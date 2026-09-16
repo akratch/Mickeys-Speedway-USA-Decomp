@@ -66,9 +66,9 @@
       "source_commit": "4e4a459d5ff43edbc88b3a3f60181a18e741efa9"
     },
     "func_8000590C": {
-      "ledger_commit": "c7c021db5a6303c61d76c7263768833fe680a3e0",
+      "ledger_commit": "34281081406b7ff6adc76a6b1761378aa383efe5",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "ff1709c525a8ee7cf91f1a6e487bde8b7e6d9b2a"
+      "source_commit": "c7c021db5a6303c61d76c7263768833fe680a3e0"
     },
     "func_80006448": {
       "ledger_commit": "25a15368d81a57531735f338d69d8bad165c9def",

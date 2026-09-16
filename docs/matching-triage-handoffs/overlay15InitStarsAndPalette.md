@@ -2,11 +2,11 @@
 ### `overlay15InitStarsAndPalette` plateau handoff
 
 - source: `src/overlays/o015/overlay_015.c`
-- score: 70/247 words
+- score: 60/247 words
 - frame: 0x40
 - relocations: 14
 - first mismatch: +0x4
-- summary: Counter reuse and measured store moves reach 198 aligned exact words; 70 masked remain at exact size/frame, with adjacent scheduling controls stalled.
+- summary: Index inits ahead of the colour block and the zero/zMax stores ahead of colorDivisor reach 60; the forwarded count*12 definition (s3 against s0) and the FP ring from yRange remain.
 
 #### 2026-09-13, lane l1: counter reuse and measured bounds scheduling
 
@@ -103,5 +103,53 @@ allocator_trace_receipt mapping/fidelity, draw_census profiling/comparison,
 residual_map object comparison, web_footprint --every-colour on the changed
 source, finalize_plateau, and tools/gates.sh. Stock output remains nonexact;
 the normal fallback ROM is separately verified before committing.
+
+#### 2026-09-16, lane s1-b: the size definition is forwarded, and two store moves
+
+Baseline reproduced at 70 masked, delta zero, frame 0x40, aligner 198
+exact, 13 naming, 1 immediate, 38 structural. Retained at 60 (61 raw, one
+relocation artefact): 205 exact, 15 naming, 1 immediate, 27 structural,
+one candidate-only word at +0x1CC and one target-only at +0x218. Four
+cycles, 23 cells; the instrumented uopt (procedure 2, identity gate passed)
+was read before any cell.
+
+The s3-against-s0 head. Ours forwards starIndex = count * 12 into a
+type-4 expression web (web 4: 3 over 2 blocks, save 1.5, decided last
+among the callee-saved colours, s3), and starIndex's own symbol web (web 0,
+s0) begins at starIndex = 1. The target keeps the size in s0 through the
+allocate call and in the same block as starIndex = 1, which under
+block-set interference (L115) is only possible as one symbol web: the
+original's definition was not forwarded. This is the mechanism found on
+func_80034448 in the same lane. register on starIndex is inert (70); a
+two-statement size ((count << 2) - count, then <<= 2, or three statements)
+emits an instruction (+4, 235); the L144 address form on the post-call
+use costs +24.
+
+Two store moves. Placing the three palette index inits ahead of the colour
+block is 69 (one word; every placement of the three among the colour
+statements is 69). Moving bounds->zero and bounds->zMax ahead of the
+colorDivisor conversion, with the count store after it, is 60. The other
+five placements of the colorDivisor store are 69 to 81.
+
+Refuted at 60: a region opener before the index inits in three positions
+(61: the three li's are still hoisted to the block head by as1, so this is
+not a block question), palette read before the colour block (61),
+operand order on the xMin/xMax products (60, inert), yRange after xMax or
+before xMin (79, 61), a probe on bounds->xRange (+60, a load).
+
+Next, in order of what the records support: the size definition needs to
+stay a symbol web (the decision variable is uopt's expression forwarding
+across the allocate call, exactly as on func_80034448, where the same
+negative was measured over nine spellings); the FP ring from yRange's
+mtc1 on is one draw behind the target, which under L149 is a folded FP
+draw between the xMin product and yRange's conversion that no operand
+order or statement order here produced; and the tail's three index inits
+are scheduled at the block head by as1 in ours and at its end in the
+target, with no dependence visible in ours that the target could have.
+
+Evidence under Git's common dir, lane-evidence/s1-b/t3: sources, objects,
+the procedure-2 ladder, side-by-side listings. Commands: private direct-cc
+harness reproducing score_symbol on the base, score_symbol, align_symbol,
+the instrumented cc with CDX_DETAIL_WEB=all.
 
 <!-- plateau-handoff:overlay15InitStarsAndPalette:end -->

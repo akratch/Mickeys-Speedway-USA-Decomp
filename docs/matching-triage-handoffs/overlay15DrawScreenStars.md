@@ -268,4 +268,14 @@ ignored build/l1/overlay15DrawScreenStars. Commands: configured compilation,
 draw_census profile/compare, residual_map --object/--against, finalize_plateau
 and tools/gates.sh. No new executable-byte credit.
 
+#### 2026-09-16, lane lm-c: const qualification does not hoist the load
+
+Baseline reproduced at 9, delta zero, first +0x38, all in the entry block.
+One cycle, five cells: reading the fade through `*(const f32 *) &global`
+in the entry block is byte-identical at 9; at the loop top, at the shade
+site, with and without the local, and the plain global at the shade site,
+every in-loop read stays in the loop (+4 bytes, 73 to 84). The p6-small
+hoist is a property of the pointer variable, not of the qualifier. Next: the
+pointer view with a discarded second dereference late in the loop body to
+raise the fade web's divisor before uopt deletes the read.
 <!-- plateau-handoff:overlay15DrawScreenStars:end -->

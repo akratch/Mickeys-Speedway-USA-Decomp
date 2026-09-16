@@ -244,4 +244,25 @@ instruction cost. Source, object, score and aligned comparisons remain private
 under build/p24/func_80046BCC. A scratch-path canary reproduced the configured
 baseline before those retained-object comparisons were used.
 
+#### 2026-09-16, lane lm-c: every declared working copy hoists and commons
+
+Baseline reproduced at 16, delta zero, first +0x2C, register-only. Read off
+both objects: the target keeps the loaded byte caller-saved and never
+across the call, the working char in the first saved register, and the
+arm reads add into the second saved register, mask into the first, then
+copy back; the copy ahead of the range test is not propagated into it.
+The procedure-11 census confirms ours has one symbol web for the loaded
+and working char (web 0, 17 interferences) spanning the loop. Four
+cycles, 33 cells:
+- the three-statement arm spelling is byte-identical at 16; on `var_s2`
+  alone 38.
+- a declared working copy in either width, copied inside the arms from
+  `var_s2` or from the masked load, tests mixed or on the copy: 16 cells,
+  all +4 to +24 bytes. The surplus word is a copy at +0x58: both arms'
+  copies hoist into the predecessor and common with the mask.
+- anti-commoning spellings of the two copies: +4 to +12.
+- no working copy at all, arms and tests on `var_s2`: 42 at delta zero.
+Next: the target's saved working register is most likely uopt's own split
+of `var_s2`, which is precisely a copy that is not propagated; the lever is
+that web's split gate, not a source variable. Read its record.
 <!-- plateau-handoff:func_80046BCC:end -->

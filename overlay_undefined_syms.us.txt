@@ -1301,6 +1301,10 @@ sqrtf_o041Reloc = 0xf0000000;
 /* overlay 41: overlay41IsUnitScale.c.o */
 gOverlay41Objects = 0x00000000;
 
+/* overlay 41: overlay41UpdateProgress.c.o */
+gOverlay41CurrentState = 0x00000000;
+overlay41ApplyAmount = 0xf0000000;
+
 /* overlay 41: overlay41AddSlot.c.o */
 gOverlay41Slots = 0x00000000;
 

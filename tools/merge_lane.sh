@@ -73,12 +73,9 @@ if ! git rev-parse --verify MERGE_HEAD >/dev/null 2>&1; then
   exit 0
 fi
 if git grep -q '^<<<<<<< ' -- . ':!*.md'; then echo "conflict markers left in tracked files:" >&2; git grep -l '^<<<<<<< ' -- . >&2; exit 1; fi
-.venv/bin/python tools/merge_transaction.py begin
-if [ "${regenerate_ranking_doc:-0}" = 1 ]; then
-  .venv/bin/python tools/nm_ranking.py --write-doc >/dev/null
-  git add docs/nm-ranking.md
-  echo "regenerated docs/nm-ranking.md from the merged ranking"
-fi
+# This must run BEFORE `merge_transaction.py begin`: the transaction
+# snapshots the index and refuses if it changes while the gates run, so
+# anything that stages a file has to happen first.
 # A promotion retires the matched function's ranking row, so `check-docs`
 # fails below until config/nonmatching-ranking.us.json stops listing it. That
 # happened on five merges on 2026-09-16, and each cost a full atlas/extract/
@@ -96,6 +93,12 @@ case "$pruned" in
      git add config/nonmatching-ranking.us.json docs/nm-ranking.md
      echo "ranking: $pruned" ;;
 esac
+.venv/bin/python tools/merge_transaction.py begin
+if [ "${regenerate_ranking_doc:-0}" = 1 ]; then
+  .venv/bin/python tools/nm_ranking.py --write-doc >/dev/null
+  git add docs/nm-ranking.md
+  echo "regenerated docs/nm-ranking.md from the merged ranking"
+fi
 echo "== integration gates"
 gmake overlay-atlas-write >/dev/null 2>&1 || true
 .venv/bin/python tools/refresh_atlas_digest.py >/dev/null

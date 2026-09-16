@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 296,
-  "resolved": 296,
+  "queue_size": 294,
+  "resolved": 294,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 296,
-  "relocation_masked_coverage": 296,
+  "source_context_coverage": 294,
+  "relocation_masked_coverage": 294,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -121,13 +121,13 @@
       "tu": "main",
       "size_bytes": 1188,
       "objdiff_match_pct": null,
-      "differing_words": 13,
-      "first_mismatch_offset": 540,
-      "relocation_masked_differing_words": 13,
-      "relocation_masked_first_mismatch_offset": 540,
+      "differing_words": 11,
+      "first_mismatch_offset": 996,
+      "relocation_masked_differing_words": 11,
+      "relocation_masked_first_mismatch_offset": 996,
       "size_delta": 0,
       "category": "register-only",
-      "source_context_sha256": "YM99.uOj0.mQi4.0yGW.Ql6K.kI05.3tCF.gV6e.ir7c.2gRY.vuA"
+      "source_context_sha256": "xbym.nkBw.oJ99.hLro.AiBS.UG-l.7_6M.V52q.D_h8.tjhl.RXw"
     },
     {
       "name": "func_80046BCC",
@@ -292,7 +292,7 @@
       "relocation_masked_first_mismatch_offset": 80,
       "size_delta": 0,
       "category": "register-only",
-      "source_context_sha256": "PHMi.yXaq.jVri.FNJ3.cHO5.hJyd.LfLB.DURS.2r20.bbTK.Zbo"
+      "source_context_sha256": "7kY5.SVVK.rM0I.Szee.rK9K.4c4f._f2u.SnOn.wY1G.X_6T.Zbs"
     },
     {
       "name": "func_8005ABA8",
@@ -490,21 +490,6 @@
       "source_context_sha256": "Hxg1.tL1B.CFJR.i-6l.HYpD.S-St.WLYc.pBzG.k19F.gO6C.Yto"
     },
     {
-      "name": "func_overlay_014_F0001540_1870E18",
-      "file": "src/overlays/o014/func_overlay_014_F0001540_1870E18.c",
-      "overlay": 14,
-      "tu": "overlays/o014",
-      "size_bytes": 752,
-      "objdiff_match_pct": null,
-      "differing_words": 14,
-      "first_mismatch_offset": 220,
-      "relocation_masked_differing_words": 12,
-      "relocation_masked_first_mismatch_offset": 220,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "bq62.if90.Ue_C.bh8g.-NiU.tKBK.Phfk.JcPy.8ph6.A2Zj._9Q"
-    },
-    {
       "name": "overlay14CreateValue",
       "file": "src/overlays/o014/overlay14CreateValue.c",
       "overlay": 14,
@@ -623,21 +608,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "eMzO._9q7.j-BF.lUgm.Ovkn.HAYR.sxmy.NdAY.3O6e.vCZ_.ZT4"
-    },
-    {
-      "name": "overlay3SelectScoredObject",
-      "file": "src/overlays/o003/overlay3SelectScoredObject.c",
-      "overlay": 3,
-      "tu": "overlays/o003",
-      "size_bytes": 472,
-      "objdiff_match_pct": null,
-      "differing_words": 21,
-      "first_mismatch_offset": 72,
-      "relocation_masked_differing_words": 21,
-      "relocation_masked_first_mismatch_offset": 72,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "gPH5.Au36.jaRQ.p04y.8KAc.z7Th.Pq3i.i09x.VsZ_.NGYl.Wkg"
     },
     {
       "name": "overlay33PresentAndSwap",
@@ -1132,7 +1102,7 @@
       "relocation_masked_first_mismatch_offset": 72,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "Sc2q.4_D_.4fO1.kyEG.PdjF.kiEr.-PnU.xM4T.mZQw.mvrL.s6U"
+      "source_context_sha256": "o4-P.hzae.ujKs.rpeq.yvKb.Z72w.9e0e.Ajno.xb7I.mvCO.IGA"
     },
     {
       "name": "overlay83DrawStrip",

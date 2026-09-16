@@ -67,6 +67,7 @@ not a correctness gap.
 
 | `overlay17DrawStrip` | overlay 17 strip renderer | unsigned OR-zero reassignment of the initialized strip-packet cursor | Preserves all 32 pointer bits and every store and increment. It lowers the cursor save from 30 to 25 with no emitted instruction. Seek a natural spelling retaining 119 words, frame `0x38`, one relocation, and linked ROM identity. |
 | `func_overlay_058_F000138C_18B0574` | overlay 58 results renderer | `i &= 0` after case 12's first call; `(0xFF - (i = 0))` resets in the last colour argument of cases 1, 12 and 13; empty `!= 0` tests on `columnStep` and `columnCount`; unused `cursor` and `portraitX` declarations; a dead index local at two slot lookups | Each is zero instructions and load-bearing for one allocator or pass-order fact named at its point of use and in `docs/WHALE.md`. Seek natural spellings retaining 3614 words, frame `0x138` and 1253 relocation identities; try the probes first and the self-read with the guard reset last. |
+| `overlay3SelectScoredObject` | overlay 3 scored-object search | unused `Overlay3Object **cursor` declaration | Holds the `0x80` frame: with one pointer-typed declaration fewer than the body declares the frame is `0x78` and 7 words differ; an unused `f32` is eliminated and does not hold it. Seek a natural used pointer local retaining 118 words, frame `0x80` and 5 relocation identities. |
 
 Add rows as ugly-but-verified matches land. When revisiting: reproduce the match
 with idiomatic C, `gmake verify`, then delete the row + the in-source comment.

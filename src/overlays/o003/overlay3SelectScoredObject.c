@@ -7,15 +7,18 @@ extern s32 overlay3ContainsValueReloc(Overlay3Object *anchor, Overlay3Object *ob
 extern s32 overlay3RandomRangeReloc(s32 low, s32 high);
 extern f32 overlay3SqrtReloc(f32 value);
 /*
- * Plateau, remeasured 2026-09-12: 21 relocation-masked words at the exact
- * 118-word extent and 0x80 frame, all of them in the entry and cached-path
- * block; every instruction from +0xA0 on is byte-exact. The residual is one
- * allocator shape, stated and priced in the handoff below: the ROM copies the
- * helper's return register into $a1 before the guard so $v0 is free for both
- * reloads of `count`, and neither a colour force nor a split force on this
- * candidate's single `objects` web reproduces that.
+ * Matched 2026-09-16 (lane lm-a), 118/118 words at frame 0x80, unforced.
+ * Two facts, both measured (docs/lastmile-region-boundary.md):
+ *   - the loop subscripts `objects[index]` and lets strength reduction own
+ *     the walking cursor (L160). With a declared cursor the helper result
+ *     was one web coloured v0 unopposed; generated, uopt keeps the call
+ *     result for the cached path, copies it into a1 before the guard, and
+ *     both reloads of `count` take v0, which is the ROM's shape;
+ *   - the frame is 0x80 only with one more pointer-typed declaration than
+ *     the body uses: `cursor` is kept, unused, for that reason. An unused
+ *     f32 in its place is eliminated and the frame falls to 0x78. Listed in
+ *     docs/cleanup-queue.md.
  */
-#ifdef NON_MATCHING
 Overlay3Object *overlay3SelectScoredObject(Overlay3Object *anchor, Overlay3Search *search, s32 elapsed) {
     s32 count; Overlay3Object **objects; Overlay3Object **cursor; Overlay3Object *result;
     Overlay3Object *object; Overlay3State *state; s32 index; s32 bestScore;
@@ -29,9 +32,8 @@ Overlay3Object *overlay3SelectScoredObject(Overlay3Object *anchor, Overlay3Searc
         bestScore = -1000000;
         index = count - 1;
         if (count != 0) {
-            cursor = &objects[index];
             do {
-                object = *cursor;
+                object = objects[index];
                 if ((object != anchor) && (object->state->blocked == 0) &&
                     (overlay3ContainsValueReloc(anchor, object) == 0)) {
                     score = overlay3RandomRangeReloc(0, 2000);
@@ -47,7 +49,6 @@ Overlay3Object *overlay3SelectScoredObject(Overlay3Object *anchor, Overlay3Searc
                         result = object;
                     }
                 }
-                cursor--;
             } while (index--);
         }
         if (result != 0) {
@@ -58,16 +59,4 @@ Overlay3Object *overlay3SelectScoredObject(Overlay3Object *anchor, Overlay3Searc
     return result;
 }
 
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o003/overlay3SelectScoredObject/func_overlay_003_F00003B0_185A0E0.s")
-#endif
 
-/* PLATEAU-HANDOFF:overlay3SelectScoredObject:start
- * symbol: overlay3SelectScoredObject
- * score: 21/118 words
- * frame: 0x80
- * relocations: 5
- * first-mismatch: +0x48
- * summary: Refresh confirms 28-draw/166-emission schedule; helper-result caller-saved copy remains unreachable after the current causal controls.
- * PLATEAU-HANDOFF:overlay3SelectScoredObject:end
- */

@@ -102,6 +102,7 @@ nonmatchings/
 .codex/
 .codex-*
 .lane-extract.log
+.lane-prebuild.log
 .metadata_never_index
 
 # Instrumented uopt listing output (cc -S / CDX_LOG scratch); never tracked.

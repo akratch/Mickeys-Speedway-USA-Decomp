@@ -134,4 +134,50 @@ spellings), so the copy is load-bearing in every spelling of the carrier.
 
 Six forms measured this pass, none below 13. The reopen condition is unchanged
 and the two cheapest laws that looked like they reached it are now spent.
+
+#### 2026-09-16, lane nx-a: the target's pointer is spilled to its own home, and the ratio that blocks it is named
+
+Baseline reproduces 384 bytes, delta zero, 13 masked and 14 raw, frame 0x28,
+first mismatch +0x54; aligner 83 exact, 5 naming, 4 immediate, 4 structural.
+Nothing adopted; eight cycles.
+
+Read off the objects: the target computes index shifted by three as a ring
+draw (t1) and sums it straight into v1, which is one pointer web spilled to
+its own home 0x18 around all three calls; the candidate colours the shift as
+a web (v1), writes the sum to the volatile chosen home, and copies it into the
+register slot web whose spill goes to a temp at 0x24. The tail's count load
+is above the key store in the target and below it here.
+
+Measured: a plain (non-volatile) chosen is copy-propagated and rematerialised
+after each call from a spilled index (frame 0x38, 75, plus four); that holds
+with the loop walked by slot increments (93), with every index spelling (u32,
+u8 pointer, plus, shift), with declaration order, and with index reused as the
+switch variable (22 base, 67 one pointer). Killing index after the pointer is
+formed (a dead `index = 0`, or `index++`) is the one thing that makes uopt
+spill the pointer to its own home and draw the shift from the ring: 54 at plus
+four, and the four bytes are the arm merge, because the pointer takes a3
+while the constant 1 holds v1.
+
+With one `slot` variable through the scan loop, the free loop and the calls
+(no chosen), the shape from +0x9C to the tail is the target's except the
+frame, and the census names the last decision: slot (web 0) is 57 over 7 and
+value (web 3) is 25 over 3, so value is decided first, takes v1, and slot
+falls to a2; the base's copy form has slot at 57 over 6 because the copy's
+def sits after the call. Two probes on slot raise both terms (59 over 8) and
+do not flip it. Testing `slot->value` instead of `value` in the tail drops
+value to 24 over 3 and flips the order: slot v1, value a0, every colour the
+target's, at 31 words and plus four for the reload the spelling adds. Taking
+value out of the scan loop also flips it (38, delta zero) but breaks the
+loop's a0. Per-arm value definitions add a reference (26 over 3). A non
+register slot still spills to a temp (frame 0x20); two unused pointer locals
+do not enlarge the frame here.
+
+Next hypothesis, in order: find a tail spelling that removes exactly one
+weight-one reference to value without adding a load (the volatile struct
+field forces a load per read, so the candidate is the return path); and a
+declaration that gives the single slot web a home at 0x18 with the frame at
+0x28, which a separate declared chosen achieved (the idx0 form's frame is the
+target's) but the one-web form does not. The lane report is
+docs/lastmile-phantom-web.md.
+
 <!-- plateau-handoff:overlay14CreateValue:end -->

@@ -1259,7 +1259,13 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                             amSndPlay(0xCU, NULL);
                             D_o058_5EB0 = 0xA;
                             saves = func_800291C4();
-                            slot = &saves[levelGetBlurEffect(D_800D304E_o058Reloc)];
+                            /* Slot address as overlay60Prefix spells it: the index
+                             * through a dead local AND byte arithmetic.  Either alone is
+                             * byte-identical to `&saves[f()]` (wv-v cycle 10); together
+                             * they put `saves` first in the addu, as the target has it
+                             * (wv-w cycle 1: the operand order is the tree's evaluation
+                             * order, not a canonical sum). */
+                            portraitIndex = levelGetBlurEffect(D_800D304E_o058Reloc); slot = (SavesSlot *) ((u8 *) saves + portraitIndex * 32);
                             if (D_o058_5E8C != -1) {
                                 slot->records[3].name[0] = func_8003A6B0(D_800D31C4_o058Reloc[0]);
                                 slot->records[3].name[1] = func_8003A6B0(D_800D31C4_o058Reloc[1]);
@@ -1437,7 +1443,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
         saves = func_800291C4();
 
-        slot = &saves[levelGetBlurEffect(D_800D304E_o058Reloc)];
+        erase = levelGetBlurEffect(D_800D304E_o058Reloc); slot = (SavesSlot *) ((u8 *) saves + erase * 32); /* see case 9 (wv-w) */
 
         if (D_o058_5CD8 != 0) {
             if ((D_o058_5CD8 >= 2) && (x == 0)) {
@@ -1537,10 +1543,10 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
 
 /* PLATEAU-HANDOFF:func_overlay_058_F000138C_18B0574:start
  * symbol: func_overlay_058_F000138C_18B0574
- * score: 11/3614 words
+ * score: 9/3614 words
  * frame: 0x138
  * relocations: 1253
  * first-mismatch: +0x12E4
- * summary: 11 retained: the loop-index resets ride on two dead-in-place locals (letter1 for cases 1/2, textY for cases 3/13) so their web takes s1/s4 instead of a0; W's nine rows and the two slot rows remain.
+ * summary: 9 retained: the slot address spelled as overlay60Prefix does (index through a dead local plus byte arithmetic) puts saves first in the addu; the loop-index resets ride on letter1/textY; W's nine rows (a2 for t0, +0x1280..+0x1500) remain.
  * PLATEAU-HANDOFF:func_overlay_058_F000138C_18B0574:end
  */

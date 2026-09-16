@@ -3016,6 +3016,20 @@ overlay86FindPreviousUsableReloc = 0xf0000000;
 overlay86GetNodesReloc = 0xf0000000;
 overlay86NextIndexReloc = 0xf0000000;
 
+/* overlay 86: func_overlay_086_F0000474_18D22AC.c.o */
+ext_o0_1bed0 = 0xf0000000;
+ext_o0_28d88 = 0xf0000000;
+ext_o0_29b94 = 0xf0000000;
+ext_o0_2c64 = 0xf0000000;
+ext_o0_494ac = 0xf0000000;
+ext_o0_53d0 = 0xf0000000;
+ext_o0_5a758 = 0xf0000000;
+ext_o0_f690 = 0xf0000000;
+ext_o7_dbc = 0xf0000000;
+overlay86BuildTransformReloc = 0xf0000000;
+overlay86ScaledVectorPositionReloc = 0xf0000000;
+overlay86SelectPositionReloc = 0xf0000000;
+
 /* overlay 87: overlay87InitializeObject.c.o */
 gOverlay87InitScaleReloc = 0x00000000;
 

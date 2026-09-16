@@ -1,31 +1,11 @@
-0x088:ext_o0_5a758:func_overlay_086_F0000000_18D1E38
-0x124:ext_o0_2b90:func_overlay_086_F0000000_18D1E38
-0x144:ext_o0_2d70:func_overlay_086_F0000000_18D1E38
-0x160:ext_o0_2d98:func_overlay_086_F0000000_18D1E38
-0x168:ext_o0_2a470:func_overlay_086_F0000000_18D1E38
-0x1d4:ext_o0_2d98:func_overlay_086_F0000000_18D1E38
-0x264:overlay86ScaledVectorPosition:func_overlay_086_F0000000_18D1E38
-0x2b4:ext_o0_f690:func_overlay_086_F0000000_18D1E38
-0x300:ext_o0_494ac:func_overlay_086_F0000000_18D1E38
-0x308:ext_o0_28d88:func_overlay_086_F0000000_18D1E38
-0x328:ext_o0_5a914:func_overlay_086_F0000000_18D1E38
-0x364:overlay86ScaledVectorPosition:func_overlay_086_F0000000_18D1E38
-0x41c:overlay86SelectPosition:func_overlay_086_F0000000_18D1E38
-0x460:overlay86BuildTransform:func_overlay_086_F0000000_18D1E38
-0x48c:ext_o0_1bed0:func_overlay_086_F0000000_18D1E38
-0x4e4:ext_o0_494ac:func_overlay_086_F0000000_18D1E38
-0x4ec:ext_o7_dbc:func_overlay_086_F0000000_18D1E38
-0x4fc:ext_o0_f690:func_overlay_086_F0000000_18D1E38
-0x590:overlay86BuildTransform:func_overlay_086_F0000000_18D1E38
-0x5e4:ext_o0_2b90:func_overlay_086_F0000000_18D1E38
-0x604:ext_o0_5a914:func_overlay_086_F0000000_18D1E38
-0x664:ext_o0_f690:func_overlay_086_F0000000_18D1E38
-0x7ac:ext_o0_29b94:func_overlay_086_F0000000_18D1E38
-0x7f8:ext_o0_f690:func_overlay_086_F0000000_18D1E38
-0x848:ext_o0_2b90:func_overlay_086_F0000000_18D1E38
-0x85c:ext_o0_2c4c:func_overlay_086_F0000000_18D1E38
-0x8bc:ext_o0_2952c:func_overlay_086_F0000000_18D1E38
-0x8dc:ext_o0_2d70:func_overlay_086_F0000000_18D1E38
-0x96c:ext_o0_2c64:func_overlay_086_F0000000_18D1E38
-0x9a4:ext_o0_2c4c:func_overlay_086_F0000000_18D1E38
-0xa14:ext_o0_2d98:func_overlay_086_F0000000_18D1E38
+# Bind the compiler's private pool references (two float constants at +0x0
+# and +0x4, the five-entry state-switch table at +0x8) to the retained overlay
+# pool at data_rodata +0x80, rodata-relative +0x0, which the shipped %hi/%lo
+# pairs encode.  Only relocation symbol indices change; instructions and
+# addends stay untouched.
+0x1f8:.rodata:gOverlay86StatePoolReloc
+0x1fc:.rodata:gOverlay86StatePoolReloc
+0x208:.rodata:gOverlay86StatePoolReloc
+0x210:.rodata:gOverlay86StatePoolReloc
+0x224:.rodata:gOverlay86StatePoolReloc
+0x22c:.rodata:gOverlay86StatePoolReloc

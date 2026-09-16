@@ -1,0 +1,3315 @@
+# Whale pass log — 2026-09-12 and earlier
+
+Historical per-pass record for `func_overlay_058_F000138C_18B0574`, split out
+of the per-symbol handoff shard on 2026-09-16 when the function matched and
+the shard stopped growing. These are the passes that took it from 733 through
+the 227 and 187 plateaus. Newest first.
+
+The shard is
+[`matching-triage-handoffs/func_overlay_058_F000138C_18B0574.md`](matching-triage-handoffs/func_overlay_058_F000138C_18B0574.md);
+the 2026-09-13 passes are in
+[`whale-pass-log-2026-09-13.md`](whale-pass-log-2026-09-13.md).
+How it was finished is [`whale-self-read.md`](whale-self-read.md); the map is
+[`WHALE_HANDOFF.md`](WHALE_HANDOFF.md).
+
+## 2026-09-12 (lane `p25-whale`): generated-cursor premise tested; transition coupling remains
+
+**Retained source unchanged: 217 masked / 386 raw**, 14,456 bytes, delta
+zero, frame 0x138, first mismatch +0x50. Aligned buckets remain
+**3454 exact / 135 naming / 2 immediate / 25 structural**. Candidate-only
++0xDDC and +0x12F8 remain paired with target-only +0xD5C and +0x1260.
+No new gap is introduced and no executable bytes are promoted. Only the
+source's EOF handoff metadata changes.
+
+The inherited 207 alternative independently reproduces **207/378**, delta
+zero, buckets **3438/154/1/22**, with only the case-12 pair. Its sixteen
+fewer exact aligned rows still prevent adopting it over 217. Both sources
+have the same 35 frame homes and traffic, and 1,253 candidate relocations
+against the assembled target representation's 526. Exact runtime relocation
+identity is not claimed.
+
+### The requested deletion has no declared case-3 pointer to remove
+
+Case 3 already spells its accesses as array subscripts. Its entry cursor is
+compiler-generated: the fresh 207 capture identifies a type-four expression
+web, 309, at **71/6 = 11.833333**, taking s0. The separately declared
+portraitX is an integer induction, not a walking pointer. The only declared
+walking pointer named cursor belongs to case 13's first loop.
+
+Attempt one tests the concrete alternatives before pursuing colours. Seeding
+case 3's independent induction from i, an unsigned conversion of i, addition
+of zero, or multiplication by one gives identical owned text and relocations
+to the 207 control. Replacing the declared case-13 pointer with an indexed
+scalar also preserves the complete owned text and relocations on both 217
+and 207 when its equality bound is retained. The less-than bound costs four
+bytes. Thus the delete-a-declared-pointer recipe is not an untried source
+change at this case-3 site; this does not refute the general compiler law.
+
+### Complete single-force landscape of the changed 207 source
+
+The old 227 landscape is not rerun. Attempt two measures the changed 207
+source: **1,914 legal alternative-colour probes across 142 coloured webs**,
+both save kinds, with explicit procedure zero and direct object scoring.
+There are 508 accepted size-zero cells, 1,157 accepted size-changing cells,
+and 249 declined or unverifiable requests excluded by the receipt checker.
+Twenty-two accepted size-zero cells improve 207. Raw logs and every object
+are retained privately; no declined request is treated as an intervention.
+
+The best disjoint packing predicts 162. One combined compile measures
+**162 masked / 333 raw**, delta zero, buckets **3481/111/1/22**, with all six
+requested final colours accepted:
+
+- web 75 to colour 16: single 192, fifteen-word gain;
+- web 379 to colour 20: single 197, ten-word gain;
+- web 225 to colour 14: single 200, seven-word gain;
+- web 320 to colour 18: single 200, seven-word gain;
+- web 27 to colour 17: single 204, three-word gain;
+- web 506 to colour 15: single 204, three-word gain.
+
+This is a measured diagnostic combination, not a source result, source-space
+floor, or exhaustive higher-order-force result. The first cursor still does
+not have a size-zero repair in the complete single-force landscape. Every
+legal alternative colour for web 309 changes width. Its six alternative
+callee-saved colours each cost four bytes; the requested s4 choice is
+explicitly accepted at colour 18 and still costs four bytes.
+
+That cost is a transition-address defect, not a spill. Under the s4 force,
+the case-3 transition puts its two coordinate addresses into v0/v1 instead
+of v1/a2. The subsequent state-value load uses v0, and the zero store loses
+its reusable coordinate address, adding one address materialization near
++0x1114. The frame census still has identical 35 homes and traffic. Moving
+the cursor alone therefore recreates the same class of transition constraint
+already known in case 12. Numeric web identities apply only to this captured
+207 source.
+
+### Three subsequent source attempts stall
+
+All candidates preserve the source-level access domains and call order and
+remain private. Each is scored and compared by aligned per-window delta,
+including regressions; size-changing results are not promoted.
+
+- Attempt three contrasts the generated case-3 entry cursor with a declared
+  pointer carrying only the entry array while the other array stays indexed.
+  Four dead pointer roles are tested. Cursor and saves add four bytes; path
+  gives 225/396 at delta zero with buckets 3420/152/1/42; slot gives 234/405
+  with 3411/161/1/42. A shared byte-offset induction adds eight bytes, and
+  reverse-index addressing reproduces 207 exactly. These repeat the known
+  pointer-body/width tradeoff and supply no repair.
+- Attempt four changes the transition delta's source identity. Scaling the
+  existing rate parameter once and replacing both later products is defined
+  on the original arithmetic domain; the original rate is dead afterwards.
+  Three placements each add four bytes on 217 and twelve on the case-12
+  early-index split. Two forms updating the dead saved-coordinate local
+  change width by minus sixteen or plus four on 217, and minus twelve or
+  plus eight on the split. None preserves the transition at target width.
+- Attempt five transfers the previously measured unsigned-index partition
+  to cases 1/2, separately changing the entry array, the other arrays, or
+  both. All six forms on 217 give **220/389**, delta zero,
+  **3451/138/2/25**; all six on 207 give **210/381**, delta zero,
+  **3435/157/1/22**. The edit adds three naming rows and removes no gap.
+
+These three attempts add no adoption or new mechanism beyond the measured
+cursor/transition coupling, meeting ADR 0018's stopping rule. This is not
+exhaustion of source space. The next concrete source question is how to keep
+the transition coordinate address live through its zero store while changing
+the first cursor's allocation. A useful experiment must preserve both facts
+at once; repeating a declared-pointer deletion, these induction seeds,
+these rate-update forms, or the old 227 colour sweep does not do that.
+
+### Preservation and validation
+
+The assignment gate returned base-only. The configured full-TU baseline and
+scratch-copy harness agree on owned text and relocation maps. Stock and
+instrumented 207 output also pass the full section, relocation and symbol
+fidelity gate. The workbench's baseline self-comparison
+reports identical instruction words and known relocation-kind layout.
+The size-filtered oracle still selects JFG frontKeyboard at 0.081; no donor
+source or names are adopted.
+
+Full preflight, including analysis-only mode, refuses the inherited candidate
+with `candidate relocation symbol D_800D31C8 has conflicting runtime identity`.
+This unresolved source identity is retained as a promotion blocker; the
+candidate/target relocation counts above do not waive it. The initial fresh
+lane link issue was repaired by regenerating overlay aliases and rebuilding,
+with no tracked alias change.
+
+The private packet is archived as
+`matching-evidence/p25-whale-20260912.tar.gz` under Git's common directory.
+It contains source snapshots, all material candidate objects, the complete
+changed-source landscape, accepted combined-force receipt, aligned maps and
+deltas, frame censuses, compiler logs, oracle and preflight output, harnesses,
+and gate logs. It is ROM-derived evidence and must never be staged or
+published. The guarded source is finalized with `tools/finalize_plateau.py`.
+Final configured recompilation reproduces 217/386 and identical owned text
+and relocation maps to the entry object. All four `tools/gates.sh` gates pass:
+verify, cleanroom, check-docs and check-tooling. Verify prints the expected
+US ROM SHA-1 `507341c0a40ca3e9a7cee969b396ee53facfb548`. This proves
+the assembly fallback, not the nonexact C candidate. No merge, rebase or
+push is performed.
+
+## 2026-09-12 (lane `p23-whale-shape`): final handoff
+
+**Retained source: 217 masked / 386 raw**, 14,456 bytes, delta zero,
+frame 0x138, first mismatch +0x50, 1,253 candidate relocations. The assembled
+target representation has 526 relocations; exact runtime relocation identity
+is not claimed. The aligned buckets are **3454 exact / 135 naming /
+2 immediate / 25 structural**, versus entry **3449/137/2/30**. Both frame
+ladders have the same 35 homes and traffic. No C bytes are promoted.
+Commit `19dd329f` preserves the two ordinary source changes described in the
+checkpoint below. Only source metadata and this handoff change afterwards.
+
+**Two original pairs are gone without replacements**, candidate +0x1CDC and
++0x2E78 against target +0x1CE8 and +0x2E80. The retained source still has
+candidate +0xDDC / +0x12F8 and target +0xD5C / +0x1260. The call-load pair is
+now causally proved: the named-array spelling emits a stack-disjointness
+fact covering its load. The stock scheduler drops the outgoing-argument-store
+edge; the load's recorded aftercycles falls from two to zero, and that
+store's predecessor count falls from two to one. The generic pointer has no
+covering fact. Both listings and traces pass owned text/relocation fidelity
+against their configured full-TU objects. No compiler directive or object
+edit is adopted.
+
+### A third pair is source-reachable, with an explicit allocation tradeoff
+
+A separately retained ordinary-source form scores **207 masked / 378 raw**,
+delta zero, buckets **3438/154/1/22**, with the same frame and relocation
+counts. It removes the case-3 +0xDDC / +0xD5C pair too; only the case-12 pair
+remains. It is not adopted over the 217 source: its lower positional score
+comes with sixteen fewer exact aligned rows and nineteen more naming rows.
+The exact alternative source, object, alignment and trace are preserved as
+`a7-typed-0-12` in the private packet. This is a measured competing source
+shape, not a new diagnostic floor or a match claim.
+
+The source form separates case 3's array induction into portraitX, initializes
+the visible i in the title colour call, and advances both once. In case 12's
+later draw loop only, the entry-array subscript becomes `(u32)i`; case 13
+retains the signed spelling. The indices start at zero and are used only while
+less than the unsigned byte player count, so the conversion preserves their
+values. No load, store, call, bound or object identity is changed.
+
+The fresh ordinal-zero allocator records explain the entire seventeen-word
+benefit of the type partition:
+
+- The inherited shared entry cursor has total saving 333 over eleven
+  occurrence blocks, save 30.272728, selected to s4.
+- After the case-3 split, its first cursor is 71/6, save 11.833333, selected
+  to s0. The later shared cursor is 262/6, save 43.666668, selected to s3.
+  On the already improved scheduling source this control scores 224/395,
+  buckets 3421/171/1/22.
+- Giving just one later case an unsigned index splits that later cursor into
+  two ranges, each 131/4, save 32.75. Both take s4. Their selection moves
+  below the competing address constants at 100/3. This restores seventeen
+  aligned naming rows and gives the 207 alternative. The first cursor's
+  71/6 and s0 assignment survive and account for the unrepaired case-3 cost.
+
+The eight case subsets establish the type partition rather than a special
+case number: changing either case 12 or case 13 works; changing both does
+not. Also changing case 3 has no effect. Five full-width spellings agree:
+unsigned cast, unsigned zero addition, unsigned unit multiplication, and the
+two measured explicit byte-offset pointer spellings. A narrow signed-halfword
+cast adds instructions and is rejected. The source casts do not change any
+runtime array identity. Numeric web receipts belong to these exact snapshots;
+no colour force or colour sweep is run in this lane.
+
+### Bounded negative partitions and stopping evidence
+
+Attempts four through six explore first-loop/whole-draw lifetime changes.
+Nine coordinated whole-draw counter renames cost four to 28 bytes. Four
+case-12 first-loop-only carriers, including locals used only later in the
+case, each cost four bytes; reusing rowBase after copying its value to rowY
+in case 3 also costs four. The case-12 first loop itself gains the early
+initialization, but its transition loses the shared global-address form.
+Four legal restore-order changes retain or worsen that cost, and four local
+parameter reload forms cost 36 to 48 bytes. Every source/object and aligned
+delta is retained; no such candidate enters the tree.
+
+Attempt seven finds the typed-index alternative above, and attempt eight
+proves its asymmetric type partition. The final three attempts add neither
+an adoption nor a new mechanism, meeting ADR 0018's stall rule:
+
+- Attempt nine: four case-3 title-initialization placements on the new source
+  score 209, 210, 217 and 217, all delta zero. They repeat the known local
+  initialization/order tradeoff and do not beat 207.
+- Attempt ten: combine the last case-12 early-index split with the new type
+  partition, across eight carriers. All change size, by four to 28 bytes;
+  the transition-address loss survives this pairing.
+- Attempt eleven: transfer the full shared visible-index role while retaining
+  one array induction across cases 3/12/13, with three bijective local-role
+  renamings. The three rename controls reproduce 217 exactly. All six actual
+  partitions change size, by four to 24 bytes, repeating the known whole-draw
+  counter/width tradeoff.
+
+This is a bounded plateau, not exhaustion of source space. The next concrete
+question is the case-3 first cursor's lost interference after splitting:
+it now takes s0 at 71/6 while the target uses s4. Repairing that source
+partition would make the three-pair alternative competitive on aligned rows.
+The remaining case-12 pair additionally requires keeping its transition's
+shared global address. Do not repeat the colour sweep, the measured typed
+case subsets, these initializer placements, or these counter-role cells
+without a new mechanism or changed source shape.
+
+### Preservation and validation
+
+The private packet is archived under Git's common directory as
+`matching-evidence/p23-whale-shape-20260912.tar.gz`. It includes the original
+and retained sources, every material alternative and object, scores, aligned
+maps/deltas, compiler and scheduler traces, baseline self-comparison inputs,
+oracle output, scripts and gate logs. It contains ROM-derived evidence and
+must never be staged or published. The preserved 207 form remains available
+there even though the tracked source keeps the stronger aligned 217 result.
+
+Configured baseline, direct-copy and instrumented fidelity gates pass.
+The final guarded source is recompiled after metadata refresh and compared
+with its retained object. `tools/finalize_plateau.py` maintains the active
+assembly fallback and matching metric headers. ROM verification at the
+checkpoint passes with expected SHA-1
+`507341c0a40ca3e9a7cee969b396ee53facfb548`; this verifies the fallback,
+not the candidate C. Closing gate results are recorded with their true exit
+statuses in the private packet. No merge, rebase or push is performed.
+
+## 2026-09-12 (lane `p23-whale-shape`): two scheduling pairs removed
+
+Checkpoint: **227 to 217 masked**, raw 396 to 386, delta zero, 14,456
+bytes, frame 0x138, first mismatch +0x50. Aligned buckets change from
+**3449/137/2/30** to **3454/135/2/25**. The candidate remains guarded
+NON_MATCHING; no executable credit or exact relocation identity is claimed.
+
+The four gap pairs are reordered work, not four additional operations. In
+particular, the aligner's target-only label at +0xD5C names argument setup;
+the delayed visible-index initialization is at +0xD64. The corresponding
+case-12 initialization is at +0x1268. The first two pairs retain their known
+induction-initialization barrier and remain open at this checkpoint.
+
+Two ordinary source edits remove the smaller pairs without adding gaps:
+
+- The erase scan puts its outer initializer and following `do` on one
+  physical line, retaining a blank line so later source lines do not move.
+  This closes candidate +0x2E78 / target +0x2E80. Alone it gives 224/393,
+  buckets 3450/137/2/28. The two source statements retain their order and
+  every initialization, access, increment, bound and call is unchanged.
+- Cases 7/11 use an independent `rowBase` index into the named text array,
+  instead of a generic pointer cursor. The visible `i` remains initialized
+  at case entry. Both indices visit zero through three and advance once
+  per iteration. `rowBase` is dead throughout this case before the change,
+  and its address does not escape. This closes candidate +0x1CDC / target
+  +0x1CE8 and removes the adjacent structural row, reaching the checkpoint
+  score above. No other aligned window changes beyond this call region.
+
+The identity-gated stock as1 trace identifies the call-load mechanism:
+its generic-pointer load has an outgoing-stack-store dependency and an
+`aftercycles` value of two. The target places the load after that store.
+Pointer cast spelling is inert in four forms. Separating the load into
+an ordinary scalar still leaves the gap and can change unrelated allocation;
+the tested portraitX/letter0 forms give 219 and columnCount gives 218 on
+the 227 base, while savedPosition changes width. These are rejected.
+The independent named-array induction changes the alias surface without
+moving the early visible index. On the 224 source, portraitX, letter0 and
+opponent give 221; columnCount, countdownX, columnX, columnStep, highlighted,
+rowHeight, savedX and erase give 224; portraitIndex gives 227; letter1 gives
+225; rowBase gives 217. savedOffset changes width. An array-lvalue cast over
+the original pointer is inert; two pointer-difference reconstructions cost
+20 bytes. All candidates and aligned deltas are retained privately.
+
+The baseline configured wrapper reproduces the stated 227 score. The
+stock and instrumented owned text and relocation maps agree, and the
+byte-inert as1 trace passes that same gate. The baseline object's workbench
+self-comparison reports instruction words and known relocation-kind layout
+identical. The size-filtered oracle gives JFG frontKeyboard at 0.081;
+no external source or names are adopted. Both retained edits together keep
+1,253 candidate relocations, against the assembled target representation's
+526; these counts are not an exact runtime identity proof.
+
+Checkpoint validation passes `tools/gates.sh verify cleanroom check-docs`
+and `check-nonmatching-builds`. The initial fresh-lane alias link failure is
+repaired with `gmake overlay-syms` and a full core-count build; the tracked
+alias file is unchanged. Verify reports the expected US ROM hash
+`507341c0a40ca3e9a7cee969b396ee53facfb548`. This proves the assembly
+fallback, not the nonexact C candidate. The private direct-copy compiler
+path also reproduces both baseline and retained configured-wrapper owned
+text and relocation maps before scheduler listings are consulted.
+
+Investigation continues on the two larger induction pairs. This is a
+preservation checkpoint, not a final stall claim.
+
+## 2026-09-12 (integration, third pass): 185 is provably optimal, not sampled
+
+The cross-kind half of the landscape has now been measured too. **All 1,875
+legal `(web, colour)` single forces of this procedure have been compiled** --
+every colour in every coloured web's own `p1cost` table, both save kinds. That
+is the complete single-force landscape, and it is closed.
+
+Eleven forces beat the unforced 227 at size delta 0:
+
+    w75=c16  212      w225=c14 220      w950=c17 223
+    w225=c20 217      w956=c19 220      w27=c17  224
+    w379=c20 217      w963=c19 220      w950=c19 224
+                      w75=c15  223      w950=c20 225
+
+`w225=c20` is new and beats the previously-known `w225=c14` by three words as a
+single force. **It makes the set worse.** A five-force lattice using it
+measures 192; the set using c14 measures 185. The reason is in the radii:
+`w225=c20`, `w379=c20` and `w963=c19` all carry the radius
+`0x1280 0x1700 0x1780 0x1900` -- `w225=c20` and `w379=c20` identically, to the
+word. They are three handles on ONE question. Taking `w225=c20` duplicates a
+slot `w379` already covers and gives up the separate region at `+0x780` that
+`w225=c14` is the only force to reach.
+
+So the best combination is a maximum-weight packing over disjoint radii, with
+one colour per web, not a sort by single score (L159). Run over the complete
+landscape that packing returns:
+
+    p1:w75=c16 (+15)  p1:w379=c20 (+10)  p1:w225=c14 (+7)
+    p1:w956=c19 (+7)  p1:w27=c17  (+3)      predicted 185
+
+which is exactly the five forces the previous lane found by hand, and 185 is
+the measured value. **185 is therefore the optimum of the single-force colour
+landscape for this function, computed rather than sampled.** The earlier
+correction stands -- it was never a source floor -- but it is no longer open to
+the objection that only five webs were asked. All 139 were, at every colour
+they could take.
+
+What this leaves is exact: 185 masked words, of which 81 are the positional
+shadow of four instructions no colour reaches, and the remainder is a colour
+residual that no single force improves. Higher-order forces (two webs forced to
+one colour jointly, or a p2 force) are not covered by this landscape and remain
+unmeasured.
+
+## 2026-09-12 (integration, second pass): the colour axis is exhausted at 185
+
+The nomination gap identified below was closed by measurement rather than by
+another lane. `tools/web_footprint.py --every-colour` compiled **all 923 legal
+same-kind (web, colour) single forces** of this procedure in eight minutes.
+Exactly eight beat the unforced 227 at size delta 0:
+
+    p1:w75=c16   212  (+15)      p1:w963=c19  220  (+7)
+    p1:w379=c20  217  (+10)      p1:w75=c15   223  (+4)
+    p1:w956=c19  220  (+7)       p1:w950=c17  223  (+4)
+                                 p1:w950=c19  224  (+3)
+                                 p1:w950=c20  225  (+2)
+
+The sweep excluded caller->callee probes, which is where `p1:w27=c17` (224) and
+`p1:w225=c14` (220) live; with those, ten single forces are known and the
+landscape is complete for same-kind singles.
+
+**A seven-force lattice over the distinct winners still floors at 185**, with
+the original five. The two newly found webs do not add:
+
+- `w963=c19` is a RIVAL of `w379=c20`, not an addition. Its blast radius is
+  `0x1700-8 0x1780-2 0x1900-1` -- exactly `w379`'s window set -- and the pair
+  measures 220 against an additive prediction of 210, an interaction of +10.
+  Two webs competing for one slot; taking either is worth about the same and
+  taking both is worth less.
+- `w950=c17` collides with `w75=c16` in three windows and the pair measures
+  251 against a prediction of 208, an interaction of **+43** -- far worse than
+  either single, and worse than the unforced base.
+
+**The blast radius predicted all eleven measured pairs, from seven single
+measurements.** Nine read disjoint and measured exactly zero interaction; the
+two that read as contending were exactly the two antagonistic pairs. The
+previous lattice's five were all additive, so this is the first test of the
+prediction against a positive case, and it holds (L156).
+
+So the colour axis of this function is done: **185 is its floor for any
+combination of same-kind single forces, and it is a diagnostic floor, not a
+source result.** The source stays at 227. What remains is not a nomination
+problem any more -- it is the four instructions below, which no colour reaches,
+plus whatever colour residual survives once they are gone.
+
+## 2026-09-12 (integration): the 185 is a sample of five webs, not a floor
+
+The lattice below is sound and its 31 measurements stand. What does not stand
+is reading 185 as a floor. Two readings of the *same retained objects*, taken
+at integration with no new compile, change the target list.
+
+**81 of the 227 positional words are an insertion shadow.** The function has
+four one-word insertion/deletion pairs: target-only at +0xD5C, +0x1260, +0x1CE8,
++0x2E80 against candidate-only at +0xDDC, +0x12F8, +0x1CDC, +0x2E78. Between
+each pair the two streams run a word apart, so every word in the span
+mismatches by position and aligns perfectly. The two big spans fall in +0xC00
+and +0x1200, which carry 35 and 46 *positional* words and 8 and 14 *aligned*
+rows. No register colour can move any of it. So of the 185, a floor's worth is
+not a colour question at all -- it is four instructions (L155).
+
+**The five forces are 5 of the 139 webs the procedure colours** (431 p1
+decisions, 139 `p1color` rows). Their blast radii move 10 of the 22 occupied
+windows. Per-window aligned delta from base to the all-five object:
+
+    window    naming   delta      window    naming   delta
+    +0x0000   21->17    -4        +0x1400    9->7     -2
+    +0x0200   13->2    -11        +0x1600   11->1    -10
+    +0x0400    3->4     +1        +0x1800    8->7     -1
+    +0x0600    9->2     -7        +0x1A00    4->0     -4
+    +0x0800   11->11    +0        +0x1C00    5->4     -1
+    +0x0A00   10->6     -4        +0x1E00    4->4     +0
+    +0x0C00    4->4     +0        +0x2200    4->4     +0
+    +0x1200    9->12    +3        +0x2400    6->6     +0
+
+and +0x2600, +0x2C00, +0x3000, +0x3200, +0x3400 are unmoved as well.
+
+Three findings follow, and each names work:
+
+1. **+0x0800 carries 11 aligned naming rows and no force touched it.** Its
+   census is a ladder rotation -- `s1->s2` x3, `s2->s3` x4, `s3->s4` x3,
+   `s0->s2` x2 -- plus a closed `a1 -> v1 -> a1`. It is now the largest
+   untouched naming block in the function.
+2. **+0x1200 got three rows WORSE.** Force D (web 379, the shared count/stride)
+   saves ten words overall and *adds* three naming rows here. Score-level
+   additivity is a global statement and hides this completely; it is only
+   visible in the aligned per-window delta.
+3. **The remaining naming after all five is 97 rows**, concentrated at +0x0000
+   (17), +0x1200 (12), +0x0800 (11), +0x1400 (7), +0x1800 (7), +0x0A00 (6) and
+   +0x2400 (6). Every one of those is a nomination question, and nomination is
+   now mechanical: `tools/web_footprint.py` probes each of the 139 coloured
+   webs once and inverts the result into a window -> webs table.
+
+Also corrected, from the same trace: a force's legality is its web's own
+`p1cost` table, not the `available0/1` mask on its `p1dec` row. The mask calls
+three of the five colours this lane successfully forced illegal (L157).
+
+Next work, in order: (a) run the full web footprint and nominate for +0x0800,
++0x1200 and +0x0000; (b) treat the four insertion pairs as their own
+source-shape question, since no colour reaches them; (c) re-examine force D,
+which is a net win carrying a local regression.
+
+## 2026-09-12 (lane `p22-whale`): all five forces are exactly additive
+
+**Source remains 227 masked / 396 raw words, 14,456 bytes, delta zero.**
+The all-five forced diagnostic is **185 masked / 354 raw**, also delta zero.
+Every one of the 31 nonempty subsets equals its additive prediction, including
+all ten pairs and every higher-order subset. All 80 requested force applications
+are accepted in their own final colour records. This is the dispatch's third
+outcome: five independent measured interventions, with a combined 42-word price
+and a diagnostic floor of 185 for this lattice. No source-space floor or
+source reachability proof is claimed. The guarded C remains NON_MATCHING and
+no executable bytes are banked.
+
+### Identity, baseline and receipt reproduction
+
+The assignment gate returned base-only. The full inherited shard and source
+handoff were read before measurement. Configured baseline measurements reproduce
+227/396, buckets **3449 exact / 137 naming / 2 immediate / 30 structural**,
+frame 0x138, first mismatch +0x50, and displacement tax 58. Both frame ladders
+have the same 35 homes and traffic. The register census reproduces 63 percent
+coherence and ten windows, with the same four local gap pairs. The nearest
+size-filtered oracle neighbour remains JFG frontKeyboard at 0.081; no external
+code or names are adopted.
+
+Compile commands come from `nm_ranking.configured_compile_commands`, using the
+source-path key and retaining the complete asm-processor wrapper and per-file
+flags. Only the compiler token and private output path change. Stock versus
+instrumented fidelity passes text, rodata, data, relocations and symbols.
+A separately retained named Ucode input and full procedure-index capture map
+this exact function to ordinal zero, one procedure, and 431 p1 decisions.
+
+The procedure's own p1cost table identifies a0 as c3 and the five requests as:
+
+- A: copy input, web 27, s3 = c17. Accepted single 224, saving three words.
+- B: advancing entry address, web 75, s2 = c16. Accepted single 212, saving fifteen.
+- C: decrement cursor, web 225, s0 = c14. Accepted single 220, saving seven.
+- D: shared count/stride, web 379, s6 = c20. Accepted single 217, saving ten.
+- E: shared seven, web 956, s5 = c19. Accepted single 220, saving seven.
+
+The mandatory web-75 single first reproduced 212 independently, then again
+through the repaired tool. The complete lattice also required each inherited
+single to equal its expected score before proceeding to combinations. All five
+receipts survive. Every forced object is scored directly; none is passed to a
+measurement entry point that first recompiles the unforced candidate.
+
+### Complete lattice
+
+The following table uses the letter definitions above. Scores are positional
+relocation-masked differing words out of 3,614. Delta is executable bytes.
+Every row passes requested-force acceptance; every additive residual is zero.
+
+    subset  score    delta    force status
+    base     227       +0       unforced
+    A       224       +0       accepted
+    B       212       +0       accepted
+    C       220       +0       accepted
+    D       217       +0       accepted
+    E       220       +0       accepted
+    AB      209       +0       accepted
+    AC      217       +0       accepted
+    AD      214       +0       accepted
+    AE      217       +0       accepted
+    BC      205       +0       accepted
+    BD      202       +0       accepted
+    BE      205       +0       accepted
+    CD      210       +0       accepted
+    CE      213       +0       accepted
+    DE      210       +0       accepted
+    ABC     202       +0       accepted
+    ABD     199       +0       accepted
+    ABE     202       +0       accepted
+    ACD     207       +0       accepted
+    ACE     210       +0       accepted
+    ADE     207       +0       accepted
+    BCD     195       +0       accepted
+    BCE     198       +0       accepted
+    BDE     195       +0       accepted
+    CDE     203       +0       accepted
+    ABCD    192       +0       accepted
+    ABCE    195       +0       accepted
+    ABDE    192       +0       accepted
+    ACDE    200       +0       accepted
+    BCDE    188       +0       accepted
+    ABCDE   185       +0       accepted
+
+Best subset: **ABCDE**, the five requests together, at **185**. The arithmetic
+is 227 minus three minus fifteen minus seven minus ten minus seven = 185.
+
+### Every pair's interaction verdict
+
+Interaction is measured pair score minus the sum-of-single-deltas prediction.
+A negative value would be synergistic; a positive value would be antagonistic.
+
+- AB: 209 measured and predicted; interaction zero, additive.
+- AC: 217 measured and predicted; interaction zero, additive.
+- AD: 214 measured and predicted; interaction zero, additive.
+- AE: 217 measured and predicted; interaction zero, additive.
+- BC: 205 measured and predicted; interaction zero, additive.
+- BD: 202 measured and predicted; interaction zero, additive.
+- BE: 205 measured and predicted; interaction zero, additive.
+- CD: 210 measured and predicted; interaction zero, additive.
+- CE: 213 measured and predicted; interaction zero, additive.
+- DE: 210 measured and predicted; interaction zero, additive.
+
+There is no antagonistic pair and therefore no contested register identified
+by this lattice. The final-colour records give stronger supporting evidence:
+the five singles recolour disjoint web groups, and their union survives the
+combined capture:
+
+- A changes webs 27, 26, 37 and 9: copy input plus the early caller-colour chain.
+- B changes webs 75, 259, 101 and 950: advancing entries and their base addresses.
+- C changes webs 225 and 232: decrement cursor and its end.
+- D changes webs 379 and 419: the count/stride transposition.
+- E changes only web 956: the shared constant seven.
+
+These are source-snapshot-specific allocator identities. They name five
+separate source questions; a change in source requires fresh records and may
+change their interaction. The forced all-five object has aligned buckets
+**3489 / 97 / 2 / 30**, frame 0x138, first mismatch +0x50 and displacement tax
+56. Its four gap pairs, 35 frame homes and traffic, and 1,253 candidate
+relocations remain unchanged. The assembled target has 526 relocations in its
+different representation; no exact runtime relocation-identity claim is made.
+
+### Tool repair and validation
+
+Commit `00f7a155` repairs `tools/force_lattice.py`, adds regression coverage in
+`tools/test_force_lattice.py`, and includes that test in `check-tooling`.
+The previous execution path called a nonexistent queue API, looked up compile
+commands by symbol instead of source, replaced the Python interpreter rather
+than the nested compiler, and attempted to locate an object through an absent
+helper. It could also accept a missing log, reject an unforced baseline because
+unrequested rows normally say forced minus two, and return success after
+failures. Its one shared log/object location did not preserve cell evidence.
+
+The repaired path compiles into distinct retained directories, clears inherited
+force/trace environment, passes both CDX_PROC and CDX_OUT, and checks every
+requested phase/procedure/web against its final p1color or p2color row. The
+p1dec bestcolor field is the pre-force proposal and cannot verify the final
+assignment: the real single receipt exposed that distinction. Missing,
+duplicated, wrong-procedure, declined or wrong-colour evidence fails closed.
+The tool records raw and masked scores, width, first mismatch and artifacts,
+prints every subset and pair, excludes size-changing cells from the best
+comparison, and exits nonzero on failed measurement or receipt reproduction.
+Stock/instrumented fidelity precedes the sweep. Explicit total, per-compile
+and campaign deadlines bound the run; source changes during capture stop it.
+
+All 29 focused tests pass, including wrapper preservation, exact output-path
+scoring, force acceptance, cleared environment, timeout/deadline refusal,
+zero-score interactions and size-change handling. The final executable tool
+also repeats the accepted web-75 receipt at 212 after the fidelity gate.
+
+### Secondary source experiments and stopping evidence
+
+Attempts one and two establish the single calibration and complete lattice.
+Three subsequent bounded source experiments preserve all candidates privately
+but give no adoption or newly established compiler mechanism:
+
+- Attempt three: eleven count identities with the case-12/13 stride shared
+  through columnStep. The case-13 count is separate. columnCount, countdownX
+  and highlighted each give 313 at delta zero, buckets 3363/223/2/30; textY
+  gives 425. The other tested identities change width. This differs from the
+  inherited opposite carrier assignment at 322, but reproduces its known
+  ordering problem. A fresh fidelity-clean capture gives stride 222/9,
+  visible index 1534/70 and count 124/6. The index still takes s6 before the
+  count, which takes s7. No ratio or interference repair results.
+- Attempt four: case-3 visible-index initialization in the title colour call,
+  with portraitX or countdownX carrying the array induction. Each gives 234,
+  delta zero, buckets 3416/173/1/27. Pairing either with the shared-stride,
+  separate-count source gives 320, buckets 3330/259/1/27. The paired penalty
+  is exactly additive again: neither edit repairs the other's allocation.
+- Attempt five: the corresponding case-12 first-loop split, both alone and
+  paired with the count/stride source. portraitX gives 2403 or 2426 with four
+  extra bytes. countdownX holds width but gives 970 or 1044 and substantially
+  worse structural/immediate buckets. All four also add two candidate
+  relocations (1,255 versus 1,253). They do not remove the known body cost.
+
+These three attempts do not improve the retained 227 residual and repeat the
+known priority and early-index/body trade-offs. This is the bounded source
+stall, not a claim that all partitions or source space are exhausted. The
+retired bound axis, broad carrier sweep, case-10 web 978, additional depth-two
+probe site, region lever, and old statement-order neighborhoods are not rerun.
+No new inert source probe or recurrence is adopted.
+
+The next source work is now bounded by the measured five independent colour
+questions. For the count/stride branch specifically, an ordinary source form
+must keep the shared stride first while putting the separate count ahead of
+the visible index, without adding width or changing the runtime relocation
+surface. Existing case-3/12 early-index splits do not supply that priority
+repair. The 185 diagnostic still contains both delayed-index windows, so
+colour additivity does not close those structural questions.
+
+### Preservation and final gates
+
+The C body is restored byte-for-byte to the entry source. Only its EOF handoff
+metadata changes, through `tools/finalize_plateau.py`; the original assembly
+fallback remains active. The complete private evidence archive is
+`matching-evidence/p22-whale-20260912.tar.gz` under Git's common directory.
+It includes baseline/source snapshots, all 31 forced objects and logs, direct
+scores, fidelity and procedure-map receipts, alignments, rejected source
+candidates and gate logs. It contains ROM-derived evidence and must never be
+staged or published. The full lattice table and compact findings above are
+the tracked handoff, not raw compiler output.
+
+Post-metadata configured compilation reproduces 227 masked / 396 raw and
+3449/137/2/30. Object fidelity against the entry stock artifact passes text,
+rodata, data, relocations and symbols. The ordinary ROM verify gate prints
+expected and built SHA-1 `507341c0a40ca3e9a7cee969b396ee53facfb548` and
+`OK  build/mickey.us.z64 matches the expected US ROM hash`. This verifies the
+original assembly fallback, not the nonexact C body. The initial fresh-lane
+alias link failure was repaired with `gmake overlay-syms` and a full core-count
+build, with no tracked alias change. All four final `tools/gates.sh` checks
+pass: verify, cleanroom, check-docs and check-tooling. Staged cleanroom and
+check-docs also pass. No merge, rebase or push is performed.
+
+## 2026-09-12 (lane `p21-whale`): final handoff, 236 to 227
+
+**227 masked / 396 raw differing words**, 3,614 words and 14,456 bytes,
+delta zero, frame 0x138, first mismatch +0x50. The four aligned buckets move
+from **3440/146/2/30** to **3449/137/2/30**. The only retained C change is
+removing the case-10 discarded index probe, committed in `875989ee`.
+The candidate remains NON_MATCHING; no executable bytes are banked.
+
+The removal corrects seven naming rows in +0x2C00 and two in +0x3400.
+It changes the saves/slot allocation and the pointer-addition operand order,
+rather than the visible-index colour. A claim that those commuted additions
+cannot respond to source is therefore too broad: this probe removal moves
+them. The arithmetic-spelling tests in the older handoff retain their narrower
+negative scope.
+
+Both frame ladders retain the same 35 homes and traffic. Displacement tax
+remains 58. Register coherence rises from 59 to 63 percent, and the required
+mapping windows fall from 12 to ten; this is still regional allocation,
+not one coherent global ring phase. Candidate relocations remain 1,253,
+against 526 in the assembled target representation. No exact runtime
+relocation-identity claim is made. The final configured stock and instrumented
+owned text and relocation maps agree. Explicit index capture reports
+procedure ordinal zero and 431 p1 decisions. The workbench accepts the
+baseline object's self-comparison as function-exact.
+
+### Current address partition
+
+Each entry gives positional differing words, then aligned naming / immediate /
+paired structural rows in a half-open 0x200-byte window. Paired structural
+counts exclude the four single-sided pairs listed below. Positional prices
+sum to 227; intervention prices are global effects and are not additive credits.
+
+- +0x0000: **23; 21/0/2**. Switch, copy cursors and entry-address colours,
+  plus the title-index/argument association. Copy input to s3 saves three
+  words globally; switch to a0 and copy output to s0 remain declined.
+- +0x0200: **13; 13/0/0**. Advancing entry cursor, base address and shared five.
+  The accepted entry-cursor s2 choice is worth fifteen words globally.
+- +0x0400: **3; 3/0/0**. Entry cursor and shared five. Base-address s0 and
+  constant-five s1 remain unavailable on this source.
+- +0x0600: **9; 9/0/0**. Decrement cursor/end and shared five.
+  Accepted decrement-cursor s0 saves seven words.
+- +0x0800: **11; 11/0/0**. Case-2 entry/text/address cursors and local
+  caller-colour transposition. The second entry-cursor s3 choice loses a word.
+- +0x0A00: **10; 10/0/0**. Remaining case-2 address and row-coordinate colours.
+  The inherited cached-row requirement survives the tested carrier forms.
+- +0x0C00: **35; 4/1/3**. Case-3 delayed visible-index definition, branch
+  displacement and shared five. A split closes the gap but divides the shared
+  entry-address range; its full-TU cost is quantified below.
+- +0x1200: **46; 9/1/4**. Case-12 first-loop index placement and coordinate /
+  inner-index colours. Cursor and split-index forms still incur body,
+  width or relocation costs.
+- +0x1400: **9; 9/0/0**. Coordinate/index transposition and shared seven.
+  Forcing the shared inner index to s1 regresses globally to 252.
+- +0x1600: **13; 11/0/2**. Case-13 count/stride transposition and title
+  argument/index association. Count to s6 saves ten words; direct stride s5
+  is declined because the earlier count/stride range occupies it.
+- +0x1800: **8; 8/0/0**. Coordinate/index and count/stride transpositions.
+  These belong to the same two regional allocation questions.
+- +0x1A00: **4; 4/0/0**. Shared seven; its accepted s5 choice saves seven
+  words across the function.
+- +0x1C00: **10; 5/0/1**. Menu coordinate, constants 160/seven, and local
+  call-argument load order. Constant 160 to s2 costs ten words globally.
+- +0x1E00: **4; 4/0/0**. Shared five, whose requested s1 remains unavailable.
+- +0x2200: **6; 4/0/2**. Countdown coordinate and portrait preheader order.
+  Countdown coordinate to s0 is declined.
+- +0x2400: **8; 6/0/2**. Portrait coordinate, constant 170, shared five and
+  title argument/index association. Constant 170 to a0 costs two words.
+- +0x2600: **1; 1/0/0**. Commuted coordinate addition.
+- +0x2C00: **1; 1/0/0**. Commuted slot-pointer addition. Seven former
+  saves/slot naming rows are corrected by the retained probe removal.
+- +0x2E00: **3; 0/0/0**, gap only. Grid row initialization relative to the
+  character/table preheader loads. Erase counter colours remain correct.
+- +0x3000: **3; 1/0/2**. Matrix-address and call-argument order.
+- +0x3200: **3; 1/0/2**. Case-10 title argument/index association.
+- +0x3400: **4; 2/0/2**. Remaining pointer-addition and call-argument
+  scheduling. The old saved-register slot-pointer transposition is corrected.
+
+Unlisted windows are relocation-normalized exact, including the tail from
++0x3600 to the owned end. The candidate-only offsets remain +0xDDC,
++0x12F8, +0x1CDC and +0x2E78; target-only offsets remain +0xD5C,
++0x1260, +0x1CE8 and +0x2E80. Thus the two delayed-index windows still
+hold 81 positional differences. They are four local gap pairs, not a
+function-wide displacement.
+
+### Fresh intervention receipts
+
+All prices here use the final 227 source, explicit procedure ordinal zero,
+and direct scoring of each forced object. Acceptance is read from the
+positive forced colour in this installed profile; declined requests carry
+forced minus two. Caller a0 is colour three in this procedure. Two separately
+preserved exploratory colour-four requests concern a1 and are not a0 receipts.
+
+- Copy input, web 27 to s3: **224**, accepted.
+- Advancing entry address, web 75 to s2: **212**, accepted.
+- Decrement cursor, web 225 to s0: **220**, accepted.
+- Shared count/stride, web 379 to s6: **217**, accepted.
+- Shared seven, freshly identified web 956 to s5: **220**, accepted.
+- Inner index, web 22 to s1: **252**, accepted but worse.
+- Constant 160, web 967 to s2: **237**, accepted but worse.
+- Constant 170, web 1021 to a0: **229**, accepted but worse.
+- Second entry cursor, web 101 to s3: **3118**, accepted with delta minus four;
+  not an improvement.
+- Declined, unchanged at 227: switch 9 to a0, copy output 26 to s0,
+  coordinate 372 to s0, stride 419 to s5, countdown coordinate 565 to s0,
+  base address 950 to s0, and shared five 924 to s1.
+
+The baseline count/stride/index ladder remains 235/10, 111/5 and 1534/70.
+Changing the case-12 stride to share the case-13 stride, while separating
+the count, instead gives 222/9, 124/6 and 1534/70. The retained source
+checkpoint above prices that changed shape before the probe removal.
+
+An additional controlled finding makes the next experiment more precise:
+the inherited two-read opaque recurrence and the one-read multiplicative
+recurrence produce identical owned text and relocations on the baseline,
+but their index total savings differ by exactly 100. They are equal as
+objects at one allocation ordering, not equal as optimizer states. Combining
+the lower weight with the separated stride/count reaches the accepted
+index-force object's text and relocation map in the private diagnostic.
+No rewritten inert recurrence is adopted into this nonexact candidate.
+
+For case 3, the measured shared-cursor split remains the concrete blocker:
+333/11 becomes 71/6 and 262/6, with the later range then outranking the
+100/3 address constants. The accepted later-range colour intervention saves
+17 words on that split source, but the first range and title scheduling
+still differ. A future source repair must preserve the regional address
+sharing as well as the early visible-index definition. Replacing all three
+draw-loop array inductions does not meet that requirement: its best measured
+form has four additional relocations.
+
+### Closures and stopping evidence
+
+The case-10 discarded-probe requirement falls; deleting that statement
+improves both positional and aligned measurements. The surviving case-2
+probe is not jointly removable on the retained recurrence: deleting both
+probes gives 315. The already-removed separate decrement carrier and four
+grid probes are not reinstated. The counted-loop rewrite proof and the
+accepted historical force receipts are not reclassified as source-space
+impossibility proofs.
+
+After the checkpoint, 18 explicit-cursor candidates give no adoption:
+the best case-3 form is 253 with structural bucket 50 rather than 30.
+Ten count-initialization candidates show that hoisting or mutating the
+count loses four or eight bytes; the ternary is identical, and reversing
+the diamond is a one-word regression. These eliminate the tested
+block-membership changes as zero-width count-priority repairs.
+
+The final three material attempts produce no improvement or newly established
+mechanism, satisfying ADR 0018:
+
+- Attempt 9: guarded move-one order climb, minimum run two, fixed at 227
+  after one pass and 730 compiles.
+- Attempt 10: 292 carrier candidates over twenty eligible loops, requiring
+  the replacement scalar to be unused in the enclosing case and the old
+  final index value to be dead. None improves 227. This conservative scope
+  does not cover every disjoint lifetime inside a case.
+- Attempt 11: eleven coordinated replacements of the entry-array induction
+  in cases 1 and 2. Five reproduce 227 exactly; the rest reproduce the
+  already-known naming or width costs. No broad carrier impossibility is
+  claimed.
+
+Next action: retain the 227 source, select one of the priced regional
+identities above, and require the source change to alter its recorded
+interference or ratio while preserving owned width and relocation surface.
+Do not rerun the measured order neighborhood or the same carrier cells
+without a changed shape. The lower-weight recurrence is a retained
+diagnostic decision variable, not permission to bank a nonexact inert form.
+
+### Preservation and validation
+
+The first checkpoint passed cleanroom, check-docs, check-tooling and
+check-nonmatching-builds. Initial ROM linking needed the documented
+fresh-lane repair, `gmake overlay-syms` followed by a full core-count build.
+The tracked alias file did not change. The corrected verify gate printed
+expected and built SHA-1 `507341c0a40ca3e9a7cee969b396ee53facfb548` and
+`OK  build/mickey.us.z64 matches the expected US ROM hash`.
+This proves the original assembly fallback, not the nonexact C body.
+
+The guarded candidate is finalized with `tools/finalize_plateau.py`.
+Configured compiles, self-comparison, stock/instrumented fidelity,
+`align_symbol.py`, `residual_map.py`, `register_census.py`,
+`frame_census.py`, accepted/declined direct forces and the bounded source
+experiments are retained privately. The archive is
+`matching-evidence/p21-whale-20260912.tar.gz` under Git's common directory.
+It contains ROM-derived evidence and must never be staged or published.
+The source, this shard and the generic learning are the only tracked changes;
+no compiler flags, symbol claims, atlas credit or scoreboard numbers change.
+No merge, rebase or push is performed.
+
+## 2026-09-12 (lane `p21-whale`): probe removal checkpoint
+
+The configured baseline reproduces **236 masked / 405 raw**, delta zero,
+frame 0x138 and 1,253 candidate relocations. Aligned buckets are
+3440 exact, 146 naming, two immediate and 30 structural. The assignment gate
+returns base-only on the current reopening. The worktree and worker are
+p21-whale; the dispatch's p18 label and 277-word buckets are historical.
+The nearest size-filtered oracle result remains JFG frontKeyboard, 0.081;
+no donor material is adopted. Stock and instrumented owned text and relocation
+maps agree, and the frame ladders have identical 35 homes and traffic.
+
+Removing the discarded index read after the case-10 saves call improves
+**236 to 227 masked**, raw 405 to 396, with buckets **3449/137/2/30**.
+Size, frame, relocation count and first mismatch +0x50 stay unchanged.
+This removes an inert statement; no call, access, index definition or
+increment changes. Removing only the case-2 probe gives 234, while removing
+both gives 315. The retained case-2 probe is therefore still load-bearing
+on this shape. This is an improvement checkpoint, not a final stall claim.
+
+Case-3 array/visible-index separation closes the local displacement but
+regresses to 243: the previously shared advancing entry cursor at 333/11
+splits into 71/6 and 262/6. The latter then outranks the two 100/3 address
+constants. An accepted force of that later cursor to its old colour improves
+243 to 226 diagnostically; forcing the first cursor instead costs a word.
+Sharing the separate induction across the cases-3/12/13 draw loops gives
+483 at best with four additional relocations. Reversing the split, keeping
+the array index and introducing a separate visible index, floors at 296.
+These price regional identity costs; neither family is adopted.
+
+Separating case-12 stride from case-13 count gives 322 with unchanged geometry.
+The fresh ladder is stride 222/9, visible index 1534/70, count 124/6.
+An accepted index-to-s7 intervention gives diagnostic 225, proving the
+97-word cost of that ranking on this source. Rewriting the already-inert
+grid recurrence to use the index once instead of twice reduces total saving
+by exactly 100 without changing the unsplit baseline's object. On the split
+source it reaches the forced object's 225 score. These source-shaping
+diagnostics are retained privately; the committed change is only the
+case-10 probe removal. Their ratios and numeric web identities belong to
+their exact source snapshots.
+
+All sources, objects, measurements and instrument records are preserved in
+private lane scratch. The candidate remains guarded by NON_MATCHING and
+no matching credit is claimed. Investigation continues from the retained 227.
+
+## 2026-09-12 (lane `p18-whale`): final handoff, 277 to 236
+
+**236 masked / 405 raw differing words**, 14,456 bytes, delta zero,
+frame 0x138, first mismatch +0x50. Entry was 277/447. The aligned buckets
+improve from **3422 exact / 157 naming / 4 immediate / 42 structural** to
+**3440 / 146 / 2 / 30**. Displacement tax falls from 74 to 58. Seven of the
+eleven local gap pairs are gone. This is a compiled, guarded `NON_MATCHING`
+candidate, not an object-exact or ROM-exact C function; no bytes are banked.
+
+Both frame ladders now have the same 35 homes AND the same load/store traffic.
+The surplus saved-position store recorded at entry is removed. Candidate
+relocations remain 1,253; the target object's 526 records are a different
+representation, not a proof of runtime relocation identity. The final stock
+configured-wrapper and instrumented owned text and relocation maps agree.
+The fresh procedure ordinal is zero, with 431 p1 decisions. Register coherence
+is 59 percent and needs 12 windows, so there is no single global ring phase.
+
+### Retained changes after the second checkpoint
+
+The following rows give masked/raw, followed by exact/naming/immediate/full
+structural counts. Every retained row has delta zero and frame 0x138.
+
+- Entry: 277/447; 3422/157/4/42.
+- Case-1 lifetime pair, preserved in `42e15152`: 272/442; 3426/154/4/41.
+- Three title initializations: 265/435; 3424/157/4/37.
+- Two inner-index definitions after node calls, preserved together with the
+  title changes in `fa392e8d`: 249/419; 3430/155/2/33.
+- Case 1 also initializes through the title's zero blue argument:
+  247/417; 3429/156/2/32.
+- Case-2 decrement loop reuses `i` and retains its post-loop reset:
+  243/413; 3430/156/2/30.
+- Coordinated erase/grid roles and case-13 count/stride carrier exchange,
+  removing the four grid probes: 235/404; 3438/148/2/30.
+- Remove the inherited discarded read of `i` before its first definition in
+  case 3: **236/405; 3440/146/2/30**. The lower 235 number is retained only in
+  private diagnostic evidence. It is not the final candidate.
+
+The decrement-loop closure fell. On this shape, `i` is initialized at case-2
+entry, used for the decrement scan, and reset to zero after that scan. Both
+paths still reach the draw loop with zero. The old separate `savedPosition`
+carrier emits an unnecessary stack store and suppresses the post-loop index
+definition. Reusing `i` fixes both together. Other measured dead carriers
+still lose four bytes; `savedX` keeps size but gives no improvement. The
+source's local comment is updated; its old blanket requirement for the
+separate scalar no longer applies.
+
+The erase scan and grid now use `columnX` for their row and `i` for their
+character. The grid uses `opponent` for the drawing coordinate. Each counter
+is initialized before use, visits the original bounds and preserves every
+array access, comparison, store and call. The opaque unit increment still
+uses its own inner index and remains mathematically one. Sharing the row
+carrier in BOTH scans preserves the common matrix-address web; changing
+only the erase scan fixes its counters but splits that address web and
+regresses to 259 even after probe retuning.
+
+Those coordinated roles alone score 321 with no probes: the visible index
+wins s6 at 1534/71, before the case-13 count at 124/6. A confirmed s7 force on
+that intermediate source scores 224. This is a diagnostic price, not a source
+result. Reusing the earlier erase-flag lifetime lowers the index to 1538/80
+and gives s7 naturally, but introduces two instructions in case 2; it is
+rejected. Moving the opaque-zero dependency off the inner index costs twelve
+bytes. Neither is a repair of the coupled shape.
+
+Exchanging the two count/stride carriers inside case 13 instead gives the
+ordinary-source 235 result, while preserving case 12. The variable called
+`columnStep` consequently carries the count in case 13, and `columnCount`
+carries its stride; their values and uses are exchanged consistently. The
+then-current ratios become 235/10, 111/5 and 1534/71, putting the visible
+index back in s7. All four discarded grid probes become unnecessary and are
+removed. Removing the separate case-3 read before definition leaves the final
+index at **1534/70 = 21.914286**, still below 111/5 = 22.2. The two remaining
+discarded `i` probes in cases 2 and 10 read initialized values. No new inert
+source-shaping operation is adopted.
+
+### Final address partition and prices
+
+Each row below gives positional differing words, then aligned N/I/S in that
+0x200-byte window. Here S excludes single-sided gaps, exactly as
+`residual_map.py` reports. The complete structural count is 22 paired rows
+plus four candidate-only and four target-only words, or 30. The positional
+prices sum to 236. Force prices in parentheses are global interventions and
+are not additive local credits.
+
+- +0x0000: **23; 21/0/2**. Initial switch, copy-loop and entry-address colours,
+  plus the title index/argument tie. Switch and copy-output target colours
+  remain unavailable; accepted copy-input s3 costs three fewer words globally.
+- +0x0200: **13; 13/0/0**. Entry-address, base-address and shared-five colours.
+  Advancing entry-address s2 is a confirmed fifteen-word global price.
+- +0x0400: **3; 3/0/0**. Entry cursor and shared five. The base-address s0 and
+  constant-five s1 requests are both declined on this source.
+- +0x0600: **9; 9/0/0**. Decrement cursor/end and shared five. The old local
+  gap is closed; accepted decrement-cursor s0 now saves seven words, compared
+  with only one before the surplus store was removed.
+- +0x0800: **11; 11/0/0**. Case-2 entry/text/address cursor colours, including
+  a local caller-register transposition. The entry-address intervention also
+  reaches this family; the second cursor's requested s3 loses four bytes.
+- +0x0A00: **10; 10/0/0**. Continuation of the case-2 address and row-coordinate
+  colours. Preserve the cached row load: its loss caused the measured
+  one-draw ring phase in the rejected copy-carrier source.
+- +0x0C00: **35; 4/1/3**. Case-3 delayed visible-index definition, its branch
+  displacement and shared five. Early definitions add twelve bytes; a
+  separate array induction keeps width but still regresses. The undefined
+  pre-definition probe is removed rather than used as a score lever.
+- +0x1200: **46; 9/1/4**. Case-12 first-loop index placement and coordinate /
+  inner-index colour transposition. An early first-loop definition adds eight
+  bytes; source splits still have coupled saved-register costs.
+- +0x1400: **9; 9/0/0**. Coordinate/index colours and constant seven. The
+  inner-index call-delay gap is closed. Moving the shared index to s1 fixes
+  local colours but regresses globally to 259.
+- +0x1600: **13; 11/0/2**. Case-13 count/stride transposition plus the title
+  index/zero-argument association. Accepted count-carrier s6 is worth ten
+  words globally; direct stride s5 is blocked by that earlier carrier.
+- +0x1800: **8; 8/0/0**. Case-13 coordinate/index and count/stride colours.
+  Its inner-index call-delay gap is also closed.
+- +0x1A00: **4; 4/0/0**. Constant seven; accepted s5 fixes seven words globally.
+- +0x1C00: **10; 5/0/1**. Menu-coordinate and constant-160 colours, shared
+  seven and a call-argument load-order gap. Constant-160 s2 regresses by ten;
+  the unsigned literal forms normalize back. Coordinate-carrier splitting
+  changes spill width, except `savedOffset`, which regresses by eight words.
+- +0x1E00: **4; 4/0/0**. Shared five, whose target s1 remains unavailable.
+- +0x2200: **6; 4/0/2**. Countdown-coordinate colour and portrait preheader
+  emission order. The coordinate's target s0 request is declined.
+- +0x2400: **8; 6/0/2**. Portrait-coordinate/constant-170 colours and the
+  case-8 title argument association. Accepted constant-170 a0 regresses by two.
+- +0x2600: **1; 1/0/0**. Commuted coordinate addition; the adopted case-8
+  increment order remains intact.
+- +0x2C00: **8; 8/0/0**. Saves-base/slot-pointer colours and a commuted pointer
+  addition. These are separate from the now-correct erase counters.
+- +0x2E00: **3; 0/0/0**, gap only. Row-index initialization relative to the
+  character/table preheader loads. The erase counter colours are corrected.
+- +0x3000: **3; 1/0/2**. Local matrix-address/argument order. The old grid
+  index/coordinate three-cycle is removed.
+- +0x3200: **3; 1/0/2**. Case-10 title index/zero-argument association; its
+  old local index-definition gap is closed.
+- +0x3400: **6; 4/0/2**. Record/slot-pointer and call-argument scheduling.
+
+Unlisted windows, including +0x3600 through the owned end, are normalized
+exact. The remaining gap pairs are candidate +0xDDC, +0x12F8, +0x1CDC,
++0x2E78 against target +0xD5C, +0x1260, +0x1CE8, +0x2E80 respectively.
+The +0x0C00 and +0x1200 windows alone hold **81 positional differences**;
+that concentration is freshly measured, not inherited from an earlier score.
+
+### Current intervention receipts and the next decision
+
+Fresh web identities on the final source, accepted in `p1color` and scored
+DIRECTLY from each forced object:
+
+- Copy input 27 to s3: 233. Entry address 75 to s2: 221.
+- Decrement cursor 225 to s0: 229. Constant seven 957 to s5: 229.
+- Shared count/stride carrier 379 to s6: 226. Its earlier choice blocks
+  stride carrier 419 from s5; that direct request is declined at 236.
+- Inner index 22 to s1: 259. Constant 160, web 968 to s2: 246.
+  Constant 170, web 1022 to a0: 238.
+- Second entry cursor 101 to s3: 3118, delta minus four bytes; not a gain.
+- Declined at 236: switch 9 to a0, copy output 26 to s0, base address 951 to
+  s0, shared five 925 to s1, coordinate 372 to s0, countdown coordinate 565
+  to s0. These are offer-list limits on THIS source, not universal source
+  impossibility proofs.
+
+The count/stride/index ordering is now a precise remaining variable:
+**235/10 = 23.5; 111/5 = 22.2; 1534/70 = 21.914286**. The first carrier
+serves a case-12 stride and a case-13 count whose target colours differ, so
+forcing its one colour cannot make both roles exact. A source repair must
+separate that regional identity while retaining the index's placement. The
+original-role paired source's accepted index force and the rejected erase-flag
+reuse price the alternative route; the latter must also repair its case-2
+instruction surplus. A broad count-spelling or added-probe search does not
+answer this identity question.
+
+### Closures, stopping evidence and preservation
+
+The separate-decrement-carrier and four-grid-probe requirements both fell on
+changed shapes, with the measurements above. Case-1 splitting also became
+useful when paired with the later row assignment. The guarded order fixed
+points survived inside their stated neighborhoods; they never covered the
+adopted safe initialization moves across calls or initialization inside an
+argument. Initial switch and shared-five direct-force declines survived.
+The copy-carrier source can improve the switch colour, but its measured
+cached-row/ring-phase cost prevents calling that a closure. Early case-3/12
+index splits remain nonexact; the coupled cases-3/12/13 array-induction test
+also regresses, with additional width or relocation costs.
+
+Final source attempts 37-39 add no improvement or new mechanism: the audited
+field-aware order climb is fixed at 236 after one pass and 909 compiles;
+all twenty comma-initializer variants score 238, regardless of argument slot;
+and reusing `i` in both the copy and decrement loops is unchanged at 236.
+Before these, literal casts normalized back and menu-coordinate carrier
+splits repeated the measured spill-width trade-off. This is the ADR 0018
+stall evidence, not a claim that all source space is exhausted. The last
+numerical adoption was the 235 role bundle; the subsequent one-word
+regression removes the concrete pre-definition read.
+
+Only the owned source and this shard change. Commands include configured TU
+compiles; `align_symbol.py`, `residual_map.py`, `register_census.py`,
+`frame_census.py`; ordinal-zero allocator interventions; ugen draw traces;
+byte-inert as1 traces; the guarded and audited field-aware climbs;
+`finalize_plateau.py`; and `tools/gates.sh` with the default four gates and
+`check-nonmatching-builds`. Stock and instrumented identity checks compare
+both owned text and relocation maps. Every material candidate, object, score,
+first mismatch and rationale remains in the private packet, including the
+rejected 235 source and all force receipts.
+
+The private archive is `matching-evidence/p18-whale-20260912.tar.gz` under
+Git's common directory. It contains ROM-derived evidence and must never be
+staged or published. No merge, rebase or push is performed. Final ROM
+verification prints expected and built SHA-1
+`507341c0a40ca3e9a7cee969b396ee53facfb548` and
+`OK  build/mickey.us.z64 matches the expected US ROM hash`.
+This verifies the original assembly fallback, not the nonexact C body.
+
+## 2026-09-12 (lane `p18-whale`): scheduler ties, second checkpoint
+
+The retained candidate improves **272 -> 265 -> 249 masked words**; raw
+442 -> 435 -> 419, delta zero, frame 0x138 and 1,253 candidate relocations.
+The corresponding aligned buckets are 3426/154/4/41, 3424/157/4/37 and
+3430/155/2/33. The five removed local gap pairs belonged to cases 8, 10,
+12 and 13. No matching credit is claimed; the assembly fallback is retained.
+The earlier case-1 improvement is preserved in commit `42e15152`.
+
+Cases 8, 10 and 13 now initialize the visible index in the title font call's
+zero blue argument. The other arguments do not refer to that index; its
+address never escapes, and its first meaningful use follows this call. The
+callee receives exactly the old colour values. Isolated changes save three,
+one and three positional words respectively, and combine at 265. This is an
+ordinary value-producing initialization, not a discarded-expression probe.
+
+Cases 12 and 13 now initialize their inner index immediately after the
+node-list call. The index is neither a call argument nor part of any node
+field and is first used later. Every node field and the NULL terminator
+still precede the consuming call. IDO schedules the initialization into that
+call's delay slot. Each case saves eight positional words, jointly reaching
+249; same-line-after and separate-line-after forms compile identically.
+The separate-line spelling is retained. Initializing in the call's third or
+fourth argument only reaches 253 or 251 jointly, so merely joining a source
+line is not the complete lever.
+
+### What the intervening negative results actually established
+
+A copy-loop carrier change improved the initial switch colour but scored
+1737 against the 272 source. Its register census is 94 percent coherent:
+one closed nine-cycle persists from approximately +0x800 to the end and is
+absent before that boundary. The ugen traces count **720 versus 721 draws**.
+The extra draw occurs at case 2's `nodes[0].y = rowY - 4`: the retained source
+caches the row load, while the rejected source spends an additional ring draw
+on the reload before the subtraction. This is a cache-lifetime and ring-phase
+cost, not an unexplained global allocation regression. No raw trace rows are
+tracked.
+
+Moving the row initialization inside the player-count guard removes the
+extra draw but loses four bytes (3101 positional differences). Six apparent
+cache carriers fold back to the uncached form. `while` and `for` spellings
+of the existing guarded loop are byte-identical to their respective inputs;
+changing the tail's source line can differ by one word. A block-shaped inert
+probe costs 16 bytes on this shape and is rejected. Restoring a separate
+case-2 induction can remove the phase but also loses the switch-colour gain.
+The paired constraint is now explicit: preserve both the cached row load and
+the switch's freed argument register without changing executable width.
+
+Cases 12/13 originally share an inner-index web at 1433/10 = 143.3, ahead of
+the coordinate at 1412/13 = 108.615. Splitting one index leaves 1023/8 =
+127.875, still ahead. Two distinct carriers reduce the original index to
+613/6 = 102.167 and genuinely reverse the coordinate's priority. Their best
+source scores still regress (285 or worse); the local gain costs colours
+elsewhere. Reassigning erase/grid roles does not recover those costs. The
+new grid-role source with four probes raises the visible index to 1654/74
+and s6; zero through two restore 1254/72 and s7, but still floor at 305.
+Thus the probe threshold is measured for the changed role, not inherited
+from the previous source. Coordinate-only carrier splits and separate
+primary/secondary array inductions give no retained gain.
+
+The ordinary dependency-guarded statement climb reaches a 272 fixed point
+in one pass, 743 compiles. A separately audited scratch climb permits only
+writes to distinct literal `nodes[0/1]` fields whose right sides never read
+`nodes`, keeping calls immovable; it also reaches 272, after 932 compiles.
+These are shape-specific move-one limits. The guard's conservative treatment
+of shared aggregate storage does not prove all field orders impossible.
+
+The byte-inert as1 trace instead identifies zero-height index definitions
+competing with zero-height argument setup. Those ties motivated the adopted
+initializations. Source exploration had reached a provisional stall after
+attempts 17-19; this fresh scheduler evidence reopened a concrete variable,
+and attempts 21-22 improved it. There is no final plateau claim at that
+provisional stopping point. The full trace and its private object alignment
+are retained; no instruction listing enters this shard.
+
+### Allocation prices on the explicitly pinned 272 source
+
+These are diagnostic compiler interventions, not adopted C and not current
+prices after the 249 shape change. Each accepted intervention was confirmed
+in `p1color`; in this installed profile acceptance prints a positive colour,
+while a declined request prints `forced=-2`. Procedure ordinal zero and an
+explicit output path were set. Stock, configured-wrapper and instrumented
+owned text and relocation maps agree; the as1 trace also passes that identity
+gate. Never reuse numeric web identifiers across a source-shape change.
+
+- Initial switch web 9 to a0 and copy-output web 26 to s0: declined, 272.
+- Copy-input web 27 to s3: accepted, 269, a three-word price.
+- Advancing entry address web 75 to s2: accepted, 257, a fifteen-word price.
+  It also frees s0 for base-address web 959. The second advancing address,
+  web 101 to s3, is accepted but loses four bytes and scores 3103.
+- Base-address web 959 to s0 and constant-five web 933 to s1: declined, 272.
+  Constant five is blocked by the base address. The entry-address ratios are
+  152/16, 62/16 and 20/12, with constant five at 21/16.
+- Decrement cursor web 228 to s0: accepted, 271; seven aligned naming rows
+  improve but displacement leaves a one-word positional gain.
+- Inner-index web 22 to s1: accepted, 282; coordinate web 378 to s0 is declined.
+- Constant-seven web 965 to s5: accepted, 265, seven words. A declared plain
+  constant carrier had already folded back in the inherited source tests.
+- Constant 160, web 976 to s2: accepted, 282. Constant 170, web 1030 to a0:
+  accepted, 274. Countdown-coordinate web 569 to s0: declined, 272.
+
+The full 272 address partition, register census, frame census and scheduler
+trace are retained privately. Its displacement tax is 73, compared with 74
+at entry; global register coherence is 53 percent with 13 windows. Both
+frame ladders have 35 slots; only the saved-position home has one extra store.
+The 249 source is an improvement checkpoint, not an assertion that these
+older force prices or order optima survive its changed shape.
+
+## 2026-09-12 (lane `p18-whale`): case-1 lifetime pair, first checkpoint
+
+The configured baseline reproduces 277 masked / 447 raw, delta zero,
+frame 0x138, 1,253 candidate relocations, first mismatch +0x50. The aligned
+buckets are 3422 exact, 157 naming, four immediate and 42 structural.
+The address partition reproduces the p16 windows; the whole-function register
+mapping has 49 percent coherence and needs 13 windows. Both frame ladders
+have 35 slots, with one additional candidate store to the saved-position home.
+The near-match oracle still gives JFG frontKeyboard at 0.081; no donor material
+is adopted. Stock, configured-wrapper and instrumented owned text and
+relocation maps agree. The fresh procedure index is zero, with 433 p1 decisions.
+
+Case 1 now uses the otherwise dead `portraitX` for its array induction while
+`i` remains the visible index. Both start at zero and advance together; the
+loop condition, accesses and calls are unchanged. Moving `rowY = rowBase`
+after the three initial font/text calls is safe because neither local escapes,
+and the first row use follows that store. The split without the store move
+regresses to 308; together they reach 273, with buckets 3426/154/4/41.
+Putting the early `i` definition on the first font call's physical line reaches
+272, with the same aligned buckets. These are ordinary source lifetime and
+statement placement changes. The original assembly fallback remains active.
+
+The new shape changes the entry-address allocation receipt: its advancing
+entry cursor is now web 75, and an accepted s2 intervention scores 257.
+The constant-five web is now 933; its target s1 is blocked by base-address
+web 959, rather than the earlier receipt's advancing cursor. A rejected
+copy-loop carrier change does improve the first switch colour but regresses
+globally to 1737; probe counts zero through eight do not repair it. Fresh
+case-3/12 index splits also regress; case 3's best is 285 against 272.
+These are measured source-shape limits, not universal closures.
+
+ROM verification passed after the documented fresh-lane alias repair:
+`gmake overlay-syms` and a full core-count build repaired unresolved resident
+aliases without changing the tracked alias file. Verify printed expected and
+built SHA-1 `507341c0a40ca3e9a7cee969b396ee53facfb548` and the successful
+US ROM hash verdict. This proves the assembly fallback, not the candidate C.
+The candidate-bearing-TU compile check also passed.
+
+This is an early preservation commit while the assigned investigation continues.
+All diagnostic sources, objects, scores and traces remain in private lane
+scratch. No compiler force is adopted and no matching credit is claimed.
+
+## 2026-09-12 (lane `p16-whale`): two more independent inductions
+
+**393 -> 277 relocation-masked differing words**, raw 560 -> 447, size
+14,456 bytes, delta zero, frame 0x138, first mismatch +0x50. Aligned buckets:
+byte-exact 3394 -> 3422, naming 162 -> 157, immediate 15 -> 4, structural
+55 -> 42. These are configured candidate-object measurements. The body stays
+`NON_MATCHING` with the original assembly fallback; no new matching credit.
+Candidate relocations remain 1,253. The assembled target's 526 relocation
+records are a different representation, not an exact runtime-identity proof.
+
+The dispatch's 594 baseline and `p13-whale` label were stale. This worktree
+was `lane/p16-whale`, starting at `0f17f9852a65`; the committed p14 handoff
+already contained the resolved paired run. The assignment gate returned
+`base-only` with an authenticated L145-L154 reopening. The near-match oracle's
+best size-filtered neighbour was JFG `frontKeyboard`, 0.081 four-gram Jaccard;
+no donor code or names were adopted.
+
+### Changes adopted, with the coupled measurements
+
+Every adopted row below has delta zero and frame 0x138. Each row gives
+masked/raw, then exact/naming/immediate/structural aligned counts.
+
+- Entry: 393/560; 3394, 162, 15, 55.
+- Separate both case-8 inductions and add the fourth grid probe:
+  330/497; 3409, 157, 8, 52.
+- Separate case-2 array induction with `portraitX`:
+  280/450; 3419, 157, 4, 45.
+- Put case-8's visible increment before its address increment:
+  277/447; 3422, 157, 4, 42.
+
+Case 8 retains the early `i = 0` as the visible row index. `opponent` starts
+at zero immediately beside the loop and carries BOTH the lap-array subscript
+and the coordinate's stride. Each counter visits zero, one and two, advances
+once per iteration, and has no intervening escaping address or altered call.
+`opponent` is otherwise dead in this case. Splitting only the lap subscript
+costs 12 bytes; splitting only the coordinate stride costs eight. Both must
+move together, just as the previous pass's record and character changes did.
+
+The split alone regresses to 492/659: 3247, 319, 8, 52. The allocator explains
+why. The visible-index web 63 keeps total saving 1075 but its occurrence-block
+count rises from 66 to 70, lowering save from 16.287878 to 15.357142. The
+text-buffer address wins at 849/54 = 15.722222 and exchanges saved colours
+with the index. The fourth depth-two probe raises the index to 1175/70 and
+restores the target's ordering. Four and five probes give the same object;
+six regresses. The positive force on that split source, web 933 to colour 22,
+was accepted and produces exactly the fourth-probe source's owned text AND
+relocation map. It is a diagnostic receipt; only ordinary C was adopted.
+The final source re-identifies the index as web 63 at 1175/74 and the buffer
+as web 954 at 849/55. Numeric web identities are source-shape specific.
+
+Case 2 similarly retains the existing earlier definitions of `i` and uses
+`portraitX`, dead throughout that case, for every draw-loop array subscript.
+The two counters begin at zero and advance together until the original
+player-count test fails. The same loads, stores, widths and calls occur in
+the same order; node terminators still precede the list-walking call. This
+closes the missing top-of-case definition and the later draw-preheader run.
+The remaining local gap is +0x7B0 against +0x7D4.
+
+The last three words were a loop-tail schedule: spelling the visible increment
+first closes all three rows in the +0x2800 window. Same-line, separate-line,
+and comma forms agree when they preserve that increment order. The adopted
+case-8 increments are on separate lines. Comment updates preserve the prior
+physical line count and were separately proved text/relocation identical.
+
+### Requested range and current window partition
+
+The requested half-open range +0x3088..+0x3348 is unchanged at **14 positional
+mismatches**, 12 naming and two structural aligned rows, zero immediate.
+There is no long grid-to-case-10 displacement. The remaining grid three-cycle
+is a local allocation question. Case 10 still has only its local +0x3348 /
++0x3354 pair, and +0x3600..+0x3878 stays relocation-normalized byte-exact.
+The final stock versus instrumented scheduler/allocator gate passes owned
+text and relocation identity; procedure ordinal zero has 433 p1 decisions.
+
+Pre-+0x3000 falls **369 -> 253 positional mismatches**. Its aligned residual
+is 141 naming, four immediate and 35 full structural rows. The following
+0x200-byte windows give N/I/S; S excludes single-sided gaps, as in
+`tools/residual_map.py`. Causes were checked against the assembled target,
+source, retained alignments and fresh allocator receipts. The p14 section
+below retains the detailed historical decomposition; its web numbers and
+force prices are not current receipts.
+
+- +0x0000: 22/0/2. Switch-value/copy-loop/entry-address colours and index/state-save scheduling. The switch-value target colour is not offered; accepted copy-cursor web 27 to s3 prices three naming rows.
+- +0x0200: 13/0/0. Case-1 entry-address and shared constant-five colours. The accepted web-72 s2 intervention gives nine fewer words globally, at 268.
+- +0x0400: 4/0/0. Constant five and cursor colour; constant-five web 949 is not offered target s1.
+- +0x0600: 9/0/0. Constant five and decrement cursor/end colours. The old missing top-of-case definition is closed. Web 223 to s0 fixes seven aligned naming rows but only one positional word globally.
+- +0x0800: 11/0/0. Case-2 data/text/address cursor colours; the long draw-preheader displacement is closed. The +0x7B0/+0x7D4 local definition pair is just before this window.
+- +0x0A00: 10/0/0. Continuation of case-2 cursor, row-coordinate and text-address colours.
+- +0x0C00: 6/1/3. Constant five, delayed case-3 index definition and split global-address caller colours.
+- +0x0E00: 0/0/0. Exact.
+- +0x1000: 0/0/0. Exact; the earlier transition-order correction is preserved.
+- +0x1200: 9/1/4. Case-12 first-loop index placement and coordinate/index saved-colour transposition.
+- +0x1400: 10/1/0. Coordinate/index colours, constant seven and inner-index initialization relative to call arguments.
+- +0x1600: 0/0/1. Case-13 early index/call-delay scheduling; table-address order remains closed.
+- +0x1800: 8/1/0. Case-13 coordinate/index colours and inner-index initialization/call-delay order.
+- +0x1A00: 4/0/0. Constant seven. Accepted web 981 to s5 fixes seven naming words globally, diagnostic 270.
+- +0x1C00: 5/0/1. Menu coordinate, constant 160, constant seven and call-argument scheduling. Constant-160 web 992 to s2 regresses globally to 287.
+- +0x1E00: 4/0/0. Shared constant five, with target s1 unavailable.
+- +0x2000: 0/0/0. Exact.
+- +0x2200: 4/0/2. Countdown coordinate colour and portrait-preheader emission order.
+- +0x2400: 5/0/2. Portrait coordinate, constant 170 and the now-local case-8 initialization schedule. Constant-170 web 1046 to a0 is accepted but regresses globally to 279.
+- +0x2600: 1/0/0. Commuted coordinate addition; the delayed case-8 index run is closed.
+- +0x2800: 0/0/0. Exact after the increment-order correction.
+- +0x2A00: 0/0/0. Exact.
+- +0x2C00: 8/0/0. Saves-base/slot-pointer colours and a commuted pointer addition.
+- +0x2E00: 8/0/0. Erase-index saved-colour transposition and the separate +0x2E78/+0x2E80 local pair.
+
+### Negative scope, stopping evidence and next action
+
+The initial case-8 split experiment measured 15 cells over lap/stride/both
+and five carriers, then seven probe counts. A 48-cell transfer across cases
+1, 2, 3 and 12 selected case 2; a further 102 cells on the improved shape
+found no adoption in cases 1, 3 or 12. Case 3's best split is 293 against 280:
+it buys early placement but adds naming differences locally and in cases
+12/13. Case 12's best size-zero split is 1005 and displaces earlier regions.
+These are limits of the measured split shape, not compiler-wide impossibility.
+
+Sixteen literal-type cells over constants five and seven do not improve the
+280 source: comparison splits can cost a word, while stores and fixed-call
+arguments convert back. The guarded `blockclimb` run at 280, minimum run two,
+reaches a fixed point after 746 compiles with no adoption. It does not enumerate
+two statements on one physical line, which is why the separate six-cell
+case-8 increment test still found the three-word improvement. Twenty grid-role
+permutations/probe forms on 277 regress, best 290; the signed exit and the
+previous pass's opaque recurrence are preserved.
+
+The final focused question was whether a declared carrier could make the
+priced constant-seven web take its target colour. Initializing a dead scalar
+at case 7/11 entry and using it in both comparisons folds straight back to
+the same object. `rowHeight` established the negative; the subsequent
+`columnCount`, `savedX` and `savedPosition` attempts each produce identical
+owned text and relocations and no new information. Those are the three
+consecutive stalled attempts (11-13), so this pass stops under ADR 0018.
+No unrestricted source-space exhaustion is claimed.
+
+Next action: change a source web partition that changes the actual offer or
+ranking, using the current entry-cursor or constant-seven force price. A plain
+constant carrier does not do that. For cases 3/12, account for the coupled
+saved-register costs before retrying index splitting; for cases 8/10, the
+remaining definition question is local scheduling. Preserve both adopted
+induction splits and retune the probe threshold after any new shape change.
+
+### Preservation and validation
+
+All sources, objects, scores, first mismatches, traces and rejected forms are
+retained in the private p16 scratch packet, with configured compile commands.
+An archive is stored under Git's common directory as
+`matching-evidence/p16-whale-20260912.tar.gz`; it is ROM-derived private evidence
+and must never be staged or published. Only this shard and the guarded source
+belong in the function commit. No merge, rebase or push is performed.
+
+`tools/finalize_plateau.py` passed cleanroom and check-docs. The four default
+`tools/gates.sh` checks passed after the documented fresh-lane alias repair:
+initial verify reported resident alias link failures, `gmake overlay-syms`
+and the full core-count build repaired them without changing the tracked
+alias file, and `tools/gates.sh verify check-nonmatching-builds` then passed.
+Verify printed expected and built SHA-1
+`507341c0a40ca3e9a7cee969b396ee53facfb548` and
+`OK  build/mickey.us.z64 matches the expected US ROM hash`.
+ROM verification uses the assembly fallback, not the nonexact C body.
+The final configured candidate recompile still gives 277/447 masked/raw,
+with identical owned text and relocation map to the retained best artifact.
+No matched ranges, symbol claims, scoreboard credit or compiler flags change.
+
+## 2026-09-12 (lane `p14-whale`): the paired run is removed
+
+**594 -> 393 relocation-masked differing words**, raw 750 -> 560, size delta
+0, frame 0x138, first mismatch +0x50. Aligned buckets are byte-exact
+3311 -> 3394, register naming 198 -> 162, immediate 32 -> 15, and structural
+86 -> 55. These are candidate-object measurements, not new matching credit.
+The body remains under `NON_MATCHING` with its original assembly fallback.
+The owned function stays 14,456 bytes; its candidate object has 1,253
+relocations. The assembled comparison target's 526 relocation records are a
+separate representation, not evidence of exact runtime relocation identity.
+
+### Adopted changes and semantic audit
+
+Measurements below give masked/raw differences followed by the aligned
+exact/naming/immediate/structural buckets.
+
+- Entry: 594/750; 3311, 198, 32, 86.
+- Three transition store orders: 566/722; 3339, 170, 32, 86.
+- Opaque stride, separate record index, character carrier: 403/569; 3385, 170, 15, 56.
+- Independent two-statement order: 395/562; 3393, 162, 15, 56.
+- Case 10 index definition after first font call: 393/560; 3394, 162, 15, 55.
+
+Every row has size delta zero and frame 0x138.
+
+1. In case 3, restore the saved position between restoring and decrementing
+   the other coordinate. In cases 12/13, restore the saved position first.
+   All globals are distinct, locals are unchanged, the dependent restore and
+   decrement stay ordered, and no call is crossed. Committed as `c4ade705`.
+2. The grid starts its inner index at literal zero and increments it by
+   `(opponent * 0) + 1`. The product is defined and zero on every pass, so the
+   index still visits 0 through 9 once, in order. This is deliberately inert
+   source shaping: the recurrence is opaque to uopt's counted-loop proof,
+   then folds in ugen. It retains the signed exit comparison without the old
+   opaque initializer's memory temporary.
+3. Case 10 uses `opponent` for record induction and `i` for visible rows.
+   Both start at zero, increment once at the end of each outer iteration,
+   and visit exactly four rows. `opponent` has no other use in that case.
+   The character loop uses `rowY`, dead on entry to the case, visiting indices
+   0 through 10. `textY` retains the vertical coordinate. All data accesses,
+   widths, and call order are preserved.
+4. In case 13, compute `portraitX` before the independent `columnStep` table
+   lookup. Neither assignment reads the other's destination; no call occurs.
+5. Initialize case 10's `i` immediately after the first `fontColour` call.
+   The call's arguments are constants; neither `i` nor its address escapes
+   to it, and there is no intervening read of `i`. This reduces the remaining
+   local scheduling discrepancy by two positional words.
+
+### The closure that was wrong, and the replacement evidence
+
+L153's initial-value lever is sufficient, not exclusive. The previous 19
+opaque-zero forms asked whether the **initializer** could avoid a memory
+carrier. Keeping the initializer literal and making the **stride** opaque
+answers a different question. Three stride spellings fold to one object:
+`opponent += (opponent * 0) + 1`, `opponent = opponent * 1 + 1`, and
+`opponent = (opponent + 1) * 1`. Each retains the signed comparison without
+an extra instruction. Using the outer index as the zero-product carrier
+instead introduces a temporary again. No bound spelling was reopened.
+
+The other end needs two web separations together. Splitting the record index
+from the visible row index keeps the top-of-case definition alive before
+as1; with the old shared induction it was absent even from the stock
+pre-scheduler listing. On the split-record/opaque-stride diagnostic the
+character address still splits: its saved-register neighbours include
+`columnCount`, whose other region imports interference into this loop.
+Changing the character index to the dead `rowY` removes that neighbour.
+`columnCount` retains its saved register elsewhere, and the character address
+now takes the same register in a disjoint region.
+
+The final identity-gated trace names the character address as web 989, with
+save 10, 10 occurrences, total saving 100, offered callee cost 10, and a
+successful s6 assignment. The numeric-web neighbour receipt no longer lists
+`columnCount`. The prior split-record diagnostic identifies the corresponding
+address as web 988 and lists `columnCount` as its s6 blocker. These ordinals
+belong to their respective source shapes; do not transplant them blindly.
+
+Controlled intermediate scores explain why either endpoint alone was
+misleading: separate record induction alone is 649 at delta zero; opaque
+stride alone is 763 at delta minus four; both are 684 at delta minus four.
+Changing the character carrier on the latter reaches 403 at delta zero.
+The stride without record separation, with the same character carrier,
+reaches only 482. Twelve record carriers and 23 character-carrier cells were
+measured; `rowY`, `rowHeight`, `savedX`, and `erase` tie for the best character
+object. The selected spelling is ordinary defined C apart from the disclosed
+inert recurrence; no object editing or forced compiler choice is adopted.
+
+### Address proof: a long displacement becomes a local scheduling question
+
+Within the requested half-open range **+0x3088..+0x3348**, positional masked
+mismatches fall **176 -> 14**. The remaining aligned rows there are 12 naming
+and two structural, with zero immediate residual. The full +0x3000..+0x3380
+region falls 178 -> 18 positional mismatches. There is no candidate-only word
+at the old grid boundary, and the signed grid comparison remains present.
+The tail +0x3600..+0x3878 is now byte-exact in the relocation-normalized object
+comparison. These local facts do not establish linked or ROM identity for C.
+
+The last case-10 discrepancy is only local: alignment lists a target-only
+word at +0x3348 and a candidate-only word at +0x3354. The target places the
+row-index initialization in the first font call's delay slot; the candidate
+places it after that call. This is not the old grid-to-case-10 run.
+
+Beware treating an alignment gap's chosen row as the source cause: on the
+entry object, +0x3088 was an aligned gap on an index definition; the actual
+opaque-initializer store/reload were nearby at +0x3094/+0x30A4. Similarly,
+the old +0x3348 gap aligned to an argument setup, while the target's index
+initialization was at +0x3350. Classification requires the neighbouring
+instructions and source, not just the edit script's insertion label.
+
+### Pre-+0x3000 partition and causal prices
+
+The list uses 0x200-byte windows from `tools/residual_map.py`. N/I/S are its
+aligned naming/immediate/structural rows; single-sided alignment gaps are
+listed separately below. Thus S is not the aligner's full structural bucket.
+All force prices below are **ignored diagnostics**, scored directly against
+the target, with acceptance recorded. A colour intervention's effect can
+include recolouring dependent webs; it is not an independent source fix.
+
+- **+0x0000**, 20/0/2: Switch-value caller colour, copy-loop cursor/end colours, case-1 address webs, and early index/state-save placement. Web 9's target a0 is not offered. Web 27 -> s3 fixes three rows; web 72 -> s2 fixes another three, with coupled effects below.
+- **+0x0200**, 13/0/0: Case-1 entry/address cursor webs plus shared constant five. Web 72 -> s2 fixes eleven rows here and gives 378 globally, a 15-word net diagnostic gain.
+- **+0x0400**, 3/0/0: Shared constant five and cursor increment colour. None of the 139 offered equal-cost interventions closes these rows. Constant-five web 928 does not offer the target s1.
+- **+0x0600**, 10/2/2: Constant five; case-2 decrement cursor/end colours; missing early index definition paired with a memory-carried initializer. Web 223 -> s0 fixes six rows, global diagnostic 387.
+- **+0x0800**, 13/2/3: Late index definition, two swapped address colours, entry/data/text address webs at the case-2 draw preheader. Web 260 prices its cursor; web 998 -> s4 fixes the two text-address rows but regresses globally to 506.
+- **+0x0A00**, 10/0/0: Continuation of case-2 address cursors, row coordinate and text-address colours. Web 72 -> s2 fixes five rows; remaining coordinate/address colours are coupled, not a temp-ring phase.
+- **+0x0C00**, 6/1/3: Constant five, delayed case-3 row-index definition, and a split global-address web's caller-colour swap. Final split web 1132 -> a2 fixes two address rows, global 400.
+- **+0x0E00**, 0/0/0: Exact window.
+- **+0x1000**, 0/0/0: Former eight-row temporary emission-order residual closed by the case-3 transition store order.
+- **+0x1200**, 9/1/4: Case-12 row-index definition placement and coordinate/cursor s0/s1 transposition. Web 22 (`opponent`) -> s1 fixes seven naming rows here, six in each of +0x1400/+0x1800, but costs nine words globally (402).
+- **+0x1400**, 10/1/0: Six coordinate/index colour rows, shared constant-seven rows, and opponent initialization against call arguments. The separate ten-row transition emission cycle is closed.
+- **+0x1600**, 0/0/1: Early case-13 index definition/call-delay scheduling. The eight-row table-address temporary order is closed by swapping the independent two-statement group.
+- **+0x1800**, 8/1/0: Case-13 coordinate/index colour and opponent initialization/call-delay order. The former ten-row transition emission cycle is closed.
+- **+0x1A00**, 4/0/0: Shared constant-seven web 960. An accepted equal-cost s5 choice fixes all four rows here and seven naming rows globally (386 masked, seven additional exact aligned rows).
+- **+0x1C00**, 5/0/1: Menu textY, constant 160, constant seven, and call-argument scheduling. Constant-160 web 971 -> s2 fixes two rows here, global 403; the coordinate web is separate.
+- **+0x1E00**, 4/0/0: Shared constant-five web 928, target colour unavailable; source type/web partition is the remaining lever, not a tie force.
+- **+0x2000**, 0/0/0: Exact window.
+- **+0x2200**, 4/0/2: Countdown coordinate and portrait-loop preheader emission order. Web 420 (`portraitX`) recolouring moves the competing coordinate web, fixing the three constant-coordinate rows but regressing globally to 400.
+- **+0x2400**, 7/2/3: Portrait coordinate needs a caller/temp colour, constant 170's web wants a0, constant five remains shared, and case-8 index definition is late. Web 1025 -> a0 fixes the height row; global 395.
+- **+0x2600**, 4/5/5: Continuation of case-8's delayed index definition plus one commuted coordinate addition. The many apparent argument-register substitutions belong to the displaced alignment, not independent colour contests.
+- **+0x2800**, 0/0/0: Exact window.
+- **+0x2A00**, 0/0/0: Exact window.
+- **+0x2C00**, 8/0/0: Saves-base/slot-pointer s1/s2 allocation and one commuted pointer addition. Slot web 684 -> s2 fixes seven naming rows here but regresses globally to 405.
+- **+0x2E00**, 8/0/0: Erase outer/inner indices use the opposite saved colours. `columnX` web 372 -> s7 fixes four rows but costs 287 words globally. Swapping the actual live index roles also regresses.
+
+Pre-+0x3000 has 369 positional masked mismatches, versus 405 at entry.
+Its aligned buckets are 146 naming, 15 immediate and 48 full structural rows.
+The single-sided pairs in this part of the function are candidate offsets
++0x128, +0x7AC, +0x874, +0xDDC, +0x12F8, +0x1408, +0x1688, +0x189C,
++0x1CDC, +0x26C4, +0x2E78 and target offsets +0x138, +0x760, +0x7D4,
++0xD5C, +0x1260, +0x1420, +0x1698, +0x18B4, +0x1CE8, +0x25A8, +0x2E80.
+These are alignment labels, not a one-to-one pairing assertion.
+
+The grid's remaining saved-register three-cycle is similarly a local
+index/coordinate allocation question. Seven permutations of existing live
+roles across grid and erase loops give 396..531 from the 395 source; none
+improves it. Preserving probes on their old symbol while swapping the actual
+indices also regresses. These tests preserve both domains and call order.
+
+### Scope of the stopping evidence
+
+The safe sparse statement-order climb bridges blank/comment lines, includes
+runs of two, and applies the tool's call/dependency guard. It measured 310
+cells in two passes; the second pass found no further move. Its only new
+adoption was the audited case-13 coordinate/table order. Earlier blanket
+order exhaustion was wrong because the enumerator excluded these runs.
+
+The final local scheduler question was priced first with an identity-gated
+`-Wa,-R` trace: the index definition and ordinary font arguments all have
+height zero, so an order lever is applicable. Ten line/position forms and
+14 argument/region forms were then measured. After the initial same-line
+change, comma-expression placement and all five pure argument placements
+produce the same object; the two region forms reproduce the starting object.
+The consecutive equivalent argument placements add no information. Stop
+this tie-spelling axis here; no compiler-wide impossibility is claimed.
+
+The first and final allocator maps each tested 139 offered equal-cost colour
+choices, all accepted and scored directly. The final stock/instrumented
+identity gate compares owned text **and** relocation maps. Its procedure is
+ordinal zero, with 431 decisions: 139 colour and 292 split, all phase one.
+The entry source had 430 decisions, so older 428/429 censuses are historical.
+No forced object, trace, listing, raw alignment or instruction data is tracked.
+
+Next concrete actions: use the final force prices to select a source web
+partition, starting with the entry-address family (web 72) or constant-seven
+identity (web 960), and preserve the resolved stride/character combination.
+For the remaining early-index regions, split induction from visible index
+before trying source-line order; for the now-local case-10 delay slot, a
+scheduler tie mechanism beyond the measured forms is needed. Re-run numeric
+web identification after any shape change.
+
+### Reproduction, preservation and validation
+
+Sources, objects, scores, first mismatches, instrumentation logs and rejected
+forms are retained outside the repository in the lane's temporary scratch
+packet. Compile commands come from `nm_ranking.configured_compile_commands`;
+only output paths and, for receipts, the compiler binary are replaced. One
+TU is measured at a time. Reproduce the canonical score with
+`tools/score_symbol.py`, `tools/align_symbol.py` and `tools/residual_map.py`.
+The latter's `--lo 0x3088 --hi 0x3348` prices the resolved run directly.
+
+`tools/finalize_plateau.py` refreshes the guard-aware source footer and this
+shard. The earlier transition-order commit passed the four repository gates;
+its first verify needed `gmake overlay-syms` to initialize the fresh lane's
+resident aliases, then verified successfully without a tracked alias change.
+Final `tools/gates.sh` results: verify PASS, cleanroom PASS, check-tooling
+PASS. Check-docs first rejected Markdown tables under the shard grammar;
+after converting them to lists, `tools/gates.sh check-docs` passed. Verify
+printed expected and built SHA-1 `507341c0a40ca3e9a7cee969b396ee53facfb548`
+and `OK  build/mickey.us.z64 matches the expected US ROM hash`. A final
+configured C recompile reproduced 393 and the exact retained object text
+and relocation map. ROM verification uses the guarded assembly fallback;
+it does not promote this nonexact C body.
+
+The complete private experiment packet is additionally archived beneath
+Git's common directory as `matching-evidence/p14-whale-20260912.tar.gz`,
+including a source/object digest manifest. It contains ROM-derived evidence
+and must never be staged or published. The source and this handoff are the
+only files in the function commit; the generic recurrence learning follows
+as a separate documentation commit. No merge, rebase or push was performed.
+
+## 2026-09-12 (lane `p12-whale`): the counted-loop exit rewrite, and the three axes it reopens
+
+688 -> 594 masked at size delta 0, frame 0x138 with identical 35-slot ladders
+throughout. Aligned: byte-exact 3144 -> 3311, register naming 371 -> 198,
+immediate 24 -> 32, really different 88 -> 86. Three commits, each gated.
+
+### The closure that was wrong, and the question it was asking
+
+Two passes closed case 9's grid-loop exit test on the same reasoning.
+`c6-whale` wrote that the constant-10 web and a global-address web "compete for
+one slot", that "the eviction is a tie inside uopt ... so it will not move
+under a spelling that leaves the loop's web count where it is", and -- rightly
+-- that "if the eviction is ever prevented, the natural spelling is the one to
+take". `p9-whale` then closed the axis: "Moving it needs the *address* web's
+ratio raised -- the same dial that worked above, but on a web with no obvious
+source handle."
+
+Every measurement behind that is correct and reproduces here. The question is
+wrong. The eviction is not a contest to be won; it is a consequence of the
+constant entering the loop at all, and what puts it there is a uopt *rewrite*
+with a source-level precondition that nobody had tested.
+
+### uopt rewrites a provably counted loop's `<` exit test into `!=`
+
+The loop reads `opponent = 0; do { ... } while (opponent < 0xA);`. uopt proves
+the index starts at 0, steps by 1 and reaches 10 exactly, and rewrites the exit
+test into a `!=` against a constant held in a register. That register is the
+same web the erase scan's `!= 0xA` and `D_o058_5EB0 = 0xA` already share, so
+the web then spans the grid loop, interferes with `columnX`, and takes the
+callee-saved colour `&D_o058_5E7C` had.
+
+The rewrite is unconditional at this loop's depth. Measured four ways:
+
+  - bounds 0x9, 0xA, 0xB and 0x40 all emit a register `bne`, never `slti`
+  - with the store spelled `0xB` and the erase scan's bound made non-constant,
+    so no other 10 exists in the procedure, uopt *creates* a fresh
+    saved-register constant web and still emits `bne` (a diagnostic build,
+    semantically wrong, never adopted)
+  - the outer `i < 3` loop of the same nest is not rewritten, one level
+    shallower
+  - a uopt region opener between the erase block and the grid loop is
+    byte-inert in both shapes: `if (1) { }`, `do { } while (0);` and `{ }`
+
+So no spelling of the bound reaches the target's `slti $at,<index>,10`. Ten
+grid spellings compile to one object -- `< 0xA`, `<= 9`, `< 10`, `!(>= 0xA)`,
+`0xA > opponent`, `< 0x000A`, `< 5 + 5`, `< 0xAL`, `< (s32) 0xAU`,
+`< 0xA && 1` -- and so do the erase scan's `!= 0xA`, `< 0xA` and `<= 9`. L151
+does not reach an integer constant here: `0xAU` on the erase bound changes the
+size by -4 and is far worse, and `0xAU`, `0xAL` or `5 + 5` on the store or on
+the grid bound are byte-identical to the plain literal.
+
+### What the rewrite needs is a known initial value
+
+`opponent = i * 0;` is zero for every value of `i`, and `i` is written
+immediately above the outer loop, so the value is exactly the literal's. uopt
+can no longer see the initial value, does not rewrite, and emits
+`slti $at,<index>,10` with `bnez $at` -- the target's two words, the constant
+an immediate, no web at all. 688 -> 634.
+
+Receipts, from `~/Desktop/dev/ido-instrumented/cc` with the `.text` gate
+checked byte-identical to the tree's object first, `CDX_LOG=1 CDX_PROC=0
+CDX_OUT=<file> CDX_DETAIL_WEB=all` (one procedure in this TU, ordinal 0, 429
+decisions):
+
+  - under the natural bound, web 960 is `type=2 raw10=0x0000000a` -- the
+    constant -- at save 8.909091, nocs 22, totalsave 196, coloured s5; web 982
+    at 7.482759 (29, 217) takes s6; web 984 at 7.034483 (29, 204) is not
+    coloured at all
+  - under the opaque zero the same constant is web 961 at save 12.250000,
+    nocs 8, totalsave 98, coloured s0, and both address webs keep a colour:
+    983 to s5, 985 to s6
+
+The web numbering differs by one between the two builds because the derived
+form creates one fewer web; re-derive it rather than carrying these numbers.
+
+### The old spelling's `addiu` was a ring-phase fact, not a one-word fact
+
+`(opponent - 1) < (0xA - 1)` bought the same `slti` by comparing a derived
+value, at one `addiu` per iteration. That `addiu` draws one temp from the ring
+and the draw rotates the free list for everything emitted after it. A
+per-region register census of the committed 688 shows it exactly:
+
+  - after +0x3148, 150 of 212 differing register slots form one closed
+    nine-cycle, t1 to t5 to t2 to t6 to t7 to t8 to t3 to t4 to t9 to t1
+  - before +0x3148 no such cycle exists: the largest temp substitutions there
+    are 8 slots each
+
+So that word was worth about 150 register slots, not one.
+
+### The dispatch's localisation of the residual was wrong
+
+The dispatch said 219 of 494 differing rows sat in `+0x3000..+0x3300`. Measured
+on the committed 688 with the aligner's own row classification, that window
+held **71** of 483 differing rows -- 38 naming, 25 structural -- and **118** of
+the 688 positional words. The concentration was real but it was the whole tail:
++0x3000 to the end held 218 rows and 272 positional words, 45 percent of the
+residual in 15 percent of the function, and its boundary was +0x3148, not
++0x3300. The s1/s7 transposition was not downstream of the bound either: it is
+present in the erase scan 800 bytes earlier and survives every bound spelling.
+
+### Three axes reopened by the shape change, two of which paid
+
+L146 says an order optimum belongs to the shape. Two shape changes landed:
+
+  - **Statement order**, re-climbed from 634 with `tools/blockclimb.py`, 2,880
+    compiles, three passes to a fixed point: 634 -> 623 in two moves, both in
+    case 10's node fill -- the texture lookup to the head of the store group,
+    and `nodes[0].x` before `nodes[0].y`. Audited: no call between them, and
+    `nodes[1].texture`, the NULL terminator `func_8002F618` scans for, is still
+    stored before the call. Re-climbed again from 594 it reports a move-one
+    fixed point with no move at all, in 970 compiles.
+  - **Carrier**, recorded exhausted at 733 as "1,604 cells, no adoption". A
+    greedy re-sweep of 17 sites x 23 carriers, guarded on the carrier's name
+    being absent from the loop's own text, gives three adoptions and then
+    stops: case 10's character loop to `columnCount` (623 -> 620), case 9's
+    erase scan inner loop to `columnX` (620 -> 599), case 8's lap loop to `i`
+    (599 -> 594). Each was read against its whole case before adoption. The
+    third reverses a 2026-09-10 adoption that was right for its own shape;
+    that site has now changed hands three times. Round four's best cell is 592
+    masked at 3,304 byte-exact against 3,311 -- better positionally, worse
+    aligned, refused per trap 12.
+  - **The opaque zero elsewhere**, closed. Each of the other seventeen index
+    resets in the function crossed with four carriers, 69 cells: every one is
+    byte-identical to the base or worse, several catastrophic. The lever is
+    specific to this loop, because this is the only loop whose exit test the
+    rewrite was costing anything.
+
+### Closed at 594, do not re-run
+
+  - **The grid-loop bound axis**, for a third time and now with the mechanism:
+    twenty-three spellings across grid bound, erase bound, store constant and
+    literal type, and the four unconditionality measurements above.
+  - **The opaque-zero expression axis.** Nineteen forms at the adopted site:
+    `i * 0`, `arg0 * 0`, `textY * 0`, `(i + 1) * 0`, `(i * 2) * 0`,
+    `(s32) (i * 0)`, `(u8) (i * 0)`, an OR of `i * 0` with zero,
+    `-(arg0 * 0)`,
+    `(i * 0) + (arg0 * 0)` and `arg0 % 1` are one object; everything that
+    removes the preheader spill (`i * i * 0`, `(i & 1) * 0`, `i % 1`,
+    `(arg0 - arg0) * 1`) also loses the effect and scores 757 to 788.
+  - **The probe axis.** Twelve variables x zero to five copies at the grid
+    loop's depth-2 site. Two, three, four and five copies of `if (i);` are the
+    identical object; every other variable is 735 or worse. Note the count has
+    saturated: three is no longer load-bearing, two suffices, and this is the
+    first shape where that is true.
+  - **Case 10's index definitions.** Six placements of the top-of-case `i = 0`
+    and three opaque-zero forms of the adjacent def: all byte-identical to the
+    base except the two that regress. **The top-of-case `i = 0` is now
+    completely inert** -- deleting it is byte-identical -- where `p9-whale`
+    priced it at +8 bytes. Leave it in; it was load-bearing before the carrier
+    changed and will be again after the next one.
+
+### Where the residual is now, by address
+
+483 differing rows became 316, and the tail is essentially gone. Aligned rows
+per 0x200 window, naming/immediate/structural:
+
+  - +0x0000 to +0x2000, 175 rows, of which 160 are naming
+  - +0x2200 to +0x3000, 48 rows
+  - +0x3000 to +0x3400, 60 rows -- 13 naming, 17 immediate, 30 structural
+  - +0x3400 to the end, 7 rows, down from 120 at 688
+
+The +0x3400 block that three passes called "case 10's web PARTITION problem,
+91 naming rows" is gone without ever being attacked directly. Web 978 is not
+the blocker it was described as.
+
+### The one remaining paired defect, both ends named
+
+The +0x3000 to +0x3400 block is a single +1 run, and its two ends are:
+
+  - **candidate-only at +0x3088**: `sw zero,96(sp)`, the memory temp uopt gives
+    the opaque zero. The matching `lw` at +0x30A4 replaces the target's
+    `move s1,zero`, so the pair costs exactly one word. Every expression that
+    avoids the spill also loses the rewrite defeat.
+  - **target-only at +0x3348**: case 10's `i = 0`, which the target emits in
+    the delay slot of case 10's first `jal` (the opening `fontColour`) at
+    +0x3350 and this candidate emits at +0x34A4.
+
+They cancel in size, which is why the delta reads 0, and neither closes the
+region alone -- the same paired structure `p9-whale` found at 688, moved 0xC0
+bytes earlier. The next lane's first move is the second of these: get case
+10's index definition into that delay slot. Six placements and three opaque
+forms are already measured inert (above), so it needs a different handle --
+most likely whatever makes `saves = func_800291C4();` and the `if (i != 0);`
+probe beside it schedule differently.
+
+### The unguarded order optimum still sits 16 words below the safe one
+
+`tools/blockclimb.py --probe-unguarded` at 594 reaches 578 in five moves that
+move statements containing calls; it reached exactly 16 below the safe optimum
+at 688 too. The gap surviving a 94-word improvement unchanged is worth
+recording: it is the same family `p11-big` read (`nodes[1].texture = 0;` after
+`func_8002F618`), and it remains weak evidence that the original initialises
+that terminator somewhere this reconstruction does not.
+
+### Reproducing any of this
+
+The measurement harness is a direct `nm_ranking.compile_configured_tu` of the
+configured command with a private work directory, about 0.23 s per cell, so a
+300-cell sweep is a minute; `tools/score_symbol.py` and `tools/align_symbol.py`
+agree with it by construction. The per-region register census and the
+per-address row histogram are the two readings this pass turned on, and they
+are now `tools/residual_map.py` -- a re-run of `align_symbol._banded_edit_script`
+that keeps every differing row's target offset instead of only the first, then
+buckets by offset and by decoded register field. That is what made the
+nine-cycle visible as a property of the region after +0x3148 rather than of the
+function; run it with `--lo`/`--hi` to price a region.
+
+## 2026-09-12 (lane `p11-big`): statement order was never retired, and it is worth 45 words
+
+733 -> 688 masked at size delta 0. Aligned: byte-exact 3120 -> 3144, register
+naming 379 -> 371, immediate 25 -> 24, really different 103 -> 88. Frame 0x138
+on both sides with identical 35-slot ladders before and after.
+
+### The closure that was wrong
+
+The header note says "every one of this procedure's 428 allocator decisions is
+phase one, so declaration order, definition position and statement order are
+the wrong axis". The phase census is right and the inference is not: it retires
+**L106 specifically**, ugen's p2 web-number ordering, and statement order also
+reaches as1's scheduling and ugen's emission order, neither of which the census
+touches. That sentence had closed the largest untried dimension on the biggest
+function in the tree.
+
+### The sweep
+
+A move-one hill climb over every run of three or more consecutive single-line
+statements in the body -- 67 runs, found mechanically by indentation, each
+climbed to its own local optimum, then the whole sweep re-run twice until it
+reported no further move. Roughly 3,000 compiles at 0.55 s each.
+
+Six orders moved, each worth between one and nine words on its own:
+
+  - `rowY = rowBase;` to the top of case 1, ahead of both fontColour calls
+  - `i = 0;` after `x = D_o058_5E98 + D_o058_5EA8;` in case 1
+  - `columnStep = ...` after `i = 0;` in case 5's column loop preamble
+  - `nodes[0].texture = cursor[0x51];` to the head of its store group in the
+    portrait loop
+  - `cursor++` after `textY += 0x1E;` in case 6's caption loop
+  - `nodes[0].y` before `nodes[0].x` in case 12's row loop
+
+### The three moves that were rejected
+
+672 is reachable, and the sweep finds it again from the 688 source, but only
+through three moves that change what the function does:
+
+  - two put `nodes[1].texture = 0;` AFTER the `func_8002F618` call, and that
+    callee walks the node list until it reads a NULL `texture` -- so the
+    terminator has to be stored first
+  - one moves `x = -x;` in front of a `func_8004B0F8` call that takes
+    `x + 0xA0` as an argument
+
+This is the brief's trap 8 in a different instrument: an order sweep ranked by
+score will offer a semantically wrong candidate that scores better. 688 is the
+safe move-one optimum. It is worth recording that the target's own shape is 16
+words closer to the unsafe orders, which is weak evidence that the original
+initialises `nodes[1].texture` somewhere this reconstruction does not.
+
+### What is left
+
+Unchanged in kind: the 88 really-different rows and 371 naming rows are still
+the p1 colour residual the previous passes characterised -- the prologue and
+case 10's `&character[0]` temp (web 978) as web PARTITION problems, and 119
+words in case 9's grid-loop exit test, where the target emits
+`slti at,<index>,10` and this candidate emits `addiu t5,<index>,-1;
+slti at,t5,9` from the `(opponent - 1) < (0xA - 1)` bound, with the two loop
+indices additionally transposed between s1 and s7 across the whole
++0x3000..+0x3300 region -- 219 of the 494 differing rows sit there.
+
+Do not re-run the statement-order sweep: it is a move-one fixed point at 688,
+re-climbed from its own output.
+
+Validation: `gmake verify` printed 507341c0a40ca3e9a7cee969b396ee53facfb548;
+`gmake cleanroom` and `gmake check-docs` pass. The candidate remains
+`NON_MATCHING`, so no bytes are credited.
+
+
+## Characterisation, 2026-09-09 (lane/whale-o058)
+
+### The 532-byte surplus was the compiler flag
+
+The TU carried a per-target `MIPSISET := -mips1 -32` override in
+`mk/overlays.mk`, inherited from the first draft's positional flag sweep,
+while every other overlay TU compiles at the overlays default `-mips2 -32`.
+The target contains 38 branch-likely instructions, which IDO never emits
+below `-mips2`. Measured on the same candidate source: `-mips1` gives 3747
+words (+532 bytes, 180 nops, 0 branch-likely); `-mips2` gives 3616 words
+(+8 bytes, 38 nops against the target's 38, 36 of 38 branch-likely). The
+override is removed (commit "Drop the mips1 override on the overlay 58
+whale TU"); `gmake verify` is unaffected because the function is still
+`NON_MATCHING`. Eliminated on the same fast loop: `-O2 -g3`, `-O1`,
+`-mips3`, `-Wo,-loopunroll,0`, `-Wab,-r4300_mul`, and every explicit
+`-Olimit` value (800 and above all produce one identical, worse object
+with 49 nops and 24 branch-likely; below 800 uopt refuses the procedure).
+`-O2 -mips2 -32` with the default limit is the only configuration with the
+target's nop and branch-likely census.
+
+### Where the residual lives now
+
+Measured with a direct `tools/ido/cc` compile at the recovered flags
+(byte-identical `.text` to the `NON_MATCHING` object) and a shape-tolerant
+alignment on opcode class (scratch tooling under `build/scratch-w58/`):
+
+Before and after (target 3614 words, frame 0x138, 38 nops, 38
+branch-likely):
+
+- candidate words: 3747 (+532 bytes) to 3645 (+124 bytes)
+- positional differing words (the flag_sweep metric): 3693 to 3537
+- shape-identical rows out of 3614: 3406 to 3496
+- exact rows within the shape alignment: 1621 to 1855
+- rows differing only in sp displacement: 90 to 2
+- rows differing only in register names: 1403 to 1474
+- alignment regions: 216 to 159
+- frame: 0x158 to 0x138
+- nops and branch-likely: 180 and 0 to 35 and 38
+
+The running shift never exceeds +31 and re-converges to +31 at the end:
+a dense local defect, not a structural one. The 159 regions are one to
+three words each; only six are larger and every one of those is a
+scheduling shape (address materialisation hoisted or not), not missing
+work. The dominant residual is register identity: 1474 shape-aligned
+rows differ only in register names, and the histogram is a near
+permutation of the saved registers (`i` sits in s7 in the target and in
+fp in the candidate, the hoisted `&text` the reverse; s2/s3 and s4/s3
+swap in places), with temporaries renumbered downstream.
+
+### Proved
+
+- The function opens with a two-case `switch` on `D_o058_5E94` (cases 1
+  and 2 share the points-copy loop) followed by the 13-way `switch` on
+  the same global, not an `if` testing the two values with a short-circuit or: only the switch
+  spelling reproduces the register copy for the second compare and the
+  unconditional branch on the fall-through path.
+- A store through a pointer cursor kills every global CSE in this
+  compiler regardless of pointee type or linkage (`static`, defined,
+  `extern` all measured). The target keeps `D_o058_5E94` live across the
+  points-copy loop and hoists the loop bound, so that loop stores through
+  the named array with an index; the case-2 decrement loop is the same
+  shape.
+- The frame is a declaration census at 4-byte granularity: an unused
+  local reserves a slot, aggregates declared last land at the bottom, and
+  the target's displacements read back as 30 scalars plus `character[2]`,
+  `text[24]`, `nodes[4]` over a 20-byte compiler-owned area, in this
+  order from the top: four register-only scalars, `x`, five register-only
+  scalars, `seconds`, `minutes`, `centiseconds`, `rowY`, one, `rowHeight`,
+  two, `savedX`, `savedPosition`, `savedOffset`, two, `character`, `text`,
+  one, `state`, `nodes`, four, and last a record cursor that the target
+  keeps entirely in memory during the case-10 loop (its slot is written
+  once and reloaded seven times). The candidate now reproduces the whole
+  census except that the record cursor is a compiler temporary at 0x60
+  instead of a declared local at 0x64.
+- Loop bodies are indexed: the case-10 inner loop's compare constants are
+  materialised as three separate address constants (base, base+6,
+  base+22) exactly as uopt's test replacement produces from `k == 0`,
+  `k == 3`, `k != 11`, and every hand-written cursor in the draw loops
+  regresses the loop body by one to four regions against the indexed
+  form.
+- Loop headers want the index known zero: IDO folds `i = 0` into the
+  strength-reduced cursor bases only when no call separates the
+  assignment from the loop (measured on a nine-line TU as well). A plain
+  `for (i = 0; i < n; i++)` and an `i = 0;` immediately before a guarded
+  `do`/`while` compile to identical objects here.
+- `X = saved; X -= delta;` keeps the first store that the previous
+  spelling let uopt drop at the case 3/12/13 transitions.
+- Statement order inside the node fill: the texture lookup comes first,
+  as the other cases already spelled it.
+
+### Eliminated
+
+- Every flag axis above, including `-Olimit`.
+- Pointer-store aliasing as a function of type or linkage.
+- Address forms (`text` vs `&text[0]`, `arr` vs `&arr[0]`): identical
+  code.
+- Pointer cursors in the draw loops (cases 1, 2, 3, 12, 13, 7/11): the
+  preheaders improve but the bodies regress; net worse.
+- Converting every loop to `for` at once: `i` loses its register and
+  gains a 64-access stack home; the conversion must stay loop-local.
+
+### Highest-value next lever
+
+The first `jal` delay slot in cases 1, 3, 12 and 13 holds `i = 0` in the
+target while the candidate schedules it earlier or in the loop's `blez`
+delay slot, and the target spills `rowY` from s2 in exactly that slot.
+The candidate keeps `rowY` in memory from the top instead. Getting `rowY`
+(and `state`) to live in saved registers between spills is the single
+allocation decision most of the remaining register-only rows hang off,
+and it is a priority question (the same one that puts `i` in s7 and the
+hoisted `&text` in fp). The shape work is otherwise done: work the 159
+regions with `build/scratch-w58/diffview.py` one case at a time, keeping
+the frame census fixed at 0x138.
+
+
+## Second grind, 2026-09-09 (lane/whale2-o058)
+
+Scored on the same direct-`cc` loop (flags recovered from `gmake -n`) and
+the same shape-tolerant alignment; the Makefile object for this TU is the
+`GLOBAL_ASM` target itself, so never compare the fast loop against it.
+
+Before and after this grind (target 3614 words, frame 0x138):
+
+- shape-identical rows: 3496 to 3565 of 3614
+- exact rows within the alignment: 1855 to 2084
+- alignment regions: 159 to 85 (every remaining one is 1 to 4 words)
+- sp-displacement-only rows: 2 to 0 (the frame census is exact)
+- nop and branch-likely census: 38/38 against 38/40 (two extra likely
+  branches came in with the constant-10 spelling below)
+- size delta: +124 to +104 bytes; positional words 3537 to 3523
+
+### Corrections to the first grind's findings
+
+- The first grind's register histogram tool (`reghist.py`) had t8/t9 at
+  indices 16/17 of its name table, so every saved register was labelled
+  two low: its "s7 -> temporaries" story was t9. With the table fixed the
+  picture is clean: `i` is s7 in the target and fp in the candidate, the
+  hoisted `&text` and `&D_o058_5EB0` are fp in the target and s7 in the
+  candidate, and rowBase is s2 against s3. One colouring decision.
+- The target declares 28 scalars, not 30. The frame law at 4-byte
+  granularity is: locals bottom = frame - locals size; the compiler's
+  record-cursor temporary sits 8 below the locals bottom; frame =
+  round8(0x68 + locals). 29 scalars (the first grind) and 28 scalars both
+  give 0x138, but only 28 puts the temporary at 0x64 where the target has
+  it. `erasedCharacter` was the spurious scalar: the target compares
+  against the character value re-read through the decremented index.
+- The points total is computed before the fontColour call and carried
+  across it (s1); the first draft had that and the first grind's
+  uncommitted scratch had inlined it. It is spelled through the dead
+  `textY` scalar so the census stays at 28; spelling it through
+  `columnX` instead costs four regions, so the carrier's identity feeds
+  the colouring order.
+- rowBase is a separate register-resident variable and rowY the
+  memory-resident running row (the first grind's uncommitted `RB2`); a
+  single `rowY` variable does not split the way the target does. The
+  first draft had the two source arrays swapped.
+
+### Proved this grind
+
+- `i = 0` at the top of a case is never in a jal delay slot in this
+  compiler's output unless something else is going on: in every probe a
+  def separated from its loop by a call or a join leaves the loop's
+  cursor bases unfolded (`sll/addu` from the index), and a second def
+  adjacent to the loop kills the first as dead. The target has both the
+  top-of-case def (first jal delay slot in cases 1, 3, 12, 13, 8, 10;
+  before the first blez in case 2) and folded cursors in the same case,
+  in six cases. No spelling tried reproduces that pair: `register`,
+  a function-level def, a `for` init, `while`, `++i`, a duplicated def,
+  a never-read variable. Eliminated as spellings; the mechanism is open.
+- Block count is not the lever: uopt's verbose number is the basic-block
+  count (633 here, target-equivalent), the default limit lies in
+  (633, 721], and a generated 633-block function shares every global's
+  load/store address register. `-Olimit 800` gives a different, worse
+  object and still emits the direct stores.
+- Non-locality is forward only: thirty dummy blocks appended after the
+  last case change nothing before them; the same blocks inserted at the
+  start of the switch change 54 regions after them. Colouring is a
+  sequential pass in statement order, so fixes must be taken front to
+  back.
+- The direct-store defect in every `X = X + delta; if (X >= 0x141)` tail
+  (candidate stores through `$at` and reloads; target stores through the
+  shared address register in the branch delay slot) reproduces in a
+  24-block standalone copy of the tail and bisects to `delta`: when
+  `delta = arg0 * 0xF` is computed from a parameter, uopt treats it as a
+  rematerialisable expression temp and every later store of an
+  expression involving it goes direct. Computing it from a memory load
+  (`d = G * 0xF`), reading the parameter through a pointer, or declaring
+  the parameter `volatile` makes delta a variable and restores the
+  sharing everywhere (volatile: exact rows 1980 to 2415 in one edit,
+  register-only rows 1473 to 1041), but volatile also moves the
+  `move s4, delta` copy ahead of the first store instead of into the
+  bgez delay slot, so it is a proof of mechanism, not the spelling.
+  Naming the stored value (`t = X + delta; X = t; if (t >= ...)`) fixes
+  one site at a time and is what is committed for case 1.
+- The case-9 grid loop's `opponent < 0xA` is rewritten by uopt to `bne`
+  against 10 in a saved register because the erase loop's `!= 0xA` and
+  the `D_o058_5EB0 = 0xA` stores put 10 in a register web that the
+  grid-loop test joins; the target tests `slti $at, $s7, 0xA` with no
+  such register. Breaking the constant (permuter-found
+  `(opponent - 1) < (0xA - 1)`, semantics-preserving) frees s5 and
+  closes 20 regions of colour cascade; the natural spelling that keeps
+  `slti` is still unknown (`for`, `while`, `++opponent`, `<= 9`, `!= 10`
+  all normalise to the shared form; `s16` indices keep `slti` but cost
+  sign-extension shifts the target lacks).
+
+### Eliminated
+
+- `register` on i/opponent (no effect on .text); `s16` indices; `volatile`
+  on D_800D304E-style resident globals; array-typed extern declarations
+  (`D_o058_5EA8[0]`); `+=` against `= +` (identical); a single
+  function-level `delta`; every delta spelling that keeps it a parameter
+  expression (`(a << 4) - a`, embedded assignment, copy through a second
+  local, defined before or after the calls); explicit pointer cursors in
+  the case-2 draw loop (preheader improves, body regresses); folding
+  `saves` into the slot expression (28 scalars but regresses cases 3 and
+  9); dropping `countdownX` or `portraitX` (shifts the memory-resident
+  locals); the case-only cuts as a probe (a 94-block cut of case 1 alone
+  compiles very differently from the same code inside the whole).
+
+### Highest-value next lever
+
+Make `delta` a non-rematerialisable variable with a natural spelling.
+The volatile-parameter experiment shows that single property is worth
+about 430 exact rows and moves the colouring of every tail toward the
+target; the remaining difference under volatile is only where the copy
+into s4 lands. Whatever the original did to `arg0` (or to `delta`) so
+that uopt would not recompute `arg0 * 0xF`, find it, then re-run the
+constant-10 and `i = 0` questions on top of it, because both are
+colouring-order effects that will move once the tails settle.
+
+
+
+## Size delta closed, 2026-09-10 (lane/wa-o058)
+
+The size delta is **0**: 3614 words against 3614, frame 0x138 held. Scored
+with the project's own comparator (`tools/flag_sweep.py`'s `get_candidate` /
+`assemble_target_asm` / `score_words`, so the relocation masks are the union
+of both sides), on a direct `tools/ido/cc` compile at the flags recovered from
+`gmake -n`:
+
+Before (HEAD) and after, in that order:
+
+- size delta: +56 bytes to **0**
+- differing words, relocation-masked: 3215 to 1009
+- differing words, raw: 3229 to 1153
+- first mismatch: +0x50, unchanged
+
+The `before` column reproduces the ranking's recorded 3,229 / 3,215 / +56
+exactly, so the two scorers agree.
+
+### Census both sides, then look only where the totals differ
+
+Counting by construct rather than by total put the whole surplus in four
+named places. At HEAD the two sides agreed on every count except index
+scaling (+8), address arithmetic (+5 add-register, +1 add-immediate, +2
+upper-immediate) and two copies (-3), and the cumulative-shift profile put
+every one of those after word 1494 -- the first 41% of the function was
+already size-exact. There was **no unrolling difference**: the branch,
+branch-likely, call, load, store, shift, compare and logical counts were
+already equal at HEAD, and the nop census (38) matched. `uopt -Wo,-zdbug:2`
+was therefore not needed and was not run.
+
+At delta 0 the census differs in exactly one place: one copy on the target
+side is an add-immediate on the candidate side. Every other class -- 3614
+words, 38 nops, 38 branch-likely, 286 branches, 244 calls, 633 loads, 462
+stores, 168/267 stack loads/stores, 504 upper-immediates, 523 immediate
+loads, 47 shifts, 43 compares, 29 logicals, 106 add-register, 31/22
+subtract -- is equal.
+
+### The three levers
+
+**1. The index def must be adjacent to its loop, and the top-of-case def must
+stay (cases 7/11, 6, 8, 10; -20 bytes).** This is the first grind's
+"loop headers want the index known zero" law, applied per case. Where `i = 0`
+at the top of a case is separated from the loop by calls, IDO cannot fold the
+zero into the strength-reduced cursor bases and the body recomputes each
+subscript; case 8 also recomputed a multiply-by-27 every iteration. Repeating
+the def immediately before the loop restores the fold. Two refinements the
+earlier grinds did not have:
+
+- The repeat must be a *second* def, not a move. Deleting the top-of-case
+  defs and keeping only the adjacent ones is measurably worse (+28 bytes
+  against +24 for the same four loops repeated), because the dead top def
+  still numbers the webs.
+- `for (i = 0; i != 3; i++)` and the guarded `do`/`while` with an adjacent
+  def compile to the same object, confirming the earlier finding.
+
+**2. Case 13's first loop wants `i < columnCount`, not `i != columnCount`
+(-16 bytes, and 515 more exact rows).** With `!=` uopt does linear function
+test replacement: it drops the counter increment and tests a cursor against a
+computed limit, which costs that limit's own scaling and a second address
+register. With `<` the basic induction variable survives and the loop takes
+the target's shape. This is the *converse* of law L90 as recorded: L90 says a
+basic variable's `i < K` test is normalised to `i != K`, and that is true when
+`K` is a memory-resident bound, but with `K` a register-resident local the two
+spellings are not interchangeable and only `<` keeps the counter.
+
+**3. Two same-region reads of one halfword global cost two words (-8 bytes,
+delta 0).** The last surplus was four extra full address materialisations, all
+of one symbol, all in one saved register. IDO opens a global address web for a
+symbol as soon as two of its reads land in the same region; once open, the web
+is rematerialised as a two-instruction address at the *single*-read sites too,
+where the target spends one instruction and folds the low half into the load.
+The function has six reads of what the reconstruction spelled as one symbol:
+two isolated, and two same-region pairs. Six isolated reads would cost 12
+words; the webbed form costs 14.
+
+- Falsified as spellings: array-typed extern, dropping the cast, an explicit
+  dereference of the address, `volatile` on the extern. All four compile to
+  the identical object.
+- Falsified as a use-count threshold: in a standalone probe IDO keeps the
+  one-instruction form at two, three, four, five, six and eight reads of the
+  same global, and only opens the web at ten. The threshold is not the count.
+  What opens it here is two reads in one region.
+- **Exhaustive**: all 203 set partitions of the six reads were compiled and
+  scored. Every partition that separates the two same-region pairs reaches
+  delta 0, and all of them emit a **byte-identical** object; every partition
+  that leaves either pair together does not. So the evidence fixes the split,
+  and says nothing whatever about the grouping.
+
+The ROM relocates all six of these reads at load time -- their address fields
+are zero in the image -- so no read's identity is evidenced by the bytes, and
+the single name the reconstruction gave all six was never more than a guess.
+What *is* evidenced, at the strength of "the target cannot have been compiled
+from a source that did otherwise", is that the two reads inside one case are
+not the same object. The tree now spells the two `&saves[...]` reads as a
+second extern, whose name is a placeholder for an unresolved import and not a
+claim about its address; that particular grouping was chosen for reading, not
+from evidence, and any of the other delta-0 partitions would produce the same
+bytes. Tier D.
+
+### Where the residual is now
+
+41 regions, 3589 of 3614 rows shape-identical, 2754 exact. The dominant
+residual is still the colouring swap the second grind named: the index lives
+in s7 in the target and fp in the candidate, and the hoisted addresses the
+reverse. That swap is now *all* that is left of the size question too -- both
+of the last two words were spent because the candidate had a saved register
+free where the target did not. Work the 41 regions front to back; colouring is
+sequential in statement order, so a fix late in the function cannot move
+anything before it.
+
+### Reproducing the measurement
+
+Nothing in this lane needed a patched compiler or the workbench. The loop is
+`gmake -n` for the real flags, `tools/ido/cc` at exactly those flags plus
+`-DNON_MATCHING` (0.35s per compile, which is what made a 203-point exhaustive
+partition search practical), the candidate's size read from the ELF symbol's
+`st_size` -- not the section size, which is padded to 16 and would have
+quantised the delta -- and `tools/flag_sweep.py`'s scorer for the masked word
+count.
+
+
+## The displaced index def named and priced, 2026-09-10 (lane/c5-whale)
+
+996 to **895** of 3,614 relocation-masked words, size delta held at 0, frame
+0x138, first mismatch +0x50 unchanged.  Measured with `tools/score_symbol.py`
+(the project comparator) on a direct `tools/ido/cc` compile at the flags from
+`gmake -n`; both agree.  `gmake verify` prints
+507341c0a40ca3e9a7cee969b396ee53facfb548 on the committed tree.
+
+### The residual partitions into two mechanisms, not two hundred
+
+Aligning the two instruction streams shape-tolerantly (register names erased)
+puts 3,387 of 3,614 rows in one-to-one correspondence at HEAD, and only 227
+rows in shape blocks.  Of the corresponding rows 2,860 are byte-exact and 527
+differ only in register names.  The positional count is 996 rather than 754
+because a handful of single displaced instructions push whole runs out of
+position:
+
+- **displacement**, about 242 words: eight `move <saved>, zero` index
+  initialisations that the target emits at the TOP of a case and the candidate
+  emits next to the loop, 19 to 90 instructions later.  Every word between the
+  two positions differs positionally although it is exact under alignment.
+- **colour**, about 525 words: three transpositions of saved-register pairs,
+  s7 with s8, s0 with s1, s2 with s3, carried through the whole body.  `i` is
+  s7 in the target and s8 in the candidate; the hoisted `&text[0]` the
+  reverse.  The register census is a near-permutation: target s7 84 / s8 128,
+  candidate s7 128 / s8 81.
+- the rest is 227 rows of local shape difference in 201 blocks.
+
+The first colour disagreement is at word 20, in the prologue: the target reads
+the switch global into a0 and copies it to s2, the candidate into a2 and s3.
+Same instructions, different colours, before any of the levers below apply.
+
+### The displacement is a fold constraint, and the fold has a source-level exit
+
+The mechanism is now closed.  `cc -S` reads out ugen's allocation directly and
+makes each step checkable:
+
+1. The target's `move s7, zero` sits in the delay slot of a case's FIRST call,
+   which as1 can only fill from that call's own block.  So the target's source
+   defines the index at the top of the case.
+2. Moving the def there in the candidate costs 8 bytes: with the def separated
+   from the loop by a call, uopt cannot fold the known zero into the
+   strength-reduced cursor base and emits `mul i,4` + `la` + `addu` instead of
+   a bare `la`.  Measured on cases 1, 12 and 7/11 and reproduced in a
+   nine-line standalone TU.
+3. The barrier is the CALL, not distance and not a join: within one block the
+   def can move freely (two statements earlier is worth one word), and one
+   call anywhere between def and loop breaks the fold, whichever call it is.
+4. It is not a constant-propagation barrier.  `i >>= 31;` written next to the
+   loop, with the only def at the top of the case past three calls, compiles
+   to `move $30, $0` -- uopt propagated the zero across all three calls.  The
+   induction-variable initial-value analysis is a separate, block-local thing
+   that does not consult the propagated constant.
+5. So the def cannot be duplicated into a free no-op either.  A second `i = 0`
+   next to the loop is kept and the top one dead-code-eliminated (measured:
+   byte-identical to no probe at all).  `i *= 1;` and `i <<= 0;` are defs and
+   emit the same `move`; `i += 0;`, `i -= 0;`, an or-with-zero and `i = i;`
+   are deleted outright and break the fold exactly like having no def.
+
+**The exit is to remove the thing that has to be folded.**  Where a loop
+subscripts exactly ONE array with the index, spelling that subscript as an
+explicit pointer cursor leaves nothing for uopt to strength-reduce, and the
+index def is then free to sit at the top of the case where the target has it.
+Applied to the two loops that qualify:
+
+- case 7/11's `D_o058_5E68[i]`: 98-word region gone, 996 to 923.
+- case 13's first loop, `D_800D31C8[0x51 + i]`: 48-word region gone, and with
+  it the exit test flips -- with the cursor carrying the subscript, `<` costs
+  an extra `slt` and `!=` gives the target's `bne`, the converse of what the
+  indexed form wanted.  923 to 895.
+
+The cursor is spelled through the one declared-but-unused scalar the frame
+census left over (`s32 delta`, retyped `void **cursor`), so the declaration
+count and the frame are untouched.  Placement of the cursor assignment is
+worth a word: before `textY = 0x50;` rather than after, in case 7/11.
+
+### Why the other six displaced sites are census-blocked, not unreachable
+
+Cases 1, 2 (draw), 3 and 12 (draw) subscript two or three distinct arrays with
+the same index, so the cursor form needs two or three pointer cells.  The
+frame is a declaration census at 4-byte granularity and the function has
+exactly ONE spare cell; adding a second takes the frame from 0x138 to 0x140
+and moves every sp displacement.  `path`, `saves` and `slot` are the only
+other pointer cells and are live in cases 9, 10, 2, 12 and 13.  The remaining
+displaced sites and their positional cost:
+
+- case 1, 35 words: three cursors (`D_o058_5EC8` twice, `D_o058_5EF8`).
+- case 2 inner, 20 words, single array -- but cursoring it makes the
+  top-of-case def dead and drops the move count from two to one.
+- case 2 draw, 40 words; case 3, 29 words; case 12 first loop, 40 words.
+- case 8, 2410-2481, 72 words: single array, but the body also strength-
+  reduces `i * 0x1B`, so the cursor form costs 16 bytes.
+- case 12 first loop specifically reaches the target's shape (the move lands
+  one word from the delay slot) but costs 8 bytes in case 12's TAIL, where the
+  colour change loses the shared global-address register and the stores go
+  through `$at` again -- the grind-2 direct-store defect, re-triggered.
+
+### Falsified this pass
+
+- **L97 regions are inert here.**  `if (1) { ... }`, `do { ... } while (0)` and
+  a bare block around the first switch, around its inner `if`, and around the
+  three leading calls of a case: all five byte-identical to nothing.
+- **Declaration order among the register-only scalars is inert.**  Six
+  permutations of the first four declarations, all byte-identical.
+- **Discarded-expression probes are exhausted at case granularity.**  144
+  variants, one `if (V != 0);` at the top of each of twelve case bodies for
+  twelve different locals: every size-preserving one measures exactly 996, and
+  the three already in the tree are the whole of what that lever gives.  A
+  discarded expression is not a use for dead-code elimination either: it does
+  not keep a top-of-case def alive.
+- **Splitting the index into a second variable per case** (using the spare
+  cell) is worth 3 words on case 7/11 alone and nothing or worse on the other
+  nine cases; superseded by the cursor form, which uses the same cell.
+- **Caching `&character[0]` in a pointer local** to reproduce the target's
+  `addiu s6, sp, 216` (the single opcode-histogram difference) is
+  byte-identical to not doing it: uopt folds the local straight back to the
+  sp-relative form, exactly as the earlier pass found for `&text[0]`.
+- **The case-9 grid loop's `(opponent - 1) < (0xA - 1)` spelling is load-
+  bearing at the new count.**  The natural `opponent < 0xA`, with or without
+  matching changes to the erase loop's `!= 0xA`, measures 990 against 895.
+
+### Where the residual is now
+
+895 words in 286 regions.  The two largest are unchanged by this pass and are
+both single displaced instructions:
+
+- 3152-3271, 120 words, shift -1: the extra `addiu t5, s0, -1` that the
+  `(opponent - 1)` spelling costs.  The target tests `slti $at, s7, 10`
+  directly.  Finding the spelling that keeps `slti` without putting 10 in a
+  saved register is worth 120 words and is the largest single open item.
+- 2410-2481, 72 words, shift +1: case 8's index def, census-blocked above.
+
+The colouring question is untouched and is the larger half.  It is a rotation
+question, not a spelling one: six declaration permutations, five region
+boundaries and 144 discarded-expression probes all left s7/s8 exactly as they
+were.  The one structural asymmetry found is that the target holds one MORE
+saved-register web than the candidate -- `&character[0]` in s6 across case
+10's inner loop -- which is the "one web too few" the rotation law asks for,
+but no source form reaches it.
+
+
+
+## The census blocker is liveness, the colour is movable, 2026-09-10 (lane/c6-whale)
+
+895 to **894** of 3,614 relocation-masked words, size delta held at 0, frame
+0x138, first mismatch +0x50 unchanged.  `tools/score_symbol.py` reports
+14,456 bytes, raw 1,044, masked 894, artifact 150, delta 0.  `gmake verify`
+prints 507341c0a40ca3e9a7cee969b396ee53facfb548 on the committed tree, and
+`gmake cleanroom` and `gmake check-docs` pass.
+
+Under a shape-tolerant alignment the residual is 2,872 byte-exact rows, 692
+rows differing only in register names, and 58 shape blocks holding 84 rows.
+The positional 894 sits in 286 regions; the seven largest are 120 words
+(case 9), 72 (case 8), 40 (case 12 draw), 34 (case 1), 33 and 20 (case 2)
+and 29 (case 3), all of them displacement.
+
+### The frame-cell budget was never the constraint
+
+An `s32` scalar carrying a pointer through casts compiles **byte-identically**
+to a `void **` local.  Measured by retyping the committed `cursor` back to
+`s32` and casting at all six of its uses: 894 before and after, same object.
+
+So the earlier reading -- that cases 1, 2, 3 and 12 are blocked because they
+need two or three pointer cells and the frame has one spare -- is wrong on its
+premise.  Any of the 28 declared scalars can carry a cursor in a case where it
+is dead, at zero census cost, because the declaration count and the frame
+never change.  Case 1 alone has 17 scalars dead in it (`opponent`, `columnX`,
+`cursor`, `portraitX`, `columnStep`, `portraitIndex`, `countdownX`,
+`highlighted`, `letter0`, `letter1`, `savedX`, `savedPosition`, `savedOffset`,
+`columnCount`, `erase`, `path`, `saves`, `slot`), and `cursor` already proves
+cross-case reuse works: it serves case 13 and case 7/11 in the committed tree.
+
+Separately confirmed: a genuinely NEW declaration is not free either, but not
+for the recorded reason.  One extra unused scalar keeps the frame at 0x138 --
+the closed form has four bytes of slack -- but moves the locals' bottom from
+0x6C to 0x68 and every sp displacement with it, costing 68 words at delta 0.
+A second takes the frame to 0x140.
+
+### The remaining cursor sites are blocked by the loop BODY
+
+With the cell question gone, all four multi-array sites were measured with
+free carriers, each in five to six carrier pairs, with and without the index
+def moved to the top of the case.  Every one is worse than the base:
+
+- case 1 (`D_o058_5EC8` plus `D_o058_5EF8`): best 3,332 at delta -4; the
+  delta-0 carriers do not exist because the body loses a word.
+- case 3 (`D_o058_5EE0` plus `D_o058_5F10`): best 925 at delta 0.
+- case 12 first loop (`D_o058_5C98`, single array): best 1,569 at delta 0.
+
+So the cursor form pays only where the loop subscripts exactly one array AND
+has no other surviving induction variable, which is cases 7/11 and 13 and
+nothing else.  Cases 1, 3 and 12 keep `rowY`, `columnX` or a second cursor as
+induction variables, and adding an explicit one regresses the body by more
+than the preheader gains.  This closes the "census-blocked" line of enquiry:
+those six sites are body-blocked, and the frame has nothing to do with it.
+
+### The s7 with s8 rotation moved for the first time, and is a single global decision
+
+The rotation is 186 aligned rows (`keep78` 4).  165 earlier forms left it
+untouched.  It moves under **carrier identity**, and the lever is which
+declared variable plays the loop-index role in an early case:
+
+- case 1's index spelled `columnCount` (a scalar also used in case 13): 186
+  swapped rows to **7**, `keep78` 4 to 58.
+- case 1's index spelled `columnStep`: 54.  Spelled `savedX`: 106.
+- case 3's cursor pair carried by `cursor` and `columnCount`: 61.
+- case 7/11's index spelled `columnCount`: 53.  Case 10's: 52.
+- case 2's index spelled `columnCount`: 58.
+
+The flip needs the carrier to be live in a LATER case as well: freeing
+`columnCount` from case 13 (giving case 13 a different carrier) puts the
+rotation straight back to 179.
+
+But the rotation is one global decision, not a per-case one.  Every probe that
+improved s7 with s8 rotated other saved registers the other way.  Counting
+saved-register operand slots that agree, out of 834: the base scores 439 and
+no probe in roughly 120 measured variants exceeded 456, while masked never
+went below 894.  The base colour is a local optimum on both metrics, which is
+why the flip is visible and not yet useful.
+
+Falsified as levers on the rotation, all at `swap78` 186 or worse:
+
+- adding a saved-register web before the switch, and adding two.  This is a
+  sharper negative than it looks: assigning a cursor before the three leading
+  calls does make its range cross them, and the register class DOES change --
+  the points-copy loop's cursors land in callee-saved registers in that
+  variant, which is exactly the target's shape at words 40 to 53 -- and the
+  s7 with s8 rotation still does not move.  So the two extra callee-saved webs
+  at the top of the function, although a real structural difference, are not
+  what decides the rotation.
+- the points-copy loop's index carrier: twelve carriers, ten byte-identical.
+- moving case 1's index def to the top of the case (+12 bytes, unchanged).
+- all fifteen exit-test spellings of the case-9 grid loop.
+- discarded-expression probes INSIDE a loop body rather than at the top of a
+  case: eighteen measured, and unlike the top-of-case form they are not free --
+  most cost 12 bytes, and the two that flip the rotation do so only by
+  deleting code (an uninitialised carrier, delta -56).
+
+### The earliest structural asymmetry, named
+
+At words 40 to 53, the pre-switch points-copy loop, the target puts both
+strength-reduced cursors in CALLEE-SAVED registers (s3 and s0) where the
+candidate uses temporaries.  Same shape, same count, different register class.
+That is two saved-register webs the target has and the candidate does not, and
+they are created before the first switch -- earlier than any lever tried here,
+and earlier than the `&character[0]` web in case 10 that the previous pass
+named.  Neither loop crosses a call, so "spans a call" does not discriminate
+them.  Six loop spellings (`for`, `while`, `!=` bound, an explicit cursor, a
+named temporary, `i` as the index) and twelve index carriers all left it
+unchanged.  This is the most promising unexplored handle on the colour,
+because colouring is sequential in statement order and this is the first
+disagreement in the function.
+
+### The 120-word case-9 region is register pressure, not spelling
+
+With the natural `opponent < 0xA`, uopt hoists the constant 10 into a saved
+register (`li s5,10` in the grid loop's preheader) and rewrites the exit test
+as `bne`.  That evicts one of the loop's four global-address webs, which then
+costs a full `lui` plus `lw` pair INSIDE the loop.  Both sides hold all nine
+saved registers live across that loop, so the constant and the fourth global
+address compete for one slot; uopt ranks the constant higher and the target
+ranks the address higher, which is why the target still tests
+`slti $at, $s7, 10`.  The committed `(opponent - 1) < (0xA - 1)` buys the
+address back and pays one `addiu` per iteration instead.
+
+Fifteen spellings measured.  `(opponent - 2) < (0xA - 2)` ties the committed
+form.  `opponent < 0xA`, `!= 0xA`, `<= 9`, `0xA > opponent`,
+`!(opponent >= 0xA)`, `< 9 + 1` and `< 0xA - 0` all give 989; `opponent - 10 <
+0` and `(opponent < 0xA) != 0` give 1029; the unsigned form 1028;
+`(opponent + 1) < (0xA + 1)` and `opponent * 1 < 0xA` 1411.
+
+Worth carrying forward: under shape-tolerant alignment the natural `<` form is
+BETTER than what is committed -- 2,904 byte-exact rows against 2,872 and 634
+register-only rows against 692.  It loses only positionally, on the one evicted
+address.  If the eviction is ever prevented, the natural spelling is the one to
+take.
+
+Six further combinations were measured to try to prevent the eviction and all
+stay at 988: the natural bound with the condition's two global reads swapped,
+with the erase loop's `!= 0xA` spelled `< 0xA`, with its outer `!= 3` spelled
+`< 3`, and the pairs of those.  Swapping the condition's reads on its own
+costs two words.  The eviction is a tie inside uopt -- re-materialising the
+evicted address costs one word inside the loop and the hoisted constant saves
+one at the test -- so it will not move under a spelling that leaves the
+loop's web count where it is.
+
+### L98 re-verified from scratch, with four new negatives
+
+Rebuilt in a fresh nine-line TU rather than trusted: a call between `i = 0` and
+a guarded `do`/`while` over `A[i]` costs 4 bytes, emitting `sll` plus `addu`
+where the adjacent-def form emits a folded `lui`/`addiu` base.  An adjacent
+second def restores it.  New negatives:
+
+- a copy through a second local (`j = i;` after the call, loop over `j`)
+  restores the fold, but still emits the `move` in the preheader, not at the
+  top: the copy simply becomes the adjacent def.
+- keeping the first variable live past the loop does not change that, because
+  uopt constant-folds its later uses and it dies anyway.
+- a redundant `n > 0 && i == 0` guard does not help.
+- `for (; i < n; i++)` with the init left at the top does not help.
+- when the loop has no call in its body IDO unrolls it and the call before the
+  loop stops mattering, which is why the earlier eight-word probe did not show
+  the effect; the body must contain a call to reproduce it.
+
+Also measured on the real function: the target's two `move $s7, zero` in case 2
+(before the `blez` guard, and after the decrement loop) imply a source with no
+defs at the two places this reconstruction has them.  Removing line 390 costs
+8 bytes, removing line 407 costs 16, removing both costs 24.  So that reading
+of the target is not reachable either.
+
+### Committed this pass
+
+- case 1: `i = 0;` ahead of `x = D_o058_5E98 + D_o058_5EA8;` rather than after
+  it.  One word.  Both spellings leave the def in the loop's own block, so the
+  cursor bases stay folded either way; only the schedule moves.  Every other
+  index def in the function was swept the same way (both directions, twenty
+  probes) and this is the only one that pays.
+- case 13's first loop: base the cursor at `D_800D31C8` and carry the 0x51 in
+  the subscript, rather than `&D_800D31C8[0x51]`.  The target's cursor register
+  holds the bare symbol and spends 0x144 in the load displacement; same
+  instruction count, one more exact row, and it removes a twelve-row shape
+  block at +0x1768.
+
+### Also falsified this pass
+
+- the three commutative `addu` operand-order rows (+0x26f8, +0x2cc0, +0x341c)
+  are NOT source-driven: six spellings of `slot = &saves[levelGetBlurEffect()]`
+  -- pointer addition, an explicit byte-offset cast, a split assignment, a
+  named index, and each site alone -- are all byte-identical.  They are a
+  colouring artefact of which operand landed in the saved register.
+- statement-order swaps around every index def in the function: twenty probes,
+  one word gained (above), everything else neutral or worse.
+
+
+
+## The rotation is a p1 save ratio, and it has a free source dial (2026-09-10, lane/w8-whale58)
+
+894 of 3,614 relocation-masked words, size delta 0, frame 0x138, first mismatch
++0x50 -- unchanged.  **No source change is committed**: every configuration
+that moves the colour is a masked regression, and the base is still the only
+one at delta 0 with 3,614 instructions.  `gmake verify` prints
+507341c0a40ca3e9a7cee969b396ee53facfb548 on the committed tree.
+
+What this pass adds is the mechanism behind the residual's larger half, read
+directly out of the allocator rather than inferred, plus a source dial that
+reproduces the target's register rotation exactly and a partition of the
+positional 894 by region.
+
+### The residual is p1-owned, so the lever is the save ratio and not web numbering
+
+The instrumented uopt CDX profile (`~/Desktop/dev/ido-instrumented/cc`,
+`CDX_LOG=1`) emits **428 allocator decisions for this procedure, every one
+`phase=p1`** -- 136 `color`, 292 `split`, and not a single p2 record.  Its
+`.text` is byte-identical to the tree's own object, so the records describe the
+candidate we score.
+
+That settles a question two lanes have had to guess at.  L106 (web numbers
+follow first-definition order, and the caller-saved sweep colours in ascending
+web number) governs **p2**, and p2 does not run here at all.  What runs is
+p1: repeated max-save selection, `save = totalsave / nocs`, descending, each
+web taking the lowest-numbered colour its interference leaves available.  So
+declaration order, definition position and statement order are all the wrong
+axis for this function's colour, which is why 165 earlier forms were flat on
+it.  The right axis is the ratio.
+
+### The rotation is a two-web contest, and both colours cost the same
+
+The rotation the last three grinds named -- the index in one saved register and
+the hoisted 24-byte text buffer address in the other, transposed -- is exactly
+two webs:
+
+- **web 911** -- uopt's address temp for the 24-byte text buffer (its record
+  carries the buffer's own frame offset and size).  nocs 53, totalsave 849,
+  save 16.0189, coloured s7.
+- **web 55** -- `i`, the index; declared first, so a low web number.  nocs 61,
+  totalsave 776, save 12.7213, coloured s8.
+
+Web 911 is selected first because 16.0189 > 12.7213, and it is offered **both**
+s7 and s8 at **exactly equal cost, 145.199982**.  The record shows s7 evaluated
+first and s8 arriving with `best_before` already at that same number, so the
+tie keeps the incumbent.  Web 55 then finds s7 in its forbidden mask and takes
+s8.  Nothing about the two registers distinguishes them; the whole 187-slot
+rotation is a scan-order tie-break downstream of one ratio comparison.
+
+### Force receipt, and the source dial that reproduces it byte for byte
+
+`CDX_PROC=0 CDX_FORCE=p1:w911=c22` gives web 911 s8; web 55 then takes s7 by
+itself, no second force needed.  Measured against the base, under a
+shape-tolerant alignment with register names erased:
+
+- transposed saved-register operand slots: 187 to **0**
+- saved-register slots in agreement: 434 of 848 to **621 of 848**
+- byte-exact aligned rows, of 3,614: 2,877 to **3,042**
+- rows differing only in register names: 528 to 363
+- shape blocks: 183 to 182
+- size delta: 0 to -4
+- positional masked words: 894 to 3,103
+
+The same object is reachable from source at **zero instruction cost**.  Two
+discarded-expression probes on the index inside case 9's grid inner loop --
+the function's only doubly-nested loop -- raise web 55's `totalsave` past web
+911's ratio, and the resulting `.text` is **byte-identical to the forced
+object** (sha1 `deffe302b2c87dc862e2a6861dd3bebc56ae3a54` for both).  That is a
+T1 receipt for the whole chain: ratio, tie-break, and the source edit that
+moves it.
+
+The weight model, measured rather than assumed: one probe at loop depth 2 adds
+**100** to `totalsave` and nothing to `nocs`; the second adds 100 and 1.  A
+probe at the top of a case (depth 0) is not free here -- it restructured the
+web and cost 24 bytes.  Three probes give 1076/62 = 17.355 against 15.722, a
+comfortable margin, and the identical object; use three, because every other
+edit tried moves this ratio as a side effect.
+
+Other spellings that reach the same object: `if (i);` for `if (i != 0);`.
+Placement inside the loop body (before the first call, or after the colour
+block) is inert.  A probe on `opponent` or on `textY` adds to the wrong web and
+does nothing.  One probe inner plus one outer lands at 14.290 -- short of the
+threshold, and therefore exactly as flat as no probe at all.
+
+### Why it is not adopted: the swap removes a compensating error, not the error
+
+Under the swap the size delta reads -4, but the alignment shows this is not new
+damage.  The unbalanced-block profiles of the two objects are the same list
+except for one entry: the base carries **two** errors around the case 1/2
+boundary -- a target word at +0x760 the candidate never emits, and a spurious
+candidate word nineteen words later -- and they cancel to delta 0.  The swap
+deletes the spurious one and leaves the missing one.
+
+The missing word is case 2's top-of-case index initialisation, which the target
+emits ahead of that case's first guard.  Under the base colouring the candidate
+emits it late (hence the spurious word at the wrong position); under the swap
+it is eliminated outright, because the loop it guards is fully
+strength-reduced and every later definition dominates it.
+
+Five removals of the redundant later definitions were measured on top of the
+swap -- the definition before the decrement loop, the one after it, the one
+before `rowY`, and their combinations.  All regress (best: delta 0 at 1,102
+masked and 2,641 exact), **and each of them also drops web 55's save back below
+web 911's**, undoing the rotation.  The two levers are coupled through the same
+web's occurrence count, so any future attempt on the case-2 definition must
+re-tune the probe count in the same measurement.
+
+### Trap 12, remeasured at the new colour
+
+With the swap in place the natural case-9 bound is worth taking: `opponent <
+0xA` on top of the probes gives **3,094 byte-exact aligned rows**, the best
+number measured on this function, against 3,042 for the committed
+`(opponent - 1) < (0xA - 1)` and 2,877 for the base.  Positionally it reads
+3,102 against 894.  Saved-register agreement moves the other way (544/835
+against 621/848), so the two configurations are not ordered: record both.
+
+### The prologue's colour is NOT reachable, and that is a force verdict
+
+The earliest colour disagreement is at word 20/24, before any case: the
+three-occurrence web that copies the switch value into a saved register takes
+s3 here and s2 in the target.  Its save is 33.333, and the two webs that take
+s2 before it are at 77.500 and 73.333.
+
+`CDX_FORCE=p1:w936=c16` (and the same for the other 33.333 web, 945) is
+**declined**, with `forbidden=0x5e038000` -- s0, s1 and s2 are all interference,
+not preference.  So no ratio edit reaches it: the target's compilation has one
+fewer coloured web interfering with this one at that point.  That is a web
+*partition* question, and it is upstream of everything else, because p1 hands
+out the lowest available colour and this is the first callee-saved decision in
+the function.
+
+The second-earliest, at words 40 and 41, is the same shape: the target gives
+the pre-switch points-copy loop's two cursors callee-saved registers and we
+leave them uncoloured.  In our records they are `split`, not `color`.
+
+### Region partition of the positional 894
+
+286 regions at gap 0.  Words are function-relative; the case attribution comes
+from the candidate's own call relocations joined to the source's call sequence,
+so it is exact to the nearest call.
+
+- 120 words, 3152-3271, case 9 -- the grid loop's exit test; see the bound
+  note above.
+- 72 words, 2410-2481, case 8 -- index definition displaced; the body
+  strength-reduces a stride as well, so the cursor form costs 16 bytes.
+- 40 words, 1176-1215, case 12 -- index definition displaced, first loop.
+- 34 words, 78-111, case 1 -- index definition displaced.
+- 33 words, 501-533, case 2 -- draw loop.
+- 29 words, 855-883, case 3 -- index definition displaced.
+- 20 words, 472-491, the case 1/2 boundary -- case 2's top-of-case index
+  definition, the missing word above.
+- 13 words, 1639-1651, case 13.
+- 12 words, 1498-1509, case 13 -- successor of the six-word shape block at
+  +0x1768.
+- 10 words, 3273-3282, case 9.
+- 10 words, 3561-3570, case 10.
+- 9 words, 3491-3499, case 10.
+
+Per case, summed over all regions: **9: 174, 10: 135, 8: 100, 1: 95, 12: 93,
+2: 75, 13: 71, 3: 53, prologue: 38, 11: 33, 6: 22, pre-switch: 5.**
+
+Under the swap the same partition, measured on disagreeing saved-register
+operand slots rather than positional words, is: **case 9: 38, case 10: 31,
+case 2: 29, case 11: 26, prologue: 24, case 1: 23, case 12: 21, case 13: 16,
+case 8: 9, case 6: 8** -- 227 slots, down from 434.
+
+### Falsified this pass
+
+- **Unifying the two adjacent case-9 globals into one two-element array**:
+  1,376 masked at delta -28.  The target reads them through separate
+  addresses; the reconstruction's split spelling is right.
+- **Caching the text buffer address in the declared pointer cell** for the grid
+  loop, to split web 911: byte-identical to not doing it, exactly as the
+  earlier passes found for the other frame addresses.  uopt folds it back, so
+  splitting that web is not available as a source edit.
+- **Forcing the prologue colour**: declined, above.
+- Every case-2 index-definition removal, above.
+
+### The adopted point is a local optimum on every axis swept
+
+Three exhaustive sweeps were run on the committed 733, all at delta 0 or
+rejected for delta, and none of them beats it:
+
+- **Carrier, all eighteen loop sites x twenty-two carriers, greedy with
+  re-sweep.**  This is the sweep that found the two adoptions; run again from
+  733 it returns one cell, case 9's second loop carried by `highlighted`, at
+  732 masked but 3,028 exact rows and 623/848 slots -- worse on two of the
+  three metrics for one positional word, which is exactly what Trap 12 says to
+  refuse.  A first, unguarded run of the same sweep offered case 9's second
+  loop carried by `columnX` at 728; `columnX` is the x cursor *inside that
+  loop*, so the rename silently aliased the index onto it.  Guard every carrier
+  sweep by requiring the carrier's name to be absent from the loop's own text,
+  and hand-check the winner against its whole case; a score is not a semantics
+  check.
+- **Probe variable and count**, twelve variables x one to three extra probes
+  beside the three on the index: every cell is 733 or worse, and several are
+  catastrophic (`x` at three probes deletes 276 bytes).
+- **Probe on the evicted global-address web**, one to four depth-2 reads of
+  each of the grid loop's five globals, on both bounds.  Every one is inert or
+  worse.  The reason is instructive and worth keeping: a discarded expression
+  that reads a global the loop ALREADY reads is common-subexpression-eliminated
+  into that read, so it adds nothing to the address web's occurrence count.
+  The probe dial reaches an index web because the index has a *definition* to
+  attach to; it does not reach an address web.  Under the natural bound the two
+  contestants are the constant-10 web at save 8.909 (totalsave 196, nocs 22)
+  and `&D_o058_5E7C`'s address web at 7.034 (204, 29), and nothing measured
+  moves either.
+
+The grid loop's register census is otherwise already the target's: both sides
+hold four global addresses, the row constant, the two indices and the text
+buffer address across it, in nine saved registers.  The only difference under
+the committed bound is the extra `addiu <t>,<s>,-1` per iteration and the
+resulting one-word shift, which is the whole 119-word region.
+
+### What the next lane should do first
+
+1. The prologue partition, in this order, because p1 is sequential in save and
+   this is its first callee-saved decision: find the source form in which the
+   77.500 or the 73.333 web does not interfere with the switch-value copy.
+   Their records are in the CDX log; `CDX_DETAIL_WEB` prints the interference
+   neighbours.
+2. Then re-run the case-1/3/12 cursor forms **on top of the three-probe dial**.
+   Every one of them was measured under the old colouring, and the colouring
+   they were measured against is now known to be wrong by 187 slots.
+3. Only then the case-2 missing word, with the probe count re-tuned in the same
+   compile.
+
+### Reproducing any of this
+
+`~/Desktop/dev/ido-instrumented/cc` at the flags from `gmake -n`, plus
+`-DNON_MATCHING`, with `CDX_LOG=1 CDX_PROC=0 CDX_OUT=<file>`; the profile's
+`.text` is byte-identical to the tree's object, checked, so its records are
+about the candidate being scored.  `CDX_DETAIL_WEB=<n>` adds the per-colour
+cost list, which is what makes the 145.199982 tie visible.  Scoring is
+`tools/score_symbol.py` for the masked count and a shape-tolerant alignment on
+opcode class for the rest; the two disagree by design and both belong in any
+report.  Nothing here is committed but this section.
+
+
+
+## The coupling broke on the carrier axis, 894 -> 733 (2026-09-10, lane/w8-whale58b)
+
+894 to **733** of 3,614 relocation-masked words, size delta held at 0, frame
+0x138, first mismatch +0x50 unchanged.  Under a shape-tolerant alignment:
+byte-exact rows **2,874 -> 3,034** of 3,614, saved-register operand slots in
+agreement **434/848 -> 631/848**, transposed s7-with-s8 slots **187 -> 0**.
+All three moved the same way, so this is not a Trap 12 trade.  Measured with
+`tools/score_symbol.py` (the project comparator, which agrees with the lane
+harness on every cell) and with the instrumented uopt at
+`~/Desktop/dev/ido-instrumented/cc`, whose `.text` was re-checked
+byte-identical to `tools/ido/cc`'s on the base before anything was trusted.
+`gmake verify` prints 507341c0a40ca3e9a7cee969b396ee53facfb548 on the
+committed tree; `cleanroom`, `check-docs` and `check-overlay-syms` pass.
+
+The previous pass's force receipt reproduced exactly from scratch: web 911
+nocs 53 / totalsave 849 / save 16.018867, offered s7 and s8 at the identical
+cost 145.199982; web 55 nocs 61 / totalsave 776 / save 12.721312.  Two, three,
+four and five depth-2 probes on the index all produce the object
+`deffe302b2c87dc862e2a6861dd3bebc56ae3a54`, byte-identical to
+`CDX_FORCE=p1:w911=c22`, and six break it.  Everything below is measured on
+top of that.
+
+### Experiment 1: case 2's top-of-case index def crossed with the probe dial
+
+Rows are which of case 2's later index definitions are deleted (`d1` the def
+before the decrement loop, `d2` the one after it, `d3` the one before the draw
+loop); columns are the probe count.  `+0x760` is whether the candidate emits
+the target's top-of-case `move <saved>,zero` at that offset, checked against
+the assembled target object, not the annotation.  `winner` is the web p1
+selects first of the two that contest s7/s8, `runner` the other; both are read
+out of the `p1dec` records of the same compilation that produced the score.
+
+Columns: row, probes, masked, delta, exact rows, saved-register slots
+agreeing out of the alignment's total, transposed s7/s8 slots, whether
++0x760 is supplied, then winner and runner nocs / totalsave / save.
+
+    --      0     894    0   2874   434/848   187  no    53 / 849 / 16.0189     61 / 776 / 12.7213
+    --      2    3103   -4   3021   621/848     0  no    62 / 976 / 15.7419     54 / 849 / 15.7222
+    --      3    3103   -4   3021   621/848     0  no    62 / 1076 / 17.3548    54 / 849 / 15.7222
+    --      4    3103   -4   3021   621/848     0  no    63 / 1176 / 18.6667    55 / 849 / 15.4364
+    --      5    3103   -4   3021   621/848     0  no    63 / 1276 / 20.2540    55 / 849 / 15.4364
+    d1      0    3179   +8   2012   432/851   188  no    53 / 849 / 16.0189     62 / 777 / 12.5323
+    d1      2    3179   +8   2012   432/851   188  no    54 / 849 / 15.7222     63 / 977 / 15.5079
+    d1      3    3158   +8   2148   620/851     0  yes   64 / 1077 / 16.8281    54 / 849 / 15.7222
+    d1      4    3158   +8   2148   620/851     0  yes   64 / 1177 / 18.3906    55 / 849 / 15.4364
+    d1      5    3158   +8   2148   620/851     0  yes   65 / 1277 / 19.6462    55 / 849 / 15.4364
+    d2      0    3176   -8   2003   431/848   188  no    53 / 849 / 16.0189     64 / 807 / 12.6094
+    d2      2    3176   -8   2003   431/848   188  no    54 / 849 / 15.7222     65 / 1007 / 15.4923
+    d2      3    3154   -8   2139   619/848     0  yes   66 / 1107 / 16.7727    54 / 849 / 15.7222
+    d2      4    3154   -8   2139   619/848     0  yes   66 / 1207 / 18.2879    55 / 849 / 15.4364
+    d2      5    3154   -8   2139   619/848     0  yes   67 / 1307 / 19.5075    55 / 849 / 15.4364
+    d3      0    3130  +16   2011   428/847   189  no    53 / 849 / 16.0189     63 / 777 / 12.3333
+    d3      2    3130  +16   2011   428/847   189  no    54 / 849 / 15.7222     64 / 977 / 15.2656
+    d3      3    3108  +16   2148   617/847     0  yes   65 / 1077 / 16.5692    54 / 849 / 15.7222
+    d3      4    3108  +16   2148   617/847     0  yes   65 / 1177 / 18.1077    55 / 849 / 15.4364
+    d3      5    3108  +16   2148   617/847     0  yes   66 / 1277 / 19.3485    55 / 849 / 15.4364
+    d1d2    0    1102    0   2638   430/849   188  no    53 / 849 / 16.0189     64 / 808 / 12.6250
+    d1d2    2    1102    0   2638   430/849   188  no    54 / 849 / 15.7222     65 / 1008 / 15.5077
+    d1d2    3     956    0   2793   618/849     0  yes   66 / 1108 / 16.7879    54 / 849 / 15.7222
+    d1d2    4     956    0   2793   618/849     0  yes   66 / 1208 / 18.3030    55 / 849 / 15.4364
+    d1d2    5     956    0   2793   618/849     0  yes   67 / 1308 / 19.5224    55 / 849 / 15.4364
+    d1d3    0    3199  +24   2020   426/849   189  no    53 / 849 / 16.0189     63 / 778 / 12.3492
+    d1d3    3    3176  +24   2159   615/849     0  yes   65 / 1078 / 16.5846    54 / 849 / 15.7222
+    d2d3    0    3126   +4   2065   425/845   188  no    53 / 849 / 16.0189     64 / 807 / 12.6094
+    d2d3    3    3105   +4   2202   613/845     0  yes   66 / 1107 / 16.7727    54 / 849 / 15.7222
+    d1d2d3  0    3208  +12   1995   424/846   188  no    53 / 849 / 16.0189     64 / 808 / 12.6250
+    d1d2d3  3    3186  +12   2131   612/846     0  yes   66 / 1108 / 16.7879    54 / 849 / 15.7222
+(d1d3, d2d3 and d1d2d3 at 2, 4 and 5 probes were measured too and behave like
+their `3` row: 2 is short of the threshold, 4 and 5 give the same object as 3.)
+
+**The coupling is broken, and the arithmetic is exactly as the parent lane
+predicted.**  Every removal costs the index web one to three occurrences, which
+is worth 0.1 to 0.4 of `save`, and two probes then land inside that margin --
+at `d1`/2 the two webs read 15.5079 against 15.7222 and the rotation is back.
+**Three probes clear every removal**: `swap78` is 0 and saved-register
+agreement 612-620 in all seven, and the `d1`, `d2`, `d3` families all supply
+the +0x760 word.  So the probe dial does pay for the definition edit, exactly
+as costed.
+
+**And every cell that supplies the word still regresses, for a named reason.**
+The best is `d1d2` at 3 probes: delta 0, +0x760 supplied byte-exact, rotation
+held -- but 956 masked against 894 and 2,793 exact rows against 2,874.  The
+words it loses are **489-492**, the decrement loop's preheader.  The target
+emits `lui / addiu <base> / sll <n>,2 / addu <limit>`: a folded cursor base and
+a computed limit, with the loop fully strength-reduced (`addiu s0,s0,4`,
+`sltu at,s0,v1`, `bnel`) and no index register in it at all.  With `d1` the
+only reaching def of the index is the top-of-case one, and `amSndPlay` sits
+between them, so **L98** applies: the initial-value analysis is block-local,
+the zero is not folded, and the loop keeps `addiu <i>,<i>,1` / `slt` / `bne`
+and recomputes each subscript.  That is the third coupled lever, and it is
+L98, not anything new.
+
+Also measured on the same axis and negative: replacing the decrement loop with
+an explicit pointer cursor (`<` and `!=` limit forms, so nothing needs folding)
+costs 8 and 4 bytes respectively on its own and never reaches delta 0.
+
+### What actually pays: the loop's index CARRIER, not its definitions
+
+The target's shape says what the source did.  It emits **no `move` in the
+decrement loop's preheader at all**, and the loop is still fully
+strength-reduced -- which is what a loop whose index is dead after strength
+reduction looks like.  `i` is not dead there, because case 2's draw loop reads
+it.  So give that loop an index of its own.
+
+Sixteen carriers were measured, each dead in case 2, each at 0, 2, 3, 4 and 5
+probes.  Fifteen of them behave identically to one another (delta -4, masked
+3,108 at 2+ probes).  **`savedPosition` alone reaches delta 0**, and with the
+probes it is worth 894 -> **755** masked, 2,874 -> 3,021 exact, 434 -> 610/848.
+`savedPosition` is written and read only in cases 3, 12 and 13, so it is dead
+in case 2 and the rename carries no meaning.
+
+The same lever was then swept over eight further loop sites x eighteen
+carriers, greedily, re-sweeping after each adoption.  One more paid: **case 8's
+loop carried by `opponent`** (`opponent` appears nowhere in case 8), worth
+755 -> **733** masked, 3,021 -> 3,034 exact, 610 -> **631/848**.  The next best
+carrier for that site is `columnCount` at 761, so the identity matters and is
+not a tie.  A second round found nothing better than 746, so the greedy stops
+at two.
+
+Two consequences worth carrying:
+
+- **The probe count is not a constant of the function.**  With case 8 carried
+  by `opponent` the index web loses that loop's occurrences and **two probes no
+  longer flip the rotation** -- 881 masked, `swap78` 183.  Three, four and five
+  do, and six restructures the web.  The previous lane's "use three for margin"
+  was right for a reason that has now actually bitten.
+- At the adopted point the contest reads the other way round: **web 55 (`i`)
+  nocs 59 / totalsave 1024 / save 17.355932 -> s7**, and the text buffer's
+  address temp **nocs 54 / totalsave 849 / save 15.722222 -> s8** at the same
+  145.199982.  429 p1 decisions, still no p2.
+
+### Experiment 2: the 119-word case-9 region is closed on the bound axis
+
+The largest region is unchanged at 119 words (3153-3271).  Under the new
+colouring the natural `opponent < 0xA` reads 845 masked / 3,075 exact /
+539/831 against the committed `(opponent - 1) < (0xA - 1)` at 733 / 3,034 /
+631/848 -- Trap 12 again, and the committed form now wins on two of the three.
+
+The eviction that costs the natural form its `slti` was attacked at its
+source.  The constant-10 web and a global-address web compete for the last
+callee-saved slot; in the natural compilation the constant's web is
+**save 8.909 (totalsave 196, nocs 22)** and takes s5, and the address web that
+holds 7.034 (204/29) in the committed compilation is not coloured at all.
+Seven spellings of the erase loop's own `!= 0xA` (`(opponent - 1) != 9`,
+`< 0xA`, `<= 9`, `(opponent + 1) != 0xB`, `(opponent - 2) != 8`, `^`) crossed
+with three grid-loop spellings gave **exactly two objects**: every
+arithmetic-shifted form normalises straight back to the base, and only the
+`^` form differs, worse.  So the constant sharing is not driven by the erase
+loop's spelling, and this axis is closed.  Moving it needs the *address* web's
+ratio raised -- the same dial that worked above, but on a web with no obvious
+source handle.
+
+### Experiment 3: case 8
+
+Not stride-blocked any more, but not by the cursor form.  The 72-word region
+is 69 words now and its index is carried by `opponent`; that is where 22 of
+the 733 went.
+
+### Region partition of the positional 733
+
+183 regions.  119 (case 9, grid-loop exit test), 69 (case 8), 40 (case 12
+first loop), 34 (case 1), 34 (case 2 draw loop), 29 (case 3), 22 (the case 1/2
+boundary, +0x760), 12, 10, 10, 8, 8, 8, 7.
+
+### Falsified this pass
+
+- Dropping case 2's now-quiet index definitions (line 393 top-of-case, and the
+  one after the decrement loop) on top of the adopted form: 3,571 and 3,575
+  masked at delta +36 and +28.  They are load-bearing again once the carrier
+  changes; do not tidy them away.
+- The decrement loop as a pointer cursor, both limit spellings.
+- All seven erase-loop bound spellings, above.
+- Fifteen of sixteen carriers for case 2's decrement loop, and seventeen of
+  eighteen for case 8's loop.
+- A second greedy round over all eight loop sites: best 746 against 733.
+
+### The adopted point is a local optimum on every axis swept
+
+Three exhaustive sweeps were run on the committed 733, all at delta 0 or
+rejected for delta, and none of them beats it:
+
+- **Carrier, all eighteen loop sites x twenty-two carriers, greedy with
+  re-sweep.**  This is the sweep that found the two adoptions; run again from
+  733 it returns one cell, case 9's second loop carried by `highlighted`, at
+  732 masked but 3,028 exact rows and 623/848 slots -- worse on two of the
+  three metrics for one positional word, which is exactly what Trap 12 says to
+  refuse.  A first, unguarded run of the same sweep offered case 9's second
+  loop carried by `columnX` at 728; `columnX` is the x cursor *inside that
+  loop*, so the rename silently aliased the index onto it.  Guard every carrier
+  sweep by requiring the carrier's name to be absent from the loop's own text,
+  and hand-check the winner against its whole case; a score is not a semantics
+  check.
+- **Probe variable and count**, twelve variables x one to three extra probes
+  beside the three on the index: every cell is 733 or worse, and several are
+  catastrophic (`x` at three probes deletes 276 bytes).
+- **Probe on the evicted global-address web**, one to four depth-2 reads of
+  each of the grid loop's five globals, on both bounds.  Every one is inert or
+  worse.  The reason is instructive and worth keeping: a discarded expression
+  that reads a global the loop ALREADY reads is common-subexpression-eliminated
+  into that read, so it adds nothing to the address web's occurrence count.
+  The probe dial reaches an index web because the index has a *definition* to
+  attach to; it does not reach an address web.  Under the natural bound the two
+  contestants are the constant-10 web at save 8.909 (totalsave 196, nocs 22)
+  and `&D_o058_5E7C`'s address web at 7.034 (204, 29), and nothing measured
+  moves either.
+
+The grid loop's register census is otherwise already the target's: both sides
+hold four global addresses, the row constant, the two indices and the text
+buffer address across it, in nine saved registers.  The only difference under
+the committed bound is the extra `addiu <t>,<s>,-1` per iteration and the
+resulting one-word shift, which is the whole 119-word region.
+
+### What the next lane should do first
+
+1. **Sweep the carrier axis over the loop sites this pass did not enumerate.**
+   Eight sites were swept; the function has more loops than that, and the two
+   that paid were found by exactly this sweep.  The harness is a 0.5 s direct
+   `tools/ido/cc` compile per cell; a whole site x carrier grid is a minute.
+2. **The 119-word case-9 region**, via the address web's ratio rather than the
+   bound's spelling.  Identify the evicted global-address web with
+   `CDX_DETAIL_WEB`, then look for a depth-2 discarded expression that reads
+   that global and raises its totalsave past 8.909 x its nocs.  This is the
+   same shape of fix as the rotation, and it is the largest single item left.
+3. Then case 12's first loop (40 words) and case 1 (34): both are displaced
+   index definitions and both were last measured under the *old* colouring.
+4. The prologue is still force-declined (`forbidden=0x5e038000`, interference
+   rather than preference) and still needs a web partition change.  Leave it.
+
+### Reproducing any of this
+
+`gmake -n` for the flags, `tools/ido/cc` at exactly those plus
+`-DNON_MATCHING`, `tools/score_symbol.py` for the masked count, and the same
+compile under `~/Desktop/dev/ido-instrumented/cc` with
+`CDX_LOG=1 CDX_PROC=0 CDX_OUT=<file>` for the `p1dec` records; check the two
+compilers' `.text` agree on the base first.  The shape-tolerant alignment is
+`difflib` over the words with `nm_ranking.instr_reg_mask` applied, and the
+saved-register agreement counts operand slots where either side names s0-s8.
+Nothing here needed the workbench, a patched build, or a full link.
+
+
+
+## Both remaining structural items are force-declined; the carrier axis is exhausted (2026-09-11, lane/p9-whale)
+
+**No source change.**  733 of 3,614 relocation-masked words, size delta 0,
+frame 0x138, first mismatch +0x50 -- all unchanged.  `gmake verify` prints
+507341c0a40ca3e9a7cee969b396ee53facfb548 on the committed tree.
+
+The three metrics for the committed form, re-measured with the tree's own
+instruments (`tools/score_symbol.py`, `tools/align_symbol.py`):
+
+- positional masked **733** (raw 883, artifact 150), displacement tax **226**
+- byte-exact aligned rows **3,120** of 3,614 (86.0%), register-naming **379**
+  (10.4%), really different **128** (3.5%)
+- saved-register operand slots in agreement **627 of 858**, transposed s7/s8
+  **0**, 183 positional regions
+
+What this pass adds is: the largest region named as a *pair* of defects rather
+than one; a force verdict on the second of them; and four axes closed by
+exhaustive sweep rather than by argument.
+
+### The 119-word case-9 region is two independent defects that cancel
+
+Read off the two instruction streams (assembled target, `objdump`, never
+splat's annotation):
+
+- **candidate-only word at +0x3148** (word 3154): `addiu t5,s1,-1`, the cost of
+  the committed `(opponent - 1) < (0xA - 1)` spelling.
+- **target-only word at +0x3348** (word 3282): `move s7,zero` -- case 10's
+  top-of-case `i = 0`, which the target emits in the first `jal`'s delay slot
+  and the candidate emits 85 words later, at +0x34A4.
+
+Between them the candidate runs one word ahead, and that stretch *is* the
+119-word region.  The two cancel in size, which is why the delta reads 0.
+
+The consequence matters more than the diagnosis: **neither defect can be fixed
+alone.**  Remove the `addiu` (the natural bound) and the region does not close,
+it moves -- 40 words at 3243-3283, plus 220 newly displaced words at 2879-3100
+where the eviction lands.  Supply case 10's definition alone and the +1 run
+extends from 3154 all the way to 3369 instead of stopping at 3282, which is
+worse.  The region needs the bound *and* case 10's definition together, and
+case 10's definition is itself blocked (below).
+
+The grid loop's register identities, for the record: the target holds
+`opponent` in s7 and `i` in s1; the candidate holds them the other way round.
+Under the natural bound the candidate's preheader emits `li s5,10` exactly
+where the target completes a global address (`addiu s5,s5,0`), and the body
+then pays `lui t3,0x0 / lw t3,0(t3)` where the target has `lw t3,0(s6)`; the
+exit test costs the candidate one word less (`bne s1,s5` against
+`slti at,s7,10` + `bnez at`).  That is the tie the previous lane inferred,
+now visible as instructions.
+
+Re-derived from a fresh instrumented compilation, so the numbers are this
+tree's and not a carried-forward receipt: under the natural bound the
+constant-10 web is **web 960, save 8.909091 (totalsave 196, nocs 22)** and takes
+s5; **web 982 at 7.482759 (217/29)** takes s6; the web that holds
+**7.034483 (204/29)** in the committed compilation is not coloured at all.
+Under `(opponent - 1)` there is no constant web and both address webs are
+coloured (983 -> s5, 985 -> s6).
+
+### A discarded expression cannot reach an ADDRESS web, and CSE is not why
+
+The parent handoff explained the inert address probes as common-subexpression
+elimination into the read the loop already performs.  That explanation is too
+narrow, and the sharper statement matters because it closes the lever for good:
+
+Twelve new cells, all on top of the natural bound: `if (D_o058_5E7C);` and
+`if (D_o058_5E78);`, one to four copies, placed **after the loop body's last
+call** (`func_8004B0F8`), where no CSE with the pre-call read is possible, and
+also mid-body.  **Every one is byte-identical** to the natural bound alone
+(845 masked / 3,125 exact / 544 of 851).
+
+So it is not CSE.  A discarded expression contributes a reference to a
+*symbol's* web; a global's `%hi` address temp is a different web, created
+downstream of the statement that the discard deletes, and nothing written in C
+attaches to it.  The same holds for a frame-address temp (next section).  **The
+probe dial exists on variable webs only.**
+
+### Case 10's "one web too few" is web 978, and it is force-declined
+
+The earliest passes named an asymmetry they could not price: the target holds
+one more saved-register web than the candidate, `&character[0]` in s6 across
+case 10's inner loop.  It is now named, numbered and closed.
+
+- The target emits `addiu s6,sp,216` in case 10's outer-loop preheader (word
+  3373) and spends `move a3,s6` at +0x3704; the candidate spends
+  `addiu a3,sp,216` at the single use.  **Same instruction count on both
+  sides** -- the hoist buys nothing, so it is purely an allocator artefact,
+  and it is worth chasing only because of what it does to the colouring of the
+  last 500 words.
+- The web exists in our compilation.  `CDX_DETAIL_WEB=all` gives
+  **web 978**, `type=1`, frame offset `0xffffffa0` (sp+216) and size 2 -- the
+  `character[2]` buffer -- at **save 10.000000 (totalsave 100, nocs 10)**,
+  `decision=split`, `bestcolor=-1`, cost infinite on every colour.
+- It **ties at 10.000000** with webs 976 and 977, the `&D_o058_5CB0[0]` and
+  `&D_o058_5CB0[3]` address constants that uopt's test replacement produces
+  from the inner loop's `opponent == 0` and `opponent == 3`.  Those take s5 and
+  s6; 978 is third in scan order and there is nothing left.
+- Its interference neighbours occupy **all nine** callee-saved registers: s0
+  web 873 (save 152.5), s1 web 22 (138.6), s2 web 866 (77.5), s3 web 7 (19.75),
+  s4 web 131 (15.48), s5 web 976, s6 web 977, s7 web 55 (`i`, 17.36), s8 web
+  922 (`&text`, 15.72).
+- `CDX_FORCE=p1:w978=c14` through `c22` is **declined at all nine**
+  (`forbidden=0x5e03fe0000000000`), and each object comes back byte-identical
+  to the base.  Per L101 that is the third kind of decline for s4-s8 and genuine
+  interference for s0-s3; either way no `save` edit reaches it.
+- Five spellings of the address were measured.  `character` for
+  `&character[0]`, `*&character[0]` with `*(&character[0] + 1)`, and
+  `character[opponent - opponent]` are all **byte-identical**; hoisting the
+  address into a declared scalar costs 4 bytes and 174 masked words (254 if the
+  two stores are routed through it too).  **Web 978's weight is not settable
+  from source**: the temp gets exactly one depth-2 occurrence however its three
+  references are spelled.
+
+So case 10 joins the prologue: it needs a web *partition* change, not a ratio
+edit.  It is the larger of the two -- words 3400-3599 hold **91 register-naming
+rows and one structural row**, and the whole 3100-3613 stretch holds 178 of the
+379 naming rows and 47 of the 128 structural ones, while everything before word
+2400 averages eight naming rows per hundred.
+
+### The carrier axis is exhausted: 1,604 cells, no adoption
+
+The parent lane swept eight loop sites and asked the next lane to enumerate the
+rest.  All **22** index sites in the function were swept against all **22**
+alternative declared scalars, guarded by requiring the carrier's name to be
+absent from the loop's own text: 401 cells.  Then the whole grid was re-run at
+**probe counts 2, 4 and 5** (1,203 more), because a carrier change that strips
+depth-2 occurrences from web 55 can drop its save back below web 922 and
+un-rotate the pair -- two sites do exactly that at three probes (case 9's erase
+outer index, 21 of 21 carriers; case 9's grid outer index, 14 of 17), and a
+sweep at a fixed probe count would have scored them as catastrophes without
+noticing why.
+
+**Not one of the 1,604 cells beats the base on two of the three metrics without
+losing on the third.**
+
+- Best masked: **732**, case 9's second loop carried by `opponent`,
+  `highlighted` or `letter1` -- but 3,116 exact and 619 of 858 slots.  That is
+  the same Trap-12 offer the parent lane refused, and it is refused again.
+- Best saved-register agreement: **636 of 858**, case 10's inner loop carried by
+  `columnCount` -- but 737 masked and 3,119 exact.
+- Probe counts 3, 4 and 5 give the **identical object in every cell**; 2 never
+  wins.  The parent lane's "use three for margin" survives the whole grid.
+- The pre-switch points-copy loop's carrier is **inert across all 22
+  alternatives** (byte-identical), extending the earlier "twelve carriers, ten
+  byte-identical" to the complete set.
+- Twelve pairwise combinations of the five cells that beat the base on any one
+  metric: every one worse on all three.
+
+### A second depth-2 probe SITE is not a dial either
+
+288 cells: `if (V);`, one to three copies, at the top of the inner loop body of
+case 12's, case 13's, case 9's erase and case 10's nests -- all four at loop
+depth 2, the depth the grid loop's probes exploit -- for each of the 23
+declared scalars and `arg0`.  Twenty-one are byte-identical; every other cell is
+worse; none reaches delta 0 with a gain.  So the grid loop's three probes are
+not merely optimal in count and variable: **it is the only depth-2 probe site in
+the function that pays**.
+
+### Case 2's definitions, re-measured at 733
+
+The parent's Experiment-1 table was taken at 894, with `i` still carrying the
+decrement loop.  Re-measured on the adopted form (all seven drop-sets x probe
+counts 3/4/5, 24 cells):
+
+- Dropping `i = 0;` **after** the decrement loop is now **byte-identical**.
+  That statement became inert when the carrier changed; the parent's "+28" for
+  it is stale.  It is left in place all the same -- it was load-bearing before
+  the carrier change and would be again after another.
+- Dropping the **top-of-case** definition costs +8 bytes / 3,183 masked.
+- Dropping the definition **before the draw loop** does supply the target's
+  +0x760 word, and costs +16 bytes / 3,122 masked -- the L98 coupling the parent
+  priced, unchanged.
+- Every combination is worse.
+
+And the compensating error at the case 1/2 boundary is now identified: the
+candidate's spurious word nineteen later is **`sw zero,232(sp)`**, the
+memory-resident `savedPosition = 0`.  That is *why* `savedPosition` was the only
+delta-0 carrier for that loop -- it pays back exactly the word the missing
+`move s7,zero` would have cost.  Any future attempt on +0x760 has to replace
+both at once.
+
+### What the next lane should do first
+
+1. **Case 10's web partition.**  Web 978 needs either a save above 10.000000 --
+   unreachable from source, above -- or one of its nine neighbours off a
+   callee-saved register across case 10's inner loop.  The cheapest-looking
+   neighbours are webs 976 and 977, the two `&D_o058_5CB0[k]` test constants at
+   save 10.000 each: a spelling of the inner loop's `opponent == 0` and
+   `opponent == 3` tests that uopt does *not* rewrite into cursor comparisons
+   would free one, and the target has both, so the target's source did not do
+   that -- but it is the only handle in the list that is source-visible at all.
+   This is worth 91 naming rows.
+2. **Then the 119-word case-9 region, as a pair.**  It needs the natural bound
+   AND case 10's top-of-case definition in the same compilation; either alone
+   is measurably worse.  Item 1 is a prerequisite for the second half.
+3. The prologue is still force-declined (`forbidden=0x5e038000`) and still needs
+   a web partition.  Both remaining structural items are now of that one kind.
+4. Do **not** re-run the carrier axis, the probe-count axis, the probe-site
+   axis, or the case-9 bound axis.  All four are exhausted above.
+
+### Reproducing any of this
+
+`gmake -n NON_MATCHING=1` for the flags, `tools/ido/cc` at exactly those plus
+`-DNON_MATCHING`, and the same compile under `~/Desktop/dev/ido-instrumented/cc`
+with `CDX_LOG=1 CDX_PROC=0 CDX_OUT=<file>`; `CDX_DETAIL_WEB=all` emits one
+`webdetail` record per decision, and for a `type=1` web `raw10`/`raw14` are the
+frame offset and the size, which is how `character[2]` was identified.  Scoring
+is `tools/score_symbol.py` and `tools/align_symbol.py`; the saved-register
+agreement counts operand slots where either side names s0-s8, over the same
+shape alignment `align_symbol.py` uses.  The instrumented compiler's `.text` was
+re-checked byte-identical to the tree's object before any reading was trusted.
+Nothing here needed the workbench or a full link.

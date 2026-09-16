@@ -334,10 +334,6 @@ CONTENT_EXEMPTIONS: "dict[tuple[str, str], str]" = {
         "oversize",
     ): "prose ledger of the resident segment (per-function census, evidence, plateaus); grows with every matched TU and carries no extracted data; the word-table rule above still applies to its content",
     (
-        "docs/matching-triage-handoffs/func_overlay_058_F000138C_18B0574.md",
-        "oversize",
-    ): "per-pass prose log of the tree's largest unmatched function (thirty-plus lanes, measurements and closures); it stood 39 bytes under the limit on 2026-09-14 so no further pass could be recorded; carries no extracted data, and the word-table rule still applies to its content",
-    (
         "overlay_undefined_syms.us.txt",
         "decoder-audit:hex-run",
     ): "generated overlay relocation surface: thousands of reviewed symbol addresses and addends required by the linker, never an instruction-word dump",

@@ -6,17 +6,24 @@ byte-identically; every commit must keep it that way.
 ## Release posture
 
 There is one repository. `origin` is
-`git@github.com:akratch/Mickeys-Speedway-USA.git`, it is **public**, and it is
-canonical. Work lands through lanes on `campaign/unchain`, is merged into
-`master`, and both are pushed by `tools/land.sh` after each integration batch.
+`git@github.com:akratch/Mickeys-Speedway-USA-Decomp.git`, it is **public**, and
+it is canonical. It was renamed from `Mickeys-Speedway-USA` on 2026-09-15;
+GitHub still redirects the old name, so a stale remote keeps working and hides
+the rename until the redirect stops. Work lands through lanes on
+`campaign/unchain`, is merged into `master`, and both are pushed by
+`tools/land.sh` after each integration batch.
 Run it rather than pushing by hand: it regenerates the overlay alias list,
 re-verifies the ROM *from the merge result* (a merge can combine two lanes'
 generated artifacts in ways neither produced alone, which `verify` on
 `campaign/unchain` does not cover), and pushes both branches. Never force-push
 `origin`.
 
-The `upstream` remote is Rare's public Jet Force Gemini repository, not ours.
-Never push there.
+The `upstream` remote is `https://github.com/Ryan-Myers/Mickeys-Speedway-USA.git`
+-- the Mickey's Speedway USA decomp this fork came from, not ours. Never push
+there. (This paragraph named Rare's Jet Force Gemini repository until
+2026-09-16; that was wrong. JFG is a *permitted source* under
+`docs/CLEANROOM.md`, read from `~/Desktop/dev/decomp-refs/`, and is not a
+remote of this repository at all.)
 
 Because the repository is public, everything committed is published the moment
 it is pushed. The content rules in the next section are therefore the whole of

@@ -2,11 +2,11 @@
 ### `packInit` plateau handoff
 
 - source: `src/main/saves.c`
-- score: 29/115 words
+- score: 115/115 words
 - frame: 0x60
 - relocations: 20
-- first mismatch: +0xB0
-- summary: Procedure-29 census confirms 14 draws and the coherent ten-register rotation; the shard’s schedule controls leave no source handle.
+- first mismatch: none
+- summary: ROM-exact and promoted: 115 words, frame 0x60, delta 0, unforced; the pak pattern is masked again before the bit test, which draws the one ring temp the target spends and as1 folds into the `lbu`.
 #### 2026-09-12, lane p23-lastmile5: exhaustive colour evidence
 
 The configured baseline is 115 words, 34 masked differences, delta zero,
@@ -134,5 +134,32 @@ build/g1/packInit includes every source/object pair, raw trace, Ucode map,
 census comparison and aligned per-window residual. Commands include
 draw_census.py, residual_map.py --object/--against, allocator_trace_receipt.py,
 tools/gates.sh and finalize_plateau.py. ROM gates validate the guarded tree.
+
+#### 2026-09-16, lane nx-b: matched and promoted, 29 -> 0 in one batch
+
+Baseline reproduced at 29 masked, delta 0, aligned 86 exact / 29 naming /
+0 immediate / 0 structural, first +0xB0, all 29 rows one ten-register ring
+rotation from the pak-pattern load onward, ours one draw behind. Lane g1's
+reading was right: the target spends one more ring draw before that load
+and emits no instruction for it. The procedure-29 census on the incoming
+source has 14 draws and none before line 1035.
+
+The generator is L149's: `pakPattern` is a memory `u8`, so masking it again
+before the bit test, `(pakPattern & 0xFF) & controllerBit`, makes ugen
+draw a ring temp for an `andi` that as1 folds into the `lbu` with the draw
+still spent. That one cell is 0 masked at delta 0, 115 of 115 words, frame
+0x60. The five controls in the same batch: a `u8` or `u32` cast of the
+pattern is a no-op and inert (29); masking the bit instead adds a word
+(70, +4); assigning the unread `osPfsIsPlug` result to `ret` is inert (29);
+DKR's nested `ret = osMotorInit` form with its empty `if (controllerIndex)`
+is 32. The folded preheader line, the bit recurrence before the index
+increment and the indexed motor-success address from lane g1 are all still
+load-bearing and were not varied.
+
+Verified with `tools/score_symbol.py` at 0/0 delta 0 before promotion and
+with `gmake verify` printing the expected SHA1 from the C after it. The
+NON_MATCHING guard, GLOBAL_ASM fallback and PLATEAU-HANDOFF block are
+removed. Evidence is outside the tree under the lane's private evidence
+directory; nothing ROM-derived is tracked.
 
 <!-- plateau-handoff:packInit:end -->

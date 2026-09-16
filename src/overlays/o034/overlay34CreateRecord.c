@@ -79,7 +79,8 @@ extern void func_80029FE4(Overlay34Input *input, f32 direction[3]);
 /* The indexed scan lets IDO generate the advancing cursor and removes the
  * former loop-copy naming residual. Keep the current-record alias and the
  * dimension declaration order: the configured candidate retains the target
- * frame. Six words remain; see the symbol's plateau shard. */
+ * frame. Two words remain, the byte12/short16 store pair; see the symbol's
+ * plateau shard for the block-budget reading that bounds it. */
 #ifdef NON_MATCHING
 Overlay34Record *overlay34CreateRecord(Overlay34Input *input) {
     Overlay34Record *record;
@@ -122,6 +123,19 @@ Overlay34Record *overlay34CreateRecord(Overlay34Input *input) {
                 candidate->byte11 = 1;
                 candidate->short14 = width;
                 candidate->byte12 = 2;
+                /* Two self-defining reads of height (lane nx-b, 2026-09-16).
+                 * uopt closes a straight-line block after a fixed budget of
+                 * local-variable loads (measured: twenty from the resource
+                 * test, one per store plus one per stored variable), which
+                 * falls after byte12 here; height's last store is past it, so
+                 * its web is two blocks (save 4/2) and the resource copy
+                 * (save 3, one block) is coloured v1 ahead of it where the
+                 * ROM has the copy in a0 and height in v1. Each self-defining
+                 * read is a def and a use in that second block, raising
+                 * height to 8/2 at zero width; discarded `height | 0` reads
+                 * are dropped by uopt and count nothing. 6 -> 2 masked. */
+                height = height | 0;
+                height = height | 0;
                 candidate->short16 = height;
                 candidate->short18 = 0;
                 candidate->short1A = 0;
@@ -159,10 +173,10 @@ Overlay34Record *overlay34CreateRecord(Overlay34Input *input) {
 
 /* PLATEAU-HANDOFF:overlay34CreateRecord:start
  * symbol: overlay34CreateRecord
- * score: 6/125 words
+ * score: 2/125 words
  * frame: 0x30
  * relocations: 12
- * first-mismatch: +0x88
- * summary: Fresh proc-0 census: 28 draws/213 emissions. Existing store-order probes remain exhausted; no aligned improvement or new schedule lever.
+ * first-mismatch: +0xE8
+ * summary: uopt closes the store block after twenty local loads, one per store and one per stored variable, which leaves height's last store in a second block; two self-defining reads of height there outrank the resource copy (6 to 2), and the byte12/short16 pair is that same boundary read the other way.
  * PLATEAU-HANDOFF:overlay34CreateRecord:end
  */

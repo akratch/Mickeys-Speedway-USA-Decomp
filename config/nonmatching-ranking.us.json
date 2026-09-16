@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 291,
-  "resolved": 291,
+  "queue_size": 290,
+  "resolved": 290,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 291,
-  "relocation_masked_coverage": 291,
+  "source_context_coverage": 290,
+  "relocation_masked_coverage": 290,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -97,7 +97,7 @@
       "relocation_masked_first_mismatch_offset": 24,
       "size_delta": 0,
       "category": "register-only",
-      "source_context_sha256": "qo6X.8E8l.fpHk.pjdz.KPgM.QHId.Lj5e.FqPH.Emt_.c0QJ.ZZs"
+      "source_context_sha256": "IKGn.NGkv.n7pW.QSz_.CxiF.83F4.c8RG.ZVQj.Nw7n.X9od.H2o"
     },
     {
       "name": "func_overlay_071_F0000870_18CA390",
@@ -233,21 +233,6 @@
       "size_delta": 0,
       "category": "register-only",
       "source_context_sha256": "32rJ.E5QU.P_3c.v-L-.MLJc.A86X.v4E2.sNXD.2Nex.os52.Ius"
-    },
-    {
-      "name": "packInit",
-      "file": "src/main/saves.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 460,
-      "objdiff_match_pct": null,
-      "differing_words": 29,
-      "first_mismatch_offset": 176,
-      "relocation_masked_differing_words": 29,
-      "relocation_masked_first_mismatch_offset": 176,
-      "size_delta": 0,
-      "category": "register-only",
-      "source_context_sha256": "lm9j.d0Eq.UqsT.bq83.c-By.c276.cEqH.5uM4.1vil.U8A5.xx0"
     },
     {
       "name": "overlay1ConsumeNearbyPending",
@@ -2257,7 +2242,7 @@
       "relocation_masked_first_mismatch_offset": 8,
       "size_delta": -12,
       "category": "size-mismatch",
-      "source_context_sha256": "kXKt.P3Ji.0GOE.umHk.MMGA.9YDL.b6cp.3cC0.ItPI.3K7A.Ji8"
+      "source_context_sha256": "i9IQ.LTNT.tPw5.pPgl.LMyt.4mgw.9CiF.q0xv.FrLy.Eajf.gIE"
     },
     {
       "name": "func_8004EC60",

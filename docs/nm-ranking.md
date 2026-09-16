@@ -318,11 +318,11 @@ units remain distinct.
 | 22 | `src/overlays/o001/overlay_001.c` | `overlay1ActivateObject` | `o001` | `other` | 352 | 14 | 3 | 100 | 108 | 0 | — |
 | 23 | `src/overlays/o057/overlay57UpdateModeState.c` | `overlay57UpdateModeState` | `o057` | `other` | 1,416 | 5 | 5 | 264 | 264 | 0 | — |
 | 24 | `src/overlays/o034/overlay34CreateRecord.c` | `overlay34CreateRecord` | `o034` | `other` | 500 | 8 | 6 | 12 | 136 | 0 | — |
-| 25 | `src/overlays/o009/overlay_009.c` | `func_overlay_009_F0000540_1866BB8` | `o009` | `other` | 516 | 9 | 8 | 76 | 76 | 0 | — |
-| 26 | `src/main/audiomgr.c` | `func_80002134` | `main` | `other` | 84 | 9 | 9 | 24 | 24 | 0 | — |
-| 27 | `src/overlays/o015/overlay_015.c` | `overlay15DrawScreenStars` | `o015` | `other` | 420 | 9 | 9 | 56 | 56 | 0 | — |
-| 28 | `src/overlays/o043/overlay43ComputeMotion.c` | `func_overlay_043_F00010A8_188B078` | `o043` | `other` | 220 | 9 | 9 | 116 | 116 | 0 | — |
-| 29 | `src/overlays/o058/func_overlay_058_F000138C_18B0574.c` | `func_overlay_058_F000138C_18B0574` | `o058` | `other` | 14,456 | 186 | 9 | 84 | 4,836 | 0 | — |
+| 25 | `src/overlays/o058/func_overlay_058_F000138C_18B0574.c` | `func_overlay_058_F000138C_18B0574` | `o058` | `other` | 14,456 | 184 | 6 | 84 | 4,884 | 0 | — |
+| 26 | `src/overlays/o009/overlay_009.c` | `func_overlay_009_F0000540_1866BB8` | `o009` | `other` | 516 | 9 | 8 | 76 | 76 | 0 | — |
+| 27 | `src/main/audiomgr.c` | `func_80002134` | `main` | `other` | 84 | 9 | 9 | 24 | 24 | 0 | — |
+| 28 | `src/overlays/o015/overlay_015.c` | `overlay15DrawScreenStars` | `o015` | `other` | 420 | 9 | 9 | 56 | 56 | 0 | — |
+| 29 | `src/overlays/o043/overlay43ComputeMotion.c` | `func_overlay_043_F00010A8_188B078` | `o043` | `other` | 220 | 9 | 9 | 116 | 116 | 0 | — |
 | 30 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
 | 31 | `src/main/models_5B300.c` | `func_8005A7A0` | `main` | `other` | 424 | 10 | 10 | 0 | 0 | 0 | — |
 | 32 | `src/overlays/o068/overlay68CheckKind.c` | `overlay68CheckKind` | `o068` | `other` | 320 | 10 | 10 | 80 | 80 | 0 | — |

@@ -2,11 +2,58 @@
 ### `func_overlay_086_F0000474_18D22AC` plateau handoff
 
 - source: `src/overlays/o086/func_overlay_086_F0000474_18D22AC.c`
-- score: 7 differing words
+- score: 662/662 words
 - frame: 0xA8
 - relocations: 38
-- first mismatch: +0x330
-- summary: Fresh 169-draw census confirms the inherited unchanged-draw link-expression controls; colour, carrier and source-order axes remain closed.
+- first mismatch: none
+- summary: ROM-exact and promoted: 662 words, frame 0xA8 and all 38 relocation identities; the call before each of the two generated pointer loads the ROM holds in v0 is declared void, because a call's unused result web denies v0 to every web in the call's block.
+
+Matched by [lm-a](../lastmile-region-boundary.md).
+
+#### 2026-09-16, lane lm-a: matched on the void result of one call; promoted
+
+7 to 0 at delta zero, unforced, in four measured cycles; aligned 655/7/0/0
+to 662/0/0/0; frame and relocations unchanged; `gmake verify` prints the
+expected SHA1 from the C and `gmake promotion-proof` passes
+(`identity=static`, 38/38). Full account in
+[lastmile-region-boundary.md](../lastmile-region-boundary.md).
+
+- The records, not a lattice, named the blocker. The generated `+0x3E0`
+  load (web 213 once inlined) has `v0` set in its `forbidden` mask and
+  absent from its cost list although no `v0`-coloured web shares a block
+  with it; the only `v0` value in its block is the unused result of the
+  `ext_o0_5a914` call before it. L101's call-result denial is therefore
+  block-granular: a call's result web occupies the call's whole block.
+- An L97 region boundary (`if (1) { }`, or `do { } while (0)`) placed
+  between the call and the load starts a new block, the load takes `v0`
+  as the ROM does, and the `+0x600` window closes: 7 to 3.
+- The case-0 `+0x48` access is the same shape twice over. Inlined without
+  a boundary it merges with line 434's identical expression into one
+  call-spanning IR name (L131), that web takes `v1` and evicts the
+  state-byte family from the head (42, first `+0x70`); int-typed loads
+  avoid the merge but pay an `addiu` (+4). With a boundary after the
+  block's last call the plain pointer-typed inline takes `v0` and the
+  head is untouched: 3 to 0. The u32- and s32-typed inlines match too;
+  the pointer-typed one is adopted as the spelling line 434 already uses.
+- The control names the web. With both boundaries removed, declaring
+  `ext_o0_5a914` -- the last call before each freed load, whose result no
+  site uses -- as returning `void` compiles to an object byte-identical
+  to the matched one; the same with the four calls before the loads
+  voided; voiding every unused-result call in the TU moves the head (13,
+  first `+0xA8`); the boundaries alone removed is 44. So the interferer
+  is the call's own unused result web, and the adopted source is the
+  `void` declaration with no boundary idiom at all.
+- Promotion needed the two facts the score does not show: the compiler's
+  32-byte pool (two float constants, the five-entry state-switch table)
+  duplicates the shipped pool at data_rodata `+0x80` (rodata-relative
+  `+0x0`, which the shipped `%hi/%lo` pairs encode), so the six references
+  are rebound to `gOverlay86StatePoolReloc` and the pool externalized by
+  digest with an externalized ownership row -- without it every module
+  after 86 shifted by 32 bytes; and the five same-module `jal`s
+  (`overlay86ScaledVectorPosition` x2, `overlay86SelectPosition`,
+  `overlay86BuildTransform` x2) are `SYMBOL` records with a zero addend,
+  so the C names their `*Reloc` placeholders. The three 2026-08-28
+  ownership-trial spec files were consumed by no rule and are replaced.
 
 #### 2026-09-10, lane w8-bigclose: p1 owns all of it, and the probe route is closed
 

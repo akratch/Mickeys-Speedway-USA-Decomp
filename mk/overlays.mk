@@ -254,6 +254,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 		--redefine-sym func_overlay_001_F00067C0_1852BA0=overlay1UpdateRangeFlags \
 		--redefine-sym func_overlay_001_F0006A14_1852DF4=overlay1ConsumeNearbyPending \
 		--redefine-sym func_overlay_001_F0006D4C_185312C=overlay1UpdateAimedTransient \
+		--redefine-sym func_8002A910=func_8002A910_o001Reloc \
+		--redefine-sym func_8002A8BC=func_8002A8BC_o001Reloc \
+		--redefine-sym func_8002A8C0=func_8002A8C0_o001Reloc \
 		--redefine-sym func_overlay_001_F0007130_1853510=overlay1UpdateTransient \
 		--redefine-sym func_overlay_001_F00072A4_1853684=overlay1AllocateRecord \
 		--redefine-sym func_overlay_001_F0007344_1853724=overlay1CloneRecord \
@@ -938,10 +941,25 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84SelectCurrent.c.o: POSTPROCESS = 
 # owner of its six LOCAL HILO roles. All 32 static calls are folded to the raw
 # overlay carrier only after their runtime identities have been independently
 # censused.
+# The compiler's private pool for this unit -- two float constants and the
+# five-entry state-switch table -- duplicates the retained overlay data segment
+# at data_rodata +0x80 (rodata-relative +0x0, which the shipped %hi/%lo pairs
+# encode; the loader's six LOCAL HILO roles supply the base).  Rebind the six
+# references to a pool symbol and discard the digest-checked duplicate; no
+# instruction or compiler addend is edited (overlay 58's metadata-only form).
 O86_0474_OBJ := \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o086/func_overlay_086_F0000474_18D22AC.c.o
+$(O86_0474_OBJ): \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/func_overlay_086_F0000474_18D22AC.rebind.spec
 $(O86_0474_OBJ): POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_086_F0000474_18D22AC=func_overlay_086_F0000474_18D22AC $@ && \
+	$(OBJCOPY) --add-symbol gOverlay86StatePoolReloc=0x0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_086_F0000474_18D22AC.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:08f3e1a4c518600a11dd66005593764a3a35e9d74386fd2bb4c863c379dbee52 && \
+	$(OBJCOPY) --remove-section .rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA58
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86Init.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30

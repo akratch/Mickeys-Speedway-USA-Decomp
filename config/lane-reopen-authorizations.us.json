@@ -76,7 +76,7 @@
       "source_commit": "25a15368d81a57531735f338d69d8bad165c9def"
     },
     "func_80006534": {
-      "ledger_commit": "f7fe64fb8567b9f911b712d15ec70f5d3fa2ca7c",
+      "ledger_commit": "99d67c7f96d2dd07e391ad61fe6e6fdb01039327",
       "reason": "Closed before L142/L144/L131/L139 existed. L142: a call-spanning web is denied exactly the argument registers those calls load, so arity is the lever not the ratio. L144: address-taking forces the reload without volatile edges.",
       "source_commit": "f7fe64fb8567b9f911b712d15ec70f5d3fa2ca7c"
     },
@@ -186,7 +186,7 @@
       "source_commit": "1736a63e233ee56a2ef42d13510e7185707ca064"
     },
     "func_80010900": {
-      "ledger_commit": "08645095b49d832e7dd597bc4b3db223176f85c6",
+      "ledger_commit": "99d67c7f96d2dd07e391ad61fe6e6fdb01039327",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "08645095b49d832e7dd597bc4b3db223176f85c6"
     },
@@ -636,7 +636,7 @@
       "source_commit": "578b7bf129cfb24f6232250be800db6dea6115f2"
     },
     "func_80046BCC": {
-      "ledger_commit": "e0f8a713b21d30e68b668b233d99dda0adf41776",
+      "ledger_commit": "99d67c7f96d2dd07e391ad61fe6e6fdb01039327",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "e0f8a713b21d30e68b668b233d99dda0adf41776"
     },
@@ -821,7 +821,7 @@
       "source_commit": "8d7572bb186e825ead555edd14c515221aa3d73c"
     },
     "func_8005A7A0": {
-      "ledger_commit": "dc17781ce7dc9f000e7c4df1eca52ad2d9ce35db",
+      "ledger_commit": "99d67c7f96d2dd07e391ad61fe6e6fdb01039327",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "dc17781ce7dc9f000e7c4df1eca52ad2d9ce35db"
     },
@@ -831,7 +831,7 @@
       "source_commit": "75eec1f945cbff202a77f874beec5983e7f07eab"
     },
     "func_8005ABA8": {
-      "ledger_commit": "c83b2645e2a2bc3525574543255a6919f8df2d22",
+      "ledger_commit": "99d67c7f96d2dd07e391ad61fe6e6fdb01039327",
       "reason": "Closed before L142/L144/L131/L139 existed. L142: a call-spanning web is denied exactly the argument registers those calls load, so arity is the lever not the ratio. L144: address-taking forces the reload without volatile edges.",
       "source_commit": "c83b2645e2a2bc3525574543255a6919f8df2d22"
     },
@@ -1446,7 +1446,7 @@
       "source_commit": "a35d0bdaa2dd7ba44d56687aee8bdd42712f0b9b"
     },
     "levelFreeAll": {
-      "ledger_commit": "226eb06ff22542a9b91f4ca00d5634dcca62d476",
+      "ledger_commit": "99d67c7f96d2dd07e391ad61fe6e6fdb01039327",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "226eb06ff22542a9b91f4ca00d5634dcca62d476"
     },
@@ -1551,7 +1551,7 @@
       "source_commit": "9fa2a74915008156fafcbfe16d998904c10c7849"
     },
     "overlay15DrawScreenStars": {
-      "ledger_commit": "9b167e712a4a04c9f1fdc8530c23f296997d5c9b",
+      "ledger_commit": "99d67c7f96d2dd07e391ad61fe6e6fdb01039327",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "9b167e712a4a04c9f1fdc8530c23f296997d5c9b"
     },

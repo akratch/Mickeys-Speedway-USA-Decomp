@@ -1786,7 +1786,7 @@ extern s32 func_8000A830(Objects0A830Object *object, void *data);
  * remains assembly-backed. No donor C was adopted; the existing Mickey
  * candidate and the unresolved header-scheduling mechanism are unchanged.
  */
-/* Lane s1-c (2026-09-16): 99 -> 28 masked at delta 0, frame 0x90, no force.
+/* Lane s1-c (2026-09-16): 99 -> 26 masked at delta 0, frame 0x90, no force.
  * The nested fixups no longer declare a pointer: `object->unk4C` is stored and
  * re-read with one spelling, so uopt forwards the stored value into a temp
  * that ugen keeps in a ring register across the branch (the target's t8/t4),
@@ -1794,14 +1794,16 @@ extern s32 func_8000A830(Objects0A830Object *object, void *data);
  * `(size & 3)` test with `remainder` assigned inside it is the target's copy,
  * and `remainder` is its own single-chain symbol (sharing `loadType` with
  * the resource loop made the copy-loop piece a late split web that lost the
- * 11/2 tie to the test expression on web number).
+ * 11/2 tie to the test expression on web number). The `(u32)` on the unk4C
+ * nested STORE address is load-bearing: the forwarded re-read is a phantom
+ * web (coloured a0, never emitted) that outranks the nested value on web
+ * number; a second spelling for the store splits it and the value takes a0.
  * Left: the copy-loop preheader's `sll a0,zero,2` (a strength-reduced init;
  * indexing all three loops by resultSize produces it at 35 with a different
- * residual), the unk4C nested value's a1 (a0 is held by `offset`'s web,
- * which reaches from the copy loops to its unk48 carrier use), and the
- * tail's s0/s3 exchange: `arg1 & 1` and the two counter addresses tie at
- * 3/7 and are coloured in web-number order, where the ROM decides the
- * addresses first; region openers and carriers are inert on that tie. */
+ * residual) and the tail's s0/s3 exchange: `arg1 & 1` and the two counter
+ * addresses tie at 3/7 and are coloured in web-number order, where the ROM
+ * decides the addresses first; region openers, carriers and arm order are
+ * inert on that tie. */
 #ifdef NON_MATCHING
 void *func_8000590C(void *arg0, s32 arg1) {
     Objects0590CObject *object;
@@ -2055,7 +2057,7 @@ void *func_8000590C(void *arg0, s32 arg1) {
     if (object->unk4C != 0) {
         object->unk4C = (s32)((u32)object + (u32)object->unk4C - (u32)D_800C9450);
         if (*(s32 *)((u8 *)object->unk4C + 0x1C) != 0) {
-            *(s32 *)((u8 *)object->unk4C + 0x1C) =
+            *(s32 *)((u8 *)(u32)object->unk4C + 0x1C) =
                 (s32)((u32)object + *(s32 *)((u8 *)object->unk4C + 0x1C) - (u32)D_800C9450);
         }
     }
@@ -5753,11 +5755,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_8000590C:start
  * symbol: func_8000590C
- * score: 28 differing words
+ * score: 26 differing words
  * frame: 0x90
  * relocations: 99
  * first-mismatch: +0x6D4
- * summary: 99 to 28 at delta 0 (lane s1-c): nested fixups without a declared pointer, one-width nested reads, and the copy-loop remainder as its own symbol copied from the unmasked test; left are the strength-reduced preheader init, the unk4C nested value's colour and the tail's three-way tie at 3/7.
+ * summary: 99 to 26 at delta 0 (lane s1-c): nested fixups without a declared pointer, one-width nested reads, the copy-loop remainder as its own symbol copied from the unmasked test, and a split phantom re-read; left are the strength-reduced preheader init and the tail's three-way tie at 3/7.
  * PLATEAU-HANDOFF:func_8000590C:end
  */
 

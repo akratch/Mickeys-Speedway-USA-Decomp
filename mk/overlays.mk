@@ -2397,7 +2397,22 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F0000000_18AF1E8.c.o: POS
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c.o: OPT_FLAGS := -O2 -g3
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xCF4
+# The compiler's private pool for this unit is the thirteen-entry mode-switch
+# table; the retained overlay data segment already owns those bytes at
+# data_rodata +0x3F4 (rodata-relative +0x124, which the shipped %hi/%lo pair
+# encodes).  Rebind only metadata and discard the checked duplicate table;
+# no instruction or compiler addend is edited.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F000138C_18B0574.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/func_overlay_058_F000138C_18B0574.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F000138C_18B0574.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay58ModeJumpTableReloc=0x124,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_058_F000138C_18B0574.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:77de523043975c80a3e242600f52cf9cbb6ad5ed735965e74ed1e11bbf345b03 && \
+	$(OBJCOPY) --remove-section .rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x3878
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58DrawSegmentStrip.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_058_F0004C04_18B3DEC=overlay58DrawSegmentStrip $@ && \

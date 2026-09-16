@@ -2491,6 +2491,22 @@ def _runtime_correlated_overlay_r26_identities(candidate_elf, module, start,
     return resolved, ambiguous
 
 
+def _overlay_identity_extent(module):
+    """Bytes an overlay identity offset can legitimately address, or None.
+
+    The module's ROM row plus its BSS. Returns None when the atlas row cannot
+    supply both, so the bound is skipped rather than guessed at.
+    """
+    try:
+        rom_size = _atlas_hex(module.get("rom", {}), "size", "overlay ROM row")
+        bss_size = _overlay_module_extent(module, "bss_size", "BSS size")
+    except (SurfaceComparisonError, KeyError, TypeError, ValueError):
+        return None
+    if not isinstance(rom_size, int) or not isinstance(bss_size, int):
+        return None
+    return rom_size + bss_size
+
+
 def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
                                     start, size, redefine_aliases=None,
                                     root=None, elf_loader=None, rom=None,
@@ -2544,6 +2560,37 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
                 redefine_aliases))
         for name, identity in correlated.items():
             proposed[name].add(identity)
+
+    # An offset outside the overlay's own extent is not an overlay identity,
+    # whatever arithmetic produced it -- so drop it here, once, rather than at
+    # each of the three sources above.
+    #
+    # splat names every unresolved absolute after its own value
+    # (`D_80000078 = 0x80000078`), and those are literal operands: display-list
+    # command words, hardware addresses. Paired against a matched sibling and
+    # had the sibling's addend subtracted, such a name yields the absolute
+    # itself as a proposed "offset" -- 0x80005A98 against overlay 58, whose
+    # entire extent is 0x9568. It then collided with the same name's resident
+    # identity, and `promotion-proof` refused four functions whose bytes were
+    # exact; two had been promoted weeks earlier, so the refusal reproduced on
+    # already-shipped work and was not a property of the new ones.
+    #
+    # Dropping the out-of-range proposal is fail-closed. The name keeps
+    # whatever the resident pass gives it, and a genuine overlay datum lies
+    # inside the extent by construction, so it is untouched.
+    extent = _overlay_identity_extent(module)
+    if extent is not None:
+        for name in list(proposed):
+            kept = {
+                identity for identity in proposed[name]
+                if not (isinstance(identity, tuple) and len(identity) == 2
+                        and identity[0] == module.get("overlay"))
+                or 0 <= identity[1] < extent
+            }
+            if kept:
+                proposed[name] = kept
+            else:
+                del proposed[name]
 
     equality_aliases = ri.parse_linker_aliases(path.read_text()) \
         if path.is_file() else []

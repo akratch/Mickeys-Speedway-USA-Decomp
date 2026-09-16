@@ -744,8 +744,13 @@ D_98 = 0x00000098;
 gOverlay15Resource10 = 0x00000010;
 gOverlay15Resource4 = 0x00000004;
 gOverlay15Resource48 = 0x00000048;
+gOverlay15StarCount = 0x00000000;
+gOverlay15StarSetup = 0x00000018;
+gOverlay15Stars = 0x00000000;
 gOverlay15Value7C = 0x0000007c;
 gOverlay15ValueC = 0x0000000c;
+overlay15FinishDisplayListReloc = 0xf0000000;
+overlay15GetDimensionsReloc = 0xf0000000;
 overlay15ReleaseReloc = 0xf0000000;
 
 /* overlay 16: overlay_016.c.o */
@@ -3927,13 +3932,13 @@ func_overlay_014_F0001B7C_1871454 = overlay14FinalizeActiveHandle;
 /* overlay 15: overlay_015.c.o */
 func_overlay_015_F0000000_1872398 = overlay15GetResource4;
 func_overlay_015_F000000C_18723A4 = overlay15ReleaseResource;
+func_overlay_015_F0000500_1872898 = overlay15DrawScreenStars;
 func_overlay_015_F00006A4_1872A3C = overlay15GetResource10;
 func_overlay_015_F00006B0_1872A48 = overlay15ReleaseResource10;
 func_overlay_015_F0000B7C_1872F14 = overlay15SetValueC;
 func_overlay_015_F0000B88_1872F20 = overlay15ClearValue7C;
 func_overlay_015_F000004C_18723E4 = overlay15InitStarsAndPalette;
 func_overlay_015_F0000428_18727C0 = overlay15MoveStars;
-func_overlay_015_F0000500_1872898 = overlay15DrawScreenStars;
 func_overlay_015_F00006E8_1872A80 = overlay15InitStars;
 func_overlay_015_F00009E0_1872D78 = overlay15UpdateMovingStars;
 func_overlay_015_F0000B94_1872F2C = overlay15DrawRain;

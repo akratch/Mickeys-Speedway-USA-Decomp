@@ -2,11 +2,11 @@
 ### `overlay15DrawScreenStars` plateau handoff
 
 - source: `src/overlays/o015/overlay_015.c`
-- score: 9/105 words
+- score: 0/105 words, promoted
 - frame: 0x58
 - relocations: 10
-- first mismatch: +0x38
-- summary: Aggregate fade carrier changes no draws or emissions; preheader ownership and constant priority remain the blocker.
+- first mismatch: none
+- summary: Matched 2026-09-16 (lane nx-c); the fade scale is a float literal in the unit's own pool, not a data global, and the two setup stores share a line.
 
 #### Historical baseline at assignment 3ccc02a1
 
@@ -278,4 +278,51 @@ every in-loop read stays in the loop (+4 bytes, 73 to 84). The p6-small
 hoist is a property of the pointer variable, not of the qualifier. Next: the
 pointer view with a discarded second dereference late in the loop body to
 raise the fade web's divisor before uopt deletes the read.
+#### 2026-09-16, lane nx-c: matched and promoted, 9 to 0 -- the fade "global" was the literal pool
+
+Baseline reproduced at 9 masked, delta zero, first +0x38. Three cycles, 32
+cells. Verified: `gmake verify` prints the expected SHA1 from the C,
+`gmake promotion-proof` passes (105 words, frame 0x58, 10 of 10 relocation
+identities, identity static-plus-runtime-table-and-linked-rom),
+`gmake check-overlay-syms` up to date.
+
+The named next step (a pointer view with a discarded late second
+dereference) is refuted: every discarded dereference spelling (`*fade;`
+before or after the increment, a dead `fadeScale = *fade`, at the loop top)
+is byte-identical to the plain pointer view, because cfe drops a
+value-less expression before uopt sees it; `if (*fade) { }` is 96 and the
+volatile form costs 12 bytes.
+
+Two claims on this page were wrong and are corrected off the objects:
+
+- The loop-top pointer form (16 words, p6-small) does NOT hoist the load
+  into the preheader. Its back-edge targets the block's first instruction
+  and the fade `lwc1` sits after it: the load is inside the loop and runs
+  every iteration. Its web reads `totalsave 20, nocs 3` (def and use both
+  at loop depth 1), which is why it ties 8.0f at 6.667 and takes f12 on web
+  number. No measured form had ever placed the load in the preheader.
+- `gOverlay15StarFadeScale` was never a global. The shipped words are a
+  LOCAL `%hi/%lo` pair with immediates 0x0000/0x0000 and the loader
+  supplying the base -- the same shape as overlay 86's literal pool -- and
+  the value at data_rodata +0x40, 0x3f5f8fc8, is 255/292, i.e. 255 over the
+  visible depth range 300 - 8. It is the unit's one pool constant.
+
+Adopted: `fadeScale = 255.0f / 292.0f;` (the quotient folds to exactly
+0x3f5f8fc8) assigned to the local before the loop, 9 to 2 at delta zero.
+uopt hoists the pool constant into the preheader below the synthesised
+guard like the other invariants, and as a single-use constant numbered
+after 8.0f and 300.0f it is coloured last, c28, the ROM's register. The
+literal written at the shade site instead is 13 (the constant is then
+conditional). The last two words were the entry block's `lui t7,0x600` /
+`addiu t8` order, an as1 physical-line tie the earlier 85-cell order sweep
+had measured on the old block shape (L146): folding the two setup-command
+stores onto one line is 2 to 0; so are three wider folds; every other
+transposition stays at 2.
+
+Promotion followed overlay 86's metadata-only pool form: the two `.rodata`
+references are rebound to `gOverlay15FadePoolReloc` (absolute 0), the
+16-byte pool is externalized by digest and `.rel.rodata` dropped, in
+`mk/overlays.mk`; no instruction or addend changes. The header's
+`extern const f32 gOverlay15StarFadeScale` is removed; the value stays where
+it always was, as the last word of `gOverlay15InitializedData`.
 <!-- plateau-handoff:overlay15DrawScreenStars:end -->

@@ -201,22 +201,18 @@ void overlay15MoveStars(f32 movementX, f32 movementY, f32 movementZ,
 #endif
 
 /*
- * Plateau (2026-08-30, wave11-o15-stars): configured -O2 -mips2 with
- * -Wab,-r4300_mul remains exact-size at 105 words with the exact 0x58 frame
- * and first mismatch +0x18. Reopened 2026-09-10 under L90 and closed again:
- * the exit test is a countdown against zero, so no bound is hoistable, and
- * fourteen fresh loop, fade and packed-command forms were neutral or worse.
- * The star pointer uses this TU's pointer-view idiom, which retires the last
- * raw-only difference.
- *
- * 2026-09-12, lane p10-near: 13 -> 9 on L59. The two shade/rectangle commands
- * are emitted as one physical source line, which ties every store's line
- * number and lets as1's ready-list position decide instead -- the same edit
- * that took func_overlay_071 from 33 to 11. Folding the two pairs separately
- * is 11 and folding one pair is 11 or 13, so it is the whole group that has
- * to share a line. The nine that are left are one fact; see the shard.
+ * Matched 2026-09-16 (lane nx-c). Two edits closed the last nine words:
+ * the fade scale is the float literal 255.0f / 292.0f (255 over the visible
+ * depth range 300 - 8) assigned to a local, not a data global -- the shipped
+ * value sits in this unit's own literal pool (data_rodata +0x40, the last
+ * word of gOverlay15InitializedData), and as a pool constant uopt hoists it
+ * into the loop preheader below the synthesised zero-trip guard and colours
+ * it after the two depth constants (single use, numbered last); and the two
+ * setup-command stores share one physical line (L59), which is what let as1
+ * order the entry block once the fade load had left it. The pool the compiler
+ * emits for the literal is externalized back onto the retained data word in
+ * mk/overlays.mk. See docs/matching-triage-handoffs/overlay15DrawScreenStars.md.
  */
-#ifdef NON_MATCHING
 void overlay15DrawScreenStars(Overlay15Gfx **displayList, f32 projectionScale) {
     Overlay15Gfx *command;
     Overlay15Star *star;
@@ -235,9 +231,8 @@ void overlay15DrawScreenStars(Overlay15Gfx **displayList, f32 projectionScale) {
     command = *displayList;
     star = ((Overlay15StarPointerView *)&gOverlay15Stars)->stars;
     initialCommand = command++;
-    initialCommand->w0 = 0x06000000;
-    initialCommand->w1 = (u32) gOverlay15StarSetup;
-    fadeScale = gOverlay15StarFadeScale;
+    initialCommand->w0 = 0x06000000; initialCommand->w1 = (u32) gOverlay15StarSetup;
+    fadeScale = 255.0f / 292.0f;
 
     while (remaining--) {
         if ((star->z >= 8.0f) && (star->z < 300.0f)) {
@@ -258,9 +253,6 @@ void overlay15DrawScreenStars(Overlay15Gfx **displayList, f32 projectionScale) {
     *displayList = command;
     overlay15FinishDisplayListReloc(displayList);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o015/overlay_015/func_overlay_015_F0000500_1872898.s")
-#endif
 
 void *overlay15GetResource10(void) {
     return gOverlay15Resource10;
@@ -449,16 +441,6 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o015/overlay_015/func_overlay_015_F0000B94_1872F2C.s")
 #endif
-
-/* PLATEAU-HANDOFF:overlay15DrawScreenStars:start
- * symbol: overlay15DrawScreenStars
- * score: 9/105 words
- * frame: 0x58
- * relocations: 10
- * first-mismatch: +0x38
- * summary: Aggregate fade carrier changes no draws or emissions; preheader ownership and constant priority remain the blocker.
- * PLATEAU-HANDOFF:overlay15DrawScreenStars:end
- */
 
 /* PLATEAU-HANDOFF:overlay15DrawRain:start
  * symbol: overlay15DrawRain

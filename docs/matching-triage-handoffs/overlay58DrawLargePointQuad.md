@@ -2,7 +2,7 @@
 ### `overlay58DrawLargePointQuad` plateau handoff
 
 - source: `src/overlays/o058/overlay58DrawLargePointQuad.c`
-- score: 21/104 words
+- score: matched (0/104 words, promoted 2026-09-16 by lane w1-b)
 - frame: 0x18
 - relocations: 11
 - first mismatch: +0x14
@@ -109,4 +109,36 @@ Next hypothesis: as recorded on the sibling shard. The decision variable is
 the phantom `gfx` symbol web and the block set of the 0xFF constant; no
 spelling of the current locals moves either.
 
+#### 2026-09-16, lane w1-b: matched and promoted (0/104 words, delta 0, frame 0x18)
+
+Closed from 21 by block structure, not colour; `gmake verify` prints the
+expected SHA1 from the C with GLOBAL_ASM gone. Three facts, each measured
+on the instrumented uopt's block sets and the aligned score:
+
+- uopt closes a straight-line block after twenty loads of LOCAL variables;
+  global loads are free (calibrated on overlay34CreateRecord, lane report
+  docs/lastmile-block-budget-globals.md). The appends hold four such loads,
+  so the boundary the ROM has between the appends and the colour stores is a
+  zero-cost region opener, and so is the one after the last colour store.
+- With both appends in one block the shared `dl++` expression web has one
+  occurrence set (save 6.0) and is decided before the packet macros' two
+  block-scoped `_g` phantoms (3.0 each), which is what gives it v0; the
+  colour constant is then a single-block web at 15 (v0 in its own block)
+  and the four coordinate expressions colour v0/v1/a1/a2 in first-occurrence
+  order. `vertices = cursor` inside the append block keeps v1 busy there so
+  the display-list address falls to a3. The packet spellings are the JFG
+  engine's own gSPVertexJFG/gSPPolygon macros through gDma1p (PROVENANCE in
+  the source), which also retire the +0x88 store-order tie by being one
+  physical line each.
+- The last two words (the argument `lui` pair at +0x14) are an as1 tie at
+  equal height broken on source line; reading the render-state field into a
+  local inside a region before the call gives the load the earlier line
+  (0 words). Physical-line variants of the call itself are inert (six cells).
+
+`gmake promotion-proof` refuses with `candidate relocation symbol D_80000098 has
+conflicting runtime identity`, the resident auto-name versus reserved
+selector namespace conflict already recorded on func_overlay_050 and the
+whale; the promoted precedents overlay101DrawClock (D_800002D8) and
+overlay96DrawObject (D_80000000) refuse identically, so this is the proof
+tool's limitation for low resident payload names, not a fault in the bytes.
 <!-- plateau-handoff:overlay58DrawLargePointQuad:end -->

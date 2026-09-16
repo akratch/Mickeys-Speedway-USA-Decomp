@@ -1,6 +1,27 @@
 # Harpooning `func_overlay_058_F000138C_18B0574`
 
-## Current checkpoint: 11, with the reset web coloured by its symbol
+## Current checkpoint: 9, with the slot rows closed and W a closed system
+
+Lane wv-w retains **9 at delta zero, unforced** (3605 / 9 / 0 / 0, frame
+0x138, 1,253 relocations, first mismatch +0x12E4). The two slot-address
+rows close on the spelling a matched sibling uses: `overlay60Prefix.c`
+writes `i = f(); slot = (SavesSlot *)((u8 *)slots + i * 32)`, and the
+operand order of the `addu` is the expression tree's evaluation order (the
+byte form through a declared local evaluates the base first; `&saves[f()]`
+and `&saves[i]` the index first), not a canonicalised sum -- wv-v had
+measured the two halves of that spelling separately, each inert. What
+remains is W alone, and it is now arithmetic: wv-t's growth rule
+(`2*left_after >= numintf + new`) holds on all 477 tests, the neighbour
+lists of W and the 5E9C piece are itemised and every member is the
+target's, and the three decision variables that would make W `t0` while
+the 5E9C piece keeps rejecting 202 -- w40 above 3.6, the `&D_o058_5EA0`
+remainder above 3.0 at its 183 seed against a seed walk that pops switch
+arms in descending case value, and the 5E9C lineage's 202 seed before W's
+183 seed -- are each closed at zero width, with alias diagnostics showing
+the seed moving exactly as the model says. Ten cycles; the
+[growth-margins report](whale-growth-margins.md) has the ledger.
+
+## Previous checkpoint: 11, with the reset web coloured by its symbol
 
 Lane wv-v retains **11 at delta zero, unforced** (3603 / 11 / 0 / 0, frame
 0x138, 1,253 relocations, first mismatch +0x12E4): wv-u's forced witness

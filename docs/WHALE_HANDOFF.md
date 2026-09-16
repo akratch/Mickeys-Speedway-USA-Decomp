@@ -1,86 +1,101 @@
-# Whale handoff — 2026-09-16 (wv-v), at 11 words, unforced
+# Whale handoff — 2026-09-16 (wv-w), at 9 words, unforced
 
 `func_overlay_058_F000138C_18B0574`, 14,456 bytes, the largest unmatched
-function in the tree. Seven bounded lanes have taken it **187 → 11 masked
+function in the tree. Eight bounded lanes have taken it **187 → 9 masked
 words at delta zero**, unforced. This file is the resumption point; the
 standing plan is `docs/WHALE.md` and the lane reports it links.
 
 ## State
 
-    masked                11 / 3,614 words   (99.7% of words byte-exact)
-    raw                  188
+    masked                 9 / 3,614 words   (99.75% of words byte-exact)
+    raw                  186
     delta                  0
     frame              0x138
     relocations        1,253
-    buckets      3603 exact / 11 naming / 0 immediate / 0 structural
+    buckets      3605 exact / 9 naming / 0 immediate / 0 structural
     displacement tax       0
-    first mismatch    +0x12E4, the &D_o058_5EA0 fragment's head piece (W)
+    first mismatch    +0x12E4, W (the &D_o058_5EA0 case-12 piece, a2 for t0)
 
-Verified with `tools/score_symbol.py` and `tools/align_symbol.py` on the
+Verified with `tools/score_symbol.py` and `tools/residual_map.py` on the
 tree source. The C remains guarded `NON_MATCHING`; nothing is promoted.
-Source on `lane/wv-v`; the report is
-[whale-index-carriers.md](whale-index-carriers.md) and the cells are under
-`cells-wv-v/`.
+Source on `lane/wv-w`; the report is
+[whale-growth-margins.md](whale-growth-margins.md) and the cells are under
+`cells-wv-w/`.
 
-Lane `wv-v` (2026-09-16) closed case 13 and the `+0x0` cascade together
-by changing *which symbol* the loop-index resets are written on. The
-seven folded resets are dead defs that uopt colours as one web per
-symbol; on a symbol of their own they take `a0` (nothing forbids it and
-they cannot be decided later), so they are written on locals that are
-dead where the loops run and already coloured harmlessly elsewhere:
-`textY` (`s4`) for cases 3/13 and `letter1` (`s1`) for cases 1/2. The two
-groups cannot share a carrier because the `D_o058_5EF8` address web spans
-the entry loop and both draw loops while `textY` is case 1's y.
+Lane `wv-w` (2026-09-16) closed the two slot-address rows: the operand
+order of `saves + index*32` is the expression tree's evaluation order, and
+the form a matched sibling (`overlay60Prefix.c`) uses -- the index through
+a declared local *and* byte arithmetic, `(u8 *)saves + i * 32` -- puts the
+base first. Either half alone is byte-identical to `&saves[f()]` (wv-v's
+cycle 10 measured them separately); together they are exact.
 
-Lane `wv-u` (2026-09-15) itemised the case-12 identity and derived the
-case-13 roles ([whale-split-order.md](whale-split-order.md)); lane `wv-t`
-built the split instrument ([whale-split-growth.md](whale-split-growth.md)).
-Both readings stand.
+Lane `wv-v` (2026-09-16) coloured the seven folded loop-index resets by
+choosing their symbols (`textY` for cases 3/13, `letter1` for cases 1/2);
+see [whale-index-carriers.md](whale-index-carriers.md). Lane `wv-u`
+itemised the case-12 identity ([whale-split-order.md](whale-split-order.md));
+lane `wv-t` built the split instrument ([whale-split-growth.md](whale-split-growth.md)).
+All stand.
 
-## What remains: 11 aligned rows, all naming
+## What remains: 9 aligned rows, one web
 
-1. **`&D_o058_5EA0`'s fragment W in case 12** (9 rows, +0x1280..+0x1500):
-   `a2` where the target has `t0`. On the 11 body the identity reads as
-   wv-u itemised it: the `&D_o058_5E9C` piece seeded at 183 splits at idx
-   127 (3.60) and accepts the title loop's call block 185 at margin 0
-   (`left 12`, `numintf 24`); `w40` (the `n*2` temp, 3.0) takes `v1` at
-   136; W's remainder splits at 178 (2.26) and rejects 185 by one (`left
-   11`, `numintf 23`). Both need 12 colours left at 185; they differ by
-   the `v1` decided between them.
-2. **`saves + index*32` operand order in cases 9/10** (2 rows). Not the
-   carrier (deleting `saves` costs 10-18 rows) and not the expression
-   (wv-r's fourteen spellings).
+**`&D_o058_5EA0`'s fragment W in case 12** (+0x12E4..+0x1528): `a2` where
+the target has `t0`. `t0` needs a2/a3 forbidden at W's colouring and only
+the title loop's call block 185 supplies them, so W must accept 185 and
+keep 202 (the restore block) in the same piece -- a separate 202 piece
+would colour v0 or a0.
 
-## The next cycle, named by wv-v
+## The system, named by wv-w
 
-**Put `w40`'s decision after W's split.** With any carrier web at 183 the
-`&D_o058_5E9C` piece needs 17 colours at its seed and W needs 16, and the
-only colour that separates them is the `v1` w40 (3.0, idx 136) takes
-between the piece's split (127, 3.60) and W's (178, 2.26); with it free
-for W, W accepts 185 and colours `t0` with the target's extent, and the
-piece is unchanged. The neighbour captures under `cells-wv-v/` name every
-member. Three things are measured closed on the 11 body: moving w40 off
-`v1` (w251 takes it instead; cycle 7); a carrier decided after both, even
-one live at 191 (the piece keeps 13 colours through 185, rejects 191 by
-one and takes 202: +4, wv-t's `k` again; cycle 8); and pushing w40
-*before* the piece (wv-u: the piece loses its 185 fold and swallows 202).
-What is left is either `save(w40) < 2.26` -- impossible by occurrence
-count, since `nocs = f(reference blocks + live-in blocks)` keeps a
-two-block temp at 6/2 whatever is added, and only a live-in span the
-target also has could lower it -- or the `&D_o058_5EA0` remainder above
-3.0 at its 183 seed (95/42 now, because the seed walk carves case 13's
-229/234/243/245/275 pieces, 90 of its 185, before case 12's). That second
-handle is a seed-order or weight question on the 5EA0 lineage, and the
-aliasing route to it (`(&D_o058_5E9C)[1]`) changes which register a load
-uses wherever the two lineages hold different pieces, so it is not
-zero-width where it would count. Everything wv-u closed for this lever
-still holds. If a lane takes this, read `cells-wv-v/allocator-cell-c6a-detail-*.log`
-with `intfdiff.py` first and price the seed order before any cell.
+The split instrument's rule (wv-t: a block is accepted iff
+`2*left_after >= numintf + new`) holds on all 477 growth tests of the 9
+body, and the neighbour lists of W (23 in {183,184,185,190}) and the
+`&D_o058_5E9C` piece (the same 23 plus the 5EA0 remainder) are itemised and
+all the target's: six spilled-or-late symbol candidates (`arg0`, `state`,
+`rowHeight`, `savedOffset`, `savedPosition`, `rowBase`), eight lineage
+hulls, nine coloured webs. So W's shape is a function of three numbers,
+and the constraints do not meet:
 
-The two slot rows are below the expression: wv-r's fourteen and wv-v's
-seven spellings, including the explicitly reversed sum and an index
-through a dead local, are one object. Whatever orders `saves` first in the
-target is not the source of the sum.
+- W accepts 185 iff 12 colours survive the a1-a3 fold: 15 at its seed is
+  one short. The margin is `v1` (w40, held since idx 136) or `s4` (`textY`'s
+  dead def at 183). a0 never helps: free, it is folded too.
+- W keeps 202 iff `2*left >= numintf + new` there. `new` at 202 is w157
+  (`arg0 * 0xF`) plus the `&D_o058_5E9C` remainder whenever the 5E9C
+  piece has rejected 202 -- which it must, or the tail's v1 piece is lost
+  (+4). With 12 colours that is 24-23-2 = -1. wv-v's `c8c` (W `t0`, +4)
+  passed 202 only because its 5E9C piece had taken 202 first.
+- The 5E9C piece rejects 191 and 202 iff it has 12 after 185, i.e. `s4`
+  held at 183 -- or `v1` held there before idx 127, the one colour W loses
+  that the piece does not.
+
+The consistent configuration is: **v1 held at 183 before the 5E9C split
+(w40 above 3.6), no s4 holder at 183, and the 5E9C lineage's 202 seed
+processed before W's 183 seed.** Each is closed at zero width (cycles
+3-10): w40 is 3.0 in every partition (6/2 or 3/1); the seed walk is a CFG
+DFS that follows case 1 and then pops the switch arms in **descending case
+value**, so case 13's five seeds always precede case 12's and leave the
+5EA0 remainder at 95/42 = 2.26; and the 5E9C remainder is 2.21 at 194 and
+1.97 at 202. Alias-symbol diagnostics (`c8a`, `c9a`, `c10a`, `c10b`) move
+the 183 seed to 5.9, 3.63, 3.34 and 3.08 and the growth records follow the
+rule line by line (at 3.3: 185 accepted, 191 and 202 rejected with `new`
+2), while the rest of the function moves from +0x104 on. They are not a
+source.
+
+## The next cycle, named by wv-w
+
+**A form that changes a lineage's weight or a seed's order without an
+instruction.** Concretely, one of: (a) a third occurrence of `n*2` in
+block 13 or 183 that replaces an existing instruction (there is none in
+the target's stream); (b) a `&D_o058_5E9C` occurrence in a case walked
+after 12 (11/7, 10, 9, 8, 6, 5, 3, 2) that is loop-weighted, so its
+remainder stays above 2.26 through its 202 seed; (c) something that
+lowers the 5EA0 remainder's own ratio at 183 below 1.97 -- 13 weight out
+of case 12's row loop, or 7 `nocs` in. If none exists, the honest reading
+is that the original's case-12 tail or head differs structurally from the
+exact-row reconstruction in a way that does not show in the words -- for
+example a dead def coloured v1 at 183, which the target's instruction
+stream cannot carry. Read `whale-growth-margins.md` "The three decision
+variables" before any cell; every alias cell is banked with its growth
+records.
 
 ## The cycle wv-u named (done)
 
@@ -163,7 +178,12 @@ Do not re-dispatch against any of these.
 | freeing `v1` for W by moving w40 | w251 (2.33) takes `v1` instead; W's growth byte-identical (wv-v cycle 7) |
 | a late case-12 carrier, also live at 191 | W t0 but the 5E9C piece keeps 13 colours, rejects 191 by one and takes 202: +4 (wv-v cycle 8, wv-t's k) |
 | deleting the unused `s32 portraitX;` | 284 at delta 0: an unused declaration's symbol number orders later web numbers and their tie-breaks |
-| the slot-address sum's spelling | wv-r's 14 and wv-v's 7 (pointer arithmetic, `(u32)`, byte arithmetic, reversed order, dead-local index) are one object |
+| the slot-address sum's spelling | wv-r's 14 and wv-v's 7 (pointer arithmetic, `(u32)`, byte arithmetic, reversed order, dead-local index) are one object; the base-first order is the byte form THROUGH a declared local, which is exact (wv-w) |
+| case-12 head statement order | four permutations byte-identical; `textY = 0` above the head's calls +12 (wv-w cycle 2) |
+| w40's save | 3.0 in every partition: 6/2 across blocks 13/183, 3/1 when split by literal type (width moves); `(s32)` casts do not split (wv-w cycle 3) |
+| forcing W to t0 on the 9 body | +64 from +0x600, the caller-saved table reshapes (wv-w cycle 4) |
+| memory class for the five spilled candidates | `*&x` is folded by cfe; `volatile` moves the frame and width on all five, so they are candidates in the target too (wv-w cycles 5-6) |
+| an alias symbol for the 5EA0 lineage | the 183 seed moves as the rule predicts (5.9, 3.63, 3.34, 3.08) and the function moves from +0x104 on (-12 to -104); diagnostic only (wv-w cycles 7-10) |
 
 `p1:wN=s` split forces **are** honoured and `force_lattice.py` parses the
 receipt, but every split measured so far costs width.
@@ -197,7 +217,7 @@ and wv-t's growth-profile traces: `allocator18-growth.log`,
 `allocator48-growth.log`, the `allocator18-cell-*.log`/`cell18-*.c` pairs,
 three `allocator18-detail-w*.log` neighbour captures, `uoptlist18.txt`, and
 `cells-wv-t/` (every wv-t cell with its source and the scratch harness).
-Lane wv-v adds `cells-wv-v/`: every cell, result and trace, the 16 / 15 / 11
+Lane wv-w adds `cells-wv-w/`: every cell, result and trace, the 9 object (`unforced9.o`), neighbour captures on the 9 body (`d9W`, `d9P`) and on wv-v's `c8c` (`d8cW`, `d8cP`), the alias-lineage cells with their growth records, and `mini/m1.c` (the slot-order mini TU). Lane wv-v adds `cells-wv-v/`: every cell, result and trace, the 16 / 15 / 11
 objects, and the readers `readsym.py`, `early.py`, `mkcarrier.py`. Lane wv-u adds `cells-wv-u/`: every cell's source, result and trace, the
 reader scripts (`readW.py`, `intfdiff.py`, `peels.py`, `colourdiff.py`,
 `case13.py`), the neighbour captures on the pointer and opponent bodies, the

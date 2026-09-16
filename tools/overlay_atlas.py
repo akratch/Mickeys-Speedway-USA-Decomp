@@ -145,6 +145,16 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         (0x3C, 0x54, "overlay41UpdateCurveObject", ".rodata", "func_overlay_041_F0000854_1887B8C"),
     ],
     46: [(0x364, 0x378, "overlay46UpdateSequence", ".rodata", "func_overlay_046_F0000120_188E518")],
+    58: [
+        (
+            0x3F4,
+            0x428,
+            "func_overlay_058_F000138C_18B0574",
+            ".rodata",
+            "func_overlay_058_F000138C_18B0574",
+            True,
+        )
+    ],
     59: [(0x76C, 0x78C, "overlay59Advance", ".rodata", "overlay59Advance", True)],
     86: [(0x80, 0xA0, "func_overlay_086_F0000474_18D22AC", ".rodata", "func_overlay_086_F0000474_18D22AC")],
 }
@@ -1527,6 +1537,14 @@ MIXED_TU_EXACT_C_RANGES = {
             0xAB4,
             0xAF4,
             "overlay56UnpackColor",
+            "canonical mixed-TU object and linked bytes exact",
+        ),
+    ],
+    58: [
+        (
+            0x138C,
+            0x4C04,
+            "func_overlay_058_F000138C_18B0574",
             "canonical mixed-TU object and linked bytes exact",
         ),
     ],

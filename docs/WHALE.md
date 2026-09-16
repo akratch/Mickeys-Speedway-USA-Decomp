@@ -1,6 +1,27 @@
 # Harpooning `func_overlay_058_F000138C_18B0574`
 
-## Current checkpoint: 6, with W closed on a pointer walk
+## Matched (2026-09-16, lane wv-y): 3,614 of 3,614 words, promoted
+
+The whale is Tier A exact C and linked: `gmake verify` reproduces the ROM
+from the C, `gmake promotion-proof` passes (3,614 words, frame 0x138,
+1,253 of 1,253 relocations), and the assembly fallback is gone. The last
+fact was one statement: `i &= 0;` after case 12's first call. The title
+loop subscripts `D_o058_5C98` by `i`, so strength reduction owns the
+cursor and the load carries its `.noalias` fact; the cursor init folds
+from an `i = 0` in the guard's block, and that reset is deleted as
+redundant only while the delay-slot reset is still live when dead stores
+are removed. Every plain read of `i` between the two resets is folded
+first; a self-reading def is not a dead-store candidate, cannot be folded
+because its own def follows its read, and is deleted once the liveness
+pass has run. Six spellings measure 0; the control without it is wv-x's
+46. Two promotion faults followed that the score cannot see -- the
+compiler's duplicate jump-table pool, and three resident data symbols
+named without the `_o058Reloc` suffix, which moved 95 resident bytes
+through the alias file -- both in the
+[self-read report](whale-self-read.md). The sections below are the
+history of how the 187 became 6, kept as written.
+
+## Previous checkpoint: 6, with W closed on a pointer walk
 
 Lane wv-x retains **6 at delta zero, unforced** (3611 / 0 / 0 / 4, frame
 0x138, 1,253 relocations, first mismatch +0x1314). Case 12's title loop

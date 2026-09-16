@@ -1,4 +1,81 @@
-# Whale handoff — 2026-09-16 (wv-x), at 6 words, unforced
+# Whale handoff — 2026-09-16 (wv-y): matched and promoted
+
+`func_overlay_058_F000138C_18B0574`, 14,456 bytes, was the largest
+unmatched function in the tree. Ten bounded lanes took it **187 → 0 masked
+words at delta zero**, unforced, and lane wv-y promoted it. This file is
+kept as the record of how; the standing plan is `docs/WHALE.md` and the
+lane reports it links.
+
+## State
+
+    masked                 0 / 3,614 words
+    raw                    0
+    delta                  0
+    frame              0x138
+    relocations        1,253 / 1,253
+    buckets      3614 exact / 0 naming / 0 immediate / 0 structural
+    displacement tax       0
+    first mismatch      none
+
+`gmake verify` prints the expected SHA1 from the C; `gmake promotion-proof
+SYMBOL=func_overlay_058_F000138C_18B0574` passes
+(`identity=static-plus-runtime-table-and-linked-rom`);
+`gmake check-overlay-syms` is up to date; the `NON_MATCHING` guard, the
+`GLOBAL_ASM` fallback and the in-source PLATEAU-HANDOFF block are removed.
+Source on `lane/wv-y`; the report is [whale-self-read.md](whale-self-read.md)
+and the cells are under `cells-wv-y/`.
+
+## What closed it
+
+wv-x's residue was the title-loop load's schedule, for want of a `.noalias`
+fact on a pointer-variable base. The indexed form has the fact and needs
+`i` known zero in the guard's block, which wv-x had reduced to a three-way
+conflict: the delay-slot reset lives only through a loop phi, the title
+init folds only from a redundant in-block def, and the row init likewise.
+The missing piece was a read of the delay-slot reset that dead-store
+elimination counts and nothing later pays for. Measured on a mini TU
+(six rules, in the report): every plain read between the resets is folded
+before liveness is judged; a read followed by a def of the same variable in
+its block is not; the redundancy pass deletes a store only as its block's
+first reference, which is also what blocks the row reset's sink when a
+read precedes it; a self-reading def is not a dead-store candidate. So
+`i &= 0;` in block 181 keeps the delay-slot def, is deleted itself, lets
+the guard reset fold the cursor and be deleted, and leaves the row side as
+it was: 0 on five spellings, 46 on the control.
+
+## Two things a promotion has to know that the score does not show
+
+- A switch's jump table is a duplicate pool: the shipped module owns the
+  bytes, the object must not contribute them, and the metadata-only route
+  is add-symbol / rebind / externalize-by-digest (overlay 14's form). An
+  anchored externalization is classed `altered`.
+- Every resident symbol an overlay TU names, data included, needs the
+  `_oNNReloc` spelling before the object is linked; a bare name becomes a
+  value line that overrides the resident definition and moves bytes far
+  from the overlay. The tell is a clean overlay and a handful of differing
+  resident pages.
+
+## Open housekeeping
+
+- `config/lane-reopen-authorizations.us.json` still pins the whale
+  (`ledger_commit` 9d581a54); it is matched now, so the pin is stale and is
+  the coordinator's to retire.
+- The whale's TU keeps its long plateau-history comment above the
+  declarations and the inert forms listed in `docs/cleanup-queue.md`.
+- The per-pass shard `docs/matching-triage-handoffs/func_overlay_058_F000138C_18B0574.md`
+  carries a narrow `CONTENT_EXEMPTIONS` entry for the clean-room `oversize`
+  rule; it no longer grows.
+- `origin` reports that it has **moved to
+  `git@github.com:akratch/Mickeys-Speedway-USA-Decomp.git`**. Pushes still
+  succeed by redirect, but `CLAUDE.md` names the old URL and the remote
+  should be updated before the redirect stops being honoured.
+
+---
+
+The sections below are the handoff as wv-x left it, kept as the record of
+the closed axes and the banked instruments.
+
+# Whale handoff — 2026-09-16 (wv-x), at 6 words, unforced (superseded)
 
 `func_overlay_058_F000138C_18B0574`, 14,456 bytes, the largest unmatched
 function in the tree. Nine bounded lanes have taken it **187 → 6 masked
@@ -252,7 +329,7 @@ and wv-t's growth-profile traces: `allocator18-growth.log`,
 `allocator48-growth.log`, the `allocator18-cell-*.log`/`cell18-*.c` pairs,
 three `allocator18-detail-w*.log` neighbour captures, `uoptlist18.txt`, and
 `cells-wv-t/` (every wv-t cell with its source and the scratch harness).
-Lane wv-x adds `cells-wv-x/`: every cell, result and trace, the objects `c2a-6.o`, `c1a-14.o`, `c4b-39.o`, `c13a-50.o`, `c12a-2350-delta8.o`, the neighbour captures on the 14 body (`d1aW`, `d1aP`), the mini TUs under `mini/`, and under `alias/` the `cc -S` listings and the alias-provenance traces of the 9 and pointer bodies. Lane wv-w adds `cells-wv-w/`: every cell, result and trace, the 9 object (`unforced9.o`), neighbour captures on the 9 body (`d9W`, `d9P`) and on wv-v's `c8c` (`d8cW`, `d8cP`), the alias-lineage cells with their growth records, and `mini/m1.c` (the slot-order mini TU). Lane wv-v adds `cells-wv-v/`: every cell, result and trace, the 16 / 15 / 11
+Lane wv-y adds `cells-wv-y/`: the six whale cells with their results and stock objects, the linked matched object and its externalized pool payload, the matched tree source, and under `mini/` the ~60 two-loop mini TUs with their `cc -S` listings and `run.sh`. Lane wv-x adds `cells-wv-x/`: every cell, result and trace, the objects `c2a-6.o`, `c1a-14.o`, `c4b-39.o`, `c13a-50.o`, `c12a-2350-delta8.o`, the neighbour captures on the 14 body (`d1aW`, `d1aP`), the mini TUs under `mini/`, and under `alias/` the `cc -S` listings and the alias-provenance traces of the 9 and pointer bodies. Lane wv-w adds `cells-wv-w/`: every cell, result and trace, the 9 object (`unforced9.o`), neighbour captures on the 9 body (`d9W`, `d9P`) and on wv-v's `c8c` (`d8cW`, `d8cP`), the alias-lineage cells with their growth records, and `mini/m1.c` (the slot-order mini TU). Lane wv-v adds `cells-wv-v/`: every cell, result and trace, the 16 / 15 / 11
 objects, and the readers `readsym.py`, `early.py`, `mkcarrier.py`. Lane wv-u adds `cells-wv-u/`: every cell's source, result and trace, the
 reader scripts (`readW.py`, `intfdiff.py`, `peels.py`, `colourdiff.py`,
 `case13.py`), the neighbour captures on the pointer and opponent bodies, the
@@ -273,23 +350,7 @@ freshness guard will say so if a landscape has gone stale.
   running it against a stale row is a no-op that looks like a success. The
   measuring form is the default mode, then `--write-doc` for the document.
 
-## Open housekeeping
+## The standing arithmetic (as it stood)
 
-- The per-pass shard `docs/matching-triage-handoffs/func_overlay_058_F000138C_18B0574.md`
-  crossed the 262,144-byte clean-room `oversize` limit and now carries a
-  `CONTENT_EXEMPTIONS` entry. The exemption is narrow — that path, that rule
-  — and the word-table, hex-run and mnemonic-density detectors still apply to
-  the file, but it grows every pass and should be split, with superseded
-  prose archived to a sibling, before it doubles.
-- `origin` reports that it has **moved to
-  `git@github.com:akratch/Mickeys-Speedway-USA-Decomp.git`**. Pushes still
-  succeed by redirect, but `CLAUDE.md` names the old URL and the remote
-  should be updated before the redirect stops being honoured.
-
-## The standing arithmetic
-
-The whale is worth **14,456 bytes**, and credits **zero** until it fully
-matches — a partial match banks nothing. At 6 words the function is 99.8%
-matched by word; at 6 every remaining row is one instruction's schedule,
-and that instruction's fact is the only thing between here and the
-largest single byte gain available in the tree.
+The whale was worth **14,456 bytes**, and credited **zero** until it fully
+matched — a partial match banks nothing. It is banked now.

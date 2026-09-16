@@ -1344,6 +1344,19 @@ share one reviewed source and normalization shape but keep independent
 symbol and payload bindings. Both configured objects, direct slices, and the
 full ROM are exact.
 
+Overlay 58's results renderer, `func_overlay_058_F000138C_18B0574`, is
+Tier A exact C at `+0x138C..+0x4C04`: **14,456 bytes** / 3,614 words, frame
+`0x138`, and all 1,253 runtime relocation offsets, types and identities
+(2026-09-16, lane wv-y; the largest function matched in the tree). The
+compiler's private thirteen-entry jump-table pool duplicates the shipped
+table at data_rodata `+0x3F4`, so the object's two table references are
+rebound to `gOverlay58ModeJumpTableReloc` and the pool is externalized by
+digest, contributing no bytes; the atlas records the rodata row as
+externalized ownership. Untouched configured IDO, the linked owned range
+and the full ROM pass the normal promotion proofs. No instruction rewriting
+is used. The inert forms its match rests on are listed in
+`docs/cleanup-queue.md`; the route from 187 words is `docs/WHALE.md`.
+
 Overlay 40's state updater at `+0x0E8..+0x1A0` — 184 bytes / 46 words,
 creating a 416-byte contiguous prefix. NON_MATCHING: the bounded natural
 direct-shift source is exact-sized and frameless at 44/46 positional words,

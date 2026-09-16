@@ -2705,93 +2705,44 @@ extern f32 overlay1AimedThresholdReloc;
 extern f32 overlay1AimedTrigReloc;
 extern f32 overlay1AimedVelocityYReloc;
 
-extern Overlay1TransientObject *func_overlay_036_F0000694_1883B4C(
+/* Every call below that the shipped module records as a SYMBOL relocation
+ * (stored word `jal 0`, patched at load) goes through a placeholder that
+ * `gmake overlay-syms` values at 0xF0000000 -- the three same-module callees
+ * included, since a same-module call can still be a SYMBOL record. */
+extern Overlay1TransientObject *overlay36SpawnTransientReloc(
     Overlay1TransientOwner *owner, Overlay1TransientWorld *world);
-extern s16 func_overlay_001_F00064F8_18528D8(
+extern s16 overlay1SolveAngleCandidatesReloc(
     f32, f32, f32, f32, f32, f32, f32, f32, s32);
+extern void overlay1ReadSelectionReloc(Overlay1Object *object, s32 index, f32 *outX, f32 *outY, f32 *outZ);
+extern void overlay1InitTimedStateReloc(Overlay1TimedObject *object, s32 timer);
 extern s32 func_8002A910(f32 y, f32 x);
 extern f32 func_8002A8BC(s32 angle);
 extern f32 func_8002A8C0(s32 angle);
 extern f32 sqrtf(f32 value);
 
-/* Plateau: the exact 996-byte extent, 249 instructions, the 0x80 frame, the
- * one stack home and all 43 relocation records. Nineteen words differed at
- * the previous pass (fourteen now, see the 2026-09-11 note below), and
- * NINE of them are phantom. The target's own extraction materialises nine
- * overlay-local addresses as a literal `lui reg,0x0` / `lw reg,<addend>(reg)`
- * pair carrying no relocation, where the candidate emits the same pair with an
- * R_MIPS_HI16/LO16 record and a zero addend. The comparator masks the `lui`
- * half and scores the `%lo` half as a constant difference. Six of the nine are
- * already provably identical after linking -- `D_1D9C` is 0x1D9C, which is the
- * 7580 the target bakes in, and `D_1DA0` is 0x1DA0, which is 7584 -- and the
- * remaining three are the overlay-local float globals whose values the
- * generated relocation surface derives from those same sites at promotion. Do
- * not chase them, and do not mask the `lui at,0xc1f0` at the -30.0f constant,
- * which is a float immediate and matches.
+/* Matched 2026-09-16 (lane lm-b). The last residual, fourteen positional
+ * words in the prologue, was one assembler directive: the target loads the
+ * shared-world pointer through a uopt-created address web, and ugen stamps
+ * such a load with `.noalias <reg>,$sp`, so as1 schedules it above the
+ * register saves. A declared `u32` address carrier keeps the web but launders
+ * the provenance, ugen emits no directive, and as1 gives the load an ordering
+ * edge from every save (measured on `cc -S` output: removing the directive from
+ * a byte-exact sibling prologue in overlay 14 drops its load below ten saves;
+ * adding it to this function's listing lifts the load into the target's slot).
  *
- * The ten real words are two placement clusters. Five are the shared-world
- * address: the target finishes the low half and dereferences it among the
- * register saves, the candidate after them. The `u32 worldAddress` carrier is
- * load-bearing -- a typed pointer carrier folds straight back into a
- * two-instruction global read and loses the saved-register address entirely --
- * and declaration order is inert here, measured over all 306 single-position
- * moves.
- *
- * Five are the trig constant, and this half moved. Writing the load as
- * `... * -30.0f * (trig = overlay1AimedTrigReloc)` puts it after the first
- * angle call with the `jal` and its delay slot exact and no stall, at 249
- * instructions: the previously recorded embedded form
- * (`func(angle) * (trig = ...) * -30.0f`) reaches the same region but costs a
- * `nop`, because it wants the trig value one instruction sooner than the load
- * can deliver it. What remains on this cluster is that the target materialises
- * the trig constant before the -30.0f constant and we do it the other way
- * round, which also reverses both multiply operand orders. Measured and flat,
- * do not repeat: twenty-two orderings of the three velocity statements and the
- * two constants, including reading the global directly at one or both sites
- * (251 instructions), a trailing redundant `trig = ...`, a comma operator, and
- * every parenthesisation of the two products.
- *
- * Note for the next reader: the positional score falls 21 to 19 on this edit
- * while the insertion-tolerant aligned count rises 32 to 34 (lever 48). The
- * aligned count rises because the trig pair is now a two-row move rather than
- * a two-row absence; the cluster itself is strictly closer.
- *
- * 2026-09-11, lane f9-audit: the trig cluster is CLOSED, 19 -> 14, and the
- * else arm is now exact. The closure had read it as ugen emission order and
- * swept twenty spellings of the trig statement; the variable it held fixed was
- * the basic block the -30.0f constant's definition is hoisted to. uopt places
- * a CSE'd constant at the head of the block that first uses it, so in every
- * one-block form the immediate lands ahead of the trig load no matter which
- * statement comes first. Loading trig in its own statement AFTER the call
- * (the call result carried in `factor`; `distance` and `predictedX` tie, the
- * other five f32 locals are worse) and opening an L97 region with the three
- * velocity stores inside puts the block head after the load. A bare block is
- * +1 instruction like every one-block form, `do while (0)` ties `if (1)`, and
- * the region must contain all three stores: with velocityY/Z outside, or the
- * trig load inside, it is +1 again. The `mov.s` the previous lane recorded for
- * the call-result carrier does not appear in this form.
- *
- * The 14 words are the prologue world load and nothing else. Read off the
- * objects rather than the as1 trace: a direct `D_1DA0` read is scheduled
- * ABOVE every prologue save (it lands at +0x4), so as1 has no store-to-load
- * edge for a symbol-class load, and the closure's "ugen must emit the load
- * before the saves" is not the mechanism. The candidate's load is held below
- * the saves because it is an indirect load through an opaque carrier. The
- * target has a symbol-class load whose address is nevertheless shared in s0
- * with the store site. Every carrier spelling (u32, typed pointer through an
- * integer cast, volatile pointee, subscript, this pass) keeps the sharing and
- * the opaque class; every typed carrier, array decay or struct-holder spelling
- * folds to two separate symbol loads (51 words, the same object as all-direct)
- * and loses the sharing. The mixed forms (first read direct with the carrier
- * kept for the store, and the reverse) each cost one instruction. A region
- * boundary anywhere in the head block moves the frame. `const` on the trig
- * import and `static` file-scope data were also measured: IDO 5.3 reloads
- * both across a call, so neither explains the single trig load. L108 census:
- * 310 p1 records, zero p2, so definition order is not an axis here. */
-#ifdef NON_MATCHING
+ * uopt builds that web only for a global read twice in a procedure that also
+ * contains a loop, and it then serves every read of that symbol; the target
+ * serves two reads from the web and four from plain symbol loads, so the two
+ * groups must be spelled through different symbols at the same address. The
+ * head read and the store site use `D_1DA0`; the four reloads use the
+ * `D_1DA0_array` alias this TU already declares. The ROM cannot distinguish
+ * the two symbols, so which group carries which name is a reconstruction
+ * choice; both assignments produce identical text. The unused `owner`
+ * declaration supplies the frame's last eight bytes, which the old carrier had
+ * been occupying, and it must precede `savedState` for that home to land. */
 void overlay1UpdateAimedTransient(void) {
+    Overlay1TransientOwner *owner;
     Overlay1TransientWorld *world;
-    u32 worldAddress;
     Overlay1TransientState *savedState;
     Overlay1TransientObject *object;
     Overlay1TransientState *state;
@@ -2809,12 +2760,11 @@ void overlay1UpdateAimedTransient(void) {
     s16 sourceAngle;
     s16 objectAngle;
 
-    worldAddress = (u32)&D_1DA0;
-    world = *(Overlay1TransientWorld **)worldAddress;
+    world = D_1DA0;
     object = world->object;
     source = world->source;
     if (object == 0) {
-        object = func_overlay_036_F0000694_1883B4C(D_1D9C, world);
+        object = overlay36SpawnTransientReloc(D_1D9C, world);
         if (object != 0) {
             state = object->state;
             state->owner = D_1D9C;
@@ -2823,12 +2773,12 @@ void overlay1UpdateAimedTransient(void) {
             state->selector = 9;
             state->pad0A = 0;
             object->scale = overlay1AimedScaleReloc;
-            overlay1ReadSelection(D_1D9C, 9, &object->x, &object->y,
-                                  &object->z);
-            (*(Overlay1TransientWorld **)worldAddress)->object = object;
+            overlay1ReadSelectionReloc(D_1D9C, 9, &object->x, &object->y,
+                                       &object->z);
+            ((Overlay1TransientWorld *)D_1DA0)->object = object;
             savedState = state;
         }
-        world = D_1DA0;
+        world = (Overlay1TransientWorld *)D_1DA0_array[0];
         state = savedState;
     } else {
         state = object->state;
@@ -2862,7 +2812,7 @@ void overlay1UpdateAimedTransient(void) {
             } while (iteration--);
 
             sourceAngle = func_8002A910(deltaX, deltaZ);
-            objectAngle = func_overlay_001_F00064F8_18528D8(
+            objectAngle = overlay1SolveAngleCandidatesReloc(
                 object->x, object->y, object->z,
                 predictedX, predictedY, predictedZ,
                 30.0f, -*object->extra->value, 0);
@@ -2884,17 +2834,17 @@ void overlay1UpdateAimedTransient(void) {
             }
         }
         *object->flags &= ~2;
-        world = D_1DA0;
+        world = (Overlay1TransientWorld *)D_1DA0_array[0];
     }
 
     if (world->flags & 2) {
         if (world->mode == 0xD) {
-            overlay1InitTimedState(D_1D9C, 0x78);
-            world = D_1DA0;
+            overlay1InitTimedStateReloc(D_1D9C, 0x78);
+            world = (Overlay1TransientWorld *)D_1DA0_array[0];
         }
         if (world->mode == 0xD) {
             world->mode = 0xD;
-            world = D_1DA0;
+            world = (Overlay1TransientWorld *)D_1DA0_array[0];
         }
     }
     if (!(world->status & 0x2000) && world->mode == 0xD) {
@@ -2902,9 +2852,6 @@ void overlay1UpdateAimedTransient(void) {
     }
 }
 
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F0006D4C_185312C.s")
-#endif
 
 /* ---- overlay1UpdateTransient ---- */
 
@@ -3452,16 +3399,6 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
  * first-mismatch: +0x190
  * summary: Proc-23 census: 33 draws/174 emissions; mode probe worsened residual. Ring release-order remains.
  * PLATEAU-HANDOFF:overlay1UpdateRangeFlags:end
- */
-
-/* PLATEAU-HANDOFF:overlay1UpdateAimedTransient:start
- * symbol: overlay1UpdateAimedTransient
- * score: 14/249 words
- * frame: 0x80
- * relocations: 43
- * first-mismatch: +0xC
- * summary: 473-draw census confirms closed prologue-load emission-order blocker; no source-authentic route below 14.
- * PLATEAU-HANDOFF:overlay1UpdateAimedTransient:end
  */
 
 /* PLATEAU-HANDOFF:overlay1AdvancePath:start

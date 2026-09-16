@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 240688,
-  "nonmatching_overlay_c_bytes": 227932,
+  "matched_overlay_c_bytes": 241684,
+  "nonmatching_overlay_c_bytes": 226936,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 2400,
   "bss_bytes": 77680,
@@ -1451,6 +1451,14 @@
      "label": "overlay1SelectMaskedMode",
      "source": "overlays/o001/overlay_001_tail",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
+     "offset": "0x6D4C",
+     "end_offset": "0x7130",
+     "size": "0x3E4",
+     "label": "overlay1UpdateAimedTransient",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "canonical mixed-TU object and linked bytes exact"
     },
     {
      "offset": "0x7130",

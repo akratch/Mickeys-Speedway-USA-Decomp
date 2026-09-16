@@ -2,11 +2,11 @@
 ### `func_8003D4FC` plateau handoff
 
 - source: `src/main/particles.c`
-- score: 73 differing words
+- score: 0 differing words
 - frame: 0x138
 - relocations: 14
-- first mismatch: +0x2D0
-- summary: 995/1068 words; 14 tuples exact. Five flat controls after faithful sweep. Next: complete UGEN queue-transition and emitted-row evidence.
+- first mismatch: none
+- summary: MATCHED. This header claimed an open residual until 2026-09-16, when tools/check_shard_metrics.py reconciled every shard against the ranking; the function had already left the queue. The claim it carried was: 995/1068 words; 14 tuples exact. Five flat controls after faithful sweep. Next: complete UGEN queue-transition and emitted-row evidence.
 
 The September 8 register-residual audit used assignment base
 `edecdb8232aa7728d82d385b0e81ec00f3cb916e` and retained the reconstruction

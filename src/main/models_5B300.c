@@ -259,50 +259,32 @@ void func_8005A770(void) {
  * PROVENANCE: Mickey-derived. JFG src/models.c::modLoadModel remains assembly
  * and supplies role/TU context only; no donor body was imported.
  *
- * Plateau: fresh unchanged current-HEAD configured full-TU V0 is exact-sized
- * at 106 words, with 96/106 raw and 99/106 relocation-normalized object words,
- * but uses frame 0x50 versus target 0x38. Ten raw sites remain at
- * +0x000/+0x08C/+0x0A0/+0x0BC/+0x0C0/+0x0C4/+0x0C8/+0x0DC/+0x0F4/+0x1A4.
- * Relocation normalization leaves seven positional sites. The ten relocation
- * identities agree as a multiset and nine tuples are exact; the second
- * piRomLoadSection call moves from target +0xBC to candidate +0xC0. Alignment
- * originally remained v1/sp+0x30 instead of s0/sp+0x34. The stall-rule reopen
- * de-declared the bounds pointer without changing the 96/106 score or 106-word
- * extent, and this moves the spill to the target's sp+0x34 home. A stock
- * `-Wo,-zdbug:2` listing identifies six memory-class scalar homes in this
- * retained candidate. Reduced-local carrier maps reached frames 0x48 and 0x30
- * but regressed to at best 88/106; de-declaring either shifted bound changed
- * instruction geometry. The last five distinct carrier, expression, and one-
- * local forms did not improve the retained residual. Workbench verdict remains
- * `structure-mismatch`; its routed lever is `drop-a-declared-local`. Reopen
- * only with target-correlated CFE temp birth-site evidence, not another
- * ungrounded carrier permutation. The real-address linked V0 has 94/106 raw
- * and 99/106 relocation-normalized words. The 119 flag groups remain exhausted.
- *
- * 2026-09-10, lane o7-mid: reproduced at 10 relocation-masked words, size
- * delta 0, at the ten recorded offsets, so the decomposition above stands.
- * What this pass adds is the mechanism behind `drop-a-declared-local`, taken
- * from a controlled measurement on func_8004BA8C in src/main/font.c:
- *
- *   IDO gives a four-byte frame home only to a local it leaves MEMORY-CLASS,
- *   and assigns those homes descending from the top of the local block in
- *   DECLARATION order. A local uopt colours owns no slot at all.
- *
- * That makes the routed lever precise. The frame gap here is 0x50 against
- * 0x38 -- six words -- and the `-Wo,-zdbug:2` listing quoted above already
- * says all six declared scalars are memory-class in this candidate. So the
- * requirement is not "declare fewer locals" but "leave six fewer locals
- * memory-class at the same 106 words", which is a colouring outcome and only
- * indirectly a declaration-count one. That is why the earlier reduced-local
- * maps hit 0x48 and 0x30 without passing through 0x38: they were moving the
- * count, not the class. The next lane should read WHICH of the six uopt
- * strikes (L55's `save <= 0` eligibility gate) and attack the save of those,
- * rather than permuting carriers again.
+ * Matched 2026-09-16 (lane w1-a), 10 -> 0 masked words at delta 0 in four
+ * measured batches, no colour force. The ten words were the frame (0x50
+ * against 0x38), the colour of `firstAnimation & 3` (ours v1, the ROM s0)
+ * and the spill placed around the wrong call. Read off the ROM: the value
+ * lives in s0 through the second piRomLoadSection call, is stored to the
+ * frame's one home right before func_8002B314, and only the doubling in the
+ * loop setup reads it back, into a temporary. That is two webs, not one:
+ * `alignment` stops at that store, so it no longer shares the loop-setup
+ * block with the loop's byte offset and takes s0 at cost 0; a second symbol
+ * carries the value across the allocation call. Which symbol decides the
+ * reload register and the frame. `loadSize` is coloured a3 whole and reloads
+ * into a3 (5 words); `inputOffset` takes s1 and no spill at all (24);
+ * `lastAnimation` a2 (6); a fresh local +4. `firstAnimation` is the one whose
+ * web already spans the second call's argument block, so a0-a3 are denied
+ * and it takes c7 = t0, the ROM's reload register, at cost 4 -- but written
+ * as a plain copy `firstAnimation = alignment` the two chains of `alignment`
+ * stop being renamed apart and the callee-saved order rotates (27). The
+ * self-defining spelling `firstAnimation = firstAnimation & 3` keeps the
+ * chains apart and is 2, and those two are the carrier's home one slot below
+ * the ROM's: homes descend from the frame top in declaration order (L99), so
+ * `firstAnimation` is declared first. Frame 0x38, seven slots, ten relocation
+ * identities, 106 of 106 words.
  */
-#ifdef NON_MATCHING
 s32 func_8005A7A0(ModelAnimationTable *model, s32 modelId) {
-    s32 alignment;
     s32 firstAnimation;
+    s32 alignment;
     s32 lastAnimation;
     s32 loadSize;
     s32 loaded;
@@ -322,13 +304,14 @@ s32 func_8005A7A0(ModelAnimationTable *model, s32 modelId) {
         loadSize += 8;
     }
     piRomLoadSection(0x29, (void *)D_800D7CFC, (firstAnimation & ~3) * 2, loadSize);
+    firstAnimation = firstAnimation & 3;
     model->animations = (u8 **)func_8002B314(model->animationCount * 4, 0x80);
     if (model->animations == NULL) {
         return FALSE;
     }
 
     loaded = 0;
-    inputOffset = alignment * 2;
+    inputOffset = firstAnimation * 2;
     alignment = 0;
     do {
         *(u8 **)((u8 *)model->animations + alignment) =
@@ -353,9 +336,6 @@ s32 func_8005A7A0(ModelAnimationTable *model, s32 modelId) {
     } while (loaded < model->animationCount);
     return TRUE;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/models_5B300/func_8005A7A0.s")
-#endif
 /* The two boolean spellings in this function are one edit and neither of them
  * works alone. ugen materialises a `(relational) == 0` test as a `seq`/`beq`
  * pair, which as1 fuses back into a single branch, so the temporary is
@@ -895,16 +875,6 @@ void func_8005B644(Matrix *matrices, Matrix *root, ModelMatrixNode *node, s32 co
         } while (i != count);
     }
 }
-
-/* PLATEAU-HANDOFF:func_8005A7A0:start
- * symbol: func_8005A7A0
- * score: 10/106 words
- * frame: 0x50
- * relocations: 10
- * first-mismatch: +0x0
- * summary: frame and caller-home allocation remain unresolved after the authenticated source and colour closures
- * PLATEAU-HANDOFF:func_8005A7A0:end
- */
 
 /* PLATEAU-HANDOFF:func_8005ABA8:start
  * symbol: func_8005ABA8

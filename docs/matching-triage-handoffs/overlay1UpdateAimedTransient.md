@@ -2,11 +2,11 @@
 ### `overlay1UpdateAimedTransient` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_tail.c`
-- score: 14/249 words
+- score: 249/249 words
 - frame: 0x80
 - relocations: 43
-- first mismatch: +0xC
-- summary: 473-draw census confirms closed prologue-load emission-order blocker; no source-authentic route below 14.
+- first mismatch: none
+- summary: MATCHED. This header claimed an open residual until 2026-09-16, when tools/check_shard_metrics.py reconciled every shard against the ranking; the function had already left the queue. The claim it carried was: 473-draw census confirms closed prologue-load emission-order blocker; no source-authentic route below 14.
 - assignment base: `ab2e28755e75281263cff6b4846893469a252f61`
 - owned range: Overlay 1 `+0x6D4C..+0x7130`, 996 bytes / 249 instructions, with no size delta
 - baseline: 64 raw differing words and 57 positional differences, 39 opcode mismatches, eight alignment gaps, and frame `0x88` versus target `0x80`; the runtime surface had 43 target records versus 45 candidate records, with 30 offset/type positions aligned

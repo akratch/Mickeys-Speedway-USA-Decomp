@@ -1110,19 +1110,23 @@ void func_8003EF80(ParticleObject *object, ParticleTriggerSlot *trigger) {
         } while (trigger->unk0C >= config->value40);
     }
 }
-#ifdef NON_MATCHING
-/* Workbench: pure FP-allocation plateau, 11 differing words, size_delta 0; first mismatch +0x3E4.
- * Target and candidate are 297 instructions with the exact 0x58 frame and 16 relocation identities.
- * Every integer lane is exact and the schedule is exact. The head is exact since 2026-09-16
- * (lane lm-a): the two emission-direction zeros are the integer literal 0, which is a different
- * IR constant from the 0.0f the comparison reads (L151), so the head materialises its zero once
- * into the pool colour with no ring draw, and the value3C load is a ring temp negated straight
- * into offset[2] with no `speed` definition at the head. What remains is the region after the
- * sqrt call: the named sum of squares sits in scale's pool colour where the ROM keeps it in a
- * ring register (inlining it x-first is exact through +0x3F0 and costs the tail one ring step),
- * the comparison zero is a ring temp where the ROM has a pool web in scale's colour, and the
- * tail's Z accumulate follows that phase. A zero assigned to scale before or after the sqrt call
- * is propagated into the comparison and changes nothing; see the shard.
+/* Matched 2026-09-16 (lane w1-a), 11 -> 0 masked words at delta 0 in one
+ * measured batch of eight cells, no colour force. The residual was the
+ * comparison zero after the sqrt call: the ROM materialises it into scale's
+ * pool colour, ours drew a ring temp, and the tail's ring phase followed.
+ * The `0.0f` constant is one uopt web wherever it is spelled `0.0f`; with
+ * the velocity head spelled `0.0f` the web reaches from the entry to the
+ * comparison, is split, and the comparison's piece has one reference and
+ * nothing to save. Spelling the velocity-head zeros as the integer literal
+ * `0` (a different IR constant, L151, like the emission-direction zeros)
+ * shrinks the `0.0f` web to the disableTransform arm and the comparison
+ * (records: two blocks, totalsave 2, cost 0, coloured whole rather than
+ * split); with the sum of squares inlined x-first `scale` no longer
+ * occupies the sqrt argument block, so that web takes c25 and the
+ * comparison zero lands on $f2 as the ROM has it. The direct Z accumulate
+ * is the tail's ring phase.
+ * The velocity head spelled `0.0` (double) is byte-identical; the named
+ * sum with the same head is 18, the inlined sum with a `0.0f` head is 17.
  * PROVENANCE: structure cross-checked against JFG's assembly-only asm/nonmatchings/particles/func_80060400.s sibling; body reconstructed from Mickey evidence. */
 void func_8003F154(BasicParticle *particle, ParticleEmitterObject *object, ParticleTriggerSlot *trigger,
                    ParticleConfig *config) {
@@ -1142,9 +1146,9 @@ void func_8003F154(BasicParticle *particle, ParticleEmitterObject *object, Parti
         particle->velocityY = config->velocityModifier.y;
         particle->velocityZ = config->velocityModifier.z;
     } else {
-        particle->velocityX = 0.0f;
-        particle->velocityY = 0.0f;
-        particle->velocityZ = 0.0f;
+        particle->velocityX = 0;
+        particle->velocityY = 0;
+        particle->velocityZ = 0;
     }
 
     flags = config->flags5C & 0x700;
@@ -1222,8 +1226,7 @@ void func_8003F154(BasicParticle *particle, ParticleEmitterObject *object, Parti
                     (u8 *)resource->matrices[resource->matrixTableIndex] +
                         ((header->transformIndices[pointIndex].matrixIndex << 5) << 1),
                     offset, offset, header);
-                scale = (offset[1] * offset[1]) + (offset[0] * offset[0]);
-                magnitude = sqrtf(scale + (offset[2] * offset[2]));
+                magnitude = sqrtf(((offset[0] * offset[0]) + (offset[1] * offset[1])) + (offset[2] * offset[2]));
                 if (magnitude == 0.0f) {
                     scale = speed;
                 } else {
@@ -1239,13 +1242,9 @@ void func_8003F154(BasicParticle *particle, ParticleEmitterObject *object, Parti
 
         particle->velocityX += offset[0];
         particle->velocityY += offset[1];
-        magnitude = offset[2];
-        particle->velocityZ += magnitude;
+        particle->velocityZ += offset[2];
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/particles/func_8003F154.s")
-#endif
 /* PROVENANCE: structure cross-checked against JFG's assembly-only
  * asm/nonmatchings/particles/func_800608EC.s sibling; body reconstructed
  * from Mickey evidence.
@@ -2590,16 +2589,6 @@ void partNullifyCircularParticleParents(ParticlePosition *position) {
         } while (poolPtr != (CircularParticlePool **)&D_800D4134);
     } while (0);
 }
-
-/* PLATEAU-HANDOFF:func_8003F154:start
- * symbol: func_8003F154
- * score: 11/297 words
- * frame: 0x58
- * relocations: 16
- * first-mismatch: +0x3E4
- * summary: Head exact on integer-literal zeros (L151); residual is the post-sqrt region: the named sum in the pool, the comparison zero as a ring temp, and the tail's ring phase.
- * PLATEAU-HANDOFF:func_8003F154:end
- */
 
 /* PLATEAU-HANDOFF:func_8003D25C:start
  * symbol: func_8003D25C

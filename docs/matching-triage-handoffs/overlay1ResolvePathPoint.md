@@ -2,11 +2,11 @@
 ### `overlay1ResolvePathPoint` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_end.c`
-- score: 151/152 words
+- score: 152/152 words
 - frame: 0x78
 - relocations: 22
-- first mismatch: +0x6C
-- summary: One word: the else-branch base reads the raw call-result web (v0) where the target reads the saved copy (s4); the doubled product is closed
+- first mismatch: none
+- summary: MATCHED. This header claimed an open residual until 2026-09-16, when tools/check_shard_metrics.py reconciled every shard against the ranking; the function had already left the queue. The claim it carried was: One word: the else-branch base reads the raw call-result web (v0) where the target reads the saved copy (s4); the doubled product is closed
 
 
 #### 2026-09-09, lane win-b: 8 -> 3 words, three named mechanisms

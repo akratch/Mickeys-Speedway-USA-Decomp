@@ -345,6 +345,7 @@ check-tooling:
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_progress.py
 	$(PYTHON) $(TOOLS_DIR)/test_raw_asm_census.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_merge_transaction.py
+	$(HOST_PYTHON) $(TOOLS_DIR)/test_check_shard_metrics.py
 	$(HOST_PYTHON) tests/test_make_layout.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_check_match_regression.py
 	$(HOST_PYTHON) tests/test_flag_sweep.py

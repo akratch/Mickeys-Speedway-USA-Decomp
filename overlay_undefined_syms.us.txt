@@ -2486,6 +2486,12 @@ overlay60ReleaseReloc = 0xf0000000;
 
 /* overlay 60: func_overlay_060_F0002F54_18BCD2C.c.o */
 D_800000B0 = 0x800000b0;
+func_80034554_o060Reloc = 0xf0000000;
+func_80036600_o060Reloc = 0xf0000000;
+func_80036660_o060Reloc = 0xf0000000;
+gOverlay60DisplayListReloc = 0x00000000;
+gOverlay60InputAxisReloc = 0x00000000;
+gOverlay60LocalDataReloc = 0x00000000;
 
 /* overlay 60: overlay60DrawBorder.c.o */
 gOverlay60DisplayList = 0x00000000;

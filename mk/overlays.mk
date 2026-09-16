@@ -2129,6 +2129,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60DrawLine.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/func_overlay_060_F0002F54_18BCD2C.c.o: \
 	CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/func_overlay_060_F0002F54_18BCD2C.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym func_80034554=func_80034554_o060Reloc \
+		--redefine-sym func_80036600=func_80036600_o060Reloc \
+		--redefine-sym func_80036660=func_80036660_o060Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x378
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60ReassignChoiceSlots.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \

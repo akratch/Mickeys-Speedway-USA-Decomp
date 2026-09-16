@@ -1468,6 +1468,7 @@ MIXED_TU_EXACT_C_RANGES = {
     ],
     27: [
         (0x000, 0x064, "overlay27Init"),
+        (0xA1C, 0xB20, "overlay27UpdateCoordinates"),
         (0xB20, 0xB68, "overlay27CanUse"),
         (0xB68, 0xBC0, "overlay27Activate"),
     ],
@@ -1565,6 +1566,9 @@ MIXED_TU_EXACT_C_RANGES = {
         ),
         (0x4F28, 0x50C8, "overlay58DrawPointQuad"),
         (0x50C8, 0x5268, "overlay58DrawLargePointQuad"),
+    ],
+    60: [
+        (0x2F54, 0x32CC, "func_overlay_060_F0002F54_18BCD2C"),
     ],
     63: [
         (0x77C, 0x928, "overlay63UpdateSequence"),

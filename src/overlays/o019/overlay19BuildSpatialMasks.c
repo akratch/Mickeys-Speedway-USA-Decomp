@@ -25,33 +25,36 @@ typedef struct O19SpatialMaskFrame {
     u8 unused6C[0x14];
 } O19SpatialMaskFrame;
 
+/* s1-b (2026-09-16): a fresh s16 bin counter (numbered between binEnd and
+ * binStart, 9300/5 like both), an xMax probe in the vertex loop (4100/8 puts
+ * xMax ahead of xMin) and the two loop-1 inits on one physical line: 63 to 17. */
 #ifdef NON_MATCHING
 void overlay19BuildSpatialMasks(O19Context *context, O19Group *group, O19Output *output) {
-    O19SpatialMaskFrame frame; s32 item, itemEnd, selector; s16 vertexBase; O19Span *span; O19Point *point; O19Vertex *vertices, *vertex; s16 x, y, z, xMax, xMin, yMax, yMin, zMax, zMin; s16 spanCount, lower, upper, step, binStart, binEnd, firstItem; u32 bit, mask; ;
+    O19SpatialMaskFrame frame; s32 item, itemEnd, selector; s16 vertexBase; O19Span *span; O19Point *point; O19Vertex *vertices, *vertex; s16 x, y, z, xMax, xMin, yMax, yMin, zMax, zMin; s16 spanCount, lower, upper, step, binStart, binEnd, firstItem, binIndex; u32 bit, mask; ;
     frame.index.spanIndex = 0; spanCount = group->spanCount; if ((spanCount > 0)) { ; frame.offset.spanOffset = 0; do { O19_LOAD_SPAN_FIELDS;
-    if ((firstItem < itemEnd)) { ; item = firstItem; ; frame.suppressed = bit & 0x1080; do { ; xMax = -32000; yMax = -32000; zMax = -32000; if (frame.suppressed != 0) output->masks[item] = 0; else { ; xMin = 32000; if (xMin); yMin = 32000; zMin = 32000; selector = 0; if (selector); mask = 0; if (mask); point = &group->points[item]; vertices = context->vertices;
-    do { vertex = (O19Vertex *)((u8 *)vertices + (u32)(point->selectors[selector] + vertexBase) * 10); x = vertex->x; y = vertex->y; z = vertex->z; if ((xMax < x)) { ; xMax = x; } if ((x < xMin)) { ; xMin = x; } if (yMax < y) yMax = y; if (y < yMin) yMin = y; if (zMax < z) zMax = z; if (z < zMin) zMin = z; ; selector++; } while (selector != 3); ; bit = 1;
+    if ((firstItem < itemEnd)) { ; item = firstItem; ; frame.suppressed = bit & 0x1080; do { ; xMax = -32000; yMax = -32000; zMax = -32000; if (frame.suppressed != 0) output->masks[item] = 0; else { ; xMin = 32000; if (xMin); yMin = 32000; zMin = 32000; mask = 0; if (mask); selector = 0; if (selector); point = &group->points[item]; vertices = context->vertices;
+    do { vertex = (O19Vertex *)((u8 *)vertices + (u32)(point->selectors[selector] + vertexBase) * 10); x = vertex->x; y = vertex->y; z = vertex->z; if ((xMax < x)) { ; xMax = x; } if ((x < xMin)) { ; xMin = x; } if (yMax < y) yMax = y; if (y < yMin) yMin = y; if (zMax < z) zMax = z; if (z < zMin) zMin = z; if (xMax); selector++; } while (selector != 3); ; bit = 1;
     lower = group->xLower;
     upper = group->xUpper;
     step = ((upper - lower) >> 3) + 1;
     binEnd = O19_ADD_REVERSED(lower, step);
-    firstItem = 0;
-    binStart = lower;
+    binIndex = 0; binStart = lower;
+
     ;
     do {
         if (!(binEnd < xMin || xMax < binStart)) { ; mask |= bit; }
-        binEnd += step; binStart += step; bit <<= 1; firstItem++;
-#line 10
-        if (firstItem);
-    } while (firstItem < 8);
-#line 100
+        binEnd += step; binStart += step; bit <<= 1; binIndex++;
+
+        ;
+    } while (binIndex < 8);
+
     ;
     lower = group->zLower;
     upper = group->zUpper;
     step = ((upper - lower) >> 3) + 1;
     binEnd = O19_ADD_REVERSED(lower, step);
     binStart = lower;
-    for (firstItem = 0; firstItem < 8; firstItem++) {
+    for (binIndex = 0; binIndex < 8; binIndex++) {
         if (!(binEnd < zMin || zMax < binStart)) { ; mask |= bit; }
         binEnd += step;
         binStart += step;
@@ -63,7 +66,7 @@ void overlay19BuildSpatialMasks(O19Context *context, O19Group *group, O19Output 
     step = ((upper - lower) >> 3) + 1;
     binEnd = O19_ADD_REVERSED(lower, step);
     binStart = lower;
-    for (firstItem = 0; firstItem < 8; firstItem++) {
+    for (binIndex = 0; binIndex < 8; binIndex++) {
         if (!(binEnd < yMin || yMax < binStart)) { ; mask |= bit; }
         binEnd += step;
         binStart += step;
@@ -80,10 +83,10 @@ void overlay19BuildSpatialMasks(O19Context *context, O19Group *group, O19Output 
 
 /* PLATEAU-HANDOFF:overlay19BuildSpatialMasks:start
  * symbol: overlay19BuildSpatialMasks
- * score: 63/227 words
+ * score: 17/227 words
  * frame: 0x80
  * relocations: 0
  * first-mismatch: +0x58
- * summary: Unsigned scale normalization leaves all 63 draws and stock text unchanged; the mask-table emission-order blocker remains.
+ * summary: Fresh bin counter, xMax probe and a folded init line reach 17; the p2-ordered span/firstItem pair and the selector/mask init order remain.
  * PLATEAU-HANDOFF:overlay19BuildSpatialMasks:end
  */

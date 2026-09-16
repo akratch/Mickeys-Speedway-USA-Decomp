@@ -1786,9 +1786,24 @@ extern s32 func_8000A830(Objects0A830Object *object, void *data);
  * remains assembly-backed. No donor C was adopted; the existing Mickey
  * candidate and the unresolved header-scheduling mechanism are unchanged.
  */
-/* Workbench plateau: 538 differing words; target and candidate are 719 words. */
-/* First mismatch: +0x1B4; both frames are 0x90, both relocation counts are 99. */
-/* Remaining: header scheduling, saved-register lifetimes and nested fixup carriers. */
+/* Lane s1-c (2026-09-16): 99 -> 26 masked at delta 0, frame 0x90, no force.
+ * The nested fixups no longer declare a pointer: `object->unk4C` is stored and
+ * re-read with one spelling, so uopt forwards the stored value into a temp
+ * that ugen keeps in a ring register across the branch (the target's t8/t4),
+ * and the nested value is read once with one width (a0). The unmasked
+ * `(size & 3)` test with `remainder` assigned inside it is the target's copy,
+ * and `remainder` is its own single-chain symbol (sharing `loadType` with
+ * the resource loop made the copy-loop piece a late split web that lost the
+ * 11/2 tie to the test expression on web number). The `(u32)` on the unk4C
+ * nested STORE address is load-bearing: the forwarded re-read is a phantom
+ * web (coloured a0, never emitted) that outranks the nested value on web
+ * number; a second spelling for the store splits it and the value takes a0.
+ * Left: the copy-loop preheader's `sll a0,zero,2` (a strength-reduced init;
+ * indexing all three loops by resultSize produces it at 35 with a different
+ * residual) and the tail's s0/s3 exchange: `arg1 & 1` and the two counter
+ * addresses tie at 3/7 and are coloured in web-number order, where the ROM
+ * decides the addresses first; region openers, carriers and arm order are
+ * inert on that tie. */
 #ifdef NON_MATCHING
 void *func_8000590C(void *arg0, s32 arg1) {
     Objects0590CObject *object;
@@ -1803,9 +1818,9 @@ void *func_8000590C(void *arg0, s32 arg1) {
     s32 size;
     u8 *aligned;
     s8 failed;
-    u8 *relocated;
     s32 resultSize;
     Objects0590CAsset *asset;
+    s32 remainder;
 
     D_8007A210 = 1;
     D_8007A214 = NULL;
@@ -2012,8 +2027,8 @@ void *func_8000590C(void *arg0, s32 arg1) {
     resultSize = 0;
     size >>= 2;
     if (size > 0) {
-        loadType = size & 3;
-        if (loadType != 0) {
+        if ((size & 3) != 0) {
+            remainder = size & 3;
             offset = resultSize * 4;
             aligned = (u8 *)object + offset;
             do {
@@ -2021,7 +2036,7 @@ void *func_8000590C(void *arg0, s32 arg1) {
                 aligned += 4;
                 *(s32 *)(aligned - 4) = *(s32 *)((u8 *)D_800C9450 + offset);
                 offset += 4;
-            } while (resultSize != loadType);
+            } while (resultSize != remainder);
         }
         if (resultSize != size) {
             offset = resultSize * 4;
@@ -2040,11 +2055,10 @@ void *func_8000590C(void *arg0, s32 arg1) {
         object->unk54 = (s32)((u32)object + (u32)object->unk54 - (u32)D_800C9450);
     }
     if (object->unk4C != 0) {
-        relocated = (u8 *)((u32)object + (u32)object->unk4C - (u32)D_800C9450);
-        object->unk4C = (s32)relocated;
-        if (*(s32 *)(relocated + 0x1C) != 0) {
-            *(s32 *)(relocated + 0x1C) =
-                (s32)((u32)object + *(u32 *)(relocated + 0x1C) - (u32)D_800C9450);
+        object->unk4C = (s32)((u32)object + (u32)object->unk4C - (u32)D_800C9450);
+        if (*(s32 *)((u8 *)object->unk4C + 0x1C) != 0) {
+            *(s32 *)((u8 *)(u32)object->unk4C + 0x1C) =
+                (s32)((u32)object + *(s32 *)((u8 *)object->unk4C + 0x1C) - (u32)D_800C9450);
         }
     }
     if (object->unk50 != 0) {
@@ -2054,11 +2068,10 @@ void *func_8000590C(void *arg0, s32 arg1) {
         object->unk64 = (s32)((u32)object + (u32)object->unk64 - (u32)D_800C9450);
     }
     if (object->unk48 != 0) {
-        relocated = (u8 *)((u32)object + (u32)object->unk48 - (u32)D_800C9450);
-        object->unk48 = (s32)relocated;
-        offset = (s32)*(s32 *)(relocated + 0x74);
+        object->unk48 = (s32)((u32)object + (u32)object->unk48 - (u32)D_800C9450);
+        offset = (s32)*(s32 *)((u8 *)object->unk48 + 0x74);
         if (offset != 0) {
-            *(s32 *)(relocated + 0x74) = (s32)((u32)object + (u32)offset - (u32)D_800C9450);
+            *(s32 *)((u8 *)object->unk48 + 0x74) = (s32)((u32)object + (u32)offset - (u32)D_800C9450);
         }
     }
     if (object->unk58 != 0) {
@@ -2127,9 +2140,8 @@ void *func_8000590C(void *arg0, s32 arg1) {
         return NULL;
     }
     if ((loadFlags & 0x200) && (object->unk40->unk61 != 0)) {
-        relocated = (u8 *)(s32)object->unk4C;
-        if ((*(s32 *)(relocated + 0x1C) != 0) &&
-            ((*(u8 *)(relocated + 0x10) & 8) != 0)) {
+        if ((*(s32 *)((u8 *)object->unk4C + 0x1C) != 0) &&
+            ((*(u8 *)((u8 *)object->unk4C + 0x10) & 8) != 0)) {
             TrapDanglingJump(object);
         }
     }
@@ -5743,11 +5755,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_8000590C:start
  * symbol: func_8000590C
- * score: 99 differing words
+ * score: 26 differing words
  * frame: 0x90
  * relocations: 99
- * first-mismatch: 0x6c8
- * summary: Authenticated 227-draw baseline; corrected copy, nested-read and flag-sharing controls cover identified source levers; no new hypothesis.
+ * first-mismatch: +0x6D4
+ * summary: 99 to 26 at delta 0 (lane s1-c): nested fixups without a declared pointer, one-width nested reads, the copy-loop remainder as its own symbol copied from the unmasked test, and a split phantom re-read; left are the strength-reduced preheader init and the tail's three-way tie at 3/7.
  * PLATEAU-HANDOFF:func_8000590C:end
  */
 

@@ -614,7 +614,13 @@ D_2C = 0x0000002c;
 overlay13ProcessRecord = 0xf0000000;
 
 /* overlay 13: overlay13DrawRecord.c.o */
+D_28 = 0x00000028;
 D_80000000 = 0x80000000;
+o13DrawRecord = 0xf0000000;
+o13FinishDraw = 0xf0000000;
+o13GetRenderState = 0xf0000000;
+o13SetColor = 0xf0000000;
+o13SetupRecord = 0xf0000000;
 
 /* overlay 13: overlay13Call.c.o */
 overlay13CallReloc = 0xf0000000;
@@ -664,7 +670,6 @@ gOverlay14ValueF8 = 0x000000f8;
 gOverlay14CommandHeader = 0x000000fc;
 
 /* overlay 14: overlay14CreateValue.c.o */
-D_28 = 0x00000028;
 D_E8 = 0x000000e8;
 
 /* overlay 14: overlay14LoadRelocatedValue.c.o */
@@ -963,12 +968,14 @@ o26FlushReloc = 0xf0000000;
 o26PrepareNode = 0xf0000000;
 
 /* overlay 27: overlay_027.c.o */
-D_100 = 0x00000100;
-D_110 = 0x00000110;
-D_114 = 0x00000114;
 D_80000050 = 0x80000050;
 D_80000118 = 0x80000118;
 D_80000160 = 0x80000160;
+gOverlay27CoordinateRecords = 0x00000050;
+gOverlay27XCoordinates = 0x000000f0;
+gOverlay27XOffset = 0x00000110;
+gOverlay27YCoordinates = 0x00000100;
+gOverlay27YOffset = 0x00000114;
 
 /* overlay 28: overlay_028.c.o */
 D_80000028 = 0x80000028;
@@ -1658,6 +1665,7 @@ overlay51ReleaseIndexReloc = 0xf0000000;
 overlay51ReleaseReloc = 0xf0000000;
 
 /* overlay 52: overlay52Initialize.c.o */
+D_100 = 0x00000100;
 D_170 = 0x00000170;
 D_180 = 0x00000180;
 D_2F4 = 0x000002f4;
@@ -2015,6 +2023,7 @@ D_4E8 = 0x000004e8;
 D_50C = 0x0000050c;
 
 /* overlay 57: overlay57UpdateModeState.c.o */
+D_114 = 0x00000114;
 D_1A0 = 0x000001a0;
 D_4F8 = 0x000004f8;
 
@@ -2486,6 +2495,12 @@ overlay60ReleaseReloc = 0xf0000000;
 
 /* overlay 60: func_overlay_060_F0002F54_18BCD2C.c.o */
 D_800000B0 = 0x800000b0;
+func_80034554_o060Reloc = 0xf0000000;
+func_80036600_o060Reloc = 0xf0000000;
+func_80036660_o060Reloc = 0xf0000000;
+gOverlay60DisplayListReloc = 0x00000000;
+gOverlay60InputAxisReloc = 0x00000000;
+gOverlay60LocalDataReloc = 0x00000000;
 
 /* overlay 60: overlay60DrawBorder.c.o */
 gOverlay60DisplayList = 0x00000000;
@@ -4074,9 +4089,9 @@ func_overlay_025_F000017C_1879E04 = overlay25UpdateEffect;
 
 /* overlay 27: overlay_027.c.o */
 func_overlay_027_F0000000_187B9D8 = overlay27Init;
+func_overlay_027_F0000A1C_187C3F4 = overlay27UpdateCoordinates;
 func_overlay_027_F0000B20_187C4F8 = overlay27CanUse;
 func_overlay_027_F0000B68_187C540 = overlay27Activate;
-func_overlay_027_F0000A1C_187C3F4 = overlay27UpdateCoordinates;
 
 /* overlay 28: overlay_028.c.o */
 func_overlay_028_F0000000_187C8D0 = overlay28ResetBuffer;

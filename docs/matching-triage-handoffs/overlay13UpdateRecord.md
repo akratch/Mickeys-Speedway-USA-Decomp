@@ -2,11 +2,11 @@
 ### `overlay13UpdateRecord` plateau handoff
 
 - source: `src/overlays/o013/overlay13ProcessRecord.c`
-- score: 96/161 words
+- score: 70/161 words
 - frame: 0x20
 - relocations: 5
-- first mismatch: +0x2C
-- summary: Proc-0 census confirms 66 draws; authenticated ABI notwithstanding, the countdown/result candidate remains explicitly NON_EQUIVALENT.
+- first mismatch: +0x4C
+- summary: Countdown semantics reconstructed from the listing (old-count tests, count-exit reload, promoted timer, walking vertex pointer, void); 70 at delta 0 remain in the preheader load order, the fade exit's delay slot and the vertex block's schedule.
 
 - geometry: Target and configured C remain exact at `0x284`/644 bytes/161 words with `0x20` frame; the owned Overlay 13 range is `+0x284..+0x508`, ROM `0x186ED9C..0x186F020`, followed by `overlay13ProcessActive` with no padding.
 - ABI/flags: The configured candidate is `s16 *overlay13UpdateRecord(Overlay13Record *, s32)` under overlay game-code `-O2 -mips2 -32` and the canonical symbol-redefine/trim postprocess.
@@ -69,4 +69,68 @@ function_preflight.py (complete five-of-five identities),
 configured stock/traced compilation, draw_census.py comparisons,
 residual_map.py --object --against, finalize_plateau.py and tools/gates.sh.
 ROM verification covers the retail assembly fallback only.
+#### 2026-09-16, lane s1-a: 96 to 70 at delta 0, the semantics reconstructed off the listing
+
+Baseline reproduced at 96 masked, delta zero, first +0x2C, aligned 86
+exact, 34 naming, 2 immediate, 45 structural with six insertions each
+way. Six cycles, 60 cells. Retained candidate: 70 masked, delta zero,
+first +0x4C, aligned 121 exact, 18 naming, 2 immediate, 25 structural
+with five candidate-only and four target-only words. Not matched; the
+retail fallback stays.
+
+The j1 reading ("the target snapshots the remaining ticks into the result
+during each fall iteration") is corrected: every `or v0,s0,zero` is the
+dead copy of a bare `ticks--` truth test, the same artefact that closed
+`overlay27UpdateCoordinates` the same day, and the function's one caller
+declares it void and discards v0. Spelled `x-- != 0` the compiler builds
+an `sltu` boolean instead; spelled bare it copies and tests the old value
+with the decrement in the delay slot, as the ROM does. What the listing
+says the source is, each measured in isolation:
+
+- Both loops are guarded do-while loops on the old count (`if (ticks--)`
+  then `do { } while (ticks--)`), the fall loop leaving through a `goto`
+  past the count-exit's `state = record->state` reload (the ROM reloads
+  only on that exit), the fade loop through a `break` to a reload common
+  to both exits. The `for(;;)` and `while` forms with an inner exit test
+  are 116 to 141.
+- `state = record->state = 2` (sb then andi) in the fall loop.
+- `gravity`, `velocityX` and `velocityY` are locals defined in that order
+  before the loop (the FP colours f14/f16/f18 follow first-definition
+  order, L106; as expression webs gravity colours first and is wrong),
+  and the x update is written before the z update (as1 then schedules the
+  z chain first): 9 words.
+- The fade loop reads `record->timer` through the field with a forwarded
+  reload (`record->timer -= 2; timer = record->timer;`): the ROM stores the
+  unmasked subtraction from a ring temp and masks once into the promoted
+  register. Every masked-local spelling stores the masked value or masks
+  twice; the pure field form is one word short (88 at -4).
+- `record->vertexIndex = 1 - record->vertexIndex` with no `index` local:
+  the ROM's index is a ring temp (t1) and the chain skips a draw (t3),
+  which is the deleted copy of the forwarded reload (L149/L150); the
+  declared local is a coloured v1 and pushes the constant-1 web off a0.
+- The four vertices are filled through a walking pointer (`v[1] = y;
+  v[0] = ..; v[2] = ..; v += 5;`), which uopt folds to its final value: the
+  `+48` stays with the pointer's definition before the u32-to-float
+  branch and the `+30` lands after it, exactly the ROM's two adds, with
+  no probe and no region. Writing the final offsets directly forwards the
+  definition across the branch and folds the two adds (91 at -4); a
+  discarded read of the pointer or an `if (1) { }` region also holds the
+  split (79) but is artificial.
+
+What remains, 70 words in three places: the preheader's four invariant
+loads are ordered gravity, velocityX, z, velocityY in the ROM against
+velocityX, velocityY, gravity, z here (defining gravity first is 73, so it
+is not first-definition order alone); the fade loop's timer-zero exit
+stores the count before its `beq` and carries a second `lbu` of
+`record->state` in the delay slot where ours moves the store into the slot
+(a second explicit reload is merged back by uopt, 70 either way); and the
+vertex block schedules the 0.1875f constant first here where the ROM
+schedules the index load first, with the `beql`/`lw ra` exit fill
+following from that. Next: the vertex block's order is the question with
+the most words; the ROM's `mtc1 at,f4` sits ten instructions later than
+ours, which reads as the constant having no consumer in its block, i.e.
+the u32-to-float conversion's `bgez` being a block boundary the ROM's
+uopt respects and ours does not. Try the conversion spelled on an
+explicit `u32` local, or the radius computed before the pointer, before
+any colour work.
 <!-- plateau-handoff:overlay13UpdateRecord:end -->

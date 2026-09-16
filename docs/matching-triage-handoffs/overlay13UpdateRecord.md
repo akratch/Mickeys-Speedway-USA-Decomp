@@ -2,11 +2,11 @@
 ### `overlay13UpdateRecord` plateau handoff
 
 - source: `src/overlays/o013/overlay13ProcessRecord.c`
-- score: 70/161 words
+- score: 4/161 words
 - frame: 0x20
 - relocations: 5
 - first mismatch: +0x4C
-- summary: Countdown semantics reconstructed from the listing (old-count tests, count-exit reload, promoted timer, walking vertex pointer, void); 70 at delta 0 remain in the preheader load order, the fade exit's delay slot and the vertex block's schedule.
+- summary: No state local (a phantom v0 web), s32 timer with a goto exit, s16 y (two folded draws) and x/y/z store order take 70 to 4; the preheader's four loads remain, gravity emitted first but coloured last.
 
 - geometry: Target and configured C remain exact at `0x284`/644 bytes/161 words with `0x20` frame; the owned Overlay 13 range is `+0x284..+0x508`, ROM `0x186ED9C..0x186F020`, followed by `overlay13ProcessActive` with no padding.
 - ABI/flags: The configured candidate is `s16 *overlay13UpdateRecord(Overlay13Record *, s32)` under overlay game-code `-O2 -mips2 -32` and the canonical symbol-redefine/trim postprocess.
@@ -133,4 +133,63 @@ the u32-to-float conversion's `bgez` being a block boundary the ROM's
 uopt respects and ours does not. Try the conversion spelled on an
 explicit `u32` local, or the radius computed before the pointer, before
 any colour work.
+#### 2026-09-16, lane s2-b: a phantom state web, a narrowed y, 70 to 4
+
+Baseline reproduced at 70 masked, delta zero, frame 0x20, first +0x4C,
+aligner 121 exact, 18 naming, 2 immediate, 25 structural. Retained at 4
+(4 raw): 157 exact, 4 naming, 0 immediate, 0 structural, no insertions.
+Four cycles, 333 cells, a private direct-cc harness reproducing
+score_symbol on the base; the instrumented uopt's ladder (procedure 0,
+19 webs, all coloured, p1 only) and the freelist trace were read on the
+27 shape before the decisive cells.
+
+The named step (the vertex block's schedule from an explicit u32 local or
+the radius before the pointer) was not it: the radius position and a
+u32 spelling are inert or worse. What moved the function, each measured
+alone and together:
+
+- The fade exit. A `timer` declared s32 tests the once-masked forwarded
+  reload without the second andi, and the break path leaving through a
+  goto past the count-exit reload, like the fall loop, keeps the reloads
+  apart. The two are coupled: s32 alone is -8, the goto alone +4, both at
+  delta zero. With the x, y, z vertex store order (the y store between
+  the x and z stores, as1 then hoists it into the x load's shadow): 70
+  to 27, all naming.
+- The constant 1 (a1 for a0) and the ActiveCount address (a0 for v0),
+  seven rows, were one cause read off the ladder: web 0, a type-3 symbol
+  web at a u8 home with references in exactly the five blocks where
+  `state` is assigned, coloured v0 and never emitted -- a phantom; the
+  value the code carries is the `record->state` expression web on v1.
+  Its reference in the break block denied v0 to the address web. With no
+  `state` local at all (every test reads `record->state`), the phantom
+  is gone, the address takes v0 and the constant a0, and the reloads the
+  ROM has on each loop exit are uopt's PRE of the load after the loop's
+  possibly-aliasing stores, in the delay slots the ROM has them in.
+- The vertex temps sat one ring position behind (t7 for t9, and so on
+  through the eight stores). The GP ring in this TU is a plain ten-register
+  FIFO (t6 t7 t8 t9 t0 t1 t2 t3 t4 t5, no interleaved frees), so a draw's
+  register is its index mod 10; the trace put our first vertex mfc1 at
+  draw 12 and the target's t9 is draw 14. `s16 y` spends exactly two more
+  folded draws (mfc1, then the narrowing pair uopt drops because every use
+  is an sh). 27 to 4 with the state change; u16 y is 23, s32 y 20.
+
+What remains, four naming rows at +0x4C: the preheader loads. The ROM
+emits gravity, velocityX, z (the rotated reload), velocityY and colours
+velocityX f14, velocityY f16, gravity f18; ours emits velocityX,
+velocityY, gravity, z with the same colours. Every cell that produces the
+ROM's emission order (gravity a local, the velocities read in the loop
+and hoisted: 6) rotates the colours with it, because the three webs tie
+at save 5.5 over two blocks and the tie goes to web number, which
+follows definition order. Measured flat or worse on the 4 shape: all six
+definition orders crossed with local or hoisted forms of each of the
+three and the six loop-body orders (96 cells, floor 4); gravity defined
+inside the body (+4: a global load is not hoisted past the loop's
+pointer stores, which also says the ROM defines it in the preheader);
+any of the three defined before the ticks guard (the loads move into
+the earlier block, 7 to 13). Next: a form that lowers gravity's save
+below the velocities' (a third block in its web, or one more reference
+on each velocity) without moving its load out of the preheader block;
+the tie-break is the decision variable and the ladder on this shape is
+saved with the evidence.
+
 <!-- plateau-handoff:overlay13UpdateRecord:end -->

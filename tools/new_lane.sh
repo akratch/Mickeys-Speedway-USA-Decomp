@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Create an isolated worktree ("lane") for one worker.
 #
-#   tools/new_lane.sh <name> [--no-extract] [--no-cache] [base-branch]
+#   tools/new_lane.sh <name> [--no-extract] [--no-cache] [--no-prebuild]
+#                     [base-branch]
 #
 # Creates ../mickey-lane-<name> on branch lane/<name> from base-branch
 # (default: freshest linear local/remote campaign integration ref), shares the
@@ -13,11 +14,12 @@
 # lane path.
 set -euo pipefail
 name=${1:?lane name}; shift
-extract=1; cache=1; base=
+extract=1; cache=1; prebuild=1; base=
 for a in "$@"; do
   case "$a" in
     --no-extract) extract=0 ;;
     --no-cache) cache=0 ;;
+    --no-prebuild) prebuild=0 ;;
     *) base=$a ;;
   esac
 done
@@ -98,5 +100,30 @@ if [ "$extract" = 1 ] && [ "$restored" = 0 ]; then
 fi
 if [ "$dest" != "$display_dest" ]; then
   ln -s "$(basename "$dest")" "$display_dest"
+fi
+# A fresh lane does not link until `overlay-syms` has run against its own
+# compiled overlay objects and the tree has been built again: the first pass
+# cannot see a symbol the objects do not yet define, so a single build ends in
+# R_MIPS_26 truncations against resident entry points. Every lane dispatched
+# in this campaign paid ten minutes rediscovering that, and one arrived with a
+# trap 11. Do it here, once, where the cost is the lane's setup rather than
+# its budget.
+#
+# Advisory: a lane can still build. If this fails the worktree is fine and the
+# lane runs the two passes itself, so the failure is reported and not fatal.
+if [ "$prebuild" = 1 ]; then
+  # The order matters and only this one works on a fresh tree. overlay-syms
+  # derives its aliases from the COMPILED overlay objects, so it must follow a
+  # compile; and the link needs those aliases, so it must follow overlay-syms.
+  # The first build therefore ends in R_MIPS_26 truncations and its failure is
+  # expected, not a fault -- the same shape as the promotion recipe in
+  # CLAUDE.md.
+  jobs=${MICKEY_BUILD_JOBS:-8}
+  if ! (cd "$dest" \
+        && { gmake -j"$jobs" || true; } \
+        && gmake overlay-syms \
+        && gmake -j"$jobs") >"$dest/.lane-prebuild.log" 2>&1; then
+    echo "prebuild failed; run 'gmake -j8; gmake overlay-syms; gmake -j8' in the lane (see $dest/.lane-prebuild.log)" >&2
+  fi
 fi
 echo "$display_dest"

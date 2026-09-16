@@ -50,6 +50,29 @@ logdir=build/gates
 mkdir -p "$logdir"
 failed=()
 
+extra_gates=0
+# Whitespace, when the index is what is being gated. `git diff --cached
+# --check` refuses a trailing blank line at EOF and trailing spaces, and it is
+# what `merge_transaction.py` runs at integration time -- so a lane that does
+# not run it here hands back a branch that stops the merge after every gate has
+# already passed. That happened on four merges on 2026-09-16, each caught only
+# after a full build. It costs milliseconds and needs no build, so it runs
+# first.
+if [ "$staged" -eq 1 ]; then
+  mkdir -p build/gates
+  if git diff --cached --check > build/gates/whitespace.log 2>&1; then
+    printf 'PASS  %-26s %s\n' whitespace build/gates/whitespace.log
+    extra_gates=$((extra_gates + 1))
+  else
+    printf 'FAIL  %-26s %s\n' whitespace build/gates/whitespace.log
+    sed 's/^/      | /' build/gates/whitespace.log | tail -6
+    echo
+    echo "GATES FAILED: whitespace"
+    echo "Do NOT commit. Do NOT pass --no-verify. Fix the gate."
+    exit 1
+  fi
+fi
+
 for g in "${gates[@]}"; do
   args=()
   if [ "$g" = cleanroom ] && [ "$staged" -eq 1 ]; then
@@ -74,4 +97,4 @@ if [ ${#failed[@]} -ne 0 ]; then
   exit 1
 fi
 echo
-echo "all ${#gates[@]} gate(s) passed"
+echo "all $(( ${#gates[@]} + extra_gates )) gate(s) passed"

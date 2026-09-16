@@ -51,6 +51,16 @@ extern void overlay58Call59FCReloc(s32 code);
  * gain on the base the two before it produce, and none is a gain alone in a
  * different order.  The same construct is what moved this overlay's two
  * point-quad draw routines from 70 to 26.
+ *
+ * 2026-09-16 (lane s1-a), 88 to 78 at delta 0: `shift` is defined before
+ * `mask` in every arm (first-definition order gives shift v1 and mask a0,
+ * L106), the extended test is `== 0` with its else arm hoisted above the
+ * branch as the ROM lays it out, and every mode section defines `i`, then
+ * `count`, then its selected player.  A clean form with no probes and the
+ * selected player re-read from `records[0].player` reproduces the ROM's
+ * mode-0 loop shape exactly (the copy `or a3,t0,zero`, the compare before
+ * the address) but colours the packed-status base t0 where the ROM has t3
+ * (44 rows), which the probes are pinning; see the shard.
  */
 #ifdef NON_MATCHING
 void overlay58FinalizePackedStatus(void) {
@@ -69,6 +79,7 @@ void overlay58FinalizePackedStatus(void) {
     s32 equalFourCount;
     s32 decoded;
     u16 flags;
+
 
     records = overlay58Call555CReloc();
 
@@ -99,17 +110,17 @@ void overlay58FinalizePackedStatus(void) {
 
     mode = gOverlay58PackedModeReloc;
     if (mode == 0) {
-        mask = 0x7;
         shift = 0;
+        mask = 0x7;
     } else if (mode == 1) {
-        mask = 0x38;
         shift = 3;
-    } else if (gOverlay58ExtendedPackedModeReloc != 0) {
-        mask = 0xE00;
-        shift = 9;
-    } else {
-        mask = 0x1C0;
+        mask = 0x38;
+    } else if (gOverlay58ExtendedPackedModeReloc == 0) {
         shift = 6;
+        mask = 0x1C0;
+    } else {
+        shift = 9;
+        mask = 0xE00;
     }
 
     player = records[0].player;
@@ -127,9 +138,10 @@ void overlay58FinalizePackedStatus(void) {
             return;
         }
 
+        i = 0;
         count = 0;
         selectedPlayer0 = player;
-        for (i = 0; i < 3; i++) {
+        for (; i < 3; i++) {
             if (current != 0);
             if ((i != *(volatile u8 *)&records[0].player) &&
                 ((gOverlay58PackedStatusReloc[i + 4] & 0x7) >= 3)) {
@@ -164,9 +176,10 @@ void overlay58FinalizePackedStatus(void) {
             return;
         }
 
+        i = 0;
         count = 0;
         selectedPlayer1 = *(volatile u8 *)&records[0].player;
-        for (i = 0; i < 3; i++) {
+        for (; i < 3; i++) {
             if (player != 0);
             if ((i != selectedPlayer1) &&
                 (((gOverlay58PackedStatusReloc[i + 4] & 0x38) >> 3) >=
@@ -199,10 +212,10 @@ void overlay58FinalizePackedStatus(void) {
     }
 
     if (gOverlay58ExtendedPackedModeReloc == 0) {
-        count = 0;
-        equalFourCount = 0;
-        selectedPlayer2 = *(volatile u8 *)&records[0].player;
         i = 0;
+        count = 0;
+        selectedPlayer2 = *(volatile u8 *)&records[0].player;
+        equalFourCount = 0;
         do {
             if (i != selectedPlayer2) {
                 decoded =
@@ -284,10 +297,10 @@ void overlay58FinalizePackedStatus(void) {
 
 /* PLATEAU-HANDOFF:overlay58FinalizePackedStatus:start
  * symbol: overlay58FinalizePackedStatus
- * score: 88 differing words
+ * score: 78 differing words
  * frame: 0x48
  * relocations: 48
  * first-mismatch: 0x18
- * summary: Authenticated 44-draw baseline; resident-set and mask/shift allocation remain; existing count/records controls supply no new source hypothesis.
+ * summary: shift before mask, the extended test flipped and every section's i/count/selected order take 88 to 78; a probe-free form has the ROM's mode-0 loop shape but colours the packed-status base t0 for t3.
  * PLATEAU-HANDOFF:overlay58FinalizePackedStatus:end
  */

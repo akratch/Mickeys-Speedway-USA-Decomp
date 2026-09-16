@@ -32,12 +32,20 @@ extern void o13DrawRecord(O13Command **, s32, s32, O13Record *, void *, s32, s32
 extern void o13FinishDraw(void);
 extern void o13SetupRecord(O13Command **, void *, s32, s32);
 
-#ifdef NON_MATCHING
+/* Each command is one gbi-style block, `{ Gfx *_g = pkt; _g->w0 = ..; _g->w1 = ..; }`
+ * (PROVENANCE: the shape of DKR's `fast3d_cmd`/`gDma1p` macros in
+ * include/f3ddkr.h and gbi.h; the words are this ROM's own). The block-scoped
+ * cursor is load-bearing: a shared `cmd` local is a phantom web that pushes the
+ * render pointer off t1 and rotates the ring; the vertex word must be built
+ * `(0x04 << 24 | p << 16) | 0x30` in gDma1p's order, and the colour bytes need
+ * the `& 0xFF` of _SHIFTL so uopt evaluates r before g. Matched 2026-09-16
+ * (lane s1-a): 97 to 39 on the block cursor and OR order, 39 to 0 on the masks. */
+#define O13_GFX(w0v, w1v) { O13Command *_g = (*commands)++; _g->w0 = (w0v); _g->w1 = (w1v); }
+
 void overlay13DrawRecord(
     O13Record *record, O13Command **commands, s32 arg2, s32 arg3) {
     f32 savedScale;
     O13RenderState *render;
-    O13Command *cmd;
 
     if (((record->state == 1) && (D_20 != 0)) || record->state == 2) {
         render = o13GetRenderState();
@@ -50,65 +58,28 @@ void overlay13DrawRecord(
         } else {
             o13SetupRecord(commands, D_28, 0xE, 0);
             if (record->timer < 0x20) {
-                cmd = *commands;
-                *commands = cmd + 1;
-                cmd->w0 = 0xFA000000;
-                cmd->w1 = ((record->timer * 8) & 0xFF) | 0xFFFFFF00;
+                O13_GFX(0xFA000000, ((record->timer * 8) & 0xFF) | 0xFFFFFF00);
             }
 
-            cmd = *commands;
-            *commands = cmd + 1;
-            cmd->w0 = 0x04000030U |
-                ((((((u32)record + record->vertexBank * 0x28 +
-                    0x80000030U) & 6) | 0x20) & 0xFF) << 16);
-            cmd->w1 = (u32)record + record->vertexBank * 0x28 + 0x80000030U;
-
-            cmd = *commands;
-            *commands = cmd + 1;
-            cmd->w0 = 0x05110020;
-            cmd->w1 = (u32)&D_80000000;
+            O13_GFX(0x04000000 |
+                        ((((((u32)record + record->vertexBank * 0x28 +
+                             0x80000030U) & 6) | 0x20) & 0xFF) << 16) | 0x30,
+                    (u32)record + record->vertexBank * 0x28 + 0x80000030U);
+            O13_GFX(0x05110020, (u32)&D_80000000);
 
             if (D_24 != 0 && record->phase < (f32)(u32)*D_24) {
                 record->scale = savedScale * D_4;
-                cmd = *commands;
-                *commands = cmd + 1;
-                cmd->w0 = 0xFA000000;
-                cmd->w1 = ((u32)render->r << 24) |
-                          ((u32)render->g << 16) |
-                          ((u32)render->b << 8) | 0xA0;
-                cmd = *commands;
-                *commands = cmd + 1;
-                cmd->w0 = 0xFB000000;
-                cmd->w1 = 0xFFFFFF00;
+                O13_GFX(0xFA000000, ((render->r & 0xFF) << 24) |
+                                        ((render->g & 0xFF) << 16) |
+                                        ((render->b & 0xFF) << 8) | 0xA0);
+                O13_GFX(0xFB000000, 0xFFFFFF00);
                 o13DrawRecord(commands, arg2, arg3, record, D_24, 0xE, 0);
             }
         }
 
         record->scale = savedScale;
-        cmd = *commands;
-        *commands = cmd + 1;
-        cmd->w0 = 0xE7000000;
-        cmd->w1 = 0;
-        cmd = *commands;
-        *commands = cmd + 1;
-        cmd->w0 = 0xFB000000;
-        cmd->w1 = 0xFFFFFFFF;
-        cmd = *commands;
-        *commands = cmd + 1;
-        cmd->w0 = 0xFA000000;
-        cmd->w1 = 0xFFFFFFFF;
+        O13_GFX(0xE7000000, 0);
+        O13_GFX(0xFB000000, 0xFFFFFFFF);
+        O13_GFX(0xFA000000, 0xFFFFFFFF);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o013/overlay13DrawRecord/func_overlay_013_F0000580_186F098.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay13DrawRecord:start
- * symbol: overlay13DrawRecord
- * score: 97/192 words
- * frame: 0x38
- * relocations: 18
- * first-mismatch: +0x30
- * summary: Fresh 64-draw census retains solved frame; forced-colour diagnostics improve but do not close the structural and relocation-bound residual.
- * PLATEAU-HANDOFF:overlay13DrawRecord:end
- */

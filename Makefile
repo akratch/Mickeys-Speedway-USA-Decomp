@@ -687,10 +687,16 @@ $(BUILD_DIR)/$(SRC_DIR)/libultra/xldtob.c.o: $(SRC_DIR)/libultra/xldtob.c $(H_FI
 # file's header comment, never guessed at.
 # ---------------------------------------------------------------------------
 
-# Mickey's object-system TU uses the R4300 multiply-hazard scheduler; the
-# rolled byte-copy loop in func_80005548 also requires the measured unroll
-# setting alongside func_8000A62C's three delay nops.
-$(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: CFLAGS += -Wab,-r4300_mul -Wo,-loopunroll,0
+# Mickey's object-system TU uses the R4300 multiply-hazard scheduler: target
+# func_8000A62C reproduces three delay nops only with this measured flag.
+# It does NOT carry -Wo,-loopunroll,0: that override was added for a
+# NON_MATCHING candidate (func_80005548, commit 7adbef15), is byte-inert on
+# every matched function in the TU (lane s2-a, 2026-09-16: only six
+# GLOBAL_ASM-backed candidates change without it), and is refuted by
+# func_8000590C, whose target copy loop is the unroller's own output (the
+# remainder loop, the bypass of the `i != n` test on the no-remainder path
+# and the 4x body) from a plain `while (i < n)` loop.
+$(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: CFLAGS += -Wab,-r4300_mul
 
 # The shadow TU needs the same scheduler. The target bytes of two of its
 # unmatched functions carry the FP multiply-hazard nop between adjacent

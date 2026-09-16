@@ -595,7 +595,28 @@ it end to end. The ones that carry most of the weight:
   it there. On an overlay match follow the promotion sequence in `CLAUDE.md`,
   then `check-overlay-syms` and `promotion-proof`.
 - Do not refresh `docs/nm-ranking.md` unless `check-docs` fails without it; the
-  coordinator regenerates it.
+  coordinator regenerates it. **A promotion is exactly that case**: matching a
+  function retires its ranking row, so `check-docs` fails until the file is
+  regenerated, and the lane that promoted it regenerates it. Two lanes read the
+  sentence above as a blanket prohibition and handed back a tree that would not
+  integrate; a third was told by its dispatch to regenerate unconditionally,
+  which is the opposite error. Regenerate when, and only when, `check-docs`
+  fails without it.
+- **Regenerating means measuring.** `tools/nm_ranking.py` with no mode flag
+  compiles and re-measures; `--write-doc` is documentation mode and does not
+  compile, so it rewrites the Markdown from whatever the JSON already holds.
+  Run the measuring form first, then `--write-doc`. Against a stale row,
+  `--write-doc` alone is a no-op that looks like a success.
+- **Your shard header is a claim, and it is checked.** `- score:` and
+  `- first mismatch:` must agree with what the function measures when you hand
+  back; `python3 tools/check_shard_metrics.py` compares every header against
+  the ranking. `plateau_handoff_audit.py` does *not* catch this -- it compares
+  a shard to its in-source marker, and `finalize_plateau.py` writes both
+  together, so a drifted pair agrees with itself and reports `current`. On a
+  match, say so in the header: a matched function leaves the ranking entirely
+  and its shard stops being compared to anything, so a stale header there
+  advertises an open residual forever. Sixteen shards were in that state on
+  2026-09-16, one of them matched the same day.
 
 ## When your lane is merged
 

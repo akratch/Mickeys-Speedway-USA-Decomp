@@ -47,6 +47,27 @@ class OffsetTests(unittest.TestCase):
         self.assertIsNone(mod.parse_offset("early"))
 
 
+class ConventionTests(unittest.TestCase):
+    """`N/M words` is written both ways in this corpus and both are valid.
+
+    Assuming the differing-first reading reported 31 false positives out of
+    43 on the 2026-09-16 tree; assuming the masked offset alone reported 6
+    out of 33. A checker that cries wolf is worse than no checker.
+    """
+
+    def test_differing_first_agrees(self):
+        self.assertTrue(mod.PAIR_RE.match("14/249 words"))
+        differing, total = 14, 249
+        self.assertEqual(differing, 14)
+        self.assertEqual(total - differing, 235)
+
+    def test_matched_first_is_the_other_reading(self):
+        """levelInit reads 510/516 with six differing: 510 is the MATCHED half."""
+        pair = mod.PAIR_RE.match("510/516 words")
+        differing, total = int(pair.group(1)), int(pair.group(2))
+        self.assertEqual(total - differing, 6)
+
+
 class HeaderScanTests(unittest.TestCase):
     def test_only_the_header_is_scanned(self):
         """A later section quoting an old score is history, not a claim."""

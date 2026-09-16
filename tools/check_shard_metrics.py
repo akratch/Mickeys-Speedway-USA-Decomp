@@ -115,7 +115,19 @@ def check() -> "list[dict]":
         masked = row["relocation_masked_differing_words"]
         pair = PAIR_RE.match(score)
         bare = BARE_RE.match(score)
-        claimed = int(pair.group(1)) if pair else (int(bare.group(1)) if bare else None)
+        # `N/M words` is written both ways in this corpus: some shards put the
+        # DIFFERING count first, some the MATCHED count. Both are in use and
+        # neither is wrong, so a header is only drifted when it agrees with
+        # the ranking under NEITHER reading. Assuming one convention reported
+        # 31 false positives out of 43 on this tree.
+        if pair:
+            differing, total = int(pair.group(1)), int(pair.group(2))
+            agrees = differing == masked or total - differing == masked
+            claimed = None if agrees else differing
+        elif bare:
+            claimed = int(bare.group(1))
+        else:
+            claimed = None
         if claimed is not None and claimed != masked:
             findings.append({
                 "kind": "score",
@@ -125,9 +137,17 @@ def check() -> "list[dict]":
                 "actual": f"{masked} masked differing words",
             })
 
+        # A header may legitimately quote either the masked or the raw first
+        # mismatch; the ranking carries both. Only a value matching neither is
+        # drift. Comparing against the masked offset alone reported 6 false
+        # positives out of 33.
         claimed_off = parse_offset(first)
+        offsets = {
+            row.get("relocation_masked_first_mismatch_offset"),
+            row.get("first_mismatch_offset"),
+        } - {None}
         actual_off = row.get("relocation_masked_first_mismatch_offset")
-        if claimed_off is not None and actual_off is not None and claimed_off != actual_off:
+        if claimed_off is not None and offsets and claimed_off not in offsets:
             findings.append({
                 "kind": "first-mismatch",
                 "shard": rel,

@@ -303,4 +303,39 @@ values that are uopt temps rather than declared symbols in a form that keeps
 the copy. Price any candidate by the synthetic probe first; it is a
 one-second compile per cell and reads the block sets directly.
 
+#### 2026-09-16, lane w1-b: the budget is calibrated exactly; the pair is two loads short, six cycles
+
+Baseline reproduced at 2 masked (4 raw), delta 0, aligned 123/0/0/2, the
+byte12/short16 pair. Not moved. What the six cycles bought is the rule
+itself, measured on this TU with a sliding sentinel (`byte03 = 2`, K zero
+stores, `byte12 = 2`; the literal's block set read off the instrumented
+uopt), so the next lane can price a form without compiling it:
+
+- uopt closes a straight-line block when the count of LOADS OF LOCAL
+  VARIABLES since the block's start reaches twenty. A store of a constant
+  costs one (its base pointer), a store of a local two, `p->f = q->g` two,
+  a definition statement one per local it reads however long its ILOD
+  chain (`width = (candidate->resource->width - 1) << 5` is one), and a
+  self-defining an or-with-zero self-defining read one. `register` changes nothing.
+- Global loads cost nothing: `g = 7` and `g++` are zero units, and
+  `p->f = g` is one. ILODs, constants, arithmetic nodes and the statement
+  itself cost nothing. The counter restarts at the block head, not at the
+  call: probes, extra stores and zero-cost statements in the call block
+  before the resource test move nothing.
+- Counted after propagation: `height = width - 1` and `height = width`
+  fold the def away and shave two.
+
+In the ROM's store order the block holds 19 units before `short16`, so
+`short16` (two) closes it and `byte12` starts the next; both in one block
+needs at most 17 before `short16`. Dropping two zero stores does it and
+dropping one does not (control). The only source form measured that
+reaches 17 without a declared dimension is the forwarding shape (store the
+expressions once and re-read the fields), and uopt refuses to forward an
+s32 truncated into an s16 field: it reloads with `lh`, 97 at plus four,
+frame 0x28. Next: a form with at most 17 local loads before `short16` that
+keeps two declared s32 dimensions (the frame) -- there is no such form in
+the statement-per-store family, so it is either a different base symbol for
+the second half (a temp, which the `candidate->resource` copy web shows
+uopt will carry) or a store family cfe emits with one base load for two
+fields.
 <!-- plateau-handoff:overlay34CreateRecord:end -->

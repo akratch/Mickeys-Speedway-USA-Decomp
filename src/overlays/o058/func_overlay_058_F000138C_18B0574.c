@@ -302,7 +302,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
     s32 textY;
     s32 columnX;
     s32 x;
-    void **cursor;   /* one cell, exactly as the scalar it replaces */
+    char **cursor;   /* one cell, exactly as the scalar it replaces; case 12's title pointer (wv-x) */
     s32 portraitX;   /* unused: the loop indices below ride on letter1 and textY (wv-v) */
     s32 columnStep;
     s32 portraitIndex;
@@ -671,10 +671,11 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
         /* The visible index is reset through the last title-colour argument
          * (the value-producing spelling wv-i found: the reset then lands in
          * the call's delay slot), as case 13 already does.  The title loop
-         * below subscripts by a dead carrier, not by `i`, so the reset can
-         * live here: with `D_o058_5C98[i]` uopt folds the known-zero index
-         * into the cursor's constant init only from the loop's own block.
-         * See docs/whale-split-tokens.md. */
+         * below walks a pointer, not a subscript, so the reset can live
+         * here: with `D_o058_5C98[i]` uopt folds the known-zero index into
+         * the cursor's constant init only when no call separates the reset
+         * from the loop (measured on mini TUs and here, wv-x).  See
+         * docs/whale-split-tokens.md and docs/whale-pointer-walk.md. */
         fontColour(0xFF, 0x80, 0, 0xFF, (0xFF - (i = 0)));
         func_8004B0F8(&D_800D3140, D_o058_5E9C + D_o058_5EA0 + 0xA0, 0x1E, D_8007C0B8->text[0x6E], 4);
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -685,17 +686,31 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
          * s1 here and in case 13.  So `opponent` carries column X and
          * `columnX` the inner index; neither web changes colour (wv-r). */
         opponent = D_o058_5C80[D_8007BEF8 - 1] + D_o058_5E9C + D_o058_5EA0;
-        /* `textY` is the dead title-array induction: its reset folds into
-         * the generated cursor's constant init and is deleted, and its web
-         * (s4, decided early) is the one carrier of sixteen that leaves the
-         * `&D_o058_5E9C` address fragments intact.  A fresh scalar or any
-         * late-decided carrier costs the restore's `v1` fragment (+4). */
-        textY = 0;
         columnStep = D_o058_5C8C[D_8007BEF8 - 1];
         if ((s32) D_8007BEF8 > 0) {
+            /* The title array is walked by `cursor`, initialised inside the
+             * guard, so no index web touches blocks 183/184/190: W (the
+             * `&D_o058_5EA0` case-12 piece) then accepts the call block 185
+             * with margin +2, rejects 191, keeps 202 at margin 0 and colours
+             * t0, while the `&D_o058_5E9C` piece accepts 191 at margin 0 and
+             * rejects 202, exactly the 48 body's growth (wv-x, from wv-t's
+             * pointer cell).  Any dead carrier at 183 or 184 is one web too
+             * many for both tests, and a known-zero `i` does not survive the
+             * three calls into the cursor init.  The init is spelled from
+             * `D_o058_5C80`, whose lineage already spans the window, because
+             * `&D_o058_5C98` is used in cases 1/2/3/10 and its remainder
+             * would count at 184 (+4: the 5E9C piece steals 202).  The
+             * `cursor` cell is the frame slot the scalar used to hold.
+             * Residue: the load is `lw a3,0(s1)` first in the block where the
+             * target has it in the call's delay slot, because a load through
+             * a pointer variable gets no `.noalias` fact (L95; the alias
+             * profile reads its base as isvar/may-alias) and as1 cannot sink
+             * it past `sw t8,16(sp)`; an indexed named array gets the fact
+             * but needs the index known zero here.  Six words. */
+            cursor = (char **) (D_o058_5C80 + 12);
             do {
-                func_8004B0F8(&D_800D3140, opponent, 0x37, D_o058_5C98[textY], 4);
-                i += 1; textY += 1;
+                func_8004B0F8(&D_800D3140, opponent, 0x37, *cursor, 4);
+                i += 1; cursor += 1;
                 opponent += columnStep;
                 if (columnStep != 0); /* +10 to the stride web: decided before the count (see case 13). */
             } while (i < (s32) D_8007BEF8);
@@ -1543,10 +1558,10 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
 
 /* PLATEAU-HANDOFF:func_overlay_058_F000138C_18B0574:start
  * symbol: func_overlay_058_F000138C_18B0574
- * score: 9/3614 words
+ * score: 6/3614 words
  * frame: 0x138
  * relocations: 1253
- * first-mismatch: +0x12E4
- * summary: 9 retained: the slot address spelled as overlay60Prefix does (index through a dead local plus byte arithmetic) puts saves first in the addu; the loop-index resets ride on letter1/textY; W's nine rows (a2 for t0, +0x1280..+0x1500) remain.
+ * first-mismatch: +0x1314
+ * summary: 6 retained: case 12's title loop walks a pointer initialised inside the guard from the D_o058_5C80 lineage, so no index web touches W's blocks and W colours t0 unforced; the residue is one load scheduled first in the title-loop block instead of in the call's delay slot, for want of a .noalias fact on a pointer-variable base.
  * PLATEAU-HANDOFF:func_overlay_058_F000138C_18B0574:end
  */

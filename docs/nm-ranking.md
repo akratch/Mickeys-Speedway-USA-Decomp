@@ -306,7 +306,7 @@ units remain distinct.
 | 10 | `src/main/track.c` | `func_8000FAE0` | `main` | `register-only` | 248 | 16 | 16 | 28 | 28 | 0 | — |
 | 11 | `src/main/models.c` | `func_80020D8C` | `main` | `register-only` | 192 | 17 | 17 | 56 | 56 | 0 | — |
 | 12 | `src/overlays/o058/overlay58DrawLargePointQuad.c` | `overlay58DrawLargePointQuad` | `o058` | `register-only` | 416 | 21 | 21 | 20 | 20 | 0 | — |
-| 13 | `src/overlays/o058/overlay58DrawPointQuad.c` | `overlay58DrawPointQuad` | `o058` | `register-only` | 416 | 24 | 24 | 20 | 20 | 0 | — |
+| 13 | `src/overlays/o058/overlay58DrawPointQuad.c` | `overlay58DrawPointQuad` | `o058` | `register-only` | 416 | 21 | 21 | 20 | 20 | 0 | — |
 | 14 | `src/main/objects.c` | `func_80007C68` | `main` | `register-only` | 472 | 25 | 25 | 148 | 148 | 0 | — |
 | 15 | `src/overlays/o001/overlay_001_middle.c` | `overlay1AdvanceGauge` | `o001` | `register-only` | 168 | 25 | 25 | 24 | 24 | 0 | — |
 | 16 | `src/main/saves.c` | `packInit` | `main` | `register-only` | 460 | 29 | 29 | 176 | 176 | 0 | — |

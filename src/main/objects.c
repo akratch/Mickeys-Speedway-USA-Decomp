@@ -1786,16 +1786,22 @@ extern s32 func_8000A830(Objects0A830Object *object, void *data);
  * remains assembly-backed. No donor C was adopted; the existing Mickey
  * candidate and the unresolved header-scheduling mechanism are unchanged.
  */
-/* Lane s1-c (2026-09-16): 99 -> 32 masked at delta 0, frame 0x90, no force.
+/* Lane s1-c (2026-09-16): 99 -> 28 masked at delta 0, frame 0x90, no force.
  * The nested fixups no longer declare a pointer: `object->unk4C` is stored and
  * re-read with one spelling, so uopt forwards the stored value into a temp
  * that ugen keeps in a ring register across the branch (the target's t8/t4),
  * and the nested value is read once with one width (a0). The unmasked
- * `(size & 3)` test with `loadType` assigned inside it is the target's copy.
+ * `(size & 3)` test with `remainder` assigned inside it is the target's copy,
+ * and `remainder` is its own single-chain symbol (sharing `loadType` with
+ * the resource loop made the copy-loop piece a late split web that lost the
+ * 11/2 tie to the test expression on web number).
  * Left: the copy-loop preheader's `sll a0,zero,2` (a strength-reduced init;
- * indexing all three loops by resultSize produces it at 37-39 with a
- * different residual), the a2/a3 order of the loadType pair, and the tail's
- * s0/s3 exchange with the D_800C9498 address piece placed after the join. */
+ * indexing all three loops by resultSize produces it at 35 with a different
+ * residual), the unk4C nested value's a1 (a0 is held by `offset`'s web,
+ * which reaches from the copy loops to its unk48 carrier use), and the
+ * tail's s0/s3 exchange: `arg1 & 1` and the two counter addresses tie at
+ * 3/7 and are coloured in web-number order, where the ROM decides the
+ * addresses first; region openers and carriers are inert on that tie. */
 #ifdef NON_MATCHING
 void *func_8000590C(void *arg0, s32 arg1) {
     Objects0590CObject *object;
@@ -1812,6 +1818,7 @@ void *func_8000590C(void *arg0, s32 arg1) {
     s8 failed;
     s32 resultSize;
     Objects0590CAsset *asset;
+    s32 remainder;
 
     D_8007A210 = 1;
     D_8007A214 = NULL;
@@ -2019,7 +2026,7 @@ void *func_8000590C(void *arg0, s32 arg1) {
     size >>= 2;
     if (size > 0) {
         if ((size & 3) != 0) {
-            loadType = size & 3;
+            remainder = size & 3;
             offset = resultSize * 4;
             aligned = (u8 *)object + offset;
             do {
@@ -2027,7 +2034,7 @@ void *func_8000590C(void *arg0, s32 arg1) {
                 aligned += 4;
                 *(s32 *)(aligned - 4) = *(s32 *)((u8 *)D_800C9450 + offset);
                 offset += 4;
-            } while (resultSize != loadType);
+            } while (resultSize != remainder);
         }
         if (resultSize != size) {
             offset = resultSize * 4;
@@ -5746,11 +5753,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_8000590C:start
  * symbol: func_8000590C
- * score: 32 differing words
+ * score: 28 differing words
  * frame: 0x90
  * relocations: 99
- * first-mismatch: +0x410
- * summary: 99 to 32 at delta 0 (lane s1-c): nested fixups without a declared pointer and one-width nested reads, loadType copied from the unmasked test; left are the strength-reduced copy-loop preheader, the loadType pair's a2/a3 order and the tail's s0/s3 exchange.
+ * first-mismatch: +0x6D4
+ * summary: 99 to 28 at delta 0 (lane s1-c): nested fixups without a declared pointer, one-width nested reads, and the copy-loop remainder as its own symbol copied from the unmasked test; left are the strength-reduced preheader init, the unk4C nested value's colour and the tail's three-way tie at 3/7.
  * PLATEAU-HANDOFF:func_8000590C:end
  */
 

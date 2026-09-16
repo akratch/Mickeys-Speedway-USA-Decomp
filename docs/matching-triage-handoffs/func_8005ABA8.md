@@ -372,4 +372,8 @@ assembly fallback; this pass earns zero new matching bytes.
 Baseline reproduced at 2, delta zero, first +0x3C. No cycle spent; the as1
 zero-node-block closure stands and nothing in this lane's readings reopens
 it.
+#### 2026-09-16, lane nx-c: read only
+
+Baseline reproduced at 2, delta zero, first +0x3C. No cycle spent; the as1
+zero-node-block closure stands.
 <!-- plateau-handoff:func_8005ABA8:end -->

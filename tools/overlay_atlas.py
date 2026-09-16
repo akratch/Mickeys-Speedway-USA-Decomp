@@ -1445,6 +1445,7 @@ MIXED_TU_EXACT_C_RANGES = {
     15: [
         (0x000, 0x00C, "overlay15GetResource4"),
         (0x00C, 0x04C, "overlay15ReleaseResource"),
+        (0x500, 0x6A4, "overlay15DrawScreenStars"),
         (0x6A4, 0x6B0, "overlay15GetResource10"),
         (0x6B0, 0x6E8, "overlay15ReleaseResource10"),
         (0xB7C, 0xB88, "overlay15SetValueC"),

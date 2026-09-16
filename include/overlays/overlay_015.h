@@ -52,7 +52,6 @@ extern u16 *gOverlay15StarPalette;
 extern u32 *gOverlay15StarColors;
 extern Overlay15InitBounds gOverlay15InitBounds;
 extern Overlay15Gfx gOverlay15StarSetup[];
-extern const f32 gOverlay15StarFadeScale;
 extern f32 gOverlay15StarBound0;
 extern f32 gOverlay15StarBound1;
 extern f32 gOverlay15StarBound2;

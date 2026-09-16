@@ -265,4 +265,45 @@ cycles, 33 cells:
 Next: the target's saved working register is most likely uopt's own split
 of `var_s2`, which is precisely a copy that is not propagated; the lever is
 that web's split gate, not a source variable. Read its record.
+
+#### 2026-09-16, lane w1-a: one symbol web, and the copy's value number
+
+Baseline reproduced at 16 masked, delta 0, first +0x2C, register-only.
+Three batches, 17 cells, none below 16; the source is unchanged.
+Report: [lastmile-web-membership.md](../lastmile-web-membership.md).
+
+The procedure-11 records: `var_v0` is one symbol web (web 0, blocks 0 to
+33, nocs 9, totalsave 232, coloured s0) over both the loaded chain and
+the working chain; uopt does not rename them apart. The ROM keeps the
+loaded byte caller-saved and dead before the call, so its source has two
+symbols. Read off the objects, the sixteen rows are the loaded byte's
+register (six rows), the second range test reading the working char
+where ours reads `var_s2`, and the fold's mask and copy-back exchanging
+registers (the ROM masks into the working char and copies to `var_s2`;
+ours the reverse).
+
+- The loop-bottom load in the loop condition, behind a region opener, or
+  inside its own region: 16, inert. Block placement of the load is not
+  what keeps the chains one symbol.
+- A separate loaded-byte symbol (`s32` or `u8`) with the working char
+  kept as `var_v0`: 91, +4. The object says why, and it corrects the
+  hoisting reading: the arm copies are not hoisted, they stay in the
+  arms; uopt value-numbers `w = var_s2` with `var_s2 = c & 0xFF` and the
+  masked value gets three destinations, a temp plus a copy into `var_s2`.
+  The base avoids it only because the mask's operand is the copy's own
+  symbol.
+- `u8` working char with the three-statement fold and no explicit masks
+  (two-variable and three-variable, `s32` or `u8` loaded byte, the masked
+  fold too): 79 to 94, +4 to +16. The truncations are emitted.
+- `u8 var_s2`, the lazy-normalisation reading of the ROM's fold: 88 to
+  94, +4 to +20. The masks are emitted eagerly on the store, on the read
+  into the working char and on the copy back.
+
+Next: the decision variable is the value number of the arm-head copy. In
+the ROM the copy reads `var_s2`'s register, so its value is not the
+mask's: either `var_s2` has a second reaching definition at the arm
+heads or the loaded byte is unavailable there. The untested cell is a
+zero-width redefinition of the loaded symbol between the mask and the
+arms; a plain two-symbol form on this shape is closed by the 192-form
+lattice, lm-c's 16 cells and the five here.
 <!-- plateau-handoff:func_80046BCC:end -->

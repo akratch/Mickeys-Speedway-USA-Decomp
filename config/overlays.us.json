@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 244160,
-  "nonmatching_overlay_c_bytes": 224460,
+  "matched_overlay_c_bytes": 244420,
+  "nonmatching_overlay_c_bytes": 224200,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 2400,
   "bss_bytes": 77680,
@@ -6611,6 +6611,14 @@
      "end_offset": "0x64",
      "size": "0x64",
      "label": "overlay27Init",
+     "source": "overlays/o027/overlay_027",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
+     "offset": "0xA1C",
+     "end_offset": "0xB20",
+     "size": "0x104",
+     "label": "overlay27UpdateCoordinates",
      "source": "overlays/o027/overlay_027",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },

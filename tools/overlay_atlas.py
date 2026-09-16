@@ -1468,6 +1468,7 @@ MIXED_TU_EXACT_C_RANGES = {
     ],
     27: [
         (0x000, 0x064, "overlay27Init"),
+        (0xA1C, 0xB20, "overlay27UpdateCoordinates"),
         (0xB20, 0xB68, "overlay27CanUse"),
         (0xB68, 0xBC0, "overlay27Activate"),
     ],

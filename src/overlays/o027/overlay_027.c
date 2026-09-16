@@ -376,10 +376,11 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
 #endif
 
 /* DKR v77/v80 and JFG contain no exact donor for this table transform. */
-/* Plateau retry (2026-08-25): -O2/-mips2 is exact-sized; spelling the scale
- * as amount * -12 and eliminating xDelta reduce 55 to 19 register-only words,
- * first +0x0; ten source/lifetime variants leave the a1/a2 phase unresolved. */
-#ifdef NON_MATCHING
+/* Matched 2026-09-16 (lane s1-a). The last 19 words were the leaf's p2 web
+ * numbering: the countdown's post-decrement temp must be numbered ahead of the
+ * loop's index expressions, which a `while (remaining--)` condition does (it is
+ * created before the body) and a `do ... while (remaining--)` cannot. uopt peels
+ * the constant-true first test, so the shape is the same do-while with 9. */
 void overlay27UpdateCoordinates(s32 amount) {
     Overlay27CoordinateRecord *record;
     s32 xOffset;
@@ -391,8 +392,8 @@ void overlay27UpdateCoordinates(s32 amount) {
         ((amount * 48) + gOverlay27YOffset) & 0x3FF;
 
     record = gOverlay27CoordinateRecords;
-    remaining = 9;
-    do {
+    remaining = 10;
+    while (remaining--) {
         record->firstX = gOverlay27XCoordinates[record->firstIndex] +
                          xOffset;
         record->firstY = gOverlay27YCoordinates[record->firstIndex] +
@@ -406,11 +407,8 @@ void overlay27UpdateCoordinates(s32 amount) {
         record->thirdY = gOverlay27YCoordinates[record->thirdIndex] +
                          amount;
         record++;
-    } while (remaining--);
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o027/overlay_027/func_overlay_027_F0000A1C_187C3F4.s")
-#endif
 
 /* Fresh pinned DKR v77/v80 and JFG object scans found no exact donor. */
 s32 overlay27CanUse(Overlay27UseObject *object) {
@@ -443,15 +441,6 @@ s32 overlay27Activate(O27Object *object) {
     return 0;
 }
 
-/* PLATEAU-HANDOFF:overlay27UpdateCoordinates:start
- * symbol: overlay27UpdateCoordinates
- * score: 19/65 words
- * frame: frameless
- * relocations: 10
- * first-mismatch: +0x0
- * summary: Explicit proc-3 census confirms 29 draws; swapping record/countdown preheader initializers moved neither draws nor emissions and was restored.
- * PLATEAU-HANDOFF:overlay27UpdateCoordinates:end
- */
 
 /* PLATEAU-HANDOFF:func_overlay_027_F0000064_187BA3C:start
  * symbol: func_overlay_027_F0000064_187BA3C

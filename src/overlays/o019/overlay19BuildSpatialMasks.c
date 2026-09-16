@@ -1,11 +1,10 @@
 #include "overlays/overlay019.h"
 
 #define O19_LOAD_SPAN_FIELDS \
-    span = (O19Span *)((u8 *)group->spans + frame.offset.vSpanOffset); \
-    firstItem = span->itemStart; \
-    itemEnd = (span + 1)->itemStart; \
-    vertexBase = span->vertexBase; \
-    bit = span->flags
+    firstItem = ((O19Span *)((u8 *)group->spans + frame.offset.spanOffset))->itemStart; \
+    itemEnd = (((O19Span *)((u8 *)group->spans + frame.offset.spanOffset)) + 1)->itemStart; \
+    vertexBase = ((O19Span *)((u8 *)group->spans + frame.offset.spanOffset))->vertexBase; \
+    bit = ((O19Span *)((u8 *)group->spans + frame.offset.spanOffset))->flags
 #define O19_ADD_REVERSED(a, b) ((b) + (a))
 #define O19_ADVANCE_SPAN \
     frame.index.spanIndex = frame.index.vSpanIndex + 1; \

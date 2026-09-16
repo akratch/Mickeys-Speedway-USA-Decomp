@@ -56,6 +56,9 @@ void overlay15ReleaseResource(void) {
 /* Plateau (2026-08-25, batch 36): canonical -O2 -mips2 is four bytes
  * short; best 230/247 words differ, first at +0x4. Field-order/count-address
  * lifetimes improved 238 to 230; lattice, playbook, and 40m permuter found no exact. */
+/* s1-b (2026-09-16): the palette index inits ahead of the colour block and the
+ * zero/zMax stores ahead of colorDivisor's: 70 to 60. The size definition is
+ * forwarded into a type-4 temp (s3) where the target keeps starIndex's web (s0). */
 #ifdef NON_MATCHING
 void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
                                   s32 zRange, u32 startColor, u32 endColor,
@@ -98,10 +101,10 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
     bounds->yMax = bounds->yRange * 0.5f;
     bounds->zRange = (f32) zRange;
     zRange = (zRange + 1) << 8;
-    *countAddress = starCount;
     bounds->zero = 0;
     bounds->zMax = bounds->zRange + 1.0f;
     bounds->colorDivisor = (f32) colorDivisor;
+    *countAddress = starCount;
     bounds->zMin = 1.0f;
     bounds->colorStep = 255.0f / bounds->colorDivisor;
 
@@ -121,6 +124,9 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
         previousStarIndex = 0;
     }
 
+    starIndex = 1;
+    paletteIndex2 = 2;
+    paletteIndex3 = 3;
     startR = (startColor >> 24) & 0xFF;
     startG = (startColor >> 16) & 0xFF;
     startB = (startColor >> 8) & 0xFF;
@@ -130,9 +136,7 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
 
     palette = gOverlay15StarPalette;
 
-    starIndex = 1;
-    paletteIndex2 = 2;
-    paletteIndex3 = 3;
+
     do {
         *palette++ =
             (((((deltaR * previousStarIndex) >> 8) + startR) & 0xF8) << 8) |
@@ -464,11 +468,11 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
 
 /* PLATEAU-HANDOFF:overlay15InitStarsAndPalette:start
  * symbol: overlay15InitStarsAndPalette
- * score: 70/247 words
+ * score: 60/247 words
  * frame: 0x40
  * relocations: 14
  * first-mismatch: +0x4
- * summary: Counter reuse and measured store moves reach 198 aligned exact words; 70 masked remain at exact size/frame, with adjacent scheduling controls stalled.
+ * summary: Index inits ahead of the colour block and the zero/zMax stores ahead of colorDivisor reach 60; the forwarded count*12 definition (s3 against s0) and the FP ring from yRange remain.
  * PLATEAU-HANDOFF:overlay15InitStarsAndPalette:end
  */
 

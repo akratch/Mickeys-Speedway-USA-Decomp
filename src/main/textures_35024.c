@@ -61,21 +61,34 @@ void func_80034434(s32 value)
   s32 *new_var;
   D_8007BD80 = (*(new_var = &value)) & 0xFF;
 }
-#ifdef NON_MATCHING
 /* PROVENANCE: control flow is adapted from the public Diddy Kong Racing
  * src/textures_sprites.c::load_texture and compared with Jet Force Gemini's
  * public texLoadTexture object. Mickey's globals, layouts, helpers, and
- * compiled bytes remain authoritative. The guarded candidate reconstructs
- * the complete cache, asset, allocation, decompression, and overflow paths.
- * Reusing the consumed loadSize carrier for the aligned DMA address removes
- * the surplus word: both extents are 214 words, with 54 masked differences.
- * The frame is 0x48 against 0x50; first mismatch is +0x0. Of 53 static
- * relocation records on each side, 46 offset/type/identity tuples agree.
- * Remaining frame, temporary-home and schedule differences are nonexact. */
+ * compiled bytes remain authoritative.
+ *
+ * Matched 2026-09-16 (lane s2-c), 54 -> 0 masked words at delta 0, frame
+ * 0x50, no colour force, ten measured batches. Four edits carry it, each
+ * priced alone: (1) the aligned DMA address is DKR's `u32` local with
+ * `(s32)` casts on the modulo, which is what puts the sum and remainder in
+ * ring temps and lands every later temp on the target's register (the base
+ * and every `s32` spelling are one ring position ahead from +0x58); (2) the
+ * redundant `else loadSize = uncompressedSize` stays, because the target's
+ * branch-over shape at +0x1AC comes from it (dropping it is one word short);
+ * (3) a twelfth declared scalar between assetIndex and assetOffset, because
+ * every declared local takes a slot in declaration order and the target's
+ * homes sit one slot below ours from assetOffset down; (4) the post-call use
+ * of the aligned address sits inside a direct assignment to one of its own
+ * operands, `loadSize = alignedAddress + 0x20`, which is the one form uopt
+ * refuses to forward the definition into, so the local stays a symbol web
+ * spilled to its own home (0x20) instead of an expression temp in an 8-byte
+ * temp region. A comma expression, a region opener, `register`, a pointer
+ * type, block scope and a second def after the call all leave the temp in
+ * place; the kill applied to `assetSize` instead is byte-identical. */
 TextureHeader *func_80034448(s32 textureId) {
     s32 i;
     TextureHeader *texture;
     s32 assetIndex;
+    s32 textureCount;
     s32 assetOffset;
     s32 assetSize;
     s32 assetSection;
@@ -83,6 +96,7 @@ TextureHeader *func_80034448(s32 textureId) {
     s32 tableType;
     s32 uncompressedSize;
     s32 loadSize;
+    u32 alignedAddress;
 
     textureId &= 0xFFFF;
     assetIndex = textureId;
@@ -141,16 +155,11 @@ TextureHeader *func_80034448(s32 textureId) {
         if (texture == NULL) {
             return NULL;
         }
-        piRomLoadSection(
-            assetSection,
-            loadSize = (((s32)texture + loadSize) - assetSize) -
-                ((((s32)texture + loadSize) - assetSize) % 16),
-            assetOffset, assetSize);
-        func_8004D7E0(
-            (void *)(loadSize + 0x20),
-
-
-            texture);
+        alignedAddress = (((s32)texture + loadSize) - assetSize);
+        alignedAddress = (s32)alignedAddress - (s32)alignedAddress % 16;
+        piRomLoadSection(assetSection, alignedAddress, assetOffset, assetSize);
+        loadSize = alignedAddress + 0x20;
+        func_8004D7E0((void *)loadSize, texture);
         assetSize = uncompressedSize;
     }
 
@@ -175,18 +184,6 @@ TextureHeader *func_80034448(s32 textureId) {
     }
     return texture;
 }
-/* Plateau metadata is retained at EOF; blank lines preserve source positions. */
-
-
-
-
-
-
-
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/textures_35024/func_80034448.s")
-#endif
 /* PROVENANCE: control flow is adapted from Jet Force Gemini's public
  * src/textures.c::texFreeTexture. Mickey's raw two-word cache layout, callers,
  * and exact compiled bytes remain authoritative. */
@@ -230,13 +227,3 @@ s32 func_8003484C(void *texture) {
     }
     return -1;
 }
-
-/* PLATEAU-HANDOFF:func_80034448:start
- * symbol: func_80034448
- * score: 54 differing words
- * frame: 0x48
- * relocations: 53
- * first-mismatch: 0x0
- * summary: Consumed loadSize carrier removes surplus word; 54 masked differences remain with frame/home and schedule deficits.
- * PLATEAU-HANDOFF:func_80034448:end
- */

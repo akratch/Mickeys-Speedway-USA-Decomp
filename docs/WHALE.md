@@ -1,6 +1,30 @@
 # Harpooning `func_overlay_058_F000138C_18B0574`
 
-## Current checkpoint: 9, with the slot rows closed and W a closed system
+## Current checkpoint: 6, with W closed on a pointer walk
+
+Lane wv-x retains **6 at delta zero, unforced** (3611 / 0 / 0 / 4, frame
+0x138, 1,253 relocations, first mismatch +0x1314). Case 12's title loop
+walks a pointer initialised inside the guard from the `D_o058_5C80`
+lineage, whose hull already spans the window, so no index web touches
+blocks 183/184/190 and both growth tests read as the 48 body's: W accepts
+185, rejects 191, keeps 202 at margin zero and colours `t0`; the 5E9C
+piece accepts 191 at margin zero and rejects 202. wv-t's pointer cell had
+lost only to the `&D_o058_5C98` remainder counting at 184. The residue is
+one instruction's schedule -- the title-loop load emitted first in its
+block where the target has it in the call's delay slot -- because a load
+through a pointer variable carries no `.noalias` fact (its base is
+`isvar`/may-alias in the alias profile, the strength-reduced base is
+`islda`/no-alias) and as1 cannot sink it past the argument store. An
+indexed named array has the fact but needs its index known zero at the
+preheader, and that is now a three-way conflict measured to the cell: the
+delay-slot `i = 0` lives only through a loop phi, the title init folds
+only from a redundant in-block def (which takes the title phi), and the
+row init likewise (which takes the row phi); bodies holding any two of the
+three are banked (`c12a`: the head exact through +0x1370 at +8; `c13a`:
+both inits at 50). Fifteen cycles; the
+[pointer-walk report](whale-pointer-walk.md) has the ledger.
+
+## Previous checkpoint: 9, with the slot rows closed and W a closed system
 
 Lane wv-w retains **9 at delta zero, unforced** (3605 / 9 / 0 / 0, frame
 0x138, 1,253 relocations, first mismatch +0x12E4). The two slot-address

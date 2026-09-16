@@ -1,48 +1,76 @@
-# Whale handoff — 2026-09-16 (wv-w), at 9 words, unforced
+# Whale handoff — 2026-09-16 (wv-x), at 6 words, unforced
 
 `func_overlay_058_F000138C_18B0574`, 14,456 bytes, the largest unmatched
-function in the tree. Eight bounded lanes have taken it **187 → 9 masked
+function in the tree. Nine bounded lanes have taken it **187 → 6 masked
 words at delta zero**, unforced. This file is the resumption point; the
 standing plan is `docs/WHALE.md` and the lane reports it links.
 
 ## State
 
-    masked                 9 / 3,614 words   (99.75% of words byte-exact)
-    raw                  186
+    masked                 6 / 3,614 words   (99.83% of words byte-exact)
+    raw                  184
     delta                  0
     frame              0x138
     relocations        1,253
-    buckets      3605 exact / 9 naming / 0 immediate / 0 structural
-    displacement tax       0
-    first mismatch    +0x12E4, W (the &D_o058_5EA0 case-12 piece, a2 for t0)
+    buckets      3611 exact / 0 naming / 0 immediate / 4 structural
+    displacement tax       2
+    first mismatch    +0x1314, the title-loop load (candidate-only +0x1314, target-only +0x1320)
 
-Verified with `tools/score_symbol.py` and `tools/residual_map.py` on the
-tree source. The C remains guarded `NON_MATCHING`; nothing is promoted.
-Source on `lane/wv-w`; the report is
-[whale-growth-margins.md](whale-growth-margins.md) and the cells are under
-`cells-wv-w/`.
+Verified with `tools/score_symbol.py`, `tools/align_symbol.py` and
+`tools/residual_map.py` on the tree source. The C remains guarded
+`NON_MATCHING`; nothing is promoted. Source on `lane/wv-x`; the report is
+[whale-pointer-walk.md](whale-pointer-walk.md) and the cells are under
+`cells-wv-x/`.
 
-Lane `wv-w` (2026-09-16) closed the two slot-address rows: the operand
-order of `saves + index*32` is the expression tree's evaluation order, and
-the form a matched sibling (`overlay60Prefix.c`) uses -- the index through
-a declared local *and* byte arithmetic, `(u8 *)saves + i * 32` -- puts the
-base first. Either half alone is byte-identical to `&saves[f()]` (wv-v's
-cycle 10 measured them separately); together they are exact.
+Lane `wv-x` (2026-09-16) closed W: case 12's title loop walks a pointer
+(the unused `cursor` cell) initialised inside the guard from
+`D_o058_5C80 + 12`, a lineage that already spans the window, so no index
+web touches W's blocks and both growth tests are the 48 body's. wv-w's
+suspected structural difference was not in the block graph (cycle 0: the
+emitted structure is the target's to the block) but in the neighbour count,
+by exactly the one web every dead carrier adds.
 
-Lane `wv-v` (2026-09-16) coloured the seven folded loop-index resets by
-choosing their symbols (`textY` for cases 3/13, `letter1` for cases 1/2);
-see [whale-index-carriers.md](whale-index-carriers.md). Lane `wv-u`
-itemised the case-12 identity ([whale-split-order.md](whale-split-order.md));
-lane `wv-t` built the split instrument ([whale-split-growth.md](whale-split-growth.md)).
-All stand.
+## What remains: one load's schedule, and the fact behind it
 
-## What remains: 9 aligned rows, one web
+The title-loop load `lw a3,0(s1)` is emitted first in its block where the
+target has it in the call's delay slot. as1 sinks it past `sw t8,16(sp)`
+only under a `.noalias` fact, which ugen emits for a load-address base
+(`islda`) and never for a pointer variable (`isvar`), L95; the alias
+profile's traces are banked. An indexed named array has the fact, and
+then its index must be known zero at the preheader with no web in 183,
+184 or 190 -- W's 202 test and the 5E9C piece's 191 test are both at
+margin zero. That index is `i`, and `i` is bounded by three measured
+rules: a call between a reset and the loop kills the cursor-init fold
+(every loop form, every reset position before 183, mini TUs, `register`,
+`-Olimit`); a redundant in-block reset folds the init and is then removed
+by redundant-store elimination, while the delay-slot reset survives only
+if a loop phi still reads it (every other use is folded to 0 first); and
+dead-store elimination runs before the redundancy check, so an in-block
+reset that overwrites the delay-slot def's last phi use kills it. The
+title side and the row side each need one such reset. `c12a` (title reset
+inside the guard, row reset inside the guard after the loop) is the
+target's head through +0x1370 and loses the row init (+8); `c13a` adds
+the row reset inside the row guard and loses the delay-slot def (50).
 
-**`&D_o058_5EA0`'s fragment W in case 12** (+0x12E4..+0x1528): `a2` where
-the target has `t0`. `t0` needs a2/a3 forbidden at W's colouring and only
-the title loop's call block 185 supplies them, so W must accept 185 and
-keep 202 (the restore block) in the same piece -- a separate 202 piece
-would colour v0 or a0.
+## The next cycle, named by wv-x
+
+**A use of the delay-slot `i = 0` that survives copy propagation and is
+not a loop phi, or a redundant in-block reset that dead-store elimination
+does not count as an overwrite.** Concretely, untested: (a) the row loop's
+guard and preheader as the *same* source block as the title loop's exit
+without an else-duplicated save block -- the saves are on both paths in
+the target, so this needs uopt to merge them, which it did not for the
+else form; (b) a row-loop form whose induction is not `i` at the preheader
+edge but a variable the row phi reads through `i` (a copy `k = i` placed
+in 191 is folded, so the copy must be one uopt keeps); (c) reading the
+loop-exit reset back: the target's `move s7,zero` at +0x1364 is on the
+loop path only, which the tree's `i = 0` at 190 already produces, so the
+row side of the target may be exactly ours and the title side the open
+one -- in which case what is needed is a title-init fold from a def at
+184 that leaves the title phi reading 180, i.e. a def that is redundant
+*before* copy propagation runs. Read `whale-pointer-walk.md` "What a
+known-zero `i` can and cannot reach" before any cell; every cell is banked
+with its records.
 
 ## The system, named by wv-w
 
@@ -80,7 +108,7 @@ rule line by line (at 3.3: 185 accepted, 191 and 202 rejected with `new`
 2), while the rest of the function moves from +0x104 on. They are not a
 source.
 
-## The next cycle, named by wv-w
+## The cycle wv-w named (done)
 
 **A form that changes a lineage's weight or a seed's order without an
 instruction.** Concretely, one of: (a) a third occurrence of `n*2` in
@@ -184,6 +212,13 @@ Do not re-dispatch against any of these.
 | forcing W to t0 on the 9 body | +64 from +0x600, the caller-saved table reshapes (wv-w cycle 4) |
 | memory class for the five spilled candidates | `*&x` is folded by cfe; `volatile` moves the frame and width on all five, so they are candidates in the target too (wv-w cycles 5-6) |
 | an alias symbol for the 5EA0 lineage | the 183 seed moves as the rule predicts (5.9, 3.63, 3.34, 3.08) and the function moves from +0x104 on (-12 to -104); diagnostic only (wv-w cycles 7-10) |
+| a pointer-variable base for the title-loop load, any pointee type | no `.noalias` fact (isvar/may-alias); the load stays above the argument store: 6 (wv-x cycles 2, 11) |
+| pointer-difference subscripts | computed, +16..+28 (wv-x cycle 10) |
+| `D_o058_5C98[i]` with the reset at 180, any loop form | the cursor init is `base + i*4`, +8; a call between the reset and the loop kills the fold (wv-x cycles 3-5, 7) |
+| the reset at the top of 183 | the 48 form: 39, seven aligned rows, all the `move s7,zero` position (wv-x cycle 4) |
+| an uninitialised index | loaded from its home, +12 (wv-x cycle 8) |
+| a redundant reset inside both guards | the delay-slot def dies to dead-store elimination: 50 (wv-x cycles 13-14); inside the title guard only, with the row reset in the loop exit: the head exact through +0x1370, the row init +8 (cycle 12) |
+| the row loop nested in the title guard, saves on an else branch | +8, structure moves (wv-x cycle 15) |
 
 `p1:wN=s` split forces **are** honoured and `force_lattice.py` parses the
 receipt, but every split measured so far costs width.
@@ -217,7 +252,7 @@ and wv-t's growth-profile traces: `allocator18-growth.log`,
 `allocator48-growth.log`, the `allocator18-cell-*.log`/`cell18-*.c` pairs,
 three `allocator18-detail-w*.log` neighbour captures, `uoptlist18.txt`, and
 `cells-wv-t/` (every wv-t cell with its source and the scratch harness).
-Lane wv-w adds `cells-wv-w/`: every cell, result and trace, the 9 object (`unforced9.o`), neighbour captures on the 9 body (`d9W`, `d9P`) and on wv-v's `c8c` (`d8cW`, `d8cP`), the alias-lineage cells with their growth records, and `mini/m1.c` (the slot-order mini TU). Lane wv-v adds `cells-wv-v/`: every cell, result and trace, the 16 / 15 / 11
+Lane wv-x adds `cells-wv-x/`: every cell, result and trace, the objects `c2a-6.o`, `c1a-14.o`, `c4b-39.o`, `c13a-50.o`, `c12a-2350-delta8.o`, the neighbour captures on the 14 body (`d1aW`, `d1aP`), the mini TUs under `mini/`, and under `alias/` the `cc -S` listings and the alias-provenance traces of the 9 and pointer bodies. Lane wv-w adds `cells-wv-w/`: every cell, result and trace, the 9 object (`unforced9.o`), neighbour captures on the 9 body (`d9W`, `d9P`) and on wv-v's `c8c` (`d8cW`, `d8cP`), the alias-lineage cells with their growth records, and `mini/m1.c` (the slot-order mini TU). Lane wv-v adds `cells-wv-v/`: every cell, result and trace, the 16 / 15 / 11
 objects, and the readers `readsym.py`, `early.py`, `mkcarrier.py`. Lane wv-u adds `cells-wv-u/`: every cell's source, result and trace, the
 reader scripts (`readW.py`, `intfdiff.py`, `peels.py`, `colourdiff.py`,
 `case13.py`), the neighbour captures on the pointer and opponent bodies, the
@@ -254,7 +289,7 @@ freshness guard will say so if a landscape has gone stale.
 ## The standing arithmetic
 
 The whale is worth **14,456 bytes**, and credits **zero** until it fully
-matches — a partial match banks nothing. At 11 words the function is 99.7%
-matched by word, every remaining row is naming, and two named clusters --
-W's nine and the two slot rows -- are all that stand between here and the
+matches — a partial match banks nothing. At 6 words the function is 99.8%
+matched by word; at 6 every remaining row is one instruction's schedule,
+and that instruction's fact is the only thing between here and the
 largest single byte gain available in the tree.

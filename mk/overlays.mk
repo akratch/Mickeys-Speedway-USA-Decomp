@@ -829,15 +829,32 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14GetFlagC8.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14ReleaseCurrent.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x3C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o015/overlay_015.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o015/overlay_015.c.o: POSTPROCESS = \
+# overlay15DrawScreenStars reads its fade scale as the float literal
+# 255.0f / 292.0f, so the compiler emits a one-word private pool that duplicates
+# the retained data word at data_rodata +0x40 (the last word of
+# gOverlay15InitializedData; the shipped LOCAL %hi/%lo pair encodes 0x0000 and
+# the loader supplies the base).  Rebind the two references to a pool symbol
+# and discard the digest-checked duplicate (overlay 86's metadata-only form).
+O15_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o015/overlay_015.c.o
+$(O15_OBJ): \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/overlay15DrawScreenStars.rebind.spec
+$(O15_OBJ): CFLAGS += -Wab,-r4300_mul
+$(O15_OBJ): POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_overlay_015_F000004C_18723E4=overlay15InitStarsAndPalette \
 		--redefine-sym func_overlay_015_F0000428_18727C0=overlay15MoveStars \
 		--redefine-sym func_overlay_015_F0000500_1872898=overlay15DrawScreenStars \
 		--redefine-sym func_overlay_015_F00006E8_1872A80=overlay15InitStars \
 		--redefine-sym func_overlay_015_F00009E0_1872D78=overlay15UpdateMovingStars \
-		--redefine-sym func_overlay_015_F0000B94_1872F2C=overlay15DrawRain $@ && \
+		--redefine-sym func_overlay_015_F0000B94_1872F2C=overlay15DrawRain \
+		--add-symbol gOverlay15FadePoolReloc=0x0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/overlay15DrawScreenStars.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:eca26b0fe4ae2523bfa3733b2543e689b87d531790ea5c2b879f17144cade2a9 && \
+	$(OBJCOPY) --remove-section .rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC6C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34SetValue10.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC

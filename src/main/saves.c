@@ -1000,10 +1000,18 @@ s32 packClose(s32 controllerIndex) {
     osContStartReadData(D_800D21C0);
     return 0;
 }
-/* Workbench: mixed(structural:17, register:21), exact 115 instructions/34 words, first +0xA0.
- * Levers: controller-loop form/order and PFS-base pointer lifetime; no exact candidate survived.
- * Remains: delayed base-low-half materialization, temporary rotation, and serialized success stores. */
-#ifdef NON_MATCHING
+/* Matched 2026-09-16 (lane nx-b), 29 -> 0 masked words at delta 0 in one
+ * measured batch of six cells, no colour force. The whole residual was one
+ * ten-register ring rotation from the pak-pattern test onward: the target
+ * spends one ring draw more before that load (L149). `pakPattern` is a
+ * memory `u8`, so masking it again before the bit test draws a temp for an
+ * `andi` that as1 folds into the `lbu` with the draw still spent; every
+ * later temp then sits one ring position later, which is the target. A cast
+ * to `u8` or `u32` is a no-op and inert; masking the bit instead adds a
+ * word; the unread `osPfsIsPlug` result and DKR's nested `ret` form with its
+ * empty `if` are inert or worse. The folded preheader line, the bit
+ * recurrence before the index increment and the indexed motor-success
+ * status address are lane g1's and still load-bearing. */
 /* PROVENANCE: body adapted from Diddy Kong Racing's public decomp,
  * src/save_data.c:init_controller_paks, with Mickey's globals and helpers. */
 void packInit(void) {
@@ -1032,7 +1040,7 @@ void packInit(void) {
     D_8007A2C8 = 0;
     osPfsIsPlug(D_800D21C0, &pakPattern);
 
-    controllerIndex = 0; controllerBit = 1; maxControllers = 4; do { if (pakPattern & controllerBit) {
+    controllerIndex = 0; controllerBit = 1; maxControllers = 4; do { if ((pakPattern & 0xFF) & controllerBit) {
     /* Keep the preheader grouped for the PFS-base scheduling tie. */
 
 
@@ -1062,9 +1070,6 @@ void packInit(void) {
     func_800581BC();
     osContStartReadData(D_800D21C0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/saves/packInit.s")
-#endif
 /* PROVENANCE: body adapted from Jet Force Gemini's public decomp,
  * src/saves.c:packIsPresent. */
 s32 packIsPresent(s32 controllerIndex) {
@@ -1507,16 +1512,6 @@ s32 func_8002E020(s32 controllerIndex, s32 fileNum) {
     mmFree(data);
     return result;
 }
-
-/* PLATEAU-HANDOFF:packInit:start
- * symbol: packInit
- * score: 29/115 words
- * frame: 0x60
- * relocations: 20
- * first-mismatch: +0xB0
- * summary: Procedure-29 census confirms 14 draws and the coherent ten-register rotation; the shard’s schedule controls leave no source handle.
- * PLATEAU-HANDOFF:packInit:end
- */
 
 /* PLATEAU-HANDOFF:func_8002CF6C:start
  * symbol: func_8002CF6C

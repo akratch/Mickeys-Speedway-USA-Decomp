@@ -73,4 +73,40 @@ per-window maps. Commands include draw_census.py --save/--compare,
 residual_map.py --object/--against, allocator_trace_receipt.py, the configured
 compiler and finalize_plateau.py. Full ROM gates validate the fallback tree.
 
+#### 2026-09-16, lane nx-a: the residual is a phantom symbol web, not a colour choice
+
+Baseline reproduces 416 bytes, delta zero, 21 masked and raw, frame 0x18,
+first mismatch +0x14; aligner 83 exact, 21 naming, no other buckets. The
+sibling overlay58DrawPointQuad now carries this exact residual after adopting
+this file's generated-cursor-load form (24 to 21 there), so the two are one
+question.
+
+Records (lineage census, 17 webs, 14 coloured, 3 split): the declared `gfx`
+symbol is web 5, type symbol, frame offset minus 4, refs in blocks 3, 5 and 6,
+save 3.5, coloured a1, and it is never emitted, because the two `dl++`
+expression values are one web (web 7, type expression, blocks 3 and 5) that
+supplies every use. Web 7 has v0 forbidden by the 0xFF constant (web 89,
+block 5) and a1 by the phantom, so it takes a2; xPlus (web 51) then has a1
+forbidden by the phantom and takes t0; y's post-call piece (web 90) takes t1;
+the 0x80000000 constant (web 85, block 3 only) finds v0 free. The target
+colours are gfx v0, xPlus a1, y t0, constant t1.
+
+Force lattice on those four: w85 to c8 applied and scores 59 alone; w7 to c1,
+w51 to c4 and w90 to c7 were not applied (forced minus 2, already forbidden),
+so the colour axis is closed for the three that matter. Deleting the gfx probe
+leaves the phantom at blocks 3 and 5, still a1, and zPlus takes a1 instead
+(24). Eleven probe and carrier cells: dropping any probe regresses (23, 28, 41,
+45, 47), literal 0x80000000 and one-line first append are inert (21), block
+scoped `_g` per append is 28 with probes and 83 without. Eight loop forms of
+the colour stores: 82 to 103, most changing size. Eighteen boundary cells:
+`if (1) { }` between the appends equals the cursor probe (21); any boundary
+after the second append is 45 to 84. Thirty-two cells moving xPlus and zPlus
+above the colour stores: floor 22 with a different residual (the display-list
+address moves to v1). Six call-argument line ties: inert at 21; two failed to
+compile. The +0x14 lui pair is therefore not an L59 tie under this shape.
+
+Next hypothesis: as recorded on the sibling shard. The decision variable is
+the phantom `gfx` symbol web and the block set of the 0xFF constant; no
+spelling of the current locals moves either.
+
 <!-- plateau-handoff:overlay58DrawLargePointQuad:end -->

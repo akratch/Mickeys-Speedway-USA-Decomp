@@ -2,11 +2,11 @@
 ### `overlay34CreateRecord` plateau handoff
 
 - source: `src/overlays/o034/overlay34CreateRecord.c`
-- score: 6/125 words
+- score: 2/125 words
 - frame: 0x30
 - relocations: 12
-- first mismatch: +0x88
-- summary: Fresh proc-0 census: 28 draws/213 emissions. Existing store-order probes remain exhausted; no aligned improvement or new schedule lever.
+- first mismatch: +0xE8
+- summary: uopt closes the store block after twenty local loads, one per store and one per stored variable, which leaves height's last store in a second block; two self-defining reads of height there outrank the resource copy (6 to 2), and the byte12/short16 pair is that same boundary read the other way.
 
 #### 2026-09-16, lane lm-a: two cycles, no source reaches the ranking
 
@@ -249,5 +249,58 @@ are retained privately under build/d1/overlay34CreateRecord. Commands include
 draw_census.py --save/--compare, residual_map.py --object/--against,
 align_symbol.py, frame_census.py, the workbench fidelity gate and
 finalize_plateau.py. No executable-byte credit or canonical C promotion.
+
+#### 2026-09-16, lane nx-b: the block table, measured as a budget, 6 -> 2
+
+Baseline reproduced at 6 masked (8 raw), delta 0, aligned 119/4/0/2, first
++0x88. Six batches, 37 cells; the block boundary lm-a asked for was found by
+instrument, not by sweep.
+
+**Where the boundary is and what puts it there.** The instrumented uopt's
+per-web block sets on this TU and on a synthetic copy of the then-block
+(private `bbprobe.py` over the lineage trace) locate block 10's end after
+`byte12 = 2` (line 124) and, varied, give the rule: uopt closes a
+straight-line block after a fixed budget of local-variable loads. A store
+of zero or of a hoisted constant costs one (the base pointer), a store of a
+variable costs two, a dimension definition costs one; the budget from the
+resource test is twenty. Measured: with zero stores the seventeenth store
+is the last in the block, with variable stores the ninth, with hoisted
+constants the seventeenth, alternating the twelfth, and an extra definition
+statement moves each by one. The o034 sequence spends its twenty exactly at
+byte12 in the p9 order, and one earlier in the natural order, which is why
+moving byte12 ahead of short16 gave the literal 2 its `nocs` 1 and why the
+same move costs the store pair.
+
+**What closed four rows.** Height's def and first store are in block 10 and
+its two later stores in block 11 (save 4 over `nocs` 2), the resource copy
+has one block (3 over 1), so the copy takes v1 first. Two self-defining
+self-defining or-with-zero reads of height after byte12 add a def and a use each in block
+11 at zero width (8 over 2, decided before the copy): 6 -> 2, first +0xE8,
+delta 0, unforced. One such read ties and loses (6); discarded or-with-zero
+reads in either block are dropped by uopt (6); three reads change the shape
+(92, -4). A region opener after the dimensions with the height definition
+moved to its first store also flips the pair but places the height load in
+the second block (16); every other opener position is -4.
+
+**What the last two rows are.** The ROM emits short16 before byte12 with the
+literal 2 still at `nocs` 1, so its block 10 held both, i.e. at least
+twenty-two loads under this budget; ours holds twenty. Folding the two
+stores onto one physical line in either order is inert or worse (2, 12), the
+natural order is 11, folding either or both dimension definitions into their
+first stores is 27-28 with the frame moved, `register` on the base pointer
+or the dimensions is inert (11, 2), an unscaled carrier for both dimensions
+drops the copy (-4), height alone unscaled makes its shifted value a pool
+web (34). Refuted as the boundary's cause: statement count (chaining two
+zero stores moves the boundary earlier, not later), a fixed count from the
+block start (an opener after byte03 leaves the rest one block).
+
+Next: the source question is the budget's unit, since the ROM's block holds
+more stores than twenty loads allow. Candidates the ROM could have used and
+this lane did not measure: the stores through a base that is not a local
+symbol load (the loop's `current` alias is a symbol too, but a base carried
+in a uopt temp, such as the call result itself, may be free), or dimension
+values that are uopt temps rather than declared symbols in a form that keeps
+the copy. Price any candidate by the synthetic probe first; it is a
+one-second compile per cell and reads the block sets directly.
 
 <!-- plateau-handoff:overlay34CreateRecord:end -->

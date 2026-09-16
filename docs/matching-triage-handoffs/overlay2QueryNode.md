@@ -249,4 +249,36 @@ The cursor recipe does not supply it: it changes the leaf loop instead. Sources,
 objects, scores and aligned per-window deltas are preserved privately under
 build/p24/overlay2QueryNode. No new matching bytes are credited.
 
+#### 2026-09-16, lane nx-a: the OR block's target is a spilled scalar, and why the scalar form is eight short
+
+Baseline reproduces 1,012 bytes, delta zero, 39 masked and 51 raw, frame
+0x68; aligner 223 exact, 15 naming, 2 immediate, 16 really different, with
+the three surplus and three missing words recorded above. Nothing adopted;
+two cycles.
+
+Reading: at the OR block the target stores the first call's result to 0x4C
+before the second call and reloads it into a0 after, with the side pointer
+load scheduled above the store. That is a spill of a scalar web coloured a0
+to its own home, and as1 hoists a load above a spill store where it will not
+hoist it above the candidate's array-element store. Seven scalar carriers on
+this shape: a plain scalar, its swapped or-operands and its register form are
+100 at minus eight; the compound-assignment form 72; the count carrier 45;
+the leafResult carrier 243 at minus eight; the address-read form is byte
+flat at 39. The census on the plain scalar says why: its web (save 2.0, total
+4, nocs 2) is decided before the `&D_58` and `&D_5C` address webs (1.6) and
+finds s0 free, already saved for the leaf branch, so it takes s0 with no
+spill and the function loses one word per mirror block. In the target the
+scalar was spilled, so it was decided after those address webs with s0 to s3
+taken, and split to a0. The named decision is the scalar's save against 1.6.
+
+Six forms of the tail-call child: the ternary, the ternary behind a region
+marker, and the dead `line` pointer as carrier (assigned per arm or by
+ternary) are all byte-flat at 39; a fresh `child` local is 70 with or without
+the region marker.
+
+Next hypothesis: a scalar `recursiveResult` whose web has save below 1.6 at
+unchanged total, so it is coloured after the two address constants; nocs 4
+at total 6 would do it. A probe is the diagnostic; the source form is the
+question. Nothing here touches the short-circuit reissue or the leaf join.
+
 <!-- plateau-handoff:overlay2QueryNode:end -->

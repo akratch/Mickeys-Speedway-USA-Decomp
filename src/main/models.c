@@ -1235,21 +1235,36 @@ void func_80020D8C(ModelFrameInstance *instance, s32 textureIndex, s32 frame) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/models/func_80020D8C.s")
 #endif
-#ifdef NON_MATCHING
-typedef struct ModelCacheEntry {
-    s32 id;
-    ObjectModel *model;
-} ModelCacheEntry;
-
 /* PROVENANCE: the authorized audit of JFG upstream efd5abb confirms that its
  * corresponding modSuspendModelTextures remains GLOBAL_ASM, so no donor C
  * body is adopted here. This remains a Mickey-only reconstruction. */
-/* Workbench: structure-mismatch, exact 113 instructions/frame -64; 24 words from +0xC.
- * Reading the model ID without a declared carrier removes one naming row.
- * Remains: exception-loop shape plus pool slot 1/temp slot 3; asm stays canonical. */
+/* Matched 2026-09-16 (lane nx-b), 24 -> 0 masked words at delta 0 in six
+ * measured batches, no colour force:
+ *   - the exception scan subscripts the array (`exceptions[i]`) instead of
+ *     the byte-offset spelling, so uopt strength-reduces it into the
+ *     target's stepping cursor and the parameter web falls to s7 (the
+ *     s6/s7 swap closes; the object is four bytes short, first +0x64).
+ *   - the scan is a `while`, not a guarded `do`: uopt's rotated form keeps
+ *     the index as a variable read by the cursor's preheader init, which
+ *     as1 then prints as the target's scaled zero (`sll zero,1`) and the
+ *     value-first `bnel`; the guard load stays a separate ring temp.
+ *   - the cache address is scaled twice, `(modelIndex << 1) << 2`: ugen
+ *     draws a ring temp for each shift and as1 folds the pair into the
+ *     single `sll` the target shows, with the draw still spent (L149).
+ *     That one folded draw is the whole ten-register ring rotation
+ *     downstream of the model-loop head (34 -> 6).
+ *   - one index `i` serves both the exception scan and the texture loop:
+ *     a separate scan index is a two-block web (save 10) that is coloured
+ *     a2 ahead of the D_80079C08 value web (save 6.4), where the target
+ *     has that value in a2; merged into the texture index it is s1 and
+ *     its dead init vanishes.
+ *   - no cache pointer: the id read through the global expression is
+ *     numbered after the scanned value, which is what puts the value
+ *     first in the `bnel` (6 -> 0 together with the shared index). */
 void func_80020E4C(s16 *exceptions) {
     SuspendedModelTexture *saved;
     s32 modelIndex;
+    s32 i;
 
     D_80079C08 = 0;
     saved = D_80079C04 = func_8002B280(0x3E8, 0x8A);
@@ -1257,34 +1272,29 @@ void func_80020E4C(s16 *exceptions) {
     if (D_800CB48C > 0) {
         if (D_80079C08 < 0x7D) {
             do {
-                ModelCacheEntry *cache = (ModelCacheEntry *)((u8 *)D_800CB484 + (modelIndex << 3));
-
-                if (cache->id != -1) {
-                    ObjectModel *model = cache->model;
+                if (*(s32 *)((u8 *)D_800CB484 + ((modelIndex << 1) << 2)) != -1) {
+                    ObjectModel *model = *(ObjectModel **)((u8 *)D_800CB484 + ((modelIndex << 1) << 2) + 4);
                     s32 excluded = 0;
-                    s32 exceptionIndex = 0;
 
-                    if (*exceptions != -1) {
-                        do {
-                            if (*(s16 *)((u8 *)exceptions + (exceptionIndex << 1)) == cache->id) {
-                                excluded = 1;
-                            }
-                            exceptionIndex++;
-                        } while (*(s16 *)((u8 *)exceptions + (exceptionIndex << 1)) != -1 && excluded == 0);
+                    i = 0;
+                    while (exceptions[i] != -1 && excluded == 0) {
+                        if (exceptions[i] == *(s32 *)((u8 *)D_800CB484 + ((modelIndex << 1) << 2))) {
+                            excluded = 1;
+                        }
+                        i++;
                     }
                     if (excluded == 0) {
-                        s32 textureIndex = 0;
-
+                        i = 0;
                         if (model->numberOfTextures > 0) {
                             if (D_80079C08 < 0x7D) {
                                 do {
-                                    saved->value = (s32)model->textures[textureIndex].texture;
-                                    saved->id = func_8003484C(model->textures[textureIndex].texture);
-                                    func_800347A0(model->textures[textureIndex].texture);
-                                    textureIndex++;
+                                    saved->value = (s32)model->textures[i].texture;
+                                    saved->id = func_8003484C(model->textures[i].texture);
+                                    func_800347A0(model->textures[i].texture);
+                                    i++;
                                     D_80079C08++;
                                     saved++;
-                                } while (textureIndex < model->numberOfTextures && D_80079C08 < 0x7D);
+                                } while (i < model->numberOfTextures && D_80079C08 < 0x7D);
                             }
                         }
                     }
@@ -1294,9 +1304,6 @@ void func_80020E4C(s16 *exceptions) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/models/func_80020E4C.s")
-#endif
 /*
  * PROVENANCE -- name and TU position follow JFG's public
  * modResumeModelTextures symbol. JFG has no public C body; Mickey is the body
@@ -1400,16 +1407,6 @@ void func_8002109C(ModelPointOwner *owner) {
  * first-mismatch: +0xC
  * summary: Proc-14 census confirms 37 draws; cursor setup reorder leaves the scheduler unchanged and regresses, so the pool/line-order blocker remains.
  * PLATEAU-HANDOFF:func_80020B10:end
- */
-
-/* PLATEAU-HANDOFF:func_80020E4C:start
- * symbol: func_80020E4C
- * score: 24/113 words
- * frame: 0x40
- * relocations: 13
- * first-mismatch: +0xC
- * summary: Correct proc-16 census: array loop form removes two draws at the condition but falls to 77 at delta -4; retained byte-offset form remains the preheader blocker.
- * PLATEAU-HANDOFF:func_80020E4C:end
  */
 
 /* PLATEAU-HANDOFF:func_80020D8C:start

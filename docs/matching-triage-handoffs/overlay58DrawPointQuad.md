@@ -2,11 +2,11 @@
 ### `overlay58DrawPointQuad` plateau handoff
 
 - source: `src/overlays/o058/overlay58DrawPointQuad.c`
-- score: 24 differing words
+- score: 21 differing words
 - frame: 0x18
 - relocations: 11
 - first mismatch: 0x14
-- summary: Selective base-carrier removal leaves all 34 draws, source-line counts and object bytes unchanged; address/store schedule remains.
+- summary: Sibling transfer 24 to 21; residual identical to overlay58DrawLargePointQuad and caused by the phantom gfx symbol web on a1 plus 0xFF interference on the dl expression web.
 #### 2026-09-13, lane f1: address carriers and colour-store line census
 
 The configured baseline reproduces 416 bytes at delta zero, 80 exact and
@@ -107,5 +107,41 @@ maps remain ignored under build/k1/overlay58DrawPointQuad.
 Commands: lane_status.py, configured stock compilation, draw_census.py,
 residual_map.py --object/--against where compared, finalize_plateau.py and
 tools/gates.sh. No executable bytes are newly credited.
+
+#### 2026-09-16, lane nx-a: sibling transfer 24 to 21, and the residual named off the records
+
+Baseline reproduces 416 bytes, delta zero, 24 masked and 24 raw, frame 0x18,
+first mismatch +0x14; aligner 80 exact and 24 naming. Transferring lane g1's
+form from the Large sibling (the first cursor load generated inside the
+command expression, no declared intermediate, no byte cast) is 24 to 21 at
+delta zero, aligner 83 exact and 21 naming, and is adopted. After it the two
+siblings carry the identical residual, window for window: +0x00 a0 and a1
+swapped on the two call-argument luis; +0x40 a2 to v0 twice, v0 to t1 twice,
+t1 to t0; +0x80 a2 to v0 six times, t0 to a1, v0 to t1; +0x100 and +0x140 t1
+to t0 twice and t0 to a1 each. So one mechanism serves both, and every
+measurement on the Large sibling below transfers here unchanged.
+
+The allocator records on the sibling name the residual. The declared `gfx`
+symbol survives copy propagation as a phantom web (web 5 there, frame offset
+minus 4, never emitted) coloured a1 with save 3.5, and the `if (gfx != 0)`
+probe extends it into the block where zPlus is defined; the `dl++` expression
+that actually carries the display-list value is a separate web (web 7) and
+takes a2 because the 0xFF colour constant forbids v0 in the colour-store block
+and the phantom forbids a1. The target has gfx on v0, xPlus on a1, y on t0 and
+the 0x80000000 constant on t1. Forcing those four colours: w85 to t1 applies
+alone and scores 59; w7 to v0, w51 to a1 and w90 to t0 are all declined as
+already forbidden at decision time, so no colour lever reaches them and the
+residual is an interference question. Removing the phantom's probe frees a1
+but zPlus then takes it (24). Every probe is load-bearing (removing any one is
+23 to 53), a boundary after the second append is 45 to 84, loop forms of the
+colour stores are 82 to 103 with size changes, hoisting xPlus and zPlus above
+the colour stores reaches 22 with a different residual, and physical-line ties
+on the call arguments are inert at 21. Six cycles on the pair.
+
+Next hypothesis: a source in which the display-list pointer is not a declared
+local at all, or is declared so that its symbol web has no occurrence in any
+block that xPlus reaches, together with a block boundary between the second
+append's stores and the 0xFF stores that does not also split the two appends.
+Read docs/lastmile-phantom-web.md before spending a cycle.
 
 <!-- plateau-handoff:overlay58DrawPointQuad:end -->

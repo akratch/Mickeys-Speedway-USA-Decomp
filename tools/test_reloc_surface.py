@@ -2415,5 +2415,37 @@ class GeneratedCrossOverlayCIdentityTests(unittest.TestCase):
             self.assertEqual({},self.resolve(root,*args))
 
 
+class OverlayIdentityExtentTests(unittest.TestCase):
+    """The bound that keeps a resident absolute out of an overlay's namespace.
+
+    splat names every unresolved absolute after its own value
+    (`D_80000078 = 0x80000078`). Paired against a matched sibling those names
+    can yield the absolute itself as a proposed overlay "offset", which then
+    collides with the same name's resident identity. `promotion-proof` refused
+    four byte-exact functions that way, two of them promoted weeks earlier.
+    """
+
+    MODULE = {"overlay": 58, "rom": {"size": "0x9568"}, "bss_size": "0x100"}
+
+    def test_extent_is_rom_plus_bss(self):
+        self.assertEqual(
+            rs._overlay_identity_extent(self.MODULE), 0x9568 + 0x100)
+
+    def test_missing_rows_yield_no_bound(self):
+        """An atlas row that cannot supply both sizes skips the bound."""
+        self.assertIsNone(rs._overlay_identity_extent({"overlay": 58}))
+        self.assertIsNone(rs._overlay_identity_extent({}))
+
+    def test_a_resident_absolute_is_outside_it(self):
+        """0x80000078 against an overlay whose whole extent is 0x9568."""
+        extent = rs._overlay_identity_extent(self.MODULE)
+        self.assertFalse(0 <= 0x80005A98 < extent)
+
+    def test_a_genuine_datum_is_inside_it(self):
+        """Overlay data lies within the module by construction."""
+        extent = rs._overlay_identity_extent(self.MODULE)
+        self.assertTrue(0 <= 0x5EA0 < extent)
+
+
 if __name__ == "__main__":
     unittest.main()

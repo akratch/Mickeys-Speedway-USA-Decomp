@@ -2,11 +2,43 @@
 ### `overlay3SelectScoredObject` plateau handoff
 
 - source: `src/overlays/o003/overlay3SelectScoredObject.c`
-- score: 21/118 words
+- score: 118/118 words
 - frame: 0x80
 - relocations: 5
-- first mismatch: +0x48
-- summary: Refresh confirms 28-draw/166-emission schedule; helper-result caller-saved copy remains unreachable after the current causal controls.
+- first mismatch: none
+- summary: ROM-exact and promoted: 118 words, frame 0x80 and all 5 relocation identities; the loop subscripts the helper's array by index so strength reduction owns the cursor, and one unused pointer declaration keeps the frame.
+
+Matched by [lm-a](../lastmile-region-boundary.md).
+
+#### 2026-09-16, lane lm-a: matched on the generated cursor (L160); promoted
+
+21 to 0 at delta zero, unforced, in two measured cycles; aligned
+110/5/1/1 (one candidate-only, one target-only word) to 118/0/0/0; frame
+0x80 and 5 relocations unchanged; `gmake verify` prints the expected SHA1
+from the C and `gmake promotion-proof` passes (`identity=static`, 5/5).
+
+- The named decision -- "what makes uopt copy the helper's return register
+  into a caller-saved argument register while the cached path keeps the raw
+  result" -- is L160's. With the declared `cursor` walking the array the
+  helper result was one web (114: save 20, `nocs` 1, block 14 only),
+  coloured v0 unopposed, and both reloads of `count` had v0 forbidden by it.
+  With the loop written `object = objects[index]` and no cursor arithmetic,
+  strength reduction owns the walking pointer and uopt keeps the call result
+  for the cached path, copies it into a1 at the split point before the
+  guard, and hands both `count` reloads v0 -- the ROM's shape, including
+  `addiu s3, v0, -1` in the delay slot. One cell: 21 to 0.
+- The frame is the second fact. Deleting the `cursor` declaration outright
+  is 7 words with the frame at 0x78. An unused pointer-typed declaration
+  (`cursor` kept, or any other `Overlay3Object **`) restores 0x80 and 0
+  words; an unused `f32` beside `dx`/`dz`, before or after, is eliminated
+  and stays at 7, and so is a used `distance` local for the sqrt result.
+  So the ROM's body declared one more pointer than it used; `cursor` is
+  kept unused and listed in `docs/cleanup-queue.md`. L99's "an unused f32
+  or pointer is not eliminated" is only half right on this TU: the f32 was.
+- Previous lanes' boundary/copy controls (`if (1) { }` after the call,
+  after `result = 0`) are inert at 21, so the copy is a split placement
+  and not a block question.
+
 #### 2026-09-12, lane `p9-tight`: the shape is named and two forces price it
 
 The residual reproduces at 21 masked words, size delta 0, frame 0x80, and it is

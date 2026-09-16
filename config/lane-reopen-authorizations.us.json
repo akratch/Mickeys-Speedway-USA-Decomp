@@ -601,7 +601,7 @@
       "source_commit": "0e3de63667a5d632384abba03c845ba0d1dfa148"
     },
     "func_8003F154": {
-      "ledger_commit": "627a31ce80d4f644b7fa9981fdc986c8707b9763",
+      "ledger_commit": "03286c1b2982a24b7f61a944af326ff055eb6d47",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "627a31ce80d4f644b7fa9981fdc986c8707b9763"
     },
@@ -1316,7 +1316,7 @@
       "source_commit": "d3fcf8ea6f4e562d75f6b0a7e7f97dc8b6482478"
     },
     "func_overlay_071_F0000870_18CA390": {
-      "ledger_commit": "46f08739c32580c5630eb22cfff461527da7e9f9",
+      "ledger_commit": "03286c1b2982a24b7f61a944af326ff055eb6d47",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "9489a11a55c1acf19768e91c51c9c1853ccb3367"
     },
@@ -1801,7 +1801,7 @@
       "source_commit": "78918981a33b340f7d55cee244c71b6cb861626c"
     },
     "overlay34CreateRecord": {
-      "ledger_commit": "1099cae0d02415f2829512ad2210fd9982899f43",
+      "ledger_commit": "03286c1b2982a24b7f61a944af326ff055eb6d47",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "1099cae0d02415f2829512ad2210fd9982899f43"
     },

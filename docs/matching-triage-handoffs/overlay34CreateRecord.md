@@ -8,6 +8,27 @@
 - first mismatch: +0x88
 - summary: Fresh proc-0 census: 28 draws/213 emissions. Existing store-order probes remain exhausted; no aligned improvement or new schedule lever.
 
+#### 2026-09-16, lane lm-a: two cycles, no source reaches the ranking
+
+Baseline reproduced: 6 masked at delta zero, aligned 119/4/0/2, one
+`a0`/`v1` cycle at `+0x88..+0xA4` and the byte12/short16 store pair. The
+records say the four naming rows are the ranking already named -- the
+resource copy (web 44: save 3, `nocs` 1, block 10) is decided before
+height (web 50: save 2, `nocs` 2, blocks 10 and 11) -- and height's second
+block is the open question: width (web 42) has all its references in block
+10, and the constant `1` web reaches block 13 through `active = 1`, so the
+store sequence is not one uopt block, but nothing in the source names the
+boundary. Seventeen cells, all at or below the retained form: routing the
+null test, the width load or the height load through the loop's `record`
+or `current` aliases (119-124 words, +4 to +24 bytes: the aliases are
+separate webs and referencing them after the loop extends their ranges);
+splitting or multiplying the height intermediate (16, 12); `s16`/`u16`
+dimensions (50, 102); the mode multiply moved to the end (39); height
+declared or computed before width (6 and 92). Next: find the block
+boundary inside the store sequence from the instrumented uopt's block
+table before trying any further order, because every order cell so far
+has been measured blind to it.
+
 #### 2026-09-12, lane p9-mid: 24 -> 8 on the globalcolor records
 
 The closure above asked for "direct new evidence for the missing producer/home

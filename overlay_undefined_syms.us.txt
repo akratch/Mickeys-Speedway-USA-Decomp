@@ -256,6 +256,11 @@ overlay3ContainsValueReloc = 0xf0000000;
 overlay3DistanceSquaredReloc = 0xf0000000;
 overlay3GetObjectRangeReloc = 0xf0000000;
 
+/* overlay 3: overlay3SelectScoredObject.c.o */
+overlay3GetSearchObjectsReloc = 0xf0000000;
+overlay3RandomRangeReloc = 0xf0000000;
+overlay3SqrtReloc = 0xf0000000;
+
 /* overlay 3: overlay3SelectTarget.c.o */
 gOverlay3Objects = 0x00000000;
 overlay3TouchObjectReloc = 0xf0000000;
@@ -715,7 +720,14 @@ overlay14UpdateReloc = 0xf0000498;
 D_C0 = 0x000000c0;
 
 /* overlay 14: func_overlay_014_F0001540_1870E18.c.o */
-D_34 = 0x00000034;
+gOverlay14Args34 = 0x00000034;
+gOverlay14DataBase = 0x00000000;
+gOverlay14Entries = 0x000000fc;
+gOverlay14ValueC0 = 0x000000c0;
+overlay14BuildPanel = 0xf00012d8;
+overlay14Dispatch = 0xf0000000;
+overlay14DrawPrimitive = 0xf0000000;
+overlay14ValidateEntry = 0xf0001028;
 
 /* overlay 14: overlay14ReleaseOwner.c.o */
 gOverlay14Owner = 0x00000100;
@@ -2112,6 +2124,7 @@ overlay58ReleaseReloc = 0xf0000000;
 
 /* overlay 58: func_overlay_058_F00005FC_18AF7E4.c.o */
 D_2BC = 0x000002bc;
+D_34 = 0x00000034;
 D_68 = 0x00000068;
 
 /* overlay 58: overlay58SetNodeValue.c.o */

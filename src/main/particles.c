@@ -1111,12 +1111,18 @@ void func_8003EF80(ParticleObject *object, ParticleTriggerSlot *trigger) {
     }
 }
 #ifdef NON_MATCHING
-/* Workbench: pure FP-allocation plateau, 17 differing words, size_delta 0; first mismatch +0x20C.
+/* Workbench: pure FP-allocation plateau, 11 differing words, size_delta 0; first mismatch +0x3E4.
  * Target and candidate are 297 instructions with the exact 0x58 frame and 16 relocation identities.
- * Every integer lane is exact and the schedule is exact; the residual is one fp-pool
- * position, first visible where the emission direction's zero and its -value3C load
- * exchange roles. The sum of squares is spelled y-first because the target's two
- * component loads are scheduled that way; x-first costs four more words.
+ * Every integer lane is exact and the schedule is exact. The head is exact since 2026-09-16
+ * (lane lm-a): the two emission-direction zeros are the integer literal 0, which is a different
+ * IR constant from the 0.0f the comparison reads (L151), so the head materialises its zero once
+ * into the pool colour with no ring draw, and the value3C load is a ring temp negated straight
+ * into offset[2] with no `speed` definition at the head. What remains is the region after the
+ * sqrt call: the named sum of squares sits in scale's pool colour where the ROM keeps it in a
+ * ring register (inlining it x-first is exact through +0x3F0 and costs the tail one ring step),
+ * the comparison zero is a ring temp where the ROM has a pool web in scale's colour, and the
+ * tail's Z accumulate follows that phase. A zero assigned to scale before or after the sqrt call
+ * is propagated into the comparison and changes nothing; see the shard.
  * PROVENANCE: structure cross-checked against JFG's assembly-only asm/nonmatchings/particles/func_80060400.s sibling; body reconstructed from Mickey evidence. */
 void func_8003F154(BasicParticle *particle, ParticleEmitterObject *object, ParticleTriggerSlot *trigger,
                    ParticleConfig *config) {
@@ -1176,11 +1182,9 @@ void func_8003F154(BasicParticle *particle, ParticleEmitterObject *object, Parti
 
     if (config->flags & 4) {
         flags = config->flags5C;
-        offset[0] = 0.0f;
-        magnitude = offset[0];
-        offset[1] = magnitude;
-        speed = config->value3C;
-        offset[2] = -speed;
+        offset[0] = 0;
+        offset[1] = 0;
+        offset[2] = -config->value3C;
         if (flags & 0x10) {
             randomRange = config->value70;
             offset[2] += mathRnd(-randomRange, randomRange) * 0.000015258789f;
@@ -2589,11 +2593,11 @@ void partNullifyCircularParticleParents(ParticlePosition *position) {
 
 /* PLATEAU-HANDOFF:func_8003F154:start
  * symbol: func_8003F154
- * score: 13/297 words
+ * score: 11/297 words
  * frame: 0x58
  * relocations: 16
- * first-mismatch: +0x21C
- * summary: Fresh proc-22 census: 117 draws/424 emissions. FP constant-web schedule remains unreachable; prior probes give no aligned gain.
+ * first-mismatch: +0x3E4
+ * summary: Head exact on integer-literal zeros (L151); residual is the post-sqrt region: the named sum in the pool, the comparison zero as a ring temp, and the tail's ring phase.
  * PLATEAU-HANDOFF:func_8003F154:end
  */
 

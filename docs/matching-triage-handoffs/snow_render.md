@@ -2,11 +2,11 @@
 ### `snow_render` plateau handoff
 
 - source: `src/main/weather.c`
-- score: 142 differing words
+- score: 0 differing words
 - frame: 0x68
 - relocations: 20
-- first mismatch: +0x0
-- summary: Four-word and frame gap with seven exact identities; next lever is command-temporary lifetime.
+- first mismatch: none
+- summary: MATCHED. This header claimed an open residual until 2026-09-16, when tools/check_shard_metrics.py reconciled every shard against the ranking; the function had already left the queue. The claim it carried was: Four-word and frame gap with seven exact identities; next lever is command-temporary lifetime.
 
 ## Resolved by the JFG donor re-derivation
 

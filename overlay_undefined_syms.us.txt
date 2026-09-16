@@ -614,7 +614,13 @@ D_2C = 0x0000002c;
 overlay13ProcessRecord = 0xf0000000;
 
 /* overlay 13: overlay13DrawRecord.c.o */
+D_28 = 0x00000028;
 D_80000000 = 0x80000000;
+o13DrawRecord = 0xf0000000;
+o13FinishDraw = 0xf0000000;
+o13GetRenderState = 0xf0000000;
+o13SetColor = 0xf0000000;
+o13SetupRecord = 0xf0000000;
 
 /* overlay 13: overlay13Call.c.o */
 overlay13CallReloc = 0xf0000000;
@@ -664,7 +670,6 @@ gOverlay14ValueF8 = 0x000000f8;
 gOverlay14CommandHeader = 0x000000fc;
 
 /* overlay 14: overlay14CreateValue.c.o */
-D_28 = 0x00000028;
 D_E8 = 0x000000e8;
 
 /* overlay 14: overlay14LoadRelocatedValue.c.o */

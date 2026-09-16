@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 244420,
-  "nonmatching_overlay_c_bytes": 224200,
+  "matched_overlay_c_bytes": 245176,
+  "nonmatching_overlay_c_bytes": 223444,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 2400,
   "bss_bytes": 77680,
@@ -3908,7 +3908,7 @@
      "type": "c",
      "source": "overlays/o013/overlay13DrawRecord",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x874",

@@ -79,6 +79,23 @@ if [ "${regenerate_ranking_doc:-0}" = 1 ]; then
   git add docs/nm-ranking.md
   echo "regenerated docs/nm-ranking.md from the merged ranking"
 fi
+# A promotion retires the matched function's ranking row, so `check-docs`
+# fails below until config/nonmatching-ranking.us.json stops listing it. That
+# happened on five merges on 2026-09-16, and each cost a full atlas/extract/
+# two-pass rebuild plus a measuring `nm_ranking.py` run -- ten to fifteen
+# minutes -- before `finish_merge.sh` could be re-run by hand.
+#
+# `--prune-stale` drops rows whose file/symbol identity has left the queue
+# WITHOUT compiling, which is exactly what a promotion needs and all it needs;
+# the surviving rows keep their proven measurements. It is a no-op when the
+# merge promoted nothing, so it is unconditional here.
+pruned=$(.venv/bin/python tools/nm_ranking.py --prune-stale 2>&1 | tail -1)
+case "$pruned" in
+  "pruned 0 stale row"*) ;;
+  *) .venv/bin/python tools/nm_ranking.py --write-doc >/dev/null
+     git add config/nonmatching-ranking.us.json docs/nm-ranking.md
+     echo "ranking: $pruned" ;;
+esac
 echo "== integration gates"
 gmake overlay-atlas-write >/dev/null 2>&1 || true
 .venv/bin/python tools/refresh_atlas_digest.py >/dev/null

@@ -28,77 +28,66 @@ extern u8 D_80000078[];
 /*
  * The callee is reached through the overlay loader's relocation table, so its
  * `jal` encodes 0 and splat names it after overlay offset 0 for every such
- * call in this overlay; the real callee is not identified.  What the target
- * bytes do decide is its FIRST ARGUMENT: see the note below.
+ * call in this overlay; the real callee is not identified.  Its FIRST
+ * ARGUMENT is `&gOverlay58PointVertexCursorReloc`, the same symbol the body
+ * re-reads afterwards -- p1 splits that address web around the call and the
+ * post-call piece keeps the a0 argument affinity (ido-5.3 L57/L66).
  */
 extern void func_overlay_058_F0000000_18AF1E8(
     Overlay58PointVertex **cursor, void *resource, s32 mode, s32 arg3);
 
 /*
- * Plateau (2026-09-10): 26 of 104 relocation-masked words differ, down from 70,
- * at exact 104-instruction geometry and an exact 0x18 frame.  Two mechanisms
- * closed 44 words and both are properties of the allocator, not of spelling:
- *
- *  1. The call's first argument is `&gOverlay58PointVertexCursorReloc`, the
- *     same symbol the body re-reads twenty times afterwards -- NOT the display
- *     list.  p1 splits that one address web around the call and the post-call
- *     piece keeps the a0 argument affinity at cost 0 (ido-5.3 L57/L66), which
- *     is the only construct that puts the long-lived cursor address in a0
- *     instead of v0.  Worth 16 words by itself; all twenty `0(a0)` sites go
- *     register-exact.  1352 spellings measured against the old argument
- *     spelling never reached below 68.
- *  2. Four discarded-expression probes (ido-5.3 L37) at the positions below.
- *     They cost zero instructions and re-order p1's colouring by adding web
- *     occurrences; worth a further 26 words.  Their positions were found by a
- *     frame-constrained hill climb, 7800 variants, and are a local optimum
- *     under single insert/delete/move at 4968 further variants.
- *
- * Falsified here: declaration order is wholly inert (400 permutations, none
- * below the then-best); statement-block order, the pointer/array and cast
- * forms, `physicalBase` inlining, the second-gfx word order, and every shape
- * that drops the early `vertices` assignment all regress.
- *
- * Residual: `gfx` wants v0 and takes a2; the physical-address chain wants ring
- * temps and takes colours; `xPlus` wants a1 and takes t0; the two `lui`s at
- * +0x88 are transposed; the two `lui`s at +0x14 are transposed.
- *
- * Lane nx-a (2026-09-16): 24 -> 21 by transferring the sibling's form -- the
- * first cursor load generated inside the command expression with no declared
- * intermediate and no byte cast (see overlay58DrawLargePointQuad.c, lane g1).
- * The two siblings now carry the identical 21-row residual, window for
- * window, and the allocator records name its cause: the declared `gfx`
- * symbol survives copy propagation as a PHANTOM web (never emitted) that is
- * coloured a1, and the `if (gfx != 0)` probe extends it into the block where
- * `zPlus` is defined.  That phantom denies a1 to `xPlus`, the `0xFF` constant
- * denies v0 to the `dl++` expression web in the colour-store block, and the
- * rest of the residual follows.  See docs/lastmile-phantom-web.md.
+ * PROVENANCE: the packet macros below are adapted from the Jet Force Gemini
+ * decompilation (include/PR/gbi.h gDma1p and include/PR/mbi.h _SHIFTL,
+ * include/f3ddkr.h gSPVertexJFG and gSPPolygon, include/PR/os_convert.h
+ * OS_PHYSICAL_TO_K0), a permitted source under docs/CLEANROOM.md.  The two
+ * commands are gSPVertexJFG(dl++, OS_PHYSICAL_TO_K0(cursor), 4, 0) and
+ * gSPPolygon(dl++, payload, 2, TRIN_ENABLE_TEXTURE): the vertex command's
+ * `v` argument is used twice, which is why the cursor is loaded twice, and
+ * each macro is one physical line, which is what retires the store-order
+ * tie at +0x88.  Each macro's block-scoped `_g` is a phantom symbol web
+ * (decided after the shared `dl++` expression web once both appends sit in
+ * one block, which is what gives that web v0).
  */
-#ifdef NON_MATCHING
+#define O58_SHIFTL(v, s, w) ((unsigned int)(((unsigned int)(v) & ((0x01 << (w)) - 1)) << (s)))
+#define O58_DMA1P(pkt, c, s, l, p) { Overlay58PointGfx *_g = (Overlay58PointGfx *)(pkt); _g->w0 = (O58_SHIFTL((c), 24, 8) | O58_SHIFTL((p), 16, 8) | O58_SHIFTL((l), 0, 16)); _g->w1 = (unsigned int)(s); }
+#define O58_VERTEX(pkt, v, n, v0) O58_DMA1P(pkt, 4, v, ((((n) << 3) + ((n) << 1))) + 8, ((n))<<3|(((u32)(v) & 6))|(v0))
+#define O58_POLYGON(dl, ptr, numTris, texEnabled) { Overlay58PointGfx *_g = (Overlay58PointGfx *)(dl); _g->w0 = O58_SHIFTL((((numTris) - 1) << 4) | (texEnabled), 16, 8) | O58_SHIFTL(5, 24, 8) | O58_SHIFTL(((numTris)*16), 0, 16); _g->w1 = (unsigned int)(ptr); }
+#define O58_PHYSICAL_TO_K0(x) (void *)(((u32)(x)+0x80000000))
+
+/*
+ * Matched by lane w1-b (2026-09-16) from the 21-word register-only plateau;
+ * see docs/lastmile-block-budget-globals.md.  Three things had to hold at
+ * once, all of them block structure rather than colour:
+ *
+ *  1. Both packet appends in ONE uopt block, and `vertices = cursor` in that
+ *     same block: the `dl++` expression web then has one occurrence set
+ *     (save 6.0) and is coloured v0 before the two `_g` phantoms (3.0 each,
+ *     a1/a2), and `vertices` spanning that block and the colour block keeps
+ *     v1 busy there so the display-list address falls to a3.
+ *  2. A zero-cost boundary after `vertices = cursor` and another after the
+ *     last colour store (the two `if (vertices != 0);` probes, L97), so the
+ *     0xFF constant is a single-block web (save 15, v0) that shares no
+ *     block with the `dl++` web, and the four coordinate expressions are
+ *     single-block webs coloured v0/v1/a1/a2 in first-occurrence order.
+ *     uopt closes a straight-line block on its own after twenty loads of
+ *     LOCAL variables (global loads are free), so the appends' four loads
+ *     never reach that budget and the boundaries must be explicit.
+ *  3. The render-state field read in its own region before the call: as1
+ *     ties the two argument `lui`s at equal height and breaks the tie on
+ *     source line, so the load's line must precede the cursor address's.
+ *     The dead `vertices += 3` survives without any probe.
+ */
 void overlay58DrawPointQuad(s32 x, s32 y, s32 z) {
-    Overlay58PointGfx *gfx;
     Overlay58PointVertex *vertices;
-    s32 physicalBase;
-    s32 xPlus;
-    s32 xMinus;
-    s32 zMinus;
-    s32 zPlus;
-    if (x != 0);
+    void *resource;
 
-    func_overlay_058_F0000000_18AF1E8(&gOverlay58PointVertexCursorReloc,
-                                      gOverlay58PointRenderStateReloc.resource,
-                                      5, 0);
-    gfx = gOverlay58PointDisplayListReloc++;
-    physicalBase = 0x80000000U;
-    gfx->w0 = 0x04000000U |
-              ((((((u32)gOverlay58PointVertexCursorReloc + physicalBase) & 6U) | 0x20U) & 0xFFU) << 16) |
-              0x30U;
-    gfx->w1 = (u32)gOverlay58PointVertexCursorReloc + physicalBase;
-    if (gOverlay58PointVertexCursorReloc != 0);
-
-    gfx = gOverlay58PointDisplayListReloc++;
-    gfx->w0 = 0x05110020U; gfx->w1 = (u32)D_80000078;
-
+    if (1) { resource = gOverlay58PointRenderStateReloc.resource; }
+    func_overlay_058_F0000000_18AF1E8(&gOverlay58PointVertexCursorReloc, resource, 5, 0);
+    O58_VERTEX(gOverlay58PointDisplayListReloc++, O58_PHYSICAL_TO_K0(gOverlay58PointVertexCursorReloc), 4, 0);
+    O58_POLYGON(gOverlay58PointDisplayListReloc++, D_80000078, 2, 1);
     vertices = gOverlay58PointVertexCursorReloc;
+    if (vertices != 0);
     vertices[1].r = 0xFF;
     vertices[1].g = 0xFF;
     vertices[1].b = 0xFF;
@@ -116,44 +105,21 @@ void overlay58DrawPointQuad(s32 x, s32 y, s32 z) {
     vertices[-3].g = 0xFF;
     vertices[-3].b = 0xFF;
     vertices[-3].a = 0xFF;
-
-    xPlus = x + 8;
-    zPlus = z + 8;
-    if (gfx != 0);
     if (vertices != 0);
-    xMinus = x - 8;
-    zMinus = z - 8;
-
-    gOverlay58PointVertexCursorReloc->x = (s16)xMinus;
+    gOverlay58PointVertexCursorReloc->x = (s16)(x - 8);
     gOverlay58PointVertexCursorReloc->y = (s16)y;
-    gOverlay58PointVertexCursorReloc->z = (s16)zMinus;
+    gOverlay58PointVertexCursorReloc->z = (s16)(z - 8);
     gOverlay58PointVertexCursorReloc++;
-
-    gOverlay58PointVertexCursorReloc->x = (s16)xPlus;
+    gOverlay58PointVertexCursorReloc->x = (s16)(x + 8);
     gOverlay58PointVertexCursorReloc->y = (s16)y;
-    gOverlay58PointVertexCursorReloc->z = (s16)zMinus;
+    gOverlay58PointVertexCursorReloc->z = (s16)(z - 8);
     gOverlay58PointVertexCursorReloc++;
-
-    gOverlay58PointVertexCursorReloc->x = (s16)xMinus;
+    gOverlay58PointVertexCursorReloc->x = (s16)(x - 8);
     gOverlay58PointVertexCursorReloc->y = (s16)y;
-    gOverlay58PointVertexCursorReloc->z = (s16)zPlus;
+    gOverlay58PointVertexCursorReloc->z = (s16)(z + 8);
     gOverlay58PointVertexCursorReloc++;
-
-    gOverlay58PointVertexCursorReloc->x = (s16)xPlus;
+    gOverlay58PointVertexCursorReloc->x = (s16)(x + 8);
     gOverlay58PointVertexCursorReloc->y = (s16)y;
-    gOverlay58PointVertexCursorReloc->z = (s16)zPlus;
+    gOverlay58PointVertexCursorReloc->z = (s16)(z + 8);
     gOverlay58PointVertexCursorReloc++;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o058/overlay58DrawPointQuad/func_overlay_058_F0004F28_18B4110.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay58DrawPointQuad:start
- * symbol: overlay58DrawPointQuad
- * score: 21 differing words
- * frame: 0x18
- * relocations: 11
- * first-mismatch: 0x14
- * summary: Sibling transfer 24 to 21; residual identical to overlay58DrawLargePointQuad and caused by the phantom gfx symbol web on a1 plus 0xFF interference on the dl expression web.
- * PLATEAU-HANDOFF:overlay58DrawPointQuad:end
- */

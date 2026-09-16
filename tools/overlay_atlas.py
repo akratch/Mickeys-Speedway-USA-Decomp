@@ -1563,6 +1563,8 @@ MIXED_TU_EXACT_C_RANGES = {
             "func_overlay_058_F000138C_18B0574",
             "canonical mixed-TU object and linked bytes exact",
         ),
+        (0x4F28, 0x50C8, "overlay58DrawPointQuad"),
+        (0x50C8, 0x5268, "overlay58DrawLargePointQuad"),
     ],
     63: [
         (0x77C, 0x928, "overlay63UpdateSequence"),

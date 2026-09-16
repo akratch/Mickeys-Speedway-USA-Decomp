@@ -2,11 +2,11 @@
 ### `overlay58FinalizePackedStatus` plateau handoff
 
 - source: `src/overlays/o058/overlay58FinalizePackedStatus.c`
-- score: 88 differing words
+- score: 78 differing words
 - frame: 0x48
 - relocations: 48
 - first mismatch: 0x18
-- summary: Authenticated 44-draw baseline; resident-set and mask/shift allocation remain; existing count/records controls supply no new source hypothesis.
+- summary: shift before mask, the extended test flipped and every section's i/count/selected order take 88 to 78; a probe-free form has the ROM's mode-0 loop shape but colours the packed-status base t0 for t3.
 - assignment base: `ccbd4a78b29afb17ad817dd9228f774012b7d9ac`
 - owned range: overlay 58 `+0x5554..+0x5A14`, 1,216 bytes / 304 words; the following `+0x5A14..+0x5A20` range is separately owned padding
 - baseline: exact 304-word geometry and `0x48` frame, with 178 raw differences, 177 relocation-masked differences, first raw mismatch `+0x8`, and first masked mismatch `+0x18`
@@ -83,4 +83,54 @@ Commands: lane_status.py, configured stock compilation, draw_census.py,
 residual_map.py --object/--against where compared, finalize_plateau.py and
 tools/gates.sh. No executable bytes are newly credited.
 
+#### 2026-09-16, lane s1-a: 88 to 78 at delta 0, and a probe-free shape that is structurally the ROM's
+
+Baseline reproduced at 88 masked (89 raw), delta zero, first +0x18,
+aligned 227 exact, 41 naming, 14 immediate, 26 structural with four
+candidate-only and four target-only words. Five cycles, 37 cells (one
+batch was void: a generator edit moved the base to 280 at +4 and was
+caught by the base-reproduction cell). Retained: 78 masked, delta zero,
+first +0x18, aligned 238 exact, 39 naming, 11 immediate, 20 structural,
+same eight insertion words. Not matched.
+
+Three orderings, each read off the listing, semantically inert and
+additive on the probe-bearing source:
+
+- `shift` defined before `mask` in every arm. The ROM sets shift (v1)
+  before mask (a0) and colours them in that order; ours had mask v1,
+  shift a0. First-definition order (L106): 88 to 86.
+- The extended-mode test written `== 0` with the 0x1C0/6 arm as its then
+  arm. uopt hoists the else arm's two constant assignments above the
+  branch and jumps to the join when the condition is false, so the arm
+  that appears first in the object is the else arm: the ROM has 0xE00/9
+  first and `bne t7,zero`, ours had 0x1C0/6 first and `beq`. 88 to 87;
+  with the first, 81.
+- Every mode section defines `i`, then `count`, then its selected player
+  (mode 2 then `equalFourCount`), which is the ROM's `or v1,zero,zero;
+  or a1,zero,zero; or a3,t0,zero` prologue in all three sections. 81 to 78.
+
+Computing `current` before the `desired < 3` return is 94 (worse); a
+boolean local for the first loop's compare is inert at 88 and 78.
+
+The finding that matters for the next lane is what the six probes are
+doing. Removing them all is 173. Removing them and re-reading the selected
+player from `records[0].player` (no `volatile`, no copy of `player`) is
+191 -- worse in count -- but the mode-0 loop is then instruction for
+instruction the ROM's: `i`, `count` and the selected player materialised
+by three `or`s (the third is the forwarded second load, `or a3,t0,zero`),
+the `i != selected` compare first with the address shift in its delay
+slot, a plain `beq`, and the count exit. The retained source's `volatile`
+reload inside that loop is not in the ROM. The residual of that clean
+form is 129 naming rows of which 44 are one web: the packed-status base
+address, coloured t0 there and t3 in the ROM, with the ROM's t0 and t1
+held by `player` and the constant 4. The probes exist to pin that
+ordering on the wrong loop shape; the plain copy `selectedPlayer0 =
+player` is propagated away and loses four words (272 at -16), so the ROM's
+selected player is a distinct symbol holding the second load.
+
+Next: on the clean re-read form, read the p1 ladder (29 decisions, no p2)
+for the base-address web against `player` and the constant-4 web and find
+what lowers the base's save below theirs or forbids it t0 and t1; then
+retire the probes one at a time against that form. Do not add a seventh
+probe.
 <!-- plateau-handoff:overlay58FinalizePackedStatus:end -->

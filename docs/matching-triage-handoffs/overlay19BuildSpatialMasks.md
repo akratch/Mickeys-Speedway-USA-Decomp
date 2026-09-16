@@ -2,11 +2,11 @@
 ### `overlay19BuildSpatialMasks` plateau handoff
 
 - source: `src/overlays/o019/overlay19BuildSpatialMasks.c`
-- score: 63/227 words
+- score: 17/227 words
 - frame: 0x80
 - relocations: 0
 - first mismatch: +0x58
-- summary: Unsigned scale normalization leaves all 63 draws and stock text unchanged; the mask-table emission-order blocker remains.
+- summary: Fresh bin counter, xMax probe and a folded init line reach 17; the p2-ordered span/firstItem pair and the selector/mask init order remain.
 
 - geometry: Target and configured C are both `0x38C`/908 bytes/227 words with frame `0x80`; the owned Overlay 19 range is `+0xF58..+0x12E4`, ROM `0x18761B0..0x187653C`, followed by separately owned 12-byte assembly padding.
 - relocation proof: Target runtime and candidate static surfaces both contain zero relocation records; count, type, offset, and identity surfaces are therefore vacuously exact, and preflight is complete.
@@ -71,5 +71,60 @@ censuses and aligned deltas remain under ignored build/l1/overlay19BuildSpatialM
 configured compilation, allocator_trace_receipt mapping, draw_census profile
 and comparison, residual_map object comparison, finalize_plateau, and
 tools/gates.sh verify cleanroom check-docs. No matching credit is claimed.
+
+#### 2026-09-16, lane s1-b: the counter's web number, read off the ladder
+
+Baseline reproduced at 63 masked, delta zero, frame 0x80, aligner 164 exact,
+61 naming, 0 immediate, 2 structural. The instrumented uopt (identity gate
+passed, 228 of 228 words) prices the three contests directly.
+
+The a0/v1 swap in the bin loops is the counter's decision order. Reusing
+firstItem as the counter makes web 19: six blocks (it also lives in the span
+head), total 10330, save 1721.7, decided after binEnd (web 154) and binStart
+(web 160), which tie at 9300 over 5 blocks, 1860. A fresh s16 counter is
+9300 over 5 as well, so the tie is broken by ascending web number, and its
+first occurrence sits between binEnd's and binStart's: 63 to 38 in one cell.
+Its declaration position is inert (three positions, all 38). A probe on the
+counter inside loop 1 adds 1000 to the total and moves it ahead of binEnd
+(66). Every non-do form of loop 1 puts binStart's first occurrence ahead of
+the counter's and loses the numbering (for 70, hoisted-init for 34, while
+42).
+
+The t1/t2 swap is xMax (web 45, 3100 over 8, 387.5) decided after xMin (web
+62, 3100 over 7, 442.9). An if (xMax) probe inside the vertex loop raises
+xMax to 4100 over 8, 512.5, ahead of xMin and behind mask: 38 to 24.
+
+Swapping the mask and selector zero inits reached 19, though the two moves
+themselves did not reorder; both probes are load-bearing (dropping either is
+52) and moving mask's init after point or vertices is 24. Folding the two
+loop-1 inits onto one physical line is 17 (an L59 tie; the reverse order on
+one line is 52). Separate lines for loop 1's body statements are 18 to 22.
+
+Retained at 17: aligner 212 exact, 12 naming, 0 immediate, 4 structural,
+one candidate-only word at +0x204 and one target-only at +0x1FC.
+
+What remains, with the record that blocks each:
+
+  the span pointer (web 14) and firstItem (web 19) are p2 webs, coloured in
+  ascending web number; span is created first (lineage event 5 against 7,
+  first reference in the IR, unchanged by declaration order) and is offered
+  v1 first at cost 0. The target has span in a0 and firstItem in v1, so it
+  either references firstItem earlier or holds v1 with a phantom at the loop
+  head. Reading the span through an expression instead of a carrier is 210
+  at +24 because the volatile offset is re-read per occurrence; a firstItem
+  probe ahead of the span load extends its range over the back edge (210,
+  frame 0xC0).
+
+  the selector/mask init order (two rows) is not statement order and not a
+  physical-line tie; it survives every placement measured here.
+
+  loop 1's tail (slti before the sign-extensions, the bit shift's move in the
+  delay slot) is as1's order; loops 2 and 3 already match with the same
+  statements.
+
+Evidence: sources, objects, ladders and side-by-side listings under Git's
+common dir, lane-evidence/s1-b/t2. Commands: private direct-cc harness
+reproducing score_symbol on the base, score_symbol, align_symbol,
+residual_map --object, the instrumented cc with CDX_DETAIL_WEB=all.
 
 <!-- plateau-handoff:overlay19BuildSpatialMasks:end -->

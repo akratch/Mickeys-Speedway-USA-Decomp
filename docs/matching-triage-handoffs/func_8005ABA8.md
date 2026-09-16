@@ -367,4 +367,9 @@ identified above. Commands: assignment gate, aligner, score, retained Ucode
 procedure receipt, draw census before/after, aligned residual comparison,
 `finalize_plateau.py`, and `tools/gates.sh`. ROM verification covers the
 assembly fallback; this pass earns zero new matching bytes.
+#### 2026-09-16, lane lm-c: read only
+
+Baseline reproduced at 2, delta zero, first +0x3C. No cycle spent; the as1
+zero-node-block closure stands and nothing in this lane's readings reopens
+it.
 <!-- plateau-handoff:func_8005ABA8:end -->

@@ -581,4 +581,13 @@ build/k1/levelFreeAll. Commands: lane_status.py, align_symbol.py, configured
 stock compilation, draw_census.py, residual_map.py --object,
 finalize_plateau.py and tools/gates.sh. No matching bytes are credited.
 
+#### 2026-09-16, lane lm-c: read only, one untested axis named
+
+Baseline reproduced at 3, delta zero, first +0x13C. No cycle spent; the
+ring-order closure is mechanically argued and the carrier-type lens this
+lane used elsewhere does not reach a draw order. One axis nobody has
+written down: the index as a cfe bit-field extraction of the entry word
+rather than an and-mask, which is a different lowering and may
+materialise the field before the base load. Cheap to refute because the
+load would probably become an unsigned halfword.
 <!-- plateau-handoff:levelFreeAll:end -->

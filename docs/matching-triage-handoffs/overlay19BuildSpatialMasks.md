@@ -6,7 +6,7 @@
 - frame: 0x80
 - relocations: 0
 - first mismatch: +0xC0
-- summary: Loop-1 tail closed by as1 lineno stamps: 9 to 2. Left: ugen emits mask=0 before selector=0; swapping those two cc -S moves is byte-exact.
+- summary: ugen emits mask=0 (t0) then selector=0 (a2); no tested C form emits a2 first at unchanged colours (L87 lock).
 
 - geometry: Target and configured C are both `0x38C`/908 bytes/227 words with frame `0x80`; the owned Overlay 19 range is `+0xF58..+0x12E4`, ROM `0x18761B0..0x187653C`, followed by separately owned 12-byte assembly padding.
 - relocation proof: Target runtime and candidate static surfaces both contain zero relocation records; count, type, offset, and identity surfaces are therefore vacuously exact, and preflight is complete.
@@ -187,4 +187,37 @@ regardless. Swapping those two moves in the `cc -S` listing and
 re-assembling with `cfe -E` + `as0` + `as1` under compiler-path flags
 (no `-pic0 -noglobal`) is byte-exact. Next: whatever makes ugen emit
 the selector copy first at unchanged colours.
+
+#### 2026-09-17, lane `w2-o019`: ugen copy order is locked to colour (L87)
+
+Baseline reproduced at 2 (225 exact, 2 naming, 0 immediate, 0 structural,
+first +0xC0, frame 0x80, delta 0, zero relocs). Colour was not re-run.
+`cc -S` emits the mask zero into t0 then the selector zero into a2, both
+stamped on the dense init line; the aligner cycle is that one pair.
+
+Three attempts, none better than 2, none emitted a2 before t0 at those
+colours:
+
+- Comma (`selector = 0, mask = 0`), two assigns then two probes, and a
+  selector def moved onto an earlier line without its adjacent
+  `if (selector)` each explode the text to about 1680 bytes. The pair
+  `var = 0; if (var);` is an atomic barrier; dropping the intervening
+  probe is the explosion, not the comma itself.
+- `selector = 0 or 0`, `selector xor selector`, unsigned/u32/s16 zero
+  literals, and assign-as-probe (`if (selector = 0)`) fold to the same
+  two copies. xor-0 at the vertex-loop use adds an instruction (180);
+  or-0 at that use is inert. L87's use-site lock-breaker does not
+  apply to this integer index.
+- Selector-first statements (`selector = 0; if (selector); mask = 0; if (mask);`
+  and `if (selector = 0); if (mask = 0);`) score 7: selector leaves a2
+  for a3 and t0 is still emitted first. Extending selector's last use
+  past the mask store, and L151 literal-type splits of the zeros, also
+  leave t0 first.
+
+L87 is the record: pool-copy colour and ugen emission are one decision
+here, and line grouping does not move these two copies (they already
+share a line; splits stay at 2). Next: a first-surviving-definition that
+is still coloured a2 but is visited before mask's copy, or a new input
+(flag, shape) that changes ugen's independent-copy walk. Not statement
+order, comma, or `#line` on the inits.
 <!-- plateau-handoff:overlay19BuildSpatialMasks:end -->

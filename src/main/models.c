@@ -1183,16 +1183,12 @@ typedef struct ModelFrameInstance {
  * corresponding modSetTextureFrame remains GLOBAL_ASM, so no donor C body is
  * adopted here. This remains a Mickey-only reconstruction. */
 /* Policy-clean configured full-TU C has the exact 48-word body, 0x8 frame,
- * and zero relocations, with 31/48 words matching and first mismatch +0x38.
- * Seventeen register-field residuals remain; UGEN-only ownership is unproved.
- * All 119 flag combinations were attempted; canonical -O2 -mips2 ties for best.
- * Faithful traces show allocation results, not complete dynamic FIFO replay.
- * Natural texture-table, frame-count, single-loop-count, and staged-multiply
- * forms regressed to 51, 51, 122, and 50 instructions, so no combination or
- * batch was authorized. ORT 374 authenticates eight overlay calls across
- * overlays 57, 60, and 82; resident func_8001BB10 passes an unused fourth
- * owner/context argument that this callee overwrites. Linked equality proves
- * fallback only; the guarded C remains a bounded plateau. */
+ * and zero relocations, with 33/48 words matching and first mismatch +0x38.
+ * Fifteen register-field residuals remain. remainingCopy carries the frame
+ * load so lh uses t1; outputValue is deleted so its phantom t3 web is gone.
+ * ORT 374 authenticates eight overlay calls across overlays 57, 60, and 82;
+ * resident func_8001BB10 passes an unused fourth owner/context argument that
+ * this callee overwrites. Linked equality proves fallback only. */
 void func_80020D8C(ModelFrameInstance *instance, s32 textureIndex, s32 frame) {
     ObjectModel *model;
     ModelFrameEntry *entry;
@@ -1211,7 +1207,6 @@ void func_80020D8C(ModelFrameInstance *instance, s32 textureIndex, s32 frame) {
             s32 index = entry->textureIndex & 0xFF;
             ModelTextureHeader *texture = model->textures[index].texture;
             s16 nextFrame;
-            s16 outputValue;
             u16 frameScale;
 
             if (index == textureIndex && frame < texture->frameCount) {
@@ -1219,11 +1214,11 @@ void func_80020D8C(ModelFrameInstance *instance, s32 textureIndex, s32 frame) {
             }
             frameScale = texture->frameScale;
             nextFrame = entry->nextFrame;
-            outputValue = (entry->frame >> 8) * frameScale;
+            remainingCopy = entry->frame;
             output++;
+            output[-1] = (remainingCopy >> 8) * frameScale;
             remainingCopy = remaining;
             entry++;
-            output[-1] = outputValue;
             if (nextFrame >= 0) {
                 output++;
                 output[-1] = (nextFrame >> 8) * frameScale;
@@ -1411,11 +1406,11 @@ void func_8002109C(ModelPointOwner *owner) {
 
 /* PLATEAU-HANDOFF:func_80020D8C:start
  * symbol: func_80020D8C
- * score: 17/48 words
+ * score: 15/48 words
  * frame: 0x8
  * relocations: 0
  * first-mismatch: +0x38
- * summary: P2 force ceiling reaches 16 only; the unresolved term is a hidden ugen draw in the multiply group.
+ * summary: remainingCopy as frame load is 15 at delta 0; leftover is the nextFrame shift web plus the loop-test register.
  * PLATEAU-HANDOFF:func_80020D8C:end
  */
 

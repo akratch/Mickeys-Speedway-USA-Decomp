@@ -1714,9 +1714,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33ReleaseGlobal.c.o: POSTPROCESS = 
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x38
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33CallB.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x20
+# The resident rcpFast3d call cannot be valued under its own global name in
+# overlay_undefined_syms.us.txt; tools/reloc_surface.py derives a per-module
+# placeholder and the rebind is declared here so a fresh worktree still links.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o033/overlay33PresentAndSwap.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
-		func_overlay_033_F000066C_1880E54=overlay33PresentAndSwap $@ && \
+		func_overlay_033_F000066C_1880E54=overlay33PresentAndSwap \
+		--redefine-sym rcpFast3d=rcpFast3d_o033Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x9C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36CallModes.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x40

@@ -344,6 +344,14 @@ bytes and disassembly never belong here.
   and adds a local; spelling the global twice reproduces the reload the target
   performs. Limits: this is about the address web, not aliasing -- IDO reloads
   the value after a call in both spellings.
+- A post-call `g ^= 1; use(g)` of a non-volatile global keeps the address as
+  one coloured web through both regions and copy-props the xor into the later
+  use, so the subscript consumes the xor result rather than a reload. Qualifying
+  the global `volatile` preserves the extra mention as a real load and costs an
+  instruction. Caching the xor in the same local used before the call collapses
+  the address web back onto a ring temporary. Limits: the first region still
+  needs a named copy of the old value for call arguments; reading the global
+  in those arguments is a size regression.
 - A value that only one deep path consumes is sunk to that path even when the
   source computes it early, which keeps its inputs alive across everything in
   between. Hoisting the statement in the source does not stop it, and neither

@@ -369,36 +369,18 @@ void MatrixMultiplyVec4(MtxF m, f32 *src, f32 *dst) {
  */
 #ifdef NON_MATCHING
 /*
- * The extra word is an optimization-level fact, not a source-shape one, and
- * -O3 removes it.
- *
- * Three f32 formals arrive in a1/a2/a3 because the first parameter is a
- * pointer, so each has to cross into an FP register. At -O2 IDO 5.3 moves at
- * most TWO of them with `mtc1` and routes the third through its argument
- * home as `sw` + `lwc1`, which is the candidate's 35th word. That is a
- * property of the optimizer, not of this function: an isolated three-line
- * probe with three f32 formals and one product each shows the same 2-of-3
- * split, while the same probe with one or two formals converts every one.
- * At -O3 all three become `mtc1` and the probe drops a word. On this function
- * -O3 gives 34 words with a zero instruction census delta -- every opcode
- * count agrees -- against -O2's 35 words and a census delta of three
- * (`lwc1 +1`, `mtc1 -1`, `sw +1`).
- *
- * What remains at -O3 is a commutative operand order and the FP colouring it
- * carries. The target's row accumulator ends `add.s fd, (t1+t2), t3` where
- * IDO writes `add.s fd, t3, (t1+t2)`, and its three scalars take f12/f14/f16
- * where IDO rotates them to f14/f16/f12. Copying the three parameters into
- * locals (`x = arg1; y = arg2; z = arg3;`) makes rows 1-11 and 13 exact and
- * leaves 18 of 34 words differing; without the copies it is 24. Neither the
- * association nor the operand order is reachable from source: a 288-cell
- * lattice over declaration order, assignment order, per-term operand order
- * and explicit parenthesisation is flat, as are named per-term temporaries,
- * an accumulator spelling, flat versus 2-D indexing, and -mips1/-mips3.
- *
- * The TU flag is deliberately left at -O2. ADR 0007 wants an exact function
- * before a shared flag group moves, and matrix.c's other five functions are
- * recorded as hand assembly; adopting -O3 here would restate all five
- * candidates for one function that is still a colour rotation short.
+ * Configured -O2 emits 35 words: two `mtc1` of a1/a3 and `sw`+`lwc1` of a2
+ * through 8(sp). Driver -O3 (not phase-all-O3, which appends -O3 after -O2
+ * and is inert) emits 34 words and three `mtc1`. The same 34-word object is
+ * reachable at -O2 by CDX_FORCE=p2:w15=c28 (accepted forced=28): web 15 is
+ * the arg2 float, class-2, totalsave 3, no-color because bestcost is the
+ * callee 4.0 and caller f16 (c28) is infinite-cost for the three incoming
+ * scalar webs. f12/f14 colour the other two at cost 0. Extra copy, L144
+ * address form, L97/goto regions, store-kill, register formals, K&R, 2-D
+ * indexing, and mul-by-1 copies all keep the 2-of-3 split; they rotate
+ * which formal spills. Matrix-first copies plus that force score 18 masked
+ * at +0x44, matching the best driver -O3 body. The remaining 18 is add
+ * operand order plus an f12/f14/f16 rotation. Do not move the TU to -O3.
  */
 void func_8002B040(MtxF matrix, f32 arg1, f32 arg2, f32 arg3,
                    f32 *arg4, f32 *arg5, f32 *arg6) {
@@ -415,11 +397,11 @@ void func_8002B040(MtxF matrix, f32 arg1, f32 arg2, f32 arg3,
 
 /* PLATEAU-HANDOFF:func_8002B040:start
  * symbol: func_8002B040
- * score: 18/34 words
+ * score: 34 differing words
  * frame: frameless
  * relocations: 0
  * first-mismatch: +0x0
- * summary: -O3 closes the size and instruction census exactly (34 words, census delta 0); at -O2 IDO mtc1's only two of three GPR-passed f32 formals. Residual is one commutative add order and an f12/f14/f16 rotation, flat over a 288-cell source lattice.
+ * summary: O2 35w/34 masked. Force p2:w15=c28 or driver -O3: 34w 3 mtc1 (sdk_copies+force=18). f16 INF on scalar webs; copy/L144/L97/store-kill stay 2-of-3.
  * PLATEAU-HANDOFF:func_8002B040:end
  */
 

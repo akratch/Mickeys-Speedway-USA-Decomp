@@ -177,6 +177,6 @@ Overlay34Record *overlay34CreateRecord(Overlay34Input *input) {
  * frame: 0x30
  * relocations: 12
  * first-mismatch: +0xE8
- * summary: uopt closes the store block after twenty local loads, one per store and one per stored variable, which leaves height's last store in a second block; two self-defining reads of height there outrank the resource copy (6 to 2), and the byte12/short16 pair is that same boundary read the other way.
+ * summary: uopt closes the store block after twenty cfe Ulod of locals (varrefs>=20); node 10 holds through byte12 and node 11 starts at the height self-def then short16. Two self-defs of height outrank the resource copy (6 to 2). ROM order needs <=17 units before short16; split-ILOD forwarding, chained def/store, packed zeros and repeated expressions do not save those two units without a size or shape regression.
  * PLATEAU-HANDOFF:overlay34CreateRecord:end
  */

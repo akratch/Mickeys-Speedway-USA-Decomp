@@ -6,7 +6,46 @@
 - frame: 0x30
 - relocations: 12
 - first mismatch: +0xE8
-- summary: uopt closes the store block after twenty local loads, one per store and one per stored variable, which leaves height's last store in a second block; two self-defining reads of height there outrank the resource copy (6 to 2), and the byte12/short16 pair is that same boundary read the other way.
+- summary: uopt closes the store block after twenty cfe Ulod of locals (varrefs>=20); node 10 holds through byte12 and node 11 starts at the height self-def then short16. Two self-defs of height outrank the resource copy (6 to 2). ROM order needs <=17 units before short16; split-ILOD forwarding, chained def/store, packed zeros and repeated expressions do not save those two units without a size or shape regression.
+
+#### 2026-09-17, lane lm-o034: block table read; seven cells, unmoved at 2
+
+Baseline reproduced: 2 masked (4 raw), delta 0, aligned 123/0/0/2, first
++0xE8, frame 0x30. Instrumented `.text` is byte-identical to stock. The
+instrumented per-web sets and stock `-Wo,-zdbug:2` `uoptlist` (listing
+complete before the recomp `wrapper_ecvt` abort) place the boundary:
+
+- Node 10 `expoccur` holds itable bits 42–70: both dimension defs and the
+  field stores through `byte12 = 2`. Node 11 starts at the surviving
+  height self-def (bit 71) then `short16` (bit 72).
+- Height (sym@-16) refs blocks 10,11, colour v1; the resource copy refs
+  10, colour a0; literal 2 refs 10 only.
+
+uopt source names the counter: `endblock = varrefs >= curvarreflimit`
+(default 20) at a statement boundary. `varrefs++` is each cfe `Ulod` of a
+non-`veqv` isvar; forwarding skips it. The statement that hits 20 stays
+in the block; the next opens the next one. ROM order still needs at most
+17 local-loads before `short16`.
+
+Seven cells, none below 2, none putting `short16` and `byte12` in one
+block without a size or shape regression:
+
+- Two-step `width = p->w; width = (width-1)<<5` then ROM order: 11 (2
+  self-defs) / 15 (none). Literal 2's refs become [10,11]. Copy-prop does
+  not cheapen later `Uistr` of that s32.
+- `width = p->f = expr` 47; `p->f = width = expr` 27 (the folded-def
+  family nx-b had at 27–28). Literal 2 still nocs 2.
+- `*(s32*)&short0C = 0` 80, delta -4: one wider store saves a unit and
+  changes the opcode.
+- Repeating the ILOD expression at every dimension store 108, +44:
+  candidate stores kill the resource ILOD, so each use rematerializes.
+
+Eliminated as the way to save two units while keeping two declared s32
+dimensions and the same sb/sh sequence: split-ILOD forwarding, chained
+def/store, packed adjacent zeros, repeated expressions. Next is still
+cfe emitting fewer `Ulod` of the record base (a non-isvar temp, or one
+lod feeding two `Uistr` that still become the same two store opcodes).
+Do not repeat the statement-order lattice or these seven cells.
 
 #### 2026-09-16, lane lm-a: two cycles, no source reaches the ranking
 

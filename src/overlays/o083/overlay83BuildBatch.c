@@ -93,19 +93,16 @@ extern void *overlay83CreateLinkedReloc();
 extern f32 gOverlay83ScaleReloc;
 
 /* Mickey-local reconstruction; pinned DKR/JFG scans found no exact donor. */
-/* Plateau (2026-08-25): exact-size; 97 words differ, first +0x0; 40m permuter best 420.
- * A transient allocator result improved 104 to 97; the 119-flag lattice found no match.
- * The 0x78 target frame, sp+0x58 aggregate, and count/scale schedule remain blockers. */
+/* Frame 0x80 vs target 0x78: L134 dissolved inner spill names and the u8 count
+ * local. Remaining occupies the last extra 8-byte home; scaleFactor keeps f22. */
 #ifdef NON_MATCHING
 void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
     O83Batch *batch;
     O83OutputRecord *allocated;
     O83OutputRecord *output;
     O83SourceRecord *input;
-    u8 count;
     s32 remaining;
     f32 scaleFactor;
-    s8 one;
 
     batch = parent->batch;
     allocated = overlay83AllocateBatchReloc(source->count * 0x258, (void *)0x87);
@@ -115,28 +112,19 @@ void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
         output = allocated;
         input = source->records;
         batch->alpha = source->alpha;
-        count = source->count;
-        remaining = count - 1;
-        if (count != 0) {
-            one = 1;
+        remaining = source->count - 1;
+        if (source->count != 0) {
             scaleFactor = gOverlay83ScaleReloc;
             do {
-                u8 scale;
-                f32 convertedScale;
-                f32 *world;
-
                 output->x = input->x << 8;
                 output->y = input->y << 8;
                 output->z = input->z << 8;
                 output->height = input->alpha * 4;
-                scale = input->scale;
-                convertedScale = scale;
-                world = &output->worldX;
                 output->worldX = 0.0f;
                 output->worldZ = 0.0f;
-                output->scale = convertedScale * scaleFactor;
+                output->scale = input->scale * scaleFactor;
                 output->worldY = output->height;
-                overlay83TransformWorldReloc(1, output, world, world);
+                overlay83TransformWorldReloc(1, output, &output->worldX, &output->worldX);
                 output->worldX += parent->worldX;
                 output->worldY += parent->worldY;
                 output->worldZ += parent->worldZ;
@@ -152,7 +140,7 @@ void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
                 if (input->flags & 1) {
                     O83LinkedInit linkedInit;
 
-                    linkedInit.mode = one;
+                    linkedInit.mode = 1;
                     linkedInit.count = 3;
                     linkedInit.flags = input->flags;
                     linkedInit.pad03 = -1;
@@ -176,7 +164,7 @@ void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
                 output->first = 0;
                 output->last = 0;
                 output->active = 0;
-                output->enabled = one;
+                output->enabled = 1;
                 input++;
                 output++;
             } while (remaining--);
@@ -192,10 +180,10 @@ void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
 
 /* PLATEAU-HANDOFF:overlay83BuildBatch:start
  * symbol: overlay83BuildBatch
- * score: 97/168 words
- * frame: 0x90
+ * score: 98/168 words
+ * frame: 0x80
  * relocations: 5
  * first-mismatch: +0x0
- * summary: count and scale lifetimes plus five relocation identities remain unresolved at exact geometry
+ * summary: L134 inner spills plus u8 count cut frame 0x90 to 0x80. remaining is the last 8-byte home; colour floor 89 at delta 0.
  * PLATEAU-HANDOFF:overlay83BuildBatch:end
  */

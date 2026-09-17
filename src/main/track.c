@@ -5685,7 +5685,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0x10
  * relocations: 2
  * first-mismatch: +0x1C
- * summary: Fresh proc-29 census: 7 draws/124 emissions. Width control moves the schedule only with excess geometry; baseline allocation residual remains.
+ * summary: p2 a0/t0 cycle is count vs bound/coord web order. Declaration order is inert; hoisting z/y/xLower or delaying count regresses. Count stays a0.
  * PLATEAU-HANDOFF:func_8000FAE0:end
  */
 
@@ -5725,7 +5725,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xb8
  * relocations: 6
  * first-mismatch: +0xBC
- * summary: Fresh proc-39 census: 34 draws/209 emissions; the dependency route regresses and a same-value store is inert. No schedule lever remains.
+ * summary: Mutation of a loaded direction component dests the sum at f20 but is ±4 B / 113 words. Size-0 memory-sum still copy-props into f0.
  * PLATEAU-HANDOFF:func_80010900:end
  */
 

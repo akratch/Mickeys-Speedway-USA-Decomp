@@ -75,13 +75,15 @@ extern s32 gOverlay34Count;
 extern Overlay34Resource *func_80034448(s16 resourceId);
 extern void func_80029FE4(Overlay34Input *input, f32 direction[3]);
 
-/* Pinned DKR v77/v80 and JFG searches found no exact donor. */
-/* The indexed scan lets IDO generate the advancing cursor and removes the
- * former loop-copy naming residual. Keep the current-record alias and the
- * dimension declaration order: the configured candidate retains the target
- * frame. Two words remain, the byte12/short16 store pair; see the symbol's
- * plateau shard for the block-budget reading that bounds it. */
-#ifdef NON_MATCHING
+/* Matched 2026-09-17, lane w3-o034. 125/125 words, frame 0x30, 12 relocs.
+ * uopt closes a straight-line block after twenty cfe Ulod of non-veqv isvars.
+ * Stores through the declared `candidate` spent that budget at byte12, so
+ * short16 opened the next block and the pair could not share the ROM order.
+ * Rebinding `record = candidate` after the resource call gives the fill
+ * pointer an assigned tree with no ILOD; forwarding then skips the base
+ * Ulods, the whole fill including short16 and byte12 stays in one block,
+ * and height (one block, save 4) outranks the resource copy (save 3) without
+ * the self-defs that previously bought that ranking. */
 Overlay34Record *overlay34CreateRecord(Overlay34Input *input) {
     Overlay34Record *record;
     Overlay34Record *current;
@@ -107,76 +109,51 @@ Overlay34Record *overlay34CreateRecord(Overlay34Input *input) {
         if (candidate != NULL) {
             candidate->resource = func_80034448(input->resourceId);
             if (candidate->resource != NULL) {
-                width = (candidate->resource->width - 1) << 5;
-                height = (candidate->resource->height - 1) << 5;
-                candidate->byte00 = 0x40;
-                candidate->byte01 = 0;
-                candidate->short04 = width;
-                candidate->short06 = 0;
-                candidate->byte02 = 1;
-                candidate->short08 = width;
-                candidate->short0A = height;
-                candidate->byte03 = 2;
-                candidate->short0C = 0;
-                candidate->short0E = 0;
-                candidate->byte10 = 0x40;
-                candidate->byte11 = 1;
-                candidate->short14 = width;
-                candidate->byte12 = 2;
-                /* Two self-defining reads of height (lane nx-b, 2026-09-16).
-                 * uopt closes a straight-line block after a fixed budget of
-                 * local-variable loads (measured: twenty from the resource
-                 * test, one per store plus one per stored variable), which
-                 * falls after byte12 here; height's last store is past it, so
-                 * its web is two blocks (save 4/2) and the resource copy
-                 * (save 3, one block) is coloured v1 ahead of it where the
-                 * ROM has the copy in a0 and height in v1. Each self-defining
-                 * read is a def and a use in that second block, raising
-                 * height to 8/2 at zero width; discarded `height | 0` reads
-                 * are dropped by uopt and count nothing. 6 -> 2 masked. */
-                height = height | 0;
-                height = height | 0;
-                candidate->short16 = height;
-                candidate->short18 = 0;
-                candidate->short1A = 0;
-                candidate->byte13 = 3;
-                candidate->short1C = 0;
-                candidate->short1E = height;
-                candidate->word24 = input->word1C;
-                candidate->word28 = input->word28;
-                candidate->word2C = input->word20;
-                candidate->word30 = input->word2C;
-                candidate->word34 = input->word24;
-                candidate->word38 = input->word30;
-                candidate->byte3C = 0;
-                candidate->byte3D = input->mode * 6;
-                candidate->x1 = input->x;
-                candidate->y1 = input->y;
-                candidate->z1 = input->z;
-                candidate->x2 = input->x;
-                candidate->y2 = input->y;
-                candidate->z2 = input->z;
-                candidate->depth = -input->depth;
-                func_80029FE4(input, candidate->direction);
-                candidate->value = input->value;
-                candidate->active = 1;
-                gOverlay34Pointers[gOverlay34ActiveCount] = candidate;
+                record = candidate;
+                width = (record->resource->width - 1) << 5;
+                height = (record->resource->height - 1) << 5;
+                record->byte00 = 0x40;
+                record->byte01 = 0;
+                record->short04 = width;
+                record->short06 = 0;
+                record->byte02 = 1;
+                record->short08 = width;
+                record->short0A = height;
+                record->byte03 = 2;
+                record->short0C = 0;
+                record->short0E = 0;
+                record->byte10 = 0x40;
+                record->byte11 = 1;
+                record->short14 = width;
+                record->short16 = height;
+                record->byte12 = 2;
+                record->short18 = 0;
+                record->short1A = 0;
+                record->byte13 = 3;
+                record->short1C = 0;
+                record->short1E = height;
+                record->word24 = input->word1C;
+                record->word28 = input->word28;
+                record->word2C = input->word20;
+                record->word30 = input->word2C;
+                record->word34 = input->word24;
+                record->word38 = input->word30;
+                record->byte3C = 0;
+                record->byte3D = input->mode * 6;
+                record->x1 = input->x;
+                record->y1 = input->y;
+                record->z1 = input->z;
+                record->x2 = input->x;
+                record->y2 = input->y;
+                record->z2 = input->z;
+                record->depth = -input->depth;
+                func_80029FE4(input, record->direction);
+                record->value = input->value;
+                record->active = 1;
+                gOverlay34Pointers[gOverlay34ActiveCount] = record;
                 gOverlay34ActiveCount++;
             }
         }
     }
     return candidate;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o034/overlay34CreateRecord/func_overlay_034_F00000D4_188127C.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay34CreateRecord:start
- * symbol: overlay34CreateRecord
- * score: 2/125 words
- * frame: 0x30
- * relocations: 12
- * first-mismatch: +0xE8
- * summary: uopt closes the store block after twenty cfe Ulod of locals (varrefs>=20); node 10 holds through byte12 and node 11 starts at the height self-def then short16. Two self-defs of height outrank the resource copy (6 to 2). ROM order needs <=17 units before short16; split-ILOD forwarding, chained def/store, packed zeros and repeated expressions do not save those two units without a size or shape regression.
- * PLATEAU-HANDOFF:overlay34CreateRecord:end
- */

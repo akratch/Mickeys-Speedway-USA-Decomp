@@ -1490,6 +1490,14 @@ MIXED_TU_EXACT_C_RANGES = {
     31: [
         (0x02E8, 0x04F8, "func_overlay_031_F00002E8_187F808"),
     ],
+    34: [
+        (
+            0x0D4,
+            0x2C8,
+            "overlay34CreateRecord",
+            "canonical mixed-TU object, 12 runtime relocations, and linked bytes exact",
+        ),
+    ],
     35: [
         (0x0770, 0x0B40, "func_overlay_035_F0000770_1882450"),
     ],

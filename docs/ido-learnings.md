@@ -2469,7 +2469,12 @@ bytes and disassembly never belong here.
   rematerializes under aliasing. Chaining `p->f = x = expr` is the
   folded-def family and moves the frame or reloads a truncated field.
   Combining adjacent zeros as a wider store saves a unit in the counter
-  and changes the opcode. See the
+  and changes the opcode. A post-call copy of the pointer into another
+  local (`p = q` with no ILOD in the assigned tree) is the form that
+  *does* skip the base `Ulod`s: later field stores through `p` do not
+  increment `varrefs`, so a fill that spent the budget at one store can
+  keep the next store in the same block and emit the target's order.
+  See the
   [constructor block-budget receipt](matching-triage-handoffs/overlay34CreateRecord.md).
 
 ## Adding a learning

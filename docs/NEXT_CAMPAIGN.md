@@ -68,7 +68,7 @@ not be dispatched.
 | `overlay14CreateValue` | 384 | 2 | o014 | Tail count-load hoist over the key store. **Live: lane/lm-o014.** |
 | `func_8005ABA8` | 444 | 2 | `src/main/models_5B300.c` | as1 delay-slot; suppressor (`.align` after else-arm label) is not reachable from C. Do not dispatch. |
 | `overlay20RemoveEntry` | 212 | 2 | o020 | register-only. Shard: no spelling reaches the target colour; remaining lever is the instrumented free list. |
-| `overlay34CreateRecord` | 500 | 2 | o034 | Block-budget boundary in the store sequence. **Live: lane/lm-o034.** |
+| `overlay34CreateRecord` | 500 | 0 | o034 | **Matched and promoted** (lane w3-o034). Post-call `record = candidate` rebind. |
 | `overlay1UpdateRangeFlags` | 480 | 2 | o001 tail | register-only. **Same file as other overlay-1 tail rows; do not split.** |
 | `overlay19BuildSpatialMasks` | 908 | 9 | o019 | as1 order on the mask/selector zero-init pair and loop-1 tail. **Live: lane/lm-o019.** |
 

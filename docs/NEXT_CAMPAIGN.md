@@ -1,7 +1,7 @@
 # After 60%: last-mile harvest, then the size-mismatch method
 
 The 60% goal is met. `gmake scoreboard` on the landed tree reads
-570,532 / 944,344 = **60.42%**. This file is the next campaign, not a
+573,408 / 944,344 = **60.72%**. This file is the next campaign, not a
 restatement of the sprint that got here. Numbers below are recomputed from
 `README.md`'s Progress block and `config/nonmatching-ranking.us.json` at
 the same tip; do not carry them forward from an earlier message.
@@ -11,25 +11,25 @@ arithmetic; this document is the strategy that consumes it.
 
 ## The arithmetic
 
-    resolved 570,532 / 944,344 = 60.42%
-    remaining                373,812 bytes
-    ranking queue            280 functions / 355,780 bytes
+    resolved 573,408 / 944,344 = 60.72%
+    remaining                370,936 bytes
+    ranking queue            279 functions / 352,904 bytes
     unranked remainder        18,032 bytes (no NON_MATCHING candidate)
 
 The ranking splits the reachable unmatched pool two ways:
 
 | class | functions | bytes | share of remaining |
 |---|---:|---:|---:|
-| size-mismatch (`size_delta != 0`) | 156 | 238,000 | 63.7% |
-| delta-0 | 124 | 117,780 | 31.5% |
-| unranked | — | 18,032 | 4.8% |
+| size-mismatch (`size_delta != 0`) | 156 | 238,000 | 64.2% |
+| delta-0 | 123 | 114,904 | 31.0% |
+| unranked | — | 18,032 | 4.9% |
 
 Delta-0 by mechanism:
 
 | category | functions | bytes | masked words |
 |---|---:|---:|---:|
 | other | 107 | 106,528 | 13,503 |
-| register-only | 16 | 10,344 | 276 |
+| register-only | 15 | 7,468 | 274 |
 | schedule-only | 1 | 908 | 9 |
 
 That is the ceiling of last week's methods: colour landscapes, L160
@@ -45,7 +45,7 @@ class is the bridge to 65% and beyond; last-mile harvest alone is not.
 
     65% = 613,824 bytes, gap 43,292
     last-mile cheap pool (delta-0, masked ≤ 10, excluding the barred
-    overlay57UpdateModeState) = 18 functions / 11,364 bytes
+    overlay57UpdateModeState) = 17 functions / 8,488 bytes
 
 Closing every cheap last-mile function reaches ~61.6%. Reaching 65%
 requires either large delta-0 `other` functions (the 106,528-byte band)
@@ -64,18 +64,18 @@ not be dispatched.
 
 | symbol | bytes | masked | TU | next step |
 |---|---:|---:|---|---|
-| `func_8000590C` | 2,876 | 2 | `src/main/objects.c` | Both nested `addu`s are temp-first; the ROM is object-first. Six source spellings were byte-flat. Read which operand instrumented `uopt` canonicalises first when one is an ILOD off a forwarded temp. |
-| `overlay14CreateValue` | 384 | 2 | o014 | Tail count-load hoist over the key store. |
-| `func_8005ABA8` | 444 | 2 | `src/main/models_5B300.c` | Pool-literal / `other`; shard is current. |
-| `overlay20RemoveEntry` | 212 | 2 | o020 | register-only. |
-| `overlay34CreateRecord` | 500 | 2 | o034 | `other`, two masked. |
-| `overlay1UpdateRangeFlags` | 480 | 2 | o001 tail | register-only. **Same TU as other overlay-1 tail rows; do not split.** |
-| `overlay19BuildSpatialMasks` | 908 | 9 | o019 | as1 order on the mask/selector zero-init pair and loop-1 tail. |
+| `func_8000590C` | 2,876 | 0 | `src/main/objects.c` | **Matched and landed** (lane lm-0590c). Nested-add commute: ILOD off a forwarded temp is temp-first; bind to an existing isvar for object-first. |
+| `overlay14CreateValue` | 384 | 2 | o014 | Tail count-load hoist over the key store. **Live: lane/lm-o014.** |
+| `func_8005ABA8` | 444 | 2 | `src/main/models_5B300.c` | as1 delay-slot; suppressor (`.align` after else-arm label) is not reachable from C. Do not dispatch. |
+| `overlay20RemoveEntry` | 212 | 2 | o020 | register-only. Shard: no spelling reaches the target colour; remaining lever is the instrumented free list. |
+| `overlay34CreateRecord` | 500 | 2 | o034 | Block-budget boundary in the store sequence. **Live: lane/lm-o034.** |
+| `overlay1UpdateRangeFlags` | 480 | 2 | o001 tail | register-only. **Same file as other overlay-1 tail rows; do not split.** |
+| `overlay19BuildSpatialMasks` | 908 | 9 | o019 | as1 order on the mask/selector zero-init pair and loop-1 tail. **Live: lane/lm-o019.** |
 
-`func_8000590C` is `base-only` against the current reopen pin (source
-`c7c021db`, ledger `2fbdaed2`). It is the single best target in the
-tree by bytes per masked word (1,438). `objects.c` is one owner, so
-the same lane also takes the five unroller-grown siblings below.
+`objects.c` is one owner. `func_8000590C` is matched, so the live
+objects.c lane (`lane/lm-obj`) takes the five unroller-grown siblings
+below. `func_8005ABA8` is not dispatched: the remaining two words are an
+as1 branch-likely conversion whose suppressor is not a C spelling.
 
 ### Same-TU follow-on on `objects.c`
 

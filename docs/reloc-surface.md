@@ -1433,10 +1433,11 @@ to `func_8002C8B4`, and `+0x144` to `mmFree`, plus a HI16/LO16 pair at
 exactly one export row and one direct call (`joyRead+0x130`) identify it. There
 are zero resident runtime records inside the function, zero resident or overlay
 records targeting ORT 505 across the shipped tables, and zero aligned absolute
-function pointers. The policy-clean plateau candidate emits all 11 symbol/type
-identities, but its 85-instruction structure shifts nine call offsets; only the
-`D_8007A304` pair remains at target-relative `+0x80/+0x90`. Current linked
-equality therefore proves the assembly fallback only.
+function pointers. The current stack-homed candidate emits all 11 symbol/type identities at
+86 instructions, frame `0x48`. Call offsets still drift by the two-word
+extent deficit; the `D_8007A304` pair remains at target-relative
+`+0x80/+0x90`. Current linked equality therefore proves the assembly
+fallback only.
 
 Resident `debug_text_width` owns five exact records: R_MIPS_26 calls at `+0x18`
 and `+0x30` to `sprintfSetSpacingCodes`, `+0x28` to `vsprintf`, and a

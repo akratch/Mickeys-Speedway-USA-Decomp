@@ -1985,24 +1985,18 @@ remain unchanged; this repair adds no matching credit.
 The 124-byte `func_8002C70C` is exact under canonical `-Wo,-loopunroll,0 -O2 -mips2 -32`; its 31 words and relocation-free linked range match.
 
 `func_8002CF6C` owns ROM `0x2DB6C..0x2DCCC`, 88 words with no padding before
-`packOpen`. Policy-clean configured V0 emits 85 instructions, frame `0x30`, and
-10/88 positional words, first `+0x0`. It retains all 11 relocation identities,
-but the shorter structure shifts their offsets. The complete 119-configuration
-lattice is nonexact; the `-O2 -g3 -mips2` family reaches 86 instructions but
-does not restore target structure. A single allocator trace maps the function
-to procedure 26 and shows `globalFlags`/the allocated buffer colored to `s0/s1`,
-with the saved-byte and saved-flag webs in `a2/a3`. Moving those two scalars into
-their natural lexical scope restores frame `0x48` and improves the retained body
-to 11/88 positional words, first `+0x8`, while remaining 85 instructions. A
-narrow saved-header lifetime regresses to 83 instructions, so there is no
-improving combination and no generic batch is authorized. The target records
-remain calls at `+0x0C/+0x18/+0x28/+0x54/+0x60/+0xC4/+0x120/+0x13C/+0x144`
-plus the `D_8007A304` pair at `+0x80/+0x90`. ORT 505 at ROM `0x1849F14`
-exports it; `joyRead+0x130` is the sole caller and no overlay/runtime-table or
-aligned-pointer inbound exists. The assembly fallback remains canonical. Resume
-only when a natural source model explains the target's stack-homed buffer without
-synthetic padding, volatile allocation scaffolding, false arguments, or dead
-carriers.
+`packOpen`. A stack-homed `SavesWipeState` (L112 unobservable array lengths,
+L97 region around the footer stores, s0 reuse of the buffer after the flags
+die) matches frame `0x48` and the target slot ladder. Configured C emits 86
+instructions, 54/88 positional words, first `+0x20`, and all 11 relocation
+identities. Two target-only words remain: an addiu of the buffer copy by
+`0x1C0` that uopt deletes, and a nop in `mainResetPressed`'s jal delay.
+The target records remain calls at
+`+0x0C/+0x18/+0x28/+0x54/+0x60/+0xC4/+0x120/+0x13C/+0x144` plus the
+`D_8007A304` pair at `+0x80/+0x90`. ORT 505 at ROM `0x1849F14` exports it;
+`joyRead+0x130` is the sole caller. The assembly fallback remains canonical.
+Resume with a source form that keeps the dead increment without spanning a
+later call.
 
 The save-window serializer `func_8002C94C` is now **matched** (tier-A byte-identity).
 The residual was a pure `schedule-mismatch` (exact 115-word shape, `0x70` frame, relocations already agreeing); the decomp-permuter closed it, finding an `if (1) { ... }` grouping around the entry initialization that resolves the callee-saved slot/counter scheduling tie-break. The C in `src/main/saves.c` now compiles byte-identical to the ROM; no assembly fallback remains.

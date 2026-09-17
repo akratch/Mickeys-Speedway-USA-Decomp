@@ -2010,7 +2010,12 @@ a new legal pool-to-temp web-formation mechanism.
 
 `overlay 34 +0x02C8..+0x0378` (`overlay34RemoveRecord`) — 176 bytes / 44 words. NON_MATCHING: bounded 2026-08-28 closeout retained the size-exact source after indexed-compaction, pointer-cursor, separated-count, and scoped-call probes. The best candidate matches 32/44 words with the first schedule/register residual at `+0x14`; it preserves one helper relocation and two repeated active-count HI16/LO16 pairs, while the target encodes its pointer load without relocation. Removing those source pointer relocations is prohibited, so no C credit is claimed.
 
-`overlay 34 +0x00D4..+0x02C8` (`overlay34CreateRecord`) — 500 bytes / 125 words. NON_MATCHING: bounded configured C is exact-sized at 93/125 raw and 95/125 relocation-aware positional words, first `+0x0`, with frame `0x28` versus target `0x30`. Natural index, field-store, and activation ordering closes the configured runtime surface to all 12 offsets, types, identities, and addends: resident calls at function offsets `+0x70/+0x194`; LOCAL records, pointer-table, and count pairs at module `+0x900/+0x904/+0x908`; and the active-count pair at module `+0x90C`, used at function `+0x0/+0x4` and `+0x1AC/+0x1B0`. ORT 1609 exports the owner, with calls from Overlay 8 `+0x28C0` and Overlay 89 `+0x734`; `+0x2C8` begins the next function, so there is no owned padding. All 119 flags, one fidelity-clean allocator trace, and ten natural forms are nonexact. Two scan-loop opcodes, an eight-byte frame/home deficit, and seven allocator webs remain; exact linked function, complete overlay, and ROM evidence still comes from the assembly fallback and contributes **0 exact C bytes**.
+`overlay 34 +0x00D4..+0x02C8` (`overlay34CreateRecord`) —
+**500 exact C bytes / 125 words**, frame `0x30`. Rebinding `record = candidate`
+after the resource call skips the fill-pointer `Ulod`s on uopt's block budget,
+so `short16` and `byte12` share one block in ROM order. The configured object
+is instruction-exact with all 12 relocation identities; the linked owned range
+and the complete overlay section are byte-identical to the US ROM.
 
 `overlay 14 +0x09F4..+0x0ACC` (`func_overlay_014_F00009F4_18702CC`) —
 **216 exact C bytes / 54 words**. A bounded annotated-target permutation found

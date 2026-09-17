@@ -1155,8 +1155,12 @@ gOverlay34Records = 0x00000000;
 /* overlay 34: overlay34SetValue10.c.o */
 gOverlay34Value10 = 0x00000010;
 
-/* overlay 34: overlay34RemoveRecord.c.o */
+/* overlay 34: overlay34CreateRecord.c.o */
+func_80029FE4_o034Reloc = 0xf0000000;
+func_80034448_o034Reloc = 0xf0000000;
 gOverlay34ActiveCount = 0x0000000c;
+
+/* overlay 34: overlay34RemoveRecord.c.o */
 overlay34FreeReloc = 0xf0000000;
 
 /* overlay 34: overlay34ResetStorage.c.o */

@@ -1856,7 +1856,7 @@
       "source_commit": "598cf64d96f6227c5882033610c056ebccdc629b"
     },
     "overlay44UpdateFrameCache": {
-      "ledger_commit": "8554caa23a08071ace512f223b67be459208bbb6",
+      "ledger_commit": "8a8d5757b852d143909da1f8a89345fa3cf72955",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "8554caa23a08071ace512f223b67be459208bbb6"
     },

@@ -677,13 +677,10 @@ last texture parameter as a command-word temporary and would corrupt the next
 part's cache comparison, so it was rejected.
 `func_80020D8C` owns ROM `0x2198C..0x21A4C`, 48 words with no padding before
 `func_80020E4C`. Policy-clean configured full-TU C has its exact 48-word body,
-frame `0x8`, and zero relocations, with 31/48 raw and normalized words matching
-and first mismatch `+0x38`. All seventeen residuals are register fields;
-the earlier UGEN-only/FIFO attribution is withdrawn. All 119 flag combinations
-were attempted; canonical `-O2 -mips2` ties for best. Natural texture-table,
-frame-count, single-loop-count, and staged-
-multiply forms regressed to 51, 51, 122, and 50 instructions. None improved, so
-no combination or permutation batch was authorized. ORT 374 authenticates
+frame `0x8`, and zero relocations, with 33/48 raw and normalized words matching
+and first mismatch `+0x38`. All fifteen residuals are register fields.
+`remainingCopy` now carries the frame load so `lh` uses t1; the `outputValue`
+phantom is gone. ORT 374 authenticates
 resident `func_8001BB10+0x60`, Overlay 57
 `overlay57ApplyValue+0x50`, Overlay 60
 `func_overlay_060_F0000334_18BA10C+0x1F34`, and six sites in `overlay82Update`,

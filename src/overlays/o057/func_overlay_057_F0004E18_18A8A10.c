@@ -338,7 +338,24 @@ extern void func_overlay_084_F0001398_18D1878(void);
  *      keeps it in s5 across the whole tail, which is one instruction fewer
  *      here and the whole of the deficit; the two compiler temps at sp+0x54
  *      and sp+0x58 against the target's sp+0x5C and sp+0x64 are unchanged
- *      from note 7. */
+ *      from note 7.
+ *
+ *  9.  DELETE THE WALKING CHOICE POINTER, 2026-09-17 (lane w11-o057).
+ *      L145-L154 / L160: the declared `choice` cursor was minting a source
+ *      symbol for the array base. Subscripting `gO57MiddleChoices[index]` in
+ *      a bottom-tested do-while bounded by
+ *      `&gO57MiddleChoices[index] < &gO57MiddleChoices[4]`, with `i` still
+ *      the output cursor, lets IDO strength-reduce the cursor into v0 and
+ *      the bound into a3. Size delta -4 -> 0 (1208 words both sides).
+ *      Positional 132 -> 209 is L155 shadow: aligned 1105/53/14/43 ->
+ *      1106/55/10/43, first mismatch +0x34 -> +0x100, frame still 0x140.
+ *      The unused `choice` declaration stays -- dropping it shrinks the
+ *      frame to 0x138. `while (index < 4)` unrolls (+76). Carrying the
+ *      output cursor in `outputIndex` with `i` as the index rotates the
+ *      ring (488). `nextSelection` as the index is byte-identical.
+ *      blockclimb 209 -> 209, 1617 compiles, move-one fixed point.
+ *      Identity gate PASS, CDX_PROC=0, 122 p1 decisions. Compiler temps at
+ *      sp+0x54/sp+0x58 against the target's sp+0x5C/sp+0x64 are unchanged. */
 #ifdef NON_MATCHING
 void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
     s32 i;
@@ -669,18 +686,21 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                 for (outputIndex = 9; outputIndex >= 0; outputIndex--) {
                     *active-- = 1;
                 }
-                choice = gO57MiddleChoices;
                 i = 0;
-                for (source = sourceState; choice < &gO57MiddleChoices[4]; choice++, source++) {
-                    rank = choice->active;
+                index = 0;
+                source = sourceState;
+                do {
+                    rank = gO57MiddleChoices[index].active;
                     *source = rank;
                     if (rank != 0) {
                         gO57MiddleOutput[i].controller =
-                            gO57MiddleCharacterIds[choice->tableIndex];
-                        activePlayers[gO57MiddleCharacterIds[choice->tableIndex]] = 0;
+                            gO57MiddleCharacterIds[gO57MiddleChoices[index].tableIndex];
+                        activePlayers[gO57MiddleCharacterIds[gO57MiddleChoices[index].tableIndex]] = 0;
                         i++;
                     }
-                }
+                    source++;
+                    index++;
+                } while (&gO57MiddleChoices[index] < &gO57MiddleChoices[4]);
                 i = 0;
                 for (outputIndex = gO57MiddlePlayerCount; outputIndex < 6; outputIndex++) {
                     while (activePlayers[i] == 0) {
@@ -753,10 +773,10 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_057_F0004E18_18A8A10:start
  * symbol: func_overlay_057_F0004E18_18A8A10
- * score: 132/1208 words
+ * score: 209/1208 words
  * frame: 0x140
  * relocations: 375
- * first-mismatch: +0x34
- * summary: Tail pointer probes either fold before output or regress; the target-only tail materialization remains unreachable from measured source forms.
+ * first-mismatch: +0x100
+ * summary: Index form closed the size deficit at delta 0. Aligned residual is still 43 structural plus compiler temps at 0x54/0x58 against 0x5C/0x64. Statement order is a move-one fixed point on this shape.
  * PLATEAU-HANDOFF:func_overlay_057_F0004E18_18A8A10:end
  */

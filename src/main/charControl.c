@@ -573,10 +573,16 @@ void controlPlayerReInit(ControlActor *actor, f32 x, f32 y, f32 z, s16 arg4, s16
  * agree on the two obvious carriers -- the target holds `player` in s5 and
  * `actor` in s6, this candidate in s3 and s4 -- so the two missing saved webs
  * are the ones the target puts in s3 and s4, and they are the effect/particle
- * list walk. The target reads TWO pointers with `lw sN,0(v0)` from different
- * bases and keeps both across the spawn calls; this candidate reads
- * `lw s0,4(v0)` and `lw s2,0(v0)` and keeps one fewer. Work the list walk's
- * shape, not the register names. */
+ * list walk.
+ * Identity-gated 2026-09-17 (proc 10, instrumented .text identical): two
+ * type-2 symbol webs split because totalsave 10 and 11 is not strictly below
+ * callee-saved bestcost 16.25, so s5/s6 are never allocated. Split webs have
+ * no colour and cannot be forced. L109 identity probes on player,
+ * effectOwner, and particleCount did not move those totalsaves. L99 unused
+ * pointer/f32 grows non-save, not the save area. Per-arm particle count and
+ * entries loads reproduce the target's three-arm entries load but leave the
+ * count in a caller-saved temp and grow the function. Next: loop-weighted
+ * references that survive copy-prop onto those leftover symbol webs. */
 /* PROVENANCE: JFG's corresponding character-control initialization role supplied the control-flow lead; fields and body are reconstructed from Mickey. */
 #ifdef NON_MATCHING
 void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode) {
@@ -2201,7 +2207,7 @@ void controlClearPlayerSetup(void) {
  * frame: 0xB0
  * relocations: 40
  * first-mismatch: +0x0
- * summary: Declaration census removed 8 non-save frame bytes; the target holds two more callee-saved values so the save area is 8 bytes short
+ * summary: Identity-gated proc 10: two type-2 webs split at totalsave 10 and 11 vs callee cost 16.25 so s5/s6 never allocate. L99 unused pointer is not the save area.
  * PLATEAU-HANDOFF:func_8001C4C0:end
  */
 

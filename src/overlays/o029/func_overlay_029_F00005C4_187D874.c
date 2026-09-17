@@ -140,19 +140,23 @@ extern void func_overlay_037_F00004F4_1885B14(s32 index, f32 distance);
         } \
     } while (0)
 
-/* Workbench p4: structure-mismatch; 438 positional/438 raw words differ,
- * 582/583 instructions, first +0x4, frame -192 versus -200. Levers: linked-
- * entity lifetime, initialization placement, and explicit CFG; remains FP web. */
+/* Size/frame closed at 583 words and 0xC8. Masked 374, first +0x8.
+ * L99 unused pointer/f32 (frame) and skipTargeting inverted CFG (the missing
+ * word). Remaining: updateRateF is coloured f20 at the convert, so f20 is
+ * saved before ra; target converts into a temp, stores 0xC4, saves f20 later.
+ * Identity-gated instrumented IDO, proc 0. */
 #ifdef NON_MATCHING
 void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
                                         s32 updateRate) {
+    f32 updateRateF = (f32)updateRate;
+    void *unused;
+    void *unused2;
+    f32 unusedF;
     Overlay29TailState *state;
     Overlay29TailRecord *record;
     Overlay29TailLinkedObject *linked;
     Overlay29TailEntity *linkedEntity;
-    Overlay29TailDirection *direction;
     Overlay29TailVec3f oldPosition;
-    f32 updateRateF;
     f32 acceleration;
     f32 velocityStep;
     f32 previousVelocity;
@@ -170,7 +174,6 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
     s32 delta;
     s16 targetAngle;
 
-    updateRateF = (f32)updateRate;
     state = object->state;
     func_overlay_029_F00001C4_187D474(object);
 
@@ -198,9 +201,10 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
     }
 
     ext_o0_3e99c(object, updateRate);
-    linked = NULL;
-    useLinkedPosition = 0;
-    if (state->skipTargeting == 0) {
+    if (state->skipTargeting != 0) {
+        linked = NULL;
+        useLinkedPosition = 0;
+    } else {
         if (func_overlay_001_F0000758_184CB38(
                 D_8, object->position.x, object->position.z) != 0) {
             func_overlay_029_F0000084_187D334(1);
@@ -228,6 +232,7 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
             distance = overlay29FallbackDistanceReloc;
         }
 
+        useLinkedPosition = 0;
         if (distance < D_C) {
             targetX = linkedEntity->position.x;
             targetY = linkedEntity->position.y;
@@ -317,10 +322,10 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
 
 /* PLATEAU-HANDOFF:func_overlay_029_F00005C4_187D874:start
  * symbol: func_overlay_029_F00005C4_187D874
- * score: 438 differing words
- * frame: 0xC0
+ * score: 374 differing words
+ * frame: 0xC8
  * relocations: 43
- * first-mismatch: +0x4
- * summary: 582 versus 583 words; frames 0xC0 versus 0xC8; 438 raw diffs. Relocs 43 each but 7 sites and 1 identity align. Next: earliest constant, then init/FP lifetime.
+ * first-mismatch: +0x8
+ * summary: Size and frame closed at 583 words and 0xC8. Masked 374, first +0x8. L99 unused pointer/f32 grew the frame; skipTargeting inverted CFG added the missing word. Remaining: convert of updateRateF takes f20 so f20 is saved early; target converts to a temp and stores 0xC4. Identity-gated proc 0.
  * PLATEAU-HANDOFF:func_overlay_029_F00005C4_187D874:end
  */

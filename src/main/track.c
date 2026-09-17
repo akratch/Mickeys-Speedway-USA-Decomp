@@ -5725,7 +5725,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xb8
  * relocations: 6
  * first-mismatch: +0xBC
- * summary: Fresh proc-39 census: 34 draws/209 emissions; the dependency route regresses and a same-value store is inert. No schedule lever remains.
+ * summary: Mutation of a loaded direction component dests the sum at f20 but is ±4 B / 113 words. Size-0 memory-sum still copy-props into f0.
  * PLATEAU-HANDOFF:func_80010900:end
  */
 

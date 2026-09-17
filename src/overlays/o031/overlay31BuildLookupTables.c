@@ -150,6 +150,7 @@ void func_overlay_031_F0000000_187F520(void) {
                 pairs->first = doubledFirst + doubledSecond;
                 pairs->second = doubledFirst - doubledSecond;
                     pairs++;
+                    pairs = (Overlay31FloatPair *) ((u32) pairs | 0);
                 } while (index != level);
             }
             level++;

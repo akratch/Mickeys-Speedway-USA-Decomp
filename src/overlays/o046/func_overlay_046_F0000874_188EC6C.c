@@ -71,25 +71,22 @@ extern void overlay46DrawParticleReloc(void *data, void *model,
                                        void *resource, s32 flags, s32 alpha);
 
 /* Pinned DKR v77/v80 and JFG skeleton scans found no close donor. */
-/* Workbench: structure-mismatch; 453/450 instructions, 363 masked words,
- * first +0x0; frame 0xE0 vs target 0xC0. Constants, flags, lifetimes,
- * register order, and step probes remain exhausted. The later-proven FP term
- * rotation is byte-flat in case 1, case 4, and combined forms. Remains:
- * switch-local FP/result stack allocation and overlay relocation identities. */
+/* Workbench: size-mismatch; 452/450 instructions, 50 masked words, first
+ * +0x1FC; frame 0xC0. Deleting decompiler interpolation/fade/display-list
+ * temps closed the 32-byte non-save excess. Case-local step is required so
+ * a second callee-saved float is not kept. L99 unused pointer above the
+ * 19-slot table places the table at the target home. Indexed draw keeps
+ * that colouring; an explicit walking pointer for the same loop rotates the
+ * saved-register assignment across the whole function. Remains: draw-loop
+ * strength reduction of the index, and overlay of the two 4-byte spill
+ * homes onto the target's one shared temp. */
 #ifdef NON_MATCHING
 s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
-    s32 result;
     s32 finished;
     s32 count;
-    s32 value;
-    s32 fadeStep;
-    u16 angle;
-    f32 progress;
-    f32 startX;
-    f32 startY;
-    Overlay46DisplayCommand *command;
+    s32 result;
     Overlay46Particle *particle;
-    Overlay46Particle **slot;
+    void *unused; /* L99: 4-byte home above the variant table */
     Overlay46Particle *particlesByVariant[19];
 
     overlay46RenderBeginReloc();
@@ -98,9 +95,8 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
     overlay46RenderBindReloc(gOverlay46RenderData1, gOverlay46RenderData2);
 
     count = 0x12;
-    slot = &particlesByVariant[18];
     do {
-        *slot-- = NULL;
+        particlesByVariant[count] = NULL;
     } while (count--);
 
     switch (D_C.state) {
@@ -118,14 +114,15 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
             } else {
                 finished = 0;
             }
-            progress = particle->progress24;
-            startX = particle->positionX1C;
-            startY = particle->positionY20;
             particle->baseX0C =
-                startX + ((particle->targetX2C - startX) * progress);
+                particle->positionX1C
+                + ((particle->targetX2C - particle->positionX1C)
+                   * particle->progress24);
             particle->baseY10 =
-                startY + ((particle->targetY30 - startY) * progress);
-            particle->value04 = (s16)(2.0f * (progress * 65536.0f));
+                particle->positionY20
+                + ((particle->targetY30 - particle->positionY20)
+                   * particle->progress24);
+            particle->value04 = (s16)(2.0f * (particle->progress24 * 65536.0f));
             particlesByVariant[particle->variant36] = particle;
             particle++;
         } while (count--);
@@ -157,10 +154,10 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
                 finished = 0;
             }
 
-            angle = particle->angle18 + (particle->angle1A * updateRate);
-            particle->angle18 = angle;
-            if (angle >= 0x8001) {
-                particle->angle18 = angle - 0x8000;
+            particle->angle18 =
+                particle->angle18 + (particle->angle1A * updateRate);
+            if (particle->angle18 >= 0x8001) {
+                particle->angle18 = particle->angle18 - 0x8000;
                 particle->angle1A = overlay46RandomRangeReloc(0x600, 0xA00);
             }
 
@@ -185,32 +182,25 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
         } while (count--);
 
         if (finished != 0) {
-            fadeStep = updateRate * 4;
             if (D_10 < 0xFF) {
-                value = D_10 + fadeStep;
-                D_10 = value;
-                if (value >= 0x100) {
+                D_10 += updateRate * 4;
+                if (D_10 >= 0x100) {
                     D_10 = 0xFF;
                 }
             } else if (D_14 < 0xFF) {
-                value = D_14 + fadeStep;
-                D_14 = value;
-                if (value >= 0x100) {
+                D_14 += updateRate * 4;
+                if (D_14 >= 0x100) {
                     D_14 = 0xFF;
                 }
+            } else if (D_18 < 0xFE) {
+                D_18 += updateRate * 4;
+                if (D_18 >= 0xFF) {
+                    D_18 = 0xFE;
+                }
             } else {
-                value = D_18 + fadeStep;
-                if (D_18 < 0xFE) {
-                    D_18 = value;
-                    if (value >= 0xFF) {
-                        D_18 = 0xFE;
-                    }
-                } else {
-                    value = D_5C - updateRate;
-                    D_5C = value;
-                    if (value <= 0) {
-                        D_C.state = 4;
-                    }
+                D_5C -= updateRate;
+                if (D_5C <= 0) {
+                    D_C.state = 4;
                 }
             }
         }
@@ -231,33 +221,31 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
             } else {
                 finished = 0;
             }
-            progress = particle->progress24;
-            startX = particle->positionX1C;
-            startY = particle->positionY20;
             particle->baseX0C =
-                startX + ((particle->targetX2C - startX) * progress);
+                particle->positionX1C
+                + ((particle->targetX2C - particle->positionX1C)
+                   * particle->progress24);
             particle->baseY10 =
-                startY + ((particle->targetY30 - startY) * progress);
+                particle->positionY20
+                + ((particle->targetY30 - particle->positionY20)
+                   * particle->progress24);
             particle->value04 =
-                particle->angle34 + (s32)(2.0f * (progress * 65536.0f));
+                particle->angle34
+                + (s32)(2.0f * (particle->progress24 * 65536.0f));
             particlesByVariant[particle->variant36] = particle;
             particle++;
         } while (count--);
 
-        fadeStep = updateRate * 8;
-        value = D_10 - fadeStep;
-        D_10 = value;
-        if (value < 0) {
+        D_10 -= updateRate * 8;
+        if (D_10 < 0) {
             D_10 = 0;
         }
-        value = D_14 - fadeStep;
-        D_14 = value;
-        if (value < 0) {
+        D_14 -= updateRate * 8;
+        if (D_14 < 0) {
             D_14 = 0;
         }
-        value = D_18 - fadeStep;
-        D_18 = value;
-        if (value < 0) {
+        D_18 -= updateRate * 8;
+        if (D_18 < 0) {
             D_18 = 0;
         }
         if (finished != 0) {
@@ -269,39 +257,37 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
 
     overlay46SetRenderModeReloc(2);
     overlay46SetColorReloc(0, 0, 0, 0);
-    value = D_10;
-    if (value != 0) {
-        overlay46SetPrimColorReloc(0xFF, 0xFF, 0xFF, 0xFF, value);
+    if (D_10 != 0) {
+        overlay46SetPrimColorReloc(0xFF, 0xFF, 0xFF, 0xFF, D_10);
         overlay46DrawPanelReloc(gOverlay46RenderData0, 0xA0, 0xAC, &D_C,
                                 0xC);
     }
-    value = D_14;
-    if (value != 0) {
-        overlay46SetPrimColorReloc(0xFF, 0xFF, 0xFF, 0xFF, value);
+    if (D_14 != 0) {
+        overlay46SetPrimColorReloc(0xFF, 0xFF, 0xFF, 0xFF, D_14);
         overlay46DrawPanelReloc(gOverlay46RenderData0, 0xA0, 0xB6, D_1C,
                                 0xC);
     }
-    value = D_18;
-    if (value != 0) {
+    if (D_18 != 0) {
         overlay46DrawPanelExReloc(gOverlay46RenderData0, D_2C, 0xA0, 0xCC,
-                                  0xFF, 0xFF, 0xFF, value);
+                                  0xFF, 0xFF, 0xFF, D_18);
     }
 
     overlay46LoadParticleMaterialReloc(gOverlay46ParticleMaterial);
-    command = gDisplayListHead++;
-    command->w0 = 0xFA000000;
-    command->w1 = 0xFFFFFFFF;
+    gDisplayListHead->w1 = 0xFFFFFFFF;
+    gDisplayListHead->w0 = 0xFA000000;
+    gDisplayListHead++;
 
-    slot = particlesByVariant;
+    count = 0;
     do {
-        particle = *slot++;
+        particle = particlesByVariant[count];
         if (particle != NULL) {
             overlay46DrawParticleReloc(
                 gOverlay46RenderData0, gOverlay46ParticleModel,
                 gOverlay46ParticleMaterial, particle, particle->resource38,
                 0x8001, 0xFF);
         }
-    } while (slot != &particlesByVariant[19]);
+        count++;
+    } while (count != 19);
 
     return result;
 }
@@ -311,10 +297,10 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_046_F0000874_188EC6C:start
  * symbol: func_overlay_046_F0000874_188EC6C
- * score: 87/450 words
- * frame: 0xE0
+ * score: 50/450 words
+ * frame: 0xC0
  * relocations: 96
- * first-mismatch: +0x0
- * summary: Fresh V0 confirms 1,812-byte candidate, 32-byte frame excess, and broad allocation drift; later-proven FP term rotation is byte-flat in all three scoped forms.
+ * first-mismatch: +0x1FC
+ * summary: Frame 0xC0 closed; indexed draw is 50 masked at delta +8. A walking pointer rotates colouring. Next is draw-loop strength reduction.
  * PLATEAU-HANDOFF:func_overlay_046_F0000874_188EC6C:end
  */

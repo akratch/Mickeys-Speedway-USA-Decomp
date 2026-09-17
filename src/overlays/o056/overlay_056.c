@@ -56,10 +56,9 @@ void overlay56ReleaseResource(void) {
     }
 }
 
-/* Workbench: structure-mismatch; 530 words differ, first mismatch +0x40. */
-/* Candidate is not shape-exact: 583/581 instructions; frame -504/-504 bytes. */
-/* Authenticated gates and typed resident calls replace m2c's zero proxies. */
-/* Remaining gap is the broad minimap-loop structure and pointer identities. */
+/* Workbench: structure-mismatch; 538 words differ, first mismatch +0x50. */
+/* Candidate is not shape-exact: 591/581 instructions; frame 0x1F8 exact. */
+/* Colour table is a data-section field at +0x50; minimap sprite is gOverlay56Resource. */
 #ifdef NON_MATCHING
 #define M2C_FIELD(expr, type_ptr, offset) (*(type_ptr)((u8 *)(expr) + (offset)))
 
@@ -103,6 +102,14 @@ typedef struct {
     s32 value10;
     u8 pad[112];
 } Overlay56CallState;
+
+/* Packed minimap colours sit at overlay data +0x50, stride 4. */
+typedef struct Overlay56Data {
+    u8 pad[0x50];
+    u32 colors[1];
+} Overlay56Data;
+
+extern Overlay56Data gOverlay56Data;
 
 void func_overlay_056_F00001A0_18A2F18(void **displayList, s32 *vertexCursor,
                                       s32 updateRate) {
@@ -220,7 +227,7 @@ void func_overlay_056_F00001A0_18A2F18(void **displayList, s32 *vertexCursor,
         } else {
             var_a0 = gOverlay56Mode - 1;
         }
-        temp_v0_2 = *(volatile u8 **)0;
+        temp_v0_2 = gOverlay56Resource;
         temp_v1_3 = var_a0;
         temp_t5 = &D_84[temp_v1_3];
         sp7C = temp_t5;
@@ -324,9 +331,7 @@ void func_overlay_056_F00001A0_18A2F18(void **displayList, s32 *vertexCursor,
                         spB4 = temp_v0_2 + 8;
                         M2C_FIELD(temp_v0_2, u32 *, 0) = 0xFA000000;
                         M2C_FIELD(temp_v0_2, u32 *, 4) =
-                            (M2C_FIELD((u8 *)(s32)(M2C_FIELD(temp_s1_2,
-                                                             s8 *, 1) * 4),
-                                        u32 *, 0x50) |
+                            (gOverlay56Data.colors[M2C_FIELD(temp_s1_2, s8 *, 1)] |
                              ((s32) (var_s7 *
                                      M2C_FIELD(temp_s1_2, u8 *, 0x190)) >>
                               8));
@@ -349,9 +354,7 @@ void func_overlay_056_F00001A0_18A2F18(void **displayList, s32 *vertexCursor,
                     spC0State.valueE = (s16) (s32) (temp_f20 -
                                        (f32) ((s32) M2C_FIELD(temp_fp,
                                                                u16 *, 8) >> 1));
-                    temp_v0_3 = M2C_FIELD(
-                        (u8 *)(s32)(M2C_FIELD(temp_s1_2, s8 *, 1) * 4),
-                        u32 *, 0x50);
+                    temp_v0_3 = gOverlay56Data.colors[M2C_FIELD(temp_s1_2, s8 *, 1)];
                     if (temp_v1_4 != 0) {
                         var_a2 = (*var_s6 -
                                   M2C_FIELD(temp_s3, s16 *, 0x124)) + 0x208;
@@ -436,10 +439,10 @@ void overlay56UnpackColor(s32 index, u32 *red, s32 *green, s32 *blue) {
 
 /* PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:start
  * symbol: func_overlay_056_F00001A0_18A2F18
- * score: 530 differing words
+ * score: 538 differing words
  * frame: 0x1F8
  * relocations: 75
- * first-mismatch: +0x40
- * summary: Authenticated early gates and 21 typed calls remove 47 differing words; the candidate is two words long with exact frame geometry, while the minimap loops and remaining pointer identities are still broad. Remeasured 2026-09-11 with tools/align_symbol.py: the +8 is a NET of 37 surplus and 35 missing instructions across 42 sites, not two missing instructions, so closing the size delta is not a lever here and the aligned split 130/237/251 is the number to work. The largest single hole is the eight words at target +0x6D0, where the target materialises the colour table base (lui v0 at +0x674, then addu v0,v0,idx*4 and lw v0,0x50(v0)) and unpacks the packed word into three components, while the M2C_FIELD((u8 *)(s32)(idx * 4), u32 *, 0x50) spelling here has no base register at all; the naive repair, indexing gOverlay56Colors by name, costs +8 bytes per site and gains nothing, so the base must be reconstructed as the live pointer the target already holds.
+ * first-mismatch: +0x50
+ * summary: Colour table reconstructed as a field at overlay-data +0x50 (gOverlay56Data.colors[index]) so both marker sites emit lui plus scaled addu plus lw 0x50 off the data-section base, the live pointer the target already holds. Indexing gOverlay56Colors by name still costs an extra addiu per site. Minimap sprite identity is gOverlay56Resource, not a NULL-page load. Aligned split 132 naming 244 immediate 28 structural 216 versus the prior 130/237/28/223; size is 591 versus 581 (delta +40) because the colour loads add the four missing base words plus leftover surplus elsewhere. The eight-word hole at target +0x6D8 remains unpack schedule: the target shifts RGB immediately after the load (green, blue, then red in the mode-branch delay slot) while this candidate still unpacks in the call. Identity-gate passed with CDX_PROC=6. Do not colour-landscape until size delta is 0. Ghost slots at D_800D1494 (alpha 255) and D_800D1498 (alpha 85) are identified but naming them did not move the aligned residual. Next: force the AI-site unpack before the mode branch without extra copies, then the unsigned-float surplus around +0x498.
  * PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:end
  */

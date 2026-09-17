@@ -725,78 +725,15 @@ u8 *levelGetName(s32 arg0) {
     return D_8007A0D0;
 }
 
-/* Workbench: allocation-mismatch; 3 words differ, first mismatch +0x13C. */
-/* Candidate is shape-exact: 117/117 instructions, frame -40/-40 bytes. */
-/* PROVENANCE: structure adapted from JFG src/level.c:levelFreeAll; remaining gap is pointer/scale temp order. */
-/* Plateau 2026-09-09, ring-order residual, three words. `cc -K` gives the law
- * exactly: inside the loop body ugen is still in its fresh phase, so the ring
- * numbers ARE the emission order. The arm emits mask, scale, table
- * (`and $11; sll $12; lw $13; addu $14,$12,$13`) and the target emits mask,
- * table, scale, which is why the object's `lui/lw` pair and the `sll` trade t4
- * for t5 while the `andi` stays on t3. Writing the sum table-first swaps the
- * whole order to table, mask, scale and costs five.
- * Newly measured and eliminated this pass, all still in those two classes: a
- * re-read of `D_8007A0F4[i]` in place of the carrier (56 words, and it costs
- * three instructions), `(u8 *)`/`(s32)`/`(u32)` base casts, `*(p + i)`,
- * `&p[i]`, `(u16)` on the masked value, and a hoisted `masked` local crossed
- * with all four address spellings -- uopt folds the local straight back into
- * the expression, so hoisting cannot separate the mask from the table.
- * Newly proved reachable: spelling the doubling as `m + m` DOES produce the
- * target's mask, table, scale order (`and $2; lw $11; addu $12,$2,$2`). It
- * lands 13 words because uopt gives the twice-used mask a pool colour instead
- * of a ring temp and the shift becomes an add.
- *
- * 2026-09-09, lane fin-misc. The three words are a ring-index swap of two
- * adjacent slots and nothing else: emission positions are identical in all
- * three classes and only the register names move, so this is post-uopt emit
- * order, not schedule. Target {mask t3, table t4, scale t5, sum t6}; the
- * manual-shift class is {mask t3, scale t4, table t5}; the subscript class is
- * {table t3, mask t4, scale t5}. The target therefore carries the SUBSCRIPT
- * signature -- scale created third, sum fourth -- with the index temp created
- * before the base load, and the only thing separating them is cfe's operand
- * order for a subscript. cfe canonicalises `int + ptr` to `ptr + int` before
- * numbering, which is why integer-left pointer arithmetic and the reversed
- * subscript `(idx)[table]` land base-first too.
- *
- * 2026-09-10, lane c6-named. The space is closed by construction rather than by
- * exhaustion, and the reason is a uopt property, not a cfe one. Read off `cc -S`
- * for every form rather than off the object, there are exactly two ucode orders
- * and no third: shift-first emits mask, scale, table (3 words) and base-first
- * emits table, mask, scale (5). The target needs mask, table, scale, which is
- * neither, and it is only producible if the mask is computed as its own
- * surviving statement in front of a base-first address. Every way of writing
- * that fails identically, because **uopt forward-substitutes a
- * single-assignment local straight back into the address expression**: across
- * the basic-block boundary when the definition is hoisted to the loop header,
- * through an `if (1) { }` or `do { } while (0)` region placed between the
- * definition and the use, out of the `else if` condition when the assignment is
- * put in a comma there, and out of a comma inside the add's own left operand
- * (that one also lifts the base load into a pool register, 8). Twelve such
- * forms, plus `u32` and `s16` index types, a `* 2` doubling, an explicit base
- * local, `&p[i]`, `(u32) &p[i]` and `(u32) (p + i)`, all land on 3 or 5.
- * Forcing the index to survive as a real web is the only remaining idea and it
- * is priced: two uses (`m + m`) do buy the target's order but move the mask to
- * a pool colour and turn the shift into an add, which is an opcode difference,
- * and a `volatile` index is 43 at delta 8. levelInit's six-word twin was
- * re-measured the same hour and behaves identically. */
-/*
- * 2026-09-12, lane p10-tight re-derived this from the compiler's own listing
- * rather than from the emitted registers, which the assembler reorders on both
- * sides. Three facts close it mechanically. The ring free list for this
- * procedure is one ascending cycle and every release in the loop head and the
- * guard chain happens in draw order, so the four members reaching the arm are
- * consecutive and in order -- the transposition cannot come from the list. In
- * the arm the compiler emits mask, scale, table, sum; the target's registers
- * require mask, table, scale, sum. A postorder walk of one two-operand address
- * expression admits only index-first or base-first, and twenty-three further
- * spellings read off the listing this pass all land in one of those two. The
- * deletion half of L145 was exercised too: deleting the entry carrier and
- * writing the table read as the expression itself at all four test sites is the
- * recorded 56-word regression at three extra instructions.
- */
-#ifdef NON_MATCHING
+/* PROVENANCE: structure adapted from JFG src/level.c:levelFreeAll; Mickey
+ * layout is decisive. The world-index arm mutates the existing s32 entry
+ * carrier with the 14-bit mask, then adds the table pointer first. A fresh
+ * mask local is forward-substituted into one expression and cannot emit the
+ * mask before the table load and the scale after it; assigning the mask back
+ * into the carrier is a surviving evaluation, and 32-bit width avoids a
+ * narrowing chain. */
 void levelFreeAll(void) {
-    s16 temp_v0_2;
+    s32 temp_v0_2;
     s32 i;
     s8 temp_v1;
     void *temp_v0;
@@ -827,7 +764,8 @@ void levelFreeAll(void) {
             } else if (temp_v0_2 & 0x8000) {
                 func_800359D4(D_800CF490[i]);
             } else if (temp_v0_2 & 0x4000) {
-                func_80004B04(*(s16 *) (((temp_v0_2 & 0x3FFF) << 1) + (u32) D_800C94E0));
+                temp_v0_2 &= 0x3FFF;
+                func_80004B04(*(s16 *) ((u32) D_800C94E0 + (temp_v0_2 << 1)));
             } else {
                 modFreeModel(D_800CF490[i]);
             }
@@ -841,9 +779,6 @@ void levelFreeAll(void) {
     D_800C947C = 0;
     D_80078DF0 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/level/levelFreeAll.s")
-#endif
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
 s32 levelGetNextOfWorld(s32 arg0, s8 arg1) {
@@ -885,16 +820,6 @@ s32 levelInitRegionFlags(void) {
     }
     return 0;
 }
-
-/* PLATEAU-HANDOFF:levelFreeAll:start
- * symbol: levelFreeAll
- * score: 3/117 words
- * frame: 0x28
- * relocations: 36
- * first-mismatch: +0x13C
- * summary: Authenticated 12-draw baseline; existing differential and expression receipts leave no new mask-table-scale scheduling hypothesis.
- * PLATEAU-HANDOFF:levelFreeAll:end
- */
 
 /* PLATEAU-HANDOFF:levelInit:start
  * symbol: levelInit

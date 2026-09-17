@@ -20,17 +20,18 @@ extern void SetLinkSlot(s32, u16, u16);
  * fills the four vertices through a walking pointer that uopt folds to its
  * final value (the +48 in one block, the +30 in the next). The caller
  * discards the result, so the function is void.
- * s2-b (2026-09-16), 70 to 4 at delta 0: no `state` local (its symbol web
- * was a phantom holding v0 in the break block, and every test reads
+ * s2-b (2026-09-17), matched from 70 at delta 0: no `state` local (its
+ * symbol web was a phantom holding v0 in the break block; every test reads
  * `record->state`, whose reload on each loop exit is uopt's PRE of that
  * load); `s32 timer` so the once-masked value is tested without a second
  * `andi`, coupled with the fade loop leaving through a `goto` like the fall
  * loop; `s16 y`, whose dropped narrowing spends the two folded draws that
- * put the vertex temps on the ROM's ring positions; and the vertex stores
- * in x, y, z order. The four words left are the preheader's load order
- * (the ROM emits gravity, velocityX, z, velocityY and colours gravity
- * last). See docs/lastmile-forwarding-kill.md. */
-#ifdef NON_MATCHING
+ * put the vertex temps on the ROM's ring positions; the vertex stores in
+ * x, y, z order; and two dead definitions before the fall loop's guard
+ * (`velocityX = record->z; velocityY = record->velocityY;`), which uopt
+ * deletes after they have numbered the velocities' webs ahead of gravity's
+ * and ordered the hoisted loads z-then-velocityY. See
+ * docs/lastmile-forwarding-kill.md. */
 void overlay13UpdateRecord(Overlay13Record *record, s32 ticks) {
     f32 radius;
     f32 gravity;
@@ -43,15 +44,18 @@ void overlay13UpdateRecord(Overlay13Record *record, s32 ticks) {
 
     SetLinkSlot(13, 50, 10);
     if (record->state == 1) {
+        /* Dead, and deleted by uopt: these two definitions exist to number the
+         * velocities' webs before gravity's and to order the hoisted loads. */
+        velocityX = record->z;
+        velocityY = record->velocityY;
         if (ticks--) {
-            velocityX = record->velocityX;
-            velocityY = record->velocityY;
             gravity = gOverlay13Gravity;
+            velocityX = record->velocityX;
             do {
                 velocityZ = record->velocityZ;
                 record->x += velocityX;
                 record->z += velocityZ;
-                record->y += velocityY;
+                record->y += record->velocityY;
                 record->velocityZ = velocityZ - gravity;
                 if (record->z < record->targetZ) {
                     record->z = record->targetZ;
@@ -102,16 +106,3 @@ fade_done:
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o013/overlay13ProcessRecord/func_overlay_013_F0000284_186ED9C.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay13UpdateRecord:start
- * symbol: overlay13UpdateRecord
- * score: 4/161 words
- * frame: 0x20
- * relocations: 5
- * first-mismatch: +0x4C
- * summary: No state local (a phantom v0 web), s32 timer with a goto exit, s16 y (two folded draws) and x/y/z store order take 70 to 4; the preheader's four loads remain, gravity emitted first but coloured last.
- * PLATEAU-HANDOFF:overlay13UpdateRecord:end
- */

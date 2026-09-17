@@ -2,11 +2,11 @@
 ### `overlay13UpdateRecord` plateau handoff
 
 - source: `src/overlays/o013/overlay13ProcessRecord.c`
-- score: 4/161 words
+- score: matched (0/161 words), promoted 2026-09-17 by lane s2-b
 - frame: 0x20
 - relocations: 5
-- first mismatch: +0x4C
-- summary: No state local (a phantom v0 web), s32 timer with a goto exit, s16 y (two folded draws) and x/y/z store order take 70 to 4; the preheader's four loads remain, gravity emitted first but coloured last.
+- first mismatch: none
+- summary: No state local (a phantom v0 web), s32 timer with a goto exit, s16 y (two folded draws), x/y/z store order, and two dead definitions before the guard that number the velocities ahead of gravity and order the hoisted loads: 70 to 0 at delta 0.
 
 - geometry: Target and configured C remain exact at `0x284`/644 bytes/161 words with `0x20` frame; the owned Overlay 13 range is `+0x284..+0x508`, ROM `0x186ED9C..0x186F020`, followed by `overlay13ProcessActive` with no padding.
 - ABI/flags: The configured candidate is `s16 *overlay13UpdateRecord(Overlay13Record *, s32)` under overlay game-code `-O2 -mips2 -32` and the canonical symbol-redefine/trim postprocess.
@@ -191,5 +191,31 @@ below the velocities' (a third block in its web, or one more reference
 on each velocity) without moving its load out of the preheader block;
 the tie-break is the decision variable and the ladder on this shape is
 saved with the evidence.
+
+#### 2026-09-17, lane s2-b: matched, 4 to 0 -- a dead definition orders the hoisted loads
+
+The four preheader rows closed in three cycles (25 cells) on the o015
+mechanism transplanted: a definition uopt deletes still leaves its mark
+on the records. A dead `velocityX = 0; velocityY = 0;` before the ticks
+guard (or at the function top) numbers the two velocities' symbol webs
+ahead of gravity's, so with gravity's definition first in the preheader
+the emission order is gravity, velocityX, velocityY, z and the colours
+are the ROM's: 4 to 2. The last two rows were velocityY's load before
+z's PRE-inserted load. With velocityY read inside the loop, uopt hoists
+it after z's load unless the expression was seen earlier, and the hoisted
+section is emitted in the expressions' creation order; so a dead
+`velocityX = record->z;` followed by a dead `velocityY =
+record->velocityY;` before the guard creates z's expression, then
+velocityY's, then gravity's symbol at its preheader definition: emitted
+gravity, velocityX, z, velocityY; numbered velocityX, velocityY, gravity.
+0 masked at delta 0, verified; the same two dead loads at the function
+top or with velocityY defined inside the body are also 0. Controls: the
+dead loads in the other order are 5; z's dead occurrence alone is 4;
+velocityY = 0 in place of the dead load is 4.
+
+The shard's earlier next step (an explicit u32 local for the timer
+conversion, or the radius before the pointer) was measured inert or
+worse on the way; the vertex block's schedule was the s16 y and the
+store order, not the constant's block.
 
 <!-- plateau-handoff:overlay13UpdateRecord:end -->

@@ -428,101 +428,18 @@ SavesBitWriter *func_8002C60C(s32 size, s32 clear) {
     }
     return writer;
 }
-#ifdef NON_MATCHING
-/* Bounded plateau: configured full-TU C is exact-sized and frameless at 8/28
- * words, first +0x18, with eight register-only differences and no relocations.
- *
- * 11 -> 8, lane p7-res: this is a leaf, so globalcolor runs phase two only and
- * the axis is ascending web number with each web taking the lowest free colour.
- * Two independent edits move it, both measured against the full TU:
- *   1. the bit advance belongs at the *end* of the loop body. Eight of the 72
- *      legal orderings of the six statement groups score 9 and every one of
- *      them puts the advance last; the previous body had it in the loop head.
- *   2. the `nextBit` carrier must go. With `bit >>= 1` and `while (bit != 0)`,
- *      `nextBit` stops being a p2 web, the reset constant becomes the first
- *      web coloured after the parameters, and it lands where the target keeps
- *      it. Dropping the carrier costs no instruction here (delta 0), which is
- *      the opposite of what the earlier note recorded for the old body.
- * The `valueBit`/`isSet` copy pair and the `cursorField` hoist are still
- * load-bearing: removing the hoist costs eight bytes.
- *
- * What is left is one ugen ring phase, not an allocator decision. The target
- * draws one more integer temp than this body does before the set test, so the
- * value test, the two store temps and the shifted mask each sit one position
- * further along the ring; the advance itself agrees. The claim recorded here
- * that a full p2 force sweep (every web against every colour and the split
- * path, then a second greedy round) never beats 8, and that the residual
- * therefore sits below globalcolor, is FALSIFIED -- see the p8-close note.
- * Measured flat against it on this body: twelve redundant-mask and cast
- * spellings aimed at a phantom pop, ten reset/store-arm spellings, all six
- * placements of the advance, and 23 L97 region placements.
- *
- * 2026-09-12, lane p8-close: the ring phase is read out of the instrumented
- * ugen and the requirement is now exact rather than descriptive.
- *
- * ugen builds this procedure's GP scratch free list in the fixed order
- * t6 t7 t8 t9 t0 t1 t2 t3 t4 t5, hands them out in that order without reuse,
- * and REMOVES from the list every register globalcolor has coloured -- two
- * other procedures in this file remove t0, and t0 and t1, for exactly that
- * reason. This body draws nine scratch values and so takes the first nine
- * entries; the target draws nine and takes the same list WITH t0 missing.
- *
- * Two edits together are the whole eight words, and neither is worth anything
- * alone. First, the bit advance belongs BEFORE the mask store, not after it:
- * scratch is handed out in source order, so that swap is what puts the
- * advance one entry ahead of the shifted mask, which is the only place the
- * target's list is not a plain shift of ours. Alone it is a regression to 11.
- * Second, the procedure needs one more globalcolor-coloured web at colour 7.
- * With the advance-before-store body, forcing either of this procedure's two
- * invisible webs to colour 7 -- the bitCount parameter's web, or nextCursor's,
- * neither of which shows its colour in the object -- returns an object at ZERO
- * masked words and size delta 0. A full p2 force sweep of eight webs against
- * fourteen colours and the split path puts only those two cells at zero; the
- * cursor web and the reset-constant web at colour 7 reach 3.
- *
- * Why colour 7 is unreachable from source. Phase two colours in ascending web
- * number and each web takes the lowest colour not forbidden, where forbidden
- * means an interfering web that is already assigned or whose register the ABI
- * pins. The 0x80 reset constant is a type-2 constant web; constant webs are
- * numbered above every type-3 symbol web in every source shape measured here,
- * so the constant is always the LAST decision and always takes the highest
- * colour in use. The target keeps it on a3, which is colour 6, so no web
- * decided before it can have colour 6 forbidden, and colour 7 is out of reach.
- * Reopening this needs an invisible web numbered above the constant table, or
- * a second mechanism that removes a register from ugen's scratch list.
- *
- * The prior pass's p2 force sweep is FALSIFIED, and the likely cause is the
- * CDX_PROC trap: CDX_FORCE is silently ignored unless CDX_PROC names the
- * procedure ordinal, and a dropped force returns a byte-identical object that
- * reads exactly like L101's already-forbidden decline. Every force quoted here
- * was run with CDX_PROC set and checked on the record's `forced` field, and a
- * deliberate no-CDX_PROC control reproduces the trap on this very cell. Re-run
- * with the force actually applied, colour 7 on the bitCount web beats 8 on the
- * INCUMBENT body as well, reaching 6 at delta 0. So the residual is not below
- * globalcolor: it is a globalcolor decision this procedure cannot be asked to
- * make.
- *
- * Also measured this pass, none below eight: 6,480 built candidates covering
- * all 180 topological orders of the eight loop-body statement groups crossed
- * with four positions of the reset store inside the reset arm, three set-arm
- * spellings and three local type sets, with no compile failure; eight
- * declaration permutations, which leave the web numbers and colours
- * bit-identical; and five alias families (a hoisted cursor field, a second
- * cursor alias, a mask-field alias, a writer alias, read-only and
- * write-through forms) -- the only ones that do produce a colour-7 web
- * materialise the alias and cost four or eight bytes.
- *
+/* Matched 2026-09-17 (lane w4-saves), 8 -> 0 masked words at delta 0,
+ * frameless, zero relocations, unforced. L145/L160: delete the nextCursor
+ * and cursor walking-pointer locals and write the byte stores as
+ * writer->cursor[0] so IDO generates the pointer. L146: on that shape the
+ * bit advance belongs before the mask store (a regression to 11 on the old
+ * pointer-carrier body). The valueBit/isSet copy pair is still load-bearing.
  * The unsigned initial shift is defined for the writer's 1..32-bit count
- * domain (observed direct counts: 4, 5, 18); zero remains a no-op. ORT 727 has
- * five direct callers in func_8002C94C; fallback linkage remains exact. The
- * authorized JFG efd5abb audit found no matching writer body. */
+ * domain (observed direct counts: 4, 5, 18); zero remains a no-op. */
 void func_8002C69C(SavesBitWriter *writer, s32 value, s32 bitCount) {
     s32 isSet;
     u32 bit;
-    u8 *cursor;
     s32 valueBit;
-    u8 *nextCursor;
-    u8 **cursorField;
     u32 mask;
 
     if (bitCount != 0) {
@@ -531,26 +448,20 @@ void func_8002C69C(SavesBitWriter *writer, s32 value, s32 bitCount) {
             mask = writer->mask;
             valueBit = value & bit;
             isSet = valueBit;
-            cursorField = &writer->cursor;
             if (mask == 0) {
                 writer->cursor = writer->cursor + 1;
-                nextCursor = writer->cursor;
-                *nextCursor = 0;
+                writer->cursor[0] = 0;
                 mask = writer->mask = 0x80;
             }
             if (isSet != 0) {
-                cursor = *cursorField;
-                *cursor |= mask;
+                writer->cursor[0] |= mask;
                 mask = writer->mask;
             }
-            writer->mask = (u8) (mask >> 1);
             bit >>= 1;
+            writer->mask = (u8) (mask >> 1);
         } while (bit != 0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/saves/func_8002C69C.s")
-#endif
 void func_8002C70C(reader, value, bitCount)
 SavesBitWriter *reader;
 s32 *value;
@@ -1521,14 +1432,4 @@ s32 func_8002E020(s32 controllerIndex, s32 fileNum) {
  * first-mismatch: +0x8
  * summary: Proc-26 census confirms 10 draws; the 3-word extent deficit and buffer structure remain unresolved without a natural stack-home mechanism.
  * PLATEAU-HANDOFF:func_8002CF6C:end
- */
-
-/* PLATEAU-HANDOFF:func_8002C69C:start
- * symbol: func_8002C69C
- * score: 8/28 words
- * frame: frameless
- * relocations: 0
- * first-mismatch: +0x18
- * summary: Exhaustive 12-colour footprint is flat; test an invisible later integer constant.
- * PLATEAU-HANDOFF:func_8002C69C:end
  */

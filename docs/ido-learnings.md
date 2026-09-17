@@ -829,6 +829,18 @@ bytes and disassembly never belong here.
   pointer-plus-integer to match their evaluation order; reject the lever if any
   other word, relocation, or linked byte moves. Evidence: the exact Huffman
   table builder in `docs/resident.md`.
+- For a commutative add whose other operand is an ILOD off a forwarded temp
+  (a value stored and re-read so ugen keeps it in a ring register across a
+  branch), uopt canonicalises the ILOD first: `uadd(cvt(ILOD(temp)), isvar)`.
+  The same add against an isvar operand canonicalises the symbol first, which
+  is the object-first order the plain, non-nested form already emits. Source
+  operand order, reassociation, and casts on the ILOD are byte-flat; the
+  lever is to bind the nested load to an existing isvar that already owns a
+  frame home. A fresh local takes a new home and moves every displacement.
+  Reusing one symbol at two nested sites reconnects as a single web and can
+  re-steal an earlier numbering tie. Confirm with `uopt -Wo,-zdbug:2`
+  (`uoptlist`) rather than by spelling the add. Evidence: the exact
+  `func_8000590C` nested fixups.
 - IDO can normalize both orders of pointer-plus-byte-offset addition to the
   same temporary demand order. If the final address addition matches but its
   base-load and offset-shift producers exchange temporaries, an unsigned

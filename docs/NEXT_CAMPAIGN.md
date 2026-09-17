@@ -1,315 +1,186 @@
-# Strategy to 60%
+# After 60%: last-mile harvest, then the size-mismatch method
 
-Run `tools/triage.py` before every wave; it recomputes the arithmetic, the
-bands, the clusters and the assignability split in one command with no
-compiles. It takes about four minutes and buffers its output, so redirect it
-to a file rather than waiting on a terminal. The numbers here are from
-2026-09-12 at 57.26%.
+The 60% goal is met. `gmake scoreboard` on the landed tree reads
+570,532 / 944,344 = **60.42%**. This file is the next campaign, not a
+restatement of the sprint that got here. Numbers below are recomputed from
+`README.md`'s Progress block and `config/nonmatching-ranking.us.json` at
+the same tip; do not carry them forward from an earlier message.
+
+Run `tools/triage.py` before every wave. It is still the assignment
+arithmetic; this document is the strategy that consumes it.
 
 ## The arithmetic
 
-    resolved 540,772 / 944,344 = 57.26%
-    60%      566,606 bytes
-    GAP      25,834 bytes -- 10% of the 249,020 still queued
+    resolved 570,532 / 944,344 = 60.42%
+    remaining                373,812 bytes
+    ranking queue            280 functions / 355,780 bytes
+    unranked remainder        18,032 bytes (no NON_MATCHING candidate)
 
-**The cheapest set covering that gap is 13 functions and 438 masked words**,
-ordered by words per byte, worst member 14 words on 460 bytes. That is not a
-grind. One evening in this state closed five functions and 7,880 bytes, so the
-gap is roughly three such sessions -- *if* the work is pointed at the right
-pool, which is the whole subject of this document.
+The ranking splits the reachable unmatched pool two ways:
 
-## What changed on 2026-09-12, and why it changes the scoping
+| class | functions | bytes | share of remaining |
+|---|---:|---:|---:|
+| size-mismatch (`size_delta != 0`) | 156 | 238,000 | 63.7% |
+| delta-0 | 124 | 117,780 | 31.5% |
+| unranked | — | 18,032 | 4.8% |
 
-**A function's entire register-colour axis is now minutes of compiles.** A
-forced IDO compile costs about 0.6s, so `tools/web_footprint.py --every-colour
---cross-kind` measures every legal `(web, colour)` pair a procedure has. On the
-14,456-byte function that was 1,875 compiles in ten minutes. Before this, every
-lane *sampled* that axis by hand and reported the sample as a floor; one
-lattice nominated 5 of 139 coloured webs and called 185 a floor that an
-exhaustive sweep then walked past.
+Delta-0 by mechanism:
 
-Three consequences for how a wave is planned:
+| category | functions | bytes | masked words |
+|---|---:|---:|---:|
+| other | 107 | 106,528 | 13,503 |
+| register-only | 16 | 10,344 | 276 |
+| schedule-only | 1 | 908 | 9 |
 
-1. **The colour axis is no longer an open-ended search.** Run it first, and
-   what remains is exactly one question: a source spelling, or an instruction.
-2. **A new class of target exists: the proved zero.** When a force or pair
-   scores 0 masked words at delta 0, the compiler has stated which registers it
-   must choose and only the spelling is missing. Two such functions were
-   converted to matches the day the class was created.
-3. **Selection is a packing, not a sort** (L159). A force that scores better
-   alone can make the set worse when its blast radius duplicates another's.
-   `web_footprint.py --report` computes the packing; do not hand-pick from the
-   winners list.
+That is the ceiling of last week's methods: colour landscapes, L160
+carrier deletion, draw census, and the spilltemps / web-number laws.
+They operate at delta 0. They do not emit or delete an instruction.
 
-The route from a proved zero to a match is **L160**: a *declared* carrier can
-hide the web the target needs, so delete the declaration and let IDO generate
-the value. Indexed access instead of a walking pointer makes strength
-reduction create the cursor and leaves the array-base web alive to take the
-wanted colour; removing a named intermediate also changes which of two tied
-webs comes first, which is what decides a tie. It matched three functions in
-one edit each.
+The previous sprint treated every nonzero size delta as "structurally
+wrong C". That is too coarse. Of the 156 size-mismatch functions, **80
+are only 4, 8 or 12 bytes off** (one to three instructions) and those 80
+cover **104,860 bytes**. Their masked-word counts are mostly L155
+positional shadow of the insertion, not 200 independent mistakes. That
+class is the bridge to 65% and beyond; last-mile harvest alone is not.
 
-## Where the leverage actually is: the assignment gate
+    65% = 613,824 bytes, gap 43,292
+    last-mile cheap pool (delta-0, masked ≤ 10, excluding the barred
+    overlay57UpdateModeState) = 18 functions / 11,364 bytes
 
-This is the finding that should shape the sprint. Of 303 queued functions:
+Closing every cheap last-mile function reaches ~61.6%. Reaching 65%
+requires either large delta-0 `other` functions (the 106,528-byte band)
+or the small-delta size-mismatch class. Reaching 70% (gap 90,509) is
+the small-delta class plus a slice of the large `other` band. The
+remaining 133,140 bytes of |delta| > 12 are a later problem.
 
-| state / reason | fns | bytes | what it needs |
-|---|---:|---:|---|
-| `base-only` / authorized-reopen | 175 | 227,708 | nothing -- dispatch |
-| `already-integrated/exhausted` / **current-plateau** | 82 | **97,152** | **a granted reopen, with a stated reason** |
-| `active` / lane-owned | 27 | 34,056 | in flight |
-| `already-integrated/exhausted` / reopen-authorization-stale | 3 | 18,160 | `authorize_reopen.py --refresh-stale` |
-| `stale-ledger` / prose-needs-remeasurement | 8 | 2,780 | re-measure, then re-bank |
-| `already-integrated/exhausted` / matched-or-promoted | 6 | 3,712 | nothing -- done |
+## Track A — last-mile harvest (this wave)
 
-**97,152 bytes are locked behind `current-plateau`, 3.8x the entire gap.** Those
-plateaus were banked *before* the exhaustive landscape, the packing and L160
-existed. A lane that could only sample the colour axis and stopped is not the
-same lane as one that can close it in a minute, and that difference is a
-legitimate, stateable reason to reopen — which is exactly what the
-authorization file is for. Three of the five matches on 2026-09-12 came from
-re-opening functions in precisely this state.
+One owner per translation unit. `dispatch_check.py` refuses a split.
+`overlay57UpdateModeState` stays in `config/unassignable-symbols.us.json`
+(floor of 2, proved); it is the second-best ratio in the tree and must
+not be dispatched.
 
-It is *not* a licence to reopen everything. The bar stays: a reason that names
-what changed since the plateau was banked. "The colour axis can now be closed
-exhaustively and this shard's landscape samples N of M coloured webs" is such a
-reason. "It felt close" is not.
+### Batch 1, named next steps
 
-## The sprint: four waves
+| symbol | bytes | masked | TU | next step |
+|---|---:|---:|---|---|
+| `func_8000590C` | 2,876 | 2 | `src/main/objects.c` | Both nested `addu`s are temp-first; the ROM is object-first. Six source spellings were byte-flat. Read which operand instrumented `uopt` canonicalises first when one is an ILOD off a forwarded temp. |
+| `overlay14CreateValue` | 384 | 2 | o014 | Tail count-load hoist over the key store. |
+| `func_8005ABA8` | 444 | 2 | `src/main/models_5B300.c` | Pool-literal / `other`; shard is current. |
+| `overlay20RemoveEntry` | 212 | 2 | o020 | register-only. |
+| `overlay34CreateRecord` | 500 | 2 | o034 | `other`, two masked. |
+| `overlay1UpdateRangeFlags` | 480 | 2 | o001 tail | register-only. **Same TU as other overlay-1 tail rows; do not split.** |
+| `overlay19BuildSpatialMasks` | 908 | 9 | o019 | as1 order on the mask/selector zero-init pair and loop-1 tail. |
 
-### Wave 0 — unlock (coordinator, no lanes, about forty minutes)
+`func_8000590C` is `base-only` against the current reopen pin (source
+`c7c021db`, ledger `2fbdaed2`). It is the single best target in the
+tree by bytes per masked word (1,438). `objects.c` is one owner, so
+the same lane also takes the five unroller-grown siblings below.
 
-1. `authorize_reopen.py --refresh-stale`, commit, `--verify`. Recovers the 3
-   stale pins (18,160 B).
-2. Grant reopen on the `current-plateau` functions whose shard carries **no
-   exhaustive landscape** — `--symbols <list> --reason "..."` naming the new
-   capability — then commit, then `--verify`. Start with the best ratios:
+### Same-TU follow-on on `objects.c`
 
-       2648 B  masked=9    func_overlay_086_F0000474_18D22AC
-        236 B  masked=9    func_80006448
-        416 B  masked=24   overlay58DrawLargePointQuad   <- cluster pair
-        416 B  masked=24   overlay58DrawPointQuad        <- cluster pair
-       1216 B  masked=88   overlay58FinalizePackedStatus
-        908 B  masked=63   overlay19BuildSpatialMasks
+`-Wo,-loopunroll,0` was a NON_MATCHING claim, removed. Five other
+candidates still carry the hand-unrolled loops that flag was papering
+over; under the unroller they grow 12–700 bytes and their ranking rows
+are current as size-mismatch:
 
-3. Re-run `triage.py` so the wave is planned against the unlocked pool.
+| symbol | bytes | delta | masked |
+|---|---:|---:|---:|
+| `func_80004FE0` | 1,384 | +12 | 328 |
+| `func_80009414` | 1,684 | +232 | 468 |
+| `func_8000A39C` | 656 | +300 | 231 |
+| `func_80005548` | 348 | +632 | 245 |
+| `func_80004590` | 396 | +700 | 272 |
 
-**The pins arm only from the committed file**, and only while the source and
-handoff commits match. So: grant, commit, verify, *then* dispatch — and never
-edit a handoff between the verify and the dispatch.
+Rewrite each as the plain loop the unroller expects, then re-score.
+This is restoration, not a new match attempt: until the size delta is
+back to zero they are not last-mile targets. Three further `objects.c`
+siblings sit at ±4 (`func_80006EE4`, `func_80006B04`, `func_8000831C`)
+and one at +4 (`func_800084C4`); they are Track B once the lane has
+the insertion-pair reader.
 
-### Wave 1 — the cheapest route (3 lanes, last-mile shape)
+### Method, unchanged
 
-The dispatchable route today is 29 functions / 25,888 bytes / 1,049 words, and
-it improves once Wave 0 lands. Batch 8-10 functions per lane, cheapest first,
-with a hard "bank and move on after 25 minutes" rule. Measured productivity:
-last-mile batches are the most productive lane class in this campaign, and on
-2026-09-12 they returned five matches across nine lanes.
+Aligned bucket split first (`residual_map.py`), then records, then a
+force scored against the *forced object*, then L160. Colour landscapes
+already exist on these shards; do not re-run one unless the source
+moved. Stop on ADR 0018: three consecutive attempts with no better
+residual, no new identity, and no eliminated hypothesis.
 
-Every brief carries the same four-step method: aligned bucket split first
-(`residual_map.py`), then the exhaustive landscape, then the packing, then
-L160. Nothing else.
+Expected yield this wave: 8–15 KB if two or three of the 2-word
+functions close and `func_8000590C` lands. That is ~61.3–62.0%, not 65%.
 
-### Wave 2 — cluster leads (2 lanes)
+## Track B — the size-mismatch method (the rest of the 40%)
 
-9 groups, 19 functions, 18,932 bytes — **73% of the gap** — at 2.8x word
-leverage: working every sibling is 3,343 words, working one lead per group is
-1,196. The best leads are in the low bands:
+Last week's instruments answer "which colour" and "which web". They do
+not answer "which IR node emitted the extra word". That is the method
+gap `docs/NEXT_CAMPAIGN.md` of 2026-09-12 already named as item 3, and
+it is now the campaign's load-bearing problem.
 
-       3 x  820 B  main    lead 17 words   func_80006534
-       2 x  588 B  main    lead  3 words   func_80010900
-       3 x  424 B  main    lead 10 words   func_8005A7A0
-       2 x  636 B  main    lead 47 words   joyRead
-       2 x  416 B  o058    lead 24 words   overlay58DrawLargePointQuad
+Build, in this order:
 
-Give one lane the whole cluster, never one sibling each: `dispatch_check.py`
-now refuses a plan that splits a translation unit, but siblings can also live
-in separate files and still share a diagnosis. Apply the lead's diagnosis by
-line range to its siblings without per-function tuning; that has twice landed a
-sibling better than the function it came from.
+1. **An insertion-pair reader.** Input: `residual_map.py`'s
+   candidate-only / target-only offsets plus the instrumented `uopt`
+   graph. Output: the IR construct (an extra ILOD, a missing CSE, a
+   split that should have been a copy, a loop that should have
+   unrolled) that owns the ±4/±8/±12. Same shape as
+   `web_footprint.py`: a number, not a guess.
+2. **A small-delta census.** For each of the 80 functions, the pair
+   offsets, the frame delta, and whether the extra word is a move, a
+   reload, or a real op. Tracked summary only; objects stay ignored.
+3. **Apply it to `objects.c`'s ±4 siblings first**, because that TU is
+   already owned and the unroller lesson is in hand.
 
-### Wave 3 — the whale and the structural class
+Do not dispatch a size-mismatch function to a colour-landscape lane.
+Do not rank its windows by the positional count (L155). The 106,528
+bytes of delta-0 `other` are still last-mile work; they are just
+expensive last-mile work, and they wait until the 2-word pool is dry
+or a proved-zero appears.
 
-`func_overlay_058_F000138C_18B0574` is 14,456 bytes, **56% of the gap on its
-own**, currently at 217 masked / delta 0. Its colour axis is closed and proved
-(all 1,875 single forces; the optimal packing returns the measured 185), so
-there is nothing left to sweep. What remains is two insertion/deletion pairs:
+## Track C — housekeeping, not matching
 
-    target-only +0xD5C   -> candidate-only +0xDDC    span 0x80  (32 words)
-    target-only +0x1260  -> candidate-only +0x12F8   span 0x98  (38 words)
+- **`overlay96DrawObject` promotion-proof.** The C is already in the
+  tree without `GLOBAL_ASM` and is counted. Proof still fails on a
+  call-identity conflict: a same-overlay call resolved into the
+  resident namespace as `(0, 214356)` where the data pass correctly
+  says `(96, 0)`. Inverse of the reloc-surface bug already fixed.
+  Coordinator tooling, not a lane.
+- **Stale whale reopen pin.** `config/lane-reopen-authorizations.us.json`
+  still pins `func_overlay_058_F000138C_18B0574` (`ledger_commit`
+  `9d581a54`). The function is matched. Retire the pin.
+- **Forced-floor census and assignment-classifier cache** remain the
+  two highest-payback tooling items from the 60% sprint. They are
+  coordinator work; they do not consume a matching lane.
 
-Closing the two smaller pairs took it 227 -> 217 and structural rows 30 -> 25.
-Attack the instructions, not the colours.
+## What this sprint's waves actually produced (kept)
 
-**The wider structural class.** 158 of 303 queued functions — 239,512 bytes,
-62% of queue bytes — carry a nonzero size delta: we emit a different number of
-instructions than the target. A colour force normally cannot fix that (though
-it occasionally can, by coalescing a move away: 8 of 923 probes changed size on
-the whale). For any such function, read the candidate-only/target-only offsets
-from `residual_map.py` *first* and treat the instruction as the question. Do
-not open with a colour sweep, and do not rank its windows by the positional
-count — between an insertion pair every word mismatches by position while
-aligning perfectly, and on the whale that inflated 22 aligned rows into 81
-positional words (L155).
+The 2026-09-12 plan's four waves ran, then the whale closed. Recording
+the outcome so this scoping is against measured rates.
 
-This class is where the campaign's next method gap is. It is too big to leave
-at "run a sweep and hope".
-
-## Model assignment, measured
-
-`gpt-6-astra` on the hardest single question in the wave — the whale's
-instruction pairs, a proved-zero conversion, or the best-ratio batch. It
-returned four of the five matches on 2026-09-12. `gpt-5.6-luna` and
-`gpt-5.6-terra` on breadth: batches of 5-10 near-misses, cluster siblings, and
-the "price the axis, do not chase the match" jobs, where they produced complete
-landscapes and bounded negatives quickly.
-
-Keep total load under about 12; five to seven concurrent lanes is the practical
-ceiling on this machine, and two OOM kills earlier in the campaign came from
-ignoring it.
-
-## What the sprint's waves actually produced (2026-09-13)
-
-The four waves above were executed end to end, and then repeatedly. Recording
-the outcome so the next scoping is done against measured rates rather than
-hope.
-
-**Wave 0 unlocked 96,152 bytes** and was the single highest-return action in the
-sprint, exactly as scoped: 3 stale pins refreshed, 77 plateaus reopened whose
-shards carried no exhaustive landscape, and 5 more whose landscapes predated
-L159 and L160. The assignable pool went from 175 functions to 265.
-
-**Waves 1-3 delivered eleven matches**, about 11,700 bytes, taking the campaign
-from 57.05% to 57.56%. They came from exactly two routes and nothing else:
-
-- **a proved-zero force plus L160** -- the exhaustive landscape reduces the
-  function to a known colour, then a declared carrier is deleted so IDO
-  generates the value. Six of the eleven.
-- **the draw census** -- `tools/draw_census.py`, built during the sprint, on
-  functions whose colour axis was already closed with no winner. Five of the
-  eleven, including `overlay19BuildAdjacency` (a 103-probe, 17-web landscape
-  with no winners, matched through call-site argument assignment) and
-  `overlay2ChooseBoundary` at 1,168 bytes.
-
-**The rate fell as the pool drained.** Early waves returned two to three matches
-each; the later waves returned about one per five-lane wave. That is the honest
-number to plan the next sprint with: roughly 500 to 1,200 bytes per lane-wave
-once the sub-20-word functions are gone.
-
-**The whale did not close.** Nine passes took it 227 -> 217 -> 187 and then held
-at 187 across five more, each closing a route and sharpening the constraint to
-its current form: preserve address reuse across BOTH successive splits while
-holding draws and target size. Seven attempt families and 27 source cells are
-recorded. At 14,456 bytes it is still 63% of the remaining gap, and it is now
-the best-characterised stall in the tree -- which is the precondition for either
-breaking it or arguing it to the unassignable bar.
-
-### The three things that cost the most time
-
-1. **Pin decay per integration.** Every merge invalidates its own symbols' pins,
-   and `--refresh-stale` takes about eight minutes because
-   `lane_status.AssignmentContext.build` re-derives the whole queue. A wave pays
-   that two or three times. **Caching that classifier is now the highest-value
-   tooling work**, ahead of the forced-floor census.
-2. **The resolver's keep-both fallback on metadata.** It duplicated handoff
-   fields four times and once appended a pre-match `#else / GLOBAL_ASM /
-   #endif` tail on top of a promoted body. The post-merge sweep must check
-   every handoff field and preprocessor balance, not just conflict markers; a
-   repair script now does it, and it must not touch the generated markdown
-   shards, whose header has a required field order.
-3. **A promotion merge needs its rebuild before its gates mean anything.**
-   `verify`, `check-scoreboard` and `check-overlay-syms` all read red against a
-   stale build and green after extract, overlay-syms, build, overlay-syms,
-   build. Regenerating the ranking or scoreboard before that rebuild compares
-   them against the wrong objects.
-
-## Footguns
-
-Every one of these has cost this campaign real work. The first five cost it on
-2026-09-12.
-
-**Never pipe a gate.** `gmake check-docs | tail; echo $?` reports *tail's*
-status. Use `tools/gates.sh`, and do not pipe that either. It has put commits
-on top of a red gate three times, including once after the tool that prevents
-it existed.
-
-**Renew reopen pins AFTER the last handoff edit, not before.** A pin arms only
-while its source and handoff commits match. Renewing and then committing a
-handoff section moves the handoff commit and re-invalidates the pin the
-renewal just wrote. Order: merge → last handoff edit → renew → commit → verify
-→ dispatch.
-
-**Regenerate every generated file after a merge; never `--refresh-stale` to
-repair one.** A clean auto-merge of `config/nonmatching-ranking.us.json` parsed
-fine and was internally inconsistent — header `resolved: 307` over 306 rows,
-because the merge kept the incoming count while dropping a retired row.
-`nm_ranking.py --check-doc` refused it. A refresh re-reads the same broken
-header; a full regeneration fixes it.
-
-**The conflict resolver's keep-both fallback is safe on prose and unsafe on
-metadata.** It duplicated a single-valued `summary:` key inside a C file's
-EOF handoff block. After any keep-both resolution, scan for *duplicated keys*,
-not just for conflict markers.
-
-**A promotion's first build is expected to fail.** `gmake extract` discards the
-reloc-surface renames, so the first link reports undefined resident references
-and prints its own remedy. Do not chain it with `&&`: run build, then
-`overlay-syms`, then build again, then verify.
-
-**Never `git merge --abort` while another merge is in progress** — it reverts
-the resolution you are part-way through. Finish or stash first.
-
-**Never run two `gates.sh` at once.** They race on `build/gates/*.log` and
-neither finishes.
-
-**One owner per translation unit.** `dispatch_check.py` now refuses a plan that
-splits one, after three overlay 8 functions with distinct names turned out to
-share `overlay_008.c`.
-
-**A force is a diagnostic, never a shippable edit.** `CDX_FORCE` says which
-colour the target wants; the deliverable is the source form that produces it
-unaided.
-
-**Do not re-run a colour sweep on a function whose shard already reports one**
-unless you changed the source — in which case the old landscape is void and you
-must re-measure.
-
-**Re-run any specific measurement before quoting it into a brief.** Three
-claims travelled report → brief → lane unverified in one session and all three
-were wrong.
-
-## Tooling to build next, in order of payback
-
-1. **A forced-floor census.** For every queued function: the exhaustive
-   landscape, the packing, and the predicted floor. That turns "which function
-   should I work?" from a judgement into a lookup, and it is the natural
-   successor to `triage.py`. A scratch prototype ran at roughly a minute per
-   small function. Promote it with tests and have it write a tracked summary
-   (never the objects, which are ROM-derived evidence).
-2. **Cache the assignment classifier.** `lane_status.AssignmentContext.build`
-   dominates `triage.py` (four minutes), `dispatch_check.py`, and
-   `authorize_reopen --refresh-stale` (about ten minutes per land). Every
-   integration pays it two or three times. A keyed cache invalidated by the
-   branch tip would pay for itself within a day.
-3. **An insertion-pair reader.** The structural class is 62% of queue bytes and
-   the only instrument pointed at it is `residual_map.py`'s offset list. A tool
-   that says *which IR construct* emits the extra word, the way
-   `web_footprint.py` says which web owns a colour, is the next real
-   multiplier.
+- 57.56% → 60.42% (+27,004 bytes). 19 functions, headed by
+  `func_overlay_058_F000138C_18B0574` (14,456 bytes, 187 → 0 over ten
+  bounded lanes).
+- The two routes that produced matches were a proved-zero force plus
+  L160, and the draw census. Colour landscapes without a source
+  spelling were uniformly flat.
+- Last-mile batches returned two to three matches early and about one
+  per five-lane wave once the sub-20-word functions drained. Plan this
+  wave at the later rate.
 
 ## Do not spend a lane on this
 
-`overlay57UpdateModeState` — 1,416 bytes at 5 words, near the top of any
-ratio-sorted list, and **proven unmatchable at a floor of 2**. A trace replay
-reproduced 244 of 244 multi-candidate selections with zero mispredictions.
-`config/unassignable-symbols.us.json` carries the bar and the proof;
-`tools/triage.py` drops barred symbols from every route, cluster, band and
-total and prints an `EXCLUDED` line so the removal stays visible. Add a symbol
-there only with evidence that *no legal source reaches the target* — a
-plateau, however stubborn, is not that, and belongs in the handoff.
+- `overlay57UpdateModeState` — floor of 2, barred.
+- `func_overlay_054_F00005AC_189F24C` and
+  `func_overlay_052_F000063C_189ACAC` — colour axis priced; residual is
+  structural.
+- The whale. It is matched.
+- Any size-mismatch function whose shard does not yet have an
+  insertion-pair reading. That is Track B's job, not a colour sweep.
 
-Two large functions now have their colour axis *priced*, which is its own kind
-of "do not spend": colour reaches 12 of 851 words on
-`func_overlay_054_F00005AC_189F24C` and 153 of 1,337 on
-`func_overlay_052_F000063C_189ACAC`. Their residuals are structural. Do not
-send another lane to sweep them.
+## Footguns that still apply
+
+The 2026-09-12 list is still the list. In particular: never pipe a
+gate; renew reopen pins after the last handoff edit; regenerate
+generated files after a merge; one owner per TU; a force is a
+diagnostic; score a forced object directly, never through
+`score_symbol.py`'s recompile.

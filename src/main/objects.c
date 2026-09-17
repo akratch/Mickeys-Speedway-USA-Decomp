@@ -911,76 +911,32 @@ void *func_80004454(f32 arg0, f32 arg1, f32 arg2, u8 arg3) {
 /* Keep the preheader's three assignments on one physical line with `do {`:
  * splitting them costs two words at +0x74/+0x78. See func_8000471C, which is
  * the same function against a different object list and needs the same edit. */
-/* Workbench verdict: structure-mismatch; 96 differing words (99/104). */
-/* First mismatch: +0x0; target frame is 0x50, candidate frame is 0x58. */
-/* Structural gap: stack homes and four-at-a-time tail control flow remain unresolved. */
+/* Lane lm-obj: plain `for (i = start; i < end; i++)` over list[i]. The
+ * hand-unrolled remainder-plus-4x body was +700 / 272 masked; this is
+ * +24 / 100. The 04454 preheader walk under-unrolls to -236. */
 #ifdef NON_MATCHING
 s32 func_80004590(s32 arg0) {
-    s32 sp4C;
-    s32 sp48;
-    s32 sp40;
-    s32 temp_s0;
-    s32 temp_t7;
-    s32 temp_v0;
-    s32 var_a2;
-    s32 var_a3;
-    s32 var_t1;
-    s32 var_a1;
+    s32 start;
+    s32 end;
+    s32 count;
+    s32 i;
+    s32 type;
+    Objects04454Object **list;
     Objects04454Object *object;
-    s32 var_a1_2;
 
-    temp_s0 = arg0 & 0xFF;
-    sp40 = 0;
-    temp_v0 = (s32)func_8000572C(&sp4C, &sp48);
-    var_a2 = sp40;
-    var_a3 = sp4C;
-    if (sp4C < sp48) {
-        temp_t7 = (sp48 - sp4C) & 3;
-        if (temp_t7 != 0) {
-            var_a1 = temp_v0 + (sp4C * 4);
-            do {
-                object = *(Objects04454Object **)var_a1;
-                var_a3 += 1;
-                if ((object->unk91 == 0) && (object != D_80078F20) &&
-                    (temp_s0 == object->unk44)) {
-                    var_a2 += 1;
-                }
-                var_a1 += 4;
-            } while ((temp_t7 + sp4C) != var_a3);
-            if (var_a3 != sp48) {
-                goto block_9;
+    type = arg0 & 0xFF;
+    count = 0;
+    list = (Objects04454Object **)func_8000572C(&start, &end);
+    if (start < end) {
+        for (i = start; i < end; i++) {
+            object = list[i];
+            if ((object->unk91 == 0) && (object != D_80078F20) &&
+                (type == object->unk44)) {
+                count += 1;
             }
-        } else {
-block_9:
-            var_t1 = var_a3 * 4;
-            var_a1_2 = temp_v0 + var_t1;
-            do {
-                object = *(Objects04454Object **)(var_a1_2 + 0);
-                var_t1 += 0x10;
-                if ((object->unk91 == 0) && (object != D_80078F20) &&
-                    (temp_s0 == object->unk44)) {
-                    var_a2 += 1;
-                }
-                object = *(Objects04454Object **)(var_a1_2 + 4);
-                if ((object->unk91 == 0) && (object != D_80078F20) &&
-                    (temp_s0 == object->unk44)) {
-                    var_a2 += 1;
-                }
-                object = *(Objects04454Object **)(var_a1_2 + 8);
-                if ((object->unk91 == 0) && (object != D_80078F20) &&
-                    (temp_s0 == object->unk44)) {
-                    var_a2 += 1;
-                }
-                object = *(Objects04454Object **)(var_a1_2 + 12);
-                if ((object->unk91 == 0) && (object != D_80078F20) &&
-                    (temp_s0 == object->unk44)) {
-                    var_a2 += 1;
-                }
-                var_a1_2 += 4;
-            } while (var_t1 != (sp48 * 4));
         }
     }
-    return var_a2;
+    return count;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80004590.s")
@@ -1294,7 +1250,7 @@ typedef struct {
     u8 unk0;
     u8 pad01[3];
     u8 unk4;
-    u8 pad05;
+    s8 unk5;
     s8 unk6;
     u8 pad07[0x21];
 } Objects04FE0ModeRecord;
@@ -1372,12 +1328,7 @@ void func_80004FE0(s32 arg0) {
                         category[slot] = object;
                     }
                 } else {
-                    category[0] = object;
-                    category[1] = object;
-                    for (type = 2; type < 6; type += 4) {
-                        category[type + 1] = object;
-                        category[type + 2] = object;
-                        category[type + 3] = object;
+                    for (type = 0; type < 6; type++) {
                         category[type] = object;
                     }
                 }
@@ -1497,95 +1448,26 @@ void func_80004FE0(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80004FE0.s")
 #endif
-/* Workbench verdict: structure-mismatch; 81 raw differing words (85/87 instructions). */
-/* First mismatch: +0x18; frame is exact, but the target retains two setup instructions. */
-/* Structural gap: zero-index setup and register carriers remain unresolved. */
-#ifdef NON_MATCHING
+/* Lane lm-obj: the ROM's two rank-copy loops are IDO's unroller output of a
+ * plain `for (i = 0; i < arg0; i++)` over each mode record. The hand-unrolled
+ * remainder-plus-4x body grew 632 bytes under the unroller. unk5 is signed:
+ * a u8 load left 10 structural words at delta 0. 87/87 words, frame 0x18,
+ * 3 relocations. */
 void func_80005548(s32 arg0) {
-    s32 temp_a3;
-    s32 temp_a3_2;
-    s32 temp_v0;
-    s32 var_a0;
-    s32 var_a0_2;
-    s8 temp_t1;
-    s8 temp_t2;
-    s8 temp_t2_2;
-    s8 temp_t3;
-    s8 temp_t3_2;
-    s8 temp_t4;
-    s8 temp_t6;
-    s8 temp_t6_2;
-    s8 temp_t8;
-    s8 temp_t9;
-    void *var_v1;
-    void *var_v1_2;
-    void *var_v1_3;
-    void *var_v1_4;
+    s32 i;
+    Objects04FE0ModeRecord *records;
 
-    temp_v0 = (s32)func_80028F54();
+    records = (Objects04FE0ModeRecord *)func_80028F54();
     if (D_8007BF0C != 0) {
-        var_a0 = 0;
-        if (arg0 > 0) {
-            temp_a3 = arg0 & 3;
-            if (temp_a3 != 0) {
-                var_v1 = (s8 *)temp_v0 + (0 << 5);
-                do {
-                    temp_t8 = ((s8 *)var_v1)[5];
-                    var_a0 += 1;
-                    var_v1 = (u8 *)var_v1 + 0x28;
-                    ((s8 *)var_v1)[-0x22] = temp_t8;
-                } while (temp_a3 != var_a0);
-                if (var_a0 == arg0) {
-                    return;
-                }
-            }
-            var_v1_2 = (s8 *)temp_v0 + (var_a0 * 0x28);
-            do {
-                temp_t2 = ((s8 *)var_v1_2)[0x2D];
-                temp_t3 = ((s8 *)var_v1_2)[0x55];
-                temp_t4 = ((s8 *)var_v1_2)[0x7D];
-                temp_t1 = ((s8 *)var_v1_2)[5];
-                var_v1_2 = (u8 *)var_v1_2 + 0xA0;
-                ((s8 *)var_v1_2)[-0x72] = temp_t2;
-                ((s8 *)var_v1_2)[-0x4A] = temp_t3;
-                ((s8 *)var_v1_2)[-0x22] = temp_t4;
-                ((s8 *)var_v1_2)[-0x9A] = temp_t1;
-            } while (var_v1_2 != (void *)((s8 *)temp_v0 + (arg0 * 0x28)));
+        for (i = 0; i < arg0; i++) {
+            records[i].unk6 = records[i].unk5;
         }
     } else {
-        var_a0_2 = 0;
-        if (arg0 > 0) {
-            temp_a3_2 = arg0 & 3;
-            if (temp_a3_2 != 0) {
-                var_v1_3 = (s8 *)temp_v0 + (0 << 5);
-                do {
-                    temp_t6 = ((s8 *)var_v1_3)[5];
-                    var_a0_2 += 1;
-                    var_v1_3 = (u8 *)var_v1_3 + 0x28;
-                    ((s8 *)var_v1_3)[-0x22] = (arg0 - temp_t6) - 1;
-                } while (temp_a3_2 != var_a0_2);
-                if (var_a0_2 == arg0) {
-                    return;
-                }
-            }
-            var_v1_4 = (s8 *)temp_v0 + (var_a0_2 * 0x28);
-            do {
-                temp_t3_2 = (arg0 - ((s8 *)var_v1_4)[5]) - 1;
-                temp_t2_2 = (arg0 - ((s8 *)var_v1_4)[0x7D]) - 1;
-                temp_t9 = (arg0 - ((s8 *)var_v1_4)[0x55]) - 1;
-                temp_t6_2 = (arg0 - ((s8 *)var_v1_4)[0x2D]) - 1;
-                var_v1_4 = (u8 *)var_v1_4 + 0xA0;
-                ((s8 *)var_v1_4)[-0x72] = temp_t6_2;
-                ((s8 *)var_v1_4)[-0x4A] = temp_t9;
-                ((s8 *)var_v1_4)[-0x22] = temp_t2_2;
-                ((s8 *)var_v1_4)[-0x9A] = temp_t3_2;
-            } while (var_v1_4 != (void *)((s8 *)temp_v0 + (arg0 * 0x28)));
+        for (i = 0; i < arg0; i++) {
+            records[i].unk6 = (arg0 - records[i].unk5) - 1;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80005548.s")
-#endif
 /* D_800C9460 heads an eight-byte record: the object base pointer, then the
    pointer to the index table.  The second field's address reaches the compiler
    as &D_800C9460[1], which is why this reads through a pointer instead of a
@@ -4114,9 +3996,9 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
     command->w1 = (u32)-0x100;
     command->w0 = 0xFB000000;
 
-    for (i = 0; i < 16; i += 4) {
-        if (*(s32 *)((u8 *)resource + 0x134 + i) != 0) {
-            TrapDanglingJump(arg0, *(s32 *)((u8 *)resource + 0x134 + i));
+    for (i = 0; i < 4; i++) {
+        if (*(s32 *)((u8 *)resource + 0x134 + (i * 4)) != 0) {
+            TrapDanglingJump(arg0, *(s32 *)((u8 *)resource + 0x134 + (i * 4)));
         }
     }
 
@@ -4154,25 +4036,11 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
 
         if (count > 0) {
             for (i = count - 1; i > 0; i--) {
-                j = 0;
-                if (i & 1) {
+                for (j = 0; j < i; j++) {
                     if (depths[sortIndex[j + 1]] < depths[sortIndex[j]]) {
                         swap = sortIndex[j];
                         sortIndex[j] = sortIndex[j + 1];
                         sortIndex[j + 1] = swap;
-                    }
-                    j = 1;
-                }
-                for (; j != i; j += 2) {
-                    if (depths[sortIndex[j + 1]] < depths[sortIndex[j]]) {
-                        swap = sortIndex[j];
-                        sortIndex[j] = sortIndex[j + 1];
-                        sortIndex[j + 1] = swap;
-                    }
-                    if (depths[sortIndex[j + 2]] < depths[sortIndex[j + 1]]) {
-                        swap = sortIndex[j + 1];
-                        sortIndex[j + 1] = sortIndex[j + 2];
-                        sortIndex[j + 2] = swap;
                     }
                 }
             }
@@ -4556,9 +4424,9 @@ s32 func_8000A244(s32 *arg0) {
     D_800C94B2 = i;
     return i;
 }
-/* Workbench verdict: structure-mismatch; 37 differing words (target 164, candidate 165). */
-/* First mismatch: +0x4; frame is 0x58, with an extra saved-register lifetime. */
-/* Structural gap: entry/counter scheduling and two of three exact relocation identities. */
+/* Lane lm-obj: plain counted walk `current = *objects++` over the depth
+ * update. The hand-unrolled remainder-plus-4x body was +300 / 231 masked;
+ * this is delta 0 / 154. Entry still colours arg0 instead of spilling it. */
 #ifdef NON_MATCHING
 void func_8000A39C(s32 arg0, s32 arg1) {
     s32 passCount;
@@ -4575,7 +4443,7 @@ void func_8000A39C(s32 arg0, s32 arg1) {
     f32 nextDepth;
     s32 difference;
     s32 updateCount;
-    s32 remainder;
+    s32 i;
     s32 sorted;
 
     difference = arg0;
@@ -4592,56 +4460,15 @@ void func_8000A39C(s32 arg0, s32 arg1) {
 
         difference += 1;
         sortOffset = arg0;
-        updateCount = difference;
-        if (difference != 0) {
-            remainder = -(difference & 3);
-            difference = remainder + difference;
-            if (remainder != 0) {
-                do {
-                    current = *objects++;
-                    updateCount -= 1;
-                    if (current != NULL) {
-                        current->unk30 = -((current->unkC * matrixX) +
-                                          (current->unk10 * matrixY) +
-                                          (current->unk14 * matrixZ) + matrixW);
-                    }
-                } while (difference != updateCount);
-                if (updateCount == 0) {
-                    goto sort_objects;
-                }
-            }
-            {
-                do {
-                    current = *objects++;
-                    updateCount -= 4;
-                    if (current != NULL) {
-                        current->unk30 = -((current->unkC * matrixX) +
-                                          (current->unk10 * matrixY) +
-                                          (current->unk14 * matrixZ) + matrixW);
-                    }
-                    current = *objects++;
-                    if (current != NULL) {
-                        current->unk30 = -((current->unkC * matrixX) +
-                                          (current->unk10 * matrixY) +
-                                          (current->unk14 * matrixZ) + matrixW);
-                    }
-                    current = *objects++;
-                    if (current != NULL) {
-                        current->unk30 = -((current->unkC * matrixX) +
-                                          (current->unk10 * matrixY) +
-                                          (current->unk14 * matrixZ) + matrixW);
-                    }
-                    current = *objects++;
-                    if (current != NULL) {
-                        current->unk30 = -((current->unkC * matrixX) +
-                                          (current->unk10 * matrixY) +
-                                          (current->unk14 * matrixZ) + matrixW);
-                    }
-                } while (updateCount != 0);
+        for (i = 0; i < difference; i++) {
+            current = *objects++;
+            if (current != NULL) {
+                current->unk30 = -((current->unkC * matrixX) +
+                                  (current->unk10 * matrixY) +
+                                  (current->unk14 * matrixZ) + matrixW);
             }
         }
 
-sort_objects:
         do {
             objects = (Objects0A39CObject **)(sortOffset + (u8 *)D_800C9494);
             updateCount = passCount;
@@ -5678,16 +5505,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  */
 
 
-
-/* PLATEAU-HANDOFF:func_80005548:start
- * symbol: func_80005548
- * score: 81 differing words
- * frame: 0x18
- * relocations: 2
- * first-mismatch: +0x18
- * summary: Best rolled-loop candidate is 85 instructions versus 87 target; two zero-index setup instructions and register carriers remain structural.
- * PLATEAU-HANDOFF:func_80005548:end
- */
 
 /* PLATEAU-HANDOFF:func_80006FA0:start
  * symbol: func_80006FA0

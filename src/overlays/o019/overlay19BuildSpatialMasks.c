@@ -30,8 +30,13 @@ typedef struct O19SpatialMaskFrame {
 /* s2-a (2026-09-16): the span fields are read through the expression itself
  * via the NON-volatile union member (one CSE'd load), so the base is a type-4
  * web numbered after firstItem's type-3 web and takes a0 where a declared
- * `span` took v1: 17 to 9. Left: the mask/selector init order and loop 1's
- * tail, both as1 order. */
+ * `span` took v1: 17 to 9. */
+/* lm-o019 (2026-09-17): loop 1's tail is as1 lineno. bit <<= on its own
+ * line leaves its move as the delay leftover; #line 49 on binIndex++ puts
+ * its sign-extend before binEnd's; #line 48 on the trailing ; stamps slti
+ * with the do header so it issues before binStart's sign-extend. 9 to 2.
+ * Left: ugen emits mask=0 before selector=0; swapping those two moves in
+ * the cc -S listing reassembles byte-exact. */
 #ifdef NON_MATCHING
 void overlay19BuildSpatialMasks(O19Context *context, O19Group *group, O19Output *output) {
     O19SpatialMaskFrame frame; s32 item, itemEnd, selector; s16 vertexBase; O19Span *span; O19Point *point; O19Vertex *vertices, *vertex; s16 x, y, z, xMax, xMin, yMax, yMin, zMax, zMin; s16 spanCount, lower, upper, step, binStart, binEnd, firstItem, binIndex; u32 bit, mask; ;
@@ -47,9 +52,13 @@ void overlay19BuildSpatialMasks(O19Context *context, O19Group *group, O19Output 
     ;
     do {
         if (!(binEnd < xMin || xMax < binStart)) { ; mask |= bit; }
-        binEnd += step; binStart += step; bit <<= 1; binIndex++;
-
+        binEnd += step; binStart += step;
+        bit <<= 1;
+#line 49
+        binIndex++;
+#line 48
         ;
+#line 53
     } while (binIndex < 8);
 
     ;
@@ -87,10 +96,10 @@ void overlay19BuildSpatialMasks(O19Context *context, O19Group *group, O19Output 
 
 /* PLATEAU-HANDOFF:overlay19BuildSpatialMasks:start
  * symbol: overlay19BuildSpatialMasks
- * score: 9/227 words
+ * score: 2/227 words
  * frame: 0x80
  * relocations: 0
  * first-mismatch: +0xC0
- * summary: The span base as a non-volatile expression web puts firstItem in v1 and span in a0, 17 to 9; the mask/selector init order and loop 1's tail schedule remain, both as1 order.
+ * summary: Loop-1 tail closed by as1 lineno stamps: 9 to 2. Left: ugen emits mask=0 before selector=0; swapping those two cc -S moves is byte-exact.
  * PLATEAU-HANDOFF:overlay19BuildSpatialMasks:end
  */

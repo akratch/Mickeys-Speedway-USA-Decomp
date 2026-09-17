@@ -5559,11 +5559,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_8000A39C:start
  * symbol: func_8000A39C
- * score: 37 differing words
+ * score: 154 differing words
  * frame: 0x58
  * relocations: 3
  * first-mismatch: +0x4
- * summary: 37 words and one surplus instruction. The target spills the unmodified first parameter to its incoming home and keeps the return address at +0x14; a spelling that takes the object base from an inline shift and the sort offset from a separate product reproduces that entry block exactly, but overshoots the frame by eight bytes and loses the copy the target emits after the matrix loads. Those are now two separable decision variables rather than one coupled pair.
+ * summary: Delta 0 after unroller restoration. 79 exact, 70 naming, 17 structural. Insertion pairs at plus-4/plus-1C and plus-27C/plus-64. Unmodified arg0 spills and restores ra but loses two words and grows the frame; decrementing counted loops stay rolled; only for-i-from-zero unrolls and it cannot emit the target remainder.
  * PLATEAU-HANDOFF:func_8000A39C:end
  */
 

@@ -22,21 +22,12 @@ static u8 overlay22DataPad34[0xC] = { 0 };
 static f32 overlay22Constants[5] = { 14.4F, 14.4F, 0.8F, 0.03F, 0.707F };
 static u8 overlay22DataTail[0xC] = { 0 };
 
-extern Overlay22Object *gOverlay22NodesEnd[];
 extern void partUpdateTriggers(Overlay22Object *object, s32 mode);
 extern void func_80002FE0(u16 soundId, f32 x, f32 y, f32 z, u8 priority,
                           void **handle);
 extern void func_80006EA0(void *object);
 
 /* Pinned DKR v77/v80 and JFG object scans found no exact donor. */
-/*
- * Bounded plateau (2026-08-29): configured full-TU C has the exact 91-word
- * extent and 0x28 frame, with 43 register-only differences from +0x10. All
- * 12 runtime relocation tuples are exact after restoring the four typed
- * resident callees. The 119-flag lattice, one fidelity-clean allocator trace,
- * and three trace-supported lifetime/loop forms are nonexact; no strict gain
- * authorized a combination or generic batch. Preserve the assembly fallback.
- */
 #ifdef NON_MATCHING
 void func_overlay_022_F0000D30_1878E38(Overlay22Object *object, s32 flags) {
     s32 i;
@@ -54,22 +45,12 @@ void func_overlay_022_F0000D30_1878E38(Overlay22Object *object, s32 flags) {
     }
 
     if (found != -1) {
-        s32 last;
-
-        last = count - 1;
-        if (found < last) {
-            Overlay22Object **current;
-            Overlay22Object **end;
-
-            end = &gOverlay22NodesEnd[last];
-            current = &gOverlay22Nodes[found];
-            do {
-                *current = current[1];
-                current++;
-            } while (current < end);
+        while (found < count - 1) {
+            gOverlay22Nodes[found] = gOverlay22Nodes[found + 1];
+            found++;
         }
         gOverlay22Nodes[count] = 0;
-        D_30 = last;
+        D_30 = count - 1;
     }
 
     if (flags & 1) {
@@ -90,10 +71,10 @@ void func_overlay_022_F0000D30_1878E38(Overlay22Object *object, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_overlay_022_F0000D30_1878E38:start
  * symbol: func_overlay_022_F0000D30_1878E38
- * score: 43/91 words
+ * score: 40/91 words
  * frame: 0x28
  * relocations: 12
  * first-mismatch: +0x10
- * summary: Pointer-initializer order moves one draw and emission between lines but retains the 43-word floor; guarded pointer loop restored.
+ * summary: L160 index compact without current/end/last is 40/91 register-only at delta 0; identity-gated web 15 still takes v0 and force w15=c2 scores 34 not 0.
  * PLATEAU-HANDOFF:func_overlay_022_F0000D30_1878E38:end
  */

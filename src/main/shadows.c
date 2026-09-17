@@ -1352,16 +1352,17 @@ void func_800180B4(ShadowQuery *query) {
     yMin = (s32) query->y10 + query->volume40->minY6C;
     done = 0;
     if (query->sector2E != -1) {
+        sectorIndex = query->sector2E;
         mask = getXZCompareMask(
             (u8 *) ((ShadowWorld *) D_800CB284)->grid8 +
-                (query->sector2E * 0xC),
+                (sectorIndex * 0xC),
             (s32) (query->x0C - 16.0f),
             (s32) (query->z14 - 16.0f),
             (s32) (query->x0C + 16.0f),
             (s32) (query->z14 + 16.0f));
         blockNumber = 0;
         sector = (ShadowSector *) ((u8 *) ((ShadowWorld *) D_800CB284)->sectors4 +
-                                  (query->sector2E << 6));
+                                  (sectorIndex << 6));
         blockOffset = 0;
         if (sector->blockCount24 > 0) {
             block = sector->blocksC;

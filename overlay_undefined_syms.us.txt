@@ -2843,6 +2843,14 @@ overlay68GetBlurEffectReloc = 0xf0000000;
 overlay68GetResidentEntriesReloc = 0xf0000000;
 overlay68RomLoadSectionReloc = 0xf0000000;
 
+/* overlay 68: overlay68CheckKind.c.o */
+gOverlay68KindMapInitial = 0x00000014;
+gOverlay68KindMapLoop = 0x00000014;
+overlay68AllocProbeReloc = 0xf0000000;
+overlay68FillProbeReloc = 0xf0000000;
+overlay68FreeProbeReloc = 0xf0000000;
+overlay68MapResidentIndexReloc = 0xf0000000;
+
 /* overlay 70: func_overlay_070_F00000D8_18C92A0.c.o */
 gOverlay70HeightTableReloc = 0x00000000;
 gOverlay70PairTableReloc = 0x00000000;

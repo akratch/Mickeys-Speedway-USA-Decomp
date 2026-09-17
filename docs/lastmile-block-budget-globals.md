@@ -134,7 +134,9 @@ load/store emission. The instrumented alias query is may-alias because the
 spilled slot is isvar against the count's islda -- a one-base pointer that
 spills still queries may-alias, so the three-base diagnosis was the wrong
 variable. A post-call `la` of the chosen base into slot stamps the fact at
-plus four and 13 masked. Next steps are in the shard.
+plus four and 13 masked. Lane w2-o014 (2026-09-17) priced the other named
+lever: any declared count carrier takes a1 (first free colour at the tail)
+and a comma inside `+` folds to the baseline. Next steps are in the shard.
 
 ## `overlay34CreateRecord`: unmoved at 2, mechanism exact
 

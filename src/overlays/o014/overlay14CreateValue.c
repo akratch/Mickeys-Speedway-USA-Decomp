@@ -22,7 +22,9 @@ extern void *func_overlay_014_F00009F4_18702CC(s32 key, s32 kind);
  * `.noalias $count,$slot` (or swapping ugen's load/store emission) is
  * exact; ugen does not stamp that fact on a spilled pointer because the
  * tail alias query is isvar versus islda (the spill, not the three bases).
- * Read the shard before touching it. */
+ * A declared count carrier gets the ROM schedule in a1 (first free colour
+ * at the tail); a ugen-temp split cannot be a comma inside `+` (cfe
+ * evaluates the side-effecting comma first).  Read the shard. */
 #ifdef NON_MATCHING
 void *overlay14CreateValue(s32 key, s32 alternate) {
     void *value;
@@ -114,6 +116,6 @@ void *overlay14CreateValue(s32 key, s32 alternate) {
  * frame: 0x28
  * relocations: 15
  * first-mismatch: +0x158
- * summary: tail count load versus key store; listing replay of a count-versus-slot noalias stamp is exact; ugen queries may-alias because the spilled slot is isvar against the count islda.
+ * summary: tail count load versus key store; a declared carrier sequences the load first but colours it a1; named-array key stores stamp count-versus-chosen-LDA at an extra la; comma-in-plus folds.
  * PLATEAU-HANDOFF:overlay14CreateValue:end
  */

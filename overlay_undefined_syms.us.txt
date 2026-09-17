@@ -2520,6 +2520,11 @@ gOverlay60LocalDataReloc = 0x00000000;
 /* overlay 60: overlay60DrawBorder.c.o */
 gOverlay60DisplayList = 0x00000000;
 
+/* overlay 60: overlay60ReassignChoiceSlots.c.o */
+D_800D3058Pass2End_o060Reloc = 0x000000d0;
+D_800D3058Pass2_o060Reloc = 0x00000000;
+D_800D3058_o060Reloc = 0x00000000;
+
 /* overlay 61: overlay61UpdateInput.c.o */
 gOverlay61RepeatXReloc = 0x0000008c;
 gOverlay61RepeatYReloc = 0x00000090;

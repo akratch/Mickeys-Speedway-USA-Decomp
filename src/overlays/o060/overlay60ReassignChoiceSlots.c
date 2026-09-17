@@ -8,57 +8,44 @@ typedef struct Overlay60Choice {
     u8 pad2C[8];
 } Overlay60Choice;
 
-/* Separate pass aliases preserve the two address-materialization lifetimes. */
-extern Overlay60Choice gOverlay60ChoicesPass1[];
-extern Overlay60Choice gOverlay60ChoicesPass2[];
-extern Overlay60Choice gOverlay60ChoicesPass1End[];
-extern Overlay60Choice gOverlay60ChoicesPass2End[];
+/* The four-entry resident player block. Two pass names keep the two
+ * address-materialization lifetimes; the pass-2 end sentinel is a distinct
+ * symbol so the back-edge comparison keeps End first (overlay 57's form). */
+extern Overlay60Choice D_800D3058_o060Reloc[4];
+extern Overlay60Choice D_800D3058Pass2_o060Reloc[4];
+extern Overlay60Choice D_800D3058Pass2End_o060Reloc[];
 
-/* The pinned DKR v77/v80 and JFG object scans have no donor for this owner. */
-/* Workbench: structure-mismatch, 35 differing words, first mismatch +0x04.
- * Target-sized 53-instruction CFG/field access shape; register web and relocations remain.
- * Shape-exact for the permuter; no structural rewrite remains. */
-#ifdef NON_MATCHING
+/* Matched 2026-09-17 (lane w8-o060), 35 -> 0 masked words at delta 0,
+ * frame 0x20, eight relocations, unforced. L160: delete the walking choice
+ * pointer and subscript the player block from a while-index so IDO generates
+ * the cursor. available[14] holds the index home at the 0x20 frame. */
 void overlay60ReassignChoiceSlots(void) {
-    u8 available[18];
-    Overlay60Choice *choice;
+    s32 i;
+    u8 available[14];
 
-    choice = (Overlay60Choice *)available;
-    do {
-        *(u8 *)choice = 1;
-        choice = (Overlay60Choice *)((u8 *)choice + 1);
-    } while ((u8 *)choice < available + 10);
+    i = 0;
+    while (i < 10) {
+        available[i] = 1;
+        i++;
+    }
 
-    choice = gOverlay60ChoicesPass1;
+    i = 0;
     do {
-        if (choice->active != 0) {
-            available[choice->slot & 0xF] = 0;
+        if (D_800D3058_o060Reloc[i].active != 0) {
+            available[D_800D3058_o060Reloc[i].slot & 0xF] = 0;
         }
-        choice++;
-    } while (choice < gOverlay60ChoicesPass1End);
+        i++;
+    } while (&D_800D3058_o060Reloc[i] < &D_800D3058_o060Reloc[4]);
 
-    choice = gOverlay60ChoicesPass2;
+    i = 0;
     do {
-        if ((choice->active != 0) && (choice->slot >= 6)) {
-            choice->slot = 0;
-            while (available[choice->slot] == 0) {
-                choice->slot++;
+        if ((D_800D3058Pass2_o060Reloc[i].active != 0) && (D_800D3058Pass2_o060Reloc[i].slot >= 6)) {
+            D_800D3058Pass2_o060Reloc[i].slot = 0;
+            while (available[D_800D3058Pass2_o060Reloc[i].slot] == 0) {
+                D_800D3058Pass2_o060Reloc[i].slot++;
             }
-            available[choice->slot] = 0;
+            available[D_800D3058Pass2_o060Reloc[i].slot] = 0;
         }
-        choice++;
-    } while (choice != gOverlay60ChoicesPass2End);
+        i++;
+    } while (D_800D3058Pass2End_o060Reloc != &D_800D3058Pass2_o060Reloc[i]);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o060/overlay60ReassignChoiceSlots/func_overlay_060_F0003488_18BD260.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay60ReassignChoiceSlots:start
- * symbol: overlay60ReassignChoiceSlots
- * score: 35 differing words
- * frame: 0x20
- * relocations: 8
- * first-mismatch: 0x4
- * summary: Authenticated nine-draw baseline; prior cursor/type/extent differentials leave the earlier p2 web-creation requirement unresolved.
- * PLATEAU-HANDOFF:overlay60ReassignChoiceSlots:end
- */

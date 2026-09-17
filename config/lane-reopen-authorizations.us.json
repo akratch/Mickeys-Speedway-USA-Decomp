@@ -926,7 +926,7 @@
       "source_commit": "a1d4f1cf4ba697c250080c1b4c3c3b913bf471d4"
     },
     "func_overlay_008_F00034A0_18611F8": {
-      "ledger_commit": "6b373a9d4785050dc742a18c98883d8557e420ba",
+      "ledger_commit": "b594e37a1dec2009e81653c9c93502d5557d4cd4",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "6b373a9d4785050dc742a18c98883d8557e420ba"
     },
@@ -1816,7 +1816,7 @@
       "source_commit": "2964dfd496bc549532c6b5afe36cb7b769c96b6a"
     },
     "overlay34SortAndDraw": {
-      "ledger_commit": "13a2c18556c7fdb8a94d556d99a11ca51ab934b0",
+      "ledger_commit": "01419894ab1512ce44307be8f2e6e9ff20cd6b23",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "13a2c18556c7fdb8a94d556d99a11ca51ab934b0"
     },
@@ -2036,9 +2036,9 @@
       "source_commit": "4133a7bb91343e729143a9fb6ee789346782d6b5"
     },
     "overlay98CollectUniqueY": {
-      "ledger_commit": "153408d840f84f44c0ba7c155784a45a38e9c1f5",
+      "ledger_commit": "8c035c84ffe3b0d13687d98cf79bd0def40bc83e",
       "reason": "New mechanisms found today: lever 51, a hand-written cursor blocks the register names and indexing the parallel arrays closed three functions in one pass; and lever 50, an unrelocated literal address pair scores as a false residual.",
-      "source_commit": "153408d840f84f44c0ba7c155784a45a38e9c1f5"
+      "source_commit": "8c035c84ffe3b0d13687d98cf79bd0def40bc83e"
     },
     "overlay98RenderReflections": {
       "ledger_commit": "4100d1b96b29e9fd23198a99472b593b138a0e22",
@@ -2066,9 +2066,9 @@
       "source_commit": "a6b36ef53e00d3421dec82342b756c7a16b9b226"
     },
     "rain_render_splashes": {
-      "ledger_commit": "97307c144d1eb2c478b01f7c066ec6177b6fcd20",
+      "ledger_commit": "fc414d09b87569faf0a37467b20294b88553c5e6",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "97307c144d1eb2c478b01f7c066ec6177b6fcd20"
+      "source_commit": "fc414d09b87569faf0a37467b20294b88553c5e6"
     },
     "render_epc_lock_up_display": {
       "ledger_commit": "6551b94503f641633b23c4477f31156daea040bc",

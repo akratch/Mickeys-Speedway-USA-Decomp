@@ -147,7 +147,15 @@ bytes and disassembly never belong here.
   takes the instruction census delta to zero. Limit: this is about formals
   arriving in integer registers, not about `f12`/`f14` FP arguments, and it
   does not license adopting `-O3` for a shared TU -- ADR 0007 still wants an
-  exact function first.
+  exact function first. The `-O2` no-color is L139 on the third class-2 web:
+  totalsave 3 against callee bestcost 4, with caller `f16` (c28) infinite-cost
+  for every incoming-scalar web even though it is not forbidden. A
+  `CDX_FORCE` onto c28 is accepted and emits the third `mtc1` at `-O2`;
+  driver `-O3` colours it naturally. `tools/ido-phases.py` phase-all-O3
+  appends `-O3` after the driver's `-O2`, and uopt uses the first flag, so
+  that lattice row is inert for this lowering. Extra copy, address form,
+  region split, and store-kill rotate which formal spills and do not make
+  c28 finite. Evidence: `func_8002B040` identity-gated proc 5, forced=28.
 
 - That same flag is decidable from the target bytes *before* any source work,
   and the test is cheap: disassemble each unmatched function's own fallback

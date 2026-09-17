@@ -50,62 +50,52 @@ void overlay25InitializeEffect(Overlay25Object *object,
 }
 
 /*
- * Plateau (2026-08-25): -O2 -mips2 emits the exact 0x40C-byte size. Naming
- * the two update-rate terms reduced the residual from 140 to 127 differing
- * words (18 opcode mismatches), with the first mismatch at function offset
- * 0x0. The candidate frame is 0xC8 bytes versus the target's 0xA0 bytes;
- * mutually exclusive scopes and declaration reordering regressed to +0x10
- * bytes and 216 differing words. A bounded ten-minute permuter run lowered
- * its imported score from 3090 to 2605 only by adding a vacuous guard and a
- * shared constant; the clean shared-constant form regressed to 164 differing
- * words. The blocker remains the combined stack-home and register schedule
- * across the movement and query branches.
- * R3 revisit: all 119 flag groups reconfirmed 127 words and first mismatch
- * +0x0 at the exact 0x40C boundary. Reversing the position/radius/object-array
- * declarations and scoping those locals to either branch emitted the same
- * object, so neither accounts for the target's 0xA0 versus 0xC8 frame.
+ * 2026-09-17: frame closed at 0xA0. L112 solves objects[6] from that frame;
+ * one unused pointer declared first (L99) homes hitSomething at 0x98.
+ * Spill-name deletion (velocity copies, extraSteps, cursor, queryRadius,
+ * ownerState) and 2.0f * value dropped 127 masked to 82 at delta 0.
+ * Remaining: objects at 0x70 vs target 0x4C (and radius/position 0x14 high);
+ * 67 naming / 8 immediate / 7 structural. Colour landscape (proc 1, 154
+ * same-kind probes): only p1:w122=c18 beats 82 (69). Inlining `other` as
+ * objects[index] (L160) is size-delta -4 and loses s0.
  */
 /* Ownership trial (2026-08-28): fixed the TU's +0x20..+0x40 .rodata range;
  * linked promotion is text-differs with 386 in-range words, first at +0x0.
  * Module growth is cleared; the remaining gap is codegen/register allocation. */
 #ifdef NON_MATCHING
 void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
-    Overlay25EffectState *state = &object->state->effect;
-    Overlay25Vector position;
-    f32 radius;
-    Overlay25Object *objects[10];
+    void *unused; /* L99: declared first so hitSomething homes at 0x98 */
     s32 hitSomething;
+    f32 radius;
+    Overlay25Vector position;
+    Overlay25Object *objects[6];
+    Overlay25EffectState *state;
 
+    state = &object->state->effect;
     if (state->activeDuration != 0) {
         s32 remaining;
-        s32 extraSteps;
         f32 accum;
         f32 moveX;
         f32 moveZ;
-        f32 velocityX;
-        f32 velocityZ;
 
         state->activeDuration -= updateRate;
-        object->value = object->transform->value + object->transform->value;
+        object->value = 2.0f * object->transform->value;
         remaining = updateRate - 2;
-        extraSteps = updateRate - 1;
         if (state->activeDuration <= 0) {
             overlay25DestroyReloc(object);
             return;
         }
 
         accum = state->lift;
-        velocityX = state->velocityX;
-        velocityZ = state->velocityZ;
-        moveX = velocityX;
-        moveZ = velocityZ;
+        moveX = state->velocityX;
+        moveZ = state->velocityZ;
         state->lift = accum - 1.1034483f;
-        if (extraSteps != 0) {
+        if (updateRate - 1) {
             do {
                 f32 current = state->lift;
-                moveX += velocityX;
+                moveX += state->velocityX;
                 state->lift = current - 1.1034483f;
-                moveZ += velocityZ;
+                moveZ += state->velocityZ;
                 accum += current;
             } while (remaining--);
         }
@@ -131,6 +121,7 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
         }
     } else {
         s32 count;
+        s32 index;
 
         state->duration -= updateRate;
         state->lifetime -= updateRate;
@@ -147,24 +138,19 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
                 return;
             }
         } else {
-            f32 queryRadius;
-            s32 index;
-            Overlay25Object **cursor;
-
             state->multiplier += 0.4f * (f32)updateRate;
             if (state->multiplier > 4.0f) {
                 state->multiplier = 4.0f;
             }
 
-            queryRadius = object->value * state->multiplier * 16.0f;
-            count = overlay25QueryObjectsReloc(object->x, object->y, object->z,
-                                               queryRadius, 1, objects);
+            count = overlay25QueryObjectsReloc(
+                object->x, object->y, object->z,
+                object->value * state->multiplier * 16.0f, 1, objects);
             hitSomething = 0;
             if (count != 0) {
                 index = count - 1;
-                cursor = &objects[index];
                 do {
-                    Overlay25Object *other = *cursor;
+                    Overlay25Object *other = objects[index];
                     f32 delta = other->y - object->y;
 
                     if ((other != state->owner) || (state->duration == 0)) {
@@ -174,10 +160,8 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
                             (otherState->enabled != 0)) {
                             hitSomething = 1;
                             if (overlay25CanHitReloc(other, otherState)) {
-                                Overlay25EntityState *ownerState;
                                 overlay7DispatchModesReloc(state->owner, other);
-                                ownerState = &state->owner->state->entity;
-                                ownerState->ownerHitCount++;
+                                state->owner->state->entity.ownerHitCount++;
                                 otherState->selfHitCount++;
                                 if (overlay25GetStatusReloc()->type == 5) {
                                     overlay25NotifyHitReloc(other);
@@ -185,7 +169,6 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
                             }
                         }
                     }
-                    cursor--;
                 } while (index--);
             }
             if (hitSomething != 0) {
@@ -222,10 +205,10 @@ void overlay25SetVectorFlags(s32 unused0, Overlay25Vector *out, s32 unused2,
 
 /* PLATEAU-HANDOFF:overlay25UpdateEffect:start
  * symbol: overlay25UpdateEffect
- * score: 132/259 words
- * frame: 0xC8
+ * score: 82/259 words
+ * frame: 0xA0
  * relocations: 25
- * first-mismatch: +0x0
- * summary: Fidelity-clean proc-1 trace emits no source semantics or virtual/final stack homes; no natural lifetime edit is uniquely justified.
+ * first-mismatch: +0x3C
+ * summary: Frame and size closed. Homes still 0x14/0x24 high (objects 0x70 vs 0x4C). Colour floor 69 via p1:w122=c18 (s3->s4); L160 delete-other regresses.
  * PLATEAU-HANDOFF:overlay25UpdateEffect:end
  */

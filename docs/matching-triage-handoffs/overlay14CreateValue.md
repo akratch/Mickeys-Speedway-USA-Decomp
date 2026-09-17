@@ -2,11 +2,11 @@
 ### `overlay14CreateValue` plateau handoff
 
 - source: `src/overlays/o014/overlay14CreateValue.c`
-- score: 13/96 words
+- score: 2/96 words
 - frame: 0x28
 - relocations: 15
-- first mismatch: +0x54
-- summary: Fresh 10-draw baseline confirms the extra +0x24 pointer home; declaration-order probe moved no draw or emission line and was restored.
+- first mismatch: +0x158
+- summary: one fourth-declared slot pointer spilled to its own home, base-plus-index pointer keeps the shift a ring draw; two rows left are the tail count-load hoist over the key store.
 - base: `3169297845d9e4b3843c03be16cfe6d51358d280`
 - boundary: overlay 14 `+0x6FC..+0x87C`, 384 bytes / 96 words, no
   padding or export; two local callers at `+0x3C0` and `+0x40C`
@@ -180,4 +180,65 @@ declaration that gives the single slot web a home at 0x18 with the frame at
 target's) but the one-web form does not. The lane report is
 docs/lastmile-phantom-web.md.
 
+#### 2026-09-16, lane w1-b: 13 -> 2 on the frame home and a PRE split, six cycles
+
+Baseline reproduced at 13 masked (14 raw), delta 0, frame 0x28, aligner
+83/5/4/4. Retained: 2 masked (3 raw), delta 0, frame 0x28, first +0x158,
+aligner 94/0/0/2; the two rows are the count load the ROM schedules above
+the key store. Every score is `tools/score_symbol.py` or the same comparator
+on the configured TU; nothing forced.
+
+What the residual was, read off the objects and the records: the target's
+pointer is one symbol web (scan cursor, free-loop cursor and chosen slot)
+coloured v1 and spilled around all three calls to its OWN home at 0x18, its
+shift is a ring draw, and the tail reloads slot before key. Ours had the
+pointer flowing through a volatile home plus a `register` copy spilled to a
+temp at 0x24, and a PRE'd shift web.
+
+- Cycle 1 (address-taken and separated-cursor forms): taking `&slot` in a
+  dead branch removes the pointer from colouring altogether (its symbol web
+  vanishes from the ladder), 61 to 94; the L55 mechanism is the wrong one
+  here. A separate scan cursor confines the cursor web to the loop, where
+  it takes v0 and pushes `value` to v1 (75, plus four).
+- Cycle 2 (plain `chosen` plus index kills and pointer probes, nx-a's
+  cycle-5 shape): every cell 58 at plus four with the FIRST difference at
+  +0x4, so that shape is not "the target from +0x9C on" as the previous
+  entry says; the head moves because the cursor web no longer spans the
+  index blocks. Probes on the pointer are inert there.
+- Cycle 3: one `slot` symbol through everything, `index = 0` after the
+  pointer (so uopt cannot rematerialise it from a spilled index), and ONE
+  or-with-zero read of the pointer: 94 at minus eight to 25 at delta 0. The
+  read lifts the pointer web's net from 57 to 59 over nocs 7, 8.43 against
+  `value`'s 8.33, so the pointer is decided first and takes v1, `value` a0,
+  the slots-end address v0. A second or third read is inert; unused f32,
+  f64 and array locals do not enlarge the frame (L99's wording is wrong
+  about f32 here).
+- Cycle 4 (frame): declaring `slot` FOURTH (`value, index, kind, slot`)
+  moves its reserved home to 0x18 and the frame to 0x28: 25 to 10. A
+  coloured pointer spilled around calls spills to its own reserved home,
+  and the homes descend in declaration order. Declaring `kind` first is
+  19; unused pointer locals, a volatile pad and a dead `chosen` copy are
+  all 25.
+- Cycle 5 (PRE): `slot = gOverlay14ChosenSlots28 + index` (or an explicit
+  `(u32)index << 3`, or a `u8 *` spelling of the loop's subscript) is a
+  different IR name from the free loop's `&gOverlay14FreeSlots28[index]`,
+  so the shift is no longer PRE'd into a two-block web coloured a0 and is
+  drawn from the ring as `t1`, realigning every later draw: 10 to 2.
+  `index * 8` stays PRE'd (10). Computing the pointer before the bound
+  check is 20.
+- Cycle 6 (tail order): reading the count into a local first is 21,
+  incrementing before the key store 4, between the stores 5. The ROM's
+  order is not a source order; it is as1 hoisting the count load over the
+  key store, which needs a `.noalias` between the pointer and the count's
+  address. ugen stamps that only for a pointer whose provenance is one base;
+  our pointer symbol has three (scan, free, chosen). On the two-symbol
+  shape the chosen pointer has bestcost 4.0 against save 1.2 and is still
+  coloured (a3) rather than split, so the target's own-home pieces are not
+  a split either.
+
+Next: a pointer with one base for the tail without a second symbol web
+that steals v1 or lands on a3, or an emission-order spelling of the tail
+that as1 keeps; and check whether the `index = 0` kill and the or-with-zero
+read are both still load-bearing on the retained shape (they were adopted
+in sequence and not re-tested individually after the declaration move).
 <!-- plateau-handoff:overlay14CreateValue:end -->

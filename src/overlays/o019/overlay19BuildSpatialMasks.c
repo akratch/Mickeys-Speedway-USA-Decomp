@@ -32,11 +32,11 @@ typedef struct O19SpatialMaskFrame {
  * web numbered after firstItem's type-3 web and takes a0 where a declared
  * `span` took v1: 17 to 9. */
 /* lm-o019 (2026-09-17): loop 1's tail is as1 lineno. bit <<= on its own
- * line leaves its move as the delay leftover; #line 49 on binIndex++ puts
- * its sign-extend before binEnd's; #line 48 on the trailing ; stamps slti
- * with the do header so it issues before binStart's sign-extend. 9 to 2.
- * Left: ugen emits mask=0 before selector=0; swapping those two moves in
- * the cc -S listing reassembles byte-exact. */
+ * line; #line 49 on binIndex++; #line 48 on the trailing ;. 9 to 2. */
+/* w2-o019 (2026-09-17): ugen still emits mask=0 (t0) then selector=0 (a2).
+ * Comma, 0|0, xor-self, assign-as-if, last-use, literal type and earlier
+ * def do not emit a2 first at unchanged colours; reversing statements
+ * recolours selector off a2 and still emits t0 first (L87 lock). */
 #ifdef NON_MATCHING
 void overlay19BuildSpatialMasks(O19Context *context, O19Group *group, O19Output *output) {
     O19SpatialMaskFrame frame; s32 item, itemEnd, selector; s16 vertexBase; O19Span *span; O19Point *point; O19Vertex *vertices, *vertex; s16 x, y, z, xMax, xMin, yMax, yMin, zMax, zMin; s16 spanCount, lower, upper, step, binStart, binEnd, firstItem, binIndex; u32 bit, mask; ;
@@ -100,6 +100,6 @@ void overlay19BuildSpatialMasks(O19Context *context, O19Group *group, O19Output 
  * frame: 0x80
  * relocations: 0
  * first-mismatch: +0xC0
- * summary: Loop-1 tail closed by as1 lineno stamps: 9 to 2. Left: ugen emits mask=0 before selector=0; swapping those two cc -S moves is byte-exact.
+ * summary: ugen emits mask=0 (t0) then selector=0 (a2); no tested C form emits a2 first at unchanged colours (L87 lock).
  * PLATEAU-HANDOFF:overlay19BuildSpatialMasks:end
  */

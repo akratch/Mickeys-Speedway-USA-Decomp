@@ -252,19 +252,24 @@ extern s32 frontGetLanguage(void);
 extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset,
                             s32 size);
 
-/* verdict: allocation-mismatch; 28 differing words; first mismatch +0xA8 */
-/* shape: exact 84 instructions and 0x20 frame; relocation ordering differs at two sites */
-/* canonical fallback retained until the compiler's temporary register coloring is closed */
-#ifdef NON_MATCHING
+/* PROVENANCE: adapted from Jet Force Gemini src/subtitles.c subtitleStart
+ * and Diddy Kong Racing src/game_text.c set_current_text. Mickey's globals,
+ * language addends, calls, and bytes remain authoritative. */
+/* Matched 2026-09-17 (lane w8-block), 28 -> 0 masked words at delta 0,
+ * frame 0x20, 22 relocations, unforced. JFG carrier shape: named table
+ * pointer, high-byte mask, and section size, with subscript access rather
+ * than a walking pointer plus loaded-word CSE. That reorders ugen's
+ * post-call scratch ring (L145/L160); colour-forcing the loaded-word web
+ * to t2 scored 18 and did not close. */
 void func_8004EED0(s32 arg0) {
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 *temp_t0;
+    s32 *entries;
+    s32 language;
+    s32 temp;
+    s32 size;
 
-    arg0 = arg0;
     if ((D_8007D640 != 0) && (arg0 >= 0) && (arg0 < D_800D6AB4)) {
-        temp_v0 = frontGetLanguage();
-        switch (temp_v0) {
+        language = frontGetLanguage();
+        switch (language) {
         case 2:
             arg0 += 2;
             break;
@@ -278,20 +283,16 @@ void func_8004EED0(s32 arg0) {
             arg0 += 4;
             break;
         }
-        piRomLoadSection(5, D_800D6AB0, (arg0 & ~1) * 4, 0x10);
-        temp_t0 = (s32 *)(D_800D6AB0 + ((arg0 & 1) * 4));
-        temp_v1 = temp_t0[0];
-        piRomLoadSection(4, D_800D6AD8[D_800D6AE4],
-                         temp_v1 ^ (temp_v1 & 0xFF000000),
-                         (temp_t0[1] & 0xFFFFFF) - (temp_v1 & 0xFFFFFF));
+        piRomLoadSection(5, D_800D6AB0, (arg0 & ~1) << 2, 0x10);
+        entries = (s32 *)D_800D6AB0;
+        temp = entries[arg0 & 1] & 0xFF000000;
+        size = (entries[(arg0 & 1) + 1] & 0xFFFFFF) - (entries[arg0 & 1] & 0xFFFFFF);
+        piRomLoadSection(4, D_800D6AD8[D_800D6AE4], entries[arg0 & 1] ^ temp, size);
         D_800D6AE0 = (u8 *)D_800D6AD8[D_800D6AE4];
         func_8004EC60();
         D_800D6AE4 = (D_800D6AE4 + 1) & 1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/block_4F4E0/func_8004EED0.s")
-#endif
 s32 func_8004F020(void) {
     return 0;
 }
@@ -304,14 +305,4 @@ s32 func_8004F020(void) {
  * first-mismatch: +0x0
  * summary: Proc-4 census records nine draws; extra saved-register setup and direct global-address expression shape remain the live structural blocker.
  * PLATEAU-HANDOFF:func_8004EC60:end
- */
-
-/* PLATEAU-HANDOFF:func_8004EED0:start
- * symbol: func_8004EED0
- * score: 28/84 words
- * frame: 0x20
- * relocations: 22
- * first-mismatch: +0xA8
- * summary: Fresh proc-0 census: 10 draws/67 emissions. Post-call free-list release ordering has no surviving source lever.
- * PLATEAU-HANDOFF:func_8004EED0:end
  */

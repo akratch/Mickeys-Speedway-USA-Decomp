@@ -435,11 +435,11 @@ units remain distinct.
 | 138 | `src/main/block_4F4E0.c` | `func_8004EC60` | `main` | `size-mismatch` | 328 | 79 | 79 | 0 | 0 | 4 | — |
 | 139 | `src/main/objects.c` | `func_8000831C` | `main` | `size-mismatch` | 424 | 81 | 81 | 64 | 64 | -4 | — |
 | 140 | `src/main/matrix.c` | `func_8002AB78` | `main` | `size-mismatch` | 268 | 83 | 83 | 0 | 0 | 68 | — |
-| 141 | `src/overlays/o015/overlay_015.c` | `overlay15UpdateMovingStars` | `o015` | `size-mismatch` | 412 | 87 | 84 | 36 | 48 | 28 | — |
-| 142 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
-| 143 | `src/main/track.c` | `func_800133FC` | `main` | `size-mismatch` | 384 | 98 | 98 | 0 | 0 | 12 | — |
-| 144 | `src/overlays/o089/overlay89UpdateStateAndParticles.c` | `overlay89UpdateStateAndParticles` | `o089` | `size-mismatch` | 544 | 98 | 98 | 0 | 0 | 4 | — |
-| 145 | `src/main/objects.c` | `func_80004590` | `main` | `size-mismatch` | 396 | 100 | 100 | 8 | 8 | 24 | — |
+| 141 | `src/main/objects.c` | `func_80004590` | `main` | `size-mismatch` | 396 | 84 | 84 | 8 | 8 | 16 | — |
+| 142 | `src/overlays/o015/overlay_015.c` | `overlay15UpdateMovingStars` | `o015` | `size-mismatch` | 412 | 87 | 84 | 36 | 48 | 28 | — |
+| 143 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
+| 144 | `src/main/track.c` | `func_800133FC` | `main` | `size-mismatch` | 384 | 98 | 98 | 0 | 0 | 12 | — |
+| 145 | `src/overlays/o089/overlay89UpdateStateAndParticles.c` | `overlay89UpdateStateAndParticles` | `o089` | `size-mismatch` | 544 | 98 | 98 | 0 | 0 | 4 | — |
 | 146 | `src/main/font.c` | `func_8004C690` | `main` | `size-mismatch` | 584 | 105 | 105 | 0 | 0 | -8 | — |
 | 147 | `src/main/track.c` | `func_8000D1B8` | `main` | `size-mismatch` | 512 | 114 | 114 | 48 | 48 | 8 | — |
 | 148 | `src/main/fx.c` | `fxScreenEffect` | `main` | `size-mismatch` | 588 | 117 | 116 | 8 | 8 | -16 | — |

@@ -2449,6 +2449,29 @@ bytes and disassembly never belong here.
   or authority to move global/volatile assignments across calls. See the
   [portrait-slot control](whale-address-reuse.md#the-banked-three-word-repair).
 
+- **uopt closes a straight-line block when `varrefs` reaches twenty, counted
+  on cfe `Ulod` of locals, not on uopt CSE.** Symptom: a long field-init
+  sequence splits between two stores the target emits in one block, so a
+  literal's `nocs` or a store pair is the residual. Mechanism: `getop`
+  sets `endblock` when `varrefs >= curvarreflimit` (default 20) at a
+  statement boundary (`ustack` empty, not in a call). `varrefs++` fires on
+  each `Ulod`/`Uisld` of a non-`veqv` isvar (stack locals and parameters).
+  Forwarding an `assigned_value` skips the increment; ILODs, constants and
+  the store opcode itself do not increment. The statement that reaches 20
+  stays in the block; the next statement opens the next one. Lever: count
+  cfe local-loads in the Ucode of that block. A 2-unit store that must
+  share the block with a following 1-unit store needs at most 17 units
+  before it. Limits: uopt CSE of the same isvar does not reduce `varrefs`
+  (each cfe `Ulod` still counts). Copy-prop does not replace a later
+  pointer-field `Uistr` of a named s32 whose assignment contains an ILOD,
+  so splitting `width = p->w; width = (width - 1) << 5` does not make
+  `p->f = width` cheaper. Repeating the ILOD expression at each store
+  rematerializes under aliasing. Chaining `p->f = x = expr` is the
+  folded-def family and moves the frame or reloads a truncated field.
+  Combining adjacent zeros as a wider store saves a unit in the counter
+  and changes the opcode. See the
+  [constructor block-budget receipt](matching-triage-handoffs/overlay34CreateRecord.md).
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

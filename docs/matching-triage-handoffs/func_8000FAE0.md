@@ -6,7 +6,7 @@
 - frame: 0x10
 - relocations: 2
 - first mismatch: +0x1C
-- summary: Fresh proc-29 census: 7 draws/124 emissions. Width control moves the schedule only with excess geometry; baseline allocation residual remains.
+- summary: p2 a0/t0 cycle is count vs bound/coord web order. Declaration order is inert; hoisting z/y/xLower or delaying count regresses. Count stays a0.
 
 - Reopen audit (2026-09-08): the local Jet Force Gemini checkout is exactly
   `efd5abb1c79636e297b831f7c2d5bf47eac39c0c`, with an unchanged tracked
@@ -137,4 +137,23 @@ Commands: configured stock/capture compile, allocator_trace_receipt.py
 --map-only, draw_census.py profiles/comparison, residual_map.py --object
 --against, finalize_plateau.py and tools/gates.sh. Zero new byte credit.
 
+#### 2026-09-17, lane w5-track: L106 definition-order cells
+
+Follow-on after func_80010900 plateau. Baseline 248 bytes, delta 0, 46 exact
+and 16 naming, first +0x1C. Census is one coherent a0/t0 cycle (count three
+sites, bound/coord twelve) plus t9/at on the loop compare (two). Leaf, p2.
+
+Declaration order of count vs zInt/xLower/coords/bounds/keepGoing is
+byte-identical at 16. Hoisting zInt, yInt, or xLower=0 before count keeps
+size and moves to 18. Hoisting all three conversions is 22. Moving count
+after bounds/i is 33. Assigning count after xInt, with the first test on
+the field, is +12 bytes / 58 words. Dropping the keepGoing local is -4
+bytes / 23 words. s32 count is still 16.
+
+The count web is defined before the loop; the bound/coord web's first real
+def is inside it. An early dummy def that survives numbering without an
+extra conversion is still missing. Best source unchanged.
+
+Commands: score_symbol.py on the definition-order and declaration-order
+cells, align_symbol.py, register_census.py, finalize_plateau.py.
 <!-- plateau-handoff:func_8000FAE0:end -->

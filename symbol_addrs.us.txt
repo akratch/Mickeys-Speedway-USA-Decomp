@@ -2874,6 +2874,7 @@ func_80009AA8 = 0x80009aa8; // type:func size:0x3d0 ROM 0xa6a8 tier-A assembly f
 func_8000784C = 0x8000784c; // type:func size:0x41c ROM 0x844c tier-A matched C, 263/263 words and 34 relocations, frame -0x100, linked ROM 0x844c-0x8868 byte-identical
 func_800084C4 = 0x800084c4; // type:func size:0x55c ROM 0x90c4 tier-A assembly fallback extent verified against linked ROM range, NON_MATCHING C has no credit
 func_80004FE0 = 0x80004fe0; // type:func size:0x568 ROM 0x5be0 tier-A assembly fallback extent verified against linked ROM range, NON_MATCHING C has no credit
+func_80005548 = 0x80005548; // type:func size:0x15C ROM 0x6148 tier-A matched C src/main/objects.c.o, Mickey-only 87/87 words, frame 0x18, 3 relocations, linked ROM exact
 func_80008B94 = 0x80008b94; // type:func size:0x68c ROM 0x9794 tier-A assembly fallback extent verified against linked ROM range, NON_MATCHING C has no credit
 func_80009414 = 0x80009414; // type:func size:0x694 ROM 0xa014 tier-A assembly fallback extent verified against linked ROM range, NON_MATCHING C has no credit
 func_80007118 = 0x80007118; // type:func size:0x72c ROM 0x7d18 tier-A assembly fallback extent verified against linked ROM range, NON_MATCHING C has no credit

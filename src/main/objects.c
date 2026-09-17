@@ -1294,7 +1294,7 @@ typedef struct {
     u8 unk0;
     u8 pad01[3];
     u8 unk4;
-    u8 pad05;
+    s8 unk5;
     s8 unk6;
     u8 pad07[0x21];
 } Objects04FE0ModeRecord;
@@ -1497,95 +1497,26 @@ void func_80004FE0(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80004FE0.s")
 #endif
-/* Workbench verdict: structure-mismatch; 81 raw differing words (85/87 instructions). */
-/* First mismatch: +0x18; frame is exact, but the target retains two setup instructions. */
-/* Structural gap: zero-index setup and register carriers remain unresolved. */
-#ifdef NON_MATCHING
+/* Lane lm-obj: the ROM's two rank-copy loops are IDO's unroller output of a
+ * plain `for (i = 0; i < arg0; i++)` over each mode record. The hand-unrolled
+ * remainder-plus-4x body grew 632 bytes under the unroller. unk5 is signed:
+ * a u8 load left 10 structural words at delta 0. 87/87 words, frame 0x18,
+ * 3 relocations. */
 void func_80005548(s32 arg0) {
-    s32 temp_a3;
-    s32 temp_a3_2;
-    s32 temp_v0;
-    s32 var_a0;
-    s32 var_a0_2;
-    s8 temp_t1;
-    s8 temp_t2;
-    s8 temp_t2_2;
-    s8 temp_t3;
-    s8 temp_t3_2;
-    s8 temp_t4;
-    s8 temp_t6;
-    s8 temp_t6_2;
-    s8 temp_t8;
-    s8 temp_t9;
-    void *var_v1;
-    void *var_v1_2;
-    void *var_v1_3;
-    void *var_v1_4;
+    s32 i;
+    Objects04FE0ModeRecord *records;
 
-    temp_v0 = (s32)func_80028F54();
+    records = (Objects04FE0ModeRecord *)func_80028F54();
     if (D_8007BF0C != 0) {
-        var_a0 = 0;
-        if (arg0 > 0) {
-            temp_a3 = arg0 & 3;
-            if (temp_a3 != 0) {
-                var_v1 = (s8 *)temp_v0 + (0 << 5);
-                do {
-                    temp_t8 = ((s8 *)var_v1)[5];
-                    var_a0 += 1;
-                    var_v1 = (u8 *)var_v1 + 0x28;
-                    ((s8 *)var_v1)[-0x22] = temp_t8;
-                } while (temp_a3 != var_a0);
-                if (var_a0 == arg0) {
-                    return;
-                }
-            }
-            var_v1_2 = (s8 *)temp_v0 + (var_a0 * 0x28);
-            do {
-                temp_t2 = ((s8 *)var_v1_2)[0x2D];
-                temp_t3 = ((s8 *)var_v1_2)[0x55];
-                temp_t4 = ((s8 *)var_v1_2)[0x7D];
-                temp_t1 = ((s8 *)var_v1_2)[5];
-                var_v1_2 = (u8 *)var_v1_2 + 0xA0;
-                ((s8 *)var_v1_2)[-0x72] = temp_t2;
-                ((s8 *)var_v1_2)[-0x4A] = temp_t3;
-                ((s8 *)var_v1_2)[-0x22] = temp_t4;
-                ((s8 *)var_v1_2)[-0x9A] = temp_t1;
-            } while (var_v1_2 != (void *)((s8 *)temp_v0 + (arg0 * 0x28)));
+        for (i = 0; i < arg0; i++) {
+            records[i].unk6 = records[i].unk5;
         }
     } else {
-        var_a0_2 = 0;
-        if (arg0 > 0) {
-            temp_a3_2 = arg0 & 3;
-            if (temp_a3_2 != 0) {
-                var_v1_3 = (s8 *)temp_v0 + (0 << 5);
-                do {
-                    temp_t6 = ((s8 *)var_v1_3)[5];
-                    var_a0_2 += 1;
-                    var_v1_3 = (u8 *)var_v1_3 + 0x28;
-                    ((s8 *)var_v1_3)[-0x22] = (arg0 - temp_t6) - 1;
-                } while (temp_a3_2 != var_a0_2);
-                if (var_a0_2 == arg0) {
-                    return;
-                }
-            }
-            var_v1_4 = (s8 *)temp_v0 + (var_a0_2 * 0x28);
-            do {
-                temp_t3_2 = (arg0 - ((s8 *)var_v1_4)[5]) - 1;
-                temp_t2_2 = (arg0 - ((s8 *)var_v1_4)[0x7D]) - 1;
-                temp_t9 = (arg0 - ((s8 *)var_v1_4)[0x55]) - 1;
-                temp_t6_2 = (arg0 - ((s8 *)var_v1_4)[0x2D]) - 1;
-                var_v1_4 = (u8 *)var_v1_4 + 0xA0;
-                ((s8 *)var_v1_4)[-0x72] = temp_t6_2;
-                ((s8 *)var_v1_4)[-0x4A] = temp_t9;
-                ((s8 *)var_v1_4)[-0x22] = temp_t2_2;
-                ((s8 *)var_v1_4)[-0x9A] = temp_t3_2;
-            } while (var_v1_4 != (void *)((s8 *)temp_v0 + (arg0 * 0x28)));
+        for (i = 0; i < arg0; i++) {
+            records[i].unk6 = (arg0 - records[i].unk5) - 1;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80005548.s")
-#endif
 /* D_800C9460 heads an eight-byte record: the object base pointer, then the
    pointer to the index table.  The second field's address reaches the compiler
    as &D_800C9460[1], which is why this reads through a pointer instead of a
@@ -5678,16 +5609,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  */
 
 
-
-/* PLATEAU-HANDOFF:func_80005548:start
- * symbol: func_80005548
- * score: 81 differing words
- * frame: 0x18
- * relocations: 2
- * first-mismatch: +0x18
- * summary: Best rolled-loop candidate is 85 instructions versus 87 target; two zero-index setup instructions and register carriers remain structural.
- * PLATEAU-HANDOFF:func_80005548:end
- */
 
 /* PLATEAU-HANDOFF:func_80006FA0:start
  * symbol: func_80006FA0

@@ -2856,7 +2856,7 @@ func_80024ED8 = 0x80024ED8; // type:func size:0x144 ROM 0x25AD8 tier-D matched-C
 func_8000AA38 = 0x8000AA38; // type:func size:0x4B4 tier-A matched C object initializer dispatch with exact compiler table and metadata-only relocation binding
 func_8000A830 = 0x8000A830; // type:func size:0x208 tier-A matched C Mickey-only object-data sizing switch with exact compiler table
 func_8000AEEC = 0x8000AEEC; // type:func size:0x4E0 tier-A matched C Mickey-only object control dispatcher with exact compiler table and 69 relocation identities
-func_8000590C = 0x8000590C; // type:func size:0xB3C tier-D extracted resident boundary and call graph, NON_MATCHING staged object construction
+func_8000590C = 0x8000590C; // type:func size:0xB3C ROM 0x650C tier-A matched C src/main/objects.c.o, Mickey-only 719/719 words, frame 0x90, 99 relocations, linked ROM exact
 
 // Overlay 26 text identity; synthetic VMA is scoped by segment and ROM.
 func_overlay_026_F0000D24_187B11C = 0xF0000D24; // type:func size:0x434 rom:0x187B11C segment:overlay_026 tier-A matched C, 269 linked words and 23 runtime relocation identities

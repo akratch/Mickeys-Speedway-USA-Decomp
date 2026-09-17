@@ -1815,13 +1815,13 @@ extern s32 func_8000A830(Objects0A830Object *object, void *data);
  *    itself, not `offset`: a declared symbol is numbered with the type-3
  *    webs and wins the 1.5 tie against the unk48 value web on number where
  *    the ROM decides the value first (v1) and the nested read second (a0).
- * Left: both nested `addu`s have the operands the other way round
- * (`addu t2,a0,v0` for the ROM's `addu t2,v0,a0`); six spellings of the add
- * (source order, two reassociations, u32 read, signed, pointer) are
- * byte-flat, so the order is set by the IR around the CSE temp, not by the
- * expression. `offset` stays declared: the frame is 0x90 with it and every
- * live local, and it is dead here. */
-#ifdef NON_MATCHING
+ * Lane lm-0590c: both nested adds commute temp-first while the operand is
+ * an ILOD off the forwarded relocated pointer (`uadd(cvt(ILOD(temp)),
+ * isvar)`). Binding that operand to an isvar makes uopt emit object-first,
+ * matching the plain fixups. A new local takes a home and moves the 0x90
+ * frame; `offset` and the already-dead `aligned` reuse the existing 20
+ * slots. Using `offset` at both sites reconnects as one type-3 web and
+ * re-steals the 1.5 tie (14). */
 void *func_8000590C(void *arg0, s32 arg1) {
     Objects0590CObject *object;
     Objects0590CObject *newObject;
@@ -2032,9 +2032,10 @@ void *func_8000590C(void *arg0, s32 arg1) {
     }
     if (object->unk4C != 0) {
         object->unk4C = (s32)((u32)object + (u32)object->unk4C - (u32)D_800C9450);
-        if (*(s32 *)((u8 *)object->unk4C + 0x1C) != 0) {
+        offset = *(s32 *)((u8 *)object->unk4C + 0x1C);
+        if (offset != 0) {
             *(s32 *)((u8 *)(u32)object->unk4C + 0x1C) =
-                (s32)((u32)object + *(s32 *)((u8 *)object->unk4C + 0x1C) - (u32)D_800C9450);
+                (s32)((u32)object + offset - (u32)D_800C9450);
         }
     }
     if (object->unk50 != 0) {
@@ -2045,9 +2046,10 @@ void *func_8000590C(void *arg0, s32 arg1) {
     }
     if (object->unk48 != 0) {
         object->unk48 = (s32)((u32)object + (u32)object->unk48 - (u32)D_800C9450);
-        if (*(s32 *)((u8 *)object->unk48 + 0x74) != 0) {
+        aligned = (u8 *)*(s32 *)((u8 *)object->unk48 + 0x74);
+        if (aligned != 0) {
             *(s32 *)((u8 *)(u32)object->unk48 + 0x74) =
-                (s32)((u32)object + *(s32 *)((u8 *)object->unk48 + 0x74) - (u32)D_800C9450);
+                (s32)((u32)object + (s32)aligned - (u32)D_800C9450);
         }
     }
     if (object->unk58 != 0) {
@@ -2125,9 +2127,6 @@ void *func_8000590C(void *arg0, s32 arg1) {
     D_8007A21C = 4;
     return object;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_8000590C.s")
-#endif
 /* Mickey-only reconstruction. Indexed accesses let IDO create the offset and
  * resource webs; the initializer shares the loop line to retain entry order. */
 void func_80006448(void *arg0) {
@@ -5728,16 +5727,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * first-mismatch: +0x94
  * summary: 25 words of pure register naming from +0x94, frame and stack homes exact. The target colours one value this body leaves to ugen, and a full phase-one force sweep over every web against every colour and the split path (522 compiles) never beats 25, which is what a missing web looks like. The ugen freelist trace shows the ring two draws ahead: v1 is held by the frame -12 local's web, and there is a phantom pop on the texture-fetch line. Naming the index costs the frame and still does not make a web, including across an L97 region; 23 region placements never improve.
  * PLATEAU-HANDOFF:func_80007C68:end
- */
-
-/* PLATEAU-HANDOFF:func_8000590C:start
- * symbol: func_8000590C
- * score: 2 differing words
- * frame: 0x90
- * relocations: 99
- * first-mismatch: +0x7A8
- * summary: 26 to 2 at delta 0 (lane s2-a): an empty overflow check after the special-list append breaks the tail's 3/7 tie, the copy loop is the plain while loop under IDO's unroller with the TU's -loopunroll,0 override removed, and the unk48 nested value is the expression itself; left are the operand orders of the two nested addu instructions.
- * PLATEAU-HANDOFF:func_8000590C:end
  */
 
 /* PLATEAU-HANDOFF:func_80007E40:start

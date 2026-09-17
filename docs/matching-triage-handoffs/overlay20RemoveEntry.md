@@ -6,7 +6,7 @@
 - frame: frameless
 - relocations: 10
 - first mismatch: +0x6C
-- summary: Draw census unchanged; same-width bound cast stayed at 2 words. Pre-colour web-order blocker remains.
+- summary: L154 index-shape cannot number the decrement above the SR limit at zero width; the limit is minted from the bound. Baseline kept at 2 of 53.
 
 #### 2026-09-09, lane fin-misc: the tie is between two dead colours
 
@@ -363,5 +363,59 @@ colour sweep. This is a guarded plateau with no new matching credit. Setup
 failures before editing are excluded from the three source controls; the shared
 checkpoint counter remains monotonic. Commands: draw_census.py --save/--compare,
 residual_map.py --object/--against, align_symbol.py and finalize_plateau.py.
+
+#### 2026-09-17, lane w3-o020: the named L154 lever is ruled out at zero width
+
+Configured baseline reproduces 212 bytes, 53 words, delta 0, frameless, ten
+relocations, two masked words, 51 aligned exact and two naming rows at +0x6C.
+Stock and instrumented full-TU text compare identical. Procedure ordinal 0,
+twelve p2 decisions. Baseline lineage creates the decremented-count expression
+(type 4) before strength reduction mints the compaction cursor and limit; that
+count is live in the store block and the loop, so it is coloured first and
+holds the first colour.
+
+The named question was whether an index-shape spelling can make that count a
+strength-reduced symbol numbered with, or above, the limit at zero width.
+Screened on creation order, not on score. No colour landscape and no exhausted
+declaration, region, or top-tested product was repeated.
+
+- For-loop, delete the bound carrier, bound is the stored global. The
+  decremented-count expression is still created at the store, before the cursor
+  and the limit. Size grows by two words. Does not delay the count.
+- For-loop, first use of owner minus one is the guard, store after the loop.
+  The count is still created before strength reduction, because the guard is
+  the first use. Size grows by two words.
+- For-loop, bound written as i plus one against owner. The limit web
+  disappears; a different early expression takes the first colour. Size grows
+  by two words.
+- Bottom-tested loop, guard spelled without owner minus one, bound is owner
+  minus one in the tail, store after. This is the hypothesized move: the count
+  joins the strength-reduction cluster. It is created between the cursor and
+  the limit, never above the limit. The limit is minted from that bound, so
+  the bound ICHAIN has to exist first. Size grows by two words. The cursor
+  takes the first colour; the limit still cannot.
+- Bottom-tested, delete carrier, store before, bound is the global. Zero
+  width, six words. Confirms the recorded carrier-deletion basin: the count is
+  still early, the cursor takes the third colour, the limit the fourth.
+- Global pre-decrement: the count expression is created even earlier and its
+  live range reaches the search loop. Size grows.
+- Assign owner minus one to the bound local and store after: the type-4 count
+  dies in the store block and no longer shares the loop with the limit, but
+  the type-3 bound local takes the first colour in its place. Size grows by
+  one word. Same substitution: exactly one holder of the first colour in front
+  of the limit.
+- Merge the decrement into the parameter at zero width: the type-4 count is
+  gone, 21 words. Cursor takes the first colour, limit the fourth. The owner
+  parameter stays live through the loop.
+
+Zero-width conclusion: the bottom-tested shape always uses the bound before
+the loop (the store, the guard, or both), so a source-level decremented count
+is always created before strength reduction. A bound cannot number above the
+limit that strength reduction creates from it. Same-block and above-limit
+together are contradictory for that pair. Baseline retained at two of 53
+words. The next concrete action is not another index-shape first-use spelling;
+the numbering axis that remains is whatever can mint the limit before the
+cursor without paying the recorded array-base hoist, which this packet does
+not have.
 
 <!-- plateau-handoff:overlay20RemoveEntry:end -->

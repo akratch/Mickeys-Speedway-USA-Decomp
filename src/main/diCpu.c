@@ -893,7 +893,7 @@ void func_80046E00(void) {
  * frame: 0x40
  * relocations: 3
  * first-mismatch: +0x2C
- * summary: Seven-draw census confirms four-window live-range split; exhausted source and colour routes remain at 16.
+ * summary: L145 one-name restores type-4 web 32 at 42. Separate working copy puts load in v0 at delta 0, keeps web 32 and a structural pair. w0=c1 accepts, +12.
  * PLATEAU-HANDOFF:func_80046BCC:end
  */
 

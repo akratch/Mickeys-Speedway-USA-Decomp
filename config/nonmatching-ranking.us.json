@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 272,
-  "resolved": 272,
+  "queue_size": 271,
+  "resolved": 271,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 272,
-  "relocation_masked_coverage": 272,
+  "source_context_coverage": 271,
+  "relocation_masked_coverage": 271,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -293,21 +293,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "IRVm.P4AV.zSxq.r_aO.heGA.AGpa.vv7N.R_rl.QTjm.df7X.LuE"
-    },
-    {
-      "name": "func_80002134",
-      "file": "src/main/audiomgr.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 84,
-      "objdiff_match_pct": null,
-      "differing_words": 9,
-      "first_mismatch_offset": 24,
-      "relocation_masked_differing_words": 9,
-      "relocation_masked_first_mismatch_offset": 24,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "xToN.3lR8.GMsz.iU8s.wn7e.T2ZP.0yjY.Zb1y.-jLB.HEMY.mY4"
     },
     {
       "name": "func_overlay_043_F00010A8_188B078",

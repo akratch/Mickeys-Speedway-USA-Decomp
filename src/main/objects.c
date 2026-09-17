@@ -912,8 +912,11 @@ void *func_80004454(f32 arg0, f32 arg1, f32 arg2, u8 arg3) {
  * splitting them costs two words at +0x74/+0x78. See func_8000471C, which is
  * the same function against a different object list and needs the same edit. */
 /* Lane lm-obj: plain `for (i = start; i < end; i++)` over list[i]. The
- * hand-unrolled remainder-plus-4x body was +700 / 272 masked; this is
- * +24 / 100. The 04454 preheader walk under-unrolls to -236. */
+ * hand-unrolled remainder-plus-4x body was +700 / 272 masked. Lane w2-obj:
+ * the outer `if (start < end)` duplicated the for-loop test and cost two
+ * words; removing it is +16 / 84 from +24 / 100. Remaining extras are the
+ * type mask rematerialized at each compare because s0 holds unmodified arg0.
+ * The 04454 preheader walk under-unrolls to -236. */
 #ifdef NON_MATCHING
 s32 func_80004590(s32 arg0) {
     s32 start;
@@ -927,13 +930,11 @@ s32 func_80004590(s32 arg0) {
     type = arg0 & 0xFF;
     count = 0;
     list = (Objects04454Object **)func_8000572C(&start, &end);
-    if (start < end) {
-        for (i = start; i < end; i++) {
-            object = list[i];
-            if ((object->unk91 == 0) && (object != D_80078F20) &&
-                (type == object->unk44)) {
-                count += 1;
-            }
+    for (i = start; i < end; i++) {
+        object = list[i];
+        if ((object->unk91 == 0) && (object != D_80078F20) &&
+            (type == object->unk44)) {
+            count += 1;
         }
     }
     return count;
@@ -5518,11 +5519,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80004590:start
  * symbol: func_80004590
- * score: 96 differing words
- * frame: 0x58
+ * score: 84 differing words
+ * frame: 0x50
  * relocations: 5
- * first-mismatch: +0x0
- * summary: Stack homes and four-at-a-time tail control flow remain unresolved after the m2c translation.
+ * first-mismatch: +0x8
+ * summary: Outer start less-than-end test duplicated the for-loop check. Remaining plus-16 is five per-compare type masks minus the missing incoming-arg0 store.
  * PLATEAU-HANDOFF:func_80004590:end
  */
 

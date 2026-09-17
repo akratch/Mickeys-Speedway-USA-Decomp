@@ -59,6 +59,13 @@ void overlay15ReleaseResource(void) {
 /* s1-b (2026-09-16): the palette index inits ahead of the colour block and the
  * zero/zMax stores ahead of colorDivisor's: 70 to 60. The size definition is
  * forwarded into a type-4 temp (s3) where the target keeps starIndex's web (s0). */
+/* s2-b (2026-09-16): 60 to 41. A self-redefinition of count (`count |= 0`)
+ * in the entry block stops uopt forwarding `starIndex = count * 12` into its
+ * uses, so the size stays in starIndex's symbol web (s0) and count keeps its
+ * parameter copy (s2); uopt then deletes the redefinition (delta 0). On that
+ * head the natural xMax-before-yRange order syncs the FP ring, and the count
+ * store written to the global directly (no cast pointer) forms the address in
+ * s7 itself. See docs/lastmile-forwarding-kill.md. */
 #ifdef NON_MATCHING
 void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
                                   s32 zRange, u32 startColor, u32 endColor,
@@ -78,38 +85,35 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
     s32 deltaR;
     s32 deltaG;
     s32 deltaB;
-    s32 starCount;
     s32 previousStarIndex;
-    s32 *countAddress;
 
     starIndex = count * 12;
-    starCount = count;
+    count |= 0; /* kills the multiply's operand: the definition is not forwarded */
     stars = overlay15Allocate(starIndex + 0x200, 0x87);
     starsAddress = &gOverlay15Stars;
     *starsAddress = stars;
     gOverlay15StarPalette = (u16 *) ((u8 *) *starsAddress + starIndex);
 
     bounds = &gOverlay15InitBounds;
-    countAddress = (s32 *)(s32)&gOverlay15StarCount;
     bounds->xRange = (f32) xRange;
     bounds->xMin = bounds->xRange * -0.5f;
+    bounds->xMax = bounds->xRange * 0.5f;
     bounds->yRange = (f32) yRange;
     xRange <<= 7;
-    bounds->xMax = bounds->xRange * 0.5f;
     bounds->yMin = bounds->yRange * -0.5f;
     yRange <<= 7;
     bounds->yMax = bounds->yRange * 0.5f;
+    gOverlay15StarCount = count;
     bounds->zRange = (f32) zRange;
     zRange = (zRange + 1) << 8;
     bounds->zero = 0;
     bounds->zMax = bounds->zRange + 1.0f;
     bounds->colorDivisor = (f32) colorDivisor;
-    *countAddress = starCount;
     bounds->zMin = 1.0f;
     bounds->colorStep = 255.0f / bounds->colorDivisor;
 
     previousStarIndex = 0; starIndex = 1;
-    if (starCount > 0) {
+    if (count > 0) {
         do {
             stars->x = (f32) overlay15RandomRange(-xRange, xRange) *
                        (1.0f / 256.0f);
@@ -120,7 +124,7 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
             previousStarIndex = starIndex;
             starIndex++;
             stars++;
-        } while (previousStarIndex < *countAddress);
+        } while (previousStarIndex < gOverlay15StarCount);
         previousStarIndex = 0;
     }
 
@@ -468,11 +472,11 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
 
 /* PLATEAU-HANDOFF:overlay15InitStarsAndPalette:start
  * symbol: overlay15InitStarsAndPalette
- * score: 60/247 words
+ * score: 41/247 words
  * frame: 0x40
  * relocations: 14
- * first-mismatch: +0x4
- * summary: Index inits ahead of the colour block and the zero/zMax stores ahead of colorDivisor reach 60; the forwarded count*12 definition (s3 against s0) and the FP ring from yRange remain.
+ * first-mismatch: +0x70
+ * summary: A count self-redefinition keeps the size in starIndex's web and the natural xMax/yRange order syncs the FP ring, 60 to 41; the stars address colour, block 1's tail order and the palette index inits remain.
  * PLATEAU-HANDOFF:overlay15InitStarsAndPalette:end
  */
 

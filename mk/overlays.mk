@@ -2146,10 +2146,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13CreateRecord.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xFC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13Release.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x64
-# NON_MATCHING fallback assembly supplies the retail body; restore the
-# friendly source symbol and retain the exact text extent when needed.
+# Matched C (lane s2-b, 2026-09-17): the TU's one resident call goes through
+# the generated surface alias; retain the exact text extent.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13ProcessRecord.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_013_F0000284_186ED9C=overlay13UpdateRecord $@ && \
+	$(OBJCOPY) --redefine-sym SetLinkSlot=SetLinkSlot_o013Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x284
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.

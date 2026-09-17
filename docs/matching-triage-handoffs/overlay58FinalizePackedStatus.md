@@ -133,4 +133,59 @@ for the base-address web against `player` and the constant-4 web and find
 what lowers the base's save below theirs or forbids it t0 and t1; then
 retire the probes one at a time against that form. Do not add a seventh
 probe.
+#### 2026-09-17, lane s2-b: the ladder on the clean form, and four structural facts it needs
+
+Baseline reproduced at 78 masked (79 raw), delta zero, frame 0x48, first
++0x18, aligner 238 exact, 39 naming, 11 immediate, 12 structural with four
+insertions each way. The tree keeps that form; nothing was adopted. Four
+cycles, 58 cells, on the probe-free re-read form the s1-a section named
+(186 here, 191 on its spelling), with its p1 ladder (procedure 0, 29
+coloured webs, p1 only) and frame census read on the best cell.
+
+Four source facts the listing states, each measured alone and together
+on the clean form (36 cells): current's load and mask sit before the
+desired-below-3 branch with the srav in its delay slot (the s1-a reading
+that this is 94 held on the probe form only); the first loop's compare
+is a coloured boolean, not at (a local holding the compare); the count
+plus one passed to the 58BC call is a distinct value from count, spilled
+to its own home at 28 (a next local, or the expression written twice);
+and the two literal 5s are different webs (the loop bound a web, the
+count test rematerialised in at), which a 5u on either one produces.
+186 to 140 at delta zero, frame 0x48 with the count-plus-one forms
+excluded because a declared next or the repeated expression grows the
+frame to 0x68. Declaring records ninth puts its home at 36 as the ROM
+has it (138); most other declaration orders move the frame.
+
+What the 140 form is, read off its ladder: from +0x1E8 to the end every
+row is one permutation of the caller-saved colours. Decision order is
+descending save. The packed-status base (type 1, 48 over 17 blocks, save
+2.82) is decided before desired (38 over 14, 2.71) and after the constant
+4 (13 over 4, 3.25), so they take t0, t1, t2 and the constant 3 (22 over
+17, 1.29) t3; the ROM has player, 4, desired, base, 3 on t0 through t4,
+so the base must fall below desired (two fewer references, or one more
+block) and player must enter the t bank first. In ours player is not the
+load: the four reads of records zero's player field are one CSE'd
+expression web (a3, 5 over 4 blocks) and player (a1, 6 over 4) and the
+three selected players are copies of it. The ROM loads straight into
+player's web (t0) and copies it to a3 in each section.
+
+Refuted at delta zero or worse, 15 cells: the selected players as copies
+of player (propagated, minus 16 bytes) in s32, u8 player, u8 selected, one
+shared selected local, or with a self-kill of player after each copy
+(minus 4); u8 player with the re-reads (165); a self-kill after player's
+definition (140, inert); the first load defining a shared selected with
+every other use re-reading the field (minus 4). So the ROM's or a3,t0,zero
+is not a source copy on this shape; it is the forwarded second load with
+the load in player's own web, or a split of that web at the loop, and
+which of the two needs the decision records of a form that has it.
+
+Next: on the 140 form, force the base to c10 (t3) and player's load web
+to c7 (t0) and score the forced object to price the permutation, then
+find the source form that lowers the base's save below desired's without
+touching the switch (its five arms are ten of the base's references) --
+a form where the extended section reads the flags word once fewer, or
+where current's load is in its own block, is where the two references
+are. The probes in the retained source pin colours on the wrong loop
+shape and should not be carried onto the clean form.
+
 <!-- plateau-handoff:overlay58FinalizePackedStatus:end -->

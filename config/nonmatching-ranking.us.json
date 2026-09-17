@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 269,
-  "resolved": 269,
+  "queue_size": 268,
+  "resolved": 268,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 269,
-  "relocation_masked_coverage": 269,
+  "source_context_coverage": 268,
+  "relocation_masked_coverage": 268,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -368,21 +368,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "WBoY.OZe9.yM-_.MQnp.s3LT.EieP.ngJ4.DcSl.Om7K.z_lj.WKI"
-    },
-    {
-      "name": "func_800580F0",
-      "file": "src/main/flash_58C10.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 204,
-      "objdiff_match_pct": null,
-      "differing_words": 20,
-      "first_mismatch_offset": 68,
-      "relocation_masked_differing_words": 20,
-      "relocation_masked_first_mismatch_offset": 68,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "qZ-t.Ezsn.xA0O.QUXE.DkPY.ytYv.l3DX.HBnx.V_Ds.Kd8f.9FY"
     },
     {
       "name": "overlay1BendPathPoint",

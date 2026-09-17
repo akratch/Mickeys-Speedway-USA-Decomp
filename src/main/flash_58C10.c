@@ -53,27 +53,35 @@ void func_8005807C(void) {
 
 void func_800580E8(void) {
 }
-#ifdef NON_MATCHING
+/* Each inner call sits in its own do-while(0) region so &D_800D7830 stays an
+ * address constant and rematerializes (L97/L110). One unused OSPfs * keeps the
+ * 0x30 frame after that spill disappears (L99). The first status call still
+ * takes the signed address so its identity stays distinct from the plains.
+ */
 void func_800580F0(s32 arg0) {
     u8 status;
+    OSPfs *pfs;
 
     if (D_8007F7A4 != 0) {
         osGbpakGetStatus((OSPfs *)(s32)&D_800D7830, &status);
         if (func_8006AC60(&D_800D7830, 1) == 0) {
-            osGbpakCheckConnector((OSPfs *)(u32)&D_800D7830, &status);
+            do {
+            osGbpakCheckConnector(&D_800D7830, &status);
+            } while (0);
+            do {
             func_8006B020(&D_800D7830, (u16)arg0,
                           *(u16 *)(&D_800D789A[arg0 * 4]),
                           D_800D78A0[arg0], D_800D78A8[arg0]);
-            func_8006AC60((OSPfs *)(u32)&D_800D7830, 0);
+            } while (0);
+            do {
+            func_8006AC60(&D_800D7830, 0);
+            } while (0);
             if (osGbpakGetStatus(&D_800D7830, &status) != 0) {
                     func_80058010();
                 }
             }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/flash_58C10/func_800580F0.s")
-#endif
 void func_800581BC(void) {
     D_8007A1CC |= 0x04000000;
 }
@@ -93,14 +101,3 @@ void func_8005820C(s32 arg0, s32 arg1, s32 arg2) {
 OSGbpakId *func_80058240(void) {
     return D_8007F7A0;
 }
-
-
-/* PLATEAU-HANDOFF:func_800580F0:start
- * symbol: func_800580F0
- * score: 20/51 words
- * frame: 0x30
- * relocations: 25
- * first-mismatch: +0x44
- * summary: Final status address-type controls buy no draw and regress alignment or extent; retained pooled-address plateau.
- * PLATEAU-HANDOFF:func_800580F0:end
- */

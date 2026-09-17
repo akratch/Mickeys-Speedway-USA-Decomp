@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 274,
-  "resolved": 274,
+  "queue_size": 273,
+  "resolved": 273,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 274,
-  "relocation_masked_coverage": 274,
+  "source_context_coverage": 273,
+  "relocation_masked_coverage": 273,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -338,21 +338,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "Bs-X.iwOY.XU0v.B37d.qCFW.B4FS.8cqZ.nt7F.QxpD.f3He.6Eo"
-    },
-    {
-      "name": "overlay68CheckKind",
-      "file": "src/overlays/o068/overlay68CheckKind.c",
-      "overlay": 68,
-      "tu": "overlays/o068",
-      "size_bytes": 320,
-      "objdiff_match_pct": null,
-      "differing_words": 10,
-      "first_mismatch_offset": 80,
-      "relocation_masked_differing_words": 10,
-      "relocation_masked_first_mismatch_offset": 80,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "Rk-A.Hl3A.2IVL.Xfg0.9Pai.8kc1.4OfS.Lnus.0KeJ.E6ZN.ZD8"
     },
     {
       "name": "overlay31CreatePool",

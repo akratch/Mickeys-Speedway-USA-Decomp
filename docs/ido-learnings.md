@@ -965,6 +965,24 @@ bytes and disassembly never belong here.
   Evidence: the controlled reconstruction recorded in the
   [overlay 52 HUD handoff](matching-triage-handoffs/func_overlay_052_F000063C_189ACAC.md).
 
+- **A remainder-plus-4x copy loop in the ROM is the unroller's output, not a
+  source shape.** Spelling the remainder test and the four-at-a-time body in C
+  cannot reach that CFG: the unroller then unrolls the already-unrolled form
+  and the function grows by hundreds of bytes. Spell `for (i = 0; i < n; i++)`
+  over the logical element. The unroller emits the remainder loop, the 4x
+  body, the bypass of the leftover test on the no-remainder path, and the
+  strength-reduced zero-shift preheader. A per-TU `-Wo,-loopunroll,0` that
+  only the unmatched functions need is a claim about those candidates, not
+  about the TU. Limits: do not reintroduce the override to paper over a
+  hand-unrolled candidate; `while` and `do` with an explicit `n > 0` guard
+  are not interchangeable with `for` here (they added eight words at delta
+  0). Evidence: the resident mode-record rank copy in `src/main/objects.c`.
+- **A byte copied onto a signed field is a signed load.** At delta 0, ten
+  structural words on an otherwise exact copy loop were an unsigned source
+  field against the target's signed load. Declaring the source `s8` closed
+  them with no other edit. Limits: this is the load's signedness, not the
+  loop's; it does not license a cast at the store as a substitute. Evidence:
+  the same resident rank copy.
 - A large unrolled tail can depend on the source loop's control form even
   when the configured TU flags stay fixed. Paired full-TU builds of a counted
   `for` sort and its reconstructed guarded post-decrement form recovered the

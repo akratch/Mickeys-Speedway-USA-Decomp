@@ -6,7 +6,7 @@
 - frame: 0x70
 - relocations: 4
 - first mismatch: +0x190
-- summary: Proc-23 census: 33 draws/174 emissions; mode probe worsened residual. Ring release-order remains.
+- summary: L145-L154 reopen retained 2. 1-draw-right s16 is 14; post-sum u8 probes DCE; s32 corners 20-21; deleting rangeSquared or otherState regresses.
 
 #### tu2-o1tail: the residual is one FP pool web, same law as overlay1AppendPathPoint
 
@@ -467,5 +467,57 @@ Evidence is retained under ignored build/p23/range and
 build/p23/overlay1UpdateRangeFlags. Commands: residual_map.py,
 allocator_trace_receipt.py --map-only, web_footprint.py --every-colour,
 the configured full-TU source lattice, and finalize_plateau.py.
+
+#### 2026-09-17, lane w2-o001: L145-L154 reopen does not pay the fifth draw
+
+Re-measured on the assigned base: 480 bytes, 120 of 120 words, size delta 0,
+positional masked 2, aligner buckets 118 byte-exact, 2 register naming,
+0 immediate, 0 structural. Census: t5 to t4 at both sites, 100 percent
+coherent, one window, no cycle. First naming-only difference +0x190.
+Proc 23 draw census: 33 draws, 174 emissions. Case 1 still draws 12, 11, 13
+(t4, t3, t5) with the u16 carrier; the target needs t3 then t4.
+
+The reopen asked for L145 (delete the carrier for a ring temp), L149 (count
+draws), L146 (re-climb after a shape change) and L154 (type then first use).
+The retained body is unchanged. Attempts, all at this TU's real flags
+including -Wab,-r4300_mul:
+
+- s16 angle with the right summand spelled (u16)angle: 14 naming, first
+  difference +0xE0. Line 2300 drops 7 draws to 6. Switch draw order becomes
+  t0, t1, t2, t3, t4 -- ascending, one slot early. This is the missing-fifth-
+  draw shape, now measured on s16 rather than only on the recorded s32 corner.
+- Post-sum `angleHigh = (u8)(angleHigh & 0xFF)` and an OR-with-zero
+  assignment to angleHigh on that shape: draw order identical to the 14-word
+  cell. uopt deletes the assignment or emits a pool-register no-op as1 then
+  folds. L109/L127 on the u8 local after the sum do not reach ugen as a ring
+  draw.
+- `(s16)(angle & 0xFFFF)` on both comparisons, and a named `u16 bits = angle`
+  carrier for the same truncation: 19 naming, 34-35 draws. The extra mask
+  costs two draws, not one, so the tail overshoots.
+- Reuse angleHigh for `config->mode & 0xFF` and switch on that local: 41,
+  size delta 0 but structural at +0xEC / missing +0x14C. Hoisting the mode
+  load is not a zero-footprint draw.
+- s32 angle, left as `(s16)((u32)angleHigh << 8)` or with an extra
+  `& 0xFFFF`, right as `(u16)angle`, with and without the case-1 u16
+  carrier: 20 or 21, 4 structural rows, first structural +0xD8. The recorded
+  two-word switch-exact s32 corner did not reproduce from those spellings.
+- Delete the named `rangeSquared` f32 (L145): 14 naming from +0xA0. The
+  named product remains load-bearing for the FP pool.
+- Delete `otherState` and spell `other->state` at the flag sites (L145):
+  109 masked, size delta -4. The pointer carrier is load-bearing.
+
+ADR 0018: more than three consecutive attempts with no better residual.
+New identities: the s16 one-draw-right shape is 14 with an ascending switch
+queue one slot early; dead assignments on angleHigh after the sum do not
+draw; L127 attached to the comparison or a named u16 truncation overshoots
+by one draw; the named rangeSquared and otherState carriers are not the
+fifth-draw budget.
+
+The decision variable is unchanged: one folded ring draw strictly after the
+pooled addu and before the s16 truncation, on the one-draw-right shape, that
+does not rename the sum and does not move an existing load. This grammar
+still does not produce it. Do not re-search case-1 carriers, angleHigh
+identity ops, rangeSquared deletion, otherState deletion, or the s32
+spellings above.
 
 <!-- plateau-handoff:overlay1UpdateRangeFlags:end -->

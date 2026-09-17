@@ -6,7 +6,7 @@
 - frame: 0x28
 - relocations: 15
 - first mismatch: +0x158
-- summary: tail count load versus key store; listing replay of a count-versus-slot noalias stamp is exact; ugen queries may-alias because the spilled slot is isvar against the count islda.
+- summary: tail count load versus key store; a declared carrier sequences the load first but colours it a1; named-array key stores stamp count-versus-chosen-LDA at an extra la; comma-in-plus folds.
 - base: `3169297845d9e4b3843c03be16cfe6d51358d280`
 - boundary: overlay 14 `+0x6FC..+0x87C`, 384 bytes / 96 words, no
   padding or export; two local callers at `+0x3C0` and `+0x40C`
@@ -114,6 +114,41 @@ while keeping the chosen address), or a ugen-temp count load sequenced
 before the key store -- the `kind` carrier's schedule without a symbol
 web. Do not repeat three-base splits, L109 discarded probes, increment-
 before as a source order, or declared count carriers.
+
+#### 2026-09-17, lane w2-o014: a1 is the unique declared-carrier colour; comma-in-plus folds
+
+Baseline reproduces: 2 masked (3 raw), delta 0, frame 0x28, 15 relocations,
+first +0x158, aligner 94/0/0/2. Identity-gated instrumented cc against the
+tree object (byte-identical .text). Nothing adopted; best remains 2.
+
+The `kind` carrier is confirmed at the object: it emits the ROM schedule
+(count load, key store, value reload, add, count store) and differs in
+three naming words -- the load sits in a1, so the add/store use the first
+ring temp rather than the second. At that tail, v0 holds the count
+address, v1 the spilled slot, a0 the value and a2 the key, so a1 is the
+first free caller-saved colour. `index` as the carrier is 5 (it wants v0,
+which is the count address). `alternate` is 55 at plus four. A fresh or
+block-scope local is in the same family: any symbol web at that site
+takes a1, never a ring temp (L145/L130).
+
+Named-array key stores through `gOverlay14ChosenSlots28 + (slot - base)`
+stamp `.noalias` between the count address and the chosen-array LDA, at
+plus twelve and 17 masked. The extra instruction is the `la` of that
+array; the stamp names the array-base register, not the spilled slot.
+Keep-index retags and `gOverlay14ChosenSlots28[index]` rematerialise
+(plus 28, 93-94 masked). `index = 0` remains load-bearing.
+
+`count = count + (slot->key = key, value = slot->value, 1)` and the
+`+=` spelling fold to the baseline: cfe evaluates the side-effecting
+comma first, then the load. Volatile on the left-hand load still emits
+the key store first (3). Identity recasts (xor with base-xor-base,
+addr-of-zero plus delta) emit the extra `la` or fold with no stamp.
+
+Next: an islda/isilda retag of the spilled slot that copy-props onto the
+existing stack reload, or a ugen-temp live across the key store that is
+not a declared local and not a comma operand of `+`. Do not repeat
+declared count carriers, comma-in-plus, named-array key stores that
+recover the index as `slot - base`, or keep-index rematerialisation.
 
 #### Re-open under laws L90 / L94 (2026-09-10, lane/c3-reopen2)
 

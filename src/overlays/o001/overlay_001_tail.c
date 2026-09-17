@@ -2268,7 +2268,15 @@ extern void overlay1PlaySoundReloc(u8 soundId);
  * chain -- as1 deletes the no-op by renaming the byte load's destination, so
  * the load loses its pool colour, and the chain's survivor moves one slot on,
  * taking the shift and the sum's first operand with it. The fifth draw has to
- * be the fifth. */
+ * be the fifth.
+ *
+ * 2026-09-17, lane w2-o001. L145-L154 reopen re-measured the same 2 naming
+ * words at +0x190, 33 GP/FP draws, 174 ugen emissions. Deleting rangeSquared
+ * or otherState regresses (14 and a size-minus-one 109). s16 plus a one-draw
+ * (u16) right operand drops one comparison draw and shifts the tail to 14;
+ * every post-sum probe meant to buy that draw back is DCE'd, adds two draws
+ * (19), or hoists mode and goes structural (41). s32 corners are 20-21, not
+ * the recorded two-word switch-exact shape. Floor remains 2. */
 #ifdef NON_MATCHING
 void overlay1UpdateRangeFlags(Overlay1RangeObject *object, void *unused) {
     Overlay1RangeConfig *config;
@@ -3397,7 +3405,7 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
  * frame: 0x70
  * relocations: 4
  * first-mismatch: +0x190
- * summary: Proc-23 census: 33 draws/174 emissions; mode probe worsened residual. Ring release-order remains.
+ * summary: L145-L154 reopen retained 2. 1-draw-right s16 is 14; post-sum u8 probes DCE; s32 corners 20-21; deleting rangeSquared or otherState regresses.
  * PLATEAU-HANDOFF:overlay1UpdateRangeFlags:end
  */
 

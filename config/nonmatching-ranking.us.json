@@ -3661,13 +3661,13 @@
       "tu": "overlays/o056",
       "size_bytes": 2324,
       "objdiff_match_pct": null,
-      "differing_words": 530,
+      "differing_words": 538,
       "first_mismatch_offset": 80,
-      "relocation_masked_differing_words": 530,
+      "relocation_masked_differing_words": 538,
       "relocation_masked_first_mismatch_offset": 80,
-      "size_delta": 8,
+      "size_delta": 40,
       "category": "size-mismatch",
-      "source_context_sha256": "8W1T.5jAu.Pcbq.4vhm.tN-H.oVk8.SHs5.DrGE.C9EI.68rU.xjc"
+      "source_context_sha256": "A9fV.lZDQ.dG3F.LVGS.Teak.ed0z.4nru.heFQ.ck4B.yf-1.SwI"
     },
     {
       "name": "func_overlay_011_F0000150_1868998",

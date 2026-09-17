@@ -6,7 +6,7 @@
 - frame: 0x40
 - relocations: 17
 - first mismatch: +0x74
-- summary: Current 17-draw census reproduces prior address-lowering plateau; existing differential covers the identified source routes.
+- summary: Force-split of the offsets ilda matches target schedule except one extra lui; as1 does not share lui at. Next: ugen hi-only ilda, not la or per-use macros.
 
 #### 2026-09-12, lane `p9-tight`: as1 does not share a high half, so the stated decision variable is refuted
 
@@ -117,5 +117,49 @@ full base or separate absolute expansion. Fresh source/object and census
 receipts are ignored under build/l1/overlay15DrawRain. Commands: configured
 compilation, draw_census, residual_map --object, finalize_plateau and
 tools/gates.sh. ROM verification covers the fallback; no new byte credit.
+
+#### 2026-09-17, lane w7-o015: pressure forces three absolute macros; as1 does not share lui at
+
+Identity gate: instrumented IDO .text is byte-identical to stock. Procedure 11
+of 12, seven p1 decisions. Web 41 is the type-1 ilda of the padded rain-offset
+struct, save 2.0, nocs 1, block 4 only, coloured v1. ugen emits la v1 plus
+three field loads at 128, 132 and 136; as1 expands la to lui plus addiu. Align
+43 exact, 0 naming, 0 immediate, 12 structural, candidate-only +0xBC,
+target-only +0xB4, first +0x74. Frame 0x40, 14 slots identical.
+
+The named pressure lever was measured, not inferred.
+
+- Force-split web 41 (accepted forced=-1): 20 masked, delta +4. ugen emits
+  three l.s symbol-plus-offset; as1 emits three lui at. The rest of the call
+  setup matches the target: 0x8000 before the offset loads, projectionScale
+  and visibleCount reloaded early, stores projectionScale then x then y, z in
+  the jal delay slot. The whole leftover is one extra lui between x and y.
+- Two-field xy plus scalar z, then force-split the remaining 2-use ilda: still
+  20 / +4. Two consecutive lui at against the same symbol, then a third for z.
+  as1 does not share even two consecutive identical HI16 lui at in one block.
+- Consecutive absolute l.s with no .loc between them (named f32 carriers plus
+  split, and a .loc-stripped as1 diagnostic) still expand to three macros.
+  as1 merge of lui at is closed, including the same-block consecutive case
+  the 2026-09-12 two-block probe could not see.
+- L109 OR-zero and eight dummy OR-zeros in the call block are byte-identical
+  to the base. Without a loop they do not occupy colours (unlike
+  overlay31CreatePool, whose probe sits in a loop). OR-zero on width, height
+  and visibleCount is 37. Live s32 copies of positions and colors: 18, still
+  la. Deleting the camera carrier: 14, same lowering. Deleting visibleCount
+  duplicates the conversion, +36. Generated [32],[33],[34] subscripts: 13,
+  identical to struct fields. Comma-assigned f32 locals: 13 masked, 41 exact
+  plus 2 naming, worse aligned than the base.
+
+So the two IDO paths remain the only ones: la (lui plus addiu, one base, three
+loads) or per-use absolute macros (one lui at each). Pressure selects the
+second and overshoots by one lui. The target is ugen emitting one hi-only
+address covering the 128 and 132 loads, then a second lui at for 136: not la
+(which always addius) and not three l.s symbol-plus-offset (which always
+become three macros).
+
+Do not retry: L109 without a loop, dummy OR-zeros, deleting camera or
+visibleCount, generated subscripts, xy-plus-scalar-z, force-split of the ilda,
+or as1 lui-at merging. overlay15MoveStars has the same ilda-versus-absolute
+choice; the same ugen addressing-mode question applies.
 
 <!-- plateau-handoff:overlay15DrawRain:end -->

@@ -456,7 +456,7 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
  * frame: 0x40
  * relocations: 17
  * first-mismatch: +0x74
- * summary: Current 17-draw census reproduces prior address-lowering plateau; existing differential covers the identified source routes.
+ * summary: Force-split of the offsets ilda matches target schedule except one extra lui; as1 does not share lui at. Next: ugen hi-only ilda, not la or per-use macros.
  * PLATEAU-HANDOFF:overlay15DrawRain:end
  */
 

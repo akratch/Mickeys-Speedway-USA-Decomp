@@ -6,7 +6,7 @@
 - frame: 0x68
 - relocations: 51
 - first mismatch: +0x58
-- summary: Fresh 48-draw census retains the schedule; parameter-reload probes restore reissue only with broad allocation regression.
+- summary: IDO gated. Index/delete-count grow. 41-shape w69=a0 force is 32. Tail temp uniquely offered v0 in its block; denying v0 also denies a0.
 
 #### 2026-09-09 lane `w2-bigA`: 40 to 39, and the residual is four named sites
 
@@ -327,5 +327,59 @@ Next: a source that removes v0 from the offer list of the loop-tail temp
 and of the child expression without adding a word, then the two-armed
 join. The sibling diff against func_overlay_002_F0000C90 shares no
 substitution and predicted nothing.
+
+#### 2026-09-17, lane w10-o002: L145/L154/L160 reopen, a0 occupant named, no 0-scoring force
+
+Baseline reproduces: 1,012 bytes, 253 of 253 words, delta 0, masked 39, raw 51,
+frame 0x68, first mismatch +0x58. Aligner 223 exact, 15 naming, 2 immediate,
+16 really different, same three surplus/missing pairs. Register census: 15
+sites, 88 percent coherence, s1 to a0 x4, v0 to a0 x3, t7 to t6 x3, t4 to t3
+x3, no closed cycle. Frame ladders identical (21 slots). Nothing adopted.
+
+Identity gate passed: stock configured compile and instrumented IDO (proc 0,
+40 p1 decisions, 20 coloured) emit byte-identical .text. CDX_PROC=0 from
+procindex. The 39-shape ladder names the a0 occupant as symbol web 14 (count,
+offset -4, save 6.5, blocks 1/11/15). Node (web 0) is not offered a0: live
+across recursive calls, cost table starts at callee s1. Loop-tail temp (web 69,
+block 11 only, save 20, nocs 1) and tail-call child (web 104, blocks 22-23,
+save 1.5) both take v0 with a0 at cost 0.
+
+Forces on the 39-shape, all accepted, all worse or flat vs 39: w69=a0 scores 93,
+w104=a0 scores 46, w14 off a0 scores 93, pairs 88-98. Confirms the inherited
+20-web landscape floor of 39 on this shape. There is no 0-scoring force, so
+L160 after a zero force does not apply.
+
+L145/L154 generated subscript (delete line, D_3C[node->index + count], node
+live in the loop) grows: do-while 275 at plus 96, for-index 265 at plus 80,
+ternary child plus index 268 at plus 68. Re-reading node in the walking-line
+loop is 262 at plus 44. Overlay2Line is 20 bytes; keeping node live spans the
+intersect call and spills. Deleting count only is 233 at minus 16 (p24's
+234 at minus 8 reproduced). Do not retry generated subscript or delete-count
+on this walking-line shape.
+
+Loop keyword while(remaining--) and while(count = remaining--) are 238 at plus
+4. Scalar recursiveResult plus two L109 probes is 100 at minus 8 (plain scalar
+was 100 at minus 8; the probes are inert). remaining as the OR carrier is 244
+at minus 8.
+
+Two-armed join reproduces 41 at delta 0. Dropping the loop-tail count copy is
+byte-flat at 41. On that shape count leaves block 11 (now blocks 1/14/15/16,
+save 2.5, takes a1, not offered v0). leafResult takes a0. Web 69 still takes
+v0: it is the only v0-offered web in block 11 and is decided while v0 and v1
+are both free (remaining takes v1 later at save 8.5). Force w69=a0 accepted,
+41 to 32 at delta 0 (s2-c reproduced). Force w105=a0 is 48; both together 39
+(antagonistic). Remaining cannot beat save 20 by extra loop refs (asymptote 10).
+Count and leafResult are not offered v0, so raising them cannot steal it.
+Extra post-decrement, L109 OR-with-zero on count, and a block-scoped tail local
+on the 41-shape are 245/255/70 or size-changing; remaining XOR-with-zero is
+CSE'd and flat at 41.
+
+Blocker: the loop-tail temp is offered v0 because it is not live across a call.
+The intersect call loads a0, so extending that temp across the call denies v0
+and a0 together. A new short-range v0-offered web in block 11 with save at
+least 20 would take v0 first and leave the temp a0, but no source form found
+creates that web at delta 0. Same gap at the tail-call child (web 105). Do not
+re-run the 48-cell spelling lattice, generated subscript, delete-count, or
+39-shape a0 forces.
 
 <!-- plateau-handoff:overlay2QueryNode:end -->

@@ -1855,10 +1855,18 @@ f32 camGetProjZ(f32 x, f32 y, f32 z) {
  * PROVENANCE: adapted from JFG's public decomp,
  * src/camera.c:camCopyOrthoMatrix.
  *
- * Fresh workbench: 84 candidate instructions versus 83 target, exact 0x30
- * frame, 66 masked differences first at +0x8, and 11/12 target relocations exact.
- * Prior flags, aggregate/split/end-pointer, loop, and bounded-permuter forms are exhausted.
- * Remaining: same-TU data layout still retains one extra address materialization.
+ * JFG copies 15 matrix slots and writes width/2 into [3][3]; Mickey also
+ * scales each slot by D_80079F48. IDO peels 15%4=3, so the dest cursor of
+ * the 12-iter remainder is matrix+12 when dest is dest[i] with i starting
+ * at 3. Grouping the second and third coefficients as D_80079F50 and
+ * D_80079F50+4 (one locally-defined symbol) is the pair the peel would
+ * have used.
+ *
+ * Unforced: 84 vs 83 words, frame 0x30, masked 71 first +0x8, 72 aligned
+ * exact, 0 immediate, 9 a2/a3 naming. Identity-gated proc 62: p1:w47=s
+ * plus p1:w0=c6 is 83 exact, masked 0, delta 0. Web 47 is the two-use
+ * D_80079F50 ilda; splitting it is the shared high-half. Web 0 is the
+ * matrix parameter, a2/a3 tie at cost 2; the target takes a3.
  */
 void func_80024978(MtxF matrix) {
     s32 i;
@@ -1868,9 +1876,9 @@ void func_80024978(MtxF matrix) {
     viGetCurrentSize(&width, &height);
     ((f32 *) matrix)[0] = D_80079F4C * D_80079F48;
     ((f32 *) matrix)[1] = D_80079F50 * D_80079F48;
-    ((f32 *) matrix)[2] = D_80079F54 * D_80079F48;
-    for (i = 0; i < 12; i++) {
-        (((f32 *) matrix) + 3)[i] = D_80079F58[i] * D_80079F48;
+    ((f32 *) matrix)[2] = ((f32 *) &D_80079F50)[1] * D_80079F48;
+    for (i = 3; i < 15; i++) {
+        ((f32 *) matrix)[i] = ((f32 *) &D_80079F4C)[i] * D_80079F48;
     }
     matrix[3][3] = (u32) width >> 1;
 }
@@ -2040,11 +2048,11 @@ f32 D_80079F54 = 0.0f;
 
 /* PLATEAU-HANDOFF:func_80024978:start
  * symbol: func_80024978
- * score: 66 differing words
+ * score: 71 differing words
  * frame: 0x30
  * relocations: 13
  * first-mismatch: 0x8
- * summary: Authenticated 26-draw baseline; surplus coefficient address producer and unrolled cursor bias require new declaration/layout evidence.
+ * summary: dest[i] i=3..15 fixes the matrix+12 cursor. D_80079F50 pair plus identity-gated p1:w47=s and p1:w0=c6 is 83 exact masked 0. Next is source for that split and a3 tie-break.
  * PLATEAU-HANDOFF:func_80024978:end
  */
 

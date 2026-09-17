@@ -111,6 +111,12 @@ extern void func_800241BC(Overlay71Command **commands);
  * and pushes the carrier up one. Every other interferer of the two is a
  * constant web at save 1.0 or below, so none of the existing ones can. See
  * the handoff shard.
+ *
+ * 2026-09-17, lane w4-o071: delete-flags is 16/12; block-11 discards DCE or
+ * CSE. w32 is dtype 8, w57 is dtype 6. A u16 later from state->flags joins
+ * w32 and steals head's a0 (16). An s32 later coalesces into w57 (9). A
+ * narrowing copy tmp=flags; later=tmp creates w67 in block 11 without
+ * touching w32, but it is numbered after w57 and spends a draw (37).
  */
 #ifdef NON_MATCHING
 void func_overlay_071_F0000870_18CA390(Overlay71Command **commands,
@@ -197,6 +203,6 @@ void func_overlay_071_F0000870_18CA390(Overlay71Command **commands,
  * frame: 0x30
  * relocations: 13
  * first-mismatch: 0x5c
- * summary: Authenticated 65-draw baseline; existing invisible-interferer controls provide no new scheduling hypothesis.
+ * summary: Delete-flags is 16/12. Block-11 discards DCE/CSE. s32-to-u16 later is after w57 plus a draw (37). Need a type-3 web numbered below 57 at zero draw.
  * PLATEAU-HANDOFF:func_overlay_071_F0000870_18CA390:end
  */

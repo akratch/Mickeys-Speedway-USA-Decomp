@@ -171,9 +171,9 @@
       "source_commit": "60bc156a0b56adb0eb67380e01363e413b58fcc7"
     },
     "func_8000FAE0": {
-      "ledger_commit": "eb25e2d873163b1962ebba45ebe66e165bc548a5",
+      "ledger_commit": "f09046a0bcc1f448cb3a85961c505aa90359d83a",
       "reason": "New mechanism: law L87, uopt colours pool webs in first-surviving-definition order so schedule and colour are one decision, and the lock breaks at the use. Not tried; the permuter was also unfaithful here until today.",
-      "source_commit": "eb25e2d873163b1962ebba45ebe66e165bc548a5"
+      "source_commit": "f09046a0bcc1f448cb3a85961c505aa90359d83a"
     },
     "func_800103D4": {
       "ledger_commit": "ae3ca05774314ba3962e97a639f0cd4faae2d19d",
@@ -186,9 +186,9 @@
       "source_commit": "1736a63e233ee56a2ef42d13510e7185707ca064"
     },
     "func_80010900": {
-      "ledger_commit": "99d67c7f96d2dd07e391ad61fe6e6fdb01039327",
+      "ledger_commit": "8072dce733b389b3e132c51351293d1dfef907d9",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "08645095b49d832e7dd597bc4b3db223176f85c6"
+      "source_commit": "8072dce733b389b3e132c51351293d1dfef907d9"
     },
     "func_80010B4C": {
       "ledger_commit": "ade24e9c6989bcab55c9c637f75d1e21248fd651",
@@ -356,7 +356,7 @@
       "source_commit": "1f5cccaae60d690fbfcad4e941709e4a294ae6bc"
     },
     "func_80020D8C": {
-      "ledger_commit": "3d804832151f4c57ddc16d7b0e1e3c383b44b877",
+      "ledger_commit": "689a73610d046c7574d349dda588c50296cc9f36",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "4fe9255a1e3cd2c6b94232648c9a8a5acf625cf7"
     },
@@ -1841,9 +1841,9 @@
       "source_commit": "63241f7ed95f2160fef3e84e44676ac5aeadafad"
     },
     "overlay40BuildFrame": {
-      "ledger_commit": "ba213213dbfdc5050e62e8de7b18d6c733bb74b9",
+      "ledger_commit": "0e6229f0421d25b8b2e51ad4b632d680ce12a162",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "c177a5a72e139cfc17c79e8b2ba50107f86a3b21"
+      "source_commit": "ba213213dbfdc5050e62e8de7b18d6c733bb74b9"
     },
     "overlay40FadeRecords": {
       "ledger_commit": "ad0add6d7ffb09b7dab024baf6cbefdf0a452e64",

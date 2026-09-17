@@ -1733,7 +1733,7 @@ void func_800293D0(void) {
  * frame: 0x18
  * relocations: 3
  * first-mismatch: +0x1C
- * summary: Three-draw identity form duplicates normalization and loses scratch names to the return carrier; three follow-up controls are byte-identical.
+ * summary: Or-chain carrier is allocator proc 40 web 2: v0 not offered (forced=-2). Accepted recolours stay 25. L145/L144 miss the ring-temp copies. Best still 10.
  * PLATEAU-HANDOFF:func_80028FCC:end
  */
 

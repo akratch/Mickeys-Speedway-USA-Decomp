@@ -112,7 +112,7 @@ This is a names-only audit of every function body guarded by `NON_MATCHING` in `
 | `runlinkInit` | `src/main/runlink.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `runlinkResumeCode` | `src/main/runlink.c` | resolved | pending-load carrier | Exact C body, frame, relocations, and linked ROM range. |
 | `runlinkGetAddressInfo` | `src/main/runlink.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_8002C69C` | `src/main/saves.c` | resolved-plateau | — | Fresh configured full-TU C is exact-sized and frameless at 17/28 raw/normalized words, first `+0x10`, with eleven register-only differences, no padding, and zero relocations. All 119 flag identities are nonexact; thirteen O2/MIPS-II rows tie V0. A fidelity-clean proc-11 trace and lane analysis isolate one four-web class crossing: target `a3/t1/t4/t5` versus V0 `t1/a2/a3/t4`. Named unsigned and signed reset-mask forms retain eleven differences and each introduce one opcode mismatch, so no combination qualifies; the old 10/28 control was unnecessary. ORT 727 has five exact calls in `func_8002C94C` and no runtime/overlay/pointer inbound. Fallback linkage is exact. Resume only with a new natural web-existence mechanism; do not repeat flags, trace, reset-mask forms, the historical control, or generic permutation. |
+| `func_8002C69C` | `src/main/saves.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `func_8002C70C` | `src/main/saves.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_8002C94C` | `src/main/saves.c` | none | — | Matched (permuter): `if (1)` grouping resolves the schedule tie-break. |
 | `func_8002CB18` | `src/main/saves.c` | none | — | No ownership change; continue source/codegen work. |

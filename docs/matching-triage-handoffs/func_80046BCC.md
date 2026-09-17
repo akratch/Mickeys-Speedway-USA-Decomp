@@ -6,7 +6,7 @@
 - frame: 0x40
 - relocations: 3
 - first mismatch: +0x2C
-- summary: Seven-draw census confirms four-window live-range split; exhausted source and colour routes remain at 16.
+- summary: L145 one-name restores type-4 web 32 at 42. Separate working copy puts load in v0 at delta 0, keeps web 32 and a structural pair. w0=c1 accepts, +12.
 
 #### 2026-09-09: the ninth callee-saved web is the working copy
 
@@ -306,4 +306,54 @@ heads or the loaded byte is unavailable there. The untested cell is a
 zero-width redefinition of the loaded symbol between the mask and the
 arms; a plain two-symbol form on this shape is closed by the 192-form
 lattice, lm-c's 16 cells and the five here.
+
+#### 2026-09-17, lane w4-dicpu: L145 one-name restores web 32
+
+Baseline reproduced: 16 masked, 106 of 106 words, delta 0, frame 0x40,
+register-only, first +0x2C, three relocations. Procedure 11 still has
+18 decisions, 12 coloured. Web 32 is absent. Web 0 is the combined
+load-plus-working symbol (type 3, nocs 9, totalsave 232, s0). Web 0's
+cost table now lists caller colours including c1/v0 at cost 20, so
+the 2026-09-09 decline of `p1:w0=c1` does not hold on this shape.
+
+Named L145/L160 attempts, none adopted:
+
+- Dead `var_v0 = 0` between the mask and the arm copies: deleted,
+  still 16. Zero-width redef of the loaded symbol does not split
+  web 0.
+- `while ((var_s2 = (*p++) & 0xFF) != 0)` deleting the load name:
+  92 masked, delta -8. The do-while-with-precheck is the target CFG.
+- One name for the mask, tests and conversion on `var_s2` only
+  (delete the `var_v0 = var_s2` copy): 42 at delta 0. Web 32
+  RETURNS as a type-4 temp coloured v0; web 0 (the load) is pushed
+  to v1. The second destination is what kills web 32 on the 16-word
+  form, not what creates it. Aligned: 65 exact, 31 naming, 2
+  immediate, 10 structural, with a +1 at +0x48 and +0x5C against a
+  missing word at +0x64 and +0x8C.
+- Fresh `var_s0` working copy inside `do { } while (0)` after the
+  mask, copy of `var_s2`: 26 at delta 0. Web 0 becomes v1, web 32
+  takes v0, web 36 is s0. Region does not block value-numbering.
+  Aligned 81 exact, 17 naming, 2 immediate, 7 structural (+1 at
+  +0x60, missing at +0x8C).
+- Same shape but `var_s0 = var_v0` (copy the load, not the mask):
+  21 at delta 0. Web 0 is v0, web 36 is s0, web 20 is s2, web 32
+  remains a type-4 temp at v1 (nocs 2, totalsave 40). Best web SET
+  of the pass and still worse than 16: 86 exact, 12 naming, 2
+  immediate, 7 structural. Dropping the region: 28. Copy before
+  the mask: 29. Asymmetric arm spellings (`var_s2` vs
+  `var_v0 & 0xFF`): 91, +4.
+- Forced objects, acceptance read off the record: `p1:w0=c1`
+  accepted (forced=1, colour v0), 98, delta +12. `p1:w0=c2`
+  accepted, 99, +12. `p1:w0=s` 92, +12. Colouring or splitting
+  the combined web spills; the target does not have this web.
+
+The 16-word body is restored. Web 32 is a type-4 mask temporary
+that appears whenever the working copy is not the load symbol.
+Killing it by using `var_v0` as the working copy is what creates
+the remaining combined web 0. A second symbol can put the load
+in v0 at delta 0 only by reintroducing that temp and a
+structural pair. Next: a copy of `var_s2` whose value number is
+not the mask's, without a type-4 temp and without the +1/-1
+pair. The dead-store cell of the zero-width redef is closed;
+an identity probe that the web builder keeps is not.
 <!-- plateau-handoff:func_80046BCC:end -->

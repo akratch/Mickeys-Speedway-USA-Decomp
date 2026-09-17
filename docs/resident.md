@@ -1974,24 +1974,11 @@ places its low-word store at `0x800D2D4C`; the final linked ROM is exact.
 Removing the wrapper fails the full link because `jtbl_800823D8` references seven assembly-local labels.
 The remaining lever is coordinated rodata ownership; assembly stays canonical.
 
-The still-unnamed bit writer `func_8002C69C` retains a Mickey-derived
-`NON_MATCHING` body. Fresh configured full-TU C is exact-sized and frameless at
-17/28 raw and normalized words, with eleven register-only differences from
-`+0x10`, no padding, and no relocations (historical candidate SHA-256
-`e83f284ce9feecca2c1edc9024181320c777c70978009249393dd1374ca67b32`). All
-119 flag identities were attempted; 53 compile and thirteen O2/MIPS-II rows tie
-V0, while none is exact. A fidelity-clean procedure-11 allocator trace records
-eleven caller-saved decisions. Lane analysis reduces the residue to one
-four-web class crossing: the target retains the reset constant in the colored
-pool at `a3` and routes the value test, next bit, and shifted mask through the
-temporary ring at `t1/t4/t5`; V0 instead uses `t1/a2/a3/t4`. Named unsigned and
-signed reset-mask forms retain eleven positional differences and each replace
-the required narrowing instruction with a different opcode, so neither gains
-and no combination is eligible. The historical 10/28 body control was skipped
-because current V0 materially improves it. ORT 727 has five direct calls in
-matched `func_8002C94C` and no runtime/overlay/pointer inbound. Resume only with
-a new natural web-existence/class-crossing mechanism; do not repeat the flag
-lattice, trace, reset-mask forms, historical control, or generic permutation.
+The still-unnamed bit writer `func_8002C69C` is exact at **112 bytes / 28
+instruction words**, frameless, with zero relocations. Indexed
+`writer->cursor[0]` stores let IDO generate the walking pointer; on that
+shape the bit advance belongs before the mask store. ORT 727 has five direct
+calls in matched `func_8002C94C`.
 The assembly fallback remains canonical. A subsequent source-correctness
 repair uses an unsigned initial bit and count-minus-one, defined for counts
 1..32 while preserving the zero-count no-op. The five authenticated direct

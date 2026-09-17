@@ -51,7 +51,7 @@
       "source_commit": "ee7b01b74a96a9ac19e735453e645c55ec45f967"
     },
     "func_80004FE0": {
-      "ledger_commit": "bc391799944d87e7f029b7a185f23dcc008299ef",
+      "ledger_commit": "505e7aa83c173904f5d5b3752e6cfbd82edc295f",
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
       "source_commit": "281ae0271006618653ac1c52e52ecb58afca90ec"
     },
@@ -1746,9 +1746,9 @@
       "source_commit": "fdd9ce95459250efff3ecf20eb82a91112315269"
     },
     "overlay20RemoveEntry": {
-      "ledger_commit": "f1a802801c6ca535de1939a8107d0f1af428b459",
+      "ledger_commit": "d51a63a59b8a276a4138b013e4437868c9f0b21e",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "f1a802801c6ca535de1939a8107d0f1af428b459"
+      "source_commit": "d51a63a59b8a276a4138b013e4437868c9f0b21e"
     },
     "overlay25UpdateEffect": {
       "ledger_commit": "25ed877e2ceb660ad1e76664569e101452565665",

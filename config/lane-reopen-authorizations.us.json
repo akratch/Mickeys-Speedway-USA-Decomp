@@ -51,7 +51,7 @@
       "source_commit": "ee7b01b74a96a9ac19e735453e645c55ec45f967"
     },
     "func_80004FE0": {
-      "ledger_commit": "505e7aa83c173904f5d5b3752e6cfbd82edc295f",
+      "ledger_commit": "54208705063317f14781c8d9b028d6cfa22e4cea",
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
       "source_commit": "281ae0271006618653ac1c52e52ecb58afca90ec"
     },
@@ -636,9 +636,9 @@
       "source_commit": "578b7bf129cfb24f6232250be800db6dea6115f2"
     },
     "func_80046BCC": {
-      "ledger_commit": "c3d9853d69e1b556ec83cd616d46991da7cbae27",
+      "ledger_commit": "048baa54cb31a0dfec2da027c54c21349287d0bb",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "e0f8a713b21d30e68b668b233d99dda0adf41776"
+      "source_commit": "048baa54cb31a0dfec2da027c54c21349287d0bb"
     },
     "func_80046EC4": {
       "ledger_commit": "8faec7401bd3276bb958a26cc5c7417fb27ab3ae",
@@ -1316,9 +1316,9 @@
       "source_commit": "d3fcf8ea6f4e562d75f6b0a7e7f97dc8b6482478"
     },
     "func_overlay_071_F0000870_18CA390": {
-      "ledger_commit": "5fe36270a9ea156de1ffb0e5f5232ab396e6d1c9",
+      "ledger_commit": "d681456c8001aca4e103532fe6242447f152602b",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "9489a11a55c1acf19768e91c51c9c1853ccb3367"
+      "source_commit": "d681456c8001aca4e103532fe6242447f152602b"
     },
     "func_overlay_073_F0000190_18CAC50": {
       "ledger_commit": "6d9e8c8cd742c2492028f23c3fe036bb29b76c27",

@@ -172,6 +172,6 @@ void overlay20RemoveEntry(s32 owner) {
  * frame: frameless
  * relocations: 10
  * first-mismatch: +0x6C
- * summary: Draw census unchanged; same-width bound cast stayed at 2 words. Pre-colour web-order blocker remains.
+ * summary: L154 index-shape cannot number the decrement above the SR limit at zero width; the limit is minted from the bound. Baseline kept at 2 of 53.
  * PLATEAU-HANDOFF:overlay20RemoveEntry:end
  */

@@ -12,11 +12,13 @@ typedef struct Overlay44FrameSource {
 
 typedef struct Overlay44AnimationState {
     s8 sourceIndex;
-    u8 mode;
+    u8 storageMode;
     u8 flags;
-    u8 reserved3;
+    u8 subtype;
     s32 phase;
-    u8 reserved8[6];
+    s16 value8;
+    s16 valueA;
+    u8 pad0C[2];
     s8 protectedSlot0;
     s8 protectedSlot1;
     s8 cachedFrame[4];
@@ -31,6 +33,7 @@ extern void overlay44UploadFrameReloc(s32 operation, void *handle,
 #ifdef NON_MATCHING
 void overlay44UpdateFrameCache(Overlay44AnimationState *state,
                                s32 updateRate) {
+    void *unused; /* L99: unused pointer; keeps frame 0x48 */
     volatile Overlay44FrameSource *source;
     s32 limit;
     s32 delta;
@@ -86,14 +89,14 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
         } while ((state->phase < 0) || (state->phase > limit));
     }
 
+    frameSlot = -1;
     frame = state->phase >> 8;
     nextFrame = frame + 1;
+    nextSlot = -1;
     if (nextFrame >= source->frameCount) {
         nextFrame = 0;
     }
 
-    frameSlot = -1;
-    nextSlot = -1;
     slot = 3;
     do {
         if (state->cachedFrame[slot] == frame) frameSlot = slot;
@@ -105,11 +108,10 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
         do {
             if ((slot != nextSlot) && (slot != state->protectedSlot0) &&
                 (slot != state->protectedSlot1)) {
+                u8 *src = (frame * source->frameSize) + source->data;
                 state->cachedFrame[slot] = frame;
-                overlay44UploadFrameReloc(
-                    0x42, state->handles[slot],
-                    source->data + (frame * source->frameSize),
-                    source->frameSize);
+                overlay44UploadFrameReloc(0x42, state->handles[slot], src,
+                                          source->frameSize);
                 frameSlot = slot;
                 break;
             }
@@ -121,11 +123,10 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
         do {
             if ((slot != frameSlot) && (slot != state->protectedSlot0) &&
                 (slot != state->protectedSlot1)) {
+                u8 *src = (nextFrame * source->frameSize) + source->data;
                 state->cachedFrame[slot] = nextFrame;
-                overlay44UploadFrameReloc(
-                    0x42, state->handles[slot],
-                    source->data + (nextFrame * source->frameSize),
-                    source->frameSize);
+                overlay44UploadFrameReloc(0x42, state->handles[slot], src,
+                                          source->frameSize);
                 nextSlot = slot;
                 break;
             }
@@ -141,10 +142,10 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
 
 /* PLATEAU-HANDOFF:overlay44UpdateFrameCache:start
  * symbol: overlay44UpdateFrameCache
- * score: 54/187 words
- * frame: 0x40
+ * score: 30/187 words
+ * frame: 0x48
  * relocations: 4
- * first-mismatch: +0x0
- * summary: candidate remains one word short with an eight-byte frame deficit; resume with source-authentic stack-home or allocator evidence
+ * first-mismatch: +0x1F4
+ * summary: Size and frame closed at 187 words and 0x48; colour landscape floors at 30. Next is L99 packing of the extra spill slot.
  * PLATEAU-HANDOFF:overlay44UpdateFrameCache:end
  */

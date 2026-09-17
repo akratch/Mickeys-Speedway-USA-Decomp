@@ -127,10 +127,14 @@ declaration order; unused f32/f64/array locals buy nothing, against L99's
 wording); `slot = base + index` is a different IR name from the loop's
 `&base[index]`, so the shift is no longer PRE'd into a two-block web and is
 drawn from the ring, realigning every later draw, 2. The last two rows are
-the count load the ROM schedules above the key store, which needs a
-`.noalias` between the pointer and `&gOverlay14SlotCountE8` that ugen only
-stamps for a single-base pointer; tail-order spellings are 4-21. Next steps
-are in the shard.
+the count load the ROM schedules above the key store. Lane lm-o014
+(2026-09-17) proved the hoist by listing replay: a noalias stamp between
+the slot register and the count address is exact, as is swapping ugen's
+load/store emission. The instrumented alias query is may-alias because the
+spilled slot is isvar against the count's islda -- a one-base pointer that
+spills still queries may-alias, so the three-base diagnosis was the wrong
+variable. A post-call `la` of the chosen base into slot stamps the fact at
+plus four and 13 masked. Next steps are in the shard.
 
 ## `overlay34CreateRecord`: unmoved at 2, mechanism exact
 

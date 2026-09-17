@@ -6,7 +6,7 @@
 - frame: 0x28
 - relocations: 15
 - first mismatch: +0x158
-- summary: one fourth-declared slot pointer spilled to its own home, base-plus-index pointer keeps the shift a ring draw; two rows left are the tail count-load hoist over the key store.
+- summary: tail count load versus key store; listing replay of a count-versus-slot noalias stamp is exact; ugen queries may-alias because the spilled slot is isvar against the count islda.
 - base: `3169297845d9e4b3843c03be16cfe6d51358d280`
 - boundary: overlay 14 `+0x6FC..+0x87C`, 384 bytes / 96 words, no
   padding or export; two local callers at `+0x3C0` and `+0x40C`
@@ -63,6 +63,57 @@ the extra candidate home at `+0x24`; no exact result was promoted.
   explicitly bounded standing batch; a new manual attempt still requires its
   own admissible evidence. Do not repeat flags, physical-line ties,
   pointer-direct, assignment-order, or carrier forms.
+
+#### 2026-09-17, lane lm-o014: the spill is the alias poison, not the three bases
+
+Baseline reproduces: 2 masked (3 raw), delta 0, frame 0x28, 15 relocations,
+first +0x158, aligner 94/0/0/2. Identity-gated instrumented cc against the
+tree object (byte-identical .text). Nothing adopted; best remains 2.
+
+The two structural rows are a swap of the count load and the key store.
+ugen already emits the count address before the key store and the count
+load after it; as1 hoists the load over the volatile value reload but not
+over the key store. Listing replay through as0/as1 is identity-clean for
+this TU. Inserting a noalias stamp between the slot register and the count
+address (either operand order, at the la of the count or at the count
+load) produces the target tail. Swapping ugen's emission so the count load
+precedes the key store does the same. A noalias versus sp on the slot
+register does not. Volatile around the key store does not.
+
+The instrumented alias profile names the query: one may-alias between the
+slot (isvar) and the count address (islda). A no-call mini of the tail
+shape queries no-alias (islda versus islda) and ugen stamps the
+count-versus-slot fact. The same mini with one call queries may-alias
+(isvar versus islda) and the stamp is gone -- the spill retags the
+register, even when the pointer has a single named base. onebase_slot,
+onebase without the or-with-zero, and drop_or all still query may-alias.
+The three-base diagnosis is therefore the wrong variable; the spill is.
+
+A post-call assignment `slot = gOverlay14ChosenSlots28` retags the existing
+slot register islda, stamps the wanted count-versus-slot fact, and scores
+13 at plus four (the extra la, and it writes the array base). Identity
+recasts that fold (or with base-minus-base, xor with base-xor-base, a temp
+initialised from the named array then copied from slot) stay at 2 with no
+stamp. Recovering the index as `slot - base` is 19 at plus 20.
+
+Sequencing the count load in C without that stamp: increment-before-key is
+4 at delta 0 (right registers, the add and count store stay glued to the
+load). Reading the count into `kind` is 3 at delta 0 (right schedule, the
+value sits in a1 instead of a ring temp -- L145: a declared local is never
+a ring temp). A fresh or block-scope local is 5 to 21. Discarded L109
+probes, comma loads, and `*(s32 *)&count++` are inert at 2.
+
+On the retained shape both `index = 0` and the or-with-zero def are still
+load-bearing (91 at plus 20, and 92 at minus eight). A discarded
+or-with-zero use does not lift the save. Separate scan/free cursors are 57
+at plus four; merging all three names is 81 at minus eight.
+
+Next: a post-call islda retag of the spilled slot register that does not
+emit an extra instruction (or that replaces the stack reload one-for-one
+while keeping the chosen address), or a ugen-temp count load sequenced
+before the key store -- the `kind` carrier's schedule without a symbol
+web. Do not repeat three-base splits, L109 discarded probes, increment-
+before as a source order, or declared count carriers.
 
 #### Re-open under laws L90 / L94 (2026-09-10, lane/c3-reopen2)
 

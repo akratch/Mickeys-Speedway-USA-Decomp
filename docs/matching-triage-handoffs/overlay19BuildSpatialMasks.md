@@ -2,11 +2,11 @@
 ### `overlay19BuildSpatialMasks` plateau handoff
 
 - source: `src/overlays/o019/overlay19BuildSpatialMasks.c`
-- score: 17/227 words
+- score: 9/227 words
 - frame: 0x80
 - relocations: 0
-- first mismatch: +0x58
-- summary: Fresh bin counter, xMax probe and a folded init line reach 17; the p2-ordered span/firstItem pair and the selector/mask init order remain.
+- first mismatch: +0xC0
+- summary: The span base as a non-volatile expression web puts firstItem in v1 and span in a0, 17 to 9; the mask/selector init order and loop 1's tail schedule remain, both as1 order.
 
 - geometry: Target and configured C are both `0x38C`/908 bytes/227 words with frame `0x80`; the owned Overlay 19 range is `+0xF58..+0x12E4`, ROM `0x18761B0..0x187653C`, followed by separately owned 12-byte assembly padding.
 - relocation proof: Target runtime and candidate static surfaces both contain zero relocation records; count, type, offset, and identity surfaces are therefore vacuously exact, and preflight is complete.
@@ -127,4 +127,38 @@ common dir, lane-evidence/s1-b/t2. Commands: private direct-cc harness
 reproducing score_symbol on the base, score_symbol, align_symbol,
 residual_map --object, the instrumented cc with CDX_DETAIL_WEB=all.
 
+#### 2026-09-16, lane s2-a: the span pointer as a type-4 web, 17 to 9
+
+Baseline reproduced at 17 (212/12/0/2, first +0x58); identity gate passed
+on procedure 0. Four cycles, 34 cells. Adopted at 9: 220 exact, 4 naming,
+0 immediate, 2 structural, first +0xC0, frame 0x80, delta 0.
+
+- p2 colours in ascending web number and both `span` (web 14, created at
+  event 5) and `firstItem` (web 19, event 7) are type-3 webs, so a
+  declared `span` is always numbered first and takes v1. Dead
+  `firstItem` definitions at the loop head (zero, spanCount,
+  self-assignment) are deleted before numbering: inert at 17.
+- Reading the four span fields through the expression itself, spelled
+  with the union's NON-volatile member, is CSE'd to one load and makes
+  the base a type-4 web numbered after every type-3 web: it is decided
+  after firstItem and takes a0, firstItem v1. The shard's "+24 for the
+  expression form" was the volatile member re-read per occurrence; the
+  volatile qualifier never produced the loop-head reload (the carrier
+  form with the non-volatile member is byte-identical to the base), the
+  memory-class struct does. A volatile first read with non-volatile
+  others is 207, +8 to +16.
+- The remaining rows are as1 order: the mask/selector zero inits (two
+  rows), and loop 1's tail (the binIndex/binEnd sign-extension order and
+  the slti position, one candidate-only and one target-only word). Loop
+  1 as a `for` still loses the counter numbering on this shape (hoisted
+  init 26, comma init 26, plain 63). The 16-cell physical-line grouping
+  lattice of the tail's four statements, in two statement orders, floors
+  at 9; four cells reach 221 exact with one structural row and a
+  different residual (10).
+
+Next: the tail is as1's list order among four independent statements on
+one line; the lever left is the statement set itself (a `bit` or
+`binStart` spelling that changes which instruction is ready first), and
+the init pair is a two-move tie the probes may be deciding. Read
+`cc -Wa,-R` for loop 1 before the next cell.
 <!-- plateau-handoff:overlay19BuildSpatialMasks:end -->

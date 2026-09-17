@@ -1,11 +1,10 @@
 #include "overlays/overlay019.h"
 
 #define O19_LOAD_SPAN_FIELDS \
-    span = (O19Span *)((u8 *)group->spans + frame.offset.vSpanOffset); \
-    firstItem = span->itemStart; \
-    itemEnd = (span + 1)->itemStart; \
-    vertexBase = span->vertexBase; \
-    bit = span->flags
+    firstItem = ((O19Span *)((u8 *)group->spans + frame.offset.spanOffset))->itemStart; \
+    itemEnd = (((O19Span *)((u8 *)group->spans + frame.offset.spanOffset)) + 1)->itemStart; \
+    vertexBase = ((O19Span *)((u8 *)group->spans + frame.offset.spanOffset))->vertexBase; \
+    bit = ((O19Span *)((u8 *)group->spans + frame.offset.spanOffset))->flags
 #define O19_ADD_REVERSED(a, b) ((b) + (a))
 #define O19_ADVANCE_SPAN \
     frame.index.spanIndex = frame.index.vSpanIndex + 1; \
@@ -28,6 +27,11 @@ typedef struct O19SpatialMaskFrame {
 /* s1-b (2026-09-16): a fresh s16 bin counter (numbered between binEnd and
  * binStart, 9300/5 like both), an xMax probe in the vertex loop (4100/8 puts
  * xMax ahead of xMin) and the two loop-1 inits on one physical line: 63 to 17. */
+/* s2-a (2026-09-16): the span fields are read through the expression itself
+ * via the NON-volatile union member (one CSE'd load), so the base is a type-4
+ * web numbered after firstItem's type-3 web and takes a0 where a declared
+ * `span` took v1: 17 to 9. Left: the mask/selector init order and loop 1's
+ * tail, both as1 order. */
 #ifdef NON_MATCHING
 void overlay19BuildSpatialMasks(O19Context *context, O19Group *group, O19Output *output) {
     O19SpatialMaskFrame frame; s32 item, itemEnd, selector; s16 vertexBase; O19Span *span; O19Point *point; O19Vertex *vertices, *vertex; s16 x, y, z, xMax, xMin, yMax, yMin, zMax, zMin; s16 spanCount, lower, upper, step, binStart, binEnd, firstItem, binIndex; u32 bit, mask; ;
@@ -83,10 +87,10 @@ void overlay19BuildSpatialMasks(O19Context *context, O19Group *group, O19Output 
 
 /* PLATEAU-HANDOFF:overlay19BuildSpatialMasks:start
  * symbol: overlay19BuildSpatialMasks
- * score: 17/227 words
+ * score: 9/227 words
  * frame: 0x80
  * relocations: 0
- * first-mismatch: +0x58
- * summary: Fresh bin counter, xMax probe and a folded init line reach 17; the p2-ordered span/firstItem pair and the selector/mask init order remain.
+ * first-mismatch: +0xC0
+ * summary: The span base as a non-volatile expression web puts firstItem in v1 and span in a0, 17 to 9; the mask/selector init order and loop 1's tail schedule remain, both as1 order.
  * PLATEAU-HANDOFF:overlay19BuildSpatialMasks:end
  */

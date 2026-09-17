@@ -94,14 +94,14 @@ void func_80046E70(FxCone *cone) {
     }
     mmFree(cone);
 }
-/* 111 instructions against the target's 110, with the -0x48 frame and all four
- * local stack homes exact. The single extra instruction is located: the target
- * computes `cone + 0x38` once into a register, stores it as `cone->vertices`,
- * and adds the two sub-block sizes to *that* register; every source spelling
- * tried -- reading the field back, carrying a local, `(u8 *)(cone + 1)`,
- * chaining through `cone->addresses[0]`, and s32 arithmetic -- lets IDO
- * reassociate the sum into `cone + size` followed by a separate `+ 0x38`,
- * which is the extra word and the register rotation that follows it. */
+/* Size and frame are exact (110 words, 0x48). A named `cone + 0x38` plus an
+ * L97 `if (1) { }` between that store and the sub-block adds stops uopt
+ * reassociating the sum into `cone + size` then `+ 0x38`. The leftover 23
+ * is that region's block split: arg3/arg4/arg7 loads cannot hoist above
+ * vertices, plus a t5/t6/t7 ring at the allocator join. Two names, xor-0,
+ * volatile, and integer adds either restore the extra word or add more.
+ * Identity-gated proc 1: v0/v1 colour swap accepts and stays at 23.
+ */
 #ifdef NON_MATCHING
 extern void *func_8002B280(s32 size, s32 tag);
 extern void *func_80034448(s32 resourceId);
@@ -142,13 +142,12 @@ void *func_80046EC4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
         } else {
             cone->alternateTexture.value = 0;
         }
-        cone->vertices = (u8 *) ((s32) cone + 0x38);
+        temp_v1 = (u8 *) ((s32) cone + 0x38);
+        cone->vertices = temp_v1;
         temp_a0 = arg8 + 1;
-        temp_v1 = cone->vertices;
-        temp_v1 += sp44;
-        cone->addresses[0] = (u8 *) temp_v1;
-        temp_v1 += sp40;
-        cone->addresses[1] = (u8 *) temp_v1;
+        if (1) { }
+        cone->addresses[0] = temp_v1 + sp44;
+        cone->addresses[1] = temp_v1 + sp44 + sp40;
         cone->mode = temp_a0;
         cone->segmentCount = arg8;
         cone->addressIndex = 0;
@@ -2424,11 +2423,11 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:func_80046EC4:start
  * symbol: func_80046EC4
- * score: 60/110 words
+ * score: 23/110 words
  * frame: 0x48
  * relocations: 6
  * first-mismatch: +0x68
- * summary: Fresh +4-byte baseline confirms the address-base CSE blocker; all recorded source spellings remain closed and no schedule draw is exposed.
+ * summary: L97 named cone+0x38 carrier closed the extra word (60/+4 to 23/0). Remaining is the region split vs as1 hoist of arg3/arg4/arg7, and the allocator-join ring.
  * PLATEAU-HANDOFF:func_80046EC4:end
  */
 

@@ -66,7 +66,7 @@
       "source_commit": "4e4a459d5ff43edbc88b3a3f60181a18e741efa9"
     },
     "func_8000590C": {
-      "ledger_commit": "34281081406b7ff6adc76a6b1761378aa383efe5",
+      "ledger_commit": "2fbdaed20882892ad514639bef1160dc1d27cc8d",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "c7c021db5a6303c61d76c7263768833fe680a3e0"
     },
@@ -76,7 +76,7 @@
       "source_commit": "25a15368d81a57531735f338d69d8bad165c9def"
     },
     "func_80006534": {
-      "ledger_commit": "c3d9853d69e1b556ec83cd616d46991da7cbae27",
+      "ledger_commit": "2fbdaed20882892ad514639bef1160dc1d27cc8d",
       "reason": "Closed before L142/L144/L131/L139 existed. L142: a call-spanning web is denied exactly the argument registers those calls load, so arity is the lever not the ratio. L144: address-taking forces the reload without volatile edges.",
       "source_commit": "f7fe64fb8567b9f911b712d15ec70f5d3fa2ca7c"
     },
@@ -611,7 +611,7 @@
       "source_commit": "e12c163fc1b55b57589ccc264ecfdbf5b8e14e46"
     },
     "func_80040B88": {
-      "ledger_commit": "0d16f1acb5e1595715358e46e9c57a062057b355",
+      "ledger_commit": "3d2b03caa524d675a080dcc6cdca3e68543835a4",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "b701ad529fe7bf151ddcab76827ed1c4b84ceb70"
     },
@@ -871,7 +871,7 @@
       "source_commit": "664ad5551fe066443391c35d02455f93eb20279c"
     },
     "func_overlay_002_F0000C90_1857A88": {
-      "ledger_commit": "0529a46305388d625c10ebd40d7c0888aa6e5c6a",
+      "ledger_commit": "3d2b03caa524d675a080dcc6cdca3e68543835a4",
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
       "source_commit": "aa4b385dc34d592224caab8582a956f378d0f668"
     },
@@ -1561,7 +1561,7 @@
       "source_commit": "7cf4e7f482f499efd8daecf1e9615cd9264feeb0"
     },
     "overlay15InitStarsAndPalette": {
-      "ledger_commit": "0d16f1acb5e1595715358e46e9c57a062057b355",
+      "ledger_commit": "4364725b5000f9d0cf7173a508ef259228dc8d77",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "b39a489cae66acb9cfa460eb4ffcc9d84939d009"
     },
@@ -1611,7 +1611,7 @@
       "source_commit": "5ea79b6e4ae7fbb40b9d0042eb2e5d0ef0a5ca32"
     },
     "overlay19BuildSpatialMasks": {
-      "ledger_commit": "fce16690af893e1d72e87cd91be1cd7327b3280d",
+      "ledger_commit": "2fbdaed20882892ad514639bef1160dc1d27cc8d",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "02970e708f35145bd3a62b6fcc1e04d064265ede"
     },
@@ -1776,7 +1776,7 @@
       "source_commit": "3cf1caab461f215a71df5ea9bcc87a8d7f5481cb"
     },
     "overlay2QueryNode": {
-      "ledger_commit": "afd9ca7e6a7c12f88e5700bb936a604bb6116511",
+      "ledger_commit": "3d2b03caa524d675a080dcc6cdca3e68543835a4",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "3f4feff2e565e4639a6d3863910ce4985e210d6e"
     },
@@ -1906,7 +1906,7 @@
       "source_commit": "8746ae7c862fd77c569ddfca748666c2b00e73da"
     },
     "overlay58FinalizePackedStatus": {
-      "ledger_commit": "3dd87af2c337f0283e974d2e58d3aeba49372264",
+      "ledger_commit": "3389e0e39335be309026813aa34635281b30215f",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "b53bbbf41036d5dfacbf4255e768348979733a6f"
     },

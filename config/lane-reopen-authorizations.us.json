@@ -1531,9 +1531,9 @@
       "source_commit": "203227fa005d0d12a3d2622be9a881e88b57ca5a"
     },
     "overlay14CreateValue": {
-      "ledger_commit": "5399e6d60aa25ed8762a1f913f6eda573393ef2d",
+      "ledger_commit": "a7a053e91f8a1fb0c05431124d0380f958f4ec57",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "1f55a5e678388c6d982aa8efe2e09d16d0648d31"
+      "source_commit": "a7a053e91f8a1fb0c05431124d0380f958f4ec57"
     },
     "overlay14LoadRelocatedValue": {
       "ledger_commit": "62b1b74a9924d06d8a49bb0ae8ab4863c3deb853",
@@ -1611,7 +1611,7 @@
       "source_commit": "5ea79b6e4ae7fbb40b9d0042eb2e5d0ef0a5ca32"
     },
     "overlay19BuildSpatialMasks": {
-      "ledger_commit": "2fbdaed20882892ad514639bef1160dc1d27cc8d",
+      "ledger_commit": "4351c6aa8fe007750e87a762b86bc4102a1629e0",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "02970e708f35145bd3a62b6fcc1e04d064265ede"
     },
@@ -1801,7 +1801,7 @@
       "source_commit": "78918981a33b340f7d55cee244c71b6cb861626c"
     },
     "overlay34CreateRecord": {
-      "ledger_commit": "5399e6d60aa25ed8762a1f913f6eda573393ef2d",
+      "ledger_commit": "abf0ec13a1c2327cfbfadacd27412f0c1c2139b6",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "1099cae0d02415f2829512ad2210fd9982899f43"
     },

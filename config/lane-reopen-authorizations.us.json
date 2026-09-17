@@ -376,9 +376,9 @@
       "source_commit": "473efb87f29361610c29903e16540671387061bf"
     },
     "func_80024978": {
-      "ledger_commit": "c9421ccf0179b31aeb0d2e1870dc035f622c0455",
+      "ledger_commit": "e9c5b142f40647c4226ad8b9ef6b2c15e482da43",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "ecfe80604c2a060c30232d07a05a1bcc4f00933d"
+      "source_commit": "c9421ccf0179b31aeb0d2e1870dc035f622c0455"
     },
     "func_80026FB4": {
       "ledger_commit": "1832e6b4c0ad5b7dd76183f03aae60b074e1cfcd",
@@ -441,7 +441,7 @@
       "source_commit": "0af40ba10fb3711caa178fe4de27170b84a23854"
     },
     "func_8002CF6C": {
-      "ledger_commit": "ed16f01afa36d94df73bf504ddbdb05b2adeacfa",
+      "ledger_commit": "98b4f59ff8dfa4513b26f38598111a12f0e0303c",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
       "source_commit": "ed16f01afa36d94df73bf504ddbdb05b2adeacfa"
     },
@@ -1166,9 +1166,9 @@
       "source_commit": "a2ac228388dd2aad0baab078461c8a768998f597"
     },
     "func_overlay_046_F0000874_188EC6C": {
-      "ledger_commit": "85fc6ee1cbcc4d7398e70f78697b4c2de3206abf",
+      "ledger_commit": "627771580a65db384a4d6e259fb36ec0a63790d7",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "2c760695078c909de710f7d06dc48db1bf24789b"
+      "source_commit": "627771580a65db384a4d6e259fb36ec0a63790d7"
     },
     "func_overlay_046_F0001228_188F620": {
       "ledger_commit": "bbfc59f2017a100cb07aa899975d2abd644b152a",
@@ -1226,7 +1226,7 @@
       "source_commit": "3c0a8dce98c35c10e7e5217411a916ecbf0b50ea"
     },
     "func_overlay_056_F00001A0_18A2F18": {
-      "ledger_commit": "1aa50f6d54666a771bfd0c212864142aa9faf2e2",
+      "ledger_commit": "4d685542da42fa2b9be7883d065ba43fa0bbf245",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "3e97d289a17e8ed17219474474e67477a2e4490f"
     },

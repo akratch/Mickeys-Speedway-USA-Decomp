@@ -1837,15 +1837,16 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     func_overlay_008_F00049E8_1862740(owner, state, update);
 
     if (state->kind1 == 4) {
-        if ((state->motion4 < 0.0f) && (limit != 0.0f)) {
-            if (state->motion4 < -limit) {
+        /* Address-form reads reload limit from its incoming slot (L144). */
+        if ((state->motion4 < 0.0f) && (*(f32 *)&limit != 0.0f)) {
+            if (state->motion4 < -*(f32 *)&limit) {
                 outputAngle = -0x3000;
             } else {
-                outputAngle = (s16)(s32)((12288.0f / limit) *
+                outputAngle = (s16)(s32)((12288.0f / *(f32 *)&limit) *
                                          state->motion4);
             }
             trigA = D_244;
-            strength = -state->motion4 / limit;
+            strength = -state->motion4 / *(f32 *)&limit;
             delta = (update / 60.0f) * strength * 25.0f;
             state->phase3EC += delta;
             state->phase3F0 += delta;
@@ -2445,11 +2446,11 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:start
  * symbol: func_overlay_008_F00034A0_18611F8
- * score: 466/490 words
+ * score: 308/336 words
  * frame: 0x80
  * relocations: 107
  * first-mismatch: +0x1C
- * summary: declaration order moves the sample pointer phase from 482 to 466 positional differences; pointer home, ugen ring, and buffer reload remain
+ * summary: L144 address-form of limit in kind 4 spills the f18 fragment at delta 0; 308 masked. Pointer home, a3 vs a2, and six insertion sites remain.
  * PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:end
  */
 

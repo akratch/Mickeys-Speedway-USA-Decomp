@@ -6,7 +6,7 @@
 - frame: 0x58
 - relocations: 15
 - first mismatch: +0x84
-- summary: Boundary inversion buys the intended draw but costs eight bytes; distributed polarity leaves the missing transfer.
+- summary: Packed w29=c2 plus w39=c3 is 25 additive, not 0. valid is one web spanning encode so v1 is forbidden. L97 and lever 51 do not apply.
 #### 2026-09-12, lane p23-lastmile5: complete colour landscape and boolean shapes
 
 Fresh baseline: 113 words, delta zero, 34 raw and masked differences, frame
@@ -178,5 +178,32 @@ geometry. All private sources, objects, profiles and aligned deltas remain
 under build/l1/overlay3RunCachedModeAction. Commands: configured compilation,
 allocator_trace_receipt, draw_census differences, residual_map comparison,
 finalize_plateau and tools/gates.sh. No new matching-byte credit.
+
+#### 2026-09-17, lane w10-o003: colour floor 25; valid cannot take v1
+
+Identity-gated stock versus instrumented text, symbols and relocations pass
+on the retained 34-word body. Procedure 0. Reproducing the priced pair
+`p1:w29=c2` (29) plus `p1:w39=c3` (30) scores 25 at delta zero, additive.
+That is the selected-lattice floor, not zero, so L160 has no zero-scoring
+force to source-route.
+
+On this shape valid is web 36: save 1.67, nocs 3, colour a0. Its cost list
+starts at a0; v0 and v1 are absent because the one `valid` name spans the
+encode call. Forcing it onto v1 is not a legal colour. Lever 51 does not
+apply: the body loads `objects[cachedIndex]` once and does not walk a
+pointer.
+
+L97 `if (1)` and `do { } while (0)` around the valid block are
+byte-identical to the baseline. Repeating `angle << 16` at the bounds is
+the same object as `(s16)angle`. Copying valid through pointer-typed
+`objects` copy-propagates away. Rehoming the shift into `encoded` is the
+known 43-word shifted form: the extra word is a move of that symbol into
+a1, and forcing that web onto a1 regresses because valid already occupies
+a1. An else-zero birth of valid after encode costs 12 bytes.
+
+The named requirement is still two ranges: a bounds boolean that dies
+before encode (so v1 is offered) and a switch carrier born after the path
+check, without else-zero stores or a new frame slot. The guarded 34-word
+body is retained. Stop under ADR 0018.
 
 <!-- plateau-handoff:overlay3RunCachedModeAction:end -->

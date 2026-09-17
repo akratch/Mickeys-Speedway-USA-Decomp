@@ -63,6 +63,6 @@ s32 overlay3RunCachedModeAction(Overlay3Object *anchor, Overlay3Control *control
  * frame: 0x58
  * relocations: 15
  * first-mismatch: +0x84
- * summary: Boundary inversion buys the intended draw but costs eight bytes; distributed polarity leaves the missing transfer.
+ * summary: Packed w29=c2 plus w39=c3 is 25 additive, not 0. valid is one web spanning encode so v1 is forbidden. L97 and lever 51 do not apply.
  * PLATEAU-HANDOFF:overlay3RunCachedModeAction:end
  */

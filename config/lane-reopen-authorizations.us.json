@@ -421,9 +421,9 @@
       "source_commit": "6091b1a01df312435a7fd6ecae778481fb795ce4"
     },
     "func_8002B040": {
-      "ledger_commit": "98c9047772916494b41744b84a8f76ec310b32fc",
+      "ledger_commit": "5c3cceaf27b05be8f81df1e81fbb7d0de7972017",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "5907a4a9b16b4dbd443a6bc42e8341fb475ae75d"
+      "source_commit": "5c3cceaf27b05be8f81df1e81fbb7d0de7972017"
     },
     "func_8002B524": {
       "ledger_commit": "8740f3fb1d724dd4cc8e782f7635d0a189ac09f8",
@@ -1751,7 +1751,7 @@
       "source_commit": "d51a63a59b8a276a4138b013e4437868c9f0b21e"
     },
     "overlay25UpdateEffect": {
-      "ledger_commit": "25ed877e2ceb660ad1e76664569e101452565665",
+      "ledger_commit": "9025728e4b4617b24f97b694aefb07949cffa49e",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "25ed877e2ceb660ad1e76664569e101452565665"
     },
@@ -1776,9 +1776,9 @@
       "source_commit": "3cf1caab461f215a71df5ea9bcc87a8d7f5481cb"
     },
     "overlay2QueryNode": {
-      "ledger_commit": "3d2b03caa524d675a080dcc6cdca3e68543835a4",
+      "ledger_commit": "61ef29828620ea111f9791884f6b91dfc2754f26",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "3f4feff2e565e4639a6d3863910ce4985e210d6e"
+      "source_commit": "61ef29828620ea111f9791884f6b91dfc2754f26"
     },
     "overlay31CreatePool": {
       "ledger_commit": "b3a9e542ad9f25a120c19b3d230a6d2618239014",
@@ -1831,9 +1831,9 @@
       "source_commit": "5ef33dd090e496c017241f75f1167bef831a8a2f"
     },
     "overlay3RunCachedModeAction": {
-      "ledger_commit": "9bb612ece7f0a2bf67a9547588178c58b67e7680",
+      "ledger_commit": "14731352a97c4f5f2d56674fbf867ff3ca944bd2",
       "reason": "New mechanisms found today: lever 51, a hand-written cursor blocks the register names and indexing the parallel arrays closed three functions in one pass; and lever 50, an unrelocated literal address pair scores as a false residual.",
-      "source_commit": "9bb612ece7f0a2bf67a9547588178c58b67e7680"
+      "source_commit": "14731352a97c4f5f2d56674fbf867ff3ca944bd2"
     },
     "overlay3SelectScoredObject": {
       "ledger_commit": "63241f7ed95f2160fef3e84e44676ac5aeadafad",

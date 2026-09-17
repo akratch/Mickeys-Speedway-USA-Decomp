@@ -280,10 +280,10 @@ Relocation-masked mismatch evidence covers **280 / 280** resolved rows. The raw 
 
 | Threshold | Count |
 |---|---:|
-| raw `differing_words <= 5` | 9 |
-| relocation-masked `differing_words <= 5` | 10 |
-| raw `differing_words <= 10` | 18 |
-| relocation-masked `differing_words <= 10` | 19 |
+| raw `differing_words <= 5` | 10 |
+| relocation-masked `differing_words <= 5` | 11 |
+| raw `differing_words <= 10` | 19 |
+| relocation-masked `differing_words <= 10` | 20 |
 | raw `differing_words <= 20` | 29 |
 | relocation-masked `differing_words <= 20` | 29 |
 
@@ -313,17 +313,17 @@ units remain distinct.
 | 16 | `src/main/particles.c` | `func_8003D25C` | `main` | `register-only` | 672 | 68 | 68 | 80 | 80 | 0 | — |
 | 17 | `src/overlays/o019/overlay19BuildSpatialMasks.c` | `overlay19BuildSpatialMasks` | `o019` | `schedule-only` | 908 | 9 | 9 | 192 | 192 | 0 | — |
 | 18 | `src/main/models_5B300.c` | `func_8005ABA8` | `main` | `other` | 444 | 2 | 2 | 60 | 60 | 0 | — |
-| 19 | `src/overlays/o034/overlay34CreateRecord.c` | `overlay34CreateRecord` | `o034` | `other` | 500 | 4 | 2 | 12 | 232 | 0 | — |
-| 20 | `src/overlays/o001/overlay_001.c` | `overlay1ActivateObject` | `o001` | `other` | 352 | 14 | 3 | 100 | 108 | 0 | — |
-| 21 | `src/overlays/o057/overlay57UpdateModeState.c` | `overlay57UpdateModeState` | `o057` | `other` | 1,416 | 5 | 5 | 264 | 264 | 0 | — |
-| 22 | `src/overlays/o009/overlay_009.c` | `func_overlay_009_F0000540_1866BB8` | `o009` | `other` | 516 | 9 | 8 | 76 | 76 | 0 | — |
-| 23 | `src/main/audiomgr.c` | `func_80002134` | `main` | `other` | 84 | 9 | 9 | 24 | 24 | 0 | — |
-| 24 | `src/overlays/o043/overlay43ComputeMotion.c` | `func_overlay_043_F00010A8_188B078` | `o043` | `other` | 220 | 9 | 9 | 116 | 116 | 0 | — |
-| 25 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
-| 26 | `src/overlays/o068/overlay68CheckKind.c` | `overlay68CheckKind` | `o068` | `other` | 320 | 10 | 10 | 80 | 80 | 0 | — |
-| 27 | `src/overlays/o031/overlay31CreatePool.c` | `overlay31CreatePool` | `o031` | `other` | 200 | 12 | 11 | 40 | 40 | 0 | — |
-| 28 | `src/overlays/o001/overlay_001.c` | `overlay1FindPreviousUsable` | `o001` | `other` | 160 | 14 | 12 | 4 | 20 | 0 | — |
-| 29 | `src/overlays/o014/overlay14CreateValue.c` | `overlay14CreateValue` | `o014` | `other` | 384 | 14 | 13 | 84 | 144 | 0 | — |
+| 19 | `src/overlays/o014/overlay14CreateValue.c` | `overlay14CreateValue` | `o014` | `other` | 384 | 3 | 2 | 84 | 344 | 0 | — |
+| 20 | `src/overlays/o034/overlay34CreateRecord.c` | `overlay34CreateRecord` | `o034` | `other` | 500 | 4 | 2 | 12 | 232 | 0 | — |
+| 21 | `src/overlays/o001/overlay_001.c` | `overlay1ActivateObject` | `o001` | `other` | 352 | 14 | 3 | 100 | 108 | 0 | — |
+| 22 | `src/overlays/o057/overlay57UpdateModeState.c` | `overlay57UpdateModeState` | `o057` | `other` | 1,416 | 5 | 5 | 264 | 264 | 0 | — |
+| 23 | `src/overlays/o009/overlay_009.c` | `func_overlay_009_F0000540_1866BB8` | `o009` | `other` | 516 | 9 | 8 | 76 | 76 | 0 | — |
+| 24 | `src/main/audiomgr.c` | `func_80002134` | `main` | `other` | 84 | 9 | 9 | 24 | 24 | 0 | — |
+| 25 | `src/overlays/o043/overlay43ComputeMotion.c` | `func_overlay_043_F00010A8_188B078` | `o043` | `other` | 220 | 9 | 9 | 116 | 116 | 0 | — |
+| 26 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
+| 27 | `src/overlays/o068/overlay68CheckKind.c` | `overlay68CheckKind` | `o068` | `other` | 320 | 10 | 10 | 80 | 80 | 0 | — |
+| 28 | `src/overlays/o031/overlay31CreatePool.c` | `overlay31CreatePool` | `o031` | `other` | 200 | 12 | 11 | 40 | 40 | 0 | — |
+| 29 | `src/overlays/o001/overlay_001.c` | `overlay1FindPreviousUsable` | `o001` | `other` | 160 | 14 | 12 | 4 | 20 | 0 | — |
 | 30 | `src/overlays/o015/overlay_015.c` | `overlay15DrawRain` | `o015` | `other` | 216 | 18 | 13 | 8 | 116 | 0 | — |
 | 31 | `src/main/objects.c` | `func_80006534` | `main` | `other` | 820 | 17 | 17 | 284 | 284 | 0 | — |
 | 32 | `src/main/flash_58C10.c` | `func_800580F0` | `main` | `other` | 204 | 20 | 20 | 68 | 68 | 0 | — |

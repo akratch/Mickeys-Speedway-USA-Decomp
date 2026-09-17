@@ -16,24 +16,18 @@ extern s32 frontGetLanguage(void);
 extern void *overlay14LoadRelocatedValue(s32 key, s32 kind);
 extern void *func_overlay_014_F00009F4_18702CC(s32 key, s32 kind);
 
-/* Plateau (scheduler trace reopen): exact 0x180 size and 0x28 frame;
- * 83/96 relocation-aware words match (14 raw, 13 masked differences). A
- * fidelity-clean as1 -R capture proved
- * that the initial slot/end address chains are independent and selected by
- * source line. Keeping the assignment and loop label on one physical line
- * closes the two low-half schedule words and their four data identities.
- * All 15 relocation sites and identities align after authenticating the
- * resident language accessor at +0xAC. The residual begins in the chosen/slot
- * pointer web after the active-slot load. A zero-byte if (1) region around
- * the chosen/call block exposes one coherent three-register ring, but does
- * not remove the extra pointer home. */
+/* Retained candidate: 2 masked words at delta 0, frame 0x28, 15 relocations
+ * (lane w1-b, 2026-09-16).  The two rows left are the tail's count load,
+ * which the ROM schedules above the key store; that needs as1 to know the
+ * slot pointer and &gOverlay14SlotCountE8 cannot alias (a `.noalias` stamp
+ * ugen does not emit for a pointer whose defs have three different bases),
+ * or the ROM's own emission order.  Read the shard before touching it. */
 #ifdef NON_MATCHING
 void *overlay14CreateValue(s32 key, s32 alternate) {
-    register Overlay14ValueSlot *slot;
     void *value;
     s32 index;
-    Overlay14ValueSlot *volatile chosen;
     s32 kind;
+    Overlay14ValueSlot *slot;
 
     slot = gOverlay14Slots28; scan_loop:
     value = slot->value;
@@ -60,9 +54,22 @@ void *overlay14CreateValue(s32 key, s32 alternate) {
         return 0;
     }
     if (1) {
-        chosen = &gOverlay14ChosenSlots28[index];
+        /* Lane w1-b (2026-09-16), 13 -> 2 masked at delta 0; see
+         * docs/lastmile-block-budget-globals.md.  One pointer symbol for the
+         * scan, the free loop and the chosen slot, DECLARED FOURTH: a coloured
+         * pointer that is spilled around calls spills to its own reserved
+         * home, and homes descend in declaration order (L99), which is what
+         * puts the spill at 0x18 and sizes the frame to the target's 0x28.
+         * `base + index` is a different IR name from the free loop's
+         * `&base[index]`, so the shift is not PRE'd into a web and is drawn
+         * from the ring as shipped.  The dead `index = 0` stops uopt
+         * rematerialising the pointer from a spilled index after each call,
+         * and the or-with-zero read is one def and one use at zero width
+         * that lifts the pointer web's net past `value`'s 25/3. */
+        slot = gOverlay14ChosenSlots28 + index;
+        index = 0;
+        slot = (Overlay14ValueSlot *)((u32)slot | 0);
         kind = frontGetLanguage();
-        slot = chosen;
 
     switch (kind) {
         case 1:
@@ -102,10 +109,10 @@ void *overlay14CreateValue(s32 key, s32 alternate) {
 
 /* PLATEAU-HANDOFF:overlay14CreateValue:start
  * symbol: overlay14CreateValue
- * score: 13/96 words
+ * score: 2/96 words
  * frame: 0x28
  * relocations: 15
- * first-mismatch: +0x54
- * summary: Fresh 10-draw baseline confirms the extra +0x24 pointer home; declaration-order probe moved no draw or emission line and was restored.
+ * first-mismatch: +0x158
+ * summary: one fourth-declared slot pointer spilled to its own home, base-plus-index pointer keeps the shift a ring draw; two rows left are the tail count-load hoist over the key store.
  * PLATEAU-HANDOFF:overlay14CreateValue:end
  */

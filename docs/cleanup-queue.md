@@ -19,6 +19,7 @@ not a correctness gap.
 
 | Function | TU | Non-natural form | Notes for the cleaner pass |
 |---|---|---|---|
+| `func_8000590C` | objects.c spawn | dead `aligned` pointer reused as the unk48 nested integer | The nested add commutes object-first only when that operand is an isvar, and a new local moves the 0x90 frame. `offset` already carries the unk4C nested value; `aligned` is dead after the copy. Seek a natural integer temp that keeps 719 words, frame `0x90`, and 99 relocations. |
 | `overlay19BuildAdjacency` | overlay 19 adjacency builder | fifth-argument assignment to the existing local inside the call | The local is private and unobserved by other arguments. Removing only the assignment adds a draw and breaks the selector emission order. Seek a plain argument retaining 123 words, frame `0x80`, and one relocation identity. |
 | `overlay89InitializeEffect` | overlay 89 effect initializer | inert `if (1)` region around the maintain conditional | The region makes the retained state pointer stay caller-saved. Independent semantic review passed; seek natural grouping preserving 205 words and the runtime relocation surface. |
 | `overlay1FindType5ByKey` | overlay 1 record lookup | single-execution `do/while(0)` predicate block and packed cursor/loop line | The unused key local was removed without changing output. Replacing the predicate scaffold with an ordinary block regressed; retain the used Boolean and bounds-before-offset ordering while seeking natural grouping. |

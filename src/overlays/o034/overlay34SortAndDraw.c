@@ -60,10 +60,10 @@ void overlay34SortAndDraw(s32 arg0, s32 arg1) {
         for (j = 0; j < i; j++) {
             if (distances[j + 1] < distances[j]) {
                 swapDistance = distances[j];
-                distances[j] = distances[j + 1];
-                distances[j + 1] = swapDistance;
                 record = gOverlay34Pointers[j];
+                distances[j] = distances[j + 1];
                 gOverlay34Pointers[j] = gOverlay34Pointers[j + 1];
+                distances[j + 1] = swapDistance;
                 gOverlay34Pointers[j + 1] = record;
             }
         }
@@ -80,23 +80,24 @@ void overlay34SortAndDraw(s32 arg0, s32 arg1) {
                 length = record->frameCount;
                 half = length >> 1;
                 position = record->frame;
+                i = position;
                 if (position < half) {
-                    overlay34InterpolateColor(position, half,
+                    overlay34InterpolateColor(i, half,
                                               (u8 *)&record->color0A,
                                               (u8 *)&record->color1A,
                                               (u8 *)&color1);
-                    overlay34InterpolateColor(position, half,
+                    overlay34InterpolateColor(i, half,
                                               (u8 *)&record->color0B,
                                               (u8 *)&record->color1B,
                                               (u8 *)&color2);
                 } else {
-                    position -= half;
+                    i -= half;
                     length -= half;
-                    overlay34InterpolateColor(position, length,
+                    overlay34InterpolateColor(i, length,
                                               (u8 *)&record->color1A,
                                               (u8 *)&record->color2A,
                                               (u8 *)&color1);
-                    overlay34InterpolateColor(position, length,
+                    overlay34InterpolateColor(i, length,
                                               (u8 *)&record->color1B,
                                               (u8 *)&record->color2B,
                                               (u8 *)&color2);
@@ -114,10 +115,10 @@ void overlay34SortAndDraw(s32 arg0, s32 arg1) {
 
 /* PLATEAU-HANDOFF:overlay34SortAndDraw:start
  * symbol: overlay34SortAndDraw
- * score: 128 differing words
+ * score: 97 differing words
  * frame: 0x1A0
  * relocations: 16
- * first-mismatch: +0x14
- * summary: A fidelity-gated phase-local block moved ten home operands but left the 128-word target distance flat; the one-word deficit remains.
+ * first-mismatch: +0x50
+ * summary: Size closed at 760 B / 0x1A0. Interleaved swap plus reused-i copy. Unforced 97. Forced packing 64. Colour landscape floor 64. Homes still 24 B high.
  * PLATEAU-HANDOFF:overlay34SortAndDraw:end
  */

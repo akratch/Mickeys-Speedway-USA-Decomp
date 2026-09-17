@@ -2,18 +2,18 @@
 ### `overlay19BuildSpatialMasks` plateau handoff
 
 - source: `src/overlays/o019/overlay19BuildSpatialMasks.c`
-- score: 9/227 words
+- score: 2/227 words
 - frame: 0x80
 - relocations: 0
 - first mismatch: +0xC0
-- summary: The span base as a non-volatile expression web puts firstItem in v1 and span in a0, 17 to 9; the mask/selector init order and loop 1's tail schedule remain, both as1 order.
+- summary: Loop-1 tail closed by as1 lineno stamps: 9 to 2. Left: ugen emits mask=0 before selector=0; swapping those two cc -S moves is byte-exact.
 
 - geometry: Target and configured C are both `0x38C`/908 bytes/227 words with frame `0x80`; the owned Overlay 19 range is `+0xF58..+0x12E4`, ROM `0x18761B0..0x187653C`, followed by separately owned 12-byte assembly padding.
 - relocation proof: Target runtime and candidate static surfaces both contain zero relocation records; count, type, offset, and identity surfaces are therefore vacuously exact, and preflight is complete.
 - diagnosis: Fresh workbench comparison has 63 raw/normalized differences, two opcode mismatches, 61 register differences, and twenty shift-tolerant alignment gaps.
 - history: The body remains the original guarded reconstruction from `752cefadbde9a2ffb9128690055650d33e6edcdc`; this target-named evidence refresh changes no executable source.
 - authorized maintenance reproof: A second forced configured V0 from authorization tip `ce9f8cd6b8581e4ec3f3014c88ec2a6e66a8d310` reproduces every metric and confirms the separate `+0x12E4..+0x12F0` padding boundary.
-- next action: Preserve the fallback pending a genuinely new natural pointer/item-index coloring or independently proved source structure. Prior declaration, lifetime, load-order, alias, loop-variable, flag, and permutation families remain closed.
+- next action: ugen emits mask=0 before selector=0 at unchanged colours; swapping those two cc -S moves reassembles byte-exact. Statement order, type, declaration and #line on the inits recolour selector off a2.
 
 #### 2026-09-13, lane `j1`: point and scaled-offset draw controls
 
@@ -161,4 +161,30 @@ one line; the lever left is the statement set itself (a `bit` or
 `binStart` spelling that changes which instruction is ready first), and
 the init pair is a two-move tie the probes may be deciding. Read
 `cc -Wa,-R` for loop 1 before the next cell.
+
+#### 2026-09-17, lane `lm-o019`: loop-1 tail is as1 lineno, 9 to 2
+
+Baseline reproduced at 9 (220/4/0/2, first +0xC0, candidate-only +0x204,
+target-only +0x1FC). Colour was not re-run. `cc -S` and `cc -Wa,-R`
+show loop 1's slti stamped on the trailing `;` (later than the
+increments) while loops 2 and 3 stamp slti and `binIndex++` with the
+`for` header, which is why those tails already matched.
+
+Three lineno stamps close the tail at delta 0, frame 0x80: `bit <<= 1`
+on its own line so its move is the delay leftover; `#line 49` on
+`binIndex++` so its sign-extend beats binEnd's; `#line 48` on the
+trailing `;` so slti carries the `do` line and issues before binStart's
+sign-extend. `#line 1` also works; 48 is the `do` header. A 24-perm
+one-line grouping of the four increments floors at 8 without `#line`.
+A `for` still loses the counter numbering (24). overlay40 already
+stamps `#line` in this tree.
+
+Left: two naming rows at +0xC0, the mask/selector zero-inits (`t0` then
+`a2` against `a2` then `t0`). Statement order, types, declaration
+order, physical-line split and `#line` on the inits do not swap them
+without recolouring selector off `a2`. uopt emits mask=0 first
+regardless. Swapping those two moves in the `cc -S` listing and
+re-assembling with `cfe -E` + `as0` + `as1` under compiler-path flags
+(no `-pic0 -noglobal`) is byte-exact. Next: whatever makes ugen emit
+the selector copy first at unchanged colours.
 <!-- plateau-handoff:overlay19BuildSpatialMasks:end -->

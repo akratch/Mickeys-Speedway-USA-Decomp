@@ -1011,9 +1011,9 @@
       "source_commit": "ab6fd14822ae069ee0878ae4f4a8837f12ad2456"
     },
     "func_overlay_022_F0000D30_1878E38": {
-      "ledger_commit": "2040eccb4a35a30ee65c29a4616a5dffdd9a96ad",
+      "ledger_commit": "726d42105ac0646d7164d2e91aa4d757833db9b8",
       "reason": "New mechanisms found today: lever 51, a hand-written cursor blocks the register names and indexing the parallel arrays closed three functions in one pass; and lever 50, an unrelocated literal address pair scores as a false residual.",
-      "source_commit": "7f1050096930b1bc98f4ba21ffce2aaea1458841"
+      "source_commit": "726d42105ac0646d7164d2e91aa4d757833db9b8"
     },
     "func_overlay_026_F00001A0_187A598": {
       "ledger_commit": "30646111e6ecaaf7a3a2796f44709a5fb03e05b0",
@@ -1546,9 +1546,9 @@
       "source_commit": "d4630ba31d6b32e2480c99f698348321b4e11ff4"
     },
     "overlay15DrawRain": {
-      "ledger_commit": "9fa2a74915008156fafcbfe16d998904c10c7849",
+      "ledger_commit": "07531ebaed6708b80155107f4853fde951999aae",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "9fa2a74915008156fafcbfe16d998904c10c7849"
+      "source_commit": "07531ebaed6708b80155107f4853fde951999aae"
     },
     "overlay15DrawScreenStars": {
       "ledger_commit": "99d67c7f96d2dd07e391ad61fe6e6fdb01039327",

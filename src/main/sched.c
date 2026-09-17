@@ -422,7 +422,7 @@ SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
                 address = nestedStart + commandIndex * 8;
 
                 if (address < 0x80000000U) {
-                    address = address + (u32) D_80000000;
+                    address += (u32) D_80000000;
                 }
                 displayList = (SchedGfx *) address;
                 diRcpPrintDL((SchedGfx *) nestedStart, displayList, 0xA0);

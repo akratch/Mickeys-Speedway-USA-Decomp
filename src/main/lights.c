@@ -533,8 +533,8 @@ void func_80018F08(UnkLight *light, s32 updateRate) {
                 offset = index * 12;
                 state->x18 = *(f32 *) ((u8 *) segment->coordinates40 + offset);
                 state->y1C = *(f32 *) ((u8 *) segment->coordinates40 + offset + 4);
-                state->flags2 |= 1;
                 state->z20 = *(f32 *) ((u8 *) segment->coordinates40 + offset + 8);
+                state->flags2 |= 1;
             }
         } else {
             pointListRPY(1, owner, &state->inputX08, &state->x18);
@@ -561,8 +561,8 @@ void func_80018F08(UnkLight *light, s32 updateRate) {
         state->flags2 |= 2;
     }
     if (state->step5C != 0) {
-        state->flags2 |= 4;
         state->value58 = (s16) (state->value58 + (state->step5C * updateRate));
+        state->flags2 |= 4;
     }
     if (state->step5E != 0) {
         state->value5A = (s16) (state->value5A + (state->step5E * updateRate));

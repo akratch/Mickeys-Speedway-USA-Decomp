@@ -1296,6 +1296,9 @@ typedef struct {
 } Objects04FE0SpecialPacket;
 
 #ifdef NON_MATCHING
+/* Lane w3-obj: category zero is a pointer walk (counted i<6 unrolls and
+ * steals s0). Object scan is for-i over D_800C9494[i]. Size exact, 207
+ * masked, 3-vs-3 leftover. */
 void func_80004FE0(s32 arg0) {
     s32 i;
     s32 offset;
@@ -1317,11 +1320,14 @@ void func_80004FE0(s32 arg0) {
     playerCount = func_800291FC();
     D_800C94F8 = 0;
     if ((level[0x83] != 1) && (level[0x83] != 2) && (playerCount > 0)) {
-        for (i = 0; i < 6; i++) {
-            category[i] = NULL;
+        {
+            Objects04FE0Object **slot;
+            for (slot = category; slot < category + 6; slot++) {
+                *slot = NULL;
+            }
         }
-        for (offset = 0; offset < D_800C9498; offset++) {
-            object = (Objects04FE0Object *)D_800C9494[offset];
+        for (i = 0; i < D_800C9498; i++) {
+            object = (Objects04FE0Object *)D_800C9494[i];
             if ((object->unk44 == 5) && (arg0 == object->unk88)) {
                 slot = object->unk84;
                 if ((slot >= 0) && (slot < 6)) {
@@ -1335,7 +1341,7 @@ void func_80004FE0(s32 arg0) {
                 }
             }
         }
-        for (i = 0, records = modeState; i < playerCount; i++, records++) {
+        for (i = 0, records = modeState; i < playerCount; records++, i++) {
             type = records->unk4;
             if (type >= 0xA) {
                 type = 0;
@@ -5589,11 +5595,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80004FE0:start
  * symbol: func_80004FE0
- * score: 189 differing words
+ * score: 207 differing words
  * frame: 0x100
  * relocations: 83
- * first-mismatch: +0x38
- * summary: Workbench structure-mismatch: structure-buckets. Next: resolve category-fill unrolling and packet/index carriers with the frame held exact.
+ * first-mismatch: +0x54
+ * summary: Size exact after pointer-walk category zero-fill and i-indexed object scan. Remaining 3-vs-3 is category CSE copy at plus-58 versus rematerialize at plus-90, plus modeState ILOD at plus-230 and extra s0 reset at plus-2E8. Captured-end, packet cursor, spawn-without-i, L97 fill, and deleting offset all regress. Next: keep category dead during the fill without a new local.
  * PLATEAU-HANDOFF:func_80004FE0:end
  */
 

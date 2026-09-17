@@ -2,11 +2,11 @@
 ### `func_overlay_057_F0004E18_18A8A10` plateau handoff
 
 - source: `src/overlays/o057/func_overlay_057_F0004E18_18A8A10.c`
-- score: 132/1208 words
+- score: 209/1208 words
 - frame: 0x140
 - relocations: 375
-- first mismatch: +0x34
-- summary: Tail pointer probes either fold before output or regress; the target-only tail materialization remains unreachable from measured source forms.
+- first mismatch: +0x100
+- summary: Index form closed the size deficit at delta 0. Aligned residual is still 43 structural plus compiler temps at 0x54/0x58 against 0x5C/0x64. Statement order is a move-one fixed point on this shape.
 
 ## 2026-09-12 (lane `p11-big`): the target's bound is the global's end, read off the object
 
@@ -347,5 +347,52 @@ no source candidate was adopted.
 Validation: `gmake verify` printed
 507341c0a40ca3e9a7cee969b396ee53facfb548 and `tools/gates.sh --staged` passed
 all four gates. The candidate remains `NON_MATCHING`, so no bytes are credited.
+
+
+## 2026-09-17 (lane `w11-o057`): L145-L154 index form closes the size deficit
+
+Deleted the walking `choice` pointer and subscripted `gO57MiddleChoices[index]`
+in a bottom-tested do-while bounded by
+`&gO57MiddleChoices[index] < &gO57MiddleChoices[4]`, keeping `i` as the
+output cursor. IDO strength-reduces the cursor into v0 and the bound into a3;
+`outputIndex` stays in s2 via `i`. Size delta -4 -> 0 (1208 words both sides).
+
+  - before: 132 masked of 1208 words, size delta -4, byte-exact 1105, register
+    naming 53, immediate only 14, really different 43, displacement tax 22,
+    first mismatch +0x34.
+  - after: 209 masked, size delta 0, byte-exact 1106, register naming 55,
+    immediate only 10, really different 43, displacement tax 101, first
+    mismatch +0x100. Frame 0x140 on both sides, 32 slots on both sides.
+
+The positional jump is L155 shadow of later scheduling, not a worse loop:
+the choice walk now matches the target's cursor, bound, output register and
+source post-increment. Compiler temps remain at sp+0x54/sp+0x58 against the
+target's sp+0x5C/sp+0x64.
+
+### Measured and rejected on this shape
+
+  - `while (index < 4)` -- delta +76, 243 masked. The integer bound unrolls.
+  - `i` as the loop index with `outputIndex` as the output cursor -- 488
+    masked at delta 0; `outputIndex` takes an argument register and rotates
+    the temp ring.
+  - `i` as the index with `panelX` as the output cursor -- 209 masked, 1100
+    byte-exact, worse than `index` plus `i`.
+  - dropping the unused `choice` declaration -- frame 0x140 -> 0x138, first
+    immediate +0x0. The unused pointer is the 0x140 home (L99).
+  - `nextSelection` as the index -- byte-identical to `index`.
+  - `tools/blockclimb.py --passes 2` -- 209 -> 209, 0 moves, 1617 compiles,
+    move-one fixed point. L146's previous climb is closed on this shape.
+
+Identity gate PASS: instrumented `IDO_DIR` `.text` is byte-identical to stock.
+`CDX_PROC=0` (single-function TU), 122 p1 decisions.
+
+Do **not** re-run: the integer `index < 4` bound, `outputIndex` as the choice
+loop's output cursor, dropping `choice`, or statement order on this shape.
+
+### What is still open
+
+43 aligned structural rows and the 0x54/0x58 vs 0x5C/0x64 compiler-temp
+homes. Register census is 64 percent coherent over eight windows, not one
+ring phase. Next lever is those homes, not another bound spelling.
 
 <!-- plateau-handoff:func_overlay_057_F0004E18_18A8A10:end -->

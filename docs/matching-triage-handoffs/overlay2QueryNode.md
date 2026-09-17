@@ -281,4 +281,51 @@ unchanged total, so it is coloured after the two address constants; nocs 4
 at total 6 would do it. A probe is the diagnostic; the source form is the
 question. Nothing here touches the short-circuit reissue or the leaf join.
 
+#### 2026-09-16, lane s2-c: the leaf join is a two-armed assignment, and the leaf's nine words are one denied colour
+
+Baseline reproduced at 39 masked, 51 raw, delta zero, frame 0x68, aligner
+223 exact, 15 naming, 2 immediate, 16 really different with the three
+surplus and three missing words. Six cycles, nothing adopted: the closest
+shape scores 41 positionally and is banked here as a finding, not in the
+tree.
+
+The leaf join, read off the target: the loop tail carries one copy of the
+pre-decrement counter (the dead post-decrement temp, on a0), the join block
+materialises a zero into a0 before the D_60 branch, and the two return
+arms copy a1 (leafResult) or a0 into v0. Every reset form measured (a plain
+`count = 0` after the loop, `count = remaining + 1`, xor and subtraction
+zeros, the reset with or without the loop copy, `count = remaining--` in
+the condition or as a statement) is 152 to 155 at minus four: uopt
+constant-folds or forwards a single-def join value into the return and
+deletes the copies. The shard's earlier "+5" for the explicit reset does
+not reproduce. uopt also does not know the induction variable's exit
+value: `return remaining + 1` emits the add. The shape that keeps the zero
+unfolded is a variable with two reaching defs at the return, one per arm:
+`if (D_60 != 0) count = leafResult; else count = 0; return count;` (or the
+ternary assigned to count) removes the +0x17C/+0x194 insertion pair and
+both immediate rows (branch offsets) and scores 41 at delta zero, aligner
+218 exact, 23 naming, 0 immediate, 10 structural, with only the two
+short-circuit pairs left. The loop-test spellings on count (`while (count
+= remaining--)`, the statement form, the split copy) are flat at 41 to 43
+on that shape; the tail copy is a cfe temp in every one.
+
+The 41 shape's leaf residual is three colours, priced by force on the
+instrumented uopt (identity gate passed, procedure 0): the dead temp (web
+69, one block, save 20, offered v0 first and taking it) forced to a0
+cascades leafResult to a1 and count to a0 with no second force, 41 to 32
+at delta zero, accepted (forced=3). So the leaf is one fact: the target's
+temp is not offered v0 in the loop-tail block. Forcing the tail-call child
+expression (web 105, blocks 23 and 24, save 1.5, takes v0) to a0 alone is
+48, because the D_50 address web (151) then takes v0 where the target has
+it on v1; in the target both v0 and v1 were unavailable to 105 and v0 to
+151, which points at one v0 holder present in blocks 11 and 23 that our
+source does not declare. A phantom (nx-a's mechanism) is the reading; a
+web live across a call is not offered v0, so it is not a plain
+function-wide local.
+
+Next: a source that removes v0 from the offer list of the loop-tail temp
+and of the child expression without adding a word, then the two-armed
+join. The sibling diff against func_overlay_002_F0000C90 shares no
+substitution and predicted nothing.
+
 <!-- plateau-handoff:overlay2QueryNode:end -->

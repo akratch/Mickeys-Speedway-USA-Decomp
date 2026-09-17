@@ -2,11 +2,11 @@
 ### `overlay15InitStarsAndPalette` plateau handoff
 
 - source: `src/overlays/o015/overlay_015.c`
-- score: 60/247 words
+- score: 41/247 words
 - frame: 0x40
 - relocations: 14
-- first mismatch: +0x4
-- summary: Index inits ahead of the colour block and the zero/zMax stores ahead of colorDivisor reach 60; the forwarded count*12 definition (s3 against s0) and the FP ring from yRange remain.
+- first mismatch: +0x70
+- summary: A count self-redefinition keeps the size in starIndex's web and the natural xMax/yRange order syncs the FP ring, 60 to 41; the stars address colour, block 1's tail order and the palette index inits remain.
 
 #### 2026-09-13, lane l1: counter reuse and measured bounds scheduling
 
@@ -151,5 +151,61 @@ Evidence under Git's common dir, lane-evidence/s1-b/t3: sources, objects,
 the procedure-2 ladder, side-by-side listings. Commands: private direct-cc
 harness reproducing score_symbol on the base, score_symbol, align_symbol,
 the instrumented cc with CDX_DETAIL_WEB=all.
+
+#### 2026-09-16, lane s2-b: the forwarding is blocked by a self-redefinition of the operand, 60 to 41
+
+Baseline reproduced at 60 masked (61 raw), delta zero, frame 0x40,
+aligner 205 exact, 15 naming, 1 immediate, 27 structural, candidate-only
++0x1CC, target-only +0x218. Retained at 41 (42 raw): 226 exact, 5 naming,
+1 immediate, 17 structural, candidate-only +0x13C and +0x1CC, target-only
++0x130 and +0x218. Six cycles, 260 cells, a private direct-cc harness
+reproducing score_symbol on the base.
+
+The named step (keep the size definition a symbol web) closed. What
+blocks uopt from forwarding starIndex = count * 12 into its two uses is a
+redefinition of the operand in the same block: a dead count = 0 after the
+definition puts the size on s0 (the cc -S listing shows mul into
+starIndex's register instead of an expression temp), but it makes the
+count copy a statement copy that as1 schedules five words late (60, first
++0x18). A self-redefinition, count or-equals 0 (also xor-equals 0, and-equals -1, times-equals 1, shift-left-equals 0;
+plus-equals 0 and minus-equals 0 are +12), blocks the forwarding and is then deleted, so
+count keeps its parameter copy or s2,a0,zero at +0x18 and the head is
+exact through +0x74: 54. A kill in any later block is +4 to +12, and
+every no-copy form without the kill is 243 at +12, so the starCount copy
+in the retained source was load-bearing only against that.
+
+On that head shape the store order was re-climbed (L146): a 180-cell
+lattice over six FP statement orders, ten tail orders and three count
+address forms. The natural order (xMax before yRange's conversion) syncs
+the FP ring, which the s1-b reading called one folded draw behind; the
+cast pointer countAddress = (s32 *)(s32)&gOverlay15StarCount put the
+address's hi part on a1 (pushing the stars address to a2 by accident) and
+writing gOverlay15StarCount = count directly forms the address in s7 as
+the target does; the count store position among the tail stores moves one
+word. 41, delta zero, the whole head to +0x6C exact.
+
+Refuted on the 41 shape (24 cells): every form that re-reads stars from
+the global or the pointer at the loop preheader (120 to 230; the reload
+forms are -4), a fresh first palette index in place of starIndex (76,
+first +0x4: the head colours move), and the three index inits after the
+palette load (42).
+
+What remains, 41 words in three places. The gOverlay15Stars address is a1
+here and a2 in the target with a1 unused in the target's block 1, so an
+invisible occupant of a1 (a phantom web, or an address web spanning the
+allocate call whose a1 is denied by L142) sits in the target's source;
+with the cast pointer that occupant was our count address's hi part.
+Block 1's tail: the target emits or s1,v0,zero last (+0x140), the count
+store at +0xF8 and sw zero at +0x10C, where ours has the stars copy at
++0xF8 and the two stores at +0x128/+0x130; ugen emits move s1,v0 right
+after the call in ours and as1 sinks it, so the target's stars definition
+is later in ugen's order, but every reload spelling measured is far
+worse. The palette head: the target's three index inits are the last
+three words of the block after lw v0,72(v0), and its addiu s0,zero,1
+there is unconditional where ours is PRE-sunk onto the loop-exit path
+(+0x1CC); a fresh variable removes the PRE but recolours the head. Next:
+a spelling of the first palette index that is not starIndex's web but
+does not change the head's colour order, and the a1 occupant read off the
+records with the count-address form of the retained source.
 
 <!-- plateau-handoff:overlay15InitStarsAndPalette:end -->

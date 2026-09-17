@@ -33,7 +33,60 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
-RANKING = pathlib.Path(__file__).resolve().parents[1] / "config" / "nonmatching-ranking.us.json"
+REPO = pathlib.Path(__file__).resolve().parents[1]
+RANKING = REPO / "config" / "nonmatching-ranking.us.json"
+
+
+def check_doc_paths(paths: list[str]) -> list[str]:
+    """Refuse a brief that cites a document which does not exist.
+
+    Three lanes in one campaign were sent to
+    `docs/lastmile-block-budget-globals.md`; the file is
+    `docs/lastmile-block-budget.md`. The name was copied out of a lane report
+    and never opened. A brief that names a missing file spends the lane's
+    first minutes proving the coordinator wrong, and teaches it to distrust
+    the rest of the brief -- which is the part that matters.
+    """
+    problems = []
+    for raw in paths:
+        if (REPO / raw).is_file():
+            continue
+        stem = pathlib.Path(raw).name.split("-")[0]
+        near = sorted(
+            q.relative_to(REPO).as_posix()
+            for q in (REPO / "docs").rglob("*.md")
+            if q.name.split("-")[0] == stem
+        )[:4]
+        hint = f" Did you mean: {', '.join(near)}?" if near else ""
+        problems.append(f"brief cites a missing document: {raw}.{hint}")
+    return problems
+
+
+SHARD_DIR = REPO / "docs" / "matching-triage-handoffs"
+
+
+def prior_work(symbol: str) -> str:
+    """State how much has already been tried, in bytes, never as a dash.
+
+    A dispatch of mine wrote "--" in this column for four targets and the lane
+    read it as "no shard". All four carried six to sixteen kilobytes of
+    recorded attempts, and the lane spent cycles rediscovering them. A second
+    dispatch repeated it. The number is cheap to look up and impossible to
+    misread, so the tool looks it up.
+    """
+    path = SHARD_DIR / f"{symbol}.md"
+    if not path.is_file():
+        return "prior work: no shard -- genuinely untouched"
+    size = path.stat().st_size
+    sections = sum(
+        1 for line in path.read_text(encoding="utf-8", errors="replace").splitlines()
+        if line.startswith("## ")
+    )
+    weight = ("thin" if size < 3000 else
+              "moderate" if size < 10000 else
+              "HEAVY -- read it before forming a hypothesis")
+    return (f"prior work: shard {size:,} B, {sections} recorded pass(es) "
+            f"({weight})")
 
 
 def queued_rows() -> dict[str, dict]:
@@ -170,6 +223,7 @@ def check(plan: dict[str, list[str]]) -> tuple[list[str], list[str]]:
                 line += (f"\n      closure predates the current laws "
                          f"({closure['closed']}); newly applicable: "
                          f"{', '.join(law.split()[0] for law in closure['laws'])}")
+            line += "\n      " + prior_work(symbol)
             notes.append(line)
     return problems, notes
 
@@ -180,6 +234,9 @@ def main(argv: list[str]) -> int:
     parser.add_argument("assignments", nargs="*")
     parser.add_argument("--plan", type=pathlib.Path,
                         help="JSON object mapping lane name to a list of symbols")
+    parser.add_argument(
+        "--cites", action="append", default=[], metavar="PATH",
+        help="a document the brief will cite; refused if it does not exist")
     args = parser.parse_args(argv)
 
     if args.plan:
@@ -193,6 +250,7 @@ def main(argv: list[str]) -> int:
         parser.error("no assignments given")
 
     problems, notes = check(plan)
+    problems = check_doc_paths(args.cites) + problems
     print("\n".join(notes).lstrip("\n"))
     if problems:
         print("\nPLAN REFUSED:", file=sys.stderr)

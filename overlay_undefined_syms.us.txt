@@ -608,7 +608,9 @@ overlay13LoadResourceReloc = 0xf0000000;
 overlay13ReleaseReloc = 0xf0000000;
 
 /* overlay 13: overlay13ProcessRecord.c.o */
-D_2C = 0x0000002c;
+SetLinkSlot_o013Reloc = 0xf0000000;
+gOverlay13ActiveCount = 0x0000002c;
+gOverlay13Gravity = 0x00000000;
 
 /* overlay 13: overlay13ProcessActive.c.o */
 overlay13ProcessRecord = 0xf0000000;
@@ -723,6 +725,9 @@ overlay14UpdateReloc = 0xf0000498;
 
 /* overlay 14: overlay14UpdateTransition.c.o */
 D_C0 = 0x000000c0;
+
+/* overlay 14: func_overlay_014_F00013F4_1870CCC.c.o */
+D_2C = 0x0000002c;
 
 /* overlay 14: func_overlay_014_F0001540_1870E18.c.o */
 gOverlay14Args34 = 0x00000034;

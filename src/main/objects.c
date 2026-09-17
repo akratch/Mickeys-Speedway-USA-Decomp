@@ -911,37 +911,29 @@ void *func_80004454(f32 arg0, f32 arg1, f32 arg2, u8 arg3) {
 /* Keep the preheader's three assignments on one physical line with `do {`:
  * splitting them costs two words at +0x74/+0x78. See func_8000471C, which is
  * the same function against a different object list and needs the same edit. */
-/* Lane lm-obj: plain `for (i = start; i < end; i++)` over list[i]. The
- * hand-unrolled remainder-plus-4x body was +700 / 272 masked. Lane w2-obj:
- * the outer `if (start < end)` duplicated the for-loop test and cost two
- * words; removing it is +16 / 84 from +24 / 100. Remaining extras are the
- * type mask rematerialized at each compare because s0 holds unmodified arg0.
- * The 04454 preheader walk under-unrolls to -236. */
-#ifdef NON_MATCHING
-s32 func_80004590(s32 arg0) {
+/* Lane w3-obj: u8 arg0 emits the prologue andi plus the incoming a0 home
+ * store. object->unk44 == arg0 is the compare operand order. Unused pointer
+ * pad places count at 0x40. 99/99 words, frame 0x50, 5 relocations. */
+s32 func_80004590(u8 arg0) {
     s32 start;
     s32 end;
+    void *pad;
     s32 count;
     s32 i;
-    s32 type;
     Objects04454Object **list;
     Objects04454Object *object;
 
-    type = arg0 & 0xFF;
     count = 0;
     list = (Objects04454Object **)func_8000572C(&start, &end);
     for (i = start; i < end; i++) {
         object = list[i];
         if ((object->unk91 == 0) && (object != D_80078F20) &&
-            (type == object->unk44)) {
+            (object->unk44 == arg0)) {
             count += 1;
         }
     }
     return count;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80004590.s")
-#endif
 /* Twin of func_80004454 against a different object list: the same advance of
  * the list base onto the start element, whose coalesced copy leaves the
  * zero-cost web that takes a0 and moves the initial list index to a1.
@@ -1296,6 +1288,9 @@ typedef struct {
 } Objects04FE0SpecialPacket;
 
 #ifdef NON_MATCHING
+/* Lane w3-obj: category zero is a pointer walk (counted i<6 unrolls and
+ * steals s0). Object scan is for-i over D_800C9494[i]. Size exact, 207
+ * masked, 3-vs-3 leftover. */
 void func_80004FE0(s32 arg0) {
     s32 i;
     s32 offset;
@@ -1317,11 +1312,14 @@ void func_80004FE0(s32 arg0) {
     playerCount = func_800291FC();
     D_800C94F8 = 0;
     if ((level[0x83] != 1) && (level[0x83] != 2) && (playerCount > 0)) {
-        for (i = 0; i < 6; i++) {
-            category[i] = NULL;
+        {
+            Objects04FE0Object **slot;
+            for (slot = category; slot < category + 6; slot++) {
+                *slot = NULL;
+            }
         }
-        for (offset = 0; offset < D_800C9498; offset++) {
-            object = (Objects04FE0Object *)D_800C9494[offset];
+        for (i = 0; i < D_800C9498; i++) {
+            object = (Objects04FE0Object *)D_800C9494[i];
             if ((object->unk44 == 5) && (arg0 == object->unk88)) {
                 slot = object->unk84;
                 if ((slot >= 0) && (slot < 6)) {
@@ -1335,7 +1333,7 @@ void func_80004FE0(s32 arg0) {
                 }
             }
         }
-        for (i = 0, records = modeState; i < playerCount; i++, records++) {
+        for (i = 0, records = modeState; i < playerCount; records++, i++) {
             type = records->unk4;
             if (type >= 0xA) {
                 type = 0;
@@ -5517,16 +5515,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * PLATEAU-HANDOFF:func_80006FA0:end
  */
 
-/* PLATEAU-HANDOFF:func_80004590:start
- * symbol: func_80004590
- * score: 84 differing words
- * frame: 0x50
- * relocations: 5
- * first-mismatch: +0x8
- * summary: Outer start less-than-end test duplicated the for-loop check. Remaining plus-16 is five per-compare type masks minus the missing incoming-arg0 store.
- * PLATEAU-HANDOFF:func_80004590:end
- */
-
 /* PLATEAU-HANDOFF:func_8000831C:start
  * symbol: func_8000831C
  * score: 81 differing words
@@ -5589,11 +5577,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80004FE0:start
  * symbol: func_80004FE0
- * score: 189 differing words
+ * score: 207 differing words
  * frame: 0x100
  * relocations: 83
- * first-mismatch: +0x38
- * summary: Workbench structure-mismatch: structure-buckets. Next: resolve category-fill unrolling and packet/index carriers with the frame held exact.
+ * first-mismatch: +0x54
+ * summary: Size exact after pointer-walk category zero-fill and i-indexed object scan. Remaining 3-vs-3 is category CSE copy at plus-58 versus rematerialize at plus-90, plus modeState ILOD at plus-230 and extra s0 reset at plus-2E8. Captured-end, packet cursor, spawn-without-i, L97 fill, and deleting offset all regress. Next: keep category dead during the fill without a new local.
  * PLATEAU-HANDOFF:func_80004FE0:end
  */
 

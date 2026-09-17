@@ -1042,10 +1042,13 @@ bytes and disassembly never belong here.
 - Ring order inside one expression is the order of the surviving definitions,
   which means an expression with three operands offers only as many ring
   orders as it has evaluation orders. Where the target's order is not one of
-  them, no spelling of that expression reaches it and splitting it into
-  statements does not help, because uopt normalises the split away. Stop
-  sweeping spellings at that point and look for a definition created outside
-  the expression. Evidence:
+  them, no spelling of that expression reaches it. Splitting the mask into a
+  *fresh* local does not help: uopt forward-substitutes a single-assignment
+  temporary straight back into the address. Mutating the *existing* carrier
+  that produced the value -- `x &= M` on the loaded entry, then a base-first
+  add of the table pointer -- is a surviving evaluation in front of that
+  address, and ugen then emits mask, table, scale. The carrier must be 32-bit
+  or the assignment is a narrowing chain. Evidence:
   [the model-release loop](matching-triage-handoffs/levelFreeAll.md).
 - **A chained assignment leaves the pair one web; two full expressions give
   each its own colour.** Writing `a = b = X` makes the later use of `a` read
@@ -2469,7 +2472,12 @@ bytes and disassembly never belong here.
   rematerializes under aliasing. Chaining `p->f = x = expr` is the
   folded-def family and moves the frame or reloads a truncated field.
   Combining adjacent zeros as a wider store saves a unit in the counter
-  and changes the opcode. See the
+  and changes the opcode. A post-call copy of the pointer into another
+  local (`p = q` with no ILOD in the assigned tree) is the form that
+  *does* skip the base `Ulod`s: later field stores through `p` do not
+  increment `varrefs`, so a fill that spent the budget at one store can
+  keep the next store in the same block and emit the target's order.
+  See the
   [constructor block-budget receipt](matching-triage-handoffs/overlay34CreateRecord.md).
 
 ## Adding a learning

@@ -2088,7 +2088,7 @@ levelGetType = 0x80026768; // type:func size:0x10 ROM 0x27368 tier B (JFG src/le
 levelGetCamera = 0x80026778; // type:func size:0x24 ROM 0x27378 tier B (JFG src/level.c.o levelGetCamera, ordered call graph)
 levelGetLevel = 0x8002679C; // type:func size:0xC ROM 0x2739C tier B (JFG src/level.c.o levelGetLevel, ordered call graph)
 levelGetName = 0x800267A8; // type:func size:0x90 ROM 0x273A8 tier B (JFG src/level.c.o levelGetName, ordered call graph)
-levelFreeAll = 0x80026838; // type:func size:0x1D4 ROM 0x27438 tier B (JFG src/level.c.o levelFreeAll, ordered call graph), NON_MATCHING exact-shaped 112/117 words, 36/36 static relocations, first +0x13C, ugen temp-FIFO swap, linked equality fallback-only
+levelFreeAll = 0x80026838; // type:func size:0x1D4 ROM 0x27438 tier-A matched C, JFG src/level.c.o levelFreeAll structure, Mickey layout decisive, 117 linked words and 36 static relocation identities
 levelGetNextOfWorld = 0x80026A0C; // type:func size:0x88 ROM 0x2760C tier B (JFG src/level.c.o levelGetNextOfWorld, ordered call graph)
 levelGetPrevOfWorld = 0x80026A94; // type:func size:0x90 ROM 0x27694 tier B (JFG src/level.c.o levelGetPrevOfWorld, ordered call graph)
 levelInitRegionFlags = 0x80026B24; // type:func size:0x38 ROM 0x27724 tier B (JFG src/level.c.o levelInitRegionFlags, ordered call graph)
@@ -2869,6 +2869,7 @@ D_8007A660 = 0x8007A660; // type:u64 size:0x8 tier-A compiler-owned scheduler co
 func_80006534 = 0x80006534; // type:func size:0x334 ROM 0x7134 tier-D NON_MATCHING resident fallback and adjacent func_80006868 boundary, no match credit
 
 // Queued objects TU assembly ownership: linked range and fallback extent agree.
+func_80004590 = 0x80004590; // type:func size:0x18C ROM 0x5190 tier-A matched C src/main/objects.c.o, Mickey-only 99/99 words, frame 0x50, 5 relocations, linked ROM exact
 func_80004C28 = 0x80004c28; // type:func size:0x3b8 ROM 0x5828 tier-A matched C, 238/238 words and 39 relocations, frame -0x48, linked ROM 0x5828-0x5be0 byte-identical
 func_80009AA8 = 0x80009aa8; // type:func size:0x3d0 ROM 0xa6a8 tier-A assembly fallback extent verified against linked ROM range, NON_MATCHING C has no credit
 func_8000784C = 0x8000784c; // type:func size:0x41c ROM 0x844c tier-A matched C, 263/263 words and 34 relocations, frame -0x100, linked ROM 0x844c-0x8868 byte-identical

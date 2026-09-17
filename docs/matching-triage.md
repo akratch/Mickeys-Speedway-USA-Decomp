@@ -330,11 +330,11 @@ routing facts from that sweep; the sweep's `summary.json` is the measurement.
 ### `levelFreeAll` plateau handoff
 
 - source: `src/main/level.c`
-- score: 112/117 words
+- score: 117/117 words
 - frame: 0x28
 - relocations: 36
-- first mismatch: +0x13C
-- summary: Exact-shaped for/indexed-array form; one ugen temp-FIFO swap remains after 119 flags and 15 source variants; next lever is a bounded permuter.
+- first mismatch: none
+- summary: MATCHED. Mutate the s32 entry carrier with the 14-bit mask, then add the table pointer first.
 <!-- plateau-handoff:levelFreeAll:end -->
 
 <!-- plateau-handoff:overlay1StartTimerCallbacks:start -->

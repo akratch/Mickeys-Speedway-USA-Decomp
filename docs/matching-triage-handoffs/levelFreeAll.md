@@ -2,11 +2,24 @@
 ### `levelFreeAll` plateau handoff
 
 - source: `src/main/level.c`
-- score: 3/117 words
+- score: 117/117 words
 - frame: 0x28
 - relocations: 36
-- first mismatch: +0x13C
-- summary: Authenticated 12-draw baseline; existing differential and expression receipts leave no new mask-table-scale scheduling hypothesis.
+- first mismatch: none
+- summary: MATCHED. Mutate the s32 entry carrier with the 14-bit mask, then add the table pointer first.
+
+#### 2026-09-17, lane w3-level: matched
+
+The remaining three-word ring swap was a surviving mask evaluation in front of
+a base-first address, which no fresh local and no spelling of the one
+expression could produce. Assigning `temp_v0_2 &= 0x3FFF` on the existing
+entry carrier (widened from s16 to s32 so the assignment is not a narrowing)
+then writing `(u32) D_800C94E0 + (temp_v0_2 << 1)` emits mask, table, scale.
+uopt does not forward-substitute a self-assignment of the loaded entry the way
+it does a new mask local. A 16-bit carrier adds a sign-extend chain; a
+subscript after the assignment uses a multiply for the scale. Configured
+score 0 of 117, delta 0, frame 0x28, 36 relocations. The assembly fallback is
+removed.
 
 - 2026-09-09 pass, the residual reduced to one ring ordering. The three words
   are one three-temp allocation in the world-index arm of the model-release

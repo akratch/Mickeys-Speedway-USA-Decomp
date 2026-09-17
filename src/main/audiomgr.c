@@ -396,24 +396,25 @@ void func_80001BF4(void) {
 #endif
 /* PROVENANCE: control-flow and audio-completion intent cross-checked against Jet Force Gemini's
  * public src/audiomgr.c::__amHandleDoneMsg; Mickey's ROM-derived globals remain authoritative. */
-/* Verdict: structure-mismatch; 9 differing sites of 21 instructions with an exact frame. */
-/* First mismatch: function offset +0x18; the target rematerializes the EFC address for its final store. */
-/* Gap: EFC address precoloring survives carrier and region changes; see the symbol handoff shard. */
-#ifdef NON_MATCHING
-extern volatile u32 D_80078DF0;
+/* Matched 2026-09-17 (lane w6-audio), 9 -> 0 masked words at delta 0,
+ * frame 0x18, seven relocations, unforced. L131: two pointer names for
+ * &D_80078EFC split the address range so the load is a folded %hi/%lo and
+ * the store rematerializes through $at. One name CSEs and keeps a pointer. */
 extern volatile s32 D_80078EFC;
 
 void func_80002134(void) {
+    s32 *p;
+    s32 *q;
+
     if ((osAiGetLength() >> 2) == 0) {
-        if (D_80078EFC == 0) {
+        p = &D_80078EFC;
+        q = &D_80078EFC;
+        if (*p == 0) {
             D_80078DF0 |= 8;
-            D_80078EFC = 0;
+            *q = 0;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audiomgr/func_80002134.s")
-#endif
 /* PROVENANCE: body adapted from Diddy Kong Racing's public decomp,
  * src/audiomgr.c::__amDMA; Mickey's DMA state and queue globals remain authoritative. */
 /* Configured IDO emits all 115 target instructions and 22 relocation records exactly. */
@@ -538,19 +539,6 @@ void func_8000238C(void) {
     D_80078DD4 = 0;
 }
 
-/*
- * 2026-09-10, lane nm-mixed: the declaration lever is FALSIFIED. The residual
- * is one address-CSE decision, not a volatility one: the candidate materialises
- * the EFC address once in the entry block and reuses it in the store block,
- * while the target recomputes the address pair at each of the two accesses.
- * Twenty-eight forms held at nine words: volatile/non-volatile on either
- * global in every combination, scalar/array/pointer declarations, nested or
- * joined guards, an early-return shape, a hoisted length local, casting the
- * store or load to drop volatile, and reordering the two stores. Dropping
- * volatile from EFC alone regresses to eleven and still materialises the
- * address, which proves CSE rather than volatility is the mechanism.
- */
-
 /* PLATEAU-HANDOFF:func_80001740:start
  * symbol: func_80001740
  * score: 203/209 instructions
@@ -569,14 +557,4 @@ void func_8000238C(void) {
  * first-mismatch: +0x0
  * summary: Best DKR-derived frame handler; manager/task-base allocation and cleanup/large-mode loops remain structurally displaced.
  * PLATEAU-HANDOFF:func_80001BF4:end
- */
-
-/* PLATEAU-HANDOFF:func_80002134:start
- * symbol: func_80002134
- * score: 9 differing words
- * frame: -0x18
- * relocations: 5
- * first-mismatch: +0x18
- * summary: Exhaustive 186-force colour pass and unsigned declaration are flat; seek EFC address reload identity.
- * PLATEAU-HANDOFF:func_80002134:end
  */

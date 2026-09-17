@@ -125,6 +125,12 @@ extern void overlay2IntersectBoundary(f32 x0, f32 y0, f32 x1, f32 y1,
  * argument form is byte-identical to the assignment; both two-return forms,
  * with and without `else`, fail to tail-merge and grow the function by 20
  * bytes.
+ *
+ * Lane w10-o002 (2026-09-17). Identity-gated IDO (proc 0, 40 p1, 20 coloured).
+ * On this shape count occupies a0; node is not offered a0. Generated subscript
+ * and delete-count grow. The 41-shape force of the loop-tail temp onto a0 is
+ * 32 and is not source-reachable: the temp is the only v0-offered web in its
+ * block, and the intersect call that would deny v0 also loads a0.
  */
 #ifdef NON_MATCHING
 s32 overlay2QueryNode(f32 x0, f32 y0, f32 x1, f32 y1,
@@ -226,6 +232,6 @@ s32 overlay2QueryNode(f32 x0, f32 y0, f32 x1, f32 y1,
  * frame: 0x68
  * relocations: 51
  * first-mismatch: +0x58
- * summary: Fresh 48-draw census retains the schedule; parameter-reload probes restore reissue only with broad allocation regression.
+ * summary: IDO gated. Index/delete-count grow. 41-shape w69=a0 force is 32. Tail temp uniquely offered v0 in its block; denying v0 also denies a0.
  * PLATEAU-HANDOFF:overlay2QueryNode:end
  */

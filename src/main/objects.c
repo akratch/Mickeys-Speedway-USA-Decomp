@@ -5732,11 +5732,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_8000590C:start
  * symbol: func_8000590C
- * score: 26 differing words
+ * score: 2 differing words
  * frame: 0x90
  * relocations: 99
- * first-mismatch: +0x6D4
- * summary: 99 to 26 at delta 0 (lane s1-c): nested fixups without a declared pointer, one-width nested reads, the copy-loop remainder as its own symbol copied from the unmasked test, and a split phantom re-read; left are the strength-reduced preheader init and the tail's three-way tie at 3/7.
+ * first-mismatch: +0x7A8
+ * summary: 26 to 2 at delta 0 (lane s2-a): an empty overflow check after the special-list append breaks the tail's 3/7 tie, the copy loop is the plain while loop under IDO's unroller with the TU's -loopunroll,0 override removed, and the unk48 nested value is the expression itself; left are the operand orders of the two nested addu instructions.
  * PLATEAU-HANDOFF:func_8000590C:end
  */
 

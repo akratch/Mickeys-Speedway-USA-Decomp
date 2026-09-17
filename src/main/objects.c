@@ -1288,9 +1288,9 @@ typedef struct {
 } Objects04FE0SpecialPacket;
 
 #ifdef NON_MATCHING
-/* Lane w3-obj: category zero is a pointer walk (counted i<6 unrolls and
- * steals s0). Object scan is for-i over D_800C9494[i]. Size exact, 207
- * masked, 3-vs-3 leftover. */
+/* Lane w4-obj: indexed category fill plus modeState[i]. playerCount = i
+ * after controlGetPlayerSetup pins i live so the spawn zero cannot hoist.
+ * Leftover is packets-in-a2 versus modeState-base-in-a0. */
 void func_80004FE0(s32 arg0) {
     s32 i;
     s32 offset;
@@ -1312,11 +1312,8 @@ void func_80004FE0(s32 arg0) {
     playerCount = func_800291FC();
     D_800C94F8 = 0;
     if ((level[0x83] != 1) && (level[0x83] != 2) && (playerCount > 0)) {
-        {
-            Objects04FE0Object **slot;
-            for (slot = category; slot < category + 6; slot++) {
-                *slot = NULL;
-            }
+        for (i = 0; i < 6; i++) {
+            category[i] = NULL;
         }
         for (i = 0; i < D_800C9498; i++) {
             object = (Objects04FE0Object *)D_800C9494[i];
@@ -1333,8 +1330,8 @@ void func_80004FE0(s32 arg0) {
                 }
             }
         }
-        for (i = 0, records = modeState; i < playerCount; records++, i++) {
-            type = records->unk4;
+        for (i = 0; i < playerCount; i++) {
+            type = modeState[i].unk4;
             if (type >= 0xA) {
                 type = 0;
             }
@@ -1363,9 +1360,9 @@ void func_80004FE0(s32 arg0) {
             } else if ((modeState->unk0 == 1) || (modeState->unk0 == 2)) {
                 slot = 0;
             } else if (D_8007BF0C != 0) {
-                slot = (playerCount - records->unk6) - 1;
+                slot = (playerCount - modeState[i].unk6) - 1;
             } else {
-                slot = records->unk6;
+                slot = modeState[i].unk6;
             }
             object = category[slot];
             if (object != NULL) {
@@ -1384,6 +1381,7 @@ void func_80004FE0(s32 arg0) {
         }
         controlGetPlayerSetup(&packets[0].unk4, &packets[0].unk6,
                               &packets[0].unk8, &packets[0].unkE);
+        playerCount = i;
         for (offset = 0; offset < 8; offset++) {
             D_800C94F4[offset] = NULL;
         }
@@ -5577,11 +5575,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80004FE0:start
  * symbol: func_80004FE0
- * score: 207 differing words
+ * score: 70 differing words
  * frame: 0x100
  * relocations: 83
- * first-mismatch: +0x54
- * summary: Size exact after pointer-walk category zero-fill and i-indexed object scan. Remaining 3-vs-3 is category CSE copy at plus-58 versus rematerialize at plus-90, plus modeState ILOD at plus-230 and extra s0 reset at plus-2E8. Captured-end, packet cursor, spawn-without-i, L97 fill, and deleting offset all regress. Next: keep category dead during the fill without a new local.
+ * first-mismatch: +0x134
+ * summary: Size exact, no insertion pair. Indexed i less-than-6 fill rematerializes category; modeState[i] kills the records carrier and the modeState ILOD. playerCount equals i after the setup call stops the early s0 zero. Remaining 58 naming is packets versus modeState-base a0/a2, with 10 structural jal/8-iter/spawn rows in that shadow. Packet cursor, D_800C94F4[i], L97 barriers, and deleting offset still regress. Next: put packets in a0 and the modeState base in a2 without a declared packet cursor.
  * PLATEAU-HANDOFF:func_80004FE0:end
  */
 

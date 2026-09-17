@@ -1146,6 +1146,12 @@ overlay33SetupGeometryReloc = 0xf0000000;
 overlay33SetupPassReloc = 0xf0000000;
 overlay33SetupViewportReloc = 0xf0000000;
 
+/* overlay 33: overlay33PresentAndSwap.c.o */
+gOverlay33BufferRefs = 0x00000000;
+gOverlay33Ready = 0x00000000;
+overlay33BuildDisplayListReloc = 0xf0000000;
+rcpFast3d_o033Reloc = 0xf0000000;
+
 /* overlay 34: overlay34InitStorage.c.o */
 func_8002B280_o034Reloc = 0xf0000000;
 gOverlay34Count = 0x00000008;

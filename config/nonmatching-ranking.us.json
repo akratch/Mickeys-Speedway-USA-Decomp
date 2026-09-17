@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 271,
-  "resolved": 271,
+  "queue_size": 270,
+  "resolved": 270,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 271,
-  "relocation_masked_coverage": 271,
+  "source_context_coverage": 270,
+  "relocation_masked_coverage": 270,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -398,21 +398,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "TqF-.mVjl.5TrX.GULk.MO_o.iFDb.CWKd.Meez.Zr8L.OrOZ.Y8A"
-    },
-    {
-      "name": "overlay33PresentAndSwap",
-      "file": "src/overlays/o033/overlay33PresentAndSwap.c",
-      "overlay": 33,
-      "tu": "overlays/o033",
-      "size_bytes": 156,
-      "objdiff_match_pct": null,
-      "differing_words": 22,
-      "first_mismatch_offset": 16,
-      "relocation_masked_differing_words": 21,
-      "relocation_masked_first_mismatch_offset": 16,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "8xTF.RK6J.D3GF.LfY9.VtEC.ly_M.ETat.mqxP.Q-jD.wbuT.QBM"
     },
     {
       "name": "overlay96Unregister",

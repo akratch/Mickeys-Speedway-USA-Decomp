@@ -18,10 +18,11 @@ extern void *func_overlay_014_F00009F4_18702CC(s32 key, s32 kind);
 
 /* Retained candidate: 2 masked words at delta 0, frame 0x28, 15 relocations
  * (lane w1-b, 2026-09-16).  The two rows left are the tail's count load,
- * which the ROM schedules above the key store; that needs as1 to know the
- * slot pointer and &gOverlay14SlotCountE8 cannot alias (a `.noalias` stamp
- * ugen does not emit for a pointer whose defs have three different bases),
- * or the ROM's own emission order.  Read the shard before touching it. */
+ * which the ROM schedules above the key store.  Listing replay of
+ * `.noalias $count,$slot` (or swapping ugen's load/store emission) is
+ * exact; ugen does not stamp that fact on a spilled pointer because the
+ * tail alias query is isvar versus islda (the spill, not the three bases).
+ * Read the shard before touching it. */
 #ifdef NON_MATCHING
 void *overlay14CreateValue(s32 key, s32 alternate) {
     void *value;
@@ -113,6 +114,6 @@ void *overlay14CreateValue(s32 key, s32 alternate) {
  * frame: 0x28
  * relocations: 15
  * first-mismatch: +0x158
- * summary: one fourth-declared slot pointer spilled to its own home, base-plus-index pointer keeps the shift a ring draw; two rows left are the tail count-load hoist over the key store.
+ * summary: tail count load versus key store; listing replay of a count-versus-slot noalias stamp is exact; ugen queries may-alias because the spilled slot is isvar against the count islda.
  * PLATEAU-HANDOFF:overlay14CreateValue:end
  */

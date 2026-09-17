@@ -6,7 +6,7 @@
 - frame: 0x18
 - relocations: 3
 - first mismatch: +0x1C
-- summary: Three-draw identity form duplicates normalization and loses scratch names to the return carrier; three follow-up controls are byte-identical.
+- summary: Or-chain carrier is allocator proc 40 web 2: v0 not offered (forced=-2). Accepted recolours stay 25. L145/L144 miss the ring-temp copies. Best still 10.
 
 #### Owned pass, 2026-09-10 (lane/o7-small): the shape is known, not a donor
 
@@ -197,5 +197,47 @@ draw_census.py, residual_map.py --object and --against, align_symbol.py,
 frame_census.py, score_symbol.py, configured stock compiler, named Ucode and
 UGEN index authentication, and finalize_plateau.py. Full-ROM gates validate
 the guarded tree, not an exact C promotion of this function.
+#### 2026-09-17, lane w6-main: Trap 20 force reopen plus L145/L144
+
+Identity gate: instrumented IDO function text is byte-identical to stock
+under the configured command (compiler binary swapped only). Logs went to
+CDX_OUT. A non-numeric CDX_PROC printed 66 allocator procedures (0 through
+65). This function is allocator proc 40: two earlier TU members exceed
+Olimit and skip globalcolor, so UGEN 42 maps to CDX 40. The incumbent
+early-return body has two allocator decisions, both argument-home webs.
+The or-chain body has four, including carrier web 2 coloured a0.
+
+L101 on that carrier, now with Trap 20-correct records. Its p1cost list
+starts at a0; v0 and v1 are absent. CDX_PROC=40 CDX_FORCE=p1:w2=c1 records
+forced=-2 and a byte-identical 25-instruction object, so the force never
+applied. p1:w2=c4 is accepted (forced=4) and recolours the same coalesced
+web to a1, still 25 instructions, 20 masked. p1:w2=c7 is accepted
+(forced=7) and recolours it to t0, still 25. p1:w2=s is accepted
+(forced=-1) and spills, 28 instructions with a larger frame. Colour cannot
+mint the three ring temporaries.
+
+L145 delete-the-declared-ret is the or-chain: 25 instructions, one a0 web,
+one copy at the epilogue, short-circuit branches to that join. Two-name
+L51, goto, De Morgan, bang-bang, and a live a0 blocker all collapse to
+that same object. The 29-instruction if-return-boolean family (declared
+ret, assignment-in-condition, register, nested else, three distinct
+locals) has the per-arm copies and inverted branches. Mixed
+two-instruction normalisation is 27 instructions and 14 masked with the
+join copy still on a0.
+
+L144: address-of-arg0 is byte-identical to the or-chain. Address-of-the
+test local is 27 instructions at delta 0 but a larger frame, extra stores,
+one v1 web, 17 masked. Volatile ret is 35.
+
+Screen: no candidate had 27 instructions and three ring-temp operands and
+per-arm copies into the return register. Do not adopt the 25-instruction
+coalesced or or the 29-instruction if-return family. Best remains the
+retained early-return body: 108 bytes, 27 words, delta 0, 10 masked, first
++0x1C, frame 0x18, three relocations.
+
+Next: a source form that keeps the or-chain branch sense while preventing
+uopt from coalescing the three one-instruction normalisations into one
+web, without a stack home or a second normalisation insn. Do not re-run
+same-kind forces on web 2.
 
 <!-- plateau-handoff:func_80028FCC:end -->

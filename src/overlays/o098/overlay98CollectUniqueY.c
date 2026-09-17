@@ -42,16 +42,17 @@ extern s16 overlay98UniqueYReloc[15];
 
 /* Exact DKR v77/v80 and JFG scans are negative for this routine. */
 /*
- * Plateau (2026-08-25 plus retained-base reshape): ten source attempts plus
- * one bounded permuter batch and a focused array-base pass.
- * The best safe C is exact-size with the retail frame and control flow; the
- * flag lattice reports 32 of 81 words different, first at +0x68. IDO still
- * coalesces the array-address roles and schedules the count/vertex loads
- * differently. An indexed scan grows by 26 instructions; inner pointer scope
- * shrinks to 77 instructions and a 0x8 frame; removing the byte destination
- * carrier keeps 81 instructions but grows the frame to 0x18. Volatile array
- * qualification is byte-neutral. A lower-scoring permuter result relied on
- * unsequenced evaluation and was rejected.
+ * Plateau (2026-08-25 plus lever-51 reopen 2026-09-17): the best safe C is
+ * still exact-size with the retail frame. Flag lattice 32 of 81, first at
+ * +0x68. Named uniqueEnd is load-bearing for 81 words and three stack slots;
+ * deleting it to index overlay98UniqueYReloc is 78-80 and misses slot +0x4.
+ * The historic +26 indexed scan was an extra s32 uniqueIndex beside the u8
+ * destination. Span subscripts are byte-identical to the named span pointer.
+ * Dropping the named block pointer rematerializes and grows to 88. Inner
+ * pointer scope, removing the byte destination, volatile array, unsequenced
+ * permuter, vertex array indexing, outer while, unique-before-vertex order,
+ * and live-global uniqueEnd remain nonexact. Identity-gated proc-0 is p2
+ * only (18 decisions); force of the s0 web onto a1 is declined as forbidden.
  */
 #ifdef NON_MATCHING
 void overlay98CollectUniqueY(Overlay98Group *group) {
@@ -121,6 +122,6 @@ void overlay98CollectUniqueY(Overlay98Group *group) {
  * frame: 0x10
  * relocations: 8
  * first-mismatch: +0x68
- * summary: Fresh proc-0 census: 21 draws/145 emissions. Array-root CSE scheduling remains unresolved after prior root, pointer, loop and volatile probes.
+ * summary: Lever 51 stall. Named uniqueEnd is required for 81 words and three stack slots; unique indexing without it is 78-80, with an extra s32 index +26. Span subscripts are inert; dropping the block pointer grows to 88. Identity-gated proc-0 is p2, 18 decisions; the s0 web cannot take a1. Aligned 52 exact, 19 naming, 7 structural plus 3/3 insertions. Best remains the walking unique scan.
  * PLATEAU-HANDOFF:overlay98CollectUniqueY:end
  */

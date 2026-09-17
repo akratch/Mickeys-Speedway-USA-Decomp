@@ -13,41 +13,24 @@ extern void *overlay31CreateConfig(s32 kind, void *source, s32 width, s32 height
 extern void *D_10;
 
 /* DKR v77/v80 and JFG contain no exact donor for this pool allocator. */
-/*
- * Plateau, remeasured 2026-09-12 by lane p9-tight. 11 relocation-masked words
- * at 50/50 and frame 0x38 exact; the declaration order above is load-bearing
- * and is the whole of the frame.
- *
- * The residual is now ONE allocator decision, priced. An instrumented uopt
- * whose object is byte-identical to the configured build records seven p1
- * decisions here: state save 305 -> c1 v0, j 155 -> c2 v1, the literal 15
- * 50 -> c7 t0 (forbidden c1-c6, it spans the four-argument config call),
- * record 40.5 -> c3 a0, i 15.5 -> c4 a1, count 4.33 -> c14 s0, records 0.67
- * -> c8 t1. Forcing record to c4 and i to c5 -- both accepted, forced=4 and
- * forced=5 in the records -- gives 0 masked words at delta 0 against this
- * declaration order. So the function is exactly one colour from a match: the
- * target skips c3 for both webs and nothing in the target's stream uses $a0
- * between the two calls.
- *
- * Decision variable: what puts c3 in record's `forbidden` mask. It is not the
- * ratio -- c3 is on record's offer list at every save measured -- and it is
- * not a call denial, because neither call loads a0 alone; a web spanning the
- * config call is forbidden c3-c6 together, as the literal-15 web shows. So it
- * has to be interference with a pre-coloured a0, and the only pre-coloured a0
- * in the function is the incoming `count`, whose range ends at the size
- * computation four instructions in, in the target as well as here.
- */
-#ifdef NON_MATCHING
+/* Matched 2026-09-17 (lane w6-o031), 11 -> 0 masked words at delta 0,
+ * frame 0x38, four relocations, unforced. An inner-loop OR-zero on a
+ * last-declared s32 is an L109 probe: it creates a phantom a0 web
+ * (save 100.5) so record is forbidden c3 and takes a1, and i takes a2.
+ * Declaration order is load-bearing (`s32 i; s32 j;` first, `zero` last).
+ * The inert OR-zero is tracked in docs/cleanup-queue.md. */
 Overlay31PoolRecord *overlay31CreatePool(s32 count) {
     s32 i;
     s32 j;
     Overlay31PoolRecord *records;
     Overlay31PoolRecord *record;
     s32 *state;
+    s32 zero;
 
     records = (Overlay31PoolRecord *)overlay31AllocateReloc(
         count * sizeof(Overlay31PoolRecord), 0x8C);
     record = records;
+    zero = 0;
 
     i = 0;
     if (count > 0) {
@@ -61,6 +44,7 @@ Overlay31PoolRecord *overlay31CreatePool(s32 count) {
             j = 3;
             state = &record->state[3];
             do {
+                zero |= 0;
                 j += 4;
                 state[1] = 0;
                 state[2] = 0;
@@ -76,16 +60,3 @@ Overlay31PoolRecord *overlay31CreatePool(s32 count) {
     D_10 = overlay31CreateConfig(0, 0, 0, 0, count * 15);
     return records;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o031/overlay31CreatePool/func_overlay_031_F0000E7C_188039C.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay31CreatePool:start
- * symbol: overlay31CreatePool
- * score: 11/50 words
- * frame: 0x38
- * relocations: 4
- * first-mismatch: +0x28
- * summary: Outer less-than test leaves every draw and emission unchanged; record still lacks the required pre-coloured a0 interference.
- * PLATEAU-HANDOFF:overlay31CreatePool:end
- */

@@ -1808,7 +1808,7 @@ The full flag lattice and 40-minute permuter produced no valid exact source.
 
 `overlay 1 +0x61F0..+0x6270` — 128 bytes / 32 words, cached-mode handling. NON_MATCHING: retired 2026-08-24 per ADR 0002 (was made to match via redundant-branch/identity-copy removal plus a register/schedule rewrite); source kept as decomp-permuter input. The 13 runtime records comprise three calls, five HI16, and five LO16 sites.
 
-`overlay 60 +0x3488..+0x355C` — 212 bytes / 53 words, choice-slot reassignment. NON_MATCHING: retired 2026-08-24 per ADR 0002 (was made to match via a stack/address/cursor representation rewrite); source kept as decomp-permuter input. The 8 runtime records are four HI16 and four LO16 sites targeting resident offset `0x4D618`.
+`overlay 60 +0x3488..+0x355C` (`overlay60ReassignChoiceSlots`) — **212 exact C bytes / 53 words**, frame `0x20`, 8 of 8 relocation identities (2026-09-17, lane w8-o060). Indexed subscripts of the resident player block generate the walking cursor (L160); two pass names keep the two address-materialization lifetimes and the pass-2 end sentinel keeps End first on the back-edge. `gmake verify` and `promotion-proof` pass from the C.
 
 `overlay 15 +0xB94..+0xC6C` — 216 bytes / 54 words, rain rendering. NON_MATCHING: retired 2026-08-24 per ADR 0002 (was made to match via redundant address-producer removal plus a count-home/addend rewrite); source kept as decomp-permuter input. The 17 runtime records comprise two resident calls plus seven HI16 and eight LO16 local sites.
 

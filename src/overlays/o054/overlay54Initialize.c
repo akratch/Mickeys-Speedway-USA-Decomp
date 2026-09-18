@@ -69,9 +69,9 @@ extern void overlay54CopyOffsetRecords(void *src, void *dst, s32 mode, s32 index
 #define BSS_PTR(off) ((void *)(gOverlay54Bss + (off)))
 
 /* Independently reconstructed from Mickey-local evidence; no DKR/JFG donor. */
-/* Workbench p7: structure-mismatch; 244/243 instructions, -0x78 frame, 127 masked/144 raw words, first +0x28.
- * Levers: Mickey-local structure/predicate/order/binding/pointer/post-loop probes and a nested-call split; split was unchanged.
- * Remains: 61 alignment gaps, 71 structural rows, one extra instruction, and relocation identities; GLOBAL_ASM stays canonical. */
+/* Workbench p7 plus L90 reopen: 244/243 instructions, 0x78 frame, 127 masked/144 raw, first +0xF0.
+ * Extra word is the nop delay of the context-equals-3 branch. L90 rewrites i++ then i<4 to !=4;
+ * target keeps slti 4 after increment. Delay fill is reachable only on inverted polarity. */
 #ifdef NON_MATCHING
 void func_overlay_054_F0000000_189ECA0(void) {
     volatile O54Locals locals;
@@ -211,7 +211,7 @@ void func_overlay_054_F0000000_189ECA0(void) {
  * score: 127 differing words
  * frame: 0x78
  * relocations: 112
- * first-mismatch: +0x28
- * summary: One word long; structure, predicate/order, binding, pointer, post-loop and nested-call split routes are exhausted. Relocation identity remains unresolved.
+ * first-mismatch: +0xF0
+ * summary: One word long. Extra instruction is the unfilled delay of the context-equals-3 branch. L90 rewrites increment-then-i-lt-4 to not-equal-4; the target keeps slti 4 after increment. Delay fill is reachable only on inverted polarity.
  * PLATEAU-HANDOFF:func_overlay_054_F0000000_189ECA0:end
  */

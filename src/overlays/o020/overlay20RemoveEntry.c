@@ -172,6 +172,6 @@ void overlay20RemoveEntry(s32 owner) {
  * frame: frameless
  * relocations: 10
  * first-mismatch: +0x6C
- * summary: L154 index-shape cannot number the decrement above the SR limit at zero width; the limit is minted from the bound. Baseline kept at 2 of 53.
+ * summary: L145 delete-carrier stays the 6-word basin: store-forward keeps web 8. End-first inverts colours at 10-14 with a 4-word preheader shuffle. Baseline 2 of 53.
  * PLATEAU-HANDOFF:overlay20RemoveEntry:end
  */

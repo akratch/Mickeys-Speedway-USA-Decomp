@@ -376,9 +376,9 @@
       "source_commit": "473efb87f29361610c29903e16540671387061bf"
     },
     "func_80024978": {
-      "ledger_commit": "e9c5b142f40647c4226ad8b9ef6b2c15e482da43",
+      "ledger_commit": "a79d1dee7826e3b690dd0a7c203ce1159ed546ae",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "c9421ccf0179b31aeb0d2e1870dc035f622c0455"
+      "source_commit": "a79d1dee7826e3b690dd0a7c203ce1159ed546ae"
     },
     "func_80026FB4": {
       "ledger_commit": "1832e6b4c0ad5b7dd76183f03aae60b074e1cfcd",
@@ -781,7 +781,7 @@
       "source_commit": "4b1cb3fb4c85cadf5c6ce8472b9b4c949039d2f3"
     },
     "func_80056DD8": {
-      "ledger_commit": "3afa6db8429630c4d6dea1fe12e28a2785f32100",
+      "ledger_commit": "62f944e3725e5c00d5696e5304152c9d4494b59a",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "f29ffe945f62c04131c694e535878765dabb027d"
     },
@@ -1331,9 +1331,9 @@
       "source_commit": "44819833de8400ed7ecb815a95f9c9f11423571a"
     },
     "func_overlay_079_F0000134_18CD0D4": {
-      "ledger_commit": "2c0f65f081945338a2c3d0f6cc7e7d44a61b2bae",
+      "ledger_commit": "eeeb9d7fef50e0478d524e4814abaed5a846d4fb",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "2c0f65f081945338a2c3d0f6cc7e7d44a61b2bae"
+      "source_commit": "eeeb9d7fef50e0478d524e4814abaed5a846d4fb"
     },
     "func_overlay_079_F0000FA0_18CDF40": {
       "ledger_commit": "33cecba3c8a10060df5649ad785028df65738a64",

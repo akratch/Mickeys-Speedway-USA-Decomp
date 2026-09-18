@@ -203,6 +203,6 @@ void func_overlay_071_F0000870_18CA390(Overlay71Command **commands,
  * frame: 0x30
  * relocations: 13
  * first-mismatch: 0x5c
- * summary: Delete-flags is 16/12. Block-11 discards DCE/CSE. s32-to-u16 later is after w57 plus a draw (37). Need a type-3 web numbered below 57 at zero draw.
+ * summary: One type-3 AND occupier at zero draw moves the second pair a0 to a1. A second simultaneous occupier is still missing. Force w59=c5 then scores 4.
  * PLATEAU-HANDOFF:func_overlay_071_F0000870_18CA390:end
  */

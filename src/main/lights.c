@@ -128,10 +128,17 @@ typedef struct LightUpdateHeader {
     u8 count2D;
 } LightUpdateHeader;
 
+/* PROVENANCE: Vec3f coordinate rows follow JFG camlight.h CamLight_inner1. */
+typedef struct LightUpdateVec3f {
+    f32 x;
+    f32 y;
+    f32 z;
+} LightUpdateVec3f;
+
 typedef struct LightUpdateSegment {
     LightUpdateHeader *header0;
     u8 pad4[0x3C];
-    f32 *coordinates40;
+    LightUpdateVec3f *coordinates40;
 } LightUpdateSegment;
 
 typedef struct LightUpdateOwner {
@@ -507,41 +514,42 @@ void lightUpdateLights(s32 updateRate) {
         func_80018F08(D_80079498[i], updateRate);
     }
 }
-/* Workbench verdict: structure-mismatch, 74 differing words, first mismatch +0x0. */
-/* Candidate: 205/205 instructions with a -0x58 frame versus target -0x48; all seven relocation identities are exact. */
-/* Shape status: exact extent and call surface; a 0x10 non-save-frame and temporary-allocation cascade remains. */
-/* PROVENANCE: JFG's corresponding light-update role supplies the control-flow idiom; all Mickey offsets, globals, and calls below are reconstructed locally. */
+/*
+ * Workbench: 205/205 words, masked 41, first naming +0x20, frame 0x48.
+ * Remaining: one lbu/sll swap at +0x64 and a t-reg ring phase (t5 vs t4).
+ * PROVENANCE: control flow, Vec3f coordinate rows, nested flags/mode test,
+ * and PY rotation layout adapted from JFG's public retail-derived
+ * src/camlight.c::camlightUpdate and src/lights.c::func_80021434_22034.
+ * Mickey's owner/segment offsets, colour-cycle helper, and track-light
+ * calls remain authoritative.
+ */
 #ifdef NON_MATCHING
 void func_80018F08(UnkLight *light, s32 updateRate) {
+    s16 rotation[3];
     LightUpdateState *state;
     LightUpdateOwner *owner;
-    f32 *direction;
-    s32 value;
-    s16 rotation[3];
-    s16 index;
-    s32 offset;
-    LightUpdateSegment *segment;
 
     state = (LightUpdateState *) light;
     owner = state->owner14;
     if ((owner != NULL) && (owner->disabled91 == 0)) {
-        index = state->index6;
-        if (index >= 0) {
-            segment = owner->segments68[(s32) owner->segmentIndex3A];
-            if ((segment != NULL) &&
-                (index < (s32) segment->header0->count2D)) {
-                offset = index * 12;
-                state->x18 = *(f32 *) ((u8 *) segment->coordinates40 + offset);
-                state->y1C = *(f32 *) ((u8 *) segment->coordinates40 + offset + 4);
-                state->z20 = *(f32 *) ((u8 *) segment->coordinates40 + offset + 8);
-                state->flags2 |= 1;
+        if (state->index6 >= 0) {
+            LightUpdateSegment *segment;
+
+            segment = owner->segments68[owner->segmentIndex3A];
+            if (segment != NULL) {
+                if (state->index6 < segment->header0->count2D) {
+                    state->x18 = segment->coordinates40[state->index6].x;
+                    state->y1C = segment->coordinates40[state->index6].y;
+                    state->z20 = segment->coordinates40[state->index6].z;
+                    state->flags2 |= 1;
+                }
             }
         } else {
             pointListRPY(1, owner, &state->inputX08, &state->x18);
             state->x18 += owner->offsetX0C;
             state->y1C += owner->offsetY10;
-            state->flags2 |= 1;
             state->z20 += owner->offsetZ14;
+            state->flags2 |= 1;
         }
         state->flags2 |= 4;
         if (state->trackLight6C != 0) {
@@ -554,9 +562,8 @@ void func_80018F08(UnkLight *light, s32 updateRate) {
         state->green41 = *(u8 *) ((u8 *) state + 0x51);
         state->blue42 = *(u8 *) ((u8 *) state + 0x52);
         if (!(state->flags3 & 0x10)) {
-            value = *(u8 *) ((u8 *) state + 0x53);
-            state->intensity43 = value;
-            state->intensity44 = (f32) (u32) (value & 0xFF);
+            state->intensity43 = *(u8 *) ((u8 *) state + 0x53);
+            state->intensity44 = (f32) (u32) (*(u8 *) ((u8 *) state + 0x53) & 0xFF);
         }
         state->flags2 |= 2;
     }
@@ -579,19 +586,20 @@ void func_80018F08(UnkLight *light, s32 updateRate) {
                           state->blue42, state->intensity43);
         }
     }
-    if ((state->flags2 & 4) && ((state->mode0 == 3) || (state->mode0 == 0))) {
-        direction = &state->directionX60;
-        state->directionZ68 = -1.0f;
-        rotation[0] = state->value58;
-        rotation[1] = 0;
-        rotation[2] = state->value5A;
-        mathOneFloatPY(rotation, direction);
-        if ((owner != NULL) && (owner->disabled91 == 0)) {
-            pointListRPY(1, owner, direction, direction);
+    if (state->flags2 & 4) {
+        if ((state->mode0 == 3) || (state->mode0 == 0)) {
+            state->directionZ68 = -1.0f;
+            rotation[0] = state->value58;
+            rotation[1] = state->value5A;
+            rotation[2] = 0;
+            mathOneFloatPY(rotation, &state->directionX60);
+            if ((owner != NULL) && (owner->disabled91 == 0)) {
+                pointListRPY(1, owner, &state->directionX60, &state->directionX60);
+            }
+            state->directionX60 = -state->directionX60;
+            state->directionY64 = -state->directionY64;
+            state->directionZ68 = -state->directionZ68;
         }
-        state->directionX60 = -state->directionX60;
-        state->directionY64 = -state->directionY64;
-        state->directionZ68 = -state->directionZ68;
     }
     state->flags2 = 0;
 }
@@ -1123,11 +1131,11 @@ s32 lightKillGlowingLight(void) {
 
 /* PLATEAU-HANDOFF:func_80018F08:start
  * symbol: func_80018F08
- * score: 74/205 words
- * frame: 0x58
+ * score: 41/205 words
+ * frame: 0x48
  * relocations: 7
- * first-mismatch: +0x0
- * summary: Direction-pointer and carrier probes leave all 73 draws unchanged; the target 0x48 frame and early release-order schedule remain unresolved.
+ * first-mismatch: +0x20
+ * summary: JFG control flow closes 0x48 frame and else-path insertion, 54 to 41. Remaining: +0x64 lbu/sll swap and t4/t5 ring. Header/count/value locals add frame.
  * PLATEAU-HANDOFF:func_80018F08:end
  */
 

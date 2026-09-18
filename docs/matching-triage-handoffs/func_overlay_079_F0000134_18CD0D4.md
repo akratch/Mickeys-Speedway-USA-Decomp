@@ -6,7 +6,7 @@
 - frame: 0xB8
 - relocations: 88
 - first mismatch: +0x7C
-- summary: Census confirms the missing FP draw before line 412; existing source families do not reach it or tail web45.
+- summary: L145 declared FP carriers do not add the prefix ring draw. Missing draw is CSE of -1.0f at forward.z. Next: delta-0 CSE-break so z draws onto f4.
 
 Added to the flat list this lane, on the same base:
 
@@ -145,5 +145,77 @@ forced diagnostics only; no source candidate was adopted.
 Validation: `gmake verify` printed
 507341c0a40ca3e9a7cee969b396ee53facfb548 and `tools/gates.sh --staged` passed
 all four gates. No source change was adopted.
+
+### 2026-09-18, lane `w19-o079`: L145 does not add the missing prefix FP draw
+
+Re-measured on d722dcf0: 3528 bytes, size delta 0, 198 masked of 882, frame
+0xB8, 88 relocations, first mismatch +0x7C. Aligner: 703 byte-exact, 148
+register naming, 3 immediate only, 30 really different. Frame census: 34 slots
+both sides; the only home disagreement remains +0x40 (us) against +0x3C
+(target), one 4-byte load/store each. Declaration-order and pad-local probes
+were not repeated.
+
+Identity gate: stock `tools/ido/cc` versus instrumented IDO, decomp-workbench
+fidelity PASS on .text, .data, relocations and symbols. `CDX_PROC=0`, 77
+decisions, one procedure. `CDX_FORCE p1:w346=c26` accepted (`forced=26`) scores
+195 via `score_symbol.py --object`. `p1:w143=c25` declined (`forced=-2`).
+`p1:w45=c2` accepted (`forced=2`) scores 194. The same w346 force without
+`CDX_PROC` logs `forced=-2` and `CDX_FORCE ignored without CDX_PROC`.
+`score_symbol.py` with `CDX_FORCE` set and no `--object` exits 2.
+
+Draw census: 256 draws, 168 `ALLOC_FP_RESULT`. The first FP ring draw after
+`mathOneFloatRPY` (the `dz = state->targetZ - object->z` statement) is f18.
+The target wants f4, one step of the five-cycle scratch ring. `forward.x` and
+`forward.y` each draw; `forward.z = -1.0f` does not, because the `-1.0f` from
+`state->speed > -1.0f` in the same arm is one IR name (L131) and is reused for
+the store. The scratch ring is not reset at the call, so that missing z-store
+draw is exactly the one-step phase at the next ring use.
+
+L145 on declared FP carriers, each compiled with DKWB traces (byte-inert at
+198 on the base) and scored with `--object`:
+
+- inline the 3-component distance test: 251, delta 0, 170 FP draws. Extra
+  draws sit at the inlined site; the post-call ring is still f18.
+- inline dy only at that site: 211, delta 0, 170 FP draws, ring unchanged.
+- inline nearby dx/dz: 200, delta 0, 168 FP draws, ring unchanged.
+- inline home dx/dz: 246, delta 0, 168 FP draws, ring unchanged.
+- all three prefix sites together: 253, delta 0, 170 FP draws, ring unchanged.
+- inline mode-0 dx/dz/dot: 236, delta 0, 171 FP draws (the extras are at the
+  site, after the missing-draw point).
+- drop the `update` local and write `(f32)updateRate` at the uses: 844, delta
+  0, 168 FP draws.
+- reuse `start` or `end` as the forward vector (delete the `forward` local):
+  246, delta 0, 168 FP draws.
+- block-scope dx/dy/dz per arm: 738, delta 0, 173 FP draws.
+
+None of those add a prefix ring draw before the post-call load. A declared
+local deleted at a site either leaves the ring where it was, or adds draws at
+that site and regresses the score.
+
+L151 on the two `-1.0f` literals: `(f32)-1`, `-1`, `-1.0`, `-(1.0f)`,
+`0.0f - 1.0f`, `-1.0f * 1.0f`, commuting the compare, and integer 0/0/-1 on
+x/y/z are byte-identical at 198 except `speed > -1.0` (double) at 618 with
+size +16, and all-integer xyz at 246 with 166 FP draws (two fewer, ring moves
+the wrong way). uopt canonicalises those spellings onto one IR name; L151 does
+not split this constant.
+
+The CSE-break that does rotate the ring: `state->speed + 1.0f > 0.0f`
+(semantically equivalent) makes `forward.z` draw and puts the post-call draw
+on f4, the target's register. Cost is size delta +8 and 743 masked. Splitting
+the z store as `forward.z = 0.0f; forward.z -= 1.0f` is the same +8 / 748.
+L97 `if (1)` / `do { } while (0)` around the forward stores, the z store, the
+acceleration if, or an empty region between the compare and the stores: all
+198, CSE still crosses the region. L144 `*(f32 *)&state->speed` is
+byte-identical. Moving the forward stores before the compare at delta 0 is 369
+with the post-call draw on f6 (one step past the target).
+
+Colour was not re-run. Size stayed 0, but L145 named the next source form, so
+`--every-colour` is not the next compile. The 2026-09-12 landscape (diagnostic
+floor 191 from w45=c2 plus w346=c26) still describes this body.
+
+Named next source form: a delta-0 CSE-break of the `-1.0f` shared by the
+mode-0 speed compare and `forward.z`, so the z store draws a ring temp and the
+following draw lands on f4 without adding a word. No measured spelling,
+region, order, or carrier deletion does that.
 
 <!-- plateau-handoff:func_overlay_079_F0000134_18CD0D4:end -->

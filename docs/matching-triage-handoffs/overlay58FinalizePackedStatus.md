@@ -2,11 +2,11 @@
 ### `overlay58FinalizePackedStatus` plateau handoff
 
 - source: `src/overlays/o058/overlay58FinalizePackedStatus.c`
-- score: 78 differing words
+- score: 77 differing words
 - frame: 0x48
 - relocations: 48
 - first mismatch: 0x18
-- summary: shift before mask, the extended test flipped and every section's i/count/selected order take 88 to 78; a probe-free form has the ROM's mode-0 loop shape but colours the packed-status base t0 for t3.
+- summary: u16 mask and shift pack onto the target +0x1C home, 78 to 77 at delta 0; colour landscape floor 78 with no zero force; indexed packed-status already used
 - assignment base: `ccbd4a78b29afb17ad817dd9228f774012b7d9ac`
 - owned range: overlay 58 `+0x5554..+0x5A14`, 1,216 bytes / 304 words; the following `+0x5A14..+0x5A20` range is separately owned padding
 - baseline: exact 304-word geometry and `0x48` frame, with 178 raw differences, 177 relocation-masked differences, first raw mismatch `+0x8`, and first masked mismatch `+0x18`
@@ -187,5 +187,44 @@ a form where the extended section reads the flags word once fewer, or
 where current's load is in its own block, is where the two references
 are. The probes in the retained source pin colours on the wrong loop
 shape and should not be carried onto the clean form.
+
+#### 2026-09-18, lane w14-o058: identity-gated landscape floor 78; u16 mask/shift 78 to 77
+
+Base `f0ae2111`. Owned this TU only; `func_overlay_058_F00005FC` untouched.
+Configured baseline reproduced 1216 bytes, delta 0, masked 78, first +0x18,
+frame 0x48, 48 relocs. Aligner 238 exact, 39 naming, 11 immediate, 20
+structural (12 paired plus 4+4 insertions). Candidate homes +0x44 +0x3C
++0x18 +0x14 against target +0x40 +0x30 +0x24 +0x1C +0x14. No closed
+register cycle. Stock and instrumented `.text` are byte-identical
+(identity gate). `CDX_PROC` from procindex is 0 (29 p1 decisions, 27
+coloured, no p2).
+
+`web_footprint.py --every-colour` on procedure 0: 178 same-kind probes
+over 27 webs. Zero probes beat 78 at delta 0; none scored below 78 even
+with size change. L159 packing is empty, predicted 78. L160 does not
+apply: no zero-scoring force to source-route.
+
+The body already subscripts `gOverlay58PackedStatusReloc[i + 4]` (indexed,
+the overlay60 close). A walking `statusBase = &gOverlay58PackedStatusReloc[4]`
+is 193 at +12; an overlay49 packed pointer on the u16 shape is 83. Keep
+the indexed form.
+
+Named mask/shift carrier: `u16 mask` and `u16 shift` score **77** at
+delta 0, first still +0x18, frame 0x48. Aligner 239 exact, 39 naming, 10
+immediate, 20 structural. Candidate homes become +0x44 +0x3C +0x1C +0x14;
+the unique +0x18 slot is gone and the target's +0x1C is shared (ours 2
+load/store, theirs 1). Byte-identical 77 objects: s16 mask with u16
+shift, u16 mask with u8 shift, `unsigned short`, shift declared before
+mask. Refuted: s32/u32/unsigned 78; u16 on only one of the pair 78; s16
+shift 266 at +8; u8 both 79; volatile u16 281 at +32; flags packed
+adjacent to the pair 78. Other 16-bit locals (current, player, i, count,
+desired, decoded, selected, equalFourCount) grow or score 80+. Unused
+pointer/f32 are inert or 78. Current-before-desired on this shape is 90;
+`5u` on one literal 122, on both byte-identical to 77.
+
+Retained: `u16 mask; u16 shift;` in the probe-bearing body. Colour axis
+closed on this shape. Next is the missing fifth home (+0x24/+0x30/+0x40)
+or the s2-b 140-form's load-web split, not another same-kind landscape
+or the original ten loop/carrier/declaration forms.
 
 <!-- plateau-handoff:overlay58FinalizePackedStatus:end -->

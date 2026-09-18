@@ -203,7 +203,7 @@ void func_overlay_011_F0001E4C_186A694(s32 updateRate) {
  * score: 109/295 words
  * frame: 0x40
  * relocations: 87
- * first-mismatch: +0x10
- * summary: Fresh V0 on 151b0d05 reproduces -1w and 87-site ambiguity; caller/donors unchanged, no new identity; body untouched.
+ * first-mismatch: +0xD8
+ * summary: Size -4 (294/295), extra +0x28 action spill. index=2 folds scale to -28. Need rematerialized 2 plus nop delay, not colour (L155).
  * PLATEAU-HANDOFF:func_overlay_011_F0001E4C_186A694:end
  */

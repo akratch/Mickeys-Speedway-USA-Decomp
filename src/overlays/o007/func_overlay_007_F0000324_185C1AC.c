@@ -49,7 +49,7 @@ extern void overlay7StartRuntimeValueReloc(u8 value);
 extern void overlay7ReleaseRuntimeOwnerReloc(void *owner);
 extern s32 overlay7AdjustRuntimeValueReloc(s32 arg0, s32 value);
 extern void *overlay7CreateRuntimeOwnerReloc(u16 value, s32 x, s32 y, s32 z,
-                                             s32 kind, void *argument);
+                                             s32 kind, void **argument);
 extern void overlay7ReleaseRuntimeHandleReloc(void *handle);
 extern void overlay7ReleaseRuntimeEntryReloc(Overlay7Entry *entry);
 extern s32 overlay7RuntimeChanceReloc(s32 minimum, s32 maximum);
@@ -64,7 +64,13 @@ extern void overlay7SetRuntimeModeReloc(Overlay7RuntimeObject *object,
  * hoisted loop invariant reuses the `difference` carrier -- their live ranges
  * are disjoint. Declaration order then places `objects` 6th, `object` 7th and
  * `difference` 11th, which is the target's home ladder exactly; the other
- * eight positions are byte-inert (four permutations measured identical). */
+ * eight positions are byte-inert (four permutations measured identical).
+ *
+ * Size closed 2026-09-18: the D_844 scan is `do { D_844[0x2B - index] }
+ * while (index--)`, which keeps the countdown live across the adjust call,
+ * and the create-owner sixth argument is `&overlay7RuntimeHandleReloc`
+ * (LOCAL data+0), not NULL. Nested scale/pair/block-scoped difference all
+ * reopen the 0x80 frame. */
 #ifdef NON_MATCHING
 void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
     s32 count;
@@ -191,16 +197,18 @@ void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
             }
             if (found) {
                 value = entry->value;
-                for (index = 0; index < 0x2B; index++) {
-                    if (value == D_844[index].key) {
+                index = 0x2B;
+                do {
+                    if (value == D_844[0x2B - index].key) {
                         value += overlay7AdjustRuntimeValueReloc(
-                            0, D_844[index].value);
+                            0, D_844[0x2B - index].value);
                         break;
                     }
-                }
+                } while (index--);
                 if ((u32)entry->field04 < 0xB4) {
                     overlay7CreateRuntimeOwnerReloc(
-                        value, object->x, object->y, object->z, 4, NULL);
+                        value, object->x, object->y, object->z, 4,
+                        &overlay7RuntimeHandleReloc);
                     overlay7RuntimeLastObjectReloc = object;
                     D_290 = entry;
                 } else {
@@ -247,10 +255,10 @@ void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
 
 /* PLATEAU-HANDOFF:func_overlay_007_F0000324_185C1AC:start
  * symbol: func_overlay_007_F0000324_185C1AC
- * score: 129/348 words
+ * score: 10/348 words
  * frame: 0x78
  * relocations: 61
- * first-mismatch: +0x7C
- * summary: Frame closed at 0x78; every stack slot now agrees. Residual is three missing words and 30 naming rows.
+ * first-mismatch: +0x120
+ * summary: Size closed at delta 0. Residual is 10 masked: as1 scheduling plus f12 versus f0, and f0 is not offered.
  * PLATEAU-HANDOFF:func_overlay_007_F0000324_185C1AC:end
  */

@@ -6,7 +6,7 @@
 - frame: 0x20
 - relocations: 52
 - first mismatch: +0x10
-- summary: Store-result capture moves the intended line but replaces duplicate colour emission with a byte mask; 158 at +4, baseline retained.
+- summary: Identity-gate proc 0. Extra 0xC0 into a2; w198=c5 declined. Copy/L97/L144/L145/fallthrough/remat leave +4. Force floor 134 at +4.
 
 Measured 2026-09-11, lane `lane/s1-trio`, on the four-function overlay-101
 presentation-builder cluster. Every number is `tools/align_symbol.py`, whose
@@ -405,4 +405,74 @@ pairs, complete traces, census profiles and aligned maps. Commands include
 lane_status.py, configured stock compilation, draw_census.py, residual_map.py
 with retained objects and paired deltas, finalize_plateau.py and tools/gates.sh.
 ROM verification covers the assembly fallback and adds no matching credit.
+
+#### 2026-09-19, lane w22-o101b: size levers on the extra dim-colour word
+
+Fresh configured baseline reproduces 209 candidate words against 208 target
+words, 144 raw and 143 masked differences, first +0x10. Frame 0x20 matches
+the three-slot ladder. Alignment is 79 exact, 104 naming, one immediate and
+32 structural, with the same eight candidate-only and seven target-only
+offsets as the inherited shard. Candidate object relocations remain 52.
+
+Identity gate: stock `tools/ido/cc` and instrumented `ido-instrumented/cc`
+`.text` are byte-identical (fidelity pass on `.text`, `.data`, `.rodata`,
+relocations and symbols). Nonnumeric `CDX_PROC` prints one procindex row:
+proc 0, 33 decisions. All forces below used `CDX_PROC=0` and were scored with
+`--object` on the forced object. Acceptance was read from `forced`, not from
+whether the object changed.
+
+The extra word is still the second materialisation of the dim colour 0xC0
+into the call's third argument register. The target materialises that
+constant once into that register before the unsigned length conversion and
+reuses it for both colour stores and the call. This candidate materialises
+it into t3 (web 198: type 2, dtype 8, table 192, save 1.0, nocs 1,
+forbidden0 0x7fc30000, cost table c10-c13 plus callee-saved) and
+rematerialises it for the call. `CDX_FORCE=p1:w198=c5` is declined
+(`forced=-2`, no cost-table entry for a2). No accepted force reached size
+delta 0. Splits of webs 198, 108, 182 and 3 grow to +8. Colouring still
+moves only the naming residual at +4: w186=c11 is 134, w31=c2 is 135,
+w78=c8 is 139, matching the inherited three-force prefix.
+
+Named size levers, each compiled with the configured command and scored
+directly. Source restored after every cell. Guarded body unchanged.
+
+- Sibling opacity spelling `(f32)(s32)1` in place of the `opacityScale`
+  local: 143 at +4, byte-inert. The inherited 150 at -8 was the `1.0f`
+  literal specifically; the cast form keeps the conversion and does not
+  close the extra word.
+- Copy 0xC0 into existing dead s32 carriers (`orderIndex`, `node24IndexA`,
+  `node32IndexB`) or via `handle`: 143 at +4, copy-prop folds them back.
+- L97 `if (1)` / `do { } while (0)` around the prefix, the opacity
+  conversion, or the tail: 154-160 masked, size +4 to +12. Bare `{ }` is
+  143 at +4, as L97 says. Empty `if (1) { }` between opacity and dimColor
+  is 157 at +8.
+- Delay `dimColor = 0xC0` until after opacity, nested block, or late
+  assignment with literal stores: 143 at +4. uopt still hoists the
+  constant.
+- Moving the dim colour stores next to the call, folding them onto the
+  call line, or a comma-expression argument: 148 at +4. The inherited
+  eight-statement tail lattice did not include those stores; moving them
+  is now measured and is worse.
+- L145 node-20 `pool[count]` on both sides of the create call: 149 at +4.
+- Rematerialised node24 address (`pool + index`, two names for the text
+  store, indexed colour0): 143 at +4.
+- L144 address-form of `dimColor` uses or assignment: 142 masked at +4,
+  but first mismatch +0x0 and frame 0x50 with a spill replacing the
+  second materialisation. Not adopted. Call-only L144 is 158 at +8.
+  `volatile s32 dimColor` is 162 at +16.
+- Reusing the existing `previous` / `previousType` carriers for the
+  node-20 chain head (valid, not the self-link trap): 192-197, size +8
+  or +16, extra callee-saved. Folding that capture onto the root writes
+  reaches size delta 0 at 192 masked, first +0x0, frame 0x28 with an
+  extra s2, and the second 0xC0 materialisation still present. Coincidental
+  size close; not adopted.
+
+Three consecutive productive rounds on the extra word produced no better
+retained residual, no new valid identity, and no force-to-source route
+that colours web 198 as a2. Stop under ADR 0018. Next named question:
+give the dim colour an s32 argument identity (the target stores the
+byte from the argument register) without homing it. dtype 8 on web 198
+is the copy-propagated byte-store form; L144 proves the s32 home but
+pays a frame. Do not re-run the copy, L97, tail-store-move, or
+node-20 L145 cells above.
 <!-- plateau-handoff:overlay101BuildPresentationB:end -->

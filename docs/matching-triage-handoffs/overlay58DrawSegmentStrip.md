@@ -6,7 +6,7 @@
 - frame: 0x88
 - relocations: 8
 - first mismatch: +0xF0
-- summary: Fresh proc-0 census: 86 draws/303 emissions. Recorded carrier and order controls remain closed; no independent schedule lever exists.
+- summary: Landscape floor 37 (only w225=c3); L160 closed. Generated-index rematerialises. Next: source form that lets the 0xFF web take v1.
 - assignment base: `9c62568e60deef2170043478e9473e5b42fd27b4`
 - owned range: overlay 58 `+0x4C04..+0x4F28`, 804 bytes / 201 words
 - fresh baseline: 99 of 201 words exact, 102 positional differences, first mismatch `+0xC`; exact `0x88` frame
@@ -73,4 +73,47 @@ Private source, stock/traced objects, census and residual map are preserved.
 Commands: assignment gate, configured compilation, draw_census.py baseline,
 residual_map.py --object, finalize_plateau.py and tools/gates.sh. The full-ROM
 proof covers the assembly fallback and awards no new executable bytes.
+
+#### 2026-09-18, lane w15-o058s: colour landscape, L159 packing, L160 closed
+
+Configured baseline still 201 words, delta 0, frame 0x88, masked 68, first
++0xF0. Aligned buckets 133 exact, 60 naming, 0 immediate, 10 structural,
+with two candidate-only words at +0x1A4 and two target-only words at +0x198.
+Frame ladder is 17 of 17 shared slots. Draw census is 86 draws and 303
+emissions. Identity-gate: stock IDO versus instrumented IDO passed on
+procedure 0 (31 p1 decisions, no p2). CDX_PROC is 0.
+
+web_footprint --every-colour ran 145 same-kind probes over 31 coloured webs.
+Ten forces beat 68 at delta 0. The unique best is p1:w225=c3 (v1 to a0) at
+37, saving 31, which is the inherited v1/a0 swap. All other winners are
+rivals of that radius (w62=c2, w89=c2, and the other w225 colours). L159
+packing is that single force, predicted 37. No force scored 0, so L160's
+delete-the-declaration path is not available.
+
+The forced-37 object keeps size and frame. Its remaining 29 naming rows are
+the t4-t9 ring cycle (not declaration-reachable). The two-word insertion
+pair at +0x198 versus +0x1A4 is unchanged, so colour cannot close the
+function.
+
+Generated-index and carrier mutations, all reverted:
+
+- Sibling-style vertices[1,2,3] plus vertices[-3]: byte-flat at 68.
+- L97 if (vertices != 0) probes around colours: byte-flat at 68.
+- Delete vertices and subscript the global with constants 0..3: 152 masked,
+  size +56. IDO rematerialises the base; there is no induction index.
+- Indexed colours and coordinates through vertices, assign cursor = vertices
+  + 4: 193 masked, size -72. Homes move.
+- Walk vertices for coordinates and store the cursor at the end: 194 masked,
+  size -48. The target walks the global.
+- do-while-0 around colour stores: 93 masked at delta 0.
+- do-while-0 around the two packet appends: 201 masked, size +20.
+- Reuse y as the 0xFF colour carrier: byte-flat at 68; copy-propagated away.
+
+Retained source is still the negative-index walking cursor. Do not retry
+dx,dy,dz rotation, perpendicular muls, explicit dereference, the ten prior
+cursor forms, the 119-flag lattice, or these generated-index / L97 cells.
+The named remaining variable is how to make web 226 (the 0xFF constant,
+save 160/3, currently a0) outrank web 225 (expression, save 230/3, currently
+v1) from source, without a force. Landscape evidence lives outside the tree
+under the lane scratch directory.
 <!-- plateau-handoff:overlay58DrawSegmentStrip:end -->

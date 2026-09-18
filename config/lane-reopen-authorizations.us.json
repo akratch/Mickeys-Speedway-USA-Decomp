@@ -1181,9 +1181,9 @@
       "source_commit": "5cf05869e9af8dd404c469b6812f23969f48f224"
     },
     "func_overlay_047_F0000B30_1891948": {
-      "ledger_commit": "8829b55c0709e84bf5881439eadb32ba1758be5e",
+      "ledger_commit": "c8e612e0091a7664a5db345543b64ff801f35545",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "8829b55c0709e84bf5881439eadb32ba1758be5e"
+      "source_commit": "c8e612e0091a7664a5db345543b64ff801f35545"
     },
     "func_overlay_050_F0000000_1896970": {
       "ledger_commit": "9eeee4ce415459b8988df486b8172c1267f88a49",
@@ -1856,9 +1856,9 @@
       "source_commit": "598cf64d96f6227c5882033610c056ebccdc629b"
     },
     "overlay44UpdateFrameCache": {
-      "ledger_commit": "8a8d5757b852d143909da1f8a89345fa3cf72955",
+      "ledger_commit": "1f76b358621a55d481a098d18226c1895e5d4992",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "8554caa23a08071ace512f223b67be459208bbb6"
+      "source_commit": "1f76b358621a55d481a098d18226c1895e5d4992"
     },
     "overlay48InitializeState": {
       "ledger_commit": "80d31a51e00d9d93ceb20432691b59bcfe797915",
@@ -2011,9 +2011,9 @@
       "source_commit": "fb9a096f575791e53907007f0bdb5aeaf6348437"
     },
     "overlay89UpdateStateAndParticles": {
-      "ledger_commit": "4eabfe5b39227207357a32c93b48f933fe96f846",
+      "ledger_commit": "c5fc6d01b95ff98d5801e1d1a94358acee628ff6",
       "reason": "One-instruction reconstruction: at a 4-byte delta the candidate is one instruction out, and today's laws name the usual causes -- a missing register copy, a block-fallthrough order, or an address rematerialized once too often.",
-      "source_commit": "0324280f8b8dffcb9947688fb558b076ac6de409"
+      "source_commit": "c5fc6d01b95ff98d5801e1d1a94358acee628ff6"
     },
     "overlay94UpdateController": {
       "ledger_commit": "93b43ef25a9cdf6a734efbaaff3498a2a6de6d9e",

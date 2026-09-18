@@ -1,5 +1,9 @@
 #include "PR/ultratypes.h"
 
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
 typedef struct Overlay43Node {
     f32 x;
     f32 y;
@@ -112,12 +116,9 @@ extern s32 D_ACTIVE;
 extern Overlay43SortRecord D_FALLBACK;
 extern Overlay43SortRecord D_D8[];
 extern f32 D_20;
-extern Overlay43CloneState *func_overlay_043_F0000000_1889FD0(
-    Overlay43Input *input);
+extern void *levelGetLevel(void);
 extern s16 overlay43Atan2(f32 x, f32 y);
 extern f32 overlay43Sqrt(f32 value);
-extern s16 overlay43InterpolateWeighted(s16 from, s16 to, f32 fraction,
-                                        u8 weight);
 extern s16 overlay43Interpolate(s16 from, s16 to, f32 fraction);
 extern void overlay43ProcessRecord(s16 *angles, u8 priority,
                                    Overlay43SortRecord *record);
@@ -133,9 +134,9 @@ extern void overlay43ScaleMatrix(s16 *angles, f32 *matrix,
 extern void func_overlay_043_F0000BE4_188ABB4(
     Overlay43Input *input, Overlay43SortRecord **records, s32 recordCount);
 
-/* NON_MATCHING plateau: direct Mickey clone-initializer call gives 529 positional
- * words, 557/560 instructions, exact 0x178 frame; workbench first diverges at +0x40.
- * Register/stack count webs and the record-loop CFG remain structurally different. */
+/* NON_MATCHING: L144 homes a0, 0-arg levelGetLevel, boundsMode==2, same-temp
+ * scaleX/Y. 559/560 words, exact 0x178 frame, 41 slots, masked 494, first
+ * structural +0xB8. One-word size deficit remains. */
 #ifdef NON_MATCHING
 s32 func_overlay_043_F0000324_188A2F4(
     Overlay43Input *input,
@@ -162,8 +163,11 @@ s32 func_overlay_043_F0000324_188A2F4(
     s32 pass;
     s32 index;
     s32 limit;
+    s16 *stateAngles;
 
     (void)unused;
+    /* L144: address-form homes incoming a0 at +0x178; volatile overshoots. */
+    input = *(Overlay43Input **)&input;
     state = input->link->state;
     model = state->model;
     if (model->active != 0) {
@@ -177,7 +181,7 @@ s32 func_overlay_043_F0000324_188A2F4(
         return 1;
     }
     definition = model->definition;
-    clone = func_overlay_043_F0000000_1889FD0(input);
+    clone = (Overlay43CloneState *)levelGetLevel();
     recordCount = 0;
 
     if (useNodes != 0) {
@@ -218,8 +222,8 @@ s32 func_overlay_043_F0000324_188A2F4(
                 if (node->priority < clone->priority) {
                     fraction = (1.0f / (f32)clone->priority) *
                                (f32)node->priority;
-                    angle0 = overlay43InterpolateWeighted(
-                        clone->angle0, angle0, fraction, clone->priority);
+                    angle0 = overlay43Interpolate(
+                        clone->angle0, angle0, fraction);
                     angle1 = overlay43Interpolate(
                         clone->angle1, angle1, fraction);
                     angle0 = overlay43Interpolate(
@@ -252,10 +256,10 @@ s32 func_overlay_043_F0000324_188A2F4(
             angle1 = clone->angle1;
             state->angle0 = angle0;
             state->angle1 = angle1;
-            records[0] = &D_FALLBACK;
+            records[0] = NULL;
             recordCount = 1;
             overlay43ProcessRecord(
-                &angle0, clone->priority, &D_FALLBACK);
+                &angle0, clone->priority, NULL);
         }
     } else {
         if (clone->priority == 0) {
@@ -274,7 +278,8 @@ s32 func_overlay_043_F0000324_188A2F4(
     position[0] = -input->x;
     position[1] = -input->y;
     position[2] = -input->z;
-    overlay43MakeAngles(angles, (s16 *)((u8 *)state + 0x6C));
+    stateAngles = (s16 *)((u8 *)state + 0x6C);
+    overlay43MakeAngles(angles, stateAngles);
 
     if (state->boundsMode == 0) {
         extent = input->scaleSource->scale * input->scale;
@@ -293,7 +298,7 @@ s32 func_overlay_043_F0000324_188A2F4(
         maximumZ = -32000.0f;
         minimumZ = 32000.0f;
         for (index = 0; index < recordCount; index++) {
-            overlay43MakeMatrix(angles, records[index], matrix);
+            overlay43MakeMatrix(stateAngles, records[index], matrix);
             for (vertexIndex = 0;
                  vertexIndex < definition->vertexCount;
                  vertexIndex++) {
@@ -344,10 +349,11 @@ s32 func_overlay_043_F0000324_188A2F4(
         } else {
             state->diameter = diameter;
         }
-        state->scaleX = D_20 * diameter;
-        state->scaleY = state->scaleX;
+        value = D_20 * diameter;
         extent = 64.0f / diameter;
-    } else {
+        state->scaleX = value;
+        state->scaleY = value;
+    } else if (state->boundsMode == 2) {
         extent = state->fallbackScale;
     }
 
@@ -355,9 +361,7 @@ s32 func_overlay_043_F0000324_188A2F4(
     matrix[0] = extent;
     matrix[5] = extent;
     matrix[10] = extent;
-    overlay43ScaleMatrix(
-        (s16 *)((u8 *)state + 0x6C), matrix,
-        (s16 *)((u8 *)state + 0x6C));
+    overlay43ScaleMatrix(stateAngles, matrix, stateAngles);
     func_overlay_043_F0000BE4_188ABB4(input, records, recordCount);
     return 1;
 }

@@ -6,7 +6,7 @@
 - frame: 0x70
 - relocations: 4
 - first mismatch: +0x190
-- summary: L145-L154 reopen retained 2. 1-draw-right s16 is 14; post-sum u8 probes DCE; s32 corners 20-21; deleting rangeSquared or otherState regresses.
+- summary: L145 on dx/dz keeps the t5/t4 pair. Inlining one square is 4 (same 33 draws). Floor remains 2.
 
 #### tu2-o1tail: the residual is one FP pool web, same law as overlay1AppendPathPoint
 
@@ -519,5 +519,58 @@ does not rename the sum and does not move an existing load. This grammar
 still does not produce it. Do not re-search case-1 carriers, angleHigh
 identity ops, rangeSquared deletion, otherState deletion, or the s32
 spellings above.
+
+#### 2026-09-18, lane w18-o1tail: L145 on the squared-distance carriers does not move the pair
+
+Re-measured on cbaed235: 480 bytes, 120 of 120, size delta 0, masked 2,
+aligner 118 byte-exact / 2 naming / 0 immediate / 0 structural, frame 0x70
+exact, first naming difference +0x190. Census: t5 to t4 at both sites, 100
+percent coherent, one window, no cycle. Draw census proc 23: 33 draws, 174
+emissions. Case 1 still draws 12, 11, 13.
+
+Identity gate: stock tools/ido/cc and the instrumented IDO
+whole-TU .text are byte-identical. Procindex 38 procedures; this symbol is
+ordinal 23 with 22 p1 decisions. Unforced records read forced=-2 throughout.
+Forces accepted (forced equals the requested colour, not -2) and scored
+directly against the object: w42=c25 is 4; w30=c28 and w36=c28 are 17. The
+three named f32 symbol webs (type 3, class 2) are w30/w36/w42. None of them
+lists a ring temp in p1cost, which is L130: a declared local cannot take f4.
+
+The current comparison already emits the first square in the fp scratch ring
+and the second square in f4. The tu2-o1tail f18-versus-f4 pool-population
+reading is the 31-word residual, not this one. L145 was still run on dx and
+dz, which that pass never deleted.
+
+Eighteen source forms, every one at this TU's real flags including
+-Wab,-r4300_mul, scored against the full-TU object:
+
+- Delete dz and spell the second square as field reads, with the call
+  recomputing the z difference: 7 naming, first +0x7C.
+- Delete dx, mirror: 10, first +0x68.
+- Delete both, call args as field reads: 29.
+- Named dx/dz assigned only after the comparison, comparison uses field
+  reads: 87, size delta +8.
+- dz as an if-body block local: 9.
+- One named delta for x, z square inlined: 7.
+- Inline the second square, keep named dz for the call (uopt CSEs them): 4
+  naming, first +0xB8. Draw census versus baseline: 33 draws unchanged, draw
+  order unchanged, one extra emission on the dz assignment. Case 1 still
+  draws 12, 11, 13. The extra two words are rangeSquared moving off f0; the
+  original t5/t4 pair is still there.
+- Mirror: inline the first square, keep named dx: 4, same shape.
+- (f32) cast on the second product, extra parens on it, register f32 dz:
+  all three byte-identical to the retained 2.
+- Swap square order in the comparison: 10. Swap dx/dz assignment order: 8.
+- rangeSquared before the diffs: 16. dz assigned after rangeSquared: 7.
+- Comma-assignment of dz inside the comparison: 12.
+- Call args as field reads while inlining the second square: 8.
+- Named dz2 carrier for the second square (the opposite of L145): 15.
+
+ADR 0018: the authorized L145 lever on the second squared term produces no
+better residual and no new identity that reaches the pair. Inlining a square
+while keeping its local is CSE and does not change a draw. Deleting the
+local recoulours the f32 pool and leaves the integer ring in the same
+phase. Do not re-search dx/dz deletion, inlined squares, or rangeSquared
+statement order. The decision variable is unchanged.
 
 <!-- plateau-handoff:overlay1UpdateRangeFlags:end -->

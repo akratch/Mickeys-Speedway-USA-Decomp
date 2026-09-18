@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """The lane-facing scorer must agree with the ranking, and must refuse
 to invent a measurement for a function that is not queued."""
+import os
+import pathlib
+import tempfile
 import unittest
+from types import SimpleNamespace
 from unittest import mock
 
 import score_symbol
@@ -93,6 +97,45 @@ class AgreementTests(unittest.TestCase):
         row = rows[0]
         self.assertEqual(row["relocation_artifact_words"],
                          row["differing_words"] - row["relocation_masked_differing_words"])
+
+
+class ForcedObjectTests(unittest.TestCase):
+    """A force experiment must score the forced object, not a TU recompile."""
+
+    def test_cdx_force_without_object_refuses_and_does_not_compile(self):
+        with mock.patch.dict(os.environ, {"CDX_FORCE": "p1:w47=s"}, clear=False), \
+                mock.patch.object(score_symbol.nr, "compile_configured_tu") as compile:
+            code = score_symbol.main(["func_80024978"])
+        self.assertEqual(code, 2)
+        compile.assert_not_called()
+
+    def test_object_flag_scores_that_path_not_a_recompile(self):
+        item = SimpleNamespace(func="func_80024978", rel_c_file="src/main/camera.c")
+        result = SimpleNamespace(
+            name="func_80024978", file="src/main/camera.c", size_bytes=332,
+            size_delta=0, differing_words=0,
+            relocation_masked_differing_words=7,
+            first_mismatch_offset=8,
+            relocation_masked_first_mismatch_offset=8,
+            category="other",
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            obj = pathlib.Path(tmp) / "forced.o"
+            obj.write_bytes(b"forced-object")
+            with mock.patch.dict(os.environ, {"CDX_FORCE": "p1:w47=s"},
+                                 clear=False), \
+                    mock.patch.object(score_symbol.pb, "discover_queue",
+                                     return_value=[item]), \
+                    mock.patch.object(score_symbol.nr, "compile_configured_tu") as compile, \
+                    mock.patch.object(score_symbol.nr, "process_item",
+                                      return_value=(result, None)) as proc:
+                code = score_symbol.main(
+                    ["func_80024978", "--object", str(obj), "--json"])
+        self.assertEqual(code, 0)
+        compile.assert_not_called()
+        proc.assert_called_once()
+        self.assertEqual(proc.call_args[0][0], item)
+        self.assertEqual(proc.call_args[0][1], obj)
 
 
 if __name__ == "__main__":

@@ -467,5 +467,32 @@ class RenderTests(unittest.TestCase):
                       text)
 
 
+class LandscapeRefuseTests(unittest.TestCase):
+    """L155: --every-colour on a size mismatch names the insertion, not the web."""
+
+    def test_helper_refuses_only_the_landscape_on_a_nonzero_delta(self):
+        self.assertIsNone(wf.refuse_every_colour(0, True))
+        self.assertIsNone(wf.refuse_every_colour(None, True))
+        self.assertIsNone(wf.refuse_every_colour(8, False))
+        self.assertIn("size_delta +8", wf.refuse_every_colour(8, True))
+        self.assertIn("size_delta -12", wf.refuse_every_colour(-12, True))
+
+    def test_every_colour_cli_refuses_nonzero_size_without_a_probe_compile(self):
+        """Drive the shipped entry: web_footprint.main --every-colour."""
+        import tempfile
+        cell = wf.fl.Cell((), 10, True, size_delta=8)
+        with tempfile.TemporaryDirectory() as tmp:
+            out = pathlib.Path(tmp) / "out"
+            with mock.patch.object(wf.fl, "compile_command",
+                                   return_value=["cc", "-o", "x.o"]) as compile, \
+                    mock.patch.object(wf.fl, "run_cell", return_value=cell) as run:
+                with self.assertRaises(SystemExit) as cm:
+                    wf.main(["fixture_symbol", "--every-colour", "--out", str(out)])
+        self.assertIn("refusing --every-colour", str(cm.exception))
+        self.assertIn("size_delta +8", str(cm.exception))
+        compile.assert_called_once()
+        run.assert_called_once()
+
+
 if __name__ == "__main__":
     unittest.main()

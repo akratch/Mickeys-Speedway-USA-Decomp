@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import json
+import os
 import pathlib
 import shutil
 import sys
@@ -66,8 +67,20 @@ def _isolated_workdir():
         shutil.rmtree(scratch, ignore_errors=True)
 
 
-def score(symbols: list[str]) -> tuple[list[dict], list[str]]:
-    """Measure each named symbol, compiling each owning TU exactly once."""
+FORCE_WITHOUT_OBJECT = (
+    "error: CDX_FORCE is set; this scorer recompiles the translation unit "
+    "unforced and would report the unforced score. Pass --object <forced.o> "
+    "to score that object directly."
+)
+
+
+def score(symbols: list[str], *, object_path: pathlib.Path | None = None,
+          ) -> tuple[list[dict], list[str]]:
+    """Measure each named symbol, compiling each owning TU exactly once.
+
+    `object_path` scores that object and does not compile. That is the path
+    a force experiment must take: `compile_configured_tu` drops `CDX_FORCE`.
+    """
     queue = {item.func: item for item in pb.discover_queue()}
     wanted, errors = [], []
     for symbol in symbols:
@@ -79,9 +92,40 @@ def score(symbols: list[str]) -> tuple[list[dict], list[str]]:
             wanted.append(item)
     if not wanted:
         return [], errors
+    if object_path is not None and len(wanted) != 1:
+        return [], ["--object scores exactly one symbol"]
 
     with _isolated_workdir():
+        if object_path is not None:
+            return _measure_object(wanted[0], object_path, errors)
         return _measure(wanted, errors)
+
+
+def _row(result) -> dict:
+    raw = result.differing_words
+    masked = result.relocation_masked_differing_words
+    return {
+        "symbol": result.name,
+        "file": result.file,
+        "size_bytes": result.size_bytes,
+        "size_delta": result.size_delta,
+        "differing_words": raw,
+        "relocation_masked_differing_words": masked,
+        "relocation_artifact_words": (raw - masked)
+        if (raw is not None and masked is not None) else None,
+        "first_mismatch_offset": result.first_mismatch_offset,
+        "relocation_masked_first_mismatch_offset":
+            result.relocation_masked_first_mismatch_offset,
+        "category": result.category,
+    }
+
+
+def _measure_object(item, object_path: pathlib.Path, errors) -> tuple[list[dict], list[str]]:
+    result, error = nr.process_item(item, object_path)
+    if result is None:
+        errors.append(f"{item.func}: {error}")
+        return [], errors
+    return [_row(result)], errors
 
 
 def _measure(wanted, errors) -> tuple[list[dict], list[str]]:
@@ -99,22 +143,7 @@ def _measure(wanted, errors) -> tuple[list[dict], list[str]]:
         if result is None:
             errors.append(f"{item.func}: {error}")
             continue
-        raw = result.differing_words
-        masked = result.relocation_masked_differing_words
-        rows.append({
-            "symbol": result.name,
-            "file": result.file,
-            "size_bytes": result.size_bytes,
-            "size_delta": result.size_delta,
-            "differing_words": raw,
-            "relocation_masked_differing_words": masked,
-            "relocation_artifact_words": (raw - masked)
-            if (raw is not None and masked is not None) else None,
-            "first_mismatch_offset": result.first_mismatch_offset,
-            "relocation_masked_first_mismatch_offset":
-                result.relocation_masked_first_mismatch_offset,
-            "category": result.category,
-        })
+        rows.append(_row(result))
     return rows, errors
 
 
@@ -123,9 +152,18 @@ def main(argv: list[str]) -> int:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("symbols", nargs="+")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--object", type=pathlib.Path, default=None,
+        help="score this already-built object instead of recompiling the TU; "
+             "required when CDX_FORCE is set, because a recompile drops the force",
+    )
     args = parser.parse_args(argv)
 
-    rows, errors = score(args.symbols)
+    if os.environ.get("CDX_FORCE") and args.object is None:
+        print(FORCE_WITHOUT_OBJECT, file=sys.stderr)
+        return 2
+
+    rows, errors = score(args.symbols, object_path=args.object)
     if args.json:
         print(json.dumps({"functions": rows, "errors": errors}, indent=2, sort_keys=True))
     else:

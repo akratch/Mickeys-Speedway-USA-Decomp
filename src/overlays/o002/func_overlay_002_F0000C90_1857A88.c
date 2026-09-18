@@ -67,9 +67,9 @@ extern void overlay2BuildPhaseReloc(void *state);
 extern void overlay2BuildReleaseReloc(void *memory);
 extern void overlay2BuildResizeReloc(s32 size, void *memory, s32 tag);
 
-/* Workbench plateau: structure-mismatch, 98 words; 355/355 instructions, frame -96 vs -104.
- * Lever: reversed the leaf-line pointer addition; flags, lifetime/scoping, copy, and permuter levers did not close.
- * Remains: 8-byte home/frame, overlay relocation identities, and allocator/schedule residual. */
+/* Workbench plateau: 94 masked words; 355/355 instructions, frame exact 0x68.
+ * Two unused pointers declared first closed the 8-byte home/frame (L99).
+ * Remains: leaf-type constant insertion and a 51-word naming residual. */
 /*
  * PROVENANCE: Jet Force Gemini src/overlays/o142/overlay_142.c identifies the
  * close assembly-backed sibling as CreateBSP. No donor C body exists there;
@@ -78,6 +78,8 @@ extern void overlay2BuildResizeReloc(s32 size, void *memory, s32 tag);
 #ifdef NON_MATCHING
 void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
                                         volatile s32 includeLinked) {
+    void *unused0; /* L99: unused pointers declared first */
+    void *unused1;
     Overlay2BuildPoint *point;
     Overlay2BuildPoint *nextPoint;
     Overlay2BuildPoint *firstPoint;
@@ -258,10 +260,10 @@ void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
 
 /* PLATEAU-HANDOFF:func_overlay_002_F0000C90_1857A88:start
  * symbol: func_overlay_002_F0000C90_1857A88
- * score: 98/355 words
- * frame: 0x60
+ * score: 94/355 words
+ * frame: 0x68
  * relocations: 65
- * first-mismatch: +0x0
- * summary: frame-home remains eight bytes short; winning colour forces are diagnostic only
+ * first-mismatch: +0xDC
+ * summary: Two unused pointers close the 8-byte frame and match every home. Residual 94 is naming plus a leaf-type insertion; colour forces remain diagnostic.
  * PLATEAU-HANDOFF:func_overlay_002_F0000C90_1857A88:end
  */

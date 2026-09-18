@@ -24,7 +24,10 @@ extern void *func_overlay_014_F00009F4_18702CC(s32 key, s32 kind);
  * tail alias query is isvar versus islda (the spill, not the three bases).
  * A declared count carrier gets the ROM schedule in a1 (first free colour
  * at the tail); a ugen-temp split cannot be a comma inside `+` (cfe
- * evaluates the side-effecting comma first).  Read the shard. */
+ * evaluates the side-effecting comma first).  Lane w16-o014: after-call
+ * identity recasts stay isvar; assigning the named chosen base stamps
+ * islda versus islda at an extra la that does not copy-prop onto the
+ * stack reload.  Read the shard. */
 #ifdef NON_MATCHING
 void *overlay14CreateValue(s32 key, s32 alternate) {
     void *value;
@@ -116,6 +119,6 @@ void *overlay14CreateValue(s32 key, s32 alternate) {
  * frame: 0x28
  * relocations: 15
  * first-mismatch: +0x158
- * summary: tail count load versus key store; a declared carrier sequences the load first but colours it a1; named-array key stores stamp count-versus-chosen-LDA at an extra la; comma-in-plus folds.
+ * summary: after-call identity recasts stay isvar; named-base stamps islda at extra la; cfe hoists side-effecting operands so no ugen-temp split
  * PLATEAU-HANDOFF:overlay14CreateValue:end
  */

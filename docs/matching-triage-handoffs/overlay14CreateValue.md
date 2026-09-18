@@ -6,7 +6,7 @@
 - frame: 0x28
 - relocations: 15
 - first mismatch: +0x158
-- summary: tail count load versus key store; a declared carrier sequences the load first but colours it a1; named-array key stores stamp count-versus-chosen-LDA at an extra la; comma-in-plus folds.
+- summary: after-call identity recasts stay isvar; named-base stamps islda at extra la; cfe hoists side-effecting operands so no ugen-temp split
 - base: `3169297845d9e4b3843c03be16cfe6d51358d280`
 - boundary: overlay 14 `+0x6FC..+0x87C`, 384 bytes / 96 words, no
   padding or export; two local callers at `+0x3C0` and `+0x40C`
@@ -149,6 +149,57 @@ existing stack reload, or a ugen-temp live across the key store that is
 not a declared local and not a comma operand of `+`. Do not repeat
 declared count carriers, comma-in-plus, named-array key stores that
 recover the index as `slot - base`, or keep-index rematerialisation.
+
+#### 2026-09-18, lane w16-o014: after-call identities stay isvar; cfe still hoists
+
+Baseline reproduces: 2 masked (3 raw), delta 0, frame 0x28, 15 relocations,
+first +0x158, aligner 94/0/0/2. Identity-gated instrumented cc against the
+tree object (byte-identical .text). proc=0, 10 p1 decisions. A force of
+web 89 to its incumbent colour is accepted (forced field not -2) and the
+object stays byte-identical. Alias profile is one may-alias query, slot
+isvar versus count islda. Draw census 10, two of them on the increment
+line. Nothing adopted; best remains 2.
+
+The previous post-call retags sat before frontGetLanguage, so the three
+calls would have re-spilled any islda tag. Re-sited after the last
+value-loading call: identity recasts of the spilled pointer (address of
+the key field, plus zero, or-with-zero, xor-with-zero, integer casts,
+self-assign, or-with-index while index is already 0) all stay at 2 with
+the same may-alias query. They copy-prop away and do not retag. Assigning
+the named chosen base (or base plus index with index known 0, or the
+address of base at index) does retag: the alias query becomes no-alias,
+islda versus islda, two queries. Size +8 and 19 masked; the extra la does
+not replace the stack reload (the handoff's +4 / 13 form overwrote the
+pointer with the array base). base plus (slot minus base) is 22 at +24. A
+ternary slot-or-base is 19 at +12. Taking the address of slot as a
+volatile reload is 99 at +20.
+
+ugen-temp split of the increment, not a declared local and not a comma
+operand of `+`: `* 0`, xor/or/and-not/sub of a comma-0, `+= (key-store ==
+key)`, volatile-left `+`, address-taken left `+`, and self-assign-in-plus
+are 5 or 6 at delta 0. First mismatch stays +0x158, so the two structural
+rows remain; leftover arithmetic does not fold. Draws stay 10 and both
+still sit on the increment line — cfe evaluates the side-effecting operand
+first, so the load is never live across the key store. `+ 1U`, a u32 cast
+add, `0[count]++`, folding the key store onto one physical line, a region
+or do-while around the key store, and storing the key through a u32/s32
+cast of slot are byte-identical to baseline (2). Increment-before as
+`count = count + 1` then key, or as `(++count, key-store)`, is still 4 at
+delta 0. if (count), if (count or 1), boolean-and sequencing, a volatile
+discarded count load, and count-plus-zero or self-assign of count as a
+separate statement all grow the owner.
+
+Eliminated: after-call identity recasts as an islda retag; cfe-reordered
+non-plus operators as a ugen-temp split; evaluation-order pins via
+volatile or address-taken left operands of `+`; if (count) as a live temp.
+The copy-prop retag still needs an RHS that equals the spilled pointer
+and is typed islda/isilda without rematerialising the chosen base. A
+ugen-temp copy of the count still needs two sequenced statements whose
+first is a load that is neither a symbol def nor dead-eliminated.
+
+Do not repeat the after-call identity recasts, named-base extra la,
+cfe-hoisted `* 0` / xor / or / sub splits, volatile-left plus, if (count)
+temps, or increment-before.
 
 #### Re-open under laws L90 / L94 (2026-09-10, lane/c3-reopen2)
 

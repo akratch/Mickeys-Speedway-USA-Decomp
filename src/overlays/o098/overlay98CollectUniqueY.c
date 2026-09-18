@@ -42,17 +42,21 @@ extern s16 overlay98UniqueYReloc[15];
 
 /* Exact DKR v77/v80 and JFG scans are negative for this routine. */
 /*
- * Plateau (2026-08-25 plus lever-51 reopen 2026-09-17): the best safe C is
- * still exact-size with the retail frame. Flag lattice 32 of 81, first at
- * +0x68. Named uniqueEnd is load-bearing for 81 words and three stack slots;
- * deleting it to index overlay98UniqueYReloc is 78-80 and misses slot +0x4.
- * The historic +26 indexed scan was an extra s32 uniqueIndex beside the u8
- * destination. Span subscripts are byte-identical to the named span pointer.
- * Dropping the named block pointer rematerializes and grows to 88. Inner
- * pointer scope, removing the byte destination, volatile array, unsequenced
- * permuter, vertex array indexing, outer while, unique-before-vertex order,
- * and live-global uniqueEnd remain nonexact. Identity-gated proc-0 is p2
- * only (18 decisions); force of the s0 web onto a1 is declined as forbidden.
+ * Plateau (2026-08-25 plus lever-51 reopen 2026-09-19): the best safe C is
+ * still the walking uniqueEnd scan, exact-size with the retail frame. Masked
+ * 32 of 81, first at +0x68. Identity-gated proc-0 is p2, 18 decisions; force
+ * of web 112 (type-1 count address, s0) onto a1 is declined (forced=-2, a1
+ * absent from its cost table), and web 58 (t3) cannot take v1. Accepted
+ * forces are 32 or worse. Forward unique indexing with a local bound unrolls
+ * +26 words; -Wo,-loopunroll,0 is 78 words. Live-global forward index is +16
+ * of 49 and unroll-inert. An indexed scan whose bound is != uniqueEnd
+ * strength-reduces back to this walking object at 32. Countdown of the live
+ * global is 31 at delta 0 and still uses the three 0x10 slots, but it is a
+ * backward scan: aligned structural 7 to 12 against the target's forward
+ * walk, so it is not adopted. L131 UniqueY spellings, L97 regions, volatile
+ * pointers, count-pointer, vertex-index split, and setup-before-value are
+ * flat or worse. Span subscripts stay inert; dropping the block pointer
+ * still grows to 88. Lever 50 does not apply: raw equals masked at 32.
  */
 #ifdef NON_MATCHING
 void overlay98CollectUniqueY(Overlay98Group *group) {
@@ -122,6 +126,6 @@ void overlay98CollectUniqueY(Overlay98Group *group) {
  * frame: 0x10
  * relocations: 8
  * first-mismatch: +0x68
- * summary: Lever 51 stall. Named uniqueEnd is required for 81 words and three stack slots; unique indexing without it is 78-80, with an extra s32 index +26. Span subscripts are inert; dropping the block pointer grows to 88. Identity-gated proc-0 is p2, 18 decisions; the s0 web cannot take a1. Aligned 52 exact, 19 naming, 7 structural plus 3/3 insertions. Best remains the walking unique scan.
+ * summary: Lever 51 stall. Indexed unique scan unrolls +26 or 78-80 without uniqueEnd; != uniqueEnd SRs to walking 32. Countdown 31/0 is backward. p2 w112 cannot take a1.
  * PLATEAU-HANDOFF:overlay98CollectUniqueY:end
  */

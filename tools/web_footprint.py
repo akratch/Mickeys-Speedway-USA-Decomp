@@ -460,6 +460,23 @@ def render(rows: list[dict], width: int, base_score: int | None = None,
     return "\n".join(out)
 
 
+def refuse_every_colour(size_delta: int | None, every_colour: bool) -> str | None:
+    """L155: a colour landscape on a size mismatch is insertion shadow.
+
+    `--every-colour` is the exhaustive single-force map. Each probe that
+    inserts or deletes a word shifts every later mismatch, so the footprint
+    names the insertion, not the web. Refuse before the first probe compile.
+    A non-landscape run (one web, a hold, `--list-procs`) still measures.
+    """
+    if every_colour and size_delta:
+        return (
+            f"web_footprint: refusing --every-colour: live size_delta "
+            f"{size_delta:+d} (L155: colour on a size mismatch is insertion "
+            f"shadow). Close size/frame first."
+        )
+    return None
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Map each coloured web to the words its colour controls.")
@@ -526,6 +543,9 @@ def main(argv: list[str] | None = None) -> int:
     if not base_cell.accepted:
         raise SystemExit(f"web_footprint: {'held' if args.hold else 'unforced'}"
                          f" baseline failed: {base_cell.note}")
+    refusal = refuse_every_colour(base_cell.size_delta, args.every_colour)
+    if refusal:
+        raise SystemExit(refusal)
     captured = args.out / "base" / "allocator.log"
     trace_path = args.trace if args.trace is not None else captured
     trace_text = trace_path.read_text() if trace_path.is_file() else ""

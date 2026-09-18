@@ -3728,21 +3728,18 @@ f32 func_8002A8BC(s32 angle);
 f32 func_8002A8C0(s32 angle);
 
 /*
- * Plateau (p6): 229/228 instructions and 217 raw differing words from +0x24.
- * The frame now matches the target's 0x70. The lever was carrier reuse, not a
- * new spill: the target homes four fewer f32 locals than the previous
- * candidate declared, and the two arms of this function are mutually
- * exclusive, so the velocity triple and the magnitude scalar carry the
- * previous-position triple and the plane dot product in the else arm. Every
- * declared f32 reserves a home here whether or not it is register-coloured,
- * which is why dropping four declarations moved the frame by 16 bytes while
- * the instruction count barely changed.
+ * Plateau: 229/229 instructions, frame 0x70, 177 differing words from +0x24.
+ * Computing the contact dots as their own statement, then
+ * (unk6C + 1.0f) * dots / (1.0f / mass), closed the one-word size deficit:
+ * 1.0f/mass and (unk6C + 1.0f) now sit side by side after the dots.
  *
- * Next lever: the impulse block. The target materializes 1.0f into two FP
- * registers from one `lui`, computes 1.0f/mass and (unk6C + 1.0f) side by
- * side, and spills only the impulse; the candidate CSEs the constant into one
- * register and spills the correction as well. Audit that statement group's
- * evaluation order before anything else.
+ * Next lever: delay materializing 25.0f until after the three squared
+ * velocity products. ugen currently emits that constant first among the
+ * magnitude ops, which occupies a ring temp and rotates the FP ring for the
+ * rest of the procedure. Mag-as-local, L97, L144 on the magnitude, L144 on
+ * retained, an unassociated sum, and deleting the pre-branch velocity
+ * carriers were all measured; copy-forwarding collapses the mag local back
+ * into the compare.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3782,10 +3779,10 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         vectorX = target->velocity.x;
         vectorY = target->velocity.y;
         vectorZ = target->velocity.z;
-        impulse = ((secondSource->unk6C + 1.0f) *
-                   ((normal->z * vectorZ) +
-                    ((vectorX * normal->x) +
-                     (vectorY * normal->y)))) / (1.0f / mass);
+        /* Dots first so (unk6C + 1.0f) and 1.0f/mass sit side by side. */
+        impulse = (normal->z * vectorZ) +
+                  ((vectorX * normal->x) + (vectorY * normal->y));
+        impulse = ((secondSource->unk6C + 1.0f) * impulse) / (1.0f / mass);
         correction = impulse / mass;
         retained = impulse;
         target->velocity.x = vectorX - (correction * normal->x);
@@ -4193,11 +4190,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 217 differing words
+ * score: 177 differing words
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x24
- * summary: Frame now matches at 0x70 and the first six words are exact; candidate is 228 of 229 words and the impulse block's divide order is the next lever.
+ * summary: Size now exact at 229 words and frame 0x70; impulse dots-then-divide closed the missing word. Residual is the early 25.0f materialization rotating the FP ring from +0x24.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

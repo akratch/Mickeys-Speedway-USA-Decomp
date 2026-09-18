@@ -2052,7 +2052,7 @@ f32 D_80079F54 = 0.0f;
  * frame: 0x30
  * relocations: 13
  * first-mismatch: 0x8
- * summary: dest[i] i=3..15 fixes the matrix+12 cursor. D_80079F50 pair plus identity-gated p1:w47=s and p1:w0=c6 is 83 exact masked 0. Next is source for that split and a3 tie-break.
+ * summary: Force pair 0 at delta 0 via --object. Unforced +4/71. Pair ilda splits only under peel caller-save pressure. a2/a3 tie independent. Forced-0 is not a match.
  * PLATEAU-HANDOFF:func_80024978:end
  */
 

@@ -42,9 +42,9 @@ extern u8 D_0[];
 extern u8 D_28[];
 extern void func_overlay_044_F0000000_188B860();
 
-/* Workbench plateau (2026-08-26): structure-mismatch; 347/349 instructions,
- * 330 masked words, frame -0x130/-0x100, and first divergence +0x0.
- * Levers: constant/OR/macro, direct carriers, narrow widths, and helper arity; display-list stack homes remain. */
+/* Frame closed to 0x100 by dissolving extra mips_to_c s32s (L134) and placing
+ * five used-but-colored working s32s between the width and y-prev homes (L99).
+ * Size is one word short; incoming pointer stays in a0 (web 2 cost 0 vs a2 0.1). */
 /* No external donor body was used. */
 #ifdef NON_MATCHING
 void func_overlay_044_F0000580_188BDE0(
@@ -52,76 +52,62 @@ void func_overlay_044_F0000580_188BDE0(
     Overlay44Gfx **arg1,
     f32 arg2) {
     s32 spFC;
-    s32 spE4;
-    s32 sp64;
-    s32 sp58;
-    s32 sp54;
-    s32 sp50;
-    s32 sp4C;
-    s32 sp48;
-    s32 sp44;
-    s32 sp40;
-    u8 *var_s0;
-    u8 *var_s1;
-    f32 temp_f12;
-    s32 temp_t4;
     s32 var_t2;
     s32 var_t3;
-    s32 temp_a2;
-    s32 temp_lo;
-    s32 temp_t0;
     s32 temp_t4_2;
-    s32 temp_t6;
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 var_a3;
-    s32 var_a3_2;
     s32 var_t5;
-    u8 temp_t7;
-    Overlay44FrameSource *source;
+    s32 temp_t0;
+    s32 spE4;
+    u8 *var_s0;
+    u8 *var_s1;
+    s32 var_a3;
+    Overlay44AnimationState *state;
 
-    if (arg0 != 0) {
-        if (arg0->sourceIndex != -1) {
-            source = &gOverlay44FrameSources[arg0->sourceIndex];
-            var_s0 = arg0->handles[arg0->protectedSlot0];
-            temp_t4 = source->dimension0;
-            var_t3 = source->dimension1;
-            var_s1 = arg0->handles[arg0->protectedSlot1];
+    state = (Overlay44AnimationState *)((u32)arg0 | 0);
+    if (state != 0) {
+        if (state->sourceIndex != -1) {
+            var_s0 = state->handles[state->protectedSlot0];
+            spFC = gOverlay44FrameSources[state->sourceIndex].dimension0;
+            var_t3 = gOverlay44FrameSources[state->sourceIndex].dimension1;
+            var_s1 = state->handles[state->protectedSlot1];
             if (arg2 == 1.0f) {
                 OVERLAY44_CMD((*arg1)++, 0x06000000, D_0);
             } else {
                 OVERLAY44_CMD((*arg1)++, 0x06000000, D_28);
             }
 
-            temp_t7 = arg0->subtype;
-            temp_v1 = arg0->phase & 0xFF;
+            var_t2 = state->subtype;
             OVERLAY44_CMD((*arg1)++, 0xFA000000,
-                (temp_t7 << 24) | (temp_t7 << 16) |
-                (temp_t7 << 8) | 0xFF);
+                (var_t2 << 24) | (var_t2 << 16) | (var_t2 << 8) | 0xFF);
+            var_t2 = state->phase & 0xFF;
             OVERLAY44_CMD((*arg1)++, 0xFB000000,
-                (temp_v1 << 24) | (temp_v1 << 16) |
-                (temp_v1 << 8) | temp_v1);
+                (var_t2 << 24) | (var_t2 << 16) | (var_t2 << 8) | var_t2);
 
-            temp_t6 = arg0->value8 * 4;
-            var_a3 = (s32)(1024.0f / arg2);
-            var_t5 = arg0->valueA << 16;
-            temp_f12 = arg2 * 65536.0f;
-            spE4 = var_t5;
-            spFC = temp_t4;
-            temp_a2 = (s32)((f32)temp_t4 * arg2 * 4.0f) + temp_t6;
+            var_t2 = state->value8 * 4;
+            spE4 = state->valueA << 16;
             if (var_t3 != 0) {
-                temp_v0 = temp_t4 * 2;
-                sp64 = temp_v0;
-                temp_t4_2 = (0x800 / temp_v0) & ~1;
-                sp58 = ((((temp_v0 + 7) >> 3) & 0x1FF) << 9) |
-                       0xF5100000;
+                s32 sp64;
+                s32 sp58;
+                s32 sp54;
+                s32 sp50;
+                s32 sp4C;
+                s32 sp48;
+                s32 sp44;
+                s32 sp40;
+
+                sp64 = spFC * 2;
+                temp_t4_2 = (0x800 / sp64) & ~1;
+                sp58 = ((((sp64 + 7) >> 3) & 0x1FF) << 9) | 0xF5100000;
                 sp54 = sp58 | 0x100;
-                sp50 = (((temp_t4 - 1) * 4) & 0xFFF) << 12;
+                sp50 = (((spFC - 1) * 4) & 0xFFF) << 12;
                 sp4C = sp50 | 0x01000000;
-                sp48 = ((temp_a2 & 0xFFF) << 12) | 0xE4000000;
-                sp44 = (temp_t6 & 0xFFF) << 12;
-                temp_v1 = var_a3 & 0xFFFF;
-                sp40 = (temp_v1 << 16) | temp_v1;
+                sp48 = ((((s32)((f32)spFC * arg2 * 4.0f) + var_t2) & 0xFFF)
+                        << 12) | 0xE4000000;
+                sp44 = (var_t2 & 0xFFF) << 12;
+                var_a3 = (s32)(1024.0f / arg2);
+                sp40 = ((var_a3 & 0xFFFF) << 16) | (var_a3 & 0xFFFF);
+                var_t5 = spE4;
+                arg2 *= 65536.0f;
 
                 do {
                     var_t2 = var_t3;
@@ -134,15 +120,15 @@ void func_overlay_044_F0000580_188BDE0(
 
                     OVERLAY44_CMD((*arg1)++, 0xFD100000, var_s1);
                     OVERLAY44_CMD((*arg1)++, 0xF5100100, 0x07080200);
-                    var_t5 += (s32)((f32)var_t2 * temp_f12);
+                    var_t5 += (s32)((f32)var_t2 * arg2);
                     OVERLAY44_CMD((*arg1)++, 0xE6000000, 0);
                     temp_t0 = (spFC * var_t2) - 1;
-                    var_a3_2 = 0x7FF;
+                    var_a3 = 0x7FF;
                     if (temp_t0 < 0x7FF) {
-                        var_a3_2 = temp_t0;
+                        var_a3 = temp_t0;
                     }
                     OVERLAY44_CMD((*arg1)++, 0xF3000000,
-                        ((var_a3_2 & 0xFFF) << 12) | 0x07000000);
+                        ((var_a3 & 0xFFF) << 12) | 0x07000000);
                     OVERLAY44_CMD((*arg1)++, 0xE7000000, 0);
                     OVERLAY44_CMD((*arg1)++, sp54, 0x01080200);
                     OVERLAY44_CMD((*arg1)++, 0xF2000000,
@@ -169,9 +155,8 @@ void func_overlay_044_F0000580_188BDE0(
                     OVERLAY44_CMD((*arg1)++, 0xB2000000, sp40);
 
                     spE4 = var_t5;
-                    temp_lo = var_t2 * sp64;
-                    var_s0 += temp_lo;
-                    var_s1 += temp_lo;
+                    var_s0 += var_t2 * sp64;
+                    var_s1 += var_t2 * sp64;
                 } while (var_t3 != 0);
             }
 
@@ -187,10 +172,10 @@ void func_overlay_044_F0000580_188BDE0(
 
 /* PLATEAU-HANDOFF:func_overlay_044_F0000580_188BDE0:start
  * symbol: func_overlay_044_F0000580_188BDE0
- * score: 330 differing words
- * frame: 0x130
+ * score: 338 differing words
+ * frame: 0x100
  * relocations: 7
- * first-mismatch: +0x0
- * summary: Two words short; target frame 0x100 versus candidate 0x130. Constant/OR/macro, carrier, width and helper-arity routes are exhausted.
+ * first-mismatch: +0x8
+ * summary: Frame 0x100 exact. Size -4 (348 vs 349). Incoming pointer web stays in a0; a2 copy and a0 home store are the missing word plus the 0x100 slot.
  * PLATEAU-HANDOFF:func_overlay_044_F0000580_188BDE0:end
  */

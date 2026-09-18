@@ -2,11 +2,11 @@
 ### `overlay89UpdateStateAndParticles` plateau handoff
 
 - source: `src/overlays/o089/overlay89UpdateStateAndParticles.c`
-- score: 98 differing words
-- frame: 0x90
+- score: 85 differing words
+- frame: 0x88
 - relocations: 14
-- first mismatch: 0x0
-- summary: Parameter-home and guarded-count controls are byte-flat; early z is 97 positional but worse aligned; retained 98 and frame 0x90.
+- first mismatch: +0x0
+- summary: Frame 0x88 at 85 masked; extra s3 is type-1 particle address web 122; split rematerializes with secondaryHandle 8 bytes low and size -8.
 #### 2026-09-13, lane k1: authenticated draw-census follow-up
 
 Fresh configured stock compilation reproduces 544 target bytes,
@@ -57,5 +57,41 @@ maps remain ignored under build/k1/overlay89UpdateStateAndParticles.
 Commands: lane_status.py, configured stock compilation, draw_census.py,
 residual_map.py --object/--against where compared, finalize_plateau.py and
 tools/gates.sh. No executable bytes are newly credited.
+
+#### 2026-09-18, lane w21-o089: frame closed; extra s3 is type-1 particle address
+
+Identity-gated instrumented IDO (stock and instrumented .text identical,
+CDX_PROC=0). Confirmed baseline 544 B, size delta +4, masked 98, frame 0x90.
+The extra callee-saved register is type-1 web 122 (particle address, nocs=3,
+totalsave=10, coloured s1). Forcing p1:w122=s rematerializes the stack address
+into a0, drops s3, and matches the target save area (f20 at 0x20, s0/s1/s2/ra).
+
+Adopted source that closed the 8-byte frame surplus without a force:
+s32 count instead of a homed u8 particleCount; randomScale declared first;
+particle.z written with x and y (early-z on this new shape, not the rejected
+late-shape form). Unforced result is 85 masked, frame 0x88 exact, size still
++4, 137 vs 136 words, relocations 14 vs 12, first +0x0. Aligned 67 exact,
+39 naming, 11 immediate, 21 structural. Candidate-only words are the extra
+s3 save and restore; one target-only word at +0xE8.
+
+On that 85-score object, p1:w122=s scores 95 positional at size -8, but aligned
+92 exact, 8 naming, 9 immediate, 28 structural, 23 vs 23 slots. Particle homes
+match 0x50 through 0x80. The only remaining slot is secondaryHandle at +0x44
+versus target +0x4C (8 bytes). Immediate rows are that displacement. Size -8
+is the lost s3 save/restore plus the hoisted addiu collapsing into the loop
+rematerialize, missing the target's count-copy or v1 copy.
+
+Inert or worse on this shape (ADR 0018 after the last adoption): L97 around
+spawn, loop, randomScale, or secondaryHandle; register f32; particle as
+array of 1; first-member address and volatile-cast address spellings;
+while(count--); deleting randomScale (loses f20, +12); deleting state and
+primaryHandle locals (+32); extra declared s32 particleCount (frame 0x90,
+94 masked); L144 parameter-home already retired. Colour lattice not run:
+delta is still +4 and --every-colour refuses.
+
+Next lever is a source form that splits web 122 (totalsave 10 vs s1 cost 9)
+without growing the frame, then an 8-byte temp below the save area so
+secondaryHandle lands at +0x4C, plus the missing count-copy into s0 and the
+extra v1 copy of particleCount without a homed extra s32.
 
 <!-- plateau-handoff:overlay89UpdateStateAndParticles:end -->

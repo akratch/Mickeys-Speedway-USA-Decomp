@@ -76,9 +76,9 @@
       "source_commit": "25a15368d81a57531735f338d69d8bad165c9def"
     },
     "func_80006534": {
-      "ledger_commit": "2fbdaed20882892ad514639bef1160dc1d27cc8d",
+      "ledger_commit": "164ceb845611d3ff8dbace0a526bff06804d965c",
       "reason": "Closed before L142/L144/L131/L139 existed. L142: a call-spanning web is denied exactly the argument registers those calls load, so arity is the lever not the ratio. L144: address-taking forces the reload without volatile edges.",
-      "source_commit": "f7fe64fb8567b9f911b712d15ec70f5d3fa2ca7c"
+      "source_commit": "164ceb845611d3ff8dbace0a526bff06804d965c"
     },
     "func_80007118": {
       "ledger_commit": "3639bb146dd3828a3c8cc5bc93deb42a12d4f8e6",
@@ -891,9 +891,9 @@
       "source_commit": "5037e79c097c932e6c03f1e9dba1aabef4f162fb"
     },
     "func_overlay_007_F0000324_185C1AC": {
-      "ledger_commit": "f1d249e86fa061871475fc4af1fabf1fd8e2b860",
+      "ledger_commit": "a88acbcfb0aa8565b0b214200e5ee478ef3cd104",
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
-      "source_commit": "1e5e6b9ac093f146e97fc74dadf8aea9d5616853"
+      "source_commit": "a88acbcfb0aa8565b0b214200e5ee478ef3cd104"
     },
     "func_overlay_008_F0000058_185DDB0": {
       "ledger_commit": "2f294079865eef169175e26f5d41f267efabcfd2",
@@ -1561,7 +1561,7 @@
       "source_commit": "7cf4e7f482f499efd8daecf1e9615cd9264feeb0"
     },
     "overlay15InitStarsAndPalette": {
-      "ledger_commit": "4364725b5000f9d0cf7173a508ef259228dc8d77",
+      "ledger_commit": "904cffa9db87143ce96cd8a6928cc5945f9024a2",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "b39a489cae66acb9cfa460eb4ffcc9d84939d009"
     },

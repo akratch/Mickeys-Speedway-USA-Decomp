@@ -1,20 +1,5 @@
 #include "PR/ultratypes.h"
 
-typedef struct Overlay89Object {
-    s16 angleA;
-    s16 angleB;
-    u8 pad04[8];
-    f32 x;
-    f32 y;
-    f32 z;
-    u8 pad18[0x22];
-    u8 active;
-    u8 pad3B[0x29];
-    void *state;
-    u8 pad68[0x1C];
-    s32 clearWord;
-} Overlay89Object;
-
 typedef struct Overlay89EffectState {
     u8 pad00[3];
     u8 particleCount;
@@ -30,6 +15,21 @@ typedef struct Overlay89EffectState {
     u8 pad24[8];
     void *secondaryHandle;
 } Overlay89EffectState;
+
+typedef struct Overlay89Object {
+    s16 angleA;
+    s16 angleB;
+    u8 pad04[8];
+    f32 x;
+    f32 y;
+    f32 z;
+    u8 pad18[0x22];
+    u8 active;
+    u8 pad3B[0x29];
+    Overlay89EffectState *state;
+    u8 pad68[0x1C];
+    s32 clearWord;
+} Overlay89Object;
 
 typedef struct Overlay89Particle {
     s16 angleA;
@@ -62,29 +62,18 @@ extern void overlay89MaintainReloc(Overlay89Object *object,
                                    Overlay89EffectState *state);
 
 /* DKR v77/v80 and JFG contain no exact donor for this state updater. */
-/*
- * Plateau retry (2026-08-25): the full flag lattice still bottoms out at
- * -O2 -mips2, 4 bytes long with 98 masked word differences, first at +0x0.
- * Aggregate volatility/scope/array/prototype variants, register hints,
- * field-local representations, and a direct-count loop did not remove the
- * extra saved register holding &particle. The target rematerializes its stack
- * address and uses an 0x88-byte frame; this body uses 0x90 bytes. A 10-minute
- * bounded permuter batch improved score 2205 to 1115 only by adding an empty
- * self-conjunction block, rejected as scheduling scaffolding.
- */
-/* Ownership trial (2026-08-28): no initialized .data/.rodata is emitted by
- * this TU; linked promotion remains text-differs with 136 in-range words,
- * first +0x0. The 0x10 text overrun/frame and codegen gap remain. */
+/* 2026-09-18: s32 count, randomScale first, early z. Frame 0x88, 85 masked,
+ * size still +4. Extra s3 is type-1 &particle (web 122); force-split
+ * rematerializes. See the plateau handoff. */
 #ifdef NON_MATCHING
 void overlay89UpdateStateAndParticles(Overlay89Object *object,
                                       volatile s32 updateRate) {
+    f32 randomScale;
     Overlay89Particle particle;
     Overlay89EffectState *state;
     void *primaryHandle;
     void *secondaryHandle;
     s32 count;
-    u8 particleCount;
-    f32 randomScale;
 
     state = object->state;
     secondaryHandle = state->secondaryHandle;
@@ -106,10 +95,11 @@ void overlay89UpdateStateAndParticles(Overlay89Object *object,
                                            state->intensity);
                 }
 
-                particleCount = state->particleCount;
-                if (particleCount != 0) {
+                count = state->particleCount;
+                if (count != 0) {
                     particle.x = object->x;
                     particle.y = object->y;
+                    particle.z = object->z;
                     particle.lifetime = 0x80;
                     particle.type = 0xA;
                     particle.colorA = -0x7F01;
@@ -118,10 +108,9 @@ void overlay89UpdateStateAndParticles(Overlay89Object *object,
                     particle.flagsB = 0xFF0000FF;
                     particle.rotation = -0x8000;
                     particle.flagsC = 0xFF000000;
-                    particle.z = object->z;
-                    count = particleCount - 1;
-                    if (particleCount != 0) {
+                    if (count != 0) {
                         randomScale = gOverlay89RandomScale[2];
+                        count--;
                         do {
                             particle.angleA =
                                 overlay89RandomReloc(-0x2000, 0x2000) +
@@ -162,10 +151,10 @@ void overlay89UpdateStateAndParticles(Overlay89Object *object,
 
 /* PLATEAU-HANDOFF:overlay89UpdateStateAndParticles:start
  * symbol: overlay89UpdateStateAndParticles
- * score: 98 differing words
- * frame: 0x90
+ * score: 85 differing words
+ * frame: 0x88
  * relocations: 14
- * first-mismatch: 0x0
- * summary: Parameter-home and guarded-count controls are byte-flat; early z is 97 positional but worse aligned; retained 98 and frame 0x90.
+ * first-mismatch: +0x0
+ * summary: Frame 0x88 at 85 masked; extra s3 is type-1 particle address web 122; split rematerializes with secondaryHandle 8 bytes low and size -8.
  * PLATEAU-HANDOFF:overlay89UpdateStateAndParticles:end
  */

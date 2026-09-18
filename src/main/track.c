@@ -3046,17 +3046,17 @@ s32 func_800103D4(void *object) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_800103D4.s")
 #endif
-#ifdef NON_MATCHING
-/*
- * PROVENANCE: Mickey's m2c draft and the resident collision-node and plane
- * offsets reconstruct this intersection query; no external body is adapted.
- */
 typedef struct TrackRayPoint {
     f32 x;
     f32 y;
     f32 z;
 } TrackRayPoint;
 
+#ifdef NON_MATCHING
+/*
+ * PROVENANCE: Mickey's m2c draft and the resident collision-node and plane
+ * offsets reconstruct this intersection query; no external body is adapted.
+ */
 typedef struct TrackRayNode {
     u8 pad00[0x1C];
     TrackPlane *planes;
@@ -3179,8 +3179,14 @@ loop_80010654:
 /*
  * PROVENANCE: Mickey's m2c control-flow draft and resident collision
  * records reconstruct this wrapper; no external function body is adapted.
+ *
+ * The z square is `(&scratch.direction.x)[2]` rather than `scratch.direction.z`
+ * so the sum is a first definition of lengthSquared that uopt does not copy-prop
+ * into an expression temp (L145/L160). Assigning that sum through temp_f20 folds
+ * the def; temp_f0 and temp_f20 stay declared as unused frame carriers. var_s4
+ * is initialised after the first calls so its p1 save outranks the scratch
+ * address webs.
  */
-#ifdef NON_MATCHING
 typedef struct TrackRayHit {
     f32 normalX;
     f32 normalY;
@@ -3205,32 +3211,8 @@ extern s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                          f32 threshold, TrackRayHit *hit);
 extern s32 func_80011CDC(u8 *arg0, u8 *arg1, f32 arg2, u8 *arg3);
 
-/* Workbench verdict: 20/147 differing words, first mismatch +0x3c; size and -0xB8 frame exact. */
-/* The declaration order below is load-bearing, not cosmetic: homes descend from the frame top in
- * declaration order, so var_s4/var_s7 take the two cells above `scratch` and sp6C/sp68 the two lowest.
- * That single reorder closed all 21 stack-displacement words (41 -> 20) with no other edit. */
-/* Reusing ONE local across sqrtf (lengthSquared = sqrtf(lengthSquared)) instead of a separate
- * temp_f0 retired the last structural word: the target holds the sum in a callee-saved register,
- * copies it to f12 at the call and takes the result back into the same register, which is one
- * variable in the source and not two. temp_f0 stays declared because it is a frame carrier.
- * The verdict is now register-permutation: structural 0, schedule 0, 20 register words. */
-/* Remaining gap: a 3-cycle over s4/s5/s6 -- the target numbers var_s4's web below the two
- * &scratch member-address webs, we number it above -- plus that same fp web, which the target
- * colours f20 and we colour f0. Declaration order does NOT move either: reordering the block
- * changes the stack homes and leaves the pool lane byte-identical. */
-/* 2026-09-12, lane p10-tight: read off both objects, the target writes the sum
- * straight into the callee-saved float register the length variable already
- * owns and copies the square root's result back into it, so the sum and the
- * result are ONE web with two definitions. The requirement is therefore that
- * the length variable's FIRST definition survive uopt, not that a separate
- * temporary be given a longer range. L144 is refuted here and priced: taking
- * the variable's address at the guard, at the call argument or at both costs
- * twelve bytes and 93 words, because it moves the variable to a memory home --
- * the reload is the wrong half of volatile for this residual. Six further
- * rewrites of the sum (split accumulation, compound assignment, a dead zero
- * initialisation, a self-assignment, the root taken into the spare float, and
- * the guard read through the spare float) are all byte-identical: uopt forwards
- * any expression whose operands are unmodified between definition and use. */
+/* Declaration order is load-bearing: homes descend from the frame top, so
+ * var_s4/var_s7 take the two cells above `scratch` and sp6C/sp68 the two lowest. */
 s32 func_80010900(TrackVec3f *arg0, TrackVec3f *arg1, f32 arg2, s32 arg3,
                   void (*arg4)(void *, void *, f32 *, f32, void *, s32)) {
     s32 var_s4;
@@ -3251,10 +3233,9 @@ s32 func_80010900(TrackVec3f *arg0, TrackVec3f *arg1, f32 arg2, s32 arg3,
         scratch.direction.x = arg1->f[0] - arg0->f[0];
         scratch.direction.y = arg1->f[1] - arg0->f[1];
         scratch.direction.z = arg1->f[2] - arg0->f[2];
-        temp_f20 = (scratch.direction.z * scratch.direction.z) +
-                   ((scratch.direction.x * scratch.direction.x) +
-                    (scratch.direction.y * scratch.direction.y));
-        lengthSquared = temp_f20;
+        lengthSquared = ((&scratch.direction.x)[2] * (&scratch.direction.x)[2]) +
+                        ((scratch.direction.x * scratch.direction.x) +
+                         (scratch.direction.y * scratch.direction.y));
         if (lengthSquared > 0.0f) {
             lengthSquared = sqrtf(lengthSquared);
             scratch.length = lengthSquared;
@@ -3272,12 +3253,9 @@ s32 func_80010900(TrackVec3f *arg0, TrackVec3f *arg1, f32 arg2, s32 arg3,
             }
             /* `var_s4 = 0` belongs here, not at the top of the loop body.
              * At the top its live range spans four calls, so its p1 save is
-             * totalsave 30 / nocs 4 = 7.5; that loses the round to the two
-             * `scratch` address webs at 8.0, which take s4 and s5, and
-             * var_s4 ends up in s6 where the target holds s4. Initialising
-             * it here drops the span, lifts the save above 8.0, and the whole
-             * s4/s5/s6 3-cycle disappears: 20 -> 3 differing words, measured
-             * against the full-TU object. */
+             * totalsave 30 / nocs 4 = 7.5 and loses the round to the two
+             * `scratch` address webs at 8.0. Initialising it here drops the
+             * span and lifts the save above 8.0. */
             var_s4 = 0;
             if (D_800C9D28 != 0) {
                 var_s4 = func_80011CDC((u8 *) arg0,
@@ -3305,9 +3283,6 @@ s32 func_80010900(TrackVec3f *arg0, TrackVec3f *arg1, f32 arg2, s32 arg3,
     } while (var_s2 != 0);
     return sp68 | sp6C;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80010900.s")
-#endif
 #ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c collision-response draft and the resident ray
@@ -5717,16 +5692,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * first-mismatch: +0x0
  * summary: Recovered shadow buffer ABI and eight-byte records; 187 differences remain. Next: source evidence for flag and pointer stack homes.
  * PLATEAU-HANDOFF:func_800140CC:end
- */
-
-/* PLATEAU-HANDOFF:func_80010900:start
- * symbol: func_80010900
- * score: 3/147 words
- * frame: 0xb8
- * relocations: 6
- * first-mismatch: +0xBC
- * summary: Mutation of a loaded direction component dests the sum at f20 but is ±4 B / 113 words. Size-0 memory-sum still copy-props into f0.
- * PLATEAU-HANDOFF:func_80010900:end
  */
 
 /* PLATEAU-HANDOFF:func_80012658:start

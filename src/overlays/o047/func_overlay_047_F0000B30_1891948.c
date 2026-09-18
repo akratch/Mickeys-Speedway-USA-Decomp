@@ -693,6 +693,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
  * frame: 0x280
  * relocations: 316
  * first-mismatch: +0x4
- * summary: Address partition isolates regional GP ring phases; size-only rate deletion is rejected.
+ * summary: Live +4/1580/0x280. Extra word is ugen param-home reload; L144 -908; or-eq 0 is size 0 at 1964; no force removes the copy.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

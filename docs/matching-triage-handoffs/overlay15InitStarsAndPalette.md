@@ -2,11 +2,11 @@
 ### `overlay15InitStarsAndPalette` plateau handoff
 
 - source: `src/overlays/o015/overlay_015.c`
-- score: 20/247 words
+- score: 19/247 words
 - frame: 0x40
 - relocations: 14
 - first mismatch: +0x70
-- summary: Guard-local starIndex=1 plus an L59 split of the two inits, 41 to 20; stars address colour (force p1:w317=c5 is 18), block 1 tail order and palette index inits remain.
+- summary: Same-line allocate+starsAddress+store keeps addiu+sw adjacent, 20 to 19; stars address still a1 (force p1:w317=c5 is 16), block 1 tail order and palette index inits remain.
 
 #### 2026-09-13, lane l1: counter reuse and measured bounds scheduling
 
@@ -243,5 +243,23 @@ web set is unchanged (same 30 colours, same web numbers), so the 171-cell
 landscape was not re-run. Next: an a1 occupant in block 1 that is not the
 count address (that one is already s7), or an as1 line that keeps
 addiu+sw adjacent without a region opener.
+
+#### 2026-09-18, lane w20-o015: L59 allocate+addr+store, 20 to 19
+
+Same-line
+stars = overlay15Allocate(...); starsAddress = &gOverlay15Stars; *starsAddress = stars
+keeps ugen's addiu+sw adjacent through as1 (no L97). First structural
+moves from +0x80 to +0xF8. Aligned 228 exact / 6 naming / 0 immediate /
+13 structural, displacement tax 0. Force p1:w317=c5 is 16 on this shape.
+
+Refuted on the 19 shape: palette inits after the palette load (20);
+inits after deltas (19, inert); folding the palette store onto that
+same line (22); palette from stars instead of *starsAddress (-4 size);
+starsAddress before the jal (-4 size); volatile starsAddress (+4);
+L97 still size; phantom/cast palette and bounds pointers inert;
+L109 occ on StarBound0 inert in block 1 and +8 in the loop.
+ugen still emits la bounds (a0), la stars (a1), la count (s7). Next:
+an a1 occupant that survives copy-prop in block 1, then the three
+palette inits after lw on that shape.
 
 <!-- plateau-handoff:overlay15InitStarsAndPalette:end -->

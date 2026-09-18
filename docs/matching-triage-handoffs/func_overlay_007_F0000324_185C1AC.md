@@ -6,7 +6,7 @@
 - frame: 0x78
 - relocations: 61
 - first mismatch: +0x120
-- summary: Size closed at delta 0. Residual is 10 masked: as1 scheduling plus f12 versus f0, and f0 is not offered.
+- summary: Colour floor 10: web 99 denied f0 (L142); a distinct f0 name costs a twelfth home or size. as1 delays are besttime, not lineno.
 
 ## 2026-09-11 frame closed (lane `lane/o11-frames`)
 
@@ -102,7 +102,54 @@ Tried and rejected on the remaining 10, all against this size-0 baseline:
 
 The 10 are three as1 scheduling windows (remaining versus the objects reload,
 the scale address versus the index shift, and `li 43` versus `%hi(D_844)` in
-the same delay) plus f12 versus f0 on the scale web.  Next: a scale web that
-is offered f0 without a twelfth home, or a delay-slot preference for the
-`D_844` high half over 43.  Do not reopen the declaration block.
+the same delay) plus f12 versus f0 on the scale web.  Do not reopen the
+declaration block.
+
+## 2026-09-18 colour and as1 closed (lane `lane/w20-o007`)
+
+Identity gate: instrumented IDO `.text` is byte-identical to stock.
+`CDX_PROC=0`, 40 p1, 0 p2.  Reconfirmed web 99 (`difference`, type-3,
+`bbs=26,27,28,45,46,47,48,107`) `p1cost` starts at colour 26, `forbidden0=0xC0`
+(the two caller-float bits).  `CDX_FORCE=p1:w99=c24` is not on the offer list.
+
+Offered caller colours of web 99, all accepted at size delta 0:
+
+- c26 (incumbent f12): 10
+- c27: 16
+- c28: 26
+- c29: 25
+
+The incumbent is the best colour this web is offered.  L142 arity cannot
+help: the denied bits are the float return registers, which any spanned call
+sets, not f12/f14.
+
+Forced split `p1:w99=s` accepted (`forced=-1`).  A remainder row then
+reports `bestcolor=24 forbidden=0 totalsave=11 nocs=2` and would colour at
+f0, at size +8.  Nested `f32 scale` for the multiply creates web 138, which
+takes c24 with empty forbidden, at size 0 but 32 masked (24 immediate-only:
+the twelfth home).  `register f32` is byte-identical to that nested form.
+No-carrier global, puns through `found`/`index`, store-first, and first-loop
+expression doubling all reopen size (plus 4 to plus 40).
+
+`--every-colour` landscape: 264 probes over 30 coloured webs, out directory
+untracked.  173 accepted at size delta 0.  None beat 10; the best ok cells
+are 13 (web 90 at c2-c6, web 202 at c1/c2/c4-c6).  No cell scores 0.  L140:
+the wanted f0 colour belongs to a web this body does not have.
+
+as1 `-R` on the three delay windows: lever 42 / overlay40 line-join of the
+initializer onto the loop header is flat (or plus 1 for the scale join).
+The remaining-versus-objects pick is `besttime` 0 on the stack reload
+(latency 3) against `besttime` 3 on `count - 1`, not lineno.  The `li 43`
+versus `%hi(D_844)` pick is `aftercycles` 0 against 1; tying lineno leaves
+that key in place.  L97 around the first objects loop, remaining-in-condition,
+index hoisted above `if (found)`, nested `if (1)` around the countdown,
+`D_844` discarded probe, and value/index/do on one line: all flat 10.
+
+Decision variable: `difference` is one IR name whose hull spans the measure
+and record calls, so the scale fragment is denied f0.  A second name that
+does not span a call colours f0, and every such name measured here is either
+a twelfth home or a size change.  The three as1 windows sit below
+globalcolor (the 264-cell floor is the incumbent 10).  Next lever is a
+source form that gives the scale a distinct IR name without a new home and
+without aliasing `overlay7RuntimeScaleReloc` through `state->scale`.
 <!-- plateau-handoff:func_overlay_007_F0000324_185C1AC:end -->

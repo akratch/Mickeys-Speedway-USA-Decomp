@@ -37,6 +37,9 @@ typedef struct O19SpatialMaskFrame {
  * Comma, 0|0, xor-self, assign-as-if, last-use, literal type and earlier
  * def do not emit a2 first at unchanged colours; reversing statements
  * recolours selector off a2 and still emits t0 first (L87 lock). */
+/* w16-o019 (2026-09-18): exhaustive same-kind colour landscape, 172 probes
+ * over 29 p1 webs, floors at 2 with 0 winners. L159 packing empty; no
+ * force scores 0 so L160 is closed. */
 #ifdef NON_MATCHING
 void overlay19BuildSpatialMasks(O19Context *context, O19Group *group, O19Output *output) {
     O19SpatialMaskFrame frame; s32 item, itemEnd, selector; s16 vertexBase; O19Span *span; O19Point *point; O19Vertex *vertices, *vertex; s16 x, y, z, xMax, xMin, yMax, yMin, zMax, zMin; s16 spanCount, lower, upper, step, binStart, binEnd, firstItem, binIndex; u32 bit, mask; ;
@@ -100,6 +103,6 @@ void overlay19BuildSpatialMasks(O19Context *context, O19Group *group, O19Output 
  * frame: 0x80
  * relocations: 0
  * first-mismatch: +0xC0
- * summary: ugen emits mask=0 (t0) then selector=0 (a2); no tested C form emits a2 first at unchanged colours (L87 lock).
+ * summary: exhaustive same-kind colour landscape floors at 2 with 0 winners of 172 probes; L159 empty; L160 closed; L87 lock remains
  * PLATEAU-HANDOFF:overlay19BuildSpatialMasks:end
  */

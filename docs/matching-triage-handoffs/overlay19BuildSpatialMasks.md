@@ -6,7 +6,7 @@
 - frame: 0x80
 - relocations: 0
 - first mismatch: +0xC0
-- summary: ugen emits mask=0 (t0) then selector=0 (a2); no tested C form emits a2 first at unchanged colours (L87 lock).
+- summary: exhaustive same-kind colour landscape floors at 2 with 0 winners of 172 probes; L159 empty; L160 closed; L87 lock remains
 
 - geometry: Target and configured C are both `0x38C`/908 bytes/227 words with frame `0x80`; the owned Overlay 19 range is `+0xF58..+0x12E4`, ROM `0x18761B0..0x187653C`, followed by separately owned 12-byte assembly padding.
 - relocation proof: Target runtime and candidate static surfaces both contain zero relocation records; count, type, offset, and identity surfaces are therefore vacuously exact, and preflight is complete.
@@ -220,4 +220,43 @@ share a line; splits stay at 2). Next: a first-surviving-definition that
 is still coloured a2 but is visited before mask's copy, or a new input
 (flag, shape) that changes ugen's independent-copy walk. Not statement
 order, comma, or `#line` on the inits.
+
+#### 2026-09-18, lane `w16-o019`: exhaustive colour landscape floors at 2
+
+Baseline reproduced at 2 (225 exact, 2 naming, 0 immediate, 0 structural,
+first +0xC0, frame 0x80, delta 0, zero relocs). Register census is the one
+t0/a2 pair at that offset; frames match at 0x80 with identical 14-slot
+ladders. Identity gate: instrumented IDO .text is byte-identical to stock
+(908 bytes). procindex is proc=0 with 29 p1color and 4 p2color records.
+CDX_OUT / CDX_PROC=0; a force is only counted when the colour row's
+forced value is the requested colour, never -2.
+
+`tools/web_footprint.py overlay19BuildSpatialMasks --every-colour --proc 0`
+probed 172 same-kind colours over 29 p1 webs. 162 accepted at delta 0, 8
+size-shifted (web 80, +12 bytes), 2 with no second colour (web 20, web 45).
+Spot-checked web 68=c8, web 71=c6 and web 24=c17: each colour row reads
+forced equal to the requested colour.
+
+Floor: 2. Probes beating the unforced 2 at delta 0: 0. Best accepted
+delta-0 scores are 6 (web 24=c17 and web 224=c18). No accepted probe
+reduced the +0x80 window that holds the two naming rows. L159 packing is
+empty because there are no winners. L160 requires a force that scores 0
+at delta 0; none exists, so generated-cursor / carrier deletion is not
+opened.
+
+The two copies remain web 68 (mask, t0, c7; p1cost starts at c7, so a2 is
+forbidden) and web 71 (selector, a2, c5). Forcing selector to a3 (c6)
+scores 7, matching the already-closed statement-order cell; t0 is still
+emitted first. The four p2 colours are v0/v1/a0 and cannot own this pair.
+
+Stop under the assignment and ADR 0018: the reopen mechanism was the
+missing landscape; it names no source-reachable web. Do not retry
+statement order, comma, types, declaration order, or `#line` on the inits.
+Next: a first-surviving-definition still coloured a2 but visited before
+mask's copy, or a new input (flag, shape) that changes ugen's
+independent-copy walk. Not colour, packing, or L160.
+
+Commands: score_symbol, align_symbol, frame_census, register_census,
+identity-gate stock vs instrumented, web_footprint --every-colour,
+finalize_plateau. No matching credit is claimed.
 <!-- plateau-handoff:overlay19BuildSpatialMasks:end -->

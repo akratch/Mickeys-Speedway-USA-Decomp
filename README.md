@@ -11,25 +11,25 @@ from the original stub but have not been modernized or verified.
 <!-- SCOREBOARD_BEGIN -->
 ## Progress
 
-[![functions](https://img.shields.io/badge/functions_matched-1233_of_1462_(84.34%25)-blue)](#progress) [![bytes](https://img.shields.io/badge/code_bytes_resolved-576880_of_944344_(61.09%25)-blue)](#progress) [![names](https://img.shields.io/badge/symbols_named-1425_adopted-blue)](#progress)
+[![functions](https://img.shields.io/badge/functions_matched-1234_of_1462_(84.40%25)-blue)](#progress) [![bytes](https://img.shields.io/badge/code_bytes_resolved-577468_of_944344_(61.15%25)-blue)](#progress) [![names](https://img.shields.io/badge/symbols_named-1426_adopted-blue)](#progress)
 
 | | Done | Total | |
 | :--- | ---: | ---: | ---: |
-| **Whole program** | 576,880 | 944,344 | **61.09%** |
-| Resident C | 311,464 | 475,080 | 65.56% |
+| **Whole program** | 577,468 | 944,344 | **61.15%** |
+| Resident C | 312,052 | 475,080 | 65.68% |
 | Verified assembly | 17,184 | 475,080 | 3.62% |
 | Overlay C | 248,232 | 469,264 | 52.90% |
-| Functions matched | 1,233 | 1,462 | 84.34% |
-| Names adopted | 1,326 | 1,462 | 90.70% |
+| Functions matched | 1,234 | 1,462 | 84.40% |
+| Names adopted | 1,327 | 1,462 | 90.77% |
 
-Whole program is resident C plus verified assembly plus overlay C. A function counts only when the ROM rebuilds byte-identically with its C compiled in place of its assembly, so a `NON_MATCHING` body counts as unmatched exactly like extracted assembly. Verified assembly is 84 hand-written functions kept as assembly on purpose. 1,425 symbols are adopted in `symbol_addrs.us.txt`.
+Whole program is resident C plus verified assembly plus overlay C. A function counts only when the ROM rebuilds byte-identically with its C compiled in place of its assembly, so a `NON_MATCHING` body counts as unmatched exactly like extracted assembly. Verified assembly is 84 hand-written functions kept as assembly on purpose. 1,426 symbols are adopted in `symbol_addrs.us.txt`.
 
 | Area | Functions | Matched to C | Named, still asm | Unnamed | Identified |
 | :--- | ---: | ---: | ---: | ---: | :--- |
 | libultra corridor | 301 | 271 | 29 | 1 | `██████████████████▓▓` 99.7% |
-| game code, TU identified | 1154 | 962 | 64 | 128 | `█████████████████▓░░` 88.9% |
+| game code, TU identified | 1154 | 963 | 64 | 127 | `█████████████████▓░░` 89.0% |
 | game code, not yet split | 7 | 0 | 0 | 7 | `░░░░░░░░░░░░░░░░░░░░` 0.0% |
-| **total** | 1462 | 1233 | 93 | 136 | `█████████████████▓░░` 90.7% |
+| **total** | 1462 | 1234 | 93 | 135 | `█████████████████▓░░` 90.8% |
 
 `█` matched to C · `▓` named but still assembly · `░` neither. Naming runs ahead of matching: a function is decompiled against an already-identified translation unit.
 

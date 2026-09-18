@@ -232,6 +232,6 @@ void overlay101BuildPresentationB(void) {
  * frame: 0x20
  * relocations: 52
  * first-mismatch: +0x10
- * summary: Store-result capture moves the intended line but replaces duplicate colour emission with a byte mask; 158 at +4, baseline retained.
+ * summary: Identity-gate proc 0. Extra 0xC0 into a2; w198=c5 declined. Copy/L97/L144/L145/fallthrough/remat leave +4. Force floor 134 at +4.
  * PLATEAU-HANDOFF:overlay101BuildPresentationB:end
  */

@@ -6,7 +6,7 @@
 - frame: 0x20
 - relocations: 52
 - first mismatch: +0x10
-- summary: B store-result transfer adds a byte-mask draw and regresses to 158 at +4; the guarded 143-word baseline is retained.
+- summary: L97 copy still +4 with a2 forbidden on the 0xC0 web; L144/array get a2 plus a home store and frame 0x50 at 142; 143 retained.
 
 Measured 2026-09-11, lane `lane/s1-trio`, on the four-function overlay-101
 presentation-builder cluster. Every number is `tools/align_symbol.py`, whose
@@ -319,4 +319,58 @@ The first mechanical preparation removed the initializer but missed the
 color1 store, leaving an undefined value. It is explicitly marked INVALID and
 excluded from measurements above. The corrected transfer has its own complete
 source/object/profile receipt; the invalid size-zero result is not evidence.
+
+#### 2026-09-19, lane w22-o101a: size-close on copy, L144, L97, L103, L131
+
+Assignment is base-only on 5639d0a3. Configured stock measures 209 candidate
+words against 208 target words, delta +4, 144 raw and 143 masked, first +0x10;
+aligned 79 exact, 104 naming, 1 immediate, 32 structural, including eight
+candidate-only and seven target-only words. Frame 0x20 with the same three-slot
+ladder as the target. Stock and instrumented full-TU .text agree with traces
+off. CDX_PROC is ordinal 0 (procindex decisions=33). Forces were scored with
+score_symbol.py --object so a recompile could not drop them. The B store-result
+transfer was not repeated.
+
+The surplus word is still the second 0xC0 materialisation at +0x31C. Two
+independent source-shape routes were measured, and neither closes delta 0 at
+frame 0x20.
+
+Missing copy / L97. An empty if (1) {} after the dimColor assignment (and the
+equivalent wrap of the uses in if (1), and switch-default fallthrough) keeps
+one 0xC0 materialisation and copies it into the call's argument register.
+Masked 147 at +4, frame 0x20. The 0xC0 web is then web 199, color t0,
+forbidden0=0x7ec30000. CDX_FORCE=p1:w199=c5 is declined (forced=-2, object
+byte-identical to the unforced copy shape). Freeing a2 from web 108 is
+accepted (forced=10, 149 at +4) and does not unforbid a2 on web 199; the
+combined force p1:w108=c10,p1:w199=c5 still has forced=-2 on web 199. The copy
+is real and the size does not close, because the 0xC0 web is live in the call
+block as the source of the argument copy, so a2 stays forbidden.
+
+L144 and the same memory-class lever as an array of one. Taking dimColor's
+address at every use, or writing dimArr[0] at the same sites, puts one 0xC0
+into a2 and uses that register for both colour stores and the call. Masked 142
+at +4. The extra word is a home store, and the frame grows to 0x50. Not
+adopted: the target frame is 0x20. A one-field struct is a scalar and is
+byte-identical to the 143 baseline. Address-take at the call only is 158 at
++8, the same class as the rejected store-result transfer. volatile dimColor is
+162 at +16.
+
+L131 rematerialised address at the node-24 chain-head reads (arrow, [0], mixed
+dot/arrow) is 143 at +4, byte-inert. L103 float spellings of 1.0f and 0.0f are
+the same. L104 copy-then-redefine of dimColor, including a live 0xFF redef
+consumed by color0/color3, folds away and stays 143. Goto join between the
+colour stores and the tail is 145 at +8. Split force on web 198 / web 199 is
+accepted (forced=-1) and scores 159 at +8. Moving the colour stores beside or
+onto the call line is 147 at +4 with both materialisations retained.
+
+The previous-link load path was re-tried only as a semantically valid copy of
+the NEW chain head after the node-20 write: 193 at +8. The self-linking
+reconstructions remain invalid and were not re-run.
+
+Retained: the guarded 143-word body, frame 0x20. The decision variable is
+still the extra word. What this lane adds is the mechanism: a register-class
+0xC0 web cannot take a2 while it is the source of the argument copy, and the
+memory-class form that does take a2 pays a home store and a 0x50 frame. A
+source that makes that web the argument itself, without escaping it, is the
+remaining size question. Colour packing stays blocked on nonzero size.
 <!-- plateau-handoff:overlay101BuildPresentationA:end -->

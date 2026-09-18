@@ -2,11 +2,11 @@
 ### `overlay15InitStarsAndPalette` plateau handoff
 
 - source: `src/overlays/o015/overlay_015.c`
-- score: 41/247 words
+- score: 19/247 words
 - frame: 0x40
 - relocations: 14
 - first mismatch: +0x70
-- summary: A count self-redefinition keeps the size in starIndex's web and the natural xMax/yRange order syncs the FP ring, 60 to 41; the stars address colour, block 1's tail order and the palette index inits remain.
+- summary: Same-line allocate+starsAddress+store keeps addiu+sw adjacent, 20 to 19; stars address still a1 (force p1:w317=c5 is 16), block 1 tail order and palette index inits remain.
 
 #### 2026-09-13, lane l1: counter reuse and measured bounds scheduling
 
@@ -207,5 +207,59 @@ there is unconditional where ours is PRE-sunk onto the loop-exit path
 a spelling of the first palette index that is not starIndex's web but
 does not change the head's colour order, and the a1 occupant read off the
 records with the count-address form of the retained source.
+
+#### 2026-09-18, lane w20-o015: L59 split and guard-local starIndex, 41 to 20
+
+Baseline reproduced at 41 masked (42 raw), delta zero, frame 0x40, first
++0x70. Identity gate passed: instrumented IDO .text is byte-identical to
+stock (988 bytes), CDX_PROC=2 (31 p1dec, 30 p1color, web 318 split). Named
+Ucode mapping still authenticates procedure 2.
+
+Force p1:w317=c5 (stars address a1 to a2) is accepted and scores 18 on
+this shape, 38 on the 40-word ancestor, 39 on the 41-word ancestor. Web 317
+is type-1, block 1 only, save 1.0, lowest colour in its cost table. Hoisting
+starsAddress before the allocate call (L142 span) is 218 at delta -4.
+Deleting the carrier (gOverlay15Stars = stars) is byte-inert at 20. L97
+around the address block or bounds is +4 to +24 size.
+
+L59: previousStarIndex = 0; starIndex = 1 on one line was the 41-word
+form. Splitting them is 40, closes the +0x13C / +0x130 gap pair, and lines
+up li s0, 1 at +0x138. Swapping the two inits is 41. Folding starIndex = 1
+back onto previousStarIndex = 0 or onto colorStep is 41.
+
+The 20-word step: the loop's starIndex = 1 belongs inside if (count > 0).
+Outside, uopt PRE-sinks the palette's later starIndex = 1 onto the
+loop-exit path (candidate-only +0x1CC). Inside, that PRE is gone, displacement
+tax is 0, aligned 227 exact / 5 naming / 0 immediate / 15 structural, no
+gap words, 114 draws unchanged. A fresh paletteIndex1 in place of the
+palette starIndex is still 76. Moving the three palette inits after the
+palette load is 21 on this shape.
+
+Remaining 20 words: stars address a1 vs a2 (the 18-word force), the
+stars-store vs bounds-lui swap at +0x80, the t7 vs t6 add, block-1 tail
+order of move s1,v0 / count store / sw zero / negu, and the three
+palette index inits still before lw v0 rather than after it. Coloured
+web set is unchanged (same 30 colours, same web numbers), so the 171-cell
+landscape was not re-run. Next: an a1 occupant in block 1 that is not the
+count address (that one is already s7), or an as1 line that keeps
+addiu+sw adjacent without a region opener.
+
+#### 2026-09-18, lane w20-o015: L59 allocate+addr+store, 20 to 19
+
+Same-line
+stars = overlay15Allocate(...); starsAddress = &gOverlay15Stars; *starsAddress = stars
+keeps ugen's addiu+sw adjacent through as1 (no L97). First structural
+moves from +0x80 to +0xF8. Aligned 228 exact / 6 naming / 0 immediate /
+13 structural, displacement tax 0. Force p1:w317=c5 is 16 on this shape.
+
+Refuted on the 19 shape: palette inits after the palette load (20);
+inits after deltas (19, inert); folding the palette store onto that
+same line (22); palette from stars instead of *starsAddress (-4 size);
+starsAddress before the jal (-4 size); volatile starsAddress (+4);
+L97 still size; phantom/cast palette and bounds pointers inert;
+L109 occ on StarBound0 inert in block 1 and +8 in the loop.
+ugen still emits la bounds (a0), la stars (a1), la count (s7). Next:
+an a1 occupant that survives copy-prop in block 1, then the three
+palette inits after lw on that shape.
 
 <!-- plateau-handoff:overlay15InitStarsAndPalette:end -->

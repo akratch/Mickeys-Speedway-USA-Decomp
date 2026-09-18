@@ -2,11 +2,11 @@
 ### `overlay15InitStarsAndPalette` plateau handoff
 
 - source: `src/overlays/o015/overlay_015.c`
-- score: 41/247 words
+- score: 20/247 words
 - frame: 0x40
 - relocations: 14
 - first mismatch: +0x70
-- summary: A count self-redefinition keeps the size in starIndex's web and the natural xMax/yRange order syncs the FP ring, 60 to 41; the stars address colour, block 1's tail order and the palette index inits remain.
+- summary: Guard-local starIndex=1 plus an L59 split of the two inits, 41 to 20; stars address colour (force p1:w317=c5 is 18), block 1 tail order and palette index inits remain.
 
 #### 2026-09-13, lane l1: counter reuse and measured bounds scheduling
 
@@ -207,5 +207,41 @@ there is unconditional where ours is PRE-sunk onto the loop-exit path
 a spelling of the first palette index that is not starIndex's web but
 does not change the head's colour order, and the a1 occupant read off the
 records with the count-address form of the retained source.
+
+#### 2026-09-18, lane w20-o015: L59 split and guard-local starIndex, 41 to 20
+
+Baseline reproduced at 41 masked (42 raw), delta zero, frame 0x40, first
++0x70. Identity gate passed: instrumented IDO .text is byte-identical to
+stock (988 bytes), CDX_PROC=2 (31 p1dec, 30 p1color, web 318 split). Named
+Ucode mapping still authenticates procedure 2.
+
+Force p1:w317=c5 (stars address a1 to a2) is accepted and scores 18 on
+this shape, 38 on the 40-word ancestor, 39 on the 41-word ancestor. Web 317
+is type-1, block 1 only, save 1.0, lowest colour in its cost table. Hoisting
+starsAddress before the allocate call (L142 span) is 218 at delta -4.
+Deleting the carrier (gOverlay15Stars = stars) is byte-inert at 20. L97
+around the address block or bounds is +4 to +24 size.
+
+L59: previousStarIndex = 0; starIndex = 1 on one line was the 41-word
+form. Splitting them is 40, closes the +0x13C / +0x130 gap pair, and lines
+up li s0, 1 at +0x138. Swapping the two inits is 41. Folding starIndex = 1
+back onto previousStarIndex = 0 or onto colorStep is 41.
+
+The 20-word step: the loop's starIndex = 1 belongs inside if (count > 0).
+Outside, uopt PRE-sinks the palette's later starIndex = 1 onto the
+loop-exit path (candidate-only +0x1CC). Inside, that PRE is gone, displacement
+tax is 0, aligned 227 exact / 5 naming / 0 immediate / 15 structural, no
+gap words, 114 draws unchanged. A fresh paletteIndex1 in place of the
+palette starIndex is still 76. Moving the three palette inits after the
+palette load is 21 on this shape.
+
+Remaining 20 words: stars address a1 vs a2 (the 18-word force), the
+stars-store vs bounds-lui swap at +0x80, the t7 vs t6 add, block-1 tail
+order of move s1,v0 / count store / sw zero / negu, and the three
+palette index inits still before lw v0 rather than after it. Coloured
+web set is unchanged (same 30 colours, same web numbers), so the 171-cell
+landscape was not re-run. Next: an a1 occupant in block 1 that is not the
+count address (that one is already s7), or an as1 line that keeps
+addiu+sw adjacent without a region opener.
 
 <!-- plateau-handoff:overlay15InitStarsAndPalette:end -->

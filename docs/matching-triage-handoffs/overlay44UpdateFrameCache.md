@@ -2,11 +2,11 @@
 ### `overlay44UpdateFrameCache` plateau handoff
 
 - source: `src/overlays/o044/overlay44UpdateFrameCache.c`
-- score: 30/187 words
+- score: 18/187 words
 - frame: 0x48
 - relocations: 4
 - first mismatch: +0x1F4
-- summary: Size and frame closed at 187 words and 0x48; colour landscape floors at 30. Next is L99 packing of the extra spill slot.
+- summary: L99 packing closed the extra spill slot (30 to 18, homes exact). Remaining 18 is ugen ring naming at +0x1F4; colour stops at t4.
 
 #### 2026-09-17, lane w8-o044: size closed; colour floor is 30
 
@@ -30,5 +30,19 @@ Eliminated on this body, all at the 30-word shape unless noted:
 - named `data` pointer before `src`: 68 masked, delta +4
 
 The remaining 30 is the first-upload register assignment plus stack homes. Candidate still has 7 slots against the target's 6: unique candidate homes at +0x28 +0x2C +0x40, unique target homes at +0x34 +0x38. The 8 immediate rows are the first-call spill offsets. The 4 structural rows are the second-call pair, which spills frameSlot then slot; the target spills slot then frameSlot and reuses two first-call homes. Colour does not move those offsets. The next lever is a source-authentic home packing that drops the extra spill slot, not another colour probe.
+
+#### 2026-09-18, lane w21-o044: extra spill slot packed; 18 naming remain
+
+Arrival reproduced 748 B, delta 0, masked 30, frame 0x48 both, 7 slots vs 6. Identity gate PASS, CDX_PROC=0, 20 p1. First-call spilled t4 t3 t1 v1 to the extra homes; second-call spilled frameSlot then slot onto a new slot. Colour landscape on that shape is void for packing.
+
+L99 packing that closed the extra slot, 30 to 18, homes identical to the target (ladder +0x38 +0x34 +0x30 +0x24 +0x1C +0x18, 6 of 6):
+
+- `source` declared last (t4 stays at +0x24).
+- `frame` parked below the spilled cluster (`nextFrame`, `frameSlot`, `nextSlot`) so those three sit at +0x38 +0x34 +0x30.
+- `frameSlot = slot` and `nextSlot = slot` moved before each upload so both values are live across the first call and the second call reuses those homes, spilling slot then frameSlot.
+
+Unused pointer remains first (frame 0x48). Coalescing `limit`/`delta` onto the slot names dropped words (delta -4 or -8). L112 pads either matched the unused pointer or grew the frame. Function-scope `src` did not drop the extra slot.
+
+Aligned after packing: 169 exact, 18 naming, 0 immediate, 0 structural. First +0x1F4. The 18 is t5/t9/t7/t8/t2/t3/t6, 7 incoherent windows, not one ring phase. p1 colours stop at t4; t5-t9 are ugen ring. Forces of w7/w88/w74 onto t5 (c12) accepted and scored 106/145/113 at delta -4. nonvolatile source, `handles[frameSlot]`, line-folds, L109 nested OR-zero, and function-scope `src` did not beat 18. Next is a ring-draw / emission-order lever at +0x1F4, not another home permutation or same-kind colour force.
 
 <!-- plateau-handoff:overlay44UpdateFrameCache:end -->

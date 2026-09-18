@@ -5559,7 +5559,7 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: 0x38
  * relocations: 7
  * first-mismatch: +0x11C
- * summary: Bitfield decoding adds a capture draw but loses one word; ghost identity and local mask/load schedule remain at the guarded 17-word baseline.
+ * summary: L142: flags denied v1 (cost list starts at c3). Region after the load-call offers target colours at +4. Size-0 split family floors at 37. Retained 17.
  * PLATEAU-HANDOFF:func_80006534:end
  */
 

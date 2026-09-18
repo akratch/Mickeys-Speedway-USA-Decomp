@@ -1416,7 +1416,7 @@
       "source_commit": "a461398a67cf05a378cd63c5fdd938b0dc997009"
     },
     "func_overlay_101_F000AB4C_18E636C": {
-      "ledger_commit": "0cd1a38d7c52eaebd8dc815d7abedbc23129e03c",
+      "ledger_commit": "28489cd7df1697abce078f572c26c4efc47eafa7",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "adc7f0cbc3d77d652823da4948edc61c38b562cc"
     },
@@ -1996,9 +1996,9 @@
       "source_commit": "39c0ce8086fac7882de2abf4584364ca4333bfee"
     },
     "overlay83BuildBatch": {
-      "ledger_commit": "9e7ca314e6f60a66362e702df4ba8f2a3cfb81ae",
+      "ledger_commit": "6f17011f34d29483e3cd6c82cda07c8f6dfb8638",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "9897c70199b38f0aa9a3064f9a83cc71938ddec3"
+      "source_commit": "6f17011f34d29483e3cd6c82cda07c8f6dfb8638"
     },
     "overlay83DrawStrip": {
       "ledger_commit": "17b71829ed0133bc9367239d28e369d3940d87c6",

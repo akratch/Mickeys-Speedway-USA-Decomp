@@ -61,6 +61,11 @@ extern void overlay58Call59FCReloc(s32 code);
  * mode-0 loop shape exactly (the copy `or a3,t0,zero`, the compare before
  * the address) but colours the packed-status base t0 where the ROM has t3
  * (44 rows), which the probes are pinning; see the shard.
+ *
+ * 2026-09-18 (lane w14-o058), 78 to 77 at delta 0: `mask` and `shift` are
+ * `u16`.  That pair occupies the target's +0x1C home (candidate +0x18 is
+ * gone).  s32/u32/unsigned are 78; s16 shift grows the function; other
+ * 16-bit locals regress.  See the shard.
  */
 #ifdef NON_MATCHING
 void overlay58FinalizePackedStatus(void) {
@@ -72,8 +77,8 @@ void overlay58FinalizePackedStatus(void) {
     s32 selectedPlayer0;
     s32 selectedPlayer1;
     s32 selectedPlayer2;
-    s32 mask;
-    s32 shift;
+    u16 mask;
+    u16 shift;
     s32 i;
     s32 count;
     s32 equalFourCount;
@@ -297,10 +302,10 @@ void overlay58FinalizePackedStatus(void) {
 
 /* PLATEAU-HANDOFF:overlay58FinalizePackedStatus:start
  * symbol: overlay58FinalizePackedStatus
- * score: 78 differing words
+ * score: 77 differing words
  * frame: 0x48
  * relocations: 48
  * first-mismatch: 0x18
- * summary: shift before mask, the extended test flipped and every section's i/count/selected order take 88 to 78; a probe-free form has the ROM's mode-0 loop shape but colours the packed-status base t0 for t3.
+ * summary: u16 mask and shift pack onto the target +0x1C home, 78 to 77 at delta 0; colour landscape floor 78 with no zero force; indexed packed-status already used
  * PLATEAU-HANDOFF:overlay58FinalizePackedStatus:end
  */

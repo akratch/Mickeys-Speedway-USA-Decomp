@@ -1299,13 +1299,19 @@ loop_29:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/func_80017BCC.s")
 #endif
-/* Workbench verdict: structure-mismatch, 159 differing words, first mismatch +0x34. */
+/* Workbench verdict: structure-mismatch, 91 masked words, first mismatch +0x34. */
 /* Candidate: exact 206-word geometry and -0x90 frame; 8/8 relocation offsets,
- * types and identities align and every stack home matches the target.
- * Shape status: the block/vertex/triangle traversal, the saved-register roles
- * and all branch spellings now agree; the residual is one mechanism, the
- * sector index that the target holds in a caller-saved register and spills
- * across getXZCompareMask where this candidate re-reads it from the query.
+ * types and identities align. yMax and yMin occupy +0x8C and +0x88; sectorIndex
+ * is a type-3 symbol whose home is the target spill slot at +0x84, but the
+ * web is coloured s0 so that home stays idle. The target loads volume into a1
+ * and sectorIndex into v1, then stores v1 to +0x84 across getXZCompareMask.
+ *
+ * Identity-gated IDO (proc 9, unforced forced=-2, stock/instrumented .text
+ * identical): forcing volume (web 6) to a1 scores 84 at delta 0 and matches
+ * the head through lh v1; forcing sectorIndex (web 21) to v1 emits the +0x84
+ * spill but grows one word. L105 block moves, L97 regions and an unused
+ * pointer pad did not beat 91. Next is source-routing volume onto a1 (a
+ * cost-0 tie currently broken by colour number).
  *
  * Measured IDO behaviour this body depends on (all reproduced in-lane):
  *   - the declared-local list sizes the 0x90 frame and its order fixes every
@@ -1442,11 +1448,11 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_800180B4:start
  * symbol: func_800180B4
- * score: 101/206 words
+ * score: 91/206 words
  * frame: 0x90
  * relocations: 8
  * first-mismatch: +0x34
- * summary: Measured sector-index materialization: draw/emission schedule unchanged and residual worsened; target spill across getXZCompareMask remains unformed.
+ * summary: Identity-gated proc 9. Volume to a1 is 84 at delta 0. Sector-index v1 force spills +0x84 but grows 4. L105/L97/pad did not beat 91.
  * PLATEAU-HANDOFF:func_800180B4:end
  */
 

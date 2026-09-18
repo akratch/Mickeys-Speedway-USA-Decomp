@@ -62,15 +62,11 @@ extern void overlay68SubmitEntryReloc(u32 **displayList, s32 arg1, s32 arg2,
                                       s32 mode, s32 objectMode);
 
 /*
- * PLATEAU: canonical -O2/-mips2 is the exact 0x354-byte size, with 146 of
- * 213 owned words differing first at +0x0.  The best C frame is -0x128 while
- * retail is -0x108; the saved-register surface is exact and the extra 0x20 is
- * non-save local space.  Correcting the descriptor's mode field to +0x6 and
- * separating the final vector web improved the residual.  Target CFG confirms
- * the s16 index sort used by Overlay 69/88 rather than Overlay 99's in-place
- * swaps; target-supported display-list assignment order gains two words, but
- * typed aggregate, array-size, loop-bound, and bounded-permuter forms did not
- * recover retail's stack allocation.
+ * L112: order[8], distances[8], entries[8] close the extra 0x20 of non-save
+ * local space (frame 0x128 to 0x108) at size 0x354 with the s0-s7/ra/f20
+ * save set unchanged.  The descriptor block shifts with the smaller entries
+ * array.  Indexing the collect loop (Lever 51) keeps the save set but grows
+ * the body by 16 bytes.
  */
 #ifdef NON_MATCHING
 void overlay68DrawSortedEntries(u32 **displayList, s32 arg1, s32 arg2,
@@ -84,10 +80,10 @@ void overlay68DrawSortedEntries(u32 **displayList, s32 arg1, s32 arg2,
     s32 count;
     s32 i;
     s32 pass;
-    s16 order[16];
-    f32 distances[9];
+    s16 order[8];
+    f32 distances[8];
     Overlay68DrawDescriptor descriptor;
-    Overlay68DrawEntry *entries[11];
+    Overlay68DrawEntry *entries[8];
 
     owner = *object->vectorOwner;
     if (owner == 0) {
@@ -160,10 +156,10 @@ void overlay68DrawSortedEntries(u32 **displayList, s32 arg1, s32 arg2,
 
 /* PLATEAU-HANDOFF:overlay68DrawSortedEntries:start
  * symbol: overlay68DrawSortedEntries
- * score: 67/213 words
- * frame: 0x128
+ * score: 144/213 words
+ * frame: 0x108
  * relocations: 3
- * first-mismatch: +0x0
- * summary: Target CFG confirms the s16 index sort and rejects in-place sibling swaps; macro assignment order gains two words, while the 0x20 local-frame drift persists.
+ * first-mismatch: +0x4C
+ * summary: L112 8/8/8 array counts close the frame at 0x108 and improve the masked residual 146 to 144. Descriptor homes shift with the smaller entries array. Lever 51 indexing grows size by 16. Identity-gated proc-0 is p1, 38 decisions. Colour landscape floor is 131 from w80=c16.
  * PLATEAU-HANDOFF:overlay68DrawSortedEntries:end
  */

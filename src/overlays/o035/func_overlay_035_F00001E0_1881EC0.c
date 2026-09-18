@@ -93,12 +93,13 @@ extern void func_overlay_035_F0000770_1882450(O35Segment *, O35Bounds *,
 extern s32 func_overlay_035_F0000B40_1882820(O35Segment *);
 extern void func_overlay_035_F0001380_1883060(O35Segment *);
 
-/* Workbench p4: structure-mismatch; 356/353 instructions, 283 positional words, first +0x0; exact 0x40 frame.
- * Levers: prior typed-pointer/return-cursor forms; workbench still shows 39 structural/12 schedule and 193 register sites.
- * Remains: whole-function saved-register web and adapted overlay call identities.
+/* Size -8 (354/356), frame 0x40, slots match at +0x38. Masked 262, first +0xBC.
+ * L99 unused pointer, L144 count20 reload, texture index reuses k.
+ * Remaining: second-loop preheader vs zeros; color-loop copies/delay slots.
  * PROVENANCE: adapted from Diddy Kong Racing, src/tracks.c (generate_track). */
 #ifdef NON_MATCHING
 void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
+    void *unusedPad;
     register s32 mdl;
     register s32 i;
     register s32 k;
@@ -216,14 +217,15 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
     call_o0_0_2B2A4(temp);
     call_o0_0_26934();
 
-    for (i = 0; i < D_o35_current_model->textureCount; i++) {
-        D_o35_current_model->textures[i].texture = call_o0_0_33FF8(
-            (s32)D_o35_current_model->textures[i].texture | 0x8000);
+    for (k = 0; k < D_o35_current_model->textureCount; k++) {
+        D_o35_current_model->textures[k].texture = call_o0_0_33FF8(
+            (s32)D_o35_current_model->textures[k].texture | 0x8000);
     }
     call_o0_0_26934();
 
     model = D_o35_current_model;
     segment = model->segments;
+    k = 0;
     if (model->segmentCount > 0) {
         do {
             register O35ColorData *colorData;
@@ -243,13 +245,17 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
                 colorData->flags = flags;
                 colorData->colors = colors;
                 source = segment->vertices;
-                remaining = i;
-                while (remaining != 0) {
-                    *colors++ = source[6];
-                    *colors++ = source[7];
-                    *colors++ = source[8];
-                    source += 0xA;
-                    remaining--;
+                remaining = *(s16 *)&segment->count20;
+                {
+                    register s32 countCopy;
+                    countCopy = remaining;
+                    while (countCopy != 0) {
+                        *colors++ = source[6];
+                        *colors++ = source[7];
+                        *colors++ = source[8];
+                        source += 0xA;
+                        countCopy--;
+                    }
                 }
                 remaining = temp_s4 >> 1;
                 while (remaining != 0) {
@@ -273,10 +279,10 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
 
 /* PLATEAU-HANDOFF:func_overlay_035_F00001E0_1881EC0:start
  * symbol: func_overlay_035_F00001E0_1881EC0
- * score: 283 differing words
+ * score: 262 differing words
  * frame: 0x40
  * relocations: 63
- * first-mismatch: +0x44
- * summary: V0: 353/356 words, exact 0x40 frame, 283 raw diffs. Relocs 63 each; 41 sites and 21 identities align. The saved-register web remains dominant.
+ * first-mismatch: +0xBC
+ * summary: Size -8 (354/356), exact 0x40 frame, matching +0x38 slot. Aligned 201/113/3/43. Identity-gated proc 0 (40 p1). L160 for-loop over-deletes. Close remaining two words before any colour landscape.
  * PLATEAU-HANDOFF:func_overlay_035_F00001E0_1881EC0:end
  */

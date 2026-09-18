@@ -295,73 +295,37 @@ char *osScGetTaskType(s32 taskID) {
 void func_80030608(OSScTask *arg0) {
 }
 #ifdef NON_MATCHING
-/* Historical baseline (2026-09-09): 192/192 instructions, target/candidate frames
- * -0x98/-0x90, 87 raw differences. The size closed by spelling the first of
- * the three 0x80000000 sites as the same `(u32) D_80000000` the other two use:
- * the target materializes that symbol's high half into a saved register twice
- * and folds the low half into a later load, which a literal constant cannot
- * reproduce. See the EOF handoff and function shard for current measurements.
- *
- * 2026-09-09, the frame is an equation with two unknowns and both are now
- * measured. Every frame in this function is
- *
- *     frame = 72 + S + L
- *
- * where 72 is the outgoing-argument area plus the ten saved registers, L is
- * cfe's declared-local block laid top-down from the frame top in declaration
- * order, and S is the reserved register-temporary area between them. The
- * declared block's *bottom* is what `message` sits on, so `message` is always
- * `frame - L`.
- *
- * Target: frame 0x98, `savedCommands` at 0x80, `done` at 0x7C, `message` at
- * 0x70, so L = 40 and S = 40. The 40 bytes are eight above the aggregate,
- * the aggregate's sixteen, `done`'s four, eight more, and `message`'s four:
- * declaration order [8][savedCommands][done][8][message].
- * Candidate: L = 24 and S = 48, so frame 0x90 and `message` at 0x78.
- *
- * That reverses the previous entry's conclusion. The four missing slots are
- * not four more spilled values -- the target reserves *two fewer* register
- * temporaries than the candidate, and the extra sixteen bytes are declared
- * locals. Measured directly: an eight-byte declaration ahead of the aggregate
- * (or a third `s64` element) takes the frame to the exact 0x98 and 87 words
- * to 81 with the first mismatch moving from +0x0 to +0x40, and adding the
- * second eight bytes between `done` and `message` puts `message` at 0x70 but
- * takes the frame to 0xA0, because S stays 48. S is 48 in every candidate
- * shape tried. The target writes exactly one temporary slot (0x4C) and the
- * candidate one (0x48); the rest are reserved and never touched, which is the
- * `spilltemps` law in docs/ido-learnings.md.
- *
- * So the open question is narrow and arithmetic: find the source shape that
- * creates two fewer register temporaries. Flat or worse against it: spelling
- * `nestedCommand` as an `s8 *` cursor (87, frame unchanged); hoisting
- * `sc->curRSPTask` into a local (-1 word); `>> 1` for the four `/ 2` sites
- * (-13 words); dropping `nextCommand` (-3); using `nextCommand` for the two
- * restore stores (+1); reordering the two `s64` saves (+1); rewriting the
- * message `switch` as an if/else chain (-7 words -- the switch is
- * load-bearing); and swapping the increment order in the 0xB8 scan (87).
- * Do not repeat the declaration-order sweep: it moves L, never S. */
+/* 2026-09-18: frame 0x98 and the stack-home set now match. L145 reuse of
+ * commandIndex as the 0xB8 walk counter drops S 48 to 40; the four unused
+ * s8* pads realize declaration order [8][savedCommands][done][8][message]
+ * so L is 40. Deleting the address carrier puts the one used temp at 0x4C.
+ * Size is 193/192: one extra addiu of D_80000000 at +0x180. A literal first
+ * addend CSEs with the 0x80000000U compare and reopens size +8. See the EOF
+ * handoff. */
 SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
                         SchedGfx *displayList, OSMesgQueue *queue,
                         u64 *dataStart) {
+    s8 *padAbove0;
+    s8 *padAbove1;
     s64 savedCommands[2];
     s32 done = 0;
+    s8 *padMid0;
+    s8 *padMid1;
     OSMesg message = NULL;
     SchedGfx *nextCommand;
     s32 numRetraces;
     s32 gotRdpDone;
-    s32 commandCount;
     s8 *commandStart;
     s8 *printStart;
     u32 nestedStart;
 
     u32 nestedCommand;
-    u32 address;
 
     do {
         nextCommand = displayList + 1;
+        __osSpSetStatus(0xAAAA82);
         gotRdpDone = 0;
         numRetraces = 0;
-        __osSpSetStatus(0xAAAA82);
         osDpSetStatus(0x1D6);
 
         savedCommands[1] = *(s64 *) displayList;
@@ -409,22 +373,20 @@ SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
                     nestedCommand += (u32) D_80000000;
                 }
                 nestedStart = nestedCommand;
-                commandCount = 0;
+                commandIndex = 0;
                 while (*(s8 *) nestedCommand != (s8) 0xB8) {
                     nestedCommand += 8;
-                    commandCount++;
+                    commandIndex++;
                 }
-                if (commandCount & 1) {
-                    commandIndex = commandCount / 2 + 1;
+                if (commandIndex & 1) {
+                    commandIndex = commandIndex / 2 + 1;
                 } else {
-                    commandIndex = commandCount / 2;
+                    commandIndex = commandIndex / 2;
                 }
-                address = nestedStart + commandIndex * 8;
-
-                if (address < 0x80000000U) {
-                    address += (u32) D_80000000;
+                displayList = (SchedGfx *) (nestedStart + commandIndex * 8);
+                if ((u32) displayList < 0x80000000U) {
+                    displayList = (SchedGfx *) ((u32) displayList + (u32) D_80000000);
                 }
-                displayList = (SchedGfx *) address;
                 diRcpPrintDL((SchedGfx *) nestedStart, displayList, 0xA0);
                 return func_80030610(sc, commandIndex, displayList, queue,
                                      (u64 *) nestedStart);
@@ -938,10 +900,10 @@ s32 __scSchedule(OSSched *sc, OSScTask **sp, OSScTask **dp, s32 availRCP) {
 
 /* PLATEAU-HANDOFF:func_80030610:start
  * symbol: func_80030610
- * score: 85 differing words
- * frame: 0x90
+ * score: 193/192 words
+ * frame: 0x98
  * relocations: 13
- * first-mismatch: 0x0
- * summary: Midpoint-carrier merge improves 86 to 85 masked; 24 draws unchanged. Other carrier and layout controls move reservation but regress.
+ * first-mismatch: +0x8C
+ * summary: L145 commandIndex reuse plus pads close frame 0x98 and slots; extra D_80000000 addiu at +0x180 keeps size +4.
  * PLATEAU-HANDOFF:func_80030610:end
  */

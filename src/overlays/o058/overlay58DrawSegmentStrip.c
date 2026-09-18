@@ -175,6 +175,6 @@ void overlay58DrawSegmentStrip(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1,
  * frame: 0x88
  * relocations: 8
  * first-mismatch: +0xF0
- * summary: Fresh proc-0 census: 86 draws/303 emissions. Recorded carrier and order controls remain closed; no independent schedule lever exists.
+ * summary: Landscape floor 37 (only w225=c3); L160 closed. Generated-index rematerialises. Next: source form that lets the 0xFF web take v1.
  * PLATEAU-HANDOFF:overlay58DrawSegmentStrip:end
  */

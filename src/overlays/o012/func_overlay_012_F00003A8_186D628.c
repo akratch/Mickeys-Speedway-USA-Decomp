@@ -23,16 +23,17 @@ extern s32 func_80036544(void *entry, s32 *mode, s32 animationId,
  * JFG's bloodSpurtUpdateAll is the closest masked-skeleton sibling, but its
  * public source is GLOBAL_ASM. This body is reconstructed from Mickey only.
  *
- * Workbench plateau (2026-08-26): structure-mismatch; 349/346 instructions,
- * exact frame -0x110, first divergence +0x10, and 340 masked words differ.
- * Levers: FP-copy removal, initialization/order, and struct-carrier variants; mixed drift remains.
+ * Size 0, frame 0x110, 226 masked. Named gRate yields delay-slot cvt without
+ * an f22 copy; indexed effects close the walking-pointer extra; unsigned
+ * sltiu spells the particle test; a volatile value pointer plus collision[10]
+ * yields bnel plus sb. Colour landscape floor 224.
  */
 #ifdef NON_MATCHING
 void func_overlay_012_F00003A8_186D628(s32 updateRate) {
     /*
      * PROVENANCE: JFG's public src/camlight.c uses an 11-float output buffer
-     * for trackNearestIntersection. Mickey's own accesses establish the same
-     * buffer extent and field indices here.
+     * for trackNearestIntersection. Mickey's own accesses use indices 0-9;
+     * L112 solves the unobservable extra slot for the volatile pointer home.
      */
     Overlay12TrackHeight *track;
     Overlay12Effect *effect;
@@ -54,17 +55,19 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
     s16 randomAngle;
     s32 mode = 1;
     s32 i;
-    f32 collision[11];
+    f32 collision[10];
 
     track = (Overlay12TrackHeight *)trackGetTrack();
     minimumHeight = (f32)track->height - 1000.0f;
-    effect = gOverlay12Effects;
-    for (i = 0; i < 64; i++, effect++) {
+    for (i = 0; i < 64; i++) {
+        effect = &gOverlay12Effects[i];
         switch (effect->active) {
         case 1:
             tempA = effect->y2;
-            effect->y0 += (tempA * updateRateF) +
-                          (gOverlay12Gravity * updateRateF * updateRateF);
+            {
+                f32 gRate = gOverlay12Gravity * updateRateF;
+                effect->y0 += (tempA * updateRateF) + (gRate * updateRateF);
+            }
             if (effect->y0 < minimumHeight) {
                 effect->active = 0;
                 gOverlay12EffectCount--;
@@ -85,9 +88,12 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
                         effect->z0 = collision[3];
                         effect->scaleY =
                             (255 - (((((u32 *)collision)[9] >> 24) & 7) << 5)) << 5;
-                        effect->value *=
-                            2.0f + ((f32)(mathRnd(0, 255) - 128) *
-                                    gOverlay12RandomScale);
+                        {
+                            volatile f32 *vp = &effect->value;
+                            *vp *=
+                                2.0f + ((f32)(mathRnd(0, 255) - 128) *
+                                        gOverlay12RandomScale);
+                        }
 
                         if (((s32 *)collision)[0] == 0) {
                             pitch = Arctanf(collision[5],
@@ -163,11 +169,12 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
     mode = 1;
     particle = gOverlay12Particles;
     for (i = 0; i < 5; i++, particle++) {
-        if ((particle->active != 0) &&
-            (func_80036544(gOverlay12Resource5, &mode, 15,
-                           &particle->velocity, updateRate) != 0)) {
-            particle->active = 0;
-            gOverlay12ParticleCount--;
+        if (((u32)((u32)particle->active < 1u)) == 0) {
+            if (func_80036544(gOverlay12Resource5, &mode, 15,
+                              &particle->velocity, updateRate) != 0) {
+                particle->active = 0;
+                gOverlay12ParticleCount--;
+            }
         }
     }
 }
@@ -177,10 +184,10 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_012_F00003A8_186D628:start
  * symbol: func_overlay_012_F00003A8_186D628
- * score: 340 differing words
+ * score: 226 differing words
  * frame: 0x110
  * relocations: 33
- * first-mismatch: +0x10
- * summary: Candidate is three words long with exact frame. FP-copy, initialization/order and struct-carrier routes are exhausted; mixed structural drift remains.
+ * first-mismatch: +0x50
+ * summary: Size 0, frame 0x110, masked 226. Colour floor 224. Blocker: volatile value pointer vs collision-load hoist; physics loads; vertex nop plus sh.
  * PLATEAU-HANDOFF:func_overlay_012_F00003A8_186D628:end
  */

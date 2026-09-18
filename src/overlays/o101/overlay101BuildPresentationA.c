@@ -231,6 +231,6 @@ void overlay101BuildPresentationA(void) {
  * frame: 0x20
  * relocations: 52
  * first-mismatch: +0x10
- * summary: B store-result transfer adds a byte-mask draw and regresses to 158 at +4; the guarded 143-word baseline is retained.
+ * summary: L97 copy still +4 with a2 forbidden on the 0xC0 web; L144/array get a2 plus a home store and frame 0x50 at 142; 143 retained.
  * PLATEAU-HANDOFF:overlay101BuildPresentationA:end
  */

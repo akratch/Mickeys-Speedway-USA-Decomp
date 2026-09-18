@@ -3405,7 +3405,7 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
  * frame: 0x70
  * relocations: 4
  * first-mismatch: +0x190
- * summary: L145-L154 reopen retained 2. 1-draw-right s16 is 14; post-sum u8 probes DCE; s32 corners 20-21; deleting rangeSquared or otherState regresses.
+ * summary: L145 on dx/dz keeps the t5/t4 pair. Inlining one square is 4 (same 33 draws). Floor remains 2.
  * PLATEAU-HANDOFF:overlay1UpdateRangeFlags:end
  */
 

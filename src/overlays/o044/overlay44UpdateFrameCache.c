@@ -34,14 +34,14 @@ extern void overlay44UploadFrameReloc(s32 operation, void *handle,
 void overlay44UpdateFrameCache(Overlay44AnimationState *state,
                                s32 updateRate) {
     void *unused; /* L99: unused pointer; keeps frame 0x48 */
-    volatile Overlay44FrameSource *source;
     s32 limit;
     s32 delta;
-    s32 frame;
     s32 nextFrame;
     s32 frameSlot;
     s32 nextSlot;
     s32 slot;
+    s32 frame;
+    volatile Overlay44FrameSource *source;
 
     if ((state == 0) || (state->sourceIndex == -1)) {
         return;
@@ -110,9 +110,9 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
                 (slot != state->protectedSlot1)) {
                 u8 *src = (frame * source->frameSize) + source->data;
                 state->cachedFrame[slot] = frame;
+                frameSlot = slot;
                 overlay44UploadFrameReloc(0x42, state->handles[slot], src,
                                           source->frameSize);
-                frameSlot = slot;
                 break;
             }
         } while (slot--);
@@ -125,9 +125,9 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
                 (slot != state->protectedSlot1)) {
                 u8 *src = (nextFrame * source->frameSize) + source->data;
                 state->cachedFrame[slot] = nextFrame;
+                nextSlot = slot;
                 overlay44UploadFrameReloc(0x42, state->handles[slot], src,
                                           source->frameSize);
-                nextSlot = slot;
                 break;
             }
         } while (slot--);
@@ -142,10 +142,10 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
 
 /* PLATEAU-HANDOFF:overlay44UpdateFrameCache:start
  * symbol: overlay44UpdateFrameCache
- * score: 30/187 words
+ * score: 18/187 words
  * frame: 0x48
  * relocations: 4
  * first-mismatch: +0x1F4
- * summary: Size and frame closed at 187 words and 0x48; colour landscape floors at 30. Next is L99 packing of the extra spill slot.
+ * summary: L99 packing closed the extra spill slot (30 to 18, homes exact). Remaining 18 is ugen ring naming at +0x1F4; colour stops at t4.
  * PLATEAU-HANDOFF:overlay44UpdateFrameCache:end
  */

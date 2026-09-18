@@ -6,7 +6,7 @@
 - frame: frameless
 - relocations: 10
 - first mismatch: +0x6C
-- summary: L154 index-shape cannot number the decrement above the SR limit at zero width; the limit is minted from the bound. Baseline kept at 2 of 53.
+- summary: L145 delete-carrier stays the 6-word basin: store-forward keeps web 8. End-first inverts colours at 10-14 with a 4-word preheader shuffle. Baseline 2 of 53.
 
 #### 2026-09-09, lane fin-misc: the tie is between two dead colours
 
@@ -417,5 +417,58 @@ words. The next concrete action is not another index-shape first-use spelling;
 the numbering axis that remains is whatever can mint the limit before the
 cursor without paying the recorded array-base hoist, which this packet does
 not have.
+
+#### 2026-09-18, lane w16-o020: L145 delete-the-carrier does not free v0 at zero width
+
+Configured baseline reproduces 212 bytes, 53 words, delta 0, frameless, ten
+relocations, two masked words, 51 aligned exact and two naming rows at +0x6C,
+one window, a2 to v0, no cycle. Stock and instrumented full-TU text compare
+identical. Procedure ordinal 0. Forcing the limit onto the first colour is
+declined (forced=-2) and scores 2; forcing web 8 onto the sixth colour is
+accepted (forced=6) and scores 6. Draw census: 11 draws, 130 emissions.
+
+Authorized lever was L145-L154, especially delete-the-carrier for the owner-1
+ring temp, without minting a new strength-reduced limit from that bound.
+Creation order still makes web 8 a type-4 expression in the store block before
+the cursor (type 4) and the limit (type 4); new_var is the type-3 bound
+carrier. No declaration lattice, no loop-form product, and no p2:w8=c6 search
+on the incumbent shape was repeated.
+
+- Delete new_var, bound is the stored global: zero width, six naming rows.
+  Web 8 survives by store-forward, still on the first colour; the cursor takes
+  the third, the limit the fourth. Address-form store is byte-identical to
+  this cell, so taking the global's address does not break forwarding here.
+  Volatile store breaks forwarding and grows four bytes / 36 words.
+- L151 unsigned bound without a carrier: four extra bytes, 36 words.
+- i plus one against owner (no owner-1 web, no limit web): zero width, 20
+  words. Cursor lands on the fourth colour; the pointer-limit compare is gone.
+- Merge decrement into the parameter: 19 words, as recorded.
+- Global pre-decrement / DKR gCount--: 52 words and plus four bytes, or six
+  words if the search still copies the count into owner then deletes new_var.
+- Reuse entry as the array base after the store: 17 words.
+- Declared end pointer from owner, not owner-1: plus four to plus 28 bytes.
+- On the delete-new_var shape, forcing web 8 to the sixth colour is accepted
+  and still scores 6: the cursor takes the first colour, the limit the third.
+  The promotion chain survives the carrier-shape change (L146).
+- End-first pointer compare while (&arr[gCount] greater than &arr[i]) kills
+  web 8 and numbers the limit below the cursor. Limit takes the first colour,
+  cursor the fourth (the target pair) at 14 words, delta 0, but with four
+  candidate-only and four target-only preheader words. Cursor-first pointer
+  compare is the same 14. Indexed body plus end-first tail returns to the
+  six-word basin; adding an end-first guard on top of the indexed loop grows
+  sixteen bytes.
+- Declared limit pointer plus indexed copy: 10 words, delta 0, same four-plus-
+  four preheader shuffle, limit on the first colour and cursor on the fourth,
+  leftover naming is a ring cycle not the limit colour.
+
+Zero-width conclusion: deleting the s32 bound carrier leaves owner-1 live as
+the forwarded store value, so it is still a type-4 web numbered below the
+limit. Breaking that forward, or writing the exclusive end from owner rather
+than owner-1, either grows size, destroys the limit web, or inverts colouring
+only by shuffling the preheader four words against the target. Target colours
+and the target preheader were not observed together. Baseline kept at 2 of 53.
+Next is not another delete-carrier of owner-1 or new_var; it is a spelling that
+emits the indexed-SR preheader while creating the limit ICHAIN first, which
+this packet's hybrids did not.
 
 <!-- plateau-handoff:overlay20RemoveEntry:end -->

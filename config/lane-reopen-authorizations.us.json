@@ -266,12 +266,12 @@
       "source_commit": "377c73a069541a2a34485b63f949923bbce9d886"
     },
     "func_800180B4": {
-      "ledger_commit": "ec6d1a6e477de14dfb482e2c5ef7b726e5ba70e9",
+      "ledger_commit": "267a5bd3d1b968453572f15edc410a78ba7fde02",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "ec6d1a6e477de14dfb482e2c5ef7b726e5ba70e9"
+      "source_commit": "c8d9c216c9af8ff127346577479efdb7a6c41782"
     },
     "func_80018F08": {
-      "ledger_commit": "0ae4386e31a86fa18ad61e4ba5929bc70af101fd",
+      "ledger_commit": "0b1e2a0df0417404134ba71111ab0e4eba6abffd",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
       "source_commit": "0ae4386e31a86fa18ad61e4ba5929bc70af101fd"
     },
@@ -1906,7 +1906,7 @@
       "source_commit": "8746ae7c862fd77c569ddfca748666c2b00e73da"
     },
     "overlay58FinalizePackedStatus": {
-      "ledger_commit": "3389e0e39335be309026813aa34635281b30215f",
+      "ledger_commit": "5917616c45586d2f6448221ba2d33444fa531132",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "b53bbbf41036d5dfacbf4255e768348979733a6f"
     },
@@ -1956,7 +1956,7 @@
       "source_commit": "a06d67461f57e2c1c878b85721707ba8093a92e1"
     },
     "overlay68DrawSortedEntries": {
-      "ledger_commit": "7489e24e0a5494200ad7d478e38e1f4062b24200",
+      "ledger_commit": "a7f1b8cf4a9ee0247d322ccb1fb0b89fe109f152",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "7489e24e0a5494200ad7d478e38e1f4062b24200"
     },

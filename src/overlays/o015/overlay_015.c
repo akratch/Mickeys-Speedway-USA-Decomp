@@ -66,6 +66,9 @@ void overlay15ReleaseResource(void) {
  * head the natural xMax-before-yRange order syncs the FP ring, and the count
  * store written to the global directly (no cast pointer) forms the address in
  * s7 itself. See docs/lastmile-forwarding-kill.md. */
+/* w20-o015 (2026-09-18): 41 to 19. Guard-local starIndex=1 (41 to 20).
+ * Same-line allocate + starsAddress + store (L59) keeps addiu+sw
+ * adjacent, 20 to 19; first structural moves to +0xF8. */
 #ifdef NON_MATCHING
 void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
                                   s32 zRange, u32 startColor, u32 endColor,
@@ -89,9 +92,7 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
 
     starIndex = count * 12;
     count |= 0; /* kills the multiply's operand: the definition is not forwarded */
-    stars = overlay15Allocate(starIndex + 0x200, 0x87);
-    starsAddress = &gOverlay15Stars;
-    *starsAddress = stars;
+    stars = overlay15Allocate(starIndex + 0x200, 0x87); starsAddress = &gOverlay15Stars; *starsAddress = stars;
     gOverlay15StarPalette = (u16 *) ((u8 *) *starsAddress + starIndex);
 
     bounds = &gOverlay15InitBounds;
@@ -112,8 +113,9 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
     bounds->zMin = 1.0f;
     bounds->colorStep = 255.0f / bounds->colorDivisor;
 
-    previousStarIndex = 0; starIndex = 1;
+    previousStarIndex = 0;
     if (count > 0) {
+        starIndex = 1; /* loop start; keeping this outside PRE-sinks palette's `starIndex = 1` onto the exit path */
         do {
             stars->x = (f32) overlay15RandomRange(-xRange, xRange) *
                        (1.0f / 256.0f);
@@ -472,11 +474,11 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
 
 /* PLATEAU-HANDOFF:overlay15InitStarsAndPalette:start
  * symbol: overlay15InitStarsAndPalette
- * score: 41/247 words
+ * score: 19/247 words
  * frame: 0x40
  * relocations: 14
  * first-mismatch: +0x70
- * summary: A count self-redefinition keeps the size in starIndex's web and the natural xMax/yRange order syncs the FP ring, 60 to 41; the stars address colour, block 1's tail order and the palette index inits remain.
+ * summary: Same-line allocate+starsAddress+store keeps addiu+sw adjacent, 20 to 19; stars address still a1 (force p1:w317=c5 is 16), block 1 tail order and palette index inits remain.
  * PLATEAU-HANDOFF:overlay15InitStarsAndPalette:end
  */
 

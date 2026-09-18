@@ -259,6 +259,6 @@ void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
  * frame: 0x78
  * relocations: 61
  * first-mismatch: +0x120
- * summary: Size closed at delta 0. Residual is 10 masked: as1 scheduling plus f12 versus f0, and f0 is not offered.
+ * summary: Colour floor 10: web 99 denied f0 (L142); a distinct f0 name costs a twelfth home or size. as1 delays are besttime, not lineno.
  * PLATEAU-HANDOFF:func_overlay_007_F0000324_185C1AC:end
  */

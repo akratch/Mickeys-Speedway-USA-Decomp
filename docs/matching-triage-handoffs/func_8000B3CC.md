@@ -2,58 +2,46 @@
 ### `func_8000B3CC` plateau handoff
 
 - source: `src/main/objects.c`
-- score: 202 differing words
+- score: 116 differing words
 - frame: 0x98
 - relocations: 20
 - first mismatch: +0x148
-- summary: Workbench structure-mismatch: constant-audit then register-role. Next: resolve time-step/speed homes and the floating zero/reflection allocation.
+- summary: Size exact after L144 address-form homes on speed and dot. Next: step +0x34, speed +0x30, factor +0x2C, then reflection schedule and s0/s2.
 
-The configured full-TU baseline had 427 words against 494 owned words
-(1976 bytes), 489 raw/masked differences, first +0, a 136-byte frame
-against 152, and 20 relocations per side with no authenticated identities.
-The retained C has 497 words (1988 bytes), 202 raw/masked differences,
-first +0x148, the exact 152-byte frame, and 20 relocations per side with
-13 identities authenticated at matching positions. It is three instructions
-long, remains guarded NON_MATCHING C and earns no matching credit.
+The retained C is now size-exact: 494 words (1976 bytes), delta 0, frame 0x98,
+20 relocations, 116 raw/masked differences, first +0x148. Displacement tax
+fell from 69 to 5. Aligned: 388 exact, 86 naming, 5 immediate, 20 structural.
+Five candidate-only words at +0x3E4 +0x560 +0x5AC +0x5C4 +0x610 pair with five
+target-only words at +0x3DC +0x540 +0x54C +0x5A0 +0x5BC. Still NON_MATCHING,
+no matching credit.
 
-The fresh gate returned base-only. The weak oracle neighbors supplied no
-counterpart body; no external C was adopted. Rescoring all 53 usable original
-TU flag objects gave no exact result. Configured flags remain unchanged.
-The linked fallback ownership range was proved separately.
+L144 address form on the speed divide (`*(f32 *)&speed`) and on the
+reflection negation (`-*(f32 *)&dot`) is what closed the +12 size deficit.
+The dot home is now +0x58 with 0 loads and 1 store, matching the target.
+The speed eq sequence is store plus two reloads, but at +0x4C not +0x30.
+Step is still at +0x30 (target +0x34). Factor has no home (target +0x2C,
+3 loads 1 store). Candidate has 25 slots, target 26.
 
-The two direct float-to-unsigned-byte volume conversions recover the target
-FCSR sequences: the old signed intermediate and mask removed 63 instructions.
-Native float arrays for collision endpoints reproduce the target's scalar
-stores and repeated configuration observations. The bottom-of-object value
-is captured before the height query, and the normalization path observes
-state speed at the target points. Separate movement-delta carriers and
-reuse of expired scalar lifetimes improve allocation. The reflection factor
-uses addition of the separately negated projection, as the target does.
-Bounce status is initialized inside the collision path. Declaration ordering
-recovers the frame, collision and saved-angle homes.
+Identity-gated instrumented IDO: stock and instrumented .text are
+byte-identical. Procedure ordinal is 60 (32 p1 decisions, 16 float). Forcing
+`p1:w204=s` on the dot-only L144 form scored 204 at delta -4 and restored the
+speed spill; the source address form on the divide then reached delta 0 at 116
+without a force.
 
-The primary residual improved through attempts 222–228, 230 and 234.
-The best is attempt 234. The final five material probes 235–239 tested direct
-normalization reads, length-scalar reuse with contact-height capture, the
-isolated height capture, restricting explicit velocity carriers to the first
-length and Z-carrier declaration order. They tied or regressed the primary
-residual and proved no exact mechanism. This is the stopping evidence.
-Cleanup 240 restored 234. All sources, objects, scores and rationale remain
-in ignored build artifacts.
+Closed on this shape, all worse or flat: declaration reorder of step/speed
+(122 masked, delta 0), factor address form (307 masked, delta +20), volatile
+speed (226 masked, delta -4), hoisted speed assignment (232 masked, delta +8),
+start[0] via config (481 masked, lost the config copy), split if/else-if zero
+tests (224 masked, delta +12), speed[1] array (220 masked, delta -12),
+reversed equality operands (byte-identical), first sqrtf stored only to
+state->unk18 (byte-identical). Do not add volatile fields.
 
-Workbench reports structure-mismatch with a mixed constant, structure and
-register residual. The constant-audit footer directs the next work to the
-remaining time-step and normalization-speed homes before register-role work.
-The zero-valued floating register and reflection-factor lifetime differ;
-three extra instructions remain. A common named zero, reversed equality
-operands and chained velocity clears were flat. Do not add volatile fields,
-padding or synthetic guards to force the missing allocation. Authenticate
-the float spill and source-lifetime mechanism first.
+Next: put step at +0x34, speed at +0x30 and factor at +0x2C without undoing
+the L144 homes; then the five reflection scheduling pairs (target has the mul
+nop and three velocities live; we reload) and the s0/s2 naming. Proc 60.
 
-Validation includes configured full-TU comparison and diagnosis, guides,
-flag rescoring, finalize_plateau.py, full gmake verify,
-check-nonmatching-builds, check-docs and cleanroom. The full-TU collateral
-comparison changed only this function. ROM verification continues to use
-its assembly fallback.
+Validation includes configured full-TU comparison, identity-gated IDO with
+CDX_PROC, force lattice on proc 60, finalize_plateau.py, check-docs and
+cleanroom. ROM verification continues to use the assembly fallback.
 
 <!-- plateau-handoff:func_8000B3CC:end -->

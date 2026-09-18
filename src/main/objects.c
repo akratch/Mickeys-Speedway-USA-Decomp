@@ -5272,8 +5272,7 @@ void func_8000B3CC(void *arg0, s32 arg1) {
     volume = object->unk1C;
     savedY = object->unk20;
     moveZ = object->unk24;
-    speed = sqrtf((volume * volume) + (savedY * savedY) + (moveZ * moveZ));
-    state->unk18 = speed;
+    state->unk18 = sqrtf((volume * volume) + (savedY * savedY) + (moveZ * moveZ));
 
     bottom = end[1] - radius;
     if (((func_8001357C(object->unkC, object->unk14, &state->unk14,
@@ -5324,20 +5323,21 @@ void func_8000B3CC(void *arg0, s32 arg1) {
     if ((collision << 2) != 0) {
         state->unk2 = 1;
         bounced = 0;
+        /* L144 address form homes speed and dot; volatile overshoots. */
         if ((config->unk10 == 0.0f) || ((speed = state->unk18) == 0.0f)) {
             object->unk1C = 0.0f;
             object->unk20 = 0.0f;
             object->unk24 = 0.0f;
             state->flags |= 2;
         } else {
-            object->unk1C /= speed;
+            object->unk1C /= *(f32 *)&speed;
             object->unk20 /= state->unk18;
             object->unk24 /= state->unk18;
             state->unk18 *= config->unk10;
             dot = (state->unk8 * object->unk1C) +
                   (state->unkC * object->unk20) +
                   (state->unk10 * object->unk24);
-            negativeDot = -dot;
+            negativeDot = -*(f32 *)&dot;
             factor = negativeDot + negativeDot;
             object->unk1C = ((factor * state->unk8) + object->unk1C) *
                             state->unk18;
@@ -5605,10 +5605,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_8000B3CC:start
  * symbol: func_8000B3CC
- * score: 202 differing words
+ * score: 116 differing words
  * frame: 0x98
  * relocations: 20
  * first-mismatch: +0x148
- * summary: Workbench structure-mismatch: constant-audit then register-role. Next: resolve time-step/speed homes and the floating zero/reflection allocation.
+ * summary: Size exact after L144 address-form homes on speed and dot. Next: step +0x34, speed +0x30, factor +0x2C, then reflection schedule and s0/s2.
  * PLATEAU-HANDOFF:func_8000B3CC:end
  */

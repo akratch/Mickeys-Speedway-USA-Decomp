@@ -593,6 +593,6 @@ void func_overlay_079_F0000134_18CD0D4(Overlay79Object *object,
  * frame: 0xB8
  * relocations: 88
  * first-mismatch: +0x7C
- * summary: Census confirms the missing FP draw before line 412; existing source families do not reach it or tail web45.
+ * summary: L145 declared FP carriers do not add the prefix ring draw. Missing draw is CSE of -1.0f at forward.z. Next: delta-0 CSE-break so z draws onto f4.
  * PLATEAU-HANDOFF:func_overlay_079_F0000134_18CD0D4:end
  */

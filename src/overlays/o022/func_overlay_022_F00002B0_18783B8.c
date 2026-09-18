@@ -66,18 +66,25 @@ extern void func_8000309C(void *handle, u8 volume);
 extern void func_80036544(void *entry, s32 *mode, s32 animationId,
                           void *state, s32 updateRate);
 
-/* Workbench p5: structure-mismatch; 501/499 candidate/target instructions, 430 differing words from +0x4, frame -0xE0 vs -0x90.
- * Lever: scalar/vector carrier ordering regressed to 506 instructions; stock -O2/mips2/r4300_mul remains best.
- * Remains: 80-byte FP frame surplus and mixed structure/register residual. */
+/* Nested exclusive-block f32 carriers produced the 0xE0 frame. Dropping them
+ * closes the frame to 0x90; an unused pointer restores the 8-byte rounding
+ * cell. $f20 went away once speed was stored to state before the bounce
+ * calls. Size is still 3 words short. */
 #ifdef NON_MATCHING
 void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
     O22State *state;
+    O22Model *model;
     f32 deltaTime;
     f32 step;
     f32 distance;
     f32 accelerationX;
     f32 accelerationY;
     f32 accelerationZ;
+    f32 crossX;
+    f32 crossY;
+    f32 crossZ;
+    f32 speed;
+    void *pad;
     s16 angle;
     s32 collision;
     s32 animationMode;
@@ -87,11 +94,12 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
     step = (f32)updateRate;
     distance = D_4;
     object->flags80 = 0;
+    model = object->model;
 
-    if (((O22Model *)object->model)->flags06 & 2) {
-        ((O22Model *)object->model)->owner70 = 0;
-        ((O22Model *)object->model)->flags06 =
-            ((O22Model *)object->model)->flags06 & ~2;
+    if (model->flags06 & 2) {
+        model->owner70 = 0;
+        model = object->model;
+        model->flags06 = model->flags06 & ~2;
     }
 
     if (state->mode == 2) {
@@ -99,44 +107,29 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
     }
 
     if ((state->mode == 1) && (state->flags & 2)) {
-        f32 crossX;
-        f32 crossY;
-        f32 crossZ;
-        f32 horizontal;
-
         crossX = 0.0f - ((state->up.x * -1.0f) * state->up.y);
         crossY = state->up.y * -(state->up.z * -1.0f);
         crossZ = (state->up.x * (state->up.x * -1.0f)) -
                  (-(state->up.z * -1.0f) * state->up.z);
         angle = Arctanf(crossX, crossY);
-        horizontal = sqrtf((crossX * crossX) + (crossY * crossY));
-        accelerationY = -func_8002A8C0(Arctanf(crossZ, horizontal));
+        accelerationY = -func_8002A8C0(Arctanf(crossZ, sqrtf((crossX * crossX) + (crossY * crossY))));
         accelerationX = func_8002A8C0(angle) * accelerationY;
         accelerationZ = func_8002A8BC(angle) * accelerationY;
     } else {
-        accelerationY = -1.0f;
         accelerationX = 0.0f;
         accelerationZ = 0.0f;
+        accelerationY = -1.0f;
     }
 
-    {
-        f32 velocityX;
-        f32 velocityY;
-        f32 velocityZ;
-
-        velocityX = object->velocity.x;
-        velocityY = object->velocity.y;
-        velocityZ = object->velocity.z;
-        object->velocity.x = velocityX + (accelerationX * deltaTime);
-        object->velocity.y = velocityY + (accelerationY * deltaTime);
-        object->velocity.z = velocityZ + (accelerationZ * step);
-        object->position.x += (velocityX * deltaTime) +
-                              (0.5f * accelerationX * deltaTime * deltaTime);
-        object->position.y += (velocityY * deltaTime) +
-                              (0.5f * accelerationY * deltaTime * deltaTime);
-        object->position.z += (velocityZ * step) +
-                              (0.5f * accelerationZ * step * step);
-    }
+    object->position.x += (object->velocity.x * deltaTime) +
+                          (0.5f * accelerationX * deltaTime * deltaTime);
+    object->position.y += (object->velocity.y * deltaTime) +
+                          (0.5f * accelerationY * deltaTime * deltaTime);
+    object->position.z += (object->velocity.z * step) +
+                          (0.5f * accelerationZ * step * step);
+    object->velocity.x = object->velocity.x + (accelerationX * deltaTime);
+    object->velocity.y = object->velocity.y + (accelerationY * deltaTime);
+    object->velocity.z = object->velocity.z + (accelerationZ * step);
     state->flags = 0;
 
     trackMakePolylist(1, &state->previousPosition, &object->position,
@@ -146,7 +139,9 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
 
     if ((func_80008128(object, 0.0f, 0.0f, 0.0f) != 0) ||
         (object->result2E == -1)) {
-        object->position = state->previousPosition;
+        object->position.x = state->previousPosition.x;
+        object->position.y = state->previousPosition.y;
+        object->position.z = state->previousPosition.z;
         func_80008128(object, 0.0f, 0.0f, 0.0f);
         func_overlay_022_F0000D30_1878E38(object, 5);
         return;
@@ -157,88 +152,69 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
         state->speed = 0.0f;
     } else if (collision != 0) {
         if (state->flags & 4) {
-            f32 velocityX;
-            f32 velocityY;
-            f32 velocityZ;
-            f32 speed;
-
-            velocityX = object->velocity.x;
-            velocityY = object->velocity.y;
-            velocityZ = object->velocity.z;
-            speed = sqrtf((velocityX * velocityX) +
-                          (velocityY * velocityY) +
-                          (velocityZ * velocityZ));
+            speed = sqrtf((object->velocity.x * object->velocity.x) +
+                          (object->velocity.y * object->velocity.y) +
+                          (object->velocity.z * object->velocity.z));
             if (speed > 0.0f) {
-                velocityX /= speed;
-                velocityY /= speed;
-                velocityZ /= speed;
+                object->velocity.x /= speed;
+                object->velocity.y /= speed;
+                object->velocity.z /= speed;
                 if (state->mode == 0) {
                     state->mode = 1;
                 }
-                {
-                    f32 normalX;
-                    f32 normalY;
-                    f32 normalZ;
-                    f32 dot;
+                speed *= D_8;
+                state->speed = speed;
+                crossX = (state->normal.x * object->velocity.x) +
+                         (state->normal.y * object->velocity.y) +
+                         (state->normal.z * object->velocity.z);
+                crossX = -crossX;
+                object->velocity.x =
+                    (((2.0f * crossX) * state->normal.x) + object->velocity.x) * state->speed;
+                object->velocity.y =
+                    (((2.0f * crossX) * state->normal.y) + object->velocity.y) * state->speed;
+                object->velocity.z =
+                    (((2.0f * crossX) * state->normal.z) + object->velocity.z) * state->speed;
 
-                    speed *= D_8;
-                    normalX = state->normal.x;
-                    normalY = state->normal.y;
-                    normalZ = state->normal.z;
-                    dot = (normalX * velocityX) + (normalY * velocityY) +
-                          (normalZ * velocityZ);
-                    dot = -dot;
-                    object->velocity.x = (((2.0f * dot) * normalX) + velocityX) * speed;
-                    object->velocity.y = (((2.0f * dot) * normalY) + velocityY) * speed;
-                    object->velocity.z = (((2.0f * dot) * normalZ) + velocityZ) * speed;
-                }
-
-                if (speed > 10.0f) {
-                    O22Vec3f savedPosition;
-
-                    savedPosition = object->position;
-                    object->position = state->contact;
+                if (state->speed > 10.0f) {
+                    accelerationX = object->position.x;
+                    accelerationY = object->position.y;
+                    accelerationZ = object->position.z;
+                    object->position.x = state->contact.x;
+                    object->position.y = state->contact.y;
+                    object->position.z = state->contact.z;
                     object->flags80 |= 2;
                     partUpdateTriggers(object, 1);
-                    object->position = savedPosition;
+                    object->position.x = accelerationX;
+                    object->position.y = accelerationY;
+                    object->position.z = accelerationZ;
                 }
 
                 {
-                    f32 volume;
                     u32 soundVolume;
 
                     soundVolume = func_80001620(0x20B);
-                    volume = speed * 0.03125f * (f32)soundVolume;
-                    if ((f32)soundVolume < volume) {
-                        volume = (f32)soundVolume;
+                    crossY = state->speed * 0.03125f * (f32)soundVolume;
+                    if ((f32)soundVolume < crossY) {
+                        crossY = (f32)soundVolume;
                     }
                     if (state->soundHandle != 0) {
                         func_800031E8(state->soundHandle);
                     }
                     func_80002FE0(0x20B, object->position.x, object->position.y,
                                   object->position.z, 4, &state->soundHandle);
-                    func_8000309C(state->soundHandle, (u8)volume);
+                    func_8000309C(state->soundHandle, (u8)crossY);
                 }
-                state->speed = speed;
             } else {
                 state->speed = 0.0f;
                 state->mode = 2;
             }
         } else if (state->flags & 2) {
-            f32 speed;
-
             object->velocity.y =
                 (object->position.y - state->previousPosition.y) / step;
             if (state->mode == 1) {
-                f32 velocityX;
-                f32 velocityY;
-                f32 velocityZ;
-
-                velocityX = object->velocity.x;
-                velocityY = object->velocity.y;
-                velocityZ = object->velocity.z;
-                speed = (velocityX * velocityX) + (velocityY * velocityY) +
-                        (velocityZ * velocityZ);
+                speed = (object->velocity.x * object->velocity.x) +
+                        (object->velocity.y * object->velocity.y) +
+                        (object->velocity.z * object->velocity.z);
                 if (speed > 0.0f) {
                     speed = sqrtf(speed);
                     object->velocity.x /= speed;
@@ -257,16 +233,9 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
             }
         }
     } else {
-        f32 velocityX;
-        f32 velocityY;
-        f32 velocityZ;
-
-        velocityX = object->velocity.x;
-        velocityY = object->velocity.y;
-        velocityZ = object->velocity.z;
-        state->speed = sqrtf((velocityX * velocityX) +
-                             (velocityY * velocityY) +
-                             (velocityZ * velocityZ));
+        state->speed = sqrtf((object->velocity.x * object->velocity.x) +
+                             (object->velocity.y * object->velocity.y) +
+                             (object->velocity.z * object->velocity.z));
     }
 
     if (state->mode == 0) {
@@ -274,19 +243,16 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
         partUpdateTriggers(object, updateRate);
     }
 
-    state->previousPosition = object->position;
-    {
-        f32 animationSpeed;
-
-        animationSpeed = state->speed;
-        if (animationSpeed < 10.0f) {
-            animationSpeed = 10.0f;
-        }
-        animationMode = 9;
-        func_80036544(*object->animationEntries, &animationMode,
-                      (s32)animationSpeed, object->animationState28,
-                      updateRate);
+    state->previousPosition.x = object->position.x;
+    state->previousPosition.y = object->position.y;
+    state->previousPosition.z = object->position.z;
+    speed = state->speed;
+    if (speed < 10.0f) {
+        speed = 10.0f;
     }
+    animationMode = 9;
+    func_80036544(*object->animationEntries, &animationMode, (s32)speed,
+                  object->animationState28, updateRate);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o022/func_overlay_022_F00002B0_18783B8/func_overlay_022_F00002B0_18783B8.s")
@@ -294,10 +260,10 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_022_F00002B0_18783B8:start
  * symbol: func_overlay_022_F00002B0_18783B8
- * score: 69/499 words
- * frame: 0xE0
+ * score: 448/499 words
+ * frame: 0x90
  * relocations: 29
- * first-mismatch: +0x4
- * summary: Adjacent exact cross-term rotation and explicit dereference forms are compiler-flat; frame and size drift remain.
+ * first-mismatch: +0x28
+ * summary: Frame 0x90 exact, saved s0/s1/ra at 0x1C/0x20/0x24, no f20; size -12.
  * PLATEAU-HANDOFF:func_overlay_022_F00002B0_18783B8:end
  */

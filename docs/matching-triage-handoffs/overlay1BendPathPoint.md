@@ -2,11 +2,11 @@
 ### `overlay1BendPathPoint` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_tail.c`
-- score: 21/107 words
+- score: 19/107 words
 - frame: 0x30
 - relocations: 6
-- first mismatch: +0xC
-- summary: 46-draw census confirms parameter-home/current-index live-range blocker; exhausted source and colour routes remain at 21.
+- first mismatch: +0x10
+- summary: Empty-if L100 spills index to parameter home; jal delay still holds the selector mask, and currentIndex still refuses v1.
 
 #### tu2-o1tail: the u8 parameter's spill slot is the residual, and it is not source-reachable so far
 
@@ -212,5 +212,48 @@ ADR 0018 and retain the original guarded candidate. The source question is
 still the parameter-owned byte store together with a current-index lifetime
 that permits the target register; neither an isolated type change nor deleting
 these carriers supplies both.
+
+#### 2026-09-19, lane w34-o1tail: empty-if L100 closes the byte home, 21 to 19
+
+Identity-gate: stock and instrumented function text and relocations are
+byte-identical. This TU indexes overlay1BendPathPoint at proc 35 of 0-37
+(15 coloured webs, 23 p1 decisions, no p2). Frame 0x30, 107 words, six
+relocations, size delta 0 throughout the adopted form.
+
+L160 indexed `path->points[i]` (AdvanceGauge transfer) regresses: dropping
+the three point pointers is plus 8 to plus 12 bytes and 107-108 masked.
+Inlining next alone is plus 8. `path->points + i` is byte-flat with the
+subscript. There is no walking cursor; L160 is not the lever.
+
+Leftover OR-zero on index (and xor-0, plus-0, comma-assign of the same store)
+reproduces the parameter-home byte store and the out-of-order third-argument
+save, but spends a deleted identity draw (L149) that rotates the temp ring
+for 52 masked words. Address-form store is the same basin at 55. Dual
+`currentIndex = index` in the else still hoists and drops a word (96-101)
+on leftover, volatile, goto, L97, and previousIndex-tested shapes.
+
+Overlay22 empty `if (index) {}` on the plain no-hack body (no volatile
+local) is the closer for the home: L100 weight makes uopt spill the u8
+parameter to sp+59 without an identity op, so t8 on the first shift agrees
+and every frame slot matches, including the target-only +0x3B byte. Adopted
+score 19/107 words, first mismatch +0x10. Aligned 90 exact, 15 naming, 0
+immediate, 3 structural, displacement tax 1. Candidate-only word at +0x18
+against target-only at +0x10: the selector mask still sits in the jal delay
+and the byte store still sits before it. The 15 naming rows are the same
+coherent four-cycle (currentIndex, previousIndex, count, nextIndex) plus a
+one-window t-ring pair. `if (index != 0) {}` is plus 12 bytes; do not use
+the compare form.
+
+Volatile u8 local is retired: its store can never reach the argument area
+and it pinned the store before the jal (L144 edges). Plain u8 local puts
+the store in the delay slot but at sp+25 and reloads a ring temp (58).
+L99 pad pointer on the empty-if shape is 35. Selector leftover / volatile
+sel on this shape returns the 52-basin extra draw or adds a word.
+
+Next lever: schedule the selector mask before the remaining argument saves
+so the parameter-home store can take the jal delay, then a currentIndex
+pair of assignments that IDO will not hoist. Empty-if line placement, plus-0
+and cast of the selector, empty-if on selector, do-while-0 around the call,
+and comma of index into the call are byte-flat at 19 on this shape.
 
 <!-- plateau-handoff:overlay1BendPathPoint:end -->

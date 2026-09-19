@@ -406,13 +406,15 @@ void func_overlay_008_F0000F1C_185EC74(Overlay8ActivationOwner *owner,
     overlay8FinalizeActivationReloc(owner, 0x17);
 }
 
-/* Workbench p7: structure-mismatch; 164/165 instructions, 159 words, first +0x8, exact -0x18 frame.
- * Levers: context lint, flag lattice, parameter/register forms, local-data address forms, and prior control-flow/alias probes.
- * Remains: retail omits the unused-a0 home and keeps state in a3; the rollover join differs, so GLOBAL_ASM stays canonical. */
+/* Overlay22 empty-if on unused: 164/165, 105 masked, first +0x4C, exact 0x18 frame, state in a3.
+ * Missing one word at rollover +0x10C: skip fills lui via beqzl; target is beqz+nop plus extra b.
+ * Join-axis lattice inert. GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 f32 func_overlay_008_F0001000_185ED58(void *unused, O8PhaseState *state, f32 input) {
     s32 nextCountdown;
 
+    if (unused) {
+    }
     if (state->timer > 0) {
         if ((state->phase != 1) && (state->phase != 2)) {
             state->phase = 2;
@@ -2416,11 +2418,11 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F0001000_185ED58:start
  * symbol: func_overlay_008_F0001000_185ED58
- * score: 159 differing words
- * frame: -0x18
+ * score: 105/165 words
+ * frame: 0x18
  * relocations: 18
- * first-mismatch: +0x8
- * summary: Fresh V0 is one instruction short; authentic three-argument ABI retains the unused-a0 home, a3 state carrier, and rollover-join mismatch.
+ * first-mismatch: +0x4C
+ * summary: Empty-if on unused closed the a0 home; state stays in a3. Still -4: rollover skip fills lui; target is beqz nop plus extra b at +0x10C.
  * PLATEAU-HANDOFF:func_overlay_008_F0001000_185ED58:end
  */
 

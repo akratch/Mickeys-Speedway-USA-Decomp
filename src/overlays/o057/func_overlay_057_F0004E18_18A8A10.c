@@ -355,7 +355,29 @@ extern void func_overlay_084_F0001398_18D1878(void);
  *      ring (488). `nextSelection` as the index is byte-identical.
  *      blockclimb 209 -> 209, 1617 compiles, move-one fixed point.
  *      Identity gate PASS, CDX_PROC=0, 122 p1 decisions. Compiler temps at
- *      sp+0x54/sp+0x58 against the target's sp+0x5C/sp+0x64 are unchanged. */
+ *      sp+0x54/sp+0x58 against the target's sp+0x5C/sp+0x64 are unchanged.
+ *
+ * 10.  THREE IDENTITIES CLOSE EVERY INSERTION, 2026-09-19 (lane w26-o057).
+ *      209 -> 86 masked at delta 0, byte-exact 1106 -> 1122, naming 55 -> 56,
+ *      immediate 10 -> 6, really different 43 -> 24, displacement tax 101 -> 0.
+ *      No candidate-only or target-only words remain. Frame still 0x140,
+ *      compiler temps still 0x54/0x58 against 0x5C/0x64.
+ *
+ *      (a) `stackB0[0] = *active` ahead of `stackB0[1] = 0`. blockclimb's
+ *      3+ filter skipped this two-store prefix of the columns call. Alone
+ *      it is 209 -> 208 and drops the +0xDE0 insertion pair.
+ *      (b) `(u8)((state < 2) ^ 1)` to `(u8)(state >= 2)`. The xor-with-1
+ *      commons a literal 1 with the countdown fill and the tail. Direct
+ *      compare is 208 -> 118 alone, additive with (a) at 117.
+ *      (c) `gO57MiddleData31A4 = 2` AFTER the 31AC store. Rejected on the
+ *      xor-1 shape; on (b) it closes every remaining insertion (L146).
+ *      117 -> 86, 0 ins / 0 del.
+ *
+ *      L99/L112 cannot move the temps up: unused f32/pointer at the end
+ *      shifts them down 4 at an unchanged 209; +8 bytes at the end grows
+ *      the frame to 0x148; dropping any unused 4-byte local shrinks it to
+ *      0x138. Unused s32 is NOT eliminated here. sourceState[2]/[4],
+ *      activePlayers[10]/[12] and stackB0[2]/[4] are byte-identical. */
 #ifdef NON_MATCHING
 void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
     s32 i;
@@ -644,8 +666,8 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                 color = gO57MiddleColumns;
                 active = (u8 *)renderState;
                 do {
-                    stackB0[1] = 0;
                     stackB0[0] = *active;
+                    stackB0[1] = 0;
                     func_8004B0F8(
                         &gO57MiddleDisplayList, *color + panelX, row, stackB0, 0);
                     color++;
@@ -733,8 +755,8 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
                     gO57MiddleData319C = 0;
                     gO57MiddleData3198 = (u8)state;
                 }
+                gO57MiddleData31AC = (u8)(state >= 2);
                 gO57MiddleData31A4 = 2;
-                gO57MiddleData31AC = (u8)((state < 2) ^ 1);
                 gO57MiddleData31B8 = gO57MiddleData31B4;
                 gO57MiddleData31A8 = 0;
                 if (gO57MiddleData31E4 > 0) {
@@ -773,10 +795,10 @@ void func_overlay_057_F0004E18_18A8A10(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_057_F0004E18_18A8A10:start
  * symbol: func_overlay_057_F0004E18_18A8A10
- * score: 209/1208 words
+ * score: 86/1208 words
  * frame: 0x140
  * relocations: 375
  * first-mismatch: +0x100
- * summary: Index form closed the size deficit at delta 0. Aligned residual is still 43 structural plus compiler temps at 0x54/0x58 against 0x5C/0x64. Statement order is a move-one fixed point on this shape.
+ * summary: Three identities closed every insertion (209 -> 86, tax 101 -> 0). Remaining is 24 aligned structural plus compiler temps at 0x54/0x58 against 0x5C/0x64. L99/L112 cannot raise those temps without shrinking the frame.
  * PLATEAU-HANDOFF:func_overlay_057_F0004E18_18A8A10:end
  */

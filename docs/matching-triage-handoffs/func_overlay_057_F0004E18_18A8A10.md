@@ -2,11 +2,11 @@
 ### `func_overlay_057_F0004E18_18A8A10` plateau handoff
 
 - source: `src/overlays/o057/func_overlay_057_F0004E18_18A8A10.c`
-- score: 209/1208 words
+- score: 86/1208 words
 - frame: 0x140
 - relocations: 375
 - first mismatch: +0x100
-- summary: Index form closed the size deficit at delta 0. Aligned residual is still 43 structural plus compiler temps at 0x54/0x58 against 0x5C/0x64. Statement order is a move-one fixed point on this shape.
+- summary: Three identities closed every insertion (209 -> 86, tax 101 -> 0). Remaining is 24 aligned structural plus compiler temps at 0x54/0x58 against 0x5C/0x64. L99/L112 cannot raise those temps without shrinking the frame.
 
 ## 2026-09-12 (lane `p11-big`): the target's bound is the global's end, read off the object
 
@@ -387,12 +387,78 @@ Identity gate PASS: instrumented `IDO_DIR` `.text` is byte-identical to stock.
 `CDX_PROC=0` (single-function TU), 122 p1 decisions.
 
 Do **not** re-run: the integer `index < 4` bound, `outputIndex` as the choice
-loop's output cursor, dropping `choice`, or statement order on this shape.
+loop's output cursor, dropping `choice`, or statement order on the *index-form
+xor-1* shape. L146 voids that climb the moment the comparison spelling changes.
+
+
+## 2026-09-19 (lane `w26-o057`): three identities close every insertion, 209 -> 86
+
+  - before: 209 masked of 1208 words, size delta 0, byte-exact 1106, register
+    naming 55, immediate only 10, really different 43, displacement tax 101,
+    first mismatch +0x100.
+  - after: 86 masked, size delta 0, byte-exact 1122, register naming 56,
+    immediate only 6, really different 24, displacement tax 0, first mismatch
+    still +0x100. Frame 0x140 on both sides, 32 slots on both sides. Zero
+    candidate-only or target-only words.
+
+### Adopted
+
+  - `stackB0[0] = *active` ahead of `stackB0[1] = 0`. blockclimb's 3+ filter
+    skipped this two-store prefix of the columns call. Alone 209 -> 208,
+    closing the +0xDE0 insertion pair.
+  - `(u8)((state < 2) ^ 1)` to `(u8)(state >= 2)`. The xor-with-1 commons a
+    literal 1 with the countdown fill and the tail. Direct compare is 208 ->
+    118 alone; additive with the store swap at 117.
+  - `gO57MiddleData31A4 = 2` after the 31AC store. Rejected on the xor-1
+    shape (235); on `>= 2` it closes every remaining insertion (L146). 117 ->
+    86, 0 ins / 0 del.
+
+The three compose additively: swap saves the columns insertion pair, the
+compare saves the two `1`-literal insertion sites, the 31A4 order saves the
+last three-word cluster.
+
+### L99/L112 priced, temps do not move up
+
+Compiler temps stay at sp+0x54 (1ld 1st) / sp+0x58 (2ld 1st) against the
+target's sp+0x5C / sp+0x64. Identity gate PASS against stock `.text`,
+`CDX_PROC=0`, 122 p1dec, unforced `forced=-2`.
+
+  - unused `f32` / pointer / s32 at the end: temps shift *down* 4 at an
+    unchanged 209; unused s32 is NOT eliminated on this TU.
+  - +8 bytes of unused at the end (two pointers, `f64`, `f32[2]`, `char[8]`):
+    frame 0x140 -> 0x148, immediate 10 -> 40.
+  - dropping any unused 4-byte local (`remainder`, `nextSelection`,
+    `nextValue`, `cursorValue`, `input`, `choice`, `output`, `activeCount`):
+    frame 0x140 -> 0x138. `choiceActive` (unused s8) is eliminated and
+    dropping it is byte-identical.
+  - L112 alignment slack is byte-identical: `sourceState[2]`/`[4]`,
+    `activePlayers[10]`/`[12]`, `stackB0[2]`/`[4]`. Enlargements that leave
+    slack grow the frame and the immediate bucket.
+
+### Measured and rejected on the 209 and 117 shapes
+
+  - leftover-in-param `updateRate or= 0` after the declarations: byte-identical
+    (folded). Inside either panel loop: size delta -80 / -168.
+  - `gO57MiddleFlags.bytes[1] &= 0xFE` as a halfword or word: size delta -12
+    or +8.
+  - `tableIndex` as `u16`, or a `(u16)` cast on the subscript: 209 -> 209 or
+    117 -> 119, more structural.
+  - path-list walk rewritten as `gO57MiddlePathList[index]`: 664, delta -4.
+  - countdown `while (outputIndex-- != 0)`: +4 on the 209 shape; `--i >= 0`
+    from 10 is byte-identical on the 117 shape (still the `>=` branch).
+  - `gO57MiddleData31A4 = 2` after 31AC on the xor-1 shape: 235.
+
+Do **not** re-run: the L99/L112 lattice above, leftover-in-param on
+`updateRate`, flags-as-halfword, `tableIndex` as `u16`, the path-list index
+walk, or the xor-1 form of 31AC.
 
 ### What is still open
 
-43 aligned structural rows and the 0x54/0x58 vs 0x5C/0x64 compiler-temp
-homes. Register census is 64 percent coherent over eight windows, not one
-ring phase. Next lever is those homes, not another bound spelling.
+24 aligned structural rows (displacement tax 0) and the 0x54/0x58 vs
+0x5C/0x64 compiler-temp homes (5 of the 6 immediate rows). The sixth
+immediate is the flags mask width. Remaining structure is the columns-call
+arg schedule, the countdown fill's count-vs-address order and branch kind,
+and the tail rematerialising `&gO57MiddleChoices` instead of keeping it.
+L99/L112 cannot raise the temps without shrinking the frame.
 
 <!-- plateau-handoff:func_overlay_057_F0004E18_18A8A10:end -->

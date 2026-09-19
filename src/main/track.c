@@ -5660,7 +5660,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0x10
  * relocations: 2
  * first-mismatch: +0x1C
- * summary: p2 a0/t0 cycle is count vs bound/coord web order. Declaration order is inert; hoisting z/y/xLower or delaying count regresses. Count stays a0.
+ * summary: 10900 subscript did not transfer. Combined p2 force still 2 (keepGoing t9 vs at). Dummy xLower 18; delete count 33.
  * PLATEAU-HANDOFF:func_8000FAE0:end
  */
 

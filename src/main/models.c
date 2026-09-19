@@ -1199,7 +1199,7 @@ void func_80020D8C(ModelFrameInstance *instance, s32 textureIndex, s32 frame) {
     model = instance->model;
     entry = instance->entries;
     output = instance->outputs[instance->outputIndex];
-    remaining = *((u8 *)model + 0x2C);
+    remaining = model->textureAnimationCount;
     remainingCopy = remaining;
     remaining--;
     if (remainingCopy != 0) {
@@ -1410,7 +1410,7 @@ void func_8002109C(ModelPointOwner *owner) {
  * frame: 0x8
  * relocations: 0
  * first-mismatch: +0x38
- * summary: remainingCopy as frame load is 15 at delta 0; leftover is the nextFrame shift web plus the loop-test register.
+ * summary: Phantom t3 web still 15. L145 nextFrame delete 28/-4; while remaining-- 23 copy-after-test. Need remaining as test without two-block shift web.
  * PLATEAU-HANDOFF:func_80020D8C:end
  */
 

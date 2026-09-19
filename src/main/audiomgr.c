@@ -115,10 +115,13 @@ extern void func_80001BF4(void);
 extern void func_80002134(void);
 
 /* PROVENANCE: body adapted from Diddy Kong Racing's public decomp,
- * src/audiomgr.c::amCreateAudioMgr; Mickey's config, queues, and heap globals remain authoritative. */
-/* Verdict: structure-mismatch; 154 differing sites, 203 candidate vs 209 target instructions. */
-/* First mismatch: function offset +0x00; candidate frame -344 vs target -336. */
-/* Gap: initializer stack, field, and copy shapes remain displaced from the target. */
+ * src/audiomgr.c::amCreateAudioMgr, cross-checked against Jet Force Gemini
+ * efd5abb src/audiomgr.c::amCreateAudioMgr (still unmatched there; same SGI
+ * initializer call order). Mickey's config, heap sizes, DMA stride, and
+ * queue depth remain authoritative. */
+/* Verdict: size-mismatch; 153 masked words, 203 candidate vs 209 target instructions. */
+/* First mismatch: function offset +0x00; candidate frame 0x158 vs target 0x150. */
+/* Gap: six missing words (sltu, two lui, addiu, or, nop) and 8 extra frame bytes. */
 #ifdef NON_MATCHING
 typedef struct AudioManagerEffectParams {
     u32 words[0x108 / sizeof(u32)];
@@ -545,7 +548,7 @@ void func_8000238C(void) {
  * frame: -0x158
  * relocations: 58
  * first-mismatch: +0x0
- * summary: Best DKR-derived initializer; 6 instructions short and 8-byte smaller frame after allocator, loop, and field-shape probes.
+ * summary: JFG confirms 0x150 frame; best remains 203/209 at 0x158, masked 153. Missing sltu, two lui, addiu, or, nop. Next: emit those six with no new stack home.
  * PLATEAU-HANDOFF:func_80001740:end
  */
 

@@ -271,9 +271,9 @@
       "source_commit": "c8d9c216c9af8ff127346577479efdb7a6c41782"
     },
     "func_80018F08": {
-      "ledger_commit": "0b1e2a0df0417404134ba71111ab0e4eba6abffd",
+      "ledger_commit": "da53811bedf53dccb772d85e98f2fff27433e5e9",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "0ae4386e31a86fa18ad61e4ba5929bc70af101fd"
+      "source_commit": "da53811bedf53dccb772d85e98f2fff27433e5e9"
     },
     "func_8001953C": {
       "ledger_commit": "d09352cdaa9a476ab208fd6965e169db3d64bdce",
@@ -1096,7 +1096,7 @@
       "source_commit": "68093ebf6f0fcf6b841a0f264e1384a6a8373393"
     },
     "func_overlay_036_F0000A60_1883F18": {
-      "ledger_commit": "8c67b5d1374237971d5f3b6c0b68fb66c25acea4",
+      "ledger_commit": "b3d67ffe117e67b45d9e5a728731f6247f6e7a7d",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "743e8def99e49b26ad7e7019a09814333a9161b6"
     },
@@ -1166,9 +1166,9 @@
       "source_commit": "a2ac228388dd2aad0baab078461c8a768998f597"
     },
     "func_overlay_046_F0000874_188EC6C": {
-      "ledger_commit": "627771580a65db384a4d6e259fb36ec0a63790d7",
+      "ledger_commit": "af2aac4a88abf7bec987333fa6b53de4b4d600bd",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "627771580a65db384a4d6e259fb36ec0a63790d7"
+      "source_commit": "af2aac4a88abf7bec987333fa6b53de4b4d600bd"
     },
     "func_overlay_046_F0001228_188F620": {
       "ledger_commit": "bbfc59f2017a100cb07aa899975d2abd644b152a",
@@ -1751,9 +1751,9 @@
       "source_commit": "d1d8fa17cc378ed1367e13b5694c06b268748895"
     },
     "overlay25UpdateEffect": {
-      "ledger_commit": "9025728e4b4617b24f97b694aefb07949cffa49e",
+      "ledger_commit": "225dbf9f3c7d0f9336be0f0d57968d3da94c500d",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "25ed877e2ceb660ad1e76664569e101452565665"
+      "source_commit": "225dbf9f3c7d0f9336be0f0d57968d3da94c500d"
     },
     "overlay27UpdateCoordinates": {
       "ledger_commit": "6f39884151705e43af48622cce877d456fd5dc18",
@@ -1831,9 +1831,9 @@
       "source_commit": "199f2f2c26c36bb7aa34d017c87178557edb4385"
     },
     "overlay3RunCachedModeAction": {
-      "ledger_commit": "14731352a97c4f5f2d56674fbf867ff3ca944bd2",
+      "ledger_commit": "d2c9eb5bd7be1405079163409f104b928e0c84c3",
       "reason": "New mechanisms found today: lever 51, a hand-written cursor blocks the register names and indexing the parallel arrays closed three functions in one pass; and lever 50, an unrelocated literal address pair scores as a false residual.",
-      "source_commit": "14731352a97c4f5f2d56674fbf867ff3ca944bd2"
+      "source_commit": "d2c9eb5bd7be1405079163409f104b928e0c84c3"
     },
     "overlay3SelectScoredObject": {
       "ledger_commit": "63241f7ed95f2160fef3e84e44676ac5aeadafad",

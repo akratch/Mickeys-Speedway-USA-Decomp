@@ -163,6 +163,16 @@ extern s32 overlay101ByteLength(u8 *text);
  *   the +4, so the surplus is reachable from the load side as well as from the
  *   colour constant. See the shard for the register census, which shows these
  *   naming rows are per-web colour and not one ring cycle.
+ * Lane w25-o101c (2026-09-19): C's 0xC0 web on this body is the same as A/B
+ *   (dtype 8, a2 absent from the cost table, forbidden0 includes a2). Do not
+ *   rerun L144, L97 copy, or a2 force. Size closes at 133, delta 0, frame 0x20
+ *   when dimColor is assigned AFTER the length store as 0xC0 OR the just-stored
+ *   length AND 0: that keeps an s32 identity so copy-prop cannot retype the
+ *   constant to a byte, the extra call rematerialisation goes, and 0xC0 lives
+ *   in the call's third argument register for both colour stores. The AND-0 is
+ *   an ADR 0017 inert diagnostic, not adopted. Natural 0xC0 before or after
+ *   the length store stays +4. Three-force diagnostic floor on that shape is
+ *   115 at delta 0. The guarded 143-word body is retained.
  * See docs/matching-triage-handoffs/overlay101BuildPresentationC.md for the
  * remaining residual and the decision variable that blocks it. */
 #ifdef NON_MATCHING
@@ -235,6 +245,6 @@ void overlay101BuildPresentationC(void) {
  * frame: 0x20
  * relocations: 52
  * first-mismatch: +0x10
- * summary: B store-result transfer reproduces 158 at +4 with one extra draw; the guarded 143-word baseline is retained.
+ * summary: Size closes at 133 frame 0x20 with an s32 identity diagnostic after the length store; natural 0xC0 stays +4. 143 retained.
  * PLATEAU-HANDOFF:overlay101BuildPresentationC:end
  */

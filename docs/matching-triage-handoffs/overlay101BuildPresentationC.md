@@ -6,7 +6,7 @@
 - frame: 0x20
 - relocations: 52
 - first mismatch: +0x10
-- summary: B store-result transfer reproduces 158 at +4 with one extra draw; the guarded 143-word baseline is retained.
+- summary: Size closes at 133 frame 0x20 with an s32 identity diagnostic after the length store; natural 0xC0 stays +4. 143 retained.
 
 Measured 2026-09-11, lane `lane/s1-trio`, on the four-function overlay-101
 presentation-builder cluster. Every number is `tools/align_symbol.py`, whose
@@ -313,4 +313,70 @@ promotion is claimed. Sources, objects, profiles and aligned maps stay ignored
 under build/c2. Commands include assignment gate, configured stock compilation,
 draw_census.py profiles/comparison, residual_map.py, finalize_plateau.py and
 tools/gates.sh. Full-ROM verification covers the fallback; no new exact bytes.
+
+#### 2026-09-19, lane w25-o101c: s32 identity closes size; dummy not adopted
+
+Assignment is this lane's owned C relative only. Configured stock on the
+guarded body still measures 209 candidate words against 208 target words,
+delta +4, 144 raw and 143 masked, first +0x10; aligned 79 exact, 104 naming,
+1 immediate, 32 structural, including eight candidate-only and seven
+target-only words. Frame 0x20 with the same three-slot ladder as the target.
+Stock and instrumented full-TU .text agree with traces off. CDX_PROC is
+ordinal 0 (procindex decisions=33). Forces were scored with score_symbol.py
+--object so a recompile could not drop them.
+
+C's consecutive color0/color1 stores do not change the 143 body's 0xC0 web
+against A/B. Web 198 is still type 2, dtype 8, table 192, save 1.0, nocs 1,
+forbidden0 0x7fc30000, cost table c10-c13 plus callee-saved, colour t3.
+CDX_FORCE=p1:w198=c5 is not in that cost table. L144, L97 copy, and a2 force
+were not rerun.
+
+The extra word is still the second 0xC0 materialisation into the call's third
+argument register. The target materialises 0xC0 once into that register
+before the unsigned length conversion, stores both colour bytes from it, and
+passes it to the call. This candidate materialises a byte-typed 0xC0 for the
+stores and rematerialises an s32 0xC0 for the call. dtype 8 is copy-prop of
+the constant into the byte stores (L151): the call use is s32, so they are
+two IR constants.
+
+A computed s32 0xC0 defeats that copy-prop. The paying form, measured and
+not adopted, assigns dimColor AFTER the length store as 0xC0 OR the
+just-stored length field AND 0. That spelling:
+
+- is always 0xC0 (the AND-0 folds; no extra instruction)
+- scores 133 masked at size delta 0, 208 vs 208 words, frame 0x20, the same
+  three-slot ladder, displacement tax 0
+- aligned 82 exact, 105 naming, 1 immediate, 27 structural, with the surplus
+  candidate-only word at +0x31C gone and the other seven/seven insertion
+  offsets unchanged
+- puts the one 0xC0 in the call's third argument register and uses that
+  register for both colour stores, in the target's tail order (length store,
+  then 0xC0, then the unsigned conversion)
+- makes dimColor web 137, type 3, dtype 6, save 4.0, nocs 1, colour a2
+
+The same AND-0 on node24IndexB before the length store also closes size at
+frame 0x20 (134 masked) but emits 0xC0 before the length store. After the
+length store, the index dummy returns to 143 at +4. Multiply-by-zero on
+node24IndexB closes size at 136 but grows the frame to 0x38. Multiply-by-zero
+on length closes size at 147 and places 0xC0 after the conversion join.
+Comma, XOR-identity, shift-0, AND-minus-one, plus-0, and a2-typed call
+parameter (u8, s8, u16) are byte-inert or worse. Reloading color0 as the
+call argument copy-props back to 0xC0 and stays +4. Chained color0=color1 as
+the call argument is 157 at +8. Expression-at-every-use without the local
+returns to +4. The AND-0 is an ADR 0017 inert diagnostic: load-bearing for
+s32 identity, not Rare's source, not adopted into the guarded body.
+
+On that size-zero shape, identity-gated, the inherited three forces are all
+accepted: p1:w186=c11 is 124, p1:w31=c2 is 125, p1:w78=c8 is 129, and the
+three together are 115, still at delta 0. That is a diagnostic floor, not a
+source result. --every-colour was not run; size is now 0 on the diagnostic
+shape so it is legal there.
+
+Retained: the guarded 143-word body, frame 0x20, delta +4. Next named
+question: a natural s32 0xC0 that is not copy-propped into dtype 8, assigned
+after the length store, without AND-0, multiply-by-zero, or a home. Once
+that is in the source, re-derive the three-force packing and the 7/7
+earlier insertion residual; those windows did not move when the extra 0xC0
+went away. Do not rerun L144, L97 copy, a2 force on web 198, or the AND-0
+cells above.
 <!-- plateau-handoff:overlay101BuildPresentationC:end -->

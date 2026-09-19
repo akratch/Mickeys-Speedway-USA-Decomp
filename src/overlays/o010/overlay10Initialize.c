@@ -67,6 +67,9 @@ extern u8 *gOverlay10Buffers[4];
 extern u8 gOverlay10Flag0;
 extern u8 gOverlay10Flag1;
 extern u8 gOverlay10Flag2;
+extern u8 D_140[];
+extern u8 D_400[];
+extern u8 D_10[];
 
 extern void overlay10GetDimensionsReloc(s32 *width, s32 *height);
 extern void *overlay10AllocateReloc();
@@ -75,13 +78,15 @@ extern void overlay10LoadReloc();
 extern void overlay10ReleaseReloc();
 extern void overlay10FinishReloc(void);
 
-/* Pinned DKR v77/v80 and JFG scans contain no exact donor for this initializer. */
+/* Pinned DKR v77/v80 and JFG scans contain no exact donor for this initializer.
+ * This TU needs -Wo,-loopunroll,0: default unroll grows .text by 160 bytes.
+ * leftover offset |= 0 keeps the entry-loop compare as slti 4096. */
 #ifdef NON_MATCHING
 void overlay10Initialize(void) {
-    s32 widthValue;
-    s32 heightValue;
     s32 width;
     s32 height;
+    s32 widthValue;
+    s32 heightValue;
     Overlay10Viewport *viewport;
     Overlay10Resource *resource;
     Overlay10Loaded *loaded;
@@ -122,7 +127,7 @@ void overlay10Initialize(void) {
         viewport[-1].value1 = 0;
         viewport[-1].value2 = 0;
         viewport[-1].pointer = 0;
-    } while (viewport < &gOverlay10Viewports[8]);
+    } while (viewport < (Overlay10Viewport *)D_140);
 
     viewport = (Overlay10Viewport *)gOverlay10Descriptors;
     do {
@@ -139,7 +144,7 @@ void overlay10Initialize(void) {
         ((Overlay10Descriptor *)viewport)[-1].color1[2] = 0xFF;
         ((Overlay10Descriptor *)viewport)[-1].color1[3] = 0;
         ((Overlay10Descriptor *)viewport)[-1].tail = 0;
-    } while ((Overlay10Descriptor *)viewport < &gOverlay10Descriptors[32]);
+    } while ((Overlay10Descriptor *)viewport < (Overlay10Descriptor *)D_400);
 
     gOverlay10LargeBlock = overlay10AllocateReloc(0x10010, 0x86);
     gOverlay10Entries = overlay10AllocateReloc(0x1000, 0x86);
@@ -147,6 +152,7 @@ void overlay10Initialize(void) {
     angle = 0;
     offset = 0;
     do {
+        offset |= 0;
         ((volatile Overlay10Entry *)((u8 *)gOverlay10Entries + offset))->marker = 0xFF;
         ((volatile Overlay10Entry *)((u8 *)gOverlay10Entries + offset))->state0 = 0;
         ((volatile Overlay10Entry *)((u8 *)gOverlay10Entries + offset))->angle = angle;
@@ -162,7 +168,7 @@ void overlay10Initialize(void) {
 
     loaded = gOverlay10Loaded;
     buffer = gOverlay10Buffers;
-    bufferEnd = &gOverlay10Buffers[4];
+    bufferEnd = (u8 **)D_10;
     resource = gOverlay10Resources;
     do {
         *buffer = overlay10AllocateReloc(0x400, 0x86);
@@ -190,10 +196,10 @@ void overlay10Initialize(void) {
 
 /* PLATEAU-HANDOFF:overlay10Initialize:start
  * symbol: overlay10Initialize
- * score: 131/172 words
+ * score: 37/172 words
  * frame: 0x68
  * relocations: 41
  * first-mismatch: +0x0
- * summary: Required -Wo,-loopunroll,0 gives exact geometry; target frame is 0x58. Residual is stack-home/pool allocation; static relocation identities remain unresolved.
+ * summary: loopunroll,0 closes size. leftover offset OR-zero closed slti vs li. Copies cost 16 frame bytes and buy the first-loop shape.
  * PLATEAU-HANDOFF:overlay10Initialize:end
  */

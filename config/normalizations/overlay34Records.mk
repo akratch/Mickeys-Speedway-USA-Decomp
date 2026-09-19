@@ -13,6 +13,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34UpdateRecords.c.o: POSTPROCESS = 
 	$(OBJCOPY) --redefine-sym overlay34RemoveRecord=overlay34RemoveRecordReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x134
 
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34SortAndDraw.c.o: \
+	$(TOOLS_DIR)/trim_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34SortAndDraw.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_034_F0000608_18817B0=overlay34SortAndDraw $@ && \
+	$(OBJCOPY) --redefine-sym func_80024938=func_80024938_o034Reloc \
+		--redefine-sym func_800084C4=func_800084C4_o034Reloc \
+		--redefine-sym overlay34InterpolateColor=overlay34InterpolateColorReloc \
+		$@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2F8

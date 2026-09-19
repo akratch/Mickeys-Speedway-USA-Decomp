@@ -36,21 +36,29 @@ extern void func_800084C4(s32 arg0, s32 arg1, void *resource,
                           f32 *secondPosition, f32 value, u32 color1,
                           u32 color2, s32 scale);
 
-#ifdef NON_MATCHING
 /* L160 indexed draw; split record->frame spellings; position |= 0 is L100
  * weight so position outranks length. Do-while fill closed two structural
- * first-loop words. */
+ * first-loop words. Comma-assign of frame plus else position -= half puts
+ * the copy in the branch delay without the pre-test v0/v1 swap. Five unused
+ * pointers plus distances[59] (L99+L112, net-zero block) drop the colour
+ * homes onto +0x184/+0x188. Scalars declared above the array pull its home
+ * down 24 bytes into the spilltemps gap, onto +0x80. */
 void overlay34SortAndDraw(s32 arg0, s32 arg1) {
+    void *pad0;
+    void *pad1;
+    void *pad2;
+    void *pad3;
+    void *pad4;
     u32 color1;
     u32 color2;
-    f32 distances[64];
-    Overlay34Record *record;
     f32 swapDistance;
     s32 i;
     s32 j;
     s32 half;
     s32 position;
     s32 length;
+    f32 distances[59];
+    Overlay34Record *record;
 
     j = 0;
     if (gOverlay34ActiveCount > 0) {
@@ -83,8 +91,7 @@ void overlay34SortAndDraw(s32 arg0, s32 arg1) {
             if (record != NULL) {
                 length = record->frameCount;
                 half = length >> 1;
-                if (record->frame < half) {
-                    position = record->frame;
+                if (position = record->frame, record->frame < half) {
                     position |= 0;
                     overlay34InterpolateColor(position, half,
                                               (u8 *)&record->color0A,
@@ -95,7 +102,7 @@ void overlay34SortAndDraw(s32 arg0, s32 arg1) {
                                               (u8 *)&record->color1B,
                                               (u8 *)&color2);
                 } else {
-                    position = record->frame - half;
+                    position -= half;
                     length -= half;
                     overlay34InterpolateColor(position, length,
                                               (u8 *)&record->color1A,
@@ -113,16 +120,3 @@ void overlay34SortAndDraw(s32 arg0, s32 arg1) {
         } while (j < gOverlay34ActiveCount);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o034/overlay34SortAndDraw/func_overlay_034_F0000608_18817B0.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay34SortAndDraw:start
- * symbol: overlay34SortAndDraw
- * score: 13 differing words
- * frame: 0x1A0
- * relocations: 16
- * first-mismatch: +0x54
- * summary: 97 to 13 at size 0 / 0x1A0. L160, split frame, position OR-zero, do-while fill. Homes still +0x18. Delay-slot vs v0/v1 is a 13 vs 17 trade.
- * PLATEAU-HANDOFF:overlay34SortAndDraw:end
- */

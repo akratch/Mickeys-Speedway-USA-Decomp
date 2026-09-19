@@ -2,11 +2,11 @@
 ### `overlay34SortAndDraw` plateau handoff
 
 - source: `src/overlays/o034/overlay34SortAndDraw.c`
-- score: 13 differing words
+- score: 0 differing words
 - frame: 0x1A0
 - relocations: 16
-- first mismatch: +0x54
-- summary: 97 to 13 at size 0 / 0x1A0. L160, split frame, position OR-zero, do-while fill. Homes still +0x18. Delay-slot vs v0/v1 is a 13 vs 17 trade.
+- first mismatch: none
+- summary: Matched. Comma-assign delay slot, L99 five unused pointers plus distances[59], scalars declared above the array.
 
 #### 2026-09-19, lane w33-o034: 97 to 13 at size 0
 

@@ -1178,6 +1178,11 @@ overlay34FreeReloc = 0xf0000000;
 /* overlay 34: overlay34ResetStorage.c.o */
 overlay34RemoveRecordReloc = 0xf0000000;
 
+/* overlay 34: overlay34SortAndDraw.c.o */
+func_800084C4_o034Reloc = 0xf0000000;
+func_80024938_o034Reloc = 0xf0000000;
+overlay34InterpolateColorReloc = 0xf0000000;
+
 /* overlay 35: overlay35Initialize.c.o */
 D_o35_alloc = 0x00000000;
 D_o35_byte = 0x00000000;

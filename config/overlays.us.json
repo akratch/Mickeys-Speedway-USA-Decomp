@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 249256,
-  "nonmatching_overlay_c_bytes": 219364,
+  "matched_overlay_c_bytes": 250016,
+  "nonmatching_overlay_c_bytes": 218604,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 2400,
   "bss_bytes": 77680,
@@ -7627,7 +7627,7 @@
      "type": "c",
      "source": "overlays/o034/overlay34SortAndDraw",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     }
    ],
    "bss_size": "0x0",

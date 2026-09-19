@@ -232,6 +232,6 @@ s32 overlay2QueryNode(f32 x0, f32 y0, f32 x1, f32 y1,
  * frame: 0x68
  * relocations: 51
  * first-mismatch: +0x58
- * summary: IDO gated. Index/delete-count grow. 41-shape w69=a0 force is 32. Tail temp uniquely offered v0 in its block; denying v0 also denies a0.
+ * summary: L100 save below 1.6 is reachable (per-arm 1.0) but takes s3 not a0. Denying s0-s3 takes v1 not a0. Force w121=a0 is 41. Next: forbid v1.
  * PLATEAU-HANDOFF:overlay2QueryNode:end
  */

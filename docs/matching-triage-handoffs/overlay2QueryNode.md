@@ -6,7 +6,7 @@
 - frame: 0x68
 - relocations: 51
 - first mismatch: +0x58
-- summary: IDO gated. Index/delete-count grow. 41-shape w69=a0 force is 32. Tail temp uniquely offered v0 in its block; denying v0 also denies a0.
+- summary: L100 save below 1.6 is reachable (per-arm 1.0) but takes s3 not a0. Denying s0-s3 takes v1 not a0. Force w121=a0 is 41. Next: forbid v1.
 
 #### 2026-09-09 lane `w2-bigA`: 40 to 39, and the residual is four named sites
 
@@ -381,5 +381,54 @@ least 20 would take v0 first and leave the temp a0, but no source form found
 creates that web at delta 0. Same gap at the tail-call child (web 105). Do not
 re-run the 48-cell spelling lattice, generated subscript, delete-count, or
 39-shape a0 forces.
+
+#### 2026-09-19, lane w26-o002: L100 save-rank below 1.6 is reachable and is not a0
+
+Baseline reproduces: 1,012 bytes, 253 of 253 words, delta 0, masked 39, raw 51,
+frame 0x68, first mismatch +0x58. Aligner 223 exact, 15 naming, 2 immediate,
+16 really different, same three surplus/missing pairs. Register census: 15
+sites, 88 percent coherence, no closed cycle. Frame ladders identical (21
+slots). Identity gate passed: stock and instrumented IDO (CDX_PROC=0, 40 p1
+decisions, 20 coloured) emit byte-identical .text.
+
+The array incumbent has no coloured scalar web. Switching to a function-scope
+scalar `recursiveResult` confirms the inherited census: web 121, type 3,
+dtype 6, home raw10=-28 (slot 0x4C), save 4/2 = 2.0, decided before the
+`&D_58`/`&D_5C` address webs (8/5 = 1.6), colour s0 at cost 0, 100 masked at
+minus eight. Its cost table offers v1 and a0 at cost 4, s0/s2/s3 at cost 0,
+and does not offer v0. Blocks 32, 33, 41, 42. Node holds s1 in 32, 41; the
+address webs share 32, 41.
+
+Force `p1:w121=c3` accepted (forced=3, colour a0). Size restores to delta 0.
+Masked 41. Residual map against the target: structural 10 to 6, naming 15 to
+23. Window +0x280 drops 5 rows to 1 (the OR-block store/reload). Windows
++0x300 and +0x380 pick up a ring rotation. The a0 colour is the OR-block
+shape and is not a 0-scoring force. The array form at 39 remains best.
+
+L100 extra-def probes on the scalar at depth 0 (xor-with-zero, or-with-zero,
+and-with-minus-one, assign-or-zero, shared init-plus-xor) are copy-propagated:
+tot stays 4, nocs stays 2, score stays 100 at minus eight. Do not retry them.
+
+Per-arm declarations are the save-rank source form. Each arm is tot 2, nocs 2,
+save 1.0, decided after the address webs at 1.6. Those webs take s0 and s2;
+each arm takes s3 at cost 0. Score 107 at minus eight. So the named hypothesis
+is half-right: save below 1.6 does colour after the address webs, and it
+does not spill to a0 because s3 remains free.
+
+Occupying s0 in the OR-block as well does not produce a0 either. An empty
+`if (line != 0);` before call1 does not overlap the scalar's blocks. The same
+probe after call1, with or without hoisting `line = &D_3C[node->index]` above
+the type test, denies s0 and the scalar takes s2 (function-scope, 183 at plus
+16) or v1 (per-arm, 103 at delta 0). Per-arm plus the after-call1 line probe
+has address webs on s2 and s3 and the scalars on v1 at bestcost 1, not a0 at
+4. `line += 0` and or-with-zero of a line pointer are inert.
+
+The blocker is now named: even with s0, s2 and s3 taken, v1 is still offered
+and cheaper than a0 (colour 2 vs colour 3 at equal cost on the function-scope
+web). The target coloured a0, so its scalar has v1 absent from p1cost. Save
+ranking cannot forbid v1. Next lever: a source form whose scalar web has v1
+forbidden, then occupy s0/s2/s3. Do not retry the depth-0 L109 probes, the
+empty-if-before-call1 line probe, per-arm alone, leaf-zero, comparison order,
+or-operand order, generated subscript, or delete-count.
 
 <!-- plateau-handoff:overlay2QueryNode:end -->

@@ -370,17 +370,22 @@ void MatrixMultiplyVec4(MtxF m, f32 *src, f32 *dst) {
 #ifdef NON_MATCHING
 /*
  * Configured -O2 emits 35 words: two `mtc1` of a1/a3 and `sw`+`lwc1` of a2
- * through 8(sp). Driver -O3 (not phase-all-O3, which appends -O3 after -O2
- * and is inert) emits 34 words and three `mtc1`. The same 34-word object is
- * reachable at -O2 by CDX_FORCE=p2:w15=c28 (accepted forced=28): web 15 is
- * the arg2 float, class-2, totalsave 3, no-color because bestcost is the
- * callee 4.0 and caller f16 (c28) is infinite-cost for the three incoming
- * scalar webs. f12/f14 colour the other two at cost 0. Extra copy, L144
- * address form, L97/goto regions, store-kill, register formals, K&R, 2-D
- * indexing, and mul-by-1 copies all keep the 2-of-3 split; they rotate
- * which formal spills. Matrix-first copies plus that force score 18 masked
- * at +0x44, matching the best driver -O3 body. The remaining 18 is add
- * operand order plus an f12/f14/f16 rotation. Do not move the TU to -O3.
+ * through 8(sp). Align names that extra word at +0x0 (L155); the frame
+ * census's extra slot is +0x8 with one store and one load. Driver -O3
+ * (not phase-all-O3, which appends -O3 after -O2 and is inert) emits 34
+ * words and three `mtc1`. The same 34-word object is reachable at -O2 by
+ * CDX_FORCE=p2:w15=c28 (accepted forced=28): web 15 is the arg2 float,
+ * class-2, totalsave 3, no-color because bestcost is the callee 4.0 and
+ * caller f16 (c28) is infinite-cost for the three incoming-scalar webs.
+ * f12/f14 colour the other two at cost 0. Extra copy, L144 address form,
+ * L97/goto regions, store-kill, register formals, K&R, 2-D indexing,
+ * mul-by-1 copies, L160 (no flatMatrix), L99 unused pointer/f32 first,
+ * leftover OR-zero, overlay22 empty-if, overlay40 comma-assign, and
+ * overlay41-style remat-delete (arg2 products first) all keep the 2-of-3
+ * split; they rotate which formal spills or grow the function. Force
+ * split of web 15 is accepted and still no-color. Matrix-first copies
+ * plus the c28 force score 18 masked at +0x44, matching the best driver
+ * -O3 body. Do not move the TU to -O3.
  */
 void func_8002B040(MtxF matrix, f32 arg1, f32 arg2, f32 arg3,
                    f32 *arg4, f32 *arg5, f32 *arg6) {
@@ -401,7 +406,7 @@ void func_8002B040(MtxF matrix, f32 arg1, f32 arg2, f32 arg3,
  * frame: frameless
  * relocations: 0
  * first-mismatch: +0x0
- * summary: O2 35w/34 masked. Force p2:w15=c28 or driver -O3: 34w 3 mtc1 (sdk_copies+force=18). f16 INF on scalar webs; copy/L144/L97/store-kill stay 2-of-3.
+ * summary: O2 35w +4/34 masked. L155 extra is a2 home. L160/L99/leftover/o22-if/o40-comma/remat stay 2-of-3. c28 INF; force c28: 34w 24 masked.
  * PLATEAU-HANDOFF:func_8002B040:end
  */
 

@@ -103,9 +103,9 @@ extern void overlay37RecordMinimum(s32 index, f32 value);
 extern f32 Powerf(f32 value, s32 exponent);
 extern s16 dAngle(s16 first, s16 second, f32 amount);
 
-/* Plateau p5: workbench structure-mismatch; 602/606 instructions, 510 positional words, first +0x9C; frame exact. */
-/* Levers tried: per-record scalar scopes, nested/commuted zero tests, and compound velocity updates; baseline remains best. */
-/* Remains: IDO hoists the velocity-step load and reuses zero materialisation across records, shifting the FP web; retain GLOBAL_ASM. */
+/* Size closed: (s16) casts on both heading-loop compares (sibling o29). 606 words, frame 0x98, 455 masked, first +0x9C. */
+/* Named recipe leftover/empty-if/comma/L160/L99/remat is inert or regresses size. Volatile velocityStep is load-bearing. */
+/* Remains: 0.0f CSE after record 0 shifts the FP ring (24 windows); D_0/D_4 loads unpaired at +0xAC. Retain GLOBAL_ASM. */
 #ifdef NON_MATCHING
 void func_overlay_026_F00001A0_187A598(O26ObjectUpdate *object,
                                         s32 updateRate) {
@@ -239,10 +239,10 @@ void func_overlay_026_F00001A0_187A598(O26ObjectUpdate *object,
         if (updateRate != 0) {
             do {
                 i = mathDiffAngle(state->heading2C, targetHeading, step) >> 3;
-                if (i >= 0x2EF) {
+                if ((s16)i >= 0x2EF) {
                     i = 0x2EE;
                 }
-                if (i < -0x2EE) {
+                if ((s16)i < -0x2EE) {
                     i = -0x2EE;
                 }
                 state->heading2C += i;
@@ -327,10 +327,10 @@ void func_overlay_026_F00001A0_187A598(O26ObjectUpdate *object,
 
 /* PLATEAU-HANDOFF:func_overlay_026_F00001A0_187A598:start
  * symbol: func_overlay_026_F00001A0_187A598
- * score: 96/606 words
+ * score: 455/606 words
  * frame: 0x98
- * relocations: 32
+ * relocations: 22
  * first-mismatch: +0x9C
- * summary: Fresh V0 is 16 bytes short with exact frame; constant, FP-home, record-scope, zero-test, and compound-update families are exhausted.
+ * summary: Size closed by (s16) heading casts (o29). 455/606, frame 0x98, first +0x9C. Recipe leftover/empty-if/comma/L160/L99/remat inert or regress. FP 0.0f CSE remains.
  * PLATEAU-HANDOFF:func_overlay_026_F00001A0_187A598:end
  */

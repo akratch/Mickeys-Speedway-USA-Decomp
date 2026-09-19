@@ -76,22 +76,10 @@ extern void func_800349A4(Overlay37Command **commands, void *resource,
                           s32 mode, s32 flags);
 extern void func_8002460C(Overlay37Command **commands, const void *displayData);
 
-/*
- * Plateau (2026-08-25): -O2 -mips2 with -Wab,-r4300_mul emits the exact
- * 0x358-byte/214-instruction boundary. Named distance arithmetic,
- * branch-local blends, and camera-delta-first ordering reduce the residual
- * to 68 words (first mismatch +0x0), with no FP-register differences. The
- * remaining blocker is the 0x10-byte frame/stack-home gap and the command
- * temporary/register schedule; the bounded permuter remained non-exact.
- * R3 revisit: the full 119-group lattice reconfirmed 68 words and first
- * mismatch +0x0 only with -Wab,-r4300_mul. Moving the resource before or
- * directly after the camera was neutral or regressed to 72 words; moving the
- * transform declaration first also regressed to 72. None moved its spill
- * above the camera or closed the 0x10-byte frame gap.
- */
 #ifdef NON_MATCHING
 void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
                            Overlay37Object *object) {
+    f32 pad[4]; /* L112: 16 unused bytes close the 0x10 frame gap */
     Overlay37Camera *camera;
     Overlay37State *state;
     Overlay37Resource *resource;
@@ -169,7 +157,7 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
     command = *commands;
     *commands = command + 1;
     command->w0 = (((((u32)gOverlay37DisplayData & 6) | 0x60) & 0xFF) << 16) |
-                  0x04000080;
+                  0x04000000 | 0x80;
     command->w1 = (u32)gOverlay37DisplayData;
 
     command = *commands;
@@ -196,10 +184,10 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
 
 /* PLATEAU-HANDOFF:overlay37RenderEffect:start
  * symbol: overlay37RenderEffect
- * score: 75/214 words
- * frame: 0x88
+ * score: 61/214 words
+ * frame: 0x98
  * relocations: 12
- * first-mismatch: +0x0
- * summary: Fresh reproof unchanged; sole caller, weak PD donor, and 3/12 aligned relocation identities expose no new source lever.
+ * first-mismatch: +0x54
+ * summary: Size 0 at 61 via r4300_mul, 0x04000000 with 0x80, L112 pad[4]. Colour floor 61, 58 with p1:w184=c7. Extra pair +0x26C vs +0x284; transform homes 0x60 vs 0x6C.
  * PLATEAU-HANDOFF:overlay37RenderEffect:end
  */

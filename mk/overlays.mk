@@ -1171,6 +1171,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Update.c.o: POSTPROCESS = \
 # alignment word. Extend that word into the symbol, select the complete guarded
 # frame/register/FP/schedule bijection, and bind resident calls to the overlay's
 # stored-zero runtime proxy without collapsing the relocation sites.
+# Target emits the R4300 FP-mul hazard nop after the else-arm blend muls;
+# without this pass the object is one word short (measured 213 vs 214).
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Render.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Render.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_overlay_037_F000019C_18857BC=overlay37RenderEffect $@ && \

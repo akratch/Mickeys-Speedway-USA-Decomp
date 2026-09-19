@@ -50,14 +50,12 @@ void overlay25InitializeEffect(Overlay25Object *object,
 }
 
 /*
- * 2026-09-17: frame closed at 0xA0. L112 solves objects[6] from that frame;
- * one unused pointer declared first (L99) homes hitSomething at 0x98.
- * Spill-name deletion (velocity copies, extraSteps, cursor, queryRadius,
- * ownerState) and 2.0f * value dropped 127 masked to 82 at delta 0.
- * Remaining: objects at 0x70 vs target 0x4C (and radius/position 0x14 high);
- * 67 naming / 8 immediate / 7 structural. Colour landscape (proc 1, 154
- * same-kind probes): only p1:w122=c18 beats 82 (69). Inlining `other` as
- * objects[index] (L160) is size-delta -4 and loses s0.
+ * 2026-09-19: hybrid L99 homes. Function-scope unused+hitSomething keep
+ * hitSomething at 0x98; radius/position live in the activeDuration arm;
+ * objects[6] lives in the else arm. Frame stays 0xA0, size 1036. Homes
+ * 0x98/0x80/0x74 match the target; objects sits at 0x58 not 0x4C (0x0C
+ * short; extra else-arm pads and objects[7..] grow the frame). Colour
+ * still p1 w122=s3 vs wanted s4 (sibling w129 at 6.2 takes s4).
  */
 /* Ownership trial (2026-08-28): fixed the TU's +0x20..+0x40 .rodata range;
  * linked promotion is text-differs with 386 in-range words, first at +0x0.
@@ -66,9 +64,6 @@ void overlay25InitializeEffect(Overlay25Object *object,
 void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
     void *unused; /* L99: declared first so hitSomething homes at 0x98 */
     s32 hitSomething;
-    f32 radius;
-    Overlay25Vector position;
-    Overlay25Object *objects[6];
     Overlay25EffectState *state;
 
     state = &object->state->effect;
@@ -77,6 +72,8 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
         f32 accum;
         f32 moveX;
         f32 moveZ;
+        f32 radius;
+        Overlay25Vector position;
 
         state->activeDuration -= updateRate;
         object->value = 2.0f * object->transform->value;
@@ -120,6 +117,7 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
             object->flags |= 0x800;
         }
     } else {
+        Overlay25Object *objects[6];
         s32 count;
         s32 index;
 
@@ -205,10 +203,10 @@ void overlay25SetVectorFlags(s32 unused0, Overlay25Vector *out, s32 unused2,
 
 /* PLATEAU-HANDOFF:overlay25UpdateEffect:start
  * symbol: overlay25UpdateEffect
- * score: 82/259 words
+ * score: 76/259 words
  * frame: 0xA0
  * relocations: 25
  * first-mismatch: +0x3C
- * summary: Frame and size closed. Homes still 0x14/0x24 high (objects 0x70 vs 0x4C). Colour floor 69 via p1:w122=c18 (s3->s4); L160 delete-other regresses.
+ * summary: Hybrid L99 homes 82 to 76. Objects 0x58 vs 0x4C. Colour floor 63 via p1:w122=c18; L100 leftovers do not rank other onto s4 unforced.
  * PLATEAU-HANDOFF:overlay25UpdateEffect:end
  */

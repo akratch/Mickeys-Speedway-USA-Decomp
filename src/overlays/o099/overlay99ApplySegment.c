@@ -38,16 +38,17 @@ extern f32 overlay99AngleWave(s32 angle);
 extern f32 overlay99AngleWavePhaseReloc(s32 angle);
 extern f32 overlay99ProjectVector(f32 x, f32 y, f32 z, f32 dx, f32 dy);
 
-/* Workbench: structure-mismatch, 205/230 positional words differ; the first
- * hunk is the frame-size instruction (target -0xD0, candidate -0xE8).
- * Ownership: private constants rebind to retained +0xB0; representation/prologue schedule remains NON_MATCHING. */
+/* Reusing the interpolation x carrier for the loop x (L115) restores the
+ * 0xD0 frame. An empty `if (var_s0)` after the inner compact (overlay22
+ * L100) plus volatile on the +0x88 plane coefficient close the two missing
+ * words at that frame. */
 #ifdef NON_MATCHING
 void overlay99ApplySegment(Overlay99Influence *arg0, f32 arg1) {
     f32 spA0;
     f32 sp9C;
     f32 sp90;
     volatile f32 sp8C;
-    f32 sp88;
+    volatile f32 sp88;
     f32 sp84;
     f32 sp7C;
     f32 temp_f0;
@@ -58,7 +59,6 @@ void overlay99ApplySegment(Overlay99Influence *arg0, f32 arg1) {
     f32 temp_f22;
     f32 temp_f24;
     f32 temp_f26;
-    f32 temp_f26_2;
     f32 temp_f28;
     f32 temp_f28_2;
     f32 temp_f2;
@@ -90,14 +90,14 @@ void overlay99ApplySegment(Overlay99Influence *arg0, f32 arg1) {
                 var_s0 = 0;
                 if (gOverlay99GridWidth > 0) {
                     do {
-                        temp_f26_2 =
+                        temp_f26 =
                             (f32)(var_s0 - (gOverlay99WidthMinusOne >> 1)) *
                             (f32)gOverlay99Arg4;
                         temp_f28_2 =
                             (f32)((gOverlay99HeightMinusOne >> 1) - var_s3) *
                             (f32)gOverlay99Arg5;
                         temp_f0 = overlay99ProjectVector(
-                            sp7C, sp8C, sp90, temp_f26_2, temp_f28_2);
+                            sp7C, sp8C, sp90, temp_f26, temp_f28_2);
                         if (temp_f0 > 0.0f) {
                             temp_f2_2 = temp_f0 * spA0;
                             if ((temp_f2_2 > 0.0f) && (temp_f2_2 < 1.0f)) {
@@ -105,7 +105,7 @@ void overlay99ApplySegment(Overlay99Influence *arg0, f32 arg1) {
                                     (s32)(temp_f0 * spA0 * 16384.0f));
                                 temp_f22 = arg0->widthScale * temp_f2_2;
                                 temp_f0_2 = overlay99ProjectVector(
-                                    sp8C, sp88, sp84, temp_f26_2, temp_f28_2);
+                                    sp8C, sp88, sp84, temp_f26, temp_f28_2);
                                 var_f20 = temp_f0_2;
                                 if (temp_f0_2 < 0.0f) {
                                     var_f20 = -temp_f0_2;
@@ -134,6 +134,10 @@ void overlay99ApplySegment(Overlay99Influence *arg0, f32 arg1) {
                         var_s0++;
                         var_s1++;
                     } while (var_s0 < gOverlay99GridWidth);
+                    /* Overlay22 empty-if L100: one extra occurrence of the
+                     * inner index after the compact. */
+                    if (var_s0) {
+                    }
                 }
                 var_s3++;
             } while (var_s3 < gOverlay99GridHeight);
@@ -146,10 +150,10 @@ void overlay99ApplySegment(Overlay99Influence *arg0, f32 arg1) {
 
 /* PLATEAU-HANDOFF:overlay99ApplySegment:start
  * symbol: overlay99ApplySegment
- * score: 202 differing words
- * frame: 0xE8
+ * score: 190/230 words
+ * frame: 0xD0
  * relocations: 27
- * first-mismatch: +0x0
- * summary: endpoint-first interpolation gains three words; saved-register/global-address web keeps a 24-byte excess frame
+ * first-mismatch: +0x50
+ * summary: Size 0 at frame 0xD0. L115 x-reuse, overlay22 empty if(var_s0), volatile sp88. 190 masked; stack homes still +0xB4 not +0xA0.
  * PLATEAU-HANDOFF:overlay99ApplySegment:end
  */

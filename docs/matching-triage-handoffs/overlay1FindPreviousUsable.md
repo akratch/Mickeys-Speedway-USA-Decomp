@@ -6,7 +6,7 @@
 - frame: frameless
 - relocations: 4
 - first mismatch: +0x4
-- summary: structure-mismatch; lever none-known. Raw/masked 14/12, masked first +0x14; attempts 9-13 stalled. Next: fidelity-pinned CFE copy/coalescing trace.
+- summary: Two-name CSE emits the delay-slot copy; pointer-form load dest is ugen, remaining folds, dead wrapCount still missing.
 
 
 #### c2-o001: the residual is one copy-propagation decision, and it drives all twelve words
@@ -198,4 +198,60 @@ is a real compiler state, not an impossibility.
   (signed and unsigned, 32-bit and 16-bit) crossed with three bound spellings.
   The 32-bit signed and unsigned rows are byte-identical, so a declared type is
   not a web identity here; only a LITERAL's type is.
+
+#### 2026-09-19, lane `w24-o1prev`: L145/L160/L131 two-name CSE reaches the delay-slot copy, not the dead second copy
+
+Re-measured at the assigned base: 160 bytes, delta 0, 14 raw / 12 masked, frameless,
+first raw +0x4, first masked +0x14. Aligner 28 byte-exact, 6 naming, 0 immediate,
+6 structural. Census is one coherent window at 100 percent, three source
+registers, no cycle. Frame slot +0x4 is selectedIndex on both sides (candidate
+4 loads, target 3). Identity gate PASS against stock with IDO_DIR instrumented
+toolchain. `CDX_PROC=12` (0-based `.text` order in this TU). Leaf, p2 only, 14
+decisions; coloured webs take v0, v1, a0, a1, a2, a3, t0, t1, t2. The load dest
+of a pointer-form count is a ugen temp, not a coloured web.
+
+Forces on the incumbent (`--object`): splits 32-33; accepted colour moves 17-19
+or flat 12; declined forces byte-identical at 12. No colour recovers the two
+count copies. Colour is not the 12-word residual.
+
+The target still wants remaining = count as a move in the range-guard delay
+(plain branch, not likely), a dead wrapCount = count move next, inner test of
+the remaining copy, in-place decrement of that copy, and wrap from the original
+load. Copy-prop of remaining = count into the inner test is still the cause.
+
+L145/L160/L131 family actually moved structure, for the first time:
+
+- Two names for `gOverlay1EntryCount` (named load plus `entryCount[0]` through
+  `s32 *entryCount = &gOverlay1EntryCount`) CSE to one load and emit a surviving
+  copy in the range-guard delay, converting the range branch to a plain branch.
+  That is the func_80010900 / lever-45 mechanism. Wrap then recomputes from the
+  surviving copy. Cost: the canonical load is the pointer form into a ugen temp
+  (not v1), remaining still folds to original-minus-one in a third register, and
+  the dead wrapCount copy is still missing. Size delta -4, 39 words, masked 37,
+  aligned structural 1. Forces on this shape cannot recolour the ugen load dest
+  (every coloured-web force stayed 37; splits 31-40).
+- Generated subscript without a pointer local (`(&gOverlay1EntryCount)[0]`,
+  `*(&gOverlay1EntryCount)`) rematerializes the address into a0, spilling index.
+  Same delay-copy shape, worse naming.
+- Mutating the loaded `count` after copying keeps a snapshot (wrapCount
+  survives) at delta 0, masked 16, structural 4. Roles of original and counter
+  are swapped versus the target, so wrap uses the snapshot and the inner test
+  still sees the original.
+- Identity-mutating count with or-zero after the copies is the same snapshot
+  shape (masked 17). Remaining assigned from or-zero, shift-zero, or and-minus-one,
+  and L151 unsigned wrap, still lose one instruction (delta -4, structural 2):
+  wrap site correct, copies folded.
+- Deleting `record` / `flags` / `records` / `wrapCount` is 12, 17, or 22-24.
+  Self-assign of remaining is byte-identical to the incumbent. Taking the
+  address of remaining or count grows a home and scores 32-38.
+- An unsigned second load of the same address is two loads, masked 20.
+
+Incumbent retained: copies from the named local, guarded do/while, wrap from
+wrapCount, 12 masked at delta 0, 28 exact. The decision variable is now named:
+a two-name CSE whose canonical load is the *named* global (into v1) so the
+surviving delay copy is remaining in a1, plus a dead wrapCount move, plus
+in-place decrement of that copy. The pointer-form CSE produces the delay copy
+and then loses on dest identity; colour cannot retarget the ugen load. Do not
+repeat the pointer-local two-name, generated-subscript-without-pointer, count
+mutation, or or-zero families.
 <!-- plateau-handoff:overlay1FindPreviousUsable:end -->

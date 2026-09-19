@@ -72,15 +72,15 @@ extern void func_overlay_036_F0000914_1883DCC(Overlay36Object *object,
                                               s32 arg1, s32 state,
                                               s32 enabled);
 
-/* Fresh configured V0 remains exact-sized at 170 words with the exact 0x38
- * frame, 99/170 positional words, and first mismatch +0x3C. The 33-record
- * candidate and target relocation surfaces retain only 18 offset/type
- * alignments and one resolved identity. A later exact independent-FP-term
- * rotation and explicit-dereference precedent justified three bounded forms:
- * rotating the initial value terms was byte-flat, explicit (*inner).strength
- * emitted 169 words and regressed to 138 residuals, and combining both was
- * byte-flat. Preserve V0 pending new mode-branch staging or FP-pool evidence;
- * GLOBAL_ASM stays canonical. */
+/* V0 stays exact-sized at 170 words, frame 0x38, first mismatch +0x3C.
+ * The candidate-only word is the homed object reload scheduled before the
+ * mode branch; the target emits the shared 5-argument first and fills that
+ * delay with the reload. Restoring (blend * 10) + ((1 - blend) * value)
+ * emits the target-only +0x12C pad and grows to 171, so that pad is the
+ * blend-term compensation, not a second independent insertion. A shared
+ * local 5 copy-propagates back into both arms; inverting the mode test
+ * hoists the 5 but changes the branch to equality. Identity gate PASS on
+ * proc 0 (15 p1, 0 p2, unforced). GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 arg1,
                                        volatile s32 arg2,
@@ -169,6 +169,6 @@ void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 arg1,
  * frame: 0x38
  * relocations: 33
  * first-mismatch: +0x3C
- * summary: Fresh proc-0 census retains 45 draws and 246 emissions; early structural gap still shadows the unresolved draw and float schedule.
+ * summary: Mode-branch delay tie: extra object reload vs shared 5. Target blend order exposes size +1. Copy-prop blocks parent 5. Identity gate PASS proc 0.
  * PLATEAU-HANDOFF:func_overlay_036_F0000A60_1883F18:end
  */

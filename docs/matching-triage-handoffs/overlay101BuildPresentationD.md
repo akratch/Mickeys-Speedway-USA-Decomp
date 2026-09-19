@@ -2,11 +2,11 @@
 ### `overlay101BuildPresentationD` plateau handoff
 
 - source: `src/overlays/o101/overlay101BuildPresentationD.c`
-- score: 131 differing words
+- score: 130 differing words
 - frame: 0x20
 - relocations: 52
 - first mismatch: +0x10
-- summary: L160 pointer removal is byte-inert. The 21-web landscape packs to 119; the mapped split-base lattice reaches 114, still nonexact.
+- summary: u8 length 131 to 130. Packed forces 118, split-base 113, none score 0. L109/L131 do not raise the node-20 base save.
 
 Measured 2026-09-11, lane `lane/s1-trio`, on the four-function overlay-101
 presentation-builder cluster. Every number is `tools/align_symbol.py`, whose
@@ -194,5 +194,55 @@ header/naming allocation. No zero-scoring force-to-source route was established,
 and copying the trio's colour-argument experiments here would test a feature
 D does not have. The incoming guarded body is retained and the flat transfer
 is banked; the prior order and force sweeps are not repeated.
+
+#### 2026-09-19, lane w25-o101d: u8 length, independent packing, ADR 0018
+
+Fresh configured baseline reproduced 206 candidate and target words, delta 0,
+132 raw and 131 masked differences, first +0x10. Frame 0x20 matches the target
+ladder at +0x1C, +0x18 and +0x14. Aligned buckets were 82 exact, 103 naming,
+1 immediate and 27 structural, including seven candidate-only and seven
+target-only words. Register census: 103 pure substitutions, 57 percent
+coherence, six windows, no closed cycle.
+
+Identity-gate: stock and instrumented `.text` agree (decomp-workbench fidelity
+PASS on every gate). `web_footprint --list-procs` prints one procindex row,
+proc 0 with 32 p1 decisions and 21 p1color records. The web set is unchanged
+from the 21-web landscape, so `--every-colour` was not re-run. No saved
+footprints.json accompanied this worktree; packing was taken from the named
+L159 set and scored with `--object`.
+
+Named packing and split-base lattice, all accepted, all delta 0, scored on
+the forced objects:
+
+- p1:w31=c2 123, p1:w81=c8 127, p1:w186=c11 123
+- p1:w31=c2 + p1:w81=c8 119 (L159 packing, additive, disjoint radii)
+- three-force floor 114 (w186 contends with both, +2 and +1)
+
+No cell scores 0, so L160 is not opened. w186 remains split, save 0.5, nocs 2,
+totalsave 1, bestcost 2, bestcolor 11.
+
+Adopted: the A/B/C u8 length local, (s8) store cast, and no redundant mask.
+131 to 130 masked, 82 to 83 exact, 103 to 102 naming, still delta 0, same
+seven-and-seven insertion offsets. The 21 coloured webs and the three packed
+web identities are unchanged. Re-measured lattice on the adopted body, again
+identity-gated: singles 122, 126, 122; packing 118; three-force floor 113.
+Every cell moved by exactly one word. Still no zero-scoring force.
+
+Three consecutive non-improving attempts after that adoption, then stop
+(ADR 0018):
+
+- L109 discarded OR-with-zero on gOverlay101BuilderNodes20A after the node-20
+  stores: 130, delta 0. w186 totalsave stays 1. The copy-prop narrow that made
+  colour-constant probes inert on A/B/C also applies to this type-1 address
+  constant.
+- Inlining compactSelector to a 0x18 literal at the three use sites: 130,
+  same aligned buckets and frame. The declared 0x18 carrier is not hiding a
+  colour.
+- L131 spelling split, node20B as array + index against node20A as
+  subscript: 132, 81 exact, 104 naming. Reverted.
+
+Retained body is the u8 length form. Decision variable is still the node-20
+base's save 0.5 against cost 2, with no source-reachable extra occurrence
+that copy-prop will count. Colour floor 113 is diagnostic, not a match.
 
 <!-- plateau-handoff:overlay101BuildPresentationD:end -->

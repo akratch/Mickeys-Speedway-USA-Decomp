@@ -356,9 +356,9 @@
       "source_commit": "1f5cccaae60d690fbfcad4e941709e4a294ae6bc"
     },
     "func_80020D8C": {
-      "ledger_commit": "689a73610d046c7574d349dda588c50296cc9f36",
+      "ledger_commit": "708bd4d91d27926568be1366e759706e8c92466c",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "4fe9255a1e3cd2c6b94232648c9a8a5acf625cf7"
+      "source_commit": "708bd4d91d27926568be1366e759706e8c92466c"
     },
     "func_80020E4C": {
       "ledger_commit": "f6c3e67c3d71800e746b7c3a87f52c8b9c42e646",
@@ -1326,9 +1326,9 @@
       "source_commit": "6d9e8c8cd742c2492028f23c3fe036bb29b76c27"
     },
     "func_overlay_073_F0000D70_18CB830": {
-      "ledger_commit": "83a9c46d4180cfae43fdea1ab1bff37a62914409",
+      "ledger_commit": "e7a08f17de8aa1791a595297a24f30d1c2063afd",
       "reason": "New mechanisms found today: lever 51, a hand-written cursor blocks the register names and indexing the parallel arrays closed three functions in one pass; and lever 50, an unrelocated literal address pair scores as a false residual.",
-      "source_commit": "44819833de8400ed7ecb815a95f9c9f11423571a"
+      "source_commit": "ffad34074e04702234e66310ec22aa4e3cd862b8"
     },
     "func_overlay_079_F0000134_18CD0D4": {
       "ledger_commit": "eeeb9d7fef50e0478d524e4814abaed5a846d4fb",
@@ -1681,9 +1681,9 @@
       "source_commit": "cb961a7f6f13985a560586d292f281d721900c16"
     },
     "overlay1FindPreviousUsable": {
-      "ledger_commit": "b5c6562009fd4ae4995177f0b546ca4dd74f7a42",
+      "ledger_commit": "97cf61ccf02abf140a6b4cd47f91267529e9346c",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "8d63f19c4f02ea1663a349b4ee5f9e9a80366880"
+      "source_commit": "97cf61ccf02abf140a6b4cd47f91267529e9346c"
     },
     "overlay1FindType47ByAngle": {
       "ledger_commit": "caa77e37c6b2ffbcbc4897e4a83d4221627bab6d",

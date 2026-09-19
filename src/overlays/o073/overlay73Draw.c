@@ -25,9 +25,10 @@ extern void func_80034554(Overlay73Command **commands, void *resource,
                          s32 mode, s32 flags);
 extern void func_800241BC(Overlay73Command **commands);
 
-/* Workbench verdict=structure-mismatch; 41 raw/masked words differ in exact 78-word/0x30 frame, first +0x1C.
- * Splitting 0x04000044 removes all alignment gaps and leaves two opcode-order mismatches; instruction/frame geometry is exact.
- * Five relocation sites remain, with D_80000000 sites reordered; the residual structural gap is not yet permuter-ready. */
+/* Workbench: exact 78-word / 0x30 frame, 42 masked, first +0x1C.
+ * Writing the 0x05710080 word before D_80000000 closes that pair's birth order
+ * (structural 4 to 2). Remaining: vertices spill +0x28 vs +0x2C, and the
+ * vertexBank load in v0 vs a ring temp. Colour landscape floor 39 (w43 to a1). */
 #ifdef NON_MATCHING
 void func_overlay_073_F0000D70_18CB830(Overlay73Command **commands,
                                        s32 context,
@@ -38,7 +39,6 @@ void func_overlay_073_F0000D70_18CB830(Overlay73Command **commands,
     u32 physicalVertices;
     s32 vertexBank;
     s32 vertexOffset;
-    volatile u32 stackShape;
 
     state = object->state;
     if (state->resource != NULL) {
@@ -52,8 +52,7 @@ void func_overlay_073_F0000D70_18CB830(Overlay73Command **commands,
 
         command = *commands;
         *commands = command + 1;
-        command->w0 = 0xFA000000;
-        command->w1 = object->alpha | 0xFFFFFF00;
+        command->w0 = 0xFA000000; command->w1 = object->alpha | 0xFFFFFF00;
 
         func_80034554(commands, state->resource, 0xE, 0);
 
@@ -67,13 +66,11 @@ void func_overlay_073_F0000D70_18CB830(Overlay73Command **commands,
 
         command = *commands;
         *commands = command + 1;
-        command->w1 = (u32)D_80000000;
-        command->w0 = 0x05710080;
+        command->w0 = 0x05710080; command->w1 = (u32)D_80000000;
 
         command = *commands;
         *commands = command + 1;
-        command->w0 = 0xFA000000;
-        command->w1 = object->alpha | 0xFFFFFF00;
+        command->w0 = 0xFA000000; command->w1 = object->alpha | 0xFFFFFF00;
         func_800241BC(commands);
     }
 }
@@ -83,10 +80,10 @@ void func_overlay_073_F0000D70_18CB830(Overlay73Command **commands,
 
 /* PLATEAU-HANDOFF:func_overlay_073_F0000D70_18CB830:start
  * symbol: func_overlay_073_F0000D70_18CB830
- * score: 41/78 words
+ * score: 42/78 words
  * frame: 0x30
  * relocations: 5
  * first-mismatch: +0x1C
- * summary: opcode order and temporary schedule remain after carrier and qualifier controls; preserve fallback
+ * summary: w0-first closed 0x0571/D_80000000 birth order (structural 4 to 2). Residual: spill +0x28 vs +0x2C and LBU v0 vs t7. Colour floor 39. L145/L97/lineno exhausted.
  * PLATEAU-HANDOFF:func_overlay_073_F0000D70_18CB830:end
  */

@@ -97,10 +97,11 @@ void func_80046E70(FxCone *cone) {
 /* Size and frame are exact (110 words, 0x48). A named `cone + 0x38` plus an
  * L97 `if (1) { }` between that store and the sub-block adds stops uopt
  * reassociating the sum into `cone + size` then `+ 0x38`. The leftover 23
- * is that region's block split: arg3/arg4/arg7 loads cannot hoist above
- * vertices, plus a t5/t6/t7 ring at the allocator join. Two names, xor-0,
- * volatile, and integer adds either restore the extra word or add more.
- * Identity-gated proc 1: v0/v1 colour swap accepts and stays at 23.
+ * is as1 lineno: arg3/arg4/arg7 loads share their field stores' line, so
+ * cone+0x38 wins the initially-ready pick. L97 emits no branch; as1 can
+ * hoist inside the block. Comma-assign onto vertices hoists the loads but
+ * the stores follow (41). Named copies copy-prop; volatile/leftover/empty
+ * if overshoot. Identity-gated proc 1: v0/v1 swap accepts and stays at 23.
  */
 #ifdef NON_MATCHING
 extern void *func_8002B280(s32 size, s32 tag);
@@ -2427,7 +2428,7 @@ void func_8004AF68(void) {
  * frame: 0x48
  * relocations: 6
  * first-mismatch: +0x68
- * summary: L97 named cone+0x38 carrier closed the extra word (60/+4 to 23/0). Remaining is the region split vs as1 hoist of arg3/arg4/arg7, and the allocator-join ring.
+ * summary: as1: arg3/arg4/arg7 loads share store lineno and lose to cone+0x38. Need a surviving first-use that is not the store. Copies copy-prop; comma-assign is 41.
  * PLATEAU-HANDOFF:func_80046EC4:end
  */
 

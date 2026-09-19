@@ -80,6 +80,29 @@ bytes and disassembly never belong here.
   locals or replace globals. Evidence: the ROM-exact recipe in
   [the angle-scan handoff](matching-triage-handoffs/overlay1FindType47ByAngle.md).
 
+### Display-list packet cursor and a dying index
+
+- **Symptom:** stores through the shared display-list head plus a later
+  increment leave two extra words, and a newly declared packet pointer closes
+  size but grows the frame by 8. **Mechanism:** the increment-then-store GBI
+  packet wants a copy of the old head, and IDO will give a fresh pointer local
+  its own home. An existing unused pointer already sitting in the frame (L99
+  placement pad) can carry that copy at zero extra width. **Lever:** assign
+  `gDisplayListHead++` into that existing pointer and store the packet through
+  it. Do not add a block-scoped cursor until its home has been measured.
+- **Symptom:** a draw-loop spelling that was byte-flat on the shared-head
+  shape moves once the packet cursor changes. **Mechanism:** L146 — a
+  statement-order or induction-form optimum belongs to the carrier shape.
+  `arr[i++]` (the index dies in the subscript) was identical to `arr[i]; i++`
+  on the old shape and three words closer after the cursor reuse. **Lever:**
+  re-climb the dying-index forms after any display-list or cursor edit; do
+  not treat the previous lattice as evidence on the new shape.
+- **Validation and limits:** confirm the frame before believing a size-0
+  score — a new pointer local can match `.text` length while shifting every
+  displacement. Colour landscapes on the size-0 form can still floor well
+  above zero when the leftover is two non-overlapping 4-byte homes versus
+  the target's one shared temp.
+
 ### Flags and compiler phases
 
 - The driver does not run `uopt` below `-O2`, but Mickey's

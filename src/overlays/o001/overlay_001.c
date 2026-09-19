@@ -474,6 +474,6 @@ s32 overlay1TestDirection(Overlay1Direction *direction, f32 x, f32 z) {
  * frame: frameless
  * relocations: 4
  * first-mismatch: +0x4
- * summary: structure-mismatch; lever none-known. Raw/masked 14/12, masked first +0x14; attempts 9-13 stalled. Next: fidelity-pinned CFE copy/coalescing trace.
+ * summary: Two-name CSE emits the delay-slot copy; pointer-form load dest is ugen, remaining folds, dead wrapCount still missing.
  * PLATEAU-HANDOFF:overlay1FindPreviousUsable:end
  */

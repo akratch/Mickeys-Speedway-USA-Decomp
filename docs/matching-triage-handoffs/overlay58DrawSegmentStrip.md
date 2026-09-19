@@ -6,7 +6,7 @@
 - frame: 0x88
 - relocations: 8
 - first mismatch: +0xF0
-- summary: Landscape floor 37 (only w225=c3); L160 closed. Generated-index rematerialises. Next: source form that lets the 0xFF web take v1.
+- summary: L100 cannot attach to the 0xFF constant. Unforced v1 needs islda save below 53.33 without a competing isop. Integer-cast split hits v1 at 73.
 - assignment base: `9c62568e60deef2170043478e9473e5b42fd27b4`
 - owned range: overlay 58 `+0x4C04..+0x4F28`, 804 bytes / 201 words
 - fresh baseline: 99 of 201 words exact, 102 positional differences, first mismatch `+0xC`; exact `0x88` frame
@@ -116,4 +116,84 @@ The named remaining variable is how to make web 226 (the 0xFF constant,
 save 160/3, currently a0) outrank web 225 (expression, save 230/3, currently
 v1) from source, without a force. Landscape evidence lives outside the tree
 under the lane scratch directory.
+
+#### 2026-09-19, lane w28-o058s: L100 leftovers vs the 0xFF/v1 ranking
+
+Configured baseline independently reproduces 201 words, delta 0, frame 0x88,
+masked 68, first +0xF0. Aligned buckets 133 exact, 60 naming, 0 immediate,
+10 structural, with two candidate-only words at +0x1A4 and two target-only
+words at +0x198. Register census is the inherited v1/a0 swap (24+17) plus
+the t6-t9-t4-t5 ring. Identity-gate: stock IDO versus instrumented IDO
+.text is byte-identical (816 bytes). CDX_PROC is 0, 31 p1 decisions, no p2.
+
+Force receipts, scored with score_symbol.py --object against the forced
+object, acceptance read from forced= not from the bytes:
+
+- p1:w225=c3 accepted (forced=3). Masked 37, delta 0. Web 226 then takes
+  v1 unforced. Packed 37 is still not a match.
+- p1:w226=c2 declined (forced=-2). At decision time v1 is already held by
+  the islda, so 226 is forbidden c2. Directly forcing the 0xFF web onto v1
+  is not a legal colour.
+
+Decision variable, re-derived from this capture (web numbers move; identify
+by type/raw): the v1 occupant is type=1 dtype=0 islda of
+gOverlay58StripVertexCursorReloc, save 230/3 = 76.67, bbs 6-12. The 0xFF
+web is type=2 dtype=8 raw 0xff, save 160/3 = 53.33, same blocks. p1 max-save
+colours the islda first onto v1; 0xFF takes a0. Type-1 wins a save tie
+because it is numbered first. L100's divisor does not reach the islda
+(compiler temp) or the constant (discarded 0xFF or 0, 0xFF and -1, 0xFF xor 0
+leave totalsave at 160/3).
+
+L100 leftover probes, all reverted, 0xFF colour named:
+
+- vertexCommand or= 0 after its assignment: delta 0, masked 68. That
+  integer's save doubled 20 to 40 and moved a2 to a1. 0xFF unchanged. This
+  is the leftover form that counts on an already-live integer.
+- last-declared loop-local zero or= 0 (L109): delta 0, masked 68. Depth-1
+  phantom was eliminated; no a0 occupant appeared.
+- empty if (vertices), if (1), if (y), if (vertexCommand), if (slot): all
+  regress (93 to 199) via a new region. Overlay-22 empty-if does not drop
+  the islda.
+- named s32 white = 0xFF with stores still 0xFF: copy-prop, 68.
+- named white, stores use white, discarded white or 0: 0xFF web gone, white
+  save 160/3 on a0, islda still v1, masked 87, delta 0.
+- named white plus white or= 0, stores use white: save 170/3 on a0, still
+  below 76.67, masked 98, delta +4. register and function-scope the same.
+- L97 if (1) wrap of the colour stores: islda nocs stayed 3, masked 93.
+- taking and leftover-or on a slot while still walking the global: islda
+  save unchanged or raised, 68 or 93.
+- y or= 0 and y and= -1 after y = (s16)y0: masked 67, delta 0, 134 exact /
+  59 naming, structural unchanged. v1/a0 swap untouched. The one-word gain
+  is the inner-if a-register shuffle (vertexCommand a2 to a1). A second
+  leftover on y is CSE'd. Combined with an islda-split that had tied 0xFF
+  at 53.33, y or= 0 restored the islda win. Do not adopt: antagonistic
+  with the named lever (L88).
+
+Unforced 0xFF-on-v1, none adopted:
+
+- Function-scope slot = and the global, walk (*slot): 0xFF takes v1
+  (islda save 40/4 = 10), size delta +68, masked 210. Proves the ranking
+  arithmetic: islda save below 53.33 is sufficient.
+- Integer-cast address spelling on the first 9 coordinate field stores
+  (`(u32)&global`, also s32 and u32+0): 0xFF takes v1 at delta 0, masked
+  73. islda 150/3 = 50 on a1, the cast isop 100/2 = 50 on a0. Aligned
+  buckets 133 exact / 56 naming / 1 immediate / 15 structural, extra
+  insertion pair, first mismatch +0xCC. The v1/a0 swap is gone and replaced
+  by a1/a0 x24 plus more structure. Worse residual than 68. char*/u8*/void*
+  and *& spellings CSE back to one islda, 68, no split. Eight-arrow integer
+  cast ties 0xFF at 53.33; type-1 keeps v1. Duplicate 0xFF store does not
+  raise totalsave.
+
+Stall: leftover forms that attach at delta 0 do not move the 0xFF/islda
+ratio (constant probes do not count; named carriers copy-prop or score
+87+; empty-if opens a region). The only delta-0 unforced v1 is the
+integer-cast islda split at 73 with a competing isop on a0. Three
+gentler address spellings after that HIT produced no new ranking and
+CSE'd to 68. Retained source is unchanged. Next: a split spelling of
+the global's address that does not CSE, does not birth an isop with
+save above 53.33, and keeps the original addressing mode; or a live
+integer leftover that is the 0xFF value without emitting a new `li`.
+Do not retry FP order, the prior ten cursor forms, packed 37, named
+white carriers, discarded 0xFF probes, L109 zero at depth 1, or y or= 0
+as a claimed step toward v1.
 <!-- plateau-handoff:overlay58DrawSegmentStrip:end -->

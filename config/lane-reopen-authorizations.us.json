@@ -1066,9 +1066,9 @@
       "source_commit": "0acc1679065b420bbb279a779264b63b9c04072b"
     },
     "func_overlay_031_F0000000_187F520": {
-      "ledger_commit": "633d74378a30596e44e50ca64f2936fdd6c986b3",
+      "ledger_commit": "1d2664aeb36c84b91f43ada86a99f84f97730107",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "633d74378a30596e44e50ca64f2936fdd6c986b3"
+      "source_commit": "1d2664aeb36c84b91f43ada86a99f84f97730107"
     },
     "func_overlay_031_F00002E8_187F808": {
       "ledger_commit": "86c0da5c4ebeaee107323d93df3a48aad6d8b22e",
@@ -1251,7 +1251,7 @@
       "source_commit": "e441502f0f9470a2ac3eff706f966bab378f42d7"
     },
     "func_overlay_057_F0004E18_18A8A10": {
-      "ledger_commit": "7988b891ba5e980353af5cbb3edb9306b81fee6a",
+      "ledger_commit": "6e13f276823a5d4c2d064c2b738dd8c190a0127f",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "afa26893968d418c493f544f0362e0c6a8e1dfff"
     },
@@ -1776,9 +1776,9 @@
       "source_commit": "3cf1caab461f215a71df5ea9bcc87a8d7f5481cb"
     },
     "overlay2QueryNode": {
-      "ledger_commit": "61ef29828620ea111f9791884f6b91dfc2754f26",
+      "ledger_commit": "4b7c473a078e7e2159a78ebbad7afbb7531aa0c7",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "61ef29828620ea111f9791884f6b91dfc2754f26"
+      "source_commit": "4b7c473a078e7e2159a78ebbad7afbb7531aa0c7"
     },
     "overlay31CreatePool": {
       "ledger_commit": "b3a9e542ad9f25a120c19b3d230a6d2618239014",
@@ -1841,7 +1841,7 @@
       "source_commit": "63241f7ed95f2160fef3e84e44676ac5aeadafad"
     },
     "overlay40BuildFrame": {
-      "ledger_commit": "0e6229f0421d25b8b2e51ad4b632d680ce12a162",
+      "ledger_commit": "d12e9f3038dfe6e9562ec4b1fa71d307f5784be8",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "ba213213dbfdc5050e62e8de7b18d6c733bb74b9"
     },
@@ -1966,9 +1966,9 @@
       "source_commit": "b1a8f39f5b1fc714777b997b9ab76e3692e6ee8f"
     },
     "overlay68UpdateAnimation": {
-      "ledger_commit": "ce1059bdbbbd4ea7105aa123299ea67baf685364",
+      "ledger_commit": "f0f05d62fd5828f8733834747a0a008e3fbf553b",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "ce1059bdbbbd4ea7105aa123299ea67baf685364"
+      "source_commit": "f0f05d62fd5828f8733834747a0a008e3fbf553b"
     },
     "overlay74Update": {
       "ledger_commit": "e2eb59251353c04c5914fad172c6d6806e9c8122",
@@ -2066,9 +2066,9 @@
       "source_commit": "a6b36ef53e00d3421dec82342b756c7a16b9b226"
     },
     "rain_render_splashes": {
-      "ledger_commit": "fc414d09b87569faf0a37467b20294b88553c5e6",
+      "ledger_commit": "79a4e2dd7e4c08eef36f152eeb26d28268a73309",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "fc414d09b87569faf0a37467b20294b88553c5e6"
+      "source_commit": "79a4e2dd7e4c08eef36f152eeb26d28268a73309"
     },
     "render_epc_lock_up_display": {
       "ledger_commit": "6551b94503f641633b23c4477f31156daea040bc",

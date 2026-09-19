@@ -1922,7 +1922,16 @@ metadata-only call rebind restores the shipped placeholder identity without
 altering an instruction. All three runtime records, the linked owned range,
 complete overlay, and full US ROM are byte-identical.
 
-`overlay 22 +0x0D30..+0x0E9C` (`func_overlay_022_F0000D30_1878E38`) — 364 bytes / 91 words. NON_MATCHING: identity-correct configured full-TU C has the exact `0x28` frame and 48/91 raw/runtime-normalized words, first `+0x10`; all 43 residual sites are register-only. The runtime contract is exact at all 12 offsets, types, identities, and addends: a LOCAL pair to count `+0xED0`, three LOCAL node-array pairs to `+0xEA0`, and SYMBOL calls to resident `partUpdateTriggers`, `func_80002FE0` twice, and `func_80006EA0`. The 119-row flag lattice is nonexact, one fidelity-clean allocator trace records 11 high-confidence integer webs, and three natural lifetime/loop forms produce no gain. ORT 1465 has seven resident inbounds from `func_80053868` (`+0x5F8/+0xCF0/+0xCFC`), `func_800557F8+0x158`, `func_80055D08+0x124`, `func_80055E50+0xF0`, and `func_800573C8+0x350`; Overlay 22 table-2 records 10 and 17 add local inbounds at module `+0x274/+0x5C4`. The function consumes object and flags in `a0/a1`; one local call also leaves an ignored count pointer in `a2`. The following `+0xE9C..+0xEA0` word is separately owned padding. Exact linked function/module/ROM evidence proves the assembly fallback only, so this owner contributes **0 exact C bytes**.
+`overlay 22 +0x0D30..+0x0E9C` (`func_overlay_022_F0000D30_1878E38`)
+contributes **364 exact C bytes / 91 words** with the retail `0x28` frame.
+A loop-local node carrier plus an empty `if (i)` after the compact restore
+the search-load dest and the index colour unforced. The configured instruction
+stream is exact. All 12 runtime records agree by offset, type, identity, and
+addend: a LOCAL pair to count `+0xED0`, three LOCAL node-array pairs to
+`+0xEA0`, and SYMBOL calls to resident `partUpdateTriggers`, `func_80002FE0`
+twice, and `func_80006EA0`. The following `+0xE9C..+0xEA0` word remains
+separately owned padding. The linked owned range, complete overlay, and full
+US ROM are byte-identical.
 
 `overlay 99 +0x02A0..+0x0638` (`overlay99ApplySegment`) — 920 bytes / 230 words. NON_MATCHING: retired 2026-08-24 per ADR 0002 (was made to match via a bijective private-representation rewrite, plus removal of a 16-byte compiler-private `.rodata` duplicate already covered by the retained runtime table); source kept as decomp-permuter input. The object covers 13 static and 27 runtime relocation roles.
 

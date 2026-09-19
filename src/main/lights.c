@@ -1135,7 +1135,7 @@ s32 lightKillGlowingLight(void) {
  * frame: 0x48
  * relocations: 7
  * first-mismatch: +0x20
- * summary: JFG control flow closes 0x48 frame and else-path insertion, 54 to 41. Remaining: +0x64 lbu/sll swap and t4/t5 ring. Header/count/value locals add frame.
+ * summary: Header as v0 symbol serializes the +0x64 pair. A second extra auto costs 8 frame. Sole-header is frame-exact plus 10 words. Colour cannot close it.
  * PLATEAU-HANDOFF:func_80018F08:end
  */
 

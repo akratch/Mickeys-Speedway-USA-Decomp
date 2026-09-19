@@ -921,6 +921,12 @@ func_8003E99C_o022Reloc = 0xf0000000;
 func_overlay_022_F0000D30_1878E38Reloc = 0xf0000000;
 gOverlay22DistanceReloc = 0x00000000;
 
+/* overlay 22: overlay22RemoveObject.c.o */
+func_80002FE0_o022Reloc = 0xf0000000;
+func_80006EA0_o022Reloc = 0xf0000000;
+gOverlay22Nodes = 0x00000000;
+partUpdateTriggers_o022Reloc = 0xf0000000;
+
 /* overlay 23: overlay23SpawnAttachments.c.o */
 overlay23RandomRangeReloc = 0xf0000000;
 overlay23SpawnReloc = 0xf0000000;

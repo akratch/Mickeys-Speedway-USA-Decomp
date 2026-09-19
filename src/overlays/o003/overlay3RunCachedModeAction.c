@@ -63,6 +63,6 @@ s32 overlay3RunCachedModeAction(Overlay3Object *anchor, Overlay3Control *control
  * frame: 0x58
  * relocations: 15
  * first-mismatch: +0x84
- * summary: Packed w29=c2 plus w39=c3 is 25 additive, not 0. valid is one web spanning encode so v1 is forbidden. L97 and lever 51 do not apply.
+ * summary: Packed 25 still misses the +0xE0 copy. Comma-assign leftover generated-subscript and L109 fold or grow; valid cannot take v1.
  * PLATEAU-HANDOFF:overlay3RunCachedModeAction:end
  */

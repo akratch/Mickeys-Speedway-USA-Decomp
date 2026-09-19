@@ -28,7 +28,12 @@ extern void func_80002FE0(u16 soundId, f32 x, f32 y, f32 z, u8 priority,
 extern void func_80006EA0(void *object);
 
 /* Pinned DKR v77/v80 and JFG object scans found no exact donor. */
-#ifdef NON_MATCHING
+/* Matched 2026-09-19 (lane w27-o022), 40 -> 0 masked words at delta 0,
+ * frame 0x28, 12 relocations, unforced. A loop-local node carrier makes
+ * ugen reuse v0 for the search load (L145). An empty `if (i)` after the
+ * compact is an L100 occurrence that drops i's save below the cursor so
+ * i takes v1 and occupies v1 through compact; the inert test is tracked
+ * in docs/cleanup-queue.md. */
 void func_overlay_022_F0000D30_1878E38(Overlay22Object *object, s32 flags) {
     s32 i;
     s32 found;
@@ -38,7 +43,8 @@ void func_overlay_022_F0000D30_1878E38(Overlay22Object *object, s32 flags) {
     count = D_30;
     found = -1;
     for (i = 0; i < count; i++) {
-        if (gOverlay22Nodes[i] == object) {
+        Overlay22Object *node = gOverlay22Nodes[i];
+        if (node == object) {
             found = i;
             i = count;
         }
@@ -51,6 +57,8 @@ void func_overlay_022_F0000D30_1878E38(Overlay22Object *object, s32 flags) {
         }
         gOverlay22Nodes[count] = 0;
         D_30 = count - 1;
+        if (i) {
+        }
     }
 
     if (flags & 1) {
@@ -65,16 +73,3 @@ void func_overlay_022_F0000D30_1878E38(Overlay22Object *object, s32 flags) {
     }
     func_80006EA0(object);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o022/overlay22RemoveObject/func_overlay_022_F0000D30_1878E38.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_022_F0000D30_1878E38:start
- * symbol: func_overlay_022_F0000D30_1878E38
- * score: 40/91 words
- * frame: 0x28
- * relocations: 12
- * first-mismatch: +0x10
- * summary: L160 index compact without current/end/last is 40/91 register-only at delta 0; identity-gated web 15 still takes v0 and force w15=c2 scores 34 not 0.
- * PLATEAU-HANDOFF:func_overlay_022_F0000D30_1878E38:end
- */

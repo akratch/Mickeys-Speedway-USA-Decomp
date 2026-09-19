@@ -1257,8 +1257,8 @@ base at `+0xEA0`. SYMBOL calls at `+0xE8/+0x118/+0x148/+0x150` resolve to
 resident `partUpdateTriggers`, `func_80002FE0` twice, and `func_80006EA0`.
 The extracted fallback object retains only the count pair and collapses the
 four call identities, so the shipped runtime tables are the identity authority.
-The candidate remains nonexact at 43 register-only words; linked equality
-proves only the assembly fallback.
+The configured C is now byte-identical; linked equality proves the C object
+and the full ROM.
 
 Overlay 73 `+0x0` (`func_overlay_073_F0000000_18CAAC0`) owns eight LOCAL
 records: `+0x1C/+0x3C` resolves through base `+0xEB0`, addend `+0x80`, to

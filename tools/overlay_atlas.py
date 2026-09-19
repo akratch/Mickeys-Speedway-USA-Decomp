@@ -1463,6 +1463,14 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x1A8, 0x1E0, "overlay16ReleaseBuffer"),
         (0x1E0, 0x424, "overlay16ApplyGradient"),
     ],
+    22: [
+        (
+            0xD30,
+            0xE9C,
+            "func_overlay_022_F0000D30_1878E38",
+            "canonical mixed-TU object, 12 runtime relocations, and linked ROM bytes exact",
+        ),
+    ],
     25: [
         (
             0x000,

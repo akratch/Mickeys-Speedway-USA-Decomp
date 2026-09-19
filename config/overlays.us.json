@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 248232,
-  "nonmatching_overlay_c_bytes": 220388,
+  "matched_overlay_c_bytes": 248400,
+  "nonmatching_overlay_c_bytes": 220220,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 2400,
   "bss_bytes": 77680,
@@ -629,7 +629,7 @@
      "type": "c",
      "source": "overlays/o001/overlay_001_middle",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x2B4C",
@@ -1235,46 +1235,6 @@
      "label": "overlay1CallReset",
      "source": "overlays/o001/overlay_001_head",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x2744",
-     "end_offset": "0x280C",
-     "size": "0xC8",
-     "label": "overlay1FindNextAngle",
-     "source": "overlays/o001/overlay_001_middle",
-     "evidence": "canonical mixed-TU object, all four runtime relocations, and linked ROM bytes exact"
-    },
-    {
-     "offset": "0x280C",
-     "end_offset": "0x28D4",
-     "size": "0xC8",
-     "label": "overlay1FindPreviousAngle",
-     "source": "overlays/o001/overlay_001_middle",
-     "evidence": "canonical mixed-TU object, all four runtime relocations, and linked ROM bytes exact"
-    },
-    {
-     "offset": "0x28D4",
-     "end_offset": "0x293C",
-     "size": "0x68",
-     "label": "overlay1RefreshMode",
-     "source": "overlays/o001/overlay_001_middle",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x293C",
-     "end_offset": "0x296C",
-     "size": "0x30",
-     "label": "overlay1CallGlobal",
-     "source": "overlays/o001/overlay_001_middle",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x296C",
-     "end_offset": "0x2AA4",
-     "size": "0x138",
-     "label": "overlay1AdvanceObjectGauges",
-     "source": "overlays/o001/overlay_001_middle",
-     "evidence": "canonical mixed-TU object and linked bytes exact"
     },
     {
      "offset": "0x3578",

@@ -114,86 +114,49 @@ void func_8004E9F8(void) {
     }
     func_8004BFB0(6);
 }
-/* Census against the target: `addiu +1, beqzl +1, move -3, nop +2`, +1 word
- * net, frame 0x10 against 0x8.
- *
- * The three missing copies are the record cursor's, and they are recoverable.
- * The target advances the cursor by computing the next address, storing *that*
- * to D_800D6AE0, reading the next byte through it, and only then copying it
- * into the lasting carrier -- `sw t8,0(t1); lbu a0,0(t8); move v1,t8` -- which
- * is three references to `data + 1` and therefore two live carriers. Writing
- * the three advances as `D_800D6AE0 = data + 1; next = data[1]; data += 1;`
- * instead of `data += 1; D_800D6AE0 = data; next = *data;` restores all three
- * copies and takes the census delta from seven to three. It is not adopted
- * because it does not improve the residual: the remaining `addiu +1`,
- * `beqzl +1` and `nop +1` put it three words long instead of one, and the
- * positional score goes 79 to 84. It is recorded as the proved cause of the
- * `move -3` term, not as a better candidate.
- *
- * The `beqzl`/`nop` pair is the same branch-likely delay-slot effect as
- * overlay2ClassifyBoundary's: the target's inner scan uses a plain `beqz`
- * whose delay slot holds the `data + 1` it needs on the fall-through, and it
- * re-reads D_800D6AE0 after the two arms rather than keeping the cursor live.
- * Reproducing that re-read alone costs an `lw`, an `sw` and a `beqz`; combined
- * with the cursor fix it is four words long. The frame difference is the same
- * question again -- the target keeps the sentinel 12 in s0 and the constant 10
- * in a scratch t5, while the candidate promotes both to s0/s1 and pays a
- * second save/restore pair.
- *
- * The whole flag lattice is flat: every -O1/-O2/-O3 row at -mips1/-mips2/
- * -mips3, with and without r4300_mul, loopunroll and g3, is at least as long
- * with at least this census delta. */
+/* PROVENANCE: adapted from Jet Force Gemini src/subtitles.c
+ * find_next_subtitle and Diddy Kong Racing src/game_text.c find_next_subtitle.
+ * Mickey's globals, the unwrapped *6 timer, and linked bytes remain
+ * authoritative. Direct global cursor and do-while inner scan closed the
+ * extra instruction and extra s-save. sentinel == new_var2 is the 12-compare
+ * operand order. Remaining 15 words are the inner u8 taking a0; an identity-
+ * gated p2 force of that web onto a1 scores 0. An outer u8 carrier that
+ * numbers first reintroduces an s-save. */
 #ifdef NON_MATCHING
 void func_8004EC60(void) {
-    register s32 var_v0;
+    u8 new_var;
+    s32 new_var2;
+    s32 done;
     s32 sentinel;
-    register u8 *data;
-    register u8 next;
 
-    sentinel = 0xC;
-    data = D_800D6AE0;
     D_800D6AC6 = 0;
     D_800D6ABA = 0;
-    next = *data;
-    var_v0 = 0;
-    if (next != 0) {
-loop_2:
-        D_800D6AC8 = next - 1;
-        D_800D6AD0[D_800D6AC6] = (char *)data;
-        D_800D6AE0 = data + 8;
-        D_800D6ABA = data[7] * 6;
-        data += 8;
-        next = *data;
-        while (next != 0) {
-            if (next & 0x80) {
-                data += 2;
+    sentinel = 12;
+    done = FALSE;
+    while (D_800D6AE0[0] != 0 && done == FALSE) {
+        D_800D6AC8 = D_800D6AE0[0] - 1;
+        D_800D6AD0[D_800D6AC6] = (char *)D_800D6AE0;
+        D_800D6ABA = D_800D6AE0[7] * 6;
+        D_800D6AE0 += 8;
+        do {
+            new_var = D_800D6AE0[0];
+            if (new_var & 0x80) {
+                D_800D6AE0 += 2;
             } else {
-                data += 1;
+                D_800D6AE0 += 1;
             }
-            D_800D6AE0 = data;
-            next = *data;
-        }
+        } while (D_800D6AE0[0] != 0);
         D_800D6AC6 += 1;
-        data += 1;
         if (D_800D6AC6 >= 2) {
-            var_v0 = 1;
+            done = TRUE;
         }
-        D_800D6AE0 = data;
-        next = *data;
-        if (next == 0xA) {
-            data += 1;
-            D_800D6AE0 = data;
-            next = *data;
-        } else {
-            if (next == sentinel) {
-                data += 1;
-                D_800D6AE0 = data;
-                next = *data;
-                var_v0 = 1;
-            }
-        }
-        if ((next != 0) && (var_v0 == 0)) {
-            goto loop_2;
+        D_800D6AE0 += 1;
+        new_var2 = D_800D6AE0[0];
+        if (D_800D6AE0[0] == 10) {
+            D_800D6AE0 += 1;
+        } else if (sentinel == new_var2) {
+            D_800D6AE0 += 1;
+            done = TRUE;
         }
     }
     if (D_800D6AC6 > 0) {
@@ -299,10 +262,10 @@ s32 func_8004F020(void) {
 
 /* PLATEAU-HANDOFF:func_8004EC60:start
  * symbol: func_8004EC60
- * score: 79/82 words
- * frame: 0x10
+ * score: 15/82 words
+ * frame: 0x8
  * relocations: 12
- * first-mismatch: +0x0
- * summary: Proc-4 census records nine draws; extra saved-register setup and direct global-address expression shape remain the live structural blocker.
+ * first-mismatch: +0x2C
+ * summary: JFG global do-while closed +4 and extra s-save. Remaining 15 is inner u8 on a0 vs outer byte on a1. Identity-gated p2:w9=c4 scores 0.
  * PLATEAU-HANDOFF:func_8004EC60:end
  */

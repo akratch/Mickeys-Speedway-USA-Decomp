@@ -2523,7 +2523,7 @@ func_80037414 = 0x80037414; // type:func size:0x244 ROM 0x38014 tier-D structure
 func_80037658 = 0x80037658; // type:func size:0xC ROM 0x38258 tier-A, matched C src/main/frontend_37D50.c -O2 -mips2 -32, direct D_8007BEA8 clear, linked exact=3/3
 func_80037664 = 0x80037664; // type:func size:0x68 ROM 0x38264 tier-A, matched C src/main/frontend_37D50.c -O2 -mips2 -32, state predicate, linked exact=26/26
 func_80037A78 = 0x80037A78; // type:func size:0x74 ROM 0x38678 tier-A, matched C src/main/frontend_37D50.c -O2 -mips2 -32, frontend transition body, linked exact=29/29
-func_800376CC = 0x800376CC; // type:func size:0x1D8 ROM 0x382CC tier-D structure-mismatch candidate, target 118/candidate 119 words, state machine
+func_800376CC = 0x800376CC; // type:func size:0x1D8 ROM 0x382CC tier-A, matched C src/main/frontend_37D50.c -O2 -mips2 -32, fade state machine, linked exact=118/118
 func_800378A4 = 0x800378A4; // type:func size:0x1D4 ROM 0x384A4 tier-D structure-mismatch candidate, target 117 instructions/candidate 112, radial gradient shape unresolved
 func_80037AEC = 0x80037AEC; // type:func size:0x108 ROM 0x386EC tier-D allocation-mismatch candidate, target/candidate 66 instructions, register allocation unresolved
 func_80037BF4 = 0x80037BF4; // type:func size:0x80 ROM 0x387F4 tier-A, matched C src/main/frontend_37D50.c -O2 -mips2 -32, second-phase transition interpolation dispatch, linked exact=32/32

@@ -208,67 +208,43 @@ s32 func_80037664(void) {
     return 2;
 }
 /*
- * The +1 word is one colour: the target carries the loop flag in `a1` for its
- * whole life and the candidate colours it into `s0`, paying a save, a restore
- * and a `move a1,s0` in the jump's delay slot where the target has a `nop`.
- * Census `lw +1, sw +1, nop -1`, and the frame follows: 0x20 against 0x18,
- * which is 16 bytes of outgoing arguments plus `ra` and nothing else.
+ * Fade state machine. The leftover time lives in the parameter: a separate
+ * copy loses a2 to the cached mode bit and then has to save s0. `arg0 |= 0`
+ * each iteration is the loop-weighted identity that keeps the remainder's
+ * save above the mode bit's (L100); it emits no extra word. Duplicating the
+ * loop-flag clear on both overflow arms, instead of a shared goto, is the
+ * fallthrough the delay-slot copies need. old_state is register so it can
+ * reuse ra after the save, which is dead before the jump.
  *
- * The target has one more allocatable register than the candidate because it
- * uses `ra` itself: it saves `ra` at +0x14 and then loads the previous state
- * into it, which is legal because that value is dead before the jump. Every
- * later colour is shifted by that one register, and the shift is what pushes
- * the loop flag out of `a1`, which the candidate has given to the mode bit.
- *
- * Reading the three globals back at each use instead of naming the
- * decompiler's intermediates (`temp_t7`, `temp_t9`, `var_v0`) is what the
- * target does and it more than doubles the agreement, from 30 to 62 of 118
- * shift-tolerant words and from a census delta of seven to three. The three
- * names cost nothing in frame -- they were already coalesced -- but they
- * changed the address web and the branch shapes (`bne`/`bnel`).
- *
- * Flat from here: all six statement orders of the three prologue assignments,
- * all 24 declaration orders, `register` on each subset of the four locals,
- * inlining the mode bit at its three uses (which costs six words), and
- * changing the dangling-jump argument list. -O3 is not admissible: it reaches
- * the exact 0x18 frame, 85 of 118 aligned words and a census delta of one,
- * but this TU also contains matched functions, so the flag would break the
- * ROM and is a diagnostic only.
- *
- * Jet Force Gemini pull request #37 (head d45123d1c528955d5e12ddad805076267a690d76)
- * takes src/menu.c to 48 matched bodies with no pragmas, and it does not
- * contain this function: neither that file nor the rest of that tree has the
- * fade state machine, its `(x << 10) / duration` level, or any `0x400`
- * complement. No donor is available for this target.
+ * No donor: JFG PR 37 (head d45123d1c528955d5e12ddad805076267a690d76) does
+ * not contain this function.
  */
-#ifdef NON_MATCHING
 void func_800376CC(s32 arg0) {
     s32 temp_t0;
     register s32 old_state;
     register s32 var_a1;
-    s32 var_a2;
 
-    var_a2 = arg0;
     temp_t0 = D_8007BE90 & 1;
     old_state = D_8007BEA8;
     do {
         var_a1 = 1;
+        arg0 |= 0; /* L100: loop weight so the remainder keeps a2 */
         if (D_8007BEA8 == 2) {
             if (D_8007BE98 >= 0) {
-                D_8007BEAC += var_a2;
+                D_8007BEAC += arg0;
                 if (D_8007BEAC >= D_8007BE98) {
-                    var_a2 = D_8007BEAC - D_8007BE98;
+                    arg0 = D_8007BEAC - D_8007BE98;
                     if (temp_t0 != 0) {
                         D_8007BEA8 = 1;
                     } else {
                         D_8007BEA8 = 0;
                     }
                     D_8007BEAC = 0;
-                    goto block_17;
+                    var_a1 = 0;
                 }
             }
         } else if (D_8007BEA8 == 1) {
-            D_8007BEAC += var_a2;
+            D_8007BEAC += arg0;
             if (temp_t0 == 0) {
                 D_8007BEB0 = (s32) (D_8007BEAC << 0xA) / D_8007BE94;
             } else {
@@ -276,14 +252,13 @@ void func_800376CC(s32 arg0) {
                               D_8007BE94;
             }
             if (D_8007BEAC >= D_8007BE94) {
-                var_a2 = D_8007BEAC - D_8007BE94;
+                arg0 = D_8007BEAC - D_8007BE94;
                 if (temp_t0 != 0) {
                     D_8007BEA8 = 0;
                 } else {
                     D_8007BEA8 = 2;
                 }
                 D_8007BEAC = 0;
-block_17:
                 var_a1 = 0;
             }
         }
@@ -297,12 +272,9 @@ block_17:
     if ((old_state != 0) && (D_8007BEA8 == 0) &&
         ((D_8007BEB8 = 1, (D_8007BE90 == 4)) ||
          (D_8007BE90 == 5))) {
-        TrapDanglingJump(&D_8007BEAC, var_a1, var_a2, &D_8007BEA8);
+        TrapDanglingJump(&D_8007BEAC, var_a1, arg0, &D_8007BEA8);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/frontend_37D50/func_800376CC.s")
-#endif
 /* The front-end backdrop's radial shading pass: a 17x17 vertex grid whose
  * greyscale falls off with distance from the centre, modulated by an angle
  * table (func_8002A8C0) and the caller's intensity.
@@ -676,17 +648,6 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
  * summary: Declaration and independent global-store scheduling remove two residual words; the 0x30 target frame and callee-saved carrier remain.
  * PLATEAU-HANDOFF:func_80037414:end
  */
-
-/* PLATEAU-HANDOFF:func_800376CC:start
- * symbol: func_800376CC
- * score: 61/120 words
- * frame: 0x20
- * relocations: 15
- * first-mismatch: +0x0
- * summary: size-mismatch and ABI lifetime residual remain; move-one schedule controls are closed
- * PLATEAU-HANDOFF:func_800376CC:end
- */
-
 
 
 /* PLATEAU-HANDOFF:func_80037C74:start

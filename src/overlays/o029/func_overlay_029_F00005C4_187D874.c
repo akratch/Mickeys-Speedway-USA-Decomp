@@ -140,23 +140,21 @@ extern void func_overlay_037_F00004F4_1885B14(s32 index, f32 distance);
         } \
     } while (0)
 
-/* Size/frame closed at 583 words and 0xC8. Masked 374, first +0x8.
- * L99 unused pointer/f32 (frame) and skipTargeting inverted CFG (the missing
- * word). Remaining: updateRateF is coloured f20 at the convert, so f20 is
- * saved before ra; target converts into a temp, stores 0xC4, saves f20 later.
- * Identity-gated instrumented IDO, proc 0. */
+/* Leftover updateRate OR-zero in the records block sends the convert to a
+ * temp and stores 0xC4; a third unused pointer restores frame 0xC8; scalars
+ * above oldPosition save one word. Masked 364, first +0xA0. */
 #ifdef NON_MATCHING
 void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
                                         s32 updateRate) {
     f32 updateRateF = (f32)updateRate;
     void *unused;
     void *unused2;
+    void *unused3;
     f32 unusedF;
     Overlay29TailState *state;
     Overlay29TailRecord *record;
     Overlay29TailLinkedObject *linked;
     Overlay29TailEntity *linkedEntity;
-    Overlay29TailVec3f oldPosition;
     f32 acceleration;
     f32 velocityStep;
     f32 previousVelocity;
@@ -173,6 +171,7 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
     s32 remaining;
     s32 delta;
     s16 targetAngle;
+    Overlay29TailVec3f oldPosition;
 
     state = object->state;
     func_overlay_029_F00001C4_187D474(object);
@@ -187,6 +186,7 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
     }
 
     if (state->recordsActive != 0) {
+        updateRate |= 0;
         acceleration =
             overlay29AccelerationReloc * updateRateF * updateRateF;
         velocityStep = overlay29VelocityStepReloc * updateRateF;
@@ -322,10 +322,10 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
 
 /* PLATEAU-HANDOFF:func_overlay_029_F00005C4_187D874:start
  * symbol: func_overlay_029_F00005C4_187D874
- * score: 374 differing words
+ * score: 364 differing words
  * frame: 0xC8
  * relocations: 43
- * first-mismatch: +0x8
- * summary: Size and frame closed at 583 words and 0xC8. Masked 374, first +0x8. L99 unused pointer/f32 grew the frame; skipTargeting inverted CFG added the missing word. Remaining: convert of updateRateF takes f20 so f20 is saved early; target converts to a temp and stores 0xC4. Identity-gated proc 0.
+ * first-mismatch: +0xA0
+ * summary: Leftover updateRate OR-zero and a third unused pointer close convert-to-temp at frame 0xC8. Masked 364, first +0xA0. Records-unroll triples remain.
  * PLATEAU-HANDOFF:func_overlay_029_F00005C4_187D874:end
  */

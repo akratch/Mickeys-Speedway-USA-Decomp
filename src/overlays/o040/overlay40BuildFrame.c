@@ -13,7 +13,11 @@ extern void frontDrawRectangles(void *displayList, s32 count,
 
 /* `right`/`bottom`/`color` are declared before `records` so the eight
  * 12-byte records land at sp+0x40. `scratch` is the eight-byte aggregate
- * kept at the end of the list so the frame stays 0xB0. */
+ * kept at the end of the list so the frame stays 0xB0.
+ *
+ * `bottom` is assigned at its first use (the rec2.bottom comma) so the
+ * height load is not initially ready and cannot beat colour packing.
+ * `#line 20` on rec2.right/bottom lets x+3 beat the ra save (lineno 24). */
 #line 22
 #ifdef NON_MATCHING
 void overlay40BuildFrame(void *displayList, s32 x, s32 y, s32 width,
@@ -30,8 +34,6 @@ void overlay40BuildFrame(void *displayList, s32 x, s32 y, s32 width,
 
 #line 72
     right = x + width;
-    bottom = y + height;
-    bottomPlus2 = bottom + 2;
 #line 78
     color = (red << 24) | (green << 16) | (blue << 8) | (alpha & 0xFF);
 
@@ -52,8 +54,10 @@ void overlay40BuildFrame(void *displayList, s32 x, s32 y, s32 width,
 #line 107
     records[2].left = x - 2;
     records[2].top = y - 2;
+#line 20
     records[2].right = x + 3;
-    records[2].bottom = bottomPlus2;
+    records[2].bottom = (bottom = y + height, bottomPlus2 = bottom + 2, bottomPlus2);
+#line 111
     records[2].color = 0;
 
 #line 113
@@ -102,10 +106,10 @@ void overlay40BuildFrame(void *displayList, s32 x, s32 y, s32 width,
 
 /* PLATEAU-HANDOFF:overlay40BuildFrame:start
  * symbol: overlay40BuildFrame
- * score: 75/81 words
+ * score: 60/81 words
  * frame: 0xB0
  * relocations: 1
- * first-mismatch: +0x4
- * summary: colour floor is 75; record homes now match at sp+0x40; store schedule remains
+ * first-mismatch: +0x30
+ * summary: colour packing and rec0.bottom now match; ra-save still beats bottom addu; rec7 is stack-relative
  * PLATEAU-HANDOFF:overlay40BuildFrame:end
  */

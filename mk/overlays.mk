@@ -12,6 +12,13 @@
 # rule; MIPS I inserts load-delay nops in several of them.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/%.c.o: MIPSISET := -mips2 -32
 
+# overlay10Initialize's three rolled loops match only with the unroller off.
+# Default IDO unroll grows the TU from 0x2B0 to 0x350. NON_MATCHING-only until
+# the function is promoted; the GLOBAL_ASM path does not compile those loops.
+ifeq ($(NON_MATCHING),1)
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o010/overlay10Initialize.c.o: CFLAGS += -Wo,-loopunroll,0
+endif
+
 # Build architecture note: this section does not implement Mickey's runtime
 # overlay loader. Runtime loading and relocation live in src/main/runlink.c and
 # are explained in docs/overlays.md sections 5.1-5.4. mickey.us.yaml and

@@ -71,22 +71,19 @@ extern void overlay46DrawParticleReloc(void *data, void *model,
                                        void *resource, s32 flags, s32 alpha);
 
 /* Pinned DKR v77/v80 and JFG skeleton scans found no close donor. */
-/* Workbench: size-mismatch; 452/450 instructions, 50 masked words, first
- * +0x1FC; frame 0xC0. Deleting decompiler interpolation/fade/display-list
- * temps closed the 32-byte non-save excess. Case-local step is required so
- * a second callee-saved float is not kept. L99 unused pointer above the
- * 19-slot table places the table at the target home. Indexed draw keeps
- * that colouring; an explicit walking pointer for the same loop rotates the
- * saved-register assignment across the whole function. Remains: draw-loop
- * strength reduction of the index, and overlay of the two 4-byte spill
- * homes onto the target's one shared temp. */
+/* Workbench: 450/450, 28 masked, first +0x1FC, frame 0xC0. L99 unused is
+ * the GBI display-list cursor (a fresh cmd local grows the frame). Draw
+ * uses particlesByVariant[count++] so the index dies in the subscript.
+ * Colour landscape floors at 28 (202 probes, no winner). Remains: overlay
+ * the +0x4C and +0x58 spill homes onto the target's one +0x54 temp, and
+ * put the material %lo in the LoadParticleMaterial delay slot. */
 #ifdef NON_MATCHING
 s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
     s32 finished;
     s32 count;
     s32 result;
     Overlay46Particle *particle;
-    void *unused; /* L99: 4-byte home above the variant table */
+    Overlay46DisplayCommand *unused; /* L99: 4-byte home above the variant table */
     Overlay46Particle *particlesByVariant[19];
 
     overlay46RenderBeginReloc();
@@ -273,20 +270,19 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
     }
 
     overlay46LoadParticleMaterialReloc(gOverlay46ParticleMaterial);
-    gDisplayListHead->w1 = 0xFFFFFFFF;
-    gDisplayListHead->w0 = 0xFA000000;
-    gDisplayListHead++;
+    unused = gDisplayListHead++;
+    unused->w0 = 0xFA000000;
+    unused->w1 = 0xFFFFFFFF;
 
     count = 0;
     do {
-        particle = particlesByVariant[count];
+        particle = particlesByVariant[count++];
         if (particle != NULL) {
             overlay46DrawParticleReloc(
                 gOverlay46RenderData0, gOverlay46ParticleModel,
                 gOverlay46ParticleMaterial, particle, particle->resource38,
                 0x8001, 0xFF);
         }
-        count++;
     } while (count != 19);
 
     return result;
@@ -297,10 +293,10 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_046_F0000874_188EC6C:start
  * symbol: func_overlay_046_F0000874_188EC6C
- * score: 50/450 words
+ * score: 28/450 words
  * frame: 0xC0
  * relocations: 96
  * first-mismatch: +0x1FC
- * summary: Frame 0xC0 closed; indexed draw is 50 masked at delta +8. A walking pointer rotates colouring. Next is draw-loop strength reduction.
+ * summary: Size 0, 28/450. L99 unused as GBI cmd; dying count++ subscript. Colour floor 28 (202 probes, 0 winners). Homes +0x4C/+0x58 vs +0x54.
  * PLATEAU-HANDOFF:func_overlay_046_F0000874_188EC6C:end
  */

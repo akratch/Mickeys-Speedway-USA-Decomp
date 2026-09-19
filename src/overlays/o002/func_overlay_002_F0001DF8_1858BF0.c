@@ -38,9 +38,10 @@ extern u32 joyGetButtons(s32 controller);
 
 /* Mickey-only reconstruction. The closest permitted reference skeleton is
  * too weak to establish a donor body (masked 4-gram Jaccard 0.077). */
-/* NON_MATCHING p4: workbench mixed(constant:3, structural:56, schedule:2,
- * register:268); 386 positional words, first +0x28, frame/count exact.
- * Prior flags/permutation/spill-counter audits remain the best result; target phase and overlay-local call aliases remain. */
+/* NON_MATCHING: lastCandidate copy lives in the first scan only. That is
+ * 370 masked words at size -4, frame 0x880, first +0x38. Second-loop copy
+ * returns +4/387. A one-word leftover that is not copy-propagated is still
+ * missing. */
 #ifdef NON_MATCHING
 void func_overlay_002_F0001DF8_1858BF0(Overlay2RouteObject *object,
                                         Overlay2RouteInput *input) {
@@ -95,7 +96,6 @@ void func_overlay_002_F0001DF8_1858BF0(Overlay2RouteObject *object,
             for (index = start; index < end; index++) {
                 candidate = objects[index];
                 candidateRoute = candidate->route;
-                lastCandidate = candidate;
                 if ((candidate->disabled == 0) && (candidate != object) &&
                     (candidate->type == 0x2B) &&
                     (closestRoute->group == candidateRoute->group)) {
@@ -170,10 +170,10 @@ void func_overlay_002_F0001DF8_1858BF0(Overlay2RouteObject *object,
 
 /* PLATEAU-HANDOFF:func_overlay_002_F0001DF8_1858BF0:start
  * symbol: func_overlay_002_F0001DF8_1858BF0
- * score: 73/460 words
+ * score: 370/460 words
  * frame: 0x880
  * relocations: 5
- * first-mismatch: +0x28
- * summary: Restoring the pre-crash candidate carrier cuts V0 from 448 to 387 differences and from -20 to +4 bytes; prior flag/permutation/spill work is exhausted.
+ * first-mismatch: +0x38
+ * summary: First-loop lastCandidate copy only: 370 masked at size -4, exact 170. Leftover OR-zero/empty-if/comma emit 0 or 2 words, never 1.
  * PLATEAU-HANDOFF:func_overlay_002_F0001DF8_1858BF0:end
  */

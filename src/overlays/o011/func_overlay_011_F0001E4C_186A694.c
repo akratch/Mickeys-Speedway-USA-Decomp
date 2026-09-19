@@ -51,9 +51,8 @@ extern void func_800006BC(f32 arg0, s32 arg1);
 extern void func_overlay_045_F0001BF4_188E04C(void *handle, s32 value);
 extern void func_overlay_066_F0000000(void *arg0);
 
-/* Workbench p7: structure-mismatch, 295/294 instructions/frame -64, 186 masked (189 raw) words; first raw +0x10, aligned +0x58.
- * Context is clean; prior base-offset, choice-alias, pointer/index, loop, declaration, and flag levers remain best.
- * Residual is the overlay-local choice/jump-table relocation binding plus mixed register/schedule web; retain NON_MATCHING. */
+/* Workbench: size 0, frame 0x40, 8=8 slots, 63 masked / 68 raw, first +0xD8.
+ * Remaining 2+2 inserts: occupancy beq vs addiu 4, addiu 2 schedule. */
 #ifdef NON_MATCHING
 void func_overlay_011_F0001E4C_186A694(s32 updateRate) {
     s32 index;
@@ -125,10 +124,17 @@ void func_overlay_011_F0001E4C_186A694(s32 updateRate) {
                 }
                 sub = func_80005820(O11_ARGUMENT)->sub64;
                 O11_COUNTER = 1;
-                if ((status->mode == 5) || (status->mode == 6)) {
+                /* || of consecutive 5/6 range-folds; volatile keeps both tests.
+                 * index=2 plus empty-if/OR-zero (L109) keeps the 0x28 scale
+                 * without spilling action. */
+                if ((*(volatile u8 *)&status->mode == 5) ||
+                    (*(volatile u8 *)&status->mode == 6)) {
                     status[0].field8 = 0;
                     status[1].field8 = 0;
-                    index = action * 2;
+                    index = 2;
+                    if (index) {
+                    }
+                    index |= 0;
                     status[index + 1].field8 = 0;
                     status[index + 2].field8 = 0;
                     status[index + 3].field8 = 0;
@@ -200,10 +206,10 @@ void func_overlay_011_F0001E4C_186A694(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_011_F0001E4C_186A694:start
  * symbol: func_overlay_011_F0001E4C_186A694
- * score: 109/295 words
+ * score: 63/295 words
  * frame: 0x40
  * relocations: 87
  * first-mismatch: +0xD8
- * summary: Size -4 (294/295), extra +0x28 action spill. index=2 folds scale to -28. Need rematerialized 2 plus nop delay, not colour (L155).
+ * summary: Size 0, 8=8 slots, masked 63. Occupancy beq vs addiu 4; addiu 2 scheduled early. Colour still L155-shadowed by 2+2 inserts.
  * PLATEAU-HANDOFF:func_overlay_011_F0001E4C_186A694:end
  */

@@ -2,11 +2,11 @@
 ### `overlay1AdvanceGauge` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_middle.c`
-- score: 25 differing words
+- score: 0 differing words
 - frame: 0x40
 - relocations: 3
-- first mismatch: +0x18
-- summary: register-only at 25 words; the volatile pad moved last closes the stack home, and one extra pool web is the whole residual.
+- first mismatch: none
+- summary: MATCHED. Indexed `objects[index]` plus hoisted `index = count - 1` removes the extra pool web; no allocator force in the build.
 
 
 #### c2-o001 diagnostic: 18 of the 25 words are pool/ring population, and that is now measured
@@ -63,4 +63,19 @@ with `forced=5` and scored 13 masked words directly against the target object;
 the same web forced to c2 scored 23. This prices the allocator decision but
 does not identify an admissible source spelling. The candidate remains
 guarded and no diagnostic force is promoted.
+
+#### 2026-09-19 lane w25-o1gauge: L160 indexed scan is exact
+
+Identity-gated instrumented IDO `.text` matches stock. `CDX_PROC=5` (12 p1
+decisions, 12 coloured webs, no p2). `--every-colour` (105 probes, size 0)
+floors at 13 with `p1:w40=c5` (loopValue v0 to a2); holding that force and
+adding `p1:w21=c2` plus `p1:w11=c5` reaches 6 at delta 0. Splits of the
+constant webs and of loopValue all regress. Colour therefore cannot close it.
+
+The extra pool web was the walking cursor. Writing `objects[index]`, hoisting
+`index = count - 1` above the guard, and using `loopValue = index--` -- the
+same shape as matched `overlay1FindNextAngle` in this TU -- is 42/42 words,
+frame 0x40, three relocations, and no pad. The walking sibling
+`overlay1AdvanceObjectGauges` keeps its cursor because the inner call changes
+occupancy; that form is not the lever here.
 <!-- plateau-handoff:overlay1AdvanceGauge:end -->

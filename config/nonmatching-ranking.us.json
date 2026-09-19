@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 264,
-  "resolved": 264,
+  "queue_size": 263,
+  "resolved": 263,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 264,
-  "relocation_masked_coverage": 264,
+  "source_context_coverage": 263,
+  "relocation_masked_coverage": 263,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -128,21 +128,6 @@
       "size_delta": 0,
       "category": "register-only",
       "source_context_sha256": "_2u4.dPxP.eTBD.tgsr.jt7x.wZaO.JX3G.MYjL.rBH9.s0nX.WHw"
-    },
-    {
-      "name": "overlay1AdvanceGauge",
-      "file": "src/overlays/o001/overlay_001_middle.c",
-      "overlay": 1,
-      "tu": "overlays/o001",
-      "size_bytes": 168,
-      "objdiff_match_pct": null,
-      "differing_words": 25,
-      "first_mismatch_offset": 24,
-      "relocation_masked_differing_words": 25,
-      "relocation_masked_first_mismatch_offset": 24,
-      "size_delta": 0,
-      "category": "register-only",
-      "source_context_sha256": "32rJ.E5QU.P_3c.v-L-.MLJc.A86X.v4E2.sNXD.2Nex.os52.Ius"
     },
     {
       "name": "overlay1ConsumeNearbyPending",

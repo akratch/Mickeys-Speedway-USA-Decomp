@@ -2,11 +2,11 @@
 ### `overlay58FinalizePackedStatus` plateau handoff
 
 - source: `src/overlays/o058/overlay58FinalizePackedStatus.c`
-- score: 77 differing words
+- score: 75 differing words
 - frame: 0x48
 - relocations: 48
-- first mismatch: 0x18
-- summary: u16 mask and shift pack onto the target +0x1C home, 78 to 77 at delta 0; colour landscape floor 78 with no zero force; indexed packed-status already used
+- first mismatch: +0x18
+- summary: comma-delay of mode-0 i and shift, 77 to 75 at delta 0; L100/L145/L109 on i and mask/shift inert or worse; fifth home remains
 - assignment base: `ccbd4a78b29afb17ad817dd9228f774012b7d9ac`
 - owned range: overlay 58 `+0x5554..+0x5A14`, 1,216 bytes / 304 words; the following `+0x5A14..+0x5A20` range is separately owned padding
 - baseline: exact 304-word geometry and `0x48` frame, with 178 raw differences, 177 relocation-masked differences, first raw mismatch `+0x8`, and first masked mismatch `+0x18`
@@ -226,5 +226,44 @@ Retained: `u16 mask; u16 shift;` in the probe-bearing body. Colour axis
 closed on this shape. Next is the missing fifth home (+0x24/+0x30/+0x40)
 or the s2-b 140-form's load-web split, not another same-kind landscape
 or the original ten loop/carrier/declaration forms.
+
+#### 2026-09-19, lane w28-o058f: comma-delay of i and shift, 77 to 75
+
+Assignment `base-only` on `b05cf692`. Owned this TU only;
+`overlay58DrawSegmentStrip` untouched. Configured baseline reproduced
+1216 bytes, delta 0, masked 77, first +0x18, frame 0x48, 48 relocs.
+Aligner 239 exact, 39 naming, 10 immediate, 20 structural. Identity
+gate: stock `tools/ido/cc` and instrumented `ido-instrumented/cc`
+`.text` are byte-identical; `CDX_PROC` is 0 (29 p1 decisions, 27
+coloured, no p2). Mask/shift are the dtype-8 pair (webs 59/62, save
+1.67, v1/a0); loop index `i` is web 28 (save 22.14, v1).
+
+Authorized levers on mask/shift and the loop index, not the closed ten
+forms or the 119-flag lattice:
+
+- Mode-0 `i = 0` moved into `for (i = 0; i < 3; i++)` so that node is
+  not initially ready: 77 to 76 at delta 0, 240 exact, 38 naming.
+- Each mask arm comma-assigns shift in the same statement
+  (`shift = 0, mask = 0x7`, overlay40 delay): 76 to 75 at delta 0,
+  240 exact, 37 naming, 21 structural, displacement tax 7. Nested
+  `mask = (shift = 0, 0x7)` is byte-identical; reverse comma (mask
+  first) is 82.
+
+Refuted or inert on the 75 shape: empty `if (i) {}` after loops,
+switch, or compact (116-236); replacing the existing probes with
+`if (i) {}` (80-161); leftover OR-zero on i, mask, or shift
+(size growth); L109 last-declared zero OR-zero (inert on one loop, 200
+at -12 on all four); L145 loop-local packed / index / status pointer
+(inert or 252+); generated subscripts (canonicalized, inert); using
+mask/shift inside the loops (258-284); mode-1 i-in-for (77); moving
+the mask switch after the desired check (88); empty `if (mask)` /
+`if (shift)`; delaying mode, current, desired, flags, or player
+(inert). Frame still 0x48 with four candidate homes against the
+target's five. Relocations remain unresolved; do not invent overlay
+identities from the target.
+
+Next: the missing fifth home or the s2-b load-web split. Do not retry
+empty `if (i) {}`, leftover OR-zero, loop-local packed, generated
+subscript, or the remaining initially-ready delays on this shape.
 
 <!-- plateau-handoff:overlay58FinalizePackedStatus:end -->

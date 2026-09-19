@@ -893,7 +893,7 @@ void func_80046E00(void) {
  * frame: 0x40
  * relocations: 3
  * first-mismatch: +0x2C
- * summary: L145 one-name restores type-4 web 32 at 42. Separate working copy puts load in v0 at delta 0, keeps web 32 and a structural pair. w0=c1 accepts, +12.
+ * summary: arg0 OR-zero spans the glyph call (72); loop-local zero folds. Three-var region still 21; forcing the mask temp to s2 is 74. Occupancy cannot occupy v0. Best 16
  * PLATEAU-HANDOFF:func_80046BCC:end
  */
 

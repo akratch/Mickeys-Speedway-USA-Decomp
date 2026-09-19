@@ -3222,26 +3222,20 @@ void func_80007E40(Objects07E40Object *arg0, s32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80007E40.s")
 #endif
-/* Workbench verdict: structure-mismatch; 28 differing words (60/60). */
-/* First mismatch: +0x24; size and frame are exact, with a near-identical CFG. */
-/* Structural gap: outer object/offset carriers and inner model-index allocation differ. */
+/* Workbench verdict: structure-mismatch; 23 differing words (60/60). */
+/* First mismatch: +0x24; size and frame are exact. Loop-local indexed object */
+/* plus empty if (objectIndex) closed the a0/a1 cycle; 3 structural rows remain. */
 #ifdef NON_MATCHING
 void func_80008028(s32 arg0) {
     s32 objectIndex;
-    Objects08028Object *object;
-    s32 objectOffset;
     s32 modelIndex;
     s32 updateModels;
     Objects58C0Data *data;
-    Objects08028Model *model;
-    u8 modelReferences;
 
     objectIndex = D_800C949C;
     if (objectIndex < D_800C9498) {
-        objectOffset = objectIndex * 4;
         do {
-            objectIndex += 1;
-            object = *(Objects08028Object **)((u8 *)D_800C9494 + objectOffset);
+            Objects08028Object *object = ((Objects08028Object **)D_800C9494)[objectIndex];
             data = object->unk40;
             if (data->unk1E[0] == 0) {
                 updateModels = 0;
@@ -3252,19 +3246,20 @@ void func_80008028(s32 arg0) {
                     modelIndex = 0;
                     do {
                         if ((updateModels == 0) || (data->unk1E[modelIndex] == 0)) {
-                            model = object->unk68[modelIndex];
-                            modelReferences = model->unk3F;
+                            Objects08028Model *model = object->unk68[modelIndex];
                             model->unk8 = arg0;
-                            if (modelReferences != 0) {
-                                model->unk3F = modelReferences - 1;
+                            if (model->unk3F != 0) {
+                                model->unk3F -= 1;
                             }
                         }
                         modelIndex += 1;
                     } while (modelIndex < object->unk40->unk22);
                 }
             }
-            objectOffset += 4;
+            objectIndex += 1;
         } while (objectIndex < D_800C9498);
+        if (objectIndex) {
+        }
     }
 }
 #else
@@ -5472,11 +5467,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80008028:start
  * symbol: func_80008028
- * score: 28/60 words
+ * score: 23/60 words
  * frame: 0x8
  * relocations: 8
  * first-mismatch: +0x24
- * summary: outer offset/interference schedule remains; indexed-loop and typed-offset families are closed
+ * summary: Loop-local indexed object plus empty if closed a0/a1 to 23. Inner type-4 web on t1 blocks address t1; force t2 scores 20. Three structural rows at +0x74 remain.
  * PLATEAU-HANDOFF:func_80008028:end
  */
 

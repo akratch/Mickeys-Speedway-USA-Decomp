@@ -4,9 +4,9 @@
 - source: `src/overlays/o052/overlay52TailB.c`
 - score: 1337 differing words
 - frame: 0x118
-- relocations: 283
+- relocations: 310
 - first mismatch: +0x130
-- summary: Exhaustive colour packing reaches 1184; scoped tail carrier experiment regressed to 1349.
+- summary: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
 
 ## 2026-09-12 exhaustive colour landscape
 
@@ -412,4 +412,50 @@ is dead for this function.
 Nothing above is a source change, a match claim or a credit claim. The
 `GLOBAL_ASM` fallback remains canonical and `gmake verify` passes at this
 commit.
+
+#### 2026-09-19 lane w29-o052: size already closed; listed size levers are negatives
+
+Live re-measure on `386b918d`: 6748 bytes, size delta 0, 1687 vs 1687 words,
+masked 1337, frame 0x118 both sides, 42 slots both sides, first mismatch
++0x130 (immediate), first structural +0x13C. Aligned 672 exact / 739 naming /
+71 immediate / 189 structural plus 16 candidate-only and 16 target-only
+words. Displacement tax 306. Identity-gated instrumented IDO `.text` matches
+stock; `CDX_PROC=0`, 237 p1 decisions. Candidate object has 310 relocation
+records.
+
+The inherited 12-byte-short figure is stale. `web_footprint.py --every-colour`
+is therefore legal on size, but the colour packing floor of 1184 was not
+re-run (source unchanged).
+
+Falsified, each by a configured full-TU compile against the same comparator:
+
+- A plain `for (i = 0; i < updateRate; i++)` float recurrence, with or
+  without the `updateRate > 0` guard, does not unroll. Size -112 / -120
+  (28-30 words short). The unroller that produced `func_80005548`'s
+  remainder-plus-4x copy loops does not fire on this carried global float
+  update. Do not retry a counted spelling of the recurrence.
+- Cleanup bound spelled as `(s32 *)&o52_bss_4B0` instead of
+  `o52_bss_4A8 + 2`: size -4, exact 569.
+- Restoration loop as `o52_bss_4A8[i]` without the walking `slot` cursor:
+  size -8, exact 636. Combined with the bound change: size -12, exact 574.
+- Nested `if (D_800C947C == 0) { i = 0; if (updateRate > 0) ... }` to put
+  `i = 0` in the `blez` delay: size 0, masked 1337, exact 671 (one worse).
+  It drops the +0x170 / +0x184 insertion pair and does not pay.
+- Comma-assign of the paired `o52_data_24C` stores: byte-identical.
+- Leftover `updateRate or-equals 0` at entry: byte-identical.
+- Empty `if (i) {}` after the recurrence: byte-identical.
+- Deleting the `digits` cursor for generated `o52_bss_0[player]` /
+  `o52_bss_A0[player]` / `o52_bss_200[player]` subscripts: size 0, masked
+  1341, exact 675, but two new insertion pairs, first immediate +0x30, and
+  a worse home set.
+- Unused `f32` after `step`: frame 0x120, masked 1349.
+
+The first two candidate-only words remain +0x15C and +0x160: each arm of
+the `o52_data_24C` stores rematerialises `%hi` instead of sharing one
+`lui` while `-120` is live. Target fills the `updateRate > 0` `blez` delay
+with `i = 0` and copies the remainder (`andi` then `or`); the candidate
+fills that delay with the `andi` and never copies. Those two as1 identities
+are still the next lever. Colour packing is not.
+
+No source change is retained. `GLOBAL_ASM` remains canonical.
 <!-- plateau-handoff:func_overlay_052_F000063C_189ACAC:end -->

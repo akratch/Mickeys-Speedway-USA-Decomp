@@ -116,7 +116,7 @@ void overlay48InitializeState(void) {
  * score: 47 differing words
  * frame: 0x18
  * relocations: 24
- * first-mismatch: 0x0
- * summary: Current 47-word residual and six-draw census expose retained-index setup and store schedule; declaration/TU evidence remains missing.
+ * first-mismatch: +0x0
+ * summary: Hand-unroll folds index=1 to addiu+2; loops peel record 0. Missing sll+addu cursor and v0+=0x30. Colour refused at nonzero size.
  * PLATEAU-HANDOFF:overlay48InitializeState:end
  */

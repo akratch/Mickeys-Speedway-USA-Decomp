@@ -580,8 +580,8 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
  * symbol: func_overlay_052_F000063C_189ACAC
  * score: 1337 differing words
  * frame: 0x118
- * relocations: 283
+ * relocations: 310
  * first-mismatch: +0x130
- * summary: Exhaustive colour packing reaches 1184; scoped tail carrier experiment regressed to 1349.
+ * summary: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
  * PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:end
  */

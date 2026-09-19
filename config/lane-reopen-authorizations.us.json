@@ -736,9 +736,9 @@
       "source_commit": "e14634a8533b583479f9dcd4d8091e87625675c8"
     },
     "func_8004EC60": {
-      "ledger_commit": "7eb566167dad1256ca800553b3a26fe28befb3cb",
+      "ledger_commit": "e6a65a653b93c4943bc6013485dd684905a8d2f3",
       "reason": "One-instruction reconstruction: at a 4-byte delta the candidate is one instruction out, and today's laws name the usual causes -- a missing register copy, a block-fallthrough order, or an address rematerialized once too often.",
-      "source_commit": "7eb566167dad1256ca800553b3a26fe28befb3cb"
+      "source_commit": "1ab7e8c925dbab00191472b1c8e60cd3329c45e9"
     },
     "func_8004EED0": {
       "ledger_commit": "c2c8c91bcba6d42123cfb1fca98f33e202129df1",
@@ -1481,12 +1481,12 @@
       "source_commit": "c9990af595c204e076bad10ff432eeb1d789b129"
     },
     "overlay101BuildPresentationC": {
-      "ledger_commit": "d5780dd94112498a61bf89be9b9738f73d36e922",
+      "ledger_commit": "8958b6fbed7d68d26f81b473297e73e5bb03a384",
       "reason": "Landscape predates L159 and L160: winners were picked by score, not packed by blast radius, and the force-to-source route did not exist. Re-select with web_footprint.py --report, then apply L160.",
-      "source_commit": "d5780dd94112498a61bf89be9b9738f73d36e922"
+      "source_commit": "8958b6fbed7d68d26f81b473297e73e5bb03a384"
     },
     "overlay101BuildPresentationD": {
-      "ledger_commit": "f94f8bc7860c936d12ce5fabf328e8f41df01fea",
+      "ledger_commit": "8dcef34be2fe73aeaa20cbbdbab93bd2d064ee20",
       "reason": "Landscape predates L159 and L160: winners were picked by score, not packed by blast radius, and the force-to-source route did not exist. Re-select with web_footprint.py --report, then apply L160.",
       "source_commit": "f94f8bc7860c936d12ce5fabf328e8f41df01fea"
     },

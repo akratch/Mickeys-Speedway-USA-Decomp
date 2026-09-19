@@ -960,6 +960,6 @@ void rain_sound(s32 updateRate) {
  * frame: 0xB8
  * relocations: 53
  * first-mismatch: +0x94
- * summary: Size and frame match after JFG while-loop. Remaining 113 is s1-s2-s3 colour (forced floor 44) plus height-result home 0x9C vs 0x84.
+ * summary: Forced floor 44 needs 0xFF save above splash 76.8; L160 indexed spawn cannot close the conditional-increment size gap.
  * PLATEAU-HANDOFF:rain_render_splashes:end
  */

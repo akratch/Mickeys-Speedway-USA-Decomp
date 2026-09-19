@@ -93,8 +93,10 @@ extern void *overlay83CreateLinkedReloc();
 extern f32 gOverlay83ScaleReloc;
 
 /* Mickey-local reconstruction; pinned DKR/JFG scans found no exact donor. */
-/* Frame 0x80 vs target 0x78: L134 dissolved inner spill names and the u8 count
- * local. Remaining occupies the last extra 8-byte home; scaleFactor keeps f22. */
+/* Frame 0x80 vs target 0x78. Six function-scope homes sit above linkedInit at
+ * +0x50; target linkedInit is +0x58. Dummy-after-linkedInit slides the home
+ * and grows the frame; reusing batch as remaining shrinks the frame and
+ * leaves the home. scaleFactor keeps f22. */
 #ifdef NON_MATCHING
 void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
     O83Batch *batch;
@@ -184,6 +186,6 @@ void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
  * frame: 0x80
  * relocations: 5
  * first-mismatch: +0x0
- * summary: L134 inner spills plus u8 count cut frame 0x90 to 0x80. remaining is the last 8-byte home; colour floor 89 at delta 0.
+ * summary: o34 comma inert. dummy-after-linkedInit 91/0x88 home +0x58. batch-as-remaining frame 0x78 at 107. No size-0 net-zero slide.
  * PLATEAU-HANDOFF:overlay83BuildBatch:end
  */

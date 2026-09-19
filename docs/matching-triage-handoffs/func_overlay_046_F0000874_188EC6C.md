@@ -2,11 +2,11 @@
 ### `func_overlay_046_F0000874_188EC6C` plateau handoff
 
 - source: `src/overlays/o046/func_overlay_046_F0000874_188EC6C.c`
-- score: 50/450 words
+- score: 28/450 words
 - frame: 0xC0
 - relocations: 96
 - first mismatch: +0x1FC
-- summary: Frame 0xC0 closed; indexed draw is 50 masked at delta +8. A walking pointer rotates colouring. Next is draw-loop strength reduction.
+- summary: Size 0, 28/450. L99 unused as GBI cmd; dying count++ subscript. Colour floor 28 (202 probes, 0 winners). Homes +0x4C/+0x58 vs +0x54.
 
 Fresh evidence:
 
@@ -41,4 +41,16 @@ Proved this session:
 Closed: spill-name excess, function-scope step, table length, unused-pointer placement of the table. Do not repeat term rotation or a function-scope step.
 
 Open: the draw loop still indexes instead of walking, which is the +8 and the +0x650 window; the target shares one 4-byte temp for case-2 step and the late draw spill, while this candidate keeps two. Next lever is a strength-reduced index that dies in the draw loop (L113 / L154) without introducing a source-declared pointer web.
+
+#### 2026-09-19, lane w27-o046b: size closed at 28; colour floor is 28
+
+Identity-gated instrumented IDO `.text` matches stock. `CDX_PROC=0` (p1 only; 43 decisions on the +8 form, 45 on the size-0 form). Unforced `forced=-2`; `p1:w9=c2` accepted.
+
+The +8 was the shared `gDisplayListHead` stores, not a still-live draw index. The indexed draw already strength-reduced to a walker. A new display-list cursor local closed size but grew the frame to 0xC8. Reusing the L99 `unused` pointer as `unused = gDisplayListHead++; unused->w0/w1` keeps frame 0xC0 and is 31 masked at delta 0.
+
+L146: loop-keyword cells that were flat on the +8 shape had to be re-climbed. `particle = particlesByVariant[count++]` is 28 at delta 0; the same spelling was byte-flat at 50 on the old shape. Subscript-only (no `particle` assignment) is 51 at -12 and drops the extra +0x4C home. New integer or pointer locals grow the frame. Inlining case-2 step is 64. Leftover OR-with-zero is byte-flat.
+
+`--every-colour` (202 probes, 31 webs) has zero winners of 28. Four probes tie at 28. No 0-scoring force, so L160's force-then-delete-carrier route does not apply.
+
+Still two 4-byte homes (+0x4C draw spill, +0x58 case-2 step) against the target's one +0x54 slot (2ld 2st). The LoadParticleMaterial jal still takes a load in the delay slot instead of the material `%lo`. Next is a source form that overlays those homes at +0x54 without growing the frame or re-extending the `particle` web through case 2.
 <!-- plateau-handoff:func_overlay_046_F0000874_188EC6C:end -->

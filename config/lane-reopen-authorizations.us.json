@@ -1211,9 +1211,9 @@
       "source_commit": "8c46de3417852aa40119541fd38ecd07b6906e85"
     },
     "func_overlay_054_F0000000_189ECA0": {
-      "ledger_commit": "6b7f68146f6503a8ed99c36f3a13b03b36814387",
+      "ledger_commit": "63fda6f28b2183c9d0e160be3baea6454c2eb06b",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "6b7f68146f6503a8ed99c36f3a13b03b36814387"
+      "source_commit": "63fda6f28b2183c9d0e160be3baea6454c2eb06b"
     },
     "func_overlay_054_F00005AC_189F24C": {
       "ledger_commit": "4b6d45043859646a3b58e93ea44b766dc00b2a83",
@@ -1471,14 +1471,14 @@
       "source_commit": "191746912fa2fb2c0bd29b374451cefbdb8d20cc"
     },
     "overlay101BuildPresentationA": {
-      "ledger_commit": "3a8f1de3f620366be048856af0d6bb0e5814849f",
+      "ledger_commit": "dece080e3a43fc1fb77fcbedc4b7a18a045541a1",
       "reason": "Landscape predates L159 and L160: winners were picked by score, not packed by blast radius, and the force-to-source route did not exist. Re-select with web_footprint.py --report, then apply L160.",
-      "source_commit": "3a8f1de3f620366be048856af0d6bb0e5814849f"
+      "source_commit": "dece080e3a43fc1fb77fcbedc4b7a18a045541a1"
     },
     "overlay101BuildPresentationB": {
-      "ledger_commit": "5517daf56b37ccc0e217c848b8c7732d9d93a5e9",
+      "ledger_commit": "c9990af595c204e076bad10ff432eeb1d789b129",
       "reason": "Landscape predates L159 and L160: winners were picked by score, not packed by blast radius, and the force-to-source route did not exist. Re-select with web_footprint.py --report, then apply L160.",
-      "source_commit": "5517daf56b37ccc0e217c848b8c7732d9d93a5e9"
+      "source_commit": "c9990af595c204e076bad10ff432eeb1d789b129"
     },
     "overlay101BuildPresentationC": {
       "ledger_commit": "d5780dd94112498a61bf89be9b9738f73d36e922",
@@ -2036,9 +2036,9 @@
       "source_commit": "4133a7bb91343e729143a9fb6ee789346782d6b5"
     },
     "overlay98CollectUniqueY": {
-      "ledger_commit": "8c035c84ffe3b0d13687d98cf79bd0def40bc83e",
+      "ledger_commit": "ba068929976c0084f4803dcee96d55e8aa3d3025",
       "reason": "New mechanisms found today: lever 51, a hand-written cursor blocks the register names and indexing the parallel arrays closed three functions in one pass; and lever 50, an unrelocated literal address pair scores as a false residual.",
-      "source_commit": "8c035c84ffe3b0d13687d98cf79bd0def40bc83e"
+      "source_commit": "ba068929976c0084f4803dcee96d55e8aa3d3025"
     },
     "overlay98RenderReflections": {
       "ledger_commit": "4100d1b96b29e9fd23198a99472b593b138a0e22",

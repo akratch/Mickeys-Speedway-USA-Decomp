@@ -6,7 +6,7 @@
 - frame: 0x10
 - relocations: 2
 - first mismatch: +0x1C
-- summary: p2 a0/t0 cycle is count vs bound/coord web order. Declaration order is inert; hoisting z/y/xLower or delaying count regresses. Count stays a0.
+- summary: 10900 subscript did not transfer. Combined p2 force still 2 (keepGoing t9 vs at). Dummy xLower 18; delete count 33.
 
 - Reopen audit (2026-09-08): the local Jet Force Gemini checkout is exactly
   `efd5abb1c79636e297b831f7c2d5bf47eac39c0c`, with an unchanged tracked
@@ -156,4 +156,42 @@ extra conversion is still missing. Best source unchanged.
 
 Commands: score_symbol.py on the definition-order and declaration-order
 cells, align_symbol.py, register_census.py, finalize_plateau.py.
+
+#### 2026-09-19, lane w23-track2: 10900 generated-subscript class does not transfer
+
+Identity-gated instrumented IDO against the configured TU object: whole
+.text and the 248-byte owned range are byte-identical. CDX_PROC=29, p2
+only, 19 coloured webs, 7 ugen draws and 124 emissions, matching the
+prior draw census. Combined accepted force of webs 6, 10, 13, 17, 28, 32,
+46, 48, 52, 65, 67 and 71 onto the target colours still scores 2 at
+delta 0. That leftover is the keepGoing slt dest (t9 versus at) with
+count already in t0. Forcing count onto t0 alone is 31; xLower onto a0
+is declined (forced=-2) while count still holds a0.
+
+The sibling 10900 lever was two names for one address so a product first
+def survives copy-prop. This function has no square or product. Spelling
+every bound field as (&bounds->x1)[n], mixing named lowers with generated
+uppers, and loading count as (&D_800792E8->textureCount)[1] are all
+byte-identical at 16: IDO folds distinct offsets back to the same loads.
+Two names for the same x1 address at the compare adds 4 bytes. Split
+count (field load, generated subscript at keepGoing) adds 8.
+
+L145 delete bound carriers is +20 bytes. Delete the count local (walk
+kept, condition on the field or the generated subscript) is size 0 and
+33 naming: minVal takes a0 and the rest cascade. The same 33 is
+count-after-bounds/i. L154 index-only with LFTR count is +4 bytes / 56.
+A used xLower=0 first def in the preheader is size 0 / 18, as before.
+XOR occupier pointer 22; keepGoing in the while and same-line are inert
+16; zInt self-assign inert 16. keepGoing as s16, volatile, sub-lt-0,
+count-minus-i, L144 address form on count or xLower, self-assign tail,
+and for-walk all move size.
+
+Stall: three families (10900 same-address spelling, L154/L160 count
+deletion, occupy-a0 first def) produced no better residual. Best source
+unchanged at 16/62, frame 0x10, first +0x1C. Next: a keepGoing spelling
+that dests at at 62 words, or an xLower-family web numbered before count
+without preheader overlap. Do not start func_80010654 from this residual.
+
+Commands: score_symbol.py --object on forced objects, force_lattice
+acceptance, register_census.py, align_symbol.py, draw_census.py --proc 29.
 <!-- plateau-handoff:func_8000FAE0:end -->

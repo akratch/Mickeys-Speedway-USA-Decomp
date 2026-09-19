@@ -787,11 +787,11 @@ void func_8002CF0C(void *globalFlags) {
  * TU's matched func_8002CD6C SavesGameWriteState pattern so the buffer is a
  * struct field rather than an s-register. Mickey's EEPROM path, preserved
  * flag bits, and 0x200 combined image remain authoritative.
- * Configured result: 86/88 instructions, 54/88 positional words, frame 0x48
- * matching the target ladder, first mismatch +0x20. Two target-only words
- * remain: an addiu of the buffer copy by 0x1C0 that uopt DCE's, and a nop
- * in mainResetPressed's jal delay so the s0 buffer reload can sit in the
- * bne delay. */
+ * Configured result: 88/88 instructions, 25/88 positional words, frame 0x48
+ * matching the target ladder, first mismatch +0x68. dst = buffer + 0x1C0
+ * keeps the leftover addiu; assigning globalFlags = state.buffer after
+ * mainResetPressed puts nop in that jal delay. The addiu still lands on
+ * v1 before flags-dest reuse, not on a2 after copy setup. */
 void func_8002CF6C(u8 *globalFlags) {
     SavesWipeState state;
     s32 savedByte;
@@ -811,10 +811,10 @@ void func_8002CF6C(u8 *globalFlags) {
             } while (count--);
             func_8002CCE4();
             count = packCalculateGameChecksum(state.buffer, 0x1C0);
-            dst = state.buffer;
+            dst = state.buffer + 0x1C0;
             if (1) { /* L97 region; pairs the two footer stores on one buffer copy. */
-                *(u32 *) (dst + 0x1C0) = count;
-                *(u32 *) (dst + 0x1C4) = 0x12345678;
+                *(u32 *) dst = count;
+                *(u32 *) (dst + 4) = 0x12345678;
             }
             savedByte = (s8) globalFlags[3];
             savedFlag = (u32) (*(u16 *) globalFlags << 17) >> 31;
@@ -838,8 +838,9 @@ void func_8002CF6C(u8 *globalFlags) {
             do {
                 *dst++ = *src++;
             } while (count--);
+            count = mainResetPressed();
             globalFlags = state.buffer;
-            if (mainResetPressed() == 0) {
+            if (count == 0) {
                 func_8002C8B4(state.messageQueue, 0, globalFlags, 0x200);
             }
             mmFree(globalFlags);
@@ -1430,10 +1431,10 @@ s32 func_8002E020(s32 controllerIndex, s32 fileNum) {
 
 /* PLATEAU-HANDOFF:func_8002CF6C:start
  * symbol: func_8002CF6C
- * score: 54/88 words
+ * score: 25/88 words
  * frame: 0x48
  * relocations: 11
- * first-mismatch: +0x20
- * summary: Stack-homed SavesWipeState matches the 0x48 frame and slot ladder. 86 vs 88 instructions. Two target-only words remain: a DCE'd addiu of the buffer copy by 0x1C0, and a nop in the mainResetPressed jal delay.
+ * first-mismatch: +0x68
+ * summary: Size 0 at 25/88 first +0x68. addiu 0x1C0 on v1 before dest reuse not a2 after setup. Checksum jal delay is move a0. Avoid flags-split and address-of leftover.
  * PLATEAU-HANDOFF:func_8002CF6C:end
  */

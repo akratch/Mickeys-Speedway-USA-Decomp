@@ -163,10 +163,10 @@ void func_overlay_031_F0000000_187F520(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_031_F0000000_187F520:start
  * symbol: func_overlay_031_F0000000_187F520
- * score: 94/186 words
+ * score: 86/186 words
  * frame: 0x40
  * relocations: 10
- * first-mismatch: +0x2C
- * summary: Seven-draw allocator proxy: pre-loop definition reorder leaves schedule and residual unchanged.
+ * first-mismatch: +0x34
+ * summary: L160 indexed walks missize 20-68. L109 zero stays 0x40 delta 0 at 92 (phantom t3). lui-addiu first store is +4. Neighbour colour forces inert at 86.
  * PLATEAU-HANDOFF:func_overlay_031_F0000000_187F520:end
  */

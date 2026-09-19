@@ -612,6 +612,6 @@ f32 func_80058EF4(f32 arg0) {
  * frame: frameless
  * relocations: 24
  * first-mismatch: +0x0
- * summary: Direct-global and slot-order forms exhausted; separate-slot pointers hit exact extent but left allocation and relocation residual.
+ * summary: O2 address-commoning is the +16 (addiu vs $at). O1 same-symbol tails are 22 words but f4 not f0. Separate globals never share $at.
  * PLATEAU-HANDOFF:func_80058250:end
  */

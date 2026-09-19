@@ -16,9 +16,9 @@
       "source_commit": "db91e6e0240ae26a225929eb6c93e45f4f4cde5b"
     },
     "func_80001740": {
-      "ledger_commit": "c7546d550af3c57aad34949e51594dc2ee18ea08",
+      "ledger_commit": "ae41bd043c4d1ec14e1ffa0d0fcb9d2e44a10cbb",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "c7546d550af3c57aad34949e51594dc2ee18ea08"
+      "source_commit": "ae41bd043c4d1ec14e1ffa0d0fcb9d2e44a10cbb"
     },
     "func_80001BF4": {
       "ledger_commit": "3b49cd47d65f8182d7587ce95d86ac49955cc52d",
@@ -421,9 +421,9 @@
       "source_commit": "6091b1a01df312435a7fd6ecae778481fb795ce4"
     },
     "func_8002B040": {
-      "ledger_commit": "5c3cceaf27b05be8f81df1e81fbb7d0de7972017",
+      "ledger_commit": "31b60d5adeea2826d600567d958f213643e245ab",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "5c3cceaf27b05be8f81df1e81fbb7d0de7972017"
+      "source_commit": "31b60d5adeea2826d600567d958f213643e245ab"
     },
     "func_8002B524": {
       "ledger_commit": "8740f3fb1d724dd4cc8e782f7635d0a189ac09f8",
@@ -906,9 +906,9 @@
       "source_commit": "2727781413af7208b3af46011f6f8d98107a7aec"
     },
     "func_overlay_008_F0001000_185ED58": {
-      "ledger_commit": "d36a01818c47d21e31873ede19cdea54c060ff01",
+      "ledger_commit": "3c3892bd189b498290ce6f750e564c20d68e033c",
       "reason": "ADR 0018 stall-rule reopen for a whole-TU batch: these plateaus were filed under the superseded attempt cap. One owner works the unit under the stall rule with a single shared flag-lattice run.",
-      "source_commit": "12f726fe91ba2c2e332a9b422ccb8252d5f47e29"
+      "source_commit": "3c3892bd189b498290ce6f750e564c20d68e033c"
     },
     "func_overlay_008_F0001294_185EFEC": {
       "ledger_commit": "a99e66384dc645381934ce05f4ad8387f86ede70",

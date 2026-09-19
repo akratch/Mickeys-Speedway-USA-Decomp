@@ -67,9 +67,9 @@ extern void overlay2BuildPhaseReloc(void *state);
 extern void overlay2BuildReleaseReloc(void *memory);
 extern void overlay2BuildResizeReloc(s32 size, void *memory, s32 tag);
 
-/* Workbench plateau: 94 masked words; 355/355 instructions, frame exact 0x68.
- * Two unused pointers declared first closed the 8-byte home/frame (L99).
- * Remains: leaf-type constant insertion and a 51-word naming residual. */
+/* Workbench plateau: 76 masked words; 355/355 instructions, frame exact 0x68.
+ * Overlay41 remat of side0 before the test plus L160 countdown 94 to 76.
+ * Remains: leaf-type li 1 insertion; u32 leafType closes it at 121 naming. */
 /*
  * PROVENANCE: Jet Force Gemini src/overlays/o142/overlay_142.c identifies the
  * close assembly-backed sibling as CreateBSP. No donor C body exists there;
@@ -177,11 +177,11 @@ void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
 
     {
         Overlay2BuildRegion *region;
+        Overlay2BuildRegion *side0;
         Overlay2BuildNode *node;
         Overlay2BuildLine *line;
         Overlay2BuildLine *outputLine;
         s32 regionRemaining;
-        s32 regionHasRemaining;
         s32 lineRemaining;
         s32 leafType;
 
@@ -189,12 +189,11 @@ void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
         node = object->nodes;
         outputLine = object->lines;
         regionRemaining = gOverlay2BuildRegionCountReloc;
-        regionHasRemaining = regionRemaining;
         leafType = 1;
-        regionRemaining--;
-        if (regionHasRemaining != 0) {
+        if (regionRemaining--) {
             do {
-                if (region->side0 != NULL) {
+                side0 = region->side0;
+                if (side0 != NULL) {
                     node->type = 0;
                     node->side1 = (Overlay2BuildNode *)(
                         (s32)object->nodes +
@@ -228,9 +227,7 @@ void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
                 }
                 region++;
                 node++;
-                regionHasRemaining = regionRemaining;
-                regionRemaining--;
-            } while (regionHasRemaining != 0);
+            } while (regionRemaining--);
         }
 
         gOverlay2BuiltNodeCountReloc = gOverlay2BuildRegionCountReloc;
@@ -260,10 +257,10 @@ void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
 
 /* PLATEAU-HANDOFF:func_overlay_002_F0000C90_1857A88:start
  * symbol: func_overlay_002_F0000C90_1857A88
- * score: 94/355 words
+ * score: 76/355 words
  * frame: 0x68
  * relocations: 65
  * first-mismatch: +0xDC
- * summary: Two unused pointers close the 8-byte frame and match every home. Residual 94 is naming plus a leaf-type insertion; colour forces remain diagnostic.
+ * summary: Overlay41 side0 remat plus L160 countdown 94 to 76. Insertion remains; u32 leafType closes it at 121 naming. Next: hoist signed 1.
  * PLATEAU-HANDOFF:func_overlay_002_F0000C90_1857A88:end
  */

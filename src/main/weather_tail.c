@@ -63,15 +63,15 @@ extern void func_8002EBD4(u32 value);
  * intervening store, and `sp20`/`sp1C` still take the named locals, which is
  * what keeps them alive across the call.
  *
- * What is left is 66 aligned register differences and one constant: a whole
- * rotation of the interpolation loop's temporaries plus the caller-saved set
- * chosen around `func_8002EBD4`, where the target spills three registers and
- * the candidate two and a call-crossing pointer. That is allocator work and
- * needs no further instruction to be found. */
+ * L99: an unused pointer first (not pad[8]) keeps frame 0x38 and moves the
+ * extra home from +0x18 to +0x24, 104 to 103 masked, draws unchanged. Named
+ * size levers (remat-delete, empty-if, leftover OR-zero, comma-assign, L160)
+ * are flat or size -4. The first delay is still the arg copy; target extra
+ * home remains +0x30. */
 /* PROVENANCE: palette layouts and interpolation control flow are reconstructed from Mickey's target accesses; no external donor body was used. */
 #ifdef NON_MATCHING
 void func_8003C80C(s32 arg0) {
-    u8 pad[8];
+    void *pad;
     s32 sp30;
     u8 *sp20;
     u8 *sp1C;
@@ -144,10 +144,10 @@ void func_8003C80C(s32 arg0) {
 
 /* PLATEAU-HANDOFF:func_8003C80C:start
  * symbol: func_8003C80C
- * score: 104/118 words
+ * score: 103/118 words
  * frame: 0x38
  * relocations: 21
  * first-mismatch: +0x14
- * summary: Moving the sp20 declaration leaves all five draws and emissions unchanged while worsening frame-home agreement; baseline restored.
+ * summary: L99 unused pointer: 103/118, extra home +0x24 not +0x30. remat/empty-if size -4; leftover/comma/L160 flat. First delay still the arg copy.
  * PLATEAU-HANDOFF:func_8003C80C:end
  */

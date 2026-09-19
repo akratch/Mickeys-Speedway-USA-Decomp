@@ -1299,19 +1299,21 @@ loop_29:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/func_80017BCC.s")
 #endif
-/* Workbench verdict: structure-mismatch, 91 masked words, first mismatch +0x34. */
-/* Candidate: exact 206-word geometry and -0x90 frame; 8/8 relocation offsets,
- * types and identities align. yMax and yMin occupy +0x8C and +0x88; sectorIndex
- * is a type-3 symbol whose home is the target spill slot at +0x84, but the
- * web is coloured s0 so that home stays idle. The target loads volume into a1
- * and sectorIndex into v1, then stores v1 to +0x84 across getXZCompareMask.
+/* Workbench verdict: size-mismatch, 154 masked words, delta -4, first +0x34. */
+/* L160: masks10[vertex] instead of a vertexOffset carrier. That deletes the
+ * extra shift that used to sit opposite the target's extra add-immediate, so
+ * unforced is one word short. Identity-gated proc 9 (stock/instrumented .text
+ * identical, unforced forced=-2): p1:w21=c2 on this shape is 71 at delta 0,
+ * frame 0x90, spill home +0x84 live, no insertion pair, two structural rows
+ * are a post-call store/move swap. Volume (web 6) is still a cost-0 v1/a1 tie
+ * taking v1. Pairing w6=c4 with w21=c2 is declined: web 18 (bbs 0-1) takes v1
+ * once volume leaves it. Web 21 still prefers s0 at cost 0 over v1 at cost 2.
  *
- * Identity-gated IDO (proc 9, unforced forced=-2, stock/instrumented .text
- * identical): forcing volume (web 6) to a1 scores 84 at delta 0 and matches
- * the head through lh v1; forcing sectorIndex (web 21) to v1 emits the +0x84
- * spill but grows one word. L105 block moves, L97 regions and an unused
- * pointer pad did not beat 91. Next is source-routing volume onto a1 (a
- * cost-0 tie currently broken by colour number).
+ * Named levers on this shape that did not produce v1: overlay41 shade-before
+ * test, vertexBase-before-flags, hoisted block, loop leftover on sectorIndex
+ * (frame 0xB8), overlay22 empty if (byte-identical), block++ (123 exact).
+ * Do not restore vertexOffset unless a v1 source form is in hand: with the
+ * carrier, w21=c2 grows one word.
  *
  * Measured IDO behaviour this body depends on (all reproduced in-lane):
  *   - the declared-local list sizes the 0x90 frame and its order fixes every
@@ -1342,7 +1344,6 @@ void func_800180B4(ShadowQuery *query) {
     u32 maskWord;
     s32 vertex;
     s32 blockOffset;
-    s32 vertexOffset;
     s32 triangleNumber;
     s32 firstPointOffset;
     s32 lowY;
@@ -1378,10 +1379,9 @@ void func_800180B4(ShadowQuery *query) {
                     vertexBase = (ShadowPoint *) sector->vertices0 +
                                  block->vertexBase6;
                     vertex = block->firstVertex8;
-                    vertexOffset = vertex * 4;
                     if ((vertex < block->lastVertex18) && (done == 0)) {
                         do {
-                            maskWord = *(u32 *) ((u8 *) sector->masks10 + vertexOffset);
+                            maskWord = sector->masks10[vertex];
                             maskWord &= mask;
                             if (((maskWord & 0xFFFF) != 0) &&
                                 ((maskWord >> 16) != 0)) {
@@ -1418,7 +1418,6 @@ void func_800180B4(ShadowQuery *query) {
                                 }
                             }
                             vertex++;
-                            vertexOffset += 4;
                             block = (ShadowBlock *)
                                 ((u8 *) sector->blocksC + blockOffset);
                         } while ((vertex < block->lastVertex18) &&
@@ -1448,11 +1447,11 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_800180B4:start
  * symbol: func_800180B4
- * score: 91/206 words
+ * score: 154/206 words
  * frame: 0x90
  * relocations: 8
  * first-mismatch: +0x34
- * summary: Identity-gated proc 9. Volume to a1 is 84 at delta 0. Sector-index v1 force spills +0x84 but grows 4. L105/L97/pad did not beat 91.
+ * summary: L160 masks10 cursor. Unforced 154 at delta -4. Force w21=c2 is 71 at delta 0 with +0x84 spill and a 2-row store/move swap. s0 still cost 0.
  * PLATEAU-HANDOFF:func_800180B4:end
  */
 

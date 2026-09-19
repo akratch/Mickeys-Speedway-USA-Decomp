@@ -2,11 +2,11 @@
 ### `func_overlay_011_F0001E4C_186A694` plateau handoff
 
 - source: `src/overlays/o011/func_overlay_011_F0001E4C_186A694.c`
-- score: 109/295 words
+- score: 63/295 words
 - frame: 0x40
 - relocations: 87
 - first mismatch: +0xD8
-- summary: Size -4 (294/295), extra +0x28 action spill. index=2 folds scale to -28. Need rematerialized 2 plus nop delay, not colour (L155).
+- summary: Size 0, 8=8 slots, masked 63. Occupancy beq vs addiu 4; addiu 2 scheduled early. Colour still L155-shadowed by 2+2 inserts.
 
 Lane `w18-o011` on base `cbaed235`. Re-measure: ranking size -4 is right;
 the prior V0 "-1 word" / first `+0x10` were stale. Configured IDO 5.3
@@ -48,11 +48,41 @@ Tried, all against this 294-word baseline unless noted:
 
 Ownership, ABI, donor scan, and the 87-site reloc surface are unchanged
 from the prior shard. The retired carrier-schedule rewrite is still not
-admissible. Body restored to the plateau candidate.
+admissible.
 
-Next lever: a source form where `action * 2` rematerialises as `addiu 2`
-after the call (action dead, no `+0x28` spill) without forwarding 2 into
-the GEPs, and where as1 leaves the `bne mode, 6` delay as `nop`. Do not
-run the colour landscape, restore the retired rewrite, or weaken reloc
-checks. Do not hardcode `index = 2`.
+Lane `w30-o011` on base `8eb96979`. Identity-gate PASS on stock vs
+instrumented IDO (proc 0). The live size fact is now 0: 295/295 words,
+frame 0x40, slots 8=8 with identical ladders (extra +0x28 gone). Masked
+63 / raw 68 / artifact 5. Aligned 241 exact, 44 naming, 5 immediate, 7
+structural. Displacement tax 7. Candidate-only +0x280 (2); target-only
++0x240 (1) and +0x29C (1). First naming +0xD8; first immediate +0x21C;
+first structural +0x260. Register census: 44 substitutions, 79 percent
+coherence, 5 windows starting +0x1FC, +0x248, +0x2A4, +0x330; not one
+ring phase.
+
+The closer for size and the extra slot is the adopted body: volatile
+reloads of `status->mode` so consecutive equals-5 or equals-6 does not
+range-fold, plus `index = 2` with overlay22 empty-if and L109 OR-zero so
+the 0x28 scale survives without spilling `action` across
+`func_80005820`. Bare `index = 2` still folds to size -28. Empty-if or
+OR-zero alone folds (-12 / -20). Bitwise or of the two compares also
+reaches size 0 (65 masked) but keeps a 3+3 insert/delete and is worse
+than volatile (2+2). Empty-if on `updateRate`, do-while-zero around
+OR-zero, and OR-zero inside the empty-if are byte-identical to the
+adopted occupancy. Comma-assign, L97 around GEPs, L144, unused L99
+f32/pointer, leftover updateRate OR-zero, sibling do-while, and
+D_1C4/D_1B8/D_204 scalars are flat at 63 on this shape (L146 re-test).
+Non-volatile `menuInput` regresses to size -20.
+
+Remaining 2+2: candidate occupancy `beq` plus `addiu 2` at +0x280;
+target `addiu 4` at +0x240 and `addiu 2` at +0x29C. The two `addiu 2`
+are the same rematerialised scale, scheduled 4 bytes apart because of
+the extra `beq`. Colour / `web_footprint --every-colour` is still L155
+insertion shadow until those two words are gone. Do not restore the
+retired rewrite or weaken reloc checks. Do not drop the empty-if /
+OR-zero pair without a replacement that keeps the scale.
+
+Next lever: occupancy that keeps `index = 2` from folding into constant
+GEP offsets without emitting the extra `beq`, so the rematerialised 2
+lands at the target +0x29C and `addiu 4` realigns. Then colour.
 <!-- plateau-handoff:func_overlay_011_F0001E4C_186A694:end -->

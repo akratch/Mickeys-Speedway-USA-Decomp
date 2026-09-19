@@ -3164,36 +3164,13 @@ extern s32 overlay1AngleDifferenceReloc(s16 first, s16 second);
 extern f32 overlay1TrigXReloc(s32 angle);
 extern f32 overlay1TrigYReloc(s32 angle);
 
-/* Plateau: exact 107 instructions and 0x30 frame, and now both spilled stack
- * homes. The declaration order is an identity, not a guess: the target spills
- * `current` to sp+40 and `next` to sp+32, which are the second and fourth
- * four-byte slots, so `previous, current, path, next` is the only order of the
- * four pointers that lands them (25 words to 21, all 24 orders measured). The
- * three `s32` index locals take registers, not homes, and permuting them is
- * inert -- all 6 orders crossed with 5 branch spellings and 2 assignment
- * orders, 60 forms, all flat.
- *
- * Twenty-one words remain in two clusters. Six are the prologue: the target
- * stores the third argument home out of order, puts the byte spill in the
- * call's delay slot, and reloads it into the argument register. Taking the
- * parameter's address (`*(u8 *)&index = index;`) is the only form that reaches
- * that byte -- the retained `volatile u8` local can never, because a local
- * lives in the local area -- and it does fix the first four prologue words,
- * but the byte store then lands before the call instead of in its delay slot
- * and the reload takes a ring temp instead of the argument register, costing
- * 34 words downstream (55 against 21). Measured and flat, do not repeat: the
- * address form combined with the volatile local in both orders and on both
- * sides of the call, a comma-operator store inside the call's argument list,
- * a `u8 *`/`volatile u8 *` carrier for the address, `((u8 *)&index)[0]`, a
- * read-back into a fresh `u8`/`s32` local or into `currentIndex`, and casting
- * the call's own argument.
- *
- * The other fifteen are the index block's pool colours: the target has
- * currentIndex on v1, previousIndex on a0 and the point count on a1, where we
- * get a1, v1 and a2. The emitted schedule is identical instruction for
- * instruction; only the web numbering differs. `currentIndex = index` in the
- * else branch reproduces the target's `move v1,a2` at both sites but IDO then
- * hoists the assignment out of the if/else and drops an instruction (101). */
+/* Plateau: exact 107 instructions and 0x30 frame. `if (index) {}` is L100
+ * weight that makes uopt spill the u8 parameter to its own incoming home
+ * (sp+59) without a leftover identity op, so the first shift stays on t8 and
+ * the residual is 19 rather than the leftover basin's 52. The store still
+ * sits before the jal; the target puts it in the delay slot and the selector
+ * mask three words earlier. `currentIndex = index` in the else reproduces the
+ * target's copy from a2 at both sites but IDO hoists it and drops a word. */
 #ifdef NON_MATCHING
 void overlay1BendPathPoint(s16 *x, s16 *y, u8 index, u8 selector) {
     Overlay1PathPoint *previous;
@@ -3201,12 +3178,10 @@ void overlay1BendPathPoint(s16 *x, s16 *y, u8 index, u8 selector) {
     Overlay1Path *path;
     Overlay1PathPoint *next;
     s16 firstAngle, secondAngle, midpointAngle;
-    volatile u8 localIndex;
     s32 nextIndex, previousIndex, currentIndex;
 
-    localIndex = index;
+    if (index) {}
     path = overlay1GetPathReloc(selector);
-    index = localIndex;
     current = &path->points[index];
     if (index != 0) {
         currentIndex = index;
@@ -3452,10 +3427,10 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:overlay1BendPathPoint:start
  * symbol: overlay1BendPathPoint
- * score: 21/107 words
+ * score: 19/107 words
  * frame: 0x30
  * relocations: 6
- * first-mismatch: +0xC
- * summary: 46-draw census confirms parameter-home/current-index live-range blocker; exhausted source and colour routes remain at 21.
+ * first-mismatch: +0x10
+ * summary: Empty-if L100 spills index to parameter home; jal delay still holds the selector mask, and currentIndex still refuses v1.
  * PLATEAU-HANDOFF:overlay1BendPathPoint:end
  */

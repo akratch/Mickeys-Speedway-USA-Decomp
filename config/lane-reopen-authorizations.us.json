@@ -171,9 +171,9 @@
       "source_commit": "60bc156a0b56adb0eb67380e01363e413b58fcc7"
     },
     "func_8000FAE0": {
-      "ledger_commit": "f09046a0bcc1f448cb3a85961c505aa90359d83a",
+      "ledger_commit": "6ee51e9337a5dcdf9e88aa50f534390692e1908f",
       "reason": "New mechanism: law L87, uopt colours pool webs in first-surviving-definition order so schedule and colour are one decision, and the lock breaks at the use. Not tried; the permuter was also unfaithful here until today.",
-      "source_commit": "f09046a0bcc1f448cb3a85961c505aa90359d83a"
+      "source_commit": "6ee51e9337a5dcdf9e88aa50f534390692e1908f"
     },
     "func_800103D4": {
       "ledger_commit": "ae3ca05774314ba3962e97a639f0cd4faae2d19d",
@@ -1191,7 +1191,7 @@
       "source_commit": "cec7bee4f0ee60b03bf25ea9e7c08f3b2c993d5a"
     },
     "func_overlay_050_F0000334_1896CA4": {
-      "ledger_commit": "c434329718cdd8e0614f19db4a68b5d9114d0b00",
+      "ledger_commit": "246bbd5d0de7501582a38b5c4977f464393776d7",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "c434329718cdd8e0614f19db4a68b5d9114d0b00"
     },
@@ -1516,9 +1516,9 @@
       "source_commit": "cd650a80bc656d9b35176e6b01c6e7484c49a922"
     },
     "overlay13DrawActive": {
-      "ledger_commit": "2201d63875c6fad362505a6710cebe0f816d9237",
+      "ledger_commit": "13618095a108e8b3b12a7f02a938e584a158111f",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "2201d63875c6fad362505a6710cebe0f816d9237"
+      "source_commit": "13618095a108e8b3b12a7f02a938e584a158111f"
     },
     "overlay13DrawRecord": {
       "ledger_commit": "df7e436ae810f6b0cac7e9f6d72df6c3a1fa6d37",
@@ -1826,9 +1826,9 @@
       "source_commit": "796357935f5af94cc36660a3865d6b5f4be1d8ae"
     },
     "overlay37RenderEffect": {
-      "ledger_commit": "5ef33dd090e496c017241f75f1167bef831a8a2f",
+      "ledger_commit": "199f2f2c26c36bb7aa34d017c87178557edb4385",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "5ef33dd090e496c017241f75f1167bef831a8a2f"
+      "source_commit": "199f2f2c26c36bb7aa34d017c87178557edb4385"
     },
     "overlay3RunCachedModeAction": {
       "ledger_commit": "14731352a97c4f5f2d56674fbf867ff3ca944bd2",

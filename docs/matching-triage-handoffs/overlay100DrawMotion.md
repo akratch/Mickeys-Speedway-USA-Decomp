@@ -2,11 +2,11 @@
 ### `overlay100DrawMotion` plateau handoff
 
 - source: `src/overlays/o100/overlay100DrawMotion.c`
-- score: 161 differing words
-- frame: 0xB0
+- score: 155 differing words
+- frame: 0xC0
 - relocations: 7
 - first mismatch: +0x0
-- summary: New depth and projection term-order forms are compiler-flat; command and color lifetime blocker remains.
+- summary: L99 unused pointers declared first close frame 0xC0 with exact homes. Packed RGB hoist is plus two words. Command/color lifetime remains.
 - assignment base: `d8b737b08b810602e750e195d357f542c79f407c`
 - owned range: overlay 100 `+0x580..+0x94C`, 972 bytes / 243 words; the following four-byte padding is separately owned
 - fresh baseline: 82 of 243 words exact, 161 aligned and raw differences, first mismatch `+0x0`; normalized workbench distance 113

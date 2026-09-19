@@ -50,17 +50,21 @@ extern u8 gOverlay100SegmentReloc[];
     }
 
 /*
- * Plateau: the complete flag lattice and ten distinct source/allocation
- * candidates remain nonexact.  Keeping the projection scalars ahead of the
- * two separate color homes preserves the exact 243-word extent and improves
- * the natural frame from 0x88 to 0xB0 (target 0xC0), but 161 positional words
- * still differ from +0x0.  The candidate retains seven static relocations;
- * only four offset/type sites align and their runtime identities are not yet
- * proved.  Resume with source-authentic command/color lifetime evidence.
+ * Four unused pointers declared first close the 0xC0 frame (L99); four
+ * projection scalars then the volatile color homes then commands last place
+ * every stack slot on the target ladder. Packed RGB hoists stay two words
+ * long. Resume with command/color lifetime that does not add instructions.
  */
 #ifdef NON_MATCHING
 void overlay100DrawMotion(O100Command **commandPtr, Overlay100Motion *motion) {
-    O100Command *commands;
+    void *unused0; /* L99: unused pointers declared first hold frame 0xC0 */
+    void *unused1;
+    void *unused2;
+    void *unused3;
+    f32 sinAngle, cosAngle, xScale, yScale;
+    volatile s32 green;
+    volatile s32 blue;
+    f32 depthScale, depth, inverseDepth;
     O100View *view;
     Overlay100Vec3 *point;
     s16 *angleRecord;
@@ -68,10 +72,8 @@ void overlay100DrawMotion(O100Command **commandPtr, Overlay100Motion *motion) {
     register s32 alphaStep;
     s32 alpha;
     register s32 red;
-    f32 sinAngle, cosAngle, xScale, yScale, depthScale, depth, inverseDepth;
     s32 x, y, progress;
-    volatile s32 green;
-    volatile s32 blue;
+    O100Command *commands;
 
     if (motion == 0) return;
     commands = *commandPtr;
@@ -139,10 +141,10 @@ void overlay100DrawMotion(O100Command **commandPtr, Overlay100Motion *motion) {
 
 /* PLATEAU-HANDOFF:overlay100DrawMotion:start
  * symbol: overlay100DrawMotion
- * score: 161 differing words
- * frame: 0xB0
+ * score: 155 differing words
+ * frame: 0xC0
  * relocations: 7
  * first-mismatch: +0x0
- * summary: New depth and projection term-order forms are compiler-flat; command and color lifetime blocker remains.
+ * summary: L99 unused pointers declared first close frame 0xC0 with exact homes. Packed RGB hoist is plus two words. Command/color lifetime remains.
  * PLATEAU-HANDOFF:overlay100DrawMotion:end
  */

@@ -52,37 +52,40 @@ extern void overlay41ApplyEntry(Overlay41Context *, Overlay41Entry *, void *,
 extern void overlay41FinishEntry(Overlay41Context *, Overlay41Child *,
                                  Overlay41Entry *, s32);
 
-/* Workbench p7 batch 12: structure-mismatch; 123/128 instructions, exact -0x48 frame, 120 masked/raw words, first +0x10.
- * Lever: selected=0 followed by selector!=0 regressed; inherited input/type/scope/flag/context probes remain negative.
- * Remains: incoming-input home, five-instruction excess, temp schedule, and relocation identities; GLOBAL_ASM stays canonical. */
-#ifdef NON_MATCHING
+/* Matched 2026-09-19 (lane w31-o041p), 120 -> 0 masked words at delta 0.
+ *
+ *   - `scaled = (s32)(input->scale * 60.0f)` before the alternateMode test
+ *     (delete remat): input stays in a3 instead of its incoming home, which
+ *     was the extra word at +0x10 and the five-word overrun (L155).
+ *   - unused `pad` declared first (L99): an unused pointer is not eliminated
+ *     and occupies +0x44 so mode/child sit at +0x40/+0x38. Listed in
+ *     docs/cleanup-queue.md.
+ */
 void func_overlay_041_F0001464_188879C(Overlay41Input *input,
                                        Overlay41Context *context,
                                        s32 argument) {
-    register Overlay41Input *savedInput;
+    Overlay41Input *pad;
     s32 mode;
     Overlay41Entry *entry;
     Overlay41Child *child;
     Overlay41State *state;
     s32 selected;
+    Overlay41Entry *firstEntry;
+    s32 scaled;
 
     state = context->state;
-    savedInput = input;
     selected = state->selector != 0.0f;
     if (((selected != 0) &&
          (((Overlay41State *)((u8 *)state + context->stateIndex))->status == 1)) ||
         ((selected == 0) && (state->status == 1))) {
-        Overlay41Entry *firstEntry;
-
         firstEntry = context->entries[context->entryIndex];
         if (firstEntry != 0) {
+            scaled = (s32)(input->scale * 60.0f);
             mode = 9;
-            if (savedInput->alternateMode != 0) {
+            if (input->alternateMode != 0) {
                 mode = 11;
             }
-            overlay41StartEntry(firstEntry, &mode,
-                                (s32)(savedInput->scale * 60.0f),
-                                context->work, argument);
+            overlay41StartEntry(firstEntry, &mode, scaled, context->work, argument);
         }
     } else if (((selected != 0) &&
                 (((Overlay41State *)((u8 *)state + context->stateIndex))->status == 0)) ||
@@ -91,7 +94,7 @@ void func_overlay_041_F0001464_188879C(Overlay41Input *input,
         if (entry->active != 0) {
             child = entry->child;
             if (child->refreshEnabled != 0) {
-                overlay41RefreshEntry(entry, child, context, savedInput);
+                overlay41RefreshEntry(entry, child, context, input);
                 overlay41ApplyEntry(context, entry, context->argument,
                                     entry->values[entry->index]);
             } else {
@@ -108,16 +111,3 @@ void func_overlay_041_F0001464_188879C(Overlay41Input *input,
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o041/overlay41ProcessEntry/func_overlay_041_F0001464_188879C.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_041_F0001464_188879C:start
- * symbol: func_overlay_041_F0001464_188879C
- * score: 3/123 words
- * frame: 0x48
- * relocations: 5
- * first-mismatch: +0x10
- * summary: V0 remains five words oversized; displaced call proxies lack exact ownership evidence.
- * PLATEAU-HANDOFF:func_overlay_041_F0001464_188879C:end
- */

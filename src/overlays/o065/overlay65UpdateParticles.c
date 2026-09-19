@@ -82,12 +82,9 @@ extern void func_overlay_065_F0000C38_18C4EA0(O65Command **, s32 *, s32);
 #define O65_BUFFER_TABLE D_2980
 
 /*
- * Plateau (2026-08-25, 6 attempts): the best -O2 -g3 candidate is 36 bytes
- * short, differs in 546 of 720 words, and first diverges at +0x4.  Its frame
- * size is exact, but the compiler assigns the long-lived particle, camera,
- * transform-base, counter, and argument values to a different saved-register
- * web.  Pointer/index and loop spellings improved the body without recovering
- * that allocation; the complete flag lattice found no closer code shape.
+ * Size closed at 720 words / frame 0xF8: load *arg1 while a1 is live, then
+ * write transformed points through a word-index cursor ((s32 *)point + i,
+ * i += 3) reused on groundIndex. Colour cannot close the remaining residual.
  */
 #ifdef NON_MATCHING
 void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
@@ -96,8 +93,8 @@ void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
     O65Vertex *batchStart;
     s32 cursor;
     volatile s32 spawnCount;
-    f32 **ground;
     O65Vec3f transformed[4];
+    f32 **ground;
     O65Camera *camera;
     O65Particle *particle;
     s32 groundCount;
@@ -114,12 +111,12 @@ void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
     register O65Vec3f *point;
 
     commands = *arg0;
-    D_2988 = O65_BUFFER_TABLE[D_210];
-    D_210 ^= 1;
+    cursor = *arg1;
     particle = D_1908;
     spawnCount = 4;
     remaining = 6;
-    cursor = *arg1;
+    D_2988 = O65_BUFFER_TABLE[D_210];
+    D_210 ^= 1;
     o65BeginDraw(&commands, O65_INPUT, 3, 0);
     camera = o65GetCamera(0);
     o65PrepareCamera(0);
@@ -199,23 +196,23 @@ void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
             radius = (s16)(o65Cos(particle->angle) * 50.0f);
             o65Transform(4, &particle->dx, D_1D8, point);
             remaining--;
-#define O65_WRITE_POINT(index) \
-                D_2988->x = (s16)(point[index].x + \
-                                   (f32)(particle->x + radius)); \
-                D_2988->y = (s16)(point[index].y + \
-                                   (f32)particle->y); \
-                D_2988->z = (s16)(point[index].z + \
-                                   (f32)(particle->z + radius)); \
+            groundIndex = 3;
+#define O65_WRITE_VTX(vtx) \
+                D_2988->x = (s16)((vtx)->x + (f32)(particle->x + radius)); \
+                D_2988->y = (s16)((vtx)->y + (f32)particle->y); \
+                D_2988->z = (s16)((vtx)->z + (f32)(particle->z + radius)); \
                 D_2988->r = particle->r; \
                 D_2988->g = particle->g; \
                 D_2988->b = particle->b; \
                 D_2988->a = alpha; \
                 D_2988++
-            O65_WRITE_POINT(0);
-            O65_WRITE_POINT(1);
-            O65_WRITE_POINT(2);
-            O65_WRITE_POINT(3);
-#undef O65_WRITE_POINT
+            O65_WRITE_VTX(point);
+            O65_WRITE_VTX((O65Vec3f *)((s32 *)point + groundIndex));
+            groundIndex += 3;
+            O65_WRITE_VTX((O65Vec3f *)((s32 *)point + groundIndex));
+            groundIndex += 3;
+            O65_WRITE_VTX((O65Vec3f *)((s32 *)point + groundIndex));
+#undef O65_WRITE_VTX
 
             if (remaining == 0) {
                 commands->w0 = 0x040000F8U |
@@ -259,10 +256,10 @@ void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
 
 /* PLATEAU-HANDOFF:overlay65UpdateParticles:start
  * symbol: overlay65UpdateParticles
- * score: 689/720 words
+ * score: 458/720 words
  * frame: 0xF8
  * relocations: 64
- * first-mismatch: +0xC
- * summary: V0 is 710/720 words (-10), frame 0xF8 exact, first +0xC; relocation identities are blocked by overlay65Initialize canonical-owner conflict.
+ * first-mismatch: +0x50
+ * summary: Size closed 0 at frame 0xF8. Colour 267 probes floor 395 on one c8 radius. Cursor still one-behind. overlay65Initialize identities untouched.
  * PLATEAU-HANDOFF:overlay65UpdateParticles:end
  */

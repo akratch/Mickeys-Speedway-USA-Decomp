@@ -775,112 +775,114 @@ extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
  * globals, sound-object offset, and final compiler output are independently
  * established from Mickey's ROM.
  *
- * Workbench wave 7: structure-mismatch after ten coherent attempts,
- * 287/287 instructions, frame -72 vs target -64, and 192 raw words from
- * +0x0. Reordering the interpolation update retained the headline score but
- * reduced aligned structural differences from 44 to 38 and gaps from 38 to
- * 32. The target retains playback-state and television-mode addresses in
- * saved registers; explicit source carriers regress geometry or alignment.
- * Prior flag, clock/type/lifetime, and canonical-permuter levers remain
- * exhausted; retain NON_MATCHING. */
+ * Size-exact at 287 words after CSE of the command word, restoring the
+ * PAL/NTSC join local, and hoisting the clock sum before the camera walk.
+ * Overlay40 joined lines recovered two more words. Remaining: frame 0x48
+ * vs 0x40, playback-state address rematerialized (target keeps it in s1
+ * until the path loops), and the (s8) command shift after PAL math
+ * instead of before the compare. Explicit playing pointer, volatile cmd,
+ * and s4 forces regress. Retain NON_MATCHING. */
 #ifdef NON_MATCHING
 void func_80051364(s32 updateRate) {
     AnimStreamEntry *command;
     AnimCameraSource **camera;
     AnimPath *path;
     AnimPathObject *object;
-    void *soundHandle;
     s32 originalRate;
     s32 offset;
     s32 adjustedRate;
+    s32 cmd;
+    s32 newClock;
+    u16 cmdWord;
+    u16 duration;
     f32 timeScale;
     f32 speed;
 
-    if ((D_8007D68C != NULL) && (D_8007D6A4 != 0)) {
-        if (osTvType == 0) {
-            timeScale = D_80083FAC;
-        } else {
-            timeScale = D_80083FB0;
-        }
-        originalRate = updateRate;
-        if (D_8007D6B0 > 0) {
-            TrapDanglingJump(updateRate);
-        }
-        command = D_8007D69C;
-        if ((command != NULL) && (D_8007D6A4 == 1)) {
-            if ((command->command >> 8) == 0x7B) {
-                if (((f32) command->duration / 100.0f) <
-                    ((f32) (D_8007D6A8 + updateRate) * timeScale)) {
-                    if (osTvType == 0) {
-                        adjustedRate = command->duration >> 1;
-                    } else {
-                        adjustedRate = (command->duration * 6) / 10;
-                    }
-                    updateRate = adjustedRate - D_8007D6A8;
-                    D_8007D69C = command + 1;
-                    D_8007D6A4 = (s8) command->command;
-                    if ((s8) command->command == 0) {
-                        originalRate = updateRate;
-                    }
-                }
+    if (D_8007D68C != NULL) {
+        if (D_8007D6A4 != 0) {
+            if (osTvType == 0) {
+                timeScale = D_80083FAC;
+            } else {
+                timeScale = D_80083FB0;
             }
-        }
-        if (updateRate > 0) {
-            camera = D_800D6B08;
-            do {
-                *camera++ = NULL;
-            } while (camera < (AnimCameraSource **) D_800D6B18);
-            if (D_8007D6BC != 0) {
-                if (updateRate < D_8007D6BC) {
-                    D_8007D6B4 += D_8007D6B8 * (f32) updateRate;
-                    D_8007D6BC -= updateRate;
-                } else {
-                    D_8007D6B4 += D_8007D6B8 * (f32) D_8007D6BC;
-                    D_8007D6BC = 0;
-                }
+            originalRate = updateRate; if (D_8007D6B0 > 0) {
+                TrapDanglingJump(updateRate);
             }
-            D_8007D6A8 += updateRate;
-            D_8007D6AC = (f32) D_8007D6A8 * timeScale;
-            offset = 0;
-            do {
-                path = *(AnimPath **) ((u8 *) D_800D6B00 + offset);
-                if ((path != NULL) && (path->flags & 5)) {
-                    animUpdateTrap(path, (f32) updateRate * timeScale,
-                                   updateRate, originalRate);
-                }
-                offset += 4;
-            } while (offset < 0x400);
-            if (D_8007D6A4 == 1) {
-                func_800517E0();
-            }
-            TrapDanglingJump(updateRate); /* runtime: overlay 41 +0x000 */
-            TrapDanglingJump(updateRate); /* runtime: overlay 41 +0x124 */
-            TrapDanglingJump(updateRate); /* runtime: overlay 41 +0x1B00 */
-            offset = 0;
-            do {
-                path = *(AnimPath **) ((u8 *) D_800D6B00 + offset);
-                if (path != NULL) {
-                    object = path->unk8;
-                    if ((object != NULL) && (object->soundHandle != NULL)) {
-                        soundHandle = object->soundHandle;
-                        func_800031C0(soundHandle, object->x, object->y,
-                                      object->z);
-                        if ((path->unk28 != 0x64) || (path->unk29 != 0)) {
-                            speed = sqrtf((object->velocityX *
-                                           object->velocityX) +
-                                          (object->velocityY *
-                                           object->velocityY) +
-                                          (object->velocityZ *
-                                           object->velocityZ));
-                            func_800030B4(
-                                object->soundHandle,
-                                (u32) ((f32) path->unk28 +
-                                       ((f32) path->unk29 * speed)) & 0xFF);
+            command = D_8007D69C; if (command != NULL) {
+                if (D_8007D6A4 == 1) {
+                    cmdWord = command->command; if ((cmdWord >> 8) == 0x7B) {
+                        duration = command->duration;
+                        if (((f32) (u32) duration / 100.0f) <
+                            ((f32) (u32) (D_8007D6A8 + updateRate) *
+                             timeScale)) {
+                            if (osTvType == 0) {
+                                adjustedRate = duration >> 1;
+                            } else {
+                                adjustedRate = (duration * 6) / 10;
+                            }
+                            updateRate = adjustedRate - D_8007D6A8;
+                            D_8007D69C = command + 1; cmd = (s8) cmdWord; D_8007D6A4 = cmd; if (cmd == 0) {
+                                originalRate = updateRate;
+                            }
                         }
                     }
                 }
-                offset += 4;
-            } while (offset != 0x400);
+            }
+            if (updateRate > 0) {
+                newClock = D_8007D6A8 + updateRate; camera = D_800D6B08; do {
+                    *camera++ = NULL;
+                } while (camera < (AnimCameraSource **) D_800D6B18);
+                if (D_8007D6BC != 0) {
+                    if (updateRate < D_8007D6BC) {
+                        D_8007D6B4 += D_8007D6B8 * (f32) updateRate;
+                        D_8007D6BC -= updateRate;
+                    } else {
+                        D_8007D6B4 += D_8007D6B8 * (f32) D_8007D6BC;
+                        D_8007D6BC = 0;
+                    }
+                }
+                D_8007D6A8 = newClock; D_8007D6AC = (f32) (u32) newClock * timeScale;
+                offset = 0; do {
+                    path = *(AnimPath **) ((u8 *) D_800D6B00 + offset);
+                    if ((path != NULL) && (path->flags & 5)) {
+                        animUpdateTrap(path, (f32) updateRate * timeScale,
+                                       updateRate, originalRate);
+                    }
+                    offset += 4;
+                } while (offset < 0x400);
+                if (D_8007D6A4 == 1) {
+                    func_800517E0();
+                }
+                TrapDanglingJump(updateRate); /* runtime: overlay 41 +0x000 */
+                TrapDanglingJump(updateRate); /* runtime: overlay 41 +0x124 */
+                TrapDanglingJump(updateRate); /* runtime: overlay 41 +0x1B00 */
+                offset = 0; do {
+                    path = *(AnimPath **) ((u8 *) D_800D6B00 + offset);
+                    if (path != NULL) {
+                        object = path->unk8;
+                        if ((object != NULL) &&
+                            (object->soundHandle != NULL)) {
+                            func_800031C0(object->soundHandle, object->x,
+                                          object->y, object->z);
+                            if ((path->unk28 != 0x64) ||
+                                (path->unk29 != 0)) {
+                                speed = sqrtf((object->velocityX *
+                                               object->velocityX) +
+                                              (object->velocityY *
+                                               object->velocityY) +
+                                              (object->velocityZ *
+                                               object->velocityZ));
+                                func_800030B4(
+                                    object->soundHandle,
+                                    (u32) ((f32) path->unk28 +
+                                           ((f32) path->unk29 * speed)) &
+                                        0xFF);
+                            }
+                        }
+                    }
+                    offset += 4;
+                } while (offset != 0x400);
+            }
         }
     }
 }
@@ -4169,11 +4171,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80051364:start
  * symbol: func_80051364
- * score: 251 differing words
+ * score: 102 differing words
  * frame: 0x48
  * relocations: 51
  * first-mismatch: +0x0
- * summary: Re-measured under the TU's -Wab,-r4300_mul selection; target is frame 0x40 with 47 relocations and the candidate materializes the playback-state and television-mode addresses four times where the target keeps each in one saved register.
+ * summary: Size exact 287. Frame 0x48 vs 0x40. Playback address rematerialized; s8 shift after PAL. Split s4 webs declined. Next: address keep that dies before path loops.
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

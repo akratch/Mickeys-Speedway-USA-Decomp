@@ -1201,9 +1201,9 @@
       "source_commit": "9eda1eb006b12e3dc3e49b43227b3ddfd2e2d7e6"
     },
     "func_overlay_052_F000063C_189ACAC": {
-      "ledger_commit": "0a458572b74f4742f0b651d4eecf7ed16ae94a1e",
+      "ledger_commit": "8b948c486f72e7bdc9c940c1d978df2070cf7b14",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "e6584c715160e55f9850831de0fc715284dc5a76"
+      "source_commit": "8b948c486f72e7bdc9c940c1d978df2070cf7b14"
     },
     "func_overlay_053_F0000240_189DBE8": {
       "ledger_commit": "8e4943d15be05f31258fe5102e7999f699cfd7b3",
@@ -1506,7 +1506,7 @@
       "source_commit": "89a3e47de77c85f10c4579aa6e1e93ff7ec59217"
     },
     "overlay10Initialize": {
-      "ledger_commit": "22ff4dda5d91ac1e58e0fddde26422e70f79bdf3",
+      "ledger_commit": "3e984e1aac392f9e891285c5f6164760a90a2e66",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "22ff4dda5d91ac1e58e0fddde26422e70f79bdf3"
     },
@@ -1861,9 +1861,9 @@
       "source_commit": "1f76b358621a55d481a098d18226c1895e5d4992"
     },
     "overlay48InitializeState": {
-      "ledger_commit": "80d31a51e00d9d93ceb20432691b59bcfe797915",
+      "ledger_commit": "619c8d918863998a0263da88f2b40f6108d4b231",
       "reason": "Reconstruction sweep at 8 to 16 bytes: the candidate is a few instructions out, and today's cause list names the usual reasons -- a missing copy, a block fallthrough, an address rematerialized once too often.",
-      "source_commit": "9e8fbd654a20f9711199839bddcc679f9ba09141"
+      "source_commit": "619c8d918863998a0263da88f2b40f6108d4b231"
     },
     "overlay4UpdateObjectMotion": {
       "ledger_commit": "04d879e6e074e11aae7f44e1e730a440a7666663",
@@ -1946,9 +1946,9 @@
       "source_commit": "fc001f593f0ee499dbf8d54b5e65ff5efb8da599"
     },
     "overlay65UpdateParticles": {
-      "ledger_commit": "f1be901bd3d60f68df1821f544818a8e69d7a38a",
+      "ledger_commit": "dba4cfe3cf421581f009be1820b863e19d4d64e4",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "27d7731a7e0a4635055be8e495d692b88593a25d"
+      "source_commit": "edc8ff3ea86ad8e1e37066d9a4c17f762e238625"
     },
     "overlay68CheckKind": {
       "ledger_commit": "a06d67461f57e2c1c878b85721707ba8093a92e1",

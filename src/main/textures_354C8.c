@@ -582,11 +582,9 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
     s8 allocFailed;
     s8 cacheFull;
     s16 numTextures;
-    s32 arenaCount;
-    s32 triangleOffset;
+    s32 arenaCount; /* extra decl before offset locals holds frame 0x68 */
     s32 displayListOffset;
     s32 textureOffset;
-    u8 *newBase;
     s32 vertexOffset;
     s32 commandOffset;
 
@@ -605,9 +603,10 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
 
     cacheNum = -1;
     for (i = 0; i < D_800D3008; i++) {
+        s32 *node = &D_800D2FFC[i << 1];
         if (newSprite) {
         }
-        if (D_800D2FFC[i << 1] == -1) {
+        if (node[0] == -1) {
             cacheNum = i;
         }
     }
@@ -624,19 +623,19 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
                      D_800D2FF8[spriteId + 1] - size);
 
     numTextures = spriteAsset->frameTexOffsets[spriteAsset->numberOfFrames];
-    arenaCount = numTextures;
+    i = numTextures;
     if (numTextures < spriteAsset->numberOfFrames) {
-        arenaCount = spriteAsset->numberOfFrames;
+        i = spriteAsset->numberOfFrames;
     }
 
-    triangleOffset =
-        (s32)align16((u8 *)(spriteAsset->numberOfFrames * 4 + 0x18));
-    displayListOffset = triangleOffset + ((arenaCount * 2) * 16);
-    textureOffset = displayListOffset + (arenaCount * 0x20) +
+    displayListOffset =
+        (s32)align16((u8 *)(spriteAsset->numberOfFrames * 4 + 0x18))
+        + ((i * 2) * 16);
+    textureOffset = displayListOffset + ((i * 4) * 8) +
                     (spriteAsset->numberOfFrames * sizeof(Gfx));
-    vertexOffset = textureOffset + (arenaCount * 4);
-    commandOffset = vertexOffset + (arenaCount * 40);
-    size = (s32)align16((u8 *)(commandOffset + (arenaCount * 2)));
+    vertexOffset = textureOffset + (i * 4);
+    commandOffset = vertexOffset + ((i * 4) * 10);
+    size = (s32)align16((u8 *)(commandOffset + (i * 2)));
     newSprite = func_8002B314(size, 0x8E);
     if (newSprite == NULL) {
         if (cacheFull) {
@@ -645,10 +644,11 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
         return NULL;
     }
 
-    D_800D3018 = (SpriteTriangle *)((u8 *)newSprite + triangleOffset);
+    /* Reconstructs the align16 result; a named triangleOffset local takes s2. */
+    D_800D3018 = (SpriteTriangle *)((u8 *)newSprite
+        + (displayListOffset - ((i * 2) * 16)));
     D_800D3014 = (Gfx *)((u8 *)newSprite + displayListOffset);
-    newBase = (u8 *)newSprite;
-    D_800D3010 = (SpriteVertex *)(newBase + vertexOffset);
+    D_800D3010 = (SpriteVertex *)((u8 *)newSprite + vertexOffset);
     newSprite->textures =
         (TextureFrameHeader **)((u8 *)newSprite + textureOffset);
     newSprite->commandOffsets = (u8 *)newSprite + commandOffset;
@@ -710,11 +710,11 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
 }
 /* PLATEAU-HANDOFF:func_800355A0:start
  * symbol: func_800355A0
- * score: 177 differing words; normalized distance 27
- * frame: 0x70 (target 0x68)
+ * score: 109 differing words
+ * frame: 0x68
  * relocations: 44
- * first-mismatch: +0x0
- * summary: Complete DKR/JFG-derived sprite loader is 268 versus 269 instructions; 20/44 relocation sites align, and ten bounded forms plus a 20-minute permuter leave one extra declared-local web and an eight-byte frame excess.
+ * first-mismatch: +0x48
+ * summary: Size and frame closed (269 words, 0x68). 109 masked; recover vs triangleOffset spill is the remaining 3-word insertion. Do not colour yet.
  * PLATEAU-HANDOFF:func_800355A0:end
  */
 #else

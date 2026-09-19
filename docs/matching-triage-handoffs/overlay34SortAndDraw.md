@@ -2,11 +2,47 @@
 ### `overlay34SortAndDraw` plateau handoff
 
 - source: `src/overlays/o034/overlay34SortAndDraw.c`
-- score: 97 differing words
+- score: 13 differing words
 - frame: 0x1A0
 - relocations: 16
-- first mismatch: +0x50
-- summary: Size closed at 760 B / 0x1A0. Interleaved swap plus reused-i copy. Unforced 97. Forced packing 64. Colour landscape floor 64. Homes still 24 B high.
+- first mismatch: +0x54
+- summary: 97 to 13 at size 0 / 0x1A0. L160, split frame, position OR-zero, do-while fill. Homes still +0x18. Delay-slot vs v0/v1 is a 13 vs 17 trade.
+
+#### 2026-09-19, lane w33-o034: 97 to 13 at size 0
+
+Identity-gated instrumented IDO vs stock PASS, proc 0, 26 p1 decisions, frame 0x1A0, 190 vs 190 words, displacement tax 0.
+
+Named levers on the inherited 97 body:
+
+- L99 unused pointer/f32 first or before the array: 101, first +0x0
+- leftover arg0 OR-zero at entry, in the draw loop, or inside record != NULL: inert at 97
+- leftover i OR-zero: size +4, 118
+- overlay22 empty-if on offset, j, i after sort, or offset inside the record body: inert at 97
+- overlay22 empty if (1) in the draw loop: 107
+- overlay40 comma-assign of the record load: 96
+- overlay40 comma while (i = i - 1, i >= 0): size -8, 160
+- overlay41 remat half-first / inline half: size -4
+- overlay41 remat frame-first: inert at 97
+- L160 delete i copy: size -4, 119
+
+What moved:
+
+- L160 indexed draw (delete the byte-offset carrier, use gOverlay34Pointers[j]): 81, s0/s1 cycle gone, +0x68 home matches, insertion pair unchanged
+- split record->frame spellings (then i = record->frame, else i = record->frame - half): 86, insertion pair closed
+- together: 25, 165 exact / 11 naming / 10 immediate / 4 structural, no insertions
+- carry the frame copy in position instead of reused sort-i: 24, sort-i takes a1
+- leftover position OR-zero (L100, not the folded frame OR 0 expression): 15, s3/s4 swap gone, 1 naming left (v0 to s3)
+- do-while fill in place of for (j): 13, first-loop structural pair closed
+
+Best unforced: 760 B, delta 0, frame 0x1A0, 13 masked / 15 raw, first +0x54, aligned 177 exact / 1 naming / 10 immediate / 2 structural. w6 record takes s0 naturally. w25 takes a1.
+
+Remaining on that body:
+
+- 10 immediate: distances still at +0x98 vs +0x80, colors at +0x198/+0x19C vs +0x184/+0x188, swap at +0x9C vs +0x84. +0x68 matches. L112 lengths 60-72 and L99 pads 1-6 either grow the frame or break +0x68.
+- 2 structural at +0x1F8/+0x1FC: delay-slot of position < half. Copying position before the test closes both (0 structural) and costs a 6-site v0/v1 swap, 17 masked. Same cell as overlay40 comma-assign of the test.
+- 1 naming at +0x23C: v0 to s3 in the else arm.
+
+Do not repeat declaration shuffles, flags, or permuter. Do not drop position OR-zero or the do-while fill. Next: a form that puts the position copy in the branch delay slot without the v0/v1 swap, or a 24-byte top-of-frame save that keeps +0x68 and frame 0x1A0.
 
 #### 2026-09-17, lane w9-o034: size closed; colour floor 64
 

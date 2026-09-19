@@ -42,9 +42,10 @@ extern u8 D_80000000[];
 }
 
 #ifdef NON_MATCHING
-/* Workbench: structure-mismatch, 73 differing words, first mismatch +0x04.
+/* Workbench: structure-mismatch, 69 differing words, first mismatch +0x04.
  * Exact 77-instruction size and four-command CFG; packet arithmetic is reordered.
- * Structural gap: saved-list alias plus macro scheduling/register web remain. */
+ * Trailing empty if (vertexCount) then if (count) are L100 occurrences; reverse
+ * order is 73, and each probe alone is 72 and 71. */
 void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
     register Overlay83Command **savedDisplayList = displayList;
     s32 count;
@@ -61,6 +62,10 @@ void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
                (u8 *)&strip[strip->vertexIndex] + 0x800000F0,
                vertexCount, 0);
         POLYGON((*savedDisplayList)++, D_80000000, doubledCount, 1);
+        if (vertexCount) {
+        }
+        if (count) {
+        }
     }
 }
 #else
@@ -69,10 +74,10 @@ void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
 
 /* PLATEAU-HANDOFF:overlay83DrawStrip:start
  * symbol: overlay83DrawStrip
- * score: 73/77 words
+ * score: 69/77 words
  * frame: frameless
  * relocations: 2
  * first-mismatch: +0x4
- * summary: Refresh corrects the stale score label: 73 masked differences, 45 draws; source-authentic packet schedule and unique relocation identity remain unavailable.
+ * summary: L100 empty-if pair 73 to 69 at delta 0. Leaf, zero p1 probes. Cursor force t0 is 68. Missing a0 copy at +0x4. D_80000000 identity fail-closed.
  * PLATEAU-HANDOFF:overlay83DrawStrip:end
  */

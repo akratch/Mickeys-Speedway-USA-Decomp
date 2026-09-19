@@ -124,6 +124,6 @@ void func_overlay_066_F0000040_18C64A8(Overlay66Gfx **commands) {
  * frame: -0x18
  * relocations: 28
  * first-mismatch: +0x4
- * summary: Exact 296-word geometry; broad filter CFG/register cascade remains, and candidate relocation identity proof is partial.
+ * summary: Colour floor 247 on 117 probes (w21=c13). Comma-assign, empty-if, OR-zero inert; L160 index +20. Five insertion pairs remain; not colour.
  * PLATEAU-HANDOFF:func_overlay_066_F0000040_18C64A8:end
  */

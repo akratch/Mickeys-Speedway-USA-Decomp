@@ -496,9 +496,9 @@
       "source_commit": "8744e6484324325c1b899182492ff1962767c33d"
     },
     "func_800355A0": {
-      "ledger_commit": "65925a5c237a851580679278dea7746082cbecf6",
+      "ledger_commit": "983ce64bfc8d31c133b35ebead4b19ed9f247bcd",
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
-      "source_commit": "65925a5c237a851580679278dea7746082cbecf6"
+      "source_commit": "983ce64bfc8d31c133b35ebead4b19ed9f247bcd"
     },
     "func_80035F48": {
       "ledger_commit": "a863dd80ec6202a424fd71431d686bc728be4fbf",
@@ -751,9 +751,9 @@
       "source_commit": "838f8ff7d18ce66f00c1ab7470b30bee06dbf5b5"
     },
     "func_80051364": {
-      "ledger_commit": "4b1cb3fb4c85cadf5c6ce8472b9b4c949039d2f3",
+      "ledger_commit": "272b57c0308665f4bcabec8c47b6c9961aec7f15",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "e39c665934647ee79903e791dfff5076b97c6d86"
+      "source_commit": "272b57c0308665f4bcabec8c47b6c9961aec7f15"
     },
     "func_800517E0": {
       "ledger_commit": "171a68c474d894eaa7541a0a86d07a61df09a408",
@@ -886,9 +886,9 @@
       "source_commit": "daecb33e7741645c83f713cface0a558e85bbe31"
     },
     "func_overlay_002_F0001DF8_1858BF0": {
-      "ledger_commit": "5037e79c097c932e6c03f1e9dba1aabef4f162fb",
+      "ledger_commit": "0afb87361a166160712784fe525a90a63fa7d4cc",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "5037e79c097c932e6c03f1e9dba1aabef4f162fb"
+      "source_commit": "0afb87361a166160712784fe525a90a63fa7d4cc"
     },
     "func_overlay_007_F0000324_185C1AC": {
       "ledger_commit": "a88acbcfb0aa8565b0b214200e5ee478ef3cd104",
@@ -966,9 +966,9 @@
       "source_commit": "adc505d8d56ca3f66650d5845e20ec1048a6b7e8"
     },
     "func_overlay_011_F0001E4C_186A694": {
-      "ledger_commit": "e7f08f0fb67d7de0593dbc7b2758a8c635391638",
+      "ledger_commit": "1372cc7ca2ab6db90ceefe0e23e8ef98db914dd4",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "e7f08f0fb67d7de0593dbc7b2758a8c635391638"
+      "source_commit": "1372cc7ca2ab6db90ceefe0e23e8ef98db914dd4"
     },
     "func_overlay_011_F00022E8_186AB30": {
       "ledger_commit": "c1cd2f3e3ac6513106b79a2767ee9b78910cc5cf",
@@ -2001,9 +2001,9 @@
       "source_commit": "6f17011f34d29483e3cd6c82cda07c8f6dfb8638"
     },
     "overlay83DrawStrip": {
-      "ledger_commit": "17b71829ed0133bc9367239d28e369d3940d87c6",
+      "ledger_commit": "004b23a69ae67ad041b704668d00acc4839d3720",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "f4355da50d5e3929fee866f69eac5a887c4cd351"
+      "source_commit": "004b23a69ae67ad041b704668d00acc4839d3720"
     },
     "overlay89InitializeEffect": {
       "ledger_commit": "fb9a096f575791e53907007f0bdb5aeaf6348437",
@@ -2046,9 +2046,9 @@
       "source_commit": "9ad11577bd38cf096723e6b8587e39cd3e9a51e3"
     },
     "overlay99ApplySegment": {
-      "ledger_commit": "1377145754e1a57d1f940a56e0552f463af749d3",
+      "ledger_commit": "6e621ae2863f66ed28e4dbe211337396969b185b",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "1377145754e1a57d1f940a56e0552f463af749d3"
+      "source_commit": "6e621ae2863f66ed28e4dbe211337396969b185b"
     },
     "overlay99BuildHeightGrid": {
       "ledger_commit": "93fad07b9050b3ca3c6579894ddfa3de12b2f9ed",

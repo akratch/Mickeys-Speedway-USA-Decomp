@@ -1359,6 +1359,12 @@ gOverlay41Objects = 0x00000000;
 gOverlay41CurrentState = 0x00000000;
 overlay41ApplyAmount = 0xf0000000;
 
+/* overlay 41: overlay41ProcessEntry.c.o */
+overlay41ApplyEntry = 0xf0000000;
+overlay41FinishEntry = 0xf0000000;
+overlay41RefreshEntry = 0xf0000000;
+overlay41StartEntry = 0xf0000000;
+
 /* overlay 41: overlay41AddSlot.c.o */
 gOverlay41Slots = 0x00000000;
 

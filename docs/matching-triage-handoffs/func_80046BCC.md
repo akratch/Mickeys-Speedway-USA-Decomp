@@ -6,7 +6,7 @@
 - frame: 0x40
 - relocations: 3
 - first mismatch: +0x2C
-- summary: L145 one-name restores type-4 web 32 at 42. Separate working copy puts load in v0 at delta 0, keeps web 32 and a structural pair. w0=c1 accepts, +12.
+- summary: arg0 OR-zero spans the glyph call (72); loop-local zero folds. Three-var region still 21; forcing the mask temp to s2 is 74. Occupancy cannot occupy v0. Best 16
 
 #### 2026-09-09: the ninth callee-saved web is the working copy
 
@@ -356,4 +356,62 @@ structural pair. Next: a copy of `var_s2` whose value number is
 not the mask's, without a type-4 temp and without the +1/-1
 pair. The dead-store cell of the zero-width redef is closed;
 an identity probe that the web builder keeps is not.
+
+#### 2026-09-19, lane w28-dicpu: L100/L109 occupancy cannot occupy v0
+
+Re-measure of the restored 16-word body: 424 bytes, 106 of 106 words,
+delta 0, frame 0x40, 16 masked, 16 raw, first +0x2C, register-only.
+Aligner: 90 exact, 16 naming, 0 immediate, 0 structural. Census: 68
+percent coherence, four windows at +0x78, +0xAC and +0x164. Identity
+gate: instrumented IDO `.text` is byte-identical to stock (5296 bytes);
+procedure 11 still has 18 decisions, 12 coloured, no web 32. Web 0 is
+the combined load-plus-working symbol, save 25.78, nocs 9, totalsave
+232, coloured s0; its caller cost list includes c1/v0 at cost 20.
+
+The overlay 22 recipe does not transfer. This function's glyph call sits
+inside the character loop, so any parameter occupancy that the web
+builder keeps is live across that call and takes a callee-saved colour
+rather than v0.
+
+- `x` OR-zero, `y` OR-zero, `x &= -1`, `x ^= 0`, and empty `if (x)` at loop
+  head: 72, delta 0. They count (n_coloured drops 12 to 11) and v0
+  stays empty. `x += 0` folds, still 16.
+- Empty `if (var_s1)`, `var_s2` OR-zero after the mask, `var_v0` OR-zero
+  after the mask: 16, inert. L109 on an already-read local still does
+  not move totalsave.
+- Loop-local `s32 zero = 0; zero` OR-zero at loop head or after the call:
+  16, folded. Function-scope `zero` OR-zero in the loop: 72, extra web
+  takes s7, still no v0.
+- Loop-local `s32 ch = var_v0` feeding the mask, with or without
+  `ch` OR-zero / `ch &= -1` / `ch ^= 0`: copy-propagated, 16.
+- Empty `if (ch)` on that local: 16, but web 0 totalsave 232 to 242.
+
+Three-variable family, occupancy applied on top:
+
+- Working copy `w = var_v0` (the load, not the mask), tests on `w`:
+  28 without a region, 21 with `do { } while (0)` around the copy.
+  Reproduces the 2026-09-17 21-word web SET: load web 0 in v0, type-4
+  mask temp in v1 (nocs 2, totalsave 40, blocks 2,3,4,8), `w` in s0.
+  Aligned on the 21: 86 exact, 12 naming, 2 immediate, 5 structural,
+  candidate-only +0x60, target-only +0x8C.
+- Loop-local `zero` OR-zero on that shape: 28, folded. `x` OR-zero on it:
+  71. Neither moves the mask temp off v1 onto a saved carrier.
+- One-name on `var_s2` (delete the `var_v0 = var_s2` copy): 42, web 32
+  returns as type-4 coloured first into v0. Loop-local zero on it: 42,
+  the temp still takes v0.
+- Dropping the initial `& 0xFF` on the 21-word form kills the type-4
+  web and the `andi`, delta -4, 85. The target needs that mask; the
+  temp is that mask.
+- Forced objects of the 21-word form, acceptance read off `forced`:
+  `p1:w32=c16` (s2) accepted, 74. `p1:w32=c15` (s1) accepted, 76.
+  `p1:w32=c17` (s3) accepted, 74. `p1:w32=c3` (a0) accepted, 21.
+  Recolouring the mask temp into the saved carrier wrecks the
+  schedule; recolouring it inside the caller-saved bank stays at 21.
+
+Occupancy cannot occupy v0 unforced, and putting the mask temp in the
+saved carrier is not the match. Best remains the 16-word two-variable
+body. The load is in v0 only on the three-variable 21-word SET, which
+reintroduces the type-4 temp and a structural pair. Next is still a
+copy of `var_s2` whose value number is not the mask's, without that
+temp and without the +1/-1 pair; an L109 phantom is not that copy.
 <!-- plateau-handoff:func_80046BCC:end -->

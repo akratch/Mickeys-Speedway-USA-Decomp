@@ -1716,6 +1716,20 @@ bytes and disassembly never belong here.
   offset could be defined first (as1 emits its move first) and still be
   coloured second. Diagnostic-only until a natural source form is found; the
   committed function says so at the point of use.
+- **A shared goto that joins two overflow arms can hide the target's
+  per-arm delay-slot copies and keep an extra callee-saved.** Duplicating
+  the join assignment onto both arms lets each copy land in a delay slot
+  (one on the skip-else branch, one as fallthrough) and drops the extra
+  branch. A leftover time or similar value that starts as a parameter must
+  stay the parameter: a named copy is a different web and can lose the
+  argument register to a cached flag of slightly higher save, after which
+  the leftover is forced into s0 and the frame grows by one slot. A
+  loop-weighted identity (`x |= 0` or `x &= -1`) on the leftover raises its
+  save above the flag's (L100) and restores the argument colour; `x += 0`
+  is folded and does not count. Forcing the flag off the argument register
+  first is how this was priced (delta 0, two-word prologue swap); the
+  parameter spelling then retired the swap. Limit: the identity is
+  diagnostic until a natural extra loop use is found.
 
 ### Assembler scheduling and phase replay
 

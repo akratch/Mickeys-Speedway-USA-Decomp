@@ -863,6 +863,7 @@ tier-A threshold, so the address label remains canonical.
 | `func_80037150` | 108 bytes under `-O2 -mips2 -32`; buffer-release body, all 27 instruction words and its relocation surface exact. |
 | `func_80037658` | 12 bytes under `-O2 -mips2 -32`; direct store-only body, all 3 instruction words and one HI16/LO16 relocation identity exact. |
 | `func_80037664` | 104 bytes under `-O2 -mips2 -32`; state predicate body, all 26 instruction words and eight relocation identities exact. |
+| `func_800376CC` | 472 bytes under `-O2 -mips2 -32`; fade state machine, all 118 instruction words and its relocation surface exact (matched 2026-09-19: leftover time in the parameter, duplicated overflow clears, L100 identity so the remainder keeps a2). |
 | `func_80037A78` | 116 bytes under `-O2 -mips2 -32`; frontend transition body, all 29 instruction words and its relocation surface exact. |
 | `func_8003A680` | 48 bytes under `-O2 -mips2 -32`; bounded character-buffer append body, all 12 instruction words and four relocation identities exact. |
 | `func_8003A6B0` | 80 bytes under `-O2 -mips2 -32`; character-code mapping body, all 20 instruction words and zero relocations exact. |
@@ -876,7 +877,6 @@ tier-A threshold, so the address label remains canonical.
 | `func_8003A7D0` | Structure-mismatch, 36 differing words, first `+0x10`; target 43/candidate 41 words, with count-carrier and first-loop address formation unresolved. |
 | `func_800371BC` | Structure-mismatch, 148 differing words, first `+0x28`; target 150/candidate 159 words and 0x38-byte frames, with grid induction and record-store schedule unresolved. |
 | `func_80037414` | Structure-mismatch, 59 differing words, first `+0x10`; target 145/candidate 146 words, target frame 0x30 versus candidate 0x40. |
-| `func_800376CC` | Structure-mismatch, 95 differing words, first `+0x0`; target 118/candidate 119 words, target frame 0x18 versus candidate 0x20. |
 | `func_800378A4` | Structure-mismatch candidate: 103 differing words, first `+0x14`; target 117 instructions/0x68 frame versus candidate 112/0x68, with radial-gradient FP lifetimes and clamp/control-flow shape unresolved. |
 | `func_80037AEC` | Allocation-mismatch, 7 differing words, first `+0x54`; target/candidate 66 words and 0x40-byte frames, with only register allocation unresolved. |
 | `func_80037BF4` | Matched: the retained NON_MATCHING body was already byte-exact (32/32 words, 0x18 frame, 6 relocations); the recorded 17-word structure-mismatch was a stale verdict from an earlier candidate. |

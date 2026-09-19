@@ -441,9 +441,9 @@
       "source_commit": "0af40ba10fb3711caa178fe4de27170b84a23854"
     },
     "func_8002CF6C": {
-      "ledger_commit": "98b4f59ff8dfa4513b26f38598111a12f0e0303c",
+      "ledger_commit": "acf1edf71a4cf2a1b154cd36cbada145c924eb34",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "ed16f01afa36d94df73bf504ddbdb05b2adeacfa"
+      "source_commit": "acf1edf71a4cf2a1b154cd36cbada145c924eb34"
     },
     "func_8002EBE0": {
       "ledger_commit": "525cc87414cf6a43c0305a56a63015509c9cedd3",
@@ -726,9 +726,9 @@
       "source_commit": "9fa2314ec43c033254eb19b67d3494a2c67df7c9"
     },
     "func_8004C690": {
-      "ledger_commit": "b0e8083df03e4cb05bf7465d847b892d51a013c3",
+      "ledger_commit": "782cc192403a47c1e1ab98b5c2e8b8189a6946f8",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "b0e8083df03e4cb05bf7465d847b892d51a013c3"
+      "source_commit": "782cc192403a47c1e1ab98b5c2e8b8189a6946f8"
     },
     "func_8004E8E0": {
       "ledger_commit": "e14634a8533b583479f9dcd4d8091e87625675c8",
@@ -811,9 +811,9 @@
       "source_commit": "f2c3205a83b96f6cadf2dd3655cb57fbc8b5b22a"
     },
     "func_80058250": {
-      "ledger_commit": "4bd0ef0597a0443028441f79230ea6f202d6f2de",
+      "ledger_commit": "6ca09d07a845defd661c3fb4942761dca8050167",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "4bd0ef0597a0443028441f79230ea6f202d6f2de"
+      "source_commit": "6ca09d07a845defd661c3fb4942761dca8050167"
     },
     "func_8005830C": {
       "ledger_commit": "0a960767cf036fca266830971f39cd8f96f07e4b",

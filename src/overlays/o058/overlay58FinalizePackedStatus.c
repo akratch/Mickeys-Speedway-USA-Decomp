@@ -66,6 +66,13 @@ extern void overlay58Call59FCReloc(s32 code);
  * `u16`.  That pair occupies the target's +0x1C home (candidate +0x18 is
  * gone).  s32/u32/unsigned are 78; s16 shift grows the function; other
  * 16-bit locals regress.  See the shard.
+ *
+ * 2026-09-19 (lane w28-o058f), 77 to 75 at delta 0: mode-0 `i = 0` moves
+ * into the `for` initializer so that node is not initially ready, and
+ * each mask arm comma-assigns `shift` in the same statement (overlay40
+ * delay).  Empty `if (i) {}`, leftover OR-zero, loop-local packed
+ * carriers, generated subscripts, and the other initially-ready delays
+ * are inert or worse on this shape.  See the shard.
  */
 #ifdef NON_MATCHING
 void overlay58FinalizePackedStatus(void) {
@@ -115,17 +122,13 @@ void overlay58FinalizePackedStatus(void) {
 
     mode = gOverlay58PackedModeReloc;
     if (mode == 0) {
-        shift = 0;
-        mask = 0x7;
+        shift = 0, mask = 0x7;
     } else if (mode == 1) {
-        shift = 3;
-        mask = 0x38;
+        shift = 3, mask = 0x38;
     } else if (gOverlay58ExtendedPackedModeReloc == 0) {
-        shift = 6;
-        mask = 0x1C0;
+        shift = 6, mask = 0x1C0;
     } else {
-        shift = 9;
-        mask = 0xE00;
+        shift = 9, mask = 0xE00;
     }
 
     player = records[0].player;
@@ -143,10 +146,9 @@ void overlay58FinalizePackedStatus(void) {
             return;
         }
 
-        i = 0;
         count = 0;
         selectedPlayer0 = player;
-        for (; i < 3; i++) {
+        for (i = 0; i < 3; i++) {
             if (current != 0);
             if ((i != *(volatile u8 *)&records[0].player) &&
                 ((gOverlay58PackedStatusReloc[i + 4] & 0x7) >= 3)) {
@@ -302,10 +304,10 @@ void overlay58FinalizePackedStatus(void) {
 
 /* PLATEAU-HANDOFF:overlay58FinalizePackedStatus:start
  * symbol: overlay58FinalizePackedStatus
- * score: 77 differing words
+ * score: 75 differing words
  * frame: 0x48
  * relocations: 48
- * first-mismatch: 0x18
- * summary: u16 mask and shift pack onto the target +0x1C home, 78 to 77 at delta 0; colour landscape floor 78 with no zero force; indexed packed-status already used
+ * first-mismatch: +0x18
+ * summary: comma-delay of mode-0 i and shift, 77 to 75 at delta 0; L100/L145/L109 on i and mask/shift inert or worse; fifth home remains
  * PLATEAU-HANDOFF:overlay58FinalizePackedStatus:end
  */

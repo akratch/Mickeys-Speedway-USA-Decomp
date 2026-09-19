@@ -209,7 +209,7 @@ void func_overlay_050_F0000334_1896CA4(O50Object *object, s32 updateRate) {
             i = 0;
             if (updateRate > 0) {
                 remainder = updateRate & 3;
-                if (remainder != 0) {
+                if (*(s32 *)&remainder != 0) {
                     do {
                         i++;
                         D_A4 += (0.0f - D_A4) * 0.125f;
@@ -583,12 +583,11 @@ hudQuad:
             do {
                 i = 0;
                 if (updateRate > 0) {
-                    remainder = updateRate & 3;
-                    if (remainder != 0) {
+                    if ((updateRate & 3) != 0) {
                         do {
                             i += 1;
                             *lapOffsets += (-*lapOffsets) >> 2;
-                        } while (remainder != i);
+                        } while ((updateRate & 3) != i);
                     }
                     if (i != updateRate) {
                         do {
@@ -641,10 +640,10 @@ hudQuad:
 
 /* PLATEAU-HANDOFF:func_overlay_050_F0000334_1896CA4:start
  * symbol: func_overlay_050_F0000334_1896CA4
- * score: 1183 differing words
+ * score: 1115 differing words
  * frame: 0x110
  * relocations: 315
  * first-mismatch: +0x0
- * summary: Address partition isolates interpolation temp-ring windows; no safe source adoption.
+ * summary: Size closed at 1575 via L144 remainder plus inlined lap peel. Colour packing 1094 of 1115. Structural insertions remain.
  * PLATEAU-HANDOFF:func_overlay_050_F0000334_1896CA4:end
  */

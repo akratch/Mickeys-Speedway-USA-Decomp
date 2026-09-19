@@ -142,6 +142,11 @@ extern s32 overlay101ByteLength(u8 *text);
  *   Inlining the node-24 or node-32 index local reads 148 and 155; merging the
  *   two node-24 index locals reads 206 at +8, so the counter partition is
  *   already separated as it should be.
+ * Lane w25-o101d (2026-09-19) adopted the A/B/C u8 length local and (s8)
+ *   store cast: 131 to 130 at delta 0. Identity-gate proc 0; 21 coloured
+ *   webs unchanged. Packed forces reach 118, split-base lattice 113; no
+ *   force scores 0. See the shard for the L109 and L131 negatives on the
+ *   node-20 base.
  * See docs/matching-triage-handoffs/overlay101BuildPresentationD.md for the
  * remaining residual and the decision variable that blocks it. */
 #ifdef NON_MATCHING
@@ -155,7 +160,7 @@ void overlay101BuildPresentationD(void) {
     s32 previousType;
     void *previous;
     void *handle;
-    s8 length;
+    u8 length;
     f32 opacityScale;
     s32 compactSelector;
     Overlay101Node32 *node32A;
@@ -181,9 +186,9 @@ void overlay101BuildPresentationD(void) {
 
     node24IndexB = gOverlay101BuilderNode24CountB;
     node24B = &gOverlay101BuilderNodes24B[node24IndexB];
-    node24B->length = length;
+    node24B->length = (s8)length;
     node24B->opacity =
-        (s8)(s32)((f32)(u32)(length & 0xFF) * opacityScale);
+        (s8)(s32)((f32)(u32)length * opacityScale);
     node24B->kind = 4;
     node24B->mode = 2;
     node24B->color0 = 0xFF;
@@ -208,10 +213,10 @@ void overlay101BuildPresentationD(void) {
 
 /* PLATEAU-HANDOFF:overlay101BuildPresentationD:start
  * symbol: overlay101BuildPresentationD
- * score: 131 differing words
+ * score: 130 differing words
  * frame: 0x20
  * relocations: 52
  * first-mismatch: +0x10
- * summary: L160 pointer removal is byte-inert. The 21-web landscape packs to 119; the mapped split-base lattice reaches 114, still nonexact.
+ * summary: u8 length 131 to 130. Packed forces 118, split-base 113, none score 0. L109/L131 do not raise the node-20 base save.
  * PLATEAU-HANDOFF:overlay101BuildPresentationD:end
  */

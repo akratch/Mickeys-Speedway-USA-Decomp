@@ -840,9 +840,9 @@ void func_8004C5A4(char *input, char *output, s32 number) {
     } while (currentChar);
 }
 
-/* Workbench p7 batch 12: structure-mismatch; 144/146 instructions, exact -0x70 frame, 105 masked/raw words, first +0x0.
- * Lever: forced incoming-character home regressed; inherited flag/width/address/copy/stack-home variants remain negative.
- * Remains: initial pool allocation and saved-header copy schedule; GLOBAL_ASM stays canonical. */
+/* 145/146 instructions, exact 0x70 frame, 106 masked words, first +0x0.
+ * tmp-form copy plus L99 savedHeader after the pointer/index locals closes one
+ * missing word and puts the array at 0x40. GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 /*
  * PROVENANCE -- source organization was cross-checked against JFG's
@@ -850,7 +850,6 @@ void func_8004C5A4(char *input, char *output, s32 number) {
  * draft, constants, structure offsets, and loader call determine this body.
  */
 FontGlyphData *func_8004C690(s32 character) {
-    s32 savedHeader[4];
     FontSpacingData *font;
     FontGlyphData *entries;
     FontGlyphData *entry;
@@ -859,6 +858,7 @@ FontGlyphData *func_8004C690(s32 character) {
     s32 *source;
     s32 *destination;
     s32 index;
+    s32 savedHeader[4];
     s32 runLength;
     s32 remaining;
     u32 blockCount;
@@ -939,9 +939,12 @@ FontGlyphData *func_8004C690(s32 character) {
             destination = savedHeader;
             copyIndex = 0;
             do {
-                *destination++ = *source++;
+                s32 tmp = *source;
                 copyIndex++;
-            } while (copyIndex < 4);
+                destination++;
+                source++;
+                destination[-1] = tmp;
+            } while (copyIndex < 4U);
 
             piRomLoadSection(0x39, header,
                           font->romOffset + (characterIndex * font->textureSize),
@@ -1226,10 +1229,10 @@ u8 func_8004D5C0(s32 font) {
 
 /* PLATEAU-HANDOFF:func_8004C690:start
  * symbol: func_8004C690
- * score: 105/146 words
+ * score: 106/146 words
  * frame: 0x70
  * relocations: 9
  * first-mismatch: +0x0
- * summary: Fresh proc-24 census: 29 draws/253 emissions. Saved-header placement improves two aligned rows only; copy-unrolling deficit remains.
+ * summary: tmp copy plus L99 homes at 0x40 close one word to 145/146. Remaining is the rolled sltiu save; OR-zero on copyIndex emits it but takes s0 and frame 0x78.
  * PLATEAU-HANDOFF:func_8004C690:end
  */

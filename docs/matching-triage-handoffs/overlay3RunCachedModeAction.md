@@ -6,7 +6,7 @@
 - frame: 0x58
 - relocations: 15
 - first mismatch: +0x84
-- summary: Packed w29=c2 plus w39=c3 is 25 additive, not 0. valid is one web spanning encode so v1 is forbidden. L97 and lever 51 do not apply.
+- summary: Packed 25 still misses the +0xE0 copy. Comma-assign leftover generated-subscript and L109 fold or grow; valid cannot take v1.
 #### 2026-09-12, lane p23-lastmile5: complete colour landscape and boolean shapes
 
 Fresh baseline: 113 words, delta zero, 34 raw and masked differences, frame
@@ -205,5 +205,60 @@ The named requirement is still two ranges: a bounds boolean that dies
 before encode (so v1 is offered) and a switch carrier born after the path
 check, without else-zero stores or a new frame slot. The guarded 34-word
 body is retained. Stop under ADR 0018.
+
+#### 2026-09-19, lane w27-o003: boolean-transfer levers fold or grow
+
+Re-measure of the retained body: 452 bytes, delta 0, 113 words, 34 raw and
+masked differences, frame 0x58 with nine matching slots, 15 candidate
+relocations, first mismatch +0x84. Aligned buckets are 91 exact, 11 naming,
+zero immediate and 12 structural rows, with the candidate-only word at +0x98
+and the target-only word at +0xE0. Register census is 11 pure substitutions,
+coherence 83 percent, a v1-a0 cycle, and a new mapping at +0x114.
+
+Identity gate: instrumented IDO at the configured compile command, CDX_OUT
+not CDX_LOG, CDX_PROC=0 (procindex one row, 12 p1 decisions). Unforced
+records read forced=-2. Stock and instrumented .text hashes match; relocation
+and symbol tables match aside from the object path. Direct object scores are
+both 34, delta 0, first +0x84.
+
+The extra word is a second shift of the angle at the encode argument, an
+initially-ready as1 node (before=0, aftercycles=0) in that call block. The
+missing word is a copy of the path-check boolean into the switch carrier
+after the control reload. Packed forces p1:w29=c2 (accepted forced=2, 29)
+plus p1:w39=c3 (accepted forced=3, 30) still score 25 additive at delta 0.
+That pair moves the extra word to +0xA0 and leaves the +0xE0 copy. Forcing
+valid (web 36) onto v1 is declined (forced=-2, byte-identical). Forcing a
+split of web 36 is accepted (forced=-1, no colour row) and grows 20 bytes to
+89, sending the boolean to memory. Colour cannot emit the copy.
+
+Authorized source levers, all compiled through the configured command and
+scored on the object:
+
+- leftover in a param: s32 first-parameter casts without a new local score 35
+  at delta 0 and still have the gap pair; arg0 OR-zero on that shape is the same
+  object (the OR-zero folds). A dead-param leftover after an extra pointer
+  copy scores 39 at delta 0, first +0x8, gap unchanged. Reusing the parameter
+  as the shifted angle or as the post-encode boolean with a register pointer
+  copy grows 12 to 16 bytes and scores 111 to 116.
+- generated subscript: switch consumers or a copy through (&valid)[0] score
+  98 and grow 24 bytes (the L144 addressed-read cost). (&angle)[0] at encode
+  only is 83 plus 4 bytes. Both the cast and the encode spelled that way is
+  86 plus 12 bytes and still misses +0xE0. (&control->mode)[0] is
+  byte-identical to the baseline.
+- comma-assign at the encode argument, the switch, the path assignment, or
+  the mode-3/4 tests, including value-producing OR-zero and live pointer
+  self-assigns, is byte-identical to the baseline. A two-name pathOk join
+  with comma-assign grows 4 bytes and scores 102.
+- L109 last-declared zero OR-zero, with or without zero = 0, is byte-identical
+  (no loop, the probe is deleted). valid OR-zero at the switch also folds.
+
+Repeating (angle << 16) >> 16 at the bounds is the same object as (s16)angle,
+matching the earlier receipt. Draw census of the retained body is 17 draws
+and 171 emissions. No source was adopted. Stop under ADR 0018: three
+consecutive lever families produced no better residual, no new identity that
+scores below 34 at delta 0, and the packed 25 object still lacks the +0xE0
+copy. Next action needs a source-authentic split of the bounds boolean from
+the path-check result that is offered v1 without else-zero stores, a new
+frame slot, or a stack split.
 
 <!-- plateau-handoff:overlay3RunCachedModeAction:end -->

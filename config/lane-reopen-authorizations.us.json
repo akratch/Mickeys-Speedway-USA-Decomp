@@ -436,9 +436,9 @@
       "source_commit": "6091b1a01df312435a7fd6ecae778481fb795ce4"
     },
     "func_8002B040": {
-      "ledger_commit": "31b60d5adeea2826d600567d958f213643e245ab",
+      "ledger_commit": "d348622e34cee1867ce13e87cc32dee1fa3823a0",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "31b60d5adeea2826d600567d958f213643e245ab"
+      "source_commit": "d348622e34cee1867ce13e87cc32dee1fa3823a0"
     },
     "func_8002B524": {
       "ledger_commit": "8740f3fb1d724dd4cc8e782f7635d0a189ac09f8",
@@ -476,9 +476,9 @@
       "source_commit": "babca388fb412e0e57a59447c7ec286e261a8ed2"
     },
     "func_80030610": {
-      "ledger_commit": "bca4aa0dfd5941b51ed6c12a6deac70c3ab7488b",
+      "ledger_commit": "bd26c5092a71ef640ab4949089d11562ee561278",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "cfbb756f31ac7172a1da0adef61efb317db86af2"
+      "source_commit": "bd26c5092a71ef640ab4949089d11562ee561278"
     },
     "func_800336A8": {
       "ledger_commit": "bfd6d07a61c4ce33e4b8069ccf92d49054398980",
@@ -701,9 +701,9 @@
       "source_commit": "e71d0977dfce6dbb522aed9af75dc3c6589bee0b"
     },
     "func_80049B14": {
-      "ledger_commit": "5a433a0f91d111cd61b4692152dc0e41cbbd88aa",
+      "ledger_commit": "3bc297ba34c5af92e45d68f1344b72796cbafc1f",
       "reason": "ADR 0018 stall rule, and at delta 4 bytes the candidate is not the same function: decompiler-assisted reconstruction applies where no permutation can.",
-      "source_commit": "5a433a0f91d111cd61b4692152dc0e41cbbd88aa"
+      "source_commit": "3bc297ba34c5af92e45d68f1344b72796cbafc1f"
     },
     "func_80049E4C": {
       "ledger_commit": "0124e56849a0eca16f5c657a6649d9fafb2b7d4f",
@@ -856,9 +856,9 @@
       "source_commit": "bfc53f44626b68875f1d845577717a59f172d8d8"
     },
     "func_8006E7E0": {
-      "ledger_commit": "c09b294587a23c2b4ed76f2ca023022852b2592c",
+      "ledger_commit": "f3a89e25f45adda7a25a7d4d99ace3cb785872d0",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "6039ac03862fd56e8ef91c68d23adce0c4c39154"
+      "source_commit": "f3a89e25f45adda7a25a7d4d99ace3cb785872d0"
     },
     "func_overlay_001_F0001D78_184E158": {
       "ledger_commit": "4730f79d5488a6a563a1e17af4ed1a3c1816a9b4",
@@ -921,9 +921,9 @@
       "source_commit": "2727781413af7208b3af46011f6f8d98107a7aec"
     },
     "func_overlay_008_F0001000_185ED58": {
-      "ledger_commit": "3c3892bd189b498290ce6f750e564c20d68e033c",
+      "ledger_commit": "77999c0e08d2831ba22ec5509a9cc9009ae74272",
       "reason": "ADR 0018 stall-rule reopen for a whole-TU batch: these plateaus were filed under the superseded attempt cap. One owner works the unit under the stall rule with a single shared flag-lattice run.",
-      "source_commit": "3c3892bd189b498290ce6f750e564c20d68e033c"
+      "source_commit": "77999c0e08d2831ba22ec5509a9cc9009ae74272"
     },
     "func_overlay_008_F0001294_185EFEC": {
       "ledger_commit": "a99e66384dc645381934ce05f4ad8387f86ede70",
@@ -1006,9 +1006,9 @@
       "source_commit": "1f5bc9322f4c637ed149ff269f11b75686550d98"
     },
     "func_overlay_014_F0001830_1871108": {
-      "ledger_commit": "9d5fc3ba23a65bed39fddb258bb67cb77e8356d9",
+      "ledger_commit": "6c4abc4b47d6db6851eb62014bf6fa22da103022",
       "reason": "Track B reopen 2026-09-23: tools/insertion_pairs.py (new since closure) owns every one-sided word with a line and construct (docs/small-delta-census.md). Closure searched colour at nonzero delta; this pass re-spells the owning line.",
-      "source_commit": "bb201dc13247b7445c37b0f92a6c48ca0cb7cb22"
+      "source_commit": "6c4abc4b47d6db6851eb62014bf6fa22da103022"
     },
     "func_overlay_020_F000038C_1876964": {
       "ledger_commit": "b0707769d25676576150e02d365a01a1090b17c0",

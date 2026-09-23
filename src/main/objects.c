@@ -803,7 +803,7 @@ extern s32 D_800790D0[];
 extern f32 D_80080D24;
 extern f32 D_80080D28;
 extern void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
-                          s32 arg5, s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10);
+                          s32 arg5, volatile s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10);
 typedef struct CameraScaledTransform CameraScaledTransform;
 typedef struct FxGfx FxGfx;
 extern void camPushModelMtx(Gfx **dlist, Mtx **mtx, CameraScaledTransform *transform,
@@ -3316,7 +3316,7 @@ s32 func_80008128(Objects08128Object *arg0, f32 arg1, f32 arg2, f32 arg3) {
 }
 #ifdef NON_MATCHING
 void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
-                   s32 arg5, s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10) {
+                   s32 arg5, volatile s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10) {
     s32 sp24;
     s32 temp_a1;
     s32 temp_a2;
@@ -3341,8 +3341,9 @@ void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
     if (arg5 != 0) {
         sp24 = 1;
     }
+    temp_t3 = arg6;
     if (arg10 < 0xFF) {
-        arg6 |= 4;
+        arg6 = temp_t3 | 4;
     }
     func_800349A4((FxGfx **)&D_800C94B4, arg5, arg6, arg7);
     temp_v0 = (Objects0831CCommand *)D_800C94B4;
@@ -3350,12 +3351,12 @@ void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
     D_800C94B4 = (s32)(temp_v0 + 1);
     temp_a1 = arg2 * 8;
     temp_v0->unk0 = ((((temp_a1 | (temp_a2 & 6)) & 0xFF) << 16) |
-                     0x04000000 | (((arg2 * 0xA) + 8) & 0xFFFF));
+                     0x04000000 | (((temp_a1 + arg2 * 2) + 8) & 0xFFFF));
     temp_v0->unk4 = temp_a2;
     temp_v0 = (Objects0831CCommand *)D_800C94B4;
     D_800C94B4 = (s32)(temp_v0 + 1);
     temp_v0->unk0 = (((((arg4 - 1) * 0x10) | sp24) & 0xFF) << 16) |
-                     0x05000000 | ((arg4 * 0x10) & 0xFFFF);
+                     0x05000000 | ((arg4 << 4) & 0xFFFF);
     temp_v0->unk4 = (s32)arg3 + 0x80000000;
     camPopModelMtx((Gfx **)&D_800C94B4);
 }
@@ -5487,11 +5488,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_8000831C:start
  * symbol: func_8000831C
- * score: 81 differing words
+ * score: 62 differing words
  * frame: 0x28
  * relocations: 11
- * first-mismatch: +0x40
- * summary: Remeasured 2026-09-23: 81 masked at size delta -4, frame 0x28 exact; the seventh-argument home traffic is the structural fact left to attack.
+ * first-mismatch: +0x70
+ * summary: Track B 2026-09-23: 81 at delta -4 to 62 at delta 0 (volatile arg6 read before the test, x8 plus x2); ring rotation left.
  * PLATEAU-HANDOFF:func_8000831C:end
  */
 

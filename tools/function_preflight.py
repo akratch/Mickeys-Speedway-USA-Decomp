@@ -1710,6 +1710,27 @@ def workbench_summary(
     provenance_allowed = _summary_boolean(manifest, "exact_claim_allowed")
     comparison_exact = _summary_boolean(payload, "exact")
     comparison_accepted = _summary_boolean(payload, "accepted")
+    # decomp-workbench's build_provenance block (schema
+    # decomp-workbench-build-provenance-v1) says whether the compared object
+    # was known to be a stock build. An exact result only claims a real
+    # match when claim == "match"; a forced/instrumented/unknown build still
+    # reports exact=True but is not admissible evidence of a match. Older
+    # raw reports carry no such block at all -- treat that as unconstrained
+    # (verified), not as a denial, so behaviour on those is unchanged.
+    build_provenance = payload.get("build_provenance")
+    build_claim = None
+    if isinstance(build_provenance, dict):
+        claim_value = build_provenance.get("claim")
+        if isinstance(claim_value, str):
+            build_claim = claim_value
+    build_provenance_verified = build_claim is None or build_claim == "match"
+    if comparison_exact and not build_provenance_verified:
+        print(
+            "function_preflight: workbench reported exact=True but "
+            f"build_provenance.claim={build_claim!r} (not 'match'); "
+            "not treating this as a verified match.",
+            file=sys.stderr,
+        )
     target_words = _summary_integer(payload, "target_instructions", "target_insns")
     candidate_words = _summary_integer(
         payload, "candidate_instructions", "insns"
@@ -1835,6 +1856,7 @@ def workbench_summary(
         "provenance": {
             "classification": selection["classification"],
             "exact_claim_allowed": provenance_allowed,
+            "build_claim": build_claim,
             "verdict": manifest.get("verdict"),
             "source_sha256": _summary_digest(manifest, "source"),
             "candidate_object_sha256": _summary_digest(
@@ -1844,7 +1866,7 @@ def workbench_summary(
         },
         "evidence": {
             "admissible_exact_comparison": (
-                comparison_accepted and provenance_allowed
+                comparison_accepted and provenance_allowed and build_provenance_verified
             ),
             "promotion_proof_included": False,
             "scope": "workbench-comparison-not-canonical-promotion-proof",

@@ -354,11 +354,117 @@ class WrapperRoutingTests(unittest.TestCase):
             )
             self.assertIn("--function", arguments)
             self.assertIn("friendly", arguments)
-            self.assertEqual(arguments[-1], "--json")
+            self.assertEqual(arguments[-3], "--json")
+            self.assertEqual(arguments[-2:], ["--build-env", "stock"])
             self.assertEqual(
                 ["friendly", "--resolve-wb"],
                 preflight_args.read_text(encoding="utf-8").splitlines(),
             )
+
+    def test_caller_declared_build_env_is_not_overridden(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = pathlib.Path(directory)
+            WrapperFixture(fixture)
+            args_out = fixture / "args.txt"
+            env = os.environ.copy()
+            env["WB_ARGS_OUT"] = str(args_out)
+
+            result = subprocess.run(
+                [
+                    str(fixture / "tools/wb_compare.sh"),
+                    "friendly",
+                    "--json",
+                    "--build-env",
+                    "forced",
+                ],
+                cwd=fixture,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            arguments = args_out.read_text(encoding="utf-8").splitlines()
+            self.assertEqual(arguments[-2:], ["--build-env", "forced"])
+            self.assertEqual(arguments.count("--build-env"), 1)
+
+    def test_scratch_candidate_symbol_env_skips_auto_stock_declaration(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = pathlib.Path(directory)
+            WrapperFixture(fixture)
+            args_out = fixture / "args.txt"
+            env = os.environ.copy()
+            env["WB_ARGS_OUT"] = str(args_out)
+            env["WB_CANDIDATE_SYMBOL"] = "friendly"
+
+            result = subprocess.run(
+                [str(fixture / "tools/wb_compare.sh"), "friendly", "--json"],
+                cwd=fixture,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            arguments = args_out.read_text(encoding="utf-8").splitlines()
+            self.assertNotIn("--build-env", arguments)
+
+    def test_forcing_environment_variable_without_declaration_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = pathlib.Path(directory)
+            WrapperFixture(fixture)
+            args_out = fixture / "args.txt"
+            env = os.environ.copy()
+            env["WB_ARGS_OUT"] = str(args_out)
+            env["CDX_LOG"] = "trace.log"
+
+            result = subprocess.run(
+                [str(fixture / "tools/wb_compare.sh"), "friendly", "--json"],
+                cwd=fixture,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("CDX_LOG", result.stderr)
+            self.assertIn("--build-env forced", result.stderr)
+            self.assertFalse(args_out.exists())
+
+    def test_forcing_environment_variable_with_explicit_declaration_proceeds(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = pathlib.Path(directory)
+            WrapperFixture(fixture)
+            args_out = fixture / "args.txt"
+            env = os.environ.copy()
+            env["WB_ARGS_OUT"] = str(args_out)
+            env["CDX_LOG"] = "trace.log"
+
+            result = subprocess.run(
+                [
+                    str(fixture / "tools/wb_compare.sh"),
+                    "friendly",
+                    "--json",
+                    "--build-env",
+                    "forced",
+                ],
+                cwd=fixture,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            arguments = args_out.read_text(encoding="utf-8").splitlines()
+            self.assertEqual(arguments[-2:], ["--build-env", "forced"])
 
     def test_no_build_is_forwarded_to_preflight_not_workbench(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -426,7 +532,11 @@ class WrapperRoutingTests(unittest.TestCase):
             self.assertEqual(arguments[0], "diagnose")
             tail = arguments[arguments.index("--objdump") + 2 :]
             self.assertEqual(
-                tail, ["--trace", "trace.log", "--trace-proc", "3", "--terse"]
+                tail,
+                [
+                    "--trace", "trace.log", "--trace-proc", "3", "--terse",
+                    "--build-env", "stock",
+                ],
             )
 
     def test_preflight_freshness_failure_stops_before_workbench(self) -> None:

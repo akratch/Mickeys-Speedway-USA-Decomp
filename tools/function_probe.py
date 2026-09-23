@@ -101,11 +101,30 @@ def compact(preflight, diagnosis):
         type(scores.get(key)) is int and scores[key] == 0
         for key in ("relocation_metadata_mismatches", "relocation_target_mismatches")
     )
+    # An exact word comparison only claims a real match when the object it
+    # scored was built stock; a forced/traced/undeclared build still reports
+    # exact=True but is not admissible evidence of a match (see
+    # decomp-workbench's build_provenance block). Older diagnosis reports
+    # carry no such block at all -- treat that as unconstrained, not as a
+    # denial, so behaviour on pre-provenance summaries is unchanged.
+    build_provenance = (diagnosis or {}).get("build_provenance")
+    build_claim = (
+        build_provenance.get("claim") if isinstance(build_provenance, dict) else None
+    )
+    exact_verified = scores.get("exact") is True and (
+        build_claim is None or build_claim == "match"
+    )
+    unverified_exact = scores.get("exact") is True and not exact_verified
     eligible = (complete and (preflight or {}).get("resolution_mode") == "fallback"
-                and scores.get("exact") is True and type(target) is int
+                and exact_verified and type(target) is int
                 and target > 0 and type(candidate) is int and candidate == target
                 and type(scores.get("words")) is int and scores["words"] == 0
                 and identities_exact and relocation_comparison_exact)
+    next_action = evidence.get("action", "inspect_phase_logs_and_restore_preflight_evidence")
+    if eligible:
+        next_action = "run_separate_linked_promotion_proof"
+    elif unverified_exact:
+        next_action = f"reject_exact_result_build_provenance_claim_{build_claim}_not_match"
     return {
         "preflight_status": evidence.get("status", "unavailable"),
         "owned_bytes": (preflight or {}).get("owned_size"),
@@ -117,10 +136,10 @@ def compact(preflight, diagnosis):
         "mechanism": {"routing": (diagnosis or {}).get("routing"),
                       "lever_class": lever.get("lever_class"),
                       "edit_family": lever.get("edit_family")},
+        "build_provenance_claim": build_claim,
         "candidate_for_linked_trial": eligible,
         "promotion_proof_included": False,
-        "next_action": ("run_separate_linked_promotion_proof" if eligible else
-                        evidence.get("action", "inspect_phase_logs_and_restore_preflight_evidence")),
+        "next_action": next_action,
     }
 
 

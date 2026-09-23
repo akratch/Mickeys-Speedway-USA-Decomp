@@ -1225,6 +1225,30 @@ def workbench_summary_result(
     if not exact and target_words == candidate_words and raw == 0 and masked == 0:
         raise CrewError("workbench summary denies exact despite exact word metrics")
 
+    # decomp-workbench's build_provenance.claim only reaches "match" for a
+    # declared stock build; forced/instrumented/unknown/undeclared builds
+    # still report exact=True. function_preflight.workbench_summary() already
+    # folds this into admissible_exact_comparison, so this is defense in
+    # depth against a stale or hand-edited summary -- and it names the reason
+    # rather than letting a mismatched claim promote silently. A summary with
+    # no provenance.build_claim at all (older format) is unconstrained here,
+    # matching prior behaviour.
+    provenance = payload.get("provenance")
+    build_claim = provenance.get("build_claim") if isinstance(provenance, dict) else None
+    build_provenance_verified = build_claim is None or build_claim == "match"
+    if exact and not build_provenance_verified:
+        print(
+            "crew: workbench summary reports exact=True but "
+            f"provenance.build_claim={build_claim!r} (not 'match'); "
+            "not treating this as a verified match.",
+            file=sys.stderr,
+        )
+        if admissible:
+            raise CrewError(
+                "workbench summary claims admissible_exact_comparison despite "
+                "an unverified build_provenance.claim"
+            )
+
     result: dict[str, object] = {
         "target_words": target_words,
         "candidate_words": candidate_words,

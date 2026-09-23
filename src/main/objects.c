@@ -5477,11 +5477,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_8000BB84:start
  * symbol: func_8000BB84
- * score: 4/65 words
+ * score: 61 differing words
  * frame: 0x30
  * relocations: 0
  * first-mismatch: +0x0
- * summary: Arithmetic/control-flow size is exact, but the target's 0x28 frame and FP register/stack allocation remain unresolved.
+ * summary: Remeasured 2026-09-23: 61 masked at delta 0; frame 0x30 against the target's 0x28, FP register and stack allocation unresolved.
  * PLATEAU-HANDOFF:func_8000BB84:end
  */
 

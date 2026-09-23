@@ -121,10 +121,11 @@ other delta-0 dispatch until a lane reports a new mechanism.
 
 ## Coordinator work, not lanes
 
-- The classifier cache is keyed on the integration base commit, so every
-  merge batch refills it cold. Re-key on the per-symbol handoff and source
-  blobs plus the shard's last-change commit.
-- `tools/authorize_reopen.py` still classifies uncached (about two minutes).
+- Done 2026-09-23 (lane tb-follow): the classifier cache is keyed on each
+  symbol's own evidence (source, shard and ledger blobs and last-change
+  commits, its authorization row) instead of the base commit, so a merge
+  batch no longer refills it cold, and `lane_status.py --symbols` -- hence
+  `tools/authorize_reopen.py` -- uses it.
 - Six `objects.c` handoffs need a remeasure before their pins can arm;
   `overlay7UpdateOwnerMode` needs a new authorization with a reason.
 - `gmake check-promotion-proofs` (lane tb-proofs) must reach zero failures

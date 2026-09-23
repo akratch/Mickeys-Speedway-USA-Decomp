@@ -653,6 +653,8 @@ shadow -- the dispatch order for Track B.
   hexdumps, no machine-word arrays, no base64 of ROM bytes. `uoptlist` and
   compiler scratch are never committed.
 - No absolute workstation paths in tracked files.
+- `tools/finalize_plateau.py --commit` appends your commit trailer only when
+  given one: export `MICKEY_COMMIT_TRAILER` (or pass `--trailer`, repeatable).
 - A handoff shard is a strict grammar: the metric header must be source, score,
   frame, relocations, first mismatch, then an optional summary, each on its own
   line, and `|` is forbidden anywhere in the block — write measurements as prose

@@ -12,6 +12,7 @@ import json
 import os
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -1586,15 +1587,29 @@ print("base score =", {score} if b"return 3" in text else 10 if b"return 2" in t
             self.assertIn("baseline/base.o", saved)
 
     def test_actual_exhausted_deadline_never_launches_best_compilation(self):
+        # The deadline must expire after the search and before the best
+        # compile. A one-second wall deadline and a 1.1 s sleep did that only
+        # when preparation took under a second, which a loaded machine does
+        # not guarantee. Exhaust it on the monotonic clock instead: the search
+        # moves the clock an hour forward, deterministically.
         real = batch.bounded_capture
+        real_clock = time.monotonic
+        skew = [0.0]
         def search(*args, **kwargs):
             output = self.improved(*args, **kwargs)
-            time.sleep(1.1)
+            skew[0] = 3600.0
             return output
+        launched = []
+        def capture(*a, **k):
+            if k.get("cwd") is not None:
+                return real(*a, **k)
+            launched.append(a[0] if a else k)
+            raise AssertionError("must not launch")
         with patch.object(batch, "run_permuter", side_effect=search), \
-             patch.object(batch, "bounded_capture", side_effect=lambda *a, **k:
-                real(*a, **k) if k.get("cwd") is not None else (_ for _ in ()).throw(AssertionError("must not launch"))):
-            result = self.run_one(batch_deadline=time.monotonic() + 1)
+             patch.object(batch.time, "monotonic", side_effect=lambda: real_clock() + skew[0]), \
+             patch.object(batch, "bounded_capture", side_effect=capture):
+            result = self.run_one(batch_deadline=real_clock() + 600)
+        self.assertEqual(launched, [])
         self.assertFalse(result.ok)
         self.assertIsNone(self.store.completed(result.receipt_key))
         saved = self.store.read_bundle(result.artifact_bundle, require_complete=False)
@@ -1640,7 +1655,9 @@ print("base score =", {score} if b"return 3" in text else 10 if b"return 2" in t
             batch._IMPORT_LOCK.release()
         self.assertFalse(result.ok)
         self.assertTrue(result.stopped_batch)
-        self.assertLess(time.monotonic() - start, 1)
+        # Hang guard: the lock is never released, so an unobserved deadline
+        # waits forever. Ten seconds separates that from a loaded machine.
+        self.assertLess(time.monotonic() - start, 10)
 
     def test_raw_baseline_recipe_paths_conservatively_separate_lanes(self):
         first = self.run_one()
@@ -1769,7 +1786,10 @@ raise SystemExit(7)
         self.assertFalse(result.ok)
         log = (Path(result.scratch_path).parent / "permuter.log").read_text()
         worker = int(log.split("worker = ")[1].splitlines()[0])
-        deadline = time.monotonic() + 2
+        # SIGKILL is immediate; the poll only waits for the kernel to reap.
+        # Ten seconds keeps that true under load and still far below the
+        # worker's own 20 s sleep.
+        deadline = time.monotonic() + 10
         while True:
             state = subprocess.run(["ps", "-p", str(worker), "-o", "stat="],
                                    capture_output=True, text=True).stdout.strip()
@@ -1789,7 +1809,7 @@ raise SystemExit(7)
         self.write("permuter/permuter.py", "import time\nprint('base score = 20', flush=True)\ntime.sleep(20)\n")
         start = time.monotonic()
         result = self.run_one(batch_deadline=start + 0.2)
-        self.assertLess(time.monotonic() - start, 3)
+        self.assertLess(time.monotonic() - start, 10)  # the child sleeps 20 s
         self.assertTrue(result.stopped_batch)
         self.assertIsNone(self.store.completed(result.receipt_key))
 
@@ -1802,7 +1822,7 @@ raise SystemExit(7)
         start = time.monotonic()
         score, elapsed, flat, stopped = batch.run_permuter(scratch, out_dir, 0.005, 1, [])
         self.assertEqual(score, 20)
-        self.assertLess(time.monotonic() - start, 3)
+        self.assertLess(time.monotonic() - start, 10)  # the child sleeps 20 s
         self.assertFalse(flat)
         self.assertFalse(stopped)
         self.assertIn("base score = 20", (out_dir / "permuter.log").read_text())
@@ -1927,7 +1947,41 @@ raise SystemExit(7)
         with self.assertRaises(subprocess.TimeoutExpired):
             batch.bounded_capture([sys.executable, "-c", "import time; time.sleep(20)"],
                                    start + 0.1)
-        self.assertLess(time.monotonic() - start, 3)
+        self.assertLess(time.monotonic() - start, 10)  # the child sleeps 20 s
+
+
+
+class StopProcessGroupTests(unittest.TestCase):
+    """Darwin's killpg reports EPERM for a group holding an unreaped zombie."""
+
+    class Proc:
+        pid = 424242
+
+        def __init__(self):
+            self.waits = []
+
+        def wait(self, timeout=None):
+            self.waits.append(timeout)
+            return 0
+
+    def test_eperm_from_a_zombie_member_is_not_a_failed_run(self):
+        proc = self.Proc()
+        calls = []
+        def killpg(pid, sig):
+            calls.append(sig)
+            raise PermissionError(1, "Operation not permitted")
+        with patch.object(batch.os, "killpg", side_effect=killpg):
+            batch.stop_process_group(proc)
+        # Both the TERM and the KILL sweep were still attempted, and the
+        # parent was reaped: EPERM does not skip the cleanup that ends it.
+        self.assertEqual(calls, [signal.SIGTERM, signal.SIGKILL])
+        self.assertEqual(proc.waits, [15, None])
+
+    def test_a_vanished_group_is_reaped_once(self):
+        proc = self.Proc()
+        with patch.object(batch.os, "killpg", side_effect=ProcessLookupError):
+            batch.stop_process_group(proc)
+        self.assertEqual(proc.waits, [None])
 
 
 if __name__ == "__main__":

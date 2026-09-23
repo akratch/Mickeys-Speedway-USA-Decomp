@@ -1317,3 +1317,13 @@ s32 runlinkGetAddressInfo(u32 address, s32 *moduleId, s32 *moduleAddress,
     }
     return 0;
 }
+
+/* PLATEAU-HANDOFF:ProcessRelocationEntry:start
+ * symbol: ProcessRelocationEntry
+ * score: 126 differing words
+ * frame: 0x48
+ * relocations: 25
+ * first-mismatch: +0x0
+ * summary: Remeasured 2026-09-23: 126 masked at size delta +4, frame 0x48 against 0x40, relocations 25 of 25; a1/a3 after the call stay structural.
+ * PLATEAU-HANDOFF:ProcessRelocationEntry:end
+ */

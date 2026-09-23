@@ -192,3 +192,13 @@ void func_overlay_038_F000047C_188618C(O38Command **commands, void *context,
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o038/func_overlay_038_F000047C_188618C/func_overlay_038_F000047C_188618C.s")
 #endif
+
+/* PLATEAU-HANDOFF:func_overlay_038_F000047C_188618C:start
+ * symbol: func_overlay_038_F000047C_188618C
+ * score: 93 differing words
+ * frame: 0xE8
+ * relocations: 18
+ * first-mismatch: +0xC0
+ * summary: Remeasured 2026-09-23: 93 masked at delta 0, frame 0xE8 exact, 18 of 18 relocations; integer command-web order remains, FP lanes exact.
+ * PLATEAU-HANDOFF:func_overlay_038_F000047C_188618C:end
+ */

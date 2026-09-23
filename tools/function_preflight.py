@@ -56,6 +56,7 @@ import proof_provenance as pp  # noqa: E402
 import postprocess_audit as pa  # noqa: E402
 import reloc_identity as ri  # noqa: E402
 import reloc_surface as rs  # noqa: E402
+import finalize_plateau as fp  # noqa: E402
 _LOADED_FILTER_PROOF = pp.sha256_file(Path(__file__))
 _LOADED_FILTER_IMPLEMENTATIONS = {str(Path(module.__file__)): pp.sha256_file(Path(module.__file__))
                                   for module in (pp, ri, rs, ot)}
@@ -141,6 +142,34 @@ def _resolve_names(symbol: str, alias_path: Path = ALIASES) -> tuple[str, str]:
     if len(generated) == 1:
         return generated[0], symbol
     return symbol, symbol
+
+
+def _guarded_resident_fallback(symbol: str, root: Path) -> str | None:
+    """The splat name a descriptive resident candidate's guard falls back to.
+
+    A resident function renamed only in C -- ``ProcessRelocationEntry`` over
+    ``func_80031A30.s`` -- has no alias row (the alias surface is overlay-only)
+    and no ``<symbol>.s``, so `resolve` found no target at all and reported the
+    candidate as promoted. The guard itself is the pairing, exactly as
+    `finalize_plateau.guarded_candidates` and tools/progress.py read it: one
+    ``#ifdef NON_MATCHING`` definition of ``symbol`` whose one ``#else``
+    fallback is a generated resident name. Returns that name only when exactly
+    one source carries such a guard.
+    """
+    found: set[str] = set()
+    for source in (root / "src").rglob("*.c"):
+        text = source.read_text(encoding="utf-8", errors="replace")
+        if symbol not in text or "NON_MATCHING" not in text:
+            continue
+        try:
+            candidates = fp.guarded_candidates(text, symbol)
+        except fp.PlateauError:
+            continue
+        for candidate in candidates:
+            name = Path(candidate.fallback).name
+            if fp.GENERATED_RESIDENT_FALLBACK_RE.fullmatch(name):
+                found.add(name[:-2])
+    return found.pop() if len(found) == 1 else None
 
 
 def _unique(paths: list[Path], description: str) -> Path:
@@ -472,6 +501,13 @@ def resolve(
     root = root.resolve()
     target_symbol, candidate_symbol = _resolve_names(symbol, alias_path)
     asm_matches = list((root / "asm" / "nonmatchings").rglob(f"{target_symbol}.s"))
+    if not asm_matches and target_symbol == candidate_symbol:
+        generated = _guarded_resident_fallback(symbol, root)
+        if generated is not None:
+            target_symbol = generated
+            asm_matches = list(
+                (root / "asm" / "nonmatchings").rglob(f"{target_symbol}.s")
+            )
     if not asm_matches:
         return _post_promotion_resolution(
             symbol,
@@ -2646,7 +2682,8 @@ def _declared_filter_comparison(resolution, comparison, context, records, target
         raw_comparison = rs.function_surface_comparison(
             resolution.requested_symbol, raw_path, TARGET_ELF, rom_path=ROM, atlas_path=ATLAS,
             values_path=ALIASES, candidate_symbol=resolution.candidate_symbol,
-            target_symbol=linked_name, source=resolution.translation_unit)
+            target_symbol=linked_name, source=resolution.translation_unit,
+            measure_size_delta=resolution.resolution_mode != "post_promotion")
         total = len(records)
         removed = {(row["offset"], row["rtype"]) for row in accounting["filtered"]}
         unresolved = {(row["offset"], row["rtype"]) for row in raw_comparison["candidate_identity_unresolved_records"]}
@@ -2748,6 +2785,8 @@ def collect(resolution: Resolution, *, no_build: bool = False) -> dict[str, obje
         resolution.candidate_object
     )
     try:
+        # A candidate longer than its target is measured (Track B); only a
+        # post-promotion resolution keeps the strict TU-ownership bound.
         comparison = rs.function_surface_comparison(
             resolution.requested_symbol,
             resolution.candidate_object,
@@ -2759,6 +2798,7 @@ def collect(resolution: Resolution, *, no_build: bool = False) -> dict[str, obje
             target_symbol=linked_name,
             source=resolution.translation_unit,
             candidate_redefine_aliases=candidate_redefine_aliases,
+            measure_size_delta=resolution.resolution_mode != "post_promotion",
         )
     except rs.SurfaceComparisonError as error:
         raise PreflightError(

@@ -3321,6 +3321,14 @@ s32 func_80008128(Objects08128Object *arg0, f32 arg1, f32 arg2, f32 arg3) {
     }
     return result;
 }
+/* 65 masked at size delta 0 (2026-09-23, lane A2-obj).  Three shape facts
+ * are the target's, each priced by forcing the tail block's five webs to the
+ * target's colours (the floor under those forces went 35 -> 31 -> 24):
+ * the (u8) decrement keeps (arg4 - 1) ahead of the shift, the FB/-0x100
+ * pair on one line fixes cmd 2's ring order, and the address-form arm read
+ * leaves arg6 in a ring temporary across the branch.  Left: the tail block's
+ * colours (target: temp_a2 a2, arg4 t0, 0x80000000 t1, arg2 t2, with v1 and
+ * a3 unused); see the handoff. */
 #ifdef NON_MATCHING
 void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
                    s32 arg5, volatile s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10) {
@@ -3342,15 +3350,13 @@ void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
                         (temp_t3 << 8) | (arg10 & 0xFF);
         temp_v0 = (Objects0831CCommand *)D_800C94B4;
         D_800C94B4 = (s32)(temp_v0 + 1);
-        temp_v0->unk4 = -0x100;
-        temp_v0->unk0 = 0xFB000000;
+        temp_v0->unk0 = 0xFB000000; temp_v0->unk4 = -0x100;
     }
     if (arg5 != 0) {
         sp24 = 1;
     }
-    temp_t3 = arg6;
     if (arg10 < 0xFF) {
-        arg6 = temp_t3 | 4;
+        arg6 = *(s32 *)&arg6 | 4;
     }
     func_800349A4((FxGfx **)&D_800C94B4, arg5, arg6, arg7);
     temp_v0 = (Objects0831CCommand *)D_800C94B4;
@@ -3362,7 +3368,7 @@ void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
     temp_v0->unk4 = temp_a2;
     temp_v0 = (Objects0831CCommand *)D_800C94B4;
     D_800C94B4 = (s32)(temp_v0 + 1);
-    temp_v0->unk0 = (((((arg4 - 1) * 0x10) | sp24) & 0xFF) << 16) |
+    temp_v0->unk0 = (((((u8)(arg4 - 1) << 4) | sp24) & 0xFF) << 16) |
                      0x05000000 | ((arg4 << 4) & 0xFFFF);
     temp_v0->unk4 = (s32)arg3 + 0x80000000;
     camPopModelMtx((Gfx **)&D_800C94B4);
@@ -5486,11 +5492,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_8000831C:start
  * symbol: func_8000831C
- * score: 62 differing words
+ * score: 65 differing words
  * frame: 0x28
  * relocations: 11
  * first-mismatch: +0x70
- * summary: Track B 2026-09-23: 81 at delta -4 to 62 at delta 0 (volatile arg6 read before the test, x8 plus x2); ring rotation left.
+ * summary: A2-obj 2026-09-23: 62 to 65, forced floor 35 to 24 (u8 decrement, FB store first, address-form arm read); left: tail-block colours, v1/a3 unused.
  * PLATEAU-HANDOFF:func_8000831C:end
  */
 

@@ -1395,18 +1395,19 @@ void func_8000D7F8(TrackFloatRecord *arg0, f32 arg1, f32 arg2, f32 arg3) {
  * skeleton supplies the alternating packed-colour copy. Mickey's separate
  * lighting count at `TrackSegment +0x20`, source record, and dirty-mask
  * fields are established by the resident accesses above.
+ *
+ * Matched by reusing lightCount as the dirty-mask group counter (one web, so
+ * the reassignment keeps its copy), reading the dirty flag and the middle
+ * colour byte without declared carriers, and defining the mask after the two
+ * cursors so the leaf's web order follows the target's.
  */
-#ifdef NON_MATCHING
 void func_8000D820(void) {
     s32 segmentCount;
     s32 lightCount;
     s32 *segmentFlags;
-    s32 dirty;
     s32 copyMode;
-    s32 maskCount;
     u8 *dirtyMasks;
     u32 mask;
-    u8 colour;
     TrackLightSource *sourceRecord;
     u8 *sourceBase;
     u8 *lightData;
@@ -1419,9 +1420,8 @@ void func_8000D820(void) {
     segmentCount = D_800792E8->segmentCount;
     copyMode = (D_80079308 != NULL) ? 1 : -1;
     while (segmentCount--) {
-        dirty = *segmentFlags;
         segmentFlags++;
-        if ((dirty != 0) && ((segment->lightingMode & copyMode) != 0)) {
+        if ((segmentFlags[-1] != 0) && ((segment->lightingMode & copyMode) != 0)) {
             sourceRecord = (TrackLightSource *) segment->unk30;
             if (sourceRecord != NULL) {
                 sourceBase = sourceRecord->source;
@@ -1431,19 +1431,18 @@ void func_8000D820(void) {
                     while (lightCount--) {
                         lightData += 10;
                         lightData[-4] = sourceBase[0];
-                        colour = sourceBase[1];
+                        lightData[-3] = sourceBase[1];
                         sourceBase += 3;
-                        lightData[-3] = colour;
                         lightData[-2] = sourceBase[-1];
                     }
                     segment->lightingMode ^= 1;
                 } else {
-                    maskCount = (lightCount + 15) >> 4;
+                    lightCount = (lightCount + 15) >> 4;
                     dirtyMasks = (u8 *) sourceRecord->dirtyMasks;
-                    while (maskCount--) {
-                        mask = *(u16 *) dirtyMasks;
+                    while (lightCount--) {
                         destination = lightData;
                         source = sourceBase;
+                        mask = *(u16 *) dirtyMasks;
                         *(u16 *) dirtyMasks = 0;
                         if (mask != 0) {
                             do {
@@ -1468,9 +1467,6 @@ void func_8000D820(void) {
         segment++;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000D820.s")
-#endif
 /*
  * PROVENANCE: adapted from Jet Force Gemini's public `src/track.c` and
  * assembly-only `trackUpdateLighting`. Mickey's module path, segment layout,
@@ -5662,16 +5658,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * first-mismatch: +0x1C
  * summary: 10900 subscript did not transfer. Combined p2 force still 2 (keepGoing t9 vs at). Dummy xLower 18; delete count 33.
  * PLATEAU-HANDOFF:func_8000FAE0:end
- */
-
-/* PLATEAU-HANDOFF:func_8000D820:start
- * symbol: func_8000D820
- * score: 65/86 words
- * frame: frameless
- * relocations: 6
- * first-mismatch: +0x3C
- * summary: Fresh baseline confirms 84 vs 86 words and a 65-word mixed residual; no new dirty-flag/shared-count lifetime evidence exists.
- * PLATEAU-HANDOFF:func_8000D820:end
  */
 
 /* PLATEAU-HANDOFF:func_800133FC:start

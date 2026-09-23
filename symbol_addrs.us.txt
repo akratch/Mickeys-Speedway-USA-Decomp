@@ -1935,6 +1935,7 @@ func_8000D768 = 0x8000D768; // type:func size:0x90 ROM 0xe368 tier-D (JFG src/tr
 // TU-position identification only. Mickey's placeholder is retained; all 10
 // words are exact and the function has no relocation records.
 func_8000D7F8 = 0x8000D7F8; // type:func size:0x28 ROM 0xe3f8
+func_8000D820 = 0x8000D820; // type:func size:0x158 ROM 0xe420 tier-A, matched C src/main/track.c -O2 -mips2 -32 -Wab,-r4300_mul, lighting dirty-mask copy, linked exact=86/86
 
 // No public name adopted: JFG's assembly-only `trackUpdateLighting` supplies
 // tier-D role/TU context; Mickey proves the revised module path and exact C.

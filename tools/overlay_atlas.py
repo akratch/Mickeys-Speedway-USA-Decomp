@@ -1392,6 +1392,7 @@ MIXED_TU_EXACT_C_RANGES = {
         # these ranges once carried are not C definitions.
         (0xE88, 0xF1C, "func_overlay_008_F0000E88_185EBE0"),
         (0xF1C, 0x1000, "func_overlay_008_F0000F1C_185EC74"),
+        (0x1000, 0x1294, "func_overlay_008_F0001000_185ED58"),
         (
             0x291C,
             0x2EC0,

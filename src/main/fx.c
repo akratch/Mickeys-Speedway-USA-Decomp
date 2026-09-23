@@ -1081,53 +1081,53 @@ void func_80048980(WakeRipple *ripple) {
     }
 }
 #ifdef NON_MATCHING
-/* Workbench verdict: structure-mismatch, 334 differing words; first mismatch is at +0x0. */
-/* Target is 398 instructions/frame -144; candidate is 396 instructions/frame -152. */
-/* Remaining gap is allocator/lifetime shape: the first trig relocation is one word late and two counter webs spill. */
+/* B3-fx (2026-09-23): size delta 0 and frame 0x90, 257 masked. Two
+ * semantic fixes against the target (a separate polygon counter stored at
+ * +0xE, and stripIndex advancing by 2 per sample with polygon[0x12] set),
+ * index as s32, a while (count--) scan, and the 0x20 buffer read spelled as
+ * a subscript so uopt keeps it apart from the 0x18/0x28 address (the target
+ * computes that address twice). The rest is p1 colour order: wake and
+ * secondaryVertices, index and stripIndex swap; see the handoff shard. */
 void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
-    u8 *wakeBytes = (u8 *) wake;
-    s32 temp_lo;
-    s32 var_v0;
+    u8 *sample;
+    s32 index;
+    s32 count;
+    s32 outputOffset;
+    s32 mark;
+    s32 stripIndex;
+    s32 polyCount;
+    s32 outputCount;
     s32 value;
     s32 polygonOffset;
     s32 vertexCount;
-    s32 mark;
-    s8 stripIndex;
-    s16 outputCount;
-    s16 outputOffset;
-    u8 index;
-    u8 currentState;
-    u8 *sample;
-    u8 *secondaryVertices;
     u8 *vertices;
-    u8 *display;
+    u8 *secondaryVertices;
     u8 *polygon;
     f32 sine;
     f32 cosine;
 
-    index = wake->value39;
-    var_v0 = wake->value3B - 1;
-    if (wake->value3B != 0) {
-        do {
-            temp_lo = index * 0x14;
-            index++;
-            if (index >= wake->segmentCount) {
-                index = 0;
-            }
-            if (arg5 >= (s32) *((u8 *) wake->samples + temp_lo)) {
-                wake->value39 = index;
-                wake->value3B--;
-            } else {
-                var_v0 = 0;
-            }
-        } while (var_v0-- != 0);
-        index = wake->value39;
+    vertexCount = wake->value39;
+    count = wake->value3B;
+    index = vertexCount;
+    while (count--) {
+        sample = (u8 *) wake->samples + (index * 0x14);
+        index++;
+        if (index >= wake->segmentCount) {
+            index = 0;
+        }
+        if (arg5 >= sample[0]) {
+            wake->value39 = index;
+            wake->value3B--;
+        } else {
+            count = 0;
+        }
     }
+    vertexCount = wake->value39;
     mark = 0;
     stripIndex = 0;
-    vertexCount = 0;
+    polyCount = 0;
     outputCount = 0;
-    sample = (u8 *) wake->samples + (index * 0x14);
+    sample = (u8 *) wake->samples + (vertexCount * 0x14);
     sample[1] |= 0x80;
     if (wake->flags & 2) {
         if (wake->value8 == 0) {
@@ -1138,9 +1138,8 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
         } else {
             wake->value8 = 0xFF;
         }
-        value = wake->value3C + (arg5 * 0x10);
-        wake->value3C = value;
-        if (value >= 0x100) {
+        wake->value3C += arg5 * 0x10;
+        if (wake->value3C >= 0x100) {
             wake->value3C = 0xFF;
         }
     } else {
@@ -1149,9 +1148,8 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
         } else {
             wake->value8 = 0;
         }
-        value = wake->value3C - (arg5 * 0x10);
-        wake->value3C = value;
-        if (value < 0) {
+        wake->value3C -= arg5 * 0x10;
+        if (wake->value3C < 0) {
             wake->value3C = 0;
         }
     }
@@ -1164,12 +1162,11 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
             sample[1] = value | 0x80;
         }
         *(s16 *) (sample + 2) = angle;
-        *(s16 *) (sample + 6) = (s16) arg2;
+        *(s16 *) (sample + 4) = (*(u16 *) ((u8 *) wake->linked + 8) - 1) << 8;
+        *(s16 *) (sample + 6) = arg2;
         *(f32 *) (sample + 8) = arg1;
         *(f32 *) (sample + 0xC) = arg3;
-        *(s16 *) (sample + 4) = (s16) ((*(s16 *)
-            ((u8 *) wake->linked + 8) - 1) << 8);
-        *(f32 *) (sample + 0x10) = (f32) wake->value4;
+        *(f32 *) (sample + 0x10) = wake->value4;
         wake->value3A++;
         if (wake->value3A >= wake->segmentCount) {
             wake->value3A = 0;
@@ -1179,18 +1176,17 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
     wake->state = 1 - wake->state;
     wake->value38 = 0;
     if (wake->value3B != 0) {
-        currentState = wake->state;
-        vertices = *(u8 **) (wakeBytes + 0x18 + (currentState * 4));
-        secondaryVertices = *(u8 **) (wakeBytes + 0x20 + (currentState * 4));
-        polygon = *(u8 **) (wakeBytes + 0x28 + (currentState * 4));
-        polygonOffset = (*(s16 *) ((u8 *) wake->linked + 6) - 1) << 5;
+        vertices = *(u8 **) ((u8 *) wake + 0x18 + (wake->state * 4));
+        secondaryVertices = ((u8 **) ((u8 *) wake + 0x20))[wake->state];
+        polygon = *(u8 **) ((u8 *) wake + 0x28 + (wake->state * 4));
+        polygonOffset = (*(u16 *) ((u8 *) wake->linked + 6) - 1) << 5;
         outputOffset = 0;
-        if (wake->value39 != wake->value3A) {
-            index = wake->value39;
+        index = wake->value39;
+        if (index != wake->value3A) {
             do {
-                temp_lo = index * 5;
+                value = index * 5;
                 index++;
-                sample = (u8 *) wake->samples + (temp_lo * 4);
+                sample = (u8 *) wake->samples + (value * 4);
                 if (index >= wake->segmentCount) {
                     index = 0;
                 }
@@ -1200,100 +1196,87 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
                         *(s16 *) ((u8 *) wake->vertices +
                                   (wake->value38 * 0x10) + 0xC) = outputCount;
                         *(s16 *) ((u8 *) wake->vertices +
-                                  (wake->value38 * 0x10) + 0xE) = vertexCount;
+                                  (wake->value38 * 0x10) + 0xE) = polyCount;
                         wake->value38++;
                     }
                     outputOffset = 1;
-                    vertexCount = 0;
+                    polyCount = 0;
+                    *(u8 **) ((u8 *) wake->vertices +
+                              (wake->value38 * 0x10) + 0x0) = vertices;
                     outputCount = 0;
-                    *(u32 *) ((u8 *) wake->vertices +
-                              (wake->value38 * 0x10) + 0x0) = (u32) vertices;
-                    *(u32 *) ((u8 *) wake->vertices +
-                              (wake->value38 * 0x10) + 0x4) =
-                        (u32) secondaryVertices;
-                    *(u32 *) ((u8 *) wake->vertices +
-                              (wake->value38 * 0x10) + 0x8) = (u32) polygon;
+                    *(u8 **) ((u8 *) wake->vertices +
+                              (wake->value38 * 0x10) + 0x4) = secondaryVertices;
+                    *(u8 **) ((u8 *) wake->vertices +
+                              (wake->value38 * 0x10) + 0x8) = polygon;
                 }
                 sample[0] -= arg5;
                 *(f32 *) (sample + 0x10) += wake->valueC * (f32) arg5;
-                *(s16 *) (sample + 4) -=
-                    *(s16 *) (wakeBytes + 0xA) * arg5;
+                *(s16 *) (sample + 4) -= *(s16 *) ((u8 *) wake + 0xA) * arg5;
                 sine = func_8002A8C0(*(s16 *) (sample + 2));
                 sine *= *(f32 *) (sample + 0x10);
                 cosine = func_8002A8BC(*(s16 *) (sample + 2));
                 cosine *= *(f32 *) (sample + 0x10);
                 value = ((sample[1] & 0x7F) * wake->value3C) >> 7;
                 vertices += 0xA;
-                *(s16 *) (vertices - 0xA) =
-                    (s16) (*(f32 *) (sample + 8) - cosine);
+                *(s16 *) (vertices - 0xA) = *(f32 *) (sample + 8) - cosine;
                 *(s16 *) (vertices - 8) = *(s16 *) (sample + 6);
                 *(s8 *) (vertices - 1) = value;
-                *(s16 *) (vertices - 6) =
-                    (s16) (*(f32 *) (sample + 0xC) + sine);
+                *(s16 *) (vertices - 6) = *(f32 *) (sample + 0xC) + sine;
                 if (secondaryVertices == NULL) {
-                    *(s16 *) (vertices + 0) =
-                        (s16) (*(f32 *) (sample + 8) + cosine);
-                    *(s16 *) (vertices + 4) =
-                        (s16) (*(f32 *) (sample + 0xC) - sine);
+                    *(s16 *) (vertices + 0) = *(f32 *) (sample + 8) + cosine;
+                    *(s16 *) (vertices + 4) = *(f32 *) (sample + 0xC) - sine;
                 } else {
                     secondaryVertices += 0x14;
-                    *(s16 *) (vertices + 0) = (s16) *(f32 *) (sample + 8);
-                    *(s16 *) (vertices + 4) =
-                        (s16) *(f32 *) (sample + 0xC);
-                    *(s16 *) (secondaryVertices - 0x14) =
-                        (s16) (*(f32 *) (sample + 8) + cosine);
-                    *(s16 *) (secondaryVertices - 0x12) =
-                        *(s16 *) (sample + 6);
+                    *(s16 *) (vertices + 0) = *(f32 *) (sample + 8);
+                    *(s16 *) (vertices + 4) = *(f32 *) (sample + 0xC);
+                    *(s16 *) (secondaryVertices - 0x14) = *(f32 *) (sample + 8) + cosine;
+                    *(s16 *) (secondaryVertices - 0x12) = *(s16 *) (sample + 6);
                     *(s8 *) (secondaryVertices - 0xB) = value;
-                    *(s16 *) (secondaryVertices - 0x10) =
-                        (s16) (*(f32 *) (sample + 0xC) - sine);
-                    *(s16 *) (secondaryVertices - 0xA) =
-                        *(s16 *) (vertices + 0);
-                    *(s16 *) (secondaryVertices - 8) =
-                        *(s16 *) (sample + 6);
+                    *(s16 *) (secondaryVertices - 0x10) = *(f32 *) (sample + 0xC) - sine;
+                    *(s16 *) (secondaryVertices - 0xA) = *(s16 *) (vertices + 0);
+                    *(s16 *) (secondaryVertices - 8) = *(s16 *) (sample + 6);
                     *(s8 *) (secondaryVertices - 1) = value;
-                    *(s16 *) (secondaryVertices - 6) =
-                        *(s16 *) (vertices + 4);
+                    *(s16 *) (secondaryVertices - 6) = *(s16 *) (vertices + 4);
                 }
                 *(s8 *) (vertices + 9) = value;
                 vertices += 0xA;
                 *(s16 *) (vertices - 8) = *(s16 *) (sample + 6);
                 outputCount += 2;
-                vertexCount = (*(s16 *) (sample + 4)) >> 3;
+                vertexCount = *(s16 *) (sample + 4) >> 3;
                 if (stripIndex != 0) {
                     polygon[3] = stripIndex;
                     *(s16 *) (polygon + 0xC) = 0;
                     *(s16 *) (polygon + 0xE) = vertexCount;
+                    polygon[0x12] = stripIndex;
                     *(s16 *) (polygon + 0x18) = 0;
                     *(s16 *) (polygon + 0x1A) = vertexCount;
                     polygon[0x13] = stripIndex + 1;
                     *(s16 *) (polygon + 0x1C) = polygonOffset;
                     *(s16 *) (polygon + 0x1E) = vertexCount;
                     polygon += 0x20;
+                    polyCount += 2;
                     if ((stripIndex + 2) >= 0x11) {
                         stripIndex = 0;
                     }
                 }
-                stripIndex++;
-                polygon[1] = stripIndex - 1;
+                polygon[1] = stripIndex;
                 *(s16 *) (polygon + 4) = 0;
                 *(s16 *) (polygon + 6) = vertexCount;
-                polygon[2] = stripIndex;
+                polygon[2] = stripIndex + 1;
                 *(s16 *) (polygon + 8) = polygonOffset;
                 *(s16 *) (polygon + 0xA) = vertexCount;
-                polygon[0x11] = stripIndex;
+                polygon[0x11] = stripIndex + 1;
                 *(s16 *) (polygon + 0x14) = polygonOffset;
                 *(s16 *) (polygon + 0x16) = vertexCount;
                 stripIndex += 2;
             } while (index != wake->value3A);
         }
-        display = *(u8 **) (wakeBytes + 0x10) + (wake->value38 * 0x10);
-        *(s16 *) (display + 0xC) = outputCount;
-        *(s16 *) (display + 0xE) = vertexCount;
+        *(s16 *) ((u8 *) wake->vertices + (wake->value38 * 0x10) + 0xC) = outputCount;
+        *(s16 *) ((u8 *) wake->vertices + (wake->value38 * 0x10) + 0xE) = polyCount;
         wake->value38++;
-        wake->value34 = (s16) (wake->value34 + (wake->value36 * arg5));
-        while (wake->value34 >= *(s16 *) ((u8 *) wake->linked + 0x10)) {
-            wake->value34 -= *(s16 *) ((u8 *) wake->linked + 0x10);
+        wake->value34 += wake->value36 * arg5;
+        while (wake->value34 >= *(u16 *) ((u8 *) wake->linked + 0x10)) {
+            wake->value34 -= *(u16 *) ((u8 *) wake->linked + 0x10);
         }
     }
 }
@@ -2515,10 +2498,10 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeUpdate:start
  * symbol: wakeUpdate
- * score: 334 differing words
- * frame: 0x98
+ * score: 257 differing words
+ * frame: 0x90
  * relocations: 2
- * first-mismatch: 0x0
- * summary: JFG efd5abb remains assembly-only; zero source attempts. Need new counter lifetime and trig-call schedule evidence.
+ * first-mismatch: +0x34
+ * summary: Size delta 0, frame 0x90; residual is p1 colour order (wake/secondaryVertices, index/stripIndex swapped); four colour forces price it at 207.
  * PLATEAU-HANDOFF:wakeUpdate:end
  */

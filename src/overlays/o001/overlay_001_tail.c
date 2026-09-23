@@ -519,24 +519,29 @@ extern void ext_o7_ccc(Transform *, s32);
 extern Spawned *local_378(State *);
 extern void ext_o0_1bed0(Transform *, f32, f32, f32, s16, s16, s16);
 extern void ext_o0_1c6bc(Transform *, State *);
-extern void ext_o0_5a914(Transform *, s32, s32, s32);
+extern void ext_o0_5a914(Transform *, s32, s32, f32);
 extern Spawned *local_414(s16, Spawned **);
 extern s16 local_c0(Spawned *);
 
-/* PLATEAU (2026-09-04): configured full-TU C is 236/237 words with 160 raw
- * and relocation-masked differences from +0x20; both frames are 0x50. An
- * asymmetric selector assignment restored the narrow index mask/shift. Phase
- * carrier, register-hint, and pointer-advance forms were flat or regressed;
- * folding the existing point update into its load is also byte-flat. The
- * promotion trial's in=0/out=0 is a build-error classification caused by
- * schedule-divergent global sites, not linked byte equality. */
+/* PLATEAU (B3-o001, 2026-09-23): 30 masked words at size delta 0, frame 0x50
+ * exact (was 160 at delta -4). The size gap was the point-element pointer:
+ * `point += 0x14` before the x read keeps the element address as its own
+ * value, so z reads 4 off it rather than folding to 24. rotY is stored before
+ * rotX/rotZ (as1 order), four locals precede sp3C (its home is 0x3C, L99),
+ * the fade/alpha update is two statements (the load lands in the value's own
+ * register), ext_o0_5a914's last parameter is f32 (as in overlay 86, giving
+ * the target's addiu for 0.0f), and the narrow index is the assignment
+ * expression itself rather than a u8 carrier (L160: 95 -> 30). The rest is
+ * phase/phaseValue taking v1/v0 where the target has v0/v1 and spawned/point
+ * likewise; forcing those four webs prices it at 11, the remainder being the
+ * phase==0 delay slot and two commutative operand orders. */
 #ifdef NON_MATCHING
 void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
-    Spawned *sp3C;
     s32 value;
     u8 phase;
     s32 phaseValue;
     u8 index;
+    Spawned *sp3C;
     u8 *point;
     Spawned *spawned;
 
@@ -553,7 +558,8 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             }
             phaseValue = phase;
             if (phaseValue == 2) {
-                value = state->fade - (updateRate * 4);
+                value = state->fade;
+                value -= updateRate * 4;
                 if (value <= 0) {
                     state->phase = 3;
                     return;
@@ -566,9 +572,9 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
                 obj->x = spawned->x;
                 obj->y = spawned->at10.y2 + 100.0f;
                 obj->z = spawned->z;
+                obj->rotY = spawned->angle;
                 obj->rotX = 0;
                 obj->rotZ = 0;
-                obj->rotY = spawned->angle;
                 ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
                 ext_o0_1c6bc(obj, state);
                 state->flags &= ~8;
@@ -579,7 +585,8 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
                 return;
             }
             if (phaseValue == 4) {
-                value = state->fade + (updateRate * 4);
+                value = state->fade;
+                value += updateRate * 4;
                 if (value >= 255) {
                     state->fade = 255;
                     state->phase = 5;
@@ -593,7 +600,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
                 state->phase = 0;
                 state->active = 0;
                 state->done = 1;
-                ext_o0_5a914(obj, 12, -1, 0);
+                ext_o0_5a914(obj, 12, -1, 0.0f);
                 state->spawned = 0;
         }
     } else {
@@ -611,7 +618,8 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             }
             phaseValue = phase;
             if (phaseValue == 2) {
-                value = obj->alpha - (updateRate * 4);
+                value = obj->alpha;
+                value -= updateRate * 4;
                 if (value <= 0) {
                     state->phase = 3;
                     return;
@@ -621,17 +629,16 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             }
             if (phaseValue == 3) {
                 spawned = state->spawned;
-                index = state->selectorA = 3;
+                point = (u8 *)spawned + ((state->selectorA = 3) << 4);
                 state->selectorB = 3;
                 state->selectorC = 0;
-                point = (u8 *)spawned + (index << 4);
-                obj->x = *(f32 *)(point + 0x14);
-                obj->y = spawned->y + 100.0f;
                 point += 0x14;
+                obj->x = *(f32 *)point;
+                obj->y = spawned->y + 100.0f;
                 obj->z = *(f32 *)(point + 4);
+                obj->rotY = *(s16 *)((u8 *)spawned + 0xC) + 0x4000;
                 obj->rotX = 0;
                 obj->rotZ = 0;
-                obj->rotY = *(s16 *)((u8 *)spawned + 0xC) + 0x4000;
                 ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
                 ext_o0_1c6bc(obj, state);
                 state->flags &= ~8;
@@ -642,7 +649,8 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
                 return;
             }
             if (phaseValue == 4) {
-                value = obj->alpha + (updateRate * 4);
+                value = obj->alpha;
+                value += updateRate * 4;
                 if (value >= 255) {
                     obj->alpha = 255;
                     state->phase = 5;
@@ -656,7 +664,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
                 state->phase = 0;
                 state->active = 0;
                 state->done = 1;
-                ext_o0_5a914(obj, 12, -1, 0);
+                ext_o0_5a914(obj, 12, -1, 0.0f);
                 state->spawned->at10.flags &= 0xFFF7;
                 state->spawned = 0;
         }
@@ -3396,11 +3404,11 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:overlay1TransitionState:start
  * symbol: overlay1TransitionState
- * score: 160 differing words
+ * score: 30 differing words
  * frame: 0x50
  * relocations: 13
  * first-mismatch: +0x20
- * summary: The size-near pointer-update probe is byte-flat; promotion trial in=0/out=0 is a schedule-divergence build error, not equality. Retain the 160-word structural plateau.
+ * summary: Delta -4 closed, 160 to 30 at delta 0; the rest is the v0/v1 order of phase/phaseValue and spawned/point (forced: 11).
  * PLATEAU-HANDOFF:overlay1TransitionState:end
  */
 

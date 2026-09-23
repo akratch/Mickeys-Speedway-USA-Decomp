@@ -360,9 +360,25 @@ def refresh_build() -> None:
     # link can fail with R_MIPS_26 truncations (CLAUDE.md, "Promoting an
     # overlay function").  Regenerate and link once more before giving up.
     jobs = "-j%d" % (os.cpu_count() or 4)
+    # The ELF can be newer than an edited recipe while the objects it linked
+    # are not (an earlier link after the edit rebuilt only what Make saw as
+    # stale). Each proof checks its own object against the recipe, so force
+    # the whole graph when any linked object predates a recipe input.
+    recipe_time = max(path.stat().st_mtime_ns for path in fp._build_logic_inputs())
+    linked = {obj for rows in map_text_objects(MAP_PATH.read_text(errors="replace")).values()
+              for _start, _size, obj in rows} if MAP_PATH.is_file() else set()
+    stale = any(not (REPO / obj).is_file() or (REPO / obj).stat().st_mtime_ns < recipe_time
+                for obj in linked)
     try:
+        if stale:
+            raise fp.PreflightError("linked objects predate a build recipe input")
         fp._build_linked_boundary()
     except fp.PreflightError:
+        subprocess.run(["gmake", "--no-print-directory", jobs, "--always-make",
+                        "--assume-old=%s" % fp.VENV_PYTHON_TARGET,
+                        ELF_PATH.relative_to(REPO).as_posix()],
+                       cwd=REPO, check=False, stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL)
         for command in (["gmake", "--no-print-directory", "overlay-syms"],
                         ["gmake", "--no-print-directory", jobs]):
             subprocess.run(command, cwd=REPO, check=False, stdout=subprocess.DEVNULL)

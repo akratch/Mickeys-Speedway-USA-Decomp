@@ -756,6 +756,28 @@ class OverlayDataIdentityTests(unittest.TestCase):
             {"overlayCall": (7, 0x200)}, {"overlayCall"})
         self.assertEqual([None], [record.identity for record in records])
 
+    def test_call_name_shape_conflict_leaves_site_unresolved(self):
+        # A resident call stores a zero jump field, which is also the field of
+        # a call to the overlay's offset-0 function, so the C can carry the
+        # generated `func_overlay_007_F0000000_*` name for a resident callee.
+        # The name's own shape says (7, 0); an exact sibling's runtime tuple
+        # says resident. Neither may be chosen, and the disagreement must not
+        # abort the whole comparison: the site stays unresolved.
+        name = "func_overlay_007_F0000000_0000100"
+        candidate = self.FakeElf(
+            Path("missing"), ["", ".text"],
+            [(name, 0, 0, 0, rs.SHN_UNDEF)],
+            [(".text", 0, rs.R_MIPS_26, 0)], b"\0" * 4)
+        records = rs._candidate_surface_records(
+            candidate, 0, 4, [], {name: (7, 0)}, {}, set(), 7,
+            {name: (0, 0x1234)}, set())
+        self.assertEqual([None], [record.identity for record in records])
+        agreeing = rs._candidate_surface_records(
+            candidate, 0, 4, [], {name: (0, 0x1234)}, {}, set(), 7,
+            {name: (0, 0x1234)}, set())
+        self.assertEqual([(0, 0x1234)],
+                         [record.identity for record in agreeing])
+
     @staticmethod
     def runtime_module(overlay):
         return {
@@ -1355,6 +1377,72 @@ class MatchedOverlayRelocationWitnessTests(unittest.TestCase):
                     rom=rom, runtime_module=runtime_module)
         self.assertNotIn("gSharedProxy", resolved)
         self.assertIn("gSharedProxy", ambiguous)
+
+    def test_function_under_proof_is_not_its_own_witness(self):
+        # Re-proving an already promoted function finds its own canonical
+        # object among the matched siblings. Its call tuple is the target's
+        # tuple at the same site, so it would "witness" whatever name the
+        # candidate happens to use -- even a generated overlay name whose own
+        # identity is a different function. That is the circular one-site
+        # copy the runtime-correlated route refuses; it must not re-enter
+        # through the sibling route.
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            rom, module, runtime_module, target, canonicals = (
+                self.call_fixture(root)
+            )
+            records = [rs.SurfaceRecord(0x8, rs.R_MIPS_26, (0, 0x1234))]
+            with mock.patch.object(rs, "_target_runtime_records",
+                                   return_value=records) as runtime:
+                own = rs._matched_overlay_relocation_witnesses(
+                    module, target, rom, runtime_module, {"gSharedProxy"},
+                    root=root, elf_loader=lambda path: canonicals[path],
+                    exclude_range=(0x4, 0x10))
+                other = rs._matched_overlay_relocation_witnesses(
+                    module, target, rom, runtime_module, {"gSharedProxy"},
+                    root=root, elf_loader=lambda path: canonicals[path],
+                    exclude_range=(0x20, 0x40))
+        self.assertEqual({}, own)
+        self.assertEqual({(0, 0x1234)}, other["gSharedProxy"])
+        self.assertEqual(1, runtime.call_count)
+
+    def test_self_witness_cannot_override_generated_call_name(self):
+        # A resident call whose stored field is zero links against the same
+        # word as a call to the overlay's offset-0 function, so splat names
+        # both after the overlay's own function. The call pass must not
+        # rebind that generated name to the resident target from the function
+        # being proved; the name keeps no call identity and the candidate's
+        # surface is compared on its own evidence.
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            rom, module, runtime_module, target, canonicals = (
+                self.call_fixture(root)
+            )
+            name = "func_overlay_007_F0000000_0000100"
+            canonical = next(iter(canonicals.values()))
+            canonical._symbols[0] = (name, 0, 0, 0, rs.SHN_UNDEF)
+            candidate = self.FakeElf(
+                root / "build/src/overlays/o007/witness0.c.o",
+                ["", ".text"],
+                symbols=[(name, 0, 0, 0, rs.SHN_UNDEF)],
+                relocations=[(".text", 0x8, rs.R_MIPS_26, 0)],
+                sections={".text": b"\0" * 0x20},
+            )
+            records = [rs.SurfaceRecord(0x8, rs.R_MIPS_26, (0, 0x1234))]
+            kwargs = dict(root=root,
+                          elf_loader=lambda path: canonicals[path],
+                          module=module, rom=rom,
+                          runtime_module=runtime_module)
+            with mock.patch.object(rs, "_target_runtime_records",
+                                   return_value=records):
+                circular, _ = rs._stable_overlay_call_identities(
+                    root / "missing-aliases.txt", candidate, 7, target,
+                    {"modules": []}, 0, 0x20, **kwargs)
+                honest, _ = rs._stable_overlay_call_identities(
+                    root / "missing-aliases.txt", candidate, 7, target,
+                    {"modules": []}, 0, 0x20, own_range=(0, 0x20), **kwargs)
+        self.assertEqual((0, 0x1234), circular[name])
+        self.assertNotIn(name, honest)
 
     def test_call_proxy_witness_does_not_align_shifted_offset(self):
         identity = (0, 0x1234)

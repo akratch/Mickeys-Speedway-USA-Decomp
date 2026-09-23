@@ -159,12 +159,13 @@ or a proved-zero appears.
 
 ## Track C — housekeeping, not matching
 
-- **`overlay96DrawObject` promotion-proof.** The C is already in the
-  tree without `GLOBAL_ASM` and is counted. Proof still fails on a
-  call-identity conflict: a same-overlay call resolved into the
-  resident namespace as `(0, 214356)` where the data pass correctly
-  says `(96, 0)`. Inverse of the reloc-surface bug already fixed.
-  Coordinator tooling, not a lane.
+- **`overlay96DrawObject` promotion-proof: done (2026-09-23).** The
+  premise was inverted: `(0, 214356)` was right (the shipped record is a
+  resident call to `func_800349A4`), and `(96, 0)` came from the
+  generated name's shape. The resident identity reached the proof only
+  through the function witnessing itself. See
+  `docs/reloc-surface.md`, "The function under proof is never its own
+  witness".
 - **Stale whale reopen pin.** `config/lane-reopen-authorizations.us.json`
   still pins `func_overlay_058_F000138C_18B0574` (`ledger_commit`
   `9d581a54`). The function is matched. Retire the pin.

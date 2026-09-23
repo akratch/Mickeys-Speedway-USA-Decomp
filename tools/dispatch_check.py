@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """Check a planned lane fan-out, and emit the facts each brief should carry.
 
-    tools/dispatch_check.py <lane>=<sym>[,<sym>...] [<lane>=<sym>...]
+    tools/dispatch_check.py <lane>=<sym>[,<sym>...] [<lane>=<sym>...] [--track <lane>=B]
     tools/dispatch_check.py --plan plan.json
+
+A plan file maps each lane to a list of symbols, or to an object
+``{"track": "B", "symbols": [...]}``; the two forms mix freely, and a bare list
+is Track A. ``--track <lane>=B`` marks a lane on the command line.
 
 Two jobs, both aimed at waste that has actually happened rather than waste
 that might.
@@ -20,6 +24,14 @@ out of a residual, when the artifact count was already stored and turned out to
 be 0.4% of the number. A brief that carries measured values does not invite a
 lane to re-derive them, and a lane that is handed `masked=1834, artifact=7`
 does not spend a phase discovering `7`.
+
+**Route size-mismatch work to Track B only.** A function whose ranking row
+has ``size_delta != 0`` is one to three instructions (or more) away from the
+target, and colour landscapes, L160 and the web-number laws operate at delta
+0: they neither emit nor delete an instruction (docs/NEXT_CAMPAIGN.md). A
+size-mismatch symbol in a lane not marked ``track=B`` is refused with the
+reason ``size-mismatch-needs-track-b``, and every symbol's note carries its
+delta group (``delta-0``, ``small-delta`` for |delta| <= 12, ``big-delta``).
 
 Exit status is 0 when the plan is sound, 1 when it is not.
 """
@@ -103,6 +115,44 @@ def closure_facts() -> dict[str, dict]:
         return {}
 
 
+TRACKS = {"A", "B"}
+
+
+def delta_group(delta: int | None) -> str:
+    """`delta-0`, `small-delta` (|delta| <= 12) or `big-delta`; triage's split."""
+    import triage
+    return triage.delta_group(delta)
+
+
+def load_plan(document: dict) -> tuple[dict[str, list[str]], dict[str, str]]:
+    """Read a JSON plan: lane -> [symbols] or {"track": "A"|"B", "symbols": [...]}."""
+    plan: dict[str, list[str]] = {}
+    tracks: dict[str, str] = {}
+    for lane, value in document.items():
+        if isinstance(value, dict):
+            track = str(value.get("track", "A")).upper()
+            if track not in TRACKS:
+                raise ValueError(f"lane {lane}: track must be A or B, got {track!r}")
+            if track != "A":
+                tracks[lane] = track
+            value = value.get("symbols", [])
+        if not isinstance(value, list):
+            raise ValueError(f"lane {lane}: expected a symbol list")
+        plan[lane] = [str(s) for s in value]
+    return plan, tracks
+
+
+def parse_tracks(items: list[str]) -> dict[str, str]:
+    tracks: dict[str, str] = {}
+    for item in items:
+        lane, sep, track = item.partition("=")
+        track = track.strip().upper()
+        if not sep or not lane.strip() or track not in TRACKS:
+            raise ValueError(f"expected --track <lane>=A|B, got {item!r}")
+        tracks[lane.strip()] = track
+    return tracks
+
+
 def parse_plan(args: list[str]) -> dict[str, list[str]]:
     plan: dict[str, list[str]] = {}
     for item in args:
@@ -139,14 +189,23 @@ def assignability(symbols: list[str]) -> dict[str, str]:
         return {}
     try:
         base = "campaign/unchain"
-        ctx = ls.AssignmentContext.build(base, symbols, jobs=4)
-        return {s: ctx.classify(base, s).state for s in symbols}
-    except Exception:
+        # The same content-keyed cache triage uses: lane ownership is always
+        # recomputed, the base-derived pins are not re-walked on a warm base.
+        cache = ls.AssignmentCache(base, REPO / ls.ASSIGNMENT_CACHE_DIR)
+        ctx = ls.AssignmentContext.build(base, symbols, jobs=4, cache=cache)
+        states = {s: ctx.classify(base, s).state for s in symbols}
+        ctx.save()
+        return states
+    except Exception as error:  # noqa: BLE001 -- degraded check, said aloud
+        print(f"dispatch_check: lane_status failed: {type(error).__name__}: "
+              f"{error}", file=sys.stderr)
         return {}
 
 
-def check(plan: dict[str, list[str]]) -> tuple[list[str], list[str]]:
+def check(plan: dict[str, list[str]],
+          tracks: dict[str, str] | None = None) -> tuple[list[str], list[str]]:
     rows, closures = queued_rows(), closure_facts()
+    tracks = tracks or {}
     problems, notes = [], []
 
     # Distinct lanes, not occurrences: a symbol listed twice inside one lane is
@@ -192,6 +251,21 @@ def check(plan: dict[str, list[str]]) -> tuple[list[str], list[str]]:
                 f"edit that moves every function in it, and two lanes editing "
                 f"one file conflict on every merge.")
 
+    # Track B routing. Refused per (lane, symbol) so the message names both.
+    for lane, symbols in sorted(plan.items()):
+        if tracks.get(lane) == "B":
+            continue
+        for symbol in dict.fromkeys(symbols):
+            delta = (rows.get(symbol) or {}).get("size_delta")
+            if delta:
+                problems.append(
+                    f"size-mismatch-needs-track-b: {symbol} has size_delta "
+                    f"{delta:+d} ({delta_group(delta)}) but lane {lane} is not "
+                    f"marked track=B. Colour and web laws work at delta 0 and "
+                    f"cannot emit or delete an instruction; give it to a Track B "
+                    f"lane (--track {lane}=B, or \"track\": \"B\" in the plan) "
+                    f"whose brief carries the insertion-pair method.")
+
     states = assignability(sorted(owner))
     if not states:
         notes.append("\nNOTE lane_status unavailable -- assignability unchecked; "
@@ -206,7 +280,7 @@ def check(plan: dict[str, list[str]]) -> tuple[list[str], list[str]]:
                 f"--refresh-stale first; merging a lane invalidates its own pin.")
 
     for lane, symbols in sorted(plan.items()):
-        notes.append(f"\n=== {lane} ===")
+        notes.append(f"\n=== {lane} (track {tracks.get(lane, 'A')}) ===")
         for symbol in symbols:
             row = rows.get(symbol)
             if row is None:
@@ -216,7 +290,8 @@ def check(plan: dict[str, list[str]]) -> tuple[list[str], list[str]]:
             masked = row.get("relocation_masked_differing_words")
             artifact = (raw - masked) if (raw is not None and masked is not None) else None
             line = (f"  {symbol}: {row['size_bytes']} B, masked={masked}, "
-                    f"artifact={artifact}, delta={row.get('size_delta')}, "
+                    f"artifact={artifact}, delta={row.get('size_delta')} "
+                    f"({delta_group(row.get('size_delta'))}), "
                     f"class={row.get('category')}")
             closure = closures.get(symbol)
             if closure:
@@ -235,21 +310,29 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--plan", type=pathlib.Path,
                         help="JSON object mapping lane name to a list of symbols")
     parser.add_argument(
+        "--track", action="append", default=[], metavar="LANE=A|B",
+        help="mark a lane's track; only a track=B lane may take a symbol "
+             "whose size_delta is nonzero (default A)")
+    parser.add_argument(
         "--cites", action="append", default=[], metavar="PATH",
         help="a document the brief will cite; refused if it does not exist")
     args = parser.parse_args(argv)
 
-    if args.plan:
-        plan = {k: list(v) for k, v in json.loads(args.plan.read_text()).items()}
-    else:
-        try:
-            plan = parse_plan(args.assignments)
-        except ValueError as error:
-            parser.error(str(error))
+    try:
+        if args.plan:
+            plan, tracks = load_plan(json.loads(args.plan.read_text()))
+        else:
+            plan, tracks = parse_plan(args.assignments), {}
+        tracks.update(parse_tracks(args.track))
+    except ValueError as error:
+        parser.error(str(error))
     if not plan:
         parser.error("no assignments given")
+    unknown = sorted(set(tracks) - set(plan))
+    if unknown:
+        parser.error(f"--track names lanes not in the plan: {', '.join(unknown)}")
 
-    problems, notes = check(plan)
+    problems, notes = check(plan, tracks)
     problems = check_doc_paths(args.cites) + problems
     print("\n".join(notes).lstrip("\n"))
     if problems:
@@ -258,7 +341,8 @@ def main(argv: list[str]) -> int:
             print(f"  {problem}", file=sys.stderr)
         return 1
     print(f"\nplan sound: {sum(len(v) for v in plan.values())} symbol(s) "
-          f"across {len(plan)} lane(s), no overlap, all queued, all assignable")
+          f"across {len(plan)} lane(s), no overlap, all queued, all assignable, "
+          f"size-mismatch only on track=B")
     return 0
 
 

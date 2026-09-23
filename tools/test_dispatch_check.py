@@ -216,5 +216,74 @@ class AssignabilityGateTests(unittest.TestCase):
         problems, _ = self._check({"a": ["func_A"]}, {"func_B": "base-only"})
         self.assertEqual(problems, [])
 
+
+class TrackBRouting(unittest.TestCase):
+    """A size-mismatch function is not colour work.
+
+    Colour landscapes, L160 and the web laws operate at delta 0; they cannot
+    emit or delete an instruction. The previous sprint sent size-mismatch
+    targets to colour lanes and they came back flat, so a plan now has to say
+    which lanes carry the insertion-pair method (track=B) before one of those
+    targets may go to it.
+    """
+
+    def queued(self, **deltas):
+        return {n: dict(ROW, name=n, size_delta=d) for n, d in deltas.items()}
+
+    def run_check(self, plan, queued, tracks=None):
+        with mock.patch.object(dc, "queued_rows", return_value=queued), \
+             mock.patch.object(dc, "closure_facts", return_value={}), \
+             mock.patch.object(dc, "assignability", return_value={}):
+            return dc.check(plan, tracks)
+
+    def test_a_size_mismatch_symbol_on_an_unmarked_lane_is_refused(self):
+        problems, _ = self.run_check({"a": ["small"]}, self.queued(small=4))
+        self.assertEqual(len(problems), 1)
+        self.assertIn("size-mismatch-needs-track-b", problems[0])
+        self.assertIn("small", problems[0])
+        self.assertIn("lane a", problems[0])
+        self.assertIn("small-delta", problems[0])
+
+    def test_a_track_b_lane_may_take_it(self):
+        problems, _ = self.run_check({"a": ["small", "big"]},
+                                     self.queued(small=-8, big=232), {"a": "B"})
+        self.assertEqual(problems, [])
+
+    def test_delta_zero_needs_no_track(self):
+        problems, _ = self.run_check({"a": ["exact"]}, self.queued(exact=0))
+        self.assertEqual(problems, [])
+
+    def test_the_old_two_argument_call_still_works(self):
+        with mock.patch.object(dc, "queued_rows", return_value=self.queued(x=0)), \
+             mock.patch.object(dc, "closure_facts", return_value={}), \
+             mock.patch.object(dc, "assignability", return_value={}):
+            problems, _ = dc.check({"a": ["x"]})
+        self.assertEqual(problems, [])
+
+    def test_the_note_carries_the_delta_group_and_the_track(self):
+        _, notes = self.run_check({"a": ["big"]}, self.queued(big=300), {"a": "B"})
+        text = "\n".join(notes)
+        self.assertIn("=== a (track B) ===", text)
+        self.assertIn("delta=300 (big-delta)", text)
+
+    def test_plan_file_forms_mix(self):
+        plan, tracks = dc.load_plan({"a": ["x"], "b": {"track": "b", "symbols": ["y"]}})
+        self.assertEqual(plan, {"a": ["x"], "b": ["y"]})
+        self.assertEqual(tracks, {"b": "B"})
+        with self.assertRaises(ValueError):
+            dc.load_plan({"a": {"track": "C", "symbols": ["x"]}})
+
+    def test_track_flag_parses(self):
+        self.assertEqual(dc.parse_tracks(["lane-1=B", "lane-2=a"]),
+                         {"lane-1": "B", "lane-2": "A"})
+        with self.assertRaises(ValueError):
+            dc.parse_tracks(["lane-1"])
+
+    def test_delta_groups(self):
+        self.assertEqual([dc.delta_group(d) for d in (0, 4, -12, 13, -700)],
+                         ["delta-0", "small-delta", "small-delta",
+                          "big-delta", "big-delta"])
+
+
 if __name__ == "__main__":
     unittest.main()

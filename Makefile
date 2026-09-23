@@ -378,6 +378,7 @@ check-tooling:
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_align_symbol.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_frame_census.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_triage.py
+	$(HOST_PYTHON) $(TOOLS_DIR)/test_dispatch_check.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_reclaim_worktrees.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_register_census.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_permute_batch_deadline.py

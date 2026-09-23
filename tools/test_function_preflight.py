@@ -640,7 +640,9 @@ class GeometryAndWorkbenchSummaryTests(unittest.TestCase):
             },
         }
 
-    def inputs(self, root: Path, *, exact: bool = False) -> tuple[Path, Path]:
+    def inputs(
+        self, root: Path, *, exact: bool = False, build_claim: str | None = None
+    ) -> tuple[Path, Path]:
         payload = {
             "schema": "decomp-workbench-comparison-v1",
             "exact": exact,
@@ -679,6 +681,8 @@ class GeometryAndWorkbenchSummaryTests(unittest.TestCase):
             "relocation_target_mismatches": 0,
             "diff_sites": [{"instruction": "must not escape"}],
         }
+        if build_claim is not None:
+            payload["build_provenance"] = {"claim": build_claim}
         raw = root / "raw.json"
         raw.write_text(json.dumps(payload), encoding="utf-8")
         digest = {"sha256": "a" * 64}
@@ -699,8 +703,15 @@ class GeometryAndWorkbenchSummaryTests(unittest.TestCase):
         )
         return raw, manifest
 
-    def summarize(self, root: Path, *, exact: bool = False, size: int = 32):
-        raw, manifest = self.inputs(root, exact=exact)
+    def summarize(
+        self,
+        root: Path,
+        *,
+        exact: bool = False,
+        size: int = 32,
+        build_claim: str | None = None,
+    ):
+        raw, manifest = self.inputs(root, exact=exact, build_claim=build_claim)
         return fp.workbench_summary(
             raw,
             manifest,
@@ -723,6 +734,43 @@ class GeometryAndWorkbenchSummaryTests(unittest.TestCase):
         self.assertFalse(report["evidence"]["admissible_exact_comparison"])
         self.assertNotIn("diff_sites", json.dumps(report))
         self.assertNotIn("relocations", report)
+
+    def test_exact_without_build_provenance_block_is_unconstrained(self) -> None:
+        # Older raw workbench reports (or ones from a workbench build that
+        # predates build_provenance) carry no such block at all. That must
+        # not be treated as a denial: behaviour matches what this test
+        # expected before build_provenance existed.
+        with tempfile.TemporaryDirectory() as directory:
+            report = self.summarize(Path(directory), exact=True)
+        self.assertTrue(report["comparison"]["exact"])
+        self.assertIsNone(report["provenance"]["build_claim"])
+        self.assertTrue(report["evidence"]["admissible_exact_comparison"])
+
+    def test_exact_with_matching_build_claim_stays_admissible(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = self.summarize(
+                Path(directory), exact=True, build_claim="match"
+            )
+        self.assertEqual("match", report["provenance"]["build_claim"])
+        self.assertTrue(report["evidence"]["admissible_exact_comparison"])
+
+    def test_exact_with_forced_build_claim_is_not_admissible(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = self.summarize(
+                Path(directory), exact=True, build_claim="reachability-proof"
+            )
+        # exact is unchanged -- it reports what the comparator measured --
+        # but the claim disqualifies the result from being admissible.
+        self.assertTrue(report["comparison"]["exact"])
+        self.assertEqual("reachability-proof", report["provenance"]["build_claim"])
+        self.assertFalse(report["evidence"]["admissible_exact_comparison"])
+
+    def test_exact_with_unknown_build_claim_is_not_admissible(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = self.summarize(
+                Path(directory), exact=True, build_claim="unknown"
+            )
+        self.assertFalse(report["evidence"]["admissible_exact_comparison"])
 
     def test_summary_includes_only_authenticated_relocation_scalars(self) -> None:
         comparison = {

@@ -2017,110 +2017,106 @@ typedef struct FxRippleLevel {
 } FxRippleLevel;
 
 extern FxRippleLevel *levelGetLevel(void);
-extern s32 func_8002A204(s32 angle);
+extern s32 func_8002A204(s16 angle);
 
-/* Workbench verdict: structure-mismatch; 224 differing words, first mismatch +0x8. */
-/* Target 232 instructions/frame -168; candidate 234 instructions/frame -168. */
-/* The remaining gap is the saved-register and command-loop schedule. */
+/* B3-fx (2026-09-23): 205 masked, size delta +8, frame 0xA8 closed by four
+ * unreferenced pads. The +8 is two words: alphaHigh and alphaLow win the
+ * last callee-saved colour on a save tie (2.75) with the hoisted
+ * ((arg3 & 0x3FF) << 14) | 0xF6000000 temp, which the target keeps there
+ * and spills them to their homes instead. Forcing both alpha webs to split
+ * gives delta 0 at 163; see the handoff shard. */
 void fxSPDPRipple(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
                   s32 arg5) {
     FxGfx *command;
     FxRippleLevel *level;
-    s32 sp8C;
-    s32 sp84;
-    s32 sp44;
-    s16 temp_t0;
-    s16 var_a2;
-    s16 var_a3;
-    s16 var_s4;
-    s16 var_s5;
-    s16 var_s6;
-    s32 temp_s2;
-    s32 temp_s3;
-    s32 temp_t3;
-    s32 temp_t3_2;
-    s32 temp_v1_2;
-    s32 var_a0;
-    s32 var_a1;
-    s32 var_a1_2;
-    s32 var_a2_2;
-    s32 var_a3_2;
-    s32 var_s1;
-    s32 var_t0;
-    u8 temp_v1;
+    s32 angleA;
+    s32 angleB;
+    s32 angleC;
+    s32 i;
+    s32 alphaHigh;
+    s32 alphaMid;
+    s32 alphaLow;
+    s32 waveB;
+    s32 waveA;
+    s32 wave;
+    s32 red;
+    s32 green;
+    s32 blue;
+    s32 alpha;
+    s32 next;
+    s16 baseA;
+    s16 baseB;
+    s16 baseC;
+    s32 pad0;
+    s32 pad1;
+    s32 pad2;
+    s32 cmdHi;
 
     level = levelGetLevel();
     if ((level != NULL) && (level->rippleEnabled != 0)) {
         func_800349A4(dList, 0, 4, 0);
         command = *dList;
-        var_a1 = arg5;
         *dList = command + 1;
         command->w0 = 0xFCFFFFFF;
         command->w1 = 0xFFFDF6FB;
-        temp_v1 = level->rippleEnabled;
-        var_a2 = D_8007D370[0] + ((var_a1 << 0xD) >> 4);
-        var_a3 = D_8007D374[0] + ((var_a1 * -0x3C00) >> 4);
-        temp_t0 = D_8007D378[0] + ((var_a1 * 0x1800) >> 4);
-        D_8007D370[0] = var_a2;
-        var_s4 = var_a2 + (arg2 << 0xA);
-        D_8007D374[0] = var_a3;
-        D_8007D378[0] = temp_t0;
-        temp_t3 = (s32)(temp_v1 * 0x50) >> 7;
-        var_s5 = var_a3 + (arg2 * 0xBA2);
-        var_s6 = temp_t0 + (arg2 * 0x28F);
-        sp8C = (s32)(temp_v1 * 0x58) >> 7;
-        sp84 = (s32)(temp_v1 * 0x48) >> 7;
-        var_s1 = arg2;
-        if (arg2 < arg4) {
-            sp44 = (arg1 & 0x3FF) << 0xE;
+        baseA = D_8007D370[0] + ((arg5 << 0xD) >> 4);
+        baseB = D_8007D374[0] + ((arg5 * -0x3C00) >> 4);
+        baseC = D_8007D378[0] + ((arg5 * 0x1800) >> 4);
+        D_8007D370[0] = baseA;
+        angleA = baseA + (arg2 << 0xA);
+        D_8007D374[0] = baseB;
+        D_8007D378[0] = baseC;
+        alphaMid = (level->rippleEnabled * 0x50) >> 7;
+        angleB = baseB + (arg2 * 0xBA2);
+        angleC = baseC + (arg2 * 0x28F);
+        alphaHigh = (level->rippleEnabled * 0x58) >> 7;
+        alphaLow = (level->rippleEnabled * 0x48) >> 7;
+        i = arg2;
+        if (i < arg4) {
+            cmdHi = ((arg3 & 0x3FF) << 0xE) | 0xF6000000;
             do {
-                temp_s2 = func_8002A204(var_s5);
-                temp_s3 = func_8002A204(var_s4);
-                temp_t3_2 = ((func_8002A204(var_s6) << 6) +
-                             (temp_s3 * 0xC0) + (temp_s2 * 0x60)) >> 8;
-                var_a0 = temp_t3_2;
-                if (temp_t3_2 < 0) {
-                    var_a0 = -temp_t3_2;
-                    var_a1_2 = 8;
-                    var_a2_2 = 0x20;
-                    var_a3_2 = 0xA0;
-                    var_t0 = sp84;
-                } else {
-                    var_a1_2 = 0x80;
-                    var_a2_2 = 0xC0;
-                    var_a3_2 = 0xFF;
-                    var_t0 = sp8C;
-                }
-                if (var_a0 >= 0x10001) {
-                    var_a0 = 0x10000;
-                }
-                command = *dList;
-                temp_v1_2 = var_s1 + 1;
-                var_s4 += 0x400;
-                var_s5 += 0xBA2;
-                var_s6 += 0x28F;
-                var_a1 = (((var_a1_2 - 0x20) * var_a0) >> 0x10) + 0x20;
-                *dList = command + 1;
-                command->w0 = 0xFA000000;
-                var_a2 = (((var_a2_2 - 0x78) * var_a0) >> 0x10) + 0x78;
-                var_a3 = (((var_a3_2 - 0xFF) * var_a0) >> 0x10) + 0xFF;
-                command->w1 = (s32)((var_a1 << 0x18) |
-                                    ((var_a2 & 0xFF) << 0x10) |
-                                    ((var_a3 & 0xFF) << 8) |
-                                    (((((var_t0 - temp_t3) * var_a0) >> 0x10) +
-                                      temp_t3) & 0xFF));
-                command = *dList;
-                *dList = command + 1;
-                command->w0 = (s32)(((arg3 & 0x3FF) << 0xE) |
-                                    0xF6000000 |
-                                    ((temp_v1_2 & 0x3FF) * 4));
-                command->w1 = (s32)(sp44 | ((var_s1 & 0x3FF) * 4));
-                command = *dList;
-                var_s1 = temp_v1_2;
-                *dList = command + 1;
-                command->w1 = 0;
-                command->w0 = 0xE7000000;
-            } while (temp_v1_2 != arg4);
+            waveB = func_8002A204(angleB);
+            waveA = func_8002A204(angleA);
+            wave = ((func_8002A204(angleC) << 6) + (waveA * 0xC0) +
+                    (waveB * 0x60)) >> 8;
+            if (wave < 0) {
+                wave = -wave;
+                red = 8;
+                green = 0x20;
+                blue = 0xA0;
+                alpha = alphaLow;
+            } else {
+                red = 0x80;
+                green = 0xC0;
+                blue = 0xFF;
+                alpha = alphaHigh;
+            }
+            if (wave > 0x10000) {
+                wave = 0x10000;
+            }
+            command = *dList;
+            angleA += 0x400;
+            angleB += 0xBA2;
+            angleC += 0x28F;
+            red = (((red - 0x20) * wave) >> 0x10) + 0x20;
+            *dList = command + 1;
+            command->w0 = 0xFA000000;
+            green = (((green - 0x78) * wave) >> 0x10) + 0x78;
+            blue = (((blue - 0xFF) * wave) >> 0x10) + 0xFF;
+            command->w1 = (red << 0x18) | ((green & 0xFF) << 0x10) |
+                          ((blue & 0xFF) << 8) |
+                          (((((alpha - alphaMid) * wave) >> 0x10) + alphaMid) &
+                           0xFF);
+            command = *dList;
+            *dList = command + 1;
+            command->w0 = cmdHi | (((i + 1) & 0x3FF) * 4);
+            command->w1 = ((arg1 & 0x3FF) << 0xE) | ((i & 0x3FF) * 4);
+            command = *dList;
+            *dList = command + 1;
+            command->w1 = 0;
+            command->w0 = 0xE7000000;
+                i++;
+            } while (i != arg4);
         }
         func_80034920(dList);
     }
@@ -2469,11 +2465,11 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:fxSPDPRipple:start
  * symbol: fxSPDPRipple
- * score: 224 differing words
+ * score: 205 differing words
  * frame: 0xa8
  * relocations: 12
- * first-mismatch: 0x8
- * summary: JFG efd5abb remains assembly-only; zero source attempts. Need new missing relocations and command-loop topology evidence.
+ * first-mismatch: +0x40
+ * summary: Delta +8 is alphaHigh/alphaLow winning a 2.75 save tie over the hoisted arg3 command temp; splitting both forces delta 0 at 163.
  * PLATEAU-HANDOFF:fxSPDPRipple:end
  */
 

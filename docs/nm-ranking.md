@@ -463,10 +463,10 @@ units remain distinct.
 | 166 | `src/main/track.c` | `func_80012234` | `main` | `size-mismatch` | 832 | 187 | 187 | 12 | 12 | 12 | — |
 | 167 | `src/overlays/o087/func_overlay_087_F0000128_18D3090.c` | `func_overlay_087_F0000128_18D3090` | `o087` | `size-mismatch` | 1,896 | 195 | 193 | 44 | 44 | -16 | — |
 | 168 | `src/overlays/o066/func_overlay_066_F00004E0_18C6948.c` | `func_overlay_066_F00004E0_18C6948` | `o066` | `size-mismatch` | 816 | 202 | 202 | 0 | 0 | -52 | — |
-| 169 | `src/main/main.c` | `func_80026FB4` | `main` | `size-mismatch` | 1,652 | 207 | 207 | 56 | 56 | 24 | — |
-| 170 | `src/main/track.c` | `func_80011980` | `main` | `size-mismatch` | 860 | 211 | 211 | 0 | 0 | 8 | — |
-| 171 | `src/main/track.c` | `func_800115E4` | `main` | `size-mismatch` | 924 | 217 | 217 | 0 | 0 | 24 | — |
-| 172 | `src/main/fx.c` | `fxSPDPRipple` | `main` | `size-mismatch` | 928 | 224 | 224 | 8 | 8 | 8 | — |
+| 169 | `src/main/fx.c` | `fxSPDPRipple` | `main` | `size-mismatch` | 928 | 205 | 205 | 64 | 64 | 8 | — |
+| 170 | `src/main/main.c` | `func_80026FB4` | `main` | `size-mismatch` | 1,652 | 207 | 207 | 56 | 56 | 24 | — |
+| 171 | `src/main/track.c` | `func_80011980` | `main` | `size-mismatch` | 860 | 211 | 211 | 0 | 0 | 8 | — |
+| 172 | `src/main/track.c` | `func_800115E4` | `main` | `size-mismatch` | 924 | 217 | 217 | 0 | 0 | 24 | — |
 | 173 | `src/main/lights.c` | `func_8001953C` | `main` | `size-mismatch` | 1,016 | 225 | 225 | 0 | 0 | 32 | — |
 | 174 | `src/main/charControl.c` | `func_8001EC44` | `main` | `size-mismatch` | 952 | 231 | 231 | 0 | 0 | 12 | — |
 | 175 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `size-mismatch` | 1,080 | 256 | 256 | 0 | 0 | -24 | — |

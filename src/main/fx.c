@@ -1387,15 +1387,22 @@ void func_80049000(FxWakeUpdateOwner *owner, s32 delta) {
         }
     }
 }
-/* Workbench verdict: structure-mismatch, 122 differing words, first mismatch +0x0. */
-/* Candidate: 176/177 instructions with a -0x50 frame versus target -0x88; the target's outer-index spill and saved-register web remain unresolved. */
-/* Shape status: the JFG-derived display-list command and chunk loops are reconstructed with the target's single relocation identity exact. */
-/* PROVENANCE: JFG's wakeDraw role supplies the display-list idiom; this body is reconstructed from Mickey's target offsets and FxGfx type. */
-#ifdef NON_MATCHING
+/* PROVENANCE: JFG's wakeDraw role supplies the display-list idiom; this body is reconstructed from Mickey's target offsets and FxGfx type.
+ * Matched 2026-09-23 (Track B, lane B-fx). What closed it, in order:
+ *  - frame: the target's 0x88 frame is fourteen declared slots between alpha
+ *    and outerOffset, and outerOffset declared last (its spill home is +0x44).
+ *    Unused declarations keep their homes here, so the list is the frame.
+ *  - size: shiftedX and shiftedZ written inline instead of through carriers
+ *    (L160); their carriers took a2/t0 and pushed the outer index into a
+ *    register the target spills.
+ *  - colour order: x += xStep after the first polygon, the outer bound read
+ *    from wake->value38 directly (no outerLimit carrier), both index updates on
+ *    one line (as1 store order), and the second vertex's packet pointer taken
+ *    before shiftedY so that web numbers after it.
+ *  - tail: FX_PIPE_SYNC + FX_SET_ENV instead of hand-written command words. */
 void wakeDraw(Wake *wake, FxGfx **dlist) {
     s32 outerIndex;
     s32 alpha;
-    s32 outerOffset;
     s32 remaining;
     s32 chunk;
     s32 shiftedY;
@@ -1409,6 +1416,8 @@ void wakeDraw(Wake *wake, FxGfx **dlist) {
     u8 outerLimit;
     FxGfx *cmd;
     FxWakeSegment *segment;
+    s32 unusedSlot;
+    s32 outerOffset;
 
     if ((s32) wake->value38 > 0) {
         func_800349A4(dlist, (s32) wake->linked, 0x1F,
@@ -1421,8 +1430,7 @@ void wakeDraw(Wake *wake, FxGfx **dlist) {
         FX_SET_ENV((*dlist)++, alpha, alpha, alpha, alpha);
         FX_SET_PRIM((*dlist)++, 0xFF, 0xFF, 0xFF, 0xFF);
         outerIndex = 0;
-        outerLimit = wake->value38;
-        if ((s32) outerLimit > 0) {
+        if (wake->value38 > 0) {
             outerOffset = 0;
             do {
                 segment = (FxWakeSegment *) ((u8 *) wake->vertices + outerOffset);
@@ -1432,7 +1440,6 @@ void wakeDraw(Wake *wake, FxGfx **dlist) {
                 z = segment->z;
                 if (remaining != 0) {
                     do {
-                        shiftedX = x + 0x80000000;
                         if (remaining >= 0x11) {
                             remaining -= 0x10;
                             chunk = 0x10;
@@ -1440,41 +1447,35 @@ void wakeDraw(Wake *wake, FxGfx **dlist) {
                             chunk = remaining;
                             remaining = 0;
                         }
+                        FX_VERTEX_JFG((*dlist)++, x + 0x80000000, chunk + 2, 0);
+                        FX_POLYGON((*dlist)++, z + 0x80000000, chunk, 1);
                         xStep = chunk * 0xA;
-                        FX_VERTEX_JFG((*dlist)++, shiftedX, chunk + 2, 0);
-                        zStep = chunk * 0x10;
-                        shiftedZ = z + 0x80000000;
                         x += xStep;
-                        FX_POLYGON((*dlist)++, shiftedZ, chunk, 1);
+                        zStep = chunk * 0x10;
                         if (y != 0) {
-                            shiftedY = y + 0x80000000;
-                            FX_VERTEX_JFG((*dlist)++, shiftedY, chunk + 2, 0);
+                            {
+                                FxGfx *_g = (*dlist)++;
+                                shiftedY = y + 0x80000000;
+                                _g->w0 = FX_SHIFTL(4, 24, 8) |
+                                         FX_SHIFTL(((chunk + 2) << 3) | ((u32) shiftedY & 6) | 0, 16, 8) |
+                                         FX_SHIFTL(((chunk + 2) << 3) + ((chunk + 2) << 1) + 8, 0, 16);
+                                _g->w1 = (u32) shiftedY;
+                            }
                             y += xStep;
-                            FX_POLYGON((*dlist)++, shiftedZ, chunk, 1);
+                            FX_POLYGON((*dlist)++, z + 0x80000000, chunk, 1);
                         }
                         z += zStep;
                     } while (remaining != 0);
-                    outerLimit = wake->value38;
                 }
-                outerIndex++;
-                outerOffset += 0x10;
-            } while (outerIndex < (s32) outerLimit);
+                outerIndex++; outerOffset += 0x10;
+            } while (outerIndex < wake->value38);
         }
         if (alpha != 0xFF) {
-            cmd = *dlist;
-            *dlist = cmd + 1;
-            cmd->w0 = 0xE7000000;
-            cmd->w1 = 0;
-            cmd = *dlist;
-            *dlist = cmd + 1;
-            cmd->w1 = -1;
-            cmd->w0 = 0xFB000000;
+            FX_PIPE_SYNC((*dlist)++);
+            FX_SET_ENV((*dlist)++, 0xFF, 0xFF, 0xFF, 0xFF);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/wakeDraw.s")
-#endif
 /* Workbench: schedule-mismatch, 2/138 differing words, first mismatch +0x60. */
 /* Exact 138-word geometry/frame -0x20; one D_7D310 LO16 schedule slot remains. */
 /* All five relocation identities agree; the LO16 offset is nonexact. */
@@ -2502,16 +2503,6 @@ void func_8004AF68(void) {
  * first-mismatch: 0x0
  * summary: JFG efd5abb remains assembly-only; zero source attempts. Need new vertex-loop source or proved build boundary evidence.
  * PLATEAU-HANDOFF:func_800475E8:end
- */
-
-/* PLATEAU-HANDOFF:wakeDraw:start
- * symbol: wakeDraw
- * score: 121/176 words
- * frame: 0x50
- * relocations: 1
- * first-mismatch: +0x0
- * summary: Independent E7 command field scheduling removes one residual word; frame and outer-index lifetime remain unresolved.
- * PLATEAU-HANDOFF:wakeDraw:end
  */
 
 /* PLATEAU-HANDOFF:func_80049B14:start

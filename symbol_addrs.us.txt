@@ -1154,7 +1154,7 @@ wakeFree = 0x80048944;                // type:func size:0x3C tier A (exact C, JF
 func_80048980 = 0x80048980;           // type:func size:0x48 tier A (exact C, JFG wakeFreeRipple)
 wakeUpdate = 0x800489C8;              // type:func size:0x638 tier B (JFG call graph/order)
 func_80049000 = 0x80049000;           // type:func size:0x254 tier B (JFG wakeUpdateRipple)
-wakeDraw = 0x80049254;                // type:func size:0x2C4 tier B (JFG call graph/order)
+wakeDraw = 0x80049254;                // type:func size:0x2C4 tier B (JFG call graph/order), matched C src/main/fx.c -O2 -mips2 -32 -Wab,-r4300_mul, linked exact=177/177
 func_80049518 = 0x80049518;           // type:func size:0x228 tier B (JFG wakeDrawRipple)
 fxInit = 0x80049740;                  // type:func size:0x4C tier A (exact C, JFG name)
 func_8004978C = 0x8004978C;           // type:func size:0x9C tier-D ROM 0x4A38C matched C src/main/fx.c.o -O2 -mips2 -32, linked exact=39/39

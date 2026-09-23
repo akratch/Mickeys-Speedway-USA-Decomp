@@ -142,12 +142,12 @@ extern void TrapDanglingJump();
  * argument setup and the s0 carrier it forced); the three tail byte stores
  * are in address order; the first frame count is not a declared variable --
  * D_8007BE94 re-spells the expression and uopt CSEs it; and the
- * TrapDanglingJump argument is `var_a1 | 0`. uopt copy-propagates a bare
- * variable into a call argument but not into an operand of an operator, so
- * the plain `var_a1` argument was replaced by the expression temp and the two
- * webs traded a1/t0. The `| 0` keeps var_a1 itself as the argument, as the
- * target does, and folds away before code generation (`& -1` measures the
- * same). */
+ * TrapDanglingJump call names only arg0. The trampoline forwards a0-a3 as
+ * they stand, and at the jump a1 and a2 already hold var_a1 and var_a2 in
+ * their allocated homes, so naming them adds nothing to the bytes. Naming
+ * var_a1 costs the match: uopt copy-propagates a bare variable into a call
+ * argument, so the expression temp took a1 and the two webs traded a1/t0
+ * (the first match spelled it `var_a1 | 0` to block that). */
 void func_80037414(s32 arg0, f32 arg1, f32 arg2, s32 arg3, s32 arg4,
                    s32 arg5, s32 arg6) {
     s32 var_a1;
@@ -162,7 +162,7 @@ void func_80037414(s32 arg0, f32 arg1, f32 arg2, s32 arg3, s32 arg4,
     }
     if ((D_8007BEA8 != 0) &&
         ((D_8007BE90 == 4) || (D_8007BE90 == 5))) {
-        TrapDanglingJump(arg0, var_a1 | 0, var_a2);
+        TrapDanglingJump(arg0);
     }
     if ((arg6 == 0) || (D_8007BEA8 == 0)) {
         if ((arg0 & 1) && (var_a2 != 0)) {

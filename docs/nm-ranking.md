@@ -483,7 +483,7 @@ units remain distinct.
 | 186 | `src/main/main.c` | `func_80028564` | `main` | `size-mismatch` | 1,956 | 307 | 306 | 4 | 4 | 8 | — |
 | 187 | `src/overlays/o043/func_overlay_043_F0000BE4_188ABB4.c` | `func_overlay_043_F0000BE4_188ABB4` | `o043` | `size-mismatch` | 1,220 | 307 | 307 | 4 | 4 | 28 | — |
 | 188 | `src/main/frontend_37D50.c` | `func_80037C74` | `main` | `size-mismatch` | 1,308 | 314 | 314 | 52 | 52 | -64 | — |
-| 189 | `src/main/track.c` | `func_80011CDC` | `main` | `size-mismatch` | 1,368 | 327 | 327 | 0 | 0 | 8 | — |
+| 189 | `src/main/track.c` | `func_80011CDC` | `main` | `size-mismatch` | 1,368 | 329 | 329 | 0 | 0 | 20 | — |
 | 190 | `src/overlays/o044/func_overlay_044_F0000580_188BDE0.c` | `func_overlay_044_F0000580_188BDE0` | `o044` | `size-mismatch` | 1,396 | 338 | 338 | 8 | 8 | -4 | — |
 | 191 | `src/overlays/o001/overlay_001_tail.c` | `func_overlay_001_F0003750_184FB30` | `o001` | `size-mismatch` | 1,784 | 346 | 341 | 76 | 88 | 4 | — |
 | 192 | `src/main/fx.c` | `wakeAllocate` | `main` | `size-mismatch` | 1,404 | 345 | 345 | 12 | 12 | -32 | — |

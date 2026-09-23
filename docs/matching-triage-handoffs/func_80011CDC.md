@@ -2,11 +2,24 @@
 ### `func_80011CDC` plateau handoff
 
 - source: `src/main/track.c`
-- score: 327 differing words
-- frame: 0xd0
+- score: 329 differing words
+- frame: 0xc8
 - relocations: 11
 - first mismatch: +0x0
-- summary: Mickey m2c reproduces existing edge/endpoint tests; no new structural identity. Next: source-proved texture-global and counter lifetimes.
+- summary: Aligned 243 to 193. One p1 decision left: D_800792E8 address web outranks the record counter; forcing it split gives 342/342 words, 150 diff.
+
+Summary before this remeasure: Mickey m2c reproduces existing edge/endpoint tests; no new structural identity. Next: source-proved texture-global and counter lifetimes.
+
+#### Track B pass (lane B3-track), 2026-09-23
+
+- Start: size delta +8, frame 0xD0 against 0xC0, 327 masked, aligned after shadow 243. Reader: a prologue hoist pair and one 318-word open pair labelled missing-CSE, owned by the texture-global lines, the three call sites (two stack stores each) and the plane/edge reload lines.
+- Typed rewrite (records as TrackClipOutput, whose segment is the s16 the target reads, hit as TrackRayHit, node indices with named material and data fields at unchanged offsets; prototype and both in-TU call sites retyped, linked ROM unchanged): the target's two reloads of hit normals and its re-read segment index now agree, 349 words, 329.
+- Foot point carried in the difference locals before the three normal divisions: register shape only, 331.
+- Point sums written origin-first: puts the product first as in the target, 330.
+- Dropping the three unused locals: frame 0xD8 to 0xC8 (t and tEnd land at the target's offsets from the frame top), 330.
+- All three points computed before the hit stores in the two endpoint branches: t is address-taken, so an interleaved store forced a reload of t: 349 to 347 words, 329, aligned after shadow 193.
+- Flat: subscripted record pointer, for loop, pre-increment compare, explicit byte-offset carrier, result/count initialisation order.
+- Decision variable, from the instrumented records: the D_800792E8 address web (save 30/7) outranks the record counter (31/8) and the result flag (4.0), takes s8, and leaves the counter in a caller-saved register that is spilled and reloaded around each of the three calls, plus two hoist words. Forcing only that web to split (accepted, forced=-1) gives 342/342 words and 150 differing; adding the result flag in v1 gives 124. The counter still cannot reach s5 because the SR offset web (save 4.43) takes it first. In the target the counter outranks the offset and the three address webs, so its source gives the counter more references or fewer blocks than any form tried here. That is the next lever.
 
 #### Mickey m2c structural audit, 2026-09-09
 

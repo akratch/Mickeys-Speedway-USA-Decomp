@@ -3,20 +3,6 @@
   "objects": [
     {
       "c_owned": null,
-      "class": "review-required",
-      "matched_c": null,
-      "nonmatching": null,
-      "object": "build/src/libultra/block_6F3E0.c.o",
-      "offset": null,
-      "overlay": null,
-      "size": null,
-      "source": "src/libultra/block_6F3E0.c",
-      "tools": [
-        "set_elf_symbol_size.py"
-      ]
-    },
-    {
-      "c_owned": null,
       "class": "metadata",
       "matched_c": null,
       "nonmatching": null,
@@ -9198,9 +9184,9 @@
     "by_class": {
       "altered": 2,
       "metadata": 636,
-      "review-required": 2
+      "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 148068,
-    "objects_with_postprocess": 640
+    "objects_with_postprocess": 639
   }
 }

@@ -62,7 +62,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 RANKING = ROOT / "config" / "nonmatching-ranking.us.json"
 UNASSIGNABLE = ROOT / "config" / "unassignable-symbols.us.json"
 # Whole-program text, the denominator README's headline percentage uses.
-WHOLE_PROGRAM = 944344
+WHOLE_PROGRAM = 944340
 
 # |size_delta| at or below this is one to three instructions: Track B's bridge.
 SMALL_DELTA = 12

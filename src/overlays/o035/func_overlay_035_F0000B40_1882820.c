@@ -41,7 +41,7 @@ typedef struct O35CollisionSegment {
     void *unk10;
     void *unk14;
     O35CollisionRecord *records;
-    O35CollisionPlane *planes;
+    f32 *planes;
     u8 pad20[2];
     s16 triangleCount;
     s16 spanCount;
@@ -53,44 +53,50 @@ extern void call_o0_0_2B318(void *value);
 extern f32 sqrtf(f32 value);
 
 /*
- * Workbench plateau: structure-mismatch; 516/528 instructions, exact 0x130
- * frame, 486 positional words, first +0x4. Flags, widths, volatility, and
- * expression probes regressed; coordinate spill variants were not productive.
+ * Delta 0 at 130 masked words (lane B3-rl35): rebuilt on DKR's
+ * track_init_collision shape. Size came from span fields read by subscript
+ * (SR owns the span offset), plane stores indexed by counter << 2 with the
+ * increment after them, s32 neighbour, and the opposite-vertex test through
+ * a plane pointer taken before the edge maths. pad0, span and spanOffset
+ * are unreferenced frame holders (L99). Left: IV creation order in the edge
+ * loop (scratch + i * 8 before i * 8) rotates the t6/t9 ring, and s5-s7
+ * colour order.
  *
  * PROVENANCE: adapted from Diddy Kong Racing,
  * src/object_models.c (model_init_collision).
  */
 #ifdef NON_MATCHING
-s32 func_overlay_035_F0000B40_1882820(register O35CollisionSegment *s) {
+s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
+    s32 pad0;
     O35CollisionRecord *scratch;
     O35CollisionRecord *scratchRecord;
     O35CollisionRecord *record;
-    O35CollisionSpan *span;
-    O35CollisionTriangle *triangle;
-    O35CollisionVertex *v0;
-    O35CollisionVertex *v1;
-    O35CollisionVertex *v2;
-    O35CollisionPlane *plane;
-    O35CollisionPlane *neighborPlane;
-    f32 x0, y0, z0;
+    s32 copyIndex;
     f32 x1, y1, z1;
     f32 x2, y2, z2;
+    f32 x3, y3, z3;
     f32 nx, ny, nz;
-    volatile f32 rawNx, rawNy;
-    f32 length;
-    f32 ex, ey, ez;
+    f32 x5, y5, z5;
+    f32 mag;
+    s32 triStart;
+    O35CollisionVertex *v;
+    s32 i;
+    O35CollisionSpan *span;
+    s32 triEnd;
+    s32 vertexBase;
     s32 spanIndex;
-    s32 spanOffset;
-    s32 copyIndex;
+    s32 j;
     s32 edge;
-    s32 nextEdge;
-    s32 oppositeEdge;
-    s32 halfOffset;
-    s16 triangleIndex;
-    s16 triangleEnd;
-    s16 vertexBase;
-    s16 planeCount;
-    u16 neighbor;
+    s32 counter;
+    s32 oppVertIndex;
+    s32 idx;
+    s32 next;
+    s32 opp;
+    s32 vertIndex;
+    s32 nextVertIndex;
+    s32 neighbor;
+    s32 spanOffset;
+    f32 *plane;
 
     scratch = call_o0_0_2AE30(
         s->triangleCount * (s32)sizeof(O35CollisionRecord), 0x91);
@@ -106,148 +112,137 @@ s32 func_overlay_035_F0000B40_1882820(register O35CollisionSegment *s) {
         } while (copyIndex < s->triangleCount * 4);
     }
 
-    planeCount = 0;
-    spanOffset = 0;
-    for (spanIndex = 0; spanIndex < s->spanCount;
-         spanIndex++, spanOffset += sizeof(O35CollisionSpan)) {
-        span = (O35CollisionSpan *)((u8 *)s->spans + spanOffset);
-        triangleIndex = span->triangleStart;
-        triangleEnd = (span + 1)->triangleStart;
-        vertexBase = span->vertexBase;
-        if (span->flags & 0x1080) {
-            triangleIndex = triangleEnd;
+    counter = 0;
+    for (spanIndex = 0; spanIndex < s->spanCount; spanIndex++) {
+        triStart = s->spans[spanIndex].triangleStart;
+        vertexBase = s->spans[spanIndex].vertexBase;
+        triEnd = s->spans[spanIndex + 1].triangleStart;
+        if (s->spans[spanIndex].flags & 0x1080) {
+            triStart = triEnd;
         }
-        while (triangleIndex < triangleEnd) {
-            triangle = &s->triangles[triangleIndex];
-            v0 = &s->vertices[triangle->selectors[0] + vertexBase];
-            x0 = v0->x;
-            y0 = v0->y;
-            z0 = v0->z;
-            v1 = &s->vertices[triangle->selectors[1] + vertexBase];
-            x1 = v1->x;
-            y1 = v1->y;
-            z1 = v1->z;
-            v2 = &s->vertices[triangle->selectors[2] + vertexBase];
-            x2 = v2->x;
-            y2 = v2->y;
-            z2 = v2->z;
-            rawNx = ((y1 - y0) * (z2 - z1)) -
-                    ((z1 - z0) * (y2 - y1));
-            nx = rawNx;
-            rawNy = ((z1 - z0) * (x2 - x1)) -
-                    ((x1 - x0) * (z2 - z1));
-            ny = rawNy;
-            nz = ((x1 - x0) * (y2 - y1)) -
-                 ((y1 - y0) * (x2 - x1));
-            length = sqrtf((rawNx * rawNx) + (rawNy * rawNy) + (nz * nz));
-            if (length > 0.0f) {
-                nx = rawNx / length;
-                ny = rawNy / length;
-                nz /= length;
+        for (i = triStart; i < triEnd; i++) {
+            v = &s->vertices[s->triangles[i].selectors[0] + vertexBase];
+            x1 = v->x;
+            y1 = v->y;
+            z1 = v->z;
+            v = &s->vertices[s->triangles[i].selectors[1] + vertexBase];
+            x2 = v->x;
+            y2 = v->y;
+            z2 = v->z;
+            v = &s->vertices[s->triangles[i].selectors[2] + vertexBase];
+            x3 = v->x;
+            y3 = v->y;
+            z3 = v->z;
+            nx = (y2 - y1) * (z3 - z2) - (z2 - z1) * (y3 - y2);
+            ny = (z2 - z1) * (x3 - x2) - (x2 - x1) * (z3 - z2);
+            nz = (x2 - x1) * (y3 - y2) - (y2 - y1) * (x3 - x2);
+            mag = sqrtf(nx * nx + ny * ny + nz * nz);
+            if (mag > 0.0f) {
+                nx /= mag;
+                ny /= mag;
+                nz /= mag;
             }
-            s->records[triangleIndex].plane = planeCount;
-            plane = &s->planes[planeCount++];
-            plane->x = nx;
-            plane->y = ny;
-            plane->z = nz;
-            plane->d = -((x0 * nx) + (y0 * ny) + (z0 * nz));
-            triangleIndex++;
+            s->records[i].plane = counter;
+            s->planes[counter << 2] = nx;
+            s->planes[(counter << 2) + 1] = ny;
+            s->planes[(counter << 2) + 2] = nz;
+            s->planes[(counter << 2) + 3] = -(x1 * nx + y1 * ny + z1 * nz);
+            counter++;
         }
     }
 
     if (D_o35_skip_collision_edges != 0) {
         call_o0_0_2B318(scratch);
-        return planeCount;
+        return counter;
     }
 
-    spanOffset = 0;
-    for (spanIndex = 0; spanIndex < s->spanCount;
-         spanIndex++, spanOffset += sizeof(O35CollisionSpan)) {
-        span = (O35CollisionSpan *)((u8 *)s->spans + spanOffset);
-        triangleIndex = span->triangleStart;
-        triangleEnd = (span + 1)->triangleStart;
-        vertexBase = span->vertexBase;
-        if (span->flags & 0x1080) {
-            triangleIndex = triangleEnd;
+    for (spanIndex = 0; spanIndex < s->spanCount; spanIndex++) {
+        triStart = s->spans[spanIndex].triangleStart;
+        vertexBase = s->spans[spanIndex].vertexBase;
+        triEnd = s->spans[spanIndex + 1].triangleStart;
+        if (s->spans[spanIndex].flags & 0x1080) {
+            triStart = triEnd;
         }
-        while (triangleIndex < triangleEnd) {
-            triangle = &s->triangles[triangleIndex];
-            scratchRecord = &scratch[triangleIndex];
-            plane = &s->planes[s->records[triangleIndex].plane];
+        for (i = triStart; i < triEnd; i++) {
+            idx = s->records[i].plane;
+            nx = s->planes[4 * idx + 0];
+            ny = s->planes[4 * idx + 1];
+            nz = s->planes[4 * idx + 2];
             for (edge = 0; edge < 3; edge++) {
-                nextEdge = edge + 1;
-                if (nextEdge >= 3) {
-                    nextEdge = 0;
+                next = edge + 1;
+                if (next >= 3) {
+                    next = 0;
                 }
-                oppositeEdge = nextEdge + 1;
-                if (oppositeEdge >= 3) {
-                    oppositeEdge = 0;
+                opp = next + 1;
+                if (opp >= 3) {
+                    opp = 0;
                 }
-                neighbor = scratchRecord->edgeNeighbor[edge];
+                vertIndex = s->triangles[i].selectors[edge] + vertexBase;
+                nextVertIndex = s->triangles[i].selectors[next] + vertexBase;
+                oppVertIndex = s->triangles[i].selectors[opp] + vertexBase;
+                neighbor = scratch[i].edgeNeighbor[edge];
                 if (neighbor != 0xFFFF) {
                     if (neighbor == 0xFFFE) {
-                        neighborPlane = &s->planes[s->records[triangleIndex].plane];
+                        idx = s->records[i].plane * 4;
                     } else {
-                        neighborPlane = &s->planes[s->records[neighbor].plane];
+                        idx = s->records[neighbor].plane * 4;
                     }
-                    v0 = &s->vertices[triangle->selectors[edge] + vertexBase];
-                    v1 = &s->vertices[triangle->selectors[nextEdge] + vertexBase];
-                    x0 = v0->x;
-                    y0 = v0->y;
-                    z0 = v0->z;
-                    x1 = v1->x;
-                    y1 = v1->y;
-                    z1 = v1->z;
-                    ex = (((neighborPlane->x + plane->x) * 5.0f) + x0) - x0;
-                    ey = (((neighborPlane->y + plane->y) * 5.0f) + y0) - y0;
-                    ez = (((neighborPlane->z + plane->z) * 5.0f) + z0) - z0;
-                    nx = ((y1 - y0) * ez) - ((z1 - z0) * ey);
-                    ny = ((z1 - z0) * ex) - ((x1 - x0) * ez);
-                    nz = ((x1 - x0) * ey) - ((y1 - y0) * ex);
-                    length = sqrtf((nx * nx) + (ny * ny) + (nz * nz));
-                    if (length > 0.0f) {
-                        nx /= length;
-                        ny /= length;
-                        nz /= length;
+                    plane = &s->planes[idx];
+                    x5 = s->planes[idx + 0] + nx;
+                    y5 = s->planes[idx + 1] + ny;
+                    z5 = s->planes[idx + 2] + nz;
+                    v = &s->vertices[vertIndex];
+                    x1 = v->x;
+                    y1 = v->y;
+                    z1 = v->z;
+                    v = &s->vertices[nextVertIndex];
+                    x2 = v->x;
+                    y2 = v->y;
+                    z2 = v->z;
+                    x3 = x5 * 5.0f + x1;
+                    y3 = y5 * 5.0f + y1;
+                    z3 = z5 * 5.0f + z1;
+                    x5 = (y2 - y1) * (z3 - z1) - (z2 - z1) * (y3 - y1);
+                    y5 = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
+                    z5 = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
+                    mag = sqrtf(x5 * x5 + y5 * y5 + z5 * z5);
+                    if (mag > 0.0f) {
+                        x5 /= mag;
+                        y5 /= mag;
+                        z5 /= mag;
                     }
                     if (neighbor == 0xFFFE) {
-                        triangle->flags |= 1 << edge;
+                        s->triangles[i].flags |= 1 << edge;
                     } else {
-                        record = &scratch[neighbor];
-                        halfOffset = 0;
-                        while (halfOffset != 6) {
-                            if (triangleIndex ==
-                                record->edgeNeighbor[halfOffset >> 1]) {
-                                s->records[neighbor]
-                                    .edgeNeighbor[halfOffset >> 1] =
-                                    planeCount | 0x8000;
-                                record->edgeNeighbor[halfOffset >> 1] = 0xFFFF;
+                        for (j = 0; j < 3; j++) {
+                            if (scratch[neighbor].edgeNeighbor[j] == i) {
+                                s->records[neighbor].edgeNeighbor[j] =
+                                    counter | 0x8000;
+                                scratch[neighbor].edgeNeighbor[j] = 0xFFFF;
                             }
-                            halfOffset += 2;
                         }
-                        v2 = &s->vertices[
-                            triangle->selectors[oppositeEdge] + vertexBase];
-                        if ((neighborPlane->d +
-                             ((v2->x * neighborPlane->x) +
-                              (v2->y * neighborPlane->y) +
-                              (v2->z * neighborPlane->z))) < 0.0f) {
-                            triangle->flags |= 1 << edge;
+                        v = &s->vertices[oppVertIndex];
+                        x3 = v->x;
+                        y3 = v->y;
+                        z3 = v->z;
+                        if (plane[3] + (x3 * plane[0] + y3 * plane[1] + z3 * plane[2]) <
+                            0.0f) {
+                            s->triangles[i].flags |= 1 << edge;
                         }
                     }
-                    s->records[triangleIndex].edgeNeighbor[edge] = planeCount;
-                    scratchRecord->edgeNeighbor[edge] = 0xFFFF;
-                    plane = &s->planes[planeCount++];
-                    plane->x = nx;
-                    plane->y = ny;
-                    plane->z = nz;
-                    plane->d = -((x0 * nx) + (y0 * ny) + (z0 * nz));
+                    s->records[i].edgeNeighbor[edge] = counter;
+                    scratch[i].edgeNeighbor[edge] = 0xFFFF;
+                    s->planes[counter << 2] = x5;
+                    s->planes[(counter << 2) + 1] = y5;
+                    s->planes[(counter << 2) + 2] = z5;
+                    s->planes[(counter << 2) + 3] = -(x1 * x5 + y1 * y5 + z1 * z5);
+                    counter++;
                 }
             }
-            triangleIndex++;
         }
     }
     call_o0_0_2B318(scratch);
-    return planeCount;
+    return counter;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o035/func_overlay_035_F0000B40_1882820/func_overlay_035_F0000B40_1882820.s")
@@ -255,10 +250,10 @@ s32 func_overlay_035_F0000B40_1882820(register O35CollisionSegment *s) {
 
 /* PLATEAU-HANDOFF:func_overlay_035_F0000B40_1882820:start
  * symbol: func_overlay_035_F0000B40_1882820
- * score: 486/528 words
+ * score: 130/528 words
  * frame: 0x130
  * relocations: 7
- * first-mismatch: +0x4
- * summary: V0 is 12 words short (516/528) with broad structural drift; relocation counts are 7/7 but only 2 stable identities align; prior probes stay closed.
+ * first-mismatch: +0xA4
+ * summary: Delta 0 at 130 on the DKR collision shape. Left: edge-loop IV order (i*8 before scratch+i*8) rotates t6/t9; s5-s7 colour order.
  * PLATEAU-HANDOFF:func_overlay_035_F0000B40_1882820:end
  */

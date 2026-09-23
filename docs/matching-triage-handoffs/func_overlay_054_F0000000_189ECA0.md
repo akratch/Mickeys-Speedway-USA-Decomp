@@ -2,11 +2,13 @@
 ### `func_overlay_054_F0000000_189ECA0` plateau handoff
 
 - source: `src/overlays/o054/overlay54Initialize.c`
-- score: 125 differing words
+- score: 17 differing words
 - frame: 0x78
 - relocations: 114
-- first mismatch: +0xF0
-- summary: Record copy is an unrolled 9-loop, body exact; remainder needs as1 to see static data (probe: 89 masked, -4); loop-A slti is L90.
+- first mismatch: +0x1AC
+- summary: TU owns overlay 54 data; delta 0, frame exact; left: as1 hoists loop-A flag/value stores above their increments (no noalias for declared pointers).
+
+Summary before this remeasure: Record copy is an unrolled 9-loop, body exact; remainder needs as1 to see static data (probe: 89 masked, -4); loop-A slti is L90.
 
 Summary before this remeasure: One word long. Extra instruction is the unfilled delay of the context-equals-3 branch. L90 rewrites increment-then-i-lt-4 to not-equal-4; the target keeps slti 4 after increment. Delay fill is reachable only on inverted polarity.
 
@@ -85,5 +87,57 @@ Other spellings measured this cycle:
 Next lever: after overlay 54's data is moved into the TU, re-measure. The
 static probe says the function is then one word short, and that word is
 the `&gOverlay54Current` pointer the target hoists into the branch delay.
+
+#### 2026-09-23, lane B3-o054: the TU owns overlay 54's data; 125 (+4) to 17 (delta 0)
+
+The data move is its own commit. overlay54Initialize.c defines all of
+data_rodata +0x0..+0x2D0 as static typed objects in ROM order, declared in
+the atlas `DATA_RODATA_OWNERSHIP` (the +0x2D0..+0x2E0 tail is the original
+TU's 0x10-byte .rodata, a separate relocation base, and stays raw), and the
+whole 0x670-byte .bss as statics. Its compiled .data is byte-identical to
+the ROM slice and `gmake verify` passes. With both record arrays local the
+copy remainder is the target's (89, -4, as B2-ov2's probe said).
+
+Then, each measured:
+
+- Loop-A pointer setup folded onto one physical line: 89 to 81. The target
+  sets the eight pointers in reverse, an L59 tie.
+- Tail statement order, an exhaustive 5,040-order sweep of the seven tail
+  statements: 72 to 56 at the order state, obj+0x26, obj+0x28, field08,
+  field00, field04, field10, bounds.
+- `o54Configure(sOverlay54Current, 0)` in place of `o54Configure(object, 0)`:
+  56 to 18 and delta 0. Reading the global back keeps its address a register
+  web, which uopt hoists into the compare block (the branch-delay addiu) and
+  rematerialises in the then-arm. The prior closure named this word; the
+  value read back is forwarded, the address web stays.
+- Exit test `(++i ^ 0) < 4`: 18 to 17. It keeps slti 4 after the increment,
+  which L90 otherwise rewrites to li 4 plus bne (`++i < 4`, `i < 4` after an
+  early `i++`, a flag variable, `(s32)(u32)`, or-with-zero, `& -1`, `+ 0` all
+  normalise; `(u16)` adds an andi).
+
+What is left, all in loop A's tail (+0x1AC..+0x1EC, 10 aligned rows, 0
+naming, frame exact): as1 schedules the flag and value stores right after
+the volatile sentinel store, above the pointer increments (offset 0), where
+the target keeps them after the increments (offsets -1 and -2) with the
+compare and the three constants first. The as1 trace (`-Wa,-R`) shows why:
+each loop-A store carries a dependence chain to the next store and to the
+sentinel store, so its aftercycles outrank the increments. The target's
+stores behave as if they have no successors, i.e. as1 had noalias
+information for them. uopt emits `.noalias` only for pointers it created
+(indexed arrays); the declared walking pointers get none.
+
+Measured and flat or worse on this axis: 2,520 orders of the tail
+statements with the increment first (floor 17); every line fold of the
+tail; volatile flag and value pointers; indexed value (27), indexed flag
+(67, uopt uses base+i for a byte stride); indexed sentinel without the
+volatile struct (+4 size, frame 200); a plain sentinel pointer (uopt
+spills the value pointer instead, 26); a plain context local (frame 0x80,
+33; unreferenced s32 pads inert).
+
+Next lever: a loop-A spelling whose flag, value and sentinel stores are all
+uopt-created pointers (so `.noalias` is emitted) while the sentinel still
+takes the 0x44 spill home and the frame stays 0x78. Also: overlays 50 and
+52's Initialize functions carry the same record-copy family and still
+reference their data as externs; the same data move should apply there.
 
 <!-- plateau-handoff:func_overlay_054_F0000000_189ECA0:end -->

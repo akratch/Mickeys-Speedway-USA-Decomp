@@ -115,6 +115,9 @@ DATA_RODATA_OWNERSHIP = {
     42: [(0x0, 0x10, "overlay_042")],
     77: [(0x0, 0x30, "overlay_077")],
     79: [(0x0, 0x60, "func_overlay_079_F0000134_18CD0D4")],
+    # The whole .data section; data_rodata +0x2D0..+0x2E0 is the original
+    # TU's .rodata (its own relocation base) and stays raw.
+    54: [(0x0, 0x2D0, "overlay54Initialize")],
 }
 
 # Reviewed initialized subranges emitted by a C owner's non-.data section.
@@ -182,6 +185,9 @@ COMPILER_TEXT_ALIGNMENT_PADDING = {
 # for that gap rather than letting the old row absorb the data block.
 EXPLICIT_TEXT_PADDING = {
     47: "overlay_047_padding",
+    # Overlay 54's text tail pads to 0x1EF0; overlay54Initialize's .data
+    # follows it, so the pad needs its own bounded row.
+    54: "overlay_054_padding",
 }
 
 TEXT_SUBSEGMENTS = {
@@ -1521,6 +1527,7 @@ MIXED_TU_EXACT_C_RANGES = {
         ),
     ],
     35: [
+        (0x01E0, 0x0770, "func_overlay_035_F00001E0_1881EC0"),
         (0x0770, 0x0B40, "func_overlay_035_F0000770_1882450"),
     ],
     51: [

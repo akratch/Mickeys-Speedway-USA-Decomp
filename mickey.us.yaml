@@ -564,10 +564,14 @@ segments:
       # Shadows owns IDO's measured 0x50-byte data input through D_8007945C.
       - [0x7A010, .data, main/shadows]
       - [0x7A060, data]
-      # Camera's four-float scale/leading-matrix range is compiler-owned; IDO
-      # emits the 0x10-byte .data input section, so the raw tail starts at F58.
-      - [0x7AB48, .data, main/camera]
-      - [0x7AB58, data]
+      # Camera's .data input section is compiler-owned: two zero words, the
+      # scale and five matrix floats, 0x20 bytes (IDO rounds the section to
+      # 16), so the raw tail starts at F60. It starts 16-byte aligned at F40,
+      # not at the scale: as1 shares a `lui $at` only inside one aligned
+      # 16-byte block, and func_80024978's target re-materialises it between
+      # D_80079F4C and D_80079F50.
+      - [0x7AB40, .data, main/camera]
+      - [0x7AB60, data]
       # Scheduler retrace counter: an initialized u64 at its ROM-proved slot.
       # The adjacent raw data resumes immediately after its eight owned bytes.
       - [0x7B260, .data, main/sched]

@@ -1850,23 +1850,19 @@ f32 camGetProjZ(f32 x, f32 y, f32 z) {
 
     return out;
 }
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: adapted from JFG's public decomp,
  * src/camera.c:camCopyOrthoMatrix.
  *
- * JFG copies 15 matrix slots and writes width/2 into [3][3]; Mickey also
- * scales each slot by D_80079F48. IDO peels 15%4=3, so the dest cursor of
- * the 12-iter remainder is matrix+12 when dest is dest[i] with i starting
- * at 3. Grouping the second and third coefficients as D_80079F50 and
- * D_80079F50+4 (one locally-defined symbol) is the pair the peel would
- * have used.
- *
- * Unforced: 84 vs 83 words, frame 0x30, masked 71 first +0x8, 72 aligned
- * exact, 0 immediate, 9 a2/a3 naming. Identity-gated proc 62: p1:w47=s
- * plus p1:w0=c6 is 83 exact, masked 0, delta 0. Web 47 is the two-use
- * D_80079F50 ilda; splitting it is the shared high-half. Web 0 is the
- * matrix parameter, a2/a3 tie at cost 2; the target takes a3.
+ * JFG's 15-slot copy with each slot scaled by D_80079F48. The body is the
+ * JFG loop unchanged; what closed it was the .data layout. as1 reuses a
+ * `lui $at` for a second load only when both addresses provably share a
+ * high half, and it can prove that only inside one 16-byte block of the
+ * section (the section's own alignment). The target re-materialises the
+ * high half between the first and second peeled loads and shares it for
+ * the second and third, which puts D_80079F4C at section offset 0xC: this
+ * TU's .data starts at 0x80079F40, not 0x80079F48. See the two leading
+ * words below.
  */
 void func_80024978(MtxF matrix) {
     s32 i;
@@ -1874,17 +1870,11 @@ void func_80024978(MtxF matrix) {
     s32 height;
 
     viGetCurrentSize(&width, &height);
-    ((f32 *) matrix)[0] = D_80079F4C * D_80079F48;
-    ((f32 *) matrix)[1] = D_80079F50 * D_80079F48;
-    ((f32 *) matrix)[2] = ((f32 *) &D_80079F50)[1] * D_80079F48;
-    for (i = 3; i < 15; i++) {
+    for (i = 0; i < 15; i++) {
         ((f32 *) matrix)[i] = ((f32 *) &D_80079F4C)[i] * D_80079F48;
     }
     matrix[3][3] = (u32) width >> 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/camera/func_80024978.s")
-#endif
 /* PROVENANCE: adapted from JFG's public decomp, src/camera.c:camStartShake. */
 void camStartShake(s32 camNo, f32 attack, f32 sustain, f32 decay,
                    s32 magnitude) {
@@ -2030,11 +2020,19 @@ void func_80024ED8(CameraTransform *source, s32 unused, Camera *dest) {
     dest->transform.zRotation = 0;
 }
 
-/* The projection scale and matrix constants are owned by this TU. */
+/* The projection scale and matrix constants are owned by this TU.
+ * The section starts 16-byte aligned at 0x80079F40, eight bytes before the
+ * scale: func_80024978's shared `lui $at` pattern places D_80079F4C at
+ * section offset 0xC (see the comment there). The two leading words are
+ * zero in the ROM and nothing references them. IDO rounds the section to
+ * 16 bytes, so it also owns the next two matrix floats at 0x80079F58. */
+s32 D_80079F40 = 0;
+s32 D_80079F44 = 0;
 f32 D_80079F48 = 1.0f;
 f32 D_80079F4C = 1.0f;
 f32 D_80079F50 = 0.0f;
 f32 D_80079F54 = 0.0f;
+f32 D_80079F58[2] = { 0.0f, 0.0f };
 
 /* PLATEAU-HANDOFF:func_80022FD4:start
  * symbol: func_80022FD4
@@ -2044,16 +2042,6 @@ f32 D_80079F54 = 0.0f;
  * first-mismatch: +0x9C
  * summary: first +0x9C remains the folded GP-draw schedule; field-access probes moved no census lines; retained body is best
  * PLATEAU-HANDOFF:func_80022FD4:end
- */
-
-/* PLATEAU-HANDOFF:func_80024978:start
- * symbol: func_80024978
- * score: 71 differing words
- * frame: 0x30
- * relocations: 13
- * first-mismatch: 0x8
- * summary: Force pair 0 at delta 0 via --object. Unforced +4/71. Pair ilda splits only under peel caller-save pressure. a2/a3 tie independent. Forced-0 is not a match.
- * PLATEAU-HANDOFF:func_80024978:end
  */
 
 /* PLATEAU-HANDOFF:func_80023598:start

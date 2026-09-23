@@ -3615,16 +3615,20 @@ typedef struct TrackRayNodeExtended {
     TrackRayFace *planes;
 } TrackRayNodeExtended;
 
-/* Workbench verdict: structure-mismatch, 211 differing words, first mismatch +0x0. */
-/* Candidate: 217/215 instructions with a -0xE0 frame versus target -0xC8. */
-/* The two validity flags, edge cursor, adjusted offset, and repeated metadata lookup now follow the target; declaration and FP lifetimes remain. */
+/* Candidate (Track B, 2026-09-23): 216/215 words, 195 differing, frame 0xD8
+ * versus 0xC8. Typed plane/metadata subscripts, sums left-associated, the edge
+ * index incremented at the loop's end and initialised in the entry block (which
+ * reproduces the target's shifted-zero preheader). The rest is the p1 ranking:
+ * the target gives the inner loop's edge, sign and face pointer the last four
+ * callee-saved registers and keeps the entry pointer in a copy, while this body
+ * gives them the first caller-saved colours and runs out of registers (ra). */
 s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                   TrackRayPoint *offset, f32 scale, f32 planeOffset,
                   f32 threshold, TrackRayHit *hit) {
     TrackRayNodeExtended *node;
     u16 *entry;
+    TrackRayFace *planes;
     TrackRayFace *face;
-    TrackRayFace *edgeFace;
     f32 planeX;
     f32 planeY;
     f32 planeZ;
@@ -3637,97 +3641,82 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
     f32 pointZ;
     f32 edgeValue;
     f32 adjustedOffset;
-    u16 *edgeEntry;
     s32 encoded;
-    s32 entryOffset;
     s32 segmentIndex;
-    s32 edgeOffset;
     s32 edgeValid;
     s32 valid;
     s32 sign;
-    s32 edgeIndex;
+    s32 i;
     u16 edge;
 
     valid = 0;
     segmentIndex = 0;
-    entryOffset = 0;
     if (D_800C9D3C > 0) {
         do {
-            encoded = *(s32 *) ((u8 *) D_800C9D2C + entryOffset);
-            if (encoded > 0) {
-                node = (TrackRayNodeExtended *) (encoded | (s32) 0x80000000);
-            } else {
-                entry = (u16 *) encoded;
-                face = (TrackRayFace *) ((u8 *) node->planes +
-                                         (*entry * 0x10));
-                planeX = face->x;
-                planeY = face->y;
-                planeZ = face->z;
-                planeValue = face->distance - planeOffset;
-                endValue = ((end->z * planeZ) +
-                            ((planeX * end->x) + (planeY * end->y))) +
-                           planeValue;
-                if (endValue < 0.0f) {
-                    startValue = ((start->z * planeZ) +
-                                  ((planeX * start->x) +
-                                   (planeY * start->y))) +
-                                 planeValue;
-                    if (startValue >= 0.0f) {
-                        ratio = (startValue / (startValue - endValue)) * scale;
-                        if (ratio <= hit->ratio) {
-                            edgeOffset = 0;
-                            edgeValid = 1;
-                            edgeEntry = (u16 *) ((u8 *) entry + edgeOffset);
-                            pointX = ((offset->x * ratio) + start->x) -
-                                     (planeOffset * planeX);
-                            pointY = ((offset->y * ratio) + start->y) -
-                                     (planeOffset * planeY);
-                            pointZ = ((offset->z * ratio) + start->z) -
-                                     (planeOffset * planeZ);
-                            do {
-                                edge = edgeEntry[1];
-                                edgeOffset += 2;
-                                sign = edge & 0x8000;
-                                edgeIndex = edge ^ sign;
-                                edgeFace = (TrackRayFace *)
-                                    ((u8 *) node->planes + (edgeIndex * 0x10));
-                                edgeValue = edgeFace->distance +
-                                             ((edgeFace->x * pointX) +
-                                              (edgeFace->y * pointY) +
-                                              (edgeFace->z * pointZ));
-                                if (sign != 0) {
-                                    edgeValue = -edgeValue;
-                                }
-                                if (threshold < edgeValue) {
-                                    edgeValid = 0;
-                                }
-                                edgeEntry++;
-                            } while ((edgeOffset < 6) && (edgeValid != 0));
-                            if (edgeValid != 0) {
-                                hit->normalX = planeX;
-                                hit->normalY = planeY;
-                                hit->normalZ = planeZ;
-                                hit->distance = planeValue;
-                                adjustedOffset = D_80081790 + planeOffset;
-                                hit->x = (adjustedOffset * planeX) + pointX;
-                                hit->y = (adjustedOffset * planeY) + pointY;
-                                hit->z = (adjustedOffset * planeZ) + pointZ;
-                                hit->faceData = ((TrackRayMeta *)
-                                    ((u8 *) node->metadata +
-                                     (D_800C9D30[segmentIndex] * 0x10)))->data;
-                                hit->material = ((u8 *) D_800792E8->textures)[
-                                    (((TrackRayMeta *)
-                                      ((u8 *) node->metadata +
-                                       (D_800C9D30[segmentIndex] * 0x10)))->material * 8) + 7];
-                                hit->ratio = ratio;
-                                valid = 1;
+        encoded = D_800C9D2C[segmentIndex];
+        if (encoded > 0) {
+            node = (TrackRayNodeExtended *) (encoded | (s32) 0x80000000);
+        } else {
+            entry = (u16 *) encoded;
+            i = 0;
+            planes = node->planes;
+            face = &planes[*entry];
+            planeX = face->x;
+            planeY = face->y;
+            planeZ = face->z;
+            planeValue = face->distance - planeOffset;
+            endValue = planeX * end->x + planeY * end->y + end->z * planeZ +
+                       planeValue;
+            if (endValue < 0.0f) {
+                startValue = planeX * start->x + planeY * start->y +
+                             start->z * planeZ + planeValue;
+                if (startValue >= 0.0f) {
+                    ratio = (startValue / (startValue - endValue)) * scale;
+                    if (ratio <= hit->ratio) {
+                        edgeValid = 1;
+                        pointX = ((offset->x * ratio) + start->x) -
+                                 (planeOffset * planeX);
+                        pointY = ((offset->y * ratio) + start->y) -
+                                 (planeOffset * planeY);
+                        pointZ = ((offset->z * ratio) + start->z) -
+                                 (planeOffset * planeZ);
+                        do {
+                            edge = entry[i + 1];
+                            sign = edge & 0x8000;
+                            face = &planes[edge ^ sign];
+                            edgeValue = face->distance +
+                                        (face->x * pointX + face->y * pointY +
+                                         face->z * pointZ);
+                            if (sign != 0) {
+                                edgeValue = -edgeValue;
                             }
+                            if (threshold < edgeValue) {
+                                edgeValid = 0;
+                            }
+                            i++;
+                        } while (i < 3 && edgeValid != 0);
+                        if (edgeValid != 0) {
+                            hit->normalX = planeX;
+                            hit->normalY = planeY;
+                            hit->normalZ = planeZ;
+                            hit->distance = planeValue;
+                            adjustedOffset = D_80081790 + planeOffset;
+                            hit->x = (adjustedOffset * planeX) + pointX;
+                            hit->y = (adjustedOffset * planeY) + pointY;
+                            hit->z = (adjustedOffset * planeZ) + pointZ;
+                            hit->faceData =
+                                node->metadata[D_800C9D30[segmentIndex]].data;
+                            hit->material = ((u8 *) &D_800792E8->textures[
+                                node->metadata[D_800C9D30[segmentIndex]]
+                                    .material])[7];
+                            hit->ratio = ratio;
+                            valid = 1;
                         }
                     }
                 }
             }
+        }
             segmentIndex++;
-            entryOffset += 4;
         } while (segmentIndex < D_800C9D3C);
     }
     return valid;
@@ -5600,11 +5589,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80011980:start
  * symbol: func_80011980
- * score: 211 differing words
- * frame: 0xe0
+ * score: 195 differing words
+ * frame: 0xd8
  * relocations: 12
  * first-mismatch: +0x0
- * summary: Halfword record types preserve candidate bytes; 211 differences remain after five m2c forms. Next: source-attributed FP home evidence.
+ * summary: Delta +8 to +4. Target ranks inner-loop edge/sign/face webs below all outer webs (s5-s8); ours ranks them first and spills into ra.
  * PLATEAU-HANDOFF:func_80011980:end
  */
 

@@ -406,9 +406,10 @@ void func_overlay_008_F0000F1C_185EC74(Overlay8ActivationOwner *owner,
     overlay8FinalizeActivationReloc(owner, 0x17);
 }
 
-/* Overlay22 empty-if on unused: 164/165, 105 masked, first +0x4C, exact 0x18 frame, state in a3.
- * Missing one word at rollover +0x10C: skip fills lui via beqzl; target is beqz+nop plus extra b.
- * Join-axis lattice inert. GLOBAL_ASM stays canonical. */
+/* 165/165, 7 masked, first +0xBC, exact 0x18 frame, state in a3.
+ * The clamp's separate sample local and else-arm copy emit the join b (size delta 0);
+ * flags-before-countdown in case 2 closes the t6/t7/t8 ring phase. Left: the else copy
+ * keeps count in v0 because it interferes with the sample web. GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 f32 func_overlay_008_F0001000_185ED58(void *unused, O8PhaseState *state, f32 input) {
     s32 nextCountdown;
@@ -432,10 +433,11 @@ f32 func_overlay_008_F0001000_185ED58(void *unused, O8PhaseState *state, f32 inp
         if (state->countdown == 0) {
             nextCountdown = 120;
             if (gO8RolloverControlReloc != 0) {
-                nextCountdown =
-                    (s32)(o8RolloverSampleReloc() * 6.0f + 60.0f);
-                if (nextCountdown >= 181) {
+                s32 sample = (s32)(o8RolloverSampleReloc() * 6.0f + 60.0f);
+                if (sample >= 181) {
                     nextCountdown = 180;
+                } else {
+                    nextCountdown = sample;
                 }
             }
             state->phase = 2;
@@ -449,8 +451,8 @@ f32 func_overlay_008_F0001000_185ED58(void *unused, O8PhaseState *state, f32 inp
     case 2:
         state->effect = 3;
         if (state->countdown != 0) {
-            state->countdown--;
             state->flags |= 0x8000;
+            state->countdown--;
         } else if (state->timer > 0) {
             state->weight +=
                 (gO8Phase2TargetReloc - state->weight) * 0.875f;
@@ -2418,11 +2420,11 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F0001000_185ED58:start
  * symbol: func_overlay_008_F0001000_185ED58
- * score: 105/165 words
+ * score: 7/165 words
  * frame: 0x18
  * relocations: 18
- * first-mismatch: +0x4C
- * summary: Empty-if on unused closed the a0 home; state stays in a3. Still -4: rollover skip fills lui; target is beqz nop plus extra b at +0x10C.
+ * first-mismatch: +0xBC
+ * summary: Delta 0 at 7: sample local plus else copy emits the join b. Left: count web takes v0, target v1; it interferes with the sample web in the else block.
  * PLATEAU-HANDOFF:func_overlay_008_F0001000_185ED58:end
  */
 

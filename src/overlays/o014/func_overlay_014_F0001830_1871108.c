@@ -14,27 +14,21 @@ extern u8 *func_8004D40C(s32 font, char *text, s32 maxWidth,
 extern void func_8004B0F8(void *displayList, s32 x, s32 y, char *text,
                           s32 alignmentFlags);
 
-#define CASE_PREINC 1
-
-#ifdef NON_MATCHING
 /* PROVENANCE: structure cross-checked against JFG
  * asm/nonmatchings/overlays/o7/overlay_7/func_overlay_7_007023D4_1EFD4FC.s;
  * body reconstructed from Mickey evidence. */
-/* Retained configured-isolated evidence is exact-size at 201 words/frame 0x90
- * with eight raw sites at +0x98,+0x11C,+0x1C0,+0x1F4,+0x1F8,+0x1FC,+0x200,
- * +0x208 and five after local-relocation normalization at +0x1F4..+0x208.
- * Its 21 runtime records and seven-entry switch payload are structurally exact,
- * but all eight calls previously used one false overlay-local identity. The
- * declarations below repair the six resident font identities; configured V0
- * must re-establish the relocation surface before one target-shaped case-7
- * load-before-increment probe. Park after those two builds if flat. */
-/* Track B (2026-09-23): the int-returning declaration above closed size
- * and frame (804/804 bytes, frame 0x90); 5 masked words remain, all in
- * case 7, where the target schedules the stream increment into the call's
- * delay slot and this spelling schedules the last argument load there. */
-/* Ownership trial (2026-08-28): fixed the TU's +0x174..+0x190 .rodata range;
- * linked promotion established module-growth/table ownership only, not exact C
- * text or relocation identity. Module growth is cleared. */
+/* Matched 2026-09-23 (lane A2-ov), 201/201 words at frame 0x90, unforced.
+ * The int-returning declaration of func_8004D5C0 closed size and frame
+ * (Track B, lane B-ovsmall). The last five words were case 7's schedule:
+ * the ROM loads the four colour bytes at +1..+5 and puts the stream
+ * increment in the call's delay slot. as1 breaks a tie between the
+ * increment and the loads on source line number (L59), and the increment
+ * written first takes the smaller line, so it is picked first and the last
+ * load fills the slot. Case 7 therefore draws from a block placed before its
+ * label: its own statements are the increment and a jump back, so uopt
+ * merges the two blocks with the increment keeping the later line. Temps
+ * loaded before the increment reproduce the case too, but a third
+ * temporary is globalcoloured to t0 and removes it from the ring (47). */
 s32 func_overlay_014_F0001830_1871108(s32 context, u8 *stream, s32 skip) {
     s32 remaining;
     s32 y;
@@ -85,21 +79,17 @@ s32 func_overlay_014_F0001830_1871108(s32 context, u8 *stream, s32 skip) {
             adjust = 1;
             break;
         case 6:
-#if CASE_PREINC
             stream += 8;
             saved = stream[-2];
             fontColour(stream[-7], stream[-6], stream[-5], stream[-3],
                        (saved * gOverlay14ValueC0) >> 8);
-#else
-            fontColour(stream[1], stream[2], stream[3], stream[5],
-                       (stream[6] * gOverlay14ValueC0) >> 8);
-            stream += 8;
-#endif
+            break;
+        case7Draw:
+            func_8004B0DC(stream[-7], stream[-6], stream[-5], stream[-3]);
             break;
         case 7:
             stream += 8;
-            func_8004B0DC(stream[-7], stream[-6], stream[-5], stream[-3]);
-            break;
+            goto case7Draw;
         default:
             done = 1;
             break;
@@ -132,16 +122,3 @@ s32 func_overlay_014_F0001830_1871108(s32 context, u8 *stream, s32 skip) {
     } while (done == 0);
     return result;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o014/func_overlay_014_F0001830_1871108/func_overlay_014_F0001830_1871108.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_014_F0001830_1871108:start
- * symbol: func_overlay_014_F0001830_1871108
- * score: 5/201 words
- * frame: 0x90
- * relocations: 21
- * first-mismatch: +0x1F4
- * summary: Delta 0, frame closed, 186 to 5: callee declared int-returning. Left: case 7 fills the jal delay with the last arg load; target fills it with the increment.
- * PLATEAU-HANDOFF:func_overlay_014_F0001830_1871108:end
- */

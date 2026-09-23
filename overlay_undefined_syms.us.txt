@@ -738,6 +738,15 @@ overlay14Dispatch = 0xf0000000;
 overlay14DrawPrimitive = 0xf0000000;
 overlay14ValidateEntry = 0xf0001028;
 
+/* overlay 14: func_overlay_014_F0001830_1871108.c.o */
+fontColour_o014Reloc = 0xf0000000;
+func_8004B0A4_o014Reloc = 0xf0000000;
+func_8004B0DC_o014Reloc = 0xf0000000;
+func_8004B0F8_o014Reloc = 0xf0000000;
+func_8004D40C_o014Reloc = 0xf0000000;
+func_8004D5C0_o014Reloc = 0xf0000000;
+gOverlay14DrawJumpTableReloc = 0x00000054;
+
 /* overlay 14: overlay14ReleaseOwner.c.o */
 gOverlay14Owner = 0x00000100;
 

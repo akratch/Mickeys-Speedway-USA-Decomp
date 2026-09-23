@@ -1101,15 +1101,34 @@ s32 func_80017660(void *arg0, s32 arg1, void *arg2, s32 arg3, s32 arg4) {
  * resident buffer layouts determine the field bindings below.
  */
 #ifdef NON_MATCHING
-/* Workbench verdict: structure-mismatch, 270 differing words; first mismatch is at +0x4. */
-/* Target is 314 instructions/frame -0x108; candidate is 313 instructions and now shares that frame. */
-/* The frame closed by deleting four m2c-only locals: the declared-local list
- * sizes the frame in 8-byte steps, so merging var_v0_2/var_v1_2 into their
- * originals and inlining the two subtraction temps removed the 0x18 excess.
- * The remaining split is inside the frame: the candidate still colours one
- * extra callee-saved FP web (it hoists 1.0f where the target hoists 0.0f),
- * so its save area is 8 bytes larger and every stack home sits 8 low. */
+/* Workbench verdict: 221 masked words at size delta 0 (was 270 at +8).
+ * Track B, 2026-09-23:
+ *   - the +8 was one extra callee-saved FP register. The loop carried the two
+ *     rotation deltas as fresh temps where the target reassigns the loaded
+ *     coordinates (x -= cx; z -= cz), which freed a caller-saved FP register
+ *     and stopped 1.0f being hoisted into f20.
+ *   - the cosine result is copied into var_f16 inside each arm, after the
+ *     sine reload, which is the target's duplicated arm tail (delta 0).
+ *   - the frame is a declaration count: nine words before projected, eleven
+ *     between it and spA8 (home +0xA8), and two unreferenced pads (L99).
+ *   - var_a1 is a plain int shifted in place (no u8 mask); z is loaded in
+ *     each arm; the rotated pair is two named results.
+ * Left: the sine is spilled by the allocator in the target (store in the
+ * second jal's delay slot) where this form stores at the assignment; 0.0f
+ * shares f20 with var_f0 in the target while here it is a separate web in
+ * f12, and var_f18/var_f0 take f20/f18 swapped (forcing p1 var_f18=c29,
+ * var_f0=c30, zero=c30 prices 215); a separate x-delta web, which the
+ * target's f12 suggests, costs +24 here by re-hoisting 1.0f. */
 s32 func_80017BCC(void *arg0, void *arg1, void *arg2) {
+    s32 var_fp;
+    s32 var_s4;
+    s32 var_s7;
+    s32 var_t2;
+    s32 var_t3;
+    s32 var_v1;
+    s32 var_a0_2;
+    s32 var_a1_2;
+    s32 var_t5;
     u32 projected[3];
     u8 *var_a0;
     u8 *var_a2;
@@ -1118,10 +1137,12 @@ s32 func_80017BCC(void *arg0, void *arg1, void *arg2) {
     u8 *var_t4;
     u8 *var_v0;
     u8 *temp_v0;
-    f32 spA8;
+    s32 var_a1;
+    u8 vertexCount;
     f32 temp_f0;
     f32 temp_f12;
     f32 temp_f2;
+    f32 spA8;
     f32 temp_f2_2;
     f32 var_f0;
     f32 var_f0_2;
@@ -1133,32 +1154,24 @@ s32 func_80017BCC(void *arg0, void *arg1, void *arg2) {
     f32 var_f24;
     f32 var_f26;
     f32 var_f28;
-    s32 var_fp;
-    s32 var_s4;
-    s32 var_s7;
-    s32 var_t2;
-    s32 var_t3;
-    s32 var_v1;
-    s32 var_a0_2;
-    s32 var_a1_2;
-    s32 var_t5;
-    u8 var_a1;
-    u8 vertexCount;
+    s32 pad0;
+    s32 pad1;
 
     if ((*(u8 *) ((u8 *) arg2 + 0x10) & 0x10) != 0) {
-        var_f16 = 1.0f;
         var_f14 = 0.0f;
+        var_f16 = 1.0f;
     } else {
         if (arg1 != NULL) {
             spA8 = func_8002A8C0(*(s16 *) ((u8 *) arg1 + 0x0));
             var_f0 = func_8002A8BC(*(s16 *) ((u8 *) arg1 + 0x0));
-            var_f14 = spA8;
+            var_f14 = *(f32 *) &spA8;
+            var_f16 = var_f0;
         } else {
             spA8 = func_8002A8C0(*(s16 *) ((u8 *) arg0 + 0x14));
             var_f0 = func_8002A8BC(*(s16 *) ((u8 *) arg0 + 0x14));
-            var_f14 = spA8;
+            var_f14 = *(f32 *) &spA8;
+            var_f16 = var_f0;
         }
-        var_f16 = var_f0;
     }
     temp_v0 = *(u8 **) ((u8 *) arg0 + 0x0);
     var_f26 = *(f32 *) ((u8 *) arg0 + 0x34);
@@ -1225,19 +1238,20 @@ loop_21:
                 var_v0 = D_800C9F58 + (*(u8 *) (var_a0 + 0x2) << 5);
                 var_f0_2 = *(f32 *) (var_v0 + 0x0);
                 var_f12 = *(f32 *) (var_v0 + 0x4);
+                temp_f2_2 = *(f32 *) (var_v0 + 0x8);
             } else {
                 var_v0 = D_800C9D48 + (*(u8 *) (var_a0 + 0x2) * 0x10);
                 var_f0_2 = *(f32 *) (var_v0 + 0x0);
                 var_f12 = *(f32 *) (var_v0 + 0x4);
+                temp_f2_2 = *(f32 *) (var_v0 + 0x8);
             }
-            temp_f2_2 = *(f32 *) (var_v0 + 0x8);
-            var_a1 = (u8) ((s32) var_a1 >> 1);
+            var_a1 = var_a1 >> 1;
             var_t2 += 1;
             var_a2 += 0xA;
             *(s16 *) (var_a2 - 0xA) = (s32) var_f0_2;
-            *(s8 *) (var_a2 - 0x4) = 0xFF;
-            *(s8 *) (var_a2 - 0x3) = 0xFF;
-            *(s8 *) (var_a2 - 0x2) = 0xFF;
+            *(u8 *) (var_a2 - 0x4) = 0xFF;
+            *(u8 *) (var_a2 - 0x3) = 0xFF;
+            *(u8 *) (var_a2 - 0x2) = 0xFF;
             *(s8 *) (var_a2 - 0x1) = (s8) var_s4;
             *(s16 *) (var_a2 - 0x6) = (s32) temp_f2_2;
             *(s16 *) (var_a2 - 0x8) =
@@ -1245,14 +1259,14 @@ loop_21:
             if (var_t2 >= D_800CB278) {
                 return 0;
             }
+            var_f0_2 -= var_f18;
             var_a0 += 1;
+            temp_f2_2 -= var_f0;
+            temp_f0 = (var_f0_2 * var_f16) - (temp_f2_2 * var_f14);
+            temp_f2_2 = (temp_f2_2 * var_f16) + (var_f0_2 * var_f14);
             projected[var_v1] =
-                ((s32) ((((temp_f2_2 - var_f0) * var_f16) +
-                         ((var_f0_2 - var_f18) * var_f14) + var_f28) * var_f24) &
-                 0xFFFF) |
-                ((s32) (var_f22 * ((((var_f0_2 - var_f18) * var_f16) -
-                                    ((temp_f2_2 - var_f0) * var_f14)) + var_f26)) <<
-                 0x10);
+                ((s32) ((temp_f2_2 + var_f28) * var_f24) & 0xFFFF) |
+                ((s32) (var_f22 * (temp_f0 + var_f26)) << 0x10);
             var_v1 += 1;
             if (var_v1 < (s32) *(u8 *) (var_t4 + 0x0)) {
                 goto loop_21;
@@ -1451,11 +1465,11 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_80017BCC:start
  * symbol: func_80017BCC
- * score: 270 differing words
+ * score: 221/314 words
  * frame: 0x108
  * relocations: 44
- * first-mismatch: +0x4
- * summary: Frame exact at 0x108; re-measured under the corrected R4300 multiply scheduler, which adds the three FP hazard nops the target carries.
+ * first-mismatch: +0x58
+ * summary: Delta 0 (was +8) via in-place coordinate deltas and per-arm cosine copy; left: 0.0f/var_f0 f20 sharing, sine spill placement
  * PLATEAU-HANDOFF:func_80017BCC:end
  */
 

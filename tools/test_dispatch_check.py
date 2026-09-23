@@ -285,5 +285,26 @@ class TrackBRouting(unittest.TestCase):
                           "big-delta", "big-delta"])
 
 
+
+class BaseSelection(unittest.TestCase):
+    """A maintenance lane's own commits must be checkable before integration."""
+
+    def test_the_named_base_reaches_the_classifier(self):
+        with mock.patch.object(dc, "queued_rows", return_value=rows("x")), \
+             mock.patch.object(dc, "closure_facts", return_value={}), \
+             mock.patch.object(dc, "assignability",
+                               return_value={"x": "base-only"}) as seen:
+            problems, _ = dc.check({"a": ["x"]}, base="lane/maintenance")
+        self.assertEqual(problems, [])
+        seen.assert_called_once_with(["x"], "lane/maintenance")
+
+    def test_the_default_base_is_the_integration_branch(self):
+        with mock.patch.object(dc, "queued_rows", return_value=rows("x")), \
+             mock.patch.object(dc, "closure_facts", return_value={}), \
+             mock.patch.object(dc, "assignability", return_value={}) as seen:
+            dc.check({"a": ["x"]})
+        seen.assert_called_once_with(["x"], "campaign/unchain")
+
+
 if __name__ == "__main__":
     unittest.main()

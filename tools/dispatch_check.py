@@ -164,7 +164,7 @@ def parse_plan(args: list[str]) -> dict[str, list[str]]:
     return plan
 
 
-def assignability(symbols: list[str]) -> dict[str, str]:
+def assignability(symbols: list[str], base: str = "campaign/unchain") -> dict[str, str]:
     """Each symbol's lane_status assignment state.
 
     ONLY `base-only` may be dispatched; every other state is fail-closed so
@@ -188,7 +188,6 @@ def assignability(symbols: list[str]) -> dict[str, str]:
     except ImportError:
         return {}
     try:
-        base = "campaign/unchain"
         # The same content-keyed cache triage uses: lane ownership is always
         # recomputed, the base-derived pins are not re-walked on a warm base.
         cache = ls.AssignmentCache(base, REPO / ls.ASSIGNMENT_CACHE_DIR)
@@ -203,7 +202,8 @@ def assignability(symbols: list[str]) -> dict[str, str]:
 
 
 def check(plan: dict[str, list[str]],
-          tracks: dict[str, str] | None = None) -> tuple[list[str], list[str]]:
+          tracks: dict[str, str] | None = None,
+          base: str = "campaign/unchain") -> tuple[list[str], list[str]]:
     rows, closures = queued_rows(), closure_facts()
     tracks = tracks or {}
     problems, notes = [], []
@@ -266,7 +266,7 @@ def check(plan: dict[str, list[str]],
                     f"lane (--track {lane}=B, or \"track\": \"B\" in the plan) "
                     f"whose brief carries the insertion-pair method.")
 
-    states = assignability(sorted(owner))
+    states = assignability(sorted(owner), base)
     if not states:
         notes.append("\nNOTE lane_status unavailable -- assignability unchecked; "
                      "a lane may still arrive at a closed gate")
@@ -314,6 +314,11 @@ def main(argv: list[str]) -> int:
         help="mark a lane's track; only a track=B lane may take a symbol "
              "whose size_delta is nonzero (default A)")
     parser.add_argument(
+        "--base", default="campaign/unchain",
+        help="ref whose committed evidence decides assignability (default "
+             "campaign/unchain); name a lane branch to check a plan against "
+             "maintenance commits that have not been integrated yet")
+    parser.add_argument(
         "--cites", action="append", default=[], metavar="PATH",
         help="a document the brief will cite; refused if it does not exist")
     args = parser.parse_args(argv)
@@ -332,7 +337,7 @@ def main(argv: list[str]) -> int:
     if unknown:
         parser.error(f"--track names lanes not in the plan: {', '.join(unknown)}")
 
-    problems, notes = check(plan, tracks)
+    problems, notes = check(plan, tracks, args.base)
     problems = check_doc_paths(args.cites) + problems
     print("\n".join(notes).lstrip("\n"))
     if problems:

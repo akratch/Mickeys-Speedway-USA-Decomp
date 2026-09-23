@@ -2000,6 +2000,7 @@ func_800131AC = 0x800131AC; // type:func size:0x178 ROM 0x13dac tier-D (JFG trac
 // No public name adopted: Mickey's callers and arithmetic establish an
 // interval-clipping helper; the reference scan found no credible donor.
 func_80013324 = 0x80013324; // type:func size:0xD8 ROM 0x13f24 tier-D (Mickey reconstruction, placeholder retained)
+func_800133FC = 0x800133FC; // type:func size:0x180 ROM 0x13ffc tier-A, matched C src/main/track.c -O2 -mips2 -32 -Wab,-r4300_mul, three-point plane normal, linked exact=96/96
 
 // Tier B: all three external callers consume the returned object through
 // track-layout fields; this is the TU's accessor for its current track object.

@@ -529,4 +529,47 @@ was measured on the +4 shape and must be re-derived, not inherited. The
 remaining structural rows are schedule: the root second header's constant
 materialisations, and the tail, where the target issues the text global's
 load and the chain-head reads before the counter bump.
+#### 2026-09-23, lane B3-o101: natural dim-colour spellings and tail rows
+
+No change to the source; 136 at delta 0, frame 0x20, 52 relocations. Everything below was measured on A, whose body B shares row for row; the B shard's own numbers are unchanged.
+
+Natural spellings for the dim colour, all measured on A against the 136
+diagnostic (masked, size delta): plain 0xC0 148 +4; file-scope static const
+158 +4 and function-local static const 158 +4 (both a load); an enum
+constant 148 +4; (u8)~0x3F 148 +4; the callee unprototyped with an s32, u8
+or s8 dim local 148 +4 each (unprototyped with the diagnostic kept stays
+136); float-derived forms through the live 1.0f opacity scale (192.0f times
+the scale, the scale times 0xC0, 0xC0 times the scale converted, 0xFF less
+63.0f times the scale) 161 at +16 or 164 at +28, because uopt folds no float
+operation; a chained colour1 = colour2 store 148 +4; a masked or shifted
+read of the root's already-stored colour byte 159 +8. None replaces the
+diagnostic. What does score 136 at delta 0 are other annihilating
+operations on the loaded counter: 0xC0 OR (count AND 0), count % 1 + 0xC0,
+0xC0 >> (count * 0). So the fold that matters is ugen's, not uopt's: uopt
+keeps any binary operation with a loaded operand as an expression web, and
+ugen then folds a literal-zero or literal-one operand to $zero, emitting
+the single addiu from $zero the target has. B2's note that x & 0 folds
+early holds only for a local operand. A natural source therefore needs a
+non-constant operand that a literal annihilates -- plausibly a macro
+parameter passed as 0 by this builder -- and no such parameter is visible.
+
+Tail and second-header rows, measured on A at 136: moving the two
+chain-head loads before the opacity, the length, the kind, the colours or
+the index read 147 to 150; mode before kind, folding kind/mode, the
+colours, the chain-head pair or the node stores onto one line, all flat at
+136; folding the counter bump and root stores 138; the chain-head values
+written straight into the node (no carrier, L145) 139 to 140 on four line
+layouts, because as1 then keeps the node stores ahead of the root stores
+(it treats the two bases as possibly aliasing). Second header: folding the
+node-32 group into the header line 138; moving the order-count read to
+the end of the header, or the handle store to the front of its group,
+flat. Register reading: the target holds the node-24 chain-head values in
+t7/t8 and the node-20 ones in t4/t5, while ours colours both pairs
+t1/t2 (webs 159/174 and 93/97, save 1.5/1.0 and 2.0). t7/t8 are outside
+this procedure's colour table (c1 v0 to c12 t5, c14 s0, c15 s1), so in the
+target at least the node-24 pair are ugen ring temps, not coloured locals,
+yet their loads precede the root stores and their stores follow them.
+That is the named question for the tail: a carrier that is not a
+colourable symbol but survives across the root stores. ADR 0018 reached:
+three consecutive layout and carrier attempts with no better residual.
 <!-- plateau-handoff:overlay101BuildPresentationB:end -->

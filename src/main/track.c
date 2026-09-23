@@ -1395,18 +1395,19 @@ void func_8000D7F8(TrackFloatRecord *arg0, f32 arg1, f32 arg2, f32 arg3) {
  * skeleton supplies the alternating packed-colour copy. Mickey's separate
  * lighting count at `TrackSegment +0x20`, source record, and dirty-mask
  * fields are established by the resident accesses above.
+ *
+ * Matched by reusing lightCount as the dirty-mask group counter (one web, so
+ * the reassignment keeps its copy), reading the dirty flag and the middle
+ * colour byte without declared carriers, and defining the mask after the two
+ * cursors so the leaf's web order follows the target's.
  */
-#ifdef NON_MATCHING
 void func_8000D820(void) {
     s32 segmentCount;
     s32 lightCount;
     s32 *segmentFlags;
-    s32 dirty;
     s32 copyMode;
-    s32 maskCount;
     u8 *dirtyMasks;
     u32 mask;
-    u8 colour;
     TrackLightSource *sourceRecord;
     u8 *sourceBase;
     u8 *lightData;
@@ -1419,9 +1420,8 @@ void func_8000D820(void) {
     segmentCount = D_800792E8->segmentCount;
     copyMode = (D_80079308 != NULL) ? 1 : -1;
     while (segmentCount--) {
-        dirty = *segmentFlags;
         segmentFlags++;
-        if ((dirty != 0) && ((segment->lightingMode & copyMode) != 0)) {
+        if ((segmentFlags[-1] != 0) && ((segment->lightingMode & copyMode) != 0)) {
             sourceRecord = (TrackLightSource *) segment->unk30;
             if (sourceRecord != NULL) {
                 sourceBase = sourceRecord->source;
@@ -1431,19 +1431,18 @@ void func_8000D820(void) {
                     while (lightCount--) {
                         lightData += 10;
                         lightData[-4] = sourceBase[0];
-                        colour = sourceBase[1];
+                        lightData[-3] = sourceBase[1];
                         sourceBase += 3;
-                        lightData[-3] = colour;
                         lightData[-2] = sourceBase[-1];
                     }
                     segment->lightingMode ^= 1;
                 } else {
-                    maskCount = (lightCount + 15) >> 4;
+                    lightCount = (lightCount + 15) >> 4;
                     dirtyMasks = (u8 *) sourceRecord->dirtyMasks;
-                    while (maskCount--) {
-                        mask = *(u16 *) dirtyMasks;
+                    while (lightCount--) {
                         destination = lightData;
                         source = sourceBase;
+                        mask = *(u16 *) dirtyMasks;
                         *(u16 *) dirtyMasks = 0;
                         if (mask != 0) {
                             do {
@@ -1468,9 +1467,6 @@ void func_8000D820(void) {
         segment++;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000D820.s")
-#endif
 /*
  * PROVENANCE: adapted from Jet Force Gemini's public `src/track.c` and
  * assembly-only `trackUpdateLighting`. Mickey's module path, segment layout,
@@ -1545,27 +1541,26 @@ extern s32 func_8000A244(s32 *resultCount);
 extern void func_8000A39C(s32 first, s32 last);
 extern TrackRouteObject *func_800056F0(s32 index);
 
-#ifdef NON_MATCHING
-/* Mickey m2c restores the inclusive reverse object range and signed count ABI. */
-/* Nonexact: 169/172 words, 144 differences, first +0x5C, exact 0x190 frame. */
-/* Six relocation records on each side; their offsets still differ. */
+/* Mickey m2c restores the inclusive reverse object range and signed count ABI.
+ * Matched (Track B) by subscripting indices[] in both loops so strength
+ * reduction builds the cursors, scanning with while (mapIndex--), doubling
+ * objectRadius in place, pre-decrementing lastIndex in the lookup call, and
+ * three unreferenced locals that give the 0x190 frame its home layout. */
 s32 func_8000DB34(s32 count, u8 *indices, TrackRouteResult *results) {
     s32 heapCount;
     s32 mapIndex;
+    s32 unusedA;
+    s32 unusedB;
     s32 lastIndex;
     s32 resultCount;
-    s32 segmentIndex;
     s32 objectRadius;
-    s32 objectIndex;
     s32 minX;
     s32 minY;
     s32 minZ;
-    s32 maxDistance;
     s32 candidateSegment;
+    s32 unusedC;
     u8 inputIndex;
-    u8 candidateIndex;
     u8 map[256];
-    u8 *input;
     TrackRouteObject *object;
     TrackBoundingBox *bounds;
 
@@ -1575,9 +1570,9 @@ s32 func_8000DB34(s32 count, u8 *indices, TrackRouteResult *results) {
     } while (mapIndex < 256);
     mapIndex = 0;
     if (count > 0) {
-        input = indices;
         do {
-            map[*input++] = mapIndex++;
+            map[indices[mapIndex]] = mapIndex;
+            mapIndex++;
         } while (mapIndex != count);
     }
 
@@ -1586,9 +1581,7 @@ s32 func_8000DB34(s32 count, u8 *indices, TrackRouteResult *results) {
     resultCount = 0;
     if (heapCount < lastIndex) {
         do {
-            objectIndex = lastIndex - 1;
-            lastIndex = objectIndex;
-            object = func_800056F0(objectIndex);
+            object = func_800056F0(--lastIndex);
             if ((object->segmentIndex != -1) &&
                 (map[object->segmentIndex] != 0xFF) &&
                 (func_800103D4(object) != 0)) {
@@ -1597,23 +1590,19 @@ s32 func_8000DB34(s32 count, u8 *indices, TrackRouteResult *results) {
                 minX = (s32) object->x - objectRadius;
                 minY = (s32) object->y - objectRadius;
                 minZ = (s32) object->z - objectRadius;
-                maxDistance = objectRadius * 2;
-                candidateIndex = map[object->segmentIndex];
-                if (candidateIndex != 0) {
-                    input = indices + candidateIndex - 1;
-                    mapIndex = candidateIndex - 1;
-                    do {
-                        inputIndex = *input--;
-                        bounds = &D_800792E8->segmentBounds[inputIndex];
-                        if ((minX < bounds->x2) &&
-                            (minY < bounds->y2) &&
-                            (minZ < bounds->z2) &&
-                            (bounds->x1 < (minX + maxDistance)) &&
-                            (bounds->y1 < (minY + maxDistance)) &&
-                            (bounds->z1 < (minZ + maxDistance))) {
-                            candidateSegment = inputIndex;
-                        }
-                    } while (mapIndex-- != 0);
+                objectRadius *= 2;
+                mapIndex = map[object->segmentIndex];
+                while (mapIndex--) {
+                    inputIndex = indices[mapIndex];
+                    bounds = &D_800792E8->segmentBounds[inputIndex];
+                    if ((minX < bounds->x2) &&
+                        (minY < bounds->y2) &&
+                        (minZ < bounds->z2) &&
+                        (bounds->x1 < (minX + objectRadius)) &&
+                        (bounds->y1 < (minY + objectRadius)) &&
+                        (bounds->z1 < (minZ + objectRadius))) {
+                        candidateSegment = inputIndex;
+                    }
                 }
                 results->segmentIndex = candidateSegment;
                 results->flags = 0xFF;
@@ -1625,9 +1614,6 @@ s32 func_8000DB34(s32 count, u8 *indices, TrackRouteResult *results) {
     }
     return resultCount;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000DB34.s")
-#endif
 /* Exact 118-word C: reusing the dead recordIndex carrier for the later sort
  * passes closes the 24-site allocator bijection while preserving the 0x28
  * frame and both R_MIPS_26 call identities. The complete flag lattice was
@@ -4559,81 +4545,66 @@ s32 func_80013324(f32 coefficient, f32 numerator,
     }
     return TRUE;
 }
-/* Workbench: structure-mismatch, 98 differing words, first mismatch +0x0. */
-/* Candidate shape: 99 instructions/frame -0x98 vs target 96/-0xA0; sqrtf call present. */
-/* Remaining structural gap: coordinate-load ordering, FP spill homes, and saved-FP frame. */
-#ifdef NON_MATCHING
+/* Three-point plane: unit normal and plane distance. Matched (Track B) by
+ * replacing the m2c carriers with one local per coordinate, delta and normal
+ * component; the deltas are declared before the normal with three
+ * unreferenced locals between them (the 0xA0 frame's home layout) and are
+ * computed grouped by axis, which gives the target's FP colouring. */
 void func_800133FC(TrackVertex *arg0, TrackVertex *arg1,
                    TrackVertex *arg2, f32 *arg3, f32 *arg4,
                    f32 *arg5, f32 *arg6) {
-    s32 sp9C;
-    s32 sp98;
-    s32 sp94;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 sp34;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f18;
-    register f32 temp_f20;
-    register f32 temp_f22;
-    register f32 temp_f24;
-    f32 temp_f2;
-    f32 temp_f8;
-    f32 var_f12;
-    f32 var_f14;
-    f32 var_f2;
-    s32 temp_t0;
-    s32 temp_t1;
-    s32 temp_t2;
-    s32 temp_t3;
-    s32 temp_v0;
-    s32 temp_v1;
+    s32 x0;
+    s32 y0;
+    s32 z0;
+    s32 x1;
+    s32 y1;
+    s32 z1;
+    s32 x2;
+    s32 y2;
+    s32 z2;
+    f32 dx1;
+    f32 dy1;
+    f32 dz1;
+    f32 dx2;
+    f32 dy2;
+    f32 dz2;
+    s32 pad0;
+    s32 pad1;
+    s32 pad2;
+    f32 nx;
+    f32 ny;
+    f32 nz;
+    f32 mag;
 
-    temp_v1 = arg0->y;
-    temp_t2 = arg1->y;
-    temp_t3 = arg1->z;
-    temp_t0 = arg0->z;
-    temp_f14 = (f32) (temp_t2 - temp_v1);
-    temp_f8 = (f32) (arg2->z - temp_t3);
-    temp_t1 = arg1->x;
-    temp_v0 = arg0->x;
-    sp98 = (s32) temp_v1;
-    temp_f16 = (f32) (arg2->y - temp_t2);
-    sp34 = temp_f8;
-    sp94 = (s32) temp_t0;
-    temp_f18 = (f32) (temp_t3 - temp_t0);
-    sp9C = (s32) temp_v0;
-    temp_f2 = (f32) (arg2->x - temp_t1);
-    temp_f20 = (temp_f14 * temp_f8) - (temp_f18 * temp_f16);
-    sp54 = temp_f20;
-    temp_f0 = (f32) (temp_t1 - temp_v0);
-    temp_f22 = (temp_f18 * temp_f2) - (temp_f0 * temp_f8);
-    sp50 = temp_f22;
-    temp_f24 = (temp_f0 * temp_f16) - (temp_f14 * temp_f2);
-    sp4C = temp_f24;
-    temp_f0_2 = sqrtf((temp_f20 * temp_f20) + (temp_f22 * temp_f22) +
-                       (temp_f24 * temp_f24));
-    var_f2 = sp54;
-    var_f12 = sp50;
-    var_f14 = sp4C;
-    if (temp_f0_2 > 0.0f) {
-        var_f2 = temp_f20 / temp_f0_2;
-        var_f12 = temp_f22 / temp_f0_2;
-        var_f14 = temp_f24 / temp_f0_2;
+    x0 = arg0->x;
+    y0 = arg0->y;
+    z0 = arg0->z;
+    x1 = arg1->x;
+    y1 = arg1->y;
+    z1 = arg1->z;
+    x2 = arg2->x;
+    y2 = arg2->y;
+    z2 = arg2->z;
+    dx1 = x1 - x0;
+    dx2 = x2 - x1;
+    dy1 = y1 - y0;
+    dy2 = y2 - y1;
+    dz1 = z1 - z0;
+    dz2 = z2 - z1;
+    nx = (dy1 * dz2) - (dz1 * dy2);
+    ny = (dz1 * dx2) - (dx1 * dz2);
+    nz = (dx1 * dy2) - (dy1 * dx2);
+    mag = sqrtf((nx * nx) + (ny * ny) + (nz * nz));
+    if (mag > 0.0f) {
+        nx /= mag;
+        ny /= mag;
+        nz /= mag;
     }
-    *arg3 = var_f2;
-    *arg4 = var_f12;
-    *arg5 = var_f14;
-    *arg6 = -(((f32) temp_v0 * var_f2) + ((f32) temp_v1 * var_f12) +
-              ((f32) temp_t0 * var_f14));
+    *arg3 = nx;
+    *arg4 = ny;
+    *arg5 = nz;
+    *arg6 = -((x0 * nx) + (y0 * ny) + (z0 * nz));
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_800133FC.s")
-#endif
 /*
  * PROVENANCE: Mickey-only reconstruction from the target's collision-query
  * callers, resident track layouts, and the neighboring collision helpers;
@@ -5664,26 +5635,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * PLATEAU-HANDOFF:func_8000FAE0:end
  */
 
-/* PLATEAU-HANDOFF:func_8000D820:start
- * symbol: func_8000D820
- * score: 65/86 words
- * frame: frameless
- * relocations: 6
- * first-mismatch: +0x3C
- * summary: Fresh baseline confirms 84 vs 86 words and a 65-word mixed residual; no new dirty-flag/shared-count lifetime evidence exists.
- * PLATEAU-HANDOFF:func_8000D820:end
- */
-
-/* PLATEAU-HANDOFF:func_800133FC:start
- * symbol: func_800133FC
- * score: 98 differing words
- * frame: 0x98
- * relocations: 1
- * first-mismatch: +0x0
- * summary: Current scored baseline remains 98; donor audit and m2c type controls leave only original FP and integer-coordinate lifetime evidence.
- * PLATEAU-HANDOFF:func_800133FC:end
- */
-
 /* PLATEAU-HANDOFF:func_800140CC:start
  * symbol: func_800140CC
  * score: 187 differing words
@@ -5793,16 +5744,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * first-mismatch: +0x48
  * summary: Correct next-batch vertex boundary and unsigned command types; five m2c structural follow-ups fail to improve. Next: batch/display-list lifetimes.
  * PLATEAU-HANDOFF:func_8000DFBC:end
- */
-
-/* PLATEAU-HANDOFF:func_8000DB34:start
- * symbol: func_8000DB34
- * score: 144 differing words
- * frame: 0x190
- * relocations: 6
- * first-mismatch: +0x5c
- * summary: Correct inclusive object traversal improves to 144 differences, frame 0x190 exact. Next: map and traversal declaration evidence.
- * PLATEAU-HANDOFF:func_8000DB34:end
  */
 
 /* PLATEAU-HANDOFF:func_8000E5EC:start

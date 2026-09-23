@@ -1277,6 +1277,7 @@ segments:
       - [0x18775F0, c, overlay20RemoveEntry]
       - [0x18776C4, c, overlay20AdvanceEntries]
       - [0x1877720, c, func_overlay_020_F0001148_1877720]
+      - [0x1877A5C, asm, overlay_020_padding]
       - [0x1877A68, bin, overlay_020_data_rodata]
       - [0x1877AB8, bin, overlay_020_reloc1]
       - [0x1877B40, bin, overlay_020_reloc2]

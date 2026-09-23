@@ -900,6 +900,11 @@ D_4DC = 0x000004dc;
 gOverlay20Entries = 0x00000000;
 gOverlay20EntryCount = 0x00000000;
 
+/* overlay 20: func_overlay_020_F0001148_1877720.c.o */
+gOverlay20TailXLimit = 0x0000002c;
+gOverlay20TailYLimit = 0x00000030;
+overlay20TailSqrtReloc = 0xf0000000;
+
 /* overlay 21: overlay21RegisterPlane.c.o */
 gOverlay21ObjectCount = 0x00000000;
 gOverlay21Objects = 0x00000004;

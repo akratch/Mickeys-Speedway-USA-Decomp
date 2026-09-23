@@ -2403,5 +2403,51 @@ class RelocationEvidenceTests(unittest.TestCase):
         self.assertEqual([], evidence["target_static_relocations"])
         self.assertEqual(1, len(evidence["runtime_overlay_records"]))
         self.assertEqual([], evidence["resident_runtime_records"])
+
+
+class GuardedResidentFallbackTests(unittest.TestCase):
+    """ProcessRelocationEntry: a resident renamed only in C, over a splat
+    fallback, has no alias row and no <symbol>.s; the guard is the pairing."""
+
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name)
+        (self.root / "src/main").mkdir(parents=True)
+        (self.root / "asm/nonmatchings/main/demo").mkdir(parents=True)
+        (self.root / "asm/nonmatchings/main/demo/func_80031A30.s").write_text(
+            "", encoding="utf-8")
+        (self.root / "src/main/demo.c").write_text(
+            "#ifdef NON_MATCHING\n"
+            "s32 FriendlyName(s32 a) {\n    return a;\n}\n"
+            "#else\n"
+            '#pragma GLOBAL_ASM("asm/nonmatchings/main/demo/func_80031A30.s")\n'
+            "#endif\n",
+            encoding="utf-8",
+        )
+        self.aliases = self.root / "aliases.txt"
+        self.aliases.write_text("", encoding="utf-8")
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def test_friendly_resident_resolves_to_its_guarded_fallback(self) -> None:
+        resolution = fp.resolve(
+            "FriendlyName", root=self.root, alias_path=self.aliases)
+        self.assertEqual(resolution.target_symbol, "func_80031A30")
+        self.assertEqual(resolution.candidate_symbol, "FriendlyName")
+        self.assertEqual(resolution.candidate_build_dir, "build_non_matching")
+
+    def test_two_guards_naming_different_fallbacks_do_not_guess(self) -> None:
+        (self.root / "src/main/other.c").write_text(
+            "#ifdef NON_MATCHING\n"
+            "s32 FriendlyName(s32 a) {\n    return a;\n}\n"
+            "#else\n"
+            '#pragma GLOBAL_ASM("asm/nonmatchings/main/other/func_80031B00.s")\n'
+            "#endif\n",
+            encoding="utf-8",
+        )
+        self.assertIsNone(fp._guarded_resident_fallback("FriendlyName", self.root))
+
+
 if __name__ == "__main__":
     unittest.main()

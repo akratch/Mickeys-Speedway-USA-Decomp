@@ -240,6 +240,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 		--redefine-sym func_overlay_001_F000438C_185076C=overlay1UpdateObjectPhysics \
 		--redefine-sym func_overlay_001_F0005BF4_1851FD4=overlay1StartTimerCallbacks \
 		--redefine-sym overlay1GetObjectList=overlay1GetObjectListReloc \
+		--redefine-sym overlay27CanUse=overlay1Overlay27CanUseReloc \
+		--redefine-sym overlay3RunCachedModeAction=overlay1Overlay3RunCachedModeActionReloc \
 		--redefine-sym sqrtf=overlay1SqrtReloc \
 		--redefine-sym overlay1TrigX=overlay1TrigXReloc \
 		--redefine-sym overlay1TrigY=overlay1TrigYReloc \
@@ -2200,7 +2202,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11UpdateMenu.c.o: POSTPROCESS = \
 		--redefine-sym func_80000F94=overlay11PlaySoundReloc \
 		--redefine-sym func_overlay_045_F0001BF4_188E04C=overlay11SetValue \
 		--redefine-sym func_8002554C=overlay11ReadInputReloc \
-		--redefine-sym func_overlay_066_F0000000=overlay11Overlay66SelectReloc \
+		--redefine-sym overlay66Select=overlay11Overlay66SelectReloc \
 		--redefine-sym func_800290AC=overlay11ResidentModeReloc \
 		--redefine-sym func_800291D8=overlay11Func800291D8Reloc \
 		--redefine-sym func_800006BC=overlay11Func800006BCReloc \
@@ -2334,7 +2336,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11InitializeFour.c.o: POSTPROCESS =
 	$(OBJCOPY) \
 		--redefine-sym func_80028F54=overlay11GetStatusReloc \
 		--redefine-sym sprintf=overlay11FormatReloc \
-		--redefine-sym func_overlay_045_F000000C_188B438=overlay11CreateReloc \
 		--redefine-sym D_800D31BC=gOverlay11ResidentFlagsReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x194
 # The compiler emits the exact six-entry switch table already present in the
@@ -2460,7 +2461,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F000138C_18B0574.c.o: \
 	$(TOOLS_DIR)/externalize_elf_section.py \
 	config/normalizations/func_overlay_058_F000138C_18B0574.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F000138C_18B0574.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol gOverlay58ModeJumpTableReloc=0x124,global $@ && \
+	$(OBJCOPY) --redefine-sym overlay56SplitTime=overlay58Overlay56SplitTimeReloc \
+		--add-symbol gOverlay58ModeJumpTableReloc=0x124,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/func_overlay_058_F000138C_18B0574.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
@@ -2783,7 +2785,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o: POSTPROCESS = \
 		func_overlay_049_F0000000_1896410=overlay49Initialize \
 		--redefine-sym func_80028F54=func_80028F54_o049Reloc \
 		--redefine-sym func_800508B4=func_800508B4_o049Reloc \
-		--redefine-sym func_8002917C=func_8002917C_o049Reloc $@ && \
+		--redefine-sym func_8002917C=func_8002917C_o049Reloc \
+		--redefine-sym overlay65Initialize=overlay49Overlay65InitializeReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		0x218:func_800254FC:overlay65UpdateReloc \
 		0x224:func_8002554C:overlay65UpdateReloc \

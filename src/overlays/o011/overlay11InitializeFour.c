@@ -28,8 +28,8 @@ extern u16 D_800D31BC;
 
 extern Overlay11Status *func_80028F54(void);
 extern s32 sprintf(char *buffer, const char *format, ...);
-extern void *func_overlay_045_F000000C_188B438(void *resource, s32 x, s32 y,
-                                               s32 mode);
+/* overlay45CreateDescriptor, through the placeholder its siblings use. */
+extern void *overlay11CreateReloc(void *resource, s32 x, s32 y, s32 mode);
 
 /* DKR v77/v80 and JFG contain no matching Overlay 11 initializer donor. */
 void overlay11InitializeFour(void) {
@@ -43,27 +43,27 @@ void overlay11InitializeFour(void) {
         sprintf(buffer, gOverlay11Resources->format194, status->mode - 1);
     }
 
-    gOverlay11Created[0] = func_overlay_045_F000000C_188B438(
+    gOverlay11Created[0] = overlay11CreateReloc(
         gOverlay11Resources->resource198, 160, 40, 4);
-    gOverlay11Created[1] = func_overlay_045_F000000C_188B438(
+    gOverlay11Created[1] = overlay11CreateReloc(
         gOverlay11Resources->resource19C, 160, 100, 4);
 
     if (status->mode == 1) {
-        gOverlay11Created[2] = func_overlay_045_F000000C_188B438(
+        gOverlay11Created[2] = overlay11CreateReloc(
             gOverlay11Resources->resource50, 160, 135, 4);
         gOverlay11Created[3] = 0;
     } else {
         if (D_800D31BC & 0x100) {
-            gOverlay11Created[2] = func_overlay_045_F000000C_188B438(
+            gOverlay11Created[2] = overlay11CreateReloc(
                 gOverlay11Resources->resource1A8, 160, 135, 4);
         } else if (status->value1 == 0) {
-            gOverlay11Created[2] = func_overlay_045_F000000C_188B438(
+            gOverlay11Created[2] = overlay11CreateReloc(
                 gOverlay11Resources->resource1A0, 160, 135, 4);
         } else {
             gOverlay11Created[2] =
-                func_overlay_045_F000000C_188B438(buffer, 160, 135, 4);
+                overlay11CreateReloc(buffer, 160, 135, 4);
         }
-        gOverlay11Created[3] = func_overlay_045_F000000C_188B438(
+        gOverlay11Created[3] = overlay11CreateReloc(
             gOverlay11Resources->resource50, 160, 170, 4);
     }
     gOverlay11CreatedActive = 1;

@@ -235,6 +235,58 @@ about the callee. Measured over the 589 promoted overlay functions on
 every one still passes `promotion-proof`, now reported as
 `static-plus-runtime-table-and-linked-rom` instead of `static`.
 
+A cross-module call must never be spelled with the callee's own name.
+`promotion-proof` refused five overlay 65 and 66 functions with "linked
+symbol conflicts with canonical overlay ownership", naming a sibling
+(`overlay65Initialize`, `overlay66Select`) rather than the function under
+proof. Overlay 49 called `overlay65Initialize` and overlay 11 called
+`overlay66Select` by those names (overlay 11's POSTPROCESS rename still named
+the pre-promotion `func_overlay_066_F0000000`), so the generator wrote a value
+line for each, and a linker-script assignment overrides the definition in
+every module: both functions linked as `*ABS*`, and the sibling-witness pass
+over their overlays refused them. Both sit at module offset 0, so the stored
+addend equalled their real address and the ROM still matched; four more
+(`overlay1GetEntry`, `overlay27CanUse`, `overlay3RunCachedModeAction`,
+`overlay56SplitTime`) do not sit at offset 0 and matched only because no
+word in the ROM depended on their clobbered linked address. All six callers now call
+through a `*Reloc` placeholder, like a resident call, and
+`reloc_surface.py generate` refuses to value any name another module defines
+in its own `.text`, reporting it as `UNRESOLVED` instead. Those that
+linked as `*ABS*` were invisible to the promotion-proof census as
+well, because an `*ABS*` symbol belongs to no overlay section.
+
+A generated name in C is an identity claim, and a POSTPROCESS rename does not
+hide a wrong one from the proof. `overlay11InitializeFour` called
+`func_overlay_045_F000000C_188B438`, whose ROM suffix disagrees with overlay
+45's atlas start plus `0xC` (the real name ends `188C464`); the object renamed
+it to `overlay11CreateReloc`, so the link and the ROM were right, but the
+proof maps the placeholder back to the C spelling and refused it with
+"encoded ROM address conflicts with atlas ownership". The C now calls
+`overlay11CreateReloc` directly, as its siblings do, and
+`reloc_surface.py generate --check` (and so `gmake check-overlay-syms`) fails
+on any generated name under `src/`, `include/`, `mk/` or
+`config/normalizations/` whose suffix disagrees with the atlas. Fixing it
+exposed a second disagreement behind it: `D_800D31BC` reads statically as a
+resident address, while the shipped table reaches the same byte through the
+reserved selector `0xFFD`. Reserved selectors stay distinct identities, so a
+symbol pass and a data pass that disagree only as resident against reserved
+now leave the name ambiguous, for the linked-ROM route to account for; every
+other disagreement still aborts.
+
+Declared relocation filters are accounted for by what proves the removed
+site, not by its symbol. The accounting accepted only `.bss` HI/LO pairs,
+whose identity comes from the linked BSS base, and refused
+`overlay86ScaledVectorPosition`, `overlay20ConfigureEntry` and
+`overlay46UpdateTransition` with "unsupported filtered runtime identity",
+because each filters a *named* symbol (`gOverlay86Vectors` in overlay 86).
+The fresh raw object resolves a named site through the same static identity
+routes as any unfiltered site, and the raw comparison already requires every
+resolved raw record to align with its shipped tuple, so a named filtered site
+the raw surface resolved is proved (receipt route `raw-static`); a `.bss` site
+still goes through the linked BSS base (`linked-bss-base`); a named site the
+raw surface left unresolved is still refused. All three now prove as
+`raw-static-with-declared-metadata-filters`.
+
 Linked BSS follows the shipped relocation blobs, while runtime BSS follows only
 text plus data/rodata. The tool therefore proves the linked definition first,
 then translates its BSS offset from `ROM-size + object offset` to

@@ -2654,22 +2654,44 @@ def _declared_filter_comparison(resolution, comparison, context, records, target
                 or not unresolved <= removed or raw_comparison["stable_identity_alignment_count"] != total - len(unresolved)
                 or accounting["retained_count"] != comparison["candidate_record_count"]):
             raise pp.MetadataProofError("raw compiler relocation surface is not exact outside declared filters")
-        if any(row["symbol"] != ".bss" or row["rtype"] not in (5, 6) for row in accounting["filtered"]):
+        # Two independent routes prove a filtered site's identity:
+        #   * a named symbol the raw surface resolved: the raw comparison
+        #     above already aligned it with the shipped tuple (every resolved
+        #     raw record agrees, since the alignment count equals the resolved
+        #     count), exactly as for any unfiltered site;
+        #   * the anonymous `.bss` section symbol, which the raw surface
+        #     cannot resolve: its base is derived from the linked BSS
+        #     definitions below.
+        # A filtered site proved by neither is refused.
+        bss_keys = {(row["offset"], row["rtype"]) for row in accounting["filtered"]
+                    if row["symbol"] == ".bss"}
+        if any(row["rtype"] not in (5, 6) for row in accounting["filtered"]
+               if row["symbol"] == ".bss"):
             raise pp.MetadataProofError("unsupported filtered runtime identity; only canonical BSS HI/LO is accounted")
-        overlay = context["overlay"]
-        module = ot.build_modules(ot.read_headers(ROM.read_bytes()))[overlay - 1]
-        identity = pp.linked_bss_base(raw, configured, target_elf, overlay,
-                                     module["text_size"] + module["data_size"], module["bss_size"])
-        bss_records = rs._candidate_surface_records(raw, accounting["start"], accounting["size"], records,
-                                                   {".bss": identity}, {}, set(), overlay)
+        if (removed - bss_keys) & unresolved:
+            raise pp.MetadataProofError(
+                "unsupported filtered runtime identity; a named filtered site the raw "
+                "surface cannot resolve has no independent identity")
         expected = {(row.offset, row.rtype): row.identity for row in records}
-        proved = {(row.offset, row.rtype): row.identity for row in bss_records}
+        proved = {key: expected.get(key) for key in removed - bss_keys}
+        routes = {key: "raw-static" for key in removed - bss_keys}
+        if bss_keys:
+            overlay = context["overlay"]
+            module = ot.build_modules(ot.read_headers(ROM.read_bytes()))[overlay - 1]
+            identity = pp.linked_bss_base(raw, configured, target_elf, overlay,
+                                         module["text_size"] + module["data_size"], module["bss_size"])
+            bss_records = rs._candidate_surface_records(raw, accounting["start"], accounting["size"], records,
+                                                       {".bss": identity}, {}, set(), overlay)
+            bss_proved = {(row.offset, row.rtype): row.identity for row in bss_records}
+            proved.update({key: bss_proved.get(key) for key in bss_keys})
+            routes.update({key: "linked-bss-base" for key in bss_keys})
         if any(proved.get(key) is None or proved.get(key) != expected.get(key) for key in removed):
-            raise pp.MetadataProofError("filtered BSS raw addend disagrees with canonical/runtime identity")
+            raise pp.MetadataProofError("filtered raw addend disagrees with canonical/runtime identity")
         if receipt["inputs"] != current_context() or receipt["raw_sha256"] != pp.sha256_file(raw_path):
             raise pp.MetadataProofError("raw proof inputs or object changed during validation")
         receipt.update(accounting)
-        receipt["filtered_identities"] = [{"offset": offset, "rtype": kind, "identity": proved[(offset, kind)]}
+        receipt["filtered_identities"] = [{"offset": offset, "rtype": kind, "identity": proved[(offset, kind)],
+                                            "route": routes[(offset, kind)]}
                                            for offset, kind in sorted(removed)]
         receipt["source_selection"] = pp.classify_source_selection(
             resolution.source.read_text(), candidate_symbol=resolution.candidate_symbol,

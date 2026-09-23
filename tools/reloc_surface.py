@@ -269,6 +269,68 @@ def module_text_defs(objects, overlay, atlas_rows):
     return out
 
 
+GENERATED_NAME_TEXT_RE = re.compile(
+    r"func_overlay_(\d{3})_F([0-9A-Fa-f]{7})_([0-9A-Fa-f]+)")
+
+
+def misspelled_generated_names(atlas, texts):
+    """Generated overlay names whose ROM suffix disagrees with the atlas.
+
+    ``texts`` is an iterable of ``(label, text)``.  A generated name encodes
+    ``overlay``, module offset and ROM address; the address must equal the
+    overlay's atlas ROM start plus the offset.  A name that does not is not an
+    identity at all, and ``promotion-proof`` refuses a function whose C
+    spells one ("encoded ROM address conflicts with atlas ownership") even
+    when a POSTPROCESS rename hides it from the link.  Returns sorted
+    ``(label, name, expected_name)`` rows.
+    """
+    starts = {}
+    for module in atlas.get("modules", []):
+        rom_row = module.get("rom")
+        if isinstance(rom_row, dict) and "start" in rom_row:
+            starts[module.get("overlay")] = int(rom_row["start"], 16)
+    out = set()
+    for label, text in texts:
+        for match in GENERATED_NAME_TEXT_RE.finditer(text):
+            overlay, offset = int(match.group(1)), int(match.group(2), 16)
+            if overlay not in starts:
+                continue
+            expected = starts[overlay] + offset
+            if int(match.group(3), 16) != expected:
+                out.add((label, match.group(0), "func_overlay_%03d_F%07X_%X"
+                         % (overlay, offset, expected)))
+    return sorted(out)
+
+
+def tree_generated_name_texts(root=None):
+    """(label, text) for every tracked file that may spell a generated name."""
+    root = REPO if root is None else Path(root)
+    paths = []
+    for base, pattern in (("src", "*.c"), ("src", "*.h"), ("include", "*.h"),
+                          ("mk", "*.mk"), ("config/normalizations", "*")):
+        paths += sorted(path for path in (root / base).rglob(pattern) if path.is_file())
+    paths.append(root / "Makefile")
+    return [(path.relative_to(root).as_posix(),
+             path.read_text(errors="replace")) for path in paths if path.is_file()]
+
+
+def foreign_text_values(values, local):
+    """Valued names that some module defines in its own ``.text``.
+
+    ``values`` maps name -> (value, asking object name); ``local`` maps
+    overlay -> names defined in that module's ``.text``.  Returns
+    name -> (asking object name, defining overlay).  An asker's own module
+    never values its own ``.text`` names (``synthesize`` skips them), so any
+    hit here is a cross-module reference.
+    """
+    out = {}
+    for name, (_value, asker) in values.items():
+        owners = sorted(ov for ov, names in local.items() if name in names)
+        if owners:
+            out[name] = (asker, owners[0])
+    return out
+
+
 # ------------------------------------------------------- site alignment
 #
 # A site is normally corroborated at its own module offset: the object's
@@ -837,6 +899,32 @@ def generate(rom, atlas, objects=None, quiet=False, rebind_resident=True,
         if mine_aliases:
             alias_order.append((ov, obj, mine_aliases))
 
+    # A value line is a linker-script assignment, and an assignment overrides
+    # the definition for *every* module. Valuing a name another module
+    # defines in its own .text therefore moves that module's function to the
+    # stored addend: its linked symbol becomes *ABS*, and every canonical
+    # ownership proof over that module refuses it. Overlay 49 and overlay 11
+    # called overlay65Initialize and overlay66Select by their own names;
+    # both sit at module offset 0, so the addend 0xF0000000 happened to equal
+    # their real address and the ROM still matched. A cross-module call must
+    # spell a *Reloc placeholder (an objcopy --redefine-sym in the caller's
+    # POSTPROCESS rule), exactly as a resident call does. Refused means
+    # refused: no value line, and the reason is reported.
+    for ov in {ov for ov, _obj in objects}:
+        if ov not in local:
+            local[ov] = module_text_defs(objects, ov, rows.get(ov, []))
+    foreign = foreign_text_values(values, local)
+    if foreign:
+        for name, (asker, owner) in sorted(foreign.items()):
+            conflicts.append((asker, name,
+                              "names overlay %d's own .text definition; a value "
+                              "line would override it for every module -- call it "
+                              "through a *Reloc placeholder" % owner))
+        values = {k: v for k, v in values.items() if k not in foreign}
+        value_order = [(ov, obj, [n for n in names if n not in foreign])
+                       for ov, obj, names in value_order]
+        value_order = [row for row in value_order if row[2]]
+
     # A generated identity that is aliased to a friendly name is *defined* by
     # the alias, so a value line for the same name would be a shadowed
     # assignment -- exactly the duplicate the hand-maintained file carried, and
@@ -933,6 +1021,12 @@ def cmd_generate(argv):
         return 0
 
     if args.check:
+        misspelled = misspelled_generated_names(atlas, tree_generated_name_texts())
+        for label, name, expected in misspelled:
+            print("%s: %s does not match the atlas; the overlay/offset it "
+                  "encodes is %s" % (label, name, expected), file=sys.stderr)
+        if misspelled:
+            return 1
         current = args.out.read_text() if args.out.is_file() else ""
         if current == text:
             if not args.quiet:
@@ -1536,6 +1630,15 @@ def _unique_symbol(elf, name, *, require_text=False):
             "%s: expected one nonzero definition of %s, found %d"
             % (elf.path, name, len(found)))
     return found[0]
+
+
+RESERVED_SELECTORS = frozenset((0xFFD, 0xFFE, 0xFFF))
+
+
+def _resident_versus_reserved(first, second):
+    """True when one identity is resident and the other a reserved selector."""
+    kinds = {first[0], second[0]}
+    return 0 in kinds and bool(kinds & RESERVED_SELECTORS) and len(kinds) == 2
 
 
 def _identity_add(identity, addend):
@@ -3280,6 +3383,17 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
         )
         for name, identity in overlay_data_identities.items():
             existing = identities.get(name)
+            if (existing is not None and existing != identity
+                    and _resident_versus_reserved(existing, identity)):
+                # The symbol pass reads a resident *address* and calls it a
+                # resident identity; the shipped table may instead reach the
+                # same byte through a reserved runtime selector (0xFFD..0xFFF).
+                # Reserved selectors stay distinct identities, so neither is
+                # chosen: the name is ambiguous and only the linked-ROM route
+                # can account for its sites.
+                identities.pop(name, None)
+                ambiguous_identities.add(name)
+                continue
             if existing is not None and existing != identity:
                 raise SurfaceComparisonError(
                     "candidate relocation symbol %s has conflicting runtime "

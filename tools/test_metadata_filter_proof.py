@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Synthetic metadata accounting tests; no target-derived fixtures."""
+import contextlib
 import copy
 import hashlib
 import re
@@ -236,6 +237,93 @@ class ReportTests(unittest.TestCase):
             with self.subTest(mutation=mutation), self.assertRaises(proof.ProofError):
                 proof.validate_report("friendly", altered)
 
+
+    def test_named_filtered_sites_need_a_raw_static_identity(self):
+        """overlay86ScaledVectorPosition filters a named HI/LO pair, not `.bss`.
+
+        The raw surface resolves the named pair statically, so its identity is
+        the shipped tuple it aligned with; a named site the raw surface left
+        unresolved has no independent identity and is still refused.
+        """
+        import collections
+        import function_preflight as fp
+        Record = collections.namedtuple("Record", "offset rtype identity")
+        records = [Record(0x18, 5, (86, 0x40)), Record(0x24, 6, (86, 0x40)),
+                   Record(0x84, 4, (86, 0))]
+        accounting = {"raw_count": 3, "retained_count": 1, "start": 0, "size": 0xDC,
+                      "filtered": [{"offset": 0x18, "rtype": 5, "symbol": "gVectors"},
+                                   {"offset": 0x24, "rtype": 6, "symbol": "gVectors"}]}
+
+        def run(unresolved):
+            raw = {"candidate_record_count": 3, "offset_type_exact": True,
+                   "candidate_identity_unresolved_records": unresolved,
+                   "stable_identity_alignment_count": 3 - len(unresolved)}
+            with tempfile.TemporaryDirectory() as td:
+                root = Path(td)
+                (root / "capture").mkdir()
+                source = root / "f.c"
+                source.write_text("void f(void) {}\n")
+                resolution = fp.Resolution("f", "f", "f", source, "f", "build",
+                                           root / "f.c.o", None, "promoted",
+                                           resolution_mode="post_promotion")
+                receipt = {"inputs": {"command": "cc"}, "raw_sha256": "r",
+                           "directory": "capture"}
+                with contextlib.ExitStack() as stack:
+                    patch = lambda *a, **k: stack.enter_context(mock.patch.object(*a, **k))
+                    patch(fp, "REPO", root)
+                    patch(fp.pa, "run_make_database", return_value=None)
+                    patch(fp.pa, "postprocess_commands",
+                          return_value={fp._relative(resolution.candidate_object):
+                                        "tools/filter_elf_relocations.py"})
+                    patch(fp, "_check_filter_implementations")
+                    patch(fp, "_require_capture_snapshot")
+                    patch(fp.pp, "capture_configured_raw",
+                          return_value=(root / "raw.o", [], receipt, lambda: {"command": "cc"}))
+                    patch(fp.rs, "Elf", return_value=None)
+                    patch(fp.pp, "validate_metadata_objects", return_value=dict(accounting))
+                    patch(fp.rs, "function_surface_comparison", return_value=raw)
+                    patch(fp.pp, "sha256_file", return_value="r")
+                    patch(fp.pp, "classify_source_selection", return_value=(fp.pp.ORDINARY_C,))
+                    bss = patch(fp.pp, "linked_bss_base")
+                    _comparison, binding = fp._declared_filter_comparison(
+                        resolution, {"offset_type_exact": False, "candidate_record_count": 1},
+                        {"kind": "overlay", "overlay": 86}, records, mock.Mock(data=b""), "f", {})
+                    self.assertFalse(bss.called)
+                    return binding[0]
+
+        proved = run([])
+        self.assertEqual([(0x18, (86, 0x40), "raw-static"), (0x24, (86, 0x40), "raw-static")],
+                         [(row["offset"], row["identity"], row["route"])
+                          for row in proved["filtered_identities"]])
+        with self.assertRaisesRegex(fp.PreflightError, "no independent identity"):
+            run([{"offset": 0x18, "rtype": 5}, {"offset": 0x24, "rtype": 6}])
+
+    def test_named_filter_sites_are_valid_receipt_rows(self):
+        import promotion_proof as proof
+        from test_promotion_proof import exact_report
+        report = exact_report()
+        raw = copy.deepcopy(report["relocation_comparison"])
+        raw["identity_proof_mode"] = "raw-static-with-declared-metadata-filters"
+        metadata = {"schema": "mickey-declared-metadata-proof-v1", "raw_count": 3, "retained_count": 1,
+                    "source_selection": "ordinary_c",
+                    "filtered": [{"offset": 0, "rtype": 5, "symbol": "gVectors"},
+                                 {"offset": 4, "rtype": 6, "symbol": "gVectors"}],
+                    "filtered_identities": [{"offset": 0, "rtype": 5, "identity": [3, 8]},
+                                            {"offset": 4, "rtype": 6, "identity": [3, 8]}],
+                    "raw_sha256": "a" * 64, "configured_sha256": "b" * 64, "linked_sha256": "c" * 64,
+                    "inputs": {"command": "cc", "postprocess": "filter", "configured": "b" * 64,
+                               "linked": "c" * 64}}
+        report["relocation_comparison"].update(candidate_record_count=1, original_raw_comparison=raw,
+                                                declared_metadata_proof=metadata,
+                                                identity_proof_mode=raw["identity_proof_mode"])
+        self.assertEqual("exact", proof.validate_report("friendly", report)["verdict"])
+        for symbol, rtype in ((".bss", 4), ("", 5), (None, 5)):
+            altered = copy.deepcopy(report)
+            row = altered["relocation_comparison"]["declared_metadata_proof"]["filtered"][0]
+            row.update(symbol=symbol, rtype=rtype)
+            altered["relocation_comparison"]["declared_metadata_proof"]["filtered_identities"][0]["rtype"] = rtype
+            with self.subTest(symbol=symbol, rtype=rtype), self.assertRaises(proof.ProofError):
+                proof.validate_report("friendly", altered)
 
 if __name__ == "__main__":
     unittest.main()

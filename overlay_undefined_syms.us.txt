@@ -159,6 +159,8 @@ overlay1ModeAction9 = 0xf0000000;
 overlay1ModeNextAngleReloc = 0xf0000000;
 overlay1ModePreviousAngleReloc = 0xf0000000;
 overlay1ModeSoundReloc = 0xf0000000;
+overlay1Overlay27CanUseReloc = 0xf0000000;
+overlay1Overlay3RunCachedModeActionReloc = 0xf0000000;
 overlay1RandomRange = 0xf0000000;
 overlay1ReadSelectionReloc = 0xf0000000;
 overlay1SampleAngleReloc = 0xf0000000;
@@ -171,9 +173,7 @@ overlay1SubmitReloc = 0xf0000000;
 overlay1TransientCallReloc = 0xf0000000;
 overlay1TrigXReloc = 0xf0000000;
 overlay1TrigYReloc = 0xf0000000;
-overlay27CanUse = 0xf0000000;
 overlay36SpawnTransientReloc = 0xf0000000;
-overlay3RunCachedModeAction = 0xf0000000;
 
 /* overlay 1: overlay_001_end.c.o */
 D_1BA4 = 0x00001ba4;
@@ -241,8 +241,8 @@ gOverlay2QueryX0Reloc = 0x00000040;
 gOverlay2QueryX1Reloc = 0x00000048;
 gOverlay2QueryY0Reloc = 0x00000044;
 gOverlay2QueryY1Reloc = 0x0000004c;
-overlay1GetEntry = 0xf0000000;
 overlay2ContainsPointReloc = 0xf0000000;
+overlay2Overlay1GetEntryReloc = 0xf0000000;
 
 /* overlay 3: overlay3ContainsValue.c.o */
 gOverlay3Entries = 0x00000028;
@@ -532,7 +532,6 @@ overlay11Func80028374Reloc = 0xf0000000;
 overlay11Func80028528Reloc = 0xf0000000;
 overlay11Func800291D8Reloc = 0xf0000000;
 overlay11Func8003A754Reloc = 0xf0000000;
-overlay66Select = 0xf0000000;
 
 /* overlay 11: overlay11UpdateFiveOptionMenu.c.o */
 D_0_reload_failure = 0x00000000;
@@ -1633,8 +1632,8 @@ gOverlay49PackedStatusReloc = 0x00000000;
 gOverlay49Result = 0x00000028;
 gOverlay49Shifts = 0x00000018;
 gOverlay49Timer = 0x00000000;
+overlay49Overlay65InitializeReloc = 0xf0000000;
 overlay49RefractOutputReloc = 0xf0000000;
-overlay65Initialize = 0xf0000000;
 overlay65UpdateReloc = 0xf0000000;
 
 /* overlay 50: overlay50Initialize.c.o */
@@ -2292,7 +2291,7 @@ levelGetBlurEffect_o058Reloc = 0xf0000000;
 mainChangeCameras_o058Reloc = 0xf0000000;
 mainChangeLevel_o058Reloc = 0xf0000000;
 mainSetAnimGroup_o058Reloc = 0xf0000000;
-overlay56SplitTime = 0xf0000000;
+overlay58Overlay56SplitTimeReloc = 0xf0000000;
 sprintf_o058Reloc = 0xf0000000;
 
 /* overlay 58: overlay58DrawSegmentStrip.c.o */

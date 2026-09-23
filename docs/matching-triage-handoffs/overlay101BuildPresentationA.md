@@ -2,11 +2,13 @@
 ### `overlay101BuildPresentationA` plateau handoff
 
 - source: `src/overlays/o101/overlay101BuildPresentationA.c`
-- score: 143 differing words
+- score: 136 differing words
 - frame: 0x20
 - relocations: 52
 - first mismatch: +0x10
-- summary: L97 copy still +4 with a2 forbidden on the 0xC0 web; L144/array get a2 plus a home store and frame 0x50 at 142; 143 retained.
+- summary: Delta 0: dim colour as counter*0+0xC0 is an expression web that takes a2 (type-2 const never does). 136 at 0x20; colour ceiling to re-derive.
+
+Summary before this remeasure: L97 copy still +4 with a2 forbidden on the 0xC0 web; L144/array get a2 plus a home store and frame 0x50 at 142; 143 retained.
 
 Measured 2026-09-11, lane `lane/s1-trio`, on the four-function overlay-101
 presentation-builder cluster. Every number is `tools/align_symbol.py`, whose
@@ -373,4 +375,56 @@ still the extra word. What this lane adds is the mechanism: a register-class
 memory-class form that does take a2 pays a home store and a 0x50 frame. A
 source that makes that web the argument itself, without escaping it, is the
 remaining size question. Colour packing stays blocked on nonzero size.
+#### 2026-09-23, lane B2-o101: size delta +4 closed to 0 on A and B
+
+Cycle 0. insertion_pairs reads five pairs; four are balanced schedule
+swaps inside the folded header groups and the fifth, open to the end, is the
+one candidate-only word: the final call's own load of the 0xC0 dim colour
+(line of the call, class const). Aligned residual after shadow 137.
+
+Mechanism, measured on the instrumented uopt and on small test units in a
+private scratch directory. The call's argument registers are precoloured
+against every web in the call's uopt block, and the web that IS a given
+argument is exempt for its own register: a type-3 variable (the node-24
+index takes a1), a type-1 address (the counter address takes a3), a type-4
+expression (the node-20 pointer takes a1 in block 1). A type-2 integer
+constant is never exempt, even when the argument names it: with the callee's
+third parameter declared u32 the argument does reference the constant web
+(ugen emits a copy instead of a second load) and the record still reads
+forbidden0=0x7fc30000, a2 excluded. In a unit with no unsigned-to-float
+conversion the same shape matches anyway, because as1 renames the constant
+load into a2 to delete the copy; here ugen's branch for the u32-to-f32
+conversion puts the load and the copy in different as1 blocks, so the rename
+cannot happen. That is why every constant spelling was +4.
+
+The edit. Spell the value as a product with zero plus the colour, which uopt
+does not fold before colouring. The value becomes an expression web, it is
+the call's argument, it takes a2, and one load serves both colour stores and
+the call. Size delta 0, frame 0x20 with the target's three-slot ladder,
+52 relocations as before. Measured factors: the node-24 counter global 137,
+the local index 144, the length 147, the order index 185 at +8, the node-24
+A index 158 at +4; operand order inside the expression is inert. Measured
++4 and inert: (x - x), (x & 0), (x ^ x), float and pointer cast forms, a u8,
+s8, u16, s16 or u32 parameter type with every local type and call cast (180
+cells), reading a colour field back as the argument (forwarded with a mask),
+a copy made before the earlier call, a reassigned parameter, and a for-loop
+initialiser.
+
+Then, on the new shape (L146 voids earlier order results): a single-move
+tail climb over the 19 tail statements under their real dependences found
+one word, the text store after the root header, 137 to 136, and is a local
+optimum. The length local becomes s32 with a raw store and a (u8) conversion,
+which makes the length store take the raw return register as the target's
+does; 72 local, store and conversion type cells are flat at 136.
+
+Aligned buckets. Before 79 exact, 104 naming, 1 immediate, 32 structural at
++4. After 79 exact, 101 naming, 1 immediate, 34 structural at 0; the
+positional count falls 143 to 136, most of it the removed insertion shadow.
+
+Next lever. The function is now in the delta-0 pool and the colour
+instruments apply. The forced-colour ceiling in this shard (127, then 125)
+was measured on the +4 shape and must be re-derived, not inherited. The
+remaining structural rows are schedule: the root second header's constant
+materialisations, and the tail, where the target issues the text global's
+load and the chain-head reads before the counter bump.
 <!-- plateau-handoff:overlay101BuildPresentationA:end -->

@@ -89,7 +89,7 @@ void func_overlay_066_F00004E0_18C6948(register Gfx **displayList,
 
 /* PLATEAU-HANDOFF:func_overlay_066_F00004E0_18C6948:start
  * symbol: func_overlay_066_F00004E0_18C6948
- * score: 181 differing words
+ * score: 202 differing words
  * frame: 0x78
  * relocations: 19
  * first-mismatch: +0x0

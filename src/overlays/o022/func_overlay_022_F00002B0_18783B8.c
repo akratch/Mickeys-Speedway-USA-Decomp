@@ -263,7 +263,7 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
  * score: 448/499 words
  * frame: 0x90
  * relocations: 29
- * first-mismatch: +0x28
+ * first-mismatch: +0x1C
  * summary: Frame 0x90 exact, saved s0/s1/ra at 0x1C/0x20/0x24, no f20; size -12.
  * PLATEAU-HANDOFF:func_overlay_022_F00002B0_18783B8:end
  */

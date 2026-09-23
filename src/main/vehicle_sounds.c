@@ -598,10 +598,10 @@ f32 func_80058EF4(f32 arg0) {
 
 /* PLATEAU-HANDOFF:func_8005830C:start
  * symbol: func_8005830C
- * score: 692 differing words
+ * score: 697 differing words
  * frame: 0x118
  * relocations: 88
- * first-mismatch: +0x0
+ * first-mismatch: +0x8
  * summary: 758 vs 762 instructions; frame now exact at 0x118 and the whole saved-register and spill-temp block matches by offset and use count, so the residual is the declared-local ORDER plus eight unhomed float values
  * PLATEAU-HANDOFF:func_8005830C:end
  */

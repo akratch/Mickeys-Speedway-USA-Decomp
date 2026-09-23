@@ -152,3 +152,28 @@ never through `score_symbol.py`'s recompile. And, new this week:
 `DKWB_*` variable it refuses until the caller says `--build-env forced`, and
 an exact result without a declared stock build is `claim: unverified`, not a
 match.
+
+## Waves 1 and 2, measured (2026-09-23)
+
+Thirteen Track B lanes on 34 symbols. Recomputed from the tree at landing:
+
+    61.39% -> 62.34%   (+8,968 bytes, 16 matches, 13 lanes)
+    a further 6 functions brought to size delta 0 and left in the delta-0 pool
+
+Per-lane yield was 1.2 matches, six times the last-mile rate of the
+previous week. Every lane reported the same two things: the reader named
+the owning line every time, and the mechanism about half the time. The
+recurring mechanisms it did not name are workbench backlog items 33 to 41
+(ISA-hazard nops, self-reassignment copies, narrow-parameter stores,
+memory-across-call, unprototyped callees, constant call arguments, L56
+block pricing) and the corrected L99 in the brief. Frame census plus a
+declaration lattice closed the frame on every match; a match's last step is
+now order and layout, never colour.
+
+Three closes used inert spellings (`| 0`, empty `do {} while (0)`) and are
+in `docs/cleanup-queue.md`; two overlay 101 candidates at delta 0 carry a
+`* 0 +` diagnostic that needs a natural equivalent before promotion.
+
+Wave 3 should be planned from `docs/small-delta-census.md` in census order
+again (34 functions, 56,540 bytes remain in the class), with the delta-0
+leftovers from these waves as second targets in the same TUs.

@@ -2246,52 +2246,62 @@ s32 func_800069E8(Objects069E8Object *arg0, Objects069E8Target *arg1) {
     D_800C9490 = arg1->unk8;
     return (sp1C & ~3) + 4;
 }
-/* 6 masked words at size delta 0 (2026-09-23, lane B-obj), frameless: only the
- * head's +0x7C cursor and asset-pointer registers remain; see the handoff. */
-#ifdef NON_MATCHING
 s32 func_80006B04(Objects06B04Object *arg0, Objects06B04Output *arg1, volatile s32 arg2) {
     s16 temp_t0;
     s32 var_a3;
     s32 var_t2;
     s32 var_v1;
     s32 temp_a3;
-    u8 temp_t4;
     Objects06B04Asset *temp_a2;
-    u8 *var_a1;
     Objects06B04Output *output;
+    u8 *slots;
 
     arg0->unk48 = arg1;
     var_v1 = 0x7C;
     if (arg0->unk40->unk1E == 0) {
+        /* One carrier for the asset handle and then the output record, so
+           both live ranges are one name and share v0. */
+        output = (Objects06B04Output *)*arg0->unk68;
+        temp_a2 = *(Objects06B04Asset **)output;
         output = arg1;
-        temp_a2 = **arg0->unk68;
         temp_a3 = temp_a2->unk2F;
         if (temp_a3 > 0) {
+            /* The slot base is never a named web: it stays in the ring
+               temporary that first computes it (t9), and the preheader
+               copies that register.  `slots` is read back from the record
+               across the empty region, so uopt forwards the store late and
+               colours `slots` (t1) without ever emitting it; that occupied
+               colour is what pushes the loop count to t2.  Without the
+               region the forward happens early and the base becomes a
+               coloured expression web. */
+            output->unk74 = (u8 *)arg1 + 0x7C;
+            do { } while (0);
             output->unkA = temp_a3;
             temp_t0 = output->unkA;
-            output->unk74 = (u8 *)arg1 + 0x7C;
+            slots = output->unk74;
             var_t2 = 0;
             var_v1 = (temp_t0 * 0x34) + 0x7C;
             if (temp_t0 > 0) {
-                var_a1 = (u8 *)&arg1->unk74 + 8;
+                /* arg1 itself walks the slots: its register is the cursor. */
+                arg1 = (Objects06B04Output *)slots;
                 var_a3 = 0;
                 do {
-                    *(u16 *)var_a1 = 0;
-                    *(u16 *)(var_a1 + 2) = 0;
-                    *(u16 *)(var_a1 + 4) = 0;
+                    *(u16 *)arg1 = 0;
+                    *(u16 *)((u8 *)arg1 + 2) = 0;
+                    *(u16 *)((u8 *)arg1 + 4) = 0;
                     var_t2 += 1;
-                    var_a1 += 0x34;
-                    *(u16 *)(var_a1 - 0x2E) = *(u16 *)(temp_a2->unk38 + var_a3);
-                    *(s8 *)(var_a1 - 0x2C) = *(s8 *)(temp_a2->unk38 + var_a3 + 2);
-                    *(u8 *)(var_a1 - 0x2B) = *(u8 *)(temp_a2->unk38 + var_a3 + 3);
-                    *(u16 *)(var_a1 - 0x2A) = 0;
-                    *(f32 *)(var_a1 - 0x10) = *(f32 *)(temp_a2->unk38 + var_a3 + 8) * arg0->unk8;
-                    *(f32 *)(var_a1 - 0xC) = *(f32 *)(temp_a2->unk38 + var_a3 + 8) * arg0->unk8;
-                    *(u8 *)(var_a1 - 0x6) = (u8)*(u16 *)(temp_a2->unk38 + var_a3 + 4);
-                    *(u8 *)(var_a1 - 0x5) = (u8)*(u16 *)(temp_a2->unk38 + var_a3 + 6);
-                    *(u8 *)(var_a1 - 0x4) = (*(u8 *)(var_a1 - 0x4) & 0xFF) | 0x80;
-                    *(u16 *)(var_a1 - 0x8) = 0;
-                    *(u8 *)(var_a1 - 0x4) &= 0xBF;
+                    arg1 = (Objects06B04Output *)((u8 *)arg1 + 0x34);
+                    *(u16 *)((u8 *)arg1 - 0x2E) = *(u16 *)(temp_a2->unk38 + var_a3);
+                    *(s8 *)((u8 *)arg1 - 0x2C) = *(s8 *)(temp_a2->unk38 + var_a3 + 2);
+                    *(u8 *)((u8 *)arg1 - 0x2B) = *(u8 *)(temp_a2->unk38 + var_a3 + 3);
+                    *(u16 *)((u8 *)arg1 - 0x2A) = 0;
+                    *(f32 *)((u8 *)arg1 - 0x10) = *(f32 *)(temp_a2->unk38 + var_a3 + 8) * arg0->unk8;
+                    *(f32 *)((u8 *)arg1 - 0xC) = *(f32 *)(temp_a2->unk38 + var_a3 + 8) * arg0->unk8;
+                    *(u8 *)((u8 *)arg1 - 0x6) = (u8)*(u16 *)(temp_a2->unk38 + var_a3 + 4);
+                    *(u8 *)((u8 *)arg1 - 0x5) = (u8)*(u16 *)(temp_a2->unk38 + var_a3 + 6);
+                    *(u8 *)((u8 *)arg1 - 0x4) = (*(u8 *)((u8 *)arg1 - 0x4) & 0xFF) | 0x80;
+                    *(u16 *)((u8 *)arg1 - 0x8) = 0;
+                    *(u8 *)((u8 *)arg1 - 0x4) &= 0xBF;
                     var_a3 += 0xC;
                 } while (var_t2 < output->unkA);
             }
@@ -2299,9 +2309,6 @@ s32 func_80006B04(Objects06B04Object *arg0, Objects06B04Output *arg1, volatile s
     }
     return var_v1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80006B04.s")
-#endif
 s32 func_80006C40(Objects06C40 *arg0, s32 arg1) {
     arg0->unk58 = arg1;
     return 0x13C;
@@ -5464,15 +5471,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  */
 
 
-/* PLATEAU-HANDOFF:func_80006B04:start
- * symbol: func_80006B04
- * score: 6 differing words
- * frame: frameless
- * relocations: 0
- * first-mismatch: +0x20
- * summary: Track B 2026-09-23: 63 at delta -4 to 6 at delta 0; left: +0x7C value is a coloured web (t1), target carries it in ring t9.
- * PLATEAU-HANDOFF:func_80006B04:end
- */
 
 
 

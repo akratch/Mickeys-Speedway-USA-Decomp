@@ -3155,7 +3155,8 @@ typedef struct TrackRayScratch {
 extern s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                          TrackRayPoint *offset, f32 scale, f32 planeOffset,
                          f32 threshold, TrackRayHit *hit);
-extern s32 func_80011CDC(u8 *arg0, u8 *arg1, f32 arg2, u8 *arg3);
+extern s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
+                         TrackRayHit *hit);
 
 /* Declaration order is load-bearing: homes descend from the frame top, so
  * var_s4/var_s7 take the two cells above `scratch` and sp6C/sp68 the two lowest. */
@@ -3204,9 +3205,9 @@ s32 func_80010900(TrackVec3f *arg0, TrackVec3f *arg1, f32 arg2, s32 arg3,
              * span and lifts the save above 8.0. */
             var_s4 = 0;
             if (D_800C9D28 != 0) {
-                var_s4 = func_80011CDC((u8 *) arg0,
-                                       (u8 *) &scratch.direction, arg2,
-                                       scratch.result);
+                var_s4 = func_80011CDC((TrackVec3f *) arg0,
+                                       (TrackVec3f *) &scratch.direction, arg2,
+                                       (TrackRayHit *) scratch.result);
             }
             if ((var_v0 | var_s4) != 0) {
                 arg4(arg0, arg1, (f32 *) &scratch.direction, lengthSquared,
@@ -3347,8 +3348,8 @@ s32 func_80010B4C(s32 arg0, void *arg1, f32 *arg2, f32 *arg3,
                     }
                     if (D_800C9D28 != 0) {
                         auxiliaryResult = func_80011CDC(
-                            (u8 *) start, (u8 *) &direction, scale,
-                            (u8 *) &intersection);
+                            (TrackVec3f *) start, (TrackVec3f *) &direction,
+                            scale, (TrackRayHit *) &intersection);
                     }
                     if ((queryResult | auxiliaryResult) != 0) {
                         record = (u8 *) ((u32) arg4 + (index * 0x40));
@@ -3615,16 +3616,20 @@ typedef struct TrackRayNodeExtended {
     TrackRayFace *planes;
 } TrackRayNodeExtended;
 
-/* Workbench verdict: structure-mismatch, 211 differing words, first mismatch +0x0. */
-/* Candidate: 217/215 instructions with a -0xE0 frame versus target -0xC8. */
-/* The two validity flags, edge cursor, adjusted offset, and repeated metadata lookup now follow the target; declaration and FP lifetimes remain. */
+/* Candidate (Track B, 2026-09-23): 216/215 words, 195 differing, frame 0xD8
+ * versus 0xC8. Typed plane/metadata subscripts, sums left-associated, the edge
+ * index incremented at the loop's end and initialised in the entry block (which
+ * reproduces the target's shifted-zero preheader). The rest is the p1 ranking:
+ * the target gives the inner loop's edge, sign and face pointer the last four
+ * callee-saved registers and keeps the entry pointer in a copy, while this body
+ * gives them the first caller-saved colours and runs out of registers (ra). */
 s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                   TrackRayPoint *offset, f32 scale, f32 planeOffset,
                   f32 threshold, TrackRayHit *hit) {
     TrackRayNodeExtended *node;
     u16 *entry;
+    TrackRayFace *planes;
     TrackRayFace *face;
-    TrackRayFace *edgeFace;
     f32 planeX;
     f32 planeY;
     f32 planeZ;
@@ -3637,97 +3642,82 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
     f32 pointZ;
     f32 edgeValue;
     f32 adjustedOffset;
-    u16 *edgeEntry;
     s32 encoded;
-    s32 entryOffset;
     s32 segmentIndex;
-    s32 edgeOffset;
     s32 edgeValid;
     s32 valid;
     s32 sign;
-    s32 edgeIndex;
+    s32 i;
     u16 edge;
 
     valid = 0;
     segmentIndex = 0;
-    entryOffset = 0;
     if (D_800C9D3C > 0) {
         do {
-            encoded = *(s32 *) ((u8 *) D_800C9D2C + entryOffset);
-            if (encoded > 0) {
-                node = (TrackRayNodeExtended *) (encoded | (s32) 0x80000000);
-            } else {
-                entry = (u16 *) encoded;
-                face = (TrackRayFace *) ((u8 *) node->planes +
-                                         (*entry * 0x10));
-                planeX = face->x;
-                planeY = face->y;
-                planeZ = face->z;
-                planeValue = face->distance - planeOffset;
-                endValue = ((end->z * planeZ) +
-                            ((planeX * end->x) + (planeY * end->y))) +
-                           planeValue;
-                if (endValue < 0.0f) {
-                    startValue = ((start->z * planeZ) +
-                                  ((planeX * start->x) +
-                                   (planeY * start->y))) +
-                                 planeValue;
-                    if (startValue >= 0.0f) {
-                        ratio = (startValue / (startValue - endValue)) * scale;
-                        if (ratio <= hit->ratio) {
-                            edgeOffset = 0;
-                            edgeValid = 1;
-                            edgeEntry = (u16 *) ((u8 *) entry + edgeOffset);
-                            pointX = ((offset->x * ratio) + start->x) -
-                                     (planeOffset * planeX);
-                            pointY = ((offset->y * ratio) + start->y) -
-                                     (planeOffset * planeY);
-                            pointZ = ((offset->z * ratio) + start->z) -
-                                     (planeOffset * planeZ);
-                            do {
-                                edge = edgeEntry[1];
-                                edgeOffset += 2;
-                                sign = edge & 0x8000;
-                                edgeIndex = edge ^ sign;
-                                edgeFace = (TrackRayFace *)
-                                    ((u8 *) node->planes + (edgeIndex * 0x10));
-                                edgeValue = edgeFace->distance +
-                                             ((edgeFace->x * pointX) +
-                                              (edgeFace->y * pointY) +
-                                              (edgeFace->z * pointZ));
-                                if (sign != 0) {
-                                    edgeValue = -edgeValue;
-                                }
-                                if (threshold < edgeValue) {
-                                    edgeValid = 0;
-                                }
-                                edgeEntry++;
-                            } while ((edgeOffset < 6) && (edgeValid != 0));
-                            if (edgeValid != 0) {
-                                hit->normalX = planeX;
-                                hit->normalY = planeY;
-                                hit->normalZ = planeZ;
-                                hit->distance = planeValue;
-                                adjustedOffset = D_80081790 + planeOffset;
-                                hit->x = (adjustedOffset * planeX) + pointX;
-                                hit->y = (adjustedOffset * planeY) + pointY;
-                                hit->z = (adjustedOffset * planeZ) + pointZ;
-                                hit->faceData = ((TrackRayMeta *)
-                                    ((u8 *) node->metadata +
-                                     (D_800C9D30[segmentIndex] * 0x10)))->data;
-                                hit->material = ((u8 *) D_800792E8->textures)[
-                                    (((TrackRayMeta *)
-                                      ((u8 *) node->metadata +
-                                       (D_800C9D30[segmentIndex] * 0x10)))->material * 8) + 7];
-                                hit->ratio = ratio;
-                                valid = 1;
+        encoded = D_800C9D2C[segmentIndex];
+        if (encoded > 0) {
+            node = (TrackRayNodeExtended *) (encoded | (s32) 0x80000000);
+        } else {
+            entry = (u16 *) encoded;
+            i = 0;
+            planes = node->planes;
+            face = &planes[*entry];
+            planeX = face->x;
+            planeY = face->y;
+            planeZ = face->z;
+            planeValue = face->distance - planeOffset;
+            endValue = planeX * end->x + planeY * end->y + end->z * planeZ +
+                       planeValue;
+            if (endValue < 0.0f) {
+                startValue = planeX * start->x + planeY * start->y +
+                             start->z * planeZ + planeValue;
+                if (startValue >= 0.0f) {
+                    ratio = (startValue / (startValue - endValue)) * scale;
+                    if (ratio <= hit->ratio) {
+                        edgeValid = 1;
+                        pointX = ((offset->x * ratio) + start->x) -
+                                 (planeOffset * planeX);
+                        pointY = ((offset->y * ratio) + start->y) -
+                                 (planeOffset * planeY);
+                        pointZ = ((offset->z * ratio) + start->z) -
+                                 (planeOffset * planeZ);
+                        do {
+                            edge = entry[i + 1];
+                            sign = edge & 0x8000;
+                            face = &planes[edge ^ sign];
+                            edgeValue = face->distance +
+                                        (face->x * pointX + face->y * pointY +
+                                         face->z * pointZ);
+                            if (sign != 0) {
+                                edgeValue = -edgeValue;
                             }
+                            if (threshold < edgeValue) {
+                                edgeValid = 0;
+                            }
+                            i++;
+                        } while (i < 3 && edgeValid != 0);
+                        if (edgeValid != 0) {
+                            hit->normalX = planeX;
+                            hit->normalY = planeY;
+                            hit->normalZ = planeZ;
+                            hit->distance = planeValue;
+                            adjustedOffset = D_80081790 + planeOffset;
+                            hit->x = (adjustedOffset * planeX) + pointX;
+                            hit->y = (adjustedOffset * planeY) + pointY;
+                            hit->z = (adjustedOffset * planeZ) + pointZ;
+                            hit->faceData =
+                                node->metadata[D_800C9D30[segmentIndex]].data;
+                            hit->material = ((u8 *) &D_800792E8->textures[
+                                node->metadata[D_800C9D30[segmentIndex]]
+                                    .material])[7];
+                            hit->ratio = ratio;
+                            valid = 1;
                         }
                     }
                 }
             }
+        }
             segmentIndex++;
-            entryOffset += 4;
         } while (segmentIndex < D_800C9D3C);
     }
     return valid;
@@ -3735,20 +3725,68 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80011980.s")
 #endif
+typedef struct TrackClipVertex {
+    s16 x;
+    s16 y;
+    s16 z;
+    u8 pad06[4];
+} TrackClipVertex;
+
+typedef struct TrackClipFace {
+    u8 flags;
+    u8 vertices[3];
+    u8 pad04[0x0C];
+} TrackClipFace;
+
+typedef struct TrackClipIndex {
+    u8 material;
+    u8 pad01[5];
+    s16 vertexBase;
+    u8 pad08[4];
+    s32 data;
+} TrackClipIndex;
+
+typedef struct TrackClipNode {
+    TrackClipVertex *origin;
+    TrackClipFace *faces;
+    u8 pad08[4];
+    TrackClipIndex *indices;
+} TrackClipNode;
+
+typedef struct TrackClipOutput {
+    f32 x0;
+    f32 y0;
+    f32 z0;
+    f32 x1;
+    f32 y1;
+    f32 z1;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    TrackClipNode *node;
+    s16 segment;
+} TrackClipOutput;
+
 #ifdef NON_MATCHING
 /* PROVENANCE: JFG's public track.c supplies the ray/edge collision role;
  * this body uses Mickey's resident edge records and output layout. */
-/* Workbench verdict: structure-mismatch, 327 differing words; first mismatch is at +0x0. */
-/* Target is 342 instructions/frame -192; candidate is 344 instructions/frame -208. */
-/* Named plane differences recover the target saved-register footprint; the
- * texture-global hoist still spills the loop counter and shifts the CFG. */
+/* Candidate (Track B, 2026-09-23): 347/342 words, 329 differing, frame 0xC8
+ * versus 0xC0. Typed edge records (TrackClipOutput) and hit (TrackRayHit),
+ * point sums written origin-first, all three points computed before the hit
+ * stores (t is address-taken, so an interleaved store forces a reload), the
+ * foot point carried in the difference locals, unused locals dropped. One p1
+ * decision is left: the D_800792E8 address web (save 30/7) outranks the record
+ * counter (31/8), is kept in s8, and pushes the counter into a caller-saved
+ * register spilled at each call. Forcing that web to split alone gives
+ * 342/342 words and 150 differing. */
 extern s32 func_80012234(TrackVec3f *point, TrackVec3f *direction,
                          TrackVec3f *origin, TrackVec3f *planeDirection,
                          f32 radius, f32 *minimum, f32 *maximum);
 
-s32 func_80011CDC(u8 *arg0, u8 *arg1, f32 arg2, u8 *arg3) {
-    u8 *record;
-    u8 *metadata;
+s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
+                  TrackRayHit *hit) {
+    TrackClipOutput *record;
+    TrackClipNode *node;
     f32 t;
     f32 tEnd;
     f32 pointX;
@@ -3761,206 +3799,159 @@ s32 func_80011CDC(u8 *arg0, u8 *arg1, f32 arg2, u8 *arg3) {
     f32 differenceY;
     f32 differenceZ;
     f32 planeDistance;
-    s32 recordIndex;
     s32 recordCount;
-    s32 recordOffset;
-    s32 hit;
+    s32 result;
     s32 edgeHit;
-    s32 metadataIndex;
 
-    hit = 0;
+    result = 0;
     recordCount = 0;
     if (D_800C9D24 > 0) {
-        recordOffset = 0;
         do {
             edgeHit = 0;
-            record = (u8 *) D_800C9D20 + recordOffset;
-            if ((func_80012234((TrackVec3f *) arg0, (TrackVec3f *) arg1,
-                               (TrackVec3f *) record,
-                               (TrackVec3f *) (record + 0x18),
-                               arg2, &t, &tEnd) != 0) &&
-                (t >= 0.0f) && (t <= *(f32 *) (arg3 + 0x1C))) {
-                normalX = *(f32 *) (record + 0x18);
-                normalY = *(f32 *) (record + 0x1C);
-                normalZ = *(f32 *) (record + 0x20);
-                pointX = (*(f32 *) (arg1 + 0) * t) +
-                         *(f32 *) (arg0 + 0);
-                pointY = (*(f32 *) (arg1 + 4) * t) +
-                         *(f32 *) (arg0 + 4);
-                pointZ = (*(f32 *) (arg1 + 8) * t) +
-                         *(f32 *) (arg0 + 8);
-                differenceX = pointX - *(f32 *) (record + 0);
-                differenceY = pointY - *(f32 *) (record + 4);
-                differenceZ = pointZ - *(f32 *) (record + 8);
-                planeDistance = ((differenceX * normalX) +
-                                  (differenceY * normalY) +
-                                  (differenceZ * normalZ)) /
-                                 ((normalZ * normalZ) +
-                                  ((normalX * normalX) + (normalY * normalY)));
+            record = recordCount + (TrackClipOutput *) D_800C9D20;
+            if ((func_80012234(origin, direction, (TrackVec3f *) &record->x0,
+                               (TrackVec3f *) &record->dx, radius, &t,
+                               &tEnd) != 0) &&
+                (t >= 0.0f) && (t <= hit->ratio)) {
+                normalX = record->dx;
+                normalY = record->dy;
+                normalZ = record->dz;
+                pointX = origin->f[0] + direction->f[0] * t;
+                pointY = origin->f[1] + direction->f[1] * t;
+                pointZ = origin->f[2] + direction->f[2] * t;
+                differenceX = pointX - record->x0;
+                differenceY = pointY - record->y0;
+                differenceZ = pointZ - record->z0;
+                planeDistance = (differenceX * normalX + differenceY * normalY +
+                                 differenceZ * normalZ) /
+                                (normalX * normalX + normalY * normalY +
+                                 normalZ * normalZ);
                 if ((planeDistance >= 0.0f) && (planeDistance <= 1.0f)) {
-                    *(f32 *) (arg3 + 0x10) = pointX;
-                    *(f32 *) (arg3 + 0x14) = pointY;
-                    *(f32 *) (arg3 + 0x18) = pointZ;
-                    hit = 1;
+                    hit->x = pointX;
+                    hit->y = pointY;
+                    hit->z = pointZ;
+                    result = 1;
                     edgeHit = 1;
-                    *(f32 *) (arg3 + 0) =
-                        (pointX - ((*(f32 *) (record + 0x18) * planeDistance) +
-                                   *(f32 *) (record + 0))) / arg2;
-                    normalX = (pointZ - ((*(f32 *) (record + 0x20) * planeDistance) +
-                                         *(f32 *) (record + 8))) / arg2;
-                    *(f32 *) (arg3 + 4) =
-                        (pointY - ((*(f32 *) (record + 0x1C) * planeDistance) +
-                                   *(f32 *) (record + 4))) / arg2;
-                    *(f32 *) (arg3 + 8) = normalX;
-                    *(f32 *) (arg3 + 0xC) =
-                        -((normalX * pointZ) +
-                          ((pointX * *(f32 *) (arg3 + 0)) +
-                           (pointY * *(f32 *) (arg3 + 4))));
-                    metadata = *(u8 **) (record + 0x24);
-                    metadataIndex = *(s32 *) (record + 0x28);
-                    *(s32 *) (arg3 + 0x20) = *(s32 *)
-                        (*(u8 **) (metadata + 0xC) +
-                         (metadataIndex * 0x10) + 0xC);
-                    *(u8 *) (arg3 + 0x24) = ((u8 *)
-                        &D_800792E8->textures[
-                            *(u8 *) (*(u8 **) (metadata + 0xC) +
-                                     (metadataIndex * 0x10))])[7];
-                    *(f32 *) (arg3 + 0x1C) = t;
+                    differenceX = record->dx * planeDistance + record->x0;
+                    differenceY = record->dy * planeDistance + record->y0;
+                    differenceZ = record->dz * planeDistance + record->z0;
+                    hit->normalX = (pointX - differenceX) / radius;
+                    hit->normalY = (pointY - differenceY) / radius;
+                    normalX = (pointZ - differenceZ) / radius;
+                    hit->normalZ = normalX;
+                    hit->distance = -(pointX * hit->normalX +
+                                      pointY * hit->normalY +
+                                      normalX * pointZ);
+                    node = record->node;
+                    hit->faceData = node->indices[record->segment].data;
+                    hit->material = ((u8 *) &D_800792E8->textures[
+                        node->indices[record->segment].material])[7];
+                    hit->ratio = t;
                 }
             }
             if (edgeHit == 0) {
-                if ((func_80012574((TrackVec3f *) arg0, (TrackVec3f *) arg1,
-                                   (TrackVec3f *) record,
-                                   arg2, &t, &tEnd) != 0) &&
-                    (t >= 0.0f) && (t <= *(f32 *) (arg3 + 0x1C))) {
+                if ((func_80012574(origin, direction, (TrackVec3f *) &record->x0,
+                                   radius, &t, &tEnd) != 0) &&
+                    (t >= 0.0f) && (t <= hit->ratio)) {
                     edgeHit = 1;
-                    hit = 1;
-                    pointX = (*(f32 *) (arg1 + 0) * t) +
-                             *(f32 *) (arg0 + 0);
-                    pointY = (*(f32 *) (arg1 + 4) * t) +
-                             *(f32 *) (arg0 + 4);
-                    *(f32 *) (arg3 + 0x10) = pointX;
-                    *(f32 *) (arg3 + 0x14) = pointY;
-                    pointZ = (*(f32 *) (arg1 + 8) * t) +
-                             *(f32 *) (arg0 + 8);
-                    *(f32 *) (arg3 + 0x18) = pointZ;
-                    *(f32 *) (arg3 + 0) =
-                        (pointX - *(f32 *) (record + 0)) / arg2;
-                    *(f32 *) (arg3 + 4) =
-                        (pointY - *(f32 *) (record + 4)) / arg2;
-                    *(f32 *) (arg3 + 8) =
-                        (pointZ - *(f32 *) (record + 8)) / arg2;
-                    *(f32 *) (arg3 + 0xC) =
-                        -((*(f32 *) (arg3 + 8) * pointZ) +
-                          ((pointX * *(f32 *) (arg3 + 0)) +
-                           (pointY * *(f32 *) (arg3 + 4))));
-                    metadata = *(u8 **) (record + 0x24);
-                    metadataIndex = *(s32 *) (record + 0x28);
-                    *(s32 *) (arg3 + 0x20) = *(s32 *)
-                        (*(u8 **) (metadata + 0xC) +
-                         (metadataIndex * 0x10) + 0xC);
-                    *(u8 *) (arg3 + 0x24) = ((u8 *)
-                        &D_800792E8->textures[
-                            *(u8 *) (*(u8 **) (metadata + 0xC) +
-                                     (metadataIndex * 0x10))])[7];
-                    *(f32 *) (arg3 + 0x1C) = t;
+                    result = 1;
+                    pointX = origin->f[0] + direction->f[0] * t;
+                    pointY = origin->f[1] + direction->f[1] * t;
+                    pointZ = origin->f[2] + direction->f[2] * t;
+                    hit->x = pointX;
+                    hit->y = pointY;
+                    hit->z = pointZ;
+                    hit->normalX = (pointX - record->x0) / radius;
+                    hit->normalY = (pointY - record->y0) / radius;
+                    hit->normalZ = (pointZ - record->z0) / radius;
+                    hit->distance = -(pointX * hit->normalX +
+                                      pointY * hit->normalY +
+                                      hit->normalZ * pointZ);
+                    node = record->node;
+                    hit->faceData = node->indices[record->segment].data;
+                    hit->material = ((u8 *) &D_800792E8->textures[
+                        node->indices[record->segment].material])[7];
+                    hit->ratio = t;
                 }
             }
             if (edgeHit == 0) {
-                if ((func_80012574((TrackVec3f *) arg0, (TrackVec3f *) arg1,
-                                   (TrackVec3f *) (record + 0xC), arg2,
-                                   &t, &tEnd) != 0) &&
-                    (t >= 0.0f) && (t <= *(f32 *) (arg3 + 0x1C))) {
-                    hit = 1;
-                    pointX = (*(f32 *) (arg1 + 0) * t) +
-                             *(f32 *) (arg0 + 0);
-                    pointY = (*(f32 *) (arg1 + 4) * t) +
-                             *(f32 *) (arg0 + 4);
-                    *(f32 *) (arg3 + 0x10) = pointX;
-                    *(f32 *) (arg3 + 0x14) = pointY;
-                    pointZ = (*(f32 *) (arg1 + 8) * t) +
-                             *(f32 *) (arg0 + 8);
-                    *(f32 *) (arg3 + 0x18) = pointZ;
-                    *(f32 *) (arg3 + 0) =
-                        (pointX - *(f32 *) (record + 0xC)) / arg2;
-                    *(f32 *) (arg3 + 4) =
-                        (pointY - *(f32 *) (record + 0x10)) / arg2;
-                    *(f32 *) (arg3 + 8) =
-                        (pointZ - *(f32 *) (record + 0x14)) / arg2;
-                    *(f32 *) (arg3 + 0xC) =
-                        -((*(f32 *) (arg3 + 8) * pointZ) +
-                          ((pointX * *(f32 *) (arg3 + 0)) +
-                           (pointY * *(f32 *) (arg3 + 4))));
-                    metadata = *(u8 **) (record + 0x24);
-                    metadataIndex = *(s32 *) (record + 0x28);
-                    *(s32 *) (arg3 + 0x20) = *(s32 *)
-                        (*(u8 **) (metadata + 0xC) +
-                         (metadataIndex * 0x10) + 0xC);
-                    *(u8 *) (arg3 + 0x24) = ((u8 *)
-                        &D_800792E8->textures[
-                            *(u8 *) (*(u8 **) (metadata + 0xC) +
-                                     (metadataIndex * 0x10))])[7];
-                    *(f32 *) (arg3 + 0x1C) = t;
+                if ((func_80012574(origin, direction, (TrackVec3f *) &record->x1,
+                                   radius, &t, &tEnd) != 0) &&
+                    (t >= 0.0f) && (t <= hit->ratio)) {
+                    result = 1;
+                    pointX = origin->f[0] + direction->f[0] * t;
+                    pointY = origin->f[1] + direction->f[1] * t;
+                    pointZ = origin->f[2] + direction->f[2] * t;
+                    hit->x = pointX;
+                    hit->y = pointY;
+                    hit->z = pointZ;
+                    hit->normalX = (pointX - record->x1) / radius;
+                    hit->normalY = (pointY - record->y1) / radius;
+                    hit->normalZ = (pointZ - record->z1) / radius;
+                    hit->distance = -(pointX * hit->normalX +
+                                      pointY * hit->normalY +
+                                      hit->normalZ * pointZ);
+                    node = record->node;
+                    hit->faceData = node->indices[record->segment].data;
+                    hit->material = ((u8 *) &D_800792E8->textures[
+                        node->indices[record->segment].material])[7];
+                    hit->ratio = t;
                 }
             }
             recordCount++;
-            recordOffset += 0x2C;
         } while (recordCount < D_800C9D24);
     }
-    return hit;
+    return result;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80011CDC.s")
 #endif
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c FP dataflow and the resident vector layout
  * reconstruct this plane-intersection query; no external function body is adapted.
+ * Matched 2026-09-23 (Track B): the three sums written left-associated and
+ * the cross products in textbook a[j]*b[k] - a[k]*b[j] order (size +12 -> 0),
+ * normalLength declared first so it takes the frame's top home, the dot
+ * product assigned straight into absoluteDot and negated in place (a separate
+ * scalar carrier gave the stack radius a bb-local web that outranked it for
+ * $f2), and the plane dot carried by directionDot, which it later reuses.
  */
-/* Workbench verdict: structure-mismatch, 187 differing words, first mismatch +0xC. */
-/* Candidate: 211/208 instructions with the exact -0x60 frame; all three sqrtf
- * relocations are present but the latter two remain displaced by three words. */
-/* Shape status: local vector storage and scalar reuse recover the target frame;
- * FP allocation and cross-product scheduling remain unresolved. The required
- * flag lattice fails closed because this resident symbol has no unique sized
- * symbol_addrs owner. */
 s32 func_80012234(TrackVec3f *point, TrackVec3f *direction,
                   TrackVec3f *origin, TrackVec3f *planeDirection,
                   f32 radius, f32 *minimum, f32 *maximum) {
+    f32 normalLength;
     f32 delta[3];
     f32 normal[3];
     f32 cross[3];
-    f32 normalLength;
-    f32 scalar;
     f32 absoluteDot;
     f32 planeOffset;
-    f32 directionDot;
+    f32 scalar;
     f32 interval;
+    f32 directionDot;
     s32 result;
 
     delta[0] = point->f[0] - origin->f[0];
     delta[1] = point->f[1] - origin->f[1];
     delta[2] = point->f[2] - origin->f[2];
     normal[0] = (direction->f[1] * planeDirection->f[2]) -
-                (planeDirection->f[1] * direction->f[2]);
+                (direction->f[2] * planeDirection->f[1]);
     normal[1] = (direction->f[2] * planeDirection->f[0]) -
-                (planeDirection->f[2] * direction->f[0]);
+                (direction->f[0] * planeDirection->f[2]);
     normal[2] = (direction->f[0] * planeDirection->f[1]) -
-                (planeDirection->f[0] * direction->f[1]);
-    normalLength = (normal[2] * normal[2]) +
-                   ((normal[0] * normal[0]) + (normal[1] * normal[1]));
+                (direction->f[1] * planeDirection->f[0]);
+    normalLength = normal[0] * normal[0] + normal[1] * normal[1] +
+                   normal[2] * normal[2];
     if (normalLength == 0.0f) {
         return 0;
     }
     normalLength = sqrtf(normalLength);
-    normal[2] = normal[2] / normalLength;
     normal[0] = normal[0] / normalLength;
     normal[1] = normal[1] / normalLength;
-    scalar = (normal[2] * delta[2]) +
-             ((delta[0] * normal[0]) + (delta[1] * normal[1]));
-    absoluteDot = scalar;
-    if (scalar < 0.0f) {
-        absoluteDot = -scalar;
+    normal[2] = normal[2] / normalLength;
+    absoluteDot = delta[0] * normal[0] + delta[1] * normal[1] +
+                  delta[2] * normal[2];
+    if (absoluteDot < 0.0f) {
+        absoluteDot = -absoluteDot;
     }
     result = 0;
     if (absoluteDot <= radius) {
@@ -3968,29 +3959,28 @@ s32 func_80012234(TrackVec3f *point, TrackVec3f *direction,
     }
     if (result != 0) {
         cross[0] = (delta[1] * planeDirection->f[2]) -
-                   (planeDirection->f[1] * delta[2]);
+                   (delta[2] * planeDirection->f[1]);
         cross[1] = (delta[2] * planeDirection->f[0]) -
-                   (planeDirection->f[2] * delta[0]);
+                   (delta[0] * planeDirection->f[2]);
         cross[2] = (delta[0] * planeDirection->f[1]) -
-                   (planeDirection->f[0] * delta[1]);
-        scalar = (normal[2] * cross[2]) +
-                 ((cross[0] * normal[0]) + (cross[1] * normal[1]));
-        planeOffset = -scalar / normalLength;
+                   (delta[1] * planeDirection->f[0]);
+        directionDot = cross[0] * normal[0] + cross[1] * normal[1] +
+                       cross[2] * normal[2];
+        planeOffset = -directionDot / normalLength;
         cross[0] = (normal[1] * planeDirection->f[2]) -
-                   (planeDirection->f[1] * normal[2]);
+                   (normal[2] * planeDirection->f[1]);
         cross[1] = (normal[2] * planeDirection->f[0]) -
-                   (planeDirection->f[2] * normal[0]);
+                   (normal[0] * planeDirection->f[2]);
         cross[2] = (normal[0] * planeDirection->f[1]) -
-                   (planeDirection->f[0] * normal[1]);
-        normalLength = sqrtf((cross[2] * cross[2]) +
-                             ((cross[0] * cross[0]) +
-                              (cross[1] * cross[1])));
+                   (normal[1] * planeDirection->f[0]);
+        normalLength = sqrtf(cross[0] * cross[0] + cross[1] * cross[1] +
+                             cross[2] * cross[2]);
         cross[0] = cross[0] / normalLength;
         cross[1] = cross[1] / normalLength;
         cross[2] = cross[2] / normalLength;
-        directionDot = (cross[2] * direction->f[2]) +
-                       ((direction->f[0] * cross[0]) +
-                        (direction->f[1] * cross[1]));
+        directionDot = direction->f[0] * cross[0] +
+                       direction->f[1] * cross[1] +
+                       direction->f[2] * cross[2];
         scalar = radius * radius;
         interval = sqrtf(scalar - (absoluteDot * absoluteDot)) /
                    directionDot;
@@ -4002,9 +3992,6 @@ s32 func_80012234(TrackVec3f *point, TrackVec3f *direction,
     }
     return result;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80012234.s")
-#endif
 s32 func_80012574(TrackVec3f *origin, TrackVec3f *direction, TrackVec3f *center, f32 radius, f32 *minimum, f32 *maximum)
 {
   f32 temp_f0;
@@ -4042,46 +4029,6 @@ s32 func_80012574(TrackVec3f *origin, TrackVec3f *direction, TrackVec3f *center,
  * PROVENANCE: Mickey's m2c draft, collision-node offsets, and output-record
  * writes reconstruct this routine; no external function body is adapted.
  */
-typedef struct TrackClipVertex {
-    s16 x;
-    s16 y;
-    s16 z;
-    u8 pad06[4];
-} TrackClipVertex;
-
-typedef struct TrackClipFace {
-    u8 flags;
-    u8 vertices[3];
-    u8 pad04[0x0C];
-} TrackClipFace;
-
-typedef struct TrackClipIndex {
-    u8 pad00[6];
-    s16 vertexBase;
-    u8 pad08[8];
-} TrackClipIndex;
-
-typedef struct TrackClipNode {
-    TrackClipVertex *origin;
-    TrackClipFace *faces;
-    u8 pad08[4];
-    TrackClipIndex *indices;
-} TrackClipNode;
-
-typedef struct TrackClipOutput {
-    f32 x0;
-    f32 y0;
-    f32 z0;
-    f32 x1;
-    f32 y1;
-    f32 z1;
-    f32 dx;
-    f32 dy;
-    f32 dz;
-    TrackClipNode *node;
-    s16 segment;
-} TrackClipOutput;
-
 /*
  * Matched with the face and vertex-base cursors formed once per node from
  * index locals read in D_800C9D30/D_800C9D34 order, the corner flag tested
@@ -5607,11 +5554,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80011980:start
  * symbol: func_80011980
- * score: 211 differing words
- * frame: 0xe0
+ * score: 195 differing words
+ * frame: 0xd8
  * relocations: 12
  * first-mismatch: +0x0
- * summary: Halfword record types preserve candidate bytes; 211 differences remain after five m2c forms. Next: source-attributed FP home evidence.
+ * summary: Delta +8 to +4. Target ranks inner-loop edge/sign/face webs below all outer webs (s5-s8); ours ranks them first and spills into ra.
  * PLATEAU-HANDOFF:func_80011980:end
  */
 
@@ -5646,16 +5593,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * PLATEAU-HANDOFF:func_800103D4:end
  */
 
-/* PLATEAU-HANDOFF:func_80012234:start
- * symbol: func_80012234
- * score: 187 differing words
- * frame: 0x60
- * relocations: 3
- * first-mismatch: +0xc
- * summary: Fresh Mickey m2c reproduces existing typed CFG; zero new attempts, 187 differences. Next: source-attributed FP lifetime evidence.
- * PLATEAU-HANDOFF:func_80012234:end
- */
-
 /* PLATEAU-HANDOFF:func_8001357C:start
  * symbol: func_8001357C
  * score: 189 differing words
@@ -5688,11 +5625,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80011CDC:start
  * symbol: func_80011CDC
- * score: 327 differing words
- * frame: 0xd0
+ * score: 329 differing words
+ * frame: 0xc8
  * relocations: 11
  * first-mismatch: +0x0
- * summary: Mickey m2c reproduces existing edge/endpoint tests; no new structural identity. Next: source-proved texture-global and counter lifetimes.
+ * summary: Aligned 243 to 193. One p1 decision left: D_800792E8 address web outranks the record counter; forcing it split gives 342/342 words, 150 diff.
  * PLATEAU-HANDOFF:func_80011CDC:end
  */
 

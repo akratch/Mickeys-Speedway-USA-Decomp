@@ -1070,9 +1070,17 @@
    "mixed_tu_exact_c_ranges": [
     {
      "offset": "0x0",
+     "end_offset": "0x28",
+     "size": "0x28",
+     "label": "overlay1PreviousPointer",
+     "source": "overlays/o001/overlay_001",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
+     "offset": "0x28",
      "end_offset": "0x50",
-     "size": "0x50",
-     "label": "overlay1PointerWrap",
+     "size": "0x28",
+     "label": "overlay1NextPointer",
      "source": "overlays/o001/overlay_001",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
@@ -1278,9 +1286,17 @@
     },
     {
      "offset": "0x3F38",
+     "end_offset": "0x3F88",
+     "size": "0x50",
+     "label": "overlay1RelativeAngleA",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
+     "offset": "0x3F88",
      "end_offset": "0x3FD8",
-     "size": "0xA0",
-     "label": "overlay1RelativeAngles",
+     "size": "0x50",
+     "label": "overlay1RelativeAngleB",
      "source": "overlays/o001/overlay_001_tail",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
@@ -2927,7 +2943,7 @@
      "offset": "0xE88",
      "end_offset": "0xF1C",
      "size": "0x94",
-     "label": "overlay8StartMotion",
+     "label": "func_overlay_008_F0000E88_185EBE0",
      "source": "overlays/o008/overlay_008",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
@@ -2935,7 +2951,7 @@
      "offset": "0xF1C",
      "end_offset": "0x1000",
      "size": "0xE4",
-     "label": "overlay8Activate",
+     "label": "func_overlay_008_F0000F1C_185EC74",
      "source": "overlays/o008/overlay_008",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
@@ -2951,7 +2967,7 @@
      "offset": "0x2EC0",
      "end_offset": "0x3018",
      "size": "0x158",
-     "label": "overlay8UpdateChild",
+     "label": "func_overlay_008_F0002EC0_1860C18",
      "source": "overlays/o008/overlay_008",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
@@ -2967,7 +2983,7 @@
      "offset": "0x3278",
      "end_offset": "0x3368",
      "size": "0xF0",
-     "label": "overlay8ApplyColors",
+     "label": "func_overlay_008_F0003278_1860FD0",
      "source": "overlays/o008/overlay_008",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },

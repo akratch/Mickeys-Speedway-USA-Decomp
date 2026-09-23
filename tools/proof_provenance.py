@@ -34,8 +34,37 @@ class MetadataProofError(RuntimeError):
     """Declared metadata steps do not explain the configured object."""
 
 
-def metadata_filter_plan(command: str, target: str) -> list[tuple[str, object]]:
-    """Accept only ordered renames, exact text filters and a trailing text trim."""
+def _filter_spec_file(argument: str, root: pathlib.Path) -> pathlib.Path:
+    """Resolve a filter ``@SPEC_FILE`` exactly as filter_elf_relocations.py does."""
+    relative = pathlib.PurePosixPath(argument[1:])
+    if not argument[1:] or relative.is_absolute() or ".." in relative.parts:
+        raise MetadataProofError("unsafe filter specification file")
+    path = root / relative
+    if path.is_symlink() or not path.is_file():
+        raise MetadataProofError("missing filter specification file")
+    return path
+
+
+def filter_spec_files(command: str, root: pathlib.Path) -> dict[str, str]:
+    """Digest every ``@SPEC_FILE`` a metadata recipe names (content is a build input)."""
+    specs = {}
+    for segment in command.split("&&"):
+        words = shlex.split(segment)
+        if len(words) >= 2 and words[1].endswith("filter_elf_relocations.py"):
+            for word in words[4:]:
+                if word.startswith("@"):
+                    specs[word[1:]] = sha256_file(_filter_spec_file(word, root))
+    return specs
+
+
+def metadata_filter_plan(command: str, target: str,
+                         root: pathlib.Path | None = None) -> list[tuple[str, object]]:
+    """Accept only ordered renames, exact text filters and a trailing text trim.
+
+    A filter argument may be ``@SPEC_FILE``, read the way the filter helper
+    reads it: whitespace-separated specifications, ``#`` comments ignored.
+    """
+    root = pathlib.Path(__file__).resolve().parent.parent if root is None else root
     # These are precisely the existing canonical Makefile substitutions, not
     # arbitrary shell expansion or executable lookup.
     for token, replacement in {"$(OBJCOPY)": "tools/binutils/mips64-elf-objcopy",
@@ -62,7 +91,14 @@ def metadata_filter_plan(command: str, target: str) -> list[tuple[str, object]]:
               and words[2:4] == [target, ".text"]):
             if words[1] == "tools/filter_elf_relocations.py":
                 requests = []
-                for spec in words[4:]:
+                expanded = []
+                for word in words[4:]:
+                    if not word.startswith("@"):
+                        expanded.append(word)
+                        continue
+                    for line in _filter_spec_file(word, root).read_text().splitlines():
+                        expanded.extend(line.partition("#")[0].split())
+                for spec in expanded:
                     try:
                         offset, kind, name = spec.split(":", 2)
                         row = (int(offset, 0), int(kind, 0), name)
@@ -274,7 +310,7 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
     dependency_args = args + (("-I", str(source.parent)) if wrapped else ())
     if words.count("-o") != 1:
         raise MetadataProofError("ambiguous configured output argument")
-    plan = metadata_filter_plan(expanded_postprocess, target)
+    plan = metadata_filter_plan(expanded_postprocess, target, root)
     def context():
         batch.checked_tool_identity()
         if sha256_file(pathlib.Path(__file__)) != _LOADED_METADATA_PROOF:
@@ -294,6 +330,7 @@ def capture_configured_raw(root, source, configured, linked, postprocess):
                   "target_inputs": {name: sha256_file(root / name) for name in
                     ("baseroms/mickey.us.z64", "config/overlays.us.json",
                      "overlay_undefined_syms.us.txt", "symbol_addrs.us.txt")},
+                  "filter_specs": filter_spec_files(expanded_postprocess, root),
                   "metadata_tools": {name: sha256_file(root / name) for name in
                     ("tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
                      "tools/binutils/mips64-elf-objcopy")}}

@@ -287,6 +287,19 @@ still goes through the linked BSS base (`linked-bss-base`); a named site the
 raw surface left unresolved is still refused. All three now prove as
 `raw-static-with-declared-metadata-filters`.
 
+The promotion-proof census (`gmake check-promotion-proofs`) found two more
+proof-input gaps behind those. Eight overlay 1 and overlay 8 functions failed
+with "expected one tracked exact atlas range": the proof accepts a
+mixed-TU exact range only when its label is the function's own C definition,
+and two overlay 1 ranges each covered two functions under an invented label,
+while four overlay 8 labels were friendly names `overlay_008.c` never
+defines. `MIXED_TU_EXACT_C_RANGES` now carries one row per function, labelled
+with its definition; the matched byte totals are unchanged. And a declared
+filter may name its sites through `@SPEC_FILE`, which the metadata proof
+refused as an unsupported specification; it now expands the file exactly as
+`filter_elf_relocations.py` does and pins the file's digest among the
+capture's inputs.
+
 Linked BSS follows the shipped relocation blobs, while runtime BSS follows only
 text plus data/rodata. The tool therefore proves the linked definition first,
 then translates its BSS offset from `ROM-size + object offset` to

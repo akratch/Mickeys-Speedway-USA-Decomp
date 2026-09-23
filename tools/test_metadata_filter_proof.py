@@ -128,6 +128,24 @@ class MetadataTests(unittest.TestCase):
             with self.assertRaises(pp.MetadataProofError):
                 pp.metadata_filter_plan(bad, "x.o")
 
+    def test_filter_spec_files_expand_like_the_helper(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "specs").mkdir()
+            (root / "specs/f.spec").write_text("# removed pair\n0x8:5:gA 0xc:6:gA  # tail\n\n")
+            command = ("$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text "
+                       "0:5:.bss @specs/f.spec")
+            self.assertEqual(("filter", [(0, 5, ".bss"), (8, 5, "gA"), (12, 6, "gA")]),
+                             pp.metadata_filter_plan(command, "x.o", root)[-1])
+            expanded = command.replace("$(HOST_PYTHON)", ".venv/bin/python").replace(
+                "$(TOOLS_DIR)", "tools").replace("$@", "x.o")
+            self.assertEqual({"specs/f.spec"}, set(pp.filter_spec_files(expanded, root)))
+            for bad in ("@specs/missing.spec", "@../f.spec", "@/etc/f.spec", "@"):
+                with self.subTest(bad=bad), self.assertRaises(pp.MetadataProofError):
+                    pp.metadata_filter_plan(command.replace("@specs/f.spec", bad), "x.o", root)
+            (root / "specs/dup.spec").write_text("0:5:.bss\n")
+            with self.assertRaises(pp.MetadataProofError):
+                pp.metadata_filter_plan(command.replace("f.spec", "dup.spec"), "x.o", root)
 
 class CaptureTests(unittest.TestCase):
     def test_current_capture_and_changed_inputs(self):

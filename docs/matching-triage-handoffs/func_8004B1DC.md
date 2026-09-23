@@ -2,11 +2,13 @@
 ### `func_8004B1DC` plateau handoff
 
 - source: `src/main/font.c`
-- score: 465 differing words
+- score: 451 differing words
 - frame: 0x80
 - relocations: 48
 - first mismatch: +0x30
-- summary: Half the 465 is a t6-t9 ring phase downstream of the eight-word size deficit; the +0x54 head is caller-saved naming and schedule, not structure.
+- summary: Unchanged body; the u8 parameter on func_8004C690 moved this caller from 465 to 451 at the same size delta -32
+
+Summary before this remeasure: Half the 465 is a t6-t9 ring phase downstream of the eight-word size deficit; the +0x54 head is caller-saved naming and schedule, not structure.
 - current assignment base: `8aafabd4945580f6ba72e3c7bb7744a6a063198e`
 - current configured baseline and retained candidate: 2,192 candidate bytes / 548 words against 2,224 target bytes / 556 words; size delta is -32 bytes, with 466 raw and 465 relocation-masked differing words; both frames are `0x80`
 - first mismatch distinction: direct object words first differ at `+0x30` (the early branch displacement); the workbench's aligned structural report begins at `+0x54`. The header now records the raw mismatch and the candidate's 48 relocations; the target has 42.

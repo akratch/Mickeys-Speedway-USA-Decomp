@@ -84,7 +84,7 @@ void *func_8002B280(s32 size, s32 tag);
 void viGetCurrentSize(u32 *width, u32 *height);
 void camSetScissor(Gfx **displayList);
 void func_80034920(Gfx **displayList);
-FontGlyphData *func_8004C690(s32 character);
+FontGlyphData *func_8004C690(u8 character);
 void func_8004D39C(char *input, char *output);
 u8 *func_8004D40C(s32 font, char *text, s32 maxWidth, u8 **lineStart,
                   s32 *outWidth);
@@ -840,31 +840,50 @@ void func_8004C5A4(char *input, char *output, s32 number) {
     } while (currentChar);
 }
 
-/* 145/146 instructions, exact 0x70 frame, 106 masked words, first +0x0.
- * tmp-form copy plus L99 savedHeader after the pointer/index locals closes one
- * missing word and puts the array at 0x40. GLOBAL_ASM stays canonical. */
+/* 105 masked words at size delta 0, exact 0x70 frame and slot ladder, first
+ * +0x0 (was 106 at delta -4). Track B, 2026-09-23:
+ *   - the parameter is u8: the target stores the incoming a0 to its home
+ *     and masks it, which is what a narrow parameter does. That word was the
+ *     -4 (138 at delta 0; the caller func_8004B1DC moves 465 -> 451).
+ *   - the ROM offset is computed before the header copy, as in the target.
+ *   - the copy has no tmp carrier (`*destination++ = *source++`) and keeps
+ *     the OR-zero on copyIndex that stops the unroller: the rolled sltiu
+ *     loop with the load in a ring temp, 117.
+ *   - declarations put eight scalars above savedHeader and header right
+ *     below it, result four slots further: the target's homes 0x40, 0x3C
+ *     and 0x2C, 113. Order is otherwise inert (a 120-swap climb found
+ *     nothing; this procedure calls, so only save ratios decide colour).
+ *   - the found branch returns early, which puts the v0 copy in each path
+ *     as the target has it, 110.
+ *   - destination, copyIndex, source initialised in that order, which is
+ *     the web order that gives the loop v0/v1/a0, 106; on one line, 105.
+ * Left: the characterIndex copy lands at entry where the target splits it
+ * at the fill block (+0x24 against +0x108), and the search-loop webs take
+ * the caller-saved colours in a different order (index, runLength,
+ * blockCount, fontIndex, entries). */
 #ifdef NON_MATCHING
 /*
  * PROVENANCE -- source organization was cross-checked against JFG's
  * permitted published func_80071B08 cache allocator. Mickey's own m2c
  * draft, constants, structure offsets, and loader call determine this body.
  */
-FontGlyphData *func_8004C690(s32 character) {
+FontGlyphData *func_8004C690(u8 character) {
     FontSpacingData *font;
     FontGlyphData *entries;
     FontGlyphData *entry;
-    FontGlyphData *result;
-    s32 *header;
     s32 *source;
     s32 *destination;
     s32 index;
-    s32 savedHeader[4];
     s32 runLength;
     s32 remaining;
+    s32 savedHeader[4];
+    s32 *header;
     u32 blockCount;
     u32 copyIndex;
     s32 fontIndex;
+    FontGlyphData *result;
     s32 characterIndex;
+    s32 offset;
 
     characterIndex = character & 0xFF;
     fontIndex = D_800D60E0;
@@ -891,6 +910,7 @@ FontGlyphData *func_8004C690(s32 character) {
             entry->state = 2;
             entry++;
         } while (nextLength != 0);
+        return result;
     } else {
         index = 0;
         runLength = 0;
@@ -933,22 +953,16 @@ FontGlyphData *func_8004C690(s32 character) {
                 } while (blockCount != 0);
             }
 
+            offset = font->romOffset + (characterIndex * font->textureSize);
             header = (s32 *)
                 ((D_800D6638 + result->allocationOffset) - 0x10);
-            source = header;
-            destination = savedHeader;
-            copyIndex = 0;
+            destination = savedHeader; copyIndex = 0; source = header;
             do {
-                s32 tmp = *source;
-                copyIndex++;
-                destination++;
-                source++;
-                destination[-1] = tmp;
+                copyIndex = (copyIndex | 0) + 1;
+                *destination++ = *source++;
             } while (copyIndex < 4U);
 
-            piRomLoadSection(0x39, header,
-                          font->romOffset + (characterIndex * font->textureSize),
-                          font->textureSize);
+            piRomLoadSection(0x39, header, offset, font->textureSize);
             result->textureOffset =
                 (result->allocationOffset + ((u16 *) header)[0]) - 0x10;
             result->textureOffset2 =
@@ -1219,20 +1233,20 @@ u8 func_8004D5C0(s32 font) {
 
 /* PLATEAU-HANDOFF:func_8004B1DC:start
  * symbol: func_8004B1DC
- * score: 465 differing words
+ * score: 451 differing words
  * frame: 0x80
  * relocations: 48
  * first-mismatch: +0x30
- * summary: Half the 465 is a t6-t9 ring phase downstream of the eight-word size deficit; the +0x54 head is caller-saved naming and schedule, not structure.
+ * summary: Unchanged body; the u8 parameter on func_8004C690 moved this caller from 465 to 451 at the same size delta -32
  * PLATEAU-HANDOFF:func_8004B1DC:end
  */
 
 /* PLATEAU-HANDOFF:func_8004C690:start
  * symbol: func_8004C690
- * score: 106/146 words
+ * score: 105/146 words
  * frame: 0x70
  * relocations: 9
  * first-mismatch: +0x0
- * summary: tmp copy plus L99 homes at 0x40 close one word to 145/146. Remaining is the rolled sltiu save; OR-zero on copyIndex emits it but takes s0 and frame 0x78.
+ * summary: u8 parameter closes the -4; rolled carrier-free copy and target homes give 105 at delta 0; characterIndex split point and loop-web colours remain
  * PLATEAU-HANDOFF:func_8004C690:end
  */

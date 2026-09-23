@@ -1,207 +1,154 @@
-# After 60%: last-mile harvest, then the size-mismatch method
+# Track B: the small-delta campaign (from 2026-09-23)
 
-The 60% goal is met. `gmake scoreboard` on the landed tree reads
-573,408 / 944,344 = **60.72%**. This file is the next campaign, not a
-restatement of the sprint that got here. Numbers below are recomputed from
-`README.md`'s Progress block and `config/nonmatching-ranking.us.json` at
-the same tip; do not carry them forward from an earlier message.
+The last-mile harvest is over. Waves w32 through w36 (2026-09-19) ran
+thirteen colour lanes for two matches; wave w36 went 0 for 4. The cheap
+delta-0 pool is thirteen functions, five of them barred or proved. This file
+is the campaign that replaces it. Every number below was recomputed from the
+tree on 2026-09-23 after the tooling batch landed; recompute again before
+quoting any of them.
 
-Run `tools/triage.py` before every wave. It is still the assignment
-arithmetic; this document is the strategy that consumes it.
+Run `tools/triage.py` before every wave (warm runs take seconds now; a run
+after a merge refills the classifier cache and takes about two minutes).
+Read `docs/small-delta-census.md` and `docs/forced-floor-census.md` next to
+it. Those three are the assignment arithmetic; this document is the
+strategy that consumes them.
 
 ## The arithmetic
 
-    resolved 573,408 / 944,344 = 60.72%
-    remaining                370,936 bytes
-    ranking queue            279 functions / 352,904 bytes
-    unranked remainder        18,032 bytes (no NON_MATCHING candidate)
+    resolved 579,724 / 944,344 = 61.39%
+    65% = 613,823 bytes, gap 34,099
+    queue 260 functions / 346,588 bytes; 28 of them not assignable
 
-The ranking splits the reachable unmatched pool two ways:
-
-| class | functions | bytes | share of remaining |
+| group | functions | bytes | masked words |
 |---|---:|---:|---:|
-| size-mismatch (`size_delta != 0`) | 156 | 238,000 | 64.2% |
-| delta-0 | 123 | 114,904 | 31.0% |
-| unranked | — | 18,032 | 4.9% |
+| delta-0 (colour work) | 110 | 133,340 | 16,316 |
+| small-delta, 0 < \|Δ\| ≤ 12 | 52 | 68,232 | 13,740 |
+| big-delta | 69 | 123,096 | 27,780 |
 
-Delta-0 by mechanism:
+Not assignable: 14 functions (13,616 bytes) are **colour-exhausted**, with a
+proved forced floor above zero at delta 0 (`docs/forced-floor-census.md`);
+7 are already integrated and 7 carry a stale ledger. Triage names them and
+leaves them out of every route.
 
-| category | functions | bytes | masked words |
-|---|---:|---:|---:|
-| other | 107 | 106,528 | 13,503 |
-| register-only | 15 | 7,468 | 274 |
-| schedule-only | 1 | 908 | 9 |
+Each group alone could cover the gap to 65%. The delta-0 route is the
+cheapest by words (33 functions, 34,928 bytes, 1,326 masked words), but
+those are the functions colour lanes have been plateauing on for two
+weeks; the words are cheap to count and expensive to move.
 
-That is the ceiling of last week's methods: colour landscapes, L160
-carrier deletion, draw census, and the spilltemps / web-number laws.
-They operate at delta 0. They do not emit or delete an instruction.
+## What the insertion-pair census changed
 
-The previous sprint treated every nonzero size delta as "structurally
-wrong C". That is too coarse. Of the 156 size-mismatch functions, **80
-are only 4, 8 or 12 bytes off** (one to three instructions) and those 80
-cover **104,860 bytes**. Their masked-word counts are mostly L155
-positional shadow of the insertion, not 200 independent mistakes. That
-class is the bridge to 65% and beyond; last-mile harvest alone is not.
+`tools/insertion_pairs.py` (landed 2026-09-23) reads each small-delta
+function's one-sided words: which pair they form, how much positional
+shadow (L155) they cast, what class of word they are, and which source line
+and ugen construct emitted them. `gmake small-delta-census` runs it over the
+class.
 
-    65% = 613,824 bytes, gap 43,292
-    last-mile cheap pool (delta-0, masked ≤ 10, excluding the barred
-    overlay57UpdateModeState) = 17 functions / 8,488 bytes
+The previous plan assumed the class was "mostly shadow". It is not:
 
-Closing every cheap last-mile function reaches ~61.6%. Reaching 65%
-requires either large delta-0 `other` functions (the 106,528-byte band)
-or the small-delta size-mismatch class. Reaching 70% (gap 90,509) is
-the small-delta class plus a slice of the large `other` band. The
-remaining 133,140 bytes of |delta| > 12 are a later problem.
+    positional masked words 14,421
+    of which shadow          3,629   (25%)
+    aligned after shadow    10,792
+    in-pair register naming  4,359   (an upper bound on what one fix drags)
 
-## Track A — last-mile harvest (this wave)
+So subtracting the shadow does not make these functions cheap; it makes
+them *addressable*. 55 of 58 are fully owned: every extra or missing word
+has a line and a construct. Labels: missing-CSE 28, spill/reload 11,
+split-not-copy 6, extra-ISTR 5, extra-ILOD 4, control-flow 2, callee-save 1.
+The label names the word and the line, not the spelling that removes it.
+That spelling is the lane's job, and it is a different job from a colour
+sweep.
 
-One owner per translation unit. `dispatch_check.py` refuses a split.
-`overlay57UpdateModeState` stays in `config/unassignable-symbols.us.json`
-(floor of 2, proved); it is the second-best ratio in the tree and must
-not be dispatched.
+## Wave 1: seven Track B lanes
 
-### Batch 1, named next steps
+One owner per translation unit; `dispatch_check.py` refuses a split and
+refuses a small-delta symbol to a lane not marked `--track LANE=B`.
+Targets are the census order, smallest aligned residual first, grouped by
+TU so each lane's second target is in a file it already understands.
 
-| symbol | bytes | masked | TU | next step |
-|---|---:|---:|---|---|
-| `func_8000590C` | 2,876 | 0 | `src/main/objects.c` | **Matched and landed** (lane lm-0590c). Nested-add commute: ILOD off a forwarded temp is temp-first; bind to an existing isvar for object-first. |
-| `overlay14CreateValue` | 384 | 2 | o014 | Tail count-load hoist over the key store. **Live: lane/lm-o014.** |
-| `func_8005ABA8` | 444 | 2 | `src/main/models_5B300.c` | as1 delay-slot; suppressor (`.align` after else-arm label) is not reachable from C. Do not dispatch. |
-| `overlay20RemoveEntry` | 212 | 2 | o020 | register-only. Shard: no spelling reaches the target colour; remaining lever is the instrumented free list. |
-| `overlay34CreateRecord` | 500 | 0 | o034 | **Matched and promoted** (lane w3-o034). Post-call `record = candidate` rebind. |
-| `overlay1UpdateRangeFlags` | 480 | 2 | o001 tail | register-only. **Same file as other overlay-1 tail rows; do not split.** |
-| `overlay19BuildSpatialMasks` | 908 | 9 | o019 | as1 order on the mask/selector zero-init pair and loop-1 tail. **Live: lane/lm-o019.** |
+| lane | targets (aligned residual after shadow, label) | bytes |
+|---|---|---:|
+| `B-obj` | `func_80006EE4` (17, control-flow), `func_80006B04` (45, extra-ISTR), `func_8000831C` (76, missing-CSE), `func_800084C4` (91, missing-CSE, 81 of it in-pair naming) | 2,300 |
+| `B-small` | `func_8006E7E0` (1, one frame word), `func_80024978` camera.c (12, missing-CSE), `func_80030610` sched.c (24, missing-CSE), `func_8002B040` matrix.c (29, spill/reload) | 1,240 |
+| `B-ovsmall` | `func_overlay_008_F0001000_185ED58` (29, control-flow), `func_overlay_014_F0001830_1871108` (46, split-not-copy, frame +8) | 1,464 |
+| `B-track` | `func_8000D820` (57, split-not-copy), `func_8000DB34` (94, missing-CSE, Δ −12), `func_800133FC` (97, spill/reload, one unowned word) | 1,416 |
+| `B-fx` | `wakeDraw` (89, spill/reload, frame −56), `func_800479D4` (90, extra-ISTR, frame −8), `func_80049B14` (117, split-not-copy) | 2,304 |
+| `B-o020` | `overlay20UpdateGrid` (57, missing-CSE, frame +72), `func_overlay_020_F0001148_1877720` (137, spill/reload) | 1,688 |
+| `B-resmix` | `func_80037414` frontend (44, missing-CSE, frame +8), `func_800180B4` shadows (82, missing-CSE), `func_8004C690` font (92, split-not-copy), `func_80019AB8` lights (109, missing-CSE) | 2,724 |
 
-`objects.c` is one owner. `func_8000590C` is matched, so the live
-objects.c lane (`lane/lm-obj`) takes the five unroller-grown siblings
-below. `func_8005ABA8` is not dispatched: the remaining two words are an
-as1 branch-likely conversion whose suppressor is not a C spelling.
+Scope 13,136 bytes. Planned at the measured rate of the last two weeks
+(roughly one match per five lanes once a class is past its first few
+closes) this wave is worth 3 to 6 matches, 3 to 8 KB. It is also the first
+measurement of the method itself; the second wave is planned from what the
+first one reports, not from this table.
 
-### Same-TU follow-on on `objects.c`
+### The Track B lane protocol
 
-`-Wo,-loopunroll,0` was a NON_MATCHING claim, removed. Five other
-candidates still carry the hand-unrolled loops that flag was papering
-over; under the unroller they grow 12–700 bytes and their ranking rows
-are current as size-mismatch:
+1. **Cycle 0, uncounted:** `tools/insertion_pairs.py <symbol>` and
+   `tools/residual_map.py <symbol>`. Write down the pair(s), the owning
+   line, the construct and the class before touching the source.
+2. **Change the owning line, not the residual.** A `missing-CSE` word is an
+   expression the target computed once and the candidate twice; a
+   `spill/reload` word is a home the target never allocated; a
+   `split-not-copy` word is a web uopt split where the target's stayed one
+   web (LANE_BRIEF laws L145–L154 on carriers apply). Re-spell that line
+   and re-score. A size delta that reaches 0 is the milestone, even if the
+   masked count rises: the function moves to the delta-0 pool and the
+   colour instruments apply from there.
+3. **Do not run a colour landscape on a nonzero delta.** The census shows
+   why: at most 4,359 of 10,792 aligned words could be naming, and none of
+   them can move until the inserted word is gone.
+4. **A frame delta is a declared home**, and `tools/frame_census.py` names
+   it. Close the frame before the words when both are off.
+5. Stop on ADR 0018: three consecutive attempts with no better residual, no
+   new identity, and no eliminated hypothesis. Then write the handoff with
+   the pair, the line and the spellings tried, so the next reader does not
+   repeat them.
 
-| symbol | bytes | delta | masked |
-|---|---:|---:|---:|
-| `func_80004FE0` | 1,384 | +12 | 328 |
-| `func_80009414` | 1,684 | +232 | 468 |
-| `func_8000A39C` | 656 | +300 | 231 |
-| `func_80005548` | 348 | +632 | 245 |
-| `func_80004590` | 396 | +700 | 272 |
+## Track A, kept warm
 
-Rewrite each as the plain loop the unroller expects, then re-score.
-This is restoration, not a new match attempt: until the size delta is
-back to zero they are not last-mile targets. Three further `objects.c`
-siblings sit at ±4 (`func_80006EE4`, `func_80006B04`, `func_8000831C`)
-and one at +4 (`func_800084C4`); they are Track B once the lane has
-the insertion-pair reader.
-
-### Method, unchanged
-
-Aligned bucket split first (`residual_map.py`), then records, then a
-force scored against the *forced object*, then L160. Colour landscapes
-already exist on these shards; do not re-run one unless the source
-moved. Stop on ADR 0018: three consecutive attempts with no better
-residual, no new identity, and no eliminated hypothesis.
-
-Expected yield this wave: 8–15 KB if two or three of the 2-word
-functions close and `func_8000590C` lands. That is ~61.3–62.0%, not 65%.
-
-## Track B — the size-mismatch method (the rest of the 40%)
-
-Last week's instruments answer "which colour" and "which web". They do
-not answer "which IR node emitted the extra word". That is the method
-gap `docs/NEXT_CAMPAIGN.md` of 2026-09-12 already named as item 3, and
-it is now the campaign's load-bearing problem.
-
-Build, in this order:
-
-1. **An insertion-pair reader.** Input: `residual_map.py`'s
-   candidate-only / target-only offsets plus the instrumented `uopt`
-   graph. Output: the IR construct (an extra ILOD, a missing CSE, a
-   split that should have been a copy, a loop that should have
-   unrolled) that owns the ±4/±8/±12. Same shape as
-   `web_footprint.py`: a number, not a guess.
-2. **A small-delta census.** For each of the 80 functions, the pair
-   offsets, the frame delta, and whether the extra word is a move, a
-   reload, or a real op. Tracked summary only; objects stay ignored.
-3. **Apply it to `objects.c`'s ±4 siblings first**, because that TU is
-   already owned and the unroller lesson is in hand.
-
-- **Items 1 and 2 are done** (lane tb-pairs). `tools/insertion_pairs.py`
-  is the reader and `gmake small-delta-census` writes
-  `docs/small-delta-census.md`; the LANE_BRIEF "Instruments" section says
-  how to read both. The census scope, recomputed from the ranking at the
-  time it ran, is **58 functions / 71,408 bytes** at 0 < |delta| <= 12,
-  not the 80 / 104,860 above: that pool has moved since this file was
-  written. Headline: of 14,421 positional masked words only **3,629 are
-  shadow**; the aligned residual after shadow is **10,792**, 4,359 of it
-  register naming inside a pair. So the premise that these functions are
-  "mostly shadow" holds for a few (func_80024978 reads 71 masked, 12
-  aligned) and not for the class. 55 of 58 are fully owned (3 carry one
-  unowned word each). Labels: missing-CSE 28, spill/reload 11,
-  split-not-copy 6, extra-ISTR 5, extra-ILOD 4, control-flow 2,
-  callee-save 1, other 1. Dispatch in the census's order, smallest
-  aligned residual first. The `objects.c` siblings read: `func_80006EE4`
-  17 aligned (control-flow), `func_80006B04` 45 (extra-ISTR),
-  `func_8000831C` 76 (missing-CSE), `func_800084C4` 91 (missing-CSE, 81
-  of it in-pair naming). A label names the word and its line, not the
-  spelling that removes it; item 3 is still a lane's job.
-
-Do not dispatch a size-mismatch function to a colour-landscape lane.
-Do not rank its windows by the positional count (L155). The 106,528
-bytes of delta-0 `other` are still last-mile work; they are just
-expensive last-mile work, and they wait until the 2-word pool is dry
-or a proved-zero appears.
-
-## Track C — housekeeping, not matching
-
-- **`overlay96DrawObject` promotion-proof: done (2026-09-23).** The
-  premise was inverted: `(0, 214356)` was right (the shipped record is a
-  resident call to `func_800349A4`), and `(96, 0)` came from the
-  generated name's shape. The resident identity reached the proof only
-  through the function witnessing itself. See
-  `docs/reloc-surface.md`, "The function under proof is never its own
-  witness".
-- **Stale whale reopen pin.** `config/lane-reopen-authorizations.us.json`
-  still pins `func_overlay_058_F000138C_18B0574` (`ledger_commit`
-  `9d581a54`). The function is matched. Retire the pin.
-- **Forced-floor census and assignment-classifier cache** remain the
-  two highest-payback tooling items from the 60% sprint. They are
-  coordinator work; they do not consume a matching lane.
-
-## What this sprint's waves actually produced (kept)
-
-The 2026-09-12 plan's four waves ran, then the whale closed. Recording
-the outcome so this scoping is against measured rates.
-
-- 57.56% → 60.42% (+27,004 bytes). 19 functions, headed by
-  `func_overlay_058_F000138C_18B0574` (14,456 bytes, 187 → 0 over ten
-  bounded lanes).
-- The two routes that produced matches were a proved-zero force plus
-  L160, and the draw census. Colour landscapes without a source
-  spelling were uniformly flat.
-- Last-mile batches returned two to three matches early and about one
-  per five-lane wave once the sub-20-word functions drained. Plan this
-  wave at the later rate.
+Two delta-0 lanes at most, and only where triage reports a tight cluster
+(identical word counts across siblings): the overlay 101 triple at 143
+words each and the two `main` pairs at 154 words. One lead per cluster. No
+other delta-0 dispatch until a lane reports a new mechanism.
 
 ## Do not spend a lane on this
 
-- `overlay57UpdateModeState` — floor of 2, barred.
-- `func_overlay_054_F00005AC_189F24C` and
-  `func_overlay_052_F000063C_189ACAC` — colour axis priced; residual is
-  structural.
-- The whale. It is matched.
-- Any size-mismatch function whose shard does not yet have an
-  insertion-pair reading. That is Track B's job, not a colour sweep.
+- `overlay57UpdateModeState`: floor of 2, barred (`config/unassignable-symbols.us.json`).
+- The 14 colour-exhausted functions in `docs/forced-floor-census.md`, in a colour lane. A structural lane may take one only with a named reason the handoff does not already refute.
+- `func_8005ABA8`: the residual is an as1 branch-likely conversion with no C spelling.
+- `overlay1UpdateRangeFlags` and the rest of the overlay-1 tail: one file, one owner, and that owner is not a Track B lane.
+- Any function whose census row says `owned: no` as a first target. The three (`func_800133FC`, `func_8001EC44`, `func_overlay_001_F000438C_185076C`) each carry one unowned word; take them second, after a sibling in the same TU has taught the lane the file.
+
+## Coordinator work, not lanes
+
+- The classifier cache is keyed on the integration base commit, so every
+  merge batch refills it cold. Re-key on the per-symbol handoff and source
+  blobs plus the shard's last-change commit.
+- `tools/authorize_reopen.py` still classifies uncached (about two minutes).
+- Six `objects.c` handoffs need a remeasure before their pins can arm;
+  `overlay7UpdateOwnerMode` needs a new authorization with a reason.
+- `gmake check-promotion-proofs` (lane tb-proofs) must reach zero failures
+  and then join the `--promotion` gate set.
+- The lane brief's colour-first ordering needs a Track B paragraph that
+  points at this protocol; the instrument section already describes the
+  reader.
+
+## What the 2026-09-19 waves produced (kept for rate planning)
+
+- 60.72% → 61.39% (+6,316 bytes) over waves w32–w36: two matches
+  (`overlay1BendPathPoint`, `overlay34SortAndDraw`) and eleven plateaus.
+- Every plateau handoff records a colour landscape that came back flat, and
+  every one of those functions now sits in the colour-exhausted or unproved
+  rows of the forced-floor census. That is the measurement behind moving the
+  campaign to Track B.
 
 ## Footguns that still apply
 
-The 2026-09-12 list is still the list. In particular: never pipe a
-gate; renew reopen pins after the last handoff edit; regenerate
-generated files after a merge; one owner per TU; a force is a
-diagnostic; score a forced object directly, never through
-`score_symbol.py`'s recompile.
+Never pipe a gate. Renew reopen pins after the last handoff edit.
+Regenerate generated files after a merge rather than trusting the merge.
+One owner per TU. A force is a diagnostic. Score a forced object directly,
+never through `score_symbol.py`'s recompile. And, new this week:
+`tools/wb_compare.sh` declares a stock build; under any exported `CDX_*` or
+`DKWB_*` variable it refuses until the caller says `--build-env forced`, and
+an exact result without a declared stock build is `claim: unverified`, not a
+match.

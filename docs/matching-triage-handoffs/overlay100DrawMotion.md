@@ -5,7 +5,7 @@
 - score: 155 differing words
 - frame: 0xC0
 - relocations: 7
-- first mismatch: +0x0
+- first mismatch: +0x30
 - summary: L99 unused pointers declared first close frame 0xC0 with exact homes. Packed RGB hoist is plus two words. Command/color lifetime remains.
 - assignment base: `b05cf692e3fc02d376d334564fed1d6c1e0a8953`
 - owned range: overlay 100 `+0x580..+0x94C`, 972 bytes / 243 words; the following four-byte padding is separately owned
@@ -18,4 +18,6 @@
 - packed RGB hoist: a pre-loop packed color (new local, `progress` reuse, block-scope `register s32`, or in-place `red`) removes the 11-word target-only block at `+0x194` but emits two extra words (980 bytes) and was not adopted
 - other lifetime probes: remaining saved in `x` is 968 bytes; remaining plus a `start` cursor is size 0 at 187 masked; empty `if (row) {}` is plus two words. None beat 155
 - blocker: command and color lifetime still rebuilds RGB inside the loop and reloads `colorA0` / `colorA1` / remaining / `commands-1` instead of keeping the target's live `a0`/`a1`/`a2`. Next lever is a size-0 spelling of that hoist, not another frame or FP term-order edit
+
+Header regenerated from the ranking on 2026-09-23 (check_shard_metrics --write); it read first mismatch +0x0.
 <!-- plateau-handoff:overlay100DrawMotion:end -->

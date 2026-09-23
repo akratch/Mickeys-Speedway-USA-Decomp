@@ -57,8 +57,6 @@ __pycache__/
 # instruction text in their diff sites, so the tree is ignored wholesale.
 # Only the per-campaign manifest (paths + hashes, no ROM content) is tracked.
 .decomp-workbench/**
-!.decomp-workbench/**/
-!.decomp-workbench/campaigns/*/manifest.json
 
 # Generated build artifacts (from upstream stub's ignore rules)
 *.map

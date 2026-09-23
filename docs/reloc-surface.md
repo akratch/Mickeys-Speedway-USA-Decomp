@@ -211,6 +211,30 @@ matching sibling tuple is insufficient when another admissible sibling
 conflicts; the tool rejects the name instead of choosing the closest target or
 the tuple at the candidate's offset.
 
+The function under proof is never its own witness. Re-proving an already
+promoted function used to find that function's own canonical object among the
+matched rows, and its runtime tuple at a site is by definition the target's
+tuple at that site: a one-site copy of the kind the repeated-proxy route
+refuses as circular. The witness pass now skips any row overlapping the
+target's module extent. `overlay96DrawObject` exposed it. Its C calls the
+resident `func_800349A4` (the shipped record at `+0x640` is a `SYMBOL` to
+`resident:+0x34554`) under the generated name `func_overlay_096_F0000000_*`,
+because a resident call stores a zero jump field and so does a call to the
+overlay's own offset-0 function; splat names both after the latter. The
+self-witness bound that name to the resident target while the name's own
+shape (through its `overlay96Register` alias) said `(96, 0)`, and the proof
+refused. Overlay 86 (`overlay86ScaledVectorPosition`) and overlay 20
+(`overlay20ReleaseTree`) failed the same way, with a real sibling witness
+standing in for the self-witness. That disagreement between the name-shape
+pass and the call pass is now an ambiguity, not an abort: the site stays
+unresolved, and only the linked-ROM route can account for it. The offset-0
+call-proxy spelling is widespread (overlay 20 uses one such name for four
+different resident callees), so treat it as a proxy, never as a statement
+about the callee. Measured over the 589 promoted overlay functions on
+2026-09-23, 156 had a static-exact surface only through the self-witness;
+every one still passes `promotion-proof`, now reported as
+`static-plus-runtime-table-and-linked-rom` instead of `static`.
+
 Linked BSS follows the shipped relocation blobs, while runtime BSS follows only
 text plus data/rodata. The tool therefore proves the linked definition first,
 then translates its BSS offset from `ROM-size + object offset` to

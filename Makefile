@@ -336,67 +336,12 @@ cleanroom:
 system-health:
 	$(HOST_PYTHON) $(TOOLS_DIR)/system_health.py $(SYSTEM_HEALTH_ARGS)
 
+# Discovers and runs every tools/test_*.py and tests/test_*.py file, so a
+# new test file is never silently excluded. Special-cased interpreters and
+# class restrictions (a build-needing class skipped, a venv-only import)
+# live in run_tool_tests.py itself, not here -- see its docstring.
 check-tooling:
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_force_lattice.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_web_footprint.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_score_symbol.py ForcedObjectTests
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_draw_census.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_lineage_census.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_function_probe.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_progress.py
-	$(PYTHON) $(TOOLS_DIR)/test_raw_asm_census.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_merge_transaction.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_check_shard_metrics.py
-	$(HOST_PYTHON) tests/test_make_layout.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_check_match_regression.py
-	$(HOST_PYTHON) tests/test_flag_sweep.py
-	$(HOST_PYTHON) tests/test_tu_flag_impact.py
-	$(HOST_PYTHON) tests/test_overlay_atlas.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_reloc_identity.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_reloc_surface.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_cleanroom_detectors.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_proof_provenance.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_metadata_filter_proof.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_elf_metadata_contracts.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_function_history.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_function_preflight.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_canonical_candidate_guard.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_promotion_proof.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_allocator_trace_receipt.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_integration_base.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_lane_status.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_check_donor_claims.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_mul_scheduler_scan.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_authorize_reopen.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_resolve_target_asm.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_check_isa_overrides.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_check_paths.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_ready_queue.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_skeleton_scan.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_wb_compare.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_nm_ranking.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_align_symbol.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_frame_census.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_triage.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_reclaim_worktrees.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_register_census.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_permute_batch_deadline.py
-	$(PYTHON) $(TOOLS_DIR)/test_candidate_context.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_permute_sweep_cli.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_sweep_receipts.py
-	$(PYTHON) $(TOOLS_DIR)/test_source_fidelity.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_promotion_transaction.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_finalize_plateau.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_crew_heartbeat.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_release_gate.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_run_logged.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_experiment_ledger.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_plateau_remeasure.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_resolve_comment_hunks.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_lane_cache.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_public_release.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_blockclimb.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_residual_map.py
+	$(HOST_PYTHON) $(TOOLS_DIR)/run_tool_tests.py $(CHECK_TOOLING_ARGS)
 
 # Ownership-only inventory; does not count padding/scaffolds as matched C.
 .PHONY: check-raw-asm

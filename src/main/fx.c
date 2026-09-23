@@ -1692,9 +1692,12 @@ s32 func_80049B14(s32 delta) {
                             current = record->value14;
                             carry = 0;
                             if (current >= duration) {
-                                mode = record->value1E;
-                                if (((mode != 0) && (record->value1F == 0)) ||
-                                    ((mode == 0) && (record->value1F != 0))) {
+                                /* carry doubles as the 0x1E mode byte: the
+                                 * target loads it into carry's register, and
+                                 * this spelling is what brings size delta to 0. */
+                                carry = record->value1E;
+                                if (((carry != 0) && (record->value1F == 0)) ||
+                                    ((carry == 0) && (record->value1F != 0))) {
                                     carry = current - duration;
                                     record->state = 3;
                                     record->value14 = carry;
@@ -2496,11 +2499,11 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:func_80049B14:start
  * symbol: func_80049B14
- * score: 154/207 words
+ * score: 181/206 words
  * frame: 0x18
  * relocations: 4
- * first-mismatch: +0x8
- * summary: Switch/carry declaration probe was byte-flat; target state-machine allocation remains unresolved and the donor supplies no C body.
+ * first-mismatch: +0x4
+ * summary: Delta +4 to 0 by reusing carry as the case-2 mode byte; allocator regime then shifts (p1 colours 4 webs), constants land in s0-s4.
  * PLATEAU-HANDOFF:func_80049B14:end
  */
 

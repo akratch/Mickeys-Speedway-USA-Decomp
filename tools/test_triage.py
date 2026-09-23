@@ -312,5 +312,52 @@ class MilestoneTests(unittest.TestCase):
             rendered = triage.render(triage.report(60.0, 5))
         self.assertIn("NEXT 5%  65%", rendered)
 
+
+class ColourExhaustedTests(unittest.TestCase):
+    """A proved forced floor above zero is a fourth exclusion class.
+
+    Colour cannot close such a function, and a colour lane sent to it
+    re-derives the landscape its handoff already records. It must leave the
+    route and be reported, never silently dropped.
+    """
+
+    def _report(self, floors):
+        import contextlib
+        rows = [fn("open", 1000, 10, 1), fn("floored", 5000, 5, 2)]
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(unittest.mock.patch.object(triage, "load", lambda: rows))
+            stack.enter_context(unittest.mock.patch.object(
+                triage, "assignability", return_value={"open": "base-only",
+                                                       "floored": "base-only"}))
+            stack.enter_context(unittest.mock.patch.object(
+                triage, "resolved_bytes", lambda: 0))
+            stack.enter_context(unittest.mock.patch.object(triage, "unassignable", dict))
+            stack.enter_context(unittest.mock.patch.object(
+                triage, "colour_exhausted", return_value=floors))
+            r = triage.report(60.0, 5)
+            return r, triage.render(r)
+
+    def test_a_colour_exhausted_target_leaves_the_route_and_is_reported(self):
+        r, rendered = self._report({"floored": {"floor": 5, "base": 5,
+                                                "handoff": "docs/x.md"}})
+        self.assertNotIn("floored", r["route"]["names"])
+        self.assertEqual(r["colour_exhausted"]["functions"], 1)
+        self.assertEqual(r["colour_exhausted"]["bytes"], 5000)
+        self.assertIn("NOT ASSIGNABLE 1 fns, 5,000 bytes", rendered)
+        self.assertIn("colour-exhausted", rendered)
+        self.assertIn("forced-floor-census", rendered)
+
+    def test_an_unreadable_census_says_so(self):
+        r, rendered = self._report(None)
+        self.assertIsNone(r["colour_exhausted"])
+        self.assertIn("forced-floor census unavailable", rendered)
+        self.assertIn("floored", r["route"]["names"])
+
+    def test_the_real_census_only_names_queued_rows(self):
+        """Hermetic: the census is keyed by triage's own rows, so fixture
+        names never collide with a real handoff."""
+        out = triage.colour_exhausted([fn("no_such_symbol", 100, 3)])
+        self.assertEqual(out, {})
+
 if __name__ == "__main__":
     unittest.main()

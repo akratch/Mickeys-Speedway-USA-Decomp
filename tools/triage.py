@@ -24,6 +24,12 @@ a cluster's cost is roughly its lead's word count, not its total.
 a high rate; functions over 400 reduce but rarely close. Work that moves a
 function *into* the low band is worth counting differently from work inside it.
 
+**Colour-exhausted.** A queued delta-0 function whose plateau handoff proves
+a forced colour floor above zero (`forced_floor_census.py`) is withheld from
+the route, clusters and bands and reported as a fourth NOT ASSIGNABLE class
+next to the lane_status states: colour cannot close it, and a colour lane
+sent to it re-derives the landscape the handoff already records.
+
 **Delta groups.** Every section above is split three ways by the ranking's
 `size_delta`: `delta-0`, `small-delta` (|delta| <= 12, one to three
 instructions) and `big-delta`. They are different work. Colour landscapes,
@@ -123,6 +129,28 @@ def unassignable() -> dict[str, dict]:
     if not UNASSIGNABLE.exists():
         return {}
     return json.loads(UNASSIGNABLE.read_text(encoding="utf-8"))["symbols"]
+
+
+def colour_exhausted(rows: list[dict]) -> dict[str, dict] | None:
+    """Queued symbols whose handoff proves a forced colour floor above zero.
+
+    `forced_floor_census.py` reads the plateau handoffs for a stated floor
+    and a stated exhaustion (no zero-scoring force, an empty winner list,
+    "colour cannot close"). At delta 0 with the current score at or above
+    that floor, no colour lane can close the function: routing it to one
+    re-derives a landscape that already exists. They are withheld from every
+    route, cluster and band below and reported, never silently dropped.
+    Returns None when the census cannot be read (reported as a note).
+    """
+    try:
+        import forced_floor_census as ffc
+        census = ffc.census(ranking={r["name"]: r for r in rows}, commits=False)
+    except Exception as error:  # noqa: BLE001 -- degraded triage, said aloud
+        print(f"triage: forced-floor census failed: {type(error).__name__}: "
+              f"{error}", file=sys.stderr)
+        return None
+    return {r.symbol: {"floor": r.floor, "base": r.base, "handoff": r.handoff}
+            for r in ffc.colour_exhausted(census).values()}
 
 
 def load() -> list[dict]:
@@ -243,6 +271,17 @@ def report(target_pct: float, top: int, *, use_cache: bool = True) -> dict:
                            "by_state": by_state}
     else:
         blocked_summary = None
+    floors = colour_exhausted(rows)
+    if floors is None:
+        colour_summary = None
+    else:
+        withheld = [r for r in rows if r["name"] in floors]
+        rows = [r for r in rows if r["name"] not in floors]
+        colour_summary = {
+            "functions": len(withheld),
+            "bytes": sum(r["size_bytes"] for r in withheld),
+            "symbols": {r["name"]: floors[r["name"]] for r in withheld},
+        }
     have = resolved_bytes()
     target = int(WHOLE_PROGRAM * target_pct / 100.0)
     gap = max(target - have, 0)
@@ -278,6 +317,7 @@ def report(target_pct: float, top: int, *, use_cache: bool = True) -> dict:
         "bands": band_rows,
         "excluded": excluded,
         "blocked": blocked_summary,
+        "colour_exhausted": colour_summary,
     }
 
 
@@ -306,15 +346,29 @@ def render(r: dict) -> str:
     for ex in r.get("excluded", []):
         out.append(f"EXCLUDED {ex['name']} -- {ex['reason']} Never assign it.")
     bl = r.get("blocked")
+    ce = r.get("colour_exhausted")
     if bl is None:
         out.append("NOTE lane_status unavailable -- figures below may include "
                    "targets no lane can accept")
-    elif bl["functions"]:
-        out.append(f"NOT ASSIGNABLE {bl['functions']} fns, {bl['bytes']:,} bytes "
+    if ce is None:
+        out.append("NOTE forced-floor census unavailable -- figures below may "
+                   "include colour-exhausted targets")
+    states = dict(bl["by_state"]) if bl else {}
+    if ce and ce["functions"]:
+        states["colour-exhausted"] = {"functions": ce["functions"],
+                                      "bytes": ce["bytes"]}
+    if states:
+        total_fns = sum(e["functions"] for e in states.values())
+        total_bytes = sum(e["bytes"] for e in states.values())
+        out.append(f"NOT ASSIGNABLE {total_fns} fns, {total_bytes:,} bytes "
                    f"-- excluded from everything below")
-        for st, e in sorted(bl["by_state"].items(), key=lambda kv: -kv[1]["bytes"]):
+        for st, e in sorted(states.items(), key=lambda kv: -kv[1]["bytes"]):
             out.append(f"    {st:<32} {e['functions']:>4} fns  {e['bytes']:>9,} B")
-        out.append("    repin stale authorizations with tools/authorize_reopen.py")
+        if bl and bl["functions"]:
+            out.append("    repin stale authorizations with tools/authorize_reopen.py")
+        if ce and ce["functions"]:
+            out.append("    colour-exhausted: proved forced floor > 0 at delta 0; "
+                       "structural lanes only (docs/forced-floor-census.md)")
     out += ["", "queue by delta group (small = |size_delta| <= "
             f"{SMALL_DELTA}; only delta-0 is colour work):"]
     out += _group_lines(r["queue"]["by_group"], "  ")

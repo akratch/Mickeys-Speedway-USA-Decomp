@@ -3154,6 +3154,14 @@ gOverlay89InitScale = 0x00000000;
 overlay89CreatePrimaryReloc = 0xf0000000;
 overlay89MaintainReloc = 0xf0000000;
 
+/* overlay 89: overlay89UpdateStateAndParticles.c.o */
+gOverlay89RandomScale = 0x00000000;
+overlay34SpawnReloc = 0xf0000000;
+overlay89RandomReloc = 0xf0000000;
+overlay89SetColorReloc = 0xf0000000;
+overlay89SetPrimaryReloc = 0xf0000000;
+overlay89UpdateReloc = 0xf00001a8;
+
 /* overlay 90: overlay_090.c.o */
 gOverlay90Value1C = 0x00000000;
 gOverlay90Value20 = 0x00000004;

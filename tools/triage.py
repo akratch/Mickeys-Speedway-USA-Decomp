@@ -49,7 +49,8 @@ BANDS = ((0, 20, "closes often"), (21, 60, "one or two decisions"),
          (401, None, "reduces, rarely closes"))
 
 
-def assignability(names: list[str], base: str = "campaign/unchain") -> dict[str, str]:
+def assignability(names: list[str], base: str = "campaign/unchain", *,
+                  use_cache: bool = True) -> dict[str, str]:
     """Map each symbol to its lane_status assignment state.
 
     **Only `base-only` may be dispatched.** Every other state is fail-closed by
@@ -62,16 +63,33 @@ def assignability(names: list[str], base: str = "campaign/unchain") -> dict[str,
     were assignable, and a wave was dispatched at nine targets of which three
     were. A lane that is handed a non-assignable target correctly refuses it and
     the slot is wasted. Returns {} if lane_status cannot be consulted, since a
-    degraded triage is better than none.
+    degraded triage is better than none; the reason goes to stderr.
+
+    The base-derived part of each verdict is served from
+    `lane_status.AssignmentCache` under ``build/cache/lane-assignment/``,
+    keyed by content (base commit, source/shard/authorization blobs, classifier
+    code), never by age. A cold run over the queue took about three minutes on
+    2026-09-23; a warm one on an unchanged base takes seconds. Lane ownership
+    is recomputed every run. ``use_cache=False`` (``--no-cache``) bypasses it.
     """
     try:
         import lane_status as ls
-    except ImportError:
+    except ImportError as error:
+        print(f"triage: lane_status unavailable: {error}", file=sys.stderr)
         return {}
     try:
-        ctx = ls.AssignmentContext.build(base, names, jobs=8)
-        return {n: ctx.classify(base, n).state for n in names}
-    except Exception:
+        cache = (ls.AssignmentCache(base, ROOT / ls.ASSIGNMENT_CACHE_DIR)
+                 if use_cache else None)
+        ctx = ls.AssignmentContext.build(base, names, jobs=8, cache=cache)
+        states = {n: ctx.classify(base, n).state for n in names}
+        ctx.save()
+        if cache is not None:
+            print(f"triage: assignment cache {cache.hits} hit(s), "
+                  f"{cache.misses} miss(es)", file=sys.stderr)
+        return states
+    except Exception as error:  # noqa: BLE001 -- degraded triage, said aloud
+        print(f"triage: lane_status failed, assignability unchecked: "
+              f"{type(error).__name__}: {error}", file=sys.stderr)
         return {}
 
 
@@ -142,13 +160,13 @@ def cheapest_route(rows: list[dict], gap: int) -> dict:
             "names": [r["name"] for r in picked]}
 
 
-def report(target_pct: float, top: int) -> dict:
+def report(target_pct: float, top: int, *, use_cache: bool = True) -> dict:
     rows = load()
     all_names = {r["name"] for r in json.loads(
         RANKING.read_text(encoding="utf-8"))["functions"]}
     excluded = [{"name": n, "reason": v["reason"]}
                 for n, v in sorted(unassignable().items()) if n in all_names]
-    states = assignability([r["name"] for r in rows])
+    states = assignability([r["name"] for r in rows], use_cache=use_cache)
     if states:
         blocked = [r for r in rows if states.get(r["name"], "base-only") != "base-only"]
         rows = [r for r in rows if states.get(r["name"], "base-only") == "base-only"]
@@ -250,8 +268,11 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--target-pct", type=float, default=60.0)
     ap.add_argument("--top", type=int, default=12)
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--no-cache", action="store_true",
+                    help="classify every symbol from git history, ignoring "
+                         "and not writing the assignment cache")
     args = ap.parse_args(argv)
-    r = report(args.target_pct, args.top)
+    r = report(args.target_pct, args.top, use_cache=not args.no_cache)
     print(json.dumps(r, indent=2) if args.json else render(r))
     return 0
 

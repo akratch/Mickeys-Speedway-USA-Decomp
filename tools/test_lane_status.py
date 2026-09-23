@@ -6,6 +6,7 @@ from __future__ import annotations
 from contextlib import ExitStack, redirect_stderr, redirect_stdout
 import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -161,6 +162,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         ls.guarded_candidate_region.cache_clear()
         ls.target_guard_changed.cache_clear()
         ls.reopen_authorizations.cache_clear()
+        ls.claim_dispositions.cache_clear()
         self.temporary = tempfile.TemporaryDirectory()
         self.repo = Path(self.temporary.name)
         self.command("git", "init", "-q", "-b", "campaign/unchain")
@@ -181,6 +183,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         ls.target_guard_changed.cache_clear()
         ls.merge_base.cache_clear()
         ls.reopen_authorizations.cache_clear()
+        ls.claim_dispositions.cache_clear()
         self.temporary.cleanup()
 
     def command(self, *command: str, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -972,6 +975,147 @@ void unrelatedFunction(void) {
         self.assertEqual(
             report["assignment"]["state"], "already-integrated/exhausted",
         )
+
+
+class AssignmentCacheTests(unittest.TestCase):
+    """The persistent cache must be invisible except in wall-clock time.
+
+    Every verdict it serves has to equal the uncached classifier's verdict on
+    the same tree, lane ownership must never come out of it, and a moved base
+    must miss rather than serve an older base's pins.
+    """
+
+    # Borrow the git fixture without re-running the fixture class's tests.
+    command = LaneStatusAssignmentTests.command
+    commit = LaneStatusAssignmentTests.commit
+    current_plateau = LaneStatusAssignmentTests.current_plateau
+    authorize_reopen = LaneStatusAssignmentTests.authorize_reopen
+
+    def setUp(self) -> None:
+        LaneStatusAssignmentTests.setUp(self)
+
+    def _clear(self) -> None:
+        # Every in-process memo, so each classification starts as a fresh run.
+        for value in vars(ls).values():
+            if callable(getattr(value, "cache_clear", None)):
+                value.cache_clear()
+
+    def classify(self, cache_dir: Path | None) -> tuple[ls.Assignment, "ls.AssignmentCache | None"]:
+        self._clear()
+        previous = Path.cwd()
+        os.chdir(self.repo)
+        try:
+            cache = (ls.AssignmentCache("campaign/unchain", cache_dir)
+                     if cache_dir is not None else None)
+            context = ls.AssignmentContext.build(
+                "campaign/unchain", [SYMBOL], cache=cache,
+            )
+            verdict = context.classify("campaign/unchain", SYMBOL)
+            context.save()
+            return verdict, cache
+        finally:
+            os.chdir(previous)
+
+    def cache_dir(self) -> Path:
+        return Path(self.temporary.name + "-cache")
+
+    def tearDown(self) -> None:
+        import shutil
+        shutil.rmtree(self.cache_dir(), ignore_errors=True)
+        LaneStatusAssignmentTests.tearDown(self)
+
+    def test_warm_verdict_equals_cold_and_skips_history(self) -> None:
+        plateau_commit = self.current_plateau()
+        self.authorize_reopen(plateau_commit, plateau_commit)
+        uncached, _ = self.classify(None)
+        cold, cache = self.classify(self.cache_dir())
+        self.assertEqual(cold, uncached)
+        self.assertEqual((cache.hits, cache.misses), (0, 1))
+        self.assertTrue(cache.path.is_file())
+
+        boom = mock.Mock(side_effect=AssertionError("history walked on a warm hit"))
+        with mock.patch.object(ls, "target_history_commit", boom), \
+                mock.patch.object(ls, "reopen_authorizations", boom), \
+                mock.patch.object(ls, "_settled_status", boom):
+            warm, cache = self.classify(self.cache_dir())
+        self.assertEqual(warm, uncached)
+        self.assertEqual(warm.reason_code, "authorized-reopen")
+        self.assertEqual((cache.hits, cache.misses), (1, 0))
+
+    def test_cache_never_serves_lane_ownership(self) -> None:
+        self.current_plateau()
+        warm, _ = self.classify(self.cache_dir())
+        self.assertEqual(warm.state, "already-integrated/exhausted")
+        self.command("git", "switch", "-q", "-c", "lane/o43-cache")
+        (self.repo / SOURCE_PATH).write_text(
+            candidate(plateau=True).replace(
+                "void overlay43FilterImage", "static void overlay43FilterImage",
+            ),
+            encoding="utf-8",
+        )
+        self.commit(f"Reproof {SYMBOL} new mechanism")
+        self.command("git", "switch", "-q", "campaign/unchain")
+
+        uncached, _ = self.classify(None)
+        cached, cache = self.classify(self.cache_dir())
+        self.assertEqual(cache.hits, 1, "same base commit must hit")
+        self.assertEqual(cached.state, "active")
+        self.assertEqual(cached, uncached)
+
+    def test_a_moved_base_misses_and_matches_the_uncached_verdict(self) -> None:
+        plateau_commit = self.current_plateau()
+        self.authorize_reopen(plateau_commit, plateau_commit)
+        first, _ = self.classify(self.cache_dir())
+        self.assertEqual(first.state, "base-only")
+        # A re-proof moves the shard and the source: the pin goes stale.
+        (self.repo / SOURCE_PATH).write_text(
+            candidate(plateau=True).replace("score: 8/43", "score: 9/43"),
+            encoding="utf-8",
+        )
+        (self.repo / SHARD_PATH).write_text(
+            shard().replace("35/43", "34/43"), encoding="utf-8",
+        )
+        self.commit(f"Plateau {SYMBOL} reproof")
+        uncached, _ = self.classify(None)
+        cached, cache = self.classify(self.cache_dir())
+        self.assertEqual((cache.hits, cache.misses), (0, 1))
+        self.assertEqual(cached, uncached)
+        self.assertNotEqual(cached.state, "base-only")
+        self.assertEqual(
+            sorted(p.name for p in self.cache_dir().glob("*.json")),
+            [f"{cache.base_commit}.json"],
+        )
+
+    def test_key_covers_code_shard_and_authorization(self) -> None:
+        self.current_plateau()
+        previous = Path.cwd()
+        os.chdir(self.repo)
+        try:
+            cache = ls.AssignmentCache("campaign/unchain", self.cache_dir())
+        finally:
+            os.chdir(previous)
+        path = SOURCE_PATH.as_posix()
+        base_key = cache.key(SYMBOL, path)
+        self.assertEqual(base_key, cache.key(SYMBOL, path))
+        probe = ls.AssignmentCache.__new__(ls.AssignmentCache)
+        probe.__dict__.update(cache.__dict__, code="0" * 64)
+        self.assertNotEqual(base_key, probe.key(SYMBOL, path))
+        probe.__dict__.update(cache.__dict__, base_commit="e" * 40)
+        self.assertNotEqual(base_key, probe.key(SYMBOL, path))
+        for name in (SHARD_PATH.as_posix(), ls.REOPEN_AUTHORIZATIONS_PATH, path):
+            with self.subTest(name):
+                probe.__dict__.update(
+                    cache.__dict__, blobs=dict(cache.blobs, **{name: "f" * 40}))
+                self.assertNotEqual(base_key, probe.key(SYMBOL, path))
+
+    def test_a_corrupt_cache_file_is_ignored(self) -> None:
+        self.current_plateau()
+        _, cache = self.classify(self.cache_dir())
+        cache.path.write_text("{not json", encoding="utf-8")
+        uncached, _ = self.classify(None)
+        again, cache = self.classify(self.cache_dir())
+        self.assertEqual((cache.hits, cache.misses), (0, 1))
+        self.assertEqual(again, uncached)
 
 
 class LaneRefQueryTests(unittest.TestCase):

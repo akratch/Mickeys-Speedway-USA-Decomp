@@ -2404,43 +2404,34 @@ void func_80006EA0(void *ptr) {
         D_800C94F0 += 1;
     }
 }
-/* Workbench verdict: structure-mismatch; 40 differing words, candidate 46/47. */
-/* First mismatch: +0x08; the target has one direct global-pointer load extra. */
-/* Structural candidate: global-pointer load/register shape remains unresolved. */
-#ifdef NON_MATCHING
+/* Matched 2026-09-23: subscript D_800C94A4 directly rather than walking a
+ * declared cursor, so the pointer is loaded before the loop and its address
+ * built only in the found arm; shift the tail by subscript on the copy of
+ * index, and take that copy before the bound test. */
 s32 func_80006EE4(s32 object) {
     s32 index;
-    s32 *entry;
+    s32 shiftIndex;
 
     index = 0;
     if (D_800C94A8 > 0) {
-        entry = D_800C94A4;
         do {
-            if (object == *entry) {
+            if (object == D_800C94A4[index]) {
                 D_800C94A8 -= 1;
-                if (index < D_800C94A8) {
-                    s32 shiftIndex = index;
-                    s32 offset = shiftIndex * 4;
-
+                shiftIndex = index;
+                if (shiftIndex < D_800C94A8) {
                     do {
+                        D_800C94A4[shiftIndex] = D_800C94A4[shiftIndex + 1];
                         shiftIndex += 1;
-                        *(s32 *)((u8 *)D_800C94A4 + offset) =
-                            *(s32 *)((u8 *)D_800C94A4 + offset + 4);
-                        offset += 4;
                     } while (shiftIndex < D_800C94A8);
                 }
                 func_80007118(object, 0, index, &D_800C94A8);
                 return index;
             }
             index += 1;
-            entry += 1;
         } while (index < D_800C94A8);
     }
     return -1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80006EE4.s")
-#endif
 /* Workbench verdict: structure-mismatch; 63 differing words (94/94). */
 /* First mismatch: +0x0C; frame and instruction count are exact. */
 /* Structural gap: active-list carriers and loop register allocation remain unresolved. */
@@ -5453,16 +5444,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 }
 
 
-
-/* PLATEAU-HANDOFF:func_80006EE4:start
- * symbol: func_80006EE4
- * score: 40 differing words
- * frame: 0x28
- * relocations: 5
- * first-mismatch: +0x8
- * summary: Remeasured 2026-09-23: 40 masked at size delta -4 (46 of 47 words), frame exact; direct global-pointer load and allocator shape remain.
- * PLATEAU-HANDOFF:func_80006EE4:end
- */
 
 
 /* PLATEAU-HANDOFF:func_80008028:start

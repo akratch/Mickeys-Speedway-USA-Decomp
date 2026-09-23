@@ -175,6 +175,14 @@ extern s32 overlay101ByteLength(u8 *text);
  *   115 at delta 0. The guarded 143-word body is retained.
  * See docs/matching-triage-handoffs/overlay101BuildPresentationC.md for the
  * remaining residual and the decision variable that blocks it. */
+/* Lane B3-o101 (2026-09-23) closed C's +4 to size delta 0, 143 to 136,
+ * by carrying lane B2-o101's A/B edit: the dim colour as the node-24 counter
+ * times zero plus 0xC0 is an expression web that IS the final call's third
+ * argument, so it takes a2 and one load serves both colour stores and the
+ * call. This is an ADR 0017 diagnostic, not a natural spelling, and must not
+ * be adopted into an exact match without the cleanup-queue review. The text
+ * store after the root header is the second word (137 to 136), as on A. A's
+ * s32 length local does not transfer: on C it reads 143. */
 #ifdef NON_MATCHING
 void overlay101BuildPresentationC(void) {
     s32 orderIndex;
@@ -210,8 +218,8 @@ void overlay101BuildPresentationC(void) {
 
     node24IndexA = gOverlay101BuilderNode24CountA; node24A = &gOverlay101BuilderNodes24A[node24IndexA]; node24A->x = 0x50; node24A->y = 0x9C; length = overlay101ByteLength(gOverlay101BuilderInput140);
 
-    dimColor = 0xC0;
     node24IndexB = gOverlay101BuilderNode24CountB;
+    dimColor = gOverlay101BuilderNode24CountB * 0 + 0xC0;
     node24B = &gOverlay101BuilderNodes24B[node24IndexB];
     node24B->length = (s8)length;
     node24B->opacity =
@@ -225,10 +233,10 @@ void overlay101BuildPresentationC(void) {
 
     previousType = gOverlay101BuilderRoot.childType;
     previous = gOverlay101BuilderRoot.child;
-    node24B->text = gOverlay101BuilderInput140;
     gOverlay101BuilderNode24CountB = node24IndexB + 1;
     gOverlay101BuilderRoot.child = node24B;
     gOverlay101BuilderRoot.childType = 3;
+    node24B->text = gOverlay101BuilderInput140;
     node24B->previousType = previousType;
     node24B->previous = previous;
     overlay101BuilderCreateFinalReloc(&gOverlay101BuilderTextC, node24IndexB,
@@ -241,10 +249,10 @@ void overlay101BuildPresentationC(void) {
 
 /* PLATEAU-HANDOFF:overlay101BuildPresentationC:start
  * symbol: overlay101BuildPresentationC
- * score: 143 differing words
+ * score: 136 differing words
  * frame: 0x20
  * relocations: 52
  * first-mismatch: +0x10
- * summary: Size closes at 133 frame 0x20 with an s32 identity diagnostic after the length store; natural 0xC0 stays +4. 143 retained.
+ * summary: Delta 0 via the B2 counter*0+0xC0 diagnostic plus the text-store move; no natural spelling found. 136 at 0x20, as A and B.
  * PLATEAU-HANDOFF:overlay101BuildPresentationC:end
  */

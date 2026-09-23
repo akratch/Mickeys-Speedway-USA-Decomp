@@ -2,11 +2,13 @@
 ### `overlay101BuildPresentationC` plateau handoff
 
 - source: `src/overlays/o101/overlay101BuildPresentationC.c`
-- score: 143 differing words
+- score: 136 differing words
 - frame: 0x20
 - relocations: 52
 - first mismatch: +0x10
-- summary: Size closes at 133 frame 0x20 with an s32 identity diagnostic after the length store; natural 0xC0 stays +4. 143 retained.
+- summary: Delta 0 via the B2 counter*0+0xC0 diagnostic plus the text-store move; no natural spelling found. 136 at 0x20, as A and B.
+
+Summary before this remeasure: Size closes at 133 frame 0x20 with an s32 identity diagnostic after the length store; natural 0xC0 stays +4. 143 retained.
 
 Measured 2026-09-11, lane `lane/s1-trio`, on the four-function overlay-101
 presentation-builder cluster. Every number is `tools/align_symbol.py`, whose
@@ -379,4 +381,47 @@ that is in the source, re-derive the three-force packing and the 7/7
 earlier insertion residual; those windows did not move when the extra 0xC0
 went away. Do not rerun L144, L97 copy, a2 force on web 198, or the AND-0
 cells above.
+#### 2026-09-23, lane B3-o101: size delta +4 closed to 0 (143 to 136)
+
+Cycle 0: insertion_pairs read five pairs; the fifth, open to the end, is the final call's own 0xC0 load (class const, line of the call), exactly A's pair before B2. Carried B2's A edit: dimColor as the node-24 counter times zero plus 0xC0, placed after the index read, 137 at delta 0 (the same spelling after the length store is 157 at +4). Then A's text-store move, after the root's childType store, 137 to 136. A's s32 length local does not transfer: 143 alone, 142 with the text move. The w25 AND-0 form (0xC0 OR the stored length AND 0, after the length store) reads 133 alone but 140 with the text move; it is an equally inert diagnostic and was not adopted. Aligned buckets now 79 exact, 101 naming, 1 immediate, 34 structural at delta 0, frame 0x20 with the target's three-slot ladder, 52 relocations -- identical to A and B. The diagnostic is not natural C; see below.
+
+Natural spellings for the dim colour, all measured on A against the 136
+diagnostic (masked, size delta): plain 0xC0 148 +4; file-scope static const
+158 +4 and function-local static const 158 +4 (both a load); an enum
+constant 148 +4; (u8)~0x3F 148 +4; the callee unprototyped with an s32, u8
+or s8 dim local 148 +4 each (unprototyped with the diagnostic kept stays
+136); float-derived forms through the live 1.0f opacity scale (192.0f times
+the scale, the scale times 0xC0, 0xC0 times the scale converted, 0xFF less
+63.0f times the scale) 161 at +16 or 164 at +28, because uopt folds no float
+operation; a chained colour1 = colour2 store 148 +4; a masked or shifted
+read of the root's already-stored colour byte 159 +8. None replaces the
+diagnostic. What does score 136 at delta 0 are other annihilating
+operations on the loaded counter: 0xC0 OR (count AND 0), count % 1 + 0xC0,
+0xC0 >> (count * 0). So the fold that matters is ugen's, not uopt's: uopt
+keeps any binary operation with a loaded operand as an expression web, and
+ugen then folds a literal-zero or literal-one operand to $zero, emitting
+the single addiu from $zero the target has. B2's note that x & 0 folds
+early holds only for a local operand. A natural source therefore needs a
+non-constant operand that a literal annihilates -- plausibly a macro
+parameter passed as 0 by this builder -- and no such parameter is visible.
+
+Tail and second-header rows, measured on A at 136: moving the two
+chain-head loads before the opacity, the length, the kind, the colours or
+the index read 147 to 150; mode before kind, folding kind/mode, the
+colours, the chain-head pair or the node stores onto one line, all flat at
+136; folding the counter bump and root stores 138; the chain-head values
+written straight into the node (no carrier, L145) 139 to 140 on four line
+layouts, because as1 then keeps the node stores ahead of the root stores
+(it treats the two bases as possibly aliasing). Second header: folding the
+node-32 group into the header line 138; moving the order-count read to
+the end of the header, or the handle store to the front of its group,
+flat. Register reading: the target holds the node-24 chain-head values in
+t7/t8 and the node-20 ones in t4/t5, while ours colours both pairs
+t1/t2 (webs 159/174 and 93/97, save 1.5/1.0 and 2.0). t7/t8 are outside
+this procedure's colour table (c1 v0 to c12 t5, c14 s0, c15 s1), so in the
+target at least the node-24 pair are ugen ring temps, not coloured locals,
+yet their loads precede the root stores and their stores follow them.
+That is the named question for the tail: a carrier that is not a
+colourable symbol but survives across the root stores. ADR 0018 reached:
+three consecutive layout and carrier attempts with no better residual.
 <!-- plateau-handoff:overlay101BuildPresentationC:end -->

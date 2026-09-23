@@ -2191,10 +2191,21 @@ def _render_workbench_summary_human(report: dict[str, object]) -> None:
         )
 
 
-def _workbench(resolution: Resolution) -> dict[str, object]:
+def _workbench(resolution: Resolution, *, no_build: bool = False) -> dict[str, object]:
+    """Run the workbench oracle for one resolution.
+
+    ``no_build`` is forwarded to ``wb_compare.sh --rom``.  Without it the
+    ROM oracle refreshes ``build/mickey.us.z64`` from the linked ELF, and two
+    concurrent proofs then rewrite and read that one shared ROM at the same
+    time: the reader dumps a half-written image and the comparison fails with
+    exit 2.  A ``--no-build`` proof only reads, and requires the ROM to be
+    strictly newer than the ELF, so it is safe to run in parallel once the
+    caller has refreshed the build.
+    """
     if resolution.resolution_mode == "post_promotion":
         command = [
             str(WB_COMPARE),
+            *(["--no-build"] if no_build else []),
             "--rom",
             resolution.candidate_symbol,
             "--json",
@@ -2678,7 +2689,7 @@ def _declared_filter_comparison(resolution, comparison, context, records, target
         raise PreflightError("declared metadata accounting failed: " + str(error)) from error
 
 
-def collect(resolution: Resolution) -> dict[str, object]:
+def collect(resolution: Resolution, *, no_build: bool = False) -> dict[str, object]:
     for path, label in (
         (TARGET_ELF, "canonical linked ELF"),
         (resolution.candidate_object, "candidate object"),
@@ -2746,7 +2757,7 @@ def collect(resolution: Resolution) -> dict[str, object]:
         section,
     )
     inbound = _inbound_references(context, rom)
-    workbench = _workbench(resolution)
+    workbench = _workbench(resolution, no_build=no_build)
     if filter_binding is not None:
         receipt, current_context = filter_binding
         _check_filter_implementations()
@@ -3052,7 +3063,7 @@ def main(argv: list[str]) -> int:
             _build(resolution)
             resolution = resolve(args.symbol)
         require_fresh_evidence(resolution)
-        report = collect(resolution)
+        report = collect(resolution, no_build=args.no_build)
     except (OSError, ValueError, rs.SurfaceComparisonError, PreflightError) as error:
         parser.error(str(error))
     if args.json:

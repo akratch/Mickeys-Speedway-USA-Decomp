@@ -27,7 +27,7 @@ This is a names-only audit of every function body guarded by `NON_MATCHING` in `
 | `func_800033B0` | `src/main/audio_manager_36D0.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_80022FD4` | `src/main/camera.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_80023598` | `src/main/camera.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_80024978` | `src/main/camera.c` | resolved-plateau | D_80079F48, D_80079F4C | Camera owns the scale pair; code-shape mismatch remains. |
+| `func_80024978` | `src/main/camera.c` | matched | — | Promoted: JFG camCopyOrthoMatrix loop scaled by D_80079F48, 83 words, frame `0x30`, 12/12 relocations. Camera's .data section starts at 0x80079F40 (as1's `lui $at` sharing places D_80079F4C at section offset 0xC). |
 | `func_8001C114` | `src/main/charControl.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_8001D2A0` | `src/main/charControl.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_8001D880` | `src/main/charControl.c` | resolved-plateau | — | Fresh configured full-TU C is exact-sized and frameless at 7/36 positional words (29 differ), first `+0x4`, with no padding or relocations. Thirteen natural builds plus four fidelity-clean trace diagnostics found no strict gain; the prior 119-flag sweep remains exhausted. Proc 21 isolates a second-base FP web that occupies the target constant color and cascades the register map and final schedule. ORT 405 has two overlay inbounds, but their friendly caller ABIs conflict with the target FP ABI and are identity-only evidence. Preserve V0 and fallback; resume only with a source-authentic base pool-to-temp/web-formation mechanism. |

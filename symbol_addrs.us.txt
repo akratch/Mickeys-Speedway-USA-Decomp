@@ -2842,6 +2842,7 @@ camGetProjectionMtx = 0x800246A4; // type:func size:0x0C ROM 0x252A4 tier-D matc
 func_800246B0 = 0x800246B0; // type:func size:0x184 ROM 0x252B0 tier-D matched-C JFG camProjectPoint role/order, Mickey auto-name retained
 func_80024834 = 0x80024834; // type:func size:0x104 ROM 0x25434 tier-A matched-C JFG camReversePoint source, 65/65 instructions and nine relocations exact
 camGetProjZ = 0x80024938; // type:func size:0x40 ROM 0x25538 tier-D matched-C JFG TU role/order and projection-depth dataflow
+func_80024978 = 0x80024978; // type:func size:0x14C ROM 0x25578 tier-A matched C src/main/camera.c.o -O2 -mips2 -32 -Wab,-r4300_mul, JFG camCopyOrthoMatrix loop scaled by D_80079F48, 83/83 instructions exact, camera .data starts at 0x80079F40
 D_80079F48 = 0x80079F48; // type:f32 size:0x4 tier-A compiler-owned camera .data projection scale
 D_80079F4C = 0x80079F4C; // type:f32 size:0x4 tier-A compiler-owned camera .data matrix coefficient
 D_80079F50 = 0x80079F50; // type:f32 size:0x4 tier-A compiler-owned camera .data leading-matrix coefficient

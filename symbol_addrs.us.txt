@@ -2287,7 +2287,7 @@ func_80009F74 = 0x80009F74; // type:func size:0x2D0 ROM 0xAB74 tier-A matched C 
 func_80005868 = 0x80005868; // type:func size:0x58 ROM 0x6468 tier-A matched C Mickey-only C-object+linked-ROM-exact, five relocation identities, name unresolved
 GetRomlistInfo = 0x8000BC88; // type:func size:0x28 tier-A JFG byte identity, ROM 0xc888, matched C src/main/objects.c.o -O2 -mips2 -32, linked exact=10/10
 // donor-jfg-src/track.c.o
-func_8000DB34 = 0x8000DB34; // type:func size:0x2B0 tier-D ROM 0xE734 src/main/track.c.o -O2 -mips2 -32 -Wab,-r4300_mul NON_MATCHING resident fallback and adjacent func_8000DDE4 boundary owner, no match credit
+func_8000DB34 = 0x8000DB34; // type:func size:0x2B0 ROM 0xE734 tier-A, matched C src/main/track.c -O2 -mips2 -32 -Wab,-r4300_mul, segment-map object route scan, linked exact=172/172
 func_8000DFBC = 0x8000DFBC; // type:func size:0x630 tier-D ROM 0xEBBC src/main/track.c.o -O2 -mips2 -32 -Wab,-r4300_mul NON_MATCHING resident fallback and adjacent func_8000E5EC boundary owner, no match credit
 func_8000E5EC = 0x8000E5EC; // type:func size:0x334 tier-D ROM 0xF1EC src/main/track.c.o -O2 -mips2 -32 -Wab,-r4300_mul NON_MATCHING resident fallback and adjacent func_8000E920 boundary owner, no match credit
 func_8000E920 = 0x8000E920; // type:func size:0x878 tier-D ROM 0xF520 src/main/track.c.o -O2 -mips2 -32 -Wab,-r4300_mul NON_MATCHING resident fallback, linked ELF size, and adjacent func_8000F198 boundary owner, metadata-only postprocess, no match credit

@@ -1541,27 +1541,26 @@ extern s32 func_8000A244(s32 *resultCount);
 extern void func_8000A39C(s32 first, s32 last);
 extern TrackRouteObject *func_800056F0(s32 index);
 
-#ifdef NON_MATCHING
-/* Mickey m2c restores the inclusive reverse object range and signed count ABI. */
-/* Nonexact: 169/172 words, 144 differences, first +0x5C, exact 0x190 frame. */
-/* Six relocation records on each side; their offsets still differ. */
+/* Mickey m2c restores the inclusive reverse object range and signed count ABI.
+ * Matched (Track B) by subscripting indices[] in both loops so strength
+ * reduction builds the cursors, scanning with while (mapIndex--), doubling
+ * objectRadius in place, pre-decrementing lastIndex in the lookup call, and
+ * three unreferenced locals that give the 0x190 frame its home layout. */
 s32 func_8000DB34(s32 count, u8 *indices, TrackRouteResult *results) {
     s32 heapCount;
     s32 mapIndex;
+    s32 unusedA;
+    s32 unusedB;
     s32 lastIndex;
     s32 resultCount;
-    s32 segmentIndex;
     s32 objectRadius;
-    s32 objectIndex;
     s32 minX;
     s32 minY;
     s32 minZ;
-    s32 maxDistance;
     s32 candidateSegment;
+    s32 unusedC;
     u8 inputIndex;
-    u8 candidateIndex;
     u8 map[256];
-    u8 *input;
     TrackRouteObject *object;
     TrackBoundingBox *bounds;
 
@@ -1571,9 +1570,9 @@ s32 func_8000DB34(s32 count, u8 *indices, TrackRouteResult *results) {
     } while (mapIndex < 256);
     mapIndex = 0;
     if (count > 0) {
-        input = indices;
         do {
-            map[*input++] = mapIndex++;
+            map[indices[mapIndex]] = mapIndex;
+            mapIndex++;
         } while (mapIndex != count);
     }
 
@@ -1582,9 +1581,7 @@ s32 func_8000DB34(s32 count, u8 *indices, TrackRouteResult *results) {
     resultCount = 0;
     if (heapCount < lastIndex) {
         do {
-            objectIndex = lastIndex - 1;
-            lastIndex = objectIndex;
-            object = func_800056F0(objectIndex);
+            object = func_800056F0(--lastIndex);
             if ((object->segmentIndex != -1) &&
                 (map[object->segmentIndex] != 0xFF) &&
                 (func_800103D4(object) != 0)) {
@@ -1593,23 +1590,19 @@ s32 func_8000DB34(s32 count, u8 *indices, TrackRouteResult *results) {
                 minX = (s32) object->x - objectRadius;
                 minY = (s32) object->y - objectRadius;
                 minZ = (s32) object->z - objectRadius;
-                maxDistance = objectRadius * 2;
-                candidateIndex = map[object->segmentIndex];
-                if (candidateIndex != 0) {
-                    input = indices + candidateIndex - 1;
-                    mapIndex = candidateIndex - 1;
-                    do {
-                        inputIndex = *input--;
-                        bounds = &D_800792E8->segmentBounds[inputIndex];
-                        if ((minX < bounds->x2) &&
-                            (minY < bounds->y2) &&
-                            (minZ < bounds->z2) &&
-                            (bounds->x1 < (minX + maxDistance)) &&
-                            (bounds->y1 < (minY + maxDistance)) &&
-                            (bounds->z1 < (minZ + maxDistance))) {
-                            candidateSegment = inputIndex;
-                        }
-                    } while (mapIndex-- != 0);
+                objectRadius *= 2;
+                mapIndex = map[object->segmentIndex];
+                while (mapIndex--) {
+                    inputIndex = indices[mapIndex];
+                    bounds = &D_800792E8->segmentBounds[inputIndex];
+                    if ((minX < bounds->x2) &&
+                        (minY < bounds->y2) &&
+                        (minZ < bounds->z2) &&
+                        (bounds->x1 < (minX + objectRadius)) &&
+                        (bounds->y1 < (minY + objectRadius)) &&
+                        (bounds->z1 < (minZ + objectRadius))) {
+                        candidateSegment = inputIndex;
+                    }
                 }
                 results->segmentIndex = candidateSegment;
                 results->flags = 0xFF;
@@ -1621,9 +1614,6 @@ s32 func_8000DB34(s32 count, u8 *indices, TrackRouteResult *results) {
     }
     return resultCount;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000DB34.s")
-#endif
 /* Exact 118-word C: reusing the dead recordIndex carrier for the later sort
  * passes closes the 24-site allocator bijection while preserving the 0x28
  * frame and both R_MIPS_26 call identities. The complete flag lattice was
@@ -5779,16 +5769,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * first-mismatch: +0x48
  * summary: Correct next-batch vertex boundary and unsigned command types; five m2c structural follow-ups fail to improve. Next: batch/display-list lifetimes.
  * PLATEAU-HANDOFF:func_8000DFBC:end
- */
-
-/* PLATEAU-HANDOFF:func_8000DB34:start
- * symbol: func_8000DB34
- * score: 144 differing words
- * frame: 0x190
- * relocations: 6
- * first-mismatch: +0x5c
- * summary: Correct inclusive object traversal improves to 144 differences, frame 0x190 exact. Next: map and traversal declaration evidence.
- * PLATEAU-HANDOFF:func_8000DB34:end
  */
 
 /* PLATEAU-HANDOFF:func_8000E5EC:start

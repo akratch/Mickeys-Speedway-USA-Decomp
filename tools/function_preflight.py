@@ -2682,7 +2682,8 @@ def _declared_filter_comparison(resolution, comparison, context, records, target
         raw_comparison = rs.function_surface_comparison(
             resolution.requested_symbol, raw_path, TARGET_ELF, rom_path=ROM, atlas_path=ATLAS,
             values_path=ALIASES, candidate_symbol=resolution.candidate_symbol,
-            target_symbol=linked_name, source=resolution.translation_unit)
+            target_symbol=linked_name, source=resolution.translation_unit,
+            measure_size_delta=resolution.resolution_mode != "post_promotion")
         total = len(records)
         removed = {(row["offset"], row["rtype"]) for row in accounting["filtered"]}
         unresolved = {(row["offset"], row["rtype"]) for row in raw_comparison["candidate_identity_unresolved_records"]}
@@ -2784,6 +2785,8 @@ def collect(resolution: Resolution, *, no_build: bool = False) -> dict[str, obje
         resolution.candidate_object
     )
     try:
+        # A candidate longer than its target is measured (Track B); only a
+        # post-promotion resolution keeps the strict TU-ownership bound.
         comparison = rs.function_surface_comparison(
             resolution.requested_symbol,
             resolution.candidate_object,
@@ -2795,6 +2798,7 @@ def collect(resolution: Resolution, *, no_build: bool = False) -> dict[str, obje
             target_symbol=linked_name,
             source=resolution.translation_unit,
             candidate_redefine_aliases=candidate_redefine_aliases,
+            measure_size_delta=resolution.resolution_mode != "post_promotion",
         )
     except rs.SurfaceComparisonError as error:
         raise PreflightError(

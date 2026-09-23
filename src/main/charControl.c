@@ -1921,129 +1921,90 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
  * controlSquashCheckPrior routine, but publishes assembly only; this body is
  * reconstructed from Mickey's fields, calls, branch conditions, and stores. */
 #ifdef NON_MATCHING
-/* Workbench verdict: structure-mismatch; 231 differing words, first mismatch +0x0. */
-/* Target 238 instructions/frame -160; candidate 241 instructions/frame -224. */
-/* Scalar relocation identities are repaired; common-prefix sinking and FP allocation remain. */
-void func_8001EC44(s32 arg0, ControlVector3 *arg1, ControlVector3 *arg2,
-                   f32 arg3, ControlCollisionPlane *arg4) {
-    f32 sp94;
-    f32 sp8C;
-    f32 sp70;
-    f32 sp6C;
-    f32 sp5C;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp4C;
-    f32 normalX;
-    f32 normalY;
-    f32 normalZ;
-    f32 planeDistance;
-    f32 pointX;
-    f32 pointY;
-    f32 pointZ;
-    f32 crossX;
-    f32 crossY;
-    f32 crossZ;
+/* Track B (B3-char): size delta 0 and frame 0xA0 as the target. The reused
+ * x/y/z and u/v/w carriers and the in-place "x -= u" updates are what keep
+ * u/v/w from being copy-propagated away; see the handoff for what remains. */
+void func_8001EC44(s32 arg0, ControlVector3 *pos, ControlVector3 *vel,
+                   f32 radius, ControlCollisionPlane *plane) {
+    f32 nx, ny, nz;
+    f32 x, y, z;
     f32 value;
-    f32 distance;
-    f32 delta;
-    f32 vectorZ;
-    f32 vectorX;
-    f32 crossBase;
-    f32 crossMiddle;
-    f32 crossOther;
+    f32 vx, vz;
+    f32 u, v, w;
+    f32 len;
+    f32 pad; /* unreferenced: without it the frame is not 0xA0 (L99) */
+    f32 angle;
 
-    planeDistance = arg4->distance;
-    normalX = arg4->x;
-    normalY = arg4->y;
-    normalZ = arg4->z;
-    sp70 = planeDistance;
-    pointZ = arg1->z;
-    sp58 = pointZ * normalZ;
-    pointX = arg1->x;
-    sp50 = normalX * pointX;
-    pointY = arg1->y;
-    value = sp58 + (sp50 + (normalY * pointY)) + planeDistance;
-    if ((D_8008187C <= normalY) || (arg4->flags & 0x10000000)) {
-        vectorZ = arg2->z;
-        vectorX = arg2->x;
-        crossBase = vectorZ * normalY;
-        crossMiddle = (normalZ * vectorX) -
-                      (vectorZ * normalX);
-        crossOther = -(vectorX * normalY);
-
-        crossX = (crossMiddle * normalZ) -
-                 (crossOther * normalY);
-        crossY = (crossOther * normalX) -
-                 (crossBase * normalZ);
-        crossZ = (crossBase * normalY) -
-                 (crossMiddle * normalX);
-        sp54 = crossY;
-        sp4C = crossZ;
-        distance = (crossX * crossX) + (crossY * crossY) +
-                   (crossZ * crossZ);
-        if (D_80081880 < distance) {
-            sp5C = crossX;
-            distance = sqrtf(distance);
-            delta = arg3 - arg4->unk1C;
-            arg1->x = arg4->unk10 + (delta * (crossX / distance));
-            arg1->y = arg4->unk14 + (delta * (crossY / distance));
-            arg1->z = arg4->unk18 + (delta * (crossZ / distance));
+    nx = plane->x;
+    ny = plane->y;
+    nz = plane->z;
+    x = pos->x;
+    y = pos->y;
+    z = pos->z;
+    value = nx * x + ny * y + z * nz + plane->distance;
+    if ((D_8008187C <= ny) || (plane->flags & 0x10000000)) {
+        vz = vel->z;
+        vx = vel->x;
+        u = vz * ny;
+        v = (nz * vx) - (vz * nx);
+        w = -(vx * ny);
+        x = (v * nz) - (w * ny);
+        v = (u * ny) - (v * nx);
+        u = (w * nx) - (u * nz);
+        len = (x * x) + (u * u) + (v * v);
+        if (D_80081880 < len) {
+            len = sqrtf(len);
+            value = radius - plane->unk1C;
+            pos->x = plane->unk10 + (value * (x / len));
+            pos->y = plane->unk14 + (value * (u / len));
+            pos->z = plane->unk18 + (value * (v / len));
         } else {
-            arg1->y = (-(sp58 + sp50 + sp70) / normalY) + D_80081884;
+            pos->y = (-(pos->z * nz + nx * pos->x + plane->distance) / ny) + D_80081884;
         }
-        D_800CB2C4 = normalX;
-        D_800CB2C8 = normalY;
-        D_800CB2CC = normalZ;
+        D_800CB2C4 = nx;
+        D_800CB2C8 = ny;
+        D_800CB2CC = nz;
         D_800CB2FD |= 2;
-    } else if (normalY <= D_80081888) {
-        delta = D_8008188C - value;
-        arg1->x = pointX + (delta * normalX);
-        arg1->y = pointY + (delta * normalY);
-        arg1->z = pointZ + (delta * normalZ);
-        D_800CB2DC = normalX;
-        D_800CB2E0 = normalY;
-        D_800CB2E4 = normalZ;
+    } else if (ny <= D_80081888) {
+        value = D_8008188C - value;
+        pos->x = x + (value * nx);
+        pos->y = y + (value * ny);
+        pos->z = z + (value * nz);
+        D_800CB2DC = nx;
+        D_800CB2E0 = ny;
+        D_800CB2E4 = nz;
         D_800CB2FD |= 8;
     } else {
-        f32 planeX;
-        f32 planeZ;
-
-        planeX = normalX;
-        planeZ = normalZ;
-        sp54 = pointX;
-        delta = D_80081890 - value;
-        sp4C = pointY;
-        sp8C = delta;
-        crossX = sp54 + (delta * normalX);
-        crossY = sp4C + (delta * normalY);
-        crossZ = pointZ + (delta * normalZ);
-        normalX = sp54 - crossX;
-        normalZ = pointZ - crossZ;
-        sp94 = sp4C - crossY;
-        value = func_8002A8BC(Arctanf(sp94,
-                                      sqrtf((normalX * normalX) +
-                                            (normalZ * normalZ))));
-        if (value != 0.0f) {
-            delta = sp8C / value;
-            sp6C = delta;
-            distance = sqrtf((planeX * planeX) +
-                             (planeZ * planeZ));
-            arg1->x += delta * (planeX / distance);
-            arg1->z += delta * (planeZ / distance);
+        value = D_80081890 - value;
+        u = x + (value * nx);
+        v = y + (value * ny);
+        w = z + (value * nz);
+        x -= u;
+        y -= v;
+        z -= w;
+        angle = func_8002A8BC(Arctanf(y, sqrtf((x * x) + (z * z))));
+        if (angle != 0.0f) {
+            value = value / angle;
+            len = sqrtf((nx * nx) + (nz * nz));
+            pos->x += value * (nx / len);
+            pos->z += value * (nz / len);
         } else {
-            arg1->x = crossX;
-            arg1->y = crossY;
-            arg1->z = crossZ;
+            pos->x = u;
+            pos->y = v;
+            pos->z = w;
         }
-        D_800CB2D0.x = planeX;
-        D_800CB2D4 = arg4->y;
-        D_800CB2D8 = planeZ;
+        D_800CB2D0.x = nx;
+        D_800CB2D0.y = ny;
+        D_800CB2D8 = nz;
         D_800CB2FD |= 4;
     }
-    D_800CB2F8 = arg4->flags;
-    D_800CB2FC = arg4->kind;
+    /* Diagnostic stand-in, not the original: the target's procedure has two
+     * more uopt basic blocks than this body, which lifts the callee-save toll
+     * from 4.75/4.85 to 5.0+ so pos and plane stay in a1/a3 and are saved
+     * around the calls, as the target does. This dead if supplies them. */
+    if (arg0 == 0x7FFF) { arg0 = 0; }
+    D_800CB2F8 = plane->flags;
+    D_800CB2FC = plane->kind;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/func_8001EC44.s")
@@ -2182,11 +2143,11 @@ void controlClearPlayerSetup(void) {
 
 /* PLATEAU-HANDOFF:func_8001EC44:start
  * symbol: func_8001EC44
- * score: 231 differing words
- * frame: 0xE0
- * relocations: 45
- * first-mismatch: +0x0
- * summary: Target 238w, frame 0xA0, 47 relocs. The 0x40 frame excess is a declaration census and the exact target frame IS reachable -- dropping the three cross-product carriers hits -0xA0 -- but that spelling duplicates the sub-expressions and costs 24 instructions (265 versus 241 against a 238 target). So the target drops those three carriers WITHOUT duplicating the terms; find that spelling. Reassigning them into the crossY/crossZ slots instead is 230 words but 242 instructions.
+ * score: 224 differing words
+ * frame: 0xA0
+ * relocations: 43
+ * first-mismatch: +0xC
+ * summary: Delta 0, frame 0xA0. Blocker: callee toll 4.75/4.85 vs caller 5.0 puts pos/plane in s0/s1; target has 2 more uopt blocks.
  * PLATEAU-HANDOFF:func_8001EC44:end
  */
 

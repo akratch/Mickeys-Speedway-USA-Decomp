@@ -5622,7 +5622,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xa0
  * relocations: 8
  * first-mismatch: +0x0
- * summary: Mickey m2c cursor and plane lifetimes do not improve 162 differences. Next: evidence for threshold and FP home declarations.
+ * summary: Dot/negation split gives delta +4. Target colours encoded/offset into a2/a3 and moves result/maximum to s-regs; no tried form reproduces its p1 set.
  * PLATEAU-HANDOFF:func_80010654:end
  */
 

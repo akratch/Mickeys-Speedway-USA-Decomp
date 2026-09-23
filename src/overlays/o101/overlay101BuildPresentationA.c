@@ -158,6 +158,24 @@ extern s32 overlay101ByteLength(u8 *text);
  *   the +4, so the surplus is reachable from the load side as well as from the
  *   colour constant. See the shard for the register census, which shows these
  *   naming rows are per-web colour and not one ring cycle.
+ * Lane B2-o101 (2026-09-23) closed the +4 to size delta 0, 143 to 136
+ *   masked, the same edit on A and B. The surplus word was the final call's
+ *   own materialisation of the dim colour. A plain constant is a type-2 uopt
+ *   web, and a type-2 web is never exempted from the argument-register
+ *   precolour of a call in its block (a type-1 address or type-3/4 variable or
+ *   expression web passed as that argument is), so it cannot take a2 and the
+ *   call loads the constant a second time. Where the constant and the copy
+ *   sit in one as1 block, as1 renames the load into a2 and hides this; here
+ *   the unsigned-to-float conversion's branch separates them. Spelling the
+ *   value as an expression uopt does not fold before colouring -- a product
+ *   with zero -- makes it an expression web that IS the argument, so it takes
+ *   a2 and serves both colour stores and the call from one load. Only the
+ *   multiply does it: (x - x), (x & 0), (x ^ x) and cast forms fold early
+ *   and stay +4. The node-24 counter as the factor scores 136, the local
+ *   index 144, the length 147. The length local is s32 so its store takes the
+ *   raw return register as the target's does, flat on the count. The text
+ *   store after the root header is one word (single-move tail climb, local
+ *   optimum; the 4,480-order exhaustion was on the +4 shape and is void).
  * See docs/matching-triage-handoffs/overlay101BuildPresentationA.md for the
  * remaining residual and the decision variable that blocks it. */
 #ifdef NON_MATCHING
@@ -171,7 +189,7 @@ void overlay101BuildPresentationA(void) {
     s32 previousType;
     void *previous;
     void *handle;
-    u8 length;
+    s32 length;
     f32 opacityScale;
     s32 dimColor;
     Overlay101Node32 *node32A;
@@ -195,25 +213,23 @@ void overlay101BuildPresentationA(void) {
 
     node24IndexA = gOverlay101BuilderNode24CountA; node24A = &gOverlay101BuilderNodes24A[node24IndexA]; node24A->x = 0x50; node24A->y = 0x9C; length = overlay101ByteLength(gOverlay101BuilderInput130);
 
-    dimColor = 0xC0;
     node24IndexB = gOverlay101BuilderNode24CountB;
+    dimColor = gOverlay101BuilderNode24CountB * 0 + 0xC0;
     node24B = &gOverlay101BuilderNodes24B[node24IndexB];
-    node24B->length = (s8)length;
-    node24B->opacity =
-        (s8)(s32)((f32)(u32)length * opacityScale);
+    node24B->length = length;
+    node24B->opacity = (s8)(s32)((f32)(u8)length * opacityScale);
     node24B->kind = 4;
     node24B->mode = 2;
     node24B->color0 = 0xFF;
     node24B->color1 = dimColor;
     node24B->color2 = dimColor;
     node24B->color3 = 0xFF;
-
     previousType = gOverlay101BuilderRoot.childType;
     previous = gOverlay101BuilderRoot.child;
-    node24B->text = gOverlay101BuilderInput130;
     gOverlay101BuilderNode24CountB = node24IndexB + 1;
     gOverlay101BuilderRoot.child = node24B;
     gOverlay101BuilderRoot.childType = 3;
+    node24B->text = gOverlay101BuilderInput130;
     node24B->previousType = previousType;
     node24B->previous = previous;
 
@@ -227,10 +243,10 @@ void overlay101BuildPresentationA(void) {
 
 /* PLATEAU-HANDOFF:overlay101BuildPresentationA:start
  * symbol: overlay101BuildPresentationA
- * score: 143 differing words
+ * score: 136 differing words
  * frame: 0x20
  * relocations: 52
  * first-mismatch: +0x10
- * summary: L97 copy still +4 with a2 forbidden on the 0xC0 web; L144/array get a2 plus a home store and frame 0x50 at 142; 143 retained.
+ * summary: Delta 0: dim colour as counter*0+0xC0 is an expression web that takes a2 (type-2 const never does). 136 at 0x20; colour ceiling to re-derive.
  * PLATEAU-HANDOFF:overlay101BuildPresentationA:end
  */

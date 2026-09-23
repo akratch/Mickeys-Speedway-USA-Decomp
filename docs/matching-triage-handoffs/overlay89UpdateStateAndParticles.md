@@ -2,11 +2,11 @@
 ### `overlay89UpdateStateAndParticles` plateau handoff
 
 - source: `src/overlays/o089/overlay89UpdateStateAndParticles.c`
-- score: 85 differing words
+- score: 136/136 words
 - frame: 0x88
 - relocations: 14
-- first mismatch: +0x0
-- summary: Frame 0x88 at 85 masked; extra s3 is type-1 particle address web 122; split rematerializes with secondaryHandle 8 bytes low and size -8.
+- first mismatch: none
+- summary: ROM-exact and promoted; if(count--) guard around a do-while, value-returning spawn, secondaryHandle declared after particle, and two empty do-while statements that lift the callee toll so the particle-address web splits.
 #### 2026-09-13, lane k1: authenticated draw-census follow-up
 
 Fresh configured stock compilation reproduces 544 target bytes,
@@ -93,5 +93,43 @@ Next lever is a source form that splits web 122 (totalsave 10 vs s1 cost 9)
 without growing the frame, then an 8-byte temp below the save area so
 secondaryHandle lands at +0x4C, plus the missing count-copy into s0 and the
 extra v1 copy of particleCount without a homed extra s32.
+
+#### 2026-09-23, lane B2-ov2: matched and promoted
+
+Cycle 0 reader: +4 bytes, one spill/reload pair (the extra s3 save and
+restore, prologue and epilogue lines) and one target-only word, 71 aligned
+after 14 shadow. The target-only word is the guard's dead post-decrement copy,
+not a constant. Method: put a candidate shape in, force every coloured type-1
+web to split with the instrumented uopt, and score the forced object directly.
+That priced the shapes before any unforced work.
+
+- `while (count--)` with `count` loaded straight into s0: +8. The guard copy
+  comes back, but the load goes directly to s0 with no copy.
+- Testing `state->particleCount` and assigning `count` inside the test, before
+  the particle stores: the load is one CSE'd temp copied into s0, as in the
+  target. Forced: delta 0 at 15.
+- `if (count--) { randomScale = ...; do { } while (count--); }`: the
+  randomScale load lands after the guard, as in the target, and the guard
+  copy survives. Forced: 14.
+- The remaining naming was two webs, the loaded temp and the post-decrement
+  copy, taking v1 and v0 against the target's v0 and v1. Declaring
+  overlay34Spawn as returning s32 fixes it. Forced: 9, with naming 0.
+- Declaring secondaryHandle right after particle moves its home from 0x44 to
+  0x4C, the target's. Forced: 3.
+- Reading primaryHandle before secondaryHandle fixes the prologue schedule.
+  Forced: 0.
+
+The one force left was the particle-address web: totalsave 10, cost 9 at s1
+(the L56 toll of 8 plus 1), so it is coloured. L56 prices the first
+callee-saved register at nBB/4, and an empty `do { } while (0)` (or
+`if (1) { }`) adds two blocks and no code; `if (0) { }` is folded and adds
+nothing. Two of them lift the toll to 9, and the web splits at 10 <= 10.
+Unforced result: 136 of 136 words byte-identical, frame 0x88, gmake verify OK,
+check-overlay-syms up to date, promotion-proof PASS with 14 of 14 relocations.
+
+This corrects the earlier handoffs on three points. The size gap was not the
+frame and not the count copy. It was the loop shape plus an allocator toll
+decision, and the toll is movable from source because it counts blocks. The
+missing-copy and v0/v1 residue was an unprototyped callee's return type.
 
 <!-- plateau-handoff:overlay89UpdateStateAndParticles:end -->

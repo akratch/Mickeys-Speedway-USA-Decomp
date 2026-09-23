@@ -1,24 +1,5 @@
 #include "PR/ultratypes.h"
 
-typedef struct O54CopyRecord {
-    u8 pad00[8];
-    s32 field08;
-    s16 pad0C;
-    s16 field0E;
-    u8 pad10[8];
-    s32 field18;
-    s16 field1C;
-    s16 field1E;
-    u8 pad20[8];
-    s32 field28;
-    s16 field2C;
-    s16 field2E;
-    u8 pad30[8];
-    s32 field38;
-    s16 field3C;
-    s16 field3E;
-} O54CopyRecord;
-
 typedef struct O54State {
     s32 field00;
     s32 field04;
@@ -41,9 +22,13 @@ extern u8 gOverlay54Bss[];
 extern u8 gOverlay54ExternalResource[];
 extern u8 gOverlay54ExternalObject[];
 extern s32 gOverlay54ExternalWord;
-extern s32 gOverlay54Data08, gOverlay54Data1E0;
-extern s16 gOverlay54Data0C, gOverlay54Data0E, gOverlay54Data1E4, gOverlay54Data1E6;
-extern O54CopyRecord gOverlay54CopySource[], gOverlay54CopyDest[], gOverlay54CopyEnd[];
+typedef struct O54Rec {
+    u8 pad0[8];
+    s32 field8;
+    s16 fieldC;
+    s16 fieldE;
+} O54Rec;
+extern O54Rec gO54RecDst[], gO54RecSrc[];
 extern f32 gOverlay54Height;
 extern s16 gOverlay54Data00;
 extern O54State gOverlay54State;
@@ -69,9 +54,12 @@ extern void overlay54CopyOffsetRecords(void *src, void *dst, s32 mode, s32 index
 #define BSS_PTR(off) ((void *)(gOverlay54Bss + (off)))
 
 /* Independently reconstructed from Mickey-local evidence; no DKR/JFG donor. */
-/* Workbench p7 plus L90 reopen: 244/243 instructions, 0x78 frame, 127 masked/144 raw, first +0xF0.
- * Extra word is the nop delay of the context-equals-3 branch. L90 rewrites i++ then i<4 to !=4;
- * target keeps slti 4 after increment. Delay fill is reachable only on inverted polarity. */
+/* Workbench p7 plus L90 reopen: the extra word and the loop-exit slti are
+ * unchanged (see the plateau handoff). 2026-09-23, lane B2-ov2: the record
+ * copy is a nine-iteration subscript loop. IDO unrolls it by four with the
+ * remainder first, and that reproduces the target's unrolled body word for
+ * word (ring draws t4..t3). The remainder is still interleaved: see the
+ * handoff on static data. */
 #ifdef NON_MATCHING
 void func_overlay_054_F0000000_189ECA0(void) {
     volatile O54Locals locals;
@@ -84,12 +72,9 @@ void func_overlay_054_F0000000_189ECA0(void) {
     u8 *src4;
     u8 *src5;
     s32 i;
-    O54CopyRecord *src;
-    O54CopyRecord *dst;
+    s32 j;
     O54State *state;
     void *object;
-    s16 copy0C, copy0E, copy1C, copy3E, copy1E, copy2C, copy2E, copy3C;
-    s32 copy38, copy18, copy28, copy08;
     s16 *nextSentinel;
     s32 loopFlag, storeFlag, storeValue, storeSentinel;
 
@@ -143,39 +128,11 @@ void func_overlay_054_F0000000_189ECA0(void) {
         nextSentinel[-1] = storeSentinel;
     } while (i++ < 3);
 
-    gOverlay54Data08 = gOverlay54Data1E0;
-    *(s16 *)(gOverlay54Data + 0x0E) = gOverlay54Data1E6;
-    *(s16 *)(gOverlay54Data + 0x0C) = gOverlay54Data1E4;
-    src = gOverlay54CopySource;
-    dst = gOverlay54CopyDest;
-    do {
-        copy0C = src->pad0C;
-        copy0E = src->field0E;
-        copy1C = src->field1C;
-        dst->pad0C = copy0C;
-        dst->field0E = copy0E;
-        copy38 = src->field38;
-        copy3E = src->field3E;
-        copy1E = src->field1E;
-        copy18 = src->field18;
-        copy2C = src->field2C;
-        copy2E = src->field2E;
-        copy28 = src->field28;
-        copy3C = src->field3C;
-        copy08 = src->field08;
-        src++;
-        dst++;
-        dst[-1].field1C = copy1C;
-        dst[-1].field38 = copy38;
-        dst[-1].field3E = copy3E;
-        dst[-1].field1E = copy1E;
-        dst[-1].field18 = copy18;
-        dst[-1].field2C = copy2C;
-        dst[-1].field2E = copy2E;
-        dst[-1].field28 = copy28;
-        dst[-1].field3C = copy3C;
-        dst[-1].field08 = copy08;
-    } while (src != gOverlay54CopyEnd);
+    for (j = 0; j < 9; j++) {
+        gO54RecDst[j].fieldC = gO54RecSrc[j].fieldC;
+        gO54RecDst[j].fieldE = gO54RecSrc[j].fieldE;
+        gO54RecDst[j].field8 = gO54RecSrc[j].field8;
+    }
 
     gOverlay54Height = -80.0f;
     o54LoadResource();
@@ -208,10 +165,10 @@ void func_overlay_054_F0000000_189ECA0(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_054_F0000000_189ECA0:start
  * symbol: func_overlay_054_F0000000_189ECA0
- * score: 127 differing words
+ * score: 125 differing words
  * frame: 0x78
- * relocations: 112
+ * relocations: 114
  * first-mismatch: +0xF0
- * summary: One word long. Extra instruction is the unfilled delay of the context-equals-3 branch. L90 rewrites increment-then-i-lt-4 to not-equal-4; the target keeps slti 4 after increment. Delay fill is reachable only on inverted polarity.
+ * summary: Record copy is an unrolled 9-loop, body exact; remainder needs as1 to see static data (probe: 89 masked, -4); loop-A slti is L90.
  * PLATEAU-HANDOFF:func_overlay_054_F0000000_189ECA0:end
  */

@@ -1607,6 +1607,7 @@ MIXED_TU_EXACT_C_RANGES = {
     ],
     89: [
         (0x270, 0x5A4, "overlay89InitializeEffect"),
+        (0x5A4, 0x7C4, "overlay89UpdateStateAndParticles"),
     ],
     90: [
         (0x000, 0x0FC, "overlay90Initialize"),

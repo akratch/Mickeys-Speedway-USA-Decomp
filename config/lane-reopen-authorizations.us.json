@@ -356,9 +356,9 @@
       "source_commit": "cbcfcadc14e0cda0060b6faea6b44c231ed6ad92"
     },
     "func_8001FC50": {
-      "ledger_commit": "9477fea633184fa9fbef34cbfec6292d9ffe9851",
+      "ledger_commit": "ab765c62f3b2833d845778bf30237807c85baf0d",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "9477fea633184fa9fbef34cbfec6292d9ffe9851"
+      "source_commit": "ab765c62f3b2833d845778bf30237807c85baf0d"
     },
     "func_8002057C": {
       "ledger_commit": "92fb6d1093596e7220265a46202bf31b4fef5aa7",
@@ -386,9 +386,9 @@
       "source_commit": "73c94c3c84d9def6aff1017f0ba6cf27378b42da"
     },
     "func_80023598": {
-      "ledger_commit": "473efb87f29361610c29903e16540671387061bf",
+      "ledger_commit": "f0b9ae6e730a722e7b85e860174a2240e98bc89a",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "473efb87f29361610c29903e16540671387061bf"
+      "source_commit": "f0b9ae6e730a722e7b85e860174a2240e98bc89a"
     },
     "func_80024978": {
       "ledger_commit": "a79d1dee7826e3b690dd0a7c203ce1159ed546ae",
@@ -501,9 +501,9 @@
       "source_commit": "6f9e72e6fb41e2b3e351dfbc3546b6dae585a8fd"
     },
     "func_800349A4": {
-      "ledger_commit": "7a4566dfe745e43b43b06e88349631dbaf69d03d",
+      "ledger_commit": "cbe47b7e671a195bbb7245a57aeeb3d83335afd7",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "d59c971eab56071e3efe5265353886202df1d5c7"
+      "source_commit": "cbe47b7e671a195bbb7245a57aeeb3d83335afd7"
     },
     "func_80034E54": {
       "ledger_commit": "8744e6484324325c1b899182492ff1962767c33d",

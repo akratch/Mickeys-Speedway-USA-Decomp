@@ -1146,7 +1146,7 @@
       "source_commit": "18fe33ff3f9046dcb0ce072634d94e7f1a20da67"
     },
     "func_overlay_043_F00010A8_188B078": {
-      "ledger_commit": "da37937af8434b63072b1aea032ba4eb56f163f9",
+      "ledger_commit": "db8fd6dd833789c76b64d49a0450261b24746dab",
       "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
       "source_commit": "6f5fe225d8013f75ebcfcde099073bac2db8da26"
     },
@@ -1270,11 +1270,6 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "a033c4a293cebd0f7e1f0fce9cf62a1290be36d6"
     },
-    "func_overlay_058_F000138C_18B0574": {
-      "ledger_commit": "9d581a54344ff3277fcc23047c1cf88b76bfbc8f",
-      "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "07fd1b21cad12ca54a7a1bc3270efbeeffbfcee5"
-    },
     "func_overlay_060_F0000000_18B9DD8": {
       "ledger_commit": "14d10ff4c6e39d40d8072f0e43f0b846e91beaf6",
       "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
@@ -1361,7 +1356,7 @@
       "source_commit": "46725c0ed62dd4e0e0ec0aa82a8db131409f74fd"
     },
     "func_overlay_092_F0000068_18D5F88": {
-      "ledger_commit": "9d5f2205be121eef7507305c71980130a043a7bb",
+      "ledger_commit": "6ea6dd44c63503435a2b0a48247d10cd730c54a2",
       "reason": "New mechanisms found today: lever 51, a hand-written cursor blocks the register names and indexing the parallel arrays closed three functions in one pass; and lever 50, an unrelocated literal address pair scores as a false residual.",
       "source_commit": "82d35dd9da593db1737ff17f35f84ab1ee8a81f8"
     },

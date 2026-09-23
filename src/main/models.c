@@ -447,39 +447,49 @@ struct ModelConstructedInstance {
     void *data44;
     void *data48;
     ModelInstanceCopy *copies;
-    s16 *stateA;
-    s16 *stateB;
+    s16 *state[2];
 };
 
 /* PROVENANCE: local size and alignment lifetimes are adapted from JFG upstream
  * efd5abb's corresponding src/models.c function, func_8003BF58. JFG retains
  * that function as GLOBAL_ASM; Mickey's layout and bytes remain authority. */
-/* Workbench structure-mismatch: 299/333 words differ, candidate 330 words,
- * frame -128 versus target -120, first +0x0. JFG's scalar-size and cursor
- * lifetimes are exhausted; the remaining lever is the target's constant audit. */
+/* Workbench: size delta 0 and frame 0x78 both closed (from -12 and +8).
+ * Closed by: declarations laid on the target's home ladder (every local at
+ * function scope, 18 slots, instance at -0x40); no allocation-size local, so
+ * the sum is a CSE temp spilled across the allocator call; the state reset
+ * written as indexed stores through state[i], which reloads the pointer per
+ * store as the target does (the goto keeps uopt from unrolling it); and
+ * matrixBytes carrying the matrix count before it is shifted (x = f(x)).
+ * Remains: register naming. The target keeps modeBytes in its home from both
+ * arms and gives pointBytes ra; here modeBytes is coloured ra and spilled. */
 #ifdef NON_MATCHING
 ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCopies) {
-    ModelConstructedInstance *instance;
     ModelConstructedInstance *instanceCursor;
+    s32 i;
+    s32 j;
     s32 matrixBytes;
     s32 pointBytes;
-    s32 modeBytes[1];
     s32 dataBytes44;
     s32 dataBytes48;
     s32 coordinateBytes;
     s32 extraBytes;
-    s32 allocationSize;
-    s32 i;
-    s32 j;
+    u32 *clear;
+    s32 words;
+    s32 modeBytes;
+    u8 *end;
+    ModelInstancePoint *sourcePoint;
+    ModelInstancePoint *destinationPoint;
+    ModelConstructedInstance *instance;
+    f32 *coordinate;
+    ModelInstancePoint *sourcePoint2;
 
     matrixBytes = 0;
     if (source->mode != 0) {
-        s8 matrixCount = source->matrixCount;
-
-        modeBytes[0] = matrixCount * 0x1C + 0xC;
-        matrixBytes = matrixCount << 6;
+        matrixBytes = source->matrixCount;
+        modeBytes = matrixBytes * 0x1C + 0xC;
+        matrixBytes <<= 6;
     } else {
-        modeBytes[0] = 0;
+        modeBytes = 0;
     }
 
     pointBytes = source->pointCount * sizeof(ModelInstancePoint);
@@ -503,12 +513,12 @@ ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCo
         extraBytes = source->copyCount * 8 + 0xA8;
     }
 
-    allocationSize = (matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes[0] + dataBytes44 +
-                     dataBytes48 + coordinateBytes + extraBytes + 0x58;
-    instance = func_8002B314(allocationSize, 0x8A);
+    instance = func_8002B314((matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes + dataBytes44 +
+                     dataBytes48 + coordinateBytes + extraBytes + 0x58, 0x8A);
     if (instance != NULL) {
-        u32 *clear = (u32 *)instance;
-        s32 words = allocationSize >> 2;
+        clear = (u32 *)instance;
+        words = ((matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes + dataBytes44 +
+                     dataBytes48 + coordinateBytes + extraBytes + 0x58) >> 2;
 
         while (words--) {
             *clear++ = 0;
@@ -531,56 +541,45 @@ ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCo
         } else {
             instance->pointsB = instance->pointsA;
         }
-        if (source->matrixCount != 0 && modeBytes[0] != 0) {
+        if (source->matrixCount != 0 && modeBytes != 0) {
             instance->modeData = (u8 *)instance + (matrixBytes << 1) + (pointBytes * pointCopies) + 0x58;
         }
         if (source->dataCount44 != 0) {
-            instance->data44 = (u8 *)instance + (matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes[0] + 0x58;
+            instance->data44 = (u8 *)instance + (matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes + 0x58;
         }
         if (source->dataCount48 != 0) {
-            instance->data48 = (u8 *)instance + (matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes[0] + dataBytes44 + 0x58;
+            instance->data48 = (u8 *)instance + (matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes + dataBytes44 + 0x58;
         }
         if (source->coordinateCount != 0) {
-            instance->coordinates = (f32 *)((u8 *)instance + (matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes[0] +
+            instance->coordinates = (f32 *)((u8 *)instance + (matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes +
                                               dataBytes44 + dataBytes48 + 0x58);
         }
         if (source->hasCopies != 0) {
-            u8 *end;
-            s16 *state;
-
             instance->copies = (ModelInstanceCopy *)((u8 *)instance + (matrixBytes << 1) + (pointBytes * pointCopies) +
-                                                       modeBytes[0] + dataBytes44 + dataBytes48 + coordinateBytes + 0x58);
+                                                       modeBytes + dataBytes44 + dataBytes48 + coordinateBytes + 0x58);
             end = (u8 *)(instance->copies + source->copyCount);
             if (((s32)end & 7) != 0) {
                 end = end - ((s32)end & 7) + 8;
             }
-            instance->stateA = (s16 *)end;
-            instance->stateB = (s16 *)(end + 0x50);
+            instance->state[0] = (s16 *)end;
+            instance->state[1] = (s16 *)(end + 0x50);
 
-            instanceCursor = instance;
-            i = 0;
-            do {
+            for (i = 0; i < 2; i++) {
                 j = 0;
 state_reset_loop:
-                state = (s16 *)((u8 *)instanceCursor->stateA + j);
-                state[0] = 0;
-                state[1] = 0;
-                state[2] = 0;
-                state[3] = 0;
-                j += 8;
-                if (j != 0x50) {
+                    instance->state[i][j] = 0;
+                    instance->state[i][j + 1] = 0;
+                    instance->state[i][j + 2] = 0;
+                    instance->state[i][j + 3] = 0;
+                j += 4;
+                if (j != 40) {
                     goto state_reset_loop;
                 }
-                i += 4;
-                instanceCursor = (ModelConstructedInstance *)((u8 *)instanceCursor + 4);
-            } while (i != 8);
+            }
         }
 
         i = 0;
         if (pointCopies > 0) {
-            ModelInstancePoint *sourcePoint;
-            ModelInstancePoint *destinationPoint;
-
             instanceCursor = instance;
             do {
                 sourcePoint = source->points;
@@ -606,16 +605,14 @@ state_reset_loop:
         }
 
         if (source->mode == 0) {
-            f32 *coordinate = instance->coordinates;
-            ModelInstancePoint *sourcePoint;
-
+            coordinate = instance->coordinates;
             i = 0;
             if (source->coordinateCount > 0) {
                 do {
-                    sourcePoint = &source->points[source->pointIndices[i].pointIndex];
-                    *coordinate++ = sourcePoint->x;
-                    *coordinate++ = sourcePoint->y;
-                    *coordinate++ = sourcePoint->z;
+                    sourcePoint2 = &source->points[source->pointIndices[i].pointIndex];
+                    *coordinate++ = sourcePoint2->x;
+                    *coordinate++ = sourcePoint2->y;
+                    *coordinate++ = sourcePoint2->z;
                     i++;
                 } while (i < source->coordinateCount);
             }
@@ -1416,11 +1413,11 @@ void func_8002109C(ModelPointOwner *owner) {
 
 /* PLATEAU-HANDOFF:func_8001FC50:start
  * symbol: func_8001FC50
- * score: 299/333 words
- * frame: 0x80
+ * score: 277 differing words
+ * frame: 0x78
  * relocations: 3
- * first-mismatch: +0x0
- * summary: JFG size and cursor lifetimes cut the frame by 0x8; next lever is the target constant audit.
+ * first-mismatch: +0x18
+ * summary: Delta 0, frame 0x78; naming left: target keeps modeBytes homed in both arms and gives pointBytes ra, here modeBytes takes ra
  * PLATEAU-HANDOFF:func_8001FC50:end
  */
 

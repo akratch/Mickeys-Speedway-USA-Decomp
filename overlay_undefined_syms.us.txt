@@ -1233,6 +1233,31 @@ call_o0_0_509A0 = 0xf0000000;
 call_o0_0_C0F0 = 0xf0000000;
 call_o98_0_0 = 0xf0000000;
 
+/* overlay 35: func_overlay_035_F00001E0_1881EC0.c.o */
+D_o35_allocation_count = 0x00000000;
+D_o35_allocations = 0x00000000;
+D_o35_current_model = 0x00000000;
+D_o35_final_reset = 0x00000000;
+D_o35_loader_state = 0x00000000;
+D_o35_model_heap = 0x00000000;
+D_o35_model_table = 0x00000000;
+D_o35_reset = 0x00000000;
+D_o35_segment_storage = 0x00000000;
+D_o35_values_a = 0x00000000;
+D_o35_values_b = 0x00000000;
+call_o0_0_26934 = 0xf0000000;
+call_o0_0_29DF4 = 0xf0000000;
+call_o0_0_2B0D4 = 0xf0000000;
+call_o0_0_2B2A4 = 0xf0000000;
+call_o0_0_2B318 = 0xf0000000;
+call_o0_0_2B6E4 = 0xf0000000;
+call_o0_0_2B810 = 0xf0000000;
+call_o0_0_2B848 = 0xf0000000;
+call_o0_0_2DCF8 = 0xf0000000;
+call_o0_0_2DE90 = 0xf0000000;
+call_o0_0_4D390 = 0xf0000000;
+call_o0_0_CF68 = 0xf0000000;
+
 /* overlay 36: overlay36InitObject.c.o */
 gOverlay36Mode = 0x00000000;
 overlay36AcquireReloc = 0xf0000000;

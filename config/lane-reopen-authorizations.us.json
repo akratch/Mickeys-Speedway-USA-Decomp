@@ -1446,9 +1446,9 @@
       "source_commit": "57c954db03b3d369013665c972bc73acaae8a76f"
     },
     "fxSPDPRipple": {
-      "ledger_commit": "987f5a0507f7619a8578aeafe2e6d281ef1999b5",
+      "ledger_commit": "5f2b7ab9dbf97723d140c18c6ad7b10fd7a131d1",
       "reason": "ADR 0018 stall rule, and at delta 8 bytes the candidate is not the same function: decompiler-assisted reconstruction applies where no permutation can.",
-      "source_commit": "987f5a0507f7619a8578aeafe2e6d281ef1999b5"
+      "source_commit": "5f2b7ab9dbf97723d140c18c6ad7b10fd7a131d1"
     },
     "fxScreenEffect": {
       "ledger_commit": "0c4f29b001dc3a59f5ab92bbbcd049b7ade2cf70",
@@ -2126,9 +2126,9 @@
       "source_commit": "2d923387fa81afb05ef9fdd245dc8c67522adc73"
     },
     "wakeUpdate": {
-      "ledger_commit": "93d8d52434ceac33410e0de9ed1e87fc10b5ec1f",
+      "ledger_commit": "0922cb435351df2dd39230eecba5c27bb725d2d9",
       "reason": "ADR 0018 stall rule, and at delta -4 bytes the candidate is not the same function: decompiler-assisted reconstruction applies where no permutation can.",
-      "source_commit": "93d8d52434ceac33410e0de9ed1e87fc10b5ec1f"
+      "source_commit": "0922cb435351df2dd39230eecba5c27bb725d2d9"
     }
   },
   "schema_version": 1

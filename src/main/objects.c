@@ -5492,7 +5492,7 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: frameless
  * relocations: 0
  * first-mismatch: +0x20
- * summary: Asset/count carrier and late loop register shape remain structural; next lever is a typed source record/output layout.
+ * summary: Remeasured 2026-09-23: 63 masked at size delta -4 (78 of 79 words), unchanged; asset/count carrier and late loop registers remain structural.
  * PLATEAU-HANDOFF:func_80006B04:end
  */
 

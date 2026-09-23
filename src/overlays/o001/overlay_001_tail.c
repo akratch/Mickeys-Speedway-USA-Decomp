@@ -3420,7 +3420,7 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
  * score: 105/446 words
  * frame: 0x90
  * relocations: 31
- * first-mismatch: +0xC
+ * first-mismatch: +0x58
  * summary: Direct selector loads remove the redundant path web and improve 360 to 341 masked differences without changing the 447/446 size. Linked trial has zero measured diffs but remains 12 bytes long.
  * PLATEAU-HANDOFF:func_overlay_001_F0003750_184FB30:end
  */

@@ -2458,7 +2458,7 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:func_80047304:start
  * symbol: func_80047304
- * score: 175 differing words
+ * score: 158 differing words
  * frame: 0x180
  * relocations: 5
  * first-mismatch: 0x4
@@ -2519,7 +2519,7 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeUpdate:start
  * symbol: wakeUpdate
- * score: 334 differing words
+ * score: 367 differing words
  * frame: 0x98
  * relocations: 2
  * first-mismatch: 0x0

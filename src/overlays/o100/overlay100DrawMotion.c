@@ -144,7 +144,7 @@ void overlay100DrawMotion(O100Command **commandPtr, Overlay100Motion *motion) {
  * score: 155 differing words
  * frame: 0xC0
  * relocations: 7
- * first-mismatch: +0x0
+ * first-mismatch: +0x30
  * summary: L99 unused pointers declared first close frame 0xC0 with exact homes. Packed RGB hoist is plus two words. Command/color lifetime remains.
  * PLATEAU-HANDOFF:overlay100DrawMotion:end
  */

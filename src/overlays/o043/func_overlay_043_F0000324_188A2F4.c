@@ -371,10 +371,10 @@ s32 func_overlay_043_F0000324_188A2F4(
 
 /* PLATEAU-HANDOFF:func_overlay_043_F0000324_188A2F4:start
  * symbol: func_overlay_043_F0000324_188A2F4
- * score: 529/560 words
+ * score: 494 differing words
  * frame: 0x178
  * relocations: 41
- * first-mismatch: +0x40
+ * first-mismatch: +0x60
  * summary: V0 is 3 words short (557/560) with broad structural/register drift; relocations are 41 vs 43 with 5 aligned sites and no stable identities.
  * PLATEAU-HANDOFF:func_overlay_043_F0000324_188A2F4:end
  */

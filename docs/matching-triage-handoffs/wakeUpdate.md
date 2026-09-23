@@ -2,7 +2,7 @@
 ### `wakeUpdate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 334 differing words
+- score: 367 differing words
 - frame: 0x98
 - relocations: 2
 - first mismatch: 0x0
@@ -40,4 +40,5 @@ Commands: `lane_status.py --symbol`, `wb_compare.sh --summary-json`, workbench
 `diagnose` and `guide`, and `finalize_plateau.py`. The unchanged guarded C stays
 NON_MATCHING and receives zero new exact bytes.
 
+Header regenerated from the ranking on 2026-09-23 (check_shard_metrics --write); it read score 334 differing words.
 <!-- plateau-handoff:wakeUpdate:end -->

@@ -1156,10 +1156,10 @@ void func_80035F48(u8 **dlist, TextureFrameHeader *tex, s32 rtile,
 #undef M2C_FIELD
 /* PLATEAU-HANDOFF:func_80035F48:start
  * symbol: func_80035F48
- * score: 369 differing words
+ * score: 371 differing words
  * frame: 0x88 (target 0x90)
  * relocations: 4
- * first-mismatch: +0x4
+ * first-mismatch: +0x0
  * summary: Complete semantic C emits 362 versus 383 instructions; delaying the TMEM carrier improves positional differences by 14 words, but the texture pointer occupies s0 and displaces the target's rtile carrier.
  * PLATEAU-HANDOFF:func_80035F48:end
  */

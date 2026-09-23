@@ -578,6 +578,7 @@ check-docs:
 	$(HOST_PYTHON) $(TOOLS_DIR)/nm_ranking.py --check-doc
 	$(HOST_PYTHON) $(TOOLS_DIR)/nm_ranking.py --check-retired
 	$(HOST_PYTHON) $(TOOLS_DIR)/plateau_handoff_audit.py --check
+	$(HOST_PYTHON) $(TOOLS_DIR)/check_shard_metrics.py
 
 # Proved colour floors recorded in plateau handoffs, summarised. Reads the
 # handoff shards, source PLATEAU-HANDOFF blocks and the ranking; no build.

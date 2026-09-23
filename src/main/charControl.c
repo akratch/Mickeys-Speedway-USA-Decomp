@@ -582,29 +582,33 @@ void controlPlayerReInit(ControlActor *actor, f32 x, f32 y, f32 z, s16 arg4, s16
  * pointer/f32 grows non-save, not the save area. Per-arm particle count and
  * entries loads reproduce the target's three-arm entries load but leave the
  * count in a caller-saved temp and grow the function. Next: loop-weighted
- * references that survive copy-prop onto those leftover symbol webs. */
+ * references that survive copy-prop onto those leftover symbol webs.
+ * Corrected 2026-09-23 (B3-char): those two type-2 webs are the constants 10
+ * and 3 and stay split in the target too. The missing saved webs were the loop
+ * counters: once one i and one j serve every loop, their totalsave clears the
+ * 16.25 toll and player/actor land in s5/s6 without any force. */
 /* PROVENANCE: JFG's corresponding character-control initialization role supplied the control-flow lead; fields and body are reconstructed from Mickey. */
 #ifdef NON_MATCHING
+/* Track B (B3-char): size delta 0 and frame 0xA8 as the target. The target
+ * reuses i/j across all five loops (point copy, effects, particles, slot
+ * fill, spawn packets); merging them is what opens s5/s6 for player/actor.
+ * It also loads each particle list per arm, calls camSetNo with one
+ * argument, and spells unk17C as a double 1.0 (a separate constant). */
 void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode) {
     ControlPlayer *player;
-    CharControlEffectList *effectList;
     CharControlEffectDefinition *effect;
-    CharControlParticleList *particleList;
+    s32 effectIndex;
     CharControlParticleDefinition *particle;
     CharControlCharacterData *characterData;
     CharControlParticleSlot *slot;
-    CharControlSpawnSetup packet;
     f32 *output;
     s16 *position;
+    CharControlSpawnSetup packet;
     void **effectOwner;
     void *stateCursor;
-    s32 effectIndex;
-    s32 effectCount;
-    s32 effectSlot;
     s32 pointIndex;
-    s32 particleCount;
-    s32 particleSlotCount;
-    s32 packetIndex;
+    s32 i;
+    s32 j;
 
     player = actor->player;
     player->unk1B8 = 0x2000;
@@ -637,32 +641,31 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
     }
     player->unk33C = 0;
     player->unk340 = 0;
-    pointIndex = 0;
     if (player->unk2BC > 0) {
-        effectSlot = 0;
+        i = 0;
+        pointIndex = 0;
         do {
-            effectSlot++;
+            i++;
             output += 3;
             output[-3] = *((f32 *) ((u8 *) player->unk2B8 + pointIndex));
             output[-2] = *((f32 *) ((u8 *) player->unk2B8 + pointIndex + 4));
             output[-1] = *((f32 *) ((u8 *) player->unk2B8 + pointIndex + 8));
             pointIndex += 0x10;
-        } while (effectSlot < player->unk2BC);
+        } while (i < player->unk2BC);
     }
     func_8001EFFC(actor, player, &player->unk2F0);
 
-    effectIndex = (s32) player->unk1;
-    if ((player->unk1 < 0) || (player->unk1 >= 10)) {
+    effectIndex = player->unk1;
+    if ((effectIndex < 0) || (effectIndex >= 10)) {
         effectIndex = 0;
     }
     if (player->playerIndex < (D_8007BEF8 - D_8007BEFC)) {
-        effectList = &D_8007980C[effectIndex];
-        effect = effectList->entries;
+        effect = D_8007980C[effectIndex].entries;
         if (effect != 0) {
-            effectCount = effectList->count;
-            effectSlot = 0;
+            i = D_8007980C[effectIndex].count;
+            j = 0;
             effectOwner = (void **) player;
-            if (effectCount > 0) {
+            if (i > 0) {
                 do {
                     if (effectOwner[0x134 / 4] == 0) {
                         effectOwner[0x134 / 4] =
@@ -672,40 +675,36 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
                                 effect->arg14, effect->arg15, effect->arg16,
                                 effect->arg17);
                     }
-                    effectSlot++;
+                    j++;
                     effectOwner++;
                     effect++;
-                } while (effectSlot != effectCount);
+                } while (j != i);
             }
         }
     }
 
     characterData = (CharControlCharacterData *)
         *(*(actor->unk68 + actor->unk3A));
-    particleCount = effectIndex * 8;
-    particleSlotCount = 0;
+    i = 0;
     if (levelGetType() == 3) {
-        particleList = (CharControlParticleList *)
-            ((u8 *) D_8007987C + particleCount);
+        j = D_8007987C[effectIndex].count;
+        particle = D_8007987C[effectIndex].entries;
     } else if (D_8007BF04 != 0) {
-        particleList = (CharControlParticleList *)
-            ((u8 *) D_800798DC + particleCount);
+        j = D_800798DC[effectIndex].count;
+        particle = D_800798DC[effectIndex].entries;
     } else {
-        particleList = (CharControlParticleList *)
-            ((u8 *) D_8007987C + particleCount);
+        j = D_8007987C[effectIndex].count;
+        particle = D_8007987C[effectIndex].entries;
     }
-    particleCount = particleList->count;
-    particle = particleList->entries;
     slot = (CharControlParticleSlot *) player->particles;
-    if (particleCount != 0) {
-        particleCount--;
-        do {
+    while (j--) {
+        {
             if (slot->handle == 0) {
                 if (particle->index < characterData->count) {
-                    slot->kind = particle->kind;
-                    slot->index = particle->index;
                     position = (s16 *) ((u8 *) characterData->positions +
                         (characterData->indexTable[particle->index].offset * 10));
+                    slot->kind = particle->kind;
+                    slot->index = particle->index;
                     slot->model = (s8)
                         characterData->indexTable[particle->index].value;
                     slot->handle = func_80046EC4(
@@ -722,15 +721,13 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
             slot->unk6 = 0;
             particle++;
             slot++;
-            particleSlotCount++;
-        } while (particleCount-- != 0);
+            i++;
+        }
     }
-    if (particleSlotCount < 4) {
-        do {
-            particleSlotCount++;
-            slot->handle = 0;
-            slot++;
-        } while (particleSlotCount < 4);
+    while (i < 4) {
+        i++;
+        slot->handle = 0;
+        slot++;
     }
 
     player->unk38 = actor->x;
@@ -752,8 +749,9 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
     player->unk187 = 0;
     player->unk188 = 0.0f;
     player->unk4C = actor->z;
+    i = 0;
     if (player->playerIndex != -1) {
-        camSetNo(player->playerIndex, 0, &D_800CB300);
+        camSetNo(player->playerIndex);
         func_8001BE0C(actor, player);
     }
     player->unk16C = 0;
@@ -774,15 +772,13 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
     stateCursor = (u8 *) player;
     player->unk174 = 1.0f;
     player->unk178 = 2.0f;
-    player->unk17C = 1.0f;
-    particleSlotCount = 0;
+    player->unk17C = 1.0;
     do {
-        packetIndex = particleSlotCount * 8;
-        particleSlotCount++;
         stateCursor = (u8 *) stateCursor + 1;
         *((u8 *) stateCursor + 0x12B) = 0;
-        *((u8 *) stateCursor + 0x12F) = (u8) packetIndex;
-    } while (particleSlotCount < 4);
+        *((u8 *) stateCursor + 0x12F) = i * 8;
+        i++;
+    } while (i < 4);
     player->unk3EC = 0.0f;
     player->unk3F0 = D_80081844;
     player->unk43C = actor->rotationX;
@@ -794,7 +790,7 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
     player->unk3BA = 0xFF;
     player->unk450 = actor->z;
     if (levelGetType() == 3) {
-        packetIndex = 0;
+        i = 0;
         if (mode != 0) {
             packet.kind = 0x124;
             packet.arg04 = 0;
@@ -802,17 +798,17 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
             packet.arg08 = 0;
             packet.owner = actor;
             do {
-                packet.arg0A = packetIndex;
+                packet.arg0A = i;
                 func_8000590C((ControlSpawnPacket *) &packet, 1);
-                packetIndex++;
-            } while (packetIndex != 3);
+                i++;
+            } while (i != 3);
         }
     }
     if ((D_8007BF1C & 2) && (*func_80028F54() != 1)) {
         player->unk192 = 0xA;
-        return;
+    } else {
+        player->unk192 = 0;
     }
-    player->unk192 = 0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/func_8001C4C0.s")
@@ -2164,11 +2160,11 @@ void controlClearPlayerSetup(void) {
 
 /* PLATEAU-HANDOFF:func_8001C4C0:start
  * symbol: func_8001C4C0
- * score: 386/403 words
- * frame: 0xB0
- * relocations: 40
- * first-mismatch: +0x0
- * summary: Identity-gated proc 10: two type-2 webs split at totalsave 10 and 11 vs callee cost 16.25 so s5/s6 never allocate. L99 unused pointer is not the save area.
+ * score: 121/403 words
+ * frame: 0xA8
+ * relocations: 38
+ * first-mismatch: +0x3C
+ * summary: Delta 0, frame 0xA8. Shared i/j loop counters open s5/s6; left: schedule order at entry, point-loop v0/v1, ring phase.
  * PLATEAU-HANDOFF:func_8001C4C0:end
  */
 

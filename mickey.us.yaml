@@ -1967,7 +1967,8 @@ segments:
       - [0x189F24C, c, overlay54TailA]
       - [0x18A0B34, c, overlay54ReleaseResources]
       - [0x18A0B84, asm, overlay_054_padding]
-      - [0x18A0B90, bin, overlay_054_data_rodata]
+      - [0x18A0B90]
+      - [0x18A0E60, bin, overlay_054_data_rodata]
       - [0x18A0E70, bin, overlay_054_reloc1]
       - [0x18A1370, bin, overlay_054_reloc2]
 

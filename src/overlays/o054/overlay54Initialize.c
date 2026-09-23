@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "overlays/offset_records.h"
 
 typedef struct O54State {
     s32 field00;
@@ -22,13 +23,75 @@ extern u8 gOverlay54Bss[];
 extern u8 gOverlay54ExternalResource[];
 extern u8 gOverlay54ExternalObject[];
 extern s32 gOverlay54ExternalWord;
-typedef struct O54Rec {
-    u8 pad0[8];
-    s32 field8;
-    s16 fieldC;
-    s16 fieldE;
-} O54Rec;
-extern O54Rec gO54RecDst[], gO54RecSrc[];
+
+/* Overlay 54's initialized data, in ROM order: this TU is its byte owner.
+ * The original overlay was one translation unit -- its runtime relocation
+ * table addresses .data, a 0x10-byte .rodata and .bss through three separate
+ * section bases -- and this function's record copy is only scheduled the way
+ * the ROM has it when the compiler can see both record arrays defined here.
+ * Every object is static so that no other TU's extern placeholder resolves to
+ * it; the siblings keep their absolute section-relative names. */
+static s16 sOverlay54ResourceIds[18] = {
+    2, 38, 39, 25, 26, 20, 21, 30, 31, 22, 40, 23, 24, 53, 80, 100, -1, 0,
+};
+static s16 sOverlay54PrepareIds[4] = { 4, 2, 3, -1 };
+static OverlayOffsetRecord sOverlay54ListA[2] = {
+    { 38, 39, 0, 0, 0 },
+};
+static OverlayOffsetRecord sOverlay54ListB[2] = {
+    { 38, 39, 0x00060000, 0, 0 },
+};
+static OverlayOffsetRecord sOverlay54ListC[3] = {
+    { 20, 21, 0, 21, 0 },
+    { 20, 21, 0, 28, 0 },
+};
+static OverlayOffsetRecord sOverlay54ListD[3] = {
+    { 30, 31, 0, 0, -3 },
+    { 20, 21, 0, 32, 1 },
+};
+static OverlayOffsetRecord sOverlay54ListE[10] = {
+    { 20, 21, 0, 0, 0 },
+    { 20, 21, 0, 7, 0 },
+    { 20, 21, 0x000B0000, 14, 0 },
+    { 20, 21, 0, 20, 0 },
+    { 20, 21, 0, 27, 0 },
+    { 20, 21, 0x000A0000, 33, 0 },
+    { 20, 21, 0, 40, 0 },
+    { 20, 21, 0, 47, 0 },
+    { 23, 24, 0, -25, -8 },
+};
+static OverlayOffsetRecord sOverlay54ListF[2] = {
+    { 25, 0, 0, -25, -6 },
+};
+static s16 sOverlay54Limits[6] = { 0x300, 0xC00, -0x420, 0x4E0, 0xC80, 0x1580 };
+static s16 sOverlay54Offsets[32] = {
+    23, 24, 281, 132, 48, 33, 235, 141,
+    91, 32, 185, 140, 76, 33, 215, 141,
+    23, 12, 281, 132, 48, 25, 235, 145,
+    91, 24, 185, 144, 76, 25, 215, 145,
+};
+static OverlayOffsetRecord sOverlay54SourceRecords[10] = {
+    { 20, 21, 0, -7, 0 },
+    { 20, 21, 0, 0, 0 },
+    { 20, 21, 0, 7, 0 },
+    { 20, 21, 0x000B0000, 14, 0 },
+    { 20, 21, 0, 20, 0 },
+    { 20, 21, 0, 27, 0 },
+    { 20, 21, 0x000A0000, 33, 0 },
+    { 20, 21, 0, 40, 0 },
+    { 20, 21, 0, 47, 0 },
+};
+static OverlayOffsetRecord sOverlay54ListG[2] = {
+    { 20, 21, 0, -3, -4 },
+};
+static s32 sOverlay54Tail298[4] = { 0 };
+static s32 sOverlay54Tail2A8 = 9;
+static s32 sOverlay54Tail2AC = 0;
+static s8 sOverlay54Tail2B0[4] = { 0 };
+static s32 sOverlay54Tail2B4[7] = { 0 };
+
+/* Overlay 54's .bss begins with the copy's destination list. */
+static OverlayOffsetRecord sOverlay54Records[10];
 extern f32 gOverlay54Height;
 extern s16 gOverlay54Data00;
 extern O54State gOverlay54State;
@@ -129,9 +192,9 @@ void func_overlay_054_F0000000_189ECA0(void) {
     } while (i++ < 3);
 
     for (j = 0; j < 9; j++) {
-        gO54RecDst[j].fieldC = gO54RecSrc[j].fieldC;
-        gO54RecDst[j].fieldE = gO54RecSrc[j].fieldE;
-        gO54RecDst[j].field8 = gO54RecSrc[j].field8;
+        sOverlay54Records[j].x = sOverlay54SourceRecords[j].x;
+        sOverlay54Records[j].y = sOverlay54SourceRecords[j].y;
+        sOverlay54Records[j].metadata = sOverlay54SourceRecords[j].metadata;
     }
 
     gOverlay54Height = -80.0f;

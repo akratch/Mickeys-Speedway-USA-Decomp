@@ -130,18 +130,17 @@ void func_800371BC(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/frontend_37D50/func_800371BC.s")
 #endif
 extern void TrapDanglingJump();
-#ifdef NON_MATCHING
-/* 57 -> 13 masked words, size delta +4 -> 0, frame 0x38 -> 0x30 (2026-09-23).
- * Three edits: the call to func_800371BC takes no arguments (the +4 was the
- * a2/a3 argument setup and the s0 carrier it forced); the three tail byte
- * stores are in address order; and the first frame count is not a declared
- * variable -- D_8007BE94 re-spells the expression and uopt CSEs it, which
- * leaves exactly three declared homes (var_a1 0x2C, sp28 0x28, var_a2 0x24)
- * and two compiler temps, the target's slot ladder word for word.
- * What remains is one decision: the target passes the var_a1 web to the
- * TrapDanglingJump call and keeps the expression temp for D_8007BE94 alone,
- * while uopt here propagates the expression into the call argument, so the
- * two webs trade a1/t0 and their spill slots (5 naming, 8 immediate). */
+/* Matched 2026-09-23. Four edits took it from 57 masked words to 0:
+ * the call to func_800371BC takes no arguments (the old +4 was the a2/a3
+ * argument setup and the s0 carrier it forced); the three tail byte stores
+ * are in address order; the first frame count is not a declared variable --
+ * D_8007BE94 re-spells the expression and uopt CSEs it; and the
+ * TrapDanglingJump argument is `var_a1 | 0`. uopt copy-propagates a bare
+ * variable into a call argument but not into an operand of an operator, so
+ * the plain `var_a1` argument was replaced by the expression temp and the two
+ * webs traded a1/t0. The `| 0` keeps var_a1 itself as the argument, as the
+ * target does, and folds away before code generation (`& -1` measures the
+ * same). */
 void func_80037414(s32 arg0, f32 arg1, f32 arg2, s32 arg3, s32 arg4,
                    s32 arg5, s32 arg6) {
     s32 var_a1;
@@ -156,7 +155,7 @@ void func_80037414(s32 arg0, f32 arg1, f32 arg2, s32 arg3, s32 arg4,
     }
     if ((D_8007BEA8 != 0) &&
         ((D_8007BE90 == 4) || (D_8007BE90 == 5))) {
-        TrapDanglingJump(arg0, var_a1, var_a2);
+        TrapDanglingJump(arg0, var_a1 | 0, var_a2);
     }
     if ((arg6 == 0) || (D_8007BEA8 == 0)) {
         if ((arg0 & 1) && (var_a2 != 0)) {
@@ -182,9 +181,6 @@ void func_80037414(s32 arg0, f32 arg1, f32 arg2, s32 arg3, s32 arg4,
     D_8007BEA0 = (u8) arg4;
     D_8007BEA4 = (u8) arg5;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/frontend_37D50/func_80037414.s")
-#endif
 void func_80037658(void) {
     D_8007BEA8 = 0;
 }
@@ -629,17 +625,6 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
  * summary: Declared (void) with its call site in func_80037414: 144 to 114; size delta +4 remains
  * PLATEAU-HANDOFF:func_800371BC:end
  */
-
-/* PLATEAU-HANDOFF:func_80037414:start
- * symbol: func_80037414
- * score: 13/145 words
- * frame: 0x30
- * relocations: 42
- * first-mismatch: +0x34
- * summary: Delta 0 and frame closed; last 13 words are uopt propagating the expression, not var_a1, into the TrapDanglingJump argument
- * PLATEAU-HANDOFF:func_80037414:end
- */
-
 
 /* PLATEAU-HANDOFF:func_80037C74:start
  * symbol: func_80037C74

@@ -2521,7 +2521,7 @@ func_80036DD0 = 0x80036DD0; // type:func size:0x138 ROM 0x379D0 tier-A, matched 
 func_80036F08 = 0x80036F08; // type:func size:0x240 ROM 0x37B08 tier-A, matched C src/main/frontend_37680.c -O2 -mips2 -32, JFG src/screen.c screenDraw body, linked exact=144/144, target boundary includes 0x8 bytes padding
 func_80037150 = 0x80037150; // type:func size:0x6C ROM 0x37D50 tier-A, matched C src/main/frontend_37D50.c -O2 -mips2 -32, buffer release body, linked exact=27/27
 func_800371BC = 0x800371BC; // type:func size:0x258 ROM 0x37DBC tier-D structure-mismatch candidate, target 150/candidate 159 words, grid initialization loops
-func_80037414 = 0x80037414; // type:func size:0x244 ROM 0x38014 tier-D structure-mismatch candidate, target 145/candidate 146 words, VI transition body
+func_80037414 = 0x80037414; // type:func size:0x244 ROM 0x38014 tier-A, matched C src/main/frontend_37D50.c -O2 -mips2 -32, VI transition body, linked exact=145/145
 func_80037658 = 0x80037658; // type:func size:0xC ROM 0x38258 tier-A, matched C src/main/frontend_37D50.c -O2 -mips2 -32, direct D_8007BEA8 clear, linked exact=3/3
 func_80037664 = 0x80037664; // type:func size:0x68 ROM 0x38264 tier-A, matched C src/main/frontend_37D50.c -O2 -mips2 -32, state predicate, linked exact=26/26
 func_80037A78 = 0x80037A78; // type:func size:0x74 ROM 0x38678 tier-A, matched C src/main/frontend_37D50.c -O2 -mips2 -32, frontend transition body, linked exact=29/29

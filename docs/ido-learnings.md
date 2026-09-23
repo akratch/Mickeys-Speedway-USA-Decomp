@@ -1739,6 +1739,25 @@ bytes and disassembly never belong here.
   offset could be defined first (as1 emits its move first) and still be
   coloured second. Diagnostic-only until a natural source form is found; the
   committed function says so at the point of use.
+- **uopt copy-propagates a bare variable into a call argument, but not into
+  an operand of an operator; `x | 0` at the argument keeps the variable.**
+  `func_80037414` (2026-09-23, 13 -> 0 at delta 0): `var_a1 = (s32) (arg1 *
+  60.0f)` shares its expression with a later global store, so PRE makes one
+  expression temp and `var_a1` becomes a copy of it. The `uoptlist` table after
+  COPY PROPAGATION still carries `var_a1` in both multiplies, yet the call's
+  plain `var_a1` argument was replaced by the expression temp, so the temp took
+  the argument register and `var_a1` kept only the multiplies -- two webs
+  trading `a1`/`t0` and their spill slots (5 naming, 8 immediate). The target
+  passes `var_a1` itself. Writing the argument as `var_a1 | 0` (or `& -1`, or
+  `& 0xFFFFFFFF`) makes it an operand, which copy propagation leaves alone, and
+  the identity folds before code generation: 0 words. `+ 0`, `- 0` and a
+  `(s32)(u32)` cast are folded too early and stay at 13; `* 1`, `/ 1`, `^ 0`,
+  shifts by zero and double negation all emit code and add a word or two.
+  The records that settled it: web membership, not colour -- the var's web
+  carried `a1` in its `forbidden` mask because the call loads `a1` from the
+  other web, so no force could reach it. Same identity family as
+  `func_800376CC`'s `arg0 |= 0`, for a different reason (propagation, not
+  save).
 - **A shared goto that joins two overflow arms can hide the target's
   per-arm delay-slot copies and keep an extra callee-saved.** Duplicating
   the join assignment onto both arms lets each copy land in a delay slot

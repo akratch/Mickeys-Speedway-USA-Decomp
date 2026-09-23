@@ -1128,7 +1128,10 @@ TEXT_SUBSEGMENTS = {
 # field after their canonical mixed-TU and linked-ROM proofs.
 MIXED_TU_EXACT_C_RANGES = {
     1: [
-        (0x0000, 0x0050, "overlay1PointerWrap"),
+        # One row per function: promotion-proof authenticates a function
+        # only against a range whose label is its own C definition.
+        (0x0000, 0x0028, "overlay1PreviousPointer"),
+        (0x0028, 0x0050, "overlay1NextPointer"),
         (
             0x0050,
             0x0080,
@@ -1225,7 +1228,8 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x3E48, 0x3E74, "overlay1SubmitGlobals"),
         (0x3E74, 0x3EB8, "overlay1SubmitAll"),
         (0x3EB8, 0x3F38, "overlay1AngleBetweenSamples"),
-        (0x3F38, 0x3FD8, "overlay1RelativeAngles"),
+        (0x3F38, 0x3F88, "overlay1RelativeAngleA"),
+        (0x3F88, 0x3FD8, "overlay1RelativeAngleB"),
         (0x5BA4, 0x5BC0, "overlay1InitTimedState"),
         (0x5BC0, 0x5BF4, "overlay1ConsumeTimer"),
         (
@@ -1383,22 +1387,24 @@ MIXED_TU_EXACT_C_RANGES = {
             "func_overlay_008_F0000894_185E5EC",
             "canonical mixed-TU object and linked ROM bytes exact",
         ),
-        (0xE88, 0xF1C, "overlay8StartMotion"),
-        (0xF1C, 0x1000, "overlay8Activate"),
+        # Labels are the names overlay_008.c defines; the friendly names
+        # these ranges once carried are not C definitions.
+        (0xE88, 0xF1C, "func_overlay_008_F0000E88_185EBE0"),
+        (0xF1C, 0x1000, "func_overlay_008_F0000F1C_185EC74"),
         (
             0x291C,
             0x2EC0,
             "func_overlay_008_F000291C_1860674",
             "canonical mixed-TU object and linked ROM bytes exact",
         ),
-        (0x2EC0, 0x3018, "overlay8UpdateChild"),
+        (0x2EC0, 0x3018, "func_overlay_008_F0002EC0_1860C18"),
         (
             0x3018,
             0x3278,
             "overlay8UpdateChannels",
             "canonical mixed-TU object, 16 runtime relocations, and linked bytes exact",
         ),
-        (0x3278, 0x3368, "overlay8ApplyColors"),
+        (0x3278, 0x3368, "func_overlay_008_F0003278_1860FD0"),
         (
             0x3368,
             0x34A0,

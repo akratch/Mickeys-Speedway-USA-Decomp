@@ -2535,5 +2535,85 @@ class OverlayIdentityExtentTests(unittest.TestCase):
         self.assertTrue(0 <= 0x5EA0 < extent)
 
 
+class ForeignTextValueTests(unittest.TestCase):
+    """A value line must never name another module's own .text definition."""
+
+    def test_foreign_text_names_are_found_with_their_owner(self):
+        values = {"overlay65Initialize": (0xF0000000, "overlay_049.c.o"),
+                  "overlay49TimerReloc": (0x28, "overlay_049.c.o")}
+        local = {49: {"overlay49Initialize"}, 65: {"overlay65Initialize"}}
+        self.assertEqual({"overlay65Initialize": ("overlay_049.c.o", 65)},
+                         rs.foreign_text_values(values, local))
+
+    def test_generate_refuses_the_value_line_and_reports_it(self):
+        caller = Path("build/src/overlays/o049/overlay_049.c.o")
+        callee = Path("build/src/overlays/o065/overlay65Initialize.c.o")
+        atlas = {"modules": [
+            {"overlay": 49, "text_ownership": [], "rom": {"start": "0x100"}},
+            {"overlay": 65, "text_ownership": [], "rom": {"start": "0x200"}},
+        ]}
+        defs = {49: {"overlay49Initialize"}, 65: {"overlay65Initialize"}}
+
+        def synthesize(obj, overlay, *_args):
+            vals = ({"overlay65Initialize": 0xF0000000, "overlay49TimerReloc": 0x28}
+                    if obj == caller else {})
+            return [], vals, [], {"attempted": False}
+
+        with contextlib.ExitStack() as stack:
+            patch = stack.enter_context
+            patch(mock.patch.object(rs.ot, "read_rom_table", return_value=[]))
+            patch(mock.patch.object(rs.ot, "read_headers", return_value=[]))
+            patch(mock.patch.object(rs.ot, "build_modules", return_value=[None] * 65))
+            patch(mock.patch.object(rs.ot, "read_module_relocations", return_value=[]))
+            patch(mock.patch.object(rs, "module_text_defs",
+                                    side_effect=lambda _objs, ov, _rows: defs[ov]))
+            patch(mock.patch.object(rs, "synthesize", side_effect=synthesize))
+            patch(mock.patch.object(rs, "object_aliases", return_value=[]))
+            text, diag = rs.generate(b"", atlas, objects=[(49, caller), (65, callee)],
+                                     rebind_resident=False, mutate_objects=False)
+
+        self.assertIn("overlay49TimerReloc = 0x00000028;", text)
+        self.assertNotIn("overlay65Initialize =", text)
+        self.assertEqual(1, len(diag["conflicts"]))
+        obj, name, why = diag["conflicts"][0]
+        self.assertEqual(("overlay_049.c.o", "overlay65Initialize"), (obj, name))
+        self.assertIn("overlay 65", why)
+
+
+class MisspelledGeneratedNameTests(unittest.TestCase):
+    ATLAS = {"modules": [{"overlay": 45, "rom": {"start": "0x188C458"}}]}
+
+    def test_a_wrong_rom_suffix_is_reported_with_the_right_name(self):
+        rows = rs.misspelled_generated_names(self.ATLAS, [
+            ("src/a.c", "x = func_overlay_045_F000000C_188B438(1);"),
+            ("src/b.c", "y = func_overlay_045_F000000C_188C464(1);"),
+            ("mk/c.mk", "--redefine-sym func_overlay_099_F0000000_1=z"),
+        ])
+        self.assertEqual([("src/a.c", "func_overlay_045_F000000C_188B438",
+                           "func_overlay_045_F000000C_188C464")], rows)
+
+    def test_the_tree_spells_no_misspelled_generated_name(self):
+        atlas = json.loads((rs.REPO / "config" / "overlays.us.json").read_text())
+        self.assertEqual([], rs.misspelled_generated_names(
+            atlas, rs.tree_generated_name_texts()))
+
+
+class ResidentVersusReservedTests(unittest.TestCase):
+    """A resident address and a reserved-selector tuple are not one identity.
+
+    overlay11InitializeFour's D_800D31BC reads statically as resident, while
+    the shipped table reaches it through selector 0xFFD. The disagreement is
+    an ambiguity for the linked-ROM route, not an abort; any other
+    disagreement still aborts.
+    """
+
+    def test_only_resident_against_reserved_is_an_ambiguity(self):
+        self.assertTrue(rs._resident_versus_reserved((0, 0x10), (0xFFD, 0x10)))
+        self.assertTrue(rs._resident_versus_reserved((0xFFF, 4), (0, 8)))
+        self.assertFalse(rs._resident_versus_reserved((0, 0x10), (11, 0x10)))
+        self.assertFalse(rs._resident_versus_reserved((0xFFD, 0), (0xFFE, 0)))
+        self.assertFalse(rs._resident_versus_reserved((0, 4), (0, 8)))
+
+
 if __name__ == "__main__":
     unittest.main()

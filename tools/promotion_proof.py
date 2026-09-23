@@ -186,10 +186,15 @@ def validate_report(symbol: str, report: dict[str, object]) -> dict[str, object]
             raise ProofError("missing independent filtered identities")
         keys = []
         for row in removed:
-            if (not isinstance(row, dict) or row.get("symbol") != ".bss"
+            # `.bss` sites are HI/LO proved through the linked BSS base; a
+            # named site is any type the filter plan admits, proved by the
+            # raw static surface.
+            if (not isinstance(row, dict) or not isinstance(row.get("symbol"), str)
+                    or not row["symbol"]
                     or type(row.get("offset")) is not int or row["offset"] < 0
                     or row["offset"] % 4 or row["offset"] >= target_words * 4
-                    or type(row.get("rtype")) is not int or row["rtype"] not in (5, 6)):
+                    or type(row.get("rtype")) is not int
+                    or row["rtype"] not in ((5, 6) if row["symbol"] == ".bss" else (4, 5, 6))):
                 raise ProofError("malformed declared filter site")
             keys.append((row["offset"], row["rtype"]))
         identity_keys = []

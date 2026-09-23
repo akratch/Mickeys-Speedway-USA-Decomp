@@ -30,6 +30,7 @@
 #   gmake check-tooling     focused safety/provenance/tooling regressions
 #   gmake small-delta-census  insertion-pair census -> docs/small-delta-census.md
 #   gmake promotion-proof SYMBOL=name  strict post-promotion exactness receipt
+#   gmake check-promotion-proofs  promotion-proof over every promoted function (cached; -j via PROMOTION_CENSUS_ARGS)
 #   gmake release-gate      serial, niced release checks with compact output
 #   gmake public-release    dry-run reconciliation/preflight; never pushes
 #   gmake clean      remove build/
@@ -422,6 +423,13 @@ check-raw-asm:
 promotion-proof:
 	@test -n "$(SYMBOL)" || { echo "usage: gmake promotion-proof SYMBOL=name [PROMOTION_PROOF_ARGS='--canonical']"; exit 2; }
 	$(HOST_PYTHON) $(TOOLS_DIR)/promotion_proof.py "$(SYMBOL)" $(PROMOTION_PROOF_ARGS)
+
+# Every promoted function (resident with a matched-C symbol row, and every
+# overlay function inside exact atlas ownership) through promotion-proof,
+# one proof per function, passes cached by object/ELF/tool hash. Exits nonzero
+# on any failure. Parallel runs are safe: each proof is --no-build.
+check-promotion-proofs:
+	$(HOST_PYTHON) $(TOOLS_DIR)/promotion_proof_census.py $(PROMOTION_CENSUS_ARGS)
 
 release-gate:
 	$(HOST_PYTHON) $(TOOLS_DIR)/release_gate.py $(RELEASE_GATE_ARGS)
@@ -1417,7 +1425,7 @@ $(TARGET).z64: $(TARGET).bin $(CRC)
 	fi
 	@ls -l $@
 
-.PHONY: default all setup hooks extract prune-asm verify cleanroom system-health check-tooling forced-floor-census promotion-proof release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
+.PHONY: default all setup hooks extract prune-asm verify cleanroom system-health check-tooling forced-floor-census promotion-proof check-promotion-proofs release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
 .SECONDARY:
 SHELL = /bin/bash -e -o pipefail
 

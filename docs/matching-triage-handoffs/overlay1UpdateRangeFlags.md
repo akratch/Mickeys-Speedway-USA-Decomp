@@ -573,4 +573,21 @@ local recoulours the f32 pool and leaves the integer ring in the same
 phase. Do not re-search dx/dz deletion, inlined squares, or rangeSquared
 statement order. The decision variable is unchanged.
 
+#### B3-o001 (2026-09-23): the phantom pop is found, and it is the wrong direction
+
+Re-measured 2 masked at delta 0, the same `and` at +0x190 taking t5 where
+the ROM has t4. The ugen freelist trace (`draw_census.py --proc 23 --keep`),
+read by source line through case 1: the `if (masked)` line draws twice, t4
+for `flags & 8` and then t3 for the u16 truncation of `masked`, and as1
+folds the pair into one `andi t3` (L149). The draw is spent, t4 and t3 go
+back on the list in that order, and the next line's `and` draws t5.
+
+Removing the phantom does not reach the ROM: with no `masked` carrier
+(`if (flags & 8)`) the single draw at that line takes t4 and the `and` takes
+t3, 4 words. `s32`/`u32` carriers are also 4, `u8` is 2. The ROM needs t3 at
+the head of the list and t4 next at that line, and the list arrives there
+as t4, t3, t5 in every form measured. So the free order of t3/t4 is decided
+upstream of case 1, which is where the recorded five-draw constraint puts
+it. No source edit adopted.
+
 <!-- plateau-handoff:overlay1UpdateRangeFlags:end -->

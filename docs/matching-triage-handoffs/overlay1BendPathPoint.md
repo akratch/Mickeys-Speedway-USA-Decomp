@@ -256,4 +256,19 @@ pair of assignments that IDO will not hoist. Empty-if line placement, plus-0
 and cast of the selector, empty-if on selector, do-while-0 around the call,
 and comma of index into the call are byte-flat at 19 on this shape.
 
+#### B3-o001 (2026-09-23): typed-view copies and spill placement, all measured
+
+Re-measured 19 at delta 0. The ROM copies the reloaded index into
+currentIndex (`move v1,a2`) in both arms; every same-IR spelling is hoisted
+into one move (103 at delta -8 with the copy last or first in the else arm,
+99 at -4 with the count decrement folded). The typed-view else-arm copies the
+last handoff proposed were measured from this base: `(s8)`, `(s16)` are 101
+at +12; `(u16)`, `(u32)`, plain parentheses, minus zero and or-with-zero are
+103 at -8 (folded back to the same IR); `& 0xFF`, `& 0xFFU` and xor-with-zero
+are 99 at +4 (a real extra word). None keeps two copies at delta 0. The
+empty-if spill moved after the call, folded onto the call's line, behind an
+empty `do {} while (0)`, or joined by an empty `if (selector)` is byte-flat
+at 19: the store-versus-mask delay-slot order is not reached by the placement
+of the L100 probe. No source edit adopted.
+
 <!-- plateau-handoff:overlay1BendPathPoint:end -->

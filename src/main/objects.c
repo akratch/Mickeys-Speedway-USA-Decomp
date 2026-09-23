@@ -5502,9 +5502,9 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * symbol: func_80006FA0
  * score: 63 differing words
  * frame: 0x40
- * relocations: 16
- * first-mismatch: +0x0C
- * summary: Active-list carriers and loop register allocation remain structural after restoring the two-argument destroy call.
+ * relocations: 18
+ * first-mismatch: +0xC
+ * summary: Remeasured 2026-09-23: 63 masked at delta 0, frame exact, 18 relocations against 16; active-list carriers and loop registers remain structural.
  * PLATEAU-HANDOFF:func_80006FA0:end
  */
 

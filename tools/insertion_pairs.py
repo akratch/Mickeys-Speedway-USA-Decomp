@@ -42,7 +42,7 @@ WHAT IT MEASURES
   5. OWNER of each one-sided word:
        - the source LINE, read from the candidate object's own line table
          (`.mdebug`, which the configured build carries without `-g`; `-g3`
-         is not used because it changes the code on 20 of 65 objects.c
+         is not used because it changes the size of 30 of 65 objects.c
          functions). A target-only word has no candidate address, so it takes
          the line of the nearest candidate word the alignment puts beside it,
          and says so (`via neighbour`).

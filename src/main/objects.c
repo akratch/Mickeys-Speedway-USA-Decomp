@@ -5456,11 +5456,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80006EE4:start
  * symbol: func_80006EE4
- * score: 46/47 words
+ * score: 40 differing words
  * frame: 0x28
- * relocations: 7
+ * relocations: 5
  * first-mismatch: +0x8
- * summary: One target direct global-pointer load and allocator shape remain unresolved after bounded source attempts.
+ * summary: Remeasured 2026-09-23: 40 masked at size delta -4 (46 of 47 words), frame exact; direct global-pointer load and allocator shape remain.
  * PLATEAU-HANDOFF:func_80006EE4:end
  */
 

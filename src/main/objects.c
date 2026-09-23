@@ -5456,11 +5456,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80006EE4:start
  * symbol: func_80006EE4
- * score: 46/47 words
+ * score: 40 differing words
  * frame: 0x28
- * relocations: 7
+ * relocations: 5
  * first-mismatch: +0x8
- * summary: One target direct global-pointer load and allocator shape remain unresolved after bounded source attempts.
+ * summary: Remeasured 2026-09-23: 40 masked at size delta -4 (46 of 47 words), frame exact; direct global-pointer load and allocator shape remain.
  * PLATEAU-HANDOFF:func_80006EE4:end
  */
 
@@ -5477,11 +5477,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_8000BB84:start
  * symbol: func_8000BB84
- * score: 4/65 words
+ * score: 61 differing words
  * frame: 0x30
  * relocations: 0
  * first-mismatch: +0x0
- * summary: Arithmetic/control-flow size is exact, but the target's 0x28 frame and FP register/stack allocation remain unresolved.
+ * summary: Remeasured 2026-09-23: 61 masked at delta 0; frame 0x30 against the target's 0x28, FP register and stack allocation unresolved.
  * PLATEAU-HANDOFF:func_8000BB84:end
  */
 
@@ -5492,7 +5492,7 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: frameless
  * relocations: 0
  * first-mismatch: +0x20
- * summary: Asset/count carrier and late loop register shape remain structural; next lever is a typed source record/output layout.
+ * summary: Remeasured 2026-09-23: 63 masked at size delta -4 (78 of 79 words), unchanged; asset/count carrier and late loop registers remain structural.
  * PLATEAU-HANDOFF:func_80006B04:end
  */
 
@@ -5502,9 +5502,9 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * symbol: func_80006FA0
  * score: 63 differing words
  * frame: 0x40
- * relocations: 16
- * first-mismatch: +0x0C
- * summary: Active-list carriers and loop register allocation remain structural after restoring the two-argument destroy call.
+ * relocations: 18
+ * first-mismatch: +0xC
+ * summary: Remeasured 2026-09-23: 63 masked at delta 0, frame exact, 18 relocations against 16; active-list carriers and loop registers remain structural.
  * PLATEAU-HANDOFF:func_80006FA0:end
  */
 
@@ -5512,19 +5512,19 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * symbol: func_8000831C
  * score: 81 differing words
  * frame: 0x28
- * relocations: 13
- * first-mismatch: +0x0
- * summary: Still 81 masked at size delta -4, and this pass is a precise negative that redirects the axis. The transfer from func_8005A7A0 is refuted at its precondition: that lead's finding is that the frame is the variable, and here frame_census reports 0x28 on both sides, fourteen slots each, identical ladders, and not one slot either side uses alone. There is no frame cell for a lever to move. The one measured asymmetry is traffic, not layout: the home of the seventh argument is read three times and written once by the target, and read once and never written here, so the target never register-promotes that parameter while this candidate keeps it in a caller-saved register across the whole middle of the function. That is the structural fact to attack. The L100 divisor lever does not reach it. Discarded-expression probes on that parameter, OR-with-zero, AND-with-minus-one and XOR-with-zero, at five placements and applied once, twice and three times, are byte-inert in all of them, masked staying 81 with the slot traffic unchanged, so L109's narrowing extends from an already-read global to an already-read stack parameter. The one probe placed ahead of the first call is not inert and is worse, 100 masked with the frame growing 0x28 to 0x30. Two respellings of the tenfold multiply as an eightfold plus a twofold, the form the target emits reusing the eightfold it already has, leave masked at 81 and move the size the wrong way, -4 to -8, because cfe reassociates them back. Naming the decrement through the existing temp is flat. Six physical-line arrangements of the four-way OR that builds the colour word are byte-identical, so L59's tie-break does not reach inside a single statement. Call test: p1-only, three calls, so the axis is the save ratio and L106 is not available. What is left is 47 naming words carrying a closed three-cycle over t8, t9 and t7, one L127 ring-phase fact rather than 47 colour questions, plus 29 structural words.
+ * relocations: 11
+ * first-mismatch: +0x40
+ * summary: Remeasured 2026-09-23: 81 masked at size delta -4, frame 0x28 exact; the seventh-argument home traffic is the structural fact left to attack.
  * PLATEAU-HANDOFF:func_8000831C:end
  */
 
 /* PLATEAU-HANDOFF:func_80007C68:start
  * symbol: func_80007C68
- * score: 93/118 words
+ * score: 25 differing words
  * frame: 0x60
  * relocations: 4
  * first-mismatch: +0x94
- * summary: 25 words of pure register naming from +0x94, frame and stack homes exact. The target colours one value this body leaves to ugen, and a full phase-one force sweep over every web against every colour and the split path (522 compiles) never beats 25, which is what a missing web looks like. The ugen freelist trace shows the ring two draws ahead: v1 is held by the frame -12 local's web, and there is a phantom pop on the texture-fetch line. Naming the index costs the frame and still does not make a web, including across an L97 region; 23 region placements never improve.
+ * summary: Remeasured 2026-09-23: 25 masked at delta 0, frame and relocations exact; pure register naming from +0x94, one web the target colours is missing.
  * PLATEAU-HANDOFF:func_80007C68:end
  */
 

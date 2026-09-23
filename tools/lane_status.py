@@ -67,8 +67,19 @@ def git(*args: str, check: bool = True) -> str:
 
 
 def has_global_asm(ref: str, symbol: str) -> bool:
+    """True when ``src`` at ``ref`` names a fallback file for ``symbol``.
+
+    A renamed overlay symbol's fallback keeps splat's generated file name, so
+    the names the build redefines to ``symbol`` are probed as well.
+    """
+    patterns = [f"{symbol}.s"] + [
+        f"{name}.s" for name in sorted(symbol_fallback_aliases(ref, symbol))
+    ]
+    command = ["git", "grep", "-q", "-F"]
+    for pattern in patterns:
+        command.extend(("-e", pattern))
     result = subprocess.run(
-        ["git", "grep", "-q", "-F", f"{symbol}.s", ref, "--", "src"],
+        [*command, ref, "--", "src"],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
     if result.returncode not in (0, 1):
@@ -364,29 +375,46 @@ def source_identity_index(
     return identities
 
 
-def guarded_fallback(text: str, symbol: str) -> bool:
-    """Recognise an exact-symbol NON_MATCHING body and its one fallback."""
-    definition = FUNCTION_DEFINITION_TEMPLATE.format(symbol=re.escape(symbol))
-    guard = re.compile(
-        rf"#\s*ifdef\s+NON_MATCHING\b(?P<body>.*?)"
-        rf"#\s*else\b(?P<fallback>.*?)#\s*endif\b",
-        re.DOTALL,
+def guarded_fallback(
+    text: str, symbol: str, aliases: frozenset[str] | set[str] = frozenset(),
+) -> bool:
+    """Recognise an exact-symbol NON_MATCHING body and its one fallback.
+
+    Delegates to `finalize_plateau.guarded_candidates`, the depth-aware
+    reader the plateau tool itself uses. The regex this replaced paired the
+    target ``#ifdef NON_MATCHING`` with the first ``#else``/``#endif`` after
+    it, so any candidate body carrying its own ``#if ... #else ... #endif``
+    (a variant switch) read as having no fallback, and the symbol was
+    classified already-integrated/exhausted while still NON_MATCHING.
+    ``aliases`` are the splat names the build renames to ``symbol``
+    (`build_fallback_aliases`).
+    """
+    try:
+        candidates = finalize_plateau.guarded_candidates(text, symbol, aliases)
+    except finalize_plateau.PlateauError:
+        return False
+    return len(candidates) == 1
+
+
+@lru_cache(maxsize=256)
+def build_fallback_aliases(ref: str) -> dict[tuple[str, str], frozenset[str]]:
+    """The build's generated-name -> symbol renames at ``ref``, per source."""
+    return finalize_plateau.fallback_aliases(
+        show_file(ref, finalize_plateau.OVERLAY_RULES_PATH)
     )
-    for match in guard.finditer(text):
-        if not re.search(definition, match.group("body"), re.DOTALL):
-            continue
-        fallbacks = re.findall(
-            r'#\s*pragma\s+GLOBAL_ASM\s*\(\s*"([^"]+)"\s*\)',
-            match.group("fallback"),
-        )
-        if len(fallbacks) != 1:
-            return False
-        name = PurePosixPath(fallbacks[0]).name
-        return name == f"{symbol}.s" or bool(re.fullmatch(
-            r"func_overlay_[0-9]{3}_F[0-9A-Fa-f]{7}_[0-9A-Fa-f]+\.s",
-            name,
-        ))
-    return False
+
+
+def source_fallback_aliases(ref: str, path: str, symbol: str) -> frozenset[str]:
+    return build_fallback_aliases(ref).get((path, symbol), frozenset())
+
+
+def symbol_fallback_aliases(ref: str, symbol: str) -> frozenset[str]:
+    """Every splat name the build renames to ``symbol``, from any source."""
+    names: set[str] = set()
+    for (_source, built), generated in build_fallback_aliases(ref).items():
+        if built == symbol:
+            names.update(generated)
+    return frozenset(names)
 
 
 def has_plateau_handoff(text: str, symbol: str) -> bool:
@@ -1351,7 +1379,9 @@ def _settled_status(
             "reopen-authorization-invalid",
         )
 
-    if not guarded_fallback(text, symbol):
+    if not guarded_fallback(
+        text, symbol, source_fallback_aliases(base, path, symbol),
+    ):
         return Assignment(
             symbol, "already-integrated/exhausted", path, None, None, [],
             "base has a committed definition without this target's fallback",

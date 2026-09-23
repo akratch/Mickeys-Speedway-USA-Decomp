@@ -36,6 +36,12 @@ KEYED_HANDOFF_RE = re.compile(
 GENERATED_OVERLAY_FALLBACK_RE = re.compile(
     r"^func_overlay_[0-9]{3}_F[0-9A-Fa-f]{7}_[0-9A-Fa-f]+\.s$"
 )
+OVERLAY_RULES_PATH = "mk/overlays.mk"
+OBJECT_RULE_RE = re.compile(r"^\$\(BUILD_DIR\)/\$\(SRC_DIR\)/(?P<source>\S+?\.c)\.o\s*:")
+REDEFINE_SYM_RE = re.compile(
+    r"--redefine-sym\s+(?P<old>[A-Za-z_][A-Za-z0-9_]*)=(?P<new>[A-Za-z_][A-Za-z0-9_]*)"
+)
+GENERATED_RESIDENT_FALLBACK_RE = re.compile(r"^func_8[0-9A-Fa-f]{7}\.s$")
 DEFINITION_TEMPLATE = (
     r"^[ \t]*(?:[A-Za-z_][A-Za-z0-9_]*[ \t*]+)+"
     r"{symbol}\s*\([^;{{}}]*\)\s*\{{"
@@ -129,7 +135,62 @@ def directive(line: str) -> tuple[str, str] | None:
     return match.group(1), match.group(2).strip()
 
 
-def guarded_candidates(text: str, symbol: str) -> list[GuardedCandidate]:
+def fallback_aliases(rules_text: str | None) -> dict[tuple[str, str], frozenset[str]]:
+    """Map (source path, built symbol) to the splat names the build renames to it.
+
+    A renamed overlay function keeps splat's generated fallback file:
+    ``overlay20UpdateGrid`` falls back to
+    ``.../overlay20UpdateGrid/func_overlay_020_F0000A68_1877040.s``, and the
+    build turns that name into the friendly one with an ``objcopy
+    --redefine-sym generated=friendly`` in the object's POSTPROCESS rule in
+    mk/overlays.mk. That rule is the build's own record of which fallback file
+    is which symbol, so it is the mapping read here, not the symbol's spelling.
+    Paths are repository-relative (``src/...``).
+    """
+    found: dict[tuple[str, str], set[str]] = {}
+    if not rules_text:
+        return {}
+    logical = re.sub(r"\\\n", " ", rules_text)
+    for line in logical.splitlines():
+        rule = OBJECT_RULE_RE.match(line)
+        if rule is None:
+            continue
+        source = "src/" + rule.group("source")
+        for pair in REDEFINE_SYM_RE.finditer(line):
+            found.setdefault((source, pair.group("new")), set()).add(pair.group("old"))
+    return {key: frozenset(value) for key, value in found.items()}
+
+
+def fallback_names_symbol(
+    path: str, symbol: str, aliases: frozenset[str] | set[str] = frozenset(),
+) -> bool:
+    """True when one GLOBAL_ASM path is this symbol's own fallback.
+
+    Accepted, in order: the file is ``<symbol>.s`` (resident renames and
+    ``<symbol>/<symbol>.s`` per-function directories alike); the file is a
+    splat name the build redefines to ``symbol`` (``aliases``, from
+    `fallback_aliases`); or the file carries a splat-generated name, overlay
+    (``func_overlay_NNN_...``) or resident (``func_8XXXXXXX``). The last is
+    what a candidate written under a descriptive C name looks like when the
+    ROM symbol was never renamed (``MatrixMultiplyVec4`` over
+    ``func_8002AF6C.s``) or was renamed without a redefine rule; the guard's
+    own structure (exactly one definition, exactly one fallback) is then the
+    pairing, as it is for tools/progress.py.
+    """
+    name = Path(path).name
+    if name == f"{symbol}.s":
+        return True
+    if name.endswith(".s") and name[:-2] in aliases:
+        return True
+    return bool(
+        GENERATED_OVERLAY_FALLBACK_RE.fullmatch(name)
+        or GENERATED_RESIDENT_FALLBACK_RE.fullmatch(name)
+    )
+
+
+def guarded_candidates(
+    text: str, symbol: str, aliases: frozenset[str] | set[str] = frozenset(),
+) -> list[GuardedCandidate]:
     lines = text.splitlines(keepends=True)
     found: list[GuardedCandidate] = []
     definition = re.compile(
@@ -197,8 +258,7 @@ def guarded_candidates(text: str, symbol: str) -> list[GuardedCandidate]:
         fallbacks = fallback_re.findall(fallback_text)
         valid = [
             path for path in fallbacks
-            if Path(path).name == f"{symbol}.s"
-            or GENERATED_OVERLAY_FALLBACK_RE.fullmatch(Path(path).name)
+            if fallback_names_symbol(path, symbol, aliases)
         ]
         if len(fallbacks) != 1 or len(valid) != 1:
             raise PlateauError(
@@ -209,7 +269,9 @@ def guarded_candidates(text: str, symbol: str) -> list[GuardedCandidate]:
     return found
 
 
-def defined_without_fallback(text: str, symbol: str) -> bool:
+def defined_without_fallback(
+    text: str, symbol: str, aliases: frozenset[str] | set[str] = frozenset(),
+) -> bool:
     """True when the symbol is defined and has no GLOBAL_ASM fallback of its own.
 
     Deliberately NOT called "is matched". From the file's text alone a matched
@@ -224,11 +286,17 @@ def defined_without_fallback(text: str, symbol: str) -> bool:
     if not definition.search(text):
         return False
     fallbacks = re.findall(r'#\s*pragma\s+GLOBAL_ASM\s*\(\s*"([^"]+)"\s*\)', text)
-    return not any(Path(path).name == f"{symbol}.s" for path in fallbacks)
+    return not any(
+        Path(path).name == f"{symbol}.s"
+        or (path.endswith(".s") and Path(path).name[:-2] in aliases)
+        for path in fallbacks
+    )
 
 
-def require_guarded_candidate(text: str, symbol: str) -> GuardedCandidate:
-    candidates = guarded_candidates(text, symbol)
+def require_guarded_candidate(
+    text: str, symbol: str, aliases: frozenset[str] | set[str] = frozenset(),
+) -> GuardedCandidate:
+    candidates = guarded_candidates(text, symbol, aliases)
     if len(candidates) != 1:
         if not candidates:
             # Keep the original sentence -- callers and tests rely on it --
@@ -238,7 +306,7 @@ def require_guarded_candidate(text: str, symbol: str) -> GuardedCandidate:
             # regions, so the merge reports no conflict and only this audit
             # sees the result is inconsistent. It has landed twice.
             detail = ""
-            if defined_without_fallback(text, symbol):
+            if defined_without_fallback(text, symbol, aliases):
                 detail = (
                     f"; {symbol} is defined here with no GLOBAL_ASM fallback of"
                     " its own, so either it is already matched and this"
@@ -344,7 +412,7 @@ def shard_pattern(symbol: str) -> re.Pattern[str]:
         r"- frame: [^\n|]+\n"
         r"- relocations: [0-9]+\n"
         r"- first mismatch: [^\n|]+\n"
-        r"(?:- summary: [^\n|]+\n)?"
+        r"(?:- summary: (?P<summary>[^\n|]+)\n)?"
         r"(?P<details>(?:[^\r\n|]*\n)*)"
         rf"<!-- {marker}:end -->\n?\Z"
     )
@@ -438,6 +506,15 @@ def update_handoff_shard(text: str, symbol: str, block: str) -> str:
         return block
     _source, retained = parse_shard(text, symbol)
     handoff_shard_source(block, symbol)
+    # A summary is evidence too. The header grammar allows one of any length,
+    # the command line only 160 characters, so a remeasure with a fresh
+    # one-line summary would otherwise drop a long committed one outright.
+    previous = shard_pattern(symbol).fullmatch(text).group("summary")
+    current = shard_pattern(symbol).fullmatch(block).group("summary")
+    if previous and previous != current:
+        carried = f"Summary before this remeasure: {previous}\n"
+        if carried not in retained:
+            retained = "\n" + carried + retained
     if not retained.strip():
         return block
     end = f"<!-- plateau-handoff:{symbol}:end -->"
@@ -572,7 +649,11 @@ def main() -> int:
         require_only_allowed_dirt(root, allowed)
 
         source_text = source_path.read_text(encoding="utf-8")
-        candidate = require_guarded_candidate(source_text, args.symbol)
+        rules = root / OVERLAY_RULES_PATH
+        aliases = fallback_aliases(
+            rules.read_text(encoding="utf-8") if rules.is_file() else None
+        ).get((source_rel, args.symbol), frozenset())
+        candidate = require_guarded_candidate(source_text, args.symbol, aliases)
         doc_text = doc_path.read_text(encoding="utf-8") if doc_path.exists() else ""
         block = markdown_handoff(args.symbol, source_rel, metrics)
         updated_doc = (
@@ -586,7 +667,9 @@ def main() -> int:
         )
         doc_path.write_text(updated_doc, encoding="utf-8", newline="\n")
 
-        require_guarded_candidate(source_path.read_text(encoding="utf-8"), args.symbol)
+        require_guarded_candidate(
+            source_path.read_text(encoding="utf-8"), args.symbol, aliases,
+        )
         require_only_allowed_dirt(root, allowed)
         run_source_gates(root)
         require_only_allowed_dirt(root, allowed)

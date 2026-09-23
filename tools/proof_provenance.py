@@ -713,6 +713,28 @@ def _brace_depth(masked: str, stop: int) -> int:
     return depth
 
 
+_KR_IDENTIFIER_LIST_RE = re.compile(r"\s*[A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)*\s*")
+
+
+def _kr_parameter_declarations(parameters: str, masked: str, tail: int) -> bool:
+    """True when ``tail`` opens a K&R parameter-declaration list ending at ``{``.
+
+    ``f(a, b) T a; U b; {`` is a definition in old-style C. The parameter
+    list must be bare identifiers, and everything before the body's ``{``
+    must be non-empty ``;``-terminated declarations, which a prototype
+    (``f(a);``) or a call can never satisfy.
+    """
+    if not _KR_IDENTIFIER_LIST_RE.fullmatch(parameters):
+        return False
+    body = masked.find("{", tail)
+    if body < 0:
+        return False
+    declarations = masked[tail:body]
+    if any(char in declarations for char in "}=#") or not declarations.rstrip().endswith(";"):
+        return False
+    return all(segment.strip() for segment in declarations.rstrip()[:-1].split(";"))
+
+
 def source_facts(text: str, symbol: str) -> SourceFacts:
     """Find global definitions and GLOBAL_ASM fallbacks for ``symbol``."""
 
@@ -731,7 +753,10 @@ def source_facts(text: str, symbol: str) -> SourceFacts:
         tail = closing + 1
         while tail < len(masked) and masked[tail].isspace():
             tail += 1
-        if tail >= len(masked) or masked[tail] != "{":
+        if tail >= len(masked):
+            continue
+        if masked[tail] != "{" and not _kr_parameter_declarations(
+                masked[opening + 1:closing], masked, tail):
             continue
         line = _line_number(starts, match.start())
         definitions.append(Occurrence(line, _state_at(states, line)))
@@ -747,6 +772,63 @@ def source_facts(text: str, symbol: str) -> SourceFacts:
             PragmaOccurrence(line, _state_at(states, line), path, pragma_symbol)
         )
     return SourceFacts(tuple(definitions), tuple(pragmas))
+
+
+def _macro_spells(text: str, symbol: str) -> bool:
+    """True when a ``#define`` in ``text`` names or expands to ``symbol``."""
+    return any(re.search(rf"\b{re.escape(symbol)}\b", line)
+               for line in _mask_c(text).splitlines()
+               if re.match(r"\s*#\s*define\b", line))
+
+
+def preprocessed_text(source: pathlib.Path, root: pathlib.Path) -> str:
+    """The configured compiler's own preprocessed view of ``source``.
+
+    The ordinary build's compile command (``gmake -n``, every define and include
+    in order, no ``NON_MATCHING``) is rerun as ``tools/ido/cc -E``. The result
+    is what the compiler parsed: conditionals resolved, macros expanded,
+    quoted includes inlined, ``# LINE "FILE"`` markers left in place.
+    """
+    command, flags, error = _discover_compile_command(root, source, non_matching=False)
+    if command is None or error is not None:
+        raise MetadataProofError("cannot discover the configured compile command: %s" % error)
+    words = shlex.split(command)
+    if "tools/ido/cc" not in words:
+        raise MetadataProofError("configured compile command is not IDO")
+    result = subprocess.run(
+        ["tools/ido/cc", "-E", *flags, _relative(source, root)], cwd=root, text=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=120, check=False)
+    if result.returncode:
+        raise MetadataProofError("configured preprocessor failed: %s" % (
+            result.stderr.strip().splitlines() or ["exit %d" % result.returncode])[-1])
+    return result.stdout
+
+
+def source_view(source: pathlib.Path, symbol: str,
+                root: pathlib.Path | None = None) -> tuple[str, str]:
+    """The text ``source_facts`` should read for ``symbol``, and which view it is.
+
+    The source as written is the view whenever it defines the symbol or holds a
+    ``GLOBAL_ASM`` for it. A definition spelled through the preprocessor is not
+    visible there: ``overlay101UpdateEntry8B.c`` is
+    ``#define overlay101UpdateEntry8 overlay101UpdateEntry8B`` followed by
+    ``#include "overlay101UpdateEntry8.c"``. When the written source has no
+    fact for the symbol but a ``#define`` spells it, the view is the configured
+    compiler's preprocessed output (``preprocessed_text``), so the facts are
+    the ones the ordinary build compiles.
+    """
+    root = pathlib.Path(__file__).resolve().parent.parent if root is None else root
+    text = source.read_text(encoding="utf-8", errors="replace")
+    facts = source_facts(text, symbol)
+    if facts.definitions or facts.pragmas or not _macro_spells(text, symbol):
+        return text, "source"
+    return preprocessed_text(source, root), "preprocessed"
+
+
+def source_facts_for(source: pathlib.Path, symbol: str,
+                     root: pathlib.Path | None = None) -> SourceFacts:
+    """``source_facts`` over ``source_view`` (the preprocessed view when needed)."""
+    return source_facts(source_view(source, symbol, root)[0], symbol)
 
 
 def _all_pragmas(text: str) -> tuple[PragmaOccurrence, ...]:
@@ -843,6 +925,7 @@ def _artifact(path: pathlib.Path | None, root: pathlib.Path, kind: str) -> dict[
 
 def _find_source(root: pathlib.Path, symbols: Sequence[str]) -> pathlib.Path | None:
     matches: set[pathlib.Path] = set()
+    spelled: list[pathlib.Path] = []
     for path in (root / "src").rglob("*.c"):
         text = path.read_text(encoding="utf-8", errors="replace")
         for symbol in symbols:
@@ -850,6 +933,17 @@ def _find_source(root: pathlib.Path, symbols: Sequence[str]) -> pathlib.Path | N
             if facts.definitions or facts.pragmas:
                 matches.add(path)
                 break
+        else:
+            if any(_macro_spells(text, symbol) for symbol in symbols):
+                spelled.append(path)
+    if not matches:
+        # Only the preprocessor spells the definition (#define + #include).
+        for path in spelled:
+            try:
+                if any(source_facts_for(path, symbol, root).definitions for symbol in symbols):
+                    matches.add(path)
+            except MetadataProofError:
+                continue
     return next(iter(matches)) if len(matches) == 1 else None
 
 
@@ -973,8 +1067,14 @@ def build_manifest(
         compiler_flags: list[str] = []
         compile_error = "source unavailable"
     else:
-        source_text = source.read_text(encoding="utf-8", errors="replace")
         requested_nm = candidate_build_dir.name == "build_non_matching"
+        try:
+            # The ordinary build's view: a definition spelled through the
+            # preprocessor is classified as the compiler sees it.
+            source_text = (source_view(source, candidate_symbol, root)[0] if not requested_nm
+                           else source.read_text(encoding="utf-8", errors="replace"))
+        except MetadataProofError:
+            source_text = source.read_text(encoding="utf-8", errors="replace")
         compile_command, compiler_flags, compile_error = _discover_compile_command(
             root, source, non_matching=requested_nm
         )

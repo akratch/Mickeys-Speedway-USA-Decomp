@@ -183,6 +183,20 @@ def _definition_source(candidate_symbol: str, root: Path) -> Path:
         text = source.read_text(encoding="utf-8", errors="replace")
         if pp.source_facts(text, candidate_symbol).definitions:
             candidates.append(source)
+    if not candidates:
+        # A definition spelled through the preprocessor (#define + #include)
+        # is visible only in the compiler's view; consult it only for the
+        # files whose own #define spells the symbol.
+        for source in (root / "src").rglob("*.c"):
+            text = source.read_text(encoding="utf-8", errors="replace")
+            if not pp._macro_spells(text, candidate_symbol):
+                continue
+            try:
+                facts = pp.source_facts_for(source, candidate_symbol, root)
+            except pp.MetadataProofError as error:
+                raise PreflightError(f"{_relative(source)}: {error}") from error
+            if facts.definitions:
+                candidates.append(source)
     return _unique(candidates, f"C definition source for {candidate_symbol}")
 
 
@@ -415,7 +429,10 @@ def _post_promotion_resolution(
     symbol_path: Path,
 ) -> Resolution:
     source = _definition_source(candidate_symbol, root)
-    text = source.read_text(encoding="utf-8", errors="replace")
+    try:
+        text, view = pp.source_view(source, candidate_symbol, root)
+    except pp.MetadataProofError as error:
+        raise PreflightError(f"{_relative(source)}: {error}") from error
     facts = pp.source_facts(text, candidate_symbol)
     target_facts = pp.source_facts(text, target_symbol)
     if (
@@ -429,6 +446,8 @@ def _post_promotion_resolution(
             "is not one unconditional promoted C definition with no matching GLOBAL_ASM"
         )
     ordinary_reason = "the selected symbol has one unconditional ordinary C definition"
+    if view == "preprocessed":
+        ordinary_reason += " (in the configured preprocessor's view)"
 
     generated = rs.GEN_NAME_RE.match(target_symbol)
     if generated:
@@ -941,7 +960,10 @@ def _build_linked_boundary() -> None:
 
 
 def _source_signature(source: Path, symbol: str) -> str:
-    original = source.read_text(encoding="utf-8", errors="replace")
+    try:
+        original = pp.source_view(source, symbol, REPO)[0]
+    except pp.MetadataProofError as error:
+        raise PreflightError(f"{_relative(source)}: {error}") from error
     facts = pp.source_facts(original, symbol)
     if len(facts.definitions) != 1:
         raise PreflightError(
@@ -964,6 +986,10 @@ def _source_signature(source: Path, symbol: str) -> str:
     brace = closing + 1
     while brace < len(text) and text[brace].isspace():
         brace += 1
+    if brace < len(text) and text[brace] != "{" and pp._kr_parameter_declarations(
+            text[opening + 1:closing], text, brace):
+        # K&R: the signature runs through the parameter declarations.
+        brace = text.find("{", brace)
     if brace >= len(text) or text[brace] != "{":
         raise PreflightError(f"{symbol} occurrence is not a function definition")
     line_start = text.rfind("\n", 0, symbol_start) + 1

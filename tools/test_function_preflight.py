@@ -2403,5 +2403,32 @@ class RelocationEvidenceTests(unittest.TestCase):
         self.assertEqual([], evidence["target_static_relocations"])
         self.assertEqual(1, len(evidence["runtime_overlay_records"]))
         self.assertEqual([], evidence["resident_runtime_records"])
+class SourceViewTests(unittest.TestCase):
+    """Definitions the written source does not spell as `name(...) {`."""
+
+    def test_kr_definition_has_a_signature(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "a.c"
+            source.write_text("void reset();\nvoid reset(state, count)\n"
+                              "State *state;\ns32 count;\n{\n    reset(state, 1);\n}\n")
+            self.assertEqual("void reset(state, count) State *state; s32 count;",
+                             fp._source_signature(source, "reset"))
+
+    def test_macro_spelled_definition_source_uses_the_preprocessed_view(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "src").mkdir()
+            (root / "src/entry.c").write_text("void entry(void) { }\n")
+            alias = root / "src/entryB.c"
+            alias.write_text('#define entry entryB\n#include "entry.c"\n')
+            expanded = '# 1 "src/entry.c"\nvoid entryB(void) { }\n'
+            with mock.patch.object(fp.pp, "preprocessed_text", return_value=expanded):
+                self.assertEqual(alias.resolve(), fp._definition_source("entryB", root))
+            with mock.patch.object(fp.pp, "preprocessed_text",
+                                   side_effect=fp.pp.MetadataProofError("cpp failed")):
+                with self.assertRaisesRegex(fp.PreflightError, "cpp failed"):
+                    fp._definition_source("entryB", root)
+
+
 if __name__ == "__main__":
     unittest.main()

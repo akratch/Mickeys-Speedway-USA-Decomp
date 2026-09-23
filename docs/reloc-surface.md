@@ -361,6 +361,19 @@ object's own section symbol is placed by the link map
 (`build/mickey.us.map`), which must place that object's section once, at its
 own size.
 
+The last three failures were definitions the source-fact reader could not
+see. `overlay28ResetBuffer` is written K&R style (`f(state, count)` then its
+parameter declarations before the `{`), which the reader now accepts when the
+parameter list is bare identifiers and every declaration before the body is a
+non-empty `;`-terminated one, so a prototype or a call never qualifies.
+`overlay101UpdateEntry8B`/`8C` are spelled only by the preprocessor
+(`#define overlay101UpdateEntry8 overlay101UpdateEntry8B` then
+`#include "overlay101UpdateEntry8.c"`). When the written source has no fact
+for a symbol that one of its own `#define`s spells, the reader
+(`proof_provenance.source_view`) uses the configured compiler's view instead:
+the ordinary build's compile command from `gmake -n`, rerun as
+`tools/ido/cc -E`. Only such files are ever preprocessed.
+
 Linked BSS follows the shipped relocation blobs, while runtime BSS follows only
 text plus data/rodata. The tool therefore proves the linked definition first,
 then translates its BSS offset from `ROM-size + object offset` to

@@ -42,7 +42,9 @@ typedef struct Overlay2Hit {
     s32 flags;
 } Overlay2Hit;
 
-extern Overlay2Entry *overlay1GetEntry(u16 index);
+/* Overlay 1's function, called through a placeholder: a value line for
+ * overlay1GetEntry itself would override its definition in every module. */
+extern Overlay2Entry *overlay2Overlay1GetEntryReloc(u16 index);
 extern void overlay2AdjacentIndices(Overlay2Entry *entry, u16 index,
                                     s16 *previous, s16 *next);
 extern s32 overlay2QueryNode(f32 x0, f32 y0, f32 x1, f32 y1,
@@ -86,7 +88,7 @@ s32 func_overlay_002_F0001A94_185888C(f32 x0, f32 y0, f32 x1, f32 y1,
     Overlay2Entry *hitEntry;
     Overlay2Point *point;
 
-    baseEntry = overlay1GetEntry(shapeIndex);
+    baseEntry = overlay2Overlay1GetEntryReloc(shapeIndex);
     D_38 = shape->nodes;
     gOverlay2QueryLinesReloc = shape->lines;
     gOverlay2QueryX0Reloc = x0;
@@ -107,7 +109,7 @@ s32 func_overlay_002_F0001A94_185888C(f32 x0, f32 y0, f32 x1, f32 y1,
         hit->index = gOverlay2QueryIndexReloc;
         hit->owner = D_72;
 
-        hitEntry = overlay1GetEntry(D_72);
+        hitEntry = overlay2Overlay1GetEntryReloc(D_72);
         overlay2AdjacentIndices(hitEntry, hit->index,
                                 &hit->previous, &hit->next);
 

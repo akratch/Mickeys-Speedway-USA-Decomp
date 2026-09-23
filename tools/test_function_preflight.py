@@ -1308,6 +1308,12 @@ class GeometryAndWorkbenchSummaryTests(unittest.TestCase):
         self.assertEqual(command[1:3], ["--rom", "friendly"])
         self.assertEqual("rom", report["comparison_mode"])
 
+        # --no-build must reach the ROM oracle, or two concurrent proofs
+        # rewrite and read the one shared build/mickey.us.z64 at once.
+        with mock.patch.object(fp, "_run", return_value=completed) as run:
+            fp._workbench(resolution, no_build=True)
+        self.assertEqual(run.call_args.args[0][1:4], ["--no-build", "--rom", "friendly"])
+
     def test_promoted_geometry_must_equal_tracked_range(self) -> None:
         resolution = fp.Resolution(
             "friendly",

@@ -412,7 +412,7 @@ def shard_pattern(symbol: str) -> re.Pattern[str]:
         r"- frame: [^\n|]+\n"
         r"- relocations: [0-9]+\n"
         r"- first mismatch: [^\n|]+\n"
-        r"(?:- summary: [^\n|]+\n)?"
+        r"(?:- summary: (?P<summary>[^\n|]+)\n)?"
         r"(?P<details>(?:[^\r\n|]*\n)*)"
         rf"<!-- {marker}:end -->\n?\Z"
     )
@@ -506,6 +506,15 @@ def update_handoff_shard(text: str, symbol: str, block: str) -> str:
         return block
     _source, retained = parse_shard(text, symbol)
     handoff_shard_source(block, symbol)
+    # A summary is evidence too. The header grammar allows one of any length,
+    # the command line only 160 characters, so a remeasure with a fresh
+    # one-line summary would otherwise drop a long committed one outright.
+    previous = shard_pattern(symbol).fullmatch(text).group("summary")
+    current = shard_pattern(symbol).fullmatch(block).group("summary")
+    if previous and previous != current:
+        carried = f"Summary before this remeasure: {previous}\n"
+        if carried not in retained:
+            retained = "\n" + carried + retained
     if not retained.strip():
         return block
     end = f"<!-- plateau-handoff:{symbol}:end -->"

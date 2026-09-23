@@ -80,6 +80,16 @@
       "reason": "Closed before L142/L144/L131/L139 existed. L142: a call-spanning web is denied exactly the argument registers those calls load, so arity is the lever not the ratio. L144: address-taking forces the reload without volatile edges.",
       "source_commit": "164ceb845611d3ff8dbace0a526bff06804d965c"
     },
+    "func_80006B04": {
+      "ledger_commit": "d33598a3a5aefdbdd3b7952f44bbb57907a0d20e",
+      "reason": "Track B reopen 2026-09-23: tools/insertion_pairs.py (new since closure) owns every one-sided word with a line and construct (docs/small-delta-census.md). Closure searched colour at nonzero delta; this pass re-spells the owning line.",
+      "source_commit": "d33598a3a5aefdbdd3b7952f44bbb57907a0d20e"
+    },
+    "func_80006EE4": {
+      "ledger_commit": "09720b262a8f536d4cac661d318edc74bea9e0e7",
+      "reason": "Track B reopen 2026-09-23: tools/insertion_pairs.py (new since closure) owns every one-sided word with a line and construct (docs/small-delta-census.md). Closure searched colour at nonzero delta; this pass re-spells the owning line.",
+      "source_commit": "09720b262a8f536d4cac661d318edc74bea9e0e7"
+    },
     "func_80007118": {
       "ledger_commit": "3639bb146dd3828a3c8cc5bc93deb42a12d4f8e6",
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
@@ -99,6 +109,11 @@
       "ledger_commit": "3f0eb5cd6e7a5cd049f009127d9f36c9b3884cf3",
       "reason": "New mechanisms measured since this closed: lever 51 (a hand-written cursor blocks the register names; uopt never coalesces the base it invented itself) and the L88 composition rule, where each edit alone is a regression.",
       "source_commit": "3f0eb5cd6e7a5cd049f009127d9f36c9b3884cf3"
+    },
+    "func_8000831C": {
+      "ledger_commit": "5da6b1c65b1dd5b95bb64c9778633447534af192",
+      "reason": "Track B reopen 2026-09-23: tools/insertion_pairs.py (new since closure) owns every one-sided word with a line and construct (docs/small-delta-census.md). Closure searched colour at nonzero delta; this pass re-spells the owning line.",
+      "source_commit": "5da6b1c65b1dd5b95bb64c9778633447534af192"
     },
     "func_800084C4": {
       "ledger_commit": "8165ac8f49b34eac800bf6e25337427bb6a6af79",
@@ -989,6 +1004,11 @@
       "ledger_commit": "1f5bc9322f4c637ed149ff269f11b75686550d98",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "1f5bc9322f4c637ed149ff269f11b75686550d98"
+    },
+    "func_overlay_014_F0001830_1871108": {
+      "ledger_commit": "9d5fc3ba23a65bed39fddb258bb67cb77e8356d9",
+      "reason": "Track B reopen 2026-09-23: tools/insertion_pairs.py (new since closure) owns every one-sided word with a line and construct (docs/small-delta-census.md). Closure searched colour at nonzero delta; this pass re-spells the owning line.",
+      "source_commit": "bb201dc13247b7445c37b0f92a6c48ca0cb7cb22"
     },
     "func_overlay_020_F000038C_1876964": {
       "ledger_commit": "b0707769d25676576150e02d365a01a1090b17c0",

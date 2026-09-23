@@ -781,6 +781,28 @@ class ShardEvidenceRetentionTests(unittest.TestCase):
             "src/main/example.c",
         )
 
+    def test_a_replaced_summary_is_carried_into_the_evidence(self):
+        # A long committed summary cannot be re-entered through --summary
+        # (160 characters); a remeasure must not silently drop it.
+        long = "Eliminated the frame axis; " + "x" * 300
+        old = self.shard("30/40", f"- summary: {long}\n" + self.EVIDENCE)
+        new = self.shard("12/40", "- summary: Remeasured; unchanged blocker.\n")
+        merged = plateau.update_handoff_shard(old, self.SYMBOL, new)
+        self.assertIn(f"Summary before this remeasure: {long}", merged)
+        self.assertIn("- summary: Remeasured; unchanged blocker.", merged)
+        self.assertIn("Eliminated: three loop forms", merged)
+        self.assertEqual(
+            plateau.update_handoff_shard(merged, self.SYMBOL, new).count(
+                "Summary before this remeasure"), 1,
+        )
+
+    def test_an_unchanged_summary_is_not_duplicated(self):
+        same = self.shard("30/40", "- summary: same blocker\n")
+        merged = plateau.update_handoff_shard(
+            same, self.SYMBOL, self.shard("12/40", "- summary: same blocker\n"),
+        )
+        self.assertNotIn("Summary before this remeasure", merged)
+
     def test_a_shard_with_no_evidence_is_replaced_cleanly(self):
         merged = plateau.update_handoff_shard(
             self.shard("30/40"), self.SYMBOL, self.shard("12/40")

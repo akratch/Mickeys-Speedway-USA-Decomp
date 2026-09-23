@@ -910,28 +910,40 @@ f32 lightDirectionCalc(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg
     }
     return var_f2;
 }
-/* Workbench verdict: structure-mismatch, 155 differing words, first mismatch +0x20. */
-/* Candidate: 183/184 instructions with an exact -0xC8 frame; 1/28 relocation identities is exact. */
-/* Shape status: call order and the +0x20 colour block are preserved; the early pointer/carrier allocation is not shape-exact. */
+/* 63 masked words at size delta 0, frame 0xC8 with the target's slot ladder,
+ * first mismatch +0x80 (was 155 at delta -4). Track B, 2026-09-23:
+ *   - lightData is assigned once before the scale test and again after it.
+ *     The first definition is dead on the unscaled path, so uopt sinks it
+ *     into the scaled branch; the target computes description + 0x10 in both
+ *     places and addresses the branch through it. One pointer declared once
+ *     was hoisted above the test and folded into the offsets: the -4. 75.
+ *   - declarations ordered so count, the four saved values and changed take
+ *     the top homes, local sits at 0x70 and cameraDelta at 0x50: 63, and the
+ *     immediate bucket is empty.
+ * Left, 57 naming rows and one moved word: the three single-block CSE temps
+ * of the scaling arithmetic (web numbers 78, 86 and 88 on this shape, save
+ * 3 each) are coloured v0, v1 and a0 here where the target leaves them in
+ * ring temps, and the ring phase differs downstream (t0-t4 against t5-t9); and
+ * the changed = 1 constant is drawn later than the target draws it. */
 /* PROVENANCE: JFG's corresponding object-light routine supplies the role and dispatch idiom; Mickey's fields, globals, and calls are authoritative below. */
 #ifdef NON_MATCHING
 void func_80019AB8(LightPosition *position, LightObjectContext *object,
                    LightDescription *description, f32 *matrix) {
-    LightObjectState *state;
     s32 count;
-    LightData *lightData;
     s32 savedRed;
     s32 savedGreen;
     s32 savedBlue;
     s32 savedPacked;
     s32 changed;
+    f32 local[4][4];
+    LightData *lightData;
     f32 scale;
     f32 factor;
     s32 redValue;
     s32 greenValue;
-    s16 jointCount;
-    f32 local[4][4];
     f32 cameraDelta[3];
+    LightObjectState *state;
+    s16 jointCount;
 
     state = object->state0;
     if ((description != NULL) || (state->environment64 != 0)) {
@@ -946,23 +958,21 @@ void func_80019AB8(LightPosition *position, LightObjectContext *object,
         if (description != NULL) {
             changed = 0;
             scale = description->scale0;
+            lightData = (LightData *) ((u8 *) description + 0x10);
             if ((1.0f != scale) ||
                 ((D_8007C854 != 0) && (D_8007C85C != 0xFF))) {
-                LightData *scaledData;
-
-                scaledData = (LightData *) ((u8 *) description + 0x10);
-                savedRed = scaledData->red15;
-                savedGreen = scaledData->green17;
-                savedBlue = scaledData->blue16;
+                savedRed = lightData->red15;
+                savedGreen = lightData->green17;
+                savedBlue = lightData->blue16;
                 factor = scale * ((f32) D_8007C85C * D_800817C8);
-                savedPacked = scaledData->packed10;
+                savedPacked = lightData->packed10;
                 redValue = (s32) ((f32) savedRed * factor);
-                scaledData->red15 = (u8) redValue;
+                lightData->red15 = (u8) redValue;
                 greenValue = (s32) ((f32) savedGreen * factor);
-                scaledData->blue16 = (u8) (redValue - greenValue);
-                scaledData->packed10 =
-                    ((redValue - greenValue) & 0xFF) << scaledData->shift14;
-                scaledData->green17 = (u8) greenValue;
+                lightData->blue16 = (u8) (redValue - greenValue);
+                lightData->packed10 =
+                    ((redValue - greenValue) & 0xFF) << lightData->shift14;
+                lightData->green17 = (u8) greenValue;
                 changed = 1;
             }
             jointCount = description->jointCountE;
@@ -1141,11 +1151,11 @@ s32 lightKillGlowingLight(void) {
 
 /* PLATEAU-HANDOFF:func_80019AB8:start
  * symbol: func_80019AB8
- * score: 155 differing words
+ * score: 63/184 words
  * frame: 0xC8
  * relocations: 28
- * first-mismatch: +0x20
- * summary: 183/184 words; early scaling-pointer hoist swaps the s1/s2 carrier; flag lattice lacks a resident size owner
+ * first-mismatch: +0x80
+ * summary: Sunk partially dead lightData def closes the -4; target homes give 63 at delta 0; three single-block CSE temps take v0/v1/a0 not ring temps
  * PLATEAU-HANDOFF:func_80019AB8:end
  */
 

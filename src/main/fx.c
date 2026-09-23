@@ -513,46 +513,48 @@ void func_800475E8(FxCone *cone, s16 angle) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/fx/func_800475E8.s")
 #endif
-/* Workbench verdict: structure-mismatch, 167 differing words, first mismatch +0x0. */
-/* Candidate is 188/193 instructions, frame -0x148 versus target -0x150. */
-/* Signed-step and factor webs are repaired; point-array placement remains. */
-/* PROVENANCE: JFG's fxMakeConeLength role identifies the routine; this body is reconstructed from Mickey's target offsets and m2c control flow. */
-#ifdef NON_MATCHING
+/* PROVENANCE: JFG's fxMakeConeLength role identifies the routine; this body is reconstructed from Mickey's target offsets and m2c control flow.
+ * Matched 2026-09-23 (Track B, lane B-fx). What closed it, in order:
+ *  - frame 0x150: six declared slots above points and five between points
+ *    and vertices, whose spill home is +0x6C. Unused declarations
+ *    (unused, addressIndex, scale) keep their homes, so they stay.
+ *  - size: no addressIndex carrier (its copy was the extra word), and
+ *    while (i--) for the first loop (the target keeps the post-decrement
+ *    copy and tests the counter).
+ *  - FP colours: the cast height in its own web (originZ), the scale
+ *    written inline, and originZ *= before the negation. */
 void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
                    s32 alpha) {
-    FxConePoint points[15];
+    s32 unused;
     FxConePoint *point;
-    u8 *vertices;
     u8 addressIndex;
     s32 angle;
     s32 i;
     s32 step;
+    FxConePoint points[15];
     f32 originZ;
     f32 scale;
     f32 scaleX;
     f32 scaleY;
     f32 factor;
+    u8 *vertices;
     f32 temp;
 
     if (cone != 0) {
         point = points;
-        addressIndex = cone->addressIndex ^ 1;
-        cone->addressIndex = addressIndex;
-        vertices = cone->addresses[addressIndex];
+        cone->addressIndex = cone->addressIndex ^ 1;
+        vertices = cone->addresses[cone->addressIndex];
         if (cone->flags != 0) {
             angle = 0;
             i = cone->segmentCount;
             step = -0x10000 / i;
-            if (i != 0) {
-                do {
-                    point->x = func_8002A8C0(angle) * radius;
-                    temp = func_8002A8BC(angle) * depth;
-                    point->z = (f32) -height;
-                    point++;
-                    angle += step;
-                    point[-1].y = temp;
-                    i--;
-                } while (i != 0);
+            while (i--) {
+                point->x = func_8002A8C0(angle) * radius;
+                temp = func_8002A8BC(angle) * depth;
+                point->z = (f32) -height;
+                point++;
+                angle += step;
+                point[-1].y = temp;
             }
             func_80048080(cone->segmentCount, cone->value26, cone->value28,
                           cone->value2A, (s32) cone->value20,
@@ -569,7 +571,7 @@ void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
         if (cone->segmentCount == 0) {
             scaleX = cone->value18;
             scaleY = cone->value1C;
-            temp = (f32) cone->value24;
+            originZ = (f32) cone->value24;
             if (alpha < 0x80) {
                 factor = 0.0f;
             } else if (alpha >= 0x100) {
@@ -577,11 +579,11 @@ void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
             } else {
                 factor = (f32) (alpha - 0x7F) * 0.0078125f;
             }
-            scale = 1.0f + (2.0f * factor);
+            scaleX *= 1.0f + (2.0f * factor);
+            scaleY *= 1.0f + (2.0f * factor);
             i = 0;
-            scaleX *= scale;
-            scaleY *= scale;
-            temp = -(temp * (0.25f * factor));
+            originZ *= 0.25f * factor;
+            temp = -originZ;
             do {
                 angle = i << 0xD;
                 point->x = func_8002A8C0(angle) * scaleX;
@@ -597,9 +599,6 @@ void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/func_800479D4.s")
-#endif
 
 /*
  * PROVENANCE: the block-local display-list macro spelling below is adapted
@@ -2473,16 +2472,6 @@ void func_8004AF68(void) {
  * first-mismatch: 0x8
  * summary: JFG efd5abb remains assembly-only; zero source attempts. Need new missing relocations and command-loop topology evidence.
  * PLATEAU-HANDOFF:fxSPDPRipple:end
- */
-
-/* PLATEAU-HANDOFF:func_800479D4:start
- * symbol: func_800479D4
- * score: 167/192 words
- * frame: 0x148
- * relocations: 7
- * first-mismatch: +0x0
- * summary: Point-array declaration and capacity probes leave the 0x148 frame and 167-word residual; target point-array home remains unresolved.
- * PLATEAU-HANDOFF:func_800479D4:end
  */
 
 /* PLATEAU-HANDOFF:fxScreenEffect:start

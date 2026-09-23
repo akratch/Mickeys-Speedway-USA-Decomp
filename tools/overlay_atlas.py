@@ -137,7 +137,7 @@ FIXED_DATA_RODATA_OWNERSHIP = {
     9: [(0x390, 0x3E0, "overlay_009", ".rodata", "func_overlay_009_F0000CE4_186735C", True)],
     14: [
         (0x158, 0x174, "overlay14LoadRelocatedValue", ".rodata", "overlay14LoadRelocatedValue", True),
-        (0x174, 0x190, "func_overlay_014_F0001830_1871108", ".rodata", "func_overlay_014_F0001830_1871108"),
+        (0x174, 0x190, "func_overlay_014_F0001830_1871108", ".rodata", "func_overlay_014_F0001830_1871108", True),
     ],
     25: [(0x20, 0x40, "overlay_025", ".rodata", "overlay25UpdateEffect")],
     41: [
@@ -1392,6 +1392,7 @@ MIXED_TU_EXACT_C_RANGES = {
         # these ranges once carried are not C definitions.
         (0xE88, 0xF1C, "func_overlay_008_F0000E88_185EBE0"),
         (0xF1C, 0x1000, "func_overlay_008_F0000F1C_185EC74"),
+        (0x1000, 0x1294, "func_overlay_008_F0001000_185ED58"),
         (
             0x291C,
             0x2EC0,

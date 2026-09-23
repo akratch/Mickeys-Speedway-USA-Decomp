@@ -3912,55 +3912,52 @@ s32 func_80011CDC(u8 *arg0, u8 *arg1, f32 arg2, u8 *arg3) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80011CDC.s")
 #endif
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c FP dataflow and the resident vector layout
  * reconstruct this plane-intersection query; no external function body is adapted.
+ * Matched 2026-09-23 (Track B): the three sums written left-associated and
+ * the cross products in textbook a[j]*b[k] - a[k]*b[j] order (size +12 -> 0),
+ * normalLength declared first so it takes the frame's top home, the dot
+ * product assigned straight into absoluteDot and negated in place (a separate
+ * scalar carrier gave the stack radius a bb-local web that outranked it for
+ * $f2), and the plane dot carried by directionDot, which it later reuses.
  */
-/* Workbench verdict: structure-mismatch, 187 differing words, first mismatch +0xC. */
-/* Candidate: 211/208 instructions with the exact -0x60 frame; all three sqrtf
- * relocations are present but the latter two remain displaced by three words. */
-/* Shape status: local vector storage and scalar reuse recover the target frame;
- * FP allocation and cross-product scheduling remain unresolved. The required
- * flag lattice fails closed because this resident symbol has no unique sized
- * symbol_addrs owner. */
 s32 func_80012234(TrackVec3f *point, TrackVec3f *direction,
                   TrackVec3f *origin, TrackVec3f *planeDirection,
                   f32 radius, f32 *minimum, f32 *maximum) {
+    f32 normalLength;
     f32 delta[3];
     f32 normal[3];
     f32 cross[3];
-    f32 normalLength;
-    f32 scalar;
     f32 absoluteDot;
     f32 planeOffset;
-    f32 directionDot;
+    f32 scalar;
     f32 interval;
+    f32 directionDot;
     s32 result;
 
     delta[0] = point->f[0] - origin->f[0];
     delta[1] = point->f[1] - origin->f[1];
     delta[2] = point->f[2] - origin->f[2];
     normal[0] = (direction->f[1] * planeDirection->f[2]) -
-                (planeDirection->f[1] * direction->f[2]);
+                (direction->f[2] * planeDirection->f[1]);
     normal[1] = (direction->f[2] * planeDirection->f[0]) -
-                (planeDirection->f[2] * direction->f[0]);
+                (direction->f[0] * planeDirection->f[2]);
     normal[2] = (direction->f[0] * planeDirection->f[1]) -
-                (planeDirection->f[0] * direction->f[1]);
-    normalLength = (normal[2] * normal[2]) +
-                   ((normal[0] * normal[0]) + (normal[1] * normal[1]));
+                (direction->f[1] * planeDirection->f[0]);
+    normalLength = normal[0] * normal[0] + normal[1] * normal[1] +
+                   normal[2] * normal[2];
     if (normalLength == 0.0f) {
         return 0;
     }
     normalLength = sqrtf(normalLength);
-    normal[2] = normal[2] / normalLength;
     normal[0] = normal[0] / normalLength;
     normal[1] = normal[1] / normalLength;
-    scalar = (normal[2] * delta[2]) +
-             ((delta[0] * normal[0]) + (delta[1] * normal[1]));
-    absoluteDot = scalar;
-    if (scalar < 0.0f) {
-        absoluteDot = -scalar;
+    normal[2] = normal[2] / normalLength;
+    absoluteDot = delta[0] * normal[0] + delta[1] * normal[1] +
+                  delta[2] * normal[2];
+    if (absoluteDot < 0.0f) {
+        absoluteDot = -absoluteDot;
     }
     result = 0;
     if (absoluteDot <= radius) {
@@ -3968,29 +3965,28 @@ s32 func_80012234(TrackVec3f *point, TrackVec3f *direction,
     }
     if (result != 0) {
         cross[0] = (delta[1] * planeDirection->f[2]) -
-                   (planeDirection->f[1] * delta[2]);
+                   (delta[2] * planeDirection->f[1]);
         cross[1] = (delta[2] * planeDirection->f[0]) -
-                   (planeDirection->f[2] * delta[0]);
+                   (delta[0] * planeDirection->f[2]);
         cross[2] = (delta[0] * planeDirection->f[1]) -
-                   (planeDirection->f[0] * delta[1]);
-        scalar = (normal[2] * cross[2]) +
-                 ((cross[0] * normal[0]) + (cross[1] * normal[1]));
-        planeOffset = -scalar / normalLength;
+                   (delta[1] * planeDirection->f[0]);
+        directionDot = cross[0] * normal[0] + cross[1] * normal[1] +
+                       cross[2] * normal[2];
+        planeOffset = -directionDot / normalLength;
         cross[0] = (normal[1] * planeDirection->f[2]) -
-                   (planeDirection->f[1] * normal[2]);
+                   (normal[2] * planeDirection->f[1]);
         cross[1] = (normal[2] * planeDirection->f[0]) -
-                   (planeDirection->f[2] * normal[0]);
+                   (normal[0] * planeDirection->f[2]);
         cross[2] = (normal[0] * planeDirection->f[1]) -
-                   (planeDirection->f[0] * normal[1]);
-        normalLength = sqrtf((cross[2] * cross[2]) +
-                             ((cross[0] * cross[0]) +
-                              (cross[1] * cross[1])));
+                   (normal[1] * planeDirection->f[0]);
+        normalLength = sqrtf(cross[0] * cross[0] + cross[1] * cross[1] +
+                             cross[2] * cross[2]);
         cross[0] = cross[0] / normalLength;
         cross[1] = cross[1] / normalLength;
         cross[2] = cross[2] / normalLength;
-        directionDot = (cross[2] * direction->f[2]) +
-                       ((direction->f[0] * cross[0]) +
-                        (direction->f[1] * cross[1]));
+        directionDot = direction->f[0] * cross[0] +
+                       direction->f[1] * cross[1] +
+                       direction->f[2] * cross[2];
         scalar = radius * radius;
         interval = sqrtf(scalar - (absoluteDot * absoluteDot)) /
                    directionDot;
@@ -4002,9 +3998,6 @@ s32 func_80012234(TrackVec3f *point, TrackVec3f *direction,
     }
     return result;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80012234.s")
-#endif
 s32 func_80012574(TrackVec3f *origin, TrackVec3f *direction, TrackVec3f *center, f32 radius, f32 *minimum, f32 *maximum)
 {
   f32 temp_f0;
@@ -5644,16 +5637,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * first-mismatch: +0x0
  * summary: Scoped plane FP lifetimes lower the candidate frame from 0x60 to 0x50; accepted web 163 force to c32 scores 95 but source route remains unproved.
  * PLATEAU-HANDOFF:func_800103D4:end
- */
-
-/* PLATEAU-HANDOFF:func_80012234:start
- * symbol: func_80012234
- * score: 187 differing words
- * frame: 0x60
- * relocations: 3
- * first-mismatch: +0xc
- * summary: Fresh Mickey m2c reproduces existing typed CFG; zero new attempts, 187 differences. Next: source-attributed FP lifetime evidence.
- * PLATEAU-HANDOFF:func_80012234:end
  */
 
 /* PLATEAU-HANDOFF:func_8001357C:start

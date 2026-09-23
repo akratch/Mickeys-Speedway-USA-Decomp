@@ -352,6 +352,7 @@ TEXT_SUBSEGMENTS = {
         (0x1018, "c", "overlay20RemoveEntry"),
         (0x10EC, "c", "overlay20AdvanceEntries"),
         (0x1148, "c", "func_overlay_020_F0001148_1877720"),
+        (0x1484, "asm", "overlay_020_padding"),
     ],
     22: [
         (0x000, "c", "overlay22InitializeObject"),

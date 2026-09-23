@@ -1679,12 +1679,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20UpdateGrid.c.o: POSTPROCESS = \
 		func_overlay_020_F0000A68_1877040=overlay20UpdateGrid $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x35C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/func_overlay_020_F0001148_1877720.c.o: $(TOOLS_DIR)/set_elf_flags.py
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/func_overlay_020_F0001148_1877720.c.o: MIPSISET := -mips3 -32
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/func_overlay_020_F0001148_1877720.c.o: MIPSISET := -mips2 -32
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/func_overlay_020_F0001148_1877720.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/func_overlay_020_F0001148_1877720.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym sqrtf=overlay20TailSqrtReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/set_elf_flags.py $@ 0x10000000 && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x348
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x33C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreateRecords.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xB8
 # NON_MATCHING fallback assembly supplies the retail body; restore the

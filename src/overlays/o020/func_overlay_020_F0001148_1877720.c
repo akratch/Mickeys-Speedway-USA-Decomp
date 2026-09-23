@@ -37,89 +37,93 @@ extern f32 sqrtf(f32 value);
 extern f32 gOverlay20TailXLimit;
 extern f32 gOverlay20TailYLimit;
 
-/* Workbench p8: structure-mismatch, 207/205 instructions/frame 0x90, 178 masked (180 raw) words from +0x20.
- * Five bounded FP association/explicit-negation forms were nonexact; a z-first
- * length association improves only the normalized diagnostic from 161 to 160.
- * Register-class divergence still begins in the grid-field load web; retain NON_MATCHING. */
-#ifdef NON_MATCHING
+/* Built at -mips2 (mk/overlays.mk): the target keeps a slot between every FP
+ * compare and its bc1 branch, which as1 inserts only below MIPS III.
+ * x and y are clamped in place (one web each with their argument copies);
+ * width and height are named so their conversions are hoisted ahead of the
+ * divisors; stride is defined beside the vertex index, which gives its web
+ * the save that outranks upperTriangle; cornerValue carries vertex[1] in the
+ * upper arm as it does in the lower; vertex[stride] is subscripted with no
+ * row pointer, and planeX is assigned after cornerValue. Every f32, pointer
+ * and s32 local takes a stack slot in declaration order (L99), so the order
+ * below, including the unused nextRow, places the six spilled homes. */
 f32 func_overlay_020_F0001148_1877720(Overlay20TailGrid *grid, f32 x, f32 y,
     Overlay20TailVector *normal) {
     Overlay20TailVertex *vertex;
     Overlay20TailVertex *nextRow;
-    f32 cellWidth;
-    f32 cellHeight;
-    f32 localX;
-    f32 localY;
-    f32 normalY;
-    f32 result;
-    f32 normalZ;
-    f32 normalX;
-    volatile f32 rowValue;
-    f32 baseValue;
-    f32 planeX;
-    f32 cornerValue;
-    f32 length;
     s32 column;
     s32 row;
     s32 stride;
     s32 upperTriangle;
+    f32 width;
+    f32 height;
+    f32 planeX;
+    f32 baseValue;
+    volatile f32 rowValue;
+    f32 cornerValue;
+    f32 normalX;
+    f32 normalY;
+    f32 normalZ;
+    f32 cellWidth;
+    f32 cellHeight;
+    f32 result;
+    f32 length;
 
-    cellWidth = (f32)grid->width / (f32)grid->columns;
-    cellHeight = (f32)grid->height / (f32)grid->rows;
-    stride = grid->rows + 1;
+    width = (f32)grid->width;
+    height = (f32)grid->height;
+    cellWidth = width / (f32)grid->columns;
+    cellHeight = height / (f32)grid->rows;
     result = (f32)grid->baseValue;
-    localX = x;
-    localY = y;
-    localX -= (f32)grid->minX;
-    localY -= (f32)grid->minY;
-    if (localX < 0.0f) {
-        localX = 0.0f;
-    } else if ((f32)grid->width <= localX) {
-        localX = (f32)grid->width - gOverlay20TailXLimit;
+    x -= (f32)grid->minX;
+    y -= (f32)grid->minY;
+    if (x < 0.0f) {
+        x = 0.0f;
+    } else if (width <= x) {
+        x = width - gOverlay20TailXLimit;
     }
-    if (localY < 0.0f) {
-        localY = 0.0f;
-    } else if ((f32)grid->height <= localY) {
-        localY = (f32)grid->height - gOverlay20TailYLimit;
+    if (y < 0.0f) {
+        y = 0.0f;
+    } else if (height <= y) {
+        y = height - gOverlay20TailYLimit;
     }
 
-    column = (s32)(localX / cellWidth);
-    row = (s32)(localY / cellHeight);
-    localX -= (f32)column * cellWidth;
-    localY -= (f32)row * cellHeight;
+    column = (s32)(x / cellWidth);
+    row = (s32)(y / cellHeight);
+    x -= (f32)column * cellWidth;
+    y -= (f32)row * cellHeight;
     upperTriangle = 0;
-    if ((localY != cellHeight) &&
-        (localX < (((cellHeight - localY) / cellHeight) * cellWidth))) {
+    if ((y != cellHeight) &&
+        (x < (((cellHeight - y) / cellHeight) * cellWidth))) {
         upperTriangle = 1;
     }
 
+    stride = grid->rows + 1;
     vertex = grid->buffers[grid->bufferIndex] + (column + (row * stride));
     if (upperTriangle != 0) {
         baseValue = (f32)vertex->value;
-        nextRow = vertex + stride;
-        rowValue = (f32)nextRow->value;
+        rowValue = (f32)vertex[stride].value;
+        cornerValue = (f32)vertex[1].value;
         planeX = 0.0f;
-        normalX = (baseValue - (f32)vertex[1].value) * cellHeight;
+        normalX = (baseValue - cornerValue) * cellHeight;
         normalY = cellHeight * cellWidth;
         normalZ = (baseValue - rowValue) * cellWidth;
     } else {
         baseValue = (f32)vertex[1].value;
-        nextRow = vertex + stride;
-        rowValue = (f32)nextRow->value;
+        rowValue = (f32)vertex[stride].value;
+        cornerValue = (f32)vertex[stride + 1].value;
         planeX = cellWidth;
-        cornerValue = (f32)nextRow[1].value;
         normalX = (rowValue - cornerValue) * cellHeight;
         normalY = cellHeight * cellWidth;
         normalZ = (baseValue - cornerValue) * cellWidth;
     }
 
-    length = sqrtf((normalZ * normalZ) +
-                   ((normalX * normalX) + (normalY * normalY)));
+    length = sqrtf((normalX * normalX) + (normalY * normalY) +
+                   (normalZ * normalZ));
     if ((length != 0.0f) && (normalY != 0.0f)) {
         normalX /= length;
         normalZ /= length;
         normalY /= length;
-        result = -(((normalX * localX) + (normalZ * localY)) -
+        result = -(((normalX * x) + (normalZ * y)) -
                    ((planeX * normalX) + (baseValue * normalY))) /
                  normalY;
     }
@@ -130,16 +134,3 @@ f32 func_overlay_020_F0001148_1877720(Overlay20TailGrid *grid, f32 x, f32 y,
     }
     return result;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o020/func_overlay_020_F0001148_1877720/func_overlay_020_F0001148_1877720.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_020_F0001148_1877720:start
- * symbol: func_overlay_020_F0001148_1877720
- * score: 178 differing words
- * frame: 0x90
- * relocations: 5
- * first-mismatch: +0x20
- * summary: Five bounded FP association forms were nonexact; retained length order ties 178 masked words and improves normalized diagnostic 161 to 160.
- * PLATEAU-HANDOFF:func_overlay_020_F0001148_1877720:end
- */

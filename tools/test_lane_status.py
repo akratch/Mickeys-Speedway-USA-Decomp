@@ -1165,7 +1165,7 @@ class AssignmentCacheTests(unittest.TestCase):
 
         uncached, _ = self.classify(None)
         cached, cache = self.classify(self.cache_dir())
-        self.assertEqual(cache.hits, 1, "same base commit must hit")
+        self.assertEqual(cache.hits, 1, "unchanged evidence must hit")
         self.assertEqual(cached.state, "active")
         self.assertEqual(cached, uncached)
 
@@ -1190,29 +1190,102 @@ class AssignmentCacheTests(unittest.TestCase):
         self.assertNotEqual(cached.state, "base-only")
         self.assertEqual(
             sorted(p.name for p in self.cache_dir().glob("*.json")),
-            [f"{cache.base_commit}.json"],
+            [ls.ASSIGNMENT_CACHE_FILE],
         )
 
-    def test_key_covers_code_shard_and_authorization(self) -> None:
+    def test_a_merge_that_leaves_the_evidence_alone_hits(self) -> None:
+        # The case the base-commit key got wrong: an integration merge moves
+        # the base without touching this symbol's source, shard, ledger or
+        # authorization, and must be served warm with the same verdict.
+        plateau_commit = self.current_plateau()
+        self.authorize_reopen(plateau_commit, plateau_commit)
+        first, cache = self.classify(self.cache_dir())
+        self.assertEqual((cache.hits, cache.misses), (0, 1))
+        before = cache.base_commit
+        self.command("git", "switch", "-q", "-c", "lane/unrelated")
+        (self.repo / "src" / "unrelated.c").write_text(
+            "void unrelated(void) {\n}\n", encoding="utf-8",
+        )
+        self.commit("Match unrelated")
+        self.command("git", "switch", "-q", "campaign/unchain")
+        self.command(
+            "git", "merge", "-q", "--no-ff", "-m",
+            "Merge lane/unrelated into campaign/unchain", "lane/unrelated",
+        )
+        self.command("git", "branch", "-q", "-D", "lane/unrelated")
+        uncached, _ = self.classify(None)
+        boom = mock.Mock(side_effect=AssertionError("history walked on a warm hit"))
+        with mock.patch.object(ls, "target_history_commit", boom), \
+                mock.patch.object(ls, "reopen_authorizations", boom), \
+                mock.patch.object(ls, "_settled_status", boom):
+            warm, cache = self.classify(self.cache_dir())
+        self.assertNotEqual(cache.base_commit, before)
+        self.assertEqual((cache.hits, cache.misses), (1, 0))
+        self.assertEqual(warm, uncached)
+        self.assertEqual(warm, first)
+        self.assertEqual(warm.reason_code, "authorized-reopen")
+
+    def test_a_pin_outside_the_authorization_anchor_keys_on_the_base(self) -> None:
+        plateau_commit = self.current_plateau()
+        self.authorize_reopen(plateau_commit, plateau_commit)
+        _, cache = self.classify(self.cache_dir())
+        self.assertIsNone(cache.base_term)
+        probe = ls.AssignmentCache.__new__(ls.AssignmentCache)
+        probe.__dict__.update(cache.__dict__)
+        with mock.patch.object(
+            ls, "parse_reopen_authorizations",
+            return_value={SYMBOL: {
+                "source_commit": "a" * 40, "ledger_commit": None,
+                "reason": "x",
+            }},
+        ):
+            previous = Path.cwd()
+            os.chdir(self.repo)
+            try:
+                self.assertEqual(
+                    probe._authorization_base_term(), cache.base_commit,
+                )
+            finally:
+                os.chdir(previous)
+
+    def test_key_covers_code_files_anchors_and_aliases(self) -> None:
         self.current_plateau()
         previous = Path.cwd()
         os.chdir(self.repo)
-        try:
-            cache = ls.AssignmentCache("campaign/unchain", self.cache_dir())
-        finally:
-            os.chdir(previous)
+        self.addCleanup(os.chdir, previous)
+        cache = ls.AssignmentCache("campaign/unchain", self.cache_dir())
         path = SOURCE_PATH.as_posix()
         base_key = cache.key(SYMBOL, path)
         self.assertEqual(base_key, cache.key(SYMBOL, path))
         probe = ls.AssignmentCache.__new__(ls.AssignmentCache)
         probe.__dict__.update(cache.__dict__, code="0" * 64)
         self.assertNotEqual(base_key, probe.key(SYMBOL, path))
-        probe.__dict__.update(cache.__dict__, base_commit="e" * 40)
+        probe.__dict__.update(cache.__dict__, base_term="e" * 40)
         self.assertNotEqual(base_key, probe.key(SYMBOL, path))
-        for name in (SHARD_PATH.as_posix(), ls.REOPEN_AUTHORIZATIONS_PATH, path):
-            with self.subTest(name):
+        probe.__dict__.update(
+            cache.__dict__, aliases={(path, SYMBOL): frozenset({"func_x"})})
+        self.assertNotEqual(base_key, probe.key(SYMBOL, path))
+        probe.__dict__.update(
+            cache.__dict__, authorization_rows={SYMBOL: {"reason": "x"}})
+        self.assertNotEqual(base_key, probe.key(SYMBOL, path))
+        probe.__dict__.update(cache.__dict__, _validity="invalid: x")
+        self.assertNotEqual(base_key, probe.key(SYMBOL, path))
+        # Another symbol's authorization row is not this symbol's evidence.
+        probe.__dict__.update(
+            cache.__dict__, authorization_rows={"otherSymbol": {"reason": "x"}},
+            blobs=dict(cache.blobs, **{ls.REOPEN_AUTHORIZATIONS_PATH: "f" * 40}))
+        self.assertEqual(base_key, probe.key(SYMBOL, path))
+        names = (SHARD_PATH.as_posix(), ls.LEGACY_TRIAGE_PATH, path)
+        for name in names:
+            with self.subTest(blob=name):
                 probe.__dict__.update(
                     cache.__dict__, blobs=dict(cache.blobs, **{name: "f" * 40}))
+                self.assertNotEqual(base_key, probe.key(SYMBOL, path))
+        for name in (SHARD_PATH.as_posix(), path):
+            with self.subTest(anchor=name):
+                probe.__dict__.update(
+                    cache.__dict__,
+                    anchors=dict(cache.anchors, **{name: "d" * 40}))
                 self.assertNotEqual(base_key, probe.key(SYMBOL, path))
 
     def test_a_corrupt_cache_file_is_ignored(self) -> None:

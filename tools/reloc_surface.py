@@ -3291,11 +3291,44 @@ def _resident_target_records(candidate_object, source, target_elf,
             for record in records]
 
 
+def tu_ownership_overflow(candidate_start, candidate_size, target_local,
+                          target_size, owner_size, *, measure_size_delta):
+    """Bytes a candidate runs past its TU owner; raise unless admissible.
+
+    Zero when the candidate fits. A positive overrun is admitted only under
+    ``measure_size_delta``, and only when it is this function's own size
+    delta: the candidate starts at its target's local offset, the target's
+    range fits the owner, and the candidate is the longer of the two.
+    """
+    end = candidate_start + candidate_size
+    if end <= owner_size:
+        return 0
+    if (measure_size_delta
+            and candidate_start == target_local
+            and candidate_size > target_size
+            and target_local + target_size <= owner_size):
+        return end - owner_size
+    raise SurfaceComparisonError("candidate function escapes TU ownership")
+
+
 def function_surface_comparison(symbol, candidate_object, target_elf_path,
                                 rom_path=DEFAULT_ROM, atlas_path=None,
                                 values_path=LINK_SYMS, candidate_symbol=None,
                                 target_symbol=None, overlay_hint=None, source=None,
-                                candidate_redefine_aliases=None):
+                                candidate_redefine_aliases=None,
+                                measure_size_delta=False):
+    """Compare one candidate's relocation surface with the shipped target's.
+
+    ``measure_size_delta`` admits exactly one ownership overrun: a candidate
+    that starts where its target starts inside the TU owner (no drift from
+    earlier functions) and whose own range fits, but which is longer than its
+    target and so runs past the owner's end. That is a Track B size-mismatch
+    candidate, the normal state of the work, and measuring it is the point;
+    the result then reports ``size_delta`` and ``tu_ownership_overflow``.
+    Any other overrun -- prefix drift, or a candidate at the wrong offset --
+    still raises, and the default (False) is what every promotion route
+    uses, so the ownership check for promotion is unchanged.
+    """
     candidate_symbol = candidate_symbol or symbol
     target_symbol = target_symbol or symbol
     atlas_path = atlas_path or (REPO / "config" / "overlays.us.json")
@@ -3309,6 +3342,7 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
     target_value, target_size, target_section = _unique_symbol(
         target_elf, target_symbol)
 
+    ownership_overflow = 0
     if owner is not None:
         module_row, row = owner
         overlay = module_row["overlay"]
@@ -3331,8 +3365,10 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
             raise SurfaceComparisonError(
                 "target range %#x..%#x escapes atlas owner %#x..%#x"
                 % (target_start, target_start + target_size, row_start, row_end))
-        if candidate_start + candidate_size > int(row["size"], 16):
-            raise SurfaceComparisonError("candidate function escapes TU ownership")
+        ownership_overflow = tu_ownership_overflow(
+            candidate_start, candidate_size, target_start - row_start,
+            target_size, int(row["size"], 16),
+            measure_size_delta=measure_size_delta)
         context = {"kind": "overlay", "overlay": overlay,
                    "module": ot.build_modules(ot.read_headers(
                        rom_path.read_bytes()))[overlay - 1]}
@@ -3410,6 +3446,9 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
     result["candidate_redefine_alias_count"] = len(
         candidate_redefine_aliases or {}
     )
+    if ownership_overflow:
+        result["size_delta"] = candidate_size - target_size
+        result["tu_ownership_overflow"] = ownership_overflow
     result.update({
         "symbol": symbol,
         "candidate_symbol": candidate_symbol,

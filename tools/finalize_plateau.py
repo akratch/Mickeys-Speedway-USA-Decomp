@@ -4,11 +4,18 @@
 The command records concise measured evidence, runs source-only repository
 gates, and commits only when --commit is supplied.  It never reads or records
 target instruction rows.
+
+A commit it makes ends with the attribution trailers the lane's commits carry:
+each ``--trailer 'Co-Authored-By: Name <address>'`` (repeatable), or, when none
+is given, the line(s) in the environment variable ``MICKEY_COMMIT_TRAILER``.
+Until 2026-09-23 it wrote none, so every plateau commit a lane made through it
+was the one commit in the lane without its trailer.
 """
 
 from __future__ import annotations
 
 import argparse
+import os
 from dataclasses import dataclass
 from pathlib import Path
 import re
@@ -37,6 +44,8 @@ GENERATED_OVERLAY_FALLBACK_RE = re.compile(
     r"^func_overlay_[0-9]{3}_F[0-9A-Fa-f]{7}_[0-9A-Fa-f]+\.s$"
 )
 OVERLAY_RULES_PATH = "mk/overlays.mk"
+TRAILER_ENV = "MICKEY_COMMIT_TRAILER"
+TRAILER_RE = re.compile(r"^[A-Za-z][A-Za-z0-9-]*: \S.*$")
 OBJECT_RULE_RE = re.compile(r"^\$\(BUILD_DIR\)/\$\(SRC_DIR\)/(?P<source>\S+?\.c)\.o\s*:")
 REDEFINE_SYM_RE = re.compile(
     r"--redefine-sym\s+(?P<old>[A-Za-z_][A-Za-z0-9_]*)=(?P<new>[A-Za-z_][A-Za-z0-9_]*)"
@@ -615,7 +624,34 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--commit", action="store_true", help="Commit only the source and handoff doc")
     parser.add_argument("--message", help="Commit subject; requires --commit")
+    parser.add_argument(
+        "--trailer", action="append", default=None,
+        help=(
+            "commit trailer line, e.g. 'Co-Authored-By: Name <address>'; "
+            "repeatable; requires --commit. Default: the line(s) in "
+            f"${TRAILER_ENV}, if set"
+        ),
+    )
     return parser
+
+
+def commit_trailers(explicit: list[str] | None, environ: dict[str, str]) -> list[str]:
+    """The trailer lines a --commit ends with: explicit ones, else the env's."""
+    if explicit is not None:
+        lines = explicit
+    else:
+        lines = [
+            line.strip()
+            for line in environ.get(TRAILER_ENV, "").splitlines()
+            if line.strip()
+        ]
+    for line in lines:
+        if "\n" in line or not TRAILER_RE.fullmatch(line):
+            raise PlateauError(
+                f"invalid commit trailer {line!r}; expected one "
+                "'Token: value' line"
+            )
+    return lines
 
 
 def main() -> int:
@@ -626,6 +662,9 @@ def main() -> int:
             raise PlateauError(f"invalid exact symbol {args.symbol!r}")
         if args.message and not args.commit:
             raise PlateauError("--message requires --commit")
+        if args.trailer and not args.commit:
+            raise PlateauError("--trailer requires --commit")
+        trailers = commit_trailers(args.trailer, dict(os.environ)) if args.commit else []
         metrics = validate_metrics(args)
         root = repository_root()
         source_path, source_rel = tracked_relative_path(root, args.source, "source", ".c")
@@ -684,7 +723,8 @@ def main() -> int:
             if not staged:
                 commit = "unchanged"
             else:
-                run_git(root, "commit", "-m", message)
+                body = message + ("\n\n" + "\n".join(trailers) if trailers else "")
+                run_git(root, "commit", "-m", body)
                 commit = run_git(root, "rev-parse", "HEAD").stdout.strip()
 
         print(f"symbol: {args.symbol}")

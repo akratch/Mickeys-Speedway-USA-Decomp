@@ -248,3 +248,13 @@ void overlay20UpdateGrid(Overlay20Grid *grid) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o020/overlay20UpdateGrid/func_overlay_020_F0000A68_1877040.s")
 #endif
+
+/* PLATEAU-HANDOFF:overlay20UpdateGrid:start
+ * symbol: overlay20UpdateGrid
+ * score: 185 differing words
+ * frame: 0x188
+ * relocations: 6
+ * first-mismatch: +0x0
+ * summary: Remeasured 2026-09-23: 185 masked at size delta +4 (216 of 215 words), frame 0x188 against 0x140; frame, registers and loop topology remain.
+ * PLATEAU-HANDOFF:overlay20UpdateGrid:end
+ */

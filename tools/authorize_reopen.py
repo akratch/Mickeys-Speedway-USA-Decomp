@@ -99,6 +99,12 @@ def classify(symbols: list[str]) -> dict[str, dict]:
     record that `--symbol` does, pins included. Forty-eight symbols one at a
     time took twelve minutes; the batch is a single process.
 
+    The batch is served from `lane_status.AssignmentCache` (content-keyed,
+    under ``build/cache/lane-assignment/``), so a re-run after committing an
+    authorization re-derives only the symbols whose own row changed: until
+    2026-09-23 this call classified uncached and cost about two minutes
+    every time, twice per authorization (write, then --verify).
+
     Exit status is deliberately ignored -- the batch returns 1 when any
     symbol is not `base-only`, which for this tool is the normal case and
     not an error.

@@ -1069,40 +1069,85 @@ def active_lanes_for_source(
     return sorted(active)
 
 
-ASSIGNMENT_CACHE_SCHEMA = 1
+ASSIGNMENT_CACHE_SCHEMA = 2
 ASSIGNMENT_CACHE_DIR = PurePosixPath("build/cache/lane-assignment")
+ASSIGNMENT_CACHE_FILE = "entries.json"
+# Keys kept per symbol. A symbol's key moves only when its own evidence moves,
+# so the newest few cover the integration base and the lane bases that
+# dispatch_check is pointed at, and the file stays bounded by the queue.
+ASSIGNMENT_CACHE_KEYS_PER_SYMBOL = 4
 # The classifier's own code is part of every key: a logic change must never be
 # answered from a verdict an older rule produced.
 _CACHE_CODE_FILES = ("lane_status.py", "finalize_plateau.py")
 
 
+def path_anchor(ref: str, path: str) -> str | None:
+    """The commit `git log <ref> -- <path>` starts from, or None.
+
+    Every history walk the settled classifier makes over ``path`` (the
+    target's history commit, the path's plateau record, the shard's and the
+    legacy ledger's last-change commits, the legacy ledger's blame) is a
+    function of this commit alone: default history simplification follows
+    one TREESAME line from ``ref`` down to it, so the walk from ``ref`` and
+    the walk from the anchor list the same commits in the same order.
+    """
+    return latest_path_commit(ref, path)
+
+
 class AssignmentCache:
     """Content-keyed store for the base-derived phases of `assignment_status`.
 
-    Measured on 2026-09-23: classifying the 259-function queue took about
-    three minutes, nearly all of it walking git history to re-derive each
-    symbol's source and ledger pins -- the same answer every run until the
-    integration base moves. Phases 1 and 3 (`_pre_active_status`,
-    `_settled_status`) read nothing but the base commit, so they are stored;
-    phase 2, lane ownership, also reads lane refs that move independently of
-    the base, and is recomputed on every call.
+    Measured on 2026-09-23: classifying the 244-function queue took two to
+    three and a half minutes, nearly all of it walking git history to
+    re-derive each symbol's source and ledger pins. Phases 1 and 3
+    (`_pre_active_status`, `_settled_status`) read only the base commit, so
+    they are stored; phase 2, lane ownership, also reads lane refs that move
+    independently of the base, and is recomputed on every call.
 
-    The key is the SHA-256 of: schema, the classifier's code, the resolved
-    integration base commit, the symbol, its source path and blob, its handoff
-    shard path and blob, and the reopen-authorization blob. The base commit
-    alone determines every stored input; the blobs are carried so that the key
-    states what the entry depends on, and so a future relaxation of the base
-    term cannot silently widen a hit. Entries are invalidated by key only,
-    never by age. One file per base commit lives under ``build/`` (gitignored);
-    saving drops the files of other bases, which no key can reach again unless
-    the base is rewound, and then the cost is one cold run.
+    Until 2026-09-23 the key carried the integration base commit, so every
+    merge batch -- which moves the base but touches few symbols' evidence --
+    refilled the whole queue cold (119.6 s measured after one empty commit).
+    The key now names exactly what phases 1 and 3 read, and not the base:
+
+    * schema and the classifier's code (`_CACHE_CODE_FILES`);
+    * the symbol, its source path, the source blob, and the source path's
+      last-change commit (`path_anchor`; the history `target_history_commit`
+      and `path_plateau_record` walk);
+    * the handoff shard path, its blob, and -- when the shard exists -- its
+      last-change commit (what `shard_source_plateau_record` walks and
+      `latest_path_commit` returns for it). A missing shard is never walked;
+    * the legacy triage ledger's blob and last-change commit (its rows, its
+      blame, and `ledger_source_plateau_record`);
+    * this symbol's own row of the reopen-authorization file, and whether
+      the file as a whole validates at this base (`reopen_authorizations`
+      fails closed for every symbol when any row is invalid). The validation
+      verdict costs about 30 s on the real file, so it is itself stored,
+      keyed by the file's blob and the base term below. Keying on the file's
+      blob instead would send the whole queue cold on every pin renewal,
+      which is exactly when `authorize_reopen.py --verify` runs;
+    * the build's fallback aliases for this (source, symbol) pair, which is
+      the only thing read from ``mk/overlays.mk``;
+    * the base commit itself, only when some authorization pin is not an
+      ancestor of the authorization file's last-change commit. Then the
+      pins' ancestry to the base is not implied by the anchor and has to be
+      re-proved per base; otherwise a base that contains the anchor contains
+      every pin.
+
+    Everything else phases 1 and 3 compute is a pure function of commit ids
+    (ancestry, first parents, guarded regions at a commit). So a merge that
+    leaves a symbol's files alone leaves its key alone and hits.
+
+    Entries are invalidated by key only, never by age. They live in one file
+    under ``build/`` (gitignored); each symbol keeps its newest
+    `ASSIGNMENT_CACHE_KEYS_PER_SYMBOL` keys, and `save` merges with whatever
+    another process wrote meanwhile rather than overwriting it.
     """
 
     def __init__(self, base: str, directory: Path) -> None:
         self.base = base
         self.base_commit = git("rev-parse", "--verify", f"{base}^{{commit}}").strip()
         self.directory = directory
-        self.path = directory / f"{self.base_commit}.json"
+        self.path = directory / ASSIGNMENT_CACHE_FILE
         tools = Path(__file__).resolve().parent
         code = hashlib.sha256()
         for name in _CACHE_CODE_FILES:
@@ -1112,34 +1157,145 @@ class AssignmentCache:
         listing = git(
             "ls-tree", "-r", "--full-tree", self.base_commit, "--",
             "src", str(PurePosixPath(finalize_plateau.HANDOFF_SHARD_DIR)),
-            REOPEN_AUTHORIZATIONS_PATH,
+            REOPEN_AUTHORIZATIONS_PATH, LEGACY_TRIAGE_PATH,
         )
         for line in listing.splitlines():
             meta, _, name = line.partition("\t")
             fields = meta.split()
             if len(fields) == 3 and fields[1] == "blob":
                 self.blobs[name] = fields[2]
+        self.anchors: dict[str, str | None] = {}
+        self.aliases = build_fallback_aliases(self.base_commit)
+        self.authorization_rows: dict[str, dict] = {}
+        self.base_term = self._authorization_base_term()
         self.entries: dict[str, dict] = {}
+        self.order: dict[str, list[str]] = {}
+        self.validity: dict[str, list] = {}
+        self._validity: str | None = None
         self.hits = self.misses = 0
         self.dirty = False
+        self._load()
+
+    def _load(self) -> None:
         try:
             document = json.loads(self.path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
-            document = None
+            return
         if (
             isinstance(document, dict)
             and document.get("schema") == ASSIGNMENT_CACHE_SCHEMA
-            and document.get("base_commit") == self.base_commit
             and isinstance(document.get("entries"), dict)
+            and isinstance(document.get("order"), dict)
         ):
             self.entries = document["entries"]
+            self.order = document["order"]
+            validity = document.get("validity")
+            self.validity = validity if isinstance(validity, dict) else {}
+
+    def _authorization_base_term(self) -> str | None:
+        """None when the authorization anchor implies every pin's ancestry."""
+        path = REOPEN_AUTHORIZATIONS_PATH
+        if path not in self.blobs:
+            return None
+        anchor = self.anchor(path)
+        try:
+            rows = parse_reopen_authorizations(
+                show_file(self.base_commit, path) or "", label=path,
+            )
+        except RuntimeError:
+            return self.base_commit
+        self.authorization_rows = rows
+        pins = sorted({
+            pin for row in rows.values()
+            for pin in (row["source_commit"], row["ledger_commit"])
+            if pin is not None
+        })
+        if not pins or anchor is None:
+            return None if not pins else self.base_commit
+        result = subprocess.run(
+            ["git", "rev-list", "--count", *pins, "--not", anchor],
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+        )
+        if result.returncode != 0 or result.stdout.strip() != "0":
+            return self.base_commit
+        return None
+
+    def authorization_validity(self) -> str:
+        """The authorization file's validation verdict at this base.
+
+        ``"valid"``, or ``"invalid: <error>"``. Stored per (schema, code,
+        file blob, base term), so it is re-proved only when one of those moves.
+        """
+        if self._validity is not None:
+            return self._validity
+        material = json.dumps([
+            ASSIGNMENT_CACHE_SCHEMA, self.code,
+            self.blobs.get(REOPEN_AUTHORIZATIONS_PATH), self.base_term,
+        ])
+        key = hashlib.sha256(material.encode()).hexdigest()
+        stored = self.validity.get(key)
+        if isinstance(stored, list) and len(stored) == 2:
+            verdict = stored[1]
+        else:
+            try:
+                reopen_authorizations(self.base)
+                verdict = "valid"
+            except RuntimeError as error:
+                verdict = f"invalid: {error}"
+        self.validity = {key: [0, verdict], **{
+            k: [v[0] + 1, v[1]] for k, v in self.validity.items()
+            if k != key and isinstance(v, list) and len(v) == 2 and v[0] < 3
+        }}
+        if stored is None or stored != [0, verdict]:
+            self.dirty = True
+        self._validity = verdict
+        return verdict
+
+    def anchor(self, path: str) -> str | None:
+        if path not in self.anchors:
+            self.anchors[path] = path_anchor(self.base_commit, path)
+        return self.anchors[path]
+
+    def prefetch(self, pairs: list[tuple[str, str]], *, jobs: int = 8) -> None:
+        """Resolve the anchors `key` needs for (symbol, source path) pairs.
+
+        One ``git log -1`` per path, run in parallel; a shard that does not
+        exist at the base needs none.
+        """
+        wanted = {LEGACY_TRIAGE_PATH}
+        for symbol, path in pairs:
+            wanted.add(path)
+            shard = shard_path(symbol)
+            if shard in self.blobs:
+                wanted.add(shard)
+        wanted = {
+            path for path in wanted
+            if path not in self.anchors and path in self.blobs
+        }
+        if not wanted:
+            return
+        with concurrent.futures.ThreadPoolExecutor(max(1, jobs)) as pool:
+            ordered = sorted(wanted)
+            for path, value in zip(
+                ordered,
+                pool.map(lambda p: path_anchor(self.base_commit, p), ordered),
+            ):
+                self.anchors[path] = value
+
+    def _file_terms(self, path: str) -> list[str | None]:
+        blob = self.blobs.get(path)
+        return [path, blob, self.anchor(path) if blob is not None else None]
 
     def key(self, symbol: str, path: str) -> str:
-        shard = shard_path(symbol)
         material = json.dumps([
-            ASSIGNMENT_CACHE_SCHEMA, self.code, self.base_commit, symbol,
-            path, self.blobs.get(path), shard, self.blobs.get(shard),
-            self.blobs.get(REOPEN_AUTHORIZATIONS_PATH),
+            ASSIGNMENT_CACHE_SCHEMA, self.code, symbol,
+            *self._file_terms(path),
+            *self._file_terms(shard_path(symbol)),
+            *self._file_terms(LEGACY_TRIAGE_PATH),
+            self.authorization_rows.get(symbol),
+            self.authorization_validity(),
+            sorted(self.aliases.get((path, symbol), frozenset())),
+            self.base_term,
         ])
         return hashlib.sha256(material.encode()).hexdigest()
 
@@ -1151,27 +1307,59 @@ class AssignmentCache:
             self.hits += 1
         return record
 
-    def put(self, key: str, record: dict) -> None:
+    def put(self, key: str, record: dict, symbol: str) -> None:
         self.entries[key] = record
+        keys = [k for k in self.order.get(symbol, []) if k != key]
+        self.order[symbol] = [key, *keys]
         self.dirty = True
+
+    def touch(self, symbol: str, key: str) -> None:
+        """Record that ``key`` is ``symbol``'s newest key, for pruning."""
+        keys = self.order.get(symbol, [])
+        if keys[:1] != [key]:
+            self.order[symbol] = [key, *(k for k in keys if k != key)]
+            self.dirty = True
 
     def save(self) -> None:
         if not self.dirty:
             return
+        # Merge with what another process may have saved since we loaded.
+        on_disk = AssignmentCache.__new__(AssignmentCache)
+        on_disk.path, on_disk.entries, on_disk.order = self.path, {}, {}
+        on_disk.validity = {}
+        on_disk._load()
+        entries = dict(on_disk.entries, **self.entries)
+        order: dict[str, list[str]] = {}
+        for symbol in sorted(set(on_disk.order) | set(self.order)):
+            mine = self.order.get(symbol, [])
+            theirs = on_disk.order.get(symbol, [])
+            merged = list(dict.fromkeys(
+                k for k in (*mine, *theirs) if k in entries
+            ))
+            order[symbol] = merged[:ASSIGNMENT_CACHE_KEYS_PER_SYMBOL]
+        validity = dict(on_disk.validity, **self.validity)
+        validity = dict(sorted(
+            validity.items(), key=lambda item: item[1][0],
+        )[:ASSIGNMENT_CACHE_KEYS_PER_SYMBOL])
+        live = {k for keys in order.values() for k in keys}
+        entries = {k: v for k, v in entries.items() if k in live}
         self.directory.mkdir(parents=True, exist_ok=True)
         temporary = self.path.with_suffix(f".{os.getpid()}.tmp")
         temporary.write_text(json.dumps({
             "schema": ASSIGNMENT_CACHE_SCHEMA,
-            "base_commit": self.base_commit,
-            "entries": self.entries,
+            "entries": entries,
+            "order": order,
+            "validity": validity,
         }, sort_keys=True), encoding="utf-8")
         os.replace(temporary, self.path)
+        # Schema-1 files were named for a base commit; nothing reads them.
         for stale in self.directory.glob("*.json"):
             if stale != self.path:
                 try:
                     stale.unlink()
                 except OSError:
                     pass
+        self.entries, self.order = entries, order
         self.dirty = False
 
 
@@ -1197,6 +1385,8 @@ def cached_assignment_status(
         )
     key = cache.key(symbol, path)
     record = cache.get(key)
+    if record is not None:
+        cache.touch(symbol, key)
     if record is not None and record.get("early") is not None:
         return Assignment(**record["early"])
     text: str | None = None
@@ -1205,7 +1395,7 @@ def cached_assignment_status(
             base, symbol, path, None,
         )
         if early is not None:
-            cache.put(key, {"early": asdict(early)})
+            cache.put(key, {"early": asdict(early)}, symbol)
             return early
     else:
         current_blob = record["source_blob"]
@@ -1227,7 +1417,7 @@ def cached_assignment_status(
             "base_source_commit": base_source_commit,
             "settled": asdict(settled),
         }
-        cache.put(key, record)
+        cache.put(key, record, symbol)
     if active is not None:
         return active
     return Assignment(**record["settled"])
@@ -1251,9 +1441,15 @@ class AssignmentContext:
         cls, base: str, symbols: list[str], *, jobs: int = 1,
         cache: AssignmentCache | None = None,
     ) -> "AssignmentContext":
+        identities = source_identity_index(base, symbols)
+        if cache is not None:
+            cache.prefetch([
+                (symbol, path) for symbol, (path, error) in identities.items()
+                if path is not None and error is None
+            ], jobs=max(jobs, 8))
         return cls(
             base=base,
-            identities=source_identity_index(base, symbols),
+            identities=identities,
             lane_index=build_lane_path_index(base, symbols, jobs=jobs),
             cache=cache,
         )
@@ -1918,6 +2114,15 @@ def main() -> int:
             "them."
         ),
     )
+    parser.add_argument(
+        "--no-cache", action="store_true",
+        help=(
+            "with --symbols: classify without the content-keyed assignment "
+            "cache under build/cache/lane-assignment/ (neither read nor "
+            "written). The cache serves only the base-derived phases; lane "
+            "ownership is recomputed every run either way."
+        ),
+    )
     parser.add_argument("--pending-only", action="store_true")
     parser.add_argument("--json", action="store_true")
     parser.add_argument(
@@ -1951,8 +2156,12 @@ def main() -> int:
         try:
             if args.base is None:
                 args.base = integration_base.resolve(Path.cwd())
+            cache = (
+                None if args.no_cache
+                else AssignmentCache(args.base, default_cache_dir())
+            )
             context = AssignmentContext.build(
-                args.base, wanted, jobs=getattr(args, "jobs", 4))
+                args.base, wanted, jobs=getattr(args, "jobs", 4), cache=cache)
         except RuntimeError as error:
             print(f"lane_status: {error}", file=sys.stderr)
             return 2
@@ -1963,6 +2172,10 @@ def main() -> int:
             except RuntimeError as error:
                 print(f"lane_status: {name}: {error}", file=sys.stderr)
                 return 2
+        context.save()
+        if cache is not None:
+            print(f"lane_status: assignment cache {cache.hits} hit(s), "
+                  f"{cache.misses} miss(es)", file=sys.stderr)
         if args.json:
             print(json.dumps(
                 {"base": args.base,

@@ -2335,6 +2335,21 @@
       "source_context_sha256": "_ipx.0_TQ.4qas.rcBa.KFIX.MU-5.1BbJ.yy87.IQcL.e0LC.MTw"
     },
     {
+      "name": "func_overlay_054_F0000000_189ECA0",
+      "file": "src/overlays/o054/overlay54Initialize.c",
+      "overlay": 54,
+      "tu": "overlays/o054",
+      "size_bytes": 972,
+      "objdiff_match_pct": null,
+      "differing_words": 142,
+      "first_mismatch_offset": 84,
+      "relocation_masked_differing_words": 125,
+      "relocation_masked_first_mismatch_offset": 240,
+      "size_delta": 4,
+      "category": "size-mismatch",
+      "source_context_sha256": "vwFq.T4QP.q1RA.Z3O4.yxg7.nzfK.IhRa.NrXQ.HXt8.uBzW.TVY"
+    },
+    {
       "name": "ProcessRelocationEntry",
       "file": "src/main/runlink.c",
       "overlay": null,
@@ -2348,21 +2363,6 @@
       "size_delta": 4,
       "category": "size-mismatch",
       "source_context_sha256": "YR_h.Fy6v.0gaO.S__j.P8gY.W7PK.iG6j.VZQB.Fnyx.MReM.c6g"
-    },
-    {
-      "name": "func_overlay_054_F0000000_189ECA0",
-      "file": "src/overlays/o054/overlay54Initialize.c",
-      "overlay": 54,
-      "tu": "overlays/o054",
-      "size_bytes": 972,
-      "objdiff_match_pct": null,
-      "differing_words": 144,
-      "first_mismatch_offset": 84,
-      "relocation_masked_differing_words": 127,
-      "relocation_masked_first_mismatch_offset": 240,
-      "size_delta": 4,
-      "category": "size-mismatch",
-      "source_context_sha256": "r3bh.G46x.kOz_.AjVj._oam.OH8i.BgWo.UCzo.jjlJ.wlui.iCM"
     },
     {
       "name": "func_8001B798",

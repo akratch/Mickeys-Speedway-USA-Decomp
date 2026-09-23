@@ -1233,11 +1233,11 @@ u8 func_8004D5C0(s32 font) {
 
 /* PLATEAU-HANDOFF:func_8004B1DC:start
  * symbol: func_8004B1DC
- * score: 465 differing words
+ * score: 451 differing words
  * frame: 0x80
  * relocations: 48
  * first-mismatch: +0x30
- * summary: Half the 465 is a t6-t9 ring phase downstream of the eight-word size deficit; the +0x54 head is caller-saved naming and schedule, not structure.
+ * summary: Unchanged body; the u8 parameter on func_8004C690 moved this caller from 465 to 451 at the same size delta -32
  * PLATEAU-HANDOFF:func_8004B1DC:end
  */
 

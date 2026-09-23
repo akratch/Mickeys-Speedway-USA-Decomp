@@ -173,10 +173,6 @@ extern O1ControlPoint *D_20C;
 extern O1ControlPoint *D_210;
 extern O1ControlPoint *D_214;
 extern s32 D_1D94;
-extern f32 D_E8;
-extern f32 D_EC;
-extern f32 D_F0;
-extern f32 D_F4;
 extern Overlay1ValueRow D_1BA8[];
 
 extern f32 overlay1RandomWave(s32 value);
@@ -191,30 +187,39 @@ extern f32 overlay1MeasureChoice(f32 first, f32 second);
 
 #define CHOICE_WORLD ((O1ChoiceState *)D_1DA0)
 
-/* Workbench plateau: 447/446 instructions, exact 0x90 frame, 341 masked/346 raw
- * differences, and first mismatch at +0xC.  Removing the redundant path carrier
- * changes only allocation and improves 19 positional words; the linked trial is
- * still 12 bytes long.  Target score and interpolation locals sit higher in the
- * same frame; the flag lattice and reverse score cursor remain eliminated. */
+/* PLATEAU (B3-o001, 2026-09-23): 139 masked words at size delta 0 with the
+ * 0x90 frame's home ladder exact (was 341 at delta +4). The four `D_E8`..`D_F4`
+ * externs were rodata literals (-1.2f, 400.5f, 0.1f, 0.1f at overlay-local
+ * base 0x8230 plus the addend), which stops three address webs being hoisted.
+ * The object loop guards on a `loopValue` copy and moves its cursor at the
+ * bottom; the step is an if/else on the reloaded selector with `value`
+ * assigned after it (the target's copy); the FindChoice sentinel is a literal
+ * with `value` set before the selection loop; FindChoice's result goes through
+ * `object`, which puts the state pointer in a0 across MeasureChoice. `i`,
+ * `selected`, `weight` and `chosenState` are declared where the target's homes
+ * put them, and `found` and `pad1` hold slots. What is left is register naming,
+ * led by the transition weight: the target stores the product from a ring temp
+ * and reloads it into f0, where ours colours it f12 and spills. */
 #ifdef NON_MATCHING
 void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
+    s32 i;
+    s32 selected;
     O1ChoiceState *otherState;
-    O1ChoiceState *chosenState;
     O1ChoiceObject **objects;
+    s32 scores[8];
     O1ChoiceObject **cursor;
     O1ChoiceObject *object;
     O1ChoiceObject *found;
     O1ControlTable *table;
-    s32 i;
-    s32 scores[8];
-    s32 selected;
     s32 loopValue;
-    s32 step;
-    s32 value;
-    f32 weight;
-    f32 difference;
     f32 temporaryX;
     f32 temporaryZ;
+    f32 weight;
+    O1ChoiceState *chosenState;
+    s32 value;
+    s32 step;
+    f32 difference;
+    s32 pad1;
 
     if (CHOICE_WORLD->transition != 0) {
         weight = (overlay1RandomWave((CHOICE_WORLD->transition << 7) + 0x8000) +
@@ -265,21 +270,26 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
     } while (loopValue != 0);
 
     objects = overlay1GetChoiceObjects(&i);
-    if (i-- != 0) {
+    loopValue = i;
+    i--;
+    if (loopValue != 0) {
         cursor = objects + i;
         do {
-            object = *cursor--;
+            object = *cursor;
             otherState = object->state;
             if (otherState != CHOICE_WORLD && !(otherState->flags & 8)) {
                 difference =
                     ((O1Pair (*)[6])D_1BA8)[CHOICE_WORLD->playerIndex]
                                                 [otherState->playerIndex].value;
                 if (((difference > -2.0f) && (difference < 2.0f)) ||
-                    ((D_E8 < difference) && (difference < 0.0f) &&
+                    ((-1.2f < difference) && (difference < 0.0f) &&
                      (CHOICE_WORLD->relationModes[otherState->relationIndex] == 1))) {
+                    if (otherState->selector < CHOICE_WORLD->selector) {
+                        step = -1;
+                    } else {
+                        step = 1;
+                    }
                     value = otherState->selector;
-                    step = 1;
-                    if (value < CHOICE_WORLD->selector) step = -1;
                     do {
                         if (difference > 0.0f) {
                             weight = difference;
@@ -296,9 +306,10 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
                     CHOICE_WORLD->relationModes[otherState->relationIndex] >= 4) {
                     scores[otherState->selector] =
                         (s32)((f32)scores[otherState->selector] +
-                              D_EC);
+                              400.5f);
                 }
             }
+            cursor--;
             loopValue = i;
             i--;
         } while (loopValue != 0);
@@ -319,14 +330,13 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
         i--;
     } while (loopValue != 0);
 
-    value = -1000000;
     if (CHOICE_WORLD->active != 0 && CHOICE_WORLD->mode == 6) {
-        found = overlay1FindChoice(CHOICE_WORLD->progress, table, value, scores);
-        if (found != 0) {
-            chosenState = found->state;
-            weight = (f32)chosenState->objectValue * D_F0;
+        object = overlay1FindChoice(CHOICE_WORLD->progress, table, -1000000, scores);
+        if (object != 0) {
+            chosenState = object->state;
+            weight = (f32)chosenState->objectValue * 0.1f;
             difference = overlay1MeasureChoice(weight, CHOICE_WORLD->progress);
-            if (difference < D_F4) {
+            if (difference < 0.1f) {
                 overlay1SubmitChoice(D_1D9C);
             } else if (difference < 3.0f) {
                 scores[chosenState->scoreIndex] += 1000;
@@ -335,6 +345,7 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
     }
 
     selected = -1;
+    value = -1000000;
     i = 0;
     do {
         if (value < scores[i]) {
@@ -3425,11 +3436,11 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F0003750_184FB30:start
  * symbol: func_overlay_001_F0003750_184FB30
- * score: 105/446 words
+ * score: 139 differing words
  * frame: 0x90
  * relocations: 31
- * first-mismatch: +0xC
- * summary: Direct selector loads remove the redundant path web and improve 360 to 341 masked differences without changing the 447/446 size. Linked trial has zero measured diffs but remains 12 bytes long.
+ * first-mismatch: +0x58
+ * summary: Delta +4 closed and frame ladder exact, 341 to 139 at delta 0; the rest is naming led by the transition weight's f0 split.
  * PLATEAU-HANDOFF:func_overlay_001_F0003750_184FB30:end
  */
 

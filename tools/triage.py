@@ -92,10 +92,12 @@ def assignability(names: list[str], base: str = "campaign/unchain", *,
 
     The base-derived part of each verdict is served from
     `lane_status.AssignmentCache` under ``build/cache/lane-assignment/``,
-    keyed by content (base commit, source/shard/authorization blobs, classifier
-    code), never by age. A cold run over the queue took about three minutes on
-    2026-09-23; a warm one on an unchanged base takes seconds. Lane ownership
-    is recomputed every run. ``use_cache=False`` (``--no-cache``) bypasses it.
+    keyed by content (each symbol's source/shard/ledger blobs and last-change
+    commits, its authorization row, classifier code), never by age and not
+    by the base commit, so a merge that leaves a symbol's evidence alone is
+    still a hit. A cold run over the queue took two to three minutes on
+    2026-09-23; a warm one takes seconds, including after a merge. Lane
+    ownership is recomputed every run. ``use_cache=False`` (``--no-cache``) bypasses it.
     """
     try:
         import lane_status as ls

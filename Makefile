@@ -25,6 +25,7 @@
 #   gmake check-reference-builds  prove that farm is the one the names came from
 #   gmake scoreboard        regenerate README.md's progress block from the tree
 #   gmake check-scoreboard  fail if that block has gone stale
+#   gmake forced-floor-census  regenerate docs/forced-floor-census.md from the handoffs
 #   gmake system-health     read-only campaign load/memory/process summary
 #   gmake check-tooling     focused safety/provenance/tooling regressions
 #   gmake small-delta-census  insertion-pair census -> docs/small-delta-census.md
@@ -569,6 +570,13 @@ check-docs:
 	$(HOST_PYTHON) $(TOOLS_DIR)/nm_ranking.py --check-doc
 	$(HOST_PYTHON) $(TOOLS_DIR)/nm_ranking.py --check-retired
 	$(HOST_PYTHON) $(TOOLS_DIR)/plateau_handoff_audit.py --check
+
+# Proved colour floors recorded in plateau handoffs, summarised. Reads the
+# handoff shards, source PLATEAU-HANDOFF blocks and the ranking; no build.
+# tools/triage.py computes the same census live and withholds the
+# colour-exhausted rows from colour routing; this file is the tracked summary.
+forced-floor-census:
+	$(HOST_PYTHON) $(TOOLS_DIR)/forced_floor_census.py --write docs/forced-floor-census.md
 
 # Keep the shared linked-ELF prerequisite quiet for progress consumers while
 # retaining complete compiler/linker diagnostics on disk.
@@ -1409,7 +1417,7 @@ $(TARGET).z64: $(TARGET).bin $(CRC)
 	fi
 	@ls -l $@
 
-.PHONY: default all setup hooks extract prune-asm verify cleanroom system-health check-tooling promotion-proof release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
+.PHONY: default all setup hooks extract prune-asm verify cleanroom system-health check-tooling forced-floor-census promotion-proof release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
 .SECONDARY:
 SHELL = /bin/bash -e -o pipefail
 

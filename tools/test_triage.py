@@ -224,5 +224,140 @@ class AssignabilityFilterTests(unittest.TestCase):
                 side_effect=RuntimeError("no base")):
             self.assertEqual(triage.assignability(["a"]), {})
 
+
+class DeltaGroupTests(unittest.TestCase):
+    """Size-mismatch work is Track B, and the report has to say how much.
+
+    Delta-0 methods (colour, L160, web laws) cannot emit or delete an
+    instruction. A route that silently mixes 4-byte-off functions with
+    delta-0 ones reads as colour work and gets dispatched as colour work.
+    """
+
+    def rows(self):
+        return [dict(fn("zero", 1000, 10), size_delta=0),
+                dict(fn("small", 2000, 20), size_delta=-8),
+                dict(fn("edge", 500, 5), size_delta=12),
+                dict(fn("big", 3000, 300), size_delta=232)]
+
+    def test_groups_by_absolute_delta(self):
+        self.assertEqual(
+            [triage.delta_group(r["size_delta"]) for r in self.rows()],
+            ["delta-0", "small-delta", "small-delta", "big-delta"])
+        self.assertEqual(triage.delta_group(None), "delta-0")
+
+    def test_group_totals_carry_counts_bytes_and_words(self):
+        out = triage.group_totals(self.rows())
+        self.assertEqual(out["delta-0"], {"functions": 1, "bytes": 1000, "words": 10})
+        self.assertEqual(out["small-delta"], {"functions": 2, "bytes": 2500, "words": 25})
+        self.assertEqual(out["big-delta"], {"functions": 1, "bytes": 3000, "words": 300})
+
+    def test_every_group_is_present_even_when_empty(self):
+        self.assertEqual(set(triage.group_totals([])), set(triage.DELTA_GROUPS))
+
+    def _report(self, target=65.0):
+        import contextlib
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(unittest.mock.patch.object(triage, "load", self.rows))
+            stack.enter_context(unittest.mock.patch.object(
+                triage, "assignability", return_value={}))
+            stack.enter_context(unittest.mock.patch.object(
+                triage, "resolved_bytes", lambda: 0))
+            stack.enter_context(unittest.mock.patch.object(triage, "unassignable", dict))
+            r = triage.report(target, 5)
+            return r, triage.render(r)
+
+    def test_route_clusters_and_bands_are_split(self):
+        r, rendered = self._report()
+        self.assertEqual(sum(g["functions"] for g in r["route"]["by_group"].values()),
+                         r["route"]["functions"])
+        self.assertEqual(set(r["route_by_group"]), set(triage.DELTA_GROUPS))
+        self.assertEqual(set(r["clusters"]["by_group"]), set(triage.DELTA_GROUPS))
+        for band in r["bands"]:
+            self.assertEqual(
+                sum(g["bytes"] for g in band["by_group"].values()), band["bytes"])
+        for label in ("small-delta", "big-delta", "each group alone",
+                      "queue by delta group"):
+            self.assertIn(label, rendered)
+
+    def test_a_group_that_cannot_cover_the_gap_says_so(self):
+        r, rendered = self._report()
+        self.assertFalse(r["route_by_group"]["delta-0"]["covers_gap"])
+        self.assertIn("cannot cover the gap", rendered)
+
+
+class MilestoneTests(unittest.TestCase):
+    def test_default_target_is_65(self):
+        with unittest.mock.patch.object(triage, "report") as report, \
+                unittest.mock.patch.object(triage, "render", return_value=""):
+            triage.main([])
+        self.assertEqual(report.call_args.args[0], 65.0)
+
+    def test_next_milestone_is_the_next_multiple_of_five_above(self):
+        whole = triage.WHOLE_PROGRAM
+        at_61 = int(whole * 0.6139)
+        nm = triage.next_milestone(at_61)
+        self.assertEqual(nm["pct"], 65.0)
+        self.assertEqual(nm["gap_bytes"], int(whole * 0.65) - at_61)
+
+    def test_exactly_on_a_milestone_points_at_the_next(self):
+        nm = triage.next_milestone(int(triage.WHOLE_PROGRAM * 0.70) + 1)
+        self.assertEqual(nm["pct"], 75.0)
+
+    def test_the_report_prints_it(self):
+        with unittest.mock.patch.object(triage, "load", lambda: [fn("a", 100, 1)]), \
+                unittest.mock.patch.object(triage, "assignability", return_value={}), \
+                unittest.mock.patch.object(triage, "resolved_bytes",
+                                           lambda: int(triage.WHOLE_PROGRAM * 0.62)), \
+                unittest.mock.patch.object(triage, "unassignable", dict):
+            rendered = triage.render(triage.report(60.0, 5))
+        self.assertIn("NEXT 5%  65%", rendered)
+
+
+class ColourExhaustedTests(unittest.TestCase):
+    """A proved forced floor above zero is a fourth exclusion class.
+
+    Colour cannot close such a function, and a colour lane sent to it
+    re-derives the landscape its handoff already records. It must leave the
+    route and be reported, never silently dropped.
+    """
+
+    def _report(self, floors):
+        import contextlib
+        rows = [fn("open", 1000, 10, 1), fn("floored", 5000, 5, 2)]
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(unittest.mock.patch.object(triage, "load", lambda: rows))
+            stack.enter_context(unittest.mock.patch.object(
+                triage, "assignability", return_value={"open": "base-only",
+                                                       "floored": "base-only"}))
+            stack.enter_context(unittest.mock.patch.object(
+                triage, "resolved_bytes", lambda: 0))
+            stack.enter_context(unittest.mock.patch.object(triage, "unassignable", dict))
+            stack.enter_context(unittest.mock.patch.object(
+                triage, "colour_exhausted", return_value=floors))
+            r = triage.report(60.0, 5)
+            return r, triage.render(r)
+
+    def test_a_colour_exhausted_target_leaves_the_route_and_is_reported(self):
+        r, rendered = self._report({"floored": {"floor": 5, "base": 5,
+                                                "handoff": "docs/x.md"}})
+        self.assertNotIn("floored", r["route"]["names"])
+        self.assertEqual(r["colour_exhausted"]["functions"], 1)
+        self.assertEqual(r["colour_exhausted"]["bytes"], 5000)
+        self.assertIn("NOT ASSIGNABLE 1 fns, 5,000 bytes", rendered)
+        self.assertIn("colour-exhausted", rendered)
+        self.assertIn("forced-floor-census", rendered)
+
+    def test_an_unreadable_census_says_so(self):
+        r, rendered = self._report(None)
+        self.assertIsNone(r["colour_exhausted"])
+        self.assertIn("forced-floor census unavailable", rendered)
+        self.assertIn("floored", r["route"]["names"])
+
+    def test_the_real_census_only_names_queued_rows(self):
+        """Hermetic: the census is keyed by triage's own rows, so fixture
+        names never collide with a real handoff."""
+        out = triage.colour_exhausted([fn("no_such_symbol", 100, 3)])
+        self.assertEqual(out, {})
+
 if __name__ == "__main__":
     unittest.main()

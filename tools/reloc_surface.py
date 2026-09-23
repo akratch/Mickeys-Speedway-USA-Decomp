@@ -1958,8 +1958,14 @@ def _stable_overlay_call_identities(path, candidate_elf, source_overlay,
                                     target_elf, atlas, start, size,
                                     redefine_aliases=None, root=None,
                                     elf_loader=None, module=None, rom=None,
-                                    runtime_module=None, target_records=None):
-    """Resolve uniquely boundary- or sibling-authenticated ``R_MIPS_26`` names."""
+                                    runtime_module=None, target_records=None,
+                                    own_range=None):
+    """Resolve uniquely boundary- or sibling-authenticated ``R_MIPS_26`` names.
+
+    ``own_range`` is the module-offset extent of the function under proof;
+    it is never its own sibling witness (see
+    ``_matched_overlay_relocation_witnesses``).
+    """
     symbols = candidate_elf.symbols()
     proposed = collections.defaultdict(set)
     reverse = redefine_aliases or {}
@@ -1980,7 +1986,7 @@ def _stable_overlay_call_identities(path, candidate_elf, source_overlay,
     if module is not None and rom is not None and runtime_module is not None:
         witnessed = _matched_overlay_relocation_witnesses(
             module, target_elf, rom, runtime_module, valid,
-            root=root, elf_loader=elf_loader)
+            root=root, elf_loader=elf_loader, exclude_range=own_range)
         for name, identities in witnessed.items():
             proposed[name].update(identities)
 
@@ -2510,8 +2516,13 @@ def _overlay_identity_extent(module):
 def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
                                     start, size, redefine_aliases=None,
                                     root=None, elf_loader=None, rom=None,
-                                    runtime_module=None, target_records=None):
-    """Resolve candidate-side same-overlay LOCAL/data identities fail closed."""
+                                    runtime_module=None, target_records=None,
+                                    own_range=None):
+    """Resolve candidate-side same-overlay LOCAL/data identities fail closed.
+
+    ``own_range`` excludes the function under proof from the sibling
+    witnesses, as in ``_stable_overlay_call_identities``.
+    """
     symbols = candidate_elf.symbols()
     sites = []
     names = set()
@@ -2548,7 +2559,7 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
     if rom is not None and runtime_module is not None:
         witnessed = _matched_overlay_relocation_witnesses(
             module, target_elf, rom, runtime_module, valid,
-            root=root, elf_loader=elf_loader)
+            root=root, elf_loader=elf_loader, exclude_range=own_range)
         for name, identities in witnessed.items():
             proposed[name].update(identities)
 
@@ -2614,7 +2625,7 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
 
 def _matched_overlay_relocation_witnesses(module, target_elf, rom,
                                           runtime_module, names, root=None,
-                                          elf_loader=None):
+                                          elf_loader=None, exclude_range=None):
     """Prove relocation-name identities through exact canonical siblings.
 
     A numeric overlay placeholder is not an identity.  A different, already
@@ -2627,6 +2638,15 @@ def _matched_overlay_relocation_witnesses(module, target_elf, rom,
     This is deliberately a name witness, not an offset normalizer.  A caller's
     candidate records retain their own offsets and are compared to the target
     surface unchanged.
+
+    ``exclude_range`` is the ``(start, end)`` module-offset extent of the
+    function under proof, and any row overlapping it is skipped.  Re-proving
+    an already promoted function otherwise finds that function's own
+    canonical object among the matched rows, and its tuple at a site is the
+    target's tuple at the same site: a one-site copy that "witnesses" any
+    name the candidate uses.  overlay96DrawObject's generated
+    ``func_overlay_096_F0000000_*`` call proxy was bound to a resident
+    function that way, contradicting the name's own overlay-96 identity.
     """
     wanted = set(names)
     if not wanted:
@@ -2668,6 +2688,10 @@ def _matched_overlay_relocation_witnesses(module, target_elf, rom,
                 or not 0 <= row_start < row_end <= text_size):
             raise SurfaceComparisonError(
                 "overlay %d text ownership boundary is inconsistent" % overlay)
+        if (exclude_range is not None
+                and row_start < exclude_range[1]
+                and exclude_range[0] < row_end):
+            continue
         if (row.get("type") != "c" or row.get("matched") is not True
                 or row.get("nonmatching") is not False):
             continue
@@ -2980,10 +3004,18 @@ def _candidate_surface_records(elf, start, size, target, identities,
                 and name in (overlay_call_identities or {})):
             call_identity = overlay_call_identities[name]
             if base_identity is not None and base_identity != call_identity:
-                raise SurfaceComparisonError(
-                    "candidate relocation symbol %s has conflicting runtime identity"
-                    % name)
-            base_identity = call_identity
+                # Two independent passes disagree about a call name. The
+                # recurring cause is a zero-field call proxy: a resident call
+                # stores a zero jump field, which is also the field of a call
+                # to the overlay's own offset-0 function, so splat names both
+                # `func_overlay_NNN_F0000000_*` and the C keeps that name. The
+                # name's shape then says (NNN, 0) while an exact sibling's
+                # runtime tuple says resident. Neither is chosen: the site is
+                # left unresolved, as for any other conflicting witnesses, and
+                # only the linked-ROM route can account for it.
+                base_identity = None
+            else:
+                base_identity = call_identity
         if base_identity is not None:
             identity = _identity_add(base_identity, addend)
         elif (not identity_is_ambiguous
@@ -3233,7 +3265,9 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
             candidate_start, candidate_size, candidate_redefine_aliases,
             module=module_row if overlay is not None else None, rom=rom,
             runtime_module=context.get("module"),
-            target_records=target_records)
+            target_records=target_records,
+            own_range=((target_start, target_start + target_size)
+                       if overlay is not None else None))
     )
     if overlay is not None:
         overlay_data_identities, ambiguous_overlay_data = (
@@ -3241,14 +3275,16 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                 values_path, candidate_elf, module_row, target_elf,
                 candidate_start, candidate_size, candidate_redefine_aliases,
                 rom=rom, runtime_module=context["module"],
-                target_records=target_records)
+                target_records=target_records,
+                own_range=(target_start, target_start + target_size))
         )
         for name, identity in overlay_data_identities.items():
             existing = identities.get(name)
             if existing is not None and existing != identity:
                 raise SurfaceComparisonError(
-                    "candidate relocation symbol %s has conflicting runtime identity"
-                    % name)
+                    "candidate relocation symbol %s has conflicting runtime "
+                    "identity: symbol pass %r, data pass %r"
+                    % (name, existing, identity))
             identities[name] = identity
         ambiguous_identities.update(ambiguous_overlay_data)
     numeric_values = _numeric_assignments(values_path)

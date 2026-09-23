@@ -514,6 +514,63 @@ it end to end. The ones that carry most of the weight:
   `GLOBAL_ASM` pragma, at roughly 130 candidates/sec, which makes a small
   lattice exhaustive rather than sampled.
 
+### The insertion-pair reader, for any function whose size is off
+
+`tools/insertion_pairs.py <symbol>` is the instrument for a size-mismatch
+function, and the one to run **before** any colour or draw work on it. Every
+other instrument here works at size delta 0; they move a register, never an
+instruction. This one answers the question a nonzero delta actually asks:
+which word is extra or missing, and which construct of our source emitted it.
+
+What it measures, all from one alignment (the same edit script
+`residual_map.py` reads, so its offsets agree with that tool's by construction):
+
+- **Pairs.** A pair opens at the first one-sided word and closes where the two
+  streams are index-aligned again; one that never closes runs to the end. Two
+  shifts that touch are two pairs.
+- **Shadow**, per pair: positional masked words inside it less the aligned
+  disagreement inside it. `aligned residual after shadow` is the positional
+  count less every pair's shadow, which is exactly align_symbol's aligned
+  disagreement. **That is the number to rank a size-mismatch function by**, not
+  the masked count (L155). It also prints how much of that residual is
+  register naming *inside* a pair -- the rows a free list rotated by the
+  one-sided word would produce. Read that as an upper bound on what fixing the
+  word could take with it, not as a measurement of it.
+- **Class** of each one-sided word from its encoding (move, stack-load,
+  stack-store, load, store, alu, const, branch, call, frame, delay-nop, nop).
+- **Owner**: the source line from the candidate object's own `.mdebug` line
+  table, and the ugen handler that emitted a word of that family on that line
+  (`iloadistore` = ILOD/ISTR, `loadstore` = LOD/STR, `move_to_dest` = a copy,
+  `jump` = FJP/TJP, `gen_reg_save_restore` = a callee save), read from the
+  `DKWB_UGEN_TRACE` call stack. It compiles the trace itself and identity-gates
+  it per function. Every owner states its **basis**: `line`, `prologue`,
+  `nearest` (within three lines, because as1 schedules across statements),
+  `as1` for a nop, or `neighbour` for a target-only word placed only by the
+  line beside it -- the weakest. A word nothing owns says `unowned`.
+- A **label** per pair from a fixed rule (`pair_label` states it): hoist,
+  unrolled-loop, extra-ILOD, extra-ISTR, missing-CSE, split-not-copy,
+  spill/reload, callee-save, control-flow, delay-slot, other, unowned.
+
+What it cannot do. It reads **our** compile only: the target has no trace and
+no line table, so a target-only word is owned by what our code does beside it.
+The label names the one-sided word's class and owner, **not the edit that
+removes it**. Measured: `func_800084C4` reads one extra ALU word on a line that
+spells one subexpression twice, labelled missing-CSE; binding that
+subexpression to a temporary left the object byte-identical, because uopt had
+already shared it. The label tells you which word and which line; finding the
+spelling is still a source edit judged by `draw_census.py --compare` and the
+reader run again. It does not see uopt's decisions (a CSE, a hoist, an unroll)
+except through the word they leave behind. `-g3` is not used for lines: it
+changes the size of 30 of the 65 `objects.c` functions.
+
+When to run it: first, on any function with `size_delta != 0`, and again after
+every edit that moves a one-sided word. It refuses delta 0 (use
+`residual_map.py`) and refuses a force or trace environment without
+`--object`; score a forced object with `--object` and its own log with
+`--trace`. `gmake small-delta-census` runs it over every |delta| <= 12 row
+and writes `docs/small-delta-census.md`, sorted by aligned residual after
+shadow -- the dispatch order for Track B.
+
 ## Traps that have each cost a lane real time
 
 1. **Never read target words from splat's `.s` annotation** — that is the ROM's

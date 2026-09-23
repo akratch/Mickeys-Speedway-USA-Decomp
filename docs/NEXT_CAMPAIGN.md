@@ -131,6 +131,26 @@ Build, in this order:
 3. **Apply it to `objects.c`'s ±4 siblings first**, because that TU is
    already owned and the unroller lesson is in hand.
 
+- **Items 1 and 2 are done** (lane tb-pairs). `tools/insertion_pairs.py`
+  is the reader and `gmake small-delta-census` writes
+  `docs/small-delta-census.md`; the LANE_BRIEF "Instruments" section says
+  how to read both. The census scope, recomputed from the ranking at the
+  time it ran, is **58 functions / 71,408 bytes** at 0 < |delta| <= 12,
+  not the 80 / 104,860 above: that pool has moved since this file was
+  written. Headline: of 14,421 positional masked words only **3,629 are
+  shadow**; the aligned residual after shadow is **10,792**, 4,359 of it
+  register naming inside a pair. So the premise that these functions are
+  "mostly shadow" holds for a few (func_80024978 reads 71 masked, 12
+  aligned) and not for the class. 55 of 58 are fully owned (3 carry one
+  unowned word each). Labels: missing-CSE 28, spill/reload 11,
+  split-not-copy 6, extra-ISTR 5, extra-ILOD 4, control-flow 2,
+  callee-save 1, other 1. Dispatch in the census's order, smallest
+  aligned residual first. The `objects.c` siblings read: `func_80006EE4`
+  17 aligned (control-flow), `func_80006B04` 45 (extra-ISTR),
+  `func_8000831C` 76 (missing-CSE), `func_800084C4` 91 (missing-CSE, 81
+  of it in-pair naming). A label names the word and its line, not the
+  spelling that removes it; item 3 is still a lane's job.
+
 Do not dispatch a size-mismatch function to a colour-landscape lane.
 Do not rank its windows by the positional count (L155). The 106,528
 bytes of delta-0 `other` are still last-mile work; they are just
@@ -139,12 +159,13 @@ or a proved-zero appears.
 
 ## Track C — housekeeping, not matching
 
-- **`overlay96DrawObject` promotion-proof.** The C is already in the
-  tree without `GLOBAL_ASM` and is counted. Proof still fails on a
-  call-identity conflict: a same-overlay call resolved into the
-  resident namespace as `(0, 214356)` where the data pass correctly
-  says `(96, 0)`. Inverse of the reloc-surface bug already fixed.
-  Coordinator tooling, not a lane.
+- **`overlay96DrawObject` promotion-proof: done (2026-09-23).** The
+  premise was inverted: `(0, 214356)` was right (the shipped record is a
+  resident call to `func_800349A4`), and `(96, 0)` came from the
+  generated name's shape. The resident identity reached the proof only
+  through the function witnessing itself. See
+  `docs/reloc-surface.md`, "The function under proof is never its own
+  witness".
 - **Stale whale reopen pin.** `config/lane-reopen-authorizations.us.json`
   still pins `func_overlay_058_F000138C_18B0574` (`ledger_commit`
   `9d581a54`). The function is matched. Retire the pin.

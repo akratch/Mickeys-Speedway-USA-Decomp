@@ -16,7 +16,9 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 from functools import lru_cache
+import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -885,6 +887,10 @@ def active_lanes_for_source(
         refs = lane_refs(
             containing=base_source_commit, unmerged_into=base
         )
+    if not refs:
+        # Identical to the all() test below over an empty branch list; it only
+        # skips the three base reads that test would otherwise make first.
+        return []
     branches = [branch for branch, _head in refs]
     objects = blob_contents(branches, base_path)
     legacy_objects = blob_contents(branches, LEGACY_TRIAGE_PATH)
@@ -1035,22 +1041,193 @@ def active_lanes_for_source(
     return sorted(active)
 
 
+ASSIGNMENT_CACHE_SCHEMA = 1
+ASSIGNMENT_CACHE_DIR = PurePosixPath("build/cache/lane-assignment")
+# The classifier's own code is part of every key: a logic change must never be
+# answered from a verdict an older rule produced.
+_CACHE_CODE_FILES = ("lane_status.py", "finalize_plateau.py")
+
+
+class AssignmentCache:
+    """Content-keyed store for the base-derived phases of `assignment_status`.
+
+    Measured on 2026-09-23: classifying the 259-function queue took about
+    three minutes, nearly all of it walking git history to re-derive each
+    symbol's source and ledger pins -- the same answer every run until the
+    integration base moves. Phases 1 and 3 (`_pre_active_status`,
+    `_settled_status`) read nothing but the base commit, so they are stored;
+    phase 2, lane ownership, also reads lane refs that move independently of
+    the base, and is recomputed on every call.
+
+    The key is the SHA-256 of: schema, the classifier's code, the resolved
+    integration base commit, the symbol, its source path and blob, its handoff
+    shard path and blob, and the reopen-authorization blob. The base commit
+    alone determines every stored input; the blobs are carried so that the key
+    states what the entry depends on, and so a future relaxation of the base
+    term cannot silently widen a hit. Entries are invalidated by key only,
+    never by age. One file per base commit lives under ``build/`` (gitignored);
+    saving drops the files of other bases, which no key can reach again unless
+    the base is rewound, and then the cost is one cold run.
+    """
+
+    def __init__(self, base: str, directory: Path) -> None:
+        self.base = base
+        self.base_commit = git("rev-parse", "--verify", f"{base}^{{commit}}").strip()
+        self.directory = directory
+        self.path = directory / f"{self.base_commit}.json"
+        tools = Path(__file__).resolve().parent
+        code = hashlib.sha256()
+        for name in _CACHE_CODE_FILES:
+            code.update(name.encode() + b"\0" + (tools / name).read_bytes())
+        self.code = code.hexdigest()
+        self.blobs: dict[str, str] = {}
+        listing = git(
+            "ls-tree", "-r", "--full-tree", self.base_commit, "--",
+            "src", str(PurePosixPath(finalize_plateau.HANDOFF_SHARD_DIR)),
+            REOPEN_AUTHORIZATIONS_PATH,
+        )
+        for line in listing.splitlines():
+            meta, _, name = line.partition("\t")
+            fields = meta.split()
+            if len(fields) == 3 and fields[1] == "blob":
+                self.blobs[name] = fields[2]
+        self.entries: dict[str, dict] = {}
+        self.hits = self.misses = 0
+        self.dirty = False
+        try:
+            document = json.loads(self.path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            document = None
+        if (
+            isinstance(document, dict)
+            and document.get("schema") == ASSIGNMENT_CACHE_SCHEMA
+            and document.get("base_commit") == self.base_commit
+            and isinstance(document.get("entries"), dict)
+        ):
+            self.entries = document["entries"]
+
+    def key(self, symbol: str, path: str) -> str:
+        shard = shard_path(symbol)
+        material = json.dumps([
+            ASSIGNMENT_CACHE_SCHEMA, self.code, self.base_commit, symbol,
+            path, self.blobs.get(path), shard, self.blobs.get(shard),
+            self.blobs.get(REOPEN_AUTHORIZATIONS_PATH),
+        ])
+        return hashlib.sha256(material.encode()).hexdigest()
+
+    def get(self, key: str) -> dict | None:
+        record = self.entries.get(key)
+        if record is None:
+            self.misses += 1
+        else:
+            self.hits += 1
+        return record
+
+    def put(self, key: str, record: dict) -> None:
+        self.entries[key] = record
+        self.dirty = True
+
+    def save(self) -> None:
+        if not self.dirty:
+            return
+        self.directory.mkdir(parents=True, exist_ok=True)
+        temporary = self.path.with_suffix(f".{os.getpid()}.tmp")
+        temporary.write_text(json.dumps({
+            "schema": ASSIGNMENT_CACHE_SCHEMA,
+            "base_commit": self.base_commit,
+            "entries": self.entries,
+        }, sort_keys=True), encoding="utf-8")
+        os.replace(temporary, self.path)
+        for stale in self.directory.glob("*.json"):
+            if stale != self.path:
+                try:
+                    stale.unlink()
+                except OSError:
+                    pass
+        self.dirty = False
+
+
+def default_cache_dir() -> Path:
+    return Path(git("rev-parse", "--show-toplevel").strip()) / ASSIGNMENT_CACHE_DIR
+
+
+def cached_assignment_status(
+    base: str, symbol: str, *,
+    identity: tuple[str | None, str | None],
+    lane_index: LanePathIndex | None,
+    cache: AssignmentCache,
+) -> Assignment:
+    """`assignment_status`, with phases 1 and 3 served from `cache`.
+
+    Returns exactly what `assignment_status` returns for the same inputs;
+    tools/test_lane_status.py holds that equivalence.
+    """
+    path, identity_error = identity
+    if identity_error or path is None:
+        return assignment_status(
+            base, symbol, identity=identity, lane_index=lane_index,
+        )
+    key = cache.key(symbol, path)
+    record = cache.get(key)
+    if record is not None and record.get("early") is not None:
+        return Assignment(**record["early"])
+    text: str | None = None
+    if record is None:
+        early, text, current_blob, base_source_commit = _pre_active_status(
+            base, symbol, path, None,
+        )
+        if early is not None:
+            cache.put(key, {"early": asdict(early)})
+            return early
+    else:
+        current_blob = record["source_blob"]
+        base_source_commit = record["base_source_commit"]
+    active = _active_status(
+        base, symbol, path, current_blob, base_source_commit, text, lane_index,
+    )
+    if record is None:
+        try:
+            settled = _settled_status(base, symbol, path, text, base_source_commit)
+        except Exception:
+            # The uncached path never reaches phase 3 for an owned target, so
+            # an error there must not replace an `active` verdict.
+            if active is not None:
+                return active
+            raise
+        record = {
+            "early": None, "source_blob": current_blob,
+            "base_source_commit": base_source_commit,
+            "settled": asdict(settled),
+        }
+        cache.put(key, record)
+    if active is not None:
+        return active
+    return Assignment(**record["settled"])
+
+
 @dataclass(frozen=True)
 class AssignmentContext:
-    """Shared immutable evidence for many assignment classifications."""
+    """Shared immutable evidence for many assignment classifications.
+
+    Pass ``cache`` to `build` to serve the base-derived phases from an
+    `AssignmentCache`; call `save` when done so the next run is warm.
+    """
 
     base: str
     identities: dict[str, tuple[str | None, str | None]]
     lane_index: LanePathIndex
+    cache: AssignmentCache | None = None
 
     @classmethod
     def build(
         cls, base: str, symbols: list[str], *, jobs: int = 1,
+        cache: AssignmentCache | None = None,
     ) -> "AssignmentContext":
         return cls(
             base=base,
             identities=source_identity_index(base, symbols),
             lane_index=build_lane_path_index(base, symbols, jobs=jobs),
+            cache=cache,
         )
 
     def classify(self, base: str, symbol: str) -> Assignment:
@@ -1061,9 +1238,18 @@ class AssignmentContext:
         identity = self.identities.get(symbol)
         if identity is None:
             raise RuntimeError(f"assignment context does not contain {symbol}")
+        if self.cache is not None:
+            return cached_assignment_status(
+                base, symbol, identity=identity, lane_index=self.lane_index,
+                cache=self.cache,
+            )
         return assignment_status(
             base, symbol, identity=identity, lane_index=self.lane_index,
         )
+
+    def save(self) -> None:
+        if self.cache is not None:
+            self.cache.save()
 
 
 def assignment_status(
@@ -1075,14 +1261,39 @@ def assignment_status(
 
     Only ``base-only`` is assignable. Every other state is deliberately
     fail-closed so stale evidence cannot become duplicate matching work.
+
+    The classification runs in three phases, split so that `AssignmentCache`
+    can store the two that depend on the base commit alone:
+
+    1. `_pre_active_status` -- source identity, blob and target history commit;
+    2. `_active_status` -- unintegrated lane ownership, which depends on lane
+       refs as well as the base, and so is never cached;
+    3. `_settled_status` -- plateau, ledger and reopen-pin evidence.
     """
     path, identity_error = identity or source_identity(base, symbol)
+    early, text, current_blob, base_source_commit = _pre_active_status(
+        base, symbol, path, identity_error,
+    )
+    if early is not None:
+        return early
+    active = _active_status(
+        base, symbol, path, current_blob, base_source_commit, text, lane_index,
+    )
+    if active is not None:
+        return active
+    return _settled_status(base, symbol, path, text, base_source_commit)
+
+
+def _pre_active_status(
+    base: str, symbol: str, path: str | None, identity_error: str | None,
+) -> tuple[Assignment | None, str | None, str | None, str | None]:
+    """Phase 1: return (early verdict, source text, source blob, source commit)."""
     if identity_error or path is None:
         return Assignment(
             symbol, "stale-ledger", path, None, None, [],
             identity_error or "source identity is unavailable",
             "source-identity",
-        )
+        ), None, None, None
     text = show_file(base, path)
     current_blob = blob_id(base, path)
     if text is None or current_blob is None:
@@ -1090,7 +1301,7 @@ def assignment_status(
             symbol, "stale-ledger", path, None, None, [],
             "exact source path is absent from the base object",
             "source-missing",
-        )
+        ), text, current_blob, None
 
     base_source_commit = target_history_commit(
         base, symbol, [path], require_plateau=False,
@@ -1100,7 +1311,16 @@ def assignment_status(
             symbol, "stale-ledger", path, None, None, [],
             "exact source path has no committed history",
             "history-missing",
-        )
+        ), text, current_blob, None
+    return None, text, current_blob, base_source_commit
+
+
+def _active_status(
+    base: str, symbol: str, path: str, current_blob: str,
+    base_source_commit: str, text: str | None,
+    lane_index: LanePathIndex | None,
+) -> Assignment | None:
+    """Phase 2: the `active` verdict, or None when no lane owns the target."""
     active = active_lanes_for_source(
         base, symbol, path, current_blob, base_source_commit, text,
         lane_index, claim_dispositions(base),
@@ -1111,7 +1331,18 @@ def assignment_status(
             "an unintegrated lane has a different committed target guard or handoff",
             "lane-owned",
         )
+    return None
 
+
+def _settled_status(
+    base: str, symbol: str, path: str, text: str | None,
+    base_source_commit: str,
+) -> Assignment:
+    """Phase 3: the verdict for a target no unintegrated lane owns."""
+    if text is None:
+        text = show_file(base, path)
+        if text is None:
+            raise RuntimeError(f"{base}:{path} vanished during classification")
     try:
         reopen_authorization = reopen_authorizations(base).get(symbol)
     except RuntimeError as error:
@@ -1329,6 +1560,7 @@ def unique_commits(branch: str, base: str) -> list[tuple[str, str, str]]:
     return rows
 
 
+@lru_cache(maxsize=128)
 def claim_dispositions(base: str) -> dict[str, dict[str, str]]:
     raw = git("show", f"{base}:{DISPOSITIONS_PATH}", check=False)
     if not raw:

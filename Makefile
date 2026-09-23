@@ -25,8 +25,10 @@
 #   gmake check-reference-builds  prove that farm is the one the names came from
 #   gmake scoreboard        regenerate README.md's progress block from the tree
 #   gmake check-scoreboard  fail if that block has gone stale
+#   gmake forced-floor-census  regenerate docs/forced-floor-census.md from the handoffs
 #   gmake system-health     read-only campaign load/memory/process summary
 #   gmake check-tooling     focused safety/provenance/tooling regressions
+#   gmake small-delta-census  insertion-pair census -> docs/small-delta-census.md
 #   gmake promotion-proof SYMBOL=name  strict post-promotion exactness receipt
 #   gmake release-gate      serial, niced release checks with compact output
 #   gmake public-release    dry-run reconciliation/preflight; never pushes
@@ -336,11 +338,17 @@ cleanroom:
 system-health:
 	$(HOST_PYTHON) $(TOOLS_DIR)/system_health.py $(SYSTEM_HEALTH_ARGS)
 
+# Discovers and runs every tools/test_*.py and tests/test_*.py file, so a
+# new test file is never silently excluded. Special-cased interpreters and
+# class restrictions (a build-needing class skipped, a venv-only import)
+# live in run_tool_tests.py itself, not here -- see its docstring.
 check-tooling:
+	$(HOST_PYTHON) $(TOOLS_DIR)/run_tool_tests.py $(CHECK_TOOLING_ARGS)
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_force_lattice.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_web_footprint.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_score_symbol.py ForcedObjectTests
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_draw_census.py
+	$(HOST_PYTHON) $(TOOLS_DIR)/test_insertion_pairs.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_lineage_census.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_function_probe.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_progress.py
@@ -397,6 +405,14 @@ check-tooling:
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_public_release.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_blockclimb.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_residual_map.py
+
+# Insertion-pair reading of every 0 < |size_delta| <= 12 ranking row, written
+# to docs/small-delta-census.md. Needs the extracted tree and, for ownership,
+# the instrumented IDO toolchain; one configured and one traced compile per TU.
+.PHONY: small-delta-census
+small-delta-census:
+	@$(MAKE) --no-print-directory $(SPLAT_STAMP)
+	$(PYTHON) $(TOOLS_DIR)/small_delta_census.py
 
 # Ownership-only inventory; does not count padding/scaffolds as matched C.
 .PHONY: check-raw-asm
@@ -554,6 +570,13 @@ check-docs:
 	$(HOST_PYTHON) $(TOOLS_DIR)/nm_ranking.py --check-doc
 	$(HOST_PYTHON) $(TOOLS_DIR)/nm_ranking.py --check-retired
 	$(HOST_PYTHON) $(TOOLS_DIR)/plateau_handoff_audit.py --check
+
+# Proved colour floors recorded in plateau handoffs, summarised. Reads the
+# handoff shards, source PLATEAU-HANDOFF blocks and the ranking; no build.
+# tools/triage.py computes the same census live and withholds the
+# colour-exhausted rows from colour routing; this file is the tracked summary.
+forced-floor-census:
+	$(HOST_PYTHON) $(TOOLS_DIR)/forced_floor_census.py --write docs/forced-floor-census.md
 
 # Keep the shared linked-ELF prerequisite quiet for progress consumers while
 # retaining complete compiler/linker diagnostics on disk.
@@ -1394,7 +1417,7 @@ $(TARGET).z64: $(TARGET).bin $(CRC)
 	fi
 	@ls -l $@
 
-.PHONY: default all setup hooks extract prune-asm verify cleanroom system-health check-tooling promotion-proof release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
+.PHONY: default all setup hooks extract prune-asm verify cleanroom system-health check-tooling forced-floor-census promotion-proof release-gate public-release audit-decoders overlay-tables overlay-atlas overlay-atlas-write overlay-syms check-overlay-syms overlay-donors overlay-donors-write overlay-donors-scan-check check-fixtures check-docs reference-builds check-reference-builds progress scoreboard check-scoreboard clean distclean
 .SECONDARY:
 SHELL = /bin/bash -e -o pipefail
 

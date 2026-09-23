@@ -147,6 +147,21 @@ def accounting(base, target):
 
 
 class AccountingTests(unittest.TestCase):
+    def test_naming_rows_inside_a_pair_are_counted_apart(self):
+        target = list(range(100, 130))
+        base = target[:5] + [999] + target[5:]
+        script = script_for(base, target)
+        pairs = ip.pairs_from_script(script)
+        inside = next(s for s, (op, i, j) in enumerate(script)
+                      if op == "equal" and j == 12)
+        outside = next(s for s, (op, i, j) in enumerate(script)
+                       if op == "equal" and j == 2)
+        totals = ip.account(pairs, script, {inside, outside},
+                            list(range(5, 29)), 29, 1,
+                            naming_steps={inside, outside})
+        self.assertEqual(pairs[0]["naming_in"], 1)
+        self.assertEqual(totals["naming_in_pairs"], 1)
+
     def test_shadow_plus_aligned_is_the_positional_count(self):
         target = list(range(100, 140))
         base = target[:5] + [999] + target[5:20] + target[21:]

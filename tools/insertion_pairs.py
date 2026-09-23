@@ -222,11 +222,15 @@ def pairs_from_script(script: list[tuple[str, int, int]]) -> list[dict]:
 
 def account(pairs: list[dict], script: list[tuple[str, int, int]],
             differing_steps: set[int], positional: list[int],
-            n_min: int, extra: int) -> dict:
+            n_min: int, extra: int,
+            naming_steps: set[int] | None = None) -> dict:
     """Split the positional count into per-pair shadow and aligned residual.
 
     `differing_steps` are script steps whose aligned pair really differs
     (naming, immediate or structural); one-sided steps always count.
+    `naming_steps`, a subset, are the register-naming-only rows: inside a
+    pair those are the candidates for a free list the one-sided word rotated
+    (the overlay 58 reading), so they are counted separately.
     `positional` is the masked mismatch index list over range(n_min), and
     `extra` the length difference, which the ranking adds to its count.
     """
@@ -244,6 +248,7 @@ def account(pairs: list[dict], script: list[tuple[str, int, int]],
             positional_in += extra
         pair["positional_in"] = positional_in
         pair["aligned_in"] = aligned_in
+        pair["naming_in"] = len(steps & (naming_steps or set()))
         pair["shadow"] = positional_in - aligned_in
         pair["span_words"] = hi - pair["lo"] + (extra if pair["hi"] is None else 0)
     covered = set()
@@ -261,6 +266,7 @@ def account(pairs: list[dict], script: list[tuple[str, int, int]],
         "outside_agrees": aligned_out == positional_out,
         "shadow": shadow,
         "aligned_after_shadow": total_positional - shadow,
+        "naming_in_pairs": sum(p["naming_in"] for p in pairs),
     }
 
 
@@ -683,6 +689,7 @@ def analyse(item, obj: pathlib.Path, procs: dict | None, trace_note: str,
     script = als._banded_edit_script(b_key, t_key)
     buckets = {"naming": 0, "immediate": 0, "structural": 0}
     differing: set[int] = set()
+    naming: set[int] = set()
     for step, (op, i, j) in enumerate(script):
         if op not in ("equal", "replace"):
             continue
@@ -693,6 +700,7 @@ def analyse(item, obj: pathlib.Path, procs: dict | None, trace_note: str,
         differing.add(step)
         if nr.instr_reg_mask(bw) == nr.instr_reg_mask(tw):
             buckets["naming"] += 1
+            naming.add(step)
         elif als.instr_imm_mask(bw) == als.instr_imm_mask(tw):
             buckets["immediate"] += 1
         else:
@@ -702,7 +710,8 @@ def analyse(item, obj: pathlib.Path, procs: dict | None, trace_note: str,
     n_min = min(len(base), len(target))
     extra = abs(len(base) - len(target))
     pairs = pairs_from_script(script)
-    totals = account(pairs, script, differing, positional, n_min, extra)
+    totals = account(pairs, script, differing, positional, n_min, extra,
+                     naming)
 
     span = nr.func_symbol_span(obj, item.func)
     lines = line_table(obj, span[0], span[1], item.rel_c_file) if span else {}
@@ -788,6 +797,7 @@ def analyse(item, obj: pathlib.Path, procs: dict | None, trace_note: str,
             "span_words": p["span_words"],
             "positional_in": p["positional_in"],
             "aligned_in": p["aligned_in"],
+            "naming_in": p["naming_in"],
             "shadow": p["shadow"],
             "label": p["label"],
             "words": [{k: v for k, v in w.items() if k != "shape"}
@@ -857,7 +867,8 @@ def render(data: dict) -> str:
            f"  aligned rows: naming {b['naming']}, immediate {b['immediate']}, "
            f"structural {b['structural']}, one-sided {data['one_sided_words']}",
            f"  positional masked {data['positional']}, shadow {data['shadow']}, "
-           f"aligned residual after shadow {data['aligned_after_shadow']}",
+           f"aligned residual after shadow {data['aligned_after_shadow']} "
+           f"({data['naming_in_pairs']} of it naming rows inside pairs)",
            f"  outside pairs: aligned {data['aligned_outside']} vs positional "
            f"{data['positional_outside']}"
            + ("" if data["outside_agrees"] else "   <-- DISAGREE"),
@@ -871,7 +882,8 @@ def render(data: dict) -> str:
                    f"{'closed' if pair['closed'] else 'open to end'})  "
                    f"label {pair['label']}")
         out.append(f"    positional {pair['positional_in']}, aligned "
-                   f"{pair['aligned_in']}, shadow {pair['shadow']}")
+                   f"{pair['aligned_in']} ({pair['naming_in']} naming), "
+                   f"shadow {pair['shadow']}")
         for w in pair["words"]:
             o = w["owner"]
             where = f"line {o['line']}" if o["line"] is not None else "no line"

@@ -27,6 +27,7 @@
 #   gmake check-scoreboard  fail if that block has gone stale
 #   gmake system-health     read-only campaign load/memory/process summary
 #   gmake check-tooling     focused safety/provenance/tooling regressions
+#   gmake small-delta-census  insertion-pair census -> docs/small-delta-census.md
 #   gmake promotion-proof SYMBOL=name  strict post-promotion exactness receipt
 #   gmake release-gate      serial, niced release checks with compact output
 #   gmake public-release    dry-run reconciliation/preflight; never pushes
@@ -398,6 +399,14 @@ check-tooling:
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_public_release.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_blockclimb.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_residual_map.py
+
+# Insertion-pair reading of every 0 < |size_delta| <= 12 ranking row, written
+# to docs/small-delta-census.md. Needs the extracted tree and, for ownership,
+# the instrumented IDO toolchain; one configured and one traced compile per TU.
+.PHONY: small-delta-census
+small-delta-census:
+	@$(MAKE) --no-print-directory $(SPLAT_STAMP)
+	$(PYTHON) $(TOOLS_DIR)/small_delta_census.py
 
 # Ownership-only inventory; does not count padding/scaffolds as matched C.
 .PHONY: check-raw-asm

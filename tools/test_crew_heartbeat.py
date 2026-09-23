@@ -131,6 +131,7 @@ class HeartbeatTests(unittest.TestCase):
         admissible: bool = False,
         symbol: str = "demo_symbol",
         relocations: dict[str, int] | None = None,
+        build_claim: str | None = "match",
     ) -> Path:
         path = root / "build/wb/demo.summary.json"
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -154,6 +155,7 @@ class HeartbeatTests(unittest.TestCase):
                 "admissible_exact_comparison": admissible,
                 "promotion_proof_included": False,
             },
+            "provenance": {"build_claim": build_claim},
         }
         if relocations is not None:
             payload["relocations"] = relocations
@@ -561,6 +563,93 @@ class HeartbeatTests(unittest.TestCase):
         self.assertEqual(loaded["raw_differing_words"], 0)
         self.assertEqual(loaded["exact_relocation_identities"], 11)
         self.assertEqual(loaded["promotion_state"], "compiled")
+
+    def test_exact_summary_with_unmatched_build_claim_and_admissible_is_rejected(
+        self,
+    ) -> None:
+        # function_preflight.workbench_summary() should never itself emit
+        # admissible_exact_comparison=True alongside a non-"match" build
+        # claim, but a hand-edited or stale summary can, and crew.py must not
+        # trust it: exact + a forced/instrumented/unknown build is not a
+        # verified match.
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.write_summary(
+                root,
+                raw=0,
+                masked=0,
+                exact=True,
+                admissible=True,
+                build_claim="reachability-proof",
+                relocations={
+                    "candidate_relocations": 6,
+                    "target_relocations": 6,
+                    "exact_relocation_identities": 6,
+                },
+            )
+            with mock.patch.object(crew, "repository_root", return_value=root):
+                with mock.patch.object(crew, "git_ignored", return_value=True):
+                    with self.assertRaisesRegex(crew.CrewError, "unverified build_provenance"):
+                        crew.workbench_summary_result(
+                            "build/wb/demo.summary.json",
+                            worker="worker-1",
+                            target="demo_symbol",
+                        )
+
+    def test_exact_summary_with_unmatched_build_claim_stays_compiled(self) -> None:
+        # Same unverified build claim, but admissible_exact_comparison is
+        # already False (the ordinary case, since function_preflight folds
+        # the claim into that field itself): no error, just no promotion.
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.write_summary(
+                root,
+                raw=0,
+                masked=0,
+                exact=True,
+                admissible=False,
+                build_claim="unknown",
+                relocations={
+                    "candidate_relocations": 6,
+                    "target_relocations": 6,
+                    "exact_relocation_identities": 6,
+                },
+            )
+            args = self.command_args(
+                target="demo_symbol",
+                base="a" * 40,
+                deadline_unix=2_000_000_000,
+                wb_summary="build/wb/demo.summary.json",
+            )
+            loaded = self.run_checkpoint_with_summary(root, args)
+        self.assertEqual(loaded["promotion_state"], "compiled")
+
+    def test_exact_summary_without_provenance_block_is_unchanged(self) -> None:
+        # Older summaries carry no provenance.build_claim at all; that must
+        # not be treated as a denial.
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.write_summary(
+                root,
+                raw=0,
+                masked=0,
+                exact=True,
+                admissible=True,
+                build_claim=None,
+                relocations={
+                    "candidate_relocations": 6,
+                    "target_relocations": 6,
+                    "exact_relocation_identities": 6,
+                },
+            )
+            args = self.command_args(
+                target="demo_symbol",
+                base="a" * 40,
+                deadline_unix=2_000_000_000,
+                wb_summary="build/wb/demo.summary.json",
+            )
+            loaded = self.run_checkpoint_with_summary(root, args)
+        self.assertEqual(loaded["promotion_state"], "object-exact")
 
     def test_worse_current_checkpoint_never_replaces_best(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -30,6 +30,20 @@
 # only the cheap ELF -> BIN -> ROM derivation so a same-timestamp stale ROM
 # cannot masquerade as current. --no-build instead requires the ROM to be
 # strictly newer than its linked ELF.
+#
+# Build provenance: decomp-workbench's scoring commands (compare,
+# compare-dumps, score, diagnose, diagnose-dumps, rank) only claim `match` on
+# an exact result when the build is declared `stock`. This wrapper declares
+# `--build-env stock` automatically on every workbench invocation, unless:
+#   - the caller's own workbench args already spell --build-env or
+#     --build-env-file (their declaration wins, whatever it says);
+#   - WB_CANDIDATE_BUILD_DIR or WB_CANDIDATE_SYMBOL is set, because those
+#     point the comparison at a scratch object the caller must declare the
+#     provenance of themselves; or
+#   - the shell has any CDX_* or DKWB_* variable exported and gave no
+#     declaration -- that shell may hold a forced or traced build, in which
+#     case the wrapper refuses (exit 2) rather than silently claiming stock.
+#     Pass --build-env forced (or --build-env-file) explicitly to proceed.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -119,15 +133,49 @@ run_provenance() {
 
 wb_extra_args=("$@")
 
+# Decide whether to append --build-env stock to a workbench invocation. See
+# the "Build provenance" note in the header comment for the guard rules.
+# Sets the global build_env_reply array (empty when declaration is left to
+# the caller); exits 2 with a one-line refusal under a forcing/tracing
+# environment that declared nothing.
+compute_build_env_args() {
+    local arg
+    for arg in "$@"; do
+        case "$arg" in
+            --build-env|--build-env=*|--build-env-file|--build-env-file=*)
+                return 0
+                ;;
+        esac
+    done
+    if [ -n "${WB_CANDIDATE_BUILD_DIR:-}" ] || [ -n "${WB_CANDIDATE_SYMBOL:-}" ]; then
+        return 0
+    fi
+    local forcing=() var
+    while IFS= read -r var; do
+        case "$var" in
+            CDX_*|DKWB_*) forcing+=("$var") ;;
+        esac
+    done < <(compgen -e)
+    if [ "${#forcing[@]}" -gt 0 ]; then
+        echo "$0: refusing to declare --build-env stock: ${forcing[*]} exported" \
+             "with no --build-env/--build-env-file given; pass --build-env forced" \
+             "(or --build-env-file) explicitly." >&2
+        exit 2
+    fi
+    build_env_reply=(--build-env stock)
+}
+
 run_workbench() {
     local command=$1 raw_report result=0
     shift
+    local build_env_reply=()
+    compute_build_env_args "$@"
     if [ "$summary_json" -eq 0 ]; then
-        exec "$WB" "$command" "$@"
+        exec "$WB" "$command" "$@" "${build_env_reply[@]}"
     fi
 
     raw_report="$OUT/$sym.workbench.json"
-    "$WB" "$command" "$@" --json --color never > "$raw_report" || result=$?
+    "$WB" "$command" "$@" "${build_env_reply[@]}" --json --color never > "$raw_report" || result=$?
     summary_size=${target_boundary_size:--1}
     if ! "$PROVENANCE" -c '
 import json

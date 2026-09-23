@@ -97,6 +97,33 @@ class ProbeTests(unittest.TestCase):
         diagnosis["comparison"].update(candidate_instructions=4, exact=False)
         self.assertFalse(probe.compact(preflight, diagnosis)["candidate_for_linked_trial"])
 
+    def test_exact_with_matching_build_claim_still_passes(self):
+        preflight, diagnosis = self.evidence()
+        diagnosis["build_provenance"] = {"claim": "match"}
+        report = probe.compact(preflight, diagnosis)
+        self.assertTrue(report["candidate_for_linked_trial"])
+        self.assertEqual(report["build_provenance_claim"], "match")
+
+    def test_exact_with_forced_build_claim_never_passes(self):
+        preflight, diagnosis = self.evidence()
+        diagnosis["build_provenance"] = {"claim": "reachability-proof"}
+        report = probe.compact(preflight, diagnosis)
+        self.assertFalse(report["candidate_for_linked_trial"])
+        self.assertEqual(report["build_provenance_claim"], "reachability-proof")
+        self.assertIn("reachability-proof", report["next_action"])
+
+    def test_exact_with_unverified_build_claim_never_passes(self):
+        preflight, diagnosis = self.evidence()
+        diagnosis["build_provenance"] = {"claim": "unverified"}
+        self.assertFalse(probe.compact(preflight, diagnosis)["candidate_for_linked_trial"])
+
+    def test_exact_without_build_provenance_block_is_unconstrained(self):
+        preflight, diagnosis = self.evidence()
+        self.assertNotIn("build_provenance", diagnosis)
+        report = probe.compact(preflight, diagnosis)
+        self.assertTrue(report["candidate_for_linked_trial"])
+        self.assertIsNone(report["build_provenance_claim"])
+
     def test_missing_evidence_never_passes(self):
         report = probe.compact(None, None)
         self.assertFalse(report["candidate_for_linked_trial"])

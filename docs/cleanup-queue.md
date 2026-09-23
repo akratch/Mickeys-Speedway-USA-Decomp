@@ -76,3 +76,4 @@ not a correctness gap.
 
 Add rows as ugly-but-verified matches land. When revisiting: reproduce the match
 with idiomatic C, `gmake verify`, then delete the row + the in-source comment.
+| `func_80037414` | frontend trap caller | `var_a1 \| 0` as the `TrapDanglingJump` argument | An operand of an operator is not copy-propagated, so the identity keeps `var_a1` itself in `a1` where a bare argument was replaced by the shared expression value; the fold leaves no instruction. Seek a natural spelling that keeps the argument as the variable, retaining 145 words, frame `0x30` and 42 relocations. |

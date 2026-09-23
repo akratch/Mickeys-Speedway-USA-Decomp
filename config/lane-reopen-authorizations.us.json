@@ -81,9 +81,9 @@
       "source_commit": "164ceb845611d3ff8dbace0a526bff06804d965c"
     },
     "func_80006B04": {
-      "ledger_commit": "d33598a3a5aefdbdd3b7952f44bbb57907a0d20e",
+      "ledger_commit": "ec9e75405fe27cc055adf303acf7df2d3e67ed17",
       "reason": "Track B reopen 2026-09-23: tools/insertion_pairs.py (new since closure) owns every one-sided word with a line and construct (docs/small-delta-census.md). Closure searched colour at nonzero delta; this pass re-spells the owning line.",
-      "source_commit": "d33598a3a5aefdbdd3b7952f44bbb57907a0d20e"
+      "source_commit": "ec9e75405fe27cc055adf303acf7df2d3e67ed17"
     },
     "func_80006EE4": {
       "ledger_commit": "09720b262a8f536d4cac661d318edc74bea9e0e7",
@@ -111,14 +111,14 @@
       "source_commit": "3f0eb5cd6e7a5cd049f009127d9f36c9b3884cf3"
     },
     "func_8000831C": {
-      "ledger_commit": "5da6b1c65b1dd5b95bb64c9778633447534af192",
+      "ledger_commit": "b8adc4a2a3aa7aa42bed941af27abc84d5f2349f",
       "reason": "Track B reopen 2026-09-23: tools/insertion_pairs.py (new since closure) owns every one-sided word with a line and construct (docs/small-delta-census.md). Closure searched colour at nonzero delta; this pass re-spells the owning line.",
-      "source_commit": "5da6b1c65b1dd5b95bb64c9778633447534af192"
+      "source_commit": "b8adc4a2a3aa7aa42bed941af27abc84d5f2349f"
     },
     "func_800084C4": {
-      "ledger_commit": "8165ac8f49b34eac800bf6e25337427bb6a6af79",
+      "ledger_commit": "5a57f82aeed10eec97d3315cde3a66c1680a2321",
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
-      "source_commit": "8165ac8f49b34eac800bf6e25337427bb6a6af79"
+      "source_commit": "5a57f82aeed10eec97d3315cde3a66c1680a2321"
     },
     "func_80009414": {
       "ledger_commit": "59d344d38fe34eda70d66ccc8ce5b51ebbc88e1c",
@@ -281,9 +281,9 @@
       "source_commit": "377c73a069541a2a34485b63f949923bbce9d886"
     },
     "func_800180B4": {
-      "ledger_commit": "67970865fd5ca83b8b3100090ab67816b39f8f33",
+      "ledger_commit": "62284df0f50540259afde9744b09ec885f0a5d89",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "67970865fd5ca83b8b3100090ab67816b39f8f33"
+      "source_commit": "62284df0f50540259afde9744b09ec885f0a5d89"
     },
     "func_80018F08": {
       "ledger_commit": "da53811bedf53dccb772d85e98f2fff27433e5e9",
@@ -296,9 +296,9 @@
       "source_commit": "d09352cdaa9a476ab208fd6965e169db3d64bdce"
     },
     "func_80019AB8": {
-      "ledger_commit": "173cab235f4fe1cf595964b0070f612463d896ae",
+      "ledger_commit": "37862551f60d51f602884f6055adee80e8ef5321",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "173cab235f4fe1cf595964b0070f612463d896ae"
+      "source_commit": "37862551f60d51f602884f6055adee80e8ef5321"
     },
     "func_80019DE8": {
       "ledger_commit": "3871c92be170f512c85f90d6fd3682e1e1a0adb0",
@@ -526,14 +526,14 @@
       "source_commit": "5c4bda08946c5a1a271aba9cbb27740c4000d1ad"
     },
     "func_800371BC": {
-      "ledger_commit": "55d23e78382ea80987c387b4db2c7bdf53eabfa4",
+      "ledger_commit": "59527cf3c719da5b445fc6f11b313ffbb0a45d92",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "094bac856d40e201d133d032e58a05960d54f530"
+      "source_commit": "59527cf3c719da5b445fc6f11b313ffbb0a45d92"
     },
     "func_80037414": {
-      "ledger_commit": "c28230116e74ff270c66e3a3593e08c7ae8f31ba",
+      "ledger_commit": "440a5b2f94c1af325e85a561b9f515f48e5c3c3e",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "c28230116e74ff270c66e3a3593e08c7ae8f31ba"
+      "source_commit": "440a5b2f94c1af325e85a561b9f515f48e5c3c3e"
     },
     "func_800376CC": {
       "ledger_commit": "1fceaee54b69af574b73c23d43063a14c686e6e8",
@@ -731,9 +731,9 @@
       "source_commit": "cb7d0ac38b50149be503d9418fc1f130f57155b6"
     },
     "func_8004B1DC": {
-      "ledger_commit": "d48350704b481bb21029b14a233f9a0349b460d3",
+      "ledger_commit": "e49e46db426483a822c86bd604fdf19272119a02",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "a8947635ec5917a09950fa19f991c530b494a1fd"
+      "source_commit": "e49e46db426483a822c86bd604fdf19272119a02"
     },
     "func_8004BA8C": {
       "ledger_commit": "9fa2314ec43c033254eb19b67d3494a2c67df7c9",
@@ -741,9 +741,9 @@
       "source_commit": "9fa2314ec43c033254eb19b67d3494a2c67df7c9"
     },
     "func_8004C690": {
-      "ledger_commit": "782cc192403a47c1e1ab98b5c2e8b8189a6946f8",
+      "ledger_commit": "b7aa646f08040e16a2be15a1adeddd567dac3906",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "782cc192403a47c1e1ab98b5c2e8b8189a6946f8"
+      "source_commit": "b7aa646f08040e16a2be15a1adeddd567dac3906"
     },
     "func_8004E8E0": {
       "ledger_commit": "e14634a8533b583479f9dcd4d8091e87625675c8",

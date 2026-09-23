@@ -28,6 +28,18 @@ typedef struct FrontendVertex {
     s8 b;
     s8 a;
 } FrontendVertex;
+/* func_800371BC writes the same layout with unsigned colour bytes: the
+ * target loads 255, not -1. The s8 view stays for the shading functions,
+ * whose register naming depends on it. */
+typedef struct FrontendGridVertex {
+    s16 x;
+    s16 y;
+    s16 unk4;
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
+} FrontendGridVertex;
 extern s32 D_8007BE84;
 extern s32 D_8007BEB0;
 extern s32 D_8007BEB4;
@@ -61,34 +73,36 @@ void func_80037150(void) {
 }
 extern s32 viGetVideoMode(void);
 extern void *func_8002B280(s32, s32);
-/* Workbench verdict: size-mismatch, 114 differing words (was 144), size
- * delta +4, first mismatch +0x2C.
- *
- * Allocates and fills both backdrop vertex buffers with a 17x17 grid -- the
+/* Allocates and fills both backdrop vertex buffers with a 17x17 grid -- the
  * same grid func_800378A4 later shades. The m2c draft transcribed the
- * compiler's 4x unrolled inner loop literally (a peeled first vertex, then
- * four vertices and four parallel `var_s2 * 4` accumulators per pass); this
- * TU has the default unroller, so the ordinary counted loop reproduces that
- * shape by itself. Both divides are signed `/ 16`, not `>> 4`: the target
- * carries the `bgez` / `addiu at,x,15` rounding correction at every site, so
- * the source could not prove the dividend non-negative.
+ * compiler's 4x unrolled inner loop literally; this TU has the default
+ * unroller, so the ordinary counted loop reproduces that shape by itself.
+ * Both divides are signed `/ 16`, not `>> 4`: the target carries the
+ * rounding correction at every site.
  *
- * func_800371BC takes NO PARAMETERS: the target homes nothing in the
- * incoming argument slots. Applied 2026-09-23 together with its one call site
- * in func_80037414, which it also moved to size delta 0: 144 -> 114 here.
+ * Matched 2026-09-23 (144 -> 114 -> 0). It takes no parameters (the target
+ * homes nothing in the incoming slots; its call site in func_80037414 changed
+ * with it). Then, in order: `y` is a plain s32, not an s16 cast (the cast was
+ * the two extra words); the buffer loop is an index over D_8007BE88, not a
+ * walking pointer -- strength reduction then makes the s6/s7 cursor and bound
+ * itself, and the tail's two loads share one materialised base address, the
+ * missing word (L154/L160); the store precedes the copy into `vertex`, which
+ * is read back from the table, so the result is stored before it is copied;
+ * the row loop is a `for`, which puts `row = 0` after the hoisted `-half - 1`;
+ * and the colour bytes are written through the u8 FrontendGridVertex view
+ * (the target loads 255, not -1).
  *
  * No donor counterpart: JFG's src/menu.c has no function of this shape.
  * frontend_37D50.c is Mickey's own backdrop renderer, outside the JFG menu.c
  * crosswalk that names the rest of this front end. */
-#ifdef NON_MATCHING
 void func_800371BC(void) {
-    FrontendVertex *vertex;
-    void **buffer;
+    FrontendGridVertex *vertex;
     s32 spacing;
     s32 half;
     s32 row;
     s32 column;
-    s16 y;
+    s32 y;
+    s32 i;
 
     if (D_8007BE80 == 0) {
         if (viGetVideoMode() & 1) {
@@ -96,15 +110,13 @@ void func_800371BC(void) {
         } else {
             spacing = 0x1AA;
         }
-        buffer = (void **) &D_8007BE88;
-        do {
-            vertex = func_8002B280(0xB4A, 0x87);
-            *buffer = vertex;
+        for (i = 0; i < 2; i++) {
+            ((FrontendGridVertex **) &D_8007BE88)[i] = func_8002B280(0xB4A, 0x87);
+            vertex = ((FrontendGridVertex **) &D_8007BE88)[i];
             if (vertex != NULL) {
                 half = spacing >> 1;
-                row = 0;
-                do {
-                    y = (s16) (0x79 - (row / 16));
+                for (row = 0; row != 0xFF0; row += 0xF0) {
+                    y = 0x79 - (row / 16);
                     for (column = 0; column != 0x11; column++) {
                         vertex->x = (s16) (((column * spacing) / 16) - half - 1);
                         vertex->y = y;
@@ -115,20 +127,15 @@ void func_800371BC(void) {
                         vertex->a = 0xFF;
                         vertex++;
                     }
-                    row += 0xF0;
-                } while (row != 0xFF0);
+                }
             }
-            buffer++;
-        } while (buffer != (void **) &D_8007BE90);
+        }
         D_8007BE80 = 1;
         if ((D_8007BE88.unk0 == NULL) || (D_8007BE88.unk4 == NULL)) {
             func_80037150();
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/frontend_37D50/func_800371BC.s")
-#endif
 extern void TrapDanglingJump();
 /* Matched 2026-09-23. Four edits took it from 57 masked words to 0:
  * the call to func_800371BC takes no arguments (the old +4 was the a2/a3
@@ -615,16 +622,6 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/frontend_37D50/func_80038190.s")
 #endif
 #undef FRONTEND_EMIT
-
-/* PLATEAU-HANDOFF:func_800371BC:start
- * symbol: func_800371BC
- * score: 114/150 words
- * frame: 0x38
- * relocations: 15
- * first-mismatch: +0x2C
- * summary: Declared (void) with its call site in func_80037414: 144 to 114; size delta +4 remains
- * PLATEAU-HANDOFF:func_800371BC:end
- */
 
 /* PLATEAU-HANDOFF:func_80037C74:start
  * symbol: func_80037C74

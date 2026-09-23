@@ -571,6 +571,7 @@ def synthesize(obj_path: Path, overlay: int, rom: bytes, atlas_rows, records,
 STT_NOTYPE = 0
 STT_OBJECT = 1
 STT_FUNC = 2
+STT_SECTION = 3
 STB_GLOBAL = 1
 SHN_ABS = 0xFFF1
 
@@ -1677,8 +1678,11 @@ def _stable_symbol_identities(path, candidate_elf, overlay, tu_base_offset,
     # build have a unique address space. Overlay-valued ELF symbols are not
     # admitted here: F0000000 is deliberately shared by 107 modules.
     for elf in (candidate_elf, target_elf):
-        for name, value, _size, _info, shndx in elf.symbols():
-            if not name or shndx == SHN_UNDEF:
+        for name, value, _size, info, shndx in elf.symbols():
+            # A section symbol names one object's input section, never a
+            # program-wide identity: every TU has its own `.rodata`, and an
+            # externalized one survives in the linked ELF as `*ABS*` zero.
+            if not name or shndx == SHN_UNDEF or info & 0xF == STT_SECTION:
                 continue
             if 0x80000000 <= value < 0x90000000:
                 propose(name, (0, value - ot.RESIDENT_VRAM_BASE))
@@ -3132,6 +3136,58 @@ def _candidate_surface_records(elf, start, size, target, identities,
     return output
 
 
+LINK_MAP = REPO / "build" / "mickey.us.map"
+
+
+def linked_input_sections(map_path=LINK_MAP):
+    """{(object, section): (address, size)} for every input section the link placed.
+
+    Read from the linker map written by the same link as the ELF: the only
+    record of where one object's anonymous `.rodata`/`.data`/`.bss` landed.
+    """
+    placed = {}
+    pattern = re.compile(
+        r"^ (\.[\w.]+)\s+0x([0-9A-Fa-f]+)\s+0x([0-9A-Fa-f]+)\s+(\S+\.o)\s*$")
+    for line in Path(map_path).read_text(errors="replace").splitlines():
+        match = pattern.match(line)
+        if match:
+            key = (match.group(4), match.group(1))
+            value = (int(match.group(2), 16), int(match.group(3), 16))
+            if placed.setdefault(key, value) != value:
+                raise SurfaceComparisonError(
+                    "link map places %s(%s) twice" % key[::-1])
+    return placed
+
+
+def _resident_section_identities(target_object, target_object_path, map_path=LINK_MAP):
+    """Resident identities of one object's own section symbols, from the link map.
+
+    A relocation against a section symbol (`.rodata` for a jump table or a
+    literal pool) addresses that object's input section, whose linked address
+    only the map records. The map entry must exist once and have the object's
+    own section size; a section the link did not place is left unresolved.
+    """
+    placed = linked_input_sections(map_path)
+    try:
+        key_object = Path(target_object_path).resolve().relative_to(REPO.resolve()).as_posix()
+    except ValueError:
+        return {}
+    identities = {}
+    for name, _value, _size, info, shndx in target_object.symbols():
+        if info & 0xF != STT_SECTION or not 0 < shndx < len(target_object.names):
+            continue
+        section = target_object.names[shndx]
+        if name != section or (key_object, section) not in placed:
+            continue
+        address, size = placed[(key_object, section)]
+        header = target_object.sh[shndx]
+        if size != header[5] or not 0x80000000 <= address < 0x90000000:
+            raise SurfaceComparisonError(
+                "link map disagrees with %s(%s)" % (key_object, section))
+        identities[name] = (0, address - ot.RESIDENT_VRAM_BASE)
+    return identities
+
+
 def _resident_target_records(candidate_object, source, target_elf,
                              target_symbol, target_value, target_size,
                              target_section, values_path,
@@ -3221,6 +3277,7 @@ def _resident_target_records(candidate_object, source, target_elf,
 
     identities, ambiguous = _stable_symbol_identities(
         values_path, target_object, None, 0, target_elf)
+    identities.update(_resident_section_identities(target_object, target_object_path))
     records = _candidate_surface_records(
         target_object, object_start, object_size, shape, identities,
         _numeric_assignments(values_path), ambiguous, None)
@@ -3295,7 +3352,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                                 rom_path=DEFAULT_ROM, atlas_path=None,
                                 values_path=LINK_SYMS, candidate_symbol=None,
                                 target_symbol=None, overlay_hint=None, source=None,
-                                candidate_redefine_aliases=None):
+                                candidate_redefine_aliases=None,
+                                include_candidate_identities=False):
     candidate_symbol = candidate_symbol or symbol
     target_symbol = target_symbol or symbol
     atlas_path = atlas_path or (REPO / "config" / "overlays.us.json")
@@ -3407,6 +3465,13 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
         identities, numeric_values, ambiguous_identities, overlay,
         overlay_call_identities, ambiguous_overlay_calls)
     result = compare_record_sets(target_records, candidate_records)
+    if include_candidate_identities:
+        # Per-site static identities, for a caller that must prove individual
+        # sites rather than the whole surface (the declared-metadata proof).
+        result["candidate_identities"] = [
+            {"offset": row.offset, "rtype": row.rtype,
+             "identity": list(row.identity) if row.identity is not None else None}
+            for row in candidate_records]
     result["candidate_redefine_alias_count"] = len(
         candidate_redefine_aliases or {}
     )

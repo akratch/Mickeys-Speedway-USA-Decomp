@@ -35,12 +35,12 @@ typedef struct O14Value114Ref {
     s32 value;
 } O14Value114Ref;
 
-extern O14ValueC0Ref gOverlay14ValueC0;
-extern O14ValueDCRef gOverlay14ValueDC;
+extern O14ValueC0Ref gOverlay14ValueC0Base;
+extern O14ValueDCRef gOverlay14ValueDCBase;
 extern O14HandleE0Ref gOverlay14HandleE0;
 extern O14ModeE4Ref gOverlay14ModeE4;
 extern O14ValueECRef gOverlay14ValueEC;
-extern O14ValueF8Ref gOverlay14ValueF8;
+extern O14ValueF8Ref gOverlay14ValueF8Base;
 extern O14Value114Ref gOverlay14Value114;
 extern s32 gOverlay14Args2C;
 extern s32 gOverlay14Args30;
@@ -55,14 +55,14 @@ void func_overlay_014_F00013F4_1870CCC(s32 context) {
     s32 mode;
 
     overlay14BuildPanel(context, &gOverlay14DataBase, 0x5C, 0x14, 0xD0, 0x58,
-                        (gOverlay14ValueC0.value * 0xA0) >> 8);
+                        (gOverlay14ValueC0Base.value * 0xA0) >> 8);
     gOverlay14HandleE0.value =
-        overlay14CreateHandle(context, gOverlay14ValueF8.value,
-                              gOverlay14ValueDC.value);
+        overlay14CreateHandle(context, gOverlay14ValueF8Base.value,
+                              gOverlay14ValueDCBase.value);
     overlay14DrawPrimitive(0, 0, 0, 0);
     overlay14DrawPrimitive(0xFF, 0xC0, 0, 0xFF,
-                           (gOverlay14ValueC0.value * 0xFF) >> 8);
-    if (gOverlay14ValueDC.value != 0) {
+                           (gOverlay14ValueC0Base.value * 0xFF) >> 8);
+    if (gOverlay14ValueDCBase.value != 0) {
         overlay14DrawPrimitive(context, 0xC4, 0x14, &gOverlay14Args2C, 0xC);
     }
     if ((gOverlay14HandleE0.value != 0) ||

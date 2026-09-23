@@ -300,6 +300,67 @@ refused as an unsupported specification; it now expands the file exactly as
 `filter_elf_relocations.py` does and pins the file's digest among the
 capture's inputs.
 
+The census then ended at 23 failures; 20 were overlay functions whose
+recipes the declared-metadata proof did not read. That proof now accepts every
+metadata form the build ships -- `objcopy --redefine-sym`, `--add-symbol` and
+`--remove-section` (never of `.text`, its relocations or the symbol tables),
+`rebind_elf_relocations.py`, `externalize_elf_section.py`, the filters and
+the trim, `@SPEC_FILE` arguments included -- and proves the filtered sites
+against a *replay*: the Make-expanded recipe run, step by step and in order,
+on the fresh raw compile with only the filters left out, so the replay
+carries every rename and rebind the configured object does. The accounting
+then requires the configured object to differ from the replay by exactly the
+declared filter records. Two orderings are restated rather than replayed: a
+rename that follows a filter carries the filter's symbol with it, and a
+section a filter frees for a later `--remove-section` (overlay 91 filters its
+`.rodata` HI/LO, then removes `.rodata`) is removed by the accounting after
+the filters. A retained site is the configured object's own record and is
+proved as in any promoted function, statically or by the linked-ROM route; a
+filtered site is proved by the replay's static surface (receipt route
+`replay-static`), the linked BSS base (`linked-bss-base`), or, for a section
+the recipe removes, by content: every such site must agree on where the
+section starts, that offset must lie in the module's initialized data, and the
+ROM must hold the section's exact bytes there, jump-table words relocated
+against the TU's text (`removed-section-content`).
+
+Reading those recipes exposed tree defects the filters had hidden, each a C
+spelling whose identity disagreed with the site it names:
+
+- Overlay 14's `Ref` idiom (`extern O14ValueC0Ref gOverlay14ValueC0;` with
+  padding up to the field) makes the name the module's data base, while
+  other overlay 14 TUs declare the same name as the `s32` at data `+0xC0`.
+  The static surface saw both meanings and left the name ambiguous. The
+  `Ref`-idiom declarations in `overlay14ApplyValues`,
+  `overlay14AdvanceCommand`, `overlay14StepCommand` and
+  `func_overlay_014_F00013F4_1870CCC` now spell the base as
+  `gOverlay14<Field>Base`, following `gOverlay14CommandHeaderBase`.
+- `overlay11UpdateModeSix` and `overlay11UpdateTwoOptionMenu` read one C
+  macro, `D_INPUT + 0x1C4`, for two retail words: the argument past the BSS
+  base and the menu input in initialized data (the `D_menuBase + 0x1C4` of
+  their siblings). The data reads are now `OVERLAY11_MENU_INPUT` through
+  `D_menuInputBase`, and the counter's base `D_cfgA`, a scalar at a reserved
+  selector in every other TU, is `D_menuCounterBase`.
+- `overlay28InitializeWork` stored `overlay28ResetBuffer` (module `+0`) in
+  its `reset` field; the shipped relocation names the start of overlay 28's
+  initialized data (`+0x7F0`). The C now stores `gOverlay28DataBase`.
+- `overlay91UpdateTimeline` called one `overlay91CallProxy` for eleven
+  retail callees in four identities. Each call now names its callee
+  (`func_8002A8C0`, `func_8002A8BC`, `func_80000F94`, `func_80006EA0`,
+  `func_overlay_007_F0000DBC_185CC44`).
+
+Every one of those relocations stays filtered, so no name is linked and the
+ROM, the alias surface and every word are unchanged. Two proof defects fell
+out as well: `classify_source_selection` paired an *unconditional* friendly
+definition in multi-function `overlay_007_tail.c` with another function's
+guarded `GLOBAL_ASM` (only a guarded definition can be a fallback's
+alternative), and a resident function's own `.rodata` jump table
+(`func_8005BA40`) resolved through a program-wide `.rodata`: an
+externalized overlay section survives in the linked ELF as an `*ABS*` zero
+section symbol. Section symbols are never name identities now; a resident
+object's own section symbol is placed by the link map
+(`build/mickey.us.map`), which must place that object's section once, at its
+own size.
+
 Linked BSS follows the shipped relocation blobs, while runtime BSS follows only
 text plus data/rodata. The tool therefore proves the linked definition first,
 then translates its BSS offset from `ROM-size + object offset` to

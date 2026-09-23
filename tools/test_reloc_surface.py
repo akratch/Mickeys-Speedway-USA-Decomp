@@ -425,6 +425,60 @@ class FunctionSurfaceComparisonTests(unittest.TestCase):
         )
         self.assertNotIn("D_7BE08", ambiguous)
 
+    def test_section_symbols_are_never_program_wide_identities(self):
+        # An externalized overlay `.rodata` survives in the linked ELF as an
+        # `*ABS*` zero section symbol; func_8005BA40's own `.rodata` jump
+        # table must not borrow it.
+        class FakeElf:
+            def __init__(self, rows):
+                self.rows = rows
+
+            def symbols(self):
+                return self.rows
+
+            def section(self, _name):
+                return None, None
+
+        candidate = FakeElf([(".rodata", 0, 0, rs.STT_SECTION, 5)])
+        target = FakeElf([(".rodata", 0, 0, rs.STT_SECTION, rs.SHN_ABS),
+                          (".main", 0x80000450, 0, rs.STT_SECTION, 1)])
+        resolved, ambiguous = rs._stable_symbol_identities(
+            Path("missing"), candidate, None, 0, target)
+        self.assertNotIn(".rodata", resolved)
+        self.assertNotIn(".main", resolved)
+
+    def test_resident_section_symbol_identity_comes_from_the_link_map(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            link_map = root / "link.map"
+            link_map.write_text(
+                " build/src/main/a.c.o(.rodata)\n"
+                " .rodata        0x80084320      0x150 build/src/main/a.c.o\n"
+                " .rodata        0x80084470       0x20 build/src/main/b.c.o\n")
+
+            class Obj:
+                names = ["", ".text", ".rodata"]
+                sh = [(0,) * 10, (0,) * 10, (0, 1, 2, 0, 0, 0x150, 0, 0, 4, 0)]
+
+                def symbols(self):
+                    return [(".rodata", 0, 0, rs.STT_SECTION, 2),
+                            ("local", 0, 0, rs.STT_OBJECT, 2)]
+
+            obj_path = rs.REPO / "build/src/main/a.c.o"
+            self.assertEqual({".rodata": (0, 0x80084320 - rs.ot.RESIDENT_VRAM_BASE)},
+                             rs._resident_section_identities(Obj(), obj_path, link_map))
+            # An object the map does not place stays unresolved.
+            self.assertEqual({}, rs._resident_section_identities(
+                Obj(), rs.REPO / "build/src/main/c.c.o", link_map))
+            # A size disagreement is a contradiction, not a guess.
+            Obj.sh[2] = (0, 1, 2, 0, 0, 0x154, 0, 0, 4, 0)
+            with self.assertRaises(rs.SurfaceComparisonError):
+                rs._resident_section_identities(Obj(), obj_path, link_map)
+            link_map.write_text(link_map.read_text()
+                                + " .rodata        0x80090000      0x150 build/src/main/a.c.o\n")
+            with self.assertRaises(rs.SurfaceComparisonError):
+                rs.linked_input_sections(link_map)
+
     def test_transitive_redefine_alias_propagates_stable_identity(self):
         class FakeElf:
             def __init__(self, target=False):

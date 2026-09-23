@@ -2626,6 +2626,55 @@ def _surface_error_diagnostic(
     return original
 
 
+def _removed_section_identities(raw, accounting, records, overlay, tu_base, sections, keys, expected):
+    """Prove filtered HI/LO sites against a section the recipe removes.
+
+    The site's addend into the removed section is read from the unfiltered
+    replay. The shipped identity then names one module offset for the
+    section's start; it is accepted only when every such site agrees on it,
+    it lies in the module's initialized data, and the ROM holds the removed
+    section's exact bytes there -- the C datum is the retail datum. Words the
+    section relocates against the TU's own text (a jump table) are compared
+    module-relative, as retail stores them.
+    """
+    if len(sections) != 1 or any(kind not in (5, 6) for _offset, kind in keys):
+        raise pp.MetadataProofError("unsupported filtered runtime identity; one removed-section HI/LO is accounted")
+    section = next(iter(sections))
+    relative = rs._candidate_surface_records(raw, accounting["start"], accounting["size"], records,
+                                             {section: (overlay, 0)}, {}, set(), overlay)
+    addends = {(row.offset, row.rtype): row.identity for row in relative}
+    bases = set()
+    for key in keys:
+        own, shipped = addends.get(key), expected.get(key)
+        if own is None or shipped is None or own[0] != overlay or shipped[0] != overlay:
+            raise pp.MetadataProofError("removed-section site has no overlay-local addend")
+        bases.add(shipped[1] - own[1])
+    if len(bases) != 1:
+        raise pp.MetadataProofError("removed-section sites disagree on the section's placement")
+    base = next(iter(bases))
+    # A removed jump table's words are R_MIPS_32 references to this TU's own
+    # text; retail stores them module-relative. Apply exactly those.
+    payload = bytearray(raw.section_bytes(section))
+    text_index = raw.section(".text")[0]
+    symbols = raw.symbols()
+    for _target, offset, kind, index in raw.relocations(re.escape(section)):
+        name, value, _size, _info, shndx = symbols[index]
+        if kind != 2 or shndx != text_index or offset % 4 or offset + 4 > len(payload):
+            raise pp.MetadataProofError("removed section carries an unsupported relocation")
+        word = int.from_bytes(payload[offset:offset + 4], "big")
+        payload[offset:offset + 4] = ((word + value + tu_base) & 0xFFFFFFFF).to_bytes(4, "big")
+    payload = bytes(payload)
+    rom = ROM.read_bytes()
+    module = ot.build_modules(ot.read_headers(rom))[overlay - 1]
+    if not (module["text_size"] <= base and base + len(payload)
+            <= module["text_size"] + module["data_size"]) or not payload:
+        raise pp.MetadataProofError("removed section does not lie in the module's initialized data")
+    start = module["rom_start"] + base
+    if rom[start:start + len(payload)] != payload:
+        raise pp.MetadataProofError("removed section bytes are not the retail module data")
+    return {key: (overlay, base + addends[key][1]) for key in keys}
+
+
 def _declared_filter_comparison(resolution, comparison, context, records, target_elf, linked_name, input_snapshot):
     """Compose fresh raw proof with exact declared metadata removal, never missing guessed sites."""
     if (resolution.resolution_mode != "post_promotion" or context["kind"] != "overlay"
@@ -2641,40 +2690,83 @@ def _declared_filter_comparison(resolution, comparison, context, records, target
         _check_filter_implementations()
         receipt["proof_implementations"] = dict(_LOADED_FILTER_IMPLEMENTATIONS)
         _require_capture_snapshot(receipt, input_snapshot, target_elf.data)
-        raw, configured = rs.Elf(raw_path), rs.Elf(resolution.candidate_object)
-        accounting = pp.validate_metadata_objects(raw, configured, plan, resolution.candidate_symbol)
+        # Replay the configured recipe on the fresh raw object with only the
+        # declared filters left out. Every rename, added symbol, rebind,
+        # externalization, section removal and trim the build applies is then
+        # present, in the build's order, so the replay carries the shipped
+        # identity at every site, filtered or not; the accounting below then
+        # requires the configured object to differ from it by exactly the
+        # declared filter records. (A full replay is not compared byte for
+        # byte: .mdebug records asm-processor's temporary file names.)
+        unfiltered_path = pp.replay_metadata(
+            raw_path, receipt["inputs"]["postprocess"], _relative(resolution.candidate_object),
+            REPO / receipt["directory"] / "unfiltered.o", REPO,
+            skip_filters=True, deadline=time.monotonic() + 120, plan=plan)
+        receipt["unfiltered_object"] = _relative(unfiltered_path)
+        receipt["unfiltered_sha256"] = pp.sha256_file(unfiltered_path)
+        raw, configured = rs.Elf(unfiltered_path), rs.Elf(resolution.candidate_object)
+        accounting = pp.validate_metadata_objects(
+            raw, configured, pp.filter_accounting_plan(plan), resolution.candidate_symbol)
         raw_comparison = rs.function_surface_comparison(
-            resolution.requested_symbol, raw_path, TARGET_ELF, rom_path=ROM, atlas_path=ATLAS,
+            resolution.requested_symbol, unfiltered_path, TARGET_ELF, rom_path=ROM, atlas_path=ATLAS,
             values_path=ALIASES, candidate_symbol=resolution.candidate_symbol,
-            target_symbol=linked_name, source=resolution.translation_unit)
+            target_symbol=linked_name, source=resolution.translation_unit,
+            candidate_redefine_aliases=_candidate_redefine_aliases(resolution.candidate_object),
+            include_candidate_identities=True)
+        candidate = {(row["offset"], row["rtype"]): tuple(row["identity"]) if row["identity"] else None
+                     for row in raw_comparison.pop("candidate_identities")}
         total = len(records)
         removed = {(row["offset"], row["rtype"]) for row in accounting["filtered"]}
-        unresolved = {(row["offset"], row["rtype"]) for row in raw_comparison["candidate_identity_unresolved_records"]}
-        if (raw_comparison["candidate_record_count"] != total or not raw_comparison["offset_type_exact"]
-                or not unresolved <= removed or raw_comparison["stable_identity_alignment_count"] != total - len(unresolved)
-                or accounting["retained_count"] != comparison["candidate_record_count"]):
-            raise pp.MetadataProofError("raw compiler relocation surface is not exact outside declared filters")
-        # Two independent routes prove a filtered site's identity:
-        #   * a named symbol the raw surface resolved: the raw comparison
-        #     above already aligned it with the shipped tuple (every resolved
-        #     raw record agrees, since the alignment count equals the resolved
-        #     count), exactly as for any unfiltered site;
-        #   * the anonymous `.bss` section symbol, which the raw surface
+        reasons = [text for failed, text in (
+            (raw_comparison["candidate_record_count"] != total,
+             "records %d/%d" % (raw_comparison["candidate_record_count"], total)),
+            (not raw_comparison["offset_type_exact"], "offsets/types differ"),
+            (accounting["retained_count"] != comparison["candidate_record_count"],
+             "retained %d, configured %d" % (accounting["retained_count"],
+                                             comparison["candidate_record_count"]))) if failed]
+        if reasons:
+            raise pp.MetadataProofError(
+                "unfiltered replay relocation surface is not exact outside declared filters: "
+                + "; ".join(reasons))
+        # A retained site is the configured object's own record (the
+        # accounting above proved the two agree everywhere but the filters),
+        # so it is proved exactly as in any promoted function: statically, or
+        # by the linked ROM and runtime table. A filtered site is absent from
+        # the linked object, so it needs an independent identity, through one
+        # of two routes:
+        #   * a named symbol: the unfiltered replay, which carries every
+        #     rename and rebind the build applies, must resolve the site to
+        #     the shipped tuple;
+        #   * the anonymous `.bss` section symbol, which the static surface
         #     cannot resolve: its base is derived from the linked BSS
         #     definitions below.
         # A filtered site proved by neither is refused.
+        expected = {(row.offset, row.rtype): row.identity for row in records}
         bss_keys = {(row["offset"], row["rtype"]) for row in accounting["filtered"]
                     if row["symbol"] == ".bss"}
         if any(row["rtype"] not in (5, 6) for row in accounting["filtered"]
                if row["symbol"] == ".bss"):
             raise pp.MetadataProofError("unsupported filtered runtime identity; only canonical BSS HI/LO is accounted")
-        if (removed - bss_keys) & unresolved:
+        # A section-symbol site whose section the recipe removes (its bytes
+        # live in the retained module data instead) is proved by content.
+        removed_sections = {name for operation, names in plan if operation == "remove-section"
+                            for name in names}
+        section_keys = {(row["offset"], row["rtype"]) for row in accounting["filtered"]
+                        if row["symbol"] in removed_sections and row["symbol"] != ".bss"}
+        unnamed = sorted(key for key in removed - bss_keys - section_keys if candidate.get(key) is None)
+        if unnamed:
             raise pp.MetadataProofError(
-                "unsupported filtered runtime identity; a named filtered site the raw "
-                "surface cannot resolve has no independent identity")
-        expected = {(row.offset, row.rtype): row.identity for row in records}
-        proved = {key: expected.get(key) for key in removed - bss_keys}
-        routes = {key: "raw-static" for key in removed - bss_keys}
+                "unsupported filtered runtime identity; a named filtered site the unfiltered "
+                "replay cannot resolve has no independent identity: "
+                + ", ".join("+0x%X/%s" % (offset, TYPE_NAMES.get(kind, kind)) for offset, kind in unnamed))
+        proved = {key: candidate.get(key) for key in removed - bss_keys - section_keys}
+        routes = {key: "replay-static" for key in removed - bss_keys - section_keys}
+        if section_keys:
+            proved.update(_removed_section_identities(
+                raw, accounting, records, context["overlay"], context["offset"] - accounting["start"],
+                {row["symbol"] for row in accounting["filtered"]
+                 if (row["offset"], row["rtype"]) in section_keys}, section_keys, expected))
+            routes.update({key: "removed-section-content" for key in section_keys})
         if bss_keys:
             overlay = context["overlay"]
             module = ot.build_modules(ot.read_headers(ROM.read_bytes()))[overlay - 1]
@@ -2685,9 +2777,16 @@ def _declared_filter_comparison(resolution, comparison, context, records, target
             bss_proved = {(row.offset, row.rtype): row.identity for row in bss_records}
             proved.update({key: bss_proved.get(key) for key in bss_keys})
             routes.update({key: "linked-bss-base" for key in bss_keys})
-        if any(proved.get(key) is None or proved.get(key) != expected.get(key) for key in removed):
-            raise pp.MetadataProofError("filtered raw addend disagrees with canonical/runtime identity")
-        if receipt["inputs"] != current_context() or receipt["raw_sha256"] != pp.sha256_file(raw_path):
+        wrong = sorted(key for key in removed
+                       if proved.get(key) is None or proved.get(key) != expected.get(key))
+        if wrong:
+            raise pp.MetadataProofError(
+                "filtered site identity disagrees with canonical/runtime identity: "
+                + ", ".join("+0x%X/%s proved %s, shipped %s" % (
+                    offset, TYPE_NAMES.get(kind, kind), proved.get((offset, kind)),
+                    expected.get((offset, kind))) for offset, kind in wrong))
+        if (receipt["inputs"] != current_context() or receipt["raw_sha256"] != pp.sha256_file(raw_path)
+                or receipt["unfiltered_sha256"] != pp.sha256_file(unfiltered_path)):
             raise pp.MetadataProofError("raw proof inputs or object changed during validation")
         receipt.update(accounting)
         receipt["filtered_identities"] = [{"offset": offset, "rtype": kind, "identity": proved[(offset, kind)],
@@ -2701,10 +2800,18 @@ def _declared_filter_comparison(resolution, comparison, context, records, target
         if receipt["source_selection"] != pp.ORDINARY_C:
             raise pp.MetadataProofError("raw proof does not select ordinary C")
         (REPO / receipt["directory"] / "proof.json").write_text(json.dumps(receipt, sort_keys=True, indent=2))
-        raw_comparison.update(candidate_identity_resolved_count=total,
-                              candidate_identity_unresolved_records=[], stable_identity_alignment_count=total,
-                              stable_identity_exact=True,
-                              candidate_surface_source="fresh-raw-before-declared-metadata")
+        # Credit only the filtered sites with the identities proved above;
+        # every retained site keeps the static verdict it would have in an
+        # unfiltered function, and the linked-ROM route accounts for the rest.
+        retained = [key for key in expected if key not in removed]
+        retained_unresolved = [{"offset": offset, "rtype": kind} for offset, kind in sorted(retained)
+                               if candidate.get((offset, kind)) is None]
+        retained_aligned = sum(candidate.get(key) == expected[key] for key in retained)
+        raw_comparison.update(candidate_identity_resolved_count=total - len(retained_unresolved),
+                              candidate_identity_unresolved_records=retained_unresolved,
+                              stable_identity_alignment_count=retained_aligned + len(removed),
+                              stable_identity_exact=retained_aligned == len(retained),
+                              candidate_surface_source="fresh-unfiltered-replay-of-declared-metadata")
         return dict(comparison, original_raw_comparison=raw_comparison,
                     declared_metadata_proof=receipt), (receipt, current_context)
     except (pp.MetadataProofError, OSError, ValueError, RuntimeError) as error:

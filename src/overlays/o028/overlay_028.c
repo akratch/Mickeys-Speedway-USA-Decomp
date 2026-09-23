@@ -58,6 +58,11 @@ void overlay28UpdateVertices(Overlay28VertexState *state) {
     } while (remaining--);
 }
 
+/* The shipped relocation for this field names the start of overlay 28's
+   initialized data (module +0x7F0), not overlay28ResetBuffer at +0: the
+   pointer is set to the data base, whatever the field is. */
+extern u8 gOverlay28DataBase[];
+
 void overlay28InitializeWork(Overlay28Owner *owner, Overlay28Source *source) {
     Overlay28Work *work;
 
@@ -74,7 +79,7 @@ void overlay28InitializeWork(Overlay28Owner *owner, Overlay28Source *source) {
     work->stepB = 0x4000;
     work->stepC = 0x1000;
     work->stepD = -0x2000;
-    work->reset = overlay28ResetBuffer;
+    work->reset = (void (*)())gOverlay28DataBase;
     work->scaleA = 4.0f;
     work->scaleB = 2.0f;
     ext_o0_36630(work->object);

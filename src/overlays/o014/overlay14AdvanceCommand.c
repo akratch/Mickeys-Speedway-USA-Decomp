@@ -37,8 +37,8 @@ typedef struct O14Value114Ref {
 
 extern s32 gOverlay14Transition;
 extern s32 gOverlay14Cursor;
-extern O14TransitionD8Ref gOverlay14TransitionD8;
-extern O14PointerE0Ref gOverlay14PointerE0;
+extern O14TransitionD8Ref gOverlay14TransitionD8Base;
+extern O14PointerE0Ref gOverlay14PointerE0Base;
 extern s32 gOverlay14Flag0;
 extern s32 gOverlay14Flag4[];
 extern O14ModeE4Ref gOverlay14ModeE4;
@@ -65,16 +65,16 @@ void overlay14AdvanceCommand(s32 context) {
             gOverlay14Transition -= 1;
             gOverlay14Cursor += 1;
         }
-    } else if ((gOverlay14PointerE0.value != 0) && (gOverlay14Flag0 != 0)) {
-        gOverlay14TransitionD8.value = (0x58 / divisor) - 1;
+    } else if ((gOverlay14PointerE0Base.value != 0) && (gOverlay14Flag0 != 0)) {
+        gOverlay14TransitionD8Base.value = (0x58 / divisor) - 1;
     } else {
         limit = (0x58 / divisor) - 1;
         if ((gOverlay14Cursor >= limit) && (gOverlay14Flag4[1] != 0)) {
-            gOverlay14TransitionD8.value = -limit;
+            gOverlay14TransitionD8Base.value = -limit;
         }
     }
 
-    if ((gOverlay14PointerE0.value == 0) && (gOverlay14Flag0 != 0)) {
+    if ((gOverlay14PointerE0Base.value == 0) && (gOverlay14Flag0 != 0)) {
         if ((gOverlay14ModeE4.value == 4) && (gOverlay14ValueEC.value >= 2)) {
             overlay14ResetMode();
             return;

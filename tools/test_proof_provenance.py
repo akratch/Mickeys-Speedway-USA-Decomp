@@ -77,6 +77,19 @@ class SourceClassificationTests(unittest.TestCase):
         )
         self.assertEqual(kind, provenance.ORDINARY_C)
 
+    def test_unconditional_friendly_definition_ignores_another_fallback(self) -> None:
+        # A promoted friendly-named body in a multi-function TU, beside another
+        # function's guarded fallback: the fallback is not its alternative.
+        text = """
+        void friendly(void) { }
+        #ifdef NON_MATCHING
+        void another(void) { }
+        #else
+        #pragma GLOBAL_ASM("asm/nonmatchings/x/another_auto_name.s")
+        #endif
+        """
+        self.assertEqual(self.classify(text)[0], provenance.ORDINARY_C)
+
     def test_bare_global_asm_is_fallback(self) -> None:
         text = '#pragma GLOBAL_ASM("asm/nonmatchings/x/func_1234.s")\n'
         self.assertEqual(self.classify(text)[0], provenance.GLOBAL_ASM)

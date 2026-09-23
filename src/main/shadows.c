@@ -722,14 +722,25 @@ void func_80016890(void *arg0, void *arg1, void *arg2, f32 arg3, f32 arg4,
  * Mickey-only evidence.
  */
 #ifdef NON_MATCHING
-/* Workbench verdict: structure-mismatch, 300 differing words; first mismatch is at +0x44. */
-/* Target is 328 instructions/frame -320; candidate is 325 instructions/frame -320. */
-/* The polygon buffer now sits at the target's own frame offset: ten declared
- * scalar words precede it, which is what places an array inside IDO's local
- * block. Remaining gap is allocation: the target spends a callee-saved
- * register on the scaled edge index and re-materializes the polygon address
- * at each call, where this candidate hoists the polygon address and the
- * literal 3 instead, leaving the edge index in a caller-saved register. */
+/* Workbench verdict: 285 masked words at size delta 0 (was 300 at -12).
+ * Track B, 2026-09-23:
+ *   - the polygon buffer keeps its offset (ten declared words precede it);
+ *     below it the declaration order now lands the target's homes: var_t1
+ *     +0xBC, var_ra +0xB8, temp_a1 +0xB4, surfaceId +0x94, var_v1 +0x80,
+ *     sp7C +0x7C, var_a0 +0x78. The two s16 locals share one word.
+ *   - surfaceId read through its address after the calls is stored at its
+ *     definition (as the target does) instead of being sunk to its use with
+ *     temp_a0 kept live: -12 to -4.
+ *   - sp7C at function scope read through its address stays home-resident,
+ *     as the target's per-iteration reload shows: delta 0.
+ * Measured and not adopted: holding D_800CAF58 in a local for the slot
+ * address and the increment (the target never reloads it) gives 98
+ * byte-exact words against 88 here but size delta -16; the fill loop
+ * written with the byte index (not the scaled offset) carried across the
+ * rotation matches the target's body shape but is +12; a declared
+ * polygon-end pointer unrolls the loop (+744). Left: the literal 3 hoisted
+ * into s7 (the target keeps slti and re-materialises 3 and the polygon
+ * address at each call, hoisting only polygon+0x30), and arg2 held in t5. */
 void func_80017140(void *arg0, s32 arg1, void *arg2, s32 arg3) {
     u8 *var_a3;
     u8 *temp_a3;
@@ -742,6 +753,8 @@ void func_80017140(void *arg0, s32 arg1, void *arg2, s32 arg3) {
     u8 *var_v1_4;
     f32 pointHeight;
     u8 polygon[0x58];
+    s32 var_t1;
+    s32 var_ra;
     s32 temp_a1;
     s16 temp_v0_3;
     s16 temp_v1;
@@ -749,19 +762,18 @@ void func_80017140(void *arg0, s32 arg1, void *arg2, s32 arg3) {
     s32 var_a1;
     s32 var_a1_2;
     s32 var_a2;
-    s32 var_ra;
     s32 var_t0;
+    s32 var_lo;
+    s32 surfaceId;
     s32 temp_s1;
     s32 temp_t9;
-    s32 var_a0;
     s32 var_a0_2;
     s32 var_a2_2;
-    s32 var_lo;
-    s32 var_t0_2;
-    s32 var_t1;
     s32 var_v1;
+    s32 sp7C;
+    s32 var_a0;
+    s32 var_t0_2;
     s32 vertexOffset;
-    s32 surfaceId;
     s32 temp_v0_4;
     u32 temp_a0;
     u32 temp_v0_2;
@@ -769,9 +781,9 @@ void func_80017140(void *arg0, s32 arg1, void *arg2, s32 arg3) {
     var_t0 = *(s16 *) ((u8 *) arg2 + 0x24);
     var_t1 = 0;
     if (var_t0 > 0) {
-        s32 sp7C = 0;
+        sp7C = 0;
         do {
-            temp_v0 = *(u8 **) ((u8 *) arg2 + 0xC) + sp7C;
+            temp_v0 = *(u8 **) ((u8 *) arg2 + 0xC) + *(s32 *) &sp7C;
             temp_a0 = *(u32 *) (temp_v0 + 0xC);
             if (!(temp_a0 & 0x08013880)) {
                 var_ra = *(s16 *) (temp_v0 + 0x8);
@@ -897,13 +909,13 @@ loop_27:
                                                 } while (var_t0_2 != temp_v0_4);
                                             }
                                             *(u8 *) (temp_t2 + 0x0) = temp_v0_4;
-                                            *(s16 *) (temp_t2 + 0xA) = surfaceId;
+                                            *(s16 *) (temp_t2 + 0xA) = *(s32 *) &surfaceId;
                                             D_800CAF58 += 1;
                                             if ((D_800CB268 >= 0) &&
-                                                (surfaceId != D_800CB268)) {
+                                                (*(s32 *) &surfaceId != D_800CB268)) {
                                                 D_800CB26C = 0;
                                             }
-                                            D_800CB268 = surfaceId;
+                                            D_800CB268 = *(s32 *) &surfaceId;
                                         }
                                     }
                                 }
@@ -1445,11 +1457,11 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_80017140:start
  * symbol: func_80017140
- * score: 300 differing words
+ * score: 285/328 words
  * frame: 0x140
- * relocations: 21
+ * relocations: 19
  * first-mismatch: +0x44
- * summary: Polygon buffer and its fill loop now match the target's frame offset and entry shape; residual is allocation, chiefly the scaled edge index.
+ * summary: Delta 0 (was -12) via target home order and address-form surfaceId/sp7C; left: hoisted literal 3 and polygon base, uncached D_800CAF58
  * PLATEAU-HANDOFF:func_80017140:end
  */
 

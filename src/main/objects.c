@@ -803,7 +803,7 @@ extern s32 D_800790D0[];
 extern f32 D_80080D24;
 extern f32 D_80080D28;
 extern void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
-                          s32 arg5, s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10);
+                          s32 arg5, volatile s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10);
 typedef struct CameraScaledTransform CameraScaledTransform;
 typedef struct FxGfx FxGfx;
 extern void camPushModelMtx(Gfx **dlist, Mtx **mtx, CameraScaledTransform *transform,
@@ -2246,37 +2246,34 @@ s32 func_800069E8(Objects069E8Object *arg0, Objects069E8Target *arg1) {
     D_800C9490 = arg1->unk8;
     return (sp1C & ~3) + 4;
 }
-/* Workbench verdict: structure-mismatch; 63 differing words (78 candidate / 79 target). */
-/* First mismatch: +0x20; both outputs are frameless and the candidate is one instruction shorter. */
-/* Structural gap: asset/count carrier and late loop register shape remain unresolved. */
+/* 6 masked words at size delta 0 (2026-09-23, lane B-obj), frameless: only the
+ * head's +0x7C cursor and asset-pointer registers remain; see the handoff. */
 #ifdef NON_MATCHING
 s32 func_80006B04(Objects06B04Object *arg0, Objects06B04Output *arg1, volatile s32 arg2) {
     s16 temp_t0;
     s32 var_a3;
     s32 var_t2;
     s32 var_v1;
-    u8 temp_a3;
+    s32 temp_a3;
     u8 temp_t4;
     Objects06B04Asset *temp_a2;
-    u8 *temp_t9;
     u8 *var_a1;
     Objects06B04Output *output;
 
     arg0->unk48 = arg1;
     var_v1 = 0x7C;
     if (arg0->unk40->unk1E == 0) {
-        temp_t9 = (u8 *)arg1 + 0x7C;
-        temp_a2 = **arg0->unk68;
         output = arg1;
+        temp_a2 = **arg0->unk68;
         temp_a3 = temp_a2->unk2F;
-        if ((s32)temp_a3 > 0) {
+        if (temp_a3 > 0) {
             output->unkA = temp_a3;
             temp_t0 = output->unkA;
-            output->unk74 = temp_t9;
+            output->unk74 = (u8 *)arg1 + 0x7C;
             var_t2 = 0;
             var_v1 = (temp_t0 * 0x34) + 0x7C;
             if (temp_t0 > 0) {
-                var_a1 = temp_t9;
+                var_a1 = (u8 *)&arg1->unk74 + 8;
                 var_a3 = 0;
                 do {
                     *(u16 *)var_a1 = 0;
@@ -2286,16 +2283,15 @@ s32 func_80006B04(Objects06B04Object *arg0, Objects06B04Output *arg1, volatile s
                     var_a1 += 0x34;
                     *(u16 *)(var_a1 - 0x2E) = *(u16 *)(temp_a2->unk38 + var_a3);
                     *(s8 *)(var_a1 - 0x2C) = *(s8 *)(temp_a2->unk38 + var_a3 + 2);
-                    *(u16 *)(var_a1 - 0x2A) = 0;
                     *(u8 *)(var_a1 - 0x2B) = *(u8 *)(temp_a2->unk38 + var_a3 + 3);
+                    *(u16 *)(var_a1 - 0x2A) = 0;
                     *(f32 *)(var_a1 - 0x10) = *(f32 *)(temp_a2->unk38 + var_a3 + 8) * arg0->unk8;
                     *(f32 *)(var_a1 - 0xC) = *(f32 *)(temp_a2->unk38 + var_a3 + 8) * arg0->unk8;
                     *(u8 *)(var_a1 - 0x6) = (u8)*(u16 *)(temp_a2->unk38 + var_a3 + 4);
-                    temp_t4 = *(u8 *)(var_a1 - 0x4) | 0x80;
-                    *(u8 *)(var_a1 - 0x4) = temp_t4;
-                    *(u16 *)(var_a1 - 0x8) = 0;
-                    *(u8 *)(var_a1 - 0x4) = temp_t4 & 0xBF;
                     *(u8 *)(var_a1 - 0x5) = (u8)*(u16 *)(temp_a2->unk38 + var_a3 + 6);
+                    *(u8 *)(var_a1 - 0x4) = (*(u8 *)(var_a1 - 0x4) & 0xFF) | 0x80;
+                    *(u16 *)(var_a1 - 0x8) = 0;
+                    *(u8 *)(var_a1 - 0x4) &= 0xBF;
                     var_a3 += 0xC;
                 } while (var_t2 < output->unkA);
             }
@@ -2404,43 +2400,34 @@ void func_80006EA0(void *ptr) {
         D_800C94F0 += 1;
     }
 }
-/* Workbench verdict: structure-mismatch; 40 differing words, candidate 46/47. */
-/* First mismatch: +0x08; the target has one direct global-pointer load extra. */
-/* Structural candidate: global-pointer load/register shape remains unresolved. */
-#ifdef NON_MATCHING
+/* Matched 2026-09-23: subscript D_800C94A4 directly rather than walking a
+ * declared cursor, so the pointer is loaded before the loop and its address
+ * built only in the found arm; shift the tail by subscript on the copy of
+ * index, and take that copy before the bound test. */
 s32 func_80006EE4(s32 object) {
     s32 index;
-    s32 *entry;
+    s32 shiftIndex;
 
     index = 0;
     if (D_800C94A8 > 0) {
-        entry = D_800C94A4;
         do {
-            if (object == *entry) {
+            if (object == D_800C94A4[index]) {
                 D_800C94A8 -= 1;
-                if (index < D_800C94A8) {
-                    s32 shiftIndex = index;
-                    s32 offset = shiftIndex * 4;
-
+                shiftIndex = index;
+                if (shiftIndex < D_800C94A8) {
                     do {
+                        D_800C94A4[shiftIndex] = D_800C94A4[shiftIndex + 1];
                         shiftIndex += 1;
-                        *(s32 *)((u8 *)D_800C94A4 + offset) =
-                            *(s32 *)((u8 *)D_800C94A4 + offset + 4);
-                        offset += 4;
                     } while (shiftIndex < D_800C94A8);
                 }
                 func_80007118(object, 0, index, &D_800C94A8);
                 return index;
             }
             index += 1;
-            entry += 1;
         } while (index < D_800C94A8);
     }
     return -1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80006EE4.s")
-#endif
 /* Workbench verdict: structure-mismatch; 63 differing words (94/94). */
 /* First mismatch: +0x0C; frame and instruction count are exact. */
 /* Structural gap: active-list carriers and loop register allocation remain unresolved. */
@@ -3329,7 +3316,7 @@ s32 func_80008128(Objects08128Object *arg0, f32 arg1, f32 arg2, f32 arg3) {
 }
 #ifdef NON_MATCHING
 void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
-                   s32 arg5, s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10) {
+                   s32 arg5, volatile s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10) {
     s32 sp24;
     s32 temp_a1;
     s32 temp_a2;
@@ -3354,8 +3341,9 @@ void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
     if (arg5 != 0) {
         sp24 = 1;
     }
+    temp_t3 = arg6;
     if (arg10 < 0xFF) {
-        arg6 |= 4;
+        arg6 = temp_t3 | 4;
     }
     func_800349A4((FxGfx **)&D_800C94B4, arg5, arg6, arg7);
     temp_v0 = (Objects0831CCommand *)D_800C94B4;
@@ -3363,12 +3351,12 @@ void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
     D_800C94B4 = (s32)(temp_v0 + 1);
     temp_a1 = arg2 * 8;
     temp_v0->unk0 = ((((temp_a1 | (temp_a2 & 6)) & 0xFF) << 16) |
-                     0x04000000 | (((arg2 * 0xA) + 8) & 0xFFFF));
+                     0x04000000 | (((temp_a1 + arg2 * 2) + 8) & 0xFFFF));
     temp_v0->unk4 = temp_a2;
     temp_v0 = (Objects0831CCommand *)D_800C94B4;
     D_800C94B4 = (s32)(temp_v0 + 1);
     temp_v0->unk0 = (((((arg4 - 1) * 0x10) | sp24) & 0xFF) << 16) |
-                     0x05000000 | ((arg4 * 0x10) & 0xFFFF);
+                     0x05000000 | ((arg4 << 4) & 0xFFFF);
     temp_v0->unk4 = (s32)arg3 + 0x80000000;
     camPopModelMtx((Gfx **)&D_800C94B4);
 }
@@ -5454,16 +5442,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 
 
-/* PLATEAU-HANDOFF:func_80006EE4:start
- * symbol: func_80006EE4
- * score: 40 differing words
- * frame: 0x28
- * relocations: 5
- * first-mismatch: +0x8
- * summary: Remeasured 2026-09-23: 40 masked at size delta -4 (46 of 47 words), frame exact; direct global-pointer load and allocator shape remain.
- * PLATEAU-HANDOFF:func_80006EE4:end
- */
-
 
 /* PLATEAU-HANDOFF:func_80008028:start
  * symbol: func_80008028
@@ -5488,11 +5466,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80006B04:start
  * symbol: func_80006B04
- * score: 63 differing words
+ * score: 6 differing words
  * frame: frameless
  * relocations: 0
  * first-mismatch: +0x20
- * summary: Remeasured 2026-09-23: 63 masked at size delta -4 (78 of 79 words), unchanged; asset/count carrier and late loop registers remain structural.
+ * summary: Track B 2026-09-23: 63 at delta -4 to 6 at delta 0; left: +0x7C value is a coloured web (t1), target carries it in ring t9.
  * PLATEAU-HANDOFF:func_80006B04:end
  */
 
@@ -5510,11 +5488,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_8000831C:start
  * symbol: func_8000831C
- * score: 81 differing words
+ * score: 62 differing words
  * frame: 0x28
  * relocations: 11
- * first-mismatch: +0x40
- * summary: Remeasured 2026-09-23: 81 masked at size delta -4, frame 0x28 exact; the seventh-argument home traffic is the structural fact left to attack.
+ * first-mismatch: +0x70
+ * summary: Track B 2026-09-23: 81 at delta -4 to 62 at delta 0 (volatile arg6 read before the test, x8 plus x2); ring rotation left.
  * PLATEAU-HANDOFF:func_8000831C:end
  */
 
@@ -5560,11 +5538,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_800084C4:start
  * symbol: func_800084C4
- * score: 168/343 words
+ * score: 168 differing words
  * frame: 0xB0
  * relocations: 8
- * first-mismatch: +0x2C8
- * summary: One candidate-only word at +0x2D4 drives a coherent seven-register ring rotation; explicit cast and signed parameter forms are flat.
+ * first-mismatch: +0x60
+ * summary: Track B 2026-09-23: unchanged at 168, delta +4; the extra word is ugen loading arg9 into a2 and copying back after the OR.
  * PLATEAU-HANDOFF:func_800084C4:end
  */
 

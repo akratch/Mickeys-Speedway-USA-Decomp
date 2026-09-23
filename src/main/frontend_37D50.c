@@ -61,8 +61,8 @@ void func_80037150(void) {
 }
 extern s32 viGetVideoMode(void);
 extern void *func_8002B280(s32, s32);
-/* Workbench verdict: structure-mismatch, 144 differing words (was 148);
- * target 150 / candidate 155 words, first mismatch +0x2C.
+/* Workbench verdict: size-mismatch, 114 differing words (was 144), size
+ * delta +4, first mismatch +0x2C.
  *
  * Allocates and fills both backdrop vertex buffers with a 17x17 grid -- the
  * same grid func_800378A4 later shades. The m2c draft transcribed the
@@ -73,23 +73,15 @@ extern void *func_8002B280(s32, s32);
  * carries the `bgez` / `addiu at,x,15` rounding correction at every site, so
  * the source could not prove the dividend non-negative.
  *
- * THE NEXT LEVER, MEASURED AND HELD BACK: func_800371BC takes NO PARAMETERS.
- * The target homes nothing in the incoming argument slots, while every
- * parameter in the declared signature costs exactly one `sw`/`swc1` at +0x2C
- * -- which is where the first mismatch is. Measured on this body with the
- * definition and its one call site rewritten together: (void) gives 151 words
- * and 114 differing, (f32, f32) or (s32, s32) 153 and 140, and the declared
- * four 155 and 144. The change was NOT made here because the sole caller is
- * func_80037414, which another lane is working as a live one-instruction hunt,
- * and rewriting its argument list would move its codegen underneath it. Make
- * this the first edit once that lane lands: 148 -> 114 and geometry within one
- * word, at the cost of one line.
+ * func_800371BC takes NO PARAMETERS: the target homes nothing in the
+ * incoming argument slots. Applied 2026-09-23 together with its one call site
+ * in func_80037414, which it also moved to size delta 0: 144 -> 114 here.
  *
  * No donor counterpart: JFG's src/menu.c has no function of this shape.
  * frontend_37D50.c is Mickey's own backdrop renderer, outside the JFG menu.c
  * crosswalk that names the rest of this front end. */
 #ifdef NON_MATCHING
-void func_800371BC(f32 arg0, f32 arg1, s32 arg2, s32 arg3) {
+void func_800371BC(void) {
     FrontendVertex *vertex;
     void **buffer;
     s32 spacing;
@@ -138,30 +130,29 @@ void func_800371BC(f32 arg0, f32 arg1, s32 arg2, s32 arg3) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/frontend_37D50/func_800371BC.s")
 #endif
 extern void TrapDanglingJump();
-/* Workbench verdict: structure-mismatch, 59 differing words; target 145/candidate 146 words. */
-/* First mismatch: +0x10; target frame 0x30 versus candidate 0x40. */
-/* Structural gap: argument homes and floating/integer carrier allocation. */
 #ifdef NON_MATCHING
-/* `sp2C`, `sp20` and `sp1C` were decompiler names for the compiler's own spill
- * slots around the two calls, written and never read; deleting them takes the
- * frame from 0x40 to 0x38 without moving an instruction. `sp28` stays -- it is
- * read again at the 2-state divide. The target's own homes give the rest of
- * the census: with frame 0x30, var_a1 is at 0x2C, sp28 at 0x28, var_t0 at 0x20
- * and var_a2 at 0x1C, while arg0, arg3 and arg6 live at their incoming homes
- * 0x30, 0x3C and 0x48 and are not locals at all. */
+/* 57 -> 13 masked words, size delta +4 -> 0, frame 0x38 -> 0x30 (2026-09-23).
+ * Three edits: the call to func_800371BC takes no arguments (the +4 was the
+ * a2/a3 argument setup and the s0 carrier it forced); the three tail byte
+ * stores are in address order; and the first frame count is not a declared
+ * variable -- D_8007BE94 re-spells the expression and uopt CSEs it, which
+ * leaves exactly three declared homes (var_a1 0x2C, sp28 0x28, var_a2 0x24)
+ * and two compiler temps, the target's slot ladder word for word.
+ * What remains is one decision: the target passes the var_a1 web to the
+ * TrapDanglingJump call and keeps the expression temp for D_8007BE94 alone,
+ * while uopt here propagates the expression into the call argument, so the
+ * two webs trade a1/t0 and their spill slots (5 naming, 8 immediate). */
 void func_80037414(s32 arg0, f32 arg1, f32 arg2, s32 arg3, s32 arg4,
                    s32 arg5, s32 arg6) {
     s32 var_a1;
-    s32 var_a2;
-    s32 var_t0;
     s32 sp28;
+    s32 var_a2;
 
-    var_t0 = (s32) (arg1 * 60.0f);
+    var_a1 = (s32) (arg1 * 60.0f);
     var_a2 = (s32) (arg2 * 60.0f);
-    var_a1 = var_t0;
     sp28 = var_a2;
     if (D_8007BE80 == 0) {
-        func_800371BC(arg1, arg2, var_a1, var_a2);
+        func_800371BC();
     }
     if ((D_8007BEA8 != 0) &&
         ((D_8007BE90 == 4) || (D_8007BE90 == 5))) {
@@ -185,11 +176,11 @@ void func_80037414(s32 arg0, f32 arg1, f32 arg2, s32 arg3, s32 arg4,
         D_8007BEAC = (s32) ((0x400 - D_8007BEB0) * var_a1) / 1024;
     }
     D_8007BE90 = arg0;
-    D_8007BE94 = var_t0;
+    D_8007BE94 = (s32) (arg1 * 60.0f);
     D_8007BE98 = var_a2;
+    D_8007BE9C = (u8) arg3;
     D_8007BEA0 = (u8) arg4;
     D_8007BEA4 = (u8) arg5;
-    D_8007BE9C = (u8) arg3;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/frontend_37D50/func_80037414.s")
@@ -631,21 +622,21 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
 
 /* PLATEAU-HANDOFF:func_800371BC:start
  * symbol: func_800371BC
- * score: 144 differing words
+ * score: 114/150 words
  * frame: 0x38
- * relocations: 13
- * first-mismatch: +0x28
- * summary: Rewritten as the natural 17x17 grid fill; the residual is now dominated by the declared parameter list, which the target does not have -- (void) measures 151/114 but needs func_80037414's call site, owned by a live lane.
+ * relocations: 15
+ * first-mismatch: +0x2C
+ * summary: Declared (void) with its call site in func_80037414: 144 to 114; size delta +4 remains
  * PLATEAU-HANDOFF:func_800371BC:end
  */
 
 /* PLATEAU-HANDOFF:func_80037414:start
  * symbol: func_80037414
- * score: 57/146 words
- * frame: 0x38
+ * score: 13/145 words
+ * frame: 0x30
  * relocations: 42
- * first-mismatch: +0x10
- * summary: Declaration and independent global-store scheduling remove two residual words; the 0x30 target frame and callee-saved carrier remain.
+ * first-mismatch: +0x34
+ * summary: Delta 0 and frame closed; last 13 words are uopt propagating the expression, not var_a1, into the TrapDanglingJump argument
  * PLATEAU-HANDOFF:func_80037414:end
  */
 

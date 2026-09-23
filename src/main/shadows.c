@@ -1299,21 +1299,21 @@ loop_29:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/func_80017BCC.s")
 #endif
-/* Workbench verdict: size-mismatch, 154 masked words, delta -4, first +0x34. */
-/* L160: masks10[vertex] instead of a vertexOffset carrier. That deletes the
- * extra shift that used to sit opposite the target's extra add-immediate, so
- * unforced is one word short. Identity-gated proc 9 (stock/instrumented .text
- * identical, unforced forced=-2): p1:w21=c2 on this shape is 71 at delta 0,
- * frame 0x90, spill home +0x84 live, no insertion pair, two structural rows
- * are a post-call store/move swap. Volume (web 6) is still a cost-0 v1/a1 tie
- * taking v1. Pairing w6=c4 with w21=c2 is declined: web 18 (bbs 0-1) takes v1
- * once volume leaves it. Web 21 still prefers s0 at cost 0 over v1 at cost 2.
- *
- * Named levers on this shape that did not produce v1: overlay41 shade-before
- * test, vertexBase-before-flags, hoisted block, loop leftover on sectorIndex
- * (frame 0xB8), overlay22 empty if (byte-identical), block++ (123 exact).
- * Do not restore vertexOffset unless a v1 source form is in hand: with the
- * carrier, w21=c2 grows one word.
+/* Workbench verdict: 61 masked words at size delta 0, first +0x34 (was 154
+ * at delta -4). Track B, 2026-09-23:
+ *   - the -4 was the target's sectorIndex spill: the target keeps it in a
+ *     caller-saved register and stores/reloads its home +0x84 around the
+ *     getXZCompareMask call, where uopt here gave it s0 at cost 0. Reading it
+ *     after the call through its address (L144's address form) makes it a
+ *     home-resident value: one store, one reload, delta 0, 66 words.
+ *   - the shade update written without the oldValue and targetValue
+ *     carriers (`*value += ...`) reproduces the target's float ring
+ *     exactly: 66 -> 61.
+ * Left: the store lands at the assignment (+0x74) where the target's
+ * spill-style store sits just before the call (+0xB8); a t6/t7 ring phase
+ * through the rest; and volume (web 6) taking v1 where the target has a1
+ * (forcing p1:w6=c4 on this shape is 56, and the sector2E web then takes v1
+ * unforced).
  *
  * Measured IDO behaviour this body depends on (all reproduced in-lane):
  *   - the declared-local list sizes the 0x90 frame and its order fixes every
@@ -1350,8 +1350,6 @@ void func_800180B4(ShadowQuery *query) {
     s32 highY;
     s32 currentY;
     f32 *value;
-    f32 oldValue;
-    f32 targetValue;
     s32 done;
     s32 shade;
 
@@ -1369,7 +1367,7 @@ void func_800180B4(ShadowQuery *query) {
             (s32) (query->z14 + 16.0f));
         blockNumber = 0;
         sector = (ShadowSector *) ((u8 *) ((ShadowWorld *) D_800CB284)->sectors4 +
-                                  (sectorIndex << 6));
+                                  (*(s32 *) &sectorIndex << 6));
         blockOffset = 0;
         if (sector->blockCount24 > 0) {
             block = sector->blocksC;
@@ -1409,12 +1407,8 @@ void func_800180B4(ShadowQuery *query) {
                                                  &vertexBase[triangle->vertex2],
                                                  &vertexBase[triangle->vertex3]) != 0)) {
                                     value = query->value50;
-                                    oldValue = *value;
                                     done = 1;
-                                    targetValue =
-                                        (1.0f - D_80079464[shade]) -
-                                        oldValue;
-                                    *value = oldValue + (targetValue * D_800CB28C);
+                                    *value += ((1.0f - D_80079464[shade]) - *value) * D_800CB28C;
                                 }
                             }
                             vertex++;
@@ -1447,11 +1441,11 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_800180B4:start
  * symbol: func_800180B4
- * score: 154/206 words
+ * score: 61/206 words
  * frame: 0x90
  * relocations: 8
  * first-mismatch: +0x34
- * summary: L160 masks10 cursor. Unforced 154 at delta -4. Force w21=c2 is 71 at delta 0 with +0x84 spill and a 2-row store/move swap. s0 still cost 0.
+ * summary: Delta 0 via address-form sectorIndex after the call; 61 left: store placement, t6/t7 ring phase, volume w6 on v1 (w6=c4 prices 56)
  * PLATEAU-HANDOFF:func_800180B4:end
  */
 

@@ -155,10 +155,99 @@ class ReopenSchemaTests(unittest.TestCase):
             self.assertEqual(raised.exception.code, 2)
 
 
+VARIANT_BODY = """#ifdef NON_MATCHING
+s32 {symbol}(s32 context) {{
+#if CASE_PREINC
+    context++;
+#else
+    context += 1;
+#endif
+    return context;
+}}
+#else
+#pragma GLOBAL_ASM("{fallback}")
+#endif
+"""
+
+
+class GuardedFallbackTests(unittest.TestCase):
+    """A NON_MATCHING symbol must never read as matched from its spelling.
+
+    The first two cases were classified already-integrated/exhausted on
+    campaign/unchain at 8a9764fb: the old regex took the first ``#else``
+    inside the candidate body as the guard's own, found no fallback there,
+    and reported a live candidate as done.
+    """
+
+    def test_variant_switch_inside_body_per_function_directory(self) -> None:
+        symbol = "func_overlay_014_F0001830_1871108"
+        text = VARIANT_BODY.format(
+            symbol=symbol,
+            fallback=f"asm/nonmatchings/overlays/o014/{symbol}/{symbol}.s",
+        )
+        self.assertTrue(ls.guarded_fallback(text, symbol))
+
+    def test_variant_switch_with_renamed_overlay_fallback(self) -> None:
+        generated = "func_overlay_020_F0000A68_1877040"
+        text = VARIANT_BODY.format(
+            symbol="overlay20UpdateGrid",
+            fallback=f"asm/nonmatchings/overlays/o020/overlay20UpdateGrid/{generated}.s",
+        ).replace("#if CASE_PREINC", "#ifndef SCOPED_LOCALS")
+        self.assertTrue(ls.guarded_fallback(
+            text, "overlay20UpdateGrid", frozenset({generated}),
+        ))
+
+    def test_alias_from_the_build_redefine_rule(self) -> None:
+        rules = (
+            "$(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20UpdateGrid.c.o: POSTPROCESS = \\\n"
+            "\t$(OBJCOPY) --redefine-sym \\\n"
+            "\t\tsplat_name_A68=overlay20UpdateGrid $@ && \\\n"
+            "\t$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x35C\n"
+        )
+        aliases = ls.finalize_plateau.fallback_aliases(rules)
+        key = ("src/overlays/o020/overlay20UpdateGrid.c", "overlay20UpdateGrid")
+        self.assertEqual(aliases[key], frozenset({"splat_name_A68"}))
+        text = VARIANT_BODY.format(
+            symbol="overlay20UpdateGrid",
+            fallback="asm/nonmatchings/overlays/o020/overlay20UpdateGrid/splat_name_A68.s",
+        )
+        # A non-generated stem is only this symbol's through the rule.
+        self.assertFalse(ls.guarded_fallback(text, "overlay20UpdateGrid"))
+        self.assertTrue(ls.guarded_fallback(text, "overlay20UpdateGrid", aliases[key]))
+
+    def test_descriptive_resident_name_over_generated_fallback(self) -> None:
+        text = VARIANT_BODY.format(
+            symbol="MatrixMultiplyVec4",
+            fallback="asm/nonmatchings/main/matrix/func_8002AF6C.s",
+        )
+        self.assertTrue(ls.guarded_fallback(text, "MatrixMultiplyVec4"))
+
+    def test_foreign_named_fallback_is_still_refused(self) -> None:
+        text = VARIANT_BODY.format(
+            symbol="demo_symbol",
+            fallback="asm/nonmatchings/main/demo/other_symbol.s",
+        )
+        self.assertFalse(ls.guarded_fallback(text, "demo_symbol"))
+
+    def test_matched_definition_has_no_fallback(self) -> None:
+        text = "s32 demo_symbol(s32 context) {\n    return context;\n}\n"
+        self.assertFalse(ls.guarded_fallback(text, "demo_symbol"))
+
+    def test_two_fallbacks_in_one_guard_stay_ambiguous(self) -> None:
+        text = VARIANT_BODY.format(
+            symbol="demo_symbol",
+            fallback="asm/nonmatchings/main/demo/demo_symbol.s",
+        ).replace(
+            "#endif\n", '#pragma GLOBAL_ASM("asm/nonmatchings/main/demo/next.s")\n#endif\n', 2,
+        )
+        self.assertFalse(ls.guarded_fallback(text, "demo_symbol"))
+
+
 class LaneStatusAssignmentTests(unittest.TestCase):
     def setUp(self) -> None:
         ls.show_file.cache_clear()
         ls.blob_id.cache_clear()
+        ls.build_fallback_aliases.cache_clear()
         ls.guarded_candidate_region.cache_clear()
         ls.target_guard_changed.cache_clear()
         ls.reopen_authorizations.cache_clear()
@@ -179,6 +268,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
     def tearDown(self) -> None:
         ls.show_file.cache_clear()
         ls.blob_id.cache_clear()
+        ls.build_fallback_aliases.cache_clear()
         ls.guarded_candidate_region.cache_clear()
         ls.target_guard_changed.cache_clear()
         ls.merge_base.cache_clear()
@@ -231,6 +321,23 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         return self.commit(f"Authorize one-shot {SYMBOL} reproof")
 
     def test_base_only_is_the_only_assignable_state(self) -> None:
+        result, report = self.status()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(report["assignment"]["state"], "base-only")
+
+    def test_variant_switch_and_renamed_fallback_stay_assignable(self) -> None:
+        generated = "func_overlay_043_F0000100_1880000"
+        (self.repo / SOURCE_PATH).write_text(VARIANT_BODY.format(
+            symbol=SYMBOL,
+            fallback=f"asm/nonmatchings/overlays/o043/{SYMBOL}/{generated}.s",
+        ), encoding="utf-8")
+        (self.repo / "mk").mkdir()
+        (self.repo / "mk/overlays.mk").write_text(
+            f"$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/{SYMBOL}.c.o: POSTPROCESS = \\\n"
+            f"\t$(OBJCOPY) --redefine-sym {generated}={SYMBOL} $@\n",
+            encoding="utf-8",
+        )
+        self.commit("Seed a variant-switch candidate")
         result, report = self.status()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(report["assignment"]["state"], "base-only")
@@ -1122,6 +1229,7 @@ class LaneRefQueryTests(unittest.TestCase):
     def tearDown(self) -> None:
         ls.show_file.cache_clear()
         ls.blob_id.cache_clear()
+        ls.build_fallback_aliases.cache_clear()
         ls.merge_base.cache_clear()
 
     def test_lane_scan_filters_refs_already_merged_into_base(self) -> None:

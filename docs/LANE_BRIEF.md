@@ -284,8 +284,13 @@ it end to end. The ones that carry most of the weight:
   on unreferenced `s32` pads to land the target's homes; removing three from
   `wakeDraw` moved its frame from 0x88 to 0x78. Treat unreferenced locals as
   a frame lever, sweep their count and position with `frame_census.py`, and
-  do not assume the compiler drops them. `align8(4N)` hides a one-slot
-  change.
+  do not assume the compiler drops them. The condition, measured on mini TUs
+  with the tree's IDO (workbench law page, 2026-09-23): an unused local takes
+  a 4-byte cell only when the function already keeps some other value in its
+  own frame across a call (a declared local or a compiler temporary). Leaves,
+  frames holding only arrays or volatiles, and functions whose live values
+  all sit in callee-saved registers pay nothing. `align8(4N)` hides a
+  one-slot change.
 - **L150** — **a deleted no-op is not side-effect free.** as1 removes it *by
   renaming its producer's destination*, so a no-op placed to buy a ring draw
   also moves whatever produced its operand off the colour it held. That is why

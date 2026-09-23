@@ -1750,7 +1750,10 @@ bytes and disassembly never belong here.
   trading `a1`/`t0` and their spill slots (5 naming, 8 immediate). The target
   passes `var_a1` itself. Writing the argument as `var_a1 | 0` (or `& -1`, or
   `& 0xFFFFFFFF`) makes it an operand, which copy propagation leaves alone, and
-  the identity folds before code generation: 0 words. `+ 0`, `- 0` and a
+  the identity folds before code generation: 0 words. Cleanup (2026-09-23):
+  a `TrapDanglingJump` argument is only the register state the trampoline
+  forwards, and `a1` already holds `var_a1` at the jump, so the committed form
+  is now `TrapDanglingJump(arg0)` with no identity -- byte-identical. `+ 0`, `- 0` and a
   `(s32)(u32)` cast are folded too early and stay at 13; `* 1`, `/ 1`, `^ 0`,
   shifts by zero and double negation all emit code and add a word or two.
   The records that settled it: web membership, not colour -- the var's web

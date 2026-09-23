@@ -12,9 +12,9 @@ in the grammar the instrumented ugen emits. What is pinned is the reading:
      the positional and aligned counts agree -- the L155 subtraction is exact;
   3. a word's class comes from its fields, and a nop's class from its
      predecessor (delay slot or not);
-  4. ownership needs a line AND a compatible emission; a prologue word is
-     matched against the end-stamped save/frame rows; anything else is
-     `unowned`, never a guess;
+  4. ownership needs a line AND a compatible emission (on the line, within
+     three lines, or -- for a prologue word -- among the end-stamped
+     save/frame rows), and says which; anything else is `unowned`;
   5. the label rule and its tie-breaks;
   6. the refusals: size delta 0, and a force environment without --object.
 """
@@ -256,11 +256,22 @@ class OwnershipTests(unittest.TestCase):
         owner = ip.own("load", 10, self.proc)
         self.assertTrue(owner["owned"])
         self.assertEqual(owner["construct"], "iloadistore")
+        self.assertEqual(owner["basis"], "line")
 
-    def test_an_incompatible_line_is_unowned_not_guessed(self):
+    def test_the_nearest_compatible_line_owns_it_and_says_so(self):
         owner = ip.own("load", 11, self.proc)
+        self.assertTrue(owner["owned"])
+        self.assertEqual(owner["basis"], "nearest")
+        self.assertEqual(owner["construct_line"], 10)
+
+    def test_nothing_compatible_within_reach_is_unowned_not_guessed(self):
+        owner = ip.own("load", 15, self.proc)
         self.assertFalse(owner["owned"])
         self.assertIsNone(owner["construct"])
+        self.assertIsNone(owner["basis"])
+        # the search stays inside the function
+        self.assertFalse(ip.own("load", 11, self.proc,
+                                bounds=(11, 19))["owned"])
 
     def test_no_line_no_trace_or_header_line_is_unowned(self):
         self.assertFalse(ip.own("alu", None, self.proc)["owned"])
@@ -273,13 +284,14 @@ class OwnershipTests(unittest.TestCase):
         self.assertEqual(owner["construct"], "as1")
 
     def test_a_prologue_save_is_matched_to_the_end_stamped_rows(self):
-        self.assertFalse(ip.own("stack-store", 9, self.proc)["owned"])
-        owner = ip.own("stack-store", 9, self.proc, bounds=(9, 19))
+        self.assertFalse(ip.own("stack-store", 5, self.proc)["owned"])
+        owner = ip.own("stack-store", 5, self.proc, bounds=(5, 19))
         self.assertTrue(owner["owned"])
+        self.assertEqual(owner["basis"], "prologue")
         self.assertEqual(owner["construct"], "gen_reg_save_restore")
-        # but not a body line
-        self.assertFalse(ip.own("stack-store", 11, self.proc,
-                                bounds=(9, 19))["owned"])
+        # but not a body line with no memory emission within reach
+        self.assertFalse(ip.own("stack-store", 15, self.proc,
+                                bounds=(5, 19))["owned"])
 
 
 def word(side, klass, shape=0, owned=True, construct="eval"):
@@ -295,11 +307,20 @@ class LabelTests(unittest.TestCase):
         pair["closed"] = False
         self.assertEqual(ip.pair_label(pair), "extra-ILOD")
 
-    def test_a_repeated_shape_with_a_branch_is_an_unrolled_loop(self):
+    def test_two_same_shape_branches_on_one_side_are_an_unrolled_loop(self):
         pair = {"closed": False, "words": [word("candidate", "branch", 5),
                                            word("candidate", "alu", 7),
-                                           word("candidate", "alu", 7)]}
+                                           word("candidate", "branch", 5)]}
         self.assertEqual(ip.pair_label(pair), "unrolled-loop")
+
+    def test_a_single_branch_with_repeated_alu_is_control_flow(self):
+        pair = {"closed": False, "words": [word("candidate", "branch", 5),
+                                           word("candidate", "alu", 7),
+                                           word("candidate", "alu", 7),
+                                           word("target", "branch", 6)]}
+        self.assertEqual(ip.pair_label(pair), "missing-CSE")
+        pair["words"] = [word("candidate", "branch", 5)]
+        self.assertEqual(ip.pair_label(pair), "control-flow")
 
     def test_a_tie_goes_to_the_candidate_side(self):
         pair = {"closed": True, "words": [word("target", "store"),

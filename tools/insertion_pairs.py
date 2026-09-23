@@ -29,7 +29,13 @@ WHAT IT MEASURES
      index-aligned, so there positional and aligned counts are equal by
      construction and the tool checks that they are. `aligned residual after
      shadow` is the positional masked count less every pair's shadow -- the
-     number of words that are actually wrong.
+     number of words that are actually wrong, and equal to align_symbol's
+     aligned disagreement (its three buckets plus the one-sided words).
+     One pair's shadow can come out slightly negative (-1, -2 measured): a
+     shifted positional comparison happens to agree where the alignment
+     accepted a differing row to win exact rows elsewhere. It is the same
+     effect as align_symbol's negative displacement tax; the function-level
+     identity above still holds exactly.
   4. CLASS of each one-sided word, from its encoding: move, stack-load,
      stack-store, load, store, alu, const, branch, call, frame, delay-nop, nop,
      other. Classes only; the instruction itself is never printed.
@@ -45,10 +51,15 @@ WHAT IT MEASURES
          each emission names the handler (`iloadistore` for ILOD/ISTR,
          `loadstore` for LOD/STR, `move_to_dest` for a register copy, `jump`
          for FJP/TJP, `gen_reg_save_restore` for callee saves, ...). A word is
-         owned when its line has an emission of a compatible family.
-       - a nop is as1's, not ugen's; it is owned by `as1` when its line is known.
-     If the line is unknown, or the line has no compatible emission, the word
-     is `unowned`. That is reported, not papered over.
+         owned when an emission of a compatible family is found; `own` states
+         the search order and every answer carries its `basis`: `line` (its
+         own line), `prologue` (a save/frame word, which ugen stamps with the
+         procedure's last line), `nearest` (within three lines, because as1
+         schedules across statements), `as1` (a nop), or, for a target-only
+         word only, `neighbour` (our construct at the neighbour's line, no
+         same-family emission near it -- the weakest basis, and counted apart).
+     Anything else is `unowned`, with the reason. That is reported, not
+     papered over.
   6. LABEL per pair, from a fixed vocabulary and a fixed rule (see `LABELS`):
      hoist, unrolled-loop, extra-ILOD, extra-ISTR, missing-CSE,
      split-not-copy, spill/reload, callee-save, control-flow, delay-slot,
@@ -421,50 +432,80 @@ COMPATIBLE = {
 }
 
 
+NEAREST_LINES = 3
+
+
+def _construct(rows: list[dict]) -> tuple[str, int]:
+    handlers = collections.Counter(r["handler"] for r in rows)
+    return sorted(handlers.items(), key=lambda kv: (-kv[1], kv[0]))[0]
+
+
 def own(word_class: str, line, proc: dict | None,
         bounds: tuple[int, int] | None = None) -> dict:
     """Owner of one one-sided word: a line plus a construct, or unowned.
 
-    `bounds` is the function's first and last line. ugen emits the prologue
-    and epilogue (callee saves, the frame adjustment, the return) when it
-    reaches the END of the procedure, so the trace stamps them with the last
-    line while the line table puts the prologue on the first. A stack or
-    frame word on either boundary line is therefore matched against the
-    procedure's save/frame emissions wherever they are stamped.
+    Tried in this order, and the one that answered is `basis`:
+
+      as1       a nop: the assembler's fill, owned once its line is known.
+      line      a compatible emission stamped with the word's own line.
+      prologue  a stack or frame word on the function's first or last line
+                (`bounds`), matched to the save/frame emissions wherever they
+                are stamped: ugen emits the prologue and epilogue on reaching
+                the END of the procedure, so the trace stamps them with the
+                last line while the line table puts the prologue on the first.
+      nearest   a compatible emission within NEAREST_LINES lines, nearest
+                first (lower line on a tie): as1 schedules across statements,
+                so the line table can stamp a word with a neighbouring
+                statement's line.
+    Otherwise the word is unowned and `reason` says why.
     """
+    def unowned(reason):
+        return {"owned": False, "line": line, "construct": None,
+                "basis": None, "reason": reason}
+
     if line is None:
-        return {"owned": False, "line": None, "construct": None,
-                "reason": "no line"}
+        return unowned("no line")
     if word_class in ("nop", "delay-nop"):
         return {"owned": True, "line": line, "construct": "as1",
-                "reason": "assembler fill"}
+                "basis": "as1", "reason": "assembler fill"}
     if not isinstance(line, int):
-        return {"owned": False, "line": line, "construct": None,
-                "reason": "line outside the TU source"}
+        return unowned("line outside the TU source")
     if proc is None:
-        return {"owned": False, "line": line, "construct": None,
-                "reason": "no trace"}
-    rows = [r for r in proc["emits"].get(line, [])
-            if r["family"] in COMPATIBLE[word_class]]
-    if not rows and bounds and line in bounds and \
+        return unowned("no trace")
+
+    def compatible(at):
+        return [r for r in proc["emits"].get(at, [])
+                if r["family"] in COMPATIBLE[word_class]]
+
+    def owned(rows, basis, reason, at):
+        construct, count = _construct(rows)
+        return {"owned": True, "line": line, "construct": construct,
+                "basis": basis, "construct_line": at,
+                "reason": reason.format(count=count, total=len(rows), at=at),
+                "draws_on_line": proc["draws"].get(at, 0)}
+
+    rows = compatible(line)
+    if rows:
+        return owned(rows, "line", "{count} of {total} compatible emissions",
+                     line)
+    if bounds and line in bounds and \
             word_class in ("stack-load", "stack-store", "frame"):
         rows = [r for rs in proc["emits"].values() for r in rs
                 if r["family"] in ("save", "frame")]
         if rows:
-            handlers = collections.Counter(r["handler"] for r in rows)
-            construct = sorted(handlers.items(),
-                               key=lambda kv: (-kv[1], kv[0]))[0][0]
-            return {"owned": True, "line": line, "construct": construct,
-                    "reason": "prologue/epilogue, traced at the procedure's end",
-                    "draws_on_line": proc["draws"].get(line, 0)}
-    if not rows:
-        return {"owned": False, "line": line, "construct": None,
-                "reason": "no compatible emission on this line"}
-    handlers = collections.Counter(r["handler"] for r in rows)
-    construct, count = sorted(handlers.items(), key=lambda kv: (-kv[1], kv[0]))[0]
-    return {"owned": True, "line": line, "construct": construct,
-            "reason": f"{count} of {len(rows)} compatible emissions",
-            "draws_on_line": proc["draws"].get(line, 0)}
+            return owned(rows, "prologue",
+                         "prologue/epilogue, traced at the procedure's end",
+                         line)
+    for distance in range(1, NEAREST_LINES + 1):
+        for at in (line - distance, line + distance):
+            if bounds and not bounds[0] <= at <= bounds[1]:
+                continue
+            rows = compatible(at)
+            if rows:
+                return owned(rows, "nearest",
+                             "no compatible emission on its line; nearest at "
+                             "line {at}", at)
+    return unowned(f"no compatible emission within {NEAREST_LINES} lines")
 
 
 # The label rule, in full. Order in LABELS breaks ties.
@@ -495,8 +536,8 @@ def pair_label(pair: dict) -> str:
                      have the same class multiset (nops aside): the same kind
                      of instruction sits at a different place. Decided before
                      ownership, because it does not depend on it.
-      unrolled-loop  one side's one-sided words include a branch AND repeat a
-                     register-erased shape: a duplicated loop body or test.
+      unrolled-loop  one side carries two or more one-sided branches of the
+                     same register-erased shape: a duplicated loop test.
       otherwise      the majority of the per-word labels (CLASS_LABEL, or
                      `unowned` for a word nothing owns). A tie goes to the
                      candidate side's word -- what our source emits and can
@@ -510,10 +551,10 @@ def pair_label(pair: dict) -> str:
     if pair["closed"] and cand and cand == targ:
         return "hoist"
     for side in ("candidate", "target"):
-        words = [w for w in pair["words"] if w["side"] == side]
-        shapes = collections.Counter(w["shape"] for w in words)
-        if any(w["class"] == "branch" for w in words) and \
-                any(n > 1 for n in shapes.values()):
+        branches = collections.Counter(
+            w["shape"] for w in pair["words"]
+            if w["side"] == side and w["class"] == "branch")
+        if any(n > 1 for n in branches.values()):
             return "unrolled-loop"
     votes = collections.Counter(word_label(w) for w in pair["words"])
     first = {}
@@ -702,15 +743,16 @@ def analyse(item, obj: pathlib.Path, procs: dict | None, trace_note: str,
                 owner = own(klass, line, proc, bounds)
                 if not owner["owned"] and isinstance(line, int) and proc \
                         and proc["emits"].get(line):
-                    # Our side emits nothing for this word. The nearest line
-                    # still names what our code does there; say so.
+                    # Our side emits nothing for this word and nothing of its
+                    # family nearby; the line still names what our code does
+                    # where the target has it. Kept, and marked as such.
                     rows = proc["emits"][line]
-                    handlers = collections.Counter(r["handler"] for r in rows)
-                    construct = sorted(handlers.items(),
-                                       key=lambda kv: (-kv[1], kv[0]))[0][0]
+                    construct, _ = _construct(rows)
                     owner = {"owned": True, "line": line,
-                             "construct": construct,
-                             "reason": "neighbour line; no same-family emission",
+                             "construct": construct, "basis": "neighbour",
+                             "construct_line": line,
+                             "reason": "neighbour line; no same-family "
+                                       "emission near it",
                              "draws_on_line": proc["draws"].get(line, 0)}
                 words.append({"side": "target", "offset": j * 4,
                               "class": klass, "shape": t_key[j],
@@ -757,6 +799,8 @@ def analyse(item, obj: pathlib.Path, procs: dict | None, trace_note: str,
         "label": function_label(pairs),
         "classes": dict(collections.Counter(w["class"] for p in pairs
                                             for w in p["words"])),
+        "basis": dict(collections.Counter(w["owner"].get("basis") or "unowned"
+                                          for p in pairs for w in p["words"])),
     }
 
 
@@ -834,9 +878,12 @@ def render(data: dict) -> str:
             what = o["construct"] if o["owned"] else "unowned"
             extra = (f", {o['draws_on_line']} draws on line"
                      if o.get("draws_on_line") is not None else "")
+            basis = o.get("basis") or "unowned"
             out.append(f"    {w['side']:<9} +0x{w['offset']:X}  {w['class']:<11}"
-                       f" {where} ({w['via']}): {what} -- {o['reason']}{extra}")
+                       f" {where} [{basis}]: {what} -- {o['reason']}{extra}")
     out.append("")
+    out.append("  ownership basis: " + ", ".join(
+        f"{k} {v}" for k, v in sorted(data["basis"].items())))
     out.append(f"  function label {data['label']}; "
                f"{'owned' if data['owned'] else 'NOT fully owned'}; "
                f"{data['owning_lines']} owning line(s)")

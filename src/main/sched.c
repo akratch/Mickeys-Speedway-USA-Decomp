@@ -900,10 +900,10 @@ s32 __scSchedule(OSSched *sc, OSScTask **sp, OSScTask **dp, s32 availRCP) {
 
 /* PLATEAU-HANDOFF:func_80030610:start
  * symbol: func_80030610
- * score: 193/192 words
+ * score: 104 differing words
  * frame: 0x98
  * relocations: 13
  * first-mismatch: +0x8C
- * summary: L145 commandIndex reuse plus pads close frame 0x98 and slots; extra D_80000000 addiu at +0x180 keeps size +4.
+ * summary: Extra lo addiu of the symbol addend at +0x180; target's addend is a lui-only constant web apart from the compare constant.
  * PLATEAU-HANDOFF:func_80030610:end
  */

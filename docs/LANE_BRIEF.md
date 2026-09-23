@@ -155,8 +155,12 @@ spelling lattice would have returned "flat" with nothing learned.
 
 ## The call test — ask this before any allocator work
 
-Every procedure that issues a call emits **p1 allocator records only**; every
-leaf emits **p2 only**. 59 procedures classified, zero counterexamples.
+Every procedure that issues a call emits **p1 allocator records only**; most
+leaves emit **p2 only**. 59 procedures classified with zero counterexamples
+until 2026-09-23, when `func_80049B14`, a leaf, emitted 14 p1 decisions and
+changed regime (14 coloured webs to 4) when its size gap closed. So for a leaf,
+read the record kinds once before trusting the p2 rule; a leaf whose webs are
+global candidates is on the p1 axis.
 
 - **Your function contains a call** ⇒ p1 only ⇒ the axis is the `save` ratio
   (L100) **only for colours the web is actually offered**. What this retires is
@@ -273,9 +277,15 @@ it end to end. The ones that carry most of the weight:
   give.
 - **L99** — stack homes descend from the frame top in declaration order, and
   only a memory-class local gets one. The offset is a linear readout, so sweep
-  and solve rather than guess. Frame *size* is a count, not an order. An unused
-  `s32` is eliminated before the frame is sized; an unused `f32` or pointer is
-  not. `align8(4N)` hides a one-slot change.
+  and solve rather than guess. Frame *size* is a count, not an order.
+  **Corrected 2026-09-23:** an unused `s32` is *not* reliably eliminated
+  before the frame is sized. Five Track B matches (`func_8000DB34`,
+  `func_800133FC`, `wakeDraw`, `func_800479D4`, the overlay 20 match) depend
+  on unreferenced `s32` pads to land the target's homes; removing three from
+  `wakeDraw` moved its frame from 0x88 to 0x78. Treat unreferenced locals as
+  a frame lever, sweep their count and position with `frame_census.py`, and
+  do not assume the compiler drops them. `align8(4N)` hides a one-slot
+  change.
 - **L150** — **a deleted no-op is not side-effect free.** as1 removes it *by
   renaming its producer's destination*, so a no-op placed to buy a ring draw
   also moves whatever produced its operand off the colour it held. That is why

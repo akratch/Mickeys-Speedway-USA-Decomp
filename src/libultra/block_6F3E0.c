@@ -28,6 +28,6 @@ void func_8006E7E0(void) {
  * frame: frameless
  * relocations: 0
  * first-mismatch: +0x0
- * summary: Empty C emits two instructions while the target is a one-word hole with padding; this remains unrepresentable as generated C.
+ * summary: One zero padding word; every IDO body is at least two words. Needs a yaml reclassification, not C.
  * PLATEAU-HANDOFF:func_8006E7E0:end
  */

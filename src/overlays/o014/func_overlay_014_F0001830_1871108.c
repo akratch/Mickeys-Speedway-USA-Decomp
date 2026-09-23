@@ -1,7 +1,10 @@
 #include "PR/ultratypes.h"
 
 extern s32 gOverlay14ValueC0;
-extern u8 func_8004D5C0(s32 font);
+/* The resident definition (main/font.c) returns u8; this TU calls it as
+ * returning int, as an undeclared call would. As u8 the zero-extension
+ * becomes a second web copied out of v0 (one extra move, frame +8). */
+extern s32 func_8004D5C0(s32 font);
 extern void func_8004B0DC(s32 red, s32 green, s32 blue, s32 alpha);
 extern void fontColour(s32 red, s32 green, s32 blue, s32 alpha,
                        s32 opacity);
@@ -25,6 +28,10 @@ extern void func_8004B0F8(void *displayList, s32 x, s32 y, char *text,
  * declarations below repair the six resident font identities; configured V0
  * must re-establish the relocation surface before one target-shaped case-7
  * load-before-increment probe. Park after those two builds if flat. */
+/* Track B (2026-09-23): the int-returning declaration above closed size
+ * and frame (804/804 bytes, frame 0x90); 5 masked words remain, all in
+ * case 7, where the target schedules the stream increment into the call's
+ * delay slot and this spelling schedules the last argument load there. */
 /* Ownership trial (2026-08-28): fixed the TU's +0x174..+0x190 .rodata range;
  * linked promotion established module-growth/table ownership only, not exact C
  * text or relocation identity. Module growth is cleared. */
@@ -128,3 +135,13 @@ s32 func_overlay_014_F0001830_1871108(s32 context, u8 *stream, s32 skip) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o014/func_overlay_014_F0001830_1871108/func_overlay_014_F0001830_1871108.s")
 #endif
+
+/* PLATEAU-HANDOFF:func_overlay_014_F0001830_1871108:start
+ * symbol: func_overlay_014_F0001830_1871108
+ * score: 5/201 words
+ * frame: 0x90
+ * relocations: 21
+ * first-mismatch: +0x1F4
+ * summary: Delta 0, frame closed, 186 to 5: callee declared int-returning. Left: case 7 fills the jal delay with the last arg load; target fills it with the increment.
+ * PLATEAU-HANDOFF:func_overlay_014_F0001830_1871108:end
+ */

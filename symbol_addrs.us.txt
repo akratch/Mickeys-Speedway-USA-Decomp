@@ -1145,7 +1145,7 @@ func_8004707C = 0x8004707C;           // type:func size:0x34 tier A (exact C)
 func_800470B0 = 0x800470B0;           // type:func size:0x254 tier D (JFG placeholder)
 func_80047304 = 0x80047304;           // type:func size:0x2E4 tier D (JFG placeholder)
 func_800475E8 = 0x800475E8;           // type:func size:0x3EC tier-B ROM 0x481E8 NON_MATCHING plateau, first +0x0
-func_800479D4 = 0x800479D4;           // type:func size:0x304 tier B (JFG fxMakeConeLength)
+func_800479D4 = 0x800479D4;           // type:func size:0x304 tier B (JFG fxMakeConeLength), matched C src/main/fx.c -O2 -mips2 -32 -Wab,-r4300_mul, linked exact=193/193
 func_80047CD8 = 0x80047CD8;           // type:func size:0x3A8 tier-A ROM 0x488D8 matched C and linked ROM, frame 0x68, four exact func_800349A4 calls, tier-B JFG fxDrawCone role
 func_80048080 = 0x80048080;           // type:func size:0x164 tier-A ROM 0x48C80 matched C, 89/89 words and 4 relocations, frame -0x48, linked ROM 0x48C80-0x48DE4 byte-identical
 wakeAllocate = 0x800481E4;            // type:func size:0x57C tier B (JFG call graph/order)
@@ -1154,7 +1154,7 @@ wakeFree = 0x80048944;                // type:func size:0x3C tier A (exact C, JF
 func_80048980 = 0x80048980;           // type:func size:0x48 tier A (exact C, JFG wakeFreeRipple)
 wakeUpdate = 0x800489C8;              // type:func size:0x638 tier B (JFG call graph/order)
 func_80049000 = 0x80049000;           // type:func size:0x254 tier B (JFG wakeUpdateRipple)
-wakeDraw = 0x80049254;                // type:func size:0x2C4 tier B (JFG call graph/order)
+wakeDraw = 0x80049254;                // type:func size:0x2C4 tier B (JFG call graph/order), matched C src/main/fx.c -O2 -mips2 -32 -Wab,-r4300_mul, linked exact=177/177
 func_80049518 = 0x80049518;           // type:func size:0x228 tier B (JFG wakeDrawRipple)
 fxInit = 0x80049740;                  // type:func size:0x4C tier A (exact C, JFG name)
 func_8004978C = 0x8004978C;           // type:func size:0x9C tier-D ROM 0x4A38C matched C src/main/fx.c.o -O2 -mips2 -32, linked exact=39/39
@@ -2844,6 +2844,7 @@ camGetProjectionMtx = 0x800246A4; // type:func size:0x0C ROM 0x252A4 tier-D matc
 func_800246B0 = 0x800246B0; // type:func size:0x184 ROM 0x252B0 tier-D matched-C JFG camProjectPoint role/order, Mickey auto-name retained
 func_80024834 = 0x80024834; // type:func size:0x104 ROM 0x25434 tier-A matched-C JFG camReversePoint source, 65/65 instructions and nine relocations exact
 camGetProjZ = 0x80024938; // type:func size:0x40 ROM 0x25538 tier-D matched-C JFG TU role/order and projection-depth dataflow
+func_80024978 = 0x80024978; // type:func size:0x14C ROM 0x25578 tier-A matched C src/main/camera.c.o -O2 -mips2 -32 -Wab,-r4300_mul, JFG camCopyOrthoMatrix loop scaled by D_80079F48, 83/83 instructions exact, camera .data starts at 0x80079F40
 D_80079F48 = 0x80079F48; // type:f32 size:0x4 tier-A compiler-owned camera .data projection scale
 D_80079F4C = 0x80079F4C; // type:f32 size:0x4 tier-A compiler-owned camera .data matrix coefficient
 D_80079F50 = 0x80079F50; // type:f32 size:0x4 tier-A compiler-owned camera .data leading-matrix coefficient

@@ -513,46 +513,48 @@ void func_800475E8(FxCone *cone, s16 angle) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/fx/func_800475E8.s")
 #endif
-/* Workbench verdict: structure-mismatch, 167 differing words, first mismatch +0x0. */
-/* Candidate is 188/193 instructions, frame -0x148 versus target -0x150. */
-/* Signed-step and factor webs are repaired; point-array placement remains. */
-/* PROVENANCE: JFG's fxMakeConeLength role identifies the routine; this body is reconstructed from Mickey's target offsets and m2c control flow. */
-#ifdef NON_MATCHING
+/* PROVENANCE: JFG's fxMakeConeLength role identifies the routine; this body is reconstructed from Mickey's target offsets and m2c control flow.
+ * Matched 2026-09-23 (Track B, lane B-fx). What closed it, in order:
+ *  - frame 0x150: six declared slots above points and five between points
+ *    and vertices, whose spill home is +0x6C. Unused declarations
+ *    (unused, addressIndex, scale) keep their homes, so they stay.
+ *  - size: no addressIndex carrier (its copy was the extra word), and
+ *    while (i--) for the first loop (the target keeps the post-decrement
+ *    copy and tests the counter).
+ *  - FP colours: the cast height in its own web (originZ), the scale
+ *    written inline, and originZ *= before the negation. */
 void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
                    s32 alpha) {
-    FxConePoint points[15];
+    s32 unused;
     FxConePoint *point;
-    u8 *vertices;
     u8 addressIndex;
     s32 angle;
     s32 i;
     s32 step;
+    FxConePoint points[15];
     f32 originZ;
     f32 scale;
     f32 scaleX;
     f32 scaleY;
     f32 factor;
+    u8 *vertices;
     f32 temp;
 
     if (cone != 0) {
         point = points;
-        addressIndex = cone->addressIndex ^ 1;
-        cone->addressIndex = addressIndex;
-        vertices = cone->addresses[addressIndex];
+        cone->addressIndex = cone->addressIndex ^ 1;
+        vertices = cone->addresses[cone->addressIndex];
         if (cone->flags != 0) {
             angle = 0;
             i = cone->segmentCount;
             step = -0x10000 / i;
-            if (i != 0) {
-                do {
-                    point->x = func_8002A8C0(angle) * radius;
-                    temp = func_8002A8BC(angle) * depth;
-                    point->z = (f32) -height;
-                    point++;
-                    angle += step;
-                    point[-1].y = temp;
-                    i--;
-                } while (i != 0);
+            while (i--) {
+                point->x = func_8002A8C0(angle) * radius;
+                temp = func_8002A8BC(angle) * depth;
+                point->z = (f32) -height;
+                point++;
+                angle += step;
+                point[-1].y = temp;
             }
             func_80048080(cone->segmentCount, cone->value26, cone->value28,
                           cone->value2A, (s32) cone->value20,
@@ -569,7 +571,7 @@ void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
         if (cone->segmentCount == 0) {
             scaleX = cone->value18;
             scaleY = cone->value1C;
-            temp = (f32) cone->value24;
+            originZ = (f32) cone->value24;
             if (alpha < 0x80) {
                 factor = 0.0f;
             } else if (alpha >= 0x100) {
@@ -577,11 +579,11 @@ void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
             } else {
                 factor = (f32) (alpha - 0x7F) * 0.0078125f;
             }
-            scale = 1.0f + (2.0f * factor);
+            scaleX *= 1.0f + (2.0f * factor);
+            scaleY *= 1.0f + (2.0f * factor);
             i = 0;
-            scaleX *= scale;
-            scaleY *= scale;
-            temp = -(temp * (0.25f * factor));
+            originZ *= 0.25f * factor;
+            temp = -originZ;
             do {
                 angle = i << 0xD;
                 point->x = func_8002A8C0(angle) * scaleX;
@@ -597,9 +599,6 @@ void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/func_800479D4.s")
-#endif
 
 /*
  * PROVENANCE: the block-local display-list macro spelling below is adapted
@@ -1387,15 +1386,22 @@ void func_80049000(FxWakeUpdateOwner *owner, s32 delta) {
         }
     }
 }
-/* Workbench verdict: structure-mismatch, 122 differing words, first mismatch +0x0. */
-/* Candidate: 176/177 instructions with a -0x50 frame versus target -0x88; the target's outer-index spill and saved-register web remain unresolved. */
-/* Shape status: the JFG-derived display-list command and chunk loops are reconstructed with the target's single relocation identity exact. */
-/* PROVENANCE: JFG's wakeDraw role supplies the display-list idiom; this body is reconstructed from Mickey's target offsets and FxGfx type. */
-#ifdef NON_MATCHING
+/* PROVENANCE: JFG's wakeDraw role supplies the display-list idiom; this body is reconstructed from Mickey's target offsets and FxGfx type.
+ * Matched 2026-09-23 (Track B, lane B-fx). What closed it, in order:
+ *  - frame: the target's 0x88 frame is fourteen declared slots between alpha
+ *    and outerOffset, and outerOffset declared last (its spill home is +0x44).
+ *    Unused declarations keep their homes here, so the list is the frame.
+ *  - size: shiftedX and shiftedZ written inline instead of through carriers
+ *    (L160); their carriers took a2/t0 and pushed the outer index into a
+ *    register the target spills.
+ *  - colour order: x += xStep after the first polygon, the outer bound read
+ *    from wake->value38 directly (no outerLimit carrier), both index updates on
+ *    one line (as1 store order), and the second vertex's packet pointer taken
+ *    before shiftedY so that web numbers after it.
+ *  - tail: FX_PIPE_SYNC + FX_SET_ENV instead of hand-written command words. */
 void wakeDraw(Wake *wake, FxGfx **dlist) {
     s32 outerIndex;
     s32 alpha;
-    s32 outerOffset;
     s32 remaining;
     s32 chunk;
     s32 shiftedY;
@@ -1409,6 +1415,8 @@ void wakeDraw(Wake *wake, FxGfx **dlist) {
     u8 outerLimit;
     FxGfx *cmd;
     FxWakeSegment *segment;
+    s32 unusedSlot;
+    s32 outerOffset;
 
     if ((s32) wake->value38 > 0) {
         func_800349A4(dlist, (s32) wake->linked, 0x1F,
@@ -1421,8 +1429,7 @@ void wakeDraw(Wake *wake, FxGfx **dlist) {
         FX_SET_ENV((*dlist)++, alpha, alpha, alpha, alpha);
         FX_SET_PRIM((*dlist)++, 0xFF, 0xFF, 0xFF, 0xFF);
         outerIndex = 0;
-        outerLimit = wake->value38;
-        if ((s32) outerLimit > 0) {
+        if (wake->value38 > 0) {
             outerOffset = 0;
             do {
                 segment = (FxWakeSegment *) ((u8 *) wake->vertices + outerOffset);
@@ -1432,7 +1439,6 @@ void wakeDraw(Wake *wake, FxGfx **dlist) {
                 z = segment->z;
                 if (remaining != 0) {
                     do {
-                        shiftedX = x + 0x80000000;
                         if (remaining >= 0x11) {
                             remaining -= 0x10;
                             chunk = 0x10;
@@ -1440,41 +1446,35 @@ void wakeDraw(Wake *wake, FxGfx **dlist) {
                             chunk = remaining;
                             remaining = 0;
                         }
+                        FX_VERTEX_JFG((*dlist)++, x + 0x80000000, chunk + 2, 0);
+                        FX_POLYGON((*dlist)++, z + 0x80000000, chunk, 1);
                         xStep = chunk * 0xA;
-                        FX_VERTEX_JFG((*dlist)++, shiftedX, chunk + 2, 0);
-                        zStep = chunk * 0x10;
-                        shiftedZ = z + 0x80000000;
                         x += xStep;
-                        FX_POLYGON((*dlist)++, shiftedZ, chunk, 1);
+                        zStep = chunk * 0x10;
                         if (y != 0) {
-                            shiftedY = y + 0x80000000;
-                            FX_VERTEX_JFG((*dlist)++, shiftedY, chunk + 2, 0);
+                            {
+                                FxGfx *_g = (*dlist)++;
+                                shiftedY = y + 0x80000000;
+                                _g->w0 = FX_SHIFTL(4, 24, 8) |
+                                         FX_SHIFTL(((chunk + 2) << 3) | ((u32) shiftedY & 6) | 0, 16, 8) |
+                                         FX_SHIFTL(((chunk + 2) << 3) + ((chunk + 2) << 1) + 8, 0, 16);
+                                _g->w1 = (u32) shiftedY;
+                            }
                             y += xStep;
-                            FX_POLYGON((*dlist)++, shiftedZ, chunk, 1);
+                            FX_POLYGON((*dlist)++, z + 0x80000000, chunk, 1);
                         }
                         z += zStep;
                     } while (remaining != 0);
-                    outerLimit = wake->value38;
                 }
-                outerIndex++;
-                outerOffset += 0x10;
-            } while (outerIndex < (s32) outerLimit);
+                outerIndex++; outerOffset += 0x10;
+            } while (outerIndex < wake->value38);
         }
         if (alpha != 0xFF) {
-            cmd = *dlist;
-            *dlist = cmd + 1;
-            cmd->w0 = 0xE7000000;
-            cmd->w1 = 0;
-            cmd = *dlist;
-            *dlist = cmd + 1;
-            cmd->w1 = -1;
-            cmd->w0 = 0xFB000000;
+            FX_PIPE_SYNC((*dlist)++);
+            FX_SET_ENV((*dlist)++, 0xFF, 0xFF, 0xFF, 0xFF);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/wakeDraw.s")
-#endif
 /* Workbench: schedule-mismatch, 2/138 differing words, first mismatch +0x60. */
 /* Exact 138-word geometry/frame -0x20; one D_7D310 LO16 schedule slot remains. */
 /* All five relocation identities agree; the LO16 offset is nonexact. */
@@ -1692,9 +1692,12 @@ s32 func_80049B14(s32 delta) {
                             current = record->value14;
                             carry = 0;
                             if (current >= duration) {
-                                mode = record->value1E;
-                                if (((mode != 0) && (record->value1F == 0)) ||
-                                    ((mode == 0) && (record->value1F != 0))) {
+                                /* carry doubles as the 0x1E mode byte: the
+                                 * target loads it into carry's register, and
+                                 * this spelling is what brings size delta to 0. */
+                                carry = record->value1E;
+                                if (((carry != 0) && (record->value1F == 0)) ||
+                                    ((carry == 0) && (record->value1F != 0))) {
                                     carry = current - duration;
                                     record->state = 3;
                                     record->value14 = carry;
@@ -2474,16 +2477,6 @@ void func_8004AF68(void) {
  * PLATEAU-HANDOFF:fxSPDPRipple:end
  */
 
-/* PLATEAU-HANDOFF:func_800479D4:start
- * symbol: func_800479D4
- * score: 167/192 words
- * frame: 0x148
- * relocations: 7
- * first-mismatch: +0x0
- * summary: Point-array declaration and capacity probes leave the 0x148 frame and 167-word residual; target point-array home remains unresolved.
- * PLATEAU-HANDOFF:func_800479D4:end
- */
-
 /* PLATEAU-HANDOFF:fxScreenEffect:start
  * symbol: fxScreenEffect
  * score: 116/147 words
@@ -2504,23 +2497,13 @@ void func_8004AF68(void) {
  * PLATEAU-HANDOFF:func_800475E8:end
  */
 
-/* PLATEAU-HANDOFF:wakeDraw:start
- * symbol: wakeDraw
- * score: 121/176 words
- * frame: 0x50
- * relocations: 1
- * first-mismatch: +0x0
- * summary: Independent E7 command field scheduling removes one residual word; frame and outer-index lifetime remain unresolved.
- * PLATEAU-HANDOFF:wakeDraw:end
- */
-
 /* PLATEAU-HANDOFF:func_80049B14:start
  * symbol: func_80049B14
- * score: 154/207 words
+ * score: 181/206 words
  * frame: 0x18
  * relocations: 4
- * first-mismatch: +0x8
- * summary: Switch/carry declaration probe was byte-flat; target state-machine allocation remains unresolved and the donor supplies no C body.
+ * first-mismatch: +0x4
+ * summary: Delta +4 to 0 by reusing carry as the case-2 mode byte; allocator regime then shifts (p1 colours 4 webs), constants land in s0-s4.
  * PLATEAU-HANDOFF:func_80049B14:end
  */
 

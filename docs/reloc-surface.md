@@ -374,6 +374,39 @@ for a symbol that one of its own `#define`s spells, the reader
 the ordinary build's compile command from `gmake -n`, rerun as
 `tools/ido/cc -E`. Only such files are ever preprocessed.
 
+The census used to leave 1,057 resident functions *uncovered*: the proof
+admitted a resident function only through a `symbol_addrs.us.txt` row saying
+`matched C`, while `tools/progress.py` (and so the scoreboard) counts a
+resident function as matched C when the linked ELF defines it as a sized,
+non-overlay `STT_FUNC` and no `glabel`/`alabel` under `asm/` names it. The
+proof now applies that rule (`function_preflight._progress_matched_resident`)
+instead of the comment, so every function progress counts is in contract; no
+row was annotated. Its geometry is the row's `type:func size:` when there is
+one, and otherwise the linked extent, accepted only when the function runs to
+the next sized function in its section (or the section end) over nothing but
+zero padding. A zero-size weak alias (`fsin` of `__sinf`) passes through the
+sized definition at its address. The census tallies residents by that
+geometry evidence.
+
+Covering them exposed four more classes. Thirty-five `size:` annotations
+disagreed with the compiler's `st_size` for a byte-identical build -- 24
+carried the inter-function padding, 11 were simply short -- and now carry
+the linked size. A libultra definition behind ordinary conditionals (`crc.c`'s
+`#if BUILD_VERSION >= VERSION_J`, `#if 0` blocks in `n_env.c` and
+`pfsdeletefile.c`) is read through the configured preprocessor, as a
+`#define`-spelled one is. A resident object's own symbols -- its anonymous
+`.rodata`, and `joy.c.o`'s local carrier that shares the name
+`D_800CF3B5` with the global alias it is renamed to -- are placed by symbol
+table entry from the link map, and HI16/LO16 pair on the entry, as the linker
+pairs them, not on the name. A global or weak definition is placed that way
+only when the link's one global of that name sits exactly there: a
+linker-script assignment overrides `menu.c.o`'s weak `D_800D3044`.
+`func_80004B04` stays refused: the retail resident table holds one `R_MIPS_32`
+tuple (its only mode-2 record) on an `lw` at `+0x68`, which no static
+relocation reproduces. A record against the ELF null symbol (entry 0,
+`S = 0`) relocates to its addend: `mainThread`'s two ram-end records lose
+their carrier in the recipe's second objcopy pass and link as absolute.
+
 Linked BSS follows the shipped relocation blobs, while runtime BSS follows only
 text plus data/rodata. The tool therefore proves the linked definition first,
 then translates its BSS offset from `ROM-size + object offset` to

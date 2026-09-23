@@ -235,6 +235,7 @@ def validate_report(symbol: str, report: dict[str, object]) -> dict[str, object]
         "exact_relocations": target_relocations,
         "configured_relocations": configured_relocations,
         "identity_proof_mode": identity_mode,
+        "geometry_evidence": report.get("identity_evidence"),
         "declared_metadata_proof": metadata,
         "canonical_commands": [],
         "verdict": "exact",

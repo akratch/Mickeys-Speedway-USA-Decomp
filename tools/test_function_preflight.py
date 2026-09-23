@@ -2403,6 +2403,55 @@ class RelocationEvidenceTests(unittest.TestCase):
         self.assertEqual([], evidence["target_static_relocations"])
         self.assertEqual(1, len(evidence["runtime_overlay_records"]))
         self.assertEqual([], evidence["resident_runtime_records"])
+class ResidentCoverageTests(unittest.TestCase):
+    """A resident function is promoted by progress.py's rule, not a comment."""
+
+    class Linked:
+        names = ["", ".main"]
+        def __init__(self, symbols, data):
+            self.sh = [(0,) * 10, (0, 1, 6, 0x80001000, 0, len(data), 0, 0, 16, 0)]
+            self._symbols, self.data = symbols, data
+        def symbols(self):
+            return self._symbols
+        def section_bytes(self, _name):
+            return self.data
+
+    def test_untracked_extent_is_bounded_by_its_neighbour(self):
+        f = ("f", 0x80001000, 0x8, fp.rs.STT_FUNC, 1)
+        g = ("g", 0x80001010, 0x8, fp.rs.STT_FUNC, 1)
+        padded = self.Linked([f, g], b"\x01" * 8 + bytes(8) + b"\x02" * 8)
+        self.assertEqual((0x80001000, 8), fp._neighbour_bounded_extent(padded, f))
+        # Nonzero bytes between the extent and the next function: code the
+        # proof would not cover.
+        hidden = self.Linked([f, g], b"\x01" * 8 + b"\x03" * 8 + b"\x02" * 8)
+        with self.assertRaisesRegex(fp.PreflightError, "not bounded"):
+            fp._neighbour_bounded_extent(hidden, f)
+        last = self.Linked([g], bytes(0x10) + b"\x02" * 8 + bytes(8))
+        self.assertEqual((0x80001010, 8), fp._neighbour_bounded_extent(last, g))
+
+    def test_progress_rule_decides_promotion(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "asm").mkdir()
+            (root / "asm/a.s").write_text("glabel func_80002000\n")
+            (root / "build").mkdir()
+            (root / "build/mickey.us.elf").write_bytes(b"")
+            symbols = [("func_80001000", 0x80001000, 8, fp.rs.STT_FUNC, 1),
+                       ("func_80002000", 0x80002000, 8, fp.rs.STT_FUNC, 1)]
+            linked = self.Linked(symbols, bytes(0x2000))
+            table = root / "symbols.txt"
+            table.write_text("func_80001000 = 0x80001000; // type:func size:0x8 tier-B\n"
+                             "func_80002000 = 0x80002000; // type:func size:0x8\n")
+            with mock.patch.object(fp.rs, "Elf", return_value=linked):
+                self.assertEqual(
+                    (0x80001000, 8, "symbol_addrs function row+progress matched-C rule"),
+                    fp._resident_promotion_evidence("func_80001000", table, root))
+                with self.assertRaisesRegex(fp.PreflightError, "glabel under asm/"):
+                    fp._resident_promotion_evidence("func_80002000", table, root)
+                with self.assertRaisesRegex(fp.PreflightError, "0 sized resident"):
+                    fp._resident_promotion_evidence("func_80003000", table, root)
+
+
 class SourceViewTests(unittest.TestCase):
     """Definitions the written source does not spell as `name(...) {`."""
 

@@ -781,6 +781,29 @@ def _macro_spells(text: str, symbol: str) -> bool:
                if re.match(r"\s*#\s*define\b", line))
 
 
+_CONDITIONAL_RE = re.compile(r"^\s*#\s*(?:if|ifdef|ifndef|elif)\b", re.MULTILINE)
+
+
+def needs_preprocessed_view(text: str, symbol: str) -> bool:
+    """True when only the compiler's view can say which definition is compiled.
+
+    The written source answers whenever it holds a ``GLOBAL_ASM`` for the
+    symbol, exactly one definition, or any ``NON_MATCHING``-guarded one (the
+    guard is the fact being read). Otherwise it cannot: a ``#define`` may
+    spell the definition, or ordinary conditionals may hold two (libultra's
+    ``#if BUILD_VERSION >= VERSION_J`` in ``crc.c``) or unbalance the braces
+    the reader counts (``#if 0`` blocks in ``n_env.c``).
+    """
+    facts = source_facts(text, symbol)
+    if facts.pragmas or len(facts.definitions) == 1 or any(
+            row.non_matching_state is not None for row in facts.definitions):
+        return False
+    if _macro_spells(text, symbol):
+        return True
+    return bool(_CONDITIONAL_RE.search(text)
+                and re.search(rf"\b{re.escape(symbol)}\s*\(", _mask_c(text)))
+
+
 def preprocessed_text(source: pathlib.Path, root: pathlib.Path) -> str:
     """The configured compiler's own preprocessed view of ``source``.
 
@@ -808,19 +831,18 @@ def source_view(source: pathlib.Path, symbol: str,
                 root: pathlib.Path | None = None) -> tuple[str, str]:
     """The text ``source_facts`` should read for ``symbol``, and which view it is.
 
-    The source as written is the view whenever it defines the symbol or holds a
-    ``GLOBAL_ASM`` for it. A definition spelled through the preprocessor is not
-    visible there: ``overlay101UpdateEntry8B.c`` is
+    The source as written is the view unless ``needs_preprocessed_view``: a
+    definition spelled through the preprocessor is not visible there
+    (``overlay101UpdateEntry8B.c`` is
     ``#define overlay101UpdateEntry8 overlay101UpdateEntry8B`` followed by
-    ``#include "overlay101UpdateEntry8.c"``. When the written source has no
-    fact for the symbol but a ``#define`` spells it, the view is the configured
+    ``#include "overlay101UpdateEntry8.c"``), and ordinary conditionals can
+    hold two definitions or hide one. Then the view is the configured
     compiler's preprocessed output (``preprocessed_text``), so the facts are
     the ones the ordinary build compiles.
     """
     root = pathlib.Path(__file__).resolve().parent.parent if root is None else root
     text = source.read_text(encoding="utf-8", errors="replace")
-    facts = source_facts(text, symbol)
-    if facts.definitions or facts.pragmas or not _macro_spells(text, symbol):
+    if not needs_preprocessed_view(text, symbol):
         return text, "source"
     return preprocessed_text(source, root), "preprocessed"
 
@@ -934,7 +956,7 @@ def _find_source(root: pathlib.Path, symbols: Sequence[str]) -> pathlib.Path | N
                 matches.add(path)
                 break
         else:
-            if any(_macro_spells(text, symbol) for symbol in symbols):
+            if any(needs_preprocessed_view(text, symbol) for symbol in symbols):
                 spelled.append(path)
     if not matches:
         # Only the preprocessor spells the definition (#define + #include).

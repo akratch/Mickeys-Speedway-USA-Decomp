@@ -390,7 +390,7 @@ entrypoint = 0x80000400; // type:func size:0x50   ROM 0x01000  hasm/entrypoint.s
 // (`lui t2,0x8002 / addiu t2,t2,0x11a0 / jr t2`), so position and bytes agree.
 mainproc = 0x800211A0; // type:func size:0x58 ROM 0x21da0 tier-A IDO C exact, DKR src/main.c donor, masked=11/22
 thread1_main = 0x800211F8; // type:func size:0x98 ROM 0x21df8 tier-A IDO C exact, DKR src/main.c donor, masked=14/38
-func_80021290 = 0x80021290; // type:func size:0x50 ROM 0x21e90 tier-A IDO C exact, Mickey-only u64 counter reconstruction
+func_80021290 = 0x80021290; // type:func size:0x44 ROM 0x21e90 tier-A IDO C exact, Mickey-only u64 counter reconstruction
 
 // math_util.s -- 13 routines matched, 11 named in this block; most have ZERO
 // masked words, and this is the strongest evidence in the block. (Of the other
@@ -707,7 +707,7 @@ func_8004D750 = 0x8004D750; // type:func size:0x28 ROM 0x4e350 tier-A IDO C exac
 byteswap32 = 0x8004D778; // type:func size:0x30 ROM 0x4e378 tier-A IDO C exact, DKR src/gzip.c donor, masked=0/12
 func_8004D7A8 = 0x8004D7A8; // type:func size:0x38 ROM 0x4e3a8 tier-A IDO C exact, Mickey-only reconstruction
 func_8004D7E0 = 0x8004D7E0; // type:func size:0x60 ROM 0x4e3e0 tier-A IDO C exact, Mickey-only reconstruction
-func_8004D840 = 0x8004D840; // type:func size:0x620 ROM 0x4e440 tier-B IDO C exact, DKR src/gzip.c huft_build donor
+func_8004D840 = 0x8004D840; // type:func size:0x618 ROM 0x4e440 tier-B IDO C exact, DKR src/gzip.c huft_build donor
 gzip_inflate_block = 0x8004DE60; // type:func size:0x104   ROM 0x4ea60  hasm/gzip_asm.s.o  masked=19/65
 gzip_inflate_dynamic = 0x8004DF64; // type:func size:0x418   ROM 0x4eb64  hasm/gzip_asm.s.o  masked=32/262
 gzip_inflate_fixed = 0x8004E37C; // type:func size:0x158   ROM 0x4ef7c  hasm/gzip_asm.s.o  masked=11/86
@@ -899,7 +899,7 @@ ReleaseUnusedLinkSlots = 0x8003314C; // type:func size:0x98  tier-D invented
 GetSymbolName = 0x800317E0;         // type:func size:0x10 tier-B call-graph
 runlinkInit = 0x800328CC;           // type:func size:0x248 tier-D C-object+linked-ROM-exact
 runlinkDownloadCode = 0x80031C78;   // type:func size:0x478 tier-B call-graph C-object+linked-ROM-exact
-runlinkGetAddressInfo = 0x800331E4; // type:func size:0x1BC
+runlinkGetAddressInfo = 0x800331E4; // type:func size:0x1B0
 // TIER A, no longer resting on the call-graph argument above. The whole 0x1E0
 // .text of JFG's built `src/hasm/ido/trapDanglingJump.s.o` is byte-identical
 // to ROM 0x33FA0-0x34180, 15 of 120 words masked, ROM-wide unique -- a
@@ -1471,43 +1471,43 @@ D_800D7DC6 = 0x800D7DC6; // type:u8 size:0x2
 // libultra/n_csplayer  ROM 0x5e700  (jfg/libultra: src/libultra/n_csplayer.c.o)  whole .text 0x3220, masked=154, romocc=1
 n_alCSPNew = 0x8005DB00; // type:func size:0x270
 __n_CSPPostNextSeqEvent = 0x80060C70; // type:func size:0x94
-n_alCSPVoiceLimit = 0x80060D04; // type:func size:0x10
+n_alCSPVoiceLimit = 0x80060D04; // type:func size:0x18
 // libultra/n_cspsetchlvol  ROM 0x61920  (jfg/libultra: src/libultra/n_cspsetchlvol.c.o)  whole .text 0x70, masked=1, romocc=1
-n_alCSPSetChlVol = 0x80060D20; // type:func size:0x70
+n_alCSPSetChlVol = 0x80060D20; // type:func size:0x68
 // libultra/n_cspgetstate  ROM 0x61990  (jfg/libultra: src/libultra/n_cspgetstate.c.o)  whole .text 0x20, masked=0, romocc=1
 //   same bytes in: conker,jfg,perfect_dark
-n_alCSPGetState = 0x80060D90; // type:func size:0x8
+n_alCSPGetState = 0x80060D90; // type:func size:0x18
 // libultra/n_cseq  ROM 0x619b0  (jfg/libultra: src/libultra/n_cseq.c.o)  whole .text 0x9d0, masked=15, romocc=1
 n_alCSeqNew = 0x80060DB0; // type:func size:0x180
 n_alCSeqNextEvent = 0x80060F30; // type:func size:0x17C
-n_alCSeqGetTicks = 0x800614E0; // type:func size:0x8
+n_alCSeqGetTicks = 0x800614E0; // type:func size:0x18
 // libultra/n_cspsetseq  ROM 0x62380  (jfg/libultra: src/libultra/n_cspsetseq.c.o)  whole .text 0x50, masked=1, romocc=1
-n_alCSPSetSeq = 0x80061780; // type:func size:0x50
+n_alCSPSetSeq = 0x80061780; // type:func size:0x4C
 // libultra/n_cspplay  ROM 0x623d0  (jfg/libultra: src/libultra/n_cspplay.c.o)  whole .text 0x40, masked=1, romocc=1
 n_alCSPPlay = 0x800617D0; // type:func size:0x40
 // libultra/n_cspstop  ROM 0x62410  (jfg/libultra: src/libultra/n_cspstop.c.o)  whole .text 0x40, masked=1, romocc=1
 n_alCSPStop = 0x80061810; // type:func size:0x40
 // libultra/n_cspmessage  ROM 0x62450  (jfg/libultra: src/libultra/n_cspmessage.c.o)  whole .text 0xb0, masked=0, romocc=1
-n_alCSPSetMessageQ = 0x80061850; // type:func size:0xC
+n_alCSPSetMessageQ = 0x80061850; // type:func size:0x14
 n_alCSPSetMessage = 0x80061864; // type:func size:0x68
-n_alCSPSetChanMessage = 0x800618CC; // type:func size:0x2C
+n_alCSPSetChanMessage = 0x800618CC; // type:func size:0x34
 // libultra/n_sl  ROM 0x62500  (jfg/libultra: src/libultra/n_sl.c.o)  whole .text 0xc0, masked=18, romocc=1
 //   same bytes in: conker,jfg,perfect_dark
 n_alInit = 0x80061900; // type:func size:0x6C
-n_alClose = 0x8006196C; // type:func size:0x54
+n_alClose = 0x8006196C; // type:func size:0x4C
 // libultra/slHeap  ROM 0x625c0  (jfg/libultra: src/libultra/slHeap.c.o)  whole .text 0xb0, masked=0, romocc=1
 //   same bytes in: conker,jfg,perfect_dark
-alHeapInit = 0x800619C0; // type:func size:0x1C
-alHeapDBAlloc = 0x800619E4; // type:func size:0x8C
+alHeapInit = 0x800619C0; // type:func size:0x24
+alHeapDBAlloc = 0x800619E4; // type:func size:0x84
 // libultra/sl  ROM 0x62670  (jfg/libultra: src/libultra/sl.c.o)  whole .text 0x80, masked=0, romocc=1
 //   same bytes in: jfg,perfect_dark
-alLink = 0x80061A70; // type:func size:0x2C
-alUnlink = 0x80061AA4; // type:func size:0x4C
+alLink = 0x80061A70; // type:func size:0x34
+alUnlink = 0x80061AA4; // type:func size:0x40
 // libultra/n_synthesizer  ROM 0x626f0  (jfg/libultra: src/libultra/n_synthesizer.c.o)  whole .text 0xad0, masked=173, romocc=1
 n_alSynNew = 0x80061AF0; // type:func size:0x5E0
 n_alAudioFrame = 0x800620D0; // type:func size:0x224
 __n_allocParam = 0x800622F4; // type:func size:0xA0
-_n_freeParam = 0x80062394; // type:func size:0x38
+_n_freeParam = 0x80062394; // type:func size:0x40
 _n_collectPVoices = 0x800623D4; // type:func size:0x6C
 _n_freePVoice = 0x80062440; // type:func size:0x40
 _n_timeToSamplesNoRound = 0x80062480; // type:func size:0x64
@@ -1515,11 +1515,11 @@ _n_timeToSamples = 0x800624E4; // type:func size:0x3C
 __n_nextSampleTime = 0x80062520; // type:func size:0xA0
 // libultra/cents2ratio  ROM 0x631c0  (jfg/libultra: src/libultra/cents2ratio.c.o)  whole .text 0xa0, masked=4, romocc=1
 //   same bytes in: conker,jfg
-alCents2Ratio = 0x800625C0; // type:func size:0xA0
+alCents2Ratio = 0x800625C0; // type:func size:0x94
 // libultra/alsurround  ROM 0x63260  (jfg/libultra: src/libultra/alsurround.c.o)  whole .text 0x210, masked=39, romocc=1
 //   same bytes in: conker,jfg,perfect_dark
 alSurround_OutputType = 0x80062660; // type:func size:0xD4
-alSurround_ReverbSetup = 0x80062734; // type:func size:0x13C
+alSurround_ReverbSetup = 0x80062734; // type:func size:0x138
 // BSS ownership: direct HI16/LO16 references in Mickey's linked alSurround
 // functions place the donor-named globals at 0x800D7DC0 in declaration order.
 D_800D7DC0 = 0x800D7DC0; // type:u32 size:0x4
@@ -1538,13 +1538,13 @@ n_alSynAddSndPlayer = 0x80062F40; // type:func size:0x70
 n_alSynAddSeqPlayer = 0x80062FB0; // type:func size:0x70
 // libultra/n_synallocvoice  ROM 0x63c20  (jfg/libultra: src/libultra/n_synallocvoice.c.o)  whole .text 0x310, masked=23, romocc=1
 n_alSynAllocVoice = 0x80063020; // type:func size:0x1D8
-_allocatePVoice = 0x800631F8; // type:func size:0x138
+_allocatePVoice = 0x800631F8; // type:func size:0x134
 // libultra/n_synsetvol  ROM 0x63f30  (jfg/libultra: src/libultra/n_synsetvol.c.o)  whole .text 0xd0, masked=5, romocc=1
 //   same bytes in: jfg,perfect_dark
-n_alSynSetVol = 0x80063330; // type:func size:0xD0
+n_alSynSetVol = 0x80063330; // type:func size:0xC4
 // libultra/n_synstartvoiceparam  ROM 0x64000  (jfg/libultra: src/libultra/n_synstartvoiceparam.c.o)  whole .text 0x130, masked=5, romocc=1
 //   same bytes in: jfg,perfect_dark
-n_alSynStartVoiceParams = 0x80063400; // type:func size:0x130
+n_alSynStartVoiceParams = 0x80063400; // type:func size:0x12C
 // libultra/n_synsetpan  ROM 0x64130  (jfg/libultra: src/libultra/n_synsetpan.c.o)  whole .text 0xb0, masked=4, romocc=1
 //   same bytes in: jfg,perfect_dark
 n_alSynSetPan = 0x80063530; // type:func size:0xB0
@@ -1559,14 +1559,14 @@ n_alSynSetFXMix = 0x80063690; // type:func size:0xB0
 n_alSynStopVoice = 0x80063740; // type:func size:0xA0
 // libultra/n_synfreevoice  ROM 0x643e0  (jfg/libultra: src/libultra/n_synfreevoice.c.o)  whole .text 0xe0, masked=5, romocc=1
 //   compiler-exact C: 0xd4 executable bytes plus 0xc bytes of TU alignment
-n_alSynFreeVoice = 0x800637E0; // type:func size:0xE0
+n_alSynFreeVoice = 0x800637E0; // type:func size:0xD4
 // libultra/n_alcspchan  ROM 0x644c0  (jfg/libultra: src/libultra/n_alcspchan.c.o)  whole .text 0x240, masked=5, romocc=1
 n_alCSPAllChanOn = 0x800638C0; // type:func size:0x98
 n_alCSPChanOff = 0x80063958; // type:func size:0x48
 n_alCSPChanOn = 0x800639A0; // type:func size:0x68
 n_alCSPChanFade = 0x80063A08; // type:func size:0x50
 n_alCSPChanSurround = 0x80063A58; // type:func size:0x50
-n_alCSPChanFadeForce = 0x80063AA8; // type:func size:0x58
+n_alCSPChanFadeForce = 0x80063AA8; // type:func size:0x50
 // libultra/n_seqplayer  ROM 0x64700  (jfg/libultra: src/libultra/n_seqplayer.c.o)  whole .text 0x1160, masked=14, romocc=1
 __n_unmapVoice = 0x80063B00; // type:func size:0xC0
 __n_seqpReleaseVoice = 0x80063BC0; // type:func size:0x174
@@ -1580,9 +1580,9 @@ __n_vsDelta = 0x80064350; // type:func size:0x44
 __n_vsPan = 0x80064394; // type:func size:0x8C
 __n_initFromBank = 0x80064420; // type:func size:0xE8
 __n_initChanState = 0x80064508; // type:func size:0x8C
-__n_resetPerfChanState = 0x80064594; // type:func size:0x248
+__n_resetPerfChanState = 0x80064594; // type:func size:0x250
 __n_setInstChanState = 0x800647E4; // type:func size:0x33C
-__n_seqpStopOsc = 0x80064B20; // type:func size:0x140
+__n_seqpStopOsc = 0x80064B20; // type:func size:0x13C
 // libultra/n_alsynsetlpffreq  ROM 0x65860  (jfg/libultra: src/libultra/n_alsynsetlpffreq.c.o)  whole .text 0xb0, masked=4, romocc=1
 //   same bytes in: jfg,perfect_dark
 n_alSynSetLpf_freq = 0x80064C60; // type:func size:0xB0
@@ -1602,19 +1602,19 @@ n_alSynGetOutputLPRef = 0x80065B48; // type:func size:0x78
 // libultra/n_synsetfxparam  ROM 0x667c0  (jfg/libultra: src/libultra/n_synsetfxparam.c.o)  whole .text 0x100, masked=6, romocc=1
 //   same bytes in: jfg,perfect_dark
 n_alSynSetFXParam = 0x80065BC0; // type:func size:0x44
-n_alSynSetOutputLPParam = 0x80065C04; // type:func size:0xBC
+n_alSynSetOutputLPParam = 0x80065C04; // type:func size:0xB8
 // libultra/n_alsynsetdistort  ROM 0x668c0  (jfg/libultra: src/libultra/n_alsynsetdistort.c.o)  whole .text 0xb0, masked=4, romocc=1
 //   same bytes in: jfg,perfect_dark
 n_alSynSetDistort = 0x80065CC0; // type:func size:0xB0
 // libultra/n_cseqnextdelta  ROM 0x66970  (jfg/libultra: src/libultra/n_cseqnextdelta.c.o)  whole .text 0xe0, masked=0, romocc=1
 //   same bytes in: conker,jfg,perfect_dark
-__alCSeqNextDelta = 0x80065D70; // type:func size:0xE0
+__alCSeqNextDelta = 0x80065D70; // type:func size:0xDC
 // libultra/n_syndelete  ROM 0x66a50  (jfg/libultra: src/libultra/n_syndelete.c.o)  whole .text 0x20, masked=2, romocc=1
 //   same bytes in: conker,jfg,perfect_dark
-n_alSynDelete = 0x80065E50; // type:func size:0x14
+n_alSynDelete = 0x80065E50; // type:func size:0x1C
 // libultra/n_synallocfx  ROM 0x66a70  (jfg/libultra: src/libultra/n_synallocfx.c.o)  whole .text 0x90, masked=5, romocc=1
 //   same bytes in: jfg,perfect_dark
-n_alSynAllocFX = 0x80065E70; // type:func size:0x90
+n_alSynAllocFX = 0x80065E70; // type:func size:0x88
 // libultra/n_reverb  ROM 0x66b00  (jfg/libultra: src/libultra/n_reverb.c.o)  whole .text 0x16b0, masked=60, romocc=1
 n_alFxPull = 0x80065F00; // type:func size:0x840
 n_alFxParamHdl = 0x80066740; // type:func size:0x520
@@ -1623,7 +1623,7 @@ _n_loadBuffer = 0x80066F78; // type:func size:0x1F8
 _n_saveBuffer = 0x80067170; // type:func size:0x1DC
 _n_filterBuffer = 0x8006734C; // type:func size:0x100
 _doModFunc = 0x8006744C; // type:func size:0xC4
-n_alSavePull = 0x80067510; // type:func size:0xA0
+n_alSavePull = 0x80067510; // type:func size:0x94
 // libultra/n_env  ROM 0x681b0  (jfg/libultra: src/libultra/n_env.c.o)  whole .text 0xff0, masked=59, romocc=1
 n_alEnvmixerPull = 0x800675B0; // type:func size:0x924
 n_alEnvmixerParam = 0x80067ED4; // type:func size:0x144
@@ -1631,17 +1631,17 @@ _pullSubFrame = 0x80068018; // type:func size:0x2E4
 _getRate = 0x800682FC; // type:func size:0x210
 _getVol = 0x8006850C; // type:func size:0x90
 // libultra/n_cspsendmidi  ROM 0x691a0  (jfg/libultra: src/libultra/n_cspsendmidi.c.o)  whole .text 0x80, masked=1, romocc=1
-n_alCSPSendMidi = 0x800685A0; // type:func size:0x80
+n_alCSPSendMidi = 0x800685A0; // type:func size:0x78
 // libultra/n_synsetpriority  ROM 0x69220  (jfg/libultra: src/libultra/n_synsetpriority.c.o)  whole .text 0x20, masked=0, romocc=1
 //   same bytes in: jfg,perfect_dark
-n_alSynSetPriority = 0x80068620; // type:func size:0x14
+n_alSynSetPriority = 0x80068620; // type:func size:0x1C
 // main/math_atan  ROM 0x69240  (jfg/game: src/math/math_atan.c.o)  whole .text 0x200, masked=17, romocc=1
 atan2f = 0x80068640; // type:func size:0x1F4 tier-A exact C, JFG source body
 // libultra/n_auxbus  ROM 0x69440  (jfg/libultra: src/libultra/n_auxbus.c.o)  whole .text 0x4f0, masked=7, romocc=1
 //   same bytes in: jfg,perfect_dark
-n_alAuxBusPull = 0x80068840; // type:func size:0x4F0
+n_alAuxBusPull = 0x80068840; // type:func size:0x4E4
 // libultra/n_mainbus  ROM 0x69930  (jfg/libultra: src/libultra/n_mainbus.c.o)  whole .text 0x370, masked=22, romocc=1
-n_alMainBusPull = 0x80068D30; // type:func size:0x370
+n_alMainBusPull = 0x80068D30; // type:func size:0x36C
 // libultra/n_load  ROM 0x69ca0  (jfg/libultra: src/libultra/n_load.c.o)  whole .text 0xb50, masked=4, romocc=1
 n_alAdpcmPull = 0x800690A0; // type:func size:0x6AC
 n_alLoadParam = 0x8006974C; // type:func size:0x2E8
@@ -2538,7 +2538,7 @@ func_8003A680 = 0x8003A680; // type:func size:0x30 ROM 0x3B280 tier-A, matched C
 func_8003A6B0 = 0x8003A6B0; // type:func size:0x50 ROM 0x3B2B0 tier-A, matched C src/main/menu_3B1A0.c -O2 -mips2 -32, character-code mapping body, linked exact=20/20
 func_8003A700 = 0x8003A700; // type:func size:0x54 ROM 0x3B300 tier-A, matched C src/main/menu_3B1A0.c -O2 -mips2 -32, inverse character-code mapping body, linked exact=21/21
 func_8003A754 = 0x8003A754; // type:func size:0x7C ROM 0x3B354 tier-D structure-mismatch candidate, 12 differing words, scalar reset loop
-func_8003A7D0 = 0x8003A7D0; // type:func size:0xB0 ROM 0x3B3D0 tier-D structure-mismatch candidate, 36 differing words, count accumulation loop
+func_8003A7D0 = 0x8003A7D0; // type:func size:0xAC ROM 0x3B3D0 tier-D structure-mismatch candidate, 36 differing words, count accumulation loop
 // donor-jfg-src/menu.c.o
 func_80038750 = 0x80038750; // type:func size:0x128 tier-A ROM 0x39350 IDO C exact, JFG src/menu.c structural oracle, allocator-trace-guided, owns jtbl at 0x83334
 func_80038878 = 0x80038878; // type:func size:0x154 tier-D ROM 0x39478 NON_MATCHING diagnostic p6 target 85/candidate 86 instructions, 66/85 positional differences, first +0x14, artificial empty address condition removed

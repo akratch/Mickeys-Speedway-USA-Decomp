@@ -3017,16 +3017,26 @@ def _target_runtime_records(rom, context, start, size):
 def _candidate_surface_records(elf, start, size, target, identities,
                                numeric_values, ambiguous_identities, overlay,
                                overlay_call_identities=None,
-                               ambiguous_overlay_calls=None):
+                               ambiguous_overlay_calls=None,
+                               index_identities=None):
+    """Identify each relocation record of one function.
+
+    HI16/LO16 pair on the symbol-table *entry*, as the linker pairs them: an
+    object can carry two symbols of one name (joy.c.o's local relocation
+    carrier and the global alias it is renamed to). ``index_identities``
+    ({symbol index: identity}) identifies a record by its entry before any
+    name is consulted.
+    """
     syms = elf.symbols()
     target_by_shape = {(r.offset, r.rtype): r for r in target}
+    index_identities = index_identities or {}
     raw = []
     for _section, offset, rtype, symbol_index in elf.relocations():
         if not start <= offset < start + size:
             continue
         name = syms[symbol_index][0] if symbol_index < len(syms) else ""
         raw.append({"offset": offset, "relative_offset": offset - start,
-                    "type": rtype, "symbol": name})
+                    "type": rtype, "symbol": name, "index": symbol_index})
 
     obj_text = elf.section_bytes(".text")
     output = []
@@ -3035,9 +3045,9 @@ def _candidate_surface_records(elf, start, size, target, identities,
     low_to_highs = collections.defaultdict(list)
     for index, row in enumerate(raw):
         if row["type"] == R_MIPS_HI16:
-            pending_highs[row["symbol"]].append(index)
+            pending_highs[row["index"]].append(index)
         elif row["type"] == R_MIPS_LO16:
-            highs = pending_highs.pop(row["symbol"], [])
+            highs = pending_highs.pop(row["index"], [])
             for high_index in highs:
                 high_to_low[high_index] = index
                 low_to_highs[index].append(high_index)
@@ -3061,7 +3071,9 @@ def _candidate_surface_records(elf, start, size, target, identities,
                 high_value = stored_field(obj_text, record["offset"], rtype)
                 low_value = stored_field(obj_text, low["offset"], R_MIPS_LO16)
                 addend = (high_value << 16) + sext16(low_value)
-                if not identity_is_ambiguous and name in identities:
+                if record["index"] in index_identities:
+                    identity = _identity_add(index_identities[record["index"]], addend)
+                elif not identity_is_ambiguous and name in identities:
                     identity = _identity_add(identities[name], addend)
                 elif (not identity_is_ambiguous
                       and overlay is None and name in numeric_values
@@ -3106,7 +3118,9 @@ def _candidate_surface_records(elf, start, size, target, identities,
                 raise SurfaceComparisonError("PC16 relocation is not on a supported branch instruction")
             addend = (sext16(addend) << 2) + 4
         base_identity = None if identity_is_ambiguous else identities.get(name)
-        if (not identity_is_ambiguous
+        if record["index"] in index_identities:
+            base_identity = index_identities[record["index"]]
+        elif (not identity_is_ambiguous
                 and rtype == R_MIPS_26
                 and name in (overlay_call_identities or {})):
             call_identity = overlay_call_identities[name]
@@ -3139,12 +3153,16 @@ def _candidate_surface_records(elf, start, size, target, identities,
 LINK_MAP = REPO / "build" / "mickey.us.map"
 
 
-def linked_input_sections(map_path=LINK_MAP):
+def linked_input_sections(map_path=None):
     """{(object, section): (address, size)} for every input section the link placed.
 
     Read from the linker map written by the same link as the ELF: the only
     record of where one object's anonymous `.rodata`/`.data`/`.bss` landed.
+    No map places nothing, which leaves such sections unresolved.
     """
+    map_path = Path(LINK_MAP if map_path is None else map_path)
+    if not map_path.is_file():
+        return {}
     placed = {}
     pattern = re.compile(
         r"^ (\.[\w.]+)\s+0x([0-9A-Fa-f]+)\s+0x([0-9A-Fa-f]+)\s+(\S+\.o)\s*$")
@@ -3159,32 +3177,53 @@ def linked_input_sections(map_path=LINK_MAP):
     return placed
 
 
-def _resident_section_identities(target_object, target_object_path, map_path=LINK_MAP):
-    """Resident identities of one object's own section symbols, from the link map.
+def _resident_object_identities(target_object, target_object_path, map_path=None,
+                                linked_elf=None):
+    """{symbol index: resident identity} for local symbols the object defines.
 
-    A relocation against a section symbol (`.rodata` for a jump table or a
-    literal pool) addresses that object's input section, whose linked address
-    only the map records. The map entry must exist once and have the object's
-    own section size; a section the link did not place is left unresolved.
+    A local symbol defined in one of the object's own sections sits at that
+    input section's linked address plus its value, and only the link map
+    records the address of an anonymous `.rodata`, `.data` or `.bss`. Keyed by
+    symbol-table entry, so neither a section symbol (every TU has its own
+    `.rodata`) nor a duplicated local name is ever resolved by name. The map must place the section
+    once, at the object's own size; a section it does not place is skipped.
     """
     placed = linked_input_sections(map_path)
     try:
         key_object = Path(target_object_path).resolve().relative_to(REPO.resolve()).as_posix()
     except ValueError:
         return {}
-    identities = {}
-    for name, _value, _size, info, shndx in target_object.symbols():
-        if info & 0xF != STT_SECTION or not 0 < shndx < len(target_object.names):
+    # Entry 0 is the ELF null symbol: S = 0, so a record naming it relocates
+    # to its addend alone (main.c.o's two ram-end records, whose carrier the
+    # recipe's second objcopy pass unbinds).
+    identities = {0: (ri.ABSOLUTE_IDENTITY, 0)}
+    linked_globals = None
+    if linked_elf is not None:
+        linked_globals = collections.defaultdict(list)
+        for name, value, _size, info, shndx in linked_elf.symbols():
+            if info >> 4 != 0 and shndx != SHN_UNDEF:
+                linked_globals[name].append(value)
+    for index, (name, value, _size, info, shndx) in enumerate(target_object.symbols()):
+        if not 0 < shndx < len(target_object.names):
             continue
         section = target_object.names[shndx]
-        if name != section or (key_object, section) not in placed:
+        if info & 0xF == STT_SECTION and name != section:
+            continue
+        if (key_object, section) not in placed:
             continue
         address, size = placed[(key_object, section)]
-        header = target_object.sh[shndx]
-        if size != header[5] or not 0x80000000 <= address < 0x90000000:
+        if size != target_object.sh[shndx][5] or not 0x80000000 <= address < 0x90000000:
             raise SurfaceComparisonError(
                 "link map disagrees with %s(%s)" % (key_object, section))
-        identities[name] = (0, address - ot.RESIDENT_VRAM_BASE)
+        # A local binds to this definition unconditionally. A global or weak
+        # one binds by name, and a linker-script assignment may override it
+        # (menu.c.o's weak D_800D3044 links at 0x800D3044, not at its own
+        # .bss slot): accept it only when the link's one global of that name
+        # sits exactly here.
+        if info >> 4 != 0 and (linked_globals is None
+                               or linked_globals.get(name) != [address + value]):
+            continue
+        identities[index] = (0, address + value - ot.RESIDENT_VRAM_BASE)
     return identities
 
 
@@ -3225,7 +3264,7 @@ def _resident_target_records(candidate_object, source, target_elf,
         if offset + 4 > object_start + object_size:
             raise SurfaceComparisonError(
                 "resident target relocation crosses the function boundary")
-        if symbol_index >= len(symbols) or not symbols[symbol_index][0]:
+        if symbol_index >= len(symbols) or (symbol_index and not symbols[symbol_index][0]):
             raise SurfaceComparisonError(
                 "resident target relocation has no symbol identity")
         relative = offset - object_start
@@ -3277,10 +3316,11 @@ def _resident_target_records(candidate_object, source, target_elf,
 
     identities, ambiguous = _stable_symbol_identities(
         values_path, target_object, None, 0, target_elf)
-    identities.update(_resident_section_identities(target_object, target_object_path))
     records = _candidate_surface_records(
         target_object, object_start, object_size, shape, identities,
-        _numeric_assignments(values_path), ambiguous, None)
+        _numeric_assignments(values_path), ambiguous, None,
+        index_identities=_resident_object_identities(target_object, target_object_path,
+                                                     linked_elf=target_elf))
     if len(records) != len(shape):
         raise SurfaceComparisonError(
             "resident target relocation pairing changed the tuple count")

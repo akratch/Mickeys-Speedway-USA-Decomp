@@ -185,11 +185,11 @@ def _definition_source(candidate_symbol: str, root: Path) -> Path:
             candidates.append(source)
     if not candidates:
         # A definition spelled through the preprocessor (#define + #include)
-        # is visible only in the compiler's view; consult it only for the
-        # files whose own #define spells the symbol.
+        # or hidden by ordinary conditionals is visible only in the
+        # compiler's view; consult it only for the files that need it.
         for source in (root / "src").rglob("*.c"):
             text = source.read_text(encoding="utf-8", errors="replace")
-            if not pp._macro_spells(text, candidate_symbol):
+            if not pp.needs_preprocessed_view(text, candidate_symbol):
                 continue
             try:
                 facts = pp.source_facts_for(source, candidate_symbol, root)
@@ -391,33 +391,99 @@ def _fully_matched_inner_geometry(
     return value, size, "overlay atlas exact C container+linked STT_FUNC+whole-container ROM"
 
 
+def _progress_matched_resident(symbol: str, root: Path) -> tuple[rs.Elf, tuple]:
+    """Apply ``tools/progress.py``'s resident matched-C rule to one name.
+
+    progress counts a resident function as matched C when the linked ELF
+    defines it as a sized, non-overlay ``STT_FUNC`` and no ``glabel`` or
+    ``alabel`` under ``asm/`` still names it. The same rule, not a comment in
+    ``symbol_addrs.us.txt``, decides whether a resident function is promoted.
+    """
+    import progress
+    elf_path = root / "build" / "mickey.us.elf"
+    if not elf_path.is_file() or not (root / "asm").is_dir():
+        raise PreflightError(
+            f"{symbol} is not a progress-matched C function (matched-C needs the "
+            "linked ELF and asm/ to apply progress.py's rule)"
+        )
+    if symbol in progress.get_asm_labelled_names(str(root / "asm")):
+        raise PreflightError(
+            f"{symbol} is not a progress-matched C function (matched-C): "
+            "a glabel under asm/ still names it"
+        )
+    elf = rs.Elf(elf_path)
+    rows = [row for row in elf.symbols()
+            if row[0] == symbol and row[3] & 0xF == rs.STT_FUNC and row[2] > 0
+            and 0 < row[4] < len(elf.names)
+            and not elf.names[row[4]].startswith(".overlay_")]
+    if len(rows) != 1:
+        raise PreflightError(
+            f"{symbol} is not a progress-matched C function (matched-C): "
+            f"the linked ELF has {len(rows)} sized resident STT_FUNC definitions"
+        )
+    return elf, rows[0]
+
+
+def _neighbour_bounded_extent(elf: rs.Elf, row: tuple) -> tuple[int, int]:
+    """Authenticate an untracked resident extent against its linked neighbour.
+
+    With no tracked size, the linked size is accepted only when the function
+    runs up to the next sized function in its section, or to the section end,
+    with nothing but zero padding between: no code can sit outside the extent
+    the ROM comparison then covers.
+    """
+    name, value, size, _info, shndx = row
+    section = elf.sh[shndx]
+    start, length = section[3], section[5]
+    end = value + size
+    following = sorted(other[1] for other in elf.symbols()
+                       if other[4] == shndx and other[3] & 0xF == rs.STT_FUNC
+                       and other[2] > 0 and other[1] >= end and other[0] != name)
+    limit = following[0] if following else start + length
+    data = elf.section_bytes(elf.names[shndx])
+    gap = data[end - start:limit - start] if start <= end <= limit <= start + length else None
+    if gap is None or any(gap) or size % 4 or value % 4:
+        raise PreflightError(
+            f"untracked extent of {name} is not bounded by its linked neighbour "
+            f"({value:#x}+{size:#x}, next at {limit:#x})"
+        )
+    return value, size
+
+
 def _resident_promotion_evidence(
     symbol: str,
     symbol_path: Path,
+    root: Path = REPO,
 ) -> tuple[int, int, str]:
     if not symbol_path.is_file():
         raise PreflightError(f"missing tracked symbol table: {_relative(symbol_path)}")
     pattern = re.compile(
-        rf"^\s*{re.escape(symbol)}\s*=\s*(0x[0-9A-Fa-f]+)\s*;\s*//(?P<comment>.*)$"
+        rf"^\s*{re.escape(symbol)}\s*=\s*(0x[0-9A-Fa-f]+)\s*;\s*(?://(?P<comment>.*))?$"
     )
     rows = []
     for line in symbol_path.read_text(encoding="utf-8", errors="replace").splitlines():
         match = pattern.match(line)
         if match:
-            rows.append((int(match.group(1), 16), match.group("comment")))
-    if len(rows) != 1:
+            rows.append((int(match.group(1), 16), match.group("comment") or ""))
+    if len(rows) > 1:
         raise PreflightError(
             f"expected one tracked symbol row for promoted {symbol}, found {len(rows)}"
         )
-    value, comment = rows[0]
-    sizes = re.findall(r"\bsize:0x([0-9A-Fa-f]+)\b", comment)
-    if "type:func" not in comment or len(sizes) != 1 or not re.search(
-        r"\bmatched\s+C\b", comment
-    ):
-        raise PreflightError(
-            f"tracked symbol row for {symbol} is not one unambiguous matched-C function"
-        )
-    return value, int(sizes[0], 16), "symbol_addrs matched-C function row"
+    tracked = None
+    if rows:
+        value, comment = rows[0]
+        sizes = re.findall(r"\bsize:0x([0-9A-Fa-f]+)\b", comment)
+        if "type:func" in comment and len(sizes) == 1:
+            tracked = (value, int(sizes[0], 16))
+            if re.search(r"\bmatched\s+C\b", comment):
+                return value, tracked[1], "symbol_addrs matched-C function row"
+    # No row says "matched C": apply progress.py's rule, the same source of
+    # truth the scoreboard counts.
+    elf, row = _progress_matched_resident(symbol, root)
+    if tracked is not None:
+        return tracked[0], tracked[1], "symbol_addrs function row+progress matched-C rule"
+    value, size = _neighbour_bounded_extent(elf, row)
+    return value, size, "linked STT_FUNC bounded by its neighbour+progress matched-C rule (no tracked size)"
 
 
 def _post_promotion_resolution(
@@ -460,7 +526,7 @@ def _post_promotion_resolution(
                 "resident post-promotion identity cannot use different target/candidate names"
             )
         expected_value, expected_size, evidence = _resident_promotion_evidence(
-            target_symbol, symbol_path
+            target_symbol, symbol_path, root
         )
 
     rel_source = source.relative_to(root).as_posix()

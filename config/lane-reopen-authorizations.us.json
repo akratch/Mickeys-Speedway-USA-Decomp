@@ -666,7 +666,7 @@
       "source_commit": "23281b639e40eb3e5c0b5598ef252f5053ac3a2b"
     },
     "func_80047304": {
-      "ledger_commit": "4d8130631551a8cc9d3eb2f0b6710048d769afdc",
+      "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",
       "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 158 masked words is a schedule or structure defect the permuter can still move.",
       "source_commit": "4d8130631551a8cc9d3eb2f0b6710048d769afdc"
     },

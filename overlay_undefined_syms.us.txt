@@ -404,8 +404,16 @@ gO8FloatD4 = 0x000000d4;
 gO8FloatD8 = 0x000000d8;
 gO8FloatDC = 0x000000dc;
 gO8FloatE0 = 0x000000e0;
+gO8Phase2ScaleControlReloc = 0x00000000;
+gO8Phase2ScaleReloc = 0x000000e8;
+gO8Phase2TargetReloc = 0x000000e4;
+gO8Phase3DecayReloc = 0x000000ec;
+gO8Phase3ScaleControlReloc = 0x00000000;
+gO8Phase3ScaleReloc = 0x000000f4;
 gO8Pointer14 = 0x00000014;
 gO8Pointer18 = 0x00000018;
+gO8RetireThresholdReloc = 0x000000f0;
+gO8RolloverControlReloc = 0x00000000;
 gO8Table360 = 0x00000360;
 gO8Table3A0 = 0x000003a0;
 gO8Value364 = 0x00000364;
@@ -425,6 +433,8 @@ gOverlay8UpdateDecayReloc = 0x000001b8;
 gOverlay8UpdateLowerReloc = 0x000001b0;
 gOverlay8UpdateUpperReloc = 0x000001b4;
 gOverlay8Value = 0x00000004;
+o8Phase1EmitReloc = 0xf0000000;
+o8RolloverSampleReloc = 0xf0000000;
 overlay8ApproachMotionReloc = 0xf0000000;
 overlay8ConvertDirectionReloc = 0xf0000000;
 overlay8CreateResourceReloc = 0xf0000000;
@@ -737,6 +747,15 @@ overlay14BuildPanel = 0xf00012d8;
 overlay14Dispatch = 0xf0000000;
 overlay14DrawPrimitive = 0xf0000000;
 overlay14ValidateEntry = 0xf0001028;
+
+/* overlay 14: func_overlay_014_F0001830_1871108.c.o */
+fontColour_o014Reloc = 0xf0000000;
+func_8004B0A4_o014Reloc = 0xf0000000;
+func_8004B0DC_o014Reloc = 0xf0000000;
+func_8004B0F8_o014Reloc = 0xf0000000;
+func_8004D40C_o014Reloc = 0xf0000000;
+func_8004D5C0_o014Reloc = 0xf0000000;
+gOverlay14DrawJumpTableReloc = 0x00000054;
 
 /* overlay 14: overlay14ReleaseOwner.c.o */
 gOverlay14Owner = 0x00000100;

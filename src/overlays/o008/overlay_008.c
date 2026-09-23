@@ -406,11 +406,16 @@ void func_overlay_008_F0000F1C_185EC74(Overlay8ActivationOwner *owner,
     overlay8FinalizeActivationReloc(owner, 0x17);
 }
 
-/* 165/165, 7 masked, first +0xBC, exact 0x18 frame, state in a3.
- * The clamp's separate sample local and else-arm copy emit the join b (size delta 0);
- * flags-before-countdown in case 2 closes the t6/t7/t8 ring phase. Left: the else copy
- * keeps count in v0 because it interferes with the sample web. GLOBAL_ASM stays canonical. */
-#ifdef NON_MATCHING
+/* Matched 2026-09-23 (lane A2-ov), 165/165 words at frame 0x18, unforced.
+ * The empty `if (unused)` closes the unused-a0 home (lane w32-o008) and the
+ * flags-before-countdown order in case 2 closes the t6/t7/t8 ring phase
+ * (lane B-ovsmall). The rollover default 120 is the else arm of the control
+ * test, not an initialiser: the shipped b is the control arm's jump over that
+ * else, which ugen emits and as1 then empties by hoisting its 120 above the
+ * test, and the clamp itself has no else. The sample is assigned straight to
+ * the count, so the only copy is the mfc1 result's, which as1 folds into v1.
+ * An inner else arm copying a separate sample kept the two in interfering
+ * webs instead (count v0, sample v1, and a surviving move). */
 f32 func_overlay_008_F0001000_185ED58(void *unused, O8PhaseState *state, f32 input) {
     s32 nextCountdown;
 
@@ -431,14 +436,13 @@ f32 func_overlay_008_F0001000_185ED58(void *unused, O8PhaseState *state, f32 inp
         state->countdown--;
 
         if (state->countdown == 0) {
-            nextCountdown = 120;
             if (gO8RolloverControlReloc != 0) {
-                s32 sample = (s32)(o8RolloverSampleReloc() * 6.0f + 60.0f);
-                if (sample >= 181) {
+                nextCountdown = (s32)(o8RolloverSampleReloc() * 6.0f + 60.0f);
+                if (nextCountdown >= 181) {
                     nextCountdown = 180;
-                } else {
-                    nextCountdown = sample;
                 }
+            } else {
+                nextCountdown = 120;
             }
             state->phase = 2;
             state->countdown = (u8)nextCountdown;
@@ -492,9 +496,6 @@ f32 func_overlay_008_F0001000_185ED58(void *unused, O8PhaseState *state, f32 inp
     }
     return input;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o008/overlay_008/func_overlay_008_F0001000_185ED58.s")
-#endif
 
 struct O8P1294Owner {
     u8 pad00[0x0C];
@@ -2417,16 +2418,6 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
  */
 
 
-
-/* PLATEAU-HANDOFF:func_overlay_008_F0001000_185ED58:start
- * symbol: func_overlay_008_F0001000_185ED58
- * score: 7/165 words
- * frame: 0x18
- * relocations: 18
- * first-mismatch: +0xBC
- * summary: Delta 0 at 7: sample local plus else copy emits the join b. Left: count web takes v0, target v1; it interferes with the sample web in the else block.
- * PLATEAU-HANDOFF:func_overlay_008_F0001000_185ED58:end
- */
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000

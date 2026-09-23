@@ -2246,37 +2246,34 @@ s32 func_800069E8(Objects069E8Object *arg0, Objects069E8Target *arg1) {
     D_800C9490 = arg1->unk8;
     return (sp1C & ~3) + 4;
 }
-/* Workbench verdict: structure-mismatch; 63 differing words (78 candidate / 79 target). */
-/* First mismatch: +0x20; both outputs are frameless and the candidate is one instruction shorter. */
-/* Structural gap: asset/count carrier and late loop register shape remain unresolved. */
+/* 6 masked words at size delta 0 (2026-09-23, lane B-obj), frameless: only the
+ * head's +0x7C cursor and asset-pointer registers remain; see the handoff. */
 #ifdef NON_MATCHING
 s32 func_80006B04(Objects06B04Object *arg0, Objects06B04Output *arg1, volatile s32 arg2) {
     s16 temp_t0;
     s32 var_a3;
     s32 var_t2;
     s32 var_v1;
-    u8 temp_a3;
+    s32 temp_a3;
     u8 temp_t4;
     Objects06B04Asset *temp_a2;
-    u8 *temp_t9;
     u8 *var_a1;
     Objects06B04Output *output;
 
     arg0->unk48 = arg1;
     var_v1 = 0x7C;
     if (arg0->unk40->unk1E == 0) {
-        temp_t9 = (u8 *)arg1 + 0x7C;
-        temp_a2 = **arg0->unk68;
         output = arg1;
+        temp_a2 = **arg0->unk68;
         temp_a3 = temp_a2->unk2F;
-        if ((s32)temp_a3 > 0) {
+        if (temp_a3 > 0) {
             output->unkA = temp_a3;
             temp_t0 = output->unkA;
-            output->unk74 = temp_t9;
+            output->unk74 = (u8 *)arg1 + 0x7C;
             var_t2 = 0;
             var_v1 = (temp_t0 * 0x34) + 0x7C;
             if (temp_t0 > 0) {
-                var_a1 = temp_t9;
+                var_a1 = (u8 *)&arg1->unk74 + 8;
                 var_a3 = 0;
                 do {
                     *(u16 *)var_a1 = 0;
@@ -2286,16 +2283,15 @@ s32 func_80006B04(Objects06B04Object *arg0, Objects06B04Output *arg1, volatile s
                     var_a1 += 0x34;
                     *(u16 *)(var_a1 - 0x2E) = *(u16 *)(temp_a2->unk38 + var_a3);
                     *(s8 *)(var_a1 - 0x2C) = *(s8 *)(temp_a2->unk38 + var_a3 + 2);
-                    *(u16 *)(var_a1 - 0x2A) = 0;
                     *(u8 *)(var_a1 - 0x2B) = *(u8 *)(temp_a2->unk38 + var_a3 + 3);
+                    *(u16 *)(var_a1 - 0x2A) = 0;
                     *(f32 *)(var_a1 - 0x10) = *(f32 *)(temp_a2->unk38 + var_a3 + 8) * arg0->unk8;
                     *(f32 *)(var_a1 - 0xC) = *(f32 *)(temp_a2->unk38 + var_a3 + 8) * arg0->unk8;
                     *(u8 *)(var_a1 - 0x6) = (u8)*(u16 *)(temp_a2->unk38 + var_a3 + 4);
-                    temp_t4 = *(u8 *)(var_a1 - 0x4) | 0x80;
-                    *(u8 *)(var_a1 - 0x4) = temp_t4;
-                    *(u16 *)(var_a1 - 0x8) = 0;
-                    *(u8 *)(var_a1 - 0x4) = temp_t4 & 0xBF;
                     *(u8 *)(var_a1 - 0x5) = (u8)*(u16 *)(temp_a2->unk38 + var_a3 + 6);
+                    *(u8 *)(var_a1 - 0x4) = (*(u8 *)(var_a1 - 0x4) & 0xFF) | 0x80;
+                    *(u16 *)(var_a1 - 0x8) = 0;
+                    *(u8 *)(var_a1 - 0x4) &= 0xBF;
                     var_a3 += 0xC;
                 } while (var_t2 < output->unkA);
             }
@@ -5469,11 +5465,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80006B04:start
  * symbol: func_80006B04
- * score: 63 differing words
+ * score: 6 differing words
  * frame: frameless
  * relocations: 0
  * first-mismatch: +0x20
- * summary: Remeasured 2026-09-23: 63 masked at size delta -4 (78 of 79 words), unchanged; asset/count carrier and late loop registers remain structural.
+ * summary: Track B 2026-09-23: 63 at delta -4 to 6 at delta 0; left: +0x7C value is a coloured web (t1), target carries it in ring t9.
  * PLATEAU-HANDOFF:func_80006B04:end
  */
 

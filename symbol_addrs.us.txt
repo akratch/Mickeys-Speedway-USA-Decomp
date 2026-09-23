@@ -1913,6 +1913,7 @@ func_8000D018 = 0x8000D018; // type:func size:0x154 ROM 0xdc18 tier-A byte-ident
 // tier-D TU-position identification only. Mickey's placeholder is retained;
 // all 19 words and the two HI16/LO16 relocation pairs are exact.
 func_8000D16C = 0x8000D16C; // type:func size:0x4C ROM 0xdd6c
+func_8000D1B8 = 0x8000D1B8; // type:func size:0x200 ROM 0xddb8 tier-A, matched C src/main/track.c -O2 -mips2 -32 -Wab,-r4300_mul, packed texture-scroll apply, linked exact=128/128
 
 // No public name adopted: JFG's assembly-only `trackLightFreeMem` supplies
 // tier-D role/TU and control-flow context; Mickey proves the exact C body.

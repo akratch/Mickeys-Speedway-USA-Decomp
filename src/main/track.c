@@ -1096,130 +1096,90 @@ void func_8000D16C(s32 arg0, s32 arg1, s32 arg2) {
 /* PROVENANCE: Mickey's target accesses reconstruct the packed-scroll and
  * nested segment/batch/vertex loops; Jet Force Gemini's assembly-only
  * trackUpdateTextureScroll supplies TU-position and role context only. */
-/* Workbench: structure-mismatch; 121 words differ, first mismatch +0x04. */
-/* Candidate is not shape-exact: target/candidate 128/124 instructions, frame -40/-40. */
-/* Structural gap: 98 aligned structural words, 40 register words, 1 constant; 7 relocation sites differ. */
-#ifdef NON_MATCHING
+/*
+ * Matched by reusing the packed command word as the texture index once both
+ * scroll deltas have been shifted out of it (so the deltas stay in the outer
+ * loop instead of being propagated into the triangle loop), shifting each
+ * delta left and then right in place, reading the segment count after the
+ * mask selection, and forming the triangle cursor before its count.
+ */
 void func_8000D1B8(void) {
-    s16 temp_s3;
-    s16 temp_s3_2;
-    s16 temp_s3_3;
-    s16 temp_s4;
-    s16 temp_s4_2;
-    s16 temp_t1;
-    s16 temp_t2;
-    u32 *var_s0;
-    u32 temp_t4;
-    s32 temp_t4_2;
-    s32 temp_v1_2;
-    s32 var_a3;
-    s32 var_s1;
-    s32 var_t0;
-    s32 var_t2;
-    s32 var_t5;
-    s32 var_v1;
+    u32 *command;
+    s32 count;
+    u32 packed;
     s32 scrollU;
     s32 scrollV;
-    u16 temp_a0;
-    u16 temp_v0;
-    TrackTextureHeader *temp_v1;
-    u8 *var_t1;
-    TrackSegment *var_t3;
-    u8 *var_v0;
+    TrackTextureHeader *texture;
+    s32 maskU;
+    s32 maskV;
+    s32 segmentCount;
+    TrackSegment *segment;
+    s32 batchCount;
+    TrackBatch *batch;
+    s32 triangleCount;
+    TrackTriangle *triangle;
+    s32 u;
+    s32 v;
+    s32 du1;
+    s32 dv1;
+    s32 du2;
+    s32 dv2;
 
     if (D_800792E8 != NULL) {
-        var_s0 = D_800C9B50;
-        if (D_80079314 != 0) {
-            var_s1 = D_80079314;
-            if (D_80079314 != 0) {
-                var_s1--;
-                do {
-                    temp_t4 = *var_s0;
-                    var_s0 += 1;
-                    scrollU = (s32) (temp_t4 << 8) >> 20;
-                    scrollV = (s32) (temp_t4 << 20) >> 20;
-                    temp_t4_2 = ((s32) temp_t4 >> 24) & 0xFF;
-                    temp_v1 = D_800792E8->textures[temp_t4_2].texture;
-                    temp_t1 = D_800792E8->segmentCount;
-                    temp_a0 = temp_v1->width;
-                    var_t3 = D_800792E8->segments;
-                    if (temp_a0 < 0x41 && temp_v1->height < 0x41) {
-                        var_a3 = (temp_a0 << 8) - 1;
-                        temp_v0 = temp_v1->height;
-                        var_t0 = (temp_v0 << 8) - 1;
-                    } else {
-                        var_a3 = (temp_a0 << 6) - 1;
-                        temp_v0 = temp_v1->height;
-                        var_t0 = (temp_v0 << 6) - 1;
-                    }
-                    var_t5 = temp_t1;
-                    if (temp_t1 != 0) {
-                        var_t5--;
-                        do {
-                            temp_t2 = var_t3->batchCount;
-                            var_t1 = var_t3->batches;
-                            var_t2 = temp_t2;
-                            if (temp_t2 != 0) {
-                                var_t2--;
-                                do {
-                                    if (temp_t4_2 == var_t1[0]) {
-                                        temp_s3 = *(s16 *) (var_t1 + 8);
-                                        temp_v1_2 =
-                                            *(s16 *) (var_t1 + 0x18) - temp_s3;
-                                        var_v0 =
-                                            *(u8 **) ((u8 *) var_t3 + 4) +
-                                            (temp_s3 * 0x10);
-                                        var_v1 = temp_v1_2;
-                                        if (temp_v1_2 != 0) {
-                                            var_v1--;
-                                            do {
-                                                temp_s3_2 = *(s16 *) (var_v0 + 4);
-                                                temp_s4 = *(s16 *) (var_v0 + 6);
-                                                temp_s3_3 =
-                                                    (temp_s3_2 +
-                                                     scrollU) &
-                                                    var_a3;
-                                                temp_s4_2 =
-                                                    (temp_s4 +
-                                                     scrollV) &
-                                                    var_t0;
-                                                *(s16 *) (var_v0 + 4) = temp_s3_3;
-                                                *(s16 *) (var_v0 + 6) = temp_s4_2;
-                                                *(s16 *) (var_v0 + 8) =
-                                                    (s16) (temp_s3_3 +
-                                                           (*(s16 *) (var_v0 + 8) -
-                                                            temp_s3_2));
-                                                *(s16 *) (var_v0 + 10) =
-                                                    (s16) (temp_s4_2 +
-                                                           (*(s16 *) (var_v0 + 10) -
-                                                            temp_s4));
-                                                *(s16 *) (var_v0 + 12) =
-                                                    (s16) (temp_s3_3 +
-                                                           (*(s16 *) (var_v0 + 12) -
-                                                            temp_s3_2));
-                                                *(s16 *) (var_v0 + 14) =
-                                                    (s16) (temp_s4_2 +
-                                                           (*(s16 *) (var_v0 + 14) -
-                                                            temp_s4));
-                                                var_v0 += 0x10;
-                                            } while (var_v1--);
-                                        }
-                                    }
-                                    var_t1 += 0x10;
-                                } while (var_t2--);
+        count = D_80079314;
+        if (count != 0) {
+            command = D_800C9B50;
+            while (count--) {
+                packed = *command++;
+                scrollU = packed << 8;
+                scrollV = packed << 20;
+                packed = ((s32) packed >> 24) & 0xFF;
+                scrollU >>= 20;
+                scrollV >>= 20;
+                texture = D_800792E8->textures[packed].texture;
+                segment = D_800792E8->segments;
+                if (texture->width < 65 && texture->height < 65) {
+                    maskU = (texture->width << 8) - 1;
+                    maskV = (texture->height << 8) - 1;
+                } else {
+                    maskU = (texture->width << 6) - 1;
+                    maskV = (texture->height << 6) - 1;
+                }
+                segmentCount = D_800792E8->segmentCount;
+                while (segmentCount--) {
+                    batchCount = segment->batchCount;
+                    batch = segment->batches;
+                    while (batchCount--) {
+                        if (packed == batch->textureIndex) {
+                            triangle = (TrackTriangle *) segment->vertexData + batch->v0;
+                            triangleCount = batch[1].v0 - batch[0].v0;
+                            while (triangleCount--) {
+                                u = triangle->u0;
+                                v = triangle->v0;
+                                du1 = triangle->u1 - u;
+                                dv1 = triangle->v1 - v;
+                                du2 = triangle->u2 - u;
+                                dv2 = triangle->v2 - v;
+                                u = (u + scrollU) & maskU;
+                                v = (v + scrollV) & maskV;
+                                triangle->u0 = u;
+                                triangle->v0 = v;
+                                triangle->u1 = u + du1;
+                                triangle->v1 = v + dv1;
+                                triangle->u2 = u + du2;
+                                triangle->v2 = v + dv2;
+                                triangle++;
                             }
-                            var_t3 = (TrackSegment *) ((u8 *) var_t3 + 0x40);
-                        } while (var_t5--);
+                        }
+                        batch++;
                     }
-                } while (var_s1--);
+                    segment++;
+                }
             }
         }
     }
     D_80079314 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000D1B8.s")
-#endif
 /*
  * PROVENANCE: Jet Force Gemini's public assembly-only `trackLightAllocate`
  * establishes the pool/segment allocation role. Mickey's +0x20 lighting
@@ -5663,16 +5623,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * first-mismatch: +0x0
  * summary: Unsigned batch flag types preserve 185 differences and exact249-word size; m2c adds no missing CFG. Next: counter and flag home evidence.
  * PLATEAU-HANDOFF:func_8000F198:end
- */
-
-/* PLATEAU-HANDOFF:func_8000D1B8:start
- * symbol: func_8000D1B8
- * score: 114/128 words
- * frame: 0x28
- * relocations: 8
- * first-mismatch: +0x38
- * summary: Proc-11 census confirms 27 draws; unsigned command decoding remains best while packed-delta and relative-UV lifetime forms are exhausted.
- * PLATEAU-HANDOFF:func_8000D1B8:end
  */
 
 /* PLATEAU-HANDOFF:func_80011980:start

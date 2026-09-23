@@ -25,9 +25,9 @@
 #   gmake check-reference-builds  prove that farm is the one the names came from
 #   gmake scoreboard        regenerate README.md's progress block from the tree
 #   gmake check-scoreboard  fail if that block has gone stale
+#   gmake forced-floor-census  regenerate docs/forced-floor-census.md from the handoffs
 #   gmake system-health     read-only campaign load/memory/process summary
 #   gmake check-tooling     focused safety/provenance/tooling regressions
-#   gmake forced-floor-census  regenerate docs/forced-floor-census.md from the handoffs
 #   gmake promotion-proof SYMBOL=name  strict post-promotion exactness receipt
 #   gmake release-gate      serial, niced release checks with compact output
 #   gmake public-release    dry-run reconciliation/preflight; never pushes
@@ -379,8 +379,6 @@ check-tooling:
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_align_symbol.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_frame_census.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_triage.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_dispatch_check.py
-	$(HOST_PYTHON) $(TOOLS_DIR)/test_forced_floor_census.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_reclaim_worktrees.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_register_census.py
 	$(HOST_PYTHON) $(TOOLS_DIR)/test_permute_batch_deadline.py

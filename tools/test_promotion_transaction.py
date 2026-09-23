@@ -810,7 +810,9 @@ class PromotionTests(unittest.TestCase):
             start = time.monotonic()
             ok, error = fixture.promote(seconds=1)
             self.assertFalse(ok)
-            self.assertLess(time.monotonic() - start, 4)
+            # Hang guard against the hook's 20 s sleep, not a latency bound:
+            # a loaded machine must not turn it into a flake.
+            self.assertLess(time.monotonic() - start, 10)
             fixture.assert_restored(self)
             self.assertIn("refs/sweep-recovery/", error)
             self.assertTrue(fixture.git("for-each-ref", "--format=%(refname)", "refs/sweep-recovery/"))
@@ -859,7 +861,8 @@ class PromotionTests(unittest.TestCase):
                 timer.join()
             self.assertFalse(ok)
             self.assertIn("cancelled", error)
-            self.assertLess(time.monotonic() - start, 1)
+            # Without cancellation this waits out the 15 s deadline.
+            self.assertLess(time.monotonic() - start, 5)
             fixture.assert_restored(self)
 
     def test_signal_handler_cancels_cli_and_restores_previous_handler(self):
@@ -883,7 +886,8 @@ class PromotionTests(unittest.TestCase):
                         batch.wait_for_headroom(1, batch_deadline=time.monotonic() + 15)
             finally:
                 timer.join()
-            self.assertLess(time.monotonic() - start, 1)
+            # Without cancellation this waits out the 15 s deadline.
+            self.assertLess(time.monotonic() - start, 5)
 
 
 if __name__ == "__main__":

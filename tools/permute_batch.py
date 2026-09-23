@@ -820,12 +820,26 @@ def bounded_capture(args: list[str], deadline: Optional[float], *, check: bool =
 
 
 def stop_process_group(proc: subprocess.Popen) -> None:
-    """Stop only our launched session, including workers after parent failure."""
+    """Stop only our launched session, including workers after parent failure.
+
+    Darwin's killpg(2) fails with EPERM, not ESRCH, when any member of the
+    group cannot be signalled -- which includes a member that has exited and
+    not yet been reaped. The signal still reaches every live member. So a
+    search whose last worker is a zombie at the moment of cleanup raised
+    PermissionError out of here and failed a finished, successful run; on a
+    loaded machine that was often enough to fail tests/test_sweep_receipts
+    RunnerTests intermittently (measured 2026-09-23: 3 failures in 6
+    concurrent runs of the class under load, all "[Errno 1] Operation not
+    permitted"). EPERM is therefore "signalled what could be signalled":
+    carry on to the wait and the SIGKILL sweep, which is what ends the group.
+    """
     try:
         os.killpg(proc.pid, signal.SIGTERM)
     except ProcessLookupError:
         proc.wait()
         return
+    except PermissionError:
+        pass
     try:
         proc.wait(timeout=15)
     except subprocess.TimeoutExpired:
@@ -835,7 +849,7 @@ def stop_process_group(proc: subprocess.Popen) -> None:
         # parent alone is not evidence that its process group has stopped.
         try:
             os.killpg(proc.pid, signal.SIGKILL)
-        except ProcessLookupError:
+        except (ProcessLookupError, PermissionError):
             pass
         proc.wait()
 

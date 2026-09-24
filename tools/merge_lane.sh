@@ -42,17 +42,15 @@ fi
 echo "== merge $branch"
 # --no-commit: the merge is committed only after every gate below passes.
 if ! git merge --no-commit --no-ff "$tip" >/dev/null 2>&1; then
-regenerate_ranking_doc=0
   conflicts=$(git diff --name-only --diff-filter=U)
   for f in $conflicts; do
     case "$f" in
       README.md|config/overlays.us.json|config/overlay-donors.us.json|config/postprocess-audit.us.json) git checkout --theirs "$f" && git add "$f" ;;
-      # docs/nm-ranking.md is generated from config/nonmatching-ranking.us.json.
-      # Three-way merging it produces a document that matches neither side and
-      # fails `nm_ranking.py --check-doc` in the gates below, which is how two
-      # match integrations stalled before this rule existed. Regenerate it from
-      # the merged ranking instead of merging its text.
-      docs/nm-ranking.md) git checkout --theirs "$f" && git add "$f" && regenerate_ranking_doc=1 ;;
+      # The ranking, its generated document, and the handoff shards are not
+      # the lane's to keep. resolve_lane_conflicts.py holds the integration
+      # copy (or drops a lane-only file) and the regeneration below replaces
+      # it from the merged tree. Taking --theirs here installed an older
+      # lane's scores.
       docs/modules.md|docs/overlays.md) .venv/bin/python tools/resolve_modules_split.py || { echo "unresolved conflict: $f" >&2; exit 1; } ;;
       mickey.us.yaml|docs/resident.md|*.c|*.h) .venv/bin/python tools/resolve_comment_hunks.py "$f" && git add "$f" || echo "deferring $f to tools/resolve_lane_conflicts.py" ;;
       *) echo "deferring $f to tools/resolve_lane_conflicts.py" ;;
@@ -97,17 +95,48 @@ if git grep -q '^<<<<<<< ' -- . ':!*.md'; then echo "conflict markers left in tr
 # "note: ... remain unranked" line. If this ever stops a merge again, stage
 # the two files and resume by hand with tools/finish_merge.sh.
 pruned=$(.venv/bin/python tools/nm_ranking.py --prune-stale 2>&1 | tail -1)
-if ! git diff --quiet -- config/nonmatching-ranking.us.json docs/nm-ranking.md; then
-  .venv/bin/python tools/nm_ranking.py --write-doc >/dev/null
-  git add config/nonmatching-ranking.us.json docs/nm-ranking.md
-  echo "ranking: $pruned"
-fi
+.venv/bin/python tools/nm_ranking.py --write-doc >/dev/null
+# Shards are regenerated from the merged source blocks. This is not
+# `plateau_handoff_audit.py --write`: that command refuses a shard the
+# merge has already staged, which is every shard during a merge.
+.venv/bin/python - <<'PY'
+import sys
+from pathlib import Path
+sys.path.insert(0, "tools")
+import plateau_handoff_audit as audit
+written = audit.regenerate_stale_shards(Path("."))
+print(f"regenerated {len(written)} handoff shard(s) from the merged source")
+PY
+.venv/bin/python - "$tip" <<'PY'
+import sys
+from pathlib import Path
+sys.path.insert(0, "tools")
+import resolve_lane_conflicts as rlc
+tip = sys.argv[1]
+paths = [rlc.GENERATED_RANKING, rlc.GENERATED_RANKING_DOC]
+shard_dir = Path(rlc.GENERATED_SHARD_PREFIX)
+if shard_dir.is_dir():
+    paths.extend(
+        path.as_posix() for path in sorted(shard_dir.glob("*.md"))
+        if path.name != "README.md"
+    )
+rejected = 0
+for path in paths:
+    file = Path(path)
+    if not file.is_file():
+        continue
+    shown = rlc.git("show", f"{tip}:{path}")
+    lane_text = shown.stdout if shown.returncode == 0 else ""
+    regenerated = file.read_text()
+    chosen = rlc.choose_regenerated(lane_text, regenerated)
+    if chosen != regenerated:
+        file.write_text(chosen)
+        rejected += 1
+print(f"ranking: kept merged-tree regeneration; rejected {rejected} older lane copies")
+PY
+git add -- config/nonmatching-ranking.us.json docs/nm-ranking.md docs/matching-triage-handoffs
+echo "ranking: $pruned"
 .venv/bin/python tools/merge_transaction.py begin
-if [ "${regenerate_ranking_doc:-0}" = 1 ]; then
-  .venv/bin/python tools/nm_ranking.py --write-doc >/dev/null
-  git add docs/nm-ranking.md
-  echo "regenerated docs/nm-ranking.md from the merged ranking"
-fi
 echo "== integration gates"
 gmake overlay-atlas-write >/dev/null 2>&1 || true
 .venv/bin/python tools/refresh_atlas_digest.py >/dev/null

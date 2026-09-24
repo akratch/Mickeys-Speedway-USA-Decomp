@@ -612,6 +612,6 @@ f32 func_80058EF4(f32 arg0) {
  * frame: frameless
  * relocations: 24
  * first-mismatch: +0x0
- * summary: O2 address-commoning is the +16 (addiu vs $at). O1 same-symbol tails are 22 words but f4 not f0. Separate globals never share $at.
+ * summary: hypothesis=one symbol shares the high half; spellings=offset, reversed, struct all 22 at +16; stall=size stays +16, masked rises 19 to 22
  * PLATEAU-HANDOFF:func_80058250:end
  */

@@ -172,6 +172,6 @@ void overlay20RemoveEntry(s32 owner) {
  * frame: frameless
  * relocations: 10
  * first-mismatch: +0x6C
- * summary: L145 delete-carrier stays the 6-word basin: store-forward keeps web 8. End-first inverts colours at 10-14 with a 4-word preheader shuffle. Baseline 2 of 53.
+ * summary: Retype or move first use of web 8, the type-4 count load in blocks 12-13. Early/late u32: 8 to 32; or-0 folds. Still under the limit on colour 1. Stall 2/53.
  * PLATEAU-HANDOFF:overlay20RemoveEntry:end
  */

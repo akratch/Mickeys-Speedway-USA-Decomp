@@ -78,6 +78,6 @@ void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
  * frame: frameless
  * relocations: 2
  * first-mismatch: +0x4
- * summary: a0 clobber after VERTEX inc: macro assign inert 69; L104 redefine 70 at +4 (move in v0); in-place cast 82 at +20. a0 stays live. Stall, reverted.
+ * summary: hypothesis=clobber a0 after the VERTEX increment without an extra word; spellings=macro assign inert at 69, L104 redefine 70 at +4, in-place cast 82 at +20; stall=a0 stays live and all three were reverted
  * PLATEAU-HANDOFF:overlay83DrawStrip:end
  */

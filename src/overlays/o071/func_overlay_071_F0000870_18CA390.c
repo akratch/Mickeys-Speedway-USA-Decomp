@@ -203,6 +203,6 @@ void func_overlay_071_F0000870_18CA390(Overlay71Command **commands,
  * frame: 0x30
  * relocations: 13
  * first-mismatch: 0x5c
- * summary: Second type-3 in blocks 9, 11, 13 failed: s16 cast merged dtype 6 at -4; !=0 emitted +20; &0xFFFF absorbed the type-4 ucvt at -4.
+ * summary: hypothesis=second simultaneous occupier of the type-3 AND in blocks 9, 11 and 13; spellings=s16 cast merged at delta -4, pred!=0 emitted +20, flags&0xFFFF absorbed the type-4 convert at delta -4; stall=no second web at delta 0
  * PLATEAU-HANDOFF:func_overlay_071_F0000870_18CA390:end
  */

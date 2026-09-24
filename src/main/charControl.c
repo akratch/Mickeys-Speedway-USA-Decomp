@@ -2164,7 +2164,7 @@ void controlClearPlayerSetup(void) {
  * frame: 0xA8
  * relocations: 38
  * first-mismatch: +0x3C
- * summary: Loop-weighted refs on leftover const webs 10 and 3: +=/-= and (x+C)-C fold away (totalsave 10 and 11 unchanged); xor pair delta +16 adds 80 to carrier. Stall.
+ * summary: hypothesis=loop-weighted references on leftover const webs 10 and 3; spellings=plus-assign and minus-assign fold away, (x+C)-C folds away, xor pair at delta +16 adds 80 to the carrier; stall=totalsave 10 and 11 unchanged at 121/403 and delta 0
  * PLATEAU-HANDOFF:func_8001C4C0:end
  */
 

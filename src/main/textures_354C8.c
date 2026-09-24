@@ -717,7 +717,7 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
  * frame: 0x68
  * relocations: 44
  * first-mismatch: +0x48
- * summary: align16 +0x58: S1 scalar 136 at +0x40; S2 arenaCount 136 at +0x44; S3 lift 135 sw/lw +0x58 s2 kept. Stall: all raise masked past 109 by moving other spills.
+ * summary: hypothesis=store the align16 result at +0x58 and reload it with textureOffset in s2; spellings=new scalar 136 at +0x40, arenaCount 136 at +0x44, lifted arenaCount 135 at +0x58; stall=every spelling raised the masked count above 109 and the body was reverted
  * PLATEAU-HANDOFF:func_800355A0:end
  */
 #else

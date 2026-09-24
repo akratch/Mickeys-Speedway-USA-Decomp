@@ -6,7 +6,7 @@
 - frame: 0xA0
 - relocations: 25
 - first mismatch: +0x3C
-- summary: Save-ratio then pad. Spellings 106/+24 and 103/+8 reverted; hit struct kept, 74/259 delta 0, objects at 0x4C. Stall: naming 68, s4 unproved.
+- summary: hypothesis=source-authentic save-ratio so web 122 follows web 129, or 12 bytes of else-arm home; spellings=post-loop use 106 at +24, second post-loop use 103 at +8, hit struct kept at 74 and delta 0; stall=the save-ratio uses spilled and s4 is unproved, while objects homes at +0x4C
 
 Summary before this remeasure: Hybrid L99 homes 82 to 76. Objects 0x58 vs 0x4C. Colour floor 63 via p1:w122=c18; L100 leftovers do not rank other onto s4 unforced.
 

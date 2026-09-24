@@ -190,6 +190,6 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
  * frame: 0x98
  * relocations: 12
  * first-mismatch: +0x54
- * summary: Transform at sp+0x6C: 61 to 43, delta 0, immediates 0. Spellings 3 (w0-first 43, if(1) 62). Stall: green still reloads before the command pointer.
+ * summary: hypothesis=command-pointer load before the green reload and transform at +0x6C; spellings=declaration order kept 61 to 43 at delta 0, w0 before w1 stayed 43, if(1) around the prim-color store scored 62; stall=the green reload is still emitted before the command-pointer load
  * PLATEAU-HANDOFF:overlay37RenderEffect:end
  */

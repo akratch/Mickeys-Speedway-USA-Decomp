@@ -209,6 +209,6 @@ void overlay25SetVectorFlags(s32 unused0, Overlay25Vector *out, s32 unused2,
  * frame: 0xA0
  * relocations: 25
  * first-mismatch: +0x3C
- * summary: Save-ratio then pad. Spellings 106/+24 and 103/+8 reverted; hit struct kept, 74/259 delta 0, objects at 0x4C. Stall: naming 68, s4 unproved.
+ * summary: hypothesis=source-authentic save-ratio so web 122 follows web 129, or 12 bytes of else-arm home; spellings=post-loop use 106 at +24, second post-loop use 103 at +8, hit struct kept at 74 and delta 0; stall=the save-ratio uses spilled and s4 is unproved, while objects homes at +0x4C
  * PLATEAU-HANDOFF:overlay25UpdateEffect:end
  */

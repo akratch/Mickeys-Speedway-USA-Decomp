@@ -1145,7 +1145,7 @@ s32 lightKillGlowingLight(void) {
  * frame: 0x48
  * relocations: 7
  * first-mismatch: +0x20
- * summary: Live-cursor sole header stalled. Row 190/d-16, comma 189/d+40, base 189/d-16, frame 0x48. No delta-0 live cursor. Kept 41-word body.
+ * summary: hypothesis=keep the generated segment cursor live through x, y and z on the sole-header 0x48 form without a second cfe auto; spellings=row reassignment 190 at delta -16, comma of indexed stores 189 at +40, coordinates base 189 at delta -16; stall=no delta-0 live cursor and the 41-word body was kept
  * PLATEAU-HANDOFF:func_80018F08:end
  */
 

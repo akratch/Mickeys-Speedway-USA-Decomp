@@ -827,6 +827,6 @@ s32 levelInitRegionFlags(void) {
  * frame: 0x80
  * relocations: 110
  * first-mismatch: +0x328
- * summary: Separate ring-mask evaluation, fifth draw kept: statement double-mask stayed 6, use-site mask scored 19, comma-before-base scored 94. Phantom still leads.
+ * summary: hypothesis=separate ring-mask evaluation with the draw count unchanged; spellings=statement double-mask stayed 6, use-site mask scored 19, comma-before-base scored 94; stall=the redundant mask still pops before its operand
  * PLATEAU-HANDOFF:levelInit:end
  */

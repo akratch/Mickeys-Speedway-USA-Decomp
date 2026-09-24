@@ -172,6 +172,6 @@ void overlay20RemoveEntry(s32 owner) {
  * frame: frameless
  * relocations: 10
  * first-mismatch: +0x6C
- * summary: Retype or move first use of web 8, the type-4 count load in blocks 12-13. Early/late u32: 8 to 32; or-0 folds. Still under the limit on colour 1. Stall 2/53.
+ * summary: hypothesis=retype or move the first use of web 8 and do not delete the carrier; spellings=early u32 and late u32 renumber web 8 to 32, early or-0 folds; stall=it still takes colour 1 and the score stays 2/53
  * PLATEAU-HANDOFF:overlay20RemoveEntry:end
  */

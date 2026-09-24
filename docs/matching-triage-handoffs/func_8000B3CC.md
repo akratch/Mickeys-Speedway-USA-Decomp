@@ -6,7 +6,7 @@
 - frame: 0x98
 - relocations: 20
 - first mismatch: +0x148
-- summary: Hypothesis +0x2C/+0x30/+0x34. Block scope 116 d0 unhomed; split 116 d0 folded; aggregate 197 d+16 (+0x2C 1ld +0x30 3ld). Stall: speed +0x4C, step missed +0x34.
+- summary: hypothesis=put step at +0x34, speed at +0x30 and factor at +0x2C without undoing the L144 homes; spellings=block scope 116 unhomed, split stores 116 folded, two-field aggregate 197 at +16; stall=speed stayed at +0x4C and step missed +0x34, body reverted
 
 Summary before this remeasure: Size exact after L144 address-form homes on speed and dot. Next: step +0x34, speed +0x30, factor +0x2C, then reflection schedule and s0/s2.
 

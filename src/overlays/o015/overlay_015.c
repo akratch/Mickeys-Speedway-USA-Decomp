@@ -458,7 +458,7 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
  * frame: 0x40
  * relocations: 17
  * first-mismatch: +0x74
- * summary: Hi-only ilda failed: direct local float[3] stayed 13 at delta 0; do-while sym+0/+4/+8 scored 38 at +24; unrolled 4-copy scored 47 at +32.
+ * summary: hypothesis=emit the high half alone, not la; spellings=direct local float[3] stayed 13 at delta 0, do-while sym+0/+4/+8 scored 38 at +24, unrolled 4-copy scored 47 at +32; stall=a straight-line symbol still lowers to la
  * PLATEAU-HANDOFF:overlay15DrawRain:end
  */
 

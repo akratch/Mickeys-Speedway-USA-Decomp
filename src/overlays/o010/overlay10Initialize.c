@@ -200,6 +200,6 @@ void overlay10Initialize(void) {
  * frame: 0x68
  * relocations: 41
  * first-mismatch: +0x0
- * summary: hoist into a1/a2 without extra s32 homes; spellings param-pin, register-copy, OR-zero; stall params 173, register inert 37/0x68, OR-zero deleted reloads +8
+ * summary: hypothesis=hoist width and height into a1 and a2 without extra s32 homes; spellings=param-pin scored 173, register copy inert at 37, OR-zero deleted reloads and grew 8 bytes; stall=none lowered the masked count at delta 0 without growing the frame
  * PLATEAU-HANDOFF:overlay10Initialize:end
  */

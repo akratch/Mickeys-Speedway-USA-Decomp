@@ -1252,7 +1252,7 @@ u8 func_8004D5C0(s32 font) {
  * frame: 0x80
  * relocations: 48
  * first-mismatch: +0x4
- * summary: Postincrement packet cursor closes size delta -32 to 0, frame 0x80, 452 words. Two if(1) region spellings left the +32 fold and regressed to delta -44.
+ * summary: hypothesis=postincrement packet cursor instead of a delayed dList increment; spellings=empty if(1) and wrapped if(1) left the fold at delta -44, Gfx *packet = dList++ kept; stall=size delta is 0 at 452 masked words and the mechanism is display-list only
  * PLATEAU-HANDOFF:func_8004B1DC:end
  */
 
@@ -1262,6 +1262,6 @@ u8 func_8004D5C0(s32 font) {
  * frame: 0x70
  * relocations: 9
  * first-mismatch: +0x0
- * summary: Prologue first-occurrence order: separate hoist 114, comma hoist 114, early-zero or-read 145 at delta +8. None beat 105 at delta 0. Stall.
+ * summary: hypothesis=search-prologue statement order index, runLength, blockCount, fontIndex, entries; spellings=separate hoist 114, comma hoist 114, early-zero or-read 145 at delta +8; stall=none beat 105 at delta 0 and the body was reverted
  * PLATEAU-HANDOFF:func_8004C690:end
  */

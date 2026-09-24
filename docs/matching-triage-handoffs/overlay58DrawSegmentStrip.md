@@ -6,7 +6,9 @@
 - frame: 0x88
 - relocations: 8
 - first mismatch: +0xF0
-- summary: L100 cannot attach to the 0xFF constant. Unforced v1 needs islda save below 53.33 without a competing isop. Integer-cast split hits v1 at 73.
+- summary: hypothesis=live-zero address add; spellings=9 stores +16/124, all uses +72/191, 16 ops +32/129 with 0xFF on v1; stall=cross emits reloads, size never 0
+
+Summary before this remeasure: L100 cannot attach to the 0xFF constant. Unforced v1 needs islda save below 53.33 without a competing isop. Integer-cast split hits v1 at 73.
 - assignment base: `9c62568e60deef2170043478e9473e5b42fd27b4`
 - owned range: overlay 58 `+0x4C04..+0x4F28`, 804 bytes / 201 words
 - fresh baseline: 99 of 201 words exact, 102 positional differences, first mismatch `+0xC`; exact `0x88` frame
@@ -196,4 +198,32 @@ integer leftover that is the 0xFF value without emitting a new `li`.
 Do not retry FP order, the prior ten cursor forms, packed 37, named
 white carriers, discarded 0xFF probes, L109 zero at depth 1, or y or= 0
 as a claimed step toward v1.
+
+#### 2026-09-24, lane p2-o058: live-zero address add
+
+Hypothesis: add a live zero to the cursor symbol address so the split
+does not CSE, does not birth an isop above 53.33, and keeps displacement-0
+loads. Same-compiler probes showed pointer casts, canceling offsets,
+comma, volatile, bitfield-32 and typed +0 all CSE to one islda; or-0,
+xor-0 and and-minus-one collapse to the known integer-cast copy. Three
+spellings on this function, all reverted:
+
+- Nine coordinate field stores through `(char *)&cursor + stripAddrZero`
+  with `stripAddrZero = 0`. islda totalsave 230 to 200, save 66.67, still
+  v1. 0xFF stays a0 at 53.33. No new high isop. Masked 124, size delta
+  +16. Does not cross 53.33.
+- Every loop use of the cursor, including the initial load and both
+  integer casts. 0xFF takes v1. The cursor islda falls to save 3.33.
+  Masked 191, size delta +72.
+- All 12 coordinate field stores and 4 increments, leaving the initial
+  load and the two integer casts plain. 0xFF takes v1 and the cursor
+  islda is 110/3 = 36.67 on a0. No isop above 53.33. Masked 129, size
+  delta +32.
+
+Stall: the zero-add crosses the ranking only by rematerialising the
+symbol address, so size is +16 before the cross and +32 or +72 at the
+cross. None is delta 0. Retained source is unchanged. Do not retry a
+constant or live zero added to this symbol address; the integer-cast
+copy remains the only delta-0 cross and it still births the competing
+isop.
 <!-- plateau-handoff:overlay58DrawSegmentStrip:end -->

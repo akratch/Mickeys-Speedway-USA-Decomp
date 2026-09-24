@@ -2,7 +2,7 @@
 # Run the pre-commit gates and report each one's TRUE exit status.
 #
 #   tools/gates.sh                # verify, cleanroom, check-docs, check-tooling
-#   tools/gates.sh --promotion    # the above plus the three promotion gates
+#   tools/gates.sh --promotion    # the above plus the promotion gates
 #   tools/gates.sh verify check-docs
 #   tools/gates.sh --staged       # cleanroom scans the index, not the worktree
 #
@@ -31,7 +31,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 DEFAULT_GATES=(verify cleanroom check-docs check-tooling)
-PROMOTION_GATES=(check-scoreboard check-overlay-syms check-nonmatching-builds)
+PROMOTION_GATES=(check-scoreboard check-overlay-syms check-nonmatching-builds check-promotion-proofs)
 
 gates=()
 staged=0
@@ -77,6 +77,10 @@ for g in "${gates[@]}"; do
   args=()
   if [ "$g" = cleanroom ] && [ "$staged" -eq 1 ]; then
     args=(CLEANROOM_ARGS=--staged)
+  fi
+  if [ "$g" = check-promotion-proofs ]; then
+    jobs=$(sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null || echo 4)
+    args+=(PROMOTION_CENSUS_ARGS="-j $jobs --require-coverage")
   fi
   # No pipe. The status below is gmake's own.
   gmake "$g" "${args[@]}" > "$logdir/$g.log" 2>&1

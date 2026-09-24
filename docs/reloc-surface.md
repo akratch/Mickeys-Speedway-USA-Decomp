@@ -401,9 +401,11 @@ table entry from the link map, and HI16/LO16 pair on the entry, as the linker
 pairs them, not on the name. A global or weak definition is placed that way
 only when the link's one global of that name sits exactly there: a
 linker-script assignment overrides `menu.c.o`'s weak `D_800D3044`.
-`func_80004B04` stays refused: the retail resident table holds one `R_MIPS_32`
-tuple (its only mode-2 record) on an `lw` at `+0x68`, which no static
-relocation reproduces. A record against the ELF null symbol (entry 0,
+The retail resident table's one `R_MIPS_32` record (flags `0x23`) is
+`RELOC_OP_DATA`: its offset is from the resident data base, where it
+patches the overlay-64 pointer, and it only coincides numerically with
+`func_80004B04` at text `+0x68`. Text proofs skip `RELOC_OP_DATA`.
+A record against the ELF null symbol (entry 0,
 `S = 0`) relocates to its addend: `mainThread`'s two ram-end records lose
 their carrier in the recipe's second objcopy pass and link as absolute.
 

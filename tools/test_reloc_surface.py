@@ -2749,5 +2749,50 @@ class TuOwnershipOverflowTests(unittest.TestCase):
             self.overflow(0x10, 0x30, 0x10, 0x40, 0x3C, True)
 
 
+class ResidentDataRelocTests(unittest.TestCase):
+    def test_data_op_inside_a_text_range_is_not_a_function_site(self):
+        import overlay_tables as ot
+
+        end = ot.ROM_TABLE_BASE + ot.ROM_TABLE_COUNT * 4
+        rom = bytearray(end)
+        struct.pack_into(">I", rom, ot.RELOC_TABLE_BASE, 2)
+        base = ot.RELOC_TABLE_BASE + 4
+        # R_MIPS_26 / SYMBOL at text offset 0x100.
+        struct.pack_into(">I", rom, base, 0)
+        struct.pack_into(">I", rom, base + 4, (0x100 << 8) | 0x40)
+        # R_MIPS_32 / DATA at a numeric offset inside the same text range.
+        struct.pack_into(">I", rom, base + 8, 1)
+        struct.pack_into(">I", rom, base + 12, (0x110 << 8) | 0x23)
+        struct.pack_into(">I", rom, ot.ROM_TABLE_BASE, 1 << 20)
+        struct.pack_into(">I", rom, ot.ROM_TABLE_BASE + 4, 64 << 20)
+
+        records = rs._target_runtime_records(
+            bytes(rom), {"kind": "resident"}, 0x100, 0x20)
+
+        self.assertEqual([0], [record.offset for record in records])
+        self.assertEqual(rs.R_MIPS_26, records[0].rtype)
+
+    def test_retail_data_reloc_is_not_attributed_to_text(self):
+        import overlay_tables as ot
+
+        rom_path = rs.REPO / "baseroms" / "mickey.us.z64"
+        if not rom_path.is_file():
+            self.skipTest("baserom not present")
+        rom = rom_path.read_bytes()
+        _count, entries = ot.read_reloc_table(rom)
+        data = [entry for entry in entries if (entry["flags"] & 0xF) == rs.RELOC_OP_DATA]
+        self.assertTrue(data)
+        for entry in data:
+            offset = entry["call_site_offset"]
+            records = rs._target_runtime_records(
+                rom, {"kind": "resident"}, offset, 4)
+            self.assertEqual([], [record.offset for record in records])
+        symbol = next(entry for entry in entries if (entry["flags"] & 0xF) != rs.RELOC_OP_DATA)
+        offset = symbol["call_site_offset"]
+        records = rs._target_runtime_records(
+            rom, {"kind": "resident"}, offset, 4)
+        self.assertEqual([0], [record.offset for record in records])
+
+
 if __name__ == "__main__":
     unittest.main()

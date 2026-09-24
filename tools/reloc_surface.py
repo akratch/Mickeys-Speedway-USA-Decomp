@@ -85,6 +85,9 @@ SHN_UNDEF = 0
 
 R_MIPS_32, R_MIPS_26, R_MIPS_HI16, R_MIPS_LO16 = 2, 4, 5, 6
 R_MIPS_PC16 = 10
+# Low nibble of a resident RelocTableEntry. DATA offsets are from the
+# resident data base, not the text base (runlinkUnloadOverlay).
+RELOC_OP_DATA = 3
 TYPE_NAMES = {R_MIPS_32: "R_MIPS_32", R_MIPS_26: "R_MIPS_26",
               R_MIPS_HI16: "R_MIPS_HI16", R_MIPS_LO16: "R_MIPS_LO16",
               R_MIPS_PC16: "R_MIPS_PC16"}
@@ -2999,6 +3002,12 @@ def _target_runtime_records(rom, context, start, size):
         raise SurfaceComparisonError("resident relocation table count disagrees")
     selected = []
     for r in all_records:
+        # RELOC_OP_DATA stores the site as a byte offset from the resident
+        # data base. One such record (the overlay-64 pointer, flags 0x23)
+        # falls numerically inside func_80004B04's text and is not a
+        # relocation of that function.
+        if (r["flags"] & 0xF) == RELOC_OP_DATA:
+            continue
         if not start <= r["call_site_offset"] < start + size:
             continue
         selected.append(dict(

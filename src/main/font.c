@@ -1262,6 +1262,6 @@ u8 func_8004D5C0(s32 font) {
  * frame: 0x70
  * relocations: 9
  * first-mismatch: +0x0
- * summary: u8 parameter closes the -4; rolled carrier-free copy and target homes give 105 at delta 0; characterIndex split point and loop-web colours remain
+ * summary: Prologue first-occurrence order: separate hoist 114, comma hoist 114, early-zero or-read 145 at delta +8. None beat 105 at delta 0. Stall.
  * PLATEAU-HANDOFF:func_8004C690:end
  */

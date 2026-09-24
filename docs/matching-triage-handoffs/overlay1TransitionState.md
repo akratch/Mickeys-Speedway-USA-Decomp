@@ -2,11 +2,11 @@
 ### `overlay1TransitionState` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_tail.c`
-- score: 30 differing words
+- score: 16/237 words
 - frame: 0x50
 - relocations: 13
-- first mismatch: +0x20
-- summary: Delta -4 closed, 160 to 30 at delta 0; the rest is the v0/v1 order of phase/phaseValue and spawned/point (forced: 11).
+- first mismatch: +0x34
+- summary: Volatile phase re-read between the zero and one tests yields beql, 30 to 16. Slot stays lbu not or. Copy position, or-zero, and swapped compares do not beat 16.
 
 Summary before this remeasure: The size-near pointer-update probe is byte-flat; promotion trial in=0/out=0 is a schedule-divergence build error, not equality. Retain the 160-word structural plateau.
 - assignment base: `f8f3ec51a298dd0eddd0574a4313adbb1e39de9b`

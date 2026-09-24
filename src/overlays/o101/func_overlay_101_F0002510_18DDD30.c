@@ -279,10 +279,10 @@ void func_overlay_101_F0002510_18DDD30(Overlay101Gfx **displayList,
 
 /* PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:start
  * symbol: func_overlay_101_F0002510_18DDD30
- * score: 291 masked words of 293
+ * score: 291 differing words
  * frame: 0xF8
  * relocations: 6
  * first-mismatch: +0x0
- * summary: Rebuilt on the four decoded SYMBOL callees and this overlay's own display-list command idiom; structural residual 142 to 125 and size delta -52 to +8, where the +8 is one extra callee-saved register, while the positional count went 276 to 291 because the frame is 0xF8 against 0xE8.
+ * summary: 291 words, size +8, frame 0xF8 vs 0xE8. Bounds-array and width-local spellings did not beat it.
  * PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:end
  */

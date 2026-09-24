@@ -572,4 +572,8 @@ yet their loads precede the root stores and their stores follow them.
 That is the named question for the tail: a carrier that is not a
 colourable symbol but survives across the root stores. ADR 0018 reached:
 three consecutive layout and carrier attempts with no better residual.
+#### 2026-09-24, lane w4-o101: natural spellings of the * 0 + diagnostic
+
+The dim-colour line is `gOverlay101BuilderNode24CountB * 0 + 0xC0`. Three natural spellings were compiled against that object: the multiply commuted (`0 * counter + 0xC0`), the add commuted (`0xC0 + counter * 0`), and a parenthesized product (`(counter * 0) + 0xC0`). Each object differed, so the diagnostic stays. The earlier note that `(x - x)`, `(x & 0)`, `(x ^ x)` and casts fold early still stands; those were not re-run.
+
 <!-- plateau-handoff:overlay101BuildPresentationB:end -->

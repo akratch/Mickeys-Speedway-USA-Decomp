@@ -266,6 +266,6 @@ s32 func_8004F020(void) {
  * frame: 0x8
  * relocations: 12
  * first-mismatch: +0x2C
- * summary: JFG global do-while closed +4 and extra s-save. Remaining 15 is inner u8 on a0 vs outer byte on a1. Identity-gated p2:w9=c4 scores 0.
+ * summary: Hypothesis outer-before-inner: s32 new_var and (u8)(s32) merge to the 13-word a1/a2 swap; (s16)0 index stays the 15-word pair. ucvt still follows its uilod.
  * PLATEAU-HANDOFF:func_8004EC60:end
  */

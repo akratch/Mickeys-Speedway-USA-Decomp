@@ -406,7 +406,7 @@ void func_8002B040(MtxF matrix, f32 arg1, f32 arg2, f32 arg3,
  * frame: frameless
  * relocations: 0
  * first-mismatch: +0x0
- * summary: Extra arg2 home at +0x0; c28 stays infinite for the third incoming scalar at -O2. Four new spellings flat.
+ * summary: Pair +0x0..end is the line-391 arg2 stack-store. Struct, volatile, const, register, and z+(y+x) leave that home in place at -O2.
  * PLATEAU-HANDOFF:func_8002B040:end
  */
 

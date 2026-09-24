@@ -2,11 +2,13 @@
 ### `fxSPDPRipple` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 205 differing words
-- frame: 0xa8
+- score: 169 differing words
+- frame: 0xA8
 - relocations: 12
-- first mismatch: +0x40
-- summary: Delta +8 is alphaHigh/alphaLow winning a 2.75 save tie over the hoisted arg3 command temp; splitting both forces delta 0 at 163.
+- first mismatch: +0x68
+- summary: extra-ILOD pair was alphaHigh in s8, not the w1 store. volatile alphas and one rippleEnabled load: size 0, 169 words. Stall: lines 2043-2049 address CSE.
+
+Summary before this remeasure: Delta +8 is alphaHigh/alphaLow winning a 2.75 save tie over the hoisted arg3 command temp; splitting both forces delta 0 at 163.
 
 Summary before this remeasure: JFG efd5abb remains assembly-only; zero source attempts. Need new missing relocations and command-loop topology evidence.
 
@@ -90,5 +92,27 @@ full-TU object, gate receipts, summaries, diagnoses and relocation tuples.
 Commands: `lane_status.py --symbol`, `wb_compare.sh --summary-json`, workbench
 `diagnose` and `guide`, and `finalize_plateau.py`. The unchanged guarded C stays
 NON_MATCHING and receives zero new exact bytes.
+
+w4-fx remeasure, stock IDO only. insertion_pairs on the +8 body named pair 6
+(extra-ILOD, shadow 15) as a store on the second-packet w1 line and a load of
+`*dList` on the next line. The opcode multiset said those were alignment
+shadow: the real extras were two `or`s, `move` of alphaHigh into s8 at its
+definition and `move` of s8 into alpha in the positive arm, while cmdHi took
+the stack slot the target uses for alphaHigh.
+
+Spellings that moved the score:
+- volatile alphaHigh and alphaLow together: size +8 to +4, cmdHi in s8, spills
+  at 0x8C and 0x84, one extra `lbu` of rippleEnabled because the volatile store
+  splits the field load.
+- that field loaded once into the existing `next` local, and two unused s32
+  pads removed: size 0, frame 0xA8, 169 masked, first mismatch +0x68,
+  12 relocations. alphaLow left non-volatile takes s8 and the size returns
+  to +4.
+
+Stall: the only opcode-multiset gap is three `addiu` where the target has
+three `lui`. Lines 2043-2049 keep each global's address in a register across
+the halfword store. Scalar declarations, a volatile cast at the use, and
+volatile scalar declarations were byte-identical; the address CSE survived
+all three. No further size or masked improvement.
 
 <!-- plateau-handoff:fxSPDPRipple:end -->

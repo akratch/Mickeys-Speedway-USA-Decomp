@@ -892,6 +892,6 @@ void func_8005B644(Matrix *matrices, Matrix *root, ModelMatrixNode *node, s32 co
  * frame: 0x110
  * relocations: 27
  * first-mismatch: +0x0
- * summary: Frame remains 0x110 versus target 0xF8; camera/matrix allocator structure remains unresolved after the full flag lattice.
+ * summary: split-not-copy at rotation2 line 771. Frame-close reorder hits 0xF8 but aligned residual 376>327; the +0x24 callee save stays missing. Stall.
  * PLATEAU-HANDOFF:func_8005AF14:end
  */

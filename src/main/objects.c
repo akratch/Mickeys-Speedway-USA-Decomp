@@ -5586,6 +5586,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: 0x98
  * relocations: 20
  * first-mismatch: +0x148
- * summary: Size exact after L144 address-form homes on speed and dot. Next: step +0x34, speed +0x30, factor +0x2C, then reflection schedule and s0/s2.
+ * summary: Hypothesis +0x2C/+0x30/+0x34. Block scope 116 d0 unhomed; split 116 d0 folded; aggregate 197 d+16 (+0x2C 1ld +0x30 3ld). Stall: speed +0x4C, step missed +0x34.
  * PLATEAU-HANDOFF:func_8000B3CC:end
  */

@@ -2164,7 +2164,7 @@ void controlClearPlayerSetup(void) {
  * frame: 0xA8
  * relocations: 38
  * first-mismatch: +0x3C
- * summary: Delta 0, frame 0xA8. Shared i/j loop counters open s5/s6; left: schedule order at entry, point-loop v0/v1, ring phase.
+ * summary: Loop-weighted refs on leftover const webs 10 and 3: +=/-= and (x+C)-C fold away (totalsave 10 and 11 unchanged); xor pair delta +16 adds 80 to carrier. Stall.
  * PLATEAU-HANDOFF:func_8001C4C0:end
  */
 

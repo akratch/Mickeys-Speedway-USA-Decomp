@@ -3008,9 +3008,9 @@ typedef struct TrackRayNode {
     TrackPlane *planes;
 } TrackRayNode;
 
-/* Workbench verdict: structure-mismatch, 162 differing words, first mismatch +0x0. */
-/* Candidate: 172/171 instructions with a -0xA0 frame versus target -0x98. */
-/* The direct target-lifetime form leaves an extra saved-GPR pair and threshold-address hoist; not permuter-ready. */
+/* Candidate: 171/171 words, 162 differing, first mismatch +0x0, frame 0x70 versus 0x98. */
+/* Forming the hit point once before the edge loop closes the +4 size gap. */
+/* Two callee-saves remain: a dead edge copy and the hoisted D_80081774 address. */
 s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
                   TrackPlane *result, f32 *maximum) {
     u8 *node;
@@ -3078,6 +3078,9 @@ s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
                         if (temp_f0_2 >= 0.0f) {
                             temp_f28 = temp_f0_2 / (temp_f0_2 - temp_f18);
                             if (temp_f28 <= *maximum) {
+                                temp_f2_2 = temp_f2_2 + (differenceX * temp_f28);
+                                temp_f12 = temp_f12 + (differenceY * temp_f28);
+                                temp_f14 = temp_f14 + (differenceZ * temp_f28);
                                 var_s2 = 0 * 2;
                                 var_s1 = 1;
 loop_80010654:
@@ -3085,13 +3088,9 @@ loop_80010654:
                                     edge = *(u16 *) ((u8 *) entry + var_s2);
                                     temp_t2 = edge & 0x8000;
                                     plane = &planes[edge ^ temp_t2];
-                                    temp_f18_2 = (plane->x *
-                                                  (temp_f2_2 + (differenceX * temp_f28))) +
-                                                 (plane->y *
-                                                  (temp_f12 + (differenceY * temp_f28))) +
-                                                 (plane->z *
-                                                  (temp_f14 + (differenceZ * temp_f28))) +
-                                                 plane->distance;
+                                    temp_f18_2 = ((plane->x * temp_f2_2) +
+                                                  (plane->y * temp_f12)) +
+                                                 (plane->z * temp_f14) + plane->distance;
                                     normalValue = temp_f18_2;
                                     if (temp_t2 != 0) {
                                         normalValue = -temp_f18_2;
@@ -5566,10 +5565,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 /* PLATEAU-HANDOFF:func_80010654:start
  * symbol: func_80010654
  * score: 162 differing words
- * frame: 0xa0
+ * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x0
- * summary: Dot/negation split gives delta +4. Target colours encoded/offset into a2/a3 and moves result/maximum to s-regs; no tried form reproduces its p1 set.
+ * summary: Hoisting the hit point before the edge loop closes size +4 to 0 at 162 words. Frame stays 0x70 versus 0x98: dead edge-copy and hoisted D_80081774.
  * PLATEAU-HANDOFF:func_80010654:end
  */
 

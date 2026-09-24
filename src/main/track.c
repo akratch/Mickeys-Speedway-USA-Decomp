@@ -5557,7 +5557,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xd8
  * relocations: 12
  * first-mismatch: +0x0
- * summary: Second metadata add is the missing-CSE word and the target has it too. Textures local and volatile threshold stay at 195, size +4; ra still holds D_80081790.
+ * summary: The missing-CSE pair is the second metadata add on that line, and the target has it too. Stall: textures local and volatile threshold stay at 195, size +4; ra still holds D_80081790.
  * PLATEAU-HANDOFF:func_80011980:end
  */
 
@@ -5568,7 +5568,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x0
- * summary: Hoisting the hit point before the edge loop closes size +4 to 0 at 162 words. Frame stays 0x70 versus 0x98: dead edge-copy and hoisted D_80081774.
+ * summary: Hoisting the hit point before the edge-loop line closes the size pair (+4 to 0) at 162 words. Stall: frame stays 0x70 versus 0x98 because of the dead edge-copy and hoisted D_80081774.
  * PLATEAU-HANDOFF:func_80010654:end
  */
 
@@ -5608,7 +5608,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0x70
  * relocations: 51
  * first-mismatch: +0x48
- * summary: Declaring batchIndex and groupIndex first improves 304 to 303. Size stays +8, frame 0x70, first +0x48. Tail call spills remain.
+ * summary: Declaring batchIndex and groupIndex first improves 304 to 303. Size stays +8, frame 0x70, first +0x48. Stall: the spill/reload pair on the tail-call lines remains after that declaration reorder.
  * PLATEAU-HANDOFF:func_8000DFBC:end
  */
 

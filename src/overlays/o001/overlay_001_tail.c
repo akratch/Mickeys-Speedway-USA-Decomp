@@ -3418,7 +3418,7 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
  * frame: 0x50
  * relocations: 13
  * first-mismatch: +0x34
- * summary: Volatile phase re-read between the zero and one tests yields beql, 30 to 16. Slot stays lbu not or. Copy position, or-zero, and swapped compares do not beat 16.
+ * summary: Volatile phase re-read on the line between the zero and one tests yields beql, 30 to 16. Stall: the pair's slot stays lbu not or. Copy position, or-zero, and swapped compares do not beat 16.
  * PLATEAU-HANDOFF:overlay1TransitionState:end
  */
 

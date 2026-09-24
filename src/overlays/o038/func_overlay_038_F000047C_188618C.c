@@ -195,6 +195,6 @@ void func_overlay_038_F000047C_188618C(O38Command **commands, void *context,
  * frame: 0xE8
  * relocations: 18
  * first-mismatch: +0xC0
- * summary: 90 masked at delta 0. Arity split pins the vertex pointer. Constant stays in a2; forcing t0 scores 43 and saved regs then 27. Schedule edits do not stick.
+ * summary: 90 masked at delta 0. Arity split pins the vertex pointer. Stall: the constant-web pair stays in a2 at the +0xC0 line; forcing t0 scores 43 and saved regs then 27, and schedule edits do not stick.
  * PLATEAU-HANDOFF:func_overlay_038_F000047C_188618C:end
  */

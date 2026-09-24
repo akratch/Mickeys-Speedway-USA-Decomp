@@ -175,6 +175,6 @@ void func_overlay_002_F0001DF8_1858BF0(Overlay2RouteObject *object,
  * frame: 0x880
  * relocations: 5
  * first-mismatch: +0x20
- * summary: extra-ILOD pair at the distance-call spill. Delta 0 via lastCandidate carrier. Stall: order share -12, register inert, header hoist flat, post-loop +16.
+ * summary: extra-ILOD pair at the previousDistance call line. Delta 0 via lastCandidate carrier. Stall: order share -12, register inert, header hoist flat, post-loop +16.
  * PLATEAU-HANDOFF:func_overlay_002_F0001DF8_1858BF0:end
  */

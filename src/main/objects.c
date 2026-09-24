@@ -5556,7 +5556,7 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: 0x100
  * relocations: 83
  * first-mismatch: +0x134
- * summary: Size exact, no insertion pair. Indexed i less-than-6 fill rematerializes category; modeState[i] kills the records carrier and the modeState ILOD. playerCount equals i after the setup call stops the early s0 zero. Remaining 58 naming is packets versus modeState-base a0/a2, with 10 structural jal/8-iter/spawn rows in that shadow. Packet cursor, D_800C94F4[i], L97 barriers, and deleting offset still regress. Next: put packets in a0 and the modeState base in a2 without a declared packet cursor.
+ * summary: No packet cursor: packets in a0, modeState base in a2. Unsigned index, slot index, byte-offset address stalled at 185/-4, 290/+20, 185/-4; +0x134 naming stayed.
  * PLATEAU-HANDOFF:func_80004FE0:end
  */
 

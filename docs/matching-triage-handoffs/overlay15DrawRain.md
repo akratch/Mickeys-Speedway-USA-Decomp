@@ -6,7 +6,9 @@
 - frame: 0x40
 - relocations: 17
 - first mismatch: +0x74
-- summary: Force-split of the offsets ilda matches target schedule except one extra lui; as1 does not share lui at. Next: ugen hi-only ilda, not la or per-use macros.
+- summary: Hi-only ilda failed: direct local float[3] stayed 13 at delta 0; do-while sym+0/+4/+8 scored 38 at +24; unrolled 4-copy scored 47 at +32.
+
+Summary before this remeasure: Force-split of the offsets ilda matches target schedule except one extra lui; as1 does not share lui at. Next: ugen hi-only ilda, not la or per-use macros.
 
 #### 2026-09-12, lane `p9-tight`: as1 does not share a high half, so the stated decision variable is refuted
 
@@ -161,5 +163,27 @@ Do not retry: L109 without a loop, dummy OR-zeros, deleting camera or
 visibleCount, generated subscripts, xy-plus-scalar-z, force-split of the ilda,
 or as1 lui-at merging. overlay15MoveStars has the same ilda-versus-absolute
 choice; the same ugen addressing-mode question applies.
+
+#### 2026-09-24, lane p1-o015: a hi-only ilda is not free of a loop or extra stores
+
+Restored baseline remeasured at 13 masked, delta 0, 54 words, first structural
+difference +0x74, aligner 43 exact and 12 structural, candidate-only +0xBC,
+target-only +0xB4. Three spellings of a ugen hi-only ilda, no colour sweep.
+
+A defined float array placed at the first rain word, passed as three direct
+element arguments, stayed 13 masked at delta 0. That is still the la lowering,
+not a high half with the low half folded into two displacements.
+
+A do-while that reloads the same three elements, the shape that makes ugen
+emit symbol, symbol+4 and symbol+8 rather than la, scored 38 masked at delta
++24. as1 does share one lui across offsets 0 and 4 of one symbol and starts a
+second lui at offset 8, which is the target's high-half split, but only while
+the loop that hoisted those loads is still in the object.
+
+An unrolled four-iteration copy into a local array, which also emits those
+symbol-offset loads and then drops the branch, scored 47 masked at delta +32.
+The fourth load and the local stores are the size. Straight-line sums and
+scalar temps of the same symbol go back to la. No spelling lowered masked
+words at delta 0. The guarded baseline is restored.
 
 <!-- plateau-handoff:overlay15DrawRain:end -->

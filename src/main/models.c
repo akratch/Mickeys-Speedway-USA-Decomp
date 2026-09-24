@@ -1407,7 +1407,7 @@ void func_8002109C(ModelPointOwner *owner) {
  * frame: 0x8
  * relocations: 0
  * first-mismatch: +0x38
- * summary: Phantom t3 web still 15. L145 nextFrame delete 28/-4; while remaining-- 23 copy-after-test. Need remaining as test without two-block shift web.
+ * summary: Pre-test remaining in one block: while !=0 unrolled 120/+296; do/break/while(1) 39/-4; goto header 45/-8. Stall: no delta-0 score under 15.
  * PLATEAU-HANDOFF:func_80020D8C:end
  */
 

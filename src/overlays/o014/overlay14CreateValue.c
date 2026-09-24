@@ -119,6 +119,6 @@ void *overlay14CreateValue(s32 key, s32 alternate) {
  * frame: 0x28
  * relocations: 15
  * first-mismatch: +0x158
- * summary: after-call identity recasts stay isvar; named-base stamps islda at extra la; cfe hoists side-effecting operands so no ugen-temp split
+ * summary: hypothesis=stop side-effect hoist for islda; spellings=?: +36B/21, root-comma flat, slot[index].key flat; stall=no islda retag, +0x158 unmoved at delta 0
  * PLATEAU-HANDOFF:overlay14CreateValue:end
  */

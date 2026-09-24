@@ -175,6 +175,6 @@ void overlay58DrawSegmentStrip(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1,
  * frame: 0x88
  * relocations: 8
  * first-mismatch: +0xF0
- * summary: L100 cannot attach to the 0xFF constant. Unforced v1 needs islda save below 53.33 without a competing isop. Integer-cast split hits v1 at 73.
+ * summary: hypothesis=live-zero address add; spellings=9 stores +16/124, all uses +72/191, 16 ops +32/129 with 0xFF on v1; stall=cross emits reloads, size never 0
  * PLATEAU-HANDOFF:overlay58DrawSegmentStrip:end
  */

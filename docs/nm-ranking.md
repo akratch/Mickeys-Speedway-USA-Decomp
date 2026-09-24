@@ -372,8 +372,8 @@ units remain distinct.
 | 75 | `src/overlays/o057/func_overlay_057_F0004E18_18A8A10.c` | `func_overlay_057_F0004E18_18A8A10` | `o057` | `other` | 4,832 | 155 | 86 | 132 | 256 | 0 | — |
 | 76 | `src/main/fx.c` | `func_800470B0` | `main` | `other` | 596 | 89 | 89 | 68 | 68 | 0 | — |
 | 77 | `src/overlays/o015/overlay_015.c` | `overlay15InitStars` | `o015` | `other` | 760 | 89 | 89 | 124 | 124 | 0 | — |
-| 78 | `src/main/objects.c` | `func_80007E40` | `main` | `other` | 488 | 92 | 92 | 24 | 24 | 0 | — |
-| 79 | `src/overlays/o038/func_overlay_038_F000047C_188618C.c` | `func_overlay_038_F000047C_188618C` | `o038` | `other` | 876 | 93 | 93 | 192 | 192 | 0 | — |
+| 78 | `src/overlays/o038/func_overlay_038_F000047C_188618C.c` | `func_overlay_038_F000047C_188618C` | `o038` | `other` | 876 | 90 | 90 | 192 | 192 | 0 | — |
+| 79 | `src/main/objects.c` | `func_80007E40` | `main` | `other` | 488 | 92 | 92 | 24 | 24 | 0 | — |
 | 80 | `src/overlays/o083/overlay83BuildBatch.c` | `overlay83BuildBatch` | `o083` | `other` | 672 | 98 | 98 | 0 | 0 | 0 | — |
 | 81 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 102 | 102 | 0 | 0 | 0 | — |
 | 82 | `src/main/models.c` | `func_80020B10` | `main` | `other` | 636 | 102 | 102 | 12 | 12 | 0 | — |

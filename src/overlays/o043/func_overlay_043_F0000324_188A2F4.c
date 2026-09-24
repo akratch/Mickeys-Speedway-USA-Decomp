@@ -134,9 +134,13 @@ extern void overlay43ScaleMatrix(s16 *angles, f32 *matrix,
 extern void func_overlay_043_F0000BE4_188ABB4(
     Overlay43Input *input, Overlay43SortRecord **records, s32 recordCount);
 
-/* NON_MATCHING: L144 homes a0, 0-arg levelGetLevel, boundsMode==2, same-temp
- * scaleX/Y. 559/560 words, exact 0x178 frame, 41 slots, masked 494, first
- * structural +0xB8. One-word size deficit remains. */
+/* NON_MATCHING: 559/560 words, frame 0x178, 39 relocs, masked 494, first +0x60.
+ * Pair 1 is spill/reload from +0xB8 (line 184, the levelGetLevel store).
+ * The missing word is the else-branch blez delay: the target rematerializes
+ * D_FALLBACK.owner with its own lui; this spelling keeps li 1 there and folds
+ * the field into sw offset(base). <=0, a separate owner pointer, moving
+ * recordCount past the call, and replacing the empty-record NULL with
+ * &D_FALLBACK did not close the word without growing the frame or overshooting. */
 #ifdef NON_MATCHING
 s32 func_overlay_043_F0000324_188A2F4(
     Overlay43Input *input,
@@ -261,15 +265,14 @@ s32 func_overlay_043_F0000324_188A2F4(
             overlay43ProcessRecord(
                 &angle0, clone->priority, NULL);
         }
-    } else {
-        if (clone->priority == 0) {
-            return 0;
-        }
+    } else if (clone->priority > 0) {
         records[0] = &D_FALLBACK;
         recordCount = 1;
         D_FALLBACK.owner = clone->priority;
         overlay43PrepareRecord(&D_FALLBACK);
         D_FALLBACK.value14 = 0.0f;
+    } else {
+        return 0;
     }
 
     angles[0] = 0;
@@ -373,8 +376,8 @@ s32 func_overlay_043_F0000324_188A2F4(
  * symbol: func_overlay_043_F0000324_188A2F4
  * score: 494 differing words
  * frame: 0x178
- * relocations: 41
+ * relocations: 39
  * first-mismatch: +0x60
- * summary: V0 is 3 words short (557/560) with broad structural/register drift; relocations are 41 vs 43 with 5 aligned sites and no stable identities.
+ * summary: Pair 1 spill/reload +0xB8 line 184. Missing else-branch owner lui; blez delay stays li 1.
  * PLATEAU-HANDOFF:func_overlay_043_F0000324_188A2F4:end
  */

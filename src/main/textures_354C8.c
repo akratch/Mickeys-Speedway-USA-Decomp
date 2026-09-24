@@ -717,7 +717,7 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
  * frame: 0x68
  * relocations: 44
  * first-mismatch: +0x48
- * summary: Size and frame closed (269 words, 0x68). 109 masked; recover vs triangleOffset spill is the remaining 3-word insertion. Do not colour yet.
+ * summary: align16 +0x58: S1 scalar 136 at +0x40; S2 arenaCount 136 at +0x44; S3 lift 135 sw/lw +0x58 s2 kept. Stall: all raise masked past 109 by moving other spills.
  * PLATEAU-HANDOFF:func_800355A0:end
  */
 #else

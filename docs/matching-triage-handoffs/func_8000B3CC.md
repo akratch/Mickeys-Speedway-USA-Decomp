@@ -6,7 +6,9 @@
 - frame: 0x98
 - relocations: 20
 - first mismatch: +0x148
-- summary: Size exact after L144 address-form homes on speed and dot. Next: step +0x34, speed +0x30, factor +0x2C, then reflection schedule and s0/s2.
+- summary: Hypothesis +0x2C/+0x30/+0x34. Block scope 116 d0 unhomed; split 116 d0 folded; aggregate 197 d+16 (+0x2C 1ld +0x30 3ld). Stall: speed +0x4C, step missed +0x34.
+
+Summary before this remeasure: Size exact after L144 address-form homes on speed and dot. Next: step +0x34, speed +0x30, factor +0x2C, then reflection schedule and s0/s2.
 
 The retained C is now size-exact: 494 words (1976 bytes), delta 0, frame 0x98,
 20 relocations, 116 raw/masked differences, first +0x148. Displacement tax

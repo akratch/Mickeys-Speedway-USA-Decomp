@@ -141,7 +141,7 @@
       "source_commit": "71156d0edfa8062b1192074b4e20ebcf6d471692"
     },
     "func_8000B3CC": {
-      "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
+      "ledger_commit": "dab722cc302bcee6031af6c263c80ff56ebc2a32",
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
       "source_commit": "650ec38da9829ca704cfc51b63245eb28decd7cd"
     },
@@ -291,7 +291,7 @@
       "source_commit": "62284df0f50540259afde9744b09ec885f0a5d89"
     },
     "func_80018F08": {
-      "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
+      "ledger_commit": "dab722cc302bcee6031af6c263c80ff56ebc2a32",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
       "source_commit": "9092a43b142cfbe86b11237672a976e2f34d215f"
     },
@@ -516,7 +516,7 @@
       "source_commit": "8744e6484324325c1b899182492ff1962767c33d"
     },
     "func_800355A0": {
-      "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
+      "ledger_commit": "dab722cc302bcee6031af6c263c80ff56ebc2a32",
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
       "source_commit": "498813bbefefcf2493219117e350b6db9980b886"
     },
@@ -736,7 +736,7 @@
       "source_commit": "cb7d0ac38b50149be503d9418fc1f130f57155b6"
     },
     "func_8004B1DC": {
-      "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
+      "ledger_commit": "dab722cc302bcee6031af6c263c80ff56ebc2a32",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "6adf607b6c4bb67fbf8309ff5bab5a0a9fc52f62"
     },
@@ -746,7 +746,7 @@
       "source_commit": "9fa2314ec43c033254eb19b67d3494a2c67df7c9"
     },
     "func_8004C690": {
-      "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
+      "ledger_commit": "dab722cc302bcee6031af6c263c80ff56ebc2a32",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
       "source_commit": "7d16729661809b51b7f4e66e0204d43eae2618ed"
     },
@@ -1781,7 +1781,7 @@
       "source_commit": "a2ecd565fd6098e58f994d2f5a073f0afdbf32f3"
     },
     "overlay25UpdateEffect": {
-      "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
+      "ledger_commit": "dab722cc302bcee6031af6c263c80ff56ebc2a32",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "fcfbc7f12543438d04a7723c9e2e463f83de7a50"
     },

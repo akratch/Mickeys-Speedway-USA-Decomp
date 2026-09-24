@@ -8,7 +8,7 @@
 - first mismatch: +0x148
 - summary: hypothesis=put step at +0x34, speed at +0x30 and factor at +0x2C without undoing the L144 homes; spellings=block scope 116 unhomed, split stores 116 folded, two-field aggregate 197 at +16; stall=speed stayed at +0x4C and step missed +0x34, body reverted
 
-Summary before this remeasure: Size exact after L144 address-form homes on speed and dot. Next: step +0x34, speed +0x30, factor +0x2C, then reflection schedule and s0/s2.
+Summary before this remeasure: Size exact after L144 address-form homes on speed and dot. The home order asked for below was measured on 2026-09-24 and did not land.
 
 The retained C is now size-exact: 494 words (1976 bytes), delta 0, frame 0x98,
 20 relocations, 116 raw/masked differences, first +0x148. Displacement tax
@@ -38,9 +38,14 @@ tests (224 masked, delta +12), speed[1] array (220 masked, delta -12),
 reversed equality operands (byte-identical), first sqrtf stored only to
 state->unk18 (byte-identical). Do not add volatile fields.
 
-Next: put step at +0x34, speed at +0x30 and factor at +0x2C without undoing
-the L144 homes; then the five reflection scheduling pairs (target has the mul
-nop and three velocities live; we reload) and the s0/s2 naming. Proc 60.
+Tried 2026-09-24, not an open assignment: put step at +0x34, speed at +0x30
+and factor at +0x2C without undoing the L144 homes and without repeating the
+declaration reorder. Block scope left factor unhomed at 116 words, delta 0.
+Split stores folded and stayed 116, delta 0. A two-field aggregate scored
+197 at delta +16; it gained a home at +0x2C, but speed stayed at +0x4C and
+step missed +0x34. The body was reverted to the 116-word form. Stall: the
+three homes were not reached together at delta 0. The reflection schedule
+and the s0/s2 naming were not started. Proc 60.
 
 Validation includes configured full-TU comparison, identity-gated IDO with
 CDX_PROC, force lattice on proc 60, finalize_plateau.py, check-docs and

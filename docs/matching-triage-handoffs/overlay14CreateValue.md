@@ -6,7 +6,9 @@
 - frame: 0x28
 - relocations: 15
 - first mismatch: +0x158
-- summary: after-call identity recasts stay isvar; named-base stamps islda at extra la; cfe hoists side-effecting operands so no ugen-temp split
+- summary: hypothesis=stop side-effect hoist for islda; spellings=?: +36B/21, root-comma flat, slot[index].key flat; stall=no islda retag, +0x158 unmoved at delta 0
+
+Summary before this remeasure: after-call identity recasts stay isvar; named-base stamps islda at extra la; cfe hoists side-effecting operands so no ugen-temp split
 - base: `3169297845d9e4b3843c03be16cfe6d51358d280`
 - boundary: overlay 14 `+0x6FC..+0x87C`, 384 bytes / 96 words, no
   padding or export; two local callers at `+0x3C0` and `+0x40C`
@@ -378,4 +380,28 @@ that steals v1 or lands on a3, or an emission-order spelling of the tail
 that as1 keeps; and check whether the `index = 0` kill and the or-with-zero
 read are both still load-bearing on the retained shape (they were adopted
 in sequence and not re-tested individually after the declaration move).
+
+#### 2026-09-24, lane p1-o014: stopping the side-effect hoist does not retag
+
+Baseline remeasured after the three spellings were reverted: 2 masked
+(3 raw), delta 0, frame 0x28, 15 candidate relocations, first +0x158,
+aligner 94/0/0/2. Nothing adopted.
+
+Hypothesis: stop cfe hoisting the side-effecting operand, so the post-call
+slot identity is islda rather than isvar, with no second symbol web and no
+colour lattice.
+
+- An identical-arm ternary, `count ? (key store, value reload, count + 1)
+  :` the same arm, is +36 bytes and 21 masked, first mismatch +0x38. The
+  sequence point does put a count load before the key store, and both arms
+  survive, so the matched prefix breaks.
+- A root comma, `count = (key store, value reload, count + 1)`, where the
+  comma is not an operand of `+`, is flat: 2 masked, delta 0, same +0x158
+  pair, aligner 94/0/0/2.
+- `slot[index].key = key`, with index already killed to 0, is flat at the
+  same 2. cfe folds the subscript, so the store does not stay isilda.
+
+Stall: none of the three kept an islda or isilda tag, and none moved the
++0x158 pair at delta 0. Do not repeat an identical-arm ternary, a
+root-comma increment, or a zero-index subscript store.
 <!-- plateau-handoff:overlay14CreateValue:end -->

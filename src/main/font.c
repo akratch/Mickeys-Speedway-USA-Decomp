@@ -260,9 +260,12 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
         }
         gDPSetPrimColor(dList++, 0, 0, D_8007D538, D_8007D53C,
                         D_8007D540, 0);
-        dList->words.w0 = 0x07020010;
-        dList->words.w1 = (u32) D_7D528;
-        dList++;
+        {
+            Gfx *packet = dList++;
+
+            packet->words.w0 = 0x07020010;
+            packet->words.w1 = (u32) D_7D528;
+        }
         gDPFillRectangle(dList++, window->x1 + x, y + window->y1,
                          window->x1 + x + width,
                          font->verticalExtent + y + window->y1);
@@ -344,22 +347,34 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
                             dList++;
                             fontCommands += 7;
                         }
-                        dList->words.w0 = 0x07080040;
-                        dList->words.w1 = (u32) fontCommands + 0x80000000;
-                        dList++;
-                        dList->words.w0 = 0xE4000000 |
-                                          ((right & 0xFFF) << 12) |
-                                          (bottom & 0xFFF);
-                        dList->words.w1 = ((left & 0xFFF) << 12) |
-                                          (top & 0xFFF);
-                        dList++;
-                        dList->words.w0 = 0xB3000000;
-                        dList->words.w1 = (textureS << 16) |
-                                          (textureT & 0xFFFF);
-                        dList++;
-                        dList->words.w0 = 0xB2000000;
-                        dList->words.w1 = 0x04000400;
-                        dList++;
+                        {
+                            Gfx *packet = dList++;
+
+                            packet->words.w0 = 0x07080040;
+                            packet->words.w1 = (u32) fontCommands + 0x80000000;
+                        }
+                        {
+                            Gfx *packet = dList++;
+
+                            packet->words.w0 = 0xE4000000 |
+                                               ((right & 0xFFF) << 12) |
+                                               (bottom & 0xFFF);
+                            packet->words.w1 = ((left & 0xFFF) << 12) |
+                                               (top & 0xFFF);
+                        }
+                        {
+                            Gfx *packet = dList++;
+
+                            packet->words.w0 = 0xB3000000;
+                            packet->words.w1 = (textureS << 16) |
+                                               (textureT & 0xFFFF);
+                        }
+                        {
+                            Gfx *packet = dList++;
+
+                            packet->words.w0 = 0xB2000000;
+                            packet->words.w1 = 0x04000400;
+                        }
                     }
                 }
             }
@@ -1233,11 +1248,11 @@ u8 func_8004D5C0(s32 font) {
 
 /* PLATEAU-HANDOFF:func_8004B1DC:start
  * symbol: func_8004B1DC
- * score: 451 differing words
+ * score: 452 differing words
  * frame: 0x80
  * relocations: 48
- * first-mismatch: +0x30
- * summary: Unchanged body; the u8 parameter on func_8004C690 moved this caller from 465 to 451 at the same size delta -32
+ * first-mismatch: +0x4
+ * summary: Postincrement packet cursor closes size delta -32 to 0, frame 0x80, 452 words. Two if(1) region spellings left the +32 fold and regressed to delta -44.
  * PLATEAU-HANDOFF:func_8004B1DC:end
  */
 

@@ -355,7 +355,7 @@ units remain distinct.
 | 58 | `src/overlays/o040/overlay40BuildFrame.c` | `overlay40BuildFrame` | `o040` | `other` | 324 | 60 | 60 | 48 | 48 | 0 | — |
 | 59 | `src/main/objects.c` | `func_8000BB84` | `main` | `other` | 260 | 61 | 61 | 0 | 0 | 0 | — |
 | 60 | `src/main/shadows.c` | `func_800180B4` | `main` | `other` | 824 | 61 | 61 | 52 | 52 | 0 | — |
-| 61 | `src/overlays/o037/overlay37Render.c` | `overlay37RenderEffect` | `o037` | `other` | 856 | 61 | 61 | 84 | 84 | 0 | — |
+| 61 | `src/overlays/o037/overlay37Render.c` | `overlay37RenderEffect` | `o037` | `other` | 856 | 43 | 43 | 84 | 84 | 0 | — |
 | 62 | `src/main/lights.c` | `func_80019AB8` | `main` | `other` | 736 | 63 | 63 | 128 | 128 | 0 | — |
 | 63 | `src/main/objects.c` | `func_80006FA0` | `main` | `other` | 376 | 63 | 63 | 12 | 12 | 0 | — |
 | 64 | `src/overlays/o011/func_overlay_011_F0001E4C_186A694.c` | `func_overlay_011_F0001E4C_186A694` | `o011` | `other` | 1,180 | 68 | 63 | 216 | 216 | 0 | — |

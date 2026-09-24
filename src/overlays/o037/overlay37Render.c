@@ -79,12 +79,14 @@ extern void func_8002460C(Overlay37Command **commands, const void *displayData);
 #ifdef NON_MATCHING
 void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
                            Overlay37Object *object) {
-    f32 pad[4]; /* L112: 16 unused bytes close the 0x10 frame gap */
-    Overlay37Camera *camera;
-    Overlay37State *state;
+    /* 12 bytes at the frame top, then resource, camera, transform: homes 0x88, 0x84, 0x6C. */
+    f32 pad[3];
     Overlay37Resource *resource;
-    Overlay37Record *record;
+    Overlay37Camera *camera;
     Overlay37Transform transform;
+    Overlay37State *state;
+    Overlay37Record *record;
+    f32 padTail[1];
     f32 distanceDelta;
     Overlay37Command *command;
     s32 frame;
@@ -184,10 +186,10 @@ void overlay37RenderEffect(Overlay37Command **commands, void *renderContext,
 
 /* PLATEAU-HANDOFF:overlay37RenderEffect:start
  * symbol: overlay37RenderEffect
- * score: 61/214 words
+ * score: 43/214 words
  * frame: 0x98
  * relocations: 12
  * first-mismatch: +0x54
- * summary: Size 0 at 61 via r4300_mul, 0x04000000 with 0x80, L112 pad[4]. Colour floor 61, 58 with p1:w184=c7. Extra pair +0x26C vs +0x284; transform homes 0x60 vs 0x6C.
+ * summary: Transform at sp+0x6C: 61 to 43, delta 0, immediates 0. Spellings 3 (w0-first 43, if(1) 62). Stall: green still reloads before the command pointer.
  * PLATEAU-HANDOFF:overlay37RenderEffect:end
  */

@@ -2,11 +2,13 @@
 ### `overlay37RenderEffect` plateau handoff
 
 - source: `src/overlays/o037/overlay37Render.c`
-- score: 61/214 words
+- score: 43/214 words
 - frame: 0x98
 - relocations: 12
 - first mismatch: +0x54
-- summary: Size 0 at 61 via r4300_mul, 0x04000000 with 0x80, L112 pad[4]. Colour floor 61, 58 with p1:w184=c7. Extra pair +0x26C vs +0x284; transform homes 0x60 vs 0x6C.
+- summary: Transform at sp+0x6C: 61 to 43, delta 0, immediates 0. Spellings 3 (w0-first 43, if(1) 62). Stall: green still reloads before the command pointer.
+
+Summary before this remeasure: Size 0 at 61 via r4300_mul, 0x04000000 with 0x80, L112 pad[4]. Colour floor 61, 58 with p1:w184=c7. Extra pair +0x26C vs +0x284; transform homes 0x60 vs 0x6C.
 
 Identity-gate PASS on stock vs instrumented IDO 5.3 (`CDX_PROC=0`, 28 p1 decisions). Configured `-mips2` without `-Wab,-r4300_mul` was 213 words, delta -4; the missing word is the else-arm mul-hazard nop. Adding `-Wab,-r4300_mul` on this single-function TU closes size to 214 words at frame 0x88 (masked 68). Spelling `0x04000000` with `0x80` instead of `0x04000080` closes one extra pair. An unused `f32 pad[4]` (L112) grows the frame to the target `0x98` and drops the unforced score to 61.
 

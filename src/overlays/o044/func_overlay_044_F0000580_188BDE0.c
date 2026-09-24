@@ -44,7 +44,8 @@ extern void func_overlay_044_F0000000_188B860();
 
 /* Frame closed to 0x100 by dissolving extra mips_to_c s32s (L134) and placing
  * five used-but-colored working s32s between the width and y-prev homes (L99).
- * Size is one word short; incoming pointer stays in a0 (web 2 cost 0 vs a2 0.1). */
+ * Reading arg0 through its own address emits the unreloaded home store and
+ * colours the pointer copy into a2, which closes the missing word. */
 /* No external donor body was used. */
 #ifdef NON_MATCHING
 void func_overlay_044_F0000580_188BDE0(
@@ -63,7 +64,7 @@ void func_overlay_044_F0000580_188BDE0(
     s32 var_a3;
     Overlay44AnimationState *state;
 
-    state = (Overlay44AnimationState *)((u32)arg0 | 0);
+    state = *(Overlay44AnimationState **)&arg0;
     if (state != 0) {
         if (state->sourceIndex != -1) {
             var_s0 = state->handles[state->protectedSlot0];
@@ -172,10 +173,10 @@ void func_overlay_044_F0000580_188BDE0(
 
 /* PLATEAU-HANDOFF:func_overlay_044_F0000580_188BDE0:start
  * symbol: func_overlay_044_F0000580_188BDE0
- * score: 338 differing words
+ * score: 304 differing words
  * frame: 0x100
  * relocations: 7
  * first-mismatch: +0x8
- * summary: Frame 0x100 exact. Size -4 (348 vs 349). Incoming pointer web stays in a0; a2 copy and a0 home store are the missing word plus the 0x100 slot.
+ * summary: Line 151 macro split was inert. arg0 address-read: 338 to 304, delta 0, unreloaded home store plus a2 copy. Stall: s32 reorder misses 0x64/0x58/0x50.
  * PLATEAU-HANDOFF:func_overlay_044_F0000580_188BDE0:end
  */

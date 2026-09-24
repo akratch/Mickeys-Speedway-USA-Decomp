@@ -5557,7 +5557,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xd8
  * relocations: 12
  * first-mismatch: +0x0
- * summary: Delta +8 to +4. Target ranks inner-loop edge/sign/face webs below all outer webs (s5-s8); ours ranks them first and spills into ra.
+ * summary: Second metadata add is the missing-CSE word and the target has it too. Textures local and volatile threshold stay at 195, size +4; ra still holds D_80081790.
  * PLATEAU-HANDOFF:func_80011980:end
  */
 

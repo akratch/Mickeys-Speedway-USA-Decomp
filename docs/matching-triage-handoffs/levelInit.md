@@ -6,7 +6,9 @@
 - frame: 0x80
 - relocations: 110
 - first mismatch: +0x328
-- summary: Unsigned-remainder mask controls are full-TU byte-inert; separate ring-mask evaluation with unchanged draw count remains open.
+- summary: Separate ring-mask evaluation, fifth draw kept: statement double-mask stayed 6, use-site mask scored 19, comma-before-base scored 94. Phantom still leads.
+
+Summary before this remeasure: Unsigned-remainder mask controls are full-TU byte-inert; separate ring-mask evaluation with unchanged draw count remains open.
 
 #### 2026-09-10, lane c4-resident: 113 to 22, and the ring term closed
 
@@ -453,5 +455,38 @@ are retained under build/p24/levelInit/. Commands: lane_status, align_symbol,
 configured_compile_commands, residual_map with --object and --against,
 finalize_plateau, and tools/gates.sh. The candidate remains guarded and no
 matching bytes are credited. Relocation counts are not a new identity proof.
+
+#### 2026-09-24, lane p1-level: evaluating the ring mask on its own does not move the phantom
+
+The baseline was remeasured before any edit: 2064 bytes, 516 words, 6 masked
+naming words, 510 byte-exact, delta 0, first +0x328, frame 0x80, 110
+relocations. Three spellings then evaluated that mask as its own expression
+in front of a base-first address, without adding or removing a draw and
+without a remainder, a reservation, or a colour force. Each was scored with
+score_symbol and align_symbol with CDX and DKWB unset, then reverted.
+
+The doubled mask assigned to shouldPlay, followed by a base-first address
+that uses the carrier and no second mask, stays at 6 naming words on the same
+six offsets, delta 0, 110 relocations. It is not byte-identical to the
+baseline. The table pointer and the scale exchange ring slots, and the mask
+remains a ring temporary rather than the carrier register, but the redundant
+mask still pops before that mask. The four real draws stay one slot behind
+the target. Not adopted.
+
+A single self-assignment, with the redundant mask kept on the base-first
+shift, is 19 naming words, delta 0, first +0x330, 110 relocations. The table
+pointer's words agree and the mask word does not. The extra draw lands before
+the scale and the naming run continues through +0x744. Reverted.
+
+A comma that mentions the single mask, then the table base, then a doubled
+mask on the shift, is 94 naming words, delta 0, first +0x238, and still
+register-only. The early mention does not survive as a separate ring
+evaluation in front of the base, and the phase returns to the offset
+previously tied to losing the index pop. Reverted.
+
+Stall: a surviving separate mask can put the table before the scale, but the
+redundant mask still pops before its operand. It cannot be the fifth draw
+after the sum without either leading the mask or sitting in front of the
+scale. No spelling lowered the masked count at delta 0.
 
 <!-- plateau-handoff:levelInit:end -->

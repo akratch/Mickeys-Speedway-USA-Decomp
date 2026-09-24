@@ -2050,6 +2050,6 @@ f32 D_80079F58[2] = { 0.0f, 0.0f };
  * frame: 0x90
  * relocations: 32
  * first-mismatch: +0xA8
- * summary: Delta 0, frame 0x90; baseScale wins the f16 tie with distanceScale (force w30=c29 gives 3), plus a propagated copy and Arctanf load order
+ * summary: hypothesis: break the f16 tie unforced. spellings: decl inert 13; distanceScale-first 14 naming 3; temp delta +4. stall: no masked drop at delta 0
  * PLATEAU-HANDOFF:func_80023598:end
  */

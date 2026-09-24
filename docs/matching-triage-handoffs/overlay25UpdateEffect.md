@@ -53,7 +53,7 @@ Eliminated on this body:
 - inlining `delta` as two `other->y - object->y` compares: size delta +4, 145
   masked
 
-Next: a source-authentic way for web 122 to take s4 while keeping `other`
+Earlier next, superseded by the 2026-09-19 hybrid and the 2026-09-24 attempt below: a source-authentic way for web 122 to take s4 while keeping `other`
 (the 69-word force), and/or 0x24 of unused-as-memory homes between position
 and objects so the array starts at 0x4C without growing the 0xA0 frame.
 Colour will not move those stack offsets.
@@ -109,11 +109,14 @@ unused pointer moves hitSomething to 0x9C (84 masked). Slack below 0x58
 down to the save area at 0x34 is 8 bytes; 12 are required. IDO will not
 spend that pad on more else-arm memory without raising 0xA0.
 
-Next: a source-authentic save-ratio so web 122 is coloured after web 129
+Tried 2026-09-24, recorded in the section below, not an open assignment:
+a source-authentic save-ratio so web 122 is coloured after web 129
 (tot 32 vs 31, one non-loop occurrence would invert it if nocs also
-rises) without the L144 address-taken cascade, and/or 12 bytes of else-arm
-home that occupy the 0x34-0x58 pad without growing the frame. Packed
-force 63 is not a match.
+rises) without the L144 address-taken cascade, and 12 bytes of else-arm
+home in the 0x34-0x58 pad without growing the frame. The two save-ratio
+spellings spilled (106 at +24, 103 at +8) and were reverted. The 12-byte
+else-arm struct was kept: 74 masked words, delta 0, objects at +0x4C.
+Packed force 63 is not a match and was not re-run.
 
 #### 2026-09-24, lane p2b-o025: else-arm 12-byte home, 76 to 74
 

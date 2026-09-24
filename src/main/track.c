@@ -5557,7 +5557,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xd8
  * relocations: 12
  * first-mismatch: +0x0
- * summary: The missing-CSE pair is the second metadata add on that line, and the target has it too. Stall: textures local and volatile threshold stay at 195, size +4; ra still holds D_80081790.
+ * summary: The missing-CSE pair is pair 2 (+0x268..+0x2D4): the second metadata add is line 3709 at +0x2D0, and the target has that add too. Stall: textures local and volatile threshold stay at 195, size +4; ra still holds D_80081790.
  * PLATEAU-HANDOFF:func_80011980:end
  */
 

@@ -203,6 +203,6 @@ void func_overlay_071_F0000870_18CA390(Overlay71Command **commands,
  * frame: 0x30
  * relocations: 13
  * first-mismatch: 0x5c
- * summary: One type-3 AND occupier at zero draw moves the second pair a0 to a1. A second simultaneous occupier is still missing. Force w59=c5 then scores 4.
+ * summary: Second type-3 in blocks 9, 11, 13 failed: s16 cast merged dtype 6 at -4; !=0 emitted +20; &0xFFFF absorbed the type-4 ucvt at -4.
  * PLATEAU-HANDOFF:func_overlay_071_F0000870_18CA390:end
  */

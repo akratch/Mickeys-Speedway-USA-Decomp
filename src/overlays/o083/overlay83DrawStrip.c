@@ -78,6 +78,6 @@ void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
  * frame: frameless
  * relocations: 2
  * first-mismatch: +0x4
- * summary: L100 empty-if pair 73 to 69 at delta 0. Leaf, zero p1 probes. Cursor force t0 is 68. Missing a0 copy at +0x4. D_80000000 identity fail-closed.
+ * summary: a0 clobber after VERTEX inc: macro assign inert 69; L104 redefine 70 at +4 (move in v0); in-place cast 82 at +20. a0 stays live. Stall, reverted.
  * PLATEAU-HANDOFF:overlay83DrawStrip:end
  */

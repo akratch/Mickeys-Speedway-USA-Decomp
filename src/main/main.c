@@ -1732,6 +1732,6 @@ void func_800293D0(void) {
  * frame: 0x58
  * relocations: 245
  * first-mismatch: +0x4
- * summary: V0: 492/489 words, exact 0x58 frame, 426 positional and 427 raw diffs. Relocs 245 versus 201; 59 sites and 25 identities align. Saved-register web persists.
+ * summary: Pair 2 extra-ISTR owns line 1196 gDPFullSync w1. Block-scope and neg-index drop the frame; chained 1s is inert. Stall: Olimit 100 skips uopt (needs 137).
  * PLATEAU-HANDOFF:func_80028564:end
  */

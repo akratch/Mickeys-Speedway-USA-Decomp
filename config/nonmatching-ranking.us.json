@@ -820,6 +820,21 @@
       "source_context_sha256": "NSSw.vngG.zTGM.vg2v.7l0v.s4mG.tr_a.X0MC.X1-q.6d_K.TqY"
     },
     {
+      "name": "func_80030610",
+      "file": "src/main/sched.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 768,
+      "objdiff_match_pct": null,
+      "differing_words": 56,
+      "first_mismatch_offset": 140,
+      "relocation_masked_differing_words": 56,
+      "relocation_masked_first_mismatch_offset": 140,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "9Y-9.J204.serE.z8OR.TkDh.xYUX.KS1G.X30G.-1dV.v7u4.OyI"
+    },
+    {
       "name": "effectboxControl",
       "file": "src/main/spranim.c",
       "overlay": null,
@@ -2408,21 +2423,6 @@
       "size_delta": 68,
       "category": "size-mismatch",
       "source_context_sha256": "GKFb.w93C.mYv_.tGXm.CGB7.ZOi6.Fzc8.ENSh.4SAC.4S9X.q7E"
-    },
-    {
-      "name": "func_80030610",
-      "file": "src/main/sched.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 768,
-      "objdiff_match_pct": null,
-      "differing_words": 105,
-      "first_mismatch_offset": 140,
-      "relocation_masked_differing_words": 104,
-      "relocation_masked_first_mismatch_offset": 140,
-      "size_delta": 4,
-      "category": "size-mismatch",
-      "source_context_sha256": "Cb27.IhrA.p1EW.N6Zh.3j__.hD6u.hNnb.GYDa.aTOG.XbeJ.xLI"
     },
     {
       "name": "fxScreenEffect",

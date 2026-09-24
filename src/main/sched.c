@@ -295,13 +295,11 @@ char *osScGetTaskType(s32 taskID) {
 void func_80030608(OSScTask *arg0) {
 }
 #ifdef NON_MATCHING
-/* 2026-09-18: frame 0x98 and the stack-home set now match. L145 reuse of
- * commandIndex as the 0xB8 walk counter drops S 48 to 40; the four unused
- * s8* pads realize declaration order [8][savedCommands][done][8][message]
- * so L is 40. Deleting the address carrier puts the one used temp at 0x4C.
- * Size is 193/192: one extra addiu of D_80000000 at +0x180. A literal first
- * addend CSEs with the 0x80000000U compare and reopens size +8. See the EOF
- * handoff. */
+/* 2026-09-24: size is 192/192, masked 56, frame 0x98. The three compares
+ * are the D_80000000 symbol and the three adds are the 0x80000000U literal,
+ * which deletes the extra low-half addiu. The symbol's lui now occupies the
+ * byte-test delay, so that branch is bne rather than bnel, and each literal
+ * add rematerializes through at. See the EOF handoff. */
 SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
                         SchedGfx *displayList, OSMesgQueue *queue,
                         u64 *dataStart) {
@@ -360,8 +358,8 @@ SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
             if (*(u8 *) displayList == 6) {
                 commandStart = (s8 *) displayList - 0x140;
                 printStart = commandStart;
-                if ((u32) commandStart < 0x80000000U) {
-                    printStart = commandStart + (u32) D_80000000;
+                if ((u32) commandStart < (u32) D_80000000) {
+                    printStart = commandStart + 0x80000000U;
                 }
                 if ((s32) printStart < (s32) dataStart) {
                     printStart = (s8 *) dataStart;
@@ -369,8 +367,8 @@ SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
                 diRcpPrintDL((SchedGfx *) printStart, displayList, 0x50);
 
                 nestedCommand = displayList->w1;
-                if (nestedCommand < 0x80000000U) {
-                    nestedCommand += (u32) D_80000000;
+                if (nestedCommand < (u32) D_80000000) {
+                    nestedCommand += 0x80000000U;
                 }
                 nestedStart = nestedCommand;
                 commandIndex = 0;
@@ -384,8 +382,8 @@ SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
                     commandIndex = commandIndex / 2;
                 }
                 displayList = (SchedGfx *) (nestedStart + commandIndex * 8);
-                if ((u32) displayList < 0x80000000U) {
-                    displayList = (SchedGfx *) ((u32) displayList + (u32) D_80000000);
+                if ((u32) displayList < (u32) D_80000000) {
+                    displayList = (SchedGfx *) ((u32) displayList + 0x80000000U);
                 }
                 diRcpPrintDL((SchedGfx *) nestedStart, displayList, 0xA0);
                 return func_80030610(sc, commandIndex, displayList, queue,
@@ -900,10 +898,10 @@ s32 __scSchedule(OSSched *sc, OSScTask **sp, OSScTask **dp, s32 availRCP) {
 
 /* PLATEAU-HANDOFF:func_80030610:start
  * symbol: func_80030610
- * score: 104 differing words
+ * score: 56 differing words
  * frame: 0x98
- * relocations: 13
+ * relocations: 11
  * first-mismatch: +0x8C
- * summary: Extra lo addiu of the symbol addend at +0x180; target's addend is a lui-only constant web apart from the compare constant.
+ * summary: Symbol compare closes the extra addiu; its lui takes the bnel delay and literal adds rematerialize through at.
  * PLATEAU-HANDOFF:func_80030610:end
  */

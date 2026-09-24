@@ -827,6 +827,6 @@ s32 levelInitRegionFlags(void) {
  * frame: 0x80
  * relocations: 110
  * first-mismatch: +0x328
- * summary: Unsigned-remainder mask controls are full-TU byte-inert; separate ring-mask evaluation with unchanged draw count remains open.
+ * summary: Separate ring-mask evaluation, fifth draw kept: statement double-mask stayed 6, use-site mask scored 19, comma-before-base scored 94. Phantom still leads.
  * PLATEAU-HANDOFF:levelInit:end
  */

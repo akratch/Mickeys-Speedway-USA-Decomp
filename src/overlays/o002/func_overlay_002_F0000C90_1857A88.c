@@ -69,7 +69,8 @@ extern void overlay2BuildResizeReloc(s32 size, void *memory, s32 tag);
 
 /* Workbench plateau: 76 masked words; 355/355 instructions, frame exact 0x68.
  * Overlay41 remat of side0 before the test plus L160 countdown 94 to 76.
- * Remains: leaf-type li 1 insertion; u32 leafType closes it at 121 naming. */
+ * Signed-1 hoist stalled: static load +4/238; preheader and header assigns flat.
+ * u32 leafType still the only form that keeps the preheader li, at 121 naming. */
 /*
  * PROVENANCE: Jet Force Gemini src/overlays/o142/overlay_142.c identifies the
  * close assembly-backed sibling as CreateBSP. No donor C body exists there;
@@ -261,6 +262,6 @@ void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
  * frame: 0x68
  * relocations: 65
  * first-mismatch: +0xDC
- * summary: Overlay41 side0 remat plus L160 countdown 94 to 76. Insertion remains; u32 leafType closes it at 121 naming. Next: hoist signed 1.
+ * summary: Signed-1 hoist stalled after 3: static s32 +4/238, if-preheader and do-header assigns flat at 76. Signed const still rematerializes in the leaf.
  * PLATEAU-HANDOFF:func_overlay_002_F0000C90_1857A88:end
  */

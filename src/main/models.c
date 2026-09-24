@@ -1407,7 +1407,7 @@ void func_8002109C(ModelPointOwner *owner) {
  * frame: 0x8
  * relocations: 0
  * first-mismatch: +0x38
- * summary: Pre-test remaining in one block: while !=0 unrolled 120/+296; do/break/while(1) 39/-4; goto header 45/-8. Stall: no delta-0 score under 15.
+ * summary: hypothesis=use remaining as the test without a two-block shift; spellings=while !=0 unrolled 120 at +296, do/break/while(1) scored 39 at -4, goto header scored 45 at -8; stall=no delta-0 score under 15
  * PLATEAU-HANDOFF:func_80020D8C:end
  */
 

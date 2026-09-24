@@ -4174,7 +4174,7 @@ void fmvInit(void) {
  * frame: 0x48
  * relocations: 49
  * first-mismatch: +0x0
- * summary: Address keep dying before path loops: bare pointer inert, store barrier 104, load barrier 94 at delta 0. Stall: frame 0x48 and command shift still after PAL.
+ * summary: hypothesis=an address keep that dies before the path loops; spellings=bare pointer inert at 102, store barrier scored 104, load-only barrier kept at 94; stall=frame still 0x48 and the command shift still follows the PAL math
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

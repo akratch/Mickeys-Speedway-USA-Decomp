@@ -262,6 +262,6 @@ void func_overlay_002_F0000C90_1857A88(Overlay2BuildObject *object,
  * frame: 0x68
  * relocations: 65
  * first-mismatch: +0xDC
- * summary: Signed-1 hoist stalled after 3: static s32 +4/238, if-preheader and do-header assigns flat at 76. Signed const still rematerializes in the leaf.
+ * summary: hypothesis=hoist a signed 1; spellings=static s32 at +4 and 238 words, preheader assign flat, header assign flat; stall=the signed const still rematerializes and the score stays 76/355 at delta 0
  * PLATEAU-HANDOFF:func_overlay_002_F0000C90_1857A88:end
  */

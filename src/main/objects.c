@@ -5556,7 +5556,7 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: 0x100
  * relocations: 83
  * first-mismatch: +0x134
- * summary: No packet cursor: packets in a0, modeState base in a2. Unsigned index, slot index, byte-offset address stalled at 185/-4, 290/+20, 185/-4; +0x134 naming stayed.
+ * summary: hypothesis=packets in a0 and the modeState base in a2 with no declared packet cursor; spellings=unsigned spawn index 185 at -4, slot index 290 at +20, byte-offset address 185 at -4; stall=the packets address spans a call so a0 is not offered
  * PLATEAU-HANDOFF:func_80004FE0:end
  */
 
@@ -5586,6 +5586,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: 0x98
  * relocations: 20
  * first-mismatch: +0x148
- * summary: Hypothesis +0x2C/+0x30/+0x34. Block scope 116 d0 unhomed; split 116 d0 folded; aggregate 197 d+16 (+0x2C 1ld +0x30 3ld). Stall: speed +0x4C, step missed +0x34.
+ * summary: hypothesis=put step at +0x34, speed at +0x30 and factor at +0x2C without undoing the L144 homes; spellings=block scope 116 unhomed, split stores 116 folded, two-field aggregate 197 at +16; stall=speed stayed at +0x4C and step missed +0x34, body reverted
  * PLATEAU-HANDOFF:func_8000B3CC:end
  */

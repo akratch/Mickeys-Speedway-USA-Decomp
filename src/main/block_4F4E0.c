@@ -266,6 +266,6 @@ s32 func_8004F020(void) {
  * frame: 0x8
  * relocations: 12
  * first-mismatch: +0x2C
- * summary: Hypothesis outer-before-inner: s32 new_var and (u8)(s32) merge to the 13-word a1/a2 swap; (s16)0 index stays the 15-word pair. ucvt still follows its uilod.
+ * summary: hypothesis=unforced outer-before-inner byte numbering; spellings=s32 new_var, (u8)(s32) store, (s16)0 index; stall=the widen merges to the 13-word a1/a2 swap and the index cast stays the 15-word pair
  * PLATEAU-HANDOFF:func_8004EC60:end
  */

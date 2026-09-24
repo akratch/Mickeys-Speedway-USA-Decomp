@@ -12,13 +12,18 @@ remembered list:
   matched, non-``NON_MATCHING`` C ``text_ownership`` row, or a
   ``mixed_tu_exact_c_ranges`` island), and whose name no ``.s`` still labels.
 
-``promotion_proof.py`` proves a resident function only through its
-``symbol_addrs.us.txt`` row, which must say ``type:func``, ``size:`` and
-``matched C``.  A resident function progress counts as matched but whose row
-does not say so is outside that contract: no proof can run, so the census
-reports it as *uncovered* (a count, and a list under ``--list-uncovered``)
-instead of inventing a failure class for it.  ``--require-coverage`` turns
-every uncovered function into a failure.
+``promotion_proof.py`` decides that a resident function is promoted by the
+same rule (``function_preflight._progress_matched_resident``), so every
+resident function progress counts is in contract. Its geometry is the
+``symbol_addrs.us.txt`` ``type:func size:`` row when one exists, and
+otherwise the linked extent authenticated against its neighbour; the census
+tallies residents by that evidence. A zero-size resident ``STT_FUNC`` (a weak
+alias such as ``fsin`` of ``__sinf``) is not proved on its own: it passes when
+the sized definition at its address is itself promoted and proved.
+
+A function outside the proof contract would be reported as *uncovered* (a
+count, and a list under ``--list-uncovered``) rather than as a failure;
+``--require-coverage`` turns every uncovered function into a failure.
 
 Each proof runs with ``--no-build``; the census refreshes the build once
 first.  That is also what makes ``-j`` safe: without ``--no-build`` every
@@ -65,7 +70,7 @@ MAP_PATH = REPO / "build" / "mickey.us.map"
 ATLAS = REPO / "config" / "overlays.us.json"
 SYMBOLS = REPO / "symbol_addrs.us.txt"
 CACHE = REPO / "build" / "promotion-proof-census" / "cache.json"
-CACHE_SCHEMA = "mickey-promotion-proof-census-cache-v1"
+CACHE_SCHEMA = "mickey-promotion-proof-census-cache-v2"
 SYNTHETIC_VMA = 0xF0000000
 
 # Every file whose content decides a promotion-proof verdict, beyond the
@@ -91,6 +96,7 @@ class Entry:
     obj: str | None           # object path relative to the repository
     covered: bool = True      # False: outside promotion-proof's contract
     why_uncovered: str = ""
+    alias_of: str | None = None  # zero-size alias: proved through this definition
 
 
 @dataclasses.dataclass
@@ -102,6 +108,7 @@ class Outcome:
     error: str | None = None
     error_class: str | None = None
     cached: bool = False
+    evidence: str | None = None
 
 
 # ------------------------------------------------------------------ set
@@ -142,18 +149,6 @@ def object_for(objects: dict[str, list[tuple[int, int, str]]], section: str,
     return owners[0] if len(owners) == 1 else None
 
 
-def resident_contract_rows(text: str) -> set[str]:
-    """Names whose symbol_addrs row satisfies promotion-proof's resident rule."""
-    names = set()
-    for line in text.splitlines():
-        match = re.match(r"^\s*([A-Za-z_]\w*)\s*=\s*0x[0-9A-Fa-f]+\s*;\s*//(.*)$", line)
-        if (match and "type:func" in match.group(2)
-                and len(re.findall(r"\bsize:0x[0-9A-Fa-f]+\b", match.group(2))) == 1
-                and re.search(r"\bmatched\s+C\b", match.group(2))):
-            names.add(match.group(1))
-    return names
-
-
 def _exact_c(module: dict, start: int, end: int) -> bool:
     for row in module.get("text_ownership", []):
         if (row.get("type") == "c" and row.get("matched") is True
@@ -174,7 +169,6 @@ def promoted_functions(root: Path = REPO) -> list[Entry]:
     adopted = progress.get_adopted_symbol_addresses(str(SYMBOLS))
     resident, addresses, _placeholders, _aliases = progress.get_elf_functions(
         str(ELF_PATH), progress.find_objdump(str(root / "tools")), adopted)
-    contract = resident_contract_rows(SYMBOLS.read_text(errors="replace"))
     objects = map_text_objects(MAP_PATH.read_text(errors="replace"))
     elf = rs.Elf(ELF_PATH)
     sections = {}
@@ -182,14 +176,20 @@ def promoted_functions(root: Path = REPO) -> list[Entry]:
         if info & 0xF == rs.STT_FUNC and 0 < shndx < len(elf.names):
             sections.setdefault(name, elf.names[shndx])
 
+    matched = set(resident) - asm
+    sized_at = collections.defaultdict(list)
+    for name in matched:
+        if resident[name] > 0 and name in addresses:
+            sized_at[addresses[name]].append(name)
     entries = []
-    for name in sorted(set(resident) - asm):
+    for name in sorted(matched):
         obj = object_for(objects, sections.get(name, ""), addresses.get(name, -1))
-        if name in contract:
-            entries.append(Entry(name, "resident", obj))
+        if resident[name] == 0:
+            owners = sized_at.get(addresses.get(name, -1), [])
+            entries.append(Entry(name, "resident", obj,
+                                 alias_of=owners[0] if len(owners) == 1 else ""))
         else:
-            entries.append(Entry(name, "resident", obj, covered=False,
-                                 why_uncovered="symbol_addrs row does not say matched C"))
+            entries.append(Entry(name, "resident", obj))
 
     atlas = json.loads(ATLAS.read_text())
     modules = {module["overlay"]: module for module in atlas["modules"]}
@@ -269,7 +269,8 @@ def prove(entry: Entry, runner: Runner = subprocess.run) -> Outcome:
             receipt = None
         if isinstance(receipt, dict) and receipt.get("verdict") == "exact":
             return Outcome(entry.symbol, entry.kind, True,
-                           identity=str(receipt.get("identity_proof_mode")))
+                           identity=str(receipt.get("identity_proof_mode")),
+                           evidence=receipt.get("geometry_evidence"))
         message = "promotion proof exited 0 without an exact receipt"
     else:
         message = (result.stderr or result.stdout or "").strip() or (
@@ -304,6 +305,8 @@ def census(entries: Iterable[Entry], *, jobs: int = 1, cache_path: Path | None =
            runner: Runner = subprocess.run,
            progress: Callable[[int, int], None] | None = None) -> list[Outcome]:
     entries = [entry for entry in entries if entry.covered]
+    aliases = [entry for entry in entries if entry.alias_of is not None]
+    entries = [entry for entry in entries if entry.alias_of is None]
     digests: dict[str, str] = {}
 
     def digest(obj: str) -> str:
@@ -322,7 +325,8 @@ def census(entries: Iterable[Entry], *, jobs: int = 1, cache_path: Path | None =
         row = cache.get(entry.symbol)
         if row and row.get("key") == keys[entry.symbol]:
             outcomes[entry.symbol] = Outcome(entry.symbol, entry.kind, True,
-                                             identity=row.get("identity"), cached=True)
+                                             identity=row.get("identity"), cached=True,
+                                             evidence=row.get("evidence"))
         else:
             pending.append(entry)
 
@@ -341,9 +345,22 @@ def census(entries: Iterable[Entry], *, jobs: int = 1, cache_path: Path | None =
         for outcome in outcomes.values():
             if outcome.ok:
                 fresh[outcome.symbol] = {"key": keys[outcome.symbol],
-                                         "identity": outcome.identity}
+                                         "identity": outcome.identity,
+                                         "evidence": outcome.evidence}
         save_cache(cache_path, fresh)
-    return [outcomes[entry.symbol] for entry in entries]
+    for alias in aliases:
+        owner = outcomes.get(alias.alias_of or "")
+        if owner is not None and owner.ok:
+            outcomes[alias.symbol] = Outcome(alias.symbol, alias.kind, True,
+                                             identity="zero-size alias", cached=owner.cached,
+                                             evidence="zero-size alias of a proved definition")
+        else:
+            message = ("zero-size alias of %s, which is not proved" % alias.alias_of
+                       if alias.alias_of else
+                       "zero-size alias with no single sized promoted definition at its address")
+            outcomes[alias.symbol] = Outcome(alias.symbol, alias.kind, False, error=message,
+                                             error_class=error_class(message, alias.symbol))
+    return [outcomes[entry.symbol] for entry in entries + aliases]
 
 
 # ------------------------------------------------------------------ main
@@ -415,6 +432,12 @@ def render(outcomes: list[Outcome], uncovered: list[Entry], *, list_uncovered: b
         print("failures by class:")
         for name, count in collections.Counter(
                 row.error_class for row in failures).most_common():
+            print("  %4d  %s" % (count, name))
+    resident_evidence = collections.Counter(
+        row.evidence or "unrecorded" for row in outcomes if row.ok and row.kind == "resident")
+    if resident_evidence:
+        print("resident proofs by geometry evidence:")
+        for name, count in sorted(resident_evidence.items()):
             print("  %4d  %s" % (count, name))
     print("proofs by identity label:")
     for name, count in sorted(collections.Counter(

@@ -4,9 +4,9 @@
 0x2c:6:gOverlay14Flag0
 0x30:5:gOverlay14FlagC
 0x4c:6:gOverlay14FlagC
-0x50:5:gOverlay14CommandHeader
-0x60:6:gOverlay14CommandHeader
+0x50:5:gOverlay14CommandHeaderBase
+0x60:6:gOverlay14CommandHeaderBase
 0x54:5:gOverlay14Flag10
 0x80:6:gOverlay14Flag10
-0x84:5:gOverlay14CommandHeader
-0x90:6:gOverlay14CommandHeader
+0x84:5:gOverlay14CommandHeaderBase
+0x90:6:gOverlay14CommandHeaderBase

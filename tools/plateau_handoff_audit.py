@@ -87,6 +87,7 @@ class Item:
     source: str
     shard: str
     status: str
+    newer: str = ""
 
 
 @dataclass
@@ -374,6 +375,22 @@ def discover_shards(
     return shards
 
 
+def newer_handoff_side(root: Path, source_rel: str, shard_rel: str) -> str:
+    """Which of a disagreeing pair was written last.
+
+    ``source`` and ``shard`` are file mtimes. ``same`` means the metrics
+    differ but neither file is newer, which a paired finalize does not
+    produce.
+    """
+    source_ns = (root / source_rel).stat().st_mtime_ns
+    shard_ns = (root / shard_rel).stat().st_mtime_ns
+    if shard_ns > source_ns:
+        return "shard"
+    if source_ns > shard_ns:
+        return "source"
+    return "same"
+
+
 def audit_tree(root: Path) -> Audit:
     tracked = tracked_paths(root)
     sources = tracked_sources(root, tracked)
@@ -411,7 +428,11 @@ def audit_tree(root: Path) -> Audit:
                 if shard.source == marker.source and shard.metrics == marker.metrics
                 else "stale"
             )
-        items.append(Item(marker.symbol, marker.source, shard_path, status))
+        newer = (
+            newer_handoff_side(root, marker.source, shard_path)
+            if status == "stale" else ""
+        )
+        items.append(Item(marker.symbol, marker.source, shard_path, status, newer))
 
     unbacked = sorted(set(shards) - marker_symbols)
     return Audit(
@@ -427,6 +448,35 @@ def audit_tree(root: Path) -> Audit:
         ),
         unbacked_shards=unbacked,
     )
+
+
+def regenerate_stale_shards(root: Path) -> list[str]:
+    """Rewrite missing or stale shards from the source blocks in ``root``.
+
+    The merged source is the authority. A lane's older shard is not kept.
+    Unlike ``--write``, a shard the merge has staged is not refused: during
+    a merge every shard is staged.
+    """
+    audit = audit_tree(root)
+    if audit.issues:
+        raise AuditFailure(
+            "refusing to regenerate shards while source markers are invalid"
+        )
+    markers: dict[str, Marker] = {}
+    for marker in audit.markers:
+        markers.setdefault(marker.symbol, marker)
+    written: list[str] = []
+    for item in audit.actionable:
+        marker = markers.get(item.symbol)
+        if marker is None:
+            continue
+        existing = audit.shards.get(item.symbol)
+        details = existing.details if existing is not None else ""
+        path = root / item.shard
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(render_shard(marker, details), encoding="utf-8", newline="\n")
+        written.append(item.shard)
+    return written
 
 
 def render_shard(marker: Marker, details: str = "") -> str:
@@ -540,7 +590,16 @@ def print_text(result: dict[str, object]) -> None:
     items = result["items"]
     assert isinstance(items, list)
     for status in ("missing", "stale", "invalid"):
-        symbols = [row["symbol"] for row in items if row["status"] == status]
+        symbols = []
+        for row in items:
+            if row["status"] != status:
+                continue
+            if status == "stale" and row.get("newer"):
+                side = row["newer"]
+                label = "same age" if side == "same" else f"{side} newer"
+                symbols.append(f"{row['symbol']} ({label})")
+            else:
+                symbols.append(row["symbol"])
         if symbols:
             print(f"{status}: " + ", ".join(symbols))
     for row in result["issues"]:

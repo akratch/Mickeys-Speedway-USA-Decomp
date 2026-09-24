@@ -9,7 +9,7 @@ extern s32 gOverlay14Flag4[];
 extern s32 gOverlay14Flag0[];
 extern s32 gOverlay14FlagC[];
 extern s32 gOverlay14Flag10[];
-extern Overlay14CommandHeader *gOverlay14CommandHeader[];
+extern Overlay14CommandHeader *gOverlay14CommandHeaderBase[];
 
 extern void overlay14ResetMode(void);
 extern void overlay14DispatchCommand(void);
@@ -26,12 +26,12 @@ void overlay14StepCommand(s32 context) {
         overlay14DispatchCommand();
         return;
     }
-    if ((gOverlay14FlagC[3] != 0) && (gOverlay14CommandHeader[0x3F]->cursor > 0)) {
+    if ((gOverlay14FlagC[3] != 0) && (gOverlay14CommandHeaderBase[0x3F]->cursor > 0)) {
         overlay14MoveCommandCursor(-1);
         return;
     }
     if (gOverlay14Flag10[4] != 0) {
-        command = gOverlay14CommandHeader[0x3F];
+        command = gOverlay14CommandHeaderBase[0x3F];
         if (command->cursor < (command->count - 1)) {
             overlay14MoveCommandCursor(1);
         }

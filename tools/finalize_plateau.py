@@ -21,6 +21,7 @@ from pathlib import Path
 import re
 import subprocess
 import sys
+import time
 
 
 SYMBOL_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -350,6 +351,22 @@ def source_handoff(symbol: str, metrics: Metrics) -> str:
         + f" * PLATEAU-HANDOFF:{symbol}:end\n"
         + " */\n"
     )
+
+
+def write_handoff_pair(
+    source_path: Path, source_text: str, doc_path: Path, doc_text: str,
+) -> None:
+    """Write the source block and the shard together, with one mtime.
+
+    One invocation updates both, then stamps them together. A later hand
+    edit moves only one file's mtime, which is how the audit tells the
+    sides apart. A paired write itself cannot.
+    """
+    source_path.write_text(source_text, encoding="utf-8", newline="\n")
+    doc_path.write_text(doc_text, encoding="utf-8", newline="\n")
+    stamp = time.time()
+    os.utime(source_path, (stamp, stamp))
+    os.utime(doc_path, (stamp, stamp))
 
 
 def update_source(text: str, symbol: str, handoff: str) -> str:
@@ -700,11 +717,12 @@ def main() -> int:
             if custom_handoff
             else update_handoff_shard(doc_text, args.symbol, block)
         )
-        source_path.write_text(
+        write_handoff_pair(
+            source_path,
             update_source(source_text, args.symbol, source_handoff(args.symbol, metrics)),
-            encoding="utf-8", newline="\n",
+            doc_path,
+            updated_doc,
         )
-        doc_path.write_text(updated_doc, encoding="utf-8", newline="\n")
 
         require_guarded_candidate(
             source_path.read_text(encoding="utf-8"), args.symbol, aliases,

@@ -300,6 +300,115 @@ refused as an unsupported specification; it now expands the file exactly as
 `filter_elf_relocations.py` does and pins the file's digest among the
 capture's inputs.
 
+The census then ended at 23 failures; 20 were overlay functions whose
+recipes the declared-metadata proof did not read. That proof now accepts every
+metadata form the build ships -- `objcopy --redefine-sym`, `--add-symbol` and
+`--remove-section` (never of `.text`, its relocations or the symbol tables),
+`rebind_elf_relocations.py`, `externalize_elf_section.py`, the filters and
+the trim, `@SPEC_FILE` arguments included -- and proves the filtered sites
+against a *replay*: the Make-expanded recipe run, step by step and in order,
+on the fresh raw compile with only the filters left out, so the replay
+carries every rename and rebind the configured object does. The accounting
+then requires the configured object to differ from the replay by exactly the
+declared filter records. Two orderings are restated rather than replayed: a
+rename that follows a filter carries the filter's symbol with it, and a
+section a filter frees for a later `--remove-section` (overlay 91 filters its
+`.rodata` HI/LO, then removes `.rodata`) is removed by the accounting after
+the filters. A retained site is the configured object's own record and is
+proved as in any promoted function, statically or by the linked-ROM route; a
+filtered site is proved by the replay's static surface (receipt route
+`replay-static`), the linked BSS base (`linked-bss-base`), or, for a section
+the recipe removes, by content: every such site must agree on where the
+section starts, that offset must lie in the module's initialized data, and the
+ROM must hold the section's exact bytes there, jump-table words relocated
+against the TU's text (`removed-section-content`).
+
+Reading those recipes exposed tree defects the filters had hidden, each a C
+spelling whose identity disagreed with the site it names:
+
+- Overlay 14's `Ref` idiom (`extern O14ValueC0Ref gOverlay14ValueC0;` with
+  padding up to the field) makes the name the module's data base, while
+  other overlay 14 TUs declare the same name as the `s32` at data `+0xC0`.
+  The static surface saw both meanings and left the name ambiguous. The
+  `Ref`-idiom declarations in `overlay14ApplyValues`,
+  `overlay14AdvanceCommand`, `overlay14StepCommand` and
+  `func_overlay_014_F00013F4_1870CCC` now spell the base as
+  `gOverlay14<Field>Base`, following `gOverlay14CommandHeaderBase`.
+- `overlay11UpdateModeSix` and `overlay11UpdateTwoOptionMenu` read one C
+  macro, `D_INPUT + 0x1C4`, for two retail words: the argument past the BSS
+  base and the menu input in initialized data (the `D_menuBase + 0x1C4` of
+  their siblings). The data reads are now `OVERLAY11_MENU_INPUT` through
+  `D_menuInputBase`, and the counter's base `D_cfgA`, a scalar at a reserved
+  selector in every other TU, is `D_menuCounterBase`.
+- `overlay28InitializeWork` stored `overlay28ResetBuffer` (module `+0`) in
+  its `reset` field; the shipped relocation names the start of overlay 28's
+  initialized data (`+0x7F0`). The C now stores `gOverlay28DataBase`.
+- `overlay91UpdateTimeline` called one `overlay91CallProxy` for eleven
+  retail callees in four identities. Each call now names its callee
+  (`func_8002A8C0`, `func_8002A8BC`, `func_80000F94`, `func_80006EA0`,
+  `func_overlay_007_F0000DBC_185CC44`).
+
+Every one of those relocations stays filtered, so no name is linked and the
+ROM, the alias surface and every word are unchanged. Two proof defects fell
+out as well: `classify_source_selection` paired an *unconditional* friendly
+definition in multi-function `overlay_007_tail.c` with another function's
+guarded `GLOBAL_ASM` (only a guarded definition can be a fallback's
+alternative), and a resident function's own `.rodata` jump table
+(`func_8005BA40`) resolved through a program-wide `.rodata`: an
+externalized overlay section survives in the linked ELF as an `*ABS*` zero
+section symbol. Section symbols are never name identities now; a resident
+object's own section symbol is placed by the link map
+(`build/mickey.us.map`), which must place that object's section once, at its
+own size.
+
+The last three failures were definitions the source-fact reader could not
+see. `overlay28ResetBuffer` is written K&R style (`f(state, count)` then its
+parameter declarations before the `{`), which the reader now accepts when the
+parameter list is bare identifiers and every declaration before the body is a
+non-empty `;`-terminated one, so a prototype or a call never qualifies.
+`overlay101UpdateEntry8B`/`8C` are spelled only by the preprocessor
+(`#define overlay101UpdateEntry8 overlay101UpdateEntry8B` then
+`#include "overlay101UpdateEntry8.c"`). When the written source has no fact
+for a symbol that one of its own `#define`s spells, the reader
+(`proof_provenance.source_view`) uses the configured compiler's view instead:
+the ordinary build's compile command from `gmake -n`, rerun as
+`tools/ido/cc -E`. Only such files are ever preprocessed.
+
+The census used to leave 1,057 resident functions *uncovered*: the proof
+admitted a resident function only through a `symbol_addrs.us.txt` row saying
+`matched C`, while `tools/progress.py` (and so the scoreboard) counts a
+resident function as matched C when the linked ELF defines it as a sized,
+non-overlay `STT_FUNC` and no `glabel`/`alabel` under `asm/` names it. The
+proof now applies that rule (`function_preflight._progress_matched_resident`)
+instead of the comment, so every function progress counts is in contract; no
+row was annotated. Its geometry is the row's `type:func size:` when there is
+one, and otherwise the linked extent, accepted only when the function runs to
+the next sized function in its section (or the section end) over nothing but
+zero padding. A zero-size weak alias (`fsin` of `__sinf`) passes through the
+sized definition at its address. The census tallies residents by that
+geometry evidence.
+
+Covering them exposed four more classes. Thirty-five `size:` annotations
+disagreed with the compiler's `st_size` for a byte-identical build -- 24
+carried the inter-function padding, 11 were simply short -- and now carry
+the linked size. A libultra definition behind ordinary conditionals (`crc.c`'s
+`#if BUILD_VERSION >= VERSION_J`, `#if 0` blocks in `n_env.c` and
+`pfsdeletefile.c`) is read through the configured preprocessor, as a
+`#define`-spelled one is. A resident object's own symbols -- its anonymous
+`.rodata`, and `joy.c.o`'s local carrier that shares the name
+`D_800CF3B5` with the global alias it is renamed to -- are placed by symbol
+table entry from the link map, and HI16/LO16 pair on the entry, as the linker
+pairs them, not on the name. A global or weak definition is placed that way
+only when the link's one global of that name sits exactly there: a
+linker-script assignment overrides `menu.c.o`'s weak `D_800D3044`.
+The retail resident table's one `R_MIPS_32` record (flags `0x23`) is
+`RELOC_OP_DATA`: its offset is from the resident data base, where it
+patches the overlay-64 pointer, and it only coincides numerically with
+`func_80004B04` at text `+0x68`. Text proofs skip `RELOC_OP_DATA`.
+A record against the ELF null symbol (entry 0,
+`S = 0`) relocates to its addend: `mainThread`'s two ram-end records lose
+their carrier in the recipe's second objcopy pass and link as absolute.
+
 Linked BSS follows the shipped relocation blobs, while runtime BSS follows only
 text plus data/rodata. The tool therefore proves the linked definition first,
 then translates its BSS offset from `ROM-size + object offset` to

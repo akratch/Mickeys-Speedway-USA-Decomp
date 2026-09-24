@@ -6,6 +6,7 @@ from __future__ import annotations
 import pathlib
 import tempfile
 import unittest
+from unittest import mock
 
 import proof_provenance as provenance
 
@@ -77,6 +78,19 @@ class SourceClassificationTests(unittest.TestCase):
         )
         self.assertEqual(kind, provenance.ORDINARY_C)
 
+    def test_unconditional_friendly_definition_ignores_another_fallback(self) -> None:
+        # A promoted friendly-named body in a multi-function TU, beside another
+        # function's guarded fallback: the fallback is not its alternative.
+        text = """
+        void friendly(void) { }
+        #ifdef NON_MATCHING
+        void another(void) { }
+        #else
+        #pragma GLOBAL_ASM("asm/nonmatchings/x/another_auto_name.s")
+        #endif
+        """
+        self.assertEqual(self.classify(text)[0], provenance.ORDINARY_C)
+
     def test_bare_global_asm_is_fallback(self) -> None:
         text = '#pragma GLOBAL_ASM("asm/nonmatchings/x/func_1234.s")\n'
         self.assertEqual(self.classify(text)[0], provenance.GLOBAL_ASM)
@@ -120,6 +134,68 @@ class ManifestPrimitiveTests(unittest.TestCase):
             "friendly",
         )
         self.assertEqual(len(facts.definitions), 1)
+
+    def test_source_facts_see_kr_definitions(self) -> None:
+        text = """
+            void reset();
+            void reset(a);
+            void reset(state, count)
+            State *state;
+            s32 count;
+            {
+                reset(state, 1);
+            }
+            """
+        facts = provenance.source_facts(text, "reset")
+        self.assertEqual([row.line for row in facts.definitions], [4])
+        # A prototype, a call, an initializer or a non-identifier parameter
+        # list is never read as a K&R definition.
+        for other in ("void reset(a); int x; {",
+                      "int y = reset(a) ; int x = 1; {",
+                      "void reset(int a) int a; {",
+                      "void reset(a) ; {"):
+            with self.subTest(other=other):
+                self.assertEqual(provenance.source_facts(other, "reset").definitions, ())
+
+    def test_source_view_reads_the_preprocessor_only_for_macro_spelled_definitions(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            (root / "src").mkdir()
+            body = root / "src/entry.c"
+            body.write_text("void entry(int a) { }\n")
+            alias = root / "src/entryB.c"
+            alias.write_text('#define entry entryB\n#include "entry.c"\n')
+            other = root / "src/other.c"
+            other.write_text("/* #define entryB */ void other(void) { }\n")
+            expanded = '# 1 "src/entryB.c"\n# 1 "src/entry.c"\nvoid entryB(int a) { }\n'
+            with mock.patch.object(provenance, "preprocessed_text", return_value=expanded) as cpp:
+                self.assertEqual("source", provenance.source_view(body, "entry", root)[1])
+                self.assertEqual(("preprocessed"), provenance.source_view(alias, "entryB", root)[1])
+                self.assertEqual(1, len(provenance.source_facts_for(alias, "entryB", root).definitions))
+                # A commented-out #define is not a spelling.
+                self.assertEqual("source", provenance.source_view(other, "entryB", root)[1])
+                self.assertEqual(alias, provenance._find_source(root, ("entryB",)))
+                self.assertEqual({alias}, {call.args[0] for call in cpp.call_args_list})
+
+    def test_preprocessed_text_runs_the_configured_compiler(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            (root / "tools/ido").mkdir(parents=True)
+            cc = root / "tools/ido/cc"
+            cc.write_text('#!/bin/sh\necho "$@"\n')
+            cc.chmod(0o755)
+            source = root / "src/a.c"
+            source.parent.mkdir()
+            source.write_text("")
+            command = "tools/ido/cc -c -DX -I include -O2 -o build/src/a.c.o src/a.c"
+            with mock.patch.object(provenance, "_discover_compile_command",
+                                   return_value=(command, ["-DX", "-I", "include", "-O2"], None)):
+                self.assertEqual("-E -DX -I include -O2 src/a.c\n",
+                                 provenance.preprocessed_text(source, root))
+            with mock.patch.object(provenance, "_discover_compile_command",
+                                   return_value=(None, [], "gmake dry-run failed")):
+                with self.assertRaises(provenance.MetadataProofError):
+                    provenance.preprocessed_text(source, root)
 
     def build_fixture_manifest(self, source_text: str, *, emit_symbol: bool) -> dict[str, object]:
         with tempfile.TemporaryDirectory() as directory:

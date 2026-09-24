@@ -4,6 +4,9 @@
 Every case here is a resolution that left no conflict marker, so the tree
 looked clean and the failure landed several gates downstream.
 """
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -56,6 +59,85 @@ class ValidateResolved(unittest.TestCase):
         path = Path(self.tmp.name) / "bin.py"
         path.write_bytes(b"\xff\xfe def f(:\n")
         self.assertIsNotNone(rlc.validate_resolved(str(path)))
+
+
+class GeneratedRankingMergeTests(unittest.TestCase):
+    def test_choose_regenerated_discards_an_older_lane_copy(self) -> None:
+        lane = '{"functions": [{"name": "old", "size_delta": 4}]}\n'
+        regenerated = '{"functions": [{"name": "current", "size_delta": 0}]}\n'
+        chosen = rlc.choose_regenerated(lane, regenerated)
+        self.assertEqual(chosen, regenerated)
+        self.assertNotEqual(chosen, lane)
+
+    def test_resolver_keeps_regeneration_ahead_of_the_lane_ranking_and_shard(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            previous = Path.cwd()
+            os.chdir(root)
+            try:
+                self._resolve(root)
+            finally:
+                os.chdir(previous)
+
+    def _git(self, *args: str) -> None:
+        subprocess.run(["git", *args], check=True, capture_output=True, text=True)
+
+    def _resolve(self, root: Path) -> None:
+        self._git("init", "-q")
+        self._git("checkout", "-q", "-b", "integration")
+        self._git("config", "user.email", "merge@example.invalid")
+        self._git("config", "user.name", "Merge Test")
+        ranking = root / "config" / "nonmatching-ranking.us.json"
+        shard_dir = root / "docs" / "matching-triage-handoffs"
+        ranking.parent.mkdir(parents=True)
+        shard_dir.mkdir(parents=True)
+        ranking.write_text('{"resolved": "base"}\n', encoding="utf-8")
+        (shard_dir / "demo_symbol.md").write_text("score: base\n", encoding="utf-8")
+        self._git("add", ".")
+        self._git("commit", "-q", "-m", "base")
+        self._git("checkout", "-q", "-b", "lane")
+        ranking.write_text('{"resolved": "lane-old"}\n', encoding="utf-8")
+        (shard_dir / "demo_symbol.md").write_text("score: lane-old\n", encoding="utf-8")
+        self._git("commit", "-q", "-am", "lane")
+        self._git("checkout", "-q", "integration")
+        ranking.write_text('{"resolved": "integrated"}\n', encoding="utf-8")
+        (shard_dir / "demo_symbol.md").write_text("score: integrated\n", encoding="utf-8")
+        self._git("commit", "-q", "-am", "integrated")
+        subprocess.run(
+            ["git", "merge", "--no-commit", "--no-ff", "lane"],
+            check=False, capture_output=True, text=True,
+        )
+        argv = sys.argv
+        sys.argv = ["resolve_lane_conflicts.py", "lane"]
+        try:
+            status = rlc.main()
+        finally:
+            sys.argv = argv
+        self.assertEqual(status, 0)
+        self.assertEqual(ranking.read_text(encoding="utf-8"), '{"resolved": "integrated"}\n')
+        self.assertEqual(
+            (shard_dir / "demo_symbol.md").read_text(encoding="utf-8"),
+            "score: integrated\n",
+        )
+        regenerated_ranking = '{"resolved": "regenerated"}\n'
+        regenerated_shard = "score: regenerated\n"
+        ranking.write_text(
+            rlc.choose_regenerated(
+                '{"resolved": "lane-old"}\n', regenerated_ranking,
+            ),
+            encoding="utf-8",
+        )
+        (shard_dir / "demo_symbol.md").write_text(
+            rlc.choose_regenerated("score: lane-old\n", regenerated_shard),
+            encoding="utf-8",
+        )
+        self.assertEqual(ranking.read_text(encoding="utf-8"), regenerated_ranking)
+        self.assertNotIn("lane-old", ranking.read_text(encoding="utf-8"))
+        self.assertEqual(
+            (shard_dir / "demo_symbol.md").read_text(encoding="utf-8"),
+            regenerated_shard,
+        )
+        self.assertNotIn("lane-old", (shard_dir / "demo_symbol.md").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

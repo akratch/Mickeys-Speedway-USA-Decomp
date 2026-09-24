@@ -144,11 +144,35 @@ class CensusTests(unittest.TestCase):
                          census.object_for(objects, ".overlay_066", 0xF0000000))
         self.assertIsNone(census.object_for(objects, ".overlay_066", 0xF0000040))
 
-    def test_resident_contract_requires_matched_c_row(self):
-        text = ("a = 0x80001000; // type:func size:0x10 matched C src/a.c.o\n"
-                "b = 0x80002000; // type:func size:0x10 tier-D candidate\n"
-                "c = 0x80003000; // type:func matched C no size\n")
-        self.assertEqual({"a"}, census.resident_contract_rows(text))
+    def test_zero_size_aliases_pass_only_through_a_proved_definition(self):
+        entries = [census.Entry("__sinf", "resident", "build/s.o"),
+                   census.Entry("fsin", "resident", "build/s.o", alias_of="__sinf"),
+                   census.Entry("func_80001000", "resident", "build/c.o"),
+                   census.Entry("func_80001004", "resident", "build/c.o",
+                                alias_of="func_80001000"),
+                   census.Entry("orphan", "resident", "build/c.o", alias_of="")]
+        runner = FakeRunner({"__sinf": "static",
+                             "func_80001000": ("promotion_proof.py: error: not exact",)})
+        outcomes = {row.symbol: row for row in census.census(
+            entries, cache_path=None, elf_digest="e", environment="v", runner=runner,
+            object_digest=lambda obj: obj)}
+        self.assertEqual({"__sinf", "func_80001000"}, {call[2] for call in runner.calls})
+        self.assertTrue(outcomes["fsin"].ok)
+        self.assertEqual("zero-size alias", outcomes["fsin"].identity)
+        self.assertFalse(outcomes["func_80001004"].ok)
+        self.assertFalse(outcomes["orphan"].ok)
+
+    def test_resident_geometry_evidence_is_tallied(self):
+        outcomes = [census.Outcome("a", "resident", True, identity="static",
+                                   evidence="symbol_addrs function row+progress matched-C rule"),
+                    census.Outcome("b", "resident", True, identity="static",
+                                   evidence="symbol_addrs function row+progress matched-C rule"),
+                    census.Outcome("c", "overlay", True, identity="static", evidence="atlas")]
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(0, census.render(outcomes, [], list_uncovered=False,
+                                              require_coverage=True, elapsed=0.0))
+        self.assertIn("   2  symbol_addrs function row+progress matched-C rule", out.getvalue())
+        self.assertNotIn("atlas", out.getvalue())
 
 
 if __name__ == "__main__":

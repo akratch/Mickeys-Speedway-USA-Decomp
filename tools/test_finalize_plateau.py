@@ -433,6 +433,17 @@ class FinalizeCommandTests(unittest.TestCase):
         self.assertTrue((self.repo / "src" / "demo.c").read_text().startswith(VALID_SOURCE))
         self.assertEqual(self.gate_log.read_text().splitlines(), ["cleanroom", "check-docs"])
 
+    def test_one_invocation_writes_the_shard_and_source_block_together(self) -> None:
+        result = self.finalize()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        source = self.repo / "src" / "demo.c"
+        shard = self.repo / "docs" / "matching-triage-handoffs" / "demo_symbol.md"
+        source_text = source.read_text(encoding="utf-8")
+        shard_text = shard.read_text(encoding="utf-8")
+        self.assertIn("score: 98/101 words", source_text)
+        self.assertIn("- score: 98/101 words\n", shard_text)
+        self.assertEqual(source.stat().st_mtime_ns, shard.stat().st_mtime_ns)
+
     def test_command_accepts_unrelated_declaration_only_guard(self) -> None:
         (self.repo / "src" / "demo.c").write_text(
             SOURCE_WITH_UNRELATED_DECLARATION_GUARD, encoding="utf-8"
@@ -693,6 +704,35 @@ class PlateauHandoffAuditTests(unittest.TestCase):
         revised = shard.read_text(encoding="utf-8")
         self.assertIn("- score: 99/101 words\n", revised)
         self.assertIn("- next action: retry with allocator evidence\n", revised)
+
+    def test_a_disagreement_names_the_newer_side(self) -> None:
+        self.assertEqual(self.audit("--write").returncode, 0)
+        shard = self.repo / "docs" / "matching-triage-handoffs" / "demo_symbol.md"
+        shard.write_text(
+            shard.read_text(encoding="utf-8").replace("98/101 words", "1/101 words"),
+            encoding="utf-8",
+        )
+        shard_newer = self.audit("--check")
+        self.assertIn("demo_symbol (shard newer)", shard_newer.stdout)
+
+        self.write_source("99/101 words")
+        os.utime(shard, (1, 1))
+        source_newer = self.audit("--check")
+        self.assertIn("demo_symbol (source newer)", source_newer.stdout)
+
+    def test_regenerate_stale_shards_uses_the_merged_source_not_the_lane_shard(self) -> None:
+        self.assertEqual(self.audit("--write").returncode, 0)
+        shard = self.repo / "docs" / "matching-triage-handoffs" / "demo_symbol.md"
+        shard.write_text(
+            shard.read_text(encoding="utf-8").replace("98/101 words", "1/101 words"),
+            encoding="utf-8",
+        )
+        self.write_source("99/101 words")
+        written = handoff_audit.regenerate_stale_shards(self.repo)
+        self.assertEqual(written, ["docs/matching-triage-handoffs/demo_symbol.md"])
+        revised = shard.read_text(encoding="utf-8")
+        self.assertIn("- score: 99/101 words\n", revised)
+        self.assertNotIn("1/101 words", revised)
 
     def test_duplicate_shard_blocks_are_malformed_and_not_overwritten(self) -> None:
         self.assertEqual(self.audit("--write").returncode, 0)

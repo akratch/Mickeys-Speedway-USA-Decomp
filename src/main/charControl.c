@@ -2143,7 +2143,7 @@ void controlClearPlayerSetup(void) {
  * frame: 0xA0
  * relocations: 43
  * first-mismatch: +0xC
- * summary: Delta 0, frame 0xA0. Blocker: callee toll 4.75/4.85 vs caller 5.0 puts pos/plane in s0/s1; target has 2 more uopt blocks.
+ * summary: No natural spelling matched the dead-if bytes. Inert end regions do; (void)arg0 and a sixth parameter do not. Sibling entry is delta -4. Dead if kept.
  * PLATEAU-HANDOFF:func_8001EC44:end
  */
 

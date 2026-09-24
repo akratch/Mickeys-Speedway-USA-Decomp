@@ -5546,7 +5546,7 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: 0xB0
  * relocations: 8
  * first-mismatch: +0x60
- * summary: Track B 2026-09-23: unchanged at 168, delta +4; the extra word is ugen loading arg9 into a2 and copying back after the OR.
+ * summary: Pair +0x2D4 alu line 3475 (missing-CSE): load into a2, ori to a temp, move back. Named result, named operand, early hoist stayed +4. In-place ori is refused.
  * PLATEAU-HANDOFF:func_800084C4:end
  */
 

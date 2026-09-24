@@ -1145,7 +1145,7 @@ s32 lightKillGlowingLight(void) {
  * frame: 0x48
  * relocations: 7
  * first-mismatch: +0x20
- * summary: Header as v0 symbol serializes the +0x64 pair. A second extra auto costs 8 frame. Sole-header is frame-exact plus 10 words. Colour cannot close it.
+ * summary: Live-cursor sole header stalled. Row 190/d-16, comma 189/d+40, base 189/d-16, frame 0x48. No delta-0 live cursor. Kept 41-word body.
  * PLATEAU-HANDOFF:func_80018F08:end
  */
 

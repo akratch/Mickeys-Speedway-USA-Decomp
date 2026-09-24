@@ -50,12 +50,9 @@ void overlay25InitializeEffect(Overlay25Object *object,
 }
 
 /*
- * 2026-09-19: hybrid L99 homes. Function-scope unused+hitSomething keep
- * hitSomething at 0x98; radius/position live in the activeDuration arm;
- * objects[6] lives in the else arm. Frame stays 0xA0, size 1036. Homes
- * 0x98/0x80/0x74 match the target; objects sits at 0x58 not 0x4C (0x0C
- * short; extra else-arm pads and objects[7..] grow the frame). Colour
- * still p1 w122=s3 vs wanted s4 (sibling w129 at 6.2 takes s4).
+ * 2026-09-24: else-arm 12-byte hit struct (other, delta, otherState) is
+ * declared before objects[6]. Frame stays 0xA0 and the array homes at
+ * 0x4C with the target. Masked 74; the naming residual is unchanged.
  */
 /* Ownership trial (2026-08-28): fixed the TU's +0x20..+0x40 .rodata range;
  * linked promotion is text-differs with 386 in-range words, first at +0x0.
@@ -117,6 +114,11 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
             object->flags |= 0x800;
         }
     } else {
+        struct {
+            Overlay25Object *other;
+            f32 delta;
+            Overlay25EntityState *otherState;
+        } hit;
         Overlay25Object *objects[6];
         s32 count;
         s32 index;
@@ -148,21 +150,21 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
             if (count != 0) {
                 index = count - 1;
                 do {
-                    Overlay25Object *other = objects[index];
-                    f32 delta = other->y - object->y;
+                    hit.other = objects[index];
+                    hit.delta = hit.other->y - object->y;
 
-                    if ((other != state->owner) || (state->duration == 0)) {
-                        Overlay25EntityState *otherState = &other->state->entity;
-                        if ((otherState->height < -5.0f) &&
-                            (delta > -24.0f) && (delta < 24.0f) &&
-                            (otherState->enabled != 0)) {
+                    if ((hit.other != state->owner) || (state->duration == 0)) {
+                        hit.otherState = &hit.other->state->entity;
+                        if ((hit.otherState->height < -5.0f) &&
+                            (hit.delta > -24.0f) && (hit.delta < 24.0f) &&
+                            (hit.otherState->enabled != 0)) {
                             hitSomething = 1;
-                            if (overlay25CanHitReloc(other, otherState)) {
-                                overlay7DispatchModesReloc(state->owner, other);
+                            if (overlay25CanHitReloc(hit.other, hit.otherState)) {
+                                overlay7DispatchModesReloc(state->owner, hit.other);
                                 state->owner->state->entity.ownerHitCount++;
-                                otherState->selfHitCount++;
+                                hit.otherState->selfHitCount++;
                                 if (overlay25GetStatusReloc()->type == 5) {
-                                    overlay25NotifyHitReloc(other);
+                                    overlay25NotifyHitReloc(hit.other);
                                 }
                             }
                         }
@@ -203,10 +205,10 @@ void overlay25SetVectorFlags(s32 unused0, Overlay25Vector *out, s32 unused2,
 
 /* PLATEAU-HANDOFF:overlay25UpdateEffect:start
  * symbol: overlay25UpdateEffect
- * score: 76/259 words
+ * score: 74/259 words
  * frame: 0xA0
  * relocations: 25
  * first-mismatch: +0x3C
- * summary: Hybrid L99 homes 82 to 76. Objects 0x58 vs 0x4C. Colour floor 63 via p1:w122=c18; L100 leftovers do not rank other onto s4 unforced.
+ * summary: Save-ratio then pad. Spellings 106/+24 and 103/+8 reverted; hit struct kept, 74/259 delta 0, objects at 0x4C. Stall: naming 68, s4 unproved.
  * PLATEAU-HANDOFF:overlay25UpdateEffect:end
  */

@@ -2,11 +2,13 @@
 ### `overlay25UpdateEffect` plateau handoff
 
 - source: `src/overlays/o025/overlay_025.c`
-- score: 76/259 words
+- score: 74/259 words
 - frame: 0xA0
 - relocations: 25
 - first mismatch: +0x3C
-- summary: Hybrid L99 homes 82 to 76. Objects 0x58 vs 0x4C. Colour floor 63 via p1:w122=c18; L100 leftovers do not rank other onto s4 unforced.
+- summary: Save-ratio then pad. Spellings 106/+24 and 103/+8 reverted; hit struct kept, 74/259 delta 0, objects at 0x4C. Stall: naming 68, s4 unproved.
+
+Summary before this remeasure: Hybrid L99 homes 82 to 76. Objects 0x58 vs 0x4C. Colour floor 63 via p1:w122=c18; L100 leftovers do not rank other onto s4 unforced.
 
 #### 2026-09-17, lane w10-o025: frame closed at 0xA0; colour floor is 69
 
@@ -112,4 +114,31 @@ Next: a source-authentic save-ratio so web 122 is coloured after web 129
 rises) without the L144 address-taken cascade, and/or 12 bytes of else-arm
 home that occupy the 0x34-0x58 pad without growing the frame. Packed
 force 63 is not a match.
+
+#### 2026-09-24, lane p2b-o025: else-arm 12-byte home, 76 to 74
+
+Baseline remeasured with CDX and DKWB unset: 1036 bytes, masked 76, size
+delta 0, frame 0xA0, 25 candidate relocations, first mismatch +0x3C.
+Aligned 183 exact, 68 naming, 2 immediate, 6 structural. Objects at
++0x58 versus target +0x4C.
+
+Spellings, at most three:
+
+1. Hoisted `other` to the else scope and, after the loop, stored
+   `state->lifetime = (other != NULL) ? 0 : 0`. Masked 106, size delta
+   +24, frame 0xA0, new slot +0x54. Not deleted. Reverted.
+2. Same hoist, lifetime store `(s16)(((s32) other & -1) - (s32) other)`.
+   Masked 103, size delta +8, frame 0xA0, same +0x54 spill. Reverted.
+   A post-loop use that survives keeps `other` live and spills it, so it
+   cannot invert the save ratio at delta 0.
+3. One 12-byte else-arm struct (`other`, `delta`, `otherState`) declared
+   before `objects[6]`, assignments and calls unchanged. Kept. Masked 74,
+   size delta 0, frame 0xA0, 25 candidate relocations (target object has
+   13), first mismatch +0x3C. `frame_census.py` ladders match, including
+   objects at +0x4C. Aligned 185 exact, 68 naming, 0 immediate, 6
+   structural. The immediate bucket closed. Naming did not move.
+
+Stall: web 122 on s4 is unproved. The kept edit does not colour it; the
+save-ratio spellings spill before they can. Packed force 63 was not
+re-run and is not a match.
 <!-- plateau-handoff:overlay25UpdateEffect:end -->

@@ -6,7 +6,9 @@
 - frame: frameless
 - relocations: 10
 - first mismatch: +0x6C
-- summary: L145 delete-carrier stays the 6-word basin: store-forward keeps web 8. End-first inverts colours at 10-14 with a 4-word preheader shuffle. Baseline 2 of 53.
+- summary: Retype or move first use of web 8, the type-4 count load in blocks 12-13. Early/late u32: 8 to 32; or-0 folds. Still under the limit on colour 1. Stall 2/53.
+
+Summary before this remeasure: L145 delete-carrier stays the 6-word basin: store-forward keeps web 8. End-first inverts colours at 10-14 with a 4-word preheader shuffle. Baseline 2 of 53.
 
 #### 2026-09-09, lane fin-misc: the tie is between two dead colours
 
@@ -470,5 +472,34 @@ and the target preheader were not observed together. Baseline kept at 2 of 53.
 Next is not another delete-carrier of owner-1 or new_var; it is a spelling that
 emits the indexed-SR preheader while creating the limit ICHAIN first, which
 this packet's hybrids did not.
+
+#### 2026-09-24, lane p1-o020: the count load's number moves and the colour does not
+
+Stock and instrumented text for this symbol compare identical, 212 bytes, with
+instrumentation off. Procedure ordinal 0. Twelve phase-two decisions.
+
+Web 8 is not a separate subtract. It is a type-4 signed load of the entry-count
+global, born at the early copy into owner and still live only in blocks 12 and
+13, and it takes the first colour. The uses that remain are the reloads after
+the store. The limit is the later type-4 web 42 and takes the fifth colour.
+The carrier new_var was kept. No colour sweep.
+
+Three spellings, each scored with the stock compiler:
+
+- Early copy read through an unsigned pointer. Masked words stay 2 of 53,
+  delta 0, 51 byte-exact and 2 naming at +0x6C. The compaction load is
+  renumbered from 8 to 32 and still takes the first colour. The limit is
+  renumbered from 42 to 44 and still takes the fifth. The index moves in front
+  of the load, so the load is denied the second colour, but the first colour
+  is still free.
+- Guard and bound read through an unsigned pointer, carrier kept. Same 2 of
+  53, same buckets, same +0x6C. The loop value is a convert web at 32, still
+  the first colour. The limit is at 44, still the fifth.
+- Early copy or-ed with zero. Folded before numbering. The phase-two ladder
+  matches the baseline, and the score stays 2 of 53.
+
+Stall under the three-attempt rule: no better residual and no inversion. Moving
+this load's number does not put it above the limit, so the limit still sees
+the first colour taken. Baseline source retained.
 
 <!-- plateau-handoff:overlay20RemoveEntry:end -->

@@ -47,15 +47,15 @@ typedef struct O14Value108Ref {
 } O14Value108Ref;
 
 extern s32 gOverlay14StateC8;
-extern O14PendingValueD0Ref gOverlay14PendingValueD0;
-extern O14PendingModeD4Ref gOverlay14PendingModeD4;
-extern O14TransitionD8Ref gOverlay14TransitionD8;
-extern O14CursorDCRef gOverlay14CursorDC;
-extern O14PointerE0Ref gOverlay14PointerE0;
+extern O14PendingValueD0Ref gOverlay14PendingValueD0Base;
+extern O14PendingModeD4Ref gOverlay14PendingModeD4Base;
+extern O14TransitionD8Ref gOverlay14TransitionD8Base;
+extern O14CursorDCRef gOverlay14CursorDCBase;
+extern O14PointerE0Ref gOverlay14PointerE0Base;
 extern O14ModeE4Ref gOverlay14ModeE4;
 extern s32 gOverlay14CommandCountEC;
 extern s32 gOverlay14ResultF8;
-extern O14ResultFCRef gOverlay14ResultFC;
+extern O14ResultFCRef gOverlay14ResultFCBase;
 extern O14Value108Ref gOverlay14Value108;
 extern Overlay14QueuedCommand gOverlay14QueuedCommands128[];
 
@@ -69,28 +69,28 @@ s32 overlay14ApplyValues(s32 value, s32 mode) {
 
     result = 0;
     if (gOverlay14StateC8 != 0) {
-        gOverlay14PendingValueD0.value = value;
-        gOverlay14PendingModeD4.value = mode;
+        gOverlay14PendingValueD0Base.value = value;
+        gOverlay14PendingModeD4Base.value = mode;
         return 0;
     }
 
-    gOverlay14PendingValueD0.value = -1;
-    gOverlay14PendingModeD4.value = -1;
+    gOverlay14PendingValueD0Base.value = -1;
+    gOverlay14PendingModeD4Base.value = -1;
     if (gOverlay14CommandCountEC < 0x10) {
         if (mode == 2) {
             gOverlay14Value108.value = value;
             gOverlay14StateC8 = 2;
         } else if (mode == 1) {
-            gOverlay14ResultFC.value = overlay14CreateValue(value, 1);
+            gOverlay14ResultFCBase.value = overlay14CreateValue(value, 1);
             if (overlay14MoveCommandCursor(0) != 0) {
                 gOverlay14ModeE4.value = 1;
-                result = gOverlay14ResultFC.value;
+                result = gOverlay14ResultFCBase.value;
             }
         } else {
             gOverlay14ResultF8 = overlay14CreateValue(value, 4);
-            gOverlay14TransitionD8.value = 0;
-            gOverlay14CursorDC.value = 0;
-            gOverlay14PointerE0.value = 0;
+            gOverlay14TransitionD8Base.value = 0;
+            gOverlay14CursorDCBase.value = 0;
+            gOverlay14PointerE0Base.value = 0;
             gOverlay14ModeE4.value = mode;
             result = gOverlay14ResultF8;
         }

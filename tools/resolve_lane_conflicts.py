@@ -12,6 +12,12 @@ shared file):
   *.json and generated tables      -> theirs; a keep-both hunk cannot
                                       produce valid JSON, and the result is
                                       parse-checked before it is staged
+  config/nonmatching-ranking.us.json,
+  docs/nm-ranking.md, and
+  docs/matching-triage-handoffs/   -> OURS (or dropped, if the lane added
+                                      the file). These are generated. The
+                                      merge regenerates them from the merged
+                                      tree; an older lane copy must not win.
   *.py                             -> resolved as below, then parse-checked:
                                       a keep-both residue can splice a
                                       function tail onto nothing
@@ -41,6 +47,37 @@ def git(*a, **k):
 
 def keep_both(text):
     return MARK.sub(lambda m: m.group(1) + m.group(2), text)
+
+
+GENERATED_RANKING = "config/nonmatching-ranking.us.json"
+GENERATED_RANKING_DOC = "docs/nm-ranking.md"
+GENERATED_SHARD_PREFIX = "docs/matching-triage-handoffs/"
+
+
+def regenerates_in_merged_tree(path):
+    """True for generated ranking and handoff shards.
+
+    A lane's copy of these is a measurement of the lane's own tree. The
+    merge regenerates them after the sources are combined, and that
+    result is what the commit keeps.
+    """
+    return (
+        path in (GENERATED_RANKING, GENERATED_RANKING_DOC)
+        or path.startswith(GENERATED_SHARD_PREFIX)
+    )
+
+
+def choose_regenerated(lane_text, regenerated_text):
+    """Keep the merged tree's regeneration when it differs from the lane.
+
+    ``lane_text`` is the generated ranking or shard the lane brought.
+    ``regenerated_text`` is what the merged tree just produced. The lane
+    copy is not a candidate once those two differ, and it is not a
+    candidate when they agree either: the regeneration is the result.
+    """
+    if regenerated_text != lane_text:
+        return regenerated_text
+    return regenerated_text
 
 
 def theirs_if_subset(text):
@@ -136,6 +173,17 @@ def main():
             # correctly each time and that is all check-scoreboard reads.
             git("checkout", "--ours", "--", path)
             how = "ours (lane README is stale; scoreboard regenerates)"
+        elif regenerates_in_merged_tree(path):
+            # Not --theirs. The lane's generated ranking or shard is a
+            # measurement of the lane, and an older lane has won this
+            # merge before. Keep the integration copy when there is one,
+            # and drop a lane-only file. The merge then regenerates both
+            # from the combined tree.
+            if git("checkout", "--ours", "--", path).returncode != 0:
+                git("rm", "-q", "-f", "--", path)
+                how = "dropped lane-only generated file pending regeneration"
+            else:
+                how = "ours; merged-tree regeneration replaces the lane copy"
         elif path == "Makefile":
             text = open(path).read()
             open(path, "w").write(keep_both(text))

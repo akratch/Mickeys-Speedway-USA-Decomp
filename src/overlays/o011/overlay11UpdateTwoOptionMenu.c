@@ -5,13 +5,17 @@ extern s8 D_0_reload_success[];
 extern s8 D_0_reload_failure[];
 extern s8 D_INPUT[];
 extern s8 D_menuBase[];
-extern s8 D_cfgA[];
+extern s8 D_menuCounterBase[];
+extern s8 D_menuInputBase[];
 extern s32 D_1BC;
 extern void *D_1CC[2];
 
 #define OVERLAY11_SELECTION (*(s16 *)(D_menuBase + 0x1B8))
 #define OVERLAY11_ARGUMENT (*(s32 *)(D_INPUT + 0x1C4))
-#define OVERLAY11_COUNTER (*(s32 *)(D_cfgA + 0x204))
+#define OVERLAY11_COUNTER (*(s32 *)(D_menuCounterBase + 0x204))
+/* The menu input word in initialized data, distinct from the argument word
+   OVERLAY11_ARGUMENT reads at the same offset past the BSS base. */
+#define OVERLAY11_MENU_INPUT (*(s32 *)(D_menuInputBase + 0x1C4))
 
 extern void func_80000F94(s32 soundId, void *handle);
 extern u32 func_8002554C(s32 controller);
@@ -65,7 +69,7 @@ void overlay11UpdateTwoOptionMenu(s32 updateRate) {
     } while (index != 3);
 
     if ((func_8002554C(OVERLAY11_ARGUMENT) & 0x8000) ||
-        OVERLAY11_ARGUMENT != 0) {
+        OVERLAY11_MENU_INPUT != 0) {
         switch (D_1BC) {
         case 1:
             func_overlay_066_F0000000(0);
@@ -76,15 +80,15 @@ void overlay11UpdateTwoOptionMenu(s32 updateRate) {
             OVERLAY11_COUNTER = 1;
             break;
         case 2:
-            if (OVERLAY11_ARGUMENT == 0) {
+            if (OVERLAY11_MENU_INPUT == 0) {
                 func_overlay_011_F0001058_18698A0(3);
                 return;
             }
-            if (OVERLAY11_ARGUMENT == -1) {
+            if (OVERLAY11_MENU_INPUT == -1) {
                 func_overlay_011_F0001130_1869978(3);
                 return;
             }
-            if (OVERLAY11_ARGUMENT == 1) {
+            if (OVERLAY11_MENU_INPUT == 1) {
                 func_80028528(1);
                 func_overlay_011_F00029AC_186B1F4();
                 func_80028374(0xC, 0, 0, 0xC, 1, 0);

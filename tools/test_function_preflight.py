@@ -2405,6 +2405,82 @@ class RelocationEvidenceTests(unittest.TestCase):
         self.assertEqual([], evidence["resident_runtime_records"])
 
 
+class ResidentCoverageTests(unittest.TestCase):
+    """A resident function is promoted by progress.py's rule, not a comment."""
+
+    class Linked:
+        names = ["", ".main"]
+        def __init__(self, symbols, data):
+            self.sh = [(0,) * 10, (0, 1, 6, 0x80001000, 0, len(data), 0, 0, 16, 0)]
+            self._symbols, self.data = symbols, data
+        def symbols(self):
+            return self._symbols
+        def section_bytes(self, _name):
+            return self.data
+
+    def test_untracked_extent_is_bounded_by_its_neighbour(self):
+        f = ("f", 0x80001000, 0x8, fp.rs.STT_FUNC, 1)
+        g = ("g", 0x80001010, 0x8, fp.rs.STT_FUNC, 1)
+        padded = self.Linked([f, g], b"\x01" * 8 + bytes(8) + b"\x02" * 8)
+        self.assertEqual((0x80001000, 8), fp._neighbour_bounded_extent(padded, f))
+        # Nonzero bytes between the extent and the next function: code the
+        # proof would not cover.
+        hidden = self.Linked([f, g], b"\x01" * 8 + b"\x03" * 8 + b"\x02" * 8)
+        with self.assertRaisesRegex(fp.PreflightError, "not bounded"):
+            fp._neighbour_bounded_extent(hidden, f)
+        last = self.Linked([g], bytes(0x10) + b"\x02" * 8 + bytes(8))
+        self.assertEqual((0x80001010, 8), fp._neighbour_bounded_extent(last, g))
+
+    def test_progress_rule_decides_promotion(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "asm").mkdir()
+            (root / "asm/a.s").write_text("glabel func_80002000\n")
+            (root / "build").mkdir()
+            (root / "build/mickey.us.elf").write_bytes(b"")
+            symbols = [("func_80001000", 0x80001000, 8, fp.rs.STT_FUNC, 1),
+                       ("func_80002000", 0x80002000, 8, fp.rs.STT_FUNC, 1)]
+            linked = self.Linked(symbols, bytes(0x2000))
+            table = root / "symbols.txt"
+            table.write_text("func_80001000 = 0x80001000; // type:func size:0x8 tier-B\n"
+                             "func_80002000 = 0x80002000; // type:func size:0x8\n")
+            with mock.patch.object(fp.rs, "Elf", return_value=linked):
+                self.assertEqual(
+                    (0x80001000, 8, "symbol_addrs function row+progress matched-C rule"),
+                    fp._resident_promotion_evidence("func_80001000", table, root))
+                with self.assertRaisesRegex(fp.PreflightError, "glabel under asm/"):
+                    fp._resident_promotion_evidence("func_80002000", table, root)
+                with self.assertRaisesRegex(fp.PreflightError, "0 sized resident"):
+                    fp._resident_promotion_evidence("func_80003000", table, root)
+
+
+class SourceViewTests(unittest.TestCase):
+    """Definitions the written source does not spell as `name(...) {`."""
+
+    def test_kr_definition_has_a_signature(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "a.c"
+            source.write_text("void reset();\nvoid reset(state, count)\n"
+                              "State *state;\ns32 count;\n{\n    reset(state, 1);\n}\n")
+            self.assertEqual("void reset(state, count) State *state; s32 count;",
+                             fp._source_signature(source, "reset"))
+
+    def test_macro_spelled_definition_source_uses_the_preprocessed_view(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "src").mkdir()
+            (root / "src/entry.c").write_text("void entry(void) { }\n")
+            alias = root / "src/entryB.c"
+            alias.write_text('#define entry entryB\n#include "entry.c"\n')
+            expanded = '# 1 "src/entry.c"\nvoid entryB(void) { }\n'
+            with mock.patch.object(fp.pp, "preprocessed_text", return_value=expanded):
+                self.assertEqual(alias.resolve(), fp._definition_source("entryB", root))
+            with mock.patch.object(fp.pp, "preprocessed_text",
+                                   side_effect=fp.pp.MetadataProofError("cpp failed")):
+                with self.assertRaisesRegex(fp.PreflightError, "cpp failed"):
+                    fp._definition_source("entryB", root)
+
+
 class GuardedResidentFallbackTests(unittest.TestCase):
     """ProcessRelocationEntry: a resident renamed only in C, over a splat
     fallback, has no alias row and no <symbol>.s; the guard is the pairing."""

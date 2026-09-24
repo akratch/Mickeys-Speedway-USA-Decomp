@@ -2241,10 +2241,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11UpdateTwoOptionMenu.c.o: POSTPROC
 		0x84:5:D_0_reload_failure 0x8C:6:D_0_reload_failure \
 		0xF0:5:D_menuBase 0xF8:6:D_menuBase \
 		0x120:5:D_INPUT 0x128:6:D_INPUT \
-		0x134:5:D_INPUT 0x138:6:D_INPUT \
-		0x198:5:D_cfgA 0x1A0:6:D_cfgA \
-		0x1A4:5:D_INPUT 0x1A8:6:D_INPUT \
-		0x214:5:D_cfgA 0x218:6:D_cfgA && \
+		0x134:5:D_menuInputBase 0x138:6:D_menuInputBase \
+		0x198:5:D_menuCounterBase 0x1A0:6:D_menuCounterBase \
+		0x1A4:5:D_menuInputBase 0x1A8:6:D_menuInputBase \
+		0x214:5:D_menuCounterBase 0x218:6:D_menuCounterBase && \
 	$(OBJCOPY) --redefine-sym \
 		func_80000F94=func_overlay_011_F0000000_1868848 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
@@ -2308,11 +2308,11 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11UpdateModeSix.c.o: POSTPROCESS = 
 		0x84:5:D_0_reload_failure 0x8C:6:D_0_reload_failure \
 		0xF0:5:D_menuBase 0xF8:6:D_menuBase \
 		0x120:5:D_INPUT 0x128:6:D_INPUT \
-		0x134:5:D_INPUT 0x138:6:D_INPUT \
-		0x198:5:D_cfgA 0x1A0:6:D_cfgA \
-		0x1A4:5:D_INPUT 0x1A8:6:D_INPUT \
+		0x134:5:D_menuInputBase 0x138:6:D_menuInputBase \
+		0x198:5:D_menuCounterBase 0x1A0:6:D_menuCounterBase \
+		0x1A4:5:D_menuInputBase 0x1A8:6:D_menuInputBase \
 		0x1F4:5:D_lastMode 0x1F8:6:D_lastMode \
-		0x218:5:D_cfgA 0x21C:6:D_cfgA && \
+		0x218:5:D_menuCounterBase 0x21C:6:D_menuCounterBase && \
 	$(OBJCOPY) --redefine-sym \
 		func_80000F94=func_overlay_011_F0000000_1868848 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
@@ -2590,13 +2590,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091_mul.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		0x04c:5:overlay91GlobalA 0x05c:6:overlay91GlobalA \
 		0x078:5:.rodata 0x080:6:.rodata \
-		0x134:4:overlay91CallProxy 0x1a4:4:overlay91CallProxy \
-		0x1ac:4:overlay91CallProxy 0x1d0:4:overlay91CallProxy \
-		0x228:4:overlay91CallProxy 0x270:4:overlay91CallProxy \
-		0x278:4:overlay91CallProxy 0x2f0:4:overlay91CallProxy \
-		0x2f8:4:overlay91CallProxy 0x300:5:overlay91GlobalB \
-		0x308:6:overlay91GlobalB 0x360:4:overlay91CallProxy \
-		0x3a4:4:overlay91CallProxy && \
+		0x134:4:func_8002A8C0 0x1a4:4:func_80000F94 \
+		0x1ac:4:func_overlay_007_F0000DBC_185CC44 0x1d0:4:func_8002A8C0 \
+		0x228:4:func_80000F94 0x270:4:func_80000F94 \
+		0x278:4:func_overlay_007_F0000DBC_185CC44 0x2f0:4:func_80000F94 \
+		0x2f8:4:func_overlay_007_F0000DBC_185CC44 0x300:5:overlay91GlobalB \
+		0x308:6:overlay91GlobalB 0x360:4:func_80006EA0 \
+		0x3a4:4:func_8002A8BC && \
 	$(OBJCOPY) --remove-section=.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x528
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o091/overlay_091_mul.c.o: CFLAGS += -Wab,-r4300_mul
@@ -2837,12 +2837,12 @@ $(O28_MERGED_OBJ): \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
 	$(TOOLS_DIR)/trim_elf_section.py
 $(O28_MERGED_OBJ): CFLAGS += -Wab,-r4300_mul
-# The loader owns the reset callback HILO and the update-vertices call carrier.
+# The loader owns the data-base HILO stored in the reset field and the update-vertices call carrier.
 # The render tail's imports likewise retain their overlay-root and resident
 # relocation carriers after the function becomes local to the merged TU.
 $(O28_MERGED_OBJ): POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x1D8:5:overlay28ResetBuffer 0x1F4:6:overlay28ResetBuffer && \
+		0x1D8:5:gOverlay28DataBase 0x1F4:6:gOverlay28DataBase && \
 	$(OBJCOPY) \
 		--add-symbol func_overlay_028_F0000000_187C8D0=.text:0,global \
 		--add-symbol D_80000028=0x80000028,global $@ && \

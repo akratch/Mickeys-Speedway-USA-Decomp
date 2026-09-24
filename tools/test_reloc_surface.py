@@ -425,6 +425,102 @@ class FunctionSurfaceComparisonTests(unittest.TestCase):
         )
         self.assertNotIn("D_7BE08", ambiguous)
 
+    def test_section_symbols_are_never_program_wide_identities(self):
+        # An externalized overlay `.rodata` survives in the linked ELF as an
+        # `*ABS*` zero section symbol; func_8005BA40's own `.rodata` jump
+        # table must not borrow it.
+        class FakeElf:
+            def __init__(self, rows):
+                self.rows = rows
+
+            def symbols(self):
+                return self.rows
+
+            def section(self, _name):
+                return None, None
+
+        candidate = FakeElf([(".rodata", 0, 0, rs.STT_SECTION, 5)])
+        target = FakeElf([(".rodata", 0, 0, rs.STT_SECTION, rs.SHN_ABS),
+                          (".main", 0x80000450, 0, rs.STT_SECTION, 1)])
+        resolved, ambiguous = rs._stable_symbol_identities(
+            Path("missing"), candidate, None, 0, target)
+        self.assertNotIn(".rodata", resolved)
+        self.assertNotIn(".main", resolved)
+
+    def test_resident_object_symbols_are_placed_by_the_link_map(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            link_map = root / "link.map"
+            link_map.write_text(
+                " build/src/main/a.c.o(.rodata)\n"
+                " .rodata        0x80084320      0x150 build/src/main/a.c.o\n"
+                " .bss           0x800cf3b0       0x10 build/src/main/a.c.o\n"
+                " .rodata        0x80084470       0x20 build/src/main/b.c.o\n")
+
+            class Obj:
+                names = ["", ".text", ".rodata", ".bss"]
+                sh = [(0,) * 10, (0,) * 10, (0, 1, 2, 0, 0, 0x150, 0, 0, 4, 0),
+                      (0, 8, 3, 0, 0, 0x10, 0, 0, 4, 0)]
+
+                def symbols(self):
+                    # joy.c.o: a local carrier and a global alias share a name.
+                    return [("", 0, 0, 0, 0),
+                            (".rodata", 0, 0, rs.STT_SECTION, 2),
+                            ("D_800CF3B5", 4, 0, rs.STT_OBJECT, 3),
+                            ("D_800CF3B5", 5, 0, 0x10 | rs.STT_OBJECT, 3),
+                            ("extern", 0, 0, 0x10, 0),
+                            ("D_800D3044", 8, 4, 0x20 | rs.STT_OBJECT, 3)]
+
+            base = rs.ot.RESIDENT_VRAM_BASE
+            obj_path = rs.REPO / "build/src/main/a.c.o"
+            # Without the linked ELF, globals and weaks are not placed.
+            self.assertEqual({0: (rs.ri.ABSOLUTE_IDENTITY, 0), 1: (0, 0x80084320 - base),
+                              2: (0, 0x800CF3B4 - base)},
+                             rs._resident_object_identities(Obj(), obj_path, link_map))
+
+            class Linked:
+                def symbols(self):
+                    # The global alias links at its own slot; a linker-script
+                    # assignment overrides the weak definition.
+                    return [("D_800CF3B5", 0x800CF3B5, 0, 0x11, 6),
+                            ("D_800CF3B5", 0x800CF3B4, 0, 0x01, 6),
+                            ("D_800D3044", 0x800D3044, 0, 0x10, 0xFFF1)]
+
+            self.assertEqual({0: (rs.ri.ABSOLUTE_IDENTITY, 0), 1: (0, 0x80084320 - base),
+                              2: (0, 0x800CF3B4 - base), 3: (0, 0x800CF3B5 - base)},
+                             rs._resident_object_identities(Obj(), obj_path, link_map,
+                                                            linked_elf=Linked()))
+            # An object the map does not place keeps only the null symbol.
+            self.assertEqual({0: (rs.ri.ABSOLUTE_IDENTITY, 0)}, rs._resident_object_identities(
+                Obj(), rs.REPO / "build/src/main/c.c.o", link_map))
+            # A size disagreement is a contradiction, not a guess.
+            Obj.sh[2] = (0, 1, 2, 0, 0, 0x154, 0, 0, 4, 0)
+            with self.assertRaises(rs.SurfaceComparisonError):
+                rs._resident_object_identities(Obj(), obj_path, link_map)
+            link_map.write_text(link_map.read_text()
+                                + " .rodata        0x80090000      0x150 build/src/main/a.c.o\n")
+            with self.assertRaises(rs.SurfaceComparisonError):
+                rs.linked_input_sections(link_map)
+
+    def test_hilo_pairs_on_the_symbol_entry_not_the_name(self):
+        class Obj:
+            def symbols(self):
+                return [("", 0, 0, 0, 0), ("dup", 4, 0, 1, 3), ("dup", 5, 0, 0x11, 3)]
+
+            def relocations(self, target=r"\.text"):
+                # HI(entry 1), HI(entry 2), LO(entry 2), LO(entry 1)
+                return [(".text", 0, rs.R_MIPS_HI16, 1), (".text", 4, rs.R_MIPS_HI16, 2),
+                        (".text", 8, rs.R_MIPS_LO16, 2), (".text", 12, rs.R_MIPS_LO16, 1)]
+
+            def section_bytes(self, _name):
+                return bytes.fromhex("3c010000" "3c020000" "24420001" "24210002")
+
+        records = rs._candidate_surface_records(
+            Obj(), 0, 16, [], {}, {}, set(), None,
+            index_identities={1: (0, 0x100), 2: (0, 0x200)})
+        self.assertEqual([(0, (0, 0x102)), (4, (0, 0x201)), (8, (0, 0x201)), (12, (0, 0x102))],
+                         [(row.offset, row.identity) for row in records])
+
     def test_transitive_redefine_alias_propagates_stable_identity(self):
         class FakeElf:
             def __init__(self, target=False):
@@ -1455,6 +1551,12 @@ class MatchedOverlayRelocationWitnessTests(unittest.TestCase):
 
 
 class ResidentTargetRangeTests(unittest.TestCase):
+    def setUp(self):
+        # Hermetic: no linker map, so no object-local placement.
+        patcher = mock.patch.object(rs, "LINK_MAP", Path("missing.map"))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     class FakeElf:
         def __init__(self, path, section_name, section_address, section_data,
                      symbols, relocations=()):
@@ -2645,6 +2747,51 @@ class TuOwnershipOverflowTests(unittest.TestCase):
     def test_a_shorter_candidate_or_misfit_target_is_not_admitted(self):
         with self.assertRaises(rs.SurfaceComparisonError):
             self.overflow(0x10, 0x30, 0x10, 0x40, 0x3C, True)
+
+
+class ResidentDataRelocTests(unittest.TestCase):
+    def test_data_op_inside_a_text_range_is_not_a_function_site(self):
+        import overlay_tables as ot
+
+        end = ot.ROM_TABLE_BASE + ot.ROM_TABLE_COUNT * 4
+        rom = bytearray(end)
+        struct.pack_into(">I", rom, ot.RELOC_TABLE_BASE, 2)
+        base = ot.RELOC_TABLE_BASE + 4
+        # R_MIPS_26 / SYMBOL at text offset 0x100.
+        struct.pack_into(">I", rom, base, 0)
+        struct.pack_into(">I", rom, base + 4, (0x100 << 8) | 0x40)
+        # R_MIPS_32 / DATA at a numeric offset inside the same text range.
+        struct.pack_into(">I", rom, base + 8, 1)
+        struct.pack_into(">I", rom, base + 12, (0x110 << 8) | 0x23)
+        struct.pack_into(">I", rom, ot.ROM_TABLE_BASE, 1 << 20)
+        struct.pack_into(">I", rom, ot.ROM_TABLE_BASE + 4, 64 << 20)
+
+        records = rs._target_runtime_records(
+            bytes(rom), {"kind": "resident"}, 0x100, 0x20)
+
+        self.assertEqual([0], [record.offset for record in records])
+        self.assertEqual(rs.R_MIPS_26, records[0].rtype)
+
+    def test_retail_data_reloc_is_not_attributed_to_text(self):
+        import overlay_tables as ot
+
+        rom_path = rs.REPO / "baseroms" / "mickey.us.z64"
+        if not rom_path.is_file():
+            self.skipTest("baserom not present")
+        rom = rom_path.read_bytes()
+        _count, entries = ot.read_reloc_table(rom)
+        data = [entry for entry in entries if (entry["flags"] & 0xF) == rs.RELOC_OP_DATA]
+        self.assertTrue(data)
+        for entry in data:
+            offset = entry["call_site_offset"]
+            records = rs._target_runtime_records(
+                rom, {"kind": "resident"}, offset, 4)
+            self.assertEqual([], [record.offset for record in records])
+        symbol = next(entry for entry in entries if (entry["flags"] & 0xF) != rs.RELOC_OP_DATA)
+        offset = symbol["call_site_offset"]
+        records = rs._target_runtime_records(
+            rom, {"kind": "resident"}, offset, 4)
+        self.assertEqual([0], [record.offset for record in records])
 
 
 if __name__ == "__main__":

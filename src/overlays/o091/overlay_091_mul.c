@@ -2,8 +2,14 @@
 
 /* This TU retains the module's required -Wab,-r4300_mul compiler boundary. */
 
-/* One proxy intentionally models the normalized target split object's eleven
- * role calls.  Retail identities are recorded separately in the handoff. */
+/* Each call names its retail callee; the relocations stay filtered, so no
+ * name here is linked, and each spelling is the identity the shipped table
+ * records at its site. All keep the old proxy's unprototyped f32 shape. */
+extern f32 func_80000F94();
+extern f32 func_80006EA0();
+extern f32 func_8002A8BC();
+extern f32 func_8002A8C0();
+extern f32 func_overlay_007_F0000DBC_185CC44();
 
 void overlay91UpdateTimeline(Overlay91TimelineObject *object, s32 elapsed) {
     Overlay91TimerState *state;
@@ -47,7 +53,7 @@ void overlay91UpdateTimeline(Overlay91TimelineObject *object, s32 elapsed) {
                 } else {
                     fraction = (value << 14) / 60;
                     elapsed = 0;
-                    ratio = overlay91CallProxy(fraction);
+                    ratio = func_8002A8C0(fraction);
                     object->minValue = ((-(-225.0f)) * ratio) + minimum;
                     object->currentValue =
                         ((0.0f - 0.0f) * ratio) + 0.0f;
@@ -64,12 +70,12 @@ void overlay91UpdateTimeline(Overlay91TimelineObject *object, s32 elapsed) {
                     elapsed = value - 120;
                     state->timer = 0;
                     state->mode = 3;
-                    overlay91CallProxy(0x12, 0);
-                    overlay91CallProxy(0x1D);
+                    func_80000F94(0x12, 0);
+                    func_overlay_007_F0000DBC_185CC44(0x1D);
                 } else {
                     fraction = (value << 14) / 120;
                     elapsed = 0;
-                    ratio = overlay91CallProxy(fraction);
+                    ratio = func_8002A8C0(fraction);
                     object->value0 = (s16)(32768.0f * ratio);
                 }
                 break;
@@ -81,7 +87,7 @@ void overlay91UpdateTimeline(Overlay91TimelineObject *object, s32 elapsed) {
                     elapsed = value - 60;
                     state->timer = 0;
                     state->mode = 4;
-                    overlay91CallProxy(0x13, 0);
+                    func_80000F94(0x13, 0);
                 } else {
                     elapsed = 0;
                 }
@@ -94,8 +100,8 @@ void overlay91UpdateTimeline(Overlay91TimelineObject *object, s32 elapsed) {
                     elapsed = value - 60;
                     state->timer = 0;
                     state->mode = 5;
-                    overlay91CallProxy(0x14, 0);
-                    overlay91CallProxy(0x1E);
+                    func_80000F94(0x14, 0);
+                    func_overlay_007_F0000DBC_185CC44(0x1E);
                     overlay91GlobalA = 0;
                 } else {
                     elapsed = 0;
@@ -113,8 +119,8 @@ void overlay91UpdateTimeline(Overlay91TimelineObject *object, s32 elapsed) {
                     elapsed = state->timer - 60;
                     state->timer = 0;
                     state->mode = 6;
-                    overlay91CallProxy(0x15, 0);
-                    overlay91CallProxy(0x1F);
+                    func_80000F94(0x15, 0);
+                    func_overlay_007_F0000DBC_185CC44(0x1F);
                     overlay91GlobalB = 0;
                 } else {
                     elapsed = 0;
@@ -135,12 +141,12 @@ void overlay91UpdateTimeline(Overlay91TimelineObject *object, s32 elapsed) {
                 state->timer += elapsed;
                 value = state->timer;
                 if (value >= 60) {
-                    overlay91CallProxy(object);
+                    func_80006EA0(object);
                     return;
                 } else {
                     fraction = (value << 14) / 60;
                     elapsed = 0;
-                    ratio = overlay91CallProxy(fraction);
+                    ratio = func_8002A8BC(fraction);
                     object->minValue = 225.0f + (minimum * ratio);
                     object->currentValue =
                         ((0.0f - 0.0f) * ratio) + 0.0f;

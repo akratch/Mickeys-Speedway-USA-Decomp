@@ -456,15 +456,6 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
     path = func_800508B4(3);
     if ((path != 0) && (D_68 > 0)) {
         geometry = *path->object->geometry;
-        /*
-         * Cached because the target is: reading `geometry->vertices` at each
-         * of the fifteen drawing operands costs one `lw` apiece, and the
-         * target has three fewer `lw` and one fewer `addiu`/`addu` pair than
-         * the uncached form. Caching it took the size delta from +24 bytes to
-         * +4 and the masked residual from 727 to 722 words. Caching the
-         * remaining (non-drawing) uses as well overshoots to -20 bytes, so
-         * only the start/end/marker operands take the local.
-         */
         verts = geometry->vertices;
         func_800221E8(&gOverlay58DisplayListReloc,
                       &gOverlay58MatrixReloc);
@@ -474,8 +465,14 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
         for (stage = 0; stage <= D_6C; stage++) {
             start = 0;
             end = 0;
-            mapping = D_1A0;
-            if (mapping[0] != -1) {
+            /*
+             * The initial sentinel is a direct load of D_1A0[0]. The cursor
+             * is a second address, born inside the taken path, so the skip
+             * branch can carry that lui and marker's -1 is not hoisted
+             * across the draws.
+             */
+            if (D_1A0[0] != -1) {
+                mapping = D_1A0;
                 do {
                     if (mapping[0] ==
                         gOverlay58SelectionTableReloc[status->player][stage]) {
@@ -523,9 +520,9 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                     1.0f);
             }
 
-            marker = -1;
             if (!(D_2A8[status->player] &
                   ((u32)(gOverlay58ScreenModeReloc[0] << 5) >> 0x1C))) {
+                marker = -1;
                 if (status->player == 0) {
                     if (stage == 0) {
                         marker = start;
@@ -559,10 +556,10 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_058_F00005FC_18AF7E4:start
  * symbol: func_overlay_058_F00005FC_18AF7E4
- * score: 722 differing words
+ * score: 536 differing words
  * frame: 0xA0
- * relocations: 267
+ * relocations: 269
  * first-mismatch: +0x0
- * summary: The +4 size delta is a cancellation, not a findable instruction: the aligner puts a 2-word insertion at candidate +0x0 where the candidate saves s8 and the target does not, which is +8 on its own, and the body is -4 against it; the candidate frame is 0xA0 against the target's 0x88, 24 bytes and not the 16 previously recorded, so the ninth callee-saved web is the whole lever. Removing the named geometry local is byte-identical, so the stack park is a uopt temporary and no rename reaches it. Block-scoped Overlay58Vec3f *v = geometry->vertices in each of the five drawing blocks moves the aligned split from 314/301/230 to 418/265/162 and the positional residual from 722 to 551, but takes the size to +28 and the frame to 0xB0; it is recorded as a fork, adoptable only after the callee-saved surplus is solved.
+ * summary: Pair 5 extra-ILOD (-12), lines 514, 525, 548; pair 1 s8 line 207. Split D_1A0 cursor; marker=-1 inside bit test. Stall: neg1, volatile scale, per-draw reloads.
  * PLATEAU-HANDOFF:func_overlay_058_F00005FC_18AF7E4:end
  */

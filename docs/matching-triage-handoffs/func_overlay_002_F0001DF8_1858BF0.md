@@ -6,7 +6,7 @@
 - frame: 0x880
 - relocations: 5
 - first mismatch: +0x20
-- summary: extra-ILOD pair at the distance-call spill. Delta 0 via lastCandidate carrier. Stall: order share -12, register inert, header hoist flat, post-loop +16.
+- summary: extra-ILOD pair at the previousDistance call line. Delta 0 via lastCandidate carrier. Stall: order share -12, register inert, header hoist flat, post-loop +16.
 
 The open extra-ILOD pair was the tail. Its first target-only word was the stack store on the previousDistance call, because closest was spilled across the second scan and not saved again at the calls. Carrying the scanned object in lastCandidate (lastCandidate = objects[index], then candidate = lastCandidate) closes that gap: size delta 0, 353 masked, exact 174, frame 0x880, first mismatch +0x20.
 

@@ -6,7 +6,7 @@
 - frame: 0x70
 - relocations: 51
 - first mismatch: +0x48
-- summary: Declaring batchIndex and groupIndex first improves 304 to 303. Size stays +8, frame 0x70, first +0x48. Tail call spills remain.
+- summary: Declaring batchIndex and groupIndex first improves 304 to 303. Size stays +8, frame 0x70, first +0x48. Stall: the spill/reload pair on the tail-call lines remains after that declaration reorder.
 
 Summary before this remeasure: Correct next-batch vertex boundary and unsigned command types; five m2c structural follow-ups fail to improve. Next: batch/display-list lifetimes.
 

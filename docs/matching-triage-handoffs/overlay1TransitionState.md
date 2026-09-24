@@ -6,7 +6,7 @@
 - frame: 0x50
 - relocations: 13
 - first mismatch: +0x34
-- summary: Volatile phase re-read between the zero and one tests yields beql, 30 to 16. Slot stays lbu not or. Copy position, or-zero, and swapped compares do not beat 16.
+- summary: Volatile phase re-read on the line between the zero and one tests yields beql, 30 to 16. Stall: the pair's slot stays lbu not or. Copy position, or-zero, and swapped compares do not beat 16.
 
 Summary before this remeasure: The size-near pointer-update probe is byte-flat; promotion trial in=0/out=0 is a schedule-divergence build error, not equality. Retain the 160-word structural plateau.
 - assignment base: `f8f3ec51a298dd0eddd0574a4313adbb1e39de9b`

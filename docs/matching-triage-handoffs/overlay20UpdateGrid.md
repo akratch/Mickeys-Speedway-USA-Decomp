@@ -6,7 +6,7 @@
 - frame: 0x170
 - relocations: 6
 - first mismatch: +0x0
-- summary: 173 words, delta 0, frame 0x170. missing-CSE overlapBase spill at entryCount test; dx/dy/amplitude inlines held size, minX/minY and pointer restore regressed.
+- summary: 173 words, delta 0, frame 0x170. missing-CSE pair is the overlapBase spill at the entryCount test line; dx/dy/amplitude inlines held size, minX/minY and pointer restore regressed. Stall: size is closed, frame stays 0x170 against 0x140.
 
 Summary before this remeasure: Remeasured 2026-09-23: 185 masked at size delta +4 (216 of 215 words), frame 0x188 against 0x140; frame, registers and loop topology remain.
 

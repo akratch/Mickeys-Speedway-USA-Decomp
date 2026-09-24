@@ -44,8 +44,7 @@ typedef struct Overlay20Grid {
 
 extern s32 gOverlay20EntryCount;
 extern Overlay20Entry *gOverlay20Entries[];
-extern f32 func_overlay_020_F0000000_18765D8(f32 value);
-#define overlay20SqrtReloc func_overlay_020_F0000000_18765D8
+extern f32 ext_o0_6ec00(f32 value);
 extern f32 func_8002A8C0(s32 angle);
 
 #ifndef OVERLAY20_OVERLAP_CAPACITY
@@ -58,16 +57,14 @@ extern f32 func_8002A8C0(s32 angle);
 #endif
 
 /*
- * Plateau (2026-08-25, 4 source variants): the best -O2 candidate is 16
- * bytes short, differs in 173 of 215 words, and first diverges at +0x0.
- * Explicit bounds/top-load and register-local spellings tie; scoped locals
- * worsen the result.  The blocker is the full frame/register allocation and
- * loop topology rather than an isolated expression or compiler-flag choice.
+ * The overlap pointer is not a separate local: indexing the array directly
+ * avoids the spill, and dx/dy/amplitude are written inline. Declared homes
+ * still pad the frame to 0x170 against the target 0x140. register, a
+ * scan-only pointer, and dropping minX/minY do not close it.
  */
 #ifdef NON_MATCHING
 void overlay20UpdateGrid(Overlay20Grid *grid) {
     Overlay20Entry *overlaps[OVERLAY20_OVERLAP_CAPACITY];
-    Overlay20Entry **overlapBase;
 #ifndef SCOPED_LOCALS
     O20_REGISTER Overlay20Entry **cursor;
     O20_REGISTER Overlay20Entry **end;
@@ -87,11 +84,8 @@ void overlay20UpdateGrid(Overlay20Grid *grid) {
     O20_REGISTER s32 remaining;
     O20_REGISTER s32 overlapIndex;
     O20_REGISTER f32 total;
-    O20_REGISTER f32 dx;
-    O20_REGISTER f32 dy;
     O20_REGISTER f32 distanceSquared;
     O20_REGISTER f32 distance;
-    O20_REGISTER f32 amplitude;
     O20_REGISTER f32 output;
     O20_REGISTER s8 color;
 #else
@@ -132,7 +126,6 @@ void overlay20UpdateGrid(Overlay20Grid *grid) {
 #else
         end = cursor + gOverlay20EntryCount;
 #endif
-        overlapBase = overlaps;
 #ifndef SCAN_TOP_LOAD
         entry = *cursor;
 #endif
@@ -148,7 +141,7 @@ void overlay20UpdateGrid(Overlay20Grid *grid) {
                 minY + grid->height >= entry->minY &&
 #endif
                 entry->maxX >= minX && entry->maxY >= minY) {
-                overlapBase[overlapCount++] = entry;
+                overlaps[overlapCount++] = entry;
             }
 #if defined(EXPLICIT_BOUNDS) && !defined(SCAN_TOP_LOAD)
             entry = *cursor;
@@ -170,8 +163,6 @@ void overlay20UpdateGrid(Overlay20Grid *grid) {
     O20_REGISTER s32 remaining;
     O20_REGISTER s32 overlapIndex;
     O20_REGISTER f32 total;
-    O20_REGISTER f32 dx;
-    O20_REGISTER f32 dy;
     O20_REGISTER f32 distanceSquared;
     O20_REGISTER f32 distance;
     O20_REGISTER f32 amplitude;
@@ -197,22 +188,17 @@ void overlay20UpdateGrid(Overlay20Grid *grid) {
             total = 0.0f;
             overlapIndex = 0;
             if (overlapCount > 0) {
-                overlapCursor = overlapBase;
+                overlapCursor = overlaps;
                 do {
                     entry = *overlapCursor;
                     if (entry->minX < vertexX && entry->minY < vertexY &&
                         vertexX < entry->maxX && vertexY < entry->maxY) {
-                        dx = (f32)vertexX - entry->x;
-                        dy = (f32)vertexY - entry->y;
-                        distanceSquared = dx * dx + dy * dy;
+                        distanceSquared = ((f32)vertexX - entry->x) * ((f32)vertexX - entry->x) +
+                            ((f32)vertexY - entry->y) * ((f32)vertexY - entry->y);
                         if (distanceSquared < entry->radiusSquared) {
-                            distance = overlay20SqrtReloc(distanceSquared);
-                            amplitude =
-                                (entry->radius - distance) * entry->radiusRatio;
-                            total +=
-                                func_8002A8C0(entry->phase +
-                                             (s32)(entry->frequency * distance)) *
-                                amplitude;
+                            distance = ext_o0_6ec00(distanceSquared);
+                            total += func_8002A8C0(entry->phase + (s32)(entry->frequency * distance)) *
+                                ((entry->radius - distance) * entry->radiusRatio);
                         }
                     }
                     overlapIndex++;
@@ -251,10 +237,10 @@ void overlay20UpdateGrid(Overlay20Grid *grid) {
 
 /* PLATEAU-HANDOFF:overlay20UpdateGrid:start
  * symbol: overlay20UpdateGrid
- * score: 185 differing words
- * frame: 0x188
+ * score: 173 differing words
+ * frame: 0x170
  * relocations: 6
  * first-mismatch: +0x0
- * summary: Remeasured 2026-09-23: 185 masked at size delta +4 (216 of 215 words), frame 0x188 against 0x140; frame, registers and loop topology remain.
+ * summary: 173 words, delta 0, frame 0x170. missing-CSE overlapBase spill at entryCount test; dx/dy/amplitude inlines held size, minX/minY and pointer restore regressed.
  * PLATEAU-HANDOFF:overlay20UpdateGrid:end
  */

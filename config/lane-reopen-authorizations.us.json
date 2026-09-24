@@ -141,9 +141,9 @@
       "source_commit": "71156d0edfa8062b1192074b4e20ebcf6d471692"
     },
     "func_8000B3CC": {
-      "ledger_commit": "db75583b43e58f82626a18c24ca39abd0b0f188e",
+      "ledger_commit": "650ec38da9829ca704cfc51b63245eb28decd7cd",
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
-      "source_commit": "17ebe0c67aa1d335107a8e1bf7303e731a237c11"
+      "source_commit": "650ec38da9829ca704cfc51b63245eb28decd7cd"
     },
     "func_8000BDB4": {
       "ledger_commit": "1ac4ce096402051df01ff721968235046df1e373",
@@ -291,9 +291,9 @@
       "source_commit": "62284df0f50540259afde9744b09ec885f0a5d89"
     },
     "func_80018F08": {
-      "ledger_commit": "da53811bedf53dccb772d85e98f2fff27433e5e9",
+      "ledger_commit": "9092a43b142cfbe86b11237672a976e2f34d215f",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "da53811bedf53dccb772d85e98f2fff27433e5e9"
+      "source_commit": "9092a43b142cfbe86b11237672a976e2f34d215f"
     },
     "func_8001953C": {
       "ledger_commit": "d09352cdaa9a476ab208fd6965e169db3d64bdce",
@@ -516,9 +516,9 @@
       "source_commit": "8744e6484324325c1b899182492ff1962767c33d"
     },
     "func_800355A0": {
-      "ledger_commit": "983ce64bfc8d31c133b35ebead4b19ed9f247bcd",
+      "ledger_commit": "605125eabdf8f2fff33b89910f612f3b8f33f5b8",
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
-      "source_commit": "983ce64bfc8d31c133b35ebead4b19ed9f247bcd"
+      "source_commit": "605125eabdf8f2fff33b89910f612f3b8f33f5b8"
     },
     "func_80035F48": {
       "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",
@@ -736,7 +736,7 @@
       "source_commit": "cb7d0ac38b50149be503d9418fc1f130f57155b6"
     },
     "func_8004B1DC": {
-      "ledger_commit": "6adf607b6c4bb67fbf8309ff5bab5a0a9fc52f62",
+      "ledger_commit": "0e9c38951a1f170312bbd59842dfb35b503649a9",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "6adf607b6c4bb67fbf8309ff5bab5a0a9fc52f62"
     },
@@ -746,9 +746,9 @@
       "source_commit": "9fa2314ec43c033254eb19b67d3494a2c67df7c9"
     },
     "func_8004C690": {
-      "ledger_commit": "b7aa646f08040e16a2be15a1adeddd567dac3906",
+      "ledger_commit": "7d16729661809b51b7f4e66e0204d43eae2618ed",
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "b7aa646f08040e16a2be15a1adeddd567dac3906"
+      "source_commit": "7d16729661809b51b7f4e66e0204d43eae2618ed"
     },
     "func_8004E8E0": {
       "ledger_commit": "e14634a8533b583479f9dcd4d8091e87625675c8",
@@ -1781,9 +1781,9 @@
       "source_commit": "a2ecd565fd6098e58f994d2f5a073f0afdbf32f3"
     },
     "overlay25UpdateEffect": {
-      "ledger_commit": "225dbf9f3c7d0f9336be0f0d57968d3da94c500d",
+      "ledger_commit": "fcfbc7f12543438d04a7723c9e2e463f83de7a50",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "225dbf9f3c7d0f9336be0f0d57968d3da94c500d"
+      "source_commit": "fcfbc7f12543438d04a7723c9e2e463f83de7a50"
     },
     "overlay27UpdateCoordinates": {
       "ledger_commit": "6f39884151705e43af48622cce877d456fd5dc18",

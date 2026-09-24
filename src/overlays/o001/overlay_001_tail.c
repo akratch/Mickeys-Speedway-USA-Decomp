@@ -3428,7 +3428,7 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
  * frame: 0x138
  * relocations: 184
  * first-mismatch: +0x34
- * summary: Census pair 2 is missing-CSE at +0x774. The -4 size word is pair 7, missing-CSE, target +0x173C on the actionMode read (line 1462). Line 1428 volatile speedLimit reload closed delta -4 (1196 to 1114). That volatile actionMode read reaches 1113. Stall: delay-slot spellings do not beat 1113.
+ * summary: Census pair 2 is missing-CSE at +0x774. The -4 size word is pair 7, missing-CSE, target +0x173C, the eval at line 1463. Line 1428 volatile speedLimit reload closed delta -4 (1196 to 1114). That volatile actionMode read reaches 1113. Stall: delay-slot spellings do not beat 1113.
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
  */
 

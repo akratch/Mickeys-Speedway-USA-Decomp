@@ -200,6 +200,6 @@ void overlay10Initialize(void) {
  * frame: 0x68
  * relocations: 41
  * first-mismatch: +0x0
- * summary: loopunroll,0 closes size. leftover offset OR-zero closed slti vs li. Copies cost 16 frame bytes and buy the first-loop shape.
+ * summary: hoist into a1/a2 without extra s32 homes; spellings param-pin, register-copy, OR-zero; stall params 173, register inert 37/0x68, OR-zero deleted reloads +8
  * PLATEAU-HANDOFF:overlay10Initialize:end
  */

@@ -1637,9 +1637,9 @@ s32 func_8000DDE4(s32 key, s32 recordCount, TrackKeyRecord *records,
 #ifdef NON_MATCHING
 /* PROVENANCE: JFG's public track.c supplies the resident track draw-loop
  * organization; Mickey's segment and display-list accesses are authoritative. */
-/* Workbench verdict: structure-mismatch, 304 differing words; first mismatch is at +0x48. */
-/* Target is 396 instructions/frame -112; candidate is 398 instructions/frame -112. */
-/* Relocation counts are both 51; remaining batch/display-list scheduling gap is not permuter-ready. */
+/* Candidate: 398/396 words, 303 differing, first mismatch +0x48, frame 0x70 exact. */
+/* Declaring batchIndex and groupIndex ahead of the pointers saves one word. */
+/* The +8 tail spills and the display-list schedule are unchanged. */
 struct TrackShadowObject;
 struct TrackShadowInstance;
 extern void func_800140CC(struct TrackShadowObject *,
@@ -1650,6 +1650,8 @@ extern void overlay68DrawSortedEntries(Gfx **, Mtx **, TrackVertex **, void *);
 extern void overlay29DrawGroups(Gfx **, Mtx **, void *);
 
 void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    s32 batchIndex;
+    s32 groupIndex;
     TrackSegment *segment;
     TrackBatch *batch;
     Gfx *gfx;
@@ -1658,8 +1660,6 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 *objectChild;
     u8 *vertex;
     u8 *triangle;
-    s32 groupIndex;
-    s32 batchIndex;
     s16 batchCount;
     s32 itemIndex;
     s32 alpha;
@@ -1843,8 +1843,8 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                 }
             }
         }
-        batchCount = segment->batchCount;
-    } while ((batchIndex < batchCount) || (itemIndex < arg2));
+    } while ((batchIndex < (batchCount = segment->batchCount)) ||
+             (itemIndex < arg2));
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000DFBC.s")
@@ -5604,11 +5604,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8000DFBC:start
  * symbol: func_8000DFBC
- * score: 304 differing words
+ * score: 303 differing words
  * frame: 0x70
  * relocations: 51
  * first-mismatch: +0x48
- * summary: Correct next-batch vertex boundary and unsigned command types; five m2c structural follow-ups fail to improve. Next: batch/display-list lifetimes.
+ * summary: Declaring batchIndex and groupIndex first improves 304 to 303. Size stays +8, frame 0x70, first +0x48. Tail call spills remain.
  * PLATEAU-HANDOFF:func_8000DFBC:end
  */
 

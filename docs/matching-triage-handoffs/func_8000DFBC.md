@@ -2,11 +2,13 @@
 ### `func_8000DFBC` plateau handoff
 
 - source: `src/main/track.c`
-- score: 304 differing words
+- score: 303 differing words
 - frame: 0x70
 - relocations: 51
 - first mismatch: +0x48
-- summary: Correct next-batch vertex boundary and unsigned command types; five m2c structural follow-ups fail to improve. Next: batch/display-list lifetimes.
+- summary: Declaring batchIndex and groupIndex first improves 304 to 303. Size stays +8, frame 0x70, first +0x48. Tail call spills remain.
+
+Summary before this remeasure: Correct next-batch vertex boundary and unsigned command types; five m2c structural follow-ups fail to improve. Next: batch/display-list lifetimes.
 
 #### Mickey m2c reconstruction, 2026-09-09
 

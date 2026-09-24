@@ -30,7 +30,7 @@ Queued functions with a recorded floor:
 | `overlay101DrawPanel` | 1,072 | +0 | 36 | 36 | yes | colour-exhausted | d52807e76a |
 | `overlay2QueryNode` | 1,012 | +0 | 39 | 39 | yes | colour-exhausted | 4b7c473a07 |
 | `overlay19BuildSpatialMasks` | 908 | +0 | 2 | 2 | yes | colour-exhausted | b93fc9a7ca |
-| `overlay101BuildPresentationB` | 832 | +0 | 136 | 125 | yes | colour-exhausted | 28d450060c |
+| `overlay101BuildPresentationB` | 832 | +0 | 136 | 125 | yes | colour-exhausted | 46a3cd048d |
 | `overlay101BuildPresentationD` | 824 | +0 | 130 | 113 | yes | colour-exhausted | 8dcef34be2 |
 | `func_overlay_008_F0002640_1860398` | 732 | +0 | 37 | 37 | yes | colour-exhausted | 978b7d9736 |
 | `overlay83BuildBatch` | 672 | +0 | 98 | 89 | yes | colour-exhausted | adec7b1d20 |

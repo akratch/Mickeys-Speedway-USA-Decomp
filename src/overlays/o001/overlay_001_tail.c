@@ -173,10 +173,6 @@ extern O1ControlPoint *D_20C;
 extern O1ControlPoint *D_210;
 extern O1ControlPoint *D_214;
 extern s32 D_1D94;
-extern f32 D_E8;
-extern f32 D_EC;
-extern f32 D_F0;
-extern f32 D_F4;
 extern Overlay1ValueRow D_1BA8[];
 
 extern f32 overlay1RandomWave(s32 value);
@@ -191,30 +187,39 @@ extern f32 overlay1MeasureChoice(f32 first, f32 second);
 
 #define CHOICE_WORLD ((O1ChoiceState *)D_1DA0)
 
-/* Workbench plateau: 447/446 instructions, exact 0x90 frame, 341 masked/346 raw
- * differences, and first mismatch at +0xC.  Removing the redundant path carrier
- * changes only allocation and improves 19 positional words; the linked trial is
- * still 12 bytes long.  Target score and interpolation locals sit higher in the
- * same frame; the flag lattice and reverse score cursor remain eliminated. */
+/* PLATEAU (B3-o001, 2026-09-23): 139 masked words at size delta 0 with the
+ * 0x90 frame's home ladder exact (was 341 at delta +4). The four `D_E8`..`D_F4`
+ * externs were rodata literals (-1.2f, 400.5f, 0.1f, 0.1f at overlay-local
+ * base 0x8230 plus the addend), which stops three address webs being hoisted.
+ * The object loop guards on a `loopValue` copy and moves its cursor at the
+ * bottom; the step is an if/else on the reloaded selector with `value`
+ * assigned after it (the target's copy); the FindChoice sentinel is a literal
+ * with `value` set before the selection loop; FindChoice's result goes through
+ * `object`, which puts the state pointer in a0 across MeasureChoice. `i`,
+ * `selected`, `weight` and `chosenState` are declared where the target's homes
+ * put them, and `found` and `pad1` hold slots. What is left is register naming,
+ * led by the transition weight: the target stores the product from a ring temp
+ * and reloads it into f0, where ours colours it f12 and spills. */
 #ifdef NON_MATCHING
 void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
+    s32 i;
+    s32 selected;
     O1ChoiceState *otherState;
-    O1ChoiceState *chosenState;
     O1ChoiceObject **objects;
+    s32 scores[8];
     O1ChoiceObject **cursor;
     O1ChoiceObject *object;
     O1ChoiceObject *found;
     O1ControlTable *table;
-    s32 i;
-    s32 scores[8];
-    s32 selected;
     s32 loopValue;
-    s32 step;
-    s32 value;
-    f32 weight;
-    f32 difference;
     f32 temporaryX;
     f32 temporaryZ;
+    f32 weight;
+    O1ChoiceState *chosenState;
+    s32 value;
+    s32 step;
+    f32 difference;
+    s32 pad1;
 
     if (CHOICE_WORLD->transition != 0) {
         weight = (overlay1RandomWave((CHOICE_WORLD->transition << 7) + 0x8000) +
@@ -265,21 +270,26 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
     } while (loopValue != 0);
 
     objects = overlay1GetChoiceObjects(&i);
-    if (i-- != 0) {
+    loopValue = i;
+    i--;
+    if (loopValue != 0) {
         cursor = objects + i;
         do {
-            object = *cursor--;
+            object = *cursor;
             otherState = object->state;
             if (otherState != CHOICE_WORLD && !(otherState->flags & 8)) {
                 difference =
                     ((O1Pair (*)[6])D_1BA8)[CHOICE_WORLD->playerIndex]
                                                 [otherState->playerIndex].value;
                 if (((difference > -2.0f) && (difference < 2.0f)) ||
-                    ((D_E8 < difference) && (difference < 0.0f) &&
+                    ((-1.2f < difference) && (difference < 0.0f) &&
                      (CHOICE_WORLD->relationModes[otherState->relationIndex] == 1))) {
+                    if (otherState->selector < CHOICE_WORLD->selector) {
+                        step = -1;
+                    } else {
+                        step = 1;
+                    }
                     value = otherState->selector;
-                    step = 1;
-                    if (value < CHOICE_WORLD->selector) step = -1;
                     do {
                         if (difference > 0.0f) {
                             weight = difference;
@@ -296,9 +306,10 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
                     CHOICE_WORLD->relationModes[otherState->relationIndex] >= 4) {
                     scores[otherState->selector] =
                         (s32)((f32)scores[otherState->selector] +
-                              D_EC);
+                              400.5f);
                 }
             }
+            cursor--;
             loopValue = i;
             i--;
         } while (loopValue != 0);
@@ -319,14 +330,13 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
         i--;
     } while (loopValue != 0);
 
-    value = -1000000;
     if (CHOICE_WORLD->active != 0 && CHOICE_WORLD->mode == 6) {
-        found = overlay1FindChoice(CHOICE_WORLD->progress, table, value, scores);
-        if (found != 0) {
-            chosenState = found->state;
-            weight = (f32)chosenState->objectValue * D_F0;
+        object = overlay1FindChoice(CHOICE_WORLD->progress, table, -1000000, scores);
+        if (object != 0) {
+            chosenState = object->state;
+            weight = (f32)chosenState->objectValue * 0.1f;
             difference = overlay1MeasureChoice(weight, CHOICE_WORLD->progress);
-            if (difference < D_F4) {
+            if (difference < 0.1f) {
                 overlay1SubmitChoice(D_1D9C);
             } else if (difference < 3.0f) {
                 scores[chosenState->scoreIndex] += 1000;
@@ -335,6 +345,7 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
     }
 
     selected = -1;
+    value = -1000000;
     i = 0;
     do {
         if (value < scores[i]) {
@@ -519,24 +530,29 @@ extern void ext_o7_ccc(Transform *, s32);
 extern Spawned *local_378(State *);
 extern void ext_o0_1bed0(Transform *, f32, f32, f32, s16, s16, s16);
 extern void ext_o0_1c6bc(Transform *, State *);
-extern void ext_o0_5a914(Transform *, s32, s32, s32);
+extern void ext_o0_5a914(Transform *, s32, s32, f32);
 extern Spawned *local_414(s16, Spawned **);
 extern s16 local_c0(Spawned *);
 
-/* PLATEAU (2026-09-04): configured full-TU C is 236/237 words with 160 raw
- * and relocation-masked differences from +0x20; both frames are 0x50. An
- * asymmetric selector assignment restored the narrow index mask/shift. Phase
- * carrier, register-hint, and pointer-advance forms were flat or regressed;
- * folding the existing point update into its load is also byte-flat. The
- * promotion trial's in=0/out=0 is a build-error classification caused by
- * schedule-divergent global sites, not linked byte equality. */
+/* PLATEAU (B3-o001, 2026-09-23): 30 masked words at size delta 0, frame 0x50
+ * exact (was 160 at delta -4). The size gap was the point-element pointer:
+ * `point += 0x14` before the x read keeps the element address as its own
+ * value, so z reads 4 off it rather than folding to 24. rotY is stored before
+ * rotX/rotZ (as1 order), four locals precede sp3C (its home is 0x3C, L99),
+ * the fade/alpha update is two statements (the load lands in the value's own
+ * register), ext_o0_5a914's last parameter is f32 (as in overlay 86, giving
+ * the target's addiu for 0.0f), and the narrow index is the assignment
+ * expression itself rather than a u8 carrier (L160: 95 -> 30). The rest is
+ * phase/phaseValue taking v1/v0 where the target has v0/v1 and spawned/point
+ * likewise; forcing those four webs prices it at 11, the remainder being the
+ * phase==0 delay slot and two commutative operand orders. */
 #ifdef NON_MATCHING
 void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
-    Spawned *sp3C;
     s32 value;
     u8 phase;
     s32 phaseValue;
     u8 index;
+    Spawned *sp3C;
     u8 *point;
     Spawned *spawned;
 
@@ -553,7 +569,8 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             }
             phaseValue = phase;
             if (phaseValue == 2) {
-                value = state->fade - (updateRate * 4);
+                value = state->fade;
+                value -= updateRate * 4;
                 if (value <= 0) {
                     state->phase = 3;
                     return;
@@ -566,9 +583,9 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
                 obj->x = spawned->x;
                 obj->y = spawned->at10.y2 + 100.0f;
                 obj->z = spawned->z;
+                obj->rotY = spawned->angle;
                 obj->rotX = 0;
                 obj->rotZ = 0;
-                obj->rotY = spawned->angle;
                 ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
                 ext_o0_1c6bc(obj, state);
                 state->flags &= ~8;
@@ -579,7 +596,8 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
                 return;
             }
             if (phaseValue == 4) {
-                value = state->fade + (updateRate * 4);
+                value = state->fade;
+                value += updateRate * 4;
                 if (value >= 255) {
                     state->fade = 255;
                     state->phase = 5;
@@ -593,7 +611,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
                 state->phase = 0;
                 state->active = 0;
                 state->done = 1;
-                ext_o0_5a914(obj, 12, -1, 0);
+                ext_o0_5a914(obj, 12, -1, 0.0f);
                 state->spawned = 0;
         }
     } else {
@@ -611,7 +629,8 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             }
             phaseValue = phase;
             if (phaseValue == 2) {
-                value = obj->alpha - (updateRate * 4);
+                value = obj->alpha;
+                value -= updateRate * 4;
                 if (value <= 0) {
                     state->phase = 3;
                     return;
@@ -621,17 +640,16 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
             }
             if (phaseValue == 3) {
                 spawned = state->spawned;
-                index = state->selectorA = 3;
+                point = (u8 *)spawned + ((state->selectorA = 3) << 4);
                 state->selectorB = 3;
                 state->selectorC = 0;
-                point = (u8 *)spawned + (index << 4);
-                obj->x = *(f32 *)(point + 0x14);
-                obj->y = spawned->y + 100.0f;
                 point += 0x14;
+                obj->x = *(f32 *)point;
+                obj->y = spawned->y + 100.0f;
                 obj->z = *(f32 *)(point + 4);
+                obj->rotY = *(s16 *)((u8 *)spawned + 0xC) + 0x4000;
                 obj->rotX = 0;
                 obj->rotZ = 0;
-                obj->rotY = *(s16 *)((u8 *)spawned + 0xC) + 0x4000;
                 ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
                 ext_o0_1c6bc(obj, state);
                 state->flags &= ~8;
@@ -642,7 +660,8 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
                 return;
             }
             if (phaseValue == 4) {
-                value = obj->alpha + (updateRate * 4);
+                value = obj->alpha;
+                value += updateRate * 4;
                 if (value >= 255) {
                     obj->alpha = 255;
                     state->phase = 5;
@@ -656,7 +675,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
                 state->phase = 0;
                 state->active = 0;
                 state->done = 1;
-                ext_o0_5a914(obj, 12, -1, 0);
+                ext_o0_5a914(obj, 12, -1, 0.0f);
                 state->spawned->at10.flags &= 0xFFF7;
                 state->spawned = 0;
         }
@@ -3396,11 +3415,11 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:overlay1TransitionState:start
  * symbol: overlay1TransitionState
- * score: 160 differing words
+ * score: 30 differing words
  * frame: 0x50
  * relocations: 13
  * first-mismatch: +0x20
- * summary: The size-near pointer-update probe is byte-flat; promotion trial in=0/out=0 is a schedule-divergence build error, not equality. Retain the 160-word structural plateau.
+ * summary: Delta -4 closed, 160 to 30 at delta 0; the rest is the v0/v1 order of phase/phaseValue and spawned/point (forced: 11).
  * PLATEAU-HANDOFF:overlay1TransitionState:end
  */
 
@@ -3417,11 +3436,11 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F0003750_184FB30:start
  * symbol: func_overlay_001_F0003750_184FB30
- * score: 105/446 words
+ * score: 139 differing words
  * frame: 0x90
  * relocations: 31
- * first-mismatch: +0xC
- * summary: Direct selector loads remove the redundant path web and improve 360 to 341 masked differences without changing the 447/446 size. Linked trial has zero measured diffs but remains 12 bytes long.
+ * first-mismatch: +0x58
+ * summary: Delta +4 closed and frame ladder exact, 341 to 139 at delta 0; the rest is naming led by the transition weight's f0 split.
  * PLATEAU-HANDOFF:func_overlay_001_F0003750_184FB30:end
  */
 

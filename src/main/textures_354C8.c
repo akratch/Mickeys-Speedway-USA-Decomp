@@ -170,6 +170,16 @@ void func_80034920(Gfx **dlist) {
     D_8007BD8C = 0;
 }
 #ifdef NON_MATCHING
+/* PROVENANCE: gDkrDmaDisplayList as defined in Jet Force Gemini's public
+ * include/f3ddkr.h (G_DMADL is command 7). */
+#define gDkrDmaDisplayList(pkt, address, numberOfCommands)                     \
+    {                                                                          \
+        Gfx *_g = (Gfx *)(pkt);                                                \
+                                                                               \
+        _g->words.w0 = (_SHIFTL(7, 24, 8) | _SHIFTL((numberOfCommands), 16, 8) | \
+                        _SHIFTL((numberOfCommands * 8), 0, 16));               \
+        _g->words.w1 = (unsigned int)(address);                                \
+    }
 /*
  * PROVENANCE: Jet Force Gemini's public texDPTextureX establishes the related
  * texture/render-state role.  This body's fields, tables, control flow, and
@@ -182,8 +192,8 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     Gfx *textureCommands;
     u8 *currentTexture;
     u8 *nextTexture;
-    s32 oldBlockedFlags;
     s32 numTextures;
+    s32 oldBlockedFlags;
     s32 frameIndex;
     s32 nextFrame;
     s32 hasTexture;
@@ -199,6 +209,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     hasTexture = 0;
     dl = *dlist;
     if (tex != NULL) {
+        settings = D_8007B680;
         numTextures = tex->numOfTextures >> 8;
         frameIndex = frame >> 16;
         if ((numTextures >= 2) && (frameIndex < numTextures) &&
@@ -208,9 +219,10 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
             if ((tex->flags & 0x40) && (tex->unk1B < 2)) {
                 nextFrame = frameIndex + 1;
                 if (nextFrame >= numTextures) {
-                    nextFrame = numTextures - 1;
                     if (tex->spriteFlags & 2) {
                         nextFrame = 0;
+                    } else {
+                        nextFrame = numTextures - 1;
                     }
                 }
                 nextTexture = ((u8 *)tex) +
@@ -226,7 +238,6 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
 
         flags |= tex->flags;
         hasTexture = 1;
-        settings = D_8007B680;
         if ((currentTexture != D_800D3024) ||
             (nextTexture != D_800D3028)) {
             D_800D3024 = currentTexture;
@@ -237,21 +248,15 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
             dl++;
             textureCommands++;
             if (tex->unk1B >= 2) {
-                dl->words.w0 = 0x06000000;
-                dl->words.w1 = (u32)textureCommands;
-                dl++;
+                gSPDisplayList(dl++, textureCommands);
             } else {
-                dl->words.w0 = 0x07060030;
-                dl->words.w1 = (u32)textureCommands + 0x80000000;
-                dl++;
+                gDkrDmaDisplayList(dl++, (u32)textureCommands + 0x80000000, 6);
                 if ((tex->flags & 0x40) && (tex->unk1B < 2)) {
                     dl->words.w0 = textureCommands[6].words.w0;
                     dl->words.w1 = (u32)nextTexture;
                     dl++;
                     textureCommands += 7;
-                    dl->words.w0 = 0x07060030;
-                    dl->words.w1 = (u32)textureCommands + 0x80000000;
-                    dl++;
+                    gDkrDmaDisplayList(dl++, (u32)textureCommands + 0x80000000, 6);
                 }
             }
         }
@@ -260,7 +265,8 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     }
 
     if ((flags & 0x80) && (D_8007BD98 != 0)) {
-        flags = (flags & ~0x80) | 4;
+        flags &= ~0x80;
+        flags |= 4;
     }
     flags &= ~D_8007BD90;
     settingsIndex = (flags & 0x70) >> 4;
@@ -285,8 +291,8 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     tableFlags = settings->flags | (flags & settings->mask);
     if ((D_800D302C != ((settingsIndex << 8) | tableFlags)) ||
         (D_800D3020 != settings)) {
-        D_800D302C = (settingsIndex << 8) | tableFlags;
         D_800D3020 = settings;
+        D_800D302C = (settingsIndex << 8) | tableFlags;
         gDPPipeSync(dl++);
         if (tableFlags & 2) {
             if (D_800D3030 == 0) {
@@ -319,25 +325,22 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     }
     *dlist = dl;
 }
-/* Bounded reproof (2026-09-05): this complete semantic reconstruction emits
- * 274 instructions versus the exact 272-instruction / 0x440-byte owner, with
- * 265 differing target-offset words, normalized edit distance 238, and first
- * mismatch +0x8. The candidate frame is 0x30 versus target 0x40 and it emits
- * 37 versus 39 text relocations. Thirty-one overlay callers authenticate the
- * resident identity. Explicit word copies for both render-state table commands
- * are the retained strict structural gain. All 119 flag identities and ten
- * natural declaration, carrier, control-flow, and command-output forms are nonexact.
- * A fidelity-clean allocator trace identifies flags as the missing s0 web;
- * forcing that color is diagnostic only and disrupts the remaining topology.
- * Preserve the fallback. Resume only with a source-authentic lifetime form
- * that naturally carries flags in s0 while retaining the command structure. */
+/* Size delta 0 and frame 0x40 closed (from +8 and -16). flags reaches s0
+ * naturally once `flags = (flags & ~0x80) | 4` is two statements: its total
+ * save goes 14 to 16 against the callee toll 15.85 (L56). The two DMA
+ * commands are gSPDisplayList and gDkrDmaDisplayList; the wrap takes an else
+ * arm; numTextures is declared ahead of oldBlockedFlags so that home lands at
+ * -0x1C; settings is assigned at the head of the texture arm. Remains: uopt
+ * materializes the D_800D302C address in a register where the target does
+ * not, which is why the two state stores are written in the other order here,
+ * plus register naming. */
 /* PLATEAU-HANDOFF:func_800349A4:start
  * symbol: func_800349A4
- * score: 265 differing words
- * frame: 0x30 (target 0x40)
+ * score: 202 differing words
+ * frame: 0x40
  * relocations: 37
- * first-mismatch: +0x8
- * summary: Complete semantic C emits 274 versus 272 instructions at normalized distance 238; all 119 flags and ten natural forms are nonexact, and a fidelity-clean trace isolates the missing saved-register flag web.
+ * first-mismatch: +0x24
+ * summary: Delta 0, frame 0x40, flags in s0; left: D_800D302C address held in a register (stores swapped to compensate) and naming
  * PLATEAU-HANDOFF:func_800349A4:end
  */
 #else
@@ -1156,10 +1159,10 @@ void func_80035F48(u8 **dlist, TextureFrameHeader *tex, s32 rtile,
 #undef M2C_FIELD
 /* PLATEAU-HANDOFF:func_80035F48:start
  * symbol: func_80035F48
- * score: 369 differing words
+ * score: 371 differing words
  * frame: 0x88 (target 0x90)
  * relocations: 4
- * first-mismatch: +0x4
+ * first-mismatch: +0x0
  * summary: Complete semantic C emits 362 versus 383 instructions; delaying the TMEM carrier improves positional differences by 14 words, but the texture pointer occupies s0 and displaces the target's rtile carrier.
  * PLATEAU-HANDOFF:func_80035F48:end
  */

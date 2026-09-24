@@ -288,7 +288,7 @@ void func_8002AE10(CameraTransform *transform, MtxF matrix);
 void func_80024978(MtxF matrix);
 void func_80034E54(Gfx **dlist, u8 *spriteData, s32 flags,
                    f32 frame, s32 alpha);
-void func_80034434(s32 enabled, ...);
+void func_80034434(s32 enabled);
 void func_80023CCC(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
                    u8 *spriteData, s16 x, s16 y, s16 z, s16 angle, f32 scale,
                    f32 matrixScale, f32 frame, s32 flags, u8 alpha);
@@ -1265,31 +1265,38 @@ void func_80022FD4(Gfx **dlist, Mtx **mtx, void *vertices,
 #pragma GLOBAL_ASM("asm/nonmatchings/main/camera/func_80022FD4.s")
 #endif
 #ifdef NON_MATCHING
-/* Workbench: structure-mismatch, target 284 vs candidate 286 instructions; 263 words differ, first +0x0, frames 0x90/0xA0.
- * Constant audit plus prior spill, volatile, declaration, type, control, and lifetime levers left the candidate's s1 save.
- * Remains: target stack-homed dlist without s1, candidate's extra save, and the final Gfx schedule. */
+/* Workbench: size delta 0 and frame 0x90 both closed; 13 words remain.
+ * Closed by: func_80034434 takes one argument (the varargs call spilled its
+ * extra operands); GBI colour macros with the raw colour (drops the Gfx local
+ * and the separate mask); declarations laid out so every home lands on the
+ * target's ladder; the index reassigned to the scale index (x = f(x)); angle
+ * finished after frameCount is read; an empty region at the join, which
+ * raises the callee toll past dlist's total save so dlist stays in its home
+ * (no s1).
+ * Remains: baseScale and distanceScale tie at total save 6 and baseScale wins
+ * f16 (a force puts it at 3 words), the propagated copy in the distance
+ * multiply, and the order of the two Arctanf argument loads. */
 void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
                    CameraSpriteActor *actor, u8 *spriteData, s32 alpha) {
     CameraSpritePlayer *player;
+    s32 spriteTypeIndex;
+    f32 baseScale;
     s32 angle;
     s32 mirroredFrame;
-    f32 scale;
-    f32 matrixScale;
-    f32 x;
-    f32 y;
-    f32 z;
-    s16 xRotation;
-    s16 zRotation;
-    Gfx *cmd;
-    f32 threshold;
-    f32 multiplier;
-    f32 baseScale;
-    f32 distanceScale;
-    s32 spriteTypeIndex;
     s32 frameCount;
     s32 doubledFrameCount;
     s32 frame;
     s32 color;
+    f32 threshold;
+    f32 scale;
+    f32 matrixScale;
+    f32 multiplier;
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 distanceScale;
+    s16 xRotation;
+    s16 zRotation;
 
     if (actor->kind == 1) {
         player = actor->player;
@@ -1300,10 +1307,9 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
                (D_80079FF0[spriteTypeIndex].spriteType != -1)) {
             spriteTypeIndex++;
         }
+        spriteTypeIndex = D_80079FF0[spriteTypeIndex].scaleIndex;
         baseScale = *actor->baseScale;
-        scale = *(volatile f32 *)&D_80079FD8
-                    [D_80079FF0[spriteTypeIndex].scaleIndex] *
-                baseScale;
+        scale = D_80079FD8[spriteTypeIndex] * baseScale;
         matrixScale = player->unk50;
         xRotation = player->xRotation;
         zRotation = player->zRotation;
@@ -1321,12 +1327,12 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
                 multiplier = D_80081A34;
             }
             if (threshold < actor->distance) {
-                threshold = ((actor->distance - threshold) * multiplier) +
-                            1.0f;
-                if (threshold > 2.0f) {
-                    threshold = 2.0f;
+                multiplier = ((actor->distance - threshold) * multiplier) +
+                             1.0f;
+                if (multiplier > 2.0f) {
+                    multiplier = 2.0f;
                 }
-                distanceScale *= threshold;
+                distanceScale *= multiplier;
             }
         }
     } else {
@@ -1341,10 +1347,13 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
         baseScale = *actor->baseScale;
     }
 
+    do {
+    } while (0);
     scale *= distanceScale / baseScale;
-    angle = xRotation - Arctanf(D_800CEA20[D_800CEC64].transform.x - x,
-                               D_800CEA20[D_800CEC64].transform.z - z);
+    angle = Arctanf(D_800CEA20[D_800CEC64].transform.x - x,
+                    D_800CEA20[D_800CEC64].transform.z - z);
     frameCount = spriteData[0] - 1;
+    angle = xRotation - angle;
     doubledFrameCount = frameCount * 2;
     frame = ((((0x8000 / doubledFrameCount) + angle) & 0xFFFF) *
              doubledFrameCount) >> 16;
@@ -1361,33 +1370,24 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
             color = D_8007C85C;
         }
     } else {
-        color = 255;
         if (actor->opacity != NULL) {
             color = *actor->opacity * 255.0f;
+        } else {
+            color = 255;
         }
     }
 
-    color &= 0xFF;
-    cmd = (Gfx *)((*dlist)++);
-    cmd->words.w0 = 0xFA000000;
-    cmd->words.w1 = (color << 24) | (color << 16) | (color << 8) |
-                    actor->alpha;
-    cmd = (Gfx *)((*dlist)++);
-    cmd->words.w1 = 0;
-    cmd->words.w0 = 0xFB000000;
+    gDPSetPrimColor((*dlist)++, 0, 0, color, color, color, actor->alpha);
+    gDPSetEnvColor((*dlist)++, 0, 0, 0, 0);
 
-    func_80034434(1, doubledFrameCount, frame, color);
+    func_80034434(1);
     func_80023CCC(dlist, mtx, vertices, spriteData, x, y, z,
                   func_8002A8BC(angle) * zRotation, scale, matrixScale,
                   mirroredFrame, 0x10E, alpha);
     func_80034434(0);
 
-    cmd = (Gfx *)((*dlist)++);
-    cmd->words.w1 = -1;
-    cmd->words.w0 = 0xFA000000;
-    cmd = (Gfx *)((*dlist)++);
-    cmd->words.w1 = -256;
-    cmd->words.w0 = 0xFB000000;
+    gDPSetPrimColor((*dlist)++, 0, 0, 255, 255, 255, 255);
+    gDPSetEnvColor((*dlist)++, 255, 255, 255, 0);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/camera/func_80023598.s")
@@ -2046,10 +2046,10 @@ f32 D_80079F58[2] = { 0.0f, 0.0f };
 
 /* PLATEAU-HANDOFF:func_80023598:start
  * symbol: func_80023598
- * score: 263 differing words
- * frame: 0xA0
+ * score: 13 differing words
+ * frame: 0x90
  * relocations: 32
- * first-mismatch: +0x0
- * summary: JFG efd5abb adds no counterpart for Mickey's high-level sprite path beyond the donor already exhausted here; next lever is Mickey-authenticated source context.
+ * first-mismatch: +0xA8
+ * summary: Delta 0, frame 0x90; baseScale wins the f16 tie with distanceScale (force w30=c29 gives 3), plus a propagated copy and Arctanf load order
  * PLATEAU-HANDOFF:func_80023598:end
  */

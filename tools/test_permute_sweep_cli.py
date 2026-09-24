@@ -101,7 +101,11 @@ class SweepCliTests(unittest.TestCase):
     def run_cli(self, *args, script=None, shell="bash", **env):
         return subprocess.run([shell, str(script or self.repo / "tools/permute_sweep.sh"), *args],
                               env={**self.env, **env}, cwd=self.top,
-                              text=True, capture_output=True, timeout=15)
+                              text=True, capture_output=True,
+                              # A hang guard, not a latency bound: the CLI
+                              # runs git and python children that a loaded
+                              # machine can slow well past 15 s.
+                              timeout=120)
 
     def events(self):
         if not self.events_path.exists():

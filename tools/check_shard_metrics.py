@@ -23,17 +23,42 @@ that trusts the header measures something else on its first cycle and spends
 the difference working out which number is real.
 
     python3 tools/check_shard_metrics.py [--json]
+    python3 tools/check_shard_metrics.py --write
 
 Exit 1 on any disagreement, 0 otherwise. Reads the ranking JSON and the shard
-headers only: no build, no compile, nothing ROM-derived.
+headers only: no build, no compile, nothing ROM-derived. `gmake check-docs`
+runs it, so drift fails the docs gate rather than waiting for a lane to trip
+over it.
+
+**The ranking is the fresher measurement.** Its rows carry the source-context
+hash `nm_ranking.py --check-doc` holds to the tree, so a row is always a
+measurement of today's candidate; a header is a measurement of the candidate
+on the day its plateau was recorded. The ranking's `relocation_masked_*`
+fields are the same positional count `function_preflight.py` reports and
+`finalize_plateau.py` records (checked on three remeasures, 2026-09-23), so
+where they disagree the header is what moved. A bare `N differing words` is
+also accepted against the ranking's unmasked count, as offsets already were:
+some plateaus were recorded before masking.
+
+`--write` regenerates the drifted fields from the ranking: it rewrites the
+`score` / `first-mismatch` lines of the symbol's source PLATEAU-HANDOFF marker,
+projects the shard from it with `plateau_handoff_audit` (the shard's evidence
+prose is kept), and appends one line to that prose saying what the header read
+before. Frame, relocations and summary are not the ranking's to change and
+are left alone. `matched-but-open` findings are not rewritten: a matched
+function's shard needs a human decision, not a number. It refuses a dirty
+source or shard. Every rewritten shard moves its ledger commit, so run
+`tools/authorize_reopen.py --refresh-stale` after the commit lands.
 """
 
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import pathlib
 import re
+import subprocess
 import sys
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
@@ -84,12 +109,13 @@ def claims_a_residual(score: str, first: str) -> bool:
     return False  # an unrecognised spelling is not evidence of a claim
 
 
-def check() -> "list[dict]":
-    ranking = json.loads(RANKING.read_text(encoding="utf-8"))
+def check(root: pathlib.Path = REPO) -> "list[dict]":
+    ranking = json.loads(
+        (root / RANKING.relative_to(REPO)).read_text(encoding="utf-8"))
     queued = {row["name"]: row for row in ranking["functions"]}
     findings: list[dict] = []
 
-    for path in sorted(SHARD_DIR.glob("*.md")):
+    for path in sorted((root / SHARD_DIR.relative_to(REPO)).glob("*.md")):
         symbol = path.stem
         head = header_of(path)
         score_m = SCORE_RE.search(head)
@@ -98,7 +124,7 @@ def check() -> "list[dict]":
             continue
         score = score_m.group(1).strip()
         first = first_m.group(1).strip() if first_m else "unknown"
-        rel = path.relative_to(REPO).as_posix()
+        rel = path.relative_to(root).as_posix()
 
         row = queued.get(symbol)
         if row is None:
@@ -113,6 +139,7 @@ def check() -> "list[dict]":
             continue
 
         masked = row["relocation_masked_differing_words"]
+        raw = row.get("differing_words")
         pair = PAIR_RE.match(score)
         bare = BARE_RE.match(score)
         # `N/M words` is written both ways in this corpus: some shards put the
@@ -126,6 +153,8 @@ def check() -> "list[dict]":
             claimed = None if agrees else differing
         elif bare:
             claimed = int(bare.group(1))
+            if claimed == raw:
+                claimed = None
         else:
             claimed = None
         if claimed is not None and claimed != masked:
@@ -135,6 +164,7 @@ def check() -> "list[dict]":
                 "symbol": symbol,
                 "claim": f"score: {score}",
                 "actual": f"{masked} masked differing words",
+                "value": f"{masked} differing words",
             })
 
         # A header may legitimately quote either the masked or the raw first
@@ -154,17 +184,122 @@ def check() -> "list[dict]":
                 "symbol": symbol,
                 "claim": f"first mismatch: {first}",
                 "actual": f"+0x{actual_off:X}",
+                "value": f"+0x{actual_off:X}",
             })
 
     return findings
 
 
+MARKER_FIELD = {"score": "score", "first-mismatch": "first-mismatch"}
+
+
+class WriteRefused(RuntimeError):
+    """--write would overwrite something it cannot account for."""
+
+
+def _dirty(root: pathlib.Path, relative: str) -> bool:
+    return bool(subprocess.run(
+        ["git", "status", "--porcelain=v1", "--", relative], cwd=root,
+        text=True, stdout=subprocess.PIPE, check=True,
+    ).stdout)
+
+
+def _rewrite_marker(text: str, line: int, fields: dict[str, str]) -> str:
+    """Replace ``fields`` inside the marker comment that starts at ``line``."""
+    lines = text.splitlines(keepends=True)
+    seen: set[str] = set()
+    for index in range(line - 1, len(lines)):
+        row = lines[index]
+        for key, value in fields.items():
+            if row.startswith(f" * {key}: "):
+                lines[index] = f" * {key}: {value}\n"
+                seen.add(key)
+        if row.rstrip("\n") == " */":
+            break
+    missing = set(fields) - seen
+    if missing:
+        raise WriteRefused(
+            f"marker at line {line} has no {', '.join(sorted(missing))} field")
+    return "".join(lines)
+
+
+def write(root: pathlib.Path, findings: "list[dict]", *,
+          today: "str | None" = None) -> "list[str]":
+    """Regenerate drifted header fields from the ranking. Returns paths."""
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+    import plateau_handoff_audit as pha
+
+    today = today or datetime.date.today().isoformat()
+    wanted: dict[str, dict[str, tuple[str, str]]] = {}
+    for finding in findings:
+        if finding["kind"] not in MARKER_FIELD:
+            continue
+        old = finding["claim"].split(": ", 1)[1]
+        wanted.setdefault(finding["symbol"], {})[finding["kind"]] = (
+            old, finding["value"])
+    if not wanted:
+        return []
+    audit = pha.audit_tree(root)
+    markers = {marker.symbol: marker for marker in audit.markers}
+    edits: dict[str, str] = {}
+    for symbol, fields in sorted(wanted.items()):
+        marker = markers.get(symbol)
+        if marker is None:
+            raise WriteRefused(f"{symbol}: no structured source marker to rewrite")
+        shard = SHARD_DIR.relative_to(REPO).as_posix() + f"/{symbol}.md"
+        for relative in (marker.source, shard):
+            if _dirty(root, relative):
+                raise WriteRefused(f"{symbol}: {relative} has local changes")
+        text = edits.get(marker.source) or (root / marker.source).read_text(
+            encoding="utf-8")
+        edits[marker.source] = _rewrite_marker(text, marker.line, {
+            MARKER_FIELD[kind]: new for kind, (_old, new) in fields.items()
+        })
+    for relative, text in edits.items():
+        (root / relative).write_text(text, encoding="utf-8", newline="\n")
+    audit = pha.audit_tree(root)
+    written = pha.write_actionable(root, audit)
+    changed = set(edits)
+    for symbol, fields in sorted(wanted.items()):
+        shard = root / SHARD_DIR.relative_to(REPO) / f"{symbol}.md"
+        before = "; ".join(
+            f"{'first mismatch' if kind == 'first-mismatch' else kind} {old}"
+            for kind, (old, _new) in sorted(fields.items()))
+        note = (
+            f"Header regenerated from the ranking on {today} "
+            f"(check_shard_metrics --write); it read {before}.\n"
+        )
+        end = f"<!-- plateau-handoff:{symbol}:end -->"
+        text = shard.read_text(encoding="utf-8")
+        if end not in text:
+            raise WriteRefused(f"{symbol}: shard has no end marker")
+        head, tail = text.split(end, 1)
+        if not head.endswith("\n\n"):
+            head = head.rstrip("\n") + "\n\n"
+        shard.write_text(head + note + end + tail, encoding="utf-8", newline="\n")
+        changed.add(shard.relative_to(root).as_posix())
+    return sorted(changed | set(written))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--json", action="store_true", help="machine-readable output")
+    parser.add_argument(
+        "--write", action="store_true",
+        help="regenerate drifted score/first-mismatch fields from the ranking",
+    )
     args = parser.parse_args()
 
     findings = check()
+    if args.write:
+        try:
+            paths = write(REPO, findings)
+        except WriteRefused as error:
+            print(f"check_shard_metrics: {error}", file=sys.stderr)
+            return 2
+        for path in paths:
+            print(f"wrote {path}")
+        findings = check()
     if args.json:
         print(json.dumps(findings, indent=2))
     else:
@@ -179,7 +314,8 @@ def main() -> int:
                 f"\nshard metrics FAILED -- matched-but-open={counts['matched-but-open']} "
                 f"score={counts['score']} first-mismatch={counts['first-mismatch']}"
             )
-            print("Re-run tools/finalize_plateau.py for the symbol, or record the match.")
+            print("Re-run tools/finalize_plateau.py for the symbol, or record the match;")
+            print("tools/check_shard_metrics.py --write regenerates score/first-mismatch drift from the ranking.")
         else:
             print("shard metrics OK -- every header agrees with the ranking")
     return 1 if findings else 0

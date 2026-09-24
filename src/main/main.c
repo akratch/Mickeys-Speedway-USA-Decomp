@@ -1721,14 +1721,14 @@ void func_800293D0(void) {
  * score: 207 differing words
  * frame: 0x28
  * relocations: 298
- * first-mismatch: +0x48
+ * first-mismatch: +0x38
  * summary: Fresh V0 reproduces the exhausted main loop plateau. Resume only with a new display command scheduling or allocator mechanism.
  * PLATEAU-HANDOFF:func_80026FB4:end
  */
 
 /* PLATEAU-HANDOFF:func_80028564:start
  * symbol: func_80028564
- * score: 426 differing words
+ * score: 306 differing words
  * frame: 0x58
  * relocations: 245
  * first-mismatch: +0x4

@@ -5562,10 +5562,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414
- * score: 388 differing words
+ * score: 398 differing words
  * frame: 0x198
  * relocations: 11
- * first-mismatch: +0x40
+ * first-mismatch: +0x0
  * summary: Workbench structure-mismatch: structure-buckets. Next: authenticate the default-mode lifetime and sort-prefix source before further scheduling work.
  * PLATEAU-HANDOFF:func_80009414:end
  */

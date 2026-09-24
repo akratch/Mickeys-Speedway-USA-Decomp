@@ -544,7 +544,7 @@ void func_8000238C(void) {
 
 /* PLATEAU-HANDOFF:func_80001740:start
  * symbol: func_80001740
- * score: 203/209 instructions
+ * score: 153 differing words
  * frame: -0x158
  * relocations: 58
  * first-mismatch: +0x0
@@ -554,7 +554,7 @@ void func_8000238C(void) {
 
 /* PLATEAU-HANDOFF:func_80001BF4:start
  * symbol: func_80001BF4
- * score: 372/336 instructions
+ * score: 350 differing words
  * frame: -0x60
  * relocations: 187
  * first-mismatch: +0x0

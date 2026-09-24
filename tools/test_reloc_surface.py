@@ -2717,5 +2717,37 @@ class ResidentVersusReservedTests(unittest.TestCase):
         self.assertFalse(rs._resident_versus_reserved((0, 4), (0, 8)))
 
 
+
+class TuOwnershipOverflowTests(unittest.TestCase):
+    """overlay20UpdateGrid: a 0x360 candidate for a 0x35C target alone in
+    its TU could not be measured at all. Its overrun is its own size delta."""
+
+    def overflow(self, start, size, local, target, owner, measure):
+        return rs.tu_ownership_overflow(
+            start, size, local, target, owner, measure_size_delta=measure)
+
+    def test_a_fitting_candidate_has_no_overflow_in_either_mode(self):
+        for measure in (False, True):
+            self.assertEqual(self.overflow(0, 0x35C, 0, 0x35C, 0x35C, measure), 0)
+
+    def test_own_size_delta_is_measurable_and_reported(self):
+        self.assertEqual(self.overflow(0, 0x360, 0, 0x35C, 0x35C, True), 4)
+        # Last function of a consolidated TU, still at its own offset.
+        self.assertEqual(self.overflow(0x100, 0x70, 0x100, 0x60, 0x160, True), 0x10)
+
+    def test_promotion_mode_still_refuses_any_overrun(self):
+        with self.assertRaisesRegex(rs.SurfaceComparisonError, "escapes TU ownership"):
+            self.overflow(0, 0x360, 0, 0x35C, 0x35C, False)
+
+    def test_prefix_drift_is_never_admitted(self):
+        # Earlier guarded code shifted the candidate: not its own delta.
+        with self.assertRaisesRegex(rs.SurfaceComparisonError, "escapes TU ownership"):
+            self.overflow(0x10DC, 0x468, 0x10B4, 0x468, 0x1520, True)
+
+    def test_a_shorter_candidate_or_misfit_target_is_not_admitted(self):
+        with self.assertRaises(rs.SurfaceComparisonError):
+            self.overflow(0x10, 0x30, 0x10, 0x40, 0x3C, True)
+
+
 if __name__ == "__main__":
     unittest.main()

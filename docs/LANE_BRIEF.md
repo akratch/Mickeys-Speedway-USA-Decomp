@@ -284,8 +284,13 @@ it end to end. The ones that carry most of the weight:
   on unreferenced `s32` pads to land the target's homes; removing three from
   `wakeDraw` moved its frame from 0x88 to 0x78. Treat unreferenced locals as
   a frame lever, sweep their count and position with `frame_census.py`, and
-  do not assume the compiler drops them. `align8(4N)` hides a one-slot
-  change.
+  do not assume the compiler drops them. The condition, measured on mini TUs
+  with the tree's IDO (workbench law page, 2026-09-23): an unused local takes
+  a 4-byte cell only when the function already keeps some other value in its
+  own frame across a call (a declared local or a compiler temporary). Leaves,
+  frames holding only arrays or volatiles, and functions whose live values
+  all sit in callee-saved registers pay nothing. `align8(4N)` hides a
+  one-slot change.
 - **L150** — **a deleted no-op is not side-effect free.** as1 removes it *by
   renaming its producer's destination*, so a no-op placed to buy a ring draw
   also moves whatever produced its operand off the colour it held. That is why
@@ -648,6 +653,8 @@ shadow -- the dispatch order for Track B.
   hexdumps, no machine-word arrays, no base64 of ROM bytes. `uoptlist` and
   compiler scratch are never committed.
 - No absolute workstation paths in tracked files.
+- `tools/finalize_plateau.py --commit` appends your commit trailer only when
+  given one: export `MICKEY_COMMIT_TRAILER` (or pass `--trailer`, repeatable).
 - A handoff shard is a strict grammar: the metric header must be source, score,
   frame, relocations, first mismatch, then an optional summary, each on its own
   line, and `|` is forbidden anywhere in the block — write measurements as prose

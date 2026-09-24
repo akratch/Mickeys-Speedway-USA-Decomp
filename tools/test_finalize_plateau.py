@@ -383,6 +383,7 @@ class FinalizeCommandTests(unittest.TestCase):
         self.env = os.environ.copy()
         self.env["PATH"] = f"{self.bin}{os.pathsep}{self.env['PATH']}"
         self.env["GATE_LOG"] = str(self.gate_log)
+        self.env.pop("MICKEY_COMMIT_TRAILER", None)
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
@@ -464,6 +465,49 @@ class FinalizeCommandTests(unittest.TestCase):
             "src/demo.c",
             "docs/matching-triage-handoffs/demo_symbol.md",
         })
+
+    def commit_body(self) -> str:
+        return self.run_command("git", "log", "-1", "--format=%B").stdout
+
+    def test_commit_without_trailer_or_environment_has_none(self) -> None:
+        result = self.finalize("--commit")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.commit_body().strip(), "Plateau demo_symbol")
+
+    def test_environment_trailer_is_the_default(self) -> None:
+        self.env["MICKEY_COMMIT_TRAILER"] = "Co-Authored-By: Lane <lane@example.invalid>"
+        result = self.finalize("--commit")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            self.commit_body().strip(),
+            "Plateau demo_symbol\n\nCo-Authored-By: Lane <lane@example.invalid>",
+        )
+        trailers = self.run_command(
+            "git", "log", "-1", "--format=%(trailers:key=Co-Authored-By,valueonly)",
+        ).stdout.strip()
+        self.assertEqual(trailers, "Lane <lane@example.invalid>")
+
+    def test_explicit_trailers_replace_the_environment_and_repeat(self) -> None:
+        self.env["MICKEY_COMMIT_TRAILER"] = "Co-Authored-By: Env <env@example.invalid>"
+        result = self.finalize(
+            "--commit", "--trailer", "Co-Authored-By: A <a@example.invalid>",
+            "--trailer", "Claude-Session: https://example.invalid/s",
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        body = self.commit_body()
+        self.assertNotIn("Env", body)
+        self.assertTrue(body.strip().endswith(
+            "Co-Authored-By: A <a@example.invalid>\n"
+            "Claude-Session: https://example.invalid/s"
+        ))
+
+    def test_trailer_requires_commit_and_one_token_line(self) -> None:
+        result = self.finalize("--trailer", "Co-Authored-By: A <a@example.invalid>")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("--trailer requires --commit", result.stderr)
+        result = self.finalize("--commit", "--trailer", "not a trailer")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("invalid commit trailer", result.stderr)
 
     def test_two_symbols_never_edit_a_shared_ledger(self) -> None:
         other_source = VALID_SOURCE.replace("demo_symbol", "other_symbol")

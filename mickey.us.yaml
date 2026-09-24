@@ -397,9 +397,16 @@ segments:
       - [0x6DE10, c, libultra/pfsselectbank]
       - [0x6DE90, c, libultra/contpfs]
       - [0x6EA30, c, libultra/pfschecker]
-      # 0x40 bytes between the end of io/pfschecker.c and the corridor.
-      # Matches nothing in any of the five reference builds. Unidentified.
-      - [0x6F3E0, c, libultra/block_6F3E0]
+      # 0x40 zero bytes between the end of io/pfschecker.c and the corridor:
+      # padding, not a function. Matches nothing in any of the five reference
+      # builds, nothing in the image references 0x8006E7E0, and no C body
+      # emits a lone zero word (an empty IDO function is two). It was carved
+      # as libultra/block_6F3E0 on 2026-09-02 and queued as func_8006E7E0,
+      # splat's label for its first word; the Track B reader closed that
+      # reading on 2026-09-23 (git log -S func_8006E7E0 for the handoff). A
+      # `pad` subsegment is emitted as `. += 0x40` in the linker script: no
+      # object, no symbol, and so no entry in the function census.
+      - [0x6F3E0, pad]
       # -----------------------------------------------------------------
       # libultra corridor: ROM 0x6F420 - 0x76D10 (VRAM 0x8006E820 - 0x80076110).
       #
@@ -1967,7 +1974,8 @@ segments:
       - [0x189F24C, c, overlay54TailA]
       - [0x18A0B34, c, overlay54ReleaseResources]
       - [0x18A0B84, asm, overlay_054_padding]
-      - [0x18A0B90, bin, overlay_054_data_rodata]
+      - [0x18A0B90]
+      - [0x18A0E60, bin, overlay_054_data_rodata]
       - [0x18A0E70, bin, overlay_054_reloc1]
       - [0x18A1370, bin, overlay_054_reloc2]
 

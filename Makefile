@@ -578,6 +578,7 @@ check-docs:
 	$(HOST_PYTHON) $(TOOLS_DIR)/nm_ranking.py --check-doc
 	$(HOST_PYTHON) $(TOOLS_DIR)/nm_ranking.py --check-retired
 	$(HOST_PYTHON) $(TOOLS_DIR)/plateau_handoff_audit.py --check
+	$(HOST_PYTHON) $(TOOLS_DIR)/check_shard_metrics.py
 
 # Proved colour floors recorded in plateau handoffs, summarised. Reads the
 # handoff shards, source PLATEAU-HANDOFF blocks and the ranking; no build.
@@ -975,15 +976,6 @@ $(BUILD_DIR)/$(SRC_DIR)/libultra/ll.c.o: OPT_FLAGS := -O1
 $(BUILD_DIR)/$(SRC_DIR)/libultra/ll.c.o: MIPSISET := -mips3 -32
 $(BUILD_DIR)/$(SRC_DIR)/libultra/ll.c.o: POSTPROCESS = $(HOST_PYTHON) \
 	$(TOOLS_DIR)/set_elf_flags.py $@ 0x10000000
-
-# Preserve the extracted fallback's endlabel: its symbol spans 4 bytes,
-# followed by 60 bytes outside the label in the 0x40-byte block. asm-processor
-# incorrectly assigns the entire block to the first glabel. Restore only
-# st_size; keep all section bytes and the NON_MATCHING verdict unchanged.
-# This placeholder boundary is not evidence of a four-byte C function.
-$(BUILD_DIR)/$(SRC_DIR)/libultra/block_6F3E0.c.o: $(TOOLS_DIR)/set_elf_symbol_size.py
-$(BUILD_DIR)/$(SRC_DIR)/libultra/block_6F3E0.c.o: POSTPROCESS = $(HOST_PYTHON) \
-	$(TOOLS_DIR)/set_elf_symbol_size.py $@ func_8006E7E0 0x40 0x4
 
 # --- n_audio flag group (lane/naudio) -------------------------------------
 # The n_audio synthesis library (ROM 0x5E6B0-0x6ACF0, docs/modules.md 4.2) was

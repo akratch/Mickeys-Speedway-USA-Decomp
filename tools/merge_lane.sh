@@ -84,15 +84,24 @@ if git grep -q '^<<<<<<< ' -- . ':!*.md'; then echo "conflict markers left in tr
 #
 # `--prune-stale` drops rows whose file/symbol identity has left the queue
 # WITHOUT compiling, which is exactly what a promotion needs and all it needs;
-# the surviving rows keep their proven measurements. It is a no-op when the
-# merge promoted nothing, so it is unconditional here.
+# the surviving rows keep their proven measurements. It is unconditional here.
+#
+# Stage whatever it rewrote, decided by the file, never by its message. It
+# always rewrites the JSON, and it also recomputes the header counts, so it
+# can change the file while reporting "pruned 0 stale row(s)": merging
+# lane/B3-track (2026-09-23) auto-merged a ranking whose retired row was gone
+# but whose header still counted it (243 against 242 rows), the prune fixed
+# the header and said "pruned 0 stale row(s); retained 242 ...", the old
+# `case` on that line skipped the `git add`, and `merge_transaction.py begin`
+# stopped on "unstaged tracked edits present". Its last line can also be a
+# "note: ... remain unranked" line. If this ever stops a merge again, stage
+# the two files and resume by hand with tools/finish_merge.sh.
 pruned=$(.venv/bin/python tools/nm_ranking.py --prune-stale 2>&1 | tail -1)
-case "$pruned" in
-  "pruned 0 stale row"*) ;;
-  *) .venv/bin/python tools/nm_ranking.py --write-doc >/dev/null
-     git add config/nonmatching-ranking.us.json docs/nm-ranking.md
-     echo "ranking: $pruned" ;;
-esac
+if ! git diff --quiet -- config/nonmatching-ranking.us.json docs/nm-ranking.md; then
+  .venv/bin/python tools/nm_ranking.py --write-doc >/dev/null
+  git add config/nonmatching-ranking.us.json docs/nm-ranking.md
+  echo "ranking: $pruned"
+fi
 .venv/bin/python tools/merge_transaction.py begin
 if [ "${regenerate_ranking_doc:-0}" = 1 ]; then
   .venv/bin/python tools/nm_ranking.py --write-doc >/dev/null

@@ -2,11 +2,61 @@
 ### `wakeUpdate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 334 differing words
-- frame: 0x98
+- score: 257 differing words
+- frame: 0x90
 - relocations: 2
-- first mismatch: 0x0
-- summary: JFG efd5abb remains assembly-only; zero source attempts. Need new counter lifetime and trig-call schedule evidence.
+- first mismatch: +0x34
+- summary: Size delta 0, frame 0x90; residual is p1 colour order (wake/secondaryVertices, index/stripIndex swapped); four colour forces price it at 207.
+
+Summary before this remeasure: JFG efd5abb remains assembly-only; zero source attempts. Need new counter lifetime and trig-call schedule evidence.
+
+Track B lane B3-fx (2026-09-23), about twenty-five measured cycles. Start
+367 masked, size delta -4, frame 0x98 against 0x90; insertion reader: five
+pairs, aligned residual 310. The retained body was rewritten against the
+target; each step with its measured effect:
+
+- Two semantic errors in the old body, read off the target's stores: the
+  value stored at vertices-record +0xE is a separate counter (polyCount,
+  +2 inside the stripIndex branch, reset with outputCount), not the sample's
+  shifted height; and stripIndex advances by 2 per sample (polygon[1] is
+  stripIndex, [2] and [0x11] are stripIndex + 1) with polygon[0x12] also
+  written in the branch. The shifted height is a plain temporary.
+- index as `s32` (the target never masks it), `u16` reads of the linked
+  counts, value4 stored without a cast. First version 385 at -12.
+- First scan as `count = value3B; while (count--)` with a `start` value for
+  the entry and post-scan reads: the target's copy-and-test shape and its
+  PRE'd reload. 385 -> 369.
+- `index * 5` through a temporary, then `* 4`; sine and cosine as a call
+  followed by `*=`. Declarations merged to sixteen slots so the frame is
+  0x90 with outputOffset on the target's +0x80 home. 369 -> 335.
+- Sample stores in the order angle, +4, arg2, arg1, arg3: 335 -> 329 (best
+  of all 120 orders).
+- The +0x20 buffer read written as a subscript while +0x18 and +0x28 stay
+  pointer arithmetic: the target computes wake + state * 4 twice, and a
+  different spelling is what keeps uopt from sharing it. Delta -8 -> 0,
+  329 -> 257. Spelling it `<< 2` or `* 4U` measures the same; moving the
+  constant after the index does not, and writing all three as subscripts
+  shares all three again (329, -8).
+
+Residual at delta 0: byte-exact 146, register naming 232, immediate 1,
+really different 23 (four one-sided words each way, all scheduling). The
+naming is the p1 colour order, read from the globalcolor records (proc 13):
+wake (save 21.86, nocs 14) outranks secondaryVertices (20.17) and takes s3
+where the target has s4; the index web (15.38) outranks stripIndex (10.09)
+and takes s5 where the target has s6; and polygonOffset (5.17) takes s7,
+which the target gives to polyCount, spilling polygonOffset to +0x6C around
+the calls instead of our +0x70. Forcing w162=c17 and w2=c18 gives 222;
+adding w51=c19 and w12=c20 gives 207, still delta 0. Splitting the
+polygonOffset web instead of colouring it moved the size to +8 (296), so
+the target's polygonOffset is a caller-saved web that spills, not a split.
+
+Measured flat: a separate symbol for the first scan's cursor (value, mark
+or outputOffset: 266, 259, 308), all three buffer reads as subscripts.
+
+Decision variable: the save ratio of the wake parameter against
+secondaryVertices, and of the two index webs against stripIndex. The next
+lever is whatever lowers wake's totalsave by about two per reference block
+(fewer wake reads inside the sample loop) without moving the code.
 
 
 Reopening audit (2026-09-08), evidence D: PROVENANCE inspection of Jet Force
@@ -40,4 +90,5 @@ Commands: `lane_status.py --symbol`, `wb_compare.sh --summary-json`, workbench
 `diagnose` and `guide`, and `finalize_plateau.py`. The unchanged guarded C stays
 NON_MATCHING and receives zero new exact bytes.
 
+Header regenerated from the ranking on 2026-09-23 (check_shard_metrics --write); it read score 334 differing words.
 <!-- plateau-handoff:wakeUpdate:end -->

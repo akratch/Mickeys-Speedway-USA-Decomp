@@ -3,9 +3,24 @@
 
 from __future__ import annotations
 
+import json
+import pathlib
+import subprocess
+import sys
+import tempfile
 import unittest
 
-import check_shard_metrics as mod
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import check_shard_metrics as mod  # noqa: E402
+import finalize_plateau  # noqa: E402
+
+SOURCE = """#ifdef NON_MATCHING
+void demo_symbol(int value) {
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/main/demo/demo_symbol.s")
+#endif
+"""
 
 
 class ResidualClaimTests(unittest.TestCase):
@@ -76,6 +91,87 @@ class HeaderScanTests(unittest.TestCase):
     def test_score_pattern_needs_line_start(self):
         self.assertIsNone(mod.SCORE_RE.search("  quoted - score: 9/9 words"))
         self.assertIsNotNone(mod.SCORE_RE.search("- score: 9/9 words"))
+
+
+
+class TreeTests(unittest.TestCase):
+    """check() and --write against a real git tree with one queued symbol."""
+
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = pathlib.Path(self.temporary.name)
+        self.git("init", "-q")
+        self.git("config", "user.email", "shard@example.invalid")
+        self.git("config", "user.name", "Shard Test")
+        (self.root / "src/main").mkdir(parents=True)
+        (self.root / "config").mkdir()
+        (self.root / "docs/matching-triage-handoffs").mkdir(parents=True)
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def git(self, *args: str) -> str:
+        return subprocess.run(
+            ["git", *args], cwd=self.root, text=True, check=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        ).stdout
+
+    def seed(self, score: str, first: str, *, masked=40, raw=41, offset=0x10):
+        metrics = finalize_plateau.Metrics(score, "0x20", 3, first, "one web left")
+        source = finalize_plateau.update_source(
+            SOURCE, "demo_symbol",
+            finalize_plateau.source_handoff("demo_symbol", metrics))
+        (self.root / "src/main/demo.c").write_text(source, encoding="utf-8")
+        shard = finalize_plateau.markdown_handoff(
+            "demo_symbol", "src/main/demo.c", metrics)
+        (self.root / "docs/matching-triage-handoffs/demo_symbol.md").write_text(
+            shard, encoding="utf-8")
+        (self.root / "config/nonmatching-ranking.us.json").write_text(
+            json.dumps({"functions": [{
+                "name": "demo_symbol",
+                "relocation_masked_differing_words": masked,
+                "differing_words": raw,
+                "relocation_masked_first_mismatch_offset": offset,
+                "first_mismatch_offset": offset,
+            }]}), encoding="utf-8")
+        self.git("add", ".")
+        self.git("commit", "-q", "-m", "seed")
+
+    def test_a_bare_score_may_quote_the_unmasked_count(self):
+        self.seed("41 differing words", "+0x10")
+        self.assertEqual(mod.check(self.root), [])
+
+    def test_drift_is_reported_then_regenerated_from_the_ranking(self):
+        self.seed("55 differing words", "+0x4")
+        kinds = sorted(f["kind"] for f in mod.check(self.root))
+        self.assertEqual(kinds, ["first-mismatch", "score"])
+        written = mod.write(self.root, mod.check(self.root), today="2026-09-23")
+        self.assertEqual(written, [
+            "docs/matching-triage-handoffs/demo_symbol.md", "src/main/demo.c",
+        ])
+        self.assertEqual(mod.check(self.root), [])
+        source = (self.root / "src/main/demo.c").read_text(encoding="utf-8")
+        self.assertIn(" * score: 40 differing words\n", source)
+        self.assertIn(" * first-mismatch: +0x10\n", source)
+        self.assertIn(" * frame: 0x20\n", source)
+        self.assertTrue(source.startswith(SOURCE))
+        shard = (self.root / "docs/matching-triage-handoffs/demo_symbol.md"
+                 ).read_text(encoding="utf-8")
+        self.assertIn("- summary: one web left", shard)
+        self.assertIn(
+            "it read first mismatch +0x4; score 55 differing words.", shard)
+        # The pair still reconciles under plateau_handoff_audit's grammar.
+        import plateau_handoff_audit as pha
+        audit = pha.audit_tree(self.root)
+        self.assertEqual([item.status for item in audit.items], ["current"])
+        self.assertEqual(audit.issues, [])
+
+    def test_write_refuses_a_dirty_source(self):
+        self.seed("55 differing words", "+0x10")
+        path = self.root / "src/main/demo.c"
+        path.write_text(path.read_text() + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(mod.WriteRefused, "local changes"):
+            mod.write(self.root, mod.check(self.root))
 
 
 if __name__ == "__main__":

@@ -397,7 +397,7 @@ void func_overlay_047_F0000000_1890E18(void) {
  * score: 548/628 words
  * frame: 0x68
  * relocations: 189
- * first-mismatch: +0xC
+ * first-mismatch: +0xC8
  * summary: V0 overruns its 2512-byte owner by 16 bytes (632/628; 553 raw differences); relocation identity proof is unavailable; candidate has 189 records.
  * PLATEAU-HANDOFF:func_overlay_047_F0000000_1890E18:end
  */

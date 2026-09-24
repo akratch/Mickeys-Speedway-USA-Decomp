@@ -377,7 +377,7 @@ units remain distinct.
 | 80 | `src/overlays/o038/func_overlay_038_F000047C_188618C.c` | `func_overlay_038_F000047C_188618C` | `o038` | `other` | 876 | 90 | 90 | 192 | 192 | 0 | — |
 | 81 | `src/main/objects.c` | `func_80007E40` | `main` | `other` | 488 | 92 | 92 | 24 | 24 | 0 | — |
 | 82 | `src/overlays/o083/overlay83BuildBatch.c` | `overlay83BuildBatch` | `o083` | `other` | 672 | 98 | 98 | 0 | 0 | 0 | — |
-| 83 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 102 | 102 | 0 | 0 | 0 | — |
+| 83 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 94 | 94 | 0 | 0 | 0 | — |
 | 84 | `src/main/models.c` | `func_80020B10` | `main` | `other` | 636 | 102 | 102 | 12 | 12 | 0 | — |
 | 85 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 103 | 103 | 20 | 20 | 0 | — |
 | 86 | `src/overlays/o050/overlay50Initialize.c` | `func_overlay_050_F0000000_1896970` | `o050` | `other` | 740 | 112 | 104 | 60 | 192 | 0 | — |

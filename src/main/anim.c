@@ -775,13 +775,12 @@ extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
  * globals, sound-object offset, and final compiler output are independently
  * established from Mickey's ROM.
  *
- * Size-exact at 287 words after CSE of the command word, restoring the
- * PAL/NTSC join local, and hoisting the clock sum before the camera walk.
- * Overlay40 joined lines recovered two more words. Remaining: frame 0x48
- * vs 0x40, playback-state address rematerialized (target keeps it in s1
- * until the path loops), and the (s8) command shift after PAL math
- * instead of before the compare. Explicit playing pointer, volatile cmd,
- * and s4 forces regress. Retain NON_MATCHING. */
+ * Size-exact at 287 words. Early playback loads keep the state address
+ * across the trap; the or-zero on those loads is the copy-prop barrier,
+ * and that pointer dies before the path loops. The store and the
+ * post-loop test reload the global. Remaining: frame 0x48 vs 0x40 and
+ * the command shift after PAL math. A barrier on the store regressed.
+ * Retain NON_MATCHING. */
 #ifdef NON_MATCHING
 void func_80051364(s32 updateRate) {
     AnimStreamEntry *command;
@@ -791,7 +790,7 @@ void func_80051364(s32 updateRate) {
     s32 originalRate;
     s32 offset;
     s32 adjustedRate;
-    s32 cmd;
+    s32 cmd; s32 *playing;
     s32 newClock;
     u16 cmdWord;
     u16 duration;
@@ -799,7 +798,7 @@ void func_80051364(s32 updateRate) {
     f32 speed;
 
     if (D_8007D68C != NULL) {
-        if (D_8007D6A4 != 0) {
+        playing = &D_8007D6A4; if (*(s32 *)((u32) playing | 0) != 0) {
             if (osTvType == 0) {
                 timeScale = D_80083FAC;
             } else {
@@ -809,7 +808,7 @@ void func_80051364(s32 updateRate) {
                 TrapDanglingJump(updateRate);
             }
             command = D_8007D69C; if (command != NULL) {
-                if (D_8007D6A4 == 1) {
+                if (*(s32 *)((u32) playing | 0) == 1) {
                     cmdWord = command->command; if ((cmdWord >> 8) == 0x7B) {
                         duration = command->duration;
                         if (((f32) (u32) duration / 100.0f) <
@@ -821,7 +820,7 @@ void func_80051364(s32 updateRate) {
                                 adjustedRate = (duration * 6) / 10;
                             }
                             updateRate = adjustedRate - D_8007D6A8;
-                            D_8007D69C = command + 1; cmd = (s8) cmdWord; D_8007D6A4 = cmd; if (cmd == 0) {
+                            D_8007D69C = command + 1; cmd = (s8) cmdWord; *playing = cmd; if (cmd == 0) {
                                 originalRate = updateRate;
                             }
                         }
@@ -4171,11 +4170,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80051364:start
  * symbol: func_80051364
- * score: 102 differing words
+ * score: 94 differing words
  * frame: 0x48
- * relocations: 51
+ * relocations: 49
  * first-mismatch: +0x0
- * summary: Size exact 287. Frame 0x48 vs 0x40. Playback address rematerialized; s8 shift after PAL. Split s4 webs declined. Next: address keep that dies before path loops.
+ * summary: Address keep dying before path loops: bare pointer inert, store barrier 104, load barrier 94 at delta 0. Stall: frame 0x48 and command shift still after PAL.
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

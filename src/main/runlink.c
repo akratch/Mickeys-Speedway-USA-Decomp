@@ -1324,6 +1324,6 @@ s32 runlinkGetAddressInfo(u32 address, s32 *moduleId, s32 *moduleAddress,
  * frame: 0x48
  * relocations: 25
  * first-mismatch: +0x0
- * summary: Remeasured 2026-09-23: 126 masked at size delta +4, frame 0x48 against 0x40, relocations 25 of 25; a1/a3 after the call stay structural.
+ * summary: Pair 4 (+0x210, split-not-copy) is the move at line 423. hiAddr size 0/137, inlined hi 127, u32 carrier 129, text-base hoist 127. Stall: a1 forbidden, s1 stays.
  * PLATEAU-HANDOFF:ProcessRelocationEntry:end
  */

@@ -2,11 +2,13 @@
 ### `func_overlay_101_F0002510_18DDD30` plateau handoff
 
 - source: `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c`
-- score: 291 masked words of 293
+- score: 291 differing words
 - frame: 0xF8
 - relocations: 6
 - first mismatch: +0x0
-- summary: Rebuilt on the four decoded SYMBOL callees and this overlay's own display-list command idiom; structural residual 142 to 125 and size delta -52 to +8, where the +8 is one extra callee-saved register, while the positional count went 276 to 291 because the frame is 0xF8 against 0xE8.
+- summary: 291 words, size +8, frame 0xF8 vs 0xE8. Bounds-array and width-local spellings did not beat it.
+
+Summary before this remeasure: Rebuilt on the four decoded SYMBOL callees and this overlay's own display-list command idiom; structural residual 142 to 125 and size delta -52 to +8, where the +8 is one extra callee-saved register, while the positional count went 276 to 291 because the frame is 0xF8 against 0xE8.
 
 #### 2026-09-12, lane p11-o101: the four callees are three different functions
 
@@ -98,4 +100,12 @@ rectangle `w1`, `s3` the shifted source column, `s4` the doubled stride and
 `s5` the tile bottom, all hoisted -- and find the source form that makes uopt
 carry all of them at once, which is what starves the opcode hoisting and drops
 the tenth callee-saved register.
+
+#### 2026-09-24, lane w4-o101: three attempts, no better residual
+
+insertion_pairs: size +8, frame +16, label missing-CSE, aligned residual 266. The pair with the shadow is the prologue through the scissor setup. Candidate-only words there are the extra callee-save frame word on the signature, two alus on the GetBounds call, and a load of the texture width for the 0x800 division. The size itself is the two extra callee-save restores at the epilogue.
+
+Packing left/top/right/bottom into one array was byte-inert at 291. Hoisting texture width and height into locals for every use grew the frame to 0x110 and the size delta to -44 (293 masked). A width local around only the division scored 294 at delta +12. All three reverted. The body is the inherited one.
+
+Stall: those three spellings of the missing-CSE pair's owning lines (the bounds addresses, and the width load) produced no better residual, no new identity beyond the array being inert, and eliminated hoisting the texture dimensions. Do not colour-sweep while the size is off. The open lever is still the tenth callee-saved register.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

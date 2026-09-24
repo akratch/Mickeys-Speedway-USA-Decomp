@@ -1637,9 +1637,9 @@ s32 func_8000DDE4(s32 key, s32 recordCount, TrackKeyRecord *records,
 #ifdef NON_MATCHING
 /* PROVENANCE: JFG's public track.c supplies the resident track draw-loop
  * organization; Mickey's segment and display-list accesses are authoritative. */
-/* Workbench verdict: structure-mismatch, 304 differing words; first mismatch is at +0x48. */
-/* Target is 396 instructions/frame -112; candidate is 398 instructions/frame -112. */
-/* Relocation counts are both 51; remaining batch/display-list scheduling gap is not permuter-ready. */
+/* Candidate: 398/396 words, 303 differing, first mismatch +0x48, frame 0x70 exact. */
+/* Declaring batchIndex and groupIndex ahead of the pointers saves one word. */
+/* The +8 tail spills and the display-list schedule are unchanged. */
 struct TrackShadowObject;
 struct TrackShadowInstance;
 extern void func_800140CC(struct TrackShadowObject *,
@@ -1650,6 +1650,8 @@ extern void overlay68DrawSortedEntries(Gfx **, Mtx **, TrackVertex **, void *);
 extern void overlay29DrawGroups(Gfx **, Mtx **, void *);
 
 void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    s32 batchIndex;
+    s32 groupIndex;
     TrackSegment *segment;
     TrackBatch *batch;
     Gfx *gfx;
@@ -1658,8 +1660,6 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     u8 *objectChild;
     u8 *vertex;
     u8 *triangle;
-    s32 groupIndex;
-    s32 batchIndex;
     s16 batchCount;
     s32 itemIndex;
     s32 alpha;
@@ -1843,8 +1843,8 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                 }
             }
         }
-        batchCount = segment->batchCount;
-    } while ((batchIndex < batchCount) || (itemIndex < arg2));
+    } while ((batchIndex < (batchCount = segment->batchCount)) ||
+             (itemIndex < arg2));
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000DFBC.s")
@@ -3008,9 +3008,9 @@ typedef struct TrackRayNode {
     TrackPlane *planes;
 } TrackRayNode;
 
-/* Workbench verdict: structure-mismatch, 162 differing words, first mismatch +0x0. */
-/* Candidate: 172/171 instructions with a -0xA0 frame versus target -0x98. */
-/* The direct target-lifetime form leaves an extra saved-GPR pair and threshold-address hoist; not permuter-ready. */
+/* Candidate: 171/171 words, 162 differing, first mismatch +0x0, frame 0x70 versus 0x98. */
+/* Forming the hit point once before the edge loop closes the +4 size gap. */
+/* Two callee-saves remain: a dead edge copy and the hoisted D_80081774 address. */
 s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
                   TrackPlane *result, f32 *maximum) {
     u8 *node;
@@ -3078,6 +3078,9 @@ s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
                         if (temp_f0_2 >= 0.0f) {
                             temp_f28 = temp_f0_2 / (temp_f0_2 - temp_f18);
                             if (temp_f28 <= *maximum) {
+                                temp_f2_2 = temp_f2_2 + (differenceX * temp_f28);
+                                temp_f12 = temp_f12 + (differenceY * temp_f28);
+                                temp_f14 = temp_f14 + (differenceZ * temp_f28);
                                 var_s2 = 0 * 2;
                                 var_s1 = 1;
 loop_80010654:
@@ -3085,13 +3088,9 @@ loop_80010654:
                                     edge = *(u16 *) ((u8 *) entry + var_s2);
                                     temp_t2 = edge & 0x8000;
                                     plane = &planes[edge ^ temp_t2];
-                                    temp_f18_2 = (plane->x *
-                                                  (temp_f2_2 + (differenceX * temp_f28))) +
-                                                 (plane->y *
-                                                  (temp_f12 + (differenceY * temp_f28))) +
-                                                 (plane->z *
-                                                  (temp_f14 + (differenceZ * temp_f28))) +
-                                                 plane->distance;
+                                    temp_f18_2 = ((plane->x * temp_f2_2) +
+                                                  (plane->y * temp_f12)) +
+                                                 (plane->z * temp_f14) + plane->distance;
                                     normalValue = temp_f18_2;
                                     if (temp_t2 != 0) {
                                         normalValue = -temp_f18_2;
@@ -5558,7 +5557,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xd8
  * relocations: 12
  * first-mismatch: +0x0
- * summary: Delta +8 to +4. Target ranks inner-loop edge/sign/face webs below all outer webs (s5-s8); ours ranks them first and spills into ra.
+ * summary: The missing-CSE pair is the second metadata add on that line, and the target has it too. Stall: textures local and volatile threshold stay at 195, size +4; ra still holds D_80081790.
  * PLATEAU-HANDOFF:func_80011980:end
  */
 
@@ -5566,10 +5565,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 /* PLATEAU-HANDOFF:func_80010654:start
  * symbol: func_80010654
  * score: 162 differing words
- * frame: 0xa0
+ * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x0
- * summary: Dot/negation split gives delta +4. Target colours encoded/offset into a2/a3 and moves result/maximum to s-regs; no tried form reproduces its p1 set.
+ * summary: Hoisting the hit point before the edge-loop line closes the size pair (+4 to 0) at 162 words. Stall: frame stays 0x70 versus 0x98 because of the dead edge-copy and hoisted D_80081774.
  * PLATEAU-HANDOFF:func_80010654:end
  */
 
@@ -5605,11 +5604,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8000DFBC:start
  * symbol: func_8000DFBC
- * score: 304 differing words
+ * score: 303 differing words
  * frame: 0x70
  * relocations: 51
  * first-mismatch: +0x48
- * summary: Correct next-batch vertex boundary and unsigned command types; five m2c structural follow-ups fail to improve. Next: batch/display-list lifetimes.
+ * summary: Declaring batchIndex and groupIndex first improves 304 to 303. Size stays +8, frame 0x70, first +0x48. Stall: the spill/reload pair on the tail-call lines remains after that declaration reorder.
  * PLATEAU-HANDOFF:func_8000DFBC:end
  */
 

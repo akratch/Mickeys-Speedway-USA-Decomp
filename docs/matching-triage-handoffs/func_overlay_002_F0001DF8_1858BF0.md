@@ -2,29 +2,22 @@
 ### `func_overlay_002_F0001DF8_1858BF0` plateau handoff
 
 - source: `src/overlays/o002/func_overlay_002_F0001DF8_1858BF0.c`
-- score: 370/460 words
+- score: 353/460 words
 - frame: 0x880
 - relocations: 5
-- first mismatch: +0x38
-- summary: First-loop lastCandidate copy only: 370 masked at size -4, exact 170. Leftover OR-zero/empty-if/comma emit 0 or 2 words, never 1.
+- first mismatch: +0x20
+- summary: extra-ILOD pair at the previousDistance call line. Delta 0 via lastCandidate carrier. Stall: order share -12, register inert, header hoist flat, post-loop +16.
 
-Identity gate: instrumented IDO .text is byte-identical to stock tools/ido/cc on this TU.
+The open extra-ILOD pair was the tail. Its first target-only word was the stack store on the previousDistance call, because closest was spilled across the second scan and not saved again at the calls. Carrying the scanned object in lastCandidate (lastCandidate = objects[index], then candidate = lastCandidate) closes that gap: size delta 0, 353 masked, exact 174, frame 0x880, first mismatch +0x20.
 
-Best source: lastCandidate = candidate in the first scan only, not the group-collect loop. Aligned exact 170, naming 223, immediate 5, structural 73, size -4, frame 0x880, slots 21 vs 20, first mismatch +0x38.
+Kept from the earlier -4 shape, still true there: (u32) on func_8000BCB0 is required, a declared cursor grows the frame to 0x888, and OR-zero, empty if, and a comma copy of lastCandidate do not emit the missing word.
 
-The extra word is not a declared walking cursor (frame grew to 0x888) and not a nested route-group test (size +8). (u32) on func_8000BCB0 is required: (s32) drops 30 words.
+Stall after the size closed. These spellings did not improve the residual:
 
-Measured size levers on the -4 shape, all 0 extra words unless noted:
+- sharing the two order+1 stores removes the tail recompute and moves size to -12
+- register on closest is byte-inert
+- loading closest->header before joyGetButtons does not improve the residual
+- a post-loop lastCandidate = candidate assignment moves size to +16 and 457 masked
 
-- leftover OR-zero on count, closestIndex, distance, end, and lastCandidate as a pointer: copy-propagated
-- index OR-zero inside the first loop: -16 (induction)
-- overlay22 empty if (index) / if (lastCandidate) / if (1): inert
-- overlay40 comma-assign of lastCandidate: byte-identical to a separate assignment
-- L144 address-form end reload: inert
-- volatile end reload: +2 words, exact 178
-- explicit if (start < end) around the second loop: +2 words
-- L160 dropping the first-loop candidate carrier: -28
-- post-loop lastCandidate = candidate: -20 (copy-prop merges the names)
-
-The one-word gap does not have a leftover that emits exactly one instruction. Next: a first-loop spelling that replaces the 3-word compare/copy cluster at +0x1D4 with the target's 2-word load/branch at +0x1AC without a second spill.
+The remaining 353 words are mostly register naming. No colour sweep was run; the lane was stock-only.
 <!-- plateau-handoff:func_overlay_002_F0001DF8_1858BF0:end -->

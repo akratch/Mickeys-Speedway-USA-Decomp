@@ -152,10 +152,11 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
         state->speed = 0.0f;
     } else if (collision != 0) {
         if (state->flags & 4) {
-            speed = sqrtf((object->velocity.x * object->velocity.x) +
-                          (object->velocity.y * object->velocity.y) +
-                          (object->velocity.z * object->velocity.z));
+            speed = (object->velocity.x * object->velocity.x) +
+                    (object->velocity.y * object->velocity.y) +
+                    (object->velocity.z * object->velocity.z);
             if (speed > 0.0f) {
+                speed = sqrtf(speed);
                 object->velocity.x /= speed;
                 object->velocity.y /= speed;
                 object->velocity.z /= speed;
@@ -264,6 +265,6 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
  * frame: 0x90
  * relocations: 29
  * first-mismatch: +0x1C
- * summary: Frame 0x90 exact, saved s0/s1/ra at 0x1C/0x20/0x24, no f20; size -12.
+ * summary: Pair 4 +0x5F0 owns L213 stack-load, L224 move, L237 stack-load. Unowned call gone. f20 if speed crosses calls; volatile reload stays masked 448.
  * PLATEAU-HANDOFF:func_overlay_022_F00002B0_18783B8:end
  */

@@ -2002,12 +2002,11 @@ typedef struct FxRippleLevel {
 extern FxRippleLevel *levelGetLevel(void);
 extern s32 func_8002A204(s16 angle);
 
-/* B3-fx (2026-09-23): 205 masked, size delta +8, frame 0xA8 closed by four
- * unreferenced pads. The +8 is two words: alphaHigh and alphaLow win the
- * last callee-saved colour on a save tie (2.75) with the hoisted
- * ((arg3 & 0x3FF) << 14) | 0xF6000000 temp, which the target keeps there
- * and spills them to their homes instead. Forcing both alpha webs to split
- * gives delta 0 at 163; see the handoff shard. */
+/* w4-fx: volatile alphaHigh/alphaLow spill to 0x8C/0x84 so the hoisted arg3
+ * command term keeps s8. next holds rippleEnabled once; a second field load
+ * appears if that carrier is removed. Two unused pads (not four) hold frame
+ * 0xA8. 169 masked, size delta 0. The three global addresses still CSE to
+ * lui+addiu; scalar and volatile spellings of them were identical. */
 void fxSPDPRipple(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
                   s32 arg5) {
     FxGfx *command;
@@ -2016,9 +2015,9 @@ void fxSPDPRipple(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
     s32 angleB;
     s32 angleC;
     s32 i;
-    s32 alphaHigh;
+    volatile s32 alphaHigh;
     s32 alphaMid;
-    s32 alphaLow;
+    volatile s32 alphaLow;
     s32 waveB;
     s32 waveA;
     s32 wave;
@@ -2030,8 +2029,6 @@ void fxSPDPRipple(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
     s16 baseA;
     s16 baseB;
     s16 baseC;
-    s32 pad0;
-    s32 pad1;
     s32 pad2;
     s32 cmdHi;
 
@@ -2049,11 +2046,12 @@ void fxSPDPRipple(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
         angleA = baseA + (arg2 << 0xA);
         D_8007D374[0] = baseB;
         D_8007D378[0] = baseC;
-        alphaMid = (level->rippleEnabled * 0x50) >> 7;
+        next = level->rippleEnabled;
+        alphaMid = (next * 0x50) >> 7;
         angleB = baseB + (arg2 * 0xBA2);
         angleC = baseC + (arg2 * 0x28F);
-        alphaHigh = (level->rippleEnabled * 0x58) >> 7;
-        alphaLow = (level->rippleEnabled * 0x48) >> 7;
+        alphaHigh = (next * 0x58) >> 7;
+        alphaLow = (next * 0x48) >> 7;
         i = arg2;
         if (i < arg4) {
             cmdHi = ((arg3 & 0x3FF) << 0xE) | 0xF6000000;
@@ -2448,11 +2446,11 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:fxSPDPRipple:start
  * symbol: fxSPDPRipple
- * score: 205 differing words
- * frame: 0xa8
+ * score: 169 differing words
+ * frame: 0xA8
  * relocations: 12
- * first-mismatch: +0x40
- * summary: Delta +8 is alphaHigh/alphaLow winning a 2.75 save tie over the hoisted arg3 command temp; splitting both forces delta 0 at 163.
+ * first-mismatch: +0x68
+ * summary: extra-ILOD pair was alphaHigh in s8, not the w1 store. volatile alphas and one rippleEnabled load: size 0, 169 words. Stall: lines 2043-2049 address CSE.
  * PLATEAU-HANDOFF:fxSPDPRipple:end
  */
 

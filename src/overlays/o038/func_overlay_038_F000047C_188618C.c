@@ -46,11 +46,8 @@ extern void o38ApplyTransform(O38Command **commands, void *context,
                               O38Transform *transform, f32 scale, f32 extra);
 extern void o38DrawResource(O38Command **commands, void *resource,
                             s32 mode, s32 flags);
-#ifdef O38_FINISH_ONE
-extern void o38FinishDraw(O38Command **commands);
-#else
-extern void o38FinishDraw(O38Command **commands, const void *displayData);
-#endif
+/* K&R so the object draw passes the vertex address and the particle draw does not. */
+extern void o38FinishDraw();
 extern O38Camera *o38GetCamera(void);
 extern s32 o38Atan2(f32 y, f32 x);
 extern f32 sqrtf(f32 value);
@@ -91,9 +88,10 @@ extern f32 sqrtf(f32 value);
     ((volatile s32 *)command)[0] = -100663296; \
 } while (0)
 
-/* Workbench p7: structure-mismatch, 219/219 instructions/frame -232, 93 masked words, first +0xC0.
- * Geometry-word expression association improves structural residual 21->9; command-pointer postincrement regresses.
- * Context/flag and prior packet, pool-cursor, signedness, declaration, and sync levers remain exhausted; FP lanes exact. */
+/* 90 masked words at delta 0, frame 0xE8, first +0xC0. The object finish passes
+ * the vertex address and the particle finish does not; that pins the pointer.
+ * The colour constant still takes a2 rather than a temp, and as1 keeps the
+ * loop-header and packet-store order against statement order and line folds. */
 #ifdef NON_MATCHING
 void func_overlay_038_F000047C_188618C(O38Command **commands, void *context,
                                        O38Object *object)
@@ -133,17 +131,13 @@ void func_overlay_038_F000047C_188618C(O38Command **commands, void *context,
 #else
     EMIT_COLOR(commands, 0xFFFFFFFFU);
 #endif
-#ifdef O38_FINISH_ONE
-    o38FinishDraw(commands);
-#else
     o38FinishDraw(commands, gO38ObjectVertices);
-#endif
 
     camera = o38GetCamera();
     particle = pool->particles;
 #ifdef O38_POOL_CURSOR
-    poolCursor = (char *)pool;
-    for (offset = 0; offset != 0x230;
+    offset = 0; poolCursor = (char *)pool;
+    for (; offset != 0x230;
          offset += sizeof(O38Particle), poolCursor += sizeof(O38Particle)) {
         particle = (O38Particle *)(poolCursor + 8);
 #else
@@ -168,22 +162,24 @@ void func_overlay_038_F000047C_188618C(O38Command **commands, void *context,
             o38ApplyTransform(commands, context, &transform, 1.0f, 0.0f);
             o38DrawResource(commands, object->resource[1], 0x10, 0);
             EMIT_COLOR(commands, 0xFFFFFF00U | (pool->alpha & 0xFF));
-            EMIT_GEOMETRY(commands, gO38ParticleVertices, gO38ParticleTriangles);
+            {
+                O38Command *command = *commands;
+                *commands = command + 1;
+                command->w1 = (u32)gO38ParticleVertices;
+                command->w0 = (((((((u32)gO38ParticleVertices & 6U) | 0x20U) & 0xFFU) << 16) |
+                               0x04000000U) | 0x30U);
+                command = *commands;
+                *commands = command + 1;
+                command->w1 = (u32)gO38ParticleTriangles;
+                command->w0 = 0x05110020U;
+            }
             EMIT_SYNC(commands);
 #ifdef O38_VOLATILE_FINAL
             EMIT_FINAL_COLOR_FRESH(commands);
 #else
             EMIT_COLOR(commands, 0xFFFFFFFFU);
 #endif
-#ifdef O38_FINISH_ONE
             o38FinishDraw(commands);
-#else
-#ifdef O38_FINISH_PARTICLE_VERTICES
-            o38FinishDraw(commands, gO38ParticleVertices);
-#else
-            o38FinishDraw(commands, object->resource[1]);
-#endif
-#endif
         }
     }
 #undef pool
@@ -195,10 +191,10 @@ void func_overlay_038_F000047C_188618C(O38Command **commands, void *context,
 
 /* PLATEAU-HANDOFF:func_overlay_038_F000047C_188618C:start
  * symbol: func_overlay_038_F000047C_188618C
- * score: 93 differing words
+ * score: 90 differing words
  * frame: 0xE8
  * relocations: 18
  * first-mismatch: +0xC0
- * summary: Remeasured 2026-09-23: 93 masked at delta 0, frame 0xE8 exact, 18 of 18 relocations; integer command-web order remains, FP lanes exact.
+ * summary: 90 masked at delta 0. Arity split pins the vertex pointer. Stall: the constant-web pair stays in a2 at the +0xC0 line; forcing t0 scores 43 and saved regs then 27, and schedule edits do not stick.
  * PLATEAU-HANDOFF:func_overlay_038_F000047C_188618C:end
  */

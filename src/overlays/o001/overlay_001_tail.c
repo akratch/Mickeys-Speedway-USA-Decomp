@@ -534,8 +534,8 @@ extern void ext_o0_5a914(Transform *, s32, s32, f32);
 extern Spawned *local_414(s16, Spawned **);
 extern s16 local_c0(Spawned *);
 
-/* PLATEAU (B3-o001, 2026-09-23): 30 masked words at size delta 0, frame 0x50
- * exact (was 160 at delta -4). The size gap was the point-element pointer:
+/* PLATEAU: 16 masked words at delta 0, frame 0x50. Volatile phase re-read is beql;
+ * the bne slot is still lbu not or (was 30). The old size gap was the point pointer:
  * `point += 0x14` before the x read keeps the element address as its own
  * value, so z reads 4 off it rather than folding to 24. rotY is stored before
  * rotX/rotZ (as1 order), four locals precede sp3C (its home is 0x3C, L99),
@@ -561,13 +561,13 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
         if (phase == 0) {
             return;
         }
+        phaseValue = *(volatile u8 *)&state->phase;
         if (phase == 1) {
                 ext_o7_ccc(obj, 0x13);
                 state->spawned = local_378(state);
                 state->phase = 2;
                 return;
             }
-            phaseValue = phase;
             if (phaseValue == 2) {
                 value = state->fade;
                 value -= updateRate * 4;
@@ -619,6 +619,7 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
         if (phase == 0) {
             return;
         }
+        phaseValue = *(volatile u8 *)&state->phase;
         if (phase == 1) {
                 ext_o7_ccc(obj, 0x13);
                 state->spawned = local_414(state->pathId, &sp3C);
@@ -627,7 +628,6 @@ void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
                 state->phase = 2;
                 return;
             }
-            phaseValue = phase;
             if (phaseValue == 2) {
                 value = obj->alpha;
                 value -= updateRate * 4;
@@ -1425,7 +1425,7 @@ block_160:
             value = func_8002A878(0.9f, gOverlay1TimerStep);
             work = state->speedLimit;
             state->speedLimit = work + ((3.0f - work) * (1.0f - value));
-            work = state->speedLimit;
+            work = *(volatile f32 *)&state->speedLimit;
             if (state->forwardVelocity < (-work)) {
                 state->forwardVelocity = (-work);
             }
@@ -1453,14 +1453,13 @@ block_160:
             if (index != state->actionMode) {
                 predicate = action->test;
                 if ((predicate != NULL) && (action->mask & (1 << state->actionMode))) {
-
                     predicate();
                 }
             }
             index += 1;
             action++;
         } while (index != 6);
-        callback = gO1PhysicsActions[state->actionMode].update;
+        callback = gO1PhysicsActions[*(volatile u8 *)&state->actionMode].update;
         if (callback != NULL) {
             callback();
         }
@@ -3415,21 +3414,21 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:overlay1TransitionState:start
  * symbol: overlay1TransitionState
- * score: 30 differing words
+ * score: 16/237 words
  * frame: 0x50
  * relocations: 13
- * first-mismatch: +0x20
- * summary: Delta -4 closed, 160 to 30 at delta 0; the rest is the v0/v1 order of phase/phaseValue and spawned/point (forced: 11).
+ * first-mismatch: +0x34
+ * summary: Volatile phase re-read on the line between the zero and one tests yields beql, 30 to 16. Stall: the pair's slot stays lbu not or. Copy position, or-zero, and swapped compares do not beat 16.
  * PLATEAU-HANDOFF:overlay1TransitionState:end
  */
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C
- * score: 1196/1542 words
+ * score: 1113/1542 words
  * frame: 0x138
  * relocations: 184
- * first-mismatch: +0x24
- * summary: Size and frame are exact; web955 c7 reaches 1143 diagnostically only. Remaining blocker is FP/local-home shape plus unauthenticated global bindings.
+ * first-mismatch: +0x34
+ * summary: Line 1428 volatile speedLimit reload closed delta -4 (1196 to 1114). Line 1463 volatile actionMode reaches 1113. Stall: delay-slot spellings do not beat 1113.
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
  */
 

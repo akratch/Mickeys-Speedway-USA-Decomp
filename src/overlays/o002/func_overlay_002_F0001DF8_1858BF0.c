@@ -38,10 +38,10 @@ extern u32 joyGetButtons(s32 controller);
 
 /* Mickey-only reconstruction. The closest permitted reference skeleton is
  * too weak to establish a donor body (masked 4-gram Jaccard 0.077). */
-/* NON_MATCHING: lastCandidate copy lives in the first scan only. That is
- * 370 masked words at size -4, frame 0x880, first +0x38. Second-loop copy
- * returns +4/387. A one-word leftover that is not copy-propagated is still
- * missing. */
+/* NON_MATCHING: the second scan loads lastCandidate from objects[index]
+ * and copies it to candidate. 353 masked words at size delta 0, frame
+ * 0x880, first +0x20. A separate post-loop copy and a shared order+1
+ * store both move the size off zero. */
 #ifdef NON_MATCHING
 void func_overlay_002_F0001DF8_1858BF0(Overlay2RouteObject *object,
                                         Overlay2RouteInput *input) {
@@ -94,10 +94,11 @@ void func_overlay_002_F0001DF8_1858BF0(Overlay2RouteObject *object,
             closest = objects[closestIndex];
             closestRoute = closest->route;
             for (index = start; index < end; index++) {
-                candidate = objects[index];
-                candidateRoute = candidate->route;
-                if ((candidate->disabled == 0) && (candidate != object) &&
-                    (candidate->type == 0x2B) &&
+                lastCandidate = objects[index];
+                candidate = lastCandidate;
+                candidateRoute = lastCandidate->route;
+                if ((lastCandidate->disabled == 0) && (lastCandidate != object) &&
+                    (lastCandidate->type == 0x2B) &&
                     (closestRoute->group == candidateRoute->group)) {
                     count++;
                     indices[candidateRoute->order] = (u16)index;
@@ -170,10 +171,10 @@ void func_overlay_002_F0001DF8_1858BF0(Overlay2RouteObject *object,
 
 /* PLATEAU-HANDOFF:func_overlay_002_F0001DF8_1858BF0:start
  * symbol: func_overlay_002_F0001DF8_1858BF0
- * score: 370/460 words
+ * score: 353/460 words
  * frame: 0x880
  * relocations: 5
- * first-mismatch: +0x38
- * summary: First-loop lastCandidate copy only: 370 masked at size -4, exact 170. Leftover OR-zero/empty-if/comma emit 0 or 2 words, never 1.
+ * first-mismatch: +0x20
+ * summary: extra-ILOD pair at the distance-call spill. Delta 0 via lastCandidate carrier. Stall: order share -12, register inert, header hoist flat, post-loop +16.
  * PLATEAU-HANDOFF:func_overlay_002_F0001DF8_1858BF0:end
  */

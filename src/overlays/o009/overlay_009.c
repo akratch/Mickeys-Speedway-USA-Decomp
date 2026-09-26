@@ -729,11 +729,11 @@ void func_overlay_009_F00010B4_186772C(O9MotionResult *out, O9MotionOwner *owner
 
 /* PLATEAU-HANDOFF:func_overlay_009_F0000000_1866678:start
  * symbol: func_overlay_009_F0000000_1866678
- * score: 125/336 words
+ * score: 120/336 words
  * frame: 0x78
  * relocations: 63
- * first-mismatch: +0x3C
- * summary: Exact size/frame; 125 masked/131 raw. Static 52 vs runtime 63, 15 identities; F00010A4 is ambiguous. Next: local-stack order/GPR web.
+ * first-mismatch: +0xE4
+ * summary: GPR spills now match 0x50 and 0x54 after declaration reorder. 125 to 120 masked at delta 0. Arrays still +8, savedY -16, stepFloat temp +4.
  * PLATEAU-HANDOFF:func_overlay_009_F0000000_1866678:end
  */
 

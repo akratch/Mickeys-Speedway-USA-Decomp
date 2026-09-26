@@ -1160,12 +1160,12 @@ block_74:
  *   magnitudeScale hoisted above the emission-count guard, 45 -> 37.  Its fourteen other positions
  *   through the preamble are flat, as are eight positions of record.phase14.
  *
- * What is left is one word's worth of cause: the shipped code emits an extra `move` of the emission
- * count into a scratch register at +0x104, before the loop, which shifts +0x104..+0x150 by one word
- * and accounts for essentially the whole residual.  That is L113 read backwards -- the shipped
- * loop's index does not die at strength reduction and this candidate's does.  Ten loop-counter
- * spellings (post-decrement in the guard, decrement-then-test-negative, four tail conditions, two
- * guard comparisons, an or-with-zero probe, and a separate counter local) are all 37 or worse. */
+ * 2026-09-26: that preheader plus value0 under the spread product is 25/183 (was 37).  Moving
+ * magnitudeScale inside the emissionCount-- guard, still before the loop, is 11/183 at delta 0.
+ * Assigning 1.0f before that load stayed 11; assigning the load inside the loop grew to +4/83.
+ * The copy is still `move v0, s4` against the target's `or v1, s4`, and the 1.0f materialization
+ * still follows the scale load.  The conversion cluster at +0x1AC is the other leftover.
+ * Those are the stall. */
 #ifdef NON_MATCHING
 void func_overlay_008_F0002640_1860398(
     O8P2640Anchor *anchor, O8P2640Config *config, s32 orientation,
@@ -1215,38 +1215,36 @@ void func_overlay_008_F0002640_1860398(
     record.packed24 = 0xFF800000;
     record.packed30 = 0xFF000000;
 
-    magnitudeScale = O8P2640_data_19C;
-    if (emissionCount == 0) {
-        return;
-    }
-    emissionCount--;
-    do {
-        randomOffset = O8P2640_call_27BC(-0xC80, 0xC80);
-        randomValue = O8P2640_call_27CC(randomLow, randomHigh);
-        magnitudeValue = O8P2640_call_27DC(0x50, 0x78);
-        record.value0 = (s16)(baseValue + randomOffset);
-        record.value2 = (s16)randomValue;
-        spread = (f32)randomOffset * tuning->spreadScale8;
-        record.magnitude4 = (f32)magnitudeValue *
-                            clampedDistance * magnitudeScale;
-        if (orientation == 0) {
-            record.coord8 = anchor->coordC - tuning->extent0 * axisB +
-                            spread * axisA;
-            record.coord10 = anchor->coord14 + spread * axisB +
-                             tuning->extent0 * axisA;
-        } else if (orientation == 2) {
-            record.coord8 = anchor->coordC + tuning->extent0 * axisB +
-                            spread * axisA;
-            record.coord10 = anchor->coord14 + spread * axisB -
-                             tuning->extent0 * axisA;
-        } else {
-            record.coord8 = anchor->coordC + spread * axisB;
-            record.coord10 = anchor->coord14 - spread * axisA;
-        }
+    if (emissionCount--) {
+        magnitudeScale = O8P2640_data_19C;
+        do {
+            randomOffset = O8P2640_call_27BC(-0xC80, 0xC80);
+            randomValue = O8P2640_call_27CC(randomLow, randomHigh);
+            magnitudeValue = O8P2640_call_27DC(0x50, 0x78);
+            record.value2 = (s16)randomValue;
+            spread = (f32)randomOffset * tuning->spreadScale8;
+            record.value0 = (s16)(baseValue + randomOffset);
+            record.magnitude4 = (f32)magnitudeValue *
+                                clampedDistance * magnitudeScale;
+            if (orientation == 0) {
+                record.coord8 = anchor->coordC - tuning->extent0 * axisB +
+                                spread * axisA;
+                record.coord10 = anchor->coord14 + spread * axisB +
+                                 tuning->extent0 * axisA;
+            } else if (orientation == 2) {
+                record.coord8 = anchor->coordC + tuning->extent0 * axisB +
+                                spread * axisA;
+                record.coord10 = anchor->coord14 + spread * axisB -
+                                 tuning->extent0 * axisA;
+            } else {
+                record.coord8 = anchor->coordC + spread * axisB;
+                record.coord10 = anchor->coord14 - spread * axisA;
+            }
 
-        O8P2640_call_28C0(&record);
-        record.phase14 = 1.0f;
-    } while (emissionCount--);
+            O8P2640_call_28C0(&record);
+            record.phase14 = 1.0f;
+        } while (emissionCount--);
+    }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o008/overlay_008/func_overlay_008_F0002640_1860398.s")
@@ -2409,11 +2407,11 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F0002640_1860398:start
  * symbol: func_overlay_008_F0002640_1860398
- * score: 37/183 words
+ * score: 11/183 words
  * frame: 0xD0
  * relocations: 14
- * first-mismatch: +0xF0
- * summary: source question is the preheader emission-count move and loop strength reduction
+ * first-mismatch: +0x104
+ * summary: 37 to 11. v0-temp plus 1.0f-before-load: register one 40 delta 0; baseValue copy 22 delta 0; base+1 +4/101. Stall: copy stays v0, 1.0f after load, +0x1AC.
  * PLATEAU-HANDOFF:func_overlay_008_F0002640_1860398:end
  */
 

@@ -308,6 +308,6 @@ void overlay58FinalizePackedStatus(void) {
  * frame: 0x48
  * relocations: 48
  * first-mismatch: +0x18
- * summary: comma-delay of mode-0 i and shift, 77 to 75 at delta 0; L100/L145/L109 on i and mask/shift inert or worse; fifth home remains
+ * summary: one live nextCount takes the fifth home only by growing the frame 0x48 to 0x60 at 76 masked; function, block, and embedded s32 all grow; reverted
  * PLATEAU-HANDOFF:overlay58FinalizePackedStatus:end
  */

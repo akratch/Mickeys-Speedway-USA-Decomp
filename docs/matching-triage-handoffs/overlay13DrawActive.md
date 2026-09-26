@@ -2,11 +2,11 @@
 ### `overlay13DrawActive` plateau handoff
 
 - source: `src/overlays/o013/overlay13DrawActive.c`
-- score: 24 differing words
+- score: 0/166 words, promoted
 - frame: 0x168
 - relocations: 10
-- first mismatch: +0x40
-- summary: Size and 0x168 homes exact. Unforced 24 naming. FP half closed by early temporaryDistance def. record still keeps v1 over a0. Force-0 is not a match.
+- first mismatch: none
+- summary: Matched by walking the records with i, so that web takes v1 and record takes a0. No force.
 
 - geometry: Overlay 13 `+0x874..+0xB0C`, 664 bytes / 166 words both sides, size delta 0.
 - ABI/flags: Overlay 13 `-O2 -mips2 -32`. Frame `0x168` both. Slot ladder identical, 11 of 11. Save set `ra` and `s0` only.
@@ -17,4 +17,6 @@
 - forced packing on this body, scored with `--object`, acceptance `forced=-1`: `p1:w14=c3` plus `p1:w45=c4` is 0 masked at delta 0. Synergistic (pair 0 vs expected 6). That packing is diagnostic only and is not a match.
 - L160 attempts that did not unforce the integer pair (size 0 kept unless noted): indexed `record[i]` (delta -4); `record` live across `o13GetView` (delta -4); even/odd second pointer (frame 0x170); L109 OR/XOR/AND on `recordIndex` in the walk or sort (CSE, byte-identical); dead s32 inits of done or temporaryIndex (eliminated, L99); line-join of the three inits (byte-identical); subscript init of `record` folded to `D_0`. Do not retry those.
 - next action: a mutate-existing-carrier spelling that makes `record` skip v1 so a0 wins, without a twelfth home and without deleting `record` or inlining dx. Raising `recordIndex` save above 40.33 in the collection loop (uses that are not CSE'd) would colour it onto v1 first and leave a0 for `record`. Force-0 remains not a match.
+
+Matched: the collection index is `i`, the same local as the sort and the draw. That web's save is 42.4, above record's 40.33, so it takes v1, record takes a0 and the scale temp takes a1. Unforced, 0 masked words, delta 0. No separate recordIndex.
 <!-- plateau-handoff:overlay13DrawActive:end -->

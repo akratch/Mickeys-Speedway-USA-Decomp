@@ -63,13 +63,17 @@ units is alignment, not a missing function. Those bare functions become
 ranking rows only when a candidate exists. They are not promoted by this
 census.
 
-`func_overlay_009_F0000744_1866DBC` is the exception that is not bare
-assembly. It is ordinary C in a mixed translation unit, it is absent from
-the non-matching queue, and the ROM still matches, so those bytes are
-already the compiler's output. It is missing from
-`MIXED_TU_EXACT_C_RANGES`, which is why an atlas-minus-ranking subtraction
-still counts them. A fresh promotion proof does not accept the credit:
-the translation unit's postprocess contains a shell conditional the proof
-tool refuses, while the neighbouring exact functions only pass from an
-existing receipt. The range stays unlisted until that proof can be
-issued. The scoreboard is unchanged by this finding.
+`func_overlay_009_F0000744_1866DBC` is ordinary C in a mixed translation
+unit and is absent from the non-matching queue. The matched build's
+`.rodata`, after the renames, filter, and text trim, has one digest, so
+the old shell `case` is a straight
+`externalize_elf_section.py` step. `gmake verify` still matches the US
+ROM. A fresh `tools/promotion_proof.py` run does not accept a credit.
+With no exact-range row it reports: expected one tracked exact atlas
+range for func_overlay_009_F0000744_1866DBC, found 0 (none). The range
+stays unlisted. Listing it would still not prove: the eight
+`--redefine-sym` steps converge on one symbol, and
+`canonicalize_redefine_aliases` already rejects that fan-in
+(`ambiguous metadata symbol rename identities`, covered by
+`tools/test_reloc_identity.py`). No new proof step was added. The
+scoreboard is not hand-edited.

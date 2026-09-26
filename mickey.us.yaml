@@ -309,7 +309,9 @@ segments:
       - [0x4FC30, asm, libultra/exceptasm]
       - [0x505E0, c, libultra/createthread]
       - [0x506D0, c, main/block_506D0]
-      - [0x50820, asm, main/refractOutputAssembler]
+      # Same ROM range as the former asm subsegment. The C file keeps
+      # GLOBAL_ASM until a match; this is not a new file-boundary claim.
+      - [0x50820, c, main/refractOutputAssembler]
       # Resident animation/collision sequence. Individual-function skeleton
       # evidence ties the leading functions to JFG anim.c, the later functions
       # to JFG hit.c, and the final function to JFG fmv.c; no 16-byte-aligned

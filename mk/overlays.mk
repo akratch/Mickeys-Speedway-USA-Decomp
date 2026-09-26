@@ -502,28 +502,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		@config/normalizations/overlay9Output.filter.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1520 && \
-	candidate_rodata_size=$$( $(OBJDUMP) -h $@ | awk '$$2 == ".rodata" { print $$3; exit }' ); \
-	if [ -n "$$candidate_rodata_size" ] && [ "$$candidate_rodata_size" != "00000000" ]; then \
-		rodata_payload=$@.rodata.tmp; \
-		$(OBJCOPY) --dump-section .rodata=$$rodata_payload $@ && \
-		rodata_digest=$$(shasum -a 256 $$rodata_payload | cut -d' ' -f1); \
-		case "$$rodata_digest" in \
-			003a4315d6e2fefde7e81a4ff6174a90d55b37fa9f92f19c9d3c229ab00cca32) \
-				$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-					sha256:003a4315d6e2fefde7e81a4ff6174a90d55b37fa9f92f19c9d3c229ab00cca32 ;; \
-			b5a06959b28bb8c05743f313985499350feb8c5de91f76af25815341f0cb1ea5) \
-				$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-					sha256:b5a06959b28bb8c05743f313985499350feb8c5de91f76af25815341f0cb1ea5 0x390 ;; \
-			79fc408bc15884cfa8328f9fa40521762b8928b0ab0d3315414676fdff93f10f) \
-				: "F0000CE4 promoted: the C pool now carries the module's own" \
-				: "0x20..0x50 layout, so the addends are already module-relative" \
-				: "and no base is added"; \
-				$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-					sha256:79fc408bc15884cfa8328f9fa40521762b8928b0ab0d3315414676fdff93f10f ;; \
-			*) echo "overlay 9: unreviewed .rodata digest $$rodata_digest"; exit 1 ;; \
-		esac; \
-		rodata_status=$$?; rm -f $$rodata_payload; exit $$rodata_status; \
-	fi
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:79fc408bc15884cfa8328f9fa40521762b8928b0ab0d3315414676fdff93f10f
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeParticleAssets.c.o: POSTPROCESS = \

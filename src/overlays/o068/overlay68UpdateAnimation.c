@@ -71,11 +71,11 @@ extern s32 gOverlay68GlobalFlagReloc;
 #define OVERLAY68_GLOBAL_FLAG gOverlay68GlobalFlagReloc
 
 /*
- * PLATEAU: L160 named keyframes base plus local index, generated subscripts.
- * Object takes t2 unforced. Exact 1424 size, frame 0x78, 15 relocations.
- * 214/356 positional words, first at +0x34. Residual is structural around
- * the duration loop. Break-arm keyframes reload and keyframeIndex store
- * are load-bearing for size. L109/L100 did not recover the missing words.
+ * PLATEAU: pointer walk of the duration loop. The cursor is the addressed
+ * keyframe, advanced one record per trip and reloaded from the animation
+ * on the break arm. Loop shape matches at size 0. State stays out of t2,
+ * so the positional residual is naming. 213/356 words, frame 0x78, 15
+ * relocations, first at +0x1C.
  *
  */
 #ifdef NON_MATCHING
@@ -83,7 +83,7 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
     s32 atStart;
     f32 tangentX;
     f32 tangentZ;
-    Overlay68Keyframe *keyframes;
+    Overlay68Keyframe *current;
     Overlay68Keyframe *before;
     Overlay68Keyframe *after;
     Overlay68Keyframe *afterAfter;
@@ -128,60 +128,58 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
             state->opacity = animationOpacity;
 
             state->elapsed += updateRate;
-            keyframes = animation->keyframes;
-            index = state->keyframeIndex;
-            while (state->elapsed >= (s32)keyframes[index].duration) {
-                state->elapsed -= keyframes[index].duration;
-                index++;
-                if (index >= animation->keyframeCount) {
-                    index = animation->keyframeCount - 1;
-                    keyframes = animation->keyframes;
-                    state->keyframeIndex = index;
+            current = &animation->keyframes[state->keyframeIndex];
+            while (state->elapsed >= current->duration) {
+                state->elapsed -= current->duration;
+                state->keyframeIndex++;
+                current++;
+                if (state->keyframeIndex >= animation->keyframeCount) {
+                    state->keyframeIndex = animation->keyframeCount - 1;
                     state->elapsed = 0;
                     state->active = 0;
+                    current = &animation->keyframes[state->keyframeIndex];
                     break;
                 }
             }
-            state->keyframeIndex = index;
 
-            if (keyframes[index].duration != 0) {
-                state->fraction = (f32)state->elapsed /
-                    (f32)keyframes[index].duration;
+            if (current->duration) {
+                state->fraction = (f32)state->elapsed / (f32)current->duration;
             } else {
                 state->fraction = 0.0f;
             }
 
-            before = keyframes + index;
-            after = keyframes + index;
-            afterAfter = keyframes + index;
+            index = state->keyframeIndex;
+            before = current;
+            after = current;
+            afterAfter = current;
             if (index > 0) {
-                before = keyframes + (index - 1);
+                before = current - 1;
             }
             atStart = index < 1;
             if (index < animation->keyframeCount - 1) {
-                after = keyframes + (index + 1);
+                after = current + 1;
             }
             angle = index < animation->keyframeCount - 2
-                ? (afterAfter = keyframes + (index + 2), before->red)
+                ? (afterAfter = current + 2, before->red)
                 : before->red;
 
             object->red = (s16)(s32)func_overlay_068_F0000650_18C77B0(
-                state->fraction, angle << 8, keyframes[index].red << 8,
+                state->fraction, angle << 8, current->red << 8,
                 after->red << 8, afterAfter->red << 8, 1, 0, atStart);
             object->green = (s16)(s32)func_overlay_068_F0000650_18C77B0(
-                state->fraction, before->green << 8, keyframes[index].green << 8,
+                state->fraction, before->green << 8, current->green << 8,
                 after->green << 8, afterAfter->green << 8, 1, 0, atStart);
             object->blue = (s16)(s32)func_overlay_068_F0000650_18C77B0(
-                state->fraction, before->blue << 8, keyframes[index].blue << 8,
+                state->fraction, before->blue << 8, current->blue << 8,
                 after->blue << 8, afterAfter->blue << 8, 1, 0, atStart);
             object->x = func_overlay_068_F0000650_18C77B0(
-                state->fraction, before->x, keyframes[index].x, after->x,
+                state->fraction, before->x, current->x, after->x,
                 afterAfter->x, 0, &tangentX, atStart);
             object->y = func_overlay_068_F0000650_18C77B0(
-                state->fraction, before->y, keyframes[index].y, after->y,
+                state->fraction, before->y, current->y, after->y,
                 afterAfter->y, 0, 0, atStart);
             object->z = func_overlay_068_F0000650_18C77B0(
-                state->fraction, before->z, keyframes[index].z, after->z,
+                state->fraction, before->z, current->z, after->z,
                 afterAfter->z, 0, &tangentZ, atStart);
 
             object->facingAngle = overlay68Angle3Reloc(object->x, object->y,
@@ -225,10 +223,10 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
 
 /* PLATEAU-HANDOFF:overlay68UpdateAnimation:start
  * symbol: overlay68UpdateAnimation
- * score: 214/356 words
+ * score: 213/356 words
  * frame: 0x78
  * relocations: 15
- * first-mismatch: +0x34
- * summary: L160 named keyframes base puts object in t2 unforced at size 0 frame 0x78. Remaining blocker is duration-loop structure.
+ * first-mismatch: +0x1C
+ * summary: Pointer walk matches duration-loop shape at delta 0, 213/356, first +0x1C; state stays t1 not t2. Subscript walk grew 16 bytes, reverted. No colour sweep.
  * PLATEAU-HANDOFF:overlay68UpdateAnimation:end
  */

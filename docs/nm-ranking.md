@@ -425,7 +425,7 @@ units remain distinct.
 | 128 | `src/overlays/o099/overlay99ApplySegment.c` | `overlay99ApplySegment` | `o099` | `other` | 920 | 191 | 190 | 80 | 80 | 0 | — |
 | 129 | `src/overlays/o027/overlay_027.c` | `func_overlay_027_F0000624_187BFFC` | `o027` | `other` | 1,016 | 196 | 195 | 8 | 8 | 0 | — |
 | 130 | `src/overlays/o079/func_overlay_079_F0000134_18CD0D4.c` | `func_overlay_079_F0000134_18CD0D4` | `o079` | `other` | 3,528 | 198 | 198 | 124 | 124 | 0 | — |
-| 131 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 214 | 214 | 52 | 52 | 0 | — |
+| 131 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 213 | 213 | 28 | 28 | 0 | — |
 | 132 | `src/main/rcpFast3d.c` | `func_8002EBE0` | `main` | `other` | 1,020 | 218 | 218 | 0 | 0 | 0 | — |
 | 133 | `src/main/shadows.c` | `func_80017BCC` | `main` | `other` | 1,256 | 221 | 221 | 88 | 88 | 0 | — |
 | 134 | `src/main/charControl.c` | `func_8001EC44` | `main` | `other` | 952 | 224 | 224 | 12 | 12 | 0 | — |

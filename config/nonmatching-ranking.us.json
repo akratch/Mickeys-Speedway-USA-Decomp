@@ -1966,13 +1966,13 @@
       "tu": "overlays/o068",
       "size_bytes": 1424,
       "objdiff_match_pct": null,
-      "differing_words": 214,
-      "first_mismatch_offset": 52,
-      "relocation_masked_differing_words": 214,
-      "relocation_masked_first_mismatch_offset": 52,
+      "differing_words": 213,
+      "first_mismatch_offset": 28,
+      "relocation_masked_differing_words": 213,
+      "relocation_masked_first_mismatch_offset": 28,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "njnl.PAJI.DOQX.kvsL.8_F9.Hzz8.kHJ9.IEI3.V9t8.fqbJ.nJI"
+      "source_context_sha256": "dg25.FGnI.O3-9.bjO_.LCac.2my2.W-gL.fclG.2ngP.oJiE.kdg"
     },
     {
       "name": "func_8002EBE0",

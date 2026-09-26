@@ -2567,30 +2567,39 @@ void func_80007118(u8 *object, s32 arg1) {
             payload = *(u8 **)(object + 0x64);
             TrapDanglingJump(payload);
             break;
-        case 65:
-            payload = *(u8 **)(object + 0x64);
-            func_800359D4(*(void **)(payload + 0x20));
+        case 65: {
+            u8 *once;
+
+            once = *(u8 **)(object + 0x64);
+            func_800359D4(*(void **)(once + 0x20));
             break;
-        case 67:
-            payload = *(u8 **)(object + 0x64);
-            value = *(void **)(payload + 0x3C);
+        }
+        case 67: {
+            u8 *once;
+
+            once = *(u8 **)(object + 0x64);
+            value = *(void **)(once + 0x3C);
             if (value != NULL) {
                 func_800031E8(value);
             }
             break;
+        }
         case 72:
             TrapDanglingJump();
             break;
         case 76:
             TrapDanglingJump();
             break;
-        case 78:
-            payload = *(u8 **)(object + 0x64);
-            value = *(void **)(payload + 0x3C);
+        case 78: {
+            u8 *once;
+
+            once = *(u8 **)(object + 0x64);
+            value = *(void **)(once + 0x3C);
             if (value != NULL) {
                 func_800031E8(value);
             }
             break;
+        }
         case 68:
             linkedPayload = *(u8 **)(object + 0x64);
             value = *(void **)(linkedPayload + 0x18);
@@ -2609,23 +2618,28 @@ void func_80007118(u8 *object, s32 arg1) {
                 }
             }
             break;
-        case 66:
-            payload = *(u8 **)(object + 0x64);
-            value = *(void **)(payload + 0x0);
+        case 66: {
+            u8 *once;
+
+            once = *(u8 **)(object + 0x64);
+            value = *(void **)(once + 0x0);
             if (value != NULL) {
                 owner = *(u8 **)((u8 *)value + 0x64);
                 if (*(void **)(owner + 0xD0) == object) {
                     *(void **)(owner + 0xD0) = NULL;
                 }
             }
-            value = *(void **)(payload + 0x14);
+            value = *(void **)(once + 0x14);
             if (value != NULL) {
                 func_800031E8(value);
             }
             break;
-        case 89:
-            payload = *(u8 **)(object + 0x64);
-            value = *(void **)(payload + 0x10);
+        }
+        case 89: {
+            u8 *once;
+
+            once = *(u8 **)(object + 0x64);
+            value = *(void **)(once + 0x10);
             if (value != NULL) {
                 owner = *(u8 **)((u8 *)value + 0x64);
                 if (*(void **)(owner + 0xD8) == object) {
@@ -2633,20 +2647,27 @@ void func_80007118(u8 *object, s32 arg1) {
                 }
             }
             break;
-        case 90:
-            payload = *(u8 **)(object + 0x64);
-            value = *(void **)(payload + 0x0);
+        }
+        case 90: {
+            u8 *once;
+
+            once = *(u8 **)(object + 0x64);
+            value = *(void **)(once + 0x0);
             if (value != NULL) {
                 amSndStop(value);
             }
             break;
-        case 64:
-            payload = *(u8 **)(object + 0x64);
-            value = *(void **)(payload + 0x3C);
+        }
+        case 64: {
+            u8 *once;
+
+            once = *(u8 **)(object + 0x64);
+            value = *(void **)(once + 0x3C);
             if (value != NULL) {
                 func_800031E8(value);
             }
             break;
+        }
         case 55:
             linkedPayload = *(u8 **)(object + 0x64);
             value = *(void **)(linkedPayload + 0x18);
@@ -2658,13 +2679,16 @@ void func_80007118(u8 *object, s32 arg1) {
                 func_800031E8(value);
             }
             break;
-        case 54:
-            payload = *(u8 **)(object + 0x64);
-            value = *(void **)(payload + 0x38);
+        case 54: {
+            u8 *once;
+
+            once = *(u8 **)(object + 0x64);
+            value = *(void **)(once + 0x38);
             if (value != NULL) {
                 func_800031E8(value);
             }
             break;
+        }
         case 71:
             D_80078F7C = NULL;
             break;
@@ -2707,13 +2731,16 @@ void func_80007118(u8 *object, s32 arg1) {
         case 35:
             lightKillGlowingLight(*(void **)(object + 0x64));
             break;
-        case 42:
-            payload = *(u8 **)(object + 0x64);
-            value = *(void **)(payload + 4);
+        case 42: {
+            u8 *once;
+
+            once = *(u8 **)(object + 0x64);
+            value = *(void **)(once + 4);
             if (value != NULL) {
                 mmFree(value);
             }
             break;
+        }
         case 29:
             func_80005798(object);
             value = *(void **)(object + 0x84);
@@ -5572,11 +5599,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80007118:start
  * symbol: func_80007118
- * score: 186 differing words
+ * score: 168 differing words
  * frame: 0x38
  * relocations: 71
  * first-mismatch: +0x2C
- * summary: Owner interference removal exposes infinite v0 cost for payload; address reads add sixteen words. The 186-word baseline is retained.
+ * summary: hypothesis=early and case1 must not share payload; spellings=early 430/-4, case1 446/-8, both 446/-8; stall=none at delta 0, 186-to-168 kept
  * PLATEAU-HANDOFF:func_80007118:end
  */
 

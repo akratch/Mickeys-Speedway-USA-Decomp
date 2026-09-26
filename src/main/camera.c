@@ -2040,7 +2040,7 @@ f32 D_80079F58[2] = { 0.0f, 0.0f };
  * frame: 0xB0
  * relocations: 55
  * first-mismatch: +0x9C
- * summary: first +0x9C remains the folded GP-draw schedule; field-access probes moved no census lines; retained body is best
+ * summary: hypothesis: unfold folded anchor GP draw via a later use. spellings: or-if 364/+12; ptr-diff 157/0; or-minus 314/+8. stall: use deleted or size grows
  * PLATEAU-HANDOFF:func_80022FD4:end
  */
 

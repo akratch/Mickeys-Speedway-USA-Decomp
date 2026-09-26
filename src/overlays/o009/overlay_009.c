@@ -29,19 +29,19 @@ extern Overlay9YawScaleReloc gOverlay9YawScaleReloc;
 extern void func_overlay_009_F00010A4_186771C(void *object, void *state,
                                                f32 steps);
 
-/* PLATEAU (2026-08-30): workbench structure-mismatch; best 125 masked/131 raw
- * of 336, first +0x3C, with the exact 0x78 frame. Narrowed scalar lifetimes
- * removed the frame excess. Static relocation proof remains closed on the
- * ambiguous consolidated F00010A4 identity; stack order and GPR webs remain. */
+/* PLATEAU: exact 0x78 frame. Narrowed scalar lifetimes removed the excess.
+ * Static relocation proof remains closed on the ambiguous consolidated
+ * F00010A4 identity (static 52, runtime 63). GPR spill homes follow
+ * declaration order; the handoff has the current score and next lever. */
 #ifdef NON_MATCHING
 void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
     f32 vector[3];
     s16 angles[3];
-    void *entryData;
-    void *savedEntry;
     void *entry;
     f32 savedY;
     f32 stepFloat;
+    void *entryData;
+    void *savedEntry;
     void *state;
 
     state = M2C_FIELD(object, void **, 0x64);

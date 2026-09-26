@@ -69,9 +69,8 @@ unit and is absent from the non-matching queue. The matched build's
 the old shell `case` is a straight
 `externalize_elf_section.py` step. `gmake verify` still matches the US
 ROM. A fresh `tools/promotion_proof.py` run does not accept a credit.
-With no exact-range row it reports: expected one tracked exact atlas
-range for func_overlay_009_F0000744_1866DBC, found 0 (none). The range
-stays unlisted. Listing it would still not prove: the eight
+With no exact-range row it reports: expected one tracked exact atlas range for func_overlay_009_F0000744_1866DBC, found 0 (none).
+The range stays unlisted. Listing it would still not prove: the eight
 `--redefine-sym` steps converge on one symbol, and
 `canonicalize_redefine_aliases` already rejects that fan-in
 (`ambiguous metadata symbol rename identities`, covered by

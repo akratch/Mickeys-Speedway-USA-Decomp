@@ -2503,19 +2503,19 @@ void func_8000FA2C(s32 *result, s32 arg1) {
     func_8000F82C(0, 0, D_800792E8->segmentCount - 1);
     *result = D_800C9564;
 }
-#ifdef NON_MATCHING
+/* matched */
 /*
  * PROVENANCE: Diddy Kong Racing's public `src/tracks.c`,
  * `get_level_segment_index_from_position`, supplies the segment scan and
  * nearest-height selection structure. Mickey's bounds are inclusive and its
  * TrackData layout, function boundary, and bytes remain authoritative.
  */
-/* Configured C: 16 naming differences, first +0x1C. Defining x/z lower
- * bounds first removes four differences without changing the instruction shape. */
-/* Candidate: target/candidate 62/62 instructions with matching -0x10 frames and exact opcode schedule. */
-/* Shape status: the remaining pool-position/temp-FIFO residual is register-only. */
+/* The segmentCount load stays live across minVal, bounds and i, and limit
+ * takes that value. Caller-saved webs then put the bound temporaries in a0
+ * and the count in t0, and the direct loop compare emits slt into at. */
+/* Count is copied into limit so those two webs stay distinct. */
 s32 func_8000FAE0(f32 x, f32 y, f32 z) {
-    s16 segmentCount;
+    s32 segmentCount;
     s16 xLower;
     s16 xUpper;
     s16 zLower;
@@ -2529,7 +2529,7 @@ s32 func_8000FAE0(f32 x, f32 y, f32 z) {
     s32 i;
     s32 heightDiff;
     s32 result;
-    s32 keepGoing;
+    s32 limit;
     TrackBoundingBox *bounds;
 
     result = -1;
@@ -2538,7 +2538,8 @@ s32 func_8000FAE0(f32 x, f32 y, f32 z) {
         minVal = 0x7FFF;
         bounds = D_800792E8->segmentBounds;
         i = 0;
-        if (segmentCount > 0) {
+        limit = segmentCount;
+        if (limit > 0) {
             xInt = x;
             do {
                 xLower = bounds->x1;
@@ -2577,16 +2578,15 @@ s32 func_8000FAE0(f32 x, f32 y, f32 z) {
 block_14:
                 i++;
                 bounds++;
-                keepGoing = i < segmentCount;
-            } while (keepGoing != 0);
+            } while (i < limit);
         }
     }
 done:
     return result;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000FAE0.s")
-#endif
+/* matched: fallback removed */
+/* line kept so later functions stay on their measured lines */
+/* line kept so later functions stay on their measured lines */
 /*
  * PROVENANCE: Diddy Kong Racing's public `src/tracks.c`,
  * `check_if_inside_segment`, supplies the bounding-box containment structure.
@@ -5520,16 +5520,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
     intensity = (frame >> 8) & 0xFF;
     gDPSetEnvColor(D_800C9520++, intensity, intensity, intensity, intensity);
 }
-
-/* PLATEAU-HANDOFF:func_8000FAE0:start
- * symbol: func_8000FAE0
- * score: 16/62 words
- * frame: 0x10
- * relocations: 2
- * first-mismatch: +0x1C
- * summary: 10900 subscript did not transfer. Combined p2 force still 2 (keepGoing t9 vs at). Dummy xLower 18; delete count 33.
- * PLATEAU-HANDOFF:func_8000FAE0:end
- */
 
 /* PLATEAU-HANDOFF:func_800140CC:start
  * symbol: func_800140CC

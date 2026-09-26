@@ -6,7 +6,9 @@
 - frame: 0x68
 - relocations: 51
 - first mismatch: +0x58
-- summary: L100 save below 1.6 is reachable (per-arm 1.0) but takes s3 not a0. Denying s0-s3 takes v1 not a0. Force w121=a0 is 41. Next: forbid v1.
+- summary: Hypothesis bool-is-return: inv leafResult both +8/78, positive both +8/81, tail-only inv +4/51. All grew; sltu/bnez/move still has a leftover branch.
+
+Summary before this remeasure: L100 save below 1.6 is reachable (per-arm 1.0) but takes s3 not a0. Denying s0-s3 takes v1 not a0. Force w121=a0 is 41. Next: forbid v1.
 
 #### 2026-09-09 lane `w2-bigA`: 40 to 39, and the residual is four named sites
 

@@ -898,10 +898,10 @@ s32 __scSchedule(OSSched *sc, OSScTask **sp, OSScTask **dp, s32 availRCP) {
 
 /* PLATEAU-HANDOFF:func_80030610:start
  * symbol: func_80030610
- * score: 56 differing words
+ * score: 56/192 words
  * frame: 0x98
  * relocations: 11
  * first-mismatch: +0x8C
- * summary: Symbol compare closes the extra addiu; its lui takes the bnel delay and literal adds rematerialize through at.
+ * summary: Compare-delay hypothesis stalled. Separate += delta 0 masked 56; ternary delta +4 masked 77; pointer increment delta -4 masked 107. lui still fills bne delay.
  * PLATEAU-HANDOFF:func_80030610:end
  */

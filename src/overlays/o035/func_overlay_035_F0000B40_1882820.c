@@ -254,6 +254,6 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
  * frame: 0x130
  * relocations: 7
  * first-mismatch: +0xA4
- * summary: Delta 0 at 130 on the DKR collision shape. Left: edge-loop IV order (i*8 before scratch+i*8) rotates t6/t9; s5-s7 colour order.
+ * summary: Hypothesis: i*8 before scratch+i*8 rotates t6/t9. Pre-for walk 160 delta 0; body &scratch[i] delta -12; guarded walk delta +12. No drop at delta 0. Stall 130.
  * PLATEAU-HANDOFF:func_overlay_035_F0000B40_1882820:end
  */

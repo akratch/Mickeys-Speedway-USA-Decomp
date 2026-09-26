@@ -199,6 +199,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     s32 hasTexture;
     s32 settingsIndex;
     s32 tableFlags;
+    s32 *cachedState;
 
     if (D_8007BD8C != 0) {
         oldBlockedFlags = D_8007BD90;
@@ -289,10 +290,11 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
 
     settings += settingsIndex;
     tableFlags = settings->flags | (flags & settings->mask);
-    if ((D_800D302C != ((settingsIndex << 8) | tableFlags)) ||
+    cachedState = &D_800D302C;
+    if ((*cachedState != ((settingsIndex << 8) | tableFlags)) ||
         (D_800D3020 != settings)) {
+        *cachedState = (settingsIndex << 8) | tableFlags;
         D_800D3020 = settings;
-        D_800D302C = (settingsIndex << 8) | tableFlags;
         gDPPipeSync(dl++);
         if (tableFlags & 2) {
             if (D_800D3030 == 0) {
@@ -330,17 +332,17 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
  * save goes 14 to 16 against the callee toll 15.85 (L56). The two DMA
  * commands are gSPDisplayList and gDkrDmaDisplayList; the wrap takes an else
  * arm; numTextures is declared ahead of oldBlockedFlags so that home lands at
- * -0x1C; settings is assigned at the head of the texture arm. Remains: uopt
- * materializes the D_800D302C address in a register where the target does
- * not, which is why the two state stores are written in the other order here,
- * plus register naming. */
+ * -0x1C; settings is assigned at the head of the texture arm. A pointer to
+ * D_800D302C, live across its load and store, stops the early address hold
+ * and restores the target store order. Reusing an integer for that address
+ * grew by 4 bytes. Left: register naming from +0x24. */
 /* PLATEAU-HANDOFF:func_800349A4:start
  * symbol: func_800349A4
- * score: 202 differing words
+ * score: 175 differing words
  * frame: 0x40
- * relocations: 37
+ * relocations: 39
  * first-mismatch: +0x24
- * summary: Delta 0, frame 0x40, flags in s0; left: D_800D302C address held in a register (stores swapped to compensate) and naming
+ * summary: Delta 0, 175 masked, frame 0x40, 39 relocs. A D_800D302C pointer rematerializes the load and store; integer reuse grew by 4. Left: naming from +0x24.
  * PLATEAU-HANDOFF:func_800349A4:end
  */
 #else

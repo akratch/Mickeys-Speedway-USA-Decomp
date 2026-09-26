@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 241,
-  "resolved": 241,
+  "queue_size": 240,
+  "resolved": 240,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 241,
-  "relocation_masked_coverage": 241,
+  "source_context_coverage": 240,
+  "relocation_masked_coverage": 240,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -113,21 +113,6 @@
       "size_delta": 0,
       "category": "register-only",
       "source_context_sha256": "sosK.FkfX.ld-g.thga.6Dk-.TQ9L.QfQT.tFv-.jbod.7D_E.uGE"
-    },
-    {
-      "name": "func_8000FAE0",
-      "file": "src/main/track.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 248,
-      "objdiff_match_pct": null,
-      "differing_words": 16,
-      "first_mismatch_offset": 28,
-      "relocation_masked_differing_words": 16,
-      "relocation_masked_first_mismatch_offset": 28,
-      "size_delta": 0,
-      "category": "register-only",
-      "source_context_sha256": "E8d_.G0zO.4esQ.Iig5.yetO.GNzV.knCv.IILK.B9L8.zGKj.z9w"
     },
     {
       "name": "overlay44UpdateFrameCache",

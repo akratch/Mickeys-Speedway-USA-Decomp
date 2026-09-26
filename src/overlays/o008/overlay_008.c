@@ -1160,12 +1160,12 @@ block_74:
  *   magnitudeScale hoisted above the emission-count guard, 45 -> 37.  Its fourteen other positions
  *   through the preamble are flat, as are eight positions of record.phase14.
  *
- * 2026-09-26: a preheader `if (emissionCount--)` plus value0 sunk under the spread product is
- * 25/183 at delta 0 (was 37).  `emissionCount-- == 0` and bare `if (emissionCount--)` each grew
- * by one word (+4/103, +4/96): the trip-count move did not retire the multiply nop until the store
- * moved.  The kept copy is `move v0, s4` where the target has `or v1, s4` at +0x104 and the tail,
- * and magnitudeScale still loads before the guard rather than after the 1.0f materialization.
- * Those two differences are the stall. */
+ * 2026-09-26: that preheader plus value0 under the spread product is 25/183 (was 37).  Moving
+ * magnitudeScale inside the emissionCount-- guard, still before the loop, is 11/183 at delta 0.
+ * Assigning 1.0f before that load stayed 11; assigning the load inside the loop grew to +4/83.
+ * The copy is still `move v0, s4` against the target's `or v1, s4`, and the 1.0f materialization
+ * still follows the scale load.  The conversion cluster at +0x1AC is the other leftover.
+ * Those are the stall. */
 #ifdef NON_MATCHING
 void func_overlay_008_F0002640_1860398(
     O8P2640Anchor *anchor, O8P2640Config *config, s32 orientation,
@@ -1215,8 +1215,8 @@ void func_overlay_008_F0002640_1860398(
     record.packed24 = 0xFF800000;
     record.packed30 = 0xFF000000;
 
-    magnitudeScale = O8P2640_data_19C;
     if (emissionCount--) {
+        magnitudeScale = O8P2640_data_19C;
         do {
             randomOffset = O8P2640_call_27BC(-0xC80, 0xC80);
             randomValue = O8P2640_call_27CC(randomLow, randomHigh);
@@ -2407,11 +2407,11 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F0002640_1860398:start
  * symbol: func_overlay_008_F0002640_1860398
- * score: 25/183 words
+ * score: 11/183 words
  * frame: 0xD0
  * relocations: 14
  * first-mismatch: +0x104
- * summary: Preheader trip copy and strength-reduced countdown. ==0 +4/103; if(n--) +4/96; value0 after spread 25 delta 0. Stall: v0 not v1, magnitudeScale before guard.
+ * summary: Prior 25-word body kept. Scale after guard is 11 delta 0; 1.0f overwrite stayed 11; in-loop load +4/83. Stall: v0 not v1, 1.0f still follows the load.
  * PLATEAU-HANDOFF:func_overlay_008_F0002640_1860398:end
  */
 

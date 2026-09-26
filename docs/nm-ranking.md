@@ -284,8 +284,8 @@ Relocation-masked mismatch evidence covers **242 / 242** resolved rows. The raw 
 | relocation-masked `differing_words <= 5` | 7 |
 | raw `differing_words <= 10` | 11 |
 | relocation-masked `differing_words <= 10` | 13 |
-| raw `differing_words <= 20` | 26 |
-| relocation-masked `differing_words <= 20` | 27 |
+| raw `differing_words <= 20` | 27 |
+| relocation-masked `differing_words <= 20` | 28 |
 
 ### Complete ranked queue
 
@@ -316,19 +316,19 @@ units remain distinct.
 | 19 | `src/overlays/o043/overlay43ComputeMotion.c` | `func_overlay_043_F00010A8_188B078` | `o043` | `other` | 220 | 9 | 9 | 116 | 116 | 0 | — |
 | 20 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
 | 21 | `src/overlays/o007/func_overlay_007_F0000324_185C1AC.c` | `func_overlay_007_F0000324_185C1AC` | `o007` | `other` | 1,392 | 19 | 10 | 132 | 288 | 0 | — |
-| 22 | `src/overlays/o001/overlay_001.c` | `overlay1FindPreviousUsable` | `o001` | `other` | 160 | 14 | 12 | 4 | 20 | 0 | — |
-| 23 | `src/main/camera.c` | `func_80023598` | `main` | `other` | 1,136 | 13 | 13 | 168 | 168 | 0 | — |
-| 24 | `src/overlays/o015/overlay_015.c` | `overlay15DrawRain` | `o015` | `other` | 216 | 18 | 13 | 8 | 116 | 0 | — |
-| 25 | `src/overlays/o001/overlay_001_tail.c` | `overlay1TransitionState` | `o001` | `other` | 948 | 16 | 16 | 52 | 52 | 0 | — |
-| 26 | `src/main/objects.c` | `func_80006534` | `main` | `other` | 820 | 17 | 17 | 284 | 284 | 0 | — |
-| 27 | `src/overlays/o054/overlay54Initialize.c` | `func_overlay_054_F0000000_189ECA0` | `o054` | `other` | 972 | 48 | 17 | 84 | 428 | 0 | — |
-| 28 | `src/overlays/o001/overlay_001_tail.c` | `overlay1BendPathPoint` | `o001` | `other` | 428 | 19 | 19 | 16 | 16 | 0 | — |
-| 29 | `src/overlays/o015/overlay_015.c` | `overlay15InitStarsAndPalette` | `o015` | `other` | 988 | 20 | 19 | 112 | 112 | 0 | — |
-| 30 | `src/main/fx.c` | `func_80046EC4` | `main` | `other` | 440 | 23 | 23 | 104 | 104 | 0 | — |
-| 31 | `src/main/objects.c` | `func_80008028` | `main` | `other` | 240 | 23 | 23 | 36 | 36 | 0 | — |
-| 32 | `src/overlays/o013/overlay13DrawActive.c` | `overlay13DrawActive` | `o013` | `other` | 664 | 26 | 24 | 8 | 64 | 0 | — |
-| 33 | `src/main/saves.c` | `func_8002CF6C` | `main` | `other` | 352 | 25 | 25 | 104 | 104 | 0 | — |
-| 34 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0002640_1860398` | `o008` | `other` | 732 | 26 | 25 | 252 | 260 | 0 | — |
+| 22 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0002640_1860398` | `o008` | `other` | 732 | 13 | 11 | 252 | 260 | 0 | — |
+| 23 | `src/overlays/o001/overlay_001.c` | `overlay1FindPreviousUsable` | `o001` | `other` | 160 | 14 | 12 | 4 | 20 | 0 | — |
+| 24 | `src/main/camera.c` | `func_80023598` | `main` | `other` | 1,136 | 13 | 13 | 168 | 168 | 0 | — |
+| 25 | `src/overlays/o015/overlay_015.c` | `overlay15DrawRain` | `o015` | `other` | 216 | 18 | 13 | 8 | 116 | 0 | — |
+| 26 | `src/overlays/o001/overlay_001_tail.c` | `overlay1TransitionState` | `o001` | `other` | 948 | 16 | 16 | 52 | 52 | 0 | — |
+| 27 | `src/main/objects.c` | `func_80006534` | `main` | `other` | 820 | 17 | 17 | 284 | 284 | 0 | — |
+| 28 | `src/overlays/o054/overlay54Initialize.c` | `func_overlay_054_F0000000_189ECA0` | `o054` | `other` | 972 | 48 | 17 | 84 | 428 | 0 | — |
+| 29 | `src/overlays/o001/overlay_001_tail.c` | `overlay1BendPathPoint` | `o001` | `other` | 428 | 19 | 19 | 16 | 16 | 0 | — |
+| 30 | `src/overlays/o015/overlay_015.c` | `overlay15InitStarsAndPalette` | `o015` | `other` | 988 | 20 | 19 | 112 | 112 | 0 | — |
+| 31 | `src/main/fx.c` | `func_80046EC4` | `main` | `other` | 440 | 23 | 23 | 104 | 104 | 0 | — |
+| 32 | `src/main/objects.c` | `func_80008028` | `main` | `other` | 240 | 23 | 23 | 36 | 36 | 0 | — |
+| 33 | `src/overlays/o013/overlay13DrawActive.c` | `overlay13DrawActive` | `o013` | `other` | 664 | 26 | 24 | 8 | 64 | 0 | — |
+| 34 | `src/main/saves.c` | `func_8002CF6C` | `main` | `other` | 352 | 25 | 25 | 104 | 104 | 0 | — |
 | 35 | `src/overlays/o092/overlay92FindNearestCourse.c` | `func_overlay_092_F0000068_18D5F88` | `o092` | `other` | 672 | 26 | 26 | 4 | 4 | 0 | — |
 | 36 | `src/main/charControl.c` | `func_8001D880` | `main` | `other` | 144 | 28 | 28 | 4 | 4 | 0 | — |
 | 37 | `src/overlays/o046/func_overlay_046_F0000874_188EC6C.c` | `func_overlay_046_F0000874_188EC6C` | `o046` | `other` | 1,800 | 34 | 28 | 112 | 508 | 0 | — |

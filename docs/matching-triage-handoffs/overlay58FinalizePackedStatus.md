@@ -6,7 +6,9 @@
 - frame: 0x48
 - relocations: 48
 - first mismatch: +0x18
-- summary: comma-delay of mode-0 i and shift, 77 to 75 at delta 0; L100/L145/L109 on i and mask/shift inert or worse; fifth home remains
+- summary: one live nextCount takes the fifth home only by growing the frame 0x48 to 0x60 at 76 masked; function, block, and embedded s32 all grow; reverted
+
+Summary before this remeasure: comma-delay of mode-0 i and shift, 77 to 75 at delta 0; L100/L145/L109 on i and mask/shift inert or worse; fifth home remains
 - assignment base: `ccbd4a78b29afb17ad817dd9228f774012b7d9ac`
 - owned range: overlay 58 `+0x5554..+0x5A14`, 1,216 bytes / 304 words; the following `+0x5A14..+0x5A20` range is separately owned padding
 - baseline: exact 304-word geometry and `0x48` frame, with 178 raw differences, 177 relocation-masked differences, first raw mismatch `+0x8`, and first masked mismatch `+0x18`
@@ -265,5 +267,10 @@ identities from the target.
 Next: the missing fifth home or the s2-b load-web split. Do not retry
 empty `if (i) {}`, leftover OR-zero, loop-local packed, generated
 subscript, or the remaining initially-ready delays on this shape.
+
+
+#### 2026-09-26, lane p65-o058: one more live local grows the frame
+
+Three spellings of one new live local, `nextCount`, holding count + 1 for the 58BC call and the compare with 5. A function-scope s32, a block-scope s32, and that assignment embedded in the call are the same result: text stays 1216 bytes, masked score 76, and the frame grows from 0x48 to 0x60. Slot count becomes 5. The shared 0x1C home splits: count moves up with the frame and count + 1 stays at 0x1C with one load and one store. The other homes shift with the frame and do not land on the target ladder. Reverted. A fifth home is not available inside the matched 0x48 frame by adding one live local.
 
 <!-- plateau-handoff:overlay58FinalizePackedStatus:end -->

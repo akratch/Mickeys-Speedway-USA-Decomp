@@ -6,7 +6,9 @@
 - frame: 0x60
 - relocations: 22
 - first mismatch: +0x94
-- summary: Required call-input carrier reuse is byte-inert; fraction reuse adds structural residual. The real-ABI no-spill source obstacle remains.
+- summary: Shorten scale live range off the call-argument register failed: fresh local +4/272, field recompute +28/333, block temp +4/272. No delta-0 masked drop; stall.
+
+Summary before this remeasure: Required call-input carrier reuse is byte-inert; fraction reuse adds structural residual. The real-ABI no-spill source obstacle remains.
 #### Region partition (measured at 62, re-measured at 48)
 
 At 62 the 368-word residual partitioned into four independent decisions, not
@@ -558,5 +560,36 @@ build/p24/func_overlay_027_F0000064_187BA3C/. The configured candidate has
 22 text relocation sites; no new complete runtime identity proof is claimed.
 Commands: lane_status, configured compilation, residual_map --object/--against,
 full-TU byte comparison, finalize_plateau and tools/gates.sh.
+
+#### 2026-09-26, lane p65-o027: shortening the scale live range does not leave f12
+
+Restored baseline scores 1472 bytes, delta 0, frame 0x60, 49 raw and 48 masked
+words, first mismatch +0x94, 22 text relocations. The three retained closures
+stay: updateRate's copy is still the first local, post-loop fade stays cached
+in value, and the case-3 intensity read stays in phase. No colour or force
+sweep.
+
+Hypothesis: shorten or split the scale value's live range, by a source
+spelling, so it is not the register a call keeps for an argument. Three
+spellings, each reverted because size grew (a delta-0 masked drop was the keep
+rule):
+
+- Fresh function-scope float, assigned from gO27Scale8 after the ease call,
+  used for the case-0 scale multiply, then copied into scaleFactor. Size
+  delta +4, 272 masked, first mismatch +0x0. The new local takes a frame home.
+- Recompute at each use from the existing tail union's float member, replacing
+  the scaleFactor local. Size delta +28, 333 masked, first +0x8C. Same
+  memory-traffic result already recorded for a union scale carrier.
+- Block-scoped float with that same post-call lifetime. Size delta +4, 272
+  masked, first +0x0. Block scope does not avoid the frame home.
+
+None stayed at delta 0, so none could reduce the 48 masked words. The original
+body is restored. Stall: three consecutive spellings produced no better
+residual, no new target identity, and no zero-cost split of the scale carrier.
+The open residual is still the long-lived scale in f12 rather than f16, plus
+the two instruction-order pairs.
+
+Commands: tools/score_symbol.py on the restored body and on each spelling,
+stock tools/ido/cc, tools/finalize_plateau.py.
 
 <!-- plateau-handoff:func_overlay_027_F0000064_187BA3C:end -->

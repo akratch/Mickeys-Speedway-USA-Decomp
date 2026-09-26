@@ -336,6 +336,6 @@ compare_name:
  * frame: 0x30
  * relocations: 118
  * first-mismatch: +0x78
- * summary: Index-generated pointer forms retain the frame but add instructions; zero-size web partition remains open. First mismatch is relocation-masked.
+ * summary: Pointer walk and unscaled index miss a zero-size partition. Post-increment walk 70 and do-while 75 at delta 0; byte-offset index +12 bytes, 160 masked. Stall.
  * PLATEAU-HANDOFF:func_overlay_046_F0000120_188E518:end
  */

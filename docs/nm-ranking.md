@@ -284,8 +284,8 @@ Relocation-masked mismatch evidence covers **242 / 242** resolved rows. The raw 
 | relocation-masked `differing_words <= 5` | 7 |
 | raw `differing_words <= 10` | 11 |
 | relocation-masked `differing_words <= 10` | 13 |
-| raw `differing_words <= 20` | 26 |
-| relocation-masked `differing_words <= 20` | 27 |
+| raw `differing_words <= 20` | 27 |
+| relocation-masked `differing_words <= 20` | 28 |
 
 ### Complete ranked queue
 
@@ -316,27 +316,27 @@ units remain distinct.
 | 19 | `src/overlays/o043/overlay43ComputeMotion.c` | `func_overlay_043_F00010A8_188B078` | `o043` | `other` | 220 | 9 | 9 | 116 | 116 | 0 | — |
 | 20 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
 | 21 | `src/overlays/o007/func_overlay_007_F0000324_185C1AC.c` | `func_overlay_007_F0000324_185C1AC` | `o007` | `other` | 1,392 | 19 | 10 | 132 | 288 | 0 | — |
-| 22 | `src/overlays/o001/overlay_001.c` | `overlay1FindPreviousUsable` | `o001` | `other` | 160 | 14 | 12 | 4 | 20 | 0 | — |
-| 23 | `src/main/camera.c` | `func_80023598` | `main` | `other` | 1,136 | 13 | 13 | 168 | 168 | 0 | — |
-| 24 | `src/overlays/o015/overlay_015.c` | `overlay15DrawRain` | `o015` | `other` | 216 | 18 | 13 | 8 | 116 | 0 | — |
-| 25 | `src/overlays/o001/overlay_001_tail.c` | `overlay1TransitionState` | `o001` | `other` | 948 | 16 | 16 | 52 | 52 | 0 | — |
-| 26 | `src/main/objects.c` | `func_80006534` | `main` | `other` | 820 | 17 | 17 | 284 | 284 | 0 | — |
-| 27 | `src/overlays/o054/overlay54Initialize.c` | `func_overlay_054_F0000000_189ECA0` | `o054` | `other` | 972 | 48 | 17 | 84 | 428 | 0 | — |
-| 28 | `src/overlays/o001/overlay_001_tail.c` | `overlay1BendPathPoint` | `o001` | `other` | 428 | 19 | 19 | 16 | 16 | 0 | — |
-| 29 | `src/overlays/o015/overlay_015.c` | `overlay15InitStarsAndPalette` | `o015` | `other` | 988 | 20 | 19 | 112 | 112 | 0 | — |
-| 30 | `src/main/fx.c` | `func_80046EC4` | `main` | `other` | 440 | 23 | 23 | 104 | 104 | 0 | — |
-| 31 | `src/main/objects.c` | `func_80008028` | `main` | `other` | 240 | 23 | 23 | 36 | 36 | 0 | — |
-| 32 | `src/overlays/o013/overlay13DrawActive.c` | `overlay13DrawActive` | `o013` | `other` | 664 | 26 | 24 | 8 | 64 | 0 | — |
-| 33 | `src/main/saves.c` | `func_8002CF6C` | `main` | `other` | 352 | 25 | 25 | 104 | 104 | 0 | — |
-| 34 | `src/overlays/o092/overlay92FindNearestCourse.c` | `func_overlay_092_F0000068_18D5F88` | `o092` | `other` | 672 | 26 | 26 | 4 | 4 | 0 | — |
-| 35 | `src/main/charControl.c` | `func_8001D880` | `main` | `other` | 144 | 28 | 28 | 4 | 4 | 0 | — |
-| 36 | `src/overlays/o046/func_overlay_046_F0000874_188EC6C.c` | `func_overlay_046_F0000874_188EC6C` | `o046` | `other` | 1,800 | 34 | 28 | 112 | 508 | 0 | — |
-| 37 | `src/overlays/o041/overlay41EnqueueTransition.c` | `func_overlay_041_F000195C_1888C94` | `o041` | `other` | 420 | 29 | 29 | 8 | 8 | 0 | — |
-| 38 | `src/overlays/o098/overlay98CollectUniqueY.c` | `overlay98CollectUniqueY` | `o098` | `other` | 324 | 32 | 32 | 104 | 104 | 0 | — |
-| 39 | `src/overlays/o003/overlay3RunCachedModeAction.c` | `overlay3RunCachedModeAction` | `o003` | `other` | 452 | 34 | 34 | 132 | 132 | 0 | — |
-| 40 | `src/overlays/o101/overlay101DrawPanel.c` | `overlay101DrawPanel` | `o101` | `other` | 1,072 | 36 | 36 | 180 | 180 | 0 | — |
-| 41 | `src/overlays/o010/overlay10Initialize.c` | `overlay10Initialize` | `o010` | `other` | 688 | 37 | 37 | 0 | 0 | 0 | — |
-| 42 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0002640_1860398` | `o008` | `other` | 732 | 38 | 37 | 240 | 240 | 0 | — |
+| 22 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0002640_1860398` | `o008` | `other` | 732 | 13 | 11 | 252 | 260 | 0 | — |
+| 23 | `src/overlays/o001/overlay_001.c` | `overlay1FindPreviousUsable` | `o001` | `other` | 160 | 14 | 12 | 4 | 20 | 0 | — |
+| 24 | `src/main/camera.c` | `func_80023598` | `main` | `other` | 1,136 | 13 | 13 | 168 | 168 | 0 | — |
+| 25 | `src/overlays/o015/overlay_015.c` | `overlay15DrawRain` | `o015` | `other` | 216 | 18 | 13 | 8 | 116 | 0 | — |
+| 26 | `src/overlays/o001/overlay_001_tail.c` | `overlay1TransitionState` | `o001` | `other` | 948 | 16 | 16 | 52 | 52 | 0 | — |
+| 27 | `src/main/objects.c` | `func_80006534` | `main` | `other` | 820 | 17 | 17 | 284 | 284 | 0 | — |
+| 28 | `src/overlays/o054/overlay54Initialize.c` | `func_overlay_054_F0000000_189ECA0` | `o054` | `other` | 972 | 48 | 17 | 84 | 428 | 0 | — |
+| 29 | `src/overlays/o001/overlay_001_tail.c` | `overlay1BendPathPoint` | `o001` | `other` | 428 | 19 | 19 | 16 | 16 | 0 | — |
+| 30 | `src/overlays/o015/overlay_015.c` | `overlay15InitStarsAndPalette` | `o015` | `other` | 988 | 20 | 19 | 112 | 112 | 0 | — |
+| 31 | `src/main/fx.c` | `func_80046EC4` | `main` | `other` | 440 | 23 | 23 | 104 | 104 | 0 | — |
+| 32 | `src/main/objects.c` | `func_80008028` | `main` | `other` | 240 | 23 | 23 | 36 | 36 | 0 | — |
+| 33 | `src/overlays/o013/overlay13DrawActive.c` | `overlay13DrawActive` | `o013` | `other` | 664 | 26 | 24 | 8 | 64 | 0 | — |
+| 34 | `src/main/saves.c` | `func_8002CF6C` | `main` | `other` | 352 | 25 | 25 | 104 | 104 | 0 | — |
+| 35 | `src/overlays/o092/overlay92FindNearestCourse.c` | `func_overlay_092_F0000068_18D5F88` | `o092` | `other` | 672 | 26 | 26 | 4 | 4 | 0 | — |
+| 36 | `src/main/charControl.c` | `func_8001D880` | `main` | `other` | 144 | 28 | 28 | 4 | 4 | 0 | — |
+| 37 | `src/overlays/o046/func_overlay_046_F0000874_188EC6C.c` | `func_overlay_046_F0000874_188EC6C` | `o046` | `other` | 1,800 | 34 | 28 | 112 | 508 | 0 | — |
+| 38 | `src/overlays/o041/overlay41EnqueueTransition.c` | `func_overlay_041_F000195C_1888C94` | `o041` | `other` | 420 | 29 | 29 | 8 | 8 | 0 | — |
+| 39 | `src/overlays/o098/overlay98CollectUniqueY.c` | `overlay98CollectUniqueY` | `o098` | `other` | 324 | 32 | 32 | 104 | 104 | 0 | — |
+| 40 | `src/overlays/o003/overlay3RunCachedModeAction.c` | `overlay3RunCachedModeAction` | `o003` | `other` | 452 | 34 | 34 | 132 | 132 | 0 | — |
+| 41 | `src/overlays/o101/overlay101DrawPanel.c` | `overlay101DrawPanel` | `o101` | `other` | 1,072 | 36 | 36 | 180 | 180 | 0 | — |
+| 42 | `src/overlays/o010/overlay10Initialize.c` | `overlay10Initialize` | `o010` | `other` | 688 | 37 | 37 | 0 | 0 | 0 | — |
 | 43 | `src/main/main.c` | `func_80029274` | `main` | `other` | 348 | 39 | 39 | 8 | 8 | 0 | — |
 | 44 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0004CF0_1862A48` | `o008` | `other` | 1,080 | 44 | 39 | 452 | 452 | 0 | — |
 | 45 | `src/overlays/o002/overlay2QueryNode.c` | `overlay2QueryNode` | `o002` | `other` | 1,012 | 51 | 39 | 64 | 88 | 0 | — |
@@ -387,9 +387,9 @@ units remain distinct.
 | 90 | `src/main/weather.c` | `rain_render_splashes` | `main` | `other` | 1,616 | 113 | 113 | 148 | 148 | 0 | — |
 | 91 | `src/overlays/o052/overlay52Initialize.c` | `func_overlay_052_F0000000_189A670` | `o052` | `other` | 1,264 | 119 | 115 | 44 | 44 | 0 | — |
 | 92 | `src/main/objects.c` | `func_8000B3CC` | `main` | `other` | 1,976 | 116 | 116 | 328 | 328 | 0 | — |
-| 93 | `src/main/charControl.c` | `func_8001C4C0` | `main` | `other` | 1,612 | 121 | 121 | 60 | 60 | 0 | — |
-| 94 | `src/overlays/o002/func_overlay_002_F0001364_185815C.c` | `func_overlay_002_F0001364_185815C` | `o002` | `other` | 756 | 125 | 125 | 8 | 8 | 0 | — |
-| 95 | `src/overlays/o009/overlay_009.c` | `func_overlay_009_F0000000_1866678` | `o009` | `other` | 1,344 | 131 | 125 | 60 | 60 | 0 | — |
+| 93 | `src/overlays/o009/overlay_009.c` | `func_overlay_009_F0000000_1866678` | `o009` | `other` | 1,344 | 126 | 120 | 228 | 228 | 0 | — |
+| 94 | `src/main/charControl.c` | `func_8001C4C0` | `main` | `other` | 1,612 | 121 | 121 | 60 | 60 | 0 | — |
+| 95 | `src/overlays/o002/func_overlay_002_F0001364_185815C.c` | `func_overlay_002_F0001364_185815C` | `o002` | `other` | 756 | 125 | 125 | 8 | 8 | 0 | — |
 | 96 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 130 | 130 | 0 | 0 | 0 | — |
 | 97 | `src/overlays/o035/func_overlay_035_F0000B40_1882820.c` | `func_overlay_035_F0000B40_1882820` | `o035` | `other` | 2,112 | 131 | 130 | 164 | 164 | 0 | — |
 | 98 | `src/overlays/o101/overlay101BuildPresentationD.c` | `overlay101BuildPresentationD` | `o101` | `other` | 824 | 131 | 130 | 16 | 16 | 0 | — |
@@ -413,19 +413,19 @@ units remain distinct.
 | 116 | `src/main/track.c` | `func_80010654` | `main` | `other` | 684 | 162 | 162 | 0 | 0 | 0 | — |
 | 117 | `src/overlays/o057/overlay57UpdateSelection.c` | `overlay57UpdateSelection` | `o057` | `other` | 1,132 | 166 | 162 | 48 | 76 | 0 | — |
 | 118 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 163 | 163 | 96 | 96 | 0 | — |
-| 119 | `src/main/fx.c` | `fxSPDPRipple` | `main` | `other` | 928 | 169 | 169 | 104 | 104 | 0 | — |
-| 120 | `src/overlays/o020/overlay20UpdateGrid.c` | `overlay20UpdateGrid` | `o020` | `other` | 860 | 173 | 173 | 0 | 0 | 0 | — |
-| 121 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 177 | 177 | 36 | 36 | 0 | — |
-| 122 | `src/main/fx.c` | `func_80049B14` | `main` | `other` | 824 | 181 | 181 | 4 | 4 | 0 | — |
-| 123 | `src/main/track.c` | `func_8000F198` | `main` | `other` | 996 | 185 | 185 | 0 | 0 | 0 | — |
-| 124 | `src/main/objects.c` | `func_80007118` | `main` | `other` | 1,836 | 186 | 186 | 44 | 44 | 0 | — |
-| 125 | `src/main/track.c` | `func_800140CC` | `main` | `other` | 868 | 187 | 187 | 0 | 0 | 0 | — |
-| 126 | `src/main/track.c` | `func_8001357C` | `main` | `other` | 1,040 | 189 | 189 | 8 | 8 | 0 | — |
-| 127 | `src/overlays/o099/overlay99ApplySegment.c` | `overlay99ApplySegment` | `o099` | `other` | 920 | 191 | 190 | 80 | 80 | 0 | — |
-| 128 | `src/overlays/o027/overlay_027.c` | `func_overlay_027_F0000624_187BFFC` | `o027` | `other` | 1,016 | 196 | 195 | 8 | 8 | 0 | — |
-| 129 | `src/overlays/o079/func_overlay_079_F0000134_18CD0D4.c` | `func_overlay_079_F0000134_18CD0D4` | `o079` | `other` | 3,528 | 198 | 198 | 124 | 124 | 0 | — |
-| 130 | `src/main/textures_354C8.c` | `func_800349A4` | `main` | `other` | 1,088 | 202 | 202 | 36 | 36 | 0 | — |
-| 131 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 214 | 214 | 52 | 52 | 0 | — |
+| 119 | `src/main/objects.c` | `func_80007118` | `main` | `other` | 1,836 | 168 | 168 | 44 | 44 | 0 | — |
+| 120 | `src/main/fx.c` | `fxSPDPRipple` | `main` | `other` | 928 | 169 | 169 | 104 | 104 | 0 | — |
+| 121 | `src/overlays/o020/overlay20UpdateGrid.c` | `overlay20UpdateGrid` | `o020` | `other` | 860 | 173 | 173 | 0 | 0 | 0 | — |
+| 122 | `src/main/textures_354C8.c` | `func_800349A4` | `main` | `other` | 1,088 | 175 | 175 | 36 | 36 | 0 | — |
+| 123 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 177 | 177 | 36 | 36 | 0 | — |
+| 124 | `src/main/fx.c` | `func_80049B14` | `main` | `other` | 824 | 181 | 181 | 4 | 4 | 0 | — |
+| 125 | `src/main/track.c` | `func_8000F198` | `main` | `other` | 996 | 185 | 185 | 0 | 0 | 0 | — |
+| 126 | `src/main/track.c` | `func_800140CC` | `main` | `other` | 868 | 187 | 187 | 0 | 0 | 0 | — |
+| 127 | `src/main/track.c` | `func_8001357C` | `main` | `other` | 1,040 | 189 | 189 | 8 | 8 | 0 | — |
+| 128 | `src/overlays/o099/overlay99ApplySegment.c` | `overlay99ApplySegment` | `o099` | `other` | 920 | 191 | 190 | 80 | 80 | 0 | — |
+| 129 | `src/overlays/o027/overlay_027.c` | `func_overlay_027_F0000624_187BFFC` | `o027` | `other` | 1,016 | 196 | 195 | 8 | 8 | 0 | — |
+| 130 | `src/overlays/o079/func_overlay_079_F0000134_18CD0D4.c` | `func_overlay_079_F0000134_18CD0D4` | `o079` | `other` | 3,528 | 198 | 198 | 124 | 124 | 0 | — |
+| 131 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 213 | 213 | 28 | 28 | 0 | — |
 | 132 | `src/main/rcpFast3d.c` | `func_8002EBE0` | `main` | `other` | 1,020 | 218 | 218 | 0 | 0 | 0 | — |
 | 133 | `src/main/shadows.c` | `func_80017BCC` | `main` | `other` | 1,256 | 221 | 221 | 88 | 88 | 0 | — |
 | 134 | `src/main/charControl.c` | `func_8001EC44` | `main` | `other` | 952 | 224 | 224 | 12 | 12 | 0 | — |

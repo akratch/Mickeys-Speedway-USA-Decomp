@@ -2439,7 +2439,7 @@ void func_8004AF68(void) {
  * frame: 0x180
  * relocations: 5
  * first-mismatch: 0x4
- * summary: JFG efd5abb remains assembly-only; zero source attempts. Need new hoisted-bound and scale-invariant lifetimes evidence.
+ * summary: Hoisted bound plus one scale local failed: lt-bound +8/186, ne-bound 0/161, in-loop scaleZ +8/175. None beat 158 at delta 0. Stall.
  * PLATEAU-HANDOFF:func_80047304:end
  */
 

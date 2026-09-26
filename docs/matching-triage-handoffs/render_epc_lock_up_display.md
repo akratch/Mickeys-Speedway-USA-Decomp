@@ -6,7 +6,9 @@
 - frame: 0x50
 - relocations: 127
 - first mismatch: +0x18
-- summary: Dead tick updates are byte-inert and compensated preincrement adds an instruction; the zero-byte leading ring draw remains open.
+- summary: Real use before the loop stalls: 13-iter loop 338 masked delta -296, block-local tick 51 delta 0, direct tick 53 delta 0. No leading ring draw.
+
+Summary before this remeasure: Dead tick updates are byte-inert and compensated preincrement adds an instruction; the zero-byte leading ring draw remains open.
 
 #### 2026-09-12, lane p9-mid: 62 -> 51, with the ring measured rather than inferred
 

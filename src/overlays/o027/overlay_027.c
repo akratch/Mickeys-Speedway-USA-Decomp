@@ -448,7 +448,7 @@ s32 overlay27Activate(O27Object *object) {
  * frame: 0x60
  * relocations: 22
  * first-mismatch: +0x94
- * summary: Required call-input carrier reuse is byte-inert; fraction reuse adds structural residual. The real-ABI no-spill source obstacle remains.
+ * summary: Shorten scale live range off the call-argument register failed: fresh local +4/272, field recompute +28/333, block temp +4/272. No delta-0 masked drop; stall.
  * PLATEAU-HANDOFF:func_overlay_027_F0000064_187BA3C:end
  */
 

@@ -2606,6 +2606,6 @@ void partNullifyCircularParticleParents(ParticlePosition *position) {
  * frame: 0x68
  * relocations: 12
  * first-mismatch: +0x48
- * summary: pre-entry MOVE_END blocks the needed ring phase; source-safe extra draw remains unproved
+ * summary: Extra line-entry use before the table stalled: save plus reload 72, index via pointCount 152, in-condition assign 72. None reduced masked words at delta 0.
  * PLATEAU-HANDOFF:func_80040B88:end
  */

@@ -5603,7 +5603,7 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: 0x38
  * relocations: 71
  * first-mismatch: +0x2C
- * summary: hypothesis=payload addr local dies before v0 call; spellings=span 444 delta -8, one-shot 168 delta 0, tail 408 delta 0; stall=early+case1 still a1
+ * summary: hypothesis=early and case1 must not share payload; spellings=early 430/-4, case1 446/-8, both 446/-8; stall=none at delta 0, 186-to-168 kept
  * PLATEAU-HANDOFF:func_80007118:end
  */
 

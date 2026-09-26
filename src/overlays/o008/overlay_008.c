@@ -2411,7 +2411,7 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
  * frame: 0xD0
  * relocations: 14
  * first-mismatch: +0x104
- * summary: Prior 25-word body kept. Scale after guard is 11 delta 0; 1.0f overwrite stayed 11; in-loop load +4/83. Stall: v0 not v1, 1.0f still follows the load.
+ * summary: 37 to 11. v0-temp plus 1.0f-before-load: register one 40 delta 0; baseValue copy 22 delta 0; base+1 +4/101. Stall: copy stays v0, 1.0f after load, +0x1AC.
  * PLATEAU-HANDOFF:func_overlay_008_F0002640_1860398:end
  */
 

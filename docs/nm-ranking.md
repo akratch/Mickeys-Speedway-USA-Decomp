@@ -387,9 +387,9 @@ units remain distinct.
 | 90 | `src/main/weather.c` | `rain_render_splashes` | `main` | `other` | 1,616 | 113 | 113 | 148 | 148 | 0 | — |
 | 91 | `src/overlays/o052/overlay52Initialize.c` | `func_overlay_052_F0000000_189A670` | `o052` | `other` | 1,264 | 119 | 115 | 44 | 44 | 0 | — |
 | 92 | `src/main/objects.c` | `func_8000B3CC` | `main` | `other` | 1,976 | 116 | 116 | 328 | 328 | 0 | — |
-| 93 | `src/main/charControl.c` | `func_8001C4C0` | `main` | `other` | 1,612 | 121 | 121 | 60 | 60 | 0 | — |
-| 94 | `src/overlays/o002/func_overlay_002_F0001364_185815C.c` | `func_overlay_002_F0001364_185815C` | `o002` | `other` | 756 | 125 | 125 | 8 | 8 | 0 | — |
-| 95 | `src/overlays/o009/overlay_009.c` | `func_overlay_009_F0000000_1866678` | `o009` | `other` | 1,344 | 131 | 125 | 60 | 60 | 0 | — |
+| 93 | `src/overlays/o009/overlay_009.c` | `func_overlay_009_F0000000_1866678` | `o009` | `other` | 1,344 | 126 | 120 | 228 | 228 | 0 | — |
+| 94 | `src/main/charControl.c` | `func_8001C4C0` | `main` | `other` | 1,612 | 121 | 121 | 60 | 60 | 0 | — |
+| 95 | `src/overlays/o002/func_overlay_002_F0001364_185815C.c` | `func_overlay_002_F0001364_185815C` | `o002` | `other` | 756 | 125 | 125 | 8 | 8 | 0 | — |
 | 96 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 130 | 130 | 0 | 0 | 0 | — |
 | 97 | `src/overlays/o035/func_overlay_035_F0000B40_1882820.c` | `func_overlay_035_F0000B40_1882820` | `o035` | `other` | 2,112 | 131 | 130 | 164 | 164 | 0 | — |
 | 98 | `src/overlays/o101/overlay101BuildPresentationD.c` | `overlay101BuildPresentationD` | `o101` | `other` | 824 | 131 | 130 | 16 | 16 | 0 | — |

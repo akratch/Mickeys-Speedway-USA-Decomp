@@ -29,19 +29,19 @@ extern Overlay9YawScaleReloc gOverlay9YawScaleReloc;
 extern void func_overlay_009_F00010A4_186771C(void *object, void *state,
                                                f32 steps);
 
-/* PLATEAU (2026-08-30): workbench structure-mismatch; best 125 masked/131 raw
- * of 336, first +0x3C, with the exact 0x78 frame. Narrowed scalar lifetimes
- * removed the frame excess. Static relocation proof remains closed on the
- * ambiguous consolidated F00010A4 identity; stack order and GPR webs remain. */
+/* PLATEAU: exact 0x78 frame. Narrowed scalar lifetimes removed the excess.
+ * Static relocation proof remains closed on the ambiguous consolidated
+ * F00010A4 identity (static 52, runtime 63). GPR spill homes follow
+ * declaration order; the handoff has the current score and next lever. */
 #ifdef NON_MATCHING
 void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
     f32 vector[3];
     s16 angles[3];
-    void *entryData;
-    void *savedEntry;
     void *entry;
     f32 savedY;
     f32 stepFloat;
+    void *entryData;
+    void *savedEntry;
     void *state;
 
     state = M2C_FIELD(object, void **, 0x64);
@@ -729,11 +729,11 @@ void func_overlay_009_F00010B4_186772C(O9MotionResult *out, O9MotionOwner *owner
 
 /* PLATEAU-HANDOFF:func_overlay_009_F0000000_1866678:start
  * symbol: func_overlay_009_F0000000_1866678
- * score: 125/336 words
+ * score: 120/336 words
  * frame: 0x78
  * relocations: 63
- * first-mismatch: +0x3C
- * summary: Exact size/frame; 125 masked/131 raw. Static 52 vs runtime 63, 15 identities; F00010A4 is ambiguous. Next: local-stack order/GPR web.
+ * first-mismatch: +0xE4
+ * summary: GPR spills now match 0x50 and 0x54 after declaration reorder. 125 to 120 masked at delta 0. Arrays still +8, savedY -16, stepFloat temp +4.
  * PLATEAU-HANDOFF:func_overlay_009_F0000000_1866678:end
  */
 

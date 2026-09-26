@@ -925,7 +925,7 @@ f32 lightDirectionCalc(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg
  * 3 each) are coloured v0, v1 and a0 here where the target leaves them in
  * ring temps, and the ring phase differs downstream (t0-t4 against t5-t9); and
  * the changed = 1 constant is drawn later than the target draws it. */
-/* PROVENANCE: JFG's corresponding object-light routine supplies the role and dispatch idiom; Mickey's fields, globals, and calls are authoritative below. */
+/* PROVENANCE: JFG public decomp src/lights.c names this routine lightObject; that entry is still assembly, so Mickey's fields, globals, and calls are authoritative below. */
 #ifdef NON_MATCHING
 void func_80019AB8(LightPosition *position, LightObjectContext *object,
                    LightDescription *description, f32 *matrix) {
@@ -1155,7 +1155,7 @@ s32 lightKillGlowingLight(void) {
  * frame: 0xC8
  * relocations: 28
  * first-mismatch: +0x80
- * summary: Sunk partially dead lightData def closes the -4; target homes give 63 at delta 0; three single-block CSE temps take v0/v1/a0 not ring temps
+ * summary: hypothesis=JFG efd5abb lightObject C with Mickey types; spellings=none, src/lights.c is still GLOBAL_ASM; stall=kept 63 words at delta 0
  * PLATEAU-HANDOFF:func_80019AB8:end
  */
 

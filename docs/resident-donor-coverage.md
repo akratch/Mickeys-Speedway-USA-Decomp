@@ -404,7 +404,10 @@ producer prerequisite before spending source attempts.
 
 ## Validation and cost
 
-This audit compiled zero game or reference objects. Reference verification
+The search and reference-verification phase compiled zero game or reference
+objects. Initial lane preparation separately compiled 851 canonical game
+objects; its elapsed bootstrap time was not instrumented. That setup cost is
+not included in the search measurements below. Reference verification
 took approximately 1.6 seconds; the two named scans shared one corpus load and
 took approximately 2.3 seconds. These are measured subprocess costs, not total
 worker effort or expected matching throughput. No whole-queue scan, reference

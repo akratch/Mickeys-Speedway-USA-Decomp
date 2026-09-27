@@ -2794,5 +2794,129 @@ class ResidentDataRelocTests(unittest.TestCase):
         self.assertEqual([0], [record.offset for record in records])
 
 
+class RelocationDiagnosticTests(unittest.TestCase):
+    def report(self, kinds, *, indices=None, symbols=None, target=(), evidence=None,
+               identities=None, ambiguous=(), calls=None, aliases=None):
+        indices = indices or [0] * len(kinds)
+        symbols = symbols or [("proxy", 0, 0, 0, rs.SHN_UNDEF)]
+        elf = FunctionSurfaceComparisonTests.BoundaryElf(
+            names=["", ".text"], symbols=symbols, text=b"\0" * (4 * len(kinds)),
+            relocations=[(".text", 4 * i, kind, indices[i])
+                         for i, kind in enumerate(kinds)])
+        candidate = [rs.SurfaceRecord(4 * i, kind, None)
+                     for i, kind in enumerate(kinds)]
+        result = rs.relocation_diagnostics(
+            elf, 0, len(kinds) * 4, target, candidate, identities or {},
+            set(ambiguous), 7, calls, evidence=evidence, redefine_aliases=aliases)
+        self.assertTrue(all(row.identity is None for row in candidate))
+        return result
+
+    def test_same_offset_target_and_shared_vma_do_not_resolve(self):
+        report = self.report([rs.R_MIPS_26],
+            symbols=[("proxy", rs.SYNTHETIC_VMA, 4, 2, 1)],
+            target=[rs.SurfaceRecord(0, rs.R_MIPS_26, (8, 16))])
+        site = report["sites"][0]
+        self.assertIsNone(site["identity"])
+        self.assertEqual([[8, 16]], [r["identity"] for r in site["target_at_same_offset"]])
+        self.assertIn("shared-synthetic-vma-is-not-identity", site["observations"])
+        self.assertIn("same-site-target-outside-same-overlay-proxy-proof", site["observations"])
+        self.assertEqual([], site["witnesses"])
+
+    def test_moved_call_has_no_borrowed_target_witness(self):
+        site = self.report([rs.R_MIPS_26],
+            target=[rs.SurfaceRecord(4, rs.R_MIPS_26, (7, 16))])["sites"][0]
+        self.assertEqual([], site["target_at_same_offset"])
+        self.assertEqual("no-authenticated-call-identity", site["reason"])
+        self.assertIn("no-target-tuple-at-candidate-offset", site["observations"])
+
+    def test_hi_lo_pairing_uses_symbol_index_even_when_names_repeat(self):
+        report = self.report([rs.R_MIPS_HI16, rs.R_MIPS_LO16, rs.R_MIPS_LO16],
+            indices=[0, 1, 0], symbols=[("proxy", 0, 0, 0, 0)] * 2)
+        self.assertEqual([[8], [], [0]], [s["paired_offsets"] for s in report["sites"]])
+        self.assertEqual([0, 1], report["symbols"][0]["symbol_indices"])
+        self.assertEqual([0], report["sites"][0]["addends"])
+
+    def test_unpaired_hi_reason_is_not_an_identity_guess(self):
+        site = self.report([rs.R_MIPS_HI16])["sites"][0]
+        self.assertEqual("unpaired-hi16-addend-undefined", site["reason"])
+        self.assertEqual([], site["addends"])
+
+    def test_multiple_highs_share_one_low(self):
+        sites = self.report([rs.R_MIPS_HI16, rs.R_MIPS_HI16, rs.R_MIPS_LO16])["sites"]
+        self.assertEqual([[8], [8], [0, 4]], [s["paired_offsets"] for s in sites])
+
+    def test_alignment_conflicts_are_not_independent_contradictions(self):
+        evidence = {"proxy": [
+            {"route": "runtime-hilo-correlation", "independent": False,
+             "base_identity": [7, offset]} for offset in (16, 32)]}
+        site = self.report([rs.R_MIPS_LO16], evidence=evidence,
+                           ambiguous=["proxy"])["sites"][0]
+        self.assertEqual([], site["conflicts"]["independent_witnesses"])
+        self.assertEqual([[7, 16], [7, 32]], site["conflicts"]["alignment_correlations"])
+        self.assertEqual("ambiguous-identity-resolution", site["reason"])
+
+    def test_independent_conflicts_keep_reserved_and_resident_distinct(self):
+        selector = min(rs.RESERVED_SELECTORS)
+        evidence = {"proxy": [
+            {"route": "matched-canonical-sibling", "independent": True,
+             "base_identity": identity} for identity in ([selector, 16], [0, 16])]}
+        site = self.report([rs.R_MIPS_LO16], evidence=evidence)["sites"][0]
+        self.assertEqual([[0, 16], [selector, 16]], site["conflicts"]["independent_witnesses"])
+        self.assertEqual([], site["conflicts"]["alignment_correlations"])
+        self.assertIn("reserved-selector-and-resident-identity-remain-distinct", site["observations"])
+
+    def test_alias_evidence_preserves_source_and_independence(self):
+        evidence = {}
+        rs._identity_witness(evidence, "source", "runtime-hilo-correlation", (7, 16),
+                             independent=False)
+        rs._identity_alias_evidence(evidence, [("source", "alias")], [])
+        report = self.report([rs.R_MIPS_LO16],
+            symbols=[("alias", 0, 0, 0, 0)], evidence=evidence,
+            aliases={"alias": "source"})
+        site = report["sites"][0]
+        self.assertEqual("source", site["original_symbol"])
+        self.assertFalse(site["witnesses"][0]["independent"])
+        self.assertEqual("source", site["witnesses"][0]["via_symbol"])
+        self.assertIsNone(site["identity"])
+
+    def test_runtime_call_observer_does_not_change_resolution(self):
+        fixture = RepeatedOverlayCallIdentityTests()
+        for targets in (fixture.target(), fixture.target(identities=[(101, 16), (101, 32)]),
+                        fixture.target(sites=(0x40, 0x70)),
+                        fixture.target(identities=[(0, 16), (0, 16)])):
+            with self.subTest(targets=targets):
+                args = (fixture.candidate(), fixture.module(), 0, 0x70, targets)
+                expected = rs._runtime_correlated_overlay_r26_identities(*args)
+                evidence = {}
+                actual = rs._runtime_correlated_overlay_r26_identities(*args, evidence=evidence)
+                self.assertEqual(expected, actual)
+                self.assertTrue(evidence)
+                self.assertTrue(all(not w["independent"]
+                    for rows in evidence.values() for w in rows))
+
+    def test_runtime_hilo_observer_keeps_incomplete_pair_unresolved(self):
+        elf = FunctionSurfaceComparisonTests.BoundaryElf(
+            names=["", ".text"], symbols=[("proxy", 0, 0, 0, 0)],
+            text=b"\0" * 8, relocations=[(".text", 0, rs.R_MIPS_HI16, 0)])
+        evidence = {}
+        result = rs._runtime_correlated_overlay_hilo_identities(
+            elf, {"overlay": 7, "identity": "overlay:7",
+                  "synthetic_vma": "0xF0000000"}, 0, 8, [], evidence=evidence)
+        self.assertEqual(({}, set()), result)
+        self.assertEqual("incomplete-hi16-lo16-pair", evidence["proxy"][0]["reason"])
+        self.assertFalse(evidence["proxy"][0]["independent"])
+
+    def test_explain_check_does_not_turn_unresolved_into_success(self):
+        result = {"offset_type_exact": True, "stable_identity_exact": False,
+                  "diagnostics": {"sites": [], "symbols": []}}
+        with mock.patch.object(rs, "function_surface_comparison", return_value=result) as compare:
+            with contextlib.redirect_stdout(io.StringIO()) as output:
+                code = rs.cmd_compare(["target", "--candidate-object", "candidate.o",
+                    "--target-elf", "target.elf", "--json", "--explain", "--check"])
+        self.assertEqual(1, code)
+        self.assertEqual(result, json.loads(output.getvalue()))
+        self.assertTrue(compare.call_args.kwargs["include_diagnostics"])
+
+
 if __name__ == "__main__":
     unittest.main()

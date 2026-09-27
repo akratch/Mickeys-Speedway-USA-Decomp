@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 256488,
-  "nonmatching_overlay_c_bytes": 212120,
+  "matched_overlay_c_bytes": 257120,
+  "nonmatching_overlay_c_bytes": 211488,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 3120,
   "bss_bytes": 77680,
@@ -3157,6 +3157,14 @@
     "priority_rank": 90
    },
    "mixed_tu_exact_c_ranges": [
+    {
+     "offset": "0x744",
+     "end_offset": "0x9BC",
+     "size": "0x278",
+     "label": "func_overlay_009_F0000744_1866DBC",
+     "source": "overlays/o009/overlay_009",
+     "evidence": "stock C, nine raw runtime identities, declared metadata filters, and linked ROM bytes exact"
+    },
     {
      "offset": "0x9BC",
      "end_offset": "0xCE4",

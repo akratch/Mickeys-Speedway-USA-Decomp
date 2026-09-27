@@ -157,10 +157,10 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
             if (handle != NULL) {
                 ext_o0_2d98(handle);
             }
-            ext_o0_2b90(6, M2C_FIELD(object, f32 *, 0xC),
+            func_80002FE0(6, M2C_FIELD(object, f32 *, 0xC),
                         M2C_FIELD(object, f32 *, 0x10),
                         M2C_FIELD(object, f32 *, 0x14), 4,
-                        (u8 *)state + 0xB8);
+                        (void **)((u8 *)state + 0xB8));
         } else {
             if (M2C_FIELD(state, s8 *, 0x16E) > 0) {
                 M2C_FIELD(state, s8 *, 0x16E) =
@@ -357,15 +357,15 @@ void func_overlay_009_F0000744_1866DBC(O9OutputRecord *output, O9OutputControl *
     }
 
     if (control->handle == 0) {
-        ext_o0_2b90(0x16, output->x, output->y, output->z, 1,
+        func_80002FE0(0x16, output->x, output->y, output->z, 1,
                      &control->handle);
     }
 
     if (control->handle != 0) {
         amount = (state->magnitude * 100.0f) + 50.0f;
-        amount += (f32)ext_o0_2952c(-5, 5);
-        ext_o0_2d70(control->handle, output->x, output->y, output->z);
-        ext_o0_2c64(control->handle, (u8)(u32)amount);
+        amount += (f32)mathRnd(-5, 5);
+        func_800031C0(control->handle, output->x, output->y, output->z);
+        func_800030B4(control->handle, (u8)(u32)amount);
     }
 }
 

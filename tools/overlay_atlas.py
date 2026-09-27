@@ -1432,6 +1432,12 @@ MIXED_TU_EXACT_C_RANGES = {
     ],
     9: [
         (
+            0x0744,
+            0x09BC,
+            "func_overlay_009_F0000744_1866DBC",
+            "stock C, nine raw runtime identities, declared metadata filters, and linked ROM bytes exact",
+        ),
+        (
             0x09BC,
             0x0CE4,
             "func_overlay_009_F00009BC_1867034",

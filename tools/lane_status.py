@@ -294,6 +294,105 @@ def malformed_legacy_marker(text: str | None, symbol: str) -> bool:
 
 
 @lru_cache(maxsize=4096)
+def indirect_source(ref: str, path: str, symbol: str) -> tuple[str, tuple[str, ...]] | None:
+    """Recognize one local included candidate with a default signature macro.
+
+    This is source ownership, not compiler preprocessing or match proof. Only
+    the literal include/guard shape is supported; ambiguous signatures, macro
+    overrides, missing blobs and nested source includes remain unassignable.
+    Dependency bytes and history participate in pins, cache and lane ownership.
+    """
+    if not path.endswith(".c"):
+        return None
+    wrapper = show_file(ref, path)
+    if wrapper is None:
+        return None
+    def visible(text: str) -> str:
+        lexical = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|/\*.*?\*/|//[^\n]*', re.S)
+        return lexical.sub(lambda m: re.sub(r'[^\n]', ' ', m[0])
+                           if m[0].startswith(('/*', '//')) else m[0], text)
+
+    wrapper_view = visible(wrapper)
+    guard = re.search(
+        r'(?m)^#ifdef NON_MATCHING\s*\n'
+        r'#include "(?P<include>[A-Za-z0-9_]+\.inc)"\s*\n'
+        r'#else\s*\n#pragma GLOBAL_ASM\("(?P<fallback>[^"\n]+)"\)\s*\n'
+        r'#endif\b', wrapper_view)
+    if guard is None or len(re.findall(r'#\s*ifdef\s+NON_MATCHING\b', wrapper)) != 1:
+        return None
+    prefix = re.sub(r'\\\n', '', wrapper_view[:guard.start()])
+    if any(line.strip() and not re.match(r'^#define [A-Za-z_]\w*\b', line)
+           for line in prefix.splitlines()) or wrapper_view[guard.end():].strip():
+        return None
+    if not finalize_plateau.fallback_names_symbol(guard['fallback'], symbol):
+        return None
+    dependency = str(PurePosixPath(path).parent / guard['include'])
+    body = show_file(ref, dependency)
+    if body is None or re.search(r'#\s*include\s*["<][^">]+\.(?:c|inc)[">]', body):
+        return None
+    # The signature must be an object-like default macro immediately followed
+    # by its sole function-definition use. No general C preprocessor is guessed.
+    signature = re.compile(
+        r'(?m)^#ifndef (?P<macro>[A-Za-z_]\w*)\s*\n'
+        r'#define (?P=macro) (?P<header>[^\n]+)\n#endif\s*\n'
+        r'(?P=macro)\s*\{')
+    body_view = visible(body)
+    include_lines = re.findall(r'(?m)^\s*#\s*include[^\n]*', body_view)
+    if any(not re.fullmatch(r'\s*#include \"PR/ultratypes.h\"\s*', line)
+           for line in include_lines):
+        return None
+    matches = list(signature.finditer(body_view))
+    if len(matches) != 1:
+        return None
+    match = matches[0]
+    # The default signature must be at preprocessing depth zero.
+    depth = 0
+    for directive in re.findall(r'(?m)^\s*#\s*(if|ifdef|ifndef|endif)\b', body_view[:match.start()]):
+        depth += -1 if directive == 'endif' else 1
+        if depth < 0:
+            return None
+    if depth:
+        return None
+    macro = match['macro']
+    definition = re.compile(FUNCTION_DEFINITION_TEMPLATE.format(symbol=re.escape(symbol)), re.DOTALL)
+    if not definition.fullmatch(match['header'] + ' {'):
+        return None
+    header_tokens = set(re.findall(r'[A-Za-z_]\w*', match['header']))
+    defined = set(re.findall(r'(?m)^\s*#\s*define\s+([A-Za-z_]\w*)',
+                             wrapper_view + '\n' + body_view))
+    if header_tokens & defined:
+        return None
+    token = exact_symbol_pattern(macro)
+    if token.search(wrapper) or len(token.findall(body)) != 3:
+        return None
+    # A committed build/header override makes the default signature uncertain.
+    # Refuse rather than infer command-line or header macro evaluation.
+    overrides = subprocess.run(
+        ['git', 'grep', '-l', '-F', '-e', macro, ref, '--', 'Makefile', 'mk',
+         'config', 'include'], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if overrides.returncode not in (0, 1):
+        raise RuntimeError('cannot authenticate indirect signature macro overrides')
+    if overrides.returncode == 0:
+        return None
+    expanded_body = body[:match.start()] + match['header'] + ' {' + body[match.end():]
+    expanded = (wrapper[:guard.start()] + '#ifdef NON_MATCHING\n' + expanded_body
+                + '\n#else\n#pragma GLOBAL_ASM("' + guard['fallback']
+                + '")\n#endif' + wrapper[guard.end():])
+    if len(definition.findall(expanded)) != 1 or not guarded_fallback(expanded, symbol):
+        return None
+    return expanded, (dependency,)
+
+
+def indirect_identity(ref: str, symbol: str, paths: list[str]) -> tuple[str | None, str | None]:
+    owners = sorted({path for path in paths if indirect_source(ref, path, symbol) is not None})
+    if len(owners) == 1:
+        return owners[0], None
+    if owners:
+        return None, 'ambiguous indirect source definitions: ' + ', '.join(owners)
+    return None, f'no exact committed source definition for {symbol}'
+
+
+@lru_cache(maxsize=4096)
 def source_identity(ref: str, symbol: str) -> tuple[str | None, str | None]:
     """Return the one committed definition path, or a fail-closed reason."""
     output = git(
@@ -304,16 +403,19 @@ def source_identity(ref: str, symbol: str) -> tuple[str | None, str | None]:
         re.DOTALL,
     )
     paths = []
+    scanned = []
     for row in output.splitlines():
         path = row.split(":", 1)[1] if ":" in row else row
+        scanned.append(path)
         text = show_file(ref, path)
         if text is not None and definition.search(text):
             paths.append(path)
-    paths = sorted(set(paths))
+    paths = sorted(set(paths) | {path for path in scanned
+                                if indirect_source(ref, path, symbol) is not None})
     if len(paths) == 1:
         return paths[0], None
     if not paths:
-        return None, f"no exact committed source definition for {symbol}"
+        return indirect_identity(ref, symbol, scanned)
     return None, "ambiguous exact source definitions: " + ", ".join(paths)
 
 
@@ -360,13 +462,14 @@ def source_identity_index(
                 found[symbol].append(path)
     identities: dict[str, tuple[str | None, str | None]] = {}
     for symbol in ordered:
-        definitions = sorted(set(found[symbol]))
+        definitions = sorted(set(found[symbol]) | {
+            path for path in paths if objects[path] is not None
+            and '.inc"' in objects[path][1]
+            and indirect_source(ref, path, symbol) is not None})
         if len(definitions) == 1:
             identities[symbol] = (definitions[0], None)
         elif not definitions:
-            identities[symbol] = (
-                None, f"no exact committed source definition for {symbol}",
-            )
+            identities[symbol] = (None, f"no exact committed source definition for {symbol}")
         else:
             identities[symbol] = (
                 None, "ambiguous exact source definitions: "
@@ -1291,6 +1394,8 @@ class AssignmentCache:
         material = json.dumps([
             ASSIGNMENT_CACHE_SCHEMA, self.code, symbol,
             *self._file_terms(path),
+            [self._file_terms(dep) for dep in
+             (indirect_source(self.base_commit, path, symbol) or ('', ()))[1]],
             *self._file_terms(shard_path(symbol)),
             *self._file_terms(LEGACY_TRIAGE_PATH),
             self.authorization_rows.get(symbol),
@@ -1528,9 +1633,14 @@ def _pre_active_status(
             "source-missing",
         ), text, current_blob, None
 
-    base_source_commit = target_history_commit(
-        base, symbol, [path], require_plateau=False,
-    ) or latest_path_commit(base, path)
+    included = indirect_source(base, path, symbol)
+    if included is not None:
+        text, dependencies = included
+        base_source_commit = git('log', '-1', '--format=%H', base, '--', path, *dependencies).strip()
+    else:
+        base_source_commit = target_history_commit(
+            base, symbol, [path], require_plateau=False,
+        ) or latest_path_commit(base, path)
     if base_source_commit is None:
         return Assignment(
             symbol, "stale-ledger", path, None, None, [],
@@ -1550,6 +1660,19 @@ def _active_status(
         base, symbol, path, current_blob, base_source_commit, text,
         lane_index, claim_dispositions(base),
     )
+    included = indirect_source(base, path, symbol)
+    if included is not None:
+        # Includes can change while the owner blob stays identical. Always
+        # recheck committed lane dependencies, even with a warm result cache.
+        dependencies = included[1]
+        for branch, head in lane_refs(containing=base_source_commit, unmerged_into=base):
+            disposition = claim_dispositions(base).get(head)
+            if disposition is not None and disposition['symbol'] == symbol:
+                continue
+            common = merge_base(base, branch)
+            if any(blob_id(branch, dep) != blob_id(common, dep)
+                   and blob_id(branch, dep) != blob_id(base, dep) for dep in dependencies):
+                active.append(branch)
     if active:
         return Assignment(
             symbol, "active", path, None, None, active,
@@ -1568,6 +1691,9 @@ def _settled_status(
         text = show_file(base, path)
         if text is None:
             raise RuntimeError(f"{base}:{path} vanished during classification")
+    included = indirect_source(base, path, symbol)
+    if included is not None:
+        text = included[0]
     try:
         reopen_authorization = reopen_authorizations(base).get(symbol)
     except RuntimeError as error:
@@ -1604,6 +1730,14 @@ def _settled_status(
         if guard_count == 1
         else None
     )
+    if included is not None:
+        records = [record for dep in included[1]
+                   if (record := path_plateau_record(base, dep)) is not None]
+        if path_record is not None:
+            records.append(path_record)
+        if records:
+            newest = newest_related_commit([record[0] for record in records])
+            path_record = next(record for record in records if record[0] == newest)
     triage_text = show_file(base, LEGACY_TRIAGE_PATH)
     if malformed_legacy_marker(triage_text, symbol):
         return Assignment(
@@ -1668,6 +1802,8 @@ def _settled_status(
         if shard_record is not None
         else None
     )
+    if included is not None and source_commit is not None:
+        source_commit = base_source_commit
     ledger_commits = []
     if shard_source is not None:
         shard_commit = latest_path_commit(base, target_shard_path)

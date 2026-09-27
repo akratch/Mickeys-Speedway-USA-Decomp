@@ -1395,6 +1395,131 @@ class AssignmentCacheTests(unittest.TestCase):
         self.assertEqual(again, uncached)
 
 
+
+class IndirectSourceTests(unittest.TestCase):
+    command = LaneStatusAssignmentTests.command
+    commit = LaneStatusAssignmentTests.commit
+    status = LaneStatusAssignmentTests.status
+    authorize_reopen = LaneStatusAssignmentTests.authorize_reopen
+    _clear = AssignmentCacheTests._clear
+    classify = AssignmentCacheTests.classify
+    cache_dir = AssignmentCacheTests.cache_dir
+    tearDown = AssignmentCacheTests.tearDown
+
+    def setUp(self):
+        LaneStatusAssignmentTests.setUp(self)
+        self.inc = SOURCE_PATH.with_suffix('.inc')
+        self.wrapper = ('#define LOOP_INIT count = 1\n#ifdef NON_MATCHING\n'
+                        f'#include "{self.inc.name}"\n#else\n'
+                        f'#pragma GLOBAL_ASM("asm/{SYMBOL}.s")\n#endif\n')
+        self.body = ('#ifndef LOAD_HEADER\n'
+                     f'#define LOAD_HEADER void {SYMBOL}(void)\n'
+                     '#endif\nLOAD_HEADER {\n    int count;\n    LOOP_INIT;\n}\n')
+        (self.repo / SOURCE_PATH).write_text(self.wrapper)
+        (self.repo / self.inc).write_text(self.body)
+        self.source_commit = self.commit('Introduce included candidate')
+
+    def test_indirect_owner_is_wrapper_cached_and_uncached(self):
+        uncached, _ = self.classify(None)
+        cold, _ = self.classify(self.cache_dir())
+        warm, cache = self.classify(self.cache_dir())
+        self.assertEqual(uncached.state, 'base-only')
+        self.assertEqual(uncached.source_path, SOURCE_PATH.as_posix())
+        self.assertEqual(cold, uncached)
+        self.assertEqual(warm, uncached)
+        self.assertEqual(cache.hits, 1)
+        result, report = self.status()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(report['assignment']['state'], 'base-only')
+
+    def test_warm_cache_does_not_hide_new_include_only_lane_owner(self):
+        self.classify(self.cache_dir())
+        self.command('git', 'checkout', '-qb', 'lane/include-owner')
+        (self.repo / self.inc).write_text(self.body.replace('int count;', 'long count;'))
+        self.commit('Change included body only')
+        self.command('git', 'checkout', '-q', 'campaign/unchain')
+        verdict, cache = self.classify(self.cache_dir())
+        self.assertEqual(cache.hits, 1)
+        self.assertEqual(verdict.state, 'active')
+        self.assertIn('lane/include-owner', verdict.active_lanes)
+
+    def test_include_change_on_base_invalidates_cache_and_source_pin(self):
+        (self.repo / self.inc).write_text(self.body + '\n/* source plateau */\n')
+        plateau = self.commit('Plateau included body')
+        before, _ = self.classify(self.cache_dir())
+        self.assertEqual(before.source_commit, plateau)
+        (self.repo / self.inc).write_text(self.body + '\n/* revised source plateau */\n')
+        latest = self.commit('Revise included body')
+        after, cache = self.classify(self.cache_dir())
+        self.assertEqual(cache.misses, 1)
+        self.assertEqual(after.source_commit, latest)
+        self.assertNotEqual(after.state, 'base-only')
+
+    def test_include_commit_consumes_reopen_authorization(self):
+        (self.repo / self.inc).write_text(self.body + '\n/* recorded plateau */\n')
+        (self.repo / SHARD_PATH.parent).mkdir(exist_ok=True)
+        (self.repo / SHARD_PATH).write_text(shard())
+        plateau = self.commit('Plateau included candidate')
+        self.authorize_reopen(plateau, plateau)
+        before, _ = self.classify(self.cache_dir())
+        self.assertEqual(before.state, 'base-only')
+        (self.repo / self.inc).write_text(self.body + '\n/* next source attempt */\n')
+        self.commit('Record included candidate attempt')
+        after, _ = self.classify(self.cache_dir())
+        self.assertNotEqual(after.state, 'base-only')
+
+    def test_base_only_include_edit_does_not_claim_unchanged_old_lane(self):
+        self.command('git', 'branch', 'lane/unchanged-include')
+        (self.repo / self.inc).write_text(self.body + '\n/* reviewed source */\n')
+        self.commit('Update included candidate')
+        verdict, _ = self.classify(None)
+        self.assertEqual(verdict.state, 'base-only')
+
+    def test_invalid_indirection_fails_closed(self):
+        cases = [
+            (self.wrapper, None),
+            ('#define LOAD_HEADER other\n' + self.wrapper, self.body),
+            (self.wrapper, self.body + '#undef LOAD_HEADER\n'),
+            ('#if 0\n' + self.wrapper + '#endif\n', self.body),
+            (self.wrapper, '#if 0\n' + self.body + '#endif\n'),
+            (self.wrapper, self.body + '#include "nested.inc"\n'),
+            (self.wrapper, '#include CONFIG_HEADER\n' + self.body),
+            (f'#define {SYMBOL} alias\n' + self.wrapper, self.body),
+            (self.wrapper, '#define void int\n' + self.body),
+            ('/*\n' + self.wrapper + '*/\n', self.body),
+            (self.wrapper, '/*\n' + self.body + '*/\n'),
+            (self.wrapper.replace(f'{SYMBOL}.s', 'another.s'), self.body),
+        ]
+        for wrapper, body in cases:
+            with self.subTest(wrapper=wrapper, body=body):
+                (self.repo / SOURCE_PATH).write_text(wrapper)
+                if body is None:
+                    (self.repo / self.inc).unlink(missing_ok=True)
+                else:
+                    (self.repo / self.inc).write_text(body)
+                self.commit('Invalid included candidate')
+                verdict, _ = self.classify(None)
+                self.assertNotEqual(verdict.state, 'base-only')
+                self.assertEqual(verdict.reason_code, 'source-identity')
+
+    def test_duplicate_owner_or_direct_definition_is_ambiguous(self):
+        other = self.repo / SOURCE_PATH.parent / 'other.c'
+        for text in (self.wrapper, candidate()):
+            with self.subTest(text=text):
+                other.write_text(text)
+                self.commit('Add duplicate owner')
+                verdict, _ = self.classify(None)
+                self.assertEqual(verdict.state, 'stale-ledger')
+                self.assertIn('ambiguous', verdict.reason)
+
+    def test_build_macro_override_refuses_cached_identity(self):
+        self.classify(self.cache_dir())
+        (self.repo / 'Makefile').write_text('CFLAGS += -DLOAD_HEADER=alternate\n')
+        self.commit('Override included signature')
+        verdict, _ = self.classify(self.cache_dir())
+        self.assertEqual(verdict.reason_code, 'source-identity')
+
+
 class LaneRefQueryTests(unittest.TestCase):
     def tearDown(self) -> None:
         ls.show_file.cache_clear()

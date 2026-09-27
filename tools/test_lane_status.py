@@ -321,6 +321,52 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         }), encoding="utf-8")
         return self.commit(f"Authorize one-shot {SYMBOL} reproof")
 
+    def shared_guard(self) -> str:
+        text = candidate().replace(
+            "#else", "void sibling(void) {}\n#else", 1).replace(
+            "#endif", '#pragma GLOBAL_ASM("asm/sibling.s")\n#endif', 1)
+        (self.repo / SOURCE_PATH).write_text(text)
+        self.commit("Seed two owned functions in one guard")
+        return text
+
+    def test_shared_guard_retains_same_function_lane_ownership(self) -> None:
+        text = self.shared_guard()
+        self.command("git", "switch", "-q", "-c", "lane/shared-target")
+        (self.repo / SOURCE_PATH).write_text(text.replace(
+            f"void {SYMBOL}(void) {{", f"void {SYMBOL}(void) {{\n    int changed = 1;"))
+        self.commit("Change target candidate")
+        self.command("git", "switch", "-q", "campaign/unchain")
+        result, report = self.status()
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(report["assignment"]["state"], "active")
+        self.assertIn("lane/shared-target", report["assignment"]["active_lanes"])
+
+    def test_shared_guard_is_conservatively_one_writer_region(self) -> None:
+        text = self.shared_guard()
+        self.command("git", "switch", "-q", "-c", "lane/shared-sibling")
+        (self.repo / SOURCE_PATH).write_text(text.replace(
+            "void sibling(void) {}", "void sibling(void) { int changed = 1; }"))
+        self.commit("Change sibling in indivisible guard")
+        self.command("git", "switch", "-q", "campaign/unchain")
+        result, report = self.status()
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(report["assignment"]["state"], "active")
+
+    def test_other_guard_does_not_claim_shared_guard(self) -> None:
+        text = self.shared_guard() + ('\n#ifdef NON_MATCHING\nvoid other(void) {}\n'
+                                     '#else\n#pragma GLOBAL_ASM("asm/other.s")\n#endif\n')
+        (self.repo / SOURCE_PATH).write_text(text)
+        self.commit("Add separate candidate region")
+        self.command("git", "switch", "-q", "-c", "lane/separate-guard")
+        (self.repo / SOURCE_PATH).write_text(text.replace(
+            "void other(void) {}", "void other(void) { int changed = 1; }"))
+        self.commit("Change separate guard")
+        self.command("git", "switch", "-q", "campaign/unchain")
+        result, report = self.status()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(report["assignment"]["state"], "base-only")
+        self.assertEqual(report["assignment"]["active_lanes"], [])
+
     def test_base_only_is_the_only_assignable_state(self) -> None:
         result, report = self.status()
         self.assertEqual(result.returncode, 0, result.stderr)

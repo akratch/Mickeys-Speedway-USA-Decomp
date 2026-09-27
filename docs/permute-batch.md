@@ -72,6 +72,29 @@ the same import/permute steps inline so it can handle the overlay naming
 quirk below and the `#ifdef NON_MATCHING` queue shape, which `permute.sh`
 was not written for).
 
+## Candidate coverage and identity
+
+`tools/permute_batch.py --inventory-json` reports direct guarded candidates,
+ordinary C, bare assembly fallbacks, declared padding owners and unresolved
+include/macro candidates. These are source observations, not match evidence or
+assignment authorization. The normal queue contains only unique function and
+fallback pairs. Multiple functions in one guard are all enumerated; their
+fallbacks are paired by exact symbol or the owning TU's explicit build alias,
+never by order. Duplicate byte ownership and ambiguous guards stay out.
+
+Literal source includes and object-like macro aliases are visible in unresolved
+inventory rows. An included declaration macro or an indirect guard needs
+configured-preprocessor evidence before it can enter the measured queue. The
+inventory does not guess which conditional branch defines a function. Shared
+synthetic overlay addresses never merge distinct overlay owners.
+
+Every queued measurement still compiles the original configured full TU and
+binds its source, headers, flags, compiler and target through the existing
+ranking context. Automatic promotion refuses a shared guard because replacing
+the entire guard would delete sibling functions; such promotion needs a
+reviewed per-function source edit and all ordinary proofs. Discovery never
+renews an exhausted target's authorization.
+
 ## Usage
 
 ```sh

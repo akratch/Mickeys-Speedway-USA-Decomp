@@ -84,6 +84,7 @@ import contextlib
 import dataclasses
 import fcntl
 import hashlib
+from functools import lru_cache
 import json
 import os
 import re
@@ -239,6 +240,7 @@ def iter_nonmatching_blocks(source_text: str):
                     "body_start": match.end(),
                     "body_end": None,
                     "fallback_start": None,
+                    "ambiguous": bool(stack),
                 }
             )
             continue
@@ -246,13 +248,15 @@ def iter_nonmatching_blocks(source_text: str):
             continue
         current = stack[-1]
         if kind in ("else", "elif"):
+            if current["target"] and (kind == "elif" or current["body_end"] is not None):
+                current["ambiguous"] = True
             if current["target"] and current["body_end"] is None:
                 current["body_end"] = match.start()
                 current["fallback_start"] = match.end()
             continue
         if kind == "endif":
             current = stack.pop()
-            if not current["target"]:
+            if not current["target"] or current["ambiguous"]:
                 continue
             body_end = current["body_end"]
             fallback_start = current["fallback_start"]
@@ -277,28 +281,78 @@ def iter_nonmatching_blocks(source_text: str):
         yield block
 
 
-def block_function_name(source_text: str, block: NonMatchingBlock) -> Optional[str]:
-    """Return the C symbol defined by a NON_MATCHING candidate body.
+def block_function_names(source_text: str, block: NonMatchingBlock) -> list[str]:
+    """All direct definitions, resolving only unique object-like name aliases.
 
-    A few shared implementations spell the definition through a simple
-    object-like macro. Resolve that one identifier without attempting to
-    duplicate the C preprocessor.
+    Preserve duplicates so callers can refuse ambiguous ownership. Includes,
+    declaration macros and indirect guards are inventory items, not guessed C.
     """
-    fn = FUNC_DEF_RE.search(block.body)
-    if fn is None:
-        return None
-    name = fn.group("name")
-    for _ in range(8):
-        macro = re.search(
-            rf"^[ \t]*#[ \t]*define[ \t]+{re.escape(name)}[ \t]+"
-            r"(?P<replacement>[A-Za-z_][A-Za-z0-9_]*)[ \t]*(?:/\*.*\*/)?$",
-            source_text,
-            re.MULTILINE,
-        )
-        if macro is None:
-            break
-        name = macro.group("replacement")
-    return name
+    names = []
+    clean_body = LEXICAL_NOISE_RE.sub(
+        lambda match: re.sub(r"[^\n]", " ", match.group(0)), block.body)
+    for fn in FUNC_DEF_RE.finditer(clean_body):
+        name = fn.group("name")
+        seen = set()
+        for _ in range(8):
+            if name in seen:
+                return []
+            seen.add(name)
+            replacements = re.findall(
+                rf"^[ \t]*#[ \t]*define[ \t]+{re.escape(name)}[ \t]+"
+                r"([A-Za-z_][A-Za-z0-9_]*)[ \t]*(?:/\*.*\*/)?$",
+                source_text, re.M)
+            if not replacements:
+                break
+            if len(set(replacements)) != 1:
+                return []
+            name = replacements[0]
+        else:
+            return []
+        names.append(name)
+    return names
+
+
+def block_function_name(source_text: str, block: NonMatchingBlock) -> Optional[str]:
+    """Compatibility accessor: a block owns one symbol only when unambiguous."""
+    names = block_function_names(source_text, block)
+    return names[0] if len(names) == 1 else None
+
+
+@lru_cache(maxsize=4)
+def _parsed_fallback_aliases(rules_text: str):
+    import finalize_plateau
+    return finalize_plateau.fallback_aliases(rules_text)
+
+
+def source_aliases(source: str) -> dict[str, frozenset[str]]:
+    path = ROOT / "mk/overlays.mk"
+    rules = _parsed_fallback_aliases(path.read_text() if path.is_file() else "")
+    return {name: aliases for (owner, name), aliases in rules.items() if owner == source}
+
+
+def block_fallbacks(text: str, block: NonMatchingBlock,
+                    aliases: dict[str, frozenset[str]]) -> dict[str, str]:
+    """Authenticate each definition/fallback pair; never pair by source order."""
+    import finalize_plateau as fp
+    names = block_function_names(text, block)
+    paths = [m.group("path") for m in GLOBAL_ASM_RE.finditer(block.fallback)]
+    if len(names) != len(set(names)) or len(paths) != len(set(paths)):
+        return {}
+    if len(names) != len(paths):
+        return {}
+    pairs = {}
+    for name in names:
+        matching = [path for path in paths if
+                    Path(path).name == name + ".s" or
+                    Path(path).stem in aliases.get(name, ())]
+        if not matching and len(names) == len(paths) == 1:
+            matching = [path for path in paths if fp.fallback_names_symbol(path, name)]
+        if len(matching) != 1:
+            return {}
+        pairs[name] = matching[0]
+    if len(set(pairs.values())) != len(pairs):
+        return {}
+    return pairs
 
 
 def unconditional_function_names(source_text: str) -> set[str]:
@@ -541,7 +595,7 @@ def discover_queue_from_atlas() -> list[QueueItem]:
             body_funcs = {
                 name
                 for block in iter_nonmatching_blocks(text)
-                if (name := block_function_name(text, block)) is not None
+                for name in block_fallbacks(text, block, source_aliases(c_file.relative_to(ROOT).as_posix()))
             }
             # An atlas row identifies a C translation unit, not necessarily
             # a function. Consolidated overlay TUs therefore have source
@@ -565,15 +619,15 @@ def discover_queue_from_source_scan() -> list[QueueItem]:
         text = c_file.read_text(errors="replace")
         if "#ifdef NON_MATCHING" not in text:
             continue
+        aliases = source_aliases(c_file.relative_to(ROOT).as_posix())
         for block in iter_nonmatching_blocks(text):
-            func = block_function_name(text, block)
-            if func is None:
-                continue
-            overlay = None
-            mo = re.search(r"src/overlays/o(\d+)/", str(c_file))
-            if mo:
-                overlay = int(mo.group(1))
-            items.append(QueueItem(func=func, c_file=c_file, overlay=overlay))
+            pairs = block_fallbacks(text, block, aliases)
+            for func in pairs:
+                overlay = None
+                mo = re.search(r"src/overlays/o(\d+)/", str(c_file))
+                if mo:
+                    overlay = int(mo.group(1))
+                items.append(QueueItem(func=func, c_file=c_file, overlay=overlay))
     return items
 
 
@@ -586,7 +640,100 @@ def discover_queue() -> list[QueueItem]:
         by_key[(it.rel_c_file, it.func)] = it
     for it in discover_queue_from_source_scan():
         by_key.setdefault((it.rel_c_file, it.func), it)
-    return sorted(by_key.values(), key=lambda it: (it.rel_c_file, it.func))
+    owners: dict[tuple[int | None, str], list[QueueItem]] = {}
+    for item in by_key.values():
+        target = find_asm_target(item)
+        if target is not None:
+            owners.setdefault((item.overlay, target), []).append(item)
+    return sorted((values[0] for values in owners.values() if len(values) == 1),
+                  key=lambda it: (it.rel_c_file, it.func))
+
+
+def local_candidate_includes(source: Path) -> list[str]:
+    """Literal source includes are visible, never treated as evaluated branches."""
+    visited: set[Path] = set()
+    found: set[str] = set()
+    def walk(path: Path):
+        if path in visited or len(visited) >= 100:
+            return
+        visited.add(path)
+        text = path.read_text(errors="replace")
+        for name in re.findall(r'^\s*#\s*include\s+"([^"\n]+)"', text, re.M):
+            for candidate in (path.parent / name, ROOT / name):
+                candidate = Path(os.path.normpath(candidate))
+                if not candidate.resolve().is_relative_to((ROOT / "src").resolve()):
+                    continue
+                if candidate.suffix not in {".c", ".inc"} or not candidate.is_file():
+                    continue
+                found.add(candidate.relative_to(ROOT).as_posix())
+                walk(candidate)
+                break
+    walk(source)
+    return sorted(found)
+
+
+def candidate_inventory() -> list[dict]:
+    """Complete source/fallback inventory, including deliberately unresolved forms.
+
+    This is discovery, not a preprocessor or a second ranking engine. Only
+    uniquely paired direct guards enter discover_queue; all other fallbacks
+    remain visible with a reason. Ordinary C and padding are not candidates.
+    """
+    queue = {(item.rel_c_file, item.func): find_asm_target(item) for item in discover_queue()}
+    rows = []
+    for path in sorted(ROOT.glob("src/**/*.c")):
+        source = path.relative_to(ROOT).as_posix()
+        text = path.read_text(errors="replace")
+        overlay_match = re.search(r"src/overlays/o(\d+)/", source)
+        overlay = int(overlay_match[1]) if overlay_match else None
+        aliases = source_aliases(source)
+        owned = set()
+        common = {"source": source, "overlay": overlay}
+        for (owner, symbol), target in queue.items():
+            if owner == source:
+                rows.append(dict(common, symbol=symbol, fallback=target,
+                                 status="guarded-candidate", reason=None))
+                owned.add(target)
+        includes = local_candidate_includes(path)
+        macros: dict[str, list[str]] = {}
+        for name, value in re.findall(r"^\s*#\s*define\s+([A-Za-z_]\w*)[ \t]+([A-Za-z_]\w*)[ \t]*$", text, re.M):
+            macros.setdefault(name, []).append(value)
+        for match in GLOBAL_ASM_RE.finditer(text):
+            target = match.group("path")
+            if target in owned:
+                continue
+            stem = Path(target).stem
+            names = [name for name, old in aliases.items() if stem in old]
+            symbol = names[0] if len(names) == 1 else stem
+            indirect = bool(includes or re.search(r"#\s*ifdef\s+NON_MATCHING\b", text))
+            rows.append(dict(common, symbol=symbol, fallback=target,
+                             status="guarded-candidate-unresolved" if indirect else "bare-fallback",
+                             reason=("guard, macro/include expansion or fallback ownership is unresolved; "
+                                     "configured preprocessing and exact pairing required" if indirect else
+                                     "no guarded C candidate body"),
+                             source_includes=includes, macro_aliases=macros))
+        for symbol in sorted(unconditional_function_names(text)):
+            rows.append(dict(common, symbol=symbol, fallback=None,
+                             status="ordinary-c", reason="source observation only; not matching proof"))
+    if ATLAS_PATH.is_file():
+        for module in json.loads(ATLAS_PATH.read_text()).get("modules", []):
+            for owner in module.get("text_ownership", []):
+                if re.search(r"(?:padding(?:_[a-z]+)?|tail)$", owner.get("source", "")) and owner.get("type") == "asm":
+                    rows.append(dict(source=owner["source"], overlay=module["overlay"],
+                                     symbol=None, fallback=None, status="padding-owner",
+                                     reason="atlas ownership only; raw census verifies padding",
+                                     offset=owner["offset"], size=owner["size"]))
+    # Shared target paths are duplicate byte ownership even when C names differ.
+    owners = {}
+    for row in rows:
+        if row["fallback"]:
+            owners.setdefault((row["overlay"], row["fallback"]), []).append(row)
+    for values in owners.values():
+        if len(values) > 1:
+            for row in values:
+                row["status"] = "ambiguous-ownership"
+                row["reason"] = "duplicate fallback byte ownership"
+    return rows
 
 
 def read_excluded_functions(paths: list[Path]) -> set[str]:
@@ -682,7 +829,7 @@ def exclude_resolved_on_ref(
                 unresolved = {
                     name
                     for block in iter_nonmatching_blocks(text)
-                    if (name := block_function_name(text, block)) is not None
+                    for name in block_function_names(text, block)
                 }
                 defined = unconditional_function_names(text)
                 ref_state_by_file[rel] = (unresolved, defined)
@@ -717,12 +864,10 @@ def find_asm_target(item: QueueItem) -> Optional[str]:
     has been `gmake extract`-ed with NON_MATCHING=0 active, since the
     pragma string is present in the source either way)."""
     text = item.c_file.read_text(errors="replace")
-    for block in iter_nonmatching_blocks(text):
-        if block_function_name(text, block) == item.func:
-            am = GLOBAL_ASM_RE.search(block.fallback)
-            if am:
-                return am.group("path")
-    return None
+    aliases = source_aliases(item.rel_c_file)
+    found = [pairs[item.func] for block in iter_nonmatching_blocks(text)
+             if item.func in (pairs := block_fallbacks(text, block, aliases))]
+    return found[0] if len(found) == 1 else None
 
 
 # --------------------------------------------------------------------------
@@ -2449,9 +2594,11 @@ def _promote_locked(item: QueueItem, winner: bytes, jobs: int,
         validate_baseline(item, prepared, deadline)
         function = extract_function_text(winner.decode("utf-8"), item.func)
         block = next((block for block in iter_nonmatching_blocks(original)
-                      if block_function_name(original, block) == item.func), None)
+                      if item.func in block_function_names(original, block)), None)
         if block is None:
             raise RuntimeError(f"could not locate {item.func}'s NON_MATCHING block")
+        if len(block_function_names(original, block)) != 1:
+            raise RuntimeError("shared NON_MATCHING guard requires reviewed per-function promotion")
         new_text = original[:block.start] + function + original[block.end:]
         new_text = retire_plateau_marker(new_text, item.func)
         remaining_timeout(deadline)
@@ -3724,6 +3871,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "descending receipt (0 < best < base); pair with longer --minutes/--extend-minutes",
     )
     p.add_argument("--list", action="store_true", help="print the discovered queue and exit")
+    p.add_argument("--inventory-json", action="store_true",
+                   help="read-only source/fallback inventory, including unresolved includes/macros")
     p.add_argument(
         "permuter_args",
         nargs=argparse.REMAINDER,
@@ -3748,6 +3897,10 @@ def ncpu() -> int:
 def main(argv: list[str]) -> int:
     # Separate worktrees remain independent. Two batches in this worktree
     # would share importer scratch, generated objects and summary files.
+    if parse_args(argv).inventory_json:
+        print(json.dumps({"schema": "mickey-candidate-inventory-v1",
+                          "rows": candidate_inventory()}, indent=2))
+        return 0
     if parse_args(argv).list:
         return run_batch(argv)
     lock_path = subprocess.check_output(

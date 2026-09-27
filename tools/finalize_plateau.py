@@ -266,11 +266,21 @@ def guarded_candidates(
         else_line = else_lines[0]
         fallback_text = "".join(lines[else_line + 1:end_line])
         fallbacks = fallback_re.findall(fallback_text)
-        valid = [
-            path for path in fallbacks
-            if fallback_names_symbol(path, symbol, aliases)
-        ]
-        if len(fallbacks) != 1 or len(valid) != 1:
+        definitions = re.findall(
+            r"^[ \t]*(?:[A-Za-z_][A-Za-z0-9_]*[ \t*]+)+"
+            r"([A-Za-z_][A-Za-z0-9_]*)\s*\([^;{}]*\)\s*\{",
+            candidate_text, re.MULTILINE)
+        definitions = [name for name in definitions
+                       if name not in {"if", "for", "while", "switch"}]
+        if len(definitions) != len(set(definitions)):
+            raise PlateauError(f"ambiguous duplicate definitions for {symbol}")
+        # A shared guard needs a named identity, never the single-function
+        # generated-name convention or positional pairing.
+        valid = [path for path in fallbacks if (
+            fallback_names_symbol(path, symbol, aliases) if len(definitions) == 1
+            else Path(path).name == f"{symbol}.s" or Path(path).stem in aliases)]
+        if (len(fallbacks) != len(definitions) or len(valid) != 1
+                or len(fallbacks) != len(set(fallbacks))):
             raise PlateauError(
                 f"{symbol} must have exactly one matching or generated-overlay "
                 "#pragma GLOBAL_ASM fallback"

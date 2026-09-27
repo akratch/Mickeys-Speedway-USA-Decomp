@@ -2,11 +2,13 @@
 ### `overlay83BuildBatch` plateau handoff
 
 - source: `src/overlays/o083/overlay83BuildBatch.c`
-- score: 98/168 words
+- score: 22/168 words
 - frame: 0x80
 - relocations: 5
 - first mismatch: +0x0
-- summary: o34 comma inert. dummy-after-linkedInit 91/0x88 home +0x58. batch-as-remaining frame 0x78 at 107. No size-0 net-zero slide.
+- summary: Post-decrement entry and shared s6 constant. Zero stores and same-line zero24 match. 22 left: 20 frame immediates, linkedInit +0x50 vs +0x58, two v1 copies.
+
+Summary before this remeasure: o34 comma inert. dummy-after-linkedInit 91/0x88 home +0x58. batch-as-remaining frame 0x78 at 107. No size-0 net-zero slide.
 - baseline: Exact 672-byte size and 168-word body. Inherited candidate was 97 masked at frame 0x90. This pass is 98 masked at frame 0x80; aligned byte-exact 126, naming 12, immediate 9, structural 26.
 - identity gate: instrumented IDO `.text` is byte-identical to stock; proc=0. The 0x80 shape emits 13 p1 decisions.
 - save set: candidate and target both save s0-s6, ra, f20, and f22 at the same slots. Extra frame is unused local-block homes, not extra callee-saves.

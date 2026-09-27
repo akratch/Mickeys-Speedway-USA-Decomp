@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "game/lights.h"
 
 typedef struct O83SourceRecord {
     s8 x;
@@ -23,25 +24,6 @@ typedef struct O83Source {
     O83SourceRecord records[1];
 } O83Source;
 
-typedef struct O83LinkedInit {
-    u8 mode;
-    s8 count;
-    s8 flags;
-    s8 pad03;
-    s16 x;
-    s16 y;
-    s16 z;
-    s16 width;
-    s16 height;
-    s16 height2;
-    u8 red;
-    u8 green;
-    u8 blue;
-    u8 alpha;
-    s16 resource;
-    s8 pad12;
-    s8 pad13;
-} O83LinkedInit;
 
 typedef struct O83OutputRecord {
     s16 x;
@@ -87,45 +69,40 @@ typedef struct O83Parent {
     O83Batch *batch;
 } O83Parent;
 
-extern void *overlay83AllocateBatchReloc();
-extern void overlay83TransformWorldReloc();
-extern void *overlay83CreateLinkedReloc();
+extern void *func_8002B280(s32 size, u32 colourTag);
+extern void pointListRPY();
 extern f32 gOverlay83ScaleReloc;
 
 /* Mickey-local reconstruction; pinned DKR/JFG scans found no exact donor. */
-/* 22 masked at delta 0, frame 0x80. linkedInit is at +0x50; the target is
- * +0x58 in a 0x78 frame. scaleFactor keeps f22. A pad under linkedInit slides
- * the struct and either grows the frame or misses +0x58. */
-#ifdef NON_MATCHING
+/* Tier A: stock IDO body and runtime relocations proved against overlay 83. */
 void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
     O83Batch *batch;
-    O83OutputRecord *allocated;
     O83OutputRecord *output;
+    ObjectLightEntry linkedInit;
     O83SourceRecord *input;
     s32 remaining;
     f32 scaleFactor;
 
     batch = parent->batch;
-    allocated = overlay83AllocateBatchReloc(source->count * 0x258, (void *)0x87);
-    batch->records = allocated;
-    if (allocated != 0) {
+    batch->records = func_8002B280(source->count * 0x258, 0x87);
+    if (batch->records != 0) {
         batch->count = source->count;
-        output = allocated;
+        output = batch->records;
         input = source->records;
         batch->alpha = source->alpha;
         remaining = source->count;
         if (remaining--) {
             scaleFactor = gOverlay83ScaleReloc;
             do {
-                output->x = input->x << 8;
-                output->y = input->y << 8;
-                output->z = input->z << 8;
+                output->x = input->x * 256;
+                output->y = input->y * 256;
+                output->z = input->z * 256;
                 output->height = input->alpha * 4;
                 output->scale = input->scale * scaleFactor;
                 output->worldY = output->height;
                 output->worldX = 0.0f;
                 output->worldZ = 0.0f;
-                overlay83TransformWorldReloc(1, output, &output->worldX, &output->worldX);
+                pointListRPY(1, output, &output->worldX, &output->worldX);
                 output->worldX += parent->worldX;
                 output->worldY += parent->worldY;
                 output->worldZ += parent->worldZ;
@@ -138,26 +115,25 @@ void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
                 output->blue = input->blue;
                 output->alpha = source->alpha; output->zero24 = 0.0f;
                 if (input->flags & 1) {
-                    O83LinkedInit linkedInit;
 
                     linkedInit.mode = 1;
-                    linkedInit.count = 3;
+                    linkedInit.type = 3;
                     linkedInit.flags = input->flags;
-                    linkedInit.pad03 = -1;
+                    linkedInit.index = -1;
+                    linkedInit.home = 0;
                     linkedInit.x = 0;
                     linkedInit.y = 0;
                     linkedInit.z = 0;
-                    linkedInit.width = 0;
-                    linkedInit.height = 0xC0;
-                    linkedInit.height2 = 0xC0;
+                    linkedInit.radius = 0xC0;
+                    linkedInit.radius2 = 0xC0;
                     linkedInit.red = output->red;
                     linkedInit.green = output->green;
                     linkedInit.blue = output->blue;
-                    linkedInit.alpha = output->alpha;
-                    linkedInit.resource = -1;
-                    linkedInit.pad12 = 0;
-                    linkedInit.pad13 = 0;
-                    output->linked = overlay83CreateLinkedReloc(0, &linkedInit);
+                    linkedInit.intensity = output->alpha;
+                    linkedInit.colourCycleIndex = -1;
+                    linkedInit.value58 = 0;
+                    linkedInit.value5A = 0;
+                    output->linked = addObjectLight(0, &linkedInit);
                 } else {
                     output->linked = 0;
                 }
@@ -174,16 +150,3 @@ void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
     }
     parent->clear3C = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o083/overlay83BuildBatch/func_overlay_083_F000053C_18CFCFC.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay83BuildBatch:start
- * symbol: overlay83BuildBatch
- * score: 22/168 words
- * frame: 0x80
- * relocations: 5
- * first-mismatch: +0x0
- * summary: Post-decrement entry and shared s6 constant. Zero stores and same-line zero24 match. 22 left: 20 frame immediates, linkedInit +0x50 vs +0x58, two v1 copies.
- * PLATEAU-HANDOFF:overlay83BuildBatch:end
- */

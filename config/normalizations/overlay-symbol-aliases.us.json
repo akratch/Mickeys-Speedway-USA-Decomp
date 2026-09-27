@@ -176,6 +176,18 @@
         {
           "from": "func_overlay_083_F000053C_18CFCFC",
           "to": "overlay83BuildBatch"
+        },
+        {
+          "from": "func_8002B280",
+          "to": "overlay83AllocateBatchReloc"
+        },
+        {
+          "from": "pointListRPY",
+          "to": "overlay83TransformWorldReloc"
+        },
+        {
+          "from": "addObjectLight",
+          "to": "overlay83CreateLinkedReloc"
         }
       ]
     },

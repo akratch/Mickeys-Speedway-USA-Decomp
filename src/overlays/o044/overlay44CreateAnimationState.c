@@ -6,7 +6,7 @@ typedef struct Overlay44FrameSource {
     s16 frameCount;
     u8 storageMode;
     u8 speed;
-    u8 *data;
+    s32 dataOffset;
     s32 frameSize;
 } Overlay44FrameSource;
 
@@ -29,8 +29,8 @@ extern Overlay44AnimationState gOverlay44StatePool[3];
 extern Overlay44FrameSource *gOverlay44FrameSources;
 extern void *overlay44AllocateFrameReloc(s32 size, s32 tag);
 extern void overlay44CleanupStateReloc(Overlay44AnimationState *state);
-extern void overlay44UploadFrameReloc(s32 operation, void *handle,
-                                      void *source, s32 size);
+extern s32 overlay44UploadFrameReloc(u32 assetIndex, void *address,
+                                     s32 assetOffset, s32 size);
 extern void overlay44FinishFramesReloc(void);
 
 /* Mickey-local reconstruction; no external donor body was used. */
@@ -99,16 +99,16 @@ Overlay44AnimationState *overlay44CreateAnimationState(
             overlay44CleanupStateReloc(state);
             state = 0;
         } else {
-            u8 *frameData;
+            s32 frameData;
 
-            frameData = (u8 *)source->data;
+            frameData = source->dataOffset;
             state->cachedFrame[0] = 0;
             overlay44UploadFrameReloc(0x42, state->handles[0], frameData,
                                       source->frameSize);
             {
-                u8 *secondData;
+                s32 secondData;
 
-                secondData = (u8 *)source->data + source->frameSize;
+                secondData = source->dataOffset + source->frameSize;
                 state->cachedFrame[1] = 1;
                 overlay44UploadFrameReloc(0x42, state->handles[1], secondData,
                                           source->frameSize);

@@ -2,11 +2,11 @@
 ### `overlay44UpdateFrameCache` plateau handoff
 
 - source: `src/overlays/o044/overlay44UpdateFrameCache.c`
-- score: 18/187 words
+- score: 0/187 words
 - frame: 0x48
 - relocations: 4
-- first mismatch: +0x1F4
-- summary: L99 packing closed the extra spill slot (30 to 18, homes exact). Remaining 18 is ugen ring naming at +0x1F4; colour stops at t4.
+- first mismatch: none
+- summary: Exact 748-byte stock C; offset-first addition and ordinary resource-offset access close temporary naming and scheduling, with a used sourceOffset local replacing frame padding.
 
 #### 2026-09-17, lane w8-o044: size closed; colour floor is 30
 
@@ -44,5 +44,76 @@ L99 packing that closed the extra slot, 30 to 18, homes identical to the target 
 Unused pointer remains first (frame 0x48). Coalescing `limit`/`delta` onto the slot names dropped words (delta -4 or -8). L112 pads either matched the unused pointer or grew the frame. Function-scope `src` did not drop the extra slot.
 
 Aligned after packing: 169 exact, 18 naming, 0 immediate, 0 structural. First +0x1F4. The 18 is t5/t9/t7/t8/t2/t3/t6, 7 incoherent windows, not one ring phase. p1 colours stop at t4; t5-t9 are ugen ring. Forces of w7/w88/w74 onto t5 (c12) accepted and scored 106/145/113 at delta -4. nonvolatile source, `handles[frameSlot]`, line-folds, L109 nested OR-zero, and function-scope `src` did not beat 18. Next is a ring-draw / emission-order lever at +0x1F4, not another home permutation or same-kind colour force.
+
+
+#### 2026-09-27, lane wave-framecache: operand lifetime and access qualification
+
+The configured full-TU baseline reproduced 748 bytes, 18/187 masked words,
+169 exact, 18 naming, zero immediate and structural differences, and first
+mismatch +0x1F4. Stock and instrumented sections, relocations and symbols
+passed workbench fidelity. The configured IDO-preprocessed input passed
+self-context comparison. The four relocation records matched runtime offset,
+type and stable identity, with no unresolved identities.
+
+The authenticated ugen trace had 42 draws and 333 emission records. Its first
+upload evaluated size/product before the data operand, whereas the target's
+register roles suggested data/size/product. This was an operand-order
+hypothesis, not a missing-draw claim. The matched create-state sibling uses
+resource data before size in its second-frame expression.
+
+Reversing the addition operands removed all naming differences, but the
+blanket volatile source view constrained load scheduling: the candidate grew
+one word and had 170 aligned exact, zero naming, seven immediate and eleven
+structural differences (58 positional). Draw count stayed 42; the assigned
+register sequence changed. Reading only the resource offset through the
+ordinary struct view then reached 187/187 exact words, unchanged frame 0x48
+and all six homes. Draws stayed 42 and emission records fell to 329.
+
+The inherited unused pointer was replaced by one used function-scope source
+offset shared by the two upload blocks, retaining the exact frame without
+padding. ABI review then replaced the draft pointer arithmetic with signed
+32-bit resource offsets and the upload declaration with the actual
+piRomLoadSection offset, size and return types, retaining a pointer-typed
+destination with the same 32-bit calling convention. These cleanups preserved every
+owned instruction byte; no inert diagnostic or forced compiler output remains.
+
+The coordinator additionally authorized coherent offset-field typing in the
+create-state and draw-state siblings. Both now use the same signed field and
+name. The create-state's local offsets and upload declaration follow that
+representation. Whole-section, relocation and symbol fidelity passed against
+its pre-edit exact object; the guarded draw-state candidate passed the same
+comparison. An intermediate integer destination cast added a copy in the
+create-state and failed ROM verification; retaining its ordinary pointer
+argument removed that copy. No sibling matching credit is claimed.
+
+Storage evidence: the source-table relocation resolves to the resident BSS
+identity for D_800D76D0. Mickey's matched fmvInit initializes that table using
+piRomLoad resource 0x41; the upload relocation resolves to piRomLoadSection.
+The table's offset field is ordinary resource metadata, not a device register.
+All scalar metadata accesses retain their prior volatile view; each offset
+is read once in its upload block, with no motion across either call. The
+ordinary-view cast removes a draft-local qualification, not a shared-header
+or external volatile contract. This reconstruction uses Mickey evidence only.
+
+Private candidates, traces, fidelity and relocation receipts remain under
+ignored build/wave-framecache. Prior colour and home permutations were not
+repeated. The two causal edits and three source/ABI cleanups reached the
+stock exact candidate without a sweep.
+
+The canonical promotion proves overlay 44 text +0x294..+0x580, 748 owned
+bytes and no padding credit. promotion-proof reports 183 non-relocated words
+plus four exact offset/type/identity relocations, static identity proof and
+frame 0x48. gmake verify rebuilt the canonical candidates and reproduced the
+US ROM SHA1 507341c0a40ca3e9a7cee969b396ee53facfb548. The regenerated scoreboard
+credits 748 new bytes. The source contains no GLOBAL_ASM or NON_MATCHING guard.
+
+Commands: configured full-TU compile; align_symbol.py; draw_census.py with
+retained traces; candidate_context.py on IDO-preprocessed input; workbench
+fidelity; reloc_surface.py compare with overlay 44 and its exact source owner;
+overlay-atlas-write; refresh_atlas_digest.py; extract; overlay-syms; parallel
+build; verify; promotion-proof; ranking prune, refresh-stale and write-doc; scoreboard; check-docs;
+check-overlay-syms; check-nonmatching-builds; cleanroom; check-tooling; and
+check-scoreboard. No emulator, generated-game execution or external donor
+source was used.
 
 <!-- plateau-handoff:overlay44UpdateFrameCache:end -->

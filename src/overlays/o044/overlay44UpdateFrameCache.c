@@ -6,7 +6,7 @@ typedef struct Overlay44FrameSource {
     s16 frameCount;
     u8 storageMode;
     u8 speed;
-    u8 *data;
+    s32 dataOffset;
     s32 frameSize;
 } Overlay44FrameSource;
 
@@ -26,14 +26,16 @@ typedef struct Overlay44AnimationState {
 } Overlay44AnimationState;
 
 extern Overlay44FrameSource *gOverlay44FrameSources;
-extern void overlay44UploadFrameReloc(s32 operation, void *handle,
-                                      void *source, s32 size);
+extern s32 overlay44UploadFrameReloc(u32 assetIndex, void *address,
+                                     s32 assetOffset, s32 size);
 
-/* Semantic clean-room draft for overlay 44 +0x294. */
-#ifdef NON_MATCHING
+/* Mickey-local reconstruction, tier A: stock object and linked ROM exact.
+ * A shared source offset preserves the frame without unused padding.
+ * The resource data offset is ordinary storage; only the scalar metadata
+ * reads retain the volatile view required by this compiler schedule. */
 void overlay44UpdateFrameCache(Overlay44AnimationState *state,
                                s32 updateRate) {
-    void *unused; /* L99: unused pointer; keeps frame 0x48 */
+    s32 sourceOffset;
     s32 limit;
     s32 delta;
     s32 nextFrame;
@@ -108,10 +110,10 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
         do {
             if ((slot != nextSlot) && (slot != state->protectedSlot0) &&
                 (slot != state->protectedSlot1)) {
-                u8 *src = (frame * source->frameSize) + source->data;
+                sourceOffset = ((Overlay44FrameSource *)source)->dataOffset + (frame * source->frameSize);
                 state->cachedFrame[slot] = frame;
                 frameSlot = slot;
-                overlay44UploadFrameReloc(0x42, state->handles[slot], src,
+                overlay44UploadFrameReloc(0x42, state->handles[slot], sourceOffset,
                                           source->frameSize);
                 break;
             }
@@ -123,10 +125,10 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
         do {
             if ((slot != frameSlot) && (slot != state->protectedSlot0) &&
                 (slot != state->protectedSlot1)) {
-                u8 *src = (nextFrame * source->frameSize) + source->data;
+                sourceOffset = ((Overlay44FrameSource *)source)->dataOffset + (nextFrame * source->frameSize);
                 state->cachedFrame[slot] = nextFrame;
                 nextSlot = slot;
-                overlay44UploadFrameReloc(0x42, state->handles[slot], src,
+                overlay44UploadFrameReloc(0x42, state->handles[slot], sourceOffset,
                                           source->frameSize);
                 break;
             }
@@ -136,16 +138,3 @@ void overlay44UpdateFrameCache(Overlay44AnimationState *state,
     state->protectedSlot0 = frameSlot;
     state->protectedSlot1 = nextSlot;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o044/overlay44UpdateFrameCache/func_overlay_044_F0000294_188BAF4.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay44UpdateFrameCache:start
- * symbol: overlay44UpdateFrameCache
- * score: 18/187 words
- * frame: 0x48
- * relocations: 4
- * first-mismatch: +0x1F4
- * summary: L99 packing closed the extra spill slot (30 to 18, homes exact). Remaining 18 is ugen ring naming at +0x1F4; colour stops at t4.
- * PLATEAU-HANDOFF:overlay44UpdateFrameCache:end
- */

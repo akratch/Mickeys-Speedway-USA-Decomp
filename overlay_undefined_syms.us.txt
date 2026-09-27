@@ -17,6 +17,7 @@ D_1D68 = 0x00001d68;
 D_1D6C = 0x00001d6c;
 D_1D9C = 0x00001d9c;
 D_1DA0 = 0x00001da0;
+gOverlay1ClosestDistanceLiteral = 0x000000ac;
 gOverlay1CycleLength = 0x00001d8c;
 gOverlay1End = 0x00001d5c;
 gOverlay1Entries = 0x00001ba0;
@@ -27,6 +28,8 @@ gOverlay1SegmentSize = 0x00001d8c;
 gOverlay1Start = 0x00001d58;
 overlay1CompareDirectionReloc = 0xf0000000;
 overlay1DirectionReloc = 0xf0000000;
+overlay1NextPointerReloc = 0xf0000000;
+splinePos_o001Reloc = 0xf0000000;
 
 /* overlay 1: overlay_001_build.c.o */
 overlay1PointComponent0Reloc = 0xf0000000;
@@ -64,10 +67,8 @@ overlay1EvaluateCurve = 0xf0000000;
 overlay1GetBuildObjectsReloc = 0xf0000000;
 overlay1MarkBuildObjectReloc = 0xf0000000;
 overlay1ModeResolverReloc = 0xf0000000;
-overlay1NextPointerReloc = 0xf0000000;
 overlay1ReleaseReloc = 0xf0000000;
 overlay1ResetReloc = 0xf0000000;
-splinePos_o001Reloc = 0xf0000000;
 sqrtf_o001Reloc = 0xf0000000;
 
 /* overlay 1: func_overlay_001_F0001D78_184E158.c.o */
@@ -3686,10 +3687,10 @@ func_overlay_001_F00001AC_184C58C = overlay1FindType47ByAngle;
 func_overlay_001_F00002D4_184C6B4 = overlay1GetLinkedActive;
 func_overlay_001_F0000330_184C710 = overlay1GetRecord;
 func_overlay_001_F0000378_184C758 = overlay1FindType5ByKey;
+func_overlay_001_F0000614_184C9F4 = overlay1FindClosestSample;
 func_overlay_001_F0000758_184CB38 = overlay1TestDirection;
 func_overlay_001_F0000414_184C7F4 = overlay1FindPreviousUsable;
 func_overlay_001_F00004B4_184C894 = overlay1ActivateObject;
-func_overlay_001_F0000614_184C9F4 = overlay1FindClosestSample;
 
 /* overlay 1: overlay_001_build.c.o */
 func_overlay_001_F00007B0_184CB90 = overlay1BuildPointRecord;

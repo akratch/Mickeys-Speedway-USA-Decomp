@@ -203,26 +203,46 @@ class AssignabilityFilterTests(unittest.TestCase):
         self.assertIn("already-integrated/exhausted", rendered)
         self.assertIn("authorize_reopen", rendered)
 
-    def test_an_unavailable_classifier_says_so_rather_than_lying(self) -> None:
-        """Degraded triage is fine; reporting unfiltered figures as though
-        they were assignable is not."""
+    def test_an_unavailable_classifier_withholds_all_routes(self) -> None:
         r, rendered = self._report({})
-        self.assertIsNone(r["blocked"])
+        self.assertEqual(r["blocked"]["by_state"]["assignment-unknown"],
+                         {"functions": 2, "bytes": 6000})
         self.assertIn("lane_status unavailable", rendered)
-        self.assertIn("stale", r["route"]["names"])
+        self.assertEqual(r["route"]["names"], [])
+        self.assertEqual(r["queue"]["bytes"], 0)
+        self.assertEqual(r["clusters"]["top"], [])
+        self.assertTrue(all(b["functions"] == 0 for b in r["bands"]))
 
-    def test_an_unknown_symbol_is_treated_as_assignable(self) -> None:
-        """A symbol missing from the classifier's answer must not be dropped
-        silently; the fail-closed direction belongs in lane_status, not here."""
+    def test_a_missing_verdict_is_withheld_but_known_ready_remains(self) -> None:
         r, _ = self._report({"open": "base-only"})
-        self.assertIn("stale", r["route"]["names"])
+        self.assertEqual(r["route"]["names"], ["open"])
+        self.assertEqual(r["blocked"]["by_state"]["assignment-unknown"]["bytes"],
+                         5000)
 
-    def test_assignability_returns_empty_when_lane_status_raises(self) -> None:
+    def test_an_unrecognized_verdict_is_not_assignable(self) -> None:
+        r, _ = self._report({"open": "base-only", "stale": "unexpected"})
+        self.assertEqual(r["route"]["names"], ["open"])
+        self.assertEqual(r["blocked"]["by_state"]["unexpected"]["bytes"], 5000)
+
+    def test_assignability_returns_unknown_when_lane_status_raises(self) -> None:
+        import io
         import lane_status
         with unittest.mock.patch.object(
                 lane_status.AssignmentContext, "build",
-                side_effect=RuntimeError("no base")):
-            self.assertEqual(triage.assignability(["a"]), {})
+                side_effect=RuntimeError("no base")), \
+                unittest.mock.patch("sys.stderr", new_callable=io.StringIO) as err:
+            self.assertEqual(triage.assignability(["a"]),
+                             {"a": "assignment-unknown"})
+        self.assertIn("RuntimeError: no base", err.getvalue())
+
+    def test_cli_failure_is_nonzero_and_keeps_json_diagnostics(self) -> None:
+        import io
+        import json
+        r, _ = self._report({})
+        with unittest.mock.patch.object(triage, "report", return_value=r), \
+                unittest.mock.patch("sys.stdout", new_callable=io.StringIO) as out:
+            self.assertEqual(triage.main(["--json"]), 1)
+        self.assertEqual(json.loads(out.getvalue())["route"]["names"], [])
 
 
 class DeltaGroupTests(unittest.TestCase):
@@ -259,7 +279,7 @@ class DeltaGroupTests(unittest.TestCase):
         with contextlib.ExitStack() as stack:
             stack.enter_context(unittest.mock.patch.object(triage, "load", self.rows))
             stack.enter_context(unittest.mock.patch.object(
-                triage, "assignability", return_value={}))
+                triage, "assignability", return_value={r["name"]: "base-only" for r in self.rows()}))
             stack.enter_context(unittest.mock.patch.object(
                 triage, "resolved_bytes", lambda: 0))
             stack.enter_context(unittest.mock.patch.object(triage, "unassignable", dict))
@@ -305,7 +325,7 @@ class MilestoneTests(unittest.TestCase):
 
     def test_the_report_prints_it(self):
         with unittest.mock.patch.object(triage, "load", lambda: [fn("a", 100, 1)]), \
-                unittest.mock.patch.object(triage, "assignability", return_value={}), \
+                unittest.mock.patch.object(triage, "assignability", return_value={"a": "base-only"}), \
                 unittest.mock.patch.object(triage, "resolved_bytes",
                                            lambda: int(triage.WHOLE_PROGRAM * 0.62)), \
                 unittest.mock.patch.object(triage, "unassignable", dict):

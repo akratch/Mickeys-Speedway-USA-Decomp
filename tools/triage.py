@@ -87,8 +87,9 @@ def assignability(names: list[str], base: str = "campaign/unchain", *,
     This is not a nicety. Measured once: 338 queued functions, of which only 68
     were assignable, and a wave was dispatched at nine targets of which three
     were. A lane that is handed a non-assignable target correctly refuses it and
-    the slot is wasted. Returns {} if lane_status cannot be consulted, since a
-    degraded triage is better than none; the reason goes to stderr.
+    the slot is wasted. Returns an unknown verdict for every requested symbol
+    if lane_status cannot be consulted; those rows are withheld and the reason
+    goes to stderr.
 
     The base-derived part of each verdict is served from
     `lane_status.AssignmentCache` under ``build/cache/lane-assignment/``,
@@ -103,7 +104,7 @@ def assignability(names: list[str], base: str = "campaign/unchain", *,
         import lane_status as ls
     except ImportError as error:
         print(f"triage: lane_status unavailable: {error}", file=sys.stderr)
-        return {}
+        return dict.fromkeys(names, "assignment-unknown")
     try:
         cache = (ls.AssignmentCache(base, ROOT / ls.ASSIGNMENT_CACHE_DIR)
                  if use_cache else None)
@@ -115,9 +116,9 @@ def assignability(names: list[str], base: str = "campaign/unchain", *,
                   f"{cache.misses} miss(es)", file=sys.stderr)
         return states
     except Exception as error:  # noqa: BLE001 -- degraded triage, said aloud
-        print(f"triage: lane_status failed, assignability unchecked: "
+        print(f"triage: lane_status failed, assignment withheld: "
               f"{type(error).__name__}: {error}", file=sys.stderr)
-        return {}
+        return dict.fromkeys(names, "assignment-unknown")
 
 
 def unassignable() -> dict[str, dict]:
@@ -260,19 +261,19 @@ def report(target_pct: float, top: int, *, use_cache: bool = True) -> dict:
     excluded = [{"name": n, "reason": v["reason"]}
                 for n, v in sorted(unassignable().items()) if n in all_names]
     states = assignability([r["name"] for r in rows], use_cache=use_cache)
-    if states:
-        blocked = [r for r in rows if states.get(r["name"], "base-only") != "base-only"]
-        rows = [r for r in rows if states.get(r["name"], "base-only") == "base-only"]
-        by_state: dict[str, dict] = {}
-        for r in blocked:
-            e = by_state.setdefault(states[r["name"]], {"functions": 0, "bytes": 0})
-            e["functions"] += 1
-            e["bytes"] += r["size_bytes"]
-        blocked_summary = {"functions": len(blocked),
-                           "bytes": sum(r["size_bytes"] for r in blocked),
-                           "by_state": by_state}
-    else:
-        blocked_summary = None
+    # Missing verdicts are unknown, including a wholly unavailable classifier.
+    # Only an affirmative base-only verdict can contribute assignable bytes.
+    blocked = [r for r in rows if states.get(r["name"]) != "base-only"]
+    rows = [r for r in rows if states.get(r["name"]) == "base-only"]
+    by_state: dict[str, dict] = {}
+    for r in blocked:
+        state = states.get(r["name"]) or "assignment-unknown"
+        e = by_state.setdefault(state, {"functions": 0, "bytes": 0})
+        e["functions"] += 1
+        e["bytes"] += r["size_bytes"]
+    blocked_summary = {"functions": len(blocked),
+                       "bytes": sum(r["size_bytes"] for r in blocked),
+                       "by_state": by_state}
     floors = colour_exhausted(rows)
     if floors is None:
         colour_summary = None
@@ -349,9 +350,9 @@ def render(r: dict) -> str:
         out.append(f"EXCLUDED {ex['name']} -- {ex['reason']} Never assign it.")
     bl = r.get("blocked")
     ce = r.get("colour_exhausted")
-    if bl is None:
-        out.append("NOTE lane_status unavailable -- figures below may include "
-                   "targets no lane can accept")
+    if bl and "assignment-unknown" in bl["by_state"]:
+        out.append("NOTE lane_status unavailable or incomplete -- unknown "
+                   "targets withheld; repair classification before assignment")
     if ce is None:
         out.append("NOTE forced-floor census unavailable -- figures below may "
                    "include colour-exhausted targets")
@@ -432,7 +433,7 @@ def main(argv: list[str]) -> int:
     args = ap.parse_args(argv)
     r = report(args.target_pct, args.top, use_cache=not args.no_cache)
     print(json.dumps(r, indent=2) if args.json else render(r))
-    return 0
+    return 1 if "assignment-unknown" in r["blocked"]["by_state"] else 0
 
 
 if __name__ == "__main__":

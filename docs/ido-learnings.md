@@ -2578,6 +2578,21 @@ bytes and disassembly never belong here.
   not justify reassociating floating-point arithmetic, dropping observable
   volatile accesses, or treating unchanged draw counts as allocator fidelity.
 
+- **Optimized-debug names are not a transparent source-identity channel.**
+  Symptom: normal optimized Ucode lacks local names, so a debug symbol table
+  looks like a cheap way to label allocator homes. A controlled address-taken
+  aggregate probe under the pinned IDO 5.3 compiler gains local names with
+  `-g3`, but changes executable output despite retaining its text extent.
+  Selecting frontend `-Xg3` while leaving the backend at `-g0` also changes
+  output; the effect is not confined to debug sections or backend debug flags.
+  Conversely, a driver `-Wf,-Xg3` request can precede a later `-Xg0` and be
+  overridden. Lever: capture actual pass arguments and require full object
+  fidelity before joining debug names to an ordinary matching build. Limits:
+  this counterexample rules out an unconditional name-import shortcut, not
+  every individually proved debug-mode control. It supplies no source-home
+  identity when fidelity fails. See the reproducible
+  [optimized-debug control](stack-source-provenance.md).
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

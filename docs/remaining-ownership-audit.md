@@ -35,7 +35,7 @@ identity above. The remaining executable inventory is:
 
 | Owner | Executable bytes | Present evidence and acceptance gap |
 | --- | ---: | --- |
-| main/trackasm | 2384 | Tier B call graph and tier D four-function ordering against JFG's tracked assembly; shorter revisions prevent whole-object identity. |
+| main/trackasm | 2384 | Tier B call graph and tier D four-function ordering against JFG's extracted assembly; shorter revisions prevent whole-object identity. |
 | main/shadows_fp | 800 | Four-function boundary and odd-FP evidence; individual exact correspondences do not establish the entire assembly owner. |
 | main/weather_snow_asm | 832 | Snow update/vertex pair, tier B/D lineage and odd-FP vertex operations; no accepted whole-object provenance proof. |
 | Raw owner at ROM 0x59BF0 | 444 | Handwritten instruction shapes and odd-FP operations; original-source correspondence remains unproved. |
@@ -50,9 +50,20 @@ repeated IDO odd-FP flag/version sweeps. It does not itself supply the exact
 source/provenance proof required by verified_asm.us.txt. Keep these ranges
 unresolved until their acceptance evidence is established; do not fabricate
 C or add them to the accepted ledger merely because a disassembler labels
-them handwritten. A useful next packet is one named original-assembly owner
-against authenticated tracked assembly in a permitted reference, with a
-precise boundary and relocation comparison.
+them handwritten. A useful next packet requires a newly authenticated tracked assembly source
+in a permitted reference, followed by a precise boundary and relocation
+comparison. Extracted reference assembly alone does not establish that source
+prerequisite.
+
+A subsequent source-tree check at JFG revisions
+`c82affffe8f11cb5b440cfa918f4582ad8573279` and
+`efd5abb1c79636e297b831f7c2d5bf47eac39c0c` finds no tracked trackasm assembly
+source. The pinned `src/shadows_214A0.c` uses four GLOBAL_ASM fallbacks,
+including two disabled C candidates. Its exact function correspondence is
+therefore not a tracked original-assembly source witness. These two leads do
+not currently justify a provenance promotion or another compiler flag sweep.
+This is a bounded source-availability check, not exhaustion of other permitted
+reference revisions or titles.
 
 PROVENANCE: the existing JFG lineage descriptions are drawn from
 mickey.us.yaml, docs/resident.md and docs/modules.md, which disclose the public

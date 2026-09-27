@@ -3243,30 +3243,25 @@ void func_80007E40(Objects07E40Object *arg0, s32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80007E40.s")
 #endif
-/* Workbench verdict: structure-mismatch; 23 differing words (60/60). */
-/* First mismatch: +0x24; size and frame are exact. Loop-local indexed object */
-/* plus empty if (objectIndex) closed the a0/a1 cycle; 3 structural rows remain. */
-#ifdef NON_MATCHING
 void func_80008028(s32 arg0) {
     s32 objectIndex;
     s32 modelIndex;
     s32 updateModels;
-    Objects58C0Data *data;
 
     objectIndex = D_800C949C;
     if (objectIndex < D_800C9498) {
         do {
             Objects08028Object *object = ((Objects08028Object **)D_800C9494)[objectIndex];
-            data = object->unk40;
-            if (data->unk1E[0] == 0) {
+            if (object->unk40->unk1E[0] == 0) {
                 updateModels = 0;
-                if (data->unkD0[1] != 0.0f) {
+                if (object->unk40->unkD0[1] != 0.0f) {
                     updateModels = 1;
                 }
-                if (data->unk22 > 0) {
-                    modelIndex = 0;
+                /* A plain zero is hoisted above the float test. The product stays at the join. */
+                modelIndex = updateModels * 0;
+                if (object->unk40->unk22 > 0) {
                     do {
-                        if ((updateModels == 0) || (data->unk1E[modelIndex] == 0)) {
+                        if ((updateModels == 0) || (object->unk40->unk1E[modelIndex] == 0)) {
                             Objects08028Model *model = object->unk68[modelIndex];
                             model->unk8 = arg0;
                             if (model->unk3F != 0) {
@@ -3283,9 +3278,6 @@ void func_80008028(s32 arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80008028.s")
-#endif
 void func_80008118(void) {
     D_80079004 = 1;
 }
@@ -5482,16 +5474,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 
 
-
-/* PLATEAU-HANDOFF:func_80008028:start
- * symbol: func_80008028
- * score: 23/60 words
- * frame: 0x8
- * relocations: 8
- * first-mismatch: +0x24
- * summary: Loop-local indexed object plus empty if closed a0/a1 to 23. Inner type-4 web on t1 blocks address t1; force t2 scores 20. Three structural rows at +0x74 remain.
- * PLATEAU-HANDOFF:func_80008028:end
- */
 
 /* PLATEAU-HANDOFF:func_8000BB84:start
  * symbol: func_8000BB84

@@ -1259,6 +1259,12 @@ MIXED_TU_EXACT_C_RANGES = {
             "canonical mixed-TU object, 61 runtime relocations, and linked bytes exact",
         ),
         (
+            0x61F0,
+            0x6270,
+            "overlay1HandleCachedMode",
+            "canonical mixed-TU object, 13 runtime relocations, and linked ROM bytes exact",
+        ),
+        (
             0x6270,
             0x63CC,
             "overlay1ChooseModeObject",

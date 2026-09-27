@@ -77,7 +77,7 @@
     },
     "func_80006448": {
       "ledger_commit": "25a15368d81a57531735f338d69d8bad165c9def",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "25a15368d81a57531735f338d69d8bad165c9def"
     },
     "func_80006534": {
@@ -422,22 +422,22 @@
     },
     "func_8002AA50": {
       "ledger_commit": "15473abc9e04fead9c896bf9d173cbf2f96f378f",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "15473abc9e04fead9c896bf9d173cbf2f96f378f"
     },
     "func_8002AB78": {
       "ledger_commit": "7878b45cbe78ec98790857fdbc649a9dc82c6d5d",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "7878b45cbe78ec98790857fdbc649a9dc82c6d5d"
     },
     "func_8002AC84": {
       "ledger_commit": "440b094c7b53812847f3b3935c2753bef0fcdeee",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "440b094c7b53812847f3b3935c2753bef0fcdeee"
     },
     "func_8002AE10": {
       "ledger_commit": "6091b1a01df312435a7fd6ecae778481fb795ce4",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "6091b1a01df312435a7fd6ecae778481fb795ce4"
     },
     "func_8002B040": {
@@ -507,12 +507,12 @@
     },
     "func_800349A4": {
       "ledger_commit": "15c6074cc9e8c991045f5df48cb37ce1222ac859",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "15c6074cc9e8c991045f5df48cb37ce1222ac859"
     },
     "func_80034E54": {
       "ledger_commit": "8744e6484324325c1b899182492ff1962767c33d",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "8744e6484324325c1b899182492ff1962767c33d"
     },
     "func_800355A0": {
@@ -522,7 +522,7 @@
     },
     "func_80035F48": {
       "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "a863dd80ec6202a424fd71431d686bc728be4fbf"
     },
     "func_80036AB0": {
@@ -867,17 +867,17 @@
     },
     "func_overlay_001_F0001D78_184E158": {
       "ledger_commit": "4730f79d5488a6a563a1e17af4ed1a3c1816a9b4",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "4730f79d5488a6a563a1e17af4ed1a3c1816a9b4"
     },
     "func_overlay_001_F0002B4C_184EF2C": {
       "ledger_commit": "09d684a74d55e986f6d9b90209c946260027ba12",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "09d684a74d55e986f6d9b90209c946260027ba12"
     },
     "func_overlay_001_F0003258_184F638": {
       "ledger_commit": "c5a39a71356daf84e3b6cd77fbb0156ea65bfb11",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "c5a39a71356daf84e3b6cd77fbb0156ea65bfb11"
     },
     "func_overlay_001_F0003750_184FB30": {
@@ -897,7 +897,7 @@
     },
     "func_overlay_002_F0001364_185815C": {
       "ledger_commit": "e32e4b1e797bb27b5d568b37f53d6afe51bdec03",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "e32e4b1e797bb27b5d568b37f53d6afe51bdec03"
     },
     "func_overlay_002_F0001A94_185888C": {
@@ -907,7 +907,7 @@
     },
     "func_overlay_002_F0001DF8_1858BF0": {
       "ledger_commit": "07c7bc32795e0b8d1f2ff2a93cc9fb2605df6543",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "77a22e214ba500d363fc479c6203cfd35bf5dc14"
     },
     "func_overlay_007_F0000324_185C1AC": {
@@ -962,7 +962,7 @@
     },
     "func_overlay_009_F0000000_1866678": {
       "ledger_commit": "11ebf0b73b9549512916d7d462bd7c849d216924",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "11ebf0b73b9549512916d7d462bd7c849d216924"
     },
     "func_overlay_009_F0000540_1866BB8": {
@@ -987,7 +987,7 @@
     },
     "func_overlay_011_F0001E4C_186A694": {
       "ledger_commit": "1372cc7ca2ab6db90ceefe0e23e8ef98db914dd4",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "1372cc7ca2ab6db90ceefe0e23e8ef98db914dd4"
     },
     "func_overlay_011_F00022E8_186AB30": {
@@ -997,17 +997,17 @@
     },
     "func_overlay_012_F00003A8_186D628": {
       "ledger_commit": "4c885f3250cb553154f9b07474d32baa49e40239",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "9d3b4722a37957437633b4b7adff25203819bec5"
     },
     "func_overlay_012_F0000910_186DB90": {
       "ledger_commit": "7ab4dd5231d6d43fd82ed5943962ea5dcfe8aabb",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "7ab4dd5231d6d43fd82ed5943962ea5dcfe8aabb"
     },
     "func_overlay_014_F0001540_1870E18": {
       "ledger_commit": "1f5bc9322f4c637ed149ff269f11b75686550d98",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "1f5bc9322f4c637ed149ff269f11b75686550d98"
     },
     "func_overlay_014_F0001830_1871108": {
@@ -1032,7 +1032,7 @@
     },
     "func_overlay_022_F00002B0_18783B8": {
       "ledger_commit": "f247b828cf4d269529177ea1d45759252fc7bf60",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "f247b828cf4d269529177ea1d45759252fc7bf60"
     },
     "func_overlay_022_F0000D30_1878E38": {
@@ -1042,7 +1042,7 @@
     },
     "func_overlay_026_F00001A0_187A598": {
       "ledger_commit": "ab45cca3686c3732bde3cd0dd51fbfc315ba61f6",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "ab45cca3686c3732bde3cd0dd51fbfc315ba61f6"
     },
     "func_overlay_026_F0000B18_187AF10": {
@@ -1067,7 +1067,7 @@
     },
     "func_overlay_027_F0000624_187BFFC": {
       "ledger_commit": "7146fffbe60c20abd00ebfa0a2500bd403505a6d",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "437c265c597d0c66f7ab3f666733741da58bd3ac"
     },
     "func_overlay_029_F000042C_187D6DC": {
@@ -1092,7 +1092,7 @@
     },
     "func_overlay_031_F0000000_187F520": {
       "ledger_commit": "1d2664aeb36c84b91f43ada86a99f84f97730107",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "1d2664aeb36c84b91f43ada86a99f84f97730107"
     },
     "func_overlay_031_F00002E8_187F808": {
@@ -1122,7 +1122,7 @@
     },
     "func_overlay_036_F0000A60_1883F18": {
       "ledger_commit": "b3d67ffe117e67b45d9e5a728731f6247f6e7a7d",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "743e8def99e49b26ad7e7019a09814333a9161b6"
     },
     "func_overlay_038_F0000000_1885D10": {
@@ -1132,7 +1132,7 @@
     },
     "func_overlay_038_F0000154_1885E64": {
       "ledger_commit": "2886af0d298c36a9ee5b6b440d9d9852f1407afb",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "2886af0d298c36a9ee5b6b440d9d9852f1407afb"
     },
     "func_overlay_038_F000047C_188618C": {
@@ -1152,7 +1152,7 @@
     },
     "func_overlay_041_F0001464_188879C": {
       "ledger_commit": "e4b21198fdcfd9ca0cb69232fa3b6a7163cc98c7",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "390d37a8df119655b154c8b61ca97a55543dc1d0"
     },
     "func_overlay_041_F0001650_1888988": {
@@ -1197,12 +1197,12 @@
     },
     "func_overlay_046_F0000874_188EC6C": {
       "ledger_commit": "af2aac4a88abf7bec987333fa6b53de4b4d600bd",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "af2aac4a88abf7bec987333fa6b53de4b4d600bd"
     },
     "func_overlay_046_F0001228_188F620": {
       "ledger_commit": "bbfc59f2017a100cb07aa899975d2abd644b152a",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "bbfc59f2017a100cb07aa899975d2abd644b152a"
     },
     "func_overlay_047_F0000000_1890E18": {
@@ -1217,7 +1217,7 @@
     },
     "func_overlay_050_F0000000_1896970": {
       "ledger_commit": "9eeee4ce415459b8988df486b8172c1267f88a49",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "cec7bee4f0ee60b03bf25ea9e7c08f3b2c993d5a"
     },
     "func_overlay_050_F0000334_1896CA4": {
@@ -1227,7 +1227,7 @@
     },
     "func_overlay_052_F0000000_189A670": {
       "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "9eda1eb006b12e3dc3e49b43227b3ddfd2e2d7e6"
     },
     "func_overlay_052_F000063C_189ACAC": {
@@ -1242,7 +1242,7 @@
     },
     "func_overlay_054_F0000000_189ECA0": {
       "ledger_commit": "5069f6e351ec45ad35b9818602611f5704af8ad6",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "5069f6e351ec45ad35b9818602611f5704af8ad6"
     },
     "func_overlay_054_F00005AC_189F24C": {
@@ -1257,7 +1257,7 @@
     },
     "func_overlay_056_F00001A0_18A2F18": {
       "ledger_commit": "4d685542da42fa2b9be7883d065ba43fa0bbf245",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "3e97d289a17e8ed17219474474e67477a2e4490f"
     },
     "func_overlay_057_F0000000_18A3BF8": {
@@ -1267,7 +1267,7 @@
     },
     "func_overlay_057_F0001020_18A4C18": {
       "ledger_commit": "593888ed3ef9876a736dbd7ab766496d6a20c5e4",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "593888ed3ef9876a736dbd7ab766496d6a20c5e4"
     },
     "func_overlay_057_F0001AE8_18A56E0": {
@@ -1312,17 +1312,17 @@
     },
     "func_overlay_060_F0002F54_18BCD2C": {
       "ledger_commit": "ff944c96f29eb3023a75946a165c4831a15fc11a",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "9f3a4f4cf640599f4f0099a3868a58bcb887b926"
     },
     "func_overlay_061_F0000B84_18BFF4C": {
       "ledger_commit": "900b48893e83a53be6d2932d2f1d6a47d94fdffd",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "900b48893e83a53be6d2932d2f1d6a47d94fdffd"
     },
     "func_overlay_064_F0000000_18C3B28": {
       "ledger_commit": "6425ca917c05b5589e9cdefbb31d0628568bc69e",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "133737d81be79e8f7d6ece9484040ccdca85e62d"
     },
     "func_overlay_065_F0000C38_18C4EA0": {
@@ -1332,7 +1332,7 @@
     },
     "func_overlay_066_F0000040_18C64A8": {
       "ledger_commit": "2ae0d808cb43ce82e70b2b75cd0c6ede83d7ede2",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "2ae0d808cb43ce82e70b2b75cd0c6ede83d7ede2"
     },
     "func_overlay_066_F00004E0_18C6948": {
@@ -1347,7 +1347,7 @@
     },
     "func_overlay_073_F0000190_18CAC50": {
       "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "6d9e8c8cd742c2492028f23c3fe036bb29b76c27"
     },
     "func_overlay_073_F0000D70_18CB830": {
@@ -1362,12 +1362,12 @@
     },
     "func_overlay_079_F0000FA0_18CDF40": {
       "ledger_commit": "33cecba3c8a10060df5649ad785028df65738a64",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "33cecba3c8a10060df5649ad785028df65738a64"
     },
     "func_overlay_084_F0000314_18D07F4": {
       "ledger_commit": "930c2122a519bbb3fa6554d341e3271509717efc",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "930c2122a519bbb3fa6554d341e3271509717efc"
     },
     "func_overlay_086_F0000474_18D22AC": {
@@ -1377,12 +1377,12 @@
     },
     "func_overlay_087_F0000128_18D3090": {
       "ledger_commit": "68839f829c6fec28b1d4b19cd68cf607769df864",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "68839f829c6fec28b1d4b19cd68cf607769df864"
     },
     "func_overlay_090_F00000FC_18D4BF4": {
       "ledger_commit": "9320c23516e0c9a3e5934d93332d8d8c413e3103",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "46725c0ed62dd4e0e0ec0aa82a8db131409f74fd"
     },
     "func_overlay_092_F0000068_18D5F88": {
@@ -1392,12 +1392,12 @@
     },
     "func_overlay_092_F0000308_18D6228": {
       "ledger_commit": "f2c8d6f9553282c6bc14721d1d3c1223fc835d0f",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "c4c2c5547f1314c7c6c703b36d9c57a26fc49c91"
     },
     "func_overlay_099_F0000DDC_18DA38C": {
       "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "303a0613fd5d42b32e22acf0a49d7811d50c8a8d"
     },
     "func_overlay_101_F0002510_18DDD30": {
@@ -1477,7 +1477,7 @@
     },
     "levelGetCounts": {
       "ledger_commit": "ec52595d068bd560579dfe9cd252bb69ac96c7f8",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "f00aa2b6108ee4464492cc3cbb4508f694b57d67"
     },
     "levelInit": {
@@ -1487,7 +1487,7 @@
     },
     "overlay100DrawMotion": {
       "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "fb8e95096e41ee2a7200e6e3cd1077bff58d944b"
     },
     "overlay101BuildBorder": {
@@ -1527,12 +1527,12 @@
     },
     "overlay101TailA6BC": {
       "ledger_commit": "b6078e0ce416a711398089b5a6a527d896de5494",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "89a3e47de77c85f10c4579aa6e1e93ff7ec59217"
     },
     "overlay10Initialize": {
       "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "643a7bd406e0d6af51891b754287ccb79b037147"
     },
     "overlay11UpdateMenu": {
@@ -1542,17 +1542,17 @@
     },
     "overlay13DrawActive": {
       "ledger_commit": "13618095a108e8b3b12a7f02a938e584a158111f",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "13618095a108e8b3b12a7f02a938e584a158111f"
     },
     "overlay13DrawRecord": {
       "ledger_commit": "df7e436ae810f6b0cac7e9f6d72df6c3a1fa6d37",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "9e6cbe09a6df3da33bd1cf70704a5660f9cb881f"
     },
     "overlay13UpdateRecord": {
       "ledger_commit": "ced935cd75b21ef48509083c423094f6c66ca94c",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "203227fa005d0d12a3d2622be9a881e88b57ca5a"
     },
     "overlay14CreateValue": {
@@ -1567,7 +1567,7 @@
     },
     "overlay14PrepareInputState": {
       "ledger_commit": "d4630ba31d6b32e2480c99f698348321b4e11ff4",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "d4630ba31d6b32e2480c99f698348321b4e11ff4"
     },
     "overlay15DrawRain": {
@@ -1582,12 +1582,12 @@
     },
     "overlay15InitStars": {
       "ledger_commit": "7cf4e7f482f499efd8daecf1e9615cd9264feeb0",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "7cf4e7f482f499efd8daecf1e9615cd9264feeb0"
     },
     "overlay15InitStarsAndPalette": {
       "ledger_commit": "904cffa9db87143ce96cd8a6928cc5945f9024a2",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "b39a489cae66acb9cfa460eb4ffcc9d84939d009"
     },
     "overlay15MoveStars": {
@@ -1597,7 +1597,7 @@
     },
     "overlay15UpdateMovingStars": {
       "ledger_commit": "2e3532ecdf433f24f50b4fd974f7f74841ad718e",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "2e3532ecdf433f24f50b4fd974f7f74841ad718e"
     },
     "overlay16ApplyGradient": {
@@ -1612,12 +1612,12 @@
     },
     "overlay17CalculateEndpoints": {
       "ledger_commit": "bae7a665c6332e12471d3d0c44d98f3b5f134ac2",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "bae7a665c6332e12471d3d0c44d98f3b5f134ac2"
     },
     "overlay17CreateChain": {
       "ledger_commit": "43e0fd94d7fc2e44a7dbf293c5d566292c5169df",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "43e0fd94d7fc2e44a7dbf293c5d566292c5169df"
     },
     "overlay17DrawStrip": {
@@ -1632,12 +1632,12 @@
     },
     "overlay19BuildPlanes": {
       "ledger_commit": "5ea79b6e4ae7fbb40b9d0042eb2e5d0ef0a5ca32",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "5ea79b6e4ae7fbb40b9d0042eb2e5d0ef0a5ca32"
     },
     "overlay19BuildSpatialMasks": {
       "ledger_commit": "b93fc9a7ca1af0a007f081fd26a108ee99c875e8",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "b93fc9a7ca1af0a007f081fd26a108ee99c875e8"
     },
     "overlay19ClassifyEdge": {
@@ -1737,7 +1737,7 @@
     },
     "overlay1LoadBuildRecords": {
       "ledger_commit": "23c1275f54f6f4eb92a239a806481cc73c1f69eb",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "23c1275f54f6f4eb92a239a806481cc73c1f69eb"
     },
     "overlay1MeasureCurves": {
@@ -1782,7 +1782,7 @@
     },
     "overlay25UpdateEffect": {
       "ledger_commit": "dab722cc302bcee6031af6c263c80ff56ebc2a32",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "fcfbc7f12543438d04a7723c9e2e463f83de7a50"
     },
     "overlay27UpdateCoordinates": {
@@ -1797,7 +1797,7 @@
     },
     "overlay2ChooseBoundary": {
       "ledger_commit": "451c3d871a553cc25ea417fb51561c9e6a269b02",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "451c3d871a553cc25ea417fb51561c9e6a269b02"
     },
     "overlay2ClassifyBoundary": {
@@ -1847,17 +1847,17 @@
     },
     "overlay34SortAndDraw": {
       "ledger_commit": "07b09512889c973e07a46d8180775e4bace1551b",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "07b09512889c973e07a46d8180775e4bace1551b"
     },
     "overlay36UpdateInteractiveEntity": {
       "ledger_commit": "796357935f5af94cc36660a3865d6b5f4be1d8ae",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "796357935f5af94cc36660a3865d6b5f4be1d8ae"
     },
     "overlay37RenderEffect": {
       "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "5a15944171d6fdbe9c84865054eb89b834ea4401"
     },
     "overlay3RunCachedModeAction": {
@@ -1872,7 +1872,7 @@
     },
     "overlay40BuildFrame": {
       "ledger_commit": "d12e9f3038dfe6e9562ec4b1fa71d307f5784be8",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "ba213213dbfdc5050e62e8de7b18d6c733bb74b9"
     },
     "overlay40FadeRecords": {
@@ -1917,27 +1917,27 @@
     },
     "overlay57UpdateSelection": {
       "ledger_commit": "8ffcc11dd3def671a8691987b9991b8be23d5b00",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "a67fa6ae8347ec95c173bbe8e85ccb495f2729c7"
     },
     "overlay58DrawLargePointQuad": {
       "ledger_commit": "afd9ca7e6a7c12f88e5700bb936a604bb6116511",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "b20ed15c35bb17d3f96eeca3856b16971776c0a9"
     },
     "overlay58DrawPointQuad": {
       "ledger_commit": "afd9ca7e6a7c12f88e5700bb936a604bb6116511",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "efb26f21426af95777aa47bbe95b1f391a65a901"
     },
     "overlay58DrawSegmentStrip": {
       "ledger_commit": "c05ab130be14b592422b0b323e237c0d9c4ae8d3",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "c05ab130be14b592422b0b323e237c0d9c4ae8d3"
     },
     "overlay58FinalizePackedStatus": {
       "ledger_commit": "9ca1875ccd4e066f0d77dc45a2cb1365f0a961be",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "9ca1875ccd4e066f0d77dc45a2cb1365f0a961be"
     },
     "overlay59Advance": {
@@ -1967,7 +1967,7 @@
     },
     "overlay63UpdateEffects": {
       "ledger_commit": "4c41268db82820bf137ceb4f749638ac8cb1d70a",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "4c41268db82820bf137ceb4f749638ac8cb1d70a"
     },
     "overlay63UpdateSequence": {
@@ -1987,7 +1987,7 @@
     },
     "overlay68DrawSortedEntries": {
       "ledger_commit": "a7f1b8cf4a9ee0247d322ccb1fb0b89fe109f152",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "7489e24e0a5494200ad7d478e38e1f4062b24200"
     },
     "overlay68RebuildSecondaryEntry": {
@@ -1997,7 +1997,7 @@
     },
     "overlay68UpdateAnimation": {
       "ledger_commit": "f7be9efd7f5c608dace701425edc3a038b0469ca",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "f7be9efd7f5c608dace701425edc3a038b0469ca"
     },
     "overlay74Update": {
@@ -2027,12 +2027,12 @@
     },
     "overlay83BuildBatch": {
       "ledger_commit": "adec7b1d208be2b368d1e13e3aeef3d85c85ffd1",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "adec7b1d208be2b368d1e13e3aeef3d85c85ffd1"
     },
     "overlay83DrawStrip": {
       "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "ea6af559eb0a12153d74ff89c5a1646bd86a599c"
     },
     "overlay89InitializeEffect": {
@@ -2077,7 +2077,7 @@
     },
     "overlay99ApplySegment": {
       "ledger_commit": "6e621ae2863f66ed28e4dbe211337396969b185b",
-      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
+      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "6e621ae2863f66ed28e4dbe211337396969b185b"
     },
     "overlay99BuildHeightGrid": {

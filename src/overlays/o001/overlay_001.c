@@ -338,13 +338,12 @@ extern Overlay1Sample *D_020C;
 extern Overlay1Sample *D_0210;
 extern Overlay1Sample *D_0214;
 extern s32 D_0;
-extern f32 D_B0;
+extern f32 splinePos(f32, f32, f32, f32, f32);
+extern u8 *overlay1NextPointerReloc(u8 *pointer);
 
 extern void *overlay1Chain0ContextReloc(void *source, void *context);
 extern void *overlay1Chain0Reloc(void *source);
 extern void *overlay1Chain40Reloc(void *source);
-extern f32 overlay1InterpolateReloc(f32 first, f32 second, s32 third,
-                                   s32 fourth, f32 weight);
 
 /* Allocation residual is three words at +0x6C, +0x70 and +0x90: the address of
  * D_1D68 wants ugen's v0 and takes a scratch temp here.  Two edits took the
@@ -394,6 +393,10 @@ s32 overlay1ActivateObject(Overlay1Owner *owner) {
     return 1;
 }
 
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001/func_overlay_001_F00004B4_184C894.s")
+#endif
+
 s32 overlay1FindClosestSample(f32 x, f32 y, Overlay1Sample *source,
                               f32 weight) {
     Overlay1Sample *first;
@@ -404,12 +407,12 @@ s32 overlay1FindClosestSample(f32 x, f32 y, Overlay1Sample *source,
     s32 bestIndex;
     s32 index;
 
-    bestDistance = D_B0;
+    bestDistance = 3.4028234663852886e+38;
     bestIndex = -1;
-    first = (Overlay1Sample *)((u8 *)overlay1Chain0Reloc(source) + 0x84);
+    first = (Overlay1Sample *)((u8 *)overlay1PreviousPointer((u8 *)source) + 0x84);
     current = (Overlay1Sample *)((u8 *)source + 0x84);
-    third = (Overlay1Sample *)((u8 *)overlay1Chain40Reloc(source) + 0x84);
-    fourth = (Overlay1Sample *)((u8 *)overlay1Chain40Reloc(
+    third = (Overlay1Sample *)((u8 *)overlay1NextPointerReloc((u8 *)source) + 0x84);
+    fourth = (Overlay1Sample *)((u8 *)overlay1NextPointerReloc(
                                    (u8 *)third - 0x84) + 0x84);
     index = 7;
     do {
@@ -420,12 +423,10 @@ s32 overlay1FindClosestSample(f32 x, f32 y, Overlay1Sample *source,
             f32 dy;
             f32 distance;
 
-            sampleX = overlay1InterpolateReloc(first->x, current->x,
-                                               *(s32 *)&third->x,
-                                               *(s32 *)&fourth->x, weight);
-            sampleY = overlay1InterpolateReloc(first->y, current->y,
-                                               *(s32 *)&third->y,
-                                               *(s32 *)&fourth->y, weight);
+            sampleX = splinePos(first->x, current->x, third->x,
+                                fourth->x, weight);
+            sampleY = splinePos(first->y, current->y, third->y,
+                                fourth->y, weight);
             dx = x - sampleX;
             dy = y - sampleY;
             distance = dx * dx + dy * dy;
@@ -441,11 +442,6 @@ s32 overlay1FindClosestSample(f32 x, f32 y, Overlay1Sample *source,
     } while (index--);
     return bestIndex;
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001/func_overlay_001_F00004B4_184C894.s")
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001/func_overlay_001_F0000614_184C9F4.s")
-#endif
 
 /* ---- overlay1TestDirection ---- */
 

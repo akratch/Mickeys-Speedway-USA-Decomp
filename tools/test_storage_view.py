@@ -56,6 +56,22 @@ class UseTests(unittest.TestCase):
         self.assertFalse(row['index_bounds_proved'])
         self.assertFalse(row['complete_footprint'])
 
+    def test_jal_kills_return_address_before_delay_slot(self):
+        obj = use_fixture()
+        obj.text = (obj.text[:12] + struct.pack('>I', reg(33, rs=18, rt=13, rd=31))
+                    + obj.text[16:24] + struct.pack('>I', ins(33, rs=31, rt=4)))
+        self.assertEqual(sv.indexed_halfword_use(obj, sv.named_sites(obj, 'storage')), [])
+
+    def test_zero_cannot_hold_high_address(self):
+        obj = use_fixture()
+        obj.text = (struct.pack('>II', ins(15, rt=0), ins(9, rs=0, rt=18)) + obj.text[8:])
+        self.assertEqual(sv.indexed_halfword_use(obj, sv.named_sites(obj, 'storage')), [])
+
+    def test_zero_cannot_hold_completed_address(self):
+        obj = use_fixture()
+        obj.text = obj.text[:4] + struct.pack('>I', ins(9, rs=18, rt=0)) + obj.text[8:]
+        self.assertEqual(sv.indexed_halfword_use(obj, sv.named_sites(obj, 'storage')), [])
+
     def test_unsigned_distinguished(self):
         obj = use_fixture(unsigned=True)
         self.assertFalse(sv.indexed_halfword_use(obj, sv.named_sites(obj, 'storage'))[0]['signed'])
@@ -146,6 +162,36 @@ class IdentityTests(unittest.TestCase):
         raw, configured = use_fixture(), use_fixture()
         raw.text += bytes(4)
         sv.unchanged_instruction_bits(raw, configured)
+
+
+class FunctionScopeTests(unittest.TestCase):
+    def scoped_object(self):
+        obj = use_fixture()
+        obj.names = ['', '.text']
+        obj.syms += [('selected', 0, 8, 18, 1), ('sibling', 8, len(obj.text) - 8, 18, 1)]
+        return obj
+
+    def test_external_only_in_sibling_is_not_selected_function_use(self):
+        obj = self.scoped_object()
+        obj.relocs[0] = ('.text', 8, 5, 0)
+        obj.relocs[1] = ('.text', 12, 6, 0)
+        with self.assertRaisesRegex(sv.ViewError, 'not used by selected'):
+            sv.owned_external_sites(obj, copy.deepcopy(obj), 'storage', 'selected', 8)
+
+    def test_owned_sites_are_scoped_and_boundary_reported(self):
+        obj = self.scoped_object()
+        obj.relocs.append(('.text', 12, 6, 0))
+        self.assertEqual(sv.owned_external_sites(obj, copy.deepcopy(obj), 'storage', 'selected', 8),
+                         ([(0, 5), (4, 6)], 8))
+
+    def test_observed_load_cannot_cross_function_end(self):
+        obj = use_fixture()
+        self.assertEqual(sv.indexed_halfword_use(obj, sv.named_sites(obj, 'storage'), 8), [])
+
+    def test_incorrect_selected_extent_rejected(self):
+        obj = self.scoped_object()
+        with self.assertRaises(sv.ViewError):
+            sv.owned_external_sites(obj, copy.deepcopy(obj), 'storage', 'selected', 12)
 
 
 class NamedConflictTests(unittest.TestCase):

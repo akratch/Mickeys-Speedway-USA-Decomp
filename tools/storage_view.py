@@ -193,7 +193,7 @@ def unchanged_external(raw, configured, name):
     return sites
 
 
-def indexed_halfword_use(elf, sites):
+def indexed_halfword_use(elf, sites, owned_end=None):
     """Recognize only a small straight-line address-to-load/call witness.
 
     Stops at control flow (after an ordinary direct call's delay slot), any
@@ -203,24 +203,29 @@ def indexed_halfword_use(elf, sites):
     text = elf.section_bytes('.text')
     relocations = {off: (kind, elf.symbols()[idx][0]) for _, off, kind, idx in elf.relocations()}
     output = []
+    end = len(text) if owned_end is None else owned_end
+    require(0 <= end <= len(text) and end % 4 == 0, 'invalid owned use boundary')
     for hi, kind in sites:
-        if kind != rs.R_MIPS_HI16 or (hi + 4, rs.R_MIPS_LO16) not in sites:
+        if (kind != rs.R_MIPS_HI16 or (hi + 4, rs.R_MIPS_LO16) not in sites
+                or hi < 0 or hi + 8 > end):
             continue
         h, lo = struct.unpack_from('>II', text, hi)
         base = (h >> 16) & 31
         if (h >> 26 != 15 or lo >> 26 != 9 or (lo >> 21) & 31 != base
+                or base == 0 or ((lo >> 16) & 31) == 0
                 or h & 0xffff or lo & 0xffff):
             continue
         base = (lo >> 16) & 31
         known = {base: ('base', None)}
         pending_call = None
-        for pc in range(hi + 8, min(hi + 48, len(text)), 4):
+        for pc in range(hi + 8, min(hi + 48, end), 4):
             word = struct.unpack_from('>I', text, pc)[0]
             op, a, b, d = word >> 26, (word >> 21) & 31, (word >> 16) & 31, (word >> 11) & 31
             sh, fn = (word >> 6) & 31, word & 63
             if pc in relocations and op != 3:
                 break
             if op == 3 and relocations.get(pc, (None,))[0] == rs.R_MIPS_26 and pending_call is None:
+                known.pop(31, None)  # JAL writes RA before its delay slot.
                 pending_call = (pc, relocations[pc][1])
             elif op == 0 and fn == 0 and a == 0:
                 is_index = b not in known and b != 0
@@ -262,6 +267,21 @@ def unique_symbol(elf, name):
     symbols = [s for s in elf.symbols() if s[0] == name and s[4] != rs.SHN_UNDEF]
     require(len(symbols) == 1, 'missing or ambiguous named definition: ' + name)
     return symbols[0]
+
+
+def owned_external_sites(raw, configured, name, function, expected_size):
+    all_sites = unchanged_external(raw, configured, name)
+    a, b = unique_symbol(raw, function), unique_symbol(configured, function)
+    for elf, symbol in ((raw, a), (configured, b)):
+        require(0 < symbol[4] < len(elf.names) and elf.names[symbol[4]] == '.text'
+                and symbol[3] & 15 == rs.STT_FUNC and symbol[2] == expected_size
+                and 0 <= symbol[1] <= len(elf.section_bytes('.text')) - symbol[2],
+                'selected function compiler boundary unavailable')
+    require(a[1:3] == b[1:3], 'selected function boundary changed through metadata')
+    start, size = a[1:3]
+    sites = [(offset, kind) for offset, kind in all_sites if start <= offset < start + size]
+    require(sites, 'external is not used by selected function')
+    return sites, start + size
 
 
 def reject_name_conflicts(linked, name, identity, overlay):
@@ -350,7 +370,8 @@ def collect(function, external, owner_name=None):
     resolution, report, raw, capture_receipt, current, _ = exact_report(function, directory / 'witness')
     require(report['context']['kind'] == 'overlay', 'external witness must be an overlay function')
     configured = rs.Elf(resolution.candidate_object)
-    sites = unchanged_external(raw, configured, external)
+    sites, owned_end = owned_external_sites(raw, configured, external, resolution.candidate_symbol,
+                                          report['owned_size'])
     linked, rom = rs.Elf(fp.TARGET_ELF), fp.ROM.read_bytes()
     atlas = json.loads(fp.ATLAS.read_text())
     overlay = report['context']['overlay']
@@ -380,7 +401,7 @@ def collect(function, external, owner_name=None):
               'promotion_acceptance': False, 'source_function': function, 'source_overlay': overlay,
               'external': external, 'identity': list(identity), 'external_relocations': len(sites),
               'owned_storage': None, 'reserved_view': None,
-              'observed_uses': indexed_halfword_use(raw, sites),
+              'observed_uses': indexed_halfword_use(raw, sites, owned_end),
               'type_and_subobject_status': 'access facts only; no inferred C effective type, alias, or index bound',
               'source_preflight': report, 'captures': [capture_receipt]}
     if owner_name is not None:

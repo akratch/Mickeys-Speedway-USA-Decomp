@@ -190,19 +190,14 @@ extern void runlinkFlushModules(void);
 /*
  * PROVENANCE: body adapted from public JFG src/level.c at commits
  * 773e313/1a92d81; the pinned JFG reference still uses GLOBAL_ASM, and Mickey
- * byte identity is decisive. The historically measured pre-endpoint full-TU
- * spelling was 255/259 raw and 256/259 relocation-normalized, exact 259-word
- * size/frame 0x58, with all 37 offsets/types but only 35 identities; no
- * attributable C object survives. Raw first +0x50 was the identity-wrong
- * D_800CF3E0+0x40 endpoint pair; normalized first +0x13C and +0x148/+0x154
- * were one v0/target-a0 world carrier. A reformatted isolated import measured
- * only 251/259 raw and 252/259 normalized. Current D_800CF420 source is
- * uncompiled, so score, frame, and all identities are unknown; linked equality
- * proves fallback only. Run current full-TU V0 and, only on material regression,
- * one historical 0348d2f control. If V0 reproduces only the three normalized
- * carrier sites, retain exactly 119 configurations, trace once, and try one
- * natural block-scoped carrier. A strict legal gain alone permits one annotated
- * batch capped at 2,000 candidates or 20 minutes; otherwise park.
+ * byte identity is decisive. Counted `i != 16` is 255/259 raw and 256/259
+ * masked, size 1036, frame 0x58, first masked mismatch +0x13C: the world
+ * value is v0 where the target uses a0. The clear-loop end HI/LO names
+ * D_800CF3E0+0x40 rather than D_800CF420. The end-pointer walk
+ * `&D_800CF3E0[i] != (s32 *)D_800CF420` keeps that symbol but does not
+ * unroll and scores 160 masked. A block-scoped s8 or s32 world carrier
+ * stays in v0 and grows the frame to 0x60. The three sites are one
+ * uopt coalescing tie; an earlier permuter left this object residual.
  */
 void levelGetCounts(void) {
     s32 i;
@@ -213,7 +208,7 @@ void levelGetCounts(void) {
     header = func_8002B280(sizeof(LevelHeaderSummarySource), 0x8F);
     D_800CF3C0 = piRomLoad(0x1E);
 
-    for (i = 0; &D_800CF3E0[i] != (s32 *)D_800CF420; i++) { D_800CF3E0[i] = 0;
+    for (i = 0; i != 16; i++) { D_800CF3E0[i] = 0;
     }
 
     D_800CF3D4 = 0;
@@ -829,4 +824,14 @@ s32 levelInitRegionFlags(void) {
  * first-mismatch: +0x328
  * summary: hypothesis=separate ring-mask evaluation with the draw count unchanged; spellings=statement double-mask stayed 6, use-site mask scored 19, comma-before-base scored 94; stall=the redundant mask still pops before its operand
  * PLATEAU-HANDOFF:levelInit:end
+ */
+
+/* PLATEAU-HANDOFF:levelGetCounts:start
+ * symbol: levelGetCounts
+ * score: 256/259 words
+ * frame: 0x58
+ * relocations: 37
+ * first-mismatch: +0x13C
+ * summary: Counted i!=16 unrolls to 256/259; end pointer is 160. s8/s32 world carrier stays v0 and frame 0x60. Stall: a0/v0 tie at +0x13C; end names D_800CF3E0+0x40.
+ * PLATEAU-HANDOFF:levelGetCounts:end
  */

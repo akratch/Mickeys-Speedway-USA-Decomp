@@ -484,21 +484,21 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: \
 	config/normalizations/overlay9Output.filter.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
-		ext_o0_1353c=func_overlay_009_F0000000_1866678 $@ && \
+		ext_o0_1353c=overlay9HeightQueryReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		ext_o0_7cd8=func_overlay_009_F0000000_1866678 $@ && \
+		ext_o0_7cd8=overlay9TransformReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		ext_o0_2b90=func_overlay_009_F0000000_1866678 $@ && \
+		func_80002FE0=overlay9PlaySpatialReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		ext_o0_2952c=func_overlay_009_F0000000_1866678 $@ && \
+		mathRnd=overlay9RandomReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		ext_o0_2d70=func_overlay_009_F0000000_1866678 $@ && \
+		func_800031C0=overlay9SetSpatialReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		ext_o0_2c64=func_overlay_009_F0000000_1866678 $@ && \
+		func_800030B4=overlay9SetPitchReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		o9P540MathDiffAngleReloc=func_overlay_009_F0000000_1866678 $@ && \
+		o9P540MathDiffAngleReloc=overlay9AngleDifferenceReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		o9P540CosReloc=func_overlay_009_F0000000_1866678 $@ && \
+		o9P540CosReloc=overlay9CosineReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
 		@config/normalizations/overlay9Output.filter.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1520 && \

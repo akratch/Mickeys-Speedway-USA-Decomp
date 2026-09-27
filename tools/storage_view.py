@@ -363,11 +363,54 @@ def exact_report(symbol, directory):
     return resolution, report, raw, receipt, current, cpp
 
 
-def collect(function, external, owner_name=None, *, freshness_checks=None):
+class WitnessSession:
+    """One invocation's exact-function captures, bound to their full inputs.
+
+    Reuse never supplies an external identity: each collect call still checks
+    that name's selected-function sites and all independent conflicts.
+    """
+    def __init__(self):
+        self.functions = {}
+        self.capture_count = 0
+        self.reuse_count = 0
+
+    @staticmethod
+    def key(function, inputs):
+        return hashlib.sha256(json.dumps([function, inputs], sort_keys=True).encode()).hexdigest()
+
+    def _check(self, function, entry):
+        key, result = entry
+        receipt, current = result[3:5]
+        inputs = current()
+        require(inputs == receipt['inputs'] and key == self.key(function, inputs),
+                'shared function witness inputs changed')
+        return result
+
+    def prepare(self, function, directory):
+        if function in self.functions:
+            result = self._check(function, self.functions[function])
+            self.reuse_count += 1
+            return result
+        result = exact_report(function, directory)
+        entry = (self.key(function, result[3]['inputs']), result)
+        self._check(function, entry)
+        self.functions[function] = entry
+        self.capture_count += 1
+        return result
+
+    def check(self):
+        for function, entry in self.functions.items():
+            self._check(function, entry)
+
+
+def collect(function, external, owner_name=None, *, freshness_checks=None, session=None):
     parent = ROOT / 'build/storage-views'
     parent.mkdir(parents=True, exist_ok=True)
     directory = Path(tempfile.mkdtemp(prefix='proof-', dir=parent))
-    resolution, report, raw, capture_receipt, current, _ = exact_report(function, directory / 'witness')
+    require(session is None or owner_name is None,
+            'shared witness sessions currently support external-use reports only')
+    prepare = session.prepare if session is not None else exact_report
+    resolution, report, raw, capture_receipt, current, _ = prepare(function, directory / 'witness')
     require(report['context']['kind'] == 'overlay', 'external witness must be an overlay function')
     configured = rs.Elf(resolution.candidate_object)
     sites, owned_end = owned_external_sites(raw, configured, external, resolution.candidate_symbol,
@@ -415,7 +458,7 @@ def collect(function, external, owner_name=None, *, freshness_checks=None):
                       reserved_view=view, loader_preflight=loader_report)
         result['captures'].append(loader_receipt)
     require(capture_receipt['inputs'] == current(), 'evidence changed during view proof')
-    if freshness_checks is not None:
+    if freshness_checks is not None and session is None:
         freshness_checks.append(lambda: require(capture_receipt['inputs'] == current(),
                                                'storage witness changed after proof'))
         if owner_name is not None:

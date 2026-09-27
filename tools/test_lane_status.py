@@ -257,6 +257,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         self.command("git", "init", "-q", "-b", "campaign/unchain")
         self.command("git", "config", "user.email", "lane-status@example.invalid")
         self.command("git", "config", "user.name", "Lane Status Test")
+        (self.repo / ".git/info/exclude").write_text("build/\n", encoding="utf-8")
         (self.repo / SOURCE_PATH.parent).mkdir(parents=True)
         (self.repo / "docs").mkdir()
         (self.repo / SOURCE_PATH).write_text(candidate(), encoding="utf-8")
@@ -1130,6 +1131,56 @@ class AssignmentCacheTests(unittest.TestCase):
         import shutil
         shutil.rmtree(self.cache_dir(), ignore_errors=True)
         LaneStatusAssignmentTests.tearDown(self)
+
+    def singular_report(self, *options: str):
+        result = self.command(
+            sys.executable, str(TOOL), "--base", "campaign/unchain",
+            "--symbol", SYMBOL, "--json", *options, check=False,
+        )
+        return result, json.loads(result.stdout)
+
+    def test_singular_cached_and_uncached_full_reports_match(self) -> None:
+        plateau = self.current_plateau()
+        self.authorize_reopen(plateau, plateau)
+        cache_dir = self.repo / ls.ASSIGNMENT_CACHE_DIR
+        uncached, expected = self.singular_report("--no-cache")
+        self.assertEqual(uncached.returncode, 0, uncached.stderr)
+        self.assertFalse(cache_dir.exists(), "--no-cache must not write a cache")
+        cold, report = self.singular_report()
+        self.assertEqual(report, expected)
+        self.assertIn("0 hit(s), 1 miss(es)", cold.stderr)
+        warm, report = self.singular_report()
+        self.assertEqual(report, expected)
+        self.assertIn("1 hit(s), 0 miss(es)", warm.stderr)
+        self.assertEqual(set(report), {"base", "assignment", "lanes"})
+        cache_files = {p: p.read_bytes() for p in cache_dir.glob("*.json")}
+        bypassed, report = self.singular_report("--no-cache")
+        self.assertEqual(report, expected)
+        self.assertNotIn("assignment cache", bypassed.stderr)
+        self.assertEqual(cache_files,
+                         {p: p.read_bytes() for p in cache_dir.glob("*.json")})
+
+    def test_singular_warm_cache_observes_new_owner_and_claim(self) -> None:
+        first, report = self.singular_report()
+        self.assertEqual(first.returncode, 0, first.stderr)
+        self.assertEqual(report["assignment"]["state"], "base-only")
+        self.command("git", "switch", "-q", "-c", "lane/o43-cli-cache")
+        (self.repo / SOURCE_PATH).write_text(
+            candidate().replace("void overlay43FilterImage",
+                                "static void overlay43FilterImage"),
+            encoding="utf-8",
+        )
+        self.commit(f"Match {SYMBOL}")
+        self.command("git", "switch", "-q", "campaign/unchain")
+        warm, report = self.singular_report()
+        uncached, expected = self.singular_report("--no-cache")
+        self.assertEqual(warm.returncode, 1)
+        self.assertEqual(uncached.returncode, 1)
+        self.assertIn("1 hit(s), 0 miss(es)", warm.stderr)
+        self.assertEqual(report, expected)
+        self.assertEqual(report["assignment"]["state"], "active")
+        self.assertTrue(report["lanes"], "singular output must retain claims")
+        self.assertEqual(report["lanes"][0]["claims"][0]["symbol"], SYMBOL)
 
     def test_warm_verdict_equals_cold_and_skips_history(self) -> None:
         plateau_commit = self.current_plateau()

@@ -2117,7 +2117,7 @@ def main() -> int:
     parser.add_argument(
         "--no-cache", action="store_true",
         help=(
-            "with --symbols: classify without the content-keyed assignment "
+            "with --symbol or --symbols: classify without the content-keyed assignment "
             "cache under build/cache/lane-assignment/ (neither read nor "
             "written). The cache serves only the base-derived phases; lane "
             "ownership is recomputed every run either way."
@@ -2190,7 +2190,20 @@ def main() -> int:
         if args.base is None:
             args.base = integration_base.resolve(Path.cwd())
         lanes = collect(args.base, args.symbol)
-        assignment = assignment_status(args.base, args.symbol) if args.symbol else None
+        assignment = None
+        if args.symbol:
+            cache = (
+                None if args.no_cache
+                else AssignmentCache(args.base, default_cache_dir())
+            )
+            context = AssignmentContext.build(
+                args.base, [args.symbol], jobs=4, cache=cache,
+            )
+            assignment = context.classify(args.base, args.symbol)
+            context.save()
+            if cache is not None:
+                print(f"lane_status: assignment cache {cache.hits} hit(s), "
+                      f"{cache.misses} miss(es)", file=sys.stderr)
     except RuntimeError as error:
         print(f"lane_status: {error}", file=sys.stderr)
         return 2

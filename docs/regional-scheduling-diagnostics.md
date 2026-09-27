@@ -15,14 +15,17 @@ python3 tools/regional_schedule.py SYMBOL \
 ```
 
 Both windows use function-relative byte offsets with an exclusive end. Omitting
-windows selects the full owned function. The tool requires a unique, positive,
-aligned ELF function extent; it never counts section padding as function bytes.
-Object hashes and the selected symbol are included in the JSON report. Reports
+windows selects the full declared ELF function extent. The tool requires a
+unique, positive, aligned extent, but ELF symbol sizes can include alignment
+padding. The caller must authenticate executable boundaries and select windows
+that exclude padding when appropriate; this tool does not infer those boundaries.
+The `owned_size` field reports the declared extent, not independently proved
+executable bytes. Object hashes and the selected symbol are included in the JSON report. Reports
 are private workbench evidence and must remain ignored.
 
 ## What the report measures
 
-The report includes full function size and initial frame allocation, regional
+The report includes declared function size and initial frame allocation, regional
 opcode/family counts, load/store widths, multiply sites, delay-slot execution
 conditions, branch-likely alternatives, and the existing `align_symbol`
 insertion/deletion counts. Alignment offsets are relative to each selected
@@ -39,7 +42,11 @@ The execution report enumerates acyclic traversals from the selected entry.
 Ordinary branch delay slots execute on both outcomes. Branch-likely delay slots
 execute only on the taken edge. Calls include their delay slots and are assumed
 to return; caller register knowledge is discarded across the call. Returns
-include their owned delay slot. Local relocated branches require a defined
+include their declared delay slot. A `jalr` that discards its link through the
+zero register is an unresolved indirect transfer, not an assumed returning call.
+FPU data registers and FPU control registers use separate `fN` and `fcrN`
+namespaces. Only relocation records targeting `.text` enter the report.
+Local relocated branches require a defined
 in-section label; external or unresolved branch targets do not inherit their
 placeholder instruction's apparent destination.
 

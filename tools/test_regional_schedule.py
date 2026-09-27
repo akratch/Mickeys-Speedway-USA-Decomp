@@ -80,6 +80,28 @@ class ExecutionTests(unittest.TestCase):
         out = r.analyze([special(8, 4), fp()])
         self.assertIn('unresolved-control-target', out['execution']['limits'])
 
+    def test_jalr_zero_link_is_unresolved_indirect_not_returning_call(self):
+        words = [special(9, 4, dest=0), fp(), fp()]
+        decoded = r.decode(words[0], 0)
+        self.assertEqual('indirect', decoded['control'])
+        self.assertIsNone(decoded['destination'])
+        out = r.analyze(words)
+        self.assertFalse(out['execution']['complete'])
+        self.assertIsNone(out['execution']['multiply_count_range'])
+        self.assertIn('unresolved-control-target', out['execution']['limits'])
+        self.assertEqual([4], [m['offset'] for m in out['execution']['paths'][0]['multiplies']])
+
+    def test_jalr_nonzero_link_keeps_returning_call_model(self):
+        words = [special(9, 4, dest=31), 0, fp()]
+        self.assertEqual('call', r.decode(words[0], 0)['control'])
+        self.assertEqual([1, 1], r.analyze(words)['execution']['multiply_count_range'])
+
+    def test_declared_extent_can_include_padding(self):
+        out = r.analyze([special(8, 31), 0, 0, 0])
+        self.assertEqual(16, out['owned_size'])
+        self.assertEqual(3, out['opcode_counts']['nop'])
+        self.assertEqual(1, out['execution']['paths'][0]['operation_counts']['nop'])
+
     def test_unknown_control_in_delay_slot_is_incomplete(self):
         out = r.analyze([imm(4, 4, 5, 1), special(8, 31), 0])
         self.assertIn('control-in-delay-slot', out['execution']['limits'])
@@ -124,6 +146,21 @@ class OperandTests(unittest.TestCase):
         words = [3 << 26, imm(9, 0, 4, 2), imm(9, 0, 5, 3), special(24, 4, 5)]
         out = r.analyze(words)
         self.assertEqual('unresolved', out['execution']['paths'][0]['multiplies'][0]['operands'][0]['kind'])
+
+    def test_control_register_transfers_use_fcr_namespace(self):
+        read = 17 << 26 | 2 << 21 | 4 << 16 | 31 << 11
+        write = 17 << 26 | 6 << 21 | 5 << 16 | 31 << 11
+        self.assertEqual(['fcr31'], r.decode(read, 0)['sources'])
+        self.assertEqual('r4', r.decode(read, 0)['destination'])
+        self.assertEqual(['r5'], r.decode(write, 0)['sources'])
+        self.assertEqual('fcr31', r.decode(write, 0)['destination'])
+
+    def test_control_register_write_does_not_clobber_same_numbered_data_register(self):
+        write = 17 << 26 | 6 << 21 | 5 << 16 | 2 << 11
+        words = [imm(9, 0, 4, 2), mtc1(4, 2), write, fp()]
+        value = r.analyze(words)['execution']['paths'][0]['multiplies'][0]['operands'][0]
+        self.assertEqual('constant-bits', value['kind'])
+        self.assertEqual(2, value['value'])
 
     def test_fp_transfer_preserves_bits_without_computing_float_arithmetic(self):
         words = [imm(15, 0, 4, 1), mtc1(4, 2), mtc1(4, 4), fp()]
@@ -209,7 +246,8 @@ class ObjectBoundaryTests(unittest.TestCase):
         def section_bytes(self, name):
             return bytes(8) + struct.pack(">IIII", self.word, 0, special(8, 31), 0)
 
-        def relocations(self):
+        def relocations(self, target=r"\.text"):
+            self.requested_relocation_target = target
             return list(self.relocation)
 
     def test_local_pc16_uses_symbol_definition_not_placeholder_offset(self):
@@ -219,6 +257,17 @@ class ObjectBoundaryTests(unittest.TestCase):
         self.assertEqual(4, len(words))
         self.assertEqual({0: 8}, targets)
         self.assertEqual('R_MIPS_PC16', relocs[0][0])
+
+    def test_other_section_relocations_at_same_offsets_are_ignored(self):
+        fixture = self.Elf(imm(4, 4, 5, -1), [
+            (".rodata", 8, r.rs.R_MIPS_26, 2),
+            (".text", 8, r.rs.R_MIPS_PC16, 1),
+            (".data", 12, r.rs.R_MIPS_LO16, 2)])
+        with mock.patch.object(r.rs, 'Elf', return_value=fixture):
+            _, relocs, targets = r.load_function('fixture.o', 'owned')
+        self.assertEqual(r"\.text", fixture.requested_relocation_target)
+        self.assertEqual({0: ('R_MIPS_PC16', 'local')}, relocs)
+        self.assertEqual({0: 8}, targets)
 
     def test_raw_local_jump_is_rebased_for_multifunction_object(self):
         fixture = self.Elf(2 << 26 | 4)

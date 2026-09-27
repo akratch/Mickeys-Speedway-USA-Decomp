@@ -79,8 +79,10 @@ def decode(word, offset):
         elif fn in (26, 27, 30, 31):
             row.update(family="divide", destination=None)
         elif fn in (8, 9):
-            row.update(family="control", sources=[g(a)], destination=g(c) if fn == 9 else None,
-                       control="call" if fn == 9 else ("return" if a == 31 else "indirect"))
+            row.update(family="control", sources=[g(a)],
+                       destination=g(c) if fn == 9 and c != 0 else None,
+                       control=("call" if c != 0 else "indirect") if fn == 9
+                       else ("return" if a == 31 else "indirect"))
         elif fn in (12, 13):
             row.update(family="control", control="trap", destination=None)
         elif fn in (16, 18):
@@ -105,9 +107,10 @@ def decode(word, offset):
             row["control"] = "conditional-call"
     elif op == 17:
         if a in (0, 2, 4, 6):
+            cop_register = "fcr%d" % c if a in (2, 6) else f(c)
             row.update(opcode={0: "mfc1", 2: "cfc1", 4: "mtc1", 6: "ctc1"}[a], family="transfer",
-                       sources=[g(b)] if a in (4, 6) else [f(c)],
-                       destination=f(c) if a in (4, 6) else g(b))
+                       sources=[g(b)] if a in (4, 6) else [cop_register],
+                       destination=cop_register if a in (4, 6) else g(b))
         elif a in (16, 17, 20, 21):
             suffix = {16: "s", 17: "d", 20: "w", 21: "l"}[a]
             row.update(opcode=(FP.get(fn, "compare" if fn >= 48 else "unknown-fp") + "." + suffix),
@@ -384,8 +387,11 @@ def load_function(path, symbol):
     symbols = elf.symbols()
     names = {rs.R_MIPS_26: "R_MIPS_26", rs.R_MIPS_HI16: "R_MIPS_HI16",
              rs.R_MIPS_LO16: "R_MIPS_LO16", rs.R_MIPS_PC16: "R_MIPS_PC16"}
-    for _, offset, kind, symbol_index in elf.relocations():
-        if not start <= offset < start + size:
+    # Elf.relocations already defaults to an exact .text regex. Keep both the
+    # explicit selector and destination check so alternate readers cannot mix
+    # another section's section-relative offsets into this function.
+    for section_name, offset, kind, symbol_index in elf.relocations(target=r"\.text"):
+        if section_name != ".text" or not start <= offset < start + size:
             continue
         if symbol_index >= len(symbols):
             raise ValueError("relocation symbol index escapes the symbol table")

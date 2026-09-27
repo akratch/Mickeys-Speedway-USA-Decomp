@@ -125,7 +125,7 @@ extern void amTuneStop(void);
 extern u8 amTuneGetSeqNo(void);
 extern void func_80036AB0(void *, s32);
 extern s32 *piRomLoad(s32);
-extern void piRomLoadSection(s32, void *, s32, s32);
+extern s32 piRomLoadSection(s32, void *, s32, s32);
 extern void mmFree(void *);
 extern void *func_8002B280(s32, s32);
 extern u8 *align4(u8 *);
@@ -186,18 +186,11 @@ extern void func_80004B04(s16);
 extern void modFreeModel(void *);
 extern void runlinkFlushModules(void);
 
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: body adapted from public JFG src/level.c at commits
  * 773e313/1a92d81; the pinned JFG reference still uses GLOBAL_ASM, and Mickey
- * byte identity is decisive. Counted `i != 16` is 255/259 raw and 256/259
- * masked, size 1036, frame 0x58, first masked mismatch +0x13C: the world
- * value is v0 where the target uses a0. The clear-loop end HI/LO names
- * D_800CF3E0+0x40 rather than D_800CF420. The end-pointer walk
- * `&D_800CF3E0[i] != (s32 *)D_800CF420` keeps that symbol but does not
- * unroll and scores 160 masked. A block-scoped s8 or s32 world carrier
- * stays in v0 and grows the frame to 0x60. The three sites are one
- * uopt coalescing tie; an earlier permuter left this object residual.
+ * byte identity is decisive. piRomLoadSection returns s32; keeping that
+ * result in count lets the following world value coalesce into a0.
  */
 void levelGetCounts(void) {
     s32 i;
@@ -221,7 +214,7 @@ void levelGetCounts(void) {
     D_800CF3D8 = -1;
     D_800CF3C8 = header;
     for (i = 0; i < D_800CF3D4; i++) {
-        piRomLoadSection(0x1F, D_800CF3C8, D_800CF3C0[i], sizeof(LevelHeaderSummarySource));
+        count = piRomLoadSection(0x1F, D_800CF3C8, D_800CF3C0[i], sizeof(LevelHeaderSummarySource));
         if (D_800CF3C8->world > D_800CF3D8) {
             D_800CF3D8 = D_800CF3C8->world;
         }
@@ -255,9 +248,6 @@ void levelGetCounts(void) {
     }
     mmFree(D_800CF3C0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/level/levelGetCounts.s")
-#endif
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
 s32 levelNGetType(s32 arg0) {
@@ -826,12 +816,3 @@ s32 levelInitRegionFlags(void) {
  * PLATEAU-HANDOFF:levelInit:end
  */
 
-/* PLATEAU-HANDOFF:levelGetCounts:start
- * symbol: levelGetCounts
- * score: 256/259 words
- * frame: 0x58
- * relocations: 37
- * first-mismatch: +0x13C
- * summary: Counted i!=16 unrolls to 256/259; end pointer is 160. s8/s32 world carrier stays v0 and frame 0x60. Stall: a0/v0 tie at +0x13C; end names D_800CF3E0+0x40.
- * PLATEAU-HANDOFF:levelGetCounts:end
- */

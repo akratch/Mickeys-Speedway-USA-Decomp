@@ -1,8 +1,8 @@
 # Campaign efficiency: evidence before more attempts
 
-This is private operating guidance, not public release material. ADRs remain
-authoritative, especially the matching standard, plateau cap, lane isolation,
-and ADR 0016's narrow manual-escalation and standing-sweep rules.
+This guidance is tracked in the public canonical repository. ADRs remain
+authoritative, especially the matching standard, lane isolation, ADR 0017's
+causal exploration packets and ADR 0018's progress-based stopping rule.
 
 ## Scheduling
 
@@ -18,9 +18,12 @@ candidate object. A few differing words do not imply a cheap remaining fix:
 check the plateau history and the named mechanism before allocating attempts.
 Do not turn a scheduler/allocation category into an assumption of reachability.
 
-Manual escalation still requires the frame-exact, small masked-residual,
-concrete-lever evidence in ADR 0016. An unclassified structural candidate goes
-to TU/context diagnosis or the bounded sweep, not an unrestricted reopen.
+ADR 0016 governs ordinary escalation and standing sweeps. An explicitly
+authorized ADR 0017 causal packet may investigate structural deficits beyond
+that narrow threshold, with authenticated ownership and baseline context. Stop
+after three consecutive attempts yielding no improvement, proved identity or
+eliminated hypothesis under ADR 0018; close before editing when the assigned
+mechanism is already ruled out. Neither route grants an unrestricted reopen.
 Tool faults are repaired as operational work; do not charge them to a source
 permutation hypothesis or invent a lever merely to pass an assignment filter.
 
@@ -63,7 +66,8 @@ source-search control, not merely because another metric can be displayed.
 Keep scalar words for continuity, structural evidence for comparing different
 candidate shapes, and linked-range/relocation/ROM gates as the final authority.
 
-Release only reviewed exact changes already integrated and proved privately.
-The public mirror receives separate public-safe commits and its own gates;
-none of these private campaign instructions, lane receipts, or plateaus enter
-that mirror.
+Publish reviewed exact changes through `campaign/unchain` and `tools/land.sh`
+only after the required proof and integration gates. The canonical origin is
+public; there is no private mirror or later publication boundary. Keep raw
+ROM-derived captures and lane receipts ignored; concise permitted evidence
+notes still follow the clean-room and commit rules.

@@ -1,159 +1,151 @@
 #!/usr/bin/env python3
-"""Forced-floor census: every case is synthetic handoff prose.
-
-The phrasings are the ones lanes actually write; the point of each test is
-that a claim is read the way a coordinator would read it, and that nothing
-is called exhausted without a stated exhaustion.
-"""
+"""Synthetic floor evidence: chronology, source binding and route scope."""
+import hashlib
+import json
 import pathlib
+import subprocess
 import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-
-import forced_floor_census as ffc  # noqa: E402
-
-
-def shard(symbol: str, summary: str, *sections: str) -> str:
-    body = [
-        f"<!-- plateau-handoff:{symbol}:start -->",
-        f"### `{symbol}` plateau handoff",
-        "",
-        "- source: `src/overlays/o999/example.c`",
-        "- score: 10/100 words",
-        f"- summary: {summary}",
-        "",
-    ]
-    for section in sections:
-        body += [section, ""]
-    body.append(f"<!-- plateau-handoff:{symbol}:end -->")
-    return "\n".join(body)
+import forced_floor_census as ffc
 
 
-def rank(name: str, words: int, delta: int = 0, size: int = 400) -> dict:
-    return {"name": name, "relocation_masked_differing_words": words,
-            "size_delta": delta, "size_bytes": size}
+class FloorEvidence(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = pathlib.Path(self.tmp.name)
+        self.source = 'src/example.c'
+        path = self.root / self.source
+        path.parent.mkdir()
+        path.write_text('void example(void) {}\n')
+        self.rank = {'name': 'example', 'file': self.source, 'overlay': 9,
+                     'size_bytes': 400, 'size_delta': 0,
+                     'relocation_masked_differing_words': 20,
+                     'source_context_sha256': 'current-context'}
+        self.receipt = dict(symbol='example', source=self.source,
+                            source_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+                            source_context_sha256='current-context', overlay=9,
+                            target_size_bytes=400, search_scope='every-colour',
+                            result='exhausted', floor=14)
 
+    def line(self, **changes):
+        return '<!-- colour-exhaustion-v1 ' + json.dumps(dict(self.receipt, **changes)) + ' -->'
 
-def run(shards: dict[str, str], ranking: list[dict],
-        sources: dict | None = None) -> dict[str, ffc.Row]:
-    rows = ffc.census(
-        ranking={r["name"]: r for r in ranking},
-        shards={k: (f"docs/matching-triage-handoffs/{k}.md", v)
-                for k, v in shards.items()},
-        sources=sources or {}, commits=False)
-    return {r.symbol: r for r in rows}
+    def census(self, text, *, context='current-context', committed=True):
+        with patch.object(ffc, 'ROOT', self.root), \
+             patch.object(ffc, 'current_contexts', return_value={(self.source, 'example'): context}), \
+             patch.object(ffc, 'receipt_commit', return_value='a' * 40 if committed else None):
+            return ffc.census(ranking={'example': self.rank},
+                              shards={'example': ('docs/example.md', text)},
+                              sources={}, commits=False)[0]
 
-
-EXHAUSTIVE = (
-    "#### 2026-09-12, lane p23: exhaustive colour floor\n\n"
-    "The every-colour footprint sampled 80 probes over 9 coloured webs; no\n"
-    "accepted force beat 14, so the winner list is empty and the lattice\n"
-    "floor is 14. The named source question is still open."
-)
-
-
-class ClaimParsing(unittest.TestCase):
-    def test_wrapped_exhaustive_section_is_a_proved_floor(self):
-        row = run({"a": shard("a", "Size 0.", EXHAUSTIVE)}, [rank("a", 14)])["a"]
-        self.assertEqual(row.floor, 14)
+    def test_prose_is_advisory_even_with_exhaustion(self):
+        row = self.census('Colour floor 14; no zero-scoring force.')
         self.assertTrue(row.proved)
-        self.assertEqual(row.status, "colour-exhausted")
+        self.assertEqual(row.status, 'needs-review')
+        self.assertIsNone(row.commit)
+        self.assertEqual(ffc.colour_exhausted([row]), {})
 
-    def test_summary_phrasings(self):
-        cases = {
-            "Colour floor 28 (202 probes, 0 winners).": (28, True),
-            "exhaustive same-kind colour landscape floors at 2 with 0 winners "
-            "of 172 probes": (2, True),
-            "Floor 89 at delta 0 from p1:w61=c11. No zero-scoring force.": (89, True),
-            "the measured single-force colour floor is 51/344 over the sample.": (51, False),
-            "Colour floor **224**. No 0-score force.": (224, True),
-        }
-        for text, (floor, proved) in cases.items():
-            with self.subTest(text):
-                row = run({"s": shard("s", text)}, [rank("s", floor)])["s"]
-                self.assertEqual((row.floor, row.proved), (floor, proved))
+    def test_prepended_newer_and_appended_history_cannot_establish_binding(self):
+        new = '#### 2026-09-20\nColour floor 4; zero winners.'
+        old = '#### 2026-09-10\nColour floor 20; zero winners.'
+        a, b = self.census(new + '\n' + old), self.census(old + '\n' + new)
+        self.assertEqual((a.status, a.claims), ('needs-review', [4, 20]))
+        self.assertEqual((a.status, a.claims), (b.status, b.claims))
 
-    def test_delta_zero_winners_are_not_zero_winners(self):
-        """'Four delta-0 winners' lists winners; it is not an exhaustion."""
-        text = "Colour: 151 probes. Four delta-0 winners score 224. Colour floor 224."
-        row = run({"s": shard("s", text)}, [rank("s", 226)])["s"]
+    def test_unrelated_section_proof_cannot_contaminate_claim(self):
+        row = self.census('Colour floor 14.\n\nA separate old probe had zero winners.')
         self.assertFalse(row.proved)
-        self.assertEqual(row.status, "unproved")
+        self.assertEqual(row.status, 'needs-review')
 
-    def test_floor_without_colour_context_is_ignored(self):
-        """A structural 'floor' is not a colour floor."""
-        text = "No legal merge reaches 0x38: the legal floor is three declarations."
-        self.assertEqual(run({"s": shard("s", text)}, [rank("s", 9)]), {})
-        text = "The floor of the whole family is 56."
-        self.assertEqual(run({"s": shard("s", text)}, [rank("s", 60)]), {})
+    def test_current_receipt_has_exact_evidence_commit(self):
+        row = self.census(self.line())
+        self.assertEqual(row.status, 'colour-exhausted')
+        self.assertTrue(row.bound)
+        self.assertEqual(row.commit, 'a' * 40)
+        self.assertEqual(list(ffc.colour_exhausted([row])), ['example'])
 
-    def test_later_section_supersedes_earlier(self):
-        first = ("#### 2026-09-10, lane a\n\nThe lattice floor is 40; there is no "
-                 "zero-scoring force.")
-        second = ("#### 2026-09-19, lane b\n\n--every-colour (202 probes, 31 webs) "
-                  "has zero winners of 28.")
-        row = run({"s": shard("s", "Colour floor 40.", first, second)},
-                  [rank("s", 28)])["s"]
-        self.assertEqual(row.floor, 28)
-        self.assertEqual(row.status, "colour-exhausted")
+    def test_source_change_with_unchanged_score_needs_review(self):
+        (self.root / self.source).write_text('void example(void) { /* changed */ }\n')
+        row = self.census(self.line())
+        self.assertEqual(row.status, 'needs-review')
+        self.assertEqual(row.reason, 'source changed')
 
-    def test_proof_must_be_in_the_section_stating_the_floor(self):
-        proof = "#### 2026-09-10, lane a\n\nColour cannot close it."
-        floor = "#### 2026-09-12, lane b\n\nThe diagnostic lattice floor of 47 holds."
-        row = run({"s": shard("s", "Size 0.", proof, floor)}, [rank("s", 49)])["s"]
-        self.assertEqual(row.floor, 47)
-        self.assertFalse(row.proved)
+    def test_header_flags_compiler_or_target_context_change_needs_review(self):
+        row = self.census(self.line(), context='changed-context')
+        self.assertEqual(row.status, 'needs-review')
+        self.assertIn('context changed', row.reason)
 
+    def test_stale_ranking_cannot_authenticate_context(self):
+        self.rank['source_context_sha256'] = 'stale'
+        self.assertEqual(self.census(self.line()).status, 'needs-review')
 
-class Classification(unittest.TestCase):
-    def rows(self, **ranking):
-        shards = {name: shard(name, "Colour floor 20. No zero-scoring force.")
-                  for name in ranking}
-        return run(shards, [rank(n, *v) for n, v in ranking.items() if v])
+    def test_uncommitted_or_duplicate_line_cannot_be_evidence(self):
+        self.assertEqual(self.census(self.line(), committed=False).status, 'needs-review')
 
-    def test_statuses(self):
-        rows = run(
-            {n: shard(n, s) for n, s in {
-                "exhausted": "Colour floor 20. No zero-scoring force.",
-                "zero": "Colour floor 0: a zero-scoring force exists.",
-                "moved": "Colour floor 20. No zero-scoring force.",
-                "track_b": "Colour floor 20. No zero-scoring force.",
-                "hedged": "Colour floor 20.",
-                "gone": "Colour floor 20. No zero-scoring force.",
-            }.items()},
-            [rank("exhausted", 25), rank("zero", 3), rank("moved", 12),
-             rank("track_b", 30, delta=4), rank("hedged", 20)])
-        self.assertEqual(
-            {k: v.status for k, v in rows.items()},
-            {"exhausted": "colour-exhausted", "zero": "zero-floor",
-             "moved": "superseded", "track_b": "size-mismatch",
-             "hedged": "unproved", "gone": "not-queued"})
+    def test_conflicting_receipts_refuse_in_either_order(self):
+        a, b = self.line(), self.line(floor=12)
+        for text in [a + '\n' + b, b + '\n' + a]:
+            row = self.census(text)
+            self.assertEqual(row.status, 'needs-review')
+            self.assertEqual(row.reason, 'conflicting current receipts')
 
-    def test_source_block_is_read_when_no_shard_states_a_floor(self):
-        body = ("\n * symbol: blk\n * score: 5/50 words\n * summary: Size 0 at 61. "
-                "Colour floor 61. Colour cannot close it.\n * PLATEAU-HANDOFF:blk:end\n")
-        rows = run({}, [rank("blk", 61)],
-                   sources={"blk": [("src/overlays/o999/blk.c", body)]})
-        self.assertEqual(rows["blk"].status, "colour-exhausted")
-        self.assertEqual(rows["blk"].handoff, "src/overlays/o999/blk.c")
+    def test_stale_and_current_receipts_require_explicit_reconciliation(self):
+        row = self.census(self.line() + '\n' + self.line(source_context_sha256='old'))
+        self.assertEqual(row.status, 'needs-review')
 
+    def test_wrong_owner_scope_size_or_result_refuses(self):
+        for changes in [dict(symbol='other'), dict(source='src/other.c'),
+                        dict(overlay=10), dict(target_size_bytes=404),
+                        dict(search_scope='one-web'), dict(floor=-1),
+                        dict(result='zero-floor'), dict(floor=True)]:
+            with self.subTest(changes=changes):
+                self.assertEqual(self.census(self.line(**changes)).status, 'needs-review')
 
-class Document(unittest.TestCase):
-    def test_doc_carries_counts_and_no_prose(self):
-        rows = run({"a": shard("a", "Colour floor 14. No zero-scoring force: "
-                                    "SENTINEL prose.")},
-                   [rank("a", 14, size=1234)])
-        text = ffc.render_doc(list(rows.values()))
-        self.assertIn("1 queued functions, 1,234 bytes, are colour-exhausted", text)
-        self.assertIn("| `a` | 1,234 | +0 | 14 | 14 | yes | colour-exhausted |", text)
-        self.assertNotIn("SENTINEL", text)
+    def test_valid_zero_floor_is_not_exhaustion(self):
+        row = self.census(self.line(floor=0, result='zero-floor'))
+        self.assertEqual(row.status, 'zero-floor')
+        self.assertEqual(ffc.colour_exhausted([row]), {})
 
-    def test_colour_exhausted_helper(self):
-        rows = list(run({"a": shard("a", "Colour floor 14. Zero winners.")},
-                        [rank("a", 14)]).values())
-        self.assertEqual(list(ffc.colour_exhausted(rows)), ["a"])
+    def test_malformed_record_is_advisory(self):
+        for payload in ['{', 'null', '{}']:
+            self.assertEqual(self.census('<!-- colour-exhaustion-v1 ' + payload + ' -->').status,
+                             'needs-review')
+
+    def test_document_labels_prose_and_never_presents_last_touch_as_evidence(self):
+        row = self.census('Colour floor 14; zero winners.')
+        doc = ffc.render_doc([row])
+        self.assertIn('0 queued functions', doc)
+        self.assertIn('needs-review', doc)
+        self.assertIn('evidence commit', doc)
+        self.assertIn('Legacy prose is advisory', doc)
 
 
-if __name__ == "__main__":
+class CommitBinding(unittest.TestCase):
+    def test_blame_tracks_receipt_not_later_shard_edit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            def git(*args):
+                return subprocess.check_output(['git', *args], cwd=root, text=True).strip()
+            git('init', '-q')
+            git('config', 'user.name', 'Fixture')
+            git('config', 'user.email', 'fixture@example.invalid')
+            path = root / 'receipt.md'
+            line = '<!-- colour-exhaustion-v1 {} -->'
+            path.write_text(line + '\n')
+            git('add', 'receipt.md'); git('commit', '-qm', 'receipt')
+            first = git('rev-parse', 'HEAD')
+            path.write_text('New unrelated section\n' + line + '\n')
+            git('add', 'receipt.md'); git('commit', '-qm', 'unrelated')
+            import nm_ranking as nm
+            with patch.object(nm, 'ROOT', root):
+                self.assertEqual(ffc.receipt_commit('receipt.md', line), first)
+                self.assertIsNone(ffc.receipt_commit('receipt.md', 'missing'))
+
+
+if __name__ == '__main__':
     unittest.main()

@@ -461,7 +461,7 @@ def source_context_digest(source_text: Optional[str], symbol: str) -> Optional[s
     targets = [
         block
         for block in blocks
-        if pb.block_function_name(source_text, block) == symbol
+        if pb.block_function_names(source_text, block).count(symbol) == 1
     ]
     if len(targets) != 1:
         return None
@@ -610,7 +610,7 @@ def header_dependencies(
 def configured_tool_digest() -> str:
     """Fingerprint compiler binaries and the code that prepares comparisons."""
     paths = [ROOT / "tools" / name for name in (
-        "nm_ranking.py", "permute_batch.py", "ido-phases.py",
+        "nm_ranking.py", "permute_batch.py", "finalize_plateau.py", "ido-phases.py",
         "permuter/import.py", "permuter/prelude.inc",
         "binutils/mips64-elf-as", "binutils/mips64-elf-objdump",
         "binutils/mips64-elf-objcopy",

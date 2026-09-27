@@ -508,7 +508,8 @@ def guarded_candidate_region(ref: str, path: str, symbol: str) -> str | None:
     if text is None:
         return None
     try:
-        candidate = finalize_plateau.require_guarded_candidate(text, symbol)
+        candidate = finalize_plateau.require_guarded_candidate(
+            text, symbol, source_fallback_aliases(ref, path, symbol))
     except finalize_plateau.PlateauError:
         return None
     lines = text.splitlines(keepends=True)
@@ -964,7 +965,7 @@ def active_lanes_for_source(
     common_shard_objects = blob_contents(common_refs, target_shard_path)
     try:
         base_candidate = finalize_plateau.require_guarded_candidate(
-            base_text or "", symbol
+            base_text or "", symbol, source_fallback_aliases(base, base_path, symbol)
         )
     except finalize_plateau.PlateauError:
         base_candidate = None
@@ -1027,7 +1028,7 @@ def active_lanes_for_source(
             continue
         try:
             lane_candidate = finalize_plateau.require_guarded_candidate(
-                lane_text, symbol
+                lane_text, symbol, source_fallback_aliases(branch, base_path, symbol)
             )
         except finalize_plateau.PlateauError:
             active.append(branch)
@@ -1041,7 +1042,7 @@ def active_lanes_for_source(
         common_text = common_object[1] if common_object is not None else None
         try:
             common_candidate = finalize_plateau.require_guarded_candidate(
-                common_text or "", symbol
+                common_text or "", symbol, source_fallback_aliases(common, base_path, symbol)
             )
         except finalize_plateau.PlateauError:
             common_candidate = None

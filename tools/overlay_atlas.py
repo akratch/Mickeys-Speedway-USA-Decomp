@@ -1259,6 +1259,12 @@ MIXED_TU_EXACT_C_RANGES = {
             "canonical mixed-TU object, 61 runtime relocations, and linked bytes exact",
         ),
         (
+            0x61F0,
+            0x6270,
+            "overlay1HandleCachedMode",
+            "canonical mixed-TU object, 13 runtime relocations, and linked ROM bytes exact",
+        ),
+        (
             0x6270,
             0x63CC,
             "overlay1ChooseModeObject",
@@ -1425,6 +1431,12 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x49E8, 0x4CF0, "overlay8UpdateMotionOutput"),
     ],
     9: [
+        (
+            0x0744,
+            0x09BC,
+            "func_overlay_009_F0000744_1866DBC",
+            "stock C, nine raw runtime identities, declared metadata filters, and linked ROM bytes exact",
+        ),
         (
             0x09BC,
             0x0CE4,

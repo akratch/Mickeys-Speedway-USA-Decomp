@@ -1,58 +1,30 @@
 #!/usr/bin/env python3
-"""Census of forced colour floors recorded in plateau handoffs.
+"""Report colour-floor claims without turning prose into assignment authority.
 
-    tools/forced_floor_census.py [--json] [--all]
-    tools/forced_floor_census.py --write docs/forced-floor-census.md
-    tools/forced_floor_census.py --check docs/forced-floor-census.md
-    tools/forced_floor_census.py --why SYMBOL
-    gmake forced-floor-census
+Legacy prose is advisory (needs-review), regardless of document order, score or
+exhaustion wording. A decisive record is one committed single-line comment:
 
-Lanes price a function's colour axis with `force_lattice.py` and the
-`--every-colour` landscape, and write the result into the plateau handoff:
-"the lattice floor is 14", "Colour floor 28 (202 probes, 0 winners)",
-"No zero-scoring force", "Colour cannot close it". That sentence is the most
-expensive fact in the shard -- an exhaustive landscape is minutes of compiles
-per web -- and until now nothing read it back. Triage routed the same function
-to the next colour lane, which re-derived the floor.
+    <!-- colour-exhaustion-v1 {JSON object} -->
 
-This tool reads every handoff shard under `docs/matching-triage-handoffs/` and
-every `PLATEAU-HANDOFF` comment block under `src/`, and records per symbol:
+The object supplies symbol, source, source_sha256, source_context_sha256,
+overlay (integer or null), target_size_bytes, search_scope (every-colour),
+result (exhausted or zero-floor), and floor. The configured full-TU fingerprint
+is the existing nm_ranking source context: source, includes, command, compiler,
+target and tools. It is recomputed, never inferred from an unchanged score.
+The exact receipt line's Git blame supplies its evidence commit; uncommitted,
+ambiguous, contradictory or stale records remain needs-review. A record does
+not grant a reopen. Colour exhaustion never excludes structural work.
 
-* **floor** -- the last colour/lattice/force floor stated, in document order
-  (the shard header's summary counts as the earliest statement);
-* **base** -- the symbol's current masked score from
-  `config/nonmatching-ranking.us.json`;
-* **proved** -- whether the section that states that floor also states the
-  search was exhausted: no zero-scoring force, an empty winner list, zero
-  winners, no accepted force beating the floor, or "colour cannot close";
-* **handoff commit** -- the last commit that touched the handoff.
-
-and classifies it:
-
-    colour-exhausted  proved, floor > 0, size delta 0, base >= floor.
-                      Colour alone cannot close it; triage excludes it and
-                      reports it, and only a structural lane should take it.
-    zero-floor        a 0-scoring force exists: the L160 route, not exhausted.
-    superseded        base < floor: the source moved past the recorded floor,
-                      which was therefore measured on an older source.
-    size-mismatch     floor recorded, but the size delta is nonzero today:
-                      Track B, not a colour question.
-    unproved          a floor is stated but no exhaustion claim accompanies it.
-    not-queued        no longer in the ranking (matched, promoted or retired).
-
-It reads prose, so it is a parser of claims, not a re-measurement: a row says
-what a lane wrote down, and the handoff commit says where to check it. It
-never reads assembly, build products or the baserom, and the tracked summary
-it writes carries symbols, numbers and commits only.
+No compiler is invoked. Raw captures and machine words are never persisted.
 """
 from __future__ import annotations
 
 import argparse
 import dataclasses
+import hashlib
 import json
 import pathlib
 import re
-import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -99,7 +71,7 @@ SRC_SYMBOL = re.compile(r"^\s*\*?\s*symbol:\s*([A-Za-z_]\w*)\s*$", re.M)
 class Claim:
     floor: int
     proved: bool
-    position: int          # document order: later statements supersede earlier
+    position: int          # display location only; never establishes chronology
     sentence: str = ""     # the claim, for --why; never written to the doc
     proof: str = ""        # the exhaustion phrase that proved it, if any
 
@@ -117,6 +89,10 @@ class Row:
     status: str = ""
     sentence: str = ""
     proof: str = ""
+    reason: str = "unbound prose claim"
+    bound: bool = False
+    claims: list[int] = dataclasses.field(default_factory=list)
+    search_scope: str | None = None
 
 
 def sentences(section: str) -> list[str]:
@@ -145,13 +121,13 @@ def sentences(section: str) -> list[str]:
 
 
 def section_claims(section: str, start: int) -> list[Claim]:
-    """Every colour-floor claim in one section, proved if the section says so."""
+    """Advisory claims; exhaustion wording must belong to the same claim unit."""
     clean = section.replace("**", "").replace("`", "")
-    proof = PROVED.search(" ".join(clean.split()))
     out = []
     for offset, unit in enumerate(sentences(clean)):
         if not COLOUR_CONTEXT.search(unit):
             continue
+        proof = PROVED.search(unit)
         found: list[tuple[int, int]] = []
         for pattern in FLOOR_PATTERNS:
             for match in pattern.finditer(unit):
@@ -174,10 +150,6 @@ def text_claims(text: str) -> list[Claim]:
     for index, lines in enumerate(sections):
         claims.extend(section_claims("\n".join(lines), index * 10 ** 7))
     return claims
-
-
-def latest(claims: list[Claim]) -> Claim | None:
-    return max(claims, key=lambda c: c.position) if claims else None
 
 
 def shard_texts() -> dict[str, tuple[str, str]]:
@@ -206,94 +178,161 @@ def source_texts() -> dict[str, list[tuple[str, str]]]:
     return out
 
 
-# Ten hex digits: unambiguous here, and never the 4/8/16-digit shape the
-# clean-room sweep reads as a bare machine word (a column of 8-digit short
-# hashes is indistinguishable from a word dump to that detector, rightly).
-ABBREV = "--abbrev=10"
+RECEIPT = re.compile(r"^\s*<!-- colour-exhaustion-v1 (.*?) -->\s*$", re.M)
 
 
-def last_commits(paths: set[str]) -> dict[str, str]:
-    """Last commit touching each path, from one log walk per directory."""
-    found: dict[str, str] = {}
-    shard_dir = HANDOFFS.relative_to(ROOT).as_posix()
-    wanted_shards = {p for p in paths if p.startswith(shard_dir + "/")}
-    if wanted_shards:
-        log = subprocess.run(
-            ["git", "log", ABBREV, "--format=@%h", "--name-only", "--", shard_dir],
-            cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-        ).stdout
-        current = None
-        for line in log.splitlines():
-            if line.startswith("@"):
-                current = line[1:]
-            elif line and current and line in wanted_shards and line not in found:
-                found[line] = current
-    for path in sorted(paths - wanted_shards):
-        value = subprocess.run(
-            ["git", "log", "-1", ABBREV, "--format=%h", "--", path],
-            cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-        ).stdout.strip()
-        if value:
-            found[path] = value
-    return found
+def receipt_commit(path: str, line: str) -> str | None:
+    """Pin the exact committed claim, not the shard's unrelated last edit."""
+    import nm_ranking as nm
+    try:
+        matches = [(commit, content) for commit, content in
+                   nm.blamed_source_lines("HEAD", path) if content.strip() == line.strip()]
+    except nm.RankingDocumentError:
+        return None
+    if len(matches) != 1:
+        return None
+    return matches[0][0]
+
+
+def current_contexts(records: list[dict]) -> dict[tuple[str, str], str]:
+    import nm_ranking as nm
+    import permute_batch as pb
+    keys = {(r.get("source"), r.get("symbol")) for r in records}
+    items = [item for item in pb.discover_queue()
+             if (item.rel_c_file, item.func) in keys]
+    return nm.current_source_contexts(items) if items else {}
+
+
+def authenticate(record: dict, entry: dict | None, contexts: dict,
+                 evidence_commit: str | None) -> str | None:
+    """Return a refusal reason, or None for a current, committed receipt."""
+    required = {"symbol", "source", "source_sha256", "source_context_sha256",
+                "overlay", "target_size_bytes", "search_scope", "result", "floor"}
+    if set(record) != required:
+        return "invalid receipt fields"
+    if any(not isinstance(record[k], str) for k in
+           ("symbol", "source", "source_sha256", "source_context_sha256", "search_scope", "result")):
+        return "invalid receipt field types"
+    if not evidence_commit:
+        return "receipt is not uniquely committed"
+    if not entry:
+        return "symbol is not queued"
+    if (record["symbol"] != entry["name"] or record["source"] != entry.get("file")
+            or record["overlay"] != entry.get("overlay")
+            or type(record["target_size_bytes"]) is not int
+            or record["target_size_bytes"] != entry["size_bytes"]):
+        return "ownership mismatch"
+    if record["search_scope"] != "every-colour":
+        return "unsupported search scope"
+    if (type(record["floor"]) is not int or record["floor"] < 0
+            or record["result"] not in {"exhausted", "zero-floor"}
+            or (record["result"] == "zero-floor") != (record["floor"] == 0)):
+        return "invalid result"
+    source = pathlib.PurePosixPath(record["source"])
+    if source.is_absolute() or ".." in source.parts or not str(source).startswith("src/"):
+        return "invalid source path"
+    try:
+        digest = hashlib.sha256((ROOT / source).read_bytes()).hexdigest()
+    except OSError:
+        return "source unavailable"
+    if record["source_sha256"] != digest:
+        return "source changed"
+    context = contexts.get((record["source"], record["symbol"]))
+    if not context or record["source_context_sha256"] != context:
+        return "configured source/compiler context changed or unavailable"
+    if entry.get("source_context_sha256") != context:
+        return "ranking context is stale"
+    if entry.get("size_delta") != 0 or entry["relocation_masked_differing_words"] < record["floor"]:
+        return "ranking contradicts the receipt"
+    return None
 
 
 def classify(row: Row) -> str:
     if row.base is None:
         return "not-queued"
-    if row.floor == 0:
-        return "zero-floor"
-    if row.size_delta:
-        return "size-mismatch"
-    if row.base < row.floor:
-        return "superseded"
-    if not row.proved:
-        return "unproved"
-    return "colour-exhausted"
+    if not row.bound:
+        return "needs-review"
+    return "zero-floor" if row.floor == 0 else "colour-exhausted"
 
 
 def census(*, ranking: dict[str, dict] | None = None,
            shards: dict[str, tuple[str, str]] | None = None,
            sources: dict[str, list[tuple[str, str]]] | None = None,
            commits: bool = True) -> list[Row]:
-    """Every symbol with a recorded colour floor, classified."""
+    """Prose remains advisory; only current committed receipts affect colour routing."""
     if ranking is None:
-        ranking = {r["name"]: r for r in json.loads(
-            RANKING.read_text(encoding="utf-8"))["functions"]}
+        ranking = {r["name"]: r for r in json.loads(RANKING.read_text())["functions"]}
     shards = shard_texts() if shards is None else shards
     sources = source_texts() if sources is None else sources
-    rows: list[Row] = []
-    for symbol in sorted(set(shards) | set(sources)):
-        # The shard is the full record; a source block is its short summary.
-        # Prefer the shard's claim, fall back to the source block's.
-        best: tuple[Claim, str] | None = None
-        if symbol in shards:
-            path, text = shards[symbol]
-            claim = latest(text_claims(text))
-            if claim is not None:
-                best = (claim, path)
-        if best is None:
-            for path, body in sources.get(symbol, ()):
-                claim = latest(text_claims(body))
-                if claim is not None:
-                    best = (claim, path)
-        if best is None:
+    documents = {symbol: list(sources.get(symbol, ())) for symbol in set(shards) | set(sources)}
+    for symbol, document in shards.items():
+        documents[symbol].insert(0, document)
+    parsed = {}
+    all_records = []
+    for symbol, docs in documents.items():
+        records = []
+        for path, text in docs:
+            for match in RECEIPT.finditer(text):
+                try:
+                    record = json.loads(match.group(1))
+                    if not isinstance(record, dict):
+                        raise ValueError("receipt must be an object")
+                except (ValueError, TypeError):
+                    record = {}
+                records.append((record, path, match.group(0)))
+                all_records.append(record)
+        parsed[symbol] = records
+    context_error = None
+    try:
+        contexts = current_contexts(all_records) if all_records else {}
+    except Exception as error:
+        contexts = {}
+        context_error = f"context unavailable: {type(error).__name__}: {error}"
+    rows = []
+    for symbol, docs in sorted(documents.items()):
+        claims = [(claim, path) for path, text in docs for claim in text_claims(text)]
+        records = parsed[symbol]
+        if not claims and not records:
             continue
-        claim, path = best
         entry = ranking.get(symbol)
-        row = Row(
-            symbol=symbol, handoff=path, floor=claim.floor, proved=claim.proved,
-            base=entry["relocation_masked_differing_words"] if entry else None,
-            size_delta=entry.get("size_delta") if entry else None,
-            size_bytes=entry["size_bytes"] if entry else None,
-            commit=None, sentence=claim.sentence, proof=claim.proof,
-        )
+        # Display a deterministic representative only. All observed floors are
+        # retained, so prepending or appending history cannot silently supersede it.
+        claim, path = min(claims, key=lambda cp: (cp[0].floor, cp[1])) if claims else (Claim(0, False, 0), docs[0][0])
+        row = Row(symbol, path, claim.floor, claim.proved,
+                  entry["relocation_masked_differing_words"] if entry else None,
+                  entry.get("size_delta") if entry else None,
+                  entry["size_bytes"] if entry else None, None,
+                  sentence=claim.sentence, proof=claim.proof,
+                  claims=sorted({c.floor for c, _ in claims}))
+        if len(row.claims) > 1:
+            row.reason = "conflicting unbound prose floors"
+        valid = []
+        refusals = []
+        for record, record_path, line in records:
+            commit = receipt_commit(record_path, line)
+            reason = context_error or authenticate(record, entry, contexts, commit)
+            if record.get("symbol") != symbol:
+                reason = "receipt symbol differs from handoff owner"
+            if reason:
+                refusals.append(reason)
+            else:
+                valid.append((record, record_path, commit))
+        if valid and not refusals:
+            results = {(r["floor"], r["result"], r["search_scope"]) for r, _, _ in valid}
+            if len(results) == 1:
+                record, row.handoff, row.commit = valid[0]
+                row.floor = record["floor"]
+                row.proved = True
+                row.bound = True
+                row.search_scope = record["search_scope"]
+                row.reason = "current committed source/context-bound receipt"
+            else:
+                row.reason = "conflicting current receipts"
+        elif refusals:
+            row.reason = "; ".join(sorted(set(refusals)))
         row.status = classify(row)
         rows.append(row)
-    if commits:
-        found = last_commits({r.handoff for r in rows})
-        for row in rows:
-            row.commit = found.get(row.handoff)
+    # Legacy path history is navigation only; it never becomes an evidence pin.
     return rows
 
 
@@ -303,8 +342,7 @@ def colour_exhausted(rows: list[Row] | None = None) -> dict[str, Row]:
     return {r.symbol: r for r in rows if r.status == "colour-exhausted"}
 
 
-STATUS_ORDER = ("colour-exhausted", "zero-floor", "unproved", "superseded",
-                "size-mismatch", "not-queued")
+STATUS_ORDER = ("colour-exhausted", "zero-floor", "needs-review", "not-queued")
 
 
 def summary(rows: list[Row]) -> list[dict]:
@@ -328,9 +366,9 @@ def render_doc(rows: list[Row]) -> str:
         "",
         f"**{len(exhausted)} queued functions, "
         f"{sum(r.size_bytes or 0 for r in exhausted):,} bytes, are colour-exhausted**:",
-        "a proved forced floor above zero at size delta 0. `tools/triage.py` excludes",
-        "them from routes, clusters and bands and reports them; send them to a",
-        "structural lane, not a colour sweep.",
+        "Only committed source/context-bound receipts can exclude colour work.",
+        "Legacy prose is advisory and needs review. Structural visibility and",
+        "the independent lane_status assignment gate are unchanged.",
         "",
         "| status | functions | bytes |",
         "|---|---:|---:|",
@@ -341,7 +379,7 @@ def render_doc(rows: list[Row]) -> str:
         "",
         "Queued functions with a recorded floor:",
         "",
-        "| symbol | bytes | delta | base | floor | proved | status | handoff commit |",
+        "| symbol | bytes | delta | base | floor | proved | status | evidence commit |",
         "|---|---:|---:|---:|---:|:-:|---|---|",
     ]
     for row in sorted(queued, key=lambda r: (STATUS_ORDER.index(r.status),
@@ -389,6 +427,7 @@ def main(argv: list[str]) -> int:
                       f"delta {row.size_delta}, {row.handoff} @ {row.commit}")
                 print(f"  claim: {row.sentence}")
                 print(f"  proof: {row.proof or '(none stated)'}")
+                print(f"  binding: {row.reason}; prose floors: {row.claims}")
                 return 0
         print(f"no recorded colour floor for {args.why}", file=sys.stderr)
         return 1

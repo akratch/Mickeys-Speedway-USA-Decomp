@@ -19,16 +19,16 @@ typedef struct O9OutputRecord {
     s16 pitch;
     s16 yaw;
     u8 pad6[6];
-    s32 x;
-    s32 y;
-    s32 z;
+    f32 x;
+    f32 y;
+    f32 z;
 } O9OutputRecord;
 
 typedef struct O9OutputControl {
     u8 pad000[4];
     f32 lean;
     u8 pad008[0xB4];
-    s32 handle;
+    void *handle;
 } O9OutputControl;
 
 typedef struct O9OutputState {
@@ -200,15 +200,12 @@ extern void ext_o0_5aac4(void *, void *, void *);
 extern void ext_o0_19668(void *, void *, void *, void *);
 extern void ext_o0_1d510(void *, void *, void *, void *, s32);
 extern void ext_o0_2d98(void *);
-#ifdef NON_MATCHING
-extern void ext_o0_2b90(s32, f32, f32, f32, s32, void **);
-#else
-extern void ext_o0_2b90();
-#endif
+/* Mickey resident call boundaries and the spatial-audio ABI are authenticated. */
+extern void func_80002FE0(u16, f32, f32, f32, u8, void **);
 extern void ext_o0_3e99c(void *, s32);
-extern s32 ext_o0_2952c(s32, s32);
-extern s32 ext_o0_2d70(s32, s32, s32, s32);
-extern s32 ext_o0_2c64(s32, u8);
+extern s32 mathRnd(s32, s32);
+extern void func_800031C0(void *, f32, f32, f32);
+extern void func_800030B4(void *, u8);
 extern void ext_o0_7cd8(void *, f32, f32, f32);
 extern void ext_o0_1d920(O9IntegrateOutput *, O9IntegrateControl *, f32);
 extern s32 ext_o0_1353c(f32, f32, s32, O9Hit ***);

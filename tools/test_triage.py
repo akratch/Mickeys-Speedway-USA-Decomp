@@ -357,14 +357,15 @@ class ColourExhaustedTests(unittest.TestCase):
             r = triage.report(60.0, 5)
             return r, triage.render(r)
 
-    def test_a_colour_exhausted_target_leaves_the_route_and_is_reported(self):
+    def test_colour_exhaustion_keeps_structural_route_and_filters_colour_route(self):
         r, rendered = self._report({"floored": {"floor": 5, "base": 5,
                                                 "handoff": "docs/x.md"}})
-        self.assertNotIn("floored", r["route"]["names"])
+        self.assertIn("floored", r["route"]["names"])
+        self.assertNotIn("floored", r["colour_route"]["names"])
         self.assertEqual(r["colour_exhausted"]["functions"], 1)
         self.assertEqual(r["colour_exhausted"]["bytes"], 5000)
-        self.assertIn("NOT ASSIGNABLE 1 fns, 5,000 bytes", rendered)
-        self.assertIn("colour-exhausted", rendered)
+        self.assertIn("COLOUR ONLY: 1 functions", rendered)
+        self.assertIn("retained for structural investigation", rendered)
         self.assertIn("forced-floor-census", rendered)
 
     def test_an_unreadable_census_says_so(self):

@@ -24,11 +24,9 @@ a cluster's cost is roughly its lead's word count, not its total.
 a high rate; functions over 400 reduce but rarely close. Work that moves a
 function *into* the low band is worth counting differently from work inside it.
 
-**Colour-exhausted.** A queued delta-0 function whose plateau handoff proves
-a forced colour floor above zero (`forced_floor_census.py`) is withheld from
-the route, clusters and bands and reported as a fourth NOT ASSIGNABLE class
-next to the lane_status states: colour cannot close it, and a colour lane
-sent to it re-derives the landscape the handoff already records.
+**Colour-exhausted.** Only current source/context-bound receipts exclude
+colour work. Structural/general routes retain those functions, subject to the
+independent lane_status authorization gate. Legacy prose is advisory.
 
 **Delta groups.** Every section above is split three ways by the ranking's
 `size_delta`: `delta-0`, `small-delta` (|delta| <= 12, one to three
@@ -135,16 +133,7 @@ def unassignable() -> dict[str, dict]:
 
 
 def colour_exhausted(rows: list[dict]) -> dict[str, dict] | None:
-    """Queued symbols whose handoff proves a forced colour floor above zero.
-
-    `forced_floor_census.py` reads the plateau handoffs for a stated floor
-    and a stated exhaustion (no zero-scoring force, an empty winner list,
-    "colour cannot close"). At delta 0 with the current score at or above
-    that floor, no colour lane can close the function: routing it to one
-    re-derives a landscape that already exists. They are withheld from every
-    route, cluster and band below and reported, never silently dropped.
-    Returns None when the census cannot be read (reported as a note).
-    """
+    """Current authenticated colour exclusions; never an assignment verdict."""
     try:
         import forced_floor_census as ffc
         census = ffc.census(ranking={r["name"]: r for r in rows}, commits=False)
@@ -279,7 +268,6 @@ def report(target_pct: float, top: int, *, use_cache: bool = True) -> dict:
         colour_summary = None
     else:
         withheld = [r for r in rows if r["name"] in floors]
-        rows = [r for r in rows if r["name"] not in floors]
         colour_summary = {
             "functions": len(withheld),
             "bytes": sum(r["size_bytes"] for r in withheld),
@@ -313,6 +301,9 @@ def report(target_pct: float, top: int, *, use_cache: bool = True) -> dict:
         "queue": {"functions": len(rows), "bytes": queue_bytes,
                   "by_group": group_totals(rows)},
         "route": cheapest_route(rows, gap),
+        "colour_route": (cheapest_route([r for r in rows if not r.get("size_delta")
+                                           and r["name"] not in floors], gap)
+                         if floors is not None else None),
         "route_by_group": route_by_group,
         "clusters": dict(cluster_summary(cl, gap), top=cl[:top],
                          by_group={g: cluster_summary(clusters(grouped[g]), gap)
@@ -357,9 +348,6 @@ def render(r: dict) -> str:
         out.append("NOTE forced-floor census unavailable -- figures below may "
                    "include colour-exhausted targets")
     states = dict(bl["by_state"]) if bl else {}
-    if ce and ce["functions"]:
-        states["colour-exhausted"] = {"functions": ce["functions"],
-                                      "bytes": ce["bytes"]}
     if states:
         total_fns = sum(e["functions"] for e in states.values())
         total_bytes = sum(e["bytes"] for e in states.values())
@@ -368,10 +356,16 @@ def render(r: dict) -> str:
         for st, e in sorted(states.items(), key=lambda kv: -kv[1]["bytes"]):
             out.append(f"    {st:<32} {e['functions']:>4} fns  {e['bytes']:>9,} B")
         if bl and bl["functions"]:
-            out.append("    repin stale authorizations with tools/authorize_reopen.py")
-        if ce and ce["functions"]:
-            out.append("    colour-exhausted: proved forced floor > 0 at delta 0; "
-                       "structural lanes only (docs/forced-floor-census.md)")
+            out.append("    review current evidence before explicit tools/authorize_reopen.py authorization")
+    if ce and ce["functions"]:
+        out.append(f"COLOUR ONLY: {ce['functions']} functions excluded from colour work; "
+                   "retained for structural investigation, subject to lane_status "
+                   "(docs/forced-floor-census.md)")
+    colour_route = r.get("colour_route")
+    if colour_route is not None:
+        out.append(f"COLOUR ROUTE {colour_route['functions']} functions, "
+                   f"{colour_route['bytes']:,} bytes (delta-0; authenticated "
+                   "colour exclusions applied)")
     out += ["", "queue by delta group (small = |size_delta| <= "
             f"{SMALL_DELTA}; only delta-0 is colour work):"]
     out += _group_lines(r["queue"]["by_group"], "  ")

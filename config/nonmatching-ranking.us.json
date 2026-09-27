@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 238,
-  "resolved": 238,
+  "queue_size": 237,
+  "resolved": 237,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 238,
-  "relocation_masked_coverage": 238,
+  "source_context_coverage": 237,
+  "relocation_masked_coverage": 237,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -443,21 +443,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "GHMc.iTHD.ET_z.sqNJ.Wz8K.S9Os.K5i0.sl9Q.hccu.qp39.5mQ"
-    },
-    {
-      "name": "overlay83BuildBatch",
-      "file": "src/overlays/o083/overlay83BuildBatch.c",
-      "overlay": 83,
-      "tu": "overlays/o083",
-      "size_bytes": 672,
-      "objdiff_match_pct": null,
-      "differing_words": 22,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 22,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "e9TZ.JGts.6TG8.pcOk.ksgU.YX__.XRFg.RVsa.s3rW.bt-w.2Gk"
     },
     {
       "name": "func_80046EC4",

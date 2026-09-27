@@ -11,7 +11,8 @@ every count is read from build/, asm/, symbol_addrs.*.txt, and the canonical
 generated overlay atlas as they stand.
 
 Method, in one paragraph: the built ELF's symbol table is the ground truth
-for "what splat thinks is a function, and how big". A function counts as
+for physical function identities and extents. Reviewed nonexecutable ranges
+are subtracted by executable_accounting, without changing matched credit. A function counts as
 *matched* when its name does not appear as a `glabel`/`alabel` anywhere under
 asm/ -- i.e. no .s file anywhere in the tree still defines it, so whatever
 produced its bytes in the link was C. That is a tree-wide name search rather
@@ -33,6 +34,8 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+
+import executable_accounting as accounting
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 ROOT_DIR = os.path.normpath(os.path.join(SCRIPT_DIR, ".."))
@@ -377,7 +380,7 @@ def get_verified_asm_subsegments(path):
 
 
 def get_overlay_text_bytes(rom_path, atlas_path=None):
-    """Read the overlay denominator and matched-C ownership from the atlas.
+    """Read physical overlay text extent and C category sizes from the atlas.
 
     The atlas is itself regenerated from the shipped headers by
     tools/overlay_atlas.py.  Its source SHA1 is checked here so progress cannot
@@ -546,6 +549,8 @@ def render_markdown(st):
         f"[![names]({badge('symbols named', st['name_msg'], 'blue')})](#progress)"
     )
     L.append("")
+    L.append(f"Physical text: {st['physical_text_bytes']:,} bytes; reviewed nonexecutable alignment: {st['excluded_bytes']:,} bytes.")
+    L.append("")
     L.append("| | Done | Total | |")
     L.append("| :--- | ---: | ---: | ---: |")
     L.append(
@@ -574,7 +579,8 @@ def render_markdown(st):
     )
     L.append("")
     L.append(
-        f"Whole program is resident C plus verified assembly plus overlay C. A "
+        f"Whole program is resident C plus verified assembly plus overlay C. "
+        f"Totals exclude [reviewed nonexecutable alignment](docs/executable-accounting.md). A "
         f"function counts only when the ROM rebuilds byte-identically with its C "
         f"compiled in place of its assembly, so a `NON_MATCHING` body counts as "
         f"unmatched exactly like extracted assembly. Verified assembly is "
@@ -704,6 +710,11 @@ def check_partial(args):
 
     problems = []
 
+    try:
+        accounting.scoreboard_totals(ROOT_DIR)
+    except (RuntimeError, ValueError, OSError) as error:
+        problems.append(str(error))
+
     # --- 1. Non-ELF-derived figures, checked by reusing the real generator -
     symbol_addrs_path = os.path.join(ROOT_DIR, f"symbol_addrs.{args.version}.txt")
     n_named = count_named_symbols(symbol_addrs_path)
@@ -732,6 +743,8 @@ def check_partial(args):
         overlay_byte_pct=0.0,
         resolved_bytes=0,
         whole_text_bytes=0,
+        physical_text_bytes=0,
+        excluded_bytes=0,
         resolved_pct=0.0,
         n_named=n_named,
         n_named_funcs=0,
@@ -756,17 +769,9 @@ def check_partial(args):
                 return line
         return None
 
-    exp_symbols = find_line(rendered, "symbols")
-    cur_symbols = find_line(current, "symbols")
-    if exp_symbols is None:
-        problems.append("could not find a 'symbols' line in the generated block")
-    elif exp_symbols != cur_symbols:
-        problems.append(
-            "'symbols' line is stale against symbol_addrs."
-            f"{args.version}.txt:\n"
-            f"    committed: {cur_symbols!r}\n"
-            f"    tree says: {exp_symbols!r}"
-        )
+    adopted = re.findall(r"([\d,]+) symbols are adopted in", current)
+    if len(adopted) != 1 or int(adopted[0].replace(",", "")) != n_named:
+        problems.append("adopted-symbol count is stale against symbol_addrs")
 
     exp_matched = find_line(rendered, "**Source organization**")
     cur_matched = find_line(current, "**Source organization**")
@@ -800,7 +805,7 @@ def check_partial(args):
         if not m:
             problems.append(f"could not find the '{label}' line to check its arithmetic")
             return
-        num, den, pct = int(m.group(1)), int(m.group(2)), float(m.group(3))
+        num, den, pct = int(m.group(1).replace(",", "")), int(m.group(2).replace(",", "")), float(m.group(3))
         ratios[label] = (num, den, pct)
         if den == 0:
             return
@@ -811,12 +816,18 @@ def check_partial(args):
                 f"numbers ({num}/{den} = {expected_pct:.2f}%)"
             )
 
-    check_ratio("functions", r"^functions\s+(\d+)\s*/\s*(\d+)\s+(\d+\.\d+)%")
-    check_ratio(".text bytes", r"^\.text bytes\s+(\d+)\s*/\s*(\d+)\s+(\d+\.\d+)%")
-    check_ratio("verified asm", r"^verified asm\s+(\d+)\s*/\s*(\d+)\s+(\d+\.\d+)%")
-    check_ratio("overlay C", r"^overlay C\s+(\d+)\s*/\s*(\d+)\s+(\d+\.\d+)%")
-    check_ratio("whole resolved", r"^whole resolved\s+(\d+)\s*/\s*(\d+)\s+(\d+\.\d+)%")
-    check_ratio("named", r"^named\s+(\d+)\s*/\s*(\d+)\s+(\d+\.\d+)%")
+    for label, row in (("functions", "Functions matched"), (".text bytes", "Resident C"),
+                       ("verified asm", "Verified assembly"), ("overlay C", "Overlay C"),
+                       ("whole resolved", "**Whole program**"), ("named", "Names adopted")):
+        check_ratio(label, r"^\| " + re.escape(row)
+                    + r" \| ([\d,]+) \| ([\d,]+) \| \*?\*?(\d+\.\d+)%")
+    if all(label in ratios for label in (".text bytes", "verified asm", "overlay C", "whole resolved")):
+        resident, manual, overlay, whole = [ratios[label] for label in
+                                           (".text bytes", "verified asm", "overlay C", "whole resolved")]
+        if resident[1] != manual[1] or resident[1] + overlay[1] != whole[1]:
+            problems.append("resident/overlay executable denominators do not sum to whole program")
+        if resident[0] + manual[0] + overlay[0] != whole[0]:
+            problems.append("credited components do not sum to whole program")
 
     if "functions" in ratios and "named" in ratios:
         func_total = ratios["functions"][1]
@@ -872,7 +883,7 @@ def check_partial(args):
 
     print("scoreboard --check-partial: CI-safe subset (no linked ELF used)")
     print(
-        "  checked: adopted-symbol count and badge, matched-TU list, "
+        "  checked: exclusion contract, physical/executable accounting, adopted-symbol count and badge, matched-TU list, "
         "internal arithmetic\n"
         "           (ratios' own percentages, area-table row sums, "
         "cross-line total agreement)"
@@ -938,9 +949,7 @@ def main(args):
     total_funcs = set(all_funcs.keys())
     matched_funcs = total_funcs - nonmatching_names
 
-    total_bytes = sum(all_funcs.values())
-    matched_bytes = sum(all_funcs[n] for n in matched_funcs)
-
+    physical_resident_bytes = sum(all_funcs.values())
     yaml_path = os.path.join(ROOT_DIR, f"mickey.{args.version}.yaml")
     index = subsegment_index(yaml_path)
     verified_asm_path = os.path.join(ROOT_DIR, f"verified_asm.{args.version}.txt")
@@ -950,13 +959,34 @@ def main(args):
         if name not in matched_funcs
         and subsegment_of(addr, index) in verified_asm_subsegments
     }
-    verified_asm_bytes = sum(all_funcs[name] for name in verified_asm_funcs)
-    verified_asm_pct = verified_asm_bytes / total_bytes * 100 if total_bytes else 0.0
-    overlay_text_bytes, overlay_matched_bytes, overlay_nonmatching_bytes = (
+    # Classify against unmodified ELF ownership before excluding reviewed tails.
+    resident_nonmatching = get_resident_nonmatching_functions(
+        ROOT_DIR, all_funcs, func_addrs, matched_funcs, verified_asm_funcs,
+        identity_records,
+    )
+    physical_overlay_bytes, overlay_matched_bytes, overlay_nonmatching_bytes = (
         get_overlay_text_bytes(
             os.path.join(ROOT_DIR, "baseroms", f"mickey.{args.version}.z64")
         )
     )
+    atlas = json.loads(Path(ROOT_DIR, "config/overlays.us.json").read_text())
+    all_funcs, exclusions = accounting.apply_accounting(
+        ROOT_DIR, atlas, Path(ROOT_DIR, "baseroms", f"mickey.{args.version}.z64").read_bytes(),
+        all_funcs, func_addrs, matched_funcs, verified_asm_funcs, resident_nonmatching,
+        {name: subsegment_of(addr, index) or f"{addr - accounting.ROM_DELTA:X}"
+         for name, addr in func_addrs.items()},
+    )
+    total_funcs = set(all_funcs)
+    total_bytes = sum(all_funcs.values())
+    matched_bytes = sum(all_funcs[n] for n in matched_funcs)
+    verified_asm_bytes = sum(all_funcs[n] for n in verified_asm_funcs)
+    resident_nonmatching_bytes = sum(all_funcs[n] for n in resident_nonmatching)
+    overlay_text_bytes = (physical_overlay_bytes - exclusions["overlay_global_asm"]
+                          - exclusions["overlay_nonmatching"])
+    overlay_nonmatching_bytes -= exclusions["overlay_nonmatching"]
+    physical_text_bytes = physical_resident_bytes + physical_overlay_bytes
+    excluded_bytes = exclusions["excluded_bytes"]
+    verified_asm_pct = verified_asm_bytes / total_bytes * 100 if total_bytes else 0.0
     overlay_byte_pct = (
         overlay_matched_bytes / overlay_text_bytes * 100 if overlay_text_bytes else 0.0
     )
@@ -964,16 +994,6 @@ def main(args):
     resolved_bytes = matched_bytes + verified_asm_bytes + overlay_matched_bytes
     resolved_pct = resolved_bytes / whole_text_bytes * 100 if whole_text_bytes else 0.0
 
-    # ADR 0003 categories, not candidate quality or scratch-draft coverage.
-    # Resident guarded functions retain their existing ELF denominator/extent;
-    # identify them by the actual fallback, which may differ from the C name.
-    # Overlay categories remain the atlas's TU-level accounting (including
-    # mixed-TU exact islands), not a per-function guarded-source census.
-    resident_nonmatching = get_resident_nonmatching_functions(
-        ROOT_DIR, all_funcs, func_addrs, matched_funcs, verified_asm_funcs,
-        identity_records,
-    )
-    resident_nonmatching_bytes = sum(all_funcs[name] for name in resident_nonmatching)
     dkr_decompiled_bytes = matched_bytes + overlay_matched_bytes
     dkr_handwritten_asm_bytes = verified_asm_bytes
     dkr_non_matching_bytes = overlay_nonmatching_bytes + resident_nonmatching_bytes
@@ -1043,6 +1063,8 @@ def main(args):
             overlay_byte_pct=overlay_byte_pct,
             resolved_bytes=resolved_bytes,
             whole_text_bytes=whole_text_bytes,
+            physical_text_bytes=physical_text_bytes,
+            excluded_bytes=excluded_bytes,
             resolved_pct=resolved_pct,
             n_named=n_named,
             n_named_funcs=n_named_funcs,
@@ -1108,7 +1130,7 @@ def main(args):
         print(f"#   symbol_addrs:   {os.path.relpath(symbol_addrs_path, ROOT_DIR)}")
         print(
             f"#   total functions = STT_FUNC symbols in the linked ELF with "
-            f"real (nonzero) size in a real section"
+            f"real (nonzero) size in a real section, minus reviewed alignment identities"
         )
         print(
             f"#     ({len(abs_placeholders)} zero-size *ABS* placeholder symbols "
@@ -1121,6 +1143,10 @@ def main(args):
             f"#     ({len(overlay_aliases)} nonzero *ABS* overlay relocation aliases "
             f"excluded; a same-named symbol_addrs entry instead restores the "
             f"resident address when an overlay addend masks it)"
+        )
+        print(
+            f"#   executable extents = physical ELF/atlas extents minus "
+            f"config/nonexecutable-ranges.us.json; credited bytes unchanged"
         )
         print(
             f"#   matched = total functions minus every name that still "
@@ -1147,6 +1173,7 @@ def main(args):
     print(
         f"functions: {n_matched} matched / {n_total} total ({func_pct:.2f}%)"
     )
+    print(f"physical:  {physical_text_bytes} text bytes; {excluded_bytes} reviewed nonexecutable bytes excluded")
     print(
         f"bytes:     {matched_bytes} matched / {total_bytes} total "
         f"({byte_pct:.2f}% of static-segment .text)"
@@ -1185,6 +1212,8 @@ def main(args):
         print(f"verified_asm_bytes,{verified_asm_bytes},{total_bytes},{verified_asm_pct:.4f}")
         print(f"overlay_c_bytes,{overlay_matched_bytes},{overlay_text_bytes},{overlay_byte_pct:.4f}")
         print(f"whole_resolved_bytes,{resolved_bytes},{whole_text_bytes},{resolved_pct:.4f}")
+        print(f"physical_text_bytes,,{physical_text_bytes},")
+        print(f"nonexecutable_bytes,,{excluded_bytes},")
         print(f"symbols_named,{n_named},,")
 
     return 0

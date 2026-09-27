@@ -56,11 +56,11 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
+import executable_accounting as accounting
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RANKING = ROOT / "config" / "nonmatching-ranking.us.json"
 UNASSIGNABLE = ROOT / "config" / "unassignable-symbols.us.json"
-# Whole-program text, the denominator README's headline percentage uses.
-WHOLE_PROGRAM = 944340
 
 # |size_delta| at or below this is one to three instructions: Track B's bridge.
 SMALL_DELTA = 12
@@ -152,16 +152,13 @@ def load() -> list[dict]:
 
 
 def resolved_bytes() -> int:
-    """What README's Progress block currently reports as resolved."""
-    text = (ROOT / "README.md").read_text(encoding="utf-8", errors="replace")
-    for line in text.splitlines():
-        if "**Whole program**" in line:
-            cells = [c.strip() for c in line.split("|")]
-            for cell in cells:
-                digits = cell.replace(",", "")
-                if digits.isdigit():
-                    return int(digits)
-    raise SystemExit("could not read the resolved byte count from README.md")
+    """Credited bytes from the contract-checked scoreboard snapshot."""
+    return accounting.scoreboard_totals(ROOT)["resolved_bytes"]
+
+
+def whole_program_bytes() -> int:
+    """Executable denominator from the same shared accounting contract."""
+    return accounting.scoreboard_totals(ROOT)["whole_program"]
 
 
 def delta_group(delta: int | None) -> str:
@@ -183,12 +180,13 @@ def group_totals(rows: list[dict]) -> dict[str, dict]:
     return out
 
 
-def next_milestone(have: int) -> dict:
+def next_milestone(have: int, whole: int | None = None) -> dict:
     """The first multiple of MILESTONE_STEP percent strictly above `have`."""
-    pct = 100.0 * have / WHOLE_PROGRAM
+    whole = whole_program_bytes() if whole is None else whole
+    pct = 100.0 * have / whole
     step = int(pct // MILESTONE_STEP) + 1
     milestone = step * MILESTONE_STEP
-    target = int(WHOLE_PROGRAM * milestone / 100.0)
+    target = int(whole * milestone / 100.0)
     return {"pct": milestone, "bytes": target, "gap_bytes": max(target - have, 0)}
 
 
@@ -274,7 +272,8 @@ def report(target_pct: float, top: int, *, use_cache: bool = True) -> dict:
             "symbols": {r["name"]: floors[r["name"]] for r in withheld},
         }
     have = resolved_bytes()
-    target = int(WHOLE_PROGRAM * target_pct / 100.0)
+    whole = whole_program_bytes()
+    target = int(whole * target_pct / 100.0)
     gap = max(target - have, 0)
     queue_bytes = sum(r["size_bytes"] for r in rows)
     grouped = {g: [r for r in rows if delta_group(r.get("size_delta")) == g]
@@ -294,10 +293,10 @@ def report(target_pct: float, top: int, *, use_cache: bool = True) -> dict:
         route_by_group[g] = {k: alone[k] for k in
                              ("functions", "bytes", "words", "covers_gap")}
     return {
-        "resolved_bytes": have, "whole_program": WHOLE_PROGRAM,
-        "pct": 100.0 * have / WHOLE_PROGRAM, "target_pct": target_pct,
+        "resolved_bytes": have, "whole_program": whole,
+        "pct": 100.0 * have / whole, "target_pct": target_pct,
         "target_bytes": target, "gap_bytes": gap,
-        "next_milestone": next_milestone(have),
+        "next_milestone": next_milestone(have, whole),
         "queue": {"functions": len(rows), "bytes": queue_bytes,
                   "by_group": group_totals(rows)},
         "route": cheapest_route(rows, gap),

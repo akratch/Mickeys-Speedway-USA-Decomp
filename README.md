@@ -11,25 +11,27 @@ from the original stub but have not been modernized or verified.
 <!-- SCOREBOARD_BEGIN -->
 ## Progress
 
-[![functions](https://img.shields.io/badge/functions_matched-1251_of_1461_(85.63%25)-blue)](#progress) [![bytes](https://img.shields.io/badge/code_bytes_resolved-595316_of_944340_(63.04%25)-blue)](#progress) [![names](https://img.shields.io/badge/symbols_named-1434_adopted-blue)](#progress)
+[![functions](https://img.shields.io/badge/functions_matched-1251_of_1460_(85.68%25)-blue)](#progress) [![bytes](https://img.shields.io/badge/code_bytes_resolved-595316_of_943640_(63.09%25)-blue)](#progress) [![names](https://img.shields.io/badge/symbols_named-1434_adopted-blue)](#progress)
+
+Physical text: 944,340 bytes; reviewed nonexecutable alignment: 700 bytes.
 
 | | Done | Total | |
 | :--- | ---: | ---: | ---: |
-| **Whole program** | 595,316 | 944,340 | **63.04%** |
-| Resident C | 321,012 | 475,076 | 67.57% |
-| Verified assembly | 17,184 | 475,076 | 3.62% |
-| Overlay C | 257,120 | 469,264 | 54.79% |
-| Functions matched | 1,251 | 1,461 | 85.63% |
-| Names adopted | 1,342 | 1,461 | 91.85% |
+| **Whole program** | 595,316 | 943,640 | **63.09%** |
+| Resident C | 321,012 | 475,048 | 67.57% |
+| Verified assembly | 17,184 | 475,048 | 3.62% |
+| Overlay C | 257,120 | 468,592 | 54.87% |
+| Functions matched | 1,251 | 1,460 | 85.68% |
+| Names adopted | 1,342 | 1,460 | 91.92% |
 
-Whole program is resident C plus verified assembly plus overlay C. A function counts only when the ROM rebuilds byte-identically with its C compiled in place of its assembly, so a `NON_MATCHING` body counts as unmatched exactly like extracted assembly. Verified assembly is 84 hand-written functions kept as assembly on purpose. 1,434 symbols are adopted in `symbol_addrs.us.txt`.
+Whole program is resident C plus verified assembly plus overlay C. Totals exclude [reviewed nonexecutable alignment](docs/executable-accounting.md). A function counts only when the ROM rebuilds byte-identically with its C compiled in place of its assembly, so a `NON_MATCHING` body counts as unmatched exactly like extracted assembly. Verified assembly is 84 hand-written functions kept as assembly on purpose. 1,434 symbols are adopted in `symbol_addrs.us.txt`.
 
 | Area | Functions | Matched to C | Named, still asm | Unnamed | Identified |
 | :--- | ---: | ---: | ---: | ---: | :--- |
 | libultra corridor | 300 | 271 | 29 | 0 | `██████████████████▓▓` 100.0% |
 | game code, TU identified | 1154 | 980 | 62 | 112 | `█████████████████▓░░` 90.3% |
-| game code, not yet split | 7 | 0 | 0 | 7 | `░░░░░░░░░░░░░░░░░░░░` 0.0% |
-| **total** | 1461 | 1251 | 91 | 119 | `█████████████████▓░░` 91.9% |
+| game code, not yet split | 6 | 0 | 0 | 6 | `░░░░░░░░░░░░░░░░░░░░` 0.0% |
+| **total** | 1460 | 1251 | 91 | 118 | `█████████████████▓░░` 91.9% |
 
 `█` matched to C · `▓` named but still assembly · `░` neither. Naming runs ahead of matching: a function is decompiled against an already-identified translation unit.
 

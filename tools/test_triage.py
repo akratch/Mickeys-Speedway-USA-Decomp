@@ -306,6 +306,14 @@ class DeltaGroupTests(unittest.TestCase):
 
 
 class MilestoneTests(unittest.TestCase):
+    def test_denominator_comes_from_shared_contract(self):
+        with unittest.mock.patch.object(triage.accounting, "scoreboard_totals",
+                                        return_value={"resolved_bytes": 480, "whole_program": 800}):
+            self.assertEqual(triage.resolved_bytes(), 480)
+            self.assertEqual(triage.whole_program_bytes(), 800)
+            self.assertEqual(triage.next_milestone(480),
+                             {"pct": 65.0, "bytes": 520, "gap_bytes": 40})
+
     def test_default_target_is_65(self):
         with unittest.mock.patch.object(triage, "report") as report, \
                 unittest.mock.patch.object(triage, "render", return_value=""):
@@ -313,21 +321,21 @@ class MilestoneTests(unittest.TestCase):
         self.assertEqual(report.call_args.args[0], 65.0)
 
     def test_next_milestone_is_the_next_multiple_of_five_above(self):
-        whole = triage.WHOLE_PROGRAM
+        whole = triage.whole_program_bytes()
         at_61 = int(whole * 0.6139)
         nm = triage.next_milestone(at_61)
         self.assertEqual(nm["pct"], 65.0)
         self.assertEqual(nm["gap_bytes"], int(whole * 0.65) - at_61)
 
     def test_exactly_on_a_milestone_points_at_the_next(self):
-        nm = triage.next_milestone(int(triage.WHOLE_PROGRAM * 0.70) + 1)
+        nm = triage.next_milestone(int(triage.whole_program_bytes() * 0.70) + 1)
         self.assertEqual(nm["pct"], 75.0)
 
     def test_the_report_prints_it(self):
         with unittest.mock.patch.object(triage, "load", lambda: [fn("a", 100, 1)]), \
                 unittest.mock.patch.object(triage, "assignability", return_value={"a": "base-only"}), \
                 unittest.mock.patch.object(triage, "resolved_bytes",
-                                           lambda: int(triage.WHOLE_PROGRAM * 0.62)), \
+                                           lambda: int(triage.whole_program_bytes() * 0.62)), \
                 unittest.mock.patch.object(triage, "unassignable", dict):
             rendered = triage.render(triage.report(60.0, 5))
         self.assertIn("NEXT 5%  65%", rendered)

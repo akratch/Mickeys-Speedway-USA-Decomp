@@ -65,3 +65,45 @@ The initial acpp capture wrapper produced no phase captures and supplies no
 phase evidence. Full canonical setup/verification compile cost is separate and
 was not completely counted.
 
+## Follow-on frame-reservation investigation
+
+The configured baseline remains 480 bytes, 29 masked differences and a 48-byte
+frame against the target's 40-byte frame. Both objects have the same observed
+stack-access offsets and 12 bytes of saved registers. The extra eight bytes do
+not represent additional observed stack traffic; naming them as a particular
+local or spill would exceed the evidence.
+
+Native UOPT/UGEN capture and lineage runs preserve the stock full-TU text, data,
+rodata, relocations and symbols. Input Ucode reserves 32 bytes of local storage;
+optimized Ucode reserves 16 bytes. The traced UGEN dynamic temporary-area path
+returns zero. This narrows the unexplained reservation without identifying its
+source-level owner. The optimizer's traced descriptor splits do not report the
+chosen temporary slot, so descriptor identity is not a final-home witness.
+
+A separately supplied CFE source-name tracer, substituted as the only changed
+compiler stage under normal g0 flags, also passes full-TU section, relocation
+and symbol fidelity. It binds the seven declared scalar/pointer locals and an
+anonymous switch carrier to CFE storage identities. The named variant carrier
+and anonymous switch carrier are distinct. Raw declaration fields are not
+claimed as final frame homes. No debug flags were used for this proof. A
+separate debug-listing attempt aborted in the compiler wrapper and supplies no
+object or fidelity evidence.
+
+Two semantic-preserving probes were compiled and retained privately, then
+reverted: removing the single-use variant variable in favor of switching on
+the call result, and making the operation-one comparison's constant unsigned
+(the operation is an unsigned byte). Both produce byte-identical configured
+output. Neither eliminates the reservation or improves the residual. These
+are causal probes after the entry-condition audit, not semantic repairs.
+
+There is no supported next source lever in this packet. A further reservation
+investigation needs a faithful optimizer trace connecting descriptor allocation
+to chosen temporary slots and eventual frame usage, or independent source/ABI
+evidence. Declaration sweeps and entry-condition changes are unsupported.
+Canonical game source is unchanged; no match or executable-byte credit results.
+The stock and instrumented objects, traces and both variants remain ignored
+under the lane's build directory. Documentation and clean-room validation cover
+this evidence-only receipt; the separately integrated discovery tool already
+passed its full required gates. Phase/probe elapsed times and a complete total
+compiler-invocation count were not instrumented; none are inferred from file or
+commit timestamps.

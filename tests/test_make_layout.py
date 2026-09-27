@@ -13,6 +13,13 @@ NEW_LANE = ROOT / "tools" / "new_lane.sh"
 
 
 class MakeLayoutTests(unittest.TestCase):
+    def test_tooling_gate_uses_discovery_once_without_duplicate_suites(self) -> None:
+        text = MAKEFILE.read_text(encoding="utf-8")
+        recipe = text.split("check-tooling:\n", 1)[1].split("\n\n", 1)[0]
+        self.assertEqual(recipe.strip(),
+                         "$(HOST_PYTHON) $(TOOLS_DIR)/run_tool_tests.py "
+                         "$(CHECK_TOOLING_ARGS)")
+
     def test_root_includes_overlay_policy_once(self) -> None:
         text = MAKEFILE.read_text(encoding="utf-8")
         self.assertEqual(1, text.count("include mk/overlays.mk"))

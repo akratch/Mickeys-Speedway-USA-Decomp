@@ -363,7 +363,7 @@ def exact_report(symbol, directory):
     return resolution, report, raw, receipt, current, cpp
 
 
-def collect(function, external, owner_name=None):
+def collect(function, external, owner_name=None, *, freshness_checks=None):
     parent = ROOT / 'build/storage-views'
     parent.mkdir(parents=True, exist_ok=True)
     directory = Path(tempfile.mkdtemp(prefix='proof-', dir=parent))
@@ -415,6 +415,12 @@ def collect(function, external, owner_name=None):
                       reserved_view=view, loader_preflight=loader_report)
         result['captures'].append(loader_receipt)
     require(capture_receipt['inputs'] == current(), 'evidence changed during view proof')
+    if freshness_checks is not None:
+        freshness_checks.append(lambda: require(capture_receipt['inputs'] == current(),
+                                               'storage witness changed after proof'))
+        if owner_name is not None:
+            freshness_checks.append(lambda: require(loader_receipt['inputs'] == loader_current(),
+                                                   'loader witness changed after proof'))
     (directory / 'report.json').write_text(json.dumps(result, indent=2) + '\n')
     result['saved_report'] = (directory / 'report.json').relative_to(ROOT).as_posix()
     return result

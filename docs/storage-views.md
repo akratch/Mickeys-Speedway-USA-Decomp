@@ -77,3 +77,22 @@ extent and access contract separately. Containment alone is not an alias proof.
 The current tool intentionally does not invent such views. Promotion/preflight
 still needs an explicit, fresh receipt bridge before any candidate relies on
 this report for final acceptance.
+# Diagnostic comparison of explicitly named views
+
+`tools/storage_view_compare.py` replays a list of `source_function` and
+`external` requests through the storage proof above. It keeps the default
+relocation comparison and reports a separate comparison using the independently
+proved bases for those exact candidate external names. Candidate addends come
+from the candidate's own paired relocations. Neither synthetic addresses nor
+target-site correlation supply these explicit identities.
+
+The diagnostic rejects candidate-defined aliases, use only outside the selected
+function, conflicting named definitions or exact sibling witnesses, foreign
+overlay-local imports, and incomplete HI/LO pairs. It rechecks proof inputs
+after all witnesses complete. Other candidate records retain their default
+identities. Requests cannot supply manual identities or substitute alias names.
+
+The report always says `promotion_acceptance: false`. It does not establish
+C effective types, subobject extents, bounds, semantic equivalence, linked
+bytes, or a promotion bridge. Reports and request files belong under ignored
+`build/`.

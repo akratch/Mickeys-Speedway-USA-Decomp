@@ -2847,7 +2847,8 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
                                     start, size, redefine_aliases=None,
                                     root=None, elf_loader=None, rom=None,
                                     runtime_module=None, target_records=None,
-                                    own_range=None, evidence=None):
+                                    own_range=None, evidence=None,
+                                    explicit_foreign_names=()):
     """Resolve candidate-side same-overlay LOCAL/data identities fail closed.
 
     ``own_range`` excludes the function under proof from the sibling
@@ -2878,6 +2879,12 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
     numeric = _numeric_assignments(path)
     proposed = collections.defaultdict(set)
     for name in sorted(valid):
+        if name in explicit_foreign_names:
+            # A numeric ABS placeholder plus a whole BSS extent is not a
+            # named definition. An explicit foreign proof supplies its namespace.
+            _identity_witness(evidence, name, "canonical-data-owner",
+                              reason="explicit-foreign-storage-excludes-numeric-bss-fallback")
+            continue
         if name not in numeric:
             _identity_witness(evidence, name, "canonical-data-owner", reason="no-numeric-linker-assignment")
             continue
@@ -2903,7 +2910,10 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
             _runtime_correlated_overlay_hilo_identities(
                 candidate_elf, module, start, size, target_records,
                 redefine_aliases, evidence=evidence))
+        runtime_ambiguous.difference_update(explicit_foreign_names)
         for name, identity in correlated.items():
+            if name in explicit_foreign_names:
+                continue
             proposed[name].add(identity)
             _identity_witness(evidence, name, "runtime-site-correlation", identity, independent=False)
 
@@ -3147,6 +3157,283 @@ def _matched_overlay_relocation_witnesses(module, target_elf, rom,
                               source=source, function=function_name,
                               module_offset=row_start + anchor["offset"])
     return proposed
+
+
+def _reserved_witness_fidelity(replay, configured):
+    """Account for all allocated storage, relocations and non-debug symbols."""
+    def allocated(elf):
+        result = {}
+        for name, header in zip(elf.names, elf.sh):
+            if not header[2] & 2:  # SHF_ALLOC
+                continue
+            if name in result:
+                raise SurfaceComparisonError("duplicate allocated witness section")
+            result[name] = tuple(header[index] for index in (1, 2, 3, 5, 8))
+        return result
+
+    left, right = allocated(replay), allocated(configured)
+    if left != right:
+        raise SurfaceComparisonError("reserved witness allocated section geometry mismatch")
+    for name, geometry in left.items():
+        if geometry[0] != 8 and replay.section_bytes(name) != configured.section_bytes(name):
+            raise SurfaceComparisonError("reserved witness allocated section contents mismatch")
+
+    def symbol_identity(elf, symbol):
+        name, value, size, info, index = symbol
+        owner = elf.names[index] if index < len(elf.names) else index
+        return name, value, size, info, owner
+
+    def relocations(elf):
+        symbols = elf.symbols()
+        rows = []
+        for section, offset, kind, index in elf.relocations(r".*"):
+            if not 0 <= index < len(symbols):
+                raise SurfaceComparisonError("reserved witness relocation symbol index is invalid")
+            rows.append((section, offset, kind, *symbol_identity(elf, symbols[index])))
+        return collections.Counter(rows)
+
+    if relocations(replay) != relocations(configured):
+        raise SurfaceComparisonError("reserved witness reproduction relocation identity mismatch")
+
+    def symbols(elf):
+        result = []
+        for symbol in elf.symbols():
+            row = symbol_identity(elf, symbol)
+            owner = row[-1]
+            if symbol[3] & 15 == 4:  # STT_FILE: temporary compiler input name
+                continue
+            if isinstance(owner, str) and (owner.startswith((".debug", ".stab"))
+                                           or owner in {".mdebug", ".line", ".comment"}):
+                continue
+            result.append(row)
+        return collections.Counter(result)
+
+    if symbols(replay) != symbols(configured):
+        raise SurfaceComparisonError("reserved witness reproduction symbol identity mismatch")
+
+
+def _capture_reserved_storage_source(root, source, configured, linked):
+    """Reproduce a named canonical TU, with complete before/after input pins.
+
+    Narrower than the metadata-filter promotion route: only symbol renames
+    and zero-tail trimming are allowed. No supplied object is trusted.
+    """
+    import proof_provenance as pp
+    import permute_batch as batch
+    import sweep_receipts as receipts
+    import shlex
+    import tempfile
+    import time
+    import os
+    if root.resolve() != batch.ROOT.resolve() or os.environ.get("PROMOTION_TRIAL", "") not in ("", "0"):
+        raise SurfaceComparisonError("unsupported reserved witness compile environment")
+    deadline = time.monotonic() + 120
+    target = configured.relative_to(root).as_posix()
+    source_rel = source.relative_to(root).as_posix()
+
+    def recipe():
+        lines = batch.bounded_capture(
+            ["gmake", "--no-print-directory", "-n", "-W", source_rel, target],
+            deadline, check=True).stdout.replace("\\\n", " ").splitlines()
+        compilers = [line.strip() for line in lines if target in line and "tools/ido/cc" in line]
+        metadata = [line.strip() for line in lines if target in line and "tools/ido/cc" not in line
+                    and ("objcopy" in line or "trim_elf_section.py" in line)]
+        if len(compilers) != 1 or len(metadata) != 1:
+            raise SurfaceComparisonError("ambiguous reserved witness configured recipe")
+        return compilers[0], metadata[0]
+
+    command, postprocess = recipe()
+    words = shlex.split(command)
+    if words.count("-o") != 1:
+        raise SurfaceComparisonError("ambiguous reserved witness compiler output")
+    plan = pp.metadata_filter_plan(postprocess, target, root)
+    if any(operation not in {"rename", "trim"} for operation, _ in plan):
+        raise SurfaceComparisonError("reserved witness requires unfiltered executable relocations")
+    args = batch.compiler_arguments(command, source_rel, target)
+    if len(words) > 1 and words[1] == "tools/asm-processor/build.py":
+        args += ("-I", str(source.parent))
+
+    def context():
+        batch.checked_tool_identity()
+        if pp.sha256_file(Path(pp.__file__)) != pp._LOADED_METADATA_PROOF:
+            raise SurfaceComparisonError("loaded provenance implementation changed")
+        if recipe() != (command, postprocess):
+            raise SurfaceComparisonError("reserved witness recipe changed during capture")
+        dependencies = batch.source_dependencies(source, args, deadline)
+        if any(name.startswith("missing:") for name in dependencies):
+            raise SurfaceComparisonError("reserved witness dependency unavailable")
+        return {
+            "source": pp.sha256_file(source), "configured": pp.sha256_file(configured),
+            "linked": pp.sha256_file(linked), "command": command, "postprocess": postprocess,
+            "dependencies": dependencies, "source_directory": receipts.tree_digest(source.parent),
+            "include_tree": receipts.tree_digest(root / "include"),
+            "tools": batch.sweep_tool_identity(),
+            "asm_processor": receipts.tree_digest(root / "tools/asm-processor"),
+            "makefiles": {p.relative_to(root).as_posix(): pp.sha256_file(p)
+                          for p in [root / "Makefile", *sorted((root / "mk").glob("**/*.mk"))]},
+            "target_inputs": {p: pp.sha256_file(root / p) for p in
+                              ("baseroms/mickey.us.z64", "config/overlays.us.json",
+                               "overlay_undefined_syms.us.txt", "symbol_addrs.us.txt")},
+            "proof_tools": {p: pp.sha256_file(root / p) for p in
+                            ("tools/reloc_surface.py", "tools/proof_provenance.py",
+                             "tools/trim_elf_section.py", "tools/binutils/mips64-elf-objcopy")},
+        }
+
+    before = context()
+    parent = root / "build/reserved-storage-witnesses"
+    parent.mkdir(parents=True, exist_ok=True)
+    directory = Path(tempfile.mkdtemp(prefix="capture-", dir=parent))
+    raw = directory / "raw.o"
+    words[words.index("-o") + 1] = str(raw)
+    result = batch.bounded_capture(words, deadline, check=True)
+    (directory / "compile.log").write_text(result.stdout)
+    if before != context():
+        raise SurfaceComparisonError("reserved witness inputs changed during compilation")
+    replay = pp.replay_metadata(raw, postprocess, target, directory / "configured.o",
+                                root, skip_filters=False, deadline=deadline, plan=plan)
+    _reserved_witness_fidelity(Elf(replay), Elf(configured))
+    receipt = {"schema": "mickey-reserved-storage-capture-v1", "inputs": before,
+               "raw_object": raw.relative_to(root).as_posix(), "raw_sha256": pp.sha256_file(raw),
+               "replayed_object": replay.relative_to(root).as_posix(),
+               "replayed_sha256": pp.sha256_file(replay)}
+    if before != context():
+        raise SurfaceComparisonError("reserved witness inputs changed during replay")
+    (directory / "receipt.json").write_text(json.dumps(receipt, sort_keys=True, indent=2) + "\n")
+    return raw, receipt, context
+
+
+def _explicit_reserved_storage_witnesses(bindings, candidate_elf, candidate_start,
+                                         candidate_size, candidate_overlay, atlas,
+                                         target_elf, rom, *, root=None, evidence=None):
+    """Import only explicitly named, independently reproduced reserved storage.
+
+    Candidate target tuples are intentionally not an input to this proof.
+    """
+    import proof_provenance as pp
+    root = REPO if root is None else Path(root)
+    if not isinstance(bindings, dict) or set(bindings) != {"schema_version", "bindings"} \
+            or type(bindings["schema_version"]) is not int or bindings["schema_version"] != 1 \
+            or not isinstance(bindings["bindings"], list):
+        raise SurfaceComparisonError("invalid reserved storage witness schema")
+    if candidate_overlay is None:
+        raise SurfaceComparisonError("reserved storage witness requests require an overlay candidate")
+    if (rom != (root / "baseroms/mickey.us.z64").read_bytes()
+            or atlas != json.loads((root / "config/overlays.us.json").read_text())
+            or getattr(target_elf, "data", None) != target_elf.path.read_bytes()):
+        raise SurfaceComparisonError("reserved witness requires current canonical target inputs")
+    symbols = candidate_elf.symbols()
+    used = {symbols[index][0] for _, offset, _, index in candidate_elf.relocations()
+            if candidate_start <= offset < candidate_start + candidate_size
+            and symbols[index][4] == SHN_UNDEF}
+    result, receipts = {}, []
+    captures = {}
+    for binding in bindings["bindings"]:
+        if not isinstance(binding, dict) or set(binding) != {"symbol", "source_overlay", "source_function"}:
+            raise SurfaceComparisonError("reserved witness must name one external and source function")
+        name, overlay, function = (binding[k] for k in ("symbol", "source_overlay", "source_function"))
+        if (not isinstance(name, str) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name)
+                or name not in used or not isinstance(function, str)
+                or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", function)
+                or type(overlay) is not int or not 1 <= overlay <= ot.HEADER_COUNT
+                or candidate_overlay is None or overlay == candidate_overlay):
+            raise SurfaceComparisonError("reserved witness requires explicit cross-overlay candidate external")
+        for defined_name, _, _, _, shndx in target_elf.symbols():
+            if defined_name != name or shndx in (SHN_UNDEF, SHN_ABS):
+                continue
+            section = target_elf.names[shndx] if shndx < len(target_elf.names) else ""
+            if section in (".overlay_%03d" % candidate_overlay, ".overlay_%03d_bss" % candidate_overlay):
+                raise SurfaceComparisonError("explicit foreign witness conflicts with named local definition")
+        modules = [m for m in atlas.get("modules", []) if m.get("overlay") == overlay]
+        if len(modules) != 1:
+            raise SurfaceComparisonError("reserved witness source overlay unavailable or ambiguous")
+        module = modules[0]
+        rows = [row for row in module.get("text_ownership", [])
+                if row.get("source", "").split("/")[-1] == function]
+        if len(rows) != 1 or rows[0].get("type") != "c" or rows[0].get("matched") is not True \
+                or rows[0].get("nonmatching") is not False:
+            raise SurfaceComparisonError("reserved witness is not one exact canonical C owner")
+        row = rows[0]
+        relative = Path(row["source"])
+        if relative.is_absolute() or ".." in relative.parts or relative.parts[:2] != ("overlays", "o%03d" % overlay):
+            raise SurfaceComparisonError("unsafe reserved witness source ownership")
+        source = root / "src" / (row["source"] + ".c")
+        configured = root / "build/src" / (row["source"] + ".c.o")
+        source_text = source.read_text()
+        facts = pp.source_facts(source_text, function)
+        if len(facts.definitions) != 1 or facts.pragmas or re.search(r"^\s*#\s*(?:if|ifdef|ifndef)\b", source_text, re.M):
+            raise SurfaceComparisonError("reserved witness source definition is not unconditional ordinary C")
+        dependencies = _callee_build_dependencies(root, source, source_text)
+        linked = getattr(target_elf, "path", None)
+        if dependencies is None or not isinstance(linked, Path):
+            raise SurfaceComparisonError("reserved witness configured source context unavailable")
+        if (configured.stat().st_mtime_ns < max(p.stat().st_mtime_ns for p in {source, *dependencies[0]})
+                or linked.stat().st_mtime_ns < configured.stat().st_mtime_ns):
+            raise SurfaceComparisonError("reserved witness source or linked object is stale")
+        key = (overlay, function)
+        if key not in captures:
+            captures[key] = _capture_reserved_storage_source(root, source, configured, linked)
+        raw_path, receipt, current_context = captures[key]
+        canonical = Elf(configured)
+        raw = Elf(raw_path)
+        raw_names = {symbol[0] for symbol in raw.symbols() if symbol[4] == SHN_UNDEF}
+        if name not in raw_names:
+            raise SurfaceComparisonError("reserved witness name is not an actual compiler external")
+        runtime_module = ot.build_modules(ot.read_headers(rom))[overlay - 1]
+        start, size = int(row["offset"], 16), int(row["size"], 16)
+        runtime_records = _target_runtime_records(rom, {"kind": "overlay", "overlay": overlay,
+                                                       "module": runtime_module}, start, size)
+        # Authenticate all executable bits, not only the witnessed name's sites.
+        section_name = ".overlay_%03d" % overlay
+        linked_bytes = target_elf.section_bytes(section_name)[start:start + size]
+        object_bytes = canonical.section_bytes(".text")
+        raw_bytes = raw.section_bytes(".text")
+        if (len(object_bytes) != size or len(linked_bytes) != size
+                or raw_bytes[:size] != object_bytes or any(raw_bytes[size:])):
+            raise SurfaceComparisonError("reserved witness raw/configured executable extent differs")
+        masks = {}
+        for _, offset, kind, _ in canonical.relocations():
+            mask = {R_MIPS_26: 0xFC000000, R_MIPS_HI16: 0xFFFF0000,
+                    R_MIPS_LO16: 0xFFFF0000, R_MIPS_32: 0}.get(kind)
+            if mask is None or offset % 4 or not 0 <= offset <= size - 4 or offset in masks:
+                raise SurfaceComparisonError("unsupported reserved witness relocation geometry")
+            masks[offset] = mask
+        if size % 4 or any((struct.unpack_from(">I", object_bytes, offset)[0]
+                            ^ struct.unpack_from(">I", linked_bytes, offset)[0])
+                           & masks.get(offset, 0xFFFFFFFF) for offset in range(0, size, 4)):
+            raise SurfaceComparisonError("reserved witness compiler bytes are not exact")
+        shape = [(offset, kind) for _, offset, kind, _ in canonical.relocations()]
+        if sorted(shape) != sorted((record.offset, record.rtype) for record in runtime_records) \
+                or len(shape) != len(set(shape)):
+            raise SurfaceComparisonError("reserved witness does not own the complete runtime relocation shape")
+        narrowed = dict(module, text_ownership=[row])
+        witness = _matched_overlay_relocation_witnesses(
+            narrowed, target_elf, rom, runtime_module, {name}, root=root)
+        identities = witness.get(name, set())
+        if len(identities) != 1:
+            raise SurfaceComparisonError("reserved witness identity unavailable or conflicting")
+        identity = next(iter(identities))
+        if identity[0] not in RESERVED_SELECTORS:
+            raise SurfaceComparisonError("explicit witness is not reserved-selector storage")
+        if name in result and result[name] != identity:
+            raise SurfaceComparisonError("explicit reserved witnesses disagree")
+        if receipt["inputs"] != current_context():
+            raise SurfaceComparisonError("reserved witness inputs changed during identity proof")
+        result[name] = identity
+        receipts.append({"binding": binding, "identity": list(identity), "capture": receipt})
+        _identity_witness(evidence, name, "explicit-reserved-storage-witness", identity,
+                          source=row["source"], function=function)
+    return result, receipts
+
+
+def _merge_reserved_storage_identities(imported, identities, ambiguous, evidence):
+    """Explicit namespaces may replace correlations, never independent proof."""
+    for name, identity in imported.items():
+        independent = {tuple(row["base_identity"]) for row in evidence.get(name, [])
+                       if row.get("independent") and row.get("base_identity") is not None}
+        if any(proposed != identity for proposed in independent):
+            raise SurfaceComparisonError("explicit reserved witness conflicts with independent identity")
+        identities[name] = identity
+        ambiguous.discard(name)
 
 
 def _runtime_base(record, source_overlay, rom_table):
@@ -3654,7 +3941,7 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                                 candidate_redefine_aliases=None,
                                 include_candidate_identities=False,
                                 measure_size_delta=False,
-                                include_diagnostics=False):
+                                include_diagnostics=False, reserved_storage_witnesses=None):
     """Compare one candidate's relocation surface with the shipped target's.
 
     ``measure_size_delta`` admits exactly one ownership overrun: a candidate
@@ -3723,6 +4010,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
         context = {"kind": "resident"}
         tu_base_offset = 0
 
+    if reserved_storage_witnesses is not None and overlay is None:
+        raise SurfaceComparisonError("reserved storage witness requests require an overlay candidate")
     rom = rom_path.read_bytes()
     if context["kind"] == "overlay":
         # Reuse the module objects decoded from the exact same ROM bytes.
@@ -3737,7 +4026,7 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
             candidate_object, source, target_elf, target_symbol,
             target_value, target_size, target_section, values_path,
             resident_runtime_records)
-    evidence = {} if include_diagnostics else None
+    evidence = {} if include_diagnostics or reserved_storage_witnesses is not None else None
     identities, ambiguous_identities = _stable_symbol_identities(
         values_path, candidate_elf, overlay, tu_base_offset, target_elf,
         candidate_redefine_aliases, evidence=evidence)
@@ -3751,6 +4040,11 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
             own_range=((target_start, target_start + target_size)
                        if overlay is not None else None), evidence=evidence)
     )
+    imported, imported_receipts = {}, []
+    if reserved_storage_witnesses is not None:
+        imported, imported_receipts = _explicit_reserved_storage_witnesses(
+            reserved_storage_witnesses, candidate_elf, candidate_start, candidate_size,
+            overlay, atlas, target_elf, rom, evidence=evidence)
     if overlay is not None:
         overlay_data_identities, ambiguous_overlay_data = (
             _stable_overlay_data_identities(
@@ -3759,7 +4053,7 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                 rom=rom, runtime_module=context["module"],
                 target_records=target_records,
                 own_range=(target_start, target_start + target_size),
-                evidence=evidence)
+                evidence=evidence, explicit_foreign_names=set(imported))
         )
         for name, identity in overlay_data_identities.items():
             existing = identities.get(name)
@@ -3781,12 +4075,17 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                     % (name, existing, identity))
             identities[name] = identity
         ambiguous_identities.update(ambiguous_overlay_data)
+    if reserved_storage_witnesses is not None:
+        _merge_reserved_storage_identities(imported, identities, ambiguous_identities, evidence)
+        ambiguous_overlay_data.difference_update(imported)
     numeric_values = _numeric_assignments(values_path)
     candidate_records = _candidate_surface_records(
         candidate_elf, candidate_start, candidate_size, target_records,
         identities, numeric_values, ambiguous_identities, overlay,
         overlay_call_identities, ambiguous_overlay_calls)
     result = compare_record_sets(target_records, candidate_records)
+    if reserved_storage_witnesses is not None:
+        result["reserved_storage_witnesses"] = imported_receipts
     if include_diagnostics:
         result["diagnostics"] = relocation_diagnostics(
             candidate_elf, candidate_start, candidate_size, target_records,
@@ -3840,6 +4139,8 @@ def cmd_compare(argv):
                         default=REPO / "config" / "overlays.us.json")
     parser.add_argument("--values", type=Path, default=LINK_SYMS)
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--reserved-storage-witnesses", type=Path,
+                        help="explicit named cross-overlay reserved-storage bindings; recompiles witnesses")
     parser.add_argument("--explain", action="store_true",
                         help="include per-site reasons, witness routes and grouped symbols")
     parser.add_argument("--check", action="store_true",
@@ -3851,7 +4152,9 @@ def cmd_compare(argv):
             rom_path=args.rom, atlas_path=args.atlas, values_path=args.values,
             candidate_symbol=args.candidate_symbol,
             target_symbol=args.target_symbol, overlay_hint=args.overlay,
-            source=args.source, include_diagnostics=args.explain)
+            source=args.source, include_diagnostics=args.explain,
+            reserved_storage_witnesses=(json.loads(args.reserved_storage_witnesses.read_text())
+                                        if args.reserved_storage_witnesses else None))
     except (OSError, ValueError, SurfaceComparisonError) as error:
         parser.error(str(error))
     if args.json:

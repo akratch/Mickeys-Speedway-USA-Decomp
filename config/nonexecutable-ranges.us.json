@@ -1,0 +1,817 @@
+{
+  "schema_version": 1,
+  "rom_sha1": "507341c0a40ca3e9a7cee969b396ee53facfb548",
+  "review": "docs/executable-accounting.md",
+  "entries": [
+    {
+      "kind": "overlay-padding",
+      "overlay": 1,
+      "source": "overlays/o001/overlay_001_padding",
+      "owner_offset": "0x8114",
+      "owner_size": "0xC",
+      "offset": "0x8114",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 2,
+      "source": "overlays/o002/overlay_002_tail",
+      "owner_offset": "0x2548",
+      "owner_size": "0x8",
+      "offset": "0x2548",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 3,
+      "source": "overlays/o003/overlay_003_padding",
+      "owner_offset": "0x7C4",
+      "owner_size": "0xC",
+      "offset": "0x7C4",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 4,
+      "source": "overlays/o004/overlay_004_padding",
+      "owner_offset": "0xCAC",
+      "owner_size": "0x4",
+      "offset": "0xCAC",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 5,
+      "source": "overlays/o005/overlay_005_padding",
+      "owner_offset": "0x764",
+      "owner_size": "0xC",
+      "offset": "0x764",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 6,
+      "source": "overlays/o006/overlay_006_padding",
+      "owner_offset": "0x1C",
+      "owner_size": "0x4",
+      "offset": "0x1C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 7,
+      "source": "overlays/o007/overlay_007_padding",
+      "owner_offset": "0xFB8",
+      "owner_size": "0x8",
+      "offset": "0xFB8",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 8,
+      "source": "overlays/o008/overlay_008_padding",
+      "owner_offset": "0x5128",
+      "owner_size": "0x8",
+      "offset": "0x5128",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 11,
+      "source": "overlays/o011/overlay_011_padding",
+      "owner_offset": "0x2CB4",
+      "owner_size": "0xC",
+      "offset": "0x2CB4",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 13,
+      "source": "overlays/o013/overlay_013_padding",
+      "owner_offset": "0xB2C",
+      "owner_size": "0x4",
+      "offset": "0xB2C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 15,
+      "source": "overlays/o015/overlay_015_padding",
+      "owner_offset": "0xC6C",
+      "owner_size": "0x4",
+      "offset": "0xC6C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 16,
+      "source": "overlays/o016/overlay_016_padding",
+      "owner_offset": "0x424",
+      "owner_size": "0xC",
+      "offset": "0x424",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 19,
+      "source": "overlays/o019/overlay_019_padding",
+      "owner_offset": "0x12E4",
+      "owner_size": "0xC",
+      "offset": "0x12E4",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 20,
+      "source": "overlays/o020/overlay_020_padding",
+      "owner_offset": "0x1484",
+      "owner_size": "0xC",
+      "offset": "0x1484",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 21,
+      "source": "overlays/o021/overlay_021_padding",
+      "owner_offset": "0x2D4",
+      "owner_size": "0xC",
+      "offset": "0x2D4",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 22,
+      "source": "overlays/o022/overlay_022_padding",
+      "owner_offset": "0xE9C",
+      "owner_size": "0x4",
+      "offset": "0xE9C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 23,
+      "source": "overlays/o023/overlay_023_padding",
+      "owner_offset": "0x568",
+      "owner_size": "0x8",
+      "offset": "0x568",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 24,
+      "source": "overlays/o024/overlay_024_padding",
+      "owner_offset": "0x414",
+      "owner_size": "0xC",
+      "offset": "0x414",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 25,
+      "source": "overlays/o025/overlay_025_padding",
+      "owner_offset": "0x608",
+      "owner_size": "0x8",
+      "offset": "0x608",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 28,
+      "source": "overlays/o028/overlay_028_padding",
+      "owner_offset": "0x7EC",
+      "owner_size": "0x4",
+      "offset": "0x7EC",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 29,
+      "source": "overlays/o029/overlay_029_padding",
+      "owner_offset": "0x16CC",
+      "owner_size": "0x4",
+      "offset": "0x16CC",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 30,
+      "source": "overlays/o030/overlay_030_padding",
+      "owner_offset": "0x438",
+      "owner_size": "0x8",
+      "offset": "0x438",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 31,
+      "source": "overlays/o031/overlay_031_padding",
+      "owner_offset": "0xF44",
+      "owner_size": "0xC",
+      "offset": "0xF44",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 33,
+      "source": "overlays/o033/overlay_033_padding",
+      "owner_offset": "0x728",
+      "owner_size": "0x8",
+      "offset": "0x728",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 35,
+      "source": "overlays/o035/overlay_035_padding",
+      "owner_offset": "0x13E8",
+      "owner_size": "0x8",
+      "offset": "0x13E8",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 36,
+      "source": "overlays/o036/overlay_036_padding",
+      "owner_offset": "0x1748",
+      "owner_size": "0x8",
+      "offset": "0x1748",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 37,
+      "source": "overlays/o037/overlay_037_padding",
+      "owner_offset": "0x558",
+      "owner_size": "0x8",
+      "offset": "0x558",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 38,
+      "source": "overlays/o038/overlay_038_padding",
+      "owner_offset": "0x7E8",
+      "owner_size": "0x8",
+      "offset": "0x7E8",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 39,
+      "source": "overlays/o039/overlay_039_padding",
+      "owner_offset": "0x168",
+      "owner_size": "0x8",
+      "offset": "0x168",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 40,
+      "source": "overlays/o040/overlay_040_padding",
+      "owner_offset": "0x824",
+      "owner_size": "0xC",
+      "offset": "0x824",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 43,
+      "source": "overlays/o043/overlay_043_padding",
+      "owner_offset": "0x1424",
+      "owner_size": "0xC",
+      "offset": "0x1424",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 44,
+      "source": "overlays/o044/overlay_044_padding",
+      "owner_offset": "0xAF4",
+      "owner_size": "0xC",
+      "offset": "0xAF4",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 45,
+      "source": "overlays/o045/overlay_045_padding",
+      "owner_offset": "0x1C1C",
+      "owner_size": "0x4",
+      "offset": "0x1C1C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 47,
+      "source": "overlays/o047/overlay_047_padding",
+      "owner_offset": "0x2DE8",
+      "owner_size": "0x8",
+      "offset": "0x2DE8",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 48,
+      "source": "overlays/o048/overlay_048_padding",
+      "owner_offset": "0x46C",
+      "owner_size": "0x4",
+      "offset": "0x46C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 49,
+      "source": "overlays/o049/overlay_049_padding",
+      "owner_offset": "0x374",
+      "owner_size": "0xC",
+      "offset": "0x374",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 50,
+      "source": "overlays/o050/overlay_050_padding",
+      "owner_offset": "0x1E68",
+      "owner_size": "0x8",
+      "offset": "0x1E68",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 51,
+      "source": "overlays/o051/overlay_051_padding",
+      "owner_offset": "0x8AC",
+      "owner_size": "0x4",
+      "offset": "0x8AC",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 52,
+      "source": "overlays/o052/overlay_052_padding",
+      "owner_offset": "0x2128",
+      "owner_size": "0x8",
+      "offset": "0x2128",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 53,
+      "source": "overlays/o053/overlay_053_padding",
+      "owner_offset": "0xCA8",
+      "owner_size": "0x8",
+      "offset": "0xCA8",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 54,
+      "source": "overlays/o054/overlay_054_padding",
+      "owner_offset": "0x1EE4",
+      "owner_size": "0xC",
+      "offset": "0x1EE4",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 55,
+      "source": "overlays/o055/overlay_055_padding",
+      "owner_offset": "0xC68",
+      "owner_size": "0x8",
+      "offset": "0xC68",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 56,
+      "source": "overlays/o056/overlay_056_padding",
+      "owner_offset": "0xAF4",
+      "owner_size": "0xC",
+      "offset": "0xAF4",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 58,
+      "source": "overlays/o058/overlay_058_padding_b",
+      "owner_offset": "0x5A14",
+      "owner_size": "0xC",
+      "offset": "0x5A14",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 59,
+      "source": "overlays/o059/overlay_059_padding",
+      "owner_offset": "0xA1C",
+      "owner_size": "0x4",
+      "offset": "0xA1C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 60,
+      "source": "overlays/o060/overlay_060_padding",
+      "owner_offset": "0x355C",
+      "owner_size": "0x4",
+      "offset": "0x355C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 61,
+      "source": "overlays/o061/overlay_061_padding",
+      "owner_offset": "0x1A84",
+      "owner_size": "0xC",
+      "offset": "0x1A84",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 63,
+      "source": "overlays/o063/overlay_063_padding",
+      "owner_offset": "0x928",
+      "owner_size": "0x8",
+      "offset": "0x928",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 65,
+      "source": "overlays/o065/overlay_065_padding",
+      "owner_offset": "0x1BB4",
+      "owner_size": "0xC",
+      "offset": "0x1BB4",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 67,
+      "source": "overlays/o067/overlay_067_padding",
+      "owner_offset": "0x14C",
+      "owner_size": "0x4",
+      "offset": "0x14C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 68,
+      "source": "overlays/o068/overlay_068_padding",
+      "owner_offset": "0x15AC",
+      "owner_size": "0x4",
+      "offset": "0x15AC",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 69,
+      "source": "overlays/o069/overlay_069_padding",
+      "owner_offset": "0x70C",
+      "owner_size": "0x4",
+      "offset": "0x70C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 70,
+      "source": "overlays/o070/overlay_070_padding",
+      "owner_offset": "0x728",
+      "owner_size": "0x8",
+      "offset": "0x728",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 71,
+      "source": "overlays/o071/overlay_071_tail",
+      "owner_offset": "0xB48",
+      "owner_size": "0x8",
+      "offset": "0xB48",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 72,
+      "source": "overlays/o072/overlay_072_padding",
+      "owner_offset": "0x168",
+      "owner_size": "0x8",
+      "offset": "0x168",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 73,
+      "source": "overlays/o073/overlay_073_padding",
+      "owner_offset": "0xEA8",
+      "owner_size": "0x8",
+      "offset": "0xEA8",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 74,
+      "source": "overlays/o074/overlay_074_padding",
+      "owner_offset": "0x248",
+      "owner_size": "0x8",
+      "offset": "0x248",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 75,
+      "source": "overlays/o075/overlay_075_padding",
+      "owner_offset": "0x6F8",
+      "owner_size": "0x8",
+      "offset": "0x6F8",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 76,
+      "source": "overlays/o076/overlay_076_padding",
+      "owner_offset": "0x114",
+      "owner_size": "0xC",
+      "offset": "0x114",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 78,
+      "source": "overlays/o078/overlay_078_padding",
+      "owner_offset": "0xA8",
+      "owner_size": "0x8",
+      "offset": "0xA8",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 80,
+      "source": "overlays/o080/overlay_080_padding",
+      "owner_offset": "0x3EC",
+      "owner_size": "0x4",
+      "offset": "0x3EC",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 81,
+      "source": "overlays/o081/overlay_081_padding",
+      "owner_offset": "0x34C",
+      "owner_size": "0x4",
+      "offset": "0x34C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 82,
+      "source": "overlays/o082/overlay_082_padding",
+      "owner_offset": "0x4CC",
+      "owner_size": "0x4",
+      "offset": "0x4CC",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 84,
+      "source": "overlays/o084/overlay_084_padding",
+      "owner_offset": "0x13BC",
+      "owner_size": "0x4",
+      "offset": "0x13BC",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 85,
+      "source": "overlays/o085/overlay_085_padding",
+      "owner_offset": "0x29C",
+      "owner_size": "0x4",
+      "offset": "0x29C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 86,
+      "source": "overlays/o086/overlay_086_padding",
+      "owner_offset": "0xECC",
+      "owner_size": "0x4",
+      "offset": "0xECC",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 87,
+      "source": "overlays/o087/overlay_087_padding",
+      "owner_offset": "0x964",
+      "owner_size": "0xC",
+      "offset": "0x964",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 89,
+      "source": "overlays/o089/overlay_089_padding",
+      "owner_offset": "0x7C4",
+      "owner_size": "0xC",
+      "offset": "0x7C4",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 90,
+      "source": "overlays/o090/overlay_090_padding",
+      "owner_offset": "0xB1C",
+      "owner_size": "0x4",
+      "offset": "0xB1C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 91,
+      "source": "overlays/o091/overlay_091_padding",
+      "owner_offset": "0x574",
+      "owner_size": "0xC",
+      "offset": "0x574",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 93,
+      "source": "overlays/o093/overlay_093_padding",
+      "owner_offset": "0xEC",
+      "owner_size": "0x4",
+      "offset": "0xEC",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 94,
+      "source": "overlays/o094/overlay_094_padding",
+      "owner_offset": "0x568",
+      "owner_size": "0x8",
+      "offset": "0x568",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 95,
+      "source": "overlays/o095/overlay_095_padding",
+      "owner_offset": "0x1D8",
+      "owner_size": "0x8",
+      "offset": "0x1D8",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 96,
+      "source": "overlays/o096/overlay_096_padding",
+      "owner_offset": "0x6D4",
+      "owner_size": "0xC",
+      "offset": "0x6D4",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 97,
+      "source": "overlays/o097/overlay_097_padding",
+      "owner_offset": "0xA54",
+      "owner_size": "0xC",
+      "offset": "0xA54",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 98,
+      "source": "overlays/o098/overlay_098_padding",
+      "owner_offset": "0xA04",
+      "owner_size": "0xC",
+      "offset": "0xA04",
+      "size": "0xC"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 100,
+      "source": "overlays/o100/overlay_100_padding",
+      "owner_offset": "0x94C",
+      "owner_size": "0x4",
+      "offset": "0x94C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 101,
+      "source": "overlays/o101/overlay_101_padding",
+      "owner_offset": "0xCED8",
+      "owner_size": "0x8",
+      "offset": "0xCED8",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 102,
+      "source": "overlays/o102/overlay_102_padding",
+      "owner_offset": "0x6C",
+      "owner_size": "0x4",
+      "offset": "0x6C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 103,
+      "source": "overlays/o103/overlay_103_padding",
+      "owner_offset": "0x6C",
+      "owner_size": "0x4",
+      "offset": "0x6C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 106,
+      "source": "overlays/o106/overlay_106_padding",
+      "owner_offset": "0x8",
+      "owner_size": "0x8",
+      "offset": "0x8",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-padding",
+      "overlay": 107,
+      "source": "overlays/o107/overlay_107_padding",
+      "owner_offset": "0x28",
+      "owner_size": "0x8",
+      "offset": "0x28",
+      "size": "0x8"
+    },
+    {
+      "kind": "overlay-trailing-alignment",
+      "overlay": 9,
+      "source": "overlays/o009/overlay_009",
+      "owner_offset": "0x0",
+      "owner_size": "0x1520",
+      "offset": "0x151c",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-trailing-alignment",
+      "overlay": 12,
+      "source": "overlays/o012/func_overlay_012_F0000910_186DB90",
+      "owner_offset": "0x910",
+      "owner_size": "0x990",
+      "offset": "0x129c",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-trailing-alignment",
+      "overlay": 46,
+      "source": "overlays/o046/func_overlay_046_F0001228_188F620",
+      "owner_offset": "0x1228",
+      "owner_size": "0x738",
+      "offset": "0x195c",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-trailing-alignment",
+      "overlay": 99,
+      "source": "overlays/o099/func_overlay_099_F0000DDC_18DA38C",
+      "owner_offset": "0xDDC",
+      "owner_size": "0x584",
+      "offset": "0x135c",
+      "size": "0x4"
+    },
+    {
+      "kind": "resident-trailing-alignment",
+      "symbol": "func_800180B4",
+      "source": "main/shadows",
+      "vram": "0x800180b4",
+      "owner_size": "0x33c",
+      "offset": "0x338",
+      "size": "0x4"
+    },
+    {
+      "kind": "resident-trailing-alignment",
+      "symbol": "func_8003C80C",
+      "source": "main/weather_tail",
+      "vram": "0x8003c80c",
+      "owner_size": "0x1e4",
+      "offset": "0x1d8",
+      "size": "0xc"
+    },
+    {
+      "kind": "resident-trailing-alignment",
+      "symbol": "func_8002B040",
+      "source": "main/matrix",
+      "vram": "0x8002b040",
+      "owner_size": "0x90",
+      "offset": "0x88",
+      "size": "0x8"
+    },
+    {
+      "kind": "resident-alignment-identity",
+      "symbol": "func_8005800C",
+      "source": "58C0C",
+      "vram": "0x8005800c",
+      "owner_size": "0x4",
+      "offset": "0x0",
+      "size": "0x4"
+    }
+  ]
+}

@@ -89,3 +89,39 @@ canonical definition and its owner, or prove an exact sibling's relocation and
 then establish the candidate's symbol binding. Do not rename or merge aliases
 merely because target tuples align. After any binding change, repeat ordinary
 object, relocation, linked-range and ROM proof.
+
+## Explicit cross-overlay reserved-storage witnesses
+
+`compare --reserved-storage-witnesses build/witness-bindings.json` optionally
+imports a named external from an independently exact canonical function in
+another overlay. The JSON has `schema_version: 1` and a `bindings` list; each
+binding contains only `symbol`, `source_overlay`, and `source_function`.
+The candidate must actually reference that same undefined external name.
+No arbitrary alias mapping, supplied raw object, numeric-address match, or
+candidate target-site correlation supplies the imported identity.
+
+Each named witness triggers a fresh configured full-TU compile under the
+existing compiler/provenance machinery. Source, dependencies, compiler tools,
+flags, recipe, metadata tools, source directory, and canonical target inputs
+are hashed before and after capture and replay. Only symbol renames and
+zero-tail trimming are admitted. The replay must reproduce every allocated section's geometry and contents
+(without reading NOBITS as file data), all relocation identities across every
+section, and non-debug symbol definitions normalized by section name. Compiler
+FILE records and debug-only metadata are excluded. All owned compiler
+instruction bits, linked ROM bytes, and the complete runtime relocation shape
+must agree.
+Capture receipts and raw objects remain under ignored
+`build/reserved-storage-witnesses/`.
+
+Only reserved selectors are importable, and each selector keeps its own
+namespace. Overlay-local identities, conflicting witnesses, stale input,
+nonexact or moved owners, and actual same-name local definitions fail closed.
+For an explicitly proved foreign name only, the same-overlay numeric
+whole-BSS fallback and positional correlation cannot override its namespace.
+Independent resident/name and exact-sibling conflicts still fail closed.
+Inputs without explicit bindings retain their existing comparison verdicts.
+
+The JSON comparison result includes the binding and complete capture receipt.
+This standalone proof does not yet feed promotion/preflight automatically;
+that bridge remains required before promoting any candidate that relies on
+an imported witness. An improved resolved-identity count is not matching credit.

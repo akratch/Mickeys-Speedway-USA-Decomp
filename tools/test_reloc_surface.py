@@ -2918,5 +2918,273 @@ class RelocationDiagnosticTests(unittest.TestCase):
         self.assertTrue(compare.call_args.kwargs["include_diagnostics"])
 
 
+
+class ExplicitReservedStorageWitnessTests(unittest.TestCase):
+    """Synthetic eight-record fixture; no ROM-derived bytes are embedded."""
+
+    FakeElf = MatchedOverlayRelocationWitnessTests.FakeElf
+    fixture = MatchedOverlayRelocationWitnessTests.fixture
+
+    def explicit_fixture(self, root):
+        rom, module, runtime, target, objects = self.fixture(root)
+        canonical = next(iter(objects.values()))
+        canonical._relocations = [
+            (".text", offset, rs.R_MIPS_HI16 if offset % 8 == 0 else rs.R_MIPS_LO16, 0)
+            for offset in range(0, 32, 4)]
+        raw_path = root / "build/raw-witness.o"
+        raw_path.write_bytes(b"captured fixture")
+        objects[raw_path] = canonical
+        candidate = self.FakeElf(root / "candidate.o", ["", ".text"],
+            symbols=[("gSharedProxy", 0, 0, 0, rs.SHN_UNDEF)],
+            relocations=[(".text", 0, rs.R_MIPS_HI16, 0),
+                         (".text", 4, rs.R_MIPS_LO16, 0)], sections={".text": b"\0" * 8})
+        bindings = {"schema_version": 1, "bindings": [
+            {"symbol": "gSharedProxy", "source_overlay": 7, "source_function": "witness0"}]}
+        records = [rs.SurfaceRecord(offset, kind, (0xFFF, 0x1234))
+                   for _, offset, kind, _ in canonical.relocations()]
+        (root / "baseroms").mkdir()
+        (root / "baseroms/mickey.us.z64").write_bytes(rom)
+        (root / "config").mkdir()
+        (root / "config/overlays.us.json").write_text(json.dumps({"modules": [module]}))
+        target.data = target.path.read_bytes()
+        return rom, module, runtime, target, objects, raw_path, candidate, bindings, records
+
+    def invoke(self, root, fixture):
+        rom, module, runtime, target, objects, raw_path, candidate, bindings, records = fixture
+        with mock.patch.object(rs, "Elf", side_effect=lambda path: objects[Path(path)]), \
+             mock.patch.object(rs, "_callee_build_dependencies", return_value=(set(), ())), \
+             mock.patch.object(rs, "_capture_reserved_storage_source", return_value=(
+                 raw_path, {"inputs": {}}, lambda: {})), \
+             mock.patch.object(rs.ot, "read_headers", return_value=[]), \
+             mock.patch.object(rs.ot, "build_modules", return_value=[None] * 6 + [runtime]), \
+             mock.patch.object(rs, "_target_runtime_records", return_value=records):
+            return rs._explicit_reserved_storage_witnesses(
+                bindings, candidate, 0, 8, 57, {"modules": [module]}, target, rom, root=root)
+
+    def test_explicit_eight_record_reserved_witness(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            result, receipts = self.invoke(root, self.explicit_fixture(root))
+            self.assertEqual(result, {"gSharedProxy": (0xFFF, 0x1234)})
+            self.assertEqual(len(receipts), 1)
+
+    def test_stale_source_refused(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); fixture = self.explicit_fixture(root)
+            source = root / "src/overlays/o007/witness0.c"
+            newer = fixture[3].path.stat().st_mtime_ns + 1
+            os.utime(source, ns=(newer, newer))
+            with self.assertRaisesRegex(rs.SurfaceComparisonError, "stale"):
+                self.invoke(root, fixture)
+
+    def test_nonexact_compiler_bits_refused(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); fixture = self.explicit_fixture(root)
+            next(iter(fixture[4].values()))._sections[".text"] = b"\x80" + b"\0" * 31
+            with self.assertRaisesRegex(rs.SurfaceComparisonError, "compiler bytes"):
+                self.invoke(root, fixture)
+
+    def test_moved_linked_sibling_refused(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); fixture = self.explicit_fixture(root)
+            symbol = list(fixture[3]._symbols[0]); symbol[1] += 4
+            fixture[3]._symbols[0] = tuple(symbol)
+            with self.assertRaisesRegex(rs.SurfaceComparisonError, "conflicts with canonical"):
+                self.invoke(root, fixture)
+
+    def test_nonexact_linked_rom_refused(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); fixture = self.explicit_fixture(root)
+            fixture[3]._sections[".overlay_007"] = b"\0\0\0\1" + b"\0" * 28
+            with self.assertRaisesRegex(rs.SurfaceComparisonError, "unavailable or conflicting"):
+                self.invoke(root, fixture)
+
+    def test_conflicting_runtime_witnesses_refused(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); fixture = self.explicit_fixture(root)
+            fixture[8][2:4] = [rs.SurfaceRecord(offset, kind, (0xFFD, 0x1234))
+                               for offset, kind in [(8, rs.R_MIPS_HI16), (12, rs.R_MIPS_LO16)]]
+            with self.assertRaisesRegex(rs.SurfaceComparisonError, "unavailable or conflicting"):
+                self.invoke(root, fixture)
+
+    def test_overlay_local_identity_refused(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); fixture = self.explicit_fixture(root)
+            fixture[8][:] = [rs.SurfaceRecord(r.offset, r.rtype, (7, 0x1234)) for r in fixture[8]]
+            with self.assertRaisesRegex(rs.SurfaceComparisonError, "not reserved-selector"):
+                self.invoke(root, fixture)
+
+    def test_reserved_selectors_remain_distinct(self):
+        for selector in (0xFFD, 0xFFE, 0xFFF):
+            with self.subTest(selector=selector), tempfile.TemporaryDirectory() as td:
+                root = Path(td); fixture = self.explicit_fixture(root)
+                fixture[8][:] = [rs.SurfaceRecord(r.offset, r.rtype, (selector, 0x1234)) for r in fixture[8]]
+                self.assertEqual(self.invoke(root, fixture)[0]["gSharedProxy"], (selector, 0x1234))
+
+    def test_arbitrary_raw_object_is_not_binding_schema(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); fixture = self.explicit_fixture(root)
+            fixture[7]["bindings"][0]["raw_object"] = "build/arbitrary.o"
+            with self.assertRaisesRegex(rs.SurfaceComparisonError, "must name one external"):
+                self.invoke(root, fixture)
+
+    def test_undeclared_external_refused(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); fixture = self.explicit_fixture(root)
+            fixture[7]["bindings"][0]["symbol"] = "inventedAlias"
+            with self.assertRaisesRegex(rs.SurfaceComparisonError, "explicit cross-overlay"):
+                self.invoke(root, fixture)
+
+    def test_missing_runtime_tuple_refused(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); fixture = self.explicit_fixture(root)
+            fixture[8].pop()
+            with self.assertRaisesRegex(rs.SurfaceComparisonError, "complete runtime"):
+                self.invoke(root, fixture)
+
+    def test_named_local_definition_still_refused(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); fixture = self.explicit_fixture(root)
+            target = fixture[3]
+            target.names.append(".overlay_057_bss")
+            target._symbols.append(("gSharedProxy", rs.SYNTHETIC_VMA, 4, 1, 2))
+            with self.assertRaisesRegex(rs.SurfaceComparisonError, "named local definition"):
+                self.invoke(root, fixture)
+
+    def test_explicit_namespace_suppresses_only_numeric_bss_fallback(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); fixture = self.explicit_fixture(root)
+            candidate, target = fixture[6], fixture[3]
+            with mock.patch.object(rs, "_numeric_assignments", return_value={"gSharedProxy": 0}), \
+                 mock.patch.object(rs, "_canonical_overlay_data_identity", return_value=(57, 0x7110)) as owner:
+                legacy, _ = rs._stable_overlay_data_identities(
+                    root / "values", candidate, {"overlay": 57}, target, 0, 8)
+                self.assertEqual(legacy, {"gSharedProxy": (57, 0x7110)})
+                owner.reset_mock()
+                explicit, _ = rs._stable_overlay_data_identities(
+                    root / "values", candidate, {"overlay": 57}, target, 0, 8,
+                    explicit_foreign_names={"gSharedProxy"})
+                self.assertEqual(explicit, {})
+                owner.assert_not_called()
+
+    def test_independent_resident_and_sibling_conflicts_refused(self):
+        for route, identity in [("resident-elf-address", (0, 0x1234)),
+                                ("matched-canonical-sibling", (0xFFD, 0x1234))]:
+            with self.subTest(route=route), self.assertRaisesRegex(rs.SurfaceComparisonError, "independent identity"):
+                rs._merge_reserved_storage_identities({"shared": (0xFFF, 0x1234)}, {}, set(),
+                    {"shared": [{"route": route, "independent": True, "base_identity": identity}]})
+
+    def test_only_positional_proposal_can_be_replaced(self):
+        identities, ambiguous = {"shared": (57, 100)}, {"shared"}
+        rs._merge_reserved_storage_identities({"shared": (0xFFF, 0x1234)}, identities, ambiguous,
+            {"shared": [{"independent": False, "base_identity": (57, 100)}]})
+        self.assertEqual(identities, {"shared": (0xFFF, 0x1234)})
+        self.assertEqual(ambiguous, set())
+
+    def test_capture_context_mutation_refused(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td); fixture = self.explicit_fixture(root)
+            rom, module, runtime, target, objects, raw, candidate, bindings, records = fixture
+            with mock.patch.object(rs, "Elf", side_effect=lambda path: objects[Path(path)]), \
+                 mock.patch.object(rs, "_callee_build_dependencies", return_value=(set(), ())), \
+                 mock.patch.object(rs, "_capture_reserved_storage_source", return_value=(raw, {"inputs": {}}, lambda: {"changed": True})), \
+                 mock.patch.object(rs.ot, "read_headers", return_value=[]), \
+                 mock.patch.object(rs.ot, "build_modules", return_value=[None] * 6 + [runtime]), \
+                 mock.patch.object(rs, "_target_runtime_records", return_value=records):
+                with self.assertRaisesRegex(rs.SurfaceComparisonError, "inputs changed"):
+                    rs._explicit_reserved_storage_witnesses(bindings, candidate, 0, 8, 57,
+                        {"modules": [module]}, target, rom, root=root)
+
+
+class ReservedWitnessFidelityTests(unittest.TestCase):
+    class Object:
+        def __init__(self):
+            self.names = ["", ".text", ".data", ".bss", ".mdebug"]
+            self.sh = [
+                (0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                (0, 1, 6, 0, 0, 8, 0, 0, 4, 0),
+                (0, 1, 3, 0, 0, 4, 0, 0, 4, 0),
+                (0, 8, 3, 0, 99, 16, 0, 0, 8, 0),
+                (0, 1, 0, 0, 0, 3, 0, 0, 1, 0),
+            ]
+            self.payloads = {".text": b"\0" * 8, ".data": b"\0" * 4, ".mdebug": b"one"}
+            self.syms = [("external", 0, 0, 16, rs.SHN_UNDEF),
+                         ("local", 0, 4, 1, 2), ("input.c", 0, 0, 4, rs.SHN_ABS),
+                         ("debug", 0, 0, 0, 4)]
+            self.relocs = [(".text", 0, rs.R_MIPS_HI16, 0),
+                           (".data", 0, rs.R_MIPS_32, 1)]
+
+        def section_bytes(self, name):
+            if name == ".bss":
+                raise AssertionError("NOBITS must not be read as file data")
+            return self.payloads.get(name, b"")
+
+        def symbols(self):
+            return list(self.syms)
+
+        def relocations(self, target=r"\.text"):
+            return [row for row in self.relocs if __import__("re").fullmatch(target, row[0])]
+
+    def test_complete_fidelity_ignores_nobits_file_offset(self):
+        left, right = self.Object(), self.Object()
+        header = list(right.sh[3]); header[4] = 12345; right.sh[3] = tuple(header)
+        rs._reserved_witness_fidelity(left, right)
+
+    def test_bss_extent_change_rejected(self):
+        left, right = self.Object(), self.Object()
+        header = list(right.sh[3]); header[5] += 8; right.sh[3] = tuple(header)
+        with self.assertRaisesRegex(rs.SurfaceComparisonError, "geometry"):
+            rs._reserved_witness_fidelity(left, right)
+
+    def test_all_allocated_geometry_fields_checked(self):
+        for field in (1, 2, 3, 8):
+            with self.subTest(field=field):
+                left, right = self.Object(), self.Object()
+                header = list(right.sh[2]); header[field] += 16; right.sh[2] = tuple(header)
+                with self.assertRaisesRegex(rs.SurfaceComparisonError, "geometry"):
+                    rs._reserved_witness_fidelity(left, right)
+
+    def test_allocated_data_contents_checked(self):
+        left, right = self.Object(), self.Object(); right.payloads[".data"] = b"\1" * 4
+        with self.assertRaisesRegex(rs.SurfaceComparisonError, "contents"):
+            rs._reserved_witness_fidelity(left, right)
+
+    def test_data_relocation_mutation_rejected(self):
+        left, right = self.Object(), self.Object()
+        right.relocs[1] = (".data", 0, rs.R_MIPS_LO16, 1)
+        with self.assertRaisesRegex(rs.SurfaceComparisonError, "relocation identity"):
+            rs._reserved_witness_fidelity(left, right)
+
+    def test_same_name_changed_referenced_value_and_owner_rejected(self):
+        for field in (1, 4):
+            with self.subTest(field=field):
+                left, right = self.Object(), self.Object()
+                symbol = list(right.syms[1]); symbol[field] += 1; right.syms[1] = tuple(symbol)
+                with self.assertRaisesRegex(rs.SurfaceComparisonError, "relocation identity"):
+                    rs._reserved_witness_fidelity(left, right)
+
+    def test_unreferenced_symbol_definition_checked(self):
+        left, right = self.Object(), self.Object()
+        left.syms.append(("unreferenced", 0, 4, 1, 3)); right.syms.append(("unreferenced", 4, 4, 1, 3))
+        with self.assertRaisesRegex(rs.SurfaceComparisonError, "symbol identity"):
+            rs._reserved_witness_fidelity(left, right)
+
+    def test_benign_file_and_debug_metadata_ignored(self):
+        left, right = self.Object(), self.Object()
+        right.payloads[".mdebug"] = b"other debugging metadata"
+        right.syms[2] = ("different-temporary.c", 7, 0, 4, rs.SHN_ABS)
+        right.syms[3] = ("different-debug", 12, 8, 0, 4)
+        rs._reserved_witness_fidelity(left, right)
+
+    def test_empty_bindings_reject_resident_public_comparison(self):
+        with tempfile.TemporaryDirectory() as td:
+            atlas = Path(td) / "atlas.json"; atlas.write_text('{"modules":[]}')
+            with mock.patch.object(rs, "Elf", return_value=object()), \
+                 mock.patch.object(rs, "resolve_overlay_ownership", return_value=None), \
+                 mock.patch.object(rs, "_unique_symbol", side_effect=[(0, 8, ".text"), (0x80001000, 8, ".main")]):
+                with self.assertRaisesRegex(rs.SurfaceComparisonError, "require an overlay candidate"):
+                    rs.function_surface_comparison("resident", Path("candidate"), Path("linked"),
+                        atlas_path=atlas, reserved_storage_witnesses={"schema_version": 1, "bindings": []})
+
 if __name__ == "__main__":
     unittest.main()

@@ -2552,6 +2552,32 @@ bytes and disassembly never belong here.
   See the
   [constructor block-budget receipt](matching-triage-handoffs/overlay34CreateRecord.md).
 
+- **Aggregate placement and cursor lifetime are separate stack-layout levers.**
+  When scalar declaration permutations leave an address-taken aggregate fixed,
+  compare its lexical scope and position among the enclosing declarations.
+  Removing a redundant allocation-result carrier can then shrink the frame
+  while retaining the aggregate's required home. Store the allocation result
+  in its destination field, test that field, and introduce the walking cursor
+  only on the successful path. This spelling requires ordinary memory and no
+  intervening mutation of the field; it is not valid for arbitrary volatile or
+  aliased storage. Measure both the frame extent and every live stack home:
+  fixing only one can worsen the other. The
+  [batch-building closure](matching-triage-handoffs/overlay83BuildBatch.md)
+  proves the combined spelling with stock compiler output, authenticated call
+  identities and linked-ROM equality, without padding locals.
+
+- **Equal temporary-draw counts do not prove equal operand assignment.**
+  Exchanging the integer operands of an address calculation can change their
+  evaluation order and register roles while preserving the draw count. Once
+  those roles agree, check qualification separately: a blanket volatile
+  pointer can retain an unnecessary scheduling barrier on an ordinary data
+  field. Narrow qualification only after proving the storage and access
+  semantics; a ROM asset offset is not an MMIO access. The
+  [frame-cache closure](matching-triage-handoffs/overlay44UpdateFrameCache.md)
+  needed both changes and retained its sibling functions' bytes. This does
+  not justify reassociating floating-point arithmetic, dropping observable
+  volatile accesses, or treating unchanged draw counts as allocator fidelity.
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

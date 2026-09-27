@@ -67,47 +67,8 @@ gmake verify
 
 echo "== push master"
 git push origin master
-# Renew reopen pins that THIS integration batch just invalidated.
-#
-# DELIBERATELY LAST. A reopen pin arms only while its pinned source and handoff
-# commits match what lane_status derives now, so every lane that edits a handoff
-# and gets merged kills its own pin -- the authorizations decay as a direct
-# consequence of landing, silently, and a stale pin reads as
-# `already-integrated/exhausted` so the target just leaves the queue. That cost
-# two dispatched lanes before it was automated.
-#
-# It runs AFTER the push because it is the expensive step: it classifies every
-# queued symbol, and on a memory-constrained machine the OS killed land.sh twice
-# during it. Killed here, the batch is already landed and pushed and only the
-# renewal is lost -- rerun `tools/authorize_reopen.py --refresh-stale` by hand.
-# Killed before the push, as it used to be, the whole integration was lost.
-#
-# It only renews pins that already carry a recorded reason, so it restores
-# previously-granted authorizations and never grants a new one.
-# ON campaign/unchain, NOT master. land.sh has master checked out at this
-# point, and LANES BRANCH FROM campaign/unchain -- a renewal committed only on
-# master is invisible to every lane created afterwards, which is the entire
-# point of renewing. That happened once: the commit landed on master while the
-# push went to campaign/unchain, leaving master one commit unpushed and the
-# lanes' branch stale.
-echo "== renew reopen pins invalidated by this batch"
-git checkout -q campaign/unchain
-if "${PYTHON:-.venv/bin/python}" tools/authorize_reopen.py --refresh-stale; then
-    if [ -n "$(git status --porcelain --untracked-files=no -- config/lane-reopen-authorizations.us.json)" ]; then
-        git add config/lane-reopen-authorizations.us.json
-        git commit -q -m "Renew reopen pins invalidated by this integration batch
-
-Merging a lane that edited a handoff moves that symbol's handoff commit
-and invalidates its own reopen pin. Renewed with each existing reason
-preserved; no new authorization is granted here."
-        git push -q origin campaign/unchain
-        echo "   renewed, committed and pushed on campaign/unchain"
-    else
-        echo "   no stale pins"
-    fi
-else
-    echo "   WARNING: pin renewal failed; the batch IS landed." >&2
-    echo "   Rerun: tools/authorize_reopen.py --refresh-stale" >&2
-fi
+# ADR 0011: a source or handoff commit consumes its reopening authorization.
+# Landing must not rearm that attempt by copying the old reason to new pins.
+# The coordinator may authorize a genuinely new mechanism separately.
 
 echo "== landed: $(git log --oneline -1)"

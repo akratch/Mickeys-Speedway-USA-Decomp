@@ -1887,7 +1887,7 @@
     },
     "overlay44UpdateFrameCache": {
       "ledger_commit": "1f76b358621a55d481a098d18226c1895e5d4992",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
+      "reason": "ADR0017 causal packet: authenticate ugen draw/free timing and expression lifetimes at the first naming divergence; test emission-order mechanisms, preserving exact frame and homes. Prior colour and home sweeps remain exhausted.",
       "source_commit": "1f76b358621a55d481a098d18226c1895e5d4992"
     },
     "overlay48InitializeState": {
@@ -2026,9 +2026,9 @@
       "source_commit": "39c0ce8086fac7882de2abf4584364ca4333bfee"
     },
     "overlay83BuildBatch": {
-      "ledger_commit": "adec7b1d208be2b368d1e13e3aeef3d85c85ffd1",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "adec7b1d208be2b368d1e13e3aeef3d85c85ffd1"
+      "ledger_commit": "224258eed67e7f326ddfcf7981b04a15af49cc35",
+      "reason": "ADR0017 causal packet: trace declared-local versus compiler-temporary storage on the new 22-word body; test lexical lifetime sharing to raise linkedInit while shrinking the frame, preserving size and save set.",
+      "source_commit": "224258eed67e7f326ddfcf7981b04a15af49cc35"
     },
     "overlay83DrawStrip": {
       "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",

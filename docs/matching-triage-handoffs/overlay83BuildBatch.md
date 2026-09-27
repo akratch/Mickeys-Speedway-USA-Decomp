@@ -2,11 +2,52 @@
 ### `overlay83BuildBatch` plateau handoff
 
 - source: `src/overlays/o083/overlay83BuildBatch.c`
-- score: 98/168 words
-- frame: 0x80
+- score: 0/168 words, promoted
+- frame: 0x78
 - relocations: 5
-- first mismatch: +0x0
-- summary: o34 comma inert. dummy-after-linkedInit 91/0x88 home +0x58. batch-as-remaining frame 0x78 at 107. No size-0 net-zero slide.
+- first mismatch: none
+- summary: Matched. Fold allocation into batch records, declare the light initializer after two locals, and name the walking output only inside the successful allocation branch.
+
+#### 2026-09-27, wave recovery: ROM-exact closure
+
+The retained candidate reproduced 22 masked differences at 672 bytes. Its
+three call proxies were authenticated through the shipped runtime relocation
+table and the resident symbol boundaries: allocator `func_8002B280`, transform
+`pointListRPY`, and `addObjectLight`. Using those source identities proved all
+five relocation offsets, types and stable identities before promotion.
+
+The storage experiment separated scalar order from aggregate scope. Moving
+the initializer to function scope after two scalar declarations moved its
+home while preserving instruction count. Folding the allocation local into
+the walking pointer then produced the exact frame and complete stack ladder,
+leaving seven differences. Guarding the allocation through `batch->records`
+and assigning the walking output inside the successful branch delayed its
+copy to the required point and closed those seven differences.
+
+The final initializer uses the existing `ObjectLightEntry` header and the
+actual light-creation ABI. Coordinate conversion multiplies signed bytes by
+256 rather than left-shifting potentially negative values; the stock output
+is unchanged. All locals are used, with no inert padding or forced compiler
+behavior. Register qualifiers on all six original scalar locals were inert;
+a separate lexical-scope experiment moved the initializer correctly but kept
+the larger frame and regressed allocation, so neither was adopted.
+
+Proof: overlay 83 text `+0x53C..+0x7DC`, 672 executable bytes / 168 words,
+frame `0x78`, five exact relocation identities. The configured stock object,
+linked owned range and full US ROM pass; no padding earns credit. The only
+postcompile normalization renames symbols, never instructions. The source
+context self-comparison and stock/instrumented text identity passed before
+experimentation. Prior measurements below remain historical negatives.
+
+Commands: `tools/wb_compare.sh --summary-json overlay83BuildBatch`,
+`tools/frame_census.py`, `tools/align_symbol.py`, `tools/residual_map.py`,
+`tools/reloc_surface.py compare --check`, `gmake overlay-atlas-write`,
+`tools/refresh_atlas_digest.py`, `gmake extract`, `gmake overlay-syms`,
+`gmake verify`, and `gmake promotion-proof SYMBOL=overlay83BuildBatch`.
+Private source/object/score/trace receipts remain under ignored
+`build/wave-recovery/`.
+
+Summary before this remeasure: o34 comma inert. dummy-after-linkedInit 91/0x88 home +0x58. batch-as-remaining frame 0x78 at 107. No size-0 net-zero slide.
 - baseline: Exact 672-byte size and 168-word body. Inherited candidate was 97 masked at frame 0x90. This pass is 98 masked at frame 0x80; aligned byte-exact 126, naming 12, immediate 9, structural 26.
 - identity gate: instrumented IDO `.text` is byte-identical to stock; proc=0. The 0x80 shape emits 13 p1 decisions.
 - save set: candidate and target both save s0-s6, ra, f20, and f22 at the same slots. Extra frame is unused local-block homes, not extra callee-saves.

@@ -3097,6 +3097,12 @@ overlay83UpdateLinkedReloc = 0xf0000000;
 overlay83CommitReloc = 0xf00001ac;
 overlay83PrepareReloc = 0xf00002a0;
 
+/* overlay 83: overlay83BuildBatch.c.o */
+gOverlay83ScaleReloc = 0x00000000;
+overlay83AllocateBatchReloc = 0xf0000000;
+overlay83CreateLinkedReloc = 0xf0000000;
+overlay83TransformWorldReloc = 0xf0000000;
+
 /* overlay 83: overlay83DrawEntries.c.o */
 overlay83DrawEntryReloc = 0xf0000514;
 

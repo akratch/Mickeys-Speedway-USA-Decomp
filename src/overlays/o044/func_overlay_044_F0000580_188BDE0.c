@@ -11,7 +11,7 @@ typedef struct Overlay44FrameSource {
     s16 frameCount;
     u8 storageMode;
     u8 speed;
-    u8 *data;
+    s32 dataOffset;
     s32 frameSize;
 } Overlay44FrameSource;
 

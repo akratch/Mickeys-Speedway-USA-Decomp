@@ -217,23 +217,13 @@ def entry_is_valid(symbol: str, source_commit: str, ledger_commit: str | None) -
 
 
 def discover_stale() -> list[str]:
-    """Every queued symbol whose pin has drifted and that already has a reason.
+    """Find consumed authorizations that still carry a recorded reason.
 
-    A pin arms only while its pinned source and handoff commits equal the ones
-    the classifier derives right now. So EVERY lane that edits a handoff and
-    gets merged moves that symbol's handoff commit and invalidates its own pin.
-    The authorization decays as a direct consequence of integration, silently,
-    and a stale pin reads as `already-integrated/exhausted` -- the target simply
-    leaves the queue.
-
-    That cost two dispatched lanes outright on one function: each arrived,
-    found the gate closed, and returned having done nothing, because the pin had
-    died when the PREVIOUS pass on that same function was merged.
-
-    Only symbols that already carry a recorded reason are returned. A drifted
-    pin is a previously-granted authorization that integration invalidated, so
-    renewing it restores a decision already made. Granting a NEW one still
-    requires --reason or --reason-from-class and a human judgement.
+    ADR 0011 deliberately consumes a pin after a source or handoff commit.
+    Finding it here is not permission to repeat the prior attempt. This legacy
+    helper supplies explicit review workflows only; landing must never call it
+    automatically. Prefer --symbols with --reason naming a genuinely new
+    mechanism after reviewing the latest handoff.
     """
     import json as _json
     document = _json.loads(AUTHORIZATIONS.read_text())
@@ -282,8 +272,8 @@ def write(symbols: list[str], reason: str | None, dry_run: bool,
                 refused.append((symbol, invalid))
                 continue
         if keep_existing:
-            # Renewing a drifted pin, not granting a new authorization: the
-            # reason was accepted once and integration is what invalidated it.
+            # Legacy explicit refresh preserves text; it cannot establish that
+            # this reason still names a new mechanism after the latest handoff.
             existing = (authorizations.get(symbol) or {}).get("reason")
             if not existing:
                 refused.append((symbol, "no recorded reason to preserve"))
@@ -358,10 +348,10 @@ def main() -> int:
     parser.add_argument("--symbols", help="comma-separated")
     parser.add_argument(
         "--refresh-stale", action="store_true",
-        help="find every queued symbol whose pin drifted and that already has "
-             "a recorded reason, and renew the pins preserving each reason. "
-             "Run this after every land: merging a lane that edited a handoff "
-             "is what invalidates the pin.",
+        help="legacy explicit refresh preserving existing reasons; never run "
+             "automatically after landing. ADR 0011 consumes changed pins: "
+             "review the latest handoff and prefer --symbols with --reason "
+             "naming a genuinely new mechanism.",
     )
     parser.add_argument("--reason", help="one reason for every symbol")
     parser.add_argument(

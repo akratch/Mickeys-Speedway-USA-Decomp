@@ -2071,7 +2071,7 @@ joyClamp = 0x800256DC; // type:func size:0x7C ROM 0x262DC tier B (JFG src/contro
 joySetSecurity = 0x80025758; // type:func size:0xC ROM 0x26358 tier B (JFG src/controller.c.o joySetSecurity, call graph)
 arithmeticFunction = 0x80025764; // type:func size:0x84 ROM 0x26364 tier B (JFG src/controller.c.o arithmeticFunction, call graph)
 joyCharVal = 0x800257E8; // type:func size:0x8 ROM 0x263E8 tier B (JFG src/controller.c.o joyCharVal, call graph)
-levelGetCounts = 0x800257F0; // type:func size:0x40C ROM 0x263F0 tier B (JFG TU order plus Mickey ORT 518 call graph, pinned JFG body is assembly), NON_MATCHING, historical pre-endpoint full-TU 255/259 raw, 256/259 normalized with 35/37 identities, current endpoint-correct source uncompiled, linked equality is fallback-only
+levelGetCounts = 0x800257F0; // type:func size:0x40C ROM 0x263F0 tier-A matched C, JFG src/level.c structure, Mickey layout decisive, 259 linked words, section-load result kept in count
 // The level TU emits the adjacent 0x40-byte count table and 0x70-byte colour-cycle state.
 D_800CF3E0 = 0x800CF3E0; // type:s32 size:0x40 tier-D main/level BSS owner
 D_800CF420 = 0x800CF420; // type:u8 size:0x70 tier-D main/level BSS owner

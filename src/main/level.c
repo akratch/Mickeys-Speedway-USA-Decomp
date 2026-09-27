@@ -125,7 +125,7 @@ extern void amTuneStop(void);
 extern u8 amTuneGetSeqNo(void);
 extern void func_80036AB0(void *, s32);
 extern s32 *piRomLoad(s32);
-extern void piRomLoadSection(s32, void *, s32, s32);
+extern s32 piRomLoadSection(s32, void *, s32, s32);
 extern void mmFree(void *);
 extern void *func_8002B280(s32, s32);
 extern u8 *align4(u8 *);
@@ -186,23 +186,11 @@ extern void func_80004B04(s16);
 extern void modFreeModel(void *);
 extern void runlinkFlushModules(void);
 
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: body adapted from public JFG src/level.c at commits
  * 773e313/1a92d81; the pinned JFG reference still uses GLOBAL_ASM, and Mickey
- * byte identity is decisive. The historically measured pre-endpoint full-TU
- * spelling was 255/259 raw and 256/259 relocation-normalized, exact 259-word
- * size/frame 0x58, with all 37 offsets/types but only 35 identities; no
- * attributable C object survives. Raw first +0x50 was the identity-wrong
- * D_800CF3E0+0x40 endpoint pair; normalized first +0x13C and +0x148/+0x154
- * were one v0/target-a0 world carrier. A reformatted isolated import measured
- * only 251/259 raw and 252/259 normalized. Current D_800CF420 source is
- * uncompiled, so score, frame, and all identities are unknown; linked equality
- * proves fallback only. Run current full-TU V0 and, only on material regression,
- * one historical 0348d2f control. If V0 reproduces only the three normalized
- * carrier sites, retain exactly 119 configurations, trace once, and try one
- * natural block-scoped carrier. A strict legal gain alone permits one annotated
- * batch capped at 2,000 candidates or 20 minutes; otherwise park.
+ * byte identity is decisive. piRomLoadSection returns s32; keeping that
+ * result in count lets the following world value coalesce into a0.
  */
 void levelGetCounts(void) {
     s32 i;
@@ -213,7 +201,7 @@ void levelGetCounts(void) {
     header = func_8002B280(sizeof(LevelHeaderSummarySource), 0x8F);
     D_800CF3C0 = piRomLoad(0x1E);
 
-    for (i = 0; &D_800CF3E0[i] != (s32 *)D_800CF420; i++) { D_800CF3E0[i] = 0;
+    for (i = 0; i != 16; i++) { D_800CF3E0[i] = 0;
     }
 
     D_800CF3D4 = 0;
@@ -226,7 +214,7 @@ void levelGetCounts(void) {
     D_800CF3D8 = -1;
     D_800CF3C8 = header;
     for (i = 0; i < D_800CF3D4; i++) {
-        piRomLoadSection(0x1F, D_800CF3C8, D_800CF3C0[i], sizeof(LevelHeaderSummarySource));
+        count = piRomLoadSection(0x1F, D_800CF3C8, D_800CF3C0[i], sizeof(LevelHeaderSummarySource));
         if (D_800CF3C8->world > D_800CF3D8) {
             D_800CF3D8 = D_800CF3C8->world;
         }
@@ -260,9 +248,6 @@ void levelGetCounts(void) {
     }
     mmFree(D_800CF3C0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/level/levelGetCounts.s")
-#endif
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
 s32 levelNGetType(s32 arg0) {

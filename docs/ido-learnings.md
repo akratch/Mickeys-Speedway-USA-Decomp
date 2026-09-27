@@ -2449,6 +2449,20 @@ bytes and disassembly never belong here.
   local count alone does not predict frame size. Confirm the complete TU,
   relocations and linked ROM before adopting any spelling.
 
+- **Separate allocated spill reserve from emitted register-home demand.**
+  An oversized frame with unchanged observed stack traffic need not contain
+  an additional live spill. A faithful producer trace can show an allocated
+  temporary slot that never determines the emitted local-area definition,
+  while a retained register-home annotation raises its separate highwater.
+  Join the named frontend operation to its actual Ucode interval, then test
+  one predicted declaration-home change with no initializer or lifetime change.
+  If the emitted home and area contract while allocator reserve stays fixed,
+  that is a causal source-home result, not a generic declaration-order rule.
+  Raw declaration fields, chosen spill displacements and register-home pseudo
+  operations are not final machine stack offsets. Preserve stock/OFF/ON full-TU
+  fidelity and prove later UGEN conversion separately before claiming a final
+  home. See the [controlled reservation packet](o014-reservation-causal-packet.md).
+
 - **A direct memory retest can remove a named web while adding temporary
   draws.** In the
   [timer-update closure](matching-triage-handoffs/overlay14PrepareInputState.md),

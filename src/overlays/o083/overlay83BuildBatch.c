@@ -24,7 +24,7 @@ typedef struct O83Source {
 } O83Source;
 
 typedef struct O83LinkedInit {
-    s8 mode;
+    u8 mode;
     s8 count;
     s8 flags;
     s8 pad03;
@@ -93,10 +93,9 @@ extern void *overlay83CreateLinkedReloc();
 extern f32 gOverlay83ScaleReloc;
 
 /* Mickey-local reconstruction; pinned DKR/JFG scans found no exact donor. */
-/* Frame 0x80 vs target 0x78. Six function-scope homes sit above linkedInit at
- * +0x50; target linkedInit is +0x58. Dummy-after-linkedInit slides the home
- * and grows the frame; reusing batch as remaining shrinks the frame and
- * leaves the home. scaleFactor keeps f22. */
+/* 22 masked at delta 0, frame 0x80. linkedInit is at +0x50; the target is
+ * +0x58 in a 0x78 frame. scaleFactor keeps f22. A pad under linkedInit slides
+ * the struct and either grows the frame or misses +0x58. */
 #ifdef NON_MATCHING
 void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
     O83Batch *batch;
@@ -114,18 +113,18 @@ void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
         output = allocated;
         input = source->records;
         batch->alpha = source->alpha;
-        remaining = source->count - 1;
-        if (source->count != 0) {
+        remaining = source->count;
+        if (remaining--) {
             scaleFactor = gOverlay83ScaleReloc;
             do {
                 output->x = input->x << 8;
                 output->y = input->y << 8;
                 output->z = input->z << 8;
                 output->height = input->alpha * 4;
-                output->worldX = 0.0f;
-                output->worldZ = 0.0f;
                 output->scale = input->scale * scaleFactor;
                 output->worldY = output->height;
+                output->worldX = 0.0f;
+                output->worldZ = 0.0f;
                 overlay83TransformWorldReloc(1, output, &output->worldX, &output->worldX);
                 output->worldX += parent->worldX;
                 output->worldY += parent->worldY;
@@ -137,8 +136,7 @@ void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
                 output->red = input->red;
                 output->green = input->green;
                 output->blue = input->blue;
-                output->zero24 = 0.0f;
-                output->alpha = source->alpha;
+                output->alpha = source->alpha; output->zero24 = 0.0f;
                 if (input->flags & 1) {
                     O83LinkedInit linkedInit;
 
@@ -182,10 +180,10 @@ void overlay83BuildBatch(O83Parent *parent, O83Source *source) {
 
 /* PLATEAU-HANDOFF:overlay83BuildBatch:start
  * symbol: overlay83BuildBatch
- * score: 98/168 words
+ * score: 22/168 words
  * frame: 0x80
  * relocations: 5
  * first-mismatch: +0x0
- * summary: o34 comma inert. dummy-after-linkedInit 91/0x88 home +0x58. batch-as-remaining frame 0x78 at 107. No size-0 net-zero slide.
+ * summary: Post-decrement entry and shared s6 constant. Zero stores and same-line zero24 match. 22 left: 20 frame immediates, linkedInit +0x50 vs +0x58, two v1 copies.
  * PLATEAU-HANDOFF:overlay83BuildBatch:end
  */

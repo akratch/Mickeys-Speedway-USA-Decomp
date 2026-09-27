@@ -445,6 +445,21 @@
       "source_context_sha256": "GHMc.iTHD.ET_z.sqNJ.Wz8K.S9Os.K5i0.sl9Q.hccu.qp39.5mQ"
     },
     {
+      "name": "overlay83BuildBatch",
+      "file": "src/overlays/o083/overlay83BuildBatch.c",
+      "overlay": 83,
+      "tu": "overlays/o083",
+      "size_bytes": 672,
+      "objdiff_match_pct": null,
+      "differing_words": 22,
+      "first_mismatch_offset": 0,
+      "relocation_masked_differing_words": 22,
+      "relocation_masked_first_mismatch_offset": 0,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "e9TZ.JGts.6TG8.pcOk.ksgU.YX__.XRFg.RVsa.s3rW.bt-w.2Gk"
+    },
+    {
       "name": "func_80046EC4",
       "file": "src/main/fx.c",
       "overlay": null,
@@ -1193,21 +1208,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "G78a.tzxi.2PVN.GTIM.oKHr.R8_q.Z0eC.ghwX.psY4.X_a2.p-A"
-    },
-    {
-      "name": "overlay83BuildBatch",
-      "file": "src/overlays/o083/overlay83BuildBatch.c",
-      "overlay": 83,
-      "tu": "overlays/o083",
-      "size_bytes": 672,
-      "objdiff_match_pct": null,
-      "differing_words": 98,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 98,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "8StP.soUu.m4_w.tcge.ZxG0.agDO.GCqt.osEH.TXKr.LlYJ.DjY"
     },
     {
       "name": "func_80020B10",

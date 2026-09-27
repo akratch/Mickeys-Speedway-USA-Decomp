@@ -1520,6 +1520,181 @@ def compare_record_sets(target, candidate):
     return ri.compare_records(target, candidate)
 
 
+def _identity_witness(evidence, name, route, identity=None, *, independent=True,
+                      **details):
+    """Observe an existing proof route; never supply input to a resolver."""
+    if evidence is None:
+        return
+    row = {"route": route, "independent": independent, **details}
+    if identity is not None:
+        row["base_identity"] = list(identity)
+    bucket = evidence.setdefault(name, [])
+    if row not in bucket:
+        bucket.append(row)
+
+
+def _identity_alias_evidence(evidence, equality_aliases, redefine_aliases):
+    """Copy provenance through the same alias graph, not identities or verdicts."""
+    if evidence is None:
+        return
+    graph = collections.defaultdict(set)
+    for first, second in list(equality_aliases) + list(redefine_aliases):
+        graph[first].add(second)
+        graph[second].add(first)
+    original = {name: list(rows) for name, rows in evidence.items()}
+    for name in graph:
+        seen, pending = {name}, [name]
+        while pending:
+            for other in graph[pending.pop()]:
+                if other not in seen:
+                    seen.add(other)
+                    pending.append(other)
+        for other in sorted(seen - {name}):
+            for row in original.get(other, []):
+                inherited = {**row, "via_symbol": other}
+                if inherited not in evidence.setdefault(name, []):
+                    evidence[name].append(inherited)
+
+
+def relocation_diagnostics(elf, start, size, target, candidate, identities,
+                           ambiguous, overlay, call_identities=None,
+                           ambiguous_calls=None, evidence=None,
+                           redefine_aliases=None):
+    """Explain already-decided sites without resolving or pairing target sites.
+
+    Same-offset target records are observations, never witnesses of a moved
+    candidate's identity. Symbol-table indices remain explicit even when names
+    repeat. The REL pairing below mirrors the linker by index, not by name.
+    """
+    symbols = elf.symbols()
+    raw = [row for row in elf.relocations() if start <= row[1] < start + size]
+    if len(raw) != len(candidate):
+        raise SurfaceComparisonError("diagnostic candidate tuple count changed")
+    text = elf.section_bytes(".text")
+    pending, pairs = collections.defaultdict(list), collections.defaultdict(list)
+    for i, (_section, _offset, kind, index) in enumerate(raw):
+        if kind == R_MIPS_HI16:
+            pending[index].append(i)
+        elif kind == R_MIPS_LO16:
+            for high in pending.pop(index, []):
+                pairs[high].append(i)
+                pairs[i].append(high)
+    target_sites = collections.defaultdict(list)
+    for row in target:
+        target_sites[(row.offset, row.rtype)].append(row)
+    call_identities = call_identities or {}
+    ambiguous_calls = ambiguous_calls or set()
+    evidence = evidence or {}
+    reverse = redefine_aliases or {}
+    sites, groups = [], {}
+    for i, ((_section, offset, kind, index), decided) in enumerate(zip(raw, candidate)):
+        name, value, _size, info, section = (symbols[index] if index < len(symbols)
+                                            else ("", 0, 0, 0, SHN_UNDEF))
+        relative = offset - start
+        if (relative, kind) != (decided.offset, decided.rtype):
+            raise SurfaceComparisonError("diagnostic candidate tuple order changed")
+        original = reverse.get(name, name)
+        witnesses = list(evidence.get(name, []))
+        for witness in evidence.get(original, []):
+            if witness not in witnesses:
+                witnesses.append(witness)
+        observations = []
+        if section != SHN_UNDEF and SYNTHETIC_VMA <= value < 0x100000000:
+            observations.append("shared-synthetic-vma-is-not-identity")
+        same_site = target_sites[(relative, kind)]
+        if not same_site:
+            observations.append("no-target-tuple-at-candidate-offset")
+        elif len(same_site) > 1:
+            observations.append("multiple-target-tuples-at-candidate-offset")
+        if section == SHN_UNDEF:
+            observations.append("undefined-candidate-symbol")
+        if info & 0xF == STT_SECTION:
+            observations.append("object-local-section-symbol")
+        if kind == R_MIPS_26 and len([r for r in raw if r[2:] == (kind, index)]) < 2:
+            observations.append("single-call-cannot-use-repeated-proxy-proof")
+        if overlay is not None and kind == R_MIPS_26 and any(
+                r.identity is not None and r.identity[0] != overlay for r in same_site):
+            observations.append("same-site-target-outside-same-overlay-proxy-proof")
+        addends = []
+        if kind in (R_MIPS_HI16, R_MIPS_LO16) and pairs[i]:
+            for other in pairs[i]:
+                high, low = (i, other) if kind == R_MIPS_HI16 else (other, i)
+                addends.append((stored_field(text, raw[high][1], R_MIPS_HI16) << 16)
+                               + sext16(stored_field(text, raw[low][1], R_MIPS_LO16)))
+        elif kind != R_MIPS_HI16:
+            addend = stored_field(text, offset, kind)
+            if kind == R_MIPS_LO16:
+                addend = sext16(addend)
+            elif kind == R_MIPS_26:
+                addend <<= 2
+            elif kind == R_MIPS_PC16:
+                addend = (sext16(addend) << 2) + 4
+            addends.append(addend)
+        proposed = {tuple(w["base_identity"]) for w in witnesses if "base_identity" in w}
+        base, call = identities.get(name), call_identities.get(name)
+        if base is not None:
+            proposed.add(base)
+        if call is not None:
+            proposed.add(call)
+        independent = {tuple(w["base_identity"]) for w in witnesses
+                       if "base_identity" in w and w.get("independent") is True}
+        correlations = {tuple(w["base_identity"]) for w in witnesses
+                        if "base_identity" in w and w.get("independent") is False}
+        conflicts = {
+            "independent_witnesses": [list(x) for x in sorted(independent)]
+                if len(independent) > 1 else [],
+            "alignment_correlations": [list(x) for x in sorted(correlations)]
+                if len(correlations) > 1 else [],
+            "all_proposals": [list(x) for x in sorted(proposed)]
+                if len(proposed) > 1 else [],
+        }
+        reason = None
+        if decided.identity is None:
+            if kind == R_MIPS_HI16 and not pairs[i]:
+                reason = "unpaired-hi16-addend-undefined"
+            elif kind == R_MIPS_26 and base is not None and call is not None and base != call:
+                reason = "conflicting-symbol-and-call-resolver-proposals"
+            elif name in ambiguous or name in ambiguous_calls:
+                reason = "ambiguous-identity-resolution"
+            elif kind == R_MIPS_LO16 and pairs[i]:
+                reason = "paired-hi16-identity-unresolved"
+            elif kind == R_MIPS_26:
+                reason = "no-authenticated-call-identity"
+            else:
+                reason = "no-authenticated-symbol-identity"
+        if any(x[0] in RESERVED_SELECTORS for x in proposed) and any(x[0] == 0 for x in proposed):
+            observations.append("reserved-selector-and-resident-identity-remain-distinct")
+        row = {
+            "offset": relative, "rtype": kind, "symbol": name,
+            "original_symbol": original, "symbol_index": index,
+            "addends": sorted(set(addends)),
+            "paired_offsets": sorted(raw[j][1] - start for j in pairs[i]),
+            "identity": list(decided.identity) if decided.identity is not None else None,
+            "status": "resolved" if decided.identity is not None else "unresolved",
+            "reason": reason, "observations": observations,
+            "witnesses": witnesses, "conflicts": conflicts,
+            "target_at_same_offset": [
+                {"identity": list(r.identity) if r.identity is not None else None,
+                 "link_addend": r.link_addend} for r in same_site],
+        }
+        sites.append(row)
+        group = groups.setdefault(name, {"symbol": name, "symbol_indices": [],
+                                        "offsets": [], "unresolved": 0,
+                                        "reasons": {}, "witnesses": []})
+        if index not in group["symbol_indices"]:
+            group["symbol_indices"].append(index)
+        group["offsets"].append(relative)
+        if reason:
+            group["unresolved"] += 1
+            group["reasons"][reason] = group["reasons"].get(reason, 0) + 1
+        for witness in witnesses:
+            if witness not in group["witnesses"]:
+                group["witnesses"].append(witness)
+    return {"schema_version": 1, "sites": sites,
+            "symbols": [groups[name] for name in sorted(groups)],
+            "note": "Report only. Same-offset target observations do not authenticate moved sites; runtime-correlation witnesses are labelled separately."}
+
+
 def _source_from_object(path: Path):
     """Best-effort atlas source key from build*/src/<source>.c.o."""
     parts = path.as_posix().split("/")
@@ -1659,13 +1834,14 @@ def _numeric_assignments(path):
 
 
 def _stable_symbol_identities(path, candidate_elf, overlay, tu_base_offset,
-                              target_elf, redefine_aliases=None):
+                              target_elf, redefine_aliases=None, evidence=None):
     """Map names to unambiguous ``(overlay, offset)`` runtime identities."""
     proposed = collections.defaultdict(set)
 
-    def propose(name, identity):
+    def propose(name, identity, route):
         if name:
             proposed[name].add(identity)
+            _identity_witness(evidence, name, route, identity)
 
     # Generated overlay identities and their friendly aliases are stable even
     # though every module shares the same synthetic VMA.
@@ -1675,7 +1851,7 @@ def _stable_symbol_identities(path, candidate_elf, overlay, tu_base_offset,
         for generated, _friendly in equality_aliases:
             gm = GEN_NAME_RE.match(generated)
             if gm:
-                propose(generated, (int(gm.group(1)), int(gm.group(2), 16)))
+                propose(generated, (int(gm.group(1)), int(gm.group(2), 16)), "generated-linker-alias")
 
     # Resident auto-names and every resident address exported by the linked
     # build have a unique address space. Overlay-valued ELF symbols are not
@@ -1688,18 +1864,18 @@ def _stable_symbol_identities(path, candidate_elf, overlay, tu_base_offset,
             if not name or shndx == SHN_UNDEF or info & 0xF == STT_SECTION:
                 continue
             if 0x80000000 <= value < 0x90000000:
-                propose(name, (0, value - ot.RESIDENT_VRAM_BASE))
+                propose(name, (0, value - ot.RESIDENT_VRAM_BASE), "resident-elf-address")
             elif overlay is None and shndx == SHN_ABS:
                 # Resident assembly sometimes names a physical/RSP address
                 # through an ELF absolute assignment. It is not a resident
                 # pointer, so keep it in a distinct identity namespace rather
                 # than adding the resident VRAM base to the link value.
-                propose(name, (ri.ABSOLUTE_IDENTITY, value))
+                propose(name, (ri.ABSOLUTE_IDENTITY, value), "resident-absolute-symbol")
     for elf in (candidate_elf, target_elf):
         for name, _value, _size, _info, _shndx in elf.symbols():
             m = RESIDENT_NAME_RE.match(name)
             if m:
-                propose(name, (0, int(name[-8:], 16) - ot.RESIDENT_VRAM_BASE))
+                propose(name, (0, int(name[-8:], 16) - ot.RESIDENT_VRAM_BASE), "resident-address-name")
 
     # Definitions in the candidate TU are uniquely placed by its atlas owner.
     # This covers intra-overlay JUMPs without consulting the shared linked VMA.
@@ -1707,7 +1883,7 @@ def _stable_symbol_identities(path, candidate_elf, overlay, tu_base_offset,
         text_idx, _ = candidate_elf.section(".text")
         for name, value, _size, _info, shndx in candidate_elf.symbols():
             if name and shndx == text_idx:
-                propose(name, (overlay, tu_base_offset + value))
+                propose(name, (overlay, tu_base_offset + value), "candidate-tu-text-owner")
 
     redefine_pairs = [
         (source, destination)
@@ -1721,6 +1897,7 @@ def _stable_symbol_identities(path, candidate_elf, overlay, tu_base_offset,
         )
     except ri.RelocationIdentityError as error:
         raise SurfaceComparisonError(str(error)) from error
+    _identity_alias_evidence(evidence, equality_aliases, redefine_pairs)
     return resolution.resolved, set(resolution.ambiguous)
 
 
@@ -2069,7 +2246,7 @@ def _stable_overlay_call_identities(path, candidate_elf, source_overlay,
                                     redefine_aliases=None, root=None,
                                     elf_loader=None, module=None, rom=None,
                                     runtime_module=None, target_records=None,
-                                    own_range=None):
+                                    own_range=None, evidence=None):
     """Resolve uniquely boundary- or sibling-authenticated ``R_MIPS_26`` names.
 
     ``own_range`` is the module-offset extent of the function under proof;
@@ -2092,13 +2269,21 @@ def _stable_overlay_call_identities(path, candidate_elf, source_overlay,
             root=root, elf_loader=elf_loader, rom=rom)
         if identity is not None:
             proposed[original].add(identity)
+            _identity_witness(evidence, original, "canonical-call-boundary", identity)
+        else:
+            _identity_witness(evidence, original, "canonical-call-boundary",
+                              reason=("not-a-generated-overlay-function-name"
+                                      if not GEN_NAME_RE.fullmatch(original)
+                                      else "canonical-boundary-proof-unavailable"))
 
     if module is not None and rom is not None and runtime_module is not None:
         witnessed = _matched_overlay_relocation_witnesses(
             module, target_elf, rom, runtime_module, valid,
-            root=root, elf_loader=elf_loader, exclude_range=own_range)
+            root=root, elf_loader=elf_loader, exclude_range=own_range, evidence=evidence)
         for name, identities in witnessed.items():
             proposed[name].update(identities)
+        for name in sorted(valid - set(witnessed)):
+            _identity_witness(evidence, name, "matched-canonical-sibling", reason="no-eligible-independent-sibling-witness")
 
     runtime_ambiguous = set()
     if module is not None and target_records is not None:
@@ -2108,9 +2293,10 @@ def _stable_overlay_call_identities(path, candidate_elf, source_overlay,
         correlated, runtime_ambiguous = (
             _runtime_correlated_overlay_r26_identities(
                 candidate_elf, module, start, size, target_records,
-                redefine_aliases))
+                redefine_aliases, evidence=evidence))
         for name, identity in correlated.items():
             proposed[name].add(identity)
+            _identity_witness(evidence, name, "runtime-site-correlation", identity, independent=False)
 
     equality_aliases = []
     if path.is_file():
@@ -2132,6 +2318,7 @@ def _stable_overlay_call_identities(path, candidate_elf, source_overlay,
         name: identity for name, identity in resolution.resolved.items()
         if name not in ambiguous
     }
+    _identity_alias_evidence(evidence, equality_aliases, redefine_pairs)
     return resolved, ambiguous
 
 
@@ -2146,7 +2333,7 @@ def _overlay_module_extent(module, field, description):
 
 def _canonical_overlay_data_identity(module, candidate_elf, name,
                                      numeric_value, target_elf, root=None,
-                                     elf_loader=None):
+                                     elf_loader=None, evidence=None):
     """Authenticate one LOCAL/data base without consulting target tuples.
 
     The linker deliberately contains two symbols with the placeholder's name:
@@ -2155,6 +2342,10 @@ def _canonical_overlay_data_identity(module, candidate_elf, name,
     latter is a stable identity only after a unique fresh canonical object
     proves the same definition and section-relative value.
     """
+    def unavailable(reason):
+        _identity_witness(evidence, name, "canonical-data-owner", reason=reason)
+        return None
+
     overlay = module.get("overlay")
     if not isinstance(overlay, int):
         raise SurfaceComparisonError("overlay module has no numeric identity")
@@ -2175,7 +2366,7 @@ def _canonical_overlay_data_identity(module, candidate_elf, name,
         raise SurfaceComparisonError(
             "candidate data symbol %s has ambiguous linked assignments" % name)
     if not absolute:
-        return None
+        return unavailable("missing-linked-absolute-assignment")
     if absolute[0][0] != numeric_value:
         raise SurfaceComparisonError(
             "candidate data symbol %s has a conflicting linked assignment" % name)
@@ -2201,13 +2392,13 @@ def _canonical_overlay_data_identity(module, candidate_elf, name,
         output_index, output_header = target_elf.section(
             ".overlay_%03d_bss" % overlay)
         if output_index is None or not isinstance(output_header, tuple):
-            return None
+            return unavailable("missing-linked-overlay-bss-section")
         output_address, output_size = output_header[3], output_header[5]
         rom_size = _atlas_hex(module.get("rom", {}), "size", "overlay ROM row")
         bss_size = _overlay_module_extent(module, "bss_size", "BSS size")
         if (output_address != SYNTHETIC_VMA + rom_size
                 or output_size > bss_size or numeric_value >= output_size):
-            return None
+            return unavailable("linked-bss-extent-or-offset-not-authenticated")
         whole_owners = []
         for row in module.get("text_ownership", []):
             if not isinstance(row, dict) or row.get("type") != "c":
@@ -2239,14 +2430,14 @@ def _canonical_overlay_data_identity(module, candidate_elf, name,
                 "candidate data symbol %s has ambiguous whole-BSS ownership"
                 % name)
         if not whole_owners:
-            return None
+            return unavailable("no-fresh-unique-whole-bss-owner")
         candidate_source = _source_from_object(Path(candidate_elf.path))
         candidate_path = root / "src" / ((candidate_source or "") + ".c")
         if (not candidate_source or not candidate_path.is_file()
                 or not Path(candidate_elf.path).is_file()
                 or Path(candidate_elf.path).stat().st_mtime_ns
                 < candidate_path.stat().st_mtime_ns):
-            return None
+            return unavailable("candidate-source-path-or-freshness-unavailable")
         text_size = _atlas_hex(
             module.get("sections", {}).get("text", {}), "size",
             "overlay text section")
@@ -2257,7 +2448,7 @@ def _canonical_overlay_data_identity(module, candidate_elf, name,
     linked_value, linked_size, linked_info, linked_section = linked[0]
     linked_type = linked_info & 0xF
     if linked_type not in (STT_NOTYPE, STT_OBJECT):
-        return None
+        return unavailable("linked-symbol-is-not-data")
     if linked_value < SYNTHETIC_VMA:
         raise SurfaceComparisonError(
             "candidate data symbol %s is not at the synthetic VMA" % name)
@@ -2307,7 +2498,7 @@ def _canonical_overlay_data_identity(module, candidate_elf, name,
         raise SurfaceComparisonError(
             "candidate data symbol %s has ambiguous canonical definitions" % name)
     if not canonical:
-        return None
+        return unavailable("no-fresh-canonical-data-definition")
     source, obj, object_value, object_size, object_section = canonical[0]
     if object_value != numeric_value or object_size != linked_size:
         raise SurfaceComparisonError(
@@ -2380,7 +2571,7 @@ def _canonical_overlay_data_identity(module, candidate_elf, name,
 
 def _runtime_correlated_overlay_hilo_identities(candidate_elf, module, start,
                                                 size, target_records,
-                                                redefine_aliases=None):
+                                                redefine_aliases=None, evidence=None):
     """Bind undefined HI16/LO16 proxies to uniquely owned runtime tuples.
 
     This is intentionally narrower than matching a synthetic address.  The
@@ -2395,6 +2586,10 @@ def _runtime_correlated_overlay_hilo_identities(candidate_elf, module, start,
     Reserved runtime selectors (0xFFD..0xFFF) remain distinct identities.
     Nothing here compares or normalizes the overlays' shared synthetic VMA.
     """
+    def observe(name, reason, identity=None, **details):
+        _identity_witness(evidence, name, 'runtime-hilo-correlation', identity,
+                          independent=False, reason=reason, **details)
+
     overlay = module.get("overlay")
     if not isinstance(overlay, int):
         raise SurfaceComparisonError("overlay module has no numeric identity")
@@ -2442,6 +2637,8 @@ def _runtime_correlated_overlay_hilo_identities(candidate_elf, module, start,
         name for name, types in referenced_types.items()
         if not types <= {R_MIPS_HI16, R_MIPS_LO16}
     }
+    for name in sorted(disqualified):
+        observe(name, "mixed-relocation-types")
     for high, low in _pairs(sites):
         anchor = high or low
         if anchor is None or anchor["type"] not in (R_MIPS_HI16, R_MIPS_LO16):
@@ -2451,13 +2648,16 @@ def _runtime_correlated_overlay_hilo_identities(candidate_elf, module, start,
         # any candidate section needs independent canonical owner evidence.
         if referenced_sections[name] != {SHN_UNDEF}:
             disqualified.add(name)
+            observe(name, "candidate-symbol-is-defined")
             continue
         if high is None or low is None:
+            observe(name, "incomplete-hi16-lo16-pair", offset=anchor["relative_offset"])
             disqualified.add(name)
             continue
         high_targets = by_shape[(high["relative_offset"], R_MIPS_HI16)]
         low_targets = by_shape[(low["relative_offset"], R_MIPS_LO16)]
         if len(high_targets) != 1 or len(low_targets) != 1:
+            observe(name, "runtime-pair-offset-type-not-unique", offsets=[high["relative_offset"], low["relative_offset"]], target_counts=[len(high_targets), len(low_targets)])
             if high_targets or low_targets:
                 ambiguous.add(name)
             else:
@@ -2468,18 +2668,22 @@ def _runtime_correlated_overlay_hilo_identities(candidate_elf, module, start,
         if (identity is None or identity != low_target.identity
                 or high_target.link_addend is None
                 or high_target.link_addend != low_target.link_addend):
+            observe(name, "runtime-pair-identity-or-addend-disagrees", offsets=[high["relative_offset"], low["relative_offset"]], target_identities=[high_target.identity, low_target.identity], target_addends=[high_target.link_addend, low_target.link_addend])
             ambiguous.add(name)
             continue
         if (not isinstance(identity, tuple) or len(identity) != 2
                 or not all(isinstance(value, int) for value in identity)
                 or not 0 <= identity[0] <= 0xFFF or identity[1] < 0):
+            observe(name, "invalid-runtime-identity")
             ambiguous.add(name)
             continue
         if identity[1] - high_target.link_addend < 0:
+            observe(name, "negative-runtime-base-after-addend")
             ambiguous.add(name)
             continue
         if high["offset"] + 4 > len(object_text) \
                 or low["offset"] + 4 > len(object_text):
+            observe(name, "candidate-pair-outside-text")
             ambiguous.add(name)
             continue
         addend = (
@@ -2488,12 +2692,15 @@ def _runtime_correlated_overlay_hilo_identities(candidate_elf, module, start,
             object_text, low["offset"], R_MIPS_LO16))
         base_offset = identity[1] - addend
         if base_offset < 0:
+            observe(name, "negative-base-after-candidate-addend")
             ambiguous.add(name)
             continue
         proposed[name].add((identity[0], base_offset))
+        observe(name, "aligned-pair-proposal", (identity[0], base_offset), offsets=[high["relative_offset"], low["relative_offset"]])
 
     for name, identities in proposed.items():
         if len(identities) > 1:
+            observe(name, "conflicting-runtime-base-proposals", proposals=[list(x) for x in sorted(identities)])
             ambiguous.add(name)
     resolved = {
         name: next(iter(identities))
@@ -2506,7 +2713,7 @@ def _runtime_correlated_overlay_hilo_identities(candidate_elf, module, start,
 
 def _runtime_correlated_overlay_r26_identities(candidate_elf, module, start,
                                                size, target_records,
-                                               redefine_aliases=None):
+                                               redefine_aliases=None, evidence=None):
     """Bind a repeated undefined same-overlay call proxy fail closed.
 
     One aligned call site would merely copy its target tuple and is therefore
@@ -2517,6 +2724,10 @@ def _runtime_correlated_overlay_r26_identities(candidate_elf, module, start,
     duplicate, mixed-type, defined-symbol, or conflicting evidence is never
     resolved.
     """
+    def observe(name, reason, identity=None, **details):
+        _identity_witness(evidence, name, 'runtime-call-correlation', identity,
+                          independent=False, reason=reason, **details)
+
     overlay = module.get("overlay")
     if not isinstance(overlay, int):
         raise SurfaceComparisonError("overlay module has no numeric identity")
@@ -2558,9 +2769,11 @@ def _runtime_correlated_overlay_r26_identities(candidate_elf, module, start,
         # symbol/section evidence instead.
         if (referenced_sections[name] != {SHN_UNDEF}
                 or referenced_types[name] != {R_MIPS_26}):
+            observe(name, "defined-symbol-or-mixed-relocation-types")
             continue
         unique_sites = sorted(set(name_sites))
         if len(unique_sites) < 2 or len(unique_sites) != len(name_sites):
+            observe(name, "fewer-than-two-distinct-call-sites-or-duplicate")
             continue
 
         proposed = set()
@@ -2570,6 +2783,7 @@ def _runtime_correlated_overlay_r26_identities(candidate_elf, module, start,
         for absolute_offset, relative_offset in unique_sites:
             targets = by_shape[(relative_offset, R_MIPS_26)]
             if len(targets) != 1:
+                observe(name, "runtime-call-offset-type-not-unique", offset=relative_offset, target_count=len(targets))
                 incomplete = True
                 if targets:
                     conflicting = True
@@ -2581,6 +2795,8 @@ def _runtime_correlated_overlay_r26_identities(candidate_elf, module, start,
                     or not 0 <= identity[0] <= 0xFFF
                     or identity[1] < 0 or target.link_addend != 0
                     or absolute_offset + 4 > len(object_text)):
+                observe(name, "invalid-runtime-call-tuple-or-candidate-extent",
+                        offset=relative_offset)
                 conflicting = True
                 continue
             if identity[0] != overlay:
@@ -2588,19 +2804,23 @@ def _runtime_correlated_overlay_r26_identities(candidate_elf, module, start,
                 # target is valid runtime evidence, but outside this narrowly
                 # owned same-overlay proof. Keep the proxy unresolved rather
                 # than poisoning unrelated admissible names in the function.
+                observe(name, "runtime-target-outside-owned-overlay", offset=relative_offset, target_identity=list(identity))
                 outside_owned_overlay = True
                 continue
             addend = stored_field(
                 object_text, absolute_offset, R_MIPS_26) << 2
             base_offset = identity[1] - addend
             if base_offset < 0:
+                observe(name, "negative-base-after-candidate-addend", offset=relative_offset)
                 conflicting = True
                 continue
             proposed.add((overlay, base_offset))
+            observe(name, "aligned-call-proposal", (overlay, base_offset), offset=relative_offset)
 
         if outside_owned_overlay:
             continue
         if conflicting or len(proposed) > 1:
+            observe(name, "conflicting-or-invalid-runtime-call-evidence", proposals=[list(x) for x in sorted(proposed)])
             ambiguous.add(name)
         elif not incomplete and len(proposed) == 1:
             resolved[name] = next(iter(proposed))
@@ -2627,7 +2847,7 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
                                     start, size, redefine_aliases=None,
                                     root=None, elf_loader=None, rom=None,
                                     runtime_module=None, target_records=None,
-                                    own_range=None):
+                                    own_range=None, evidence=None):
     """Resolve candidate-side same-overlay LOCAL/data identities fail closed.
 
     ``own_range`` excludes the function under proof from the sibling
@@ -2659,28 +2879,33 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
     proposed = collections.defaultdict(set)
     for name in sorted(valid):
         if name not in numeric:
+            _identity_witness(evidence, name, "canonical-data-owner", reason="no-numeric-linker-assignment")
             continue
         identity = _canonical_overlay_data_identity(
             module, candidate_elf, name, numeric[name], target_elf,
-            root=root, elf_loader=elf_loader)
+            root=root, elf_loader=elf_loader, evidence=evidence)
         if identity is not None:
             proposed[name].add(identity)
+            _identity_witness(evidence, name, "canonical-data-owner", identity)
 
     if rom is not None and runtime_module is not None:
         witnessed = _matched_overlay_relocation_witnesses(
             module, target_elf, rom, runtime_module, valid,
-            root=root, elf_loader=elf_loader, exclude_range=own_range)
+            root=root, elf_loader=elf_loader, exclude_range=own_range, evidence=evidence)
         for name, identities in witnessed.items():
             proposed[name].update(identities)
+        for name in sorted(valid - set(witnessed)):
+            _identity_witness(evidence, name, "matched-canonical-sibling", reason="no-eligible-independent-sibling-witness")
 
     runtime_ambiguous = set()
     if target_records is not None:
         correlated, runtime_ambiguous = (
             _runtime_correlated_overlay_hilo_identities(
                 candidate_elf, module, start, size, target_records,
-                redefine_aliases))
+                redefine_aliases, evidence=evidence))
         for name, identity in correlated.items():
             proposed[name].add(identity)
+            _identity_witness(evidence, name, "runtime-site-correlation", identity, independent=False)
 
     # An offset outside the overlay's own extent is not an overlay identity,
     # whatever arithmetic produced it -- so drop it here, once, rather than at
@@ -2730,12 +2955,13 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
         name: identity for name, identity in resolution.resolved.items()
         if name not in ambiguous
     }
+    _identity_alias_evidence(evidence, equality_aliases, redefine_pairs)
     return resolved, ambiguous
 
 
 def _matched_overlay_relocation_witnesses(module, target_elf, rom,
                                           runtime_module, names, root=None,
-                                          elf_loader=None, exclude_range=None):
+                                          elf_loader=None, exclude_range=None, evidence=None):
     """Prove relocation-name identities through exact canonical siblings.
 
     A numeric overlay placeholder is not an identity.  A different, already
@@ -2916,6 +3142,10 @@ def _matched_overlay_relocation_witnesses(module, target_elf, rom,
             else:
                 continue
             proposed[name].add((identity[0], identity[1] - addend))
+            _identity_witness(evidence, name, "matched-canonical-sibling",
+                              (identity[0], identity[1] - addend),
+                              source=source, function=function_name,
+                              module_offset=row_start + anchor["offset"])
     return proposed
 
 
@@ -3423,7 +3653,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                                 target_symbol=None, overlay_hint=None, source=None,
                                 candidate_redefine_aliases=None,
                                 include_candidate_identities=False,
-                                measure_size_delta=False):
+                                measure_size_delta=False,
+                                include_diagnostics=False):
     """Compare one candidate's relocation surface with the shipped target's.
 
     ``measure_size_delta`` admits exactly one ownership overrun: a candidate
@@ -3506,9 +3737,10 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
             candidate_object, source, target_elf, target_symbol,
             target_value, target_size, target_section, values_path,
             resident_runtime_records)
+    evidence = {} if include_diagnostics else None
     identities, ambiguous_identities = _stable_symbol_identities(
         values_path, candidate_elf, overlay, tu_base_offset, target_elf,
-        candidate_redefine_aliases)
+        candidate_redefine_aliases, evidence=evidence)
     overlay_call_identities, ambiguous_overlay_calls = (
         _stable_overlay_call_identities(
             values_path, candidate_elf, overlay, target_elf, atlas,
@@ -3517,7 +3749,7 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
             runtime_module=context.get("module"),
             target_records=target_records,
             own_range=((target_start, target_start + target_size)
-                       if overlay is not None else None))
+                       if overlay is not None else None), evidence=evidence)
     )
     if overlay is not None:
         overlay_data_identities, ambiguous_overlay_data = (
@@ -3526,7 +3758,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                 candidate_start, candidate_size, candidate_redefine_aliases,
                 rom=rom, runtime_module=context["module"],
                 target_records=target_records,
-                own_range=(target_start, target_start + target_size))
+                own_range=(target_start, target_start + target_size),
+                evidence=evidence)
         )
         for name, identity in overlay_data_identities.items():
             existing = identities.get(name)
@@ -3554,6 +3787,12 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
         identities, numeric_values, ambiguous_identities, overlay,
         overlay_call_identities, ambiguous_overlay_calls)
     result = compare_record_sets(target_records, candidate_records)
+    if include_diagnostics:
+        result["diagnostics"] = relocation_diagnostics(
+            candidate_elf, candidate_start, candidate_size, target_records,
+            candidate_records, identities, ambiguous_identities, overlay,
+            overlay_call_identities, ambiguous_overlay_calls, evidence,
+            candidate_redefine_aliases)
     if include_candidate_identities:
         # Per-site static identities, for a caller that must prove individual
         # sites rather than the whole surface (the declared-metadata proof).
@@ -3601,6 +3840,8 @@ def cmd_compare(argv):
                         default=REPO / "config" / "overlays.us.json")
     parser.add_argument("--values", type=Path, default=LINK_SYMS)
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--explain", action="store_true",
+                        help="include per-site reasons, witness routes and grouped symbols")
     parser.add_argument("--check", action="store_true",
                         help="exit 1 unless both surfaces are exactly equal")
     args = parser.parse_args(argv)
@@ -3610,7 +3851,7 @@ def cmd_compare(argv):
             rom_path=args.rom, atlas_path=args.atlas, values_path=args.values,
             candidate_symbol=args.candidate_symbol,
             target_symbol=args.target_symbol, overlay_hint=args.overlay,
-            source=args.source)
+            source=args.source, include_diagnostics=args.explain)
     except (OSError, ValueError, SurfaceComparisonError) as error:
         parser.error(str(error))
     if args.json:
@@ -3624,6 +3865,15 @@ def cmd_compare(argv):
             "identity={stable_identity_alignment_count}/"
             "{target_runtime_record_count} "
             "resolved={candidate_identity_resolved_count}".format(**result))
+    if args.explain and not args.json:
+        for group in result["diagnostics"]["symbols"]:
+            if group["unresolved"]:
+                reasons = ", ".join("%s:%d" % item for item in sorted(group["reasons"].items()))
+                print("  %s: %d/%d unresolved (%s)" % (
+                    group["symbol"], group["unresolved"], len(group["offsets"]), reasons))
+                for route, reason in sorted({(w["route"], w["reason"])
+                                            for w in group["witnesses"] if w.get("reason")}):
+                    print("    %s: %s" % (route, reason))
     if args.check and not (
             result["offset_type_exact"] and result["stable_identity_exact"]):
         return 1

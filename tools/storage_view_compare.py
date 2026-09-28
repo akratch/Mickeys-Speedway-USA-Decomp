@@ -100,10 +100,11 @@ def collect(symbol, candidate, source, witness_requests):
                                         target_start, target_size)
     siblings = rs._matched_overlay_relocation_witnesses(module, linked, rom, runtime, names,
                     exclude_range=(target_start, target_start + target_size))
-    checks, proofs, identities = [], [], {}
+    session = sv.WitnessSession()
+    proofs, identities = [], {}
     for request in witness_requests:
         sv.require(request['source_function'] != symbol, 'candidate cannot witness itself')
-        proof = sv.collect(request['source_function'], request['external'], freshness_checks=checks)
+        proof = sv.collect(request['source_function'], request['external'], session=session)
         identities[indexes[request['external']]] = validate_binding(proof, request['external'],
                     request['source_function'], overlay, siblings, linked)
         proofs.append(proof)
@@ -112,14 +113,16 @@ def collect(symbol, candidate, source, witness_requests):
     bound = rs._candidate_surface_records(elf, start, size, [], {}, {}, set(), overlay,
                                          index_identities=identities)
     records = replace_records(default['candidate_identities'], bound, sites)
-    for check in checks:
-        check()
+    session.check()
     sv.require(all(pp.sha256_file(p) == digest for p, digest in pins.items()),
                'candidate or comparison inputs changed during proof')
     return {'schema': 'mickey-storage-view-comparison-v1', 'promotion_acceptance': False,
             'status': 'diagnostic-only', 'default_comparison': default,
             'independent_storage_comparison': rs.compare_record_sets(target, records),
             'storage_proofs': proofs,
+            'witness_reuse': {'scope': 'this invocation only',
+                              'fresh_function_captures': session.capture_count,
+                              'shared_function_reuses': session.reuse_count},
             'candidate_sha256': pins[candidate],
             'limits': 'Explicit storage bases only; no inferred type, subobject, bound, semantics, or promotion bridge.'}
 

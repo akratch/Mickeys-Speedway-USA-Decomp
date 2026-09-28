@@ -6,10 +6,94 @@ import json
 import struct
 import tempfile
 import unittest
+from types import SimpleNamespace
 from pathlib import Path
 from unittest import mock
 
 import storage_view as sv
+
+
+class SharedWitnessTests(unittest.TestCase):
+    def setUp(self):
+        self.inputs = {'source': 'source-a', 'dependencies': {'header': 'header-a'},
+                       'command': 'recipe-a', 'tools': {'compiler': 'compiler-a'},
+                       'linked': 'linked-a'}
+        self.calls = []
+
+    def exact(self, function, directory):
+        self.calls.append(function)
+        receipt = {'inputs': copy.deepcopy(self.inputs)}
+        return (None, None, None, receipt, lambda: copy.deepcopy(self.inputs), '')
+
+    def test_same_function_capture_shared(self):
+        session = sv.WitnessSession()
+        with mock.patch.object(sv, 'exact_report', side_effect=self.exact):
+            a = session.prepare('owner', Path('first'))
+            b = session.prepare('owner', Path('second'))
+            self.assertIs(a, b)
+            session.check()
+        self.assertEqual(self.calls, ['owner'])
+        self.assertEqual((session.capture_count, session.reuse_count), (1, 1))
+
+    def test_full_closure_change_rejects_reuse_without_recapture(self):
+        for field in self.inputs:
+            with self.subTest(field=field), mock.patch.object(sv, 'exact_report', side_effect=self.exact):
+                session = sv.WitnessSession()
+                session.prepare('owner', Path('first'))
+                old = self.inputs[field]
+                self.inputs[field] = 'changed'
+                with self.assertRaisesRegex(sv.ViewError, 'inputs changed'):
+                    session.prepare('owner', Path('second'))
+                self.assertEqual((session.capture_count, session.reuse_count), (1, 0))
+                self.inputs[field] = old
+
+    def test_final_recheck_detects_change_after_last_use(self):
+        with mock.patch.object(sv, 'exact_report', side_effect=self.exact):
+            session = sv.WitnessSession()
+            session.prepare('owner', Path('first'))
+            self.inputs['source'] = 'changed'
+            with self.assertRaises(sv.ViewError):
+                session.check()
+
+    def test_separate_function_or_invocation_never_reuses(self):
+        with mock.patch.object(sv, 'exact_report', side_effect=self.exact):
+            session = sv.WitnessSession()
+            session.prepare('owner', Path('first'))
+            session.prepare('other', Path('second'))
+            sv.WitnessSession().prepare('owner', Path('third'))
+        self.assertEqual(self.calls, ['owner', 'other', 'owner'])
+
+    def test_each_external_still_checks_owned_sites_and_conflicts(self):
+        resolution = SimpleNamespace(candidate_object=Path('configured.o'), candidate_symbol='owner',
+                                     translation_unit='src/overlays/o057/owner.c')
+        report = {'context': {'kind': 'overlay', 'overlay': 57}, 'owned_size': 8}
+        raw = Object()
+        receipt = {'inputs': copy.deepcopy(self.inputs)}
+        result = (resolution, report, raw, receipt, lambda: copy.deepcopy(self.inputs), '')
+        atlas = {'modules': [{'overlay': 57, 'text_ownership': [{'source': 'overlays/o057/owner'}]}]}
+        runtime = {'text_size': 16, 'data_size': 32, 'bss_size': 16}
+        def witnesses(module, linked, rom, runtime, names):
+            return {name: {(57, 24)} for name in names}
+        with tempfile.TemporaryDirectory() as directory, \
+                mock.patch.object(sv, 'ROOT', Path(directory)), \
+                mock.patch.object(sv, 'exact_report', return_value=result) as capture, \
+                mock.patch.object(sv.rs, 'Elf', return_value=raw), \
+                mock.patch.object(sv.fp, 'ROM', mock.Mock(read_bytes=lambda: b'rom')), \
+                mock.patch.object(sv.fp, 'ATLAS', mock.Mock(read_text=lambda: json.dumps(atlas))), \
+                mock.patch.object(sv.ot, 'read_headers', return_value=[]), \
+                mock.patch.object(sv.ot, 'build_modules', return_value=[runtime] * 57), \
+                mock.patch.object(sv.rs, '_matched_overlay_relocation_witnesses', side_effect=witnesses), \
+                mock.patch.object(sv, 'owned_external_sites', return_value=([(0, 5), (4, 6)], 8)) as sites, \
+                mock.patch.object(sv, 'indexed_halfword_use', return_value=[]), \
+                mock.patch.object(sv, 'reject_name_conflicts', side_effect=[None, sv.ViewError('second conflict')]) as conflicts:
+            session = sv.WitnessSession()
+            first = sv.collect('owner', 'first', session=session)
+            self.assertEqual(first['external'], 'first')
+            with self.assertRaisesRegex(sv.ViewError, 'second conflict'):
+                sv.collect('owner', 'second', session=session)
+            self.assertEqual(capture.call_count, 1)
+            self.assertEqual([c.args[2] for c in sites.call_args_list], ['first', 'second'])
+            self.assertEqual([c.args[1] for c in conflicts.call_args_list], ['first', 'second'])
 
 
 def ins(op, rs=0, rt=0, immediate=0):

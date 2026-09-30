@@ -2,7 +2,7 @@
 ### `func_8005ABA8` plateau handoff
 
 - source: `src/main/models_5B300.c`
-- score: 111/111 words
+- score: 0/111 words
 - frame: frameless
 - relocations: 0
 - first mismatch: none
@@ -378,6 +378,6 @@ Baseline reproduced at 2, delta zero, first +0x3C. No cycle spent; the as1
 zero-node-block closure stands.
 #### Exact C match closure, 2026-09-30
 
-The configured full-TU C build now emits the exact 111-word, frameless, zero-relocation resident range at `0x8005ABA8`. `tools/promotion_proof.py --canonical --json func_8005ABA8` passed with linked ROM comparison, static relocation identity, and full US ROM hash equality. The function is ordinary unconditional C; its nonmatching fallback and source plateau marker are retired. The report-only ADR 0016 winner introduced the empty pointer guard recorded above; it remains an explicitly disclosed inert form, not a claim about historical source.
+The configured full-TU C build now emits 111/111 exact words in a frameless, zero-relocation resident range at `0x8005ABA8`. `tools/promotion_proof.py --canonical --json func_8005ABA8` passed with linked ROM comparison, static relocation identity, and full US ROM hash equality. The function is ordinary unconditional C; its nonmatching fallback and source plateau marker are retired. The report-only ADR 0016 winner introduced the empty pointer guard recorded above; it remains an explicitly disclosed inert form, not a claim about historical source.
 
 <!-- plateau-handoff:func_8005ABA8:end -->

@@ -450,8 +450,8 @@ void camConvertMatrixList(Matrix *mtx, s32 count) {
     entry->count = count;
 }
 
-/* Exact stock C match proved 2026-09-30: 111 words, frameless, zero relocations.
- * The empty pointer guard preserves IDO allocation; see docs/cleanup-queue.md. */
+/* Exact stock C output proved 2026-09-30: 111/111 words, frameless, zero relocations.
+ * The retained empty guard is disclosed in docs/cleanup-queue.md. */
 /* PROVENANCE: Mickey-only reconstruction from func_8005ABA8.s and the
  * existing models TU layouts; no external function body is copied. */
 s32 func_8005ABA8(ModelAnimationInstance *instance, f32 arg1, f32 arg2) {
@@ -486,7 +486,7 @@ s32 func_8005ABA8(ModelAnimationInstance *instance, f32 arg1, f32 arg2) {
                                    temp_v0->frameValue;
         }
     } else {
-        /* Inert IDO allocation scaffold; see docs/cleanup-queue.md. */
+        /* Inert source-shaping guard; see docs/cleanup-queue.md. */
         if ((instance && instance) && instance) {
         }
         instance->frameValue += arg1 * arg2;

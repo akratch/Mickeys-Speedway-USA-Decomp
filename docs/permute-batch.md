@@ -102,7 +102,9 @@ per-function imported object. The runner may omit only an `--add-symbol`
 metadata alias for that absent section, and only after the current configured
 full-TU object proves every reference belongs to other uniquely owned
 functions. It refuses incomplete or overlapping function ranges, unresolved
-alias references in the candidate closure, and direct section-symbol
+alias references in the candidate closure, relocation sites outside the
+isolated `.text` function closure, and full-TU alias references from any
+unsupported relocation section. It also refuses direct section-symbol
 relocations (including implicit addends) in the target. The candidate's
 executable function bytes and exact relocation identities must also reproduce
 the current `NON_MATCHING=1` full-TU C baseline; only linker-owned relocation

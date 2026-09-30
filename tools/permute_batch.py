@@ -618,11 +618,8 @@ def _relocation_normalized_bytes(data: bytes, rows: list[dict], label: str) -> b
 
 def _rodata_references(elf, ranges: list[dict], metadata_names: set[str], label: str) -> list[dict]:
     symbols = elf.symbols()
-    rodata_index, _ = elf.section(".rodata")
     rows = []
-    for section, offset, kind, symbol_index in elf.relocations():
-        if section != ".text":
-            continue
+    for section, offset, kind, symbol_index in elf.relocations(target=r".*"):
         if symbol_index >= len(symbols):
             raise RuntimeError(f"{label} has an unresolved relocation symbol index")
         symbol = symbols[symbol_index]
@@ -630,6 +627,8 @@ def _rodata_references(elf, ranges: list[dict], metadata_names: set[str], label:
         symbol_section = (elf.names[shndx] if 0 <= shndx < len(elf.names) else None)
         if symbol_section != ".rodata" and name not in metadata_names and name != ".rodata":
             continue
+        if section != ".text":
+            raise RuntimeError(f"{label} has a relevant relocation from unsupported section {section}")
         owners = [row for row in ranges if row["start"] <= offset < row["end"]]
         if len(owners) != 1:
             raise RuntimeError(f"{label} has incomplete or overlapping .rodata relocation ownership")
@@ -711,8 +710,11 @@ def _section_metadata_variant(scratch: Path, recipe: BuildRecipe, c_file: Path,
             raise RuntimeError(f"{label} function does not start at the executable section boundary")
         if any(row["name"] != function for row in ranges):
             raise RuntimeError(f"{label} contains executable symbols outside the target closure")
+        relocations = elf.relocations(target=r".*")
+        if any(section_name != ".text" for section_name, _off, _kind, _symbol in relocations):
+            raise RuntimeError(f"{label} has relocations outside .text")
         if any(not (span["start"] <= off < span["end"])
-               for _sec, off, _kind, _symbol in elf.relocations()):
+               for _sec, off, _kind, _symbol in relocations):
             raise RuntimeError(f"{label} has relocation sites outside the target executable closure")
         if not (section[2] & 0x4) or span["end"] > section[5]:
             raise RuntimeError(f"{label} has incomplete executable function ownership")
@@ -747,9 +749,14 @@ def _section_metadata_variant(scratch: Path, recipe: BuildRecipe, c_file: Path,
                 or matches[0][3] >> 4 != expected_binding):
             raise RuntimeError(f"cannot prove full-TU owner for recipe metadata symbol {name}")
         refs = []
-        for _section, offset, kind, symbol_index in full_elf.relocations():
-            if symbol_index >= len(symbol_rows) or symbol_rows[symbol_index][0] != name:
+        for source_section, offset, kind, symbol_index in full_elf.relocations(target=r".*"):
+            if symbol_index >= len(symbol_rows):
+                raise RuntimeError(f"recipe metadata symbol {name} has an unresolved relocation identity")
+            if symbol_rows[symbol_index][0] != name:
                 continue
+            if source_section != ".text":
+                raise RuntimeError(
+                    f"recipe metadata symbol {name} has unsupported reference section {source_section}")
             owners = [row for row in full_ranges if row["start"] <= offset < row["end"]]
             if len(owners) != 1:
                 raise RuntimeError(f"recipe metadata symbol {name} has incomplete or overlapping full-TU owners")
@@ -878,7 +885,7 @@ def replicate_objcopy(scratch: Path, recipe: BuildRecipe, c_file: Path, out_dir:
     variant = _unchanged_recipe_variant(recipe, function)
     rodata_metadata = False
     for step in recipe.objcopy_steps:
-        if mention.search(step):
+        if mention.search(step) and "--add-symbol" in step and ".rodata" in step:
             words = _shell_words_for_objcopy(mention.sub('"$OUTPUT"', step))
             if any(row[3] == ".rodata" for row in _objcopy_add_symbols(words)):
                 rodata_metadata = True

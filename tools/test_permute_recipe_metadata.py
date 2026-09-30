@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -35,14 +36,15 @@ class FakeElf:
     def symbols(self):
         return self._symbols
 
-    def relocations(self):
-        return self._relocs
+    def relocations(self, target=r"\.text"):
+        return [row for row in self._relocs if re.fullmatch(target, row[0])]
 
     def section_bytes(self, name):
         return self._text if name == ".text" else b""
 
 
-def fake_elf(kind, owned_dependency=False, section_addend=False):
+def fake_elf(kind, owned_dependency=False, section_addend=False,
+             data_dependency=False):
     target = ("func_80006534", 0, 16, 0x12, 0)
     other = ("other_function", 16, 16, 0x12, 0)
     aliases = [
@@ -76,6 +78,11 @@ def fake_elf(kind, owned_dependency=False, section_addend=False):
         if section_addend:
             symbols.append((".rodata", 0, 0, 0x03, 1))
             relocs.append((".text", 4, 6, len(symbols) - 1))
+    if data_dependency and kind in {"candidate", "target"}:
+        symbols.append(("objectsSwitchTablesBase", 0, 0, 0x10, 0))
+        relocs.append((".data", 3, 5, len(symbols) - 1))  # offset overlaps apparent .text function
+    if data_dependency and kind == "full":
+        relocs.append((".data", 17, 5, 12))  # outside target .text, inside another apparent range
     return FakeElf(symbols, relocs, text)
 
 
@@ -154,9 +161,67 @@ def test_owned_alias_and_section_symbol_dependencies_refuse():
                 module.reloc_surface.Elf = old_elf
 
 
+def test_nontext_relocation_sources_refuse():
+    original = ("tools/binutils/mips64-elf-objcopy --add-symbol "
+                "objectsSizeDefaultBranch=.text:0x6500,local --add-symbol "
+                "objectsInitDefaultBranch=.text:0x6718,local --add-symbol "
+                "objectsControlDefaultBranch=.text:0x6C00,local --add-symbol "
+                "objectsSwitchTablesBase=.rodata:0,global build/src/main/objects.c.o",)
+    recipe = module.BuildRecipe((), original, (), True)
+    cases = ((True, False, False), (False, True, False), (False, False, True))
+    for candidate_data, target_data, full_data in cases:
+        with tempfile.TemporaryDirectory(prefix="recipe-section-ref-", dir=ROOT) as tmp:
+            root = Path(tmp)
+            scratch = root / "scratch"
+            scratch.mkdir()
+            (scratch / "base.o").write_bytes(b"candidate")
+            (scratch / "target.o").write_bytes(b"target")
+            full = root / "full.o"
+            full.write_bytes(b"full")
+            source = ROOT / "src/main/objects.c"
+            fixtures = {
+                "base.o": fake_elf("candidate", data_dependency=candidate_data),
+                "target.o": fake_elf("target", data_dependency=target_data),
+                "full.o": fake_elf("full", data_dependency=full_data),
+            }
+            old_elf = module.reloc_surface.Elf
+            module.reloc_surface.Elf = lambda path: fixtures[Path(path).name]
+            try:
+                try:
+                    module._section_metadata_variant(
+                        scratch, recipe, source, "func_80006534", full,
+                        c_baseline_object=full)
+                except RuntimeError as error:
+                    assert "section" in str(error) or "relocations outside .text" in str(error)
+                else:
+                    raise AssertionError("non-.text relocation source was accepted")
+            finally:
+                module.reloc_surface.Elf = old_elf
+
+
+def test_unrelated_recipe_stays_unchanged_without_section_parsing():
+    with tempfile.TemporaryDirectory(prefix="recipe-unrelated-", dir=ROOT) as tmp:
+        root = Path(tmp)
+        scratch = root / "scratch"
+        scratch.mkdir()
+        compile_script = scratch / "compile.sh"
+        compile_script.write_text("#!/bin/sh\n")
+        out = root / "out"
+        out.mkdir()
+        step = ("tools/binutils/mips64-elf-objcopy --redefine-sym old=new "
+                "build/src/main/objects.c.o")
+        recipe = module.BuildRecipe((), (step,), (), True)
+        module.replicate_objcopy(scratch, recipe, ROOT / "src/main/objects.c", out)
+        variant = __import__("json").loads((out / "recipe-variant.json").read_text())
+        assert variant["status"] == "unchanged"
+        assert variant["original_steps"] == variant["effective_steps"] == [step]
+
+
 def main() -> int:
     test_unowned_metadata_variant_and_preserved_recipe()
     test_owned_alias_and_section_symbol_dependencies_refuse()
+    test_nontext_relocation_sources_refuse()
+    test_unrelated_recipe_stays_unchanged_without_section_parsing()
     print("permute recipe metadata tests: PASS")
     return 0
 

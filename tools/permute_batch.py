@@ -105,6 +105,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import reloc_surface  # noqa: E402
 import search_local_bindings  # noqa: E402
 import source_symbol_fidelity  # noqa: E402
+import prepared_macro_context  # noqa: E402
 import sweep_receipts  # noqa: E402
 import promotion_transaction  # noqa: E402
 _LOADED_IMPLEMENTATIONS = {
@@ -114,6 +115,7 @@ _LOADED_IMPLEMENTATIONS = {
                        ("relocations", reloc_surface.__file__),
                        ("search_local_bindings", search_local_bindings.__file__),
                        ("source_symbol_fidelity", source_symbol_fidelity.__file__),
+                       ("prepared_macro_context", prepared_macro_context.__file__),
                        ("relocation_identity", reloc_surface.ri.__file__),
                        ("overlay_table", reloc_surface.ot.__file__))
 }
@@ -1618,6 +1620,13 @@ def review_context(item: QueueItem, evidence: PreparedBaseline | None, winner: b
         validate_baseline(item, evidence, deadline)
         import candidate_context
         comparison = candidate_context.compare_context(evidence.source, winner, item.func)
+        if prepared_macro_context.needs_preprocessing(comparison):
+            directory = BUILD_PERMUTER / "macro-context" / uuid.uuid4().hex
+            report["preprocessing_directory"] = str(directory)
+            comparison = prepared_macro_context.compare_stock(evidence.source, winner, item.func, directory,
+                ROOT / "tools" / "ido" / "cc", json.loads(evidence.recipe_json)["compiler_args"],
+                lambda argv: bounded_capture(argv, deadline))
+            validate_baseline(item, evidence, deadline)
         if (comparison.get("schema") != "mickey-candidate-context-v1"
                 or comparison.get("symbol") != item.func
                 or comparison.get("baseline_sha256") != report["baseline_source_sha256"]
@@ -1642,6 +1651,7 @@ def retain_context(directory: Path, evidence: PreparedBaseline | None, winner: b
             "binding": json.loads(evidence.capture_binding_json)})
     (directory / "winner.c").write_bytes(winner)
     sweep_receipts.atomic_json(directory / "report.json", report)
+    prepared_macro_context.retain(report, directory, BUILD_PERMUTER)
 
 
 def require_search_context(item, evidence, directory, deadline):

@@ -77,7 +77,7 @@ def _strip_comments(text: str) -> str:
     return LEXICAL.sub(replace, text)
 
 
-def _inactive_macro_prelude(text: str) -> tuple[str, list[dict], list[str]]:
+def _inactive_macro_prelude(text: str, *, allow_active: bool = False) -> tuple[str, list[dict], list[str]]:
     """Retain unused leading definitions as context, never guess expansion.
 
     Prepared vendor input can carry unused graphics definitions, including
@@ -136,11 +136,21 @@ def _inactive_macro_prelude(text: str) -> tuple[str, list[dict], list[str]]:
     prepared = "".join(output)
     without_literals = LEXICAL.sub(lambda match: " " if match.group().startswith(('"', "'"))
                                   else match.group(), prepared)
-    if names.intersection(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", without_literals)):
+    if not allow_active and names.intersection(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", without_literals)):
         raise ContextError("active prepared macro requires independent preprocessing/context review")
     if len(rows) > MAX_DECLARATIONS:
         raise ContextError("prepared macro prelude exceeds declaration limit")
     return prepared, rows, snippets
+
+
+def preprocessing_macro_context(source: bytes) -> list[dict]:
+    """Validate and fingerprint definitions for an actual compiler -E replay.
+
+    This never supplies C with its active definitions blanked. Only the stock
+    preprocessor output may be passed to the ordinary context comparator.
+    """
+    _text, rows, _snippets = _inactive_macro_prelude(_prepared_text(source), allow_active=True)
+    return rows
 
 
 def _prepared_text(source: bytes) -> str:

@@ -76,12 +76,14 @@ def _section_owner(elf: reloc_surface.Elf, symbol: tuple) -> dict[str, Any]:
     if not flags & SHF_ALLOC:
         raise SourceFidelityError(f"owner {name!r} is not in allocated storage")
     if typ == STT_FUNC:
-        if not flags & SHF_EXECINSTR or flags & SHF_WRITE:
+        if sh_type != SHT_PROGBITS or not flags & SHF_EXECINSTR or flags & SHF_WRITE:
             raise SourceFidelityError(f"function owner {name!r} has incompatible storage")
     elif flags & SHF_EXECINSTR:
         raise SourceFidelityError(f"object owner {name!r} has executable storage")
     if size <= 0 or value < 0 or value + size > section_size:
         raise SourceFidelityError(f"defined owner {name!r} has invalid extent")
+    if sh_type == SHT_PROGBITS and sh[4] + section_size > len(elf.data):
+        raise SourceFidelityError(f"owner {name!r} has truncated section storage")
     return {"name": name, "type": typ, "binding": bind, "defined": True,
             "value": value, "size": size,
             "storage": (elf.names[shndx], sh_type, flags)}
@@ -114,6 +116,8 @@ def _function(elf: reloc_surface.Elf, symbols: list[tuple], name: str) -> dict[s
     if owner["type"] != STT_FUNC or not owner["defined"]:
         raise SourceFidelityError(f"target function {name!r} is not a defined FUNC")
     _, value, size, _, shndx = symbol
+    if elf.names.count(elf.names[shndx]) != 1:
+        raise SourceFidelityError("owned executable section name is ambiguous")
     if value % 4 or size % 4:
         raise SourceFidelityError("target function extent is not word aligned")
     return {"symbol": symbol, "owner": owner, "section": shndx,
@@ -128,6 +132,8 @@ def _relocations(elf: reloc_surface.Elf, symtab: int,
     rows: list[dict[str, Any]] = []
     seen_sites: set[int] = set()
     for section_index, sh in enumerate(elf.sh):
+        if sh[1] == 4 and sh[7] == function["section"]:
+            raise SourceFidelityError("owned executable RELA table is unsupported")
         if sh[1] != SHT_REL or sh[7] != function["section"]:
             continue
         if sh[6] != symtab or sh[9] not in (0, 8) or sh[5] % 8:
@@ -165,6 +171,11 @@ def _relocations(elf: reloc_surface.Elf, symtab: int,
                     raise SourceFidelityError("R_MIPS_HI16 does not name a LUI field")
                 pending.setdefault(name, []).append((site, field & 0xFFFF))
             else:
+                # This narrow route accepts signed immediate address fields,
+                # including integer/FP loads and stores, never R-format bits.
+                if opcode not in (8, 9, 24, 25, 32, 33, 34, 35, 36, 37, 38,
+                                  39, 40, 41, 42, 43, 44, 45, 46, 49, 53, 57, 61):
+                    raise SourceFidelityError("R_MIPS_LO16 does not name a signed immediate field")
                 low = field & 0xFFFF
                 signed_low = low - 0x10000 if low & 0x8000 else low
                 highs = pending.pop(name, [])
@@ -175,8 +186,8 @@ def _relocations(elf: reloc_surface.Elf, symtab: int,
                         raise SourceFidelityError(
                             f"ambiguous HI16/LO16 addends for owner {name!r}")
                     addend = next(iter(addends))
-                    for site, _ in highs:
-                        rows.append({"site": site, "type": R_MIPS_HI16,
+                    for hi_site, _ in highs:
+                        rows.append({"site": hi_site, "type": R_MIPS_HI16,
                                      "name": name, "addend": addend,
                                      "owner": owner})
                 else:

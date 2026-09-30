@@ -31,6 +31,24 @@ def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def unique_payload(elf, name):
+    """Authenticate name-based section reads before using their bytes."""
+    need(elf.names.count(name) == 1, 'ambiguous section name: ' + name)
+    index, header = elf.section(name)
+    need(header[1] == 1 and header[4] + header[5] <= len(elf.data),
+         'missing or truncated PROGBITS storage: ' + name)
+    need(not any(sh[1] == 4 and sh[7] == index for sh in elf.sh),
+         'unsupported RELA storage: ' + name)
+    tables = [i for i, sh in enumerate(elf.sh) if sh[1] == 2]
+    for sh in elf.sh:
+        if sh[1] != 9 or sh[7] != index:
+            continue
+        need(len(tables) == 1 and sh[6] == tables[0] and sh[9] in (0, 8)
+             and sh[5] % 8 == 0 and sh[4] + sh[5] <= len(elf.data),
+             'malformed or foreign REL storage: ' + name)
+    return index, header
+
+
 def integer(node):
     kind = type(node).__name__
     if kind == 'Constant' and node.type in ('int', 'long', 'unsigned int'):
@@ -132,8 +150,12 @@ class Code:
     """Bounded def/use on ordinary MIPS control flow, including delay slots."""
     def __init__(self, elf, symbol):
         self.elf = elf
+        text_index, _ = unique_payload(elf, '.text')
         self.start, self.size, section = rs._unique_symbol(elf, symbol, require_text=True)
         need(section == '.text' and self.size and self.size % 4 == 0, 'invalid owned function')
+        owners = [row for row in elf.symbols() if row[0] == symbol and row[2] > 0]
+        need(len(owners) == 1 and owners[0][4] == text_index and owners[0][3] & 15 == 2,
+             'function symbol does not own the selected executable section')
         data = elf.section_bytes(section)[self.start:self.start + self.size]
         need(len(data) == self.size and self.size <= 65536, 'invalid function extent')
         self.words = dict(enumerate(struct.unpack('>' + 'I' * (len(data) // 4), data)))
@@ -349,7 +371,7 @@ def partition(entries, info, shape):
 def candidate_table(path, symbol, shape):
     elf = rs.Elf(path)
     code = Code(elf, symbol)
-    rodata, header = elf.section('.rodata')
+    rodata, header = unique_payload(elf, '.rodata')
     local = [(hi, lo, index, addend) for hi, lo, index, addend in pairs(code)
              if code.symbols[index][4] == rodata and rodata is not None]
     if not local:
@@ -413,6 +435,7 @@ def target_table(root, symbol, source, candidate, shape):
     code = Code(obj, symbol)
     value, size, section = rs._unique_symbol(linked, symbol)
     need(section == '.main', 'target function is outside resident namespace')
+    unique_payload(linked, section)
     # Existing target adapter authenticates all instruction fields and PC16
     # actual addends/destinations, rather than merely trusting local labels.
     rs._resident_target_records(candidate, source, linked, symbol, value, size, section, rs.LINK_SYMS)
@@ -455,6 +478,7 @@ def target_table(root, symbol, source, candidate, shape):
     need(len(owners) == 1, 'target table linker owner is ambiguous')
     owner_base, owner_size, owner_path = owners[0]
     owner = rs.Elf(owner_path)
+    unique_payload(owner, '.rodata')
     owned = [s for s in owner.symbols() if s[0] == name]
     need(len(owned) == 1 and owned[0][1] + owner_base == address and owned[0][2] == extent
          and owned[0][4] == owner.section('.rodata')[0], 'named table disagrees with canonical owner object')

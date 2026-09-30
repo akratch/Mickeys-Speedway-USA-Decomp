@@ -104,6 +104,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import reloc_surface  # noqa: E402
 import search_local_bindings  # noqa: E402
+import source_symbol_fidelity  # noqa: E402
 import sweep_receipts  # noqa: E402
 import promotion_transaction  # noqa: E402
 _LOADED_IMPLEMENTATIONS = {
@@ -112,6 +113,7 @@ _LOADED_IMPLEMENTATIONS = {
                        ("promotion", promotion_transaction.__file__),
                        ("relocations", reloc_surface.__file__),
                        ("search_local_bindings", search_local_bindings.__file__),
+                       ("source_symbol_fidelity", source_symbol_fidelity.__file__),
                        ("relocation_identity", reloc_surface.ri.__file__),
                        ("overlay_table", reloc_surface.ot.__file__))
 }
@@ -3746,6 +3748,7 @@ def _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
     runtime_exact = all(report.get("offset_type_exact") is True
                         and report.get("stable_identity_exact") is True for report in reports)
     identity_route = "runtime-identities" if runtime_exact else "raw-source-symbols-not-runtime-proof"
+    named_source_proof = None
     has_local = any("object-local-section-symbol" in site.get("observations", [])
                     for surface in reports for site in surface.get("diagnostics", {}).get("sites", []))
     if has_local:
@@ -3761,8 +3764,21 @@ def _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
                           for surface, proof in zip(reports, local_proofs)]
         identity_route = "authenticated-externals-and-owned-switch-table"
     elif not runtime_exact:
-        source_records = [raw_source_relocations(path, item.func) for path in (full, raw_emitted)]
-    if has_local or not runtime_exact:
+        try:
+            source_records = [raw_source_relocations(path, item.func) for path in (full, raw_emitted)]
+        except UnsupportedSearchBinding as error:
+            if error.route != "defined-symbol-owner":
+                raise
+            named_source_proof = source_symbol_fidelity.compare_source_symbols(raw_emitted, full, item.func)
+            if (named_source_proof.get("status") != "source-correspondence-exact"
+                    or named_source_proof.get("runtime_identity_proved") is not False
+                    or named_source_proof.get("promotion_authority") is not False):
+                raise RuntimeError("named source correspondence exceeded its proof authority")
+            sweep_receipts.atomic_json(directory / "named-source-correspondence.json", named_source_proof)
+            # This route only establishes emitter fidelity. require_search_bindings
+            # still authenticates every candidate runtime identity independently.
+            identity_route = "named-source-owner-correspondence-not-runtime-proof"
+    if (has_local or not runtime_exact) and named_source_proof is None:
         sweep_receipts.atomic_json(directory / "source-relocations.json", source_records)
         if source_records[0] != source_records[1]:
             raise RuntimeError("actual emitted local relocation correspondence differs" if has_local

@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import permute_batch as batch
@@ -28,6 +29,26 @@ void fixture(Byte *object) {
 
 
 class TableProofTests(unittest.TestCase):
+    def test_rela_and_foreign_or_malformed_rel_tables_refuse(self):
+        text = [0, 1, 6, 0, 0, 4, 0, 0, 4, 0]
+        symbols = [0, 2, 0, 0, 0, 0, 0, 0, 4, 16]
+        for kind, link, size, entsize in ((4, 1, 12, 12), (9, 0, 8, 8),
+                                          (9, 1, 7, 8), (9, 1, 8, 12)):
+            reloc = [0, kind, 0, 0, 0, size, link, 0, 4, entsize]
+            elf = SimpleNamespace(names=['.text', '.symtab', '.rel.text'],
+                sh=[text, symbols, reloc], data=b'\0' * 16,
+                section=lambda name: (0, text))
+            with self.subTest(kind=kind, link=link, size=size, entsize=entsize), self.assertRaises(RuntimeError):
+                local.unique_payload(elf, '.text')
+
+    def test_duplicate_and_nonpayload_section_reads_refuse(self):
+        for names, kind, extent in ((['.text', '.text'], 1, 4),
+                                    (['.text'], 8, 4), (['.text'], 1, 8)):
+            elf = SimpleNamespace(names=names, data=b'\0' * 4, sh=[],
+                section=lambda name: (0, [0, kind, 6, 0, 0, extent]))
+            with self.subTest(names=names, kind=kind, extent=extent), self.assertRaises(RuntimeError):
+                local.unique_payload(elf, '.text')
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

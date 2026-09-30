@@ -133,6 +133,71 @@ def make_elf(path: Path, *, words: list[int], relocs: list[tuple[int, int, str]]
 
 
 class SourceSymbolFidelityTests(unittest.TestCase):
+    def test_moved_raw_full_lo_site_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw, full = self.make_pair(Path(directory),
+                words=[0x3C080000, 0x25080000, 0x25080000],
+                raw_relocs=[(0, 5, "owner"), (4, 6, "owner")],
+                full_relocs=[(0, 5, "owner"), (8, 6, "owner")],
+                owner_type=STT_OBJECT)
+            with self.assertRaisesRegex(sf.SourceFidelityError, "site/type"):
+                sf.compare_source_symbols(raw, full, "source_fn")
+
+    def test_lo_site_survives_high_pairing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw, full = self.make_pair(Path(directory),
+                words=[0x3C080000, 0x25080000],
+                raw_relocs=[(0, 5, "owner"), (4, 6, "owner")],
+                owner_type=STT_OBJECT)
+            report = sf.compare_source_symbols(raw, full, "source_fn")
+            self.assertEqual([(r['site'], r['type']) for r in report['relocations']],
+                             [('+0x0', 5), ('+0x4', 6)])
+
+    def test_rela_and_missing_function_payload_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for missing in (False, True):
+                raw, full = self.make_pair(Path(directory), words=[0x0C000000],
+                    raw_relocs=[(0, 4, "owner")])
+                elf = sf.reloc_surface.Elf(full)
+                data = bytearray(full.read_bytes())
+                shoff = struct.unpack_from('>I', data, 0x20)[0]
+                index, _ = elf.section('.text' if missing else '.rel.text')
+                struct.pack_into('>I', data, shoff + index * 40 + (16 if missing else 4),
+                                 len(data) + 4 if missing else 4)
+                full.write_bytes(data)
+                with self.subTest(missing=missing), self.assertRaises(sf.SourceFidelityError):
+                    sf.compare_source_symbols(raw, full, 'source_fn')
+
+    def test_duplicate_owned_section_name_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            raw, full = self.make_pair(path, words=[0x0C000000],
+                raw_relocs=[(0, 4, "owner")],
+                full_extra=[(".text", SHT_PROGBITS, SHF_ALLOC | SHF_EXECINSTR,
+                             struct.pack(">I", 0x24020002))])
+            with self.assertRaisesRegex(sf.SourceFidelityError, "ambiguous"):
+                sf.compare_source_symbols(raw, full, "source_fn")
+
+    def test_lo16_on_non_immediate_instruction_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw, full = self.make_pair(Path(directory), words=[0],
+                raw_relocs=[(0, 6, "owner")], owner_type=STT_OBJECT)
+            with self.assertRaisesRegex(sf.SourceFidelityError, "signed immediate"):
+                sf.compare_source_symbols(raw, full, "source_fn")
+
+    def test_nobits_function_storage_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw, full = self.make_pair(Path(directory), words=[0x0C000000],
+                raw_relocs=[(0, 4, "owner")])
+            elf = sf.reloc_surface.Elf(full)
+            data = bytearray(full.read_bytes())
+            shoff = struct.unpack_from(">I", data, 0x20)[0]
+            index, _ = elf.section(".text")
+            struct.pack_into(">I", data, shoff + index * 40 + 4, sf.SHT_NOBITS)
+            full.write_bytes(data)
+            with self.assertRaisesRegex(sf.SourceFidelityError, "storage"):
+                sf.compare_source_symbols(raw, full, "source_fn")
+
     def make_pair(self, directory: Path, *, words: list[int],
                   raw_relocs: list[tuple[int, int, str]],
                   full_relocs: list[tuple[int, int, str]] | None = None,

@@ -1757,8 +1757,8 @@
     },
     "overlay1TransitionState": {
       "ledger_commit": "07c7bc32795e0b8d1f2ff2a93cc9fb2605df6543",
-      "reason": "ADR 0018 stall-rule reopen for a whole-TU batch: these plateaus were filed under the superseded attempt cap. One owner works the unit under the stall rule with a single shared flag-lattice run.",
-      "source_commit": "8b4f51cdcbdc468f5622bc353511de2c0abb3270"
+      "reason": "Configured full-TU flag lattice for current transition body; no current-input lattice receipt; diagnostic only pending shared-flag consumer review",
+      "source_commit": "287a018f7a46c95dbc19edafa75d681e025bd8f4"
     },
     "overlay1UpdateAimedTransient": {
       "ledger_commit": "ed1e730b0017226ca6c9cb70a78dfc91988b1e5d",

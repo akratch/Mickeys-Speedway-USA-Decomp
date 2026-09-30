@@ -1648,6 +1648,167 @@ def require_search_context(item, evidence, directory, deadline):
         raise RuntimeError("baseline context readiness refused: " + str(report.get("reason")))
     # review_context records errors; recheck outside its report boundary too.
     validate_baseline(item, evidence, deadline)
+    report["search_bindings"] = require_search_bindings(item, evidence, directory, deadline)
+    return report
+
+
+class UnsupportedSearchBinding(RuntimeError):
+    """An unimplemented proof adapter, not an assertion of impossibility."""
+    def __init__(self, route):
+        self.route = route
+        super().__init__("unsupported-proof-route: " + route + "; independent ownership proof required")
+
+
+def search_binding_records(report):
+    """Admit independent identities, without requiring target site/count equality.
+
+    Resolver correlations and generated-name spellings are observations, not
+    authority for a candidate binding. Local sections/branches need an explicit
+    ownership adapter; this external-reference adapter does not guess one.
+    """
+    sites = report.get("diagnostics", {}).get("sites")
+    count = report.get("candidate_record_count")
+    for site in sites if isinstance(sites, list) else []:
+        if site.get("rtype") == 10:
+            raise UnsupportedSearchBinding("pc16-owned-branch")
+        if "object-local-section-symbol" in site.get("observations", []):
+            raise UnsupportedSearchBinding("section-local-data-owner")
+    if (type(count) is not int or count < 0 or not isinstance(sites, list)
+            or len(sites) != count
+            or report.get("candidate_identity_resolved_count") != count
+            or report.get("candidate_identity_unresolved_records") != []):
+        raise RuntimeError("candidate binding identities are incomplete or unresolved")
+    routes = {"resident-elf-address", "resident-absolute-symbol",
+              "canonical-call-boundary", "canonical-data-owner",
+              "matched-canonical-sibling", "explicit-reserved-storage-witness"}
+    records = []
+    def identity(value):
+        return (isinstance(value, list) and len(value) == 2
+                and all(type(part) is int for part in value))
+    for site in sites:
+        offset, kind, effective = site.get("offset"), site.get("rtype"), site.get("identity")
+        if (type(offset) is not int or offset < 0 or offset % 4
+                or type(kind) is not int or not identity(effective)
+                or site.get("status") != "resolved"):
+            raise RuntimeError("candidate binding has invalid site/type/identity")
+        if kind not in (4, 5, 6):
+            raise UnsupportedSearchBinding("relocation-kind-" + str(kind))
+        if any(site.get("conflicts", {}).values()):
+            raise RuntimeError("candidate binding has conflicting identity witnesses")
+        addends = site.get("addends")
+        if (not isinstance(addends, list) or len(addends) != 1
+                or type(addends[0]) is not int):
+            raise RuntimeError("candidate binding REL addend is not uniquely proved")
+        bases = {tuple(witness["base_identity"]) for witness in site.get("witnesses", [])
+                 if witness.get("independent") is True and witness.get("route") in routes
+                 and identity(witness.get("base_identity"))}
+        expected = (effective[0], effective[1] - addends[0])
+        if bases != {expected}:
+            raise RuntimeError("candidate binding lacks independent canonical identity authority")
+        records.append((offset, kind, tuple(effective)))
+    if len({offset for offset, _kind, _identity in records}) != count:
+        raise RuntimeError("candidate binding has duplicate relocation sites")
+    return sorted(records)
+
+
+def search_binding_authority():
+    paths = (ROOT / "build/mickey.us.elf", ROOT / "build/mickey.us.map",
+             BASEROM, ATLAS_PATH, reloc_surface.LINK_SYMS, ROOT / "symbol_addrs.us.txt",
+             ROOT / "Makefile")
+    result = {str(path): sweep_receipts.file_digest(path) for path in paths}
+    # Canonical boundary/data/sibling witnesses consult objects and their
+    # sources, not only the linked ELF. Pin that read authority across a load
+    # wait too; candidate objects under build_non_matching are not witnesses.
+    for relative in ("build/src", "src", "include", "asm", "assets", "mk", "config"):
+        directory = ROOT / relative
+        rows = [(path.relative_to(directory).as_posix(), sweep_receipts.file_digest(path))
+                for path in sorted(directory.rglob("*")) if path.is_file()]
+        if not rows:
+            raise RuntimeError("search binding authority tree is missing: " + relative)
+        result["tree:" + relative] = sweep_receipts.digest(rows)
+    return result
+
+
+def validate_search_binding_authority(report):
+    if report["authority"] != search_binding_authority():
+        raise RuntimeError("search binding authority changed after readiness proof")
+
+
+def require_search_bindings(item, evidence, directory, deadline):
+    """Prove raw candidate identities before annotation can rename placeholders.
+
+    Compile the captured source through the pinned original importer recipe.
+    Compare its owned fields and independently authenticated relocation tuples
+    with the actual captured search object. Full-TU fidelity is separately
+    established by grouped_baseline_fidelity, including ungrouped baselines.
+    """
+    proof_dir = directory / "bindings"
+    proof_dir.mkdir(mode=0o700)
+    report = {"schema": "mickey-search-bindings-v1", "status": "unverifiable",
+              "symbol": item.func, "source_sha256": evidence.source_sha256,
+              "captured_object_sha256": evidence.object_sha256,
+              "unsupported_proof_route": None}
+    try:
+        validate_baseline(item, evidence, deadline)
+        inputs = json.loads(evidence.prepared_inputs_json)
+        run_dir = directory.parent
+        raw_script = sweep_receipts.owned_bytes(run_dir, "importer-compile.sh")
+        prepared_script = sweep_receipts.owned_bytes(run_dir, "baseline-capture/compile-original.sh")
+        if (compile_script_digest(raw_script) != inputs["context"]["importer_recipe"]
+                or compile_script_digest(prepared_script) != inputs["context"]["prepared"]["compile.sh"]):
+            raise RuntimeError("search binding recipes differ from captured preparation")
+        aliases = reloc_surface.ri.canonicalize_redefine_aliases(
+            reloc_surface.ri.parse_objcopy_redefine_pairs(prepared_script.decode()))
+        if aliases.ambiguous or aliases.cycles or aliases.conflicts:
+            raise RuntimeError("search binding recipe has ambiguous rename provenance")
+        report["authority"] = search_binding_authority()
+        if inputs["context"].get("search_binding_authority") != report["authority"]:
+            raise RuntimeError("search binding authority differs from prepared receipt inputs")
+        files = {"source.c": evidence.source, "compile.sh": raw_script, "captured.o": evidence.object}
+        for name, data in files.items():
+            (proof_dir / name).write_bytes(data)
+        raw = proof_dir / "raw.o"
+        raw.touch(exist_ok=False)
+        output = bounded_capture(["bash", str(proof_dir / "compile.sh"),
+            str(proof_dir / "source.c"), "-o", str(raw)], deadline)
+        (proof_dir / "compile.log").write_text(output.stdout)
+        output.check_returncode()
+        raw_bytes = sweep_receipts.owned_bytes(proof_dir, "raw.o")
+        captured = proof_dir / "captured.o"
+        normalized = [normalized_owned_instructions(path, item.func) for path in (raw, captured)]
+        if not normalized[0] or normalized[0] != normalized[1]:
+            raise RuntimeError("search binding replay changed captured executable fields")
+        target_elf = reloc_surface.Elf(ROOT / "build/mickey.us.elf")
+        names = {row[0] for row in target_elf.symbols()}
+        fallback = find_asm_target(item)
+        target_symbol = item.func if item.func in names else Path(fallback or "").stem
+        reports = []
+        for path, reverse in ((raw, None), (captured, aliases.resolved)):
+            surface = reloc_surface.function_surface_comparison(item.func, path,
+                ROOT / "build/mickey.us.elf", source=item.rel_c_file.removeprefix("src/").removesuffix(".c"),
+                overlay_hint=item.overlay, target_symbol=target_symbol,
+                candidate_redefine_aliases=reverse, include_diagnostics=True,
+                include_candidate_identities=True, measure_size_delta=True)
+            sweep_receipts.atomic_json(proof_dir / (path.stem + "-relocations.json"), surface)
+            reports.append(search_binding_records(surface))
+        if reports[0] != reports[1]:
+            raise RuntimeError("search annotation changed independently proved candidate bindings")
+        if (any(sweep_receipts.owned_bytes(proof_dir, name) != data for name, data in files.items())
+                or sweep_receipts.owned_bytes(proof_dir, "raw.o") != raw_bytes
+                or sweep_receipts.owned_bytes(run_dir, "importer-compile.sh") != raw_script
+                or sweep_receipts.owned_bytes(run_dir, "baseline-capture/compile-original.sh") != prepared_script):
+            raise RuntimeError("search binding inputs changed during proof")
+        validate_search_binding_authority(report)
+        validate_baseline(item, evidence, deadline)
+        report.update(status="authenticated", candidate_record_count=len(reports[0]),
+                      raw_object_sha256=hashlib.sha256(raw_bytes).hexdigest())
+    except Exception as error:
+        report["reason"] = str(error)
+        if isinstance(error, UnsupportedSearchBinding):
+            report["unsupported_proof_route"] = error.route
+        raise RuntimeError("search binding readiness refused: " + str(error)) from error
+    finally:
+        sweep_receipts.atomic_json(proof_dir / "report.json", report)
     return report
 
 
@@ -1726,6 +1887,7 @@ def receipt_inputs(item: QueueItem, scratch: Path, settings: Path, target: Path,
         "recipe_variant": hashlib.sha256(variant_bytes).hexdigest(),
         "tools": sweep_tool_identity(),
         "dependencies": source_dependencies(item.c_file, recipe.compiler_args),
+        "search_binding_authority": search_binding_authority(),
     }
     # Whole-ROM hash is cheap here and also pins the relocation metadata read
     # by annotation. The receipt never contains ROM bytes.
@@ -3269,6 +3431,9 @@ def seed_context_compatible(parent: dict, current: dict) -> bool:
     implementations = {"runner", "receipts", "promotion", "candidate_context", "loaded_modules"}
     for context in (old["context"], new["context"]):
         context.pop("seed", None)
+        # Historical seeds must pass the current independent binding gate.
+        # Their old authority snapshot is not a transferable admission proof.
+        context.pop("search_binding_authority", None)
         context["tools"] = {k: v for k, v in context["tools"].items() if k not in implementations}
         context["baseline_hashes"].pop("baseline/compile.sh", None)
     for value in (old, new):
@@ -3348,7 +3513,9 @@ def normalized_owned_instructions(path, symbol):
             continue
         site = offset - start
         masks = {4: 0xFC000000, 5: 0xFFFF0000, 6: 0xFFFF0000}
-        if kind not in masks or site % 4 or site in seen or site + 4 > size:
+        if kind not in masks:
+            raise UnsupportedSearchBinding("pc16-owned-branch" if kind == 10 else "relocation-kind-" + str(kind))
+        if site % 4 or site in seen or site + 4 > size:
             raise RuntimeError("unsupported grouped baseline relocation encoding")
         seen.add(site)
         word = int.from_bytes(data[site:site + 4], "big") & masks[kind]
@@ -3375,9 +3542,12 @@ def raw_source_relocations(path, symbol):
         if index >= len(symbols) or offset % 4 or offset + 4 > start + size:
             raise RuntimeError("invalid source relocation geometry")
         name, value, extent, info, section = symbols[index]
-        if (not name or names.count(name) != 1 or section not in (0, 0xFFF1)
-                or kind not in (4, 5, 6)):
-            raise RuntimeError("source relocation needs independent defined-symbol identity")
+        if not name or names.count(name) != 1:
+            raise RuntimeError("source relocation needs independent unique-symbol identity")
+        if section not in (0, 0xFFF1):
+            raise UnsupportedSearchBinding("section-local-data-owner" if info & 0xF == 3 else "defined-symbol-owner")
+        if kind not in (4, 5, 6):
+            raise UnsupportedSearchBinding("pc16-owned-branch" if kind == 10 else "relocation-kind-" + str(kind))
         position = offset - start
         if any(row[0] == position for row in raw):
             raise RuntimeError("duplicate source relocation site")
@@ -3408,15 +3578,23 @@ def grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
         pass
     try:
         return _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline)
+    except UnsupportedSearchBinding as error:
+        sweep_receipts.atomic_json(out_dir / "source-fidelity/binding-readiness.json", {
+            "schema": "mickey-search-bindings-v1", "symbol": item.func,
+            "status": "unverifiable", "unsupported_proof_route": error.route,
+            "reason": str(error)})
+        raise
     finally:
         _FIDELITY_LOCK.release()
 
 
 def _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
-    """Prove the actual initial emitter against a freshly configured full TU.
+    """Prove every actual initial emitter against a freshly configured full TU.
 
     Unsupported syntax requests measurement, not automatic refusal. Runtime
     identities and raw original-source correspondence are distinct proof routes.
+    Ungrouped syntax also needs fidelity; a source self-comparison cannot prove
+    that pruning the TU preserved the compiled function.
     """
     plan_path = out_dir / "source-groups.json"
     if not plan_path.is_file() or plan_path.is_symlink():
@@ -3435,8 +3613,6 @@ def _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
             or (status == "measurement-required" and not plan["groups"]
                 and isinstance(plan.get("reason"), str) and bool(plan["reason"]))):
         raise RuntimeError("invalid source grouping status or inconsistent groups")
-    if status == "ungrouped":
-        return
     directory = out_dir / "source-fidelity"
     directory.mkdir()
     target = ROOT / "build_non_matching" / (item.rel_c_file + ".o")
@@ -4009,9 +4185,10 @@ def run_prepared(item: QueueItem, scratch: Path, out_dir: Path, result: RunResul
         launch_files = launch_inputs if launch_inputs is not None else {name: sweep_receipts.owned_bytes(scratch, name)
                         for name in ("base.c", "compile.sh", "target.s", "target.o", "settings.toml")
                         if (scratch / name).exists()}
+        binding_reports = []
         if seed_evidence is not None:
-            require_search_context(item, prepared, out_dir / "baseline-readiness", batch_deadline)
-            require_search_context(item, seed_evidence, out_dir / "seed-readiness", batch_deadline)
+            binding_reports.append(require_search_context(item, prepared, out_dir / "baseline-readiness", batch_deadline)["search_bindings"])
+            binding_reports.append(require_search_context(item, seed_evidence, out_dir / "seed-readiness", batch_deadline)["search_bindings"])
         else:
             if readiness_evidence is None:
                 if seed_artifacts is not None:
@@ -4021,11 +4198,13 @@ def run_prepared(item: QueueItem, scratch: Path, out_dir: Path, result: RunResul
                     # Direct callers may already own an authenticated capture.
                     readiness_evidence = (captured_baseline(item, out_dir, prepared_inputs, batch_deadline), None)
             prepared = readiness_evidence[0]
-            require_search_context(item, prepared, out_dir / "baseline-readiness", batch_deadline)
+            binding_reports.append(require_search_context(item, prepared, out_dir / "baseline-readiness", batch_deadline)["search_bindings"])
         wait_for_headroom(load_threshold, f"before permuting {item.func}", batch_deadline)
         validate_baseline(item, prepared, batch_deadline)
         if seed_evidence is not None:
             validate_baseline(item, seed_evidence, batch_deadline)
+        for binding_report in binding_reports:
+            validate_search_binding_authority(binding_report)
         if any(sweep_receipts.owned_bytes(scratch, name) != data for name, data in launch_files.items()):
             raise RuntimeError("prepared search input changed during baseline readiness")
         if seed_evidence is not None and hashlib.sha256(sweep_receipts.owned_bytes(
@@ -4099,6 +4278,8 @@ def run_prepared(item: QueueItem, scratch: Path, out_dir: Path, result: RunResul
                     raise RuntimeError("extension emission score differs from saved winner")
                 prove_seed_emission(item, out_dir / "extension-fidelity", seed_artifacts,
                     prepared_inputs, extension_source, extension, batch_deadline)
+                extension_bindings = require_search_bindings(item, extension,
+                    out_dir / "extension-readiness", batch_deadline)
                 extension_dir = out_dir / "extension-search"
                 extension_dir.mkdir(mode=0o700)
                 (scratch / "base.c").write_bytes(extension_prepared)
@@ -4111,6 +4292,7 @@ def run_prepared(item: QueueItem, scratch: Path, out_dir: Path, result: RunResul
                 wait_for_headroom(load_threshold, f"before extending {item.func}", batch_deadline)
                 validate_baseline(item, prepared, batch_deadline)
                 validate_baseline(item, extension, batch_deadline)
+                validate_search_binding_authority(extension_bindings)
                 if any(sweep_receipts.owned_bytes(scratch, name) != data for name, data in extension_files.items()):
                     raise RuntimeError("prepared extension input changed during readiness")
                 result.extended = True

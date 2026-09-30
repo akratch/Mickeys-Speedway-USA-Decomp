@@ -516,6 +516,10 @@ class RunnerTests(unittest.TestCase):
         self.stack.enter_context(patch.object(batch, "annotate_overlay_scratch", return_value=0))
         # These orchestration fixtures copy C as their synthetic object. Real
         # parser/ELF fidelity is exercised separately in test_source_fidelity.
+        self.stack.enter_context(patch.object(batch, "grouped_baseline_fidelity", return_value=None))
+        self.stack.enter_context(patch.object(batch, "require_search_bindings", return_value={"status": "authenticated"}))
+        self.stack.enter_context(patch.object(batch, "validate_search_binding_authority"))
+        self.stack.enter_context(patch.object(batch, "search_binding_authority", return_value={"fixture": "authority"}))
         self.stack.enter_context(patch.object(batch, "prepare_seed_layout", side_effect=lambda item, directory, source, deadline:
             (source, json.dumps({"contract": batch.SOURCE_GROUP_CONTRACT, "symbol": item.func,
                                  "groups": [], "status": "ungrouped"}).encode())))
@@ -644,6 +648,34 @@ class RunnerTests(unittest.TestCase):
         self.assertTrue(result.ok, result.error)
         self.assertEqual(measured.call_count, 1)
         self.assertEqual(measured.call_args.args[1].name, "grouped-measurement")
+
+    def test_unproved_bindings_refuse_before_random_search(self):
+        with patch.object(batch, "require_search_bindings",
+                side_effect=RuntimeError("candidate binding identity is unproved")), \
+             patch.object(batch, "run_permuter") as search:
+            result = self.run_one()
+        self.assertFalse(result.ok)
+        self.assertIn("binding identity is unproved", result.error)
+        search.assert_not_called()
+
+    def test_binding_authority_drift_during_wait_refuses_before_search(self):
+        with patch.object(batch, "validate_search_binding_authority",
+                side_effect=RuntimeError("search binding authority changed")), \
+             patch.object(batch, "run_permuter") as search:
+            result = self.run_one()
+        self.assertFalse(result.ok)
+        self.assertIn("authority changed", result.error)
+        search.assert_not_called()
+
+    def test_binding_authority_change_cannot_resume_completed_receipt(self):
+        first = self.run_one()
+        self.assertTrue(first.ok, first.error)
+        with patch.object(batch, "search_binding_authority", return_value={"fixture": "changed"}):
+            second = self.run_one(resume=True)
+        self.assertTrue(second.ok, second.error)
+        self.assertFalse(second.resumed)
+        self.assertNotEqual(first.receipt_key, second.receipt_key)
+        self.assertIsNotNone(self.store.completed(first.receipt_key))
 
     def test_baseline_installed_capture_wrapper_drift_refuses_before_search(self):
         real = batch.run_prepared

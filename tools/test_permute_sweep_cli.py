@@ -153,7 +153,7 @@ class SweepCliTests(unittest.TestCase):
                 result = self.run_cli(*args)
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertIn("Usage:", result.stdout)
-        self.assertEqual(self.events(), [])
+                self.assertEqual(self.events(), [])
         self.assertFalse((self.top / "mickey-lane---help").exists())
 
     def test_legacy_implicit_mode_and_invalid_lane_names_fail_before_calls(self):

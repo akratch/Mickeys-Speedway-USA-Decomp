@@ -2142,7 +2142,7 @@
     },
     "wakeUpdate": {
       "ledger_commit": "00919d11e8fff7c8cf4b43fd74ea998dbd6f8613",
-      "reason": "ADR 0018 stall rule, and at delta -4 bytes the candidate is not the same function: decompiler-assisted reconstruction applies where no permutation can.",
+      "reason": "New target-proved unsigned halfword arithmetic closes the zero-input shift gap; ADR 0017 causal packet tests its minimal C spelling and resulting expression topology, not the closed colour-force or declaration grids.",
       "source_commit": "0922cb435351df2dd39230eecba5c27bb725d2d9"
     }
   },

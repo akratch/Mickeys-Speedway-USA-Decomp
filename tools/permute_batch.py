@@ -103,6 +103,7 @@ from typing import Optional
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import reloc_surface  # noqa: E402
+import search_local_bindings  # noqa: E402
 import sweep_receipts  # noqa: E402
 import promotion_transaction  # noqa: E402
 _LOADED_IMPLEMENTATIONS = {
@@ -110,6 +111,7 @@ _LOADED_IMPLEMENTATIONS = {
     for name, path in (("runner", __file__), ("receipts", sweep_receipts.__file__),
                        ("promotion", promotion_transaction.__file__),
                        ("relocations", reloc_surface.__file__),
+                       ("search_local_bindings", search_local_bindings.__file__),
                        ("relocation_identity", reloc_surface.ri.__file__),
                        ("overlay_table", reloc_surface.ot.__file__))
 }
@@ -1714,12 +1716,12 @@ def search_binding_records(report):
 def search_binding_authority():
     paths = (ROOT / "build/mickey.us.elf", ROOT / "build/mickey.us.map",
              BASEROM, ATLAS_PATH, reloc_surface.LINK_SYMS, ROOT / "symbol_addrs.us.txt",
-             ROOT / "Makefile")
+             ROOT / "Makefile", ROOT / "mickey.us.yaml")
     result = {str(path): sweep_receipts.file_digest(path) for path in paths}
     # Canonical boundary/data/sibling witnesses consult objects and their
     # sources, not only the linked ELF. Pin that read authority across a load
     # wait too; candidate objects under build_non_matching are not witnesses.
-    for relative in ("build/src", "src", "include", "asm", "assets", "mk", "config"):
+    for relative in ("build/src", "build/asm", "src", "include", "asm", "assets", "mk", "config"):
         directory = ROOT / relative
         rows = [(path.relative_to(directory).as_posix(), sweep_receipts.file_digest(path))
                 for path in sorted(directory.rglob("*")) if path.is_file()]
@@ -1732,6 +1734,53 @@ def search_binding_authority():
 def validate_search_binding_authority(report):
     if report["authority"] != search_binding_authority():
         raise RuntimeError("search binding authority changed after readiness proof")
+
+
+def local_table_shape(source, symbol):
+    sys.path.insert(0, str(PERMUTER_DIR))
+    from src import ast_util
+    with ido_import_parser():
+        ast = ast_util.parse_c(source.decode(), from_import=True)
+    return search_local_bindings.source_switch(ast, symbol)
+
+
+def local_table_proof(item, path, source, out_dir, inputs):
+    """Use the pinned original preprocessor output and actual emitted AST."""
+    try:
+        full_source = sweep_receipts.owned_bytes(out_dir, "source-groups.preprocessed.c")
+        expected = inputs["context"].get("original_preprocessed")
+        if not expected or hashlib.sha256(full_source).hexdigest() != expected:
+            raise RuntimeError("local table original preprocessor authority is missing or stale")
+        shape = local_table_shape(source, item.func)
+        if shape != local_table_shape(full_source, item.func):
+            raise RuntimeError("local table prepared/full-TU source switch differs")
+        return search_local_bindings.authenticate(ROOT, item.func,
+            item.rel_c_file.removeprefix("src/").removesuffix(".c"), path, shape, item.overlay)
+    except search_local_bindings.UnsupportedLocalBinding as error:
+        raise UnsupportedSearchBinding(error.route) from error
+
+
+def local_search_records(surface, proof):
+    """Remove only mechanically authenticated local sites from external proof."""
+    sites = surface.get("diagnostics", {}).get("sites", [])
+    local = {tuple(row[:2]) for row in proof["records"]}
+    actual = {(row.get("offset"), row.get("rtype")) for row in sites
+              if "object-local-section-symbol" in row.get("observations", [])}
+    if actual != local or len(local) != len(proof["records"]):
+        raise RuntimeError("local table proof does not cover exactly the local binding surface")
+    removed = [row for row in sites if (row.get("offset"), row.get("rtype")) in local]
+    if len(removed) != len(local):
+        raise RuntimeError("local table relocation sites are ambiguous")
+    external = dict(surface)
+    external["diagnostics"] = {"sites": [row for row in sites if row not in removed]}
+    external["candidate_record_count"] = surface["candidate_record_count"] - len(removed)
+    external["candidate_identity_resolved_count"] = surface["candidate_identity_resolved_count"] - sum(
+        row.get("identity") is not None for row in removed)
+    external["candidate_identity_unresolved_records"] = [row for row in surface["candidate_identity_unresolved_records"]
+        if (row.get("offset"), row.get("rtype")) not in local]
+    records = search_binding_records(external)
+    records.extend((offset, kind, tuple(identity)) for offset, kind, identity in proof["records"])
+    return sorted(records)
 
 
 def require_search_bindings(item, evidence, directory, deadline):
@@ -1782,7 +1831,7 @@ def require_search_bindings(item, evidence, directory, deadline):
         names = {row[0] for row in target_elf.symbols()}
         fallback = find_asm_target(item)
         target_symbol = item.func if item.func in names else Path(fallback or "").stem
-        reports = []
+        reports, local_proofs = [], []
         for path, reverse in ((raw, None), (captured, aliases.resolved)):
             surface = reloc_surface.function_surface_comparison(item.func, path,
                 ROOT / "build/mickey.us.elf", source=item.rel_c_file.removeprefix("src/").removesuffix(".c"),
@@ -1790,7 +1839,18 @@ def require_search_bindings(item, evidence, directory, deadline):
                 candidate_redefine_aliases=reverse, include_diagnostics=True,
                 include_candidate_identities=True, measure_size_delta=True)
             sweep_receipts.atomic_json(proof_dir / (path.stem + "-relocations.json"), surface)
-            reports.append(search_binding_records(surface))
+            if any("object-local-section-symbol" in row.get("observations", [])
+                   for row in surface.get("diagnostics", {}).get("sites", [])):
+                proof = local_table_proof(item, path, evidence.source, run_dir, inputs)
+                sweep_receipts.atomic_json(proof_dir / (path.stem + "-local-table.json"), proof)
+                local_proofs.append(proof)
+                reports.append(local_search_records(surface, proof))
+            else:
+                reports.append(search_binding_records(surface))
+        if local_proofs:
+            if len(local_proofs) != 2:
+                raise RuntimeError("search annotation changed local table presence")
+            search_local_bindings.fidelity(*(p["candidate"] for p in local_proofs))
         if reports[0] != reports[1]:
             raise RuntimeError("search annotation changed independently proved candidate bindings")
         if (any(sweep_receipts.owned_bytes(proof_dir, name) != data for name, data in files.items())
@@ -1875,6 +1935,8 @@ def receipt_inputs(item: QueueItem, scratch: Path, settings: Path, target: Path,
         "preparation_contract": SOURCE_GROUP_CONTRACT,
         "importer_recipe": compile_digest(scratch.parent / "importer-compile.sh"),
         "source_group_plan": sweep_receipts.file_digest(scratch.parent / "source-groups.json"),
+        "original_preprocessed": (sweep_receipts.file_digest(scratch.parent / "source-groups.preprocessed.c")
+                                  if (scratch.parent / "source-groups.preprocessed.c").is_file() else None),
         "identity": {"symbol": item.func, "source": item.rel_c_file,
                      "overlay": item.overlay, "section": ".text", "offset": offset,
                      "rom_offset": rom},
@@ -3674,7 +3736,8 @@ def _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
         try:
             report = reloc_surface.function_surface_comparison(item.func, path,
                 ROOT / "build/mickey.us.elf", source=item.rel_c_file.removeprefix("src/").removesuffix(".c"),
-                overlay_hint=item.overlay, target_symbol=evidence["linked_symbol"])
+                overlay_hint=item.overlay, target_symbol=evidence["linked_symbol"],
+                include_diagnostics=True, include_candidate_identities=True)
         except (reloc_surface.SurfaceComparisonError, ValueError, KeyError) as error:
             report = {"status": "unresolved", "reason": str(error)}
         reports.append(report)
@@ -3682,15 +3745,32 @@ def _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
         normalized.append(normalized_owned_instructions(path, item.func))
     runtime_exact = all(report.get("offset_type_exact") is True
                         and report.get("stable_identity_exact") is True for report in reports)
-    if not runtime_exact:
+    identity_route = "runtime-identities" if runtime_exact else "raw-source-symbols-not-runtime-proof"
+    has_local = any("object-local-section-symbol" in site.get("observations", [])
+                    for surface in reports for site in surface.get("diagnostics", {}).get("sites", []))
+    if has_local:
+        # Even an exact text relocation surface does not prove table contents.
+        # Defined same-TU callees may become undefined in the isolated emitter;
+        # both sides must independently reproduce their canonical identities.
+        local_proofs = [local_table_proof(item, path, capture.source, out_dir, inputs)
+                        for path in (full, raw_emitted, emitted)]
+        search_local_bindings.fidelity(local_proofs[0]["candidate"], local_proofs[1]["candidate"])
+        search_local_bindings.fidelity(local_proofs[1]["candidate"], local_proofs[2]["candidate"])
+        sweep_receipts.atomic_json(directory / "local-tables.json", local_proofs)
+        source_records = [local_search_records(surface, proof)
+                          for surface, proof in zip(reports, local_proofs)]
+        identity_route = "authenticated-externals-and-owned-switch-table"
+    elif not runtime_exact:
         source_records = [raw_source_relocations(path, item.func) for path in (full, raw_emitted)]
+    if has_local or not runtime_exact:
         sweep_receipts.atomic_json(directory / "source-relocations.json", source_records)
         if source_records[0] != source_records[1]:
-            raise RuntimeError("actual emitted raw source-symbol relocation correspondence differs")
+            raise RuntimeError("actual emitted local relocation correspondence differs" if has_local
+                               else "actual emitted raw source-symbol relocation correspondence differs")
     success = normalized[0] == normalized[1]
     sweep_receipts.atomic_json(directory / "report.json", {
         "contract": SOURCE_GROUP_CONTRACT, "source_fidelity_exact": success,
-        "identity_route": "runtime-identities" if runtime_exact else "raw-source-symbols-not-runtime-proof",
+        "identity_route": identity_route,
         "exact": success,
         "owned_bytes": len(normalized[0]), "strict_score": score,
         "full_tu_sha256": sweep_receipts.file_digest(full),

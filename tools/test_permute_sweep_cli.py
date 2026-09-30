@@ -58,10 +58,12 @@ if kind == "gmake":
     )
     if (len(args) == 1 and args[0].startswith("-j") and full_builds == 1
             and os.environ.get("SWEEP_TEST_BOOTSTRAP_EXIT")):
-        if os.environ.get("SWEEP_TEST_BOOTSTRAP_MODE") == "expected-link":
+        if os.environ.get("SWEEP_TEST_BOOTSTRAP_MODE") in ("expected-link", "expected-link-cfe-error"):
             print("build/src/main/fixture.c.o: relocation truncated to fit: R_MIPS_26 against `residentFn'")
             print("link failed with undefined resident references or R_MIPS_26 overflows.")
             print("gmake[1]: *** [Makefile:1321: build/mickey.us.elf] Error 1")
+            if os.environ.get("SWEEP_TEST_BOOTSTRAP_MODE") == "expected-link-cfe-error":
+                print("cfe: Error: synthetic compiler error")
         else:
             print("compiler: fatal error: synthetic unrelated failure")
         sys.exit(int(os.environ["SWEEP_TEST_BOOTSTRAP_EXIT"]))
@@ -206,6 +208,19 @@ class SweepCliTests(unittest.TestCase):
                               SWEEP_TEST_BOOTSTRAP_MODE="unrelated")
         self.assertEqual(result.returncode, 19)
         self.assertIn("synthetic unrelated failure", result.stderr)
+        self.assertIn("failed outside the diagnosed resident R_MIPS_26 link case", result.stderr)
+        self.assertEqual([args for kind, args in self.events() if kind == "gmake"],
+                         [["-j" + str(os.cpu_count() or 1), "extract"],
+                          ["overlay-syms"], ["-j" + str(os.cpu_count() or 1)]])
+        self.assertFalse(any(kind == "python" and args[:1] == ["-u"]
+                             for kind, args in self.events()))
+
+    def test_cfe_error_with_link_marker_is_not_treated_as_expected_bootstrap(self):
+        self.lane()
+        result = self.run_cli("--report-only", "owned", SWEEP_TEST_BOOTSTRAP_EXIT="2",
+                              SWEEP_TEST_BOOTSTRAP_MODE="expected-link-cfe-error")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("cfe: Error: synthetic compiler error", result.stderr)
         self.assertIn("failed outside the diagnosed resident R_MIPS_26 link case", result.stderr)
         self.assertEqual([args for kind, args in self.events() if kind == "gmake"],
                          [["-j" + str(os.cpu_count() or 1), "extract"],

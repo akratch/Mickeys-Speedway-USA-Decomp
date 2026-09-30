@@ -144,7 +144,7 @@ only_expected_make_errors = bool(make_errors) and all(
     re.fullmatch(r"gmake\[1\]: \*\*\* \[Makefile:\d+: build/mickey\.us\.elf\] Error 1|gmake: \*\*\* \[Makefile:\d+: all\] Error 2", line)
     for line in make_errors
 )
-compiler_error = any(re.search(r"\b(?:fatal error|error:)\b", line, re.I) for line in lines)
+compiler_error = any(re.search(r"\b(?:fatal error\b|error:)", line, re.I) for line in lines)
 sys.exit(0 if (has_link_diagnosis and only_expected_overflows and link_target_failed
                and only_expected_make_errors and not compiler_error) else 1)
 PY

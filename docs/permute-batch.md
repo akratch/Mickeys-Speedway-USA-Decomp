@@ -454,8 +454,10 @@ created from the pinned integration commit; an existing lane only fast-forwards.
 These checks assume the operator exclusively owns the named lane; they are not
 a lock against a separate actor checking out another branch concurrently.
 
-Both modes extract, warm-build and verify the base before searching. Only
-promotion mode performs the final extraction/build/progress pass. Existing
+Both modes extract the base, regenerate overlay relocation aliases from the
+compiled overlay objects, build, and verify before searching. Regenerating the
+aliases after extraction is required because splat rewrites the generated
+surface. Only promotion mode repeats that sequence before its progress pass. Existing
 resource defaults remain two searches, four permuter threads each, a
 20-minute search plus optional 20-minute descending extension, a
 six-minute flat stop, a 120-minute whole-batch cap and load threshold 13.

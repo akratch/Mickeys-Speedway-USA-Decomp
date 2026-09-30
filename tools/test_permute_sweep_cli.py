@@ -156,15 +156,15 @@ class SweepCliTests(unittest.TestCase):
         self.assertEqual(batch[0][-4:], ["--function", "fixture", "--minutes", "3"])
         jobs = "-j" + str(os.cpu_count() or 1)
         self.assertEqual([args for kind, args in self.events() if kind == "gmake"],
-                         [[jobs, "extract"], [jobs], [jobs], [jobs, "verify"]])
+                         [[jobs, "extract"], ["overlay-syms"], [jobs], [jobs, "verify"]])
         self.assertEqual(self.git("status", "--porcelain", repo=lane), "")
 
     def assert_build_jobs(self, count, *, promoted=False):
         builds = [args for kind, args in self.events() if kind == "gmake"]
         jobs = "-j" + str(count)
-        expected = [[jobs, "extract"], [jobs], [jobs], [jobs, "verify"]]
+        expected = [[jobs, "extract"], ["overlay-syms"], [jobs], [jobs, "verify"]]
         if promoted:
-            expected += [[jobs, "extract"], [jobs], [jobs, "verify"]]
+            expected += [[jobs, "extract"], ["overlay-syms"], [jobs], [jobs, "verify"]]
         self.assertEqual(builds, expected)
         batch = next(args for kind, args in self.events() if kind == "python" and args[:1] == ["-u"])
         self.assertEqual(batch[batch.index("--build-jobs") + 1], str(count))
@@ -217,7 +217,7 @@ class SweepCliTests(unittest.TestCase):
         batch = next(args for kind, args in self.events() if kind == "python" and args[:1] == ["-u"])
         self.assertIn("--apply", batch)
         self.assertIn("--commit", batch)
-        self.assertEqual(sum(kind == "gmake" for kind, _ in self.events()), 7)
+        self.assertEqual(sum(kind == "gmake" for kind, _ in self.events()), 8)
 
     def test_wrong_branch_and_detached_head_are_preserved(self):
         for name, branch, detached in (("other", "different", False), ("detached", None, True)):

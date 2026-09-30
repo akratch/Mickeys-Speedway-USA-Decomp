@@ -107,7 +107,7 @@ git -C "$physical" merge -q --ff-only "$base"
 check_owner
 cd "$physical"
 gmake "-j$build_jobs" extract >/dev/null
-gmake "-j$build_jobs" >/dev/null
+gmake overlay-syms >/dev/null
 gmake "-j$build_jobs" >/dev/null
 gmake "-j$build_jobs" verify | tail -1
 
@@ -127,6 +127,7 @@ printf 'promotion enabled: %s; exact-context receipts in Git common directory\n'
 
 if [ "$promote" -eq 1 ]; then
     gmake "-j$build_jobs" extract >/dev/null
+    gmake overlay-syms >/dev/null
     gmake "-j$build_jobs" >/dev/null
     gmake "-j$build_jobs" verify | tail -1
     .venv/bin/python tools/progress.py --version us | head -6

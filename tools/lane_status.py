@@ -631,6 +631,22 @@ def target_guard_changed(commit: str, symbol: str, path: str) -> bool:
     return current != previous and (current is not None or previous is not None)
 
 
+@lru_cache(maxsize=4096)
+def latest_target_body_record(
+    ref: str, symbol: str, path: str,
+) -> tuple[str, str] | None:
+    """Return the newest commit that changed this exact guarded body.
+
+    Commit subjects are scheduling prose and may omit "plateau" (or even the
+    target name). The guard comparison scopes ownership to this symbol inside
+    a shared TU, so sibling edits cannot advance its source evidence pin.
+    """
+    for commit, subject in path_history(ref, path):
+        if target_guard_changed(commit, symbol, path):
+            return commit, subject
+    return None
+
+
 def path_plateau_record(ref: str, path: str) -> tuple[str, str] | None:
     """Return the latest plateau commit for a single-candidate source path."""
     for commit, subject in path_history(ref, path):
@@ -1714,6 +1730,7 @@ def _settled_status(
     source_record = target_history_record(
         base, symbol, [path], require_plateau=False,
     )
+    body_record = latest_target_body_record(base, symbol, path)
     named_plateau_record = (
         source_record
         if source_record and PLATEAU_SUBJECT_RE.search(source_record[1])
@@ -1802,6 +1819,16 @@ def _settled_status(
         if shard_record is not None
         else None
     )
+    # A later exact body edit supersedes the plateau/source checkpoint even
+    # when its subject omits "plateau". Do not let the original introduction
+    # of the guard predate (and shadow) the checkpoint, and do not let sibling
+    # edits advance this symbol's pin.
+    if (
+        source_commit is not None
+        and body_record is not None
+        and is_ancestor(source_commit, body_record[0])
+    ):
+        source_commit = body_record[0]
     if included is not None and source_commit is not None:
         source_commit = base_source_commit
     ledger_commits = []

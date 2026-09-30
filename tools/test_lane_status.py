@@ -250,6 +250,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         ls.build_fallback_aliases.cache_clear()
         ls.guarded_candidate_region.cache_clear()
         ls.target_guard_changed.cache_clear()
+        ls.latest_target_body_record.cache_clear()
         ls.reopen_authorizations.cache_clear()
         ls.claim_dispositions.cache_clear()
         self.temporary = tempfile.TemporaryDirectory()
@@ -272,6 +273,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         ls.build_fallback_aliases.cache_clear()
         ls.guarded_candidate_region.cache_clear()
         ls.target_guard_changed.cache_clear()
+        ls.latest_target_body_record.cache_clear()
         ls.merge_base.cache_clear()
         ls.reopen_authorizations.cache_clear()
         ls.claim_dispositions.cache_clear()
@@ -515,7 +517,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
-        self.commit("Refine guarded candidate evidence")
+        later_source_commit = self.commit("Refine guarded candidate evidence")
 
         result, report = self.status()
         assignment = report["assignment"]
@@ -524,7 +526,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         self.assertEqual(
             assignment["reason_code"], "reopen-authorization-stale",
         )
-        self.assertEqual(assignment["source_commit"], source_commit)
+        self.assertEqual(assignment["source_commit"], later_source_commit)
 
     def test_missing_ledger_authorization_allows_unrelated_tu_edit(self) -> None:
         (self.repo / SOURCE_PATH).write_text(
@@ -570,7 +572,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(assignment["state"], "base-only")
         self.assertEqual(assignment["reason_code"], "authorized-reopen")
-        self.assertEqual(assignment["source_commit"], plateau_commit)
+        self.assertEqual(assignment["source_commit"], evidence_commit)
         self.assertIsNone(assignment["ledger_commit"])
 
     def test_missing_ledger_single_guard_can_pin_latest_file_commit(self) -> None:
@@ -1095,6 +1097,54 @@ void unrelatedFunction(void) {
         self.assertEqual(assignment["state"], "already-integrated/exhausted")
         self.assertEqual(assignment["source_commit"], plateau_commit)
         self.assertEqual(assignment["ledger_commit"], plateau_commit)
+
+    def test_non_plateau_target_body_change_advances_source_pin(self) -> None:
+        plateau_commit = self.current_plateau()
+        (self.repo / SOURCE_PATH).write_text(
+            candidate(plateau=True).replace(
+                "void overlay43FilterImage(void) {\n}",
+                "void overlay43FilterImage(void) {\n    /* updated body */\n}",
+            ),
+            encoding="utf-8",
+        )
+        source_commit = self.commit("Adjust local candidate expression")
+
+        result, report = self.status()
+        assignment = report["assignment"]
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertEqual(assignment["state"], "stale-ledger")
+        self.assertEqual(assignment["source_commit"], source_commit)
+        self.assertNotEqual(assignment["source_commit"], plateau_commit)
+
+    def test_shared_tu_sibling_change_does_not_advance_target_source_pin(self) -> None:
+        sibling = '''
+#ifdef NON_MATCHING
+void unrelatedFunction(void) {
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o043/unrelatedFunction.s")
+#endif
+'''
+        (self.repo / SOURCE_PATH).write_text(
+            candidate(plateau=True) + sibling, encoding="utf-8",
+        )
+        (self.repo / SHARD_PATH.parent).mkdir(parents=True, exist_ok=True)
+        (self.repo / SHARD_PATH).write_text(shard(), encoding="utf-8")
+        target_commit = self.commit(f"Plateau {SYMBOL} allocator")
+        (self.repo / SOURCE_PATH).write_text(
+            candidate(plateau=True) + sibling.replace(
+                "void unrelatedFunction(void) {\n}",
+                "void unrelatedFunction(void) {\n    /* sibling edit */\n}",
+            ),
+            encoding="utf-8",
+        )
+        self.commit("Refactor neighboring function")
+
+        result, report = self.status()
+        assignment = report["assignment"]
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertEqual(assignment["state"], "already-integrated/exhausted")
+        self.assertEqual(assignment["source_commit"], target_commit)
 
     def test_mixed_tu_plateau_row_without_source_change_is_stale(self) -> None:
         second = """\n#ifdef NON_MATCHING

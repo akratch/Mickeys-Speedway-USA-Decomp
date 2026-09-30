@@ -108,10 +108,100 @@ check_owner
 cd "$physical"
 gmake "-j$build_jobs" extract >/dev/null
 gmake overlay-syms >/dev/null
-gmake "-j$build_jobs" >/dev/null
+# `overlay-syms` needs the overlay objects, but its resident-name census also
+# reads every resident object named by the linker script. On a cold lane those
+# objects do not exist yet. The first full build materializes them and may fail
+# only at the final resident-call link; regenerate the surface against that
+# complete inventory before the authoritative build/ROM proof.
+mkdir -p build/permuter
+bootstrap_log=$(mktemp build/permuter/sweep-bootstrap.log.XXXXXXXX)
+bootstrap_surface=$(mktemp build/permuter/sweep-overlay-syms.XXXXXXXX)
+cp overlay_undefined_syms.us.txt "$bootstrap_surface"
+bootstrap_status=0
+gmake "-j$build_jobs" >"$bootstrap_log" 2>&1 || bootstrap_status=$?
+if [ "$bootstrap_status" -ne 0 ]; then
+    if ! .venv/bin/python -B - "$bootstrap_log" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+lines = Path(sys.argv[1]).read_text(errors="replace").splitlines()
+has_link_diagnosis = any(
+    line.strip() == "link failed with undefined resident references or R_MIPS_26 overflows."
+    for line in lines
+)
+overflow_lines = [line for line in lines if "relocation truncated to fit:" in line]
+only_expected_overflows = bool(overflow_lines) and all(
+    re.search(r"relocation truncated to fit: R_MIPS_26 against `[^`']+['`]", line)
+    for line in overflow_lines
+)
+make_errors = [line for line in lines if re.search(r"gmake(?:\[\d+\])?: \*\*\* .* Error \d+", line)]
+link_target_failed = any(
+    re.fullmatch(r"gmake\[1\]: \*\*\* \[Makefile:\d+: build/mickey\.us\.elf\] Error 1", line)
+    for line in make_errors
+)
+only_expected_make_errors = bool(make_errors) and all(
+    re.fullmatch(r"gmake\[1\]: \*\*\* \[Makefile:\d+: build/mickey\.us\.elf\] Error 1|gmake: \*\*\* \[Makefile:\d+: all\] Error 2", line)
+    for line in make_errors
+)
+compiler_error = any(re.search(r"\b(?:fatal error|error:)\b", line, re.I) for line in lines)
+sys.exit(0 if (has_link_diagnosis and only_expected_overflows and link_target_failed
+               and only_expected_make_errors and not compiler_error) else 1)
+PY
+    then
+        cat "$bootstrap_log" >&2
+        printf 'permute-sweep: cold bootstrap failed outside the diagnosed resident R_MIPS_26 link case (log: %s/%s)\n' "$physical" "$bootstrap_log" >&2
+        exit "$bootstrap_status"
+    fi
+    gmake overlay-syms >/dev/null
+    if ! .venv/bin/python -B - "$bootstrap_log" "$bootstrap_surface" overlay_undefined_syms.us.txt <<'PY'
+import hashlib
+import re
+import sys
+from pathlib import Path
+
+log, before_path, after_path = map(Path, sys.argv[1:])
+before, after = before_path.read_bytes(), after_path.read_bytes()
+text = log.read_text(errors="replace")
+names = set(re.findall(
+    r"relocation truncated to fit: R_MIPS_26 against `([^`']+)['`]", text
+))
+def assignments(data):
+    return {
+        m.group(1): m.group(2)
+        for m in re.finditer(
+            r"^\s*([A-Za-z_]\w*)\s*=\s*([^;]+);", data.decode(), re.M
+        )
+    }
+
+old, new = assignments(before), assignments(after)
+replaced = bool(names) and all(
+    name in old
+    and name not in new
+    and any(re.fullmatch(re.escape(name) + r"_o\d{3}Reloc", key) for key in new)
+    for name in names
+)
+changed = hashlib.sha256(before).digest() != hashlib.sha256(after).digest()
+sys.exit(0 if changed and replaced else 1)
+PY
+    then
+        printf 'permute-sweep: resident alias surface did not change to replace each failed resident symbol; refusing retry (bootstrap log: %s/%s)\n' "$physical" "$bootstrap_log" >&2
+        exit 2
+    fi
+    printf 'cold bootstrap link needs resident object inventory; regenerated resident aliases (%s)\n' "$bootstrap_log" >&2
+else
+    gmake overlay-syms >/dev/null
+fi
+final_build_log=$(mktemp build/permuter/sweep-build.log.XXXXXXXX)
+final_build_status=0
+gmake "-j$build_jobs" >"$final_build_log" 2>&1 || final_build_status=$?
+if [ "$final_build_status" -ne 0 ]; then
+    cat "$final_build_log" >&2
+    printf 'permute-sweep: authoritative build failed (log: %s/%s)\n' "$physical" "$final_build_log" >&2
+    exit "$final_build_status"
+fi
 gmake "-j$build_jobs" verify | tail -1
 
-mkdir -p build/permuter
 # Unique logs preserve sequential launches within the same minute.
 log=$(mktemp build/permuter/sweep.log.XXXXXXXX)
 # Keep the array nonempty for macOS system Bash 3.2 with nounset enabled.

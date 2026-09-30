@@ -475,10 +475,19 @@ created from the pinned integration commit; an existing lane only fast-forwards.
 These checks assume the operator exclusively owns the named lane; they are not
 a lock against a separate actor checking out another branch concurrently.
 
-Both modes extract the base, regenerate overlay relocation aliases from the
-compiled overlay objects, build, and verify before searching. Regenerating the
-aliases after extraction is required because splat rewrites the generated
-surface. Only promotion mode repeats that sequence before its progress pass. Existing
+Both modes extract the base and generate overlay relocation aliases. On a cold
+lane, the first full build materializes resident objects used by the alias
+generator's resident-name census. The surface is then regenerated against that
+complete inventory. If the first link fails, the wrapper retries generation
+only when the captured log has the diagnosed resident `R_MIPS_26` link failure
+and every reported symbol changes from a value assignment to an
+overlay-qualified `*_oNNNReloc` alias. The pre-retry log is retained; unrelated
+compiler/link failures, unchanged or unrelated surface changes, and failed
+authoritative builds stop before any search. The final build and ROM
+verification must pass before searching. Regenerating aliases after extraction
+is required because splat rewrites the generated surface. Only promotion mode
+repeats the normal extract/generate/build/verify sequence before its progress
+pass. Existing
 resource defaults remain two searches, four permuter threads each, a
 20-minute search plus optional 20-minute descending extension, a
 six-minute flat stop, a 120-minute whole-batch cap and load threshold 13.

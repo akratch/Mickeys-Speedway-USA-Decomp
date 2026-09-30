@@ -1529,7 +1529,7 @@ print("base score =", {score} if b"return 3" in text else 10 if b"return 2" in t
         self.assertIn("baseline/recipe.json", saved)
 
     def test_capture_records_ast_input_and_final_recipe_not_importer_object(self):
-        def postprocess(scratch, *args):
+        def postprocess(scratch, *args, **kwargs):
             with (scratch / "compile.sh").open("a") as stream:
                 stream.write('printf final-postprocess >> "$3"\n')
         with patch.object(batch, "replicate_objcopy", side_effect=postprocess):

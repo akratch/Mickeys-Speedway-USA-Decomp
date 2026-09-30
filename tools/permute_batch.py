@@ -494,8 +494,374 @@ def build_recipe_for(c_file: Path, deadline: Optional[float] = None) -> BuildRec
     return recipe
 
 
+RECIPE_VARIANT_SCHEMA = "mickey-section-metadata-recipe-variant-v1"
+
+
+def _unchanged_recipe_variant(recipe: BuildRecipe, function: Optional[str]) -> dict:
+    original_json = json.dumps(dataclasses.asdict(recipe), sort_keys=True).encode()
+    steps = list(recipe.objcopy_steps)
+    return {"schema": RECIPE_VARIANT_SCHEMA, "status": "unchanged",
+            "function": function,
+            "original_recipe_sha256": hashlib.sha256(original_json).hexdigest(),
+            "original_steps": steps, "effective_steps": steps,
+            "effective_recipe_sha256": hashlib.sha256(json.dumps(steps, sort_keys=True).encode()).hexdigest(),
+            "omitted_additions": [], "ownership_proof": None}
+
+
+def _shell_words_for_objcopy(step: str) -> list[str]:
+    words = shlex.split(step)
+    if (not words or Path(words[0]).resolve() != OBJCOPY.resolve()
+            or words[-1] != "$OUTPUT"
+            or any(word in {"&&", "||", ";", "|", ">", "2>"} for word in words)):
+        raise RuntimeError("unsupported objcopy recipe for section-metadata classification")
+    return words
+
+
+def _objcopy_add_symbols(words: list[str]) -> list[tuple[int, int, str, str, int, str]]:
+    """Return (start, stop, name, section, value, binding) for parsed additions."""
+    found = []
+    i = 1
+    pattern = re.compile(
+        r"([^=,]+)=(?:(\.[A-Za-z0-9_.$]+):)?(0[xX][0-9a-fA-F]+|[0-9]+),([A-Za-z]+(?:,[A-Za-z]+)*)$")
+    while i < len(words) - 1:
+        token = words[i]
+        if token == "--add-symbol":
+            if i + 1 >= len(words) - 1:
+                raise RuntimeError("missing --add-symbol recipe value")
+            value = words[i + 1]
+            match = pattern.fullmatch(value)
+            if match is None:
+                raise RuntimeError("unsupported --add-symbol recipe value")
+            name, section, address, flags = match.groups()
+            bindings = [flag for flag in flags.split(",") if flag in {"local", "global", "weak"}]
+            if len(bindings) != 1:
+                raise RuntimeError("ambiguous --add-symbol binding")
+            found.append((i, i + 2, name, section or "", int(address, 0), bindings[0]))
+            i += 2
+        elif token.startswith("--add-symbol="):
+            value = token.split("=", 1)[1]
+            match = pattern.fullmatch(value)
+            if match is None:
+                raise RuntimeError("unsupported --add-symbol recipe value")
+            name, section, address, flags = match.groups()
+            bindings = [flag for flag in flags.split(",") if flag in {"local", "global", "weak"}]
+            if len(bindings) != 1:
+                raise RuntimeError("ambiguous --add-symbol binding")
+            found.append((i, i + 1, name, section or "", int(address, 0), bindings[0]))
+            i += 1
+        else:
+            i += 1
+    return found
+
+
+def _function_ranges(elf, label: str) -> list[dict]:
+    text_index, text_section = elf.section(".text")
+    if text_index is None or not (text_section[2] & 0x4):
+        raise RuntimeError(f"{label} has no executable .text section")
+    rows = []
+    for name, value, size, info, shndx in elf.symbols():
+        if (shndx == text_index and (info & 0xF) == 2 and size > 0):
+            if value + size > text_section[5]:
+                raise RuntimeError(f"{label} function symbol exceeds its .text section")
+            rows.append({"name": name, "start": value, "end": value + size,
+                         "size": size, "section_index": shndx})
+    rows.sort(key=lambda row: (row["start"], row["end"], row["name"]))
+    for left, right in zip(rows, rows[1:]):
+        if right["start"] < left["end"]:
+            raise RuntimeError(
+                f"{label} has overlapping function owners: {left['name']} and {right['name']}")
+    return rows
+
+
+def _unique_function_range(elf, function: str, label: str, ranges=None) -> dict:
+    rows = _function_ranges(elf, label) if ranges is None else ranges
+    matches = [row for row in rows if row["name"] == function]
+    if len(matches) != 1:
+        raise RuntimeError(f"{label} has incomplete ownership for function {function}")
+    return matches[0]
+
+
+def _relocation_rows(elf, function_range: dict, metadata_names: set[str], label: str) -> list[dict]:
+    symbols = elf.symbols()
+    text_index, _ = elf.section(".text")
+    rows = []
+    for section, offset, kind, symbol_index in elf.relocations():
+        if section != ".text":
+            continue
+        if symbol_index >= len(symbols):
+            raise RuntimeError(f"{label} has an unresolved relocation symbol index")
+        symbol = symbols[symbol_index]
+        symbol_section = (elf.names[symbol[4]] if 0 <= symbol[4] < len(elf.names) else None)
+        if function_range["start"] <= offset < function_range["end"]:
+            rows.append({"offset": offset - function_range["start"], "type": kind,
+                         "symbol": symbol[0], "symbol_section": symbol_section})
+    return rows
+
+
+def _relocation_identity(rows: list[dict]) -> list[tuple[int, int, str]]:
+    return [(row["offset"], row["type"], row["symbol"]) for row in rows]
+
+
+def _relocation_normalized_bytes(data: bytes, rows: list[dict], label: str) -> bytes:
+    """Normalize only linker-owned instruction fields before TU-context compare."""
+    masks = {2: 0x00000000, 4: 0xFC000000, 5: 0xFFFF0000,
+             6: 0xFFFF0000, 10: 0xFFFF0000}
+    normalized = bytearray(data)
+    for row in rows:
+        offset, kind = row["offset"], row["type"]
+        if kind not in masks or offset < 0 or offset + 4 > len(normalized):
+            raise RuntimeError(f"{label} has an unsupported or out-of-range relocation field")
+        word = int.from_bytes(normalized[offset:offset + 4], "big")
+        normalized[offset:offset + 4] = (word & masks[kind]).to_bytes(4, "big")
+    return bytes(normalized)
+
+
+def _rodata_references(elf, ranges: list[dict], metadata_names: set[str], label: str) -> list[dict]:
+    symbols = elf.symbols()
+    rodata_index, _ = elf.section(".rodata")
+    rows = []
+    for section, offset, kind, symbol_index in elf.relocations():
+        if section != ".text":
+            continue
+        if symbol_index >= len(symbols):
+            raise RuntimeError(f"{label} has an unresolved relocation symbol index")
+        symbol = symbols[symbol_index]
+        name, _value, _size, _info, shndx = symbol
+        symbol_section = (elf.names[shndx] if 0 <= shndx < len(elf.names) else None)
+        if symbol_section != ".rodata" and name not in metadata_names and name != ".rodata":
+            continue
+        owners = [row for row in ranges if row["start"] <= offset < row["end"]]
+        if len(owners) != 1:
+            raise RuntimeError(f"{label} has incomplete or overlapping .rodata relocation ownership")
+        rows.append({"offset": offset, "type": kind, "symbol": name,
+                     "symbol_section": symbol_section, "owner": owners[0]["name"]})
+    return rows
+
+
+def _section_metadata_variant(scratch: Path, recipe: BuildRecipe, c_file: Path,
+                              function: Optional[str], full_tu_object: Path,
+                              source_sha256: Optional[str] = None,
+                              c_baseline_object: Optional[Path] = None) -> tuple[tuple[str, ...], dict]:
+    """Drop only an absent, proven-unowned TU section alias from scratch metadata.
+
+    The original BuildRecipe remains untouched. Any ambiguous owner, direct
+    section-symbol relocation, or undefined-name reference in the target
+    executable closure refuses the variant.
+    """
+    original_steps = tuple(recipe.objcopy_steps)
+    variant = _unchanged_recipe_variant(recipe, function)
+    base_path = scratch / "base.o"
+    if not recipe.objcopy_steps or not base_path.is_file() or not function:
+        if recipe.objcopy_steps and not function:
+            # Existing standalone callers that do not identify a function keep
+            # their original recipe; production ownership-sensitive call sites
+            # always supply one.
+            variant["status"] = "unchanged-no-function-context"
+        return original_steps, variant
+
+    base_elf = reloc_surface.Elf(base_path)
+    base_rodata_index, _ = base_elf.section(".rodata")
+    if base_rodata_index is not None:
+        return original_steps, variant
+
+    remapped = []
+    candidates = []
+    all_additions = []
+    mention = re.compile(r"(?<![\w./-])(?:\./)?" + re.escape(
+        f"build/{c_file.relative_to(ROOT).as_posix()}.o") + r"(?![\w.-])")
+    for step in original_steps:
+        if not mention.search(step):
+            remapped.append(step)
+            continue
+        words = _shell_words_for_objcopy(mention.sub('"$OUTPUT"', step))
+        parsed_additions = _objcopy_add_symbols(words)
+        all_additions.extend((len(remapped), words, row, step) for row in parsed_additions)
+        additions = [row for row in parsed_additions if row[3] == ".rodata"]
+        for add in additions:
+            candidates.append((len(remapped), words, add, step))
+        remapped.append(step)
+    if not candidates:
+        return original_steps, variant
+    if full_tu_object.is_symlink() or not full_tu_object.is_file():
+        raise RuntimeError("cannot prove section metadata ownership: canonical TU object is missing or nonregular")
+    full_elf = reloc_surface.Elf(full_tu_object)
+    full_ranges = _function_ranges(full_elf, "canonical full-TU object")
+    full_function = _unique_function_range(full_elf, function, "canonical full-TU object", full_ranges)
+    c_baseline_object = c_baseline_object or full_tu_object
+    if c_baseline_object.is_symlink() or not c_baseline_object.is_file():
+        raise RuntimeError("cannot prove configured C baseline: object is missing or nonregular")
+    c_elf = reloc_surface.Elf(c_baseline_object)
+    c_ranges = _function_ranges(c_elf, "configured NON_MATCHING C baseline")
+    c_function = _unique_function_range(c_elf, function, "configured NON_MATCHING C baseline", c_ranges)
+    base_ranges = _function_ranges(base_elf, "isolated candidate object")
+    base_function = _unique_function_range(base_elf, function, "isolated candidate object", base_ranges)
+    target_path = scratch / "target.o"
+    if target_path.is_symlink() or not target_path.is_file():
+        raise RuntimeError("cannot prove section metadata ownership: isolated target object is missing or nonregular")
+    target_elf = reloc_surface.Elf(target_path)
+    target_rodata_index, _ = target_elf.section(".rodata")
+    if target_rodata_index is not None:
+        raise RuntimeError("cannot omit full-TU .rodata metadata when the isolated target has .rodata")
+    target_ranges = _function_ranges(target_elf, "isolated target object")
+    target_function = _unique_function_range(target_elf, function, "isolated target object", target_ranges)
+    for label, elf, span, ranges in (("isolated candidate object", base_elf, base_function, base_ranges),
+                                    ("isolated target object", target_elf, target_function, target_ranges)):
+        text_index, section = elf.section(".text")
+        if span["start"] != 0:
+            raise RuntimeError(f"{label} function does not start at the executable section boundary")
+        if any(row["name"] != function for row in ranges):
+            raise RuntimeError(f"{label} contains executable symbols outside the target closure")
+        if any(not (span["start"] <= off < span["end"])
+               for _sec, off, _kind, _symbol in elf.relocations()):
+            raise RuntimeError(f"{label} has relocation sites outside the target executable closure")
+        if not (section[2] & 0x4) or span["end"] > section[5]:
+            raise RuntimeError(f"{label} has incomplete executable function ownership")
+        padding = elf.section_bytes(".text")[span["end"]:]
+        if len(padding) > 15 or len(padding) % 4 or any(padding):
+            raise RuntimeError(f"{label} has executable bytes outside the target function range")
+
+    # All section-symbol relocations (including implicit addends) and all
+    # undefined alias-name relocations are treated as dependencies.
+    rodata_names = {row[2] for _index, _words, row, _step in candidates}
+    all_metadata_names = {row[2] for _index, _words, row, _step in all_additions}
+    full_refs = _rodata_references(full_elf, full_ranges, rodata_names, "canonical full-TU object")
+    if any(row["owner"] == function for row in full_refs):
+        raise RuntimeError("cannot omit .rodata metadata: full-TU target owns a .rodata relocation")
+    for label, elf, span in (("isolated candidate object", base_elf, base_function),
+                             ("isolated target object", target_elf, target_function)):
+        refs = _rodata_references(elf, [span], all_metadata_names, label)
+        if refs:
+            raise RuntimeError(f"cannot omit .rodata metadata: {label} target closure has a .rodata dependency")
+
+    symbol_rows = full_elf.symbols()
+    omissions = []
+    removals_by_step: dict[int, list[tuple[int, int]]] = {}
+    addition_owners = []
+    for step_index, words, addition, original_step in all_additions:
+        _start, _stop, name, section_name, value, binding = addition
+        matches = [row for row in symbol_rows if row[0] == name]
+        expected_section_index, _ = full_elf.section(section_name)
+        expected_binding = {"local": 0, "global": 1, "weak": 2}[binding]
+        if (len(matches) != 1 or expected_section_index is None
+                or matches[0][4] != expected_section_index or matches[0][1] != value
+                or matches[0][3] >> 4 != expected_binding):
+            raise RuntimeError(f"cannot prove full-TU owner for recipe metadata symbol {name}")
+        refs = []
+        for _section, offset, kind, symbol_index in full_elf.relocations():
+            if symbol_index >= len(symbol_rows) or symbol_rows[symbol_index][0] != name:
+                continue
+            owners = [row for row in full_ranges if row["start"] <= offset < row["end"]]
+            if len(owners) != 1:
+                raise RuntimeError(f"recipe metadata symbol {name} has incomplete or overlapping full-TU owners")
+            refs.append({"offset": offset, "type": kind, "owner": owners[0]["name"]})
+        owners = sorted({row["owner"] for row in refs})
+        if not owners:
+            raise RuntimeError(f"cannot prove relocation owner for recipe metadata symbol {name}")
+        if function in owners:
+            raise RuntimeError(f"recipe metadata symbol {name} is referenced by target {function}")
+        addition_owners.append({"symbol": name, "section": section_name, "value": value,
+                                "binding": binding, "full_tu_reference_owners": owners,
+                                "target_closure_reference_count": 0})
+        if section_name == ".rodata":
+            removals_by_step.setdefault(step_index, []).append((addition[0], addition[1]))
+            omissions.append({"symbol": name, "section": section_name, "value": value,
+                              "binding": binding, "full_tu_reference_owners": owners,
+                              "original_step": original_step})
+
+    effective_steps = list(original_steps)
+    for step_index, _words, _addition, original_step in candidates:
+        if step_index not in removals_by_step:
+            continue
+        mention_match = mention.search(original_step)
+        if mention_match is None:
+            raise RuntimeError("cannot preserve postprocess provenance for section-metadata variant")
+        words = _shell_words_for_objcopy(mention.sub('"$OUTPUT"', original_step))
+        drop = {pair for pair in removals_by_step[step_index]}
+        kept = []
+        i = 0
+        while i < len(words):
+            match = next((entry for entry in _objcopy_add_symbols(words)
+                          if entry[0] == i and (entry[0], entry[1]) in drop), None)
+            if match is not None:
+                i = match[1]
+            else:
+                kept.append(words[i])
+                i += 1
+        rendered = " ".join('"$OUTPUT"' if word == "$OUTPUT" else shlex.quote(word) for word in kept)
+        effective_steps[step_index] = rendered
+
+    tu_text_index, tu_text = full_elf.section(".text")
+    candidate_text = base_elf.section_bytes(".text")
+    target_text = target_elf.section_bytes(".text")
+    candidate_relocs = _relocation_rows(base_elf, base_function, all_metadata_names, "isolated candidate object")
+    target_relocs = _relocation_rows(target_elf, target_function, all_metadata_names, "isolated target object")
+    full_function_relocs = _relocation_rows(
+        c_elf, c_function, all_metadata_names, "configured NON_MATCHING C baseline")
+    full_function_bytes = c_elf.section_bytes(".text")[c_function["start"]:c_function["end"]]
+    candidate_function_bytes = candidate_text[base_function["start"]:base_function["end"]]
+    normalized_full = _relocation_normalized_bytes(full_function_bytes, full_function_relocs,
+                                                   "canonical full-TU function")
+    normalized_candidate = _relocation_normalized_bytes(candidate_function_bytes, candidate_relocs,
+                                                        "isolated candidate function")
+    if (c_function["size"] != base_function["size"]
+            or normalized_full != normalized_candidate
+            or _relocation_identity(full_function_relocs) != _relocation_identity(candidate_relocs)):
+        raise RuntimeError(
+            "isolated candidate baseline does not reproduce current full-TU executable bytes and relocation identities")
+    full_tu_sha = sweep_receipts.file_digest(full_tu_object)
+    source_sha = source_sha256 or sweep_receipts.file_digest(c_file)
+    variant.update({
+        "status": "unowned-section-metadata-omitted",
+        "effective_steps": effective_steps,
+        "effective_recipe_sha256": hashlib.sha256(json.dumps(effective_steps, sort_keys=True).encode()).hexdigest(),
+        "source": c_file.relative_to(ROOT).as_posix(),
+        "source_sha256": source_sha,
+        "full_tu_object": full_tu_object.relative_to(ROOT).as_posix(),
+        "full_tu_object_sha256": full_tu_sha,
+        "full_tu_text_bytes": tu_text[5],
+        "full_tu_function": {"name": function, "start": full_function["start"],
+                              "size": full_function["size"], "end": full_function["end"]},
+        "configured_c_baseline_object": c_baseline_object.relative_to(ROOT).as_posix(),
+        "configured_c_baseline_object_sha256": sweep_receipts.file_digest(c_baseline_object),
+        "configured_c_baseline_function": {"name": function, "start": c_function["start"],
+                                             "size": c_function["size"], "end": c_function["end"]},
+        "configured_c_baseline_function_bytes_sha256": hashlib.sha256(full_function_bytes).hexdigest(),
+        "configured_c_baseline_function_relocations": full_function_relocs,
+        "function_self_context": {
+            "relocation_identity_equal": True,
+            "relocation_normalized_bytes_sha256": hashlib.sha256(normalized_full).hexdigest(),
+            "candidate_raw_bytes_sha256": hashlib.sha256(candidate_function_bytes).hexdigest(),
+            "configured_c_baseline_raw_bytes_sha256": hashlib.sha256(full_function_bytes).hexdigest(),
+            "normalized_fields": "R_MIPS_32, R_MIPS_26, R_MIPS_HI16, R_MIPS_LO16, R_MIPS_PC16"
+        },
+        "candidate": {"object_sha256": sweep_receipts.file_digest(base_path),
+                      "text_section_bytes": len(candidate_text),
+                      "function_start": base_function["start"], "function_size": base_function["size"],
+                      "function_end": base_function["end"],
+                      "function_bytes_sha256": hashlib.sha256(candidate_text[base_function["start"]:base_function["end"]]).hexdigest(),
+                      "relocations": candidate_relocs},
+        "target": {"object_sha256": sweep_receipts.file_digest(target_path),
+                   "text_section_bytes": len(target_text),
+                   "function_start": target_function["start"], "function_size": target_function["size"],
+                   "function_end": target_function["end"],
+                   "function_bytes_sha256": hashlib.sha256(target_text[target_function["start"]:target_function["end"]]).hexdigest(),
+                   "relocations": target_relocs},
+        "full_tu_rodata_references": full_refs,
+        "omitted_additions": omissions,
+        "kept_additions": [row for row in addition_owners if row["section"] != ".rodata"],
+        "padding_excluded_from_function_ranges": {
+            "candidate": len(candidate_text) - base_function["end"],
+            "target": len(target_text) - target_function["end"]},
+        "proof": "current full-TU ownership and isolated executable closures contain no owned .rodata dependency"
+    })
+    if effective_steps == list(original_steps):
+        raise RuntimeError("section-metadata classification produced no effective recipe change")
+    return tuple(effective_steps), variant
+
+
 def replicate_objcopy(scratch: Path, recipe: BuildRecipe, c_file: Path, out_dir: Path,
-                      alias_history: Optional[list] = None) -> None:
+                      alias_history: Optional[list] = None, *, function: Optional[str] = None,
+                      batch_deadline: Optional[float] = None) -> None:
     """Append the TU's post-compile objcopy chain to the scratch's compile.sh,
     retargeted at the scratch object, so the scratch object == the real
     per-TU object (workbench improvement-backlog #9). Records what was and
@@ -508,14 +874,54 @@ def replicate_objcopy(scratch: Path, recipe: BuildRecipe, c_file: Path, out_dir:
     # that does not mention the object at all cannot be retargeted (it would
     # reach the scratch still pointing at the real build tree).
     mention = re.compile(r"(?<![\w./-])(?:\./)?" + re.escape(obj) + r"(?![\w.-])")
+    effective_steps = tuple(recipe.objcopy_steps)
+    variant = _unchanged_recipe_variant(recipe, function)
+    rodata_metadata = False
+    for step in recipe.objcopy_steps:
+        if mention.search(step):
+            words = _shell_words_for_objcopy(mention.sub('"$OUTPUT"', step))
+            if any(row[3] == ".rodata" for row in _objcopy_add_symbols(words)):
+                rodata_metadata = True
+                break
+    if rodata_metadata and not function:
+        raise RuntimeError("cannot classify section metadata without an owned function identity")
+    if rodata_metadata and function and not csh.is_file():
+        raise RuntimeError("cannot classify section metadata without the captured compiler command")
+    if rodata_metadata and function:
+        full_tu_object = ROOT / "build" / f"{c_file.relative_to(ROOT).as_posix()}.o"
+        c_baseline_object = ROOT / "build_non_matching" / f"{c_file.relative_to(ROOT).as_posix()}.o"
+        source_sha = sweep_receipts.file_digest(c_file)
+        full_tu_rel = full_tu_object.relative_to(ROOT).as_posix()
+        c_baseline_rel = c_baseline_object.relative_to(ROOT).as_posix()
+        bounded_capture(["gmake", f"-j{max(1, os.cpu_count() or 1)}", "NON_MATCHING=1",
+                         c_baseline_rel], batch_deadline, check=True)
+        freshness = bounded_capture(["gmake", "-q", full_tu_rel], batch_deadline)
+        c_freshness = bounded_capture(["gmake", "-q", "NON_MATCHING=1", c_baseline_rel], batch_deadline)
+        if freshness.returncode != 0 or c_freshness.returncode != 0:
+            raise RuntimeError("cannot prove current canonical and NON_MATCHING full-TU object ownership")
+        object_sha_before = sweep_receipts.file_digest(full_tu_object)
+        c_object_sha_before = sweep_receipts.file_digest(c_baseline_object)
+        effective_steps, variant = _section_metadata_variant(
+            scratch, recipe, c_file, function, full_tu_object, source_sha256=source_sha,
+            c_baseline_object=c_baseline_object)
+        if (source_sha != sweep_receipts.file_digest(c_file)
+                or object_sha_before != sweep_receipts.file_digest(full_tu_object)
+                or c_object_sha_before != sweep_receipts.file_digest(c_baseline_object)):
+            raise RuntimeError("source or full-TU object changed during section-metadata proof")
+    variant_path = out_dir / "recipe-variant.json"
+    variant_path.write_text(json.dumps(variant, sort_keys=True, indent=2) + "\n")
     if recipe.objcopy_steps and csh.is_file():
         with open(csh, "a") as f:
             f.write("\n")
-            for step in recipe.objcopy_steps:
+            for index, step in enumerate(recipe.objcopy_steps):
                 if not mention.search(step):
                     lines.append(f"skipped (does not name the object): {step}")
                     continue
-                remapped = mention.sub('"$OUTPUT"', step)
+                remapped = mention.sub('"$OUTPUT"', effective_steps[index])
+                if step != effective_steps[index]:
+                    original_remapped = mention.sub('"$OUTPUT"', step)
+                    lines.append(f"original: {original_remapped}")
+                    lines.append(f"effective metadata-only variant: {remapped}")
                 if alias_history is not None:
                     words = shlex.split(remapped)
                     if (not words or Path(words[0]).resolve() != OBJCOPY.resolve()
@@ -1273,6 +1679,30 @@ def receipt_inputs(item: QueueItem, scratch: Path, settings: Path, target: Path,
         # strings, include arguments or arbitrary user commands.
         return compile_script_digest(path.read_bytes())
 
+    variant_path = scratch.parent / "recipe-variant.json"
+    if not variant_path.is_file() or variant_path.is_symlink():
+        raise RuntimeError("missing authenticated effective recipe variant")
+    variant_bytes = sweep_receipts.owned_bytes(scratch.parent, "recipe-variant.json")
+    variant = json.loads(variant_bytes)
+    expected_recipe_sha = hashlib.sha256(
+        json.dumps(dataclasses.asdict(recipe), sort_keys=True).encode()).hexdigest()
+    if (variant.get("schema") != RECIPE_VARIANT_SCHEMA
+            or variant.get("function") != item.func
+            or variant.get("original_recipe_sha256") != expected_recipe_sha
+            or variant.get("original_steps") != list(recipe.objcopy_steps)
+            or variant.get("effective_recipe_sha256") != hashlib.sha256(
+                json.dumps(variant.get("effective_steps"), sort_keys=True).encode()).hexdigest()):
+        raise RuntimeError("effective recipe variant does not match the recovered original recipe")
+    compile_text = (scratch / "compile.sh").read_text()
+    mention = re.compile(r"(?<![\w./-])(?:\./)?" + re.escape(
+        f"build/{item.rel_c_file}.o") + r"(?![\w.-])")
+    for step_index, step in enumerate(recipe.objcopy_steps):
+        if mention.search(step):
+            effective = variant["effective_steps"][step_index]
+            command = mention.sub('"$OUTPUT"', effective)
+            if command not in compile_text:
+                raise RuntimeError("effective recipe variant is not present in the captured compile command")
+
     context = {
         "preparation_contract": SOURCE_GROUP_CONTRACT,
         "importer_recipe": compile_digest(scratch.parent / "importer-compile.sh"),
@@ -1286,6 +1716,7 @@ def receipt_inputs(item: QueueItem, scratch: Path, settings: Path, target: Path,
                      for name in ("base.c", "compile.sh", "target.s", "settings.toml")},
         "settings": sweep_receipts.file_digest(settings),
         "recipe": json.loads(json.dumps(dataclasses.asdict(recipe))),
+        "recipe_variant": hashlib.sha256(variant_bytes).hexdigest(),
         "tools": sweep_tool_identity(),
         "dependencies": source_dependencies(item.c_file, recipe.compiler_args),
     }
@@ -1302,7 +1733,8 @@ def receipt_inputs(item: QueueItem, scratch: Path, settings: Path, target: Path,
     baseline_hashes.update({"baseline/tu.c": context["source"],
                            "baseline/permuter_settings.toml": context["settings"],
                            "baseline/recipe.json": hashlib.sha256(
-                               json.dumps(dataclasses.asdict(recipe), sort_keys=True).encode()).hexdigest()})
+                               json.dumps(dataclasses.asdict(recipe), sort_keys=True).encode()).hexdigest(),
+                           "baseline/recipe-variant.json": hashlib.sha256(variant_bytes).hexdigest()})
     context["baseline_hashes"] = baseline_hashes
     return {"schema": sweep_receipts.SCHEMA, "context": context, "search": search,
             "baseline_hashes": baseline_hashes}
@@ -3425,7 +3857,11 @@ def run_one(item: QueueItem, minutes: int, permuter_threads: int, build_jobs: in
         result.scratch_path = str(scratch)
         alias_history: list = []
         replicate_objcopy(scratch, recipe, item.c_file, out_dir,
-                          alias_history if annotate_overlays and item.overlay is not None else None)
+                          alias_history if annotate_overlays and item.overlay is not None else None,
+                          function=item.func, batch_deadline=batch_deadline)
+        if not (out_dir / "recipe-variant.json").is_file():
+            (out_dir / "recipe-variant.json").write_text(
+                json.dumps(_unchanged_recipe_variant(recipe, item.func), sort_keys=True, indent=2) + "\n")
         if annotate_overlays:
             result.annotated_relocs = annotate_overlay_scratch(item, scratch, out_dir, batch_deadline, alias_history)
         inputs = receipt_inputs(item, scratch, settings_path, target_asm, recipe, {
@@ -3481,6 +3917,8 @@ def run_one(item: QueueItem, minutes: int, permuter_threads: int, build_jobs: in
                     baseline["baseline/" + name] = sweep_receipts.owned_bytes(scratch, name)
                 baseline["baseline/tu.c"] = sweep_receipts.owned_bytes(ROOT, item.rel_c_file)
                 baseline["baseline/recipe.json"] = json.dumps(dataclasses.asdict(recipe), sort_keys=True).encode()
+                baseline["baseline/recipe-variant.json"] = sweep_receipts.owned_bytes(
+                    out_dir, "recipe-variant.json")
                 baseline["baseline/permuter_settings.toml"] = sweep_receipts.owned_bytes(out_dir, settings_path.name)
                 if any(hashlib.sha256(baseline[name]).hexdigest() != expected
                        for name, expected in inputs["baseline_hashes"].items()):

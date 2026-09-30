@@ -377,7 +377,7 @@
     },
     "func_80020D8C": {
       "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
+      "reason": "New stock full-TU control reaches one branch-alias word with exact frame/extent/zero relocs. ADR0017 tests one proved u8-count postdecrement spelling; closed declaration/colour/flag grids and completed vendor context stay closed.",
       "source_commit": "f6e5535ad7cb6b2d80a2e5e31e5529a5af33c312"
     },
     "func_80020E4C": {

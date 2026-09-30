@@ -84,7 +84,7 @@ def _section_owner(elf: reloc_surface.Elf, symbol: tuple) -> dict[str, Any]:
         raise SourceFidelityError(f"defined owner {name!r} has invalid extent")
     return {"name": name, "type": typ, "binding": bind, "defined": True,
             "value": value, "size": size,
-            "storage": (sh_type, flags & (SHF_ALLOC | SHF_WRITE | SHF_EXECINSTR))}
+            "storage": (elf.names[shndx], sh_type, flags)}
 
 
 def _compatible_owner(left: dict[str, Any], right: dict[str, Any]) -> None:
@@ -215,7 +215,16 @@ def compare_source_symbols(raw_object: Path, configured_object: Path,
     ``configured_object`` is the current configured full-TU object. A true
     result is source fidelity only, never a target/runtime binding witness.
     """
-    raw, full = reloc_surface.Elf(Path(raw_object)), reloc_surface.Elf(Path(configured_object))
+    try:
+        raw = reloc_surface.Elf(Path(raw_object))
+        full = reloc_surface.Elf(Path(configured_object))
+    except SystemExit as error:
+        raise SourceFidelityError(str(error)) from error
+    for elf in (raw, full):
+        if struct.unpack_from(">H", elf.data, 16)[0] != 1:
+            raise SourceFidelityError("input is not an ELF relocatable object")
+        if struct.unpack_from(">H", elf.data, 18)[0] != 8:
+            raise SourceFidelityError("input is not an ELF32 MIPS object")
     raw_symbols, full_symbols = raw.symbols(), full.symbols()
     raw_fn, full_fn = (_function(raw, raw_symbols, function_name),
                        _function(full, full_symbols, function_name))

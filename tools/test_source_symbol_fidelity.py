@@ -253,6 +253,13 @@ class SourceSymbolFidelityTests(unittest.TestCase):
                           full_state="defined", raw_storage=".data",
                           full_storage=".rodata",
                           full_storage_flags=SHF_ALLOC)
+        with self.assertRaisesRegex(sf.SourceFidelityError, "storage differs"):
+            self.run_pair(words=[0x3C080000, 0x25080004],
+                          raw_relocs=[(0, 5, "owner"), (4, 6, "owner")],
+                          owner_type=STT_OBJECT, raw_state="defined",
+                          full_state="defined", raw_storage=".data",
+                          full_storage=".other_data",
+                          full_storage_flags=SHF_ALLOC | SHF_WRITE)
 
     def test_owner_binding_and_defined_extent_mismatches_are_rejected(self):
         with self.assertRaisesRegex(sf.SourceFidelityError, "type/binding"):

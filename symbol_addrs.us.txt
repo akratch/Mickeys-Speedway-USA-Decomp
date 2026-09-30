@@ -2751,6 +2751,7 @@ func_80058EF4 = 0x80058EF4; // type:func size:0x90   ROM 0x59af4  tier-D logarit
 func_8005A948 = 0x8005A948; // type:func size:0x178 ROM 0x5b548 tier-B JFG models animation-loader role/callgraph NON_MATCHING
 // donor-jfg-src/camera.c.o
 camConvertMatrixList = 0x8005AB78; // type:func size:0x30   ROM 0x5b778  src/camera.c.o  masked=4/12
+func_8005ABA8 = 0x8005ABA8; // type:func size:0x1BC ROM 0x5b7a8 tier-A, matched C src/main/models_5B300.c.o -O2 -mips2 -32, linked exact=111/111 words, frameless, 0 relocations
 func_8005AD64 = 0x8005AD64; // type:func size:0x1B0 ROM 0x5b964 tier-D animation selection/blend state, matched C main/models_5B300 -O2 -mips2 -32, 108/108 words, 0 relocs
 // Tier D: Mickey-derived parented matrix-list builder, exact linked C.
 func_8005B644 = 0x8005B644; // type:func size:0xCC  ROM 0x5c244

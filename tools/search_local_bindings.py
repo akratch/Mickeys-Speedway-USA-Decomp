@@ -51,9 +51,24 @@ def walk(node):
         pending.extend(child for _, child in reversed(list(value.children())))
 
 
-def ast_value(node):
-    return [type(node).__name__, [(name, getattr(node, name)) for name in node.attr_names],
-            [(name, ast_value(child)) for name, child in node.children()]]
+def case_groups(switch):
+    """Group stacked source labels, without requiring case-body spelling."""
+    groups, labels, default = [], [], False
+    for node in walk(switch.stmt):
+        kind = type(node).__name__
+        if kind not in ('Case', 'Default'):
+            continue
+        if kind == 'Case':
+            labels.append(integer(node.expr))
+        else:
+            default = True
+        if any(type(stmt).__name__ not in ('Case', 'Default', 'EmptyStatement', 'Pragma')
+               for stmt in node.stmts):
+            groups.append({'cases': sorted(labels), 'default': default})
+            labels, default = [], False
+    if labels or default:
+        groups.append({'cases': sorted(labels), 'default': default})
+    return sorted(groups, key=lambda row: (row['default'], row['cases']))
 
 
 def source_switch(ast, symbol):
@@ -106,7 +121,7 @@ def source_switch(ast, symbol):
          'selector parameter arithmetic is not byte-sized')
     return {'cases': sorted(cases), 'selector_argument': names.index(expr.left.name),
             'selector_offset': integer(expr.right), 'signed_bits': 16,
-            'case_ast': ast_value(switch)}
+            'case_groups': case_groups(switch)}
 
 
 def fields(word):

@@ -119,6 +119,12 @@ class TableProofTests(unittest.TestCase):
             with self.subTest(before=before), self.assertRaises(RuntimeError):
                 local.candidate_table(self.assemble(text), 'fixture', self.shape)
 
+    def test_source_case_groups_allow_body_spelling_but_not_label_regrouping(self):
+        changed_body = SOURCE.replace(b'object[0] = 1;', b'object[0] = (1 + 0);')
+        self.assertEqual(self.shape, batch.local_table_shape(changed_body, 'fixture'))
+        regrouped = SOURCE.replace(b'case 5: case 7:', b'case 5: object[0] = 1; break; case 7:')
+        self.assertNotEqual(self.shape, batch.local_table_shape(regrouped, 'fixture'))
+
     def test_source_type_parameter_scale_case_and_second_switch_refuse(self):
         for source in (SOURCE.replace(b'signed short', b'unsigned short'),
                        SOURCE.replace(b'Byte *object', b'int *object'),

@@ -302,7 +302,7 @@
     },
     "func_80019AB8": {
       "ledger_commit": "48d20b5a7f43f073e7afa3d09f3852ee75d75ebc",
-      "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
+      "reason": "New stock compiler evidence for defined u8-to-u64 widening at one store; ADR 0017 tests minimal widening/narrowing spellings with unchanged evaluation, ABI and memory effects. Closed declaration and colour grids remain closed.",
       "source_commit": "48d20b5a7f43f073e7afa3d09f3852ee75d75ebc"
     },
     "func_80019DE8": {

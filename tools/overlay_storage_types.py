@@ -1,6 +1,18 @@
 """Small fail-closed helpers for reviewed N64 typed storage declarations."""
 
+import hashlib
+from pathlib import Path
 import re
+
+
+_LOADED_IMPLEMENTATION_SHA256 = hashlib.sha256(
+    Path(__file__).read_bytes()).hexdigest()
+
+
+def require_loaded_implementation(error_type):
+    """Reject an extracted helper changed after this module was imported."""
+    if hashlib.sha256(Path(__file__).read_bytes()).hexdigest() != _LOADED_IMPLEMENTATION_SHA256:
+        raise error_type("loaded typed-storage implementation changed on disk")
 
 
 SCALAR_LAYOUT = {

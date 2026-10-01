@@ -1086,6 +1086,30 @@ Overlay8BssOwner gOverlay8BssOwner;
             rs.storage_freshness.require_dependency_snapshot(
                 changed, snapshot, rs.SurfaceComparisonError)
 
+    def test_extracted_storage_helpers_reject_post_import_edits(self):
+        from unittest.mock import patch
+
+        for helper, message in (
+                (rs.storage_types, "loaded typed-storage implementation changed"),
+                (rs.storage_freshness, "loaded storage-freshness implementation changed")):
+            with self.subTest(helper=helper.__name__, stage="initial-capture"):
+                with tempfile.TemporaryDirectory() as directory:
+                    changed = Path(directory) / "edited_helper.py"
+                    changed.write_text("# changed after module import\n")
+                    with patch.object(helper, "__file__", str(changed)):
+                        with self.assertRaisesRegex(rs.SurfaceComparisonError, message):
+                            rs._capture_explicit_storage_group(
+                                rs.REPO, {}, Path("unused-registry"), "0" * 64)
+            with self.subTest(helper=helper.__name__, stage="final-recheck"):
+                with tempfile.TemporaryDirectory() as directory:
+                    changed = Path(directory) / "edited_helper.py"
+                    changed.write_text("# changed after module import\n")
+                    with patch.object(helper, "__file__", str(changed)):
+                        with self.assertRaisesRegex(rs.SurfaceComparisonError, message):
+                            rs._recheck_explicit_storage_capture(
+                                rs.REPO, {}, Path("unused-registry"), "0" * 64,
+                                {"inputs": {}})
+
     def test_storage_fidelity_catches_bytes_geometry_symbols_and_relocations(self):
         exact_left = self.StorageElf()
         exact_right = self.StorageElf()

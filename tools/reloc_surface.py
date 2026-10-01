@@ -2483,6 +2483,11 @@ def _overlay_module_extent(module, field, description):
 _STORAGE_C_SCALAR_LAYOUT = storage_types.SCALAR_LAYOUT
 
 
+def _require_storage_helpers_loaded():
+    storage_types.require_loaded_implementation(SurfaceComparisonError)
+    storage_freshness.require_loaded_implementation(SurfaceComparisonError)
+
+
 def _storage_hex(value, description):
     if not isinstance(value, str) or not re.fullmatch(r"0x[0-9A-Fa-f]+", value):
         raise SurfaceComparisonError("invalid %s %r" % (description, value))
@@ -2704,6 +2709,7 @@ def _capture_explicit_storage_group(root, group, registry_path, registry_sha256)
     root = Path(root)
     if root.resolve() != batch.ROOT.resolve() or os.environ.get("PROMOTION_TRIAL", "") not in ("", "0"):
         raise SurfaceComparisonError("unsupported explicit storage compile environment")
+    _require_storage_helpers_loaded()
     source = _storage_source_path(root, group["owner_source"])
     source_rel = source.relative_to(root).as_posix()
     deadline = time.monotonic() + 180
@@ -2832,6 +2838,7 @@ def _recheck_explicit_storage_capture(root, group, registry_path,
 
     root = Path(root)
     inputs = capture["inputs"]
+    _require_storage_helpers_loaded()
     tools_identity = storage_freshness.checked_tool_identity(
         batch, SurfaceComparisonError)
     source = _storage_source_path(root, group["owner_source"])

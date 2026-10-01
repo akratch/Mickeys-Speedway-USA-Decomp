@@ -118,6 +118,9 @@ DATA_RODATA_OWNERSHIP = {
     # The whole .data section; data_rodata +0x2D0..+0x2E0 is the original
     # TU's .rodata (its own relocation base) and stays raw.
     54: [(0x0, 0x2D0, "overlay54Initialize")],
+    # The whole data_rodata range: the compiled .data is 0x328 bytes padded to
+    # the section's 16-byte alignment, which covers the zero tail.
+    52: [(0x0, 0x330, "overlay52Initialize")],
 }
 
 # Reviewed initialized subranges emitted by a C owner's non-.data section.
@@ -203,6 +206,8 @@ EXPLICIT_TEXT_PADDING = {
     # Overlay 54's text tail pads to 0x1EF0; overlay54Initialize's .data
     # follows it, so the pad needs its own bounded row.
     54: "overlay_054_padding",
+    # Overlay 52's text tail pads to 0x2130; overlay52Initialize's .data follows.
+    52: "overlay_052_padding",
 }
 
 TEXT_SUBSEGMENTS = {

@@ -55,12 +55,11 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
     s16 randomAngle;
     s32 mode = 1;
     s32 i;
-    f32 collision[10];
+    f32 collision[11];
 
     track = (Overlay12TrackHeight *)trackGetTrack();
     minimumHeight = (f32)track->height - 1000.0f;
-    for (i = 0; i < 64; i++) {
-        effect = &gOverlay12Effects[i];
+    for (i = 0, effect = gOverlay12Effects; i < 64; i++, effect++) {
         switch (effect->active) {
         case 1:
             tempA = effect->y2;
@@ -88,12 +87,9 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
                         effect->z0 = collision[3];
                         effect->scaleY =
                             (255 - (((((u32 *)collision)[9] >> 24) & 7) << 5)) << 5;
-                        {
-                            volatile f32 *vp = &effect->value;
-                            *vp *=
-                                2.0f + ((f32)(mathRnd(0, 255) - 128) *
-                                        gOverlay12RandomScale);
-                        }
+                        effect->value *=
+                            2.0f + ((f32)(mathRnd(0, 255) - 128) *
+                                    gOverlay12RandomScale);
 
                         if (((s32 *)collision)[0] == 0) {
                             pitch = Arctanf(collision[5],
@@ -184,10 +180,10 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_012_F00003A8_186D628:start
  * symbol: func_overlay_012_F00003A8_186D628
- * score: 226 differing words
+ * score: 169/346 words
  * frame: 0x110
  * relocations: 33
  * first-mismatch: +0x50
- * summary: Size 0, frame 0x110, masked 226. Colour floor 224. Blocker: volatile value pointer vs collision-load hoist; physics loads; vertex nop plus sh.
+ * summary: Volatile pointer, index walker and 10-float buffer were inherited: 226 to 169. Open: mode at +0xA8 and buffer at +0xAC in the target, reversed in ours.
  * PLATEAU-HANDOFF:func_overlay_012_F00003A8_186D628:end
  */

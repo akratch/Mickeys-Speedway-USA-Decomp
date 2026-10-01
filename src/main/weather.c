@@ -760,13 +760,13 @@ void rain_render_splashes(s32 updateRate) {
     void *unused3;
     RainSplash *splash;
     RainPlayer *player;
-    RainHeight **heightResult;
     s32 density;
     s32 delay;
     s32 countdown;
     s32 index;
     s32 found;
     s32 temp;
+    RainHeight **heightResult;
     f32 radius;
     f32 x;
     f32 z;
@@ -827,8 +827,7 @@ void rain_render_splashes(s32 updateRate) {
     cmd->w1 = (u32) -0x100;
     age = D_80082830;
     splash = D_8007C3E4;
-    index = 0;
-    do {
+    for (index = 0; index < 0x10; index++, splash++) {
         if (splash->state != 0) {
             splash->age += (f32) updateRate * age;
             if (splash->age < 4.0f) {
@@ -892,9 +891,7 @@ void rain_render_splashes(s32 updateRate) {
                 splash->state = 0;
             }
         }
-        index++;
-        splash++;
-    } while (index != 0x10);
+    }
     cmd = D_800D40CC;
     D_800D40CC = cmd + 1;
     cmd->w0 = 0xFA000000;
@@ -956,10 +953,10 @@ void rain_sound(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:rain_render_splashes:start
  * symbol: rain_render_splashes
- * score: 113 differing words
+ * score: 109 differing words
  * frame: 0xB8
  * relocations: 53
  * first-mismatch: +0x94
- * summary: Forced floor 44 needs 0xFF save above splash 76.8; L160 indexed spawn cannot close the conditional-increment size gap.
+ * summary: 109 with the height-result home at the target 0x84 and a for render loop; the s1/s2/s3 ring is one ranking: delay address and 0xFF outrank splash and index.
  * PLATEAU-HANDOFF:rain_render_splashes:end
  */

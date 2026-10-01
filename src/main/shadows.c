@@ -1113,7 +1113,9 @@ s32 func_80017660(void *arg0, s32 arg1, void *arg2, s32 arg3, s32 arg4) {
  * resident buffer layouts determine the field bindings below.
  */
 #ifdef NON_MATCHING
-/* Workbench verdict: 221 masked words at size delta 0 (was 270 at +8).
+/* 2026-10-01 (lane d-res1): the three m2c goto loops written as do-while
+ * loops are 217 masked at delta 0 (was 221): same statements, same order.
+ * Workbench verdict: 221 masked words at size delta 0 (was 270 at +8).
  * Track B, 2026-09-23:
  *   - the +8 was one extra callee-saved FP register. The loop carried the two
  *     rotation deltas as fresh temps where the target reassigns the loaded
@@ -1228,94 +1230,88 @@ s32 func_80017BCC(void *arg0, void *arg1, void *arg2) {
     var_a2 = D_80079440 + (var_t2 * 0xA);
     var_s6 = D_80079448 + (var_fp * 8);
     if (D_800CAF58 > 0) {
-loop_16:
-        var_a0 = var_t4;
-        if ((*(u8 *) (var_t4 + 0x0) + var_t5) >= 0x18) {
-            *(s16 *) (var_s6 + 0x6) = var_t2;
-            *(s16 *) (var_s6 + 0x4) = var_t3;
-            var_s6 += 8;
-            var_fp += 1;
-            var_t5 = 0;
-            *(u32 *) (var_s6 - 0x8) = *(u32 *) ((u8 *) arg0 + 0x0);
-        }
-        if (var_fp >= D_800CB280) {
-            return 0;
-        }
-        var_a1 = *(u8 *) (var_t4 + 0x1);
-        var_v1 = 0;
-        vertexCount = *(u8 *) (var_t4 + 0x0);
-        if ((s32) vertexCount > 0) {
-loop_21:
-            if (var_a1 & 1) {
-                var_v0 = D_800C9F58 + (*(u8 *) (var_a0 + 0x2) << 5);
-                var_f0_2 = *(f32 *) (var_v0 + 0x0);
-                var_f12 = *(f32 *) (var_v0 + 0x4);
-                temp_f2_2 = *(f32 *) (var_v0 + 0x8);
-            } else {
-                var_v0 = D_800C9D48 + (*(u8 *) (var_a0 + 0x2) * 0x10);
-                var_f0_2 = *(f32 *) (var_v0 + 0x0);
-                var_f12 = *(f32 *) (var_v0 + 0x4);
-                temp_f2_2 = *(f32 *) (var_v0 + 0x8);
+        do {
+            var_a0 = var_t4;
+            if ((*(u8 *) (var_t4 + 0x0) + var_t5) >= 0x18) {
+                *(s16 *) (var_s6 + 0x6) = var_t2;
+                *(s16 *) (var_s6 + 0x4) = var_t3;
+                var_s6 += 8;
+                var_fp += 1;
+                var_t5 = 0;
+                *(u32 *) (var_s6 - 0x8) = *(u32 *) ((u8 *) arg0 + 0x0);
             }
-            var_a1 = var_a1 >> 1;
-            var_t2 += 1;
-            var_a2 += 0xA;
-            *(s16 *) (var_a2 - 0xA) = (s32) var_f0_2;
-            *(u8 *) (var_a2 - 0x4) = 0xFF;
-            *(u8 *) (var_a2 - 0x3) = 0xFF;
-            *(u8 *) (var_a2 - 0x2) = 0xFF;
-            *(s8 *) (var_a2 - 0x1) = (s8) var_s4;
-            *(s16 *) (var_a2 - 0x6) = (s32) temp_f2_2;
-            *(s16 *) (var_a2 - 0x8) =
-                (s32) (*(f32 *) ((u8 *) arg0 + 0x1C) + var_f12);
-            if (var_t2 >= D_800CB278) {
+            if (var_fp >= D_800CB280) {
                 return 0;
             }
-            var_f0_2 -= var_f18;
-            var_a0 += 1;
-            temp_f2_2 -= var_f0;
-            temp_f0 = (var_f0_2 * var_f16) - (temp_f2_2 * var_f14);
-            temp_f2_2 = (temp_f2_2 * var_f16) + (var_f0_2 * var_f14);
-            projected[var_v1] =
-                ((s32) ((temp_f2_2 + var_f28) * var_f24) & 0xFFFF) |
-                ((s32) (var_f22 * (temp_f0 + var_f26)) << 0x10);
-            var_v1 += 1;
-            if (var_v1 < (s32) *(u8 *) (var_t4 + 0x0)) {
-                goto loop_21;
+            var_a1 = *(u8 *) (var_t4 + 0x1);
+            var_v1 = 0;
+            vertexCount = *(u8 *) (var_t4 + 0x0);
+            if ((s32) vertexCount > 0) {
+                do {
+                    if (var_a1 & 1) {
+                        var_v0 = D_800C9F58 + (*(u8 *) (var_a0 + 0x2) << 5);
+                        var_f0_2 = *(f32 *) (var_v0 + 0x0);
+                        var_f12 = *(f32 *) (var_v0 + 0x4);
+                        temp_f2_2 = *(f32 *) (var_v0 + 0x8);
+                    } else {
+                        var_v0 = D_800C9D48 + (*(u8 *) (var_a0 + 0x2) * 0x10);
+                        var_f0_2 = *(f32 *) (var_v0 + 0x0);
+                        var_f12 = *(f32 *) (var_v0 + 0x4);
+                        temp_f2_2 = *(f32 *) (var_v0 + 0x8);
+                    }
+                    var_a1 = var_a1 >> 1;
+                    var_t2 += 1;
+                    var_a2 += 0xA;
+                    *(s16 *) (var_a2 - 0xA) = (s32) var_f0_2;
+                    *(u8 *) (var_a2 - 0x4) = 0xFF;
+                    *(u8 *) (var_a2 - 0x3) = 0xFF;
+                    *(u8 *) (var_a2 - 0x2) = 0xFF;
+                    *(s8 *) (var_a2 - 0x1) = (s8) var_s4;
+                    *(s16 *) (var_a2 - 0x6) = (s32) temp_f2_2;
+                    *(s16 *) (var_a2 - 0x8) =
+                        (s32) (*(f32 *) ((u8 *) arg0 + 0x1C) + var_f12);
+                    if (var_t2 >= D_800CB278) {
+                        return 0;
+                    }
+                    var_f0_2 -= var_f18;
+                    var_a0 += 1;
+                    temp_f2_2 -= var_f0;
+                    temp_f0 = (var_f0_2 * var_f16) - (temp_f2_2 * var_f14);
+                    temp_f2_2 = (temp_f2_2 * var_f16) + (var_f0_2 * var_f14);
+                    projected[var_v1] =
+                        ((s32) ((temp_f2_2 + var_f28) * var_f24) & 0xFFFF) |
+                        ((s32) (var_f22 * (temp_f0 + var_f26)) << 0x10);
+                    var_v1 += 1;
+                } while (var_v1 < (s32) *(u8 *) (var_t4 + 0x0));
             }
-        }
-        var_v1 = 1;
-        if ((*(u8 *) (var_t4 + 0x0) - 1) >= 2) {
-            var_a0_2 = var_t5 + 1;
-            var_a1_2 = var_a0_2 + 1;
-            var_v0 = (u8 *) &projected[1];
-loop_29:
-            *(u8 *) (var_a3 + 0x0) = 0;
-            *(u8 *) (var_a3 + 0x1) = var_a0_2;
-            *(u8 *) (var_a3 + 0x2) = var_a1_2;
-            *(u8 *) (var_a3 + 0x3) = var_t5;
-            var_t3 += 1;
-            var_v1 += 1;
-            *(u32 *) (var_a3 + 0x4) = *(u32 *) (var_v0 + 0x0);
-            var_a3 += 0x10;
-            *(u32 *) (var_a3 - 0x8) = *(u32 *) (var_v0 + 0x4);
-            *(u32 *) (var_a3 - 0x4) = projected[0];
-            if (var_t3 >= D_800CB27C) {
-                return 0;
+            var_v1 = 1;
+            if ((*(u8 *) (var_t4 + 0x0) - 1) >= 2) {
+                var_a0_2 = var_t5 + 1;
+                var_a1_2 = var_a0_2 + 1;
+                var_v0 = (u8 *) &projected[1];
+                do {
+                    *(u8 *) (var_a3 + 0x0) = 0;
+                    *(u8 *) (var_a3 + 0x1) = var_a0_2;
+                    *(u8 *) (var_a3 + 0x2) = var_a1_2;
+                    *(u8 *) (var_a3 + 0x3) = var_t5;
+                    var_t3 += 1;
+                    var_v1 += 1;
+                    *(u32 *) (var_a3 + 0x4) = *(u32 *) (var_v0 + 0x0);
+                    var_a3 += 0x10;
+                    *(u32 *) (var_a3 - 0x8) = *(u32 *) (var_v0 + 0x4);
+                    *(u32 *) (var_a3 - 0x4) = projected[0];
+                    if (var_t3 >= D_800CB27C) {
+                        return 0;
+                    }
+                    var_v0 += 4;
+                    var_a0_2 += 1;
+                    var_a1_2 += 1;
+                } while (var_v1 < (*(u8 *) (var_t4 + 0x0) - 1));
             }
-            var_v0 += 4;
-            var_a0_2 += 1;
-            var_a1_2 += 1;
-            if (var_v1 < (*(u8 *) (var_t4 + 0x0) - 1)) {
-                goto loop_29;
-            }
-        }
-        var_s7 += 1;
-        var_t5 += *(u8 *) (var_t4 + 0x0);
-        var_t4 += 0xC;
-        if (var_s7 < D_800CAF58) {
-            goto loop_16;
-        }
+            var_s7 += 1;
+            var_t5 += *(u8 *) (var_t4 + 0x0);
+            var_t4 += 0xC;
+        } while (var_s7 < D_800CAF58);
     }
     D_8007944C = var_t2;
     D_80079450 = var_t3;
@@ -1477,11 +1473,11 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_80017BCC:start
  * symbol: func_80017BCC
- * score: 221/314 words
+ * score: 217/314 words
  * frame: 0x108
  * relocations: 44
  * first-mismatch: +0x58
- * summary: Delta 0 (was +8) via in-place coordinate deltas and per-arm cosine copy; left: 0.0f/var_f0 f20 sharing, sine spill placement
+ * summary: goto loops as do-while 221 to 217; open: zero constant in f20 vs f12 and the s7/fp batch-counter swap (p1 ranking)
  * PLATEAU-HANDOFF:func_80017BCC:end
  */
 

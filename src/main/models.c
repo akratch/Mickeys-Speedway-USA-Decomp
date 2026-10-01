@@ -849,6 +849,8 @@ void func_80020B10(Gfx **displayList, s8 *textureIds, s8 *slots,
 #ifdef NON_MATCHING
 s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
                   s32 lowerGroup, s32 upperGroup, s32 forceSimple) {
+    s32 partIndex;
+    s8 slots[16];
     Gfx *sourceDisplayList;
     ModelGfxPart *part;
     ModelGfxCacheEntry *cacheEntry;
@@ -856,8 +858,6 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
     void *lastTexture;
     s32 lastParameter;
     s32 cacheCount;
-    s32 partIndex;
-    s8 slots[16];
     s32 cacheEnabled;
     s32 vertexCount;
     s32 triangleCount;
@@ -1356,11 +1356,11 @@ void func_8002109C(ModelPointOwner *owner) {
 
 /* PLATEAU-HANDOFF:func_8002057C:start
  * symbol: func_8002057C
- * score: 229/342 words
+ * score: 225/342 words
  * frame: 0xD0
  * relocations: 21
  * first-mismatch: +0x3C
- * summary: Proc-12 census confirms declaration-order and physical-line forms do not alter the 125-draw sequence; local-home order remains unresolved.
+ * summary: Declaration order 229 to 225 (part index and slots first); frame ladder still differs at +0x78..+0xB8, local-home order open.
  * PLATEAU-HANDOFF:func_8002057C:end
  */
 

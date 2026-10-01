@@ -616,7 +616,9 @@ class CandidateTuPlacementAuthorityTests(unittest.TestCase):
     class FakeElf:
         names = ["", ".text"]
 
-        def __init__(self, value, text, reloc_symbol="callee"):
+        def __init__(self, value, text, reloc_symbol="callee", path=None):
+            self.path = Path(path or
+                             "build_non_matching/src/overlays/o008/overlay_008.c.o")
             self._text = text
             self._symbols = [
                 (CandidateTuPlacementAuthorityTests.name, value, 4,
@@ -637,9 +639,25 @@ class CandidateTuPlacementAuthorityTests(unittest.TestCase):
         def relocations(self):
             return list(self._relocations)
 
-    def verify(self, candidate, canonical, boundary=(8, 0x1000)):
+    def verify(self, candidate, canonical, boundary=(8, 0x1000), *,
+               candidate_source="overlays/o008/overlay_008",
+               owner_source="overlays/o008/overlay_008",
+               owner_start="0x800", target_overlay=8):
+        self.boundary_calls = []
+        name = (self.name if target_overlay == 8 else
+                "func_overlay_%03d_F0001000_185ED58" % target_overlay)
+        atlas = {"modules": [{
+            "overlay": target_overlay,
+            "text_ownership": [{
+                "type": "c", "source": owner_source,
+                "offset": owner_start, "end_offset": "0x1200",
+                "size": hex(0x1200 - int(owner_start, 16)),
+            }],
+        }]}
+
         def boundary_proof(_atlas, _overlay, _name, _target, root=None,
                            elf_loader=None, rom=None):
+            self.boundary_calls.append((_overlay, _name))
             if boundary is None:
                 return None
             elf_loader(Path("canonical.o"))
@@ -648,8 +666,9 @@ class CandidateTuPlacementAuthorityTests(unittest.TestCase):
         with mock.patch.object(rs, "_canonical_overlay_call_boundary",
                                side_effect=boundary_proof):
             return rs._candidate_tu_placement_matches_canonical(
-                self.name, 0xFC0, 0, candidate, 8, object(), {}, Path("."),
-                b"rom", elf_loader=lambda _path: canonical)
+                name, 0xFC0, 0, candidate, 8, candidate_source, object(),
+                atlas, Path("."), b"rom",
+                elf_loader=lambda _path: canonical)
 
     @staticmethod
     def section_bytes(function_offset, body):
@@ -682,6 +701,55 @@ class CandidateTuPlacementAuthorityTests(unittest.TestCase):
         canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
         self.assertFalse(self.verify(candidate, canonical, boundary=(8, 0x1004)))
 
+    def test_cross_overlay_clone_cannot_withdraw_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(
+            candidate, canonical, target_overlay=7,
+            owner_source="overlays/o007/overlay_007"))
+
+    def test_same_overlay_other_tu_clone_cannot_withdraw_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(
+            candidate, canonical, owner_source="overlays/o008/other_tu"))
+
+    def test_owner_start_fallback_cannot_withdraw_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(candidate, canonical, owner_start="0x1000"))
+        self.assertEqual([], self.boundary_calls)
+
+    def test_missing_candidate_source_context_cannot_withdraw_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(candidate, canonical, candidate_source=None))
+
+    def test_candidate_object_source_must_match_atlas_owner(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(
+            candidate, canonical, candidate_source="overlays/o008/other_tu"))
+
+    def test_relocation_symbol_binding_must_match(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        candidate._symbols[1] = ("callee", 0, 0, 0x11, rs.SHN_UNDEF)
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_relocation_symbol_extent_must_match(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        candidate._symbols[1] = ("callee", 0, 4, 0x11, rs.SHN_UNDEF)
+        canonical._symbols[1] = ("callee", 0, 8, 0x11, rs.SHN_UNDEF)
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_defined_relocation_referent_is_not_admitted(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        candidate._symbols[1] = ("callee", 0x100, 4, 0x12, 1)
+        self.assertFalse(self.verify(candidate, canonical))
+
     def test_ambiguous_candidate_function_boundary_keeps_candidate_position(self):
         candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
         candidate._symbols.append(candidate._symbols[0])
@@ -698,8 +766,9 @@ class CandidateTuPlacementAuthorityTests(unittest.TestCase):
         with mock.patch.object(rs, "_canonical_overlay_call_boundary",
                                side_effect=stale_proof):
             self.assertFalse(rs._candidate_tu_placement_matches_canonical(
-                self.name, 0xFC0, 0, candidate, 8, object(), {}, Path("."),
-                b"rom", elf_loader=lambda _path: canonical))
+                self.name, 0xFC0, 0, candidate, 8,
+                "overlays/o008/overlay_008", object(), {"modules": []},
+                Path("."), b"rom", elf_loader=lambda _path: canonical))
 
     def test_unchanged_position_needs_no_withdrawal_proof(self):
         candidate = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))

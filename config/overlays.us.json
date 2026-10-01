@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 260436,
-  "nonmatching_overlay_c_bytes": 208172,
+  "matched_overlay_c_bytes": 260864,
+  "nonmatching_overlay_c_bytes": 207744,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 3600,
   "bss_bytes": 77680,
@@ -1507,6 +1507,14 @@
      "label": "overlay1AppendPathPoint",
      "source": "overlays/o001/overlay_001_tail",
      "evidence": "canonical mixed-TU object, all eight relocation records, and linked ROM bytes exact"
+    },
+    {
+     "offset": "0x7730",
+     "end_offset": "0x78DC",
+     "size": "0x1AC",
+     "label": "overlay1BendPathPoint",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "canonical mixed-TU object, six runtime relocations, and linked ROM bytes exact"
     },
     {
      "offset": "0x78DC",

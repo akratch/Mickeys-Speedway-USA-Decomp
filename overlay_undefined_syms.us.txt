@@ -150,10 +150,12 @@ overlay1AimedVelocityYReloc = 0x00000194;
 overlay1AllocateRecordReloc = 0xf00072a4;
 overlay1AnchorX = 0x00001da4;
 overlay1AnchorY = 0x00001da6;
+overlay1AngleDifferenceReloc = 0xf0000000;
 overlay1AngleReloc = 0xf0000000;
 overlay1CountdownReloc = 0xf0000000;
 overlay1GetGaugeTable = 0xf0000000;
 overlay1GetObjectListReloc = 0xf0000000;
+overlay1GetPathReloc = 0xf0000000;
 overlay1InitTimedStateReloc = 0xf0000000;
 overlay1IsObjectActive = 0xf00004b4;
 overlay1ModeAction2 = 0xf0000000;
@@ -3758,12 +3760,12 @@ func_overlay_001_F00072A4_1853684 = overlay1AllocateRecord;
 func_overlay_001_F0007344_1853724 = overlay1CloneRecord;
 func_overlay_001_F00073A0_1853780 = overlay1UpdateValueCache;
 func_overlay_001_F0007580_1853960 = overlay1AppendPathPoint;
+func_overlay_001_F0007730_1853B10 = overlay1BendPathPoint;
 func_overlay_001_F00078DC_1853CBC = overlay1AdvancePath;
 func_overlay_001_F0007B64_1853F44 = overlay1FindBestRecord;
 func_overlay_001_F0003750_184FB30 = overlay1ChoosePath;
 func_overlay_001_F000438C_185076C = overlay1UpdateObjectPhysics;
 func_overlay_001_F00067C0_1852BA0 = overlay1UpdateRangeFlags;
-func_overlay_001_F0007730_1853B10 = overlay1BendPathPoint;
 
 /* overlay 1: overlay_001_create.c.o */
 func_overlay_001_F0007BDC_1853FBC = overlay1CreateRecord;

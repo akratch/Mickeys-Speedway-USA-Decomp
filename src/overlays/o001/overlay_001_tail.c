@@ -3151,46 +3151,47 @@ typedef struct Overlay1Path {
 } Overlay1Path;
 
 /* Fresh pinned DKR v77/v80 and JFG scans found no Overlay 1 donor. */
-extern Overlay1Path *overlay1GetPathReloc(u8 selector);
+extern Overlay1Path *overlay1GetPathReloc(s32 selector);
 extern s32 overlay1AngleReloc(f32 y, f32 x);
 extern s32 overlay1AngleDifferenceReloc(s16 first, s16 second);
 extern f32 overlay1TrigXReloc(s32 angle);
 extern f32 overlay1TrigYReloc(s32 angle);
 
-/* Plateau: exact 107 instructions and 0x30 frame. `if (index) {}` is L100
- * weight that makes uopt spill the u8 parameter to its own incoming home
- * (sp+59) without a leftover identity op, so the first shift stays on t8 and
- * the residual is 19 rather than the leftover basin's 52. The store still
- * sits before the jal; the target puts it in the delay slot and the selector
- * mask three words earlier. `currentIndex = index` in the else reproduces the
- * target's copy from a2 at both sites but IDO hoists it and drops a word. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01 from a plain rewrite; four things closed the last 19:
+ *  - `if (index)` rather than `index != 0`. The boolean test reads the u8
+ *    parameter itself, so its promoted value is first needed inside the arms
+ *    and uopt materialises it once per arm (the target's two copies), and the
+ *    parameter keeps its incoming register across the first call with a byte
+ *    spill to its own home. No probe is needed for either.
+ *  - one index local `i` serves both the previous and the next point; the
+ *    separate currentIndex/previousIndex/nextIndex trio was the colour cycle.
+ *  - the previous and next addresses are written index-first
+ *    (`i + path->points`), the current one array-style.
+ *  - the path getter takes an int-width selector, so the call site adds no
+ *    mask of its own: as1 folds the argument copy into the entry narrowing,
+ *    which schedules the mask early and leaves the delay slot to the spill. */
 void overlay1BendPathPoint(s16 *x, s16 *y, u8 index, u8 selector) {
     Overlay1PathPoint *previous;
     Overlay1PathPoint *current;
     Overlay1Path *path;
     Overlay1PathPoint *next;
     s16 firstAngle, secondAngle, midpointAngle;
-    s32 nextIndex, previousIndex, currentIndex;
+    s32 i;
 
-    if (index) {}
     path = overlay1GetPathReloc(selector);
     current = &path->points[index];
-    if (index != 0) {
-        currentIndex = index;
-        previousIndex = index - 1;
+    if (index) {
+        i = index - 1;
     } else {
-        previousIndex = path->count;
-        previousIndex--;
-        currentIndex = 0;
+        i = path->count - 1;
     }
-    previous = &path->points[previousIndex];
-    if (currentIndex >= path->count) {
-        nextIndex = 0;
+    previous = i + path->points;
+    if (index >= path->count) {
+        i = 0;
     } else {
-        nextIndex = currentIndex + 1;
+        i = index + 1;
     }
-    next = &path->points[nextIndex];
+    next = i + path->points;
     firstAngle = (s16)(overlay1AngleReloc((f32)(current->y - previous->y),
                                          (f32)(current->x - previous->x)) -
                        0x8000);
@@ -3202,9 +3203,6 @@ void overlay1BendPathPoint(s16 *x, s16 *y, u8 index, u8 selector) {
     *x = (s16)((f32)*x - overlay1TrigXReloc(midpointAngle) * 50.0f);
     *y = (s16)((f32)*y - overlay1TrigYReloc(midpointAngle) * 50.0f);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F0007730_1853B10.s")
-#endif
 
 /* ---- overlay1AdvancePath ---- */
 
@@ -3395,14 +3393,4 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
  * first-mismatch: +0x58
  * summary: Delta +4 closed and frame ladder exact, 341 to 139 at delta 0; the rest is naming led by the transition weight's f0 split.
  * PLATEAU-HANDOFF:func_overlay_001_F0003750_184FB30:end
- */
-
-/* PLATEAU-HANDOFF:overlay1BendPathPoint:start
- * symbol: overlay1BendPathPoint
- * score: 19/107 words
- * frame: 0x30
- * relocations: 6
- * first-mismatch: +0x10
- * summary: Empty-if L100 spills index to parameter home; jal delay still holds the selector mask, and currentIndex still refuses v1.
- * PLATEAU-HANDOFF:overlay1BendPathPoint:end
  */

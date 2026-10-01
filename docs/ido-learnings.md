@@ -2607,6 +2607,19 @@ bytes and disassembly never belong here.
   identity when fidelity fails. See the reproducible
   [optimized-debug control](stack-source-provenance.md).
 
+
+- **A NOBITS section can exceed its sole typed object's extent.** A controlled
+  single-precision scalar definition produces a four-byte object in a
+  sixteen-byte BSS section, without changing its translation unit's executable
+  bytes. IDO rounds the section size and alignment independently of the symbol
+  size. Prove original storage width and neighboring boundaries first, then
+  normalize only compiler tail alignment and section metadata. NOBITS has no
+  file payload: reading bytes at its file offset cannot prove zero padding.
+  The [BSS metadata helper](../tools/trim_elf_bss.py) requires a sole sized
+  object and rejects unexplained extents, other owners and stored relocations;
+  its synthetic controls verify that executable bytes stay unchanged. This
+  does not justify trimming original BSS storage or inventing padding fields.
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

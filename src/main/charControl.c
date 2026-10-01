@@ -59,7 +59,8 @@ extern f32 D_80081854;
 extern f32 D_80081858;
 extern f32 D_8008185C;
 extern f32 D_80081860;
-extern f32 D_800CB304;
+/* Shared gravity scalar; original resident/overlay uses are single precision. */
+f32 D_800CB304;
 
 typedef struct CharControlEffectDefinition {
     u8 kind;

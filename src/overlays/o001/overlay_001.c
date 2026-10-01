@@ -266,46 +266,30 @@ Overlay1SearchRecord *overlay1FindType5ByKey(const s8 *key) {
 /* ---- overlay1FindPreviousUsable ---- */
 
 
-/* The pinned DKR v77/v80 and JFG object scans contain no exact donor. */
-#ifdef NON_MATCHING
+/* The pinned DKR v77/v80 and JFG object scans contain no exact donor.
+ * Matched by reading both globals at every use with no count, bound or
+ * pointer carriers, and a plain `while (i--)` loop. */
 Overlay1RingRecord *overlay1FindPreviousUsable(s32 index, s32 *selectedIndex) {
-    s32 count;
-    s32 remaining;
-    s32 wrapCount;
+    s32 i;
     Overlay1RingRecord *record;
-    Overlay1RingRecord *records;
-    u16 flags;
 
-    records = gOverlay1Start.rings;
-    if (records != NULL) {
-        count = gOverlay1EntryCount;
-        if (index < count) {
-            remaining = count;
-            wrapCount = count;
-            if (remaining != 0) {
-                remaining--;
-                do {
-                    index--;
-                    if (index < 0) {
-                        index = wrapCount - 1;
-                    }
-                    record = &records[index];
-                    flags = record->flags;
-                    if (!(flags & 4) && !(flags & 8)) {
-                        *selectedIndex = index;
-                        return record;
-                    }
-                } while (remaining--);
+    if (gOverlay1Start.rings != NULL && index < gOverlay1EntryCount) {
+        i = gOverlay1EntryCount;
+        while (i--) {
+            index--;
+            if (index < 0) {
+                index = gOverlay1EntryCount - 1;
+            }
+            record = &gOverlay1Start.rings[index];
+            if (!(record->flags & 4) && !(record->flags & 8)) {
+                *selectedIndex = index;
+                return record;
             }
         }
     }
     *selectedIndex = -1;
     return NULL;
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001/func_overlay_001_F0000414_184C7F4.s")
-#endif
 
 /* ---- overlay1ActivateObject ---- */
 
@@ -444,13 +428,3 @@ s32 overlay1TestDirection(Overlay1Direction *direction, f32 x, f32 z) {
     angle = overlay1DirectionReloc(x - direction->x, z - direction->z);
     return overlay1CompareDirectionReloc(angle, direction->angle) > 0;
 }
-
-/* PLATEAU-HANDOFF:overlay1FindPreviousUsable:start
- * symbol: overlay1FindPreviousUsable
- * score: 12 differing words
- * frame: frameless
- * relocations: 4
- * first-mismatch: +0x4
- * summary: Two-name CSE emits the delay-slot copy; pointer-form load dest is ugen, remaining folds, dead wrapCount still missing.
- * PLATEAU-HANDOFF:overlay1FindPreviousUsable:end
- */

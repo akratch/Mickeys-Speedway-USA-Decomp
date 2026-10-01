@@ -2,11 +2,11 @@
 ### `overlay1FindPreviousUsable` plateau handoff
 
 - source: `src/overlays/o001/overlay_001.c`
-- score: 12 differing words
+- score: 0/40 words, promoted
 - frame: frameless
 - relocations: 4
-- first mismatch: +0x4
-- summary: Two-name CSE emits the delay-slot copy; pointer-form load dest is ugen, remaining folds, dead wrapCount still missing.
+- first mismatch: none
+- summary: Matched. Both globals read at every use with no count, bound or pointer carriers, and a plain while (i--) loop.
 
 
 #### c2-o001: the residual is one copy-propagation decision, and it drives all twelve words
@@ -254,4 +254,19 @@ in-place decrement of that copy. The pointer-form CSE produces the delay copy
 and then loses on dest identity; colour cannot retarget the ugen load. Do not
 repeat the pointer-local two-name, generated-subscript-without-pointer, count
 mutation, or or-zero families.
+
+#### 2026-10-01, lane b-misc: matched on the first fully natural spelling
+
+Every earlier lattice held three carriers fixed: a `count` local loaded once,
+a `wrapCount` copy of it, and a `records` pointer local. The closure's
+"top-tested loops lose one instruction" is true of that shape only. With the
+carriers gone -- the range test, the counter initialiser and the wrap bound
+each read `gOverlay1EntryCount` directly, the record address is a subscript of
+`gOverlay1Start.rings`, the flag word is read through `record` at both tests
+-- a plain `while (i--)` over a single counter is exact at delta 0. The
+target's two copies of the count are the counter initialiser and the
+post-decrement's own temporary; the copy at the loop tail is the same
+temporary. No allocator instrument was needed.
+
+`gmake verify`, `check-overlay-syms` and `promotion-proof` pass.
 <!-- plateau-handoff:overlay1FindPreviousUsable:end -->

@@ -3731,10 +3731,10 @@ func_overlay_001_F00001AC_184C58C = overlay1FindType47ByAngle;
 func_overlay_001_F00002D4_184C6B4 = overlay1GetLinkedActive;
 func_overlay_001_F0000330_184C710 = overlay1GetRecord;
 func_overlay_001_F0000378_184C758 = overlay1FindType5ByKey;
+func_overlay_001_F0000414_184C7F4 = overlay1FindPreviousUsable;
 func_overlay_001_F00004B4_184C894 = overlay1ActivateObject;
 func_overlay_001_F0000614_184C9F4 = overlay1FindClosestSample;
 func_overlay_001_F0000758_184CB38 = overlay1TestDirection;
-func_overlay_001_F0000414_184C7F4 = overlay1FindPreviousUsable;
 
 /* overlay 1: overlay_001_build.c.o */
 func_overlay_001_F00007B0_184CB90 = overlay1BuildPointRecord;

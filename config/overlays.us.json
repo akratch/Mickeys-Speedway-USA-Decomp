@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 262116,
-  "nonmatching_overlay_c_bytes": 206492,
+  "matched_overlay_c_bytes": 262276,
+  "nonmatching_overlay_c_bytes": 206332,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 3600,
   "bss_bytes": 77680,
@@ -593,7 +593,7 @@
      "type": "c",
      "source": "overlays/o001/overlay_001",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x7B0",
@@ -1068,126 +1068,6 @@
     "priority_rank": 76
    },
    "mixed_tu_exact_c_ranges": [
-    {
-     "offset": "0x0",
-     "end_offset": "0x28",
-     "size": "0x28",
-     "label": "overlay1PreviousPointer",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x28",
-     "end_offset": "0x50",
-     "size": "0x28",
-     "label": "overlay1NextPointer",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x50",
-     "end_offset": "0x80",
-     "size": "0x30",
-     "label": "overlay1GetEntry",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "canonical mixed-TU object and linked bytes exact"
-    },
-    {
-     "offset": "0x80",
-     "end_offset": "0xA0",
-     "size": "0x20",
-     "label": "overlay1GetEntryIndex",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0xA0",
-     "end_offset": "0xC0",
-     "size": "0x20",
-     "label": "overlay1PreviousIndex",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0xC0",
-     "end_offset": "0xE4",
-     "size": "0x24",
-     "label": "overlay1NextIndex",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0xE4",
-     "end_offset": "0x154",
-     "size": "0x70",
-     "label": "overlay1WrapOffset",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x154",
-     "end_offset": "0x1AC",
-     "size": "0x58",
-     "label": "overlay1SignedOffset",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x1AC",
-     "end_offset": "0x2D4",
-     "size": "0x128",
-     "label": "overlay1FindType47ByAngle",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "canonical mixed-TU C, six runtime relocation identities, and linked ROM bytes exact"
-    },
-    {
-     "offset": "0x2D4",
-     "end_offset": "0x330",
-     "size": "0x5C",
-     "label": "overlay1GetLinkedActive",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x330",
-     "end_offset": "0x378",
-     "size": "0x48",
-     "label": "overlay1GetRecord",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x378",
-     "end_offset": "0x414",
-     "size": "0x9C",
-     "label": "overlay1FindType5ByKey",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "canonical mixed-TU object, one runtime relocation, and linked ROM bytes exact"
-    },
-    {
-     "offset": "0x4B4",
-     "end_offset": "0x614",
-     "size": "0x160",
-     "label": "overlay1ActivateObject",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x614",
-     "end_offset": "0x758",
-     "size": "0x144",
-     "label": "overlay1FindClosestSample",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "stock C, seven runtime relocation identities, owned literal, and linked ROM bytes exact"
-    },
-    {
-     "offset": "0x758",
-     "end_offset": "0x7B0",
-     "size": "0x58",
-     "label": "overlay1TestDirection",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
     {
      "offset": "0xBD4",
      "end_offset": "0xCA8",

@@ -94,16 +94,11 @@ void func_80046E70(FxCone *cone) {
     }
     mmFree(cone);
 }
-/* Size and frame are exact (110 words, 0x48). A named `cone + 0x38` plus an
- * L97 `if (1) { }` between that store and the sub-block adds stops uopt
- * reassociating the sum into `cone + size` then `+ 0x38`. The leftover 23
- * is as1 lineno: arg3/arg4/arg7 loads share their field stores' line, so
- * cone+0x38 wins the initially-ready pick. L97 emits no branch; as1 can
- * hoist inside the block. Comma-assign onto vertices hoists the loads but
- * the stores follow (41). Named copies copy-prop; volatile/leftover/empty
- * if overshoot. Identity-gated proc 1: v0/v1 swap accepts and stays at 23.
- */
-#ifdef NON_MATCHING
+/* Matched by writing the block as stores and re-reads of the cone's own
+ * fields: the header size leads the allocation sum, each buffer address is
+ * the previous field plus a size, and the mode test repeats `arg8 + 1`
+ * instead of carrying it in a local. The inherited `cone + 0x38` carrier,
+ * the `if (1) { }` region and the mode local were the whole residual. */
 extern void *func_8002B280(s32 size, s32 tag);
 extern void *func_80034448(s32 resourceId);
 extern void func_800470B0(FxCone *, s16, s16, s16, s16, s16,
@@ -115,23 +110,23 @@ extern void func_800475E8(FxCone *, s16);
 void *func_80046EC4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
                     f32 arg5, f32 arg6, f32 arg7, s32 arg8, s32 arg9,
                     s32 argA) {
-    s32 sp44;
-    s32 sp40;
-    s32 temp_a0;
-    s32 sp38;
+    s32 vertexBytes;
+    s32 bufferBytes;
+    s32 pad;
+    s32 flags;
     FxCone *cone;
-    u8 *temp_v1;
 
-    sp38 = arg8 & 0x80;
+    flags = arg8 & 0x80;
     arg8 = arg8 & 0x7F;
     if (arg8 == 0) {
-        sp44 = 0x280;
-        sp40 = 0x154;
+        vertexBytes = 0x280;
+        bufferBytes = 0x154;
     } else {
-        sp44 = arg8 * 0x10;
-        sp40 = (arg8 * 0xA) + 0xA;
+        vertexBytes = arg8 * 0x10;
+        bufferBytes = (arg8 * 0xA) + 0xA;
     }
-    cone = (FxCone *) func_8002B280(sp44 + (sp40 * 2) + 0x38, 0x87);
+    cone = (FxCone *) func_8002B280(
+        sizeof(FxCone) + vertexBytes + bufferBytes * 2, 0x87);
     if (cone != NULL) {
         if (arg9 >= 0) {
             cone->texture.value = (s32) func_80034448(arg9);
@@ -143,38 +138,32 @@ void *func_80046EC4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
         } else {
             cone->alternateTexture.value = 0;
         }
-        temp_v1 = (u8 *) ((s32) cone + 0x38);
-        cone->vertices = temp_v1;
-        temp_a0 = arg8 + 1;
-        if (1) { }
-        cone->addresses[0] = temp_v1 + sp44;
-        cone->addresses[1] = temp_v1 + sp44 + sp40;
-        cone->mode = temp_a0;
+        cone->vertices = (u8 *) (cone + 1);
+        cone->addresses[0] = cone->vertices + vertexBytes;
+        cone->addresses[1] = cone->addresses[0] + bufferBytes;
+        cone->mode = arg8 + 1;
         cone->segmentCount = arg8;
         cone->addressIndex = 0;
-        cone->flags = sp38;
+        cone->flags = flags;
         cone->value22 = arg4;
         cone->value20 = arg3;
-        cone->value24 = (s16) (s32) arg7;
+        cone->value24 = arg7;
         cone->value18 = arg5;
         cone->value1C = arg6;
         cone->value2A = arg2;
         cone->value28 = arg1;
         cone->value26 = arg0;
-        if (temp_a0 == 1) {
-            func_80047304(cone, arg0, arg1, arg2, (s32) arg3,
-                          (s32) arg4, arg5, arg6, arg7);
+        if (arg8 + 1 == 1) {
+            func_80047304(cone, arg0, arg1, arg2, arg3, arg4, arg5, arg6,
+                          arg7);
         } else {
-            func_800470B0(cone, arg0, arg1, arg2, (s32) arg3,
-                          (s32) arg4, arg5, arg6, arg7);
+            func_800470B0(cone, arg0, arg1, arg2, arg3, arg4, arg5, arg6,
+                          arg7);
         }
         func_800475E8(cone, 0);
     }
     return cone;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/func_80046EC4.s")
-#endif
 void func_8004707C(FxCone *cone, s32 value2C, s32 value2D, s32 value2E,
                    s32 value30, s32 value31, s32 value32) {
     if (cone != 0) {
@@ -2401,17 +2390,6 @@ void func_8004AF68(void) {
  * over the integer temp ring where it previously showed two incoherent ones,
  * which is the L127 ring-phase fact rather than a set of colour questions.
  */
-
-/* PLATEAU-HANDOFF:func_80046EC4:start
- * symbol: func_80046EC4
- * score: 23/110 words
- * frame: 0x48
- * relocations: 6
- * first-mismatch: +0x68
- * summary: as1: arg3/arg4/arg7 loads share store lineno and lose to cone+0x38. Need a surviving first-use that is not the store. Copies copy-prop; comma-assign is 41.
- * PLATEAU-HANDOFF:func_80046EC4:end
- */
-
 
 /* PLATEAU-HANDOFF:func_800470B0:start
  * symbol: func_800470B0

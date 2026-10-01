@@ -176,6 +176,121 @@ def _assert_raw_object_stable(expected_sha256,actual_sha256):
           'retained R8 raw stock-C object changed during joint binding proof')
 
 
+def _add_content_check(checks,path,expected,label,tree=False,source_only=False):
+    path=Path(path)
+    if not path.is_absolute(): path=ROOT/path
+    key=(path,tree,source_only)
+    prior=checks.get(key)
+    _need(prior is None or prior[0]==expected,
+          f'conflicting expected hashes for joint evidence input: {label}')
+    checks[key]=(expected,label)
+
+
+def _add_tool_content_checks(checks,identity,label):
+    _add_content_check(checks,ROOT/'tools/ido',identity['ido'],label+' IDO tree',tree=True)
+    _add_content_check(checks,ROOT/'tools/binutils',identity['binutils'],label+' binutils tree',tree=True)
+    _add_content_check(checks,batch.PERMUTER_DIR,identity['permuter'],label+' permuter sources',tree=True,source_only=True)
+    _add_content_check(checks,Path(batch.PYTHON).resolve(),identity['python'],label+' Python executable')
+    module_paths={name:Path(path).resolve() for name,(path,_digest) in batch._LOADED_IMPLEMENTATIONS.items()}
+    for name,digest in identity['loaded_modules'].items():
+        _need(name in module_paths,f'unknown recorded loaded tool module: {name}')
+        _add_content_check(checks,module_paths[name],digest,label+' module '+name)
+    _add_content_check(checks,Path(batch.__file__),identity['runner'],label+' batch runner')
+    _add_content_check(checks,Path(batch.sweep_receipts.__file__),identity['receipts'],label+' receipts helper')
+    _add_content_check(checks,Path(batch.promotion_transaction.__file__),identity['promotion'],label+' promotion helper')
+    context=identity['candidate_context']
+    _add_content_check(checks,Path(cc.__file__),context['comparator_sha256'],label+' candidate context')
+
+
+def _add_candidate_content_checks(checks,candidate,snapshot):
+    _add_content_check(checks,candidate['source'],snapshot['source_sha256'],'R8 source')
+    _add_content_check(checks,candidate['configured'],snapshot['configured_object_sha256'],'R8 configured object')
+    _add_content_check(checks,candidate['raw'],candidate['raw_sha256'],'R8 raw stock-C object')
+    for relative,digest in snapshot['dependency_files'].items():
+        _add_content_check(checks,relative,digest,'R8 dependency '+relative)
+    target_paths={'linked_elf':ROOT/'build/mickey.us.elf','link_map':ROOT/'build/mickey.us.map',
+      'rom':ROOT/'build/mickey.us.z64','candidate_object':candidate['configured'],
+      'normal_split_stamp':ROOT/'build/.splat-stamp','candidate_split_stamp':ROOT/'build_non_matching/.splat-stamp',
+      'overlay_config':ROOT/'config/overlays.us.json','yaml':ROOT/'mickey.us.yaml',
+      'linker_script':ROOT/'mickey.us.ld','undefined_symbols':ROOT/'overlay_undefined_syms.us.txt',
+      'symbol_addresses':ROOT/'symbol_addrs.us.txt'}
+    for name,digest in snapshot['target_inputs'].items():
+        _need(name in target_paths,'unknown R8 target input in final snapshot')
+        _add_content_check(checks,target_paths[name],digest,'R8 target input '+name)
+    for relative,digest in snapshot['makefiles'].items():
+        _add_content_check(checks,relative,digest,'R8 makefile '+relative)
+    _add_tool_content_checks(checks,snapshot['tools'],'R8')
+    # The compiler output must remain stable through the final CPP and ELF
+    # parsing phases, not merely between two adjacent end-of-capture reads.
+    _add_content_check(checks,candidate['raw'].parent/'r8-preprocessed-before.c',
+      candidate['preprocessed_sha256'],'R8 captured preprocessor output')
+    _add_content_check(checks,candidate['raw'].parent/'r8-preprocessed-after.c',
+      candidate['preprocessed_sha256'],'R8 final preprocessor output')
+    _add_content_check(checks,candidate['raw'].parent/'stock-c.o',candidate['raw_sha256'],
+      'retained R8 stock-C artifact')
+    _add_content_check(checks,candidate['raw'].parent/'configured.o',candidate['configured_sha256'],
+      'retained R8 configured artifact')
+
+
+def _add_physical_content_checks(checks,witness,label):
+    preflight= witness.get('fresh_target_preflight',{})
+    loader= witness.get('fresh_loader_preflight',{})
+    owner=witness.get('owner') or witness.get('linked_owner') or {}
+    for snap_name in ('freshness_before','freshness_after'):
+        snapshot=witness[snap_name]
+        _add_content_check(checks,witness['source'],snapshot['source'],label+' source')
+        owner_object=preflight.get('candidate_object')
+        _need(owner_object is not None,label+' configured owner object path is unavailable')
+        _add_content_check(checks,ROOT/owner_object,snapshot['configured_object'],label+' configured owner object')
+        _add_content_check(checks,ROOT/'build/mickey.us.elf',snapshot['linked_elf'],label+' linked ELF')
+        _add_content_check(checks,ROOT/'build/mickey.us.map',snapshot['map'],label+' link map')
+        _add_content_check(checks,ROOT/'build/mickey.us.z64',snapshot['rom'],label+' full ROM')
+        _add_content_check(checks,ROOT/'include',snapshot['include_tree'],label+' include tree',tree=True)
+        source_path=ROOT/witness['source']
+        _add_content_check(checks,source_path.parent,snapshot['source_directory'],label+' source directory',tree=True)
+        _add_content_check(checks,ROOT/'tools/asm-processor',snapshot['asm_processor'],label+' asm processor tree',tree=True)
+        for nested in snapshot['dependencies'].values():
+            for relative,digest in nested.items():
+                _add_content_check(checks,relative,digest,label+' dependency '+relative)
+        for relative,digest in snapshot['dependency_files'].items():
+            _add_content_check(checks,relative,digest,label+' dependency file '+relative)
+        for relative,digest in snapshot['makefiles'].items():
+            _add_content_check(checks,relative,digest,label+' makefile '+relative)
+        for relative,digest in snapshot['proof_tools'].items():
+            _add_content_check(checks,relative,digest,label+' proof tool '+relative)
+        for relative,digest in snapshot['target_inputs'].items():
+            _add_content_check(checks,relative,digest,label+' target input '+relative)
+        extra=snapshot['additional_input_files']
+        if 'loader_source' in extra:
+            _add_content_check(checks,ROOT/loader['source'],extra['loader_source'],label+' loader source')
+        if 'loader_configured_object' in extra:
+            _add_content_check(checks,ROOT/loader['candidate_object'],extra['loader_configured_object'],label+' loader configured object')
+        if 'initialized_owner_input_object' in extra:
+            owner_path=owner.get('input_object')
+            _need(owner_path is not None,label+' initialized owner input path is unavailable')
+            _add_content_check(checks,owner_path,extra['initialized_owner_input_object'],label+' initialized owner object')
+        if 'owner_configured_object' in extra:
+            _add_content_check(checks,ROOT/preflight['candidate_object'],extra['owner_configured_object'],label+' configured owner object')
+        _add_tool_content_checks(checks,snapshot['tools'],label)
+
+
+def _assert_joint_content_closure(candidate,final_snapshot,witnesses):
+    """Last-pass hashes only: no Make, compiler, parser, or collector calls."""
+    checks={}
+    _add_candidate_content_checks(checks,candidate,final_snapshot)
+    _add_content_check(checks,Path(__file__),_LOADED[Path(__file__)],'adapter implementation')
+    for index,witness in enumerate(witnesses):
+        _add_physical_content_checks(checks,witness,f'physical witness {index+1}')
+    for (path,tree,source_only),(expected,label) in checks.items():
+        _need(path.exists(),f'joint evidence input disappeared: {label}')
+        actual=batch.sweep_receipts.tree_digest(path,source_only=source_only) if tree else pp.sha256_file(path)
+        _assert_content_digest(expected,actual,label)
+
+
+def _assert_content_digest(expected,actual,label):
+    _need(actual==expected,f'joint evidence input changed at final content recheck: {label}')
+
+
 def _assert_same_joint_view(before,after):
     fields=('key','function','source','source_sha256','configured_recipe_fingerprint',
       'configured_object_sha256','owned_size','owned_bytes_sha256','owner','semantic_view',
@@ -316,10 +431,17 @@ def collect(key: str):
         final_witness=view.collect(key)
         _assert_same_joint_view(witness,final_witness)
         _assert_candidate_view_closure(candidate,final_witness)
+        _verify_loaded()
         final_snapshot,_,_,_,_= _r8_snapshot(candidate['source'],candidate['configured'],
                                                candidate['resolution'],time.monotonic()+240)
         _assert_final_candidate_state(candidate,final_snapshot,pp.sha256_file(candidate['raw']))
-        _verify_loaded()
+        # Preserve both stock-C/configured inputs before the terminal joint
+        # check; no compiler, parser, Make query, or evidence collector runs
+        # after the content-only rehash below.
+        shutil.copyfile(candidate['raw'],out/'stock-c.o')
+        shutil.copyfile(candidate['configured'],out/'configured.o')
+        (out/'r8-configured-recipe.txt').write_text(candidate['recipe_text'])
+        _assert_joint_content_closure(candidate,final_snapshot,(witness,final_witness))
         # Opaque recheck IDs are generated here; no caller-provided path or
         # identity can redirect a later check.
         recheck_id=hashlib.sha256((str(time.time_ns())+key+candidate['raw_sha256']).encode()).hexdigest()
@@ -340,7 +462,7 @@ def collect(key: str):
              'preprocessed_sha256':candidate['preprocessed_sha256']},
           'identity_authority':{'path':'Q69-STORAGE-ADAPTER-ARCHITECTURE-20261001/proposed-bindings.json',
              'sha256':AUTHORITY_SHA256,'route':'fixed original namespace record; no target-site correlation'},
-          'adapter_sha256':pp.sha256_file(Path(__file__)),
+          'adapter_sha256':_LOADED[Path(__file__)],
           'resolver_admission':False,'matching_credit':0,'recheck_handle':recheck_id,
           'artifacts':{'binding_report':None,'stock_c_object':None,'configured_object':None,
              'compiler_command':(out/'r8-stock-c-command.json').relative_to(ROOT).as_posix(),
@@ -348,9 +470,6 @@ def collect(key: str):
              'preprocessed_before':(out/'r8-preprocessed-before.c').relative_to(ROOT).as_posix(),
              'preprocessed_after':(out/'r8-preprocessed-after.c').relative_to(ROOT).as_posix(),
              'compile_log':(out/'r8-stock-c-compile.log').relative_to(ROOT).as_posix()}}
-        (out/'r8-configured-recipe.txt').write_text(candidate['recipe_text'])
-        for name,src in [('stock-c.o',candidate['raw']),('configured.o',candidate['configured'])]:
-            shutil.copyfile(src,out/name)
         packet['artifacts']['binding_report']=(out/'binding.json').relative_to(ROOT).as_posix()
         packet['artifacts']['stock_c_object']=(out/'stock-c.o').relative_to(ROOT).as_posix()
         packet['artifacts']['configured_object']=(out/'configured.o').relative_to(ROOT).as_posix()

@@ -1,4 +1,6 @@
 import inspect
+import hashlib
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -107,6 +109,36 @@ class ResidentStorageBindingTests(unittest.TestCase):
         bindings._assert_raw_object_stable('raw-original','raw-original')
         with self.assertRaisesRegex(bindings.BindingError,'raw stock-C object changed'):
             bindings._assert_raw_object_stable('raw-original','raw-mutated-during-parse')
+
+    def test_physical_source_mutation_during_final_snapshot_is_caught_by_terminal_hash(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source=Path(temp)/'anim.c'
+            source.write_bytes(b'original physical source')
+            original_mtime=source.stat().st_mtime_ns
+            expected=hashlib.sha256(source.read_bytes()).hexdigest()
+            # Model a source edit while the final candidate snapshot is doing
+            # its Make/CPP work, preserving the timestamp to defeat mtime-only checks.
+            source.write_bytes(b'mutated physical source')
+            os.utime(source,ns=(original_mtime,original_mtime))
+            self.assertEqual(source.stat().st_mtime_ns,original_mtime)
+            actual=hashlib.sha256(source.read_bytes()).hexdigest()
+            with self.assertRaisesRegex(bindings.BindingError,'physical source'):
+                bindings._assert_content_digest(expected,actual,'physical source')
+
+    def test_candidate_object_mutation_during_final_cpp_is_caught_by_terminal_hash(self):
+        with tempfile.TemporaryDirectory() as temp:
+            raw=Path(temp)/'overlay_008.c.o'
+            raw.write_bytes(b'original raw object')
+            original_mtime=raw.stat().st_mtime_ns
+            expected=hashlib.sha256(raw.read_bytes()).hexdigest()
+            # The final CPP snapshot may yield control; a later content hash
+            # must reject any raw object replacement in that window.
+            raw.write_bytes(b'mutated raw object')
+            os.utime(raw,ns=(original_mtime,original_mtime))
+            self.assertEqual(raw.stat().st_mtime_ns,original_mtime)
+            actual=hashlib.sha256(raw.read_bytes()).hexdigest()
+            with self.assertRaisesRegex(bindings.BindingError,'candidate object'):
+                bindings._assert_content_digest(expected,actual,'candidate object')
 
     def test_final_joint_witness_rejects_candidate_source_header_recipe_or_context_change(self):
         candidate={'freshness_after':{'source_sha256':bindings.SOURCE_SHA256,

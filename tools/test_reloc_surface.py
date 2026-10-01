@@ -744,6 +744,12 @@ class CandidateTuPlacementAuthorityTests(unittest.TestCase):
         canonical._symbols[1] = ("callee", 0, 8, 0x11, rs.SHN_UNDEF)
         self.assertFalse(self.verify(candidate, canonical))
 
+    def test_ambiguous_relocation_symbol_owner_is_not_admitted(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        candidate._symbols.append(candidate._symbols[1])
+        self.assertFalse(self.verify(candidate, canonical))
+
     def test_defined_relocation_referent_is_not_admitted(self):
         candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
         canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
@@ -788,6 +794,17 @@ class CandidateTuPlacementAuthorityTests(unittest.TestCase):
         self.assertEqual(
             "shifted-position-not-authoritative; exact canonical function proof",
             evidence[self.name][0]["reason"])
+
+    def test_failed_proof_preserves_candidate_tu_conflict_proposal(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        with mock.patch.object(rs, "_candidate_tu_placement_matches_canonical",
+                               return_value=False):
+            resolved, ambiguous = rs._stable_symbol_identities(
+                Path("missing"), candidate, 8, 0, self.FakeElf(0, b""),
+                evidence={}, atlas={}, root=Path("."), rom=b"rom",
+                candidate_source="overlays/o008/overlay_008")
+        self.assertEqual((8, 0xFC0), resolved[self.name])
+        self.assertNotIn(self.name, ambiguous)
 
 
 class OverlayDataIdentityTests(unittest.TestCase):

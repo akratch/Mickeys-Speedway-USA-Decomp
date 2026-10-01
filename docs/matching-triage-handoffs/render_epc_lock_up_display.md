@@ -2,11 +2,38 @@
 ### `render_epc_lock_up_display` plateau handoff
 
 - source: `src/main/diCpu.c`
-- score: 51 differing words
+- score: 0/344 words, promoted
 - frame: 0x50
 - relocations: 127
-- first mismatch: +0x18
-- summary: Real use before the loop stalls: 13-iter loop 338 masked delta -296, block-local tick 51 delta 0, direct tick 53 delta 0. No leading ring draw.
+- first mismatch: none
+- summary: Matched. The saved integer registers are 64-bit context fields narrowed to u32 at each use; the three argument hoists into the shared value local are removed and the level result has its own local.
+
+#### 2026-10-01, lane c-obj: ROM-exact closure
+
+Promoted; the guard is removed and the full-ROM hash holds. The closure below
+asked for a zero-byte construct that spends one integer ring draw before the
+first emitted instruction. That requirement was a property of the inherited
+shape, which read the saved context as an array of u32 words. The donor shape
+(DKR thread0_epc.c, its GET_REG macro; JFG structs.h epcInfo for the layout)
+reads each saved integer register as a 64-bit field and narrows it at the
+use. A narrowed 64-bit read draws a register pair and emits one load, so the
+draws the u32-array shape never spent come from the type, not from a phantom
+statement.
+
+Measured: retyping alone, with the three hoists still in place, 51 to 45. A
+128-cell product over field signedness, the narrowing cast at the return
+address sites, the allocation-fault line and the fourteen register lines, and
+each of the three inherited hoists then gave 2 (schedule only, the
+cause-table load order) with only the cause-table hoist kept, and 7 with all
+three hoists removed, where the 7 were the level-report block. Giving the
+level result its own local instead of reusing the value local measured 0 at
+delta zero with no hoist at all. The return-address sites need the unsigned
+narrowing (the signed one is four bytes long); the register lines are
+indifferent to signedness.
+
+So every one of the three hoists the 62 to 51 pass adopted was compensation
+for the missing draws, and the colour landscape, force lattice and dead-update
+controls recorded below were all measured inside the u32-array shape.
 
 Summary before this remeasure: Dead tick updates are byte-inert and compensated preincrement adds an instruction; the zero-byte leading ring draw remains open.
 

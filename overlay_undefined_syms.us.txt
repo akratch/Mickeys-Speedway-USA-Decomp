@@ -212,6 +212,19 @@ gOverlay2TemporaryRange = 0x00000008;
 /* overlay 2: overlay2SplitRegion.c.o */
 D_24 = 0x00000024;
 
+/* overlay 2: func_overlay_002_F0000C90_1857A88.c.o */
+_bzero_o002Reloc = 0xf0000000;
+func_8002B280_o002Reloc = 0xf0000000;
+func_8002B524_o002Reloc = 0xf0000000;
+gOverlay2BuiltLineCount = 0x00000078;
+gOverlay2BuiltNodeCount = 0x00000074;
+gOverlay2RegionCount = 0x00000024;
+gOverlay2Regions = 0x00000004;
+mmFree_o002Reloc = 0xf0000000;
+mmGetDelay_o002Reloc = 0xf0000000;
+mmSetDelay_o002Reloc = 0xf0000000;
+overlay2GetBuildValueReloc = 0xf0000000;
+
 /* overlay 2: overlay2Enable.c.o */
 overlay2SetEnabledReloc = 0xf0000000;
 

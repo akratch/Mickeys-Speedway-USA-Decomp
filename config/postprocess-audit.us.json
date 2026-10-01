@@ -498,15 +498,16 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o002/func_overlay_002_F0000C90_1857A88.c.o",
       "offset": 3216,
       "overlay": 2,
       "size": 1420,
       "source": "src/overlays/o002/func_overlay_002_F0000C90_1857A88.c",
       "tools": [
-        "trim_elf_section.py"
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -9211,7 +9212,7 @@
       "metadata": 635,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 229192,
+    "matched_c_bytes_with_postprocess": 230612,
     "objects_with_postprocess": 639
   }
 }

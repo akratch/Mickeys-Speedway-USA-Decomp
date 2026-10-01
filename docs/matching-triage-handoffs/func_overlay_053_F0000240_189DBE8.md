@@ -92,7 +92,25 @@ measured with `tools/fast_score.py` on a copy of the TU:
   both halves: 6 divisions with checks became 3 (measured 515 to 455 before
   the single-variable change).
 
-Open: frame 0xF8 against the shipped 0xD8. The shipped frame has about five
+Frame, measured afterwards (not banked, because its masked count is higher
+than the banked 403). Every declared local owns a 4-byte home whether or not it
+lives in a register (read from `-g3` locals: `spC8` at -0x8, then in
+declaration order downward), so the frame is a count of declarations. The
+shipped layout is: two register-only locals above `spC8`, the memory locals in
+the order `spC8[2]`, `spC4`, `spB4[4]`, `spB0`, `spAC`, `spA8`, `spA4`, three
+register-only locals, the draw packet, `sp80`, `sp7C`, `sp78`: five scalar
+locals in all. A variant with exactly five (`list`, `i`, `j`, `inner`, one
+unused pad), the entry rows and the digit pairs written as global-array
+expressions `D_ENT[i]` (uopt then knows the stores cannot alias the address-taken
+digit locals, so each dividend divides once with no temporaries), and one loop
+variable `j` for the fade loop, the cleanup loop and the third loop, has frame
+0xD8 and every home offset on the shipped one, 426 masked at delta 0 (415 at +20
+with `i` in those loops). The remaining words are register-pressure: the shipped
+cleanup loop holds its pointer in v0 and spills it around the call where the
+candidate has free saved registers, the fade-loop counter is a1 where the
+candidate uses a0, and the entry-row base is computed in a different order.
+
+Open on the banked source: frame 0xF8 against the shipped 0xD8. The shipped frame has about five
 declared scalar homes (two above `spC8`, three between `spA4` and the packet);
 the candidate declares 12 plus the two quotient temps, and removing
 `obj`/`q`/`inner`/`ent` regressed 403 to 430 to 515. The first mismatch is the

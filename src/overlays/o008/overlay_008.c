@@ -600,14 +600,19 @@ extern s32 func_8002A204(s16 angle);
 extern s32 mathDiffAngle(s32 current, s32 target);
 
 /* NON_MATCHING reconstruction: exact 1259-word size, the target's 0xB0 frame
- * with an identical home ladder, and no one-sided words; 275 masked
- * differences remain and all but four are register naming.
+ * with an identical home ladder, and no one-sided words; 78 masked
+ * differences remain.
  * What moved it from 636 (2026-10-01): the pool floats are literals at each
  * use, one pool entry per use as shipped; state fields are read directly
  * rather than through a shared value carrier; scale is multiplied by D_8 in
  * place; the pre-loop factor is its own symbol, so the loop's scale outranks
  * the cached state->unk4 web; and integer carriers are shared the way the
  * shipped registers share them (noted on the declarations).
+ * 275 to 78 (lane d-o008): the stick test is a plain compare, not a value
+ * tested against zero; the frame-counter increment is truncated to u8 before
+ * the mask; the turn limit, the yaw step and the drift step take the carriers
+ * the shipped registers imply; the curve sum adds the base first; and the
+ * pre-loop factor multiplies by tuning before the half.
  * The update loop tests the old counter; the braking global is a halfword;
  * mathDiffAngle accepts the full requested angle. */
 #ifdef NON_MATCHING
@@ -615,7 +620,7 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
                                        O8P1294State *state, f32 update) {
     s32 updateCount;
     f32 value;
-    s32 angle;              /* state->unk108 copy, then the drift step */
+    s32 angle;              /* state->unk108 copy */
     s32 steeringInput;      /* raw stick, the wobble term, then the drift target */
     s32 updatesRemaining;
     s32 steeringTarget;     /* clamped stick, then the target angle */
@@ -623,11 +628,11 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
     s32 angleStep;          /* angle step, then the left selector */
     s32 impactBoost;
     s32 colorEnabled[2];
-    s32 braking;            /* brake bit, then the reverse-motion flag */
+    s32 braking;            /* brake bit, the reverse-motion flag, then the turn limit */
     s32 inputFlags;         /* input word, then the right selector */
     s32 turnDirection;
     s32 effectMask;
-    s32 index;              /* speed level, then the curve index */
+    s32 index;              /* speed level, curve index, yaw step, then the drift step */
     s16 cooldown;
     s16 driftDirection;
     f32 scale;
@@ -652,9 +657,8 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
         D_10 *= 1.0f + (-0.3f * state->unkD4->state64->blend14);
     }
     if (state->unk185 == 0) {
-        value = state->unk5C;
-        if (value != 0.0f) {
-            factor = 1.0f - (value * 0.5f * tuning[0xC / sizeof(f32)]);
+        if ((value = state->unk5C) != 0.0f) {
+            factor = 1.0f - value * tuning[0xC / sizeof(f32)] * 0.5f;
             if (factor < 0.1f) {
                 factor = 0.1f;
             }
@@ -743,7 +747,7 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
             state->unk148 = state->unk4;
             braking = inputFlags & 0x4000;
             state->unk146 += ((s32) scale - state->unk146) >> 3;
-            if ((braking != 0) && (inputFlags & 0x10) && ((steeringInput = state->unk428, ((steeringInput < -0x1E) != 0)) || (steeringInput >= 0x1F))) {
+            if ((braking != 0) && (inputFlags & 0x10) && (((steeringInput = state->unk428) < -0x1E) || (steeringInput >= 0x1F))) {
                 if (state->unk4 < -5.0f) {
                     state->unk4 += 0.2f;
                     if (state->unk4 > -5.0f) {
@@ -807,7 +811,7 @@ block_74:
                         index = (s32) -state->unk4;
                         scale = -state->unk4 - (f32) index;
                     }
-                    scale = ((curve[index + 1] - curve[index]) * scale) + curve[index];
+                    scale = curve[index] + ((curve[index + 1] - curve[index]) * scale);
                 }
                 if (state->unk4 < -speedLimit) {
                     state->unk4 *= 0.99f;
@@ -853,10 +857,10 @@ block_74:
                 state->unkA2 = (s16) (cooldown - 1);
             }
             if ((state->unk41C & 0x10) && (state->unk100 == 0) && (state->unk4 < -3.0f)) {
-                if (state->unk428 < -0xF) {
+                if ((steeringInput = state->unk428) < -0xF) {
                     state->unk100 = -1;
                 }
-                if (state->unk428 >= 0x10) {
+                if ((steeringInput = state->unk428) >= 0x10) {
                     state->unk100 = 1;
                 }
                 if (state->unk100 != 0) {
@@ -897,7 +901,7 @@ block_74:
             }
 
             steeringTarget = steeringInput;
-            if ((state->unk41C & 0x10) && (driftDirection = state->unk100, turnAmount = 0x2710, (driftDirection != 0))) {
+            if ((state->unk41C & 0x10) && (driftDirection = state->unk100, braking = 0x2710, (driftDirection != 0))) {
                 if (steeringInput >= 0x33) {
                     steeringTarget = 0x32;
                 } else if (steeringTarget < -0x32) {
@@ -914,7 +918,7 @@ block_74:
                 } else if (steeringTarget < -0x3C) {
                     steeringTarget = -0x3C;
                 }
-                turnAmount = (s32) tuning[0x14 / sizeof(f32)];
+                braking = (s32) tuning[0x14 / sizeof(f32)];
             }
             steeringTarget = (s32) (((f32) -steeringTarget * tuning[0x10 / sizeof(f32)]) / 60.0f);
             angleStep = (s32) ((f32) (steeringTarget - state->unk108) * 0.145f);
@@ -935,10 +939,10 @@ block_74:
             }
             angle = state->unk108;
             state->unk4 *= value;
-            if ((angle < -turnAmount) || (turnAmount < angle)) {
+            if ((angle < -braking) || (braking < angle)) {
                 state->unk4 *= tuning[0x18 / sizeof(f32)];
             }
-            state->unk182 = (u8) ((state->unk182 + 1) & 0xF);
+            state->unk182 = (u8) (state->unk182 + 1) & 0xF;
             turnAmount = (s32) ((f32) state->unk108 * scale);
             if (turnAmount != 0) {
                 driftDirection = state->unk100;
@@ -958,22 +962,22 @@ block_74:
                     turnAmount += steeringInput;
                 }
             }
-            angleStep = mathDiffAngle(state->unkFC, turnAmount) >> 2;
+            index = mathDiffAngle(state->unkFC, turnAmount) >> 2;
 
-            turnAmount = angleStep;
-            if (angleStep < -0x2EE) {
+            turnAmount = index;
+            if (index < -0x2EE) {
                 turnAmount = -0x2EE;
-            } else if (angleStep >= 0x2EF) {
+            } else if (index >= 0x2EF) {
                 turnAmount = 0x2EE;
             }
             driftDirection = state->unk100;
             steeringInput = (driftDirection << 0xD) - state->unkFE;
-            angle = steeringInput >> 4;
+            index = steeringInput >> 4;
             state->unkFC = (s16) (state->unkFC + turnAmount);
-            if (angle == 0) {
-                angle = steeringInput;
+            if (index == 0) {
+                index = steeringInput;
             }
-            state->unkFE += angle;
+            state->unkFE += index;
             if (driftDirection != 0) {
                 steeringInput = state->unk428;
                 if (((steeringInput >= 0x1A) && (driftDirection < 0)) || ((steeringInput < -0x19) && (driftDirection > 0))) {
@@ -2332,11 +2336,11 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:start
  * symbol: func_overlay_008_F0001294_185EFEC
- * score: 275 differing words
+ * score: 78 differing words
  * frame: 0xB0
  * relocations: 137
- * first-mismatch: +0xD8
- * summary: Frame and home ladder exact, no one-sided words; 271 naming rows: turnAmount a3 for a2, drift-step and unkFE webs, pre-loop factor product order.
+ * first-mismatch: +0xD4
+ * summary: Ring re-phased by a u8-truncated counter increment and a plain stick compare; pre-loop factor draw order and unkFE temp in a3 remain.
  * PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:end
  */
 

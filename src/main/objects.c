@@ -215,9 +215,6 @@ extern void partUpdateTriggers(void *object, s32 updateRate);
 extern void func_8000BB84(s32 arg0, Objects0BB84Vec3 *arg1,
                           Objects0BB84Vec3 *arg2, f32 arg3,
                           Objects0BB84Plane *arg4, Objects0BB84Object *arg5);
-extern f32 D_8008152C;
-extern f32 D_80081530;
-extern f32 D_80081534;
 
 typedef struct {
     u8 pad00[0x40];
@@ -2860,7 +2857,7 @@ typedef struct {
 
 extern s32 runlinkIsModuleLoaded(s32 module);
 extern void func_8000AEEC(void *object, s32 updateRate);
-extern void func_8000B3CC(void *object, s32 updateRate);
+extern void func_8000B3CC(Objects0B3CCObject *object, s32 updateRate);
 extern void spranimOnceControl(void *object, s32 updateRate);
 extern void spranimControl(void *object, s32 updateRate);
 extern void texscrollControl(void *object, s32 updateRate);
@@ -5135,13 +5132,18 @@ void func_8000AEEC(void *arg0, s32 arg1) {
             break;
     }
     if (object->unk78 != NULL) {
-        func_8000B3CC(object, arg1);
+        func_8000B3CC((Objects0B3CCObject *)object, arg1);
     }
     D_8007A21C = 4;
 }
-#ifdef NON_MATCHING
-void func_8000B3CC(void *arg0, s32 arg1) {
-    Objects0B3CCObject *object;
+/* Matched 2026-10-02. The object is the typed parameter, not a cast local:
+ * the velocity field loads then hash so unk1C is coloured first (f0). The
+ * divisor and the doubled negative dot are uopt spills beside step's at the
+ * bottom of the frame, so neither is a declared carrier; `pad` holds the
+ * slot the old cast local took. The 0.1/0.707/0.1 literals are this function's
+ * own pool (the second 0.1 is spelled apart so it is not merged). */
+void func_8000B3CC(Objects0B3CCObject *object, s32 arg1) {
+    s32 pad;
     Objects0B3CCConfig *config;
     f32 start[3];
     f32 end[3];
@@ -5161,9 +5163,7 @@ void func_8000B3CC(void *arg0, s32 arg1) {
     f32 moveZ;
     s16 savedAngle2;
     s16 savedAngle4;
-    f32 factor;
 
-    object = (Objects0B3CCObject *)arg0;
     state = object->unk78;
     state->unk2 = 0;
     if ((state->flags & 2) != 0) {
@@ -5218,7 +5218,7 @@ void func_8000B3CC(void *arg0, s32 arg1) {
                 func_80002FE0(config->unk1C, object->unkC, object->unk10,
                               object->unk14, 4, &state->unk24);
                 if (state->unk24 != NULL) {
-                    volume = state->unk18 * D_8008152C;
+                    volume = state->unk18 * 0.1f;
                     if (volume > 1.0f) {
                         volume = 1.0f;
                     }
@@ -5230,9 +5230,9 @@ void func_8000B3CC(void *arg0, s32 arg1) {
                 savedY = object->unk10;
                 savedAngle2 = object->unk2;
                 savedAngle4 = object->unk4;
+                object->unk10 = state->unk14;
                 object->unk2 = 0;
                 object->unk4 = 0;
-                object->unk10 = state->unk14;
                 object->unk80 = config->unk14;
                 partUpdateTriggers(object, arg1);
                 object->unk80 = 0;
@@ -5253,31 +5253,29 @@ void func_8000B3CC(void *arg0, s32 arg1) {
     if ((collision << 2) != 0) {
         state->unk2 = 1;
         bounced = 0;
-        /* L144 address form homes speed and dot; volatile overshoots. */
-        if ((config->unk10 == 0.0f) || ((speed = state->unk18) == 0.0f)) {
+        if ((config->unk10 == 0.0f) || (state->unk18 == 0.0f)) {
             object->unk1C = 0.0f;
             object->unk20 = 0.0f;
             object->unk24 = 0.0f;
             state->flags |= 2;
         } else {
-            object->unk1C /= *(f32 *)&speed;
+            object->unk1C /= state->unk18;
             object->unk20 /= state->unk18;
             object->unk24 /= state->unk18;
             state->unk18 *= config->unk10;
             dot = (state->unk8 * object->unk1C) +
                   (state->unkC * object->unk20) +
                   (state->unk10 * object->unk24);
-            negativeDot = -*(f32 *)&dot;
-            factor = negativeDot + negativeDot;
-            object->unk1C = ((factor * state->unk8) + object->unk1C) *
+            negativeDot = -dot;
+            object->unk1C = (((negativeDot + negativeDot) * state->unk8) + object->unk1C) *
                             state->unk18;
-            object->unk20 = ((factor * state->unkC) + object->unk20) *
+            object->unk20 = (((negativeDot + negativeDot) * state->unkC) + object->unk20) *
                             state->unk18;
-            object->unk24 = ((factor * state->unk10) + object->unk24) *
+            object->unk24 = (((negativeDot + negativeDot) * state->unk10) + object->unk24) *
                             state->unk18;
             speed = sqrtf((object->unk1C * object->unk1C) + (object->unk20 * object->unk20) + (object->unk24 * object->unk24));
             if (speed < 1.0f) {
-                if (state->unkC < D_80081530) {
+                if (state->unkC < 0.707f) {
                     object->unk1C = state->unk8;
                     object->unk20 = state->unkC;
                     object->unk24 = state->unk10;
@@ -5297,7 +5295,7 @@ void func_8000B3CC(void *arg0, s32 arg1) {
             func_80002FE0(config->unk1E, object->unkC, object->unk10,
                           object->unk14, 4, &state->unk24);
             if (state->unk24 != NULL) {
-                volume = state->unk18 * D_80081534;
+                volume = state->unk18 * 0.100000001f;
                 if (volume > 1.0f) {
                     volume = 1.0f;
                 }
@@ -5307,9 +5305,6 @@ void func_8000B3CC(void *arg0, s32 arg1) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_8000B3CC.s")
-#endif
 /* Workbench verdict: structure-mismatch; 61 differing words (65/65). */
 /* First mismatch: +0x0; target frame is 0x28, candidate frame is 0x30. */
 /* Structural gap: FP register/stack allocation and argument homes differ. */
@@ -5415,14 +5410,4 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * first-mismatch: +0x0
  * summary: Workbench structure-mismatch: structure-buckets. Next: authenticate the default-mode lifetime and sort-prefix source before further scheduling work.
  * PLATEAU-HANDOFF:func_80009414:end
- */
-
-/* PLATEAU-HANDOFF:func_8000B3CC:start
- * symbol: func_8000B3CC
- * score: 100/494 words
- * frame: 0x98
- * relocations: 20
- * first-mismatch: +0x148
- * summary: Velocity sums read fields at each use (116 to 100, delta 0). Left: reflection keeps fields in f0/f14/f2/f12, factor homed, zero in f18.
- * PLATEAU-HANDOFF:func_8000B3CC:end
  */

@@ -365,8 +365,13 @@ typedef struct {
 } Objects07C68Record;
 
 typedef struct {
+    Objects07C68Texture *texture;
+    s32 unk4;
+} Objects07C68TextureEntry;
+
+typedef struct {
     u8 pad00[0x18];
-    void **unk18;
+    Objects07C68TextureEntry *unk18;
     u8 pad1C[0x10];
     u8 unk2C;
 } Objects07C68Source;
@@ -3052,75 +3057,67 @@ void func_8000784C(s32 arg0) {
     D_800C9478 = 1;
     D_800C946C = (f32)arg0;
 }
-/* Workbench verdict: allocation; 25 differing words (93/118). */
-/* First mismatch: +0x94; size, frame, stack homes and opcode schedule are exact. */
-/* Structural gap: none; one ugen ring rotation from +0x94 remains. */
-#ifdef NON_MATCHING
+/* PROVENANCE: the per-batch texture-animation walk is adapted from the public
+ * Diddy Kong Racing decompilation, src/objects.c::obj_tex_animate (the
+ * 8-byte texture-table entry and the named texture index); Mickey's own
+ * target supplies the record layout, the second frame word and the output
+ * stream.
+ *
+ * Matched (was 25 masked words, one ring rotation) on the natural shape: the
+ * texture table is an array of 8-byte entries indexed by a named texture
+ * index, instead of a pointer array indexed by twice a masked expression.
+ * The doubled index spent a ring draw the scale folded away, and the named
+ * index is the pool web the target colours.  The flag word and both frame
+ * words are read from the record at each use, with no carrier locals, in a
+ * plain for loop. */
 void func_80007C68(Objects07C68Object *arg0, Objects07C68Source *arg1,
                    Objects07C68Object *arg2, s32 arg3) {
-    s16 temp_v0_2;
-    s32 sp58;
-    s32 temp_t3;
-    s32 temp_v0;
-    s32 var_s3;
-    Objects07C68Record *var_s0;
-    s16 *var_s2;
-    Objects07C68Texture *texture;
+    Objects07C68Record *rec;
+    s32 offset;
+    s16 *out;
+    s32 i;
+    Objects07C68Texture *tex;
+    s32 texIndex;
 
     if (func_800290A0() != 0) {
         arg3 = 0;
     }
-    var_s0 = arg2->unk4C;
-    if (var_s0 != NULL) {
-        var_s3 = 0;
-        var_s2 = ((Objects07C68Indexed *)((u8 *)arg2 + (arg2->unkA * 4)))->unk50;
-        if ((s32)arg1->unk2C > 0) {
-            do {
-                temp_v0 = var_s0->unk4;
-                texture = (Objects07C68Texture *)arg1->unk18[(temp_v0 & 0xFF) * 2];
-                if (temp_v0 & 0x100000) {
-                    sp58 = (s32)var_s0->unk0;
-                    if (var_s0->unk4 & 0x200000) {
-                        D_8007BDA0 = arg0->unk90;
-                    }
-                    func_800367E8(texture, &var_s0->unk4, &sp58, arg3);
-                    var_s0->unk0 = (s16)sp58;
-                    if (var_s0->unk2 >= 0) {
-                        temp_t3 = sp58 + 0x100;
-                        sp58 = temp_t3;
-                        if (temp_t3 >= (s32)texture->unk10) {
-                            if (texture->unk3 & 2) {
-                                sp58 = 0;
-                            } else {
-                                sp58 -= 0x100;
-                            }
+    rec = arg2->unk4C;
+    if (rec != NULL) {
+        out = ((Objects07C68Indexed *)((u8 *)arg2 + (arg2->unkA * 4)))->unk50;
+        for (i = 0; i < arg1->unk2C; i++) {
+            texIndex = rec->unk4 & 0xFF;
+            tex = arg1->unk18[texIndex].texture;
+            if (rec->unk4 & 0x100000) {
+                offset = rec->unk0;
+                if (rec->unk4 & 0x200000) {
+                    D_8007BDA0 = arg0->unk90;
+                }
+                func_800367E8(tex, &rec->unk4, &offset, arg3);
+                rec->unk0 = offset;
+                if (rec->unk2 >= 0) {
+                    offset += 0x100;
+                    if (offset >= tex->unk10) {
+                        if (tex->unk3 & 2) {
+                            offset = 0;
+                        } else {
+                            offset -= 0x100;
                         }
-                        var_s0->unk2 = (s16)sp58;
                     }
+                    rec->unk2 = offset;
                 }
-                temp_v0_2 = var_s0->unk2;
-                if (temp_v0_2 >= 0) {
-                    var_s2 += 1;
-                    /* `(*texture).unkE`, not `texture->unkE`: the two spellings
-                     * are semantically identical but cfe emits a different
-                     * expression-temp order for them, and this one is the
-                     * target's (26 -> 25 differing words, measured). */
-                    var_s2[-1] = (s16)((temp_v0_2 >> 8) * (*texture).unkE);
-                }
-                var_s3 += 1;
-                var_s2 += 1;
-                var_s2[-1] = (s16)(((s16)var_s0->unk0 >> 8) * texture->unkE);
-                var_s0 += 1;
-            } while (var_s3 < (s32)arg1->unk2C);
+            }
+            if (rec->unk2 >= 0) {
+                *out++ = (rec->unk2 >> 8) * tex->unkE;
+            }
+            *out++ = (rec->unk0 >> 8) * tex->unkE;
+            rec++;
         }
         if (arg0->unk90 == 1) {
             arg0->unk90 = 2;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80007C68.s")
-#endif
 /* Workbench verdict: structure-mismatch; 92 differing words (122/122). */
 /* First mismatch: +0x18; extent and frame 0x18 are exact, with no relocations. */
 /* Blocker: pool/temp allocation and dimension-load/offset-initialization schedule. */
@@ -5466,16 +5463,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * first-mismatch: +0xC
  * summary: Remeasured 2026-09-23: 63 masked at delta 0, frame exact, 18 relocations against 16; active-list carriers and loop registers remain structural.
  * PLATEAU-HANDOFF:func_80006FA0:end
- */
-
-/* PLATEAU-HANDOFF:func_80007C68:start
- * symbol: func_80007C68
- * score: 25 differing words
- * frame: 0x60
- * relocations: 4
- * first-mismatch: +0x94
- * summary: Remeasured 2026-09-23: 25 masked at delta 0, frame and relocations exact; pure register naming from +0x94, one web the target colours is missing.
- * PLATEAU-HANDOFF:func_80007C68:end
  */
 
 /* PLATEAU-HANDOFF:func_80007E40:start

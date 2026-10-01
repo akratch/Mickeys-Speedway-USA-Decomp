@@ -1625,6 +1625,17 @@ overlay46RandomBoolReloc = 0xf0000000;
 overlay46RandomRangeReloc = 0xf0000000;
 overlay46RandomSignedReloc = 0xf0000000;
 
+/* overlay 46: func_overlay_046_F0000874_188EC6C.c.o */
+camStandardOrtho_o046Reloc = 0xf0000000;
+func_80023F84_o046Reloc = 0xf0000000;
+func_8002A8C0_o046Reloc = 0xf0000000;
+func_8002F618_o046Reloc = 0xf0000000;
+func_80034920_o046Reloc = 0xf0000000;
+func_8004B0F8_o046Reloc = 0xf0000000;
+gOverlay46MatrixHead = 0x00000000;
+gOverlay46ParticleStepPoolReloc = 0x00000024;
+gOverlay46VertexHead = 0x00000000;
+
 /* overlay 46: overlay46InitState.c.o */
 gOverlay46Enabled = 0x00000058;
 gOverlay46Limit = 0x0000005c;

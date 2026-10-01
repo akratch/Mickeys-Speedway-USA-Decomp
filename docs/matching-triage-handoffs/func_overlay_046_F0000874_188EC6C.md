@@ -2,11 +2,58 @@
 ### `func_overlay_046_F0000874_188EC6C` plateau handoff
 
 - source: `src/overlays/o046/func_overlay_046_F0000874_188EC6C.c`
-- score: 28/450 words
+- score: 0/450 words, promoted
 - frame: 0xC0
 - relocations: 96
-- first mismatch: +0x1FC
-- summary: Size 0, 28/450. L99 unused as GBI cmd; dying count++ subscript. Colour floor 28 (202 probes, 0 winners). Homes +0x4C/+0x58 vs +0x54.
+- first mismatch: none
+- summary: Matched. Step factors and captions are literals in the TU pool, the render arguments are addresses of three resident cursors, and the primitive-colour command is the one-line packet macro.
+
+#### 2026-10-01, lane c-ovl2: ROM-exact closure
+
+The retained candidate reproduced 28 masked differences at 1,800 bytes. Every
+one came from reading the wrong identity off the relocation surface, not from
+allocation. Decoding the module's own relocation records for the function
+range showed three things the inherited placeholders hid:
+
+- The six references at rodata +0x4C, +0x50 and +0x54 are LOCAL records
+  against the module rodata, not globals: three float literals, one per
+  state. Written as literals at their use, each step is a hoisted invariant
+  with no declared carrier. The state-2 step, which crosses calls, then takes
+  a compiler temporary instead of a declared home, and that temporary is the
+  same slot the draw loop spills its walker to. That is the single shared
+  +0x54 home earlier passes could not produce from two declared locals.
+- The two panel arguments at rodata +0xC and +0x1C are string literals in
+  the same pool.
+- Every pointer argument the candidate loaded from a "render data" global is
+  a SYMBOL record naming one of three adjacent resident cursors (display
+  list, matrix, vertex) and is passed by address. The second call of the
+  tail takes the display-list cursor's address, so the load in its delay slot
+  disappears, and the draw call's hoisted third argument is the vertex
+  cursor's address.
+
+Measured in order on the direct configured compile: addresses alone 28 to 6;
+adding the literals reaches the target's instruction stream with the frame
+8 bytes short (17); the primitive-colour command as a one-line packet macro
+orders its two stores as shipped (L59) and its block-scoped pointer is the
+one home below the table; with five scalar homes above the table the frame
+is 0xC0 and the score is 0. Inline steps spelled against the old globals are
+8 bytes long and score 326, because a global float load cannot be hoisted
+past the particle stores, which is why earlier passes recorded step inlining
+as a regression.
+
+Proof: overlay 46 text +0x874, 1,800 executable bytes / 450 words, frame
+0xC0, 96 of 96 relocation identities. Eleven resident callees are renamed to
+their generated surface entries. The compiler's private pool duplicates
+retained overlay rodata: the captions are anchored at +0xC, the three step
+factors are bound through a pool-base symbol to +0x4C, and the private copy
+is dropped by digest. None of these steps touches an instruction. Prior
+measurements below remain historical negatives for the placeholder shape.
+
+Commands: direct configured compile scored with `tools/score_symbol.py
+--object`, `gmake overlay-atlas-write`, `tools/refresh_atlas_digest.py`,
+`gmake extract`, `gmake overlay-syms`, `gmake verify`,
+`gmake check-overlay-syms`, and
+`gmake promotion-proof SYMBOL=func_overlay_046_F0000874_188EC6C`.
 
 Fresh evidence:
 

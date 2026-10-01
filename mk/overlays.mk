@@ -1771,7 +1771,34 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46InitializeBuffers.c.o: POSTPROCES
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xD8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46InitializeBuffers.c.o: OPT_FLAGS := -O2 -Wo,-loopunroll,0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0000874_188EC6C.c.o: CFLAGS += -Wab,-r4300_mul
+# The particle update and draw is instruction-exact. Its eleven resident
+# callees go through the generated surface entries. Its private pool (two
+# captions, then three step factors) duplicates retained overlay rodata: the
+# captions sit at +0xC and +0x1C, which the anchor supplies, and the factors at
+# +0x4C..+0x54, which the step-pool base supplies for the compiler's own
+# +0x28..+0x30 offsets. The pool is dropped by digest. No instruction changes.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0000874_188EC6C.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/func_overlay_046_F0000874_188EC6C.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0000874_188EC6C.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym camStandardOrtho=camStandardOrtho_o046Reloc \
+		--redefine-sym func_80023F84=func_80023F84_o046Reloc \
+		--redefine-sym func_8002A8C0=func_8002A8C0_o046Reloc \
+		--redefine-sym func_8002F618=func_8002F618_o046Reloc \
+		--redefine-sym func_80034920=func_80034920_o046Reloc \
+		--redefine-sym func_80037658=func_80037658_o046Reloc \
+		--redefine-sym func_8004B0A4=func_8004B0A4_o046Reloc \
+		--redefine-sym func_8004B0B8=func_8004B0B8_o046Reloc \
+		--redefine-sym func_8004B0DC=func_8004B0DC_o046Reloc \
+		--redefine-sym func_8004B0F8=func_8004B0F8_o046Reloc \
+		--redefine-sym mathRnd=mathRnd_o046Reloc \
+		--add-symbol gOverlay46ParticleStepPoolReloc=0x24,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_046_F0000874_188EC6C.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:3f747d583b175b6db0aa98ac4c009a476406195eba33de3c112c6bdba325d2e4 0xC && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x708
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0001228_188F620.c.o: OPT_FLAGS := -O2 -Wo,-loopunroll,0
 ifneq ($(NON_MATCHING),1)

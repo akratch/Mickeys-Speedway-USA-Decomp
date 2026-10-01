@@ -27,85 +27,84 @@ typedef struct Overlay46DisplayCommand {
     u32 w1;
 } Overlay46DisplayCommand;
 
-typedef union Overlay46StateC {
-    s32 state;
-    u8 bytes[4];
-} Overlay46StateC;
-
 extern s32 D_10;
 extern s32 D_14;
 extern s32 D_18;
-extern u8 D_1C[];
 extern Overlay46Particle D_20[];
 extern u8 D_2C[];
-extern f32 D_4C;
-extern f32 D_50;
-extern f32 D_54;
 extern s32 D_5C;
-extern Overlay46StateC D_C;
+extern s32 D_C;
 
-extern u8 gOverlay46RenderData0[];
-extern u8 gOverlay46RenderData1[];
-extern u8 gOverlay46RenderData2[];
-extern void *gOverlay46ParticleModel;
-extern void *gOverlay46ParticleMaterial;
+/* Resident display-list, matrix and vertex cursors, reached through runtime
+ * relocation records and passed by address. */
 extern Overlay46DisplayCommand *gDisplayListHead;
+extern void *gOverlay46MatrixHead;
+extern void *gOverlay46VertexHead;
 
-extern void overlay46RenderBeginReloc(void);
-extern void overlay46RenderLoadReloc(void *data);
-extern void overlay46RenderBindReloc(void *data0, void *data1);
-extern s32 overlay46RandomRangeReloc(s32 minimum, s32 maximum);
-extern f32 overlay46SinReloc(u16 angle);
-extern void overlay46SetRenderModeReloc(s32 mode);
-extern void overlay46SetColorReloc(s32 red, s32 green, s32 blue, s32 alpha);
-extern void overlay46SetPrimColorReloc(s32 red, s32 green, s32 blue,
-                                       s32 alpha, s32 intensity);
-extern void overlay46DrawPanelReloc(void *data, s32 x, s32 y, void *state,
-                                    s32 size);
-extern void overlay46DrawPanelExReloc(void *data0, void *data1, s32 x, s32 y,
-                                      s32 red, s32 green, s32 blue, s32 alpha);
-extern void overlay46LoadParticleMaterialReloc(void *material);
-extern void overlay46DrawParticleReloc(void *data, void *model,
-                                       void *material,
-                                       Overlay46Particle *particle,
-                                       void *resource, s32 flags, s32 alpha);
+extern void func_80037658(void);
+extern void func_80034920(void *commands);
+extern void camStandardOrtho(void *commands, void *matrices);
+extern s32 mathRnd(s32 minimum, s32 maximum);
+extern f32 func_8002A8C0(u16 angle);
+extern void func_8004B0A4(s32 mode);
+extern void func_8004B0DC(s32 red, s32 green, s32 blue, s32 alpha);
+extern void func_8004B0B8(s32 red, s32 green, s32 blue, s32 alpha,
+                          s32 intensity);
+extern void func_8004B0F8(void *commands, s32 x, s32 y, void *text,
+                          s32 size);
+extern void func_8002F618(void *commands, void *data, s32 x, s32 y,
+                          s32 red, s32 green, s32 blue, s32 alpha);
+extern void func_80023F84(void *commands, void *matrices, void *vertices,
+                          Overlay46Particle *particle, void *resource,
+                          s32 flags, s32 alpha);
 
-/* Pinned DKR v77/v80 and JFG skeleton scans found no close donor. */
-/* Workbench: 450/450, 28 masked, first +0x1FC, frame 0xC0. L99 unused is
- * the GBI display-list cursor (a fresh cmd local grows the frame). Draw
- * uses particlesByVariant[count++] so the index dies in the subscript.
- * Colour landscape floors at 28 (202 probes, no winner). Remains: overlay
- * the +0x4C and +0x58 spill homes onto the target's one +0x54 temp, and
- * put the material %lo in the LoadParticleMaterial delay slot. */
-#ifdef NON_MATCHING
+#define O46_SHIFTL(value, shift, width) \
+    (((u32)(value) & ((1U << (width)) - 1U)) << (shift))
+#define O46_PRIM(packet, red, green, blue, alpha) { \
+    Overlay46DisplayCommand *macroCommand = (Overlay46DisplayCommand *)(packet); \
+    macroCommand->w0 = O46_SHIFTL(0xFA, 24, 8); \
+    macroCommand->w1 = O46_SHIFTL(red, 24, 8) | \
+        O46_SHIFTL(green, 16, 8) | O46_SHIFTL(blue, 8, 8) | \
+        O46_SHIFTL(alpha, 0, 8); \
+}
+
+/* Pinned DKR v77/v80 and JFG skeleton scans found no close donor.
+ *
+ * Matched 2026-10-01 by writing what the relocation records name instead of
+ * the inherited placeholders:
+ * - the three per-state step factors and the two captions are literals in
+ *   this TU's own pool (LOCAL records against the module rodata), not
+ *   globals, so each step is a hoisted invariant and the state-2 step shares
+ *   the one compiler temporary with the draw loop's spilled walker;
+ * - every "render data" argument is the address of one of three resident
+ *   cursors (display list, matrix, vertex), not a loaded value;
+ * - the primitive-colour command is the one-line packet macro, whose
+ *   block-scoped pointer is the home below the table. */
 s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
     s32 finished;
     s32 count;
     s32 result;
     Overlay46Particle *particle;
-    Overlay46DisplayCommand *unused; /* L99: 4-byte home above the variant table */
+    s32 pad; /* fifth scalar home above the table (L99) */
     Overlay46Particle *particlesByVariant[19];
 
-    overlay46RenderBeginReloc();
+    func_80037658();
     result = 1;
-    overlay46RenderLoadReloc(gOverlay46RenderData0);
-    overlay46RenderBindReloc(gOverlay46RenderData1, gOverlay46RenderData2);
+    func_80034920(&gDisplayListHead);
+    camStandardOrtho(&gDisplayListHead, &gOverlay46MatrixHead);
 
     count = 0x12;
     do {
         particlesByVariant[count] = NULL;
     } while (count--);
 
-    switch (D_C.state) {
+    switch (D_C) {
     case 1: {
-        f32 step;
-
         particle = D_20;
         finished = 1;
         count = 0x12;
-        step = (f32)updateRate * D_4C;
         do {
-            particle->progress24 += step;
+            particle->progress24 += updateRate * 0.01f;
             if (particle->progress24 >= 1.0f) {
                 particle->progress24 = 1.0f;
             } else {
@@ -125,7 +124,7 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
         } while (count--);
 
         if (finished != 0) {
-            D_C.state = 2;
+            D_C = 2;
             particle = D_20;
             count = 0x12;
             do {
@@ -137,14 +136,11 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
     }
 
     case 2: {
-        f32 step;
-
         particle = D_20;
         finished = 1;
         count = 0x12;
-        step = (f32)updateRate * D_50;
         do {
-            particle->progress24 += step;
+            particle->progress24 += updateRate * 0.05f;
             if (particle->progress24 >= 1.0f) {
                 particle->progress24 = 1.0f;
             } else {
@@ -155,22 +151,22 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
                 particle->angle18 + (particle->angle1A * updateRate);
             if (particle->angle18 >= 0x8001) {
                 particle->angle18 = particle->angle18 - 0x8000;
-                particle->angle1A = overlay46RandomRangeReloc(0x600, 0xA00);
+                particle->angle1A = mathRnd(0x600, 0xA00);
             }
 
             particle->angle34 += particle->angle06 * updateRate;
             if (particle->angle34 < -0x1000) {
                 particle->angle34 = -0x1000;
-                particle->angle06 = overlay46RandomRangeReloc(0x100, 0x200);
+                particle->angle06 = mathRnd(0x100, 0x200);
             } else if (particle->value04 >= 0x1001) {
                 particle->angle34 = 0x1000;
                 particle->angle06 =
-                    -overlay46RandomRangeReloc(0x100, 0x200);
+                    -mathRnd(0x100, 0x200);
             }
 
             particle->baseX0C = particle->targetX2C;
             particle->baseY10 =
-                (overlay46SinReloc(particle->angle18) *
+                (func_8002A8C0(particle->angle18) *
                  particle->progress24 * 5.0f) + particle->targetY30;
             particle->value04 =
                 (s16)((f32)particle->angle34 * particle->progress24);
@@ -197,7 +193,7 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
             } else {
                 D_5C -= updateRate;
                 if (D_5C <= 0) {
-                    D_C.state = 4;
+                    D_C = 4;
                 }
             }
         }
@@ -205,14 +201,11 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
     }
 
     case 4: {
-        f32 step;
-
         particle = D_20;
         finished = 1;
         count = 0x12;
-        step = (f32)updateRate * D_54;
         do {
-            particle->progress24 -= step;
+            particle->progress24 -= updateRate * 0.025f;
             if (particle->progress24 <= 0.0f) {
                 particle->progress24 = 0.0f;
             } else {
@@ -252,51 +245,36 @@ s32 func_overlay_046_F0000874_188EC6C(s32 updateRate) {
     }
     }
 
-    overlay46SetRenderModeReloc(2);
-    overlay46SetColorReloc(0, 0, 0, 0);
+    func_8004B0A4(2);
+    func_8004B0DC(0, 0, 0, 0);
     if (D_10 != 0) {
-        overlay46SetPrimColorReloc(0xFF, 0xFF, 0xFF, 0xFF, D_10);
-        overlay46DrawPanelReloc(gOverlay46RenderData0, 0xA0, 0xAC, &D_C,
+        func_8004B0B8(0xFF, 0xFF, 0xFF, 0xFF, D_10);
+        func_8004B0F8(&gDisplayListHead, 0xA0, 0xAC, "< 2000 Disney",
                                 0xC);
     }
     if (D_14 != 0) {
-        overlay46SetPrimColorReloc(0xFF, 0xFF, 0xFF, 0xFF, D_14);
-        overlay46DrawPanelReloc(gOverlay46RenderData0, 0xA0, 0xB6, D_1C,
+        func_8004B0B8(0xFF, 0xFF, 0xFF, 0xFF, D_14);
+        func_8004B0F8(&gDisplayListHead, 0xA0, 0xB6, "Licensed to Nintendo",
                                 0xC);
     }
     if (D_18 != 0) {
-        overlay46DrawPanelExReloc(gOverlay46RenderData0, D_2C, 0xA0, 0xCC,
+        func_8002F618(&gDisplayListHead, D_2C, 0xA0, 0xCC,
                                   0xFF, 0xFF, 0xFF, D_18);
     }
 
-    overlay46LoadParticleMaterialReloc(gOverlay46ParticleMaterial);
-    unused = gDisplayListHead++;
-    unused->w0 = 0xFA000000;
-    unused->w1 = 0xFFFFFFFF;
+    func_80034920(&gDisplayListHead);
+    O46_PRIM(gDisplayListHead++, 255, 255, 255, 255);
 
     count = 0;
     do {
         particle = particlesByVariant[count++];
         if (particle != NULL) {
-            overlay46DrawParticleReloc(
-                gOverlay46RenderData0, gOverlay46ParticleModel,
-                gOverlay46ParticleMaterial, particle, particle->resource38,
+            func_80023F84(
+                &gDisplayListHead, &gOverlay46MatrixHead,
+                &gOverlay46VertexHead, particle, particle->resource38,
                 0x8001, 0xFF);
         }
     } while (count != 19);
 
     return result;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o046/func_overlay_046_F0000874_188EC6C/func_overlay_046_F0000874_188EC6C.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_046_F0000874_188EC6C:start
- * symbol: func_overlay_046_F0000874_188EC6C
- * score: 28/450 words
- * frame: 0xC0
- * relocations: 96
- * first-mismatch: +0x1FC
- * summary: Size 0, 28/450. L99 unused as GBI cmd; dying count++ subscript. Colour floor 28 (202 probes, 0 winners). Homes +0x4C/+0x58 vs +0x54.
- * PLATEAU-HANDOFF:func_overlay_046_F0000874_188EC6C:end
- */

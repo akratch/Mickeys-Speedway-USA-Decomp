@@ -1078,8 +1078,10 @@ $(foreach f,$(MAIN_MATH_BARE_TUS),$(eval \
 	$(BUILD_DIR)/$(SRC_DIR)/main/$(f).c.o: OPT_FLAGS := -g))
 $(foreach f,$(MAIN_MATH_BARE_TUS),$(eval \
 	$(BUILD_DIR)/$(SRC_DIR)/main/$(f).c.o: CFLAGS += -Wab,-r4300_mul))
-# The reconstructed resident main loop reproduces its target frame with uopt capped.
-$(BUILD_DIR)/$(SRC_DIR)/main/main.c.o: CFLAGS += -Wo,-Olimit,100
+# main.c compiles at the plain game-code preset. It once carried
+# -Wo,-Olimit,100 on the hypothesis that the main loop (func_80026FB4) was
+# left unoptimised; func_80028564, which that cap also switched off, matches
+# byte for byte only with uopt running on it and needs a limit of at least 146.
 ifeq ($(NON_MATCHING),1)
 MAIN_THREAD_TEXT_SIZE := 0x2B10
 MAIN_THREAD_TEXT_SHA256 := ba62e894f3b04c9359aea1b9806045208745c9321dd76e52dd59283234d88c3c

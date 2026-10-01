@@ -230,7 +230,7 @@ extern void joyResetMap(void);
 extern void func_8004978C(s32, s32, s32);
 extern s32 func_80049864(s32);
 extern s32 func_8004989C(s32, s32 *);
-extern void func_800498FC(s32, u32, u32, s32, s32, s32, s32);
+extern void func_800498FC(s32, f32, f32, s32, s32, s32, s32);
 extern s32 TrapDanglingJump();
 extern s32 joyRead(s32, s32);
 extern void mainInitGame(void);
@@ -269,7 +269,11 @@ extern u8 amTuneGetSeqNo(void);
 extern void func_800005CC(f32, s32);
 extern s32 func_80001614(void);
 extern s32 func_800290A0(void);
-extern s32 func_80037664(void);
+/* Unsigned here on evidence: func_80028564 compares this result and a byte
+ * field against 1 in neighbouring tests, and the target keeps the two
+ * constants apart, which IDO does only when their types differ. The
+ * definition's own code does not depend on the signedness. */
+extern u32 func_80037664(void);
 extern s32 levelGetTune(s32);
 extern s32 levelGetScreenMode(s32);
 extern u32 levelGetGfxIndex(s32);
@@ -1050,7 +1054,7 @@ void func_800282C8(void) {
         mainChangeLevel(D_8007A148, D_8007A150, D_8007A158, D_8007A168, 0, 0);
         if (func_80049864(4) == 0) {
             D_8007A1A0 = 0;
-            func_800498FC(4, 0x3EAE147B, 0xBF800000, 0xFF, 0xFF, 0xFF, 0);
+            func_800498FC(4, 0.34f, -1.0f, 0xFF, 0xFF, 0xFF, 0);
             func_8004978C(4, 1, 1);
         }
         D_8007A194 = 0x1E;
@@ -1076,10 +1080,10 @@ void mainChangeLevel(s32 nextLevel, s32 nextCharacter, s32 nextAnimGroup,
             if ((func_80049864(4) == 0) && (func_80037664() == 0)) {
                 if (fadeOut != 0) {
                     D_8007A1A0 = 1;
-                    func_800498FC(4, 0x3EAE147B, 0xBF800000, 0, 0, 0, 0);
+                    func_800498FC(4, 0.34f, -1.0f, 0, 0, 0, 0);
                 } else {
                     D_8007A1A0 = 0;
-                    func_800498FC(4, 0x3EAE147B, 0xBF800000,
+                    func_800498FC(4, 0.34f, -1.0f,
                                   0xFF, 0xFF, 0xFF, 0);
                 }
                 func_8004978C(4, 1, 1);
@@ -1132,16 +1136,19 @@ s32 mainGetNextLevel(void) {
  * mode, gfx/cam/level reinit) with Mickey names and Mickey-only calls.
  * Mickey's ROM decides disagreements: no JFG game-flag/world/subtitle path,
  * and the clear uses func_8004989C rather than JFG's setupClearScreen.
+ *
+ * What matched it: this procedure is optimised (the TU carried an Olimit cap
+ * that kept uopt off it); the two character tables are six-pass loops, which
+ * uopt unrolls into two folded passes and one runtime group of four; the
+ * clear is a post-decrement while loop, which it does not unroll; the tune
+ * test compares the two call results directly, so the first is a byte
+ * temporary below the locals; the clear's locals belong to its own block,
+ * after the display-list macros' temporaries; and the two fade arguments are
+ * float literals.
  */
-#ifdef NON_MATCHING
 void func_80028564(s32 updateRate) {
     s32 screenMode;
-    u32 pixelCount;
-    s32 *framebuffer;
-    s32 width;
-    s32 height;
-    s32 fill;
-    u8 tune;
+    s32 i;
 
     mainPreNMI();
     D_8007A19C = 0;
@@ -1201,8 +1208,7 @@ void func_80028564(s32 updateRate) {
                 D_8007A1CC |= 0x08000000;
                 D_8007A1EC = 0;
             }
-            tune = amTuneGetSeqNo();
-            if (levelGetTune(D_8007A14C) != tune) {
+            if (amTuneGetSeqNo() != levelGetTune(D_8007A14C)) {
                 amTuneStop();
             }
             D_8007A148 = D_8007A14C;
@@ -1217,19 +1223,13 @@ void func_80028564(s32 updateRate) {
                 D_8007BF04 = D_8007A180;
                 D_800D18E0->pad0[0] = D_8007A184;
                 if (D_8007A188 != 0) {
-                    D_800D18E0[0].character = ((u8 *) D_8007A188)[0];
-                    D_800D18E0[1].character = ((u8 *) D_8007A188)[1];
-                    D_800D18E0[2].character = ((u8 *) D_8007A188)[2];
-                    D_800D18E0[3].character = ((u8 *) D_8007A188)[3];
-                    D_800D18E0[4].character = ((u8 *) D_8007A188)[4];
-                    D_800D18E0[5].character = ((u8 *) D_8007A188)[5];
+                    for (i = 0; i < 6; i++) {
+                        D_800D18E0[i].character = ((u8 *) D_8007A188)[i];
+                    }
                 } else {
-                    D_800D18E0[0].character = 0;
-                    D_800D18E0[1].character = 1;
-                    D_800D18E0[2].character = 2;
-                    D_800D18E0[3].character = 3;
-                    D_800D18E0[4].character = 4;
-                    D_800D18E0[5].character = 5;
+                    for (i = 0; i < 6; i++) {
+                        D_800D18E0[i].character = i;
+                    }
                 }
                 D_8007A18C = 0;
             }
@@ -1243,14 +1243,18 @@ void func_80028564(s32 updateRate) {
             if ((viGetVideoMode() != screenMode) || viChangeBuffers()) {
                 func_800336A8(screenMode);
             } else {
+                u32 pixelCount;
+                s32 fill;
+                s32 *framebuffer;
+                s32 width;
+                s32 height;
+
                 viGetCurrentSize(&width, &height);
                 framebuffer = D_800D2FA0;
                 pixelCount = (u32) (width * height) >> 1;
                 fill = func_8004989C(4, framebuffer);
-                if (pixelCount != 0) {
-                    do {
-                        *framebuffer++ = fill;
-                    } while (--pixelCount);
+                while (pixelCount--) {
+                    *framebuffer++ = fill;
                 }
             }
             D_8007A6A8 = 0;
@@ -1283,9 +1287,9 @@ void func_80028564(s32 updateRate) {
                 }
             } else {
                 if (D_8007A1A0) {
-                    func_800498FC(4, 0x3EAE147B, 0, 0, 0, 0, 0x80);
+                    func_800498FC(4, 0.34f, 0.0f, 0, 0, 0, 0x80);
                 } else {
-                    func_800498FC(4, 0x3EAE147B, 0, 0xFF, 0xFF, 0xFF, 0x80);
+                    func_800498FC(4, 0.34f, 0.0f, 0xFF, 0xFF, 0xFF, 0x80);
                 }
                 func_8004978C(4, 4, 1);
             }
@@ -1308,9 +1312,6 @@ void func_80028564(s32 updateRate) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/main/func_80028564.s")
-#endif
 
 /* PROVENANCE: body adapted from JFG src/main.c; Mickey byte identity is decisive. */
 void mainSyncNextLevel(void) {
@@ -1699,20 +1700,10 @@ void func_800293D0(void) {
 
 /* PLATEAU-HANDOFF:func_80026FB4:start
  * symbol: func_80026FB4
- * score: 207 differing words
- * frame: 0x28
- * relocations: 298
- * first-mismatch: +0x38
- * summary: Fresh V0 reproduces the exhausted main loop plateau. Resume only with a new display command scheduling or allocator mechanism.
+ * score: 375 differing words
+ * frame: 0x30
+ * relocations: 235
+ * first-mismatch: +0x8
+ * summary: Olimit cap retired by the func_80028564 match. Optimised: 76 bytes short, cursor address on a callee-saved web the target lacks.
  * PLATEAU-HANDOFF:func_80026FB4:end
- */
-
-/* PLATEAU-HANDOFF:func_80028564:start
- * symbol: func_80028564
- * score: 306 differing words
- * frame: 0x58
- * relocations: 245
- * first-mismatch: +0x4
- * summary: Pair 2 extra-ISTR owns line 1196 gDPFullSync w1. Block-scope and neg-index drop the frame; chained 1s is inert. Stall: Olimit 100 skips uopt (needs 137).
- * PLATEAU-HANDOFF:func_80028564:end
  */

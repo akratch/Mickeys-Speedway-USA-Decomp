@@ -2731,10 +2731,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50Initialize.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2E4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50PatchIndices.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/func_overlay_050_F0000334_1896CA4.c.o: OPT_FLAGS := \
-	-O2 -g3
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/func_overlay_050_F0000334_1896CA4.c.o: CFLAGS += \
-	-Wo,-loopunroll,0
+# -Wab,-r4300_mul: IDO then emits this function's HUD easing loops as the
+# shipped rotated loops from plain for loops (the inherited -g3 and
+# -loopunroll,0 overrides were a hand-unrolled workaround and are retired).
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/func_overlay_050_F0000334_1896CA4.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/func_overlay_050_F0000334_1896CA4.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x189C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50Cleanup.c.o: POSTPROCESS = \

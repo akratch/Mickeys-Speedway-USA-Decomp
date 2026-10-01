@@ -81,34 +81,52 @@ void mainChangeLevel(s32, s32, s32, s32, s32, s32); /* 0:+0x27F24 */
 void func_800005CC(f32, u8); /* 0:+0x17C */
 
 void overlay50SubmitTimeGlyphs(s32, s32, s32, s32);
-extern O50Glyph D_12C[10];
-extern O50Glyph D_1CC[5];
-extern s16 D_21C;
-extern O50Glyph D_230[8];
-/* Tier B: distinct relocation anchors within the eight-record template. */
-extern O50Glyph D_260[];
-extern O50Glyph D_290[];
-extern O50Glyph D_2B0[];
-extern O50Glyph D_2C0[2];
-extern O50Glyph D_2E0[2];
-extern O50Glyph D_300[2];
-extern s32 D_328;
-extern s8 D_32C;
-extern s32 D_334;
-extern s32 D_33C;
+#ifdef NON_MATCHING
+/* Overlay 50 was one translation unit: its runtime records address this
+ * function's .data, .rodata and .bss through LOCAL (section-relative)
+ * records, and as1 shares one high half across the stores to adjacent
+ * fields of record 0 only for a TU-local symbol. So the candidate defines
+ * the overlay's data at the offsets the records address (.data 0x370 and
+ * .bss 0xD0, checked against the addends of every record this function
+ * uses). The bytes are owned by the retained overlay image: these zero
+ * initializers only fix the layout, and a promotion drops the sections and
+ * rebinds the records (see overlay54TailA). The D_ names keep their offsets. */
+static s32 sOverlay50Data000[27] = { 0 };
+static O50Glyph D_6C[4] = { 0 };
+static O50Glyph D_AC[3] = { 0 };
+static O50Glyph D_DC[2] = { 0 };
+static O50Glyph D_FC[3] = { 0 };
+static O50Glyph D_12C[10] = { 0 };
+static O50Glyph D_1CC[5] = { 0 };
+static s16 D_21C = 0;
+static O50Glyph sOverlay50LapTemplate[10] = { 0 };
+static O50Glyph D_2C0[2] = { 0 };
+static O50Glyph D_2E0[2] = { 0 };
+static O50Glyph D_300[2] = { 0 };
+static s8 o50Data320[8] = { 0 };
+static s32 D_328 = 0;
+static s8 D_32C[4] = { 0 };
+static s8 o50Data330[4] = { 0 };
+static s32 D_334 = 0;
+static s32 sOverlay50Data338 = 0;
+static s32 D_33C = 0;
+static s32 sOverlay50Data340[12] = { 0 };
 
-extern O50Glyph D_6C[4];
-extern f32 D_A4;
-extern f32 D_A8;
-extern O50Glyph D_AC[3];
-extern s32 D_B0[];
-extern s32 D_BC;
-extern s32 D_C0;
-extern s16 D_C8;
-extern s16 D_CA;
-extern O50Glyph D_DC[2];
-extern O50Glyph D_FC[3];
+static O50Glyph o50LapGlyphs[10];
+static s32 sOverlay50BssA0;
+static f32 D_A4;
+static f32 D_A8;
+static s32 sOverlay50BssAC;
+static s32 D_B0[3];
+static s32 D_BC;
+static s32 D_C0;
+static void *o50BssC4;
+static s16 D_C8;
+static s16 D_CA;
 
+extern char o50SpeedText[];
+extern f32 o50ReverseScale;
+extern f32 o50ForwardScale;
 typedef struct O50MenuObject {
     s16 value00;
     s16 value02;
@@ -134,52 +152,26 @@ extern u16 D_8007BF1C;
 extern s32 D_8007C0BC;
 extern s32 o50Overlay1StateReloc; /* overlay 1 +0x83E0 */
 
-/* Tier B: local data, read-only data, and BSS ownership from runtime records. */
-extern s8 o50Data320[];
-extern s8 o50Data330;
-extern void *o50BssC4;
-extern O50Glyph o50LapGlyphs[10];
-/* Tier B: BSS anchors for sign, digit range, and list terminator. */
-extern O50Glyph D_0;
-extern O50Glyph D_10[8];
-extern O50Glyph D_90;
-extern char o50SpeedText[];
-extern f32 o50ReverseScale;
-extern f32 o50ForwardScale;
-
-/* NON_MATCHING: runtime call/global identities and record layouts are recovered.
- * The configured candidate still has a structural and allocation residual;
- * the assembly fallback remains the only ROM-exact implementation. */
-#ifdef NON_MATCHING
 void func_overlay_050_F0000334_1896CA4(O50Object *object, s32 updateRate) {
+    s32 i;
+    s32 lapIndex;
     s32 messageX;
     s32 messageY;
+    s32 bannerVisible;
+    s32 itemId;
+    s32 lapCount;
     O50Glyph messageGlyphs[5];
     O50Glyph itemGlyphs[2];
     O50Level *level;
     O50Racer *racer;
     u8 *modeFlag;
     s32 timeMagnitude;
+    s32 targetAngle;
     s32 minutes;
     s32 seconds;
     s32 centiseconds;
     s32 hudY;
     s32 hudX;
-    O50Glyph *glyphCursor;
-    O50Glyph *templateCursor;
-    O50Glyph *glyphEnd;
-    s32 itemId;
-    void *glyphTexture;
-    s32 remainder;
-    void *glyphAlternate;
-    s32 i;
-    s32 lapIndex;
-    s32 bannerVisible;
-    s32 targetAngle;
-    s32 lapCount;
-    s32 *lapOffsets;
-    s32 *lapTimes;
-    s32 lapY;
 
     modeFlag = (u8 *)func_80028F54();
     if (object != NULL) {
@@ -206,32 +198,9 @@ void func_overlay_050_F0000334_1896CA4(O50Object *object, s32 updateRate) {
             }
         }
         if (D_800C947C == 0) {
-            i = 0;
-            if (updateRate > 0) {
-                remainder = updateRate & 3;
-                if (*(s32 *)&remainder != 0) {
-                    do {
-                        i++;
-                        D_A4 += (0.0f - D_A4) * 0.125f;
-                        D_A8 += (0.0f - D_A8) * 0.125f;
-                    } while (i != remainder);
-                    if (i != updateRate) {
-                        goto hudQuad;
-                    }
-                } else {
-hudQuad:
-                    do {
-                        i += 4;
-                        D_A4 += (0.0f - D_A4) * 0.125f;
-                        D_A8 += (0.0f - D_A8) * 0.125f;
-                        D_A4 += (0.0f - D_A4) * 0.125f;
-                        D_A8 += (0.0f - D_A8) * 0.125f;
-                        D_A4 += (0.0f - D_A4) * 0.125f;
-                        D_A8 += (0.0f - D_A8) * 0.125f;
-                        D_A4 += (0.0f - D_A4) * 0.125f;
-                        D_A8 += (0.0f - D_A8) * 0.125f;
-                    } while (i != updateRate);
-                }
+            for (i = 0; i < updateRate; i++) {
+                D_A4 += (0.0f - D_A4) * 0.125f;
+                D_A8 += (0.0f - D_A8) * 0.125f;
             }
         }
         hudY = (s32) D_A4;
@@ -247,11 +216,13 @@ hudQuad:
         }
         overlay56SplitTime(racer->raceTime, &minutes, &seconds, &centiseconds);
         level = levelGetLevel();
-        if ((D_800C947C == 0) && (level->laps != racer->laps) && (func_800290A0() == 0) && (func_8003A7D0(object) != racer->raceTime)) {
+        if ((D_800C947C == 0) && (
+racer->laps != level->laps
+) && (func_800290A0() == 0) && (func_8003A7D0(object) != racer->raceTime)) {
             centiseconds -= centiseconds % 10;
-            centiseconds += D_32C;
-            D_32C++;
-            D_32C = (s8) ((s8) D_32C % 10);
+            centiseconds += D_32C[0];
+            D_32C[0]++;
+            D_32C[0] = (s8) ((s8) D_32C[0] % 10);
         }
         D_12C[0].glyph = (s32) ((minutes / 10) << 0x10);
         D_12C[1].glyph = (s32) ((minutes % 10) << 0x10);
@@ -293,19 +264,19 @@ hudQuad:
             } else if (racer->item != 0xFF) {
                 itemId = D_8007C180[racer->item];
             } else {
-                itemId = o50Data330;
+                itemId = o50Data330[0];
             }
-            if (itemId != o50Data330) {
-                if (o50Data330 != -1) {
-                    freeFrontEndItem(o50Data330);
+            if (itemId != o50Data330[0]) {
+                if (o50Data330[0] != -1) {
+                    freeFrontEndItem(o50Data330[0]);
                 }
-                o50Data330 = itemId;
-                if (o50Data330 != -1) {
-                    loadFrontEndItem(o50Data330);
+                o50Data330[0] = itemId;
+                if (o50Data330[0] != -1) {
+                    loadFrontEndItem(o50Data330[0]);
                 }
             }
-            if (o50Data330 != -1) {
-                if (o50Data330 == 0x35) {
+            if (o50Data330[0] != -1) {
+                if (o50Data330[0] == 0x35) {
                     itemGlyphs[0].x = 0x8A;
                     itemGlyphs[0].y = 0xF;
                 } else {
@@ -315,9 +286,9 @@ hudQuad:
                 itemGlyphs[0].glyph = 0;
                 itemGlyphs[0].alternate = 0;
                 itemGlyphs[1].texture = 0;
-                itemGlyphs[0].texture = D_800D31C8[o50Data330];
+                itemGlyphs[0].texture = D_800D31C8[o50Data330[0]];
                 func_8002F618(&D_800D3140, itemGlyphs, 0, 0, 0xFF, 0xFF, 0xFF, D_334);
-                if (o50Data330 != 0x35) {
+                if (o50Data330[0] != 0x35) {
                     if ((s32) racer->itemCount >= 2) {
                         D_300[0].glyph = (s32) (racer->itemCount << 0x10);
                         func_8002F618(&D_800D3140, D_300, 0xAB, 0x2E, 0, 0, 0, D_334);
@@ -327,58 +298,27 @@ hudQuad:
                 }
             }
         } else {
-            if (o50Data330 != -1) {
-                freeFrontEndItem((s32) o50Data330);
-                o50Data330 = -1;
+            if (o50Data330[0] != -1) {
+                freeFrontEndItem((s32) o50Data330[0]);
+                o50Data330[0] = -1;
             }
         }
         if (racer->value388 != 0) {
-            i = 0;
-            if (updateRate > 0) {
-                remainder = updateRate & 3;
-                if (remainder != 0) {
-                    do {
-                        i += 1;
-                        D_21C += (s32) (0x800 - D_21C) >> 3;
-                    } while (remainder != i);
-                }
-                if (i != updateRate) {
-                    do {
-                        i += 4;
-                        D_21C += (s32) (0x800 - D_21C) >> 3;
-                        D_21C += (s32) (0x800 - D_21C) >> 3;
-                        D_21C += (s32) (0x800 - D_21C) >> 3;
-                        D_21C += (s32) (0x800 - D_21C) >> 3;
-                    } while (i != updateRate);
-                }
+            for (i = 0; i < updateRate; i++) {
+                D_21C += (0x800 - D_21C) >> 3;
             }
             bannerVisible = 1;
         } else if (D_21C == -0x420) {
             bannerVisible = 0;
         } else {
-            i = 0;
-            if (updateRate > 0) {
-                remainder = updateRate & 3;
-                if (remainder != 0) {
-                    do {
-                        i += 1;
-                        D_21C += (s32) (0x1820 - D_21C) >> 3;
-                    } while (remainder != i);
-                }
-                if (i != updateRate) {
-                    do {
-                        i += 4;
-                        D_21C += (s32) (0x1820 - D_21C) >> 3;
-                        D_21C += (s32) (0x1820 - D_21C) >> 3;
-                        D_21C += (s32) (0x1820 - D_21C) >> 3;
-                        D_21C += (s32) (0x1820 - D_21C) >> 3;
-                    } while (i != updateRate);
-                }
+            for (i = 0; i < updateRate; i++) {
+                D_21C += (0x1820 - D_21C) >> 3;
             }
-            bannerVisible = 1;
-            if (((s16) D_21C >> 6) == 0x60) {
+            if ((D_21C >> 6) == 0x60) {
                 D_21C = -0x420;
                 bannerVisible = 0;
+            } else {
+                bannerVisible = 1;
             }
         }
         if (bannerVisible != 0) {
@@ -398,105 +338,42 @@ hudQuad:
         func_80036544(D_800D31C8[0], &D_328, 0x14, &D_800D3550[1].frame, updateRate);
         if (racer->laps < level->laps) {
             if (racer->differenceTimer >= updateRate) {
-                i = 0;
                 if ((racer->differenceTimer == 0xB4) && (racer->timeDifference >= 0)) {
                     amSndPlay(0x1F8, 0);
                 }
                 racer->differenceTimer -= updateRate;
-                if (updateRate > 0) {
-                    if ((updateRate & 3) != 0) {
-                        do {
-                            i += 1;
-                            D_BC += (s32) (0x830 - D_BC) >> 3;
-                            D_C0 += (s32) (0x550 - D_C0) >> 3;
-                        } while ((updateRate & 3) != i);
-                    }
-                    if (i != updateRate) {
-                        do {
-                            i += 4;
-                            D_BC += (0x830 - D_BC) >> 3;
-                            D_C0 += (0x550 - D_C0) >> 3;
-                            D_BC += (0x830 - D_BC) >> 3;
-                            D_C0 += (0x550 - D_C0) >> 3;
-                            D_BC += (0x830 - D_BC) >> 3;
-                            D_C0 += (0x550 - D_C0) >> 3;
-                            D_BC += (0x830 - D_BC) >> 3;
-                            D_C0 += (0x550 - D_C0) >> 3;
-                        } while (i != updateRate);
-                    }
+                for (i = 0; i < updateRate; i++) {
+                    D_BC += (0x830 - D_BC) >> 3;
+                    D_C0 += (0x550 - D_C0) >> 3;
                 }
             } else if (D_BC != -0x500) {
-                i = 0;
                 if (racer->differenceTimer != -1) {
                     amSndPlay(0x1F9, 0);
                     racer->differenceTimer = -1;
                 }
-                if (updateRate > 0) {
-                    if ((updateRate & 3) != 0) {
-                        do {
-                            i += 1;
-                            D_BC += (s32) (0x1900 - D_BC) >> 3;
-                            D_C0 += (s32) (-0x140 - D_C0) >> 3;
-                        } while ((updateRate & 3) != i);
-                    }
-                    if (i != updateRate) {
-                        do {
-                            i += 4;
-                            D_BC += (0x1900 - D_BC) >> 3;
-                            D_C0 += (-0x140 - D_C0) >> 3;
-                            D_BC += (0x1900 - D_BC) >> 3;
-                            D_C0 += (-0x140 - D_C0) >> 3;
-                            D_BC += (0x1900 - D_BC) >> 3;
-                            D_C0 += (-0x140 - D_C0) >> 3;
-                            D_BC += (0x1900 - D_BC) >> 3;
-                            D_C0 += (-0x140 - D_C0) >> 3;
-                        } while (i != updateRate);
-                    }
+                for (i = 0; i < updateRate; i++) {
+                    D_BC += (0x1900 - D_BC) >> 3;
+                    D_C0 += (-0x140 - D_C0) >> 3;
                 }
                 if (D_BC >= 0x1861) {
                     D_BC = -0x500;
                     D_C0 = -0x140;
                 }
             }
-            glyphEnd = &D_90;
             if (racer->timeDifference <= 0) {
-                D_0.glyph = 12 << 16;
-                glyphAlternate = D_800D31C8[21];
-                glyphTexture = D_800D31C8[20];
-                timeMagnitude = (s32) -racer->timeDifference;
-                glyphCursor = D_10;
-                D_0.alternate = glyphAlternate;
-                D_0.texture = glyphTexture;
-                do {
-                    glyphCursor += 4;
-                    glyphCursor[-3].texture = glyphTexture;
-                    glyphCursor[-3].alternate = glyphAlternate;
-                    glyphCursor[-2].texture = glyphTexture;
-                    glyphCursor[-2].alternate = glyphAlternate;
-                    glyphCursor[-1].texture = glyphTexture;
-                    glyphCursor[-1].alternate = glyphAlternate;
-                    glyphCursor[-4].texture = glyphTexture;
-                    glyphCursor[-4].alternate = glyphAlternate;
-                } while (glyphCursor != glyphEnd);
+                o50LapGlyphs[0].glyph = 12 << 16;
+                timeMagnitude = -racer->timeDifference;
+                for (i = 0; i < 9; i++) {
+                    o50LapGlyphs[i].texture = D_800D31C8[20];
+                    o50LapGlyphs[i].alternate = D_800D31C8[21];
+                }
             } else {
-                D_0.glyph = 13 << 16;
-                glyphAlternate = D_800D31C8[21];
-                glyphTexture = D_800D31C8[80];
-                glyphCursor = D_10;
-                D_0.alternate = glyphAlternate;
-                D_0.texture = glyphTexture;
-                timeMagnitude = (s32) racer->timeDifference;
-                do {
-                    glyphCursor += 4;
-                    glyphCursor[-3].texture = glyphTexture;
-                    glyphCursor[-3].alternate = glyphAlternate;
-                    glyphCursor[-2].texture = glyphTexture;
-                    glyphCursor[-2].alternate = glyphAlternate;
-                    glyphCursor[-1].texture = glyphTexture;
-                    glyphCursor[-1].alternate = glyphAlternate;
-                    glyphCursor[-4].texture = glyphTexture;
-                    glyphCursor[-4].alternate = glyphAlternate;
-                } while (glyphCursor != glyphEnd);
+                o50LapGlyphs[0].glyph = 13 << 16;
+                timeMagnitude = racer->timeDifference;
+                for (i = 0; i < 9; i++) {
+                    o50LapGlyphs[i].texture = D_800D31C8[80];
+                    o50LapGlyphs[i].alternate = D_800D31C8[21];
+                }
             }
             overlay56SplitTime(timeMagnitude, &minutes, &seconds, &centiseconds);
             o50LapGlyphs[1].glyph = (minutes / 10) << 0x10;
@@ -505,35 +382,30 @@ hudQuad:
             o50LapGlyphs[5].glyph = (seconds % 10) << 0x10;
             o50LapGlyphs[7].glyph = (centiseconds / 10) << 0x10;
             o50LapGlyphs[8].glyph = (centiseconds % 10) << 0x10;
-            templateCursor = D_230;
-            glyphCursor = D_10;
-            do {
-                if (((s32) glyphCursor[0].glyph >> 0x10) == 1) {
-                    if ((templateCursor == D_230) || (templateCursor == D_260) || (templateCursor == D_290)) {
-                        glyphCursor[0].x = (s16) (templateCursor[0].x + 1);
+            for (i = 1; i < 9; i++) {
+                if ((o50LapGlyphs[i].glyph >> 16) == 1) {
+                    if (i == 1 || i == 4 || i == 7) {
+                        o50LapGlyphs[i].x = sOverlay50LapTemplate[i].x + 1;
                     } else {
-                        glyphCursor[0].x = (s16) (templateCursor[0].x - 1);
+                        o50LapGlyphs[i].x = sOverlay50LapTemplate[i].x - 1;
                     }
                 } else {
-                    glyphCursor[0].x = (s16) templateCursor[0].x;
+                    o50LapGlyphs[i].x = sOverlay50LapTemplate[i].x;
                 }
-                templateCursor++;
-                glyphCursor++;
-            } while (templateCursor != D_2B0);
+            }
             func_8002F618(&D_800D3140, o50LapGlyphs, D_BC >> 4, D_C0 >> 4, 0xFF, 0xFF, 0xFF, 0xFF);
         }
 
         if (joyGetPressed(0) & 1) {
             D_8007C1B0 ^= 1;
         }
-        lapIndex = 0;
         if (D_8007C1B0 != 0) {
             if (D_8007BF1C & 1) {
-                timeMagnitude = (s32) (racer->speed * 6.25f);
-                if (timeMagnitude < 0) {
-                    timeMagnitude = -timeMagnitude;
+                itemId = (s32) (racer->speed * 6.25f);
+                if (itemId < 0) {
+                    itemId = -itemId;
                 }
-                func_8004A4B0(0xE6, 0xB4, timeMagnitude, 3, 0);
+                func_8004A4B0(0xE6, 0xB4, itemId, 3, 0);
                 func_8004B0A4(2);
                 func_8004B0DC(0, 0, 0, 0);
                 fontColour(0x40, 0xFF, 0x40, 0xFF, 0xE0);
@@ -545,23 +417,8 @@ hudQuad:
                 } else {
                     targetAngle = (s32) (16384.0f - (racer->speed * o50ForwardScale));
                 }
-                if (updateRate > 0) {
-                    if ((updateRate & 3) != 0) {
-                        do {
-                            lapIndex += 1;
-                            D_800D3550[0].angle = (s16) (D_800D3550[0].angle + ((s32) (targetAngle - D_800D3550[0].angle) >> 2));
-                        } while ((updateRate & 3) != lapIndex);
-                    }
-                    if (lapIndex != updateRate) {
-                        do {
-                            lapIndex += 4;
-                            D_800D3550[0].angle = (s16) (D_800D3550[0].angle + ((s32) (targetAngle - D_800D3550[0].angle) >> 2));
-                            D_800D3550[0].angle = (s16) (D_800D3550[0].angle + ((s32) (targetAngle - D_800D3550[0].angle) >> 2));
-                            D_800D3550[0].angle = (s16) (D_800D3550[0].angle + ((s32) (targetAngle - D_800D3550[0].angle) >> 2));
-                            D_800D3550[0].angle = (s16) (D_800D3550[0].angle + ((s32) (targetAngle - D_800D3550[0].angle) >> 2));
-                        } while (lapIndex != updateRate);
-                    }
-                    lapIndex = 0;
+                for (i = 0; i < updateRate; i++) {
+                    D_800D3550[0].angle += (targetAngle - D_800D3550[0].angle) >> 2;
                 }
 
                 D_800D3550[0].y = -85.0f;
@@ -572,46 +429,22 @@ hudQuad:
                 D_8007C0BC = 0xFF;
             }
         }
-        lapOffsets = D_B0;
-        lapTimes = racer->lapTimes;
-        lapY = 0x3C;
         lapCount = racer->laps;
         if (racer->finished != 0) {
             lapCount += 1;
         }
-        if (lapCount > 0) {
-            do {
-                i = 0;
-                if (updateRate > 0) {
-                    if ((updateRate & 3) != 0) {
-                        do {
-                            i += 1;
-                            *lapOffsets += (-*lapOffsets) >> 2;
-                        } while ((updateRate & 3) != i);
-                    }
-                    if (i != updateRate) {
-                        do {
-                            i += 4;
-                            *lapOffsets += (-*lapOffsets) >> 2;
-                            *lapOffsets += (-*lapOffsets) >> 2;
-                            *lapOffsets += (-*lapOffsets) >> 2;
-                            *lapOffsets += (-*lapOffsets) >> 2;
-                        } while (i != updateRate);
-                    }
-                }
-
-                overlay50SubmitTimeGlyphs(lapIndex + 1, *lapOffsets + 0xD6, lapY, *lapTimes);
-                lapIndex++;
-                lapOffsets++;
-                lapTimes++;
-                lapY += 10;
-            } while (lapIndex != lapCount);
+        for (i = 0; i < lapCount; i++) {
+            for (lapIndex = 0; lapIndex < updateRate; lapIndex++) {
+                D_B0[i] += -D_B0[i] >> 2;
+            }
+            overlay50SubmitTimeGlyphs(i + 1, D_B0[i] + 0xD6, i * 10 + 0x3C, racer->lapTimes[i]);
         }
         if (lapCount > 0) {
             func_8002F618(&D_800D3140, D_2E0, D_B0[0], 0, 0xFF, 0xFF, 0xFF, 0xFF);
         }
         if (mainGetMode() == 0) {
-            if (*modeFlag == 0) {
+            switch (*modeFlag) {
+            case 0:
                 if ((o50Overlay1StateReloc == 0) && (joyGetPressed(0) & 0x9000) && (D_33C == 0)) {
                     func_800016EC(1);
                     func_8003A590();
@@ -619,9 +452,9 @@ hudQuad:
                     mainChangeLevel(0x12, 0, 0, 7, 1, 1);
                     func_800005CC(3.0f, 0);
                     D_33C = 1;
-                    return;
                 }
-            } else if (*modeFlag == 1) {
+                break;
+            case 1:
                 if ((o50Overlay1StateReloc == 0) && (joyGetPressed(0) & 0x9000) && (D_33C == 0)) {
                     func_800016EC(1);
                     func_8003A590();
@@ -630,6 +463,7 @@ hudQuad:
                     func_800005CC(3.0f, 0);
                     D_33C = 1;
                 }
+                break;
             }
         }
     }
@@ -640,10 +474,10 @@ hudQuad:
 
 /* PLATEAU-HANDOFF:func_overlay_050_F0000334_1896CA4:start
  * symbol: func_overlay_050_F0000334_1896CA4
- * score: 1115 differing words
- * frame: 0x110
+ * score: 60 differing words
+ * frame: 0x118
  * relocations: 315
- * first-mismatch: +0x0
- * summary: Size closed at 1575 via L144 remainder plus inlined lap peel. Colour packing 1094 of 1115. Structural insertions remain.
+ * first-mismatch: +0x7FC
+ * summary: r4300_mul flag, plain loops, data into C, one i for angle and lap loops: 1115 to 60 at delta 0; item-id colours open.
  * PLATEAU-HANDOFF:func_overlay_050_F0000334_1896CA4:end
  */

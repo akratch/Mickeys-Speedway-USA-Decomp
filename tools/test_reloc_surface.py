@@ -984,6 +984,108 @@ Overlay8BssOwner gOverlay8BssOwner;
             rs._merge_explicit_storage_identities(
                 {"D_4": identity}, {}, {"D_4"}, evidence)
 
+    def test_alias_graph_conflicts_survive_explicit_storage_merge(self):
+        explicit = (8, 0x7664)
+        peer = (8, 0x7668)
+        for equality, redefine in (([("D_4", "peer")], []),
+                                   ([], [("D_4", "peer")] )):
+            with self.subTest(equality=equality, redefine=redefine):
+                evidence = {
+                    "D_4": [{"route": "explicit-typed-overlay-storage",
+                             "independent": True,
+                             "base_identity": list(explicit)}],
+                    "peer": [{"route": "canonical-data-owner",
+                              "independent": True,
+                              "base_identity": list(peer)}],
+                }
+                rs._identity_alias_evidence(evidence, equality, redefine)
+                with self.assertRaises(rs.SurfaceComparisonError):
+                    rs._merge_explicit_storage_identities(
+                        {"D_4": explicit}, {}, {"D_4", "peer"}, evidence)
+
+    def test_alias_graph_diagnostic_peer_does_not_block_explicit_proof(self):
+        explicit = (8, 0x7664)
+        evidence = {
+            "D_4": [{"route": "explicit-typed-overlay-storage",
+                     "independent": True,
+                     "base_identity": list(explicit)}],
+            "peer": [{"route": "runtime-site-correlation",
+                      "independent": False,
+                      "base_identity": [8, 0x7668]}],
+        }
+        rs._identity_alias_evidence(evidence, [("D_4", "peer")], [])
+        resolved, ambiguous = {}, {"D_4", "peer"}
+        rs._merge_explicit_storage_identities(
+            {"D_4": explicit}, resolved, ambiguous, evidence)
+        self.assertEqual(explicit, resolved["D_4"])
+        self.assertNotIn("D_4", ambiguous)
+        self.assertIn("peer", ambiguous)
+
+    def test_same_name_canonical_data_conflict_is_not_skipped(self):
+        evidence = {"D_F8": [
+            {"route": "explicit-typed-overlay-storage", "independent": True,
+             "base_identity": [8, 0x74A8]},
+            {"route": "canonical-data-owner", "independent": True,
+             "base_identity": [8, 0x74B0]},
+        ]}
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._merge_explicit_storage_identities(
+                {"D_F8": (8, 0x74A8)}, {}, {"D_F8"}, evidence)
+
+    def test_explicit_carrier_requires_unique_undefined_typed_object(self):
+        class Carrier:
+            def __init__(self, rows):
+                self._rows = rows
+
+            def symbols(self):
+                return self._rows
+
+        good = ("D_4", 0, 2, (1 << 4) | rs.STT_OBJECT, rs.SHN_UNDEF)
+        self.assertTrue(rs._is_undefined_data_carrier(Carrier([good]), "D_4", 2))
+        bad_rows = [
+            [good, good],
+            [("D_4", 0, 2, rs.STT_OBJECT, 1)],
+            [("D_4", 0, 4, (1 << 4) | rs.STT_OBJECT, rs.SHN_UNDEF)],
+            [("D_4", 0, 2, (1 << 4) | 0, rs.SHN_UNDEF)],
+        ]
+        for rows in bad_rows:
+            with self.subTest(rows=rows):
+                self.assertFalse(rs._is_undefined_data_carrier(
+                    Carrier(rows), "D_4", 2))
+
+    def test_freshness_rechecks_loaded_tool_and_dependency_digests(self):
+        class Batch:
+            stale = False
+
+            def checked_tool_identity(self):
+                if self.stale:
+                    raise RuntimeError("loaded module changed on disk")
+                return {"loaded_modules": {"reloc_identity": "a" * 64}}
+
+            def source_dependencies(self, _source, _args):
+                return {"include/overlay.h": "a" * 64}
+
+        batch = Batch()
+        self.assertEqual({"loaded_modules": {"reloc_identity": "a" * 64}},
+                         rs.storage_freshness.checked_tool_identity(
+                             batch, rs.SurfaceComparisonError))
+        batch.stale = True
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs.storage_freshness.checked_tool_identity(
+                batch, rs.SurfaceComparisonError)
+        batch.stale = False
+        source = Path("src/overlay.c")
+        modes = [{"mode": "stock-dnm", "compiler_arguments": ["-Iinclude"]}]
+        snapshot = rs.storage_freshness.source_dependency_snapshot(
+            batch, source, modes)
+        self.assertEqual({"stock-dnm": {"include/overlay.h": "a" * 64}}, snapshot)
+        rs.storage_freshness.require_dependency_snapshot(
+            snapshot, snapshot, rs.SurfaceComparisonError)
+        changed = {"stock-dnm": {"include/overlay.h": "b" * 64}}
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs.storage_freshness.require_dependency_snapshot(
+                changed, snapshot, rs.SurfaceComparisonError)
+
     def test_storage_fidelity_catches_bytes_geometry_symbols_and_relocations(self):
         exact_left = self.StorageElf()
         exact_right = self.StorageElf()

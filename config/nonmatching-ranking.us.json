@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 233,
-  "resolved": 233,
+  "queue_size": 232,
+  "resolved": 232,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 233,
-  "relocation_masked_coverage": 233,
+  "source_context_coverage": 232,
+  "relocation_masked_coverage": 232,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -580,21 +580,6 @@
       "source_context_sha256": "a_ns.lK_0.IEtJ.SS9X.7gdH.3ldt.iOLd.B0Pj.jjrk.4Mb1.Nqk"
     },
     {
-      "name": "func_80018F08",
-      "file": "src/main/lights.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 820,
-      "objdiff_match_pct": null,
-      "differing_words": 41,
-      "first_mismatch_offset": 32,
-      "relocation_masked_differing_words": 41,
-      "relocation_masked_first_mismatch_offset": 32,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "Bbkc.WoU1.nheZ.gfiq.shPw.w2-4.uQwC.lkfP.rBLc.JJt8.0b4"
-    },
-    {
       "name": "func_overlay_073_F0000D70_18CB830",
       "file": "src/overlays/o073/overlay73Draw.c",
       "overlay": 73,
@@ -832,7 +817,7 @@
       "relocation_masked_first_mismatch_offset": 128,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "J1Vj.p51V.c3i-.fylA.EEy7.7HT5.kqH3.MzDL.xLhg.cbDg.Rd4"
+      "source_context_sha256": "m1Mf.dL-k.kSR2.eQeM.Hk-s.NS2_.TFum.EUyj.Zd_q.K3pA.4gw"
     },
     {
       "name": "func_80006FA0",
@@ -2662,7 +2647,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 32,
       "category": "size-mismatch",
-      "source_context_sha256": "ZG-R.9PMW.Snj2.a-wY.CjIz.aEyE.D5Y7.0_je.uPvp.Swry.59E"
+      "source_context_sha256": "x2nV.ZJUb.r2NY.6U1_.dQrP.xaDs.kONK.oWEi.N35Q.aqQl.B84"
     },
     {
       "name": "refractOutputAssembler",

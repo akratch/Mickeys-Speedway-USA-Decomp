@@ -504,7 +504,7 @@ typedef struct {
     u8 unk3;
     s16 unk4;
     u8 pad06[2];
-    s32 unk8;
+    u32 unk8;
 } Objects06534Record;
 
 typedef struct {
@@ -541,7 +541,7 @@ typedef struct {
     u8 unk5;
     u8 pad06[2];
     f32 unk8;
-    s32 unkC;
+    u32 unkC;
     f32 unk10;
 } Objects06534Sprite;
 
@@ -2032,25 +2032,9 @@ void func_80006448(void *arg0) {
         } while (index < ((Objects06448Arg *)arg0)->unk40->unk22);
     }
 }
-/* Configured C: 17 differences (188/205 exact), first +0x11C.
- * The region before the flag store raises the sprite web above the list cursor
- * without emitting instructions; the retained body remains NON_MATCHING. */
-/* Earlier 63-word plateau: size, frame, CFG and all seven relocations exact. */
-/* Three independent residuals, none of them structural:
- *   1. a two-web exchange, s1<->s2, between `sprite` and the compiler's
- *      induction pointer for `list->entries[index]` (21 + 10 sites);
- *   2. a caller-saved lane rotation, target [v1, a0, a1] against candidate
- *      [a0, a1, a2], over the record->unk8 carrier and the reference /
- *      frameOffset fields it feeds (7 + 5 + 5 sites);
- *   3. five ring-temp lane rotations downstream of (2).
- * Falsified (each measured, all still 63 words): every permutation of the
- * three NULL/zero initialisers; computing reference and frameOffset before
- * flags; all ten positions for `sprite` in the declaration list; an explicit
- * cursor advanced in place for list->entries; the arrow/deref and [0]-index
- * rewrite at every member access in the function, greedily composed.
- * Regressions: dropping the `flags` local and re-reading record->unk8 (144);
- * a separate-statement cursor increment (178). */
-#ifdef NON_MATCHING
+/* Matched by reading the packed word back from the sprite it was just stored
+ * into: no flags local, the store first, and the two index fields decoded
+ * after the scale and byte copies, reference before frame offset. */
 s32 func_80006534(Objects06534Object *object) {
     Objects06534Record *record;
     s32 count;
@@ -2061,7 +2045,6 @@ s32 func_80006534(Objects06534Object *object) {
     s32 index;
     s32 reference;
     s32 frameOffset;
-    u32 flags;
 
     list = NULL;
     sprite = NULL;
@@ -2089,19 +2072,17 @@ s32 func_80006534(Objects06534Object *object) {
         for (index = 0; index < object->unk8C; index++, sprite++, record++) {
             sprite->unk0 = func_800355A0(record->unk0, 1);
             sprite->unk4 = record->unk2;
-            flags = record->unk8;
-            frameOffset = ((u32)record->unk8 >> 16) & 0x3F;
-            reference = ((u32)record->unk8 >> 22) & 0x3F;
-            if (1) { }
-            sprite->unkC = flags;
+            sprite->unkC = record->unk8;
             sprite->unk8 = ((f32)record->unk4 / 500.0f) * object->unk8;
             sprite->unk5 = record->unk3;
+            reference = (sprite->unkC >> 22) & 0x3F;
+            frameOffset = (sprite->unkC >> 16) & 0x3F;
             count = *(u8 *)sprite->unk0;
-            if (flags & 0x80000000) {
+            if (sprite->unkC & 0x80000000) {
                 sprite->unk10 = (f32)mathRnd(0, count);
-            } else if (flags & 0x40000000) {
+            } else if (sprite->unkC & 0x40000000) {
                 sprite->unk10 = ((Objects06534Sprite *)object->unk60)[reference].unk10 + (f32)frameOffset;
-            } else if (flags & 0x20000000) {
+            } else if (sprite->unkC & 0x20000000) {
                 sprite->unk10 = ((Objects06534Sprite *)object->unk60)[reference].unk10 - (f32)frameOffset;
             }
             if ((f32)count < sprite->unk10) {
@@ -2139,9 +2120,6 @@ s32 func_80006534(Objects06534Object *object) {
     }
     return failed;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80006534.s")
-#endif
 /* PROVENANCE: control-flow body adapted from Jet Force Gemini's public
  * src/objects.c func_80007494; Mickey's offsets, globals, and calls are authoritative. */
 /* Workbench verdict: allocation-mismatch; 1 differing word (85/86). */
@@ -5537,16 +5515,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * first-mismatch: +0x4
  * summary: Delta 0 after unroller restoration. 79 exact, 70 naming, 17 structural. Insertion pairs at plus-4/plus-1C and plus-27C/plus-64. Unmodified arg0 spills and restores ra but loses two words and grows the frame; decrementing counted loops stay rolled; only for-i-from-zero unrolls and it cannot emit the target remainder.
  * PLATEAU-HANDOFF:func_8000A39C:end
- */
-
-/* PLATEAU-HANDOFF:func_80006534:start
- * symbol: func_80006534
- * score: 17/205 words
- * frame: 0x38
- * relocations: 7
- * first-mismatch: +0x11C
- * summary: L142: flags denied v1 (cost list starts at c3). Region after the load-call offers target colours at +4. Size-0 split family floors at 37. Retained 17.
- * PLATEAU-HANDOFF:func_80006534:end
  */
 
 /* PLATEAU-HANDOFF:func_800084C4:start

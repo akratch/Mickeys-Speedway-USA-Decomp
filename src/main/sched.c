@@ -67,7 +67,6 @@ extern u8 D_800CF520;
 extern u8 D_800CF578;
 extern u8 D_800CF590;
 extern u8 D_800CF5A8;
-extern u8 D_80000000[];
 s32 D_800D2D40;
 s32 D_800D2D44;
 u64 D_800D2D48;
@@ -294,30 +293,35 @@ char *osScGetTaskType(s32 taskID) {
 }
 void func_80030608(OSScTask *arg0) {
 }
-#ifdef NON_MATCHING
-/* 2026-09-24: size is 192/192, masked 56, frame 0x98. The three compares
- * are the D_80000000 symbol and the three adds are the 0x80000000U literal,
- * which deletes the extra low-half addiu. The symbol's lui now occupies the
- * byte-test delay, so that branch is bne rather than bnel, and each literal
- * add rematerializes through at. See the EOF handoff. */
+/* Matched 2026-10-01.  The edits that closed it:
+ *  - the nested cursor and its start are pointers, like the print cursor.
+ *    All three range tests compare a u32 cast against the literal and all
+ *    three rebases are pointer adds, so the literal is two constants of two
+ *    types: the unsigned one the compares share and the address-typed one
+ *    the adds share.  Each gets its own saved register, the adds' constant
+ *    is loaded in the first arm and again at the join, and no symbol is
+ *    involved;
+ *  - the two replaced commands are the packet macros, each one source line
+ *    with the command word first, which orders the second saved pair;
+ *  - the bisection target is the start pointer indexed by commands, not a
+ *    byte sum;
+ *  - numRetraces and gotRdpDone are declared first, and two unused words
+ *    sit between done and message, which lands every home (frame 0x98). */
 SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
                         SchedGfx *displayList, OSMesgQueue *queue,
                         u64 *dataStart) {
-    s8 *padAbove0;
-    s8 *padAbove1;
-    s64 savedCommands[2];
-    s32 done = 0;
-    s8 *padMid0;
-    s8 *padMid1;
-    OSMesg message = NULL;
-    SchedGfx *nextCommand;
     s32 numRetraces;
     s32 gotRdpDone;
+    s64 savedCommands[2];
+    s32 done = 0;
+    s32 pad0;
+    s32 pad1;
+    OSMesg message = NULL;
+    SchedGfx *nextCommand;
     s8 *commandStart;
     s8 *printStart;
-    u32 nestedStart;
-
-    u32 nestedCommand;
+    s8 *nestedStart;
+    s8 *nestedCommand;
 
     do {
         nextCommand = displayList + 1;
@@ -328,10 +332,8 @@ SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
 
         savedCommands[1] = *(s64 *) displayList;
         savedCommands[0] = *(s64 *) (displayList + 1);
-        displayList->w1 = 0;
-        displayList->w0 = 0xE9000000;
-        (displayList + 1)->w1 = 0;
-        (displayList + 1)->w0 = 0xB8000000;
+        gDPFullSync(displayList);
+        gSPEndDisplayList(displayList + 1);
 
         osWritebackDCacheAll();
         osSpTaskLoad(&sc->curRSPTask->list);
@@ -358,7 +360,7 @@ SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
             if (*(u8 *) displayList == 6) {
                 commandStart = (s8 *) displayList - 0x140;
                 printStart = commandStart;
-                if ((u32) commandStart < (u32) D_80000000) {
+                if ((u32) commandStart < 0x80000000U) {
                     printStart = commandStart + 0x80000000U;
                 }
                 if ((s32) printStart < (s32) dataStart) {
@@ -366,13 +368,13 @@ SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
                 }
                 diRcpPrintDL((SchedGfx *) printStart, displayList, 0x50);
 
-                nestedCommand = displayList->w1;
-                if (nestedCommand < (u32) D_80000000) {
+                nestedCommand = (s8 *) displayList->w1;
+                if ((u32) nestedCommand < 0x80000000U) {
                     nestedCommand += 0x80000000U;
                 }
                 nestedStart = nestedCommand;
                 commandIndex = 0;
-                while (*(s8 *) nestedCommand != (s8) 0xB8) {
+                while (*nestedCommand != (s8) 0xB8) {
                     nestedCommand += 8;
                     commandIndex++;
                 }
@@ -381,8 +383,8 @@ SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
                 } else {
                     commandIndex = commandIndex / 2;
                 }
-                displayList = (SchedGfx *) (nestedStart + commandIndex * 8);
-                if ((u32) displayList < (u32) D_80000000) {
+                displayList = (SchedGfx *) nestedStart + commandIndex;
+                if ((u32) displayList < 0x80000000U) {
                     displayList = (SchedGfx *) ((u32) displayList + 0x80000000U);
                 }
                 diRcpPrintDL((SchedGfx *) nestedStart, displayList, 0xA0);
@@ -408,9 +410,6 @@ SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
 
     return displayList;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/sched/func_80030610.s")
-#endif
 /* PROVENANCE: body adapted from Jet Force Gemini's public decomp,
  * src/sched.c:func_8004FF64_50B64, with Mickey's extracted trace helper. */
 SchedGfx *func_80030910(OSSched *sc, s32 *arg1, s32 *arg2, s32 *arg3,
@@ -895,13 +894,3 @@ s32 __scSchedule(OSSched *sc, OSScTask **sp, OSScTask **dp, s32 availRCP) {
     }
     return avail;
 }
-
-/* PLATEAU-HANDOFF:func_80030610:start
- * symbol: func_80030610
- * score: 56/192 words
- * frame: 0x98
- * relocations: 11
- * first-mismatch: +0x8C
- * summary: Compare-delay hypothesis stalled. Separate += delta 0 masked 56; ternary delta +4 masked 77; pointer increment delta -4 masked 107. lui still fills bne delay.
- * PLATEAU-HANDOFF:func_80030610:end
- */

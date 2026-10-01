@@ -2442,101 +2442,59 @@ typedef struct Overlay1NearbyObject {
     void *state;
 } Overlay1NearbyObject;
 
-/* Plateau: the exact 69-instruction extent, the 0x48 frame and now the exact
- * opcode schedule -- the verdict crossed structure-mismatch into
- * allocation-mismatch. Three things buy that and all three are needed: the
- * counter is `volatile`, so every read is its own load from sp+60 and every
- * write its own store, which is what the target does at all six sites; the
- * loop is `if (count--) { do ... while (count--); }`, which reads the counter
- * once for the test and the decrement (the previous record's finding that this
- * form costs an instruction holds only for a plain `s32`, where it needs an
- * extra copy); and the inner `object = objectArg` copy is gone, because
- * `volatile` costs eight bytes of frame and dropping that declaration is what
- * pays for it.
- *
- * The residual is 31 register-only words with one cause. uopt gives our
- * counter read a pool web, so it lands on v1 and `other`/`otherState` swap
- * colours behind it; the target spends a ugen ring temp (t6) at every counter
- * read and has six fewer pool webs -- pool lanes 16 against the target's 10,
- * ring lanes 4 against 10. Measured and flat, do not repeat: plain and
- * volatile counters crossed with five loop shapes; the counter reached through
- * `*(s32 *)&count`, `*(volatile s32 *)&count`, a plain `s32 *` local and a
- * `volatile s32 *` local; inlining `otherState`, inlining `other`, reversing
- * the kind comparison, reversing the two declarations, dropping the `state`
- * local, caching the list base, and an extra `mode` web ahead of the counter
- * read. Next lever is whatever stops uopt webbing that read.
- *
- * 2026-09-10: the single cause above is confirmed, the flag lattice is now
- * closed, and the web is narrowed from per-variable to per-load.
- *
- * The flag sweep had never been run on this function. It has been: 119
- * combinations, every one nonexact, and the project's own preset is the best
- * row. The residual is not a flag.
- *
- * The web is per-load, not per-variable. Splitting the counter across two
- * distinct union members -- one read by the head test, the other by the latch
- * -- is byte-flat at 31. So uopt is not unifying the head and latch reads into
- * a single web; it webs each volatile load of this stack local separately, and
- * they share a colour only because they do not interfere. Work aimed at
- * breaking that unification is wasted, because there is none.
- *
- * The residual restated as an allocation fact, which is the useful form: the
- * target spends its two lowest pool colours on `other` and `otherState`, which
- * leaves ugen's ring as the only home for the counter reads and starts that
- * ring at its first slot for the head read. The candidate spends the lower
- * colour on the head counter read instead, so `other` and `otherState` take
- * the same two colours in the opposite order and every ring value slides one
- * position. One extra pool web at the head explains all 31 words.
- *
- * Also measured and flat, do not repeat: `count` as int, long and unsigned;
- * casts and coercions around the decrement in the head, the latch, or both;
- * casts on the index read; the getter's argument cast; `while (count--)` and
- * `for (; count--; )`, which cfe rotates into exactly the same if/do-while, so
- * loop shape is not a lever here at all; reversing the kind comparison and the
- * mode comparison. Naming the loaded value in an explicit read-modify-write
- * pair costs two instructions in every read/write volatility combination.
- *
- * The next lever is unchanged but sharper: find what makes uopt reserve those
- * two pool colours for `other` and `otherState` across the whole function. A
- * matched precedent with the same counter idiom, overlay3ResetObjects, does
- * the opposite -- its head read takes a pool colour and only its latch read
- * takes a ring temp -- so IDO reaches both outcomes from the same source shape
- * and the difference lives in this function's loop-body variables, not in how
- * the counter is spelled. */
-#ifdef NON_MATCHING
-void overlay1ConsumeNearbyPending(void *objectArg, void *listArg) {
+/* Matched 2026-10-01 by dropping the inherited `volatile` counter. The target
+ * loads the counter into a scratch temp at the guard and at the latch and
+ * decrements from that temp; uopt does that only where it has not promoted
+ * the address-taken counter to a register for the block, and it declines to
+ * promote in any block that holds an indirect load. A `volatile` counter
+ * reloads too, but through a coloured cfe temporary, which was the whole
+ * 31-word residual. Three source facts reproduce the target instead:
+ *  - a plain `s32 count` and `while (count--)`;
+ *  - a load through a pointer stored to a local that is never read, once
+ *    between the getter and the loop and once at the end of the body. uopt
+ *    deletes both stores, but only after it has ruled the counter out for
+ *    those two blocks. Which field is read is not observable; the store
+ *    target is `pending`, because a further local would grow the frame.
+ *  - an empty test of `other`, which counts as one more reference and so
+ *    ties `other` with `otherState` for the first colour (the tie keeps
+ *    `other`); it emits nothing. */
+void overlay1ConsumeNearbyPending(Overlay1NearbyObject *object, void *unused) {
     Overlay1NearbyState *state;
     f32 radiusSquared;
-    volatile s32 count;
+    s32 count;
+    Overlay1NearbyObject **list;
     Overlay1NearbyObject *other;
     Overlay1OtherState *otherState;
-    state = ((Overlay1NearbyObject *)objectArg)->state;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    u8 pending;
+
+    state = object->state;
     radiusSquared = state->radius * 4.0f;
     radiusSquared *= state->radius * 4.0f;
-    listArg = overlay1GetObjectListReloc((s32 *)&count);
-    if (count--) {
-        do {
-            other = ((Overlay1NearbyObject **)listArg)[count];
-            otherState = other->state;
-            if (state->kind == otherState->kind) {
-                f32 dx = other->x - ((Overlay1NearbyObject *)objectArg)->x;
-                f32 dy = other->y - ((Overlay1NearbyObject *)objectArg)->y;
-                f32 dz = other->z - ((Overlay1NearbyObject *)objectArg)->z;
-                if (((dx * dx) + (dy * dy) + (dz * dz) < radiusSquared) &&
-                    (state->mode == 2)) {
-                    u8 pending = otherState->pending;
-                    if (pending) {
-                        otherState->pending = 0;
-                        otherState->count += pending;
-                    }
+    list = (Overlay1NearbyObject **)overlay1GetObjectListReloc(&count);
+    pending = state->mode;
+    while (count--) {
+        other = list[count];
+        if (other) {
+        }
+        otherState = other->state;
+        if (state->kind == otherState->kind) {
+            dx = other->x - object->x;
+            dy = other->y - object->y;
+            dz = other->z - object->z;
+            if (((dx * dx) + (dy * dy) + (dz * dz) < radiusSquared) && (state->mode == 2)) {
+                pending = otherState->pending;
+                if (pending) {
+                    otherState->pending = 0;
+                    otherState->count += pending;
                 }
             }
-        } while (count--);
+        }
+        pending = otherState->pending;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F0006A14_1852DF4.s")
-#endif
 
 /* ---- overlay1InitRange ---- */
 
@@ -3398,16 +3356,6 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 }
 
 
-
-/* PLATEAU-HANDOFF:overlay1ConsumeNearbyPending:start
- * symbol: overlay1ConsumeNearbyPending
- * score: 31/69 words
- * frame: 0x18
- * relocations: 9
- * first-mismatch: +0x40
- * summary: 23-draw census retains counter read-modify-write web blocker; no admissible route below 31.
- * PLATEAU-HANDOFF:overlay1ConsumeNearbyPending:end
- */
 
 /* PLATEAU-HANDOFF:overlay1UpdateRangeFlags:start
  * symbol: overlay1UpdateRangeFlags

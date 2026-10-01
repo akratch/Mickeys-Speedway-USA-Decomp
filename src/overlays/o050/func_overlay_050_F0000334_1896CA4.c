@@ -48,49 +48,51 @@ typedef struct O50Level {
 } O50Level;
 
 /* Tier B: callee identities decoded from overlay 50 runtime exports.
- * Signatures follow Mickey callees and the O32 argument surface. */
-u8 *func_80028F54(void); /* 0:+0x28B04 */
-void camStandardOrtho(void **, void **); /* 0:+0x22600 */
-void overlay45ReleaseDescriptor(void *); /* 45:+0x270 */
-void overlay45SetMode(void *, s32); /* 45:+0x1BE0 */
-void overlay56SplitTime(s32, s32 *, s32 *, s32 *); /* 56:+0xB8 */
-O50Level *levelGetLevel(void); /* 0:+0x2634C */
-s32 func_800290A0(void); /* 0:+0x28C50 */
-s32 func_8003A7D0(void *); /* 0:+0x3A380 */
-void func_8002F618(void **, void *, s32, s32, s32, s32, s32, s32); /* 0:+0x2F1C8 */
-void func_80034920(void **); /* 0:+0x344D0 */
-void func_80039E34(s32); /* 0:+0x399E4 */
-void freeFrontEndItem(s32); /* 0:+0x3964C */
-void loadFrontEndItem(s32); /* 0:+0x39794 */
-s32 overlay59Interpolate(s32, s32, s32, s32, s32, s32 *, s32 *, s32); /* 59:+0x784 */
-void overlay59BuildList(s32, void *); /* 59:+0x84C */
-void overlay59DrawFrame(void **, s32, s32, s32); /* 59:+0x8EC */
-s32 func_80036544(void *, s32 *, s32, f32 *, s32); /* 0:+0x360F4 */
-void amSndPlay(u16, void **); /* 0:+0xB44 */
-u32 joyGetPressed(s32); /* 0:+0x250FC */
-void func_8004A4B0(s32, s32, s32, s32, s32); /* 0:+0x4A060 */
-void func_8004B0A4(s32); /* 0:+0x4AC54 */
-void func_8004B0DC(s32, s32, s32, s32); /* 0:+0x4AC8C */
-void fontColour(s32, s32, s32, s32, s32); /* 0:+0x4AC68 */
-void func_8004B0F8(void **, s32, s32, char *, s32); /* 0:+0x4ACA8 */
-s32 mainGetMode(void); /* 0:+0x288C8 */
-void func_800016EC(s32); /* 0:+0x129C */
-void func_8003A590(void); /* 0:+0x3A140 */
-void func_80037414(s32, f32, f32, s32, s32, s32, s32); /* 0:+0x36FC4 */
-void mainChangeLevel(s32, s32, s32, s32, s32, s32); /* 0:+0x27F24 */
-void func_800005CC(f32, u8); /* 0:+0x17C */
+ * Signatures follow Mickey callees and the O32 argument surface; the
+ * *_o050Reloc names are the generated relocation surface. */
+u8 *func_80028F54_o050Reloc(void); /* 0:+0x28B04 */
+void camStandardOrtho_o050Reloc(void **, void **); /* 0:+0x22600 */
+void overlay45ReleaseDescriptor_o050Reloc(void *); /* 45:+0x270 */
+void overlay45SetMode_o050Reloc(void *, s32); /* 45:+0x1BE0 */
+void overlay56SplitTime_o050Reloc(s32, s32 *, s32 *, s32 *); /* 56:+0xB8 */
+O50Level *levelGetLevel_o050Reloc(void); /* 0:+0x2634C */
+s32 func_800290A0_o050Reloc(void); /* 0:+0x28C50 */
+s32 func_8003A7D0_o050Reloc(void *); /* 0:+0x3A380 */
+void func_8002F618_o050Reloc(void **, void *, s32, s32, s32, s32, s32, s32); /* 0:+0x2F1C8 */
+void func_80034920_o050Reloc(void **); /* 0:+0x344D0 */
+void func_80039E34_o050Reloc(s32); /* 0:+0x399E4 */
+void freeFrontEndItem_o050Reloc(s32); /* 0:+0x3964C */
+void loadFrontEndItem_o050Reloc(s32); /* 0:+0x39794 */
+s32 overlay59Interpolate_o050Reloc(s32, s32, s32, s32, s32, s32 *, s32 *, s32); /* 59:+0x784 */
+void overlay59BuildList_o050Reloc(s32, void *); /* 59:+0x84C */
+void overlay59DrawFrame_o050Reloc(void **, s32, s32, s32); /* 59:+0x8EC */
+s32 func_80036544_o050Reloc(void *, s32 *, s32, f32 *, s32); /* 0:+0x360F4 */
+void amSndPlay_o050Reloc(u16, void **); /* 0:+0xB44 */
+u32 joyGetPressed_o050Reloc(s32); /* 0:+0x250FC */
+void func_8004A4B0_o050Reloc(s32, s32, s32, s32, s32); /* 0:+0x4A060 */
+void func_8004B0A4_o050Reloc(s32); /* 0:+0x4AC54 */
+void func_8004B0DC_o050Reloc(s32, s32, s32, s32); /* 0:+0x4AC8C */
+void fontColour_o050Reloc(s32, s32, s32, s32, s32); /* 0:+0x4AC68 */
+void func_8004B0F8_o050Reloc(void **, s32, s32, char *, s32); /* 0:+0x4ACA8 */
+s32 mainGetMode_o050Reloc(void); /* 0:+0x288C8 */
+void func_800016EC_o050Reloc(s32); /* 0:+0x129C */
+void func_8003A590_o050Reloc(void); /* 0:+0x3A140 */
+void func_80037414_o050Reloc(s32, f32, f32, s32, s32, s32, s32); /* 0:+0x36FC4 */
+void mainChangeLevel_o050Reloc(s32, s32, s32, s32, s32, s32); /* 0:+0x27F24 */
+void func_800005CC_o050Reloc(f32, u8); /* 0:+0x17C */
 
 void overlay50SubmitTimeGlyphs(s32, s32, s32, s32);
-#ifdef NON_MATCHING
 /* Overlay 50 was one translation unit: its runtime records address this
- * function's .data, .rodata and .bss through LOCAL (section-relative)
- * records, and as1 shares one high half across the stores to adjacent
- * fields of record 0 only for a TU-local symbol. So the candidate defines
- * the overlay's data at the offsets the records address (.data 0x370 and
- * .bss 0xD0, checked against the addends of every record this function
- * uses). The bytes are owned by the retained overlay image: these zero
- * initializers only fix the layout, and a promotion drops the sections and
- * rebinds the records (see overlay54TailA). The D_ names keep their offsets. */
+ * function's .data and .bss through LOCAL (section-relative) records, and
+ * as1 shares one high half across the stores to adjacent fields of record
+ * 0 only for a TU-local symbol. So this TU defines the overlay's data at
+ * the offsets the records address (.data 0x370 and .bss 0xD0, every addend
+ * this function uses compared equal). The bytes belong to the retained
+ * overlay image: these zero initializers only fix the layout, and the
+ * object's .data and .bss are dropped at POSTPROCESS with their records
+ * rebound to zero-valued bases (mk/overlays.mk). The D_ names keep their
+ * section offsets. The three read-only objects stay extern; the relocation
+ * surface values them at their .rodata offsets. */
 static s32 sOverlay50Data000[27] = { 0 };
 static O50Glyph D_6C[4] = { 0 };
 static O50Glyph D_AC[3] = { 0 };
@@ -141,17 +143,27 @@ typedef struct O50MenuObject {
 } O50MenuObject;
 
 /* Tier B: runtime export identities, kept distinct from stored addends. */
-extern void *D_800D3140;
-extern void *D_800D3144;
-extern s32 D_800C947C;
-extern s16 D_8007C180[];
-extern void *D_800D31C8[];
-extern O50MenuObject D_800D3550[];
-extern s32 D_8007C1B0;
-extern u16 D_8007BF1C;
-extern s32 D_8007C0BC;
+extern void *D_800D3140_o050Reloc;
+extern void *D_800D3144_o050Reloc;
+extern s32 D_800C947C_o050Reloc;
+extern s16 D_8007C180_o050Reloc[];
+extern void *D_800D31C8_o050Reloc[];
+extern O50MenuObject D_800D3550_o050Reloc[];
+extern s32 D_8007C1B0_o050Reloc;
+extern u16 D_8007BF1C_o050Reloc;
+extern s32 D_8007C0BC_o050Reloc;
 extern s32 o50Overlay1StateReloc; /* overlay 1 +0x83E0 */
 
+/* Matched 2026-10-01 from a 1,115-word plateau. What it took:
+ *   - -Wab,-r4300_mul on this TU (mk/overlays.mk) and plain for loops for
+ *     every easing loop: IDO emits the shipped rotated loops from them;
+ *   - the overlay's data defined in the TU (see above);
+ *   - one counter for the speedometer angle loop and the lap loop, each
+ *     `for (i = 0; ...)`: uopt hoists the lap loop's `i = 0` above the
+ *     joypad test, which is the shipped spill at 0x114;
+ *   - the speed readout in its own variable, the time magnitude only for
+ *     the split, `racer->laps != level->laps`, a switch on the mode flag,
+ *     and every local at function scope in the target's frame order. */
 void func_overlay_050_F0000334_1896CA4(O50Object *object, s32 updateRate) {
     s32 i;
     s32 lapIndex;
@@ -172,32 +184,33 @@ void func_overlay_050_F0000334_1896CA4(O50Object *object, s32 updateRate) {
     s32 centiseconds;
     s32 hudY;
     s32 hudX;
+    s32 speed;
 
-    modeFlag = (u8 *)func_80028F54();
+    modeFlag = (u8 *)func_80028F54_o050Reloc();
     if (object != NULL) {
         racer = object->racer;
-        camStandardOrtho(&D_800D3140, &D_800D3144);
+        camStandardOrtho_o050Reloc(&D_800D3140_o050Reloc, &D_800D3144_o050Reloc);
         if (o50BssC4 != 0) {
             D_C8 += updateRate;
             if (D_C8 >= 0x3D) {
                 if (D_C8 >= 0xF1) {
                     D_CA -= updateRate * 4;
                     if (D_CA < 0) {
-                        overlay45ReleaseDescriptor(o50BssC4);
+                        overlay45ReleaseDescriptor_o050Reloc(o50BssC4);
                         o50BssC4 = 0;
                     } else {
-                        overlay45SetMode(o50BssC4, D_CA);
+                        overlay45SetMode_o050Reloc(o50BssC4, D_CA);
                     }
                 } else {
                     D_CA += updateRate * 4;
                     if (D_CA >= 0x100) {
                         D_CA = 0xFF;
                     }
-                    overlay45SetMode(o50BssC4, D_CA);
+                    overlay45SetMode_o050Reloc(o50BssC4, D_CA);
                 }
             }
         }
-        if (D_800C947C == 0) {
+        if (D_800C947C_o050Reloc == 0) {
             for (i = 0; i < updateRate; i++) {
                 D_A4 += (0.0f - D_A4) * 0.125f;
                 D_A8 += (0.0f - D_A8) * 0.125f;
@@ -214,11 +227,11 @@ void func_overlay_050_F0000334_1896CA4(O50Object *object, s32 updateRate) {
             D_AC[0].glyph = (s32) (racer->value385 << 0x10);
             D_AC[1].glyph = (s32) (o50Data320[racer->value385] << 0x10);
         }
-        overlay56SplitTime(racer->raceTime, &minutes, &seconds, &centiseconds);
-        level = levelGetLevel();
-        if ((D_800C947C == 0) && (
+        overlay56SplitTime_o050Reloc(racer->raceTime, &minutes, &seconds, &centiseconds);
+        level = levelGetLevel_o050Reloc();
+        if ((D_800C947C_o050Reloc == 0) && (
 racer->laps != level->laps
-) && (func_800290A0() == 0) && (func_8003A7D0(object) != racer->raceTime)) {
+) && (func_800290A0_o050Reloc() == 0) && (func_8003A7D0_o050Reloc(object) != racer->raceTime)) {
             centiseconds -= centiseconds % 10;
             centiseconds += D_32C[0];
             D_32C[0]++;
@@ -230,23 +243,23 @@ racer->laps != level->laps
         D_12C[4].glyph = (s32) ((seconds % 10) << 0x10);
         D_12C[6].glyph = (s32) ((centiseconds / 10) << 0x10);
         D_12C[7].glyph = (s32) ((centiseconds % 10) << 0x10);
-        func_8002F618(&D_800D3140, D_12C, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
-        func_8002F618(&D_800D3140, D_FC, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
+        func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_12C, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
+        func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_FC, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
         if (*modeFlag != 1) {
             if (racer->flags & 8) {
-                func_8002F618(&D_800D3140, D_DC, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
+                func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_DC, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
             } else {
-                func_8002F618(&D_800D3140, D_AC, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
+                func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_AC, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
             }
         }
-        func_80034920(&D_800D3140);
-        D_800D3550[4].y = (f32) (0x54 - hudY);
-        D_800D3550[4].angle = (s16) ((s32) (racer->raceTime * -0x10000) / 300);
-        func_80039E34(4);
-        D_800D3550[1].y = (f32) (0x43 - hudY);
-        func_80039E34(1);
-        func_8002F618(&D_800D3140, D_2C0, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
-        func_80034920(&D_800D3140);
+        func_80034920_o050Reloc(&D_800D3140_o050Reloc);
+        D_800D3550_o050Reloc[4].y = (f32) (0x54 - hudY);
+        D_800D3550_o050Reloc[4].angle = (s16) ((s32) (racer->raceTime * -0x10000) / 300);
+        func_80039E34_o050Reloc(4);
+        D_800D3550_o050Reloc[1].y = (f32) (0x43 - hudY);
+        func_80039E34_o050Reloc(1);
+        func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_2C0, 0, hudY, 0xFF, 0xFF, 0xFF, 0xFF);
+        func_80034920_o050Reloc(&D_800D3140_o050Reloc);
         if (racer->item != 0xFF) {
             D_334 += updateRate * 16;
             if (D_334 >= 256) {
@@ -262,17 +275,17 @@ racer->laps != level->laps
             if (racer->itemState != 0) {
                 itemId = 0x35;
             } else if (racer->item != 0xFF) {
-                itemId = D_8007C180[racer->item];
+                itemId = D_8007C180_o050Reloc[racer->item];
             } else {
                 itemId = o50Data330[0];
             }
             if (itemId != o50Data330[0]) {
                 if (o50Data330[0] != -1) {
-                    freeFrontEndItem(o50Data330[0]);
+                    freeFrontEndItem_o050Reloc(o50Data330[0]);
                 }
                 o50Data330[0] = itemId;
                 if (o50Data330[0] != -1) {
-                    loadFrontEndItem(o50Data330[0]);
+                    loadFrontEndItem_o050Reloc(o50Data330[0]);
                 }
             }
             if (o50Data330[0] != -1) {
@@ -286,20 +299,20 @@ racer->laps != level->laps
                 itemGlyphs[0].glyph = 0;
                 itemGlyphs[0].alternate = 0;
                 itemGlyphs[1].texture = 0;
-                itemGlyphs[0].texture = D_800D31C8[o50Data330[0]];
-                func_8002F618(&D_800D3140, itemGlyphs, 0, 0, 0xFF, 0xFF, 0xFF, D_334);
+                itemGlyphs[0].texture = D_800D31C8_o050Reloc[o50Data330[0]];
+                func_8002F618_o050Reloc(&D_800D3140_o050Reloc, itemGlyphs, 0, 0, 0xFF, 0xFF, 0xFF, D_334);
                 if (o50Data330[0] != 0x35) {
                     if ((s32) racer->itemCount >= 2) {
                         D_300[0].glyph = (s32) (racer->itemCount << 0x10);
-                        func_8002F618(&D_800D3140, D_300, 0xAB, 0x2E, 0, 0, 0, D_334);
-                        func_8002F618(&D_800D3140, D_300, 0xAC, 0x30, 0, 0, 0, D_334);
-                        func_8002F618(&D_800D3140, D_300, 0xAC, 0x2F, 0xFF, 0xFF, 0xFF, D_334);
+                        func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_300, 0xAB, 0x2E, 0, 0, 0, D_334);
+                        func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_300, 0xAC, 0x30, 0, 0, 0, D_334);
+                        func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_300, 0xAC, 0x2F, 0xFF, 0xFF, 0xFF, D_334);
                     }
                 }
             }
         } else {
             if (o50Data330[0] != -1) {
-                freeFrontEndItem((s32) o50Data330[0]);
+                freeFrontEndItem_o050Reloc((s32) o50Data330[0]);
                 o50Data330[0] = -1;
             }
         }
@@ -326,20 +339,20 @@ racer->laps != level->laps
             D_1CC[1].x = (s16) (D_21C >> 4);
             D_1CC[2].x = (s16) (D_21C >> 4);
             D_1CC[3].x = (s16) (D_21C >> 4);
-            func_8002F618(&D_800D3140, D_1CC, 0, 0, 0xFF, 0xFF, 0xFF, 0xC0);
+            func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_1CC, 0, 0, 0xFF, 0xFF, 0xFF, 0xC0);
         }
-        if (overlay59Interpolate(0, -0x18, 0xBE, 0x30, 0xBE, &messageX, &messageY, 1) != 0) {
-            overlay59BuildList(0, messageGlyphs);
+        if (overlay59Interpolate_o050Reloc(0, -0x18, 0xBE, 0x30, 0xBE, &messageX, &messageY, 1) != 0) {
+            overlay59BuildList_o050Reloc(0, messageGlyphs);
             if (messageGlyphs[0].texture != 0) {
-                func_8002F618(&D_800D3140, messageGlyphs, messageX, messageY, 0xFF, 0xFF, 0xFF, 0xFF);
+                func_8002F618_o050Reloc(&D_800D3140_o050Reloc, messageGlyphs, messageX, messageY, 0xFF, 0xFF, 0xFF, 0xFF);
             }
-            overlay59DrawFrame(&D_800D3140, 0, messageX, messageY);
+            overlay59DrawFrame_o050Reloc(&D_800D3140_o050Reloc, 0, messageX, messageY);
         }
-        func_80036544(D_800D31C8[0], &D_328, 0x14, &D_800D3550[1].frame, updateRate);
+        func_80036544_o050Reloc(D_800D31C8_o050Reloc[0], &D_328, 0x14, &D_800D3550_o050Reloc[1].frame, updateRate);
         if (racer->laps < level->laps) {
             if (racer->differenceTimer >= updateRate) {
                 if ((racer->differenceTimer == 0xB4) && (racer->timeDifference >= 0)) {
-                    amSndPlay(0x1F8, 0);
+                    amSndPlay_o050Reloc(0x1F8, 0);
                 }
                 racer->differenceTimer -= updateRate;
                 for (i = 0; i < updateRate; i++) {
@@ -348,7 +361,7 @@ racer->laps != level->laps
                 }
             } else if (D_BC != -0x500) {
                 if (racer->differenceTimer != -1) {
-                    amSndPlay(0x1F9, 0);
+                    amSndPlay_o050Reloc(0x1F9, 0);
                     racer->differenceTimer = -1;
                 }
                 for (i = 0; i < updateRate; i++) {
@@ -364,18 +377,18 @@ racer->laps != level->laps
                 o50LapGlyphs[0].glyph = 12 << 16;
                 timeMagnitude = -racer->timeDifference;
                 for (i = 0; i < 9; i++) {
-                    o50LapGlyphs[i].texture = D_800D31C8[20];
-                    o50LapGlyphs[i].alternate = D_800D31C8[21];
+                    o50LapGlyphs[i].texture = D_800D31C8_o050Reloc[20];
+                    o50LapGlyphs[i].alternate = D_800D31C8_o050Reloc[21];
                 }
             } else {
                 o50LapGlyphs[0].glyph = 13 << 16;
                 timeMagnitude = racer->timeDifference;
                 for (i = 0; i < 9; i++) {
-                    o50LapGlyphs[i].texture = D_800D31C8[80];
-                    o50LapGlyphs[i].alternate = D_800D31C8[21];
+                    o50LapGlyphs[i].texture = D_800D31C8_o050Reloc[80];
+                    o50LapGlyphs[i].alternate = D_800D31C8_o050Reloc[21];
                 }
             }
-            overlay56SplitTime(timeMagnitude, &minutes, &seconds, &centiseconds);
+            overlay56SplitTime_o050Reloc(timeMagnitude, &minutes, &seconds, &centiseconds);
             o50LapGlyphs[1].glyph = (minutes / 10) << 0x10;
             o50LapGlyphs[2].glyph = (minutes % 10) << 0x10;
             o50LapGlyphs[4].glyph = (seconds / 10) << 0x10;
@@ -393,40 +406,40 @@ racer->laps != level->laps
                     o50LapGlyphs[i].x = sOverlay50LapTemplate[i].x;
                 }
             }
-            func_8002F618(&D_800D3140, o50LapGlyphs, D_BC >> 4, D_C0 >> 4, 0xFF, 0xFF, 0xFF, 0xFF);
+            func_8002F618_o050Reloc(&D_800D3140_o050Reloc, o50LapGlyphs, D_BC >> 4, D_C0 >> 4, 0xFF, 0xFF, 0xFF, 0xFF);
         }
 
-        if (joyGetPressed(0) & 1) {
-            D_8007C1B0 ^= 1;
+        if (joyGetPressed_o050Reloc(0) & 1) {
+            D_8007C1B0_o050Reloc ^= 1;
         }
-        if (D_8007C1B0 != 0) {
-            if (D_8007BF1C & 1) {
-                itemId = (s32) (racer->speed * 6.25f);
-                if (itemId < 0) {
-                    itemId = -itemId;
+        if (D_8007C1B0_o050Reloc != 0) {
+            if (D_8007BF1C_o050Reloc & 1) {
+                speed = (s32) (racer->speed * 6.25f);
+                if (speed < 0) {
+                    speed = -speed;
                 }
-                func_8004A4B0(0xE6, 0xB4, itemId, 3, 0);
-                func_8004B0A4(2);
-                func_8004B0DC(0, 0, 0, 0);
-                fontColour(0x40, 0xFF, 0x40, 0xFF, 0xE0);
-                func_8004B0F8(&D_800D3140, 0x106, 0xBC, o50SpeedText, 0);
+                func_8004A4B0_o050Reloc(0xE6, 0xB4, speed, 3, 0);
+                func_8004B0A4_o050Reloc(2);
+                func_8004B0DC_o050Reloc(0, 0, 0, 0);
+                fontColour_o050Reloc(0x40, 0xFF, 0x40, 0xFF, 0xE0);
+                func_8004B0F8_o050Reloc(&D_800D3140_o050Reloc, 0x106, 0xBC, o50SpeedText, 0);
             } else {
-                func_8002F618(&D_800D3140, D_6C, hudX, 0, 0xFF, 0xFF, 0xFF, 0xFF);
+                func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_6C, hudX, 0, 0xFF, 0xFF, 0xFF, 0xFF);
                 if (racer->speed < 0.0f) {
                     targetAngle = (s32) (16384.0f - (-racer->speed * o50ReverseScale));
                 } else {
                     targetAngle = (s32) (16384.0f - (racer->speed * o50ForwardScale));
                 }
                 for (i = 0; i < updateRate; i++) {
-                    D_800D3550[0].angle += (targetAngle - D_800D3550[0].angle) >> 2;
+                    D_800D3550_o050Reloc[0].angle += (targetAngle - D_800D3550_o050Reloc[0].angle) >> 2;
                 }
 
-                D_800D3550[0].y = -85.0f;
-                D_800D3550[0].x = (f32) (hudX + 0x77);
-                func_80034920(&D_800D3140);
-                D_8007C0BC = 0xFF;
-                func_80039E34(0);
-                D_8007C0BC = 0xFF;
+                D_800D3550_o050Reloc[0].x = hudX + 0x77;
+                D_800D3550_o050Reloc[0].y = -85.0f;
+                func_80034920_o050Reloc(&D_800D3140_o050Reloc);
+                D_8007C0BC_o050Reloc = 0xFF;
+                func_80039E34_o050Reloc(0);
+                D_8007C0BC_o050Reloc = 0xFF;
             }
         }
         lapCount = racer->laps;
@@ -440,27 +453,27 @@ racer->laps != level->laps
             overlay50SubmitTimeGlyphs(i + 1, D_B0[i] + 0xD6, i * 10 + 0x3C, racer->lapTimes[i]);
         }
         if (lapCount > 0) {
-            func_8002F618(&D_800D3140, D_2E0, D_B0[0], 0, 0xFF, 0xFF, 0xFF, 0xFF);
+            func_8002F618_o050Reloc(&D_800D3140_o050Reloc, D_2E0, D_B0[0], 0, 0xFF, 0xFF, 0xFF, 0xFF);
         }
-        if (mainGetMode() == 0) {
+        if (mainGetMode_o050Reloc() == 0) {
             switch (*modeFlag) {
             case 0:
-                if ((o50Overlay1StateReloc == 0) && (joyGetPressed(0) & 0x9000) && (D_33C == 0)) {
-                    func_800016EC(1);
-                    func_8003A590();
-                    func_80037414(2, 4.0f, -1.0f, 0, 0, 0, 0);
-                    mainChangeLevel(0x12, 0, 0, 7, 1, 1);
-                    func_800005CC(3.0f, 0);
+                if ((o50Overlay1StateReloc == 0) && (joyGetPressed_o050Reloc(0) & 0x9000) && (D_33C == 0)) {
+                    func_800016EC_o050Reloc(1);
+                    func_8003A590_o050Reloc();
+                    func_80037414_o050Reloc(2, 4.0f, -1.0f, 0, 0, 0, 0);
+                    mainChangeLevel_o050Reloc(0x12, 0, 0, 7, 1, 1);
+                    func_800005CC_o050Reloc(3.0f, 0);
                     D_33C = 1;
                 }
                 break;
             case 1:
-                if ((o50Overlay1StateReloc == 0) && (joyGetPressed(0) & 0x9000) && (D_33C == 0)) {
-                    func_800016EC(1);
-                    func_8003A590();
-                    func_80037414(2, 4.0f, -1.0f, 0, 0, 0, 0);
-                    mainChangeLevel(0x12, 0, 0, 7, 1, 0);
-                    func_800005CC(3.0f, 0);
+                if ((o50Overlay1StateReloc == 0) && (joyGetPressed_o050Reloc(0) & 0x9000) && (D_33C == 0)) {
+                    func_800016EC_o050Reloc(1);
+                    func_8003A590_o050Reloc();
+                    func_80037414_o050Reloc(2, 4.0f, -1.0f, 0, 0, 0, 0);
+                    mainChangeLevel_o050Reloc(0x12, 0, 0, 7, 1, 0);
+                    func_800005CC_o050Reloc(3.0f, 0);
                     D_33C = 1;
                 }
                 break;
@@ -468,16 +481,3 @@ racer->laps != level->laps
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o050/func_overlay_050_F0000334_1896CA4/func_overlay_050_F0000334_1896CA4.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_050_F0000334_1896CA4:start
- * symbol: func_overlay_050_F0000334_1896CA4
- * score: 60 differing words
- * frame: 0x118
- * relocations: 315
- * first-mismatch: +0x7FC
- * summary: r4300_mul flag, plain loops, data into C, one i for angle and lap loops: 1115 to 60 at delta 0; item-id colours open.
- * PLATEAU-HANDOFF:func_overlay_050_F0000334_1896CA4:end
- */

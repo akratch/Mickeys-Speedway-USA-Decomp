@@ -2456,3 +2456,17 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
  * summary: Procedure-7 census prices 355 draws; remaining mixed integer and FP ring phases have no target-backed source lever.
  * PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:end
  */
+
+/* Natural owner for the overlay's original 0x20-byte BSS range.  The live
+ * fields occupy 0x1C bytes; the remaining four bytes are section reservation. */
+typedef struct {
+    s16 *commandBuffer;
+    s16 effectFlag;
+    f32 surfaceSteeringScale;
+    f32 surfaceMotionScale;
+    f32 speedLimit;
+    s32 leftAlphaEnabled;
+    s32 rightAlphaEnabled;
+} Overlay8BssOwner;
+
+Overlay8BssOwner gOverlay8BssOwner;

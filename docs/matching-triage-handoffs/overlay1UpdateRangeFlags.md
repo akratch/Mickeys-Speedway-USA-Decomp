@@ -6,7 +6,7 @@
 - frame: 0x70
 - relocations: 4
 - first mismatch: +0x190
-- summary: L145 on dx/dz keeps the t5/t4 pair. Inlining one square is 4 (same 33 draws). Floor remains 2.
+- summary: Four canonical callee identities and ABIs authenticated without resolver changes; exact extent/frame, two allocation words remain. Prior source levers stay closed.
 
 #### tu2-o1tail: the residual is one FP pool web, same law as overlay1AppendPathPoint
 
@@ -589,5 +589,34 @@ the head of the list and t4 next at that line, and the list arrives there
 as t4, t3, t5 in every form measured. So the free order of t3/t4 is decided
 upstream of case 1, which is where the recorded five-draw constraint puts
 it. No source edit adopted.
+
+#### 2026-10-01: canonical callee identities reconstructed
+
+The old proxy spellings did not authenticate any of the four runtime calls.
+Reconstructing calls to `func_80005750`, `Arctanf`, `overlay1ActivateObject`
+and `overlay1InitializeModeState` from Mickey's runtime relocations and
+independently established canonical callee boundaries supplies all four
+identities without changing the relocation resolver. The final call initializes
+mode state; the config byte at offset 4 is a mode value. Activation returns
+`s32`, which this caller ignores, and the angle result retains its explicit
+signed-16-bit conversion.
+
+The list getter now uses its canonical `void **` declaration. Its existing
+`overlay1ChooseModeObject` caller uses the same pointer-array type; indexed
+`void *` values still convert to the corresponding object pointer. The stock
+full-TU reconstruction preserves all executable and readonly bytes and every
+relocation outside this function. Only this function's four declared callee
+names change. Raw stock output and the configured NON_MATCHING object have
+exact named source correspondence over the complete 480-byte extent. The
+actual preprocessed input compares unchanged with itself. Runtime comparison
+proves all four relocation offsets, types, zero addends and identities.
+
+The residual remains two masked words, first at +0x190, at the exact 120-word
+extent and 0x70 frame. No allocation lever was discovered or tested. Previous
+flag, carrier-deletion and draw-buyback closures remain closed; this is an ABI
+and identity correction, not a new match or an allocation search result.
+Evidence commands: `tools/wb_compare.sh --diagnose`,
+`tools/reloc_surface.py compare --json --explain`, and the configured
+NON_MATCHING build, followed by the normal ROM and repository gates.
 
 <!-- plateau-handoff:overlay1UpdateRangeFlags:end -->

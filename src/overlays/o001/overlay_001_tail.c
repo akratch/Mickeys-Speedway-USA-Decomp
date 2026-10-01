@@ -1865,7 +1865,7 @@ typedef struct O1SelectWorld {
     O1SelectObject *selected;
 } O1SelectWorld;
 
-extern O1SelectObject **func_80005750(s32 *count);
+extern void **func_80005750(s32 *count);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 
 s32 overlay1ChooseModeObject(void) {
@@ -1875,7 +1875,7 @@ s32 overlay1ChooseModeObject(void) {
     s32 choiceCount;
     O1Selection *selection;
     O1SelectObject *choices[5];
-    O1SelectObject **objects;
+    void **objects;
 
     objects = func_80005750(&count);
     choiceCount = 0;
@@ -2151,7 +2151,7 @@ typedef struct Overlay1RangeConfig {
     u8 horizontalScale;
     u8 verticalScale;
     u8 mode;
-    u8 soundId;
+    u8 modeValue;
 } Overlay1RangeConfig;
 
 typedef struct Overlay1RangeState {
@@ -2175,10 +2175,14 @@ typedef struct Overlay1RangeObject {
     void *state;
 } Overlay1RangeObject;
 
+/* The four callees follow Mickey's runtime relocations and canonical ABIs.
+ * The final call initializes mode state with the config byte at offset 4.
+ * All call identities are authenticated; the two allocation words remain. */
+/* Retained for the separate nearby-pending reconstruction below. */
 extern Overlay1RangeObject **overlay1GetObjectListReloc(s32 *count);
-extern s32 overlay1GetAngleValueReloc(f32 dz, f32 dx);
-extern void overlay1ActivateObjectReloc(Overlay1RangeObject *object);
-extern void overlay1PlaySoundReloc(u8 soundId);
+extern s32 Arctanf(f32 dz, f32 dx);
+extern s32 overlay1ActivateObject(void *object);
+extern void overlay1InitializeModeState(s32 value);
 
 /* Plateau: exact 120 instructions, the 0x70 frame, and every allocator lane --
  * general pool 37/37, general temp 8/8, FP pool 7/7, FP temp 9/9 -- with two
@@ -2299,10 +2303,10 @@ extern void overlay1PlaySoundReloc(u8 soundId);
 void overlay1UpdateRangeFlags(Overlay1RangeObject *object, void *unused) {
     Overlay1RangeConfig *config;
     s32 count;
-    Overlay1RangeObject **objects;
+    void **objects;
 
     config = object->state;
-    objects = overlay1GetObjectListReloc(&count);
+    objects = func_80005750(&count);
     if (count--) {
         do {
             Overlay1RangeObject *other;
@@ -2320,7 +2324,7 @@ void overlay1UpdateRangeFlags(Overlay1RangeObject *object, void *unused) {
             rangeSquared = (f32)(s32)(((u32)config->horizontalScale * 10U) *
                                       ((u32)config->horizontalScale * 10U));
             if ((dx * dx + dz * dz) < rangeSquared) {
-                angle = overlay1GetAngleValueReloc(dz, dx);
+                angle = Arctanf(dz, dx);
                 angleHigh = config->angleHigh;
                 angle = (s16)((u32)angleHigh << 8) + angle;
                 if ((angle < -0x4000) || (angle >= 0x4001)) {
@@ -2343,8 +2347,8 @@ void overlay1UpdateRangeFlags(Overlay1RangeObject *object, void *unused) {
                                 masked = flags & 8;
                                 if (masked) {
                                     otherState->flags = flags & ~8;
-                                    overlay1ActivateObjectReloc(other);
-                                    overlay1PlaySoundReloc(config->soundId);
+                                    overlay1ActivateObject(other);
+                                    overlay1InitializeModeState(config->modeValue);
                                 }
                                 break;
                             }
@@ -3398,7 +3402,7 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
  * frame: 0x70
  * relocations: 4
  * first-mismatch: +0x190
- * summary: L145 on dx/dz keeps the t5/t4 pair. Inlining one square is 4 (same 33 draws). Floor remains 2.
+ * summary: Four canonical callee identities and ABIs authenticated without resolver changes; exact extent/frame, two allocation words remain. Prior source levers stay closed.
  * PLATEAU-HANDOFF:overlay1UpdateRangeFlags:end
  */
 

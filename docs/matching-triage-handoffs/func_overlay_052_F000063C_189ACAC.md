@@ -2,17 +2,44 @@
 ### `func_overlay_052_F000063C_189ACAC` plateau handoff
 
 - source: `src/overlays/o052/overlay52TailB.c`
-- score: 506 differing words
+- score: 500 differing words
 - frame: 0x118
 - relocations: 314
 - first mismatch: +0x5E0
-- summary: Clock hand as *-65536, digit fix-up over records 1..8, local reuse: 602 to 506 at delta 0. Open: register ring after +0xE00.
+- summary: Lap and alpha in i, mode bit and buttons one local: 506 to 500. Open: lap colours t1 not v0; temp-ring rotation after +0xE00.
+
+Summary before this remeasure: Clock hand as *-65536, digit fix-up over records 1..8, local reuse: 602 to 506 at delta 0. Open: register ring after +0xE00.
 
 Summary before this remeasure: Icon x/y own locals, slide test inverted, difference after the fill: 814 to 602 at delta 0. Open: icon split-arm delay, count colour.
 
 Summary before this remeasure: -r4300_mul + TU-local o52 data, indexed item loops, 9-record fill: 1337 to 814 at delta 0. Next: windows 0xD00-0x1500.
 
 Summary before this remeasure: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
+
+## 2026-10-02 f-o052b (fourth bank): 506 to 500, and where it stops
+
+- The screen-mode bit and the pad-buttons word share one local (both are
+  s0 in the shipped code; mode dies before the player loop), the time
+  difference takes the freed symbol, and the lap count and the shadow
+  alpha share `i` (the shipped alpha is t1, the loop counter's colour):
+  500 at +0. Aligner: 1187 byte-exact, 483 naming, 5 immediate, 12 really
+  different.
+
+Decision variable reached: the lap count's colour. Shipped it is v0; here
+it is t1 (in `i`) or t0 (in any slide-bar local). Giving it a symbol of its
+own (any rename that leaves its symbol otherwise unused, with the pad
+buttons as an expression or in the mode local) does colour it v0, but the
+first player loop then hoists `&desiredItems` and the `o52_bss_4A8[i]`
+address into saved registers and the function shrinks by 24 bytes (1484 at
+-24), so the symbol count is load-bearing and the lap shares a symbol in
+the original. The temp-ring rotation from +0xE00 to the end, constant
+(t4 t6)(t5 t7 t8), and the slide value in t0 where shipped is a3 are
+downstream of the same allocation and were not separately closed.
+
+Also measured and rejected: swapping the unkC/unk10 store order in the
+first HUD arm (490 positional, but it breaks that arm's shipped schedule;
+an artefact of the ring, not a fix); the item count in a named local
+(eight carriers, none better than inline); the clock-hand shift spellings.
 
 ## 2026-10-02 f-o052b (third bank): 602 to 506
 

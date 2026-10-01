@@ -208,15 +208,16 @@ static s16 o52_bss_4D2;
  * unrolls the rest by four, the shipped shape). Every local has a frame home
  * in declaration order (the item-count icon's Y spills to the fourth after
  * halfHeight), so the icon position has its own locals; the lap count and
- * the shadow alpha share one, and the time difference reuses buttons. The
+ * the shadow alpha share i, and the screen-mode bit and the pad buttons
+ * share one local (both colour s0 in the shipped code). The
  * clock hand is a multiply by -65536 (as1's -r4300_mul expansion: negate
  * into at, then shift). */
 void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
     s32 i;
-    s32 buttons;
+    s32 difference;
     s32 player;
     s32 desiredItems[2];
-    s32 mode;
+    s32 bits;
     s32 split;
     Overlay52Object **racers;
     Overlay52Level *level;
@@ -242,7 +243,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
     viGetCurrentSize(&width, (s32 *)&halfHeight);
     halfHeight >>= 1;
     split = frontGet2PlayerSplit();
-    mode = frontGetScreenMode() & 1;
+    bits = frontGetScreenMode() & 1;
     camStandardOrtho(&D_800D3140, &D_800D3144);
     if (o52_bss_4CC != 0) {
         o52_bss_4D0 += updateRate;
@@ -265,7 +266,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
         }
     }
     racers = func_80005750(&racerCount);
-    if (mode != 0) {
+    if (bits != 0) {
         o52_data_24C[0] = 0;
         o52_data_24C[1] = -120;
     } else {
@@ -374,17 +375,17 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 digits[1].x--;
             }
             func_8002F618(&D_800D3140, digits, 0, hudOffset, 255, 255, 255, 255);
-            value1 = racer->lap + 1;
+            i = racer->lap + 1;
             if (racer->value45C != 0) {
-                value1++;
+                i++;
             }
-            if (value1 >= 4) {
-                value1 = 3;
+            if (i >= 4) {
+                i = 3;
             }
-            if (value1 <= 0) {
-                value1 = 1;
+            if (i <= 0) {
+                i = 1;
             }
-            secondary[1].value8 = value1 << 16;
+            secondary[1].value8 = i << 16;
             func_8002F618(&D_800D3140, secondary, 0, hudOffset, 255, 255, 255, 255);
             func_80034920(&D_800D3140);
             if (split != 0) {
@@ -460,9 +461,9 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 iconX = icon[0].x;
                 iconY = icon[0].y;
                 o52_data_2F4[0].value8 = racer->itemCount << 16;
-                value1 = (o52_data_320[player] - (o52_data_320[player] >> 1)) & 255;
-                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 28, iconY + 27, 0, 0, 0, value1);
-                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 30, iconY + 29, 0, 0, 0, value1);
+                i = (o52_data_320[player] - (o52_data_320[player] >> 1)) & 255;
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 28, iconY + 27, 0, 0, 0, i);
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 30, iconY + 29, 0, 0, 0, i);
                 func_8002F618(&D_800D3140, o52_data_2F4, iconX + 29, iconY + 28, 255, 255, 255, 255);
             }
         }
@@ -530,20 +531,20 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             }
             if (racer->timeDifference <= 0) {
                 o52_bss_160[0].value8 = 12 << 16;
-                buttons = -racer->timeDifference;
+                difference = -racer->timeDifference;
                 for (i = 0; i < 9; i++) {
                     o52_bss_160[i].resource = D_800D31C8[20];
                     o52_bss_160[i].alternate = D_800D31C8[21];
                 }
             } else {
                 o52_bss_160[0].value8 = 13 << 16;
-                buttons = racer->timeDifference;
+                difference = racer->timeDifference;
                 for (i = 0; i < 9; i++) {
                     o52_bss_160[i].resource = D_800D31C8[80];
                     o52_bss_160[i].alternate = D_800D31C8[21];
                 }
             }
-            overlay56SplitTime(buttons, &minutes, &seconds, &hundredths);
+            overlay56SplitTime(difference, &minutes, &seconds, &hundredths);
             o52_bss_160[1].value8 = (minutes / 10) << 16;
             o52_bss_160[2].value8 = (minutes % 10) << 16;
             o52_bss_160[4].value8 = (seconds / 10) << 16;
@@ -572,8 +573,8 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             switch (*func_80028F54()) {
                 case 3:
                     if (ext_o1_83e0 == 0) {
-                        buttons = joyGetPressed(0) & 65535;
-                        if (((joyGetPressed(1) | buttons) & 0x9000) && o52_data_318 == 0) {
+                        bits = joyGetPressed(0) & 65535;
+                        if (((joyGetPressed(1) | bits) & 0x9000) && o52_data_318 == 0) {
                             mainChangeCameras(1);
                             func_800016EC(1);
                             func_8003A590();
@@ -586,8 +587,8 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                     break;
                 case 4:
                     if (ext_o1_83e0 == 0) {
-                        buttons = joyGetPressed(0) & 65535;
-                        if (((joyGetPressed(1) | buttons) & 0x9000) && o52_data_318 == 0) {
+                        bits = joyGetPressed(0) & 65535;
+                        if (((joyGetPressed(1) | bits) & 0x9000) && o52_data_318 == 0) {
                             mainChangeCameras(1);
                             func_800016EC(1);
                             func_8003A590();
@@ -609,10 +610,10 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:start
  * symbol: func_overlay_052_F000063C_189ACAC
- * score: 506 differing words
+ * score: 500 differing words
  * frame: 0x118
  * relocations: 314
  * first-mismatch: +0x5E0
- * summary: Clock hand as *-65536, digit fix-up over records 1..8, local reuse: 602 to 506 at delta 0. Open: register ring after +0xE00.
+ * summary: Lap and alpha in i, mode bit and buttons one local: 506 to 500. Open: lap colours t1 not v0; temp-ring rotation after +0xE00.
  * PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:end
  */

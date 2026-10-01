@@ -2,11 +2,13 @@
 ### `overlay17CreateChain` plateau handoff
 
 - source: `src/overlays/o017/overlay17CreateChain.c`
-- score: 115 differing words
+- score: 83 differing words
 - frame: 0x80
 - relocations: 7
 - first mismatch: +0x34
-- summary: Template pointer is source on the no-material arm; source-before-destination; while(x--) loops: 130 to 115, frame 0x80 closed. Ring colour rotation remains.
+- summary: Declaration order and chain->red masked with 0xFF (ring phase): 115 to 83. Template-loop webs rotate one position; halfBufferBytes in a3 not t7.
+
+Summary before this remeasure: Template pointer is source on the no-material arm; source-before-destination; while(x--) loops: 130 to 115, frame 0x80 closed. Ring colour rotation remains.
 
 Summary before this remeasure: Fresh V0 retains 130 differences; proxy evidence cannot authenticate the shifted template HI16/LO16 pair, leaving no new source lever.
 
@@ -34,4 +36,18 @@ Priced edits, each measured with tools/shape_product.py at size delta 0:
 - Remaining residual is colour only: template-loop webs rotate one position
   (cand v1,v0,a1,a2,a3,a0 against target v0,a1,a2,a3,a0,v1) and halfBufferBytes
   takes a3 where the target holds it in a ring temp (t7).
+
+### 2026-10-01, lane d-ovl2 (second pass): declaration order and a ring no-op, 115 to 83
+
+- Declaration order, best of 150 random permutations of the eight locals
+  (floor 109 reached by several orders): source, vertex, buffer, destination,
+  halfBufferBytes, index, the six floats, chain. 115 to 109.
+- `chain->red = (red & 0xFF)`: the u8 mask the peephole deletes still spends a
+  ring temp (L127); 109 to 83 at size delta 0. It is the best of 37 single
+  `& 0xFF` wraps of the u8 reads and stores (next best 85, chain->blue), and
+  no pair of them beats it. Wraps on the s32 locals (count, index, buffer,
+  vertex, halfBufferBytes) with `& -1`, or-zero, `* 1` and `(s32)` all fold early
+  and are flat.
+- Left: 58 naming rows, 10 structural; the template-loop webs still rotate one
+  position and halfBufferBytes takes a3 where the target holds a ring temp.
 <!-- plateau-handoff:overlay17CreateChain:end -->

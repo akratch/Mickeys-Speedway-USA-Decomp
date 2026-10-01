@@ -66,14 +66,14 @@ Overlay17Chain *overlay17CreateChain(
     void *owner, s32 count, Overlay17Material *materialToken, s32 materialScale,
     f32 x, f32 y, f32 z, f32 radius,
     u8 red, u8 green, u8 blue, u8 alpha) {
-    s32 halfBufferBytes;
-    Overlay17Chain *chain;
-    Overlay17Template *destination;
     Overlay17Template *source;
-    s32 index;
-    s32 buffer;
     s32 vertex;
+    s32 buffer;
+    Overlay17Template *destination;
+    s32 halfBufferBytes;
+    s32 index;
     f32 x0, y0, z0, x1, y1, z1;
+    Overlay17Chain *chain;
 
     chain = (Overlay17Chain *)0x40;
     if (materialToken != (Overlay17Material *)-1) {
@@ -126,7 +126,7 @@ Overlay17Chain *overlay17CreateChain(
     chain->y = y;
     chain->z = z;
     chain->radius = radius;
-    chain->red = red;
+    chain->red = (red & 0xFF);
     chain->green = green;
     chain->blue = blue;
     chain->alpha = alpha;
@@ -167,10 +167,10 @@ Overlay17Chain *overlay17CreateChain(
 
 /* PLATEAU-HANDOFF:overlay17CreateChain:start
  * symbol: overlay17CreateChain
- * score: 115 differing words
+ * score: 83 differing words
  * frame: 0x80
  * relocations: 7
  * first-mismatch: +0x34
- * summary: Template pointer is source on the no-material arm; source-before-destination; while(x--) loops: 130 to 115, frame 0x80 closed. Ring colour rotation remains.
+ * summary: Declaration order and chain->red masked with 0xFF (ring phase): 115 to 83. Template-loop webs rotate one position; halfBufferBytes in a3 not t7.
  * PLATEAU-HANDOFF:overlay17CreateChain:end
  */

@@ -5192,10 +5192,7 @@ void func_8000B3CC(void *arg0, s32 arg1) {
     moveZ = end[2] - start[2];
     func_80008128((Objects08128Object *)object, volume, savedY, moveZ);
     object->unk20 += acceleration * step;
-    volume = object->unk1C;
-    savedY = object->unk20;
-    moveZ = object->unk24;
-    state->unk18 = sqrtf((volume * volume) + (savedY * savedY) + (moveZ * moveZ));
+    state->unk18 = sqrtf((object->unk1C * object->unk1C) + (object->unk20 * object->unk20) + (object->unk24 * object->unk24));
 
     bottom = end[1] - radius;
     if (((func_8001357C(object->unkC, object->unk14, &state->unk14,
@@ -5238,10 +5235,7 @@ void func_8000B3CC(void *arg0, s32 arg1) {
     object->unk1C *= damping;
     object->unk20 *= damping;
     object->unk24 *= damping;
-    volume = object->unk1C;
-    savedY = object->unk20;
-    moveZ = object->unk24;
-    state->unk18 = sqrtf((volume * volume) + (savedY * savedY) + (moveZ * moveZ));
+    state->unk18 = sqrtf((object->unk1C * object->unk1C) + (object->unk20 * object->unk20) + (object->unk24 * object->unk24));
 
     if ((collision << 2) != 0) {
         state->unk2 = 1;
@@ -5268,10 +5262,7 @@ void func_8000B3CC(void *arg0, s32 arg1) {
                             state->unk18;
             object->unk24 = ((factor * state->unk10) + object->unk24) *
                             state->unk18;
-            volume = object->unk1C;
-            savedY = object->unk20;
-            moveZ = object->unk24;
-            speed = sqrtf((volume * volume) + (savedY * savedY) + (moveZ * moveZ));
+            speed = sqrtf((object->unk1C * object->unk1C) + (object->unk20 * object->unk20) + (object->unk24 * object->unk24));
             if (speed < 1.0f) {
                 if (state->unkC < D_80081530) {
                     object->unk1C = state->unk8;
@@ -5425,10 +5416,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_8000B3CC:start
  * symbol: func_8000B3CC
- * score: 116 differing words
+ * score: 100/494 words
  * frame: 0x98
  * relocations: 20
  * first-mismatch: +0x148
- * summary: hypothesis=put step at +0x34, speed at +0x30 and factor at +0x2C without undoing the L144 homes; spellings=block scope 116 unhomed, split stores 116 folded, two-field aggregate 197 at +16; stall=speed stayed at +0x4C and step missed +0x34, body reverted
+ * summary: Velocity sums read fields at each use (116 to 100, delta 0). Left: reflection keeps fields in f0/f14/f2/f12, factor homed, zero in f18.
  * PLATEAU-HANDOFF:func_8000B3CC:end
  */

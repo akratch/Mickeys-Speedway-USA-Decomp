@@ -581,7 +581,8 @@ void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
  * scalars follow so they pack below them. triangleOffset is never read: the
  * triangle pointer is rebuilt from displayListOffset, which is the target's
  * shape, and the declaration holds the home. Plateau 2026-10-01 (lane d-res1):
- * 109 -> 106, natural source with no allocator cues. */
+ * 109 -> 106, natural source with no allocator cues. 2026-10-02 (lane e-res3):
+ * 106 -> 105 by reading the ROM table through one entry pointer. */
 Sprite *func_800355A0(s32 spriteId, s32 flags) {
     Sprite *refSprite;
     Sprite *newSprite;
@@ -626,10 +627,12 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
         D_800D3008++;
     }
 
-    size = D_800D2FF8[spriteId];
-    spriteAsset = D_800D3000;
-    piRomLoadSection(0x15, (u32)spriteAsset, size,
-                     D_800D2FF8[spriteId + 1] - size);
+    {
+        s32 *entry = &D_800D2FF8[spriteId];
+        size = entry[0];
+        spriteAsset = D_800D3000;
+        piRomLoadSection(0x15, (u32)spriteAsset, size, entry[1] - size);
+    }
 
     numTextures = spriteAsset->frameTexOffsets[spriteAsset->numberOfFrames];
     i = numTextures;
@@ -713,11 +716,11 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
 }
 /* PLATEAU-HANDOFF:func_800355A0:start
  * symbol: func_800355A0
- * score: 106 differing words
+ * score: 105 differing words
  * frame: 0x68
  * relocations: 44
  * first-mismatch: +0x48
- * summary: Natural source, declaration-order homes; open: target hoists the D_800D2FF8 lui and the id shift into block 2, here the shift lands in block 1
+ * summary: Table entry pointer (106->105); open: target hoists the D_800D2FF8 lui and the id shift into block 2, here the shift lands in block 1
  * PLATEAU-HANDOFF:func_800355A0:end
  */
 #else

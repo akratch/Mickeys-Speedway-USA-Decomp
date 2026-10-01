@@ -32,4 +32,15 @@ The batch counter takes s7 here and fp in the target against the polygon
 counter, the same kind of save-ratio swap. Neither was moved by a source edit
 tried so far.
 
+## 2026-10-02 (lane e-res3): no change, 217 held
+
+Loop forms as a 8-cell product (polygon, vertex and triangle loops as do-while
+against for): every for form is worse (259-277, sizes +4 to +24; the polygon
+loop as for is size -4 at 263). Store order of the vertex, triangle and
+triangle-word groups (reversed, 8 cells): 217 or 218. A float `zero` local
+shared by the head (partial form) costs +12 bytes. The target keeps 0.0f in
+f20 across the three head arms (`mtc1 zero,f20` is redefined in each arm after
+the calls); here it is a caller-saved f12 web per use, which is the open
+decision variable.
+
 <!-- plateau-handoff:func_80017BCC:end -->

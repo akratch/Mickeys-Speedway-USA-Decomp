@@ -2,11 +2,13 @@
 ### `rain_render_splashes` plateau handoff
 
 - source: `src/main/weather.c`
-- score: 109 differing words
+- score: 105/404 words
 - frame: 0xB8
-- relocations: 53
+- relocations: 0
 - first mismatch: +0x94
-- summary: 109 with the height-result home at the target 0x84 and a for render loop; the s1/s2/s3 ring is one ranking: delay address and 0xFF outrank splash and index.
+- summary: Packet store order (109->105); open: s1/s2/s3 ring, splash/index above delay-address and 0xFF webs
+
+Summary before this remeasure: 109 with the height-result home at the target 0x84 and a for render loop; the s1/s2/s3 ring is one ranking: delay address and 0xFF outrank splash and index.
 - ownership: resident text 0x8003BBF8 through 0x8003C248, 0x650 bytes; the next symbol is `rain_lightning`, so there is no owned tail padding.
 - ABI and flags: one `s32` update-rate argument, configured main-TU `-O2 -mips2 -32`; weather POSTPROCESS only renames trap aliases.
 - best measured shape: both sides 404 words and frame 0xB8. Masked 113, first mismatch +0x94. Aligner: 291 byte-exact, 93 naming, 3 immediate, 18 structural. One candidate-only word at +0x240 and one target-only word at +0x224.
@@ -39,5 +41,16 @@
   a total below the delay address's 8.9 per block, or the delay address a total
   over 20.6 (density, which takes s4 in the target). Neither was reached from
   source; the forced pair from the earlier lane (44) is the reference.
+
+## 2026-10-02 (lane e-res3): 109 to 105, packet store order
+
+Shape checklist item 6 as a 64-cell product (`tools/shape_product.py`, jobs 2)
+over the store order (w0/w1 first) of the six display-list packets: floor 105
+with the FA C0E0FFFF, 0x05110020 and final FA packets storing w1 before w0;
+the other three axes are inert. A second 81-cell probe over the xyz/colour
+order of the four splash vertices keeps the written order (105; every other
+cell 128-152). A function-scope `vtx` local for the vertices is 117 (the
+declaration moves the frame homes). The s1/s2/s3 ring decision variable from
+2026-10-01 is unchanged.
 
 <!-- plateau-handoff:rain_render_splashes:end -->

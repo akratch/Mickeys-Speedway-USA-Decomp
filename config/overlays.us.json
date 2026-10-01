@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 259128,
-  "nonmatching_overlay_c_bytes": 209480,
+  "matched_overlay_c_bytes": 260396,
+  "nonmatching_overlay_c_bytes": 208212,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 3600,
   "bss_bytes": 77680,
@@ -10034,7 +10034,7 @@
      "type": "c",
      "source": "overlays/o046/overlay46UpdateSequence",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x614",
@@ -10229,7 +10229,8 @@
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o046/overlay46UpdateSequence",
-     "trial_function": "func_overlay_046_F0000120_188E518"
+     "trial_function": "func_overlay_046_F0000120_188E518",
+     "externalized": true
     }
    ]
   },

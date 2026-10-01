@@ -1771,6 +1771,39 @@ ifneq ($(NON_MATCHING),1)
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0001228_188F620.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x738
 endif
+# The sequence update is instruction-exact. Its sixteen resident callees go
+# through the generated surface entries, and its switch table is the retained
+# overlay table at rodata +0x34: bind the two table references to that owner
+# and drop the compiler's private copy by digest. No instruction changes.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46UpdateSequence.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/overlay46UpdateSequence.rebind.spec
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46UpdateSequence.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym func_80000F94=func_80000F94_o046Reloc \
+		--redefine-sym func_80001608=func_80001608_o046Reloc \
+		--redefine-sym func_80028374=func_80028374_o046Reloc \
+		--redefine-sym func_80028528=func_80028528_o046Reloc \
+		--redefine-sym func_80028D30=func_80028D30_o046Reloc \
+		--redefine-sym func_800291B4=func_800291B4_o046Reloc \
+		--redefine-sym func_80036F08=func_80036F08_o046Reloc \
+		--redefine-sym func_80037414=func_80037414_o046Reloc \
+		--redefine-sym func_80037658=func_80037658_o046Reloc \
+		--redefine-sym func_80037664=func_80037664_o046Reloc \
+		--redefine-sym func_8003A680=func_8003A680_o046Reloc \
+		--redefine-sym func_8004B0A4=func_8004B0A4_o046Reloc \
+		--redefine-sym func_8004B0B8=func_8004B0B8_o046Reloc \
+		--redefine-sym func_8004B0DC=func_8004B0DC_o046Reloc \
+		--redefine-sym func_80058240=func_80058240_o046Reloc \
+		--redefine-sym mathRnd=mathRnd_o046Reloc \
+		--add-symbol gOverlay46SequenceJumpTableReloc=0x34,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/overlay46UpdateSequence.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:de2a612733fe559800a48f993a4516fab0d7a6e0dbed588c95a4dd5f2cc3c7e2 && \
+	$(OBJCOPY) --remove-section .rel.rodata $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4F4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46UpdateTransition.c.o: \
 	$(TOOLS_DIR)/filter_elf_relocations.py \
 	$(TOOLS_DIR)/trim_elf_section.py

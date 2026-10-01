@@ -4426,15 +4426,18 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o046/overlay46UpdateSequence.c.o",
       "offset": 288,
       "overlay": 46,
       "size": 1268,
       "source": "src/overlays/o046/overlay46UpdateSequence.c",
       "tools": [
-        "trim_elf_section.py"
+        "rebind_elf_relocations.py",
+        "externalize_elf_section.py",
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -9204,7 +9207,7 @@
       "metadata": 636,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 224004,
+    "matched_c_bytes_with_postprocess": 225272,
     "objects_with_postprocess": 639
   }
 }

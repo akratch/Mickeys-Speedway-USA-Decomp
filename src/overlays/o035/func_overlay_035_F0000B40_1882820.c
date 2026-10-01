@@ -62,6 +62,13 @@ extern f32 sqrtf(f32 value);
  * loop (scratch + i * 8 before i * 8) rotates the t6/t9 ring, and s5-s7
  * colour order.
  *
+ * 130 -> 103 (lane c-big, 2026-10-01): the opposite-vertex distance is
+ * assigned to `mag` before the test, which colours it and gives the third
+ * vertex component the target's float register in both passes; the edge
+ * loop skips a finished edge with `continue`, whose extra block ranks the
+ * scratch pointer ahead of the edge + 1 temporary for the last callee-saved
+ * register; and the copy loop is a plain `*dst++ = *src++` (byte-inert).
+ *
  * PROVENANCE: adapted from Diddy Kong Racing,
  * src/object_models.c (model_init_collision).
  */
@@ -69,8 +76,8 @@ extern f32 sqrtf(f32 value);
 s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
     s32 pad0;
     O35CollisionRecord *scratch;
-    O35CollisionRecord *scratchRecord;
-    O35CollisionRecord *record;
+    s16 *scratchRecord;
+    s16 *record;
     s32 copyIndex;
     f32 x1, y1, z1;
     f32 x2, y2, z2;
@@ -100,16 +107,10 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
 
     scratch = call_o0_0_2AE30(
         s->triangleCount * (s32)sizeof(O35CollisionRecord), 0x91);
-    record = s->records;
-    scratchRecord = scratch;
-    copyIndex = 0;
-    if (s->triangleCount * 4 > 0) {
-        do {
-            copyIndex++;
-            scratchRecord = (O35CollisionRecord *)((u8 *)scratchRecord + 2);
-            ((s16 *)scratchRecord)[-1] = *(s16 *)record;
-            record = (O35CollisionRecord *)((u8 *)record + 2);
-        } while (copyIndex < s->triangleCount * 4);
+    record = (s16 *)s->records;
+    scratchRecord = (s16 *)scratch;
+    for (copyIndex = 0; copyIndex < s->triangleCount * 4; copyIndex++) {
+        *scratchRecord++ = *record++;
     }
 
     counter = 0;
@@ -181,63 +182,64 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
                 nextVertIndex = s->triangles[i].selectors[next] + vertexBase;
                 oppVertIndex = s->triangles[i].selectors[opp] + vertexBase;
                 neighbor = scratch[i].edgeNeighbor[edge];
-                if (neighbor != 0xFFFF) {
-                    if (neighbor == 0xFFFE) {
-                        idx = s->records[i].plane * 4;
-                    } else {
-                        idx = s->records[neighbor].plane * 4;
-                    }
-                    plane = &s->planes[idx];
-                    x5 = s->planes[idx + 0] + nx;
-                    y5 = s->planes[idx + 1] + ny;
-                    z5 = s->planes[idx + 2] + nz;
-                    v = &s->vertices[vertIndex];
-                    x1 = v->x;
-                    y1 = v->y;
-                    z1 = v->z;
-                    v = &s->vertices[nextVertIndex];
-                    x2 = v->x;
-                    y2 = v->y;
-                    z2 = v->z;
-                    x3 = x5 * 5.0f + x1;
-                    y3 = y5 * 5.0f + y1;
-                    z3 = z5 * 5.0f + z1;
-                    x5 = (y2 - y1) * (z3 - z1) - (z2 - z1) * (y3 - y1);
-                    y5 = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
-                    z5 = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
-                    mag = sqrtf(x5 * x5 + y5 * y5 + z5 * z5);
-                    if (mag > 0.0f) {
-                        x5 /= mag;
-                        y5 /= mag;
-                        z5 /= mag;
-                    }
-                    if (neighbor == 0xFFFE) {
-                        s->triangles[i].flags |= 1 << edge;
-                    } else {
-                        for (j = 0; j < 3; j++) {
-                            if (scratch[neighbor].edgeNeighbor[j] == i) {
-                                s->records[neighbor].edgeNeighbor[j] =
-                                    counter | 0x8000;
-                                scratch[neighbor].edgeNeighbor[j] = 0xFFFF;
-                            }
-                        }
-                        v = &s->vertices[oppVertIndex];
-                        x3 = v->x;
-                        y3 = v->y;
-                        z3 = v->z;
-                        if (plane[3] + (x3 * plane[0] + y3 * plane[1] + z3 * plane[2]) <
-                            0.0f) {
-                            s->triangles[i].flags |= 1 << edge;
-                        }
-                    }
-                    s->records[i].edgeNeighbor[edge] = counter;
-                    scratch[i].edgeNeighbor[edge] = 0xFFFF;
-                    s->planes[counter << 2] = x5;
-                    s->planes[(counter << 2) + 1] = y5;
-                    s->planes[(counter << 2) + 2] = z5;
-                    s->planes[(counter << 2) + 3] = -(x1 * x5 + y1 * y5 + z1 * z5);
-                    counter++;
+                if (neighbor == 0xFFFF) {
+                    continue;
                 }
+                if (neighbor == 0xFFFE) {
+                    idx = s->records[i].plane * 4;
+                } else {
+                    idx = s->records[neighbor].plane * 4;
+                }
+                plane = &s->planes[idx];
+                x5 = s->planes[idx + 0] + nx;
+                y5 = s->planes[idx + 1] + ny;
+                z5 = s->planes[idx + 2] + nz;
+                v = &s->vertices[vertIndex];
+                x1 = v->x;
+                y1 = v->y;
+                z1 = v->z;
+                v = &s->vertices[nextVertIndex];
+                x2 = v->x;
+                y2 = v->y;
+                z2 = v->z;
+                x3 = x5 * 5.0f + x1;
+                y3 = y5 * 5.0f + y1;
+                z3 = z5 * 5.0f + z1;
+                x5 = (y2 - y1) * (z3 - z1) - (z2 - z1) * (y3 - y1);
+                y5 = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
+                z5 = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
+                mag = sqrtf(x5 * x5 + y5 * y5 + z5 * z5);
+                if (mag > 0.0f) {
+                    x5 /= mag;
+                    y5 /= mag;
+                    z5 /= mag;
+                }
+                if (neighbor == 0xFFFE) {
+                    s->triangles[i].flags |= 1 << edge;
+                } else {
+                    for (j = 0; j < 3; j++) {
+                        if (scratch[neighbor].edgeNeighbor[j] == i) {
+                            s->records[neighbor].edgeNeighbor[j] =
+                                counter | 0x8000;
+                            scratch[neighbor].edgeNeighbor[j] = 0xFFFF;
+                        }
+                    }
+                    v = &s->vertices[oppVertIndex];
+                    x3 = v->x;
+                    y3 = v->y;
+                    z3 = v->z;
+                    mag = x3 * plane[0] + y3 * plane[1] + z3 * plane[2] + plane[3];
+                    if (mag < 0.0f) {
+                        s->triangles[i].flags |= 1 << edge;
+                    }
+                }
+                s->records[i].edgeNeighbor[edge] = counter;
+                scratch[i].edgeNeighbor[edge] = 0xFFFF;
+                s->planes[counter << 2] = x5;
+                s->planes[(counter << 2) + 1] = y5;
+                s->planes[(counter << 2) + 2] = z5;
+                s->planes[(counter << 2) + 3] = -(x1 * x5 + y1 * y5 + z1 * z5);
+                counter++;
             }
         }
     }
@@ -250,10 +252,10 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
 
 /* PLATEAU-HANDOFF:func_overlay_035_F0000B40_1882820:start
  * symbol: func_overlay_035_F0000B40_1882820
- * score: 130/528 words
+ * score: 103/528 words
  * frame: 0x130
  * relocations: 7
  * first-mismatch: +0xA4
- * summary: Hypothesis: i*8 before scratch+i*8 rotates t6/t9. Pre-for walk 160 delta 0; body &scratch[i] delta -12; guarded walk delta +12. No drop at delta 0. Stall 130.
+ * summary: Saves priced as total over a block-count divisor. Open: counter over edge, oppVert over edge*2, pass-1 span tie, preheader IV order (70 ring rows).
  * PLATEAU-HANDOFF:func_overlay_035_F0000B40_1882820:end
  */

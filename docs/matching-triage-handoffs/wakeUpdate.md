@@ -2,11 +2,13 @@
 ### `wakeUpdate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 257 differing words
+- score: 253/398 words
 - frame: 0x90
 - relocations: 2
 - first mismatch: +0x34
-- summary: Size delta 0, frame 0x90; residual is p1 colour order (wake/secondaryVertices, index/stripIndex swapped); four colour forces price it at 207.
+- summary: Second-loop wrap test as ++index (257 to 253, delta 0). Left: p1 order wake/secondaryVertices, index/stripIndex, polygonOffset over polyCount.
+
+Summary before this remeasure: Size delta 0, frame 0x90; residual is p1 colour order (wake/secondaryVertices, index/stripIndex swapped); four colour forces price it at 207.
 
 Summary before this remeasure: JFG efd5abb remains assembly-only; zero source attempts. Need new counter lifetime and trig-call schedule evidence.
 
@@ -91,4 +93,25 @@ Commands: `lane_status.py --symbol`, `wb_compare.sh --summary-json`, workbench
 NON_MATCHING and receives zero new exact bytes.
 
 Header regenerated from the ranking on 2026-09-23 (check_shard_metrics --write); it read score 334 differing words.
+
+#### 2026-10-02, lane g-objB: 257 to 253 at delta 0
+
+The second loop's wrap test written `if (++index >= wake->segmentCount)`
+with the sample address computed first: 257 to 253 (a 16-cell product
+over that, the first scan's increment and a while form of the second loop;
+only this axis moved).
+
+Measured worse: a separate variable for the first scan's index (273 in
+every declaration position). It lowers the second-loop index web to save
+10.33 (62/6), still above stripIndex's 10.09 (111/11), and moves the first
+scan onto v0 where the target keeps s6, so the target's index is one web
+across both loops with a lower ratio than ours (15.38). polygonOffset
+written at each use instead of a local is not hoisted (338, +20).
+
+Decision records (proc 13): the three open orders are wake (306/14)
+over secondaryVertices (121/6), index (123/8) over stripIndex (111/11), and
+polygonOffset (31/6) over polyCount and outputCount (42/12 each). Every
+emitted reference count matches the target, so the extra weight is in IR
+occurrences the listing does not show; the per-web detail records give no
+occurrence list.
 <!-- plateau-handoff:wakeUpdate:end -->

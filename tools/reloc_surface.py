@@ -63,6 +63,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import hashlib
 import json
 import re
 import struct
@@ -72,6 +73,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import overlay_tables as ot  # noqa: E402
 import reloc_identity as ri  # noqa: E402
+import overlay_storage_types as storage_types  # noqa: E402
+import overlay_storage_freshness as storage_freshness  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_ROM = REPO / "baseroms" / "mickey.us.z64"
@@ -2459,12 +2462,12 @@ def _stable_overlay_call_identities(path, candidate_elf, source_overlay,
         )
     except ri.RelocationIdentityError as error:
         raise SurfaceComparisonError(str(error)) from error
+    _identity_alias_evidence(evidence, equality_aliases, redefine_pairs)
     ambiguous = set(resolution.ambiguous) | runtime_ambiguous
     resolved = {
         name: identity for name, identity in resolution.resolved.items()
         if name not in ambiguous
     }
-    _identity_alias_evidence(evidence, equality_aliases, redefine_pairs)
     return resolved, ambiguous
 
 
@@ -2475,6 +2478,588 @@ def _overlay_module_extent(module, field, description):
             "overlay %s has invalid %s %r" %
             (module.get("overlay"), description, value))
     return int(value, 16)
+
+
+_STORAGE_C_SCALAR_LAYOUT = storage_types.SCALAR_LAYOUT
+
+
+def _require_storage_helpers_loaded():
+    storage_types.require_loaded_implementation(SurfaceComparisonError)
+    storage_freshness.require_loaded_implementation(SurfaceComparisonError)
+
+
+def _storage_hex(value, description):
+    if not isinstance(value, str) or not re.fullmatch(r"0x[0-9A-Fa-f]+", value):
+        raise SurfaceComparisonError("invalid %s %r" % (description, value))
+    return int(value, 16)
+
+
+def _storage_source_path(root, source):
+    if not isinstance(source, str):
+        raise SurfaceComparisonError("explicit storage source must be a string")
+    relative = Path(source)
+    if relative.is_absolute() or ".." in relative.parts or not source:
+        raise SurfaceComparisonError("explicit storage source path is unsafe")
+    path = root / "src" / (source + ".c")
+    if not path.is_file():
+        raise SurfaceComparisonError("explicit storage source is unavailable")
+    return path
+
+
+def _natural_c_struct_layout(source_text, struct_name):
+    return storage_types.natural_c_struct_layout(
+        source_text, struct_name, SurfaceComparisonError)
+
+
+def _validate_explicit_bss_member(group, binding, numeric_value, source_text):
+    return storage_types.validate_explicit_bss_member(
+        group, binding, numeric_value, source_text, SurfaceComparisonError)
+
+
+def _explicit_storage_registry_groups(registry):
+    return storage_types.parse_explicit_storage_registry(
+        registry, SurfaceComparisonError, ot.HEADER_COUNT)
+
+
+def _load_explicit_overlay_storage_registry(root):
+    path = root / "config/overlay_storage_bindings.us.json"
+    try:
+        data = path.read_bytes()
+        registry = json.loads(data)
+    except (OSError, ValueError) as error:
+        raise SurfaceComparisonError("explicit overlay-storage registry unavailable or invalid") from error
+    _explicit_storage_registry_groups(registry)
+    return registry, path, hashlib.sha256(data).hexdigest()
+
+
+def _explicit_storage_fidelity(raw, configured, section_names, owner_names):
+    """Compare only typed allocated storage; GLOBAL_ASM text is out of scope."""
+    raw_sections, configured_sections = {}, {}
+    for elf, result in ((raw, raw_sections), (configured, configured_sections)):
+        for name in section_names:
+            index, header = elf.section(name)
+            if index is None or not isinstance(header, tuple):
+                raise SurfaceComparisonError("typed storage section is missing")
+            result[name] = (index, header)
+    for name in section_names:
+        _, left = raw_sections[name]
+        _, right = configured_sections[name]
+        if tuple(left[i] for i in (1, 2, 5, 8)) != tuple(right[i] for i in (1, 2, 5, 8)):
+            raise SurfaceComparisonError("raw/configured typed storage section geometry differs")
+        if left[1] != 8 and raw.section_bytes(name) != configured.section_bytes(name):
+            raise SurfaceComparisonError("raw/configured typed storage bytes differ")
+
+    def symbol_rows(elf, sections):
+        indices = {name: pair[0] for name, pair in sections.items()}
+        rows = []
+        for name, value, size, info, index in elf.symbols():
+            section = elf.names[index] if index < len(elf.names) else ""
+            if index in indices.values() or name in owner_names:
+                if info & 0xF == 4:  # STT_FILE names the temporary source input.
+                    continue
+                rows.append((name, value, size, info, section))
+        return collections.Counter(rows)
+
+    if symbol_rows(raw, raw_sections) != symbol_rows(configured, configured_sections):
+        raise SurfaceComparisonError("raw/configured typed storage symbols differ")
+
+    def rel_rows(elf):
+        symbols = elf.symbols()
+        rows = []
+        for section, offset, kind, index in elf.relocations(r".*"):
+            if section not in section_names:
+                continue
+            if index >= len(symbols):
+                raise SurfaceComparisonError("typed storage relocation symbol is invalid")
+            symbol, value, size, info, shndx = symbols[index]
+            owner = elf.names[shndx] if shndx < len(elf.names) else ""
+            word = elf.section_bytes(section)[offset:offset + 4]
+            rows.append((section, offset, kind, symbol, value, size, info, owner, word))
+        return collections.Counter(rows)
+
+    if rel_rows(raw) != rel_rows(configured):
+        raise SurfaceComparisonError("raw/configured typed storage relocations differ")
+
+
+def _capture_explicit_storage_group(root, group, registry_path, registry_sha256):
+    """Compile stock C and pin storage-only fidelity for one reviewed TU group."""
+    import os
+    import shlex
+    import tempfile
+    import time
+    import permute_batch as batch
+    import proof_provenance as pp
+    import sweep_receipts as receipts
+
+    root = Path(root)
+    if root.resolve() != batch.ROOT.resolve() or os.environ.get("PROMOTION_TRIAL", "") not in ("", "0"):
+        raise SurfaceComparisonError("unsupported explicit storage compile environment")
+    _require_storage_helpers_loaded()
+    source = _storage_source_path(root, group["owner_source"])
+    source_rel = source.relative_to(root).as_posix()
+    deadline = time.monotonic() + 180
+    sections = [group["owner_section"]]
+    owner_names = (set(group["owner_symbols"])
+                   if group["kind"] in ("overlay-local-data-scalars",
+                                         "overlay-local-data-arrays")
+                   else {group["owner_symbol"]})
+    modes = []
+    for nonmatching in (False, True):
+        build_dir = "build_non_matching" if nonmatching else "build"
+        target = f"{build_dir}/src/{group['owner_source']}.c.o"
+        configured = root / target
+        if (not configured.is_file() or configured.stat().st_mtime_ns < source.stat().st_mtime_ns):
+            raise SurfaceComparisonError("configured typed storage owner is stale")
+        prefix = ["gmake", "--no-print-directory", "-n"]
+        if nonmatching:
+            prefix.append("NON_MATCHING=1")
+        dry = batch.bounded_capture(prefix + ["-W", source_rel, target], deadline, check=True).stdout
+        flat = dry.replace("\\\n", " ").splitlines()
+        compiler_lines = [line.strip() for line in flat
+                          if target in line and "tools/ido/cc" in line]
+        if len(compiler_lines) != 1:
+            raise SurfaceComparisonError("explicit storage compiler recipe is missing or ambiguous")
+        command = compiler_lines[0]
+        compile_command = command.split(" && ", 1)[0]
+        args = list(batch.compiler_arguments(compile_command, source_rel, target))
+        if "tools/asm-processor/build.py" in compile_command:
+            args.extend(("-I", str(source.parent)))
+        dependency_rows = batch.source_dependencies(source, tuple(args), deadline)
+        if any(item.startswith("missing:") for item in dependency_rows):
+            raise SurfaceComparisonError("explicit storage source dependency is unavailable")
+        modes.append({"label": "stock-dnm" if nonmatching else "stock-configured",
+                      "target": configured, "command": command,
+                      "compile_command": compile_command,
+                      "words": shlex.split(compile_command), "args": args,
+                      "dependencies": dependency_rows})
+
+    def context():
+        storage_freshness.checked_tool_identity(batch, SurfaceComparisonError)
+        if pp.sha256_file(Path(pp.__file__)) != pp._LOADED_METADATA_PROOF:
+            raise SurfaceComparisonError("loaded provenance implementation changed")
+        current = {
+            "registry": hashlib.sha256(registry_path.read_bytes()).hexdigest(),
+            "source": pp.sha256_file(source),
+            "owner_objects": {row["label"]: pp.sha256_file(row["target"]) for row in modes},
+            "linked": pp.sha256_file(root / "build/mickey.us.elf"),
+            "rom": pp.sha256_file(root / "baseroms/mickey.us.z64"),
+            "atlas": pp.sha256_file(root / "config/overlays.us.json"),
+            "values": pp.sha256_file(root / "overlay_undefined_syms.us.txt"),
+            "symbol_addrs": pp.sha256_file(root / "symbol_addrs.us.txt"),
+            "source_dependencies": {row["label"]: row["dependencies"] for row in modes},
+            "source_tree": receipts.tree_digest(source.parent),
+            "include_tree": receipts.tree_digest(root / "include"),
+            "asm_processor": receipts.tree_digest(root / "tools/asm-processor"),
+            "makefiles": {p.relative_to(root).as_posix(): pp.sha256_file(p)
+                          for p in [root / "Makefile", *sorted((root / "mk").glob("**/*.mk"))]},
+            "tools": batch.checked_tool_identity(),
+            "proof_tools": {rel: pp.sha256_file(root / rel) for rel in
+                             ("tools/reloc_surface.py", "tools/proof_provenance.py",
+                             "tools/overlay_storage_types.py", "tools/overlay_storage_freshness.py",
+                             "tools/trim_elf_section.py",
+                             "tools/binutils/mips64-elf-objcopy")},
+            "recipes": {row["label"]: row["command"] for row in modes},
+        }
+        if current["registry"] != registry_sha256:
+            raise SurfaceComparisonError("explicit storage registry changed during owner proof")
+        return current
+
+    before = context()
+    parent = root / "build/overlay-storage-witnesses"
+    parent.mkdir(parents=True, exist_ok=True)
+    directory = Path(tempfile.mkdtemp(prefix=group["id"] + "-", dir=parent))
+    receipts_out = []
+    for row in modes:
+        words = list(row["words"])
+        if words.count("-o") != 1:
+            raise SurfaceComparisonError("explicit storage raw compiler output is ambiguous")
+        raw_path = directory / (row["label"] + ".raw.o")
+        words[words.index("-o") + 1] = str(raw_path)
+        output = batch.bounded_capture(words, deadline, check=True)
+        (directory / (row["label"] + ".compile.log")).write_text(output.stdout)
+        _explicit_storage_fidelity(Elf(raw_path), Elf(row["target"]), sections, owner_names)
+        configured_elf = Elf(row["target"])
+        if (group["kind"] in ("overlay-local-data-scalars",
+                               "overlay-local-data-arrays")
+                and (Elf(raw_path).relocations(r"\.data")
+                     or configured_elf.relocations(r"\.data"))):
+            raise SurfaceComparisonError("typed data owner contains unsupported relocations")
+        index, header = configured_elf.section(group["owner_section"])
+        symbol_rows = [symbol for symbol in configured_elf.symbols()
+                       if symbol[0] in owner_names and symbol[4] == index]
+        if group["kind"] in ("overlay-local-data-scalars",
+                              "overlay-local-data-arrays"):
+            if len(symbol_rows) != len(owner_names):
+                raise SurfaceComparisonError("explicit typed data owner symbol set is incomplete")
+            if group["kind"] == "overlay-local-data-scalars":
+                if any(row[2] != 4 or row[1] % 4 or row[3] & 0xF != STT_OBJECT
+                       for row in symbol_rows):
+                    raise SurfaceComparisonError("explicit typed scalar data owner layout differs")
+            else:
+                observed = {row[0]: {"offset": row[1], "size": row[2]}
+                            for row in symbol_rows if row[3] & 0xF == STT_OBJECT}
+                if observed != group["_owner_layout"]:
+                    raise SurfaceComparisonError("explicit typed array owner layout differs")
+        elif len(symbol_rows) != 1:
+            raise SurfaceComparisonError("explicit typed owner symbol is missing or ambiguous")
+        receipts_out.append({"mode": row["label"], "recipe": row["command"],
+                             "compiler_arguments": row["args"],
+                             "source_dependencies": row["dependencies"],
+                             "raw_object": raw_path.relative_to(root).as_posix(),
+                             "raw_sha256": pp.sha256_file(raw_path),
+                             "configured_sha256": pp.sha256_file(row["target"]),
+                             "storage_section_size": "0x%X" % header[5],
+                             "owner_symbol_count": len(symbol_rows),
+                             "owner_object": row["target"].relative_to(root).as_posix()})
+    if before != context():
+        raise SurfaceComparisonError("explicit storage dependencies changed during proof")
+    receipt = {"schema": "mickey-explicit-storage-capture-v1", "group": group["id"],
+               "inputs": before, "modes": receipts_out}
+    receipt_path = directory / "receipt.json"
+    receipt_path.write_text(json.dumps(receipt, sort_keys=True, indent=2) + "\n")
+    receipt["receipt_path"] = receipt_path.relative_to(root).as_posix()
+    receipt["receipt_sha256"] = hashlib.sha256(
+        receipt_path.read_bytes()).hexdigest()
+    return receipt
+
+
+def _recheck_explicit_storage_capture(root, group, registry_path,
+                                      registry_sha256, capture):
+    """Recheck every recorded group input after the identity proof completes."""
+    import permute_batch as batch
+    import proof_provenance as pp
+    import sweep_receipts as receipts
+
+    root = Path(root)
+    inputs = capture["inputs"]
+    _require_storage_helpers_loaded()
+    tools_identity = storage_freshness.checked_tool_identity(
+        batch, SurfaceComparisonError)
+    source = _storage_source_path(root, group["owner_source"])
+    dependencies = storage_freshness.source_dependency_snapshot(
+        batch, source, capture["modes"])
+    storage_freshness.require_dependency_snapshot(
+        dependencies, inputs["source_dependencies"], SurfaceComparisonError)
+    current = {
+        "registry": hashlib.sha256(registry_path.read_bytes()).hexdigest(),
+        "source": pp.sha256_file(source),
+        "owner_objects": {
+            row["mode"]: pp.sha256_file(root / row["owner_object"])
+            for row in capture["modes"]},
+        "linked": pp.sha256_file(root / "build/mickey.us.elf"),
+        "rom": pp.sha256_file(root / "baseroms/mickey.us.z64"),
+        "atlas": pp.sha256_file(root / "config/overlays.us.json"),
+        "values": pp.sha256_file(root / "overlay_undefined_syms.us.txt"),
+        "symbol_addrs": pp.sha256_file(root / "symbol_addrs.us.txt"),
+        "source_dependencies": dependencies,
+        "source_tree": receipts.tree_digest(source.parent),
+        "include_tree": receipts.tree_digest(root / "include"),
+        "asm_processor": receipts.tree_digest(root / "tools/asm-processor"),
+        "makefiles": {p.relative_to(root).as_posix(): pp.sha256_file(p)
+                      for p in [root / "Makefile", *sorted((root / "mk").glob("**/*.mk"))]},
+        "tools": tools_identity,
+        "proof_tools": {rel: pp.sha256_file(root / rel) for rel in
+                        ("tools/reloc_surface.py", "tools/proof_provenance.py",
+                         "tools/overlay_storage_types.py", "tools/overlay_storage_freshness.py",
+                         "tools/trim_elf_section.py",
+                         "tools/binutils/mips64-elf-objcopy")},
+    }
+    expected = {key: inputs[key] for key in current}
+    if current["registry"] != registry_sha256 or current != expected:
+        raise SurfaceComparisonError("explicit storage proof inputs changed before resolution completed")
+
+
+def _explicit_overlay_bss_identity(group, binding, numeric_value, candidate_elf,
+                                   module, target_elf, registry_path,
+                                   registry_sha256, *, root=None, evidence=None,
+                                   cache=None):
+    """Resolve one reviewed BSS addend through its natural typed C member."""
+    root = REPO if root is None else Path(root)
+    overlay = module.get("overlay")
+    name = binding["candidate"]
+    def refuse(reason):
+        _identity_witness(evidence, name, "explicit-typed-overlay-storage",
+                          reason=reason, group=group["id"],
+                          registry_sha256=registry_sha256)
+        return None
+
+    if overlay != group["overlay"]:
+        return refuse("binding-overlay-mismatch")
+    candidate_source = _source_from_object(Path(candidate_elf.path))
+    if candidate_source not in group["candidate_sources"]:
+        return refuse("candidate-source-not-in-reviewed-group")
+    if candidate_source != group["owner_source"]:
+        return refuse("BSS-candidate-and-owner-TU-differ")
+    source_path = _storage_source_path(root, group["owner_source"])
+    if hashlib.sha256(source_path.read_bytes()).hexdigest() != group["owner_source_sha256"]:
+        return refuse("typed-owner-source-pin-mismatch")
+    owner_object_path = root / "build/src" / (group["owner_source"] + ".c.o")
+    target_path = getattr(target_elf, "path", None)
+    if (not owner_object_path.is_file()
+            or owner_object_path.stat().st_mtime_ns < source_path.stat().st_mtime_ns
+            or not isinstance(target_path, Path) or not target_path.is_file()
+            or target_path.stat().st_mtime_ns < owner_object_path.stat().st_mtime_ns):
+        return refuse("typed-owner-object-or-link-is-stale")
+    current_registry = hashlib.sha256(registry_path.read_bytes()).hexdigest()
+    if current_registry != registry_sha256:
+        raise SurfaceComparisonError("explicit storage registry changed during identity proof")
+
+    modules = [row for row in module.get("text_ownership", [])
+               if isinstance(row, dict) and row.get("type") == "c"
+               and row.get("source") == group["owner_source"]]
+    if len(modules) != 1:
+        return refuse("typed-owner-is-not-one-canonical-text-TU")
+    owner_source_row = modules[0]
+    if Path(owner_source_row["source"]).is_absolute() or ".." in Path(owner_source_row["source"]).parts:
+        raise SurfaceComparisonError("explicit storage atlas source path is unsafe")
+
+    root_elf = Elf(owner_object_path)
+    section_index, bss_header = root_elf.section(".bss")
+    if not isinstance(bss_header, tuple):
+        return refuse("typed-owner-input-BSS-section-missing")
+    if (bss_header[1] != 8 or bss_header[5] != group["_section_size"]
+            or bss_header[8] < 3):
+        return refuse("typed-owner-input-BSS-section-extent-or-alignment-mismatch")
+    owner_symbols = [row for row in root_elf.symbols()
+                     if row[0] == group["owner_symbol"] and row[4] == section_index]
+    if len(owner_symbols) != 1:
+        return refuse("typed-owner-symbol-missing-or-ambiguous")
+    _, owner_value, owner_size, owner_info, _ = owner_symbols[0]
+    if (owner_info & 0xF != STT_OBJECT or owner_value != 0
+            or owner_size != group["_owner_size"]):
+        return refuse("typed-owner-symbol-type-offset-or-size-mismatch")
+
+    try:
+        member = _validate_explicit_bss_member(
+            group, binding, numeric_value, source_path.read_text())
+    except SurfaceComparisonError as error:
+        return refuse(str(error))
+
+    expected_base = (
+        _atlas_hex(module.get("sections", {}).get("text", {}), "size",
+                   "overlay text section")
+        + _atlas_hex(module.get("sections", {}).get("data_rodata", {}), "size",
+                     "overlay data/rodata section"))
+    if group["_original_base"] != expected_base:
+        raise SurfaceComparisonError(
+            "reviewed BSS namespace base conflicts with canonical runtime layout")
+    output_name = ".overlay_%03d_bss" % overlay
+    output_index, output_header = target_elf.section(output_name)
+    if (output_index is None or not isinstance(output_header, tuple)
+            or output_header[3] != SYNTHETIC_VMA + _atlas_hex(
+                module.get("rom", {}), "size", "overlay ROM row")
+            or output_header[5] != _overlay_module_extent(module, "bss_size", "BSS size")
+            or output_header[5] != group["_section_size"]):
+        return refuse("linked-overlay-BSS-range-mismatch")
+    linked_symbols = [row for row in target_elf.symbols()
+                      if row[0] == group["owner_symbol"] and row[4] == output_index]
+    if len(linked_symbols) != 1:
+        return refuse("linked-typed-owner-symbol-missing-or-ambiguous")
+    _, linked_value, linked_size, linked_info, _ = linked_symbols[0]
+    if (linked_info & 0xF != STT_OBJECT or linked_size != owner_size
+            or linked_value - output_header[3] != owner_value):
+        return refuse("linked-typed-owner-conflicts-with-input-object")
+
+    # Exactly one fresh C input may own the complete physical overlay BSS.
+    c_sources = set()
+    for row in module.get("text_ownership", []) + (module.get("data_rodata_ownership") or []):
+        if isinstance(row, dict) and row.get("type") == "c" and isinstance(row.get("source"), str):
+            c_sources.add(row["source"])
+    whole_bss_owners = []
+    for source in sorted(c_sources):
+        path = _storage_source_path(root, source)
+        obj_path = root / "build/src" / (source + ".c.o")
+        if not obj_path.is_file() or obj_path.stat().st_mtime_ns < path.stat().st_mtime_ns:
+            return refuse("overlay-C-owner-census-has-stale-input")
+        obj = Elf(obj_path)
+        _index, header = obj.section(".bss")
+        if isinstance(header, tuple) and header[5] == output_header[5]:
+            whole_bss_owners.append(source)
+    if whole_bss_owners != [group["owner_source"]]:
+        return refuse("linked-overlay-BSS-does-not-have-one-reviewed-C-owner")
+
+    identity = (overlay, expected_base + member["offset"])
+    _identity_witness(evidence, name, "explicit-typed-overlay-storage", identity,
+                      independent=True, group=group["id"],
+                      owner_source=group["owner_source"], owner_symbol=group["owner_symbol"],
+                      member=binding["member"], member_type=member["type"],
+                      member_width="0x%X" % member["width"],
+                      member_offset="0x%X" % member["offset"],
+                      original_namespace=group["original_namespace"],
+                      original_base="0x%X" % expected_base,
+                      candidate_addend="0x%X" % numeric_value,
+                      registry_sha256=registry_sha256)
+    return identity
+
+
+def _has_unique_initialized_f32_scalar(source_text, symbol):
+    return storage_types.has_unique_initialized_f32_scalar(source_text, symbol)
+
+
+def _is_undefined_data_carrier(candidate_elf, name, width):
+    rows = [row for row in candidate_elf.symbols() if row[0] == name]
+    return (len(rows) == 1 and rows[0][2] == width
+            and rows[0][3] >> 4 == 1 and rows[0][3] & 0xF == STT_OBJECT
+            and rows[0][4] == SHN_UNDEF)
+
+
+def _merge_explicit_storage_identities(imported, identities, ambiguous, evidence):
+    """Let reviewed owner proof clear correlation ambiguity, never a conflict."""
+    for name, identity in imported.items():
+        independent = {tuple(row["base_identity"])
+                       for row in evidence.get(name, [])
+                       if row.get("independent")
+                       and row.get("base_identity") is not None}
+        if any(proposed != identity for proposed in independent):
+            raise SurfaceComparisonError(
+                "explicit typed-storage proof conflicts with independent identity")
+        identities[name] = identity
+        ambiguous.discard(name)
+
+
+def _overlay_data_rodata_rom_bytes(module, row_offset, row_end, rom):
+    """Translate data_rodata-relative ownership offsets into ROM coordinates."""
+    rom_row = module.get("rom", {})
+    rom_start = _atlas_hex(rom_row, "start", "overlay ROM row")
+    rom_size = _atlas_hex(rom_row, "size", "overlay ROM row")
+    text = module.get("sections", {}).get("text", {})
+    text_start = _atlas_hex(text, "start", "overlay text section")
+    text_size = _atlas_hex(text, "size", "overlay text section")
+    if (text_start != rom_start or row_offset < 0 or row_end < row_offset
+            or text_size + row_end > rom_size
+            or rom_start + text_size + row_end > len(rom)):
+        return None
+    return rom[rom_start + text_size + row_offset:
+               rom_start + text_size + row_end]
+
+
+def _explicit_overlay_data_identity(group, binding, numeric_value, candidate_elf,
+                                    module, target_elf, rom, registry_path,
+                                    registry_sha256, *, root=None, evidence=None):
+    """Resolve a local data proxy through one reviewed typed scalar owner."""
+    root = REPO if root is None else Path(root)
+    name = binding["candidate"]
+    def refuse(reason):
+        _identity_witness(evidence, name, "explicit-typed-overlay-storage",
+                          reason=reason, group=group["id"],
+                          registry_sha256=registry_sha256)
+        return None
+
+    if module.get("overlay") != group["overlay"]:
+        return refuse("binding-overlay-mismatch")
+    candidate_source = _source_from_object(Path(candidate_elf.path))
+    if candidate_source not in group["candidate_sources"]:
+        return refuse("candidate-source-not-in-reviewed-group")
+    source_path = _storage_source_path(root, group["owner_source"])
+    if hashlib.sha256(source_path.read_bytes()).hexdigest() != group["owner_source_sha256"]:
+        return refuse("typed-owner-source-pin-mismatch")
+    current_registry = hashlib.sha256(registry_path.read_bytes()).hexdigest()
+    if current_registry != registry_sha256:
+        raise SurfaceComparisonError("explicit storage registry changed during identity proof")
+    owner_object_path = root / "build/src" / (group["owner_source"] + ".c.o")
+    target_path = getattr(target_elf, "path", None)
+    if (not owner_object_path.is_file()
+            or owner_object_path.stat().st_mtime_ns < source_path.stat().st_mtime_ns
+            or not isinstance(target_path, Path) or not target_path.is_file()
+            or target_path.stat().st_mtime_ns < owner_object_path.stat().st_mtime_ns):
+        return refuse("typed-owner-object-or-link-is-stale")
+
+    source_text = source_path.read_text()
+    if group["kind"] == "overlay-local-data-scalars":
+        if not _has_unique_initialized_f32_scalar(source_text, binding["owner_symbol"]):
+            return refuse("typed-data-scalar-declaration-missing-or-ambiguous")
+    elif group["kind"] == "overlay-local-data-arrays":
+        try:
+            storage_types.validate_explicit_array_owner(
+                group, binding, source_text, SurfaceComparisonError)
+        except SurfaceComparisonError as error:
+            return refuse(str(error))
+    else:
+        return refuse("unsupported-typed-initialized-data-owner-kind")
+    if binding["_addend"] != binding["_owner_offset"] + group["_candidate_bias"]:
+        return refuse("typed-data-candidate-addend-does-not-match-reviewed-layout")
+    if numeric_value != binding["_addend"]:
+        return refuse("typed-data-linker-assignment-differs-from-reviewed-addend")
+
+    rows = [row for row in module.get("data_rodata_ownership") or []
+            if isinstance(row, dict) and row.get("type") == "c"
+            and row.get("source") == group["owner_source"]
+            and row.get("section") == ".data"]
+    if len(rows) != 1:
+        return refuse("typed-data-owner-is-not-one-canonical-atlas-row")
+    row = rows[0]
+    row_offset = _atlas_hex(row, "offset", "typed data owner row")
+    row_end = _atlas_hex(row, "end_offset", "typed data owner row")
+    row_size = _atlas_hex(row, "size", "typed data owner row")
+    if (row_end - row_offset != row_size
+            or row_size != group["_section_size"]):
+        return refuse("typed-data-atlas-range-differs-from-reviewed-extent")
+    expected_base = (0x73B0 if group["kind"] == "overlay-local-data-scalars"
+                     else 0x5130)
+    if group["_original_base"] != expected_base:
+        raise SurfaceComparisonError("reviewed Overlay 8 local-data namespace base changed")
+
+    owner_elf = Elf(owner_object_path)
+    section_index, header = owner_elf.section(".data")
+    if (not isinstance(header, tuple) or header[1] != 1
+            or header[5] != group["_section_size"] or header[8] < 4):
+        return refuse("typed-data-input-section-extent-or-alignment-mismatch")
+    owner_rows = [symbol for symbol in owner_elf.symbols()
+                  if symbol[0] == binding["owner_symbol"] and symbol[4] == section_index]
+    if len(owner_rows) != 1:
+        return refuse("typed-data-object-symbol-missing-or-ambiguous")
+    _, owner_offset, owner_size, owner_info, _ = owner_rows[0]
+    expected_owner_size = (binding["_width"]
+                           if group["kind"] == "overlay-local-data-scalars"
+                           else group["_owner_layout"][binding["owner_symbol"]]["size"])
+    if (owner_info & 0xF != STT_OBJECT or owner_size != expected_owner_size
+            or owner_offset != binding["_owner_offset"]):
+        return refuse("typed-data-object-symbol-type-or-layout-mismatch")
+    if owner_offset + owner_size > header[5]:
+        return refuse("typed-data-object-symbol-escapes-owner-section")
+
+    text_size = _atlas_hex(module.get("sections", {}).get("text", {}),
+                           "size", "overlay text section")
+    runtime_offset = text_size + row_offset + owner_offset
+    identity_offset = group["_original_base"] + numeric_value
+    if runtime_offset != identity_offset:
+        return refuse("typed-data-original-namespace-does-not-map-to-owner")
+    rom_bytes = _overlay_data_rodata_rom_bytes(module, row_offset, row_end, rom)
+    if rom_bytes is None:
+        return refuse("typed-data-ROM-range-escapes-overlay")
+    if (len(rom_bytes) != row_size
+            or owner_elf.section_bytes(".data") != rom_bytes):
+        return refuse("typed-data-owner-bytes-do-not-match-original-ROM")
+
+    linked_name = ".overlay_%03d" % group["overlay"]
+    linked_index, linked_header = target_elf.section(linked_name)
+    if (linked_index is None or not isinstance(linked_header, tuple)
+            or linked_header[3] != SYNTHETIC_VMA):
+        return refuse("typed-data-linked-overlay-section-is-invalid")
+    linked_rows = [symbol for symbol in target_elf.symbols()
+                   if symbol[0] == binding["owner_symbol"] and symbol[4] == linked_index]
+    if len(linked_rows) != 1:
+        return refuse("typed-data-linked-symbol-missing-or-ambiguous")
+    _, linked_value, linked_size, linked_info, _ = linked_rows[0]
+    if (linked_info & 0xF != STT_OBJECT or linked_size != owner_size
+            or linked_value != SYNTHETIC_VMA + runtime_offset):
+        return refuse("typed-data-linked-symbol-does-not-match-canonical-owner")
+    linked_bytes = target_elf.section_bytes(linked_name)[text_size + row_offset:
+                                                          text_size + row_end]
+    if linked_bytes != rom_bytes:
+        return refuse("typed-data-linked-bytes-do-not-match-original-ROM")
+
+    identity = (group["overlay"], identity_offset)
+    _identity_witness(evidence, name, "explicit-typed-overlay-storage", identity,
+                      independent=True, group=group["id"],
+                      owner_source=group["owner_source"],
+                      owner_symbol=binding["owner_symbol"],
+                      owner_offset="0x%X" % owner_offset,
+                      original_namespace=group["original_namespace"],
+                      original_base="0x%X" % group["_original_base"],
+                      candidate_addend="0x%X" % numeric_value,
+                      registry_sha256=registry_sha256)
+    return identity
 
 
 def _canonical_overlay_data_identity(module, candidate_elf, name,
@@ -2937,7 +3522,11 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
                                     root=None, elf_loader=None, rom=None,
                                     runtime_module=None, target_records=None,
                                     own_range=None, evidence=None,
-                                    explicit_foreign_names=()):
+                                    explicit_foreign_names=(),
+                                    explicit_storage_registry=None,
+                                    explicit_storage_registry_path=None,
+                                    explicit_storage_registry_sha256=None,
+                                    explicit_storage_cache=None):
     """Resolve candidate-side same-overlay LOCAL/data identities fail closed.
 
     ``own_range`` excludes the function under proof from the sibling
@@ -2967,15 +3556,117 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
 
     numeric = _numeric_assignments(path)
     proposed = collections.defaultdict(set)
+    explicit_bindings = {}
+    explicit_groups = {}
+    explicit_identities = {}
+    candidate_object_sha256 = None
+    if explicit_storage_registry is not None:
+        if (explicit_storage_registry_path is None
+                or explicit_storage_registry_sha256 is None):
+            raise SurfaceComparisonError("explicit storage registry provenance is incomplete")
+        for group in _explicit_storage_registry_groups(explicit_storage_registry):
+            if group["overlay"] != module.get("overlay"):
+                continue
+            for binding in group["bindings"]:
+                if binding["candidate"] in valid:
+                    explicit_bindings[binding["candidate"]] = (group, binding)
+                    explicit_groups[group["id"]] = group
+        if explicit_groups:
+            candidate_object_sha256 = hashlib.sha256(
+                Path(candidate_elf.path).read_bytes()).hexdigest()
+
+    storage_cache = {} if explicit_storage_cache is None else explicit_storage_cache
+    for group_id, group in explicit_groups.items():
+        if group_id not in storage_cache:
+            storage_cache[group_id] = _capture_explicit_storage_group(
+                REPO if root is None else root, group,
+                explicit_storage_registry_path,
+                explicit_storage_registry_sha256)
+
     for name in sorted(valid):
         if name in explicit_foreign_names:
-            # A numeric ABS placeholder plus a whole BSS extent is not a
-            # named definition. An explicit foreign proof supplies its namespace.
             _identity_witness(evidence, name, "canonical-data-owner",
                               reason="explicit-foreign-storage-excludes-numeric-bss-fallback")
             continue
-        if name not in numeric:
+        if name not in numeric and name not in explicit_bindings:
             _identity_witness(evidence, name, "canonical-data-owner", reason="no-numeric-linker-assignment")
+            continue
+        if name in explicit_bindings:
+            group, binding = explicit_bindings[name]
+            candidate_addend = numeric.get(name, binding["_addend"])
+            carrier_size = (0 if group["kind"] == "overlay-local-data-arrays"
+                            else binding["_width"])
+            if not _is_undefined_data_carrier(
+                    candidate_elf, name, carrier_size):
+                _identity_witness(
+                    evidence, name, "explicit-typed-overlay-storage",
+                    reason="candidate-carrier-is-not-unique-undefined-typed-object",
+                    group=group["id"])
+                continue
+            assignments = [(value, size, info) for symbol, value, size, info, section
+                           in target_elf.symbols()
+                           if symbol == name and section == SHN_ABS]
+            if (len(assignments) > 1
+                    or (assignments and assignments[0][0] != binding["_addend"])):
+                _identity_witness(
+                    evidence, name, "explicit-typed-overlay-storage",
+                    reason="candidate-absolute-assignment-conflicts",
+                    group=group["id"])
+                continue
+            if assignments:
+                canonical_identity = _canonical_overlay_data_identity(
+                    module, candidate_elf, name, assignments[0][0], target_elf,
+                    root=root, elf_loader=elf_loader, evidence=evidence)
+                if canonical_identity is not None:
+                    proposed[name].add(canonical_identity)
+                    _identity_witness(evidence, name, "canonical-data-owner",
+                                      canonical_identity)
+            else:
+                linked_definitions = [
+                    row for row in target_elf.symbols()
+                    if row[0] == name and row[4] not in (SHN_UNDEF, SHN_ABS)
+                    and target_elf.names[row[4]] in
+                    (".overlay_%03d" % group["overlay"],
+                     ".overlay_%03d_bss" % group["overlay"])]
+                if linked_definitions:
+                    _identity_witness(
+                        evidence, name, "explicit-typed-overlay-storage",
+                        reason="same-name-linked-definition-lacks-canonical-assignment",
+                        group=group["id"])
+                    continue
+            if group["kind"] == "overlay-local-bss-fields":
+                identity = _explicit_overlay_bss_identity(
+                    group, binding, candidate_addend, candidate_elf, module,
+                    target_elf, explicit_storage_registry_path,
+                    explicit_storage_registry_sha256,
+                    root=REPO if root is None else root, evidence=evidence,
+                    cache=storage_cache)
+            else:
+                identity = _explicit_overlay_data_identity(
+                    group, binding, candidate_addend, candidate_elf, module,
+                    target_elf, rom if rom is not None else b"",
+                    explicit_storage_registry_path,
+                    explicit_storage_registry_sha256,
+                    root=REPO if root is None else root, evidence=evidence)
+            if identity is not None:
+                proposed[name].add(identity)
+                explicit_identities[name] = identity
+                capture = storage_cache[group["id"]]
+                capture_summary = {
+                    "receipt_path": capture["receipt_path"],
+                    "receipt_sha256": capture["receipt_sha256"],
+                    "inputs_sha256": hashlib.sha256(json.dumps(
+                        capture["inputs"], sort_keys=True,
+                        separators=(",", ":")).encode()).hexdigest(),
+                    "raw_storage_objects": [
+                        {"mode": row["mode"], "sha256": row["raw_sha256"]}
+                        for row in capture["modes"]],
+                }
+                _identity_witness(evidence, name,
+                                  "explicit-typed-overlay-storage", identity,
+                                  group=group["id"],
+                                  registry_sha256=explicit_storage_registry_sha256,
+                                  owner_capture=capture_summary)
             continue
         identity = _canonical_overlay_data_identity(
             module, candidate_elf, name, numeric[name], target_elf,
@@ -3049,12 +3740,23 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
             redefine_aliases=redefine_pairs)
     except ri.RelocationIdentityError as error:
         raise SurfaceComparisonError(str(error)) from error
+    if explicit_groups:
+        if hashlib.sha256(Path(candidate_elf.path).read_bytes()).hexdigest() != candidate_object_sha256:
+            raise SurfaceComparisonError("candidate object changed during explicit storage resolution")
+        for group_id, group in explicit_groups.items():
+            _recheck_explicit_storage_capture(
+                REPO if root is None else root, group,
+                explicit_storage_registry_path,
+                explicit_storage_registry_sha256, storage_cache[group_id])
+    _identity_alias_evidence(evidence, equality_aliases, redefine_pairs)
     ambiguous = set(resolution.ambiguous) | runtime_ambiguous
+    resolved = dict(resolution.resolved)
+    _merge_explicit_storage_identities(
+        explicit_identities, resolved, ambiguous, evidence or {})
     resolved = {
-        name: identity for name, identity in resolution.resolved.items()
+        name: identity for name, identity in resolved.items()
         if name not in ambiguous
     }
-    _identity_alias_evidence(evidence, equality_aliases, redefine_pairs)
     return resolved, ambiguous
 
 
@@ -4030,7 +4732,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                                 candidate_redefine_aliases=None,
                                 include_candidate_identities=False,
                                 measure_size_delta=False,
-                                include_diagnostics=False, reserved_storage_witnesses=None):
+                                include_diagnostics=False, reserved_storage_witnesses=None,
+                                explicit_overlay_storage_bindings=False):
     """Compare one candidate's relocation surface with the shipped target's.
 
     ``measure_size_delta`` admits exactly one ownership overrun: a candidate
@@ -4102,6 +4805,13 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
     if reserved_storage_witnesses is not None and overlay is None:
         raise SurfaceComparisonError("reserved storage witness requests require an overlay candidate")
     rom = rom_path.read_bytes()
+    explicit_storage_registry = None
+    explicit_storage_registry_path = None
+    explicit_storage_registry_sha256 = None
+    explicit_storage_cache = {}
+    if explicit_overlay_storage_bindings:
+        (explicit_storage_registry, explicit_storage_registry_path,
+         explicit_storage_registry_sha256) = _load_explicit_overlay_storage_registry(REPO)
     if context["kind"] == "overlay":
         # Reuse the module objects decoded from the exact same ROM bytes.
         context["module"] = ot.build_modules(ot.read_headers(rom))[overlay - 1]
@@ -4115,7 +4825,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
             candidate_object, source, target_elf, target_symbol,
             target_value, target_size, target_section, values_path,
             resident_runtime_records)
-    evidence = {} if include_diagnostics or reserved_storage_witnesses is not None else None
+    evidence = ({} if include_diagnostics or reserved_storage_witnesses is not None
+                or explicit_overlay_storage_bindings else None)
     candidate_symbols = candidate_elf.symbols()
     boundary_proof_names = {
         candidate_symbols[index][0]
@@ -4153,7 +4864,12 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                 rom=rom, runtime_module=context["module"],
                 target_records=target_records,
                 own_range=(target_start, target_start + target_size),
-                evidence=evidence, explicit_foreign_names=set(imported))
+                evidence=evidence, explicit_foreign_names=set(imported),
+                root=REPO,
+                explicit_storage_registry=explicit_storage_registry,
+                explicit_storage_registry_path=explicit_storage_registry_path,
+                explicit_storage_registry_sha256=explicit_storage_registry_sha256,
+                explicit_storage_cache=explicit_storage_cache)
         )
         for name, identity in overlay_data_identities.items():
             existing = identities.get(name)
@@ -4241,6 +4957,8 @@ def cmd_compare(argv):
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--reserved-storage-witnesses", type=Path,
                         help="explicit named cross-overlay reserved-storage bindings; recompiles witnesses")
+    parser.add_argument("--explicit-overlay-storage-bindings", action="store_true",
+                        help="enable reviewed, freshness-checked typed overlay-storage bindings")
     parser.add_argument("--explain", action="store_true",
                         help="include per-site reasons, witness routes and grouped symbols")
     parser.add_argument("--check", action="store_true",
@@ -4254,7 +4972,8 @@ def cmd_compare(argv):
             target_symbol=args.target_symbol, overlay_hint=args.overlay,
             source=args.source, include_diagnostics=args.explain,
             reserved_storage_witnesses=(json.loads(args.reserved_storage_witnesses.read_text())
-                                        if args.reserved_storage_witnesses else None))
+                                        if args.reserved_storage_witnesses else None),
+            explicit_overlay_storage_bindings=args.explicit_overlay_storage_bindings)
     except (OSError, ValueError, SurfaceComparisonError) as error:
         parser.error(str(error))
     if args.json:

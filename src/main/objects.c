@@ -551,12 +551,24 @@ typedef struct {
 } Objects06534Sprite;
 
 typedef struct {
+    s16 pad00;
+    s16 pad02;
+    s16 pad04;
+    s16 unk6;
+    s16 unk8;
+} Objects07E40Texture;
+
+typedef struct {
+    Objects07E40Texture *texture;
+    s32 unk4;
+} Objects07E40TextureEntry;
+
+typedef struct {
     u8 unk0;
     u8 pad01[7];
     s16 unk8;
-    u8 pad0A[0x0E];
-    s16 unk18;
-} Objects07E40Group;
+    u8 pad0A[6];
+} Objects07E40Batch;
 
 typedef struct {
     u8 pad00[4];
@@ -573,10 +585,10 @@ typedef struct {
     u8 unk10;
     u8 pad11[5];
     s16 unk16;
-    u8 *unk18;
+    Objects07E40TextureEntry *unk18;
     u8 pad1C[4];
-    u8 *unk20;
-    u8 *unk24;
+    Objects07E40Record *unk20;
+    Objects07E40Batch *unk24;
 } Objects07E40Inner;
 
 typedef struct {
@@ -599,14 +611,6 @@ typedef struct {
     u8 pad44[0x24];
     Objects07E40Outer **unk68;
 } Objects07E40Object;
-
-typedef struct {
-    s16 pad00;
-    s16 pad02;
-    s16 pad04;
-    s16 unk6;
-    s16 unk8;
-} Objects07E40Texture;
 
 typedef struct {
     s16 unk0;
@@ -3118,107 +3122,83 @@ void func_80007C68(Objects07C68Object *arg0, Objects07C68Source *arg1,
         }
     }
 }
-/* Workbench verdict: structure-mismatch; 92 differing words (122/122). */
-/* First mismatch: +0x18; extent and frame 0x18 are exact, with no relocations. */
-/* Blocker: pool/temp allocation and dimension-load/offset-initialization schedule. */
-#ifdef NON_MATCHING
+/* PROVENANCE: body adapted from the public Diddy Kong Racing decompilation,
+ * src/objects.c::func_80014090 (the texture-scroll walk over model instances,
+ * batches and triangles, with its four separate edge locals).  Mickey's
+ * target supplies the per-axis guards, the edge order within each axis and
+ * the range-end assignment order.
+ *
+ * Matched (was 92 masked words, all register naming) on the donor's variable
+ * set: each axis has its own pair of edge locals instead of one pair shared
+ * by both, and the first corner is read from the triangle at each use
+ * instead of through a carrier.  The two extra webs raise the interference
+ * count of the model, dimension, batch-index and strength-reduced offset
+ * webs to the phase-one threshold, so they take the low caller-saved
+ * colours by save order and the object pointer is left with the first
+ * callee-saved register, which is the target's whole assignment. */
 void func_80007E40(Objects07E40Object *arg0, s32 arg1) {
-    Objects07E40Object *object;
-    Objects07E40Outer *model;
-    Objects07E40Data *temp_v0;
-    s16 textureWidth;
-    s16 textureHeight;
-    s16 temp_lo;
-    s16 temp_lo_2;
-    s16 temp_s3;
-    s32 edge1;
-    s32 edge2;
-    s32 var_s2;
-    s32 var_a3_2;
-    s32 var_t2;
-    s32 var_t4;
-    s32 var_t3;
-    s32 temp_t0;
-    s32 var_a3;
-    s32 var_t1;
-    Objects07E40Texture *temp_t4;
-    Objects07E40Record *temp_t5;
-    Objects07E40Inner *temp_v0_2;
-    u8 *var_s1;
+    Objects07E40Data *header;
+    s16 width;
+    s16 height;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 end;
+    s16 textureIndex;
+    s16 modelIndex;
+    Objects07E40Inner *model;
+    Objects07E40Outer *instance;
+    Objects07E40Record *tri;
+    s16 scrollU;
+    s16 scrollV;
+    s16 newU1;
+    s16 newU2;
+    s16 newV1;
+    s16 newV2;
 
-    object = arg0;
-    temp_v0 = arg0->unk40;
-    var_a3 = temp_v0->unkA3;
-    temp_lo = temp_v0->unkA4 * arg1;
-    temp_t0 = temp_v0->unkA2;
-    temp_lo_2 = temp_v0->unkA5 * arg1;
-    if ((var_a3 == 0xFF) || ((s32) var_a3 < temp_v0->unk22)) {
-        if (var_a3 == 0xFF) {
-            var_a3 = 0;
-            var_t3 = temp_v0->unk22;
+    header = arg0->unk40;
+    modelIndex = header->unkA3;
+    textureIndex = header->unkA2;
+    scrollU = (s16)(header->unkA4 * arg1);
+    scrollV = (s16)(header->unkA5 * arg1);
+    if ((modelIndex == 0xFF) || (modelIndex < header->unk22)) {
+        if (modelIndex == 0xFF) {
+            modelIndex = 0;
+            end = header->unk22;
         } else {
-            var_t3 = var_a3 + 1;
+            end = modelIndex + 1;
         }
-        var_t1 = var_a3;
-        if ((s32) var_a3 < var_t3) {
-            var_t2 = var_a3 * 4;
-            do {
-                var_t1 += 1;
-                model = *(Objects07E40Outer **)((u8 *)object->unk68 + var_t2);
-                temp_v0_2 = model->unk0;
-                if ((s32) temp_t0 < (s32) temp_v0_2->unk10) {
-                    temp_t4 = *(Objects07E40Texture **)(temp_v0_2->unk18 + (temp_t0 * 8));
-                    textureWidth = temp_t4->unk6 << 5;
-                    textureHeight = temp_t4->unk8 << 5;
-                    var_a3_2 = 0;
-                    var_t4 = 0;
-                    if (temp_v0_2->unk16 > 0) {
-                        var_s1 = temp_v0_2->unk24;
-                        do {
-                            var_a3_2 += 1;
-                            if (temp_t0 == *(u8 *)var_s1) {
-                                var_s2 = *(s16 *)(var_s1 + 8);
-                                if (var_s2 < *(s16 *)(var_s1 + 0x18)) {
-                                    do {
-                                        temp_t5 = (Objects07E40Record *)temp_v0_2->unk20 + var_s2;
-                                        if (temp_lo != 0) {
-                                            temp_s3 = temp_t5->unk4;
-                                            edge1 = temp_t5->unk8 - temp_s3;
-                                            edge2 = temp_t5->unkC - temp_s3;
-                                            temp_t5->unk4 = (temp_s3 + temp_lo) &
-                                                (textureWidth - 1);
-                                            temp_s3 = temp_t5->unk4;
-                                            temp_t5->unk8 = temp_s3 + edge1;
-                                            temp_t5->unkC = temp_s3 + edge2;
-                                        }
-                                        if (temp_lo_2 != 0) {
-                                            temp_s3 = temp_t5->unk6;
-                                            edge1 = temp_t5->unkA - temp_s3;
-                                            edge2 = temp_t5->unkE - temp_s3;
-                                            temp_t5->unk6 = (temp_s3 + temp_lo_2) &
-                                                (textureHeight - 1);
-                                            temp_s3 = temp_t5->unk6;
-                                            temp_t5->unkA = temp_s3 + edge1;
-                                            temp_t5->unkE = temp_s3 + edge2;
-                                        }
-                                        var_s2 += 1;
-                                        var_s1 = temp_v0_2->unk24 + var_t4;
-                                    } while (var_s2 < *(s16 *)(var_s1 + 0x18));
-                                }
+        for (i = modelIndex; i < end; i++) {
+            instance = arg0->unk68[i];
+            model = instance->unk0;
+            if (textureIndex < model->unk10) {
+                width = model->unk18[textureIndex].texture->unk6 << 5;
+                height = model->unk18[textureIndex].texture->unk8 << 5;
+                for (j = 0; j < model->unk16; j++) {
+                    if (textureIndex == model->unk24[j].unk0) {
+                        for (k = model->unk24[j].unk8; k < model->unk24[j + 1].unk8; k++) {
+                            tri = &model->unk20[k];
+                            if (scrollU != 0) {
+                                newU1 = tri->unk8 - tri->unk4;
+                                newU2 = tri->unkC - tri->unk4;
+                                tri->unk4 = (tri->unk4 + scrollU) & (s16)(width - 1);
+                                tri->unk8 = tri->unk4 + newU1;
+                                tri->unkC = tri->unk4 + newU2;
                             }
-                            var_t4 += 0x10;
-                            var_s1 += 0x10;
-                        } while (var_a3_2 < temp_v0_2->unk16);
+                            if (scrollV != 0) {
+                                newV1 = tri->unkA - tri->unk6;
+                                newV2 = tri->unkE - tri->unk6;
+                                tri->unk6 = (tri->unk6 + scrollV) & (s16)(height - 1);
+                                tri->unkA = tri->unk6 + newV1;
+                                tri->unkE = tri->unk6 + newV2;
+                            }
+                        }
                     }
                 }
-                var_t2 += 4;
-            } while (var_t1 != var_t3);
+            }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80007E40.s")
-#endif
 void func_80008028(s32 arg0) {
     s32 objectIndex;
     s32 modelIndex;
@@ -5463,16 +5443,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * first-mismatch: +0xC
  * summary: Remeasured 2026-09-23: 63 masked at delta 0, frame exact, 18 relocations against 16; active-list carriers and loop registers remain structural.
  * PLATEAU-HANDOFF:func_80006FA0:end
- */
-
-/* PLATEAU-HANDOFF:func_80007E40:start
- * symbol: func_80007E40
- * score: 92 differing words
- * frame: 0x18
- * relocations: 0
- * first-mismatch: 0x18
- * summary: Generated outer-model index controls leave 39 draws and the model-load line unchanged; both regress to 95 masked; retained 92.
- * PLATEAU-HANDOFF:func_80007E40:end
  */
 
 /* PLATEAU-HANDOFF:func_8000A39C:start

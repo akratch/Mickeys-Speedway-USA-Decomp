@@ -2579,6 +2579,14 @@ bytes and disassembly never belong here.
   [batch-building closure](matching-triage-handoffs/overlay83BuildBatch.md)
   proves the combined spelling with stock compiler output, authenticated call
   identities and linked-ROM equality, without padding locals.
+  When a callee reads several fixed offsets through one address, first
+  reconstruct the complete descriptor type rather than separate undersized
+  scalar locals. The existing
+  [texture descriptor wrapper](../src/main/textures_354C8.c) provides another
+  stock-output closure: a natural descriptor and a pointer local require no
+  frame padding, and their declaration order determines the live stack homes.
+  Only fields actually consumed by the callee need initialization; prove that
+  read surface and pointer lifetime before changing the representation.
 
 - **Equal temporary-draw counts do not prove equal operand assignment.**
   Exchanging the integer operands of an address calculation can change their

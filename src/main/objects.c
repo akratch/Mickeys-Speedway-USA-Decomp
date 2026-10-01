@@ -2438,69 +2438,41 @@ s32 func_80006EE4(s32 object) {
     }
     return -1;
 }
-/* Workbench verdict: structure-mismatch; 63 differing words (94/94). */
-/* First mismatch: +0x0C; frame and instruction count are exact. */
-/* Structural gap: active-list carriers and loop register allocation remain unresolved. */
-#ifdef NON_MATCHING
+/* PROVENANCE: body adapted from the public Diddy Kong Racing decompilation,
+ * src/objects.c::gParticlePtrList_flush.  Mickey searches, unlinks and
+ * destroys inside the found arm and ends the scan by assigning the count.
+ * Matched (was 63 masked words) by dropping the inherited carriers: every
+ * global is read at its use and the lists are plain subscripts. */
 void func_80006FA0(void) {
-    s32 *temp_v0;
-    s32 temp_a0;
-    s32 temp_s2;
-    s32 temp_t4;
-    s32 temp_t7;
-    s32 var_a0;
-    s32 var_s4;
-    s32 var_s5;
-    s32 var_s6;
-    s32 var_v0;
-    s32 var_v1;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 found;
+    void *obj;
 
-    var_s5 = 0;
-    if (D_800C94F0 > 0) {
-        var_s6 = 0;
-        do {
-            temp_a0 = D_800C9498;
-            var_s4 = -1;
-            temp_s2 = *(s32 *)((u8 *)D_800C94EC + var_s6);
-            var_v0 = 0;
-            if (temp_a0 > 0) {
-                do {
-                    temp_t4 = temp_a0 - 1;
-                    if (temp_s2 == ((s32 *)D_800C9494)[var_v0]) {
-                        var_s4 = var_v0;
-                        var_a0 = var_v0 * 4;
-                        if (var_v0 < D_800C94B2) {
-                            D_800C94B2 -= 1;
-                        }
-                        D_800C9498 = temp_t4;
-                        var_v1 = var_v0;
-                        if (var_v0 < temp_t4) {
-                            do {
-                                var_v1 += 1;
-                                temp_v0 = (s32 *)((u8 *)D_800C9494 + var_a0);
-                                temp_t7 = temp_v0[1];
-                                var_a0 += 4;
-                                temp_v0[0] = temp_t7;
-                            } while (var_v1 < D_800C9498);
-                        }
-                        func_80007118(temp_s2, 0);
-                        var_v0 = D_800C9498;
-                    }
-                    var_v0 += 1;
-                } while (var_v0 < temp_a0);
+    for (i = 0; i < D_800C94F0; i++) {
+        found = -1;
+        obj = D_800C94EC[i];
+        for (j = 0; j < D_800C9498; j++) {
+            if (obj == D_800C9494[j]) {
+                found = j;
+                if (j < D_800C94B2) {
+                    D_800C94B2--;
+                }
+                D_800C9498--;
+                for (k = j; k < D_800C9498; k++) {
+                    D_800C9494[k] = D_800C9494[k + 1];
+                }
+                func_80007118(obj, 0);
+                j = D_800C9498;
             }
-            if (var_s4 == -1) {
-                func_80006EE4(temp_s2);
-            }
-            var_s5 += 1;
-            var_s6 += 4;
-        } while (var_s5 < D_800C94F0);
+        }
+        if (found == -1) {
+            func_80006EE4((s32)obj);
+        }
     }
     D_800C94F0 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80006FA0.s")
-#endif
 extern void func_800031E8(void *object);
 extern void func_80005798(void *object);
 extern void func_8000D728(void *object);
@@ -5444,20 +5416,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * first-mismatch: +0x0
  * summary: Remeasured 2026-09-23: 61 masked at delta 0; frame 0x30 against the target's 0x28, FP register and stack allocation unresolved.
  * PLATEAU-HANDOFF:func_8000BB84:end
- */
-
-
-
-
-
-/* PLATEAU-HANDOFF:func_80006FA0:start
- * symbol: func_80006FA0
- * score: 63 differing words
- * frame: 0x40
- * relocations: 18
- * first-mismatch: +0xC
- * summary: Remeasured 2026-09-23: 63 masked at delta 0, frame exact, 18 relocations against 16; active-list carriers and loop registers remain structural.
- * PLATEAU-HANDOFF:func_80006FA0:end
  */
 
 /* PLATEAU-HANDOFF:func_8000A39C:start

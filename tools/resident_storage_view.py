@@ -36,7 +36,7 @@ LOADER_BODY = sv.LOADER_BODY
 LOADER_RECIPE = '0c80ca4b26661342a8eb479d905aa636e31b01980b911b8c4a43f67d4017b306'
 SOURCE_PINS = {
     'impact_gate': ('src/main/anim.c', 'e75ea3d245cf5076d769b603ff82fc2a50ce04c7d1a100d91de4ea4d0898dfc3'),
-    'color_gate': ('src/main/objects.c', '7658d3ced34b7412101635e7f4504ce9d67896cee47c2dafe43a3b6996b9dca3'),
+    'color_gate': ('src/main/objects.c', '16dd27ed630a0e213a004adc3c0315c2f21b4b18351ec06ed07ff1f0eeebdc20'),
     'gravity': ('src/main/charControl.c', 'ea6052dcc1764229acd9ab1778ecb17a233d2b19e275e3686082dc83a9d8b44f'),
 }
 WITNESSES = {

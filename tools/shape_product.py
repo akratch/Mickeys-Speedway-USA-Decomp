@@ -175,8 +175,7 @@ def main(argv: list[str] | None = None) -> int:
         if "error" in r:
             print(f"{'ERR':>6} {'':>6} {'':>8}  {r['cell']}  {r['error'][0][:80]}")
         else:
-            first = f"{r['first']:#x}" if r["first"] is not None else "-"
-            print(f"{r['masked']:>6} {r['delta']:>+6} {first:>8}  {r['cell']}")
+            print(f"{r['masked']:>6} {r['delta']:>+6} {r['first']:>#8x}  {r['cell']}")
     if ns.json:
         Path(ns.json).write_text(json.dumps({"symbol": ns.symbol, "axes": axes, "cells": results}, indent=1))
     return 0 if exact else 1

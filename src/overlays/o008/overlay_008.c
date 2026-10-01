@@ -600,14 +600,19 @@ extern s32 func_8002A204(s16 angle);
 extern s32 mathDiffAngle(s32 current, s32 target);
 
 /* NON_MATCHING reconstruction: exact 1259-word size, the target's 0xB0 frame
- * with an identical home ladder, and no one-sided words; 275 masked
- * differences remain and all but four are register naming.
+ * with an identical home ladder, and no one-sided words; 78 masked
+ * differences remain.
  * What moved it from 636 (2026-10-01): the pool floats are literals at each
  * use, one pool entry per use as shipped; state fields are read directly
  * rather than through a shared value carrier; scale is multiplied by D_8 in
  * place; the pre-loop factor is its own symbol, so the loop's scale outranks
  * the cached state->unk4 web; and integer carriers are shared the way the
  * shipped registers share them (noted on the declarations).
+ * 275 to 78 (lane d-o008): the stick test is a plain compare, not a value
+ * tested against zero; the frame-counter increment is truncated to u8 before
+ * the mask; the turn limit, the yaw step and the drift step take the carriers
+ * the shipped registers imply; the curve sum adds the base first; and the
+ * pre-loop factor multiplies by tuning before the half.
  * The update loop tests the old counter; the braking global is a halfword;
  * mathDiffAngle accepts the full requested angle. */
 #ifdef NON_MATCHING
@@ -615,7 +620,7 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
                                        O8P1294State *state, f32 update) {
     s32 updateCount;
     f32 value;
-    s32 angle;              /* state->unk108 copy, then the drift step */
+    s32 angle;              /* state->unk108 copy */
     s32 steeringInput;      /* raw stick, the wobble term, then the drift target */
     s32 updatesRemaining;
     s32 steeringTarget;     /* clamped stick, then the target angle */
@@ -623,11 +628,11 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
     s32 angleStep;          /* angle step, then the left selector */
     s32 impactBoost;
     s32 colorEnabled[2];
-    s32 braking;            /* brake bit, then the reverse-motion flag */
+    s32 braking;            /* brake bit, the reverse-motion flag, then the turn limit */
     s32 inputFlags;         /* input word, then the right selector */
     s32 turnDirection;
     s32 effectMask;
-    s32 index;              /* speed level, then the curve index */
+    s32 index;              /* speed level, curve index, yaw step, then the drift step */
     s16 cooldown;
     s16 driftDirection;
     f32 scale;
@@ -652,9 +657,8 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
         D_10 *= 1.0f + (-0.3f * state->unkD4->state64->blend14);
     }
     if (state->unk185 == 0) {
-        value = state->unk5C;
-        if (value != 0.0f) {
-            factor = 1.0f - (value * 0.5f * tuning[0xC / sizeof(f32)]);
+        if ((value = state->unk5C) != 0.0f) {
+            factor = 1.0f - value * tuning[0xC / sizeof(f32)] * 0.5f;
             if (factor < 0.1f) {
                 factor = 0.1f;
             }
@@ -743,7 +747,7 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
             state->unk148 = state->unk4;
             braking = inputFlags & 0x4000;
             state->unk146 += ((s32) scale - state->unk146) >> 3;
-            if ((braking != 0) && (inputFlags & 0x10) && ((steeringInput = state->unk428, ((steeringInput < -0x1E) != 0)) || (steeringInput >= 0x1F))) {
+            if ((braking != 0) && (inputFlags & 0x10) && (((steeringInput = state->unk428) < -0x1E) || (steeringInput >= 0x1F))) {
                 if (state->unk4 < -5.0f) {
                     state->unk4 += 0.2f;
                     if (state->unk4 > -5.0f) {
@@ -807,7 +811,7 @@ block_74:
                         index = (s32) -state->unk4;
                         scale = -state->unk4 - (f32) index;
                     }
-                    scale = ((curve[index + 1] - curve[index]) * scale) + curve[index];
+                    scale = curve[index] + ((curve[index + 1] - curve[index]) * scale);
                 }
                 if (state->unk4 < -speedLimit) {
                     state->unk4 *= 0.99f;
@@ -853,10 +857,10 @@ block_74:
                 state->unkA2 = (s16) (cooldown - 1);
             }
             if ((state->unk41C & 0x10) && (state->unk100 == 0) && (state->unk4 < -3.0f)) {
-                if (state->unk428 < -0xF) {
+                if ((steeringInput = state->unk428) < -0xF) {
                     state->unk100 = -1;
                 }
-                if (state->unk428 >= 0x10) {
+                if ((steeringInput = state->unk428) >= 0x10) {
                     state->unk100 = 1;
                 }
                 if (state->unk100 != 0) {
@@ -897,7 +901,7 @@ block_74:
             }
 
             steeringTarget = steeringInput;
-            if ((state->unk41C & 0x10) && (driftDirection = state->unk100, turnAmount = 0x2710, (driftDirection != 0))) {
+            if ((state->unk41C & 0x10) && (driftDirection = state->unk100, braking = 0x2710, (driftDirection != 0))) {
                 if (steeringInput >= 0x33) {
                     steeringTarget = 0x32;
                 } else if (steeringTarget < -0x32) {
@@ -914,7 +918,7 @@ block_74:
                 } else if (steeringTarget < -0x3C) {
                     steeringTarget = -0x3C;
                 }
-                turnAmount = (s32) tuning[0x14 / sizeof(f32)];
+                braking = (s32) tuning[0x14 / sizeof(f32)];
             }
             steeringTarget = (s32) (((f32) -steeringTarget * tuning[0x10 / sizeof(f32)]) / 60.0f);
             angleStep = (s32) ((f32) (steeringTarget - state->unk108) * 0.145f);
@@ -935,10 +939,10 @@ block_74:
             }
             angle = state->unk108;
             state->unk4 *= value;
-            if ((angle < -turnAmount) || (turnAmount < angle)) {
+            if ((angle < -braking) || (braking < angle)) {
                 state->unk4 *= tuning[0x18 / sizeof(f32)];
             }
-            state->unk182 = (u8) ((state->unk182 + 1) & 0xF);
+            state->unk182 = (u8) (state->unk182 + 1) & 0xF;
             turnAmount = (s32) ((f32) state->unk108 * scale);
             if (turnAmount != 0) {
                 driftDirection = state->unk100;
@@ -958,22 +962,22 @@ block_74:
                     turnAmount += steeringInput;
                 }
             }
-            angleStep = mathDiffAngle(state->unkFC, turnAmount) >> 2;
+            index = mathDiffAngle(state->unkFC, turnAmount) >> 2;
 
-            turnAmount = angleStep;
-            if (angleStep < -0x2EE) {
+            turnAmount = index;
+            if (index < -0x2EE) {
                 turnAmount = -0x2EE;
-            } else if (angleStep >= 0x2EF) {
+            } else if (index >= 0x2EF) {
                 turnAmount = 0x2EE;
             }
             driftDirection = state->unk100;
             steeringInput = (driftDirection << 0xD) - state->unkFE;
-            angle = steeringInput >> 4;
+            index = steeringInput >> 4;
             state->unkFC = (s16) (state->unkFC + turnAmount);
-            if (angle == 0) {
-                angle = steeringInput;
+            if (index == 0) {
+                index = steeringInput;
             }
-            state->unkFE += angle;
+            state->unkFE += index;
             if (driftDirection != 0) {
                 steeringInput = state->unk428;
                 if (((steeringInput >= 0x1A) && (driftDirection < 0)) || ((steeringInput < -0x19) && (driftDirection > 0))) {
@@ -1513,25 +1517,17 @@ void overlay8ScaleOutputs(void *unused, Overlay8ScaleState *state,
     }
 }
 
-/* NON_MATCHING: 897 vs 898 instructions, 466 masked/490 raw words different,
- * frame -0x80 exact, 107 of the shipped 109 relocations with 59 offset/type
- * pairs agreeing and 50 identities resolved, first mismatch +0x1C.  Eighteen
- * of the twenty-one call-delimited regions are exact; the three that are not
- * are +1, +1 and -3 words.  Eight of the fifteen stack homes -- the scratch
- * quad, the mode/target/counter trio and every incoming-argument home -- sit
- * at the shipped offsets.
- *
- * Two things block the rest.  The six remaining homes are four bytes high
- * because the shipped frame wants one escaping four-byte pointer at +0x40 and
- * a separate escaping four-word block at +0x58, with +0x44/+0x48/+0x4C
- * serving as ordinary float homes between them; measured with this compiler,
- * a single aggregate never lends its padding to a home, four plain scalars
- * lose the -1 stores to dead-store elimination, and volatile scalars keep the
- * stores at a cost of roughly 270 extra differing words.  Separately, the
- * shipped selector burst re-reads gOverlay8Buffer even straight after storing
- * it, which is the whole of the -3 region and the two missing relocations;
- * declaring the pointer volatile reproduces that shape but changes code this
- * unit already matches, so it is not available.  GLOBAL_ASM stays canonical. */
+/* NON_MATCHING: exact size and frame, 296 masked words.  Every stack home is
+ * at its shipped offset (2026-10-01, lane d-o008): the terrain query's
+ * pointer and the four -1 scratch words are separate locals (an escaping
+ * pointer and an array the stores keep alive), and the update count is
+ * declared between trigB and blend, which puts the scratch block at +0x58
+ * and the pointer at +0x40 under the three float homes, as shipped.
+ * The float constants D_1D8..D_25C are this function's own literal pool,
+ * one entry per use; written as literals the body is one word short until
+ * the selector burst's second address materialisation is reproduced (the
+ * shipped code rebuilds &gOverlay8Buffer for the second command pair and
+ * reloads it after the store).  GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                                       O8P34A0State *state, f32 limit,
@@ -1540,25 +1536,26 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     s32 sampleCount;
     s32 target;
     s32 selectedMode;
-    f32 trigB;
     f32 delta;
     f32 **sample;
-    O8P34A0Query query;
+    s32 scratch[4];
+    f32 trigB;
+    s32 steps;
     f32 blend;
     f32 selectedValue;
     f32 result;
+    f32 **samples;
     f32 trigA;
     f32 factor;
     f32 strength;
     s16 outputAngle;
     s8 ownerMode;
-    s32 steps;
 
     selectedMode = owner->mode3B;
-    query.scratch04 = -1;
-    query.scratch08 = -1;
-    query.scratch0C = -1;
-    query.scratch10 = -1;
+    scratch[0] = -1;
+    scratch[1] = -1;
+    scratch[2] = -1;
+    scratch[3] = -1;
     result = 0.0f;
     selectedValue = 0.0f;
     blend = 0.0f;
@@ -1656,11 +1653,11 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
             result = 40.0f;
         } else {
             sampleCount = o8P34A0TerrainReloc(owner->xC, owner->z14,
-                                              0x1800, &query.samples0);
+                                              0x1800, &samples);
             if (sampleCount != 0) {
                 index = 0;
                 if (sampleCount > 0) {
-                    sample = query.samples0;
+                    sample = samples;
                     do {
                         result = **sample;
                         index++;
@@ -2168,69 +2165,19 @@ void overlay8UpdateMotionOutput(Overlay8MotionAnchor *anchor,
     gOverlay8Buffer++;
 }
 
-/* Plateau (2026-09-09): allocation-mismatch, 39 masked words, exact 270/270
- * instructions and exact -0x90 frame, and every stack home now at the target
- * displacement -- the surface-normal aggregate included, which was the four-byte
- * gap the previous handoff left open.
- *
- * The whole residual is one extra FP pool web.  At the normal-vector product the
- * target keeps `normal.x` in a ugen ring temp and gives axisA's reload the first
- * pool colour; the candidate colours `normal.x` instead, so axisA takes the third
- * colour and the ring pops one slot out of phase from there.  That single
- * displacement carries all of it: an f4/f6 ring exchange over 32 of the 39 sites,
- * FP pool slot 2 at row 113 and FP temp slot 14 at row 115.  Every integer lane
- * is identical.
- *
- * Exhausted for this residual, each measured on the exact-home candidate:
- * the `horizontalB = normal.x` carrier cannot be removed (reading the member
- * twice under `volatile` emits two loads, 57 words; without `volatile` uopt folds
- * the copy and the body is one instruction short at 269, 159 words); moving the
- * carrier to any other local -- `factor`, `blendFactor`, a fresh inner-block
- * local, or `horizontalA` with the two products swapped -- also drops to 269;
- * the 16-form operand-order lattice over the two products is flat; the 15-form
- * volatile-placement lattice over the aggregate's four members has `volatile x`
- * alone as its unique optimum; 37 physical line joins across the function are
- * byte-inert, so the line-grouping lever does not apply in this TU; and
- * permuting the point-initialisation, point-accumulate and activation statement
- * groups is flat at 39.
- *
- * Declaration order is fixed and not a free variable: homes follow declaration
- * order top-down, so horizontalB must stay eighth (home 0x70) and axisA ninth
- * (home 0x6C), which is exactly the order that numbers the normal.x web first.
- * Carrier identity is now tested too and is not the lever (2026-09-10): axisA
- * is uniquely correct in both blocks, axisB's carrier is inert because it never
- * becomes a coloured web, and 34 carrier, inner-block-scope, negation-splitting
- * and read-back forms are flat at 39 or lose an instruction.  An all-volatile
- * aggregate with direct reads scores 37 and is NOT closer -- it emits five
- * loads where the target emits three and fills both r4300 multiply-hazard nop
- * slots the target keeps.
- * Corrected 2026-09-11 (lane p7-ovl2): this is NOT a globalcolor decision.
- * Thirty single-web forces over the five float webs of this region, crossed
- * with the split verdict and the five lowest float colours, leave it at 39 or
- * worse in every cell.  The corrected float-bank census reads all 39 sites as
- * float with a closed two-cycle over the two lowest scratch registers on 32 of
- * them, and those two are ugen's rotation, never a p1 colour -- so the residual
- * is a ugen float free-list phase.  The carrier-free form is also no longer an
- * instruction short: it is delta 0 at 270 words and 57 masked.  Resume with a
- * ugen float free-list trace, not a colouring receipt.
- *
- * 2026-10-01: 39 -> 1, which supersedes the free-list reading above.  Three
- * edits: both products read normal.x and normal.z directly and the negation
- * moves to the call; the second block's carrier is horizontalA, not axisA, so
- * axisA is a short web and takes the low float colour; and the volatile
- * qualifier sits on normal.z instead of normal.x.  The remaining word is the
- * z reload in the first multiply-hazard slot, where the target keeps a nop. */
-/* Ownership trial (2026-08-28): fixed the TU's +0x27C..+0x2AC .rodata range;
- * linked promotion is text-differs after removing the TU growth; codegen remains.
- * The candidate's literal pool is retained as the remaining structural gap. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01.  The surface normal is read through a pointer taken
+ * at entry and handed to the surface query: the indirect reads keep the first
+ * horizontal product a register web ahead of the second, as shipped, where
+ * direct member reads let uopt forward it into the call and emit the second
+ * product first.  The second block carries its value in horizontalA so axisA
+ * stays a short web, and the negation is written at the call. */
 void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
                                        O8P4CF0State *state,
                                        s32 updateRate) {
     s32 start;
     s32 end;
     O8P4CF0SceneItem **items;
-    f32 motionTarget;
+    O8P4CF0Normal *normalPtr;
     f32 blendFactor;
     s32 targetB;
     f32 horizontalA;
@@ -2241,6 +2188,7 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
     O8P4CF0Vec3f point;
     O8P4CF0Normal normal;
 
+    normalPtr = &normal;
     state->activated173 = 0;
 
     if (O8P4CF0_call_4D14(20) != 0) {
@@ -2272,7 +2220,7 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
                                     O8P4CF0_call_4E50(item);
                                 }
                                 surfaceHeight = O8P4CF0_call_4E64(
-                                    bounds, point.x, point.z, &normal);
+                                    bounds, point.x, point.z, normalPtr);
                                 break;
                             }
                         }
@@ -2287,10 +2235,10 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
             axisA = O8P4CF0_call_4E9C(-actor->angle000);
             axisB = O8P4CF0_call_4EAC(-actor->angle000);
-            horizontalA = normal.z * axisA + normal.x * axisB;
-            horizontalB = normal.z * axisB - normal.x * axisA;
-            targetA = O8P4CF0_call_4EE8(-horizontalA, normal.y);
-            targetB = O8P4CF0_call_4EF8(horizontalB, normal.y);
+            horizontalA = normalPtr->z * axisA + normalPtr->x * axisB;
+            horizontalB = normalPtr->z * axisB - normalPtr->x * axisA;
+            targetA = O8P4CF0_call_4EE8(-horizontalA, normalPtr->y);
+            targetB = O8P4CF0_call_4EF8(horizontalB, normalPtr->y);
 
             factor = O8P4CF0_call_4F0C(0.9f, updateRate);
             actor->angle004 = (s16)O8P4CF0_call_4F34(
@@ -2348,21 +2296,6 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o008/overlay_008/func_overlay_008_F0004CF0_1862A48.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_008_F0004CF0_1862A48:start
- * symbol: func_overlay_008_F0004CF0_1862A48
- * score: 1 differing words
- * frame: -0x90
- * relocations: 15
- * first-mismatch: +0x1D8
- * summary: One word: volatile normal.z pins the A-then-B product order but reloads z where the target has a nop; no unqualified form keeps that order.
- * PLATEAU-HANDOFF:func_overlay_008_F0004CF0_1862A48:end
- */
-
-
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000
@@ -2386,21 +2319,21 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:start
  * symbol: func_overlay_008_F00034A0_18611F8
- * score: 308/336 words
+ * score: 296/324 words
  * frame: 0x80
  * relocations: 107
  * first-mismatch: +0x1C
- * summary: L144 address-form of limit in kind 4 spills the f18 fragment at delta 0; 308 masked. Pointer home, a3 vs a2, and six insertion sites remain.
+ * summary: Frame ladder exact via split query pointer and scratch array; literal pool needs the second gOverlay8Buffer address build to fit.
  * PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:end
  */
 
 /* PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:start
  * symbol: func_overlay_008_F0001294_185EFEC
- * score: 275 differing words
+ * score: 78 differing words
  * frame: 0xB0
  * relocations: 137
- * first-mismatch: +0xD8
- * summary: Frame and home ladder exact, no one-sided words; 271 naming rows: turnAmount a3 for a2, drift-step and unkFE webs, pre-loop factor product order.
+ * first-mismatch: +0xD4
+ * summary: Ring re-phased by a u8-truncated counter increment and a plain stick compare; pre-loop factor draw order and unkFE temp in a3 remain.
  * PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:end
  */
 

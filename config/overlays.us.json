@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 292356,
-  "nonmatching_overlay_c_bytes": 176252,
+  "matched_overlay_c_bytes": 293436,
+  "nonmatching_overlay_c_bytes": 175172,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4416,
   "bss_bytes": 77680,
@@ -2976,6 +2976,14 @@
      "end_offset": "0x4CF0",
      "size": "0x308",
      "label": "overlay8UpdateMotionOutput",
+     "source": "overlays/o008/overlay_008",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
+     "offset": "0x4CF0",
+     "end_offset": "0x5128",
+     "size": "0x438",
+     "label": "func_overlay_008_F0004CF0_1862A48",
      "source": "overlays/o008/overlay_008",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     }

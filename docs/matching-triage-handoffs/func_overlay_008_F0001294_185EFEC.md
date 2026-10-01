@@ -2,11 +2,70 @@
 ### `func_overlay_008_F0001294_185EFEC` plateau handoff
 
 - source: `src/overlays/o008/overlay_008.c`
-- score: 275 differing words
+- score: 78 differing words
 - frame: 0xB0
 - relocations: 137
-- first mismatch: +0xD8
-- summary: Frame and home ladder exact, no one-sided words; 271 naming rows: turnAmount a3 for a2, drift-step and unkFE webs, pre-loop factor product order.
+- first mismatch: +0xD4
+- summary: Ring re-phased by a u8-truncated counter increment and a plain stick compare; pre-loop factor draw order and unkFE temp in a3 remain.
+
+## 2026-10-01 lane d-o008: 275 to 78, frame exact
+
+align_symbol now reads 1184 byte-exact, 67 register naming, 1 immediate, 9
+really different at size delta 0 (was 984, 271, 0, 4). Each edit was
+measured as a product cell on the whole TU with `tools/shape_product.py`;
+the sibling candidates are unchanged (308, 384, 438).
+
+- **The frame-counter increment is truncated before the mask**:
+  `state->unk182 = (u8) (state->unk182 + 1) & 0xF`. That spends the one
+  integer ring draw the target spends there with no emitted word, and it
+  re-phases the integer ring for the whole back half: 246 to 97. Without the
+  cast, or with the cast outside the mask, the ring is one register behind
+  from +0xCD0 to the end.
+- **The stick test is a plain compare** (`(steeringInput = state->unk428) <
+  -0x1E`), not a value compared with zero. The old form drew a ring register
+  for the boolean where the target branches on `at`. Alone it cost 56 words
+  on the old shape (the extra draw had been cancelling the missing one
+  above); together with the cast it is part of the 97.
+- **The pre-loop factor**: `if ((value = state->unk5C) != 0.0f)` with
+  `value * tuning[3] * 0.5f`. 275 to 190 on its own; the ring it leaves is
+  the target's for everything after it. The local order is still not the
+  shipped one (below).
+- **Carriers that the shipped registers imply.** The mathDiffAngle result
+  and the drift step share one symbol (`index`), which puts both in v1 as
+  shipped (97 to 94); the 0x2710/tuning turn limit is its own symbol
+  (`braking`, dead by then), which takes turnAmount off the limit's web and
+  puts it in a2 (94 to 84); the drift-arming test reads `state->unk428`
+  through `steeringInput` at each of its two reads (84 to 79); the curve sum
+  adds the base first (79 to 78).
+- **Measured and flat or worse:** declaration position of `tuning` (7
+  cells, 246 to 262); `tuning` as a struct pointer, all sites (339) and a
+  512-cell per-site-group product (floor 245, equal to its array base); the
+  drift-branch condition written five ways (inert or +56); the spin-out
+  negation through four carriers or written directly (inert or +153); the
+  68/58 test of `state->unk100` through any of eight carriers (inert, +4, or
+  a sign-extension pair when the carrier is the s16 `driftDirection`).
+
+What remains, by window:
+
+- **Pre-loop factor, +0xD4..+0xF4** (5 rows including the 2 one-sided
+  words). The target draws the 0.5 constant, the first product, then
+  `tuning[3]`; every one-expression form loads `tuning[3]` first, because
+  uopt puts the load operand first whatever the source order. Two-statement
+  forms give the shipped draw order but colour the intermediate. A struct
+  field for `tuning[3]` (`tuning` cast to a record) gives the shipped order
+  with the product first and leaves only the compare's operand order, but
+  every whole-struct form costs elsewhere. The open question is what makes
+  the shipped tree keep the product on the left.
+- **`state->unkFE` temporary in a3 where the target has v0** (about 8 rows
+  at +0xDBC), and the integer ring one register off from +0xCD0 to +0xD7C
+  (the cast supplies the draw after the frame-counter load rather than
+  before it).
+- `state->unk100` at the 68/58 test is a v0 temporary here and sits in a1 in
+  the target; `steeringTarget` compares at +0xB30/+0xB70/+0xB84 read the
+  copy (v0) in the target and the source (a0) here.
+- Smaller rows: `updateCount` in v0 for v1 at +0x20C, two t8/t9 rows at
+  +0x478, operand order at +0xBC4, `state->unk349` carrier at +0x115C, and
+  ring rows in the colour tail from +0x11E8.
 
 ## 2026-10-01 natural-shape rewrite (lane `lane/a-o008`): 636 to 275, frame exact
 

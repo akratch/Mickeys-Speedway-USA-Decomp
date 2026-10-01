@@ -176,10 +176,14 @@ FIXED_DATA_RODATA_OWNERSHIP = {
 # The exact data-only source allowlist keeps physical ownership independent
 # from executable text ownership and matching credit.
 CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
-    8: [(0x2378, 0x2418, "overlay8MotionConstants", ".data")],
+    8: [
+        (0x03E0, 0x0520, "overlay8EffectTables", ".data"),
+        (0x2378, 0x2418, "overlay8MotionConstants", ".data"),
+    ],
 }
 DATA_ONLY_FIXED_DATA_SOURCES = {
     (8, "overlay8MotionConstants", ".data"),
+    (8, "overlay8EffectTables", ".data"),
 }
 
 # When a C owner's initialized input follows its text, IDO's measured .text

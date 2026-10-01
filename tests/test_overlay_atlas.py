@@ -374,7 +374,19 @@ class CanonicalDataOnlyOwnershipTests(unittest.TestCase):
                 "canonical": True,
             },
         )
-        self.assertEqual(len(rows), 2)
+        self.assertEqual(
+            rows[-2],
+            {
+                "offset": "0x3E0",
+                "end_offset": "0x520",
+                "size": "0x140",
+                "type": "c",
+                "section": ".data",
+                "source": "overlays/o008/overlay8EffectTables",
+                "canonical": True,
+            },
+        )
+        self.assertEqual(len(rows), 3)
 
     def test_unallowlisted_data_only_owner_fails_closed(self):
         with mock.patch.dict(
@@ -418,6 +430,41 @@ class CanonicalDataOnlyOwnershipTests(unittest.TestCase):
                 trial_ownership=True,
                 trial_sources=frozenset({"example_tail"}),
             )
+
+    def test_multiple_canonical_rows_carve_in_order_without_losing_raw_slices(self):
+        module_row = trial_module()
+        module_row["sections"]["data_rodata"] = {
+            "start": "0x1854500",
+            "end": "0x1856A00",
+            "size": "0x2500",
+        }
+        module_row["data_rodata_ownership"] = [
+            {
+                "offset": "0x3E0",
+                "end_offset": "0x520",
+                "size": "0x140",
+                "type": "c",
+                "section": ".data",
+                "source": "overlays/o008/overlay8EffectTables",
+                "canonical": True,
+            },
+            {
+                "offset": "0x2378",
+                "end_offset": "0x2418",
+                "size": "0xA0",
+                "type": "c",
+                "section": ".data",
+                "source": "overlays/o008/overlay8MotionConstants",
+                "canonical": True,
+            },
+        ]
+        block = overlay_atlas.render_yaml_block({"modules": [module_row]})
+
+        self.assertIn("- [0x1854500, bin, overlay_001_data_rodata]", block)
+        self.assertIn("- [0x18548E0, .data, overlay8EffectTables]", block)
+        self.assertIn("- [0x1854A20, bin, overlay_001_data_rodata_520]", block)
+        self.assertIn("- [0x1856878, .data, overlay8MotionConstants]", block)
+        self.assertIn("- [0x1856918, bin, overlay_001_data_rodata_2418]", block)
 
 
 class TrialProjectionTests(unittest.TestCase):

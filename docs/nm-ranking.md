@@ -377,9 +377,9 @@ units remain distinct.
 | 81 | `src/main/models.c` | `func_8001FC50` | `main` | `other` | 1,332 | 277 | 277 | 24 | 24 | 0 | — |
 | 82 | `src/main/shadows.c` | `func_80017140` | `main` | `other` | 1,312 | 285 | 285 | 68 | 68 | 0 | — |
 | 83 | `src/overlays/o058/func_overlay_058_F0000000_18AF1E8.c` | `func_overlay_058_F0000000_18AF1E8` | `o058` | `other` | 1,472 | 305 | 295 | 0 | 0 | 0 | — |
-| 84 | `src/main/charControl.c` | `func_8001DD70` | `main` | `other` | 2,132 | 299 | 299 | 84 | 84 | 0 | — |
-| 85 | `src/overlays/o044/func_overlay_044_F0000580_188BDE0.c` | `func_overlay_044_F0000580_188BDE0` | `o044` | `other` | 1,396 | 304 | 304 | 8 | 8 | 0 | — |
-| 86 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 336 | 308 | 28 | 28 | 0 | — |
+| 84 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 324 | 296 | 28 | 28 | 0 | — |
+| 85 | `src/main/charControl.c` | `func_8001DD70` | `main` | `other` | 2,132 | 299 | 299 | 84 | 84 | 0 | — |
+| 86 | `src/overlays/o044/func_overlay_044_F0000580_188BDE0.c` | `func_overlay_044_F0000580_188BDE0` | `o044` | `other` | 1,396 | 304 | 304 | 8 | 8 | 0 | — |
 | 87 | `src/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c` | `func_overlay_099_F0000DDC_18DA38C` | `o099` | `other` | 1,408 | 331 | 331 | 4 | 4 | 0 | — |
 | 88 | `src/overlays/o098/overlay98RenderReflections.c` | `overlay98RenderReflections` | `o098` | `other` | 1,556 | 333 | 332 | 0 | 0 | 0 | — |
 | 89 | `src/overlays/o002/func_overlay_002_F0001DF8_1858BF0.c` | `func_overlay_002_F0001DF8_1858BF0` | `o002` | `other` | 1,840 | 353 | 353 | 32 | 32 | 0 | — |

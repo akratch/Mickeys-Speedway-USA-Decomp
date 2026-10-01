@@ -1517,25 +1517,17 @@ void overlay8ScaleOutputs(void *unused, Overlay8ScaleState *state,
     }
 }
 
-/* NON_MATCHING: 897 vs 898 instructions, 466 masked/490 raw words different,
- * frame -0x80 exact, 107 of the shipped 109 relocations with 59 offset/type
- * pairs agreeing and 50 identities resolved, first mismatch +0x1C.  Eighteen
- * of the twenty-one call-delimited regions are exact; the three that are not
- * are +1, +1 and -3 words.  Eight of the fifteen stack homes -- the scratch
- * quad, the mode/target/counter trio and every incoming-argument home -- sit
- * at the shipped offsets.
- *
- * Two things block the rest.  The six remaining homes are four bytes high
- * because the shipped frame wants one escaping four-byte pointer at +0x40 and
- * a separate escaping four-word block at +0x58, with +0x44/+0x48/+0x4C
- * serving as ordinary float homes between them; measured with this compiler,
- * a single aggregate never lends its padding to a home, four plain scalars
- * lose the -1 stores to dead-store elimination, and volatile scalars keep the
- * stores at a cost of roughly 270 extra differing words.  Separately, the
- * shipped selector burst re-reads gOverlay8Buffer even straight after storing
- * it, which is the whole of the -3 region and the two missing relocations;
- * declaring the pointer volatile reproduces that shape but changes code this
- * unit already matches, so it is not available.  GLOBAL_ASM stays canonical. */
+/* NON_MATCHING: exact size and frame, 296 masked words.  Every stack home is
+ * at its shipped offset (2026-10-01, lane d-o008): the terrain query's
+ * pointer and the four -1 scratch words are separate locals (an escaping
+ * pointer and an array the stores keep alive), and the update count is
+ * declared between trigB and blend, which puts the scratch block at +0x58
+ * and the pointer at +0x40 under the three float homes, as shipped.
+ * The float constants D_1D8..D_25C are this function's own literal pool,
+ * one entry per use; written as literals the body is one word short until
+ * the selector burst's second address materialisation is reproduced (the
+ * shipped code rebuilds &gOverlay8Buffer for the second command pair and
+ * reloads it after the store).  GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                                       O8P34A0State *state, f32 limit,
@@ -1544,25 +1536,26 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     s32 sampleCount;
     s32 target;
     s32 selectedMode;
-    f32 trigB;
     f32 delta;
     f32 **sample;
-    O8P34A0Query query;
+    s32 scratch[4];
+    f32 trigB;
+    s32 steps;
     f32 blend;
     f32 selectedValue;
     f32 result;
+    f32 **samples;
     f32 trigA;
     f32 factor;
     f32 strength;
     s16 outputAngle;
     s8 ownerMode;
-    s32 steps;
 
     selectedMode = owner->mode3B;
-    query.scratch04 = -1;
-    query.scratch08 = -1;
-    query.scratch0C = -1;
-    query.scratch10 = -1;
+    scratch[0] = -1;
+    scratch[1] = -1;
+    scratch[2] = -1;
+    scratch[3] = -1;
     result = 0.0f;
     selectedValue = 0.0f;
     blend = 0.0f;
@@ -1660,11 +1653,11 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
             result = 40.0f;
         } else {
             sampleCount = o8P34A0TerrainReloc(owner->xC, owner->z14,
-                                              0x1800, &query.samples0);
+                                              0x1800, &samples);
             if (sampleCount != 0) {
                 index = 0;
                 if (sampleCount > 0) {
-                    sample = query.samples0;
+                    sample = samples;
                     do {
                         result = **sample;
                         index++;
@@ -2326,11 +2319,11 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:start
  * symbol: func_overlay_008_F00034A0_18611F8
- * score: 308/336 words
+ * score: 296/324 words
  * frame: 0x80
  * relocations: 107
  * first-mismatch: +0x1C
- * summary: L144 address-form of limit in kind 4 spills the f18 fragment at delta 0; 308 masked. Pointer home, a3 vs a2, and six insertion sites remain.
+ * summary: Frame ladder exact via split query pointer and scratch array; literal pool needs the second gOverlay8Buffer address build to fit.
  * PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:end
  */
 

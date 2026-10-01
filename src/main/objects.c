@@ -802,8 +802,9 @@ extern s32 D_80079008[];
 extern s32 D_800790D0[];
 extern f32 D_80080D24;
 extern f32 D_80080D28;
-extern void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
-                          s32 arg5, volatile s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10);
+extern void func_8000831C(void *object, void *vertices, s32 vertexCount, void *triangles,
+                          s32 triangleCount, s32 texture, s32 flags, s32 textureOffset,
+                          f32 scale, s32 brightness, s32 alpha);
 typedef struct CameraScaledTransform CameraScaledTransform;
 typedef struct FxGfx FxGfx;
 extern void camPushModelMtx(Gfx **dlist, Mtx **mtx, CameraScaledTransform *transform,
@@ -3318,61 +3319,51 @@ s32 func_80008128(Objects08128Object *arg0, f32 arg1, f32 arg2, f32 arg3) {
     }
     return result;
 }
-/* 65 masked at size delta 0 (2026-09-23, lane A2-obj).  Three shape facts
- * are the target's, each priced by forcing the tail block's five webs to the
- * target's colours (the floor under those forces went 35 -> 31 -> 24):
- * the (u8) decrement keeps (arg4 - 1) ahead of the shift, the FB/-0x100
- * pair on one line fixes cmd 2's ring order, and the address-form arm read
- * leaves arg6 in a ring temporary across the branch.  Left: the tail block's
- * colours (target: temp_a2 a2, arg4 t0, 0x80000000 t1, arg2 t2, with v1 and
- * a3 unused); see the handoff. */
-#ifdef NON_MATCHING
-void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
-                   s32 arg5, volatile s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10) {
-    s32 sp24;
-    s32 temp_a1;
-    s32 temp_a2;
-    s32 temp_t3;
-    Objects0831CCommand *temp_v0;
+/* PROVENANCE: body adapted from the public Diddy Kong Racing decompilation,
+ * src/objects.c::render_misc_model, with Mickey's two extra colour arguments
+ * and flag tests from its own target.  The packet macros are adapted from the
+ * Jet Force Gemini decompilation (include/PR/gbi.h gDPSetColor,
+ * gDPSetPrimColor and gDma1p, include/PR/mbi.h _SHIFTL, include/f3ddkr.h
+ * gSPVertexJFG and gSPPolygon, include/PR/os_convert.h OS_K0_TO_PHYSICAL).
+ *
+ * Matched (was 65 masked words) by writing each of the four display-list
+ * commands as its packet macro on the post-incremented list pointer.  Each
+ * expansion's block-scoped `_g` replaces the shared command pointer and the
+ * hand-split colour, vertex-count and address temporaries, and with those
+ * gone the flags parameter needs neither `volatile` nor the address-form
+ * read: a plain `flags |= 4` is exact. */
+#define OBJ_SHIFTL(v, s, w) ((u32)(((u32)(v) & ((0x01 << (w)) - 1)) << (s)))
+#define OBJ_SET_COLOR(pkt, c, d) { Objects0831CCommand *_g = (Objects0831CCommand *)(pkt); _g->unk0 = OBJ_SHIFTL(c, 24, 8); _g->unk4 = (u32)(d); }
+#define OBJ_RGBA(r, g, b, a) (OBJ_SHIFTL(r, 24, 8) | OBJ_SHIFTL(g, 16, 8) | OBJ_SHIFTL(b, 8, 8) | OBJ_SHIFTL(a, 0, 8))
+#define OBJ_SET_ENV_COLOR(pkt, r, g, b, a) OBJ_SET_COLOR(pkt, 0xFB, OBJ_RGBA(r, g, b, a))
+#define OBJ_SET_PRIM_COLOR(pkt, m, l, r, g, b, a) { Objects0831CCommand *_g = (Objects0831CCommand *)(pkt); _g->unk0 = (OBJ_SHIFTL(0xFA, 24, 8) | OBJ_SHIFTL(m, 8, 8) | OBJ_SHIFTL(l, 0, 8)); _g->unk4 = OBJ_RGBA(r, g, b, a); }
+#define OBJ_DMA1P(pkt, c, s, l, p) { Objects0831CCommand *_g = (Objects0831CCommand *)(pkt); _g->unk0 = (OBJ_SHIFTL((c), 24, 8) | OBJ_SHIFTL((p), 16, 8) | OBJ_SHIFTL((l), 0, 16)); _g->unk4 = (unsigned int)(s); }
+#define OBJ_VERTEX(pkt, v, n, v0) OBJ_DMA1P(pkt, 0x04, v, ((((n) << 3) + ((n) << 1))) + 8, ((n))<<3|(((u32)(v) & 6))|(v0))
+#define OBJ_POLYGON(dl, ptr, numTris, texEnabled) { Objects0831CCommand *_g = (Objects0831CCommand *)(dl); _g->unk0 = OBJ_SHIFTL((((numTris) - 1) << 4) | (texEnabled), 16, 8) | OBJ_SHIFTL(0x05, 24, 8) | OBJ_SHIFTL(((numTris)*16), 0, 16); _g->unk4 = (unsigned int)(ptr); }
+#define OBJ_K0_TO_PHYSICAL(x) (u32)(((char *)(x) - 0x80000000))
+#define OBJ_DL (*(Objects0831CCommand **)&D_800C94B4)
+void func_8000831C(void *object, void *vertices, s32 vertexCount, void *triangles,
+                   s32 triangleCount, s32 texture, s32 flags, s32 textureOffset,
+                   f32 scale, s32 brightness, s32 alpha) {
+    s32 hasTexture = 0;
 
-    sp24 = 0;
     camPushModelMtx((Gfx **)&D_800C94B4, (Mtx **)&D_800C94B8,
-                    (CameraScaledTransform *)arg0, arg8, 0.0f);
-    if ((arg6 & 0x240) == 0) {
-        temp_v0 = (Objects0831CCommand *)D_800C94B4;
-        D_800C94B4 = (s32)(temp_v0 + 1);
-        temp_v0->unk0 = 0xFA000000;
-        temp_t3 = arg9 & 0xFF;
-        temp_v0->unk4 = (temp_t3 << 24) | (temp_t3 << 16) |
-                        (temp_t3 << 8) | (arg10 & 0xFF);
-        temp_v0 = (Objects0831CCommand *)D_800C94B4;
-        D_800C94B4 = (s32)(temp_v0 + 1);
-        temp_v0->unk0 = 0xFB000000; temp_v0->unk4 = -0x100;
+                    (CameraScaledTransform *)object, scale, 0.0f);
+    if (!(flags & 0x240)) {
+        OBJ_SET_PRIM_COLOR(OBJ_DL++, 0, 0, brightness, brightness, brightness, alpha);
+        OBJ_SET_ENV_COLOR(OBJ_DL++, 255, 255, 255, 0);
     }
-    if (arg5 != 0) {
-        sp24 = 1;
+    if (texture != 0) {
+        hasTexture = 1;
     }
-    if (arg10 < 0xFF) {
-        arg6 = *(s32 *)&arg6 | 4;
+    if (alpha < 0xFF) {
+        flags |= 4;
     }
-    func_800349A4((FxGfx **)&D_800C94B4, arg5, arg6, arg7);
-    temp_v0 = (Objects0831CCommand *)D_800C94B4;
-    temp_a2 = (s32)arg1 + 0x80000000;
-    D_800C94B4 = (s32)(temp_v0 + 1);
-    temp_a1 = arg2 * 8;
-    temp_v0->unk0 = ((((temp_a1 | (temp_a2 & 6)) & 0xFF) << 16) |
-                     0x04000000 | (((temp_a1 + arg2 * 2) + 8) & 0xFFFF));
-    temp_v0->unk4 = temp_a2;
-    temp_v0 = (Objects0831CCommand *)D_800C94B4;
-    D_800C94B4 = (s32)(temp_v0 + 1);
-    temp_v0->unk0 = (((((u8)(arg4 - 1) << 4) | sp24) & 0xFF) << 16) |
-                     0x05000000 | ((arg4 << 4) & 0xFFFF);
-    temp_v0->unk4 = (s32)arg3 + 0x80000000;
+    func_800349A4((FxGfx **)&D_800C94B4, texture, flags, textureOffset);
+    OBJ_VERTEX(OBJ_DL++, OBJ_K0_TO_PHYSICAL(vertices), vertexCount, 0);
+    OBJ_POLYGON(OBJ_DL++, OBJ_K0_TO_PHYSICAL(triangles), triangleCount, hasTexture);
     camPopModelMtx((Gfx **)&D_800C94B4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_8000831C.s")
-#endif
 typedef struct {
     f32 x;
     f32 y;
@@ -5475,16 +5466,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * first-mismatch: +0xC
  * summary: Remeasured 2026-09-23: 63 masked at delta 0, frame exact, 18 relocations against 16; active-list carriers and loop registers remain structural.
  * PLATEAU-HANDOFF:func_80006FA0:end
- */
-
-/* PLATEAU-HANDOFF:func_8000831C:start
- * symbol: func_8000831C
- * score: 65 differing words
- * frame: 0x28
- * relocations: 11
- * first-mismatch: +0x70
- * summary: A2-obj 2026-09-23: 62 to 65, forced floor 35 to 24 (u8 decrement, FB store first, address-form arm read); left: tail-block colours, v1/a3 unused.
- * PLATEAU-HANDOFF:func_8000831C:end
  */
 
 /* PLATEAU-HANDOFF:func_80007C68:start

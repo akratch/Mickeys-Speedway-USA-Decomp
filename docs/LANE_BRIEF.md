@@ -227,6 +227,28 @@ Read the in-source `/* PLATEAU-HANDOFF:<symbol>:start … */` block and
 Re-running a lattice another lane already exhausted is this project's single
 largest measured waste.
 
+**A closure is a statement about a shape, and the shape is usually inherited.**
+`overlay20RemoveEntry` sat at 2 of 53 masked words through eight lanes and more
+than a thousand measured spellings, behind a closure that named a real
+allocator contradiction. It matched on 2026-10-01 in the first 42-cell product
+that discarded the m2c-derived shape: the count is read from its global at
+every use and decremented in place, with no parameter reuse and no bound
+carrier, and both loops index one array symbol instead of two alias extern
+names. Every earlier lane had varied spellings *inside* that shape and held
+its prologue fixed, so the contradiction was true of the shape and false of
+the function. Cells that are bad alone are exact together: the in-place
+decrement was recorded as 52 words and four bytes long on the old search shape
+and is 0 on the new one.
+
+So before allocator work on a plateau, read the target listing and write the
+function from it as its author plausibly did, list the candidate's inherited
+artefacts -- alias extern names for one object, parameter reuse, carrier
+locals, copies of globals, `volatile`, or-with-zero, dead stores, `if (1)`,
+`goto` loops, `#line` -- and measure a full product of the natural
+alternatives for each region. It is a measurement, not a rule: the same
+product on `overlay14CreateValue`, 490 cells, bottomed at 71 words against an
+inherited 2, so there the contortions are load-bearing.
+
 ## The laws
 
 Full statements and receipts are in `docs/compiler-laws/ido-5.3.md` in the

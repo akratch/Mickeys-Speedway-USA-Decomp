@@ -893,18 +893,19 @@ extern void *LOCAL_BSS_1BA4;
 extern void *LOCAL_BSS_1D9C;
 
 /* Typed reconstruction remains NON_MATCHING. The object/state and callback
- * layouts follow Mickey's runtime identities and access widths.
- * 2026-10-01 (d-o001): the declarations are in the order the target's home
- * ladder implies -- every spilled local at its shipped slot, register-only
- * locals and pads filling the gaps -- and frame_census now reads both
- * ladders identical (1113 to 1079). The path loop is a `for` over a pointer
- * and an index, the deceleration reads forwardVelocity directly, and the
- * m2c gotos are gone (1066). The surface loop uses the same `loopValue`
- * copy as overlay1ChoosePath's loops (1061). Remaining CFG and allocation
- * work is measured in the function handoff. */
+ * layouts follow Mickey's runtime identities and access widths. The
+ * declarations follow the target's home ladder (every declared local takes a
+ * slot in declaration order here, so a new local must replace a free one).
+ * 2026-10-02 (g-o001big), 1061 to 307 at delta 0: `while (n--)` for the
+ * surface and update loops, an else-arm for the last slope case, the angle
+ * magnitude in its own local, the steering scale apart from `scale`, the
+ * limit product written level-first, the decel scaled before its test, the
+ * `< 0` zero spellings the target materialises with mtc1, and the steering
+ * `* 16384` spelled apart from the angle block's 16384.0f so the angle
+ * constant stays a register web. */
 #ifdef NON_MATCHING
 void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) {
-    s32 pad0;
+    f32 absAngle;
     f32 *tuning;
     O1PhysicsSurface surfaces[8];
     f32 normal[3];
@@ -940,7 +941,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
     s32 steering;
     s32 level;
     f32 speed;
-    O1PhysicsSurface *surface;
+    f32 turnScale;
     s32 index;
     void (*callback)(void);
     s32 collision;
@@ -948,7 +949,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
     O1PhysicsActionMode *action;
     s16 resolvedX;
     s16 resolvedZ;
-    s32 loopValue;
+    s32 pad48;
 
     state = object->state;
     if (func_overlay_001_F00004B4_184C894(object) != 0) {
@@ -1010,21 +1011,14 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         state->slope = normal[2];
         surfaceCount = func_8001357C(object->x, object->z, NULL, 0x08010000, surfaces);
         ceiling = -32768.0f;
-        index = surfaceCount - 1;
         state->surfaceHeight = -32768.0f;
-        if (surfaceCount != 0) {
-            surface = &surfaces[index];
-            do {
-                if (surface->flags & 0x10000) {
-                    state->surfaceHeight = surface->height;
-                }
-                if (surface->flags & 0x08000000) {
-                    ceiling = surface->height;
-                }
-                surface--;
-                loopValue = index;
-                index--;
-            } while (loopValue != 0);
+        while (surfaceCount--) {
+            if (surfaces[surfaceCount].flags & 0x10000) {
+                state->surfaceHeight = surfaces[surfaceCount].height;
+            }
+            if (surfaces[surfaceCount].flags & 0x08000000) {
+                ceiling = surfaces[surfaceCount].height;
+            }
         }
         value2 = state->surfaceHeight;
         if (object->y < value2) {
@@ -1043,10 +1037,10 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
             }
         }
         level = state->level192;
-        if ((s32) level >= 0xB) {
-            level = 0xA;
+        if (level > 10) {
+            level = 10;
         }
-        limit = (tuning[16] + ((f32) level * tuning[2])) * state->speedScale;
+        limit = (((f32) level * tuning[2]) + tuning[16]) * state->speedScale;
         for (index = 1, path = &gO1PhysicsPaths[1]; index != 4; index++, path++) {
             if ((path->test != NULL) && (path->mask & (1 << state->pathMode))) {
                 if (path->test() != 0) {
@@ -1079,18 +1073,18 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         state->targetX = targetX;
         state->targetZ = targetZ;
         value = (f32) func_8002AA0C(object->rotationX, targetHeading) * 0.4f;
-        work = value;
+        absAngle = value;
         state->controlXjoy = (s32) (value * -0.4f);
-        if (value < 0.0f) {
-            work = -value;
+        if (value < 0) {
+            absAngle = -value;
         }
         if (gOverlay1Mode == 1) {
-            if (work > 24576.0f) {
+            if (absAngle > 24576.0f) {
                 clampedAngle = 0x6000;
             } else {
-                clampedAngle = (s16) (s32) work;
+                clampedAngle = (s16) (s32) absAngle;
             }
-            angleOffset = (s32) (work - 8192.0f);
+            angleOffset = (s32) (absAngle - 8192.0f);
             if (speed < (25.0f - ((f32) clampedAngle * 0.0009765625f))) {
                 state->controlKeys = (s32) (state->controlKeys | 0x8000);
             }
@@ -1102,20 +1096,20 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
                 state->controlKeys = (s32) (state->controlKeys | 0x4000);
             }
             value = (f32) func_8002AA0C(targetHeading, pathHeading);
-            work = value;
-            if (value < 0.0f) {
-                work = -value;
+            absAngle = value;
+            if (value < 0) {
+                absAngle = -value;
             }
-            if ((work * 0.00077f) < speed) {
+            if ((absAngle * 0.00077f) < speed) {
                 state->controlKeys = (s32) (state->controlKeys | 0x4000);
             }
         } else {
-            if (work > 16384.0f) {
+            if (absAngle > 16384.0f) {
                 clampedAngle = 0x4000;
             } else {
-                clampedAngle = (s16) (s32) work;
+                clampedAngle = (s16) (s32) absAngle;
             }
-            angleOffset = (s32) (work - 16384.0f);
+            angleOffset = (s32) (absAngle - 16384.0f);
             if (speed < (25.0f - ((f32) clampedAngle * 0.0014648438f))) {
                 state->controlKeys = (s32) (state->controlKeys | 0x8000);
             }
@@ -1191,135 +1185,133 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
                 state->boostScale = 0.0f;
             }
         }
-        if (gOverlay1TimerStep != 0) {
-            remaining = gOverlay1TimerStep - 1;
-            do {
-                value = func_overlay_008_F0001000_185ED58(object, state, limit);
-                limit = value;
-                keys = state->controlKeys;
-                if (((keys & 0x4000) == 0) && (state->slope > 0.0f) && (state->forwardVelocity < -value)) {
-                    applySlope = 1;
-                } else if (((keys & 0x4000) == 0) && (state->slope < 0.0f)) {
-                    applySlope = 1;
-                } else {
-                    applySlope = 0;
-                    if (!(keys & 0xC000) && (state->slope > 0.0f)) {
-                        applySlope = 1;
-                    }
+        remaining = gOverlay1TimerStep;
+        while (remaining--) {
+            value = func_overlay_008_F0001000_185ED58(object, state, limit);
+            limit = value;
+            keys = state->controlKeys;
+            if (((keys & 0x4000) == 0) && (state->slope > 0.0f) && (state->forwardVelocity < -value)) {
+                applySlope = 1;
+            } else if (((keys & 0x4000) == 0) && (state->slope < 0.0f)) {
+                applySlope = 1;
+            } else if (!(keys & 0xC000) && (state->slope > 0.0f)) {
+                applySlope = 1;
+            } else {
+                applySlope = 0;
+            }
+            if ((applySlope != 0) && (state->boostMode == 0)) {
+                state->forwardVelocity = (f32) (state->forwardVelocity + (G_rt_458c4 * state->slope));
+                value2 = tuning[7];
+                if (value2 < state->forwardVelocity) {
+                    state->forwardVelocity = value2;
                 }
-                if ((applySlope != 0) && (state->boostMode == 0)) {
-                    state->forwardVelocity = (f32) (state->forwardVelocity + (G_rt_458c4 * state->slope));
-                    value2 = tuning[7];
-                    if (value2 < state->forwardVelocity) {
-                        state->forwardVelocity = value2;
-                    }
+            }
+            if (state->spinTimer != 0) {
+                value2 = 0.99f;
+                state->controlXjoy = 0;
+                state->controlYjoy = 0;
+                state->controlKeys = 0;
+                state->controlDkeys = 0;
+                state->forwardVelocity = (f32) (state->forwardVelocity * value2);
+                state->sideVelocity = (f32) (state->sideVelocity * value2);
+            }
+            keys = state->controlKeys;
+            state->field100 = 0;
+            if (keys & 0x4000) {
+                if (state->forwardVelocity < -5.0f) {
+                    func_overlay_008_F00049DC_1862734(1);
                 }
-                if (state->spinTimer != 0) {
-                    value2 = 0.99f;
-                    state->controlXjoy = 0;
-                    state->controlYjoy = 0;
-                    state->controlKeys = 0;
-                    state->controlDkeys = 0;
-                    state->forwardVelocity = (f32) (state->forwardVelocity * value2);
-                    state->sideVelocity = (f32) (state->sideVelocity * value2);
-                }
-                keys = state->controlKeys;
-                state->field100 = 0;
-                if (keys & 0x4000) {
-                    if (state->forwardVelocity < -5.0f) {
-                        func_overlay_008_F00049DC_1862734(1);
-                    }
-                    if (state->forwardVelocity < 0.0f) {
-                        state->forwardVelocity = (f32) (state->forwardVelocity + tuning[(s32) -state->forwardVelocity + 50]);
-                        if ((state->forwardVelocity > 0.0f) && (state->controlYjoy >= -0x1E)) {
-                            state->forwardVelocity = 0.0f;
-                        }
-                    } else if (state->controlYjoy < -0x1E) {
-                        state->forwardVelocity = (f32) (state->forwardVelocity + tuning[(s32) state->forwardVelocity + 8]);
-                        if (state->forwardVelocity > 6.0f) {
-                            state->forwardVelocity = 6.0f;
-                        }
-                    } else {
-                        state->forwardVelocity = (f32) (state->forwardVelocity - tuning[50]);
-                        if (state->forwardVelocity <= 0.0f) {
-                            state->forwardVelocity = 0.0f;
-                        }
-                    }
-                } else if (keys & 0x8000) {
-                    if ((state->boostMode == 1) || (state->boostMode == 2)) {
-                        if (G_offd_31a4 == 0) {
-                            value2 = 0.3334f;
-                        } else {
-                            value2 = 0.5f;
-                        }
-                    } else {
-                        if (state->forwardVelocity > 0.0f) {
-                            index = (s32) state->forwardVelocity;
-                            scale = state->forwardVelocity - (f32) index;
-                        } else {
-                            work = -state->forwardVelocity;
-                            index = (s32) work;
-                            scale = work - (f32) index;
-                        }
-                        work = tuning[index + 17];
-                        value2 = ((tuning[index + 18] - work) * scale) + work;
-                    }
-                    if (state->forwardVelocity < -limit) {
-                        state->forwardVelocity *= 0.99f;
-                        if (-limit < state->forwardVelocity) {
-                            state->forwardVelocity = -limit;
-                        }
-                    } else {
-                        state->forwardVelocity -= value2 * state->speedScale;
-                        if (state->forwardVelocity < -limit) {
-                            state->forwardVelocity = -limit;
-                        }
-                    }
-                    if ((gOverlay1Mode == 1) && (G_offd_31a4 == 0) && (state->flags1A8 & 1) && (func_8002675C() == (s32)0x21) && (state->pathIndex == 0x2A) && (0.4f < state->progress398)) {
-                        state->forwardVelocity = (f32) (state->forwardVelocity - 2.0f);
-                    }
-                } else {
-                    value2 = state->forwardVelocity;
-                    if ((-0.01f < value2) && (value2 < 0.01f)) {
+                if (state->forwardVelocity < 0.0f) {
+                    state->forwardVelocity = (f32) (state->forwardVelocity + tuning[(s32) -state->forwardVelocity + 50]);
+                    if ((state->forwardVelocity > 0.0f) && (state->controlYjoy >= -0x1E)) {
                         state->forwardVelocity = 0.0f;
+                    }
+                } else if (state->controlYjoy < -0x1E) {
+                    state->forwardVelocity = (f32) (state->forwardVelocity + tuning[(s32) state->forwardVelocity + 8]);
+                    if (state->forwardVelocity > 6.0f) {
+                        state->forwardVelocity = 6.0f;
+                    }
+                } else {
+                    state->forwardVelocity = (f32) (state->forwardVelocity - tuning[50]);
+                    if (state->forwardVelocity <= 0.0f) {
+                        state->forwardVelocity = 0.0f;
+                    }
+                }
+            } else if (keys & 0x8000) {
+                if ((state->boostMode == 1) || (state->boostMode == 2)) {
+                    if (G_offd_31a4 == 0) {
+                        value2 = 0.3334f;
                     } else {
-                        state->forwardVelocity = (f32) (value2 * 0.99f);
+                        value2 = 0.5f;
                     }
-                }
-                if ((-0.2f < state->forwardVelocity) && (state->forwardVelocity < 0.2f)) {
-                    func_800299E8(0, 127);
-                }
-                if (state->controlXjoy >= 0x42) {
-                    steering = -0x1F4;
-                } else if (state->controlXjoy < -0x41) {
-                    steering = 0x1F4;
                 } else {
-                    steering = -state->controlXjoy;
-                    steering = (steering * 500) / 65;
+                    if (state->forwardVelocity > 0.0f) {
+                        index = (s32) state->forwardVelocity;
+                        scale = state->forwardVelocity - (f32) index;
+                    } else {
+                        work = -state->forwardVelocity;
+                        index = (s32) work;
+                        scale = work - (f32) index;
+                    }
+                    work = tuning[index + 17];
+                    value2 = ((tuning[index + 18] - work) * scale) + work;
                 }
-                work = -2.0f - state->forwardVelocity;
-                state->steeringAngle = (s16) (state->steeringAngle + ((s32) (steering - state->steeringAngle) >> 1));
-                if (work > 0.0f) {
-                    scale = (func_8002A8BC((s32) (work * 1310.72f)) * 0.25f) + 0.75f;
+                value2 *= state->speedScale;
+                if (state->forwardVelocity < -limit) {
+                    state->forwardVelocity *= 0.99f;
+                    if (-limit < state->forwardVelocity) {
+                        state->forwardVelocity = -limit;
+                    }
                 } else {
-                    if (work < 0.0f) {
-                        work = -work;
+                    state->forwardVelocity -= value2;
+                    if (state->forwardVelocity < -limit) {
+                        state->forwardVelocity = -limit;
                     }
-                    if (work > 2.0f) {
-                        work = 2.0f;
-                    }
-                    scale = (func_8002A8BC((s32) (work * 16384.0f)) + 1.0f) * 0.5f;
                 }
-                if (state->forwardVelocity > 0.0f) {
-                    scale = -scale;
+                if ((gOverlay1Mode == 1) && (G_offd_31a4 == 0) && (state->flags1A8 & 1) && (func_8002675C() == (s32)0x21) && (state->pathIndex == 0x2A) && (0.4f < state->progress398)) {
+                    state->forwardVelocity = (f32) (state->forwardVelocity - 2.0f);
                 }
-                state->heading = (s16) (s32) ((f32) state->heading + ((f32) state->steeringAngle * scale));
-                state->sideVelocity = (f32) (state->sideVelocity * 0.96f);
-                value2 = state->sideVelocity;
-                if ((-0.1f < value2) && (value2 < 0.1f)) {
-                    state->sideVelocity = 0.0f;
+            } else {
+                value2 = state->forwardVelocity;
+                if ((-0.01f < value2) && (value2 < 0.01f)) {
+                    state->forwardVelocity = 0.0f;
+                } else {
+                    state->forwardVelocity = (f32) (value2 * 0.99f);
                 }
-            } while (remaining--);
+            }
+            if ((-0.2f < state->forwardVelocity) && (state->forwardVelocity < 0.2f)) {
+                func_800299E8(0, 127);
+            }
+            if (state->controlXjoy >= 0x42) {
+                steering = -0x1F4;
+            } else if (state->controlXjoy < -0x41) {
+                steering = 0x1F4;
+            } else {
+                steering = -state->controlXjoy;
+                steering = (steering * 500) / 65;
+            }
+            work = -2.0f - state->forwardVelocity;
+            state->steeringAngle = (s16) (state->steeringAngle + ((s32) (steering - state->steeringAngle) >> 1));
+            if (work > 0.0f) {
+                turnScale = (func_8002A8BC((s32) (work * 1310.72f)) * 0.25f) + 0.75f;
+            } else {
+                if (work < 0) {
+                    work = -work;
+                }
+                if (work > 2.0f) {
+                    work = 2.0f;
+                }
+                turnScale = (func_8002A8BC((s32) (work * 16384)) + 1.0f) * 0.5f;
+            }
+            if (state->forwardVelocity > 0.0f) {
+                turnScale = -turnScale;
+            }
+            state->heading = (s16) (s32) ((f32) state->heading + ((f32) state->steeringAngle * turnScale));
+            state->sideVelocity = (f32) (state->sideVelocity * 0.96f);
+            value2 = state->sideVelocity;
+            if ((-0.1f < value2) && (value2 < 0.1f)) {
+                state->sideVelocity = 0.0f;
+            }
         }
         if (state->controlDkeys & 0x2000) {
             if (state->soundA8 != NULL) {
@@ -3227,10 +3219,10 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C
- * score: 1061/1542 words
+ * score: 307/1542 words
  * frame: 0x138
  * relocations: 184
  * first-mismatch: +0x170
- * summary: Frame ladder exact; natural loops and limit blocks, surface loop in the loopValue idiom: 1113 to 1061 at delta 0. Rest is ring and colour order.
+ * summary: while(n--) loops, split angle/steer locals, else-arm slope, zero and 16384 spellings: 1061 to 307 at delta 0; rest is colour order
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
  */

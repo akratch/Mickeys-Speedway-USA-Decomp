@@ -2168,69 +2168,19 @@ void overlay8UpdateMotionOutput(Overlay8MotionAnchor *anchor,
     gOverlay8Buffer++;
 }
 
-/* Plateau (2026-09-09): allocation-mismatch, 39 masked words, exact 270/270
- * instructions and exact -0x90 frame, and every stack home now at the target
- * displacement -- the surface-normal aggregate included, which was the four-byte
- * gap the previous handoff left open.
- *
- * The whole residual is one extra FP pool web.  At the normal-vector product the
- * target keeps `normal.x` in a ugen ring temp and gives axisA's reload the first
- * pool colour; the candidate colours `normal.x` instead, so axisA takes the third
- * colour and the ring pops one slot out of phase from there.  That single
- * displacement carries all of it: an f4/f6 ring exchange over 32 of the 39 sites,
- * FP pool slot 2 at row 113 and FP temp slot 14 at row 115.  Every integer lane
- * is identical.
- *
- * Exhausted for this residual, each measured on the exact-home candidate:
- * the `horizontalB = normal.x` carrier cannot be removed (reading the member
- * twice under `volatile` emits two loads, 57 words; without `volatile` uopt folds
- * the copy and the body is one instruction short at 269, 159 words); moving the
- * carrier to any other local -- `factor`, `blendFactor`, a fresh inner-block
- * local, or `horizontalA` with the two products swapped -- also drops to 269;
- * the 16-form operand-order lattice over the two products is flat; the 15-form
- * volatile-placement lattice over the aggregate's four members has `volatile x`
- * alone as its unique optimum; 37 physical line joins across the function are
- * byte-inert, so the line-grouping lever does not apply in this TU; and
- * permuting the point-initialisation, point-accumulate and activation statement
- * groups is flat at 39.
- *
- * Declaration order is fixed and not a free variable: homes follow declaration
- * order top-down, so horizontalB must stay eighth (home 0x70) and axisA ninth
- * (home 0x6C), which is exactly the order that numbers the normal.x web first.
- * Carrier identity is now tested too and is not the lever (2026-09-10): axisA
- * is uniquely correct in both blocks, axisB's carrier is inert because it never
- * becomes a coloured web, and 34 carrier, inner-block-scope, negation-splitting
- * and read-back forms are flat at 39 or lose an instruction.  An all-volatile
- * aggregate with direct reads scores 37 and is NOT closer -- it emits five
- * loads where the target emits three and fills both r4300 multiply-hazard nop
- * slots the target keeps.
- * Corrected 2026-09-11 (lane p7-ovl2): this is NOT a globalcolor decision.
- * Thirty single-web forces over the five float webs of this region, crossed
- * with the split verdict and the five lowest float colours, leave it at 39 or
- * worse in every cell.  The corrected float-bank census reads all 39 sites as
- * float with a closed two-cycle over the two lowest scratch registers on 32 of
- * them, and those two are ugen's rotation, never a p1 colour -- so the residual
- * is a ugen float free-list phase.  The carrier-free form is also no longer an
- * instruction short: it is delta 0 at 270 words and 57 masked.  Resume with a
- * ugen float free-list trace, not a colouring receipt.
- *
- * 2026-10-01: 39 -> 1, which supersedes the free-list reading above.  Three
- * edits: both products read normal.x and normal.z directly and the negation
- * moves to the call; the second block's carrier is horizontalA, not axisA, so
- * axisA is a short web and takes the low float colour; and the volatile
- * qualifier sits on normal.z instead of normal.x.  The remaining word is the
- * z reload in the first multiply-hazard slot, where the target keeps a nop. */
-/* Ownership trial (2026-08-28): fixed the TU's +0x27C..+0x2AC .rodata range;
- * linked promotion is text-differs after removing the TU growth; codegen remains.
- * The candidate's literal pool is retained as the remaining structural gap. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01.  The surface normal is read through a pointer taken
+ * at entry and handed to the surface query: the indirect reads keep the first
+ * horizontal product a register web ahead of the second, as shipped, where
+ * direct member reads let uopt forward it into the call and emit the second
+ * product first.  The second block carries its value in horizontalA so axisA
+ * stays a short web, and the negation is written at the call. */
 void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
                                        O8P4CF0State *state,
                                        s32 updateRate) {
     s32 start;
     s32 end;
     O8P4CF0SceneItem **items;
-    f32 motionTarget;
+    O8P4CF0Normal *normalPtr;
     f32 blendFactor;
     s32 targetB;
     f32 horizontalA;
@@ -2241,6 +2191,7 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
     O8P4CF0Vec3f point;
     O8P4CF0Normal normal;
 
+    normalPtr = &normal;
     state->activated173 = 0;
 
     if (O8P4CF0_call_4D14(20) != 0) {
@@ -2272,7 +2223,7 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
                                     O8P4CF0_call_4E50(item);
                                 }
                                 surfaceHeight = O8P4CF0_call_4E64(
-                                    bounds, point.x, point.z, &normal);
+                                    bounds, point.x, point.z, normalPtr);
                                 break;
                             }
                         }
@@ -2287,10 +2238,10 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
             axisA = O8P4CF0_call_4E9C(-actor->angle000);
             axisB = O8P4CF0_call_4EAC(-actor->angle000);
-            horizontalA = normal.z * axisA + normal.x * axisB;
-            horizontalB = normal.z * axisB - normal.x * axisA;
-            targetA = O8P4CF0_call_4EE8(-horizontalA, normal.y);
-            targetB = O8P4CF0_call_4EF8(horizontalB, normal.y);
+            horizontalA = normalPtr->z * axisA + normalPtr->x * axisB;
+            horizontalB = normalPtr->z * axisB - normalPtr->x * axisA;
+            targetA = O8P4CF0_call_4EE8(-horizontalA, normalPtr->y);
+            targetB = O8P4CF0_call_4EF8(horizontalB, normalPtr->y);
 
             factor = O8P4CF0_call_4F0C(0.9f, updateRate);
             actor->angle004 = (s16)O8P4CF0_call_4F34(
@@ -2348,21 +2299,6 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o008/overlay_008/func_overlay_008_F0004CF0_1862A48.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_008_F0004CF0_1862A48:start
- * symbol: func_overlay_008_F0004CF0_1862A48
- * score: 1 differing words
- * frame: -0x90
- * relocations: 15
- * first-mismatch: +0x1D8
- * summary: One word: volatile normal.z pins the A-then-B product order but reloads z where the target has a nop; no unqualified form keeps that order.
- * PLATEAU-HANDOFF:func_overlay_008_F0004CF0_1862A48:end
- */
-
-
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000

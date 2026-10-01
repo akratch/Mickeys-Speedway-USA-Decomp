@@ -1473,6 +1473,7 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x49B4, 0x49DC, "overlay8WriteCommand"),
         (0x49DC, 0x49E8, "overlay8SetValue"),
         (0x49E8, 0x4CF0, "overlay8UpdateMotionOutput"),
+        (0x4CF0, 0x5128, "func_overlay_008_F0004CF0_1862A48"),
     ],
     9: [
         (0x0540, 0x0744, "func_overlay_009_F0000540_1866BB8"),

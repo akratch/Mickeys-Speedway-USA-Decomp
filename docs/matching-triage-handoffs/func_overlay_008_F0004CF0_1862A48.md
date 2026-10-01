@@ -2,11 +2,45 @@
 ### `func_overlay_008_F0004CF0_1862A48` plateau handoff
 
 - source: `src/overlays/o008/overlay_008.c`
-- score: 1 differing words
+- score: 0/270 words, promoted
 - frame: -0x90
 - relocations: 15
-- first mismatch: +0x1D8
-- summary: One word: volatile normal.z pins the A-then-B product order but reloads z where the target has a nop; no unqualified form keeps that order.
+- first mismatch: none
+- summary: Matched. The surface normal is read through a pointer taken at entry and passed to the surface query; no volatile qualifier.
+
+#### 2026-10-01, lane d-o008: ROM-exact closure
+
+1 to 0 at size delta 0, promoted; `gmake verify` and `promotion-proof`
+(270 words, frame 0x90, 29 of 29 relocations, linked ROM) pass.
+
+- **What the qualifier was standing in for.** Without it uopt forwards the
+  first product's sum into the first call's argument, so the difference is
+  emitted first and the body is one word short (164 masked, delta -4). The
+  sum stays a register web at its own statement only when something between
+  it and the call may change one of its operands. A 512-cell product of
+  `volatile` over the four normal members and five float locals bottoms at
+  the inherited 1; every cell without a qualified z is 31 or worse.
+- **Reading the members through a pointer does it.** `normalPtr = &normal`
+  at entry, passed to the surface query, and every normal read through it:
+  0 masked. The indirect loads are not forwarded past the store of the
+  difference to its home, so the sum is evaluated first and z is read once,
+  as shipped. Six placements of the pointer assignment (entry, before the
+  scene-item query, just before the products; reads through it in the first
+  product only, both products, or every use) all score 0; assigning it
+  inside the surface-query call costs 8 to 12 bytes. The pointer takes the
+  slot the dead `motionTarget` float held, so the frame is unchanged.
+- **Measured and not the lever:** a memory-resident operand kill (the
+  difference written into axisA) gives the right order at delta 0 but 55
+  words, because axisA's home then holds both values; the same through
+  axisB stays forwarded (-4); a one-member struct, a one-element array and an
+  address-form store for the difference, block splitters (label, empty
+  block, `do {} while (0)`, empty `if`) and an inner block around the sum
+  are all forwarded or grow the body.
+- **Promotion.** The function's seven literals are a third object pool
+  (object 0x1C on, retail 0x290 on), rebound by
+  `config/normalizations/overlay8P4CF0.rebind.spec` to an absolute anchor
+  `gOverlay8P4CF0Constants = 0x274`, with the TU's `.rodata` digest updated
+  in `mk/overlays.mk`.
 
 ## 2026-10-01 lane a-o008: 39 to 1, and the decision variable
 

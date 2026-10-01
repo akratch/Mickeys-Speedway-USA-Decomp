@@ -257,23 +257,23 @@ Text outside the markers remains authored and is preserved byte-for-byte.
 > `config/nonmatching-ranking.us.json`. Do not edit this region by hand;
 > `--check-doc` and `gmake check-docs` fail on any drift.
 
-The snapshot contains **177 queued identities**: **177 resolved measurements** and **0 unresolved identities**. Resolved target size totals **278,824 bytes (272.3 KiB)**.
+The snapshot contains **176 queued identities**: **176 resolved measurements** and **0 unresolved identities**. Resolved target size totals **275,292 bytes (268.8 KiB)**.
 
 Resolved rows span **52 overlays** and **1 resident TU group** (`main`).
 
-A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 177** resolved rows.
+A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 176** resolved rows.
 
-Persisted configured-TU input evidence covers **177 / 177** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
+Persisted configured-TU input evidence covers **176 / 176** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
 
-Relocation-masked mismatch evidence covers **177 / 177** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
+Relocation-masked mismatch evidence covers **176 / 176** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
 
 ### Category distribution
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
 | `register-only` | 1 | 0.6% |
-| `other` | 99 | 55.9% |
-| `size-mismatch` | 77 | 43.5% |
+| `other` | 99 | 56.2% |
+| `size-mismatch` | 76 | 43.2% |
 
 ### Differing-word thresholds
 
@@ -462,15 +462,14 @@ units remain distinct.
 | 166 | `src/overlays/o001/func_overlay_001_F0001D78_184E158.c` | `func_overlay_001_F0001D78_184E158` | `o001` | `size-mismatch` | 2,508 | 587 | 584 | 0 | 0 | -112 | — |
 | 167 | `src/overlays/o057/func_overlay_057_F0001020_18A4C18.c` | `func_overlay_057_F0001020_18A4C18` | `o057` | `size-mismatch` | 2,392 | 585 | 585 | 0 | 0 | -32 | — |
 | 168 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `size-mismatch` | 2,696 | 593 | 593 | 0 | 0 | 28 | — |
-| 169 | `src/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c` | `func_overlay_057_F0001AE8_18A56E0` | `o057` | `size-mismatch` | 3,532 | 645 | 614 | 4 | 352 | -132 | — |
-| 170 | `src/overlays/o053/func_overlay_053_F0000240_189DBE8.c` | `func_overlay_053_F0000240_189DBE8` | `o053` | `size-mismatch` | 2,544 | 636 | 636 | 0 | 0 | -112 | — |
-| 171 | `src/main/anim.c` | `func_800563B4` | `main` | `size-mismatch` | 2,596 | 637 | 637 | 28 | 28 | -160 | — |
-| 172 | `src/main/track.c` | `func_80010B4C` | `main` | `size-mismatch` | 2,712 | 662 | 662 | 0 | 0 | 56 | — |
-| 173 | `src/main/vehicle_sounds.c` | `func_8005830C` | `main` | `size-mismatch` | 3,048 | 698 | 697 | 8 | 8 | -16 | — |
-| 174 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `size-mismatch` | 3,040 | 756 | 755 | 16 | 16 | 24 | — |
-| 175 | `src/main/anim.c` | `func_80053868` | `main` | `size-mismatch` | 4,820 | 1,170 | 1,169 | 12 | 12 | -240 | — |
-| 176 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 1,593 | 1,580 | 4 | 4 | 4 | — |
-| 177 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,785 | 1,782 | 0 | 0 | -332 | — |
+| 169 | `src/overlays/o053/func_overlay_053_F0000240_189DBE8.c` | `func_overlay_053_F0000240_189DBE8` | `o053` | `size-mismatch` | 2,544 | 636 | 636 | 0 | 0 | -112 | — |
+| 170 | `src/main/anim.c` | `func_800563B4` | `main` | `size-mismatch` | 2,596 | 637 | 637 | 28 | 28 | -160 | — |
+| 171 | `src/main/track.c` | `func_80010B4C` | `main` | `size-mismatch` | 2,712 | 662 | 662 | 0 | 0 | 56 | — |
+| 172 | `src/main/vehicle_sounds.c` | `func_8005830C` | `main` | `size-mismatch` | 3,048 | 698 | 697 | 8 | 8 | -16 | — |
+| 173 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `size-mismatch` | 3,040 | 756 | 755 | 16 | 16 | 24 | — |
+| 174 | `src/main/anim.c` | `func_80053868` | `main` | `size-mismatch` | 4,820 | 1,170 | 1,169 | 12 | 12 | -240 | — |
+| 175 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 1,593 | 1,580 | 4 | 4 | 4 | — |
+| 176 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,785 | 1,782 | 0 | 0 | -332 | — |
 
 ### Unresolved identities
 

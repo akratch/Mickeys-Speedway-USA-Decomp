@@ -318,7 +318,7 @@ units remain distinct.
 | 22 | `src/overlays/o031/overlay31BuildLookupTables.c` | `func_overlay_031_F0000000_187F520` | `o031` | `other` | 744 | 86 | 86 | 52 | 52 | 0 | — |
 | 23 | `src/overlays/o015/overlay_015.c` | `overlay15InitStars` | `o015` | `other` | 760 | 89 | 89 | 124 | 124 | 0 | — |
 | 24 | `src/overlays/o038/func_overlay_038_F000047C_188618C.c` | `func_overlay_038_F000047C_188618C` | `o038` | `other` | 876 | 90 | 90 | 192 | 192 | 0 | — |
-| 25 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 94 | 94 | 0 | 0 | 0 | — |
+| 25 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 93 | 92 | 44 | 44 | 0 | — |
 | 26 | `src/main/models.c` | `func_80020B10` | `main` | `other` | 636 | 102 | 102 | 12 | 12 | 0 | — |
 | 27 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 103 | 103 | 20 | 20 | 0 | — |
 | 28 | `src/overlays/o035/func_overlay_035_F0000B40_1882820.c` | `func_overlay_035_F0000B40_1882820` | `o035` | `other` | 2,112 | 104 | 103 | 164 | 164 | 0 | — |

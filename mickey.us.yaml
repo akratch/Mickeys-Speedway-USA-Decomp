@@ -1011,6 +1011,8 @@ segments:
       - [0x185DD58, c, overlay_008]
       - [0x1862E80, asm, overlay_008_padding]
       - [0x1862E88, bin, overlay_008_data_rodata]
+      - [0x1863268, .data, overlay8EffectTables]
+      - [0x18633A8, bin, overlay_008_data_rodata_520]
       - [0x1865200, .data, overlay8MotionConstants]
       - [0x18652A0, bin, overlay_008_data_rodata_2418]
       - [0x18653B8, bin, overlay_008_reloc1]

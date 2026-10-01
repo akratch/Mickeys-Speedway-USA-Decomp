@@ -3230,6 +3230,11 @@ overlay91EndRenderReloc = 0xf0000000;
 overlay91GetDimensionsReloc = 0xf0000000;
 overlay91RenderObjectReloc = 0xf0000000;
 
+/* overlay 92: overlay92FindNearestCourse.c.o */
+gOverlay92DistanceParameters = 0x00000000;
+overlay92GetObjectRange = 0xf0000000;
+sqrtf_o092Reloc = 0xf0000000;
+
 /* overlay 93: overlay_093.c.o */
 overlay93EmitReloc = 0xf0000000;
 overlay93FindTargetReloc = 0xf0000000;

@@ -7597,6 +7597,20 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
+      "object": "build/src/overlays/o092/overlay92FindNearestCourse.c.o",
+      "offset": 104,
+      "overlay": 92,
+      "size": 672,
+      "source": "src/overlays/o092/overlay92FindNearestCourse.c",
+      "tools": [
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o092/overlay92Init.c.o",
       "offset": 0,
       "overlay": 92,
@@ -9199,10 +9213,10 @@
     "altered_bytes": 3600,
     "by_class": {
       "altered": 2,
-      "metadata": 636,
+      "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 225016,
-    "objects_with_postprocess": 639
+    "matched_c_bytes_with_postprocess": 225688,
+    "objects_with_postprocess": 640
   }
 }

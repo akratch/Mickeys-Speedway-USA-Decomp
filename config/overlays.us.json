@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 258668,
-  "nonmatching_overlay_c_bytes": 209940,
+  "matched_overlay_c_bytes": 259340,
+  "nonmatching_overlay_c_bytes": 209268,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 3600,
   "bss_bytes": 77680,
@@ -17816,7 +17816,7 @@
      "type": "c",
      "source": "overlays/o092/overlay92FindNearestCourse",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x308",

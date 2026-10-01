@@ -56,162 +56,109 @@ extern void overlay57Call3960Reloc(void *item, s32 x, s32 y, s32 z);
 extern void overlay57Call39B0Reloc(void *item, s32 x, s32 y, s32 z);
 extern void overlay57Call39D0Reloc(void *item, s32 x, s32 y, s32 z);
 extern void overlay57Call39F0Reloc(void *item, s32 x, s32 y, s32 z);
-extern void o57SelectionSetNodeValueReloc(s32 id, s32 argument, f32 value);
+extern void overlay57SetNodeValue(s32 id, s32 argument, f32 value);
 
-/* Overlay 57 text +0x35E0..+0x3A4C. */
-/* Plateau: -O2/-mips2 is exact-size, 162 masked (166 raw) words, first +0x4C.
- * Ten cache/sentinel/volatile/split-read shapes tied or missed size/register order.
- * A 45m MIPS2 permuter found no zero; best 4620 mixed direct/pointer/literal use.
- *
- * The decision variable is the READ COUNT on the primary-state address: the
- * target performs seven, the candidate nine.  The two surplus reads are the
- * head region, where the target shares one read across three comparisons.
- * Every measured way of sharing it removes far more than two: dropping the
- * volatile removes eight (delta -8, 275 words), caching the value in a local
- * removes sixteen (delta -16, 263), caching only the inner pair removes eight
- * (245), and reading through a second non-volatile pointer to the same object
- * removes eight (246).  So the two reads are not independently removable --
- * sharing one read collapses the whole comparison chain with it.
- *
- * Unlike the two siblings this is not a colouring residual: 88 of the 283 rows
- * differ in OPCODE, not just in register, so the branch and schedule shape
- * itself is different and there is no ring or web story to chase here. */
-#ifdef NON_MATCHING
-void overlay57UpdateSelection(s32 ignored) {
+/* Overlay 57 text +0x35E0..+0x3A4C. Matched 2026-10-01 (lane d-o057) from 162
+ * masked words by discarding the inherited shape: no volatile primary-state
+ * pointer and no sentinel local (uopt shares the one read across the head
+ * comparisons itself), the id walks are `while (*list != -1)` with the list
+ * read at each use, the tail is three early returns rather than an else-if
+ * chain (which is what keeps the float literals and the table base out of
+ * callee-saved registers), and the published index is read back after the
+ * store. The two trailing locals are frame cells (L99). */
+void overlay57UpdateSelection(s32 updateRate) {
     s32 newPrimary;
     s32 newSecondary;
-    volatile s32 *primaryState;
     Overlay57SelectionResult *result;
-    s32 sentinel;
-    volatile s32 *list;
+    s32 *list;
     s32 entry;
+    s32 unused1;
+    s32 unused2;
 
-    (void)ignored;
     if (overlay57Call35F8Reloc() != 2) {
         return;
     }
-
     gO57SelectionActive144Reloc = 1;
     overlay57Call3618Reloc(&newPrimary, &newSecondary);
-    primaryState = &gO57SelectionPrimary4E8Reloc;
-    sentinel = -1;
-
-    if ((newPrimary != *primaryState) ||
+    if ((newPrimary != gO57SelectionPrimary4E8Reloc) ||
         (newSecondary != gO57SelectionSecondary4ECReloc)) {
-        if ((*primaryState != 0xFF) &&
-            (newPrimary != *primaryState)) {
+        if ((gO57SelectionPrimary4E8Reloc != 0xFF) &&
+            (newPrimary != gO57SelectionPrimary4E8Reloc)) {
             list = gO57SelectionIds134Reloc;
-            while ((entry = *list) != sentinel) {
-                if (entry == *primaryState) {
-                    result = overlay57Call3684Reloc((u8)entry);
-                    if (result != 0) {
-                        if ((result->child != 0) &&
-                            (newSecondary != result->child->selector3B)) {
-                            o57SelectionSetNodeValueReloc(
-                                entry, gO57SelectionValues17CReloc[entry],
-                                0.007f);
-                        }
+            while (*list != -1) {
+                if (*list == gO57SelectionPrimary4E8Reloc) {
+                    result = overlay57Call3684Reloc(*list);
+                    if ((result != NULL) && (result->child != NULL) &&
+                        (newSecondary != result->child->selector3B)) {
+                        overlay57SetNodeValue(*list, gO57SelectionValues17CReloc[*list], 0.007f);
                     }
                 }
                 list++;
             }
         }
-
         if (newPrimary != 0xFF) {
-            if (overlay57Call36F4Reloc((u8)newPrimary) != 0) {
-                o57SelectionSetNodeValueReloc(newPrimary, newSecondary, 0.01f);
+            if (overlay57Call36F4Reloc(newPrimary) != NULL) {
+                overlay57SetNodeValue(newPrimary, newSecondary, 0.01f);
                 gO57SelectionChanging4F0Reloc = 1;
             }
         }
-        *primaryState = newPrimary;
+        gO57SelectionPrimary4E8Reloc = newPrimary;
         gO57SelectionSecondary4ECReloc = newSecondary;
     }
 
-    if ((gO57SelectionChanging4F0Reloc != 0) &&
-        (*primaryState != 0xFF)) {
-        result = overlay57Call3758Reloc((u8)*primaryState);
-        if (result != 0) {
-            if (gO57SelectionValue10CReloc.value < result->child->value28) {
-                gO57SelectionChanging4F0Reloc = 0;
-                list = gO57SelectionIds134Reloc;
-                while ((entry = *list) != sentinel) {
-                    if (entry == *primaryState) {
-                        o57SelectionSetNodeValueReloc(
-                            entry, gO57SelectionValues17CReloc[entry], 0.007f);
-                    }
-                    list++;
+    if ((gO57SelectionChanging4F0Reloc != 0) && (gO57SelectionPrimary4E8Reloc != 0xFF)) {
+        result = overlay57Call3758Reloc(gO57SelectionPrimary4E8Reloc);
+        if ((result != NULL) && (gO57SelectionValue10CReloc.value < result->child->value28)) {
+            gO57SelectionChanging4F0Reloc = 0;
+            list = gO57SelectionIds134Reloc;
+            while (*list != -1) {
+                if (*list == gO57SelectionPrimary4E8Reloc) {
+                    overlay57SetNodeValue(*list, gO57SelectionValues17CReloc[*list], 0.007f);
                 }
+                list++;
             }
         }
     }
 
-    if (overlay57Call37E0Reloc() != sentinel) {
+    if (overlay57Call37E0Reloc() != -1) {
         list = gO57SelectionIds134Reloc;
-        while ((entry = *list) != sentinel) {
-            o57SelectionSetNodeValueReloc(
-                entry, gO57SelectionValues158Reloc[entry], 0.01f);
+        while (*list != -1) {
+            overlay57SetNodeValue(*list, gO57SelectionValues158Reloc[*list], 0.01f);
             list++;
         }
         gO57SelectionState118Reloc = 4;
         gO57SelectionTimer120Reloc = 10;
         return;
     }
-
-    if (((gOverlay57Flags37ECReloc & 0x4000) != 0) &&
-        (gO57SelectionDistance50CReloc == 0)) {
+    if ((gOverlay57Flags37ECReloc & 0x4000) && (gO57SelectionDistance50CReloc == 0)) {
         overlay57Call3880Reloc(0xD, 0);
         overlay57Call3888Reloc(0);
         gO57SelectionState118Reloc = 5;
         gO57SelectionMode11CReloc = 0;
         return;
     }
-
     entry = overlay57Call38ACReloc();
-    primaryState = gO57SelectionCurrent100Reloc;
-    if (entry == *primaryState) {
+    if (entry == gO57SelectionCurrent100Reloc[0]) {
         return;
     }
-
     if (gOverlay57Mode38C4Reloc == 1) {
-        if ((gOverlay57Threshold38D8Reloc < -16) &&
-            (gO57SelectionDistance50CReloc == 0)) {
-            overlay57Call3920Reloc(
-                ((void **)gO57SelectionList8Reloc)[entry], -160, 190, 4);
+        if ((gOverlay57Threshold38D8Reloc < -16) && (gO57SelectionDistance50CReloc == 0)) {
+            overlay57Call3920Reloc(((void **)gO57SelectionList8Reloc)[entry], -0xA0, 0xBE, 4);
         } else {
-            overlay57Call3940Reloc(
-                ((void **)gO57SelectionList8Reloc)[entry], 480, 190, 4);
+            overlay57Call3940Reloc(((void **)gO57SelectionList8Reloc)[entry], 0x1E0, 0xBE, 4);
         }
-        overlay57Call3960Reloc(
-            ((void **)gO57SelectionList8Reloc)[*primaryState], 160, 260, 260);
+        overlay57Call3960Reloc(((void **)gO57SelectionList8Reloc)[gO57SelectionCurrent100Reloc[0]], 0xA0, 0x104, 0x104);
     } else {
-        if ((gOverlay57Threshold3970Reloc < -16) &&
-            (gO57SelectionDistance50CReloc == 0)) {
-            overlay57Call39B0Reloc(
-                ((void **)gO57SelectionList30Reloc)[entry], -160, 190, 4);
+        if ((gOverlay57Threshold3970Reloc < -16) && (gO57SelectionDistance50CReloc == 0)) {
+            overlay57Call39B0Reloc(((void **)gO57SelectionList30Reloc)[entry], -0xA0, 0xBE, 4);
         } else {
-            overlay57Call39D0Reloc(
-                ((void **)gO57SelectionList30Reloc)[entry], 480, 190, 4);
+            overlay57Call39D0Reloc(((void **)gO57SelectionList30Reloc)[entry], 0x1E0, 0xBE, 4);
         }
-        overlay57Call39F0Reloc(
-            ((void **)gO57SelectionList30Reloc)[*primaryState], 160, 260, 260);
+        overlay57Call39F0Reloc(((void **)gO57SelectionList30Reloc)[gO57SelectionCurrent100Reloc[0]], 0xA0, 0x104, 0x104);
     }
-
-    gO57SelectionPrevious108Reloc = *primaryState;
-    *primaryState = entry;
+    gO57SelectionPrevious108Reloc = gO57SelectionCurrent100Reloc[0];
+    gO57SelectionCurrent100Reloc[0] = entry;
     gO57SelectionValue10CReloc.word = gO57SelectionPending104Reloc;
     gO57SelectionPending104Reloc = 0xFF;
-    gOverlay57PublishedIndex3A28Reloc = entry;
+    gOverlay57PublishedIndex3A28Reloc = gO57SelectionCurrent100Reloc[0];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o057/overlay57UpdateSelection/func_overlay_057_F00035E0_18A71D8.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay57UpdateSelection:start
- * symbol: overlay57UpdateSelection
- * score: 162/283 words
- * frame: 0x48
- * relocations: 89
- * first-mismatch: +0x4C
- * summary: The named variable is the read count on the primary-state address, seven in the target against nine here, the surplus being the head region where the target shares one read across three comparisons; four further shapes were measured and each removes eight or sixteen reads rather than two, and 88 of the 283 rows differ in opcode rather than register, so this is a branch and schedule shape difference and not a colouring residual.
- * PLATEAU-HANDOFF:overlay57UpdateSelection:end
- */

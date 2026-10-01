@@ -2315,9 +2315,43 @@ o57Draw32A0Stripe2Reloc = 0xf0000000;
 o57Draw32A0Stripe3Reloc = 0xf0000000;
 
 /* overlay 57: overlay57UpdateSelection.c.o */
-D_104 = 0x00000104;
-D_4E8 = 0x000004e8;
-D_50C = 0x0000050c;
+gO57SelectionActive144Reloc = 0x00000144;
+gO57SelectionChanging4F0Reloc = 0x000004f0;
+gO57SelectionCurrent100Reloc = 0x00000100;
+gO57SelectionDistance50CReloc = 0x0000050c;
+gO57SelectionIds134Reloc = 0x00000134;
+gO57SelectionList30Reloc = 0x00000030;
+gO57SelectionList8Reloc = 0x00000008;
+gO57SelectionMode11CReloc = 0x0000011c;
+gO57SelectionPending104Reloc = 0x00000104;
+gO57SelectionPrevious108Reloc = 0x00000108;
+gO57SelectionPrimary4E8Reloc = 0x000004e8;
+gO57SelectionSecondary4ECReloc = 0x000004ec;
+gO57SelectionState118Reloc = 0x00000118;
+gO57SelectionTimer120Reloc = 0x00000120;
+gO57SelectionValue10CReloc = 0x0000010c;
+gO57SelectionValues158Reloc = 0x00000158;
+gO57SelectionValues17CReloc = 0x0000017c;
+gOverlay57Flags37ECReloc = 0x00000000;
+gOverlay57Mode38C4Reloc = 0x00000000;
+gOverlay57PublishedIndex3A28Reloc = 0x00000000;
+gOverlay57Threshold38D8Reloc = 0x00000000;
+gOverlay57Threshold3970Reloc = 0x00000000;
+overlay57Call35F8Reloc = 0xf0000000;
+overlay57Call3618Reloc = 0xf0000000;
+overlay57Call3684Reloc = 0xf0000000;
+overlay57Call36F4Reloc = 0xf0000000;
+overlay57Call3758Reloc = 0xf0000000;
+overlay57Call37E0Reloc = 0xf0000000;
+overlay57Call3880Reloc = 0xf0000000;
+overlay57Call3888Reloc = 0xf0000000;
+overlay57Call38ACReloc = 0xf0000000;
+overlay57Call3920Reloc = 0xf0000000;
+overlay57Call3940Reloc = 0xf0000000;
+overlay57Call3960Reloc = 0xf0000000;
+overlay57Call39B0Reloc = 0xf0000000;
+overlay57Call39D0Reloc = 0xf0000000;
+overlay57Call39F0Reloc = 0xf0000000;
 
 /* overlay 57: overlay57UpdateModeState.c.o */
 gO57ModeChoice4F8 = 0x000004f8;
@@ -2497,7 +2531,9 @@ o57MiddleO84F0001350Reloc = 0xf0000000;
 o57MiddleO84F0001398Reloc = 0xf0000000;
 
 /* overlay 57: func_overlay_057_F00060F8_18A9CF0.c.o */
+D_104 = 0x00000104;
 D_11C = 0x0000011c;
+D_50C = 0x0000050c;
 
 /* overlay 57: overlay57SetNodeValue.c.o */
 overlay57ConfigureNodeReloc = 0xf0000000;

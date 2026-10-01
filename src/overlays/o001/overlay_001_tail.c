@@ -175,33 +175,36 @@ extern O1ControlPoint *D_214;
 extern s32 D_1D94;
 extern Overlay1ValueRow D_1BA8[];
 
-extern f32 overlay1RandomWave(s32 value);
-extern O1ChoiceObject **overlay1GetChoiceObjects(s32 *count);
-extern void overlay1SubmitChoice(O1ChoiceObject *object);
+f32 func_8002A8BC(s32 angle);
+extern void **func_80005750(s32 *count);
+extern void overlay36CallModeZero(void *object);
 extern void overlay1InterpolatePath(f32 *outX, f32 *outZ, s32 path,
                                     f32 offset);
-extern O1ChoiceObject *overlay1FindChoice(f32 progress,
-                                         O1ControlTable *table,
-                                         s32 minimum, s32 *scores);
-extern f32 overlay1MeasureChoice(f32 first, f32 second);
+extern O1ChoiceObject *overlay1FindType47ByAngle(f32 angle);
+extern f32 overlay1WrapOffset(f32 first, f32 second);
 
 #define CHOICE_WORLD ((O1ChoiceState *)D_1DA0)
 
-/* PLATEAU (B3-o001, 2026-09-23): 139 masked words at size delta 0 with the
- * 0x90 frame's home ladder exact (was 341 at delta +4). The four `D_E8`..`D_F4`
- * externs were rodata literals (-1.2f, 400.5f, 0.1f, 0.1f at overlay-local
- * base 0x8230 plus the addend), which stops three address webs being hoisted.
- * The object loop guards on a `loopValue` copy and moves its cursor at the
- * bottom; the step is an if/else on the reloaded selector with `value`
- * assigned after it (the target's copy); the FindChoice sentinel is a literal
- * with `value` set before the selection loop; FindChoice's result goes through
- * `object`, which puts the state pointer in a0 across MeasureChoice. `i`,
- * `selected`, `weight` and `chosenState` are declared where the target's homes
- * put them, and `found` and `pad1` hold slots. What is left is register naming,
- * led by the transition weight: the target stores the product from a ring temp
- * and reloads it into f0, where ours colours it f12 and spills. */
-#ifdef NON_MATCHING
-void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
+/* Matched 2026-10-01 (lane d-o001) by discarding the inherited shape, from
+ * 139 (B3-o001) through 63 to 0. Kept from B3: the -1.2f/400.5f/0.1f
+ * literals (as externs the object loop hoists three address webs) and the
+ * `loopValue` copies of the old count. What closed it:
+ *  - the selection maximum lives in `step`, not in `value`: one variable for
+ *    the object-loop index and the maximum was one web, which took a0 where
+ *    the target has the index in a0 and the maximum in a1 (63 to 4, together
+ *    with FindType47ByAngle's result going to `object`).
+ *  - the score initialiser and the two loops after the object loop are
+ *    `for (i = 7; ; )` with an `if (loopValue == 0) break` tail; as
+ *    `do`/`while` the `i = 7` store lands ahead of the hoisted loads in the
+ *    preheader (4 to 0).
+ *  - the object loop is indexed (`object = objects[i]`), the score decay's
+ *    absolute value is a ternary, MeasureChoice's argument is inline, the
+ *    transition step reads `D_1D94 * 8` twice, and the selection loop is a
+ *    `for`.
+ *  - callee identities are the shipped ones: FindType47ByAngle takes only
+ *    the progress, the wave is func_8002A8BC, the object list
+ *    func_80005750, and the submit call is overlay 36's CallModeZero. */
+void overlay1ChoosePath(f32 *outX, f32 *outZ) {
     s32 i;
     s32 selected;
     O1ChoiceState *otherState;
@@ -222,16 +225,15 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
     s32 pad1;
 
     if (CHOICE_WORLD->transition != 0) {
-        weight = (overlay1RandomWave((CHOICE_WORLD->transition << 7) + 0x8000) +
+        weight = (func_8002A8BC((CHOICE_WORLD->transition << 7) + 0x8000) +
                   1.0f) * 0.5f;
         overlay1InterpolatePath(outX, outZ, CHOICE_WORLD->previousSelector, 0.5f);
         overlay1InterpolatePath(&temporaryX, &temporaryZ, CHOICE_WORLD->selector,
                                 0.5f);
         *outX = ((*outX - temporaryX) * weight) + temporaryX;
         *outZ = ((*outZ - temporaryZ) * weight) + temporaryZ;
-        value = D_1D94 * 8;
-        if (CHOICE_WORLD->transition >= value) {
-            CHOICE_WORLD->transition -= value;
+        if (CHOICE_WORLD->transition >= D_1D94 * 8) {
+            CHOICE_WORLD->transition -= D_1D94 * 8;
         } else {
             CHOICE_WORLD->transition = 0;
         }
@@ -260,22 +262,21 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
         return;
     }
 
-    i = 7;
-    do {
+    for (i = 7; ; ) {
         difference = (f32)(i - CHOICE_WORLD->selector);
-        if (difference < 0.0f) difference = -difference;
+        if (difference < 0) difference = -difference;
         scores[i] = (s32)(48.0f - difference * 6.0f);
         loopValue = i;
         i--;
-    } while (loopValue != 0);
+        if (loopValue == 0) break;
+    }
 
-    objects = overlay1GetChoiceObjects(&i);
+    objects = (O1ChoiceObject **)func_80005750(&i);
     loopValue = i;
     i--;
     if (loopValue != 0) {
-        cursor = objects + i;
         do {
-            object = *cursor;
+            object = objects[i];
             otherState = object->state;
             if (otherState != CHOICE_WORLD && !(otherState->flags & 8)) {
                 difference =
@@ -291,14 +292,9 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
                     }
                     value = otherState->selector;
                     do {
-                        if (difference > 0.0f) {
-                            weight = difference;
-                        } else {
-                            weight = -difference;
-                        }
                         scores[value] =
                             (s32)((f32)scores[value] -
-                                  ((2.0f - weight) * 64.0f));
+                                  ((2.0f - ((difference > 0.0f) ? difference : -difference)) * 64.0f));
                         value += step;
                     } while (value >= 0 && value < 8);
                 }
@@ -309,35 +305,32 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
                               400.5f);
                 }
             }
-            cursor--;
             loopValue = i;
             i--;
         } while (loopValue != 0);
     }
 
-    table = D_1D68Read;
-    i = 7;
-    do {
+    for (table = D_1D68Read, i = 7; ; ) {
         scores[i] += table->points[i].enabled;
         loopValue = i;
         i--;
-    } while (loopValue != 0);
+        if (loopValue == 0) break;
+    }
 
-    i = 7;
-    do {
+    for (i = 7; ; ) {
         if (table->points[i].enabled == 0) scores[i] = -1000000;
         loopValue = i;
         i--;
-    } while (loopValue != 0);
+        if (loopValue == 0) break;
+    }
 
     if (CHOICE_WORLD->active != 0 && CHOICE_WORLD->mode == 6) {
-        object = overlay1FindChoice(CHOICE_WORLD->progress, table, -1000000, scores);
+        object = overlay1FindType47ByAngle(CHOICE_WORLD->progress);
         if (object != 0) {
             chosenState = object->state;
-            weight = (f32)chosenState->objectValue * 0.1f;
-            difference = overlay1MeasureChoice(weight, CHOICE_WORLD->progress);
+            difference = overlay1WrapOffset((f32)chosenState->objectValue * 0.1f, CHOICE_WORLD->progress);
             if (difference < 0.1f) {
-                overlay1SubmitChoice(D_1D9C);
+                overlay36CallModeZero(D_1D9C);
             } else if (difference < 3.0f) {
                 scores[chosenState->scoreIndex] += 1000;
             }
@@ -345,19 +338,17 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
     }
 
     selected = -1;
-    value = -1000000;
-    i = 0;
-    do {
-        if (value < scores[i]) {
+    step = -1000000;
+    for (i = 0; i < 8; i++) {
+        if (step < scores[i]) {
             selected = i;
-            value = scores[i];
+            step = scores[i];
             D_208 = &D_1D60->points[i];
             D_20C = &((O1ControlTable *)D_1D64)->points[i];
             D_210 = &D_1D68->points[i];
             D_214 = &D_1D6C->points[i];
         }
-        i++;
-    } while (i < 8);
+    }
 
     overlay1InterpolatePath(outX, outZ, CHOICE_WORLD->selector, 0.5f);
     if (selected != -1 && selected != CHOICE_WORLD->selector) {
@@ -367,9 +358,6 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
     }
 }
 
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F0003750_184FB30.s")
-#endif
 
 #undef CHOICE_WORLD
 
@@ -905,54 +893,62 @@ extern void *LOCAL_BSS_1BA4;
 extern void *LOCAL_BSS_1D9C;
 
 /* Typed reconstruction remains NON_MATCHING. The object/state and callback
- * layouts follow Mickey's runtime identities and access widths. Local
- * lifetime cleanup reduces the frame; remaining CFG and allocation work
- * is measured separately in the function handoff. */
+ * layouts follow Mickey's runtime identities and access widths.
+ * 2026-10-01 (d-o001): the declarations are in the order the target's home
+ * ladder implies -- every spilled local at its shipped slot, register-only
+ * locals and pads filling the gaps -- and frame_census now reads both
+ * ladders identical (1113 to 1079). The path loop is a `for` over a pointer
+ * and an index, the deceleration reads forwardVelocity directly, and the
+ * m2c gotos are gone (1066). The surface loop uses the same `loopValue`
+ * copy as overlay1ChoosePath's loops (1061). Remaining CFG and allocation
+ * work is measured in the function handoff. */
 #ifdef NON_MATCHING
 void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) {
+    s32 pad0;
     f32 *tuning;
     O1PhysicsSurface surfaces[8];
     f32 normal[3];
     s16 angles[3];
     f32 targetX;
     f32 targetZ;
-    s32 remaining;
-    f32 limit;
-    f32 velocityX;
-    f32 inverseUpdate;
-    f32 deltaY;
-    f32 impulseX;
-    f32 impulseY;
-    f32 impulseZ;
-    f32 scale;
-    s16 heading;
-    s16 targetHeading;
-    s16 pathHeading;
-    f32 speed;
-    s16 resolvedX;
-    s16 resolvedZ;
-    void (*callback)(void);
-    O1PhysicsPathMode *path;
-    O1PhysicsActionMode *action;
     f32 value;
     f32 work;
     f32 deltaX;
     f32 deltaZ;
+    s32 remaining;
     f32 value2;
     f32 ceiling;
-    f32 velocityZ;
     O1PhysicsState *state;
-    s16 clampedAngle;
     s32 (*predicate)(void);
+    f32 limit;
+    f32 velocityX;
+    f32 velocityZ;
+    f32 inverseUpdate;
     u32 surfaceCount;
-    s32 collision;
+    f32 deltaY;
     s32 angleOffset;
+    f32 impulseX;
+    f32 impulseY;
+    f32 impulseZ;
     s32 keys;
-    s32 index;
+    f32 scale;
+    s16 heading;
+    s16 targetHeading;
+    s16 pathHeading;
+    s16 clampedAngle;
     s32 applySlope;
     s32 steering;
     s32 level;
+    f32 speed;
     O1PhysicsSurface *surface;
+    s32 index;
+    void (*callback)(void);
+    s32 collision;
+    O1PhysicsPathMode *path;
+    O1PhysicsActionMode *action;
+    s16 resolvedX;
+    s16 resolvedZ;
+    s32 loopValue;
 
     state = object->state;
     if (func_overlay_001_F00004B4_184C894(object) != 0) {
@@ -960,7 +956,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         G_rt_458c4 = *tuning;
         if (gOverlay1Mode == 1) {
             if ((G_rt_43a3c == 0) && (state->joypadDisabled == 0) && (state->spinTimer == 0) && !(state->flags1A8 & 8)) {
-                if (state->pathIndex != state->previousPathIndex) {
+                if (state->previousPathIndex != state->pathIndex) {
                     state->previousPathIndex = state->pathIndex;
                     state->stuckTimer = 0;
                 } else {
@@ -970,10 +966,9 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
                     if (state->reset170 == 0) {
                         state->reset170 = 1U;
                     }
-                    goto block_13;
+                    state->stuckTimer = 0;
                 }
             } else {
-block_13:
                 state->stuckTimer = 0;
             }
         }
@@ -985,31 +980,29 @@ block_13:
         D_4 = (f32) updateRate;
         speed = -state->forwardVelocity;
         func_overlay_008_F00049DC_1862734(NULL);
-        value = -31.99f;
         object->flags80 = 0;
         state->controlXjoy = 0;
         state->controlYjoy = 0;
         state->controlKeys = 0;
         state->controlDkeys = 0;
-        if (state->forwardVelocity < value) {
-            state->forwardVelocity = value;
+        if (state->forwardVelocity < -31.99f) {
+            state->forwardVelocity = -31.99f;
         }
-        work = 31.99f;
-        if (work < state->forwardVelocity) {
-            state->forwardVelocity = work;
+        if (31.99f < state->forwardVelocity) {
+            state->forwardVelocity = 31.99f;
         }
-        if (state->sideVelocity < value) {
-            state->sideVelocity = value;
+        if (state->sideVelocity < -31.99f) {
+            state->sideVelocity = -31.99f;
         }
-        if (work < state->sideVelocity) {
-            state->sideVelocity = work;
+        if (31.99f < state->sideVelocity) {
+            state->sideVelocity = 31.99f;
         }
         func_8001D910(object, state);
         angles[0] = -state->heading;
         angles[1] = -object->rotationY;
+        angles[2] = -object->rotationZ;
         normal[2] = 0.0f;
         normal[0] = 0.0f;
-        angles[2] = -object->rotationZ;
         normal[1] = -1.0f;
         func_80029F2C(angles, normal);
         state->normalX = normal[0];
@@ -1019,17 +1012,19 @@ block_13:
         ceiling = -32768.0f;
         index = surfaceCount - 1;
         state->surfaceHeight = -32768.0f;
-        if (surfaceCount != NULL) {
+        if (surfaceCount != 0) {
             surface = &surfaces[index];
             do {
                 if (surface->flags & 0x10000) {
-                    state->surfaceHeight = (f32) surface->height;
+                    state->surfaceHeight = surface->height;
                 }
                 if (surface->flags & 0x08000000) {
                     ceiling = surface->height;
                 }
-                surface -= 1;
-            } while (index--);
+                surface--;
+                loopValue = index;
+                index--;
+            } while (loopValue != 0);
         }
         value2 = state->surfaceHeight;
         if (object->y < value2) {
@@ -1051,20 +1046,14 @@ block_13:
         if ((s32) level >= 0xB) {
             level = 0xA;
         }
-        path = &gO1PhysicsPaths[1];
-        index = 1;
         limit = (tuning[16] + ((f32) level * tuning[2])) * state->speedScale;
-        do {
-            predicate = path->test;
-            if ((predicate != NULL) && (path->mask & (1 << state->pathMode))) {
-
-                if (predicate() != 0) {
-                    state->pathMode = (u8) index;
+        for (index = 1, path = &gO1PhysicsPaths[1]; index != 4; index++, path++) {
+            if ((path->test != NULL) && (path->mask & (1 << state->pathMode))) {
+                if (path->test() != 0) {
+                    state->pathMode = index;
                 }
             }
-            index += 1;
-            path++;
-        } while (index != 4);
+        }
         gO1PhysicsPaths[state->pathMode].position(&targetX, &targetZ);
         if (D_1BA4 != NULL) {
 
@@ -1264,28 +1253,26 @@ block_13:
                             value2 = 0.5f;
                         }
                     } else {
-                        value2 = state->forwardVelocity;
-                        if (value2 > 0.0f) {
-                            index = (s32) value2;
-                            scale = value2 - (f32) index;
+                        if (state->forwardVelocity > 0.0f) {
+                            index = (s32) state->forwardVelocity;
+                            scale = state->forwardVelocity - (f32) index;
                         } else {
-                            work = -value2;
+                            work = -state->forwardVelocity;
                             index = (s32) work;
                             scale = work - (f32) index;
                         }
                         work = tuning[index + 17];
                         value2 = ((tuning[index + 18] - work) * scale) + work;
                     }
-                    if (state->forwardVelocity < (-limit)) {
-                        state->forwardVelocity = (f32) (state->forwardVelocity * 0.99f);
-                        if ((-limit) < state->forwardVelocity) {
-                            goto block_160;
+                    if (state->forwardVelocity < -limit) {
+                        state->forwardVelocity *= 0.99f;
+                        if (-limit < state->forwardVelocity) {
+                            state->forwardVelocity = -limit;
                         }
                     } else {
-                        state->forwardVelocity = (f32) (state->forwardVelocity - (value2 * state->speedScale));
-                        if (state->forwardVelocity < (-limit)) {
-block_160:
-                            state->forwardVelocity = (-limit);
+                        state->forwardVelocity -= value2 * state->speedScale;
+                        if (state->forwardVelocity < -limit) {
+                            state->forwardVelocity = -limit;
                         }
                     }
                     if ((gOverlay1Mode == 1) && (G_offd_31a4 == 0) && (state->flags1A8 & 1) && (func_8002675C() == (s32)0x21) && (state->pathIndex == 0x2A) && (0.4f < state->progress398)) {
@@ -1395,8 +1382,7 @@ block_160:
         }
 
         velocityX += state->sideVelocity * func_8002A8BC(heading);
-        value = func_8002A8C0(heading);
-        velocityZ -= state->sideVelocity * value;
+        velocityZ -= state->sideVelocity * func_8002A8C0(heading);
         deltaX = (velocityX * D_4) + impulseX;
         deltaY = ((object->velocityY * D_4) - (0.5f * G_rt_458c4 * D_4 * D_4)) + impulseY;
         inverseUpdate = 1.0f / D_4;
@@ -2188,194 +2174,69 @@ typedef struct Overlay1RangeObject {
     void *state;
 } Overlay1RangeObject;
 
-/* The four callees follow Mickey's runtime relocations and canonical ABIs.
- * The final call initializes mode state with the config byte at offset 4.
- * All call identities are authenticated; the two allocation words remain. */
 /* Retained for the separate nearby-pending reconstruction below. */
 extern Overlay1RangeObject **overlay1GetObjectListReloc(s32 *count);
 extern s32 Arctanf(f32 dz, f32 dx);
 extern s32 overlay1ActivateObject(void *object);
 extern void overlay1InitializeModeState(s32 value);
 
-/* Plateau: exact 120 instructions, the 0x70 frame, and every allocator lane --
- * general pool 37/37, general temp 8/8, FP pool 7/7, FP temp 9/9 -- with two
- * words left. Three identities were proved here. The horizontal range squared
- * must be a named `f32`, and its two `config->horizontalScale * 10U` reads must
- * be spelled twice so IDO CSEs them: a `u32 horizontalRange` carrier spends the
- * declaration budget the `f32` needs and leaves the whole FP allocation wrong
- * (12 FP words). The angle base must be a named `u8` carrier, which is what
- * puts `config->angleHigh` on the target's pool colour instead of a ring temp.
- * The `case 1` test must be a named `u16`, which orders its `andi` web before
- * the store's. `clearMask` is not needed: IDO hoists a literal `~8` into the
- * same saved register, and dropping the declaration is what buys the budget for
- * the other two.
- *
- * The residual is two words, and `cc -K` names the mechanism exactly. ugen
- * numbers `case 0`'s two temps in emission order -- `and $9` for the test,
- * `or $10` for the store -- but numbers `case 1`'s backwards: without the test
- * carrier it emits `and $12` for the test and `and $11` for the store, so the
- * store is allocated first and the pair comes out swapped (four words). The
- * `u16` carrier fixes the order, because its truncation `and $x, $y, 65535`
- * takes the outer number $11 and as1 then folds the instruction away -- but it
- * spends $12 on the inner `and`, so the store slides to $13 and lands on t5
- * where the target has t4. One temp too many, in the right order; the
- * no-carrier form has the right count in the wrong order.
- *
- * The calls in `case 1`'s body are not the cause: removing one or both leaves
- * the $12/$11 inversion unchanged. Measured and flat, do not repeat: 40 case-1
- * body spellings (compound assignment, the `^ 0` use-site break, re-reads of
- * the field, a hoisted `cleared` local, five carrier types, `if/else if` in
- * place of the switch, a `default:` arm, and reversed case order), and all 96
- * physical line groupings of the case-1 statement list.
- *
- * 2026-09-09: the residual is not in `case 1` at all. ugen's temporary ring is
- * fresh-first over $8..$15,$24,$25 and then FIFO by free time, and both arms
- * draw from that one list in emission order, so the numbers each arm gets are
- * fixed by when the *earlier* temps were freed. Reading `cc -K` for the whole
- * loop body: the angle block emits `sll $9; sll $10; sra $11` for the left
- * operand, `sll $12; sra $13` for the s16 read of `angle`, then
- * `addu $4,$11,$13`, then `sll $14/sra $15` for the truncation. $12 is freed by
- * `sra $13,$12,16` and $11 only at the `addu`, so the queue reaching the switch
- * is $9,$10,$12,$11,$13. `case 0` takes $9,$10 and `case 1` therefore takes
- * $12,$11 -- the inversion, entirely inherited. The target's queue must be
- * $9,$10,$11,$12.
- *
- * That is reachable, and was reached: with `angle` read through a one-
- * instruction conversion the free order becomes ascending and BOTH arms are
- * exact -- `andi t3` and `and t4` in `case 1`, `andi t1` and `ori t2` in
- * `case 0`, and the shared lane matches 7/7. What then remains is two different
- * words: the sum's `addu` writes a ring temp where the target writes the pool
- * colour (`addu t5,t3,v0` against `addu a0,t3,v0`).
- *
- * The constraint that blocks it, and it is structural, not a search gap. The
- * object pins three things: the left chain must end at $11, the sign-extension
- * pair must be $14 and $15, and the `addu` must write the pool. Five ring temps
- * therefore have to be spent between them, the left chain owns three, and the
- * remaining two have to be freed after $11 -- which is freed at the `addu`. Any
- * second operand needing a two-instruction conversion frees its first temp
- * before the `addu` (the current inversion); a one-instruction conversion frees
- * it at the `addu` but leaves the count one short, and the extra instruction
- * that would make up the count sits between the `addu` and the sign extension,
- * where as1 removes it by coalescing backwards onto the `addu` and renaming its
- * destination. 1080 spellings of `angle`'s type, the left operand, the read,
- * the assignment cast and the comparison were scored against the full-TU object
- * and the floor is exactly 2 in every one of them.
- *
- * Next lever: this needs an instruction between the `addu` and the sign
- * extension that as1 deletes without back-coalescing -- i.e. one whose
- * destination is consumed by the next instruction rather than written back into
- * `angle`'s home. Every cast spelling reachable from C emits ugen's
- * write-back form (`op $13,$4,..; move $4,$13`). Look for a source shape where
- * the intermediate is not the variable itself, or accept that the owner is as1
- * and reach for a ugen/as1 trace. Do not re-search `case 1`.
- *
- * 2026-09-10 (second reader): the residual reproduces at exactly 2 words, both
- * sites one web, and the diagnosis above holds. One thing worth writing down
- * because it reads as a third difference and is not: the comparison reports a
- * hunk at the first call where the two sides name different symbols. That is a
- * relocation-naming artifact -- the target side carries the generic overlay
- * entry symbol at every R_MIPS_26 site while the candidate carries the real
- * callee -- and those words are masked, which is why the raw and the masked
- * counts both read 2. Do not spend a cycle on it.
- *
- * 2026-09-12, lane p10-tight. The 2026-09-11 reading that the free list is
- * ascending here and the residual lives inside the second switch arm is wrong;
- * see the handoff shard. ugen draws a ring register immediately before each
- * instruction it emits, so the listing order IS the draw order, and the angle
- * block hands the switch its fourth and third ring members transposed. A
- * two-word corner exists in which BOTH switch arms are byte-exact and the
- * residual is the sum's destination instead: declare the angle thirty-two-bit,
- * spell the right summand as an explicit sixteen-bit mask of it so its widening
- * costs one ring draw rather than two, and write the second arm with no carrier
- * at all. The block then owes one more zero-footprint ring draw, strictly
- * between the sum and the truncation, and it cannot be paid: as1 deletes a
- * no-op by renaming ITS PRODUCER'S destination, so a phantom placed on the sum
- * renames the sum off the pool colour, and a phantom appended to the left
- * operand's chain is folded into it and moves the survivor one slot on. That is
- * the same mechanism the note above calls back-coalescing, measured from the
- * other side. Only a zero-footprint draw on some other live narrow value would
- * pay, and nothing narrow is live there.
- *
- * A second corner confirms the reading independently: a redundant byte mask on
- * the angle-high read, inside the left operand, buys the fifth draw and makes
- * the switch byte-exact in both arms, with everything from the truncation
- * onwards exact too. It scores 3 because the draw was spent at the HEAD of the
- * chain -- as1 deletes the no-op by renaming the byte load's destination, so
- * the load loses its pool colour, and the chain's survivor moves one slot on,
- * taking the shift and the sum's first operand with it. The fifth draw has to
- * be the fifth.
- *
- * 2026-09-17, lane w2-o001. L145-L154 reopen re-measured the same 2 naming
- * words at +0x190, 33 GP/FP draws, 174 ugen emissions. Deleting rangeSquared
- * or otherState regresses (14 and a size-minus-one 109). s16 plus a one-draw
- * (u16) right operand drops one comparison draw and shifts the tail to 14;
- * every post-sum probe meant to buy that draw back is DCE'd, adds two draws
- * (19), or hoists mode and goes structural (41). s32 corners are 20-21, not
- * the recorded two-word switch-exact shape. Floor remains 2. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01 by discarding the inherited shape; the 2-word closure
+ * (u8 angle carrier, u16 test carriers, a ring-order argument over them) was
+ * true of that shape only. What closed it:
+ *  - the angle offset is a named `s16` holding `config->angleHigh << 8`, added
+ *    as `angle = angleOffset + angle` after the call: in a 160-cell product
+ *    (ten angle spellings, four offset types, two arm shapes, frame pad) it
+ *    is the only exact cell; `angle += angleOffset` is 1, the u8 carrier 2.
+ *  - both switch arms read and write `otherState->flags` directly, no carrier.
+ *  - an unused `s32 pad` after `count` keeps the 0x70 frame (count at 0x68).
+ *  - `while (count--)`; the range squared stays a named `f32` (inline, 25). */
 void overlay1UpdateRangeFlags(Overlay1RangeObject *object, void *unused) {
     Overlay1RangeConfig *config;
     s32 count;
+    s32 pad;
     void **objects;
+    Overlay1RangeObject *other;
+    Overlay1RangeState *otherState;
+    f32 dx;
+    f32 dz;
+    f32 rangeSquared;
+    s16 angle;
+    s16 angleOffset;
 
     config = object->state;
     objects = func_80005750(&count);
-    if (count--) {
-        do {
-            Overlay1RangeObject *other;
-            Overlay1RangeState *otherState;
-            f32 dx;
-            f32 dz;
-            f32 rangeSquared;
-            s16 angle;
-            u8 angleHigh;
-
-            other = objects[count];
-            otherState = other->state;
-            dx = other->x - object->x;
-            dz = other->z - object->z;
-            rangeSquared = (f32)(s32)(((u32)config->horizontalScale * 10U) *
-                                      ((u32)config->horizontalScale * 10U));
-            if ((dx * dx + dz * dz) < rangeSquared) {
-                angle = Arctanf(dz, dx);
-                angleHigh = config->angleHigh;
-                angle = (s16)((u32)angleHigh << 8) + angle;
-                if ((angle < -0x4000) || (angle >= 0x4001)) {
-                    if ((object->y <= other->y + other->heightData->height) &&
-                        (other->y <= object->y +
-                         (f32)(s32)((u32)config->verticalScale * 10U))) {
-                        switch (config->mode) {
-                            case 0: {
-                                u16 flags;
-                                flags = otherState->flags;
-                                if (!(flags & 8)) {
-                                    otherState->flags = flags | 8;
-                                }
-                                break;
+    while (count--) {
+        other = objects[count];
+        otherState = other->state;
+        dx = other->x - object->x;
+        dz = other->z - object->z;
+        rangeSquared = (s32)((config->horizontalScale * 10U) * (config->horizontalScale * 10U));
+        if ((dx * dx + dz * dz) < rangeSquared) {
+            angle = Arctanf(dz, dx);
+            angleOffset = config->angleHigh << 8;
+            angle = angleOffset + angle;
+            if ((angle < -0x4000) || (angle > 0x4000)) {
+                if ((object->y <= other->y + other->heightData->height) &&
+                    (other->y <= object->y + (s32)(config->verticalScale * 10U))) {
+                    switch (config->mode) {
+                        case 0:
+                            if (!(otherState->flags & 8)) {
+                                otherState->flags |= 8;
                             }
-                            case 1: {
-                                u16 flags;
-                                u16 masked;
-                                flags = otherState->flags;
-                                masked = flags & 8;
-                                if (masked) {
-                                    otherState->flags = flags & ~8;
-                                    overlay1ActivateObject(other);
-                                    overlay1InitializeModeState(config->modeValue);
-                                }
-                                break;
+                            break;
+                        case 1:
+                            if (otherState->flags & 8) {
+                                otherState->flags &= ~8;
+                                overlay1ActivateObject(other);
+                                overlay1InitializeModeState(config->modeValue);
                             }
-                        }
+                            break;
                     }
                 }
             }
-        } while (count--);
+        }
     }
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F00067C0_1852BA0.s")
-#endif
 
 /* ---- overlay1InitMotion ---- */
 
@@ -3364,33 +3225,12 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 
 
-/* PLATEAU-HANDOFF:overlay1UpdateRangeFlags:start
- * symbol: overlay1UpdateRangeFlags
- * score: 2/120 words
- * frame: 0x70
- * relocations: 4
- * first-mismatch: +0x190
- * summary: Four canonical callee identities and ABIs authenticated without resolver changes; exact extent/frame, two allocation words remain. Prior source levers stay closed.
- * PLATEAU-HANDOFF:overlay1UpdateRangeFlags:end
- */
-
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C
- * score: 1113/1542 words
+ * score: 1061/1542 words
  * frame: 0x138
  * relocations: 184
- * first-mismatch: +0x34
- * summary: Census pair 2 is missing-CSE at +0x774. The -4 size word is pair 7, missing-CSE, target +0x173C, the eval at line 1463. Line 1428 volatile speedLimit reload closed delta -4 (1196 to 1114). That volatile actionMode read reaches 1113. Stall: delay-slot spellings do not beat 1113.
+ * first-mismatch: +0x170
+ * summary: Frame ladder exact; natural loops and limit blocks, surface loop in the loopValue idiom: 1113 to 1061 at delta 0. Rest is ring and colour order.
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
- */
-
-
-/* PLATEAU-HANDOFF:func_overlay_001_F0003750_184FB30:start
- * symbol: func_overlay_001_F0003750_184FB30
- * score: 139 differing words
- * frame: 0x90
- * relocations: 31
- * first-mismatch: +0x58
- * summary: Delta +4 closed and frame ladder exact, 341 to 139 at delta 0; the rest is naming led by the transition weight's f0 split.
- * PLATEAU-HANDOFF:func_overlay_001_F0003750_184FB30:end
  */

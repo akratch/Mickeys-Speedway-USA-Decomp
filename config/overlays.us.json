@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 312540,
-  "nonmatching_overlay_c_bytes": 156068,
+  "matched_overlay_c_bytes": 314804,
+  "nonmatching_overlay_c_bytes": 153804,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4500,
   "bss_bytes": 77680,
@@ -1157,6 +1157,14 @@
      "evidence": "canonical mixed-TU object, seven runtime relocations, and linked ROM bytes exact"
     },
     {
+     "offset": "0x3750",
+     "end_offset": "0x3E48",
+     "size": "0x6F8",
+     "label": "overlay1ChoosePath",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
      "offset": "0x3E48",
      "end_offset": "0x3E74",
      "size": "0x2C",
@@ -1305,6 +1313,14 @@
      "end_offset": "0x67C0",
      "size": "0x38",
      "label": "overlay1CopyBytes",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
+     "offset": "0x67C0",
+     "end_offset": "0x69A0",
+     "size": "0x1E0",
+     "label": "overlay1UpdateRangeFlags",
      "source": "overlays/o001/overlay_001_tail",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },

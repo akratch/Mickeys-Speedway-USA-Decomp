@@ -101,9 +101,12 @@ D_1DC0 = 0x00001dc0;
 D_1DD4 = 0x00001dd4;
 
 /* overlay 1: overlay_001_tail.c.o */
+Arctanf_o001Reloc = 0xf0000000;
 D_160 = 0x00000160;
+D_1D68Read = 0x00001d68;
 D_1D84 = 0x00001d84;
 D_1D88 = 0x00001d88;
+D_1D94 = 0x00001d94;
 D_1DA0_array = 0x00001da0;
 D_208 = 0x00000208;
 D_214 = 0x00000214;
@@ -124,13 +127,14 @@ func_80005750_o001Reloc = 0xf0000000;
 func_8002A910_o001Reloc = 0xf0000000;
 gOverlay1CallbackDescriptor = 0x000000bc;
 gOverlay1CallbackStepFloat = 0x00000004;
+gOverlay1ChoosePathLiterals = 0x000000e8;
 gOverlay1CountdownAmount = 0x00001d94;
 gOverlay1CountdownObject = 0x00001da0;
 gOverlay1CountdownResource = 0x00001d9c;
 gOverlay1ModeCallbacks = 0x000000c0;
 gOverlay1ModeMasks = 0x00000000;
 gOverlay1ModeResource = 0x00001d9c;
-gOverlay1ModeTable = 0x00000164;
+gOverlay1ModeTable = 0x00000154;
 gOverlay1MotionScale = 0x00000184;
 gOverlay1PoolExhausted = 0x00001d84;
 gOverlay1Position = 0x00001d9c;
@@ -4229,6 +4233,7 @@ func_overlay_001_F0002AA4_184EE84 = overlay1AdvanceGauge;
 /* overlay 1: overlay_001_tail.c.o */
 func_overlay_001_F0003578_184F958 = overlay1InitializeGaugeObjects;
 func_overlay_001_F00036A0_184FA80 = overlay1AssignRecordIndex;
+func_overlay_001_F0003750_184FB30 = overlay1ChoosePath;
 func_overlay_001_F0003E48_1850228 = overlay1SubmitGlobals;
 func_overlay_001_F0003E74_1850254 = overlay1SubmitAll;
 func_overlay_001_F0003EB8_1850298 = overlay1AngleBetweenSamples;
@@ -4248,6 +4253,7 @@ func_overlay_001_F0006424_1852804 = overlay1ReadSelection;
 func_overlay_001_F00064F8_18528D8 = overlay1SolveAngleCandidates;
 func_overlay_001_F0006724_1852B04 = overlay1UpdateModeSound;
 func_overlay_001_F0006788_1852B68 = overlay1CopyBytes;
+func_overlay_001_F00067C0_1852BA0 = overlay1UpdateRangeFlags;
 func_overlay_001_F00069A0_1852D80 = overlay1InitMotion;
 func_overlay_001_F0006A14_1852DF4 = overlay1ConsumeNearbyPending;
 func_overlay_001_F0006B28_1852F08 = overlay1InitRange;
@@ -4262,9 +4268,7 @@ func_overlay_001_F0007580_1853960 = overlay1AppendPathPoint;
 func_overlay_001_F0007730_1853B10 = overlay1BendPathPoint;
 func_overlay_001_F00078DC_1853CBC = overlay1AdvancePath;
 func_overlay_001_F0007B64_1853F44 = overlay1FindBestRecord;
-func_overlay_001_F0003750_184FB30 = overlay1ChoosePath;
 func_overlay_001_F000438C_185076C = overlay1UpdateObjectPhysics;
-func_overlay_001_F00067C0_1852BA0 = overlay1UpdateRangeFlags;
 
 /* overlay 1: overlay_001_create.c.o */
 func_overlay_001_F0007BDC_1853FBC = overlay1CreateRecord;

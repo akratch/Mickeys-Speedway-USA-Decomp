@@ -148,11 +148,18 @@ gmake overlay-atlas-write >/dev/null 2>&1 || true
 .venv/bin/python tools/check_duplicate_bodies.py || { echo "a function has both a C body and a GLOBAL_ASM pragma after the merge; drop the stale pragma line" >&2; exit 1; }
 gmake -s check-nonmatching-builds || { echo "a candidate-bearing TU no longer compiles with -DNON_MATCHING (its candidates would drop out of the permuter sweep); merge left uncommitted" >&2; exit 1; }
 # Fresh extraction and build: stale objects and stale asm/ have masked real failures twice.
-gmake distclean >/dev/null 2>&1; gmake extract 2>&1 | tail -1
+# Neither step may fail silently: with set -e a failing distclean (an
+# unremovable file under build/) ended the script with no message (2026-10-01).
+gmake distclean >"$root/build-distclean.log" 2>&1 || { echo "distclean FAILED (see build-distclean.log); merge left uncommitted" >&2; exit 1; }
+rm -f "$root/build-distclean.log"
+extract_log=$(mktemp -t mickey-merge-extract)
+gmake extract >"$extract_log" 2>&1 || { echo "extract FAILED after merging $branch; merge left uncommitted" >&2; tail -20 "$extract_log" >&2; exit 1; }
+tail -1 "$extract_log"; rm -f "$extract_log"
 low_gmake >/dev/null 2>&1 || true   # warm-up: the first parallel build after a re-split can race
 gmake overlay-syms 2>&1 | tail -1   # a merge that changes overlay relocation surfaces needs the generated symbol block before the link
 # The second build's status is real: a POSTPROCESS failure here left a stale
 # object that verify then accepted (2026-10-01), so it is no longer swallowed.
+mkdir -p "$root/build"
 if ! low_gmake >"$root/build/merge-build.log" 2>&1; then
   echo "build FAILED after merging $branch; merge left uncommitted" >&2
   grep -nE 'Error|error:|cannot|refus' "$root/build/merge-build.log" | head -12 >&2

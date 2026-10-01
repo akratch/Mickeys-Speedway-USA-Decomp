@@ -22,7 +22,11 @@ gmake overlay-atlas-write >/dev/null 2>&1 || true
 .venv/bin/python tools/check_duplicate_bodies.py || { echo "a function has both a C body and a GLOBAL_ASM pragma after the merge; drop the stale pragma line" >&2; exit 1; }
 gmake -s check-nonmatching-builds || { echo "a candidate-bearing TU no longer compiles with -DNON_MATCHING (its candidates would drop out of the permuter sweep); merge left uncommitted" >&2; exit 1; }
 # Fresh extraction and build: stale objects and stale asm/ have masked real failures twice.
-gmake distclean >/dev/null 2>&1; gmake extract 2>&1 | tail -1
+gmake distclean >build-distclean.log 2>&1 || { echo "distclean FAILED (see build-distclean.log); merge left uncommitted" >&2; exit 1; }
+rm -f build-distclean.log
+extract_log=$(mktemp -t mickey-merge-extract)
+gmake extract >"$extract_log" 2>&1 || { echo "extract FAILED; merge left uncommitted" >&2; tail -20 "$extract_log" >&2; exit 1; }
+tail -1 "$extract_log"; rm -f "$extract_log"
 gmake -j6 >/dev/null 2>&1 || true   # warm-up: the first parallel build after a re-split can race
 # A merge that changes overlay relocation surfaces needs the generated
 # overlay symbol block regenerated before the link can succeed.
@@ -44,7 +48,16 @@ case "$out" in
      exit 1 ;;
 esac
 .venv/bin/python tools/fix_jumptable_claim.py | tail -1
-gmake check-docs 2>&1 | tail -1 || { echo "check-docs failed; merge left uncommitted" >&2; exit 1; }
+# Re-measure stale ranking rows and the postprocess audit first: a banked
+# improvement or a POSTPROCESS edit otherwise fails check-docs here.
+# Advisory: a failure here surfaces in check-docs below with its own message.
+{ .venv/bin/python tools/nm_ranking.py --refresh-stale 2>&1 | tail -1; } || echo "warning: ranking refresh failed" >&2
+.venv/bin/python tools/nm_ranking.py --write-doc >/dev/null 2>&1 || true
+{ .venv/bin/python tools/postprocess_audit.py --write 2>&1 | tail -1; } || echo "warning: postprocess audit refresh failed" >&2
+git add -- config/nonmatching-ranking.us.json docs/nm-ranking.md config/postprocess-audit.us.json 2>/dev/null || true
+docs_log=$(mktemp -t mickey-merge-check-docs)
+gmake check-docs >"$docs_log" 2>&1 || { echo "check-docs FAILED; merge left uncommitted" >&2; tail -30 "$docs_log" >&2; exit 1; }
+tail -1 "$docs_log"; rm -f "$docs_log"
 gmake scoreboard 2>&1 | tail -1
 gmake overlay-atlas 2>&1 | tail -1
 gmake check-overlay-syms 2>&1 | tail -1

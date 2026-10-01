@@ -1141,7 +1141,7 @@ $(BUILD_DIR)/$(SRC_DIR)/main/diprint.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/sched.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x38 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .data 0x8
-# objects owns five switch tables and three literal-pool floats in an exact
+# objects owns six switch tables and three literal-pool floats in an exact
 # aligned input section. The three default branches are already resolved:
 # site-bound PC16 records preserve their fields
 # and the exact relocation identities of the assembled fallback functions.
@@ -1159,7 +1159,7 @@ $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: POSTPROCESS = \
 	    --add-symbol objectsInitDefaultBranch=.text:0x6718,local \
 	    --add-symbol objectsControlDefaultBranch=.text:0x6C00,local \
 	    --add-symbol objectsSwitchTablesBase=.rodata:0,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x690 && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x800 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 	    0x4F94:.rodata:objectsSwitchTablesBase \
 	    0x4F9C:.rodata:objectsSwitchTablesBase \
@@ -1170,7 +1170,7 @@ $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: POSTPROCESS = \
 	    0x6C08:.rodata:objectsSwitchTablesBase \
 	    0x6C10:.rodata:objectsSwitchTablesBase && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/add_elf_relocations.py $@ .text 0x708C \
-	    04dcd22184d1b53507977efc4868c715fea7ba6a86fa32c29b086d53cb076668 \
+	    871e6fd6fcbacef5658c8694182f232c9645e5b87fa19532abab1a81db5baf91 \
 	    0x6500:PC16:objectsSizeDefaultBranch:0x76 \
 	    0x6718:PC16:objectsInitDefaultBranch:0x120 \
 	    0x6C00:PC16:objectsControlDefaultBranch:0x114 && \

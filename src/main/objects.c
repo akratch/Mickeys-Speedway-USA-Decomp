@@ -2486,15 +2486,22 @@ extern void killLight(void *light);
 extern void amSndStop(void *sound);
 extern void func_80046E70(void *object);
 
-#ifdef NON_MATCHING
+/* Matched (was 168 masked words) by giving each value its own spelling:
+ * one `payload` local holds the behaviour payload in every case that reads
+ * it, so it is the one v0 range the target splits around calls, while the
+ * cases that only pass the pointer (92, 15, 35) read the field directly;
+ * the four resource loops subscript by `i` with no offset carrier, the
+ * record-1 slot loops use their own byte index `j`, the owner checks read
+ * the slot field at each use, and the 0x84 resource is read as an s32. */
 void func_80007118(u8 *object, s32 arg1) {
     s32 i;
-    s32 offset;
+    s32 offset; /* unused: holds the frame slot the target keeps */
     u8 *entry;
     u8 *payload;
     void *value;
     u8 *linkedPayload;
     u8 *owner;
+    s32 j;
 
     if (*(s16 *)(object + 0x44) == 1) {
         payload = *(u8 **)(object + 0x64);
@@ -2513,47 +2520,42 @@ void func_80007118(u8 *object, s32 arg1) {
     D_8007A218 = (s32)(*(u8 **)(object + 0x40) + 4);
 
     if (*(void **)(object + 0x5C) != NULL) {
-        for (i = 0, offset = 0; i < **(s32 **)(object + 0x5C); i++, offset += 4) {
-            entry = *(u8 **)(*(u8 **)(object + 0x5C) + 4 + offset);
+        for (i = 0; i < **(s32 **)(object + 0x5C); i++) {
+            entry = *(u8 **)(*(u8 **)(object + 0x5C) + 4 + i * 4);
             func_80006448(entry);
             func_80004B04(*(s16 *)(entry + 0x2C));
             mmFree(entry);
         }
     }
     if (*(void **)(object + 0x60) != NULL) {
-        for (i = 0, offset = 0; i < *(u8 *)(object + 0x8C); i++, offset += 0x14) {
-            func_800359D4(*(void **)(*(u8 **)(object + 0x60) + offset));
+        for (i = 0; i < *(u8 *)(object + 0x8C); i++) {
+            func_800359D4(*(void **)(*(u8 **)(object + 0x60) + i * 0x14));
         }
     }
     partObjFreeTriggers(object);
     if (*(void **)(object + 0x70) != NULL) {
-        for (i = 0, offset = 0; i < *(s8 *)(*(u8 **)(object + 0x40) + 0x28); i++, offset += 4) {
-            killLight(*(void **)(*(u8 **)(object + 0x70) + offset));
+        for (i = 0; i < *(s8 *)(*(u8 **)(object + 0x40) + 0x28); i++) {
+            killLight((*(void ***)(object + 0x70))[i]);
         }
     }
     if (*(void **)(object + 0x74) != NULL) {
-        for (i = 0, offset = 0; i < *(u8 *)(*(u8 **)(object + 0x40) + 0x29); i++, offset += 4) {
-            camlightDelete(*(void **)(*(u8 **)(object + 0x74) + offset));
+        for (i = 0; i < *(u8 *)(*(u8 **)(object + 0x40) + 0x29); i++) {
+            camlightDelete((*(void ***)(object + 0x74))[i]);
         }
     }
 
     switch (*(s16 *)(object + 0x44)) {
         case 92:
-            payload = *(u8 **)(object + 0x64);
-            TrapDanglingJump(payload);
+            TrapDanglingJump(*(u8 **)(object + 0x64));
             break;
         case 65: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            func_800359D4(*(void **)(once + 0x20));
+            payload = *(u8 **)(object + 0x64);
+            func_800359D4(*(void **)(payload + 0x20));
             break;
         }
         case 67: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 0x3C);
+            payload = *(u8 **)(object + 0x64);
+            value = *(void **)(payload + 0x3C);
             if (value != NULL) {
                 func_800031E8(value);
             }
@@ -2566,10 +2568,8 @@ void func_80007118(u8 *object, s32 arg1) {
             TrapDanglingJump();
             break;
         case 78: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 0x3C);
+            payload = *(u8 **)(object + 0x64);
+            value = *(void **)(payload + 0x3C);
             if (value != NULL) {
                 func_800031E8(value);
             }
@@ -2585,9 +2585,8 @@ void func_80007118(u8 *object, s32 arg1) {
             if (value != NULL) {
                 func_800031E8(value);
             }
-            value = *(void **)(linkedPayload + 0x20);
-            if (value != NULL) {
-                owner = *(u8 **)((u8 *)value + 0x64);
+            if (*(void **)(linkedPayload + 0x20) != NULL) {
+                owner = *(u8 **)(*(u8 **)(linkedPayload + 0x20) + 0x64);
                 if (*(void **)(owner + 0xD4) == object) {
                     *(void **)(owner + 0xD4) = NULL;
                 }
@@ -2611,12 +2610,9 @@ void func_80007118(u8 *object, s32 arg1) {
             break;
         }
         case 89: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 0x10);
-            if (value != NULL) {
-                owner = *(u8 **)((u8 *)value + 0x64);
+            payload = *(u8 **)(object + 0x64);
+            if (*(void **)(payload + 0x10) != NULL) {
+                owner = *(u8 **)(*(u8 **)(payload + 0x10) + 0x64);
                 if (*(void **)(owner + 0xD8) == object) {
                     *(void **)(owner + 0xD8) = NULL;
                 }
@@ -2624,20 +2620,16 @@ void func_80007118(u8 *object, s32 arg1) {
             break;
         }
         case 90: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 0x0);
+            payload = *(u8 **)(object + 0x64);
+            value = *(void **)(payload + 0x0);
             if (value != NULL) {
                 amSndStop(value);
             }
             break;
         }
         case 64: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 0x3C);
+            payload = *(u8 **)(object + 0x64);
+            value = *(void **)(payload + 0x3C);
             if (value != NULL) {
                 func_800031E8(value);
             }
@@ -2654,23 +2646,18 @@ void func_80007118(u8 *object, s32 arg1) {
                 func_800031E8(value);
             }
             break;
-        case 54: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 0x38);
-            if (value != NULL) {
-                func_800031E8(value);
+        case 54:
+            if (*(void **)(*(u8 **)(object + 0x64) + 0x38) != NULL) {
+                func_800031E8(*(void **)(*(u8 **)(object + 0x64) + 0x38));
             }
             break;
-        }
         case 71:
             D_80078F7C = NULL;
             break;
         case 63:
-            value = (void *)D_8007A1F4;
-            if (value != NULL && *(void **)value == object) {
-                *(void **)value = NULL;
+            payload = (u8 *)D_8007A1F4;
+            if (payload != NULL && *(void **)payload == object) {
+                *(void **)payload = NULL;
             }
             break;
         case 61:
@@ -2683,8 +2670,7 @@ void func_80007118(u8 *object, s32 arg1) {
             func_8001C088(object);
             break;
         case 15:
-            payload = *(u8 **)(object + 0x64);
-            killLight(payload);
+            killLight(*(u8 **)(object + 0x64));
             break;
         case 41:
             linkedPayload = *(u8 **)(object + 0x64);
@@ -2698,19 +2684,16 @@ void func_80007118(u8 *object, s32 arg1) {
             }
             break;
         case 9:
-            value = *(void **)(object + 0x84);
-            if (value != NULL) {
-                camlightDelete(value);
+            if (*(s32 *)(object + 0x84) != 0) {
+                camlightDelete((void *)*(s32 *)(object + 0x84));
             }
             break;
         case 35:
             lightKillGlowingLight(*(void **)(object + 0x64));
             break;
         case 42: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 4);
+            payload = *(u8 **)(object + 0x64);
+            value = *(void **)(payload + 4);
             if (value != NULL) {
                 mmFree(value);
             }
@@ -2718,9 +2701,8 @@ void func_80007118(u8 *object, s32 arg1) {
         }
         case 29:
             func_80005798(object);
-            value = *(void **)(object + 0x84);
-            if (value != NULL) {
-                func_800031E8(value);
+            if (*(s32 *)(object + 0x84) != 0) {
+                func_800031E8((void *)*(s32 *)(object + 0x84));
             }
             break;
         case 73:
@@ -2733,9 +2715,8 @@ void func_80007118(u8 *object, s32 arg1) {
         case 26:
         case 27:
         case 79:
-            value = *(void **)(object + 0x84);
-            if (value != NULL) {
-                func_800031E8(value);
+            if (*(s32 *)(object + 0x84) != 0) {
+                func_800031E8((void *)*(s32 *)(object + 0x84));
             }
             break;
         case 1:
@@ -2776,14 +2757,14 @@ void func_80007118(u8 *object, s32 arg1) {
             if (value != NULL) {
                 func_800031E8(value);
             }
-            for (i = 0; i < 0x10; i += 4) {
-                value = *(void **)(payload + 0x134 + i);
+            for (j = 0; j < 0x10; j += 4) {
+                value = *(void **)(payload + 0x134 + j);
                 if (value != NULL) {
                     TrapDanglingJump(value);
                 }
             }
-            for (i = 0; i != 0x30; i += 0xC) {
-                value = *(void **)(payload + 0x354 + i);
+            for (j = 0; j != 0x30; j += 0xC) {
+                value = *(void **)(payload + 0x354 + j);
                 if (value != NULL) {
                     func_80046E70(value);
                 }
@@ -2804,16 +2785,11 @@ void func_80007118(u8 *object, s32 arg1) {
             func_800347A0(value);
         }
     }
-    value = *(void **)(object + 0x54);
-    if (value != NULL) {
-        func_80048980(value);
+    if (*(void **)(object + 0x54) != NULL) {
+        func_80048980(*(void **)(object + 0x54));
     }
-    value = *(void **)(object + 0x78);
-    if (value != NULL) {
-        value = *(void **)((u8 *)value + 0x24);
-        if (value != NULL) {
-            func_800031E8(value);
-        }
+    if (*(u8 **)(object + 0x78) != NULL && *(void **)(*(u8 **)(object + 0x78) + 0x24) != NULL) {
+        func_800031E8(*(void **)(*(u8 **)(object + 0x78) + 0x24));
     }
     if (*(u8 *)(object + 0x92) != 0) {
         partNullifyCircularParticleParents(object);
@@ -2823,9 +2799,6 @@ void func_80007118(u8 *object, s32 arg1) {
     mmFree(object);
     D_8007A21C = 4;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80007118.s")
-#endif
 void func_80007844(void) {
 }
 typedef struct {
@@ -5446,16 +5419,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * first-mismatch: +0x0
  * summary: Workbench structure-mismatch: structure-buckets. Next: authenticate the default-mode lifetime and sort-prefix source before further scheduling work.
  * PLATEAU-HANDOFF:func_80009414:end
- */
-
-/* PLATEAU-HANDOFF:func_80007118:start
- * symbol: func_80007118
- * score: 168 differing words
- * frame: 0x38
- * relocations: 71
- * first-mismatch: +0x2C
- * summary: hypothesis=early and case1 must not share payload; spellings=early 430/-4, case1 446/-8, both 446/-8; stall=none at delta 0, 186-to-168 kept
- * PLATEAU-HANDOFF:func_80007118:end
  */
 
 /* PLATEAU-HANDOFF:func_8000B3CC:start

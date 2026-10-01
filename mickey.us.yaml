@@ -650,15 +650,16 @@ segments:
       #
       #   1. RODATA ORDER FOLLOWS TEXT ORDER, EXACTLY. The pre-carve inventory
       #      covered 35 functions and forty-four tables. After devmgr's table
-      #      moved into C objects, the 11 jump tables still emitted in asm/
+      #      moved into C objects, the 10 jump tables still emitted in asm/
       #      remain monotonically increasing in text and table address -- ZERO
-      #      INVERSIONS. They run from jtbl_80080D2C through jtbl_800841F4, so
+      #      INVERSIONS. They run from jtbl_80081694 through jtbl_800841F4, so
       #      .rodata can continue to be carved TU by TU in text order.
       #
       #   2. THE REFERENCED-FROM-CODE BOUND: 0x80080D24 (ROM 0x81924). That is
       #      a float constant (7f7fffff, i.e. FLT_MAX) loaded by the function
       #      at ROM 0x50B0, and it sits TWO words below the first jump table
-      #      jtbl_80080D2C (ROM 0x8192C). It is the lowest address anything in
+      #      (ROM 0x8192C, func_80007118's, now compiled into objects.c's own
+      #      .rodata). It is the lowest address anything in
       #      the resident segment reads as read-only data, which is a weaker
       #      statement than 0x81510 above: the xprintf and audio strings there
       #      are read by nothing in the resident segment at all, the same
@@ -674,9 +675,10 @@ segments:
       # `enddlabel` as a zero-size label directive, preserving the symbol-size
       # metadata instead of weakening asm_data_end_label for the whole tree.
       - [0x81590, rodata]
-      # objects' five switch tables and three literal-pool floats retain
-      # their source order in an exact 0x690-byte input section.
-      - [0x81A9C, .rodata, main/objects]
+      # objects' six switch tables and three literal-pool floats retain
+      # their source order in an exact 0x800-byte input section. It opens
+      # with func_80007118's 92-entry table (formerly jtbl_80080D2C).
+      - [0x8192C, .rodata, main/objects]
       - [0x8212C, rodata]
       # func_80019934's five-entry distance-mode switch table.
       - [0x823B4, .rodata, main/lights]

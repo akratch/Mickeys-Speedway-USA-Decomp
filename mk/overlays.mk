@@ -489,9 +489,6 @@ $(O8_OBJ): POSTPROCESS = \
 		sha256:47d844f716456f64428bd9db585865758b727df87be434cc7be7f0d28f28a9a8
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: \
-	$(TOOLS_DIR)/filter_elf_relocations.py \
-	config/normalizations/overlay9Output.filter.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
 		ext_o0_1353c=overlay9HeightQueryReloc $@ && \
@@ -509,11 +506,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 		o9P540MathDiffAngleReloc=overlay9AngleDifferenceReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
 		o9P540CosReloc=overlay9CosineReloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		@config/normalizations/overlay9Output.filter.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1520 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:79fc408bc15884cfa8328f9fa40521762b8928b0ab0d3315414676fdff93f10f
+		sha256:5e45f46f4effae3642aad8ec5bc46a960b4e1de95d12c4a76f12183279ec1c14
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeParticleAssets.c.o: POSTPROCESS = \

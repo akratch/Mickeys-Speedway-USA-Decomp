@@ -4,21 +4,9 @@
 #undef NULL
 #define NULL 0
 
-/* Retail's runtime relocation table addresses this pool from offset 0x20. */
-static const u8 sOverlay9ConstantPoolBase[0x20] = { 0 };
-
-typedef struct Overlay9LevelScaleReloc {
-    u8 pad00[0x18];
-    f32 value;
-} Overlay9LevelScaleReloc;
-
-typedef struct Overlay9YawScaleReloc {
-    u8 pad00[0x1C];
-    f32 value;
-} Overlay9YawScaleReloc;
-
-extern Overlay9LevelScaleReloc gOverlay9LevelScaleReloc;
-extern Overlay9YawScaleReloc gOverlay9YawScaleReloc;
+/* Pool slots +0x0..+0xC belong to func_overlay_009_F0000000_1866678, which
+ * is still assembly; the compiler's own literals follow from +0xC. */
+static const u8 sOverlay9ConstantPoolBase[0xC] = { 0 };
 
 /*
  * Overlay 9, ADR 0006 consolidation. Functions remain in retail ROM order.
@@ -176,137 +164,33 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o009/overlay_009/func_overlay_009_F0000000_1866678.s")
 #endif
 /* PROVENANCE: Mickey-derived from the assigned overlay assembly range; no donor body was imported.
- * Bounded reproof (2026-08-29): unchanged configured full-TU C under canonical
- * -O2 -mips2 -32 -Wab,-r4300_mul emits the exact 0x204-byte extent and frame
- * 0x58. It matches 120/129 raw words and 121/129 after runtime relocation or
- * real-offset link resolution, first +0x4C. The eight linked residual sites are
- * +0x4C/+0x54/+0x64/+0x6C/+0xA4/+0xB4/+0x128/+0x138.
  *
- * All ten runtime records agree by offset, type, and identity: LOCAL pairs at
- * +0x48/+0x4C, +0x50/+0x54, and +0x58/+0x5C use module base +0x18B0 with
- * addends +0xC/+0x10/+0x14; SYMBOL calls at +0x80/+0xDC are ORT 707
- * mathDiffAngle and ORT 279 func_8002A8C0; the +0x158/+0x168 LOCAL pair uses
- * BSS base +0x1930 with addend zero. A synthetic-VMA link preserves the real
- * F0000540 placement and reproduces the same 121/129 owned-range result.
- * The remaining upper/lower/threshold values form the retained four-way
- * saved-FPR color cycle. Per the reproof bound, no flag, trace, source-variant,
- * or permutation search was run.
- *
- * Reproof and exhaustion (2026-09-09): all eight residual words are saved-FPR
- * register numbers and nothing else. The allocation law was measured on this
- * TU: a hoisted memory load and a materialized literal join different groups,
- * loads taking the low callee-saved float registers ascending in emission
- * order and literals the high ones descending, with the direction fixed per
- * group. The target inverts both directions, which no partition of these five
- * values reaches. A 15,360-point lattice (120 hoist orders x 4 declaration
- * placements x 2 initializer styles x 16 comparison operand orders) scores
- * only 8 or 9 and never less, every 8 carrying the identical offsets; the
- * `register` storage class, in-loop assignment, a named zero, negation-derived
- * literals and joined physical lines are all flat; and a 14-point compiler
- * flag lattice makes the canonical -O2 -mips2 -32 -Wab,-r4300_mul the unique
- * optimum. Preserve this body and assembly fallback until a new saved-FPR
- * group-membership mechanism is proved. See the handoff shard.
- *
- * 2026-09-10, lane o7-mid, bounded reopen: the closure holds at 8, and the
- * residual is restated in a way that names a different decision variable.
- * Read from the object rather than the record, the six callee-saved FP
- * assignments in emission order are
- *
- *   target : D_C f30, D_10 f28, D_14 f26, 16.0 f24, -16.0 f22, 0.0 f20
- *   ours   : D_C f22, D_10 f24, D_14 f26, 16.0 f30, -16.0 f28, 0.0 f20
- *
- * so D_14 and the zero are FIXED POINTS and the only difference is that the
- * pair {D_C, D_10} and the pair {16.0, -16.0} exchange their colour blocks.
- * The target's whole assignment is one descending run f30..f20 in emission
- * order; ours is not.
- *
- * That is better described as a colouring ORDER than as group membership.
- * All five hoisted values carry exactly one loop-level reference each, so
- * their `save` terms tie (L7/L100), and a p1 tie is broken by web number and
- * nothing else (L31, L84). Under that reading the residual is a web-number
- * tie-break, and the reopen condition should be read as "find a web-number
- * lever for f32 locals" -- L85, the one measured renumbering spelling, is a
- * narrow-type truncation at the store and does not apply to f32 at all, and
- * L86 already records declaration order, relational operand order, an added
- * local and a hoist as moving no web number. That is consistent with the
- * recorded lattice flooring at 8 and explains WHY, which the group-membership
- * framing did not.
- *
- * This is inference from the two colour sequences (tier D), not a trace. The
- * one instrument that would settle it is a CDX capture: if the five webs tie
- * on save the record says so directly, and if they do not, the save arithmetic
- * names a cost lever the group framing hides.
- *
- * 2026-09-12, lane p8-close: the target's assignment is now a FORCED RESULT,
- * not an inference, and the reopen condition splits into one half that is
- * reached and one that is arithmetic.
- *
- * Forcing this procedure's five callee-saved float webs to c35, c34, c33 for
- * the three loads in hoist order and c31, c32 for the two sixteens returns an
- * object at zero masked words and size delta 0. So the whole residual is that
- * colour order; nothing else in the function is in question, and any future
- * pass can check a candidate against that one ladder.
- *
- * Phase one colours in decreasing save, lowest free colour first, ties on
- * ascending web number. Our ladder is zero at 20/4, the three loads at 11/4
- * and the two sixteens at 10/4; the target's requires the sixteens strictly
- * ABOVE the loads and the loads strictly DESCENDING in web number.
- *
- * Half one is reached. The divisor is not a constant of the procedure: it is
- * per web, and a basic block placed after the sixteens' last use but inside
- * the loads' live range raises only the loads' divisor. An `if (1) { }` at the
- * end of the else arm takes the loads to 11/5 = 2.2 while the sixteens hold
- * 10/4 = 2.5, and the records then show the sixteens coloured first -- the
- * first time this file has produced that order. It costs four bytes in this
- * spelling and it also stops the twenty splitting, so the candidate scores
- * 101; the value here is the mechanism, not the number.
- *
- * Half two is the blocker and it is now arithmetic. With the loads at divisor
- * 5 and the sixteens at 4, separating the three loads needs three integer
- * numerators a > b > c with a/5 < 2.5, so a <= 12, while c cannot fall below
- * 11 -- ten for the single in-loop reference plus one for the definition
- * occurrence -- and no such triple exists. At divisor 6 the triple 13, 12, 11
- * does exist, so reopening needs TWO such zero-cost blocks plus one extra
- * out-of-loop occurrence of the second load and two of the third, against a
- * target pinned at 129 instructions. L109 supplies none of them for an f32.
- *
- * One more negative, because it is the obvious thing to try: occurrence weight
- * is NOT discounted by conditional nesting. Moving the damping multiply behind
- * an `if` leaves its numerator at 11 and raises every web's divisor uniformly,
- * so per-arm placement cannot separate the three loads. */
-#ifdef NON_MATCHING
+ * Matched 2026-10-01. The three thresholds are float literals, not globals:
+ * their runtime records are LOCAL against this module's rodata base at
+ * +0xC/+0x10/+0x14, which is this function's slice of the TU's own literal
+ * pool. Written as literals they are constant webs like the two sixteens, so
+ * all five hoisted values colour in one descending run, which is the shipped
+ * saved-FPR order the load-versus-literal closures called unreachable. The
+ * loop is the plain `while (steps--)`. */
 void func_overlay_009_F0000540_1866BB8(O9Angle *angle, void *unused,
                                        O9Motion *motion, s32 steps) {
     s32 delta;
 
-    if (steps--) {
-        f32 lower;
-        f32 upper;
-        f32 upperThreshold;
-        f32 lowerThreshold;
-        f32 damping;
-
-        upperThreshold = D_C;
-        lowerThreshold = D_10;
-        damping = D_14;
-        upper = 16.0f;
-        lower = -16.0f;
-        do {
-            delta = o9P540MathDiffAngleReloc(motion->angle, -angle->angle);
-            if ((delta >= -0x3F) && (delta < 0x40) &&
-                (motion->velocity > lower) && (motion->velocity < upper)) {
-                motion->velocity = 0.0f;
-                motion->angle = -angle->angle;
-            } else {
-                motion->velocity += 20.0f * o9P540CosReloc(delta);
-                motion->angle += (s32) motion->velocity;
-            }
-            motion->velocity *= damping;
-            if ((motion->velocity > lowerThreshold) &&
-                (motion->velocity < upperThreshold)) {
-                motion->velocity = 0.0f;
-            }
-        } while (steps--);
+    while (steps--) {
+        delta = o9P540MathDiffAngleReloc(motion->angle, -angle->angle);
+        if ((delta >= -0x3F) && (delta < 0x40) &&
+            (motion->velocity > -16.0f) && (motion->velocity < 16.0f)) {
+            motion->velocity = 0.0f;
+            motion->angle = -angle->angle;
+        } else {
+            motion->velocity += 20.0f * o9P540CosReloc(delta);
+            motion->angle += (s32) motion->velocity;
+        }
+        motion->velocity *= 0.995f;
+        if ((motion->velocity > -0.1f) &&
+            (motion->velocity < 0.1f)) {
+            motion->velocity = 0.0f;
+        }
     }
 
     delta = motion->angle;
@@ -317,9 +201,6 @@ void func_overlay_009_F0000540_1866BB8(O9Angle *angle, void *unused,
     *D_0++ = 0xA;
     *D_0++ = -delta;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o009/overlay_009/func_overlay_009_F0000540_1866BB8.s")
-#endif
 
 void func_overlay_009_F0000744_1866DBC(O9OutputRecord *output, O9OutputControl *control,
                                        O9OutputState *state, s32 updateCount) {
@@ -334,14 +215,14 @@ void func_overlay_009_F0000744_1866DBC(O9OutputRecord *output, O9OutputControl *
         } while (i--);
     }
 
-    level = state->scale * gOverlay9LevelScaleReloc.value;
+    level = state->scale * 0.0125f;
     if (level > 1.0f) {
         level = 1.0f;
     }
 
     output->pitch = -(s32)(state->x * 8192.0f * level);
     output->yaw = (s32)(state->throttle * state->y *
-                        gOverlay9YawScaleReloc.value * level);
+                        6000.0f * level);
 
     state->magnitude = control->lean / 20.0f;
     if (state->magnitude < 0.0f) {
@@ -735,14 +616,4 @@ void func_overlay_009_F00010B4_186772C(O9MotionResult *out, O9MotionOwner *owner
  * first-mismatch: +0xE4
  * summary: GPR spills now match 0x50 and 0x54 after declaration reorder. 125 to 120 masked at delta 0. Arrays still +8, savedY -16, stepFloat temp +4.
  * PLATEAU-HANDOFF:func_overlay_009_F0000000_1866678:end
- */
-
-/* PLATEAU-HANDOFF:func_overlay_009_F0000540_1866BB8:start
- * symbol: func_overlay_009_F0000540_1866BB8
- * score: 8/129 words
- * frame: 0x58
- * relocations: 10
- * first-mismatch: +0x4C
- * summary: saved-FPR ordering requires unreachable source net and load-order changes
- * PLATEAU-HANDOFF:func_overlay_009_F0000540_1866BB8:end
  */

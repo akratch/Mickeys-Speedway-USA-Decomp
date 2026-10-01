@@ -1014,7 +1014,6 @@
       "size": 5408,
       "source": "src/overlays/o009/overlay_009.c",
       "tools": [
-        "filter_elf_relocations.py",
         "trim_elf_section.py",
         "externalize_elf_section.py",
         "objcopy"

@@ -1448,11 +1448,12 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x49E8, 0x4CF0, "overlay8UpdateMotionOutput"),
     ],
     9: [
+        (0x0540, 0x0744, "func_overlay_009_F0000540_1866BB8"),
         (
             0x0744,
             0x09BC,
             "func_overlay_009_F0000744_1866DBC",
-            "stock C, nine raw runtime identities, declared metadata filters, and linked ROM bytes exact",
+            "stock C, nine raw runtime identities, and linked ROM bytes exact",
         ),
         (
             0x09BC,

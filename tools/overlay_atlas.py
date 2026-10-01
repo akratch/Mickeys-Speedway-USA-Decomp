@@ -1251,6 +1251,7 @@ MIXED_TU_EXACT_C_RANGES = {
             "overlay1AssignRecordIndex",
             "canonical mixed-TU object, seven runtime relocations, and linked ROM bytes exact",
         ),
+        (0x3750, 0x3E48, "overlay1ChoosePath"),
         (0x3E48, 0x3E74, "overlay1SubmitGlobals"),
         (0x3E74, 0x3EB8, "overlay1SubmitAll"),
         (0x3EB8, 0x3F38, "overlay1AngleBetweenSamples"),

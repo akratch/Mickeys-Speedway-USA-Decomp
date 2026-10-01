@@ -1,12 +1,17 @@
-<!-- plateau-handoff:func_overlay_001_F0003750_184FB30:start -->
-### `func_overlay_001_F0003750_184FB30` plateau handoff
+<!-- plateau-handoff:overlay1ChoosePath:start -->
+### `overlay1ChoosePath` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_tail.c`
-- score: 63/446 words
+- score: 0/446 words, promoted
 - frame: 0x90
-- relocations: 31
-- first mismatch: +0x10C
-- summary: 139 to 63 at delta 0 by dropping inherited carriers; the rest is a0/a1 naming of scores-pointer vs table/best webs and chosenState in v1.
+- relocations: 63
+- first mismatch: none
+- summary: Matched. A separate variable for the selection maximum, FindType47ByAngle's result in object, and for-break count-down loops; promoted as overlay1ChoosePath.
+
+Formerly `func_overlay_001_F0003750_184FB30`; the C definition took the
+friendly name when it was promoted.
+
+Summary before this remeasure: 139 to 63 at delta 0 by dropping inherited carriers; the rest is a0/a1 naming of scores-pointer vs table/best webs and chosenState in v1.
 
 Summary before this remeasure: Delta +4 closed and frame ladder exact, 341 to 139 at delta 0; the rest is naming led by the transition weight's f0 split.
 
@@ -114,4 +119,38 @@ the target has a0, which also costs as1's branch-likely at the 0.1f test
 pointer web and check whether it is offered a0 at all (L142: a web live
 across GetChoiceObjects is denied a0).
 
-<!-- plateau-handoff:func_overlay_001_F0003750_184FB30:end -->
+#### 2026-10-01, lane d-o001 (continued): matched and promoted, 63 to 0
+
+The p1 records named the a0/a1 residual. Web 155, the one variable
+`value`, served both the object-loop index and the selection maximum and so
+was a single web, coloured a0 (save 132.75, nocs 4); the target has the
+index in a0 and the maximum in a1. Webs 151 (`step`) and 98 carry a
+forbidden0 mask that denies them a0, so no force reached the target layout
+from that source. Measured (masked words, delta 0):
+
+- the selection maximum in its own variable (`step`, or a new `best`): 63
+  to 4, but only together with FindType47ByAngle's result going to `object`
+  (with `found` it is 110 at -4 bytes; `object` alone was 152 at +4).
+- the last 4 words were the `i = 7` store before loops 5a and 5b scheduled
+  ahead of the hoisted D_1DA0 load and the -1000000 constant. Neither moving
+  statements nor a local copy of D_1DA0 changed it; writing those loops as
+  `for (i = 7; ; ) { ...; loopValue = i; i--; if (loopValue == 0) break; }`
+  did (4 to 2 for loop 5a, 2 to 0 with loop 5b). The score initialiser takes
+  the same form (neutral, adopted for consistency); the redirect loop and
+  the object loop stay `do`/`while` (the redirect loop in `for` form is 50).
+- callee identities from the module relocation table: +0x30 resident
+  0x8002A8BC, +0x260 resident func_80005750, +0x588 overlay 36 +0x1470
+  (overlay36CallModeZero, placeholder overlay1ModeAction6), and
+  FindType47ByAngle takes one `f32`. All four changes are neutral at 0.
+
+Promotion: the C definition is renamed to the friendly name overlay1ChoosePath
+(function_preflight resolves the symbol through the POSTPROCESS rename and
+found no C definition under the generated name); atlas range 0x3750..0x3E48.
+The TU's .rodata is now ChoosePath's four literals followed by the
+DispatchMode jump table, so the POSTPROCESS rule binds the literal pairs to
+`gOverlay1ChoosePathLiterals = 0xE8`, moves `gOverlay1ModeTable` to
+0x164 - 0x10 = 0x154, and asserts the new pool digest. `gmake verify`,
+`check-overlay-syms` and `promotion-proof` (446 words, frame 0x90,
+relocations 63/63) pass.
+
+<!-- plateau-handoff:overlay1ChoosePath:end -->

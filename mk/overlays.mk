@@ -234,6 +234,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: config/normalization
 # The eight-entry table retains its raw owner at initialized-data +0x274.
 # Its runtime LOCAL base is +0x110 into initialized data: bind the unchanged
 # compiler pair to stored addend +0x164, without editing instruction fields.
+# The object's .rodata is ChoosePath's four float literals (-1.2f, 400.5f,
+# 0.1f, 0.1f; shipped LOCAL addends +0xE8..+0xF4) followed by that table at
+# +0x10, so the table symbol is 0x164 - 0x10 and the literal pairs bind to a
+# base of 0xE8. Assert the whole pool by digest.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_overlay_001_F0003578_184F958=overlay1InitializeGaugeObjects \
@@ -285,11 +289,21 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4664 && \
 	candidate_rodata_size=$$( $(OBJDUMP) -h $@ | awk '$$2 == ".rodata" { print $$3; exit }' ); \
 	if [ -n "$$candidate_rodata_size" ] && [ "$$candidate_rodata_size" != "00000000" ]; then \
-		$(OBJCOPY) --add-symbol gOverlay1ModeTable=0x164,global $@ && \
+		$(OBJCOPY) --add-symbol gOverlay1ModeTable=0x154,global \
+			--add-symbol gOverlay1ChoosePathLiterals=0xE8,global $@ && \
 		$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 			@config/normalizations/overlay1DispatchMode.rebind.spec && \
+		$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+			0x4B8:.rodata:gOverlay1ChoosePathLiterals \
+			0x4FC:.rodata:gOverlay1ChoosePathLiterals \
+			0x5EC:.rodata:gOverlay1ChoosePathLiterals \
+			0x5F0:.rodata:gOverlay1ChoosePathLiterals \
+			0x718:.rodata:gOverlay1ChoosePathLiterals \
+			0x71C:.rodata:gOverlay1ChoosePathLiterals \
+			0x734:.rodata:gOverlay1ChoosePathLiterals \
+			0x738:.rodata:gOverlay1ChoosePathLiterals && \
 		$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-			sha256:553c0965d61758fe6e8486169ca6ae3a1c4def4245d49c53bdb058142fa7fead && \
+			sha256:446deb530f49dcc54cb8246aae673ad119189f428937f9a4d561f5fb873ec363 && \
 		$(OBJCOPY) --remove-section=.rel.rodata $@; \
 	fi
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_create.c.o: CFLAGS += -Wab,-r4300_mul

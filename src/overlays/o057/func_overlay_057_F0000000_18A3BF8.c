@@ -204,11 +204,13 @@ extern void func_8005AD64(O57Spawned *spawned, s32 mode, s32 index,
  * `|=`; func_8005AD64's last argument is a float zero; the initial packet
  * assigns scale before kind and state.
  *
- * Open: the -8 is the final spawn loop. The target keeps `i` live in s1 and
- * indexes the pair table from it each pass while walking only the spawned
- * array; uopt here strength-reduces both and drops `i` (loop form and the
- * spawned carrier measured flat). The frame is 0x88 against 0x78: two
- * reserved cells below the final packet that no declared local accounts for. */
+ * 2026-10-02 (lane e-o057): 100 at -8 -> 84 at 0. The final spawn loop reads
+ * the pair table as `(u8 *)table + (i << 2)` (a shift, not an ixa, so uopt
+ * keeps `i` and its sll/addu instead of walking both arrays), the call
+ * argument re-reads the spawned array, and the descriptor loop that counts
+ * 0x36 + n uses its own counter (`id`) so the choice/spawn `i` is one web.
+ * Open: register order (target i=s1, array walk s0; ours swapped, and the
+ * descriptor loops swap resourceIndex/end) and the frame, 0x88 against 0x78. */
 #ifdef NON_MATCHING
 void func_overlay_057_F0000000_18A3BF8(void) {
     u8 choiceMask;
@@ -298,12 +300,12 @@ void func_overlay_057_F0000000_18A3BF8(void) {
 
     descriptor = gO57Descriptors58Reloc;
     descriptorEnd = gO57Descriptors6CEndReloc;
-    i = 0;
+    id = 0;
     do {
         *descriptor = overlay45CreateDescriptor(
-            gO57ResourceTableReloc->entries[0x36 + i], 0xA0, -0x28, 4);
+            gO57ResourceTableReloc->entries[0x36 + id], 0xA0, -0x28, 4);
         descriptor++;
-        i++;
+        id++;
     } while (descriptor < descriptorEnd);
 
     o57PrepareDescriptorReloc(gO57Descriptor00PrepareReloc, 0xFF);
@@ -469,12 +471,12 @@ void func_overlay_057_F0000000_18A3BF8(void) {
         final.byte0A = 0;
         final.state = 0;
         final.byte0B = 0x80;
-        final.x = gO57SpawnPairs3E8Reloc[i].first;
-        final.y = gO57SpawnPairs3E8Reloc[i].second;
+        final.x = *(s16 *)((u8 *)gO57SpawnPairs3E8Reloc + (i << 2));
+        final.y = *(s16 *)((u8 *)gO57SpawnPairs3E8Reloc + (i << 2) + 2);
         spawned = func_8000590C(&final, 0);
         gO57Spawned150Reloc[i] = spawned;
         (*spawned->state)->mode = 2;
-        func_8005AD64(spawned, 0, 0, 0.0f);
+        func_8005AD64(gO57Spawned150Reloc[i], 0, 0, 0.0f);
         i++;
     } while (i != 4);
 }
@@ -484,10 +486,10 @@ void func_overlay_057_F0000000_18A3BF8(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_057_F0000000_18A3BF8:start
  * symbol: func_overlay_057_F0000000_18A3BF8
- * score: 100/597 words
+ * score: 84/597 words
  * frame: 0x88
  * relocations: 246
  * first-mismatch: +0x8
- * summary: 100 at -8: target keeps i live in s1 in the final spawn loop, uopt here strength-reduces both arrays; frame 0x88 vs 0x78.
+ * summary: 84 at 0: pair table via (i<<2) keeps i; own counter for 0x36 loop. Open: s-reg order (i s1/ptr s0), frame 0x88 vs 0x78.
  * PLATEAU-HANDOFF:func_overlay_057_F0000000_18A3BF8:end
  */

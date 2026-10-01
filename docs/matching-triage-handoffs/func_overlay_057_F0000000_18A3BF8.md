@@ -2,11 +2,13 @@
 ### `func_overlay_057_F0000000_18A3BF8` plateau handoff
 
 - source: `src/overlays/o057/func_overlay_057_F0000000_18A3BF8.c`
-- score: 100/597 words
+- score: 84/597 words
 - frame: 0x88
 - relocations: 246
 - first mismatch: +0x8
-- summary: 100 at -8: target keeps i live in s1 in the final spawn loop, uopt here strength-reduces both arrays; frame 0x88 vs 0x78.
+- summary: 84 at 0: pair table via (i<<2) keeps i; own counter for 0x36 loop. Open: s-reg order (i s1/ptr s0), frame 0x88 vs 0x78.
+
+Summary before this remeasure: 100 at -8: target keeps i live in s1 in the final spawn loop, uopt here strength-reduces both arrays; frame 0x88 vs 0x78.
 
 Summary before this remeasure: 282 to 276: every block-scoped register local merged to function scope and the packet declared sixth; the frame excess is now a local count.
 

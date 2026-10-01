@@ -1264,23 +1264,24 @@ void func_80022FD4(Gfx **dlist, Mtx **mtx, void *vertices,
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/camera/func_80022FD4.s")
 #endif
-#ifdef NON_MATCHING
-/* Workbench: size delta 0 and frame 0x90 both closed; 13 words remain.
- * Closed by: func_80034434 takes one argument (the varargs call spilled its
- * extra operands); GBI colour macros with the raw colour (drops the Gfx local
- * and the separate mask); declarations laid out so every home lands on the
- * target's ladder; the index reassigned to the scale index (x = f(x)); angle
- * finished after frameCount is read; an empty region at the join, which
- * raises the callee toll past dlist's total save so dlist stays in its home
- * (no s1).
- * Remains: baseScale and distanceScale tie at total save 6 and baseScale wins
- * f16 (a force puts it at 3 words), the propagated copy in the distance
- * multiply, and the order of the two Arctanf argument loads. */
+/* Matched 2026-10-01.  Three shape edits closed the last 13 words:
+ *  - there is no baseScale local.  *actor->baseScale is read at each use, so
+ *    the join's divisor is one expression that partial redundancy loads at
+ *    the end of the non-player arm, and distanceScale = *actor->baseScale is
+ *    a move the distance multiply does not see through;
+ *  - the base scale is the left operand of the first multiply;
+ *  - the x difference is its own statement (dx, in the frame slot the old
+ *    local held), which gives as1 the line boundary that orders the two
+ *    Arctanf argument loads.
+ * Kept from earlier lanes: func_80034434 takes one argument, the GBI colour
+ * macros with the raw colour, the declaration order (every home lands on the
+ * ladder), the index reassigned to the scale index, and the empty region at
+ * the join that keeps dlist in its home. */
 void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
                    CameraSpriteActor *actor, u8 *spriteData, s32 alpha) {
     CameraSpritePlayer *player;
     s32 spriteTypeIndex;
-    f32 baseScale;
+    f32 dx;
     s32 angle;
     s32 mirroredFrame;
     s32 frameCount;
@@ -1308,8 +1309,7 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
             spriteTypeIndex++;
         }
         spriteTypeIndex = D_80079FF0[spriteTypeIndex].scaleIndex;
-        baseScale = *actor->baseScale;
-        scale = D_80079FD8[spriteTypeIndex] * baseScale;
+        scale = *actor->baseScale * D_80079FD8[spriteTypeIndex];
         matrixScale = player->unk50;
         xRotation = player->xRotation;
         zRotation = player->zRotation;
@@ -1318,7 +1318,7 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
         y = player->y;
         z = player->z;
         if (D_8007BF0C != 0) {
-            distanceScale = baseScale;
+            distanceScale = *actor->baseScale;
             if (D_800CEC60 == 1) {
                 threshold = 400.0f;
                 multiplier = D_80081A30;
@@ -1344,14 +1344,13 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
         z = actor->z;
         scale = distanceScale;
         matrixScale = 1.0f;
-        baseScale = *actor->baseScale;
     }
 
     do {
     } while (0);
-    scale *= distanceScale / baseScale;
-    angle = Arctanf(D_800CEA20[D_800CEC64].transform.x - x,
-                    D_800CEA20[D_800CEC64].transform.z - z);
+    scale *= distanceScale / *actor->baseScale;
+    dx = D_800CEA20[D_800CEC64].transform.x - x;
+    angle = Arctanf(dx, D_800CEA20[D_800CEC64].transform.z - z);
     frameCount = spriteData[0] - 1;
     angle = xRotation - angle;
     doubledFrameCount = frameCount * 2;
@@ -1389,9 +1388,6 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
     gDPSetPrimColor((*dlist)++, 0, 0, 255, 255, 255, 255);
     gDPSetEnvColor((*dlist)++, 255, 255, 255, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/camera/func_80023598.s")
-#endif
 /*
  * PROVENANCE: adapted from JFG's public decomp, src/camera.c:camDoSprite;
  * Mickey supplies the resident projection flip and display-list encoding.
@@ -2042,14 +2038,4 @@ f32 D_80079F58[2] = { 0.0f, 0.0f };
  * first-mismatch: +0x9C
  * summary: hypothesis: unfold folded anchor GP draw via a later use. spellings: or-if 364/+12; ptr-diff 157/0; or-minus 314/+8. stall: use deleted or size grows
  * PLATEAU-HANDOFF:func_80022FD4:end
- */
-
-/* PLATEAU-HANDOFF:func_80023598:start
- * symbol: func_80023598
- * score: 13 differing words
- * frame: 0x90
- * relocations: 32
- * first-mismatch: +0xA8
- * summary: hypothesis: break the f16 tie unforced. spellings: decl inert 13; distanceScale-first 14 naming 3; temp delta +4. stall: no masked drop at delta 0
- * PLATEAU-HANDOFF:func_80023598:end
  */

@@ -199,6 +199,7 @@ def _add_tool_content_checks(checks,identity,label):
     _add_content_check(checks,Path(batch.sweep_receipts.__file__),identity['receipts'],label+' receipts helper')
     _add_content_check(checks,Path(batch.promotion_transaction.__file__),identity['promotion'],label+' promotion helper')
     context=identity['candidate_context']
+    _need(cc.identity()==context,label+' parser/comparator identity changed after recorded snapshot')
     _add_content_check(checks,Path(cc.__file__),context['comparator_sha256'],label+' candidate context')
 
 
@@ -208,8 +209,8 @@ def _add_candidate_content_checks(checks,candidate,snapshot):
     _add_content_check(checks,candidate['raw'],candidate['raw_sha256'],'R8 raw stock-C object')
     for relative,digest in snapshot['dependency_files'].items():
         _add_content_check(checks,relative,digest,'R8 dependency '+relative)
-    target_paths={'linked_elf':ROOT/'build/mickey.us.elf','link_map':ROOT/'build/mickey.us.map',
-      'rom':ROOT/'build/mickey.us.z64','candidate_object':candidate['configured'],
+    target_paths={'linked_elf':fp.TARGET_ELF,'link_map':ROOT/'build/mickey.us.map',
+      'rom':fp.ROM,'candidate_object':candidate['configured'],
       'normal_split_stamp':ROOT/'build/.splat-stamp','candidate_split_stamp':ROOT/'build_non_matching/.splat-stamp',
       'overlay_config':ROOT/'config/overlays.us.json','yaml':ROOT/'mickey.us.yaml',
       'linker_script':ROOT/'mickey.us.ld','undefined_symbols':ROOT/'overlay_undefined_syms.us.txt',
@@ -233,18 +234,28 @@ def _add_candidate_content_checks(checks,candidate,snapshot):
 
 
 def _add_physical_content_checks(checks,witness,label):
-    preflight= witness.get('fresh_target_preflight',{})
+    preflight=(witness.get('fresh_target_preflight') or
+               witness.get('fresh_owner_tu_preflight') or {})
     loader= witness.get('fresh_loader_preflight',{})
     owner=witness.get('owner') or witness.get('linked_owner') or {}
+    saved_report=ROOT/witness['saved_report']
+    _need(saved_report.is_file(),label+' retained physical report is missing')
+    report_dir=saved_report.parent
+    stock_hash=witness.get('stock_c_object_sha256') or witness.get('raw_stock_object_sha256')
+    _need(stock_hash is not None,label+' retained physical stock-C object hash is missing')
+    _add_content_check(checks,report_dir/'stock-c.o',stock_hash,label+' retained physical stock-C object')
+    if witness.get('key')=='gravity':
+        _add_content_check(checks,report_dir/'normalized.o',witness['normalized_object_sha256'],
+          label+' retained normalized gravity object')
     for snap_name in ('freshness_before','freshness_after'):
         snapshot=witness[snap_name]
         _add_content_check(checks,witness['source'],snapshot['source'],label+' source')
         owner_object=preflight.get('candidate_object')
         _need(owner_object is not None,label+' configured owner object path is unavailable')
         _add_content_check(checks,ROOT/owner_object,snapshot['configured_object'],label+' configured owner object')
-        _add_content_check(checks,ROOT/'build/mickey.us.elf',snapshot['linked_elf'],label+' linked ELF')
+        _add_content_check(checks,fp.TARGET_ELF,snapshot['linked_elf'],label+' linked ELF')
         _add_content_check(checks,ROOT/'build/mickey.us.map',snapshot['map'],label+' link map')
-        _add_content_check(checks,ROOT/'build/mickey.us.z64',snapshot['rom'],label+' full ROM')
+        _add_content_check(checks,fp.ROM,snapshot['rom'],label+' baserom')
         _add_content_check(checks,ROOT/'include',snapshot['include_tree'],label+' include tree',tree=True)
         source_path=ROOT/witness['source']
         _add_content_check(checks,source_path.parent,snapshot['source_directory'],label+' source directory',tree=True)
@@ -279,6 +290,7 @@ def _assert_joint_content_closure(candidate,final_snapshot,witnesses):
     checks={}
     _add_candidate_content_checks(checks,candidate,final_snapshot)
     _add_content_check(checks,Path(__file__),_LOADED[Path(__file__)],'adapter implementation')
+    _add_content_check(checks,AUTHORITY,AUTHORITY_SHA256,'fixed identity authority')
     for index,witness in enumerate(witnesses):
         _add_physical_content_checks(checks,witness,f'physical witness {index+1}')
     for (path,tree,source_only),(expected,label) in checks.items():

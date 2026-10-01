@@ -3697,10 +3697,13 @@ class ExplicitReservedStorageWitnessTests(unittest.TestCase):
             with self.assertRaisesRegex(rs.SurfaceComparisonError, "named local definition"):
                 self.invoke(root, fixture)
 
-    def test_explicit_namespace_suppresses_only_numeric_bss_fallback(self):
+    def test_explicit_namespace_preserves_named_owner_conflicts(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td); fixture = self.explicit_fixture(root)
             candidate, target = fixture[6], fixture[3]
+            values = root / "values"
+            values.write_text("")
+            evidence = {}
             with mock.patch.object(rs, "_numeric_assignments", return_value={"gSharedProxy": 0}), \
                  mock.patch.object(rs, "_canonical_overlay_data_identity", return_value=(57, 0x7110)) as owner:
                 legacy, _ = rs._stable_overlay_data_identities(
@@ -3709,9 +3712,13 @@ class ExplicitReservedStorageWitnessTests(unittest.TestCase):
                 owner.reset_mock()
                 explicit, _ = rs._stable_overlay_data_identities(
                     root / "values", candidate, {"overlay": 57}, target, 0, 8,
-                    explicit_foreign_names={"gSharedProxy"})
-                self.assertEqual(explicit, {})
-                owner.assert_not_called()
+                    explicit_foreign_names={"gSharedProxy"}, evidence=evidence)
+                self.assertEqual(explicit, {"gSharedProxy": (57, 0x7110)})
+                owner.assert_called_once()
+                with self.assertRaisesRegex(rs.SurfaceComparisonError, "independent alias identity"):
+                    rs._merge_independent_resident_bindings(
+                        {"gSharedProxy": (0xFFD, 0x31A4)}, explicit, set(),
+                        evidence, values, None)
 
     def test_independent_resident_and_sibling_conflicts_refused(self):
         for route, identity in [("resident-elf-address", (0, 0x1234)),

@@ -2917,6 +2917,68 @@ def _merge_explicit_storage_identities(imported, identities, ambiguous, evidence
         ambiguous.discard(name)
 
 
+def _merge_independent_resident_bindings(imported, identities, ambiguous,
+                                         evidence, values_path,
+                                         redefine_aliases):
+    """Resolve fixed resident witnesses together with every independent alias.
+
+    Correlation-only proposals are intentionally excluded.  A real independent
+    disagreement anywhere in an imported alias component remains a hard error.
+    """
+    proposed = collections.defaultdict(set)
+    for name, rows in (evidence or {}).items():
+        for row in rows:
+            if row.get("independent") and row.get("base_identity") is not None:
+                proposed[name].add(tuple(row["base_identity"]))
+    for name, identity in imported.items():
+        proposed[name].add(tuple(identity))
+    equality_aliases = ri.parse_linker_aliases(values_path.read_text()) \
+        if values_path.is_file() else []
+    redefine_pairs = [(source, destination)
+                      for destination, source in (redefine_aliases or {}).items()]
+    try:
+        resolved = ri.resolve_identities(
+            proposed, equality_aliases=equality_aliases,
+            redefine_aliases=redefine_pairs)
+    except ri.RelocationIdentityError as error:
+        raise SurfaceComparisonError(str(error)) from error
+
+    graph = collections.defaultdict(set)
+    for first, second in equality_aliases + redefine_pairs:
+        graph[first].add(second)
+        graph[second].add(first)
+    affected = set(imported)
+    pending = list(imported)
+    while pending:
+        for other in graph[pending.pop()]:
+            if other not in affected:
+                affected.add(other)
+                pending.append(other)
+    if affected.intersection(resolved.ambiguous):
+        raise SurfaceComparisonError(
+            "fixed resident binding conflicts with an independent alias identity")
+    for name in affected:
+        identity = resolved.resolved.get(name)
+        if identity is None:
+            continue
+        direct_independent = {
+            tuple(row["base_identity"])
+            for row in (evidence or {}).get(name, [])
+            if row.get("independent") and row.get("base_identity") is not None
+        }
+        if any(value != identity for value in direct_independent):
+            raise SurfaceComparisonError(
+                "fixed resident binding conflicts with an independent alias identity")
+        existing = identities.get(name)
+        if existing is not None and existing != identity and direct_independent:
+            raise SurfaceComparisonError(
+                "fixed resident binding conflicts with an independent resolved identity")
+        identities[name] = identity
+        # This can clear only ambiguity represented by discarded correlation
+        # routes; all independent proposals participated in resolve_identities.
+        ambiguous.discard(name)
+
+
 def _overlay_data_rodata_rom_bytes(module, row_offset, row_end, rom):
     """Translate data_rodata-relative ownership offsets into ROM coordinates."""
     rom_row = module.get("rom", {})
@@ -3585,8 +3647,24 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
 
     for name in sorted(valid):
         if name in explicit_foreign_names:
+            # A fixed imported identity excludes guesses from its numeric
+            # placeholder and target-site correlations, but it must not hide
+            # a genuine same-name canonical definition. Probe that independent
+            # owner route first so the joint identity graph can reject a real
+            # conflict before the foreign route suppresses weaker fallbacks.
+            if name in numeric:
+                canonical_identity = _canonical_overlay_data_identity(
+                    module, candidate_elf, name, numeric[name], target_elf,
+                    root=root, elf_loader=elf_loader, evidence=evidence)
+                if canonical_identity is not None:
+                    proposed[name].add(canonical_identity)
+                    _identity_witness(evidence, name, "canonical-data-owner",
+                                      canonical_identity)
+            else:
+                _identity_witness(evidence, name, "canonical-data-owner",
+                                  reason="no-numeric-linker-assignment")
             _identity_witness(evidence, name, "canonical-data-owner",
-                              reason="explicit-foreign-storage-excludes-numeric-bss-fallback")
+                              reason="explicit-foreign-storage-excludes-numeric-and-correlation-fallbacks")
             continue
         if name not in numeric and name not in explicit_bindings:
             _identity_witness(evidence, name, "canonical-data-owner", reason="no-numeric-linker-assignment")
@@ -4827,6 +4905,31 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
             resident_runtime_records)
     evidence = ({} if include_diagnostics or reserved_storage_witnesses is not None
                 or explicit_overlay_storage_bindings else None)
+    resident_binding_module = None
+    resident_binding_receipt = None
+    resident_imported = {}
+    if (explicit_overlay_storage_bindings and overlay == 8
+            and target_symbol == "func_overlay_008_F0001294_185EFEC"
+            and candidate_symbol == "func_overlay_008_F0001294_185EFEC"
+            and row.get("source") == "overlays/o008/overlay_008"):
+        import resident_binding_surface as resident_binding_module
+        resident_binding_receipt = resident_binding_module.collect_candidate(
+            candidate_object, target_symbol, overlay,
+            "src/overlays/o008/overlay_008.c")
+        resident_imported = {
+            name: tuple(identity)
+            for name, identity in resident_binding_receipt["bindings"].items()
+        }
+        for name, identity in resident_imported.items():
+            _identity_witness(
+                evidence, name, "fixed-resident-storage-binding", identity,
+                independent=True, binding_key=next(
+                    key for key, (carrier, _identity, _width)
+                    in resident_binding_module.EXPECTED.items()
+                    if carrier == name),
+                capture_sha256=hashlib.sha256(json.dumps(
+                    resident_binding_receipt["reports"][name], sort_keys=True,
+                    separators=(",", ":")).encode()).hexdigest())
     candidate_symbols = candidate_elf.symbols()
     boundary_proof_names = {
         candidate_symbols[index][0]
@@ -4864,7 +4967,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                 rom=rom, runtime_module=context["module"],
                 target_records=target_records,
                 own_range=(target_start, target_start + target_size),
-                evidence=evidence, explicit_foreign_names=set(imported),
+                evidence=evidence,
+                explicit_foreign_names=set(imported) | set(resident_imported),
                 root=REPO,
                 explicit_storage_registry=explicit_storage_registry,
                 explicit_storage_registry_path=explicit_storage_registry_path,
@@ -4894,6 +4998,10 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
     if reserved_storage_witnesses is not None:
         _merge_reserved_storage_identities(imported, identities, ambiguous_identities, evidence)
         ambiguous_overlay_data.difference_update(imported)
+    if resident_imported:
+        _merge_independent_resident_bindings(
+            resident_imported, identities, ambiguous_identities,
+            evidence, values_path, candidate_redefine_aliases)
     numeric_values = _numeric_assignments(values_path)
     candidate_records = _candidate_surface_records(
         candidate_elf, candidate_start, candidate_size, target_records,
@@ -4932,6 +5040,15 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
         "target_offset": "0x%X" % target_start,
         "target_size": "0x%X" % target_size,
     })
+    if resident_binding_receipt is not None:
+        resident_binding_module.recheck_candidate(resident_binding_receipt)
+        result["fixed_resident_bindings"] = {
+            "status": "independent-physical-witnesses-rechecked",
+            "bindings": resident_binding_receipt["bindings"],
+            "candidate_sha256": resident_binding_receipt["candidate"]["sha256"],
+            "rechecked_keys": ["impact_gate", "color_gate", "gravity"],
+            "matching_credit": 0,
+        }
     return result
 
 

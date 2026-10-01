@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 262276,
-  "nonmatching_overlay_c_bytes": 206332,
+  "matched_overlay_c_bytes": 262728,
+  "nonmatching_overlay_c_bytes": 205880,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 3600,
   "bss_bytes": 77680,
@@ -1728,7 +1728,7 @@
      "type": "c",
      "source": "overlays/o003/overlay3RunCachedModeAction",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x27C",

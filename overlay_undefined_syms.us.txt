@@ -255,6 +255,19 @@ gOverlay3Entries = 0x00000028;
 /* overlay 3: overlay3ResetObjects.c.o */
 overlay3GetObjectsReloc = 0xf0000000;
 
+/* overlay 3: overlay3RunCachedModeAction.c.o */
+gOverlay3ModeChance = 0x00000000;
+overlay1EncodeAngleReloc = 0xf0000000;
+overlay2CheckPathReloc = 0xf0000000;
+overlay36Mode3ActionReloc = 0xf0000000;
+overlay36Mode4ActionReloc = 0xf0000000;
+overlay36Mode6ActionReloc = 0xf0000000;
+overlay36Mode7ActionReloc = 0xf0000000;
+overlay3AngleDeltaReloc = 0xf0000000;
+overlay3GetSearchObjectsReloc = 0xf0000000;
+overlay3PlanarAngleReloc = 0xf0000000;
+overlay3RandomRangeReloc = 0xf0000000;
+
 /* overlay 3: overlay3FindClosestObject.c.o */
 gOverlay3SearchMaxDistance = 0x00000000;
 overlay3ContainsValueReloc = 0xf0000000;
@@ -262,8 +275,6 @@ overlay3DistanceSquaredReloc = 0xf0000000;
 overlay3GetObjectRangeReloc = 0xf0000000;
 
 /* overlay 3: overlay3SelectScoredObject.c.o */
-overlay3GetSearchObjectsReloc = 0xf0000000;
-overlay3RandomRangeReloc = 0xf0000000;
 overlay3SqrtReloc = 0xf0000000;
 
 /* overlay 3: overlay3SelectTarget.c.o */

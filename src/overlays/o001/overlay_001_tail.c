@@ -896,15 +896,17 @@ extern void *LOCAL_BSS_1D9C;
  * layouts follow Mickey's runtime identities and access widths. The
  * declarations follow the target's home ladder (every declared local takes a
  * slot in declaration order here, so a new local must replace a free one).
- * 2026-10-02 (g-o001big), 1061 to 144 at delta 0: `while (n--)` for the
+ * 2026-10-02 (g-o001big), 1061 to 61 at delta 0: `while (n--)` for the
  * surface and update loops, an else-arm for the last slope case, the angle
- * magnitude, steering scale and slope/spin/decel scale in their own locals
+ * magnitude and the slope/spin/decel/steering factor in their own locals
  * (impulse keeps `scale`, the target's 0x80 home), field reads instead of
- * the value2 carriers, the limit product level-first and the slope factor
- * written slope * tuning[3] * 0.5f (both move ugen's float draw order), the
- * decel scaled before its test, the `< 0` zeros the target materialises with
- * mtc1, and the steering `* 16384` spelled apart from the angle block's
- * 16384.0f so the angle constant stays a register web. */
+ * the value2 carriers and the action callback, the limit product
+ * level-first, the slope factor as slope * tuning[3] * 0.5f, the steering
+ * value as one expression, deltaZ before inverseUpdate and the three
+ * velocity stores before the position updates (all of these move ugen's
+ * register draws), the decel scaled before its test, the `< 0` zeros the
+ * target materialises with mtc1, and the steering `* 16384` spelled apart
+ * from the angle block's 16384.0f so that constant stays a register web. */
 #ifdef NON_MATCHING
 void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) {
     f32 absAngle;
@@ -943,9 +945,9 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
     s32 steering;
     s32 level;
     f32 speed;
-    f32 turnScale;
+    s32 pad64;
     s32 index;
-    void (*callback)(void);
+    s32 pad5C;
     s32 collision;
     O1PhysicsPathMode *path;
     O1PhysicsActionMode *action;
@@ -1283,13 +1285,12 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
             } else if (state->controlXjoy < -0x41) {
                 steering = 0x1F4;
             } else {
-                steering = -state->controlXjoy;
-                steering = (steering * 500) / 65;
+                steering = (-state->controlXjoy * 500) / 65;
             }
             work = -2.0f - state->forwardVelocity;
             state->steeringAngle = (s16) (state->steeringAngle + ((s32) (steering - state->steeringAngle) >> 1));
             if (work > 0.0f) {
-                turnScale = (func_8002A8BC((s32) (work * 1310.72f)) * 0.25f) + 0.75f;
+                extraScale = (func_8002A8BC((s32) (work * 1310.72f)) * 0.25f) + 0.75f;
             } else {
                 if (work < 0) {
                     work = -work;
@@ -1297,15 +1298,14 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
                 if (work > 2.0f) {
                     work = 2.0f;
                 }
-                turnScale = (func_8002A8BC((s32) (work * 16384)) + 1.0f) * 0.5f;
+                extraScale = (func_8002A8BC((s32) (work * 16384)) + 1.0f) * 0.5f;
             }
             if (state->forwardVelocity > 0.0f) {
-                turnScale = -turnScale;
+                extraScale = -extraScale;
             }
-            state->heading = (s16) (s32) ((f32) state->heading + ((f32) state->steeringAngle * turnScale));
+            state->heading = (s16) (s32) ((f32) state->heading + ((f32) state->steeringAngle * extraScale));
             state->sideVelocity = (f32) (state->sideVelocity * 0.96f);
-            value2 = state->sideVelocity;
-            if ((-0.1f < value2) && (value2 < 0.1f)) {
+            if ((-0.1f < state->sideVelocity) && (state->sideVelocity < 0.1f)) {
                 state->sideVelocity = 0.0f;
             }
         }
@@ -1372,12 +1372,12 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         velocityZ -= state->sideVelocity * func_8002A8C0(heading);
         deltaX = (velocityX * D_4) + impulseX;
         deltaY = ((object->velocityY * D_4) - (0.5f * G_rt_458c4 * D_4 * D_4)) + impulseY;
-        inverseUpdate = 1.0f / D_4;
         deltaZ = (velocityZ * D_4) + impulseZ;
+        inverseUpdate = 1.0f / D_4;
         object->velocityX = (f32) (deltaX * inverseUpdate);
         object->velocityY = (f32) (object->velocityY - (G_rt_458c4 * D_4));
-        object->x += deltaX;
         object->velocityZ = (f32) (deltaZ * inverseUpdate);
+        object->x += deltaX;
         object->y = (f32) (object->y + deltaY);
         object->z += deltaZ;
         if (state->collisionMode == 1) {
@@ -1432,21 +1432,16 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         state->outputScale = func_overlay_008_F00034A0_18611F8(object, state, limit, D_4);
         func_overlay_008_F00049B4_186270C(state);
         func_8001D41C(object, state, gOverlay1TimerStep);
-        action = &gO1PhysicsActions[2];
-        index = 2;
-        do {
+        for (index = 2, action = &gO1PhysicsActions[2]; index != 6; index++, action++) {
             if (index != state->actionMode) {
                 predicate = action->test;
                 if ((predicate != NULL) && (action->mask & (1 << state->actionMode))) {
                     predicate();
                 }
             }
-            index += 1;
-            action++;
-        } while (index != 6);
-        callback = gO1PhysicsActions[*(volatile u8 *)&state->actionMode].update;
-        if (callback != NULL) {
-            callback();
+        }
+        if (gO1PhysicsActions[state->actionMode].update != NULL) {
+            gO1PhysicsActions[state->actionMode].update();
         }
         func_overlay_008_F0003278_1860FD0(object, state, gOverlay1TimerStep);
         func_8001D960(object, state, 0, 3, gOverlay1TimerStep);
@@ -3213,10 +3208,10 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C
- * score: 144/1542 words
+ * score: 61/1542 words
  * frame: 0x138
  * relocations: 184
  * first-mismatch: +0x824
- * summary: Field reads for value2 carriers, own slope/spin scale, slope*tuning*0.5 draw order: 307 to 144 at delta 0; rest is ring/colour
+ * summary: Expression/statement order moves ugen draws: steering one expression, deltaZ first, velocity stores first; callback read direct: 144 to 61
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
  */

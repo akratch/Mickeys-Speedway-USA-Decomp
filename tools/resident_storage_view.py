@@ -37,7 +37,7 @@ LOADER_RECIPE = '0c80ca4b26661342a8eb479d905aa636e31b01980b911b8c4a43f67d4017b30
 SOURCE_PINS = {
     'impact_gate': ('src/main/anim.c', 'e75ea3d245cf5076d769b603ff82fc2a50ce04c7d1a100d91de4ea4d0898dfc3'),
     'color_gate': ('src/main/objects.c', '9c88fe52160f7515f97007d6e57f6b640f772b7f81c4d23cf1389d9e50ecc3c0'),
-    'gravity': ('src/main/charControl.c', '04c3cdbcbb265f74af6d0d656d8a6c9aafcf6654d004b7ad91cf01e42c7e6e01'),
+    'gravity': ('src/main/charControl.c', 'bd1010309d38485300c8db1f27208370f4642bb73f92e72d3f6098cd7e2f3c89'),
 }
 WITNESSES = {
     'impact_gate': {'function':'func_80050348','owner':'D_8007BF04','external':'D_8007BF04','selector':0xFFD,'offset':0x31A4,'size':532,'relocs':22,'uses':3,'recipe':'c9ae34a06b5294868c9bb0a05f888ab6b7942dbf9c6861830bf560a1208858e6','renames':('animResetTrap','hitCopyFirstTrap','TrapDanglingJump')},

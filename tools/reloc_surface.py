@@ -2529,68 +2529,11 @@ def _canonical_overlay_data_identity(module, candidate_elf, name,
         raise SurfaceComparisonError(
             "candidate data symbol %s has ambiguous overlay definitions" % name)
     if not linked:
-        # A friendly candidate name may intentionally have no linked data
-        # alias.  A sole canonical object that owns the *entire* output BSS is
-        # still sufficient provenance: the ABS assignment is then an exact
-        # byte offset in that object, independent of any target relocation.
-        root = REPO if root is None else Path(root)
-        loader = Elf if elf_loader is None else elf_loader
-        output_index, output_header = target_elf.section(
-            ".overlay_%03d_bss" % overlay)
-        if output_index is None or not isinstance(output_header, tuple):
-            return unavailable("missing-linked-overlay-bss-section")
-        output_address, output_size = output_header[3], output_header[5]
-        rom_size = _atlas_hex(module.get("rom", {}), "size", "overlay ROM row")
-        bss_size = _overlay_module_extent(module, "bss_size", "BSS size")
-        if (output_address != SYNTHETIC_VMA + rom_size
-                or output_size > bss_size or numeric_value >= output_size):
-            return unavailable("linked-bss-extent-or-offset-not-authenticated")
-        whole_owners = []
-        for row in module.get("text_ownership", []):
-            if not isinstance(row, dict) or row.get("type") != "c":
-                continue
-            source = row.get("source")
-            if not isinstance(source, str):
-                continue
-            source_rel = Path(source)
-            if source_rel.is_absolute() or ".." in source_rel.parts:
-                raise SurfaceComparisonError(
-                    "overlay %d has an unsafe canonical source path" % overlay)
-            source_path = root / "src" / (source + ".c")
-            object_path = root / "build" / "src" / (source + ".c.o")
-            if not source_path.is_file() or not object_path.is_file():
-                continue
-            if object_path.stat().st_mtime_ns < source_path.stat().st_mtime_ns:
-                continue
-            target_path = getattr(target_elf, "path", None)
-            if (isinstance(target_path, Path) and target_path.is_file()
-                    and target_path.stat().st_mtime_ns
-                    < object_path.stat().st_mtime_ns):
-                continue
-            obj = loader(object_path)
-            _index, header = obj.section(".bss")
-            if isinstance(header, tuple) and header[5] == output_size:
-                whole_owners.append((source, obj))
-        if len(whole_owners) > 1:
-            raise SurfaceComparisonError(
-                "candidate data symbol %s has ambiguous whole-BSS ownership"
-                % name)
-        if not whole_owners:
-            return unavailable("no-fresh-unique-whole-bss-owner")
-        candidate_source = _source_from_object(Path(candidate_elf.path))
-        candidate_path = root / "src" / ((candidate_source or "") + ".c")
-        if (not candidate_source or not candidate_path.is_file()
-                or not Path(candidate_elf.path).is_file()
-                or Path(candidate_elf.path).stat().st_mtime_ns
-                < candidate_path.stat().st_mtime_ns):
-            return unavailable("candidate-source-path-or-freshness-unavailable")
-        text_size = _atlas_hex(
-            module.get("sections", {}).get("text", {}), "size",
-            "overlay text section")
-        data_size = _atlas_hex(
-            module.get("sections", {}).get("data_rodata", {}), "size",
-            "overlay data/rodata section")
-        return overlay, text_size + data_size + numeric_value
+        # A sole BSS owner authenticates storage, not a proxy's namespace.
+        # The same small ABS value can denote initialized data or another
+        # LOCAL base.  Require an explicit named data definition instead of
+        # inferring BSS identity from the numeric offset alone.
+        return unavailable("missing-explicit-data-owner-binding")
     linked_value, linked_size, linked_info, linked_section = linked[0]
     linked_type = linked_info & 0xF
     if linked_type not in (STT_NOTYPE, STT_OBJECT):

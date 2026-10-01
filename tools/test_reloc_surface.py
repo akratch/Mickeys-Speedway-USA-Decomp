@@ -951,13 +951,28 @@ class OverlayDataIdentityTests(unittest.TestCase):
                 object_section=".bss"))
         self.assertEqual((7, 0x1B94), resolved["gPool"])
 
-    def test_friendly_name_without_linked_alias_uses_unique_whole_bss(self):
+    def test_friendly_name_without_linked_alias_needs_explicit_binding(self):
         with tempfile.TemporaryDirectory() as td:
             resolved, _ = self.resolve(self.fixture(
                 Path(td), name="gFriendlyState", assignment=0x11C,
                 object_value=0x11C, object_section=".bss",
                 linked_name=False))
-        self.assertEqual((7, 0x1A2C), resolved["gFriendlyState"])
+        self.assertEqual({}, resolved)
+
+    def test_small_initialized_data_proxy_does_not_borrow_whole_bss_owner(self):
+        with tempfile.TemporaryDirectory() as td:
+            fixture = self.fixture(
+                Path(td), overlay=8, name="gOverlay8IndexMode", assignment=0,
+                object_value=0, object_section=".bss", linked_name=False)
+            candidate, canonical, target, module, values = fixture
+            evidence = {}
+            identity = rs._canonical_overlay_data_identity(
+                module, candidate, "gOverlay8IndexMode", 0, target,
+                root=values.parent, elf_loader=lambda _path: canonical,
+                evidence=evidence)
+        self.assertIsNone(identity)
+        self.assertEqual("missing-explicit-data-owner-binding",
+                         evidence["gOverlay8IndexMode"][0]["reason"])
 
     def test_same_numeric_assignment_in_two_overlays_uses_caller_context(self):
         with tempfile.TemporaryDirectory() as td:

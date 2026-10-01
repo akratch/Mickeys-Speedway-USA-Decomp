@@ -5395,8 +5395,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o058/overlay58FinalizePackedStatus.c.o",
       "offset": 21844,
       "overlay": 58,
@@ -9212,7 +9212,7 @@
       "metadata": 635,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 230612,
+    "matched_c_bytes_with_postprocess": 231828,
     "objects_with_postprocess": 639
   }
 }

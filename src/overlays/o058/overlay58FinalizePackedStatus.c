@@ -8,94 +8,49 @@ typedef struct Overlay58InputRecord {
     u16 rank;
 } Overlay58InputRecord;
 
-/* Every Reloc name is provisional; normalized assembly does not bind it. */
-extern u8 gOverlay58FinalizerGateReloc;
+/* The gate, the two mode bytes and the packed status words are resident
+ * objects reached through runtime relocation records. */
+extern u8 gOverlay58FinalizerGate;
 extern s32 gOverlay58PrimaryOrderIndex; /* overlay-local BSS +0x74 */
-extern u8 gOverlay58PackedModeReloc;
-extern u8 gOverlay58ExtendedPackedModeReloc;
-extern u16 gOverlay58PackedStatusReloc[];
+extern u8 gOverlay58PackedMode;
+extern u8 gOverlay58ExtendedPackedMode;
+extern u16 gOverlay58PackedStatus[];
 
-extern Overlay58InputRecord *overlay58Call555CReloc(void);
-extern void overlay58Call56E8Reloc(s32 code);
-extern void overlay58Call56F8Reloc(s32 code);
-extern void overlay58Call5720Reloc(s32 code);
-extern void overlay58Call5738Reloc(void);
-extern void overlay58Call5740Reloc(s32 code);
-extern void overlay58Call57B4Reloc(s32 code);
-extern void overlay58Call57C4Reloc(s32 code);
-extern void overlay58Call57ECReloc(s32 code);
-extern void overlay58Call5804Reloc(void);
-extern void overlay58Call580CReloc(s32 code);
-extern void overlay58Call5894Reloc(s32 code);
-extern void overlay58Call58BCReloc(s32 count);
-extern void overlay58Call58DCReloc(s32 code);
-extern void overlay58Call5900Reloc(void);
-extern void overlay58Call5908Reloc(s32 code);
-extern void overlay58Call593CReloc(void);
-extern void overlay58Call5944Reloc(s32 code);
-extern void overlay58Call5994Reloc(void);
-extern void overlay58Call59ACReloc(void);
-extern void overlay58Call59C4Reloc(void);
-extern void overlay58Call59DCReloc(void);
-extern void overlay58Call59F4Reloc(void);
-extern void overlay58Call59FCReloc(s32 code);
+extern Overlay58InputRecord *func_80028F54(void);
+extern void func_8003A680(s32 code);
+extern void func_800291B4(void);
 
-/* Exact semantic body for executable range +0x5554..+0x5A14. */
-/*
- * Plateau (2026-09-10): 104 of 304 relocation-masked words differ, down from
- * 177, at unchanged 304-word geometry and an unchanged 0x48 frame.  The three
- * `if (... != 0);` statements below are discarded-expression probes (ido-5.3
- * L37): they cost zero instructions, and each adds one web occurrence that
- * re-orders p1's colouring.  Their positions came from a frame-constrained
- * hill climb over insert/delete/move moves; each of the three is a strict
- * gain on the base the two before it produce, and none is a gain alone in a
- * different order.  The same construct is what moved this overlay's two
- * point-quad draw routines from 70 to 26.
+/* Exact body for executable range +0x5554..+0x5A14.
  *
- * 2026-09-16 (lane s1-a), 88 to 78 at delta 0: `shift` is defined before
- * `mask` in every arm (first-definition order gives shift v1 and mask a0,
- * L106), the extended test is `== 0` with its else arm hoisted above the
- * branch as the ROM lays it out, and every mode section defines `i`, then
- * `count`, then its selected player.  A clean form with no probes and the
- * selected player re-read from `records[0].player` reproduces the ROM's
- * mode-0 loop shape exactly (the copy `or a3,t0,zero`, the compare before
- * the address) but colours the packed-status base t0 where the ROM has t3
- * (44 rows), which the probes are pinning; see the shard.
- *
- * 2026-09-18 (lane w14-o058), 78 to 77 at delta 0: `mask` and `shift` are
- * `u16`.  That pair occupies the target's +0x1C home (candidate +0x18 is
- * gone).  s32/u32/unsigned are 78; s16 shift grows the function; other
- * 16-bit locals regress.  See the shard.
- *
- * 2026-09-19 (lane w28-o058f), 77 to 75 at delta 0: mode-0 `i = 0` moves
- * into the `for` initializer so that node is not initially ready, and
- * each mask arm comma-assigns `shift` in the same statement (overlay40
- * delay).  Empty `if (i) {}`, leftover OR-zero, loop-local packed
- * carriers, generated subscripts, and the other initially-ready delays
- * are inert or worse on this shape.  See the shard.
- */
-#ifdef NON_MATCHING
+ * Matched 2026-10-01 by discarding the probes, volatile reads and comma
+ * assignments of the plateau shape and writing what the relocation records
+ * and the frame name:
+ * - all twenty-four call sites are three resident functions;
+ * - nine locals, with the records pointer declared last. The packed mode
+ *   and the selected player are not locals: each is read from its object at
+ *   every use, so the compiler keeps one shared load;
+ * - `self` is assigned from the record inside each counting loop. The
+ *   assignment is hoisted to the preheader as a copy of the shared load,
+ *   and the in-loop reference is what ranks that load ahead of the other
+ *   caller-saved values;
+ * - the decoded field of the third loop reuses `mask`, which keeps it in the
+ *   mask's register;
+ * - the posted count is the expression `count + 1` at both uses, so it is a
+ *   compiler temporary with its own home rather than the count's. */
 void overlay58FinalizePackedStatus(void) {
-    Overlay58InputRecord *records;
-    s32 desired;
-    s32 current;
-    s32 mode;
-    s32 player;
-    s32 selectedPlayer0;
-    s32 selectedPlayer1;
-    s32 selectedPlayer2;
-    u16 mask;
-    u16 shift;
     s32 i;
     s32 count;
-    s32 equalFourCount;
-    s32 decoded;
-    u16 flags;
+    s32 fourCount;
+    s32 desired;
+    s32 self;
+    s32 current;
+    s32 mask;
+    s32 shift;
+    Overlay58InputRecord *records;
 
+    records = func_80028F54();
 
-    records = overlay58Call555CReloc();
-
-    if (gOverlay58FinalizerGateReloc != 0) {
+    if (gOverlay58FinalizerGate != 0) {
         return;
     }
     if (records[0].state != 0) {
@@ -112,161 +67,134 @@ void overlay58FinalizePackedStatus(void) {
     if (records[0].rank == 0x24) {
         desired = 4;
     } else {
-        for (i = 1; (desired > 0) && (i != 6); i++) {
-            if (selectedPlayer0 != 0);
-            if (records[0].rank < records[i].rank) {
+        for (i = 1; (desired > 0) && (i != 6);) {
+            if (records[0].rank < records[i++].rank) {
                 desired--;
             }
         }
     }
 
-    mode = gOverlay58PackedModeReloc;
-    if (mode == 0) {
-        shift = 0, mask = 0x7;
-    } else if (mode == 1) {
-        shift = 3, mask = 0x38;
-    } else if (gOverlay58ExtendedPackedModeReloc == 0) {
-        shift = 6, mask = 0x1C0;
+    if (gOverlay58PackedMode == 0) {
+        shift = 0;
+        mask = 0x7;
+    } else if (gOverlay58PackedMode == 1) {
+        shift = 3;
+        mask = 0x38;
+    } else if (gOverlay58ExtendedPackedMode == 0) {
+        shift = 6;
+        mask = 0x1C0;
     } else {
-        shift = 9, mask = 0xE00;
+        shift = 9;
+        mask = 0xE00;
     }
 
-    player = records[0].player;
-
+    current = (gOverlay58PackedStatus[records[0].player + 4] & mask) >> shift;
     if (desired < 3) {
         return;
     }
-    current = (gOverlay58PackedStatusReloc[player + 4] & mask) >> shift;
     if (current >= desired) {
         return;
     }
 
-    if (mode == 0) {
+    if (gOverlay58PackedMode == 0) {
         if (current >= 3) {
             return;
         }
-
-        count = 0;
-        selectedPlayer0 = player;
-        for (i = 0; i < 3; i++) {
-            if (current != 0);
-            if ((i != *(volatile u8 *)&records[0].player) &&
-                ((gOverlay58PackedStatusReloc[i + 4] & 0x7) >= 3)) {
-                count++;
-            }
-        }
-
-        if (count == 0) {
-            if (desired == 4) {
-                overlay58Call56E8Reloc(0x17);
-            } else {
-                overlay58Call56F8Reloc(0x16);
-            }
-            return;
-        }
-        if (count != 2) {
-            return;
-        }
-        if ((selectedPlayer0 < 0) || (selectedPlayer0 >= 3)) {
-            return;
-        }
-
-        overlay58Call5720Reloc(0x0B);
-        gOverlay58PackedStatusReloc[10] |= 0x10;
-        overlay58Call5738Reloc();
-        overlay58Call5740Reloc(0x15);
-        return;
-    }
-
-    if (mode == 1) {
-        if (current >= 3) {
-            return;
-        }
-
         i = 0;
         count = 0;
-        selectedPlayer1 = *(volatile u8 *)&records[0].player;
         for (; i < 3; i++) {
-            if (player != 0);
-            if ((i != selectedPlayer1) &&
-                (((gOverlay58PackedStatusReloc[i + 4] & 0x38) >> 3) >=
-                 3)) {
+            self = records[0].player;
+            if ((i != self) && ((gOverlay58PackedStatus[i + 4] & 0x7) >= 3)) {
                 count++;
             }
         }
-
         if (count == 0) {
             if (desired == 4) {
-                if (records != 0);
-                overlay58Call57B4Reloc(0x17);
+                func_8003A680(0x17);
             } else {
-                overlay58Call57C4Reloc(0x16);
+                func_8003A680(0x16);
             }
-            return;
+        } else if (count == 2) {
+            if ((self >= 0) && (self < 3)) {
+                func_8003A680(0x0B);
+                gOverlay58PackedStatus[10] |= 0x10;
+                func_800291B4();
+                func_8003A680(0x15);
+            }
         }
-        if (count != 2) {
-            return;
-        }
-        if ((selectedPlayer1 < 0) || (selectedPlayer1 >= 3)) {
-            return;
-        }
-
-        overlay58Call57ECReloc(0x0C);
-        gOverlay58PackedStatusReloc[10] |= 0x04;
-        overlay58Call5804Reloc();
-        overlay58Call580CReloc(0x15);
         return;
     }
 
-    if (gOverlay58ExtendedPackedModeReloc == 0) {
+    if (gOverlay58PackedMode == 1) {
+        if (current >= 3) {
+            return;
+        }
         i = 0;
         count = 0;
-        selectedPlayer2 = *(volatile u8 *)&records[0].player;
-        equalFourCount = 0;
-        do {
-            if (i != selectedPlayer2) {
-                decoded =
-                    (gOverlay58PackedStatusReloc[i + 4] & 0x1C0) >> 6;
-                if (decoded >= 3) {
+        for (; i < 3; i++) {
+            self = records[0].player;
+            if ((i != self) &&
+                (((gOverlay58PackedStatus[i + 4] & 0x38) >> 3) >= 3)) {
+                count++;
+            }
+        }
+        if (count == 0) {
+            if (desired == 4) {
+                func_8003A680(0x17);
+            } else {
+                func_8003A680(0x16);
+            }
+        } else if (count == 2) {
+            if ((self >= 0) && (self < 3)) {
+                func_8003A680(0x0C);
+                gOverlay58PackedStatus[10] |= 0x04;
+                func_800291B4();
+                func_8003A680(0x15);
+            }
+        }
+        return;
+    }
+
+    if (gOverlay58ExtendedPackedMode == 0) {
+        i = 0;
+        count = 0;
+        fourCount = 0;
+        for (; i < 5; i++) {
+            self = records[0].player;
+            if (i != self) {
+                mask = (gOverlay58PackedStatus[i + 4] & 0x1C0) >> 6;
+                if (mask >= 3) {
                     count++;
-                if (player != 0);
                 }
-                if (decoded == 4) {
-                    equalFourCount++;
+                if (mask == 4) {
+                    fourCount++;
                 }
             }
-            i++;
-        } while (i != 5);
+        }
 
-        if ((equalFourCount == 4) && (desired == 4)) {
-            overlay58Call5894Reloc(0x0D);
+        if ((fourCount == 4) && (desired == 4)) {
+            func_8003A680(0x0D);
         }
 
         if (current < 3) {
-            count++;
-            overlay58Call58BCReloc(count);
-            if (count == 5) {
-                overlay58Call58DCReloc(0x18);
-                flags = gOverlay58PackedStatusReloc[10];
-                if ((flags & 0x40) == 0) {
-                    if (records != 0);
-                    gOverlay58PackedStatusReloc[10] = flags | 0x40;
-                    overlay58Call5900Reloc();
-                    overlay58Call5908Reloc(0x15);
+            func_8003A680(count + 1);
+            if ((count + 1) == 5) {
+                func_8003A680(0x18);
+                if ((gOverlay58PackedStatus[10] & 0x40) == 0) {
+                    gOverlay58PackedStatus[10] |= 0x40;
+                    func_800291B4();
+                    func_8003A680(0x15);
                 }
             }
         }
 
-        if (records[0].player != 3) {
-            return;
+        if (records[0].player == 3) {
+            if ((gOverlay58PackedStatus[10] & 0x100) == 0) {
+                gOverlay58PackedStatus[10] |= 0x100;
+                func_800291B4();
+                func_8003A680(0x15);
+            }
         }
-        flags = gOverlay58PackedStatusReloc[10];
-        if ((flags & 0x100) != 0) {
-            return;
-        }
-        gOverlay58PackedStatusReloc[10] = flags | 0x100;
-        overlay58Call593CReloc();
-        overlay58Call5944Reloc(0x15);
         return;
     }
 
@@ -274,40 +202,27 @@ void overlay58FinalizePackedStatus(void) {
         return;
     }
 
-    switch (player) {
+    switch (records[0].player) {
         case 0:
-            gOverlay58PackedStatusReloc[10] |= 0x01;
-            overlay58Call5994Reloc();
+            gOverlay58PackedStatus[10] |= 0x01;
+            func_800291B4();
             break;
         case 1:
-            gOverlay58PackedStatusReloc[10] |= 0x02;
-            overlay58Call59ACReloc();
+            gOverlay58PackedStatus[10] |= 0x02;
+            func_800291B4();
             break;
         case 2:
-            gOverlay58PackedStatusReloc[10] |= 0x08;
-            overlay58Call59C4Reloc();
+            gOverlay58PackedStatus[10] |= 0x08;
+            func_800291B4();
             break;
         case 3:
-            gOverlay58PackedStatusReloc[10] |= 0x20;
-            overlay58Call59DCReloc();
+            gOverlay58PackedStatus[10] |= 0x20;
+            func_800291B4();
             break;
         default:
-            gOverlay58PackedStatusReloc[10] |= 0x80;
-            overlay58Call59F4Reloc();
+            gOverlay58PackedStatus[10] |= 0x80;
+            func_800291B4();
             break;
     }
-    overlay58Call59FCReloc(0x15);
+    func_8003A680(0x15);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o058/overlay58FinalizePackedStatus/func_overlay_058_F0005554_18B473C.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay58FinalizePackedStatus:start
- * symbol: overlay58FinalizePackedStatus
- * score: 75 differing words
- * frame: 0x48
- * relocations: 48
- * first-mismatch: +0x18
- * summary: one live nextCount takes the fifth home only by growing the frame 0x48 to 0x60 at 76 masked; function, block, and embedded s32 all grow; reverted
- * PLATEAU-HANDOFF:overlay58FinalizePackedStatus:end
- */

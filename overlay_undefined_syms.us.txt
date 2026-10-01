@@ -2464,6 +2464,15 @@ gOverlay58ResourceState = 0x000002b8;
 gOverlay58TrackedResource = 0x00000000;
 overlay58LoadResourceReloc = 0xf0000000;
 
+/* overlay 58: overlay58FinalizePackedStatus.c.o */
+func_800291B4_o058Reloc = 0xf0000000;
+func_8003A680_o058Reloc = 0xf0000000;
+gOverlay58ExtendedPackedMode = 0x00000000;
+gOverlay58FinalizerGate = 0x00000000;
+gOverlay58PackedMode = 0x00000000;
+gOverlay58PackedStatus = 0x00000000;
+gOverlay58PrimaryOrderIndex = 0x00000074;
+
 /* overlay 59: overlay59Release.c.o */
 overlay59ReleaseReloc = 0xf0000000;
 

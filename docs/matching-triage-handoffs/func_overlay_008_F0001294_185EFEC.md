@@ -2,11 +2,89 @@
 ### `func_overlay_008_F0001294_185EFEC` plateau handoff
 
 - source: `src/overlays/o008/overlay_008.c`
-- score: 636 differing words
-- frame: 0xC8
+- score: 275 differing words
+- frame: 0xB0
 - relocations: 137
-- first mismatch: +0x0
-- summary: Procedure-7 census prices 355 draws; remaining mixed integer and FP ring phases have no target-backed source lever.
+- first mismatch: +0xD8
+- summary: Frame and home ladder exact, no one-sided words; 271 naming rows: turnAmount a3 for a2, drift-step and unkFE webs, pre-loop factor product order.
+
+## 2026-10-01 natural-shape rewrite (lane `lane/a-o008`): 636 to 275, frame exact
+
+The candidate was rewritten from the target's shape rather than polished. It
+now has the exact size, the target's 0xB0 frame with an identical home ladder
+(frame census: both sides list the same ten homes at the same offsets), zero
+one-sided words and zero immediate-only rows. align_symbol reads 984
+byte-exact, 271 register naming, 0 immediate, 4 really different (was 711,
+475, 32, 42). The sibling candidates in the translation unit measure what they
+did before (11, 39, 308, 384, 438).
+
+What moved it, in the order it was found, each measured on the whole TU:
+
+- **The pool floats are literals.** The forty `D_F8..D_194` externs were the
+  function's own literal pool. Written as float literals at each use they emit
+  one pool entry per use, in the shipped order, and the forty values were
+  checked equal to the ROM's. This alone removed the only one-sided pair
+  (the `&D_10` address materialisation at the loop head) and put the cached
+  `state->unk4` web on the target's register. Clamp pairs are not commoned:
+  `if (x < K) x = K` loads K twice, as shipped.
+- **The six approved carrier merges were the wrong partition.** They do land
+  0xB0, but score 657 to 671. A symbol is one web, so which phases share a
+  name decides the colours. The shared carriers that agree with the target are
+  noted on the declarations: clamped stick with target angle, raw stick with
+  wobble term and drift target, angle step with left selector, input word with
+  right selector, brake bit with reverse flag, speed level with curve index,
+  `state->unk108` copy with drift step. `speed` is not a variable at all.
+- **State fields are read directly.** `value = field; if (value ...)` became
+  `if (state->field ...)` at thirteen sites; uopt forms the same cached load
+  and the operand order of the compares then agrees. Measured singly these
+  moved 0 to 2 words each and one (`scale *= D_8` in place, before the
+  `unkF0` update) moved 54; together 516 to 424.
+- **`scale = (state->unk148 - state->unk4) * K` written out at both sites**
+  instead of through `value`. With `value` there, two single-block
+  float webs take the colour scale needs (1060 against 516).
+- **The pre-loop float carrier is its own symbol (`factor`).** The loop's
+  `scale` web then spans 75 blocks instead of 83, its save rises from 23.2 to
+  25.0 and it outranks the cached `state->unk4` web at 23.5. That is the
+  f2 with f12 exchange three earlier sections of this page name; it needed no
+  force. 424 to 347.
+- **Operand order at the first statement** (`(f32) level * tuning[2]` before
+  the add) re-phases the float ring for the pre-loop.
+- Compound assignment on `state->unk4` is byte-identical to the cast form the
+  page used to carry, and `*=` on the `tuning[6]` product gives the shipped
+  load order.
+
+Declaration order then solves the ladder directly (L99): updatesRemaining
+fifth, turnAmount seventh, impactBoost ninth, colorEnabled tenth and eleventh,
+turnDirection fourteenth, scale eighteenth, speedLimit twentieth, with the
+two `s16` and the `s8`/`u8` pairs sharing a word. The target has 25 words of
+locals; reading `state->unkD4` directly rather than through a `peer` local
+removed the twenty-sixth and put the call-spanning temporary at its shipped
+offset.
+
+What remains, with the decision variable for each:
+
+- **`turnAmount` holds a3 where the target holds a2**, and the temporary for
+  `state->unkFE` holds a2 where the target holds v0. The drift step shares the
+  `state->unk108` copy's symbol and takes v0; the target has it in v1, the
+  register of the `mathDiffAngle` result. Those two sit in one block, so by
+  block-level interference they are one web in the target. Writing both
+  through one name was byte-inert here because the call result is forwarded
+  as a temporary; the open question is which spelling keeps the call result a
+  declared symbol.
+- **The pre-loop `factor` product.** The target draws the constant, the first
+  product, then `tuning[3]`; every single-statement form draws `tuning[3]`
+  first. A three-statement form through a second float local draws in the
+  target's order but colours the second product. About forty forms measured;
+  the free order this leaves behind shifts the float ring for the pre-loop.
+- `state->unk428` at the drift-arming test and `state->unk100` at the 68/58
+  choice are temporaries in v0 here and sit in the stick and drift registers
+  in the target; routing them through those symbols changes size by one word
+  in each direction tried.
+- Four schedule rows: the `lh`/`lui` order at +0xA8C and the load order of
+  `state->unk102` against the selector constant at +0x10F4.
+
+The earlier force landscapes on this page were measured on the extern-pool
+shape and do not describe this candidate.
 
 ## 2026-09-12 exhaustive colour landscape
 

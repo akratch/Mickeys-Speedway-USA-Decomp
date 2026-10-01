@@ -66,7 +66,7 @@ typedef struct Overlay84UpdateObject {
     f32 y;
     f32 z;
     u8 pad18[0x24];
-    Overlay84UpdateScale *volatile scale;
+    Overlay84UpdateScale *scale;
 } Overlay84UpdateObject;
 
 typedef struct Overlay84Output {
@@ -87,7 +87,7 @@ extern f32 gOverlay84BlendStep;
 
 extern void amSndPlay(u16 soundId, void **handle);
 extern void overlay84AdvanceCurrent(s32 direction);
-extern s32 mathDiffAngle(s16 current, s16 target);
+extern s32 mathDiffAngle(s32 current, s32 target);
 extern f32 func_8002A8C0(s16 angle);
 extern f32 func_8002A8BC(s16 angle);
 extern void camSetNo(s32 camera);
@@ -96,25 +96,26 @@ extern s32 func_8000FAE0(f32 x, f32 y, f32 z);
 extern s32 Arctanf(f32 y, f32 x);
 extern s16 dAngle(s16 current, s16 target, f32 fraction);
 
-/* Fresh V0 remains 468/464 candidate/target instructions with the exact 0x70
- * frame: 15/464 relocation-masked and 14/464 raw words match from +0x3C.
- * Runtime and C each have 20 relocation records with the same type census,
- * but the four-word drift shifts every site. Canonical callee identities make
- * all 14 calls explicit without changing codegen. Prior node/scale, angle,
- * stack-home, constant, guard, and flag mechanisms remain exhausted. */
+/* 2026-10-02: the goto/register-s16/volatile-scale spelling is retired.
+ * The compare/adjust pair is plain if/else, the tilt easing is the float
+ * expression the shipped code evaluates (tilt promoted, trunc back), and
+ * angleStep is read after the loop uninitialised exactly as the shipped
+ * code does. -Wab,-r4300_mul is applied for this object like its siblings.
+ * Remaining residual: one extra temp-ring draw ahead of blendTimer, which
+ * shifts every later $t register by one. */
 #ifdef NON_MATCHING
 void func_overlay_084_F0000314_18D07F4(Overlay84UpdateObject *object,
                                        Overlay84UpdateState *state,
                                        s32 updateRate) {
     Overlay84UpdateNode *node;
+    s32 i;
     Overlay84UpdateChoice *choice;
     Overlay84Output *output;
-    s32 i;
     s32 angleStep;
+    s32 pad;
     s32 angleFlag;
-    s32 angleAdjust;
-    register s16 currentAngle;
-    register s16 targetAngle;
+    s16 currentAngle;
+    s32 targetAngle;
     f32 baseX;
     f32 baseY;
     f32 baseZ;
@@ -160,22 +161,18 @@ void func_overlay_084_F0000314_18D07F4(Overlay84UpdateObject *object,
         angleFlag = state->flags & 1;
         if (angleFlag != 0) {
             if (angleFlag == 1) {
-                angleAdjust = 0xFFFF0000;
                 if (currentAngle < targetAngle) {
-                    goto adjust_target_angle;
+                    targetAngle += 0xFFFF0000;
                 }
             }
         } else {
-            angleAdjust = 0x10000;
             if (targetAngle < currentAngle) {
-adjust_target_angle:
-                targetAngle += angleAdjust;
+                targetAngle += 0x10000;
             }
         }
 
-        angleStep = 0;
         for (i = 0; i < updateRate; i++) {
-            state->tilt += (s16)((state->targetTilt - state->tilt) * 0.125f);
+            state->tilt += (state->targetTilt - state->tilt) * 0.125f;
             state->height += (state->targetHeight - state->height) * 0.125f;
             angleStep =
                 mathDiffAngle(currentAngle, targetAngle) >> 5;
@@ -242,10 +239,10 @@ adjust_target_angle:
 
 /* PLATEAU-HANDOFF:func_overlay_084_F0000314_18D07F4:start
  * symbol: func_overlay_084_F0000314_18D07F4
- * score: 15/464 words
+ * score: 37 differing words
  * frame: 0x70
  * relocations: 20
- * first-mismatch: +0x3C
- * summary: Four extra instructions shift all 20 relocations; canonical names prove 14 call identities, while prior structural mechanisms remain exhausted.
+ * first-mismatch: +0x2A0
+ * summary: 449 to 37 at delta 0: no goto/volatile, float tilt expr, one missing t-ring draw before blendTimer
  * PLATEAU-HANDOFF:func_overlay_084_F0000314_18D07F4:end
  */

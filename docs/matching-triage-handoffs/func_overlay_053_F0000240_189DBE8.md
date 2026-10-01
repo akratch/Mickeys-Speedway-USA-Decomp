@@ -2,11 +2,13 @@
 ### `func_overlay_053_F0000240_189DBE8` plateau handoff
 
 - source: `src/overlays/o053/func_overlay_053_F0000240_189DBE8.c`
-- score: 636 differing words
-- frame: 0x178
-- relocations: 91
+- score: 403 differing words
+- frame: 0xF8
+- relocations: 117
 - first mismatch: +0x0
-- summary: 608/636 instructions, -112 bytes (was +308). Residual: loop store rotation, frame 0x178 vs 0xD8, unrecovered indexed tables.
+- summary: 636 to 403 at delta 0: -Wab,-r4300_mul, single loop var, paired div/mod; frame 0xF8 vs 0xD8 open
+
+Summary before this remeasure: 608/636 instructions, -112 bytes (was +308). Residual: loop store rotation, frame 0x178 vs 0xD8, unrecovered indexed tables.
 ### Structural pass, 2026-09-11 (lane/p9-struct)
 
 Measured with `tools/align_symbol.py`, which aligns the two streams on a
@@ -70,4 +72,47 @@ candidate carries 91 relocations against the target's 59; both follow from the
 scaffold's ~40 undifferentiated temporaries and its single stand-in callee
 name, and neither is reachable without recovering the call and data identities
 the extracted object does not carry.
+### Rewrite from the listing, 2026-10-02 (lane/f-mixed)
+
+636 masked at delta -112 became 403 masked at delta 0. Priced edits, each
+measured with `tools/fast_score.py` on a copy of the TU:
+
+- `-Wab,-r4300_mul` on the object: the easing loop becomes the shipped
+  rotated branch-likely loop from a plain `for`, delta -112 to +20 and 636 to
+  630 masked.
+- The scaffold's goto and temp web rewritten as four plain loops over
+  `D_118`/`D_288`/the spC8 pair, with typed placeholder structs for the object,
+  its state and the entry rows: 630 to 586, delta +128.
+- One loop variable `i` for the fade loop, the first loop, the third loop and
+  the draw loop (a product over the variable choice, 32 cells, floor 403;
+  separate variables regressed to 449 to 533): 586 to 403 at delta 0.
+- The cleanup loop over `D_288` as an index loop (the pointer loop adds a
+  guard the shipped code lacks).
+- Each digit pair as quotient and remainder temporaries so one `div` yields
+  both halves: 6 divisions with checks became 3 (measured 515 to 455 before
+  the single-variable change).
+
+Frame, measured afterwards (not banked, because its masked count is higher
+than the banked 403). Every declared local owns a 4-byte home whether or not it
+lives in a register (read from `-g3` locals: `spC8` at -0x8, then in
+declaration order downward), so the frame is a count of declarations. The
+shipped layout is: two register-only locals above `spC8`, the memory locals in
+the order `spC8[2]`, `spC4`, `spB4[4]`, `spB0`, `spAC`, `spA8`, `spA4`, three
+register-only locals, the draw packet, `sp80`, `sp7C`, `sp78`: five scalar
+locals in all. A variant with exactly five (`list`, `i`, `j`, `inner`, one
+unused pad), the entry rows and the digit pairs written as global-array
+expressions `D_ENT[i]` (uopt then knows the stores cannot alias the address-taken
+digit locals, so each dividend divides once with no temporaries), and one loop
+variable `j` for the fade loop, the cleanup loop and the third loop, has frame
+0xD8 and every home offset on the shipped one, 426 masked at delta 0 (415 at +20
+with `i` in those loops). The remaining words are register-pressure: the shipped
+cleanup loop holds its pointer in v0 and spills it around the call where the
+candidate has free saved registers, the fade-loop counter is a1 where the
+candidate uses a0, and the entry-row base is computed in a different order.
+
+Open on the banked source: frame 0xF8 against the shipped 0xD8. The shipped frame has about five
+declared scalar homes (two above `spC8`, three between `spA4` and the packet);
+the candidate declares 12 plus the two quotient temps, and removing
+`obj`/`q`/`inner`/`ent` regressed 403 to 430 to 515. The first mismatch is the
+prologue's frame size, so every stack offset still differs.
 <!-- plateau-handoff:func_overlay_053_F0000240_189DBE8:end -->

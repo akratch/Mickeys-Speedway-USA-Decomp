@@ -91,38 +91,37 @@ extern void mainChangeLevel();
 extern void func_800005CC(f32, s32);
 
 #ifdef NON_MATCHING
-/* Workbench plateau: mixed structure/schedule/register, 575/581 instructions, exact 0xE0
- * frame, 445 positional words, first +0x2C. Typed func_80005750(s32 *count)/objectCount
- * ABI probe emitted no change; the display/transition lifetime web remains. */
 /* Mickey-local reconstruction. The display-list and transition call roles
  * are established by this overlay's relocation records; the object layout is
- * shared with the resident player-control code. */
+ * shared with the resident player-control code.
+ * 2026-10-02: the declaration order puts every declared home on the shipped
+ * stack offsets (the 0xE0 frame now agrees slot for slot above 0x78); the
+ * player state, icon cell and placement are read as expressions, which the
+ * shipped code's register pressure requires (445 to 375 masked words). */
 void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
+    Overlay55Object **objects;
+    Overlay55Digit *digit;
     s32 digitX;
     s32 digitY;
+    s32 pad;
+    s16 iconX;
+    Overlay55Digit *digits;
+    u8 *level;
+    s32 objectCount;
     s32 minutes;
     s32 seconds;
     s32 centiseconds;
+    s32 heightOffset;
+    Overlay55Digit *source;
+    Overlay55DisplayCommand *command;
+    Overlay55Object *object;
+    s32 playerIndex;
+    s32 *alpha;
+    Overlay55Transform transform;
     s32 screenWidth;
     s32 screenHeight;
-    s32 heightOffset;
-    s32 playerIndex;
-    s16 iconX;
-    s16 iconY;
-    Overlay55Transform transform;
-    Overlay55Object **objects;
-    Overlay55Object *object;
-    Overlay55PlayerState *player;
-    Overlay55Digit *digits;
-    Overlay55Digit *digit;
-    Overlay55Digit *source;
-    Overlay55MenuPlacement *placement;
-    Overlay55DisplayCommand *command;
-    s32 objectCount;
     u8 *gameState;
-    u8 *level;
-    s8 *icon;
-    s32 *alpha;
+    s16 iconY;
 
     gameState = func_80028F54();
     func_80022A50(&D_800D3140, &D_800D3144);
@@ -145,8 +144,6 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
         if (object == NULL) {
             continue;
         }
-        player = object->state;
-        icon = &D_304[playerIndex];
         alpha = &D_F8[playerIndex];
 
         camSetNo(playerIndex);
@@ -154,12 +151,12 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
         if (gameState[0] == 6) {
             digits = (Overlay55Digit *)
                 ((u8 *) D_20 + (playerIndex * 0xA0));
-            overlay56SplitTime(player->time, &minutes, &seconds,
+            overlay56SplitTime(object->state->time, &minutes, &seconds,
                                &centiseconds);
             level = levelGetLevel();
             if ((D_800C947C == 0) &&
-                (level[0x86] != (u8) player->racerIndex) &&
-                (func_800290A0() == 0) && (player->time != 0x83D60)) {
+                (level[0x86] != (u8) object->state->racerIndex) &&
+                (func_800290A0() == 0) && (object->state->time != 0x83D60)) {
                 centiseconds = (centiseconds - (centiseconds % 10)) + D_F4;
             }
 
@@ -194,16 +191,15 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
             func_80034920(&D_800D3140);
 
             overlay55GetOffsets(playerIndex, 0, &digitX, &digitY);
-            placement = &D_800D3550[0];
-            placement->x = digitX - 0xAD;
-            placement->y = (-digitY - heightOffset) + 0x74;
-            placement->angle = (s16) ((player->time * -0x10000) / 300);
+            D_800D3550[0].x = digitX - 0xAD;
+            D_800D3550[0].y = (-digitY - heightOffset) + 0x74;
+            D_800D3550[0].angle = (s16) ((object->state->time * -0x10000) / 300);
             func_80039E34(4);
             func_8002F618(NULL, &D_280[playerIndex * 2], 0, heightOffset,
                           0xFF, 0xFF, 0xFF, 0xFF);
         }
 
-        if (player->character != 0xFF) {
+        if (object->state->character != 0xFF) {
             *alpha += updateRate * 0x10;
             if (*alpha >= 0xA5) {
                 *alpha = 0xA4;
@@ -216,13 +212,13 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
         }
 
         if (*alpha > 0) {
-            if (player->effectTimer != 0) {
-                *icon = 0x35;
-            } else if (player->character != 0xFF) {
-                *icon = (s8) D_8007C180[player->character];
+            if (object->state->effectTimer != 0) {
+                D_304[playerIndex] = 0x35;
+            } else if (object->state->character != 0xFF) {
+                D_304[playerIndex] = (s8) D_8007C180[object->state->character];
             }
 
-            if (*icon != -1) {
+            if (D_304[playerIndex] != -1) {
                 if (frontGetScreenMode() == 1) {
                     iconX = (playerIndex & 1) ? 0x1A2 : 0x25;
                     iconY = (playerIndex < 2) ? 0x86 : 0x13C;
@@ -230,7 +226,7 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
                     iconX = (playerIndex & 1) ? 0x1A2 : 0x25;
                     iconY = (playerIndex < 2) ? 0x86 : 0x12A;
                 }
-                if (*icon == 0x35) {
+                if (D_304[playerIndex] == 0x35) {
                     iconX -= 7;
                     iconY -= 6;
                 }
@@ -238,7 +234,7 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
                 command = D_800D3140++;
                 command->w0 = 0xFA000000;
                 command->w1 = 0xFFFFFFFF;
-                transform.resource = (s32) D_800D31C8[*icon];
+                transform.resource = (s32) D_800D31C8[D_304[playerIndex]];
                 transform.unk04 = 0;
                 transform.unk08 = 0;
                 transform.x = iconY;
@@ -248,7 +244,7 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
                               *alpha | ~0xFF, 1);
             }
         } else {
-            *icon = -1;
+            D_304[playerIndex] = -1;
         }
 
         if ((mainGetMode() == 0) && (func_80028F54()[0] == 5) &&
@@ -272,10 +268,10 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_055_F000031C_18A1E34:start
  * symbol: func_overlay_055_F000031C_18A1E34
- * score: 445 differing words
+ * score: 375 differing words
  * frame: 0xE0
  * relocations: 90
- * first-mismatch: +0x3C
- * summary: V0: 575/581 words, exact 0xE0 frame, 445 raw diffs. Relocs 90 versus 102; 34 sites and 20 identities align. Display/transition lifetime web persists.
+ * first-mismatch: +0x1D0
+ * summary: 445 to 375: slot-exact declaration order, three alias locals read as expressions; temp-ring and spill cells open
  * PLATEAU-HANDOFF:func_overlay_055_F000031C_18A1E34:end
  */

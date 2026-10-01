@@ -83,4 +83,14 @@ order: 50 (6, size-exact but the extent is wrong), 63, 54, 60, 51, 63, 54, 63,
 so ten stays. Left: the hit-index spill is at 0x7C where the target has 0x6C,
 and the loop cursor/index pair takes a2/a3 in the opposite roles (the
 carriers of the earlier notes were not revisited).
+## 2026-10-02 (lane e-res3): no change, 51 held
+
+Hit pointer deleted (read `hits[processed]` at each use) and `st` deleted: 153
+to 186 masked at delta -188 to -200 (the unrolled body is lost). Loop forms
+(for, for inside `if (hitCount != 0)`, while with `processed++` in the
+subscript): 51, 51, 58, 187. The target's delay slot loads the state pointer
+into a0 (`lw a0,0x64(v1)` in the beql slot) where the candidate copies the hit
+into a0 and loads the state into v1; the spill-cell (0x7C against 0x6C) row is
+unchanged.
+
 <!-- plateau-handoff:effectboxControl:end -->

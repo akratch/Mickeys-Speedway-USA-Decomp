@@ -288,6 +288,15 @@ extern MainDebugMemory *func_80005820(s32);
 extern s32 sprintf(char *, const char *, ...);
 extern u8 *levelGetLevel(void);
 extern void func_80044BC8(Gfx *, char *, s32);
+/* The checkpoint hook always receives a string and a number that read as a
+ * file name and a source line, which is what a macro built on __FILE__ and
+ * __LINE__ leaves behind. The do-while wrapper is the usual form for such a
+ * macro and it is load-bearing: its region boundary is what the main loop's
+ * register allocation depends on. */
+#define MAIN_DL_CHECKPOINT(dl, file, line) \
+    do { \
+        func_80044BC8((dl), (file), (line)); \
+    } while (0)
 extern void func_80008028(s32);
 extern void func_80051364(s32);
 extern void func_8000784C(s32);
@@ -500,24 +509,22 @@ void mainInitGame(void) {
     D_8007A320 = 0;
 }
 
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: the main-loop role and frame-pipeline organization are adapted
  * from Diddy Kong Racing's published src/thread3_main.c::main_game_loop and
  * cross-checked against JFG's published src/main.c TU ordering. Mickey's own
  * call graph, resident storage and instructions determine this body.
  *
- * Fresh configured V0 reproduces the retained structure mismatch at 419 vs
- * 413 instructions, 207 differing words, first +0x48, and exact frame -0x28.
- * Target/candidate own 290/298 relocations; 200 offsets/types and 172 effective
- * identities align. The block-local D_8007A1B8 pointer remains the best natural
- * form. Nine structural/display-command hypotheses, the full flag lattice, and
- * a bounded permuter batch are already exhausted; do not repeat them without a
- * new compiler mechanism. The remaining six words concentrate in final display
- * command scheduling and register allocation.
+ * What matched it, under the plain preset (uopt runs on this procedure): the
+ * display-list checkpoint is a do-while macro, whose region boundary keeps
+ * the cursor address off a callee-saved register; the two closing display
+ * commands are the standard macros; the buffer index is toggled in place; and
+ * the frame-sync result is held in a local, as in the DKR loop, so the clamp
+ * tests the call result and the final call rereads the global.
  */
 void func_80026FB4(void) {
     s32 drawTransition;
+    s32 updateRate;
 
     if (D_8007A20C != 0) {
         TrapDanglingJump(NULL);
@@ -535,18 +542,13 @@ void func_80026FB4(void) {
         TrapDanglingJump();
     }
 
-    {
-        s32 *bufferIndex;
-
-        bufferIndex = &D_8007A1B8;
-        *bufferIndex ^= 1;
-    }
+    D_8007A1B8 ^= 1;
     func_80044B9C();
     D_800CF518 = D_800CF510[D_8007A1B8];
     D_800CF530 = D_800CF528[D_8007A1B8];
     D_800CF588 = D_800CF580[D_8007A1B8];
     D_800CF5A0 = D_800CF598[D_8007A1B8];
-    func_80044BC8(D_800CF518, D_80081B0C, 0x2E6);
+    MAIN_DL_CHECKPOINT(D_800CF518, D_80081B0C, 0x2E6);
     rsp_segment(&D_800CF518, 0, NULL);
     rsp_segment(&D_800CF518, 1, D_800D2FA8);
     rsp_segment(&D_800CF518, 2, D_800D2FAC);
@@ -605,15 +607,11 @@ void func_80026FB4(void) {
         frontDemoMessage(&D_800CF518, D_8007A248);
     }
 
-    func_80044BC8(D_800CF518, D_80081B18, 0x355);
+    MAIN_DL_CHECKPOINT(D_800CF518, D_80081B18, 0x355);
     func_800376CC(D_8007A248);
     func_80038190(&D_800CF518, &D_800CF530, &D_800CF588);
-    D_800CF518++;
-    D_800CF518[-1].words.w1 = 0;
-    D_800CF518[-1].words.w0 = 0xE9000000;
-    D_800CF518++;
-    D_800CF518[-1].words.w1 = 0;
-    D_800CF518[-1].words.w0 = 0xB8000000;
+    gDPFullSync(D_800CF518++);
+    gSPEndDisplayList(D_800CF518++);
     if ((runlinkIsModuleLoaded(0x21) != 0) && (func_80049864(4) == 0)) {
         TrapDanglingJump();
     }
@@ -646,18 +644,16 @@ void func_80026FB4(void) {
 
     func_80027628(D_8007A248);
 
-    D_8007A248 = viFrameSync(D_8007A1D0);
+    updateRate = viFrameSync(D_8007A1D0);
+    D_8007A248 = updateRate;
     if (D_8007A19C != 0) {
         viFrameRateReset();
         D_8007A248 = 2;
-    } else if (D_8007A248 >= 7) {
+    } else if (updateRate >= 7) {
         D_8007A248 = 6;
     }
     func_80028564(D_8007A248);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/main/func_80026FB4.s")
-#endif
 
 /*
  * PROVENANCE: the display-list, matrix, vertex and triangle roles are adapted
@@ -990,7 +986,7 @@ void func_80027FB8(s32 updateRate) {
         } while (controller--);
     }
 
-    func_80044BC8(D_800CF518, D_80081B24, 0x526);
+    MAIN_DL_CHECKPOINT(D_800CF518, D_80081B24, 0x526);
     func_80008028(updateRate);
     D_8007A67C = 1;
     if (D_8007A1A8 == 0) {
@@ -1696,14 +1692,4 @@ void func_800293D0(void) {
  * first-mismatch: +0x1C
  * summary: Or-chain carrier is allocator proc 40 web 2: v0 not offered (forced=-2). Accepted recolours stay 25. L145/L144 miss the ring-temp copies. Best still 10.
  * PLATEAU-HANDOFF:func_80028FCC:end
- */
-
-/* PLATEAU-HANDOFF:func_80026FB4:start
- * symbol: func_80026FB4
- * score: 375 differing words
- * frame: 0x30
- * relocations: 235
- * first-mismatch: +0x8
- * summary: Olimit cap retired by the func_80028564 match. Optimised: 76 bytes short, cursor address on a callee-saved web the target lacks.
- * PLATEAU-HANDOFF:func_80026FB4:end
  */

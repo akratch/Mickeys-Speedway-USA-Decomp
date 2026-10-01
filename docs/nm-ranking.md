@@ -257,15 +257,15 @@ Text outside the markers remains authored and is preserved byte-for-byte.
 > `config/nonmatching-ranking.us.json`. Do not edit this region by hand;
 > `--check-doc` and `gmake check-docs` fail on any drift.
 
-The snapshot contains **231 queued identities**: **231 resolved measurements** and **0 unresolved identities**. Resolved target size totals **327,720 bytes (320.0 KiB)**.
+The snapshot contains **230 queued identities**: **230 resolved measurements** and **0 unresolved identities**. Resolved target size totals **326,068 bytes (318.4 KiB)**.
 
 Resolved rows span **58 overlays** and **1 resident TU group** (`main`).
 
-A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 231** resolved rows.
+A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 230** resolved rows.
 
-Persisted configured-TU input evidence covers **231 / 231** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
+Persisted configured-TU input evidence covers **230 / 230** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
 
-Relocation-masked mismatch evidence covers **231 / 231** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
+Relocation-masked mismatch evidence covers **230 / 230** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
 
 ### Category distribution
 
@@ -273,8 +273,8 @@ Relocation-masked mismatch evidence covers **231 / 231** resolved rows. The raw 
 |---|---:|---:|
 | `register-only` | 8 | 3.5% |
 | `schedule-only` | 1 | 0.4% |
-| `other` | 143 | 61.9% |
-| `size-mismatch` | 79 | 34.2% |
+| `other` | 143 | 62.2% |
+| `size-mismatch` | 78 | 33.9% |
 
 ### Differing-word thresholds
 
@@ -485,47 +485,46 @@ units remain distinct.
 | 188 | `src/main/frontend_37D50.c` | `func_80038190` | `main` | `size-mismatch` | 1,472 | 366 | 365 | 0 | 0 | -104 | — |
 | 189 | `src/main/textures_354C8.c` | `func_80035F48` | `main` | `size-mismatch` | 1,532 | 371 | 371 | 0 | 0 | -84 | — |
 | 190 | `src/main/anim.c` | `func_80054B3C` | `main` | `size-mismatch` | 1,480 | 374 | 374 | 8 | 8 | 40 | — |
-| 191 | `src/main/main.c` | `func_80026FB4` | `main` | `size-mismatch` | 1,652 | 375 | 375 | 8 | 8 | -76 | — |
-| 192 | `src/main/models_5B300.c` | `func_8005AF14` | `main` | `size-mismatch` | 1,840 | 377 | 377 | 0 | 0 | 12 | — |
-| 193 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `size-mismatch` | 1,788 | 384 | 384 | 68 | 68 | -68 | — |
-| 194 | `src/main/fx.c` | `func_800475E8` | `main` | `size-mismatch` | 1,004 | 390 | 390 | 0 | 0 | 780 | — |
-| 195 | `src/main/objects.c` | `func_80009414` | `main` | `size-mismatch` | 1,684 | 398 | 398 | 0 | 0 | 20 | — |
-| 196 | `src/main/charControl.c` | `func_8001E5C4` | `main` | `size-mismatch` | 1,664 | 411 | 408 | 0 | 0 | -16 | — |
-| 197 | `src/overlays/o046/func_overlay_046_F0001228_188F620.c` | `func_overlay_046_F0001228_188F620` | `o046` | `size-mismatch` | 1,844 | 416 | 415 | 92 | 92 | -96 | — |
-| 198 | `src/main/anim.c` | `func_80055104` | `main` | `size-mismatch` | 1,780 | 420 | 420 | 56 | 56 | -56 | — |
-| 199 | `src/overlays/o001/func_overlay_001_F0002B4C_184EF2C.c` | `func_overlay_001_F0002B4C_184EF2C` | `o001` | `size-mismatch` | 1,804 | 433 | 433 | 0 | 0 | -16 | — |
-| 200 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0000058_185DDB0` | `o008` | `size-mismatch` | 2,108 | 442 | 438 | 44 | 112 | -64 | — |
-| 201 | `src/main/shadows.c` | `shadowGenerate` | `main` | `size-mismatch` | 2,040 | 445 | 445 | 12 | 12 | 40 | — |
-| 202 | `src/overlays/o055/func_overlay_055_F000031C_18A1E34.c` | `func_overlay_055_F000031C_18A1E34` | `o055` | `size-mismatch` | 2,324 | 445 | 445 | 60 | 60 | -24 | — |
-| 203 | `src/overlays/o057/func_overlay_057_F0004460_18A8058.c` | `func_overlay_057_F0004460_18A8058` | `o057` | `size-mismatch` | 1,976 | 447 | 446 | 4 | 4 | -144 | — |
-| 204 | `src/overlays/o022/func_overlay_022_F00002B0_18783B8.c` | `func_overlay_022_F00002B0_18783B8` | `o022` | `size-mismatch` | 1,996 | 448 | 448 | 28 | 28 | -12 | — |
-| 205 | `src/overlays/o084/func_overlay_084_F0000314_18D07F4.c` | `func_overlay_084_F0000314_18D07F4` | `o084` | `size-mismatch` | 1,856 | 450 | 449 | 60 | 60 | 16 | — |
-| 206 | `src/main/track.c` | `func_8000E920` | `main` | `size-mismatch` | 2,168 | 459 | 459 | 0 | 0 | 20 | — |
-| 207 | `src/main/textures_354C8.c` | `func_80034E54` | `main` | `size-mismatch` | 1,868 | 461 | 461 | 0 | 0 | -32 | — |
-| 208 | `src/overlays/o001/overlay_001_head.c` | `overlay1LoadBuildRecords` | `o001` | `size-mismatch` | 2,288 | 491 | 470 | 52 | 52 | -92 | — |
-| 209 | `src/overlays/o061/func_overlay_061_F0000B84_18BFF4C.c` | `func_overlay_061_F0000B84_18BFF4C` | `o061` | `size-mismatch` | 2,548 | 499 | 476 | 0 | 0 | -64 | — |
-| 210 | `src/overlays/o043/func_overlay_043_F0000324_188A2F4.c` | `func_overlay_043_F0000324_188A2F4` | `o043` | `size-mismatch` | 2,240 | 495 | 494 | 96 | 96 | -4 | — |
-| 211 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 499 | 499 | 0 | 0 | -40 | — |
-| 212 | `src/overlays/o019/overlay19BuildPlanes.c` | `overlay19BuildPlanes` | `o019` | `size-mismatch` | 2,128 | 512 | 512 | 72 | 72 | -40 | — |
-| 213 | `src/overlays/o011/func_overlay_011_F0000150_1868998.c` | `func_overlay_011_F0000150_1868998` | `o011` | `size-mismatch` | 2,248 | 538 | 535 | 0 | 0 | -120 | — |
-| 214 | `src/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c` | `func_overlay_058_F00005FC_18AF7E4` | `o058` | `size-mismatch` | 3,316 | 550 | 536 | 0 | 0 | -12 | — |
-| 215 | `src/overlays/o056/overlay_056.c` | `func_overlay_056_F00001A0_18A2F18` | `o056` | `size-mismatch` | 2,324 | 538 | 538 | 80 | 80 | 40 | — |
-| 216 | `src/overlays/o047/func_overlay_047_F0000000_1890E18.c` | `func_overlay_047_F0000000_1890E18` | `o047` | `size-mismatch` | 2,512 | 553 | 548 | 104 | 200 | 16 | — |
-| 217 | `src/main/shadows.c` | `func_80016890` | `main` | `size-mismatch` | 2,224 | 563 | 563 | 4 | 4 | 60 | — |
-| 218 | `src/overlays/o090/overlay_090.c` | `func_overlay_090_F00000FC_18D4BF4` | `o090` | `size-mismatch` | 2,592 | 575 | 575 | 0 | 0 | -36 | — |
-| 219 | `src/overlays/o012/func_overlay_012_F0000910_186DB90.c` | `func_overlay_012_F0000910_186DB90` | `o012` | `size-mismatch` | 2,444 | 581 | 581 | 0 | 0 | -20 | — |
-| 220 | `src/overlays/o001/func_overlay_001_F0001D78_184E158.c` | `func_overlay_001_F0001D78_184E158` | `o001` | `size-mismatch` | 2,508 | 587 | 584 | 0 | 0 | -112 | — |
-| 221 | `src/overlays/o057/func_overlay_057_F0001020_18A4C18.c` | `func_overlay_057_F0001020_18A4C18` | `o057` | `size-mismatch` | 2,392 | 585 | 585 | 0 | 0 | -32 | — |
-| 222 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `size-mismatch` | 2,696 | 593 | 593 | 0 | 0 | 28 | — |
-| 223 | `src/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c` | `func_overlay_057_F0001AE8_18A56E0` | `o057` | `size-mismatch` | 3,532 | 645 | 614 | 4 | 352 | -132 | — |
-| 224 | `src/overlays/o053/func_overlay_053_F0000240_189DBE8.c` | `func_overlay_053_F0000240_189DBE8` | `o053` | `size-mismatch` | 2,544 | 636 | 636 | 0 | 0 | -112 | — |
-| 225 | `src/main/anim.c` | `func_800563B4` | `main` | `size-mismatch` | 2,596 | 637 | 637 | 28 | 28 | -160 | — |
-| 226 | `src/main/track.c` | `func_80010B4C` | `main` | `size-mismatch` | 2,712 | 662 | 662 | 0 | 0 | 56 | — |
-| 227 | `src/main/vehicle_sounds.c` | `func_8005830C` | `main` | `size-mismatch` | 3,048 | 698 | 697 | 8 | 8 | -16 | — |
-| 228 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `size-mismatch` | 3,040 | 756 | 755 | 16 | 16 | 24 | — |
-| 229 | `src/main/anim.c` | `func_80053868` | `main` | `size-mismatch` | 4,820 | 1,170 | 1,169 | 12 | 12 | -240 | — |
-| 230 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 1,593 | 1,580 | 4 | 4 | 4 | — |
-| 231 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,785 | 1,782 | 0 | 0 | -332 | — |
+| 191 | `src/main/models_5B300.c` | `func_8005AF14` | `main` | `size-mismatch` | 1,840 | 377 | 377 | 0 | 0 | 12 | — |
+| 192 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `size-mismatch` | 1,788 | 384 | 384 | 68 | 68 | -68 | — |
+| 193 | `src/main/fx.c` | `func_800475E8` | `main` | `size-mismatch` | 1,004 | 390 | 390 | 0 | 0 | 780 | — |
+| 194 | `src/main/objects.c` | `func_80009414` | `main` | `size-mismatch` | 1,684 | 398 | 398 | 0 | 0 | 20 | — |
+| 195 | `src/main/charControl.c` | `func_8001E5C4` | `main` | `size-mismatch` | 1,664 | 411 | 408 | 0 | 0 | -16 | — |
+| 196 | `src/overlays/o046/func_overlay_046_F0001228_188F620.c` | `func_overlay_046_F0001228_188F620` | `o046` | `size-mismatch` | 1,844 | 416 | 415 | 92 | 92 | -96 | — |
+| 197 | `src/main/anim.c` | `func_80055104` | `main` | `size-mismatch` | 1,780 | 420 | 420 | 56 | 56 | -56 | — |
+| 198 | `src/overlays/o001/func_overlay_001_F0002B4C_184EF2C.c` | `func_overlay_001_F0002B4C_184EF2C` | `o001` | `size-mismatch` | 1,804 | 433 | 433 | 0 | 0 | -16 | — |
+| 199 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0000058_185DDB0` | `o008` | `size-mismatch` | 2,108 | 442 | 438 | 44 | 112 | -64 | — |
+| 200 | `src/main/shadows.c` | `shadowGenerate` | `main` | `size-mismatch` | 2,040 | 445 | 445 | 12 | 12 | 40 | — |
+| 201 | `src/overlays/o055/func_overlay_055_F000031C_18A1E34.c` | `func_overlay_055_F000031C_18A1E34` | `o055` | `size-mismatch` | 2,324 | 445 | 445 | 60 | 60 | -24 | — |
+| 202 | `src/overlays/o057/func_overlay_057_F0004460_18A8058.c` | `func_overlay_057_F0004460_18A8058` | `o057` | `size-mismatch` | 1,976 | 447 | 446 | 4 | 4 | -144 | — |
+| 203 | `src/overlays/o022/func_overlay_022_F00002B0_18783B8.c` | `func_overlay_022_F00002B0_18783B8` | `o022` | `size-mismatch` | 1,996 | 448 | 448 | 28 | 28 | -12 | — |
+| 204 | `src/overlays/o084/func_overlay_084_F0000314_18D07F4.c` | `func_overlay_084_F0000314_18D07F4` | `o084` | `size-mismatch` | 1,856 | 450 | 449 | 60 | 60 | 16 | — |
+| 205 | `src/main/track.c` | `func_8000E920` | `main` | `size-mismatch` | 2,168 | 459 | 459 | 0 | 0 | 20 | — |
+| 206 | `src/main/textures_354C8.c` | `func_80034E54` | `main` | `size-mismatch` | 1,868 | 461 | 461 | 0 | 0 | -32 | — |
+| 207 | `src/overlays/o001/overlay_001_head.c` | `overlay1LoadBuildRecords` | `o001` | `size-mismatch` | 2,288 | 491 | 470 | 52 | 52 | -92 | — |
+| 208 | `src/overlays/o061/func_overlay_061_F0000B84_18BFF4C.c` | `func_overlay_061_F0000B84_18BFF4C` | `o061` | `size-mismatch` | 2,548 | 499 | 476 | 0 | 0 | -64 | — |
+| 209 | `src/overlays/o043/func_overlay_043_F0000324_188A2F4.c` | `func_overlay_043_F0000324_188A2F4` | `o043` | `size-mismatch` | 2,240 | 495 | 494 | 96 | 96 | -4 | — |
+| 210 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 499 | 499 | 0 | 0 | -40 | — |
+| 211 | `src/overlays/o019/overlay19BuildPlanes.c` | `overlay19BuildPlanes` | `o019` | `size-mismatch` | 2,128 | 512 | 512 | 72 | 72 | -40 | — |
+| 212 | `src/overlays/o011/func_overlay_011_F0000150_1868998.c` | `func_overlay_011_F0000150_1868998` | `o011` | `size-mismatch` | 2,248 | 538 | 535 | 0 | 0 | -120 | — |
+| 213 | `src/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c` | `func_overlay_058_F00005FC_18AF7E4` | `o058` | `size-mismatch` | 3,316 | 550 | 536 | 0 | 0 | -12 | — |
+| 214 | `src/overlays/o056/overlay_056.c` | `func_overlay_056_F00001A0_18A2F18` | `o056` | `size-mismatch` | 2,324 | 538 | 538 | 80 | 80 | 40 | — |
+| 215 | `src/overlays/o047/func_overlay_047_F0000000_1890E18.c` | `func_overlay_047_F0000000_1890E18` | `o047` | `size-mismatch` | 2,512 | 553 | 548 | 104 | 200 | 16 | — |
+| 216 | `src/main/shadows.c` | `func_80016890` | `main` | `size-mismatch` | 2,224 | 563 | 563 | 4 | 4 | 60 | — |
+| 217 | `src/overlays/o090/overlay_090.c` | `func_overlay_090_F00000FC_18D4BF4` | `o090` | `size-mismatch` | 2,592 | 575 | 575 | 0 | 0 | -36 | — |
+| 218 | `src/overlays/o012/func_overlay_012_F0000910_186DB90.c` | `func_overlay_012_F0000910_186DB90` | `o012` | `size-mismatch` | 2,444 | 581 | 581 | 0 | 0 | -20 | — |
+| 219 | `src/overlays/o001/func_overlay_001_F0001D78_184E158.c` | `func_overlay_001_F0001D78_184E158` | `o001` | `size-mismatch` | 2,508 | 587 | 584 | 0 | 0 | -112 | — |
+| 220 | `src/overlays/o057/func_overlay_057_F0001020_18A4C18.c` | `func_overlay_057_F0001020_18A4C18` | `o057` | `size-mismatch` | 2,392 | 585 | 585 | 0 | 0 | -32 | — |
+| 221 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `size-mismatch` | 2,696 | 593 | 593 | 0 | 0 | 28 | — |
+| 222 | `src/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c` | `func_overlay_057_F0001AE8_18A56E0` | `o057` | `size-mismatch` | 3,532 | 645 | 614 | 4 | 352 | -132 | — |
+| 223 | `src/overlays/o053/func_overlay_053_F0000240_189DBE8.c` | `func_overlay_053_F0000240_189DBE8` | `o053` | `size-mismatch` | 2,544 | 636 | 636 | 0 | 0 | -112 | — |
+| 224 | `src/main/anim.c` | `func_800563B4` | `main` | `size-mismatch` | 2,596 | 637 | 637 | 28 | 28 | -160 | — |
+| 225 | `src/main/track.c` | `func_80010B4C` | `main` | `size-mismatch` | 2,712 | 662 | 662 | 0 | 0 | 56 | — |
+| 226 | `src/main/vehicle_sounds.c` | `func_8005830C` | `main` | `size-mismatch` | 3,048 | 698 | 697 | 8 | 8 | -16 | — |
+| 227 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `size-mismatch` | 3,040 | 756 | 755 | 16 | 16 | 24 | — |
+| 228 | `src/main/anim.c` | `func_80053868` | `main` | `size-mismatch` | 4,820 | 1,170 | 1,169 | 12 | 12 | -240 | — |
+| 229 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 1,593 | 1,580 | 4 | 4 | 4 | — |
+| 230 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,785 | 1,782 | 0 | 0 | -332 | — |
 
 ### Unresolved identities
 

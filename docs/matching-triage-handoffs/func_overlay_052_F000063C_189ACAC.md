@@ -2,11 +2,126 @@
 ### `func_overlay_052_F000063C_189ACAC` plateau handoff
 
 - source: `src/overlays/o052/overlay52TailB.c`
-- score: 1337 differing words
+- score: 500 differing words
 - frame: 0x118
-- relocations: 310
-- first mismatch: +0x130
-- summary: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
+- relocations: 314
+- first mismatch: +0x5E0
+- summary: Lap and alpha in i, mode bit and buttons one local: 506 to 500. Open: lap colours t1 not v0; temp-ring rotation after +0xE00.
+
+Summary before this remeasure: Clock hand as *-65536, digit fix-up over records 1..8, local reuse: 602 to 506 at delta 0. Open: register ring after +0xE00.
+
+Summary before this remeasure: Icon x/y own locals, slide test inverted, difference after the fill: 814 to 602 at delta 0. Open: icon split-arm delay, count colour.
+
+Summary before this remeasure: -r4300_mul + TU-local o52 data, indexed item loops, 9-record fill: 1337 to 814 at delta 0. Next: windows 0xD00-0x1500.
+
+Summary before this remeasure: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
+
+## 2026-10-02 f-o052b (fourth bank): 506 to 500, and where it stops
+
+- The screen-mode bit and the pad-buttons word share one local (both are
+  s0 in the shipped code; mode dies before the player loop), the time
+  difference takes the freed symbol, and the lap count and the shadow
+  alpha share `i` (the shipped alpha is t1, the loop counter's colour):
+  500 at +0. Aligner: 1187 byte-exact, 483 naming, 5 immediate, 12 really
+  different.
+
+Decision variable reached: the lap count's colour. Shipped it is v0; here
+it is t1 (in `i`) or t0 (in any slide-bar local). Giving it a symbol of its
+own (any rename that leaves its symbol otherwise unused, with the pad
+buttons as an expression or in the mode local) does colour it v0, but the
+first player loop then hoists `&desiredItems` and the `o52_bss_4A8[i]`
+address into saved registers and the function shrinks by 24 bytes (1484 at
+-24), so the symbol count is load-bearing and the lap shares a symbol in
+the original. The temp-ring rotation from +0xE00 to the end, constant
+(t4 t6)(t5 t7 t8), and the slide value in t0 where shipped is a3 are
+downstream of the same allocation and were not separately closed.
+
+Also measured and rejected: swapping the unkC/unk10 store order in the
+first HUD arm (490 positional, but it breaks that arm's shipped schedule;
+an artefact of the ring, not a fix); the item count in a named local
+(eight carriers, none better than inline); the clock-hand shift spellings.
+
+## 2026-10-02 f-o052b (third bank): 602 to 506
+
+From 602 at +0, masked words after each edit:
+
+- Locals reassigned (the lap count and the shadow alpha share value1, the
+  time difference reuses buttons, freeing active for the slide bar alone,
+  which then colours a2 as shipped): 586.
+- Timer digit fix-up loop over records 1..8 (`for (i = 1; i < 9; i++)`
+  with `i == 1 or 4 or 7`), so the record cursor starts at record 1 as
+  shipped: 585.
+- Clock hand written `racer->time * -65536 / 300`. The shipped negate into
+  at followed by a shift is as1's -r4300_mul expansion of a multiply by a
+  negative power of two; the four shift/negate spellings all canonicalise
+  to the shift-then-negate form: 508.
+- Slide bar `active = 1` after its catch-up loop: 506.
+
+Aligner: 1181 byte-exact, 489 naming, 5 immediate, 12 really different.
+The 12 structural rows are three as1 schedule points that follow from
+registers: the lap count stores (lap in t0 where shipped is v0), the item
+count in v1 where shipped is t0, and the slide bar's two delay slots.
+From +0xF00 to the end the naming residual is one constant temp-ring
+rotation (t4 t6)(t5 t7 t8); +0xE00 has value1 in t0 where shipped is a3.
+Measured and flat or worse: lap/alpha/difference carrier product over 160
+cells (506 best); stores and fix-up loop through the `digits` pointer
+(regress by 600 or more and change size).
+
+## 2026-10-02 f-o052b (second bank): frame homes and the icon block, 814 to 602
+
+Masked words and size delta after each edit, in order, from 814 at +0:
+
+- `digits = o52_bss_0[player]` after the joypad toggle instead of before
+  it: 799 at +0 (the D_240 address is drawn before the player multiple).
+- Slide-bar test inverted to `else if (value1 == o52_bss_4A0[player]) {
+  active = 0; } else { ... }`: 800 at +0, but the bar's branch layout is
+  then the shipped one (the word it costs is the upstream shift).
+- Time difference assigned after the timer-sign value8 store in both arms
+  (it is reloaded after the stores, as shipped): 972 at +8, the +8 being
+  exactly the icon block's one-sided words.
+- Icon Y given its own local declared fourth after halfHeight (its spill
+  home 0x98), icon X its own local, the bar's flag and the time difference
+  sharing one local, alpha reusing value2 (six locals after halfHeight, the
+  shipped frame): 969 at +4. Every local has a frame home in declaration
+  order; a seventh grows the frame to 0x120.
+- Split-arm icon: the non-53 arm assigns X before Y: 602 at +0.
+
+Aligner: 1085 byte-exact, 571 naming, 5 immediate, 26 really different,
+displacement tax 0. Open: the split-arm `== 53` branch is a likely branch
+in ours where the target fills a plain branch's delay with the else arm's
+spill reload (five arm/order variants measured, none reproduce it), and the
+item count loads into v1 where the target uses t0. Measured and flat:
+lap count in its own local or any of six others; slide value roles and
+load order (36 cells, 794 best then); icon arm order and condition sense
+(16 cells).
+
+## 2026-10-02 f-o052b: per-file flag and TU-local data, 1337 to 814
+
+Measured with tools/fast_score.py against the configured recipe; masked
+words and size delta after each edit, in order:
+
+- `-Wab,-r4300_mul` on the object (mk/overlays.mk), source unchanged:
+  1597 at +16. The hand-expanded easing recurrence is then wrong.
+- Easing recurrence rewritten as a plain `for (i = 0; i < updateRate; i++)`
+  over the global: 1606 at +16 (the remaining +16 was elsewhere).
+- Overlay 52's .data and .bss defined in the TU as statics at their
+  recorded offsets (as overlay54TailA does for overlay 54), with the 0x24C
+  table split into the 2-entry arrays the function indexes: 1169 at +8.
+- Item-restore loop indexed (`o52_bss_4A8[i] = desiredItems[i]`): 1112
+  at +0, frame still 0x120 against 0x118.
+- Item-release loop indexed (drops the `slot` cursor) and the dead `step`
+  local removed: frame 0x118, 1090 at +0. Reading the stored slot back for
+  the resource test and load call (`o52_bss_4A8[i]`) then gave 984 at +8.
+- Timer-sign texture fill over all nine records (IDO peels one iteration
+  and unrolls the other eight by four, the shipped shape), with the
+  difference assigned after the loop: 814 at +0. Assigning it before the
+  loop: 986 at +8.
+
+Aligner after the last edit: 1028 byte-exact, 532 naming, 28 immediate,
+104 really different; one-sided candidate words at +0x5C0, +0xCFC, +0xE14,
++0xE60, +0x1084 and target-only at +0x5B4, +0xE1C, +0xFC4, +0x15B8. All 314
+relocation records now present. The residual is densest from +0xD00 to
++0x1500 (the item icon, the slide bar and the time-difference recurrence).
 
 ## 2026-09-12 exhaustive colour landscape
 

@@ -76,49 +76,6 @@ extern s32 D_8007C1B0;
 extern s32 D_800C947C;
 extern s32 ext_o1_83e0;
 
-/* Section-qualified names prevent the extracted data/BSS zero bases aliasing. */
-extern Overlay52Entry o52_bss_0[2][3];
-extern Overlay52Entry o52_bss_60[2][2];
-extern Overlay52Entry o52_bss_A0[2][3];
-extern Overlay52Entry o52_bss_100[2][3];
-extern Overlay52Entry o52_bss_160[10];
-extern Overlay52Entry o52_bss_200[2][10];
-extern Overlay52Entry o52_bss_340[2][10];
-extern Overlay52Entry o52_bss_480[2];
-extern s16 o52_bss_4A0[2];
-extern s32 o52_bss_4A8[2];
-extern f32 o52_bss_4B0;
-extern s16 o52_bss_4B4[2];
-extern s16 o52_bss_4B8[2];
-extern s16 o52_bss_4BC[2];
-extern s16 o52_bss_4C0[2];
-extern s16 o52_bss_4C4[2];
-extern s16 o52_bss_4C8[2];
-extern Overlay45ResourceDescriptor *o52_bss_4CC;
-extern s16 o52_bss_4D0;
-extern s16 o52_bss_4D2;
-extern Overlay52Entry o52_data_80[];
-extern Overlay52Entry o52_data_F0[9];
-extern Overlay52Entry o52_data_180[];
-extern s8 o52_data_240[2];
-extern s8 o52_data_244[];
-extern s16 o52_data_24C[2];
-extern s16 o52_data_254[2];
-extern s16 o52_data_258[2];
-extern s16 o52_data_25C[2];
-extern s16 o52_data_260[2];
-extern s16 o52_data_264[2];
-extern s16 o52_data_268[2];
-extern s16 o52_data_26C[2];
-extern s16 o52_data_270[2];
-extern s16 o52_data_274[2];
-extern s16 o52_data_278[2];
-extern Overlay52Entry o52_data_2F4[];
-extern s32 o52_data_314;
-extern s32 o52_data_318;
-extern s8 o52_data_31C;
-extern s32 o52_data_320[2];
-
 extern void camStandardOrtho(MenuCommand **, void **);
 extern Overlay52Object **func_80005750(s32 *);
 extern Overlay52Level *levelGetLevel(void);
@@ -142,14 +99,125 @@ extern void func_80037414(s32, f32, f32, s32, s32, s32, s32);
 extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
 extern void func_800005CC(f32, u8);
 
-/* Reconstructed from Mickey's call/global relocation identities and field accesses. */
 #ifdef NON_MATCHING
+/* Overlay 52 was one translation unit: the target shares high halves
+ * between data/bss sites the way as1 does only for objects defined in the
+ * same TU. So the candidate defines overlay 52's .data and .bss at their
+ * recorded offsets, laid out as overlay52Initialize.c does (that object
+ * owns the bytes; a promotion drops these copies at POSTPROCESS and
+ * rebinds the sites to zero-valued bases, as overlay54TailA does). The
+ * 0x24C table is split into the 2-entry arrays this function indexes. */
+static s16 o52_data_0[18] = {
+    2, 38, 39, 41, 42, 20, 21, 22, 23, 24, 25, 26, 30, 31, 40, 80, 100, -1,
+};
+static s16 o52_data_24[6] = { 0, 1, 2, 3, 4, -1 };
+static Overlay52Entry o52_data_30[3] = {
+    { (void *)38, (void *)39, 0, 0, 0 },
+    { (void *)41, (void *)42, 0, 12, 0 },
+};
+static Overlay52Entry o52_data_60[2] = {
+    { (void *)38, (void *)39, 0x00060000, 0, 0 },
+};
+static Overlay52Entry o52_data_80[3] = {
+    { (void *)20, (void *)21, 0, 0, 0 },
+    { (void *)20, (void *)21, 0, 7, 0 },
+};
+static Overlay52Entry o52_data_B0[3] = {
+    { (void *)30, (void *)31, 0, 0, -3 },
+    { (void *)20, (void *)21, 0, 32, 1 },
+};
+static Overlay52Entry o52_data_E0[10] = {
+    { (void *)20, (void *)21, 0, -7, 0 },
+    { (void *)20, (void *)21, 0, 0, 0 },
+    { (void *)20, (void *)21, 0, 7, 0 },
+    { (void *)20, (void *)21, 0x000B0000, 14, 0 },
+    { (void *)20, (void *)21, 0, 20, 0 },
+    { (void *)20, (void *)21, 0, 27, 0 },
+    { (void *)20, (void *)21, 0x000A0000, 33, 0 },
+    { (void *)20, (void *)21, 0, 40, 0 },
+    { (void *)20, (void *)21, 0, 47, 0 },
+};
+static Overlay52Entry o52_data_180[10] = {
+    { (void *)20, (void *)21, 0, 0, 0 },
+    { (void *)20, (void *)21, 0, 7, 0 },
+    { (void *)20, (void *)21, 0x000B0000, 14, 0 },
+    { (void *)20, (void *)21, 0, 20, 0 },
+    { (void *)20, (void *)21, 0, 27, 0 },
+    { (void *)20, (void *)21, 0x000A0000, 33, 0 },
+    { (void *)20, (void *)21, 0, 40, 0 },
+    { (void *)20, (void *)21, 0, 47, 0 },
+    { (void *)23, (void *)24, 0, -25, -8 },
+};
+static Overlay52Entry o52_data_220[2] = {
+    { (void *)25, (void *)0, 0, -25, -6 },
+};
+static s8 o52_data_240[12] = { 1, 1, 0, 0, 0, 1, 2, 3, 3, 3, 0, 0 };
+static s16 o52_data_24C[2] = { -12, -120 };
+static s16 o52_data_250[2] = { 0, 160 };
+static s16 o52_data_254[2] = { -84, 66 };
+static s16 o52_data_258[2] = { 25, 251 };
+static s16 o52_data_25C[2] = { 31, 257 };
+static s16 o52_data_260[2] = { -80, 26 };
+static s16 o52_data_264[2] = { 768, 3072 };
+static s16 o52_data_268[2] = { -1056, 1248 };
+static s16 o52_data_26C[2] = { 3200, 5504 };
+static s16 o52_data_270[2] = { 1920, 1920 };
+static s16 o52_data_274[2] = { -640, -640 };
+static s16 o52_data_278[2] = { 5760, 5760 };
+static s16 o52_data_27C[60] = {
+    28, 28, 28, 136, 117, 37, 117, 145, 165, 37, 165, 145,
+    128, 37, 128, 145, 128, 37, 128, 145, 28, 28, 262, 28,
+    88, 37, 238, 37, 110, 37, 165, 37, 92, 37, 198, 37,
+    92, 37, 198, 37, 28, 16, 28, 136, 117, 25, 117, 145,
+    165, 25, 165, 145, 128, 25, 128, 145, 128, 25, 128, 145,
+};
+static Overlay52Entry o52_data_2F4[2] = {
+    { (void *)20, (void *)21, 0, -3, -4 },
+};
+static s32 o52_data_314 = 9;
+static s32 o52_data_318 = 0;
+static s8 o52_data_31C = 0;
+static s32 o52_data_320[4] = { 0 };
+
+static Overlay52Entry o52_bss_0[2][3];
+static Overlay52Entry o52_bss_60[2][2];
+static Overlay52Entry o52_bss_A0[2][3];
+static Overlay52Entry o52_bss_100[2][3];
+static Overlay52Entry o52_bss_160[10];
+static Overlay52Entry o52_bss_200[2][10];
+static Overlay52Entry o52_bss_340[2][10];
+static Overlay52Entry o52_bss_480[2];
+static s16 o52_bss_4A0[2];
+static s32 o52_bss_4A4;
+static s32 o52_bss_4A8[2];
+static f32 o52_bss_4B0;
+static s16 o52_bss_4B4[2];
+static s16 o52_bss_4B8[2];
+static s16 o52_bss_4BC[2];
+static s16 o52_bss_4C0[2];
+static s16 o52_bss_4C4[2];
+static s16 o52_bss_4C8[2];
+static Overlay45ResourceDescriptor *o52_bss_4CC;
+static s16 o52_bss_4D0;
+static s16 o52_bss_4D2;
+
+/* Reconstructed from Mickey's call/global relocation identities and field accesses.
+ * Built with -Wab,-r4300_mul (mk/overlays.mk): the HUD height easing is then
+ * a plain for loop, as in overlay54TailA; the item loops are indexed, and the
+ * timer-sign texture fill runs over all nine records (IDO peels one and
+ * unrolls the rest by four, the shipped shape). Every local has a frame home
+ * in declaration order (the item-count icon's Y spills to the fourth after
+ * halfHeight), so the icon position has its own locals; the lap count and
+ * the shadow alpha share i, and the screen-mode bit and the pad buttons
+ * share one local (both colour s0 in the shipped code). The
+ * clock hand is a multiply by -65536 (as1's -r4300_mul expansion: negate
+ * into at, then shift). */
 void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
     s32 i;
-    s32 buttons;
+    s32 difference;
     s32 player;
     s32 desiredItems[2];
-    s32 mode;
+    s32 bits;
     s32 split;
     Overlay52Object **racers;
     Overlay52Level *level;
@@ -168,16 +236,14 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
     s32 value0;
     s32 value1;
     s32 value2;
+    s32 iconY;
     s32 active;
-    s32 alpha;
-    s32 difference;
-    s32 *slot;
-    f32 step;
+    s32 iconX;
 
     viGetCurrentSize(&width, (s32 *)&halfHeight);
     halfHeight >>= 1;
     split = frontGet2PlayerSplit();
-    mode = frontGetScreenMode() & 1;
+    bits = frontGetScreenMode() & 1;
     camStandardOrtho(&D_800D3140, &D_800D3144);
     if (o52_bss_4CC != 0) {
         o52_bss_4D0 += updateRate;
@@ -200,44 +266,15 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
         }
     }
     racers = func_80005750(&racerCount);
-    if (mode != 0) {
+    if (bits != 0) {
         o52_data_24C[0] = 0;
         o52_data_24C[1] = -120;
     } else {
         o52_data_24C[0] = -12;
         o52_data_24C[1] = -120;
     }
-    if (D_800C947C == 0 && updateRate > 0) {
-        i = 0;
-        value0 = updateRate & 3;
-        if (value0 != 0) {
-            step = (-11.0f - o52_bss_4B0) * 0.125f;
-            for (;;) {
-                i++;
-                if (i == value0) {
-                    break;
-                }
-                o52_bss_4B0 += step;
-                step = (-11.0f - o52_bss_4B0) * 0.125f;
-            }
-            o52_bss_4B0 += step;
-        }
-        if (i != updateRate) {
-            step = (-11.0f - o52_bss_4B0) * 0.125f;
-            for (;;) {
-                i += 4;
-                if (i == updateRate) {
-                    break;
-                }
-                o52_bss_4B0 += step;
-                o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
-                o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
-                o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
-                step = (-11.0f - o52_bss_4B0) * 0.125f;
-            }
-            o52_bss_4B0 += step;
-            o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
-            o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
+    if (D_800C947C == 0) {
+        for (i = 0; i < updateRate; i++) {
             o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
         }
     }
@@ -286,18 +323,17 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             }
         }
     }
-    for (slot = o52_bss_4A8; slot < o52_bss_4A8 + 2; slot++) {
-        if (*slot != -1 && *slot != desiredItems[0] && *slot != desiredItems[1]) {
-            freeFrontEndItem(*slot);
-            *slot = -1;
+    for (i = 0; i < 2; i++) {
+        if (o52_bss_4A8[i] != -1 && o52_bss_4A8[i] != desiredItems[0] && o52_bss_4A8[i] != desiredItems[1]) {
+            freeFrontEndItem(o52_bss_4A8[i]);
+            o52_bss_4A8[i] = -1;
         }
     }
-    slot = o52_bss_4A8;
-    for (i = 0; i < 2; i++, slot++) {
+    for (i = 0; i < 2; i++) {
         if (desiredItems[i] != -1) {
-            *slot = desiredItems[i];
-            if (D_800D31C8[desiredItems[i]] == NULL) {
-                loadFrontEndItem(desiredItems[i]);
+            o52_bss_4A8[i] = desiredItems[i];
+            if (D_800D31C8[o52_bss_4A8[i]] == NULL) {
+                loadFrontEndItem(o52_bss_4A8[i]);
             }
         }
     }
@@ -307,19 +343,19 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
         if (object == NULL) {
             return;
         }
-        digits = o52_bss_0[player];
         if (joyGetPressed(player) & 2) {
             o52_data_240[player] ^= 1;
         }
+        digits = o52_bss_0[player];
         racer = object->racer;
         camSetNo(player);
         camSetScissor(&D_800D3140);
         if (racer->value3BA != 255) {
             digits[0].value8 = racer->value3BA << 16;
-            digits[1].value8 = o52_data_244[racer->value3BA] << 16;
+            digits[1].value8 = o52_data_240[4 + racer->value3BA] << 16;
         } else {
             digits[0].value8 = racer->position << 16;
-            digits[1].value8 = o52_data_244[racer->position] << 16;
+            digits[1].value8 = o52_data_240[4 + racer->position] << 16;
         }
         if (racer->flags & 8) {
             func_8002F618(&D_800D3140, o52_bss_60[player], 0, hudOffset, 255, 255, 255, 255);
@@ -339,17 +375,17 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 digits[1].x--;
             }
             func_8002F618(&D_800D3140, digits, 0, hudOffset, 255, 255, 255, 255);
-            value0 = racer->lap + 1;
+            i = racer->lap + 1;
             if (racer->value45C != 0) {
-                value0++;
+                i++;
             }
-            if (value0 >= 4) {
-                value0 = 3;
+            if (i >= 4) {
+                i = 3;
             }
-            if (value0 <= 0) {
-                value0 = 1;
+            if (i <= 0) {
+                i = 1;
             }
-            secondary[1].value8 = value0 << 16;
+            secondary[1].value8 = i << 16;
             func_8002F618(&D_800D3140, secondary, 0, hudOffset, 255, 255, 255, 255);
             func_80034920(&D_800D3140);
             if (split != 0) {
@@ -396,7 +432,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 D_800D3550[4].unkC = -44.0f;
                 D_800D3550[4].unk10 = o52_data_24C[player] - hudOffset + 92;
             }
-            D_800D3550[4].unk4 = (s32)(0U - ((u32)racer->time << 16)) / 300;
+            D_800D3550[4].unk4 = racer->time * -65536 / 300;
             func_80039E34(4);
             func_8002F618(&D_800D3140, secondary, 0, hudOffset, 255, 255, 255, 255);
         }
@@ -406,8 +442,8 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                     icon[0].y = 180;
                     icon[0].x = o52_data_258[player];
                 } else {
-                    icon[0].y = 186;
                     icon[0].x = o52_data_25C[player];
+                    icon[0].y = 186;
                 }
             } else if (o52_bss_4A8[player] == 53) {
                 icon[0].x = 25;
@@ -422,13 +458,13 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             icon[0].resource = D_800D31C8[o52_bss_4A8[player]];
             func_8002F618(&D_800D3140, icon, 0, 0, 255, 255, 255, o52_data_320[player]);
             if (o52_bss_4A8[player] != 53 && racer->itemCount >= 2) {
-                value2 = icon[0].x;
-                active = icon[0].y;
+                iconX = icon[0].x;
+                iconY = icon[0].y;
                 o52_data_2F4[0].value8 = racer->itemCount << 16;
-                alpha = (o52_data_320[player] - (o52_data_320[player] >> 1)) & 255;
-                func_8002F618(&D_800D3140, o52_data_2F4, value2 + 28, active + 27, 0, 0, 0, alpha);
-                func_8002F618(&D_800D3140, o52_data_2F4, value2 + 30, active + 29, 0, 0, 0, alpha);
-                func_8002F618(&D_800D3140, o52_data_2F4, value2 + 29, active + 28, 255, 255, 255, 255);
+                i = (o52_data_320[player] - (o52_data_320[player] >> 1)) & 255;
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 28, iconY + 27, 0, 0, 0, i);
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 30, iconY + 29, 0, 0, 0, i);
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 29, iconY + 28, 255, 255, 255, 255);
             }
         }
         if (split != 0) {
@@ -441,11 +477,13 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             value2 = o52_data_278[player];
         }
         if (racer->value388 != 0) {
-            active = 1;
             for (i = 0; i < updateRate; i++) {
                 o52_bss_4A0[player] += (value0 - o52_bss_4A0[player]) >> 3;
             }
-        } else if (value1 != o52_bss_4A0[player]) {
+            active = 1;
+        } else if (value1 == o52_bss_4A0[player]) {
+            active = 0;
+        } else {
             for (i = 0; i < updateRate; i++) {
                 o52_bss_4A0[player] += (value2 - o52_bss_4A0[player]) >> 3;
             }
@@ -455,8 +493,6 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             } else {
                 active = 1;
             }
-        } else {
-            active = 0;
         }
         if (active) {
             o52_bss_480[0].x = o52_bss_4A0[player] >> 4;
@@ -495,19 +531,15 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             }
             if (racer->timeDifference <= 0) {
                 o52_bss_160[0].value8 = 12 << 16;
-                o52_bss_160[0].resource = D_800D31C8[20];
-                o52_bss_160[0].alternate = D_800D31C8[21];
                 difference = -racer->timeDifference;
-                for (i = 1; i < 9; i++) {
+                for (i = 0; i < 9; i++) {
                     o52_bss_160[i].resource = D_800D31C8[20];
                     o52_bss_160[i].alternate = D_800D31C8[21];
                 }
             } else {
                 o52_bss_160[0].value8 = 13 << 16;
-                o52_bss_160[0].resource = D_800D31C8[80];
-                o52_bss_160[0].alternate = D_800D31C8[21];
                 difference = racer->timeDifference;
-                for (i = 1; i < 9; i++) {
+                for (i = 0; i < 9; i++) {
                     o52_bss_160[i].resource = D_800D31C8[80];
                     o52_bss_160[i].alternate = D_800D31C8[21];
                 }
@@ -519,15 +551,15 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             o52_bss_160[5].value8 = (seconds % 10) << 16;
             o52_bss_160[7].value8 = (hundredths / 10) << 16;
             o52_bss_160[8].value8 = (hundredths % 10) << 16;
-            for (i = 0; i < 8; i++) {
-                if (((s32)o52_bss_160[i + 1].value8 >> 16) == 1) {
-                    if (i == 0 || i == 3 || i == 6) {
-                        o52_bss_160[i + 1].x = o52_data_F0[i].x + 1;
+            for (i = 1; i < 9; i++) {
+                if (((s32)o52_bss_160[i].value8 >> 16) == 1) {
+                    if (i == 1 || i == 4 || i == 7) {
+                        o52_bss_160[i].x = o52_data_E0[i].x + 1;
                     } else {
-                        o52_bss_160[i + 1].x = o52_data_F0[i].x - 1;
+                        o52_bss_160[i].x = o52_data_E0[i].x - 1;
                     }
                 } else {
-                    o52_bss_160[i + 1].x = o52_data_F0[i].x;
+                    o52_bss_160[i].x = o52_data_E0[i].x;
                 }
             }
             func_8002F618(&D_800D3140, o52_bss_160,
@@ -541,8 +573,8 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             switch (*func_80028F54()) {
                 case 3:
                     if (ext_o1_83e0 == 0) {
-                        buttons = joyGetPressed(0) & 65535;
-                        if (((joyGetPressed(1) | buttons) & 0x9000) && o52_data_318 == 0) {
+                        bits = joyGetPressed(0) & 65535;
+                        if (((joyGetPressed(1) | bits) & 0x9000) && o52_data_318 == 0) {
                             mainChangeCameras(1);
                             func_800016EC(1);
                             func_8003A590();
@@ -555,8 +587,8 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                     break;
                 case 4:
                     if (ext_o1_83e0 == 0) {
-                        buttons = joyGetPressed(0) & 65535;
-                        if (((joyGetPressed(1) | buttons) & 0x9000) && o52_data_318 == 0) {
+                        bits = joyGetPressed(0) & 65535;
+                        if (((joyGetPressed(1) | bits) & 0x9000) && o52_data_318 == 0) {
                             mainChangeCameras(1);
                             func_800016EC(1);
                             func_8003A590();
@@ -578,10 +610,10 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:start
  * symbol: func_overlay_052_F000063C_189ACAC
- * score: 1337 differing words
+ * score: 500 differing words
  * frame: 0x118
- * relocations: 310
- * first-mismatch: +0x130
- * summary: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
+ * relocations: 314
+ * first-mismatch: +0x5E0
+ * summary: Lap and alpha in i, mode bit and buttons one local: 506 to 500. Open: lap colours t1 not v0; temp-ring rotation after +0xE00.
  * PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:end
  */

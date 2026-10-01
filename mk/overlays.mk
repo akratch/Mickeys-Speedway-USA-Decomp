@@ -1250,18 +1250,21 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000BE4_188ABB4.c.o: \
 	MIPSISET := -mips1 -32
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000BE4_188ABB4.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4C4
-ifneq ($(NON_MATCHING),0)
-# Retail overlay43 stores this local D_0 reference without reloc records.
+# The scale is a float literal, so the compiler emits a one-constant pool
+# that duplicates the retained overlay data at rodata-relative +0x24. Retail
+# stores that hi/lo pair with the offset in place and no relocation record.
+# Assert the pool by digest and bind the pair to an absolute anchor; no
+# instruction is edited.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43ComputeMotion.c.o: \
-	$(TOOLS_DIR)/filter_elf_relocations.py
+	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43ComputeMotion.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
-		0x090:5:D_0 0x094:6:D_0 && \
+	$(OBJCOPY) \
+		--redefine-sym func_80029FE4=func_80029FE4_o043Reloc \
+		--redefine-sym func_8002A82C=func_8002A82C_o043Reloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:e7a84b73794e13cf424adafc84342429176d8f26a0982941480a3d94dba6bd23 \
+		0x24 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDC
-else
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43ComputeMotion.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDC
-endif
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43AllocateResources.c.o: \
 	config/normalizations/overlay43AllocateResources.calls.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43AllocateResources.c.o: POSTPROCESS = \

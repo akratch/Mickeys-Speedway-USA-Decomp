@@ -1489,6 +1489,10 @@ D_120 = 0x00000120;
 /* overlay 43: func_overlay_043_F0000BE4_188ABB4.c.o */
 D_800000B8 = 0x800000b8;
 
+/* overlay 43: overlay43ComputeMotion.c.o */
+func_80029FE4_o043Reloc = 0xf0000000;
+func_8002A82C_o043Reloc = 0xf0000000;
+
 /* overlay 44: overlay44CreateAnimationState.c.o */
 gOverlay44FrameSources = 0x00000000;
 gOverlay44StatePool = 0x00000000;

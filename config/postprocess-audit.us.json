@@ -4104,16 +4104,18 @@
     },
     {
       "c_owned": true,
-      "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "class": "altered",
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o043/overlay43ComputeMotion.c.o",
       "offset": 4264,
       "overlay": 43,
       "size": 220,
       "source": "src/overlays/o043/overlay43ComputeMotion.c",
       "tools": [
-        "trim_elf_section.py"
+        "externalize_elf_section.py",
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -9209,13 +9211,13 @@
   ],
   "schema_version": 3,
   "summary": {
-    "altered_bytes": 3600,
+    "altered_bytes": 3820,
     "by_class": {
-      "altered": 2,
-      "metadata": 637,
+      "altered": 3,
+      "metadata": 636,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 226432,
+    "matched_c_bytes_with_postprocess": 226652,
     "objects_with_postprocess": 640
   }
 }

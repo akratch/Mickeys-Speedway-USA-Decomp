@@ -2,11 +2,41 @@
 ### `func_overlay_052_F000063C_189ACAC` plateau handoff
 
 - source: `src/overlays/o052/overlay52TailB.c`
-- score: 1337 differing words
+- score: 814 differing words
 - frame: 0x118
-- relocations: 310
-- first mismatch: +0x130
-- summary: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
+- relocations: 314
+- first mismatch: +0x5B4
+- summary: -r4300_mul + TU-local o52 data, indexed item loops, 9-record fill: 1337 to 814 at delta 0. Next: windows 0xD00-0x1500.
+
+Summary before this remeasure: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
+
+## 2026-10-02 f-o052b: per-file flag and TU-local data, 1337 to 814
+
+Measured with tools/fast_score.py against the configured recipe; masked
+words and size delta after each edit, in order:
+
+- `-Wab,-r4300_mul` on the object (mk/overlays.mk), source unchanged:
+  1597 at +16. The hand-expanded easing recurrence is then wrong.
+- Easing recurrence rewritten as a plain `for (i = 0; i < updateRate; i++)`
+  over the global: 1606 at +16 (the remaining +16 was elsewhere).
+- Overlay 52's .data and .bss defined in the TU as statics at their
+  recorded offsets (as overlay54TailA does for overlay 54), with the 0x24C
+  table split into the 2-entry arrays the function indexes: 1169 at +8.
+- Item-restore loop indexed (`o52_bss_4A8[i] = desiredItems[i]`): 1112
+  at +0, frame still 0x120 against 0x118.
+- Item-release loop indexed (drops the `slot` cursor) and the dead `step`
+  local removed: frame 0x118, 1090 at +0. Reading the stored slot back for
+  the resource test and load call (`o52_bss_4A8[i]`) then gave 984 at +8.
+- Timer-sign texture fill over all nine records (IDO peels one iteration
+  and unrolls the other eight by four, the shipped shape), with the
+  difference assigned after the loop: 814 at +0. Assigning it before the
+  loop: 986 at +8.
+
+Aligner after the last edit: 1028 byte-exact, 532 naming, 28 immediate,
+104 really different; one-sided candidate words at +0x5C0, +0xCFC, +0xE14,
++0xE60, +0x1084 and target-only at +0x5B4, +0xE1C, +0xFC4, +0x15B8. All 314
+relocation records now present. The residual is densest from +0xD00 to
++0x1500 (the item icon, the slide bar and the time-difference recurrence).
 
 ## 2026-09-12 exhaustive colour landscape
 

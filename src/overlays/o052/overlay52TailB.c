@@ -76,49 +76,6 @@ extern s32 D_8007C1B0;
 extern s32 D_800C947C;
 extern s32 ext_o1_83e0;
 
-/* Section-qualified names prevent the extracted data/BSS zero bases aliasing. */
-extern Overlay52Entry o52_bss_0[2][3];
-extern Overlay52Entry o52_bss_60[2][2];
-extern Overlay52Entry o52_bss_A0[2][3];
-extern Overlay52Entry o52_bss_100[2][3];
-extern Overlay52Entry o52_bss_160[10];
-extern Overlay52Entry o52_bss_200[2][10];
-extern Overlay52Entry o52_bss_340[2][10];
-extern Overlay52Entry o52_bss_480[2];
-extern s16 o52_bss_4A0[2];
-extern s32 o52_bss_4A8[2];
-extern f32 o52_bss_4B0;
-extern s16 o52_bss_4B4[2];
-extern s16 o52_bss_4B8[2];
-extern s16 o52_bss_4BC[2];
-extern s16 o52_bss_4C0[2];
-extern s16 o52_bss_4C4[2];
-extern s16 o52_bss_4C8[2];
-extern Overlay45ResourceDescriptor *o52_bss_4CC;
-extern s16 o52_bss_4D0;
-extern s16 o52_bss_4D2;
-extern Overlay52Entry o52_data_80[];
-extern Overlay52Entry o52_data_F0[9];
-extern Overlay52Entry o52_data_180[];
-extern s8 o52_data_240[2];
-extern s8 o52_data_244[];
-extern s16 o52_data_24C[2];
-extern s16 o52_data_254[2];
-extern s16 o52_data_258[2];
-extern s16 o52_data_25C[2];
-extern s16 o52_data_260[2];
-extern s16 o52_data_264[2];
-extern s16 o52_data_268[2];
-extern s16 o52_data_26C[2];
-extern s16 o52_data_270[2];
-extern s16 o52_data_274[2];
-extern s16 o52_data_278[2];
-extern Overlay52Entry o52_data_2F4[];
-extern s32 o52_data_314;
-extern s32 o52_data_318;
-extern s8 o52_data_31C;
-extern s32 o52_data_320[2];
-
 extern void camStandardOrtho(MenuCommand **, void **);
 extern Overlay52Object **func_80005750(s32 *);
 extern Overlay52Level *levelGetLevel(void);
@@ -142,8 +99,113 @@ extern void func_80037414(s32, f32, f32, s32, s32, s32, s32);
 extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
 extern void func_800005CC(f32, u8);
 
-/* Reconstructed from Mickey's call/global relocation identities and field accesses. */
 #ifdef NON_MATCHING
+/* Overlay 52 was one translation unit: the target shares high halves
+ * between data/bss sites the way as1 does only for objects defined in the
+ * same TU. So the candidate defines overlay 52's .data and .bss at their
+ * recorded offsets, laid out as overlay52Initialize.c does (that object
+ * owns the bytes; a promotion drops these copies at POSTPROCESS and
+ * rebinds the sites to zero-valued bases, as overlay54TailA does). The
+ * 0x24C table is split into the 2-entry arrays this function indexes. */
+static s16 o52_data_0[18] = {
+    2, 38, 39, 41, 42, 20, 21, 22, 23, 24, 25, 26, 30, 31, 40, 80, 100, -1,
+};
+static s16 o52_data_24[6] = { 0, 1, 2, 3, 4, -1 };
+static Overlay52Entry o52_data_30[3] = {
+    { (void *)38, (void *)39, 0, 0, 0 },
+    { (void *)41, (void *)42, 0, 12, 0 },
+};
+static Overlay52Entry o52_data_60[2] = {
+    { (void *)38, (void *)39, 0x00060000, 0, 0 },
+};
+static Overlay52Entry o52_data_80[3] = {
+    { (void *)20, (void *)21, 0, 0, 0 },
+    { (void *)20, (void *)21, 0, 7, 0 },
+};
+static Overlay52Entry o52_data_B0[3] = {
+    { (void *)30, (void *)31, 0, 0, -3 },
+    { (void *)20, (void *)21, 0, 32, 1 },
+};
+static Overlay52Entry o52_data_E0[10] = {
+    { (void *)20, (void *)21, 0, -7, 0 },
+    { (void *)20, (void *)21, 0, 0, 0 },
+    { (void *)20, (void *)21, 0, 7, 0 },
+    { (void *)20, (void *)21, 0x000B0000, 14, 0 },
+    { (void *)20, (void *)21, 0, 20, 0 },
+    { (void *)20, (void *)21, 0, 27, 0 },
+    { (void *)20, (void *)21, 0x000A0000, 33, 0 },
+    { (void *)20, (void *)21, 0, 40, 0 },
+    { (void *)20, (void *)21, 0, 47, 0 },
+};
+static Overlay52Entry o52_data_180[10] = {
+    { (void *)20, (void *)21, 0, 0, 0 },
+    { (void *)20, (void *)21, 0, 7, 0 },
+    { (void *)20, (void *)21, 0x000B0000, 14, 0 },
+    { (void *)20, (void *)21, 0, 20, 0 },
+    { (void *)20, (void *)21, 0, 27, 0 },
+    { (void *)20, (void *)21, 0x000A0000, 33, 0 },
+    { (void *)20, (void *)21, 0, 40, 0 },
+    { (void *)20, (void *)21, 0, 47, 0 },
+    { (void *)23, (void *)24, 0, -25, -8 },
+};
+static Overlay52Entry o52_data_220[2] = {
+    { (void *)25, (void *)0, 0, -25, -6 },
+};
+static s8 o52_data_240[12] = { 1, 1, 0, 0, 0, 1, 2, 3, 3, 3, 0, 0 };
+static s16 o52_data_24C[2] = { -12, -120 };
+static s16 o52_data_250[2] = { 0, 160 };
+static s16 o52_data_254[2] = { -84, 66 };
+static s16 o52_data_258[2] = { 25, 251 };
+static s16 o52_data_25C[2] = { 31, 257 };
+static s16 o52_data_260[2] = { -80, 26 };
+static s16 o52_data_264[2] = { 768, 3072 };
+static s16 o52_data_268[2] = { -1056, 1248 };
+static s16 o52_data_26C[2] = { 3200, 5504 };
+static s16 o52_data_270[2] = { 1920, 1920 };
+static s16 o52_data_274[2] = { -640, -640 };
+static s16 o52_data_278[2] = { 5760, 5760 };
+static s16 o52_data_27C[60] = {
+    28, 28, 28, 136, 117, 37, 117, 145, 165, 37, 165, 145,
+    128, 37, 128, 145, 128, 37, 128, 145, 28, 28, 262, 28,
+    88, 37, 238, 37, 110, 37, 165, 37, 92, 37, 198, 37,
+    92, 37, 198, 37, 28, 16, 28, 136, 117, 25, 117, 145,
+    165, 25, 165, 145, 128, 25, 128, 145, 128, 25, 128, 145,
+};
+static Overlay52Entry o52_data_2F4[2] = {
+    { (void *)20, (void *)21, 0, -3, -4 },
+};
+static s32 o52_data_314 = 9;
+static s32 o52_data_318 = 0;
+static s8 o52_data_31C = 0;
+static s32 o52_data_320[4] = { 0 };
+
+static Overlay52Entry o52_bss_0[2][3];
+static Overlay52Entry o52_bss_60[2][2];
+static Overlay52Entry o52_bss_A0[2][3];
+static Overlay52Entry o52_bss_100[2][3];
+static Overlay52Entry o52_bss_160[10];
+static Overlay52Entry o52_bss_200[2][10];
+static Overlay52Entry o52_bss_340[2][10];
+static Overlay52Entry o52_bss_480[2];
+static s16 o52_bss_4A0[2];
+static s32 o52_bss_4A4;
+static s32 o52_bss_4A8[2];
+static f32 o52_bss_4B0;
+static s16 o52_bss_4B4[2];
+static s16 o52_bss_4B8[2];
+static s16 o52_bss_4BC[2];
+static s16 o52_bss_4C0[2];
+static s16 o52_bss_4C4[2];
+static s16 o52_bss_4C8[2];
+static Overlay45ResourceDescriptor *o52_bss_4CC;
+static s16 o52_bss_4D0;
+static s16 o52_bss_4D2;
+
+/* Reconstructed from Mickey's call/global relocation identities and field accesses.
+ * Built with -Wab,-r4300_mul (mk/overlays.mk): the HUD height easing is then
+ * a plain for loop, as in overlay54TailA; the item loops are indexed, and the
+ * timer-sign texture fill runs over all nine records (IDO peels one and
+ * unrolls the rest by four, the shipped shape). */
 void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
     s32 i;
     s32 buttons;
@@ -171,8 +233,6 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
     s32 active;
     s32 alpha;
     s32 difference;
-    s32 *slot;
-    f32 step;
 
     viGetCurrentSize(&width, (s32 *)&halfHeight);
     halfHeight >>= 1;
@@ -207,37 +267,8 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
         o52_data_24C[0] = -12;
         o52_data_24C[1] = -120;
     }
-    if (D_800C947C == 0 && updateRate > 0) {
-        i = 0;
-        value0 = updateRate & 3;
-        if (value0 != 0) {
-            step = (-11.0f - o52_bss_4B0) * 0.125f;
-            for (;;) {
-                i++;
-                if (i == value0) {
-                    break;
-                }
-                o52_bss_4B0 += step;
-                step = (-11.0f - o52_bss_4B0) * 0.125f;
-            }
-            o52_bss_4B0 += step;
-        }
-        if (i != updateRate) {
-            step = (-11.0f - o52_bss_4B0) * 0.125f;
-            for (;;) {
-                i += 4;
-                if (i == updateRate) {
-                    break;
-                }
-                o52_bss_4B0 += step;
-                o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
-                o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
-                o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
-                step = (-11.0f - o52_bss_4B0) * 0.125f;
-            }
-            o52_bss_4B0 += step;
-            o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
-            o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
+    if (D_800C947C == 0) {
+        for (i = 0; i < updateRate; i++) {
             o52_bss_4B0 += (-11.0f - o52_bss_4B0) * 0.125f;
         }
     }
@@ -286,18 +317,17 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             }
         }
     }
-    for (slot = o52_bss_4A8; slot < o52_bss_4A8 + 2; slot++) {
-        if (*slot != -1 && *slot != desiredItems[0] && *slot != desiredItems[1]) {
-            freeFrontEndItem(*slot);
-            *slot = -1;
+    for (i = 0; i < 2; i++) {
+        if (o52_bss_4A8[i] != -1 && o52_bss_4A8[i] != desiredItems[0] && o52_bss_4A8[i] != desiredItems[1]) {
+            freeFrontEndItem(o52_bss_4A8[i]);
+            o52_bss_4A8[i] = -1;
         }
     }
-    slot = o52_bss_4A8;
-    for (i = 0; i < 2; i++, slot++) {
+    for (i = 0; i < 2; i++) {
         if (desiredItems[i] != -1) {
-            *slot = desiredItems[i];
-            if (D_800D31C8[desiredItems[i]] == NULL) {
-                loadFrontEndItem(desiredItems[i]);
+            o52_bss_4A8[i] = desiredItems[i];
+            if (D_800D31C8[o52_bss_4A8[i]] == NULL) {
+                loadFrontEndItem(o52_bss_4A8[i]);
             }
         }
     }
@@ -316,10 +346,10 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
         camSetScissor(&D_800D3140);
         if (racer->value3BA != 255) {
             digits[0].value8 = racer->value3BA << 16;
-            digits[1].value8 = o52_data_244[racer->value3BA] << 16;
+            digits[1].value8 = o52_data_240[4 + racer->value3BA] << 16;
         } else {
             digits[0].value8 = racer->position << 16;
-            digits[1].value8 = o52_data_244[racer->position] << 16;
+            digits[1].value8 = o52_data_240[4 + racer->position] << 16;
         }
         if (racer->flags & 8) {
             func_8002F618(&D_800D3140, o52_bss_60[player], 0, hudOffset, 255, 255, 255, 255);
@@ -495,22 +525,18 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             }
             if (racer->timeDifference <= 0) {
                 o52_bss_160[0].value8 = 12 << 16;
-                o52_bss_160[0].resource = D_800D31C8[20];
-                o52_bss_160[0].alternate = D_800D31C8[21];
-                difference = -racer->timeDifference;
-                for (i = 1; i < 9; i++) {
+                for (i = 0; i < 9; i++) {
                     o52_bss_160[i].resource = D_800D31C8[20];
                     o52_bss_160[i].alternate = D_800D31C8[21];
                 }
+                difference = -racer->timeDifference;
             } else {
                 o52_bss_160[0].value8 = 13 << 16;
-                o52_bss_160[0].resource = D_800D31C8[80];
-                o52_bss_160[0].alternate = D_800D31C8[21];
-                difference = racer->timeDifference;
-                for (i = 1; i < 9; i++) {
+                for (i = 0; i < 9; i++) {
                     o52_bss_160[i].resource = D_800D31C8[80];
                     o52_bss_160[i].alternate = D_800D31C8[21];
                 }
+                difference = racer->timeDifference;
             }
             overlay56SplitTime(difference, &minutes, &seconds, &hundredths);
             o52_bss_160[1].value8 = (minutes / 10) << 16;
@@ -522,12 +548,12 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             for (i = 0; i < 8; i++) {
                 if (((s32)o52_bss_160[i + 1].value8 >> 16) == 1) {
                     if (i == 0 || i == 3 || i == 6) {
-                        o52_bss_160[i + 1].x = o52_data_F0[i].x + 1;
+                        o52_bss_160[i + 1].x = o52_data_E0[i + 1].x + 1;
                     } else {
-                        o52_bss_160[i + 1].x = o52_data_F0[i].x - 1;
+                        o52_bss_160[i + 1].x = o52_data_E0[i + 1].x - 1;
                     }
                 } else {
-                    o52_bss_160[i + 1].x = o52_data_F0[i].x;
+                    o52_bss_160[i + 1].x = o52_data_E0[i + 1].x;
                 }
             }
             func_8002F618(&D_800D3140, o52_bss_160,
@@ -578,10 +604,10 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:start
  * symbol: func_overlay_052_F000063C_189ACAC
- * score: 1337 differing words
+ * score: 814 differing words
  * frame: 0x118
- * relocations: 310
- * first-mismatch: +0x130
- * summary: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
+ * relocations: 314
+ * first-mismatch: +0x5B4
+ * summary: -r4300_mul + TU-local o52 data, indexed item loops, 9-record fill: 1337 to 814 at delta 0. Next: windows 0xD00-0x1500.
  * PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:end
  */

@@ -383,8 +383,8 @@ units remain distinct.
 | 87 | `src/overlays/o026/func_overlay_026_F00001A0_187A598.c` | `func_overlay_026_F00001A0_187A598` | `o026` | `other` | 2,424 | 457 | 455 | 156 | 156 | 0 | — |
 | 88 | `src/overlays/o065/overlay65UpdateParticles.c` | `overlay65UpdateParticles` | `o065` | `other` | 2,880 | 469 | 458 | 80 | 80 | 0 | — |
 | 89 | `src/overlays/o101/overlay101TailAB4C.c` | `func_overlay_101_F000AB4C_18E636C` | `o101` | `other` | 2,552 | 501 | 499 | 16 | 16 | 0 | — |
-| 90 | `src/overlays/o001/overlay_001_tail.c` | `func_overlay_001_F000438C_185076C` | `o001` | `other` | 6,168 | 1,130 | 1,113 | 52 | 52 | 0 | — |
-| 91 | `src/overlays/o052/overlay52TailB.c` | `func_overlay_052_F000063C_189ACAC` | `o052` | `other` | 6,748 | 1,338 | 1,337 | 304 | 304 | 0 | — |
+| 90 | `src/overlays/o052/overlay52TailB.c` | `func_overlay_052_F000063C_189ACAC` | `o052` | `other` | 6,748 | 849 | 814 | 112 | 1,460 | 0 | — |
+| 91 | `src/overlays/o001/overlay_001_tail.c` | `func_overlay_001_F000438C_185076C` | `o001` | `other` | 6,168 | 1,130 | 1,113 | 52 | 52 | 0 | — |
 | 92 | `src/main/vehicle_sounds.c` | `func_80058250` | `main` | `size-mismatch` | 88 | 19 | 19 | 0 | 0 | 16 | — |
 | 93 | `src/main/matrix.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
 | 94 | `src/overlays/o048/overlay48InitializeState.c` | `overlay48InitializeState` | `o048` | `size-mismatch` | 228 | 47 | 47 | 0 | 0 | -16 | — |

@@ -2891,6 +2891,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54TailA.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x18E8 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:d131bb7de7509c98fc3533790f960348a16e2e461e7d1f5ffff1cd58ae2243e0
+# -Wab,-r4300_mul: as for overlay54TailA, IDO then emits the HUD easing as
+# the shipped rotated branch-likely loop from a plain for loop.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52TailB.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52TailB.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1A5C
 

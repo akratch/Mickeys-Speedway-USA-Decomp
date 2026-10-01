@@ -2,11 +2,63 @@
 ### `func_overlay_054_F00005AC_189F24C` plateau handoff
 
 - source: `src/overlays/o054/overlay54TailA.c`
-- score: 851 differing words
-- frame: 0x158
-- relocations: 273
+- score: 280 differing words
+- frame: 0x150
+- relocations: 267
 - first mismatch: +0x0
-- summary: Exhaustive colour packing reaches 839; most aligned residual lies outside the colour axis.
+- summary: Unsigned icon mode, indexed alpha/item, split visibility arms, sign via record: 851 to 280 at delta 0.
+
+Summary before this remeasure: Exhaustive colour packing reaches 839; most aligned residual lies outside the colour axis.
+
+## 2026-10-01 lane d-big: four shape edits, 851 to 280 at delta 0
+
+Each edit was measured with `tools/fast_score.py` and the aligned residual of
+`tools/residual_map.py --object`; prices are aligned rows (naming plus
+immediate plus structural) and masked positional words.
+
+- Icon call mode parameter declared unsigned (u8, u16 and u32 all equal).
+  The target loads the call's literal 1 into a fresh temporary while the
+  function's constant-1 web sits in a callee-saved register; with a signed
+  parameter our literal joined that web, saving one ring draw and rotating
+  the whole temporary ring from +0xC4C to the end. Aligned 687 to 341
+  (byte-exact 893 to 1239); size went 0 to +4.
+- Alpha and item flag read as `array[playerIndex]` at each use instead of
+  through declared pointers (checklist item 5): uopt still creates the two
+  pointers (the item pointer spilled at 0x58, as in the target) and the
+  stores to the overlay record no longer block the alpha loads. Product of
+  four pointer groups measured; alpha plus item is the floor, aligned 324.
+  The record-row pointers (position, lap, lap count, timer) must stay
+  declared: indexing them costs 108 bytes.
+- Visibility arms: `visible = 0` moved into the arm that resets the
+  position instead of before the inner test. Aligned 305.
+- The sign glyph is written as `o54Bss_0[0].metadata`, not a separate
+  `o54Bss_8` alias of the same record (checklist item 3): the target's three
+  stores to record 0 share one high half instead of a materialised base.
+  280 masked at delta 0, aligned 259 (naming 128, immediate 97, structural
+  34, seven one-sided words each way).
+
+Open, in size order:
+
+- Frame 0x150 against 0x138. The target ladder, top down: two unused
+  cells, the player index at 0x12C, one cell, the two offset outputs,
+  the level pointer, two cells, the actor, one cell, the actor count, one
+  cell, the screen Y spill, the three split-time outputs, the HUD Y spill,
+  six cells, the icon record pair at 0xB8, width, height. Declaring every
+  local at function scope in that order (register locals in the gaps)
+  reproduces the ladder exactly at an offset of 0x10 with frame 0x148; four
+  cells too many remain below the height output. Inlining the three
+  limit-table reads to free cells costs 320 aligned rows, so the extra
+  cells must come from elsewhere.
+- Height loop at +0x114..+0x278: still the inherited carried form. The
+  plain `for` loop over the global is 136 bytes short; the target's loop
+  body is rotated (load and step of the next update at the bottom).
+- Remaining one-sided words: the height loop (four each way) and three
+  near +0x1440..+0x1500 in the time-delta digit setup.
+
+The data-into-C move (static definitions of overlay 54's data in this TU)
+was measured once with the old shape: -20 bytes and worse aligned (724
+against 687), because the three limit tables then share one base address
+while the target addresses them separately. Not adopted.
 
 ## 2026-09-12 exhaustive colour landscape
 

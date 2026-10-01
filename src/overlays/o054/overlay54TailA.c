@@ -25,9 +25,13 @@ extern s32 func_80036544_o054Reloc(u8 *resource, s32 *state,
 extern void func_8002F618_o054Reloc(MenuCommand **dlist,
     OverlayOffsetRecord *records, s32 x, s32 y, u8 red, u8 green,
     u8 blue, u8 alpha);
+/* The last parameter is unsigned: the shipped icon call materializes its
+ * literal 1 in a fresh temporary instead of reusing the function's s32
+ * constant-1 register, which a signed parameter does (one ring draw, worth
+ * about 340 aligned rows of temp-register rotation downstream). */
 extern void func_8002FB34_o054Reloc(MenuCommand **dlist,
     OverlayOffsetRecord *records, f32 x, f32 y, f32 scaleX, f32 scaleY,
-    s32 colour, s32 mode);
+    s32 colour, u8 mode);
 extern u16 joyGetPressed_o054Reloc(s32 player);
 extern void func_80034920_o054Reloc(MenuCommand **dlist);
 extern void func_80034DE4_o054Reloc(s32 mode);
@@ -77,7 +81,6 @@ extern s32 o001_data_83E0_o054Reloc;
 /* Tier B: LOCAL records distinguish the initialized templates and state
  * from the writable HUD copies in BSS. Names retain their section offsets. */
 extern OverlayOffsetRecord o54Bss_0[10];
-extern s32 o54Bss_8;
 extern OverlayOffsetRecord o54Bss_10[];
 extern OverlayOffsetRecord o54Bss_90[];
 extern OverlayOffsetRecord o54Bss_A0[];
@@ -243,8 +246,6 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
         const OverlayOffsetRecord *src;
         OverlayOffsetRecord *dst;
         s32 *displayMode;
-        s32 *alpha;
-        s8 *item;
 
         actor = actors[playerIndex];
         if (actor == NULL) {
@@ -256,8 +257,6 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
         lapCount = o54Bss_280[playerIndex];
         timer = o54Bss_340[playerIndex];
         displayMode = &o54Data_298[playerIndex];
-        alpha = &o54Data_2B4[playerIndex];
-        item = &o54Bss_654[playerIndex];
         camSetNo_o054Reloc(playerIndex);
         camSetScissor_o054Reloc(&D_800D3140_o054Reloc);
         value = O54_LAP(player) + 1;
@@ -354,23 +353,23 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
             break;
         }
         if (player->unk19A != 255) {
-            *alpha += updateRate * 16;
-            if (*alpha >= 165) {
-                *alpha = 164;
+            o54Data_2B4[playerIndex] += updateRate * 16;
+            if (o54Data_2B4[playerIndex] >= 165) {
+                o54Data_2B4[playerIndex] = 164;
             }
         } else {
-            *alpha -= updateRate * 8;
-            if (*alpha < 0) {
-                *alpha = 0;
+            o54Data_2B4[playerIndex] -= updateRate * 8;
+            if (o54Data_2B4[playerIndex] < 0) {
+                o54Data_2B4[playerIndex] = 0;
             }
         }
-        if (*alpha > 0) {
+        if (o54Data_2B4[playerIndex] > 0) {
             if (player->unk19C != 0) {
-                *item = 53;
+                o54Bss_654[playerIndex] = 53;
             } else if (player->unk19A != 255) {
-                *item = D_8007C180_o054Reloc[player->unk19A];
+                o54Bss_654[playerIndex] = D_8007C180_o054Reloc[player->unk19A];
             }
-            if (*item != -1) {
+            if (o54Bss_654[playerIndex] != -1) {
                 if (frontGetScreenMode_o054Reloc() == 1) {
                     x = (playerIndex & 1) ? 276 : 25;
                     y = (playerIndex & 2) ? 209 : 89;
@@ -378,34 +377,34 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
                     x = (playerIndex & 1) ? 276 : 25;
                     y = (playerIndex & 2) ? 197 : 89;
                 }
-                if (*item == 53) {
+                if (o54Bss_654[playerIndex] == 53) {
                     x -= 7;
                     y -= 6;
                 }
                 {
                     OverlayOffsetRecord icon[2];
 
-                    icon[0].link = (s32) D_800D31C8_o054Reloc[*item];
+                    icon[0].link = (s32) D_800D31C8_o054Reloc[o54Bss_654[playerIndex]];
                     icon[0].value = 0;
                     icon[0].metadata = 0;
                     icon[0].x = 0;
                     icon[0].y = 0;
                     icon[1].link = 0;
                     func_8002FB34_o054Reloc(&D_800D3140_o054Reloc,
-                        icon, (f32) x, (f32) y, 0.66f, 0.66f, *alpha | ~255, 1);
+                        icon, (f32) x, (f32) y, 0.66f, 0.66f, o54Data_2B4[playerIndex] | ~255, 1);
                 }
-                if (*item != 53 && player->unk19B >= 2) {
+                if (o54Bss_654[playerIndex] != 53 && player->unk19B >= 2) {
                     o54Data_278[0].metadata = player->unk19B << 16;
                     func_8002F618_o054Reloc(&D_800D3140_o054Reloc, o54Data_278,
-                        x + 18, y + 18, 0, 0, 0, *alpha);
+                        x + 18, y + 18, 0, 0, 0, o54Data_2B4[playerIndex]);
                     func_8002F618_o054Reloc(&D_800D3140_o054Reloc, o54Data_278,
-                        x + 20, y + 20, 0, 0, 0, *alpha);
+                        x + 20, y + 20, 0, 0, 0, o54Data_2B4[playerIndex]);
                     func_8002F618_o054Reloc(&D_800D3140_o054Reloc, o54Data_278,
                         x + 19, y + 19, 255, 255, 255, 255);
                 }
             }
         } else {
-            *item = -1;
+            o54Bss_654[playerIndex] = -1;
         }
         x = playerIndex & 1;
         enterX = o54Data_18C[x];
@@ -422,9 +421,9 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
             for (i = 0; i < updateRate; i++) {
                 o54Bss_660[playerIndex] += (leaveX - o54Bss_660[playerIndex]) >> 3;
             }
-            visible = 0;
             if ((leaveX >> 6) == (o54Bss_660[playerIndex] >> 6)) {
                 o54Bss_660[playerIndex] = hiddenX;
+                visible = 0;
             } else {
                 visible = 1;
             }
@@ -474,7 +473,7 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
                 }
             }
             if (O54_TIME_DELTA(player) <= 0) {
-                o54Bss_8 = 12 << 16;
+                o54Bss_0[0].metadata = 12 << 16;
                 texture = (s32) D_800D31C8_o054Reloc[20];
                 deltaTime = -O54_TIME_DELTA(player);
                 o54Bss_0[0].link = texture;
@@ -484,7 +483,7 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
                     o54Bss_0[i].value = alternate;
                 }
             } else {
-                o54Bss_8 = 13 << 16;
+                o54Bss_0[0].metadata = 13 << 16;
                 alternate = (s32) D_800D31C8_o054Reloc[21];
                 texture = (s32) D_800D31C8_o054Reloc[80];
                 deltaTime = O54_TIME_DELTA(player);
@@ -559,10 +558,10 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_054_F00005AC_189F24C:start
  * symbol: func_overlay_054_F00005AC_189F24C
- * score: 851 differing words
- * frame: 0x158
- * relocations: 273
+ * score: 280 differing words
+ * frame: 0x150
+ * relocations: 267
  * first-mismatch: +0x0
- * summary: Exhaustive colour packing reaches 839; most aligned residual lies outside the colour axis.
+ * summary: Unsigned icon mode, indexed alpha/item, split visibility arms, sign via record: 851 to 280 at delta 0.
  * PLATEAU-HANDOFF:func_overlay_054_F00005AC_189F24C:end
  */

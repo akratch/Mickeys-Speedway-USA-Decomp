@@ -249,6 +249,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 		--redefine-sym overlay1TrigX=overlay1TrigXReloc \
 		--redefine-sym overlay1TrigY=overlay1TrigYReloc \
 		--redefine-sym func_80005750=func_80005750_o001Reloc \
+		--redefine-sym Arctanf=Arctanf_o001Reloc \
 		--redefine-sym mathRnd=mathRnd_o001Reloc \
 		--redefine-sym func_overlay_001_F0005ED4_18522B4=overlay1DispatchMode \
 		--redefine-sym func_overlay_008_F0000F1C_185EC74=overlay1ModeAction2 \

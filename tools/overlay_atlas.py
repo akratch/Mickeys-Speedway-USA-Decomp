@@ -1300,6 +1300,7 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x64F8, 0x6724, "overlay1SolveAngleCandidates"),
         (0x6724, 0x6788, "overlay1UpdateModeSound"),
         (0x6788, 0x67C0, "overlay1CopyBytes"),
+        (0x67C0, 0x69A0, "overlay1UpdateRangeFlags"),
         (0x69A0, 0x6A14, "overlay1InitMotion"),
         (
             0x6A14,

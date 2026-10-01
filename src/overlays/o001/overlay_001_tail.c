@@ -2188,194 +2188,69 @@ typedef struct Overlay1RangeObject {
     void *state;
 } Overlay1RangeObject;
 
-/* The four callees follow Mickey's runtime relocations and canonical ABIs.
- * The final call initializes mode state with the config byte at offset 4.
- * All call identities are authenticated; the two allocation words remain. */
 /* Retained for the separate nearby-pending reconstruction below. */
 extern Overlay1RangeObject **overlay1GetObjectListReloc(s32 *count);
 extern s32 Arctanf(f32 dz, f32 dx);
 extern s32 overlay1ActivateObject(void *object);
 extern void overlay1InitializeModeState(s32 value);
 
-/* Plateau: exact 120 instructions, the 0x70 frame, and every allocator lane --
- * general pool 37/37, general temp 8/8, FP pool 7/7, FP temp 9/9 -- with two
- * words left. Three identities were proved here. The horizontal range squared
- * must be a named `f32`, and its two `config->horizontalScale * 10U` reads must
- * be spelled twice so IDO CSEs them: a `u32 horizontalRange` carrier spends the
- * declaration budget the `f32` needs and leaves the whole FP allocation wrong
- * (12 FP words). The angle base must be a named `u8` carrier, which is what
- * puts `config->angleHigh` on the target's pool colour instead of a ring temp.
- * The `case 1` test must be a named `u16`, which orders its `andi` web before
- * the store's. `clearMask` is not needed: IDO hoists a literal `~8` into the
- * same saved register, and dropping the declaration is what buys the budget for
- * the other two.
- *
- * The residual is two words, and `cc -K` names the mechanism exactly. ugen
- * numbers `case 0`'s two temps in emission order -- `and $9` for the test,
- * `or $10` for the store -- but numbers `case 1`'s backwards: without the test
- * carrier it emits `and $12` for the test and `and $11` for the store, so the
- * store is allocated first and the pair comes out swapped (four words). The
- * `u16` carrier fixes the order, because its truncation `and $x, $y, 65535`
- * takes the outer number $11 and as1 then folds the instruction away -- but it
- * spends $12 on the inner `and`, so the store slides to $13 and lands on t5
- * where the target has t4. One temp too many, in the right order; the
- * no-carrier form has the right count in the wrong order.
- *
- * The calls in `case 1`'s body are not the cause: removing one or both leaves
- * the $12/$11 inversion unchanged. Measured and flat, do not repeat: 40 case-1
- * body spellings (compound assignment, the `^ 0` use-site break, re-reads of
- * the field, a hoisted `cleared` local, five carrier types, `if/else if` in
- * place of the switch, a `default:` arm, and reversed case order), and all 96
- * physical line groupings of the case-1 statement list.
- *
- * 2026-09-09: the residual is not in `case 1` at all. ugen's temporary ring is
- * fresh-first over $8..$15,$24,$25 and then FIFO by free time, and both arms
- * draw from that one list in emission order, so the numbers each arm gets are
- * fixed by when the *earlier* temps were freed. Reading `cc -K` for the whole
- * loop body: the angle block emits `sll $9; sll $10; sra $11` for the left
- * operand, `sll $12; sra $13` for the s16 read of `angle`, then
- * `addu $4,$11,$13`, then `sll $14/sra $15` for the truncation. $12 is freed by
- * `sra $13,$12,16` and $11 only at the `addu`, so the queue reaching the switch
- * is $9,$10,$12,$11,$13. `case 0` takes $9,$10 and `case 1` therefore takes
- * $12,$11 -- the inversion, entirely inherited. The target's queue must be
- * $9,$10,$11,$12.
- *
- * That is reachable, and was reached: with `angle` read through a one-
- * instruction conversion the free order becomes ascending and BOTH arms are
- * exact -- `andi t3` and `and t4` in `case 1`, `andi t1` and `ori t2` in
- * `case 0`, and the shared lane matches 7/7. What then remains is two different
- * words: the sum's `addu` writes a ring temp where the target writes the pool
- * colour (`addu t5,t3,v0` against `addu a0,t3,v0`).
- *
- * The constraint that blocks it, and it is structural, not a search gap. The
- * object pins three things: the left chain must end at $11, the sign-extension
- * pair must be $14 and $15, and the `addu` must write the pool. Five ring temps
- * therefore have to be spent between them, the left chain owns three, and the
- * remaining two have to be freed after $11 -- which is freed at the `addu`. Any
- * second operand needing a two-instruction conversion frees its first temp
- * before the `addu` (the current inversion); a one-instruction conversion frees
- * it at the `addu` but leaves the count one short, and the extra instruction
- * that would make up the count sits between the `addu` and the sign extension,
- * where as1 removes it by coalescing backwards onto the `addu` and renaming its
- * destination. 1080 spellings of `angle`'s type, the left operand, the read,
- * the assignment cast and the comparison were scored against the full-TU object
- * and the floor is exactly 2 in every one of them.
- *
- * Next lever: this needs an instruction between the `addu` and the sign
- * extension that as1 deletes without back-coalescing -- i.e. one whose
- * destination is consumed by the next instruction rather than written back into
- * `angle`'s home. Every cast spelling reachable from C emits ugen's
- * write-back form (`op $13,$4,..; move $4,$13`). Look for a source shape where
- * the intermediate is not the variable itself, or accept that the owner is as1
- * and reach for a ugen/as1 trace. Do not re-search `case 1`.
- *
- * 2026-09-10 (second reader): the residual reproduces at exactly 2 words, both
- * sites one web, and the diagnosis above holds. One thing worth writing down
- * because it reads as a third difference and is not: the comparison reports a
- * hunk at the first call where the two sides name different symbols. That is a
- * relocation-naming artifact -- the target side carries the generic overlay
- * entry symbol at every R_MIPS_26 site while the candidate carries the real
- * callee -- and those words are masked, which is why the raw and the masked
- * counts both read 2. Do not spend a cycle on it.
- *
- * 2026-09-12, lane p10-tight. The 2026-09-11 reading that the free list is
- * ascending here and the residual lives inside the second switch arm is wrong;
- * see the handoff shard. ugen draws a ring register immediately before each
- * instruction it emits, so the listing order IS the draw order, and the angle
- * block hands the switch its fourth and third ring members transposed. A
- * two-word corner exists in which BOTH switch arms are byte-exact and the
- * residual is the sum's destination instead: declare the angle thirty-two-bit,
- * spell the right summand as an explicit sixteen-bit mask of it so its widening
- * costs one ring draw rather than two, and write the second arm with no carrier
- * at all. The block then owes one more zero-footprint ring draw, strictly
- * between the sum and the truncation, and it cannot be paid: as1 deletes a
- * no-op by renaming ITS PRODUCER'S destination, so a phantom placed on the sum
- * renames the sum off the pool colour, and a phantom appended to the left
- * operand's chain is folded into it and moves the survivor one slot on. That is
- * the same mechanism the note above calls back-coalescing, measured from the
- * other side. Only a zero-footprint draw on some other live narrow value would
- * pay, and nothing narrow is live there.
- *
- * A second corner confirms the reading independently: a redundant byte mask on
- * the angle-high read, inside the left operand, buys the fifth draw and makes
- * the switch byte-exact in both arms, with everything from the truncation
- * onwards exact too. It scores 3 because the draw was spent at the HEAD of the
- * chain -- as1 deletes the no-op by renaming the byte load's destination, so
- * the load loses its pool colour, and the chain's survivor moves one slot on,
- * taking the shift and the sum's first operand with it. The fifth draw has to
- * be the fifth.
- *
- * 2026-09-17, lane w2-o001. L145-L154 reopen re-measured the same 2 naming
- * words at +0x190, 33 GP/FP draws, 174 ugen emissions. Deleting rangeSquared
- * or otherState regresses (14 and a size-minus-one 109). s16 plus a one-draw
- * (u16) right operand drops one comparison draw and shifts the tail to 14;
- * every post-sum probe meant to buy that draw back is DCE'd, adds two draws
- * (19), or hoists mode and goes structural (41). s32 corners are 20-21, not
- * the recorded two-word switch-exact shape. Floor remains 2. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01 by discarding the inherited shape; the 2-word closure
+ * (u8 angle carrier, u16 test carriers, a ring-order argument over them) was
+ * true of that shape only. What closed it:
+ *  - the angle offset is a named `s16` holding `config->angleHigh << 8`, added
+ *    as `angle = angleOffset + angle` after the call: in a 160-cell product
+ *    (ten angle spellings, four offset types, two arm shapes, frame pad) it
+ *    is the only exact cell; `angle += angleOffset` is 1, the u8 carrier 2.
+ *  - both switch arms read and write `otherState->flags` directly, no carrier.
+ *  - an unused `s32 pad` after `count` keeps the 0x70 frame (count at 0x68).
+ *  - `while (count--)`; the range squared stays a named `f32` (inline, 25). */
 void overlay1UpdateRangeFlags(Overlay1RangeObject *object, void *unused) {
     Overlay1RangeConfig *config;
     s32 count;
+    s32 pad;
     void **objects;
+    Overlay1RangeObject *other;
+    Overlay1RangeState *otherState;
+    f32 dx;
+    f32 dz;
+    f32 rangeSquared;
+    s16 angle;
+    s16 angleOffset;
 
     config = object->state;
     objects = func_80005750(&count);
-    if (count--) {
-        do {
-            Overlay1RangeObject *other;
-            Overlay1RangeState *otherState;
-            f32 dx;
-            f32 dz;
-            f32 rangeSquared;
-            s16 angle;
-            u8 angleHigh;
-
-            other = objects[count];
-            otherState = other->state;
-            dx = other->x - object->x;
-            dz = other->z - object->z;
-            rangeSquared = (f32)(s32)(((u32)config->horizontalScale * 10U) *
-                                      ((u32)config->horizontalScale * 10U));
-            if ((dx * dx + dz * dz) < rangeSquared) {
-                angle = Arctanf(dz, dx);
-                angleHigh = config->angleHigh;
-                angle = (s16)((u32)angleHigh << 8) + angle;
-                if ((angle < -0x4000) || (angle >= 0x4001)) {
-                    if ((object->y <= other->y + other->heightData->height) &&
-                        (other->y <= object->y +
-                         (f32)(s32)((u32)config->verticalScale * 10U))) {
-                        switch (config->mode) {
-                            case 0: {
-                                u16 flags;
-                                flags = otherState->flags;
-                                if (!(flags & 8)) {
-                                    otherState->flags = flags | 8;
-                                }
-                                break;
+    while (count--) {
+        other = objects[count];
+        otherState = other->state;
+        dx = other->x - object->x;
+        dz = other->z - object->z;
+        rangeSquared = (s32)((config->horizontalScale * 10U) * (config->horizontalScale * 10U));
+        if ((dx * dx + dz * dz) < rangeSquared) {
+            angle = Arctanf(dz, dx);
+            angleOffset = config->angleHigh << 8;
+            angle = angleOffset + angle;
+            if ((angle < -0x4000) || (angle > 0x4000)) {
+                if ((object->y <= other->y + other->heightData->height) &&
+                    (other->y <= object->y + (s32)(config->verticalScale * 10U))) {
+                    switch (config->mode) {
+                        case 0:
+                            if (!(otherState->flags & 8)) {
+                                otherState->flags |= 8;
                             }
-                            case 1: {
-                                u16 flags;
-                                u16 masked;
-                                flags = otherState->flags;
-                                masked = flags & 8;
-                                if (masked) {
-                                    otherState->flags = flags & ~8;
-                                    overlay1ActivateObject(other);
-                                    overlay1InitializeModeState(config->modeValue);
-                                }
-                                break;
+                            break;
+                        case 1:
+                            if (otherState->flags & 8) {
+                                otherState->flags &= ~8;
+                                overlay1ActivateObject(other);
+                                overlay1InitializeModeState(config->modeValue);
                             }
-                        }
+                            break;
                     }
                 }
             }
-        } while (count--);
+        }
     }
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F00067C0_1852BA0.s")
-#endif
 
 /* ---- overlay1InitMotion ---- */
 
@@ -3363,16 +3238,6 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 }
 
 
-
-/* PLATEAU-HANDOFF:overlay1UpdateRangeFlags:start
- * symbol: overlay1UpdateRangeFlags
- * score: 2/120 words
- * frame: 0x70
- * relocations: 4
- * first-mismatch: +0x190
- * summary: Four canonical callee identities and ABIs authenticated without resolver changes; exact extent/frame, two allocation words remain. Prior source levers stay closed.
- * PLATEAU-HANDOFF:overlay1UpdateRangeFlags:end
- */
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C

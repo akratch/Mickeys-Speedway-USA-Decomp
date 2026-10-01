@@ -2,15 +2,43 @@
 ### `func_overlay_052_F000063C_189ACAC` plateau handoff
 
 - source: `src/overlays/o052/overlay52TailB.c`
-- score: 602 differing words
+- score: 506 differing words
 - frame: 0x118
 - relocations: 314
 - first mismatch: +0x5E0
-- summary: Icon x/y own locals, slide test inverted, difference after the fill: 814 to 602 at delta 0. Open: icon split-arm delay, count colour.
+- summary: Clock hand as *-65536, digit fix-up over records 1..8, local reuse: 602 to 506 at delta 0. Open: register ring after +0xE00.
+
+Summary before this remeasure: Icon x/y own locals, slide test inverted, difference after the fill: 814 to 602 at delta 0. Open: icon split-arm delay, count colour.
 
 Summary before this remeasure: -r4300_mul + TU-local o52 data, indexed item loops, 9-record fill: 1337 to 814 at delta 0. Next: windows 0xD00-0x1500.
 
 Summary before this remeasure: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
+
+## 2026-10-02 f-o052b (third bank): 602 to 506
+
+From 602 at +0, masked words after each edit:
+
+- Locals reassigned (the lap count and the shadow alpha share value1, the
+  time difference reuses buttons, freeing active for the slide bar alone,
+  which then colours a2 as shipped): 586.
+- Timer digit fix-up loop over records 1..8 (`for (i = 1; i < 9; i++)`
+  with `i == 1 or 4 or 7`), so the record cursor starts at record 1 as
+  shipped: 585.
+- Clock hand written `racer->time * -65536 / 300`. The shipped negate into
+  at followed by a shift is as1's -r4300_mul expansion of a multiply by a
+  negative power of two; the four shift/negate spellings all canonicalise
+  to the shift-then-negate form: 508.
+- Slide bar `active = 1` after its catch-up loop: 506.
+
+Aligner: 1181 byte-exact, 489 naming, 5 immediate, 12 really different.
+The 12 structural rows are three as1 schedule points that follow from
+registers: the lap count stores (lap in t0 where shipped is v0), the item
+count in v1 where shipped is t0, and the slide bar's two delay slots.
+From +0xF00 to the end the naming residual is one constant temp-ring
+rotation (t4 t6)(t5 t7 t8); +0xE00 has value1 in t0 where shipped is a3.
+Measured and flat or worse: lap/alpha/difference carrier product over 160
+cells (506 best); stores and fix-up loop through the `digits` pointer
+(regress by 600 or more and change size).
 
 ## 2026-10-02 f-o052b (second bank): frame homes and the icon block, 814 to 602
 

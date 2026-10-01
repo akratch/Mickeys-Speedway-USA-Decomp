@@ -207,8 +207,10 @@ static s16 o52_bss_4D2;
  * timer-sign texture fill runs over all nine records (IDO peels one and
  * unrolls the rest by four, the shipped shape). Every local has a frame home
  * in declaration order (the item-count icon's Y spills to the fourth after
- * halfHeight), so the icon position has its own locals and the slide bar and
- * time difference share one. */
+ * halfHeight), so the icon position has its own locals; the lap count and
+ * the shadow alpha share one, and the time difference reuses buttons. The
+ * clock hand is a multiply by -65536 (as1's -r4300_mul expansion: negate
+ * into at, then shift). */
 void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
     s32 i;
     s32 buttons;
@@ -372,17 +374,17 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 digits[1].x--;
             }
             func_8002F618(&D_800D3140, digits, 0, hudOffset, 255, 255, 255, 255);
-            value0 = racer->lap + 1;
+            value1 = racer->lap + 1;
             if (racer->value45C != 0) {
-                value0++;
+                value1++;
             }
-            if (value0 >= 4) {
-                value0 = 3;
+            if (value1 >= 4) {
+                value1 = 3;
             }
-            if (value0 <= 0) {
-                value0 = 1;
+            if (value1 <= 0) {
+                value1 = 1;
             }
-            secondary[1].value8 = value0 << 16;
+            secondary[1].value8 = value1 << 16;
             func_8002F618(&D_800D3140, secondary, 0, hudOffset, 255, 255, 255, 255);
             func_80034920(&D_800D3140);
             if (split != 0) {
@@ -429,7 +431,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 D_800D3550[4].unkC = -44.0f;
                 D_800D3550[4].unk10 = o52_data_24C[player] - hudOffset + 92;
             }
-            D_800D3550[4].unk4 = (s32)(0U - ((u32)racer->time << 16)) / 300;
+            D_800D3550[4].unk4 = racer->time * -65536 / 300;
             func_80039E34(4);
             func_8002F618(&D_800D3140, secondary, 0, hudOffset, 255, 255, 255, 255);
         }
@@ -458,9 +460,9 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 iconX = icon[0].x;
                 iconY = icon[0].y;
                 o52_data_2F4[0].value8 = racer->itemCount << 16;
-                value2 = (o52_data_320[player] - (o52_data_320[player] >> 1)) & 255;
-                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 28, iconY + 27, 0, 0, 0, value2);
-                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 30, iconY + 29, 0, 0, 0, value2);
+                value1 = (o52_data_320[player] - (o52_data_320[player] >> 1)) & 255;
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 28, iconY + 27, 0, 0, 0, value1);
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 30, iconY + 29, 0, 0, 0, value1);
                 func_8002F618(&D_800D3140, o52_data_2F4, iconX + 29, iconY + 28, 255, 255, 255, 255);
             }
         }
@@ -474,10 +476,10 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             value2 = o52_data_278[player];
         }
         if (racer->value388 != 0) {
-            active = 1;
             for (i = 0; i < updateRate; i++) {
                 o52_bss_4A0[player] += (value0 - o52_bss_4A0[player]) >> 3;
             }
+            active = 1;
         } else if (value1 == o52_bss_4A0[player]) {
             active = 0;
         } else {
@@ -528,35 +530,35 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             }
             if (racer->timeDifference <= 0) {
                 o52_bss_160[0].value8 = 12 << 16;
-                active = -racer->timeDifference;
+                buttons = -racer->timeDifference;
                 for (i = 0; i < 9; i++) {
                     o52_bss_160[i].resource = D_800D31C8[20];
                     o52_bss_160[i].alternate = D_800D31C8[21];
                 }
             } else {
                 o52_bss_160[0].value8 = 13 << 16;
-                active = racer->timeDifference;
+                buttons = racer->timeDifference;
                 for (i = 0; i < 9; i++) {
                     o52_bss_160[i].resource = D_800D31C8[80];
                     o52_bss_160[i].alternate = D_800D31C8[21];
                 }
             }
-            overlay56SplitTime(active, &minutes, &seconds, &hundredths);
+            overlay56SplitTime(buttons, &minutes, &seconds, &hundredths);
             o52_bss_160[1].value8 = (minutes / 10) << 16;
             o52_bss_160[2].value8 = (minutes % 10) << 16;
             o52_bss_160[4].value8 = (seconds / 10) << 16;
             o52_bss_160[5].value8 = (seconds % 10) << 16;
             o52_bss_160[7].value8 = (hundredths / 10) << 16;
             o52_bss_160[8].value8 = (hundredths % 10) << 16;
-            for (i = 0; i < 8; i++) {
-                if (((s32)o52_bss_160[i + 1].value8 >> 16) == 1) {
-                    if (i == 0 || i == 3 || i == 6) {
-                        o52_bss_160[i + 1].x = o52_data_E0[i + 1].x + 1;
+            for (i = 1; i < 9; i++) {
+                if (((s32)o52_bss_160[i].value8 >> 16) == 1) {
+                    if (i == 1 || i == 4 || i == 7) {
+                        o52_bss_160[i].x = o52_data_E0[i].x + 1;
                     } else {
-                        o52_bss_160[i + 1].x = o52_data_E0[i + 1].x - 1;
+                        o52_bss_160[i].x = o52_data_E0[i].x - 1;
                     }
                 } else {
-                    o52_bss_160[i + 1].x = o52_data_E0[i + 1].x;
+                    o52_bss_160[i].x = o52_data_E0[i].x;
                 }
             }
             func_8002F618(&D_800D3140, o52_bss_160,
@@ -607,10 +609,10 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:start
  * symbol: func_overlay_052_F000063C_189ACAC
- * score: 602 differing words
+ * score: 506 differing words
  * frame: 0x118
  * relocations: 314
  * first-mismatch: +0x5E0
- * summary: Icon x/y own locals, slide test inverted, difference after the fill: 814 to 602 at delta 0. Open: icon split-arm delay, count colour.
+ * summary: Clock hand as *-65536, digit fix-up over records 1..8, local reuse: 602 to 506 at delta 0. Open: register ring after +0xE00.
  * PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:end
  */

@@ -78,6 +78,40 @@ class ResidentStorageBindingTests(unittest.TestCase):
             with self.assertRaisesRegex(bindings.BindingError,'loaded binding evidence implementation changed'):
                 bindings._verify_loaded()
 
+    def test_final_candidate_snapshot_rejects_changed_source_header_recipe_or_tool(self):
+        before={'source':'s','configured':'c','recipe':'r','tools':{'ido':'t'},
+                'dependencies':{'include/x.h':'h'},'linked':'e','map':'m','rom':'z'}
+        for changed in (
+            {**before,'source':'changed'},
+            {**before,'dependencies':{'include/x.h':'changed'}},
+            {**before,'recipe':'changed'},
+            {**before,'tools':{'ido':'changed'}},
+            {**before,'map':'changed'},
+        ):
+            with self.subTest(changed=changed), self.assertRaisesRegex(bindings.BindingError,'closure changed'):
+                bindings._assert_same_candidate_snapshot(before,changed)
+
+    def test_final_physical_witness_rejects_owner_loader_elf_or_closure_changes(self):
+        closure={'loader_object':'l','initialized_owner_object':'o','linked_elf':'e',
+                 'map':'m','rom':'r','tools':{'cc':'t'},'makefiles':{'Makefile':'f'}}
+        before={'key':'impact_gate','function':'func_80050348','source':'src/main/anim.c',
+            'source_sha256':'s','configured_recipe_fingerprint':'q','configured_object_sha256':'c',
+            'owned_size':532,'owned_bytes_sha256':'b','owner':{'symbol':'D_8007BF04','address':1},
+            'semantic_view':{'type':'u8','offset':0},'loader_view':{'selector':0xFFD,'offset':0x31A4},
+            'linked_rom_sha256':'x','freshness_before':closure,'freshness_after':closure}
+        for field,value in (
+            ('owner',{'symbol':'D_8007BF0C','address':1}),
+            ('loader_view',{'selector':0xFFD,'offset':0x31AC}),
+            ('linked_rom_sha256','changed'),
+            ('freshness_after',{**closure,'loader_object':'changed'}),
+            ('freshness_after',{**closure,'initialized_owner_object':'changed'}),
+            ('freshness_after',{**closure,'linked_elf':'changed'}),
+            ('freshness_after',{**closure,'map':'changed'}),
+        ):
+            after={**before,field:value}
+            with self.subTest(field=field,value=value), self.assertRaisesRegex(bindings.BindingError,'changed across|between pre-candidate'):
+                bindings._assert_same_joint_view(before,after)
+
     def test_wrong_owner_identity_or_physical_extent_is_rejected(self):
         spec=bindings.BINDINGS['color_gate']
         self.assertEqual(spec['identity'],(0xFFD,0x31AC))

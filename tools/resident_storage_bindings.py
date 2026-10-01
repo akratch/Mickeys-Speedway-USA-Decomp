@@ -19,6 +19,7 @@ import time
 from pathlib import Path
 
 import function_preflight as fp
+import candidate_context as cc
 import permute_batch as batch
 import proof_provenance as pp
 import reloc_surface as rs
@@ -46,7 +47,7 @@ BINDINGS = {
         'view':('f32',0,4,4)},
 }
 _LOADED = {Path(m.__file__):pp.sha256_file(Path(m.__file__)) for m in
-           (fp,batch,pp,rs,view,sf)}
+           (fp,cc,batch,pp,rs,view,sf)}
 _LOADED[Path(__file__)] = pp.sha256_file(Path(__file__))
 
 
@@ -128,6 +129,68 @@ def _r8_recipe(source, configured, deadline):
     return raw,line,args,hashlib.sha256(raw.encode()).hexdigest()
 
 
+def _r8_snapshot(source, configured, resolution, deadline):
+    """Fresh complete full-TU source, compiler, dependency, and link closure."""
+    fp.require_fresh_evidence(resolution)
+    target=configured.relative_to(ROOT).as_posix(); sr=source.relative_to(ROOT).as_posix()
+    raw_recipe,command,_args,recipe_sha=_r8_recipe(source,configured,deadline)
+    compiler_args=batch.compiler_arguments(command,sr,target)
+    dependencies=batch.source_dependencies(source,compiler_args,deadline)
+    _need(not any(name.startswith('missing:') for name in dependencies),
+          'R8 source dependency closure contains a missing include')
+    dependency_files={}
+    for relative,expected in dependencies.items():
+        path=ROOT/relative
+        _need(path.is_file() and pp.sha256_file(path)==expected,
+              f'R8 source dependency changed during evidence capture: {relative}')
+        dependency_files[relative]=expected
+    target_paths={
+      'linked_elf':fp.TARGET_ELF,'link_map':ROOT/'build/mickey.us.map','rom':fp.ROM,
+      'candidate_object':configured,'normal_split_stamp':ROOT/'build/.splat-stamp',
+      'candidate_split_stamp':ROOT/'build_non_matching/.splat-stamp',
+      'overlay_config':ROOT/'config/overlays.us.json','yaml':ROOT/'mickey.us.yaml',
+      'linker_script':ROOT/'mickey.us.ld','undefined_symbols':ROOT/'overlay_undefined_syms.us.txt',
+      'symbol_addresses':ROOT/'symbol_addrs.us.txt',
+    }
+    target_hashes={name:pp.sha256_file(path) for name,path in target_paths.items()}
+    makefiles=[ROOT/'Makefile',*sorted((ROOT/'mk').glob('**/*.mk'))]
+    makefile_hashes={path.relative_to(ROOT).as_posix():pp.sha256_file(path) for path in makefiles}
+    tools=batch.checked_tool_identity()
+    preprocessed=batch.bounded_capture(['tools/ido/cc',*[a for a in compiler_args if a!='-c'],
+      '-E',sr],deadline,check=True).stdout
+    snapshot={'head':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+      'source_sha256':pp.sha256_file(source),'configured_object_sha256':pp.sha256_file(configured),
+      'recipe_sha256':recipe_sha,'recipe_raw_sha256':hashlib.sha256(raw_recipe.encode()).hexdigest(),
+      'compiler_command':command,'dependencies':dependencies,'dependency_files':dependency_files,
+      'target_inputs':target_hashes,'makefiles':makefile_hashes,'tools':tools,
+      'preprocessed_sha256':hashlib.sha256(preprocessed.encode()).hexdigest()}
+    return snapshot,raw_recipe,command,compiler_args,preprocessed
+
+
+def _assert_same_candidate_snapshot(before,after):
+    _need(before==after,'R8 source/compiler/dependency/link closure changed during joint binding proof')
+
+
+def _assert_same_joint_view(before,after):
+    fields=('key','function','source','source_sha256','configured_recipe_fingerprint',
+      'configured_object_sha256','owned_size','owned_bytes_sha256','owner','semantic_view',
+      'loader_view','linked_rom_sha256','freshness_before','freshness_after')
+    _need(_json_stable({field:before.get(field) for field in fields})==
+          _json_stable({field:after.get(field) for field in fields}),
+          'physical owner, loader, linked bytes, or input closure changed across the joint proof window')
+    _need(_json_stable(before.get('freshness_after'))==_json_stable(after.get('freshness_before')),
+          'Q80 physical witness closure changed between pre-candidate and final checks')
+
+
+def _assert_candidate_view_closure(candidate,witness):
+    closure=witness['freshness_after']; targets=candidate['freshness_after']['target_inputs']
+    _need(targets['linked_elf']==closure['linked_elf'] and
+          targets['link_map']==closure['map'] and targets['rom']==closure['rom'] and
+          candidate['freshness_after']['tools']==closure['tools'] and
+          candidate['freshness_after']['makefiles']==closure['makefiles'],
+          'R8 candidate and named storage witness did not share one final linked/tool/recipe closure')
+
+
 def _candidate_capture(out):
     resolution=fp.resolve(FUNCTION)
     source=resolution.source.resolve(); configured=resolution.candidate_object.resolve()
@@ -137,18 +200,14 @@ def _candidate_capture(out):
           resolution.candidate_build_dir=='build_non_matching' and
           resolution.selection=='-DNON_MATCHING selects the guarded C body',
           'R8 is not the reviewed guarded-C translation-unit selection')
-    fp.require_fresh_evidence(resolution)
-    target=configured.relative_to(ROOT).as_posix(); source_rel=source.relative_to(ROOT).as_posix()
-    deadline=time.monotonic()+120
-    recipe,command,_args,recipe_sha=_r8_recipe(source,configured,deadline)
-    # Preserve the exact configured argument sequence; only output and input
-    # paths move to this private capture.
-    original=batch.compiler_arguments(command,source_rel,target)
+    deadline=time.monotonic()+240
+    before,recipe,command,original,cpp_before=_r8_snapshot(source,configured,resolution,deadline)
     raw=out/'r8-stock-c.o'
-    actual=['tools/ido/cc',*original,'-o',str(raw),source_rel]
-    result=batch.bounded_capture(actual,time.monotonic()+120,check=True)
+    actual=['tools/ido/cc',*original,'-o',str(raw),SOURCE_REL]
+    result=batch.bounded_capture(actual,deadline,check=True)
     (out/'r8-stock-c-command.json').write_text(json.dumps(actual,indent=2)+'\n')
     (out/'r8-stock-c-compile.log').write_text(result.stdout)
+    (out/'r8-preprocessed-before.c').write_text(cpp_before)
     fidelity=sf.compare_source_symbols(raw,configured,resolution.candidate_symbol)
     _need(fidelity['runtime_identity_proved'] is False and fidelity['promotion_authority'] is False,
           'source-fidelity helper returned unexpected identity/promotion authority')
@@ -167,26 +226,36 @@ def _candidate_capture(out):
     raw_fn=sf._function(raw_elf,raw_elf.symbols(),resolution.candidate_symbol)
     cfg_fn=sf._function(cfg_elf,cfg_elf.symbols(),resolution.candidate_symbol)
     _need(raw_fn['size']==cfg_fn['size'],'stock-C and configured R8 function extents differ')
+    _need(raw_fn['size']==5036,'R8 owned function no longer has the reviewed 5,036-byte boundary')
     _need(sf._normalized_bytes(raw_elf,raw_fn)==sf._normalized_bytes(cfg_elf,cfg_fn),
           'stock-C and configured R8 function instruction fields differ')
     raw_rows=sf._relocations(raw_elf,sf._symtab_index(raw_elf),raw_fn,raw_elf.symbols())
     cfg_rows=sf._relocations(cfg_elf,sf._symtab_index(cfg_elf),cfg_fn,cfg_elf.symbols())
     _need(raw_rows==cfg_rows,'complete ordered R8 relocation graph differs from stock C')
+    _need(len(raw_rows)==137,'R8 complete ordered relocation surface differs from reviewed 137 records')
     text_section=raw_elf.section_bytes(raw_elf.names[raw_fn['section']])
     owned_bytes=text_section[raw_fn['start']:raw_fn['start']+raw_fn['size']]
     _need(len(owned_bytes)==raw_fn['size'],'stock-C owned function bytes are truncated')
-    fp.require_fresh_evidence(resolution)
-    fresh_recipe,_,_,fresh_recipe_sha=_r8_recipe(source,configured,time.monotonic()+120)
-    _need(fresh_recipe_sha==recipe_sha and fresh_recipe==recipe,
-          'R8 full configured recipe changed during source-fidelity capture')
-    fp.require_fresh_evidence(resolution)
+    after,fresh_recipe,_,_,cpp_after=_r8_snapshot(source,configured,resolution,deadline)
+    _assert_same_candidate_snapshot(before,after)
+    _need(cpp_before==cpp_after,'R8 configured NON_MATCHING preprocessing changed during capture')
+    context=cc.compare_context(cpp_before.encode(),cpp_after.encode(),FUNCTION)
+    _need(context['status']=='unchanged' and
+          context['baseline_context_sha256']==context['winner_context_sha256'],
+          'R8 compiler self-context is not unchanged')
+    (out/'r8-preprocessed-after.c').write_text(cpp_after)
+    _need(fresh_recipe==recipe,'R8 full configured compiler recipe changed during source-fidelity capture')
+    raw_object_sha=pp.sha256_file(raw)
+    _need(pp.sha256_file(raw)==raw_object_sha,'retained R8 stock-C object changed during capture')
     return {'resolution':resolution,'source':source,'configured':configured,'raw':raw,
       'source_sha256':pp.sha256_file(source),'configured_sha256':pp.sha256_file(configured),
-      'raw_sha256':pp.sha256_file(raw),'recipe_sha256':recipe_sha,
-      'recipe_fingerprint':recipe_sha,'definitions':definitions,'source_declaration_lines':source_lines,
+      'raw_sha256':raw_object_sha,'recipe_sha256':before['recipe_sha256'],
+      'recipe_fingerprint':before['recipe_sha256'],'definitions':definitions,'source_declaration_lines':source_lines,
       'function_size':raw_fn['size'],'function_bytes_sha256':hashlib.sha256(owned_bytes).hexdigest(),
       'function_relocations':len(raw_rows),
-      'ordered_relocations':raw_rows,'fidelity':fidelity}
+      'ordered_relocations':raw_rows,'fidelity':fidelity,'freshness_before':before,
+      'freshness_after':after,'preprocessed_self_context':context,
+      'preprocessed_sha256':before['preprocessed_sha256']}
 
 
 def collect(key: str):
@@ -227,6 +296,9 @@ def collect(key: str):
                   owner_record.get('input_section')=='.data',
                   'resident gate is not the exact named initialized four-byte owner')
         candidate=_candidate_capture(out)
+        final_witness=view.collect(key)
+        _assert_same_joint_view(witness,final_witness)
+        _assert_candidate_view_closure(candidate,final_witness)
         _verify_loaded()
         # Opaque recheck IDs are generated here; no caller-provided path or
         # identity can redirect a later check.
@@ -236,7 +308,7 @@ def collect(key: str):
           'carrier':spec['carrier'],'carrier_type':spec['ctype'],'carrier_size':spec['size'],
           'candidate_symbol_records':candidate['definitions'],'source_declaration_line':candidate['source_declaration_lines'][key],
           'original_identity':list(spec['identity']),'original_owner':spec['owner'],
-          'physical_owner':owner_record,'view_witness':witness,
+          'physical_owner':owner_record,'view_witness':witness,'final_witness':final_witness,
           'candidate_stock_c':{'object_sha256':candidate['raw_sha256'],'configured_object_sha256':candidate['configured_sha256'],
              'source_sha256':candidate['source_sha256'],'recipe_sha256':candidate['recipe_sha256'],
              'recipe_fingerprint':candidate['recipe_fingerprint'],'function_size':candidate['function_size'],
@@ -295,7 +367,9 @@ def recheck(handle: str):
           fresh['physical_owner']==old['physical_owner'] and
           _json_stable(stable_candidate)==old_candidate and
           _json_stable(fresh['view_witness']['freshness_before'])==old['view_witness']['freshness_before'] and
-          _json_stable(fresh['view_witness']['freshness_after'])==old['view_witness']['freshness_after'],
+          _json_stable(fresh['view_witness']['freshness_after'])==old['view_witness']['freshness_after'] and
+          _json_stable(fresh['final_witness']['freshness_before'])==old['final_witness']['freshness_before'] and
+          _json_stable(fresh['final_witness']['freshness_after'])==old['final_witness']['freshness_after'],
           'fresh recheck no longer agrees with captured fixed binding')
     return {'status':'fresh-fixed-binding-recheck-complete','key':old['key'],
             'identity':fresh['original_identity'],'recheck_report':fresh['artifacts']['binding_report'],

@@ -2,11 +2,13 @@
 ### `func_overlay_052_F000063C_189ACAC` plateau handoff
 
 - source: `src/overlays/o052/overlay52TailB.c`
-- score: 500 differing words
+- score: 19 differing words
 - frame: 0x118
 - relocations: 314
 - first mismatch: +0x5E0
-- summary: Lap and alpha in i, mode bit and buttons one local: 506 to 500. Open: lap colours t1 not v0; temp-ring rotation after +0xE00.
+- summary: Address-order ring fixes: late HUD pointer, compare/rounding order, (u8) alpha: 500 to 19. Open: lap s1 not v0 (iconX web).
+
+Summary before this remeasure: Lap and alpha in i, mode bit and buttons one local: 506 to 500. Open: lap colours t1 not v0; temp-ring rotation after +0xE00.
 
 Summary before this remeasure: Clock hand as *-65536, digit fix-up over records 1..8, local reuse: 602 to 506 at delta 0. Open: register ring after +0xE00.
 
@@ -15,6 +17,42 @@ Summary before this remeasure: Icon x/y own locals, slide test inverted, differe
 Summary before this remeasure: -r4300_mul + TU-local o52 data, indexed item loops, 9-record fill: 1337 to 814 at delta 0. Next: windows 0xD00-0x1500.
 
 Summary before this remeasure: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
+
+## 2026-10-02 h-o052b: 500 to 19, read in address order
+
+The lap count's colour was not what rotated the tail. Giving the lap a
+call-free symbol of its own puts it in v0 as shipped (a block-scoped local
+does too, but its frame home pushes every uopt spill cell down 4: 530), and
+the rotation after +0xE00 stays (500). The ugen freelist trace
+(`DKWB_UGEN_SCHED=1`, FIFO) showed the timer arm's first draws already out
+of phase, so each region was fixed in address order, keeping cells that
+regress positionally when the local registers match the target:
+
+- Second HUD pointer (`secondary = o52_bss_340[player]`) assigned just
+  before its draw call; uopt still hoists it, but after the record-row base,
+  so the arm entry draws match. Lap/time-difference compare written
+  `racer->lap != level->laps` (level->laps is then read first, as shipped),
+  and the hundredths rounding as `hundredths -= hundredths % 10;
+  hundredths += o52_data_31C;` (the subtract lands in a0 as shipped). In a
+  product of the three with the pointer order: 409 at +0 (the arm itself
+  matched only in the 445/453 cells; 409 was a different compensation).
+- Split-screen 53-item icon assigns X before Y; the full-screen arms keep X
+  first (the per-arm draw orders then match): 446 at +0 (the product's 282
+  cell had matching totals but wrong arms).
+- Shadow alpha held unmasked and passed as `(u8)alpha` (item 16: the cast
+  spends the draw that closes the ring for the rest of the function): 34.
+- Item-count block in the order iconX, iconY, alpha, count store: 26.
+- Lap count and time difference in iconX's symbol, alpha in its own (the
+  former `difference`): 19 at +0. The slide-bar value is then a3 as shipped
+  (it was s1/t0 because the time difference shared value1's symbol).
+
+Remaining 19: the lap count is s1 here (iconX's colour) where shipped is v0;
+the 0x60/0x64 spill cell for the player*48 row offset; and the lap store's
+as1 schedule at +0x870. Taking the lap out of iconX's symbol (any call-free
+symbol, 8x8x8 role product) recolours iconX/iconY (iconX s4, iconY s1, t2
+freed into the ring) and the function shrinks 24 bytes, so iconX's web
+needs the lap's uses for its priority in this source; the shipped source
+gives that priority some other way.
 
 ## 2026-10-02 f-o052b (fourth bank): 506 to 500, and where it stops
 

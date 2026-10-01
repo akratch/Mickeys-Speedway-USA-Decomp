@@ -117,30 +117,23 @@ void func_8004E9F8(void) {
 /* PROVENANCE: adapted from Jet Force Gemini src/subtitles.c
  * find_next_subtitle and Diddy Kong Racing src/game_text.c find_next_subtitle.
  * Mickey's globals, the unwrapped *6 timer, and linked bytes remain
- * authoritative. Direct global cursor and do-while inner scan closed the
- * extra instruction and extra s-save. sentinel == new_var2 is the 12-compare
- * operand order. Remaining 15 words are the inner u8 taking a0; an identity-
- * gated p2 force of that web onto a1 scores 0. An outer u8 carrier that
- * numbers first reintroduces an s-save. */
-#ifdef NON_MATCHING
+ * authoritative. Matched with no byte carriers at all: every test reads the
+ * cursor byte directly, and only the outer loop test compares it as
+ * unsigned, which keeps the outer byte a separate value from the inner
+ * scan's and numbers it first. */
 void func_8004EC60(void) {
-    u8 new_var;
-    s32 new_var2;
     s32 done;
-    s32 sentinel;
 
     D_800D6AC6 = 0;
     D_800D6ABA = 0;
-    sentinel = 12;
     done = FALSE;
-    while (D_800D6AE0[0] != 0 && done == FALSE) {
+    while ((u32)D_800D6AE0[0] != 0 && done == FALSE) {
         D_800D6AC8 = D_800D6AE0[0] - 1;
         D_800D6AD0[D_800D6AC6] = (char *)D_800D6AE0;
         D_800D6ABA = D_800D6AE0[7] * 6;
         D_800D6AE0 += 8;
         do {
-            new_var = D_800D6AE0[0];
-            if (new_var & 0x80) {
+            if (D_800D6AE0[0] & 0x80) {
                 D_800D6AE0 += 2;
             } else {
                 D_800D6AE0 += 1;
@@ -151,10 +144,9 @@ void func_8004EC60(void) {
             done = TRUE;
         }
         D_800D6AE0 += 1;
-        new_var2 = D_800D6AE0[0];
         if (D_800D6AE0[0] == 10) {
             D_800D6AE0 += 1;
-        } else if (sentinel == new_var2) {
+        } else if (D_800D6AE0[0] == 12) {
             D_800D6AE0 += 1;
             done = TRUE;
         }
@@ -163,9 +155,6 @@ void func_8004EC60(void) {
         D_800D6AC4 = 1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/block_4F4E0/func_8004EC60.s")
-#endif
 void func_8004EDA8(s32 arg0)
 {
   s16 var_a0;
@@ -259,13 +248,3 @@ void func_8004EED0(s32 arg0) {
 s32 func_8004F020(void) {
     return 0;
 }
-
-/* PLATEAU-HANDOFF:func_8004EC60:start
- * symbol: func_8004EC60
- * score: 15/82 words
- * frame: 0x8
- * relocations: 12
- * first-mismatch: +0x2C
- * summary: hypothesis=unforced outer-before-inner byte numbering; spellings=s32 new_var, (u8)(s32) store, (s16)0 index; stall=the widen merges to the 13-word a1/a2 swap and the index cast stays the 15-word pair
- * PLATEAU-HANDOFF:func_8004EC60:end
- */

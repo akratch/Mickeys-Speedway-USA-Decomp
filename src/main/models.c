@@ -1154,7 +1154,6 @@ void func_80020B10(Gfx **displayList, s8 *textureIds, s8 *slots,
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/models/func_80020B10.s")
 #endif
-#ifdef NON_MATCHING
 typedef struct ModelFrameEntry {
     s16 frame;
     s16 nextFrame;
@@ -1179,54 +1178,43 @@ typedef struct ModelFrameInstance {
 /* PROVENANCE: the authorized audit of JFG upstream efd5abb confirms that its
  * corresponding modSetTextureFrame remains GLOBAL_ASM, so no donor C body is
  * adopted here. This remains a Mickey-only reconstruction. */
-/* Policy-clean configured full-TU C has the exact 48-word body, 0x8 frame,
- * and zero relocations, with 33/48 words matching and first mismatch +0x38.
- * Fifteen register-field residuals remain. remainingCopy carries the frame
- * load so lh uses t1; outputValue is deleted so its phantom t3 web is gone.
+/* Matched as a plain counted-down while loop: the post-decrement is the loop
+ * test, the entry cursor advances last, the frame and next-frame values are
+ * s16 locals, and the frame scale is widened into an s32 local, which is
+ * what keeps the shifted next-frame value out of a coloured web.
  * ORT 374 authenticates eight overlay calls across overlays 57, 60, and 82;
  * resident func_8001BB10 passes an unused fourth owner/context argument that
- * this callee overwrites. Linked equality proves fallback only. */
+ * this callee overwrites. */
 void func_80020D8C(ModelFrameInstance *instance, s32 textureIndex, s32 frame) {
     ObjectModel *model;
     ModelFrameEntry *entry;
     u16 *output;
     s32 remaining;
-    s32 remainingCopy;
 
     model = instance->model;
     entry = instance->entries;
     output = instance->outputs[instance->outputIndex];
     remaining = model->textureAnimationCount;
-    remainingCopy = remaining;
-    remaining--;
-    if (remainingCopy != 0) {
-        do {
-            s32 index = entry->textureIndex & 0xFF;
-            ModelTextureHeader *texture = model->textures[index].texture;
-            s16 nextFrame;
-            u16 frameScale;
+    while (remaining--) {
+        s32 index = entry->textureIndex & 0xFF;
+        ModelTextureHeader *texture = model->textures[index].texture;
+        s16 nextFrame;
+        s32 frameScale;
+        s16 value;
 
-            if (index == textureIndex && frame < texture->frameCount) {
-                entry->frame = frame;
-            }
-            frameScale = texture->frameScale;
-            nextFrame = entry->nextFrame;
-            remainingCopy = entry->frame;
-            output++;
-            output[-1] = (remainingCopy >> 8) * frameScale;
-            remainingCopy = remaining;
-            entry++;
-            if (nextFrame >= 0) {
-                output++;
-                output[-1] = (nextFrame >> 8) * frameScale;
-            }
-            remaining--;
-        } while (remainingCopy != 0);
+        if (index == textureIndex && frame < texture->frameCount) {
+            entry->frame = frame;
+        }
+        frameScale = texture->frameScale;
+        value = entry->frame;
+        nextFrame = entry->nextFrame;
+        *output++ = (value >> 8) * frameScale;
+        if (nextFrame >= 0) {
+            *output++ = (nextFrame >> 8) * frameScale;
+        }
+        entry++;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/models/func_80020D8C.s")
-#endif
 /* PROVENANCE: the authorized audit of JFG upstream efd5abb confirms that its
  * corresponding modSuspendModelTextures remains GLOBAL_ASM, so no donor C
  * body is adopted here. This remains a Mickey-only reconstruction. */
@@ -1399,16 +1387,6 @@ void func_8002109C(ModelPointOwner *owner) {
  * first-mismatch: +0xC
  * summary: Proc-14 census confirms 37 draws; cursor setup reorder leaves the scheduler unchanged and regresses, so the pool/line-order blocker remains.
  * PLATEAU-HANDOFF:func_80020B10:end
- */
-
-/* PLATEAU-HANDOFF:func_80020D8C:start
- * symbol: func_80020D8C
- * score: 15/48 words
- * frame: 0x8
- * relocations: 0
- * first-mismatch: +0x38
- * summary: hypothesis=use remaining as the test without a two-block shift; spellings=while !=0 unrolled 120 at +296, do/break/while(1) scored 39 at -4, goto header scored 45 at -8; stall=no delta-0 score under 15
- * PLATEAU-HANDOFF:func_80020D8C:end
  */
 
 /* PLATEAU-HANDOFF:func_8001FC50:start

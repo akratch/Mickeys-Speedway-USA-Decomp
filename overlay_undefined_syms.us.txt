@@ -3534,6 +3534,9 @@ overlay101BuildIntensityColorsReloc = 0xf0000000;
 
 /* overlay 101: overlay101DrawPanel.c.o */
 D_1F4 = 0x000001f4;
+overlay101BuildBorderReloc = 0xf0000000;
+overlay101DrawDefaultAssetReloc = 0xf0000000;
+overlay101DrawRectReloc = 0xf0000000;
 
 /* overlay 101: overlay101DrawClock.c.o */
 D_800002D8 = 0x800002d8;

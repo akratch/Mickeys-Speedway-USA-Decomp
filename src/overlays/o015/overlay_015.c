@@ -359,10 +359,16 @@ void overlay15InitStars(s32 count, s32 xRange, s32 yRange, s32 zRange,
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o015/overlay_015/func_overlay_015_F00006E8_1872A80.s")
 #endif
 
-/* Mickey-local reconstruction; pinned DKR v77/v80 and JFG scans are negative.
- * Plateau: canonical C is 110/103 words (+28 bytes), with 84 differing from
- * +0x30; scalar BSS symbols retain seven HIs after pair, flag, and permuter sweeps. */
-#ifdef NON_MATCHING
+/*
+ * Mickey-local reconstruction; pinned DKR v77/v80 and JFG scans are negative.
+ * Matched 2026-10-01 on the form that closed overlay15MoveStars: the rain
+ * field is reached through a pointer taken at entry, and because every use
+ * sits behind the camera call uopt forwards the address into each access, so
+ * all of them are direct and as1 shares one high half per aligned pair. That
+ * removes the seven extra high halves of the scalar-symbol candidate. The
+ * pointer is declared last, which leaves deltaZ's spill home where the target
+ * has it, and the three position products are in x, y, z order.
+ */
 void overlay15UpdateMovingStars(f32 positionX, f32 positionY, f32 positionZ,
                                 s32 updateRate) {
     Overlay15MovingStarCamera *camera;
@@ -370,47 +376,45 @@ void overlay15UpdateMovingStars(f32 positionX, f32 positionY, f32 positionZ,
     f32 deltaY;
     f32 deltaZ;
     f32 scale;
+    Overlay15Field *field = &sOverlay15Rain;
 
     camera = overlay15GetActiveCameraReloc();
-    if (gOverlay15CameraReadyRead != 0 && updateRate != 0) {
+    if (field->bounds.zero != 0 && updateRate != 0) {
         scale = 1.0f / (f32)updateRate;
-        deltaX = (gOverlay15PreviousCameraX - camera->x) * scale;
-        deltaY = (gOverlay15PreviousCameraY - camera->y) * scale;
-        deltaZ = (gOverlay15PreviousCameraZ - camera->z) * scale;
+        deltaX = (field->previous.x - camera->x) * scale;
+        deltaY = (field->previous.y - camera->y) * scale;
+        deltaZ = (field->previous.z - camera->z) * scale;
     } else {
         deltaX = 0.0f;
         deltaY = 0.0f;
         deltaZ = 0.0f;
     }
 
-    gOverlay15PreviousCameraX = camera->x;
-    gOverlay15PreviousCameraY = camera->y;
-    gOverlay15PreviousCameraZ = camera->z;
+    field->previous.x = camera->x;
+    field->previous.y = camera->y;
+    field->previous.z = camera->z;
     positionX += deltaX;
     positionY += deltaY;
     positionZ += deltaZ;
-    gOverlay15CameraReadyWrite = 1;
-    gOverlay15CurrentPositionX = positionX;
-    gOverlay15CurrentPositionY = positionY;
-    gOverlay15CurrentPositionZ = positionZ;
+    field->bounds.zero = 1;
+    field->movement.x = positionX;
+    field->movement.y = positionY;
+    field->movement.z = positionZ;
 
     if (gOverlay15MovingStars != 0) {
         scale = (f32)updateRate;
         positionX *= scale;
-        positionZ *= scale;
         positionY *= scale;
+        positionZ *= scale;
         starfieldFastMove(gOverlay15MovingStarCount, gOverlay15MovingStars,
                           positionX, positionY, positionZ,
-                          gOverlay15MovingBound0, gOverlay15MovingBound1,
-                          gOverlay15MovingBound2, gOverlay15MovingBound3,
-                          gOverlay15MovingBound4, gOverlay15MovingBound5,
-                          gOverlay15MovingBound6, gOverlay15MovingBound7,
-                          gOverlay15MovingBound8);
+                          field->bounds.xMin, field->bounds.xMax,
+                          field->bounds.xRange, field->bounds.yMin,
+                          field->bounds.yMax, field->bounds.yRange,
+                          field->bounds.zMin, field->bounds.zMax,
+                          field->bounds.zRange);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o015/overlay_015/func_overlay_015_F00009E0_1872D78.s")
-#endif
 
 void overlay15SetValueC(s32 value) {
     gOverlay15ValueC = value;
@@ -483,14 +487,4 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
  * first-mismatch: +0x70
  * summary: Same-line allocate+starsAddress+store keeps addiu+sw adjacent, 20 to 19; stars address still a1 (force p1:w317=c5 is 16), block 1 tail order and palette index inits remain.
  * PLATEAU-HANDOFF:overlay15InitStarsAndPalette:end
- */
-
-/* PLATEAU-HANDOFF:overlay15UpdateMovingStars:start
- * symbol: overlay15UpdateMovingStars
- * score: 84/103 words
- * frame: 0x58
- * relocations: 46
- * first-mismatch: +0x30
- * summary: Inlining the trailing rate conversion removes only a location emission; 27 draws and the plus-28-byte address deficit remain.
- * PLATEAU-HANDOFF:overlay15UpdateMovingStars:end
  */

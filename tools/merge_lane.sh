@@ -189,7 +189,8 @@ esac
 .venv/bin/python tools/nm_ranking.py --refresh-stale 2>&1 | tail -1
 .venv/bin/python tools/nm_ranking.py --write-doc >/dev/null
 .venv/bin/python tools/postprocess_audit.py --write 2>&1 | tail -1
-git add -- config/nonmatching-ranking.us.json docs/nm-ranking.md config/postprocess-audit.us.json
+# Left unstaged on purpose: merge_transaction.py stage adds them, and an
+# index change between begin and stage is refused as a race.
 gmake scoreboard 2>&1 | tail -1
 gmake overlay-atlas 2>&1 | tail -1
 .venv/bin/python tools/fix_jumptable_claim.py >/dev/null 2>&1 || true

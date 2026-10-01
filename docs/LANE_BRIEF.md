@@ -304,6 +304,34 @@ order of how often they decided a match:
     but the entry's (two o015 matches).
 11. **Per-file flag overrides inherited from a plateau** (`-Olimit`, unroll
     caps) can hide the regime: two main.c functions only match optimised.
+12. **The rotated, branch-likely float easing loop is `-Wab,-r4300_mul`.**
+    With that per-file flag IDO emits the shape from a plain `for` loop; no
+    source spelling reproduces it without the flag, and with it the
+    hand-unrolled copies earlier lanes wrote are wrong. It closed the two
+    6 KB initialisers (o054 from 851 words, o050 from 1,115) on 2026-10-02
+    and the same loop appears in overlays 47, 51, 52, 53, 55 and 84. Try the
+    flag first on any target whose listing has `bc1tl`/`bnezl` tails after
+    float compares; `tools/check_isa_overrides.py` must accept the override.
+13. **Write load-then-modify as one expression** (`v = load & m;`, not
+    `v = load; v &= m;`): the AND result becomes the register web and the
+    load a ring temporary (track, 148 -> 91).
+14. **One local reused across two regions is one allocator web** with the
+    merged priority class; where the target reads the raw load in the second
+    region, give it its own read (func_80020B10, the whole residual).
+15. **Early returns kept at the end instead of an else-if chain** can stop
+    uopt hoisting a constant and a table base into saved registers (the
+    allocator's cost of an extra saved register crossed 18.0:
+    overlay57UpdateSelection).
+16. **A narrowing cast or a masked store that the compiler deletes still
+    spends a ring draw**: `(u8)(x + 1) & 0xF` on a counter was worth 149
+    words on R8; `field = value & 0xFF` closed 109 -> 83 on o017 and
+    213 -> 190 on o068. The inverse also holds: a cast the target lacks
+    costs a draw.
+17. **Static data defined in the TU** (the overlay 54/50/52 move: `.data`
+    and `.bss` as typed statics in ROM order, a rebind spec binding the
+    section-relative records, sections dropped by POSTPROCESS) is what lets
+    an initialiser's loops index real arrays; three initialisers matched
+    only after it.
 
 ### Promotion traps (each cost a lane a cycle on 2026-10-01)
 

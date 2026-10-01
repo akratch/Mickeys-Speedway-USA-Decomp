@@ -18,28 +18,35 @@ typedef struct Overlay58StripGfx {
 
 extern Overlay58StripGfx *gOverlay58StripDisplayListReloc;
 extern Overlay58StripVertex *gOverlay58StripVertexCursorReloc;
-extern u8 gOverlay58StripIndexPayload58Reloc[];
+extern u8 D_80000058[];
 extern f32 overlay58SqrtReloc(f32 value);
 extern void overlay58PrepareStripReloc(Overlay58StripGfx **displayList,
                                        void *resource, s32 mode, s32 arg3);
 
 /*
- * Plateau (2026-09-10): 68 of 201 relocation-masked words differ, down from
- * 102, at unchanged 201-word geometry and an unchanged 0x88 frame.  Three
- * moves, found by a frame-constrained hill climb over 25,132 variants:
- * one discarded-expression probe (ido-5.3 L37, zero instructions), the `dx`
- * declaration moved down two slots, and two write-order moves inside the loop
- * body that are semantically inert (the second vertex's `y` written before its
- * `x`, and the cursor advance moved across the independent `endZ` term).
- *
- * Falsified here: the argument-affinity mechanism that is worth 16 words on
- * this overlay's two point-quad draw routines does NOT apply to this call.
- * Passing `&gOverlay58StripVertexCursorReloc` as the first argument instead of
- * the display list regresses 102 -> 152 and breaks the size delta by -4, so
- * this callee really does take the display list.  The mechanism is a property
- * of the call site, not of the overlay.
+ * PROVENANCE: the packet macros below are adapted from the Jet Force Gemini
+ * decompilation (include/PR/gbi.h gDma1p and include/PR/mbi.h _SHIFTL,
+ * include/f3ddkr.h gSPVertexJFG and gSPPolygon, include/PR/os_convert.h
+ * OS_PHYSICAL_TO_K0), a permitted source under docs/CLEANROOM.md, exactly as
+ * in this overlay's two point-quad routines.
  */
-#ifdef NON_MATCHING
+#define O58_SHIFTL(v, s, w) ((unsigned int)(((unsigned int)(v) & ((0x01 << (w)) - 1)) << (s)))
+#define O58_DMA1P(pkt, c, s, l, p) { Overlay58StripGfx *_g = (Overlay58StripGfx *)(pkt); _g->w0 = (O58_SHIFTL((c), 24, 8) | O58_SHIFTL((p), 16, 8) | O58_SHIFTL((l), 0, 16)); _g->w1 = (unsigned int)(s); }
+#define O58_VERTEX(pkt, v, n, v0) O58_DMA1P(pkt, 4, v, ((((n) << 3) + ((n) << 1))) + 8, ((n))<<3|(((u32)(v) & 6))|(v0))
+#define O58_POLYGON(dl, ptr, numTris, texEnabled) { Overlay58StripGfx *_g = (Overlay58StripGfx *)(dl); _g->w0 = O58_SHIFTL((((numTris) - 1) << 4) | (texEnabled), 16, 8) | O58_SHIFTL(5, 24, 8) | O58_SHIFTL(((numTris)*16), 0, 16); _g->w1 = (unsigned int)(ptr); }
+#define O58_PHYSICAL_TO_K0(x) (void *)(((u32)(x)+0x80000000))
+
+/*
+ * Matched 2026-10-01 by shape, from a 68-word plateau whose named blocker was
+ * the ranking of the 0xFF constant against the vertex cursor's address.  The
+ * four vertex colours are set by a four-pass loop over a walking pointer; the
+ * compiler unrolls it completely, which is where the second, third, fourth,
+ * first store order, the reversed third group and the dead pointer advance
+ * all come from, and the constant keeps its inner-loop weight so it is
+ * coloured ahead of the address.  The two packets are the JFG macros, the Y
+ * coordinate is the same cast at each use, and the parameter is initialised
+ * before the prepare call with no probe statement.
+ */
 void overlay58DrawSegmentStrip(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1,
                                f32 z1, f32 limit) {
     f32 dy;
@@ -47,15 +54,17 @@ void overlay58DrawSegmentStrip(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1,
     f32 distance;
     f32 t;
     f32 dx;
-    f32 dummy0;
-    f32 dummy1;
-    f32 dummy2;
-    f32 dummy3;
+    f32 next;
+    f32 startX;
+    f32 startZ;
+    f32 endX;
     f32 zPerpendicular;
     f32 xPerpendicular;
-    f32 hole58;
+    f32 endZ;
     f32 stripStep;
     f32 quadSpan;
+    Overlay58StripVertex *vertices;
+    s32 i;
 
     dx = x1 - x0;
     dy = y1 - y0;
@@ -63,118 +72,50 @@ void overlay58DrawSegmentStrip(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1,
     distance = overlay58SqrtReloc((dx * dx) + (dy * dy) + (dz * dz));
 
     zPerpendicular = (1.25f * dx) / distance;
-    t = 0.0f;
     xPerpendicular = (1.25f * dz) / distance;
     stripStep = 12.0f / distance;
     quadSpan = 8.0f / distance;
+    t = 0.0f;
 
     overlay58PrepareStripReloc(&gOverlay58StripDisplayListReloc, (void *)0,
                                5, 0);
-    if (limit != 0);
-
     while (t < limit) {
-        Overlay58StripVertex *vertices;
-        Overlay58StripVertex *vertex;
-        Overlay58StripGfx *command;
-        s32 vertexCommand;
-        f32 next;
-        f32 startX;
-        f32 startZ;
-        f32 endX;
-        f32 endZ;
-        f32 currentStep;
-        s16 y;
-
         vertices = gOverlay58StripVertexCursorReloc;
-        vertices++;
-        vertices->r = 0xFF;
-        vertices->g = 0xFF;
-        vertices->b = 0xFF;
-        vertices->a = 0xFF;
-        vertices++;
-        vertices->r = 0xFF;
-        vertices->g = 0xFF;
-        vertices->b = 0xFF;
-        vertices->a = 0xFF;
-        vertices++;
-        vertices->a = 0xFF;
-        vertices->b = 0xFF;
-        vertices->g = 0xFF;
-        vertices->r = 0xFF;
-        vertices[-3].r = 0xFF;
-        vertices[-3].g = 0xFF;
-        vertices[-3].b = 0xFF;
-        vertices[-3].a = 0xFF;
-
+        for (i = 0; i < 4; i++) {
+            vertices->r = 0xFF;
+            vertices->g = 0xFF;
+            vertices->b = 0xFF;
+            vertices->a = 0xFF;
+            vertices++;
+        }
         next = t + quadSpan;
-        if (1.0f < next) {
+        if (next > 1.0f) {
             next = 1.0f;
         }
-        currentStep = stripStep;
         if (next <= limit) {
-            command = gOverlay58StripDisplayListReloc;
-            vertexCommand =
-                (((s32)gOverlay58StripVertexCursorReloc + 0x80000000) & 6) |
-                0x20;
-            gOverlay58StripDisplayListReloc = command + 1;
-            command->w0 =
-                (((vertexCommand & 0xFF) << 16) | 0x04000000) | 0x30;
-            command->w1 =
-                (s32)gOverlay58StripVertexCursorReloc + 0x80000000;
-
-            command = gOverlay58StripDisplayListReloc;
-            gOverlay58StripDisplayListReloc = command + 1;
-            command->w0 = 0x05110020;
-            command->w1 = (u32)&gOverlay58StripIndexPayload58Reloc[0];
-
-            startX = x0 + (t * dx);
-            startZ = z0 + (t * dz);
-            y = (s16)y0;
-
-            gOverlay58StripVertexCursorReloc->x =
-                (s16)(startX - xPerpendicular);
-            gOverlay58StripVertexCursorReloc->y = y;
-            gOverlay58StripVertexCursorReloc->z =
-                (s16)(startZ + zPerpendicular);
-            gOverlay58StripVertexCursorReloc++;
-            gOverlay58StripVertexCursorReloc->y = y;
-
-            gOverlay58StripVertexCursorReloc->x =
-                (s16)(startX + xPerpendicular);
-            gOverlay58StripVertexCursorReloc->z =
-                (s16)(startZ - zPerpendicular);
-
-            endZ = z0 + (next * dz);
-            gOverlay58StripVertexCursorReloc++;
-            endX = x0 + (next * dx);
-            gOverlay58StripVertexCursorReloc->x =
-                (s16)(endX - xPerpendicular);
+            O58_VERTEX(gOverlay58StripDisplayListReloc++, O58_PHYSICAL_TO_K0(gOverlay58StripVertexCursorReloc), 4, 0);
+            O58_POLYGON(gOverlay58StripDisplayListReloc++, D_80000058, 2, 1);
+            startX = (t * dx) + x0;
+            startZ = (t * dz) + z0;
+            gOverlay58StripVertexCursorReloc->x = (s16)(startX - xPerpendicular);
             gOverlay58StripVertexCursorReloc->y = (s16)y0;
-            gOverlay58StripVertexCursorReloc->z =
-                (s16)(endZ + zPerpendicular);
+            gOverlay58StripVertexCursorReloc->z = (s16)(startZ + zPerpendicular);
             gOverlay58StripVertexCursorReloc++;
-
-            gOverlay58StripVertexCursorReloc->x =
-                (s16)(endX + xPerpendicular);
-            gOverlay58StripVertexCursorReloc->y = y;
-            gOverlay58StripVertexCursorReloc->z =
-                (s16)(endZ - zPerpendicular);
+            gOverlay58StripVertexCursorReloc->x = (s16)(startX + xPerpendicular);
+            gOverlay58StripVertexCursorReloc->y = (s16)y0;
+            gOverlay58StripVertexCursorReloc->z = (s16)(startZ - zPerpendicular);
+            gOverlay58StripVertexCursorReloc++;
+            endX = (next * dx) + x0;
+            endZ = (next * dz) + z0;
+            gOverlay58StripVertexCursorReloc->x = (s16)(endX - xPerpendicular);
+            gOverlay58StripVertexCursorReloc->y = (s16)y0;
+            gOverlay58StripVertexCursorReloc->z = (s16)(endZ + zPerpendicular);
+            gOverlay58StripVertexCursorReloc++;
+            gOverlay58StripVertexCursorReloc->x = (s16)(endX + xPerpendicular);
+            gOverlay58StripVertexCursorReloc->y = (s16)y0;
+            gOverlay58StripVertexCursorReloc->z = (s16)(endZ - zPerpendicular);
             gOverlay58StripVertexCursorReloc++;
         }
-
-        t += currentStep;
+        t += stripStep;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o058/overlay58DrawSegmentStrip/func_overlay_058_F0004C04_18B3DEC.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay58DrawSegmentStrip:start
- * symbol: overlay58DrawSegmentStrip
- * score: 68/201 words
- * frame: 0x88
- * relocations: 8
- * first-mismatch: +0xF0
- * summary: hypothesis=live-zero address add; spellings=9 stores +16/124, all uses +72/191, 16 ops +32/129 with 0xFF on v1; stall=cross emits reloads, size never 0
- * PLATEAU-HANDOFF:overlay58DrawSegmentStrip:end
- */

@@ -638,6 +638,12 @@ typedef struct O8P1294Tuning {
  * draw the turn conversion spends); the spin-out negation reads unk100
  * directly; unkFC is updated before the drift step; the brake result
  * borrows angle's symbol and its test reads the input bit directly.
+ * 16 to 7 (lane h-r8, 2026-10-02): no driftDirection local, state->unk100 is
+ * read at each use; the stick is not copied into a carrier before the clamp
+ * (steeringTarget = state->unk428, first test on the field), so uopt keeps
+ * the copy and the later clamp tests read it; the spin-arming tests read the
+ * stick directly; the wobble term rides angleStep; modeFlags is s16; the
+ * 1.6 clamp is one source line.
  * The update loop tests the old counter; the braking global is a halfword;
  * mathDiffAngle accepts the full requested angle. */
 #ifdef NON_MATCHING
@@ -646,11 +652,11 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
     s32 updateCount;
     f32 value;
     s32 angle;              /* brake result, then the state->unk108 copy */
-    s32 steeringInput;      /* raw stick, the wobble term, then the drift target */
+    s32 steeringInput;      /* the drift difference, then the stick at the spin test */
     s32 updatesRemaining;
-    s32 steeringTarget;     /* clamped stick, then the target angle */
+    s32 steeringTarget;     /* the stick read directly, clamped, then the target angle */
     s32 turnAmount;
-    s32 angleStep;          /* angle step, then the left selector */
+    s32 angleStep;          /* angle step, the wobble term, then the left selector */
     s32 impactBoost;
     s32 colorEnabled[2];
     s32 braking;            /* brake bit, then the turn limit */
@@ -659,10 +665,9 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
     s32 effectMask;
     s32 index;              /* speed level, curve index, yaw step, then the drift step */
     s16 cooldown;
-    s16 driftDirection;
     f32 scale;
     s8 animation;
-    u8 modeFlags;
+    s16 modeFlags;          /* read as one web with the unk349 bits; u8 splits it */
     f32 speedLimit;
     O8P1294Tuning *tuning;
     O8P1294ColorTarget *colorTarget;
@@ -770,7 +775,7 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
             state->unk148 = state->unk4;
             braking = inputFlags & 0x4000;
             state->unk146 += ((s32) scale - state->unk146) >> 3;
-            if ((braking != 0) && (inputFlags & 0x10) && (((steeringInput = state->unk428) < -0x1E) || (steeringInput >= 0x1F))) {
+            if ((braking != 0) && (inputFlags & 0x10) && ((state->unk428 < -0x1E) || (state->unk428 >= 0x1F))) {
                 if (state->unk4 < -5.0f) {
                     state->unk4 += 0.2f;
                     if (state->unk4 > -5.0f) {
@@ -880,10 +885,10 @@ block_74:
                 state->unkA2 = (s16) (cooldown - 1);
             }
             if ((state->unk41C & 0x10) && (state->unk100 == 0) && (state->unk4 < -3.0f)) {
-                if ((steeringInput = state->unk428) < -0xF) {
+                if (state->unk428 < -0xF) {
                     state->unk100 = -1;
                 }
-                if ((steeringInput = state->unk428) >= 0x10) {
+                if (state->unk428 >= 0x10) {
                     state->unk100 = 1;
                 }
                 if (state->unk100 != 0) {
@@ -902,7 +907,6 @@ block_74:
                 state->unk100 = 0;
             }
             scale = state->unk4;
-            steeringInput = state->unk428;
             if (state->unk4 < 0.0f) {
                 scale = -scale;
             }
@@ -910,9 +914,7 @@ block_74:
                 scale = 0.0f;
             } else {
                 scale = scale - 0.2f;
-                if (1.6f < scale) {
-                    scale = 1.6f;
-                }
+                if (1.6f < scale) { scale = 1.6f; }
                 if (state->unk100 != 0) {
                     scale = (scale * 68.0f * 60.0f) / tuning->unk10;
                 } else {
@@ -923,17 +925,17 @@ block_74:
                 }
             }
 
-            steeringTarget = steeringInput;
-            if ((state->unk41C & 0x10) && (driftDirection = state->unk100, braking = 0x2710, (driftDirection != 0))) {
-                if (steeringInput >= 0x33) {
+            steeringTarget = state->unk428;
+            if ((state->unk41C & 0x10) && (braking = 0x2710, (state->unk100 != 0))) {
+                if (state->unk428 >= 0x33) {
                     steeringTarget = 0x32;
                 } else if (steeringTarget < -0x32) {
                     steeringTarget = -0x32;
                 }
-                if (((steeringTarget > 0) && (driftDirection > 0)) || ((steeringTarget < 0) && (driftDirection < 0))) {
+                if (((steeringTarget > 0) && (state->unk100 > 0)) || ((steeringTarget < 0) && (state->unk100 < 0))) {
                     steeringTarget = steeringTarget >> 2;
                 }
-                steeringTarget += driftDirection * 0x3C;
+                steeringTarget += state->unk100 * 0x3C;
             } else {
                 state->unk100 = 0;
                 if (steeringTarget >= 0x3D) {
@@ -968,21 +970,19 @@ block_74:
             turnAmount = (s32) ((f32) state->unk108 * scale);
             state->unk182 = (state->unk182 + 1) & 0xF;
             if (turnAmount != 0) {
-                driftDirection = state->unk100;
                 turnDirection = 0;
-                if ((driftDirection < 0) || (turnAmount < -0x1400)) {
+                if ((state->unk100 < 0) || (turnAmount < -0x1400)) {
                     turnDirection = -1;
-                } else if ((driftDirection > 0) || (turnAmount >= 0x1401)) {
+                } else if ((state->unk100 > 0) || (turnAmount >= 0x1401)) {
                     turnDirection = 1;
                 }
                 if (turnDirection != 0) {
-                    steeringInput = (func_8002A204((s16)(state->unk182 << 12)) *
+                    angleStep = (func_8002A204((s16)(state->unk182 << 12)) *
                                ((state->unk106 * 8) + 0x200)) >> 16;
-
                     if (turnDirection < 0) {
-                        steeringInput = -steeringInput;
+                        angleStep = -angleStep;
                     }
-                    turnAmount += steeringInput;
+                    turnAmount += angleStep;
                 }
             }
             index = mathDiffAngle(state->unkFC, turnAmount) >> 2;
@@ -993,17 +993,16 @@ block_74:
             } else if (index >= 0x2EF) {
                 turnAmount = 0x2EE;
             }
-            driftDirection = state->unk100;
             state->unkFC += turnAmount;
-            steeringInput = (driftDirection << 0xD) - state->unkFE;
+            steeringInput = (state->unk100 << 0xD) - state->unkFE;
             index = steeringInput >> 4;
             if (index == 0) {
                 index = steeringInput;
             }
             state->unkFE += index;
-            if (driftDirection != 0) {
+            if (state->unk100 != 0) {
                 steeringInput = state->unk428;
-                if (((steeringInput >= 0x1A) && (driftDirection < 0)) || ((steeringInput < -0x19) && (driftDirection > 0))) {
+                if (((steeringInput >= 0x1A) && (state->unk100 < 0)) || ((steeringInput < -0x19) && (state->unk100 > 0))) {
                     state->unk106++;
                 } else {
                     state->unk106 = 0;
@@ -2351,11 +2350,11 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:start
  * symbol: func_overlay_008_F0001294_185EFEC
- * score: 16 differing words
+ * score: 7 differing words
  * frame: 0xB0
  * relocations: 137
  * first-mismatch: +0xD8
- * summary: Tuning read as a struct by field, or-assign flag updates, plain counter after the turn; left: v0/v1/a1 colours and one compare order.
+ * summary: No driftDirection, stick read past the clamp copy, s16 modeFlags; left: v0 for w114, unkFE vs shift temp, one compare order.
  * PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:end
  */
 

@@ -23,6 +23,13 @@ extern s32 func_80036544(void *entry, s32 *mode, s32 animationId,
  * JFG's bloodSpurtUpdateAll is the closest masked-skeleton sibling, but its
  * public source is GLOBAL_ASM. This body is reconstructed from Mickey only.
  *
+ * 169 -> 159 (lane e-ovl3, 2026-10-02): frame homes belong to declared
+ * locals even when they live in registers, later declarations lower. The
+ * order here (two pointers, rate, minimum height, one pad word, the ten
+ * float temporaries, the 10-float buffer, mode, then the particle pointer,
+ * counter and angles) reproduces the target's frame ladder exactly.
+ * Frame exact; what is left is ring phase and scheduling in case 1.
+ *
  * Size 0, frame 0x110, 226 masked. Named gRate yields delay-slot cvt without
  * an f22 copy; indexed effects close the walking-pointer extra; unsigned
  * sltiu spells the particle test; a volatile value pointer plus collision[10]
@@ -31,15 +38,18 @@ extern s32 func_80036544(void *entry, s32 *mode, s32 animationId,
 #ifdef NON_MATCHING
 void func_overlay_012_F00003A8_186D628(s32 updateRate) {
     /*
-     * PROVENANCE: JFG's public src/camlight.c uses an 11-float output buffer
-     * for trackNearestIntersection. Mickey's own accesses use indices 0-9;
-     * L112 solves the unobservable extra slot for the volatile pointer home.
+     * PROVENANCE: JFG's public src/camlight.c uses an output buffer for
+     * trackNearestIntersection; Mickey's accesses are indices 0-9.
+     * Frame homes follow declaration order, later declarations lower: the
+     * mode word sits directly under the buffer (+0xA8 under +0xAC) when it is
+     * declared after it, and the late-declared pointer, counter and angles
+     * fill the rest below it (frame_census ladder is exact).
      */
     Overlay12TrackHeight *track;
     Overlay12Effect *effect;
-    Overlay12Particle *particle;
     f32 updateRateF = (f32)updateRate;
     f32 minimumHeight;
+    s32 pad0;
     f32 tempA;
     f32 tempB;
     f32 tempC;
@@ -50,12 +60,13 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
     f32 cosinePitch;
     f32 sineYaw;
     f32 cosineYaw;
+    f32 collision[10];
+    s32 mode = 1;
+    Overlay12Particle *particle;
+    s32 i;
     s16 pitch;
     s16 yaw;
     s16 randomAngle;
-    s32 mode = 1;
-    s32 i;
-    f32 collision[11];
 
     track = (Overlay12TrackHeight *)trackGetTrack();
     minimumHeight = (f32)track->height - 1000.0f;
@@ -180,10 +191,10 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_012_F00003A8_186D628:start
  * symbol: func_overlay_012_F00003A8_186D628
- * score: 169/346 words
+ * score: 159/346 words
  * frame: 0x110
  * relocations: 33
- * first-mismatch: +0x50
- * summary: Volatile pointer, index walker and 10-float buffer were inherited: 226 to 169. Open: mode at +0xA8 and buffer at +0xAC in the target, reversed in ours.
+ * first-mismatch: +0xC8
+ * summary: Locals declared in frame-ladder order (homes follow declaration): 169 to 159. Open: FP ring phase in case 1.
  * PLATEAU-HANDOFF:func_overlay_012_F00003A8_186D628:end
  */

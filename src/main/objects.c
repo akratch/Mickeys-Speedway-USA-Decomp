@@ -3397,7 +3397,9 @@ void func_800084C4(Objects084C4Gfx **arg0, Objects084C4Vertex **arg1,
                 deltaY *= deltaLengthSquared;
             }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0x01010040; command->words.w1 = (unsigned int)camGetProjOrgMtx() - 0x80000000U; }
-            func_800349A4((FxGfx **)&displayList, arg2, arg9 | 6, 0);
+            /* Two flag terms, not one folded 6: the folded form loads arg9
+             * into a2 and copies the OR back, a word longer. */
+            func_800349A4((FxGfx **)&displayList, arg2, arg9 | 2 | 4, 0);
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFA000000; command->words.w1 = arg7; }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFB000000; command->words.w1 = arg8; }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0x04000000U | (((unsigned int)((((unsigned int)vertices - 0x80000000U) & 6U) | 0x20U) & 0xFFU) << 16) | 0x30U; command->words.w1 = ((unsigned int)vertices - 0x80000000U); }
@@ -5403,11 +5405,11 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_800084C4:start
  * symbol: func_800084C4
- * score: 168 differing words
+ * score: 2/343 words
  * frame: 0xB0
  * relocations: 8
- * first-mismatch: +0x60
- * summary: Pair +0x2D4 alu line 3475 (missing-CSE): load into a2, ori to a temp, move back. Named result, named operand, early hoist stayed +4. In-place ori is refused.
+ * first-mismatch: +0x314
+ * summary: Delta 0 via a two-term flag OR. Left: both physical addresses add a shared t0 0x80000000; our minus form subtracts.
  * PLATEAU-HANDOFF:func_800084C4:end
  */
 

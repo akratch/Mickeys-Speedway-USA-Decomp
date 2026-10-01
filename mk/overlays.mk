@@ -941,11 +941,35 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000000_18CCFA0.c.o: POS
 		--redefine-sym func_8002A8BC=ext_o0_2a46c \
 		--redefine-sym func_8005AD64=ext_o0_5a914 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x134
-ifeq ($(NON_MATCHING),0)
-# This Phase-B body retains its assembly fallback until the source is exact.
+# The exact C body calls its resident callees through the generated surface
+# and loads its float literals from the module's retained constant pool, whose
+# shipped records carry addends +0x4..+0x2C (the pool's first word belongs to
+# the function before this one).
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000134_18CD0D4.c.o: \
+	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000134_18CD0D4.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDC8
-endif
+	$(OBJCOPY) \
+		--redefine-sym Arctanf=Arctanf_o079Reloc \
+		--redefine-sym Powerf=Powerf_o079Reloc \
+		--redefine-sym dAngle=dAngle_o079Reloc \
+		--redefine-sym func_80002FE0=func_80002FE0_o079Reloc \
+		--redefine-sym func_800031C0=func_800031C0_o079Reloc \
+		--redefine-sym func_800031E8=func_800031E8_o079Reloc \
+		--redefine-sym func_8000590C=func_8000590C_o079Reloc \
+		--redefine-sym func_80008128=func_80008128_o079Reloc \
+		--redefine-sym func_80010900=func_80010900_o079Reloc \
+		--redefine-sym func_8002A8BC=func_8002A8BC_o079Reloc \
+		--redefine-sym func_8002A8C0=func_8002A8C0_o079Reloc \
+		--redefine-sym func_8005ABA8=func_8005ABA8_o079Reloc \
+		--redefine-sym func_8005AD64=func_8005AD64_o079Reloc \
+		--redefine-sym mathOneFloatRPY=mathOneFloatRPY_o079Reloc \
+		--redefine-sym mathRnd=mathRnd_o079Reloc \
+		--redefine-sym partUpdateTriggers=partUpdateTriggers_o079Reloc \
+		--redefine-sym sqrtf=sqrtf_o079Reloc \
+		--redefine-sym trackMakePolylist=trackMakePolylist_o079Reloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDC8 && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:9f1384f81a3244ab38022f6555772a801d4e2a4d973339e8939b6432ddb7f54a 0x4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000134_18CD0D4.c.o: CFLAGS += -Wab,-r4300_mul
 # The second assembly fallback likewise needs only boundary trimming.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0001290_18CE230.c.o: POSTPROCESS = \

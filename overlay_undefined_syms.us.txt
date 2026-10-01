@@ -3103,14 +3103,33 @@ ext_o0_2952c = 0xf0000000;
 ext_o0_5a914 = 0xf0000000;
 
 /* overlay 79: func_overlay_079_F0000134_18CD0D4.c.o */
+Arctanf_o079Reloc = 0xf0000000;
 D_FA0 = 0x00000fa0;
+Powerf_o079Reloc = 0xf0000000;
+dAngle_o079Reloc = 0xf0000000;
+func_80002FE0_o079Reloc = 0xf0000000;
+func_800031C0_o079Reloc = 0xf0000000;
+func_800031E8_o079Reloc = 0xf0000000;
+func_8000590C_o079Reloc = 0xf0000000;
+func_80008128_o079Reloc = 0xf0000000;
+func_80010900_o079Reloc = 0xf0000000;
+func_8002A8BC_o079Reloc = 0xf0000000;
+func_8002A8C0_o079Reloc = 0xf0000000;
+func_8005ABA8_o079Reloc = 0xf0000000;
+func_8005AD64_o079Reloc = 0xf0000000;
+gOverlay79FlagsReloc = 0x00000000;
+gOverlay79ModeFactorsReloc = 0x00000000;
+mathOneFloatRPY_o079Reloc = 0xf0000000;
+mathRnd_o079Reloc = 0xf0000000;
+partUpdateTriggers_o079Reloc = 0xf0000000;
+sqrtf_o079Reloc = 0xf0000000;
+trackMakePolylist_o079Reloc = 0xf0000000;
 
 /* overlay 79: overlay79FindNearby.c.o */
 overlay79GetEntriesReloc = 0xf0000000;
 
 /* overlay 79: func_overlay_079_F0001290_18CE230.c.o */
 gOverlay79CounterReloc = 0x00000014;
-gOverlay79FlagsReloc = 0x00000000;
 overlay79EmitAtReloc = 0xf0000000;
 overlay79EmitReloc = 0xf0000000;
 overlay79FinishReloc = 0xf0000000;

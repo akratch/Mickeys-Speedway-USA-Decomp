@@ -78,46 +78,99 @@ extern s16 D_8007C180_o054Reloc[];
 extern s32 D_8007C1B0_o054Reloc;
 extern s32 o001_data_83E0_o054Reloc;
 
-/* Tier B: LOCAL records distinguish the initialized templates and state
- * from the writable HUD copies in BSS. Names retain their section offsets. */
-extern OverlayOffsetRecord o54Bss_0[10];
-extern OverlayOffsetRecord o54Bss_10[];
-extern OverlayOffsetRecord o54Bss_90[];
-extern OverlayOffsetRecord o54Bss_A0[];
-extern OverlayOffsetRecord o54Bss_C0[4][2];
-extern OverlayOffsetRecord o54Bss_140[4][2];
-extern OverlayOffsetRecord o54Bss_1C0[4][3];
-extern OverlayOffsetRecord o54Bss_280[4][3];
-extern OverlayOffsetRecord o54Bss_340[4][10];
-extern OverlayOffsetRecord o54Bss_5C0[4][2];
-extern s16 o54Bss_640[4];
-extern s16 o54Bss_648[4];
-extern s8 o54Bss_654[4];
-extern f32 o54Bss_658;
-extern f32 o54Bss_65C;
-extern s16 o54Bss_660[4];
-extern Overlay45ResourceDescriptor *o54Bss_668;
-extern s16 o54Bss_66C;
-extern s16 o54Bss_66E;
-extern s16 o54Data_78;
-extern s16 o54Data_88;
-extern OverlayOffsetRecord o54Data_CC[];
-extern OverlayOffsetRecord o54Data_FC[];
-extern OverlayOffsetRecord o54Data_12C[];
-extern OverlayOffsetRecord o54Data_14C[];
-extern s16 o54Data_18C[];
-extern s16 o54Data_190[];
-extern s16 o54Data_194[];
-extern OverlayOffsetRecord o54Data_1E8[];
-extern OverlayOffsetRecord o54Data_218[];
-extern OverlayOffsetRecord o54Data_248[];
-extern OverlayOffsetRecord o54Data_268[];
-extern OverlayOffsetRecord o54Data_278[];
-extern s32 o54Data_298[4];
-extern s32 o54Data_2A8;
-extern s32 o54Data_2AC;
-extern s8 o54Data_2B0;
-extern s32 o54Data_2B4[4];
+/* Overlay 54 was one translation unit: its runtime records address this
+ * function's .data and .bss through LOCAL (section-relative) records, and
+ * the shipped code shares one high half between stores to adjacent fields
+ * of record 0, which as1 does only for a symbol defined in the same TU.
+ * So the candidate defines the overlay's data exactly as
+ * overlay54Initialize.c does (same order, bytes and section sizes, checked
+ * against that object) with the three slide limits as separate arrays; the
+ * target addresses them through three high halves. A promotion must drop
+ * these sections and rebind the records, as overlay54Initialize's rule does.
+ * The o54* names below are the old section-offset aliases. */
+static s16 sOverlay54ResourceIds[18] = {
+    2, 38, 39, 25, 26, 20, 21, 30, 31, 22, 40, 23, 24, 53, 80, 100, -1, 0,
+};
+static s16 sOverlay54PrepareIds[4] = { 4, 2, 3, -1 };
+static OverlayOffsetRecord sOverlay54ListA[2] = { { 38, 39, 0, 0, 0 }, };
+static OverlayOffsetRecord sOverlay54ListB[2] = { { 38, 39, 0x00060000, 0, 0 }, };
+static OverlayOffsetRecord sOverlay54ListC[3] = { { 20, 21, 0, 21, 0 }, { 20, 21, 0, 28, 0 }, };
+static OverlayOffsetRecord sOverlay54ListD[3] = { { 30, 31, 0, 0, -3 }, { 20, 21, 0, 32, 1 }, };
+static OverlayOffsetRecord sOverlay54ListE[10] = {
+    { 20, 21, 0, 0, 0 }, { 20, 21, 0, 7, 0 }, { 20, 21, 0x000B0000, 14, 0 },
+    { 20, 21, 0, 20, 0 }, { 20, 21, 0, 27, 0 }, { 20, 21, 0x000A0000, 33, 0 },
+    { 20, 21, 0, 40, 0 }, { 20, 21, 0, 47, 0 }, { 23, 24, 0, -25, -8 },
+};
+static OverlayOffsetRecord sOverlay54ListF[2] = { { 25, 0, 0, -25, -6 }, };
+static s16 sOverlay54EnterX[2] = { 0x300, 0xC00 };
+static s16 sOverlay54HiddenX[2] = { -0x420, 0x4E0 };
+static s16 sOverlay54LeaveX[2] = { 0xC80, 0x1580 };
+static s16 sOverlay54Offsets[32] = {
+    23, 24, 281, 132, 48, 33, 235, 141, 91, 32, 185, 140, 76, 33, 215, 141,
+    23, 12, 281, 132, 48, 25, 235, 145, 91, 24, 185, 144, 76, 25, 215, 145,
+};
+static OverlayOffsetRecord sOverlay54SourceRecords[10] = {
+    { 20, 21, 0, -7, 0 }, { 20, 21, 0, 0, 0 }, { 20, 21, 0, 7, 0 },
+    { 20, 21, 0x000B0000, 14, 0 }, { 20, 21, 0, 20, 0 }, { 20, 21, 0, 27, 0 },
+    { 20, 21, 0x000A0000, 33, 0 }, { 20, 21, 0, 40, 0 }, { 20, 21, 0, 47, 0 },
+};
+static OverlayOffsetRecord sOverlay54ListG[2] = { { 20, 21, 0, -3, -4 }, };
+static s32 sOverlay54Tail298[4] = { 0 };
+static s32 sOverlay54Tail2A8 = 9;
+static s32 sOverlay54Tail2AC = 0;
+static s8 sOverlay54Tail2B0[4] = { 0 };
+static s32 sOverlay54Tail2B4[7] = { 0 };
+
+static OverlayOffsetRecord sOverlay54Records[10];
+static OverlayOffsetRecord sOverlay54State[2];
+static OverlayOffsetRecord sOverlay54ListCopyA[4][2];
+static OverlayOffsetRecord sOverlay54ListCopyB[4][2];
+static OverlayOffsetRecord sOverlay54ListCopyC[4][3];
+static OverlayOffsetRecord sOverlay54ListCopyD[4][3];
+static OverlayOffsetRecord sOverlay54ListCopyE[4][10];
+static OverlayOffsetRecord sOverlay54ListCopyF[4][2];
+static s16 sOverlay54Values[4];
+static s16 sOverlay54Sentinels[4];
+static s32 sOverlay54Mode;
+static s8 sOverlay54Flags[4];
+static f32 sOverlay54Height;
+static f32 sOverlay54Scale;
+static s16 sOverlay54Bounds[4];
+static Overlay45ResourceDescriptor *sOverlay54Current;
+static s16 sOverlay54Tail66C;
+static s16 sOverlay54Tail66E;
+
+#define o54Bss_0 sOverlay54Records
+#define o54Bss_10 (&sOverlay54Records[1])
+#define o54Bss_A0 sOverlay54State
+#define o54Bss_C0 sOverlay54ListCopyA
+#define o54Bss_140 sOverlay54ListCopyB
+#define o54Bss_1C0 sOverlay54ListCopyC
+#define o54Bss_280 sOverlay54ListCopyD
+#define o54Bss_340 sOverlay54ListCopyE
+#define o54Bss_5C0 sOverlay54ListCopyF
+#define o54Bss_640 sOverlay54Values
+#define o54Bss_648 sOverlay54Sentinels
+#define o54Bss_654 sOverlay54Flags
+#define o54Bss_658 sOverlay54Height
+#define o54Bss_65C sOverlay54Scale
+#define o54Bss_660 sOverlay54Bounds
+#define o54Bss_668 sOverlay54Current
+#define o54Bss_66C sOverlay54Tail66C
+#define o54Bss_66E sOverlay54Tail66E
+#define o54Data_78 sOverlay54ListC[0].x
+#define o54Data_88 sOverlay54ListC[1].x
+#define o54Data_CC sOverlay54ListE
+#define o54Data_18C sOverlay54EnterX
+#define o54Data_190 sOverlay54HiddenX
+#define o54Data_194 sOverlay54LeaveX
+#define o54Data_1E8 (&sOverlay54SourceRecords[1])
+#define o54Data_278 sOverlay54ListG
+#define o54Data_298 sOverlay54Tail298
+#define o54Data_2A8 sOverlay54Tail2A8
+#define o54Data_2AC sOverlay54Tail2AC
+#define o54Data_2B0 sOverlay54Tail2B0[0]
+#define o54Data_2B4 sOverlay54Tail2B4
 
 /* These fields fall in gaps in the partial ControlPlayer header. Their
  * signedness and widths come from this function's own loads. */
@@ -474,24 +527,17 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
             }
             if (O54_TIME_DELTA(player) <= 0) {
                 o54Bss_0[0].metadata = 12 << 16;
-                texture = (s32) D_800D31C8_o054Reloc[20];
                 deltaTime = -O54_TIME_DELTA(player);
-                o54Bss_0[0].link = texture;
-                o54Bss_0[0].value = alternate = (s32) D_800D31C8_o054Reloc[21];
-                for (i = 1; i < 9; i++) {
-                    o54Bss_0[i].link = texture;
-                    o54Bss_0[i].value = alternate;
+                for (i = 0; i < 9; i++) {
+                    o54Bss_0[i].link = (s32) D_800D31C8_o054Reloc[20];
+                    o54Bss_0[i].value = (s32) D_800D31C8_o054Reloc[21];
                 }
             } else {
                 o54Bss_0[0].metadata = 13 << 16;
-                alternate = (s32) D_800D31C8_o054Reloc[21];
-                texture = (s32) D_800D31C8_o054Reloc[80];
                 deltaTime = O54_TIME_DELTA(player);
-                o54Bss_0[0].value = alternate;
-                o54Bss_0[0].link = texture;
-                for (i = 1; i < 9; i++) {
-                    o54Bss_0[i].link = texture;
-                    o54Bss_0[i].value = alternate;
+                for (i = 0; i < 9; i++) {
+                    o54Bss_0[i].link = (s32) D_800D31C8_o054Reloc[80];
+                    o54Bss_0[i].value = (s32) D_800D31C8_o054Reloc[21];
                 }
             }
             overlay56SplitTime_o054Reloc(deltaTime, &minutes, &seconds, &centiseconds);
@@ -501,15 +547,15 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
             o54Bss_0[5].metadata = (seconds % 10) * 65536;
             o54Bss_0[7].metadata = (centiseconds / 10) * 65536;
             o54Bss_0[8].metadata = (centiseconds % 10) * 65536;
-            for (i = 0; i < 8; i++) {
-                if ((o54Bss_10[i].metadata >> 16) == 1) {
-                    if (i == 0 || i == 3 || i == 6) {
-                        o54Bss_10[i].x = o54Data_1E8[i].x + 1;
+            for (i = 1; i < 9; i++) {
+                if ((sOverlay54Records[i].metadata >> 16) == 1) {
+                    if (i == 1 || i == 4 || i == 7) {
+                        sOverlay54Records[i].x = sOverlay54SourceRecords[i].x + 1;
                     } else {
-                        o54Bss_10[i].x = o54Data_1E8[i].x - 1;
+                        sOverlay54Records[i].x = sOverlay54SourceRecords[i].x - 1;
                     }
                 } else {
-                    o54Bss_10[i].x = o54Data_1E8[i].x;
+                    sOverlay54Records[i].x = sOverlay54SourceRecords[i].x;
                 }
             }
             func_8002F618_o054Reloc(&D_800D3140_o054Reloc, o54Bss_0,
@@ -558,10 +604,10 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_054_F00005AC_189F24C:start
  * symbol: func_overlay_054_F00005AC_189F24C
- * score: 280 differing words
+ * score: 213 differing words
  * frame: 0x150
- * relocations: 267
+ * relocations: 273
  * first-mismatch: +0x0
- * summary: Unsigned icon mode, indexed alpha/item, split visibility arms, sign via record: 851 to 280 at delta 0.
+ * summary: Data into C, per-arm 0..9 record loop, 1..8 digit loop: 213 at delta 0; height loop and frame remain.
  * PLATEAU-HANDOFF:func_overlay_054_F00005AC_189F24C:end
  */

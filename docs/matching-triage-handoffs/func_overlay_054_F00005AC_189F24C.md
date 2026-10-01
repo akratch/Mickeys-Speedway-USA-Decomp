@@ -2,11 +2,13 @@
 ### `func_overlay_054_F00005AC_189F24C` plateau handoff
 
 - source: `src/overlays/o054/overlay54TailA.c`
-- score: 280 differing words
+- score: 213 differing words
 - frame: 0x150
-- relocations: 267
+- relocations: 273
 - first mismatch: +0x0
-- summary: Unsigned icon mode, indexed alpha/item, split visibility arms, sign via record: 851 to 280 at delta 0.
+- summary: Data into C, per-arm 0..9 record loop, 1..8 digit loop: 213 at delta 0; height loop and frame remain.
+
+Summary before this remeasure: Unsigned icon mode, indexed alpha/item, split visibility arms, sign via record: 851 to 280 at delta 0.
 
 Summary before this remeasure: Exhaustive colour packing reaches 839; most aligned residual lies outside the colour axis.
 
@@ -55,10 +57,26 @@ Open, in size order:
 - Remaining one-sided words: the height loop (four each way) and three
   near +0x1440..+0x1500 in the time-delta digit setup.
 
-The data-into-C move (static definitions of overlay 54's data in this TU)
-was measured once with the old shape: -20 bytes and worse aligned (724
-against 687), because the three limit tables then share one base address
-while the target addresses them separately. Not adopted.
+Second pass, same day, 280 to 213:
+
+- Each time-delta arm writes record 0's sign and then fills records 0..8
+  in one `for (i = 0; i < 9; i++)` loop reading the two texture pointers
+  from the resource table at each use (no texture/alternate carriers); IDO
+  peels the one-iteration remainder, which is the target's separate record
+  0 stores followed by a loop from 1. The time delta is assigned before the
+  loop (it lives in s1 across it). 271 masked with extern names.
+- Data into C: the overlay's .data and .bss defined in this TU, exactly as
+  overlay54Initialize.c lays them out (.data 0x2D0 and .bss 0x670, .data
+  bytes compared equal), with the three slide-limit pairs as separate
+  arrays. The target's records are LOCAL, and as1 shares one high half
+  between the record 0 field stores only for a symbol defined in the TU.
+  Measured with the old shape this move was -20 bytes and worse, because
+  one six-entry limit table shares a base; split into three it is the win.
+- The digit position loop runs `for (i = 1; i < 9; i++)` over records
+  1..8 of the same array with `i == 1 or 4 or 7`, not an alias name offset
+  by one record. 213 masked at delta 0, aligned 197 (naming 76, immediate
+  98, structural 23); the only one-sided words left are the height loop's
+  four each way.
 
 ## 2026-09-12 exhaustive colour landscape
 

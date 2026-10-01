@@ -1045,6 +1045,21 @@
       "source_context_sha256": "SAum.A6Gl.AgZi.7BgT.vnxb.evux.Djep.uqkN.YfTw.Vvp9.q84"
     },
     {
+      "name": "func_overlay_054_F00005AC_189F24C",
+      "file": "src/overlays/o054/overlay54TailA.c",
+      "overlay": 54,
+      "tu": "overlays/o054",
+      "size_bytes": 6376,
+      "objdiff_match_pct": null,
+      "differing_words": 251,
+      "first_mismatch_offset": 0,
+      "relocation_masked_differing_words": 213,
+      "relocation_masked_first_mismatch_offset": 0,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "ajWC.IuJo.7EKS.hS7C.NPfy.z4N_.89IY.WdWf.EX_2.vvky.2w4"
+    },
+    {
       "name": "func_8002EBE0",
       "file": "src/main/rcpFast3d.c",
       "overlay": null,
@@ -1238,21 +1253,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "MJ5a.qz3p.sE82.zYmH.IN04.5C6k.T48s.MVEh.mpkg.RrZU.684"
-    },
-    {
-      "name": "func_overlay_054_F00005AC_189F24C",
-      "file": "src/overlays/o054/overlay54TailA.c",
-      "overlay": 54,
-      "tu": "overlays/o054",
-      "size_bytes": 6376,
-      "objdiff_match_pct": null,
-      "differing_words": 307,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 280,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "Obtx.A29Y.83P0.xrSJ.pzM_.UmjJ.lea7.OvXL.jlUv.TrSt.BAU"
     },
     {
       "name": "func_80017140",

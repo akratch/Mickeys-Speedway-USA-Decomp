@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import subprocess
 from types import SimpleNamespace
 
 import candidate_context as cc
@@ -152,6 +153,46 @@ class MacroContextTests(unittest.TestCase):
         source.mkdir()
         with self.assertRaisesRegex(ValueError, "outside its owned directory"):
             pm.retain({"preprocessing_directory": str(source)}, Path(self.temp.name) / "target", Path(self.temp.name) / "build")
+
+    def test_pasted_dynamic_and_pragma_names_refuse(self):
+        for spelling in (b"JOIN(__TI,ME__)", b"JOIN(__FI,LE__)", b"JOIN(__LI,NE__)", b"JOIN(_Pr,agma)"):
+            source = b"#define JOIN(a,b) a ## b\n#define CLOCK " + spelling + b"\nint target(int x) { return CLOCK; }\n"
+            with self.subTest(spelling=spelling), self.assertRaisesRegex(cc.ContextError, "token pasting"):
+                cc.preprocessing_macro_context(source)
+        source = b"#define JOIN(a,b) a %:%: b\nint target(void) { return JOIN(1,2); }"
+        with self.assertRaisesRegex(cc.ContextError, "token pasting"):
+            cc.preprocessing_macro_context(source)
+
+    def test_inactive_token_paste_route_remains_unchanged(self):
+        source = b"#define JOIN(a,b) a ## b\nint target(int x) { return x; }"
+        self.assertEqual(cc.compare_context(source, source, "target")["status"], "unchanged")
+
+    def test_preprocessor_start_and_timeout_preserve_command_and_diagnostics(self):
+        compiler = Path(self.temp.name) / "cc"
+        compiler.write_bytes(b"identity")
+        for index, error in enumerate((OSError("command start failed"),
+                                       subprocess.TimeoutExpired(["cc"], 1, output=b"compiler timeout diagnostics"),
+                                       subprocess.TimeoutExpired(["cc"], 1, output="text timeout diagnostics"))):
+            directory = self.directory / str(index)
+            def fail(argv):
+                Path(argv[4]).write_bytes(b"partial")
+                raise error
+            with self.subTest(error=error), self.assertRaises(type(error)):
+                pm.compare_stock(BASE, BASE, "target", directory, compiler, ["-c"], fail)
+            self.assertEqual((directory / "baseline.c").read_bytes(), BASE)
+            command = json.loads((directory / "baseline-command.json").read_text())
+            self.assertEqual(command["argv"][0], str(compiler))
+            self.assertIsNone(command["returncode"])
+            expected = getattr(error, "output", None) or str(error)
+            self.assertEqual((directory / "baseline.log").read_bytes(),
+                             expected if isinstance(expected, bytes) else expected.encode())
+
+    def test_dynamic_recipe_definitions_refuse(self):
+        compiler = Path(self.temp.name) / "cc"
+        compiler.write_bytes(b"identity")
+        for option in ("-DCLOCK=__TIME__", "-DLINE=__LINE__", "-DPASTE(a,b)=a##b", "-DCALL=_Pragma"):
+            with self.subTest(option=option), self.assertRaisesRegex(ValueError, "dynamic expansion"):
+                pm.compare_stock(BASE, BASE, "target", self.directory, compiler, [option], None)
 
 
 if __name__ == "__main__":

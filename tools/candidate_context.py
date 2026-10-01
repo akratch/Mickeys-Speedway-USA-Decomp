@@ -149,7 +149,12 @@ def preprocessing_macro_context(source: bytes) -> list[dict]:
     This never supplies C with its active definitions blanked. Only the stock
     preprocessor output may be passed to the ordinary context comparator.
     """
-    _text, rows, _snippets = _inactive_macro_prelude(_prepared_text(source), allow_active=True)
+    text = _prepared_text(source)
+    visible = LEXICAL.sub(lambda match: " " if match.group().startswith(('"', "'"))
+                         else match.group(), text)
+    if "##" in visible or "%:%:" in visible:
+        raise ContextError("active token pasting requires independent expansion provenance")
+    _text, rows, _snippets = _inactive_macro_prelude(text, allow_active=True)
     return rows
 
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import re
 import shutil
 
 import candidate_context
@@ -19,13 +20,28 @@ def compare_stock(baseline, winner, symbol, directory, compiler, compiler_args, 
     """Use the runner's bounded subprocess helper with its validated recipe."""
     if any(arg in ("-E", "-S", "-o") or arg.startswith("-o") for arg in compiler_args):
         raise ValueError("unsupported output mode in stock preprocessing recipe")
+    forbidden = candidate_context.LOCATION_MACROS | candidate_context.PRAGMA_OPERATORS
+    if any("##" in arg or "%:%:" in arg or
+           forbidden.intersection(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", arg)) for arg in compiler_args):
+        raise ValueError("unsupported dynamic expansion in stock preprocessing recipe")
     arguments = [arg for arg in compiler_args if arg != "-c"] + ["-DNON_MATCHING", "-E"]
     compiler_hash = hashlib.sha256(compiler.read_bytes()).hexdigest()
     def preprocess(source_path, output_path):
         # Positional arguments only: separate diagnostic output from C stdout.
         argv = [str(compiler), *arguments, str(source_path)]
-        process = capture(["bash", "-c", 'prep_output=$1; shift; exec "$@" > "$prep_output"',
-                           "stock-preprocess", str(output_path), *argv])
+        command_path = source_path.with_name(source_path.stem + "-command.json")
+        record = {"argv": argv, "returncode": None, "compiler_sha256": compiler_hash}
+        command_path.write_text(json.dumps(record, indent=2) + "\n")
+        try:
+            process = capture(["bash", "-c", 'prep_output=$1; shift; exec "$@" > "$prep_output"',
+                               "stock-preprocess", str(output_path), *argv])
+        except BaseException as error:
+            record["error"] = type(error).__name__ + ": " + str(error)
+            command_path.write_text(json.dumps(record, indent=2) + "\n")
+            diagnostics = getattr(error, "output", None) or getattr(error, "stderr", None) or str(error)
+            output_path.with_suffix(".log").write_bytes(
+                diagnostics if isinstance(diagnostics, bytes) else str(diagnostics).encode())
+            raise
         output_path.with_suffix(".log").write_text(process.stdout)
         if hashlib.sha256(compiler.read_bytes()).hexdigest() != compiler_hash:
             raise ValueError("stock compiler changed during preprocessing")

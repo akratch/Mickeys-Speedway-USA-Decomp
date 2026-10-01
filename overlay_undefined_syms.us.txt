@@ -1575,6 +1575,35 @@ overlay46SetModeReloc = 0xf0000000;
 
 /* overlay 46: overlay46UpdateSequence.c.o */
 D_60 = 0x00000060;
+D_80003634 = 0x00000000;
+D_80003638 = 0x00000000;
+func_80000F94_o046Reloc = 0xf0000000;
+func_80001608_o046Reloc = 0xf0000000;
+func_80028374_o046Reloc = 0xf0000000;
+func_80028528_o046Reloc = 0xf0000000;
+func_80028D30_o046Reloc = 0xf0000000;
+func_800291B4_o046Reloc = 0xf0000000;
+func_80036F08_o046Reloc = 0xf0000000;
+func_80037414_o046Reloc = 0xf0000000;
+func_80037658_o046Reloc = 0xf0000000;
+func_80037664_o046Reloc = 0xf0000000;
+func_8003A680_o046Reloc = 0xf0000000;
+func_8004B0A4_o046Reloc = 0xf0000000;
+func_8004B0B8_o046Reloc = 0xf0000000;
+func_8004B0DC_o046Reloc = 0xf0000000;
+func_80058240_o046Reloc = 0xf0000000;
+gDisplayListHead = 0x00000000;
+gDisplayListHeadB = 0x00000000;
+gOverlay46ExpectedName180 = 0x00000180;
+gOverlay46Group54Render = 0x00000054;
+gOverlay46Group54Update = 0x00000054;
+gOverlay46MotionTarget = 0x00000000;
+gOverlay46SequenceJumpTableReloc = 0x00000034;
+gOverlay46StatusFlags = 0x00000000;
+mathRnd_o046Reloc = 0xf0000000;
+overlay46DrawFrameCacheReloc = 0xf0000000;
+overlay46InitializeEntriesReloc = 0xf0000000;
+overlay46UpdateFrameCacheReloc = 0xf0000000;
 
 /* overlay 46: overlay46ReleaseState.c.o */
 gOverlay46Data = 0x00000000;

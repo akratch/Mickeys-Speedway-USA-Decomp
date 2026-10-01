@@ -887,6 +887,7 @@ $(O15_OBJ): POSTPROCESS = \
 		--redefine-sym func_overlay_015_F00009E0_1872D78=overlay15UpdateMovingStars \
 		--redefine-sym func_overlay_015_F0000B94_1872F2C=overlay15DrawRain \
 		--redefine-sym starfieldFastMove=starfieldFastMove_o015Reloc \
+		--redefine-sym rainFastDraw=rainFastDraw_o015Reloc \
 		--add-symbol gOverlay15FadePoolReloc=0x0,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay15DrawScreenStars.rebind.spec && \
@@ -906,7 +907,9 @@ $(O15_OBJ): POSTPROCESS = \
 		0xae8:6:.bss 0xaf0:6:.bss 0xaf4:5:.bss 0xaf8:6:.bss \
 		0xafc:6:.bss 0xb00:5:.bss 0xb14:6:.bss 0xb18:6:.bss \
 		0xb20:5:.bss 0xb2c:6:.bss 0xb30:6:.bss 0xb34:5:.bss \
-		0xb3c:6:.bss && \
+		0xb3c:6:.bss 0xbfc:5:.bss 0xc00:6:.bss 0xc24:5:.bss \
+		0xc28:6:.bss 0xc2c:6:.bss 0xc30:5:.bss 0xc34:6:.bss \
+		0x738:5:.bss 0x73c:6:.bss && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC6C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34SetValue10.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC

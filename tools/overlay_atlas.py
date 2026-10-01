@@ -161,6 +161,16 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
+    57: [
+        (
+            0x5F0,
+            0x644,
+            "func_overlay_057_F0001AE8_18A56E0",
+            ".rodata",
+            "func_overlay_057_F0001AE8_18A56E0",
+            True,
+        )
+    ],
     59: [(0x76C, 0x78C, "overlay59Advance", ".rodata", "overlay59Advance", True)],
     86: [
         (

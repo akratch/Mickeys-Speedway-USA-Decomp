@@ -2621,9 +2621,34 @@ ifeq ($(NON_MATCHING),0)
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001020_18A4C18.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x958
 endif
+# The mode dispatch is instruction-exact. Its switch table is the retained
+# overlay table at rodata +0xB0: bind the two table references to that owner
+# and drop the compiler's private copy by digest. No instruction changes.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/func_overlay_057_F0001AE8_18A56E0.rebind.spec
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay57DispatchJumpTableReloc=0xB0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_057_F0001AE8_18A56E0.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:97d2a20db5917a686e817319bc36f7a4771d8e9799e1d0e8c0b6104c1f2dbdb6 && \
+	$(OBJCOPY) --remove-section .rel.rodata $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDCC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0004460_18A8058.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x7B8
+# The menu step and start is instruction-exact. Its resident callees go
+# through the generated surface entries; the trim only pins the size.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F00060F8_18A9CF0.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym amSndPlay=amSndPlay_o057Reloc \
+		--redefine-sym animseqStartPath=animseqStartPath_o057Reloc \
+		--redefine-sym animseqStopPath=animseqStopPath_o057Reloc \
+		--redefine-sym joyCreateMap=joyCreateMap_o057Reloc \
+		--redefine-sym mainChangeCameras=mainChangeCameras_o057Reloc \
+		--redefine-sym mainChangeLevel=mainChangeLevel_o057Reloc \
+		--redefine-sym mainSetMode=mainSetMode_o057Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6E4
 # The middle-panel update is instruction-exact. Its resident callees go
 # through the generated surface entries; the text is already 0x12E0 so the
@@ -3582,10 +3607,3 @@ OVERLAY_TRIMMED_OBJECTS += \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57UpdateModeTrigger.c.o
 
 $(OVERLAY_TRIMMED_OBJECTS): $(TOOLS_DIR)/trim_elf_section.py
-
-# Overlay 57's prefix owner ends at the measured 0xDCC-byte function boundary.
-# The assembly-backed C scaffold makes IDO/asm-processor round the standalone
-# .text section to 0xDD0, so discard only its trailing alignment word before
-# the following overlay57EaseAndLatch subsegment.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDCC

@@ -2235,6 +2235,20 @@ D_138 = 0x00000138;
 D_148 = 0x00000148;
 D_500 = 0x00000500;
 D_504 = 0x00000504;
+gOverlay57DispatchJumpTableReloc = 0x000000b0;
+gOverlay57Mode10C = 0x0000010c;
+gOverlay57ModeFlag = 0x00000144;
+gOverlay57Selection100 = 0x00000100;
+gOverlay57Selection108 = 0x00000108;
+gOverlay57State = 0x0000011c;
+gOverlay57TableIndex = 0x00000000;
+gOverlay57Timer = 0x00000118;
+gOverlay57UpdateSelection = 0x000004f8;
+overlay57LayoutDescriptorReloc = 0xf0000000;
+overlay57SetDescriptorModeReloc = 0xf0000000;
+overlay57SetFogReloc = 0xf0000000;
+overlay57SoundPlayReloc = 0xf0000000;
+overlay57SoundStopReloc = 0xf0000000;
 
 /* overlay 57: overlay57EaseAndLatch.c.o */
 gO57Ease28B4Id183 = 0x00000183;
@@ -2272,9 +2286,7 @@ o57Tail2C28StartReloc = 0xf0000000;
 /* overlay 57: overlay57CheckDistance.c.o */
 gOverlay57DistanceLimit = 0x00000108;
 gOverlay57DistanceState = 0x0000050c;
-gOverlay57ModeFlag = 0x00000144;
 gOverlay57Reference = 0x0000014c;
-gOverlay57Timer = 0x00000118;
 overlay57DistanceEmitReloc = 0xf0000000;
 overlay57DistanceFinishReloc = 0xf0000000;
 overlay57DistanceGetPositionReloc = 0xf0000000;
@@ -2284,7 +2296,6 @@ overlay57DistanceStartReloc = 0xf0000000;
 
 /* overlay 57: overlay57UpdateTransition.c.o */
 gOverlay57Delay = 0x00000508;
-gOverlay57State = 0x0000011c;
 gOverlay57Transition = 0x0000021c;
 overlay57AdvanceReloc = 0xf0001020;
 overlay57TransitionQueryReloc = 0xf0000000;
@@ -2325,9 +2336,43 @@ o57Draw32A0Stripe2Reloc = 0xf0000000;
 o57Draw32A0Stripe3Reloc = 0xf0000000;
 
 /* overlay 57: overlay57UpdateSelection.c.o */
-D_104 = 0x00000104;
-D_4E8 = 0x000004e8;
-D_50C = 0x0000050c;
+gO57SelectionActive144Reloc = 0x00000144;
+gO57SelectionChanging4F0Reloc = 0x000004f0;
+gO57SelectionCurrent100Reloc = 0x00000100;
+gO57SelectionDistance50CReloc = 0x0000050c;
+gO57SelectionIds134Reloc = 0x00000134;
+gO57SelectionList30Reloc = 0x00000030;
+gO57SelectionList8Reloc = 0x00000008;
+gO57SelectionMode11CReloc = 0x0000011c;
+gO57SelectionPending104Reloc = 0x00000104;
+gO57SelectionPrevious108Reloc = 0x00000108;
+gO57SelectionPrimary4E8Reloc = 0x000004e8;
+gO57SelectionSecondary4ECReloc = 0x000004ec;
+gO57SelectionState118Reloc = 0x00000118;
+gO57SelectionTimer120Reloc = 0x00000120;
+gO57SelectionValue10CReloc = 0x0000010c;
+gO57SelectionValues158Reloc = 0x00000158;
+gO57SelectionValues17CReloc = 0x0000017c;
+gOverlay57Flags37ECReloc = 0x00000000;
+gOverlay57Mode38C4Reloc = 0x00000000;
+gOverlay57PublishedIndex3A28Reloc = 0x00000000;
+gOverlay57Threshold38D8Reloc = 0x00000000;
+gOverlay57Threshold3970Reloc = 0x00000000;
+overlay57Call35F8Reloc = 0xf0000000;
+overlay57Call3618Reloc = 0xf0000000;
+overlay57Call3684Reloc = 0xf0000000;
+overlay57Call36F4Reloc = 0xf0000000;
+overlay57Call3758Reloc = 0xf0000000;
+overlay57Call37E0Reloc = 0xf0000000;
+overlay57Call3880Reloc = 0xf0000000;
+overlay57Call3888Reloc = 0xf0000000;
+overlay57Call38ACReloc = 0xf0000000;
+overlay57Call3920Reloc = 0xf0000000;
+overlay57Call3940Reloc = 0xf0000000;
+overlay57Call3960Reloc = 0xf0000000;
+overlay57Call39B0Reloc = 0xf0000000;
+overlay57Call39D0Reloc = 0xf0000000;
+overlay57Call39F0Reloc = 0xf0000000;
 
 /* overlay 57: overlay57UpdateModeState.c.o */
 gO57ModeChoice4F8 = 0x000004f8;
@@ -2507,7 +2552,43 @@ o57MiddleO84F0001350Reloc = 0xf0000000;
 o57MiddleO84F0001398Reloc = 0xf0000000;
 
 /* overlay 57: func_overlay_057_F00060F8_18A9CF0.c.o */
-D_11C = 0x0000011c;
+amSndPlay_o057Reloc = 0xf0000000;
+animseqStartPath_o057Reloc = 0xf0000000;
+animseqStopPath_o057Reloc = 0xf0000000;
+gOverlay57ControllerMap = 0x0000036c;
+gOverlay57LayoutBusy = 0x00000130;
+gOverlay57LayoutValue = 0x00000104;
+gOverlay57Layouts = 0x000000e0;
+gOverlay57LevelBySelection = 0x00000000;
+gOverlay57MenuButtons = 0x00000000;
+gOverlay57MenuByte0 = 0x00000000;
+gOverlay57MenuByte1 = 0x00000000;
+gOverlay57MenuByte2 = 0x00000000;
+gOverlay57MenuByte3 = 0x00000000;
+gOverlay57MenuEntries = 0x000001b8;
+gOverlay57MenuHalf = 0x00000000;
+gOverlay57MenuInputX = 0x00000000;
+gOverlay57MenuInputY = 0x00000000;
+gOverlay57MenuSources = 0x00000000;
+gOverlay57MirrorFlag = 0x00000000;
+gOverlay57MirrorSelection = 0x00000000;
+gOverlay57NodeArguments = 0x0000017c;
+gOverlay57ObjectReady = 0x000004cc;
+gOverlay57PlayerCount = 0x00000000;
+gOverlay57PreviousLayoutValue = 0x0000010c;
+gOverlay57PreviousSelection = 0x00000164;
+gOverlay57Selection = 0x00000160;
+gOverlay57StartLinks = 0x00000134;
+gOverlay57StopLinks = 0x000001a0;
+joyCreateMap_o057Reloc = 0xf0000000;
+mainChangeCameras_o057Reloc = 0xf0000000;
+mainChangeLevel_o057Reloc = 0xf0000000;
+mainSetMode_o057Reloc = 0xf0000000;
+o57MenuO45F0000314Reloc = 0xf0000000;
+o57MenuO84F0000C74Reloc = 0xf0000000;
+o57MenuO84F0001060Reloc = 0xf0000000;
+o57MenuO84F0001350Reloc = 0xf0000000;
+o57MenuO84F0001398Reloc = 0xf0000000;
 
 /* overlay 57: overlay57SetNodeValue.c.o */
 overlay57ConfigureNodeReloc = 0xf0000000;
@@ -2516,7 +2597,6 @@ overlay57FindNodeReloc = 0xf0000000;
 /* overlay 57: overlay57ApplyTable.c.o */
 gOverlay57TableA = 0x000003a4;
 gOverlay57TableB = 0x000003b4;
-gOverlay57TableIndex = 0x00000000;
 gOverlay57TableLabels = 0x00000388;
 gOverlay57TableMode = 0x0000018c;
 
@@ -2526,7 +2606,6 @@ gOverlay57UpdateFlags = 0x00000008;
 gOverlay57UpdateIndex = 0x00000000;
 gOverlay57UpdateMasks = 0x000003c8;
 gOverlay57UpdateScale = 0x00000110;
-gOverlay57UpdateSelection = 0x000004f8;
 gOverlay57UpdateShifts = 0x000003d8;
 gOverlay57UpdateValues = 0x00000383;
 overlay57UpdateEmptyReloc = 0xf0000000;

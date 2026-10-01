@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 175,
-  "resolved": 175,
+  "queue_size": 174,
+  "resolved": 174,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 175,
-  "relocation_masked_coverage": 175,
+  "source_context_coverage": 174,
+  "relocation_masked_coverage": 174,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -38,21 +38,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "R9y6.hdqP.ylqY.5gHi.iLHV.oYcM.o2h1.zsGe.ok9g.GFLr.pwk"
-    },
-    {
-      "name": "func_800084C4",
-      "file": "src/main/objects.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1372,
-      "objdiff_match_pct": null,
-      "differing_words": 2,
-      "first_mismatch_offset": 788,
-      "relocation_masked_differing_words": 2,
-      "relocation_masked_first_mismatch_offset": 788,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "bnWI.mqBC._sEz.03sW.T2Fe.Saa6.R4gE.dGJE.XH_3.XVo7.T8M"
     },
     {
       "name": "func_80028FCC",
@@ -232,7 +217,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "KPVK.7T7L.6D7k.PvbR.Tk7a.s-L4.wbkL.61K5.v2UX.O5Ok.J5k"
+      "source_context_sha256": "rEir.hCkk.ojOh.Mk5n.cxNb.vUx0.6TA0.FKvB.pV5_.zR8w.Nao"
     },
     {
       "name": "func_800180B4",
@@ -397,7 +382,7 @@
       "relocation_masked_first_mismatch_offset": 328,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "xp20.-osu.kuSL.CeIz.KQ-w.Iwut.8SVs.ORQw.cY0z.T2GE.bx8"
+      "source_context_sha256": "HzKM.Kwwu.7jqD.UVvu.ag5U.VTaE.bTfd.F9Aq.0WZi.pjXb.ueg"
     },
     {
       "name": "func_80020B10",
@@ -757,7 +742,7 @@
       "relocation_masked_first_mismatch_offset": 4,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "w3Nj.z6d1.D2E4.7QU3.OejM.eR8_.bhkc.JN8M.24qA.pPiA.9yQ"
+      "source_context_sha256": "iVEC.EPOO.7J6U.0WhS.JhOk.o1dp.NdB7.Q16G.n5al.kPjM.MM8"
     },
     {
       "name": "overlay100DrawMotion",
@@ -2092,7 +2077,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 20,
       "category": "size-mismatch",
-      "source_context_sha256": "Ouxu.SWR2.Emyx.nfhi.7uwx.3sC3.COXx.sz_O.CXfF.htoa.c1k"
+      "source_context_sha256": "BPFV.DECa.gJSg.2h8j.sbGA.5x6p.MEb4.sGMs.EqOE.BoXR.zGg"
     },
     {
       "name": "func_8001E5C4",

@@ -3325,9 +3325,27 @@ typedef union {
     unsigned long long force_alignment;
 } Objects084C4Gfx;
 
-#ifdef NON_MATCHING
+#define OBJECTS_GFX_SHIFTL(value, shift, width) ((u32)(((u32)(value) & ((1U << (width)) - 1U)) << (shift)))
+#define OBJECTS_GFX_VERTEX(packet, address, count, first) { \
+    Objects084C4Gfx *_g = (Objects084C4Gfx *)(packet); \
+    _g->words.w0 = OBJECTS_GFX_SHIFTL(4, 24, 8) | \
+             OBJECTS_GFX_SHIFTL(((count) << 3) | ((u32)(address) & 6) | (first), 16, 8) | \
+             OBJECTS_GFX_SHIFTL(((count) << 3) + ((count) << 1) + 8, 0, 16); \
+    _g->words.w1 = (u32)(address); \
+}
+#define OBJECTS_GFX_POLYGON(packet, address, count, textured) { \
+    Objects084C4Gfx *_g = (Objects084C4Gfx *)(packet); \
+    _g->words.w0 = OBJECTS_GFX_SHIFTL((((count) - 1) << 4) | (textured), 16, 8) | \
+             OBJECTS_GFX_SHIFTL(5, 24, 8) | OBJECTS_GFX_SHIFTL((count) * 16, 0, 16); \
+    _g->words.w1 = (u32)(address); \
+}
+/* Matched (was 168 masked words, four bytes long) on two shapes: the
+ * texture flags are two terms OR-ed onto arg9, and the vertex and triangle
+ * packets are the vertex/polygon command macros with arg3 a display-list
+ * byte pointer, so the 0x80000000 segment base is pointer arithmetic that
+ * ugen keeps in one register for both packets. */
 void func_800084C4(Objects084C4Gfx **arg0, Objects084C4Vertex **arg1,
-                   s32 arg2, s32 arg3, Objects084C4Point *arg4,
+                   s32 arg2, u8 *arg3, Objects084C4Point *arg4,
                    Objects084C4Point *arg5, f32 arg6, s32 arg7, s32 arg8,
                    u32 arg9) {
     f32 pointBX;
@@ -3397,13 +3415,11 @@ void func_800084C4(Objects084C4Gfx **arg0, Objects084C4Vertex **arg1,
                 deltaY *= deltaLengthSquared;
             }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0x01010040; command->words.w1 = (unsigned int)camGetProjOrgMtx() - 0x80000000U; }
-            /* Two flag terms, not one folded 6: the folded form loads arg9
-             * into a2 and copies the OR back, a word longer. */
             func_800349A4((FxGfx **)&displayList, arg2, arg9 | 2 | 4, 0);
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFA000000; command->words.w1 = arg7; }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFB000000; command->words.w1 = arg8; }
-            { Objects084C4Gfx *command = displayList++; command->words.w0 = 0x04000000U | (((unsigned int)((((unsigned int)vertices - 0x80000000U) & 6U) | 0x20U) & 0xFFU) << 16) | 0x30U; command->words.w1 = ((unsigned int)vertices - 0x80000000U); }
-            { Objects084C4Gfx *command = displayList++; command->words.w0 = 0x05110020; command->words.w1 = (unsigned int)arg3 - 0x80000000U; }
+            OBJECTS_GFX_VERTEX(displayList++, (u32)vertices + 0x80000000, 4, 0);
+            OBJECTS_GFX_POLYGON(displayList++, arg3 + 0x80000000, 2, 1);
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xE7000000; command->words.w1 = 0; }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFA000000; command->words.w1 = (u32)-1; }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFB000000; command->words.w1 = (u32)-1; }
@@ -3442,9 +3458,6 @@ void func_800084C4(Objects084C4Gfx **arg0, Objects084C4Vertex **arg1,
     *arg0 = displayList;
     *arg1 = vertices;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_800084C4.s")
-#endif
 void func_80008A20(Objects08A20Arg *arg0) {
     func_8000831C(arg0, D_80079008, 0x14, D_800790D0, 0x18, *arg0->unk68, 2, 0, 1.0f, 0xFF, 0xFF);
 }
@@ -5392,16 +5405,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * first-mismatch: +0x4
  * summary: Delta 0 after unroller restoration. 79 exact, 70 naming, 17 structural. Insertion pairs at plus-4/plus-1C and plus-27C/plus-64. Unmodified arg0 spills and restores ra but loses two words and grows the frame; decrementing counted loops stay rolled; only for-i-from-zero unrolls and it cannot emit the target remainder.
  * PLATEAU-HANDOFF:func_8000A39C:end
- */
-
-/* PLATEAU-HANDOFF:func_800084C4:start
- * symbol: func_800084C4
- * score: 2/343 words
- * frame: 0xB0
- * relocations: 8
- * first-mismatch: +0x314
- * summary: Delta 0 via a two-term flag OR. Left: both physical addresses add a shared t0 0x80000000; our minus form subtracts.
- * PLATEAU-HANDOFF:func_800084C4:end
  */
 
 /* PLATEAU-HANDOFF:func_80009414:start

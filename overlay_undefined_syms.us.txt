@@ -113,6 +113,11 @@ D_8 = 0x00000008;
 D_83E4 = 0x00000000;
 D_8C = 0x0000008c;
 D_D4 = 0x000000d4;
+G_o1_83e4 = 0x00000000;
+ext_o0_1bed0 = 0xf0000000;
+ext_o0_1c6bc = 0xf0000000;
+ext_o0_5a914 = 0xf0000000;
+ext_o7_ccc = 0xf0000000;
 func_80005750_o001Reloc = 0xf0000000;
 func_8002A910_o001Reloc = 0xf0000000;
 gOverlay1CallbackDescriptor = 0x000000bc;
@@ -135,6 +140,9 @@ gOverlay1TimerStep = 0x00001d94;
 gOverlay1TransientScale = 0x00000198;
 gOverlay1TransientThreshold = 0x0000019c;
 gOverlay1TransientVelocityY = 0x000001a0;
+local_378 = 0xf0000000;
+local_414 = 0xf0000000;
+local_c0 = 0xf0000000;
 mathRnd_o001Reloc = 0xf0000000;
 overlay1AimedScaleReloc = 0x00000188;
 overlay1AimedThresholdReloc = 0x0000018c;
@@ -392,7 +400,6 @@ ext_o0_2d98 = 0xf0000000;
 ext_o0_3e990 = 0xf0000000;
 ext_o0_3e99c = 0xf0000000;
 ext_o17_668 = 0xf0000000;
-ext_o7_ccc = 0xf0000000;
 ext_o8_2ec0 = 0xf0000000;
 ext_o8_3018 = 0xf0000000;
 ext_o8_3278 = 0xf0000000;
@@ -3035,7 +3042,6 @@ overlay78UpdateReloc = 0xf0000000;
 
 /* overlay 79: func_overlay_079_F0000000_18CCFA0.c.o */
 ext_o0_2952c = 0xf0000000;
-ext_o0_5a914 = 0xf0000000;
 
 /* overlay 79: func_overlay_079_F0000134_18CD0D4.c.o */
 D_FA0 = 0x00000fa0;
@@ -3171,7 +3177,6 @@ overlay86GetNodesReloc = 0xf0000000;
 overlay86NextIndexReloc = 0xf0000000;
 
 /* overlay 86: func_overlay_086_F0000474_18D22AC.c.o */
-ext_o0_1bed0 = 0xf0000000;
 ext_o0_28d88 = 0xf0000000;
 ext_o0_29b94 = 0xf0000000;
 ext_o0_2c64 = 0xf0000000;
@@ -3727,6 +3732,7 @@ func_overlay_001_F0003E74_1850254 = overlay1SubmitAll;
 func_overlay_001_F0003EB8_1850298 = overlay1AngleBetweenSamples;
 func_overlay_001_F0003F38_1850318 = overlay1RelativeAngleA;
 func_overlay_001_F0003F88_1850368 = overlay1RelativeAngleB;
+func_overlay_001_F0003FD8_18503B8 = overlay1TransitionState;
 func_overlay_001_F0005BA4_1851F84 = overlay1InitTimedState;
 func_overlay_001_F0005BC0_1851FA0 = overlay1ConsumeTimer;
 func_overlay_001_F0005BF4_1851FD4 = overlay1StartTimerCallbacks;
@@ -3752,7 +3758,6 @@ func_overlay_001_F00073A0_1853780 = overlay1UpdateValueCache;
 func_overlay_001_F0007580_1853960 = overlay1AppendPathPoint;
 func_overlay_001_F0007B64_1853F44 = overlay1FindBestRecord;
 func_overlay_001_F0003750_184FB30 = overlay1ChoosePath;
-func_overlay_001_F0003FD8_18503B8 = overlay1TransitionState;
 func_overlay_001_F000438C_185076C = overlay1UpdateObjectPhysics;
 func_overlay_001_F00067C0_1852BA0 = overlay1UpdateRangeFlags;
 func_overlay_001_F0006A14_1852DF4 = overlay1ConsumeNearbyPending;

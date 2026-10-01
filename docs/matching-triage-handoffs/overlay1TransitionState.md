@@ -2,11 +2,11 @@
 ### `overlay1TransitionState` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_tail.c`
-- score: 16/237 words
+- score: 0/237 words, promoted
 - frame: 0x50
 - relocations: 13
-- first mismatch: +0x34
-- summary: Volatile phase re-read on the line between the zero and one tests yields beql, 30 to 16. Stall: the pair's slot stays lbu not or. Copy position, or-zero, and swapped compares do not beat 16.
+- first mismatch: none
+- summary: Matched. One u8 phase local tested with a boolean not and then compared, and the route slot taken as an array element address indexed by the selector assignment.
 
 Summary before this remeasure: The size-near pointer-update probe is byte-flat; promotion trial in=0/out=0 is a schedule-divergence build error, not equality. Retain the 160-word structural plateau.
 - assignment base: `f8f3ec51a298dd0eddd0574a4313adbb1e39de9b`
@@ -67,4 +67,38 @@ Next hypothesis: a source form in which the u8-to-s32 copy is in the ==1
 test's block (uopt currently places it in the load's block, so as1 puts it in
 the ==0 slot) and phase outranks phaseValue; that one shape probably carries
 the delay slot and the colour order together.
+
+#### 2026-10-01, lane a-o001: ROM-exact closure, 16 to 0
+
+The inherited shape was the blocker, not the allocator. Three edits, each
+measured on the whole TU with the configured flags:
+
+- The phase carrier pair and the volatile re-read are gone. One `u8 phase`
+  local is loaded once, tested as `!phase`, then compared against 1 to 5. The
+  boolean test reads the variable itself. The comparisons read its promoted
+  value, which uopt keeps as a separate expression web and first materialises
+  in the block of the first comparison. That reproduces the target's copy in
+  that test's delay slot, the branch-likely on the zero test, and the
+  constant-first operand order of the compare against the register-held 3.
+  Measured: 16 to 12. The `== 0` spelling instead materialises the promoted
+  value in the load's block (30), and an `s32` second carrier gives the copy
+  but the variable-first compare order (14).
+- The route slot is the address of an array element indexed by the selector
+  assignment expression, with x and z read as members of a 16-byte element
+  type whose array starts at 0x14. The hand-written byte arithmetic with a
+  separate add of 0x14 carried a pointer web of total save 5 that out-ranked
+  the node pointer (4.5) for the first colour and reversed the address add's
+  operands. Forcing those two colours on the old shape priced it at 1; the
+  array form scores 0 with no force. The same array form with a `u8` index
+  carrier folds the z displacement (delta -4), so the index must stay the
+  assignment expression (the L160 finding above still holds).
+- `phaseValue` and `index` stay declared and unreferenced. With `value` and
+  `phase` they are the four homes above `sp3C`; dropping either moves the
+  frame or that home.
+
+Promotion: all seven call sites and the mode global are SYMBOL records, valued
+by `gmake overlay-syms` through the existing placeholder names. `gmake verify`
+printed the expected SHA1, `check-overlay-syms` and `promotion-proof` passed
+(237 words, 13 of 13 relocations). Siblings in the TU re-scored unchanged.
+
 <!-- plateau-handoff:overlay1TransitionState:end -->

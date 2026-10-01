@@ -1254,6 +1254,12 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x3EB8, 0x3F38, "overlay1AngleBetweenSamples"),
         (0x3F38, 0x3F88, "overlay1RelativeAngleA"),
         (0x3F88, 0x3FD8, "overlay1RelativeAngleB"),
+        (
+            0x3FD8,
+            0x438C,
+            "overlay1TransitionState",
+            "canonical mixed-TU object, 13 runtime relocations, and linked ROM bytes exact",
+        ),
         (0x5BA4, 0x5BC0, "overlay1InitTimedState"),
         (0x5BC0, 0x5BF4, "overlay1ConsumeTimer"),
         (

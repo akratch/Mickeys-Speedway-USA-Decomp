@@ -534,157 +534,170 @@ extern void ext_o0_5a914(Transform *, s32, s32, f32);
 extern Spawned *local_414(s16, Spawned **);
 extern s16 local_c0(Spawned *);
 
-/* PLATEAU: 16 masked words at delta 0, frame 0x50. Volatile phase re-read is beql;
- * the bne slot is still lbu not or (was 30). The old size gap was the point pointer:
- * `point += 0x14` before the x read keeps the element address as its own
- * value, so z reads 4 off it rather than folding to 24. rotY is stored before
- * rotX/rotZ (as1 order), four locals precede sp3C (its home is 0x3C, L99),
- * the fade/alpha update is two statements (the load lands in the value's own
- * register), ext_o0_5a914's last parameter is f32 (as in overlay 86, giving
- * the target's addiu for 0.0f), and the narrow index is the assignment
- * expression itself rather than a u8 carrier (L160: 95 -> 30). The rest is
- * phase/phaseValue taking v1/v0 where the target has v0/v1 and spawned/point
- * likewise; forcing those four webs prices it at 11, the remainder being the
- * phase==0 delay slot and two commutative operand orders. */
-#ifdef NON_MATCHING
+typedef struct O1RouteSlot {
+    f32 x;
+    f32 z;
+    u8 pad08[8];
+} O1RouteSlot;
+
+typedef struct O1RouteNode {
+    u8 pad00[4];
+    f32 y;
+    u8 pad08[4];
+    s16 angle;
+    u8 pad0E[2];
+    u16 flags;
+    u8 pad12[2];
+    O1RouteSlot slots[1];
+} O1RouteNode;
+
+/* Matched 2026-10-01 by discarding the inherited shape. Three things closed
+ * the last 16 words:
+ *  - one `u8 phase` local, tested `!phase` and then compared. The boolean
+ *    test reads the variable itself; the comparisons read its promoted value,
+ *    which uopt keeps as a separate expression web first materialised in the
+ *    `== 1` block. That is the target's copy in that test's delay slot and
+ *    its constant-first `3 == phase` operand order. A second carrier or a
+ *    volatile re-read reproduced neither.
+ *  - the route slot is `&node->slots[state->selectorA = 3]` with x and z read
+ *    as members. Hand-written byte arithmetic with a separate `+= 0x14`
+ *    carried a pointer web that out-ranked `spawned` for v0 and reversed the
+ *    address add's operands.
+ *  - `phaseValue` and `index` are unreferenced; with `value` and `phase` they
+ *    are the four homes that put `sp3C` at 0x3C in the 0x50 frame (L99).
+ * Earlier findings kept: rotY is stored before rotX/rotZ, the fade/alpha
+ * update is two statements, and ext_o0_5a914's last parameter is f32. */
 void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
     s32 value;
     u8 phase;
     s32 phaseValue;
     u8 index;
     Spawned *sp3C;
-    u8 *point;
+    O1RouteSlot *point;
     Spawned *spawned;
 
     if (G_o1_83e4 == 3) {
         phase = state->phase;
-        if (phase == 0) {
+        if (!phase) {
             return;
         }
-        phaseValue = *(volatile u8 *)&state->phase;
         if (phase == 1) {
-                ext_o7_ccc(obj, 0x13);
-                state->spawned = local_378(state);
-                state->phase = 2;
+            ext_o7_ccc(obj, 0x13);
+            state->spawned = local_378(state);
+            state->phase = 2;
+            return;
+        }
+        if (phase == 2) {
+            value = state->fade;
+            value -= updateRate * 4;
+            if (value <= 0) {
+                state->phase = 3;
                 return;
             }
-            if (phaseValue == 2) {
-                value = state->fade;
-                value -= updateRate * 4;
-                if (value <= 0) {
-                    state->phase = 3;
-                    return;
-                }
-                state->fade = value;
+            state->fade = value;
+            return;
+        }
+        if (phase == 3) {
+            spawned = state->spawned;
+            obj->x = spawned->x;
+            obj->y = spawned->at10.y2 + 100.0f;
+            obj->z = spawned->z;
+            obj->rotY = spawned->angle;
+            obj->rotX = 0;
+            obj->rotZ = 0;
+            ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
+            ext_o0_1c6bc(obj, state);
+            state->flags &= ~8;
+            obj->header->flags &= ~1;
+            state->fade = 0;
+            state->active = 1;
+            state->phase = 4;
+            return;
+        }
+        if (phase == 4) {
+            value = state->fade;
+            value += updateRate * 4;
+            if (value >= 255) {
+                state->fade = 255;
+                state->phase = 5;
                 return;
             }
-            if (phaseValue == 3) {
-                spawned = state->spawned;
-                obj->x = spawned->x;
-                obj->y = spawned->at10.y2 + 100.0f;
-                obj->z = spawned->z;
-                obj->rotY = spawned->angle;
-                obj->rotX = 0;
-                obj->rotZ = 0;
-                ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
-                ext_o0_1c6bc(obj, state);
-                state->flags &= ~8;
-                obj->header->flags &= ~1;
-                state->fade = 0;
-                state->active = 1;
-                state->phase = 4;
-                return;
-            }
-            if (phaseValue == 4) {
-                value = state->fade;
-                value += updateRate * 4;
-                if (value >= 255) {
-                    state->fade = 255;
-                    state->phase = 5;
-                    return;
-                }
-                state->fade = value;
-                return;
-            }
-            if (phaseValue == 5) {
-                obj->header->flags |= 1;
-                state->phase = 0;
-                state->active = 0;
-                state->done = 1;
-                ext_o0_5a914(obj, 12, -1, 0.0f);
-                state->spawned = 0;
+            state->fade = value;
+            return;
+        }
+        if (phase == 5) {
+            obj->header->flags |= 1;
+            state->phase = 0;
+            state->active = 0;
+            state->done = 1;
+            ext_o0_5a914(obj, 12, -1, 0.0f);
+            state->spawned = 0;
         }
     } else {
         phase = state->phase;
-        if (phase == 0) {
+        if (!phase) {
             return;
         }
-        phaseValue = *(volatile u8 *)&state->phase;
         if (phase == 1) {
-                ext_o7_ccc(obj, 0x13);
-                state->spawned = local_414(state->pathId, &sp3C);
-                state->pathId = local_c0(sp3C);
-                state->spawned->at10.flags |= 8;
-                state->phase = 2;
+            ext_o7_ccc(obj, 0x13);
+            state->spawned = local_414(state->pathId, &sp3C);
+            state->pathId = local_c0(sp3C);
+            state->spawned->at10.flags |= 8;
+            state->phase = 2;
+            return;
+        }
+        if (phase == 2) {
+            value = obj->alpha;
+            value -= updateRate * 4;
+            if (value <= 0) {
+                state->phase = 3;
                 return;
             }
-            if (phaseValue == 2) {
-                value = obj->alpha;
-                value -= updateRate * 4;
-                if (value <= 0) {
-                    state->phase = 3;
-                    return;
-                }
-                obj->alpha = value;
+            obj->alpha = value;
+            return;
+        }
+        if (phase == 3) {
+            spawned = state->spawned;
+            point = &((O1RouteNode *)spawned)->slots[state->selectorA = 3];
+            state->selectorB = 3;
+            state->selectorC = 0;
+            obj->x = point->x;
+            obj->y = spawned->y + 100.0f;
+            obj->z = point->z;
+            obj->rotY = ((O1RouteNode *)spawned)->angle + 0x4000;
+            obj->rotX = 0;
+            obj->rotZ = 0;
+            ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
+            ext_o0_1c6bc(obj, state);
+            state->flags &= ~8;
+            obj->header->flags &= ~1;
+            obj->alpha = 0;
+            state->active = 1;
+            state->phase = 4;
+            return;
+        }
+        if (phase == 4) {
+            value = obj->alpha;
+            value += updateRate * 4;
+            if (value >= 255) {
+                obj->alpha = 255;
+                state->phase = 5;
                 return;
             }
-            if (phaseValue == 3) {
-                spawned = state->spawned;
-                point = (u8 *)spawned + ((state->selectorA = 3) << 4);
-                state->selectorB = 3;
-                state->selectorC = 0;
-                point += 0x14;
-                obj->x = *(f32 *)point;
-                obj->y = spawned->y + 100.0f;
-                obj->z = *(f32 *)(point + 4);
-                obj->rotY = *(s16 *)((u8 *)spawned + 0xC) + 0x4000;
-                obj->rotX = 0;
-                obj->rotZ = 0;
-                ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
-                ext_o0_1c6bc(obj, state);
-                state->flags &= ~8;
-                obj->header->flags &= ~1;
-                obj->alpha = 0;
-                state->active = 1;
-                state->phase = 4;
-                return;
-            }
-            if (phaseValue == 4) {
-                value = obj->alpha;
-                value += updateRate * 4;
-                if (value >= 255) {
-                    obj->alpha = 255;
-                    state->phase = 5;
-                    return;
-                }
-                obj->alpha = value;
-                return;
-            }
-            if (phaseValue == 5) {
-                obj->header->flags |= 1;
-                state->phase = 0;
-                state->active = 0;
-                state->done = 1;
-                ext_o0_5a914(obj, 12, -1, 0.0f);
-                state->spawned->at10.flags &= 0xFFF7;
-                state->spawned = 0;
+            obj->alpha = value;
+            return;
+        }
+        if (phase == 5) {
+            obj->header->flags |= 1;
+            state->phase = 0;
+            state->active = 0;
+            state->done = 1;
+            ext_o0_5a914(obj, 12, -1, 0.0f);
+            state->spawned->at10.flags &= 0xFFF7;
+            state->spawned = 0;
         }
     }
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F0003FD8_18503B8.s")
-#endif
 
 /* ---- overlay1UpdateObjectPhysics ---- */
 
@@ -3414,16 +3427,6 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
  * first-mismatch: +0x10
  * summary: Proc-36 58-draw census confirms initial draw deficit and mixed later allocation residual; baseline retained.
  * PLATEAU-HANDOFF:overlay1AdvancePath:end
- */
-
-/* PLATEAU-HANDOFF:overlay1TransitionState:start
- * symbol: overlay1TransitionState
- * score: 16/237 words
- * frame: 0x50
- * relocations: 13
- * first-mismatch: +0x34
- * summary: Volatile phase re-read on the line between the zero and one tests yields beql, 30 to 16. Stall: the pair's slot stays lbu not or. Copy position, or-zero, and swapped compares do not beat 16.
- * PLATEAU-HANDOFF:overlay1TransitionState:end
  */
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start

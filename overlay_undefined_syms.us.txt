@@ -489,8 +489,24 @@ overlay9SetSpatialReloc = 0xf0000000;
 overlay9TransformReloc = 0xf0000000;
 
 /* overlay 10: overlay10Initialize.c.o */
-D_140 = 0x00000140;
-D_400 = 0x00000400;
+gOverlay10Buffers = 0x00000000;
+gOverlay10DataB = 0x00000000;
+gOverlay10DataC = 0x00000000;
+gOverlay10Descriptors = 0x00000000;
+gOverlay10Entries = 0x00000000;
+gOverlay10Flag0 = 0x00000000;
+gOverlay10Flag1 = 0x00000000;
+gOverlay10Flag2 = 0x00000000;
+gOverlay10LargeBlock = 0x00000000;
+gOverlay10Loaded = 0x00000000;
+gOverlay10Resources = 0x00000000;
+gOverlay10Viewports = 0x00000000;
+overlay10AllocateReloc = 0xf0000000;
+overlay10FinishReloc = 0xf0000000;
+overlay10GetDimensionsReloc = 0xf0000000;
+overlay10GetResourcesReloc = 0xf0000000;
+overlay10LoadReloc = 0xf0000000;
+overlay10ReleaseReloc = 0xf0000000;
 
 /* overlay 11: overlay11Initialize.c.o */
 gOverlay11Argument = 0x000001c4;
@@ -1848,6 +1864,7 @@ overlay53QueryModeReloc = 0xf0000000;
 
 /* overlay 53: func_overlay_053_F0000240_189DBE8.c.o */
 D_118 = 0x00000118;
+D_140 = 0x00000140;
 D_288 = 0x00000288;
 
 /* overlay 53: overlay53ReleaseResources.c.o */

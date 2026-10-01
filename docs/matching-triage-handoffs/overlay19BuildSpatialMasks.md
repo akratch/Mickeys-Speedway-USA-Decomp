@@ -2,11 +2,11 @@
 ### `overlay19BuildSpatialMasks` plateau handoff
 
 - source: `src/overlays/o019/overlay19BuildSpatialMasks.c`
-- score: 2/227 words
+- score: 0/227 words, promoted
 - frame: 0x80
 - relocations: 0
-- first mismatch: +0xC0
-- summary: exhaustive same-kind colour landscape floors at 2 with 0 winners of 172 probes; L159 empty; L160 closed; L87 lock remains
+- first mismatch: none
+- summary: Matched. Plain locals and for loops with the span fields read through the indexed array expression, all six bound initialisations in the else arm, and the mask cleared after the vertex loop.
 
 - geometry: Target and configured C are both `0x38C`/908 bytes/227 words with frame `0x80`; the owned Overlay 19 range is `+0xF58..+0x12E4`, ROM `0x18761B0..0x187653C`, followed by separately owned 12-byte assembly padding.
 - relocation proof: Target runtime and candidate static surfaces both contain zero relocation records; count, type, offset, and identity surfaces are therefore vacuously exact, and preflight is complete.
@@ -259,4 +259,47 @@ independent-copy walk. Not colour, packing, or L160.
 Commands: score_symbol, align_symbol, frame_census, register_census,
 identity-gate stock vs instrumented, web_footprint --every-colour,
 finalize_plateau. No matching credit is claimed.
+
+#### 2026-10-01, lane a-o001: ROM-exact closure from a plain rewrite, 2 to 0
+
+The frame struct, its volatile unions, the line directives, the probes and the
+macro-folded lines were all standing in for allocator decisions that ordinary
+locals produce by themselves. The function was rewritten from the target
+listing with no reference to the candidate; every step below is a whole-TU
+measurement with the configured flags.
+
+- Plain rewrite with a span pointer local: 212 at delta -12. With the four
+  span fields copied to locals at the head of each span: 99, and the hoisted
+  flag test already spills to a compiler temporary as the target's does.
+- Span fields read through the indexed array expression, no span pointer:
+  delta 0. uopt strength-reduces the index only on this form; with a pointer
+  local it recomputes the scaled index every span.
+- The three stack cells are not memory-class objects. All 23 colours are
+  spent in the first allocator phase before the index, its reduced offset and
+  the hoisted flag test are reached. The second phase then offers each a
+  split piece and colours it only if the piece's net saving is positive.
+- The index is the one that needed care. Its piece is seeded at the entry
+  block (the zero store is there) and grows block by block until fewer than
+  nine registers would be left. With the three maxima initialised ahead of
+  the flag test, growth stops one block short of the item loop, the piece
+  nets plus one and takes the first colour, shifting four other registers
+  (198). With all six bound initialisations in the else arm the piece grows
+  through the item loop boundary, nets negative, and the index stays in
+  memory: 3. The instruction stream is unchanged by that move, because the
+  three maxima are still emitted ahead of the branch.
+- Clearing the mask after the vertex loop rather than before it, and
+  initialising the bin start in each for clause after the counter, settle two
+  first-colour ties by first occurrence (75 to 8 on the intermediate base).
+  This also emits the selector and mask zero stores in the target's order,
+  which was the whole of the old 2-word residual.
+- The index declared sixth puts its home at the target's offset: 3 to 0.
+  Three declaration orders reach it; position alone decides.
+
+The earlier closures on this function (the exhaustive colour landscape, the
+emission-order lock on the two zero stores) were true of the inherited shape
+and do not hold for the plain one.
+
+`gmake verify` printed the expected SHA1; `check-overlay-syms` and
+`promotion-proof` passed (227 words, no relocations).
+
 <!-- plateau-handoff:overlay19BuildSpatialMasks:end -->

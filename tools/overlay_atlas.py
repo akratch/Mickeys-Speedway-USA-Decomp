@@ -1254,6 +1254,12 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x3EB8, 0x3F38, "overlay1AngleBetweenSamples"),
         (0x3F38, 0x3F88, "overlay1RelativeAngleA"),
         (0x3F88, 0x3FD8, "overlay1RelativeAngleB"),
+        (
+            0x3FD8,
+            0x438C,
+            "overlay1TransitionState",
+            "canonical mixed-TU object, 13 runtime relocations, and linked ROM bytes exact",
+        ),
         (0x5BA4, 0x5BC0, "overlay1InitTimedState"),
         (0x5BC0, 0x5BF4, "overlay1ConsumeTimer"),
         (
@@ -1293,6 +1299,12 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x6724, 0x6788, "overlay1UpdateModeSound"),
         (0x6788, 0x67C0, "overlay1CopyBytes"),
         (0x69A0, 0x6A14, "overlay1InitMotion"),
+        (
+            0x6A14,
+            0x6B28,
+            "overlay1ConsumeNearbyPending",
+            "canonical mixed-TU object, one runtime relocation, and linked ROM bytes exact",
+        ),
         (0x6B28, 0x6B6C, "overlay1InitRange"),
         (
             0x6B6C,
@@ -1336,6 +1348,18 @@ MIXED_TU_EXACT_C_RANGES = {
             0x7730,
             "overlay1AppendPathPoint",
             "canonical mixed-TU object, all eight relocation records, and linked ROM bytes exact",
+        ),
+        (
+            0x7730,
+            0x78DC,
+            "overlay1BendPathPoint",
+            "canonical mixed-TU object, six runtime relocations, and linked ROM bytes exact",
+        ),
+        (
+            0x78DC,
+            0x7B64,
+            "overlay1AdvancePath",
+            "canonical mixed-TU object, 22 runtime relocations, and linked ROM bytes exact",
         ),
         (
             0x7B64,

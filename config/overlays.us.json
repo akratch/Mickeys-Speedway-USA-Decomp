@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 274704,
-  "nonmatching_overlay_c_bytes": 193904,
+  "matched_overlay_c_bytes": 277912,
+  "nonmatching_overlay_c_bytes": 190696,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 3600,
   "bss_bytes": 77680,
@@ -1309,6 +1309,14 @@
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
     {
+     "offset": "0x3FD8",
+     "end_offset": "0x438C",
+     "size": "0x3B4",
+     "label": "overlay1TransitionState",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "canonical mixed-TU object, 13 runtime relocations, and linked ROM bytes exact"
+    },
+    {
      "offset": "0x5BA4",
      "end_offset": "0x5BC0",
      "size": "0x1C",
@@ -1421,6 +1429,14 @@
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
     {
+     "offset": "0x6A14",
+     "end_offset": "0x6B28",
+     "size": "0x114",
+     "label": "overlay1ConsumeNearbyPending",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "canonical mixed-TU object, one runtime relocation, and linked ROM bytes exact"
+    },
+    {
      "offset": "0x6B28",
      "end_offset": "0x6B6C",
      "size": "0x44",
@@ -1491,6 +1507,22 @@
      "label": "overlay1AppendPathPoint",
      "source": "overlays/o001/overlay_001_tail",
      "evidence": "canonical mixed-TU object, all eight relocation records, and linked ROM bytes exact"
+    },
+    {
+     "offset": "0x7730",
+     "end_offset": "0x78DC",
+     "size": "0x1AC",
+     "label": "overlay1BendPathPoint",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "canonical mixed-TU object, six runtime relocations, and linked ROM bytes exact"
+    },
+    {
+     "offset": "0x78DC",
+     "end_offset": "0x7B64",
+     "size": "0x288",
+     "label": "overlay1AdvancePath",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "canonical mixed-TU object, 22 runtime relocations, and linked ROM bytes exact"
     },
     {
      "offset": "0x7B64",
@@ -5182,7 +5214,7 @@
      "type": "c",
      "source": "overlays/o019/overlay19BuildSpatialMasks",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x12E4",

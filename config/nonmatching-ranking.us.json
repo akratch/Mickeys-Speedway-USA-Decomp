@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 206,
-  "resolved": 206,
+  "queue_size": 201,
+  "resolved": 201,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 206,
-  "relocation_masked_coverage": 206,
+  "source_context_coverage": 201,
+  "relocation_masked_coverage": 201,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -40,21 +40,6 @@
       "source_context_sha256": "0nsy.0Qf2.zluj.UtMs.Nl6Z.9rP9.JSVh.xC-Z.8gxW.mhZB.iYA"
     },
     {
-      "name": "overlay1ConsumeNearbyPending",
-      "file": "src/overlays/o001/overlay_001_tail.c",
-      "overlay": 1,
-      "tu": "overlays/o001",
-      "size_bytes": 276,
-      "objdiff_match_pct": null,
-      "differing_words": 31,
-      "first_mismatch_offset": 64,
-      "relocation_masked_differing_words": 31,
-      "relocation_masked_first_mismatch_offset": 64,
-      "size_delta": 0,
-      "category": "register-only",
-      "source_context_sha256": "SRgV.pp1s.rDFw.yc9Y.yL4J.QisZ.UALY.ECAb.EerM.Dp4J.lz0"
-    },
-    {
       "name": "func_8003D25C",
       "file": "src/main/particles.c",
       "overlay": null,
@@ -68,21 +53,6 @@
       "size_delta": 0,
       "category": "register-only",
       "source_context_sha256": "7o1v.2PSx.JerL.umW8.WX3_.moAA.l9q3.sY_C.AlXO.59ud.Bhw"
-    },
-    {
-      "name": "overlay19BuildSpatialMasks",
-      "file": "src/overlays/o019/overlay19BuildSpatialMasks.c",
-      "overlay": 19,
-      "tu": "overlays/o019",
-      "size_bytes": 908,
-      "objdiff_match_pct": null,
-      "differing_words": 2,
-      "first_mismatch_offset": 192,
-      "relocation_masked_differing_words": 2,
-      "relocation_masked_first_mismatch_offset": 192,
-      "size_delta": 0,
-      "category": "schedule-only",
-      "source_context_sha256": "CCwo.tUfs.gGyU.r9sg.-Uyx.oEt6.L3Y3.EwXl.gS9X._Aw5.NRE"
     },
     {
       "name": "func_overlay_008_F0004CF0_1862A48",
@@ -158,36 +128,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "3YBW.qvpJ.LtDq.XQSa.edbY.pzB9.LJWy.VGjJ.Ni1J.FYBA.348"
-    },
-    {
-      "name": "overlay1TransitionState",
-      "file": "src/overlays/o001/overlay_001_tail.c",
-      "overlay": 1,
-      "tu": "overlays/o001",
-      "size_bytes": 948,
-      "objdiff_match_pct": null,
-      "differing_words": 16,
-      "first_mismatch_offset": 52,
-      "relocation_masked_differing_words": 16,
-      "relocation_masked_first_mismatch_offset": 52,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "8bgv.-YYK.290r.OA1o.DIij.XziH.0PbX.SWT3.iqmW.Aprs.2LI"
-    },
-    {
-      "name": "overlay1BendPathPoint",
-      "file": "src/overlays/o001/overlay_001_tail.c",
-      "overlay": 1,
-      "tu": "overlays/o001",
-      "size_bytes": 428,
-      "objdiff_match_pct": null,
-      "differing_words": 19,
-      "first_mismatch_offset": 16,
-      "relocation_masked_differing_words": 19,
-      "relocation_masked_first_mismatch_offset": 16,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "FE54.Fbcm.ZoEg.DCtA.2C94.XUWm.47Oe.pbac.yBkc.7rgA.LUQ"
     },
     {
       "name": "overlay15InitStarsAndPalette",
@@ -653,21 +593,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "6aaB.Z66x.tfAt.Vjnu.D9Hx.19-3.P_LF.kZxn.DGgA.4G5V.8ls"
-    },
-    {
-      "name": "overlay1AdvancePath",
-      "file": "src/overlays/o001/overlay_001_tail.c",
-      "overlay": 1,
-      "tu": "overlays/o001",
-      "size_bytes": 648,
-      "objdiff_match_pct": null,
-      "differing_words": 81,
-      "first_mismatch_offset": 16,
-      "relocation_masked_differing_words": 81,
-      "relocation_masked_first_mismatch_offset": 16,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "6sbF.k3cG.iupa.XMDy.7_2k.orFN.GnAS.AEns.mfR3.qj65.RCQ"
     },
     {
       "name": "overlay7UpdateOwnerMode",

@@ -2,11 +2,11 @@
 ### `overlay1BendPathPoint` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_tail.c`
-- score: 19/107 words
+- score: 0/107 words, promoted
 - frame: 0x30
 - relocations: 6
-- first mismatch: +0x10
-- summary: Empty-if L100 spills index to parameter home; jal delay still holds the selector mask, and currentIndex still refuses v1.
+- first mismatch: none
+- summary: Matched. Boolean test of the u8 index, one index local for both neighbours, index-first pointer sums for them, and a path getter declared with an int-width selector.
 
 #### tu2-o1tail: the u8 parameter's spill slot is the residual, and it is not source-reachable so far
 
@@ -270,5 +270,40 @@ empty-if spill moved after the call, folded onto the call's line, behind an
 empty `do {} while (0)`, or joined by an empty `if (selector)` is byte-flat
 at 19: the store-versus-mask delay-slot order is not reached by the placement
 of the L100 probe. No source edit adopted.
+
+
+#### 2026-10-01, lane a-o001: ROM-exact closure from a plain rewrite, 19 to 0
+
+Rewritten from the target listing without the empty-if probe or the three
+index locals. Each step is a whole-TU measurement with the configured flags.
+
+- Plain rewrite with one index local reused for the previous and the next
+  point, and the wrap test written as a comparison against zero: 103 at
+  delta -8. The parameter is reloaded from its home with no spill and its
+  promoted value is copied once, ahead of the branch.
+- The wrap test written as a boolean test of the parameter: 7 at delta 0.
+  This is the same mechanism that closed `overlay1TransitionState` the same
+  day. The boolean test reads the `u8` variable itself; its promoted value is
+  then first needed inside the two arms, uopt materialises it once in each
+  (the two copies every earlier lane tried to keep from being hoisted), and
+  the parameter stays in its incoming register across the first call with a
+  byte spill to its own home. The empty-if weight probe is not needed.
+  With one index local the old four-register colour cycle does not arise.
+- The previous and next addresses written index-first: 7 to 4. The current
+  point stays array-style. Sixteen spelling pairs over five index types were
+  measured; only index-first on both reaches 4, and `s32` and `u32` tie.
+- The last four words were the as1 schedule of the selector mask against the
+  spill store. Read off `cc -S`: with the getter declared to take a `u8`, the
+  call site emits its own mask after the entry narrowing, the mask is the
+  last instruction before the call and takes the delay slot. Declared with an
+  int-width parameter, the call site emits a plain copy, as1 folds it into
+  the entry narrowing, the mask is scheduled among the home saves, and the
+  spill store takes the delay slot: 4 to 0. Line layout, K&R definition and
+  the selector parameter's own type do not reach it (nine forms, all 4 or
+  worse).
+
+`gmake verify` printed the expected SHA1; `check-overlay-syms` and
+`promotion-proof` passed (107 words, 6 of 6 relocations). Siblings in the TU
+re-scored unchanged.
 
 <!-- plateau-handoff:overlay1BendPathPoint:end -->

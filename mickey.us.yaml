@@ -693,8 +693,15 @@ segments:
       # tables, plus the ROM's one zero pad word before the next float table.
       - [0x83334, .rodata, main/menu]
       - [0x83430, rodata]
-      # func_80040740's switch table.
+      # func_80040740's switch table, then func_80040B88's two float literals
+      # and one word of the object's own section padding.
       - [0x83658, .rodata, main/particles]
+      # Two zero words of output padding. The particles rodata input section
+      # really starts 16-aligned inside the 0x83430 blob (its strings and four
+      # earlier float literals are still held there as data), so this partial
+      # carve begins 8 bytes off that alignment and the object's own padding
+      # stops at 0x83678.
+      - [0x83678, rodata]
       # Diprint owns the formatter alphabets, strings, and compiler-generated
       # switch tables through the measured 0x838F0 boundary.
       - [0x83680, .rodata, main/diprint]

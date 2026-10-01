@@ -1820,170 +1820,134 @@ s32 func_80040878(CircularParticle *particle, s32 updateRate) {
 done:
     return 0;
 }
-/* Reopened m2c reconstruction: exact 302 instructions and target 0x68 frame.
- *
- * 2026-09-12, lane p11-mid: 145 -> 111 on the frame, and the two ladders are now
- * slot-for-slot identical at 0x68.  tools/frame_census.py read the fault as a
- * uniform four-byte shift from the fifth home down: the target carries ONE MORE
- * four-byte local between `scale` and `position`, register-resident (it has no
- * traffic on either side), which is the orientation swap's own temp that an
- * earlier lane deleted to keep the frame at 0x68.  Reintroducing it alone does
- * grow the frame to 0x70 as that lane measured -- there is no slack -- but the
- * frame is a COUNT of declared memory-class locals, so deleting any other one
- * pays for it: swap temp after `scale` plus `entryIndex` inlined lands 0x68 with
- * the target's ladder.  Measured on the same base: swap alone 167, entryIndex
- * alone 145, pointCount alone 145, swap + entryIndex 111, swap + pointCount 111,
- * swap + both 111 (so the two are interchangeable and neither is homed), swap
- * before `scale` 117, after `position` 124, after `offset` 142, last 145.
- * Buckets went byte-exact 163 -> 197, naming 82 -> 94, immediate-only 37 -> 5,
- * structural 23 -> 8, displacement tax 3 -> 4.
- *
- * Then two statement-order sweeps, re-climbed on the new shape per [L146],
- * took 111 -> 72.  Both are full exhaustions, not samples.  The four statements
- * guarded by `pointCount != 9` admit twelve orders once `point` is kept ahead of
- * its own dereference; the floor is pointCount-bump, point, lifetime, scale at
- * 75, against 111 for the order this file used to carry and 128 for the worst.
- * The four `point` initialisers admit all 24; the floor is intensityTimer,
- * colorTimer, colorIndex, intensity at 72, and every order that does not put
- * intensityTimer first costs four bytes of frame and lands at 254 or worse,
- * because the later `point->intensityTimer < point->lifetime` test reloads it.
- *
- * Buckets now: byte-exact 231, register naming 58, immediate-only 2, structural
- * 13, displacement tax -1, frame ladders identical.  The naming residual is one
- * coherent three-cycle t5->t7->t4->t5 at 98% over two windows ([L127]) plus a
- * float f12->f14 phase.  The one structural fact left is at +0x74: the target
- * reloads `trigger` from its incoming home 108(sp) in the block BEFORE the
- * `pointCount != 9` branch and dereferences it after, where we keep no copy and
- * reload two instructions later, inside the branch's own block -- which is why
- * the target's home shows four loads to our three.  Both [L144] forms that would
- * force the reload were measured and both grow the frame, because taking the
- * parameter's address gives it a declared slot of its own: `*(T **)&trigger` is
- * 264 words at delta +4 and `(T *)*(s32 *)&trigger` is 299 at delta +8. */
 /* PROVENANCE: adapted from DKR src/particles.c:update_line_particle and
- * cross-checked against JFG's assembly-only sibling. */
-#ifdef NON_MATCHING
+ * cross-checked against JFG's assembly-only sibling.
+ *
+ * Matched 2026-10-01 by shape, from 72 words: the three guards return early;
+ * the point count is read from the entry at every use; the trigger's config is
+ * a local read first in the body; DKR's single float temporary carries the
+ * length, the normalising factor and the swap, leaving scale untouched; the
+ * colour table is read back from the entry after it is stored; the 0.1 and
+ * 0.01 are literals; and the first three coordinates add offset to position,
+ * as in DKR. */
 void func_80040B88(ParticleEmitterObject *object, ParticleTriggerSlot *trigger) {
     ParticleTypeDescriptor *descriptor;
     ParticleLineEntry *entry;
     ParticleLinePoint *point;
     u32 *colorTable;
     f32 scale;
-    f32 swap;
+    f32 tempf;
     ParticleVec3f position;
     ParticleVec3f offset;
     s32 orientation;
-    s32 pointCount;
+    ParticleConfig *config;
 
     descriptor = D_8007C8AC[trigger->type];
-    if ((u32)descriptor->flags >> 28 == 5) {
-        if (trigger->result != 0xFF) {
-            entry = &D_8007C894[trigger->result];
-            pointCount = entry->pointCount;
-            if (pointCount != 9) {
-                entry->pointCount = pointCount + 1;
-                point = entry->points[pointCount];
-                point->lifetime = descriptor->lifetime;
-                scale = descriptor->scale * trigger->config->value50;
-                if (descriptor->descriptorWord & 0x400) {
-                    colorTable = entry->colorTable;
-                    if (colorTable == NULL) {
-                        entry->colorCount = descriptor->colorCount;
-                        colorTable = descriptor->colorTable;
-                        entry->colorTable = colorTable;
-                    }
-                    point->red = (*colorTable & 0xFF000000) >> 24;
-                    point->green = (*entry->colorTable & 0xFF0000) >> 16;
-                    point->blue = (*entry->colorTable & 0xFF00) >> 8;
-                } else {
-                    point->red = descriptor->red;
-                    point->green = descriptor->green;
-                    point->blue = descriptor->blue;
-                }
-                point->intensityTimer = descriptor->intensityTimer;
-                point->colorTimer = descriptor->colorTimer;
-                point->colorIndex = 0;
-                point->intensity = descriptor->intensity << 8;
-                if (point->intensityTimer < point->lifetime) {
-                    point->intensityVelocity =
-                        ((descriptor->targetIntensity - descriptor->intensity) << 8) /
-                        (point->lifetime - point->intensityTimer);
-                } else {
-                    point->intensityVelocity = 0;
-                }
+    if ((u32)descriptor->flags >> 28 != 5) {
+        return;
+    }
+    if (trigger->result == 0xFF) {
+        return;
+    }
+    entry = &D_8007C894[trigger->result];
+    if (entry->pointCount == 9) {
+        return;
+    }
+    config = trigger->config;
+    scale = descriptor->scale * config->value50;
+    point = entry->points[entry->pointCount];
+    entry->pointCount++;
+    point->lifetime = descriptor->lifetime;
+    if (descriptor->descriptorWord & 0x400) {
+        colorTable = entry->colorTable;
+        if (colorTable == NULL) {
+            entry->colorCount = descriptor->colorCount;
+            entry->colorTable = descriptor->colorTable;
+            colorTable = entry->colorTable;
+        }
+        point->red = (*colorTable & 0xFF000000) >> 24;
+        point->green = (*entry->colorTable & 0xFF0000) >> 16;
+        point->blue = (*entry->colorTable & 0xFF00) >> 8;
+    } else {
+        point->red = descriptor->red;
+        point->green = descriptor->green;
+        point->blue = descriptor->blue;
+    }
+    point->intensityTimer = descriptor->intensityTimer;
+    point->colorTimer = descriptor->colorTimer;
+    point->colorIndex = 0;
+    point->intensity = descriptor->intensity << 8;
+    if (point->intensityTimer < point->lifetime) {
+        point->intensityVelocity =
+            ((descriptor->targetIntensity - descriptor->intensity) << 8) / (point->lifetime - point->intensityTimer);
+    } else {
+        point->intensityVelocity = 0;
+    }
 
-                position.x = trigger->value1A;
-                position.y = trigger->value1C;
-                position.z = trigger->value1E;
-                pointListRPY(1, (s16 *)object, &position.x, &position.x);
-                position.x += object->x;
-                position.y += object->y;
-                position.z += object->z;
-                if (trigger->config->flags & 0x1000) {
-                    scale = scale * sqrtf((object->velocityX * object->velocityX) +
-                                          (object->velocityY * object->velocityY) +
-                                          (object->velocityZ * object->velocityZ)) *
-                            D_80082A6C;
-                }
+    position.x = trigger->value1A;
+    position.y = trigger->value1C;
+    position.z = trigger->value1E;
+    pointListRPY(1, (s16 *)object, &position.x, &position.x);
+    position.x += object->x;
+    position.y += object->y;
+    position.z += object->z;
+    if (trigger->config->flags & 0x1000) {
+        tempf = sqrtf((object->velocityX * object->velocityX) + (object->velocityY * object->velocityY) +
+                      (object->velocityZ * object->velocityZ));
+        scale = scale * tempf * 0.1f;
+    }
 
-                orientation = *(u16 *)&descriptor->flags & 0xF;
-                if (!(descriptor->descriptorWord & 0x4000)) {
-                    offset.x = 0.0f;
-                    offset.y = 0.0f;
-                    offset.z = 0.0f;
-                    switch (orientation) {
-                        default:
-                            offset.x = scale;
-                            break;
-                        case 2:
-                            offset.z = scale;
-                            break;
-                        case 1:
-                            offset.y = scale;
-                            break;
-                    }
-                    pointListRPY(1, (s16 *)object, &offset.x, &offset.x);
-                } else {
-                    offset.x = object->velocityX;
-                    offset.y = object->velocityY;
-                    offset.z = object->velocityZ;
-                    if ((offset.z * offset.z) +
-                            ((offset.x * offset.x) + (offset.y * offset.y)) <
-                        D_80082A70) {
-                        scale = 1.0f;
-                    } else {
-                        scale = scale / sqrtf((offset.z * offset.z) +
-                                              ((offset.x * offset.x) + (offset.y * offset.y)));
-                    }
-                    offset.x *= scale;
-                    offset.y *= scale;
-                    offset.z *= scale;
-                    switch (orientation) {
-                        case 0:
-                            swap = offset.x;
-                            offset.x = -offset.z;
-                            offset.z = swap;
-                            break;
-                        case 1:
-                            swap = offset.y;
-                            offset.y = -offset.z;
-                            offset.z = swap;
-                            break;
-                    }
-                }
-
-                point->x0 = position.x + offset.x;
-                point->y0 = position.y + offset.y;
-                point->z0 = position.z + offset.z;
-                point->x1 = position.x - offset.x;
-                point->y1 = position.y - offset.y;
-                point->z1 = position.z - offset.z;
-            }
+    orientation = *(u16 *)&descriptor->flags & 0xF;
+    if (!(descriptor->descriptorWord & 0x4000)) {
+        offset.x = 0.0f;
+        offset.y = 0.0f;
+        offset.z = 0.0f;
+        switch (orientation) {
+            default:
+                offset.x = scale;
+                break;
+            case 2:
+                offset.z = scale;
+                break;
+            case 1:
+                offset.y = scale;
+                break;
+        }
+        pointListRPY(1, (s16 *)object, &offset.x, &offset.x);
+    } else {
+        offset.x = object->velocityX;
+        offset.y = object->velocityY;
+        offset.z = object->velocityZ;
+        tempf = (offset.z * offset.z) + ((offset.x * offset.x) + (offset.y * offset.y));
+        if (tempf < 0.01f) {
+            tempf = 1.0f;
+        } else {
+            tempf = scale / sqrtf(tempf);
+        }
+        offset.x *= tempf;
+        offset.y *= tempf;
+        offset.z *= tempf;
+        switch (orientation) {
+            case 0:
+                tempf = offset.x;
+                offset.x = -offset.z;
+                offset.z = tempf;
+                break;
+            case 1:
+                tempf = offset.y;
+                offset.y = -offset.z;
+                offset.z = tempf;
+                break;
         }
     }
+
+    point->x0 = offset.x + position.x;
+    point->y0 = offset.y + position.y;
+    point->z0 = offset.z + position.z;
+    point->x1 = position.x - offset.x;
+    point->y1 = position.y - offset.y;
+    point->z1 = position.z - offset.z;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/particles/func_80040B88.s")
-#endif
 /*
  * PROVENANCE: structure cross-checked against JFG
  * asm/nonmatchings/particles/func_80061C30_62830.s and DKR
@@ -2578,13 +2542,3 @@ void partNullifyCircularParticleParents(ParticlePosition *position) {
         } while (poolPtr != (CircularParticlePool **)&D_800D4134);
     } while (0);
 }
-
-/* PLATEAU-HANDOFF:func_80040B88:start
- * symbol: func_80040B88
- * score: 72/302 words
- * frame: 0x68
- * relocations: 12
- * first-mismatch: +0x48
- * summary: Extra line-entry use before the table stalled: save plus reload 72, index via pointCount 152, in-condition assign 72. None reduced masked words at delta 0.
- * PLATEAU-HANDOFF:func_80040B88:end
- */

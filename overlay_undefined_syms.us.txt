@@ -695,7 +695,9 @@ gOverlay14ValueF8 = 0x000000f8;
 gOverlay14CommandHeader = 0x000000fc;
 
 /* overlay 14: overlay14CreateValue.c.o */
-D_E8 = 0x000000e8;
+frontGetLanguage_o014Reloc = 0xf0000000;
+gOverlay14SlotCountE8 = 0x000000e8;
+gOverlay14Slots28 = 0x00000028;
 
 /* overlay 14: overlay14LoadRelocatedValue.c.o */
 gOverlay14LoadJumpTableReloc = 0x00000038;
@@ -2224,6 +2226,7 @@ overlay57UpdateSubmitReloc = 0xf0000000;
 D_108 = 0x00000108;
 D_74 = 0x00000074;
 D_94 = 0x00000094;
+D_E8 = 0x000000e8;
 
 /* overlay 58: overlay58ReleaseResources.c.o */
 gOverlay58InlineResource = 0x000000c8;

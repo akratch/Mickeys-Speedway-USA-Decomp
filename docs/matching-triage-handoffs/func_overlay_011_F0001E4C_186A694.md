@@ -2,11 +2,58 @@
 ### `func_overlay_011_F0001E4C_186A694` plateau handoff
 
 - source: `src/overlays/o011/func_overlay_011_F0001E4C_186A694.c`
-- score: 63/295 words
+- score: 0/295 words, promoted
 - frame: 0x40
 - relocations: 87
-- first mismatch: +0xD8
-- summary: Size 0, 8=8 slots, masked 63. Occupancy beq vs addiu 4; addiu 2 scheduled early. Colour still L155-shadowed by 2+2 inserts.
+- first mismatch: none
+- summary: Matched. Each object the relocation records name is its own extern, the option handles are a one-based table indexed directly, the action is read from its object, the mode test is a plain or, the status clear is a plain loop, and the configuration bytes are unsigned.
+
+#### 2026-10-01, lane c-ovl2: ROM-exact closure
+
+The retained candidate reproduced 63 masked differences at 1,180 bytes. It
+was rewritten from the listing and the module's relocation records and
+measured on the direct configured compile:
+
+- The records separate what the candidate reached as offsets from one menu
+  base: a controller index and an option index in the overlay's
+  uninitialized storage, and a highlight, an action, a done flag and the
+  handle table in its initialized data. The action shares its offset with
+  the controller index but lives in the other section.
+- Written as separate externs, with the action read from its object at each
+  test (no local, no volatile pointer), the constant compares take the
+  shipped operand order.
+- The six status fields are cleared by a plain loop. The compiler unrolls
+  it into the shipped two-then-four form, which the candidate had spelled
+  out by hand with an index carrier.
+- The two configuration bytes are unsigned. Signed, the two 4s share one
+  register and the function is four bytes short (167); unsigned, 26.
+- The two status modes as an ordinary or of two reads: 26 becomes 2. The
+  earlier range-fold that motivated the volatile reads does not occur on
+  this shape; a switch with two case labels keeps both tests but ranks the
+  constant 1 ahead of the saved pointer.
+- The last two words were the order of the two saves around the handle
+  call. With a declared walking pointer the pointer is saved second; with
+  the table indexed by the option number the compiler's own cursor is saved
+  first, as shipped. The cursor starts at the table base only if the table
+  is one-based, which the record's addend confirms: the table symbol is
+  four bytes below the first handle.
+- Five locals put that cursor's temporary at the shipped home.
+
+Proof: overlay 11 text +0x1E4C, 1,180 executable bytes / 295 words, frame
+0x40, 87 of 87 relocation identities. Ten resident callees are renamed to
+their generated surface entries; the two cross-overlay callees and the one
+same-module callee whose site is a SYMBOL record are placeholder
+declarations; the switch table is bound to the retained overlay table at
+rodata +0x54 and the compiler's copy is dropped by digest. None of these
+steps touches an instruction. The older filter specification for this
+symbol is unreferenced and was left as found. Prior measurements below
+remain historical negatives for the menu-base shape.
+
+Commands: direct configured compile scored with `tools/score_symbol.py
+--object`, `gmake overlay-atlas-write`, `tools/refresh_atlas_digest.py`,
+`gmake extract`, `gmake overlay-syms`, `gmake verify`,
+`gmake check-overlay-syms`, and
+`gmake promotion-proof SYMBOL=func_overlay_011_F0001E4C_186A694`.
 
 Lane `w18-o011` on base `cbaed235`. Re-measure: ranking size -4 is right;
 the prior V0 "-1 word" / first `+0x10` were stale. Configured IDO 5.3

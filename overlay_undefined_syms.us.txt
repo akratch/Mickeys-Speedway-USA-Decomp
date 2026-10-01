@@ -592,6 +592,33 @@ D_0_reload_success = 0x00000000;
 D_lastMode = 0x00000000;
 gOverlay11FiveOptionSwitchTableReloc = 0x00000040;
 
+/* overlay 11: func_overlay_011_F0001E4C_186A694.c.o */
+amSndPlay_o011Reloc = 0xf0000000;
+amTuneSetFadeScaled_o011Reloc = 0xf0000000;
+func_80005820_o011Reloc = 0xf0000000;
+func_80028F54_o011Reloc = 0xf0000000;
+func_800290AC_o011Reloc = 0xf0000000;
+func_800291D8_o011Reloc = 0xf0000000;
+gOverlay11ConfigAReloc = 0x00000000;
+gOverlay11ConfigBReloc = 0x00000000;
+gOverlay11GameStateFlagReloc = 0x00000000;
+gOverlay11GameStateReloc = 0x00000000;
+gOverlay11OptionAction = 0x000001c4;
+gOverlay11OptionDone = 0x00000204;
+gOverlay11OptionHandles = 0x000001c8;
+gOverlay11OptionHighlight = 0x000001b8;
+gOverlay11OptionIndex = 0x000001bc;
+gOverlay11OptionSwitchTableReloc = 0x00000054;
+gOverlay11PadIndex = 0x000001c4;
+gOverlay11StickXReloc = 0x00000000;
+joyGetPressed_o011Reloc = 0xf0000000;
+levelGetNumber_o011Reloc = 0xf0000000;
+mainChangeCameras_o011Reloc = 0xf0000000;
+mainChangeLevel_o011Reloc = 0xf0000000;
+overlay11ResetMenuReloc = 0xf0000000;
+overlay11SetHandleValueReloc = 0xf0000000;
+overlay11StopOverlay66Reloc = 0xf0000000;
+
 /* overlay 11: overlay11ReleaseGroup4.c.o */
 gOverlay11GroupEnd4 = 0x000001d8;
 gOverlay11GroupHandles = 0x000001c8;

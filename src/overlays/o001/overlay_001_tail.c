@@ -3228,10 +3228,6 @@ typedef struct Overlay1TraceResult {
     s32 changed;
 } Overlay1TraceResult;
 
-extern s32 overlay2TracePath(f32 x, f32 y, f32 anchorX, f32 anchorY,
-                             void *arg5, Overlay1TraceResult *result,
-                             u8 primary, u8 secondary);
-extern Overlay1PathEntry *overlay1GetEntry(u16 index);
 extern void *overlay1CloneRecord(u32 *source);
 extern void overlay1AppendPathPoint(Overlay1PathState *state, s16 x, s16 y,
                                     u8 primary, u8 secondary);
@@ -3241,79 +3237,92 @@ extern s32 gOverlay1PoolExhausted;
 
 /* DKR v77/v80, JFG, and the five-reference skeleton scan found no credible
  * donor for this bounded path advance. */
-/* NON_MATCHING: array views remove the inherited redundant endpoint load
- * without changing the callee ABI. Size, frame and instruction sequence now
- * agree; register draws and comparison carriers remain nonexact. */
-#ifdef NON_MATCHING
-s32 overlay1AdvancePath(Overlay1PathState *state) {
+/* The count byte and the two mode bits are one 16-bit bit-field unit. Only
+ * this function needs that view: the target reads the two bits through the
+ * halfword and writes them through the low byte, which is what IDO emits for
+ * a narrow field of a `u16` unit. */
+typedef struct Overlay1PathBits {
+    s16 x[32];
+    s16 y[32];
+    u8 primary[32];
+    u8 secondary[32];
+    u16 count : 8;
+    u16 unusedC1 : 6;
+    u16 mode : 2;
+} Overlay1PathBits;
+
+/* The trace call into overlay 2 and the same-module entry getter are SYMBOL
+ * relocation records (stored word `jal 0`), so both go through placeholders
+ * that `gmake overlay-syms` values; the append and clone calls are JUMP
+ * records and name the in-module definitions. */
+extern s32 overlay1TracePathReloc(f32 x, f32 y, f32 anchorX, f32 anchorY,
+                                  void *arg5, Overlay1TraceResult *result,
+                                  u8 primary, u8 secondary);
+extern Overlay1PathEntry *overlay1PathEntryReloc(u16 index);
+
+/* Matched 2026-10-01: 81 to 0 by declaring the bit-field instead of spelling
+ * its masks by hand. `state->mode &= 1` and `|= 2` draw the scratch temps the
+ * hand-written `(flags & ~3) | (halfword & 1)` form never drew, which was the
+ * ring rotation behind most of the residual. The result is a plain struct,
+ * the narrow primary arguments are casts of its fields, and the two branch
+ * tests compare `base` first. */
+s32 overlay1AdvancePath(Overlay1PathBits *state) {
     s16 currentX;
     s16 currentY;
     Overlay1PathEntry *entry;
-    union {
-        Overlay1TraceResult fields;
-        s16 coordinates[8];
-        u16 values[8];
-        s32 words[4];
-    } result;
-    Overlay1PathState *child;
-    u8 count;
+    Overlay1TraceResult result;
+    Overlay1PathBits *child;
+    s32 count;
 
     count = state->count;
     currentX = state->x[count];
     currentY = state->y[count];
-
-    state->flags = (state->flags & ~3) |
-                   (*(u16 *)&state->count & 1);
+    state->mode &= 1;
     if (count >= 31) {
         return 1;
     }
 
-    if (!overlay2TracePath((f32)currentX, (f32)currentY,
-                           (f32)overlay1AnchorX, (f32)overlay1AnchorY,
-                           (void *)gOverlay1SubmitArg5, &result.fields,
-                           state->primary[count], state->secondary[count]) ||
-        ((result.coordinates[0] == overlay1AnchorX) && (result.coordinates[1] == overlay1AnchorY))) {
-        overlay1AppendPathPoint(state, overlay1AnchorX, overlay1AnchorY, 0xFF, 0);
+    if (!overlay1TracePathReloc((f32)currentX, (f32)currentY,
+                                (f32)overlay1AnchorX, (f32)overlay1AnchorY,
+                                (void *)gOverlay1SubmitArg5, &result,
+                                state->primary[count], state->secondary[count]) ||
+        ((result.x == overlay1AnchorX) && (result.y == overlay1AnchorY))) {
+        overlay1AppendPathPoint((Overlay1PathState *)state, overlay1AnchorX, overlay1AnchorY, 0xFF, 0);
         return 1;
     }
 
-    entry = overlay1GetEntry(result.values[5]);
-    if ((currentX != result.coordinates[0]) || (currentY != result.coordinates[1])) {
-        overlay1AppendPathPoint(state, result.coordinates[0], result.coordinates[1],
-                                *((u8 *)&result + 5), result.values[5]);
-        if (result.words[3] != 0) {
-            state->flags = (state->flags & ~3) |
-                           ((*(u16 *)&state->count | 2) & 3);
+    entry = overlay1PathEntryReloc(result.secondary);
+    if ((currentX != result.x) || (currentY != result.y)) {
+        overlay1AppendPathPoint((Overlay1PathState *)state, result.x, result.y,
+                                (u8)result.base, result.secondary);
+        if (result.changed != 0) {
+            state->mode |= 2;
         }
     }
 
-    if ((result.values[3] != result.values[2]) && (gOverlay1PoolExhausted == 0)) {
+    if ((result.base != result.first) && (gOverlay1PoolExhausted == 0)) {
         child = overlay1CloneRecord((u32 *)state);
         if (child != NULL) {
-            overlay1AppendPathPoint(child, entry->points[result.values[3]].x,
-                                    entry->points[result.values[3]].y,
-                                    *((u8 *)&result + 7), result.values[5]);
-            child->flags = (child->flags & ~3) |
-                           ((*(u16 *)&child->count | 2) & 3);
+            overlay1AppendPathPoint((Overlay1PathState *)child,
+                                    entry->points[result.first].x,
+                                    entry->points[result.first].y,
+                                    (u8)result.first, result.secondary);
+            child->mode |= 2;
         }
     }
 
-    if ((result.values[4] != result.values[2]) && (gOverlay1PoolExhausted == 0)) {
+    if ((result.base != result.second) && (gOverlay1PoolExhausted == 0)) {
         child = overlay1CloneRecord((u32 *)state);
         if (child != NULL) {
-            overlay1AppendPathPoint(child, entry->points[result.values[4]].x,
-                                    entry->points[result.values[4]].y,
-                                    *((u8 *)&result + 9), result.values[5]);
-            child->flags = (child->flags & ~3) |
-                           ((*(u16 *)&child->count | 2) & 3);
+            overlay1AppendPathPoint((Overlay1PathState *)child,
+                                    entry->points[result.second].x,
+                                    entry->points[result.second].y,
+                                    (u8)result.second, result.secondary);
+            child->mode |= 2;
         }
     }
     return 1;
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F00078DC_1853CBC.s")
-#endif
 
 /* ---- overlay1FindBestRecord ---- */
 
@@ -3365,16 +3374,6 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
  * first-mismatch: +0x190
  * summary: Four canonical callee identities and ABIs authenticated without resolver changes; exact extent/frame, two allocation words remain. Prior source levers stay closed.
  * PLATEAU-HANDOFF:overlay1UpdateRangeFlags:end
- */
-
-/* PLATEAU-HANDOFF:overlay1AdvancePath:start
- * symbol: overlay1AdvancePath
- * score: 81/162 words
- * frame: 0x58
- * relocations: 22
- * first-mismatch: +0x10
- * summary: Proc-36 58-draw census confirms initial draw deficit and mixed later allocation residual; baseline retained.
- * PLATEAU-HANDOFF:overlay1AdvancePath:end
  */
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start

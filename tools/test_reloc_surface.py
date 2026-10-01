@@ -610,6 +610,117 @@ class FunctionSurfaceComparisonTests(unittest.TestCase):
                 Path("build/src/overlays/o007/example.c.o"), atlas)
 
 
+class CandidateTuPlacementAuthorityTests(unittest.TestCase):
+    name = "func_overlay_008_F0001000_185ED58"
+
+    class FakeElf:
+        names = ["", ".text"]
+
+        def __init__(self, value, text, reloc_symbol="callee"):
+            self._text = text
+            self._symbols = [
+                (CandidateTuPlacementAuthorityTests.name, value, 4,
+                 rs.STT_FUNC, 1),
+                (reloc_symbol, 0, 0, 0, rs.SHN_UNDEF),
+            ]
+            self._relocations = [(".text", value, rs.R_MIPS_26, 1)]
+
+        def section(self, name):
+            return (self.names.index(name), object()) if name in self.names else (None, None)
+
+        def section_bytes(self, name):
+            return self._text if name == ".text" else b""
+
+        def symbols(self):
+            return list(self._symbols)
+
+        def relocations(self):
+            return list(self._relocations)
+
+    def verify(self, candidate, canonical, boundary=(8, 0x1000)):
+        def boundary_proof(_atlas, _overlay, _name, _target, root=None,
+                           elf_loader=None, rom=None):
+            if boundary is None:
+                return None
+            elf_loader(Path("canonical.o"))
+            return boundary
+
+        with mock.patch.object(rs, "_canonical_overlay_call_boundary",
+                               side_effect=boundary_proof):
+            return rs._candidate_tu_placement_matches_canonical(
+                self.name, 0xFC0, 0, candidate, 8, object(), {}, Path("."),
+                b"rom", elf_loader=lambda _path: canonical)
+
+    @staticmethod
+    def section_bytes(function_offset, body):
+        result = bytearray(function_offset + 4)
+        result[function_offset:function_offset + 4] = body
+        return bytes(result)
+
+    def test_exact_canonical_boundary_and_body_withdraws_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertTrue(self.verify(candidate, canonical))
+
+    def test_same_size_wrong_body_keeps_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"nope"))
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_relocation_identity_must_match(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"), "candidate_alias")
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"), "canonical_alias")
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_missing_canonical_boundary_keeps_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(candidate, canonical, boundary=None))
+
+    def test_conflicting_canonical_boundary_keeps_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(candidate, canonical, boundary=(8, 0x1004)))
+
+    def test_ambiguous_candidate_function_boundary_keeps_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        candidate._symbols.append(candidate._symbols[0])
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_stale_canonical_boundary_proof_keeps_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+
+        def stale_proof(*_args, **_kwargs):
+            raise rs.SurfaceComparisonError("canonical proof inputs changed")
+
+        with mock.patch.object(rs, "_canonical_overlay_call_boundary",
+                               side_effect=stale_proof):
+            self.assertFalse(rs._candidate_tu_placement_matches_canonical(
+                self.name, 0xFC0, 0, candidate, 8, object(), {}, Path("."),
+                b"rom", elf_loader=lambda _path: canonical))
+
+    def test_unchanged_position_needs_no_withdrawal_proof(self):
+        candidate = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"other"))
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_withdrawal_does_not_create_identity_without_independent_route(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        evidence = {}
+        with mock.patch.object(rs, "_candidate_tu_placement_matches_canonical",
+                               return_value=True):
+            resolved, ambiguous = rs._stable_symbol_identities(
+                Path("missing"), candidate, 8, 0, self.FakeElf(0, b""),
+                evidence=evidence, atlas={}, root=Path("."), rom=b"rom")
+        self.assertNotIn(self.name, resolved)
+        self.assertNotIn(self.name, ambiguous)
+        self.assertEqual(
+            "shifted-position-not-authoritative; exact canonical function proof",
+            evidence[self.name][0]["reason"])
+
+
 class OverlayDataIdentityTests(unittest.TestCase):
     class FakeElf:
         def __init__(self, path, names, symbols=(), relocations=(), text=b"",

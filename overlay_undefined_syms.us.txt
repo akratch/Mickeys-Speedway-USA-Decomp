@@ -220,16 +220,26 @@ overlay2PointAngleDifferenceReloc = 0xf0000000;
 overlay2PointAngleReloc = 0xf0000000;
 
 /* overlay 2: overlay2QueryNode.c.o */
+D_30 = 0x00000030;
+D_34 = 0x00000034;
+D_3C = 0x0000003c;
 D_40 = 0x00000040;
 D_44 = 0x00000044;
+D_48 = 0x00000048;
+D_4C = 0x0000004c;
 D_50 = 0x00000050;
 D_54 = 0x00000054;
 D_58 = 0x00000058;
 D_5C = 0x0000005c;
+D_60 = 0x00000060;
+D_64 = 0x00000064;
+D_68 = 0x00000068;
+D_70 = 0x00000070;
+D_72 = 0x00000072;
+overlay2IntersectSegmentsReloc = 0xf0000000;
 
 /* overlay 2: func_overlay_002_F0001A94_185888C.c.o */
 D_38 = 0x00000038;
-D_72 = 0x00000072;
 gOverlay2QueryBestReloc = 0x0000006c;
 gOverlay2QueryHitReloc = 0x00000060;
 gOverlay2QueryHitXReloc = 0x00000064;
@@ -451,7 +461,6 @@ D_300 = 0x00000300;
 D_340 = 0x00000340;
 D_380 = 0x00000380;
 D_388 = 0x00000388;
-D_70 = 0x00000070;
 D_78 = 0x00000078;
 D_7C = 0x0000007c;
 ext_o0_1d920 = 0xf0000000;
@@ -491,7 +500,6 @@ D_1BA = 0x000001ba;
 D_1BC = 0x000001bc;
 D_200 = 0x00000200;
 D_204 = 0x00000204;
-D_30 = 0x00000030;
 
 /* overlay 11: overlay11CreateHandles.c.o */
 gOverlay11DirectResource = 0x00000000;
@@ -605,7 +613,6 @@ D_1520 = 0x00001520;
 D_1598 = 0x00001598;
 
 /* overlay 12: func_overlay_012_F0000910_186DB90.c.o */
-D_64 = 0x00000064;
 D_80000040 = 0x80000040;
 D_C4 = 0x000000c4;
 
@@ -1540,9 +1547,6 @@ overlay46FinishInitializeReloc = 0xf0000000;
 overlay46ReleaseIdsReloc = 0xf0000000;
 overlay46SetModeReloc = 0xf0000000;
 
-/* overlay 46: overlay46UpdateSequence.c.o */
-D_60 = 0x00000060;
-
 /* overlay 46: overlay46ReleaseState.c.o */
 gOverlay46Data = 0x00000000;
 overlay46ClearGroupReloc = 0xf0000000;
@@ -1696,7 +1700,6 @@ D_230 = 0x00000230;
 D_2B0 = 0x000002b0;
 D_2C0 = 0x000002c0;
 D_2E0 = 0x000002e0;
-D_48 = 0x00000048;
 D_AC = 0x000000ac;
 D_BC = 0x000000bc;
 
@@ -1828,7 +1831,6 @@ D_16C = 0x0000016c;
 D_1E8 = 0x000001e8;
 D_268 = 0x00000268;
 D_278 = 0x00000278;
-D_4C = 0x0000004c;
 D_5C0 = 0x000005c0;
 D_640 = 0x00000640;
 D_648 = 0x00000648;
@@ -2223,8 +2225,6 @@ overlay58ReleaseReloc = 0xf0000000;
 
 /* overlay 58: func_overlay_058_F00005FC_18AF7E4.c.o */
 D_2BC = 0x000002bc;
-D_34 = 0x00000034;
-D_68 = 0x00000068;
 
 /* overlay 58: overlay58SetNodeValue.c.o */
 overlay58ConfigureNodeReloc = 0xf0000000;

@@ -2,11 +2,51 @@
 ### `overlay2QueryNode` plateau handoff
 
 - source: `src/overlays/o002/overlay2QueryNode.c`
-- score: 39/253 words
+- score: 0/253 words, promoted
 - frame: 0x68
 - relocations: 51
-- first mismatch: +0x58
-- summary: Hypothesis bool-is-return: inv leafResult both +8/78, positive both +8/81, tail-only inv +4/51. All grew; sltu/bnez/move still has a leftover branch.
+- first mismatch: none
+- summary: Matched. Return int rather than s32, write the first-hit case as a short-circuit or, and drop every carrier: plain while scan, ternary leaf result, ternary child argument, bare union of the two calls.
+
+#### 2026-10-01, lane a-ovl: ROM-exact closure
+
+Every earlier pass kept the inherited carriers (a register count copy, a
+one-element array for the first recursive result, the node parameter reused
+for the selected child) and returned `s32`. `s32` is `long` in this tree, and
+that is the whole of the short-circuit residue: with a `long` result the value
+of the short-circuit or is converted through a named temporary that survives
+as its own web and joins before the return, while with an `int` result cfe
+writes it straight to the function result and each arm returns on its own.
+The earlier return-type lattice varied the type under the two-if spelling and
+the short-circuit spelling under `s32`; the two were never crossed.
+
+Measured with the configured flags, direct compile scored with
+`tools/score_symbol.py --object`:
+
+- inherited shape: 39 of 253, delta 0
+- inherited shape, count variable reused for the child and the union: 41
+- same with the short-circuit or under `s32`: 120, eight bytes short
+- same with the short-circuit or under `int`: 11, delta 0
+- fully natural (while scan, ternary leaf result, ternary child argument,
+  bare union) under `int`: 37, delta 0, every word a frame displacement with
+  the frame at 0x60
+- the same plus one unreferenced leading local: 0 of 253
+
+The three carrier webs the old candidate named are compiler temporaries in the
+shipped code. The leaf result is a ternary whose temporary shares the scan's
+post-decrement copy, which is why the shipped code clears that register after
+the loop; the child selection is a ternary in the argument list; and the
+all-hits case is the bare union of the two calls, whose saved first result is
+the frame cell the one-element array had been imitating.
+
+Proof: overlay 2 text +0x16A0, 1,012 executable bytes / 253 words, frame 0x68,
+51 of 51 relocation identities. The TU is now fully C. Prior measurements
+below remain historical negatives for the carrier shape.
+
+Commands: `gmake overlay-atlas-write`, `tools/refresh_atlas_digest.py`,
+`gmake extract`, `gmake overlay-syms`, `gmake verify`,
+`gmake check-overlay-syms`, and
+`gmake promotion-proof SYMBOL=overlay2QueryNode`.
 
 Summary before this remeasure: L100 save below 1.6 is reachable (per-arm 1.0) but takes s3 not a0. Denying s0-s3 takes v1 not a0. Force w121=a0 is 41. Next: forbid v1.
 

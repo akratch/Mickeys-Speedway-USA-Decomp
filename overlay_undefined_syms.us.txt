@@ -2141,9 +2141,26 @@ D_4E8 = 0x000004e8;
 D_50C = 0x0000050c;
 
 /* overlay 57: overlay57UpdateModeState.c.o */
-D_114 = 0x00000114;
-D_1A0 = 0x000001a0;
-D_4F8 = 0x000004f8;
+gO57ModeChoice4F8 = 0x000004f8;
+gO57ModeCountdown120 = 0x00000120;
+gO57ModeGate50C = 0x0000050c;
+gO57ModePrimaryIds134 = 0x00000134;
+gO57ModeSecondaryIds1A0 = 0x000001a0;
+gO57ModeSetup21C = 0x0000021c;
+gO57ModeState118BaseReloc = 0x00000000;
+gO57ModeState11CBaseReloc = 0x00000000;
+gO57ModeState144BaseReloc = 0x00000000;
+gO57ModeState160BaseReloc = 0x00000000;
+gO57ModeState164BaseReloc = 0x00000000;
+gO57ModeState184BaseReloc = 0x00000000;
+gO57ModeTimer114 = 0x00000114;
+gOverlay57Byte3D1CReloc = 0x00000000;
+gOverlay57Byte3EF4Reloc = 0x00000000;
+gOverlay57Flags3B6CReloc = 0x00000000;
+gOverlay57Mode3B88Reloc = 0x00000000;
+o57ModeOpaqueCallReloc = 0xf0000000;
+o57ModeOpaquePtrCallReloc = 0xf0000000;
+o57ModeOpaqueVoidCallReloc = 0xf0000000;
 
 /* overlay 57: overlay57BeginMode.c.o */
 gOverlay57Object = 0x00000180;
@@ -2195,6 +2212,7 @@ overlay57StartPrepareReloc = 0xf0000000;
 overlay57StartQueryReloc = 0xf0000000;
 
 /* overlay 57: func_overlay_057_F0004460_18A8058.c.o */
+D_1A0 = 0x000001a0;
 D_36C = 0x0000036c;
 
 /* overlay 57: overlay57UpdateModeTrigger.c.o */

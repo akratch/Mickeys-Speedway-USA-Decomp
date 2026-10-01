@@ -66,15 +66,14 @@ Overlay17Chain *overlay17CreateChain(
     void *owner, s32 count, Overlay17Material *materialToken, s32 materialScale,
     f32 x, f32 y, f32 z, f32 radius,
     u8 red, u8 green, u8 blue, u8 alpha) {
-    s32 halfBufferBytes;
-    Overlay17Chain *chain;
-    Overlay17Template *destination;
     Overlay17Template *source;
-    s32 index;
-    s32 buffer;
     s32 vertex;
-    s32 vertexCount;
+    s32 buffer;
+    Overlay17Template *destination;
+    s32 halfBufferBytes;
+    s32 index;
     f32 x0, y0, z0, x1, y1, z1;
+    Overlay17Chain *chain;
 
     chain = (Overlay17Chain *)0x40;
     if (materialToken != (Overlay17Material *)-1) {
@@ -95,8 +94,8 @@ Overlay17Chain *overlay17CreateChain(
         chain->buffers[1] = (Overlay17Pair *)((u8 *)chain->buffers[0] + halfBufferBytes);
     }
 
-    destination = (Overlay17Template *)((u8 *)chain + 0x40);
     source = gOverlay17TemplateReloc;
+    destination = (Overlay17Template *)((u8 *)chain + 0x40);
     if (chain->material != 0) {
         s32 widthScale = chain->material->width - 1;
         s32 heightScale = chain->material->height * materialScale;
@@ -115,9 +114,9 @@ Overlay17Chain *overlay17CreateChain(
             destination->y2 = source->y2 * heightScale;
             destination++;
             source++;
-        } while (index-- != 0);
+        } while (index--);
     } else {
-        chain->template = 0;
+        chain->template = source;
     }
 
     chain->dirty = 1;
@@ -127,7 +126,7 @@ Overlay17Chain *overlay17CreateChain(
     chain->y = y;
     chain->z = z;
     chain->radius = radius;
-    chain->red = red;
+    chain->red = (red & 0xFF);
     chain->green = green;
     chain->blue = blue;
     chain->alpha = alpha;
@@ -135,7 +134,6 @@ Overlay17Chain *overlay17CreateChain(
     func_overlay_017_F0000000_18739B8(
         chain, &x0, &y0, &z0, &x1, &y1, &z1);
 
-    vertexCount = count * 2;
     buffer = 1;
     do {
         Overlay17Point *point = (Overlay17Point *)chain->buffers[buffer];
@@ -151,14 +149,14 @@ Overlay17Chain *overlay17CreateChain(
         point[1].red = chain->red;
         point[1].green = chain->green;
         point[1].blue = chain->blue;
-        vertex = vertexCount - 1;
-        if (vertexCount != 0) {
+        vertex = count * 2 - 1;
+        if (count * 2 != 0) {
             do {
                 point->alpha = 0;
                 point++;
-            } while (vertex-- != 0);
+            } while (vertex--);
         }
-    } while (buffer-- != 0);
+    } while (buffer--);
     }
 
     return chain;
@@ -169,10 +167,10 @@ Overlay17Chain *overlay17CreateChain(
 
 /* PLATEAU-HANDOFF:overlay17CreateChain:start
  * symbol: overlay17CreateChain
- * score: 66/196 words
- * frame: 0x88
+ * score: 83 differing words
+ * frame: 0x80
  * relocations: 7
- * first-mismatch: +0x0
- * summary: Fresh V0 retains 130 differences; proxy evidence cannot authenticate the shifted template HI16/LO16 pair, leaving no new source lever.
+ * first-mismatch: +0x34
+ * summary: Declaration order and chain->red masked with 0xFF (ring phase): 115 to 83. Template-loop webs rotate one position; halfBufferBytes in a3 not t7.
  * PLATEAU-HANDOFF:overlay17CreateChain:end
  */

@@ -130,13 +130,14 @@ void func_overlay_087_F0000128_18D3090(Overlay87MotionObject *object,
                     state->turning = 0;
                     state->angularAcceleration = -state->angularAcceleration;
                 }
+                state->angle = newAngle;
             } else {
                 state->angularVelocity =
                     dAngle(state->angularVelocity, 0,
                            1.0f - Powerf(gOverlay87StraightFactor, updateRate));
                 newAngle = state->angle + (state->angularVelocity * updateRate);
+                state->angle = newAngle;
             }
-            state->angle = newAngle;
             if (state->verticalVelocity > -10.0f) {
                 distance = (state->verticalVelocity * update) +
                            (-0.125f * update * update);
@@ -249,10 +250,10 @@ void func_overlay_087_F0000128_18D3090(Overlay87MotionObject *object,
 
 /* PLATEAU-HANDOFF:func_overlay_087_F0000128_18D3090:start
  * symbol: func_overlay_087_F0000128_18D3090
- * score: 193 differing words
+ * score: 160 differing words
  * frame: 0x68
  * relocations: 38
  * first-mismatch: +0x2C
- * summary: Fresh V0 remains four words short with 193 masked differences; StraightFactor has no independent witness and its runtime identity stays ambiguous.
+ * summary: Angle stored per arm: 193 to 160 at delta -16. verticalDelta is stored at definition here; the target saves before the first call and restores once.
  * PLATEAU-HANDOFF:func_overlay_087_F0000128_18D3090:end
  */

@@ -48,6 +48,8 @@ WB_RELOCATION_SURFACE_MODES = {
     "promoted_linked": "promoted-linked",
 }
 WB_SUMMARY_MAX_AGE_SECONDS = 15 * 60
+WB_FAILURE_STDERR_MAX_CHARS = 1200
+WB_FAILURE_STDERR_MAX_LINES = 12
 
 sys.path.insert(0, str(TOOLS))
 import overlay_tables as ot  # noqa: E402
@@ -2353,7 +2355,16 @@ def _workbench(resolution: Resolution, *, no_build: bool = False) -> dict[str, o
         comparison_mode = "asm"
     result = _run(command, capture=True)
     if result.returncode:
-        raise PreflightError(f"wb_compare failed with exit {result.returncode}")
+        stderr_lines = [
+            line.strip()
+            for line in (result.stderr or "").splitlines()
+            if line.strip()
+        ]
+        stderr_tail = " | ".join(stderr_lines[-WB_FAILURE_STDERR_MAX_LINES:])
+        if len(stderr_tail) > WB_FAILURE_STDERR_MAX_CHARS:
+            stderr_tail = "…" + stderr_tail[-(WB_FAILURE_STDERR_MAX_CHARS - 1):]
+        detail = f": {stderr_tail}" if stderr_tail else ""
+        raise PreflightError(f"wb_compare failed with exit {result.returncode}{detail}")
     try:
         payload = json.loads(result.stdout)
     except json.JSONDecodeError as error:

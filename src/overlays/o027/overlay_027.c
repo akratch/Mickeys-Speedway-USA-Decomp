@@ -15,23 +15,23 @@ void overlay27Init(O27Object *object, Overlay27InitData *init) {
     state->scaleTarget = 96.0f; state->fadeFloat = 0.0f; state->source = init->target;
 }
 
-/* Plateau reproof: exact 368-instruction length/frame 0x60; 63 raw (62 relocation-masked) words differ, first +0x18.
- * Moving source below the scalar locals makes its spill pair exact and retains a four-word gain; all 119 flags and ten natural local/lifetime forms are nonexact.
- * Remaining: the update-rate home and persistent FP pool differ; 21/22 relocation offset/type sites and 12/22 static identities are resolved. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01. The 1/255 scale is written as a literal at each use, so
+ * uopt hoists it and reloads it after each call from its own pool entry; the
+ * earlier candidate carried it in a declared float, which took an argument
+ * register and hid that web. The intensity and fade fields are read directly
+ * where the earlier candidate copied them into shared scalars, which keeps
+ * each reload on the field's own web. The source state and the volume are two
+ * locals rather than one union, which lands the frame homes. */
 void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
     s32 pulseStep;
+    O27State *sourceState;
     O27State *state;
-    union {
-        O27State *sourceState;
-        s32 intensity;
-    } tail;
     s32 initialPhase;
     s32 phase;
     s32 value;
     O27Object *source;
+    s32 volume;
     f32 fraction;
-    f32 scaleFactor;
 
     state = object->state;
     pulseStep = updateRate;
@@ -51,13 +51,11 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
                   updateRate);
 
     if (updateRate != 0) {
-        scaleFactor = gO27Scale0;
         do {
             switch (state->primaryState) {
                 case 0:
                     state->timer += updateRate;
-                    fraction = 1.0f - func_8002A878(gO27EaseInput, updateRate);
-                    scaleFactor = gO27Scale8;
+                    fraction = 1.0f - func_8002A878(0.9625f, updateRate);
                     state->scaleTarget +=
                         (32.0f - state->scaleTarget) * fraction;
                     value = state->timer;
@@ -85,7 +83,7 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
                         state->intensity = (phase * 0xFF) >> 15;
                     }
                     object->scale =
-                        1.0f + ((f32)state->intensity * scaleFactor);
+                        1.0f + ((f32)state->intensity * 0.003921568f);
                     break;
 
                 case 1:
@@ -120,38 +118,35 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
                 case 3:
                     if (state->intensity < 0xFF) {
                         state->intensity += updateRate * 4;
-                        phase = state->intensity;
                         updateRate = 0;
-                        if (phase >= 0x100) {
+                        if (state->intensity >= 0x100) {
                             state->intensity = 0xFF;
                             object->scale = 2.0f;
                         } else {
                             object->scale =
-                                1.0f + ((f32)phase * scaleFactor);
+                                1.0f + ((f32)state->intensity * 0.003921568f);
                         }
                     } else {
                         state->fade += updateRate * 4;
-                        value = state->fade;
                         updateRate = 0;
-                        if (value >= 0xFF) {
+                        if (state->fade >= 0xFF) {
                             state->primaryState = 2;
                             state->timer = 0;
                             state->fade = 0xFF;
                             state->fadeFloat = 1.0f;
                         } else {
                             state->fadeFloat =
-                                (f32)value * scaleFactor;
+                                (f32)state->fade * 0.003921568f;
                         }
                     }
                     break;
 
                 default:
-                    value = state->fade;
-                    if (value >= updateRate * 8) {
-                        state->fade = value - (updateRate * 8);
+                    if (state->fade >= updateRate * 8) {
+                        state->fade -= updateRate * 8;
                         updateRate = 0;
                         state->fadeFloat =
-                            (f32)state->fade * scaleFactor;
+                            (f32)state->fade * 0.003921568f;
                     } else {
                         state->intensity -= updateRate * 4;
                         state->fade = 0;
@@ -159,10 +154,9 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
                         state->fadeFloat = 0.0f;
                         if (state->intensity <= 0) {
                             func_80006EA0(object);
-                            scaleFactor = gO27ScaleC;
                         } else {
                             object->scale = 1.0f +
-                                ((f32)state->intensity * scaleFactor);
+                                ((f32)state->intensity * 0.003921568f);
                         }
                     }
                     break;
@@ -170,22 +164,21 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
         } while (updateRate != 0);
     }
 
-    value = state->fade;
-    if (value == 0) {
+    if (state->fade == 0) {
         return;
     }
 
     if (state->pulseState == 0) {
-        if (value == 0xFF && func_800299E8(0, 0x1FFF) >= 0x1FD7) {
-            tail.sourceState = source->state;
+        if (state->fade == 0xFF && func_800299E8(0, 0x1FFF) >= 0x1FD7) {
+            sourceState = source->state;
             state->pulseState = 1;
             if (state->secondaryHandle != 0) {
                 func_800031E8(state->secondaryHandle);
             }
             func_80002FE0(0x1BB, object->x, object->y, object->z, 4,
                           &state->secondaryHandle);
-            if (!(tail.sourceState->flags1A8 & 1)) {
-                func_8002BD58(*(s8 *)&tail.sourceState->primaryState,
+            if (!(sourceState->flags1A8 & 1)) {
+                func_8002BD58(*(s8 *)&sourceState->primaryState,
                               0x32, 0.4f);
             }
         }
@@ -220,22 +213,19 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
         func_80002FE0(0x1B8, object->x, object->y, object->z, 1,
                       &state->primaryHandle);
     }
-    tail.intensity = state->fade >> 1;
-    if (tail.intensity >= 0x80) {
-        tail.intensity = 0x7F;
+    volume = state->fade >> 1;
+    if (volume >= 0x80) {
+        volume = 0x7F;
     }
     if (state->primaryHandle != 0) {
         func_800031C0(state->primaryHandle, object->x, object->y, object->z);
-        func_8000309C(state->primaryHandle, tail.intensity);
+        func_8000309C(state->primaryHandle, volume);
     }
     if (state->secondaryHandle != 0) {
         func_800031C0(state->secondaryHandle, object->x, object->y, object->z);
-        func_8000309C(state->secondaryHandle, tail.intensity);
+        func_8000309C(state->secondaryHandle, volume);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o027/overlay_027/func_overlay_027_F0000064_187BA3C.s")
-#endif
 
 /* Mickey-local rendering reconstruction; donor scans are exact-negative. */
 /* Workbench p7: structure-mismatch, 254/254 instructions/frame -152, 195 masked (196 raw) words, first +0x8.
@@ -441,16 +431,6 @@ s32 overlay27Activate(O27Object *object) {
     return 0;
 }
 
-
-/* PLATEAU-HANDOFF:func_overlay_027_F0000064_187BA3C:start
- * symbol: func_overlay_027_F0000064_187BA3C
- * score: 48 differing words
- * frame: 0x60
- * relocations: 22
- * first-mismatch: +0x94
- * summary: Shorten scale live range off the call-argument register failed: fresh local +4/272, field recompute +28/333, block temp +4/272. No delta-0 masked drop; stall.
- * PLATEAU-HANDOFF:func_overlay_027_F0000064_187BA3C:end
- */
 
 /* PLATEAU-HANDOFF:func_overlay_027_F0000624_187BFFC:start
  * symbol: func_overlay_027_F0000624_187BFFC

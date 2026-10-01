@@ -714,9 +714,26 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36CallGlobal.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36InitObject.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xD4
+# func_overlay_027_F0000064_187BA3C's four float literals are the first sixteen
+# bytes of the retained overlay rodata. Bind them to that zero-base owner; the
+# digest fails closed if the compiler ever emits a different pool.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: \
+	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_027_F0000A1C_187C3F4=overlay27UpdateCoordinates $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xBC0
+	$(OBJCOPY) \
+		--redefine-sym func_80002FE0=func_80002FE0_o027Reloc \
+		--redefine-sym func_8000309C=func_8000309C_o027Reloc \
+		--redefine-sym func_800031C0=func_800031C0_o027Reloc \
+		--redefine-sym func_800031E8=func_800031E8_o027Reloc \
+		--redefine-sym func_80006EA0=func_80006EA0_o027Reloc \
+		--redefine-sym func_800299E8=func_800299E8_o027Reloc \
+		--redefine-sym func_8002A878=func_8002A878_o027Reloc \
+		--redefine-sym func_8002BD58=func_8002BD58_o027Reloc \
+		--redefine-sym func_80036544=func_80036544_o027Reloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xBC0 && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:dd6fc9f17b7ca59ee611df3687276c9a16893e66f1c08e0b6d5ef3800683dd6f
 O41_SAMPLE_CURVE_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41SampleCurve.c.o
 $(O41_SAMPLE_CURVE_OBJ): config/normalizations/overlay41SampleCurve.rebind.spec
 # The compiler reproduces the retained jump table and literal pool exactly.

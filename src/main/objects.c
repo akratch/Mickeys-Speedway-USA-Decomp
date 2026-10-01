@@ -784,6 +784,11 @@ extern f32 sqrtf(f32 value);
 extern void func_80006FA0(void);
 extern void func_80007118();
 extern s32 TrapDanglingJump();
+/* func_80004FE0's first flag-gated trap call returns nothing; the typed
+ * alias is canonicalized back to TrapDanglingJump by the object's
+ * POSTPROCESS rule. */
+#pragma weak objectsVoidTrap = TrapDanglingJump
+extern void objectsVoidTrap();
 extern void mmFree(void *data);
 extern void modFreeModel(void *resource);
 extern void func_800347A0(void *texture);
@@ -1297,13 +1302,27 @@ typedef struct {
     s16 unkA;
 } Objects04FE0SpecialPacket;
 
-#ifdef NON_MATCHING
-/* Lane w4-obj: indexed category fill plus modeState[i]. playerCount = i
- * after controlGetPlayerSetup pins i live so the spawn zero cannot hoist.
- * Leftover is packets-in-a2 versus modeState-base-in-a0. */
+typedef struct {
+    u32 pad0 : 11;
+    u32 unk20 : 1;
+    u32 unk19 : 1;
+    u32 pad1 : 19;
+} Objects04FE0Flags;
+
+/* Matched (was 70 masked words) by removing four inherited artefacts, each
+ * measured: (1) the player loop reads its category entry into its own
+ * local, so the object-scan local is a separate web and the packet cursor
+ * takes the first argument register; (2) the object scan indexes the
+ * category table with its own slot local, so the two loops' slot addresses
+ * are two expressions, not one web; (3) the spawn section is the plain
+ * indexed form (`D_800C94F4[i]`, no byte-offset local and no `playerCount =
+ * i` pin); (4) the two system-flag tests are one-bit bitfields, each of
+ * which spends the extra temp draw a mask-and-compare does not.  The first
+ * trap call under those tests is declared through a void alias: a call with
+ * a result keeps the flag word's web off v0. */
 void func_80004FE0(s32 arg0) {
     s32 i;
-    s32 offset;
+    s32 objectSlot;
     s32 playerCount;
     s32 slot;
     s32 type;
@@ -1312,7 +1331,7 @@ void func_80004FE0(s32 arg0) {
     Objects04FE0SpecialPacket specialPacket;
     Objects04FE0ExtraPacket extraPacket;
     Objects04FE0ModeRecord *modeState;
-    Objects04FE0ModeRecord *records;
+    Objects04FE0Object *spawn;
     Objects04FE0Object *object;
     Objects04FE0Source *source;
     s8 *level;
@@ -1328,10 +1347,10 @@ void func_80004FE0(s32 arg0) {
         for (i = 0; i < D_800C9498; i++) {
             object = (Objects04FE0Object *)D_800C9494[i];
             if ((object->unk44 == 5) && (arg0 == object->unk88)) {
-                slot = object->unk84;
-                if ((slot >= 0) && (slot < 6)) {
-                    if (category[slot] == NULL) {
-                        category[slot] = object;
+                objectSlot = object->unk84;
+                if ((objectSlot >= 0) && (objectSlot < 6)) {
+                    if (category[objectSlot] == NULL) {
+                        category[objectSlot] = object;
                     }
                 } else {
                     for (type = 0; type < 6; type++) {
@@ -1374,13 +1393,13 @@ void func_80004FE0(s32 arg0) {
             } else {
                 slot = modeState[i].unk6;
             }
-            object = category[slot];
-            if (object != NULL) {
-                source = (Objects04FE0Source *)object->unk3C;
+            spawn = category[slot];
+            if (spawn != NULL) {
+                source = (Objects04FE0Source *)spawn->unk3C;
                 packets[i].unk4 = source->unk4;
                 packets[i].unk6 = source->unk6;
                 packets[i].unk8 = source->unk8;
-                packets[i].unkE = object->unk0;
+                packets[i].unkE = spawn->unk0;
                 category[slot] = NULL;
             } else {
                 packets[i].unk4 = 0;
@@ -1391,13 +1410,12 @@ void func_80004FE0(s32 arg0) {
         }
         controlGetPlayerSetup(&packets[0].unk4, &packets[0].unk6,
                               &packets[0].unk8, &packets[0].unkE);
-        playerCount = i;
-        for (offset = 0; offset < 8; offset++) {
-            D_800C94F4[offset] = NULL;
+        for (i = 0; i < 8; i++) {
+            D_800C94F4[i] = NULL;
         }
-        for (i = 0, offset = 0; i < playerCount; i++, offset += 4) {
+        for (i = 0; i < playerCount; i++) {
             object = (Objects04FE0Object *)func_8000590C(&packets[i], 1);
-            *(void **)((u8 *)D_800C94F4 + offset) = object;
+            D_800C94F4[i] = object;
             if (object != NULL) {
                 object->unk3C = NULL;
             }
@@ -1432,10 +1450,10 @@ void func_80004FE0(s32 arg0) {
             }
         }
         if ((modeState->unk0 == 1) && (D_800C94F4[0] != NULL)) {
-            if ((*(s32 *)D_800D3128 & 0x80000) != 0) {
-                TrapDanglingJump(D_8007A1F4);
+            if (((Objects04FE0Flags *)D_800D3128)->unk19) {
+                objectsVoidTrap(D_8007A1F4);
             }
-            if ((*(s32 *)D_800D3128 & 0x100000) != 0) {
+            if (((Objects04FE0Flags *)D_800D3128)->unk20) {
                 TrapDanglingJump(levelGetNumber());
                 TrapDanglingJump(D_8007A1F8);
             }
@@ -1452,9 +1470,6 @@ void func_80004FE0(s32 arg0) {
     TrapDanglingJump((s8)level[0x83]);
     func_80058250();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80004FE0.s")
-#endif
 /* Lane lm-obj: the ROM's two rank-copy loops are IDO's unroller output of a
  * plain `for (i = 0; i < arg0; i++)` over each mode record. The hand-unrolled
  * remainder-plus-4x body grew 632 bytes under the unroller. unk5 is signed:
@@ -5463,16 +5478,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * first-mismatch: +0x60
  * summary: Pair +0x2D4 alu line 3475 (missing-CSE): load into a2, ori to a temp, move back. Named result, named operand, early hoist stayed +4. In-place ori is refused.
  * PLATEAU-HANDOFF:func_800084C4:end
- */
-
-/* PLATEAU-HANDOFF:func_80004FE0:start
- * symbol: func_80004FE0
- * score: 70 differing words
- * frame: 0x100
- * relocations: 83
- * first-mismatch: +0x134
- * summary: hypothesis=packets in a0 and the modeState base in a2 with no declared packet cursor; spellings=unsigned spawn index 185 at -4, slot index 290 at +20, byte-offset address 185 at -4; stall=the packets address spans a call so a0 is not offered
- * PLATEAU-HANDOFF:func_80004FE0:end
  */
 
 /* PLATEAU-HANDOFF:func_80009414:start

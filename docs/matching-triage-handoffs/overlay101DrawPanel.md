@@ -2,11 +2,56 @@
 ### `overlay101DrawPanel` plateau handoff
 
 - source: `src/overlays/o101/overlay101DrawPanel.c`
-- score: 36 differing words
+- score: 0/268 words, promoted
 - frame: 0x178
 - relocations: 17
-- first mismatch: +0xB4
-- summary: Typed edge identity can restore the frame only with added instructions; separate-home controls do not beat 36. Retain the guarded baseline.
+- first mismatch: none
+- summary: Matched. Plain locals, edges written as expressions, and the record pointer assigned before the colour call; no work struct, volatile or region.
+
+#### 2026-10-01, lane b-o101: matched by rewriting the inherited shape
+
+Promoted at 268 of 268 words, delta 0, frame 0x178, 17 of 17 relocations.
+Nothing in the retained candidate was tuned; the body was rewritten from the
+target listing and four inherited artefacts were dropped together.
+
+The decisive one is where the record pointer gets its value. With the pointer
+assigned after the intensity-colour call, uopt forwards the array address into
+the first three records' stores and proves they miss the address-taken
+colours, so the first colour is read once for three records, two words short.
+Measured with every record storing one colour: eight loads for ten records.
+With the pointer assigned before the call, or at its declaration, every store
+address is still folded to a frame offset but the stores are no longer proved
+disjoint from the colours: ten loads for ten records, one per record, and the
+last record goes through the pointer's own register. That is the reload the
+earlier lanes produced with volatile members and the last-record register
+they produced with a region boundary.
+
+The rest follows from plain declarations. x, y, width and height are ordinary
+locals shared by both drawing arms, which gives the mode 1 and 3 height its
+coloured register (the ring question recorded on 2026-09-10 and 2026-09-11).
+The right and bottom edges are written as sums at each use; uopt commons them
+and spills the one that crosses calls to a compiler temporary, which is the
+declared-scalar deficit the 2026-09-11 frame reading named. Declaring the
+pointer between the colours and the array supplies the four-byte cell above
+the records; declared after the array it sits below it and shifts the three
+temporaries by four bytes, eight words.
+
+Path, each measured at the configured flags: natural locals with the pointer
+assigned after the call 200 words and eight bytes short; the same with the
+pointer initialised at its declaration 47 at delta 0, all of it the array
+offset; a pad above the array 8; the pointer declared above the array 0.
+Per-record do-while or if regions are twelve bytes long and unrelated, and a
+compound pointer advance is eight bytes long.
+
+Closures this breaks: the declared-symbol-count decision variable was right
+about the frame and wrong that no source form reaches it, because every form
+tried kept the work struct. The overlay101BuildBorder comment that only a
+region boundary or volatile separates two colour reads is a statement about
+its inherited shape too; that function is already matched and was not
+re-derived here.
+
+Gates: gmake verify, check-overlay-syms and promotion-proof pass.
+
 
 #### 2026-09-11, lane p2-close: the block is SMALLER, not larger, and the older reading inverts
 

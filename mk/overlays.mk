@@ -864,10 +864,18 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14ReleaseCurrent.c.o: POSTPROCESS =
 # gOverlay15InitializedData; the shipped LOCAL %hi/%lo pair encodes 0x0000 and
 # the loader supplies the base).  Rebind the two references to a pool symbol
 # and discard the digest-checked duplicate (overlay 86's metadata-only form).
+# The unit defines its two particle fields as `static` BSS (the shipped code
+# shares one high half per adjacent pair of bound loads, which IDO only does
+# for a locally-defined symbol). Every access is then a section-relative record
+# whose addend is already the module-relative offset the shipped word carries,
+# and overlay 15's own runtime table owns those records, so the static link
+# must not adjust them a second time: drop them, as overlay 57 does. No
+# instruction word is edited.
 O15_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o015/overlay_015.c.o
 $(O15_OBJ): \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
 	$(TOOLS_DIR)/externalize_elf_section.py \
+	$(TOOLS_DIR)/filter_elf_relocations.py \
 	config/normalizations/overlay15DrawScreenStars.rebind.spec
 $(O15_OBJ): CFLAGS += -Wab,-r4300_mul
 $(O15_OBJ): POSTPROCESS = \
@@ -878,12 +886,27 @@ $(O15_OBJ): POSTPROCESS = \
 		--redefine-sym func_overlay_015_F00006E8_1872A80=overlay15InitStars \
 		--redefine-sym func_overlay_015_F00009E0_1872D78=overlay15UpdateMovingStars \
 		--redefine-sym func_overlay_015_F0000B94_1872F2C=overlay15DrawRain \
+		--redefine-sym starfieldFastMove=starfieldFastMove_o015Reloc \
 		--add-symbol gOverlay15FadePoolReloc=0x0,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay15DrawScreenStars.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:eca26b0fe4ae2523bfa3733b2543e689b87d531790ea5c2b879f17144cade2a9 && \
 	$(OBJCOPY) --remove-section .rel.rodata $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/filter_elf_relocations.py $@ .text \
+		0x430:5:.bss 0x438:6:.bss 0x468:5:.bss 0x470:6:.bss \
+		0x474:6:.bss 0x478:5:.bss 0x47c:6:.bss 0x480:6:.bss \
+		0x488:5:.bss 0x4a0:6:.bss 0x4c0:6:.bss 0x4c4:5:.bss \
+		0x4c8:6:.bss 0x4cc:6:.bss 0x4d0:5:.bss 0x4d4:6:.bss \
+		0xa00:5:.bss 0xa04:6:.bss 0xa30:5:.bss 0xa34:6:.bss \
+		0xa3c:5:.bss 0xa48:6:.bss 0xa5c:6:.bss 0xa88:5:.bss \
+		0xa8c:6:.bss 0xa94:5:.bss 0xa9c:6:.bss 0xaac:6:.bss \
+		0xab0:5:.bss 0xab8:6:.bss 0xabc:5:.bss 0xacc:6:.bss \
+		0xad0:6:.bss 0xad4:5:.bss 0xadc:6:.bss 0xae4:5:.bss \
+		0xae8:6:.bss 0xaf0:6:.bss 0xaf4:5:.bss 0xaf8:6:.bss \
+		0xafc:6:.bss 0xb00:5:.bss 0xb14:6:.bss 0xb18:6:.bss \
+		0xb20:5:.bss 0xb2c:6:.bss 0xb30:6:.bss 0xb34:5:.bss \
+		0xb3c:6:.bss && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC6C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34SetValue10.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC
@@ -1136,6 +1159,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildIntensityColors.c.o: POSTPR
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101BuildBorder.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x13C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawPanel.c.o: CFLAGS += -woff 835
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawPanel.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x430
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailAB4C.c.o: CFLAGS += -woff 835
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailAB4C.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x9F8
@@ -1220,16 +1245,21 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Init.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x88
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Update.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x114
-# The typed reconstruction naturally owns 852 bytes plus one proved zero
-# alignment word. Extend that word into the symbol, select the complete guarded
-# frame/register/FP/schedule bijection, and bind resident calls to the overlay's
-# stored-zero runtime proxy without collapsing the relocation sites.
+# The typed reconstruction owns 852 bytes plus one proved zero alignment word;
+# the trim extends that word into the symbol. The redefine-sym rules bind the
+# five resident callees to the overlay's stored-zero placeholders so a fresh
+# object rebuild links without regenerating the alias list.
 # Target emits the R4300 FP-mul hazard nop after the else-arm blend muls;
 # without this pass the object is one word short (measured 213 vs 214).
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Render.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37Render.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym func_overlay_037_F000019C_18857BC=overlay37RenderEffect $@ && \
+		--redefine-sym func_overlay_037_F000019C_18857BC=overlay37RenderEffect \
+		--redefine-sym func_80021964=func_80021964_o037Reloc \
+		--redefine-sym func_8002A250=func_8002A250_o037Reloc \
+		--redefine-sym func_800244EC=func_800244EC_o037Reloc \
+		--redefine-sym func_800349A4=func_800349A4_o037Reloc \
+		--redefine-sym func_8002460C=func_8002460C_o037Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x358
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o037/overlay37RecordMinimum.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50

@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 288824,
-  "nonmatching_overlay_c_bytes": 179784,
+  "matched_overlay_c_bytes": 291380,
+  "nonmatching_overlay_c_bytes": 177228,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 3600,
   "bss_bytes": 77680,
@@ -4551,6 +4551,14 @@
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
     {
+     "offset": "0x428",
+     "end_offset": "0x500",
+     "size": "0xD8",
+     "label": "overlay15MoveStars",
+     "source": "overlays/o015/overlay_015",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
      "offset": "0x500",
      "end_offset": "0x6A4",
      "size": "0x1A4",
@@ -4571,6 +4579,14 @@
      "end_offset": "0x6E8",
      "size": "0x38",
      "label": "overlay15ReleaseResource10",
+     "source": "overlays/o015/overlay_015",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
+     "offset": "0x9E0",
+     "end_offset": "0xB7C",
+     "size": "0x19C",
+     "label": "overlay15UpdateMovingStars",
      "source": "overlays/o015/overlay_015",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
@@ -8319,7 +8335,7 @@
      "type": "c",
      "source": "overlays/o037/overlay37Render",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x4F4",
@@ -19619,7 +19635,7 @@
      "type": "c",
      "source": "overlays/o101/overlay101DrawPanel",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x332C",

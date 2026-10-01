@@ -135,6 +135,20 @@
       "class": "metadata",
       "matched_c": null,
       "nonmatching": null,
+      "object": "build/src/main/level.c.o",
+      "offset": null,
+      "overlay": null,
+      "size": null,
+      "source": "src/main/level.c",
+      "tools": [
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
       "object": "build/src/main/lights.c.o",
       "offset": null,
       "overlay": null,
@@ -9200,10 +9214,10 @@
     "altered_bytes": 3600,
     "by_class": {
       "altered": 2,
-      "metadata": 636,
+      "metadata": 637,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 224004,
-    "objects_with_postprocess": 639
+    "objects_with_postprocess": 640
   }
 }

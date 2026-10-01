@@ -1197,9 +1197,22 @@ $(BUILD_DIR)/$(SRC_DIR)/main/track.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/track.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym trackCamPosTrap=TrapDanglingJump $@
 
-# levelInit's typed weak aliases preserve the seven runtime-loaded ABIs while
-# IDO emits their calls against the shared TrapDanglingJump identity directly.
-# No postprocess is needed.
+# levelInit reaches seven runtime-loaded functions through the shared resident
+# trap. Typed weak aliases preserve each real ABI, and IDO emits each call
+# against the alias name, so the object must be canonicalized: this
+# metadata-only step restores the shipped undefined symbol identity without
+# changing section data. (The rule was once removed as redundant; it is not --
+# without it the promoted object does not link.)
+# One objcopy per alias: a single invocation refuses seven redefinitions onto
+# one target name.
+$(BUILD_DIR)/$(SRC_DIR)/main/level.c.o: POSTPROCESS = \
+	$(OBJCOPY) --redefine-sym levelTrackInitTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym levelOverlay7InitPoolTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym levelOverlay34InitStorageTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym levelOverlay33InitializeBuffersTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym levelOverlay42InitTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym levelOverlay16InitializeBufferTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym levelOverlay103CheckSignatureTrap=TrapDanglingJump $@
 
 # The gsSnd flag lattice reproduces its debug-shaped epilogues only with bare -g.
 $(BUILD_DIR)/$(SRC_DIR)/main/gsSnd.c.o: OPT_FLAGS := -g

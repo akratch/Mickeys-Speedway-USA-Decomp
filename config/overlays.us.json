@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 278716,
-  "nonmatching_overlay_c_bytes": 189892,
+  "matched_overlay_c_bytes": 284332,
+  "nonmatching_overlay_c_bytes": 184276,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 3600,
   "bss_bytes": 77680,
@@ -1649,7 +1649,7 @@
      "type": "c",
      "source": "overlays/o002/func_overlay_002_F0000C90_1857A88",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x121C",
@@ -3554,7 +3554,7 @@
      "type": "c",
      "source": "overlays/o011/func_overlay_011_F0001E4C_186A694",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x22E8",
@@ -10109,7 +10109,7 @@
      "type": "c",
      "source": "overlays/o046/func_overlay_046_F0000874_188EC6C",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xF7C",
@@ -12442,7 +12442,7 @@
      "type": "c",
      "source": "overlays/o058/overlay58FinalizePackedStatus",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x5A14",

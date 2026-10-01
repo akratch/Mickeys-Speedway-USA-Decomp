@@ -2,11 +2,73 @@
 ### `func_overlay_008_F0001294_185EFEC` plateau handoff
 
 - source: `src/overlays/o008/overlay_008.c`
-- score: 78 differing words
+- score: 16 differing words
 - frame: 0xB0
 - relocations: 137
-- first mismatch: +0xD4
-- summary: Ring re-phased by a u8-truncated counter increment and a plain stick compare; pre-loop factor draw order and unkFE temp in a3 remain.
+- first mismatch: +0xD8
+- summary: Tuning read as a struct by field, or-assign flag updates, plain counter after the turn; left: v0/v1/a1 colours and one compare order.
+
+## 2026-10-02 lane e-o008: 78 to 16, size and frame exact
+
+align_symbol now reads 1243 byte-exact, 14 register naming, 0 immediate, 2
+really different at size delta 0 (was 1184, 67, 1, 9). Every edit was a cell
+of a `tools/shape_product.py` product on the whole TU; siblings unchanged
+(F0000058 438, F00034A0 296, F00042A8 384).
+
+- **The tuning block is a struct read by field** (`O8P1294Tuning`). The
+  pre-loop factor is `value * 0.5f * tuning->unkC`: as a field the product
+  stays on the left and the shipped draw order (0.5, product, field) falls
+  out; as an array element uopt puts the load first. 78 to 70 at that site
+  alone, 69 with the whole function on the struct. The previous lane's
+  "struct costs 164 elsewhere" was one field: offset 0x40 must be an array
+  element (`unk20[8]`), not a scalar, or the `index * unk8 + unk40` sum swaps
+  its operands. A 512-cell per-site product (array element against field at
+  nine site groups) found only that site and 0x10 sensitive.
+- effectMask or-assigned 0x3C before `D_4 = 1;` in the reverse-stick branch (69 to
+  65).
+- **`owner->unk80` or-assigned the table entry** (compound assignment) at the four selector sites, and the
+  selector default `angleStep = 1` assigned inside the first arm rather than
+  before the `if` (65 to 43; the compound or alone is 22 of it). Or-ing the global
+  back the other way round or with a cast is the old 65.
+- **The frame counter needs no cast.** `state->unk182 = (state->unk182 + 1)
+  & 0xF` written after `turnAmount = ...`: the trunc/mfc1 of the turn amount
+  spends the ring draw the target spends before the counter load, which the
+  `(u8)` cast had been supplying after it. Together with the next two edits,
+  43 to 21; the cast-free counter alone is 214 (ring one behind from +0xE5C).
+- **The spin-out negation reads the field**: `state->unk102 =
+  -state->unk100; state->unk100 = 0;` (the load is a ring temporary in the
+  target, not the drift carrier).
+- **`state->unkFC += turnAmount;` before the drift step** computation.
+- **The brake result borrows `angle`'s symbol** and its first two tests read
+  `!(inputFlags & 0x4000)` directly (21 to 16). A fresh local for it is 40;
+  `index`, `turnDirection` or keeping `braking` are 21.
+- Inert, adopted as the natural spelling: `state->unk4 +=` for the motion
+  scalar, `owner->unk20 += 3.0f`, `state->unk106 += 1`, the compound or of 0xC into `owner->unk80`.
+
+Measured and not better: eleven counter spellings (casts on the load, `% 16`,
+two-statement forms); the factor compare as `0.0f != value`, two-statement
+or direct reads (the c.eq operand order at +0xD8 did not move, direct reads
+cost 7 to 11); the 68/58 test of `state->unk100` through eight s32 carriers
+(inert to +4) or through `driftDirection` (s16 sign-extension pair, +4
+bytes; as s32 the frame homes move, 27); the steering copy written as a
+chained assignment (106) or with the first clamp on the copy (inert); four
+update-loop forms (`while (n--)` is identical code but moves a home, 23);
+updateCount through ten other carriers (16 to 22, or size changes);
+`state->unk349` through seven carriers or read directly (worse); four
+spellings of the unkFE drift step.
+
+What remains (14 naming, 2 structural):
+
+- +0xD8: `c.eq.s` operand order of the factor's zero test (1 word).
+- +0x20C..+0x218: the update count's first read is v1 in the target, v0
+  here (3 words).
+- +0xA8C/+0xA90: the 68/58 test loads `state->unk100` into a1 (the drift
+  carrier's colour) after the 0x174 literal's `lui`; here it is a v0 temporary
+  scheduled first (2 structural, plus the branch at +0xAA8).
+- +0xB30/+0xB70/+0xB84: the second clamp compares read the copy (v0) in the
+  target and the stick (a0) here: uopt copy-propagates our copy.
+- +0xDBC: `state->unkFE` held in v0 in the target, a3 here (3 words).
+- +0x115C: `state->unk349` carrier v0 in the target, v1 here (3 words).
 
 ## 2026-10-01 lane d-o008: 275 to 78, frame exact
 

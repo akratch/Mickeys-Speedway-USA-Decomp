@@ -75,19 +75,19 @@ extern s32 gO63TriggerTimer;
 extern s32 gO63FadeTimer;
 
 /*
- * Plateau (current-lane flag sweep plus four structural attempts): the best
- * candidate keeps the exact 0x578-byte size, with 139 positional words
- * differing and the first mismatch at +0x16C.  Narrowing the particle/count
- * lifetime compiled identically; a natural gO63Particles one-past-end pointer
- * regressed to +8 bytes/344 differences, while scoped typed opacity pointers
- * regressed to +12 bytes/260 differences.  The remaining blocker is IDO's
- * path-sensitive saved-register web and separate fade-address materialization.
+ * Plateau: 104 masked words at delta 0, frame 0xF8 exact.  The particle loop
+ * decrements the cursor and then reads the fields in place (the carriers
+ * angle/angleRate were inherited): 137 to 109, and one spare local word
+ * restores the target's frame: 104.  What remains is the saved-register
+ * rotation: the target holds updateRate in s6 and the fade address in s7
+ * (ours the reverse), and the draw/render contexts in s5/s4 (ours reversed).
  */
 #ifdef NON_MATCHING
 void overlay63UpdateEffects(s32 updateRate) {
     O63RenderPosition pos;
     O63Particle *particle;
     s32 count;
+    s32 pad0; /* frame 0xF8: the target keeps 8 more bytes of locals */
 
     if (gO63Triggered == 0) {
         if ((gO63ExternalFlagsReloc & 0x9000) && (gO63ExternalTimerReloc <= 0)) {
@@ -176,11 +176,8 @@ void overlay63UpdateEffects(s32 updateRate) {
         particle = (O63Particle *)&gO63Fade;
         count = 18;
         do {
-            u16 angle = particle[-1].angle;
-            s16 angleRate = particle[-1].angleRate;
-
             particle--;
-            particle->angle = angle + angleRate * updateRate;
+            particle->angle = particle->angle + particle->angleRate * updateRate;
             if (particle->angle >= 0x8001) {
                 particle->angle -= 0x8000;
                 particle->angleRate = o63RandomReloc(0x600, 0xA00);
@@ -215,10 +212,10 @@ void overlay63UpdateEffects(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:overlay63UpdateEffects:start
  * symbol: overlay63UpdateEffects
- * score: 137/350 words
+ * score: 104/350 words
  * frame: 0xF8
  * relocations: 71
  * first-mismatch: +0x14
- * summary: Fade carrier local removed (reads gO63Fade at each use): 139 to 137. Particle loop forms indexed/ascending are 333+.
+ * summary: Loop reads fields after the decrement, one spare local word: 137 to 104. Open: s6/s7 and s4/s5 pairs reversed.
  * PLATEAU-HANDOFF:overlay63UpdateEffects:end
  */

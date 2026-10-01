@@ -1996,20 +1996,24 @@ overlay51ReleaseIndexReloc = 0xf0000000;
 overlay51ReleaseReloc = 0xf0000000;
 
 /* overlay 52: overlay52Initialize.c.o */
-D_100 = 0x00000100;
-D_170 = 0x00000170;
-D_180 = 0x00000180;
-D_2F4 = 0x000002f4;
-D_4A0 = 0x000004a0;
-D_4A8 = 0x000004a8;
-D_4B4 = 0x000004b4;
-D_4B8 = 0x000004b8;
-D_4BC = 0x000004bc;
-D_4C0 = 0x000004c0;
-D_4C4 = 0x000004c4;
-D_4C8 = 0x000004c8;
-D_4CC = 0x000004cc;
-D_A0 = 0x000000a0;
+D_OBJECT0 = 0x00000000;
+ext_o0_2630c = 0xf0000000;
+ext_o0_28b04 = 0xf0000000;
+ext_o0_31828 = 0xf0000000;
+ext_o0_39738 = 0xf0000000;
+ext_o0_39900 = 0xf0000000;
+ext_o0_39e48 = 0xf0000000;
+ext_o0_3a0bc = 0xf0000000;
+ext_o0_3a150 = 0xf0000000;
+ext_o0_4ac54 = 0xf0000000;
+ext_o0_c0 = 0xf0000000;
+ext_o45_1be0 = 0xf0000000;
+ext_o45_c = 0xf0000000;
+ext_o56_118 = 0xf0000000;
+ext_resident_result = 0x00000000;
+ext_resident_word_190 = 0x00000190;
+gOverlay52InitBssBaseReloc = 0x00000000;
+gOverlay52InitDataBaseReloc = 0x00000000;
 
 /* overlay 52: overlay52PatchIndices.c.o */
 gOverlay52Objects = 0x00000000;
@@ -2018,13 +2022,25 @@ gOverlay52Objects = 0x00000000;
 D_27C = 0x0000027c;
 
 /* overlay 52: overlay52TailB.c.o */
+D_100 = 0x00000100;
 D_150 = 0x00000150;
+D_170 = 0x00000170;
+D_180 = 0x00000180;
 D_1F0 = 0x000001f0;
 D_240 = 0x00000240;
 D_24C = 0x0000024c;
+D_2F4 = 0x000002f4;
+D_4A0 = 0x000004a0;
+D_4A8 = 0x000004a8;
 D_4B0 = 0x000004b0;
+D_4B4 = 0x000004b4;
+D_4B8 = 0x000004b8;
+D_4C4 = 0x000004c4;
+D_4C8 = 0x000004c8;
+D_4CC = 0x000004cc;
 D_4D0 = 0x000004d0;
 D_4D2 = 0x000004d2;
+D_A0 = 0x000000a0;
 
 /* overlay 52: overlay52Cleanup.c.o */
 gOverlay52Resource = 0x000004cc;

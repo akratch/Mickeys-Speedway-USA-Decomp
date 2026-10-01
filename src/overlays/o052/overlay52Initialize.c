@@ -126,9 +126,8 @@ extern s32 ext_o45_c(s32, s32, s32, s32);
 extern void ext_o45_1be0(s32, s32);
 
 /* Independently reconstructed from Mickey-local evidence; no DKR/JFG donor. */
-/* Plateau: 31 masked words at delta 0 with the data owned above (see the
- * shard's 2026-10-01 d-ovl1 section for what each edit was worth). */
-#ifdef NON_MATCHING
+/* The bounds stores keep the target's source-line grouping (as1 pairs
+ * statements by line); the 4A0 pair is one store per line. */
 void func_overlay_052_F0000000_189A670(void) {
     s32 i;
     u8 *state;
@@ -168,28 +167,35 @@ void func_overlay_052_F0000000_189A670(void) {
     if (ext_o0_3a0bc() != 0) {
         sB4BC[0] = -0x500; sB4C0[0] = -0x140;
         sB4BC[1] = 0x400; sB4C0[1] = -0x140;
-        sB4C4[0] = 0x3F0; sB4C8[0] = 0x3C0;
-        sB4C4[1] = 0xCF0; sB4C8[1] = 0x3C0;
-        sBounds4A0[0] = -0x420; sBounds4A0[1] = 0x4E0;
+        sB4C4[0] = 0x3F0;
+        sB4C8[0] = 0x3C0;
+        sB4C4[1] = 0xCF0;
+        sB4C8[1] = 0x3C0;
+        sBounds4A0[0] = -0x420;
+        sBounds4A0[1] = 0x4E0;
     } else if (ext_o0_39e48() & 1) {
         sB4BC[0] = -0x500; sB4C0[0] = -0x140;
         sB4BC[1] = -0x500; sB4C0[1] = -0x140;
-        sB4C4[0] = 0x830; sB4C8[0] = 0x210;
-        sB4C4[1] = 0x830; sB4C8[1] = 0x990;
+        sB4C4[0] = 0x830;
+        sB4C8[0] = 0x210;
+        sB4C4[1] = 0x830;
+        sB4C8[1] = 0x990;
         sBounds4A0[0] = -0x280; sBounds4A0[1] = -0x280;
     } else {
         sB4BC[0] = -0x500; sB4C0[0] = -0x140;
         sB4BC[1] = -0x500; sB4C0[1] = -0x140;
-        sB4C4[0] = 0x830; sB4C8[0] = 0x2D0;
-        sB4C4[1] = 0x830; sB4C8[1] = 0x990;
+        sB4C4[0] = 0x830;
+        sB4C8[0] = 0x2D0;
+        sB4C4[1] = 0x830;
+        sB4C8[1] = 0x990;
         sBounds4A0[0] = -0x280; sBounds4A0[1] = -0x280;
     }
-    sState.unk00 = ext_resident_word_190;
-    sState.unk04 = 0;
     sState.unk08 = 0;
-    sState.unk10 = 0;
     sB4B4[0] = sB4BC[0]; sB4B4[1] = sB4BC[1];
     sB4B8[0] = sB4C0[0]; sB4B8[1] = sB4C0[1];
+    sState.unk00 = ext_resident_word_190;
+    sState.unk04 = 0;
+    sState.unk10 = 0;
     if (*state == 3) {
         s32 handle;
         ext_o0_4ac54(3);
@@ -203,16 +209,3 @@ void func_overlay_052_F0000000_189A670(void) {
     sT4D2 = 0;
     sT4D0 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o052/overlay52Initialize/func_overlay_052_F0000000_189A670.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_052_F0000000_189A670:start
- * symbol: func_overlay_052_F0000000_189A670
- * score: 31/316 words
- * frame: 0x40
- * relocations: 141
- * first-mismatch: +0x30C
- * summary: Data owned in C: 115 to 31. Open: bounds s16 pair store order (as1), D_480 base lui hoisted above loads.
- * PLATEAU-HANDOFF:func_overlay_052_F0000000_189A670:end
- */

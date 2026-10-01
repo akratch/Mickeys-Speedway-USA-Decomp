@@ -4734,6 +4734,22 @@
       "class": "metadata",
       "matched_c": true,
       "nonmatching": false,
+      "object": "build/src/overlays/o052/overlay52Initialize.c.o",
+      "offset": 0,
+      "overlay": 52,
+      "size": 1264,
+      "source": "src/overlays/o052/overlay52Initialize.c",
+      "tools": [
+        "rebind_elf_relocations.py",
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o052/overlay52PatchIndices.c.o",
       "offset": 1264,
       "overlay": 52,
@@ -9268,10 +9284,10 @@
     "altered_bytes": 9148,
     "by_class": {
       "altered": 5,
-      "metadata": 636,
+      "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 272640,
-    "objects_with_postprocess": 642
+    "matched_c_bytes_with_postprocess": 273904,
+    "objects_with_postprocess": 643
   }
 }

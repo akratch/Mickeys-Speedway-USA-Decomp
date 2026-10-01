@@ -2,11 +2,51 @@
 ### `func_overlay_008_F0004CF0_1862A48` plateau handoff
 
 - source: `src/overlays/o008/overlay_008.c`
-- score: 39 differing words
+- score: 1 differing words
 - frame: -0x90
 - relocations: 15
-- first mismatch: +0x1C4
-- summary: source question is the ugen float free-list phase at the +0x1F4 window
+- first mismatch: +0x1D8
+- summary: One word: volatile normal.z pins the A-then-B product order but reloads z where the target has a nop; no unqualified form keeps that order.
+
+## 2026-10-01 lane a-o008: 39 to 1, and the decision variable
+
+align_symbol now reads 269 byte-exact, 0 naming, 0 immediate, 1 really
+different at size delta 0.
+
+What moved it:
+
+- **The 39 were not a free-list phase.** Reading the target's draws in order
+  gives z, first product, x, second product, sum, third product, fourth
+  product, difference: one FIFO pass over a five-register ring that includes
+  the fifth register the sum lands in. The sum is then negated straight into
+  the first argument register. Nothing is rotated; the candidate simply held
+  a different value in the coloured register.
+- **axisA shared a symbol with the second block's motion value.** That made
+  it one long web with loop references and it took the high colour. Giving
+  the second block the `horizontalA` name leaves axisA a short web that takes
+  the low colour, as shipped, and the second block's value then sits where the
+  target has it. 39 to 31 together with direct `normal.x` reads and the
+  negation written at the call.
+- **The qualifier was on the wrong member.** With `volatile` on `normal.x` the
+  x reload lands in a fresh ring register and shifts every later draw (28
+  naming rows). On `normal.z` the reload reuses the register the first z load
+  held and falls exactly in the first multiply-hazard slot. 31 to 1.
+
+The remaining word and what was measured against it:
+
+- The target loads z once and keeps a `nop` in that slot. The qualifier is
+  load-bearing: with no qualifier every form tried computes the difference
+  first and forwards the sum into the argument register, one instruction
+  short. Measured: 5 statement forms crossed with 3 second-block carriers and
+  5 accumulation forms, all at delta -4; 9 region placements, which grow by 8
+  to 20 bytes; 3 pointer-store forms and 7 single-read casts, of which the
+  four that hold delta 0 score 71 or more.
+- So the decision variable is **what keeps the sum from being forwarded past
+  the difference without making either z read a qualified load**. In the
+  target the sum is evaluated at its own statement and only the negation
+  waits for the call. A store between the two that may alias `normal` would
+  do it; a memory-resident `horizontalB` through `volatile` or an address
+  cast did not.
 2026-09-09 lane `lane/tu2-o008` maintenance evidence (base `304d363e`, score unchanged at 43
 relocation-masked words / 48 raw, 270 of 270 instructions, exact `0x90` frame):
 

@@ -2,11 +2,11 @@
 ### `overlay1AdvancePath` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_tail.c`
-- score: 81/162 words
+- score: 0/162 words, promoted
 - frame: 0x58
 - relocations: 22
-- first mismatch: +0x10
-- summary: Proc-36 58-draw census confirms initial draw deficit and mixed later allocation residual; baseline retained.
+- first mismatch: none
+- summary: Matched. The count byte and the two mode bits are declared as one 16-bit bit-field unit and updated with compound assignments, instead of hand-written masks over a byte and a halfword view.
 
 ### Historical source shape (superseded 2026-09-12)
 
@@ -98,5 +98,39 @@ full ROM verification through lane gates with the guarded fallback retained.
 Private source, objects, decision records and rejected alternatives remain
 available in the lane's scratch evidence. No forced compiler or object-byte
 changes are part of this candidate.
+
+
+#### 2026-10-01, lane a-o001: ROM-exact closure, 81 to 0
+
+The "initial draw deficit" the census recorded is the difference between a
+bit-field and its hand-written equivalent. The target reads the two mode bits
+through the halfword that also holds the count byte and writes them back
+through the low byte alone: that is IDO's access pattern for a 2-bit field in
+a `u16` bit-field unit whose first eight bits are the count. Spelled by hand as
+a byte mask combined with a halfword mask, the instructions are the same but
+ugen draws three fewer scratch temporaries at the first update, and the whole
+ring is rotated from there on.
+
+Measured on the configured TU, delta 0 throughout:
+
+- bit-field view of the state (count 8 bits, 6 unused, mode 2 bits), with a
+  compound and-assign of 1 at the head and a compound or-assign of 2 at the
+  three later sites, a plain result struct in place of the four-view union,
+  and the narrow primary arguments as casts of the result fields: 81 to 34.
+  Every register is exact at this point.
+- the parameter typed as the bit-field view, removing a local that held the
+  cast pointer and had displaced every home by four: the frame is exact.
+- the two fork tests written with `base` on the left: the last two words.
+  IDO loads the right operand of these unsigned halfword compares first.
+
+The shared `Overlay1PathState` keeps its byte fields, because the matched
+`overlay1AppendPathPoint` uses them; the bit-field view is a second struct
+used by this function only.
+
+Promotion: the overlay 2 trace call and the entry getter are SYMBOL records
+and go through two new placeholders; the append and clone calls are JUMP
+records and name the in-module definitions. `gmake verify` printed the
+expected SHA1; `check-overlay-syms` and `promotion-proof` passed (162 words,
+22 of 22 relocations). Siblings in the TU re-scored unchanged.
 
 <!-- plateau-handoff:overlay1AdvancePath:end -->

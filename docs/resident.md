@@ -3190,7 +3190,7 @@ placeholder name or counting padding as function text.
 | `0x5B548` / `0x8005A948` | `0x178` | `func_8005A948` | B: reference-counted single-animation loader; sole proven caller is `func_8005A7A0+0x104`, passing an `lh` animation ID and consuming the returned pointer |
 | `0x5B6C0` / `0x8005AAC0` | `0xB8` | `func_8005AAC0` | B: releases one reference-counted animation; direct callers are `func_80020278+0xD0` and `func_8005A7A0+0x140`, each passing an animation pointer |
 | `0x5B778` / `0x8005AB78` | `0x30` | `camConvertMatrixList` | A: exact JFG `camera.c` helper, used by the matrix builder below |
-| `0x5B7A8` / `0x8005ABA8` | `0x1BC` | `func_8005ABA8` | D: advances/clamps the current animation frame |
+| `0x5B7A8` / `0x8005ABA8` | `0x1BC` | `func_8005ABA8` | A: configured C is linked byte-exact, 111/111 words, frameless, zero relocations; D: advances/clamps the current animation frame |
 | `0x5B964` / `0x8005AD64` | `0x1B0` | `func_8005AD64` | D: selects an animation and establishes its frame/blend state; matched C, 108 exact words, no frame or relocations |
 | `0x5BB14` / `0x8005AF14` | `0x730` | `func_8005AF14` | B: builds model matrices and transformed attachment points, then calls `camConvertMatrixList` to queue matrix conversion |
 | `0x5C244` / `0x8005B644` | `0xCC` | `func_8005B644` | D: constructs a parented matrix list for the builder |
@@ -3297,8 +3297,7 @@ The real-address linked V0 is 94/106 raw and 99/106 relocation-normalized
 words. More than ten pointer/index, size-expression, coalescing, scope, and
 mask forms plus all 119 flag groups exhausted the family. The focused reproof
 is complete; park pending a new frame/carrier allocation mechanism. Assembly
-remains canonical. `func_8005ABA8` emits 110 against 111 and first diverges
-at `+0x38` before an FP-allocation cascade. `func_8005AF14` now has a
+remains canonical. `func_8005AF14` now has a
 Mickey-derived matrix/attachment-point candidate; its source comment discloses
 the pinned JFG declaration files used only to cross-check field roles, while
 JFG's peer body remains assembly. The target is 460 instructions with a

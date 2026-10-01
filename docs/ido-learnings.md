@@ -2449,6 +2449,20 @@ bytes and disassembly never belong here.
   local count alone does not predict frame size. Confirm the complete TU,
   relocations and linked ROM before adopting any spelling.
 
+- **Separate allocated spill reserve from emitted register-home demand.**
+  An oversized frame with unchanged observed stack traffic need not contain
+  an additional live spill. A faithful producer trace can show an allocated
+  temporary slot that never determines the emitted local-area definition,
+  while a retained register-home annotation raises its separate highwater.
+  Join the named frontend operation to its actual Ucode interval, then test
+  one predicted declaration-home change with no initializer or lifetime change.
+  If the emitted home and area contract while allocator reserve stays fixed,
+  that is a causal source-home result, not a generic declaration-order rule.
+  Raw declaration fields, chosen spill displacements and register-home pseudo
+  operations are not final machine stack offsets. Preserve stock/OFF/ON full-TU
+  fidelity and prove later UGEN conversion separately before claiming a final
+  home. See the [controlled reservation packet](o014-reservation-causal-packet.md).
+
 - **A direct memory retest can remove a named web while adding temporary
   draws.** In the
   [timer-update closure](matching-triage-handoffs/overlay14PrepareInputState.md),
@@ -2565,6 +2579,14 @@ bytes and disassembly never belong here.
   [batch-building closure](matching-triage-handoffs/overlay83BuildBatch.md)
   proves the combined spelling with stock compiler output, authenticated call
   identities and linked-ROM equality, without padding locals.
+  When a callee reads several fixed offsets through one address, first
+  reconstruct the complete descriptor type rather than separate undersized
+  scalar locals. The existing
+  [texture descriptor wrapper](../src/main/textures_354C8.c) provides another
+  stock-output closure: a natural descriptor and a pointer local require no
+  frame padding, and their declaration order determines the live stack homes.
+  Only fields actually consumed by the callee need initialization; prove that
+  read surface and pointer lifetime before changing the representation.
 
 - **Equal temporary-draw counts do not prove equal operand assignment.**
   Exchanging the integer operands of an address calculation can change their
@@ -2577,6 +2599,34 @@ bytes and disassembly never belong here.
   needed both changes and retained its sibling functions' bytes. This does
   not justify reassociating floating-point arithmetic, dropping observable
   volatile accesses, or treating unchanged draw counts as allocator fidelity.
+
+- **Optimized-debug names are not a transparent source-identity channel.**
+  Symptom: normal optimized Ucode lacks local names, so a debug symbol table
+  looks like a cheap way to label allocator homes. A controlled address-taken
+  aggregate probe under the pinned IDO 5.3 compiler gains local names with
+  `-g3`, but changes executable output despite retaining its text extent.
+  Selecting frontend `-Xg3` while leaving the backend at `-g0` also changes
+  output; the effect is not confined to debug sections or backend debug flags.
+  Conversely, a driver `-Wf,-Xg3` request can precede a later `-Xg0` and be
+  overridden. Lever: capture actual pass arguments and require full object
+  fidelity before joining debug names to an ordinary matching build. Limits:
+  this counterexample rules out an unconditional name-import shortcut, not
+  every individually proved debug-mode control. It supplies no source-home
+  identity when fidelity fails. See the reproducible
+  [optimized-debug control](stack-source-provenance.md).
+
+
+- **A NOBITS section can exceed its sole typed object's extent.** A controlled
+  single-precision scalar definition produces a four-byte object in a
+  sixteen-byte BSS section, without changing its translation unit's executable
+  bytes. IDO rounds the section size and alignment independently of the symbol
+  size. Prove original storage width and neighboring boundaries first, then
+  normalize only compiler tail alignment and section metadata. NOBITS has no
+  file payload: reading bytes at its file offset cannot prove zero padding.
+  The [BSS metadata helper](../tools/trim_elf_bss.py) requires a sole sized
+  object and rejects unexplained extents, other owners and stored relocations;
+  its synthetic controls verify that executable bytes stay unchanged. This
+  does not justify trimming original BSS storage or inventing padding fields.
 
 ## Adding a learning
 

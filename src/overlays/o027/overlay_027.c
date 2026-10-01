@@ -15,23 +15,23 @@ void overlay27Init(O27Object *object, Overlay27InitData *init) {
     state->scaleTarget = 96.0f; state->fadeFloat = 0.0f; state->source = init->target;
 }
 
-/* Plateau reproof: exact 368-instruction length/frame 0x60; 63 raw (62 relocation-masked) words differ, first +0x18.
- * Moving source below the scalar locals makes its spill pair exact and retains a four-word gain; all 119 flags and ten natural local/lifetime forms are nonexact.
- * Remaining: the update-rate home and persistent FP pool differ; 21/22 relocation offset/type sites and 12/22 static identities are resolved. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01. The 1/255 scale is written as a literal at each use, so
+ * uopt hoists it and reloads it after each call from its own pool entry; the
+ * earlier candidate carried it in a declared float, which took an argument
+ * register and hid that web. The intensity and fade fields are read directly
+ * where the earlier candidate copied them into shared scalars, which keeps
+ * each reload on the field's own web. The source state and the volume are two
+ * locals rather than one union, which lands the frame homes. */
 void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
     s32 pulseStep;
+    O27State *sourceState;
     O27State *state;
-    union {
-        O27State *sourceState;
-        s32 intensity;
-    } tail;
     s32 initialPhase;
     s32 phase;
     s32 value;
     O27Object *source;
+    s32 volume;
     f32 fraction;
-    f32 scaleFactor;
 
     state = object->state;
     pulseStep = updateRate;
@@ -51,13 +51,11 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
                   updateRate);
 
     if (updateRate != 0) {
-        scaleFactor = gO27Scale0;
         do {
             switch (state->primaryState) {
                 case 0:
                     state->timer += updateRate;
-                    fraction = 1.0f - func_8002A878(gO27EaseInput, updateRate);
-                    scaleFactor = gO27Scale8;
+                    fraction = 1.0f - func_8002A878(0.9625f, updateRate);
                     state->scaleTarget +=
                         (32.0f - state->scaleTarget) * fraction;
                     value = state->timer;
@@ -85,7 +83,7 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
                         state->intensity = (phase * 0xFF) >> 15;
                     }
                     object->scale =
-                        1.0f + ((f32)state->intensity * scaleFactor);
+                        1.0f + ((f32)state->intensity * 0.003921568f);
                     break;
 
                 case 1:
@@ -120,38 +118,35 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
                 case 3:
                     if (state->intensity < 0xFF) {
                         state->intensity += updateRate * 4;
-                        phase = state->intensity;
                         updateRate = 0;
-                        if (phase >= 0x100) {
+                        if (state->intensity >= 0x100) {
                             state->intensity = 0xFF;
                             object->scale = 2.0f;
                         } else {
                             object->scale =
-                                1.0f + ((f32)phase * scaleFactor);
+                                1.0f + ((f32)state->intensity * 0.003921568f);
                         }
                     } else {
                         state->fade += updateRate * 4;
-                        value = state->fade;
                         updateRate = 0;
-                        if (value >= 0xFF) {
+                        if (state->fade >= 0xFF) {
                             state->primaryState = 2;
                             state->timer = 0;
                             state->fade = 0xFF;
                             state->fadeFloat = 1.0f;
                         } else {
                             state->fadeFloat =
-                                (f32)value * scaleFactor;
+                                (f32)state->fade * 0.003921568f;
                         }
                     }
                     break;
 
                 default:
-                    value = state->fade;
-                    if (value >= updateRate * 8) {
-                        state->fade = value - (updateRate * 8);
+                    if (state->fade >= updateRate * 8) {
+                        state->fade -= updateRate * 8;
                         updateRate = 0;
                         state->fadeFloat =
-                            (f32)state->fade * scaleFactor;
+                            (f32)state->fade * 0.003921568f;
                     } else {
                         state->intensity -= updateRate * 4;
                         state->fade = 0;
@@ -159,10 +154,9 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
                         state->fadeFloat = 0.0f;
                         if (state->intensity <= 0) {
                             func_80006EA0(object);
-                            scaleFactor = gO27ScaleC;
                         } else {
                             object->scale = 1.0f +
-                                ((f32)state->intensity * scaleFactor);
+                                ((f32)state->intensity * 0.003921568f);
                         }
                     }
                     break;
@@ -170,22 +164,21 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
         } while (updateRate != 0);
     }
 
-    value = state->fade;
-    if (value == 0) {
+    if (state->fade == 0) {
         return;
     }
 
     if (state->pulseState == 0) {
-        if (value == 0xFF && func_800299E8(0, 0x1FFF) >= 0x1FD7) {
-            tail.sourceState = source->state;
+        if (state->fade == 0xFF && func_800299E8(0, 0x1FFF) >= 0x1FD7) {
+            sourceState = source->state;
             state->pulseState = 1;
             if (state->secondaryHandle != 0) {
                 func_800031E8(state->secondaryHandle);
             }
             func_80002FE0(0x1BB, object->x, object->y, object->z, 4,
                           &state->secondaryHandle);
-            if (!(tail.sourceState->flags1A8 & 1)) {
-                func_8002BD58(*(s8 *)&tail.sourceState->primaryState,
+            if (!(sourceState->flags1A8 & 1)) {
+                func_8002BD58(*(s8 *)&sourceState->primaryState,
                               0x32, 0.4f);
             }
         }
@@ -220,43 +213,50 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
         func_80002FE0(0x1B8, object->x, object->y, object->z, 1,
                       &state->primaryHandle);
     }
-    tail.intensity = state->fade >> 1;
-    if (tail.intensity >= 0x80) {
-        tail.intensity = 0x7F;
+    volume = state->fade >> 1;
+    if (volume >= 0x80) {
+        volume = 0x7F;
     }
     if (state->primaryHandle != 0) {
         func_800031C0(state->primaryHandle, object->x, object->y, object->z);
-        func_8000309C(state->primaryHandle, tail.intensity);
+        func_8000309C(state->primaryHandle, volume);
     }
     if (state->secondaryHandle != 0) {
         func_800031C0(state->secondaryHandle, object->x, object->y, object->z);
-        func_8000309C(state->secondaryHandle, tail.intensity);
+        func_8000309C(state->secondaryHandle, volume);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o027/overlay_027/func_overlay_027_F0000064_187BA3C.s")
-#endif
 
-/* Mickey-local rendering reconstruction; donor scans are exact-negative. */
-/* Workbench p7: structure-mismatch, 254/254 instructions/frame -152, 195 masked (196 raw) words, first +0x8.
- * Stack-home “constants” are the candidate’s 88-vs-target-100(sp) carrier; context/flag and prior allocation/lifetime/order probes remain exhausted.
- * Coupled object/child/register web and 19 overlay-local relocation identities remain; retain NON_MATCHING. */
+/* Mickey-local rendering reconstruction; donor scans are exact-negative.
+ * 2026-10-01: 195 -> 100 positional at +4 bytes, 25 aligned (230 of 255 words
+ * byte-exact). Plain locals plus one unused 0x28-byte local land the frame;
+ * selecting the intensity with if/else instead of default-then-override fixes
+ * the saved-register order and four colours; masking the red channel like the
+ * others restores a ring draw; one command per line in opcode-first order
+ * settles the as1 ties; one vertex pointer local serves both batches and the
+ * finish call. Open: one extra constant move at +0x284. The target holds the
+ * mode call's last zero in the fourth argument register from before the
+ * synchronise command and sets the second argument once before the branch;
+ * every spelling here is constant-propagated into two moves. */
+/* One display-list command per source line, opcode word first, as a GBI macro
+ * expands: as1 breaks its scheduling ties on physical line numbers. */
+#define O27_WRITE_COMMAND(word0, word1) \
+    command = *commands; *commands = command + 1; command->w0 = (word0); command->w1 = (word1)
+
 #ifdef NON_MATCHING
 void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
                                        s16 *arg2, O27Object *object) {
-    O27Work work;
-    O27Command *command;
-    O27State *state;
-    O27Child *child;
-    s16 *value;
-    void *displayList;
-    void *finishArg;
-    f32 oldScale;
-    f32 scale;
-    f32 x;
-    f32 y;
-    f32 z;
     s32 intensity;
+    f32 scale;
+    f32 oldScale;
+    O27Transform transform;
+    void *displayList;
+    O27Child *child;
+    O27State *state;
+    s16 *value;
+    O27Command *command;
+    u8 *verts;
+    u8 unused[0x28];
 
     value = overlay27GetValue();
     state = object->state;
@@ -269,97 +269,61 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
 
     if (state->fade != 0) {
         if (child != 0) {
-            work.transform.positionX = child->x;
-            work.transform.positionY = child->y;
-            work.transform.positionZ = child->z;
+            transform.positionX = child->x;
+            transform.positionY = child->y;
+            transform.positionZ = child->z;
         } else {
-            work.transform.positionX = object->x;
-            work.transform.positionY = object->y;
-            work.transform.positionZ = object->z;
+            transform.positionX = object->x;
+            transform.positionY = object->y;
+            transform.positionZ = object->z;
         }
 
-        work.transform.x = -*value;
-        work.transform.y = 0;
-        work.transform.z = 0;
-        work.transform.scale = scale;
-        intensity = 0x100;
-        work.transform.positionY += 24.0f * scale;
+        transform.x = -*value;
+        transform.y = 0;
+        transform.z = 0;
+        transform.scale = scale;
+        transform.positionY += 24.0f * scale;
 
         if (child != 0 && child->factor != 0) {
             intensity = (s32)(*child->factor * 256.0f);
+        } else {
+            intensity = 0x100;
         }
 
         displayList = *object->renderResource->displayList;
-        overlay27Prepare(commands, arg1, &work.transform, 1.0f, 0.0f);
+        overlay27Prepare(commands, arg1, &transform, 1.0f, 0.0f);
         overlay27DrawPart(commands, displayList, 0x214, 0);
 
-        command = *commands;
-        *commands = command + 1;
-        command->w0 = 0xFA000000;
-        command->w1 = (((intensity * 0x60) >> 8) << 24) |
-                      ((((intensity * 0xE0) >> 8) & 0xFF) << 16) |
-                      ((((intensity * 0xFF) >> 8) & 0xFF) << 8) |
-                      (state->fade & 0xFF);
+        O27_WRITE_COMMAND(0xFA000000, ((((intensity * 0x60) >> 8) & 0xFF) << 24) | ((((intensity * 0xE0) >> 8) & 0xFF) << 16) | ((((intensity * 0xFF) >> 8) & 0xFF) << 8) | (state->fade & 0xFF));
 
-        command = *commands;
-        *commands = command + 1;
-        command->w0 = 0xFB000000;
-        command->w1 = ((((intensity << 7) >> 8) & 0xFF) << 8) | 0xFF;
+        O27_WRITE_COMMAND(0xFB000000, ((((intensity << 7) >> 8) & 0xFF) << 8) | 0xFF);
 
-        command = *commands;
-        *commands = command + 1;
-        command->w0 = (((((u32)D_80000000 & 6) | 0x40) & 0xFF) << 16) |
-                      0x04000058;
-        command->w1 = (u32)D_80000000;
+        verts = D_80000000;
+        O27_WRITE_COMMAND((0x04 << 24) | (((0x40 | ((u32)verts & 6)) & 0xFF) << 16) | 0x58, (u32)verts);
 
-        command = *commands;
-        *commands = command + 1;
-        command->w0 = 0x059100A0;
-        command->w1 = (u32)D_80000050;
+        O27_WRITE_COMMAND(0x059100A0, (u32)D_80000050);
 
-        command = *commands;
-        *commands = command + 1;
-        command->w1 = 0;
-        command->w0 = 0xE7000000;
+        O27_WRITE_COMMAND(0xE7000000, 0);
 
-        finishArg = 0;
+        verts = 0;
         if (state->pulseTimer != 0) {
             overlay27SetMode(commands, 0, 5, 0);
 
-            command = *commands;
-            *commands = command + 1;
-            command->w0 = 0xFA000000;
-            command->w1 = (state->pulseTimer & 0xFF) | 0xFFFF0000;
-            finishArg = D_80000118;
+            O27_WRITE_COMMAND(0xFA000000, (state->pulseTimer & 0xFF) | 0xFFFF0000);
+            verts = D_80000118;
 
-            command = *commands;
-            *commands = command + 1;
-            command->w0 = (((((u32)D_80000118 & 6) | 0x38) & 0xFF) << 16) |
-                          0x0400004E;
-            command->w1 = (u32)D_80000118;
+            O27_WRITE_COMMAND((0x04 << 24) | (((0x38 | ((u32)verts & 6)) & 0xFF) << 16) | 0x4E, (u32)verts);
 
-            command = *commands;
-            *commands = command + 1;
-            command->w0 = 0x05400050;
-            command->w1 = (u32)D_80000160;
+            O27_WRITE_COMMAND(0x05400050, (u32)D_80000160);
 
-            command = *commands;
-            *commands = command + 1;
-            command->w1 = 0;
-            command->w0 = 0xE7000000;
+            O27_WRITE_COMMAND(0xE7000000, 0);
         }
 
-        command = *commands;
-        *commands = command + 1;
-        command->w1 = 0xFFFFFFFF;
-        command->w0 = 0xFA000000;
+        O27_WRITE_COMMAND(0xFA000000, 0xFFFFFFFF);
 
-        command = *commands;
-        *commands = command + 1;
-        command->w1 = 0xFFFFFF00;
-        command->w0 = 0xFB000000;
+        O27_WRITE_COMMAND(0xFB000000, 0xFFFFFF00);
 
-        overlay27Finish(commands, finishArg);
+        overlay27Finish(commands, verts);
     }
 
     oldScale = object->scale;
@@ -442,22 +406,12 @@ s32 overlay27Activate(O27Object *object) {
 }
 
 
-/* PLATEAU-HANDOFF:func_overlay_027_F0000064_187BA3C:start
- * symbol: func_overlay_027_F0000064_187BA3C
- * score: 48 differing words
- * frame: 0x60
- * relocations: 22
- * first-mismatch: +0x94
- * summary: Shorten scale live range off the call-argument register failed: fresh local +4/272, field recompute +28/333, block temp +4/272. No delta-0 masked drop; stall.
- * PLATEAU-HANDOFF:func_overlay_027_F0000064_187BA3C:end
- */
-
 /* PLATEAU-HANDOFF:func_overlay_027_F0000624_187BFFC:start
  * symbol: func_overlay_027_F0000624_187BFFC
- * score: 196 differing words
+ * score: 100 differing words
  * frame: 0x98
  * relocations: 15
- * first-mismatch: +0x8
- * summary: Fresh V0 on b4d1624a reproduces 1016B/254w and the 15-site ambiguity; no new identity or donor evidence; body untouched.
+ * first-mismatch: +0x70
+ * summary: Delta +4, 25 aligned rows. Open: one extra constant move at +0x284 for the mode call's zero arguments.
  * PLATEAU-HANDOFF:func_overlay_027_F0000624_187BFFC:end
  */

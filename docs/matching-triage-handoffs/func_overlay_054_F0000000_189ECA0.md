@@ -2,11 +2,51 @@
 ### `func_overlay_054_F0000000_189ECA0` plateau handoff
 
 - source: `src/overlays/o054/overlay54Initialize.c`
-- score: 17 differing words
+- score: 0/243 words, promoted
 - frame: 0x78
 - relocations: 114
-- first mismatch: +0x1AC
-- summary: TU owns overlay 54 data; delta 0, frame exact; left: as1 hoists loop-A flag/value stores above their increments (no noalias for declared pointers).
+- first mismatch: none
+- summary: Matched. Both loops are plain subscript loops over one counter, the flag bytes are a signed char array, and the only declared locals are the counter and the context.
+
+Summary before this remeasure: TU owns overlay 54 data; delta 0, frame exact; left: as1 hoists loop-A flag/value stores above their increments (no noalias for declared pointers).
+
+#### 2026-10-01, lane b-o057: ROM-exact closure by writing the loops as subscripts
+
+The 17-word plateau walked eight declared pointers through the first loop,
+kept the ninth pointer and the context in a volatile struct with a union, and
+stored through index minus one after hand-placed increments. The previous
+sections correctly found that the target's schedule needs noalias facts on the
+flag, value and sentinel bases, and that uopt emits those only for pointers it
+creates itself. The earlier indexed attempts changed one array at a time
+inside the inherited shape. Writing every access in the loop as a subscript on
+the counter gives all nine induction pointers to uopt, which spills the ninth
+to a temporary of its own and emits the facts.
+
+Steps, each measured with the configured flags at size delta 0:
+
+- inherited shape: 17
+- all six copy destinations and the three stores as subscripts on the counter
+  in a for loop, a plain context local, flag array of unsigned bytes: 7. The
+  store schedule is exact. Left: the frame, the stored flag constant, and the
+  exit test rewritten to a not-equal against 4.
+- the same as a do loop or a while loop with the increment written last: 31
+- flag array of signed bytes: 6, the stored constant is now minus one
+- the record copy reusing the first loop's counter, the state stores naming
+  the static directly with no state pointer, and the allocate result stored
+  straight into the current-object static with no object local, leaving two
+  declared locals, counter then context: 0. The frame lands because only two
+  locals precede the compiler temporaries, and the first loop's exit test
+  stays a set-less-than against 4 once the counter has a second loop, which
+  retires the xor-with-zero device.
+
+Promotion needed one build change. The translation unit owns overlay 54's
+data and bss, so its text reaches them through the object's own section
+symbols and a static link resolves those to the placed sections, where the
+shipped words are section-relative. The object's 80 such relocation sites are
+rebound to two zero-valued base placeholders by a reviewed specification file.
+
+Verified by the ROM hash, the overlay alias drift check and the per-symbol
+promotion proof.
 
 Summary before this remeasure: Record copy is an unrolled 9-loop, body exact; remainder needs as1 to see static data (probe: 89 masked, -4); loop-A slti is L90.
 

@@ -77,6 +77,10 @@ int fixture(void) { return 1; }
         self.stack.enter_context(patch.object(batch, "bounded_capture", side_effect=self.command))
         self.recipe = batch.BuildRecipe(("-O2",), (), (), True, ("-c", "-O2"))
         self.stack.enter_context(patch.object(batch, "build_recipe_for", return_value=self.recipe))
+        # These transaction fixtures use synthetic non-ELF objects. The actual
+        # admission boundary is covered by test_search_bindings.
+        self.stack.enter_context(patch.object(batch, "require_search_bindings", return_value={"status": "authenticated"}))
+        self.stack.enter_context(patch.object(batch, "validate_search_binding_authority"))
         self.stack.enter_context(patch.object(batch, "sweep_tool_identity", return_value={
             "fixture": "synthetic tools", "candidate_context": batch.context_tool_identity()}))
         self.stack.enter_context(patch.object(batch, "_PROCESS_TOOLS_PIN", None))

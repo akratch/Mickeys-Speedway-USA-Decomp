@@ -487,7 +487,6 @@ typedef struct ParticleRenderTransform {
     f32 x;
     f32 y;
     f32 z;
-    u8 pad18[8];
 } ParticleRenderTransform;
 
 typedef struct ParticleRenderResourceHeader {
@@ -540,8 +539,6 @@ extern f32 D_80082A48;
 extern f32 D_80082A4C;
 extern f32 D_80082A50;
 extern f32 D_80082A54;
-extern f32 D_80082A6C;
-extern f32 D_80082A70;
 extern f32 D_8007C8C8[];
 extern void **D_8007C884;
 extern s32 D_8007C888;

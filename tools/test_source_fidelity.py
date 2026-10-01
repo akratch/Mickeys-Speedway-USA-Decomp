@@ -558,7 +558,8 @@ class SourceGroups(unittest.TestCase):
                         stack.enter_context(patch.object(pb, name, value))
                     stack.enter_context(patch.object(pb.reloc_surface, "LINK_SYMS", authorities[3]))
                     stack.enter_context(patch.object(pb.reloc_surface, "function_surface_comparison", return_value={"stable_identity_exact": False}))
-                    for name in ("wait_for_headroom", "validate_baseline", "checked_tool_identity", "retain_context"):
+                    for name in ("wait_for_headroom", "validate_baseline", "checked_tool_identity", "retain_context",
+                                 "require_search_bindings", "validate_search_binding_authority"):
                         stack.enter_context(patch.object(pb, name))
                     stack.enter_context(patch.object(pb, "run_permuter", return_value=(10, 0, False, False)))
                     stack.enter_context(patch.object(pb, "captured_baseline", return_value=actual))
@@ -755,15 +756,17 @@ class SourceGroups(unittest.TestCase):
                     pb.grouped_baseline_fidelity(item, root, root, {}, None)
                 run.assert_not_called()
 
-    def test_ungrouped_does_not_build(self):
+    def test_ungrouped_requires_full_tu_fidelity(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             item = pb.QueueItem("f", root / "src/f.c")
             (root / "source-groups.json").write_text(json.dumps({
                 "contract": pb.SOURCE_GROUP_CONTRACT, "symbol": "f", "groups": [], "status": "ungrouped"}))
-            with patch.object(pb, "ROOT", root), patch.object(pb, "bounded_capture") as run:
-                pb.grouped_baseline_fidelity(item, root, root, self.plan_inputs(root), None)
-                run.assert_not_called()
+            with patch.object(pb, "ROOT", root), patch.object(pb, "bounded_capture",
+                    side_effect=RuntimeError("full-TU build required")) as run:
+                with self.assertRaisesRegex(RuntimeError, "full-TU build required"):
+                    pb.grouped_baseline_fidelity(item, root, root, self.plan_inputs(root), None)
+                run.assert_called_once()
 
     def test_symlinked_object_parent_refuses_before_build(self):
         with tempfile.TemporaryDirectory() as tmp:

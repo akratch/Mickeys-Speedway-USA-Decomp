@@ -147,7 +147,7 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         (0x0, 0x3C, "overlay41SampleCurve", ".rodata", "func_overlay_041_F00002AC_18875E4"),
         (0x3C, 0x54, "overlay41UpdateCurveObject", ".rodata", "func_overlay_041_F0000854_1887B8C"),
     ],
-    46: [(0x364, 0x378, "overlay46UpdateSequence", ".rodata", "func_overlay_046_F0000120_188E518")],
+    46: [(0x364, 0x378, "overlay46UpdateSequence", ".rodata", "func_overlay_046_F0000120_188E518", True)],
     58: [
         (
             0x3F4,
@@ -169,6 +169,21 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
+}
+
+# Permanent interior initialized-storage owners. These rows participate in
+# every canonical atlas/YAML projection, unlike function-scoped trial rows.
+# The exact data-only source allowlist keeps physical ownership independent
+# from executable text ownership and matching credit.
+CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
+    8: [
+        (0x03E0, 0x0520, "overlay8EffectTables", ".data"),
+        (0x2378, 0x2418, "overlay8MotionConstants", ".data"),
+    ],
+}
+DATA_ONLY_FIXED_DATA_SOURCES = {
+    (8, "overlay8MotionConstants", ".data"),
+    (8, "overlay8EffectTables", ".data"),
 }
 
 # When a C owner's initialized input follows its text, IDO's measured .text
@@ -1164,6 +1179,8 @@ MIXED_TU_EXACT_C_RANGES = {
             "overlay1FindType5ByKey",
             "canonical mixed-TU object, one runtime relocation, and linked ROM bytes exact",
         ),
+        (0x0414, 0x04B4, "overlay1FindPreviousUsable"),
+        (0x04B4, 0x0614, "overlay1ActivateObject"),
         (0x0614, 0x0758, "overlay1FindClosestSample",
          "stock C, seven runtime relocation identities, owned literal, and linked ROM bytes exact"),
         (0x0758, 0x07B0, "overlay1TestDirection"),
@@ -1239,6 +1256,12 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x3EB8, 0x3F38, "overlay1AngleBetweenSamples"),
         (0x3F38, 0x3F88, "overlay1RelativeAngleA"),
         (0x3F88, 0x3FD8, "overlay1RelativeAngleB"),
+        (
+            0x3FD8,
+            0x438C,
+            "overlay1TransitionState",
+            "canonical mixed-TU object, 13 runtime relocations, and linked ROM bytes exact",
+        ),
         (0x5BA4, 0x5BC0, "overlay1InitTimedState"),
         (0x5BC0, 0x5BF4, "overlay1ConsumeTimer"),
         (
@@ -1278,6 +1301,12 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x6724, 0x6788, "overlay1UpdateModeSound"),
         (0x6788, 0x67C0, "overlay1CopyBytes"),
         (0x69A0, 0x6A14, "overlay1InitMotion"),
+        (
+            0x6A14,
+            0x6B28,
+            "overlay1ConsumeNearbyPending",
+            "canonical mixed-TU object, one runtime relocation, and linked ROM bytes exact",
+        ),
         (0x6B28, 0x6B6C, "overlay1InitRange"),
         (
             0x6B6C,
@@ -1321,6 +1350,18 @@ MIXED_TU_EXACT_C_RANGES = {
             0x7730,
             "overlay1AppendPathPoint",
             "canonical mixed-TU object, all eight relocation records, and linked ROM bytes exact",
+        ),
+        (
+            0x7730,
+            0x78DC,
+            "overlay1BendPathPoint",
+            "canonical mixed-TU object, six runtime relocations, and linked ROM bytes exact",
+        ),
+        (
+            0x78DC,
+            0x7B64,
+            "overlay1AdvancePath",
+            "canonical mixed-TU object, 22 runtime relocations, and linked ROM bytes exact",
         ),
         (
             0x7B64,
@@ -1407,6 +1448,7 @@ MIXED_TU_EXACT_C_RANGES = {
         (0xE88, 0xF1C, "func_overlay_008_F0000E88_185EBE0"),
         (0xF1C, 0x1000, "func_overlay_008_F0000F1C_185EC74"),
         (0x1000, 0x1294, "func_overlay_008_F0001000_185ED58"),
+        (0x2640, 0x291C, "func_overlay_008_F0002640_1860398"),
         (
             0x291C,
             0x2EC0,
@@ -1433,11 +1475,12 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x49E8, 0x4CF0, "overlay8UpdateMotionOutput"),
     ],
     9: [
+        (0x0540, 0x0744, "func_overlay_009_F0000540_1866BB8"),
         (
             0x0744,
             0x09BC,
             "func_overlay_009_F0000744_1866DBC",
-            "stock C, nine raw runtime identities, declared metadata filters, and linked ROM bytes exact",
+            "stock C, nine raw runtime identities, and linked ROM bytes exact",
         ),
         (
             0x09BC,
@@ -1479,9 +1522,11 @@ MIXED_TU_EXACT_C_RANGES = {
     15: [
         (0x000, 0x00C, "overlay15GetResource4"),
         (0x00C, 0x04C, "overlay15ReleaseResource"),
+        (0x428, 0x500, "overlay15MoveStars"),
         (0x500, 0x6A4, "overlay15DrawScreenStars"),
         (0x6A4, 0x6B0, "overlay15GetResource10"),
         (0x6B0, 0x6E8, "overlay15ReleaseResource10"),
+        (0x9E0, 0xB7C, "overlay15UpdateMovingStars"),
         (0xB7C, 0xB88, "overlay15SetValueC"),
         (0xB88, 0xB94, "overlay15ClearValue7C"),
     ],
@@ -1510,6 +1555,7 @@ MIXED_TU_EXACT_C_RANGES = {
     ],
     27: [
         (0x000, 0x064, "overlay27Init"),
+        (0x064, 0x624, "func_overlay_027_F0000064_187BA3C"),
         (0xA1C, 0xB20, "overlay27UpdateCoordinates"),
         (0xB20, 0xB68, "overlay27CanUse"),
         (0xB68, 0xBC0, "overlay27Activate"),
@@ -2041,6 +2087,7 @@ def data_rodata_ownership_rows(overlay, data_size, text_ownership):
     rows = []
     previous_end = 0
     previous_text_index = -1
+    fixed_source_sections = set()
     text_sources = [
         part["source"].rsplit("/", 1)[1]
         for part in text_ownership
@@ -2101,6 +2148,13 @@ def data_rodata_ownership_rows(overlay, data_size, text_ownership):
                 f"overlay {overlay} fixed data/rodata owner {source_name} "
                 "does not own a C text row"
             )
+        source_section = (source_name, section)
+        if source_section in fixed_source_sections:
+            raise ValueError(
+                f"overlay {overlay} repeats fixed data/rodata owner "
+                f"{source_name} section {section}"
+            )
+        fixed_source_sections.add(source_section)
         row = {
             "offset": hx(start),
             "end_offset": hx(end),
@@ -2114,6 +2168,45 @@ def data_rodata_ownership_rows(overlay, data_size, text_ownership):
         if externalized:
             row["externalized"] = True
         rows.append(row)
+    for start, end, source_name, section in CANONICAL_FIXED_DATA_RODATA_OWNERSHIP.get(
+        overlay, []
+    ):
+        if (
+            start < 0
+            or start >= end
+            or end > data_size
+            or start % 4
+            or end % 4
+            or section not in (".data", ".rodata")
+        ):
+            raise ValueError(
+                f"invalid overlay {overlay} canonical fixed data/rodata owner"
+            )
+        source_section = (source_name, section)
+        if source_section in fixed_source_sections:
+            raise ValueError(
+                f"overlay {overlay} repeats fixed data/rodata owner "
+                f"{source_name} section {section}"
+            )
+        fixed_source_sections.add(source_section)
+        if source_name not in text_sources and (
+            overlay, source_name, section
+        ) not in DATA_ONLY_FIXED_DATA_SOURCES:
+            raise ValueError(
+                f"overlay {overlay} canonical data-only owner {source_name} "
+                f"section {section} is not explicitly allowed"
+            )
+        rows.append(
+            {
+                "offset": hx(start),
+                "end_offset": hx(end),
+                "size": hx(end - start),
+                "type": "c",
+                "section": section,
+                "source": f"overlays/o{overlay:03d}/{source_name}",
+                "canonical": True,
+            }
+        )
     return rows
 
 
@@ -2568,10 +2661,22 @@ def render_yaml_block(
                 return part.get("trial_function") in trial_functions
             return part["source"].rsplit("/", 1)[-1] in trial_sources
 
-        carved = trial_ownership and any(
-            fixed_data_matches_trial(part)
-            for part in row.get("data_rodata_ownership", [])
-        )
+        owned_data = row.get("data_rodata_ownership", [])
+        if any(
+            part.get("canonical") is True and part.get("externalized")
+            for part in owned_data
+        ):
+            raise ValueError(
+                f"overlay {ov} canonical fixed data/rodata ownership "
+                "cannot be externalized"
+            )
+        fixed_data = [
+            part
+            for part in owned_data
+            if part.get("canonical") is True
+            or (trial_ownership and fixed_data_matches_trial(part))
+        ]
+        carved = bool(fixed_data)
         lines += [
             "",
             f"  - name: {name}",
@@ -2587,7 +2692,6 @@ def render_yaml_block(
             "    subsegments:",
         ]
         text_start = int(row["sections"]["text"]["start"], 16)
-        owned_data = row.get("data_rodata_ownership", [])
         compiler_padding = COMPILER_TEXT_ALIGNMENT_PADDING.get(ov)
         explicit_padding = EXPLICIT_TEXT_PADDING.get(ov)
         for part in row["text_ownership"]:
@@ -2616,11 +2720,6 @@ def render_yaml_block(
             )
         data_row = row["sections"]["data_rodata"]
         data_size = int(data_row["size"], 16)
-        fixed_data = [
-            part
-            for part in owned_data
-            if fixed_data_matches_trial(part)
-        ] if carved else []
         leading_data = [part for part in owned_data if "section" not in part]
         owned_end = (
             int(leading_data[-1]["end_offset"], 16) if leading_data else 0

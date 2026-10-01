@@ -52,16 +52,6 @@ extern u16 *gOverlay15StarPalette;
 extern u32 *gOverlay15StarColors;
 extern Overlay15InitBounds gOverlay15InitBounds;
 extern Overlay15Gfx gOverlay15StarSetup[];
-extern f32 gOverlay15StarBound0;
-extern f32 gOverlay15StarBound1;
-extern f32 gOverlay15StarBound2;
-extern f32 gOverlay15StarBound3;
-extern f32 gOverlay15StarBound4;
-extern f32 gOverlay15StarBound5;
-extern f32 gOverlay15StarBound6;
-extern f32 gOverlay15StarBound7;
-extern f32 gOverlay15StarBound8;
-extern Overlay15Star gOverlay15StarMovement;
 
 extern s32 gOverlay15CameraReadyRead;
 extern s32 gOverlay15CameraReadyWrite;

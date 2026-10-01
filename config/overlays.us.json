@@ -22,10 +22,10 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 257444,
-  "nonmatching_overlay_c_bytes": 211164,
+  "matched_overlay_c_bytes": 291380,
+  "nonmatching_overlay_c_bytes": 177228,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 3120,
+  "owned_data_rodata_bytes": 3600,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -593,7 +593,7 @@
      "type": "c",
      "source": "overlays/o001/overlay_001",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x7B0",
@@ -1069,118 +1069,6 @@
    },
    "mixed_tu_exact_c_ranges": [
     {
-     "offset": "0x0",
-     "end_offset": "0x28",
-     "size": "0x28",
-     "label": "overlay1PreviousPointer",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x28",
-     "end_offset": "0x50",
-     "size": "0x28",
-     "label": "overlay1NextPointer",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x50",
-     "end_offset": "0x80",
-     "size": "0x30",
-     "label": "overlay1GetEntry",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "canonical mixed-TU object and linked bytes exact"
-    },
-    {
-     "offset": "0x80",
-     "end_offset": "0xA0",
-     "size": "0x20",
-     "label": "overlay1GetEntryIndex",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0xA0",
-     "end_offset": "0xC0",
-     "size": "0x20",
-     "label": "overlay1PreviousIndex",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0xC0",
-     "end_offset": "0xE4",
-     "size": "0x24",
-     "label": "overlay1NextIndex",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0xE4",
-     "end_offset": "0x154",
-     "size": "0x70",
-     "label": "overlay1WrapOffset",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x154",
-     "end_offset": "0x1AC",
-     "size": "0x58",
-     "label": "overlay1SignedOffset",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x1AC",
-     "end_offset": "0x2D4",
-     "size": "0x128",
-     "label": "overlay1FindType47ByAngle",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "canonical mixed-TU C, six runtime relocation identities, and linked ROM bytes exact"
-    },
-    {
-     "offset": "0x2D4",
-     "end_offset": "0x330",
-     "size": "0x5C",
-     "label": "overlay1GetLinkedActive",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x330",
-     "end_offset": "0x378",
-     "size": "0x48",
-     "label": "overlay1GetRecord",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x378",
-     "end_offset": "0x414",
-     "size": "0x9C",
-     "label": "overlay1FindType5ByKey",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "canonical mixed-TU object, one runtime relocation, and linked ROM bytes exact"
-    },
-    {
-     "offset": "0x614",
-     "end_offset": "0x758",
-     "size": "0x144",
-     "label": "overlay1FindClosestSample",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "stock C, seven runtime relocation identities, owned literal, and linked ROM bytes exact"
-    },
-    {
-     "offset": "0x758",
-     "end_offset": "0x7B0",
-     "size": "0x58",
-     "label": "overlay1TestDirection",
-     "source": "overlays/o001/overlay_001",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
      "offset": "0xBD4",
      "end_offset": "0xCA8",
      "size": "0xD4",
@@ -1309,6 +1197,14 @@
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
     {
+     "offset": "0x3FD8",
+     "end_offset": "0x438C",
+     "size": "0x3B4",
+     "label": "overlay1TransitionState",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "canonical mixed-TU object, 13 runtime relocations, and linked ROM bytes exact"
+    },
+    {
      "offset": "0x5BA4",
      "end_offset": "0x5BC0",
      "size": "0x1C",
@@ -1421,6 +1317,14 @@
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
     {
+     "offset": "0x6A14",
+     "end_offset": "0x6B28",
+     "size": "0x114",
+     "label": "overlay1ConsumeNearbyPending",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "canonical mixed-TU object, one runtime relocation, and linked ROM bytes exact"
+    },
+    {
      "offset": "0x6B28",
      "end_offset": "0x6B6C",
      "size": "0x44",
@@ -1491,6 +1395,22 @@
      "label": "overlay1AppendPathPoint",
      "source": "overlays/o001/overlay_001_tail",
      "evidence": "canonical mixed-TU object, all eight relocation records, and linked ROM bytes exact"
+    },
+    {
+     "offset": "0x7730",
+     "end_offset": "0x78DC",
+     "size": "0x1AC",
+     "label": "overlay1BendPathPoint",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "canonical mixed-TU object, six runtime relocations, and linked ROM bytes exact"
+    },
+    {
+     "offset": "0x78DC",
+     "end_offset": "0x7B64",
+     "size": "0x288",
+     "label": "overlay1AdvancePath",
+     "source": "overlays/o001/overlay_001_tail",
+     "evidence": "canonical mixed-TU object, 22 runtime relocations, and linked ROM bytes exact"
     },
     {
      "offset": "0x7B64",
@@ -1617,7 +1537,7 @@
      "type": "c",
      "source": "overlays/o002/func_overlay_002_F0000C90_1857A88",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x121C",
@@ -1662,7 +1582,7 @@
      "type": "c",
      "source": "overlays/o002/overlay2QueryNode",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x1A94",
@@ -1840,7 +1760,7 @@
      "type": "c",
      "source": "overlays/o003/overlay3RunCachedModeAction",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x27C",
@@ -2403,7 +2323,7 @@
      "type": "c",
      "source": "overlays/o007/func_overlay_007_F0000324_185C1AC",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x894",
@@ -2980,6 +2900,14 @@
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
     {
+     "offset": "0x2640",
+     "end_offset": "0x291C",
+     "size": "0x2DC",
+     "label": "func_overlay_008_F0002640_1860398",
+     "source": "overlays/o008/overlay_008",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
      "offset": "0x291C",
      "end_offset": "0x2EC0",
      "size": "0x5A4",
@@ -3061,6 +2989,24 @@
      "section": ".rodata",
      "source": "overlays/o008/overlay_008",
      "trial_function": "func_overlay_008_F0004CF0_1862A48"
+    },
+    {
+     "offset": "0x3E0",
+     "end_offset": "0x520",
+     "size": "0x140",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o008/overlay8EffectTables",
+     "canonical": true
+    },
+    {
+     "offset": "0x2378",
+     "end_offset": "0x2418",
+     "size": "0xA0",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o008/overlay8MotionConstants",
+     "canonical": true
     }
    ]
   },
@@ -3166,12 +3112,20 @@
    },
    "mixed_tu_exact_c_ranges": [
     {
+     "offset": "0x540",
+     "end_offset": "0x744",
+     "size": "0x204",
+     "label": "func_overlay_009_F0000540_1866BB8",
+     "source": "overlays/o009/overlay_009",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
      "offset": "0x744",
      "end_offset": "0x9BC",
      "size": "0x278",
      "label": "func_overlay_009_F0000744_1866DBC",
      "source": "overlays/o009/overlay_009",
-     "evidence": "stock C, nine raw runtime identities, declared metadata filters, and linked ROM bytes exact"
+     "evidence": "stock C, nine raw runtime identities, and linked ROM bytes exact"
     },
     {
      "offset": "0x9BC",
@@ -3267,7 +3221,7 @@
      "type": "c",
      "source": "overlays/o010/overlay10Initialize",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     }
    ],
    "bss_size": "0x0",
@@ -3488,7 +3442,7 @@
      "type": "c",
      "source": "overlays/o011/func_overlay_011_F0001E4C_186A694",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x22E8",
@@ -4112,7 +4066,7 @@
      "type": "c",
      "source": "overlays/o014/overlay14CreateValue",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x87C",
@@ -4597,6 +4551,14 @@
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
     {
+     "offset": "0x428",
+     "end_offset": "0x500",
+     "size": "0xD8",
+     "label": "overlay15MoveStars",
+     "source": "overlays/o015/overlay_015",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
      "offset": "0x500",
      "end_offset": "0x6A4",
      "size": "0x1A4",
@@ -4617,6 +4579,14 @@
      "end_offset": "0x6E8",
      "size": "0x38",
      "label": "overlay15ReleaseResource10",
+     "source": "overlays/o015/overlay_015",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
+     "offset": "0x9E0",
+     "end_offset": "0xB7C",
+     "size": "0x19C",
+     "label": "overlay15UpdateMovingStars",
      "source": "overlays/o015/overlay_015",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
@@ -5148,7 +5118,7 @@
      "type": "c",
      "source": "overlays/o019/overlay19BuildSpatialMasks",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x12E4",
@@ -5351,7 +5321,7 @@
      "type": "c",
      "source": "overlays/o020/overlay20RemoveEntry",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x10EC",
@@ -6629,6 +6599,14 @@
      "end_offset": "0x64",
      "size": "0x64",
      "label": "overlay27Init",
+     "source": "overlays/o027/overlay_027",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
+     "offset": "0x64",
+     "end_offset": "0x624",
+     "size": "0x5C0",
+     "label": "func_overlay_027_F0000064_187BA3C",
      "source": "overlays/o027/overlay_027",
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
@@ -8357,7 +8335,7 @@
      "type": "c",
      "source": "overlays/o037/overlay37Render",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x4F4",
@@ -9107,7 +9085,7 @@
      "type": "c",
      "source": "overlays/o041/overlay41EnqueueTransition",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x1B00",
@@ -9532,7 +9510,7 @@
      "type": "c",
      "source": "overlays/o043/overlay43ComputeMotion",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x1184",
@@ -10008,7 +9986,7 @@
      "type": "c",
      "source": "overlays/o046/overlay46UpdateSequence",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x614",
@@ -10035,7 +10013,7 @@
      "type": "c",
      "source": "overlays/o046/func_overlay_046_F0000874_188EC6C",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xF7C",
@@ -10203,7 +10181,8 @@
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o046/overlay46UpdateSequence",
-     "trial_function": "func_overlay_046_F0000120_188E518"
+     "trial_function": "func_overlay_046_F0000120_188E518",
+     "externalized": true
     }
    ]
   },
@@ -11365,7 +11344,7 @@
      "type": "c",
      "source": "overlays/o054/overlay54Initialize",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x3CC",
@@ -12040,7 +12019,7 @@
      "type": "c",
      "source": "overlays/o057/overlay57UpdateModeState",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x3FD4",
@@ -12103,7 +12082,7 @@
      "type": "c",
      "source": "overlays/o057/func_overlay_057_F0004E18_18A8A10",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x60F8",
@@ -12322,7 +12301,7 @@
      "type": "c",
      "source": "overlays/o058/overlay58DrawSegmentStrip",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x4F28",
@@ -12367,7 +12346,7 @@
      "type": "c",
      "source": "overlays/o058/overlay58FinalizePackedStatus",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x5A14",
@@ -14669,7 +14648,7 @@
      "type": "c",
      "source": "overlays/o071/func_overlay_071_F0000870_18CA390",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xB48",
@@ -15668,7 +15647,7 @@
      "type": "c",
      "source": "overlays/o079/func_overlay_079_F0000134_18CD0D4",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xEFC",
@@ -17798,7 +17777,7 @@
      "type": "c",
      "source": "overlays/o092/overlay92FindNearestCourse",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x308",
@@ -18731,7 +18710,7 @@
      "type": "c",
      "source": "overlays/o098/overlay98CollectUniqueY",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x144",
@@ -19656,7 +19635,7 @@
      "type": "c",
      "source": "overlays/o101/overlay101DrawPanel",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x332C",

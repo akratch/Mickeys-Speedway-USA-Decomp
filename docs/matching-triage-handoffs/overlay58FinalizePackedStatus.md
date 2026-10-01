@@ -2,11 +2,51 @@
 ### `overlay58FinalizePackedStatus` plateau handoff
 
 - source: `src/overlays/o058/overlay58FinalizePackedStatus.c`
-- score: 75 differing words
+- score: 0/304 words, promoted
 - frame: 0x48
 - relocations: 48
-- first mismatch: +0x18
-- summary: one live nextCount takes the fifth home only by growing the frame 0x48 to 0x60 at 76 masked; function, block, and embedded s32 all grow; reverted
+- first mismatch: none
+- summary: Matched. Three resident callees, nine locals with the records pointer last, mode and player read from their objects, self assigned inside each counting loop, decoded field in mask, count plus one as an expression.
+
+#### 2026-10-01, lane c-ovl2: ROM-exact closure
+
+The retained candidate reproduced 75 masked differences at 1,216 bytes. It
+was rewritten from the listing and the module's relocation records, without
+probes, volatile reads, comma assignments or forces, and measured on the
+direct configured compile:
+
+- The records name three resident callees for all twenty-four call sites,
+  one resident base for the packed status words and three resident bytes.
+- The frame names the locals. The target keeps the count in the second home
+  from the top, the current value in the sixth and the records pointer in
+  the ninth, with one compiler temporary below. That is nine declared locals
+  with the records pointer last, so the packed mode, the selected player and
+  the decoded field cannot all be locals. Mode and player written as their
+  object at every use leave one shared load each, which is what the listing
+  holds.
+- The posted count is `count + 1` at the call and at the compare. As an
+  expression it is a compiler temporary with its own home, the slot the
+  earlier next-count local could only reach by growing the frame.
+- The first loop reads the indexed rank with a post-increment subscript,
+  which orders both induction updates before the compare.
+- The decoded field of the third loop reuses `mask`. As a separate local or
+  as a repeated expression it takes the free result register and every later
+  colour is one off (127); in `mask` it scores 68.
+- `self` assigned from the record once before each loop leaves the shared
+  player load ranked after the constant, the desired rank and the status
+  base (68). Assigned inside the loop body, the copy is still hoisted to the
+  preheader, but the in-loop reference ranks the shared load first: 0.
+
+Proof: overlay 58 text +0x5554, 1,216 executable bytes / 304 words, frame
+0x48, 48 of 48 relocation identities. Three resident callees are renamed to
+their generated surface entries. Prior measurements below remain historical
+negatives for the probe shape.
+
+Commands: direct configured compile scored with `tools/score_symbol.py
+--object`, `gmake overlay-atlas-write`, `tools/refresh_atlas_digest.py`,
+`gmake extract`, `gmake overlay-syms`, `gmake verify`,
+`gmake check-overlay-syms`, and
+`gmake promotion-proof SYMBOL=overlay58FinalizePackedStatus`.
 
 Summary before this remeasure: comma-delay of mode-0 i and shift, 77 to 75 at delta 0; L100/L145/L109 on i and mask/shift inert or worse; fifth home remains
 - assignment base: `ccbd4a78b29afb17ad817dd9228f774012b7d9ac`

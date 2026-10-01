@@ -168,7 +168,9 @@ typedef struct LightUpdateState {
     f32 x18;
     f32 y1C;
     f32 z20;
-    u8 pad24[0x14];
+    u8 pad24[4];
+    f32 radius28;
+    u8 pad2C[0xC];
     f32 lower38;
     f32 upper3C;
     u8 red40;
@@ -515,97 +517,97 @@ void lightUpdateLights(s32 updateRate) {
     }
 }
 /*
- * Workbench: 205/205 words, masked 41, first naming +0x20, frame 0x48.
- * Remaining: one lbu/sll swap at +0x64 and a t-reg ring phase (t5 vs t4).
+ * Matched on the natural shape: the light parameter is used directly (no
+ * aliasing state local), the segment header is a block local, the intensity
+ * float is assigned from the byte just stored, and the radius is a typed
+ * field so the bounds add keeps its source operand order.
  * PROVENANCE: control flow, Vec3f coordinate rows, nested flags/mode test,
  * and PY rotation layout adapted from JFG's public retail-derived
  * src/camlight.c::camlightUpdate and src/lights.c::func_80021434_22034.
  * Mickey's owner/segment offsets, colour-cycle helper, and track-light
  * calls remain authoritative.
  */
-#ifdef NON_MATCHING
+#define LIGHT ((LightUpdateState *) light)
 void func_80018F08(UnkLight *light, s32 updateRate) {
     s16 rotation[3];
-    LightUpdateState *state;
     LightUpdateOwner *owner;
 
-    state = (LightUpdateState *) light;
-    owner = state->owner14;
+    owner = LIGHT->owner14;
     if ((owner != NULL) && (owner->disabled91 == 0)) {
-        if (state->index6 >= 0) {
+        if (LIGHT->index6 >= 0) {
             LightUpdateSegment *segment;
+            LightUpdateHeader *header;
 
             segment = owner->segments68[owner->segmentIndex3A];
             if (segment != NULL) {
-                if (state->index6 < segment->header0->count2D) {
-                    state->x18 = segment->coordinates40[state->index6].x;
-                    state->y1C = segment->coordinates40[state->index6].y;
-                    state->z20 = segment->coordinates40[state->index6].z;
-                    state->flags2 |= 1;
+                header = segment->header0;
+                if (LIGHT->index6 < header->count2D) {
+                    LIGHT->x18 = segment->coordinates40[LIGHT->index6].x;
+                    LIGHT->y1C = segment->coordinates40[LIGHT->index6].y;
+                    LIGHT->z20 = segment->coordinates40[LIGHT->index6].z;
+                    LIGHT->flags2 |= 1;
                 }
             }
         } else {
-            pointListRPY(1, owner, &state->inputX08, &state->x18);
-            state->x18 += owner->offsetX0C;
-            state->y1C += owner->offsetY10;
-            state->z20 += owner->offsetZ14;
-            state->flags2 |= 1;
+            pointListRPY(1, owner, &LIGHT->inputX08, &LIGHT->x18);
+            LIGHT->x18 += owner->offsetX0C;
+            LIGHT->y1C += owner->offsetY10;
+            LIGHT->z20 += owner->offsetZ14;
+            LIGHT->flags2 |= 1;
         }
-        state->flags2 |= 4;
-        if (state->trackLight6C != 0) {
-            func_8000D7F8(state->trackLight6C, state->x18, state->y1C, state->z20);
-        }
-    }
-    if (state->colourCycle54 != 0) {
-        func_80036AB0((u8 *) state + 0x48, updateRate);
-        state->red40 = *(u8 *) ((u8 *) state + 0x50);
-        state->green41 = *(u8 *) ((u8 *) state + 0x51);
-        state->blue42 = *(u8 *) ((u8 *) state + 0x52);
-        if (!(state->flags3 & 0x10)) {
-            state->intensity43 = *(u8 *) ((u8 *) state + 0x53);
-            state->intensity44 = (f32) (u32) (*(u8 *) ((u8 *) state + 0x53) & 0xFF);
-        }
-        state->flags2 |= 2;
-    }
-    if (state->step5C != 0) {
-        state->value58 = (s16) (state->value58 + (state->step5C * updateRate));
-        state->flags2 |= 4;
-    }
-    if (state->step5E != 0) {
-        state->value5A = (s16) (state->value5A + (state->step5E * updateRate));
-        state->flags2 |= 4;
-    }
-    if ((state->flags2 & 1) || ((owner != NULL) && (owner->disabled91 == 0))) {
-        state->lower38 = state->y1C - *(f32 *) ((u8 *) state + 0x28);
-        state->upper3C = state->y1C + *(f32 *) ((u8 *) state + 0x28);
-    }
-    if (state->flags2 & 2) {
-        lightCreateLightTable(state->red40, state->green41, state->blue42, state->table70);
-        if (state->trackLight6C != 0) {
-            func_8000D768(state->trackLight6C, state->red40, state->green41,
-                          state->blue42, state->intensity43);
+        LIGHT->flags2 |= 4;
+        if (LIGHT->trackLight6C != 0) {
+            func_8000D7F8(LIGHT->trackLight6C, LIGHT->x18, LIGHT->y1C, LIGHT->z20);
         }
     }
-    if (state->flags2 & 4) {
-        if ((state->mode0 == 3) || (state->mode0 == 0)) {
-            state->directionZ68 = -1.0f;
-            rotation[0] = state->value58;
-            rotation[1] = state->value5A;
+    if (LIGHT->colourCycle54 != 0) {
+        func_80036AB0((u8 *) LIGHT + 0x48, updateRate);
+        LIGHT->red40 = *(u8 *) ((u8 *) LIGHT + 0x50);
+        LIGHT->green41 = *(u8 *) ((u8 *) LIGHT + 0x51);
+        LIGHT->blue42 = *(u8 *) ((u8 *) LIGHT + 0x52);
+        if (!(LIGHT->flags3 & 0x10)) {
+            LIGHT->intensity43 = *(u8 *) ((u8 *) LIGHT + 0x53);
+            LIGHT->intensity44 = LIGHT->intensity43;
+        }
+        LIGHT->flags2 |= 2;
+    }
+    if (LIGHT->step5C != 0) {
+        LIGHT->value58 = (s16) (LIGHT->value58 + (LIGHT->step5C * updateRate));
+        LIGHT->flags2 |= 4;
+    }
+    if (LIGHT->step5E != 0) {
+        LIGHT->value5A = (s16) (LIGHT->value5A + (LIGHT->step5E * updateRate));
+        LIGHT->flags2 |= 4;
+    }
+    if ((LIGHT->flags2 & 1) || ((owner != NULL) && (owner->disabled91 == 0))) {
+        LIGHT->lower38 = LIGHT->y1C - LIGHT->radius28;
+        LIGHT->upper3C = LIGHT->y1C + LIGHT->radius28;
+    }
+    if (LIGHT->flags2 & 2) {
+        lightCreateLightTable(LIGHT->red40, LIGHT->green41, LIGHT->blue42, LIGHT->table70);
+        if (LIGHT->trackLight6C != 0) {
+            func_8000D768(LIGHT->trackLight6C, LIGHT->red40, LIGHT->green41,
+                          LIGHT->blue42, LIGHT->intensity43);
+        }
+    }
+    if (LIGHT->flags2 & 4) {
+        if ((LIGHT->mode0 == 3) || (LIGHT->mode0 == 0)) {
+            LIGHT->directionZ68 = -1.0f;
+            rotation[0] = LIGHT->value58;
+            rotation[1] = LIGHT->value5A;
             rotation[2] = 0;
-            mathOneFloatPY(rotation, &state->directionX60);
+            mathOneFloatPY(rotation, &LIGHT->directionX60);
             if ((owner != NULL) && (owner->disabled91 == 0)) {
-                pointListRPY(1, owner, &state->directionX60, &state->directionX60);
+                pointListRPY(1, owner, &LIGHT->directionX60, &LIGHT->directionX60);
             }
-            state->directionX60 = -state->directionX60;
-            state->directionY64 = -state->directionY64;
-            state->directionZ68 = -state->directionZ68;
+            LIGHT->directionX60 = -LIGHT->directionX60;
+            LIGHT->directionY64 = -LIGHT->directionY64;
+            LIGHT->directionZ68 = -LIGHT->directionZ68;
         }
     }
-    state->flags2 = 0;
+    LIGHT->flags2 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lights/func_80018F08.s")
-#endif
+#undef LIGHT
 /* PROVENANCE: adapted from DKR's public decomp, src/lights.c, and Mickey's own assembly. */
 void killLight(UnkLight *light) {
     s32 i;
@@ -1138,16 +1140,6 @@ s32 lightKillGlowingLight(void) {
     camlightDelete();
     return 1;
 }
-
-/* PLATEAU-HANDOFF:func_80018F08:start
- * symbol: func_80018F08
- * score: 41/205 words
- * frame: 0x48
- * relocations: 7
- * first-mismatch: +0x20
- * summary: hypothesis=keep the generated segment cursor live through x, y and z on the sole-header 0x48 form without a second cfe auto; spellings=row reassignment 190 at delta -16, comma of indexed stores 189 at +40, coordinates base 189 at delta -16; stall=no delta-0 live cursor and the 41-word body was kept
- * PLATEAU-HANDOFF:func_80018F08:end
- */
 
 /* PLATEAU-HANDOFF:func_80019AB8:start
  * symbol: func_80019AB8

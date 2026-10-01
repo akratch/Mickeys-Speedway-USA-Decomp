@@ -2,11 +2,11 @@
 ### `levelInit` plateau handoff
 
 - source: `src/main/level.c`
-- score: 510/516 words
+- score: 0/516 words, promoted
 - frame: 0x80
 - relocations: 110
-- first mismatch: +0x328
-- summary: hypothesis=separate ring-mask evaluation with the draw count unchanged; spellings=statement double-mask stayed 6, use-site mask scored 19, comma-before-base scored 94; stall=the redundant mask still pops before its operand
+- first mismatch: none
+- summary: Matched. Each arm of the resource loop masks the id in place before using it; the doubled masks, the borrowed carrier and the unread pad were artefacts of the inherited shape.
 
 Summary before this remeasure: Unsigned-remainder mask controls are full-TU byte-inert; separate ring-mask evaluation with unchanged draw count remains open.
 
@@ -488,5 +488,47 @@ Stall: a surviving separate mask can put the table before the scale, but the
 redundant mask still pops before its operand. It cannot be the fifth draw
 after the sum without either leading the mask or sitting in front of the
 scale. No spelling lowered the masked count at delta 0.
+
+#### 2026-10-01, lane a-level: matched by rewriting the loop, 6 to 0
+
+Matched and promoted: 516 of 516 words, size delta 0, `gmake verify` passes.
+
+The recorded closure held the loop's shape fixed. Every pass since 2026-09-10
+kept three redundant masks as phantom ring draws, a loop value borrowed from
+`shouldPlay` for its interference, and an unread `s16` to hold the tenth frame
+cell, and then asked how to move one phantom draw behind the address sum. The
+answer is that the target has no phantom draws at all.
+
+What the loop is: the id is a local of its own, and each of the four arms
+strips the two type bits from it in place with a compound mask assignment
+before using it -- as the call argument in three arms and as a plain subscript
+of the table in the fourth. The assignment is a surviving evaluation, so each
+arm spends the ring draw the doubled masks were standing in for, in the
+target's position; the tests are single masks; the table read is base-first
+with the mask drawn before the table load; and the id local is the tenth
+frame cell, so the pad goes too. A fresh `s32` declared last at function scope
+or in the loop block is exact; `s16` and `u16` typings change the size.
+
+How it was found. The matched twin `levelFreeAll` already used the in-place
+mask in its table arm. Applying only that to this function's table arm made
+the arm exact but left the loop tail one draw short (89 words of phase), which
+located the missing draw as *after* the table arm rather than inside it. A
+32-cell product over in-place-or-inline for arms one, two and four crossed
+with single-or-doubled test masks has four exact cells; the one with every
+test single and every arm in place is the natural one and was adopted. On
+that shape a fresh id local replaces both the `shouldPlay` carrier and the
+pad at 0 words.
+
+The earlier readings were right about the old shape and wrong about the
+function: "the fifth pop is load-bearing", "a mask with one read never
+survives forward substitution" and "the carrier must be shouldPlay" all
+described constraints of the doubled-mask form.
+
+Promotion needed one build fix. The seven typed trap aliases are emitted
+against their alias names, so the object does not link without a
+redefine-sym postprocess; the Makefile rule that did this had been removed
+as redundant while the function was still guarded. It is restored, one
+objcopy per alias because a single invocation refuses several redefinitions
+onto one target name.
 
 <!-- plateau-handoff:levelInit:end -->

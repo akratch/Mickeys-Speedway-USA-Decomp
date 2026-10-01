@@ -103,6 +103,9 @@ from typing import Optional
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import reloc_surface  # noqa: E402
+import search_local_bindings  # noqa: E402
+import source_symbol_fidelity  # noqa: E402
+import prepared_macro_context  # noqa: E402
 import sweep_receipts  # noqa: E402
 import promotion_transaction  # noqa: E402
 _LOADED_IMPLEMENTATIONS = {
@@ -110,6 +113,9 @@ _LOADED_IMPLEMENTATIONS = {
     for name, path in (("runner", __file__), ("receipts", sweep_receipts.__file__),
                        ("promotion", promotion_transaction.__file__),
                        ("relocations", reloc_surface.__file__),
+                       ("search_local_bindings", search_local_bindings.__file__),
+                       ("source_symbol_fidelity", source_symbol_fidelity.__file__),
+                       ("prepared_macro_context", prepared_macro_context.__file__),
                        ("relocation_identity", reloc_surface.ri.__file__),
                        ("overlay_table", reloc_surface.ot.__file__))
 }
@@ -494,8 +500,381 @@ def build_recipe_for(c_file: Path, deadline: Optional[float] = None) -> BuildRec
     return recipe
 
 
+RECIPE_VARIANT_SCHEMA = "mickey-section-metadata-recipe-variant-v1"
+
+
+def _unchanged_recipe_variant(recipe: BuildRecipe, function: Optional[str]) -> dict:
+    original_json = json.dumps(dataclasses.asdict(recipe), sort_keys=True).encode()
+    steps = list(recipe.objcopy_steps)
+    return {"schema": RECIPE_VARIANT_SCHEMA, "status": "unchanged",
+            "function": function,
+            "original_recipe_sha256": hashlib.sha256(original_json).hexdigest(),
+            "original_steps": steps, "effective_steps": steps,
+            "effective_recipe_sha256": hashlib.sha256(json.dumps(steps, sort_keys=True).encode()).hexdigest(),
+            "omitted_additions": [], "ownership_proof": None}
+
+
+def _shell_words_for_objcopy(step: str) -> list[str]:
+    words = shlex.split(step)
+    if (not words or Path(words[0]).resolve() != OBJCOPY.resolve()
+            or words[-1] != "$OUTPUT"
+            or any(word in {"&&", "||", ";", "|", ">", "2>"} for word in words)):
+        raise RuntimeError("unsupported objcopy recipe for section-metadata classification")
+    return words
+
+
+def _objcopy_add_symbols(words: list[str]) -> list[tuple[int, int, str, str, int, str]]:
+    """Return (start, stop, name, section, value, binding) for parsed additions."""
+    found = []
+    i = 1
+    pattern = re.compile(
+        r"([^=,]+)=(?:(\.[A-Za-z0-9_.$]+):)?(0[xX][0-9a-fA-F]+|[0-9]+),([A-Za-z]+(?:,[A-Za-z]+)*)$")
+    while i < len(words) - 1:
+        token = words[i]
+        if token == "--add-symbol":
+            if i + 1 >= len(words) - 1:
+                raise RuntimeError("missing --add-symbol recipe value")
+            value = words[i + 1]
+            match = pattern.fullmatch(value)
+            if match is None:
+                raise RuntimeError("unsupported --add-symbol recipe value")
+            name, section, address, flags = match.groups()
+            bindings = [flag for flag in flags.split(",") if flag in {"local", "global", "weak"}]
+            if len(bindings) != 1:
+                raise RuntimeError("ambiguous --add-symbol binding")
+            found.append((i, i + 2, name, section or "", int(address, 0), bindings[0]))
+            i += 2
+        elif token.startswith("--add-symbol="):
+            value = token.split("=", 1)[1]
+            match = pattern.fullmatch(value)
+            if match is None:
+                raise RuntimeError("unsupported --add-symbol recipe value")
+            name, section, address, flags = match.groups()
+            bindings = [flag for flag in flags.split(",") if flag in {"local", "global", "weak"}]
+            if len(bindings) != 1:
+                raise RuntimeError("ambiguous --add-symbol binding")
+            found.append((i, i + 1, name, section or "", int(address, 0), bindings[0]))
+            i += 1
+        else:
+            i += 1
+    return found
+
+
+def _function_ranges(elf, label: str) -> list[dict]:
+    text_index, text_section = elf.section(".text")
+    if text_index is None or not (text_section[2] & 0x4):
+        raise RuntimeError(f"{label} has no executable .text section")
+    rows = []
+    for name, value, size, info, shndx in elf.symbols():
+        if (shndx == text_index and (info & 0xF) == 2 and size > 0):
+            if value + size > text_section[5]:
+                raise RuntimeError(f"{label} function symbol exceeds its .text section")
+            rows.append({"name": name, "start": value, "end": value + size,
+                         "size": size, "section_index": shndx})
+    rows.sort(key=lambda row: (row["start"], row["end"], row["name"]))
+    for left, right in zip(rows, rows[1:]):
+        if right["start"] < left["end"]:
+            raise RuntimeError(
+                f"{label} has overlapping function owners: {left['name']} and {right['name']}")
+    return rows
+
+
+def _unique_function_range(elf, function: str, label: str, ranges=None) -> dict:
+    rows = _function_ranges(elf, label) if ranges is None else ranges
+    matches = [row for row in rows if row["name"] == function]
+    if len(matches) != 1:
+        raise RuntimeError(f"{label} has incomplete ownership for function {function}")
+    return matches[0]
+
+
+def _relocation_rows(elf, function_range: dict, metadata_names: set[str], label: str) -> list[dict]:
+    symbols = elf.symbols()
+    text_index, _ = elf.section(".text")
+    rows = []
+    for section, offset, kind, symbol_index in elf.relocations():
+        if section != ".text":
+            continue
+        if symbol_index >= len(symbols):
+            raise RuntimeError(f"{label} has an unresolved relocation symbol index")
+        symbol = symbols[symbol_index]
+        symbol_section = (elf.names[symbol[4]] if 0 <= symbol[4] < len(elf.names) else None)
+        if function_range["start"] <= offset < function_range["end"]:
+            rows.append({"offset": offset - function_range["start"], "type": kind,
+                         "symbol": symbol[0], "symbol_section": symbol_section})
+    return rows
+
+
+def _relocation_identity(rows: list[dict]) -> list[tuple[int, int, str]]:
+    return [(row["offset"], row["type"], row["symbol"]) for row in rows]
+
+
+def _relocation_normalized_bytes(data: bytes, rows: list[dict], label: str) -> bytes:
+    """Normalize only linker-owned instruction fields before TU-context compare."""
+    masks = {2: 0x00000000, 4: 0xFC000000, 5: 0xFFFF0000,
+             6: 0xFFFF0000, 10: 0xFFFF0000}
+    normalized = bytearray(data)
+    for row in rows:
+        offset, kind = row["offset"], row["type"]
+        if kind not in masks or offset < 0 or offset + 4 > len(normalized):
+            raise RuntimeError(f"{label} has an unsupported or out-of-range relocation field")
+        word = int.from_bytes(normalized[offset:offset + 4], "big")
+        normalized[offset:offset + 4] = (word & masks[kind]).to_bytes(4, "big")
+    return bytes(normalized)
+
+
+def _rodata_references(elf, ranges: list[dict], metadata_names: set[str], label: str) -> list[dict]:
+    symbols = elf.symbols()
+    rows = []
+    for section, offset, kind, symbol_index in elf.relocations(target=r".*"):
+        if symbol_index >= len(symbols):
+            raise RuntimeError(f"{label} has an unresolved relocation symbol index")
+        symbol = symbols[symbol_index]
+        name, _value, _size, _info, shndx = symbol
+        symbol_section = (elf.names[shndx] if 0 <= shndx < len(elf.names) else None)
+        if symbol_section != ".rodata" and name not in metadata_names and name != ".rodata":
+            continue
+        if section != ".text":
+            raise RuntimeError(f"{label} has a relevant relocation from unsupported section {section}")
+        owners = [row for row in ranges if row["start"] <= offset < row["end"]]
+        if len(owners) != 1:
+            raise RuntimeError(f"{label} has incomplete or overlapping .rodata relocation ownership")
+        rows.append({"offset": offset, "type": kind, "symbol": name,
+                     "symbol_section": symbol_section, "owner": owners[0]["name"]})
+    return rows
+
+
+def _section_metadata_variant(scratch: Path, recipe: BuildRecipe, c_file: Path,
+                              function: Optional[str], full_tu_object: Path,
+                              source_sha256: Optional[str] = None,
+                              c_baseline_object: Optional[Path] = None) -> tuple[tuple[str, ...], dict]:
+    """Drop only an absent, proven-unowned TU section alias from scratch metadata.
+
+    The original BuildRecipe remains untouched. Any ambiguous owner, direct
+    section-symbol relocation, or undefined-name reference in the target
+    executable closure refuses the variant.
+    """
+    original_steps = tuple(recipe.objcopy_steps)
+    variant = _unchanged_recipe_variant(recipe, function)
+    base_path = scratch / "base.o"
+    if not recipe.objcopy_steps or not base_path.is_file() or not function:
+        if recipe.objcopy_steps and not function:
+            # Existing standalone callers that do not identify a function keep
+            # their original recipe; production ownership-sensitive call sites
+            # always supply one.
+            variant["status"] = "unchanged-no-function-context"
+        return original_steps, variant
+
+    base_elf = reloc_surface.Elf(base_path)
+    base_rodata_index, _ = base_elf.section(".rodata")
+    if base_rodata_index is not None:
+        return original_steps, variant
+
+    remapped = []
+    candidates = []
+    all_additions = []
+    mention = re.compile(r"(?<![\w./-])(?:\./)?" + re.escape(
+        f"build/{c_file.relative_to(ROOT).as_posix()}.o") + r"(?![\w.-])")
+    for step in original_steps:
+        if not mention.search(step):
+            remapped.append(step)
+            continue
+        words = _shell_words_for_objcopy(mention.sub('"$OUTPUT"', step))
+        parsed_additions = _objcopy_add_symbols(words)
+        all_additions.extend((len(remapped), words, row, step) for row in parsed_additions)
+        additions = [row for row in parsed_additions if row[3] == ".rodata"]
+        for add in additions:
+            candidates.append((len(remapped), words, add, step))
+        remapped.append(step)
+    if not candidates:
+        return original_steps, variant
+    if full_tu_object.is_symlink() or not full_tu_object.is_file():
+        raise RuntimeError("cannot prove section metadata ownership: canonical TU object is missing or nonregular")
+    full_elf = reloc_surface.Elf(full_tu_object)
+    full_ranges = _function_ranges(full_elf, "canonical full-TU object")
+    full_function = _unique_function_range(full_elf, function, "canonical full-TU object", full_ranges)
+    c_baseline_object = c_baseline_object or full_tu_object
+    if c_baseline_object.is_symlink() or not c_baseline_object.is_file():
+        raise RuntimeError("cannot prove configured C baseline: object is missing or nonregular")
+    c_elf = reloc_surface.Elf(c_baseline_object)
+    c_ranges = _function_ranges(c_elf, "configured NON_MATCHING C baseline")
+    c_function = _unique_function_range(c_elf, function, "configured NON_MATCHING C baseline", c_ranges)
+    base_ranges = _function_ranges(base_elf, "isolated candidate object")
+    base_function = _unique_function_range(base_elf, function, "isolated candidate object", base_ranges)
+    target_path = scratch / "target.o"
+    if target_path.is_symlink() or not target_path.is_file():
+        raise RuntimeError("cannot prove section metadata ownership: isolated target object is missing or nonregular")
+    target_elf = reloc_surface.Elf(target_path)
+    target_rodata_index, _ = target_elf.section(".rodata")
+    if target_rodata_index is not None:
+        raise RuntimeError("cannot omit full-TU .rodata metadata when the isolated target has .rodata")
+    target_ranges = _function_ranges(target_elf, "isolated target object")
+    target_function = _unique_function_range(target_elf, function, "isolated target object", target_ranges)
+    for label, elf, span, ranges in (("isolated candidate object", base_elf, base_function, base_ranges),
+                                    ("isolated target object", target_elf, target_function, target_ranges)):
+        text_index, section = elf.section(".text")
+        if span["start"] != 0:
+            raise RuntimeError(f"{label} function does not start at the executable section boundary")
+        if any(row["name"] != function for row in ranges):
+            raise RuntimeError(f"{label} contains executable symbols outside the target closure")
+        relocations = elf.relocations(target=r".*")
+        if any(section_name != ".text" for section_name, _off, _kind, _symbol in relocations):
+            raise RuntimeError(f"{label} has relocations outside .text")
+        if any(not (span["start"] <= off < span["end"])
+               for _sec, off, _kind, _symbol in relocations):
+            raise RuntimeError(f"{label} has relocation sites outside the target executable closure")
+        if not (section[2] & 0x4) or span["end"] > section[5]:
+            raise RuntimeError(f"{label} has incomplete executable function ownership")
+        padding = elf.section_bytes(".text")[span["end"]:]
+        if len(padding) > 15 or len(padding) % 4 or any(padding):
+            raise RuntimeError(f"{label} has executable bytes outside the target function range")
+
+    # All section-symbol relocations (including implicit addends) and all
+    # undefined alias-name relocations are treated as dependencies.
+    rodata_names = {row[2] for _index, _words, row, _step in candidates}
+    all_metadata_names = {row[2] for _index, _words, row, _step in all_additions}
+    full_refs = _rodata_references(full_elf, full_ranges, rodata_names, "canonical full-TU object")
+    if any(row["owner"] == function for row in full_refs):
+        raise RuntimeError("cannot omit .rodata metadata: full-TU target owns a .rodata relocation")
+    for label, elf, span in (("isolated candidate object", base_elf, base_function),
+                             ("isolated target object", target_elf, target_function)):
+        refs = _rodata_references(elf, [span], all_metadata_names, label)
+        if refs:
+            raise RuntimeError(f"cannot omit .rodata metadata: {label} target closure has a .rodata dependency")
+
+    symbol_rows = full_elf.symbols()
+    omissions = []
+    removals_by_step: dict[int, list[tuple[int, int]]] = {}
+    addition_owners = []
+    for step_index, words, addition, original_step in all_additions:
+        _start, _stop, name, section_name, value, binding = addition
+        matches = [row for row in symbol_rows if row[0] == name]
+        expected_section_index, _ = full_elf.section(section_name)
+        expected_binding = {"local": 0, "global": 1, "weak": 2}[binding]
+        if (len(matches) != 1 or expected_section_index is None
+                or matches[0][4] != expected_section_index or matches[0][1] != value
+                or matches[0][3] >> 4 != expected_binding):
+            raise RuntimeError(f"cannot prove full-TU owner for recipe metadata symbol {name}")
+        refs = []
+        for source_section, offset, kind, symbol_index in full_elf.relocations(target=r".*"):
+            if symbol_index >= len(symbol_rows):
+                raise RuntimeError(f"recipe metadata symbol {name} has an unresolved relocation identity")
+            if symbol_rows[symbol_index][0] != name:
+                continue
+            if source_section != ".text":
+                raise RuntimeError(
+                    f"recipe metadata symbol {name} has unsupported reference section {source_section}")
+            owners = [row for row in full_ranges if row["start"] <= offset < row["end"]]
+            if len(owners) != 1:
+                raise RuntimeError(f"recipe metadata symbol {name} has incomplete or overlapping full-TU owners")
+            refs.append({"offset": offset, "type": kind, "owner": owners[0]["name"]})
+        owners = sorted({row["owner"] for row in refs})
+        if not owners:
+            raise RuntimeError(f"cannot prove relocation owner for recipe metadata symbol {name}")
+        if function in owners:
+            raise RuntimeError(f"recipe metadata symbol {name} is referenced by target {function}")
+        addition_owners.append({"symbol": name, "section": section_name, "value": value,
+                                "binding": binding, "full_tu_reference_owners": owners,
+                                "target_closure_reference_count": 0})
+        if section_name == ".rodata":
+            removals_by_step.setdefault(step_index, []).append((addition[0], addition[1]))
+            omissions.append({"symbol": name, "section": section_name, "value": value,
+                              "binding": binding, "full_tu_reference_owners": owners,
+                              "original_step": original_step})
+
+    effective_steps = list(original_steps)
+    for step_index, _words, _addition, original_step in candidates:
+        if step_index not in removals_by_step:
+            continue
+        mention_match = mention.search(original_step)
+        if mention_match is None:
+            raise RuntimeError("cannot preserve postprocess provenance for section-metadata variant")
+        words = _shell_words_for_objcopy(mention.sub('"$OUTPUT"', original_step))
+        drop = {pair for pair in removals_by_step[step_index]}
+        kept = []
+        i = 0
+        while i < len(words):
+            match = next((entry for entry in _objcopy_add_symbols(words)
+                          if entry[0] == i and (entry[0], entry[1]) in drop), None)
+            if match is not None:
+                i = match[1]
+            else:
+                kept.append(words[i])
+                i += 1
+        rendered = " ".join('"$OUTPUT"' if word == "$OUTPUT" else shlex.quote(word) for word in kept)
+        effective_steps[step_index] = rendered
+
+    tu_text_index, tu_text = full_elf.section(".text")
+    candidate_text = base_elf.section_bytes(".text")
+    target_text = target_elf.section_bytes(".text")
+    candidate_relocs = _relocation_rows(base_elf, base_function, all_metadata_names, "isolated candidate object")
+    target_relocs = _relocation_rows(target_elf, target_function, all_metadata_names, "isolated target object")
+    full_function_relocs = _relocation_rows(
+        c_elf, c_function, all_metadata_names, "configured NON_MATCHING C baseline")
+    full_function_bytes = c_elf.section_bytes(".text")[c_function["start"]:c_function["end"]]
+    candidate_function_bytes = candidate_text[base_function["start"]:base_function["end"]]
+    normalized_full = _relocation_normalized_bytes(full_function_bytes, full_function_relocs,
+                                                   "canonical full-TU function")
+    normalized_candidate = _relocation_normalized_bytes(candidate_function_bytes, candidate_relocs,
+                                                        "isolated candidate function")
+    if (c_function["size"] != base_function["size"]
+            or normalized_full != normalized_candidate
+            or _relocation_identity(full_function_relocs) != _relocation_identity(candidate_relocs)):
+        raise RuntimeError(
+            "isolated candidate baseline does not reproduce current full-TU executable bytes and relocation identities")
+    full_tu_sha = sweep_receipts.file_digest(full_tu_object)
+    source_sha = source_sha256 or sweep_receipts.file_digest(c_file)
+    variant.update({
+        "status": "unowned-section-metadata-omitted",
+        "effective_steps": effective_steps,
+        "effective_recipe_sha256": hashlib.sha256(json.dumps(effective_steps, sort_keys=True).encode()).hexdigest(),
+        "source": c_file.relative_to(ROOT).as_posix(),
+        "source_sha256": source_sha,
+        "full_tu_object": full_tu_object.relative_to(ROOT).as_posix(),
+        "full_tu_object_sha256": full_tu_sha,
+        "full_tu_text_bytes": tu_text[5],
+        "full_tu_function": {"name": function, "start": full_function["start"],
+                              "size": full_function["size"], "end": full_function["end"]},
+        "configured_c_baseline_object": c_baseline_object.relative_to(ROOT).as_posix(),
+        "configured_c_baseline_object_sha256": sweep_receipts.file_digest(c_baseline_object),
+        "configured_c_baseline_function": {"name": function, "start": c_function["start"],
+                                             "size": c_function["size"], "end": c_function["end"]},
+        "configured_c_baseline_function_bytes_sha256": hashlib.sha256(full_function_bytes).hexdigest(),
+        "configured_c_baseline_function_relocations": full_function_relocs,
+        "function_self_context": {
+            "relocation_identity_equal": True,
+            "relocation_normalized_bytes_sha256": hashlib.sha256(normalized_full).hexdigest(),
+            "candidate_raw_bytes_sha256": hashlib.sha256(candidate_function_bytes).hexdigest(),
+            "configured_c_baseline_raw_bytes_sha256": hashlib.sha256(full_function_bytes).hexdigest(),
+            "normalized_fields": "R_MIPS_32, R_MIPS_26, R_MIPS_HI16, R_MIPS_LO16, R_MIPS_PC16"
+        },
+        "candidate": {"object_sha256": sweep_receipts.file_digest(base_path),
+                      "text_section_bytes": len(candidate_text),
+                      "function_start": base_function["start"], "function_size": base_function["size"],
+                      "function_end": base_function["end"],
+                      "function_bytes_sha256": hashlib.sha256(candidate_text[base_function["start"]:base_function["end"]]).hexdigest(),
+                      "relocations": candidate_relocs},
+        "target": {"object_sha256": sweep_receipts.file_digest(target_path),
+                   "text_section_bytes": len(target_text),
+                   "function_start": target_function["start"], "function_size": target_function["size"],
+                   "function_end": target_function["end"],
+                   "function_bytes_sha256": hashlib.sha256(target_text[target_function["start"]:target_function["end"]]).hexdigest(),
+                   "relocations": target_relocs},
+        "full_tu_rodata_references": full_refs,
+        "omitted_additions": omissions,
+        "kept_additions": [row for row in addition_owners if row["section"] != ".rodata"],
+        "padding_excluded_from_function_ranges": {
+            "candidate": len(candidate_text) - base_function["end"],
+            "target": len(target_text) - target_function["end"]},
+        "proof": "current full-TU ownership and isolated executable closures contain no owned .rodata dependency"
+    })
+    if effective_steps == list(original_steps):
+        raise RuntimeError("section-metadata classification produced no effective recipe change")
+    return tuple(effective_steps), variant
+
+
 def replicate_objcopy(scratch: Path, recipe: BuildRecipe, c_file: Path, out_dir: Path,
-                      alias_history: Optional[list] = None) -> None:
+                      alias_history: Optional[list] = None, *, function: Optional[str] = None,
+                      batch_deadline: Optional[float] = None) -> None:
     """Append the TU's post-compile objcopy chain to the scratch's compile.sh,
     retargeted at the scratch object, so the scratch object == the real
     per-TU object (workbench improvement-backlog #9). Records what was and
@@ -508,14 +887,54 @@ def replicate_objcopy(scratch: Path, recipe: BuildRecipe, c_file: Path, out_dir:
     # that does not mention the object at all cannot be retargeted (it would
     # reach the scratch still pointing at the real build tree).
     mention = re.compile(r"(?<![\w./-])(?:\./)?" + re.escape(obj) + r"(?![\w.-])")
+    effective_steps = tuple(recipe.objcopy_steps)
+    variant = _unchanged_recipe_variant(recipe, function)
+    rodata_metadata = False
+    for step in recipe.objcopy_steps:
+        if mention.search(step) and "--add-symbol" in step and ".rodata" in step:
+            words = _shell_words_for_objcopy(mention.sub('"$OUTPUT"', step))
+            if any(row[3] == ".rodata" for row in _objcopy_add_symbols(words)):
+                rodata_metadata = True
+                break
+    if rodata_metadata and not function:
+        raise RuntimeError("cannot classify section metadata without an owned function identity")
+    if rodata_metadata and function and not csh.is_file():
+        raise RuntimeError("cannot classify section metadata without the captured compiler command")
+    if rodata_metadata and function:
+        full_tu_object = ROOT / "build" / f"{c_file.relative_to(ROOT).as_posix()}.o"
+        c_baseline_object = ROOT / "build_non_matching" / f"{c_file.relative_to(ROOT).as_posix()}.o"
+        source_sha = sweep_receipts.file_digest(c_file)
+        full_tu_rel = full_tu_object.relative_to(ROOT).as_posix()
+        c_baseline_rel = c_baseline_object.relative_to(ROOT).as_posix()
+        bounded_capture(["gmake", f"-j{max(1, os.cpu_count() or 1)}", "NON_MATCHING=1",
+                         c_baseline_rel], batch_deadline, check=True)
+        freshness = bounded_capture(["gmake", "-q", full_tu_rel], batch_deadline)
+        c_freshness = bounded_capture(["gmake", "-q", "NON_MATCHING=1", c_baseline_rel], batch_deadline)
+        if freshness.returncode != 0 or c_freshness.returncode != 0:
+            raise RuntimeError("cannot prove current canonical and NON_MATCHING full-TU object ownership")
+        object_sha_before = sweep_receipts.file_digest(full_tu_object)
+        c_object_sha_before = sweep_receipts.file_digest(c_baseline_object)
+        effective_steps, variant = _section_metadata_variant(
+            scratch, recipe, c_file, function, full_tu_object, source_sha256=source_sha,
+            c_baseline_object=c_baseline_object)
+        if (source_sha != sweep_receipts.file_digest(c_file)
+                or object_sha_before != sweep_receipts.file_digest(full_tu_object)
+                or c_object_sha_before != sweep_receipts.file_digest(c_baseline_object)):
+            raise RuntimeError("source or full-TU object changed during section-metadata proof")
+    variant_path = out_dir / "recipe-variant.json"
+    variant_path.write_text(json.dumps(variant, sort_keys=True, indent=2) + "\n")
     if recipe.objcopy_steps and csh.is_file():
         with open(csh, "a") as f:
             f.write("\n")
-            for step in recipe.objcopy_steps:
+            for index, step in enumerate(recipe.objcopy_steps):
                 if not mention.search(step):
                     lines.append(f"skipped (does not name the object): {step}")
                     continue
-                remapped = mention.sub('"$OUTPUT"', step)
+                remapped = mention.sub('"$OUTPUT"', effective_steps[index])
+                if step != effective_steps[index]:
+                    original_remapped = mention.sub('"$OUTPUT"', step)
+                    lines.append(f"original: {original_remapped}")
+                    lines.append(f"effective metadata-only variant: {remapped}")
                 if alias_history is not None:
                     words = shlex.split(remapped)
                     if (not words or Path(words[0]).resolve() != OBJCOPY.resolve()
@@ -1201,6 +1620,13 @@ def review_context(item: QueueItem, evidence: PreparedBaseline | None, winner: b
         validate_baseline(item, evidence, deadline)
         import candidate_context
         comparison = candidate_context.compare_context(evidence.source, winner, item.func)
+        if prepared_macro_context.needs_preprocessing(comparison):
+            directory = BUILD_PERMUTER / "macro-context" / uuid.uuid4().hex
+            report["preprocessing_directory"] = str(directory)
+            comparison = prepared_macro_context.compare_stock(evidence.source, winner, item.func, directory,
+                ROOT / "tools" / "ido" / "cc", json.loads(evidence.recipe_json)["compiler_args"],
+                lambda argv: bounded_capture(argv, deadline))
+            validate_baseline(item, evidence, deadline)
         if (comparison.get("schema") != "mickey-candidate-context-v1"
                 or comparison.get("symbol") != item.func
                 or comparison.get("baseline_sha256") != report["baseline_source_sha256"]
@@ -1225,6 +1651,7 @@ def retain_context(directory: Path, evidence: PreparedBaseline | None, winner: b
             "binding": json.loads(evidence.capture_binding_json)})
     (directory / "winner.c").write_bytes(winner)
     sweep_receipts.atomic_json(directory / "report.json", report)
+    prepared_macro_context.retain(report, directory, BUILD_PERMUTER)
 
 
 def require_search_context(item, evidence, directory, deadline):
@@ -1235,6 +1662,225 @@ def require_search_context(item, evidence, directory, deadline):
         raise RuntimeError("baseline context readiness refused: " + str(report.get("reason")))
     # review_context records errors; recheck outside its report boundary too.
     validate_baseline(item, evidence, deadline)
+    report["search_bindings"] = require_search_bindings(item, evidence, directory, deadline)
+    return report
+
+
+class UnsupportedSearchBinding(RuntimeError):
+    """An unimplemented proof adapter, not an assertion of impossibility."""
+    def __init__(self, route):
+        self.route = route
+        super().__init__("unsupported-proof-route: " + route + "; independent ownership proof required")
+
+
+def search_binding_records(report):
+    """Admit independent identities, without requiring target site/count equality.
+
+    Resolver correlations and generated-name spellings are observations, not
+    authority for a candidate binding. Local sections/branches need an explicit
+    ownership adapter; this external-reference adapter does not guess one.
+    """
+    sites = report.get("diagnostics", {}).get("sites")
+    count = report.get("candidate_record_count")
+    for site in sites if isinstance(sites, list) else []:
+        if site.get("rtype") == 10:
+            raise UnsupportedSearchBinding("pc16-owned-branch")
+        if "object-local-section-symbol" in site.get("observations", []):
+            raise UnsupportedSearchBinding("section-local-data-owner")
+    if (type(count) is not int or count < 0 or not isinstance(sites, list)
+            or len(sites) != count
+            or report.get("candidate_identity_resolved_count") != count
+            or report.get("candidate_identity_unresolved_records") != []):
+        raise RuntimeError("candidate binding identities are incomplete or unresolved")
+    routes = {"resident-elf-address", "resident-absolute-symbol",
+              "canonical-call-boundary", "canonical-data-owner",
+              "matched-canonical-sibling", "explicit-reserved-storage-witness"}
+    records = []
+    def identity(value):
+        return (isinstance(value, list) and len(value) == 2
+                and all(type(part) is int for part in value))
+    for site in sites:
+        offset, kind, effective = site.get("offset"), site.get("rtype"), site.get("identity")
+        if (type(offset) is not int or offset < 0 or offset % 4
+                or type(kind) is not int or not identity(effective)
+                or site.get("status") != "resolved"):
+            raise RuntimeError("candidate binding has invalid site/type/identity")
+        if kind not in (4, 5, 6):
+            raise UnsupportedSearchBinding("relocation-kind-" + str(kind))
+        if any(site.get("conflicts", {}).values()):
+            raise RuntimeError("candidate binding has conflicting identity witnesses")
+        addends = site.get("addends")
+        if (not isinstance(addends, list) or len(addends) != 1
+                or type(addends[0]) is not int):
+            raise RuntimeError("candidate binding REL addend is not uniquely proved")
+        bases = {tuple(witness["base_identity"]) for witness in site.get("witnesses", [])
+                 if witness.get("independent") is True and witness.get("route") in routes
+                 and identity(witness.get("base_identity"))}
+        expected = (effective[0], effective[1] - addends[0])
+        if bases != {expected}:
+            raise RuntimeError("candidate binding lacks independent canonical identity authority")
+        records.append((offset, kind, tuple(effective)))
+    if len({offset for offset, _kind, _identity in records}) != count:
+        raise RuntimeError("candidate binding has duplicate relocation sites")
+    return sorted(records)
+
+
+def search_binding_authority():
+    paths = (ROOT / "build/mickey.us.elf", ROOT / "build/mickey.us.map",
+             BASEROM, ATLAS_PATH, reloc_surface.LINK_SYMS, ROOT / "symbol_addrs.us.txt",
+             ROOT / "Makefile", ROOT / "mickey.us.yaml")
+    result = {str(path): sweep_receipts.file_digest(path) for path in paths}
+    # Canonical boundary/data/sibling witnesses consult objects and their
+    # sources, not only the linked ELF. Pin that read authority across a load
+    # wait too; candidate objects under build_non_matching are not witnesses.
+    for relative in ("build/src", "build/asm", "src", "include", "asm", "assets", "mk", "config"):
+        directory = ROOT / relative
+        rows = [(path.relative_to(directory).as_posix(), sweep_receipts.file_digest(path))
+                for path in sorted(directory.rglob("*")) if path.is_file()]
+        if not rows:
+            raise RuntimeError("search binding authority tree is missing: " + relative)
+        result["tree:" + relative] = sweep_receipts.digest(rows)
+    return result
+
+
+def validate_search_binding_authority(report):
+    if report["authority"] != search_binding_authority():
+        raise RuntimeError("search binding authority changed after readiness proof")
+
+
+def local_table_shape(source, symbol):
+    sys.path.insert(0, str(PERMUTER_DIR))
+    from src import ast_util
+    with ido_import_parser():
+        ast = ast_util.parse_c(source.decode(), from_import=True)
+    return search_local_bindings.source_switch(ast, symbol)
+
+
+def local_table_proof(item, path, source, out_dir, inputs):
+    """Use the pinned original preprocessor output and actual emitted AST."""
+    try:
+        full_source = sweep_receipts.owned_bytes(out_dir, "source-groups.preprocessed.c")
+        expected = inputs["context"].get("original_preprocessed")
+        if not expected or hashlib.sha256(full_source).hexdigest() != expected:
+            raise RuntimeError("local table original preprocessor authority is missing or stale")
+        shape = local_table_shape(source, item.func)
+        if shape != local_table_shape(full_source, item.func):
+            raise RuntimeError("local table prepared/full-TU source switch differs")
+        return search_local_bindings.authenticate(ROOT, item.func,
+            item.rel_c_file.removeprefix("src/").removesuffix(".c"), path, shape, item.overlay)
+    except search_local_bindings.UnsupportedLocalBinding as error:
+        raise UnsupportedSearchBinding(error.route) from error
+
+
+def local_search_records(surface, proof):
+    """Remove only mechanically authenticated local sites from external proof."""
+    sites = surface.get("diagnostics", {}).get("sites", [])
+    local = {tuple(row[:2]) for row in proof["records"]}
+    actual = {(row.get("offset"), row.get("rtype")) for row in sites
+              if "object-local-section-symbol" in row.get("observations", [])}
+    if actual != local or len(local) != len(proof["records"]):
+        raise RuntimeError("local table proof does not cover exactly the local binding surface")
+    removed = [row for row in sites if (row.get("offset"), row.get("rtype")) in local]
+    if len(removed) != len(local):
+        raise RuntimeError("local table relocation sites are ambiguous")
+    external = dict(surface)
+    external["diagnostics"] = {"sites": [row for row in sites if row not in removed]}
+    external["candidate_record_count"] = surface["candidate_record_count"] - len(removed)
+    external["candidate_identity_resolved_count"] = surface["candidate_identity_resolved_count"] - sum(
+        row.get("identity") is not None for row in removed)
+    external["candidate_identity_unresolved_records"] = [row for row in surface["candidate_identity_unresolved_records"]
+        if (row.get("offset"), row.get("rtype")) not in local]
+    records = search_binding_records(external)
+    records.extend((offset, kind, tuple(identity)) for offset, kind, identity in proof["records"])
+    return sorted(records)
+
+
+def require_search_bindings(item, evidence, directory, deadline):
+    """Prove raw candidate identities before annotation can rename placeholders.
+
+    Compile the captured source through the pinned original importer recipe.
+    Compare its owned fields and independently authenticated relocation tuples
+    with the actual captured search object. Full-TU fidelity is separately
+    established by grouped_baseline_fidelity, including ungrouped baselines.
+    """
+    proof_dir = directory / "bindings"
+    proof_dir.mkdir(mode=0o700)
+    report = {"schema": "mickey-search-bindings-v1", "status": "unverifiable",
+              "symbol": item.func, "source_sha256": evidence.source_sha256,
+              "captured_object_sha256": evidence.object_sha256,
+              "unsupported_proof_route": None}
+    try:
+        validate_baseline(item, evidence, deadline)
+        inputs = json.loads(evidence.prepared_inputs_json)
+        run_dir = directory.parent
+        raw_script = sweep_receipts.owned_bytes(run_dir, "importer-compile.sh")
+        prepared_script = sweep_receipts.owned_bytes(run_dir, "baseline-capture/compile-original.sh")
+        if (compile_script_digest(raw_script) != inputs["context"]["importer_recipe"]
+                or compile_script_digest(prepared_script) != inputs["context"]["prepared"]["compile.sh"]):
+            raise RuntimeError("search binding recipes differ from captured preparation")
+        aliases = reloc_surface.ri.canonicalize_redefine_aliases(
+            reloc_surface.ri.parse_objcopy_redefine_pairs(prepared_script.decode()))
+        if aliases.ambiguous or aliases.cycles or aliases.conflicts:
+            raise RuntimeError("search binding recipe has ambiguous rename provenance")
+        report["authority"] = search_binding_authority()
+        if inputs["context"].get("search_binding_authority") != report["authority"]:
+            raise RuntimeError("search binding authority differs from prepared receipt inputs")
+        files = {"source.c": evidence.source, "compile.sh": raw_script, "captured.o": evidence.object}
+        for name, data in files.items():
+            (proof_dir / name).write_bytes(data)
+        raw = proof_dir / "raw.o"
+        raw.touch(exist_ok=False)
+        output = bounded_capture(["bash", str(proof_dir / "compile.sh"),
+            str(proof_dir / "source.c"), "-o", str(raw)], deadline)
+        (proof_dir / "compile.log").write_text(output.stdout)
+        output.check_returncode()
+        raw_bytes = sweep_receipts.owned_bytes(proof_dir, "raw.o")
+        captured = proof_dir / "captured.o"
+        normalized = [normalized_owned_instructions(path, item.func) for path in (raw, captured)]
+        if not normalized[0] or normalized[0] != normalized[1]:
+            raise RuntimeError("search binding replay changed captured executable fields")
+        target_elf = reloc_surface.Elf(ROOT / "build/mickey.us.elf")
+        names = {row[0] for row in target_elf.symbols()}
+        fallback = find_asm_target(item)
+        target_symbol = item.func if item.func in names else Path(fallback or "").stem
+        reports, local_proofs = [], []
+        for path, reverse in ((raw, None), (captured, aliases.resolved)):
+            surface = reloc_surface.function_surface_comparison(item.func, path,
+                ROOT / "build/mickey.us.elf", source=item.rel_c_file.removeprefix("src/").removesuffix(".c"),
+                overlay_hint=item.overlay, target_symbol=target_symbol,
+                candidate_redefine_aliases=reverse, include_diagnostics=True,
+                include_candidate_identities=True, measure_size_delta=True)
+            sweep_receipts.atomic_json(proof_dir / (path.stem + "-relocations.json"), surface)
+            if any("object-local-section-symbol" in row.get("observations", [])
+                   for row in surface.get("diagnostics", {}).get("sites", [])):
+                proof = local_table_proof(item, path, evidence.source, run_dir, inputs)
+                sweep_receipts.atomic_json(proof_dir / (path.stem + "-local-table.json"), proof)
+                local_proofs.append(proof)
+                reports.append(local_search_records(surface, proof))
+            else:
+                reports.append(search_binding_records(surface))
+        if local_proofs:
+            if len(local_proofs) != 2:
+                raise RuntimeError("search annotation changed local table presence")
+            search_local_bindings.fidelity(*(p["candidate"] for p in local_proofs))
+        if reports[0] != reports[1]:
+            raise RuntimeError("search annotation changed independently proved candidate bindings")
+        if (any(sweep_receipts.owned_bytes(proof_dir, name) != data for name, data in files.items())
+                or sweep_receipts.owned_bytes(proof_dir, "raw.o") != raw_bytes
+                or sweep_receipts.owned_bytes(run_dir, "importer-compile.sh") != raw_script
+                or sweep_receipts.owned_bytes(run_dir, "baseline-capture/compile-original.sh") != prepared_script):
+            raise RuntimeError("search binding inputs changed during proof")
+        validate_search_binding_authority(report)
+        validate_baseline(item, evidence, deadline)
+        report.update(status="authenticated", candidate_record_count=len(reports[0]),
+                      raw_object_sha256=hashlib.sha256(raw_bytes).hexdigest())
+    except Exception as error:
+        report["reason"] = str(error)
+        if isinstance(error, UnsupportedSearchBinding):
+            report["unsupported_proof_route"] = error.route
+        raise RuntimeError("search binding readiness refused: " + str(error)) from error
+    finally:
+        sweep_receipts.atomic_json(proof_dir / "report.json", report)
     return report
 
 
@@ -1273,10 +1919,36 @@ def receipt_inputs(item: QueueItem, scratch: Path, settings: Path, target: Path,
         # strings, include arguments or arbitrary user commands.
         return compile_script_digest(path.read_bytes())
 
+    variant_path = scratch.parent / "recipe-variant.json"
+    if not variant_path.is_file() or variant_path.is_symlink():
+        raise RuntimeError("missing authenticated effective recipe variant")
+    variant_bytes = sweep_receipts.owned_bytes(scratch.parent, "recipe-variant.json")
+    variant = json.loads(variant_bytes)
+    expected_recipe_sha = hashlib.sha256(
+        json.dumps(dataclasses.asdict(recipe), sort_keys=True).encode()).hexdigest()
+    if (variant.get("schema") != RECIPE_VARIANT_SCHEMA
+            or variant.get("function") != item.func
+            or variant.get("original_recipe_sha256") != expected_recipe_sha
+            or variant.get("original_steps") != list(recipe.objcopy_steps)
+            or variant.get("effective_recipe_sha256") != hashlib.sha256(
+                json.dumps(variant.get("effective_steps"), sort_keys=True).encode()).hexdigest()):
+        raise RuntimeError("effective recipe variant does not match the recovered original recipe")
+    compile_text = (scratch / "compile.sh").read_text()
+    mention = re.compile(r"(?<![\w./-])(?:\./)?" + re.escape(
+        f"build/{item.rel_c_file}.o") + r"(?![\w.-])")
+    for step_index, step in enumerate(recipe.objcopy_steps):
+        if mention.search(step):
+            effective = variant["effective_steps"][step_index]
+            command = mention.sub('"$OUTPUT"', effective)
+            if command not in compile_text:
+                raise RuntimeError("effective recipe variant is not present in the captured compile command")
+
     context = {
         "preparation_contract": SOURCE_GROUP_CONTRACT,
         "importer_recipe": compile_digest(scratch.parent / "importer-compile.sh"),
         "source_group_plan": sweep_receipts.file_digest(scratch.parent / "source-groups.json"),
+        "original_preprocessed": (sweep_receipts.file_digest(scratch.parent / "source-groups.preprocessed.c")
+                                  if (scratch.parent / "source-groups.preprocessed.c").is_file() else None),
         "identity": {"symbol": item.func, "source": item.rel_c_file,
                      "overlay": item.overlay, "section": ".text", "offset": offset,
                      "rom_offset": rom},
@@ -1286,8 +1958,10 @@ def receipt_inputs(item: QueueItem, scratch: Path, settings: Path, target: Path,
                      for name in ("base.c", "compile.sh", "target.s", "settings.toml")},
         "settings": sweep_receipts.file_digest(settings),
         "recipe": json.loads(json.dumps(dataclasses.asdict(recipe))),
+        "recipe_variant": hashlib.sha256(variant_bytes).hexdigest(),
         "tools": sweep_tool_identity(),
         "dependencies": source_dependencies(item.c_file, recipe.compiler_args),
+        "search_binding_authority": search_binding_authority(),
     }
     # Whole-ROM hash is cheap here and also pins the relocation metadata read
     # by annotation. The receipt never contains ROM bytes.
@@ -1302,7 +1976,8 @@ def receipt_inputs(item: QueueItem, scratch: Path, settings: Path, target: Path,
     baseline_hashes.update({"baseline/tu.c": context["source"],
                            "baseline/permuter_settings.toml": context["settings"],
                            "baseline/recipe.json": hashlib.sha256(
-                               json.dumps(dataclasses.asdict(recipe), sort_keys=True).encode()).hexdigest()})
+                               json.dumps(dataclasses.asdict(recipe), sort_keys=True).encode()).hexdigest(),
+                           "baseline/recipe-variant.json": hashlib.sha256(variant_bytes).hexdigest()})
     context["baseline_hashes"] = baseline_hashes
     return {"schema": sweep_receipts.SCHEMA, "context": context, "search": search,
             "baseline_hashes": baseline_hashes}
@@ -2830,6 +3505,9 @@ def seed_context_compatible(parent: dict, current: dict) -> bool:
     implementations = {"runner", "receipts", "promotion", "candidate_context", "loaded_modules"}
     for context in (old["context"], new["context"]):
         context.pop("seed", None)
+        # Historical seeds must pass the current independent binding gate.
+        # Their old authority snapshot is not a transferable admission proof.
+        context.pop("search_binding_authority", None)
         context["tools"] = {k: v for k, v in context["tools"].items() if k not in implementations}
         context["baseline_hashes"].pop("baseline/compile.sh", None)
     for value in (old, new):
@@ -2909,7 +3587,9 @@ def normalized_owned_instructions(path, symbol):
             continue
         site = offset - start
         masks = {4: 0xFC000000, 5: 0xFFFF0000, 6: 0xFFFF0000}
-        if kind not in masks or site % 4 or site in seen or site + 4 > size:
+        if kind not in masks:
+            raise UnsupportedSearchBinding("pc16-owned-branch" if kind == 10 else "relocation-kind-" + str(kind))
+        if site % 4 or site in seen or site + 4 > size:
             raise RuntimeError("unsupported grouped baseline relocation encoding")
         seen.add(site)
         word = int.from_bytes(data[site:site + 4], "big") & masks[kind]
@@ -2936,9 +3616,12 @@ def raw_source_relocations(path, symbol):
         if index >= len(symbols) or offset % 4 or offset + 4 > start + size:
             raise RuntimeError("invalid source relocation geometry")
         name, value, extent, info, section = symbols[index]
-        if (not name or names.count(name) != 1 or section not in (0, 0xFFF1)
-                or kind not in (4, 5, 6)):
-            raise RuntimeError("source relocation needs independent defined-symbol identity")
+        if not name or names.count(name) != 1:
+            raise RuntimeError("source relocation needs independent unique-symbol identity")
+        if section not in (0, 0xFFF1):
+            raise UnsupportedSearchBinding("section-local-data-owner" if info & 0xF == 3 else "defined-symbol-owner")
+        if kind not in (4, 5, 6):
+            raise UnsupportedSearchBinding("pc16-owned-branch" if kind == 10 else "relocation-kind-" + str(kind))
         position = offset - start
         if any(row[0] == position for row in raw):
             raise RuntimeError("duplicate source relocation site")
@@ -2969,15 +3652,23 @@ def grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
         pass
     try:
         return _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline)
+    except UnsupportedSearchBinding as error:
+        sweep_receipts.atomic_json(out_dir / "source-fidelity/binding-readiness.json", {
+            "schema": "mickey-search-bindings-v1", "symbol": item.func,
+            "status": "unverifiable", "unsupported_proof_route": error.route,
+            "reason": str(error)})
+        raise
     finally:
         _FIDELITY_LOCK.release()
 
 
 def _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
-    """Prove the actual initial emitter against a freshly configured full TU.
+    """Prove every actual initial emitter against a freshly configured full TU.
 
     Unsupported syntax requests measurement, not automatic refusal. Runtime
     identities and raw original-source correspondence are distinct proof routes.
+    Ungrouped syntax also needs fidelity; a source self-comparison cannot prove
+    that pruning the TU preserved the compiled function.
     """
     plan_path = out_dir / "source-groups.json"
     if not plan_path.is_file() or plan_path.is_symlink():
@@ -2996,8 +3687,6 @@ def _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
             or (status == "measurement-required" and not plan["groups"]
                 and isinstance(plan.get("reason"), str) and bool(plan["reason"]))):
         raise RuntimeError("invalid source grouping status or inconsistent groups")
-    if status == "ungrouped":
-        return
     directory = out_dir / "source-fidelity"
     directory.mkdir()
     target = ROOT / "build_non_matching" / (item.rel_c_file + ".o")
@@ -3059,7 +3748,8 @@ def _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
         try:
             report = reloc_surface.function_surface_comparison(item.func, path,
                 ROOT / "build/mickey.us.elf", source=item.rel_c_file.removeprefix("src/").removesuffix(".c"),
-                overlay_hint=item.overlay, target_symbol=evidence["linked_symbol"])
+                overlay_hint=item.overlay, target_symbol=evidence["linked_symbol"],
+                include_diagnostics=True, include_candidate_identities=True)
         except (reloc_surface.SurfaceComparisonError, ValueError, KeyError) as error:
             report = {"status": "unresolved", "reason": str(error)}
         reports.append(report)
@@ -3067,15 +3757,46 @@ def _grouped_baseline_fidelity(item, out_dir, scratch, inputs, deadline):
         normalized.append(normalized_owned_instructions(path, item.func))
     runtime_exact = all(report.get("offset_type_exact") is True
                         and report.get("stable_identity_exact") is True for report in reports)
-    if not runtime_exact:
-        source_records = [raw_source_relocations(path, item.func) for path in (full, raw_emitted)]
+    identity_route = "runtime-identities" if runtime_exact else "raw-source-symbols-not-runtime-proof"
+    named_source_proof = None
+    has_local = any("object-local-section-symbol" in site.get("observations", [])
+                    for surface in reports for site in surface.get("diagnostics", {}).get("sites", []))
+    if has_local:
+        # Even an exact text relocation surface does not prove table contents.
+        # Defined same-TU callees may become undefined in the isolated emitter;
+        # both sides must independently reproduce their canonical identities.
+        local_proofs = [local_table_proof(item, path, capture.source, out_dir, inputs)
+                        for path in (full, raw_emitted, emitted)]
+        search_local_bindings.fidelity(local_proofs[0]["candidate"], local_proofs[1]["candidate"])
+        search_local_bindings.fidelity(local_proofs[1]["candidate"], local_proofs[2]["candidate"])
+        sweep_receipts.atomic_json(directory / "local-tables.json", local_proofs)
+        source_records = [local_search_records(surface, proof)
+                          for surface, proof in zip(reports, local_proofs)]
+        identity_route = "authenticated-externals-and-owned-switch-table"
+    elif not runtime_exact:
+        try:
+            source_records = [raw_source_relocations(path, item.func) for path in (full, raw_emitted)]
+        except UnsupportedSearchBinding as error:
+            if error.route != "defined-symbol-owner":
+                raise
+            named_source_proof = source_symbol_fidelity.compare_source_symbols(raw_emitted, full, item.func)
+            if (named_source_proof.get("status") != "source-correspondence-exact"
+                    or named_source_proof.get("runtime_identity_proved") is not False
+                    or named_source_proof.get("promotion_authority") is not False):
+                raise RuntimeError("named source correspondence exceeded its proof authority")
+            sweep_receipts.atomic_json(directory / "named-source-correspondence.json", named_source_proof)
+            # This route only establishes emitter fidelity. require_search_bindings
+            # still authenticates every candidate runtime identity independently.
+            identity_route = "named-source-owner-correspondence-not-runtime-proof"
+    if (has_local or not runtime_exact) and named_source_proof is None:
         sweep_receipts.atomic_json(directory / "source-relocations.json", source_records)
         if source_records[0] != source_records[1]:
-            raise RuntimeError("actual emitted raw source-symbol relocation correspondence differs")
+            raise RuntimeError("actual emitted local relocation correspondence differs" if has_local
+                               else "actual emitted raw source-symbol relocation correspondence differs")
     success = normalized[0] == normalized[1]
     sweep_receipts.atomic_json(directory / "report.json", {
         "contract": SOURCE_GROUP_CONTRACT, "source_fidelity_exact": success,
-        "identity_route": "runtime-identities" if runtime_exact else "raw-source-symbols-not-runtime-proof",
+        "identity_route": identity_route,
         "exact": success,
         "owned_bytes": len(normalized[0]), "strict_score": score,
         "full_tu_sha256": sweep_receipts.file_digest(full),
@@ -3425,7 +4146,11 @@ def run_one(item: QueueItem, minutes: int, permuter_threads: int, build_jobs: in
         result.scratch_path = str(scratch)
         alias_history: list = []
         replicate_objcopy(scratch, recipe, item.c_file, out_dir,
-                          alias_history if annotate_overlays and item.overlay is not None else None)
+                          alias_history if annotate_overlays and item.overlay is not None else None,
+                          function=item.func, batch_deadline=batch_deadline)
+        if not (out_dir / "recipe-variant.json").is_file():
+            (out_dir / "recipe-variant.json").write_text(
+                json.dumps(_unchanged_recipe_variant(recipe, item.func), sort_keys=True, indent=2) + "\n")
         if annotate_overlays:
             result.annotated_relocs = annotate_overlay_scratch(item, scratch, out_dir, batch_deadline, alias_history)
         inputs = receipt_inputs(item, scratch, settings_path, target_asm, recipe, {
@@ -3481,6 +4206,8 @@ def run_one(item: QueueItem, minutes: int, permuter_threads: int, build_jobs: in
                     baseline["baseline/" + name] = sweep_receipts.owned_bytes(scratch, name)
                 baseline["baseline/tu.c"] = sweep_receipts.owned_bytes(ROOT, item.rel_c_file)
                 baseline["baseline/recipe.json"] = json.dumps(dataclasses.asdict(recipe), sort_keys=True).encode()
+                baseline["baseline/recipe-variant.json"] = sweep_receipts.owned_bytes(
+                    out_dir, "recipe-variant.json")
                 baseline["baseline/permuter_settings.toml"] = sweep_receipts.owned_bytes(out_dir, settings_path.name)
                 if any(hashlib.sha256(baseline[name]).hexdigest() != expected
                        for name, expected in inputs["baseline_hashes"].items()):
@@ -3564,9 +4291,10 @@ def run_prepared(item: QueueItem, scratch: Path, out_dir: Path, result: RunResul
         launch_files = launch_inputs if launch_inputs is not None else {name: sweep_receipts.owned_bytes(scratch, name)
                         for name in ("base.c", "compile.sh", "target.s", "target.o", "settings.toml")
                         if (scratch / name).exists()}
+        binding_reports = []
         if seed_evidence is not None:
-            require_search_context(item, prepared, out_dir / "baseline-readiness", batch_deadline)
-            require_search_context(item, seed_evidence, out_dir / "seed-readiness", batch_deadline)
+            binding_reports.append(require_search_context(item, prepared, out_dir / "baseline-readiness", batch_deadline)["search_bindings"])
+            binding_reports.append(require_search_context(item, seed_evidence, out_dir / "seed-readiness", batch_deadline)["search_bindings"])
         else:
             if readiness_evidence is None:
                 if seed_artifacts is not None:
@@ -3576,11 +4304,13 @@ def run_prepared(item: QueueItem, scratch: Path, out_dir: Path, result: RunResul
                     # Direct callers may already own an authenticated capture.
                     readiness_evidence = (captured_baseline(item, out_dir, prepared_inputs, batch_deadline), None)
             prepared = readiness_evidence[0]
-            require_search_context(item, prepared, out_dir / "baseline-readiness", batch_deadline)
+            binding_reports.append(require_search_context(item, prepared, out_dir / "baseline-readiness", batch_deadline)["search_bindings"])
         wait_for_headroom(load_threshold, f"before permuting {item.func}", batch_deadline)
         validate_baseline(item, prepared, batch_deadline)
         if seed_evidence is not None:
             validate_baseline(item, seed_evidence, batch_deadline)
+        for binding_report in binding_reports:
+            validate_search_binding_authority(binding_report)
         if any(sweep_receipts.owned_bytes(scratch, name) != data for name, data in launch_files.items()):
             raise RuntimeError("prepared search input changed during baseline readiness")
         if seed_evidence is not None and hashlib.sha256(sweep_receipts.owned_bytes(
@@ -3654,6 +4384,8 @@ def run_prepared(item: QueueItem, scratch: Path, out_dir: Path, result: RunResul
                     raise RuntimeError("extension emission score differs from saved winner")
                 prove_seed_emission(item, out_dir / "extension-fidelity", seed_artifacts,
                     prepared_inputs, extension_source, extension, batch_deadline)
+                extension_bindings = require_search_bindings(item, extension,
+                    out_dir / "extension-readiness", batch_deadline)
                 extension_dir = out_dir / "extension-search"
                 extension_dir.mkdir(mode=0o700)
                 (scratch / "base.c").write_bytes(extension_prepared)
@@ -3666,6 +4398,7 @@ def run_prepared(item: QueueItem, scratch: Path, out_dir: Path, result: RunResul
                 wait_for_headroom(load_threshold, f"before extending {item.func}", batch_deadline)
                 validate_baseline(item, prepared, batch_deadline)
                 validate_baseline(item, extension, batch_deadline)
+                validate_search_binding_authority(extension_bindings)
                 if any(sweep_receipts.owned_bytes(scratch, name) != data for name, data in extension_files.items()):
                     raise RuntimeError("prepared extension input changed during readiness")
                 result.extended = True

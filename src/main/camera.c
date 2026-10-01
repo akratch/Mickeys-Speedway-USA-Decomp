@@ -1054,75 +1054,33 @@ void func_80022E80(CameraScaledTransform *transform) {
     D_800CF2A8 = y * D_800CF2B0;
     D_800CF2AC = z * D_800CF2B0;
 }
-#ifdef NON_MATCHING
 /*
- * PROVENANCE: JFG's public src/camera.c identifies the camDoSprite role;
- * this substantially different body is reconstructed from Mickey-only data.
+ * PROVENANCE: JFG's public src/camera.c identifies the camDoSprite role, and
+ * the statement shape follows the vehicle-part path of Diddy Kong Racing's
+ * public src/camera.c:render_sprite_billboard (one tilt variable finished in
+ * place, the lateral distance as a named float).  The frame arithmetic, the
+ * anchor transform and the display-list encoding are Mickey's own.
  *
- * The eight-byte frame excess and the twenty-byte transformed-coordinate home
- * shift were ONE fault, and tools/frame_census.py separated them from the
- * scheduling residual they were hiding behind.  The candidate's ladder was the
- * target's ladder plus eight, slot for slot, once the declarations were put in
- * the target's order; the two numbers were the same declaration list read two
- * ways.  What the census forced:
- *
- *  a. angle, pitch and frameStep move ABOVE transformedX.  The target's homed
- *     block starts transformedX three slots further down than a naive order
- *     gives, and those three slots are register-class -- they never reach
- *     memory, so nothing but the census could see them.
- *
- *  b. sine moves between rotatedX and rotatedZ, one slot the target reserves
- *     and never writes.
- *
- *  c. `transform` is the LAST homed object.  Everything m2c declared after it
- *     -- wrappedFrame, color -- has to go, because the block has to be exactly
- *     0x68 bytes of declarations plus the 0x18 struct.  Both of those live
- *     ranges are disjoint from `pitch`, which is dead from the angleProduct
- *     store onwards, so one s32 carries all three (L115: reusing a local that
- *     is already dead imports no interference at zero width).
- *
- * Measured with tools/align_symbol.py: 203 -> 157 masked words, frame
- * 0xB8 -> 0xB0 exact, the ladders identical slot for slot, immediate-only
- * 60 -> 1, byte-exact 172 -> 219 of 369, really different 62 -> 45.
- *
- * 2026-09-12, lane p11-mid.  The previous line here recorded `sprite->frame &
- * 0xFFFF` as REJECTED at +4 bytes and 263 words.  That rejection is about the
- * spelling in isolation and it should be reopened, because the +1 it costs has
- * a -1 waiting for it in the same function: we emit `move a0,v0` at +0x1CC,
- * copying the divisor the target never copies, and the target emits lh plus
- * andi 0xFFFF at +0x24C and +0x254 where we emit one lhu.  Paired with whatever
- * removes the divisor copy the spelling is size-neutral; alone it is not.
- *
- * The naming residual is one ugen draw, read off DKWB_UGEN_SCHED plus
- * DKWB_UGEN_TRACE.  This procedure's GP free list is t6 t7 t8 t9 t2 t3 t4 t5 --
- * v0, v1, t0 and t1 are REMOVEd before the first draw -- and it is FIFO.
- * Everything from +0x0 to +0x98 is byte-identical, and the first naming
- * difference at +0x9C is the `sprite` reload `lw 196(sp)`, which takes t2 for us
- * and t3 for the target: exactly one free-list position later.  The target
- * therefore spends one more GP draw in the transformed-coordinate block, and
- * since its emitted code up to +0x98 agrees word for word, that draw is folded
- * away in its own output -- the [L149] case, which no register census can see.
- *
- * Swept and flat against it: the five statements from `divisor = sprite->divisor`
- * through the volatile `angleProduct` store admit 30 orders once `divisor`
- * precedes `frameStep` and `quadrant` precedes `angle &= 0x3FFF`; ten tie at 157
- * and twenty are 167.  Moving `horizontal = sqrtf(...)` to six earlier positions
- * gives 263 to 277 at size deltas +4 to +36 -- the target does schedule that
- * multiply pair before the quadrant branch where we schedule it after, but every
- * source position that moves it also spills localX and localZ.  Head spellings:
- * interleaving each scale with its own subtraction 330 at -4, compound `*=` 157,
- * reversing the three local subtractions 287 at -4, swapping the multiply
- * operands 330 at +8, deleting the `register` spriteEarly carrier 215 at 0.
+ * Matched 2026-10-01 by writing the function from the listing instead of
+ * polishing the inherited body.  What the earlier shape carried and the
+ * target does not: a `register` copy of sprite, a volatile home for the tilt
+ * product, a u16 divisor, the frame count carried in the tilt local, the
+ * quotient left as a temporary, and hand-built command words.  Here the tilt
+ * is one s32 multiplied in place before the divisor is read, the squared
+ * lateral distance is assigned before the quadrant test and rooted
+ * afterwards, the wrapped frame takes the quotient, the scale test reads the
+ * field with the constant on the right, and each command is its packet
+ * macro.  The colour reuses the tilt local, which keeps the frame at 0xB0.
  */
 void func_80022FD4(Gfx **dlist, Mtx **mtx, void *vertices,
                    CameraSpriteAnchor *anchor, f32 *opacity,
                    CameraSprite *sprite, s32 flags, s32 alpha) {
-    register CameraSprite *spriteEarly;
-    volatile s32 angleProduct;
-    s32 quadrant;
     s32 angle;
     s32 pitch;
+    s32 quadrant;
     s32 frameStep;
+    s32 divisor;
+    s32 frame;
     f32 transformedX;
     f32 transformedY;
     f32 transformedZ;
@@ -1133,16 +1091,13 @@ void func_80022FD4(Gfx **dlist, Mtx **mtx, void *vertices,
     f32 sine;
     f32 rotatedZ;
     f32 cosine;
-    f32 matrixScale;
+    f32 pad;
     f32 horizontal;
     CameraScaledTransform transform;
-    u16 divisor;
-    Gfx *cmd;
 
-    spriteEarly = sprite;
-    transformedX = spriteEarly->x - anchor->x;
-    transformedY = spriteEarly->y - anchor->y;
-    transformedZ = spriteEarly->z - anchor->z;
+    transformedX = sprite->x - anchor->x;
+    transformedY = sprite->y - anchor->y;
+    transformedZ = sprite->z - anchor->z;
     mtxf_transform_point(D_800CF2F8, transformedX, transformedY,
                          transformedZ, &transformedX, &transformedY,
                          &transformedZ);
@@ -1167,32 +1122,33 @@ void func_80022FD4(Gfx **dlist, Mtx **mtx, void *vertices,
     }
 
     pitch = Arctanf(localY, rotatedZ);
-    if (pitch >= 0x8001) {
-        pitch += 0xFFFF0000;
+    if (pitch > 0x8000) {
+        pitch -= 0x10000;
     }
 
+    pitch = pitch * cosine;
     divisor = sprite->divisor;
+    frameStep = sprite->spriteData[0] / divisor;
     quadrant = angle & 0x4000;
-    frameStep = (s32)sprite->spriteData[0] / (s32)divisor;
     angle &= 0x3FFF;
-    angleProduct = (s32)((f32)pitch * cosine);
+    horizontal = (localX * localX) + (localZ * localZ);
     if (quadrant != 0) {
         angle = 0x3FFF - angle;
     }
     angle = (angle * frameStep) >> 14;
-    if ((s32)divisor >= 2) {
-        pitch = (u16)sprite->frame;
-        while (pitch >= sprite->frameCount) {
-            pitch -= sprite->frameCount;
+    if (divisor >= 2) {
+        frame = sprite->frame & 0xFFFF;
+        while (frame >= sprite->frameCount) {
+            frame -= sprite->frameCount;
         }
-        angle += frameStep * (((s32)divisor * pitch) /
-                              sprite->frameCount);
+        frame = (divisor * frame) / sprite->frameCount;
+        angle += frameStep * frame;
     }
 
-    horizontal = sqrtf((localX * localX) + (localZ * localZ));
+    horizontal = sqrtf(horizontal);
     transform.yRotation = Arctanf(localX, localZ);
     transform.xRotation = -Arctanf(localY, horizontal);
-    transform.zRotation = angleProduct;
+    transform.zRotation = pitch;
     transform.scale = sprite->transformScale;
     transform.x = transformedX;
     transform.y = transformedY;
@@ -1204,9 +1160,8 @@ void func_80022FD4(Gfx **dlist, Mtx **mtx, void *vertices,
         D_800CF220[0][1] = -D_800CF220[0][1];
         D_800CF220[0][2] = -D_800CF220[0][2];
     }
-    matrixScale = sprite->matrixScale;
-    if (matrixScale != 1.0f) {
-        func_80029AB8(D_800CF220, matrixScale);
+    if (sprite->matrixScale != 1.0f) {
+        func_80029AB8(D_800CF220, sprite->matrixScale);
     }
     mtxf_mul(D_800CF220, D_800CF2B8, D_800CECD8);
     mtxf_mul(D_800CECD8, D_800CED18, D_800CF220);
@@ -1233,54 +1188,33 @@ void func_80022FD4(Gfx **dlist, Mtx **mtx, void *vertices,
         }
     }
 
-    pitch &= 0xFF;
     gDPSetPrimColor((*dlist)++, 0, 0, pitch, pitch, pitch, alpha);
-
-    cmd = *dlist;
-    *dlist = cmd + 1;
-    cmd->words.w0 = 0x01020040;
-    cmd->words.w1 = (u32)*mtx + 0x80000000;
+    gSPMatrix((*dlist)++, (u32)*mtx + 0x80000000, 2);
     (*mtx)++;
-
-    cmd = *dlist;
-    *dlist = cmd + 1;
-    cmd->words.w0 = (((((u32)D_79FCC & 6) | 8) & 0xFF) << 16) |
-                    0x04000012;
-    cmd->words.w1 = (u32)D_79FCC;
-
+    gDma1p((*dlist)++, G_VTX, D_79FCC, 0x12, ((u32)D_79FCC & 6) | 8);
     func_80034E54(dlist, sprite->spriteData, flags & 0xF,
                   (f32)angle, alpha);
-
-    cmd = *dlist;
-    *dlist = cmd + 1;
-    cmd->words.w1 = 0;
-    cmd->words.w0 = 0xBC00000A;
-
-    cmd = *dlist;
-    *dlist = cmd + 1;
-    cmd->words.w1 = -1;
-    cmd->words.w0 = 0xFA000000;
+    gMoveWd((*dlist)++, 10, 0, 0);
+    gDPSetPrimColor((*dlist)++, 0, 0, 255, 255, 255, 255);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/camera/func_80022FD4.s")
-#endif
-#ifdef NON_MATCHING
-/* Workbench: size delta 0 and frame 0x90 both closed; 13 words remain.
- * Closed by: func_80034434 takes one argument (the varargs call spilled its
- * extra operands); GBI colour macros with the raw colour (drops the Gfx local
- * and the separate mask); declarations laid out so every home lands on the
- * target's ladder; the index reassigned to the scale index (x = f(x)); angle
- * finished after frameCount is read; an empty region at the join, which
- * raises the callee toll past dlist's total save so dlist stays in its home
- * (no s1).
- * Remains: baseScale and distanceScale tie at total save 6 and baseScale wins
- * f16 (a force puts it at 3 words), the propagated copy in the distance
- * multiply, and the order of the two Arctanf argument loads. */
+/* Matched 2026-10-01.  Three shape edits closed the last 13 words:
+ *  - there is no baseScale local.  *actor->baseScale is read at each use, so
+ *    the join's divisor is one expression that partial redundancy loads at
+ *    the end of the non-player arm, and distanceScale = *actor->baseScale is
+ *    a move the distance multiply does not see through;
+ *  - the base scale is the left operand of the first multiply;
+ *  - the x difference is its own statement (dx, in the frame slot the old
+ *    local held), which gives as1 the line boundary that orders the two
+ *    Arctanf argument loads.
+ * Kept from earlier lanes: func_80034434 takes one argument, the GBI colour
+ * macros with the raw colour, the declaration order (every home lands on the
+ * ladder), the index reassigned to the scale index, and the empty region at
+ * the join that keeps dlist in its home. */
 void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
                    CameraSpriteActor *actor, u8 *spriteData, s32 alpha) {
     CameraSpritePlayer *player;
     s32 spriteTypeIndex;
-    f32 baseScale;
+    f32 dx;
     s32 angle;
     s32 mirroredFrame;
     s32 frameCount;
@@ -1308,8 +1242,7 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
             spriteTypeIndex++;
         }
         spriteTypeIndex = D_80079FF0[spriteTypeIndex].scaleIndex;
-        baseScale = *actor->baseScale;
-        scale = D_80079FD8[spriteTypeIndex] * baseScale;
+        scale = *actor->baseScale * D_80079FD8[spriteTypeIndex];
         matrixScale = player->unk50;
         xRotation = player->xRotation;
         zRotation = player->zRotation;
@@ -1318,7 +1251,7 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
         y = player->y;
         z = player->z;
         if (D_8007BF0C != 0) {
-            distanceScale = baseScale;
+            distanceScale = *actor->baseScale;
             if (D_800CEC60 == 1) {
                 threshold = 400.0f;
                 multiplier = D_80081A30;
@@ -1344,14 +1277,13 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
         z = actor->z;
         scale = distanceScale;
         matrixScale = 1.0f;
-        baseScale = *actor->baseScale;
     }
 
     do {
     } while (0);
-    scale *= distanceScale / baseScale;
-    angle = Arctanf(D_800CEA20[D_800CEC64].transform.x - x,
-                    D_800CEA20[D_800CEC64].transform.z - z);
+    scale *= distanceScale / *actor->baseScale;
+    dx = D_800CEA20[D_800CEC64].transform.x - x;
+    angle = Arctanf(dx, D_800CEA20[D_800CEC64].transform.z - z);
     frameCount = spriteData[0] - 1;
     angle = xRotation - angle;
     doubledFrameCount = frameCount * 2;
@@ -1389,9 +1321,6 @@ void func_80023598(Gfx **dlist, Mtx **mtx, CameraVertex **vertices,
     gDPSetPrimColor((*dlist)++, 0, 0, 255, 255, 255, 255);
     gDPSetEnvColor((*dlist)++, 255, 255, 255, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/camera/func_80023598.s")
-#endif
 /*
  * PROVENANCE: adapted from JFG's public decomp, src/camera.c:camDoSprite;
  * Mickey supplies the resident projection flip and display-list encoding.
@@ -2033,23 +1962,3 @@ f32 D_80079F4C = 1.0f;
 f32 D_80079F50 = 0.0f;
 f32 D_80079F54 = 0.0f;
 f32 D_80079F58[2] = { 0.0f, 0.0f };
-
-/* PLATEAU-HANDOFF:func_80022FD4:start
- * symbol: func_80022FD4
- * score: 157/369 words
- * frame: 0xB0
- * relocations: 55
- * first-mismatch: +0x9C
- * summary: hypothesis: unfold folded anchor GP draw via a later use. spellings: or-if 364/+12; ptr-diff 157/0; or-minus 314/+8. stall: use deleted or size grows
- * PLATEAU-HANDOFF:func_80022FD4:end
- */
-
-/* PLATEAU-HANDOFF:func_80023598:start
- * symbol: func_80023598
- * score: 13 differing words
- * frame: 0x90
- * relocations: 32
- * first-mismatch: +0xA8
- * summary: hypothesis: break the f16 tie unforced. spellings: decl inert 13; distanceScale-first 14 naming 3; temp delta +4. stall: no masked drop at delta 0
- * PLATEAU-HANDOFF:func_80023598:end
- */

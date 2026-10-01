@@ -2,11 +2,59 @@
 ### `overlay57UpdateModeState` plateau handoff
 
 - source: `src/overlays/o057/overlay57UpdateModeState.c`
-- score: 5/354 words
+- score: 0/354 words, promoted
 - frame: 0x30
 - relocations: 59
-- first mismatch: +0x108
-- summary: floor of 2, cannot match: the +0x108 tie needs opposite directions on one per-pair scheduler key, and the +0x15c store costs 16 in one colour swap
+- first mismatch: none
+- summary: Matched. One symbol for the timer at every site, no timer local, and the function-scope eligibility local reused as the loop's dead post-decrement copy.
+
+#### 2026-10-01, lane b-o057: ROM-exact closure, and the recorded floor of 2 was a property of the shape
+
+The section below this one records a floor of 2 and says no further pass is
+worth a lane. Both of its residual terms were real, and both belonged to the
+inherited shape rather than to the function.
+
+The inherited candidate reached the timer through eight names: the plain
+global at three sites, and seven alias arrays, one per store in the dispatch
+arms, one for the early store and one for the reload after the call. The
+aliases kept the address web down to three sites in seven blocks, which the
+allocator coloured whole. Its re-entry after the call is then emitted at the
+head of the block, ahead of the aliased reload, and the scheduler tie the old
+closure analysed follows from that emission order. Hand-swapping the two
+statements in the compiler's own listing and assembling it reproduced the
+target's order exactly, so the tie was never a line-number question: the
+target emits the value reload first.
+
+Steps, each measured with the configured flags at size delta 0 unless stated:
+
+- inherited shape: 5
+- every timer site names the one global, test and decrement read the global
+  with no timer local and no written reload: 19. The address is now one web
+  across the dispatch, the allocator splits it, and the piece that covers the
+  timer block re-enters after the call with the value reload first and the
+  address second. The four words after the call are exact. What is left is
+  one colour swap between the address piece and the eligibility flag, plus
+  the saved-flag store sinking into both arms as before.
+- the same with a volatile saved flag: 17, the store lands and only the swap
+  remains.
+- the same, non-volatile, with the loop's dead post-decrement copy held in
+  the function-scope eligibility local instead of a per-arm local: 12, and all
+  12 are frame displacement. Redefining the eligibility local in the arms
+  stops the copy into the saved flag from being propagated, so the store stays
+  at its statement; the eligibility web then spans the dispatch and is decided
+  after the address piece, which is the target's colour order.
+- declaration order eligibility, saved flag, entries, with no timer local: 0.
+
+Also measured on the unified shape: a timer local with a written reload is
+four bytes short at 247; a timer local without the reload is four bytes long;
+reusing the saved flag or the eligibility local for the choice or count
+carriers is 28 or a size mismatch. Natural and byte-inert on the final shape:
+the in-place countdown decrement, an if and else dispatch in place of two
+gotos, the call result stored straight into the choice global, and the gate
+declared as a scalar.
+
+Verified by the ROM hash, the overlay alias drift check and the per-symbol
+promotion proof.
 
 #### 2026-09-10, lane w8-bigclose: the floor is 2, so this function cannot match
 

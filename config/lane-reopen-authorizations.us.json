@@ -302,7 +302,7 @@
     },
     "func_80019AB8": {
       "ledger_commit": "48d20b5a7f43f073e7afa3d09f3852ee75d75ebc",
-      "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
+      "reason": "New stock compiler evidence for defined u8-to-u64 widening at one store; ADR 0017 tests minimal widening/narrowing spellings with unchanged evaluation, ABI and memory effects. Closed declaration and colour grids remain closed.",
       "source_commit": "48d20b5a7f43f073e7afa3d09f3852ee75d75ebc"
     },
     "func_80019DE8": {
@@ -377,7 +377,7 @@
     },
     "func_80020D8C": {
       "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
+      "reason": "New stock full-TU control reaches one branch-alias word with exact frame/extent/zero relocs. ADR0017 tests one proved u8-count postdecrement spelling; closed declaration/colour/flag grids and completed vendor context stay closed.",
       "source_commit": "f6e5535ad7cb6b2d80a2e5e31e5529a5af33c312"
     },
     "func_80020E4C": {
@@ -1757,8 +1757,8 @@
     },
     "overlay1TransitionState": {
       "ledger_commit": "07c7bc32795e0b8d1f2ff2a93cc9fb2605df6543",
-      "reason": "ADR 0018 stall-rule reopen for a whole-TU batch: these plateaus were filed under the superseded attempt cap. One owner works the unit under the stall rule with a single shared flag-lattice run.",
-      "source_commit": "8b4f51cdcbdc468f5622bc353511de2c0abb3270"
+      "reason": "Configured full-TU flag lattice for current transition body; no current-input lattice receipt; diagnostic only pending shared-flag consumer review",
+      "source_commit": "287a018f7a46c95dbc19edafa75d681e025bd8f4"
     },
     "overlay1UpdateAimedTransient": {
       "ledger_commit": "ed1e730b0017226ca6c9cb70a78dfc91988b1e5d",
@@ -2142,7 +2142,7 @@
     },
     "wakeUpdate": {
       "ledger_commit": "00919d11e8fff7c8cf4b43fd74ea998dbd6f8613",
-      "reason": "ADR 0018 stall rule, and at delta -4 bytes the candidate is not the same function: decompiler-assisted reconstruction applies where no permutation can.",
+      "reason": "New target-proved unsigned halfword arithmetic closes the zero-input shift gap; ADR 0017 causal packet tests its minimal C spelling and resulting expression topology, not the closed colour-force or declaration grids.",
       "source_commit": "0922cb435351df2dd39230eecba5c27bb725d2d9"
     }
   },

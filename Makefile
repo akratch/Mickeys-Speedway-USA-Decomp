@@ -1078,8 +1078,10 @@ $(foreach f,$(MAIN_MATH_BARE_TUS),$(eval \
 	$(BUILD_DIR)/$(SRC_DIR)/main/$(f).c.o: OPT_FLAGS := -g))
 $(foreach f,$(MAIN_MATH_BARE_TUS),$(eval \
 	$(BUILD_DIR)/$(SRC_DIR)/main/$(f).c.o: CFLAGS += -Wab,-r4300_mul))
-# The reconstructed resident main loop reproduces its target frame with uopt capped.
-$(BUILD_DIR)/$(SRC_DIR)/main/main.c.o: CFLAGS += -Wo,-Olimit,100
+# main.c compiles at the plain game-code preset. It once carried
+# -Wo,-Olimit,100 on the hypothesis that the main loop (func_80026FB4) was
+# left unoptimised; func_80028564, which that cap also switched off, matches
+# byte for byte only with uopt running on it and needs a limit of at least 146.
 ifeq ($(NON_MATCHING),1)
 MAIN_THREAD_TEXT_SIZE := 0x2B10
 MAIN_THREAD_TEXT_SHA256 := ba62e894f3b04c9359aea1b9806045208745c9321dd76e52dd59283234d88c3c
@@ -1137,6 +1139,11 @@ $(BUILD_DIR)/$(SRC_DIR)/main/sched.c.o: POSTPROCESS = \
 # and the exact relocation identities of the assembled fallback functions.
 # Name the input rodata base so table identities remain unambiguous in the ELF.
 # func_80009220's compiler-owned float literal uses the same proved input base.
+# func_80004FE0's first flag-gated dangling call is declared through a void
+# alias (a call with a result keeps the flag word off v0). Canonicalize only
+# the undefined symbol name to the shared TrapDanglingJump target; section
+# contents are unchanged. The rename runs last: add_elf_relocations.py
+# refuses an object holding two symbols of one name.
 $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: $(TOOLS_DIR)/add_elf_relocations.py \
     $(TOOLS_DIR)/trim_elf_section.py $(TOOLS_DIR)/rebind_elf_relocations.py
 $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: POSTPROCESS = \
@@ -1158,7 +1165,8 @@ $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: POSTPROCESS = \
 	    04dcd22184d1b53507977efc4868c715fea7ba6a86fa32c29b086d53cb076668 \
 	    0x6500:PC16:objectsSizeDefaultBranch:0x76 \
 	    0x6718:PC16:objectsInitDefaultBranch:0x120 \
-	    0x6C00:PC16:objectsControlDefaultBranch:0x114
+	    0x6C00:PC16:objectsControlDefaultBranch:0x114 && \
+	$(OBJCOPY) --redefine-sym objectsVoidTrap=TrapDanglingJump $@
 # JFG's source-level string migration reproduces diRcp's complete diagnostic
 # string block followed by the 0x100-byte switch-table span. The following
 # four zero bytes are output-section padding.
@@ -1197,9 +1205,22 @@ $(BUILD_DIR)/$(SRC_DIR)/main/track.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/track.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym trackCamPosTrap=TrapDanglingJump $@
 
-# levelInit's typed weak aliases preserve the seven runtime-loaded ABIs while
-# IDO emits their calls against the shared TrapDanglingJump identity directly.
-# No postprocess is needed.
+# levelInit reaches seven runtime-loaded functions through the shared resident
+# trap. Typed weak aliases preserve each real ABI, and IDO emits each call
+# against the alias name, so the object must be canonicalized: this
+# metadata-only step restores the shipped undefined symbol identity without
+# changing section data. (The rule was once removed as redundant; it is not --
+# without it the promoted object does not link.)
+# One objcopy per alias: a single invocation refuses seven redefinitions onto
+# one target name.
+$(BUILD_DIR)/$(SRC_DIR)/main/level.c.o: POSTPROCESS = \
+	$(OBJCOPY) --redefine-sym levelTrackInitTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym levelOverlay7InitPoolTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym levelOverlay34InitStorageTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym levelOverlay33InitializeBuffersTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym levelOverlay42InitTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym levelOverlay16InitializeBufferTrap=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym levelOverlay103CheckSignatureTrap=TrapDanglingJump $@
 
 # The gsSnd flag lattice reproduces its debug-shaped epilogues only with bare -g.
 $(BUILD_DIR)/$(SRC_DIR)/main/gsSnd.c.o: OPT_FLAGS := -g
@@ -1282,8 +1303,12 @@ $(BUILD_DIR)/$(SRC_DIR)/main/charControl.c.o: CFLAGS += -Wab,-r4300_mul
 # func_8001C4C0's effect-spawn dangling call needs its observed twelve-argument
 # prototype without changing the other shared TrapDanglingJump call sites.
 # Canonicalize only the undefined alias name; section contents are unchanged.
+# The lone gravity scalar owns four BSS bytes; IDO rounds its section to 16.
+# Normalize only proved NOBITS tail alignment, preserving executable bytes.
+$(BUILD_DIR)/$(SRC_DIR)/main/charControl.c.o: $(TOOLS_DIR)/trim_elf_bss.py
 $(BUILD_DIR)/$(SRC_DIR)/main/charControl.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym charControlEffectSpawnTrap=TrapDanglingJump $@
+	$(OBJCOPY) --redefine-sym charControlEffectSpawnTrap=TrapDanglingJump $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_bss.py $@ D_800CB304 4
 
 # The positional-audio distance loops retain the R4300 multiply schedule;
 # the full flag lattice selects this mode for amPlayAudioMap.

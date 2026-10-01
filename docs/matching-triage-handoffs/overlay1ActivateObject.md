@@ -2,11 +2,11 @@
 ### `overlay1ActivateObject` plateau handoff
 
 - source: `src/overlays/o001/overlay_001.c`
-- score: 3 differing words
+- score: 0/88 words, promoted
 - frame: 0x18
 - relocations: 13
-- first mismatch: +0x6C
-- summary: allocation-mismatch; 47 to 3 on two edits read off the allocator records. What is left is one ugen scratch-temp choice, and a p1 force sweep never reaches below it.
+- first mismatch: none
+- summary: Matched. Natural shape: store the record to D_1D68 and read it back, one-argument chain helpers, D_1DA0 read at each use, subscript of the start pointer.
 
 #### p8-o001: the records priced both edits, and a lattice would have missed the second
 
@@ -83,4 +83,23 @@ any `p1cand` line naming the `D_1D68` address at all -- it is not outbid, it is
 not present. Axes this lane covered: colour forcing over every existing web, the
 ring-draw family, source-level reference counting on that address, statement
 order, declaration order, extern order, and physical line folding.
+
+#### 2026-10-01, lane b-misc: matched by discarding the inherited shape
+
+The closure above named the right fact (the `D_1D68` address is not a web in
+the candidate) and looked for it on the allocator axis. It is a source-shape
+fact. The inherited body carried a `record` local, a volatile `D_1D68` plus a
+second alias extern for reading it, a volatile cast on `D_1DA0`, a post-call
+`current` local and a two-argument first helper call. Writing the block as its
+author plausibly did -- assign `D_1D68`, pass `D_1D68` to the helper, read
+`D_1DA0` at every use, no locals but `state` -- makes the store and the
+forwarded read two references to one global, which is what gives its address a
+coloured web. That shape scored 19 with the whole residual one ring draw late
+from the record sum; spelling the record address as a subscript of the start
+pointer, or with the scaled index on the left of the sum, puts the index
+product before the base load and scored 0. Five spellings of the sum were all
+exact. The first helper takes one argument; the second-argument register only
+held the leftover `D_1D9C` address.
+
+`gmake verify`, `check-overlay-syms` and `promotion-proof` pass.
 <!-- plateau-handoff:overlay1ActivateObject:end -->

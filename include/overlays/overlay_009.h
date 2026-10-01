@@ -161,9 +161,6 @@ typedef struct O9MotionOwner {
 } O9MotionOwner;
 
 extern s16 *D_0;
-extern f32 D_C;
-extern f32 D_10;
-extern f32 D_14;
 extern f32 D_54;
 extern f32 D_58;
 extern f32 D_70;

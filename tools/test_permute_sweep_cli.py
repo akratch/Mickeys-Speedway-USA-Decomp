@@ -42,6 +42,35 @@ if kind == "new_lane.sh":
     (lane / ".venv").symlink_to(root / ".venv", target_is_directory=True)
     sys.exit(0)
 if kind == "gmake":
+    events = [json.loads(line) for line in pathlib.Path(os.environ["SWEEP_TEST_EVENTS"]).read_text().splitlines()]
+    if args == ["overlay-syms"]:
+        refreshes = sum(1 for event_kind, event_args in events
+                        if event_kind == "gmake" and event_args == ["overlay-syms"])
+        surface = "residentFn = 0xf0000000;" + chr(10)
+        if refreshes > 1 and os.environ.get("SWEEP_TEST_SURFACE_UNCHANGED") != "1":
+            surface = "residentFn_o014Reloc = 0xf0000000;" + chr(10)
+        if refreshes > 1 and os.environ.get("SWEEP_TEST_SURFACE_UNRELATED") == "1":
+            surface = "residentFn = 0xf0000000;" + chr(10) + "otherFn_o014Reloc = 0xf0000000;" + chr(10)
+        pathlib.Path("overlay_undefined_syms.us.txt").write_text(surface)
+    full_builds = sum(
+        1 for event_kind, event_args in events
+        if event_kind == "gmake" and len(event_args) == 1 and event_args[0].startswith("-j")
+    )
+    if (len(args) == 1 and args[0].startswith("-j") and full_builds == 1
+            and os.environ.get("SWEEP_TEST_BOOTSTRAP_EXIT")):
+        if os.environ.get("SWEEP_TEST_BOOTSTRAP_MODE") in ("expected-link", "expected-link-cfe-error"):
+            print("build/src/main/fixture.c.o: relocation truncated to fit: R_MIPS_26 against `residentFn'")
+            print("link failed with undefined resident references or R_MIPS_26 overflows.")
+            print("gmake[1]: *** [Makefile:1321: build/mickey.us.elf] Error 1")
+            if os.environ.get("SWEEP_TEST_BOOTSTRAP_MODE") == "expected-link-cfe-error":
+                print("cfe: Error: synthetic compiler error")
+        else:
+            print("compiler: fatal error: synthetic unrelated failure")
+        sys.exit(int(os.environ["SWEEP_TEST_BOOTSTRAP_EXIT"]))
+    if (len(args) == 1 and args[0].startswith("-j") and full_builds == 2
+            and os.environ.get("SWEEP_TEST_FINAL_BUILD_EXIT")):
+        print("linker: synthetic authoritative build failure")
+        sys.exit(int(os.environ["SWEEP_TEST_FINAL_BUILD_EXIT"]))
     print("synthetic build proof")
     sys.exit(int(os.environ.get("SWEEP_TEST_BUILD_EXIT", "0")))
 sys.exit(99)
@@ -72,7 +101,7 @@ class SweepCliTests(unittest.TestCase):
         (self.repo / "tools/permute_batch.py").symlink_to(TOOLS / "permute_batch.py")
         self.stub(self.repo / "tools/new_lane.sh")
         self.stub(self.repo / ".venv/bin/python")
-        (self.repo / ".gitignore").write_text(".venv\nbuild/\n")
+        (self.repo / ".gitignore").write_text(".venv\nbuild/\noverlay_undefined_syms.us.txt\n")
         (self.repo / "source.c").write_text("int fixture;\n")
         self.git("init", "-q", "-b", "campaign/unchain")
         self.git("config", "user.name", "Sweep fixture")
@@ -156,15 +185,92 @@ class SweepCliTests(unittest.TestCase):
         self.assertEqual(batch[0][-4:], ["--function", "fixture", "--minutes", "3"])
         jobs = "-j" + str(os.cpu_count() or 1)
         self.assertEqual([args for kind, args in self.events() if kind == "gmake"],
-                         [[jobs, "extract"], [jobs], [jobs], [jobs, "verify"]])
+                         [[jobs, "extract"], ["overlay-syms"], [jobs],
+                          ["overlay-syms"], [jobs], [jobs, "verify"]])
         self.assertEqual(self.git("status", "--porcelain", repo=lane), "")
+
+    def test_expected_cold_resident_overflow_rebuilds_surface_before_final_link(self):
+        self.lane()
+        result = self.run_cli("--report-only", "owned", SWEEP_TEST_BOOTSTRAP_EXIT="2",
+                              SWEEP_TEST_BOOTSTRAP_MODE="expected-link")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("cold bootstrap link needs resident object inventory", result.stderr)
+        jobs = "-j" + str(os.cpu_count() or 1)
+        self.assertEqual([args for kind, args in self.events() if kind == "gmake"],
+                         [[jobs, "extract"], ["overlay-syms"], [jobs],
+                          ["overlay-syms"], [jobs], [jobs, "verify"]])
+        self.assertTrue(any(kind == "python" and args[:1] == ["-u"]
+                            for kind, args in self.events()))
+
+    def test_unrelated_cold_bootstrap_failure_stops_before_surface_retry_or_search(self):
+        self.lane()
+        result = self.run_cli("--report-only", "owned", SWEEP_TEST_BOOTSTRAP_EXIT="19",
+                              SWEEP_TEST_BOOTSTRAP_MODE="unrelated")
+        self.assertEqual(result.returncode, 19)
+        self.assertIn("synthetic unrelated failure", result.stderr)
+        self.assertIn("failed outside the diagnosed resident R_MIPS_26 link case", result.stderr)
+        self.assertEqual([args for kind, args in self.events() if kind == "gmake"],
+                         [["-j" + str(os.cpu_count() or 1), "extract"],
+                          ["overlay-syms"], ["-j" + str(os.cpu_count() or 1)]])
+        self.assertFalse(any(kind == "python" and args[:1] == ["-u"]
+                             for kind, args in self.events()))
+
+    def test_cfe_error_with_link_marker_is_not_treated_as_expected_bootstrap(self):
+        self.lane()
+        result = self.run_cli("--report-only", "owned", SWEEP_TEST_BOOTSTRAP_EXIT="2",
+                              SWEEP_TEST_BOOTSTRAP_MODE="expected-link-cfe-error")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("cfe: Error: synthetic compiler error", result.stderr)
+        self.assertIn("failed outside the diagnosed resident R_MIPS_26 link case", result.stderr)
+        self.assertEqual([args for kind, args in self.events() if kind == "gmake"],
+                         [["-j" + str(os.cpu_count() or 1), "extract"],
+                          ["overlay-syms"], ["-j" + str(os.cpu_count() or 1)]])
+        self.assertFalse(any(kind == "python" and args[:1] == ["-u"]
+                             for kind, args in self.events()))
+
+    def test_expected_overflow_with_unchanged_surface_fails_closed(self):
+        self.lane()
+        result = self.run_cli("--report-only", "owned", SWEEP_TEST_BOOTSTRAP_EXIT="2",
+                              SWEEP_TEST_BOOTSTRAP_MODE="expected-link",
+                              SWEEP_TEST_SURFACE_UNCHANGED="1")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("surface did not change", result.stderr)
+        self.assertEqual([args for kind, args in self.events() if kind == "gmake"],
+                         [["-j" + str(os.cpu_count() or 1), "extract"],
+                          ["overlay-syms"], ["-j" + str(os.cpu_count() or 1)],
+                          ["overlay-syms"]])
+        self.assertFalse(any(kind == "python" and args[:1] == ["-u"]
+                             for kind, args in self.events()))
+
+    def test_expected_overflow_with_unrelated_surface_change_fails_closed(self):
+        self.lane()
+        result = self.run_cli("--report-only", "owned", SWEEP_TEST_BOOTSTRAP_EXIT="2",
+                              SWEEP_TEST_BOOTSTRAP_MODE="expected-link",
+                              SWEEP_TEST_SURFACE_UNRELATED="1")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("surface did not change", result.stderr)
+        self.assertFalse(any(kind == "python" and args[:1] == ["-u"]
+                             for kind, args in self.events()))
+
+    def test_second_authoritative_build_failure_is_preserved_and_stops_search(self):
+        lane = self.lane()
+        result = self.run_cli("--report-only", "owned", SWEEP_TEST_FINAL_BUILD_EXIT="21")
+        self.assertEqual(result.returncode, 21)
+        self.assertIn("synthetic authoritative build failure", result.stderr)
+        self.assertIn("authoritative build failed", result.stderr)
+        self.assertFalse(any(kind == "python" and args[:1] == ["-u"]
+                             for kind, args in self.events()))
+        logs = list((lane / "build/permuter").glob("sweep-build.log.*"))
+        self.assertEqual(len(logs), 1)
+        self.assertIn("synthetic authoritative build failure", logs[0].read_text())
 
     def assert_build_jobs(self, count, *, promoted=False):
         builds = [args for kind, args in self.events() if kind == "gmake"]
         jobs = "-j" + str(count)
-        expected = [[jobs, "extract"], [jobs], [jobs], [jobs, "verify"]]
+        expected = [[jobs, "extract"], ["overlay-syms"], [jobs],
+                    ["overlay-syms"], [jobs], [jobs, "verify"]]
         if promoted:
-            expected += [[jobs, "extract"], [jobs], [jobs, "verify"]]
+            expected += [[jobs, "extract"], ["overlay-syms"], [jobs], [jobs, "verify"]]
         self.assertEqual(builds, expected)
         batch = next(args for kind, args in self.events() if kind == "python" and args[:1] == ["-u"])
         self.assertEqual(batch[batch.index("--build-jobs") + 1], str(count))
@@ -217,7 +323,7 @@ class SweepCliTests(unittest.TestCase):
         batch = next(args for kind, args in self.events() if kind == "python" and args[:1] == ["-u"])
         self.assertIn("--apply", batch)
         self.assertIn("--commit", batch)
-        self.assertEqual(sum(kind == "gmake" for kind, _ in self.events()), 7)
+        self.assertEqual(sum(kind == "gmake" for kind, _ in self.events()), 10)
 
     def test_wrong_branch_and_detached_head_are_preserved(self):
         for name, branch, detached in (("other", "different", False), ("detached", None, True)):
@@ -285,7 +391,7 @@ class SweepCliTests(unittest.TestCase):
         lane = self.lane()
         result = self.run_cli("--promote", "owned", SWEEP_TEST_BATCH_EXIT="23")
         self.assertEqual(result.returncode, 23, result.stderr)
-        self.assertEqual(sum(kind == "gmake" for kind, _ in self.events()), 4)
+        self.assertEqual(sum(kind == "gmake" for kind, _ in self.events()), 6)
         logs = list((lane / "build/permuter").glob("sweep.log.*"))
         self.assertEqual(len(logs), 1)
         self.assertIn("synthetic", logs[0].read_text())

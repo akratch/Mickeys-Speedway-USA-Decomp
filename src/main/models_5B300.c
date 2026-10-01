@@ -450,61 +450,10 @@ void camConvertMatrixList(Matrix *mtx, s32 count) {
     entry->count = count;
 }
 
-/* Keep the original TU order: func_8005ABA8 precedes func_8005AD64. */
-/* Workbench: allocation-mismatch, 2 differing words, first mismatch +0x3C.
- * 111/111 words, frameless, zero relocations on both sides.
- *
- * Four source artefacts closed 45 of the 47, none of which was an allocator
- * question (2026-09-09):
- *  - `temp_f0_2` cached `instance->frameValue` for two tests that no store
- *    separates. The cache costs a `mov.s` where the target reads the field
- *    twice and lets uopt common the load; the target's own `nop` at that
- *    hazard slot is what the copy was filling.
- *  - the two blend stores were emitted sub-then-div; the target allocates the
- *    div's FP temp first, so the source computes `blendStart` before
- *    `blendEnd`. Both read only locals, so the order is free.
- *  - the null test spelled through `temp_a1` gave the loaded pointer a copy
- *    and exchanged a1/a2 on both frame carriers plus their two later uses.
- *    Testing `temp_v0->frame == NULL` directly lets the load keep a1 and the
- *    surviving carrier take the copy into a2.
- *  - `var_v1 = 1` written before the inner `if` of each arm, rather than once
- *    after it, changed nothing in the schedule but made as1 duplicate the
- *    join's `move v0,v1` into two annulled delay slots the target leaves as
- *    `nop`. That is the same class as the one word still open.
- * `temp_f2_2` was an m2c-only second name: one carrier serves both blendEnd
- * reads. Removing it and the dead `temp_a1` is byte-inert.
- *
- * What is left: at +0x3C the target branches `beqz` with a `nop` delay slot
- * to a block whose first scheduled instruction is `mul.s $f18,$f14,$f12`;
- * as1 turns the same branch into `beqzl` and duplicates that multiply into
- * the annulled slot, retargeting past it (the copy at +0xD8 then becomes
- * unreachable, so both sides are 111 words). Every other word, every branch
- * target and the whole register assignment agree. This is an as1 delay-slot
- * decision, not a codegen one, and it is reachable from source: the
- * `var_v1 = 1` move above flipped the same decision at two other sites
- * without moving a single instruction. Twenty-eight further shapes of the
- * else-block head, the transition test, the declaration list and the
- * comparison spellings are all flat at 2.
- *
- * Tooling note: the permuter's isolated scratch for this TU compiles the
- * function at 112 words against the real object's 111, so its base score of
- * 400 is a false reading and no score from it transfers.
- *
- * Second pass, 2026-09-09: the phase input is now proved correct. Replaying
- * the compiler's own listing through its preprocessor, first and second
- * assembler passes reproduces this object exactly, and inserting a single
- * location-counter directive at the else arm's label there suppresses the
- * duplication and yields a byte-exact 111 words. So every other word of this
- * C is already the target's C. The suppressing set is exactly the three
- * location-counter directives, which ugen emits only at function starts, so
- * it is not reachable from source. Retired for this residual: all debug-line
- * edits (hence physical line grouping), every other in-body directive, any
- * single-line move of the phase input, any neighbouring function, and 384 C
- * spellings of the tests, loops, blend order and carrier placement. See
- * docs/matching-triage-handoffs/func_8005ABA8.md. */
+/* Exact stock C output proved 2026-09-30: 111/111 words, frameless, zero relocations.
+ * The retained empty guard is disclosed in docs/cleanup-queue.md. */
 /* PROVENANCE: Mickey-only reconstruction from func_8005ABA8.s and the
  * existing models TU layouts; no external function body is copied. */
-#ifdef NON_MATCHING
 s32 func_8005ABA8(ModelAnimationInstance *instance, f32 arg1, f32 arg2) {
     s32 var_v1;
     f32 temp_f0;
@@ -537,6 +486,9 @@ s32 func_8005ABA8(ModelAnimationInstance *instance, f32 arg1, f32 arg2) {
                                    temp_v0->frameValue;
         }
     } else {
+        /* Inert source-shaping guard; see docs/cleanup-queue.md. */
+        if ((instance && instance) && instance) {
+        }
         instance->frameValue += arg1 * arg2;
         if (instance->frameValue >= 1.0f) {
             if (frame->loop != 0) {
@@ -564,9 +516,6 @@ s32 func_8005ABA8(ModelAnimationInstance *instance, f32 arg1, f32 arg2) {
     }
     return var_v1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/models_5B300/func_8005ABA8.s")
-#endif
 /* PROVENANCE: Mickey-only reconstruction from func_8005AD64.s and the
  * existing models TU layouts; no external function body is copied. */
 /* Exact configured C: 108 words, no stack frame or relocations. The canonical
@@ -875,16 +824,6 @@ void func_8005B644(Matrix *matrices, Matrix *root, ModelMatrixNode *node, s32 co
         } while (i != count);
     }
 }
-
-/* PLATEAU-HANDOFF:func_8005ABA8:start
- * symbol: func_8005ABA8
- * score: 2/111 words
- * frame: frameless
- * relocations: 0
- * first-mismatch: +0x3C
- * summary: as1 branch-delay decision remains; source-side C and phase replay are closed
- * PLATEAU-HANDOFF:func_8005ABA8:end
- */
 
 /* PLATEAU-HANDOFF:func_8005AF14:start
  * symbol: func_8005AF14

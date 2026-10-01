@@ -59,7 +59,8 @@ extern f32 D_80081854;
 extern f32 D_80081858;
 extern f32 D_8008185C;
 extern f32 D_80081860;
-extern f32 D_800CB304;
+/* Shared gravity scalar; original resident/overlay uses are single precision. */
+f32 D_800CB304;
 
 typedef struct CharControlEffectDefinition {
     u8 kind;
@@ -1219,26 +1220,28 @@ s16 dAngle(s16 arg0, s16 arg1, f32 arg2) {
     }
     return (s16) (arg0 + (s32) ((f32) var_v1 * arg2));
 }
-/* PROVENANCE -- adapted from JFG's charControl controlMakeV implementation. */
-#ifdef NON_MATCHING
+/* PROVENANCE -- role and signature follow JFG's charControl controlMakeV,
+ * which the donor carries as assembly only; the body is written from
+ * Mickey's listing. Matched with one reused index, each argument reduced to
+ * its fraction in place, the table read by subscript, and the difference
+ * accumulated into `v`. */
 f32 func_8001D880(f32 arg0, f32 arg1, f32 *table, f32 divisor) {
+    s32 i;
     f32 base;
-    f32 value;
-    s32 index;
+    f32 v;
 
     arg1 *= 10.0f;
-    index = (s32) arg1;
-    base = table[index];
-    value = table[index + 1];
-    value = ((value - base) * (arg1 - (f32) index)) + base;
+    i = arg1;
+    arg1 -= i;
+    base = table[i];
+    v = (table[i + 1] - base) * arg1 + base;
     arg0 *= 10.0f;
-    index = (s32) arg0;
-    base = table[index];
-    return (value - (base + ((table[index + 1] - base) * (arg0 - (f32) index)))) / divisor;
+    i = arg0;
+    arg0 -= i;
+    base = table[i];
+    v -= base + (table[i + 1] - base) * arg0;
+    return v / divisor;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/func_8001D880.s")
-#endif
 /* PROVENANCE -- adapted from JFG's src/charControl.c controlFSUvels. */
 void controlFSUvels(s16 *rotation, ControlPlayer *player) {
     s16 sp18[3];
@@ -2167,17 +2170,6 @@ void controlClearPlayerSetup(void) {
  * summary: hypothesis=loop-weighted references on leftover const webs 10 and 3; spellings=plus-assign and minus-assign fold away, (x+C)-C folds away, xor pair at delta +16 adds 80 to the carrier; stall=totalsave 10 and 11 unchanged at 121/403 and delta 0
  * PLATEAU-HANDOFF:func_8001C4C0:end
  */
-
-/* PLATEAU-HANDOFF:func_8001D880:start
- * symbol: func_8001D880
- * score: 28/36 words
- * frame: frameless
- * relocations: 0
- * first-mismatch: +0x4
- * summary: Indexing the table closed the address operand order (a2,t7 both sides) and naming the upper table entry in `value` before the lerp takes it to 28. The residual is a uopt colour rotation: the target colours only 10.0f from {f16,f18} and runs a five-wide FP ring, this candidate colours both and runs four. Twenty-five source forms plus 210 permuter candidates were flat or worse.
- * PLATEAU-HANDOFF:func_8001D880:end
- */
-
 /* PLATEAU-HANDOFF:func_8001DD70:start
  * symbol: func_8001DD70
  * score: 299/533 words

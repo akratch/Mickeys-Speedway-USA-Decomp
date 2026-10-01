@@ -629,9 +629,12 @@ typedef struct O8P4CF0Vec3f {
 } O8P4CF0Vec3f;
 
 typedef struct O8P4CF0Normal {
-    volatile f32 x;
+    f32 x;
     f32 y;
-    f32 z;
+    /* The qualifier pins the first horizontal product ahead of the second in
+     * +0x4CF0, as shipped, at the cost of the one reload that is that
+     * candidate's whole remaining difference. */
+    volatile f32 z;
     f32 w;
 } O8P4CF0Normal;
 
@@ -762,10 +765,6 @@ extern void o8Phase1EmitReloc(O8PhaseState *state, s32 kind, f32 scale);
 
 extern const O8P2640Tuning D_2110[];
 
-extern const f32 O8P2640_data_198;
-
-extern const f32 O8P2640_data_19C;
-
 extern f32 O8P2640_call_26AC(f32 squaredDistance);
 
 extern s32 O8P2640_call_26F0(f32 negX, f32 negZ);
@@ -780,7 +779,8 @@ extern s32 O8P2640_call_27CC(s32 low, s32 high);
 
 extern s32 O8P2640_call_27DC(s32 low, s32 high);
 
-extern void O8P2640_call_28C0(O8P2640Record *record);
+/* Declared with a result: the caller's dead count copy takes v1, not v0. */
+extern s32 O8P2640_call_28C0(O8P2640Record *record);
 
 extern f32 O8P291C_data_1A0;
 

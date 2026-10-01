@@ -2,11 +2,48 @@
 ### `overlay15MoveStars` plateau handoff
 
 - source: `src/overlays/o015/overlay_015.c`
-- score: 30/54 words
+- score: 0/54 words, promoted
 - frame: 0x40
-- relocations: 25
-- first mismatch: +0x30
-- summary: Deleting scale removes only a location emission; fourteen draws, object text and shared-address lowering remain unchanged.
+- relocations: 21
+- first mismatch: none
+- summary: Matched. The field is a locally-defined static struct reached through a pointer taken at function entry, so the bound reads are direct and share high halves.
+
+#### 2026-10-01, lane b-o101: matched; the shared high half has a natural source form
+
+Promoted at 54 of 54 words, delta 0, frame 0x40, 21 of 21 relocations.
+
+The reopen condition asked for a natural direct-load form that shares one
+high half per adjacent bound pair. It exists and needs two things together.
+
+The storage is one struct per particle field, defined in this unit: twelve
+bound words, the movement vector at 0x30, a second vector at 0x3C and a
+pointer at 0x48, 0x50 bytes, two of them filling the 0xA0-byte BSS. as1 only
+shares a high half between two references to the same locally-defined symbol
+that fall in one aligned eight-byte pair, which is the pairing the target
+shows: 0 and 4, 8 and C, 10 and 14, 18 and 1C, then 20 alone.
+
+The access is through a pointer local initialised to the struct's address at
+the top of the function. Measured on mini units and then here: where the
+pointer is used in the block that assigns it, uopt keeps it as a base
+register, which is the three movement stores; where it is used in a later
+block, or after a call, uopt forwards the address into each access as its own
+constant, so nothing is commoned into a base register and each read is direct.
+Naming the struct members without the pointer gives one base register for all
+nine reads, twelve bytes short; nine separate scalars, extern or static, give
+nine high halves, sixteen bytes long. Both were the recorded dead ends.
+
+Because the struct is static, each access is a section-relative record whose
+addend is already the shipped module-relative offset. The overlay's runtime
+table owns those records, so mk/overlays.mk drops the sixteen static ones with
+filter_elf_relocations.py, as overlay 57 does, and adds the placeholder rename
+for the resident starfield mover.
+
+The same form takes overlay15UpdateMovingStars from 84 words and 28 bytes long
+to 0 and overlay15DrawRain from 13 to 0 on the fast loop; those are separate
+commits.
+
+Gates: gmake verify, check-overlay-syms and promotion-proof pass.
+
 
 #### 2026-09-11, lane `lane/p4-xfer`: refuted, and the size delta is now fully accounted
 

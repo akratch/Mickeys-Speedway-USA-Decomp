@@ -21,6 +21,46 @@ typedef struct {
     u32 words[68];
 } MickeyEpcInfo;
 
+/* The saved context at OSThread + 0x20: 64-bit integer registers, then the
+ * 32-bit status words. */
+typedef struct {
+    u64 at;
+    u64 v0;
+    u64 v1;
+    u64 a0;
+    u64 a1;
+    u64 a2;
+    u64 a3;
+    u64 t0;
+    u64 t1;
+    u64 t2;
+    u64 t3;
+    u64 t4;
+    u64 t5;
+    u64 t6;
+    u64 t7;
+    u64 s0;
+    u64 s1;
+    u64 s2;
+    u64 s3;
+    u64 s4;
+    u64 s5;
+    u64 s6;
+    u64 s7;
+    u64 t8;
+    u64 t9;
+    u64 gp;
+    u64 sp;
+    u64 s8;
+    u64 ra;
+    u64 lo;
+    u64 hi;
+    u32 sr;
+    u32 pc;
+    u32 cause;
+    u32 badvaddr;
+} MickeyThreadContext;
+
 extern s32 D_8007CFD8;
 extern s32 D_8007CFDC;
 extern u32 D_8007CFD0;
@@ -514,77 +554,54 @@ void func_8004650C(s32 ticks) {
     }
 }
 
-#ifdef NON_MATCHING
-/* PROVENANCE: adapted from the SDK-style crash-display control flow in JFG
- * src/diCpu.c; Mickey's own m2c control flow, globals, and ABI are authoritative. */
-/* 51/344 differing words, exact 344 words, frame 0x50, size delta 0 (lane p9-mid, 2026-09-12;
- * was 62).  All 127 relocation records are present and 125 identities align.
+/* PROVENANCE: the crash-display control flow and the 64-bit saved-register
+ * reads narrowed at each use are adapted from the public Diddy Kong Racing
+ * decompilation, src/thread0_epc.c::render_epc_lock_up_display (its GET_REG
+ * macro), and JFG include/structs.h::epcInfo for the field layout; Mickey's
+ * own target supplies the control flow, globals and ABI.
  *
- * The residual is a ugen integer ring phase, and the ring itself was measured here rather than
- * inferred.  An instrumented-ugen free-list trace over this TU reports this function as procedure
- * ordinal 9 with 32 integer allocations, and its draw order is t6, t7, t8, t9, t0, t1, t2, t3, t4,
- * t5, wrapping -- so a ring draw that emits nothing still advances every later temp by one name.
- * Each draw is stamped with the source line that consumed it, which is what makes the phase
- * settable from source.
- *
- * Three hoists of a printf argument into the already-present value local, each worth the draw it
- * removes: the second argument of the exception-address line (62 -> 56), the cause-table lookup
- * (56 -> 53), and the tick counter on the first line (53 -> 51).  A greedy subset search over
- * eighteen such hoists -- every single-line cpuXYPrintf in the function with a stack-passed
- * argument -- converges there.  Buckets went 283 byte-exact / 57 naming / 1 immediate / 4
- * structural to 293 / 49 / 0 / 2 at an unchanged size, so this is more agreement on every axis, not
- * a trade.
- *
- * One tension worth stating: the last of the three puts the first line's stack argument in value's
- * own colour where the shipped code uses a ring temp, so it disagrees at three sites it used to
- * agree on while agreeing at five more.  It wins on every bucket and the schedule does not move,
- * which is why it is retained, but a form that removes that draw *without* naming the value would
- * be strictly better.
- *
- * The remaining 49 naming words are one fact: the shipped code's first visible ring temp is t7,
- * one position past the head of the list ugen builds, so it makes one draw this candidate does not
- * before any instruction is emitted.  A phantom pop at the top of the function is the shape to look
- * for.  Earlier work, retained: ten natural source forms over pointer lifetime, direct field access,
- * context reassignment, declaration order, volatility, control boundaries and cause-word reuse; a
- * 119-row flag lattice, nonexact; a bounded permuter run with no zero; and the JFG revision once
- * cited as a donor, which changes only README and tooling and supplies no body. */
+ * Matched (was 51 masked words, all one ring phase) by typing the saved
+ * integer registers as the 64-bit fields they are and narrowing each one at
+ * its use: every narrowed read draws a register pair and emits one load, which
+ * is the draw the u32-array shape never spent.  With that in place the three
+ * argument hoists into `value` came out again (tick counter, cause-table
+ * lookup, mmAlloc colour tag are passed directly), and the level result has
+ * its own local. */
 void render_epc_lock_up_display(MickeyEpcInfo *arg0) {
     u32 sp4c;
     u32 sp48;
     u32 sp44;
     char *region;
     u32 value;
-    u32 *regs = (u32 *)((u8 *)arg0 + 0x20);
+    u32 level;
+    MickeyThreadContext *context = (MickeyThreadContext *)((u8 *)arg0 + 0x20);
 
     func_80046E00();
-    value = D_8007CFD0;
-    cpuXYPrintf(0x20, 0x18, D_80083B5C, arg0->unk14, value);
-    value = regs[0xFC / 4];
+    cpuXYPrintf(0x20, 0x18, D_80083B5C, arg0->unk14, D_8007CFD0);
+    value = context->pc;
     if (value == 0) {
         cpuXYPrintf(0x20, 0x22, D_80083B78);
     } else if (runlinkGetAddressInfo(value, (s32 *)&sp4c, (s32 *)&sp48,
                                      (u32 **)&sp44) != 0) {
         cpuXYPrintf(0x20, 0x22, D_80083B84, sp4c, sp48);
     } else {
-        cpuXYPrintf(0x20, 0x22, D_80083B90, regs[0xFC / 4]);
+        cpuXYPrintf(0x20, 0x22, D_80083B90, context->pc);
     }
-    if (regs[0xE4 / 4] == 0) {
+    if ((u32)context->ra == 0) {
         cpuXYPrintf(0x20, 0x28, D_80083BA0);
-    } else if (runlinkGetAddressInfo(regs[0xE4 / 4], (s32 *)&sp4c, (s32 *)&sp48,
+    } else if (runlinkGetAddressInfo((u32)context->ra, (s32 *)&sp4c, (s32 *)&sp48,
                                      (u32 **)&sp44) != 0) {
         cpuXYPrintf(0x20, 0x28, D_80083BAC, sp4c, sp48);
     } else {
-        cpuXYPrintf(0x20, 0x28, D_80083BB8, regs[0xE4 / 4]);
+        cpuXYPrintf(0x20, 0x28, D_80083BB8, (u32)context->ra);
     }
-    if (regs[0x100 / 4] == -1U) {
-        value = regs[0x24 / 4];
-        cpuXYPrintf(0x20, 0x2E, D_80083BC8, regs[0x1C / 4], value);
+    if (context->cause == -1U) {
+        cpuXYPrintf(0x20, 0x2E, D_80083BC8, (u32)context->a0, (u32)context->a1);
     } else {
-        if ((((regs[0x100 / 4]) >> 2) & 0x1F) < 0x10) {
-            value = D_8007CFEC[(regs[0x100 / 4] >> 2) & 0x1F];
-            cpuXYPrintf(0x20, 0x2E, D_80083BE4, value);
+        if ((((context->cause) >> 2) & 0x1F) < 0x10) {
+            cpuXYPrintf(0x20, 0x2E, D_80083BE4, D_8007CFEC[(context->cause >> 2) & 0x1F]);
         } else {
-            cpuXYPrintf(0x20, 0x2E, D_80083BF4, regs[0x100 / 4]);
+            cpuXYPrintf(0x20, 0x2E, D_80083BF4, context->cause);
         }
     }
     if ((D_8007A21C != 4) && (D_8007A210 != 0)) {
@@ -608,27 +625,27 @@ void render_epc_lock_up_display(MickeyEpcInfo *arg0) {
             }
         }
     } else {
-        cpuXYPrintf(0x20, 0x34, D_80083C48, regs[0x104 / 4]);
+        cpuXYPrintf(0x20, 0x34, D_80083C48, context->badvaddr);
     }
     cpuXYPrintf(0x20, 0x3A, D_80083C58, D_800D21B0);
-    cpuXYPrintf(0x20, 0x44, D_80083C68, regs[0x4 / 4], regs[0xC / 4]);
-    cpuXYPrintf(0x20, 0x4A, D_80083C7C, regs[0x14 / 4], regs[0x1C / 4]);
-    cpuXYPrintf(0x20, 0x50, D_80083C90, regs[0x24 / 4], regs[0x2C / 4]);
-    cpuXYPrintf(0x20, 0x56, D_80083CA4, regs[0x34 / 4], regs[0x3C / 4]);
-    cpuXYPrintf(0x20, 0x5C, D_80083CB8, regs[0x44 / 4], regs[0x4C / 4]);
-    cpuXYPrintf(0x20, 0x62, D_80083CCC, regs[0x54 / 4], regs[0x5C / 4]);
-    cpuXYPrintf(0x20, 0x68, D_80083CE0, regs[0x64 / 4], regs[0x6C / 4]);
-    cpuXYPrintf(0x20, 0x6E, D_80083CF4, regs[0x74 / 4], regs[0x7C / 4]);
-    cpuXYPrintf(0x20, 0x74, D_80083D08, regs[0x84 / 4], regs[0x8C / 4]);
-    cpuXYPrintf(0x20, 0x7A, D_80083D1C, regs[0x94 / 4], regs[0x9C / 4]);
-    cpuXYPrintf(0x20, 0x80, D_80083D30, regs[0xA4 / 4], regs[0xAC / 4]);
-    cpuXYPrintf(0x20, 0x86, D_80083D44, regs[0xB4 / 4], regs[0xBC / 4]);
-    cpuXYPrintf(0x20, 0x8C, D_80083D58, regs[0xC4 / 4], regs[0xCC / 4]);
-    cpuXYPrintf(0x20, 0x92, D_80083D6C, regs[0xD4 / 4], regs[0xDC / 4]);
-    cpuXYPrintf(0x20, 0x98, D_80083D80, regs[0xF8 / 4]);
-    value = levelGetLevel();
-    if ((value != 0) && (value & 0x80000000)) {
-        cpuXYPrintf(0x20, 0xA4, D_80083D8C, value);
+    cpuXYPrintf(0x20, 0x44, D_80083C68, (u32)context->at, (u32)context->v0);
+    cpuXYPrintf(0x20, 0x4A, D_80083C7C, (u32)context->v1, (u32)context->a0);
+    cpuXYPrintf(0x20, 0x50, D_80083C90, (u32)context->a1, (u32)context->a2);
+    cpuXYPrintf(0x20, 0x56, D_80083CA4, (u32)context->a3, (u32)context->t0);
+    cpuXYPrintf(0x20, 0x5C, D_80083CB8, (u32)context->t1, (u32)context->t2);
+    cpuXYPrintf(0x20, 0x62, D_80083CCC, (u32)context->t3, (u32)context->t4);
+    cpuXYPrintf(0x20, 0x68, D_80083CE0, (u32)context->t5, (u32)context->t6);
+    cpuXYPrintf(0x20, 0x6E, D_80083CF4, (u32)context->t7, (u32)context->s0);
+    cpuXYPrintf(0x20, 0x74, D_80083D08, (u32)context->s1, (u32)context->s2);
+    cpuXYPrintf(0x20, 0x7A, D_80083D1C, (u32)context->s3, (u32)context->s4);
+    cpuXYPrintf(0x20, 0x80, D_80083D30, (u32)context->s5, (u32)context->s6);
+    cpuXYPrintf(0x20, 0x86, D_80083D44, (u32)context->s7, (u32)context->t8);
+    cpuXYPrintf(0x20, 0x8C, D_80083D58, (u32)context->t9, (u32)context->gp);
+    cpuXYPrintf(0x20, 0x92, D_80083D6C, (u32)context->sp, (u32)context->s8);
+    cpuXYPrintf(0x20, 0x98, D_80083D80, context->sr);
+    level = levelGetLevel();
+    if ((level != 0) && (level & 0x80000000)) {
+        cpuXYPrintf(0x20, 0xA4, D_80083D8C, level);
     }
     value = func_80005820(0);
     if ((value != 0) && (value & 0x80000000)) {
@@ -636,9 +653,6 @@ void render_epc_lock_up_display(MickeyEpcInfo *arg0) {
                     value + 0x10, value + 0x14);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/diCpu/render_epc_lock_up_display.s")
-#endif
 /* Mickey-derived body; JFG's corresponding func_800680B0_68CB0 is
  * assembly-only and confirms the packed-glyph loop structure. */
 void func_80046AA8(s32 x, s32 y, u16 *glyph) {
@@ -683,170 +697,53 @@ void func_80046AA8(s32 x, s32 y, u16 *glyph) {
         glyph++;
     }
 }
-/* Workbench: allocation-mismatch, 16 differing words, first mismatch +0x2C.
- * 106/106 words, frame 0x40, all three relocation sites exact, and every
- * instruction positionally identical -- the comparator calls it register-only.
- *
- * 2026-09-09: the ninth callee-saved web is the case-conversion working copy,
- * and it is a real source variable. Folding it away closed the +4 size
- * mismatch but freed a callee-saved register, so the candidate hoisted a
- * third loop-invariant constant (0x78) into s8 where the target materialises
- * it inline with `li at` and hoists only 0xA and 0x30. Reinstating the copy
- * -- `var_s0` carries the character through the range tests and the converted
- * value is written back to `var_s2`, which is the only value the next
- * iteration's `temp_s6` needs -- restores the target's two hoisted constants
- * in the target's registers (s7 = 0xA, s8 = 0x30) and takes 41 differing
- * words to 31.
- *
- * What is left is one live-range split. The target computes the masked
- * character straight into its callee-saved carrier (`andi s2,v0,0xff`) and
- * splits a copy into s0 for the range tests. The candidate computes it into a
- * caller-saved temporary, runs every range test out of that temporary, and
- * copies into the saved carrier, which also exchanges var_s2 with var_s3 and
- * var_v0 with its own temp. Same instruction count, 31 register names.
- * Measured flat against it: both initialiser orders; all legal orders of the
- * three loop-head statements; `u8` var_v0; the loop test written as
- * `while ((var_v0 = *var_s4) != 0)`; the range tests spelled entirely on
- * either variable; reversed equality operands at two sites; and the copy
- * written after the case block, inside each arm, or as a plain working copy
- * with a single write-back (40, 41). Resume on why the mask lands in a
- * caller-saved temporary here and directly in the saved carrier there.
- *
- * 2026-09-09 (second pass): the instrumented uopt answers that question and
- * closes the reordering space. The masked character is a compiler temporary in
- * its own right -- phase-one web 32 -- and it is coloured *first*, before every
- * declared local, taking v0; `var_v0` is web 0 and gets v1 behind it. The
- * target has no such web at all: its mask writes the callee-saved carrier
- * directly. `CDX_FORCE=p1:w0=c1` (put `var_v0` back in v0) is declined twice
- * because web 32 already holds it and the two interfere, so the register file
- * cannot be recovered by moving `var_v0`; web 32 has to stop existing.
- * Forcing web 32 into a callee-saved colour instead reaches the target's
- * registers and wrecks the schedule (73 and 74 differing words for s2 and s3),
- * and forcing its split path costs two instructions (108 words).
- * Web 32 exists because `var_s2 = var_v0 & 0xFF;` is immediately followed by
- * `var_s0 = var_s2;` in the same block: the value has two destinations, so uopt
- * commons it into a temporary and copy-propagates both names onto it, which is
- * also why every range test reads the temporary rather than a carrier.
- * Newly eliminated: nested `if`s in place of the `&&` pairs (31, byte-flat);
- * `var_s0` spelled as a second `var_v0 & 0xFF` (31, flat); the copy moved ahead
- * of the pointer increment (32); the copy inside each arm with an else copy on
- * the short path (103, and the frame moves); `var_s0 = var_s2 & 0xFF` (89);
- * both range tests on `var_s2` with the copy after the case block (41);
- * `var_v0` masked at the load (86); and `temp_s6` taken from `var_s0` (56).
- * Resume by removing the second destination of the mask, not by reordering it.
- *
- * 2026-09-11 (lane `lane/p4-xfer`): 31 to 16, and the temp is gone. Three
- * edits, none of which pays on its own:
- *
- *   1. The working copy is `var_v0` itself, not a fresh `var_s0` (L115). Five
- *      carrier identities were measured across 40 forms -- `var_s0`, `var_v0`,
- *      `x`, `y`, `temp_s6` -- and only `var_v0` reaches 16; the next best is
- *      27. Reusing the parameter's own local ends its live range where the
- *      copy begins, so the mask has one destination and web 32 stops existing.
- *   2. The copy sits inside each arm of the case-state test, not ahead of it.
- *      On its own that is 32 against 27, which is why earlier passes dropped
- *      it; with edit 1 and edit 3 it is the shape the target schedules into
- *      the two `bnez` delay slots.
- *   3. The tab case is written as two statements,
- *      `var_s1 = var_s1 - (var_s1 & 0xF); var_s1 = var_s1 + 0x10;`. Same three
- *      instructions, one more reference to `var_s1`, which lifts its
- *      totalsave 91 to 111 and wins the p1 tie against `var_s2` at 101/10 --
- *      var_s1 takes s1 and var_s2 takes s2, as in the target. Written as one
- *      expression it loses that tie and the callee-saved file rotates.
- *   4. `var_s2 = 0` before `var_s3 = 0` in the preamble, worth two words.
- *
- * The 16 left are one allocation fact with no source form yet reaching it:
- * `var_v0` doubles as the working copy, so its range crosses the call and it
- * colours callee-saved s0, where the target keeps it caller-saved in v0 with a
- * separate s0 copy. That accounts for the four `lbu`/`beqz` sites and the
- * eight sites inside the two conversion bodies, where our intermediate lands
- * in the working copy and the target's lands in the carrier. Separating them
- * again brings web 32 straight back: all four three-variable forms measure 31,
- * 33, 89 and 91.
- *
- * Measured flat this pass, exhaustively, against the axes an earlier pass left
- * open:
- *   - 42 structural forms (`if (1) { }` and `do { } while (0)` region openers
- *     of L97, copy placement, test operand, two- versus three-statement
- *     conversion) collapse to three outcomes decided by copy placement alone.
- *     Both region openers are byte-inert here.
- *   - 32 forms of the comparison operand order, every subset of the six
- *     comparison groups, are one object.
- *   - 16 forms of the range-test operands, including asymmetric ones, are one
- *     object, and the records show `var_s2` totalsave pinned at 101 across all
- *     of them.
- *   - 32 forms of declared type against explicit masking (`u8` versus `s32`
- *     for the two char variables and `var_v0`, each mask present or absent):
- *     nothing beats the baseline, and `var_v0`'s declared type is byte-inert.
- *   - L109's discarded-expression probe does not work on a local that is
- *     already read. Eighteen forms -- or-with-zero, and-with-minus-one and
- *     xor-with-zero, at nought to five copies each -- are byte-flat, and the
- *     allocator records confirm the probe never
- *     reaches totalsave: web 0 stays at 32.0 in every one.
- */
+/* Matched on the natural shape: one u8 character and a u8 previous
+ * character, the parameters used in place, and a while loop whose test and
+ * body both read *text, so the loaded byte is a compiler temporary rather
+ * than a declared local that doubles as the working copy. */
 /* PROVENANCE: adapted from Jet Force Gemini's public
  * asm/nonmatchings/diCpu/func_800681D0_68DD0.s; Mickey's glyph table,
  * helper symbol, and target bytes determine the final bindings. */
-#ifdef NON_MATCHING
 void func_80046BCC(s32 x, s32 y, char *text) {
-    s32 temp_s6;
-    s32 var_s1;
-    s32 var_s2;
-    s32 var_s3;
-    s32 var_s5;
-    u8 *var_s4;
-    s32 var_v0;
+    u8 prev;
+    u8 c;
+    s32 hex;
 
-    var_v0 = *(u8 *)text;
-    var_s1 = x;
-    var_s4 = (u8 *)text;
-    var_s5 = y;
-    var_s2 = 0;
-    var_s3 = 0;
-    if (var_v0 != 0) {
-        do {
-            temp_s6 = var_s2 & 0xFF;
-            var_s2 = var_v0 & 0xFF;
-            var_s4 += 1;
-            if (var_s3 != 0) {
-                var_v0 = var_s2;
-                if ((var_s2 >= 0x41) && (var_v0 < 0x47)) {
-                    var_v0 = (var_v0 + 0x20) & 0xFF;
-                    var_s2 = var_v0;
-                }
-            } else {
-                var_v0 = var_s2;
-                if ((var_s2 >= 0x61) && (var_v0 < 0x7B)) {
-                    var_v0 = (var_v0 - 0x20) & 0xFF;
-                    var_s2 = var_v0;
-                }
+    c = 0;
+    hex = 0;
+    while (*text != 0) {
+        prev = c;
+        c = *text++;
+        if (hex != 0) {
+            if ((c >= 'A') && (c < 'G')) {
+                c += 0x20;
             }
-            if (var_v0 == 0xA) {
-                var_s5 += 6;
-                var_s1 = 0x20;
-            } else if (var_v0 == 9) {
-                var_s1 = var_s1 - (var_s1 & 0xF);
-                var_s1 = var_s1 + 0x10;
-            } else if (var_v0 == 0x20) {
-                var_s1 += 4;
-            } else if ((var_v0 >= 0x21) && (var_v0 < 0x67)) {
-                func_80046AA8(var_s1, var_s5, &D_8007D034[(var_v0 * 5) - 0xA5]);
-                var_s1 += 8;
+        } else {
+            if ((c >= 'a') && (c < '{')) {
+                c -= 0x20;
             }
-            if ((var_s3 != 0) && ((var_v0 < 0x30) || (var_v0 >= 0x3A)) &&
-                ((var_v0 < 0x61) || (var_v0 >= 0x67))) {
-                var_s3 = 0;
-            }
-            if ((temp_s6 == 0x30) && ((var_v0 == 0x78) || (var_v0 == 0x58))) {
-                var_s3 = 1;
-            }
-            var_v0 = *var_s4;
-        } while (var_v0 != 0);
+        }
+        if (c == '\n') {
+            y += 6;
+            x = 0x20;
+        } else if (c == '\t') {
+            x = x - (x & 0xF);
+            x = x + 0x10;
+        } else if (c == ' ') {
+            x += 4;
+        } else if ((c >= 0x21) && (c < 0x67)) {
+            func_80046AA8(x, y, &D_8007D034[(c * 5) - 0xA5]);
+            x += 8;
+        }
+        if ((hex != 0) && ((c < '0') || (c >= 0x3A)) &&
+            ((c < 'a') || (c >= 0x67))) {
+            hex = 0;
+        }
+        if ((prev == '0') && ((c == 'x') || (c == 'X'))) {
+            hex = 1;
+        }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/diCpu/func_80046BCC.s")
-#endif
 /* PROVENANCE: body adapted from JFG src/diCpu.c::cpuXYPrintf. */
 void cpuXYPrintf(s32 x, s32 y, const char *format, ...) {
     va_list args;
@@ -886,26 +783,6 @@ void func_80046E00(void) {
         *screen++ = 0;
     }
 }
-
-/* PLATEAU-HANDOFF:func_80046BCC:start
- * symbol: func_80046BCC
- * score: 16/106 words
- * frame: 0x40
- * relocations: 3
- * first-mismatch: +0x2C
- * summary: arg0 OR-zero spans the glyph call (72); loop-local zero folds. Three-var region still 21; forcing the mask temp to s2 is 74. Occupancy cannot occupy v0. Best 16
- * PLATEAU-HANDOFF:func_80046BCC:end
- */
-
-/* PLATEAU-HANDOFF:render_epc_lock_up_display:start
- * symbol: render_epc_lock_up_display
- * score: 51 differing words
- * frame: 0x50
- * relocations: 127
- * first-mismatch: +0x18
- * summary: Real use before the loop stalls: 13-iter loop 338 masked delta -296, block-local tick 51 delta 0, direct tick 53 delta 0. No leading ring draw.
- * PLATEAU-HANDOFF:render_epc_lock_up_display:end
- */
 
 /* PLATEAU-HANDOFF:func_80045D34:start
  * symbol: func_80045D34

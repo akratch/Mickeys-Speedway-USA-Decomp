@@ -230,7 +230,7 @@ extern void joyResetMap(void);
 extern void func_8004978C(s32, s32, s32);
 extern s32 func_80049864(s32);
 extern s32 func_8004989C(s32, s32 *);
-extern void func_800498FC(s32, u32, u32, s32, s32, s32, s32);
+extern void func_800498FC(s32, f32, f32, s32, s32, s32, s32);
 extern s32 TrapDanglingJump();
 extern s32 joyRead(s32, s32);
 extern void mainInitGame(void);
@@ -269,7 +269,11 @@ extern u8 amTuneGetSeqNo(void);
 extern void func_800005CC(f32, s32);
 extern s32 func_80001614(void);
 extern s32 func_800290A0(void);
-extern s32 func_80037664(void);
+/* Unsigned here on evidence: func_80028564 compares this result and a byte
+ * field against 1 in neighbouring tests, and the target keeps the two
+ * constants apart, which IDO does only when their types differ. The
+ * definition's own code does not depend on the signedness. */
+extern u32 func_80037664(void);
 extern s32 levelGetTune(s32);
 extern s32 levelGetScreenMode(s32);
 extern u32 levelGetGfxIndex(s32);
@@ -284,6 +288,15 @@ extern MainDebugMemory *func_80005820(s32);
 extern s32 sprintf(char *, const char *, ...);
 extern u8 *levelGetLevel(void);
 extern void func_80044BC8(Gfx *, char *, s32);
+/* The checkpoint hook always receives a string and a number that read as a
+ * file name and a source line, which is what a macro built on __FILE__ and
+ * __LINE__ leaves behind. The do-while wrapper is the usual form for such a
+ * macro and it is load-bearing: its region boundary is what the main loop's
+ * register allocation depends on. */
+#define MAIN_DL_CHECKPOINT(dl, file, line) \
+    do { \
+        func_80044BC8((dl), (file), (line)); \
+    } while (0)
 extern void func_80008028(s32);
 extern void func_80051364(s32);
 extern void func_8000784C(s32);
@@ -496,24 +509,22 @@ void mainInitGame(void) {
     D_8007A320 = 0;
 }
 
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: the main-loop role and frame-pipeline organization are adapted
  * from Diddy Kong Racing's published src/thread3_main.c::main_game_loop and
  * cross-checked against JFG's published src/main.c TU ordering. Mickey's own
  * call graph, resident storage and instructions determine this body.
  *
- * Fresh configured V0 reproduces the retained structure mismatch at 419 vs
- * 413 instructions, 207 differing words, first +0x48, and exact frame -0x28.
- * Target/candidate own 290/298 relocations; 200 offsets/types and 172 effective
- * identities align. The block-local D_8007A1B8 pointer remains the best natural
- * form. Nine structural/display-command hypotheses, the full flag lattice, and
- * a bounded permuter batch are already exhausted; do not repeat them without a
- * new compiler mechanism. The remaining six words concentrate in final display
- * command scheduling and register allocation.
+ * What matched it, under the plain preset (uopt runs on this procedure): the
+ * display-list checkpoint is a do-while macro, whose region boundary keeps
+ * the cursor address off a callee-saved register; the two closing display
+ * commands are the standard macros; the buffer index is toggled in place; and
+ * the frame-sync result is held in a local, as in the DKR loop, so the clamp
+ * tests the call result and the final call rereads the global.
  */
 void func_80026FB4(void) {
     s32 drawTransition;
+    s32 updateRate;
 
     if (D_8007A20C != 0) {
         TrapDanglingJump(NULL);
@@ -531,18 +542,13 @@ void func_80026FB4(void) {
         TrapDanglingJump();
     }
 
-    {
-        s32 *bufferIndex;
-
-        bufferIndex = &D_8007A1B8;
-        *bufferIndex ^= 1;
-    }
+    D_8007A1B8 ^= 1;
     func_80044B9C();
     D_800CF518 = D_800CF510[D_8007A1B8];
     D_800CF530 = D_800CF528[D_8007A1B8];
     D_800CF588 = D_800CF580[D_8007A1B8];
     D_800CF5A0 = D_800CF598[D_8007A1B8];
-    func_80044BC8(D_800CF518, D_80081B0C, 0x2E6);
+    MAIN_DL_CHECKPOINT(D_800CF518, D_80081B0C, 0x2E6);
     rsp_segment(&D_800CF518, 0, NULL);
     rsp_segment(&D_800CF518, 1, D_800D2FA8);
     rsp_segment(&D_800CF518, 2, D_800D2FAC);
@@ -601,15 +607,11 @@ void func_80026FB4(void) {
         frontDemoMessage(&D_800CF518, D_8007A248);
     }
 
-    func_80044BC8(D_800CF518, D_80081B18, 0x355);
+    MAIN_DL_CHECKPOINT(D_800CF518, D_80081B18, 0x355);
     func_800376CC(D_8007A248);
     func_80038190(&D_800CF518, &D_800CF530, &D_800CF588);
-    D_800CF518++;
-    D_800CF518[-1].words.w1 = 0;
-    D_800CF518[-1].words.w0 = 0xE9000000;
-    D_800CF518++;
-    D_800CF518[-1].words.w1 = 0;
-    D_800CF518[-1].words.w0 = 0xB8000000;
+    gDPFullSync(D_800CF518++);
+    gSPEndDisplayList(D_800CF518++);
     if ((runlinkIsModuleLoaded(0x21) != 0) && (func_80049864(4) == 0)) {
         TrapDanglingJump();
     }
@@ -642,18 +644,16 @@ void func_80026FB4(void) {
 
     func_80027628(D_8007A248);
 
-    D_8007A248 = viFrameSync(D_8007A1D0);
+    updateRate = viFrameSync(D_8007A1D0);
+    D_8007A248 = updateRate;
     if (D_8007A19C != 0) {
         viFrameRateReset();
         D_8007A248 = 2;
-    } else if (D_8007A248 >= 7) {
+    } else if (updateRate >= 7) {
         D_8007A248 = 6;
     }
     func_80028564(D_8007A248);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/main/func_80026FB4.s")
-#endif
 
 /*
  * PROVENANCE: the display-list, matrix, vertex and triangle roles are adapted
@@ -986,7 +986,7 @@ void func_80027FB8(s32 updateRate) {
         } while (controller--);
     }
 
-    func_80044BC8(D_800CF518, D_80081B24, 0x526);
+    MAIN_DL_CHECKPOINT(D_800CF518, D_80081B24, 0x526);
     func_80008028(updateRate);
     D_8007A67C = 1;
     if (D_8007A1A8 == 0) {
@@ -1050,7 +1050,7 @@ void func_800282C8(void) {
         mainChangeLevel(D_8007A148, D_8007A150, D_8007A158, D_8007A168, 0, 0);
         if (func_80049864(4) == 0) {
             D_8007A1A0 = 0;
-            func_800498FC(4, 0x3EAE147B, 0xBF800000, 0xFF, 0xFF, 0xFF, 0);
+            func_800498FC(4, 0.34f, -1.0f, 0xFF, 0xFF, 0xFF, 0);
             func_8004978C(4, 1, 1);
         }
         D_8007A194 = 0x1E;
@@ -1076,10 +1076,10 @@ void mainChangeLevel(s32 nextLevel, s32 nextCharacter, s32 nextAnimGroup,
             if ((func_80049864(4) == 0) && (func_80037664() == 0)) {
                 if (fadeOut != 0) {
                     D_8007A1A0 = 1;
-                    func_800498FC(4, 0x3EAE147B, 0xBF800000, 0, 0, 0, 0);
+                    func_800498FC(4, 0.34f, -1.0f, 0, 0, 0, 0);
                 } else {
                     D_8007A1A0 = 0;
-                    func_800498FC(4, 0x3EAE147B, 0xBF800000,
+                    func_800498FC(4, 0.34f, -1.0f,
                                   0xFF, 0xFF, 0xFF, 0);
                 }
                 func_8004978C(4, 1, 1);
@@ -1132,16 +1132,19 @@ s32 mainGetNextLevel(void) {
  * mode, gfx/cam/level reinit) with Mickey names and Mickey-only calls.
  * Mickey's ROM decides disagreements: no JFG game-flag/world/subtitle path,
  * and the clear uses func_8004989C rather than JFG's setupClearScreen.
+ *
+ * What matched it: this procedure is optimised (the TU carried an Olimit cap
+ * that kept uopt off it); the two character tables are six-pass loops, which
+ * uopt unrolls into two folded passes and one runtime group of four; the
+ * clear is a post-decrement while loop, which it does not unroll; the tune
+ * test compares the two call results directly, so the first is a byte
+ * temporary below the locals; the clear's locals belong to its own block,
+ * after the display-list macros' temporaries; and the two fade arguments are
+ * float literals.
  */
-#ifdef NON_MATCHING
 void func_80028564(s32 updateRate) {
     s32 screenMode;
-    u32 pixelCount;
-    s32 *framebuffer;
-    s32 width;
-    s32 height;
-    s32 fill;
-    u8 tune;
+    s32 i;
 
     mainPreNMI();
     D_8007A19C = 0;
@@ -1201,8 +1204,7 @@ void func_80028564(s32 updateRate) {
                 D_8007A1CC |= 0x08000000;
                 D_8007A1EC = 0;
             }
-            tune = amTuneGetSeqNo();
-            if (levelGetTune(D_8007A14C) != tune) {
+            if (amTuneGetSeqNo() != levelGetTune(D_8007A14C)) {
                 amTuneStop();
             }
             D_8007A148 = D_8007A14C;
@@ -1217,19 +1219,13 @@ void func_80028564(s32 updateRate) {
                 D_8007BF04 = D_8007A180;
                 D_800D18E0->pad0[0] = D_8007A184;
                 if (D_8007A188 != 0) {
-                    D_800D18E0[0].character = ((u8 *) D_8007A188)[0];
-                    D_800D18E0[1].character = ((u8 *) D_8007A188)[1];
-                    D_800D18E0[2].character = ((u8 *) D_8007A188)[2];
-                    D_800D18E0[3].character = ((u8 *) D_8007A188)[3];
-                    D_800D18E0[4].character = ((u8 *) D_8007A188)[4];
-                    D_800D18E0[5].character = ((u8 *) D_8007A188)[5];
+                    for (i = 0; i < 6; i++) {
+                        D_800D18E0[i].character = ((u8 *) D_8007A188)[i];
+                    }
                 } else {
-                    D_800D18E0[0].character = 0;
-                    D_800D18E0[1].character = 1;
-                    D_800D18E0[2].character = 2;
-                    D_800D18E0[3].character = 3;
-                    D_800D18E0[4].character = 4;
-                    D_800D18E0[5].character = 5;
+                    for (i = 0; i < 6; i++) {
+                        D_800D18E0[i].character = i;
+                    }
                 }
                 D_8007A18C = 0;
             }
@@ -1243,14 +1239,18 @@ void func_80028564(s32 updateRate) {
             if ((viGetVideoMode() != screenMode) || viChangeBuffers()) {
                 func_800336A8(screenMode);
             } else {
+                u32 pixelCount;
+                s32 fill;
+                s32 *framebuffer;
+                s32 width;
+                s32 height;
+
                 viGetCurrentSize(&width, &height);
                 framebuffer = D_800D2FA0;
                 pixelCount = (u32) (width * height) >> 1;
                 fill = func_8004989C(4, framebuffer);
-                if (pixelCount != 0) {
-                    do {
-                        *framebuffer++ = fill;
-                    } while (--pixelCount);
+                while (pixelCount--) {
+                    *framebuffer++ = fill;
                 }
             }
             D_8007A6A8 = 0;
@@ -1283,9 +1283,9 @@ void func_80028564(s32 updateRate) {
                 }
             } else {
                 if (D_8007A1A0) {
-                    func_800498FC(4, 0x3EAE147B, 0, 0, 0, 0, 0x80);
+                    func_800498FC(4, 0.34f, 0.0f, 0, 0, 0, 0x80);
                 } else {
-                    func_800498FC(4, 0x3EAE147B, 0, 0xFF, 0xFF, 0xFF, 0x80);
+                    func_800498FC(4, 0.34f, 0.0f, 0xFF, 0xFF, 0xFF, 0x80);
                 }
                 func_8004978C(4, 4, 1);
             }
@@ -1308,9 +1308,6 @@ void func_80028564(s32 updateRate) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/main/func_80028564.s")
-#endif
 
 /* PROVENANCE: body adapted from JFG src/main.c; Mickey byte identity is decisive. */
 void mainSyncNextLevel(void) {
@@ -1560,81 +1557,72 @@ u8 func_80029240(s32 index) {
     return D_800D18E0[index].character;
 }
 
-/*
- * Workbench: mixed(structural:11, register:21), 39 words, first +0x8; 87 instructions/frame -16.
- * Levers tried: structure/line/association/result, declaration/comma shapes, arg0 web, 119 flags, and arg order.
- * Remains: the arg1-to-FP move schedule cascades into swapped FP webs; no TU-wide flag promotion is justified.
- */
-#ifdef NON_MATCHING
 /* PROVENANCE: structural comparison uses Jet Force Gemini's public decomp,
  * src/overlays/o3/overlay_3.c::GetSmoothAcceleration. Rechecked at upstream
  * efd5abb1c79636e297b831f7c2d5bf47eac39c0c, JFG retains assembly, so no body
  * was adapted from that revision. This body is reconstructed from Mickey-only
- * control-flow evidence, and Mickey byte identity remains decisive. */
+ * control-flow evidence, and Mickey byte identity remains decisive.
+ *
+ * What the allocator needed, read from its decision records: the float
+ * parameters are used and negated in place (no carrier copies); `result` is
+ * initialised with the two accumulators, which numbers its web ahead of the
+ * parameters so it takes the register the conversion later needs; the early
+ * exit is one conditional expression; and the loop bound is the conversion
+ * itself, named only after the loop, so no separate copy of it survives. */
 f32 func_80029274(s32 arg0, f32 arg1, f32 arg2) {
-    f32 temp_f0;
-    f32 temp_f16;
-    f32 temp_f12;
-    f32 temp_f16_2;
-    f32 var_f0;
-    f32 var_f12;
-    register f32 var_f14;
-    f32 var_f2;
-    s32 temp_v0;
+    f32 sum;
+    f32 step;
+    f32 result;
+    f32 dist;
+    f32 lower;
+    f32 next;
+    s32 neg;
 
-    var_f0 = 0.0f;
-    var_f2 = 0.0f;
-    var_f14 = arg1;
-    temp_v0 = arg0 < 0;
-    if (temp_v0 != 0) {
+    sum = 0.0f;
+    step = 0.0f;
+    result = 0.0f;
+    neg = arg0 < 0;
+    if (neg) {
         arg0 = -arg0;
-        var_f14 = -var_f14;
+        arg1 = -arg1;
     }
-    if (var_f14 < 0.0f) {
-        if (temp_v0 != 0) {
-            return -arg2;
-        }
-        return arg2;
+    if (arg1 < 0.0f) {
+        return neg ? -arg2 : arg2;
     }
-    temp_f12 = (f32) arg0;
     do {
-        var_f2 += arg2;
-        var_f0 += var_f2;
-    } while ((var_f0 + var_f2) < temp_f12);
-    if ((temp_f12 <= arg2) && (var_f14 <= arg2) &&
-        (((arg0 >= 0) && (var_f14 >= 0.0f)) ||
-         ((arg0 <= 0) && (var_f14 <= 0.0f)))) {
-        var_f12 = 0.0f;
+        step += arg2;
+        sum += step;
+    } while ((sum + step) < (f32) arg0);
+    dist = (f32) arg0;
+    if ((dist <= arg2) && (arg1 <= arg2) &&
+        (((arg0 >= 0) && (arg1 >= 0.0f)) || ((arg0 <= 0) && (arg1 <= 0.0f)))) {
+        result = 0.0f;
     } else {
-        temp_f0 = var_f2 - arg2;
-        temp_f16 = var_f14 + arg2;
-        if (temp_f16 <= temp_f0) {
-            var_f12 = temp_f16;
+        lower = step - arg2;
+        next = arg1 + arg2;
+        if (next <= lower) {
+            result = next;
         } else {
-            temp_f16_2 = var_f14 - arg2;
-            if (temp_f16_2 < var_f2) {
-                var_f12 = temp_f0;
-                if (var_f2 == arg2) {
-                    goto useAcceleration;
+            next = arg1 - arg2;
+            if (next < step) {
+                result = lower;
+                if (step == arg2) {
+                    result = arg2;
                 }
             } else {
-                var_f12 = temp_f16_2;
-                if (temp_f16_2 == 0.0f) {
-useAcceleration:
-                    var_f12 = arg2;
+                result = next;
+                if (next == 0.0f) {
+                    result = arg2;
                 }
             }
         }
     }
-    if (temp_v0 != 0) {
-        var_f12 = -var_f12;
-        var_f14 = -var_f14;
+    if (neg) {
+        result = -result;
+        arg1 = -arg1;
     }
-    return var_f12 - var_f14;
+    return result - arg1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/main/func_80029274.s")
-#endif
 
 /*
  * PROVENANCE: the debug-memory role was compared with JFG src/main.c, where
@@ -1704,34 +1692,4 @@ void func_800293D0(void) {
  * first-mismatch: +0x1C
  * summary: Or-chain carrier is allocator proc 40 web 2: v0 not offered (forced=-2). Accepted recolours stay 25. L145/L144 miss the ring-temp copies. Best still 10.
  * PLATEAU-HANDOFF:func_80028FCC:end
- */
-
-/* PLATEAU-HANDOFF:func_80029274:start
- * symbol: func_80029274
- * score: 39/87 words
- * frame: 0x10
- * relocations: 0
- * first-mismatch: +0x8
- * summary: Procedure attribution remains blocked by 68 named versus 66 allocator procedures; no draw evidence admissible.
- * PLATEAU-HANDOFF:func_80029274:end
- */
-
-/* PLATEAU-HANDOFF:func_80026FB4:start
- * symbol: func_80026FB4
- * score: 207 differing words
- * frame: 0x28
- * relocations: 298
- * first-mismatch: +0x38
- * summary: Fresh V0 reproduces the exhausted main loop plateau. Resume only with a new display command scheduling or allocator mechanism.
- * PLATEAU-HANDOFF:func_80026FB4:end
- */
-
-/* PLATEAU-HANDOFF:func_80028564:start
- * symbol: func_80028564
- * score: 306 differing words
- * frame: 0x58
- * relocations: 245
- * first-mismatch: +0x4
- * summary: Pair 2 extra-ISTR owns line 1196 gDPFullSync w1. Block-scope and neg-index drop the frame; chained 1s is inert. Stall: Olimit 100 skips uopt (needs 137).
- * PLATEAU-HANDOFF:func_80028564:end
  */

@@ -2,11 +2,11 @@
 ### `overlay3RunCachedModeAction` plateau handoff
 
 - source: `src/overlays/o003/overlay3RunCachedModeAction.c`
-- score: 34/113 words
+- score: 0/113 words, promoted
 - frame: 0x58
 - relocations: 15
-- first mismatch: +0x84
-- summary: Packed 25 still misses the +0xE0 copy. Comma-assign leftover generated-subscript and L109 fold or grow; valid cannot take v1.
+- first mismatch: none
+- summary: Matched. The validity flag is one natural && chain and the encode helper takes one argument, not two.
 #### 2026-09-12, lane p23-lastmile5: complete colour landscape and boolean shapes
 
 Fresh baseline: 113 words, delta zero, 34 raw and masked differences, frame
@@ -261,4 +261,30 @@ copy. Next action needs a source-authentic split of the bounds boolean from
 the path-check result that is offered v1 without else-zero stores, a new
 frame slot, or a stack split.
 
+
+#### 2026-10-01, lane b-misc: matched; the second encode argument never existed
+
+Two inherited assumptions held every earlier lattice in place.
+
+The first is the encode helper's arity. Its second argument register holds
+the left-shifted intermediate of the 16-bit conversion of the angle, which
+the allocator happened to place there, and every candidate since the first
+one passed a shifted angle as a real second argument. That is the
+candidate-only second shift. Declared and called with one argument, the
+conversion intermediate lands in that register by itself and the shift is
+gone.
+
+The second is the flag. Written as one `&&` chain over the two bounds and
+the path check, cfe's own temporary carries the chain, the declared `valid`
+receives it at the join, and the switch value then takes the temporary's
+register: that is the target's copy at the join, which no nested-if spelling
+of a single `valid` local can emit. An earlier note records an `&&` form at
+43; that form carried an explicit else-zero arm and the two-argument call.
+
+Measured: the `&&` chain with the two-argument call is size plus 4 with the
+join copy and switch register already exact; with the one-argument call it
+is 0 at delta 0. The `random` local stays, since its slot is part of the 0x58
+frame (without it the frame is 0x50 and 12 words differ).
+
+`gmake verify`, `check-overlay-syms` and `promotion-proof` pass.
 <!-- plateau-handoff:overlay3RunCachedModeAction:end -->

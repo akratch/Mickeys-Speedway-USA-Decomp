@@ -2,11 +2,62 @@
 ### `func_overlay_079_F0000134_18CD0D4` plateau handoff
 
 - source: `src/overlays/o079/func_overlay_079_F0000134_18CD0D4.c`
-- score: 198/882 words
+- score: 0/882 words, promoted
 - frame: 0xB8
 - relocations: 88
-- first mismatch: +0x7C
-- summary: L145 declared FP carriers do not add the prefix ring draw. Missing draw is CSE of -1.0f at forward.z. Next: delta-0 CSE-break so z draws onto f4.
+- first mismatch: none
+- summary: Matched. Float literals instead of a data array, f32 arrays for the three vectors, natural dot products, bitfield race test as a cast conditional, s32 return on the move call.
+
+#### 2026-10-01, lane c-big: ROM-exact closure
+
+198 masked words at size delta 0 went to 0 on shape alone; no allocator
+force was used. Every recorded closure below held the inherited shape fixed.
+The steps, with the masked count after each on the lane's fast loop:
+
+- The eleven float constants written as literals at each use instead of reads
+  of an extern data array, together with the integration statements in the
+  order distance, speed, dy, velocityY. With literals the speed store no
+  longer kills the commoned loads, so the order the earlier lanes priced at
+  one extra word is free of it. Literals alone were a regression (243, four
+  bytes long), which is why the form had not been kept.
+- `forward` as an `f32[3]` array rather than a three-float struct, which is
+  the parameter type `mathOneFloatRPY` has elsewhere in the tree. An array
+  element in the defining expression stops uopt forwarding `dot` into its one
+  use, so `dot` is a coloured value and the mode-0 `dx` takes the target's
+  register behind it. This was the whole float scratch-ring phase: 235 to 104,
+  then 90 with the products spelled `dx * forward[0] + dz * forward[2]` and
+  `dx` as a single subtraction. The earlier diagnosis of a missing draw at the
+  third vector store was a symptom of this, not its cause.
+- `start` and `end` as `f32[3]` arrays for the same reason: the final `dy` is
+  then a coloured value written before the move call instead of an expression
+  sunk into the argument. 90 to 5, and the size delta closes.
+- The race-state test read through a bitfield struct with its result taken
+  from a cast conditional expression. The cast keeps the value in a compiler
+  temporary, which is the word below the declared locals where the target
+  saves it across the first call; a plain if and else writes the local's own
+  home one word higher. This was the frame-home difference recorded as open
+  since the first handoff.
+- `state->mode` tested directly with no local copy, which gives the target's
+  operand order at the mode 2 compare. One unused word keeps the frame.
+- `func_80008128` declared with its `s32` return, as its other callers in the
+  tree already declare it. A discarded call result still bars the following
+  block's values from the return register (L101), which is the integer colour
+  an earlier lane could only reach by force. 4 to 0.
+
+Promotion: the object's float pool is the module's retained constant pool, so
+the rule externalises it by digest with an anchor of 4, the shipped records'
+first addend; the eighteen resident callees are renamed onto the generated
+surface in the rule itself. `gmake verify`, `gmake check-overlay-syms` and
+`gmake promotion-proof` pass.
+
+Reusable: a three-float local passed to a routine that takes `f32 *` should
+be tried as an array before any work on float colours or ring phase, and a
+callee's return type is worth checking against its other callers whenever a
+block after a call avoids the return register.
+
+#### Superseded history
+
+The notes below describe the inherited shape and are kept for the record.
 
 Added to the flat list this lane, on the same base:
 

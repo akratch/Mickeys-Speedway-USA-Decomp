@@ -35,8 +35,6 @@ typedef struct Overlay57LookupResult {
     Overlay57SelectionChild *child08;
 } Overlay57LookupResult;
 
-#define O57_SUB_WRAP(left, right) ((s32)((u32)(left) - (u32)(right)))
-
 extern u32 gOverlay57Flags3B6CReloc;
 extern s32 gOverlay57Mode3B88Reloc;
 extern u8 gOverlay57Byte3D1CReloc;
@@ -55,17 +53,10 @@ extern s32 gO57ModeState160BaseReloc[];
 extern s32 gO57ModeState164BaseReloc[];
 extern s32 gO57ModeState184BaseReloc[];
 extern s32 gO57ModeChoice4F8;
-extern s32 gO57ModeGate50C[];
+extern s32 gO57ModeGate50C;
 extern s32 gO57ModePrimaryIds134[];
 extern s32 gO57ModeSecondaryIds1A0[];
 extern Overlay57SetupObject gO57ModeSetup21C;
-extern s32 gO57ModeTimerEarlyStoreBaseReloc[];
-extern s32 gO57ModeTimerReloadBaseReloc[];
-extern s32 gO57ModeTimerA5BaseReloc[];
-extern s32 gO57ModeTimerA6BaseReloc[];
-extern s32 gO57ModeTimerA7BaseReloc[];
-extern s32 gO57ModeTimerB5BaseReloc[];
-extern s32 gO57ModeTimerB6BaseReloc[];
 
 #undef O57_S32
 #define D_0x118 gO57ModeState118BaseReloc[0x118 / 4]
@@ -76,7 +67,7 @@ extern s32 gO57ModeTimerB6BaseReloc[];
 #define D_0x164 gO57ModeState164BaseReloc[0x164 / 4]
 #define D_0x184 gO57ModeState184BaseReloc[0x184 / 4]
 #define D_0x4F8 gO57ModeChoice4F8
-#define D_0x50C gO57ModeGate50C[0]
+#define D_0x50C gO57ModeGate50C
 #define O57_JOIN_RAW(left, right) left##right
 #define O57_JOIN(left, right) O57_JOIN_RAW(left, right)
 #define O57_S32(offset) O57_JOIN(D_, offset)
@@ -113,165 +104,29 @@ extern Overlay57LookupResult *o57ModeOpaquePtrCallReloc();
 #define overlay57Call3FA4Reloc o57ModeOpaqueVoidCallReloc
 #define overlay57Call3FB8Reloc o57ModeOpaqueVoidCallReloc
 
-/* Plateau: exact-size at 0x588, 5 masked words, first at +0x108.
+/* Matched 2026-10-01 by discarding the inherited shape, not by allocator
+ * work.  The 5-word plateau was recorded as a floor of 2; that floor belonged
+ * to the shape.  What got it there, each measured:
  *
- * 74 -> 21 -> 5.  The 16-word globalcolor cluster is CLOSED, and it took two
- * edits that are each a regression alone ([L88]): `entries` declared ONCE at
- * function scope instead of once per dispatch arm (alone: 31), and the dead
- * post-decrement copy given an explicit per-arm name `prev` (alone: 31).
- * Together: 5.
+ *   - ONE symbol for the timer.  The candidate reached the timer through seven
+ *     alias arrays (one per store site, one for the reload after the call) so
+ *     that only three sites shared an address web.  With every site naming
+ *     gO57ModeTimer114 the address is one web spanning the dispatch; uopt
+ *     splits it, and a split piece re-enters after the call with the value
+ *     reload first and the address second, which is the order the scheduler
+ *     tie needed and no line numbering could supply.
+ *   - No `timer` local: the test and the decrement read the global, and the
+ *     reload after the call is the compiler's own.
+ *   - The loop's dead post-decrement copy is the function-scope `eligible`
+ *     instead of a per-arm `prev`.  Redefining `eligible` in the arms stops
+ *     the copy into `savedEligible` from being propagated, so the store stays
+ *     where it is written, and the address piece is coloured ahead of it.
+ *   - Declaration order eligible, savedEligible, entries lands the frame.
  *
- * The decision variable is uopt's colouring ORDER, and it is computable.  Every
- * `globalcolor` candidate carries `save = totalsave / nocs`, where `totalsave`
- * is the web's reference count with references inside a loop weighted x10 and
- * `nocs` is a bucket that grows with the web's span; webs are coloured by
- * DESCENDING save, and each takes the lowest colour not held by an already
- * coloured interfering web.  In this loop the three webs are `entries`, `count`
- * and the dead copy, and the target's assignment (entries v0, count v1, dead
- * copy a0) is exactly definition order -- which means the target's saves must
- * run entries > count > dead copy.  Measured, per arm: entries 42/3 = 14,
- * count 34/2 = 17, dead copy 44/2 = 22, because ONE cfe temporary serves the
- * post-decrement in BOTH arms while `entries` and `count` are separate
- * block-scoped symbols in each.  That is the exact reverse of what the target
- * needs, which is why 20 spellings of the loop moved nothing.
- *
- * Both halves of the reversal are bought by moving a symbol boundary:
- *
- *   - Hoisting `entries` to function scope merges the two arms' pointers into
- *     one web: totalsave 42 -> 84, nocs 3 -> 4, save 14 -> 21.
- *   - Naming the dead copy `prev` inside each arm splits the shared cfe
- *     temporary into two per-arm webs: totalsave 44 -> 22, save 22 -> 11.
- *
- * 21 > 17 > 11 is the target's order, and the colours follow without a force.
- * Neither edit alone reorders the trio: hoisting alone gives entries 21 > dead
- * copy 22 -> entries v1; splitting alone gives count 17 > entries 14 > dead
- * copy 11 -> count v0.  Hoisting `count` as well is inert (its merged web is
- * 68/4 = 17, the same save), and hoisting all six arm locals is 31.
- *
- * This is the general lever for a globalcolor residual on a pressure-free
- * procedure and it costs no width at all: a web's save is changed by changing
- * which SYMBOL its references belong to.  Merging two block-scoped copies of a
- * variable into one function-scope declaration raises save; giving a compiler
- * temporary an explicit per-block name lowers it.  Both are free.
- *
- * The 5 that remain are the two terms this pass did not reach:
- *
- *    3  uopt sinks `savedEligible = eligible` past the early return and
- *       duplicates the store into both arms' first `jal` delay slot; the target
- *       stores once, in the `blez` delay slot at +0x15c.  savedEligible is
- *       already memory-resident at sp+0x28 with the target's own home, so this
- *       is partial-dead-store sinking, not a missing home.  Forcing residency
- *       lands the store exactly (`volatile s32 savedEligible` declared between
- *       `timer` and `eligible`) but costs 18: `eligible`'s web stops spanning
- *       the dispatch, its nocs falls 19 -> 2, its save rises 0.26 -> 2.5, and it
- *       is then coloured BEFORE the gO57ModeTimer114 address web and takes its
- *       v1.  Raising that address web above 2.5 needs six more references to it
- *       and there are only three sites, so the volatile route is closed by the
- *       same save arithmetic that opened the loop, and the residency route has
- *       now been swept to its floor: `volatile` and the one-element array form
- *       crossed with all 24 declaration orders of the four function-scope
- *       locals is 48 cells with a floor of 18, never below the plain form's 5.
- *       Inert at 5: all 24 declaration orders of the plain form, merging
- *       savedEligible into `eligible`, reading savedEligible in the guard,
- *       folding the two tests into one `&&`, storing inside the timer test, a
- *       read-back, seven L97 region boundaries around the assignment, the
- *       eligibility block, the timer test and the whole dispatch, and replacing
- *       the early `return` with a `goto` to a label placed AFTER the trailing
- *       call (which is what `return` already means, and measures as such);
- *       `goto` to the dispatch join, which does make the value live on every
- *       path, is 17.
- *    2  the two address materialisations at +0x108 are emitted in the opposite
- *       order.  Both are in the one basic block after the `jal`: `la $3,
- *       gO57ModeTimer114` (uopt's rematerialisation of the caller-saved address
- *       web, .loc = the call's line) and `lw $2, gO57ModeTimerReloadBaseReloc +
- *       276` (.loc = the next line).  as1 breaks the scheduling tie on physical
- *       source line ([L59]) and emits the lower line first, so the target needs
- *       the reload to carry a line <= the call's -- which no legal statement
- *       order supplies.  Putting both on ONE line does move the scheduler (the
- *       `lw` then beats the `addiu`) but not the two `lui`s: 7.  Also measured:
- *       a comma expression 7, nested ifs 5, a blank line 5, an L97 region
- *       around the reload 5, a multi-line call 5, a multi-line reload 5, and an
- *       explicit `s32 *timerPtr` (with or without a post-call reassignment)
- *       delta -8 and 276.  Spelling any of the three `gO57ModeTimer114`
- *       accesses through one of the file's `*BaseReloc` alias arrays instead
- *       breaks the shared address web and costs a real instruction: 281, 299
- *       and 263 at delta -8, -4 and -8.  Swapping the reload's alias for
- *       another is byte-identical, as expected.
- *
- * Earlier, and still true: 74 fell to 21 by reading the global back in the byte
- * store (`(u8)gO57ModeChoice4F8` instead of the local `choice`), so ugen numbers
- * a ring temp for a load it forwards from the store above it and the pop costs
- * zero instructions.  That is the read-back-what-you-just-wrote lever already
- * recorded twice in docs/ido-learnings.md; what was new was the carrier, a plain
- * 32-bit global scalar read back one line below its own store.  Its safety
- * condition holds here: no call, no volatile access and no aliasing write
- * separates the store from the read.
- *
- * 2026-09-10, lane w8-bigclose: this function has a FLOOR OF 2 and therefore
- * cannot match.  The two words at +0x108 are unreachable from any source; the
- * three at +0x15c are reachable, but only by trading 16 elsewhere.  Both halves
- * are now read off the compilers' own traces instead of inferred, and the
- * flag sweep was re-run on this base (119 combinations, -O2 -mips2 still best),
- * so nothing here is left to a later pass.
- *
- * The +0x108 pair is a scheduling tie, and as1 prints its own decisions.
- * Replaying this function's whole `cc -Wa,-R` trace reproduces 244 of 244
- * multi-candidate selections with zero mispredictions under
- *     (start time, -aftercycles, -latency, node addr, lineno, ready-list pos)
- * with the ready list LIFO -- a newly ready node is examined before an older
- * one -- which is [L59]'s chain re-confirmed on a third function, with the
- * list-position key pinned down as LIFO rather than emission order.
- *
- * The block after the timer call holds exactly four nodes in two dependent
- * pairs: the block-entry rematerialisation of the timer's address, and the
- * reload.  Both pairs carry equal aftercycles and equal latency, so only
- * lineno and list position can separate them -- and the two nodes of a pair
- * share one line by construction, because an address materialisation is one
- * ugen line.  The target needs the reload's FIRST node to beat the remat's
- * first node and the remat's SECOND node to beat the reload's second node.
- * Those are opposite demands on one per-pair key, so no assignment of line
- * numbers satisfies both.  Measured over the key's entire reachable space,
- * using `#line` to reach the two positions no legal statement order can:
- *   reload line above the call's (the natural order)  5, wrong at +0x108/+0x10c
- *   reload line equal to the call's                   7, all four rows wrong
- *   reload line below the call's (`#line`)            5, wrong at +0x110/+0x114
- * The target's row order is none of the three.  The only remaining degree of
- * freedom would be ugen's emission order, and it is fixed: ugen emits the
- * block-entry rematerialisation immediately after the call and before the next
- * statement's `.loc`, whatever follows it -- probed with an extra statement
- * placed before and after the reload, and it does not move.  So "no legal
- * statement order can reverse it" was right, and the stronger statement is
- * true: no legal LINE NUMBERING can either, and the tie is not a line-number
- * problem at all but a ready-list one that source cannot address.
- *
- * The +0x15c store lands exactly under `volatile s32 savedEligible` declared
- * between `timer` and `eligible`, and the 18 that costs is now attributed.
- * The instrumented uopt (CDX log; its object is byte-identical to the tree's,
- * which is the identity gate) records 473 p1 decisions and ZERO p2 for this
- * procedure, so [L106]'s ascending-web-number axis does not exist here and
- * [L100]'s save = totalsave/nocs is the only order that runs -- ask that
- * question first ([L108]).  In the base, eligible's web spans the dispatch:
- * nocs 19, totalsave 5, save 0.263158, decision=split, and its surviving piece
- * is re-decided at save 0.666667 -- exactly TIED with the timer address web,
- * also 0.666667 -- with the address web scanned first, so it keeps its colour
- * and eligible's piece takes the next one.  That tie is the target's pair, and
- * it is why the plain form is right.  `volatile` retires the split: eligible
- * becomes nocs 2, totalsave 5, save 2.5, is decided ahead of the address web,
- * takes its colour, and the address web falls one further.  All 16 of the
- * non-+0x108 words are that single swap.  Restoring the long span while
- * keeping the store is 16 (final test on `eligible`), 28 and 29 (on both) and
- * 291 (a read-back); [L104]'s redefinition route -- reusing `eligible` as an
- * arm carrier so the copy survives its source -- is 29 with the choice and
- * count carriers and 14 with prev.  Raising the address web past 2.5 needs six
- * more references and there are three sites, and [L109]'s zero-cost probe does
- * not supply them: see the overlay 86 note, where five discarded-expression
- * forms were measured not to reach uopt's reference count at all.
- *
- * Flags were screened on the old plateau and all tie or lose: -mips1 (234),
- * -O1 (431), -Olimit 0 (412), -O2 -g3 (89), loopunroll 0 and 4 (74). */
-#ifdef NON_MATCHING
+ * Also natural and byte-inert here: the in-place countdown decrement, the
+ * if/else dispatch in place of two gotos, and storing the call result straight
+ * into gO57ModeChoice4F8. */
 void overlay57UpdateModeState(s32 updateRate) {
-    s32 timer;
     s32 eligible;
     s32 savedEligible;
     Overlay57MarkedEntry *entries;
@@ -282,7 +137,8 @@ void overlay57UpdateModeState(s32 updateRate) {
         u8 id;
 
         if (gO57ModeCountdown120 > 0) {
-            if ((gO57ModeCountdown120 = O57_SUB_WRAP(gO57ModeCountdown120, updateRate)) > 0) {
+            gO57ModeCountdown120 -= updateRate;
+            if (gO57ModeCountdown120 > 0) {
                 return;
             }
 
@@ -301,24 +157,20 @@ void overlay57UpdateModeState(s32 updateRate) {
                 list++;
             }
 
-            gO57ModeTimerEarlyStoreBaseReloc[0x114 / 4] = 60;
+            gO57ModeTimer114 = 60;
             O57_S32(0x11C) = 0;
             return;
         }
     }
 
-    {
-        timer = gO57ModeTimer114;
-        if ((timer >= 31) && (O57_SUB_WRAP(timer, updateRate) < 31)) {
-            overlay57Call3B4CReloc(0x10, 0);
-            timer = gO57ModeTimerReloadBaseReloc[0x114 / 4];
-        }
-        gO57ModeTimer114 = O57_SUB_WRAP(timer, updateRate);
+    if ((gO57ModeTimer114 >= 31) && ((gO57ModeTimer114 - updateRate) < 31)) {
+        overlay57Call3B4CReloc(0x10, 0);
     }
+    gO57ModeTimer114 -= updateRate;
 
     eligible = (gOverlay57Flags3B6CReloc & 0xD000) != 0;
     if (eligible != 0) {
-        eligible = gO57ModeGate50C[0] == 0;
+        eligible = gO57ModeGate50C == 0;
     }
     savedEligible = eligible;
     if (gO57ModeTimer114 > 0) {
@@ -327,67 +179,62 @@ void overlay57UpdateModeState(s32 updateRate) {
         }
     }
 
-    if (gOverlay57Mode3B88Reloc != 1) {
-        goto mode_b;
-    }
+    if (gOverlay57Mode3B88Reloc == 1) {
         if (overlay57Call3BC4Reloc() == 8) {
             overlay57Call3BECReloc(0x2A, 0, 0, 0xE, 1, 0);
-            gO57ModeGate50C[0] = 1;
+            gO57ModeGate50C = 1;
             overlay57Call3BF8Reloc();
         } else if (overlay57Call3C08Reloc() == 5) {
             O57_S32(0x118) = 9;
             O57_S32(0x164) = 0;
             O57_S32(0x160) = 0;
             O57_S32(0x184) = 0x2F;
-            gO57ModeTimerA5BaseReloc[0x114 / 4] = 0xB4;
+            gO57ModeTimer114 = 0xB4;
             overlay57Call3C4CReloc(1);
         } else if (overlay57Call3C5CReloc() == 6) {
             O57_S32(0x118) = 12;
-            gO57ModeTimerA6BaseReloc[0x114 / 4] = 0xB4;
+            gO57ModeTimer114 = 0xB4;
             overlay57Call3C84Reloc(2);
         } else if (overlay57Call3C94Reloc() == 7) {
             O57_S32(0x118) = 21;
             O57_S32(0x160) = 0;
             O57_S32(0x164) = 0;
             O57_S32(0x184) = 0x4B;
-            gO57ModeTimerA7BaseReloc[0x114 / 4] = 0xB4;
+            gO57ModeTimer114 = 0xB4;
             overlay57Call3CDCReloc(1);
         } else {
             Overlay57LookupResult *result;
             Overlay57SelectionChild *child;
             Overlay57Selection *selection;
-            s32 choice;
             s32 count;
-            s32 prev;
 
             O57_S32(0x118) = 15;
             gO57ModeSetup21C.x0C = 0x17C;
             gO57ModeSetup21C.y0E = 0xBE;
-            choice = overlay57Call3D08Reloc();
-            gO57ModeChoice4F8 = choice;
-            gOverlay57Byte3D1CReloc = (u8)gO57ModeChoice4F8;
+            gO57ModeChoice4F8 = overlay57Call3D08Reloc();
+            gOverlay57Byte3D1CReloc = gO57ModeChoice4F8;
             overlay57Call3D24Reloc(0x4D);
             overlay57UpdateNode();
             result = overlay57Call3D34Reloc(0x4C);
             if (result != 0) {
                 child = result->child08;
                 if (child != 0) {
-                    child->selector3A = (s8)gO57ModeChoice4F8;
+                    child->selector3A = gO57ModeChoice4F8;
                     child = result->child08;
                     selection = child->selections68[child->selector3A];
                     if (selection != 0) {
                         entries = selection->entries4C;
                         if (entries != 0) {
                             count = selection->countOwner00->count2C;
-                            prev = count--;
-                            if (prev) {
+                            eligible = count--;
+                            if (eligible) {
                                 do {
                                     if ((entries->flags04 & 0x00100000) != 0) {
                                         entries->value00 = 0x100;
                                     }
                                     entries++;
-                                    prev = count--;
-                                } while (prev);
+                                    eligible = count--;
+                                } while (eligible);
                             }
                         }
                     }
@@ -395,63 +242,58 @@ void overlay57UpdateModeState(s32 updateRate) {
             }
             overlay57Call3DC4Reloc(3);
         }
-    goto dispatch_done;
-
-mode_b:
+    } else {
         if (overlay57Call3DD4Reloc() == 8) {
             overlay57Call3DFCReloc(0x2A, 0, 0, 0xE, 1, 0);
-            gO57ModeGate50C[0] = 1;
+            gO57ModeGate50C = 1;
             overlay57Call3E08Reloc();
         } else if (overlay57Call3E18Reloc() == 5) {
             O57_S32(0x118) = 9;
             O57_S32(0x164) = 0;
             O57_S32(0x160) = 0;
             O57_S32(0x184) = 0x2F;
-            gO57ModeTimerB5BaseReloc[0x114 / 4] = 0xB4;
+            gO57ModeTimer114 = 0xB4;
             overlay57Call3E5CReloc(1);
         } else if (overlay57Call3E6CReloc() == 6) {
             O57_S32(0x118) = 21;
             O57_S32(0x160) = 0;
             O57_S32(0x164) = 0;
             O57_S32(0x184) = 0x4B;
-            gO57ModeTimerB6BaseReloc[0x114 / 4] = 0xB4;
+            gO57ModeTimer114 = 0xB4;
             overlay57Call3EB4Reloc(1);
         } else {
             Overlay57LookupResult *result;
             Overlay57SelectionChild *child;
             Overlay57Selection *selection;
-            s32 choice;
             s32 count;
-            s32 prev;
 
             O57_S32(0x118) = 15;
             gO57ModeSetup21C.x0C = 0x17C;
             gO57ModeSetup21C.y0E = 0xBE;
-            choice = overlay57Call3EE0Reloc();
-            gO57ModeChoice4F8 = choice;
-            gOverlay57Byte3EF4Reloc = (u8)gO57ModeChoice4F8;
+            gO57ModeChoice4F8 = overlay57Call3EE0Reloc();
+            gOverlay57Byte3EF4Reloc = gO57ModeChoice4F8;
             overlay57Call3EFCReloc(0x4D);
             overlay57UpdateNode();
             result = overlay57Call3F0CReloc(0x4C);
             if (result != 0) {
                 child = result->child08;
                 if (child != 0) {
-                    child->selector3A = (s8)gO57ModeChoice4F8;
+                    child->selector3A = gO57ModeChoice4F8;
                     child = result->child08;
                     selection = child->selections68[child->selector3A];
                     if (selection != 0) {
                         entries = selection->entries4C;
                         if (entries != 0) {
                             count = selection->countOwner00->count2C;
-                            prev = count--;
-                            if (prev) {
+                            eligible = count--;
+                            if (eligible) {
                                 do {
                                     if ((entries->flags04 & 0x00100000) != 0) {
                                         entries->value00 = 0x100;
                                     }
                                     entries++;
-                                    prev = count--;
-                                } while (prev);
+                                    eligible = count--;
+                                } while (eligible);
                             }
                         }
                     }
@@ -460,22 +302,9 @@ mode_b:
             }
             overlay57Call3FA4Reloc(3);
         }
-dispatch_done:
+    }
 
     if (savedEligible != 0) {
         overlay57Call3FB8Reloc();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o057/overlay57UpdateModeState/func_overlay_057_F0003A4C_18A7644.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay57UpdateModeState:start
- * symbol: overlay57UpdateModeState
- * score: 5/354 words
- * frame: 0x30
- * relocations: 59
- * first-mismatch: +0x108
- * summary: floor of 2, cannot match: the +0x108 tie needs opposite directions on one per-pair scheduler key, and the +0x15c store costs 16 in one colour swap
- * PLATEAU-HANDOFF:overlay57UpdateModeState:end
- */

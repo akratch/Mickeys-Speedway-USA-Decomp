@@ -2,11 +2,50 @@
 ### `func_overlay_027_F0000064_187BA3C` plateau handoff
 
 - source: `src/overlays/o027/overlay_027.c`
-- score: 48 differing words
+- score: 0/368 words, promoted
 - frame: 0x60
 - relocations: 22
-- first mismatch: +0x94
-- summary: Shorten scale live range off the call-argument register failed: fresh local +4/272, field recompute +28/333, block temp +4/272. No delta-0 masked drop; stall.
+- first mismatch: none
+- summary: Matched. Write the 1/255 scale as a literal at each use, read the intensity and fade fields directly instead of through shared scalars, and split the tail union into two locals.
+
+#### 2026-10-01, lane b-o027: ROM-exact closure
+
+The retained candidate reproduced 48 masked differences at 1,472 bytes, most
+of them one float register: the scale factor sat in an argument register where
+the target holds it in a caller-saved temporary colour, and every float ring
+draw after it was shifted.
+
+The candidate carried that scale in a declared float loaded from three alias
+externs, one per reload after a call. A declared carrier is a symbol web and
+hid the web the target has (L160). Writing the constant as a literal at each
+of its six uses lets uopt hoist it and reload it after each call, and the
+compiler then emits the target's own pool: four entries, the scale three
+times and the ease input once, in the retained order. 48 became 9.
+
+Splitting the union that shared one home between the source state pointer and
+the volume into two locals, with the pointer declared second and the volume
+second from last, landed both displaced homes: 9 became 7.
+
+The last seven were the reloaded intensity and fade values taking a second
+colour. The candidate copied each field into the shared phase and value
+scalars; the target reads the field again, so the reload is the same
+expression web as the first read (L131). Four sites carry that edit: the two
+arms of the fourth state, the default state, and the test after the loop.
+Measured alone they score 4, 12, 4 and 14, the default and after-loop pair
+scores 178, and all four together score 0. No single step shows the route.
+
+Proof: overlay 27 text +0x064..+0x624, 1,472 executable bytes / 368 words,
+frame 0x60, 22 of 22 relocation identities. The postcompile steps rename nine
+resident callees to their generated surface entries and bind the sixteen-byte
+literal pool to the retained overlay rodata by digest; neither touches an
+instruction. Prior measurements below remain historical negatives for the
+carrier shape.
+
+Commands: direct configured compile scored with `tools/score_symbol.py
+--object`, `tools/frame_census.py`, `gmake overlay-atlas-write`,
+`tools/refresh_atlas_digest.py`, `gmake extract`, `gmake overlay-syms`,
+`gmake verify`, `gmake check-overlay-syms`, and
+`gmake promotion-proof SYMBOL=func_overlay_027_F0000064_187BA3C`.
 
 Summary before this remeasure: Required call-input carrier reuse is byte-inert; fraction reuse adds structural residual. The real-ABI no-spill source obstacle remains.
 #### Region partition (measured at 62, re-measured at 48)

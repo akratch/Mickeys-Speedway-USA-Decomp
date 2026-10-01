@@ -610,6 +610,637 @@ class FunctionSurfaceComparisonTests(unittest.TestCase):
                 Path("build/src/overlays/o007/example.c.o"), atlas)
 
 
+class CandidateTuPlacementAuthorityTests(unittest.TestCase):
+    name = "func_overlay_008_F0001000_185ED58"
+
+    class FakeElf:
+        names = ["", ".text"]
+
+        def __init__(self, value, text, reloc_symbol="callee", path=None):
+            self.path = Path(path or
+                             "build_non_matching/src/overlays/o008/overlay_008.c.o")
+            self._text = text
+            self._symbols = [
+                (CandidateTuPlacementAuthorityTests.name, value, 4,
+                 rs.STT_FUNC, 1),
+                (reloc_symbol, 0, 0, 0, rs.SHN_UNDEF),
+            ]
+            self._relocations = [(".text", value, rs.R_MIPS_26, 1)]
+
+        def section(self, name):
+            return (self.names.index(name), object()) if name in self.names else (None, None)
+
+        def section_bytes(self, name):
+            return self._text if name == ".text" else b""
+
+        def symbols(self):
+            return list(self._symbols)
+
+        def relocations(self):
+            return list(self._relocations)
+
+    def verify(self, candidate, canonical, boundary=(8, 0x1000), *,
+               candidate_source="overlays/o008/overlay_008",
+               owner_source="overlays/o008/overlay_008",
+               owner_start="0x800", target_overlay=8):
+        self.boundary_calls = []
+        name = (self.name if target_overlay == 8 else
+                "func_overlay_%03d_F0001000_185ED58" % target_overlay)
+        atlas = {"modules": [{
+            "overlay": target_overlay,
+            "text_ownership": [{
+                "type": "c", "source": owner_source,
+                "offset": owner_start, "end_offset": "0x1200",
+                "size": hex(0x1200 - int(owner_start, 16)),
+            }],
+        }]}
+
+        def boundary_proof(_atlas, _overlay, _name, _target, root=None,
+                           elf_loader=None, rom=None):
+            self.boundary_calls.append((_overlay, _name))
+            if boundary is None:
+                return None
+            elf_loader(Path("canonical.o"))
+            return boundary
+
+        with mock.patch.object(rs, "_canonical_overlay_call_boundary",
+                               side_effect=boundary_proof):
+            return rs._candidate_tu_placement_matches_canonical(
+                name, 0xFC0, 0, candidate, 8, candidate_source, object(),
+                atlas, Path("."), b"rom",
+                elf_loader=lambda _path: canonical)
+
+    @staticmethod
+    def section_bytes(function_offset, body):
+        result = bytearray(function_offset + 4)
+        result[function_offset:function_offset + 4] = body
+        return bytes(result)
+
+    def test_exact_canonical_boundary_and_body_withdraws_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertTrue(self.verify(candidate, canonical))
+
+    def test_same_size_wrong_body_keeps_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"nope"))
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_relocation_identity_must_match(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"), "candidate_alias")
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"), "canonical_alias")
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_missing_canonical_boundary_keeps_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(candidate, canonical, boundary=None))
+
+    def test_conflicting_canonical_boundary_keeps_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(candidate, canonical, boundary=(8, 0x1004)))
+
+    def test_cross_overlay_clone_cannot_withdraw_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(
+            candidate, canonical, target_overlay=7,
+            owner_source="overlays/o007/overlay_007"))
+
+    def test_same_overlay_other_tu_clone_cannot_withdraw_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(
+            candidate, canonical, owner_source="overlays/o008/other_tu"))
+
+    def test_owner_start_fallback_cannot_withdraw_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(candidate, canonical, owner_start="0x1000"))
+        self.assertEqual([], self.boundary_calls)
+
+    def test_missing_candidate_source_context_cannot_withdraw_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(candidate, canonical, candidate_source=None))
+
+    def test_candidate_object_source_must_match_atlas_owner(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(
+            candidate, canonical, candidate_source="overlays/o008/other_tu"))
+
+    def test_relocation_symbol_binding_must_match(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        candidate._symbols[1] = ("callee", 0, 0, 0x11, rs.SHN_UNDEF)
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_relocation_symbol_extent_must_match(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        candidate._symbols[1] = ("callee", 0, 4, 0x11, rs.SHN_UNDEF)
+        canonical._symbols[1] = ("callee", 0, 8, 0x11, rs.SHN_UNDEF)
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_ambiguous_relocation_symbol_owner_is_not_admitted(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        candidate._symbols.append(candidate._symbols[1])
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_defined_relocation_referent_is_not_admitted(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        candidate._symbols[1] = ("callee", 0x100, 4, 0x12, 1)
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_ambiguous_candidate_function_boundary_keeps_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        candidate._symbols.append(candidate._symbols[0])
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_stale_canonical_boundary_proof_keeps_candidate_position(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+
+        def stale_proof(*_args, **_kwargs):
+            raise rs.SurfaceComparisonError("canonical proof inputs changed")
+
+        with mock.patch.object(rs, "_canonical_overlay_call_boundary",
+                               side_effect=stale_proof):
+            self.assertFalse(rs._candidate_tu_placement_matches_canonical(
+                self.name, 0xFC0, 0, candidate, 8,
+                "overlays/o008/overlay_008", object(), {"modules": []},
+                Path("."), b"rom", elf_loader=lambda _path: canonical))
+
+    def test_unchanged_position_needs_no_withdrawal_proof(self):
+        candidate = self.FakeElf(0x1000, self.section_bytes(0x1000, b"body"))
+        canonical = self.FakeElf(0x1000, self.section_bytes(0x1000, b"other"))
+        self.assertFalse(self.verify(candidate, canonical))
+
+    def test_withdrawal_does_not_create_identity_without_independent_route(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        evidence = {}
+        with mock.patch.object(rs, "_candidate_tu_placement_matches_canonical",
+                               return_value=True):
+            resolved, ambiguous = rs._stable_symbol_identities(
+                Path("missing"), candidate, 8, 0, self.FakeElf(0, b""),
+                evidence=evidence, atlas={}, root=Path("."), rom=b"rom")
+        self.assertNotIn(self.name, resolved)
+        self.assertNotIn(self.name, ambiguous)
+        self.assertEqual(
+            "shifted-position-not-authoritative; exact canonical function proof",
+            evidence[self.name][0]["reason"])
+
+    def test_failed_proof_preserves_candidate_tu_conflict_proposal(self):
+        candidate = self.FakeElf(0xFC0, self.section_bytes(0xFC0, b"body"))
+        with mock.patch.object(rs, "_candidate_tu_placement_matches_canonical",
+                               return_value=False):
+            resolved, ambiguous = rs._stable_symbol_identities(
+                Path("missing"), candidate, 8, 0, self.FakeElf(0, b""),
+                evidence={}, atlas={}, root=Path("."), rom=b"rom",
+                candidate_source="overlays/o008/overlay_008")
+        self.assertEqual((8, 0xFC0), resolved[self.name])
+        self.assertNotIn(self.name, ambiguous)
+
+
+class ExplicitOverlayStorageRegistryTests(unittest.TestCase):
+    SOURCE = """
+typedef struct {
+    s16 *commandBuffer;
+    s16 effectFlag;
+    f32 surfaceSteeringScale;
+    f32 surfaceMotionScale;
+    f32 speedLimit;
+    s32 leftAlphaEnabled;
+    s32 rightAlphaEnabled;
+} Overlay8BssOwner;
+Overlay8BssOwner gOverlay8BssOwner;
+"""
+
+    @classmethod
+    def group(cls):
+        registry = json.loads(
+            (Path(__file__).resolve().parent.parent /
+             "config/overlay_storage_bindings.us.json").read_text())
+        return rs._explicit_storage_registry_groups(registry)[0]
+
+    @classmethod
+    def groups(cls):
+        registry = json.loads(
+            (Path(__file__).resolve().parent.parent /
+             "config/overlay_storage_bindings.us.json").read_text())
+        return rs._explicit_storage_registry_groups(registry)
+
+    class StorageElf:
+        def __init__(self, *, data=b"abcd", header=None, symbols=None, relocs=()):
+            self.names = ["", ".data"]
+            self.data = bytes(data)
+            self.header = header or (0, 1, 3, 0, 0, 4, 0, 0, 4, 0)
+            self._symbols = symbols or [("o8MotionScalar", 0, 4,
+                                         rs.STT_OBJECT, 1)]
+            self._relocs = list(relocs)
+
+        def section(self, name):
+            return (1, self.header) if name == ".data" else (None, None)
+
+        def section_bytes(self, name):
+            return self.data if name == ".data" else b""
+
+        def symbols(self):
+            return list(self._symbols)
+
+        def relocations(self, _target=r".*"):
+            return list(self._relocs)
+
+    def test_all_reviewed_bss_members_follow_natural_n64_layout(self):
+        group = self.group()
+        resolved = {}
+        for binding in group["bindings"]:
+            member = rs._validate_explicit_bss_member(
+                group, binding, binding["_addend"], self.SOURCE)
+            resolved[binding["candidate"]] = (
+                member["type"], member["width"], member["offset"])
+        self.assertEqual({
+            "D_4": ("s16", 2, 4),
+            "D_8": ("f32", 4, 8),
+            "D_C": ("f32", 4, 12),
+            "D_10": ("f32", 4, 16),
+            "D_14": ("s32", 4, 20),
+            "D_18": ("s32", 4, 24),
+        }, resolved)
+
+    def test_candidate_bias_or_wrong_member_layout_is_rejected(self):
+        group = self.group()
+        binding = next(row for row in group["bindings"]
+                       if row["candidate"] == "D_10")
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._validate_explicit_bss_member(
+                group, binding, binding["_addend"] + 4, self.SOURCE)
+        wrong_type = self.SOURCE.replace("f32 speedLimit;", "s32 speedLimit;")
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._validate_explicit_bss_member(
+                group, binding, binding["_addend"], wrong_type)
+        wrong_offset = dict(binding, _member_offset=0x14)
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._validate_explicit_bss_member(
+                group, wrong_offset, binding["_addend"], self.SOURCE)
+
+    def test_unsupported_packed_and_array_layouts_fail_closed(self):
+        group = self.group()
+        binding = group["bindings"][0]
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._validate_explicit_bss_member(
+                group, binding, binding["_addend"],
+                self.SOURCE.replace("typedef struct {",
+                                    "typedef struct __attribute__((packed)) {"))
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._natural_c_struct_layout(
+                self.SOURCE.replace("s32 rightAlphaEnabled;",
+                                    "s32 rightAlphaEnabled[1];"),
+                "Overlay8BssOwner")
+
+    def test_duplicate_names_and_unreviewed_schema_are_rejected(self):
+        registry = json.loads(
+            (Path(__file__).resolve().parent.parent /
+             "config/overlay_storage_bindings.us.json").read_text())
+        registry["groups"][0]["bindings"][1]["candidate"] = "D_4"
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._explicit_storage_registry_groups(registry)
+        registry["groups"][0]["bindings"][1]["candidate"] = "D_8"
+        registry["groups"][0]["unreviewed"] = True
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._explicit_storage_registry_groups(registry)
+
+    def test_scalar_registry_is_full_typed_and_has_no_free_base_bias(self):
+        registry = json.loads(
+            (Path(__file__).resolve().parent.parent /
+             "config/overlay_storage_bindings.us.json").read_text())
+        group = rs._explicit_storage_registry_groups(registry)[1]
+        self.assertEqual(40, len(group["bindings"]))
+        self.assertEqual(set(range(0, 0xA0, 4)),
+                         {row["_owner_offset"] for row in group["bindings"]})
+        self.assertEqual(set(group["owner_symbols"]),
+                         {row["owner_symbol"] for row in group["bindings"]})
+        self.assertTrue(all(row["_addend"] == 0xF8 + row["_owner_offset"]
+                            and row["type"] == "f32"
+                            and row["_width"] == 4
+                            for row in group["bindings"]))
+        registry["groups"][1]["original_base"] = "0x73B4"
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._explicit_storage_registry_groups(registry)
+        registry["groups"][1]["original_base"] = "0x73B0"
+        registry["groups"][1]["bindings"][0]["owner_offset"] = "0x4"
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._explicit_storage_registry_groups(registry)
+
+    def test_table_registry_is_fixed_namespace_typed_and_full_extent(self):
+        registry = json.loads(
+            (Path(__file__).resolve().parent.parent /
+             "config/overlay_storage_bindings.us.json").read_text())
+        group = rs._explicit_storage_registry_groups(registry)[2]
+        self.assertEqual("overlay-local-data-arrays", group["kind"])
+        self.assertEqual(0x5130, group["_original_base"])
+        self.assertEqual(0x140, group["_section_size"])
+        self.assertEqual({
+            "o8EffectBit4LeftTriggerMasks": {"offset": 0x00, "size": 0x40},
+            "o8EffectBit8RightTriggerMasks": {"offset": 0x40, "size": 0x40},
+            "o8EffectBit1LeftTriggerMasks": {"offset": 0x80, "size": 0x40},
+            "o8EffectBit2RightTriggerMasks": {"offset": 0xC0, "size": 0x40},
+            "o8EffectColorBySelector": {"offset": 0x100, "size": 0x40},
+        }, group["_owner_layout"])
+        for index, field, value in (
+                (2, "original_base", "0x5134"),
+                (2, "section_size", "0x13C"),
+                (2, "owner_source_sha256", "0" * 64),
+                (2, "owner_source", "overlays/o008/overlay_008"),
+                (2, "overlay", 9),
+                (2, "candidate_sources", ["overlays/o009/overlay_009"])):
+            changed = json.loads(json.dumps(registry))
+            changed["groups"][index][field] = value
+            with self.subTest(field=field), self.assertRaises(rs.SurfaceComparisonError):
+                rs._explicit_storage_registry_groups(changed)
+        for field, value in (("owner_offset", "0x40"),
+                             ("type", "u8"), ("width", "0x1"),
+                             ("addend", "0x3E4"),
+                             ("owner_symbol", "o8EffectBit8RightTriggerMasks")):
+            changed = json.loads(json.dumps(registry))
+            changed["groups"][2]["bindings"][0][field] = value
+            with self.subTest(field=field), self.assertRaises(rs.SurfaceComparisonError):
+                rs._explicit_storage_registry_groups(changed)
+
+    def test_table_identity_cannot_suppress_independent_alias_peer(self):
+        identity = (8, 0x5510)
+        conflicting = (8, 0x5514)
+        for equality, redefine in (([("D_3E0", "peer")], []),
+                                   ([], [("D_3E0", "peer")])):
+            evidence = {
+                "D_3E0": [{"route": "explicit-typed-overlay-storage",
+                           "independent": True,
+                           "base_identity": list(identity)}],
+                "peer": [{"route": "canonical-data-owner",
+                          "independent": True,
+                          "base_identity": list(conflicting)}],
+            }
+            rs._identity_alias_evidence(evidence, equality, redefine)
+            with self.subTest(equality=equality, redefine=redefine), self.assertRaises(
+                    rs.SurfaceComparisonError):
+                rs._merge_explicit_storage_identities(
+                    {"D_3E0": identity}, {}, {"D_3E0", "peer"}, evidence)
+
+    def test_table_explicit_identity_does_not_overwrite_same_name_owner(self):
+        evidence = {"D_3E0": [
+            {"route": "explicit-typed-overlay-storage", "independent": True,
+             "base_identity": [8, 0x5510]},
+            {"route": "canonical-data-owner", "independent": True,
+             "base_identity": [8, 0x5514]},
+        ]}
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._merge_explicit_storage_identities(
+                {"D_3E0": (8, 0x5510)}, {}, {"D_3E0"}, evidence)
+
+    def test_table_owner_source_has_natural_sized_arrays_and_rgba_view(self):
+        group = self.groups()[2]
+        source = (Path(__file__).resolve().parent.parent /
+                  "src/overlays/o008/overlay8EffectTables.c").read_text()
+        for binding in group["bindings"]:
+            parsed = rs.storage_types.validate_explicit_array_owner(
+                group, binding, source, rs.SurfaceComparisonError)
+            expected_width = 4 if binding["type"] == "s32" else 1
+            self.assertEqual(64, parsed["extent"])
+            self.assertEqual(expected_width, binding["_width"])
+        bad_sources = (
+            source.replace("s32 o8EffectBit4LeftTriggerMasks[16]",
+                           "u32 o8EffectBit4LeftTriggerMasks[16]"),
+            source.replace("o8EffectBit4LeftTriggerMasks[16]",
+                           "o8EffectBit4LeftTriggerMasks[15]"),
+            source.replace("Overlay8EffectColor o8EffectColorBySelector[16]",
+                           "u8 o8EffectColorBySelector[16]"),
+            source.replace("u8 green;", "s32 green;"),
+            source.replace("u8 alpha;", "u8 opacity;") ,
+        )
+        for changed in bad_sources:
+            with self.subTest(source_hash=hash(changed)), self.assertRaises(
+                    rs.SurfaceComparisonError):
+                for binding in group["bindings"]:
+                    rs.storage_types.validate_explicit_array_owner(
+                        group, binding, changed, rs.SurfaceComparisonError)
+
+    def test_array_proxy_is_undefined_object_without_fabricated_extent(self):
+        class Carrier:
+            def __init__(self, rows): self._rows = rows
+            def symbols(self): return list(self._rows)
+
+        proxy = ("D_3E0", 0, 0, (1 << 4) | rs.STT_OBJECT, rs.SHN_UNDEF)
+        self.assertTrue(rs._is_undefined_data_carrier(Carrier([proxy]), "D_3E0", 0))
+        self.assertFalse(rs._is_undefined_data_carrier(
+            Carrier([("D_3E0", 0, 0x40, (1 << 4) | rs.STT_OBJECT, rs.SHN_UNDEF)]),
+            "D_3E0", 0))
+
+    def test_scalar_owner_requires_one_plain_f32_definition(self):
+        symbol = "o8MotionPeerBlendAdjustment"
+        self.assertTrue(rs._has_unique_initialized_f32_scalar(
+            f"f32 {symbol} = -0.3f;", symbol))
+        self.assertTrue(rs._has_unique_initialized_f32_scalar(
+            f"f32 {symbol};", symbol))
+        for source in (
+                f"f32 {symbol}[1] = {{0.3f}};",
+                f"f32 *{symbol};",
+                f"f32 {symbol}(void);",
+                f"f32 {symbol} = other_value;",
+                f"f32 {symbol} = 0.3f; f32 {symbol} = 0.4f;",
+                f"// f32 {symbol} = 0.3f;\nint unrelated;",
+        ):
+            with self.subTest(source=source):
+                self.assertFalse(rs._has_unique_initialized_f32_scalar(
+                    source, symbol))
+
+    def test_data_rodata_rom_slice_includes_text_prefix_and_fails_closed(self):
+        module = {
+            "rom": {"start": "0x100", "size": "0x100"},
+            "sections": {"text": {"start": "0x100", "size": "0x20"}},
+        }
+        rom = bytes(range(256)) * 2
+        actual = rs._overlay_data_rodata_rom_bytes(module, 0x30, 0x34, rom)
+        self.assertEqual(rom[0x150:0x154], actual)
+        self.assertNotEqual(rom[0x130:0x134], actual)
+        bad_origin = {
+            **module,
+            "sections": {"text": {"start": "0x101", "size": "0x20"}},
+        }
+        self.assertIsNone(rs._overlay_data_rodata_rom_bytes(
+            bad_origin, 0x30, 0x34, rom))
+        self.assertIsNone(rs._overlay_data_rodata_rom_bytes(
+            module, 0xF0, 0x110, rom))
+
+    def test_explicit_storage_clears_only_correlation_ambiguity(self):
+        identity = (8, 0x7664)
+        evidence = {"D_4": [
+            {"independent": True, "base_identity": list(identity)},
+            {"independent": False, "base_identity": [8, 0x7668]},
+        ]}
+        resolved = {}
+        ambiguous = {"D_4"}
+        rs._merge_explicit_storage_identities(
+            {"D_4": identity}, resolved, ambiguous, evidence)
+        self.assertEqual(identity, resolved["D_4"])
+        self.assertNotIn("D_4", ambiguous)
+        evidence["D_4"].append(
+            {"independent": True, "base_identity": [8, 0x7668]})
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._merge_explicit_storage_identities(
+                {"D_4": identity}, {}, {"D_4"}, evidence)
+
+    def test_alias_graph_conflicts_survive_explicit_storage_merge(self):
+        explicit = (8, 0x7664)
+        peer = (8, 0x7668)
+        for equality, redefine in (([("D_4", "peer")], []),
+                                   ([], [("D_4", "peer")] )):
+            with self.subTest(equality=equality, redefine=redefine):
+                evidence = {
+                    "D_4": [{"route": "explicit-typed-overlay-storage",
+                             "independent": True,
+                             "base_identity": list(explicit)}],
+                    "peer": [{"route": "canonical-data-owner",
+                              "independent": True,
+                              "base_identity": list(peer)}],
+                }
+                rs._identity_alias_evidence(evidence, equality, redefine)
+                with self.assertRaises(rs.SurfaceComparisonError):
+                    rs._merge_explicit_storage_identities(
+                        {"D_4": explicit}, {}, {"D_4", "peer"}, evidence)
+
+    def test_alias_graph_diagnostic_peer_does_not_block_explicit_proof(self):
+        explicit = (8, 0x7664)
+        evidence = {
+            "D_4": [{"route": "explicit-typed-overlay-storage",
+                     "independent": True,
+                     "base_identity": list(explicit)}],
+            "peer": [{"route": "runtime-site-correlation",
+                      "independent": False,
+                      "base_identity": [8, 0x7668]}],
+        }
+        rs._identity_alias_evidence(evidence, [("D_4", "peer")], [])
+        resolved, ambiguous = {}, {"D_4", "peer"}
+        rs._merge_explicit_storage_identities(
+            {"D_4": explicit}, resolved, ambiguous, evidence)
+        self.assertEqual(explicit, resolved["D_4"])
+        self.assertNotIn("D_4", ambiguous)
+        self.assertIn("peer", ambiguous)
+
+    def test_same_name_canonical_data_conflict_is_not_skipped(self):
+        evidence = {"D_F8": [
+            {"route": "explicit-typed-overlay-storage", "independent": True,
+             "base_identity": [8, 0x74A8]},
+            {"route": "canonical-data-owner", "independent": True,
+             "base_identity": [8, 0x74B0]},
+        ]}
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._merge_explicit_storage_identities(
+                {"D_F8": (8, 0x74A8)}, {}, {"D_F8"}, evidence)
+
+    def test_explicit_carrier_requires_unique_undefined_typed_object(self):
+        class Carrier:
+            def __init__(self, rows):
+                self._rows = rows
+
+            def symbols(self):
+                return self._rows
+
+        good = ("D_4", 0, 2, (1 << 4) | rs.STT_OBJECT, rs.SHN_UNDEF)
+        self.assertTrue(rs._is_undefined_data_carrier(Carrier([good]), "D_4", 2))
+        bad_rows = [
+            [good, good],
+            [("D_4", 0, 2, rs.STT_OBJECT, 1)],
+            [("D_4", 0, 4, (1 << 4) | rs.STT_OBJECT, rs.SHN_UNDEF)],
+            [("D_4", 0, 2, (1 << 4) | 0, rs.SHN_UNDEF)],
+        ]
+        for rows in bad_rows:
+            with self.subTest(rows=rows):
+                self.assertFalse(rs._is_undefined_data_carrier(
+                    Carrier(rows), "D_4", 2))
+
+    def test_freshness_rechecks_loaded_tool_and_dependency_digests(self):
+        class Batch:
+            stale = False
+
+            def checked_tool_identity(self):
+                if self.stale:
+                    raise RuntimeError("loaded module changed on disk")
+                return {"loaded_modules": {"reloc_identity": "a" * 64}}
+
+            def source_dependencies(self, _source, _args):
+                return {"include/overlay.h": "a" * 64}
+
+        batch = Batch()
+        self.assertEqual({"loaded_modules": {"reloc_identity": "a" * 64}},
+                         rs.storage_freshness.checked_tool_identity(
+                             batch, rs.SurfaceComparisonError))
+        batch.stale = True
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs.storage_freshness.checked_tool_identity(
+                batch, rs.SurfaceComparisonError)
+        batch.stale = False
+        source = Path("src/overlay.c")
+        modes = [{"mode": "stock-dnm", "compiler_arguments": ["-Iinclude"]}]
+        snapshot = rs.storage_freshness.source_dependency_snapshot(
+            batch, source, modes)
+        self.assertEqual({"stock-dnm": {"include/overlay.h": "a" * 64}}, snapshot)
+        rs.storage_freshness.require_dependency_snapshot(
+            snapshot, snapshot, rs.SurfaceComparisonError)
+        changed = {"stock-dnm": {"include/overlay.h": "b" * 64}}
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs.storage_freshness.require_dependency_snapshot(
+                changed, snapshot, rs.SurfaceComparisonError)
+
+    def test_extracted_storage_helpers_reject_post_import_edits(self):
+        from unittest.mock import patch
+
+        for helper, message in (
+                (rs.storage_types, "loaded typed-storage implementation changed"),
+                (rs.storage_freshness, "loaded storage-freshness implementation changed")):
+            with self.subTest(helper=helper.__name__, stage="initial-capture"):
+                with tempfile.TemporaryDirectory() as directory:
+                    changed = Path(directory) / "edited_helper.py"
+                    changed.write_text("# changed after module import\n")
+                    with patch.object(helper, "__file__", str(changed)):
+                        with self.assertRaisesRegex(rs.SurfaceComparisonError, message):
+                            rs._capture_explicit_storage_group(
+                                rs.REPO, {}, Path("unused-registry"), "0" * 64)
+            with self.subTest(helper=helper.__name__, stage="final-recheck"):
+                with tempfile.TemporaryDirectory() as directory:
+                    changed = Path(directory) / "edited_helper.py"
+                    changed.write_text("# changed after module import\n")
+                    with patch.object(helper, "__file__", str(changed)):
+                        with self.assertRaisesRegex(rs.SurfaceComparisonError, message):
+                            rs._recheck_explicit_storage_capture(
+                                rs.REPO, {}, Path("unused-registry"), "0" * 64,
+                                {"inputs": {}})
+
+    def test_storage_fidelity_catches_bytes_geometry_symbols_and_relocations(self):
+        exact_left = self.StorageElf()
+        exact_right = self.StorageElf()
+        self.assertIsNone(rs._explicit_storage_fidelity(
+            exact_left, exact_right, [".data"], {"o8MotionScalar"}))
+        mutations = [
+            (self.StorageElf(data=b"abce"), self.StorageElf(), "bytes"),
+            (self.StorageElf(header=(0, 1, 3, 0, 0, 8, 0, 0, 4, 0)),
+             self.StorageElf(), "geometry"),
+            (self.StorageElf(symbols=[("o8MotionScalar", 0, 8,
+                                      rs.STT_OBJECT, 1)]),
+             self.StorageElf(), "symbols"),
+            (self.StorageElf(relocs=[(".data", 0, rs.R_MIPS_LO16, 0)]),
+             self.StorageElf(), "relocations"),
+        ]
+        for left, right, label in mutations:
+            with self.subTest(label=label), self.assertRaises(rs.SurfaceComparisonError):
+                rs._explicit_storage_fidelity(
+                    left, right, [".data"], {"o8MotionScalar"})
+
+
 class OverlayDataIdentityTests(unittest.TestCase):
     class FakeElf:
         def __init__(self, path, names, symbols=(), relocations=(), text=b"",
@@ -754,13 +1385,28 @@ class OverlayDataIdentityTests(unittest.TestCase):
                 object_section=".bss"))
         self.assertEqual((7, 0x1B94), resolved["gPool"])
 
-    def test_friendly_name_without_linked_alias_uses_unique_whole_bss(self):
+    def test_friendly_name_without_linked_alias_needs_explicit_binding(self):
         with tempfile.TemporaryDirectory() as td:
             resolved, _ = self.resolve(self.fixture(
                 Path(td), name="gFriendlyState", assignment=0x11C,
                 object_value=0x11C, object_section=".bss",
                 linked_name=False))
-        self.assertEqual((7, 0x1A2C), resolved["gFriendlyState"])
+        self.assertEqual({}, resolved)
+
+    def test_small_initialized_data_proxy_does_not_borrow_whole_bss_owner(self):
+        with tempfile.TemporaryDirectory() as td:
+            fixture = self.fixture(
+                Path(td), overlay=8, name="gOverlay8IndexMode", assignment=0,
+                object_value=0, object_section=".bss", linked_name=False)
+            candidate, canonical, target, module, values = fixture
+            evidence = {}
+            identity = rs._canonical_overlay_data_identity(
+                module, candidate, "gOverlay8IndexMode", 0, target,
+                root=values.parent, elf_loader=lambda _path: canonical,
+                evidence=evidence)
+        self.assertIsNone(identity)
+        self.assertEqual("missing-explicit-data-owner-binding",
+                         evidence["gOverlay8IndexMode"][0]["reason"])
 
     def test_same_numeric_assignment_in_two_overlays_uses_caller_context(self):
         with tempfile.TemporaryDirectory() as td:
@@ -3051,10 +3697,13 @@ class ExplicitReservedStorageWitnessTests(unittest.TestCase):
             with self.assertRaisesRegex(rs.SurfaceComparisonError, "named local definition"):
                 self.invoke(root, fixture)
 
-    def test_explicit_namespace_suppresses_only_numeric_bss_fallback(self):
+    def test_explicit_namespace_preserves_named_owner_conflicts(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td); fixture = self.explicit_fixture(root)
             candidate, target = fixture[6], fixture[3]
+            values = root / "values"
+            values.write_text("")
+            evidence = {}
             with mock.patch.object(rs, "_numeric_assignments", return_value={"gSharedProxy": 0}), \
                  mock.patch.object(rs, "_canonical_overlay_data_identity", return_value=(57, 0x7110)) as owner:
                 legacy, _ = rs._stable_overlay_data_identities(
@@ -3063,9 +3712,13 @@ class ExplicitReservedStorageWitnessTests(unittest.TestCase):
                 owner.reset_mock()
                 explicit, _ = rs._stable_overlay_data_identities(
                     root / "values", candidate, {"overlay": 57}, target, 0, 8,
-                    explicit_foreign_names={"gSharedProxy"})
-                self.assertEqual(explicit, {})
-                owner.assert_not_called()
+                    explicit_foreign_names={"gSharedProxy"}, evidence=evidence)
+                self.assertEqual(explicit, {"gSharedProxy": (57, 0x7110)})
+                owner.assert_called_once()
+                with self.assertRaisesRegex(rs.SurfaceComparisonError, "independent alias identity"):
+                    rs._merge_independent_resident_bindings(
+                        {"gSharedProxy": (0xFFD, 0x31A4)}, explicit, set(),
+                        evidence, values, None)
 
     def test_independent_resident_and_sibling_conflicts_refused(self):
         for route, identity in [("resident-elf-address", (0, 0x1234)),

@@ -250,6 +250,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         ls.build_fallback_aliases.cache_clear()
         ls.guarded_candidate_region.cache_clear()
         ls.target_guard_changed.cache_clear()
+        ls.latest_target_body_record.cache_clear()
         ls.reopen_authorizations.cache_clear()
         ls.claim_dispositions.cache_clear()
         self.temporary = tempfile.TemporaryDirectory()
@@ -272,6 +273,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         ls.build_fallback_aliases.cache_clear()
         ls.guarded_candidate_region.cache_clear()
         ls.target_guard_changed.cache_clear()
+        ls.latest_target_body_record.cache_clear()
         ls.merge_base.cache_clear()
         ls.reopen_authorizations.cache_clear()
         ls.claim_dispositions.cache_clear()
@@ -515,7 +517,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
-        self.commit("Refine guarded candidate evidence")
+        later_source_commit = self.commit("Refine guarded candidate evidence")
 
         result, report = self.status()
         assignment = report["assignment"]
@@ -524,7 +526,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         self.assertEqual(
             assignment["reason_code"], "reopen-authorization-stale",
         )
-        self.assertEqual(assignment["source_commit"], source_commit)
+        self.assertEqual(assignment["source_commit"], later_source_commit)
 
     def test_missing_ledger_authorization_allows_unrelated_tu_edit(self) -> None:
         (self.repo / SOURCE_PATH).write_text(
@@ -570,7 +572,7 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(assignment["state"], "base-only")
         self.assertEqual(assignment["reason_code"], "authorized-reopen")
-        self.assertEqual(assignment["source_commit"], plateau_commit)
+        self.assertEqual(assignment["source_commit"], evidence_commit)
         self.assertIsNone(assignment["ledger_commit"])
 
     def test_missing_ledger_single_guard_can_pin_latest_file_commit(self) -> None:
@@ -1096,6 +1098,54 @@ void unrelatedFunction(void) {
         self.assertEqual(assignment["source_commit"], plateau_commit)
         self.assertEqual(assignment["ledger_commit"], plateau_commit)
 
+    def test_non_plateau_target_body_change_advances_source_pin(self) -> None:
+        plateau_commit = self.current_plateau()
+        (self.repo / SOURCE_PATH).write_text(
+            candidate(plateau=True).replace(
+                "void overlay43FilterImage(void) {\n}",
+                "void overlay43FilterImage(void) {\n    /* updated body */\n}",
+            ),
+            encoding="utf-8",
+        )
+        source_commit = self.commit("Adjust local candidate expression")
+
+        result, report = self.status()
+        assignment = report["assignment"]
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertEqual(assignment["state"], "stale-ledger")
+        self.assertEqual(assignment["source_commit"], source_commit)
+        self.assertNotEqual(assignment["source_commit"], plateau_commit)
+
+    def test_shared_tu_sibling_change_does_not_advance_target_source_pin(self) -> None:
+        sibling = '''
+#ifdef NON_MATCHING
+void unrelatedFunction(void) {
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o043/unrelatedFunction.s")
+#endif
+'''
+        (self.repo / SOURCE_PATH).write_text(
+            candidate(plateau=True) + sibling, encoding="utf-8",
+        )
+        (self.repo / SHARD_PATH.parent).mkdir(parents=True, exist_ok=True)
+        (self.repo / SHARD_PATH).write_text(shard(), encoding="utf-8")
+        target_commit = self.commit(f"Plateau {SYMBOL} allocator")
+        (self.repo / SOURCE_PATH).write_text(
+            candidate(plateau=True) + sibling.replace(
+                "void unrelatedFunction(void) {\n}",
+                "void unrelatedFunction(void) {\n    /* sibling edit */\n}",
+            ),
+            encoding="utf-8",
+        )
+        self.commit("Refactor neighboring function")
+
+        result, report = self.status()
+        assignment = report["assignment"]
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertEqual(assignment["state"], "already-integrated/exhausted")
+        self.assertEqual(assignment["source_commit"], target_commit)
+
     def test_mixed_tu_plateau_row_without_source_change_is_stale(self) -> None:
         second = """\n#ifdef NON_MATCHING
 void unrelatedFunction(void) {
@@ -1393,6 +1443,131 @@ class AssignmentCacheTests(unittest.TestCase):
         again, cache = self.classify(self.cache_dir())
         self.assertEqual((cache.hits, cache.misses), (0, 1))
         self.assertEqual(again, uncached)
+
+
+
+class IndirectSourceTests(unittest.TestCase):
+    command = LaneStatusAssignmentTests.command
+    commit = LaneStatusAssignmentTests.commit
+    status = LaneStatusAssignmentTests.status
+    authorize_reopen = LaneStatusAssignmentTests.authorize_reopen
+    _clear = AssignmentCacheTests._clear
+    classify = AssignmentCacheTests.classify
+    cache_dir = AssignmentCacheTests.cache_dir
+    tearDown = AssignmentCacheTests.tearDown
+
+    def setUp(self):
+        LaneStatusAssignmentTests.setUp(self)
+        self.inc = SOURCE_PATH.with_suffix('.inc')
+        self.wrapper = ('#define LOOP_INIT count = 1\n#ifdef NON_MATCHING\n'
+                        f'#include "{self.inc.name}"\n#else\n'
+                        f'#pragma GLOBAL_ASM("asm/{SYMBOL}.s")\n#endif\n')
+        self.body = ('#ifndef LOAD_HEADER\n'
+                     f'#define LOAD_HEADER void {SYMBOL}(void)\n'
+                     '#endif\nLOAD_HEADER {\n    int count;\n    LOOP_INIT;\n}\n')
+        (self.repo / SOURCE_PATH).write_text(self.wrapper)
+        (self.repo / self.inc).write_text(self.body)
+        self.source_commit = self.commit('Introduce included candidate')
+
+    def test_indirect_owner_is_wrapper_cached_and_uncached(self):
+        uncached, _ = self.classify(None)
+        cold, _ = self.classify(self.cache_dir())
+        warm, cache = self.classify(self.cache_dir())
+        self.assertEqual(uncached.state, 'base-only')
+        self.assertEqual(uncached.source_path, SOURCE_PATH.as_posix())
+        self.assertEqual(cold, uncached)
+        self.assertEqual(warm, uncached)
+        self.assertEqual(cache.hits, 1)
+        result, report = self.status()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(report['assignment']['state'], 'base-only')
+
+    def test_warm_cache_does_not_hide_new_include_only_lane_owner(self):
+        self.classify(self.cache_dir())
+        self.command('git', 'checkout', '-qb', 'lane/include-owner')
+        (self.repo / self.inc).write_text(self.body.replace('int count;', 'long count;'))
+        self.commit('Change included body only')
+        self.command('git', 'checkout', '-q', 'campaign/unchain')
+        verdict, cache = self.classify(self.cache_dir())
+        self.assertEqual(cache.hits, 1)
+        self.assertEqual(verdict.state, 'active')
+        self.assertIn('lane/include-owner', verdict.active_lanes)
+
+    def test_include_change_on_base_invalidates_cache_and_source_pin(self):
+        (self.repo / self.inc).write_text(self.body + '\n/* source plateau */\n')
+        plateau = self.commit('Plateau included body')
+        before, _ = self.classify(self.cache_dir())
+        self.assertEqual(before.source_commit, plateau)
+        (self.repo / self.inc).write_text(self.body + '\n/* revised source plateau */\n')
+        latest = self.commit('Revise included body')
+        after, cache = self.classify(self.cache_dir())
+        self.assertEqual(cache.misses, 1)
+        self.assertEqual(after.source_commit, latest)
+        self.assertNotEqual(after.state, 'base-only')
+
+    def test_include_commit_consumes_reopen_authorization(self):
+        (self.repo / self.inc).write_text(self.body + '\n/* recorded plateau */\n')
+        (self.repo / SHARD_PATH.parent).mkdir(exist_ok=True)
+        (self.repo / SHARD_PATH).write_text(shard())
+        plateau = self.commit('Plateau included candidate')
+        self.authorize_reopen(plateau, plateau)
+        before, _ = self.classify(self.cache_dir())
+        self.assertEqual(before.state, 'base-only')
+        (self.repo / self.inc).write_text(self.body + '\n/* next source attempt */\n')
+        self.commit('Record included candidate attempt')
+        after, _ = self.classify(self.cache_dir())
+        self.assertNotEqual(after.state, 'base-only')
+
+    def test_base_only_include_edit_does_not_claim_unchanged_old_lane(self):
+        self.command('git', 'branch', 'lane/unchanged-include')
+        (self.repo / self.inc).write_text(self.body + '\n/* reviewed source */\n')
+        self.commit('Update included candidate')
+        verdict, _ = self.classify(None)
+        self.assertEqual(verdict.state, 'base-only')
+
+    def test_invalid_indirection_fails_closed(self):
+        cases = [
+            (self.wrapper, None),
+            ('#define LOAD_HEADER other\n' + self.wrapper, self.body),
+            (self.wrapper, self.body + '#undef LOAD_HEADER\n'),
+            ('#if 0\n' + self.wrapper + '#endif\n', self.body),
+            (self.wrapper, '#if 0\n' + self.body + '#endif\n'),
+            (self.wrapper, self.body + '#include "nested.inc"\n'),
+            (self.wrapper, '#include CONFIG_HEADER\n' + self.body),
+            (f'#define {SYMBOL} alias\n' + self.wrapper, self.body),
+            (self.wrapper, '#define void int\n' + self.body),
+            ('/*\n' + self.wrapper + '*/\n', self.body),
+            (self.wrapper, '/*\n' + self.body + '*/\n'),
+            (self.wrapper.replace(f'{SYMBOL}.s', 'another.s'), self.body),
+        ]
+        for wrapper, body in cases:
+            with self.subTest(wrapper=wrapper, body=body):
+                (self.repo / SOURCE_PATH).write_text(wrapper)
+                if body is None:
+                    (self.repo / self.inc).unlink(missing_ok=True)
+                else:
+                    (self.repo / self.inc).write_text(body)
+                self.commit('Invalid included candidate')
+                verdict, _ = self.classify(None)
+                self.assertNotEqual(verdict.state, 'base-only')
+                self.assertEqual(verdict.reason_code, 'source-identity')
+
+    def test_duplicate_owner_or_direct_definition_is_ambiguous(self):
+        other = self.repo / SOURCE_PATH.parent / 'other.c'
+        for text in (self.wrapper, candidate()):
+            with self.subTest(text=text):
+                other.write_text(text)
+                self.commit('Add duplicate owner')
+                verdict, _ = self.classify(None)
+                self.assertEqual(verdict.state, 'stale-ledger')
+                self.assertIn('ambiguous', verdict.reason)
+
+    def test_build_macro_override_refuses_cached_identity(self):
+        self.classify(self.cache_dir())
+        (self.repo / 'Makefile').write_text('CFLAGS += -DLOAD_HEADER=alternate\n')
+        self.commit('Override included signature')
+        verdict, _ = self.classify(self.cache_dir())
+        self.assertEqual(verdict.reason_code, 'source-identity')
 
 
 class LaneRefQueryTests(unittest.TestCase):

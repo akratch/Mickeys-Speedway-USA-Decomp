@@ -534,157 +534,170 @@ extern void ext_o0_5a914(Transform *, s32, s32, f32);
 extern Spawned *local_414(s16, Spawned **);
 extern s16 local_c0(Spawned *);
 
-/* PLATEAU: 16 masked words at delta 0, frame 0x50. Volatile phase re-read is beql;
- * the bne slot is still lbu not or (was 30). The old size gap was the point pointer:
- * `point += 0x14` before the x read keeps the element address as its own
- * value, so z reads 4 off it rather than folding to 24. rotY is stored before
- * rotX/rotZ (as1 order), four locals precede sp3C (its home is 0x3C, L99),
- * the fade/alpha update is two statements (the load lands in the value's own
- * register), ext_o0_5a914's last parameter is f32 (as in overlay 86, giving
- * the target's addiu for 0.0f), and the narrow index is the assignment
- * expression itself rather than a u8 carrier (L160: 95 -> 30). The rest is
- * phase/phaseValue taking v1/v0 where the target has v0/v1 and spawned/point
- * likewise; forcing those four webs prices it at 11, the remainder being the
- * phase==0 delay slot and two commutative operand orders. */
-#ifdef NON_MATCHING
+typedef struct O1RouteSlot {
+    f32 x;
+    f32 z;
+    u8 pad08[8];
+} O1RouteSlot;
+
+typedef struct O1RouteNode {
+    u8 pad00[4];
+    f32 y;
+    u8 pad08[4];
+    s16 angle;
+    u8 pad0E[2];
+    u16 flags;
+    u8 pad12[2];
+    O1RouteSlot slots[1];
+} O1RouteNode;
+
+/* Matched 2026-10-01 by discarding the inherited shape. Three things closed
+ * the last 16 words:
+ *  - one `u8 phase` local, tested `!phase` and then compared. The boolean
+ *    test reads the variable itself; the comparisons read its promoted value,
+ *    which uopt keeps as a separate expression web first materialised in the
+ *    `== 1` block. That is the target's copy in that test's delay slot and
+ *    its constant-first `3 == phase` operand order. A second carrier or a
+ *    volatile re-read reproduced neither.
+ *  - the route slot is `&node->slots[state->selectorA = 3]` with x and z read
+ *    as members. Hand-written byte arithmetic with a separate `+= 0x14`
+ *    carried a pointer web that out-ranked `spawned` for v0 and reversed the
+ *    address add's operands.
+ *  - `phaseValue` and `index` are unreferenced; with `value` and `phase` they
+ *    are the four homes that put `sp3C` at 0x3C in the 0x50 frame (L99).
+ * Earlier findings kept: rotY is stored before rotX/rotZ, the fade/alpha
+ * update is two statements, and ext_o0_5a914's last parameter is f32. */
 void overlay1TransitionState(Transform *obj, State *state, s32 updateRate) {
     s32 value;
     u8 phase;
     s32 phaseValue;
     u8 index;
     Spawned *sp3C;
-    u8 *point;
+    O1RouteSlot *point;
     Spawned *spawned;
 
     if (G_o1_83e4 == 3) {
         phase = state->phase;
-        if (phase == 0) {
+        if (!phase) {
             return;
         }
-        phaseValue = *(volatile u8 *)&state->phase;
         if (phase == 1) {
-                ext_o7_ccc(obj, 0x13);
-                state->spawned = local_378(state);
-                state->phase = 2;
+            ext_o7_ccc(obj, 0x13);
+            state->spawned = local_378(state);
+            state->phase = 2;
+            return;
+        }
+        if (phase == 2) {
+            value = state->fade;
+            value -= updateRate * 4;
+            if (value <= 0) {
+                state->phase = 3;
                 return;
             }
-            if (phaseValue == 2) {
-                value = state->fade;
-                value -= updateRate * 4;
-                if (value <= 0) {
-                    state->phase = 3;
-                    return;
-                }
-                state->fade = value;
+            state->fade = value;
+            return;
+        }
+        if (phase == 3) {
+            spawned = state->spawned;
+            obj->x = spawned->x;
+            obj->y = spawned->at10.y2 + 100.0f;
+            obj->z = spawned->z;
+            obj->rotY = spawned->angle;
+            obj->rotX = 0;
+            obj->rotZ = 0;
+            ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
+            ext_o0_1c6bc(obj, state);
+            state->flags &= ~8;
+            obj->header->flags &= ~1;
+            state->fade = 0;
+            state->active = 1;
+            state->phase = 4;
+            return;
+        }
+        if (phase == 4) {
+            value = state->fade;
+            value += updateRate * 4;
+            if (value >= 255) {
+                state->fade = 255;
+                state->phase = 5;
                 return;
             }
-            if (phaseValue == 3) {
-                spawned = state->spawned;
-                obj->x = spawned->x;
-                obj->y = spawned->at10.y2 + 100.0f;
-                obj->z = spawned->z;
-                obj->rotY = spawned->angle;
-                obj->rotX = 0;
-                obj->rotZ = 0;
-                ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
-                ext_o0_1c6bc(obj, state);
-                state->flags &= ~8;
-                obj->header->flags &= ~1;
-                state->fade = 0;
-                state->active = 1;
-                state->phase = 4;
-                return;
-            }
-            if (phaseValue == 4) {
-                value = state->fade;
-                value += updateRate * 4;
-                if (value >= 255) {
-                    state->fade = 255;
-                    state->phase = 5;
-                    return;
-                }
-                state->fade = value;
-                return;
-            }
-            if (phaseValue == 5) {
-                obj->header->flags |= 1;
-                state->phase = 0;
-                state->active = 0;
-                state->done = 1;
-                ext_o0_5a914(obj, 12, -1, 0.0f);
-                state->spawned = 0;
+            state->fade = value;
+            return;
+        }
+        if (phase == 5) {
+            obj->header->flags |= 1;
+            state->phase = 0;
+            state->active = 0;
+            state->done = 1;
+            ext_o0_5a914(obj, 12, -1, 0.0f);
+            state->spawned = 0;
         }
     } else {
         phase = state->phase;
-        if (phase == 0) {
+        if (!phase) {
             return;
         }
-        phaseValue = *(volatile u8 *)&state->phase;
         if (phase == 1) {
-                ext_o7_ccc(obj, 0x13);
-                state->spawned = local_414(state->pathId, &sp3C);
-                state->pathId = local_c0(sp3C);
-                state->spawned->at10.flags |= 8;
-                state->phase = 2;
+            ext_o7_ccc(obj, 0x13);
+            state->spawned = local_414(state->pathId, &sp3C);
+            state->pathId = local_c0(sp3C);
+            state->spawned->at10.flags |= 8;
+            state->phase = 2;
+            return;
+        }
+        if (phase == 2) {
+            value = obj->alpha;
+            value -= updateRate * 4;
+            if (value <= 0) {
+                state->phase = 3;
                 return;
             }
-            if (phaseValue == 2) {
-                value = obj->alpha;
-                value -= updateRate * 4;
-                if (value <= 0) {
-                    state->phase = 3;
-                    return;
-                }
-                obj->alpha = value;
+            obj->alpha = value;
+            return;
+        }
+        if (phase == 3) {
+            spawned = state->spawned;
+            point = &((O1RouteNode *)spawned)->slots[state->selectorA = 3];
+            state->selectorB = 3;
+            state->selectorC = 0;
+            obj->x = point->x;
+            obj->y = spawned->y + 100.0f;
+            obj->z = point->z;
+            obj->rotY = ((O1RouteNode *)spawned)->angle + 0x4000;
+            obj->rotX = 0;
+            obj->rotZ = 0;
+            ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
+            ext_o0_1c6bc(obj, state);
+            state->flags &= ~8;
+            obj->header->flags &= ~1;
+            obj->alpha = 0;
+            state->active = 1;
+            state->phase = 4;
+            return;
+        }
+        if (phase == 4) {
+            value = obj->alpha;
+            value += updateRate * 4;
+            if (value >= 255) {
+                obj->alpha = 255;
+                state->phase = 5;
                 return;
             }
-            if (phaseValue == 3) {
-                spawned = state->spawned;
-                point = (u8 *)spawned + ((state->selectorA = 3) << 4);
-                state->selectorB = 3;
-                state->selectorC = 0;
-                point += 0x14;
-                obj->x = *(f32 *)point;
-                obj->y = spawned->y + 100.0f;
-                obj->z = *(f32 *)(point + 4);
-                obj->rotY = *(s16 *)((u8 *)spawned + 0xC) + 0x4000;
-                obj->rotX = 0;
-                obj->rotZ = 0;
-                ext_o0_1bed0(obj, obj->x, obj->y, obj->z, obj->rotY, obj->rotX, obj->rotZ);
-                ext_o0_1c6bc(obj, state);
-                state->flags &= ~8;
-                obj->header->flags &= ~1;
-                obj->alpha = 0;
-                state->active = 1;
-                state->phase = 4;
-                return;
-            }
-            if (phaseValue == 4) {
-                value = obj->alpha;
-                value += updateRate * 4;
-                if (value >= 255) {
-                    obj->alpha = 255;
-                    state->phase = 5;
-                    return;
-                }
-                obj->alpha = value;
-                return;
-            }
-            if (phaseValue == 5) {
-                obj->header->flags |= 1;
-                state->phase = 0;
-                state->active = 0;
-                state->done = 1;
-                ext_o0_5a914(obj, 12, -1, 0.0f);
-                state->spawned->at10.flags &= 0xFFF7;
-                state->spawned = 0;
+            obj->alpha = value;
+            return;
+        }
+        if (phase == 5) {
+            obj->header->flags |= 1;
+            state->phase = 0;
+            state->active = 0;
+            state->done = 1;
+            ext_o0_5a914(obj, 12, -1, 0.0f);
+            state->spawned->at10.flags &= 0xFFF7;
+            state->spawned = 0;
         }
     }
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F0003FD8_18503B8.s")
-#endif
 
 /* ---- overlay1UpdateObjectPhysics ---- */
 
@@ -1865,7 +1878,7 @@ typedef struct O1SelectWorld {
     O1SelectObject *selected;
 } O1SelectWorld;
 
-extern O1SelectObject **func_80005750(s32 *count);
+extern void **func_80005750(s32 *count);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 
 s32 overlay1ChooseModeObject(void) {
@@ -1875,7 +1888,7 @@ s32 overlay1ChooseModeObject(void) {
     s32 choiceCount;
     O1Selection *selection;
     O1SelectObject *choices[5];
-    O1SelectObject **objects;
+    void **objects;
 
     objects = func_80005750(&count);
     choiceCount = 0;
@@ -2151,7 +2164,7 @@ typedef struct Overlay1RangeConfig {
     u8 horizontalScale;
     u8 verticalScale;
     u8 mode;
-    u8 soundId;
+    u8 modeValue;
 } Overlay1RangeConfig;
 
 typedef struct Overlay1RangeState {
@@ -2175,10 +2188,14 @@ typedef struct Overlay1RangeObject {
     void *state;
 } Overlay1RangeObject;
 
+/* The four callees follow Mickey's runtime relocations and canonical ABIs.
+ * The final call initializes mode state with the config byte at offset 4.
+ * All call identities are authenticated; the two allocation words remain. */
+/* Retained for the separate nearby-pending reconstruction below. */
 extern Overlay1RangeObject **overlay1GetObjectListReloc(s32 *count);
-extern s32 overlay1GetAngleValueReloc(f32 dz, f32 dx);
-extern void overlay1ActivateObjectReloc(Overlay1RangeObject *object);
-extern void overlay1PlaySoundReloc(u8 soundId);
+extern s32 Arctanf(f32 dz, f32 dx);
+extern s32 overlay1ActivateObject(void *object);
+extern void overlay1InitializeModeState(s32 value);
 
 /* Plateau: exact 120 instructions, the 0x70 frame, and every allocator lane --
  * general pool 37/37, general temp 8/8, FP pool 7/7, FP temp 9/9 -- with two
@@ -2299,10 +2316,10 @@ extern void overlay1PlaySoundReloc(u8 soundId);
 void overlay1UpdateRangeFlags(Overlay1RangeObject *object, void *unused) {
     Overlay1RangeConfig *config;
     s32 count;
-    Overlay1RangeObject **objects;
+    void **objects;
 
     config = object->state;
-    objects = overlay1GetObjectListReloc(&count);
+    objects = func_80005750(&count);
     if (count--) {
         do {
             Overlay1RangeObject *other;
@@ -2320,7 +2337,7 @@ void overlay1UpdateRangeFlags(Overlay1RangeObject *object, void *unused) {
             rangeSquared = (f32)(s32)(((u32)config->horizontalScale * 10U) *
                                       ((u32)config->horizontalScale * 10U));
             if ((dx * dx + dz * dz) < rangeSquared) {
-                angle = overlay1GetAngleValueReloc(dz, dx);
+                angle = Arctanf(dz, dx);
                 angleHigh = config->angleHigh;
                 angle = (s16)((u32)angleHigh << 8) + angle;
                 if ((angle < -0x4000) || (angle >= 0x4001)) {
@@ -2343,8 +2360,8 @@ void overlay1UpdateRangeFlags(Overlay1RangeObject *object, void *unused) {
                                 masked = flags & 8;
                                 if (masked) {
                                     otherState->flags = flags & ~8;
-                                    overlay1ActivateObjectReloc(other);
-                                    overlay1PlaySoundReloc(config->soundId);
+                                    overlay1ActivateObject(other);
+                                    overlay1InitializeModeState(config->modeValue);
                                 }
                                 break;
                             }
@@ -2425,101 +2442,59 @@ typedef struct Overlay1NearbyObject {
     void *state;
 } Overlay1NearbyObject;
 
-/* Plateau: the exact 69-instruction extent, the 0x48 frame and now the exact
- * opcode schedule -- the verdict crossed structure-mismatch into
- * allocation-mismatch. Three things buy that and all three are needed: the
- * counter is `volatile`, so every read is its own load from sp+60 and every
- * write its own store, which is what the target does at all six sites; the
- * loop is `if (count--) { do ... while (count--); }`, which reads the counter
- * once for the test and the decrement (the previous record's finding that this
- * form costs an instruction holds only for a plain `s32`, where it needs an
- * extra copy); and the inner `object = objectArg` copy is gone, because
- * `volatile` costs eight bytes of frame and dropping that declaration is what
- * pays for it.
- *
- * The residual is 31 register-only words with one cause. uopt gives our
- * counter read a pool web, so it lands on v1 and `other`/`otherState` swap
- * colours behind it; the target spends a ugen ring temp (t6) at every counter
- * read and has six fewer pool webs -- pool lanes 16 against the target's 10,
- * ring lanes 4 against 10. Measured and flat, do not repeat: plain and
- * volatile counters crossed with five loop shapes; the counter reached through
- * `*(s32 *)&count`, `*(volatile s32 *)&count`, a plain `s32 *` local and a
- * `volatile s32 *` local; inlining `otherState`, inlining `other`, reversing
- * the kind comparison, reversing the two declarations, dropping the `state`
- * local, caching the list base, and an extra `mode` web ahead of the counter
- * read. Next lever is whatever stops uopt webbing that read.
- *
- * 2026-09-10: the single cause above is confirmed, the flag lattice is now
- * closed, and the web is narrowed from per-variable to per-load.
- *
- * The flag sweep had never been run on this function. It has been: 119
- * combinations, every one nonexact, and the project's own preset is the best
- * row. The residual is not a flag.
- *
- * The web is per-load, not per-variable. Splitting the counter across two
- * distinct union members -- one read by the head test, the other by the latch
- * -- is byte-flat at 31. So uopt is not unifying the head and latch reads into
- * a single web; it webs each volatile load of this stack local separately, and
- * they share a colour only because they do not interfere. Work aimed at
- * breaking that unification is wasted, because there is none.
- *
- * The residual restated as an allocation fact, which is the useful form: the
- * target spends its two lowest pool colours on `other` and `otherState`, which
- * leaves ugen's ring as the only home for the counter reads and starts that
- * ring at its first slot for the head read. The candidate spends the lower
- * colour on the head counter read instead, so `other` and `otherState` take
- * the same two colours in the opposite order and every ring value slides one
- * position. One extra pool web at the head explains all 31 words.
- *
- * Also measured and flat, do not repeat: `count` as int, long and unsigned;
- * casts and coercions around the decrement in the head, the latch, or both;
- * casts on the index read; the getter's argument cast; `while (count--)` and
- * `for (; count--; )`, which cfe rotates into exactly the same if/do-while, so
- * loop shape is not a lever here at all; reversing the kind comparison and the
- * mode comparison. Naming the loaded value in an explicit read-modify-write
- * pair costs two instructions in every read/write volatility combination.
- *
- * The next lever is unchanged but sharper: find what makes uopt reserve those
- * two pool colours for `other` and `otherState` across the whole function. A
- * matched precedent with the same counter idiom, overlay3ResetObjects, does
- * the opposite -- its head read takes a pool colour and only its latch read
- * takes a ring temp -- so IDO reaches both outcomes from the same source shape
- * and the difference lives in this function's loop-body variables, not in how
- * the counter is spelled. */
-#ifdef NON_MATCHING
-void overlay1ConsumeNearbyPending(void *objectArg, void *listArg) {
+/* Matched 2026-10-01 by dropping the inherited `volatile` counter. The target
+ * loads the counter into a scratch temp at the guard and at the latch and
+ * decrements from that temp; uopt does that only where it has not promoted
+ * the address-taken counter to a register for the block, and it declines to
+ * promote in any block that holds an indirect load. A `volatile` counter
+ * reloads too, but through a coloured cfe temporary, which was the whole
+ * 31-word residual. Three source facts reproduce the target instead:
+ *  - a plain `s32 count` and `while (count--)`;
+ *  - a load through a pointer stored to a local that is never read, once
+ *    between the getter and the loop and once at the end of the body. uopt
+ *    deletes both stores, but only after it has ruled the counter out for
+ *    those two blocks. Which field is read is not observable; the store
+ *    target is `pending`, because a further local would grow the frame.
+ *  - an empty test of `other`, which counts as one more reference and so
+ *    ties `other` with `otherState` for the first colour (the tie keeps
+ *    `other`); it emits nothing. */
+void overlay1ConsumeNearbyPending(Overlay1NearbyObject *object, void *unused) {
     Overlay1NearbyState *state;
     f32 radiusSquared;
-    volatile s32 count;
+    s32 count;
+    Overlay1NearbyObject **list;
     Overlay1NearbyObject *other;
     Overlay1OtherState *otherState;
-    state = ((Overlay1NearbyObject *)objectArg)->state;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    u8 pending;
+
+    state = object->state;
     radiusSquared = state->radius * 4.0f;
     radiusSquared *= state->radius * 4.0f;
-    listArg = overlay1GetObjectListReloc((s32 *)&count);
-    if (count--) {
-        do {
-            other = ((Overlay1NearbyObject **)listArg)[count];
-            otherState = other->state;
-            if (state->kind == otherState->kind) {
-                f32 dx = other->x - ((Overlay1NearbyObject *)objectArg)->x;
-                f32 dy = other->y - ((Overlay1NearbyObject *)objectArg)->y;
-                f32 dz = other->z - ((Overlay1NearbyObject *)objectArg)->z;
-                if (((dx * dx) + (dy * dy) + (dz * dz) < radiusSquared) &&
-                    (state->mode == 2)) {
-                    u8 pending = otherState->pending;
-                    if (pending) {
-                        otherState->pending = 0;
-                        otherState->count += pending;
-                    }
+    list = (Overlay1NearbyObject **)overlay1GetObjectListReloc(&count);
+    pending = state->mode;
+    while (count--) {
+        other = list[count];
+        if (other) {
+        }
+        otherState = other->state;
+        if (state->kind == otherState->kind) {
+            dx = other->x - object->x;
+            dy = other->y - object->y;
+            dz = other->z - object->z;
+            if (((dx * dx) + (dy * dy) + (dz * dz) < radiusSquared) && (state->mode == 2)) {
+                pending = otherState->pending;
+                if (pending) {
+                    otherState->pending = 0;
+                    otherState->count += pending;
                 }
             }
-        } while (count--);
+        }
+        pending = otherState->pending;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F0006A14_1852DF4.s")
-#endif
 
 /* ---- overlay1InitRange ---- */
 
@@ -3176,46 +3151,47 @@ typedef struct Overlay1Path {
 } Overlay1Path;
 
 /* Fresh pinned DKR v77/v80 and JFG scans found no Overlay 1 donor. */
-extern Overlay1Path *overlay1GetPathReloc(u8 selector);
+extern Overlay1Path *overlay1GetPathReloc(s32 selector);
 extern s32 overlay1AngleReloc(f32 y, f32 x);
 extern s32 overlay1AngleDifferenceReloc(s16 first, s16 second);
 extern f32 overlay1TrigXReloc(s32 angle);
 extern f32 overlay1TrigYReloc(s32 angle);
 
-/* Plateau: exact 107 instructions and 0x30 frame. `if (index) {}` is L100
- * weight that makes uopt spill the u8 parameter to its own incoming home
- * (sp+59) without a leftover identity op, so the first shift stays on t8 and
- * the residual is 19 rather than the leftover basin's 52. The store still
- * sits before the jal; the target puts it in the delay slot and the selector
- * mask three words earlier. `currentIndex = index` in the else reproduces the
- * target's copy from a2 at both sites but IDO hoists it and drops a word. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01 from a plain rewrite; four things closed the last 19:
+ *  - `if (index)` rather than `index != 0`. The boolean test reads the u8
+ *    parameter itself, so its promoted value is first needed inside the arms
+ *    and uopt materialises it once per arm (the target's two copies), and the
+ *    parameter keeps its incoming register across the first call with a byte
+ *    spill to its own home. No probe is needed for either.
+ *  - one index local `i` serves both the previous and the next point; the
+ *    separate currentIndex/previousIndex/nextIndex trio was the colour cycle.
+ *  - the previous and next addresses are written index-first
+ *    (`i + path->points`), the current one array-style.
+ *  - the path getter takes an int-width selector, so the call site adds no
+ *    mask of its own: as1 folds the argument copy into the entry narrowing,
+ *    which schedules the mask early and leaves the delay slot to the spill. */
 void overlay1BendPathPoint(s16 *x, s16 *y, u8 index, u8 selector) {
     Overlay1PathPoint *previous;
     Overlay1PathPoint *current;
     Overlay1Path *path;
     Overlay1PathPoint *next;
     s16 firstAngle, secondAngle, midpointAngle;
-    s32 nextIndex, previousIndex, currentIndex;
+    s32 i;
 
-    if (index) {}
     path = overlay1GetPathReloc(selector);
     current = &path->points[index];
-    if (index != 0) {
-        currentIndex = index;
-        previousIndex = index - 1;
+    if (index) {
+        i = index - 1;
     } else {
-        previousIndex = path->count;
-        previousIndex--;
-        currentIndex = 0;
+        i = path->count - 1;
     }
-    previous = &path->points[previousIndex];
-    if (currentIndex >= path->count) {
-        nextIndex = 0;
+    previous = i + path->points;
+    if (index >= path->count) {
+        i = 0;
     } else {
-        nextIndex = currentIndex + 1;
+        i = index + 1;
     }
-    next = &path->points[nextIndex];
+    next = i + path->points;
     firstAngle = (s16)(overlay1AngleReloc((f32)(current->y - previous->y),
                                          (f32)(current->x - previous->x)) -
                        0x8000);
@@ -3227,9 +3203,6 @@ void overlay1BendPathPoint(s16 *x, s16 *y, u8 index, u8 selector) {
     *x = (s16)((f32)*x - overlay1TrigXReloc(midpointAngle) * 50.0f);
     *y = (s16)((f32)*y - overlay1TrigYReloc(midpointAngle) * 50.0f);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F0007730_1853B10.s")
-#endif
 
 /* ---- overlay1AdvancePath ---- */
 
@@ -3253,10 +3226,6 @@ typedef struct Overlay1TraceResult {
     s32 changed;
 } Overlay1TraceResult;
 
-extern s32 overlay2TracePath(f32 x, f32 y, f32 anchorX, f32 anchorY,
-                             void *arg5, Overlay1TraceResult *result,
-                             u8 primary, u8 secondary);
-extern Overlay1PathEntry *overlay1GetEntry(u16 index);
 extern void *overlay1CloneRecord(u32 *source);
 extern void overlay1AppendPathPoint(Overlay1PathState *state, s16 x, s16 y,
                                     u8 primary, u8 secondary);
@@ -3266,79 +3235,92 @@ extern s32 gOverlay1PoolExhausted;
 
 /* DKR v77/v80, JFG, and the five-reference skeleton scan found no credible
  * donor for this bounded path advance. */
-/* NON_MATCHING: array views remove the inherited redundant endpoint load
- * without changing the callee ABI. Size, frame and instruction sequence now
- * agree; register draws and comparison carriers remain nonexact. */
-#ifdef NON_MATCHING
-s32 overlay1AdvancePath(Overlay1PathState *state) {
+/* The count byte and the two mode bits are one 16-bit bit-field unit. Only
+ * this function needs that view: the target reads the two bits through the
+ * halfword and writes them through the low byte, which is what IDO emits for
+ * a narrow field of a `u16` unit. */
+typedef struct Overlay1PathBits {
+    s16 x[32];
+    s16 y[32];
+    u8 primary[32];
+    u8 secondary[32];
+    u16 count : 8;
+    u16 unusedC1 : 6;
+    u16 mode : 2;
+} Overlay1PathBits;
+
+/* The trace call into overlay 2 and the same-module entry getter are SYMBOL
+ * relocation records (stored word `jal 0`), so both go through placeholders
+ * that `gmake overlay-syms` values; the append and clone calls are JUMP
+ * records and name the in-module definitions. */
+extern s32 overlay1TracePathReloc(f32 x, f32 y, f32 anchorX, f32 anchorY,
+                                  void *arg5, Overlay1TraceResult *result,
+                                  u8 primary, u8 secondary);
+extern Overlay1PathEntry *overlay1PathEntryReloc(u16 index);
+
+/* Matched 2026-10-01: 81 to 0 by declaring the bit-field instead of spelling
+ * its masks by hand. `state->mode &= 1` and `|= 2` draw the scratch temps the
+ * hand-written `(flags & ~3) | (halfword & 1)` form never drew, which was the
+ * ring rotation behind most of the residual. The result is a plain struct,
+ * the narrow primary arguments are casts of its fields, and the two branch
+ * tests compare `base` first. */
+s32 overlay1AdvancePath(Overlay1PathBits *state) {
     s16 currentX;
     s16 currentY;
     Overlay1PathEntry *entry;
-    union {
-        Overlay1TraceResult fields;
-        s16 coordinates[8];
-        u16 values[8];
-        s32 words[4];
-    } result;
-    Overlay1PathState *child;
-    u8 count;
+    Overlay1TraceResult result;
+    Overlay1PathBits *child;
+    s32 count;
 
     count = state->count;
     currentX = state->x[count];
     currentY = state->y[count];
-
-    state->flags = (state->flags & ~3) |
-                   (*(u16 *)&state->count & 1);
+    state->mode &= 1;
     if (count >= 31) {
         return 1;
     }
 
-    if (!overlay2TracePath((f32)currentX, (f32)currentY,
-                           (f32)overlay1AnchorX, (f32)overlay1AnchorY,
-                           (void *)gOverlay1SubmitArg5, &result.fields,
-                           state->primary[count], state->secondary[count]) ||
-        ((result.coordinates[0] == overlay1AnchorX) && (result.coordinates[1] == overlay1AnchorY))) {
-        overlay1AppendPathPoint(state, overlay1AnchorX, overlay1AnchorY, 0xFF, 0);
+    if (!overlay1TracePathReloc((f32)currentX, (f32)currentY,
+                                (f32)overlay1AnchorX, (f32)overlay1AnchorY,
+                                (void *)gOverlay1SubmitArg5, &result,
+                                state->primary[count], state->secondary[count]) ||
+        ((result.x == overlay1AnchorX) && (result.y == overlay1AnchorY))) {
+        overlay1AppendPathPoint((Overlay1PathState *)state, overlay1AnchorX, overlay1AnchorY, 0xFF, 0);
         return 1;
     }
 
-    entry = overlay1GetEntry(result.values[5]);
-    if ((currentX != result.coordinates[0]) || (currentY != result.coordinates[1])) {
-        overlay1AppendPathPoint(state, result.coordinates[0], result.coordinates[1],
-                                *((u8 *)&result + 5), result.values[5]);
-        if (result.words[3] != 0) {
-            state->flags = (state->flags & ~3) |
-                           ((*(u16 *)&state->count | 2) & 3);
+    entry = overlay1PathEntryReloc(result.secondary);
+    if ((currentX != result.x) || (currentY != result.y)) {
+        overlay1AppendPathPoint((Overlay1PathState *)state, result.x, result.y,
+                                (u8)result.base, result.secondary);
+        if (result.changed != 0) {
+            state->mode |= 2;
         }
     }
 
-    if ((result.values[3] != result.values[2]) && (gOverlay1PoolExhausted == 0)) {
+    if ((result.base != result.first) && (gOverlay1PoolExhausted == 0)) {
         child = overlay1CloneRecord((u32 *)state);
         if (child != NULL) {
-            overlay1AppendPathPoint(child, entry->points[result.values[3]].x,
-                                    entry->points[result.values[3]].y,
-                                    *((u8 *)&result + 7), result.values[5]);
-            child->flags = (child->flags & ~3) |
-                           ((*(u16 *)&child->count | 2) & 3);
+            overlay1AppendPathPoint((Overlay1PathState *)child,
+                                    entry->points[result.first].x,
+                                    entry->points[result.first].y,
+                                    (u8)result.first, result.secondary);
+            child->mode |= 2;
         }
     }
 
-    if ((result.values[4] != result.values[2]) && (gOverlay1PoolExhausted == 0)) {
+    if ((result.base != result.second) && (gOverlay1PoolExhausted == 0)) {
         child = overlay1CloneRecord((u32 *)state);
         if (child != NULL) {
-            overlay1AppendPathPoint(child, entry->points[result.values[4]].x,
-                                    entry->points[result.values[4]].y,
-                                    *((u8 *)&result + 9), result.values[5]);
-            child->flags = (child->flags & ~3) |
-                           ((*(u16 *)&child->count | 2) & 3);
+            overlay1AppendPathPoint((Overlay1PathState *)child,
+                                    entry->points[result.second].x,
+                                    entry->points[result.second].y,
+                                    (u8)result.second, result.secondary);
+            child->mode |= 2;
         }
     }
     return 1;
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F00078DC_1853CBC.s")
-#endif
 
 /* ---- overlay1FindBestRecord ---- */
 
@@ -3382,44 +3364,14 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 
 
-/* PLATEAU-HANDOFF:overlay1ConsumeNearbyPending:start
- * symbol: overlay1ConsumeNearbyPending
- * score: 31/69 words
- * frame: 0x18
- * relocations: 9
- * first-mismatch: +0x40
- * summary: 23-draw census retains counter read-modify-write web blocker; no admissible route below 31.
- * PLATEAU-HANDOFF:overlay1ConsumeNearbyPending:end
- */
-
 /* PLATEAU-HANDOFF:overlay1UpdateRangeFlags:start
  * symbol: overlay1UpdateRangeFlags
  * score: 2/120 words
  * frame: 0x70
  * relocations: 4
  * first-mismatch: +0x190
- * summary: L145 on dx/dz keeps the t5/t4 pair. Inlining one square is 4 (same 33 draws). Floor remains 2.
+ * summary: Four canonical callee identities and ABIs authenticated without resolver changes; exact extent/frame, two allocation words remain. Prior source levers stay closed.
  * PLATEAU-HANDOFF:overlay1UpdateRangeFlags:end
- */
-
-/* PLATEAU-HANDOFF:overlay1AdvancePath:start
- * symbol: overlay1AdvancePath
- * score: 81/162 words
- * frame: 0x58
- * relocations: 22
- * first-mismatch: +0x10
- * summary: Proc-36 58-draw census confirms initial draw deficit and mixed later allocation residual; baseline retained.
- * PLATEAU-HANDOFF:overlay1AdvancePath:end
- */
-
-/* PLATEAU-HANDOFF:overlay1TransitionState:start
- * symbol: overlay1TransitionState
- * score: 16/237 words
- * frame: 0x50
- * relocations: 13
- * first-mismatch: +0x34
- * summary: Volatile phase re-read on the line between the zero and one tests yields beql, 30 to 16. Stall: the pair's slot stays lbu not or. Copy position, or-zero, and swapped compares do not beat 16.
- * PLATEAU-HANDOFF:overlay1TransitionState:end
  */
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
@@ -3441,14 +3393,4 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
  * first-mismatch: +0x58
  * summary: Delta +4 closed and frame ladder exact, 341 to 139 at delta 0; the rest is naming led by the transition weight's f0 split.
  * PLATEAU-HANDOFF:func_overlay_001_F0003750_184FB30:end
- */
-
-/* PLATEAU-HANDOFF:overlay1BendPathPoint:start
- * symbol: overlay1BendPathPoint
- * score: 19/107 words
- * frame: 0x30
- * relocations: 6
- * first-mismatch: +0x10
- * summary: Empty-if L100 spills index to parameter home; jal delay still holds the selector mask, and currentIndex still refuses v1.
- * PLATEAU-HANDOFF:overlay1BendPathPoint:end
  */

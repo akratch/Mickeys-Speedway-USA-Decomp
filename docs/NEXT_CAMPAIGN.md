@@ -115,7 +115,6 @@ other delta-0 dispatch until a lane reports a new mechanism.
 
 - `overlay57UpdateModeState`: floor of 2, barred (`config/unassignable-symbols.us.json`).
 - The 14 colour-exhausted functions in `docs/forced-floor-census.md`, in a colour lane. A structural lane may take one only with a named reason the handoff does not already refute.
-- `func_8005ABA8`: the residual is an as1 branch-likely conversion with no C spelling.
 - `overlay1UpdateRangeFlags` and the rest of the overlay-1 tail: one file, one owner, and that owner is not a Track B lane.
 - Any function whose census row says `owned: no` as a first target. The three (`func_800133FC`, `func_8001EC44`, `func_overlay_001_F000438C_185076C`) each carry one unowned word; take them second, after a sibling in the same TU has taught the lane the file.
 

@@ -1279,24 +1279,19 @@ s32 func_80036544(u8 *arg0, s32 *arg1, s32 arg2, f32 *arg3, s32 arg4) {
     *arg3 = var_f0;
     return var_a3;
 }
-
-void func_800367A4(u8 *arg0, s32 *arg1, s32 arg2, f32 *arg3, s32 arg4) {
-    volatile s64 frame_pad[2];
-    u8 *sp20;
-    u8 **sp34;
-    u8 sp24;
-
-    sp20 = arg0;
-    sp34 = &sp20;
-    sp24 = (u8)((s32)TEXTURE_FIELD(arg0, u16 *, 0x10) >> 8);
-    func_80036544(&sp24, arg1, arg2, arg3, arg4);
-    (void)sp34;
-    (void)frame_pad;
-}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/textures_354C8/func_80036544.s")
-#pragma GLOBAL_ASM("asm/nonmatchings/main/textures_354C8/func_800367A4.s")
 #endif
+
+void func_800367A4(u8 *arg0, s32 *arg1, s32 arg2, f32 *arg3, s32 arg4) {
+    Sprite sprite;
+    TextureFrameHeader *texture;
+
+    texture = (TextureFrameHeader *)arg0;
+    sprite.textures = &texture;
+    sprite.numberOfFrames = (u8)(texture->numOfTextures >> 8);
+    func_80036544((u8 *)&sprite, arg1, arg2, arg3, arg4);
+}
 
 /* JFG's texAnimateTexture body, with Mickey's four-bit flag relocation and
  * random-number entry point retained as local target-specific evidence. */

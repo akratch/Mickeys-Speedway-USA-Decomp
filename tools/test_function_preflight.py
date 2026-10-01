@@ -1275,6 +1275,39 @@ class GeometryAndWorkbenchSummaryTests(unittest.TestCase):
         self.assertEqual(report["first_mismatch"], "+0x8")
         self.assertNotIn("diff_sites", report)
 
+    def test_workbench_failure_keeps_bounded_stderr_but_not_stdout(self) -> None:
+        resolution = fp.Resolution(
+            "friendly",
+            "generated",
+            "friendly",
+            Path("src/example.c"),
+            "example",
+            "build_non_matching",
+            Path("build_non_matching/src/example.c.o"),
+            Path("asm/generated.s"),
+            "guarded",
+        )
+        completed = subprocess.CompletedProcess(
+            [],
+            2,
+            stdout="ROM-derived score payload must not leak",
+            stderr=("x" * 2000) + "\nunderlying wb refusal",
+        )
+        with mock.patch.object(fp, "_run", return_value=completed):
+            with self.assertRaises(fp.PreflightError) as raised:
+                fp._workbench(resolution)
+
+        message = str(raised.exception)
+        self.assertIn("wb_compare failed with exit 2", message)
+        self.assertIn("underlying wb refusal", message)
+        self.assertNotIn("ROM-derived score payload", message)
+        self.assertLessEqual(len(message), 64 + fp.WB_FAILURE_STDERR_MAX_CHARS)
+
+        completed = subprocess.CompletedProcess([], 2, stdout="", stderr="")
+        with mock.patch.object(fp, "_run", return_value=completed):
+            with self.assertRaisesRegex(fp.PreflightError, "wb_compare failed with exit 2$"):
+                fp._workbench(resolution)
+
     def test_promoted_workbench_uses_friendly_symbol_and_rom_oracle(self) -> None:
         resolution = fp.Resolution(
             "generated",

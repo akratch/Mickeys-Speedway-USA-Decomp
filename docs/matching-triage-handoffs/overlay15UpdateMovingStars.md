@@ -2,11 +2,34 @@
 ### `overlay15UpdateMovingStars` plateau handoff
 
 - source: `src/overlays/o015/overlay_015.c`
-- score: 84/103 words
+- score: 0/103 words, promoted
 - frame: 0x58
-- relocations: 46
-- first mismatch: +0x30
-- summary: Inlining the trailing rate conversion removes only a location emission; 27 draws and the plus-28-byte address deficit remain.
+- relocations: 39
+- first mismatch: none
+- summary: Matched. The rain field is a locally-defined static struct reached through a pointer taken at entry; all uses sit behind the camera call, so every access is direct and shares high halves.
+
+#### 2026-10-01, lane b-o101: matched on the overlay15MoveStars form
+
+Promoted at 103 of 103 words, delta 0, frame 0x58, 39 of 39 relocations.
+Before: 84 masked words and 28 bytes long.
+
+The 28-byte deficit was seven extra high halves from the scalar-symbol
+candidate. With the rain field defined in this unit as a static struct (bounds
+at 0x50, movement at 0x80, previous camera at 0x8C, colours at 0x98) and
+reached through a pointer local, every use sits behind the camera call, so
+uopt forwards the address into each access rather than keeping a base
+register; the accesses are direct, and as1 shares one high half per aligned
+pair of them, which is the shipped shape. The pointer is declared last so
+deltaZ keeps its spill home; declared first it moves the frame 0x10 and costs
+13 words. The three position products are written in x, y, z order (the old
+x, z, y order was 2 words). Two plain blend statements score the same as the
+nested assignment.
+
+The section-relative records are dropped in mk/overlays.mk with
+filter_elf_relocations.py, as for overlay15MoveStars.
+
+Gates: gmake verify, check-overlay-syms and promotion-proof pass.
+
 
 #### 2026-09-13, lane l1: measured schedule controls
 

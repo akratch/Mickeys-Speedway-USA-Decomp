@@ -693,8 +693,15 @@ segments:
       # tables, plus the ROM's one zero pad word before the next float table.
       - [0x83334, .rodata, main/menu]
       - [0x83430, rodata]
-      # func_80040740's switch table.
+      # func_80040740's switch table, then func_80040B88's two float literals
+      # and one word of the object's own section padding.
       - [0x83658, .rodata, main/particles]
+      # Two zero words of output padding. The particles rodata input section
+      # really starts 16-aligned inside the 0x83430 blob (its strings and four
+      # earlier float literals are still held there as data), so this partial
+      # carve begins 8 bytes off that alignment and the object's own padding
+      # stops at 0x83678.
+      - [0x83678, rodata]
       # Diprint owns the formatter alphabets, strings, and compiler-generated
       # switch tables through the measured 0x838F0 boundary.
       - [0x83680, .rodata, main/diprint]
@@ -741,6 +748,9 @@ segments:
       - [0x85700, rodata]
       # BSS is zero-filled by the entrypoint; no ROM bytes back it.
       - { start: 0x86640, type: bss, vram: 0x80085A40 }
+      # Shared gravity: resident and overlay memory uses prove this four-byte scalar.
+      - { type: .bss, vram: 0x800CB304, name: main/charControl }
+      - { type: bss, vram: 0x800CB308, name: bss_gap_D800CB308 }
       # The joy controller-state globals own this contiguous BSS block; the
       # reset loop only recovers the target address materialization here.
       - { type: .bss, vram: 0x800CF3B0, name: main/joy }
@@ -1000,7 +1010,7 @@ segments:
     vram: 0xF0000000
     bss_size: 0x20
     align: 0x8
-    subalign: 0x1
+    subalign: 0x4
     dir: overlays/o008
     exclusive_ram_id: overlay_modules
     symbol_name_format: $SEG_$VRAM_$ROM
@@ -1008,6 +1018,10 @@ segments:
       - [0x185DD58, c, overlay_008]
       - [0x1862E80, asm, overlay_008_padding]
       - [0x1862E88, bin, overlay_008_data_rodata]
+      - [0x1863268, .data, overlay8EffectTables]
+      - [0x18633A8, bin, overlay_008_data_rodata_520]
+      - [0x1865200, .data, overlay8MotionConstants]
+      - [0x18652A0, bin, overlay_008_data_rodata_2418]
       - [0x18653B8, bin, overlay_008_reloc1]
       - [0x18658F0, bin, overlay_008_reloc2]
 

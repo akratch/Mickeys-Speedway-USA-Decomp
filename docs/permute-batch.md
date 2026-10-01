@@ -95,6 +95,27 @@ the entire guard would delete sibling functions; such promotion needs a
 reviewed per-function source edit and all ordinary proofs. Discovery never
 renews an exhausted target's authorization.
 
+### Isolated section-metadata recipes
+
+A TU postprocess recipe can name a section alias that is absent from the
+per-function imported object. The runner may omit only an `--add-symbol`
+metadata alias for that absent section, and only after the current configured
+full-TU object proves every reference belongs to other uniquely owned
+functions. It refuses incomplete or overlapping function ranges, unresolved
+alias references in the candidate closure, relocation sites outside the
+isolated `.text` function closure, and full-TU alias references from any
+unsupported relocation section. It also refuses direct section-symbol
+relocations (including implicit addends) in the target. The candidate's
+executable function bytes and exact relocation identities must also reproduce
+the current `NON_MATCHING=1` full-TU C baseline; only linker-owned relocation
+fields are normalized for that comparison.
+
+The original recipe remains intact. Each run receipt pins the original recipe,
+the effective metadata-only variant, full-TU owner map, and baseline
+self-context proof. Other aliases in the same command remain only when their
+full-TU owners are proved outside the target. This does not discard section
+data, relocate symbols, or change compiler flags.
+
 ## Usage
 
 ```sh
@@ -454,8 +475,19 @@ created from the pinned integration commit; an existing lane only fast-forwards.
 These checks assume the operator exclusively owns the named lane; they are not
 a lock against a separate actor checking out another branch concurrently.
 
-Both modes extract, warm-build and verify the base before searching. Only
-promotion mode performs the final extraction/build/progress pass. Existing
+Both modes extract the base and generate overlay relocation aliases. On a cold
+lane, the first full build materializes resident objects used by the alias
+generator's resident-name census. The surface is then regenerated against that
+complete inventory. If the first link fails, the wrapper retries generation
+only when the captured log has the diagnosed resident `R_MIPS_26` link failure
+and every reported symbol changes from a value assignment to an
+overlay-qualified `*_oNNNReloc` alias. The pre-retry log is retained; unrelated
+compiler/link failures, unchanged or unrelated surface changes, and failed
+authoritative builds stop before any search. The final build and ROM
+verification must pass before searching. Regenerating aliases after extraction
+is required because splat rewrites the generated surface. Only promotion mode
+repeats the normal extract/generate/build/verify sequence before its progress
+pass. Existing
 resource defaults remain two searches, four permuter threads each, a
 20-minute search plus optional 20-minute descending extension, a
 six-minute flat stop, a 120-minute whole-batch cap and load threshold 13.

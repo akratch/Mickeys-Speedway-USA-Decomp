@@ -2,11 +2,11 @@
 ### `overlay1ConsumeNearbyPending` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_tail.c`
-- score: 31/69 words
-- frame: 0x18
-- relocations: 9
-- first mismatch: +0x40
-- summary: 23-draw census retains counter read-modify-write web blocker; no admissible route below 31.
+- score: 0/69 words, promoted
+- frame: 0x48
+- relocations: 1
+- first mismatch: none
+- summary: Matched. Plain counter in a while loop, a never-read store of a pointer load before the loop and at the end of the body, and an empty test of the element pointer.
 
 #### tu2-o1tail: the countdown form is settled and is not the residual
 
@@ -137,4 +137,62 @@ declared `u32`; and the declaration moved to the head and the tail of the list
 `otherState` local at each of its four uses, in all fifteen non-empty subsets,
 runs 49 to 63 -- it shifts the reference where L100 wants it but costs the
 common subexpression.
+
+#### 2026-10-01, lane a-o001: ROM-exact closure, 31 to 0
+
+The decision variable the p8 record named -- what stops the counter's
+read-modify-write value being a coloured web -- has an answer, and it is not
+in how the counter is spelled.
+
+Read off `cc -S` on mini translation units: for a plain address-taken counter
+ugen emits load, copy of the old value, decrement, store, branch on the copy.
+as1 then deletes the copy by renaming. Whether the load and the decrement sit
+in pool registers or scratch temps depends on whether uopt promoted the
+counter to a register for that block, and it does not promote in a block that
+holds an indirect load or an indirect store. That is why the matched overlay 3
+precedent has a scratch latch (its latch block is the loop body) and a pooled
+guard. The target has scratch temps at both sites, and its latch is a join
+block holding nothing but the countdown.
+
+A load through a pointer whose value is stored to a local that is never read
+leaves no instruction, yet it still rules the counter out for its block: uopt
+removes the dead store after the candidacy decision. Measured on mini units:
+a discarded expression statement, an empty `if` on the loaded value, a dead
+store of a constant, of a pointer value, or of a global do not do it; a dead
+store of an indirect load does, both after the call and at the loop tail.
+
+The `volatile` counter was standing in for this. It reloads at every site too,
+but cfe routes the old value through a temporary that globalcolor colours, one
+pool web more and one scratch draw fewer than the target at each site, which
+was the whole 31.
+
+Steps, each measured on the configured TU at delta 0:
+
+- plain counter, `while (count--)`, dead stores of `state->mode` after the
+  getter and of `otherState->pending` at the end of the body: 31 to 12, with
+  every scratch register and the frame exact. Which field is loaded is inert
+  (seven guard fields and eight tail fields measured). A dedicated dead local
+  beside a local list pointer makes the frame 0x50; storing into `pending`
+  keeps 0x48.
+- the remaining 12 were the `other` and `otherState` colours, the save tie
+  the p8 record priced. An empty `if (other) { }` after the element load is
+  one more counted reference at no instruction: 12 to 0. An or-with-zero
+  probe, a self assignment and a dead tail read of `other` are not counted on
+  this shape (all 12).
+
+Not the cause, measured on this base: a 640-cell product over signature
+typing, list local or parameter, declaration scope of the deltas and of
+`pending`, four radius spellings and five loop forms floors at 31 without the
+dead loads; aggregate and type-punned counters (one- and two-element arrays,
+struct and union members, a pointer local, u32) all promote exactly as the
+plain counter does.
+
+The same mechanism should apply to `overlay1AdvanceGauge`-shaped residuals
+wherever a target holds an address-taken counter in scratch temps inside a
+block with no visible indirect access.
+
+`gmake verify` printed the expected SHA1; `check-overlay-syms` and
+`promotion-proof` passed (69 words, 1 of 1 relocations). Siblings in the TU
+re-scored unchanged.
+
 <!-- plateau-handoff:overlay1ConsumeNearbyPending:end -->

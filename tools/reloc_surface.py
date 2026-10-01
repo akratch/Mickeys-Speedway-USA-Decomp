@@ -2517,123 +2517,8 @@ def _validate_explicit_bss_member(group, binding, numeric_value, source_text):
 
 
 def _explicit_storage_registry_groups(registry):
-    if (not isinstance(registry, dict)
-            or set(registry) != {"schema_version", "groups"}
-            or type(registry.get("schema_version")) is not int
-            or registry.get("schema_version") != 1
-            or not isinstance(registry.get("groups"), list)):
-        raise SurfaceComparisonError("invalid explicit overlay-storage registry schema")
-    groups, ids, aliases = [], set(), set()
-    common_keys = {"id", "kind", "overlay", "candidate_sources", "owner_source",
-                   "owner_source_sha256", "owner_section", "section_size",
-                   "original_namespace", "original_base", "bindings"}
-    for raw_group in registry["groups"]:
-        if not isinstance(raw_group, dict):
-            raise SurfaceComparisonError("invalid explicit overlay-storage group schema")
-        group = dict(raw_group)
-        if group.get("kind") == "overlay-local-bss-fields":
-            group_keys = common_keys | {"owner_symbol", "owner_size", "struct_type"}
-            binding_keys = {"candidate", "addend", "member", "type", "width", "member_offset"}
-        elif group.get("kind") == "overlay-local-data-scalars":
-            group_keys = common_keys | {"owner_symbols"}
-            binding_keys = {"candidate", "addend", "owner_symbol", "owner_offset", "type", "width"}
-        else:
-            raise SurfaceComparisonError("unsupported explicit overlay-storage group kind")
-        if set(group) != group_keys:
-            raise SurfaceComparisonError("invalid explicit overlay-storage group schema")
-        if (not isinstance(group["id"], str) or not group["id"] or group["id"] in ids
-                or type(group["overlay"]) is not int
-                or not 1 <= group["overlay"] <= ot.HEADER_COUNT
-                or group["original_namespace"] != "overlay-local"):
-            raise SurfaceComparisonError("invalid explicit overlay-storage group identity")
-        ids.add(group["id"])
-        if (not isinstance(group["candidate_sources"], list)
-                or not group["candidate_sources"]
-                or (group["kind"] == "overlay-local-bss-fields"
-                    and group["owner_source"] not in group["candidate_sources"])):
-            raise SurfaceComparisonError("invalid explicit storage source allowlist")
-        owner_relative = Path(group["owner_source"]) if isinstance(group["owner_source"], str) else None
-        if (owner_relative is None or owner_relative.is_absolute()
-                or ".." in owner_relative.parts or not group["owner_source"]):
-            raise SurfaceComparisonError("invalid explicit owner source path")
-        for source in group["candidate_sources"]:
-            relative = Path(source) if isinstance(source, str) else None
-            if (relative is None or relative.is_absolute() or ".." in relative.parts
-                    or not source):
-                raise SurfaceComparisonError("invalid explicit candidate source path")
-        if (not isinstance(group["owner_source_sha256"], str)
-                or not re.fullmatch(r"[0-9a-f]{64}", group["owner_source_sha256"])):
-            raise SurfaceComparisonError("invalid explicit storage source pin")
-        group["_section_size"] = _storage_hex(group["section_size"], "BSS section size")
-        group["_original_base"] = _storage_hex(group["original_base"], "original BSS base")
-        if group["kind"] == "overlay-local-bss-fields":
-            if (not isinstance(group["owner_symbol"], str)
-                    or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", group["owner_symbol"])
-                    or group["owner_section"] != ".bss"
-                    or not isinstance(group["struct_type"], str)
-                    or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", group["struct_type"])):
-                raise SurfaceComparisonError("invalid explicit typed BSS owner")
-            group["_owner_size"] = _storage_hex(group["owner_size"], "typed owner size")
-            if group["_owner_size"] <= 0 or group["_section_size"] < group["_owner_size"]:
-                raise SurfaceComparisonError("typed owner extent exceeds its original BSS section")
-        else:
-            owners = group["owner_symbols"]
-            if (group["owner_section"] != ".data" or not isinstance(owners, list)
-                    or not owners
-                    or any(not isinstance(name, str) or not re.fullmatch(
-                        r"[A-Za-z_][A-Za-z0-9_]*", name) for name in owners)
-                    or len(set(owners)) != len(owners)):
-                raise SurfaceComparisonError("invalid explicit typed data owner list")
-            if (group["overlay"] != 8 or len(owners) != 40
-                    or group["_section_size"] != 0xA0
-                    or group["_original_base"] != 0x73B0):
-                raise SurfaceComparisonError("unsupported reviewed Overlay 8 scalar storage extent")
-            group["_owner_symbols"] = set(owners)
-            group["_candidate_bias"] = 0xF8
-        if not isinstance(group["bindings"], list) or not group["bindings"]:
-            raise SurfaceComparisonError("explicit BSS group has no member bindings")
-        copied_bindings = []
-        for raw_binding in group["bindings"]:
-            if not isinstance(raw_binding, dict) or set(raw_binding) != binding_keys:
-                raise SurfaceComparisonError("invalid explicit BSS member binding schema")
-            binding = dict(raw_binding)
-            name = binding["candidate"]
-            if (not isinstance(name, str) or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name)
-                    or (group["overlay"], name) in aliases):
-                raise SurfaceComparisonError("duplicate or invalid explicit BSS candidate name")
-            aliases.add((group["overlay"], name))
-            binding["_addend"] = _storage_hex(binding["addend"], "candidate BSS addend")
-            if group["kind"] == "overlay-local-bss-fields":
-                for field in ("member", "type"):
-                    if not isinstance(binding[field], str) or not re.fullmatch(
-                            r"[A-Za-z_][A-Za-z0-9_]*", binding[field]):
-                        raise SurfaceComparisonError("invalid explicit BSS member identity")
-                binding["_width"] = _storage_hex(binding["width"], "typed BSS member width")
-                binding["_member_offset"] = _storage_hex(
-                    binding["member_offset"], "typed BSS member offset")
-            else:
-                if (not isinstance(binding["owner_symbol"], str)
-                        or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", binding["owner_symbol"])
-                        or binding["owner_symbol"] not in group["_owner_symbols"]
-                        or not isinstance(binding["type"], str)
-                        or binding["type"] != "f32"):
-                    raise SurfaceComparisonError("invalid explicit scalar owner binding")
-                binding["_width"] = _storage_hex(binding["width"], "typed data width")
-                binding["_owner_offset"] = _storage_hex(binding["owner_offset"], "typed data owner offset")
-                if (binding["_width"] != 4 or binding["_owner_offset"] % 4
-                        or binding["_owner_offset"] >= group["_section_size"]
-                        or binding["_addend"] != group["_candidate_bias"] + binding["_owner_offset"]):
-                    raise SurfaceComparisonError("unsupported typed scalar layout")
-            copied_bindings.append(binding)
-        if group["kind"] == "overlay-local-data-scalars":
-            if ({binding["owner_symbol"] for binding in copied_bindings}
-                    != group["_owner_symbols"]
-                    or {binding["_owner_offset"] for binding in copied_bindings}
-                    != set(range(0, group["_section_size"], 4))):
-                raise SurfaceComparisonError("explicit scalar bindings do not cover the exact owner extent")
-        group["bindings"] = copied_bindings
-        groups.append(group)
-    return groups
+    return storage_types.parse_explicit_storage_registry(
+        registry, SurfaceComparisonError, ot.HEADER_COUNT)
 
 
 def _load_explicit_overlay_storage_registry(root):
@@ -2715,7 +2600,8 @@ def _capture_explicit_storage_group(root, group, registry_path, registry_sha256)
     deadline = time.monotonic() + 180
     sections = [group["owner_section"]]
     owner_names = (set(group["owner_symbols"])
-                   if group["kind"] == "overlay-local-data-scalars"
+                   if group["kind"] in ("overlay-local-data-scalars",
+                                         "overlay-local-data-arrays")
                    else {group["owner_symbol"]})
     modes = []
     for nonmatching in (False, True):
@@ -2793,19 +2679,27 @@ def _capture_explicit_storage_group(root, group, registry_path, registry_sha256)
         (directory / (row["label"] + ".compile.log")).write_text(output.stdout)
         _explicit_storage_fidelity(Elf(raw_path), Elf(row["target"]), sections, owner_names)
         configured_elf = Elf(row["target"])
-        if (group["kind"] == "overlay-local-data-scalars"
+        if (group["kind"] in ("overlay-local-data-scalars",
+                               "overlay-local-data-arrays")
                 and (Elf(raw_path).relocations(r"\.data")
                      or configured_elf.relocations(r"\.data"))):
-            raise SurfaceComparisonError("typed scalar owner data contains unsupported relocations")
+            raise SurfaceComparisonError("typed data owner contains unsupported relocations")
         index, header = configured_elf.section(group["owner_section"])
         symbol_rows = [symbol for symbol in configured_elf.symbols()
                        if symbol[0] in owner_names and symbol[4] == index]
-        if group["kind"] == "overlay-local-data-scalars":
+        if group["kind"] in ("overlay-local-data-scalars",
+                              "overlay-local-data-arrays"):
             if len(symbol_rows) != len(owner_names):
                 raise SurfaceComparisonError("explicit typed data owner symbol set is incomplete")
-            if any(row[2] != 4 or row[1] % 4 or row[3] & 0xF != STT_OBJECT
-                   for row in symbol_rows):
-                raise SurfaceComparisonError("explicit typed data owner symbol layout differs")
+            if group["kind"] == "overlay-local-data-scalars":
+                if any(row[2] != 4 or row[1] % 4 or row[3] & 0xF != STT_OBJECT
+                       for row in symbol_rows):
+                    raise SurfaceComparisonError("explicit typed scalar data owner layout differs")
+            else:
+                observed = {row[0]: {"offset": row[1], "size": row[2]}
+                            for row in symbol_rows if row[3] & 0xF == STT_OBJECT}
+                if observed != group["_owner_layout"]:
+                    raise SurfaceComparisonError("explicit typed array owner layout differs")
         elif len(symbol_rows) != 1:
             raise SurfaceComparisonError("explicit typed owner symbol is missing or ambiguous")
         receipts_out.append({"mode": row["label"], "recipe": row["command"],
@@ -3070,9 +2964,18 @@ def _explicit_overlay_data_identity(group, binding, numeric_value, candidate_elf
             or target_path.stat().st_mtime_ns < owner_object_path.stat().st_mtime_ns):
         return refuse("typed-owner-object-or-link-is-stale")
 
-    if not _has_unique_initialized_f32_scalar(
-            source_path.read_text(), binding["owner_symbol"]):
-        return refuse("typed-data-scalar-declaration-missing-or-ambiguous")
+    source_text = source_path.read_text()
+    if group["kind"] == "overlay-local-data-scalars":
+        if not _has_unique_initialized_f32_scalar(source_text, binding["owner_symbol"]):
+            return refuse("typed-data-scalar-declaration-missing-or-ambiguous")
+    elif group["kind"] == "overlay-local-data-arrays":
+        try:
+            storage_types.validate_explicit_array_owner(
+                group, binding, source_text, SurfaceComparisonError)
+        except SurfaceComparisonError as error:
+            return refuse(str(error))
+    else:
+        return refuse("unsupported-typed-initialized-data-owner-kind")
     if binding["_addend"] != binding["_owner_offset"] + group["_candidate_bias"]:
         return refuse("typed-data-candidate-addend-does-not-match-reviewed-layout")
     if numeric_value != binding["_addend"]:
@@ -3091,8 +2994,10 @@ def _explicit_overlay_data_identity(group, binding, numeric_value, candidate_elf
     if (row_end - row_offset != row_size
             or row_size != group["_section_size"]):
         return refuse("typed-data-atlas-range-differs-from-reviewed-extent")
-    if group["_original_base"] != 0x73B0:
-        raise SurfaceComparisonError("reviewed Overlay 8 scalar namespace base changed")
+    expected_base = (0x73B0 if group["kind"] == "overlay-local-data-scalars"
+                     else 0x5130)
+    if group["_original_base"] != expected_base:
+        raise SurfaceComparisonError("reviewed Overlay 8 local-data namespace base changed")
 
     owner_elf = Elf(owner_object_path)
     section_index, header = owner_elf.section(".data")
@@ -3104,7 +3009,10 @@ def _explicit_overlay_data_identity(group, binding, numeric_value, candidate_elf
     if len(owner_rows) != 1:
         return refuse("typed-data-object-symbol-missing-or-ambiguous")
     _, owner_offset, owner_size, owner_info, _ = owner_rows[0]
-    if (owner_info & 0xF != STT_OBJECT or owner_size != binding["_width"]
+    expected_owner_size = (binding["_width"]
+                           if group["kind"] == "overlay-local-data-scalars"
+                           else group["_owner_layout"][binding["owner_symbol"]]["size"])
+    if (owner_info & 0xF != STT_OBJECT or owner_size != expected_owner_size
             or owner_offset != binding["_owner_offset"]):
         return refuse("typed-data-object-symbol-type-or-layout-mismatch")
     if owner_offset + owner_size > header[5]:
@@ -3686,8 +3594,10 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
         if name in explicit_bindings:
             group, binding = explicit_bindings[name]
             candidate_addend = numeric.get(name, binding["_addend"])
+            carrier_size = (0 if group["kind"] == "overlay-local-data-arrays"
+                            else binding["_width"])
             if not _is_undefined_data_carrier(
-                    candidate_elf, name, binding["_width"]):
+                    candidate_elf, name, carrier_size):
                 _identity_witness(
                     evidence, name, "explicit-typed-overlay-storage",
                     reason="candidate-carrier-is-not-unique-undefined-typed-object",

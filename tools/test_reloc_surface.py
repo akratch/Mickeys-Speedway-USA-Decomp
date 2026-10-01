@@ -828,6 +828,13 @@ Overlay8BssOwner gOverlay8BssOwner;
              "config/overlay_storage_bindings.us.json").read_text())
         return rs._explicit_storage_registry_groups(registry)[0]
 
+    @classmethod
+    def groups(cls):
+        registry = json.loads(
+            (Path(__file__).resolve().parent.parent /
+             "config/overlay_storage_bindings.us.json").read_text())
+        return rs._explicit_storage_registry_groups(registry)
+
     class StorageElf:
         def __init__(self, *, data=b"abcd", header=None, symbols=None, relocs=()):
             self.names = ["", ".data"]
@@ -929,6 +936,109 @@ Overlay8BssOwner gOverlay8BssOwner;
         registry["groups"][1]["bindings"][0]["owner_offset"] = "0x4"
         with self.assertRaises(rs.SurfaceComparisonError):
             rs._explicit_storage_registry_groups(registry)
+
+    def test_table_registry_is_fixed_namespace_typed_and_full_extent(self):
+        registry = json.loads(
+            (Path(__file__).resolve().parent.parent /
+             "config/overlay_storage_bindings.us.json").read_text())
+        group = rs._explicit_storage_registry_groups(registry)[2]
+        self.assertEqual("overlay-local-data-arrays", group["kind"])
+        self.assertEqual(0x5130, group["_original_base"])
+        self.assertEqual(0x140, group["_section_size"])
+        self.assertEqual({
+            "o8EffectBit4LeftTriggerMasks": {"offset": 0x00, "size": 0x40},
+            "o8EffectBit8RightTriggerMasks": {"offset": 0x40, "size": 0x40},
+            "o8EffectBit1LeftTriggerMasks": {"offset": 0x80, "size": 0x40},
+            "o8EffectBit2RightTriggerMasks": {"offset": 0xC0, "size": 0x40},
+            "o8EffectColorBySelector": {"offset": 0x100, "size": 0x40},
+        }, group["_owner_layout"])
+        for index, field, value in (
+                (2, "original_base", "0x5134"),
+                (2, "section_size", "0x13C"),
+                (2, "owner_source_sha256", "0" * 64),
+                (2, "owner_source", "overlays/o008/overlay_008"),
+                (2, "overlay", 9),
+                (2, "candidate_sources", ["overlays/o009/overlay_009"])):
+            changed = json.loads(json.dumps(registry))
+            changed["groups"][index][field] = value
+            with self.subTest(field=field), self.assertRaises(rs.SurfaceComparisonError):
+                rs._explicit_storage_registry_groups(changed)
+        for field, value in (("owner_offset", "0x40"),
+                             ("type", "u8"), ("width", "0x1"),
+                             ("addend", "0x3E4"),
+                             ("owner_symbol", "o8EffectBit8RightTriggerMasks")):
+            changed = json.loads(json.dumps(registry))
+            changed["groups"][2]["bindings"][0][field] = value
+            with self.subTest(field=field), self.assertRaises(rs.SurfaceComparisonError):
+                rs._explicit_storage_registry_groups(changed)
+
+    def test_table_identity_cannot_suppress_independent_alias_peer(self):
+        identity = (8, 0x5510)
+        conflicting = (8, 0x5514)
+        for equality, redefine in (([("D_3E0", "peer")], []),
+                                   ([], [("D_3E0", "peer")])):
+            evidence = {
+                "D_3E0": [{"route": "explicit-typed-overlay-storage",
+                           "independent": True,
+                           "base_identity": list(identity)}],
+                "peer": [{"route": "canonical-data-owner",
+                          "independent": True,
+                          "base_identity": list(conflicting)}],
+            }
+            rs._identity_alias_evidence(evidence, equality, redefine)
+            with self.subTest(equality=equality, redefine=redefine), self.assertRaises(
+                    rs.SurfaceComparisonError):
+                rs._merge_explicit_storage_identities(
+                    {"D_3E0": identity}, {}, {"D_3E0", "peer"}, evidence)
+
+    def test_table_explicit_identity_does_not_overwrite_same_name_owner(self):
+        evidence = {"D_3E0": [
+            {"route": "explicit-typed-overlay-storage", "independent": True,
+             "base_identity": [8, 0x5510]},
+            {"route": "canonical-data-owner", "independent": True,
+             "base_identity": [8, 0x5514]},
+        ]}
+        with self.assertRaises(rs.SurfaceComparisonError):
+            rs._merge_explicit_storage_identities(
+                {"D_3E0": (8, 0x5510)}, {}, {"D_3E0"}, evidence)
+
+    def test_table_owner_source_has_natural_sized_arrays_and_rgba_view(self):
+        group = self.groups()[2]
+        source = (Path(__file__).resolve().parent.parent /
+                  "src/overlays/o008/overlay8EffectTables.c").read_text()
+        for binding in group["bindings"]:
+            parsed = rs.storage_types.validate_explicit_array_owner(
+                group, binding, source, rs.SurfaceComparisonError)
+            expected_width = 4 if binding["type"] == "s32" else 1
+            self.assertEqual(64, parsed["extent"])
+            self.assertEqual(expected_width, binding["_width"])
+        bad_sources = (
+            source.replace("s32 o8EffectBit4LeftTriggerMasks[16]",
+                           "u32 o8EffectBit4LeftTriggerMasks[16]"),
+            source.replace("o8EffectBit4LeftTriggerMasks[16]",
+                           "o8EffectBit4LeftTriggerMasks[15]"),
+            source.replace("Overlay8EffectColor o8EffectColorBySelector[16]",
+                           "u8 o8EffectColorBySelector[16]"),
+            source.replace("u8 green;", "s32 green;"),
+            source.replace("u8 alpha;", "u8 opacity;") ,
+        )
+        for changed in bad_sources:
+            with self.subTest(source_hash=hash(changed)), self.assertRaises(
+                    rs.SurfaceComparisonError):
+                for binding in group["bindings"]:
+                    rs.storage_types.validate_explicit_array_owner(
+                        group, binding, changed, rs.SurfaceComparisonError)
+
+    def test_array_proxy_is_undefined_object_without_fabricated_extent(self):
+        class Carrier:
+            def __init__(self, rows): self._rows = rows
+            def symbols(self): return list(self._rows)
+
+        proxy = ("D_3E0", 0, 0, (1 << 4) | rs.STT_OBJECT, rs.SHN_UNDEF)
+        self.assertTrue(rs._is_undefined_data_carrier(Carrier([proxy]), "D_3E0", 0))
+        self.assertFalse(rs._is_undefined_data_carrier(
+            Carrier([("D_3E0", 0, 0x40, (1 << 4) | rs.STT_OBJECT, rs.SHN_UNDEF)]),
+            "D_3E0", 0))
 
     def test_scalar_owner_requires_one_plain_f32_definition(self):
         symbol = "o8MotionPeerBlendAdjustment"

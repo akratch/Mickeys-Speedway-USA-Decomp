@@ -1857,19 +1857,23 @@ gOverlay53ResourceA = 0x00000000;
 overlay53ReleaseReloc = 0xf0000000;
 
 /* overlay 54: overlay54Initialize.c.o */
-D_16C = 0x0000016c;
-D_1E8 = 0x000001e8;
-D_268 = 0x00000268;
-D_278 = 0x00000278;
-D_4C = 0x0000004c;
-D_5C0 = 0x000005c0;
-D_640 = 0x00000640;
-D_648 = 0x00000648;
-D_654 = 0x00000654;
-D_660 = 0x00000660;
-D_668 = 0x00000668;
-D_9C = 0x0000009c;
-D_CC = 0x000000cc;
+gOverlay54Data00 = 0x00000000;
+gOverlay54ExternalObject = 0x00000000;
+gOverlay54ExternalResource = 0x00000000;
+gOverlay54ExternalWord = 0x00000190;
+gOverlay54InitBssBaseReloc = 0x00000000;
+gOverlay54InitDataBaseReloc = 0x00000000;
+o54Allocate = 0xf0000000;
+o54CommitMode = 0xf0000000;
+o54Configure = 0xf0000000;
+o54CreateObject = 0xf0000000;
+o54GetContext = 0xf0000000;
+o54GetObjectId = 0xf0000000;
+o54LoadResource = 0xf0000000;
+o54PrepareResource = 0xf0000000;
+o54QueryValue = 0xf0000000;
+o54SetMode = 0xf0000000;
+o54SetupBounds = 0xf0000000;
 
 /* overlay 54: overlay54PatchIndices.c.o */
 gOverlay54Objects = 0x00000000;
@@ -1880,12 +1884,22 @@ overlay54QueryModeReloc = 0xf0000000;
 
 /* overlay 54: overlay54TailA.c.o */
 D_14C = 0x0000014c;
+D_1E8 = 0x000001e8;
 D_248 = 0x00000248;
+D_268 = 0x00000268;
+D_278 = 0x00000278;
 D_298 = 0x00000298;
 D_2B4 = 0x000002b4;
+D_5C0 = 0x000005c0;
+D_640 = 0x00000640;
+D_648 = 0x00000648;
+D_654 = 0x00000654;
 D_658 = 0x00000658;
+D_660 = 0x00000660;
+D_668 = 0x00000668;
 D_66C = 0x0000066c;
 D_66E = 0x0000066e;
+D_CC = 0x000000cc;
 
 /* overlay 54: overlay54ReleaseResources.c.o */
 gOverlay54Current = 0x00000668;
@@ -2232,6 +2246,7 @@ overlay57StartReloc = 0xf0000000;
 /* overlay 57: func_overlay_057_F0004E18_18A8A10.c.o */
 D_11C = 0x0000011c;
 D_25C = 0x0000025c;
+D_4C = 0x0000004c;
 D_4FC = 0x000004fc;
 D_528 = 0x00000528;
 D_53E = 0x0000053e;
@@ -2737,6 +2752,7 @@ overlay61SetupReloc = 0xf0000000;
 /* overlay 61: func_overlay_061_F0000B84_18BFF4C.c.o */
 D_15C = 0x0000015c;
 D_5D0 = 0x000005d0;
+D_9C = 0x0000009c;
 
 /* overlay 61: overlay61ReleaseResources.c.o */
 gOverlay61Resource58Reloc = 0x00000058;

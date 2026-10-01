@@ -9,15 +9,6 @@ typedef struct O54State {
     s32 field10;
 } O54State;
 
-typedef struct O54Locals {
-    s16 *sentinel;
-    u8 reserved04[0x28];
-    union {
-        u8 *context;
-        u8 storage[8];
-    } tail;
-} O54Locals;
-
 extern u8 gOverlay54ExternalResource[];
 extern u8 gOverlay54ExternalObject[];
 extern s32 gOverlay54ExternalWord;
@@ -89,7 +80,8 @@ static s8 sOverlay54Tail2B0[4] = { 0 };
 static s32 sOverlay54Tail2B4[7] = { 0 };
 
 /* Overlay 54's .bss, in address order. IDO 8-aligns .bss arrays and
- * 4-aligns scalars, which is why the 4-byte groups below are scalars. */
+ * 4-aligns scalars, which is why the 4-byte groups below are scalars. The
+ * 4-byte flag array is the measured exception: it stays 4-aligned. */
 static OverlayOffsetRecord sOverlay54Records[10];
 static O54State sOverlay54State;
 static s32 sOverlay54BssPadB4;
@@ -104,7 +96,7 @@ static OverlayOffsetRecord sOverlay54ListCopyF[4][2];
 static s16 sOverlay54Values[4];
 static s16 sOverlay54Sentinels[4];
 static s32 sOverlay54Mode;
-static s32 sOverlay54Flags;
+static s8 sOverlay54Flags[4];
 static f32 sOverlay54Height;
 static s32 sOverlay54BssPad65C;
 static s16 sOverlay54Bounds[4];
@@ -131,38 +123,25 @@ extern void overlay54CopyOffsetRecords(void *src, void *dst, s32 mode, s32 index
 
 
 /* Independently reconstructed from Mickey-local evidence; no DKR/JFG donor. */
-/* 2026-09-23, lane B2-ov2: the record copy is a nine-iteration subscript
- * loop; IDO unrolls it by four with the remainder first.
- * 2026-09-23, lane B3-o054, 125 (+4) -> 17 (delta 0, frame exact, naming 0):
- * - the TU owns overlay 54's data and .bss (above), so as1 can prove the two
- *   record arrays disjoint and the remainder loads precede its stores;
- * - the loop-A pointer setup is one physical line (L59: the target sets the
- *   pointers in reverse);
- * - the tail stores follow the target's order;
- * - o54Configure reads sOverlay54Current back, which keeps its address a
- *   register web across both arms: the missing branch-delay word;
- * - the exit test's xor-with-zero keeps slti after the increment (L90).
- * The rest is loop A's tail: as1 hoists the flag and value stores above
- * their pointer increments, which the target does not. See the handoff. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01 by writing both loops as plain subscript loops over one
+ * counter.  The 17-word plateau walked eight declared pointers, kept the
+ * ninth and the context in a volatile struct, and stored through [-1] after
+ * hand-placed increments; as1 then hoisted the flag and value stores because
+ * a declared pointer carries no noalias fact.  With `array[i]` at every site
+ * uopt creates all nine induction pointers itself, emits their noalias facts,
+ * and spills the ninth to its own temporary, which is the target's schedule.
+ * What else it took, each measured:
+ *   - the flag bytes are a signed char array (the stored constant is -1);
+ *   - `i` is the only counter: reusing it for the record copy keeps the first
+ *     loop's exit test a set-less-than against 4 (L90 otherwise rewrites it),
+ *     which retires the xor-with-zero;
+ *   - two declared locals, `i` then `context`, land the frame: no state
+ *     pointer and no object local, the stores name the statics directly. */
 void func_overlay_054_F0000000_189ECA0(void) {
-    volatile O54Locals locals;
-    s16 *value;
-    u8 *flag;
-    u8 *src0;
-    u8 *src1;
-    u8 *src2;
-    u8 *src3;
-    u8 *src4;
-    u8 *src5;
     s32 i;
-    s32 j;
-    O54State *state;
-    void *object;
-    s16 *nextSentinel;
-    s32 loopFlag, storeFlag, storeValue, storeSentinel;
+    u8 *context;
 
-    locals.tail.context = o54GetContext();
+    context = o54GetContext();
     o54LoadResource(sOverlay54ResourceIds);
     o54LoadResource(gOverlay54ExternalResource);
     o54PrepareResource(sOverlay54PrepareIds);
@@ -177,58 +156,41 @@ void func_overlay_054_F0000000_189ECA0(void) {
     overlay54PatchIndices(sOverlay54ListF);
     overlay54PatchIndices(sOverlay54ListG);
 
-    locals.sentinel = sOverlay54Sentinels; src0 = (u8 *)sOverlay54ListCopyA; src1 = (u8 *)sOverlay54ListCopyB; src2 = (u8 *)sOverlay54ListCopyC; src3 = (u8 *)sOverlay54ListCopyD; src4 = (u8 *)sOverlay54ListCopyE; src5 = (u8 *)sOverlay54ListCopyF; flag = (u8 *)&sOverlay54Flags; value = sOverlay54Values;
-    i = 0;
-    do {
-        overlay54CopyOffsetRecords(sOverlay54ListA, src0, i, 0);
-        overlay54CopyOffsetRecords(sOverlay54ListB, src1, i, 0);
-        overlay54CopyOffsetRecords(sOverlay54ListC, src2, i, 1);
-        overlay54CopyOffsetRecords(sOverlay54ListD, src3, i, 2);
-        overlay54CopyOffsetRecords(sOverlay54ListE, src4, i, 3);
-        overlay54CopyOffsetRecords(sOverlay54ListF, src5, i, 3);
-        storeFlag = -1;
-        storeValue = -0x500;
-        storeSentinel = -0x140;
-        nextSentinel = locals.sentinel + 1;
-        locals.sentinel = nextSentinel;
-        src0 += 0x20;
-        src1 += 0x20;
-        src2 += 0x30;
-        src3 += 0x30;
-        src4 += 0xA0;
-        src5 += 0x20;
-        flag++;
-        value++;
-        flag[-1] = storeFlag;
-        value[-1] = storeValue;
-        nextSentinel[-1] = storeSentinel;
-    } while ((++i ^ 0) < 4);
+    for (i = 0; i < 4; i++) {
+        overlay54CopyOffsetRecords(sOverlay54ListA, sOverlay54ListCopyA[i], i, 0);
+        overlay54CopyOffsetRecords(sOverlay54ListB, sOverlay54ListCopyB[i], i, 0);
+        overlay54CopyOffsetRecords(sOverlay54ListC, sOverlay54ListCopyC[i], i, 1);
+        overlay54CopyOffsetRecords(sOverlay54ListD, sOverlay54ListCopyD[i], i, 2);
+        overlay54CopyOffsetRecords(sOverlay54ListE, sOverlay54ListCopyE[i], i, 3);
+        overlay54CopyOffsetRecords(sOverlay54ListF, sOverlay54ListCopyF[i], i, 3);
+        sOverlay54Flags[i] = -1;
+        sOverlay54Values[i] = -0x500;
+        sOverlay54Sentinels[i] = -0x140;
+    }
 
-    for (j = 0; j < 9; j++) {
-        sOverlay54Records[j].x = sOverlay54SourceRecords[j].x;
-        sOverlay54Records[j].y = sOverlay54SourceRecords[j].y;
-        sOverlay54Records[j].metadata = sOverlay54SourceRecords[j].metadata;
+    for (i = 0; i < 9; i++) {
+        sOverlay54Records[i].x = sOverlay54SourceRecords[i].x;
+        sOverlay54Records[i].y = sOverlay54SourceRecords[i].y;
+        sOverlay54Records[i].metadata = sOverlay54SourceRecords[i].metadata;
     }
 
     sOverlay54Height = -80.0f;
     o54LoadResource();
     gOverlay54Data00 = o54QueryValue();
-    state = &sOverlay54State;
     *(s16 *)(gOverlay54ExternalObject + 0x26) = 0x28;
     *(f32 *)(gOverlay54ExternalObject + 0x28) = 1.0f;
-    state->field08 = 0;
-    state->field00 = gOverlay54ExternalWord;
-    state->field04 = 0;
-    state->field10 = 0;
+    sOverlay54State.field08 = 0;
+    sOverlay54State.field00 = gOverlay54ExternalWord;
+    sOverlay54State.field04 = 0;
+    sOverlay54State.field10 = 0;
 
     sOverlay54Bounds[0] = -0x420;
     sOverlay54Bounds[1] = 0x4E0;
     sOverlay54Bounds[2] = -0x420;
     sOverlay54Bounds[3] = 0x4E0;
-    if (*locals.tail.context == 3) {
+    if (*context == 3) {
         o54SetupBounds(3);
-        object = o54Allocate(o54GetObjectId(o54CreateObject()), 0xA0, 0x78, 0xC);
-        sOverlay54Current = object;
+        sOverlay54Current = o54Allocate(o54GetObjectId(o54CreateObject()), 0xA0, 0x78, 0xC);
         o54Configure(sOverlay54Current, 0);
     } else {
         sOverlay54Current = 0;
@@ -236,16 +198,3 @@ void func_overlay_054_F0000000_189ECA0(void) {
     sOverlay54Tail66E = 0;
     sOverlay54Tail66C = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o054/overlay54Initialize/func_overlay_054_F0000000_189ECA0.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_054_F0000000_189ECA0:start
- * symbol: func_overlay_054_F0000000_189ECA0
- * score: 17 differing words
- * frame: 0x78
- * relocations: 114
- * first-mismatch: +0x1AC
- * summary: TU owns overlay 54 data; delta 0, frame exact; left: as1 hoists loop-A flag/value stores above their increments (no noalias for declared pointers).
- * PLATEAU-HANDOFF:func_overlay_054_F0000000_189ECA0:end
- */

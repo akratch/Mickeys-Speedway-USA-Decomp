@@ -41,38 +41,25 @@ extern s32 overlay98UniqueCountReloc;
 extern s16 overlay98UniqueYReloc[15];
 
 /* Exact DKR v77/v80 and JFG scans are negative for this routine. */
-/*
- * Plateau (2026-08-25 plus lever-51 reopen 2026-09-19): the best safe C is
- * still the walking uniqueEnd scan, exact-size with the retail frame. Masked
- * 32 of 81, first at +0x68. Identity-gated proc-0 is p2, 18 decisions; force
- * of web 112 (type-1 count address, s0) onto a1 is declined (forced=-2, a1
- * absent from its cost table), and web 58 (t3) cannot take v1. Accepted
- * forces are 32 or worse. Forward unique indexing with a local bound unrolls
- * +26 words; -Wo,-loopunroll,0 is 78 words. Live-global forward index is +16
- * of 49 and unroll-inert. An indexed scan whose bound is != uniqueEnd
- * strength-reduces back to this walking object at 32. Countdown of the live
- * global is 31 at delta 0 and still uses the three 0x10 slots, but it is a
- * backward scan: aligned structural 7 to 12 against the target's forward
- * walk, so it is not adopted. L131 UniqueY spellings, L97 regions, volatile
- * pointers, count-pointer, vertex-index split, and setup-before-value are
- * flat or worse. Span subscripts stay inert; dropping the block pointer
- * still grows to 88. Lever 50 does not apply: raw equals masked at 32.
+/* Matched by indexing the unique list and bounding the scan by the count
+ * global itself: the compiler reduces the subscript to a walking pointer and
+ * an end pointer of its own, each with its own address load, and reads the
+ * count once. No cursor, end pointer, count copy or next count is declared.
+ * The point-reference index, the vertex base and the vertex pointer are named
+ * locals; those three webs are what push the hoisted addresses and the stride
+ * constant into saved registers.
  */
-#ifdef NON_MATCHING
 void overlay98CollectUniqueY(Overlay98Group *group) {
     Overlay98Block *block;
     Overlay98Span *span;
-    s16 *unique;
-    s16 *uniqueEnd;
     s16 value;
     s32 blockIndex;
     s32 spanIndex;
-    s32 oldUniqueCount;
-    s32 nextUniqueCount;
+    s32 k;
     s32 pointRefIndex;
-    register s32 vertexBase;
+    s32 vertexBase;
     s32 isNew;
-    u8 destinationIndex;
+    Overlay98Vertex *vertex;
 
     overlay98UniqueCountReloc = 0;
     for (blockIndex = 0; blockIndex < group->blockCount; blockIndex++) {
@@ -82,32 +69,18 @@ void overlay98CollectUniqueY(Overlay98Group *group) {
             if (span->flags & 0x8000) {
                 pointRefIndex = span->pointRefIndex;
                 vertexBase = span->vertexBase;
-                value = *(s16 *)((u8 *)block->vertices +
-                                  ((vertexBase +
-                                    block->pointRefs[pointRefIndex]
-                                        .vertexIndex) *
-                                       10) +
-                                   2);
-
-                oldUniqueCount = overlay98UniqueCountReloc;
-                nextUniqueCount = oldUniqueCount + 1;
-                unique = overlay98UniqueYReloc;
-                uniqueEnd = &overlay98UniqueYReloc[oldUniqueCount];
+                vertex = &block->vertices[
+                    block->pointRefs[pointRefIndex].vertexIndex + vertexBase];
+                value = vertex->y;
                 isNew = 1;
-                if (oldUniqueCount > 0) {
-                    do {
-                        if (*unique == value) {
-                            isNew = 0;
-                        }
-                        unique++;
-                    } while (unique < uniqueEnd);
+                for (k = 0; k < overlay98UniqueCountReloc; k++) {
+                    if (overlay98UniqueYReloc[k] == value) {
+                        isNew = 0;
+                    }
                 }
-
-                destinationIndex = oldUniqueCount;
                 if (isNew) {
-                    overlay98UniqueYReloc[destinationIndex] = value;
-                    overlay98UniqueCountReloc = nextUniqueCount;
-                    if (nextUniqueCount >= 15) {
+                    overlay98UniqueYReloc[overlay98UniqueCountReloc++] = value;
+                    if (overlay98UniqueCountReloc >= 15) {
                         spanIndex = block->spanCount;
                         blockIndex = group->blockCount;
                     }
@@ -116,16 +89,3 @@ void overlay98CollectUniqueY(Overlay98Group *group) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o098/overlay98CollectUniqueY/func_overlay_098_F0000000_18D89C0.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay98CollectUniqueY:start
- * symbol: overlay98CollectUniqueY
- * score: 32/81 words
- * frame: 0x10
- * relocations: 8
- * first-mismatch: +0x68
- * summary: Lever 51 stall. Indexed unique scan unrolls +26 or 78-80 without uniqueEnd; != uniqueEnd SRs to walking 32. Countdown 31/0 is backward. p2 w112 cannot take a1.
- * PLATEAU-HANDOFF:overlay98CollectUniqueY:end
- */

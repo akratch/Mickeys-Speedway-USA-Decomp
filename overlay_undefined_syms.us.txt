@@ -3325,6 +3325,10 @@ overlay97RefreshBoundsReloc = 0xf0000000;
 /* overlay 97: overlay97InitPlane.c.o */
 overlay97BuildBasisReloc = 0xf0000000;
 
+/* overlay 98: overlay98CollectUniqueY.c.o */
+overlay98UniqueCountReloc = 0x00000080;
+overlay98UniqueYReloc = 0x00000308;
+
 /* overlay 98: overlay98CollectAccepted.c.o */
 gOverlay98AcceptedCount = 0x00000084;
 gOverlay98AcceptedEntries = 0x00000088;
@@ -3333,8 +3337,6 @@ overlay98AcquireContextReloc = 0xf0000000;
 /* overlay 98: overlay98CheckObject.c.o */
 overlay98CheckCandidateReloc = 0xf0000000;
 overlay98CheckInitialReloc = 0xf0000000;
-overlay98UniqueCountReloc = 0x00000080;
-overlay98UniqueYReloc = 0x00000308;
 
 /* overlay 99: overlay99GetEntries.c.o */
 gOverlay99Entries = 0x00000000;

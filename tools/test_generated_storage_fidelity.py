@@ -90,6 +90,13 @@ def _make_object(path: Path, *, mutations: dict | None = None) -> None:
         rel_text.extend(((hi, (rodata_sym << 8) | HI16, rodata_sym),
                          (lo, (rodata_sym << 8) | LO16, rodata_sym)))
 
+    if mutations.get("unowned_hi_register"):
+        struct.pack_into(">I", text, 0x3500,
+                         struct.unpack_from(">I", text, 0x3500)[0] ^ (1 << 16))
+    if mutations.get("extra_unowned_site_reloc"):
+        sym = next(i for i, row in enumerate(symbols) if row[0] == "data_owner_0")
+        rel_text.append((0x3500, (sym << 8) | LO16, sym))
+
     if mutations.get("bad_load"):
         site = START + owned_groups[0x204][1]
         put_word(site, (43 << 26) | (8 << 21) | 0x204)  # SW
@@ -122,6 +129,9 @@ def _make_object(path: Path, *, mutations: dict | None = None) -> None:
     if mutations.get("bad_rodata_symbol"):
         row = symbols[rodata_sym]
         symbols[rodata_sym] = (row[0], row[1], row[2], 1, row[4], row[5])
+    if mutations.get("extra_rodata_owner"):
+        symbols.append(("generated_extra_literal", 4, 4, 0x11, 0, 2))
+        names.append("generated_extra_literal")
 
     # Keep the on-disk order of this owner's stream sorted by text site.  Other
     # owners remain in compiler-style grouped order and are not reordered.
@@ -258,6 +268,27 @@ class GeneratedStorageFidelityTests(unittest.TestCase):
                 raw, full = self.pair(Path(d), mutation)
                 with self.assertRaisesRegex(sf.SourceFidelityError, reason):
                     sf.compare_generated_rodata_source_symbols(raw, full, "func_800517E0")
+
+    def test_unowned_generated_uses_compare_complete_instruction_words(self):
+        with tempfile.TemporaryDirectory() as d:
+            raw, full = self.pair(Path(d), "unowned_hi_register")
+            with self.assertRaisesRegex(sf.SourceFidelityError,
+                                        "complete generated HI/LO graph differs"):
+                sf.compare_generated_rodata_source_symbols(raw, full, "func_800517E0")
+
+    def test_generated_rodata_symbol_closure_rejects_extra_named_owner(self):
+        with tempfile.TemporaryDirectory() as d:
+            raw, full = self.pair(Path(d), "extra_rodata_owner")
+            with self.assertRaisesRegex(sf.SourceFidelityError,
+                                        "additional symbol owner"):
+                sf.compare_generated_rodata_source_symbols(raw, full, "func_800517E0")
+
+    def test_generated_use_sites_reject_other_full_tu_relocation_owner(self):
+        with tempfile.TemporaryDirectory() as d:
+            raw, full = self.pair(Path(d), "extra_unowned_site_reloc")
+            with self.assertRaisesRegex(sf.SourceFidelityError,
+                                        "conflicting full-TU relocation"):
+                sf.compare_generated_rodata_source_symbols(raw, full, "func_800517E0")
 
     def test_unsupported_access_and_invalid_pair_graph_fail(self):
         for mutation, reason in (("bad_load", "approved word/FP load"),

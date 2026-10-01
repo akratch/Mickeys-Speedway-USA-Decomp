@@ -100,6 +100,19 @@ def _section_symbol(elf: reloc_surface.Elf, name: str, section_index: int,
     return index, row
 
 
+def _rodata_symbol_closure(elf: reloc_surface.Elf, section_index: int,
+                           section_symbol: tuple,
+                           error_type: type[Exception]) -> tuple[dict[str, Any], ...]:
+    """Require the generated section to have no named or typed aliases."""
+    symbols = elf.symbols()
+    owners = [row for row in symbols if row[4] == section_index]
+    if owners != [section_symbol]:
+        _fail(error_type, "generated storage contains an additional symbol owner")
+    name, value, size, info, shndx = section_symbol
+    return ({"name": name, "value": value, "size": size, "info": info,
+             "section": elf.names[shndx]},)
+
+
 def _table_relocations(elf: reloc_surface.Elf, symtab_index: int,
                        rodata_index: int, text_section_symbol: int,
                        function: dict[str, Any],
@@ -170,9 +183,10 @@ def _text_rodata_groups(elf: reloc_surface.Elf, symtab_index: int,
     if sh[4] + sh[5] > len(elf.data):
         _fail(error_type, "generated .text REL table is truncated")
     text = elf.section_bytes(".text")
-    pending: list[tuple[int, int]] = []
+    pending: list[tuple[int, int, int]] = []
     groups = []
     seen_sites = set()
+    all_site_counts: dict[int, int] = {}
     previous_rodata_site = -1
     for pos in range(sh[4], sh[4] + sh[5], 8):
         offset, info = struct.unpack_from(">II", elf.data, pos)
@@ -182,6 +196,7 @@ def _text_rodata_groups(elf: reloc_surface.Elf, symtab_index: int,
         # `.rodata` owner's own subsequence is required to be ordered.
         if offset % 4 or offset + 4 > len(text) or symidx >= len(elf.symbols()):
             _fail(error_type, "full .text REL stream has an invalid row")
+        all_site_counts[offset] = all_site_counts.get(offset, 0) + 1
         if symidx != rodata_symbol:
             continue
         if offset <= previous_rodata_site:
@@ -197,13 +212,13 @@ def _text_rodata_groups(elf: reloc_surface.Elf, symtab_index: int,
         if kind == R_MIPS_HI16:
             if opcode != 15:
                 _fail(error_type, "generated .rodata HI16 is not a LUI")
-            pending.append((offset, low))
+            pending.append((offset, low, word))
             continue
         if len(pending) != 1:
             _fail(error_type, "generated .rodata HI/LO graph has pending or ambiguous highs")
         if opcode not in (35, 49):
             _fail(error_type, "generated .rodata low use is not an approved word/FP load")
-        hi_site, high = pending.pop()
+        hi_site, high, hi_word = pending.pop()
         signed_low = low - 0x10000 if low & 0x8000 else low
         addend = ((high << 16) + signed_low) & 0xFFFFFFFF
         kind_name = FULL_TEXT_RODATA_GROUPS.get(addend, "unsupported")
@@ -223,8 +238,9 @@ def _text_rodata_groups(elf: reloc_surface.Elf, symtab_index: int,
             if (hi_site - start, offset - start) != (expected_hi, expected_lo):
                 _fail(error_type, "selected generated HI/LO group sites differ")
         groups.append({"addend": addend, "owner": ".rodata SECTION",
-                       "hi_site": hi_site,
-                       "lo_site": offset, "lo_opcode": opcode,
+                       "hi_site": hi_site, "lo_site": offset,
+                       "hi_word": hi_word, "lo_word": word,
+                       "lo_opcode": opcode,
                        "owned": owned})
     if pending:
         _fail(error_type, "generated .rodata HI16 remains unpaired")
@@ -232,6 +248,9 @@ def _text_rodata_groups(elf: reloc_surface.Elf, symtab_index: int,
         _fail(error_type, "full translation unit does not have nine generated pairs")
     if {row["addend"] for row in groups} != set(FULL_TEXT_RODATA_GROUPS):
         _fail(error_type, "full translation-unit generated addend set differs")
+    if any(all_site_counts.get(site, 0) != 1
+           for group in groups for site in (group["hi_site"], group["lo_site"])):
+        _fail(error_type, "generated HI/LO use site has a conflicting full-TU relocation")
     if sum(row["owned"] for row in groups) != 7:
         _fail(error_type, "selected function generated pair count differs")
     return groups
@@ -266,10 +285,13 @@ def _inspect(elf: reloc_surface.Elf, function: dict[str, Any],
                              if row == text_sym)
     rodata_symbol_index, rodata_sym = _section_symbol(
         elf, ".rodata", rodata_index, RODATA_SIZE, error_type)
+    symbol_closure = _rodata_symbol_closure(
+        elf, rodata_index, rodata_sym, error_type)
     section_descriptor = {"name": ".rodata", "type": STT_SECTION,
                           "binding": STB_LOCAL, "defined": True,
                           "value": 0, "size": RODATA_SIZE,
-                          "storage": (".rodata", SHT_PROGBITS, rodata_header[2])}
+                          "storage": (".rodata", SHT_PROGBITS, rodata_header[2]),
+                          "symbol_closure": symbol_closure}
     table_rows = _table_relocations(elf, symtab, rodata_index,
                                     text_symbol_index, function, error_type)
     groups = _text_rodata_groups(elf, symtab, text_index,

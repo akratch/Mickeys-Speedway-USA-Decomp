@@ -1811,16 +1811,24 @@ D_498 = 0x00000498;
 D_80000230 = 0x80000230;
 
 /* overlay 47: func_overlay_047_F0000000_1890E18.c.o */
-D_1C0 = 0x000001c0;
-D_280 = 0x00000280;
-D_2F0 = 0x000002f0;
-D_30A = 0x0000030a;
-D_328 = 0x00000328;
-D_358 = 0x00000358;
-D_370 = 0x00000370;
-D_374 = 0x00000374;
-D_38C = 0x0000038c;
-D_D0 = 0x000000d0;
+D_8007BF68_o047Reloc = 0x00000000;
+D_8007C0B8_o047Reloc = 0x00000000;
+D_8007C1A0_o047Reloc = 0x00000000;
+D_800D3058_o047Reloc = 0x00000000;
+D_800D3128_o047Reloc = 0x00000000;
+D_800D31C8_o047Reloc = 0x00000000;
+amSndPlay_o047Reloc = 0xf0000000;
+animseqStartPath_o047Reloc = 0xf0000000;
+fontColour_o047Reloc = 0xf0000000;
+frontGetMode_o047Reloc = 0xf0000000;
+func_8000590C_o047Reloc = 0xf0000000;
+func_8003A754_o047Reloc = 0xf0000000;
+func_8004B0A4_o047Reloc = 0xf0000000;
+func_800508B4_o047Reloc = 0xf0000000;
+joyResetMap_o047Reloc = 0xf0000000;
+loadFrontEndList_o047Reloc = 0xf0000000;
+overlay45CreateDescriptor_o047Reloc = 0xf0000000;
+setupFrontEndList_o047Reloc = 0xf0000000;
 
 /* overlay 47: overlay47ReleaseResources.c.o */
 D_0_entries = 0x00000000;
@@ -1829,7 +1837,10 @@ D_314 = 0x00000314;
 D_318 = 0x00000318;
 D_31C = 0x0000031c;
 D_320 = 0x00000320;
+D_358 = 0x00000358;
+D_38C = 0x0000038c;
 D_3B4 = 0x000003b4;
+D_D0 = 0x000000d0;
 D_status0 = 0x00000000;
 D_status1 = 0x00000000;
 D_status2 = 0x00000000;
@@ -1837,7 +1848,12 @@ D_status3 = 0x00000000;
 D_status4 = 0x00000000;
 
 /* overlay 47: func_overlay_047_F0000B30_1891948.c.o */
+D_1C0 = 0x000001c0;
+D_280 = 0x00000280;
 D_2A8 = 0x000002a8;
+D_2F0 = 0x000002f0;
+D_30A = 0x0000030a;
+D_328 = 0x00000328;
 D_338 = 0x00000338;
 D_3CC = 0x000003cc;
 D_3DC = 0x000003dc;

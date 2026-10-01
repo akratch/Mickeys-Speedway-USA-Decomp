@@ -1688,9 +1688,21 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000B30_1891948.c.o: POS
 			0xF0C:.rodata:overlay47DispatchSwitchTable && \
 		$(OBJCOPY) --remove-section=.rodata $@; \
 	fi
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000000_1890E18.c.o: CFLAGS += \
-	-Wo,-loopunroll,0
+# The function defines overlay 47's .data, .bss and its "OK" literal at their
+# recorded offsets; the retained overlay image owns the bytes, so these copies
+# are dropped and their sites rebound to zero-valued bases.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000000_1890E18.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	config/normalizations/func_overlay_047_F0000000_1890E18.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000000_1890E18.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay47DataBaseReloc=0x0,global \
+		--add-symbol gOverlay47BssBaseReloc=0x0,global \
+		--add-symbol gOverlay47RodataBaseReloc=0x0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_047_F0000000_1890E18.rebind.spec && \
+	$(OBJCOPY) --remove-section=.data --remove-section=.bss \
+		--remove-section=.rodata \
+		--remove-section=.gptab.data --remove-section=.gptab.bss $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x9D0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68PayloadLimit.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8

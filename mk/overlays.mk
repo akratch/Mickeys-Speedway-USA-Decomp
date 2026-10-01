@@ -2499,6 +2499,34 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0004460_18A8058.c.o: POS
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x7B8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F00060F8_18A9CF0.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6E4
+# The middle-panel update is instruction-exact. Its resident callees go
+# through the generated surface entries; the text is already 0x12E0 so the
+# trim only pins the size. No instruction changes.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0004E18_18A8A10.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym func_80000F94=func_80000F94_o057Reloc \
+		--redefine-sym func_80005548=func_80005548_o057Reloc \
+		--redefine-sym func_80022A50=func_80022A50_o057Reloc \
+		--redefine-sym func_80025444=func_80025444_o057Reloc \
+		--redefine-sym func_80025D60=func_80025D60_o057Reloc \
+		--redefine-sym func_80028374=func_80028374_o057Reloc \
+		--redefine-sym func_80028528=func_80028528_o057Reloc \
+		--redefine-sym func_80028540=func_80028540_o057Reloc \
+		--redefine-sym func_80028D24=func_80028D24_o057Reloc \
+		--redefine-sym func_800291B4=func_800291B4_o057Reloc \
+		--redefine-sym func_800291C4=func_800291C4_o057Reloc \
+		--redefine-sym func_8002F618=func_8002F618_o057Reloc \
+		--redefine-sym func_8002FB34=func_8002FB34_o057Reloc \
+		--redefine-sym func_80039E34=func_80039E34_o057Reloc \
+		--redefine-sym func_8003A680=func_8003A680_o057Reloc \
+		--redefine-sym func_8003A700=func_8003A700_o057Reloc \
+		--redefine-sym func_800429A4=func_800429A4_o057Reloc \
+		--redefine-sym func_8004B0A4=func_8004B0A4_o057Reloc \
+		--redefine-sym func_8004B0B8=func_8004B0B8_o057Reloc \
+		--redefine-sym func_8004B0F8=func_8004B0F8_o057Reloc \
+		--redefine-sym func_80050688=func_80050688_o057Reloc \
+		--redefine-sym func_80050704=func_80050704_o057Reloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x12E0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58EnsureResource.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F0000000_18AF1E8.c.o: CFLAGS += -Wo,-loopunroll,0

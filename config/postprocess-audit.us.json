@@ -941,15 +941,16 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o",
       "offset": 804,
       "overlay": 7,
       "size": 1392,
       "source": "src/overlays/o007/func_overlay_007_F0000324_185C1AC.c",
       "tools": [
-        "trim_elf_section.py"
+        "trim_elf_section.py",
+        "externalize_elf_section.py"
       ]
     },
     {
@@ -1013,7 +1014,6 @@
       "size": 5408,
       "source": "src/overlays/o009/overlay_009.c",
       "tools": [
-        "filter_elf_relocations.py",
         "trim_elf_section.py",
         "externalize_elf_section.py",
         "objcopy"
@@ -5031,6 +5031,21 @@
     {
       "c_owned": true,
       "class": "metadata",
+      "matched_c": true,
+      "nonmatching": false,
+      "object": "build/src/overlays/o057/func_overlay_057_F0004E18_18A8A10.c.o",
+      "offset": 19992,
+      "overlay": 57,
+      "size": 4832,
+      "source": "src/overlays/o057/func_overlay_057_F0004E18_18A8A10.c",
+      "tools": [
+        "trim_elf_section.py",
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": true,
+      "class": "metadata",
       "matched_c": false,
       "nonmatching": true,
       "object": "build/src/overlays/o057/func_overlay_057_F00060F8_18A9CF0.c.o",
@@ -6457,15 +6472,16 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o071/func_overlay_071_F0000870_18CA390.c.o",
       "offset": 2160,
       "overlay": 71,
       "size": 728,
       "source": "src/overlays/o071/func_overlay_071_F0000870_18CA390.c",
       "tools": [
-        "trim_elf_section.py"
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -9204,10 +9220,10 @@
     "altered_bytes": 3600,
     "by_class": {
       "altered": 2,
-      "metadata": 636,
+      "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 225272,
-    "objects_with_postprocess": 639
+    "matched_c_bytes_with_postprocess": 232224,
+    "objects_with_postprocess": 640
   }
 }

@@ -2,11 +2,77 @@
 ### `func_overlay_057_F0004E18_18A8A10` plateau handoff
 
 - source: `src/overlays/o057/func_overlay_057_F0004E18_18A8A10.c`
-- score: 86/1208 words
+- score: 0/1208 words, promoted
 - frame: 0x140
-- relocations: 375
-- first mismatch: +0x100
-- summary: Three identities closed every insertion (209 -> 86, tax 101 -> 0). Remaining is 24 aligned structural plus compiler temps at 0x54/0x58 against 0x5C/0x64. L99/L112 cannot raise those temps without shrinking the frame.
+- relocations: 379
+- first mismatch: none
+- summary: Matched. Bitfield flag word, in-place page steps, no carriers for the tail reads or the two panel offsets, indexed row and column loops, countdown fill as a post-decrement while, first call result in a declared local.
+
+## 2026-10-01 (lane `c-o057big`): ROM-exact closure, 86 -> 0
+
+Every step is a rewrite of inherited shape; no allocator force, region marker
+or statement-order sweep was used. Measured with the direct configured compile
+and `tools/score_symbol.py --object`, all at size delta 0 unless stated.
+
+  - 86 -> 84. The flag word is a bitfield struct. The one-bit read at bit 15
+    becomes an unsigned halfword test and the clear becomes the byte-wide
+    read-modify-write with the wide mask, which the union spelling could not
+    produce (the shard's earlier halfword and word attempts moved the size).
+  - 84 -> 41. The tail reads the player count global at each use instead of
+    through `state` (which shares a symbol with the top-of-function `state`
+    and so inherits its colour), and reads `gO57MiddleChoices[0].tableIndex`
+    directly at both sites instead of through `characterId`. The carrier had
+    kept the table index in a coloured register; direct reads put it in ring
+    temporaries and the whole tail's ring phase lands. The shard's size
+    deficit for this spelling belonged to the old walking-pointer loop.
+  - 41 -> 31. The countdown fill is `count = 10; while (count--)` over a
+    subscript, and the choice walk subscripts `sourceState[index]` instead of
+    walking a `source` pointer. The first gives the target's dead
+    post-decrement copy and non-zero branch; the second removes the commoned
+    address of `sourceState` from a callee-saved register so it is formed
+    twice, as in the target. Each alone moves the size by four bytes in
+    opposite directions, which is why both were recorded as rejected.
+  - 31 -> 23. The two six-step branches are `previous = selection;
+    selection -= 6` in place. The `oldValue` carrier held the value in the
+    call-result register where the target holds it in the selection web.
+  - 23 -> 21. The page number compared against `state` is its own local; as
+    `currentGroup` it shared a symbol with the two later group computations.
+  - 21 -> 20. `records[index].items` with a 32-byte record type gives the
+    base-plus-scaled-index operand order.
+  - 20 -> 16. In the empty-row arm the format call precedes the icon index
+    assignment, with no `palette` carrier.
+  - 16 -> 4. The displaced homes. Neither is a declared local: `-g3` debug
+    info shows every declared local at its declaration-order offset and the
+    two values in cells below all of them. Both are uopt spill slots for the
+    commoned `panelX + 0xA0` and `panelX + 0x56`. The cells below the declared
+    locals are handed out in this order: cfe temporaries, then loop-unroll
+    temporaries (one per unrolled panel loop), then spills and
+    strength-reduction temporaries as they are emitted. The target's layout
+    (spill, one cell, spill, two cells) is what indexed loops produce, read
+    as the row loop's reduced pointer taking the cell between the two spills
+    and the column loop's two reduced pointers the cells after them (the
+    cell order is measured, the owner of each unused cell is inferred). So
+    the fix is to delete the
+    `stack64` and `stack5C` carriers, write each offset at its use, subscript
+    the row and column loops, and drop three trailing declared cells so the
+    total stays 0x140. The indexed column loop also reproduces the target's
+    store and argument schedule before the draw call, which the pointer walk
+    did not under any statement order.
+  - 4 -> 0. The first call's result is assigned to a declared local before
+    the second call. Written as one nested expression, cfe holds it in a
+    temporary that the fill's post-decrement copy later reuses, and that
+    shared temporary takes a callee-saved colour in the fill loop.
+
+Two earlier closures fall with this. "L99/L112 cannot raise those temps
+without shrinking the frame" was true of declaration order and false of the
+function, because the temps are not declared cells. The 1,131-form carrier
+lattice and the fill-spelling sweeps held the explicit fill pointer fixed.
+
+Promotion: no rodata, text is 0x12E0 with no padding. 22 resident callees are
+renamed through the generated surface in `mk/overlays.mk`; seven cross-overlay
+callees are `Reloc` placeholders; the two same-module callees are named
+directly. `gmake verify` printed the expected SHA1, `gmake check-overlay-syms`
+passed, and `gmake promotion-proof` reported 379 of 379 relocation identities.
 
 ## 2026-09-12 (lane `p11-big`): the target's bound is the global's end, read off the object
 

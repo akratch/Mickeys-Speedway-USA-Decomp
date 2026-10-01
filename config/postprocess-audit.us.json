@@ -74,7 +74,7 @@
     },
     {
       "c_owned": null,
-      "class": "metadata",
+      "class": "review-required",
       "matched_c": null,
       "nonmatching": null,
       "object": "build/src/main/charControl.c.o",
@@ -83,6 +83,7 @@
       "size": null,
       "source": "src/main/charControl.c",
       "tools": [
+        "trim_elf_bss.py",
         "objcopy"
       ]
     },
@@ -2465,8 +2466,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o020/overlay20RemoveEntry.c.o",
       "offset": 4120,
       "overlay": 20,
@@ -4237,8 +4238,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o044/overlay44UpdateFrameCache.c.o",
       "offset": 660,
       "overlay": 44,
@@ -9199,9 +9200,10 @@
     "altered_bytes": 3600,
     "by_class": {
       "altered": 2,
-      "metadata": 637
+      "metadata": 636,
+      "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 223044,
+    "matched_c_bytes_with_postprocess": 224004,
     "objects_with_postprocess": 639
   }
 }

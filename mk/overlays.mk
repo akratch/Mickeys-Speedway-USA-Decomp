@@ -1644,8 +1644,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/func_overlay_020_F000038C_1876964.c.o: OPT
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20BuildTileCommands.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x218
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/overlay20RemoveEntry.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym \
-		func_overlay_020_F0001018_18775F0=overlay20RemoveEntry $@ && \
+	$(OBJCOPY) \
+		--redefine-sym gOverlay20ActiveBits=D_4 \
+		--redefine-sym gOverlay20MarkerEnd=D_4DC $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xD4
 # The typed entry allocator is exact. Retail encodes three zero-base data
 # references directly and retains relocations only for the active mask/pool.

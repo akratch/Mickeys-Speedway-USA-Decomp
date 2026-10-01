@@ -2,11 +2,50 @@
 ### `overlay20RemoveEntry` plateau handoff
 
 - source: `src/overlays/o020/overlay20RemoveEntry.c`
-- score: 2/53 words
+- score: 0/53 words, promoted
 - frame: frameless
 - relocations: 10
-- first mismatch: +0x6C
-- summary: hypothesis=retype or move the first use of web 8 and do not delete the carrier; spellings=early u32 and late u32 renumber web 8 to 32, early or-0 folds; stall=it still takes colour 1 and the score stays 2/53
+- first mismatch: none
+- summary: Matched. Read the count from its global at every use, decrement it in place, and index one entry array in both the search and the compaction.
+
+#### 2026-10-01, lane o020-natural: ROM-exact closure
+
+Every earlier pass held the search prologue fixed: the count copied into the
+parameter, the decremented bound carried in a local, and the compaction array
+declared under a second name. Under that shape the count load is a separate
+web that keeps the first colour across the compaction loop, which is the
+recorded contradiction. The contradiction belonged to the shape, not to the
+function.
+
+The matching source declares no count carrier at all. The search guard, the
+search tail, the found test and the compaction bound each read the count
+global; the store is an in-place decrement; and both loops index the same
+array symbol. Measured with the configured flags on a 42-cell product of five
+search spellings, five compaction spellings and one or two array names:
+
+- bottom-tested search reading the global, in-place decrement, one array
+  name: 0 of 53, for the for-loop, guarded do-loop and explicit
+  subtract-and-store compaction spellings alike
+- the same cells with the second array name: 6 of 53
+- the same cells with a bound carrier local: 2 of 53 with either array name
+- for-loop search reading the global, one array name: 2 of 53, schedule only
+- in-place decrement behind the old parameter-copy search: 52 of 53 and four
+  bytes long, which is the cell earlier passes recorded and stopped at
+- short-circuit while search: 20 bytes long
+
+A separate cursor local for the marker walk costs 9 words, so that walk still
+reuses the parameter.
+
+Proof: overlay 20 text +0x1018, 212 executable bytes / 53 words, frameless,
+ten of ten relocation identities. The TU is now fully C. The only postcompile
+normalization renames two data symbols and trims section alignment. Prior
+measurements below remain historical negatives for the parameter-copy shape.
+
+Commands: direct configured compile scored with `tools/score_symbol.py
+--object`, `gmake overlay-atlas-write`, `tools/refresh_atlas_digest.py`,
+`gmake extract`, `gmake overlay-syms`, `gmake verify`,
+`gmake check-overlay-syms`, and
+`gmake promotion-proof SYMBOL=overlay20RemoveEntry`.
 
 Summary before this remeasure: L145 delete-carrier stays the 6-word basin: store-forward keeps web 8. End-first inverts colours at 10-14 with a 4-word preheader shuffle. Baseline 2 of 53.
 

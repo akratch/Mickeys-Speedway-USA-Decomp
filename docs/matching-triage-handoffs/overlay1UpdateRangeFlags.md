@@ -2,11 +2,11 @@
 ### `overlay1UpdateRangeFlags` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_tail.c`
-- score: 2/120 words
+- score: 0/120 words, promoted
 - frame: 0x70
 - relocations: 4
-- first mismatch: +0x190
-- summary: Four canonical callee identities and ABIs authenticated without resolver changes; exact extent/frame, two allocation words remain. Prior source levers stay closed.
+- first mismatch: none
+- summary: Matched. The inherited u8 angle carrier and u16 flag carriers were the residual; a named s16 angle offset, carrier-free arms and one frame pad are exact.
 
 #### tu2-o1tail: the residual is one FP pool web, same law as overlay1AppendPathPoint
 
@@ -618,5 +618,36 @@ and identity correction, not a new match or an allocation search result.
 Evidence commands: `tools/wb_compare.sh --diagnose`,
 `tools/reloc_surface.py compare --json --explain`, and the configured
 NON_MATCHING build, followed by the normal ROM and repository gates.
+
+#### 2026-10-01, lane d-o001: matched by discarding the inherited shape
+
+Every earlier section varied spellings inside one shape: a `u8` carrier for
+the angle byte, `u16` carriers for the flags in both switch arms, and no
+frame pad. The two-word ring-order argument above is true of that shape and
+false of the function. Measured with `tools/fast_score.py`, masked words at
+size delta 0 unless stated:
+
+- natural switch arms (read and write `otherState->flags` directly, no
+  carrier) on the old angle shape: 17, of which the frame is 8 bytes short;
+  adding one unused `s32` after `count` restores the 0x70 frame: 4 (the
+  case-1 test and clear take t4 and t3, the inverse of the old residual).
+- angle block product, 160 cells (ten angle spellings, offset local typed
+  u8, s16, u16 or s32, the two arm shapes, with and without the pad): one
+  exact cell. The offset is a named `s16` assigned `config->angleHigh << 8`
+  after the call, then `angle = angleOffset + angle`. The same local with
+  `angle += angleOffset` is 1; the old u8 carrier form stays 2.
+- Arctanf declared returning s32, s16 or u16, and the angle typed s16, s32
+  or u16: only s32 return with s16 angle reaches the floor (504 cells).
+- signed `* 10` in the range or vertical term adds three words of size
+  (+12) in every cell; the unsigned `10U` spelling is required. The range
+  squared must stay a named `f32` (inline: 25). The vertical term needs no
+  float cast: `(s32)(config->verticalScale * 10U)` is exact.
+- bit-field spellings of the flag (u16 hi:12, bit:1, lo:3) change size
+  (-4 or +4) in every arm combination.
+
+Promotion: atlas range 0x67C0..0x69A0 added; `Arctanf` is a resident
+callee, so `--redefine-sym Arctanf=Arctanf_o001Reloc` was added to the TU's
+POSTPROCESS rule in `mk/overlays.mk`. `gmake verify`, `check-overlay-syms`
+and `promotion-proof` pass (120 words, frame 0x70, relocations 4/4).
 
 <!-- plateau-handoff:overlay1UpdateRangeFlags:end -->

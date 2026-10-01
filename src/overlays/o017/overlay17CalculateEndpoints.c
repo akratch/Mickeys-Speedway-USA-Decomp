@@ -38,14 +38,14 @@ extern f32 overlay17SqrtReloc(f32 value);
 void overlay17CalculateEndpoints(
     Overlay17ChainHead *chain, f32 *outX0, f32 *outY0, f32 *outZ0,
     f32 *outX1, f32 *outY1, f32 *outZ1) {
-    f32 deltaX;
-    f32 deltaZ;
-    f32 points[6];
-    f32 *point;
-    Overlay17Transform *transform;
-    volatile f32 lengthSquared;
-    f32 scale;
     s32 index;
+    f32 deltaZ;
+    f32 scale;
+    volatile f32 lengthSquared;
+    f32 points[6];
+    Overlay17Transform *transform;
+    f32 *point;
+    f32 deltaX;
 
     if (chain != 0) {
         transform = chain->transform;
@@ -120,10 +120,10 @@ void overlay17CalculateEndpoints(
 
 /* PLATEAU-HANDOFF:overlay17CalculateEndpoints:start
  * symbol: overlay17CalculateEndpoints
- * score: 65/198 words
+ * score: 121 differing words
  * frame: 0x58
  * relocations: 3
  * first-mismatch: +0x24
- * summary: Fresh V0 retains 133 differences; call proxies have no exact sibling witness, zero identities resolve, and only one relocation site aligns.
+ * summary: Declaration order moves points to 0x30: 133 to 121. Volatile lengthSquared reloads where the target stores once and keeps f18 live.
  * PLATEAU-HANDOFF:overlay17CalculateEndpoints:end
  */

@@ -1266,6 +1266,7 @@ MIXED_TU_EXACT_C_RANGES = {
             "overlay1AssignRecordIndex",
             "canonical mixed-TU object, seven runtime relocations, and linked ROM bytes exact",
         ),
+        (0x3750, 0x3E48, "overlay1ChoosePath"),
         (0x3E48, 0x3E74, "overlay1SubmitGlobals"),
         (0x3E74, 0x3EB8, "overlay1SubmitAll"),
         (0x3EB8, 0x3F38, "overlay1AngleBetweenSamples"),
@@ -1315,6 +1316,7 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x64F8, 0x6724, "overlay1SolveAngleCandidates"),
         (0x6724, 0x6788, "overlay1UpdateModeSound"),
         (0x6788, 0x67C0, "overlay1CopyBytes"),
+        (0x67C0, 0x69A0, "overlay1UpdateRangeFlags"),
         (0x69A0, 0x6A14, "overlay1InitMotion"),
         (
             0x6A14,

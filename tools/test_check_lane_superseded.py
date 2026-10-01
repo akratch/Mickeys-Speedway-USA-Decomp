@@ -45,9 +45,13 @@ class LiveQueueTests(unittest.TestCase):
     """
 
     def test_a_friendly_named_overlay_function_is_seen_as_queued(self):
+        # Any friendly-named overlay candidate will do. Naming one symbol made
+        # the test fail whenever that symbol matched (overlay1UpdateRangeFlags
+        # did on 2026-10-01); the regression hides all of them at once.
         queue = cls.live_queue()
-        self.assertIn("overlay1UpdateRangeFlags", queue,
-                      "a friendly-named overlay candidate must read as queued")
+        friendly = [s for s in queue if s.startswith("overlay")]
+        self.assertTrue(friendly,
+                        "a friendly-named overlay candidate must read as queued")
 
     def test_the_queue_is_not_empty(self):
         self.assertGreater(len(cls.live_queue()), 100)

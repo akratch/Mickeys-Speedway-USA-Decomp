@@ -80,20 +80,20 @@ extern s32 gOverlay68GlobalFlagReloc;
  */
 #ifdef NON_MATCHING
 void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
-    s32 atStart;
-    f32 tangentX;
-    f32 tangentZ;
+    s32 direction;
+    s32 animationOpacity;
+    s16 angle;
+    s32 opacity;
+    s32 index;
     Overlay68Keyframe *current;
+    f32 tangentZ;
+    s32 atStart;
+    Overlay68Animation *animation;
     Overlay68Keyframe *before;
     Overlay68Keyframe *after;
     Overlay68Keyframe *afterAfter;
+    f32 tangentX;
     Overlay68ObjectState *state;
-    Overlay68Animation *animation;
-    s32 index;
-    s16 angle;
-    s32 direction;
-    s32 opacity;
-    s32 animationOpacity;
 
     state = object->state;
     if (OVERLAY68_GLOBAL_FLAG != 0) {
@@ -125,7 +125,7 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
             if (animationOpacity < 0) {
                 animationOpacity = 0;
             }
-            state->opacity = animationOpacity;
+            state->opacity = animationOpacity & 0xFF;
 
             state->elapsed += updateRate;
             current = &animation->keyframes[state->keyframeIndex];
@@ -223,10 +223,10 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
 
 /* PLATEAU-HANDOFF:overlay68UpdateAnimation:start
  * symbol: overlay68UpdateAnimation
- * score: 213/356 words
+ * score: 183 differing words
  * frame: 0x78
  * relocations: 15
  * first-mismatch: +0x1C
- * summary: Pointer walk matches duration-loop shape at delta 0, 213/356, first +0x1C; state stays t1 not t2. Subscript walk grew 16 bytes, reverted. No colour sweep.
+ * summary: Opacity no-op mask (ring phase) and declaration order: 213 to 183. State web t2 against t1 is a global t-pool shift.
  * PLATEAU-HANDOFF:overlay68UpdateAnimation:end
  */

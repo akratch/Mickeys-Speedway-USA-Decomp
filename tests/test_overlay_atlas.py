@@ -353,6 +353,73 @@ def trial_module(overlay=1):
     }
 
 
+class CanonicalDataOnlyOwnershipTests(unittest.TestCase):
+    @staticmethod
+    def text_ownership():
+        return [{"type": "c", "source": "overlays/o008/overlay_008"}]
+
+    def test_registered_data_only_owner_is_a_canonical_atlas_row(self):
+        rows = overlay_atlas.data_rodata_ownership_rows(
+            8, 0x2500, self.text_ownership()
+        )
+        self.assertEqual(
+            rows[-1],
+            {
+                "offset": "0x2378",
+                "end_offset": "0x2418",
+                "size": "0xA0",
+                "type": "c",
+                "section": ".data",
+                "source": "overlays/o008/overlay8MotionConstants",
+                "canonical": True,
+            },
+        )
+        self.assertEqual(len(rows), 2)
+
+    def test_unallowlisted_data_only_owner_fails_closed(self):
+        with mock.patch.dict(
+            overlay_atlas.CANONICAL_FIXED_DATA_RODATA_OWNERSHIP,
+            {8: [(0x100, 0x110, "unreviewedOwner", ".data")]},
+            clear=True,
+        ):
+            with self.assertRaisesRegex(ValueError, "not explicitly allowed"):
+                overlay_atlas.data_rodata_ownership_rows(
+                    8, 0x2500, self.text_ownership()
+                )
+
+    def test_canonical_owner_carves_without_trial_and_preserves_raw_slices(self):
+        module_row = trial_module()
+        part = module_row["data_rodata_ownership"][0]
+        part["source"] = "overlays/o001/storageOnly"
+        part["canonical"] = True
+        block = overlay_atlas.render_yaml_block({"modules": [module_row]})
+
+        self.assertIn("subalign: 0x4", block)
+        self.assertIn("- [0x1854500, bin, overlay_001_data_rodata]", block)
+        self.assertIn("- [0x1854774, .rodata, storageOnly]", block)
+        self.assertIn("- [0x1854794, bin, overlay_001_data_rodata_294]", block)
+
+    def test_canonical_owner_overlap_with_trial_owner_fails_closed(self):
+        module_row = trial_module()
+        module_row["data_rodata_ownership"].append(
+            {
+                "offset": "0x280",
+                "end_offset": "0x2A0",
+                "size": "0x20",
+                "type": "c",
+                "section": ".data",
+                "source": "overlays/o001/storageOnly",
+                "canonical": True,
+            }
+        )
+        with self.assertRaisesRegex(ValueError, "overlaps"):
+            overlay_atlas.render_yaml_block(
+                {"modules": [module_row]},
+                trial_ownership=True,
+                trial_sources=frozenset({"example_tail"}),
+            )
+
+
 class TrialProjectionTests(unittest.TestCase):
     """The promotion trial's temporary ownership projection."""
 
@@ -452,6 +519,15 @@ class TrialProjectionTests(unittest.TestCase):
             )
         with mock.patch.dict(os.environ, {overlay_atlas.TRIAL_FUNCTION_ENV: ""}):
             self.assertEqual(overlay_atlas.trial_functions(), frozenset())
+
+    def test_canonical_externalized_owner_fails_closed(self):
+        module_row = trial_module()
+        part = module_row["data_rodata_ownership"][0]
+        part["canonical"] = True
+        part["externalized"] = True
+
+        with self.assertRaisesRegex(ValueError, "canonical.*cannot be externalized"):
+            overlay_atlas.render_yaml_block({"modules": [module_row]})
 
 
 if __name__ == "__main__":

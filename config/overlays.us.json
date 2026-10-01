@@ -25,7 +25,7 @@
   "matched_overlay_c_bytes": 257444,
   "nonmatching_overlay_c_bytes": 211164,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 3120,
+  "owned_data_rodata_bytes": 3280,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -3061,6 +3061,15 @@
      "section": ".rodata",
      "source": "overlays/o008/overlay_008",
      "trial_function": "func_overlay_008_F0004CF0_1862A48"
+    },
+    {
+     "offset": "0x2378",
+     "end_offset": "0x2418",
+     "size": "0xA0",
+     "type": "c",
+     "section": ".data",
+     "source": "overlays/o008/overlay8MotionConstants",
+     "canonical": true
     }
    ]
   },

@@ -171,6 +171,17 @@ FIXED_DATA_RODATA_OWNERSHIP = {
     ],
 }
 
+# Permanent interior initialized-storage owners. These rows participate in
+# every canonical atlas/YAML projection, unlike function-scoped trial rows.
+# The exact data-only source allowlist keeps physical ownership independent
+# from executable text ownership and matching credit.
+CANONICAL_FIXED_DATA_RODATA_OWNERSHIP = {
+    8: [(0x2378, 0x2418, "overlay8MotionConstants", ".data")],
+}
+DATA_ONLY_FIXED_DATA_SOURCES = {
+    (8, "overlay8MotionConstants", ".data"),
+}
+
 # When a C owner's initialized input follows its text, IDO's measured .text
 # alignment can emit the intervening zero padding without a separate asm row.
 # Keep the row in the atlas so padding is never counted as executable C credit.
@@ -2041,6 +2052,7 @@ def data_rodata_ownership_rows(overlay, data_size, text_ownership):
     rows = []
     previous_end = 0
     previous_text_index = -1
+    fixed_source_sections = set()
     text_sources = [
         part["source"].rsplit("/", 1)[1]
         for part in text_ownership
@@ -2101,6 +2113,13 @@ def data_rodata_ownership_rows(overlay, data_size, text_ownership):
                 f"overlay {overlay} fixed data/rodata owner {source_name} "
                 "does not own a C text row"
             )
+        source_section = (source_name, section)
+        if source_section in fixed_source_sections:
+            raise ValueError(
+                f"overlay {overlay} repeats fixed data/rodata owner "
+                f"{source_name} section {section}"
+            )
+        fixed_source_sections.add(source_section)
         row = {
             "offset": hx(start),
             "end_offset": hx(end),
@@ -2114,6 +2133,45 @@ def data_rodata_ownership_rows(overlay, data_size, text_ownership):
         if externalized:
             row["externalized"] = True
         rows.append(row)
+    for start, end, source_name, section in CANONICAL_FIXED_DATA_RODATA_OWNERSHIP.get(
+        overlay, []
+    ):
+        if (
+            start < 0
+            or start >= end
+            or end > data_size
+            or start % 4
+            or end % 4
+            or section not in (".data", ".rodata")
+        ):
+            raise ValueError(
+                f"invalid overlay {overlay} canonical fixed data/rodata owner"
+            )
+        source_section = (source_name, section)
+        if source_section in fixed_source_sections:
+            raise ValueError(
+                f"overlay {overlay} repeats fixed data/rodata owner "
+                f"{source_name} section {section}"
+            )
+        fixed_source_sections.add(source_section)
+        if source_name not in text_sources and (
+            overlay, source_name, section
+        ) not in DATA_ONLY_FIXED_DATA_SOURCES:
+            raise ValueError(
+                f"overlay {overlay} canonical data-only owner {source_name} "
+                f"section {section} is not explicitly allowed"
+            )
+        rows.append(
+            {
+                "offset": hx(start),
+                "end_offset": hx(end),
+                "size": hx(end - start),
+                "type": "c",
+                "section": section,
+                "source": f"overlays/o{overlay:03d}/{source_name}",
+                "canonical": True,
+            }
+        )
     return rows
 
 
@@ -2568,10 +2626,22 @@ def render_yaml_block(
                 return part.get("trial_function") in trial_functions
             return part["source"].rsplit("/", 1)[-1] in trial_sources
 
-        carved = trial_ownership and any(
-            fixed_data_matches_trial(part)
-            for part in row.get("data_rodata_ownership", [])
-        )
+        owned_data = row.get("data_rodata_ownership", [])
+        if any(
+            part.get("canonical") is True and part.get("externalized")
+            for part in owned_data
+        ):
+            raise ValueError(
+                f"overlay {ov} canonical fixed data/rodata ownership "
+                "cannot be externalized"
+            )
+        fixed_data = [
+            part
+            for part in owned_data
+            if part.get("canonical") is True
+            or (trial_ownership and fixed_data_matches_trial(part))
+        ]
+        carved = bool(fixed_data)
         lines += [
             "",
             f"  - name: {name}",
@@ -2587,7 +2657,6 @@ def render_yaml_block(
             "    subsegments:",
         ]
         text_start = int(row["sections"]["text"]["start"], 16)
-        owned_data = row.get("data_rodata_ownership", [])
         compiler_padding = COMPILER_TEXT_ALIGNMENT_PADDING.get(ov)
         explicit_padding = EXPLICIT_TEXT_PADDING.get(ov)
         for part in row["text_ownership"]:
@@ -2616,11 +2685,6 @@ def render_yaml_block(
             )
         data_row = row["sections"]["data_rodata"]
         data_size = int(data_row["size"], 16)
-        fixed_data = [
-            part
-            for part in owned_data
-            if fixed_data_matches_trial(part)
-        ] if carved else []
         leading_data = [part for part in owned_data if "section" not in part]
         owned_end = (
             int(leading_data[-1]["end_offset"], 16) if leading_data else 0

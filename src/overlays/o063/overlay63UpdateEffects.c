@@ -88,7 +88,6 @@ void overlay63UpdateEffects(s32 updateRate) {
     O63RenderPosition pos;
     O63Particle *particle;
     s32 count;
-    s32 fade;
 
     if (gO63Triggered == 0) {
         if ((gO63ExternalFlagsReloc & 0x9000) && (gO63ExternalTimerReloc <= 0)) {
@@ -129,24 +128,20 @@ void overlay63UpdateEffects(s32 updateRate) {
             }
         }
     } else if (gO63FadeDirection == 1) {
-        fade = gO63Fade + updateRate * 4;
-        gO63Fade = fade;
-        if (fade >= 0x100) {
-            fade = 0xFF;
-            gO63Fade = fade;
+        gO63Fade += updateRate * 4;
+        if (gO63Fade >= 0x100) {
+            gO63Fade = 0xFF;
         }
-        if (fade == 0xFF) {
+        if (gO63Fade == 0xFF) {
             gO63FadeDirection = 0;
             gO63FadeTimer = 0xF0;
         }
     } else {
-        fade = gO63Fade - updateRate * 4;
-        gO63Fade = fade;
-        if (fade < 0) {
+        gO63Fade -= updateRate * 4;
+        if (gO63Fade < 0) {
             gO63Fade = 0;
-            fade = 0;
         }
-        if (fade == 0) {
+        if (gO63Fade == 0) {
             gO63FadeDirection = 1;
             gO63FadeTimer = 0x1E0;
         }
@@ -220,10 +215,10 @@ void overlay63UpdateEffects(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:overlay63UpdateEffects:start
  * symbol: overlay63UpdateEffects
- * score: 211/350 words
+ * score: 137/350 words
  * frame: 0xF8
  * relocations: 71
- * first-mismatch: +0x16C
- * summary: Fresh V0 is stable; gO63RenderMatrixReloc has no independent runtime-identity witness, so preflight remains fail-closed and body unchanged.
+ * first-mismatch: +0x14
+ * summary: Fade carrier local removed (reads gO63Fade at each use): 139 to 137. Particle loop forms indexed/ascending are 333+.
  * PLATEAU-HANDOFF:overlay63UpdateEffects:end
  */

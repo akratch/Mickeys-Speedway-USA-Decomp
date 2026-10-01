@@ -2,11 +2,11 @@
 ### `overlay63UpdateEffects` plateau handoff
 
 - source: `src/overlays/o063/overlay63UpdateEffects.c`
-- score: 211/350 words
+- score: 137/350 words
 - frame: 0xF8
 - relocations: 71
-- first mismatch: +0x16C
-- summary: Fresh V0 is stable; gO63RenderMatrixReloc has no independent runtime-identity witness, so preflight remains fail-closed and body unchanged.
+- first mismatch: +0x14
+- summary: Fade carrier local removed (reads gO63Fade at each use): 139 to 137. Particle loop forms indexed/ascending are 333+.
 
 Authorized maintenance reproof on base
 `4b9fafd36510efce3321060bf07686a2c40dfac3`:
@@ -37,4 +37,7 @@ Authorized maintenance reproof on base
 Next lever: add a Mickey-authenticated alias/owner witness or a generic
 fail-closed resolver backed by independent candidate evidence. Until then,
 leave the C body unchanged and do not reopen this plateau.
+#### 2026-10-01, lane d-ovl1: 139 to 137
+
+The `fade` carrier local in the fade-direction arms removed, each use reading and writing gO63Fade directly: 139 to 137 at delta 0 (first mismatch moves to +0x14). Particle loop as an indexed descending, postfix and ascending loop over gO63Particles: 333, 334, worse. Frame-order of the locals and the gfx packet store order: flat. The saved-register rotation (target s0 holds the fade address that later becomes the particle cursor, s5 the draw context; ours s1 and s4) is the remaining mass and no spelling tried moves it.
 <!-- plateau-handoff:overlay63UpdateEffects:end -->

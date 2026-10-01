@@ -204,9 +204,13 @@ void spranimOnceControl(SpranimOnceState *state, s32 updateRate) {
     }
 }
 #ifdef NON_MATCHING
-/* Workbench verdict: structure-mismatch, 60 differing words, first mismatch +0x48. */
-/* Candidate: 193/193 instructions with an exact 0x80 frame and five exact relocation identities; four opcode residuals remain. */
-/* Shape status: the ten-entry hit list and loop extent are exact, but stack homes and the integer register web remain non-exact. */
+/* 51 masked words at size delta 0 and the exact 0x80 frame (was 57),
+ * 2026-10-01 lane d-res2: every local declared once at the top of the
+ * function (no nested scopes), the state pointer declared after the hit list
+ * and the pointers before it, which moves the state spill from above the hit
+ * list to below it as in the target (a 150 s declaration-order climb, 57 ->
+ * 51). Left: the hit-index spill sits 0x10 above the target's 0x6C, and the
+ * loop cursor/index pair takes a2/a3 in the opposite roles. */
 /*
  * 2026-09-12 (lane p7-res2): the `st` local in the store body is load-bearing.
  * Naming the hit's state pointer before storing through it is worth three words
@@ -240,12 +244,16 @@ extern u8 D_800794B0[];
 extern s32 func_8002905C(u8 type, void *state);
 
 void effectboxControl(SpranimEffectBox *arg0, s32 arg1) {
+    u8 *entry;
+    SpranimB798Target *hit;
+    s32 hitCount;
+    s32 processed;
+    void *hits[10];
     SpranimEffectState *state;
+    void *st;
 
     state = arg0->state64;
     if ((state->planeIndex >= 0) && (state->planeIndex <= 0)) {
-        u8 *entry;
-
         entry = &D_800794B0[state->planeIndex * 4];
         if (entry[0] != 0xFF && func_8002905C(entry[0], state) != entry[1]) {
             return;
@@ -255,28 +263,22 @@ void effectboxControl(SpranimEffectBox *arg0, s32 arg1) {
         }
     }
 
-    {
-        s32 hitCount;
-        s32 processed;
-        void *hits[10];
+    hitCount = func_8005776C(arg0->x, arg0->y, arg0->z, (f32) state->radius, 0, hits);
+    if (hitCount != 0) {
+        processed = 0;
+        if (hitCount > 0) {
+            do {
+                hit = ((SpranimB798Target **) hits)[processed];
 
-        hitCount = func_8005776C(arg0->x, arg0->y, arg0->z, (f32) state->radius, 0, hits);
-        if (hitCount != 0) {
-            processed = 0;
-            if (hitCount > 0) {
-                do {
-                    SpranimB798Target *hit = ((SpranimB798Target **) hits)[processed];
+                if ((state->active == 0) ||
+                    ((state->normalX * hit->x) + (state->normalY * hit->y) +
+                     (state->normalZ * hit->z) + state->distance < 0.0f)) {
+                    st = hit->state64;
 
-                    if ((state->active == 0) ||
-                        ((state->normalX * hit->x) + (state->normalY * hit->y) +
-                         (state->normalZ * hit->z) + state->distance < 0.0f)) {
-                        void *st = hit->state64;
-
-                        *(void **)((u8 *) st + 0xC8) = arg0;
-                    }
-                    processed++;
-                } while (processed < hitCount);
-            }
+                    *(void **)((u8 *) st + 0xC8) = arg0;
+                }
+                processed++;
+            } while (processed < hitCount);
         }
     }
 }
@@ -420,11 +422,11 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
 
 /* PLATEAU-HANDOFF:effectboxControl:start
  * symbol: effectboxControl
- * score: 57/193 words
+ * score: 51/193 words
  * frame: 0x80
  * relocations: 5
  * first-mismatch: +0x48
- * summary: Exhaustive landscape reaches 38 only by forcing web 60 to a2; source cursor removal regressed structurally and declaration/counter forms were byte-flat.
+ * summary: 57 to 51 by declaration placement (state spill now below the hit list). Left: hit-index spill 0x7C vs 0x6C; cursor/index a2/a3 roles swapped
  * PLATEAU-HANDOFF:effectboxControl:end
  */
 

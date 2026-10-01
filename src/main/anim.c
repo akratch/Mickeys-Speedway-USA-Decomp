@@ -775,6 +775,11 @@ extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
  * globals, sound-object offset, and final compiler output are independently
  * established from Mickey's ROM.
  *
+ * 92 masked words at size delta 0 and the target's 0x40 frame (2026-10-01,
+ * lane d-res2). The frame was one local too many: the camera-clear cursor
+ * is gone (an indexed loop over `offset`), every declared local reserves a
+ * frame home. The or-zero below still costs one ring draw (t7 -> t8 at the
+ * first test); the bare pointer hoists the address above the first branch.
  * Size-exact at 287 words. Early playback loads keep the state address
  * across the trap; the or-zero on those loads is the copy-prop barrier,
  * and that pointer dies before the path loops. The store and the
@@ -783,8 +788,6 @@ extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
  * Retain NON_MATCHING. */
 #ifdef NON_MATCHING
 void func_80051364(s32 updateRate) {
-    AnimStreamEntry *command;
-    AnimCameraSource **camera;
     AnimPath *path;
     AnimPathObject *object;
     s32 originalRate;
@@ -792,6 +795,7 @@ void func_80051364(s32 updateRate) {
     s32 adjustedRate;
     s32 cmd; s32 *playing;
     s32 newClock;
+    AnimStreamEntry *command;
     u16 cmdWord;
     u16 duration;
     f32 timeScale;
@@ -828,9 +832,9 @@ void func_80051364(s32 updateRate) {
                 }
             }
             if (updateRate > 0) {
-                newClock = D_8007D6A8 + updateRate; camera = D_800D6B08; do {
-                    *camera++ = NULL;
-                } while (camera < (AnimCameraSource **) D_800D6B18);
+                newClock = D_8007D6A8 + updateRate; for (offset = 0; offset < 4; offset++) {
+                    D_800D6B08[offset] = NULL;
+                }
                 if (D_8007D6BC != 0) {
                     if (updateRate < D_8007D6BC) {
                         D_8007D6B4 += D_8007D6B8 * (f32) updateRate;
@@ -4170,11 +4174,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80051364:start
  * symbol: func_80051364
- * score: 94 differing words
- * frame: 0x48
+ * score: 92 differing words
+ * frame: 0x40
  * relocations: 49
- * first-mismatch: +0x0
- * summary: hypothesis=an address keep that dies before the path loops; spellings=bare pointer inert at 102, store barrier scored 104, load-only barrier kept at 94; stall=frame still 0x48 and the command shift still follows the PAL math
+ * first-mismatch: +0x2C
+ * summary: 94 to 92 with the exact frame: no camera cursor local. Left: the or-zero state reads draw one extra ring temp (t7 vs t8), shifting the rest
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

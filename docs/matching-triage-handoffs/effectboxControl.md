@@ -2,11 +2,13 @@
 ### `effectboxControl` plateau handoff
 
 - source: `src/main/spranim.c`
-- score: 57/193 words
+- score: 51/193 words
 - frame: 0x80
 - relocations: 5
 - first mismatch: +0x48
-- summary: Exhaustive landscape reaches 38 only by forcing web 60 to a2; source cursor removal regressed structurally and declaration/counter forms were byte-flat.
+- summary: 57 to 51 by declaration placement (state spill now below the hit list). Left: hit-index spill 0x7C vs 0x6C; cursor/index a2/a3 roles swapped
+
+Summary before this remeasure: Exhaustive landscape reaches 38 only by forcing web 60 to a2; source cursor removal regressed structurally and declaration/counter forms were byte-flat.
 #### 2026-09-12 (lane `lane/p7-res2`): 60 to 57 on one named local; the two stack homes are not a declaration question
 
 **Naming the hit's state pointer in a local inside the conditional body pays
@@ -66,4 +68,19 @@ length and pad forms; 11 array lengths on the pre-adoption base; four L97
 regions. Not covered:
 an instrumented free-list capture at the unrolled body, which is what would
 turn the a2/a3 cycle from a coherent mapping into a named draw.
+
+#### 2026-10-01, lane d-res2: 57 to 51 by declaration placement
+
+Every local is now declared once at the top of the function (the inner-block
+declarations of `entry`, the hit list, the counters, `hit` and `st` moved up;
+codegen is unchanged by the move: 57). Their order is then a layout variable:
+spill cells are laid out against the declared homes, and a 150 s climb over
+the seven declarations found 57 -> 54 -> 51 with `entry`, `hit`, `hitCount`,
+`processed`, `hits[10]`, `state`, `st` in that order. That order puts the
+state-pointer spill below the hit list (target 0x44) instead of above it, so
+one of the two spill-cell rows now agrees. Hit-list lengths 6 to 13 at this
+order: 50 (6, size-exact but the extent is wrong), 63, 54, 60, 51, 63, 54, 63,
+so ten stays. Left: the hit-index spill is at 0x7C where the target has 0x6C,
+and the loop cursor/index pair takes a2/a3 in the opposite roles (the
+carriers of the earlier notes were not revisited).
 <!-- plateau-handoff:effectboxControl:end -->

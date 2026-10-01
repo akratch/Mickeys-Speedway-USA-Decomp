@@ -12,13 +12,6 @@
 # rule; MIPS I inserts load-delay nops in several of them.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/%.c.o: MIPSISET := -mips2 -32
 
-# overlay10Initialize's three rolled loops match only with the unroller off.
-# Default IDO unroll grows the TU from 0x2B0 to 0x350. NON_MATCHING-only until
-# the function is promoted; the GLOBAL_ASM path does not compile those loops.
-ifeq ($(NON_MATCHING),1)
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o010/overlay10Initialize.c.o: CFLAGS += -Wo,-loopunroll,0
-endif
-
 # Build architecture note: this section does not implement Mickey's runtime
 # overlay loader. Runtime loading and relocation live in src/main/runlink.c and
 # are explained in docs/overlays.md sections 5.1-5.4. mickey.us.yaml and
@@ -2658,7 +2651,17 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53Initialize.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x11C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53CopyOffsetEntries.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xD4
+# overlay54Initialize owns overlay 54's .data and .bss.  Its text reaches them
+# through the object's own section symbols; the shipped words are
+# section-relative, so every site is rebound to a zero-valued base.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54Initialize.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	config/normalizations/func_overlay_054_F0000000_189ECA0.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54Initialize.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay54InitDataBaseReloc=0x0,global \
+		--add-symbol gOverlay54InitBssBaseReloc=0x0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_054_F0000000_189ECA0.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x3CC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54PatchIndices.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50

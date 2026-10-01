@@ -1022,8 +1022,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o010/overlay10Initialize.c.o",
       "offset": 0,
       "overlay": 10,
@@ -4426,18 +4426,15 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
+      "matched_c": false,
+      "nonmatching": true,
       "object": "build/src/overlays/o046/overlay46UpdateSequence.c.o",
       "offset": 288,
       "overlay": 46,
       "size": 1268,
       "source": "src/overlays/o046/overlay46UpdateSequence.c",
       "tools": [
-        "rebind_elf_relocations.py",
-        "externalize_elf_section.py",
-        "trim_elf_section.py",
-        "objcopy"
+        "trim_elf_section.py"
       ]
     },
     {
@@ -4821,15 +4818,17 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o054/overlay54Initialize.c.o",
       "offset": 0,
       "overlay": 54,
       "size": 972,
       "source": "src/overlays/o054/overlay54Initialize.c",
       "tools": [
-        "trim_elf_section.py"
+        "rebind_elf_relocations.py",
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -5031,21 +5030,6 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
-      "object": "build/src/overlays/o057/func_overlay_057_F0004E18_18A8A10.c.o",
-      "offset": 19992,
-      "overlay": 57,
-      "size": 4832,
-      "source": "src/overlays/o057/func_overlay_057_F0004E18_18A8A10.c",
-      "tools": [
-        "trim_elf_section.py",
-        "objcopy"
-      ]
-    },
-    {
-      "c_owned": true,
-      "class": "metadata",
       "matched_c": false,
       "nonmatching": true,
       "object": "build/src/overlays/o057/func_overlay_057_F00060F8_18A9CF0.c.o",
@@ -5230,8 +5214,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o057/overlay57UpdateModeState.c.o",
       "offset": 14924,
       "overlay": 57,
@@ -9220,10 +9204,10 @@
     "altered_bytes": 3600,
     "by_class": {
       "altered": 2,
-      "metadata": 637,
+      "metadata": 636,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 232224,
-    "objects_with_postprocess": 640
+    "matched_c_bytes_with_postprocess": 229200,
+    "objects_with_postprocess": 639
   }
 }

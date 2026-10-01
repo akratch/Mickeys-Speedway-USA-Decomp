@@ -363,11 +363,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: POSTPROCESS = \
 O8_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o
 $(O8_OBJ): config/normalizations/overlay8UpdateChannels.rebind.spec
 $(O8_OBJ): config/normalizations/overlay8P2640.rebind.spec
-# The object's .rodata is two literal pools in function order: the +0x2640
-# emitter's two floats (retail 0x198, 0x19C), then the +0x3018 channel
-# update's (retail 0x1BC on).  Each pool is rebound to an absolute anchor and
-# keeps its section-relative addend, so the second anchor is 0x1BC less the
-# eight bytes that now precede it.
+$(O8_OBJ): config/normalizations/overlay8P4CF0.rebind.spec
+# The object's .rodata is three literal pools in function order: the +0x2640
+# emitter's two floats (retail 0x198, 0x19C), the +0x3018 channel update's
+# (retail 0x1BC on), then the +0x4CF0 surface update's seven (retail 0x290
+# on).  Each pool is rebound to an absolute anchor and keeps its
+# section-relative addend, so the second anchor is 0x1BC less the eight bytes
+# that precede it and the third is 0x290 less the 0x1C bytes that precede it.
 # -Wo,-loopunroll,0: the shipped +0x34A0 body walks its four-entry angle
 # array as a single rolled do-while, while the default -O2 unroller emitted a
 # four-wide body plus a runtime remainder prologue from the two-variable
@@ -484,12 +486,16 @@ $(O8_OBJ): POSTPROCESS = \
 		gOverlay8P2640Constants=0x198,global $@ && \
 	$(OBJCOPY) --add-symbol \
 		gOverlay8UpdateChannelConstants=0x1B4,global $@ && \
+	$(OBJCOPY) --add-symbol \
+		gOverlay8P4CF0Constants=0x274,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay8P2640.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay8UpdateChannels.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/overlay8P4CF0.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:fb5718bc8fd2b81fac2bec96b37368cb69151aa76f99b2c0bc9cb212254c8778
+		sha256:11fab3c6eaac14d2852f3778b062522b0a4093f35e7fd2df756119c6a16ed4f3
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
@@ -887,6 +893,7 @@ $(O15_OBJ): POSTPROCESS = \
 		--redefine-sym func_overlay_015_F00009E0_1872D78=overlay15UpdateMovingStars \
 		--redefine-sym func_overlay_015_F0000B94_1872F2C=overlay15DrawRain \
 		--redefine-sym starfieldFastMove=starfieldFastMove_o015Reloc \
+		--redefine-sym rainFastDraw=rainFastDraw_o015Reloc \
 		--add-symbol gOverlay15FadePoolReloc=0x0,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay15DrawScreenStars.rebind.spec && \
@@ -906,7 +913,9 @@ $(O15_OBJ): POSTPROCESS = \
 		0xae8:6:.bss 0xaf0:6:.bss 0xaf4:5:.bss 0xaf8:6:.bss \
 		0xafc:6:.bss 0xb00:5:.bss 0xb14:6:.bss 0xb18:6:.bss \
 		0xb20:5:.bss 0xb2c:6:.bss 0xb30:6:.bss 0xb34:5:.bss \
-		0xb3c:6:.bss && \
+		0xb3c:6:.bss 0xbfc:5:.bss 0xc00:6:.bss 0xc24:5:.bss \
+		0xc28:6:.bss 0xc2c:6:.bss 0xc30:5:.bss 0xc34:6:.bss \
+		0x738:5:.bss 0x73c:6:.bss && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC6C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o034/overlay34SetValue10.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC
@@ -2612,9 +2621,34 @@ ifeq ($(NON_MATCHING),0)
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001020_18A4C18.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x958
 endif
+# The mode dispatch is instruction-exact. Its switch table is the retained
+# overlay table at rodata +0xB0: bind the two table references to that owner
+# and drop the compiler's private copy by digest. No instruction changes.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/func_overlay_057_F0001AE8_18A56E0.rebind.spec
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay57DispatchJumpTableReloc=0xB0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_057_F0001AE8_18A56E0.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:97d2a20db5917a686e817319bc36f7a4771d8e9799e1d0e8c0b6104c1f2dbdb6 && \
+	$(OBJCOPY) --remove-section .rel.rodata $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDCC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0004460_18A8058.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x7B8
+# The menu step and start is instruction-exact. Its resident callees go
+# through the generated surface entries; the trim only pins the size.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F00060F8_18A9CF0.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym amSndPlay=amSndPlay_o057Reloc \
+		--redefine-sym animseqStartPath=animseqStartPath_o057Reloc \
+		--redefine-sym animseqStopPath=animseqStopPath_o057Reloc \
+		--redefine-sym joyCreateMap=joyCreateMap_o057Reloc \
+		--redefine-sym mainChangeCameras=mainChangeCameras_o057Reloc \
+		--redefine-sym mainChangeLevel=mainChangeLevel_o057Reloc \
+		--redefine-sym mainSetMode=mainSetMode_o057Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6E4
 # The middle-panel update is instruction-exact. Its resident callees go
 # through the generated surface entries; the text is already 0x12E0 so the
@@ -3573,10 +3607,3 @@ OVERLAY_TRIMMED_OBJECTS += \
 	$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57UpdateModeTrigger.c.o
 
 $(OVERLAY_TRIMMED_OBJECTS): $(TOOLS_DIR)/trim_elf_section.py
-
-# Overlay 57's prefix owner ends at the measured 0xDCC-byte function boundary.
-# The assembly-backed C scaffold makes IDO/asm-processor round the standalone
-# .text section to 0xDD0, so discard only its trailing alignment word before
-# the following overlay57EaseAndLatch subsegment.
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDCC

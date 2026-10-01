@@ -2,11 +2,27 @@
 ### `overlay15InitStars` plateau handoff
 
 - source: `src/overlays/o015/overlay_015.c`
-- score: 89/190 words
+- score: 0/190 words, promoted
 - frame: 0xb8
 - relocations: 15
-- first mismatch: +0x7c
-- summary: Byte-offset normalization and folded setup stores are byte-inert; 74 draws and the existing spill/order residual remain.
+- first mismatch: none
+- summary: Matched. Rain-field bounds as the static struct, count*12 byte-pointer colour base, for loop with index and both cursors in the init clause, five unused s32 pads.
+
+#### 2026-10-01, lane d-o015: matched by a 243-cell product
+
+Promoted at 190 of 190 words, delta 0, frame 0xb8, 15 of 15 relocations.
+Before: 89 masked words (the previous lane's best scratch, a for-loop with
+pads, was 9). Priced by tools/shape_product.py over placements of the five
+setup statements (index, star cursor, colour cursor, count store, zero store)
+in three slots: floor 5. Then `colors = (u32 *)((u8 *)stars + count * 12)`
+instead of `stars + count` (the latter commutes the final addu): 4. Then the
+loop init clause `for (i = 0, stars = ..., colors = ...; ...)` with no
+separate statements: 0, and 18 of 108 cells in that sub-product were exact, so
+the statement slots no longer matter. The bounds are `sOverlay15Rain.bounds`
+(the static field struct) rather than the proxy symbol; the .bss records at
+0x738/0x73c are filtered in mk/overlays.mk.
+
+Gates: gmake verify, check-overlay-syms and promotion-proof pass.
 
 #### 2026-09-13, lane l1: measured schedule controls
 

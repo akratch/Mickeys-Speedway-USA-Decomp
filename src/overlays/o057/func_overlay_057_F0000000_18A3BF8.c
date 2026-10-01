@@ -56,20 +56,6 @@ typedef struct O57FinalSpawnPacket {
     s8 state;
 } O57FinalSpawnPacket;
 
-/* CORRECTED 2026-09-12, lane p11-mid.  This used to read "giving each its own
- * local reserves a second 20-byte home the target does not have".  The target
- * DOES have it: tools/frame_census.py reads two disjoint packet blocks in the
- * target's 24 stack homes, a 20-byte one at +0x54 and a 13-byte one at +0x3C,
- * against our single union at +0x78.  Splitting the union reproduces both with
- * their internal structure matching slot for slot and moves the size delta
- * from -20 to -12; it scores worse (282 -> 335) only because every home below
- * it shifts, and the frame excess that causes is the block-scoped register
- * locals below the packets, not the packets.  See the handoff block below. */
-typedef union O57SpawnUnion {
-    O57SpawnPacket initial;
-    O57FinalSpawnPacket final;
-} O57SpawnUnion;
-
 typedef struct O57SpawnState {
     u8 pad00[8];
     s16 mode;
@@ -155,6 +141,7 @@ extern s32 gO57Value128Reloc;
 extern s32 gO57Value12CReloc;
 extern s32 gO57Ids134Reloc[];
 extern s32 gO57Value138Reloc;
+extern s32 D_134;
 extern s32 gO57Value13CReloc;
 extern s32 gO57Active144Reloc;
 extern s32 gO57Value148Reloc;
@@ -200,86 +187,53 @@ extern O57Spawned *func_8000590C(void *packet, s32 mode);
 extern void initColourCycle(void *cycle, s32 count);
 extern void joyResetMap(void);
 extern s32 o57QueryModeReloc(void);
-extern void overlay57SetNodeValue(s32 id, s32 argument, s32 valueBits);
+extern void overlay57SetNodeValue(s32 id, s32 argument, f32 value);
 extern void o57PublishChoicesReloc(void);
 extern void func_8003A754(void);
 extern void func_8005AD64(O57Spawned *spawned, s32 mode, s32 index,
-                          s32 valueBits);
+                          f32 value);
 
-/* Workbench plateau: structure-mismatch, first divergence +0x8.
+/* Overlay 57 text +0x0..+0x954, the module initializer.
  *
- * 2026-09-12 (lane p12-o57): 282 -> 276 masked of 597 words, byte-exact
- * 410 -> 421, register naming 75, immediate 23 -> 17, really different
- * 98 -> 94, frame 0x90 -> 0x80 against the target's 0x78.  Two edits:
+ * 2026-10-01 (lane d-o057): 276 masked at size delta -20 -> 100 at -8 by
+ * rewriting inherited shape. The 0x134/0x138 stores are the bss fog pair
+ * (D_134), not the data id list the switch walks (the relocation records
+ * separate the two sections); the spawn packets are two locals, not a union,
+ * and the final one stores z; the id walks are `while (*entry != -1)` reading
+ * the entry at each use with the f32 prototype; the choice mask is a plain
+ * `|=`; func_8005AD64's last argument is a float zero; the initial packet
+ * assigns scale before kind and state.
  *
- *  1. EVERY BLOCK-SCOPED `register` LOCAL IS MERGED TO FUNCTION SCOPE.  The
- *     seven inner blocks declared fourteen locals between them -- three
- *     separate `i` and two separate `spawned` -- and each reserves its own
- *     home (L99), so the block scoping was buying nothing and costing four
- *     slots.  Twelve function-scope locals is 0x90 -> 0x80 at an unchanged
- *     score, and it makes the ladder BELOW the packets exact: six slots on
- *     each side, +0x2C +0x28 +0x24 +0x20 +0x1C +0x10.
- *
- *  2. THE PACKET IS DECLARED SIXTH, not first.  A move-one climb over all
- *     thirteen declaration positions, 145 compiles, reaches 276 in one move
- *     and is then a fixed point.  What that move buys is the target's own
- *     packet offsets: the union lands at +0x54 .. +0x64 and the target's
- *     upper packet block is +0x54 .. +0x64, slot for slot, where before it
- *     sat 0x24 too high.
- *
- * WHAT IS LEFT, and it is now a COUNT rather than a placement.  The target
- * has 24 stack homes to this candidate's 17.  The seven it has and this does
- * not are its second packet block, +0x3C +0x3E +0x40 +0x42 +0x44 +0x46 +0x47
- * +0x48 -- the O57FinalSpawnPacket, which shares the union here.
- *
- * Splitting the union reproduces that block EXACTLY when `final` is declared
- * LAST of the thirteen: its block then lands on +0x3C +0x3E +0x40 +0x42 +0x46
- * +0x47 +0x48, the target's offsets with only the target's +0x44 store
- * unaccounted.  It is not adoptable yet because the frame goes 0x80 -> 0x90
- * and the score 276 -> 335.  The split is FLAT across placement: all eight
- * positions of `final` score 335, and a separate move-one climb over all
- * fourteen positions of both packets, 170 compiles, is a fixed point at 335.
- * So the split's cost is not a declaration-order artefact and no order sweep
- * will recover it.
- *
- * The free parameter is the LOCAL COUNT (L134).  With the split the frame is
- * 0x90 against 0x78: exactly six slots too many, and this candidate declares
- * twelve non-packet locals where the target's two gaps -- +0x4C .. +0x53 and
- * +0x6C .. +0x77 -- leave room for five or six.  Merging `value` into `id`
- * and `stride` into `i` alone, without the split, takes the frame to 0x78
- * EXACTLY (candidate 0x78, target 0x78) and costs 15 words, which is the
- * measurement that proves the count is the lever and that ten is two too few
- * once the union is one object rather than two.  The next edit is to find six
- * reuses among `current`, `descriptor`, `resourceIndex`, `descriptorEnd`,
- * `i`, `value`, `stride`, `spawned`, `path`, `result`, `entry` and `id` that
- * do not cost more than the split buys. */
+ * Open: the -8 is the final spawn loop. The target keeps `i` live in s1 and
+ * indexes the pair table from it each pass while walking only the spawned
+ * array; uopt here strength-reduces both and drops `i` (loop form and the
+ * spawned carrier measured flat). The frame is 0x88 against 0x78: two
+ * reserved cells below the final packet that no declared local accounts for. */
 #ifdef NON_MATCHING
 void func_overlay_057_F0000000_18A3BF8(void) {
     u8 choiceMask;
-    register void *current;
-    register Overlay45ResourceDescriptor **descriptor;
-    register s16 *resourceIndex;
-    register Overlay45ResourceDescriptor **descriptorEnd;
-    register s32 i;
-    O57SpawnUnion packet;
-    register s32 value;
+    O57FinalSpawnPacket final;
+    Overlay45ResourceDescriptor **descriptor;
+    s16 *resourceIndex;
+    Overlay45ResourceDescriptor **descriptorEnd;
+    s32 i;
+    O57SpawnPacket packet;
+    s32 value;
     s32 stride;
-    register O57Spawned *spawned;
-    register O57AnimPath *path;
-    register O57ModeResult *result;
-    register s32 *entry;
-    register s32 id;
+    O57Spawned *spawned;
+    O57AnimPath *path;
+    O57ModeResult *result;
+    s32 *entry;
+    s32 id;
 
-    current = gO57ResidentCurrentReloc;
-    gO57Current100Reloc = current;
+    gO57Current100Reloc = gO57ResidentCurrentReloc;
     gO57Pending104Reloc = 0;
     choiceMask = 0;
-    gO57Previous108Reloc = current;
+    gO57Previous108Reloc = gO57ResidentCurrentReloc;
     gO57Runtime1B8Reloc = func_80028F54();
     func_8004B0A4(3);
     fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
 
-    {
 
     gO57Descriptor00Reloc = overlay45CreateDescriptor(
         gO57ResourceTableReloc->entries[0x40], 0xA0, -0x28, 4);
@@ -360,9 +314,7 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     o57PrepareDescriptorReloc(gO57Descriptor78PrepareReloc, 0xFF);
     o57PrepareDescriptorListReloc(&gO57DescriptorList80Reloc);
     o57PrepareDescriptorListReloc(&gO57DescriptorList130Reloc);
-    }
 
-    {
 
     gO57Value1FCReloc = gO57SeedDataReloc.value0C;
     value = gO57SeedDataReloc.value10;
@@ -377,12 +329,11 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     for (stride = 0; stride < 32; stride += 4) {
         gO57Values29CReloc[stride] = value;
     }
-    }
 
     gO57Mode11CReloc = 0;
     gO57Value128Reloc = -0x50;
     gO57Value12CReloc = 0;
-    gO57Ids134Reloc[0] = 0x40000;
+    D_134 = 0x40000;
     gO57Value138Reloc = 0x41800;
     gO57Value14CReloc = 0;
     gO57Value160Reloc = 0;
@@ -392,36 +343,33 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     gO57Value13CReloc = 0;
 
     animseqStartPath(0x3C);
-    {
 
     path = func_800508B4(0x3C);
     if (path->object != 0) {
-        packet.initial.mode = 0x14;
-        packet.initial.flags = 0;
-        packet.initial.x = path->object->x;
-        packet.initial.y = path->object->y;
-        packet.initial.z = path->object->z;
-        packet.initial.angle = path->object->angle;
-        packet.initial.kind = 0x35;
-        packet.initial.state = 0;
-        packet.initial.scale = path->object->scale;
-        spawned = func_8000590C(&packet.initial, 1);
+        packet.mode = 0x14;
+        packet.flags = 0;
+        packet.x = path->object->x;
+        packet.y = path->object->y;
+        packet.z = path->object->z;
+        packet.angle = path->object->angle;
+        packet.scale = path->object->scale;
+        packet.kind = 0x35;
+        packet.state = 0;
+        spawned = func_8000590C(&packet, 1);
         if (spawned != 0) {
             spawned->field3C = 0;
         }
-        packet.initial.kind = 0x38;
-        packet.initial.state = 1;
-        spawned = func_8000590C(&packet.initial, 1);
+        packet.kind = 0x38;
+        packet.state = 1;
+        spawned = func_8000590C(&packet, 1);
         if (spawned != 0) {
             spawned->field3C = 0;
         }
-    }
     }
 
     initColourCycle(&gO57ColourCycle1A8Reloc, 0xA);
     gO57Active144Reloc = 0;
     joyResetMap();
-    {
 
     switch (o57QueryModeReloc()) {
     case 4:
@@ -439,31 +387,19 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     case 10:
         gO57State118Reloc = 7;
         entry = gO57Ids134Reloc;
-        if (*entry != -1) {
-            id = *entry;
-            do {
-                animseqStartPath(id & 0xFF);
-                id = *entry;
-                overlay57SetNodeValue(id, gO57NodeValues17CReloc[id],
-                                      0x3BE56042);
-                id = entry[1];
-                entry++;
-            } while (id != -1);
+        while (*entry != -1) {
+            animseqStartPath(*entry);
+            overlay57SetNodeValue(*entry, gO57NodeValues17CReloc[*entry], 0.007f);
+            entry++;
         }
         break;
     case 12:
         gO57State118Reloc = 1;
         entry = gO57Ids134Reloc;
-        if (*entry != -1) {
-            id = *entry;
-            do {
-                animseqStartPath(id & 0xFF);
-                id = *entry;
-                overlay57SetNodeValue(id, gO57NodeValues17CReloc[id],
-                                      0x3BE56042);
-                id = entry[1];
-                entry++;
-            } while (id != -1);
+        while (*entry != -1) {
+            animseqStartPath(*entry);
+            overlay57SetNodeValue(*entry, gO57NodeValues17CReloc[*entry], 0.007f);
+            entry++;
         }
         gO57Mode11CReloc = 1;
         break;
@@ -494,17 +430,12 @@ void func_overlay_057_F0000000_18A3BF8(void) {
         }
         break;
     }
-    }
 
-    {
 
-    i = 0;
-    do {
+    for (i = 0; i < 4; i++) {
         if (gO57ChoicesReloc[i].enabled != 0) {
-            choiceMask = (choiceMask | (1 << i)) & 0xFF;
+            choiceMask |= 1 << i;
         }
-        i++;
-    } while (i < 4);
     }
     if ((gO57ChoiceMaskReloc != choiceMask) ||
         (gO57ChoiceMaskReferenceReloc != gO57ChoiceSourceReloc)) {
@@ -529,24 +460,23 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     gO57Value110Reloc = -140.0f;
     gO57Value124Reloc = 0;
 
-    {
 
     i = 0;
     do {
-        packet.final.kind = 0x138;
-        packet.final.mode = 0xE;
-        packet.final.byte0A = 0;
-        packet.final.state = 0;
-        packet.final.byte0B = 0x80;
-        packet.final.x = gO57SpawnPairs3E8Reloc[i].first;
-        packet.final.y = gO57SpawnPairs3E8Reloc[i].second;
-        spawned = func_8000590C(&packet.final, 0);
+        final.kind = 0x138;
+        final.mode = 0xE;
+        final.z = 0;
+        final.byte0A = 0;
+        final.state = 0;
+        final.byte0B = 0x80;
+        final.x = gO57SpawnPairs3E8Reloc[i].first;
+        final.y = gO57SpawnPairs3E8Reloc[i].second;
+        spawned = func_8000590C(&final, 0);
         gO57Spawned150Reloc[i] = spawned;
         (*spawned->state)->mode = 2;
-        func_8005AD64(spawned, 0, 0, 0);
+        func_8005AD64(spawned, 0, 0, 0.0f);
         i++;
     } while (i != 4);
-    }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o057/func_overlay_057_F0000000_18A3BF8/func_overlay_057_F0000000_18A3BF8.s")
@@ -554,10 +484,10 @@ void func_overlay_057_F0000000_18A3BF8(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_057_F0000000_18A3BF8:start
  * symbol: func_overlay_057_F0000000_18A3BF8
- * score: 276/597 words
- * frame: 0x80
+ * score: 100/597 words
+ * frame: 0x88
  * relocations: 246
  * first-mismatch: +0x8
- * summary: 282 to 276: every block-scoped register local merged to function scope and the packet declared sixth; the frame excess is now a local count.
+ * summary: 100 at -8: target keeps i live in s1 in the final spawn loop, uopt here strength-reduces both arrays; frame 0x88 vs 0x78.
  * PLATEAU-HANDOFF:func_overlay_057_F0000000_18A3BF8:end
  */

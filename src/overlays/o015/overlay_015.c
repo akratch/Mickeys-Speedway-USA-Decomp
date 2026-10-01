@@ -74,6 +74,8 @@ void overlay15ReleaseResource(void) {
 /* w20-o015 (2026-09-18): 41 to 19. Guard-local starIndex=1 (41 to 20).
  * Same-line allocate + starsAddress + store (L59) keeps addiu+sw
  * adjacent, 20 to 19; first structural moves to +0xF8. */
+/* d-o015 (2026-10-01): 19 to 17. Count store ahead of the bounds block and the
+ * three palette index inits on one line (L59). */
 #ifdef NON_MATCHING
 void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
                                   s32 zRange, u32 startColor, u32 endColor,
@@ -99,6 +101,7 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
     count |= 0; /* kills the multiply's operand: the definition is not forwarded */
     stars = overlay15Allocate(starIndex + 0x200, 0x87); starsAddress = &gOverlay15Stars; *starsAddress = stars;
     gOverlay15StarPalette = (u16 *) ((u8 *) *starsAddress + starIndex);
+    gOverlay15StarCount = count;
 
     bounds = &gOverlay15InitBounds;
     bounds->xRange = (f32) xRange;
@@ -109,7 +112,6 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
     bounds->yMin = bounds->yRange * -0.5f;
     yRange <<= 7;
     bounds->yMax = bounds->yRange * 0.5f;
-    gOverlay15StarCount = count;
     bounds->zRange = (f32) zRange;
     zRange = (zRange + 1) << 8;
     bounds->zero = 0;
@@ -135,9 +137,7 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
         previousStarIndex = 0;
     }
 
-    starIndex = 1;
-    paletteIndex2 = 2;
-    paletteIndex3 = 3;
+    starIndex = 1; paletteIndex2 = 2; paletteIndex3 = 3;
     startR = (startColor >> 24) & 0xFF;
     startG = (startColor >> 16) & 0xFF;
     startB = (startColor >> 8) & 0xFF;
@@ -278,15 +278,16 @@ void overlay15ReleaseResource10(void) {
     }
 }
 
-#ifdef NON_MATCHING
+/* Matched 2026-10-01. The rain field's bounds are the static struct's own, and
+ * the loop is a for over the global count whose init clause sets the index and
+ * both cursors; setup written to the globals is read back, as in the target.
+ * Five unused s32 pads land the frame. The colour block starts at
+ * count * 12 bytes (a byte-pointer sum, not `stars + count`, which commutes
+ * the final add). */
 void overlay15InitStars(s32 count, s32 xRange, s32 yRange, s32 zRange,
                         u32 startColor, u32 endColor, s32 colorDivisor) {
     Overlay15Star *stars;
     u32 *colors;
-    Overlay15Star *volatile *starsAddress;
-    u32 *volatile *colorsAddress;
-    volatile s32 *countAddress;
-    Overlay15InitBounds *unusedBoundsAddress;
     s32 i;
     s32 startR;
     s32 startG;
@@ -297,67 +298,56 @@ void overlay15InitStars(s32 count, s32 xRange, s32 yRange, s32 zRange,
     s32 deltaB;
     s32 deltaA;
     s32 colorTime;
+    s32 pad0;
+    s32 pad1;
+    s32 pad2;
+    s32 pad3;
+    s32 pad4;
 
-    unusedBoundsAddress = &gOverlay15InitBounds;
-    stars = overlay15Allocate(count << 4, 0x87);
-
-    gOverlay15InitBounds.xRange = (f32) xRange;
-    gOverlay15InitBounds.xMin = gOverlay15InitBounds.xRange * -0.5f;
-    gOverlay15InitBounds.xMax = gOverlay15InitBounds.xRange * 0.5f;
-    gOverlay15InitBounds.yRange = (f32) yRange;
-    gOverlay15InitBounds.yMin = gOverlay15InitBounds.yRange * -0.5f;
-    gOverlay15InitBounds.yMax = gOverlay15InitBounds.yRange * 0.5f;
-    gOverlay15InitBounds.zRange = (f32) zRange;
-    gOverlay15InitBounds.zMin = gOverlay15InitBounds.zRange * -0.5f;
-    gOverlay15InitBounds.zMax = gOverlay15InitBounds.zRange * 0.5f;
-    gOverlay15InitBounds.colorDivisor = (f32) colorDivisor;
-    gOverlay15InitBounds.colorStep = 255.0f /
-                                     gOverlay15InitBounds.colorDivisor;
-
-    i = 0;
-    colors = (u32 *) (stars + count);
-    starsAddress = &gOverlay15Stars;
-    colorsAddress = &gOverlay15StarColors;
-    countAddress = &gOverlay15StarCount;
+    gOverlay15MovingStars = overlay15Allocate(count << 4, 0x87);
+    gOverlay15RainColors = (u32 *) ((u8 *) gOverlay15MovingStars + count * 12);
+    gOverlay15MovingStarCount = count;
+    sOverlay15Rain.bounds.zero = 0;
+    sOverlay15Rain.bounds.xRange = (f32) xRange;
+    sOverlay15Rain.bounds.xMin = sOverlay15Rain.bounds.xRange * -0.5f;
+    sOverlay15Rain.bounds.xMax = sOverlay15Rain.bounds.xRange * 0.5f;
+    sOverlay15Rain.bounds.yRange = (f32) yRange;
+    sOverlay15Rain.bounds.yMin = sOverlay15Rain.bounds.yRange * -0.5f;
+    sOverlay15Rain.bounds.yMax = sOverlay15Rain.bounds.yRange * 0.5f;
+    sOverlay15Rain.bounds.zRange = (f32) zRange;
+    sOverlay15Rain.bounds.zMin = sOverlay15Rain.bounds.zRange * -0.5f;
+    sOverlay15Rain.bounds.zMax = sOverlay15Rain.bounds.zRange * 0.5f;
+    sOverlay15Rain.bounds.colorDivisor = (f32) colorDivisor;
+    sOverlay15Rain.bounds.colorStep = 255.0f / sOverlay15Rain.bounds.colorDivisor;
     xRange <<= 7;
     yRange <<= 7;
     zRange <<= 7;
-    *starsAddress = stars;
-    *colorsAddress = colors;
-    *countAddress = count;
-    gOverlay15InitBounds.zero = 0;
 
-    if (count > 0) {
-        startR = (startColor >> 24) & 0xFF;
-        startG = (startColor >> 16) & 0xFF;
-        startB = (startColor >> 8) & 0xFF;
-        startA = startColor & 0xFF;
-        deltaR = ((endColor >> 24) & 0xFF) - startR;
-        deltaG = ((endColor >> 16) & 0xFF) - startG;
-        deltaB = ((endColor >> 8) & 0xFF) - startB;
-        deltaA = (endColor & 0xFF) - startA;
-
-        do {
-            stars->x = (f32) overlay15RandomRange(-xRange, xRange) *
-                       (1.0f / 256.0f);
-            stars->y = (f32) overlay15RandomRange(-yRange, yRange) *
-                       (1.0f / 256.0f);
-            stars->z = (f32) overlay15RandomRange(-zRange, zRange) *
-                       (1.0f / 256.0f);
-            colorTime = overlay15RandomRange(0, 255);
-            *colors = ((((deltaR * colorTime) >> 8) + startR) << 24) |
-                      ((((deltaG * colorTime) >> 8) + startG) << 16) |
-                      ((((deltaB * colorTime) >> 8) + startB) << 8) |
-                      (((deltaA * colorTime) >> 8) + startA);
-            i++;
-            stars++;
-            colors++;
-        } while (i < gOverlay15StarCount);
+    startR = (startColor >> 24) & 0xFF;
+    startG = (startColor >> 16) & 0xFF;
+    startB = (startColor >> 8) & 0xFF;
+    startA = startColor & 0xFF;
+    deltaR = ((endColor >> 24) & 0xFF) - startR;
+    deltaG = ((endColor >> 16) & 0xFF) - startG;
+    deltaB = ((endColor >> 8) & 0xFF) - startB;
+    deltaA = (endColor & 0xFF) - startA;
+    for (i = 0, stars = gOverlay15MovingStars, colors = gOverlay15RainColors;
+         i < gOverlay15MovingStarCount; i++) {
+        stars->x = (f32) overlay15RandomRange(-xRange, xRange) *
+                   (1.0f / 256.0f);
+        stars->y = (f32) overlay15RandomRange(-yRange, yRange) *
+                   (1.0f / 256.0f);
+        stars->z = (f32) overlay15RandomRange(-zRange, zRange) *
+                   (1.0f / 256.0f);
+        colorTime = overlay15RandomRange(0, 255);
+        *colors = ((((deltaR * colorTime) >> 8) + startR) << 24) |
+                  ((((deltaG * colorTime) >> 8) + startG) << 16) |
+                  ((((deltaB * colorTime) >> 8) + startB) << 8) |
+                  (((deltaA * colorTime) >> 8) + startA);
+        stars++;
+        colors++;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o015/overlay_015/func_overlay_015_F00006E8_1872A80.s")
-#endif
 
 /*
  * Mickey-local reconstruction; pinned DKR v77/v80 and JFG scans are negative.
@@ -425,22 +415,13 @@ void overlay15ClearValue7C(void) {
 }
 
 /* Mickey-local reconstruction; the pinned DKR v77/v80 and JFG scans are negative. */
-typedef struct Overlay15RainOffsets {
-    u8 pad00[0x80];
-    f32 x;
-    f32 y;
-    f32 z;
-} Overlay15RainOffsets;
-
-extern Overlay15RainOffsets gOverlay15RainOffsets;
-
-/* Plateau (2026-08-25, ownership): linked full-BSS candidate is exact-size
- * 0xD8 with 13 differing words, first +0x74; the 119-flag lattice is flat.
- * Workbench: structure-mismatch; post-call load scheduling remains. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01 on the overlay15MoveStars form: the rain field is a static
+ * struct reached through a pointer local, so the colour and offset reads are
+ * direct and share high halves. */
 void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
                        f32 projectionScale, f32 intensity) {
     s32 visibleCount;
+    Overlay15Field *field = &sOverlay15Rain;
     Overlay15CameraState *camera;
 
     if (gOverlay15RainEnabled != 0) {
@@ -448,43 +429,20 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
         if ((gOverlay15RainPositions != 0) && (visibleCount > 0)) {
             camera = overlay15GetActiveCameraReloc();
             rainFastDraw(framebuffer, width, height, visibleCount,
-                         gOverlay15RainPositions, gOverlay15RainColors,
-                         camera->angle + 0x8000, gOverlay15RainOffsets.x,
-                         gOverlay15RainOffsets.y, gOverlay15RainOffsets.z,
+                         gOverlay15RainPositions, field->colors,
+                         camera->angle + 0x8000, field->movement.x,
+                         field->movement.y, field->movement.z,
                          projectionScale);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o015/overlay_015/func_overlay_015_F0000B94_1872F2C.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay15DrawRain:start
- * symbol: overlay15DrawRain
- * score: 13/54 words
- * frame: 0x40
- * relocations: 17
- * first-mismatch: +0x74
- * summary: hypothesis=emit the high half alone, not la; spellings=direct local float[3] stayed 13 at delta 0, do-while sym+0/+4/+8 scored 38 at +24, unrolled 4-copy scored 47 at +32; stall=a straight-line symbol still lowers to la
- * PLATEAU-HANDOFF:overlay15DrawRain:end
- */
-
-/* PLATEAU-HANDOFF:overlay15InitStars:start
- * symbol: overlay15InitStars
- * score: 89/190 words
- * frame: 0xb8
- * relocations: 15
- * first-mismatch: +0x7c
- * summary: Byte-offset normalization and folded setup stores are byte-inert; 74 draws and the existing spill/order residual remain.
- * PLATEAU-HANDOFF:overlay15InitStars:end
- */
 
 /* PLATEAU-HANDOFF:overlay15InitStarsAndPalette:start
  * symbol: overlay15InitStarsAndPalette
- * score: 19/247 words
+ * score: 17/247 words
  * frame: 0x40
  * relocations: 14
  * first-mismatch: +0x70
- * summary: Same-line allocate+starsAddress+store keeps addiu+sw adjacent, 20 to 19; stars address still a1 (force p1:w317=c5 is 16), block 1 tail order and palette index inits remain.
+ * summary: Count store before the bounds block and palette index inits on one line, 19 to 17; stars store base a1 vs a2 and block-1 tail order remain.
  * PLATEAU-HANDOFF:overlay15InitStarsAndPalette:end
  */

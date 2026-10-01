@@ -64,6 +64,9 @@ extern void func_overlay_001_F0000DF4_184D1D4(void *owner, s32 path,
 extern s32 func_overlay_092_F0000068_18D5F88(void *owner, f32 *x, f32 *y,
                                              f32 *z, s32 *pathIndex);
 
+/* 2026-10-01 d-ovl1: the smoothing loop as `while (remaining--)` (157 to 148)
+ * and the y and z blends written `((path - v) * wave) + v` (148 to 119);
+ * the hand-rolled sentinel loop and add-first order were inherited. */
 /* Exact DKR v77/v80 and JFG object scans found no donor for this overlay. */
 /* Fresh V0 is exact-sized at 458 instructions / 0x728 bytes with frame 0x70:
  * 301/458 relocation-masked and 300/458 raw words match.  The first actionable
@@ -101,15 +104,10 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
     }
 
     if (config->smoothAngles != 0) {
-        remaining = (s16)update - 1;
-        if ((s16)update != 0) {
-            do {
-                state->pitch +=
-                    mathDiffAngle(state->pitch, 0x800) >> 3;
-                state->roll -= state->roll >> 3;
-                update = remaining;
-                remaining--;
-            } while (update != 0);
+        remaining = update;
+        while (remaining--) {
+            state->pitch += mathDiffAngle(state->pitch, 0x800) >> 3;
+            state->roll -= state->roll >> 3;
         }
         return;
     }
@@ -139,8 +137,8 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
             y = ((((func_8002A8BC((s32)(wave * D_C)) * -0.5f) +
                     0.5f) *
                    30.0f) +
-                 (y + ((pathY - y) * wave)));
-            z += (pathZ - z) * wave;
+                 (((pathY - y) * wave) + y));
+            z = ((pathZ - z) * wave) + z;
 
             state->targetX = x;
             state->x = state->targetX;
@@ -243,10 +241,10 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
 
 /* PLATEAU-HANDOFF:func_overlay_092_F0000308_18D6228:start
  * symbol: func_overlay_092_F0000308_18D6228
- * score: 301/458 words
+ * score: 119/458 words
  * frame: 0x70
  * relocations: 33
- * first-mismatch: +0x94
- * summary: Fresh V0 is exact-sized; 33/33 offsets/types and 24/33 identities align. Prior cap remains exhausted; resume only with a new loop-sentinel/FP-web mechanism.
+ * first-mismatch: +0x220
+ * summary: Natural smoothing loop and add-last blends: 157 to 119. Open: x blend load order and FP ring phase from +0x220.
  * PLATEAU-HANDOFF:func_overlay_092_F0000308_18D6228:end
  */

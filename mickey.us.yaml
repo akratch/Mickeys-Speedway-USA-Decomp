@@ -1947,7 +1947,7 @@ segments:
       - [0x189ACAC, c, overlay52TailB]
       - [0x189C708, c, overlay52Cleanup]
       - [0x189C798, asm, overlay_052_padding]
-      - [0x189C7A0, bin, overlay_052_data_rodata]
+      - [0x189C7A0]
       - [0x189CAD0, bin, overlay_052_reloc1]
       - [0x189D010, bin, overlay_052_reloc2]
 

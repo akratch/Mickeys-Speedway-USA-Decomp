@@ -87,8 +87,16 @@ temps, which is the other half of L118.
 
 `tools/fast_score.py <symbol> <candidate.c> [--diff]` compiles a whole
 candidate TU directly with the tree's own configured command (per-file flags
-included, read from the recipe, never typed) and scores it in about a second;
-that is the loop a product of shapes is measured with. `tools/score_symbol.py
+included, read from the recipe, never typed) and scores it in about a second.
+`tools/shape_product.py <symbol> <candidate.c>` measures a whole PRODUCT of
+shapes from one candidate: mark each alternative with a preprocessor axis
+(`#if SHAPE_loop == 0 ... #elif SHAPE_loop == 1 ... #endif`), and it compiles
+every cell of the Cartesian product in parallel and ranks them by masked words
+and size delta. Six cells a second; a 500-cell product is under two minutes.
+Its exit status is 0 only when an exact delta-0 cell exists.
+`tools/shape_lint.py <symbol>` lists the candidate's inherited artefacts
+against the checklist below, each with the axis name to give it in a product
+candidate; run it before writing the first cell. `tools/score_symbol.py
 <symbol>` scores the tracked tree the same way. **Work the masked number**, never the raw
 one: the difference is relocation artefacts, already partitioned and stored.
 

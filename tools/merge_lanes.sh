@@ -89,13 +89,27 @@ case "$out" in
      echo "full log: $verify_log" >&2
      exit 1 ;;
 esac
+# Banked improvements leave shards ahead of the ranking rows and POSTPROCESS
+# edits leave the audit stale; re-measure both before the docs gate, as
+# tools/merge_lane.sh does. Gates run unpiped so their status is their own.
+.venv/bin/python tools/nm_ranking.py --refresh-stale 2>&1 | tail -1
+.venv/bin/python tools/nm_ranking.py --write-doc >/dev/null
+.venv/bin/python tools/postprocess_audit.py --write 2>&1 | tail -1
 gmake scoreboard 2>&1 | tail -1
-gmake check-docs 2>&1 | tail -1
-gmake check-scoreboard 2>&1 | tail -1
-gmake check-overlay-syms 2>&1 | tail -1
-gmake cleanroom 2>&1 | tail -1
+run_gate() {
+  local log; log=$(mktemp -t mickey-batch-gate)
+  if ! "$@" >"$log" 2>&1; then
+    echo "gate FAILED: $*  (recover with git reset --hard $base, or repair and commit)" >&2
+    tail -40 "$log" >&2; exit 1
+  fi
+  tail -1 "$log"; rm -f "$log"
+}
+run_gate gmake check-docs
+run_gate gmake check-scoreboard
+run_gate gmake check-overlay-syms
+run_gate gmake cleanroom
 if ! git diff --quiet || ! git diff --cached --quiet; then
-  git add -A README.md docs/nm-ranking.md config overlay_undefined_syms.us.txt mickey.us.yaml 2>/dev/null || true
+  git add -A README.md docs/nm-ranking.md docs/matching-triage-handoffs config overlay_undefined_syms.us.txt mickey.us.yaml 2>/dev/null || true
   git diff --cached --quiet || git commit -q -m "Regenerate derived artifacts after batch integration"
 fi
 echo "== batch integrated"; git log --oneline -1

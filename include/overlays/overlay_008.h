@@ -631,10 +631,7 @@ typedef struct O8P4CF0Vec3f {
 typedef struct O8P4CF0Normal {
     f32 x;
     f32 y;
-    /* The qualifier pins the first horizontal product ahead of the second in
-     * +0x4CF0, as shipped, at the cost of the one reload that is that
-     * candidate's whole remaining difference. */
-    volatile f32 z;
+    f32 z;
     f32 w;
 } O8P4CF0Normal;
 

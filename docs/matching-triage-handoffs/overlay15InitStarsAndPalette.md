@@ -2,11 +2,13 @@
 ### `overlay15InitStarsAndPalette` plateau handoff
 
 - source: `src/overlays/o015/overlay_015.c`
-- score: 19/247 words
+- score: 17/247 words
 - frame: 0x40
 - relocations: 14
 - first mismatch: +0x70
-- summary: Same-line allocate+starsAddress+store keeps addiu+sw adjacent, 20 to 19; stars address still a1 (force p1:w317=c5 is 16), block 1 tail order and palette index inits remain.
+- summary: Count store before the bounds block and palette index inits on one line, 19 to 17; stars store base a1 vs a2 and block-1 tail order remain.
+
+Summary before this remeasure: Same-line allocate+starsAddress+store keeps addiu+sw adjacent, 20 to 19; stars address still a1 (force p1:w317=c5 is 16), block 1 tail order and palette index inits remain.
 
 #### 2026-09-13, lane l1: counter reuse and measured bounds scheduling
 

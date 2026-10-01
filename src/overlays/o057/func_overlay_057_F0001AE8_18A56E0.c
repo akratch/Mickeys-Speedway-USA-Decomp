@@ -8,18 +8,14 @@
  * this function shares with the +0x104 mode value. */
 extern Overlay45ResourceDescriptor *gOverlay57Resource000;
 extern Overlay45ResourceDescriptor *gOverlay57Range008Start[];
-extern Overlay45ResourceDescriptor *gOverlay57Range008End[];
 extern Overlay45ResourceDescriptor *gOverlay57Range030Start[];
-extern Overlay45ResourceDescriptor *gOverlay57Range030End[];
 extern Overlay45ResourceDescriptor *gOverlay57Range058Start[];
 extern Overlay45ResourceDescriptor *gOverlay57Resource06C;
 extern Overlay45ResourceDescriptor *gOverlay57Resource070;
 extern Overlay45ResourceDescriptor *gOverlay57Resource074;
 extern Overlay45ResourceDescriptor *gOverlay57Resource078;
 extern Overlay45ResourceDescriptor *gOverlay57Range080Start[];
-extern Overlay45ResourceDescriptor *gOverlay57Range080End[];
 extern Overlay45ResourceDescriptor *gOverlay57Range0E0Start[];
-extern Overlay45ResourceDescriptor *gOverlay57Range0E0End[];
 extern Overlay45ResourceDescriptor *gOverlay57Resource0F8;
 extern Overlay45ResourceDescriptor *gOverlay57Resource0FC;
 extern s32 gOverlay57Selection100;
@@ -72,42 +68,26 @@ extern void overlay57InitializeMode(s32 updateRate);
 extern void func_overlay_057_F0004E18_18A8A10(s32 updateRate);
 extern void func_overlay_057_F00060F8_18A9CF0(s32 updateRate);
 
-/* Fresh workbench: structure-mismatch, 614 differing words, first mismatch
- * +0x04; 850 words against 883 with the exact 0x38 frame and its counter
- * spill slot. Dispatch order, the three distinct zero-valued globals, the
- * five runtime-linked call identities, the accumulator sign and both clamp
- * placements are all settled; the +0x4 residual is only the unresolved
- * placeholder value in the guarded build.
+/* Overlay 57 text +0x1AE8..+0x28B4, the per-frame mode dispatch and layout
+ * pass. Matched 2026-10-01 (lane d-o057) from 614 masked words at size delta
+ * -132 by rewriting inherited shape, not by allocator work:
  *
- * What remains is one callee-saved assignment. IDO gives the single saved
- * register to the six-entry loop counter here, where the shipped body gives
- * it to the +0xE0 descriptor base and spills the counter instead; with the
- * base uncommoned, the four unrolled fade copies also keep a spare register
- * and address their stores directly rather than through the assembler
- * temporary. That accounts for the whole -33 word deficit, twenty of it the
- * store addresses.
+ *  - the descriptor walks are indexed loops over each range (`count < 9`,
+ *    `count != 6` as shipped); uopt creates the walking pointers itself, so
+ *    the shared counter no longer outranks the +0xE0 base for s0 and is
+ *    split into a2 with the target's 0x34 spill cell;
+ *  - the fog easing reads each value by name and stores through a pointer
+ *    to it, so the address constants carry the loads in t0/t1, every store
+ *    is a direct symbol store, and nothing is forwarded between the four
+ *    unrolled copies (this was the whole -132);
+ *  - the `(s32)` on the first operand orders the shipped `addu`.
  *
- * Eliminated: the flag lattice (-O1/-O2, with and without -g3, -mips1/2/3,
- * loop unroll 0/2/4/8, -Wab,-r4300_mul) leaves the configured -O2 -mips2
- * strictly best; a separate pointer local for the +0xE0 base, `register`
- * qualifiers, the direct array spelling and separate loop counters all leave
- * the assignment unchanged. Local declaration order does matter and is the
- * one that reproduces the frame and spill slot.
- *
- * Promotion note for whoever closes this: the dispatch is a real compiler
- * jump table, so an exact body will emit a read-only table this overlay
- * already carries in its retained data segment. Overlay 1's dispatch owner
- * is the working precedent for that link recipe -- name the retained table
- * with an absolute anchor at its stored offset, rebind the table's two text
- * relocations onto that name, then externalize and drop the duplicate
- * compiler section. Without it the overlay grows and the ROM stops
- * rebuilding. */
-#ifdef NON_MATCHING
+ * The dispatch is a real compiler jump table; its retained copy and the
+ * two text relocations are bound in mk/overlays.mk. */
 void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
-    s32 limit;
-    s32 value;
     s32 count;
-    Overlay45ResourceDescriptor **cursor;
+    s32 *near;
+    s32 *far;
 
     D_130 = 0;
     switch (gOverlay57Timer) {
@@ -167,16 +147,12 @@ void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
                 gOverlay57Range030Start[gOverlay57Selection100], 0xA0, 0xBE, 0x104);
         }
 
-        cursor = gOverlay57Range008Start;
-        do {
-            overlay57SetDescriptorModeReloc(*cursor, 0);
-            cursor++;
-        } while (cursor < gOverlay57Range008End);
-        cursor = gOverlay57Range030Start;
-        do {
-            overlay57SetDescriptorModeReloc(*cursor, 0);
-            cursor++;
-        } while (cursor < gOverlay57Range030End);
+        for (count = 0; count < 9; count++) {
+            overlay57SetDescriptorModeReloc(gOverlay57Range008Start[count], 0);
+        }
+        for (count = 0; count < 9; count++) {
+            overlay57SetDescriptorModeReloc(gOverlay57Range030Start[count], 0);
+        }
 
         if (O57_mode0954 == 1) {
             overlay57SetDescriptorModeReloc(
@@ -190,16 +166,12 @@ void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
                 gOverlay57Range030Start[gOverlay57Selection100], O57_D_104);
         }
 
-        cursor = gOverlay57Range080Start;
-        do {
-            overlay57SetDescriptorModeReloc(*cursor, 0);
-            cursor++;
-        } while (cursor < gOverlay57Range080End);
-        cursor = gOverlay57Range0E0Start;
-        do {
-            overlay57SetDescriptorModeReloc(*cursor, 0);
-            cursor++;
-        } while (cursor != gOverlay57Range0E0End);
+        for (count = 0; count < 24; count++) {
+            overlay57SetDescriptorModeReloc(gOverlay57Range080Start[count], 0);
+        }
+        for (count = 0; count != 6; count++) {
+            overlay57SetDescriptorModeReloc(gOverlay57Range0E0Start[count], 0);
+        }
     } else {
         overlay57LayoutDescriptorReloc(gOverlay57Resource000, 0xA0, -0x1E, 0x104);
         if (O57_mode0954 == 1) {
@@ -223,7 +195,7 @@ void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
                 overlay57LayoutDescriptorReloc(gOverlay57Resource0FC, 0xA0, 0x20, 0x104);
             }
 
-            for (count = 0, limit = 0x18; count != limit; count++) {
+            for (count = 0; count < 0x18; count++) {
                 if ((count != gOverlay57Selection108) &&
                     (count != gOverlay57Selection100)) {
                     overlay57SetDescriptorModeReloc(gOverlay57Range080Start[count], 0);
@@ -235,11 +207,9 @@ void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
                 gOverlay57Range080Start[O57_D_160], O57_D_104);
         }
 
-        cursor = gOverlay57Range008Start;
-        do {
-            overlay57SetDescriptorModeReloc(*cursor, 0);
-            cursor++;
-        } while (cursor != gOverlay57Range008End);
+        for (count = 0; count != 9; count++) {
+            overlay57SetDescriptorModeReloc(gOverlay57Range008Start[count], 0);
+        }
     } else {
         if (O57_D_160 < 0x18) {
             overlay57LayoutDescriptorReloc(
@@ -248,26 +218,23 @@ void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
         overlay57LayoutDescriptorReloc(gOverlay57Resource0FC, 0xA0, -0x20, 0x104);
     }
 
-    cursor = gOverlay57Range0E0Start;
     if (gOverlay57State == 6) {
-        overlay57LayoutDescriptorReloc(cursor[O57_D_160], 0xA0, 0xBE, 0x104);
+        overlay57LayoutDescriptorReloc(gOverlay57Range0E0Start[O57_D_160], 0xA0, 0xBE, 0x104);
         overlay57LayoutDescriptorReloc(gOverlay57Resource0FC, 0xA0, 0x20, 0x104);
         for (count = 0; count < 6; count++) {
             if ((count != gOverlay57Selection108) &&
                 (count != gOverlay57Selection100)) {
-                overlay57SetDescriptorModeReloc(cursor[count], 0);
+                overlay57SetDescriptorModeReloc(gOverlay57Range0E0Start[count], 0);
             }
         }
-        overlay57SetDescriptorModeReloc(cursor[O57_D_164], gOverlay57Mode10C);
-        overlay57SetDescriptorModeReloc(cursor[O57_D_160], O57_D_104);
+        overlay57SetDescriptorModeReloc(gOverlay57Range0E0Start[O57_D_164], gOverlay57Mode10C);
+        overlay57SetDescriptorModeReloc(gOverlay57Range0E0Start[O57_D_160], O57_D_104);
 
-        cursor = gOverlay57Range008Start;
-        do {
-            overlay57SetDescriptorModeReloc(*cursor, 0);
-            cursor++;
-        } while (cursor != gOverlay57Range008End);
+        for (count = 0; count != 9; count++) {
+            overlay57SetDescriptorModeReloc(gOverlay57Range008Start[count], 0);
+        }
     } else if (O57_D_160 < 6) {
-        overlay57LayoutDescriptorReloc(cursor[O57_D_160], 0xA0, 0x104, 0x104);
+        overlay57LayoutDescriptorReloc(gOverlay57Range0E0Start[O57_D_160], 0xA0, 0x104, 0x104);
     }
 
     if (gOverlay57State == 3) {
@@ -337,19 +304,17 @@ void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
         }
     }
 
+    near = &D_134;
+    far = &D_138;
     if (gOverlay57ModeFlag != 0) {
         for (count = 0; count < updateRate; count++) {
-            value = D_134;
-            D_134 = value + ((0x3DE00 - value) >> 4);
-            value = D_138;
-            D_138 = value + ((0x3E800 - value) >> 4);
+            *near = (s32)D_134 + ((0x3DE00 - D_134) >> 4);
+            *far = (s32)D_138 + ((0x3E800 - D_138) >> 4);
         }
     } else {
         for (count = 0; count < updateRate; count++) {
-            value = D_134;
-            D_134 = value + ((0x3FA00 - value) >> 6);
-            value = D_138;
-            D_138 = value + ((0x3FF00 - value) >> 6);
+            *near = (s32)D_134 + ((0x3FA00 - D_134) >> 6);
+            *far = (s32)D_138 + ((0x3FF00 - D_138) >> 6);
         }
     }
 
@@ -361,16 +326,3 @@ void func_overlay_057_F0001AE8_18A56E0(s32 updateRate) {
         overlay57SoundPlayReloc(0xF, &D_148);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o057/func_overlay_057_F0001AE8_18A56E0/func_overlay_057_F0001AE8_18A56E0.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_057_F0001AE8_18A56E0:start
- * symbol: func_overlay_057_F0001AE8_18A56E0
- * score: 614/883 words
- * frame: 0x38
- * relocations: 405
- * first-mismatch: +0x160
- * summary: Guarded statement order is a fixed point; ring phase dominates from +0x140 and structural tail from +0x580. Unguarded 611 is non-adoptable.
- * PLATEAU-HANDOFF:func_overlay_057_F0001AE8_18A56E0:end
- */

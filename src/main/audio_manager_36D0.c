@@ -548,26 +548,18 @@ u8 func_800033B0(void *sound, f32 x, f32 y, f32 z) {
     }
     return 0;
 }
-/* Workbench: structure-mismatch, 53 differing words, first mismatch +0x0; 94 instructions.
- * Structural gap: frame -0x48/-0x30 and four structural words; relocation identities remain.
- */
-#ifdef NON_MATCHING
+/* Four locals only: every declared local reserves a frame home, and the
+ * target's 0x30 frame has room for exactly these. The group is read from the
+ * point at each use instead of being held in a carrier or a base pointer. */
 void func_80003480(AudioPoint *point, s32 volume, f32 pitch, s32 pan,
                    s32 effects) {
-    AudioUpdateEntry *base;
-    AudioUpdateEntry *entry;
-    AudioUpdateEntry *selected;
     s32 index;
-    s32 bestIndex;
-    u8 group;
     s32 bestVolume;
-    s32 entryVolume;
-    void *soundHandle;
+    s32 bestIndex;
+    AudioUpdateEntry *entry;
 
-    group = point->unk23;
-    base = D_800C9238[group - 1];
-    entry = base;
-    for (index = 0; index < ((s32 *) &D_80078F00)[group]; index++) {
+    entry = D_800C9238[point->unk23 - 1];
+    for (index = 0; index < ((s32 *) &D_80078F00)[point->unk23]; index++) {
         if (point == entry->point) {
             entry->volume = volume;
             entry->pitch = pitch;
@@ -578,10 +570,10 @@ void func_80003480(AudioPoint *point, s32 volume, f32 pitch, s32 pan,
         entry++;
     }
 
-    entry = base;
+    entry = D_800C9238[point->unk23 - 1];
     index = 0;
     bestVolume = entry->volume;
-    for (; index < ((s32 *) &D_80078F00)[group]; index++) {
+    for (; index < ((s32 *) &D_80078F00)[point->unk23]; index++) {
         if (entry->point == NULL) {
             entry->point = point;
             entry->volume = volume;
@@ -590,31 +582,25 @@ void func_80003480(AudioPoint *point, s32 volume, f32 pitch, s32 pan,
             entry->effects = effects;
             return;
         }
-        entryVolume = entry->volume;
-        if (bestVolume >= entryVolume) {
-            bestVolume = entryVolume;
+        if (bestVolume >= entry->volume) {
+            bestVolume = entry->volume;
             bestIndex = index;
         }
         entry++;
     }
 
     if (bestVolume < volume) {
-        selected = D_800C9238[group] + bestIndex;
-        soundHandle = selected[-3].point->soundHandle;
-        selected -= 3;
-        if (soundHandle != NULL) {
-            amSndStop(soundHandle);
+        entry = D_800C9238[point->unk23] + bestIndex - 3;
+        if (entry->point->soundHandle != NULL) {
+            amSndStop(entry->point->soundHandle);
         }
-        selected->point = point;
-        selected->volume = volume;
-        selected->pitch = pitch;
-        selected->pan = pan;
-        selected->effects = effects;
+        entry->point = point;
+        entry->volume = volume;
+        entry->pitch = pitch;
+        entry->pan = pan;
+        entry->effects = effects;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audio_manager_36D0/func_80003480.s")
-#endif
 /*
  * PROVENANCE: name/order compared with JFG src/audio_manager_36D0.c
  * func_80003994_4594; body and update-entry layout use Mickey-only evidence.
@@ -736,13 +722,3 @@ s32 func_800038EC(u16 soundId, AudioVector3 *position,
     }
     return volume;
 }
-
-/* PLATEAU-HANDOFF:func_80003480:start
- * symbol: func_80003480
- * score: 53/94 words
- * frame: 0x48
- * relocations: 5
- * first-mismatch: +0x0
- * summary: Final-cursor controls leave the 0x48 frame unchanged; named proc-15 draw evidence still does not reach the target 0x30 frame.
- * PLATEAU-HANDOFF:func_80003480:end
- */

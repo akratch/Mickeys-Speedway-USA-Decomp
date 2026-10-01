@@ -18,6 +18,7 @@ from pathlib import Path
 GENERATED = {
     "README.md", "config/overlays.us.json", "config/overlay-donors.us.json",
     "config/postprocess-audit.us.json", "docs/modules.md", "docs/overlays.md",
+    "config/nonmatching-ranking.us.json", "docs/nm-ranking.md",
     "mickey.us.yaml", "symbol_addrs.us.txt", "overlay_undefined_syms.us.txt",
 }
 

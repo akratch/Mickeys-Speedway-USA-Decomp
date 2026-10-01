@@ -118,6 +118,9 @@ DATA_RODATA_OWNERSHIP = {
     # The whole .data section; data_rodata +0x2D0..+0x2E0 is the original
     # TU's .rodata (its own relocation base) and stays raw.
     54: [(0x0, 0x2D0, "overlay54Initialize")],
+    # The whole data_rodata range: the compiled .data is 0x328 bytes padded to
+    # the section's 16-byte alignment, which covers the zero tail.
+    52: [(0x0, 0x330, "overlay52Initialize")],
 }
 
 # Reviewed initialized subranges emitted by a C owner's non-.data section.
@@ -155,6 +158,16 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             "func_overlay_058_F000138C_18B0574",
             ".rodata",
             "func_overlay_058_F000138C_18B0574",
+            True,
+        )
+    ],
+    57: [
+        (
+            0x5F0,
+            0x644,
+            "func_overlay_057_F0001AE8_18A56E0",
+            ".rodata",
+            "func_overlay_057_F0001AE8_18A56E0",
             True,
         )
     ],
@@ -203,6 +216,8 @@ EXPLICIT_TEXT_PADDING = {
     # Overlay 54's text tail pads to 0x1EF0; overlay54Initialize's .data
     # follows it, so the pad needs its own bounded row.
     54: "overlay_054_padding",
+    # Overlay 52's text tail pads to 0x2130; overlay52Initialize's .data follows.
+    52: "overlay_052_padding",
 }
 
 TEXT_SUBSEGMENTS = {
@@ -1473,6 +1488,7 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x49B4, 0x49DC, "overlay8WriteCommand"),
         (0x49DC, 0x49E8, "overlay8SetValue"),
         (0x49E8, 0x4CF0, "overlay8UpdateMotionOutput"),
+        (0x4CF0, 0x5128, "func_overlay_008_F0004CF0_1862A48"),
     ],
     9: [
         (0x0540, 0x0744, "func_overlay_009_F0000540_1866BB8"),
@@ -1526,9 +1542,11 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x500, 0x6A4, "overlay15DrawScreenStars"),
         (0x6A4, 0x6B0, "overlay15GetResource10"),
         (0x6B0, 0x6E8, "overlay15ReleaseResource10"),
+        (0x6E8, 0x9E0, "overlay15InitStars"),
         (0x9E0, 0xB7C, "overlay15UpdateMovingStars"),
         (0xB7C, 0xB88, "overlay15SetValueC"),
         (0xB88, 0xB94, "overlay15ClearValue7C"),
+        (0xB94, 0xC6C, "overlay15DrawRain"),
     ],
     16: [
         (0x000, 0x08C, "overlay16BuildGradient"),

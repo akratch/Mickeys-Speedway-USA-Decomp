@@ -675,11 +675,11 @@ segments:
       # `enddlabel` as a zero-size label directive, preserving the symbol-size
       # metadata instead of weakening asm_data_end_label for the whole tree.
       - [0x81590, rodata]
-      # objects' six switch tables and three literal-pool floats retain
-      # their source order in an exact 0x800-byte input section. It opens
+      # objects' six switch tables and six literal-pool floats retain
+      # their source order in an exact 0x80C-byte input section. It opens
       # with func_80007118's 92-entry table (formerly jtbl_80080D2C).
       - [0x8192C, .rodata, main/objects]
-      - [0x8212C, rodata]
+      - [0x82138, rodata]
       # func_80019934's five-entry distance-mode switch table.
       - [0x823B4, .rodata, main/lights]
       - [0x823C8, rodata]

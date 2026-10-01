@@ -36,12 +36,12 @@ LOADER_BODY = sv.LOADER_BODY
 LOADER_RECIPE = '0c80ca4b26661342a8eb479d905aa636e31b01980b911b8c4a43f67d4017b306'
 SOURCE_PINS = {
     'impact_gate': ('src/main/anim.c', 'e75ea3d245cf5076d769b603ff82fc2a50ce04c7d1a100d91de4ea4d0898dfc3'),
-    'color_gate': ('src/main/objects.c', '74081eadd056007b818a6ec79a15ca778307999fda423967692f6b4a68a18416'),
-    'gravity': ('src/main/charControl.c', '04c3cdbcbb265f74af6d0d656d8a6c9aafcf6654d004b7ad91cf01e42c7e6e01'),
+    'color_gate': ('src/main/objects.c', '9c88fe52160f7515f97007d6e57f6b640f772b7f81c4d23cf1389d9e50ecc3c0'),
+    'gravity': ('src/main/charControl.c', 'bd1010309d38485300c8db1f27208370f4642bb73f92e72d3f6098cd7e2f3c89'),
 }
 WITNESSES = {
     'impact_gate': {'function':'func_80050348','owner':'D_8007BF04','external':'D_8007BF04','selector':0xFFD,'offset':0x31A4,'size':532,'relocs':22,'uses':3,'recipe':'c9ae34a06b5294868c9bb0a05f888ab6b7942dbf9c6861830bf560a1208858e6','renames':('animResetTrap','hitCopyFirstTrap','TrapDanglingJump')},
-    'color_gate': {'function':'func_80005548','owner':'D_8007BF0C','external':'D_8007BF0C','selector':0xFFD,'offset':0x31AC,'size':348,'relocs':3,'uses':1,'recipe':'83b348a05f2391a764a7c64885b2439570eb112d049fef3ac8cc4207088bdc16','renames':('objectsSizeDefaultBranch','objectsInitDefaultBranch','objectsControlDefaultBranch','objectsSwitchTablesBase')},
+    'color_gate': {'function':'func_80005548','owner':'D_8007BF0C','external':'D_8007BF0C','selector':0xFFD,'offset':0x31AC,'size':348,'relocs':3,'uses':1,'recipe':'52b5e15f163b4eab2263185588b5847570d1e8f7a200eeae4f2a2fec51720eb8','renames':('objectsSizeDefaultBranch','objectsInitDefaultBranch','objectsControlDefaultBranch','objectsSwitchTablesBase')},
     'gravity': {'function':'', 'owner':'D_800CB304','source':'src/main/charControl.c','address':0x800CB304,'size':4,'recipe':'22174bb0b30080a22443639d4e286bee8d82f88c67afc9bb40e48be8f6dde8bf'},
 }
 LOADED = {Path(m.__file__): pp.sha256_file(Path(m.__file__)) for m in

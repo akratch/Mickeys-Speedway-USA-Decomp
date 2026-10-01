@@ -2,11 +2,13 @@
 ### `func_8000B3CC` plateau handoff
 
 - source: `src/main/objects.c`
-- score: 100/494 words
+- score: 0/494 words, promoted
 - frame: 0x98
 - relocations: 20
-- first mismatch: +0x148
-- summary: Velocity sums read fields at each use (116 to 100, delta 0). Left: reflection keeps fields in f0/f14/f2/f12, factor homed, zero in f18.
+- first mismatch: none
+- summary: Matched. Typed object parameter, divisor and doubled negative dot as uopt spills (no carriers or address forms), one pad local, trigger-block store order.
+
+Summary before this remeasure: Velocity sums read fields at each use (116 to 100, delta 0). Left: reflection keeps fields in f0/f14/f2/f12, factor homed, zero in f18.
 
 Summary before this remeasure: hypothesis=put step at +0x34, speed at +0x30 and factor at +0x2C without undoing the L144 homes; spellings=block scope 116 unhomed, split stores 116 folded, two-field aggregate 197 at +16; stall=speed stayed at +0x4C and step missed +0x34, body reverted
 
@@ -73,4 +75,37 @@ a plain dot read (+12 to +16), and integer or double zero spellings (+16).
 The three D_8008152C/30/34 externs are this function's float literals (0.1,
 0.707, 0.1; the two 0.1 entries need distinct spellings) and sit directly
 after the objects rodata, so a promotion grows the trim by 0xC.
+
+#### 2026-10-02, lane g-objB: 100 to 0, promoted
+
+Priced in order, every cell at delta 0 unless stated:
+
+- The reflection with no address forms and no factor or speed carriers:
+  the divisor read as `state->unk18` at the test and the first divide, the
+  doubled negative dot written inline at each of the three uses, dot read
+  plainly. 100 to 30. The target's 0x30 and 0x2C cells are uopt spills of
+  those two expressions, not declared homes; the address-form homes were the
+  inherited artefact. Any one of the three alone was worse (141 to 214, some
+  at +16), which is why the earlier single-axis attempts read as closed.
+- Unused declarations as frame cells: dropping factor and keeping
+  negativeDot declared, 30 to 28. The declaration count, not the names,
+  decides the frame (renames of step were byte-identical).
+- The f0/f14 swap on unk1C/unk20 (18 words) was the colour order of three
+  tied p1 webs (save 6 each, ascending web number). Forcing them
+  (w274=c24, w266=c27, w270=c25 on proc 60) priced it at 30 to 12. The
+  three loads share one ICHAIN bucket and their chain order follows the
+  expression hash of the base: with `object` as the typed parameter instead
+  of a local cast from `void *arg0`, unk1C is first. End-statement order,
+  sum term order and the += spelling were all measured inert on it.
+- Removing the local moved every home 4 bytes; a leading `s32 pad` restores
+  them, and dropping the factor pad then puts the three spills on the
+  target's 0x34/0x30/0x2C ladder without sharing: 12 to 3.
+- `object->unk10 = state->unk14` before the two angle clears: 3 to 0.
+
+Promotion: the three D_8008152C/30/34 externs are now literals (the second
+0.1 spelled `0.100000001f` so the pool keeps two entries), the objects
+.rodata trim grew 0x800 to 0x80C, the carve boundary moved 0x8212C to
+0x82138 and the orphaned extract was deleted. The prototype and the one
+caller now name the typed object. The color_gate witness recipe and source
+pins were repinned.
 <!-- plateau-handoff:func_8000B3CC:end -->

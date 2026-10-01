@@ -1157,9 +1157,8 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
         if (index != wake->value3A) {
             do {
                 value = index * 5;
-                index++;
                 sample = (u8 *) wake->samples + (value * 4);
-                if (index >= wake->segmentCount) {
+                if (++index >= wake->segmentCount) {
                     index = 0;
                 }
                 if (sample[1] & 0x80) {
@@ -2447,10 +2446,10 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeUpdate:start
  * symbol: wakeUpdate
- * score: 257 differing words
+ * score: 253/398 words
  * frame: 0x90
  * relocations: 2
  * first-mismatch: +0x34
- * summary: Size delta 0, frame 0x90; residual is p1 colour order (wake/secondaryVertices, index/stripIndex swapped); four colour forces price it at 207.
+ * summary: Second-loop wrap test as ++index (257 to 253, delta 0). Left: p1 order wake/secondaryVertices, index/stripIndex, polygonOffset over polyCount.
  * PLATEAU-HANDOFF:wakeUpdate:end
  */

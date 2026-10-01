@@ -2531,9 +2531,43 @@ o57MiddleO84F0001350Reloc = 0xf0000000;
 o57MiddleO84F0001398Reloc = 0xf0000000;
 
 /* overlay 57: func_overlay_057_F00060F8_18A9CF0.c.o */
-D_104 = 0x00000104;
-D_11C = 0x0000011c;
-D_50C = 0x0000050c;
+amSndPlay_o057Reloc = 0xf0000000;
+animseqStartPath_o057Reloc = 0xf0000000;
+animseqStopPath_o057Reloc = 0xf0000000;
+gOverlay57ControllerMap = 0x0000036c;
+gOverlay57LayoutBusy = 0x00000130;
+gOverlay57LayoutValue = 0x00000104;
+gOverlay57Layouts = 0x000000e0;
+gOverlay57LevelBySelection = 0x00000000;
+gOverlay57MenuButtons = 0x00000000;
+gOverlay57MenuByte0 = 0x00000000;
+gOverlay57MenuByte1 = 0x00000000;
+gOverlay57MenuByte2 = 0x00000000;
+gOverlay57MenuByte3 = 0x00000000;
+gOverlay57MenuEntries = 0x000001b8;
+gOverlay57MenuHalf = 0x00000000;
+gOverlay57MenuInputX = 0x00000000;
+gOverlay57MenuInputY = 0x00000000;
+gOverlay57MenuSources = 0x00000000;
+gOverlay57MirrorFlag = 0x00000000;
+gOverlay57MirrorSelection = 0x00000000;
+gOverlay57NodeArguments = 0x0000017c;
+gOverlay57ObjectReady = 0x000004cc;
+gOverlay57PlayerCount = 0x00000000;
+gOverlay57PreviousLayoutValue = 0x0000010c;
+gOverlay57PreviousSelection = 0x00000164;
+gOverlay57Selection = 0x00000160;
+gOverlay57StartLinks = 0x00000134;
+gOverlay57StopLinks = 0x000001a0;
+joyCreateMap_o057Reloc = 0xf0000000;
+mainChangeCameras_o057Reloc = 0xf0000000;
+mainChangeLevel_o057Reloc = 0xf0000000;
+mainSetMode_o057Reloc = 0xf0000000;
+o57MenuO45F0000314Reloc = 0xf0000000;
+o57MenuO84F0000C74Reloc = 0xf0000000;
+o57MenuO84F0001060Reloc = 0xf0000000;
+o57MenuO84F0001350Reloc = 0xf0000000;
+o57MenuO84F0001398Reloc = 0xf0000000;
 
 /* overlay 57: overlay57SetNodeValue.c.o */
 overlay57ConfigureNodeReloc = 0xf0000000;

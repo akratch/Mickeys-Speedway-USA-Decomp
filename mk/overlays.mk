@@ -2629,7 +2629,17 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001AE8_18A56E0.c.o: POS
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xDCC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0004460_18A8058.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x7B8
+# The menu step and start is instruction-exact. Its resident callees go
+# through the generated surface entries; the trim only pins the size.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F00060F8_18A9CF0.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym amSndPlay=amSndPlay_o057Reloc \
+		--redefine-sym animseqStartPath=animseqStartPath_o057Reloc \
+		--redefine-sym animseqStopPath=animseqStopPath_o057Reloc \
+		--redefine-sym joyCreateMap=joyCreateMap_o057Reloc \
+		--redefine-sym mainChangeCameras=mainChangeCameras_o057Reloc \
+		--redefine-sym mainChangeLevel=mainChangeLevel_o057Reloc \
+		--redefine-sym mainSetMode=mainSetMode_o057Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x6E4
 # The middle-panel update is instruction-exact. Its resident callees go
 # through the generated surface entries; the text is already 0x12E0 so the

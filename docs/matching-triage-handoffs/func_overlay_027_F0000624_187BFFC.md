@@ -2,11 +2,13 @@
 ### `func_overlay_027_F0000624_187BFFC` plateau handoff
 
 - source: `src/overlays/o027/overlay_027.c`
-- score: 196 differing words
+- score: 100 differing words
 - frame: 0x98
 - relocations: 15
-- first mismatch: +0x8
-- summary: Fresh V0 on b4d1624a reproduces 1016B/254w and the 15-site ambiguity; no new identity or donor evidence; body untouched.
+- first mismatch: +0x70
+- summary: Delta +4, 25 aligned rows. Open: one extra constant move at +0x284 for the mode call's zero arguments.
+
+Summary before this remeasure: Fresh V0 on b4d1624a reproduces 1016B/254w and the 15-site ambiguity; no new identity or donor evidence; body untouched.
 
 Fresh maintenance evidence on base
 `b4d1624a2b85efcd237d708762e80bf2df56e81e`:

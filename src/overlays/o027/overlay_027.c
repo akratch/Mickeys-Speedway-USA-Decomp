@@ -227,26 +227,36 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
     }
 }
 
-/* Mickey-local rendering reconstruction; donor scans are exact-negative. */
-/* Workbench p7: structure-mismatch, 254/254 instructions/frame -152, 195 masked (196 raw) words, first +0x8.
- * Stack-home “constants” are the candidate’s 88-vs-target-100(sp) carrier; context/flag and prior allocation/lifetime/order probes remain exhausted.
- * Coupled object/child/register web and 19 overlay-local relocation identities remain; retain NON_MATCHING. */
+/* Mickey-local rendering reconstruction; donor scans are exact-negative.
+ * 2026-10-01: 195 -> 100 positional at +4 bytes, 25 aligned (230 of 255 words
+ * byte-exact). Plain locals plus one unused 0x28-byte local land the frame;
+ * selecting the intensity with if/else instead of default-then-override fixes
+ * the saved-register order and four colours; masking the red channel like the
+ * others restores a ring draw; one command per line in opcode-first order
+ * settles the as1 ties; one vertex pointer local serves both batches and the
+ * finish call. Open: one extra constant move at +0x284. The target holds the
+ * mode call's last zero in the fourth argument register from before the
+ * synchronise command and sets the second argument once before the branch;
+ * every spelling here is constant-propagated into two moves. */
+/* One display-list command per source line, opcode word first, as a GBI macro
+ * expands: as1 breaks its scheduling ties on physical line numbers. */
+#define O27_WRITE_COMMAND(word0, word1) \
+    command = *commands; *commands = command + 1; command->w0 = (word0); command->w1 = (word1)
+
 #ifdef NON_MATCHING
 void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
                                        s16 *arg2, O27Object *object) {
-    O27Work work;
-    O27Command *command;
-    O27State *state;
-    O27Child *child;
-    s16 *value;
-    void *displayList;
-    void *finishArg;
-    f32 oldScale;
-    f32 scale;
-    f32 x;
-    f32 y;
-    f32 z;
     s32 intensity;
+    f32 scale;
+    f32 oldScale;
+    O27Transform transform;
+    void *displayList;
+    O27Child *child;
+    O27State *state;
+    s16 *value;
+    O27Command *command;
+    u8 *verts;
+    u8 unused[0x28];
 
     value = overlay27GetValue();
     state = object->state;
@@ -259,97 +269,61 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
 
     if (state->fade != 0) {
         if (child != 0) {
-            work.transform.positionX = child->x;
-            work.transform.positionY = child->y;
-            work.transform.positionZ = child->z;
+            transform.positionX = child->x;
+            transform.positionY = child->y;
+            transform.positionZ = child->z;
         } else {
-            work.transform.positionX = object->x;
-            work.transform.positionY = object->y;
-            work.transform.positionZ = object->z;
+            transform.positionX = object->x;
+            transform.positionY = object->y;
+            transform.positionZ = object->z;
         }
 
-        work.transform.x = -*value;
-        work.transform.y = 0;
-        work.transform.z = 0;
-        work.transform.scale = scale;
-        intensity = 0x100;
-        work.transform.positionY += 24.0f * scale;
+        transform.x = -*value;
+        transform.y = 0;
+        transform.z = 0;
+        transform.scale = scale;
+        transform.positionY += 24.0f * scale;
 
         if (child != 0 && child->factor != 0) {
             intensity = (s32)(*child->factor * 256.0f);
+        } else {
+            intensity = 0x100;
         }
 
         displayList = *object->renderResource->displayList;
-        overlay27Prepare(commands, arg1, &work.transform, 1.0f, 0.0f);
+        overlay27Prepare(commands, arg1, &transform, 1.0f, 0.0f);
         overlay27DrawPart(commands, displayList, 0x214, 0);
 
-        command = *commands;
-        *commands = command + 1;
-        command->w0 = 0xFA000000;
-        command->w1 = (((intensity * 0x60) >> 8) << 24) |
-                      ((((intensity * 0xE0) >> 8) & 0xFF) << 16) |
-                      ((((intensity * 0xFF) >> 8) & 0xFF) << 8) |
-                      (state->fade & 0xFF);
+        O27_WRITE_COMMAND(0xFA000000, ((((intensity * 0x60) >> 8) & 0xFF) << 24) | ((((intensity * 0xE0) >> 8) & 0xFF) << 16) | ((((intensity * 0xFF) >> 8) & 0xFF) << 8) | (state->fade & 0xFF));
 
-        command = *commands;
-        *commands = command + 1;
-        command->w0 = 0xFB000000;
-        command->w1 = ((((intensity << 7) >> 8) & 0xFF) << 8) | 0xFF;
+        O27_WRITE_COMMAND(0xFB000000, ((((intensity << 7) >> 8) & 0xFF) << 8) | 0xFF);
 
-        command = *commands;
-        *commands = command + 1;
-        command->w0 = (((((u32)D_80000000 & 6) | 0x40) & 0xFF) << 16) |
-                      0x04000058;
-        command->w1 = (u32)D_80000000;
+        verts = D_80000000;
+        O27_WRITE_COMMAND((0x04 << 24) | (((0x40 | ((u32)verts & 6)) & 0xFF) << 16) | 0x58, (u32)verts);
 
-        command = *commands;
-        *commands = command + 1;
-        command->w0 = 0x059100A0;
-        command->w1 = (u32)D_80000050;
+        O27_WRITE_COMMAND(0x059100A0, (u32)D_80000050);
 
-        command = *commands;
-        *commands = command + 1;
-        command->w1 = 0;
-        command->w0 = 0xE7000000;
+        O27_WRITE_COMMAND(0xE7000000, 0);
 
-        finishArg = 0;
+        verts = 0;
         if (state->pulseTimer != 0) {
             overlay27SetMode(commands, 0, 5, 0);
 
-            command = *commands;
-            *commands = command + 1;
-            command->w0 = 0xFA000000;
-            command->w1 = (state->pulseTimer & 0xFF) | 0xFFFF0000;
-            finishArg = D_80000118;
+            O27_WRITE_COMMAND(0xFA000000, (state->pulseTimer & 0xFF) | 0xFFFF0000);
+            verts = D_80000118;
 
-            command = *commands;
-            *commands = command + 1;
-            command->w0 = (((((u32)D_80000118 & 6) | 0x38) & 0xFF) << 16) |
-                          0x0400004E;
-            command->w1 = (u32)D_80000118;
+            O27_WRITE_COMMAND((0x04 << 24) | (((0x38 | ((u32)verts & 6)) & 0xFF) << 16) | 0x4E, (u32)verts);
 
-            command = *commands;
-            *commands = command + 1;
-            command->w0 = 0x05400050;
-            command->w1 = (u32)D_80000160;
+            O27_WRITE_COMMAND(0x05400050, (u32)D_80000160);
 
-            command = *commands;
-            *commands = command + 1;
-            command->w1 = 0;
-            command->w0 = 0xE7000000;
+            O27_WRITE_COMMAND(0xE7000000, 0);
         }
 
-        command = *commands;
-        *commands = command + 1;
-        command->w1 = 0xFFFFFFFF;
-        command->w0 = 0xFA000000;
+        O27_WRITE_COMMAND(0xFA000000, 0xFFFFFFFF);
 
-        command = *commands;
-        *commands = command + 1;
-        command->w1 = 0xFFFFFF00;
-        command->w0 = 0xFB000000;
+        O27_WRITE_COMMAND(0xFB000000, 0xFFFFFF00);
 
-        overlay27Finish(commands, finishArg);
+        overlay27Finish(commands, verts);
     }
 
     oldScale = object->scale;
@@ -434,10 +408,10 @@ s32 overlay27Activate(O27Object *object) {
 
 /* PLATEAU-HANDOFF:func_overlay_027_F0000624_187BFFC:start
  * symbol: func_overlay_027_F0000624_187BFFC
- * score: 196 differing words
+ * score: 100 differing words
  * frame: 0x98
  * relocations: 15
- * first-mismatch: +0x8
- * summary: Fresh V0 on b4d1624a reproduces 1016B/254w and the 15-site ambiguity; no new identity or donor evidence; body untouched.
+ * first-mismatch: +0x70
+ * summary: Delta +4, 25 aligned rows. Open: one extra constant move at +0x284 for the mode call's zero arguments.
  * PLATEAU-HANDOFF:func_overlay_027_F0000624_187BFFC:end
  */

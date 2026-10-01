@@ -898,8 +898,10 @@ extern void *LOCAL_BSS_1D9C;
  * 2026-10-01 (d-o001): the declarations are in the order the target's home
  * ladder implies -- every spilled local at its shipped slot, register-only
  * locals and pads filling the gaps -- and frame_census now reads both
- * ladders identical (1113 to 1079). Remaining CFG and allocation work is
- * measured in the function handoff. */
+ * ladders identical (1113 to 1079). The path loop is a `for` over a pointer
+ * and an index, the deceleration reads forwardVelocity directly, and the
+ * m2c gotos are gone (1066). Remaining CFG and allocation work is measured
+ * in the function handoff. */
 #ifdef NON_MATCHING
 void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) {
     s32 pad0;
@@ -964,10 +966,9 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
                     if (state->reset170 == 0) {
                         state->reset170 = 1U;
                     }
-                    goto block_13;
+                    state->stuckTimer = 0;
                 }
             } else {
-block_13:
                 state->stuckTimer = 0;
             }
         }
@@ -1043,20 +1044,14 @@ block_13:
         if ((s32) level >= 0xB) {
             level = 0xA;
         }
-        path = &gO1PhysicsPaths[1];
-        index = 1;
         limit = (tuning[16] + ((f32) level * tuning[2])) * state->speedScale;
-        do {
-            predicate = path->test;
-            if ((predicate != NULL) && (path->mask & (1 << state->pathMode))) {
-
-                if (predicate() != 0) {
-                    state->pathMode = (u8) index;
+        for (index = 1, path = &gO1PhysicsPaths[1]; index != 4; index++, path++) {
+            if ((path->test != NULL) && (path->mask & (1 << state->pathMode))) {
+                if (path->test() != 0) {
+                    state->pathMode = index;
                 }
             }
-            index += 1;
-            path++;
-        } while (index != 4);
+        }
         gO1PhysicsPaths[state->pathMode].position(&targetX, &targetZ);
         if (D_1BA4 != NULL) {
 
@@ -1256,28 +1251,26 @@ block_13:
                             value2 = 0.5f;
                         }
                     } else {
-                        value2 = state->forwardVelocity;
-                        if (value2 > 0.0f) {
-                            index = (s32) value2;
-                            scale = value2 - (f32) index;
+                        if (state->forwardVelocity > 0.0f) {
+                            index = (s32) state->forwardVelocity;
+                            scale = state->forwardVelocity - (f32) index;
                         } else {
-                            work = -value2;
+                            work = -state->forwardVelocity;
                             index = (s32) work;
                             scale = work - (f32) index;
                         }
                         work = tuning[index + 17];
                         value2 = ((tuning[index + 18] - work) * scale) + work;
                     }
-                    if (state->forwardVelocity < (-limit)) {
-                        state->forwardVelocity = (f32) (state->forwardVelocity * 0.99f);
-                        if ((-limit) < state->forwardVelocity) {
-                            goto block_160;
+                    if (state->forwardVelocity < -limit) {
+                        state->forwardVelocity *= 0.99f;
+                        if (-limit < state->forwardVelocity) {
+                            state->forwardVelocity = -limit;
                         }
                     } else {
-                        state->forwardVelocity = (f32) (state->forwardVelocity - (value2 * state->speedScale));
-                        if (state->forwardVelocity < (-limit)) {
-block_160:
-                            state->forwardVelocity = (-limit);
+                        state->forwardVelocity -= value2 * state->speedScale;
+                        if (state->forwardVelocity < -limit) {
+                            state->forwardVelocity = -limit;
                         }
                     }
                     if ((gOverlay1Mode == 1) && (G_offd_31a4 == 0) && (state->flags1A8 & 1) && (func_8002675C() == (s32)0x21) && (state->pathIndex == 0x2A) && (0.4f < state->progress398)) {
@@ -3232,11 +3225,11 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C
- * score: 1074/1542 words
+ * score: 1066/1542 words
  * frame: 0x138
  * relocations: 184
  * first-mismatch: +0x170
- * summary: Frame ladder now exact (declarations in target home order): 1113 to 1074 at delta 0. Rest is FP/int ring naming from the clamp block on.
+ * summary: Frame ladder exact; natural path loop, deceleration and limit blocks: 1113 to 1066 at delta 0. Rest is FP/int ring naming from the clamp block on.
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
  */
 

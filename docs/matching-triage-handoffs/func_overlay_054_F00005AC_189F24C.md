@@ -2,11 +2,111 @@
 ### `func_overlay_054_F00005AC_189F24C` plateau handoff
 
 - source: `src/overlays/o054/overlay54TailA.c`
-- score: 851 differing words
-- frame: 0x158
-- relocations: 273
-- first mismatch: +0x0
-- summary: Exhaustive colour packing reaches 839; most aligned residual lies outside the colour axis.
+- score: 0/1594 words, promoted
+- frame: 0x138
+- relocations: 269
+- first mismatch: none
+- summary: Matched. Built with -Wab,-r4300_mul, which makes IDO emit the HUD height easing as the shipped rotated loop from a plain for; overlay data defined in the TU; unsigned icon mode; indexed alpha and item rows; per-arm record loops; function-scope locals in the target's frame order.
+
+Summary before this remeasure: Unsigned icon mode, indexed alpha/item, split visibility arms, sign via record: 851 to 280 at delta 0.
+
+Summary before this remeasure: Exhaustive colour packing reaches 839; most aligned residual lies outside the colour axis.
+
+## 2026-10-01 lane d-big: matched and promoted (213 to 0)
+
+- Compiler flag: `-Wab,-r4300_mul` on this TU (mk/overlays.mk). The
+  height easing's rotated loop (the add of each update in a branch-likely
+  delay slot, the next update's load, subtract and multiply at the bottom,
+  a peeled group at the exit) is what IDO's back end emits for a plain
+  `for (i = 0; i < updateRate; i++) height += (-11.0f - height) * 0.125f;`
+  under that flag, and no spelling produces it without the flag: measured
+  on mini TUs with this toolchain, and Banjo-Kazooie's build (which passes
+  the same flag) shows the identical shape on `ml_vec3f_interpolate`.
+  Plain loop under the flag: 213 to 100 at delta 0, naming 0, leaving only
+  frame displacements. The overlay 50..55 HUD functions (o050, o051,
+  o052 TailB, o053, o055) and o047/o008/o084 carry the same loop shape in
+  their targets, so the flag is the first thing to try on each.
+- Frame: with the carried loop gone, every local declared at function
+  scope in the order the target's ladder reads, register-only locals in its
+  unused cells (two above the player index, one below it, two between the
+  level and actor pointers, one each after the actor and the actor count,
+  six after the HUD Y spill, three below height with the three s16 slide
+  limits packed). Frame 0x138, 100 to 4.
+- The bar Y position is an if/else, not a ternary (the ternary loads its
+  two constants in the other order): 4 to 0.
+- Promotion: the object drops its .data, .bss and .gptab copies after a
+  rebind of every section site to zero-valued placeholders
+  (config/normalizations/func_overlay_054_F00005AC_189F24C.rebind.spec,
+  141 rows generated from the object), and the 0.66f literal is
+  externalized onto the retained rodata by digest. `gmake verify` passes
+  from a fresh object; `promotion-proof` PASS (1594 words, frame 0x138,
+  269/269 relocations).
+
+## 2026-10-01 lane d-big: four shape edits, 851 to 280 at delta 0
+
+Each edit was measured with `tools/fast_score.py` and the aligned residual of
+`tools/residual_map.py --object`; prices are aligned rows (naming plus
+immediate plus structural) and masked positional words.
+
+- Icon call mode parameter declared unsigned (u8, u16 and u32 all equal).
+  The target loads the call's literal 1 into a fresh temporary while the
+  function's constant-1 web sits in a callee-saved register; with a signed
+  parameter our literal joined that web, saving one ring draw and rotating
+  the whole temporary ring from +0xC4C to the end. Aligned 687 to 341
+  (byte-exact 893 to 1239); size went 0 to +4.
+- Alpha and item flag read as `array[playerIndex]` at each use instead of
+  through declared pointers (checklist item 5): uopt still creates the two
+  pointers (the item pointer spilled at 0x58, as in the target) and the
+  stores to the overlay record no longer block the alpha loads. Product of
+  four pointer groups measured; alpha plus item is the floor, aligned 324.
+  The record-row pointers (position, lap, lap count, timer) must stay
+  declared: indexing them costs 108 bytes.
+- Visibility arms: `visible = 0` moved into the arm that resets the
+  position instead of before the inner test. Aligned 305.
+- The sign glyph is written as `o54Bss_0[0].metadata`, not a separate
+  `o54Bss_8` alias of the same record (checklist item 3): the target's three
+  stores to record 0 share one high half instead of a materialised base.
+  280 masked at delta 0, aligned 259 (naming 128, immediate 97, structural
+  34, seven one-sided words each way).
+
+Open, in size order:
+
+- Frame 0x150 against 0x138. The target ladder, top down: two unused
+  cells, the player index at 0x12C, one cell, the two offset outputs,
+  the level pointer, two cells, the actor, one cell, the actor count, one
+  cell, the screen Y spill, the three split-time outputs, the HUD Y spill,
+  six cells, the icon record pair at 0xB8, width, height. Declaring every
+  local at function scope in that order (register locals in the gaps)
+  reproduces the ladder exactly at an offset of 0x10 with frame 0x148; four
+  cells too many remain below the height output. Inlining the three
+  limit-table reads to free cells costs 320 aligned rows, so the extra
+  cells must come from elsewhere.
+- Height loop at +0x114..+0x278: still the inherited carried form. The
+  plain `for` loop over the global is 136 bytes short; the target's loop
+  body is rotated (load and step of the next update at the bottom).
+- Remaining one-sided words: the height loop (four each way) and three
+  near +0x1440..+0x1500 in the time-delta digit setup.
+
+Second pass, same day, 280 to 213:
+
+- Each time-delta arm writes record 0's sign and then fills records 0..8
+  in one `for (i = 0; i < 9; i++)` loop reading the two texture pointers
+  from the resource table at each use (no texture/alternate carriers); IDO
+  peels the one-iteration remainder, which is the target's separate record
+  0 stores followed by a loop from 1. The time delta is assigned before the
+  loop (it lives in s1 across it). 271 masked with extern names.
+- Data into C: the overlay's .data and .bss defined in this TU, exactly as
+  overlay54Initialize.c lays them out (.data 0x2D0 and .bss 0x670, .data
+  bytes compared equal), with the three slide-limit pairs as separate
+  arrays. The target's records are LOCAL, and as1 shares one high half
+  between the record 0 field stores only for a symbol defined in the TU.
+  Measured with the old shape this move was -20 bytes and worse, because
+  one six-entry limit table shares a base; split into three it is the win.
+- The digit position loop runs `for (i = 1; i < 9; i++)` over records
+  1..8 of the same array with `i == 1 or 4 or 7`, not an alias name offset
+  by one record. 213 masked at delta 0, aligned 197 (naming 76, immediate
+  98, structural 23); the only one-sided words left are the height loop's
+  four each way.
 
 ## 2026-09-12 exhaustive colour landscape
 

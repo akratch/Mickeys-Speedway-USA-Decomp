@@ -171,6 +171,11 @@ def _assert_same_candidate_snapshot(before,after):
     _need(before==after,'R8 source/compiler/dependency/link closure changed during joint binding proof')
 
 
+def _assert_raw_object_stable(expected_sha256,actual_sha256):
+    _need(expected_sha256==actual_sha256,
+          'retained R8 raw stock-C object changed during joint binding proof')
+
+
 def _assert_same_joint_view(before,after):
     fields=('key','function','source','source_sha256','configured_recipe_fingerprint',
       'configured_object_sha256','owned_size','owned_bytes_sha256','owner','semantic_view',
@@ -191,6 +196,17 @@ def _assert_candidate_view_closure(candidate,witness):
           'R8 candidate and named storage witness did not share one final linked/tool/recipe closure')
 
 
+def _assert_final_candidate_state(candidate,final_snapshot,raw_sha256):
+    _need(final_snapshot==candidate['freshness_after'],
+          'R8 candidate source/compiler/dependency closure changed after final physical witness')
+    _need(final_snapshot['source_sha256']==SOURCE_SHA256 and
+          final_snapshot['preprocessed_sha256']==candidate['preprocessed_sha256'],
+          'R8 source or preprocessing context changed after final witness')
+    _need(candidate['preprocessed_self_context']['status']=='unchanged',
+          'R8 compiler self-context changed during candidate capture')
+    _assert_raw_object_stable(candidate['raw_sha256'],raw_sha256)
+
+
 def _candidate_capture(out):
     resolution=fp.resolve(FUNCTION)
     source=resolution.source.resolve(); configured=resolution.candidate_object.resolve()
@@ -205,6 +221,7 @@ def _candidate_capture(out):
     raw=out/'r8-stock-c.o'
     actual=['tools/ido/cc',*original,'-o',str(raw),SOURCE_REL]
     result=batch.bounded_capture(actual,deadline,check=True)
+    raw_object_sha=pp.sha256_file(raw)
     (out/'r8-stock-c-command.json').write_text(json.dumps(actual,indent=2)+'\n')
     (out/'r8-stock-c-compile.log').write_text(result.stdout)
     (out/'r8-preprocessed-before.c').write_text(cpp_before)
@@ -245,12 +262,12 @@ def _candidate_capture(out):
           'R8 compiler self-context is not unchanged')
     (out/'r8-preprocessed-after.c').write_text(cpp_after)
     _need(fresh_recipe==recipe,'R8 full configured compiler recipe changed during source-fidelity capture')
-    raw_object_sha=pp.sha256_file(raw)
-    _need(pp.sha256_file(raw)==raw_object_sha,'retained R8 stock-C object changed during capture')
+    _assert_raw_object_stable(raw_object_sha,pp.sha256_file(raw))
     return {'resolution':resolution,'source':source,'configured':configured,'raw':raw,
       'source_sha256':pp.sha256_file(source),'configured_sha256':pp.sha256_file(configured),
       'raw_sha256':raw_object_sha,'recipe_sha256':before['recipe_sha256'],
-      'recipe_fingerprint':before['recipe_sha256'],'definitions':definitions,'source_declaration_lines':source_lines,
+      'recipe_fingerprint':before['recipe_sha256'],'recipe_text':recipe,
+      'definitions':definitions,'source_declaration_lines':source_lines,
       'function_size':raw_fn['size'],'function_bytes_sha256':hashlib.sha256(owned_bytes).hexdigest(),
       'function_relocations':len(raw_rows),
       'ordered_relocations':raw_rows,'fidelity':fidelity,'freshness_before':before,
@@ -299,6 +316,9 @@ def collect(key: str):
         final_witness=view.collect(key)
         _assert_same_joint_view(witness,final_witness)
         _assert_candidate_view_closure(candidate,final_witness)
+        final_snapshot,_,_,_,_= _r8_snapshot(candidate['source'],candidate['configured'],
+                                               candidate['resolution'],time.monotonic()+240)
+        _assert_final_candidate_state(candidate,final_snapshot,pp.sha256_file(candidate['raw']))
         _verify_loaded()
         # Opaque recheck IDs are generated here; no caller-provided path or
         # identity can redirect a later check.
@@ -312,13 +332,23 @@ def collect(key: str):
           'candidate_stock_c':{'object_sha256':candidate['raw_sha256'],'configured_object_sha256':candidate['configured_sha256'],
              'source_sha256':candidate['source_sha256'],'recipe_sha256':candidate['recipe_sha256'],
              'recipe_fingerprint':candidate['recipe_fingerprint'],'function_size':candidate['function_size'],
+             'recipe_raw_sha256':candidate['freshness_before']['recipe_raw_sha256'],
              'function_bytes_sha256':candidate['function_bytes_sha256'],
-             'ordered_relocations':candidate['ordered_relocations'],'source_fidelity':candidate['fidelity']},
+             'ordered_relocations':candidate['ordered_relocations'],'source_fidelity':candidate['fidelity'],
+             'freshness_before':candidate['freshness_before'],'freshness_after':candidate['freshness_after'],
+             'preprocessed_self_context':candidate['preprocessed_self_context'],
+             'preprocessed_sha256':candidate['preprocessed_sha256']},
           'identity_authority':{'path':'Q69-STORAGE-ADAPTER-ARCHITECTURE-20261001/proposed-bindings.json',
              'sha256':AUTHORITY_SHA256,'route':'fixed original namespace record; no target-site correlation'},
           'adapter_sha256':pp.sha256_file(Path(__file__)),
           'resolver_admission':False,'matching_credit':0,'recheck_handle':recheck_id,
-          'artifacts':{'binding_report':None,'stock_c_object':None,'configured_object':None}}
+          'artifacts':{'binding_report':None,'stock_c_object':None,'configured_object':None,
+             'compiler_command':(out/'r8-stock-c-command.json').relative_to(ROOT).as_posix(),
+             'configured_recipe':(out/'r8-configured-recipe.txt').relative_to(ROOT).as_posix(),
+             'preprocessed_before':(out/'r8-preprocessed-before.c').relative_to(ROOT).as_posix(),
+             'preprocessed_after':(out/'r8-preprocessed-after.c').relative_to(ROOT).as_posix(),
+             'compile_log':(out/'r8-stock-c-compile.log').relative_to(ROOT).as_posix()}}
+        (out/'r8-configured-recipe.txt').write_text(candidate['recipe_text'])
         for name,src in [('stock-c.o',candidate['raw']),('configured.o',candidate['configured'])]:
             shutil.copyfile(src,out/name)
         packet['artifacts']['binding_report']=(out/'binding.json').relative_to(ROOT).as_posix()
@@ -357,7 +387,8 @@ def recheck(handle: str):
           'retained stock-C/configured object artifact changed since capture')
     fresh=collect(old['key'])
     stable_fields=('configured_object_sha256','source_sha256','recipe_sha256','recipe_fingerprint',
-                   'function_size','function_bytes_sha256','ordered_relocations','source_fidelity')
+                   'function_size','function_bytes_sha256','ordered_relocations','source_fidelity',
+                   'freshness_before','freshness_after','preprocessed_self_context','preprocessed_sha256')
     stable_candidate={name:fresh['candidate_stock_c'][name] for name in stable_fields}
     old_candidate={name:old['candidate_stock_c'][name] for name in stable_fields}
     _need(old.get('adapter_sha256')==pp.sha256_file(Path(__file__)) and

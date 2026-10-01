@@ -91,6 +91,41 @@ class ResidentStorageBindingTests(unittest.TestCase):
             with self.subTest(changed=changed), self.assertRaisesRegex(bindings.BindingError,'closure changed'):
                 bindings._assert_same_candidate_snapshot(before,changed)
 
+    def test_final_candidate_snapshot_rejects_same_mtime_source_or_header_content_change(self):
+        # The closure is content-hash based; unchanged filesystem mtimes cannot
+        # make a changed source/header snapshot equal.
+        before={'source_sha256':'source-a','dependencies':{'include/x.h':'header-a'},
+                'recipe_sha256':'recipe','tools':{'cc':'tool'},'target_inputs':{'candidate_object':'obj'}}
+        for changed in (
+            {**before,'source_sha256':'source-b'},
+            {**before,'dependencies':{'include/x.h':'header-b'}},
+        ):
+            with self.subTest(changed=changed), self.assertRaisesRegex(bindings.BindingError,'closure changed'):
+                bindings._assert_same_candidate_snapshot(before,changed)
+
+    def test_raw_stock_c_object_is_hashed_before_parse_and_change_is_rejected(self):
+        bindings._assert_raw_object_stable('raw-original','raw-original')
+        with self.assertRaisesRegex(bindings.BindingError,'raw stock-C object changed'):
+            bindings._assert_raw_object_stable('raw-original','raw-mutated-during-parse')
+
+    def test_final_joint_witness_rejects_candidate_source_header_recipe_or_context_change(self):
+        candidate={'freshness_after':{'source_sha256':bindings.SOURCE_SHA256,
+             'preprocessed_sha256':'cpp','dependencies':{'include/x.h':'header-a'},
+             'recipe_sha256':'recipe','tools':{'cc':'tool'}},
+             'preprocessed_sha256':'cpp','preprocessed_self_context':{'status':'unchanged'},
+             'raw_sha256':'raw'}
+        bindings._assert_final_candidate_state(candidate,candidate['freshness_after'],'raw')
+        for changed in (
+            {**candidate['freshness_after'],'source_sha256':'same-mtime-source-mutated'},
+            {**candidate['freshness_after'],'dependencies':{'include/x.h':'same-mtime-header-mutated'}},
+            {**candidate['freshness_after'],'recipe_sha256':'recipe-mutated'},
+            {**candidate['freshness_after'],'tools':{'cc':'tool-mutated'}},
+        ):
+            with self.subTest(changed=changed), self.assertRaisesRegex(bindings.BindingError,'after final physical witness'):
+                bindings._assert_final_candidate_state(candidate,changed,'raw')
+        with self.assertRaisesRegex(bindings.BindingError,'raw stock-C object changed'):
+            bindings._assert_final_candidate_state(candidate,candidate['freshness_after'],'raw-mutated')
+
     def test_final_physical_witness_rejects_owner_loader_elf_or_closure_changes(self):
         closure={'loader_object':'l','initialized_owner_object':'o','linked_elf':'e',
                  'map':'m','rom':'r','tools':{'cc':'t'},'makefiles':{'Makefile':'f'}}

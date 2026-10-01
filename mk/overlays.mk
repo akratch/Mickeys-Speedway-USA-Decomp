@@ -780,7 +780,6 @@ $(O41_SPAWN_OBJ): POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:d7c6fadb83cccf1b66eb029d9abf6c67653a548a0a77831c47f6e70cd1af6ad4 && \
 	$(OBJCOPY) --remove-section .rel.rodata $@
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41EnqueueTransition.c.o: CFLAGS += -woff 835
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41EnqueueTransition.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1A4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o041/overlay41TickTransitions.c.o: POSTPROCESS = \

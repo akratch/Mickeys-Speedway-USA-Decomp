@@ -1440,6 +1440,9 @@ overlay41ConvertPairReloc = 0xf0000000;
 overlay41RandomRangeReloc = 0xf0000000;
 overlay41SpawnEffectReloc = 0xf0000000;
 
+/* overlay 41: overlay41EnqueueTransition.c.o */
+gOverlay41QueueEntries = 0x00000000;
+
 /* overlay 41: overlay41TickTransitions.c.o */
 gOverlay41Transitions = 0x00000000;
 

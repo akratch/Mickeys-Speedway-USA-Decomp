@@ -2,11 +2,13 @@
 ### `overlay63UpdateEffects` plateau handoff
 
 - source: `src/overlays/o063/overlay63UpdateEffects.c`
-- score: 137/350 words
+- score: 104/350 words
 - frame: 0xF8
 - relocations: 71
 - first mismatch: +0x14
-- summary: Fade carrier local removed (reads gO63Fade at each use): 139 to 137. Particle loop forms indexed/ascending are 333+.
+- summary: Loop reads fields after the decrement, one spare local word: 137 to 104. Open: s6/s7 and s4/s5 pairs reversed.
+
+Summary before this remeasure: Fade carrier local removed (reads gO63Fade at each use): 139 to 137. Particle loop forms indexed/ascending are 333+.
 
 Authorized maintenance reproof on base
 `4b9fafd36510efce3321060bf07686a2c40dfac3`:

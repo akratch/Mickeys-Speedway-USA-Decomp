@@ -1833,8 +1833,139 @@ def _numeric_assignments(path):
         raise SurfaceComparisonError(str(error)) from error
 
 
+def _candidate_tu_placement_matches_canonical(name, candidate_value,
+                                               tu_base_offset, candidate_elf, overlay,
+                                               candidate_source, target_elf,
+                                               atlas, root, rom,
+                                               elf_loader=None):
+    """Whether a shifted candidate definition is the exact canonical function.
+
+    The candidate's TU coordinate is never itself promoted by this proof. A
+    strict canonical boundary/ROM proof supplies the independent identity;
+    this helper only decides whether the candidate-TU coordinate is redundant
+    and therefore must not conflict with that identity.
+    """
+    match = GEN_NAME_RE.fullmatch(name)
+    if match is None or atlas is None or rom is None:
+        return False
+    target_overlay, target_offset = int(match.group(1)), int(match.group(2), 16)
+    if target_overlay != overlay:
+        return False
+    if (target_overlay, target_offset) == (overlay, tu_base_offset + candidate_value):
+        return False
+    if not isinstance(candidate_source, str) or not candidate_source:
+        return False
+    candidate_source_key = _canonical_source_key(candidate_source)
+    candidate_object_source = _canonical_source_key(
+        _source_from_object(Path(getattr(candidate_elf, "path", ""))))
+    if (not candidate_source_key
+            or candidate_object_source != candidate_source_key):
+        return False
+    modules = [row for row in atlas.get("modules", [])
+               if row.get("overlay") == target_overlay]
+    if len(modules) != 1:
+        return False
+    function_owners = []
+    for row in modules[0].get("text_ownership", []):
+        try:
+            owner_start = _atlas_hex(row, "offset", "text ownership row")
+            owner_end = _atlas_hex(row, "end_offset", "text ownership row")
+        except SurfaceComparisonError:
+            return False
+        if owner_start <= target_offset < owner_end:
+            function_owners.append((row, owner_start))
+    if len(function_owners) != 1:
+        return False
+    function_owner, function_owner_start = function_owners[0]
+    # Limit this rule to a strict interior member of the exact candidate TU.
+    # Owner-start and other-TU cases retain their original fail-closed conflict.
+    if (function_owner.get("type") != "c"
+            or function_owner.get("source") != candidate_source_key
+            or function_owner_start >= target_offset):
+        return False
+    captured = []
+    loader = Elf if elf_loader is None else elf_loader
+
+    def capture(path):
+        obj = loader(path)
+        captured.append(obj)
+        return obj
+
+    try:
+        identity = _canonical_overlay_call_boundary(
+            atlas, overlay, name, target_elf, root=root,
+            elf_loader=capture, rom=rom)
+    except (OSError, ValueError, SurfaceComparisonError):
+        return False
+    expected = (target_overlay, target_offset)
+    if identity != expected or len(captured) != 1:
+        return False
+    canonical = captured[0]
+    try:
+        candidate_text_index, _ = candidate_elf.section(".text")
+        canonical_text_index, _ = canonical.section(".text")
+        candidate_defs = [
+            (value, size) for symbol, value, size, info, section in candidate_elf.symbols()
+            if symbol == name and section == candidate_text_index
+            and (info & 0xF) == STT_FUNC
+        ]
+        canonical_defs = [
+            (value, size) for symbol, value, size, info, section in canonical.symbols()
+            if symbol == name and section == canonical_text_index
+            and (info & 0xF) == STT_FUNC
+        ]
+        if (candidate_text_index is None or canonical_text_index is None
+                or len(candidate_defs) != 1 or len(canonical_defs) != 1):
+            return False
+        candidate_start, candidate_size = candidate_defs[0]
+        canonical_start, canonical_size = canonical_defs[0]
+        if (candidate_size <= 0 or candidate_size != canonical_size
+                or candidate_start != candidate_value
+                or candidate_start < 0 or canonical_start < 0):
+            return False
+        candidate_bytes = candidate_elf.section_bytes(".text")
+        canonical_bytes = canonical.section_bytes(".text")
+        if (candidate_start + candidate_size > len(candidate_bytes)
+                or canonical_start + canonical_size > len(canonical_bytes)
+                or candidate_bytes[candidate_start:candidate_start + candidate_size]
+                != canonical_bytes[canonical_start:canonical_start + canonical_size]):
+            return False
+
+        def signature(elf, start, size):
+            end = start + size
+            result = []
+            symbols = elf.symbols()
+            for section, offset, rtype, symbol_index in elf.relocations():
+                if section != ".text" or not start <= offset < end:
+                    continue
+                if offset + 4 > end or symbol_index >= len(symbols):
+                    return None
+                referenced = symbols[symbol_index]
+                name = referenced[0]
+                owners = [row for row in symbols if row[0] == name]
+                # This narrow route accepts only a unique undefined external
+                # referent with identical ELF ownership metadata on both sides.
+                if (not name or len(owners) != 1 or owners[0] != referenced
+                        or referenced[4] != SHN_UNDEF
+                        or referenced[1] != 0):
+                    return None
+                result.append((offset - start, rtype, name,
+                               referenced[3] >> 4, referenced[3] & 0xF,
+                               referenced[4], referenced[1], referenced[2]))
+            return tuple(sorted(result))
+
+        candidate_relocations = signature(candidate_elf, candidate_start, candidate_size)
+        canonical_relocations = signature(canonical, canonical_start, canonical_size)
+        return (candidate_relocations is not None
+                and candidate_relocations == canonical_relocations)
+    except (IndexError, KeyError, OSError, ValueError, struct.error):
+        return False
+
+
 def _stable_symbol_identities(path, candidate_elf, overlay, tu_base_offset,
-                              target_elf, redefine_aliases=None, evidence=None):
+                              target_elf, redefine_aliases=None, evidence=None,
+                              atlas=None, root=None, rom=None, elf_loader=None,
+                              boundary_proof_names=None, candidate_source=None):
     """Map names to unambiguous ``(overlay, offset)`` runtime identities."""
     proposed = collections.defaultdict(set)
 
@@ -1881,9 +2012,24 @@ def _stable_symbol_identities(path, candidate_elf, overlay, tu_base_offset,
     # This covers intra-overlay JUMPs without consulting the shared linked VMA.
     if overlay is not None:
         text_idx, _ = candidate_elf.section(".text")
-        for name, value, _size, _info, shndx in candidate_elf.symbols():
+        for name, value, _size, info, shndx in candidate_elf.symbols():
             if name and shndx == text_idx:
-                propose(name, (overlay, tu_base_offset + value), "candidate-tu-text-owner")
+                shifted_exact = (
+                    atlas is not None
+                    and (info & 0xF) == STT_FUNC
+                    and (boundary_proof_names is None
+                         or name in boundary_proof_names)
+                    and _candidate_tu_placement_matches_canonical(
+                        name, value, tu_base_offset, candidate_elf, overlay,
+                        candidate_source, target_elf, atlas,
+                        REPO if root is None else root, rom, elf_loader=elf_loader)
+                )
+                if shifted_exact:
+                    _identity_witness(
+                        evidence, name, "candidate-tu-text-owner",
+                        reason="shifted-position-not-authoritative; exact canonical function proof")
+                else:
+                    propose(name, (overlay, tu_base_offset + value), "candidate-tu-text-owner")
 
     redefine_pairs = [
         (source, destination)
@@ -4027,9 +4173,20 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
             target_value, target_size, target_section, values_path,
             resident_runtime_records)
     evidence = {} if include_diagnostics or reserved_storage_witnesses is not None else None
+    candidate_symbols = candidate_elf.symbols()
+    boundary_proof_names = {
+        candidate_symbols[index][0]
+        for section, offset, _rtype, index in candidate_elf.relocations()
+        if section == ".text" and candidate_start <= offset < candidate_start + candidate_size
+        and index < len(candidate_symbols)
+    }
     identities, ambiguous_identities = _stable_symbol_identities(
         values_path, candidate_elf, overlay, tu_base_offset, target_elf,
-        candidate_redefine_aliases, evidence=evidence)
+        candidate_redefine_aliases, evidence=evidence,
+        atlas=atlas if overlay is not None else None, root=REPO, rom=rom,
+        boundary_proof_names=boundary_proof_names,
+        candidate_source=(row.get("source")
+                          if overlay is not None else None))
     overlay_call_identities, ambiguous_overlay_calls = (
         _stable_overlay_call_identities(
             values_path, candidate_elf, overlay, target_elf, atlas,

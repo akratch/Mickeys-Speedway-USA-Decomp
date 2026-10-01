@@ -921,8 +921,6 @@ overlay20CreateReloc = 0xf0000000;
 
 /* overlay 20: overlay20RemoveEntry.c.o */
 D_4DC = 0x000004dc;
-
-/* overlay 20: overlay20AdvanceEntries.c.o */
 gOverlay20Entries = 0x00000000;
 gOverlay20EntryCount = 0x00000000;
 

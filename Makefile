@@ -1282,8 +1282,12 @@ $(BUILD_DIR)/$(SRC_DIR)/main/charControl.c.o: CFLAGS += -Wab,-r4300_mul
 # func_8001C4C0's effect-spawn dangling call needs its observed twelve-argument
 # prototype without changing the other shared TrapDanglingJump call sites.
 # Canonicalize only the undefined alias name; section contents are unchanged.
+# The lone gravity scalar owns four BSS bytes; IDO rounds its section to 16.
+# Normalize only proved NOBITS tail alignment, preserving executable bytes.
+$(BUILD_DIR)/$(SRC_DIR)/main/charControl.c.o: $(TOOLS_DIR)/trim_elf_bss.py
 $(BUILD_DIR)/$(SRC_DIR)/main/charControl.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym charControlEffectSpawnTrap=TrapDanglingJump $@
+	$(OBJCOPY) --redefine-sym charControlEffectSpawnTrap=TrapDanglingJump $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_bss.py $@ D_800CB304 4
 
 # The positional-audio distance loops retain the R4300 multiply schedule;
 # the full flag lattice selects this mode for amPlayAudioMap.

@@ -322,9 +322,9 @@ units remain distinct.
 | 26 | `src/overlays/o035/func_overlay_035_F0000B40_1882820.c` | `func_overlay_035_F0000B40_1882820` | `o035` | `other` | 2,112 | 104 | 103 | 164 | 164 | 0 | — |
 | 27 | `src/overlays/o050/overlay50Initialize.c` | `func_overlay_050_F0000000_1896970` | `o050` | `other` | 740 | 112 | 104 | 60 | 192 | 0 | — |
 | 28 | `src/main/font.c` | `func_8004C690` | `main` | `other` | 584 | 105 | 105 | 0 | 0 | 0 | — |
-| 29 | `src/main/textures_354C8.c` | `func_800355A0` | `main` | `other` | 1,076 | 106 | 106 | 72 | 72 | 0 | — |
-| 30 | `src/overlays/o101/overlay101TailC6E8.c` | `func_overlay_101_F000C6E8_18E7F08` | `o101` | `other` | 1,268 | 113 | 106 | 76 | 76 | 0 | — |
-| 31 | `src/main/weather.c` | `rain_render_splashes` | `main` | `other` | 1,616 | 109 | 109 | 148 | 148 | 0 | — |
+| 29 | `src/main/weather.c` | `rain_render_splashes` | `main` | `other` | 1,616 | 105 | 105 | 148 | 148 | 0 | — |
+| 30 | `src/main/textures_354C8.c` | `func_800355A0` | `main` | `other` | 1,076 | 106 | 106 | 72 | 72 | 0 | — |
+| 31 | `src/overlays/o101/overlay101TailC6E8.c` | `func_overlay_101_F000C6E8_18E7F08` | `o101` | `other` | 1,268 | 113 | 106 | 76 | 76 | 0 | — |
 | 32 | `src/main/objects.c` | `func_8000B3CC` | `main` | `other` | 1,976 | 116 | 116 | 328 | 328 | 0 | — |
 | 33 | `src/overlays/o092/func_overlay_092_F0000308_18D6228.c` | `func_overlay_092_F0000308_18D6228` | `o092` | `other` | 1,832 | 120 | 119 | 336 | 544 | 0 | — |
 | 34 | `src/overlays/o009/overlay_009.c` | `func_overlay_009_F0000000_1866678` | `o009` | `other` | 1,344 | 126 | 120 | 228 | 228 | 0 | — |

@@ -430,6 +430,21 @@
       "source_context_sha256": "gk9R._4NM.9FBV.PHng.PPAr.4RRr.h8WK.WaZF.DSO0.yKQw.7Jw"
     },
     {
+      "name": "rain_render_splashes",
+      "file": "src/main/weather.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 1616,
+      "objdiff_match_pct": null,
+      "differing_words": 105,
+      "first_mismatch_offset": 148,
+      "relocation_masked_differing_words": 105,
+      "relocation_masked_first_mismatch_offset": 148,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "eRKC.76Cr.TUU8.wtcn.zidU.5Ixa.K0S5.0Q1k.DYOq.8Sd6.z3w"
+    },
+    {
       "name": "func_800355A0",
       "file": "src/main/textures_354C8.c",
       "overlay": null,
@@ -458,21 +473,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "UL9_.Jo2J.eD3q.R6he.Qd_f.Kc2W.XqPL.HKpS.H1vm.TWn7.CAM"
-    },
-    {
-      "name": "rain_render_splashes",
-      "file": "src/main/weather.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1616,
-      "objdiff_match_pct": null,
-      "differing_words": 109,
-      "first_mismatch_offset": 148,
-      "relocation_masked_differing_words": 109,
-      "relocation_masked_first_mismatch_offset": 148,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "WSUg.DkUp.FTpn.QTuL.G-7i.IEEG.fsnz.6bvE.Pqft.NgKQ.pEs"
     },
     {
       "name": "func_8000B3CC",

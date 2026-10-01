@@ -753,6 +753,10 @@ void rain_update(s32 updateRate) {
  * authoritative. Four unused pointer declarations hold the 0xB8 frame (L99).
  */
 #ifdef NON_MATCHING
+/* 2026-10-02 (lane e-res3): 109 -> 105. Shape checklist item 6: a 64-cell product
+ * over the store order of the six display-list packets in the draw loop; the
+ * FA C0E0FFFF, 0x05110020 and final FA packets store w1 before w0. The four
+ * vertex-field store orders (xyz/colour, 81-cell probe) are best as written. */
 void rain_render_splashes(s32 updateRate) {
     void *unused0;
     void *unused1;
@@ -842,8 +846,8 @@ void rain_render_splashes(s32 updateRate) {
                     func_800349A4(&D_800D40CC, D_8007C718, 0xE, 0);
                     cmd = D_800D40CC;
                     D_800D40CC = cmd + 1;
-                    cmd->w0 = 0xFA000000;
                     cmd->w1 = 0xC0E0FFFF;
+                    cmd->w0 = 0xFA000000;
                     cmd = D_800D40CC;
                     D_800D40CC = cmd + 1;
                     cmd->w0 = ((((((s32) D_800D40D4 + 0x80000000) & 6) | 0x20) & 0xFF) << 16) |
@@ -851,8 +855,8 @@ void rain_render_splashes(s32 updateRate) {
                     cmd->w1 = (u32) ((s32) D_800D40D4 + 0x80000000);
                     cmd = D_800D40CC;
                     D_800D40CC = cmd + 1;
-                    cmd->w0 = 0x05110020;
                     cmd->w1 = (u32) &D_7C6A8;
+                    cmd->w0 = 0x05110020;
 
                     D_800D40D4->x = (s16) (D_8007C6C8 * splash->age + splash->x);
                     D_800D40D4->y = (s16) splash->height;
@@ -894,8 +898,8 @@ void rain_render_splashes(s32 updateRate) {
     }
     cmd = D_800D40CC;
     D_800D40CC = cmd + 1;
-    cmd->w0 = 0xFA000000;
     cmd->w1 = (u32) -1;
+    cmd->w0 = 0xFA000000;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/weather/rain_render_splashes.s")
@@ -953,10 +957,10 @@ void rain_sound(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:rain_render_splashes:start
  * symbol: rain_render_splashes
- * score: 109 differing words
+ * score: 105/404 words
  * frame: 0xB8
- * relocations: 53
+ * relocations: 0
  * first-mismatch: +0x94
- * summary: 109 with the height-result home at the target 0x84 and a for render loop; the s1/s2/s3 ring is one ranking: delay address and 0xFF outrank splash and index.
+ * summary: Packet store order (109->105); open: s1/s2/s3 ring, splash/index above delay-address and 0xFF webs
  * PLATEAU-HANDOFF:rain_render_splashes:end
  */

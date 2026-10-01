@@ -74,6 +74,8 @@ void overlay15ReleaseResource(void) {
 /* w20-o015 (2026-09-18): 41 to 19. Guard-local starIndex=1 (41 to 20).
  * Same-line allocate + starsAddress + store (L59) keeps addiu+sw
  * adjacent, 20 to 19; first structural moves to +0xF8. */
+/* d-o015 (2026-10-01): 19 to 17. Count store ahead of the bounds block and the
+ * three palette index inits on one line (L59). */
 #ifdef NON_MATCHING
 void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
                                   s32 zRange, u32 startColor, u32 endColor,
@@ -99,6 +101,7 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
     count |= 0; /* kills the multiply's operand: the definition is not forwarded */
     stars = overlay15Allocate(starIndex + 0x200, 0x87); starsAddress = &gOverlay15Stars; *starsAddress = stars;
     gOverlay15StarPalette = (u16 *) ((u8 *) *starsAddress + starIndex);
+    gOverlay15StarCount = count;
 
     bounds = &gOverlay15InitBounds;
     bounds->xRange = (f32) xRange;
@@ -109,7 +112,6 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
     bounds->yMin = bounds->yRange * -0.5f;
     yRange <<= 7;
     bounds->yMax = bounds->yRange * 0.5f;
-    gOverlay15StarCount = count;
     bounds->zRange = (f32) zRange;
     zRange = (zRange + 1) << 8;
     bounds->zero = 0;
@@ -135,9 +137,7 @@ void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
         previousStarIndex = 0;
     }
 
-    starIndex = 1;
-    paletteIndex2 = 2;
-    paletteIndex3 = 3;
+    starIndex = 1; paletteIndex2 = 2; paletteIndex3 = 3;
     startR = (startColor >> 24) & 0xFF;
     startG = (startColor >> 16) & 0xFF;
     startB = (startColor >> 8) & 0xFF;
@@ -439,10 +439,10 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
 
 /* PLATEAU-HANDOFF:overlay15InitStarsAndPalette:start
  * symbol: overlay15InitStarsAndPalette
- * score: 19/247 words
+ * score: 17/247 words
  * frame: 0x40
  * relocations: 14
  * first-mismatch: +0x70
- * summary: Same-line allocate+starsAddress+store keeps addiu+sw adjacent, 20 to 19; stars address still a1 (force p1:w317=c5 is 16), block 1 tail order and palette index inits remain.
+ * summary: Count store before the bounds block and palette index inits on one line, 19 to 17; stars store base a1 vs a2 and block-1 tail order remain.
  * PLATEAU-HANDOFF:overlay15InitStarsAndPalette:end
  */

@@ -922,7 +922,13 @@ f32 lightDirectionCalc(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg
  *   - declarations ordered so count, the four saved values and changed take
  *     the top homes, local sits at 0x70 and cameraDelta at 0x50: 63, and the
  *     immediate bucket is empty.
- * Left, 57 naming rows and one moved word: the three single-block CSE temps
+ * 2026-10-01 (lane d-res2): 63 -> 56. The scale block loads the factor's
+ * D_8007C85C between the green and blue saves instead of after all three,
+ * which pulls the hoisted high-half draw two ring positions earlier (t6 where
+ * the target has t4). All 420 orders of the nine statements that follow it
+ * are inert (56), as are all 120 orders of the five opening statements bar
+ * this one; `changed = 1` placed earlier is worse (63 to 73).
+ * Left (older note, numbers now smaller), 57 naming rows and one moved word: the three single-block CSE temps
  * of the scaling arithmetic (web numbers 78, 86 and 88 on this shape, save
  * 3 each) are coloured v0, v1 and a0 here where the target leaves them in
  * ring temps, and the ring phase differs downstream (t0-t4 against t5-t9); and
@@ -965,8 +971,8 @@ void func_80019AB8(LightPosition *position, LightObjectContext *object,
                 ((D_8007C854 != 0) && (D_8007C85C != 0xFF))) {
                 savedRed = lightData->red15;
                 savedGreen = lightData->green17;
-                savedBlue = lightData->blue16;
                 factor = scale * ((f32) D_8007C85C * D_800817C8);
+                savedBlue = lightData->blue16;
                 savedPacked = lightData->packed10;
                 redValue = (s32) ((f32) savedRed * factor);
                 lightData->red15 = (u8) redValue;
@@ -1143,11 +1149,11 @@ s32 lightKillGlowingLight(void) {
 
 /* PLATEAU-HANDOFF:func_80019AB8:start
  * symbol: func_80019AB8
- * score: 63/184 words
+ * score: 56/184 words
  * frame: 0xC8
  * relocations: 28
  * first-mismatch: +0x80
- * summary: hypothesis=JFG efd5abb lightObject C with Mickey types; spellings=none, src/lights.c is still GLOBAL_ASM; stall=kept 63 words at delta 0
+ * summary: 63 to 56: factor load between the green and blue saves moves the high-half draw two ring slots. Left: ring phase t4 vs t6 and the changed constant draw
  * PLATEAU-HANDOFF:func_80019AB8:end
  */
 

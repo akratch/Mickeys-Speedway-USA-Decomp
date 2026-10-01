@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 182,
-  "resolved": 182,
+  "queue_size": 177,
+  "resolved": 177,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 182,
-  "relocation_masked_coverage": 182,
+  "source_context_coverage": 177,
+  "relocation_masked_coverage": 177,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -23,21 +23,6 @@
       "size_delta": 0,
       "category": "register-only",
       "source_context_sha256": "vTb3.iSH-.Ncby.f2t6.muDB.CvHJ.KR1z.yiuh.K59c.BXCW.O0E"
-    },
-    {
-      "name": "func_80007C68",
-      "file": "src/main/objects.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 472,
-      "objdiff_match_pct": null,
-      "differing_words": 25,
-      "first_mismatch_offset": 148,
-      "relocation_masked_differing_words": 25,
-      "relocation_masked_first_mismatch_offset": 148,
-      "size_delta": 0,
-      "category": "register-only",
-      "source_context_sha256": "RKJs.do6K.rjiA.lzs3.d5kh.rVJz.Tr3S.54Jg.8LOn.7oKX.JBI"
     },
     {
       "name": "func_overlay_008_F0004CF0_1862A48",
@@ -160,21 +145,6 @@
       "source_context_sha256": "QpZY.KaQc.uJW9.LsW_.y58U.NiN0.wVaH.-jg_._tND.9JJE.BcU"
     },
     {
-      "name": "render_epc_lock_up_display",
-      "file": "src/main/diCpu.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1376,
-      "objdiff_match_pct": null,
-      "differing_words": 51,
-      "first_mismatch_offset": 24,
-      "relocation_masked_differing_words": 51,
-      "relocation_masked_first_mismatch_offset": 24,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "SgEc.noJa.D5St.keJi.lK2O.qrxy.XY9M._BRH.6LH5.4q7P.tXQ"
-    },
-    {
       "name": "func_80003480",
       "file": "src/main/audio_manager_36D0.c",
       "overlay": null,
@@ -295,21 +265,6 @@
       "source_context_sha256": "mYwV.IEdq.gSGW.z1V7.Q5Cy.aq9z.e3DK.ySyn.x-zJ.4ebE.zwo"
     },
     {
-      "name": "func_8000831C",
-      "file": "src/main/objects.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 424,
-      "objdiff_match_pct": null,
-      "differing_words": 65,
-      "first_mismatch_offset": 112,
-      "relocation_masked_differing_words": 65,
-      "relocation_masked_first_mismatch_offset": 112,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "SkLv.oAJo.nZzD.ICxG.hg6W.ATUk.LdFW.7zIz.scIi.Sy8K.7os"
-    },
-    {
       "name": "overlay83DrawStrip",
       "file": "src/overlays/o083/overlay83DrawStrip.c",
       "overlay": 83,
@@ -323,21 +278,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "SNHP.VHiT.Zipf.ihzU.tbu-.7yvT.mTOX.GC77.F_vQ.E5pl.Vk0"
-    },
-    {
-      "name": "func_80004FE0",
-      "file": "src/main/objects.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1384,
-      "objdiff_match_pct": null,
-      "differing_words": 70,
-      "first_mismatch_offset": 308,
-      "relocation_masked_differing_words": 70,
-      "relocation_masked_first_mismatch_offset": 308,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "eyiT.8ta3.ZWNs.af28.Gp6V.TVbO.wxmp.MZ71.LOmg.Du5-.ZIY"
     },
     {
       "name": "func_overlay_036_F0000A60_1883F18",
@@ -428,21 +368,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "pXzP.zPjl.XnyZ.ViCZ.vA3O.qYaz._pqZ.LOKQ.HUwz.QPNS.tbo"
-    },
-    {
-      "name": "func_80007E40",
-      "file": "src/main/objects.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 488,
-      "objdiff_match_pct": null,
-      "differing_words": 92,
-      "first_mismatch_offset": 24,
-      "relocation_masked_differing_words": 92,
-      "relocation_masked_first_mismatch_offset": 24,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "8sno.1_mt.Ieo0.Lmdr.odJi.SkCL.MkXo.uVzS.a_BJ.CgjM.LSU"
     },
     {
       "name": "func_80051364",

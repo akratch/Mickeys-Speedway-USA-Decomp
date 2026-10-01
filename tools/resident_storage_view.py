@@ -36,12 +36,12 @@ LOADER_BODY = sv.LOADER_BODY
 LOADER_RECIPE = '0c80ca4b26661342a8eb479d905aa636e31b01980b911b8c4a43f67d4017b306'
 SOURCE_PINS = {
     'impact_gate': ('src/main/anim.c', 'e75ea3d245cf5076d769b603ff82fc2a50ce04c7d1a100d91de4ea4d0898dfc3'),
-    'color_gate': ('src/main/objects.c', '6d2b2e260e1881de948960973a5f31b1f851956ad2320a381ab666dd3502d89b'),
+    'color_gate': ('src/main/objects.c', '7658d3ced34b7412101635e7f4504ce9d67896cee47c2dafe43a3b6996b9dca3'),
     'gravity': ('src/main/charControl.c', 'ea6052dcc1764229acd9ab1778ecb17a233d2b19e275e3686082dc83a9d8b44f'),
 }
 WITNESSES = {
     'impact_gate': {'function':'func_80050348','owner':'D_8007BF04','external':'D_8007BF04','selector':0xFFD,'offset':0x31A4,'size':532,'relocs':22,'uses':3,'recipe':'c9ae34a06b5294868c9bb0a05f888ab6b7942dbf9c6861830bf560a1208858e6','renames':('animResetTrap','hitCopyFirstTrap','TrapDanglingJump')},
-    'color_gate': {'function':'func_80005548','owner':'D_8007BF0C','external':'D_8007BF0C','selector':0xFFD,'offset':0x31AC,'size':348,'relocs':3,'uses':1,'recipe':'4a3acf560c4f0625824cc6156ee506d6268db04e3264fb918d3ae34440b7fe28','renames':('objectsSizeDefaultBranch','objectsInitDefaultBranch','objectsControlDefaultBranch','objectsSwitchTablesBase')},
+    'color_gate': {'function':'func_80005548','owner':'D_8007BF0C','external':'D_8007BF0C','selector':0xFFD,'offset':0x31AC,'size':348,'relocs':3,'uses':1,'recipe':'3b8fcf3083fe1d2e515b90c7e6c7e9b6f21d8d2f31ef8297c737a62221acfc0b','renames':('objectsSizeDefaultBranch','objectsInitDefaultBranch','objectsControlDefaultBranch','objectsSwitchTablesBase')},
     'gravity': {'function':'', 'owner':'D_800CB304','source':'src/main/charControl.c','address':0x800CB304,'size':4,'recipe':'22174bb0b30080a22443639d4e286bee8d82f88c67afc9bb40e48be8f6dde8bf'},
 }
 LOADED = {Path(m.__file__): pp.sha256_file(Path(m.__file__)) for m in

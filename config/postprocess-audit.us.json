@@ -2042,7 +2042,6 @@
       "tools": [
         "rebind_elf_relocations.py",
         "externalize_elf_section.py",
-        "filter_elf_relocations.py",
         "trim_elf_section.py",
         "objcopy"
       ]
@@ -3630,8 +3629,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
+      "matched_c": false,
+      "nonmatching": true,
       "object": "build/src/overlays/o037/overlay37Render.c.o",
       "offset": 412,
       "overlay": 37,
@@ -4427,15 +4426,18 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o046/overlay46UpdateSequence.c.o",
       "offset": 288,
       "overlay": 46,
       "size": 1268,
       "source": "src/overlays/o046/overlay46UpdateSequence.c",
       "tools": [
-        "trim_elf_section.py"
+        "rebind_elf_relocations.py",
+        "externalize_elf_section.py",
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -8569,15 +8571,15 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": true,
-      "nonmatching": false,
+      "matched_c": false,
+      "nonmatching": true,
       "object": "build/src/overlays/o101/overlay101DrawPanel.c.o",
       "offset": 12028,
       "overlay": 101,
       "size": 1072,
       "source": "src/overlays/o101/overlay101DrawPanel.c",
       "tools": [
-        "trim_elf_section.py"
+        "objcopy"
       ]
     },
     {
@@ -9206,7 +9208,7 @@
       "metadata": 636,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 228052,
+    "matched_c_bytes_with_postprocess": 227392,
     "objects_with_postprocess": 639
   }
 }

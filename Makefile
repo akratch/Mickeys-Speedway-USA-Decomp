@@ -1139,6 +1139,11 @@ $(BUILD_DIR)/$(SRC_DIR)/main/sched.c.o: POSTPROCESS = \
 # and the exact relocation identities of the assembled fallback functions.
 # Name the input rodata base so table identities remain unambiguous in the ELF.
 # func_80009220's compiler-owned float literal uses the same proved input base.
+# func_80004FE0's first flag-gated dangling call is declared through a void
+# alias (a call with a result keeps the flag word off v0). Canonicalize only
+# the undefined symbol name to the shared TrapDanglingJump target; section
+# contents are unchanged. The rename runs last: add_elf_relocations.py
+# refuses an object holding two symbols of one name.
 $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: $(TOOLS_DIR)/add_elf_relocations.py \
     $(TOOLS_DIR)/trim_elf_section.py $(TOOLS_DIR)/rebind_elf_relocations.py
 $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: POSTPROCESS = \
@@ -1160,7 +1165,8 @@ $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: POSTPROCESS = \
 	    04dcd22184d1b53507977efc4868c715fea7ba6a86fa32c29b086d53cb076668 \
 	    0x6500:PC16:objectsSizeDefaultBranch:0x76 \
 	    0x6718:PC16:objectsInitDefaultBranch:0x120 \
-	    0x6C00:PC16:objectsControlDefaultBranch:0x114
+	    0x6C00:PC16:objectsControlDefaultBranch:0x114 && \
+	$(OBJCOPY) --redefine-sym objectsVoidTrap=TrapDanglingJump $@
 # JFG's source-level string migration reproduces diRcp's complete diagnostic
 # string block followed by the 0x100-byte switch-table span. The following
 # four zero bytes are output-section padding.

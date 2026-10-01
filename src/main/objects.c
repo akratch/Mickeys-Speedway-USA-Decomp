@@ -365,8 +365,13 @@ typedef struct {
 } Objects07C68Record;
 
 typedef struct {
+    Objects07C68Texture *texture;
+    s32 unk4;
+} Objects07C68TextureEntry;
+
+typedef struct {
     u8 pad00[0x18];
-    void **unk18;
+    Objects07C68TextureEntry *unk18;
     u8 pad1C[0x10];
     u8 unk2C;
 } Objects07C68Source;
@@ -546,12 +551,24 @@ typedef struct {
 } Objects06534Sprite;
 
 typedef struct {
+    s16 pad00;
+    s16 pad02;
+    s16 pad04;
+    s16 unk6;
+    s16 unk8;
+} Objects07E40Texture;
+
+typedef struct {
+    Objects07E40Texture *texture;
+    s32 unk4;
+} Objects07E40TextureEntry;
+
+typedef struct {
     u8 unk0;
     u8 pad01[7];
     s16 unk8;
-    u8 pad0A[0x0E];
-    s16 unk18;
-} Objects07E40Group;
+    u8 pad0A[6];
+} Objects07E40Batch;
 
 typedef struct {
     u8 pad00[4];
@@ -568,10 +585,10 @@ typedef struct {
     u8 unk10;
     u8 pad11[5];
     s16 unk16;
-    u8 *unk18;
+    Objects07E40TextureEntry *unk18;
     u8 pad1C[4];
-    u8 *unk20;
-    u8 *unk24;
+    Objects07E40Record *unk20;
+    Objects07E40Batch *unk24;
 } Objects07E40Inner;
 
 typedef struct {
@@ -594,14 +611,6 @@ typedef struct {
     u8 pad44[0x24];
     Objects07E40Outer **unk68;
 } Objects07E40Object;
-
-typedef struct {
-    s16 pad00;
-    s16 pad02;
-    s16 pad04;
-    s16 unk6;
-    s16 unk8;
-} Objects07E40Texture;
 
 typedef struct {
     s16 unk0;
@@ -775,6 +784,11 @@ extern f32 sqrtf(f32 value);
 extern void func_80006FA0(void);
 extern void func_80007118();
 extern s32 TrapDanglingJump();
+/* func_80004FE0's first flag-gated trap call returns nothing; the typed
+ * alias is canonicalized back to TrapDanglingJump by the object's
+ * POSTPROCESS rule. */
+#pragma weak objectsVoidTrap = TrapDanglingJump
+extern void objectsVoidTrap();
 extern void mmFree(void *data);
 extern void modFreeModel(void *resource);
 extern void func_800347A0(void *texture);
@@ -802,8 +816,9 @@ extern s32 D_80079008[];
 extern s32 D_800790D0[];
 extern f32 D_80080D24;
 extern f32 D_80080D28;
-extern void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
-                          s32 arg5, volatile s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10);
+extern void func_8000831C(void *object, void *vertices, s32 vertexCount, void *triangles,
+                          s32 triangleCount, s32 texture, s32 flags, s32 textureOffset,
+                          f32 scale, s32 brightness, s32 alpha);
 typedef struct CameraScaledTransform CameraScaledTransform;
 typedef struct FxGfx FxGfx;
 extern void camPushModelMtx(Gfx **dlist, Mtx **mtx, CameraScaledTransform *transform,
@@ -1287,13 +1302,27 @@ typedef struct {
     s16 unkA;
 } Objects04FE0SpecialPacket;
 
-#ifdef NON_MATCHING
-/* Lane w4-obj: indexed category fill plus modeState[i]. playerCount = i
- * after controlGetPlayerSetup pins i live so the spawn zero cannot hoist.
- * Leftover is packets-in-a2 versus modeState-base-in-a0. */
+typedef struct {
+    u32 pad0 : 11;
+    u32 unk20 : 1;
+    u32 unk19 : 1;
+    u32 pad1 : 19;
+} Objects04FE0Flags;
+
+/* Matched (was 70 masked words) by removing four inherited artefacts, each
+ * measured: (1) the player loop reads its category entry into its own
+ * local, so the object-scan local is a separate web and the packet cursor
+ * takes the first argument register; (2) the object scan indexes the
+ * category table with its own slot local, so the two loops' slot addresses
+ * are two expressions, not one web; (3) the spawn section is the plain
+ * indexed form (`D_800C94F4[i]`, no byte-offset local and no `playerCount =
+ * i` pin); (4) the two system-flag tests are one-bit bitfields, each of
+ * which spends the extra temp draw a mask-and-compare does not.  The first
+ * trap call under those tests is declared through a void alias: a call with
+ * a result keeps the flag word's web off v0. */
 void func_80004FE0(s32 arg0) {
     s32 i;
-    s32 offset;
+    s32 objectSlot;
     s32 playerCount;
     s32 slot;
     s32 type;
@@ -1302,7 +1331,7 @@ void func_80004FE0(s32 arg0) {
     Objects04FE0SpecialPacket specialPacket;
     Objects04FE0ExtraPacket extraPacket;
     Objects04FE0ModeRecord *modeState;
-    Objects04FE0ModeRecord *records;
+    Objects04FE0Object *spawn;
     Objects04FE0Object *object;
     Objects04FE0Source *source;
     s8 *level;
@@ -1318,10 +1347,10 @@ void func_80004FE0(s32 arg0) {
         for (i = 0; i < D_800C9498; i++) {
             object = (Objects04FE0Object *)D_800C9494[i];
             if ((object->unk44 == 5) && (arg0 == object->unk88)) {
-                slot = object->unk84;
-                if ((slot >= 0) && (slot < 6)) {
-                    if (category[slot] == NULL) {
-                        category[slot] = object;
+                objectSlot = object->unk84;
+                if ((objectSlot >= 0) && (objectSlot < 6)) {
+                    if (category[objectSlot] == NULL) {
+                        category[objectSlot] = object;
                     }
                 } else {
                     for (type = 0; type < 6; type++) {
@@ -1364,13 +1393,13 @@ void func_80004FE0(s32 arg0) {
             } else {
                 slot = modeState[i].unk6;
             }
-            object = category[slot];
-            if (object != NULL) {
-                source = (Objects04FE0Source *)object->unk3C;
+            spawn = category[slot];
+            if (spawn != NULL) {
+                source = (Objects04FE0Source *)spawn->unk3C;
                 packets[i].unk4 = source->unk4;
                 packets[i].unk6 = source->unk6;
                 packets[i].unk8 = source->unk8;
-                packets[i].unkE = object->unk0;
+                packets[i].unkE = spawn->unk0;
                 category[slot] = NULL;
             } else {
                 packets[i].unk4 = 0;
@@ -1381,13 +1410,12 @@ void func_80004FE0(s32 arg0) {
         }
         controlGetPlayerSetup(&packets[0].unk4, &packets[0].unk6,
                               &packets[0].unk8, &packets[0].unkE);
-        playerCount = i;
-        for (offset = 0; offset < 8; offset++) {
-            D_800C94F4[offset] = NULL;
+        for (i = 0; i < 8; i++) {
+            D_800C94F4[i] = NULL;
         }
-        for (i = 0, offset = 0; i < playerCount; i++, offset += 4) {
+        for (i = 0; i < playerCount; i++) {
             object = (Objects04FE0Object *)func_8000590C(&packets[i], 1);
-            *(void **)((u8 *)D_800C94F4 + offset) = object;
+            D_800C94F4[i] = object;
             if (object != NULL) {
                 object->unk3C = NULL;
             }
@@ -1422,10 +1450,10 @@ void func_80004FE0(s32 arg0) {
             }
         }
         if ((modeState->unk0 == 1) && (D_800C94F4[0] != NULL)) {
-            if ((*(s32 *)D_800D3128 & 0x80000) != 0) {
-                TrapDanglingJump(D_8007A1F4);
+            if (((Objects04FE0Flags *)D_800D3128)->unk19) {
+                objectsVoidTrap(D_8007A1F4);
             }
-            if ((*(s32 *)D_800D3128 & 0x100000) != 0) {
+            if (((Objects04FE0Flags *)D_800D3128)->unk20) {
                 TrapDanglingJump(levelGetNumber());
                 TrapDanglingJump(D_8007A1F8);
             }
@@ -1442,9 +1470,6 @@ void func_80004FE0(s32 arg0) {
     TrapDanglingJump((s8)level[0x83]);
     func_80058250();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80004FE0.s")
-#endif
 /* Lane lm-obj: the ROM's two rank-copy loops are IDO's unroller output of a
  * plain `for (i = 0; i < arg0; i++)` over each mode record. The hand-unrolled
  * remainder-plus-4x body grew 632 bytes under the unroller. unk5 is signed:
@@ -3051,176 +3076,144 @@ void func_8000784C(s32 arg0) {
     D_800C9478 = 1;
     D_800C946C = (f32)arg0;
 }
-/* Workbench verdict: allocation; 25 differing words (93/118). */
-/* First mismatch: +0x94; size, frame, stack homes and opcode schedule are exact. */
-/* Structural gap: none; one ugen ring rotation from +0x94 remains. */
-#ifdef NON_MATCHING
+/* PROVENANCE: the per-batch texture-animation walk is adapted from the public
+ * Diddy Kong Racing decompilation, src/objects.c::obj_tex_animate (the
+ * 8-byte texture-table entry and the named texture index); Mickey's own
+ * target supplies the record layout, the second frame word and the output
+ * stream.
+ *
+ * Matched (was 25 masked words, one ring rotation) on the natural shape: the
+ * texture table is an array of 8-byte entries indexed by a named texture
+ * index, instead of a pointer array indexed by twice a masked expression.
+ * The doubled index spent a ring draw the scale folded away, and the named
+ * index is the pool web the target colours.  The flag word and both frame
+ * words are read from the record at each use, with no carrier locals, in a
+ * plain for loop. */
 void func_80007C68(Objects07C68Object *arg0, Objects07C68Source *arg1,
                    Objects07C68Object *arg2, s32 arg3) {
-    s16 temp_v0_2;
-    s32 sp58;
-    s32 temp_t3;
-    s32 temp_v0;
-    s32 var_s3;
-    Objects07C68Record *var_s0;
-    s16 *var_s2;
-    Objects07C68Texture *texture;
+    Objects07C68Record *rec;
+    s32 offset;
+    s16 *out;
+    s32 i;
+    Objects07C68Texture *tex;
+    s32 texIndex;
 
     if (func_800290A0() != 0) {
         arg3 = 0;
     }
-    var_s0 = arg2->unk4C;
-    if (var_s0 != NULL) {
-        var_s3 = 0;
-        var_s2 = ((Objects07C68Indexed *)((u8 *)arg2 + (arg2->unkA * 4)))->unk50;
-        if ((s32)arg1->unk2C > 0) {
-            do {
-                temp_v0 = var_s0->unk4;
-                texture = (Objects07C68Texture *)arg1->unk18[(temp_v0 & 0xFF) * 2];
-                if (temp_v0 & 0x100000) {
-                    sp58 = (s32)var_s0->unk0;
-                    if (var_s0->unk4 & 0x200000) {
-                        D_8007BDA0 = arg0->unk90;
-                    }
-                    func_800367E8(texture, &var_s0->unk4, &sp58, arg3);
-                    var_s0->unk0 = (s16)sp58;
-                    if (var_s0->unk2 >= 0) {
-                        temp_t3 = sp58 + 0x100;
-                        sp58 = temp_t3;
-                        if (temp_t3 >= (s32)texture->unk10) {
-                            if (texture->unk3 & 2) {
-                                sp58 = 0;
-                            } else {
-                                sp58 -= 0x100;
-                            }
+    rec = arg2->unk4C;
+    if (rec != NULL) {
+        out = ((Objects07C68Indexed *)((u8 *)arg2 + (arg2->unkA * 4)))->unk50;
+        for (i = 0; i < arg1->unk2C; i++) {
+            texIndex = rec->unk4 & 0xFF;
+            tex = arg1->unk18[texIndex].texture;
+            if (rec->unk4 & 0x100000) {
+                offset = rec->unk0;
+                if (rec->unk4 & 0x200000) {
+                    D_8007BDA0 = arg0->unk90;
+                }
+                func_800367E8(tex, &rec->unk4, &offset, arg3);
+                rec->unk0 = offset;
+                if (rec->unk2 >= 0) {
+                    offset += 0x100;
+                    if (offset >= tex->unk10) {
+                        if (tex->unk3 & 2) {
+                            offset = 0;
+                        } else {
+                            offset -= 0x100;
                         }
-                        var_s0->unk2 = (s16)sp58;
                     }
+                    rec->unk2 = offset;
                 }
-                temp_v0_2 = var_s0->unk2;
-                if (temp_v0_2 >= 0) {
-                    var_s2 += 1;
-                    /* `(*texture).unkE`, not `texture->unkE`: the two spellings
-                     * are semantically identical but cfe emits a different
-                     * expression-temp order for them, and this one is the
-                     * target's (26 -> 25 differing words, measured). */
-                    var_s2[-1] = (s16)((temp_v0_2 >> 8) * (*texture).unkE);
-                }
-                var_s3 += 1;
-                var_s2 += 1;
-                var_s2[-1] = (s16)(((s16)var_s0->unk0 >> 8) * texture->unkE);
-                var_s0 += 1;
-            } while (var_s3 < (s32)arg1->unk2C);
+            }
+            if (rec->unk2 >= 0) {
+                *out++ = (rec->unk2 >> 8) * tex->unkE;
+            }
+            *out++ = (rec->unk0 >> 8) * tex->unkE;
+            rec++;
         }
         if (arg0->unk90 == 1) {
             arg0->unk90 = 2;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80007C68.s")
-#endif
-/* Workbench verdict: structure-mismatch; 92 differing words (122/122). */
-/* First mismatch: +0x18; extent and frame 0x18 are exact, with no relocations. */
-/* Blocker: pool/temp allocation and dimension-load/offset-initialization schedule. */
-#ifdef NON_MATCHING
+/* PROVENANCE: body adapted from the public Diddy Kong Racing decompilation,
+ * src/objects.c::func_80014090 (the texture-scroll walk over model instances,
+ * batches and triangles, with its four separate edge locals).  Mickey's
+ * target supplies the per-axis guards, the edge order within each axis and
+ * the range-end assignment order.
+ *
+ * Matched (was 92 masked words, all register naming) on the donor's variable
+ * set: each axis has its own pair of edge locals instead of one pair shared
+ * by both, and the first corner is read from the triangle at each use
+ * instead of through a carrier.  The two extra webs raise the interference
+ * count of the model, dimension, batch-index and strength-reduced offset
+ * webs to the phase-one threshold, so they take the low caller-saved
+ * colours by save order and the object pointer is left with the first
+ * callee-saved register, which is the target's whole assignment. */
 void func_80007E40(Objects07E40Object *arg0, s32 arg1) {
-    Objects07E40Object *object;
-    Objects07E40Outer *model;
-    Objects07E40Data *temp_v0;
-    s16 textureWidth;
-    s16 textureHeight;
-    s16 temp_lo;
-    s16 temp_lo_2;
-    s16 temp_s3;
-    s32 edge1;
-    s32 edge2;
-    s32 var_s2;
-    s32 var_a3_2;
-    s32 var_t2;
-    s32 var_t4;
-    s32 var_t3;
-    s32 temp_t0;
-    s32 var_a3;
-    s32 var_t1;
-    Objects07E40Texture *temp_t4;
-    Objects07E40Record *temp_t5;
-    Objects07E40Inner *temp_v0_2;
-    u8 *var_s1;
+    Objects07E40Data *header;
+    s16 width;
+    s16 height;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 end;
+    s16 textureIndex;
+    s16 modelIndex;
+    Objects07E40Inner *model;
+    Objects07E40Outer *instance;
+    Objects07E40Record *tri;
+    s16 scrollU;
+    s16 scrollV;
+    s16 newU1;
+    s16 newU2;
+    s16 newV1;
+    s16 newV2;
 
-    object = arg0;
-    temp_v0 = arg0->unk40;
-    var_a3 = temp_v0->unkA3;
-    temp_lo = temp_v0->unkA4 * arg1;
-    temp_t0 = temp_v0->unkA2;
-    temp_lo_2 = temp_v0->unkA5 * arg1;
-    if ((var_a3 == 0xFF) || ((s32) var_a3 < temp_v0->unk22)) {
-        if (var_a3 == 0xFF) {
-            var_a3 = 0;
-            var_t3 = temp_v0->unk22;
+    header = arg0->unk40;
+    modelIndex = header->unkA3;
+    textureIndex = header->unkA2;
+    scrollU = (s16)(header->unkA4 * arg1);
+    scrollV = (s16)(header->unkA5 * arg1);
+    if ((modelIndex == 0xFF) || (modelIndex < header->unk22)) {
+        if (modelIndex == 0xFF) {
+            modelIndex = 0;
+            end = header->unk22;
         } else {
-            var_t3 = var_a3 + 1;
+            end = modelIndex + 1;
         }
-        var_t1 = var_a3;
-        if ((s32) var_a3 < var_t3) {
-            var_t2 = var_a3 * 4;
-            do {
-                var_t1 += 1;
-                model = *(Objects07E40Outer **)((u8 *)object->unk68 + var_t2);
-                temp_v0_2 = model->unk0;
-                if ((s32) temp_t0 < (s32) temp_v0_2->unk10) {
-                    temp_t4 = *(Objects07E40Texture **)(temp_v0_2->unk18 + (temp_t0 * 8));
-                    textureWidth = temp_t4->unk6 << 5;
-                    textureHeight = temp_t4->unk8 << 5;
-                    var_a3_2 = 0;
-                    var_t4 = 0;
-                    if (temp_v0_2->unk16 > 0) {
-                        var_s1 = temp_v0_2->unk24;
-                        do {
-                            var_a3_2 += 1;
-                            if (temp_t0 == *(u8 *)var_s1) {
-                                var_s2 = *(s16 *)(var_s1 + 8);
-                                if (var_s2 < *(s16 *)(var_s1 + 0x18)) {
-                                    do {
-                                        temp_t5 = (Objects07E40Record *)temp_v0_2->unk20 + var_s2;
-                                        if (temp_lo != 0) {
-                                            temp_s3 = temp_t5->unk4;
-                                            edge1 = temp_t5->unk8 - temp_s3;
-                                            edge2 = temp_t5->unkC - temp_s3;
-                                            temp_t5->unk4 = (temp_s3 + temp_lo) &
-                                                (textureWidth - 1);
-                                            temp_s3 = temp_t5->unk4;
-                                            temp_t5->unk8 = temp_s3 + edge1;
-                                            temp_t5->unkC = temp_s3 + edge2;
-                                        }
-                                        if (temp_lo_2 != 0) {
-                                            temp_s3 = temp_t5->unk6;
-                                            edge1 = temp_t5->unkA - temp_s3;
-                                            edge2 = temp_t5->unkE - temp_s3;
-                                            temp_t5->unk6 = (temp_s3 + temp_lo_2) &
-                                                (textureHeight - 1);
-                                            temp_s3 = temp_t5->unk6;
-                                            temp_t5->unkA = temp_s3 + edge1;
-                                            temp_t5->unkE = temp_s3 + edge2;
-                                        }
-                                        var_s2 += 1;
-                                        var_s1 = temp_v0_2->unk24 + var_t4;
-                                    } while (var_s2 < *(s16 *)(var_s1 + 0x18));
-                                }
+        for (i = modelIndex; i < end; i++) {
+            instance = arg0->unk68[i];
+            model = instance->unk0;
+            if (textureIndex < model->unk10) {
+                width = model->unk18[textureIndex].texture->unk6 << 5;
+                height = model->unk18[textureIndex].texture->unk8 << 5;
+                for (j = 0; j < model->unk16; j++) {
+                    if (textureIndex == model->unk24[j].unk0) {
+                        for (k = model->unk24[j].unk8; k < model->unk24[j + 1].unk8; k++) {
+                            tri = &model->unk20[k];
+                            if (scrollU != 0) {
+                                newU1 = tri->unk8 - tri->unk4;
+                                newU2 = tri->unkC - tri->unk4;
+                                tri->unk4 = (tri->unk4 + scrollU) & (s16)(width - 1);
+                                tri->unk8 = tri->unk4 + newU1;
+                                tri->unkC = tri->unk4 + newU2;
                             }
-                            var_t4 += 0x10;
-                            var_s1 += 0x10;
-                        } while (var_a3_2 < temp_v0_2->unk16);
+                            if (scrollV != 0) {
+                                newV1 = tri->unkA - tri->unk6;
+                                newV2 = tri->unkE - tri->unk6;
+                                tri->unk6 = (tri->unk6 + scrollV) & (s16)(height - 1);
+                                tri->unkA = tri->unk6 + newV1;
+                                tri->unkE = tri->unk6 + newV2;
+                            }
+                        }
                     }
                 }
-                var_t2 += 4;
-            } while (var_t1 != var_t3);
+            }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80007E40.s")
-#endif
 void func_80008028(s32 arg0) {
     s32 objectIndex;
     s32 modelIndex;
@@ -3318,61 +3311,51 @@ s32 func_80008128(Objects08128Object *arg0, f32 arg1, f32 arg2, f32 arg3) {
     }
     return result;
 }
-/* 65 masked at size delta 0 (2026-09-23, lane A2-obj).  Three shape facts
- * are the target's, each priced by forcing the tail block's five webs to the
- * target's colours (the floor under those forces went 35 -> 31 -> 24):
- * the (u8) decrement keeps (arg4 - 1) ahead of the shift, the FB/-0x100
- * pair on one line fixes cmd 2's ring order, and the address-form arm read
- * leaves arg6 in a ring temporary across the branch.  Left: the tail block's
- * colours (target: temp_a2 a2, arg4 t0, 0x80000000 t1, arg2 t2, with v1 and
- * a3 unused); see the handoff. */
-#ifdef NON_MATCHING
-void func_8000831C(void *arg0, void *arg1, s32 arg2, void *arg3, s32 arg4,
-                   s32 arg5, volatile s32 arg6, s32 arg7, f32 arg8, s32 arg9, s32 arg10) {
-    s32 sp24;
-    s32 temp_a1;
-    s32 temp_a2;
-    s32 temp_t3;
-    Objects0831CCommand *temp_v0;
+/* PROVENANCE: body adapted from the public Diddy Kong Racing decompilation,
+ * src/objects.c::render_misc_model, with Mickey's two extra colour arguments
+ * and flag tests from its own target.  The packet macros are adapted from the
+ * Jet Force Gemini decompilation (include/PR/gbi.h gDPSetColor,
+ * gDPSetPrimColor and gDma1p, include/PR/mbi.h _SHIFTL, include/f3ddkr.h
+ * gSPVertexJFG and gSPPolygon, include/PR/os_convert.h OS_K0_TO_PHYSICAL).
+ *
+ * Matched (was 65 masked words) by writing each of the four display-list
+ * commands as its packet macro on the post-incremented list pointer.  Each
+ * expansion's block-scoped `_g` replaces the shared command pointer and the
+ * hand-split colour, vertex-count and address temporaries, and with those
+ * gone the flags parameter needs neither `volatile` nor the address-form
+ * read: a plain `flags |= 4` is exact. */
+#define OBJ_SHIFTL(v, s, w) ((u32)(((u32)(v) & ((0x01 << (w)) - 1)) << (s)))
+#define OBJ_SET_COLOR(pkt, c, d) { Objects0831CCommand *_g = (Objects0831CCommand *)(pkt); _g->unk0 = OBJ_SHIFTL(c, 24, 8); _g->unk4 = (u32)(d); }
+#define OBJ_RGBA(r, g, b, a) (OBJ_SHIFTL(r, 24, 8) | OBJ_SHIFTL(g, 16, 8) | OBJ_SHIFTL(b, 8, 8) | OBJ_SHIFTL(a, 0, 8))
+#define OBJ_SET_ENV_COLOR(pkt, r, g, b, a) OBJ_SET_COLOR(pkt, 0xFB, OBJ_RGBA(r, g, b, a))
+#define OBJ_SET_PRIM_COLOR(pkt, m, l, r, g, b, a) { Objects0831CCommand *_g = (Objects0831CCommand *)(pkt); _g->unk0 = (OBJ_SHIFTL(0xFA, 24, 8) | OBJ_SHIFTL(m, 8, 8) | OBJ_SHIFTL(l, 0, 8)); _g->unk4 = OBJ_RGBA(r, g, b, a); }
+#define OBJ_DMA1P(pkt, c, s, l, p) { Objects0831CCommand *_g = (Objects0831CCommand *)(pkt); _g->unk0 = (OBJ_SHIFTL((c), 24, 8) | OBJ_SHIFTL((p), 16, 8) | OBJ_SHIFTL((l), 0, 16)); _g->unk4 = (unsigned int)(s); }
+#define OBJ_VERTEX(pkt, v, n, v0) OBJ_DMA1P(pkt, 0x04, v, ((((n) << 3) + ((n) << 1))) + 8, ((n))<<3|(((u32)(v) & 6))|(v0))
+#define OBJ_POLYGON(dl, ptr, numTris, texEnabled) { Objects0831CCommand *_g = (Objects0831CCommand *)(dl); _g->unk0 = OBJ_SHIFTL((((numTris) - 1) << 4) | (texEnabled), 16, 8) | OBJ_SHIFTL(0x05, 24, 8) | OBJ_SHIFTL(((numTris)*16), 0, 16); _g->unk4 = (unsigned int)(ptr); }
+#define OBJ_K0_TO_PHYSICAL(x) (u32)(((char *)(x) - 0x80000000))
+#define OBJ_DL (*(Objects0831CCommand **)&D_800C94B4)
+void func_8000831C(void *object, void *vertices, s32 vertexCount, void *triangles,
+                   s32 triangleCount, s32 texture, s32 flags, s32 textureOffset,
+                   f32 scale, s32 brightness, s32 alpha) {
+    s32 hasTexture = 0;
 
-    sp24 = 0;
     camPushModelMtx((Gfx **)&D_800C94B4, (Mtx **)&D_800C94B8,
-                    (CameraScaledTransform *)arg0, arg8, 0.0f);
-    if ((arg6 & 0x240) == 0) {
-        temp_v0 = (Objects0831CCommand *)D_800C94B4;
-        D_800C94B4 = (s32)(temp_v0 + 1);
-        temp_v0->unk0 = 0xFA000000;
-        temp_t3 = arg9 & 0xFF;
-        temp_v0->unk4 = (temp_t3 << 24) | (temp_t3 << 16) |
-                        (temp_t3 << 8) | (arg10 & 0xFF);
-        temp_v0 = (Objects0831CCommand *)D_800C94B4;
-        D_800C94B4 = (s32)(temp_v0 + 1);
-        temp_v0->unk0 = 0xFB000000; temp_v0->unk4 = -0x100;
+                    (CameraScaledTransform *)object, scale, 0.0f);
+    if (!(flags & 0x240)) {
+        OBJ_SET_PRIM_COLOR(OBJ_DL++, 0, 0, brightness, brightness, brightness, alpha);
+        OBJ_SET_ENV_COLOR(OBJ_DL++, 255, 255, 255, 0);
     }
-    if (arg5 != 0) {
-        sp24 = 1;
+    if (texture != 0) {
+        hasTexture = 1;
     }
-    if (arg10 < 0xFF) {
-        arg6 = *(s32 *)&arg6 | 4;
+    if (alpha < 0xFF) {
+        flags |= 4;
     }
-    func_800349A4((FxGfx **)&D_800C94B4, arg5, arg6, arg7);
-    temp_v0 = (Objects0831CCommand *)D_800C94B4;
-    temp_a2 = (s32)arg1 + 0x80000000;
-    D_800C94B4 = (s32)(temp_v0 + 1);
-    temp_a1 = arg2 * 8;
-    temp_v0->unk0 = ((((temp_a1 | (temp_a2 & 6)) & 0xFF) << 16) |
-                     0x04000000 | (((temp_a1 + arg2 * 2) + 8) & 0xFFFF));
-    temp_v0->unk4 = temp_a2;
-    temp_v0 = (Objects0831CCommand *)D_800C94B4;
-    D_800C94B4 = (s32)(temp_v0 + 1);
-    temp_v0->unk0 = (((((u8)(arg4 - 1) << 4) | sp24) & 0xFF) << 16) |
-                     0x05000000 | ((arg4 << 4) & 0xFFFF);
-    temp_v0->unk4 = (s32)arg3 + 0x80000000;
+    func_800349A4((FxGfx **)&D_800C94B4, texture, flags, textureOffset);
+    OBJ_VERTEX(OBJ_DL++, OBJ_K0_TO_PHYSICAL(vertices), vertexCount, 0);
+    OBJ_POLYGON(OBJ_DL++, OBJ_K0_TO_PHYSICAL(triangles), triangleCount, hasTexture);
     camPopModelMtx((Gfx **)&D_800C94B4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_8000831C.s")
-#endif
 typedef struct {
     f32 x;
     f32 y;
@@ -5477,36 +5460,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * PLATEAU-HANDOFF:func_80006FA0:end
  */
 
-/* PLATEAU-HANDOFF:func_8000831C:start
- * symbol: func_8000831C
- * score: 65 differing words
- * frame: 0x28
- * relocations: 11
- * first-mismatch: +0x70
- * summary: A2-obj 2026-09-23: 62 to 65, forced floor 35 to 24 (u8 decrement, FB store first, address-form arm read); left: tail-block colours, v1/a3 unused.
- * PLATEAU-HANDOFF:func_8000831C:end
- */
-
-/* PLATEAU-HANDOFF:func_80007C68:start
- * symbol: func_80007C68
- * score: 25 differing words
- * frame: 0x60
- * relocations: 4
- * first-mismatch: +0x94
- * summary: Remeasured 2026-09-23: 25 masked at delta 0, frame and relocations exact; pure register naming from +0x94, one web the target colours is missing.
- * PLATEAU-HANDOFF:func_80007C68:end
- */
-
-/* PLATEAU-HANDOFF:func_80007E40:start
- * symbol: func_80007E40
- * score: 92 differing words
- * frame: 0x18
- * relocations: 0
- * first-mismatch: 0x18
- * summary: Generated outer-model index controls leave 39 draws and the model-load line unchanged; both regress to 95 masked; retained 92.
- * PLATEAU-HANDOFF:func_80007E40:end
- */
-
 /* PLATEAU-HANDOFF:func_8000A39C:start
  * symbol: func_8000A39C
  * score: 154 differing words
@@ -5525,16 +5478,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * first-mismatch: +0x60
  * summary: Pair +0x2D4 alu line 3475 (missing-CSE): load into a2, ori to a temp, move back. Named result, named operand, early hoist stayed +4. In-place ori is refused.
  * PLATEAU-HANDOFF:func_800084C4:end
- */
-
-/* PLATEAU-HANDOFF:func_80004FE0:start
- * symbol: func_80004FE0
- * score: 70 differing words
- * frame: 0x100
- * relocations: 83
- * first-mismatch: +0x134
- * summary: hypothesis=packets in a0 and the modeState base in a2 with no declared packet cursor; spellings=unsigned spawn index 185 at -4, slot index 290 at +20, byte-offset address 185 at -4; stall=the packets address spans a call so a0 is not offered
- * PLATEAU-HANDOFF:func_80004FE0:end
  */
 
 /* PLATEAU-HANDOFF:func_80009414:start

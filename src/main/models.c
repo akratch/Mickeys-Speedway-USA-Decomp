@@ -843,7 +843,10 @@ void func_80020B10(Gfx **displayList, s8 *textureIds, s8 *slots,
 /* PROVENANCE: declaration and cursor lifetimes are adapted from JFG upstream
  * efd5abb's corresponding makeModelGfx function. JFG retains that function as
  * GLOBAL_ASM; Mickey's own layout, constants, and bytes remain authority. */
-/* PLATEAU (2026-09-11): 229/342 words differ, first +0x3C; frame 0xD0 on both sides.
+/* 2026-10-02 (lane e-res3): 225 -> 220. The BC00000A and triangle packets store
+ * w1 before w0 (a 256-cell product over the store order of the eight
+ * packets; the other six are inert or worse). Frame 0xD0 unchanged.
+ * PLATEAU (2026-09-11): 229/342 words differ, first +0x3C; frame 0xD0 on both sides.
  * The 2026-08-31 plateau was measured at frame 0xC0 against the target's 0xD0: the
  * slots[] length is the L112 free parameter that solves it, and 13..16 all give 0xD0. */
 #ifdef NON_MATCHING
@@ -964,8 +967,8 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
 
                             nextVertex = vertexCount;
                             command = displayList++;
-                            command->words.w0 = 0xBC00000A;
                             command->words.w1 = slots[slotIndex] << 6;
+                            command->words.w0 = 0xBC00000A;
                             if (slotIndex < 2) {
                                 nextVertex = part->segmentEnds[slotIndex];
                             }
@@ -984,9 +987,9 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
                 }
 
                 command = displayList++;
+                command->words.w1 = (s32)address & 0x0FFFFFFF;
                 command->words.w0 = (((((triangleCount - 1) << 4) | cacheEnabled) & 0xFF) << 16) |
                                     0x05000000 | ((triangleCount << 4) & 0xFFFF);
-                command->words.w1 = (s32)address & 0x0FFFFFFF;
             }
             partIndex++;
             part++;
@@ -1356,11 +1359,11 @@ void func_8002109C(ModelPointOwner *owner) {
 
 /* PLATEAU-HANDOFF:func_8002057C:start
  * symbol: func_8002057C
- * score: 225/342 words
+ * score: 220/342 words
  * frame: 0xD0
  * relocations: 21
  * first-mismatch: +0x3C
- * summary: Declaration order 229 to 225 (part index and slots first); frame ladder still differs at +0x78..+0xB8, local-home order open.
+ * summary: BC/triangle packets store w1 first (225->220); open: s-reg cycle, 0xA constant outranks part pointer (s3 vs s5)
  * PLATEAU-HANDOFF:func_8002057C:end
  */
 

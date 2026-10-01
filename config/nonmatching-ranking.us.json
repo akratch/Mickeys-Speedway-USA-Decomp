@@ -1015,6 +1015,21 @@
       "source_context_sha256": "lhxR.jyHa.a19m.FINl.8-_S.9Jq7.5DFV.bram.kh1J.M5Kd.-lU"
     },
     {
+      "name": "func_8002057C",
+      "file": "src/main/models.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 1368,
+      "objdiff_match_pct": null,
+      "differing_words": 220,
+      "first_mismatch_offset": 60,
+      "relocation_masked_differing_words": 220,
+      "relocation_masked_first_mismatch_offset": 60,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "SAtf.w-lZ.Lnl7.s99q.tTDG.voLE.fJgh.3odl.fgOx.3CdE.wL0"
+    },
+    {
       "name": "func_8001EC44",
       "file": "src/main/charControl.c",
       "overlay": null,
@@ -1028,21 +1043,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "4Ycu.7W3q.5Tq7.PDRi.5Snj.cdcC.a-eD.2tRH.Bclg.FYbF.cp8"
-    },
-    {
-      "name": "func_8002057C",
-      "file": "src/main/models.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1368,
-      "objdiff_match_pct": null,
-      "differing_words": 225,
-      "first_mismatch_offset": 60,
-      "relocation_masked_differing_words": 225,
-      "relocation_masked_first_mismatch_offset": 60,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "sQeT.MZzn.4xld.2pEN.YyfF.pd5O.NDmb.qg6g.9xag.8Vch.2vM"
     },
     {
       "name": "func_overlay_011_F00022E8_186AB30",
@@ -1132,7 +1132,7 @@
       "relocation_masked_first_mismatch_offset": 24,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "YNs_.ds5u.07df.Hpie.HGHO.Ecn3.SO3t.Zrwi.PD67.2feu.5Mw"
+      "source_context_sha256": "dIiF._JxO.n54w.QAgW.b5oW.Af1j.1ZRj.eHSW.aj1k.4SPM.yAY"
     },
     {
       "name": "func_80017140",
@@ -1912,7 +1912,7 @@
       "relocation_masked_first_mismatch_offset": 8,
       "size_delta": -20,
       "category": "size-mismatch",
-      "source_context_sha256": "XU4D.B2Lk.up4l.jOq1.eQfW.Ay9R.Jn8A.lP3H.Uwde.Go3o.6-M"
+      "source_context_sha256": "pKyj.ODxW.cPnM.Rl_u.8A05.QYEL.il95.F2qA.CR3V.A4hD.4hA"
     },
     {
       "name": "func_80038190",

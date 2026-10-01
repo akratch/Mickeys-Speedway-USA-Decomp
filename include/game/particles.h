@@ -487,7 +487,6 @@ typedef struct ParticleRenderTransform {
     f32 x;
     f32 y;
     f32 z;
-    u8 pad18[8];
 } ParticleRenderTransform;
 
 typedef struct ParticleRenderResourceHeader {

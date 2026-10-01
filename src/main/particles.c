@@ -335,77 +335,66 @@ s32 func_8003CE10(Gfx **dList, s32 renderContext, void **vertices, CircularParti
     gDPSetEnvColor((*dList)++, 0xFF, 0xFF, 0xFF, 0);
     return ((u8 *)*vertices - (u8 *)firstVertex) / 10;
 }
-/* Workbench: allocation-mismatch, 68 differing words, size_delta 0; first mismatch +0x50.
- * Target and candidate are 168 instructions with the exact frame and relocation surface.
- * Forced-color-oracle lever 19 needs an authenticated globalcolor trace; assembly fallback stays canonical. */
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: structure cross-checked against JFG's assembly-only
  * func_8005E100 sibling; body reconstructed from Mickey evidence and the
  * resident render-command pattern in src/main/menu.c.
+ *
+ * Matched 2026-10-01 by shape: an early return for a null pool, the count
+ * read from the pool at every test, each colour product shifted into its own
+ * s32 local before the packet macro, and the transform as the natural
+ * 0x18-byte struct declared after the two pointers.
  */
 void func_8003D25C(Gfx **dList, s32 renderContext, void **vertices, CircularParticlePool *pool) {
-    ParticleRenderTransform transform;
     CircularParticle *particle;
     ParticleRenderResource *resource;
+    ParticleRenderTransform transform;
     Gfx *command;
-    s32 count;
     s32 i;
-    s32 color;
-    u8 intensity;
-    u8 red;
-    u8 green;
-    u8 blue;
+    s32 intensity;
+    s32 r;
+    s32 g;
+    s32 b;
 
-    if (pool != NULL) {
-        particle = pool->particles;
-        gDPPipeSync((*dList)++);
-        i = 0;
-        count = pool->count;
-        if (count > 0) {
-            do {
-                if (particle->type == 3) {
-                    resource = particle->resource;
-                    transform.rotationZ = particle->rotationZ;
-                    transform.rotationX = particle->rotationX;
-                    transform.rotationY = particle->rotationY;
-                    transform.x = particle->renderX;
-                    transform.y = particle->renderY;
-                    transform.z = particle->renderZ;
-                    transform.scale = particle->scale;
-                    camPushModelMtx(dList, renderContext, &transform, 1.0f, 0.0f);
-                    gDPPipeSync((*dList)++);
-                    if (particle->flags & 0x800) {
-                        intensity = particle->alpha;
-                        red = particle->red;
-                        green = particle->green;
-                        blue = particle->blue;
-                        gDPSetPrimColor((*dList)++, 0, 0, (red * intensity) >> 8, (green * intensity) >> 8,
-                                        (blue * intensity) >> 8, 0xFF);
-                    } else {
-                        gDPSetPrimColor((*dList)++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
-                    }
-                    command = (*dList)++;
-                    command->words.w0 = (((s32)resource->triangles[resource->triangleIndex] + 0x80000000) &
-                                         0xFFFFFF) |
-                                        0xBF000000;
-                    command->words.w1 = (s32)resource->vertices + 0x80000000;
-                    gSPDisplayList((*dList)++, (s32)resource->header->displayList + 0x80000000);
-                    gSP1Triangle((*dList)++, 0, 0, 0, 0);
-                    count = pool->count;
-                }
-                i++;
-                particle++;
-            } while (i < count);
-        }
-        gDPPipeSync((*dList)++);
-        gDPSetPrimColor((*dList)++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
-        camRestoreModelMtx(dList);
+    if (pool == NULL) {
+        return;
     }
+    particle = pool->particles;
+    gDPPipeSync((*dList)++);
+    for (i = 0; i < pool->count; i++) {
+        if (particle->type == 3) {
+            resource = particle->resource;
+            transform.rotationZ = particle->rotationZ;
+            transform.rotationX = particle->rotationX;
+            transform.rotationY = particle->rotationY;
+            transform.x = particle->renderX;
+            transform.y = particle->renderY;
+            transform.z = particle->renderZ;
+            transform.scale = particle->scale;
+            camPushModelMtx(dList, renderContext, &transform, 1.0f, 0.0f);
+            gDPPipeSync((*dList)++);
+            if (particle->flags & 0x800) {
+                intensity = particle->alpha;
+                r = (particle->red * intensity) >> 8;
+                g = (particle->green * intensity) >> 8;
+                b = (particle->blue * intensity) >> 8;
+                gDPSetPrimColor((*dList)++, 0, 0, r, g, b, 0xFF);
+            } else {
+                gDPSetPrimColor((*dList)++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
+            }
+            command = (*dList)++;
+            command->words.w0 =
+                (((s32)resource->triangles[resource->triangleIndex] + 0x80000000) & 0xFFFFFF) | 0xBF000000;
+            command->words.w1 = (s32)resource->vertices + 0x80000000;
+            gSPDisplayList((*dList)++, (s32)resource->header->displayList + 0x80000000);
+            gSP1Triangle((*dList)++, 0, 0, 0, 0);
+        }
+        particle++;
+    }
+    gDPPipeSync((*dList)++);
+    gDPSetPrimColor((*dList)++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
+    camRestoreModelMtx(dList);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/particles/func_8003D25C.s")
-#endif
 typedef struct ParticleRenderDescriptor {
     s16 rotation0;
     s16 rotation1;
@@ -2589,16 +2578,6 @@ void partNullifyCircularParticleParents(ParticlePosition *position) {
         } while (poolPtr != (CircularParticlePool **)&D_800D4134);
     } while (0);
 }
-
-/* PLATEAU-HANDOFF:func_8003D25C:start
- * symbol: func_8003D25C
- * score: 68/168 words
- * frame: 0xB8
- * relocations: 2
- * first-mismatch: +0x50
- * summary: Authenticated 202-force landscape: web 79 reaches 62, while neighbouring gains are rival footprints and their combinations decline; no force is exact.
- * PLATEAU-HANDOFF:func_8003D25C:end
- */
 
 /* PLATEAU-HANDOFF:func_80040B88:start
  * symbol: func_80040B88

@@ -576,10 +576,21 @@ void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
  * src/textures_sprites.c::tex_load_sprite and cross-checked against Jet Force
  * Gemini's public texLoadSprite object. Mickey's allocation layout, fields,
  * globals, calls, and compiler output remain authoritative. */
+/* The six word locals are declared in the order of their stack homes
+ * (cacheNum 0x5C, then the offsets down to commandOffset at 0x48); the small
+ * scalars follow so they pack below them. triangleOffset is never read: the
+ * triangle pointer is rebuilt from displayListOffset, which is the target's
+ * shape, and the declaration holds the home. Plateau 2026-10-01 (lane d-res1):
+ * 109 -> 106, natural source with no allocator cues. */
 Sprite *func_800355A0(s32 spriteId, s32 flags) {
     Sprite *refSprite;
     Sprite *newSprite;
     s32 cacheNum;
+    s32 triangleOffset;
+    s32 displayListOffset;
+    s32 vertexOffset;
+    s32 textureOffset;
+    s32 commandOffset;
     SpriteAsset *spriteAsset;
     TextureFrameHeader *texture;
     s32 i;
@@ -587,11 +598,6 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
     s8 allocFailed;
     s8 cacheFull;
     s16 numTextures;
-    s32 arenaCount; /* extra decl before offset locals holds frame 0x68 */
-    s32 displayListOffset;
-    s32 textureOffset;
-    s32 vertexOffset;
-    s32 commandOffset;
 
     D_800D300C = flags;
     if (spriteId < 0 || spriteId >= D_800D3004) {
@@ -609,8 +615,6 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
     cacheNum = -1;
     for (i = 0; i < D_800D3008; i++) {
         s32 *node = &D_800D2FFC[i << 1];
-        if (newSprite) {
-        }
         if (node[0] == -1) {
             cacheNum = i;
         }
@@ -633,9 +637,8 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
         i = spriteAsset->numberOfFrames;
     }
 
-    displayListOffset =
-        (s32)align16((u8 *)(spriteAsset->numberOfFrames * 4 + 0x18))
-        + ((i * 2) * 16);
+    triangleOffset = (s32)align16((u8 *)(spriteAsset->numberOfFrames * 4 + 0x18));
+    displayListOffset = triangleOffset + ((i * 2) * 16);
     textureOffset = displayListOffset + ((i * 4) * 8) +
                     (spriteAsset->numberOfFrames * sizeof(Gfx));
     vertexOffset = textureOffset + (i * 4);
@@ -649,9 +652,7 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
         return NULL;
     }
 
-    /* Reconstructs the align16 result; a named triangleOffset local takes s2. */
-    D_800D3018 = (SpriteTriangle *)((u8 *)newSprite
-        + (displayListOffset - ((i * 2) * 16)));
+    D_800D3018 = (SpriteTriangle *)((u8 *)newSprite + (displayListOffset - ((i * 2) * 16)));
     D_800D3014 = (Gfx *)((u8 *)newSprite + displayListOffset);
     D_800D3010 = (SpriteVertex *)((u8 *)newSprite + vertexOffset);
     newSprite->textures =
@@ -659,25 +660,22 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
     newSprite->commandOffsets = (u8 *)newSprite + commandOffset;
 
     allocFailed = 0;
-    /* Defined allocator cue retained from the bounded permuter: this arena
-     * offset is dead after the pointer stores and is reused as zero. */
-    textureOffset = 0;
-    for (i = textureOffset; i < numTextures; i++) {
+    for (i = 0; i < numTextures; i++) {
         D_8007BD84 = 0x8E;
         texture = func_80034448(spriteAsset->baseTextureId + i);
         newSprite->textures[i] = texture;
-        if (newSprite->textures[i] == (void *)textureOffset) {
+        if (newSprite->textures[i] == NULL) {
             allocFailed = 1;
         }
         D_8007BD84 = 0x90;
         D_800D2FF4 = 1;
     }
 
-    D_800D2FF4 = textureOffset;
+    D_800D2FF4 = 0;
     if (allocFailed) {
-        for (i = textureOffset; i < numTextures; i++) {
+        for (i = 0; i < numTextures; i++) {
             texture = newSprite->textures[i];
-            if (texture != (void *)textureOffset) {
+            if (texture != NULL) {
                 func_800347A0(texture);
             }
         }
@@ -685,18 +683,18 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
             D_800D3008--;
         }
         mmFree(newSprite);
-        return (void *)textureOffset;
+        return NULL;
     }
 
     newSprite->numberOfTextures = numTextures;
-    newSprite->metadata[textureOffset] = spriteAsset->metadata[textureOffset];
+    newSprite->metadata[0] = spriteAsset->metadata[0];
     newSprite->metadata[1] = spriteAsset->metadata[1];
     newSprite->metadata[2] = spriteAsset->metadata[2];
     newSprite->metadata[3] = spriteAsset->metadata[3];
     newSprite->metadata[4] = spriteAsset->metadata[4];
     newSprite->metadata[5] = spriteAsset->metadata[5];
     newSprite->numberOfFrames = spriteAsset->numberOfFrames;
-    for (i = textureOffset; i < spriteAsset->numberOfFrames; i++) {
+    for (i = 0; i < spriteAsset->numberOfFrames; i++) {
         newSprite->frameDisplayLists[i] = D_800D3014;
         func_80035ADC(spriteAsset, newSprite, i);
         if (newSprite->drawFlags & 0x40) {
@@ -706,7 +704,7 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
     newSprite->drawFlags |= spriteAsset->flags & 0x600;
 
     if (D_800D3008 >= 100) {
-        return (void *)textureOffset;
+        return NULL;
     }
     D_800D2FFC[cacheNum << 1] = spriteId;
     D_800D2FFC[(cacheNum << 1) + 1] = (s32)newSprite;
@@ -715,11 +713,11 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
 }
 /* PLATEAU-HANDOFF:func_800355A0:start
  * symbol: func_800355A0
- * score: 109 differing words
+ * score: 106 differing words
  * frame: 0x68
  * relocations: 44
  * first-mismatch: +0x48
- * summary: hypothesis=store the align16 result at +0x58 and reload it with textureOffset in s2; spellings=new scalar 136 at +0x40, arenaCount 136 at +0x44, lifted arenaCount 135 at +0x58; stall=every spelling raised the masked count above 109 and the body was reverted
+ * summary: Natural source, declaration-order homes; open: target hoists the D_800D2FF8 lui and the id shift into block 2, here the shift lands in block 1
  * PLATEAU-HANDOFF:func_800355A0:end
  */
 #else

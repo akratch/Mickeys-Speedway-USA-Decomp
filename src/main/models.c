@@ -849,6 +849,8 @@ void func_80020B10(Gfx **displayList, s8 *textureIds, s8 *slots,
 #ifdef NON_MATCHING
 s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
                   s32 lowerGroup, s32 upperGroup, s32 forceSimple) {
+    s32 partIndex;
+    s8 slots[16];
     Gfx *sourceDisplayList;
     ModelGfxPart *part;
     ModelGfxCacheEntry *cacheEntry;
@@ -856,8 +858,6 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
     void *lastTexture;
     s32 lastParameter;
     s32 cacheCount;
-    s32 partIndex;
-    s8 slots[16];
     s32 cacheEnabled;
     s32 vertexCount;
     s32 triangleCount;
@@ -1053,53 +1053,46 @@ typedef struct ModelTextureUsage {
 
 /* PROVENANCE: declaration and cursor lifetimes are adapted from JFG upstream
  * efd5abb's corresponding src/models.c function, func_8003E13C. JFG retains
- * that function as GLOBAL_ASM; Mickey's own bytes and behavior are authority. */
-/* Workbench structure-mismatch: exact 159-word geometry, 102/159 words differ,
- * first +0xC, and frame -0x10. JFG's cursor and scalar-type forms are
- * exhausted; the remaining lever needs source-proven pool/line-order evidence. */
-#ifdef NON_MATCHING
+ * that function as GLOBAL_ASM; Mickey's own bytes and behavior are authority.
+ * Matched 2026-10-01: three scalar webs decide it. The cached texture id is an
+ * s32 copy taken only in the aging loop; the eviction loop reads the table
+ * directly so it does not extend that copy's web into a second colouring
+ * class; and the free-slot search and eviction scan are `for` loops whose
+ * `slot`/`bestCount` initialisers sit where they are used. */
 void func_80020B10(Gfx **displayList, s8 *textureIds, s8 *slots,
                    ModelTextureUsage *usage, s32 entryIndex, u32 textureBase) {
     ModelTextureUsageEntry *entry;
     s32 usageIndex;
     s32 slot;
-    s16 bestCount;
+    s32 bestCount;
     s32 textureIndex;
     s32 i;
     s8 *slotCursor;
     s8 *textureIdCursor;
-    s8 cachedId;
+    s32 cachedId;
 
-    i = 0;
-    do {
-        cachedId = D_800CB498[i];
-        if (cachedId != -1) {
+    for (i = 0; i < 3; i++) {
+        if (D_800CB498[i] != -1) {
+            cachedId = D_800CB498[i];
             D_800CB49C[i]--;
             if (D_800CB49C[i] <= 0) {
                 D_800CB49C[i] = 1;
-                usageIndex = entryIndex + 1;
-                if (usageIndex < usage->entryCount) {
-                    do {
-                        entry = &usage->entries[usageIndex];
-                        if (cachedId == entry->textureIds[0] ||
-                            cachedId == entry->textureIds[1] ||
-                            cachedId == entry->textureIds[2]) {
-                            do {
-                                usageIndex = usage->entryCount;
-                            } while (0);
-                        } else {
-                            D_800CB49C[i]++;
-                        }
-                        usageIndex++;
-                    } while (usageIndex < usage->entryCount);
+                for (usageIndex = entryIndex + 1; usageIndex < usage->entryCount; usageIndex++) {
+                    entry = &usage->entries[usageIndex];
+                    if (cachedId == entry->textureIds[0] ||
+                        cachedId == entry->textureIds[1] ||
+                        cachedId == entry->textureIds[2]) {
+                        usageIndex = usage->entryCount;
+                    } else {
+                        D_800CB49C[i]++;
+                    }
                 }
             }
         }
-        i++;
-    } while (i != 3);
+    }
 
-    slotCursor = slots;
     textureIndex = 0;
+    slotCursor = slots;
     textureIdCursor = textureIds;
     do {
         *slotCursor = -1;
@@ -1113,31 +1106,26 @@ void func_80020B10(Gfx **displayList, s8 *textureIds, s8 *slots,
                 i++;
             } while (i < 3);
 
-            slot = -1;
-            i = 0;
             if (*slotCursor == -1) {
-                do {
+                slot = -1;
+                i = 0;
+                for (; i < 3 && slot == -1; i++) {
                     if (D_800CB498[i] == -1) {
                         slot = i;
                     }
-                    i++;
-                } while (i < 3 && slot == -1);
+                }
 
                 if (slot == -1) {
-                    i = 0;
-                    bestCount = 0;
-                    do {
-                        cachedId = D_800CB498[i];
-                        if (cachedId != textureIds[0] &&
-                            cachedId != textureIds[1] &&
-                            cachedId != textureIds[2]) {
+                    for (i = 0, bestCount = 0; i < 3; i++) {
+                        if (D_800CB498[i] != textureIds[0] &&
+                            D_800CB498[i] != textureIds[1] &&
+                            D_800CB498[i] != textureIds[2]) {
                             if (bestCount < D_800CB49C[i]) {
                                 bestCount = D_800CB49C[i];
                                 slot = i;
                             }
                         }
-                        i++;
-                    } while (i != 3);
+                    }
                 }
 
                 D_800CB498[slot] = *textureIdCursor;
@@ -1151,9 +1139,6 @@ void func_80020B10(Gfx **displayList, s8 *textureIds, s8 *slots,
         textureIdCursor++;
     } while (textureIndex != 3);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/models/func_80020B10.s")
-#endif
 typedef struct ModelFrameEntry {
     s16 frame;
     s16 nextFrame;
@@ -1371,22 +1356,12 @@ void func_8002109C(ModelPointOwner *owner) {
 
 /* PLATEAU-HANDOFF:func_8002057C:start
  * symbol: func_8002057C
- * score: 229/342 words
+ * score: 225/342 words
  * frame: 0xD0
  * relocations: 21
  * first-mismatch: +0x3C
- * summary: Proc-12 census confirms declaration-order and physical-line forms do not alter the 125-draw sequence; local-home order remains unresolved.
+ * summary: Declaration order 229 to 225 (part index and slots first); frame ladder still differs at +0x78..+0xB8, local-home order open.
  * PLATEAU-HANDOFF:func_8002057C:end
- */
-
-/* PLATEAU-HANDOFF:func_80020B10:start
- * symbol: func_80020B10
- * score: 102/159 words
- * frame: 0x10
- * relocations: 34
- * first-mismatch: +0xC
- * summary: Proc-14 census confirms 37 draws; cursor setup reorder leaves the scheduler unchanged and regresses, so the pool/line-order blocker remains.
- * PLATEAU-HANDOFF:func_80020B10:end
  */
 
 /* PLATEAU-HANDOFF:func_8001FC50:start

@@ -2512,7 +2512,7 @@ func_800359D4 = 0x800359D4; // type:func size:0x108 ROM 0x365D4 tier-D matched C
 func_80035ADC = 0x80035ADC; // type:func size:0x3AC ROM 0x366DC tier-D matched C src/main/textures_354C8.c.o -O2 -mips2 -32, DKR/JFG sprite frame builder adapted to Mickey fields, linked exact=235/235
 func_80035F48 = 0x80035F48; // type:func size:0x5FC ROM 0x36B48 tier-D semantic NON_MATCHING plateau, JFG-src/textures.c-func_80057C50 source shape plus Mickey target layout
 func_80036544 = 0x80036544; // type:func size:0x260 ROM 0x37144 tier-D frame-exact NON_MATCHING candidate, JFG src/textures.c-texAnimateSprite assembly donor
-func_800367A4 = 0x800367A4; // type:func size:0x44 ROM 0x373A4 tier-D frame-exact NON_MATCHING candidate, JFG src/textures.c-texAnimateTexSprite assembly donor
+func_800367A4 = 0x800367A4; // type:func size:0x44 ROM 0x373A4 tier-A byte-identical C, Mickey-only Sprite descriptor reconstruction, linked exact=17/17 words, relocations=1/1
 func_800367E8 = 0x800367E8; // type:func size:0x268 ROM 0x373E8 canonical C, linked byte-identical, JFG-src/textures.c-texAnimateTexture body adapted to Mickey flags
 // jfg:src/textures.c.o
 initColourCycle = 0x80036A50; // type:func size:0x30 tier-A exact C, JFG src/textures.c body

@@ -2,13 +2,43 @@
 ### `func_overlay_052_F000063C_189ACAC` plateau handoff
 
 - source: `src/overlays/o052/overlay52TailB.c`
-- score: 814 differing words
+- score: 602 differing words
 - frame: 0x118
 - relocations: 314
-- first mismatch: +0x5B4
-- summary: -r4300_mul + TU-local o52 data, indexed item loops, 9-record fill: 1337 to 814 at delta 0. Next: windows 0xD00-0x1500.
+- first mismatch: +0x5E0
+- summary: Icon x/y own locals, slide test inverted, difference after the fill: 814 to 602 at delta 0. Open: icon split-arm delay, count colour.
+
+Summary before this remeasure: -r4300_mul + TU-local o52 data, indexed item loops, 9-record fill: 1337 to 814 at delta 0. Next: windows 0xD00-0x1500.
 
 Summary before this remeasure: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
+
+## 2026-10-02 f-o052b (second bank): frame homes and the icon block, 814 to 602
+
+Masked words and size delta after each edit, in order, from 814 at +0:
+
+- `digits = o52_bss_0[player]` after the joypad toggle instead of before
+  it: 799 at +0 (the D_240 address is drawn before the player multiple).
+- Slide-bar test inverted to `else if (value1 == o52_bss_4A0[player]) {
+  active = 0; } else { ... }`: 800 at +0, but the bar's branch layout is
+  then the shipped one (the word it costs is the upstream shift).
+- Time difference assigned after the timer-sign value8 store in both arms
+  (it is reloaded after the stores, as shipped): 972 at +8, the +8 being
+  exactly the icon block's one-sided words.
+- Icon Y given its own local declared fourth after halfHeight (its spill
+  home 0x98), icon X its own local, the bar's flag and the time difference
+  sharing one local, alpha reusing value2 (six locals after halfHeight, the
+  shipped frame): 969 at +4. Every local has a frame home in declaration
+  order; a seventh grows the frame to 0x120.
+- Split-arm icon: the non-53 arm assigns X before Y: 602 at +0.
+
+Aligner: 1085 byte-exact, 571 naming, 5 immediate, 26 really different,
+displacement tax 0. Open: the split-arm `== 53` branch is a likely branch
+in ours where the target fills a plain branch's delay with the else arm's
+spill reload (five arm/order variants measured, none reproduce it), and the
+item count loads into v1 where the target uses t0. Measured and flat:
+lap count in its own local or any of six others; slide value roles and
+load order (36 cells, 794 best then); icon arm order and condition sense
+(16 cells).
 
 ## 2026-10-02 f-o052b: per-file flag and TU-local data, 1337 to 814
 

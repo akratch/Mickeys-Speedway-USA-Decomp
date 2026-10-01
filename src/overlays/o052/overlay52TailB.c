@@ -205,7 +205,10 @@ static s16 o52_bss_4D2;
  * Built with -Wab,-r4300_mul (mk/overlays.mk): the HUD height easing is then
  * a plain for loop, as in overlay54TailA; the item loops are indexed, and the
  * timer-sign texture fill runs over all nine records (IDO peels one and
- * unrolls the rest by four, the shipped shape). */
+ * unrolls the rest by four, the shipped shape). Every local has a frame home
+ * in declaration order (the item-count icon's Y spills to the fourth after
+ * halfHeight), so the icon position has its own locals and the slide bar and
+ * time difference share one. */
 void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
     s32 i;
     s32 buttons;
@@ -230,9 +233,9 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
     s32 value0;
     s32 value1;
     s32 value2;
+    s32 iconY;
     s32 active;
-    s32 alpha;
-    s32 difference;
+    s32 iconX;
 
     viGetCurrentSize(&width, (s32 *)&halfHeight);
     halfHeight >>= 1;
@@ -337,10 +340,10 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
         if (object == NULL) {
             return;
         }
-        digits = o52_bss_0[player];
         if (joyGetPressed(player) & 2) {
             o52_data_240[player] ^= 1;
         }
+        digits = o52_bss_0[player];
         racer = object->racer;
         camSetNo(player);
         camSetScissor(&D_800D3140);
@@ -436,8 +439,8 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                     icon[0].y = 180;
                     icon[0].x = o52_data_258[player];
                 } else {
-                    icon[0].y = 186;
                     icon[0].x = o52_data_25C[player];
+                    icon[0].y = 186;
                 }
             } else if (o52_bss_4A8[player] == 53) {
                 icon[0].x = 25;
@@ -452,13 +455,13 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             icon[0].resource = D_800D31C8[o52_bss_4A8[player]];
             func_8002F618(&D_800D3140, icon, 0, 0, 255, 255, 255, o52_data_320[player]);
             if (o52_bss_4A8[player] != 53 && racer->itemCount >= 2) {
-                value2 = icon[0].x;
-                active = icon[0].y;
+                iconX = icon[0].x;
+                iconY = icon[0].y;
                 o52_data_2F4[0].value8 = racer->itemCount << 16;
-                alpha = (o52_data_320[player] - (o52_data_320[player] >> 1)) & 255;
-                func_8002F618(&D_800D3140, o52_data_2F4, value2 + 28, active + 27, 0, 0, 0, alpha);
-                func_8002F618(&D_800D3140, o52_data_2F4, value2 + 30, active + 29, 0, 0, 0, alpha);
-                func_8002F618(&D_800D3140, o52_data_2F4, value2 + 29, active + 28, 255, 255, 255, 255);
+                value2 = (o52_data_320[player] - (o52_data_320[player] >> 1)) & 255;
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 28, iconY + 27, 0, 0, 0, value2);
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 30, iconY + 29, 0, 0, 0, value2);
+                func_8002F618(&D_800D3140, o52_data_2F4, iconX + 29, iconY + 28, 255, 255, 255, 255);
             }
         }
         if (split != 0) {
@@ -475,7 +478,9 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             for (i = 0; i < updateRate; i++) {
                 o52_bss_4A0[player] += (value0 - o52_bss_4A0[player]) >> 3;
             }
-        } else if (value1 != o52_bss_4A0[player]) {
+        } else if (value1 == o52_bss_4A0[player]) {
+            active = 0;
+        } else {
             for (i = 0; i < updateRate; i++) {
                 o52_bss_4A0[player] += (value2 - o52_bss_4A0[player]) >> 3;
             }
@@ -485,8 +490,6 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             } else {
                 active = 1;
             }
-        } else {
-            active = 0;
         }
         if (active) {
             o52_bss_480[0].x = o52_bss_4A0[player] >> 4;
@@ -525,20 +528,20 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             }
             if (racer->timeDifference <= 0) {
                 o52_bss_160[0].value8 = 12 << 16;
+                active = -racer->timeDifference;
                 for (i = 0; i < 9; i++) {
                     o52_bss_160[i].resource = D_800D31C8[20];
                     o52_bss_160[i].alternate = D_800D31C8[21];
                 }
-                difference = -racer->timeDifference;
             } else {
                 o52_bss_160[0].value8 = 13 << 16;
+                active = racer->timeDifference;
                 for (i = 0; i < 9; i++) {
                     o52_bss_160[i].resource = D_800D31C8[80];
                     o52_bss_160[i].alternate = D_800D31C8[21];
                 }
-                difference = racer->timeDifference;
             }
-            overlay56SplitTime(difference, &minutes, &seconds, &hundredths);
+            overlay56SplitTime(active, &minutes, &seconds, &hundredths);
             o52_bss_160[1].value8 = (minutes / 10) << 16;
             o52_bss_160[2].value8 = (minutes % 10) << 16;
             o52_bss_160[4].value8 = (seconds / 10) << 16;
@@ -604,10 +607,10 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:start
  * symbol: func_overlay_052_F000063C_189ACAC
- * score: 814 differing words
+ * score: 602 differing words
  * frame: 0x118
  * relocations: 314
- * first-mismatch: +0x5B4
- * summary: -r4300_mul + TU-local o52 data, indexed item loops, 9-record fill: 1337 to 814 at delta 0. Next: windows 0xD00-0x1500.
+ * first-mismatch: +0x5E0
+ * summary: Icon x/y own locals, slide test inverted, difference after the fill: 814 to 602 at delta 0. Open: icon split-arm delay, count colour.
  * PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:end
  */

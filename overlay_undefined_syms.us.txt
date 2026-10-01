@@ -337,9 +337,31 @@ gOverlay7Selected = 0x00000290;
 overlay7Acquire = 0xf0000000;
 
 /* overlay 7: func_overlay_007_F0000324_185C1AC.c.o */
+.rodata = 0x00000000;
 D_290 = 0x00000290;
 D_2AA = 0x000002aa;
 D_844 = 0x00000844;
+overlay7AdjustRuntimeValueReloc = 0xf0000000;
+overlay7CollectRuntimeObjectsReloc = 0xf0000000;
+overlay7ContinueRuntimeObjectReloc = 0xf0000000;
+overlay7CreateRuntimeOwnerReloc = 0xf0000000;
+overlay7GetRuntimeIndexReloc = 0xf0000000;
+overlay7MeasureRuntimeObjectAReloc = 0xf0000000;
+overlay7MeasureRuntimeObjectBReloc = 0xf0000000;
+overlay7RecordRuntimeEventReloc = 0xf0000000;
+overlay7ReleaseRuntimeEntryReloc = 0xf0000000;
+overlay7ReleaseRuntimeHandleReloc = 0xf0000000;
+overlay7RuntimeChanceReloc = 0xf0000000;
+overlay7RuntimeGateReloc = 0x00000000;
+overlay7RuntimeHandleReloc = 0x00000000;
+overlay7RuntimeLastObjectReloc = 0x000002ac;
+overlay7RuntimeLevelReloc = 0x00000000;
+overlay7RuntimeModeReloc = 0x00000000;
+overlay7RuntimePreviousLevelReloc = 0x00000000;
+overlay7RuntimeTimerReloc = 0x00000294;
+overlay7RuntimeValuesReloc = 0x00000000;
+overlay7SetRuntimeModeReloc = 0xf0000000;
+overlay7StartRuntimeValueReloc = 0xf0000000;
 
 /* overlay 7: overlay_007_tail.c.o */
 amSndPlay_o007Reloc = 0xf0000000;
@@ -445,7 +467,6 @@ overlay8MeasureDirectionReloc = 0xf0000000;
 overlay8ReleaseResourceReloc = 0xf0000000;
 
 /* overlay 9: overlay_009.c.o */
-.rodata = 0x00000000;
 D_2D0 = 0x000002d0;
 D_300 = 0x00000300;
 D_340 = 0x00000340;

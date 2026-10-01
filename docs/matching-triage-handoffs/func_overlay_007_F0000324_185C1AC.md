@@ -2,11 +2,11 @@
 ### `func_overlay_007_F0000324_185C1AC` plateau handoff
 
 - source: `src/overlays/o007/func_overlay_007_F0000324_185C1AC.c`
-- score: 10/348 words
+- score: 0/348 words, promoted
 - frame: 0x78
 - relocations: 61
-- first mismatch: +0x120
-- summary: Colour floor 10: web 99 denied f0 (L142); a distinct f0 name costs a twelfth home or size. as1 delays are besttime, not lineno.
+- first mismatch: none
+- summary: Matched. The decay factor is a float literal in this TU's own rodata, one u16 cursor walks both tables, and the first object loop is a plain while.
 
 ## 2026-09-11 frame closed (lane `lane/o11-frames`)
 
@@ -152,4 +152,42 @@ a twelfth home or a size change.  The three as1 windows sit below
 globalcolor (the 264-cell floor is the incumbent 10).  Next lever is a
 source form that gives the scale a distinct IR name without a new home and
 without aliasing `overlay7RuntimeScaleReloc` through `state->scale`.
+
+## 2026-10-01 matched (lane `lane/a-o007`)
+
+Matched and promoted; `gmake verify` and `promotion-proof` pass.  The recorded
+colour floor of 10 was true of the inherited shape and false of the function.
+Three shape edits, none of them an allocator lever:
+
+1. The scale is not a resident global.  The runtime relocation records for
+   the load pair are LOCAL against the module's rodata base with stored addend
+   zero, where every bss reference in the function uses the bss base.  The
+   word there is the float literal 0.995, so the source multiplies by a
+   literal.  uopt then hoists the load itself, the value is a compiler
+   temporary that spans no call and takes the first caller float colour, and
+   the hoisted load lands between the cursor's two address terms, which is
+   the schedule the three earlier as1 readings could not reach.  The
+   `overlay7RuntimeScaleReloc` extern and the `difference` carrier reuse are
+   gone.
+2. The pair-table scan walks a declared pointer beside the countdown, like
+   the timer loop, which emits the table address before the countdown
+   initialiser.  A separate pair cursor is a twelfth cell (frame 0x80), so
+   one `u16 *cursor` serves both the timer table and the pair table and the
+   declaration block stays at eleven.
+3. The first object loop is `remaining = count; while (remaining--)` rather
+   than a guarded do-while with a hand-written `count - 1`.
+
+Measured on the way, on a twelve-cell shape that still declared a scale
+local (so every count includes the frame's immediate rows): guarded first
+loop 29 masked, natural first loop 28, and the only non-frame rows left were
+the three around the scale load, which the literal removed.  In that same
+64-cell product the natural form of the second loop alone changed size, the
+natural third loop was one word worse, and the fourth was byte-inert, so
+those three stay in the guarded form.
+
+Build integration: the compiler's one-constant pool duplicates retained
+overlay data, so `mk/overlays.mk` asserts it by digest and externalises it at
+rodata-relative zero (overlay 24's form).  A carved rodata row was tried
+first and fails verify, because the object's pool is padded to sixteen bytes
+and shifts every later module.
 <!-- plateau-handoff:func_overlay_007_F0000324_185C1AC:end -->

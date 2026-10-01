@@ -134,8 +134,15 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_overlay_007_F00000A8_185BF30=overlay7AcquireEntry $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x324
+# The decay factor is a float literal, so the compiler emits a one-constant
+# pool that duplicates the retained overlay data at rodata-relative +0x0 (the
+# shipped hi/lo pair is a LOCAL record with stored addend zero). Assert the
+# pool by digest and bind the pair to the loader-owned base; no instruction is
+# edited (overlay 24's form).
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x570
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x570 && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:a601a97e6fc0a02bff61765ba5bff01706c8bf7192401643b23a0f40754d5a18
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o: CFLAGS += -Wo,-loopunroll,0
 # This pool initializer is naturally instruction-exact. Its ten local-BSS
 # records are already owned by overlay 7's shipped runtime relocation table,

@@ -35,7 +35,6 @@ extern Overlay7RuntimeObject *overlay7RuntimeLastObjectReloc;
 extern s32 overlay7RuntimeModeReloc;
 extern u8 overlay7RuntimeLevelReloc;
 extern u8 overlay7RuntimePreviousLevelReloc;
-extern f32 overlay7RuntimeScaleReloc;
 extern u8 overlay7RuntimeValuesReloc[];
 
 extern Overlay7RuntimeObject **overlay7CollectRuntimeObjectsReloc(s32 *count);
@@ -56,25 +55,19 @@ extern s32 overlay7RuntimeChanceReloc(s32 minimum, s32 maximum);
 extern void overlay7SetRuntimeModeReloc(Overlay7RuntimeObject *object,
                                         s32 mode);
 
-/* Frame closed 2026-09-11. The target's frame is 0x78 and its declaration
- * block is 44 bytes, which is eleven four-byte locals; this candidate carried
- * fourteen. Three came out: `handleObject` (the target reads the global's
- * fields directly into one temp), `cursor` (strength reduction makes the
- * walking pointer out of objects[remaining]), and the nested `scale`, whose
- * hoisted loop invariant reuses the `difference` carrier -- their live ranges
- * are disjoint. Declaration order then places `objects` 6th, `object` 7th and
- * `difference` 11th, which is the target's home ladder exactly; the other
- * eight positions are byte-inert (four permutations measured identical).
- *
- * Size closed 2026-09-18: the D_844 scan is `do { D_844[0x2B - index] }
- * while (index--)`, which keeps the countdown live across the adjust call,
- * and the create-owner sixth argument is `&overlay7RuntimeHandleReloc`
- * (LOCAL data+0), not NULL. Nested scale/pair/block-scoped difference all
- * reopen the 0x80 frame. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01 by rewriting the shape rather than the allocation:
+ * - the per-object decay factor is the float literal 0.995f from this TU's
+ *   own .rodata (a LOCAL relocation, not a resident global), so uopt hoists
+ *   the load itself and no local carries it;
+ * - one `u16 *cursor` walks both the timer table and the D_844 pairs, which
+ *   keeps the declaration block at eleven cells (frame 0x78) and emits the
+ *   table address before the countdown initialiser;
+ * - the first object loop is the plain `remaining = count; while
+ *   (remaining--)`.
+ * The create-owner sixth argument is `&overlay7RuntimeHandleReloc`. */
 void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
     s32 count;
-    u16 *timer;
+    u16 *cursor;
     s32 remaining;
     Overlay7Entry *entry;
     Overlay7RuntimeState *state;
@@ -86,17 +79,17 @@ void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
     f32 difference;
 
     objects = overlay7CollectRuntimeObjectsReloc(&count);
-    timer = &D_2AA;
+    cursor = &D_2AA;
     remaining = 9;
     do {
-        if (*timer != 0) {
-            if (*timer >= elapsed) {
-                *timer -= elapsed;
+        if (*cursor != 0) {
+            if (*cursor >= elapsed) {
+                *cursor -= elapsed;
             } else {
-                *timer = 0;
+                *cursor = 0;
             }
         }
-        timer--;
+        cursor--;
     } while (remaining--);
 
     if (overlay7RuntimeGateReloc == NULL) {
@@ -119,10 +112,10 @@ void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
             overlay7RuntimeTimerReloc -= elapsed;
             remaining = count - 1;
         } else {
-            if (overlay7RuntimeModeReloc == 1 && count != 0) {
-                remaining = count - 1;
+            if (overlay7RuntimeModeReloc == 1) {
+                remaining = count;
 
-                do {
+                while (remaining--) {
                     object = objects[remaining];
                     state = object->state;
                     if (!(state->flags & 1) && state->kind < 6 &&
@@ -135,7 +128,7 @@ void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
                         state->difference = difference;
                     }
 
-                } while (remaining--);
+                }
             }
 
             remaining = count - 1;
@@ -162,7 +155,6 @@ void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
         }
 
         if (count != 0) {
-            difference = overlay7RuntimeScaleReloc;
 
             do {
                 object = objects[remaining];
@@ -170,7 +162,7 @@ void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
                 if (state->cooldown != 0) {
                     state->cooldown--;
                 }
-                state->scale *= difference;
+                state->scale *= 0.995f;
 
             } while (remaining--);
         }
@@ -197,13 +189,15 @@ void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
             }
             if (found) {
                 value = entry->value;
+                cursor = (u16 *)D_844;
                 index = 0x2B;
                 do {
-                    if (value == D_844[0x2B - index].key) {
+                    if (value == cursor[0]) {
                         value += overlay7AdjustRuntimeValueReloc(
-                            0, D_844[0x2B - index].value);
+                            0, cursor[1]);
                         break;
                     }
+                    cursor += 2;
                 } while (index--);
                 if ((u32)entry->field04 < 0xB4) {
                     overlay7CreateRuntimeOwnerReloc(
@@ -249,16 +243,3 @@ void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o007/func_overlay_007_F0000324_185C1AC/func_overlay_007_F0000324_185C1AC.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_007_F0000324_185C1AC:start
- * symbol: func_overlay_007_F0000324_185C1AC
- * score: 10/348 words
- * frame: 0x78
- * relocations: 61
- * first-mismatch: +0x120
- * summary: Colour floor 10: web 99 denied f0 (L142); a distinct f0 name costs a twelfth home or size. as1 delays are besttime, not lineno.
- * PLATEAU-HANDOFF:func_overlay_007_F0000324_185C1AC:end
- */

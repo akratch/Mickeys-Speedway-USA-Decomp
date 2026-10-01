@@ -1688,9 +1688,21 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000B30_1891948.c.o: POS
 			0xF0C:.rodata:overlay47DispatchSwitchTable && \
 		$(OBJCOPY) --remove-section=.rodata $@; \
 	fi
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000000_1890E18.c.o: CFLAGS += \
-	-Wo,-loopunroll,0
+# The function defines overlay 47's .data, .bss and its "OK" literal at their
+# recorded offsets; the retained overlay image owns the bytes, so these copies
+# are dropped and their sites rebound to zero-valued bases.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000000_1890E18.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	config/normalizations/func_overlay_047_F0000000_1890E18.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000000_1890E18.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay47DataBaseReloc=0x0,global \
+		--add-symbol gOverlay47BssBaseReloc=0x0,global \
+		--add-symbol gOverlay47RodataBaseReloc=0x0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_047_F0000000_1890E18.rebind.spec && \
+	$(OBJCOPY) --remove-section=.data --remove-section=.bss \
+		--remove-section=.rodata \
+		--remove-section=.gptab.data --remove-section=.gptab.bss $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x9D0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o068/overlay68PayloadLimit.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8
@@ -2802,10 +2814,20 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50Cleanup.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x84
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50SubmitTimeGlyphs.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x214
-# NON_MATCHING/GLOBAL_ASM: the extracted function already has its canonical
-# auto-generated symbol and requires no postprocess metadata.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52Initialize.c.o: CFLAGS += \
 	-Wab,-r4300_mul
+# overlay52Initialize owns overlay 52's .data and .bss.  Its text reaches them
+# through the object's own section symbols; the shipped words are
+# section-relative, so every site is rebound to a zero-valued base.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52Initialize.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	config/normalizations/func_overlay_052_F0000000_189A670.rebind.spec
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52Initialize.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay52InitDataBaseReloc=0x0,global \
+		--add-symbol gOverlay52InitBssBaseReloc=0x0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_052_F0000000_189A670.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4F0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52PatchIndices.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52CopyOffsetEntries.c.o: \
@@ -2906,6 +2928,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o054/overlay54TailA.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x18E8 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:d131bb7de7509c98fc3533790f960348a16e2e461e7d1f5ffff1cd58ae2243e0
+# -Wab,-r4300_mul: as for overlay54TailA, IDO then emits the HUD easing as
+# the shipped rotated branch-likely loop from a plain for loop.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52TailB.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o052/overlay52TailB.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1A5C
 

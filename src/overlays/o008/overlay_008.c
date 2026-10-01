@@ -599,8 +599,26 @@ extern void func_800031C0(void *handle, f32 x, f32 y, f32 z);
 extern s32 func_8002A204(s16 angle);
 extern s32 mathDiffAngle(s32 current, s32 target);
 
+/* The per-character tuning block overlay8GetIndexed returns for the motion
+ * update.  Field reads and array element reads give different operand orders
+ * in the shipped code, so the layout is the one those orders imply. */
+typedef struct O8P1294Tuning {
+    f32 unk0;
+    f32 unk4;
+    f32 unk8;
+    f32 unkC;
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+    f32 unk1C;
+    f32 unk20[9];
+    f32 unk44[32];
+    f32 unkC4;
+    f32 unkC8[16];
+} O8P1294Tuning;
+
 /* NON_MATCHING reconstruction: exact 1259-word size, the target's 0xB0 frame
- * with an identical home ladder, and no one-sided words; 78 masked
+ * with an identical home ladder, and no one-sided words; 16 masked
  * differences remain.
  * What moved it from 636 (2026-10-01): the pool floats are literals at each
  * use, one pool entry per use as shipped; state fields are read directly
@@ -608,11 +626,18 @@ extern s32 mathDiffAngle(s32 current, s32 target);
  * place; the pre-loop factor is its own symbol, so the loop's scale outranks
  * the cached state->unk4 web; and integer carriers are shared the way the
  * shipped registers share them (noted on the declarations).
- * 275 to 78 (lane d-o008): the stick test is a plain compare, not a value
- * tested against zero; the frame-counter increment is truncated to u8 before
- * the mask; the turn limit, the yaw step and the drift step take the carriers
- * the shipped registers imply; the curve sum adds the base first; and the
- * pre-loop factor multiplies by tuning before the half.
+ * 275 to 78 (lane d-o008): the stick test is a plain compare; the turn
+ * limit, the yaw step and the drift step take the carriers the shipped
+ * registers imply; the curve sum adds the base first.
+ * 78 to 16 (lane e-o008, 2026-10-02): the tuning block is a struct read by
+ * field (0x40 is the last element of the 0x20 array), so the pre-loop factor
+ * is value * 0.5f * tuning->unkC with the product on the left; the
+ * owner->unk80 updates are |=; the selector default is assigned in both arms;
+ * effectMask is or-ed before D_4 is set; the frame counter is a plain
+ * (x + 1) & 0xF after the turn amount (the u8 cast was standing in for the
+ * draw the turn conversion spends); the spin-out negation reads unk100
+ * directly; unkFC is updated before the drift step; the brake result
+ * borrows angle's symbol and its test reads the input bit directly.
  * The update loop tests the old counter; the braking global is a halfword;
  * mathDiffAngle accepts the full requested angle. */
 #ifdef NON_MATCHING
@@ -620,7 +645,7 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
                                        O8P1294State *state, f32 update) {
     s32 updateCount;
     f32 value;
-    s32 angle;              /* state->unk108 copy */
+    s32 angle;              /* brake result, then the state->unk108 copy */
     s32 steeringInput;      /* raw stick, the wobble term, then the drift target */
     s32 updatesRemaining;
     s32 steeringTarget;     /* clamped stick, then the target angle */
@@ -628,7 +653,7 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
     s32 angleStep;          /* angle step, then the left selector */
     s32 impactBoost;
     s32 colorEnabled[2];
-    s32 braking;            /* brake bit, the reverse-motion flag, then the turn limit */
+    s32 braking;            /* brake bit, then the turn limit */
     s32 inputFlags;         /* input word, then the right selector */
     s32 turnDirection;
     s32 effectMask;
@@ -639,7 +664,7 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
     s8 animation;
     u8 modeFlags;
     f32 speedLimit;
-    f32 *tuning;
+    O8P1294Tuning *tuning;
     O8P1294ColorTarget *colorTarget;
     u8 *color;
     f32 *curve;
@@ -652,13 +677,13 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
     if ((s32) index >= 0xB) {
         index = 0xA;
     }
-    D_10 = ((f32) index * tuning[0x8 / sizeof(f32)]) + tuning[0x40 / sizeof(f32)];
+    D_10 = ((f32) index * tuning->unk8) + tuning->unk20[8];
     if (state->unkD4 != NULL) {
         D_10 *= 1.0f + (-0.3f * state->unkD4->state64->blend14);
     }
     if (state->unk185 == 0) {
         if ((value = state->unk5C) != 0.0f) {
-            factor = 1.0f - value * tuning[0xC / sizeof(f32)] * 0.5f;
+            factor = 1.0f - value * 0.5f * tuning->unkC;
             if (factor < 0.1f) {
                 factor = 0.1f;
             }
@@ -703,21 +728,19 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
                 speedLimit = 31.99f;
             }
             inputFlags = state->unk41C;
-            braking = inputFlags & 0x4000;
-            if ((braking == 0) && (state->unk5C > 0.0f) && (state->unk4 < -D_10)) {
-                braking = 1;
-            } else if ((braking == 0) && (state->unk5C < 0.0f)) {
-                braking = 1;
+            if ((!(inputFlags & 0x4000)) && (state->unk5C > 0.0f) && (state->unk4 < -D_10)) {
+                angle = 1;
+            } else if ((!(inputFlags & 0x4000)) && (state->unk5C < 0.0f)) {
+                angle = 1;
             } else if (!(inputFlags & 0xC000) && (state->unk5C > 0.0f)) {
-                braking = 1;
+                angle = 1;
             } else {
-                braking = 0;
+                angle = 0;
             }
-            if ((braking != 0) && (state->unk185 == 0)) {
-                state->unk4 = (f32) (state->unk4 +
-                    (gO8P1294MotionScalarReloc * state->unk5C));
-                if (state->unk4 > tuning[0x1C / sizeof(f32)]) {
-                    state->unk4 = tuning[0x1C / sizeof(f32)];
+            if ((angle != 0) && (state->unk185 == 0)) {
+                state->unk4 += gO8P1294MotionScalarReloc * state->unk5C;
+                if (state->unk4 > tuning->unk1C) {
+                    state->unk4 = tuning->unk1C;
                 }
             }
             if (state->unk102 != 0) {
@@ -759,8 +782,8 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
                         state->unk4 = -5.0f;
                     }
                 }
-                D_4 = 1;
                 effectMask |= 0x3C;
+                D_4 = 1;
                 if (state->unkE4 < 1.0f) {
                     state->unkE4 += 0.1f;
                 }
@@ -770,17 +793,17 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
                     D_4 = 1;
                 }
                 if (state->unk4 < 0.0f) {
-                    state->unk4 += tuning[0xC8 / sizeof(f32) + (s32)-state->unk4];
+                    state->unk4 += tuning->unkC8[(s32)-state->unk4];
                     if ((state->unk4 > 0.0f) && (state->unk42C >= -0x1E)) {
                         goto block_74;
                     }
                 } else if (state->unk42C < -0x1E) {
-                    state->unk4 += tuning[0x20 / sizeof(f32) + (s32)state->unk4];
-                    if (state->unk4 > tuning[0x1C / sizeof(f32)]) {
-                        state->unk4 = tuning[0x1C / sizeof(f32)];
+                    state->unk4 += tuning->unk20[(s32)state->unk4];
+                    if (state->unk4 > tuning->unk1C) {
+                        state->unk4 = tuning->unk1C;
                     }
                 } else {
-                    state->unk4 -= tuning[0xC8 / sizeof(f32)];
+                    state->unk4 -= tuning->unkC8[0];
                     if (state->unk4 <= 0.0f) {
 block_74:
                         state->unk4 = 0.0f;
@@ -803,11 +826,11 @@ block_74:
 
                 } else {
                     if (state->unk4 > 0.0f) {
-                        curve = &tuning[0xC8 / sizeof(f32)];
+                        curve = tuning->unkC8;
                         index = (s32) state->unk4;
                         scale = state->unk4 - (f32) index;
                     } else {
-                        curve = &tuning[0x44 / sizeof(f32)];
+                        curve = tuning->unk44;
                         index = (s32) -state->unk4;
                         scale = -state->unk4 - (f32) index;
                     }
@@ -839,8 +862,8 @@ block_74:
                     state->unkE4 -= 0.05f;
                 }
             } else {
-                if ((-tuning[0xC4 / sizeof(f32)] < state->unk4) &&
-                    (state->unk4 < tuning[0xC4 / sizeof(f32)])) {
+                if ((-tuning->unkC4 < state->unk4) &&
+                    (state->unk4 < tuning->unkC4)) {
                     state->unk4 = 0.0f;
                 } else {
                     state->unk4 *= 0.99f;
@@ -849,7 +872,7 @@ block_74:
             if ((state->unk18D == 0) && (state->unk158 == 0) && (state->unk349 != 0)) {
                 if ((-0.2f < state->unk4) && (state->unk4 < 0.2f) &&
                     (func_800299E8(0, 0x7F) >= 0x73)) {
-                    owner->unk80 = (s32) (owner->unk80 | 0xC);
+                    owner->unk80 |= 0xC;
                 }
             }
             cooldown = state->unkA2;
@@ -865,7 +888,7 @@ block_74:
                 }
                 if (state->unk100 != 0) {
                     if (state->unkA2 == 0) {
-                        owner->unk20 = (f32) (owner->unk20 + 3.0f);
+                        owner->unk20 += 3.0f;
                         state->unkA2 = 0xF;
                     }
                     if (state->unkA8 != NULL) {
@@ -891,9 +914,9 @@ block_74:
                     scale = 1.6f;
                 }
                 if (state->unk100 != 0) {
-                    scale = (scale * 68.0f * 60.0f) / tuning[0x10 / sizeof(f32)];
+                    scale = (scale * 68.0f * 60.0f) / tuning->unk10;
                 } else {
-                    scale = (scale * 58.0f * 60.0f) / tuning[0x10 / sizeof(f32)];
+                    scale = (scale * 58.0f * 60.0f) / tuning->unk10;
                 }
                 if (state->unk4 > 0.0f) {
                     scale = -scale;
@@ -918,9 +941,9 @@ block_74:
                 } else if (steeringTarget < -0x3C) {
                     steeringTarget = -0x3C;
                 }
-                braking = (s32) tuning[0x14 / sizeof(f32)];
+                braking = (s32) tuning->unk14;
             }
-            steeringTarget = (s32) (((f32) -steeringTarget * tuning[0x10 / sizeof(f32)]) / 60.0f);
+            steeringTarget = (s32) (((f32) -steeringTarget * tuning->unk10) / 60.0f);
             angleStep = (s32) ((f32) (steeringTarget - state->unk108) * 0.145f);
             if (angleStep != 0) {
                 state->unk108 += angleStep;
@@ -940,10 +963,10 @@ block_74:
             angle = state->unk108;
             state->unk4 *= value;
             if ((angle < -braking) || (braking < angle)) {
-                state->unk4 *= tuning[0x18 / sizeof(f32)];
+                state->unk4 *= tuning->unk18;
             }
-            state->unk182 = (u8) (state->unk182 + 1) & 0xF;
             turnAmount = (s32) ((f32) state->unk108 * scale);
+            state->unk182 = (state->unk182 + 1) & 0xF;
             if (turnAmount != 0) {
                 driftDirection = state->unk100;
                 turnDirection = 0;
@@ -971,9 +994,9 @@ block_74:
                 turnAmount = 0x2EE;
             }
             driftDirection = state->unk100;
+            state->unkFC += turnAmount;
             steeringInput = (driftDirection << 0xD) - state->unkFE;
             index = steeringInput >> 4;
-            state->unkFC = (s16) (state->unkFC + turnAmount);
             if (index == 0) {
                 index = steeringInput;
             }
@@ -981,7 +1004,7 @@ block_74:
             if (driftDirection != 0) {
                 steeringInput = state->unk428;
                 if (((steeringInput >= 0x1A) && (driftDirection < 0)) || ((steeringInput < -0x19) && (driftDirection > 0))) {
-                    state->unk106 = (s16) (state->unk106 + 1);
+                    state->unk106++;
                 } else {
                     state->unk106 = 0;
                 }
@@ -989,9 +1012,8 @@ block_74:
                     controlSetRumble(state, 0x28, 0.15f);
                 }
                 if (state->unk106 >= 0x5B) {
-                    driftDirection = state->unk100;
+                    state->unk102 = -state->unk100;
                     state->unk100 = 0;
-                    state->unk102 = (s16) -driftDirection;
                 }
             } else {
                 state->unk106 = 0;
@@ -1044,8 +1066,8 @@ block_74:
             func_800031E8(state->unkAC);
         }
     }
-    angleStep = 1;
     if ((state->unk2 != 0) || (state->unkD4 != NULL)) {
+        angleStep = 1;
         inputFlags = 1;
     } else {
         angleStep = state->unk322 & 0xF;
@@ -1069,16 +1091,16 @@ block_74:
         effectMask |= 3;
     }
     if (effectMask & 1) {
-        owner->unk80 = (s32) (owner->unk80 | D_460[angleStep]);
+        owner->unk80 |= D_460[angleStep];
     }
     if (effectMask & 2) {
-        owner->unk80 = (s32) (owner->unk80 | D_4A0[inputFlags]);
+        owner->unk80 |= D_4A0[inputFlags];
     }
     if (effectMask & 4) {
-        owner->unk80 = (s32) (owner->unk80 | D_3E0[angleStep]);
+        owner->unk80 |= D_3E0[angleStep];
     }
     if (effectMask & 8) {
-        owner->unk80 = (s32) (owner->unk80 | D_420[inputFlags]);
+        owner->unk80 |= D_420[inputFlags];
     }
     colorEnabled[0] = 0;
     colorEnabled[1] = 0;
@@ -2329,11 +2351,11 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:start
  * symbol: func_overlay_008_F0001294_185EFEC
- * score: 78 differing words
+ * score: 16 differing words
  * frame: 0xB0
  * relocations: 137
- * first-mismatch: +0xD4
- * summary: Ring re-phased by a u8-truncated counter increment and a plain stick compare; pre-loop factor draw order and unkFE temp in a3 remain.
+ * first-mismatch: +0xD8
+ * summary: Tuning read as a struct by field, or-assign flag updates, plain counter after the turn; left: v0/v1/a1 colours and one compare order.
  * PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:end
  */
 

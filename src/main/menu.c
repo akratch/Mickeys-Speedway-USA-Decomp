@@ -143,6 +143,14 @@ extern MenuCommand D_8007C2E8[];
     _g->w1 = (u32)(b); \
 }
 
+/* The same packet written through the function's one `command` carrier. */
+#define MENU_COMMAND_CARRIER(a, b) { \
+    command = D_800D3140; \
+    D_800D3140 = command + 1; \
+    command->w0 = (a); \
+    command->w1 = (b); \
+}
+
 typedef struct MenuRectangle {
     s16 left;
     s16 top;
@@ -214,7 +222,6 @@ extern MenuSpawnedObject *func_8000590C(MenuSpawnPacket *packet, s32 mode);
 extern void *func_8001F520(s32 assetId, s32 arg1);
 
 typedef struct MenuDrawStack {
-    u8 pad30[0x24];
     s16 sp7C;
     s16 sp7E;
     s16 sp80;
@@ -1012,7 +1019,6 @@ void setupFrontEndObject(s32 objectId) {
     destination->pad1C[2] = source->pad1C[2];
     destination->pad1C[3] = source->pad1C[3];
 }
-#ifdef NON_MATCHING
 /* PROVENANCE: adapted from Jet Force Gemini's public decomp, src/menu.c
  * ::frontDrawObj, at pull request #37 (head d45123d1c528955d5e12ddad805076267a690d76),
  * which takes that file to 48 bodies and 0 GLOBAL_ASM pragmas. The
@@ -1022,8 +1028,12 @@ void setupFrontEndObject(s32 objectId) {
  * 0x8000 sprite branch is adopted here; Mickey's own bytes decide the rest,
  * so the volatile copy accesses, the compound guard and the single `command`
  * carrier are Mickey's, not the donor's.
- * Workbench: structure-mismatch, exact 262-word geometry and 0xB8 frame;
- * 156 differ (was 161 before the donor `tex` carrier), first +0x14. */
+ * Matched by writing the display-list words as packets: the opcode word
+ * first through MENU_COMMAND(D_800D3140++, ...) at nine sites, the single
+ * `command` carrier at the five sites around the end of the 0x8000 branch and
+ * the head of the plain path, and each colour as `(g & 0xFF) << n` terms (the
+ * _SHIFTL form). The block-scope packet pointers are what fill the frame the
+ * volatile stack struct's old pad stood in for. */
 void func_80039E34(s32 index) {
     volatile MenuDrawStack stack;
     s16 flags;
@@ -1062,52 +1072,28 @@ void func_80039E34(s32 index) {
         if (flags & 0x8000) {
             stack.spA4 = current->unk18;
             tex = D_800D31C8[current->index];
-            command = D_800D3140;
-            D_800D3140 = command + 1;
-            command->w0 = 0xE7000000;
-            command->w1 = 0;
-            command = D_800D3140;
-            D_800D3140 = command + 1;
-            command->w0 = 0xFA000000;
-            command->w1 = (D_8007C0A4 << 24) | (D_8007C0A8 << 16) |
-                          (D_8007C0AC << 8) | (D_8007C0BC & 0xFF);
-            command = D_800D3140;
-            D_800D3140 = command + 1;
-            command->w1 = -0x100;
-            command->w0 = 0xFB000000;
+            MENU_COMMAND(D_800D3140++, 0xE7000000, 0);
+            MENU_COMMAND(D_800D3140++, 0xFA000000,
+                         ((D_8007C0A4 & 0xFF) << 24) |
+                             ((D_8007C0A8 & 0xFF) << 16) |
+                             ((D_8007C0AC & 0xFF) << 8) |
+                             (D_8007C0BC & 0xFF));
+            MENU_COMMAND(D_800D3140++, 0xFB000000, -0x100);
             func_80023F84(&D_800D3140, &D_800D3144, &D_800D3148,
                           &stack.sp7C,
                           tex, D_8007C0B4,
                           D_8007C0BC);
-            command = D_800D3140;
-            D_800D3140 = command + 1;
-            command->w1 = 0;
-            command->w0 = 0xE7000000;
-            command = D_800D3140;
-            D_800D3140 = command + 1;
-            command->w1 = -1;
-            command->w0 = 0xFA000000;
+            MENU_COMMAND_CARRIER(0xE7000000, 0);
+            MENU_COMMAND_CARRIER(0xFA000000, -1);
             return;
         }
-        command = D_800D3140;
-        D_800D3140 = command + 1;
-        command->w1 = 0;
-        command->w0 = 0xE7000000;
+        MENU_COMMAND_CARRIER(0xE7000000, 0);
         if (D_8007C0BC < 0xFF) {
-            command = D_800D3140;
-            D_800D3140 = command + 1;
-            command->w0 = 0xFA000000;
-            command->w1 = (D_8007C0BC & 0xFF) | ~0xFF;
+            MENU_COMMAND_CARRIER(0xFA000000, (D_8007C0BC & 0xFF) | ~0xFF);
         } else {
-            command = D_800D3140;
-            D_800D3140 = command + 1;
-            command->w1 = -1;
-            command->w0 = 0xFA000000;
+            MENU_COMMAND_CARRIER(0xFA000000, -1);
         }
-        command = D_800D3140;
-        D_800D3140 = command + 1;
-        command->w1 = -0x100;
-        command->w0 = 0xFB000000;
+        MENU_COMMAND(D_800D3140++, 0xFB000000, -0x100);
         stack.spA4 = current->unk18 * 0.0625f;
         renderObject = D_800D31C8[current->index];
         if (renderObject->resource->unk4E == 0) {
@@ -1115,37 +1101,21 @@ void func_80039E34(s32 index) {
             camPushModelMtx(&D_800D3140, &D_800D3144, &stack.sp7C, 1.0f,
                           0.0f);
             renderObject = stack.spAC;
-            command = D_800D3140;
-            D_800D3140 = command + 1;
-            command->w0 = (((renderObject->unkC[renderObject->indexA] +
-                            0x80000000) &
-                            0xFFFFFF) | 0xBF000000);
-            command->w1 = renderObject->unk4 + 0x80000000;
-            command = D_800D3140;
-            D_800D3140 = command + 1;
-            command->w0 = 0x06000000;
-            command->w1 = (s32)renderObject->resource->unk68 + 0x80000000;
-            command = D_800D3140;
-            D_800D3140 = command + 1;
-            command->w1 = 0;
-            command->w0 = 0xBF000000;
+            MENU_COMMAND(D_800D3140++,
+                         (((renderObject->unkC[renderObject->indexA] +
+                            0x80000000) & 0xFFFFFF) | 0xBF000000),
+                         renderObject->unk4 + 0x80000000);
+            MENU_COMMAND(D_800D3140++, 0x06000000,
+                         (s32)renderObject->resource->unk68 + 0x80000000);
+            MENU_COMMAND(D_800D3140++, 0xBF000000, 0);
             camPopModelMtx(&D_800D3140);
         }
         if (D_8007C0BC < 0xFF) {
-            command = D_800D3140;
-            D_800D3140 = command + 1;
-            command->w1 = 0;
-            command->w0 = 0xE7000000;
-            command = D_800D3140;
-            D_800D3140 = command + 1;
-            command->w1 = -1;
-            command->w0 = 0xFA000000;
+            MENU_COMMAND(D_800D3140++, 0xE7000000, 0);
+            MENU_COMMAND(D_800D3140++, 0xFA000000, -1);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/menu/func_80039E34.s")
-#endif
 #pragma weak func_8003A24C = frontGetLanguage
 /* PROVENANCE: name and order compared with JFG's public decomp,
  * src/menu.c::frontGetLanguage; body derived from Mickey. */
@@ -1323,16 +1293,3 @@ void func_8003A55C(s32 value) {
 void func_8003A590(void) {
     D_8007BF70 = -1;
 }
-
-
-/* PLATEAU-HANDOFF:func_80039E34:start
- * symbol: func_80039E34
- * score: 156 differing words
- * frame: 0xB8
- * relocations: 42
- * first-mismatch: +0x14
- * summary: Exact 262-word geometry and 0xB8 frame; the whole residual is register identity. The target runs a 4-wide ugen ring (t6-t9, ~47 uses each) over a 6-wide uopt pool (t0-t5, t2 unused); the candidate runs a 7-wide ring (t3-t9, ~26 each) over a 3-wide pool. Adding named locals does not widen the pool -- hoisted draw-object, three Gfx carriers and dropped spill all leave the histogram bit-identical to the base.
- * PLATEAU-HANDOFF:func_80039E34:end
- */
-
-

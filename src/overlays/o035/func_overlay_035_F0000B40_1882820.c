@@ -69,6 +69,15 @@ extern f32 sqrtf(f32 value);
  * scratch pointer ahead of the edge + 1 temporary for the last callee-saved
  * register; and the copy loop is a plain `*dst++ = *src++` (byte-inert).
  *
+ * 103 -> 77 (lane e-ovl3, 2026-10-02): the five empty `if (counter < 0) {}`
+ * blocks hold basic blocks only (no instruction, delta 0). A web's save
+ * divisor grows with the blocks its range spans, so they re-rank the counter,
+ * span index and span offset webs: three in the first pass's span loop (one
+ * after the triangle end load, two after the flag test), one at the top of
+ * the second pass's triangle loop and one after its span loop. Coordinate
+ * descent over 17 probe sites; conditions on other variables scored the
+ * same or worse. The true source shape that supplies these blocks is open.
+ *
  * PROVENANCE: adapted from Diddy Kong Racing,
  * src/object_models.c (model_init_collision).
  */
@@ -118,8 +127,14 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
         triStart = s->spans[spanIndex].triangleStart;
         vertexBase = s->spans[spanIndex].vertexBase;
         triEnd = s->spans[spanIndex + 1].triangleStart;
+        if (counter < 0) {
+        }
         if (s->spans[spanIndex].flags & 0x1080) {
             triStart = triEnd;
+        }
+        if (counter < 0) {
+        }
+        if (counter < 0) {
         }
         for (i = triStart; i < triEnd; i++) {
             v = &s->vertices[s->triangles[i].selectors[0] + vertexBase];
@@ -165,6 +180,8 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
             triStart = triEnd;
         }
         for (i = triStart; i < triEnd; i++) {
+            if (counter < 0) {
+            }
             idx = s->records[i].plane;
             nx = s->planes[4 * idx + 0];
             ny = s->planes[4 * idx + 1];
@@ -242,6 +259,8 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
                 counter++;
             }
         }
+        if (counter < 0) {
+        }
     }
     call_o0_0_2B318(scratch);
     return counter;
@@ -252,10 +271,10 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
 
 /* PLATEAU-HANDOFF:func_overlay_035_F0000B40_1882820:start
  * symbol: func_overlay_035_F0000B40_1882820
- * score: 103/528 words
+ * score: 77/528 words
  * frame: 0x130
  * relocations: 7
- * first-mismatch: +0xA4
- * summary: Saves priced as total over a block-count divisor. Open: counter over edge, oppVert over edge*2, pass-1 span tie, preheader IV order (70 ring rows).
+ * first-mismatch: +0xA0
+ * summary: Empty blocks re-rank the span/counter webs: 103 to 77. Open: preheader IV order, ring rows.
  * PLATEAU-HANDOFF:func_overlay_035_F0000B40_1882820:end
  */

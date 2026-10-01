@@ -2,11 +2,36 @@
 ### `func_80046BCC` plateau handoff
 
 - source: `src/main/diCpu.c`
-- score: 16/106 words
+- score: 0/106 words, promoted
 - frame: 0x40
 - relocations: 3
-- first mismatch: +0x2C
-- summary: arg0 OR-zero spans the glyph call (72); loop-local zero folds. Three-var region still 21; forcing the mask temp to s2 is 74. Occupancy cannot occupy v0. Best 16
+- first mismatch: none
+- summary: Matched. One u8 character and a u8 previous character, parameters used in place, and a while loop whose test and body both read the text byte so the load is a compiler temporary.
+
+#### 2026-10-01, lane a-res: ROM-exact closure
+
+Promoted; the guard is removed and the full-ROM hash holds. The inherited
+body carried a declared local for the loaded byte that doubled as the working
+copy, a second carrier for the character, parameter copies, explicit masks
+and a guarded do-while. Every earlier pass varied spellings inside that set
+of variables, and the recorded requirement (a copy of the carrier whose value
+number is not the mask's) was a property of that set.
+
+An 864-cell product over loop form (while with post-increment read, while
+with separate increment, guarded do-while with a load local), five case-fold
+shapes (two-variable in three orders, single variable, chained), the declared
+width of the character, working copy and previous character, explicit masks
+on the read and on the previous copy, and parameters in place or copied,
+measured 0 in exactly two cells at delta zero: a single u8 character with
+compound add and subtract in the case fold, a u8 previous character with no
+explicit mask, and parameters used in place, with either while form. The
+saved pair the target shows for the character is the compiler's own split of
+one u8 variable, not two source variables; the loaded byte is the common
+subexpression of the loop test and the body read and takes the first
+caller-saved colour because nothing declared holds it across the glyph call.
+
+The nearest two-variable cells measured 9 to 15 and the guarded do-while
+family 22 or worse.
 
 #### 2026-09-09: the ninth callee-saved web is the working copy
 

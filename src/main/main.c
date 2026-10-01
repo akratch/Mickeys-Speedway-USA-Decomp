@@ -1560,81 +1560,72 @@ u8 func_80029240(s32 index) {
     return D_800D18E0[index].character;
 }
 
-/*
- * Workbench: mixed(structural:11, register:21), 39 words, first +0x8; 87 instructions/frame -16.
- * Levers tried: structure/line/association/result, declaration/comma shapes, arg0 web, 119 flags, and arg order.
- * Remains: the arg1-to-FP move schedule cascades into swapped FP webs; no TU-wide flag promotion is justified.
- */
-#ifdef NON_MATCHING
 /* PROVENANCE: structural comparison uses Jet Force Gemini's public decomp,
  * src/overlays/o3/overlay_3.c::GetSmoothAcceleration. Rechecked at upstream
  * efd5abb1c79636e297b831f7c2d5bf47eac39c0c, JFG retains assembly, so no body
  * was adapted from that revision. This body is reconstructed from Mickey-only
- * control-flow evidence, and Mickey byte identity remains decisive. */
+ * control-flow evidence, and Mickey byte identity remains decisive.
+ *
+ * What the allocator needed, read from its decision records: the float
+ * parameters are used and negated in place (no carrier copies); `result` is
+ * initialised with the two accumulators, which numbers its web ahead of the
+ * parameters so it takes the register the conversion later needs; the early
+ * exit is one conditional expression; and the loop bound is the conversion
+ * itself, named only after the loop, so no separate copy of it survives. */
 f32 func_80029274(s32 arg0, f32 arg1, f32 arg2) {
-    f32 temp_f0;
-    f32 temp_f16;
-    f32 temp_f12;
-    f32 temp_f16_2;
-    f32 var_f0;
-    f32 var_f12;
-    register f32 var_f14;
-    f32 var_f2;
-    s32 temp_v0;
+    f32 sum;
+    f32 step;
+    f32 result;
+    f32 dist;
+    f32 lower;
+    f32 next;
+    s32 neg;
 
-    var_f0 = 0.0f;
-    var_f2 = 0.0f;
-    var_f14 = arg1;
-    temp_v0 = arg0 < 0;
-    if (temp_v0 != 0) {
+    sum = 0.0f;
+    step = 0.0f;
+    result = 0.0f;
+    neg = arg0 < 0;
+    if (neg) {
         arg0 = -arg0;
-        var_f14 = -var_f14;
+        arg1 = -arg1;
     }
-    if (var_f14 < 0.0f) {
-        if (temp_v0 != 0) {
-            return -arg2;
-        }
-        return arg2;
+    if (arg1 < 0.0f) {
+        return neg ? -arg2 : arg2;
     }
-    temp_f12 = (f32) arg0;
     do {
-        var_f2 += arg2;
-        var_f0 += var_f2;
-    } while ((var_f0 + var_f2) < temp_f12);
-    if ((temp_f12 <= arg2) && (var_f14 <= arg2) &&
-        (((arg0 >= 0) && (var_f14 >= 0.0f)) ||
-         ((arg0 <= 0) && (var_f14 <= 0.0f)))) {
-        var_f12 = 0.0f;
+        step += arg2;
+        sum += step;
+    } while ((sum + step) < (f32) arg0);
+    dist = (f32) arg0;
+    if ((dist <= arg2) && (arg1 <= arg2) &&
+        (((arg0 >= 0) && (arg1 >= 0.0f)) || ((arg0 <= 0) && (arg1 <= 0.0f)))) {
+        result = 0.0f;
     } else {
-        temp_f0 = var_f2 - arg2;
-        temp_f16 = var_f14 + arg2;
-        if (temp_f16 <= temp_f0) {
-            var_f12 = temp_f16;
+        lower = step - arg2;
+        next = arg1 + arg2;
+        if (next <= lower) {
+            result = next;
         } else {
-            temp_f16_2 = var_f14 - arg2;
-            if (temp_f16_2 < var_f2) {
-                var_f12 = temp_f0;
-                if (var_f2 == arg2) {
-                    goto useAcceleration;
+            next = arg1 - arg2;
+            if (next < step) {
+                result = lower;
+                if (step == arg2) {
+                    result = arg2;
                 }
             } else {
-                var_f12 = temp_f16_2;
-                if (temp_f16_2 == 0.0f) {
-useAcceleration:
-                    var_f12 = arg2;
+                result = next;
+                if (next == 0.0f) {
+                    result = arg2;
                 }
             }
         }
     }
-    if (temp_v0 != 0) {
-        var_f12 = -var_f12;
-        var_f14 = -var_f14;
+    if (neg) {
+        result = -result;
+        arg1 = -arg1;
     }
-    return var_f12 - var_f14;
+    return result - arg1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/main/func_80029274.s")
-#endif
 
 /*
  * PROVENANCE: the debug-memory role was compared with JFG src/main.c, where
@@ -1704,16 +1695,6 @@ void func_800293D0(void) {
  * first-mismatch: +0x1C
  * summary: Or-chain carrier is allocator proc 40 web 2: v0 not offered (forced=-2). Accepted recolours stay 25. L145/L144 miss the ring-temp copies. Best still 10.
  * PLATEAU-HANDOFF:func_80028FCC:end
- */
-
-/* PLATEAU-HANDOFF:func_80029274:start
- * symbol: func_80029274
- * score: 39/87 words
- * frame: 0x10
- * relocations: 0
- * first-mismatch: +0x8
- * summary: Procedure attribution remains blocked by 68 named versus 66 allocator procedures; no draw evidence admissible.
- * PLATEAU-HANDOFF:func_80029274:end
  */
 
 /* PLATEAU-HANDOFF:func_80026FB4:start

@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 233,
-  "resolved": 233,
+  "queue_size": 232,
+  "resolved": 232,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 233,
-  "relocation_masked_coverage": 233,
+  "source_context_coverage": 232,
+  "relocation_masked_coverage": 232,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -232,7 +232,7 @@
       "relocation_masked_first_mismatch_offset": 28,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "Hrza.mBht.Qehz.TRz8.Y7JI.FcxE.lIVC.Kk-T.4uwy._lQx.zow"
+      "source_context_sha256": "YEBx.R0bd.COyI.CwWV.Vn8d.OEn8.Vmpb.hb07.uPVT.JXCA.bho"
     },
     {
       "name": "func_overlay_007_F0000324_185C1AC",
@@ -533,21 +533,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "nCau.IcKT.PU7O.VpM3.NEro.-26_.zX4h.NzPl.ghgz.76K_._I8"
-    },
-    {
-      "name": "func_80029274",
-      "file": "src/main/main.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 348,
-      "objdiff_match_pct": null,
-      "differing_words": 39,
-      "first_mismatch_offset": 8,
-      "relocation_masked_differing_words": 39,
-      "relocation_masked_first_mismatch_offset": 8,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "eyb5.VFsX.Mzs1.22Si.bg0m.Uon1.tlv2.faFH.0ZKB.yM1Q.Nvw"
     },
     {
       "name": "func_overlay_008_F0004CF0_1862A48",
@@ -2632,7 +2617,7 @@
       "relocation_masked_first_mismatch_offset": 56,
       "size_delta": 24,
       "category": "size-mismatch",
-      "source_context_sha256": "afnV.Q-om.qctL.mN_j.bTwJ.jTfE.5TEd.FYWQ.Izou.IOGq.aV0"
+      "source_context_sha256": "IhUC.WRaq.TGvK.CZUH.cgMK.XDYs.sRsb.GUPI.DMGM.YZRM.1I8"
     },
     {
       "name": "func_800115E4",
@@ -2767,7 +2752,7 @@
       "relocation_masked_first_mismatch_offset": 4,
       "size_delta": 8,
       "category": "size-mismatch",
-      "source_context_sha256": "PiJY.ZBzt.4lc_.7LJf.SLZ0.4fe8.8D9e.Y-FI.x1qg.LXAH.7MM"
+      "source_context_sha256": "J_Bw.Txe8.z6yf.XI5z.PtyM.TCXZ.hzv-.dNvv.3tLz.Ag90.2dk"
     },
     {
       "name": "func_overlay_043_F0000BE4_188ABB4",

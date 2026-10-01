@@ -240,4 +240,38 @@ uopt from coalescing the three one-instruction normalisations into one
 web, without a stack home or a second normalisation insn. Do not re-run
 same-kind forces on web 2.
 
+#### 2026-10-01, lane a-level: three more axes closed, unchanged at 10
+
+Re-measured after this TU lost its Olimit cap (the cap never applied to a
+function this small): 108 bytes, 27 words, delta 0, 10 masked, first +0x1C.
+The retained body is unchanged.
+
+Bounded pass, stopped on three hypotheses with no better residual:
+
+- Return types. An 84-cell product over the callee's declared return type
+  (seven types, pointer included), this function's own return type (six) and
+  bare or compared operands, on the plain or-chain. Every cell is the
+  25-instruction coalesced form, or that form plus a narrowing; no type
+  splits the carrier. The declared types are a dead axis here.
+- Conditional expressions. Three forms of a nested conditional expression,
+  with and without a named result. The first two arms return a constant or a
+  coloured web, never a ring temporary copied to the return register.
+- Nested early returns with the returns out of line. This is the nearest
+  miss in kind: the first arm comes out as normalise, branch to the epilogue,
+  copy in the delay slot, which is the target's arm, because as1 copies the
+  first instruction of a branch target into the delay slot and retargets the
+  branch. But the copied value is a coloured web, and the out-of-line return
+  blocks remain in the object.
+
+One fact for a successor. Jet Force Gemini's listing for its counterpart has
+this exact shape with the second argument 0, 1 and 2 across the three calls,
+so the three calls are one test over three players and the per-arm ring
+temporaries are not an accident of this function's constant arguments.
+
+The delay-slot copies themselves are explained: as1 produces them from a
+return-register store that sits either just before the branch or first in
+the branch target. What is not explained is a source form whose three stores
+read three ring temporaries. Every form measured keeps the value in one
+coloured web or returns a constant.
+
 <!-- plateau-handoff:func_80028FCC:end -->

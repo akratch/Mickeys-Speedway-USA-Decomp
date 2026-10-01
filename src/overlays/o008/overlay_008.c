@@ -2212,7 +2212,14 @@ void overlay8UpdateMotionOutput(Overlay8MotionAnchor *anchor,
  * them, and those two are ugen's rotation, never a p1 colour -- so the residual
  * is a ugen float free-list phase.  The carrier-free form is also no longer an
  * instruction short: it is delta 0 at 270 words and 57 masked.  Resume with a
- * ugen float free-list trace, not a colouring receipt. */
+ * ugen float free-list trace, not a colouring receipt.
+ *
+ * 2026-10-01: 39 -> 1, which supersedes the free-list reading above.  Three
+ * edits: both products read normal.x and normal.z directly and the negation
+ * moves to the call; the second block's carrier is horizontalA, not axisA, so
+ * axisA is a short web and takes the low float colour; and the volatile
+ * qualifier sits on normal.z instead of normal.x.  The remaining word is the
+ * z reload in the first multiply-hazard slot, where the target keeps a nop. */
 /* Ownership trial (2026-08-28): fixed the TU's +0x27C..+0x2AC .rodata range;
  * linked promotion is text-differs after removing the TU growth; codegen remains.
  * The candidate's literal pool is retained as the remaining structural gap. */
@@ -2280,10 +2287,9 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
             axisA = O8P4CF0_call_4E9C(-actor->angle000);
             axisB = O8P4CF0_call_4EAC(-actor->angle000);
-            horizontalB = normal.x;
-            horizontalA = -(normal.z * axisA + horizontalB * axisB);
-            horizontalB = normal.z * axisB - horizontalB * axisA;
-            targetA = O8P4CF0_call_4EE8(horizontalA, normal.y);
+            horizontalA = normal.z * axisA + normal.x * axisB;
+            horizontalB = normal.z * axisB - normal.x * axisA;
+            targetA = O8P4CF0_call_4EE8(-horizontalA, normal.y);
             targetB = O8P4CF0_call_4EF8(horizontalB, normal.y);
 
             factor = O8P4CF0_call_4F0C(0.9f, updateRate);
@@ -2318,13 +2324,13 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
             state->derived17C = 1.0f;
             return;
         } else {
-            axisA = state->motion004;
-            if (axisA < 0.0f) {
-                axisA = -axisA;
+            horizontalA = state->motion004;
+            if (horizontalA < 0.0f) {
+                horizontalA = -horizontalA;
             }
-            axisA *= 0.2f;
-            if (1.0f < axisA) {
-                axisA = 1.0f;
+            horizontalA *= 0.2f;
+            if (1.0f < horizontalA) {
+                horizontalA = 1.0f;
             }
 
             start = updateRate - 1;
@@ -2333,7 +2339,7 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
                 do {
                     state->blend174 +=
-                        (axisA - state->blend174) * blendFactor;
+                        (horizontalA - state->blend174) * blendFactor;
                 } while (start--);
             }
             state->height178 = state->blend174 * -4.0f + 6.0f;
@@ -2348,11 +2354,11 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F0004CF0_1862A48:start
  * symbol: func_overlay_008_F0004CF0_1862A48
- * score: 39 differing words
+ * score: 1 differing words
  * frame: -0x90
  * relocations: 15
- * first-mismatch: +0x1C4
- * summary: source question is the ugen float free-list phase at the +0x1F4 window
+ * first-mismatch: +0x1D8
+ * summary: One word: volatile normal.z pins the A-then-B product order but reloads z where the target has a nop; no unqualified form keeps that order.
  * PLATEAU-HANDOFF:func_overlay_008_F0004CF0_1862A48:end
  */
 

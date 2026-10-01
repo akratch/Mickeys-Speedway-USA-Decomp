@@ -2982,6 +2982,9 @@ gOverlay71SecondaryRecords = 0x000000d8;
 /* overlay 71: func_overlay_071_F0000870_18CA390.c.o */
 D_80000008 = 0x80000008;
 D_800000D8 = 0x800000d8;
+func_8002409C_o071Reloc = 0xf0000000;
+func_800241BC_o071Reloc = 0xf0000000;
+func_80034554_o071Reloc = 0xf0000000;
 
 /* overlay 72: overlay_072.c.o */
 gOverlay72ComponentScale = 0x00000000;

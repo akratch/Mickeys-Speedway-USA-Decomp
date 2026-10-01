@@ -2,11 +2,50 @@
 ### `overlay37RenderEffect` plateau handoff
 
 - source: `src/overlays/o037/overlay37Render.c`
-- score: 43/214 words
+- score: 0/214 words, promoted
 - frame: 0x98
 - relocations: 12
-- first mismatch: +0x54
-- summary: hypothesis=command-pointer load before the green reload and transform at +0x6C; spellings=declaration order kept 61 to 43 at delta 0, w0 before w1 stayed 43, if(1) around the prim-color store scored 62; stall=the green reload is still emitted before the command-pointer load
+- first mismatch: none
+- summary: Matched. Packet macros for the five commands, a one-argument closing call, and the locals declared in frame order.
+
+#### 2026-10-01, lane b-o101: matched by rewriting the inherited shape
+
+Promoted at 214 of 214 words, delta 0, frame 0x98, 12 of 12 relocations.
+Three inherited parts of the candidate were replaced; none of the retained
+43 words was a colouring question.
+
+First, each display-list command is written as its packet macro taking the
+post-incremented cursor, so each site has its own block-scoped pointer. On
+the old declarations that alone scored 56 with the frame 0x10 too large,
+because the five macro pointers take frame cells of their own.
+
+Second, the locals are declared in the order the frame shows: frame, state
+and record above resource, camera and the transform, then the three deltas,
+the two blend scalars and one unused word above red, green and blue, with
+nothing declared below them. The five macro pointers fill the cells under
+the colours, which is what the two pad arrays had been standing in for.
+That layout scored 15 with every register agreeing and the object two words
+long.
+
+Third, the two extra words were the closing call. The candidate passed the
+vertex address as a second argument because the target leaves that address
+in the second argument register. The resident callee pops a model matrix and
+takes the cursor only; the register simply still holds the vertex command's
+operand. With the argument present uopt either rebuilt the address before
+the call, two words long, or with an integer cast carried it in a different
+register, 2 words at delta 0. With the argument removed the function is exact.
+
+The nested-assignment carrier in the middle blend arm is not needed: two
+plain statements score the same. The integer literals there are kept because
+the constant pool is keyed on spelling.
+
+Closures this breaks: the green-reload-before-cursor-load stall and the
+transform-home displacement were both consequences of the shared command
+local and the pad arrays, and the single-force colour reading for the
+0xFA000000 constant was true only of that shape.
+
+Gates: gmake verify, check-overlay-syms and promotion-proof pass.
+
 
 Summary before this remeasure: Size 0 at 61 via r4300_mul, 0x04000000 with 0x80, L112 pad[4]. Colour floor 61, 58 with p1:w184=c7. Extra pair +0x26C vs +0x284; transform homes 0x60 vs 0x6C.
 

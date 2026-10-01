@@ -1367,10 +1367,15 @@ overlay37SinReloc = 0xf0000000;
 overlay37UpdateObjectReloc = 0xf0000000;
 
 /* overlay 37: overlay37Render.c.o */
-D_80000078 = 0x80000078;
-
-/* overlay 37: overlay37RecordMinimum.c.o */
+func_80021964_o037Reloc = 0xf0000000;
+func_800244EC_o037Reloc = 0xf0000000;
+func_8002460C_o037Reloc = 0xf0000000;
+func_8002A250_o037Reloc = 0xf0000000;
+func_800349A4_o037Reloc = 0xf0000000;
+gOverlay37DisplayData = 0x80000000;
+gOverlay37DisplayData78 = 0x80000078;
 gOverlay37Records = 0x000000b8;
+overlay37CallProxy = 0xf0000000;
 
 /* overlay 38: func_overlay_038_F0000000_1885D10.c.o */
 mathOneFloatPY_o038Reloc = 0xf0000000;
@@ -2385,6 +2390,7 @@ sprintf_o058Reloc = 0xf0000000;
 D_80000058 = 0x80000058;
 
 /* overlay 58: overlay58DrawPointQuad.c.o */
+D_80000078 = 0x80000078;
 gOverlay58PointDisplayListReloc = 0x00000000;
 gOverlay58PointRenderStateReloc = 0x00000000;
 gOverlay58PointVertexCursorReloc = 0x00000000;

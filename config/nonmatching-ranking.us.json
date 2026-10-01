@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 229,
-  "resolved": 229,
+  "queue_size": 228,
+  "resolved": 228,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 229,
-  "relocation_masked_coverage": 229,
+  "source_context_coverage": 228,
+  "relocation_masked_coverage": 228,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -563,21 +563,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "5wWu.9fxd.p0x6.OVbj.QutP.VmB9.qYN-.A0MN.mnEv.AOU7.Llk"
-    },
-    {
-      "name": "overlay37RenderEffect",
-      "file": "src/overlays/o037/overlay37Render.c",
-      "overlay": 37,
-      "tu": "overlays/o037",
-      "size_bytes": 856,
-      "objdiff_match_pct": null,
-      "differing_words": 43,
-      "first_mismatch_offset": 84,
-      "relocation_masked_differing_words": 43,
-      "relocation_masked_first_mismatch_offset": 84,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "4wUA.1r_J.-gIX.8rx_.2j1w.HLpK.VfZj.AODo.TA8t.sNn4.ZKs"
     },
     {
       "name": "MatrixMultiplyVec4",

@@ -3629,8 +3629,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o037/overlay37Render.c.o",
       "offset": 412,
       "overlay": 37,
@@ -9205,7 +9205,7 @@
       "metadata": 636,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 227196,
+    "matched_c_bytes_with_postprocess": 228052,
     "objects_with_postprocess": 639
   }
 }

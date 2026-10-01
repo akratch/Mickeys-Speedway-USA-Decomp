@@ -557,44 +557,15 @@ void controlPlayerReInit(ControlActor *actor, f32 x, f32 y, f32 z, s16 arg4, s16
     player->unk45C = saved45C;
     player->unk45D = saved45D;
 }
-/* Bounded plateau: 401/403 words, 386 differing words, first mismatch +0x0. */
-/* Candidate frame is -0xB0 versus target -0xA8; candidate/target relocations are 40/38. */
-/* The typed direct effect-spawn alias is proven; remaining particle/effect lifetimes miss the target register web. */
-/* Frame split, measured: target 0x24 save + 0x84 non-save, candidate 0x1C save
- * + 0x94 non-save. The two axes pull opposite ways -- the declaration census
- * that closed func_8001CB84 and func_8001D960 removed 8 non-save bytes here
- * (one redundant s8 copy of player->playerIndex, one redundant loop bound),
- * but the target ALSO holds two more values in callee-saved registers than
- * this candidate does, so the save area is 8 bytes short. Removing further
- * declarations (pointIndex, effectCount, packetIndex, stateCursor) was flat.
- * The `register` qualifiers previously carried here were no-ops: dropping them
- * produced a byte-identical object, so the next lever is the uopt callee-saved
- * tie-break, not more source-level pruning.
- * Named, 2026-09-09: the target uses s0-s6, this candidate only s0-s4. Both
- * agree on the two obvious carriers -- the target holds `player` in s5 and
- * `actor` in s6, this candidate in s3 and s4 -- so the two missing saved webs
- * are the ones the target puts in s3 and s4, and they are the effect/particle
- * list walk.
- * Identity-gated 2026-09-17 (proc 10, instrumented .text identical): two
- * type-2 symbol webs split because totalsave 10 and 11 is not strictly below
- * callee-saved bestcost 16.25, so s5/s6 are never allocated. Split webs have
- * no colour and cannot be forced. L109 identity probes on player,
- * effectOwner, and particleCount did not move those totalsaves. L99 unused
- * pointer/f32 grows non-save, not the save area. Per-arm particle count and
- * entries loads reproduce the target's three-arm entries load but leave the
- * count in a caller-saved temp and grow the function. Next: loop-weighted
- * references that survive copy-prop onto those leftover symbol webs.
- * Corrected 2026-09-23 (B3-char): those two type-2 webs are the constants 10
- * and 3 and stay split in the target too. The missing saved webs were the loop
- * counters: once one i and one j serve every loop, their totalsave clears the
- * 16.25 toll and player/actor land in s5/s6 without any force. */
 /* PROVENANCE: JFG's corresponding character-control initialization role supplied the control-flow lead; fields and body are reconstructed from Mickey. */
-#ifdef NON_MATCHING
-/* Track B (B3-char): size delta 0 and frame 0xA8 as the target. The target
- * reuses i/j across all five loops (point copy, effects, particles, slot
- * fill, spawn packets); merging them is what opens s5/s6 for player/actor.
- * It also loads each particle list per arm, calls camSetNo with one
- * argument, and spells unk17C as a double 1.0 (a separate constant). */
+/* Matched (was 121 masked words). The target reuses one i and one j across
+ * the loops, which is what puts player and actor in s5/s6. On top of that:
+ * the character model's first pointer is read through stateCursor before the
+ * character data (the target holds it in v0, which removes a ring draw); the
+ * point copy starts its byte offset inside the guard with i cleared outside;
+ * the slot byte is `i << 3`, which uopt does not strength-reduce; and
+ * unk10, unkFE, unk4C, unk3BA and the spawn packet's owner are written in
+ * the target's store order, with `i = 0` folded onto the line its tie needs. */
 void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode) {
     ControlPlayer *player;
     CharControlEffectDefinition *effect;
@@ -614,21 +585,20 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
     player = actor->player;
     player->unk1B8 = 0x2000;
     player->playerIndex = *((u8 *) state + 0x10);
-    player->unk10 = 0.0f;
     player->unk1 = *((u8 *) state + 0x11);
+    player->unk10 = 0.0f;
     actor->rotationX = state->arg4;
     actor->rotationY = state->arg5;
     actor->rotationZ = state->arg6;
     player->unkF0 = actor->rotationX;
     player->unkF2 = actor->rotationY;
-    player->unkFE = 0;
     player->unkF4 = actor->rotationZ;
+    player->unkFE = 0;
     player->unkDC = (s16) (0x8000 - actor->rotationX);
     func_8005AD64(actor, 0, -1, 0.0f);
     player->unk50 = 1.0f;
     player->unk54 = 1.0f;
 
-    output = &player->unk2C0[0];
     if (D_8007BF10 != 0) {
         player->unk2BC = 4;
         player->unk2B8 = (ControlGravityVector *) &D_800799AC;
@@ -642,8 +612,9 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
     }
     player->unk33C = 0;
     player->unk340 = 0;
+    output = &player->unk2C0[0];
+    i = 0;
     if (player->unk2BC > 0) {
-        i = 0;
         pointIndex = 0;
         do {
             i++;
@@ -684,10 +655,9 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
         }
     }
 
-    characterData = (CharControlCharacterData *)
-        *(*(actor->unk68 + actor->unk3A));
-    i = 0;
-    if (levelGetType() == 3) {
+    stateCursor = actor->unk68[actor->unk3A];
+    characterData = (CharControlCharacterData *) *(void **) stateCursor;
+    i = 0; if (levelGetType() == 3) {
         j = D_8007987C[effectIndex].count;
         particle = D_8007987C[effectIndex].entries;
     } else if (D_8007BF04 != 0) {
@@ -736,6 +706,7 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
     player->unk40 = actor->z;
     player->unk44 = actor->x;
     player->unk48 = actor->y;
+    player->unk4C = actor->z;
     player->unk190 = 0xFF;
     player->unk18D = 0;
     player->unk338 = 0;
@@ -749,7 +720,6 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
     player->unk186 = 0;
     player->unk187 = 0;
     player->unk188 = 0.0f;
-    player->unk4C = actor->z;
     i = 0;
     if (player->playerIndex != -1) {
         camSetNo(player->playerIndex);
@@ -777,7 +747,7 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
     do {
         stateCursor = (u8 *) stateCursor + 1;
         *((u8 *) stateCursor + 0x12B) = 0;
-        *((u8 *) stateCursor + 0x12F) = i * 8;
+        *((u8 *) stateCursor + 0x12F) = i << 3;
         i++;
     } while (i < 4);
     player->unk3EC = 0.0f;
@@ -788,16 +758,15 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
     player->unk444 = actor->unk8;
     player->unk448 = actor->x;
     player->unk44C = actor->y;
-    player->unk3BA = 0xFF;
     player->unk450 = actor->z;
+    player->unk3BA = 0xFF;
     if (levelGetType() == 3) {
-        i = 0;
         if (mode != 0) {
-            packet.kind = 0x124;
+            packet.owner = actor;
+            packet.kind = 0x124; i = 0;
             packet.arg04 = 0;
             packet.arg06 = 0;
             packet.arg08 = 0;
-            packet.owner = actor;
             do {
                 packet.arg0A = i;
                 func_8000590C((ControlSpawnPacket *) &packet, 1);
@@ -811,9 +780,6 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
         player->unk192 = 0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/func_8001C4C0.s")
-#endif
 void func_8001CB0C(ControlTransform *transform, ControlPlayer *player) {
     player->unk2BC = 1;
     if (D_8007BF1C & 8) {
@@ -2161,15 +2127,6 @@ void controlClearPlayerSetup(void) {
  */
 
 
-/* PLATEAU-HANDOFF:func_8001C4C0:start
- * symbol: func_8001C4C0
- * score: 121/403 words
- * frame: 0xA8
- * relocations: 38
- * first-mismatch: +0x3C
- * summary: hypothesis=loop-weighted references on leftover const webs 10 and 3; spellings=plus-assign and minus-assign fold away, (x+C)-C folds away, xor pair at delta +16 adds 80 to the carrier; stall=totalsave 10 and 11 unchanged at 121/403 and delta 0
- * PLATEAU-HANDOFF:func_8001C4C0:end
- */
 /* PLATEAU-HANDOFF:func_8001DD70:start
  * symbol: func_8001DD70
  * score: 299/533 words

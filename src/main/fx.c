@@ -175,80 +175,63 @@ void func_8004707C(FxCone *cone, s32 value2C, s32 value2D, s32 value2E,
         cone->envBlue = value32;
     }
 }
-/* Workbench verdict: structure-mismatch, 90 differing words, first mismatch +0x44. */
-/* Candidate: exact 149-instruction and -0x168 frame shape; all three call sites remain offset from target. */
-/* Shape status: point extent, countdown CFG, and integer vertex indices are recovered; allocator and call-loop scheduling remain. */
-/* PROVENANCE: JFG's public src/fx.c establishes the corresponding cone routine and call roles; this body is reconstructed from Mickey's own m2c draft and typed layouts. */
-#ifdef NON_MATCHING
+/* PROVENANCE: JFG's public src/fx.c establishes the corresponding cone
+ * routine and call roles (it carries the routine as assembly only); this body
+ * is written from Mickey's own listing and typed layouts.
+ * Matched by writing each loop in its plain form: `while (n--)` over the rim
+ * points, `for (i = 0; i < 2; i++)` over the two address buffers (the scaled
+ * counter and the cursor are both the compiler's), and a counted `for` over
+ * the fan indices. The two pad locals place the point array's home. */
 void func_800470B0(FxCone *cone, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
                    s16 arg5, f32 arg6, f32 arg7, f32 arg8) {
     FxConePoint *point;
-    void **address;
     u8 *vertex;
-    s32 angleStep;
-    f32 var_f0;
-    f32 var_f24;
-    f32 temp_f6;
+    s32 step;
+    f32 z0;
+    f32 z1;
+    s32 angle;
     s32 i;
-    s32 j;
+    s32 n;
+    s32 pad0;
+    s32 pad1;
     FxConePoint points[16];
 
     if (cone->flags != 0) {
-        var_f0 = 0.0f;
-        var_f24 = -arg8;
-        angleStep = -0x10000 / (s32) cone->segmentCount;
+        z0 = 0.0f;
+        z1 = -arg8;
+        step = -0x10000 / cone->segmentCount;
     } else {
-        var_f24 = 0.0f;
-        var_f0 = -arg8;
-        angleStep = 0x10000 / (s32) cone->segmentCount;
+        z1 = 0.0f;
+        z0 = -arg8;
+        step = 0x10000 / cone->segmentCount;
     }
-    points[0].y = 0.0f;
     points[0].x = 0.0f;
-    points[0].z = var_f0;
-    point = points + 1;
-    i = 0;
-    j = cone->segmentCount;
-    if (j--) {
-        do {
-            point->x = (f32) (func_8002A8C0(i) * arg6);
-            temp_f6 = func_8002A8BC(i) * arg7;
-            point->z = var_f24;
-            point++;
-            i += angleStep;
-            point[-1].y = temp_f6;
-        } while (j--);
+    points[0].y = 0.0f;
+    points[0].z = z0;
+    point = &points[1];
+    angle = 0;
+    n = cone->segmentCount;
+    while (n--) {
+        point->x = func_8002A8C0(angle) * arg6;
+        point->y = func_8002A8BC(angle) * arg7;
+        point->z = z1;
+        point++;
+        angle += step;
     }
-    address = (void **) cone;
-    i = 0;
-    do {
-        func_80048080(cone->mode, arg1, arg2, arg3, (s32) arg4,
-                      (s32) arg5, points, address[2], 0xFF);
-        address++;
-        i += 4;
-    } while (i < 8);
+    for (i = 0; i < 2; i++) {
+        func_80048080(cone->mode, arg1, arg2, arg3, arg4, arg5, points,
+                      cone->addresses[i], 0xFF);
+    }
     vertex = cone->vertices;
-    {
-        s32 index;
-        s32 next;
-
-        index = 1;
-        if ((s32) cone->segmentCount > 0) {
-            do {
-                next = index + 1;
-                vertex[0] = 0;
-                vertex[1] = index;
-                vertex[2] = next;
-                vertex[3] = 0;
-                index = next;
-                vertex += 0x10;
-            } while ((s32) cone->segmentCount >= next);
-        }
+    for (i = 1; i <= cone->segmentCount; i++) {
+        vertex[0] = 0;
+        vertex[1] = i;
+        vertex[2] = i + 1;
+        vertex[3] = 0;
+        vertex += 0x10;
     }
     vertex[-0xE] = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/func_800470B0.s")
-#endif
 
 #ifdef NON_MATCHING
 /* Workbench verdict: structure-mismatch, 175 differing words, first mismatch +0x4. */
@@ -2389,16 +2372,6 @@ void func_8004AF68(void) {
  * After these edits the register census resolves into a single closed four-cycle
  * over the integer temp ring where it previously showed two incoherent ones,
  * which is the L127 ring-phase fact rather than a set of colour questions.
- */
-
-/* PLATEAU-HANDOFF:func_800470B0:start
- * symbol: func_800470B0
- * score: 89/149 words
- * frame: 0x168
- * relocations: 3
- * first-mismatch: +0x44
- * summary: Fresh proc-3 census: 18 draws/203 emissions. Fixed-bound allocation cycle and stack-home blocker remain without new donor/lifetime evidence.
- * PLATEAU-HANDOFF:func_800470B0:end
  */
 
 /* PLATEAU-HANDOFF:func_8004A10C:start

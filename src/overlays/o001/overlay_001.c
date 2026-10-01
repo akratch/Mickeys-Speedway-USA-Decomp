@@ -330,8 +330,7 @@ typedef struct Overlay1Sample {
 
 extern void *D_1D58;
 extern Overlay1Sample *D_1D60;
-extern Overlay1Sample *volatile D_1D68;
-extern Overlay1Sample *D_1D68Read;
+extern Overlay1Sample *D_1D68;
 extern Overlay1Sample *D_1D6C;
 extern Overlay1Sample *D_0208;
 extern Overlay1Sample *D_020C;
@@ -341,23 +340,14 @@ extern s32 D_0;
 extern f32 splinePos(f32, f32, f32, f32, f32);
 extern u8 *overlay1NextPointerReloc(u8 *pointer);
 
-extern void *overlay1Chain0ContextReloc(void *source, void *context);
-extern void *overlay1Chain0Reloc(void *source);
-extern void *overlay1Chain40Reloc(void *source);
 
-/* Allocation residual is three words at +0x6C, +0x70 and +0x90: the address of
- * D_1D68 wants ugen's v0 and takes a scratch temp here.  Two edits took the
- * residual from 47 to 3, both read off the allocator records rather than
- * guessed: splitting the one `state` local into a pre-call `state` and a
- * post-call `current` (one web spanning the three calls is denied v0, so the
- * &D_1DA0 address could not reach v1), and dropping the `index` local so the
- * record index stays an expression temp and the &D_1D68 address becomes the
- * only value competing for a colour. */
-#ifdef NON_MATCHING
+/* Matched by discarding the inherited shape: the record is stored to D_1D68
+ * and read back from it (no `record` carrier, no volatile, no alias extern),
+ * both chain helpers take one argument, the record index and the selector are
+ * read through D_1DA0 at each use, and the record address is a subscript of
+ * the start pointer. */
 s32 overlay1ActivateObject(Overlay1Owner *owner) {
-    Overlay1Sample *record;
     Overlay1OwnerState *state;
-    Overlay1OwnerState *current;
 
     D_1D9C = 0;
     D_1DA0 = 0;
@@ -371,31 +361,22 @@ s32 overlay1ActivateObject(Overlay1Owner *owner) {
     }
     D_1DA0 = state;
     if (D_0 == 1) {
-        record = (Overlay1Sample *)((u8 *)D_1D58 + (*(Overlay1OwnerState *volatile *)&D_1DA0)->recordIndex * 0x94);
-        D_1D68 = record;
-        D_1D64 = overlay1Chain0ContextReloc(record, &D_1D9C);
-        D_1D60 = overlay1Chain0Reloc(D_1D64);
-        D_1D6C = overlay1Chain40Reloc(D_1D68Read);
-        current = D_1DA0;
-        D_0208 =
-            (Overlay1Sample *)((u8 *)D_1D60 +
-                current->selector * 0x10 + 0x14);
-        D_020C =
-            (Overlay1Sample *)((u8 *)D_1D64 +
-                current->selector * 0x10 + 0x14);
-        D_0210 =
-            (Overlay1Sample *)((u8 *)D_1D68Read +
-                current->selector * 0x10 + 0x14);
-        D_0214 =
-            (Overlay1Sample *)((u8 *)D_1D6C +
-                current->selector * 0x10 + 0x14);
+        D_1D68 = (Overlay1Sample *)&gOverlay1Start.records[
+            ((Overlay1OwnerState *)D_1DA0)->recordIndex];
+        D_1D64 = overlay1PreviousPointer((u8 *)D_1D68);
+        D_1D60 = (Overlay1Sample *)overlay1PreviousPointer(D_1D64);
+        D_1D6C = (Overlay1Sample *)overlay1NextPointerReloc((u8 *)D_1D68);
+        D_0208 = (Overlay1Sample *)((u8 *)D_1D60 +
+            ((Overlay1OwnerState *)D_1DA0)->selector * 0x10 + 0x14);
+        D_020C = (Overlay1Sample *)((u8 *)D_1D64 +
+            ((Overlay1OwnerState *)D_1DA0)->selector * 0x10 + 0x14);
+        D_0210 = (Overlay1Sample *)((u8 *)D_1D68 +
+            ((Overlay1OwnerState *)D_1DA0)->selector * 0x10 + 0x14);
+        D_0214 = (Overlay1Sample *)((u8 *)D_1D6C +
+            ((Overlay1OwnerState *)D_1DA0)->selector * 0x10 + 0x14);
     }
     return 1;
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001/func_overlay_001_F00004B4_184C894.s")
-#endif
 
 s32 overlay1FindClosestSample(f32 x, f32 y, Overlay1Sample *source,
                               f32 weight) {

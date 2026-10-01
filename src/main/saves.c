@@ -99,16 +99,6 @@ typedef struct SavesGameWriteState {
     s32 messageQueue;
 } SavesGameWriteState;
 
-/* L112: unobservable gap and saved lengths place buffer at +0x28 and
- * saved at +0x38 in the 0x48 frame. */
-typedef struct SavesWipeState {
-    s32 messageQueue;
-    u8 gap[4];
-    u8 *buffer;
-    u8 gap2[12];
-    s32 saved[4];
-} SavesWipeState;
-
 typedef struct RumbleState {
     u8 state;
     u8 pad01;
@@ -780,76 +770,77 @@ void func_8002CF0C(void *globalFlags) {
         func_8002C8B4(state.messageQueue, 0x39, globalFlags, 0x18);
     }
 }
-#ifdef NON_MATCHING
-/* PROVENANCE: control flow adapted from Jet Force Gemini's public
- * src/saves.c packClearGameEprom / packSaveGlobalFlagsEprom (alloc, fill,
- * checksum, write if not reset, free). Stack-homed write state follows this
- * TU's matched func_8002CD6C SavesGameWriteState pattern so the buffer is a
- * struct field rather than an s-register. Mickey's EEPROM path, preserved
- * flag bits, and 0x200 combined image remain authoritative.
- * Configured result: 88/88 instructions, 25/88 positional words, frame 0x48
- * matching the target ladder, first mismatch +0x68. dst = buffer + 0x1C0
- * keeps the leftover addiu; assigning globalFlags = state.buffer after
- * mainResetPressed puts nop in that jal delay. The addiu still lands on
- * v1 before flags-dest reuse, not on a2 after copy setup. */
+/* The preserved bit is bit 6 of the first byte; the target reads it as a
+ * 16-bit field and rewrites it through the first byte, which is a bitfield. */
+typedef struct SavesGlobalFlags {
+    u16 bit15 : 1;
+    u16 keep : 1;
+    u16 bits : 14;
+    u8 pad2;
+    s8 byte3;
+    u8 pad4[0x12];
+    u16 checksum;
+} SavesGlobalFlags;
+
+/* PROVENANCE: control flow and the `while (n--)` byte-copy idiom adapted from
+ * Jet Force Gemini's public src/saves.c (packClearGameEprom,
+ * packLoadGlobalFlagsEprom, packSaveGlobalFlagsEprom: alloc, fill, checksum,
+ * write if not reset, free). Mickey's EEPROM path, preserved flag bits, and
+ * 0x200 combined image remain authoritative.
+ * Matched by replacing the inherited shape with plain locals: no write-state
+ * struct, no parameter reuse, no `if (1)` region; the three copies are the
+ * donor's `while (n--)` loops, the preserved bit is a bitfield, and the two
+ * footer words go through one `u32 *`. The two pad locals place the homes. */
 void func_8002CF6C(u8 *globalFlags) {
-    SavesWipeState state;
-    s32 savedByte;
-    u32 savedFlag;
     u8 *src;
     u8 *dst;
-    s32 count;
+    u32 savedFlag;
+    s32 savedByte;
+    u32 *footer;
+    s32 n;
+    s32 pad2C;
+    u8 *buffer;
+    s32 pad24;
+    s32 messageQueue;
 
-    state.messageQueue = joyMessageQ();
-    if (func_80070170(state.messageQueue) != 0) {
-        state.buffer = func_8002B280(0x200, 0x85);
-        if (state.buffer != NULL) {
-            dst = state.buffer;
-            count = 0x1FF;
-            do {
+    messageQueue = joyMessageQ();
+    if (func_80070170(messageQueue) != 0) {
+        buffer = func_8002B280(0x200, 0x85);
+        if (buffer != NULL) {
+            dst = buffer;
+            n = 0x200;
+            while (n--) {
                 *dst++ = 0;
-            } while (count--);
-            func_8002CCE4();
-            count = packCalculateGameChecksum(state.buffer, 0x1C0);
-            dst = state.buffer + 0x1C0;
-            if (1) { /* L97 region; pairs the two footer stores on one buffer copy. */
-                *(u32 *) dst = count;
-                *(u32 *) (dst + 4) = 0x12345678;
             }
-            savedByte = (s8) globalFlags[3];
-            savedFlag = (u32) (*(u16 *) globalFlags << 17) >> 31;
+            func_8002CCE4();
+            footer = (u32 *) (buffer + 0x1C0);
+            footer[0] = packCalculateGameChecksum(buffer, 0x1C0);
+            footer[1] = 0x12345678;
+            savedFlag = ((SavesGlobalFlags *) globalFlags)->keep;
+            savedByte = ((SavesGlobalFlags *) globalFlags)->byte3;
             src = D_8007A304;
             dst = globalFlags;
-            count = 0x17;
-            do {
+            n = 0x18;
+            while (n--) {
                 *dst++ = *src++;
-            } while (count--);
-            state.saved[1] = savedFlag;
-            state.saved[0] = savedByte;
-            *(u16 *) (globalFlags + 0x16) =
-                packCalculateGlobalFlagsChecksum(globalFlags);
-            globalFlags[0] =
-                ((state.saved[1] << 6) & 0x40) |
-                (globalFlags[0] & ~0x40);
-            globalFlags[3] = state.saved[0];
-            src = globalFlags;
-            dst = state.buffer + 0x1C8;
-            count = 0x17;
-            do {
-                *dst++ = *src++;
-            } while (count--);
-            count = mainResetPressed();
-            globalFlags = state.buffer;
-            if (count == 0) {
-                func_8002C8B4(state.messageQueue, 0, globalFlags, 0x200);
             }
-            mmFree(globalFlags);
+            ((SavesGlobalFlags *) globalFlags)->checksum =
+                packCalculateGlobalFlagsChecksum(globalFlags);
+            ((SavesGlobalFlags *) globalFlags)->keep = savedFlag;
+            ((SavesGlobalFlags *) globalFlags)->byte3 = savedByte;
+            src = globalFlags;
+            dst = buffer + 0x1C8;
+            n = 0x18;
+            while (n--) {
+                *dst++ = *src++;
+            }
+            if (mainResetPressed() == 0) {
+                func_8002C8B4(messageQueue, 0, buffer, 0x200);
+            }
+            mmFree(buffer);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/saves/func_8002CF6C.s")
-#endif
 /* PROVENANCE: body adapted from Jet Force Gemini's public decomp,
  * src/saves.c:packOpen, with Mickey's globals and status values. */
 s32 packOpen(s32 controllerIndex) {
@@ -1428,13 +1419,3 @@ s32 func_8002E020(s32 controllerIndex, s32 fileNum) {
     mmFree(data);
     return result;
 }
-
-/* PLATEAU-HANDOFF:func_8002CF6C:start
- * symbol: func_8002CF6C
- * score: 25/88 words
- * frame: 0x48
- * relocations: 11
- * first-mismatch: +0x68
- * summary: Size 0 at 25/88 first +0x68. addiu 0x1C0 on v1 before dest reuse not a2 after setup. Checksum jal delay is move a0. Avoid flags-split and address-of leftover.
- * PLATEAU-HANDOFF:func_8002CF6C:end
- */

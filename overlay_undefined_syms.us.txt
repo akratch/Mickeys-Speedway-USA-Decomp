@@ -12,6 +12,12 @@
 /* Stored relocation addends, per translation unit. */
 
 /* overlay 1: overlay_001.c.o */
+D_0 = 0x00000000;
+D_0208 = 0x00000208;
+D_020C = 0x0000020c;
+D_0210 = 0x00000210;
+D_0214 = 0x00000214;
+D_1D60 = 0x00001d60;
 D_1D64 = 0x00001d64;
 D_1D68 = 0x00001d68;
 D_1D6C = 0x00001d6c;
@@ -36,10 +42,8 @@ overlay1PointComponent0Reloc = 0xf0000000;
 overlay1PointComponent1Reloc = 0xf0000000;
 
 /* overlay 1: overlay_001_head.c.o */
-D_0 = 0x00000000;
 D_1BA0 = 0x00001ba0;
 D_1D58 = 0x00001d58;
-D_1D60 = 0x00001d60;
 D_1D70 = 0x00001d70;
 D_1D7C = 0x00001d7c;
 D_1D80 = 0x00001d80;
@@ -285,6 +289,19 @@ gOverlay3Entries = 0x00000028;
 /* overlay 3: overlay3ResetObjects.c.o */
 overlay3GetObjectsReloc = 0xf0000000;
 
+/* overlay 3: overlay3RunCachedModeAction.c.o */
+gOverlay3ModeChance = 0x00000000;
+overlay1EncodeAngleReloc = 0xf0000000;
+overlay2CheckPathReloc = 0xf0000000;
+overlay36Mode3ActionReloc = 0xf0000000;
+overlay36Mode4ActionReloc = 0xf0000000;
+overlay36Mode6ActionReloc = 0xf0000000;
+overlay36Mode7ActionReloc = 0xf0000000;
+overlay3AngleDeltaReloc = 0xf0000000;
+overlay3GetSearchObjectsReloc = 0xf0000000;
+overlay3PlanarAngleReloc = 0xf0000000;
+overlay3RandomRangeReloc = 0xf0000000;
+
 /* overlay 3: overlay3FindClosestObject.c.o */
 gOverlay3SearchMaxDistance = 0x00000000;
 overlay3ContainsValueReloc = 0xf0000000;
@@ -292,8 +309,6 @@ overlay3DistanceSquaredReloc = 0xf0000000;
 overlay3GetObjectRangeReloc = 0xf0000000;
 
 /* overlay 3: overlay3SelectScoredObject.c.o */
-overlay3GetSearchObjectsReloc = 0xf0000000;
-overlay3RandomRangeReloc = 0xf0000000;
 overlay3SqrtReloc = 0xf0000000;
 
 /* overlay 3: overlay3SelectTarget.c.o */
@@ -4010,10 +4025,10 @@ func_overlay_001_F00001AC_184C58C = overlay1FindType47ByAngle;
 func_overlay_001_F00002D4_184C6B4 = overlay1GetLinkedActive;
 func_overlay_001_F0000330_184C710 = overlay1GetRecord;
 func_overlay_001_F0000378_184C758 = overlay1FindType5ByKey;
-func_overlay_001_F0000614_184C9F4 = overlay1FindClosestSample;
-func_overlay_001_F0000758_184CB38 = overlay1TestDirection;
 func_overlay_001_F0000414_184C7F4 = overlay1FindPreviousUsable;
 func_overlay_001_F00004B4_184C894 = overlay1ActivateObject;
+func_overlay_001_F0000614_184C9F4 = overlay1FindClosestSample;
+func_overlay_001_F0000758_184CB38 = overlay1TestDirection;
 
 /* overlay 1: overlay_001_build.c.o */
 func_overlay_001_F00007B0_184CB90 = overlay1BuildPointRecord;

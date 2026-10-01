@@ -85,8 +85,11 @@ home-set problems nobody had measured. It reads the objects, so it is symmetric;
 `cc -g3` names which of *your* slots are declared locals rather than compiler
 temps, which is the other half of L118.
 
-`tools/score_symbol.py <symbol>` gives the positional masked count, agreeing
-with the ranking by construction. **Work the masked number**, never the raw
+`tools/fast_score.py <symbol> <candidate.c> [--diff]` compiles a whole
+candidate TU directly with the tree's own configured command (per-file flags
+included, read from the recipe, never typed) and scores it in about a second;
+that is the loop a product of shapes is measured with. `tools/score_symbol.py
+<symbol>` scores the tracked tree the same way. **Work the masked number**, never the raw
 one: the difference is relocation artefacts, already partitioned and stored.
 
 **Concurrency.** `score_symbol.py`, `align_symbol.py` and `frame_census.py`
@@ -248,6 +251,75 @@ locals, copies of globals, `volatile`, or-with-zero, dead stores, `if (1)`,
 alternatives for each region. It is a measurement, not a rule: the same
 product on `overlay14CreateValue`, 490 cells, bottomed at 71 words against an
 inherited 2, so there the contortions are load-bearing.
+
+### The shape checklist (measured on 60 matches, 2026-10-01)
+
+Sixty queued functions matched in one day, every one by rewriting an
+inherited shape and not one by forcing a colour. Before any allocator work,
+read the target listing, write the function as its author plausibly did, and
+measure a **product** of natural alternatives per region with
+`tools/fast_score.py` -- cells that regress alone were exact together on
+nearly every one of those sixty. The artefacts that were load-bearing, in
+order of how often they decided a match:
+
+1. **Carrier locals** holding a field, global or call result that the target
+   re-reads: read the field at each use (`g -= n; if (g <= 0)`, not
+   `v = (g -= n)`). The reload is then the same expression web, and a
+   store-then-reload spends the ring draw as1 folds away (L149).
+2. **Fake globals that are literals.** Any `D_`/`gScale`-style extern whose
+   relocation record is LOCAL against the module's own rodata is a float
+   literal in the TU's pool. Write the literal at each use; uopt hoists it as
+   a constant web and the float colours land.
+3. **Alias extern names for one object** (two names for one array, one timer
+   reached through seven aliases): one symbol everywhere.
+4. **Flag words tested by shift-and-sign and set by byte OR**: a bitfield
+   struct. The extract spends one more draw and the set is the shipped byte
+   update.
+5. **Loops**: `while (n--)`, `for (i = 0; i < count; i++)` reading the global
+   count, plain `while (*p)` string compares with no byte carriers, indexed
+   subscripts instead of walking pointers (uopt then creates the pointers and
+   the noalias facts). `goto` loops, hand-unrolled blocks and `volatile`
+   cursors are nearly always inherited.
+6. **Display-list code**: one packet macro per command, taking
+   `(*commands)++`, opcode word first (JFG `f3ddkr.h` operand order).
+7. **Frame homes**: plain locals in frame order, plus unused `s32` pads
+   counted with `tools/frame_census.py`; never a padded struct or a union
+   standing in for locals. Displaced homes that `-g3` does not attribute to
+   a declared local are uopt spill cells, moved by indexing loops.
+8. **Default-then-override** (`x = K; if (c) x = f;`) where the target shows a
+   branch over an empty arm is `if (c) x = f; else x = K;`; it moves saved
+   register order and several colours at once.
+9. **Call arity**: a candidate's "second argument" is often a leftover
+   intermediate the target leaves in a1; read the callee's real arity.
+10. **Static data reached through a pointer local taken at entry** gives
+    direct accesses that share one high half per aligned pair in every block
+    but the entry's (two o015 matches).
+11. **Per-file flag overrides inherited from a plateau** (`-Olimit`, unroll
+    caps) can hide the regime: two main.c functions only match optimised.
+
+### Promotion traps (each cost a lane a cycle on 2026-10-01)
+
+1. `gmake verify`'s candidate guard rebuilds changed objects and discards the
+   `*Reloc` renames `overlay-syms` wrote, so a promoted overlay object that
+   calls resident functions needs `--redefine-sym <n>=<n>_oNNNReloc` for each
+   callee in its POSTPROCESS rule in `mk/overlays.mk`; the names are the new
+   lines `overlay-syms` adds to `overlay_undefined_syms.us.txt`.
+2. Cross-overlay callees are `*Reloc` placeholder declarations in the C
+   (`overlay-syms` says so). Same-module calls can be direct or placeholder
+   per call site; read the target's call word.
+3. Compiler-emitted `.rodata` (float literals, jump tables) that already lives
+   in the retained overlay data: externalize by sha256 digest; for a jump
+   table use the overlay 14/46 form (add-symbol, rebind spec, drop
+   `.rel.rodata`, `True` on the atlas ownership row).
+4. A single-function overlay object usually needs
+   `trim_elf_section.py $@ .text <size>`.
+5. After any header edit the tree rebuilds and drops renames: run
+   `gmake overlay-syms && gmake -j4` before `gmake verify`.
+6. Some TUs are hash-pinned by tests (`tools/test_resident_storage_view.py`,
+   `config/overlay_storage_bindings.us.json`): repin in the same commit, never
+   skip the test.
+7. `config/postprocess-audit.us.json` goes stale on any POSTPROCESS edit and
+   only `tools/postprocess_audit.py --write` fixes it.
 
 ## The laws
 

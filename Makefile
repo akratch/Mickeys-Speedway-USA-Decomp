@@ -122,6 +122,14 @@ POSTPROCESS := @:
 PROMOTION_TRIAL ?=
 export PROMOTION_TRIAL
 
+# A recipe that fails after its compiler step (a POSTPROCESS guard, a trim, a
+# digest check) must not leave the compiled-but-unnormalized object behind:
+# the next invocation treats it as up to date, links it, and the failure only
+# resurfaces when something forces that object to rebuild. On 2026-10-01 a
+# stale trim size on particles.c.o passed seven integration verifies that way
+# and failed the first landing.
+.DELETE_ON_ERROR:
+
 # Every per-file POSTPROCESS below is a post-compile ELF normalization -- a
 # section trim, a relocation rebind or filter, an added relocation guarded by a
 # .text prefix hash. All of them encode the *matching* object's exact layout,
@@ -1187,10 +1195,13 @@ $(BUILD_DIR)/$(SRC_DIR)/main/camera.c.o: CFLAGS += -Wab,-r4300_mul
 
 # The general-particle velocity magnitudes require the R4300 multiply schedule.
 $(BUILD_DIR)/$(SRC_DIR)/main/particles.c.o: CFLAGS += -Wab,-r4300_mul
-# The matched switch table and the following particle constants own 0x28
-# bytes; discard only IDO's trailing zero section alignment.
+# The matched switch table, func_80040B88's two float literals and one word
+# of the object's own padding own 0x20 bytes; the two zero words that follow
+# are carved as their own segment (mickey.us.yaml, 0x83678). The size is
+# asserted, not grown: until 2026-10-01 this said 0x28, which trim refuses
+# on a 0x20 object, and the failure hid behind a stale object for a day.
 $(BUILD_DIR)/$(SRC_DIR)/main/particles.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x28
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x20
 
 # The vehicle logarithm-series helper needs the R4300 multiply-hazard pass.
 $(BUILD_DIR)/$(SRC_DIR)/main/vehicle_sounds.c.o: CFLAGS += -Wab,-r4300_mul

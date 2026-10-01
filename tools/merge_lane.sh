@@ -151,7 +151,13 @@ gmake -s check-nonmatching-builds || { echo "a candidate-bearing TU no longer co
 gmake distclean >/dev/null 2>&1; gmake extract 2>&1 | tail -1
 low_gmake >/dev/null 2>&1 || true   # warm-up: the first parallel build after a re-split can race
 gmake overlay-syms 2>&1 | tail -1   # a merge that changes overlay relocation surfaces needs the generated symbol block before the link
-low_gmake >/dev/null 2>&1 || true
+# The second build's status is real: a POSTPROCESS failure here left a stale
+# object that verify then accepted (2026-10-01), so it is no longer swallowed.
+if ! low_gmake >"$root/build/merge-build.log" 2>&1; then
+  echo "build FAILED after merging $branch; merge left uncommitted" >&2
+  grep -nE 'Error|error:|cannot|refus' "$root/build/merge-build.log" | head -12 >&2
+  exit 1
+fi
 # See finish_merge.sh: `set -e` + `pipefail` would abort at this assignment
 # when verify fails, suppressing the diagnostic the case below exists to give.
 verify_log=$(mktemp -t mickey-merge-verify)
@@ -166,13 +172,36 @@ case "$out" in
      echo "full log: $verify_log" >&2
      exit 1 ;;
 esac
+# A lane that BANKED an improvement (fewer words, still queued) leaves its
+# shard claiming a score the merged ranking row does not carry, because
+# --prune-stale above drops retired rows and re-measures nothing. check-docs
+# then fails on shard metrics, which it did on two of ten merges on
+# 2026-10-01. Re-measure the rows whose source context changed now that the
+# tree is extracted and built; only stale TUs compile. The postprocess audit
+# goes stale the same way whenever a lane edits a POSTPROCESS rule.
+.venv/bin/python tools/nm_ranking.py --refresh-stale 2>&1 | tail -1
+.venv/bin/python tools/nm_ranking.py --write-doc >/dev/null
+.venv/bin/python tools/postprocess_audit.py --write 2>&1 | tail -1
+git add -- config/nonmatching-ranking.us.json docs/nm-ranking.md config/postprocess-audit.us.json
 gmake scoreboard 2>&1 | tail -1
 gmake overlay-atlas 2>&1 | tail -1
 .venv/bin/python tools/fix_jumptable_claim.py >/dev/null 2>&1 || true
-gmake check-docs 2>&1 | tail -1
-gmake check-overlay-syms 2>&1 | tail -1
-gmake check-scoreboard 2>&1 | tail -1
-gmake cleanroom 2>&1 | tail -1
+# Gates run unpiped so the status is the gate's own, and the whole log is
+# printed on failure instead of scrolling away behind `tail -1`.
+run_gate() {
+  local log; log=$(mktemp -t mickey-merge-gate)
+  if ! "$@" >"$log" 2>&1; then
+    echo "gate FAILED: $*" >&2
+    tail -40 "$log" >&2
+    echo "merge left uncommitted; fix the gate, then tools/finish_merge.sh" >&2
+    exit 1
+  fi
+  tail -1 "$log"; rm -f "$log"
+}
+run_gate gmake check-docs
+run_gate gmake check-overlay-syms
+run_gate gmake check-scoreboard
+run_gate gmake cleanroom
 .venv/bin/python tools/merge_transaction.py stage
 git commit -q -m "Merge $branch into $(git rev-parse --abbrev-ref HEAD)
 

@@ -899,8 +899,9 @@ extern void *LOCAL_BSS_1D9C;
  * locals and pads filling the gaps -- and frame_census now reads both
  * ladders identical (1113 to 1079). The path loop is a `for` over a pointer
  * and an index, the deceleration reads forwardVelocity directly, and the
- * m2c gotos are gone (1066). Remaining CFG and allocation work is measured
- * in the function handoff. */
+ * m2c gotos are gone (1066). The surface loop uses the same `loopValue`
+ * copy as overlay1ChoosePath's loops (1061). Remaining CFG and allocation
+ * work is measured in the function handoff. */
 #ifdef NON_MATCHING
 void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) {
     s32 pad0;
@@ -947,7 +948,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
     O1PhysicsActionMode *action;
     s16 resolvedX;
     s16 resolvedZ;
-    s32 pad1;
+    s32 loopValue;
 
     state = object->state;
     if (func_overlay_001_F00004B4_184C894(object) != 0) {
@@ -1021,7 +1022,9 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
                     ceiling = surface->height;
                 }
                 surface--;
-            } while (index-- != 0);
+                loopValue = index;
+                index--;
+            } while (loopValue != 0);
         }
         value2 = state->surfaceHeight;
         if (object->y < value2) {
@@ -3224,10 +3227,10 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C
- * score: 1066/1542 words
+ * score: 1061/1542 words
  * frame: 0x138
  * relocations: 184
  * first-mismatch: +0x170
- * summary: Frame ladder exact; natural path loop, deceleration and limit blocks: 1113 to 1066 at delta 0. Rest is FP/int ring naming from the clamp block on.
+ * summary: Frame ladder exact; natural loops and limit blocks, surface loop in the loopValue idiom: 1113 to 1061 at delta 0. Rest is ring and colour order.
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
  */

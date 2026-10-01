@@ -2,11 +2,13 @@
 ### `func_8000B3CC` plateau handoff
 
 - source: `src/main/objects.c`
-- score: 116 differing words
+- score: 100/494 words
 - frame: 0x98
 - relocations: 20
 - first mismatch: +0x148
-- summary: hypothesis=put step at +0x34, speed at +0x30 and factor at +0x2C without undoing the L144 homes; spellings=block scope 116 unhomed, split stores 116 folded, two-field aggregate 197 at +16; stall=speed stayed at +0x4C and step missed +0x34, body reverted
+- summary: Velocity sums read fields at each use (116 to 100, delta 0). Left: reflection keeps fields in f0/f14/f2/f12, factor homed, zero in f18.
+
+Summary before this remeasure: hypothesis=put step at +0x34, speed at +0x30 and factor at +0x2C without undoing the L144 homes; spellings=block scope 116 unhomed, split stores 116 folded, two-field aggregate 197 at +16; stall=speed stayed at +0x4C and step missed +0x34, body reverted
 
 Summary before this remeasure: Size exact after L144 address-form homes on speed and dot. The home order asked for below was measured on 2026-09-24 and did not land.
 
@@ -51,4 +53,24 @@ Validation includes configured full-TU comparison, identity-gated IDO with
 CDX_PROC, force lattice on proc 60, finalize_plateau.py, check-docs and
 cleanroom. ROM verification continues to use the assembly fallback.
 
+#### 2026-10-01, lane d-obj: 116 to 100 at delta 0
+
+The three squared-length sums (after the first collision move, after
+damping, and the bounce speed) now read the velocity fields at each use
+instead of copying them into the `volume`, `savedY` and `moveZ` carriers;
+the carriers stay for the collision deltas passed to func_80008128, which
+regress to 182 when inlined. Measured as a 16-cell product: any one sum
+inlined is 102, all three 100, none 116. The L144 address-form homes are
+untouched. Buckets: byte-exact 405, naming 70, immediate 5, structural 10.
+
+Read from the target, not yet reached: the reflection keeps the three
+velocity fields in f0, f14 and f2 and state unk8 in f12 across the factor
+store, negativeDot is a coloured f16, and the zero constant therefore lands
+in f18; factor is a home read at each use (one store, three loads). Floated
+and measured, all worse: the reflection through the three carriers (216 at
++8), the factor address form with or without them (180 to 296, +8 to +20),
+a plain dot read (+12 to +16), and integer or double zero spellings (+16).
+The three D_8008152C/30/34 externs are this function's float literals (0.1,
+0.707, 0.1; the two 0.1 entries need distinct spellings) and sit directly
+after the objects rodata, so a promotion grows the trim by 0xC.
 <!-- plateau-handoff:func_8000B3CC:end -->

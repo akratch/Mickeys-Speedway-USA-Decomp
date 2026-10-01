@@ -2438,69 +2438,41 @@ s32 func_80006EE4(s32 object) {
     }
     return -1;
 }
-/* Workbench verdict: structure-mismatch; 63 differing words (94/94). */
-/* First mismatch: +0x0C; frame and instruction count are exact. */
-/* Structural gap: active-list carriers and loop register allocation remain unresolved. */
-#ifdef NON_MATCHING
+/* PROVENANCE: body adapted from the public Diddy Kong Racing decompilation,
+ * src/objects.c::gParticlePtrList_flush.  Mickey searches, unlinks and
+ * destroys inside the found arm and ends the scan by assigning the count.
+ * Matched (was 63 masked words) by dropping the inherited carriers: every
+ * global is read at its use and the lists are plain subscripts. */
 void func_80006FA0(void) {
-    s32 *temp_v0;
-    s32 temp_a0;
-    s32 temp_s2;
-    s32 temp_t4;
-    s32 temp_t7;
-    s32 var_a0;
-    s32 var_s4;
-    s32 var_s5;
-    s32 var_s6;
-    s32 var_v0;
-    s32 var_v1;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 found;
+    void *obj;
 
-    var_s5 = 0;
-    if (D_800C94F0 > 0) {
-        var_s6 = 0;
-        do {
-            temp_a0 = D_800C9498;
-            var_s4 = -1;
-            temp_s2 = *(s32 *)((u8 *)D_800C94EC + var_s6);
-            var_v0 = 0;
-            if (temp_a0 > 0) {
-                do {
-                    temp_t4 = temp_a0 - 1;
-                    if (temp_s2 == ((s32 *)D_800C9494)[var_v0]) {
-                        var_s4 = var_v0;
-                        var_a0 = var_v0 * 4;
-                        if (var_v0 < D_800C94B2) {
-                            D_800C94B2 -= 1;
-                        }
-                        D_800C9498 = temp_t4;
-                        var_v1 = var_v0;
-                        if (var_v0 < temp_t4) {
-                            do {
-                                var_v1 += 1;
-                                temp_v0 = (s32 *)((u8 *)D_800C9494 + var_a0);
-                                temp_t7 = temp_v0[1];
-                                var_a0 += 4;
-                                temp_v0[0] = temp_t7;
-                            } while (var_v1 < D_800C9498);
-                        }
-                        func_80007118(temp_s2, 0);
-                        var_v0 = D_800C9498;
-                    }
-                    var_v0 += 1;
-                } while (var_v0 < temp_a0);
+    for (i = 0; i < D_800C94F0; i++) {
+        found = -1;
+        obj = D_800C94EC[i];
+        for (j = 0; j < D_800C9498; j++) {
+            if (obj == D_800C9494[j]) {
+                found = j;
+                if (j < D_800C94B2) {
+                    D_800C94B2--;
+                }
+                D_800C9498--;
+                for (k = j; k < D_800C9498; k++) {
+                    D_800C9494[k] = D_800C9494[k + 1];
+                }
+                func_80007118(obj, 0);
+                j = D_800C9498;
             }
-            if (var_s4 == -1) {
-                func_80006EE4(temp_s2);
-            }
-            var_s5 += 1;
-            var_s6 += 4;
-        } while (var_s5 < D_800C94F0);
+        }
+        if (found == -1) {
+            func_80006EE4((s32)obj);
+        }
     }
     D_800C94F0 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80006FA0.s")
-#endif
 extern void func_800031E8(void *object);
 extern void func_80005798(void *object);
 extern void func_8000D728(void *object);
@@ -2514,15 +2486,22 @@ extern void killLight(void *light);
 extern void amSndStop(void *sound);
 extern void func_80046E70(void *object);
 
-#ifdef NON_MATCHING
+/* Matched (was 168 masked words) by giving each value its own spelling:
+ * one `payload` local holds the behaviour payload in every case that reads
+ * it, so it is the one v0 range the target splits around calls, while the
+ * cases that only pass the pointer (92, 15, 35) read the field directly;
+ * the four resource loops subscript by `i` with no offset carrier, the
+ * record-1 slot loops use their own byte index `j`, the owner checks read
+ * the slot field at each use, and the 0x84 resource is read as an s32. */
 void func_80007118(u8 *object, s32 arg1) {
     s32 i;
-    s32 offset;
+    s32 offset; /* unused: holds the frame slot the target keeps */
     u8 *entry;
     u8 *payload;
     void *value;
     u8 *linkedPayload;
     u8 *owner;
+    s32 j;
 
     if (*(s16 *)(object + 0x44) == 1) {
         payload = *(u8 **)(object + 0x64);
@@ -2541,47 +2520,42 @@ void func_80007118(u8 *object, s32 arg1) {
     D_8007A218 = (s32)(*(u8 **)(object + 0x40) + 4);
 
     if (*(void **)(object + 0x5C) != NULL) {
-        for (i = 0, offset = 0; i < **(s32 **)(object + 0x5C); i++, offset += 4) {
-            entry = *(u8 **)(*(u8 **)(object + 0x5C) + 4 + offset);
+        for (i = 0; i < **(s32 **)(object + 0x5C); i++) {
+            entry = *(u8 **)(*(u8 **)(object + 0x5C) + 4 + i * 4);
             func_80006448(entry);
             func_80004B04(*(s16 *)(entry + 0x2C));
             mmFree(entry);
         }
     }
     if (*(void **)(object + 0x60) != NULL) {
-        for (i = 0, offset = 0; i < *(u8 *)(object + 0x8C); i++, offset += 0x14) {
-            func_800359D4(*(void **)(*(u8 **)(object + 0x60) + offset));
+        for (i = 0; i < *(u8 *)(object + 0x8C); i++) {
+            func_800359D4(*(void **)(*(u8 **)(object + 0x60) + i * 0x14));
         }
     }
     partObjFreeTriggers(object);
     if (*(void **)(object + 0x70) != NULL) {
-        for (i = 0, offset = 0; i < *(s8 *)(*(u8 **)(object + 0x40) + 0x28); i++, offset += 4) {
-            killLight(*(void **)(*(u8 **)(object + 0x70) + offset));
+        for (i = 0; i < *(s8 *)(*(u8 **)(object + 0x40) + 0x28); i++) {
+            killLight((*(void ***)(object + 0x70))[i]);
         }
     }
     if (*(void **)(object + 0x74) != NULL) {
-        for (i = 0, offset = 0; i < *(u8 *)(*(u8 **)(object + 0x40) + 0x29); i++, offset += 4) {
-            camlightDelete(*(void **)(*(u8 **)(object + 0x74) + offset));
+        for (i = 0; i < *(u8 *)(*(u8 **)(object + 0x40) + 0x29); i++) {
+            camlightDelete((*(void ***)(object + 0x74))[i]);
         }
     }
 
     switch (*(s16 *)(object + 0x44)) {
         case 92:
-            payload = *(u8 **)(object + 0x64);
-            TrapDanglingJump(payload);
+            TrapDanglingJump(*(u8 **)(object + 0x64));
             break;
         case 65: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            func_800359D4(*(void **)(once + 0x20));
+            payload = *(u8 **)(object + 0x64);
+            func_800359D4(*(void **)(payload + 0x20));
             break;
         }
         case 67: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 0x3C);
+            payload = *(u8 **)(object + 0x64);
+            value = *(void **)(payload + 0x3C);
             if (value != NULL) {
                 func_800031E8(value);
             }
@@ -2594,10 +2568,8 @@ void func_80007118(u8 *object, s32 arg1) {
             TrapDanglingJump();
             break;
         case 78: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 0x3C);
+            payload = *(u8 **)(object + 0x64);
+            value = *(void **)(payload + 0x3C);
             if (value != NULL) {
                 func_800031E8(value);
             }
@@ -2613,9 +2585,8 @@ void func_80007118(u8 *object, s32 arg1) {
             if (value != NULL) {
                 func_800031E8(value);
             }
-            value = *(void **)(linkedPayload + 0x20);
-            if (value != NULL) {
-                owner = *(u8 **)((u8 *)value + 0x64);
+            if (*(void **)(linkedPayload + 0x20) != NULL) {
+                owner = *(u8 **)(*(u8 **)(linkedPayload + 0x20) + 0x64);
                 if (*(void **)(owner + 0xD4) == object) {
                     *(void **)(owner + 0xD4) = NULL;
                 }
@@ -2639,12 +2610,9 @@ void func_80007118(u8 *object, s32 arg1) {
             break;
         }
         case 89: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 0x10);
-            if (value != NULL) {
-                owner = *(u8 **)((u8 *)value + 0x64);
+            payload = *(u8 **)(object + 0x64);
+            if (*(void **)(payload + 0x10) != NULL) {
+                owner = *(u8 **)(*(u8 **)(payload + 0x10) + 0x64);
                 if (*(void **)(owner + 0xD8) == object) {
                     *(void **)(owner + 0xD8) = NULL;
                 }
@@ -2652,20 +2620,16 @@ void func_80007118(u8 *object, s32 arg1) {
             break;
         }
         case 90: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 0x0);
+            payload = *(u8 **)(object + 0x64);
+            value = *(void **)(payload + 0x0);
             if (value != NULL) {
                 amSndStop(value);
             }
             break;
         }
         case 64: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 0x3C);
+            payload = *(u8 **)(object + 0x64);
+            value = *(void **)(payload + 0x3C);
             if (value != NULL) {
                 func_800031E8(value);
             }
@@ -2682,23 +2646,18 @@ void func_80007118(u8 *object, s32 arg1) {
                 func_800031E8(value);
             }
             break;
-        case 54: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 0x38);
-            if (value != NULL) {
-                func_800031E8(value);
+        case 54:
+            if (*(void **)(*(u8 **)(object + 0x64) + 0x38) != NULL) {
+                func_800031E8(*(void **)(*(u8 **)(object + 0x64) + 0x38));
             }
             break;
-        }
         case 71:
             D_80078F7C = NULL;
             break;
         case 63:
-            value = (void *)D_8007A1F4;
-            if (value != NULL && *(void **)value == object) {
-                *(void **)value = NULL;
+            payload = (u8 *)D_8007A1F4;
+            if (payload != NULL && *(void **)payload == object) {
+                *(void **)payload = NULL;
             }
             break;
         case 61:
@@ -2711,8 +2670,7 @@ void func_80007118(u8 *object, s32 arg1) {
             func_8001C088(object);
             break;
         case 15:
-            payload = *(u8 **)(object + 0x64);
-            killLight(payload);
+            killLight(*(u8 **)(object + 0x64));
             break;
         case 41:
             linkedPayload = *(u8 **)(object + 0x64);
@@ -2726,19 +2684,16 @@ void func_80007118(u8 *object, s32 arg1) {
             }
             break;
         case 9:
-            value = *(void **)(object + 0x84);
-            if (value != NULL) {
-                camlightDelete(value);
+            if (*(s32 *)(object + 0x84) != 0) {
+                camlightDelete((void *)*(s32 *)(object + 0x84));
             }
             break;
         case 35:
             lightKillGlowingLight(*(void **)(object + 0x64));
             break;
         case 42: {
-            u8 *once;
-
-            once = *(u8 **)(object + 0x64);
-            value = *(void **)(once + 4);
+            payload = *(u8 **)(object + 0x64);
+            value = *(void **)(payload + 4);
             if (value != NULL) {
                 mmFree(value);
             }
@@ -2746,9 +2701,8 @@ void func_80007118(u8 *object, s32 arg1) {
         }
         case 29:
             func_80005798(object);
-            value = *(void **)(object + 0x84);
-            if (value != NULL) {
-                func_800031E8(value);
+            if (*(s32 *)(object + 0x84) != 0) {
+                func_800031E8((void *)*(s32 *)(object + 0x84));
             }
             break;
         case 73:
@@ -2761,9 +2715,8 @@ void func_80007118(u8 *object, s32 arg1) {
         case 26:
         case 27:
         case 79:
-            value = *(void **)(object + 0x84);
-            if (value != NULL) {
-                func_800031E8(value);
+            if (*(s32 *)(object + 0x84) != 0) {
+                func_800031E8((void *)*(s32 *)(object + 0x84));
             }
             break;
         case 1:
@@ -2804,14 +2757,14 @@ void func_80007118(u8 *object, s32 arg1) {
             if (value != NULL) {
                 func_800031E8(value);
             }
-            for (i = 0; i < 0x10; i += 4) {
-                value = *(void **)(payload + 0x134 + i);
+            for (j = 0; j < 0x10; j += 4) {
+                value = *(void **)(payload + 0x134 + j);
                 if (value != NULL) {
                     TrapDanglingJump(value);
                 }
             }
-            for (i = 0; i != 0x30; i += 0xC) {
-                value = *(void **)(payload + 0x354 + i);
+            for (j = 0; j != 0x30; j += 0xC) {
+                value = *(void **)(payload + 0x354 + j);
                 if (value != NULL) {
                     func_80046E70(value);
                 }
@@ -2832,16 +2785,11 @@ void func_80007118(u8 *object, s32 arg1) {
             func_800347A0(value);
         }
     }
-    value = *(void **)(object + 0x54);
-    if (value != NULL) {
-        func_80048980(value);
+    if (*(void **)(object + 0x54) != NULL) {
+        func_80048980(*(void **)(object + 0x54));
     }
-    value = *(void **)(object + 0x78);
-    if (value != NULL) {
-        value = *(void **)((u8 *)value + 0x24);
-        if (value != NULL) {
-            func_800031E8(value);
-        }
+    if (*(u8 **)(object + 0x78) != NULL && *(void **)(*(u8 **)(object + 0x78) + 0x24) != NULL) {
+        func_800031E8(*(void **)(*(u8 **)(object + 0x78) + 0x24));
     }
     if (*(u8 *)(object + 0x92) != 0) {
         partNullifyCircularParticleParents(object);
@@ -2851,9 +2799,6 @@ void func_80007118(u8 *object, s32 arg1) {
     mmFree(object);
     D_8007A21C = 4;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80007118.s")
-#endif
 void func_80007844(void) {
 }
 typedef struct {
@@ -3380,9 +3325,27 @@ typedef union {
     unsigned long long force_alignment;
 } Objects084C4Gfx;
 
-#ifdef NON_MATCHING
+#define OBJECTS_GFX_SHIFTL(value, shift, width) ((u32)(((u32)(value) & ((1U << (width)) - 1U)) << (shift)))
+#define OBJECTS_GFX_VERTEX(packet, address, count, first) { \
+    Objects084C4Gfx *_g = (Objects084C4Gfx *)(packet); \
+    _g->words.w0 = OBJECTS_GFX_SHIFTL(4, 24, 8) | \
+             OBJECTS_GFX_SHIFTL(((count) << 3) | ((u32)(address) & 6) | (first), 16, 8) | \
+             OBJECTS_GFX_SHIFTL(((count) << 3) + ((count) << 1) + 8, 0, 16); \
+    _g->words.w1 = (u32)(address); \
+}
+#define OBJECTS_GFX_POLYGON(packet, address, count, textured) { \
+    Objects084C4Gfx *_g = (Objects084C4Gfx *)(packet); \
+    _g->words.w0 = OBJECTS_GFX_SHIFTL((((count) - 1) << 4) | (textured), 16, 8) | \
+             OBJECTS_GFX_SHIFTL(5, 24, 8) | OBJECTS_GFX_SHIFTL((count) * 16, 0, 16); \
+    _g->words.w1 = (u32)(address); \
+}
+/* Matched (was 168 masked words, four bytes long) on two shapes: the
+ * texture flags are two terms OR-ed onto arg9, and the vertex and triangle
+ * packets are the vertex/polygon command macros with arg3 a display-list
+ * byte pointer, so the 0x80000000 segment base is pointer arithmetic that
+ * ugen keeps in one register for both packets. */
 void func_800084C4(Objects084C4Gfx **arg0, Objects084C4Vertex **arg1,
-                   s32 arg2, s32 arg3, Objects084C4Point *arg4,
+                   s32 arg2, u8 *arg3, Objects084C4Point *arg4,
                    Objects084C4Point *arg5, f32 arg6, s32 arg7, s32 arg8,
                    u32 arg9) {
     f32 pointBX;
@@ -3452,11 +3415,11 @@ void func_800084C4(Objects084C4Gfx **arg0, Objects084C4Vertex **arg1,
                 deltaY *= deltaLengthSquared;
             }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0x01010040; command->words.w1 = (unsigned int)camGetProjOrgMtx() - 0x80000000U; }
-            func_800349A4((FxGfx **)&displayList, arg2, arg9 | 6, 0);
+            func_800349A4((FxGfx **)&displayList, arg2, arg9 | 2 | 4, 0);
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFA000000; command->words.w1 = arg7; }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFB000000; command->words.w1 = arg8; }
-            { Objects084C4Gfx *command = displayList++; command->words.w0 = 0x04000000U | (((unsigned int)((((unsigned int)vertices - 0x80000000U) & 6U) | 0x20U) & 0xFFU) << 16) | 0x30U; command->words.w1 = ((unsigned int)vertices - 0x80000000U); }
-            { Objects084C4Gfx *command = displayList++; command->words.w0 = 0x05110020; command->words.w1 = (unsigned int)arg3 - 0x80000000U; }
+            OBJECTS_GFX_VERTEX(displayList++, (u32)vertices + 0x80000000, 4, 0);
+            OBJECTS_GFX_POLYGON(displayList++, arg3 + 0x80000000, 2, 1);
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xE7000000; command->words.w1 = 0; }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFA000000; command->words.w1 = (u32)-1; }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFB000000; command->words.w1 = (u32)-1; }
@@ -3495,9 +3458,6 @@ void func_800084C4(Objects084C4Gfx **arg0, Objects084C4Vertex **arg1,
     *arg0 = displayList;
     *arg1 = vertices;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_800084C4.s")
-#endif
 void func_80008A20(Objects08A20Arg *arg0) {
     func_8000831C(arg0, D_80079008, 0x14, D_800790D0, 0x18, *arg0->unk68, 2, 0, 1.0f, 0xFF, 0xFF);
 }
@@ -5245,10 +5205,7 @@ void func_8000B3CC(void *arg0, s32 arg1) {
     moveZ = end[2] - start[2];
     func_80008128((Objects08128Object *)object, volume, savedY, moveZ);
     object->unk20 += acceleration * step;
-    volume = object->unk1C;
-    savedY = object->unk20;
-    moveZ = object->unk24;
-    state->unk18 = sqrtf((volume * volume) + (savedY * savedY) + (moveZ * moveZ));
+    state->unk18 = sqrtf((object->unk1C * object->unk1C) + (object->unk20 * object->unk20) + (object->unk24 * object->unk24));
 
     bottom = end[1] - radius;
     if (((func_8001357C(object->unkC, object->unk14, &state->unk14,
@@ -5291,10 +5248,7 @@ void func_8000B3CC(void *arg0, s32 arg1) {
     object->unk1C *= damping;
     object->unk20 *= damping;
     object->unk24 *= damping;
-    volume = object->unk1C;
-    savedY = object->unk20;
-    moveZ = object->unk24;
-    state->unk18 = sqrtf((volume * volume) + (savedY * savedY) + (moveZ * moveZ));
+    state->unk18 = sqrtf((object->unk1C * object->unk1C) + (object->unk20 * object->unk20) + (object->unk24 * object->unk24));
 
     if ((collision << 2) != 0) {
         state->unk2 = 1;
@@ -5321,10 +5275,7 @@ void func_8000B3CC(void *arg0, s32 arg1) {
                             state->unk18;
             object->unk24 = ((factor * state->unk10) + object->unk24) *
                             state->unk18;
-            volume = object->unk1C;
-            savedY = object->unk20;
-            moveZ = object->unk24;
-            speed = sqrtf((volume * volume) + (savedY * savedY) + (moveZ * moveZ));
+            speed = sqrtf((object->unk1C * object->unk1C) + (object->unk20 * object->unk20) + (object->unk24 * object->unk24));
             if (speed < 1.0f) {
                 if (state->unkC < D_80081530) {
                     object->unk1C = state->unk8;
@@ -5446,20 +5397,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * PLATEAU-HANDOFF:func_8000BB84:end
  */
 
-
-
-
-
-/* PLATEAU-HANDOFF:func_80006FA0:start
- * symbol: func_80006FA0
- * score: 63 differing words
- * frame: 0x40
- * relocations: 18
- * first-mismatch: +0xC
- * summary: Remeasured 2026-09-23: 63 masked at delta 0, frame exact, 18 relocations against 16; active-list carriers and loop registers remain structural.
- * PLATEAU-HANDOFF:func_80006FA0:end
- */
-
 /* PLATEAU-HANDOFF:func_8000A39C:start
  * symbol: func_8000A39C
  * score: 154 differing words
@@ -5468,16 +5405,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * first-mismatch: +0x4
  * summary: Delta 0 after unroller restoration. 79 exact, 70 naming, 17 structural. Insertion pairs at plus-4/plus-1C and plus-27C/plus-64. Unmodified arg0 spills and restores ra but loses two words and grows the frame; decrementing counted loops stay rolled; only for-i-from-zero unrolls and it cannot emit the target remainder.
  * PLATEAU-HANDOFF:func_8000A39C:end
- */
-
-/* PLATEAU-HANDOFF:func_800084C4:start
- * symbol: func_800084C4
- * score: 168 differing words
- * frame: 0xB0
- * relocations: 8
- * first-mismatch: +0x60
- * summary: Pair +0x2D4 alu line 3475 (missing-CSE): load into a2, ori to a temp, move back. Named result, named operand, early hoist stayed +4. In-place ori is refused.
- * PLATEAU-HANDOFF:func_800084C4:end
  */
 
 /* PLATEAU-HANDOFF:func_80009414:start
@@ -5490,22 +5417,12 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * PLATEAU-HANDOFF:func_80009414:end
  */
 
-/* PLATEAU-HANDOFF:func_80007118:start
- * symbol: func_80007118
- * score: 168 differing words
- * frame: 0x38
- * relocations: 71
- * first-mismatch: +0x2C
- * summary: hypothesis=early and case1 must not share payload; spellings=early 430/-4, case1 446/-8, both 446/-8; stall=none at delta 0, 186-to-168 kept
- * PLATEAU-HANDOFF:func_80007118:end
- */
-
 /* PLATEAU-HANDOFF:func_8000B3CC:start
  * symbol: func_8000B3CC
- * score: 116 differing words
+ * score: 100/494 words
  * frame: 0x98
  * relocations: 20
  * first-mismatch: +0x148
- * summary: hypothesis=put step at +0x34, speed at +0x30 and factor at +0x2C without undoing the L144 homes; spellings=block scope 116 unhomed, split stores 116 folded, two-field aggregate 197 at +16; stall=speed stayed at +0x4C and step missed +0x34, body reverted
+ * summary: Velocity sums read fields at each use (116 to 100, delta 0). Left: reflection keeps fields in f0/f14/f2/f12, factor homed, zero in f18.
  * PLATEAU-HANDOFF:func_8000B3CC:end
  */

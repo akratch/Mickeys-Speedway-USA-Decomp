@@ -108,11 +108,29 @@ def rewrite_io(args: list[str], candidate: Path, source: str, obj: Path) -> list
     return out
 
 
+def target_listing_for(symbol: str, source_text: str) -> str | None:
+    """Return the GLOBAL_ASM path paired with `symbol`'s candidate, if any.
+
+    A friendly-named candidate (`overlay101TailA6BC`) keeps its fallback under
+    the generated name (`func_overlay_101_...s`), so the listing cannot be
+    found by symbol name: it is the first `#pragma GLOBAL_ASM` after the
+    candidate's definition, in the `#else` arm of the same guard.
+    """
+    m = re.search(rf"^[\w\s\*]*\b{re.escape(symbol)}\s*\([^;]*?\)\s*\{{", source_text, re.M)
+    if not m:
+        return None
+    tail = source_text[m.end():]
+    g = re.search(r'#pragma\s+GLOBAL_ASM\("([^"]+)"\)', tail)
+    return g.group(1) if g else None
+
+
 def target_words(symbol: str, source: str) -> list[tuple[int, str]]:
     stem = Path(source).with_suffix("").as_posix().removeprefix("src/")
-    pats = [f"asm/nonmatchings/{stem}/{symbol}.s", f"asm/nonmatchings/{stem}/*.s"]
     files: list[str] = []
-    for p in pats:
+    pragma = target_listing_for(symbol, (ROOT / source).read_text())
+    if pragma and (ROOT / pragma).is_file():
+        files = [str(ROOT / pragma)]
+    for p in ([] if files else [f"asm/nonmatchings/{stem}/{symbol}.s", f"asm/nonmatchings/{stem}/*.s"]):
         files = sorted(glob.glob(str(ROOT / p)))
         files = [f for f in files if symbol in Path(f).read_text()[:400] or Path(f).stem == symbol]
         if files:

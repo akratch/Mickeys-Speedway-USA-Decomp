@@ -2577,6 +2577,10 @@ sprintf_o058Reloc = 0xf0000000;
 
 /* overlay 58: overlay58DrawSegmentStrip.c.o */
 D_80000058 = 0x80000058;
+gOverlay58StripDisplayListReloc = 0x00000000;
+gOverlay58StripVertexCursorReloc = 0x00000000;
+overlay58PrepareStripReloc = 0xf0000000;
+overlay58SqrtReloc = 0xf0000000;
 
 /* overlay 58: overlay58DrawPointQuad.c.o */
 gOverlay58PointDisplayListReloc = 0x00000000;

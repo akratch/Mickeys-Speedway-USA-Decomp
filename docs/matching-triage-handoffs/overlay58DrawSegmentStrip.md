@@ -2,11 +2,11 @@
 ### `overlay58DrawSegmentStrip` plateau handoff
 
 - source: `src/overlays/o058/overlay58DrawSegmentStrip.c`
-- score: 68/201 words
+- score: 0/201 words, promoted
 - frame: 0x88
 - relocations: 8
-- first mismatch: +0xF0
-- summary: hypothesis=live-zero address add; spellings=9 stores +16/124, all uses +72/191, 16 ops +32/129 with 0xFF on v1; stall=cross emits reloads, size never 0
+- first mismatch: none
+- summary: Matched. The four vertex colours are a four-pass loop over a walking pointer that the compiler unrolls completely; with the JFG packet macros, the Y cast at each use and no probe statement the colour ranking lands unforced.
 
 Summary before this remeasure: L100 cannot attach to the 0xFF constant. Unforced v1 needs islda save below 53.33 without a competing isop. Integer-cast split hits v1 at 73.
 - assignment base: `9c62568e60deef2170043478e9473e5b42fd27b4`
@@ -226,4 +226,33 @@ cross. None is delta 0. Retained source is unchanged. Do not retry a
 constant or live zero added to this symbol address; the integer-cast
 copy remains the only delta-0 cross and it still births the competing
 isop.
+#### Matched (2026-10-01)
+
+Every entry above ends on the same decision variable: the 0xFF constant web
+at 160 over 3 has to be coloured ahead of the cursor address web at 230 over
+3, and no probe, carrier or address spelling moved either term at size delta
+zero. Both terms were true of the inherited shape, which wrote the sixteen
+colour stores out longhand through a pointer walked by hand.
+
+Measured with the direct-compile loop, in the order adopted:
+
+- The two packets as the JFG macros already used by this overlay's two
+  point-quad routines, the Y coordinate as the same cast at each of its four
+  uses, and no command, vertex-command, step or Y carrier locals. 68 to 40,
+  and the residual is then exactly the two-register swap and nothing else.
+- The colours as a loop of four passes storing through a walking pointer and
+  advancing it. The compiler unrolls the loop completely and that unrolling
+  is the source of everything earlier lanes reproduced by hand: the second,
+  third, fourth, first store order, the reversed byte order of the third
+  group, and the dead pointer advance of three elements. The constant is then
+  coloured ahead of the address with no force. The indexed form of the same
+  loop also takes the wanted colours but loses the dead advance and the
+  reversed group, at size delta minus 4.
+- With the loop in place the discarded comparison probe on the limit is
+  wrong: it leaves 26 words of saved float register rotation. Without it,
+  and with the parameter initialised anywhere before the prepare call, 0.
+
+The payload address is the retained absolute data symbol, as in the siblings.
+`gmake verify` reproduces the expected ROM hash and `gmake promotion-proof`
+passes with 8 of 8 relocations.
 <!-- plateau-handoff:overlay58DrawSegmentStrip:end -->

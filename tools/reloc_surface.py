@@ -3647,8 +3647,24 @@ def _stable_overlay_data_identities(path, candidate_elf, module, target_elf,
 
     for name in sorted(valid):
         if name in explicit_foreign_names:
+            # A fixed imported identity excludes guesses from its numeric
+            # placeholder and target-site correlations, but it must not hide
+            # a genuine same-name canonical definition. Probe that independent
+            # owner route first so the joint identity graph can reject a real
+            # conflict before the foreign route suppresses weaker fallbacks.
+            if name in numeric:
+                canonical_identity = _canonical_overlay_data_identity(
+                    module, candidate_elf, name, numeric[name], target_elf,
+                    root=root, elf_loader=elf_loader, evidence=evidence)
+                if canonical_identity is not None:
+                    proposed[name].add(canonical_identity)
+                    _identity_witness(evidence, name, "canonical-data-owner",
+                                      canonical_identity)
+            else:
+                _identity_witness(evidence, name, "canonical-data-owner",
+                                  reason="no-numeric-linker-assignment")
             _identity_witness(evidence, name, "canonical-data-owner",
-                              reason="explicit-foreign-storage-excludes-numeric-bss-fallback")
+                              reason="explicit-foreign-storage-excludes-numeric-and-correlation-fallbacks")
             continue
         if name not in numeric and name not in explicit_bindings:
             _identity_witness(evidence, name, "canonical-data-owner", reason="no-numeric-linker-assignment")

@@ -18,6 +18,7 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 import reloc_surface as rs  # noqa: E402
 import resident_storage_bindings as adapter  # noqa: E402
+import source_symbol_fidelity as sf  # noqa: E402
 
 FUNCTION = "func_overlay_008_F0001294_185EFEC"
 SOURCE = "src/overlays/o008/overlay_008.c"
@@ -40,6 +41,21 @@ def _need(condition: bool, message: str) -> None:
 
 def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+_LOADED = {
+    Path(__file__).resolve(): _sha(Path(__file__).resolve()),
+    Path(rs.__file__).resolve(): _sha(Path(rs.__file__).resolve()),
+    Path(adapter.__file__).resolve(): _sha(Path(adapter.__file__).resolve()),
+    Path(sf.__file__).resolve(): _sha(Path(sf.__file__).resolve()),
+}
+
+
+def _verify_loaded():
+    _need(all(path.is_file() and _sha(path) == digest
+              for path, digest in _LOADED.items()),
+          "resident binding surface implementation changed since import")
+    adapter._verify_loaded()
 
 
 def _candidate_carriers(candidate_object: Path, symbol: str, overlay: int,
@@ -67,6 +83,11 @@ def _candidate_carriers(candidate_object: Path, symbol: str, overlay: int,
               if section == ".text" and fn[1] <= offset < fn[1] + fn[2]]
     _need(len(relocs) == 137, "candidate function relocation count differs from reviewed stock C")
     symbols = elf.symbols()
+    function = sf._function(elf, symbols, FUNCTION)
+    ordered_graph = sf._relocations(
+        elf, sf._symtab_index(elf), function, symbols)
+    owned = elf.section_bytes(".text")[fn[1]:fn[1] + fn[2]]
+    _need(len(owned) == fn[2], "candidate function byte range is truncated")
     by_name = defaultdict(list)
     for index, row in enumerate(symbols):
         by_name[row[0]].append((index, row))
@@ -77,7 +98,8 @@ def _candidate_carriers(candidate_object: Path, symbol: str, overlay: int,
         _need(len(named) == 1, f"candidate carrier {name} is absent or duplicated")
         index, row = named[0]
         _need(row[2] == width and row[3] >> 4 == 1
-              and row[3] & 0xF == rs.STT_OBJECT and row[4] == rs.SHN_UNDEF,
+              and row[3] & 0xF == rs.STT_OBJECT and row[4] == rs.SHN_UNDEF
+              and row[1] == 0,
               f"candidate carrier {name} has the wrong ELF type, width, or binding")
         uses = [(offset, kind) for offset, kind, symbol_index in relocs
                 if symbol_index == index]
@@ -89,7 +111,9 @@ def _candidate_carriers(candidate_object: Path, symbol: str, overlay: int,
     # Check REL pairing by symbol-table index, matching the linker's rule.
     pending = defaultdict(list)
     paired = defaultdict(int)
-    for offset, kind, index in sorted(relocs):
+    # Preserve the actual REL table order.  A LO16 before its matching HI16
+    # does not acquire authority by sorting sites after the fact.
+    for offset, kind, index in relocs:
         if kind == rs.R_MIPS_HI16:
             pending[index].append(offset)
         elif kind == rs.R_MIPS_LO16:
@@ -103,13 +127,46 @@ def _candidate_carriers(candidate_object: Path, symbol: str, overlay: int,
     _need(_sha(path) == start_sha, "candidate object changed while its carrier surface was parsed")
     return {"path": path, "sha256": start_sha, "source_path": source_path,
             "source_sha256": SOURCE_SHA256, "function_size": fn[2],
+            "function_bytes_sha256": hashlib.sha256(owned).hexdigest(),
+            "ordered_relocations": ordered_graph,
             "relocation_count": len(relocs), "carriers": carrier_rows}
+
+
+def _authenticate_candidate_report(candidate, packet):
+    stock = packet.get("candidate_stock_c", {})
+    artifacts = packet.get("artifacts", {})
+    configured_rel = artifacts.get("configured_object")
+    raw_rel = artifacts.get("stock_c_object")
+    _need(isinstance(configured_rel, str) and isinstance(raw_rel, str),
+          "adapter did not retain both stock-C and configured candidate objects")
+    configured = (adapter.ROOT / configured_rel).resolve()
+    raw = (adapter.ROOT / raw_rel).resolve()
+    _need(configured.is_file() and configured.is_relative_to(adapter.ROOT.resolve())
+          and raw.is_file() and raw.is_relative_to(adapter.ROOT.resolve()),
+          "adapter candidate object artifacts are unavailable or outside the checkout")
+    _need(_sha(configured) == stock.get("configured_object_sha256") == candidate["sha256"],
+          "supplied candidate is not the freshly authenticated configured stock-C object")
+    _need(_sha(raw) == stock.get("object_sha256"),
+          "retained stock-C raw object differs from its authenticated hash")
+    _need(stock.get("function_size") == candidate["function_size"]
+          and stock.get("function_bytes_sha256") == candidate["function_bytes_sha256"]
+          and stock.get("ordered_relocations") == candidate["ordered_relocations"],
+          "supplied candidate owned bytes or ordered named REL graph differs from stock C")
+    fidelity = stock.get("source_fidelity", {})
+    _need(fidelity.get("runtime_identity_proved") is False
+          and fidelity.get("promotion_authority") is False,
+          "adapter source-fidelity proof carried unexpected identity authority")
+    context = stock.get("preprocessed_self_context", {})
+    _need(context.get("status") == "unchanged"
+          and stock.get("source_sha256") == candidate["source_sha256"]
+          and isinstance(stock.get("recipe_fingerprint"), str),
+          "adapter candidate compiler context/source is not the reviewed baseline")
 
 
 def collect_candidate(candidate_object: Path, symbol: str, overlay: int, source: str):
     """Return independently witnessed identities and opaque final-check handles."""
+    _verify_loaded()
     candidate = _candidate_carriers(candidate_object, symbol, overlay, source)
-    adapter._verify_loaded()
     bindings = {}
     reports = {}
     for key, (carrier, identity, width) in EXPECTED.items():
@@ -127,6 +184,7 @@ def collect_candidate(candidate_object: Path, symbol: str, overlay: int, source:
               and packet.get("candidate_function") == FUNCTION
               and packet.get("candidate_source") == SOURCE,
               f"physical witness for {key} is incomplete or out of scope")
+        _authenticate_candidate_report(candidate, packet)
         bindings[carrier] = identity
         reports[carrier] = {
             "key": key,
@@ -139,12 +197,14 @@ def collect_candidate(candidate_object: Path, symbol: str, overlay: int, source:
     _need(_sha(candidate["path"]) == candidate["sha256"]
           and _sha(candidate["source_path"]) == candidate["source_sha256"],
           "candidate or canonical source changed during physical witness collection")
-    adapter._verify_loaded()
+    _verify_loaded()
     return {"schema": "mickey-r8-resident-binding-surface-v1",
             "candidate": {"path": candidate["path"].relative_to(adapter.ROOT).as_posix(),
                           "sha256": candidate["sha256"],
                           "source": SOURCE, "source_sha256": candidate["source_sha256"],
                           "function_size": candidate["function_size"],
+                          "function_bytes_sha256": candidate["function_bytes_sha256"],
+                          "ordered_relocations": candidate["ordered_relocations"],
                           "relocation_count": candidate["relocation_count"],
                           "carriers": candidate["carriers"]},
             "bindings": {name: list(identity) for name, identity in bindings.items()},
@@ -155,6 +215,7 @@ def collect_candidate(candidate_object: Path, symbol: str, overlay: int, source:
 
 def recheck_candidate(receipt):
     """Recheck all fixed witnesses and the supplied candidate's terminal bytes."""
+    _verify_loaded()
     _need(isinstance(receipt, dict)
           and receipt.get("schema") == "mickey-r8-resident-binding-surface-v1",
           "invalid internal resident-binding receipt")
@@ -171,7 +232,7 @@ def recheck_candidate(receipt):
           "canonical source changed after binding capture")
     for handle in receipt.get("recheck_handles", []):
         adapter.recheck(handle)
-    adapter._verify_loaded()
+    _verify_loaded()
     _need(_sha(path) == expected_sha and _sha(source) == SOURCE_SHA256,
           "candidate object or source changed during final binding recheck")
     return True

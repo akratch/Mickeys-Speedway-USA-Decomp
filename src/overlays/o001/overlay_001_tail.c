@@ -187,19 +187,19 @@ extern f32 overlay1MeasureChoice(f32 first, f32 second);
 
 #define CHOICE_WORLD ((O1ChoiceState *)D_1DA0)
 
-/* PLATEAU (B3-o001, 2026-09-23): 139 masked words at size delta 0 with the
- * 0x90 frame's home ladder exact (was 341 at delta +4). The four `D_E8`..`D_F4`
- * externs were rodata literals (-1.2f, 400.5f, 0.1f, 0.1f at overlay-local
- * base 0x8230 plus the addend), which stops three address webs being hoisted.
- * The object loop guards on a `loopValue` copy and moves its cursor at the
- * bottom; the step is an if/else on the reloaded selector with `value`
- * assigned after it (the target's copy); the FindChoice sentinel is a literal
- * with `value` set before the selection loop; FindChoice's result goes through
- * `object`, which puts the state pointer in a0 across MeasureChoice. `i`,
- * `selected`, `weight` and `chosenState` are declared where the target's homes
- * put them, and `found` and `pad1` hold slots. What is left is register naming,
- * led by the transition weight: the target stores the product from a ring temp
- * and reloads it into f0, where ours colours it f12 and spills. */
+/* PLATEAU (d-o001, 2026-10-01): 63 masked words at size delta 0, 0x90 frame
+ * ladder exact (B3-o001 left 139). Kept from B3: the D_E8..D_F4 externs are
+ * rodata literals, the `loopValue` loop guards (every `while (i--)` spelling
+ * measured worse), and the D_1D68Read alias in the second score loop (one
+ * symbol is +16 bytes). Inherited artefacts dropped here: the hand-walked
+ * object cursor (indexed `objects[i]` into `object`), the `weight` carrier in
+ * the score decay (a ternary), the `value` carrier for the transition step,
+ * the weight local for MeasureChoice's argument, and `object` reuse for
+ * FindChoice's result (`found`). The selection loop is a `for`. Loop 3 spells
+ * its zero as `0`, the object loop as `0.0f`: one spelling for both is 85.
+ * What is left is a0/a1 naming: the target's scores-pointer webs take a0 and
+ * the table/best-score webs a1, ours the reverse, plus chosenState in v1
+ * where the target has a0 (which costs the branch-likely at the 0.1f test). */
 #ifdef NON_MATCHING
 void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
     s32 i;
@@ -229,9 +229,8 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
                                 0.5f);
         *outX = ((*outX - temporaryX) * weight) + temporaryX;
         *outZ = ((*outZ - temporaryZ) * weight) + temporaryZ;
-        value = D_1D94 * 8;
-        if (CHOICE_WORLD->transition >= value) {
-            CHOICE_WORLD->transition -= value;
+        if (CHOICE_WORLD->transition >= D_1D94 * 8) {
+            CHOICE_WORLD->transition -= D_1D94 * 8;
         } else {
             CHOICE_WORLD->transition = 0;
         }
@@ -263,7 +262,7 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
     i = 7;
     do {
         difference = (f32)(i - CHOICE_WORLD->selector);
-        if (difference < 0.0f) difference = -difference;
+        if (difference < 0) difference = -difference;
         scores[i] = (s32)(48.0f - difference * 6.0f);
         loopValue = i;
         i--;
@@ -273,9 +272,8 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
     loopValue = i;
     i--;
     if (loopValue != 0) {
-        cursor = objects + i;
         do {
-            object = *cursor;
+            object = objects[i];
             otherState = object->state;
             if (otherState != CHOICE_WORLD && !(otherState->flags & 8)) {
                 difference =
@@ -291,14 +289,9 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
                     }
                     value = otherState->selector;
                     do {
-                        if (difference > 0.0f) {
-                            weight = difference;
-                        } else {
-                            weight = -difference;
-                        }
                         scores[value] =
                             (s32)((f32)scores[value] -
-                                  ((2.0f - weight) * 64.0f));
+                                  ((2.0f - ((difference > 0.0f) ? difference : -difference)) * 64.0f));
                         value += step;
                     } while (value >= 0 && value < 8);
                 }
@@ -309,7 +302,6 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
                               400.5f);
                 }
             }
-            cursor--;
             loopValue = i;
             i--;
         } while (loopValue != 0);
@@ -331,11 +323,10 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
     } while (loopValue != 0);
 
     if (CHOICE_WORLD->active != 0 && CHOICE_WORLD->mode == 6) {
-        object = overlay1FindChoice(CHOICE_WORLD->progress, table, -1000000, scores);
-        if (object != 0) {
-            chosenState = object->state;
-            weight = (f32)chosenState->objectValue * 0.1f;
-            difference = overlay1MeasureChoice(weight, CHOICE_WORLD->progress);
+        found = overlay1FindChoice(CHOICE_WORLD->progress, table, -1000000, scores);
+        if (found != 0) {
+            chosenState = found->state;
+            difference = overlay1MeasureChoice((f32)chosenState->objectValue * 0.1f, CHOICE_WORLD->progress);
             if (difference < 0.1f) {
                 overlay1SubmitChoice(D_1D9C);
             } else if (difference < 3.0f) {
@@ -346,8 +337,7 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
 
     selected = -1;
     value = -1000000;
-    i = 0;
-    do {
+    for (i = 0; i < 8; i++) {
         if (value < scores[i]) {
             selected = i;
             value = scores[i];
@@ -356,8 +346,7 @@ void func_overlay_001_F0003750_184FB30(f32 *outX, f32 *outZ) {
             D_210 = &D_1D68->points[i];
             D_214 = &D_1D6C->points[i];
         }
-        i++;
-    } while (i < 8);
+    }
 
     overlay1InterpolatePath(outX, outZ, CHOICE_WORLD->selector, 0.5f);
     if (selected != -1 && selected != CHOICE_WORLD->selector) {
@@ -3252,10 +3241,10 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F0003750_184FB30:start
  * symbol: func_overlay_001_F0003750_184FB30
- * score: 139 differing words
+ * score: 63/446 words
  * frame: 0x90
  * relocations: 31
- * first-mismatch: +0x58
- * summary: Delta +4 closed and frame ladder exact, 341 to 139 at delta 0; the rest is naming led by the transition weight's f0 split.
+ * first-mismatch: +0x10C
+ * summary: 139 to 63 at delta 0 by dropping inherited carriers; the rest is a0/a1 naming of scores-pointer vs table/best webs and chosenState in v1.
  * PLATEAU-HANDOFF:func_overlay_001_F0003750_184FB30:end
  */

@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 232,
-  "resolved": 232,
+  "queue_size": 231,
+  "resolved": 231,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 232,
-  "relocation_masked_coverage": 232,
+  "source_context_coverage": 231,
+  "relocation_masked_coverage": 231,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -128,21 +128,6 @@
       "size_delta": 0,
       "category": "register-only",
       "source_context_sha256": "7o1v.2PSx.JerL.umW8.WX3_.moAA.l9q3.sY_C.AlXO.59ud.Bhw"
-    },
-    {
-      "name": "overlay19BuildSpatialMasks",
-      "file": "src/overlays/o019/overlay19BuildSpatialMasks.c",
-      "overlay": 19,
-      "tu": "overlays/o019",
-      "size_bytes": 908,
-      "objdiff_match_pct": null,
-      "differing_words": 2,
-      "first_mismatch_offset": 192,
-      "relocation_masked_differing_words": 2,
-      "relocation_masked_first_mismatch_offset": 192,
-      "size_delta": 0,
-      "category": "schedule-only",
-      "source_context_sha256": "CCwo.tUfs.gGyU.r9sg.-Uyx.oEt6.L3Y3.EwXl.gS9X._Aw5.NRE"
     },
     {
       "name": "overlay14CreateValue",

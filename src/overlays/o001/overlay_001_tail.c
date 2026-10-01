@@ -894,54 +894,59 @@ extern void *LOCAL_BSS_1BA4;
 extern void *LOCAL_BSS_1D9C;
 
 /* Typed reconstruction remains NON_MATCHING. The object/state and callback
- * layouts follow Mickey's runtime identities and access widths. Local
- * lifetime cleanup reduces the frame; remaining CFG and allocation work
- * is measured separately in the function handoff. */
+ * layouts follow Mickey's runtime identities and access widths.
+ * 2026-10-01 (d-o001): the declarations are in the order the target's home
+ * ladder implies -- every spilled local at its shipped slot, register-only
+ * locals and pads filling the gaps -- and frame_census now reads both
+ * ladders identical (1113 to 1079). Remaining CFG and allocation work is
+ * measured in the function handoff. */
 #ifdef NON_MATCHING
 void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) {
+    s32 pad0;
     f32 *tuning;
     O1PhysicsSurface surfaces[8];
     f32 normal[3];
     s16 angles[3];
     f32 targetX;
     f32 targetZ;
-    s32 remaining;
-    f32 limit;
-    f32 velocityX;
-    f32 inverseUpdate;
-    f32 deltaY;
-    f32 impulseX;
-    f32 impulseY;
-    f32 impulseZ;
-    f32 scale;
-    s16 heading;
-    s16 targetHeading;
-    s16 pathHeading;
-    f32 speed;
-    s16 resolvedX;
-    s16 resolvedZ;
-    void (*callback)(void);
-    O1PhysicsPathMode *path;
-    O1PhysicsActionMode *action;
     f32 value;
     f32 work;
     f32 deltaX;
     f32 deltaZ;
+    s32 remaining;
     f32 value2;
     f32 ceiling;
-    f32 velocityZ;
     O1PhysicsState *state;
-    s16 clampedAngle;
     s32 (*predicate)(void);
+    f32 limit;
+    f32 velocityX;
+    f32 velocityZ;
+    f32 inverseUpdate;
     u32 surfaceCount;
-    s32 collision;
+    f32 deltaY;
     s32 angleOffset;
+    f32 impulseX;
+    f32 impulseY;
+    f32 impulseZ;
     s32 keys;
-    s32 index;
+    f32 scale;
+    s16 heading;
+    s16 targetHeading;
+    s16 pathHeading;
+    s16 clampedAngle;
     s32 applySlope;
     s32 steering;
     s32 level;
+    f32 speed;
     O1PhysicsSurface *surface;
+    s32 index;
+    void (*callback)(void);
+    s32 collision;
+    O1PhysicsPathMode *path;
+    O1PhysicsActionMode *action;
+    s16 resolvedX;
+    s16 resolvedZ;
+    s32 pad1;
 
     state = object->state;
     if (func_overlay_001_F00004B4_184C894(object) != 0) {
@@ -949,7 +954,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         G_rt_458c4 = *tuning;
         if (gOverlay1Mode == 1) {
             if ((G_rt_43a3c == 0) && (state->joypadDisabled == 0) && (state->spinTimer == 0) && !(state->flags1A8 & 8)) {
-                if (state->pathIndex != state->previousPathIndex) {
+                if (state->previousPathIndex != state->pathIndex) {
                     state->previousPathIndex = state->pathIndex;
                     state->stuckTimer = 0;
                 } else {
@@ -974,31 +979,29 @@ block_13:
         D_4 = (f32) updateRate;
         speed = -state->forwardVelocity;
         func_overlay_008_F00049DC_1862734(NULL);
-        value = -31.99f;
         object->flags80 = 0;
         state->controlXjoy = 0;
         state->controlYjoy = 0;
         state->controlKeys = 0;
         state->controlDkeys = 0;
-        if (state->forwardVelocity < value) {
-            state->forwardVelocity = value;
+        if (state->forwardVelocity < -31.99f) {
+            state->forwardVelocity = -31.99f;
         }
-        work = 31.99f;
-        if (work < state->forwardVelocity) {
-            state->forwardVelocity = work;
+        if (31.99f < state->forwardVelocity) {
+            state->forwardVelocity = 31.99f;
         }
-        if (state->sideVelocity < value) {
-            state->sideVelocity = value;
+        if (state->sideVelocity < -31.99f) {
+            state->sideVelocity = -31.99f;
         }
-        if (work < state->sideVelocity) {
-            state->sideVelocity = work;
+        if (31.99f < state->sideVelocity) {
+            state->sideVelocity = 31.99f;
         }
         func_8001D910(object, state);
         angles[0] = -state->heading;
         angles[1] = -object->rotationY;
+        angles[2] = -object->rotationZ;
         normal[2] = 0.0f;
         normal[0] = 0.0f;
-        angles[2] = -object->rotationZ;
         normal[1] = -1.0f;
         func_80029F2C(angles, normal);
         state->normalX = normal[0];
@@ -1008,17 +1011,17 @@ block_13:
         ceiling = -32768.0f;
         index = surfaceCount - 1;
         state->surfaceHeight = -32768.0f;
-        if (surfaceCount != NULL) {
+        if (surfaceCount != 0) {
             surface = &surfaces[index];
             do {
                 if (surface->flags & 0x10000) {
-                    state->surfaceHeight = (f32) surface->height;
+                    state->surfaceHeight = surface->height;
                 }
                 if (surface->flags & 0x08000000) {
                     ceiling = surface->height;
                 }
-                surface -= 1;
-            } while (index--);
+                surface--;
+            } while (index-- != 0);
         }
         value2 = state->surfaceHeight;
         if (object->y < value2) {
@@ -1384,8 +1387,7 @@ block_160:
         }
 
         velocityX += state->sideVelocity * func_8002A8BC(heading);
-        value = func_8002A8C0(heading);
-        velocityZ -= state->sideVelocity * value;
+        velocityZ -= state->sideVelocity * func_8002A8C0(heading);
         deltaX = (velocityX * D_4) + impulseX;
         deltaY = ((object->velocityY * D_4) - (0.5f * G_rt_458c4 * D_4 * D_4)) + impulseY;
         inverseUpdate = 1.0f / D_4;
@@ -3230,11 +3232,11 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C
- * score: 1113/1542 words
+ * score: 1074/1542 words
  * frame: 0x138
  * relocations: 184
- * first-mismatch: +0x34
- * summary: Census pair 2 is missing-CSE at +0x774. The -4 size word is pair 7, missing-CSE, target +0x173C, the eval at line 1463. Line 1428 volatile speedLimit reload closed delta -4 (1196 to 1114). That volatile actionMode read reaches 1113. Stall: delay-slot spellings do not beat 1113.
+ * first-mismatch: +0x170
+ * summary: Frame ladder now exact (declarations in target home order): 1113 to 1074 at delta 0. Rest is FP/int ring naming from the clamp block on.
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
  */
 

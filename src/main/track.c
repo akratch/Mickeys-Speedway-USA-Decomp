@@ -4659,8 +4659,11 @@ u32 func_8001357C(f32 arg0, f32 arg1, f32 *arg2, s32 arg3, void *arg4) {
 #ifdef NON_MATCHING
 /* PROVENANCE: JFG's public track.c retains this collision collector as
  * assembly; Mickey's segment, batch, plane and hit-list accesses are used. */
-/* 83 masked words at size delta 0 and the target's 0x140 frame (was 163),
- * 2026-10-01 lane d-res2. Three edits did it: the visibility word is one
+/* 70 masked words at size delta 0 and the target's 0x140 frame (163 -> 83
+ * 2026-10-01 lane d-res2, 83 -> 70 lane e-res3: the sort is a for loop with
+ * `orderIndex = 0; changed = 1;` ahead of it, which fixes the loop entry
+ * order; the a0/a1 roles of the compare webs are still swapped).
+ * Earlier note, d-res2: Three edits did it: the visibility word is one
  * expression (`load & compareMask`), so the load is a ring temp and the AND
  * result is the web (148 -> 91); the segment index is read at both uses and
  * never held in a carrier (the unused `segmentIndex` stays only because every
@@ -4802,20 +4805,16 @@ s32 func_8001398C(f32 arg0, f32 arg1, s32 arg2, void **arg3) {
         } while (orderIndex != resultCount);
     }
     do {
-        orderCount = resultCount - 1;
+        orderIndex = 0;
         changed = 1;
-        if (orderCount > 0) {
-            orderIndex = 0;
-            do {
-                if (*(f32 *) D_800C9CD0[orderIndex] <
-                    *(f32 *) D_800C9CD0[orderIndex + 1]) {
-                    temporary = D_800C9CD0[orderIndex];
-                    D_800C9CD0[orderIndex] = D_800C9CD0[orderIndex + 1];
-                    D_800C9CD0[orderIndex + 1] = temporary;
-                    changed = 0;
-                }
-                orderIndex++;
-            } while (orderIndex < (resultCount - 1));
+        for (; orderIndex < resultCount - 1; orderIndex++) {
+            if (*(f32 *) D_800C9CD0[orderIndex] <
+                *(f32 *) D_800C9CD0[orderIndex + 1]) {
+                temporary = D_800C9CD0[orderIndex];
+                D_800C9CD0[orderIndex] = D_800C9CD0[orderIndex + 1];
+                D_800C9CD0[orderIndex + 1] = temporary;
+                changed = 0;
+            }
         }
     } while (changed == 0);
     *arg3 = D_800C9CD0;
@@ -5631,11 +5630,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001398C:start
  * symbol: func_8001398C
- * score: 83 differing words
+ * score: 70/330 words
  * frame: 0x140
  * relocations: 21
  * first-mismatch: +0x15C
- * summary: 163 to 83 at delta 0: one-expression visibility, no index carrier, hit height first; left sort-loop a0/a1 roles, plane coefficient pool colours
+ * summary: Sort loop reshaped (83->70); open: compare webs a0/a1 roles, plane loads in ring temps not f0/f2/f12.
  * PLATEAU-HANDOFF:func_8001398C:end
  */
 

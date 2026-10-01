@@ -77,7 +77,9 @@ def _recipe(source: Path, target: Path, deadline):
     for line in lines:
         try: tokens=shlex.split(line)
         except ValueError as error: raise EvidenceError('configured target recipe has invalid shell tokenization') from error
-        if tr in tokens: target_lines.append((line,tokens))
+        if tr in line:
+            need(tr in tokens,'target path appears only as an attached or shell-adjacent recipe token')
+            target_lines.append((line,tokens))
     commands=[(line,tokens) for line,tokens in target_lines if 'tools/ido/cc' in tokens]
     metadata=[line for line,tokens in target_lines if 'tools/ido/cc' not in tokens]
     need(len(commands)==1,'configured compiler recipe is ambiguous')

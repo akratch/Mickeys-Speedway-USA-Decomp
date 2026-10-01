@@ -43,6 +43,17 @@ class ResidentStorageViewTests(unittest.TestCase):
             with self.assertRaisesRegex(view.EvidenceError,'shell construct'):
                 view._recipe(source,target,time.monotonic()+30)
 
+    def test_recipe_rejects_target_path_only_as_attached_or_adjacent_token(self):
+        source=view.ROOT/'src/main/objects.c'; target=view.ROOT/'build/src/main/objects.c.o'
+        sr=source.relative_to(view.ROOT).as_posix(); tr=target.relative_to(view.ROOT).as_posix()
+        compiler=f'tools/ido/cc -c -o {tr} {sr}\n'
+        for injected in (f'python3 tools/new_unreviewed_metadata.py --object={tr}\n',
+                         f'python3 tools/new_unreviewed_metadata.py {tr};\n'):
+            with self.subTest(injected=injected), mock.patch.object(
+                    view.batch,'bounded_capture',return_value=SimpleNamespace(stdout=compiler+injected)):
+                with self.assertRaisesRegex(view.EvidenceError,'target path appears only'):
+                    view._recipe(source,target,time.monotonic()+30)
+
     def test_typed_global_owner_requires_one_unconditional_definition(self):
         self.assertEqual(view._global_object_declaration('f32 D_800CB304;\n', 'D_800CB304', 'f32'), 1)
         for invalid in (

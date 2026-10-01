@@ -36,48 +36,27 @@ extern f32 gOverlay92DistanceParameters[2];
 extern O92Object **overlay92GetObjectRange(s32 *start, s32 *end);
 extern f32 sqrtf(f32 value);
 
-/* Workbench: mixed(structural:2, schedule:4, register:24), exact 168 instructions/26 words, first +0x48.
- * Levers: course-position cache, racer alias, index order, valid-branch initialization,
- * L90 exit-test shapes, L92 operand orders, and carrier identity; inert or regressed.
- * Remains: index/cursor pool swap, one schedule pair, and first-distance FP coloring.
- * 2026-09-11 (lane p7-ovl2): the records name the row.  The racer parameter web
- * ranks at 37/7 and the scaled-index web at 31/6, the cursor web ties the index,
- * and forcing the racer web one colour down takes the object from 26 to 11 at
- * delta 0.  The index web needs net 32 at nocs 6; every zero-instruction
- * occurrence form is eliminated before compute_save, and adding basic blocks
- * cannot help because the index has one occurrence more than the cursor at the
- * same net.  The float half is the delta webs reaching the sqrt result, which
- * withholds the lowest float colour; splitting them reproduces the target's
- * float colouring exactly but costs three homes and moves the frame.
- * 2026-09-12 (lane p8-arity): the arity lever is measured here and it is INERT on
- * the deciding variable.  Compiling `overlay92GetObjectRange` with one, three and
- * four arguments leaves every integer web's save, nocs, totalsave, forbidden mask
- * and colour bit-for-bit unchanged -- the racer web stays 37/7 at s1, the index
- * and cursor webs stay tied at 31/6 on s2 and s3 -- while the objects score 161,
- * 155 and 156 against the base's 26.  The lever changes instructions and not the
- * allocation, because the contested colours are CALLEE-saved and the call rule
- * only reaches the caller-saved head of the table.
- * The float bank does obey the rule, in the unhelpful direction: giving `sqrtf` a
- * second float argument moves web 73's forbidden mask from 0x000000a0 to
- * 0x000000b0, adding exactly colour 27 (f14), which is the second float argument
- * register.  f12 is already denied for the same reason and f0 for L101's, and
- * sqrtf cannot take fewer than one argument, so there is nothing to give back.
- * The reopen condition in the section above is unchanged and this lane adds one
- * exclusion to it: do not spend a pass on call arity. */
-
-#ifdef NON_MATCHING
+/* Matched by writing the scan as a plain `for` over the object range with an
+ * early `continue`: the loop test is then strength-reduced by the compiler,
+ * which is where the scaled index, the cursor and the per-arm bound come from.
+ * No cursor, scaled index or limit is declared. The racer's course position
+ * and the entry's start are named locals read before the valid flag is
+ * cleared (both are frame cells as well as the schedule), and the scan's
+ * distance is one expression, so its deltas are compiler temporaries distinct
+ * from the named deltas of the projection below.
+ */
 s32 func_overlay_092_F0000068_18D5F88(O92Racer *racer, f32 *outX,
                                       f32 *outY, f32 *outZ, s32 *outValue) {
     O92Object **objects;
     s32 start;
     s32 end;
-    O92Object **cursor;
     O92Object *object;
     O92Object *nearest;
     O92VehicleState *vehicle;
-    s32 index;
-    s32 limit;
+    s32 i;
     s32 valid;
+    s32 position;
+    s32 first;
     O92CourseEntry *course;
     f32 nearestDistance;
     f32 distance;
@@ -91,40 +70,31 @@ s32 func_overlay_092_F0000068_18D5F88(O92Racer *racer, f32 *outX,
     nearestDistance = gOverlay92DistanceParameters[0];
     nearest = 0;
 
-    if (start < end) {
-        index = start * 4;
-        cursor = (O92Object **)((u8 *)objects + index);
-        do {
-            object = *cursor;
-            if (object->type != 12) {
-                limit = end * 4;
-            } else {
-                course = object->course;
-                valid = 0;
-                if (course->start < course->end) {
-                    if ((vehicle->coursePosition >= course->start) &&
-                        (vehicle->coursePosition < course->end)) {
-                        valid = 1;
-                    }
-                } else if ((vehicle->coursePosition >= course->start) ||
-                           (vehicle->coursePosition < course->end)) {
-                    valid = 1;
-                }
-                if (valid != 0) {
-                    dx = object->x - racer->x;
-                    dy = object->y - racer->y;
-                    dz = object->z - racer->z;
-                    distance = sqrtf((dx * dx) + (dy * dy) + (dz * dz));
-                    if (distance < nearestDistance) {
-                        nearestDistance = distance;
-                        nearest = object;
-                    }
-                }
-                limit = end * 4;
+    for (i = start; i < end; i++) {
+        object = objects[i];
+        if (object->type != 12) {
+            continue;
+        }
+        course = object->course;
+        position = vehicle->coursePosition;
+        first = course->start;
+        valid = 0;
+        if (first < course->end) {
+            if ((position >= first) && (position < course->end)) {
+                valid = 1;
             }
-            index += 4;
-            cursor++;
-        } while (index < limit);
+        } else if ((position >= first) || (position < course->end)) {
+            valid = 1;
+        }
+        if (valid != 0) {
+            distance = sqrtf(((object->x - racer->x) * (object->x - racer->x)) +
+                             ((object->y - racer->y) * (object->y - racer->y)) +
+                             ((object->z - racer->z) * (object->z - racer->z)));
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearest = object;
+            }
+        }
     }
 
     if (nearest != 0) {
@@ -152,16 +122,3 @@ s32 func_overlay_092_F0000068_18D5F88(O92Racer *racer, f32 *outX,
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o092/overlay92FindNearestCourse/func_overlay_092_F0000068_18D5F88.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_092_F0000068_18D5F88:start
- * symbol: func_overlay_092_F0000068_18D5F88
- * score: 142/168 words
- * frame: 0x90
- * relocations: 7
- * first-mismatch: +0x4
- * summary: Fidelity-clean allocator/UGEN trace found no source-semantic, home, or target-chronology selector; resumption bar tested and not met.
- * PLATEAU-HANDOFF:func_overlay_092_F0000068_18D5F88:end
- */

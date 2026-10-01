@@ -2,82 +2,43 @@
 
 typedef struct Overlay14ValueSlot {
     s32 key;
-    void *volatile value;
+    void *value;
 } Overlay14ValueSlot;
 
-extern Overlay14ValueSlot gOverlay14Slots28[];
-extern Overlay14ValueSlot gOverlay14FreeSlots28[];
-extern Overlay14ValueSlot gOverlay14ChosenSlots28[];
-extern Overlay14ValueSlot gOverlay14SlotsEnd128[];
-extern void *gOverlay14SlotsActive2C;
+extern Overlay14ValueSlot gOverlay14Slots28[32];
 extern s32 gOverlay14SlotCountE8;
 
 extern s32 frontGetLanguage(void);
 extern void *overlay14LoadRelocatedValue(s32 key, s32 kind);
 extern void *func_overlay_014_F00009F4_18702CC(s32 key, s32 kind);
 
-/* Retained candidate: 2 masked words at delta 0, frame 0x28, 15 relocations
- * (lane w1-b, 2026-09-16).  The two rows left are the tail's count load,
- * which the ROM schedules above the key store.  Listing replay of
- * `.noalias $count,$slot` (or swapping ugen's load/store emission) is
- * exact; ugen does not stamp that fact on a spilled pointer because the
- * tail alias query is isvar versus islda (the spill, not the three bases).
- * A declared count carrier gets the ROM schedule in a1 (first free colour
- * at the tail); a ugen-temp split cannot be a comma inside `+` (cfe
- * evaluates the side-effecting comma first).  Lane w16-o014: after-call
- * identity recasts stay isvar; assigning the named chosen base stamps
- * islda versus islda at an extra la that does not copy-prop onto the
- * stack reload.  Read the shard. */
-#ifdef NON_MATCHING
+/* Matched by subscripting the one slot array everywhere and declaring no slot
+ * pointer. The chosen slot's address is then the compiler's own temporary:
+ * it is spilled around the calls to a temporary cell, and with it the counter
+ * load schedules above the key store as shipped. A declared pointer does not;
+ * the earlier listing replay points at the assembler's no-alias fact for an
+ * address derived from the array, which is inferred here, not dumped. The
+ * reloads of the value after each store come from the joins, not from a
+ * volatile field. The free-slot scan clears its index on a line of its own.
+ */
 void *overlay14CreateValue(s32 key, s32 alternate) {
-    void *value;
-    s32 index;
+    s32 i;
     s32 kind;
-    Overlay14ValueSlot *slot;
 
-    slot = gOverlay14Slots28; scan_loop:
-    value = slot->value;
-    if ((value != 0) && (slot->key == key)) {
-        return value;
+    for (i = 0; i < 32; i++) {
+        if ((gOverlay14Slots28[i].value != 0) &&
+            (gOverlay14Slots28[i].key == key)) {
+            return gOverlay14Slots28[i].value;
+        }
     }
-    slot++;
-    if (slot < gOverlay14SlotsEnd128) {
-        goto scan_loop;
+    i = 0;
+    while ((i < 32) && (gOverlay14Slots28[i].value != 0)) {
+        i++;
     }
-
-    index = 0;
-    slot = gOverlay14FreeSlots28;
-    if (gOverlay14SlotsActive2C != 0) {
-        do {
-            index++;
-            if (index >= 32) {
-                break;
-            }
-            slot = &gOverlay14FreeSlots28[index];
-        } while (slot->value != 0);
-    }
-    if (index >= 32) {
+    if (i >= 32) {
         return 0;
     }
-    if (1) {
-        /* Lane w1-b (2026-09-16), 13 -> 2 masked at delta 0; see
-         * docs/lastmile-block-budget-globals.md.  One pointer symbol for the
-         * scan, the free loop and the chosen slot, DECLARED FOURTH: a coloured
-         * pointer that is spilled around calls spills to its own reserved
-         * home, and homes descend in declaration order (L99), which is what
-         * puts the spill at 0x18 and sizes the frame to the target's 0x28.
-         * `base + index` is a different IR name from the free loop's
-         * `&base[index]`, so the shift is not PRE'd into a web and is drawn
-         * from the ring as shipped.  The dead `index = 0` stops uopt
-         * rematerialising the pointer from a spilled index after each call,
-         * and the or-with-zero read is one def and one use at zero width
-         * that lifts the pointer web's net past `value`'s 25/3. */
-        slot = gOverlay14ChosenSlots28 + index;
-        index = 0;
-        slot = (Overlay14ValueSlot *)((u32)slot | 0);
-        kind = frontGetLanguage();
-
-    switch (kind) {
+    switch (frontGetLanguage()) {
         case 1:
             kind = 0xC;
             break;
@@ -94,31 +55,15 @@ void *overlay14CreateValue(s32 key, s32 alternate) {
             kind = 0xA;
             break;
     }
-
-        if (alternate != 1) {
-            slot->value = overlay14LoadRelocatedValue(key, kind);
-        } else {
-            slot->value = func_overlay_014_F00009F4_18702CC(key, kind);
-        }
-        value = slot->value;
-        if (value != 0) {
-            slot->key = key;
-            value = slot->value;
-            gOverlay14SlotCountE8++;
-        }
+    if (alternate != 1) {
+        gOverlay14Slots28[i].value = overlay14LoadRelocatedValue(key, kind);
+    } else {
+        gOverlay14Slots28[i].value =
+            func_overlay_014_F00009F4_18702CC(key, kind);
     }
-    return value;
+    if (gOverlay14Slots28[i].value != 0) {
+        gOverlay14Slots28[i].key = key;
+        gOverlay14SlotCountE8++;
+    }
+    return gOverlay14Slots28[i].value;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o014/overlay14CreateValue/func_overlay_014_F00006FC_186FFD4.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay14CreateValue:start
- * symbol: overlay14CreateValue
- * score: 2/96 words
- * frame: 0x28
- * relocations: 15
- * first-mismatch: +0x158
- * summary: hypothesis=stop side-effect hoist for islda; spellings=?: +36B/21, root-comma flat, slot[index].key flat; stall=no islda retag, +0x158 unmoved at delta 0
- * PLATEAU-HANDOFF:overlay14CreateValue:end
- */

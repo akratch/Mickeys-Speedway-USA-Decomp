@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 263032,
-  "nonmatching_overlay_c_bytes": 205576,
+  "matched_overlay_c_bytes": 266064,
+  "nonmatching_overlay_c_bytes": 202544,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 3600,
   "bss_bytes": 77680,
@@ -1662,7 +1662,7 @@
      "type": "c",
      "source": "overlays/o002/overlay2QueryNode",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x1A94",
@@ -4138,7 +4138,7 @@
      "type": "c",
      "source": "overlays/o014/overlay14CreateValue",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x87C",
@@ -9141,7 +9141,7 @@
      "type": "c",
      "source": "overlays/o041/overlay41EnqueueTransition",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x1B00",
@@ -9566,7 +9566,7 @@
      "type": "c",
      "source": "overlays/o043/overlay43ComputeMotion",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x1184",
@@ -17833,7 +17833,7 @@
      "type": "c",
      "source": "overlays/o092/overlay92FindNearestCourse",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x308",
@@ -18766,7 +18766,7 @@
      "type": "c",
      "source": "overlays/o098/overlay98CollectUniqueY",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x144",

@@ -2,11 +2,56 @@
 ### `overlay14CreateValue` plateau handoff
 
 - source: `src/overlays/o014/overlay14CreateValue.c`
-- score: 2/96 words
+- score: 0/96 words, promoted
 - frame: 0x28
 - relocations: 15
-- first mismatch: +0x158
-- summary: hypothesis=stop side-effect hoist for islda; spellings=?: +36B/21, root-comma flat, slot[index].key flat; stall=no islda retag, +0x158 unmoved at delta 0
+- first mismatch: none
+- summary: Matched. Subscript the one slot array everywhere and declare no slot pointer; plain field, no volatile; the free-slot scan clears its index on its own line.
+
+#### 2026-10-01, lane a-ovl: ROM-exact closure
+
+The recorded blocker named a mechanism: the counter load rises above the key
+store only when the assembler is told the slot address cannot alias the
+counter, and a declared slot pointer reloaded from its home never earns that.
+The shipped slot address is not a declared pointer. With the array
+subscripted at every use and no pointer local, the address of the chosen
+slot is the compiler's own temporary, derived from the array's address; it
+is still spilled around the calls, to a cell at the same frame offset, and
+the counter load then schedules as shipped. That the no-alias fact is what
+carries it is inferred from the earlier lane's listing replay, not dumped
+here. The retained candidate held a declared pointer and a volatile field;
+whether the earlier 490-cell natural product included a pointer-free cell
+was not checked.
+
+The reloads of the stored value were being forced with a volatile field.
+They are natural: the value is stored on both arms of the alternate test and
+read after the join, and the key store through the same array invalidates it
+again.
+
+Measured with the configured flags, direct compile scored with
+`tools/score_symbol.py --object`, all with one array symbol, a plain field,
+subscripts only and two declared locals:
+
+- inherited shape: 2 of 96, delta 0
+- free-slot scan as a for loop with a break in the body: 77, 20 bytes short
+- free-slot scan as a while loop with the bound tested in the body: 77,
+  4 bytes short
+- free-slot scan as a for loop with both tests in the condition: 2, delta 0,
+  the tail exact and one schedule pair left at the index clear
+- the same with the index cleared on a line of its own before the loop, as a
+  for or a while: 0 of 96
+- value test first in the condition: 75, 8 bytes long
+- early return on a null value in place of the guarded block: 91 or 76,
+  size changing
+
+Proof: overlay 14 text +0x6FC, 384 executable bytes / 96 words, frame 0x28,
+15 of 15 relocation identities. The TU is now fully C and declares the slot
+array once. The resident language query takes a redefine rule.
+
+Commands: `gmake overlay-atlas-write`, `tools/refresh_atlas_digest.py`,
+`gmake extract`, `gmake overlay-syms`, `gmake verify`,
+`gmake check-overlay-syms`, and
+`gmake promotion-proof SYMBOL=overlay14CreateValue`.
 
 Summary before this remeasure: after-call identity recasts stay isvar; named-base stamps islda at extra la; cfe hoists side-effecting operands so no ugen-temp split
 - base: `3169297845d9e4b3843c03be16cfe6d51358d280`

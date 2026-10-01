@@ -520,6 +520,15 @@ class TrialProjectionTests(unittest.TestCase):
         with mock.patch.dict(os.environ, {overlay_atlas.TRIAL_FUNCTION_ENV: ""}):
             self.assertEqual(overlay_atlas.trial_functions(), frozenset())
 
+    def test_canonical_externalized_owner_fails_closed(self):
+        module_row = trial_module()
+        part = module_row["data_rodata_ownership"][0]
+        part["canonical"] = True
+        part["externalized"] = True
+
+        with self.assertRaisesRegex(ValueError, "canonical.*cannot be externalized"):
+            overlay_atlas.render_yaml_block({"modules": [module_row]})
+
 
 if __name__ == "__main__":
     unittest.main()

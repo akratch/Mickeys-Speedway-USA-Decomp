@@ -2627,6 +2627,14 @@ def render_yaml_block(
             return part["source"].rsplit("/", 1)[-1] in trial_sources
 
         owned_data = row.get("data_rodata_ownership", [])
+        if any(
+            part.get("canonical") is True and part.get("externalized")
+            for part in owned_data
+        ):
+            raise ValueError(
+                f"overlay {ov} canonical fixed data/rodata ownership "
+                "cannot be externalized"
+            )
         fixed_data = [
             part
             for part in owned_data

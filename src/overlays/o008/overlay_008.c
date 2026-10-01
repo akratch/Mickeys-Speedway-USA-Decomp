@@ -1114,30 +1114,14 @@ block_74:
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o008/overlay_008/func_overlay_008_F0001294_185EFEC.s")
 #endif
 
-/* 37/183 differing words, exact 183 instructions, 0xD0 frame, size delta 0 (lane p9-mid, 2026-09-12;
- * was 62).  The previous closure asked to "resume with the missing pool value first" and recorded
- * the record/base homes at +0x78 and +0xCC as an open question.  That question is now closed: it
- * was declaration order, and the frame census -- which nobody had run on this function -- named it
- * in one command.  Both sides carry 36 slots in a 0xD0 frame, and before these edits the target
- * homed the record aggregate at +0x78..+0xAB with a four-byte local above it at +0xCC while this
- * candidate homed the record at the frame top and that local at +0x80.  Declaring baseValue first
- * and the record tenth puts nine four-byte autos above the aggregate, and **the two ladders are now
- * slot-for-slot identical**.  62 -> 53.
- *
- * Two statement moves follow from the same reading of the object:
- *   spread before record.magnitude4 in the emission loop, 53 -> 45.  The shipped code interleaves
- *   the two integer-to-float conversions and issues the spread product first; all 24 permutations
- *   of the four independent loop-body statements were measured and this is the unique optimum.
- *   magnitudeScale hoisted above the emission-count guard, 45 -> 37.  Its fourteen other positions
- *   through the preamble are flat, as are eight positions of record.phase14.
- *
- * 2026-09-26: that preheader plus value0 under the spread product is 25/183 (was 37).  Moving
- * magnitudeScale inside the emissionCount-- guard, still before the loop, is 11/183 at delta 0.
- * Assigning 1.0f before that load stayed 11; assigning the load inside the loop grew to +4/83.
- * The copy is still `move v0, s4` against the target's `or v1, s4`, and the 1.0f materialization
- * still follows the scale load.  The conversion cluster at +0x1AC is the other leftover.
- * Those are the stall. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01 (was 11/183).  Three edits, needed together:
+ *   the two pool floats are literals at their uses, with no magnitudeScale
+ *   carrier, which puts the 1.0f materialisation ahead of the 0.01f load;
+ *   spread is computed before record.value2 is stored;
+ *   the record emitter is declared as returning a value, so the dead copy of
+ *   the old emission count is not offered v0 and takes v1 (L101).
+ * The unused float keeps the ninth four-byte auto above the record, which
+ * the home ladder needs (declaration order, 2026-09-12). */
 void func_overlay_008_F0002640_1860398(
     O8P2640Anchor *anchor, O8P2640Config *config, s32 orientation,
     s32 randomLow, s32 randomHigh, f32 distanceX, f32 unusedStackFloat,
@@ -1148,7 +1132,7 @@ void func_overlay_008_F0002640_1860398(
     f32 axisB;
     f32 clampedDistance;
     f32 spread;
-    f32 magnitudeScale;
+    f32 unusedScale;
     s32 randomOffset;
     s32 randomValue;
     O8P2640Record record;
@@ -1176,7 +1160,7 @@ void func_overlay_008_F0002640_1860398(
     axisB = O8P2640_call_2708(anchor->helperInput0);
 
     record.coordC = anchor->coord10 + tuning->offset4;
-    record.phase14 = O8P2640_data_198;
+    record.phase14 = 1.6f;
     record.size18 = 0x80;
     record.kind1A = 5;
     record.packed1C = 0xFFFFFFFF;
@@ -1187,16 +1171,15 @@ void func_overlay_008_F0002640_1860398(
     record.packed30 = 0xFF000000;
 
     if (emissionCount--) {
-        magnitudeScale = O8P2640_data_19C;
         do {
             randomOffset = O8P2640_call_27BC(-0xC80, 0xC80);
             randomValue = O8P2640_call_27CC(randomLow, randomHigh);
             magnitudeValue = O8P2640_call_27DC(0x50, 0x78);
-            record.value2 = (s16)randomValue;
             spread = (f32)randomOffset * tuning->spreadScale8;
+            record.value2 = (s16)randomValue;
             record.value0 = (s16)(baseValue + randomOffset);
             record.magnitude4 = (f32)magnitudeValue *
-                                clampedDistance * magnitudeScale;
+                                clampedDistance * 0.01f;
             if (orientation == 0) {
                 record.coord8 = anchor->coordC - tuning->extent0 * axisB +
                                 spread * axisA;
@@ -1217,9 +1200,6 @@ void func_overlay_008_F0002640_1860398(
         } while (emissionCount--);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o008/overlay_008/func_overlay_008_F0002640_1860398.s")
-#endif
 
 void func_overlay_008_F000291C_1860674(O8P291CMotion *motion,
                                        O8P291CState *state,
@@ -2374,16 +2354,6 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
  * first-mismatch: +0x1C4
  * summary: source question is the ugen float free-list phase at the +0x1F4 window
  * PLATEAU-HANDOFF:func_overlay_008_F0004CF0_1862A48:end
- */
-
-/* PLATEAU-HANDOFF:func_overlay_008_F0002640_1860398:start
- * symbol: func_overlay_008_F0002640_1860398
- * score: 11/183 words
- * frame: 0xD0
- * relocations: 14
- * first-mismatch: +0x104
- * summary: 37 to 11. v0-temp plus 1.0f-before-load: register one 40 delta 0; baseValue copy 22 delta 0; base+1 +4/101. Stall: copy stays v0, 1.0f after load, +0x1AC.
- * PLATEAU-HANDOFF:func_overlay_008_F0002640_1860398:end
  */
 
 

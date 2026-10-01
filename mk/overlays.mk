@@ -362,6 +362,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xCAC
 O8_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o
 $(O8_OBJ): config/normalizations/overlay8UpdateChannels.rebind.spec
+$(O8_OBJ): config/normalizations/overlay8P2640.rebind.spec
+# The object's .rodata is two literal pools in function order: the +0x2640
+# emitter's two floats (retail 0x198, 0x19C), then the +0x3018 channel
+# update's (retail 0x1BC on).  Each pool is rebound to an absolute anchor and
+# keeps its section-relative addend, so the second anchor is 0x1BC less the
+# eight bytes that now precede it.
 # -Wo,-loopunroll,0: the shipped +0x34A0 body walks its four-entry angle
 # array as a single rolled do-while, while the default -O2 unroller emitted a
 # four-wide body plus a runtime remainder prologue from the two-variable
@@ -475,11 +481,15 @@ $(O8_OBJ): POSTPROCESS = \
 		func_overlay_008_F0003018_1860D70=overlay8UpdateChannels $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x5128 && \
 	$(OBJCOPY) --add-symbol \
-		gOverlay8UpdateChannelConstants=0x1BC,global $@ && \
+		gOverlay8P2640Constants=0x198,global $@ && \
+	$(OBJCOPY) --add-symbol \
+		gOverlay8UpdateChannelConstants=0x1B4,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/overlay8P2640.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay8UpdateChannels.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:47d844f716456f64428bd9db585865758b727df87be434cc7be7f0d28f28a9a8
+		sha256:fb5718bc8fd2b81fac2bec96b37368cb69151aa76f99b2c0bc9cb212254c8778
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: \

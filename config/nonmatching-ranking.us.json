@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 234,
-  "resolved": 234,
+  "queue_size": 233,
+  "resolved": 233,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 234,
-  "relocation_masked_coverage": 234,
+  "source_context_coverage": 233,
+  "relocation_masked_coverage": 233,
   "functions": [
     {
       "name": "overlay1UpdateRangeFlags",
@@ -263,21 +263,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "6cSy.NxhW.WM6u.SsVH.KyEl.lr9l.EF9J.yPau.BS55.PjMh.VGw"
-    },
-    {
-      "name": "func_overlay_008_F0002640_1860398",
-      "file": "src/overlays/o008/overlay_008.c",
-      "overlay": 8,
-      "tu": "overlays/o008",
-      "size_bytes": 732,
-      "objdiff_match_pct": null,
-      "differing_words": 13,
-      "first_mismatch_offset": 252,
-      "relocation_masked_differing_words": 11,
-      "relocation_masked_first_mismatch_offset": 260,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "DTMM.8WgV.Jn9u.ZkE3.j8xs.cqRA.Usxb.ZzZo.kCrX.nqdr.OTM"
     },
     {
       "name": "overlay1FindPreviousUsable",
@@ -577,7 +562,7 @@
       "relocation_masked_first_mismatch_offset": 452,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "sFAa.HuSs.P5CT.pu4J.px_i.bZfO.keZ-.tz9Z.rao9.R0UU.uAk"
+      "source_context_sha256": "VN6v.KaUY._5F1.-kBw.bPP2.lTDl.RxkQ.4vr0.5wer.fTno.RAs"
     },
     {
       "name": "overlay2QueryNode",
@@ -2032,7 +2017,7 @@
       "relocation_masked_first_mismatch_offset": 216,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "QMgR.zqE8.9bg0.-yKq.YMWb.5EZv.hntC.gkRC.BSqO.6rBl.Maw"
+      "source_context_sha256": "KCf0.YQ3I.LNdT.G4qT.w3ih.16u6.LCrn.-5RM.FPB_.7u4J.aZw"
     },
     {
       "name": "func_8001FC50",
@@ -2122,7 +2107,7 @@
       "relocation_masked_first_mismatch_offset": 28,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "9ltW.QIpU.KfzR.-ENO._ca3.AIAF.aomp.WKTe.mp7G.pfZq.pQg"
+      "source_context_sha256": "2ESh.Nc_Y.ycz3.qPD8.HX8G.TZX4.gvG0.PUsf.JzgI.j-DL.t0A"
     },
     {
       "name": "func_overlay_099_F0000DDC_18DA38C",
@@ -2947,7 +2932,7 @@
       "relocation_masked_first_mismatch_offset": 68,
       "size_delta": -68,
       "category": "size-mismatch",
-      "source_context_sha256": "Nzir.5iVu.fman.GLKg.B2LF.g0e0.7b53.cuYc.WywH.dmks.7tY"
+      "source_context_sha256": "zsnW.rAE6.2K7J.3jpc.6W5R.Vdxw.nDKQ.hD4_.2qB6.Uoid.Cf8"
     },
     {
       "name": "func_800475E8",
@@ -3052,7 +3037,7 @@
       "relocation_masked_first_mismatch_offset": 112,
       "size_delta": -64,
       "category": "size-mismatch",
-      "source_context_sha256": "148s.bApA.uMPc.1YCG.weNB.Ia8p.IVYN.SJU5.wKQJ.jzKJ.lCk"
+      "source_context_sha256": "VoIz.Dgk1.8cIQ.MpI8.rcmN.4gFi.4M29.uSoF.hmJI.HZHS.6xc"
     },
     {
       "name": "shadowGenerate",

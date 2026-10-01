@@ -18,6 +18,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import reloc_surface  # noqa: E402
+import generated_storage_fidelity  # noqa: E402
 
 SHT_PROGBITS = 1
 SHT_NOBITS = 8
@@ -125,7 +126,9 @@ def _function(elf: reloc_surface.Elf, symbols: list[tuple], name: str) -> dict[s
 
 
 def _relocations(elf: reloc_surface.Elf, symtab: int,
-                 function: dict[str, Any], symbols: list[tuple]) -> list[dict[str, Any]]:
+                 function: dict[str, Any], symbols: list[tuple],
+                 generated_section_owners: dict[str, dict[str, Any]] | None = None
+                 ) -> list[dict[str, Any]]:
     start, end = function["start"], function["start"] + function["size"]
     text = elf.section_bytes(elf.names[function["section"]])
     pending: dict[str, list[tuple[int, int]]] = {}
@@ -156,7 +159,16 @@ def _relocations(elf: reloc_surface.Elf, symtab: int,
             owner_symbol = symbols[symidx]
             if _unique_named(symbols, owner_symbol[0]) != owner_symbol:
                 raise SourceFidelityError("relocation does not use the unique named owner")
-            owner = _section_owner(elf, owner_symbol)
+            generated = ((generated_section_owners or {}).get(owner_symbol[0]))
+            if generated is not None:
+                if (owner_symbol != generated.get("source_symbol")
+                        or owner_symbol[4] != generated.get("section_index")):
+                    raise SourceFidelityError(
+                        "anonymous generated owner differs from its validated SECTION symbol")
+                owner = {key: value for key, value in generated.items()
+                         if key not in ("source_symbol", "section_index")}
+            else:
+                owner = _section_owner(elf, owner_symbol)
             name = owner["name"]
             field = struct.unpack_from(">I", text, off)[0]
             opcode = field >> 26
@@ -218,8 +230,9 @@ def _normalized_bytes(elf: reloc_surface.Elf,
     return bytes(section)
 
 
-def compare_source_symbols(raw_object: Path, configured_object: Path,
-                           function_name: str) -> dict[str, Any]:
+def _compare_source_symbols(raw_object: Path, configured_object: Path,
+                            function_name: str,
+                            generated_rodata: bool = False) -> dict[str, Any]:
     """Compare original-name REL owners and instruction fields in two objects.
 
     ``raw_object`` is emitted from the original-name function source;
@@ -242,9 +255,48 @@ def compare_source_symbols(raw_object: Path, configured_object: Path,
     _compatible_owner(raw_fn["owner"], full_fn["owner"])
     if raw_fn["size"] != full_fn["size"]:
         raise SourceFidelityError("owned function extent differs")
+    generated_summary = None
+    raw_generated_owners = full_generated_owners = None
+    if generated_rodata:
+        generated_summary = generated_storage_fidelity.validate_generated_rodata_pair(
+            raw, full, function_name, raw_fn, full_fn, SourceFidelityError)
+        raw_rodata_index, _ = generated_storage_fidelity._single_section(
+            raw, ".rodata", SourceFidelityError)
+        full_rodata_index, _ = generated_storage_fidelity._single_section(
+            full, ".rodata", SourceFidelityError)
+        _, raw_rodata_symbol = generated_storage_fidelity._section_symbol(
+            raw, ".rodata", raw_rodata_index, generated_storage_fidelity.RODATA_SIZE,
+            SourceFidelityError)
+        _, full_rodata_symbol = generated_storage_fidelity._section_symbol(
+            full, ".rodata", full_rodata_index, generated_storage_fidelity.RODATA_SIZE,
+            SourceFidelityError)
+        raw_descriptor = {
+            "name": ".rodata", "type": STT_SECTION, "binding": STB_LOCAL,
+            "defined": True, "value": 0,
+            "size": generated_storage_fidelity.RODATA_SIZE,
+            "storage": (".rodata", SHT_PROGBITS,
+                        raw.sh[raw_rodata_index][2]),
+            "source_symbol": raw_rodata_symbol,
+            "section_index": raw_rodata_index,
+        }
+        full_descriptor = {
+            "name": ".rodata", "type": STT_SECTION, "binding": STB_LOCAL,
+            "defined": True, "value": 0,
+            "size": generated_storage_fidelity.RODATA_SIZE,
+            "storage": (".rodata", SHT_PROGBITS,
+                        full.sh[full_rodata_index][2]),
+            "source_symbol": full_rodata_symbol,
+            "section_index": full_rodata_index,
+        }
+        raw_generated_owners = {".rodata": raw_descriptor}
+        full_generated_owners = {".rodata": full_descriptor}
     raw_symtab, full_symtab = _symtab_index(raw), _symtab_index(full)
-    raw_rows = _relocations(raw, raw_symtab, raw_fn, raw_symbols)
-    full_rows = _relocations(full, full_symtab, full_fn, full_symbols)
+    raw_rows = _relocations(raw, raw_symtab, raw_fn, raw_symbols,
+                            raw_generated_owners)
+    full_rows = _relocations(full, full_symtab, full_fn, full_symbols,
+                             full_generated_owners)
+    if generated_rodata and len(raw_rows) != 245:
+        raise SourceFidelityError("reviewed function relocation census is not 245 records")
     raw_by_key = {(r["site"], r["type"], r["name"]): r for r in raw_rows}
     full_by_key = {(r["site"], r["type"], r["name"]): r for r in full_rows}
     if len(raw_by_key) != len(raw_rows) or len(full_by_key) != len(full_rows):
@@ -260,6 +312,13 @@ def compare_source_symbols(raw_object: Path, configured_object: Path,
     raw_bytes, full_bytes = _normalized_bytes(raw, raw_fn), _normalized_bytes(full, full_fn)
     if raw_bytes != full_bytes:
         raise SourceFidelityError("normalized owned executable fields differ")
+    if generated_rodata:
+        raw_exact = raw.section_bytes(raw.names[raw_fn["section"]])[
+            raw_fn["start"]:raw_fn["start"] + raw_fn["size"]]
+        full_exact = full.section_bytes(full.names[full_fn["section"]])[
+            full_fn["start"]:full_fn["start"] + full_fn["size"]]
+        if raw_exact != full_exact:
+            raise SourceFidelityError("generated-storage proof requires exact owned text bytes")
     report_rows = []
     for key in sorted(raw_by_key):
         row = raw_by_key[key]
@@ -274,9 +333,34 @@ def compare_source_symbols(raw_object: Path, configured_object: Path,
             "relocation_count": len(report_rows),
             "relocations": report_rows,
             "normalized_executable_fields_equal": True,
-            "identity_route": "named-source-owner-correspondence-only",
+            "identity_route": ("source-pair-correspondence-with-reviewed-generated-rodata"
+                               if generated_rodata else
+                               "named-source-owner-correspondence-only"),
             "runtime_identity_proved": False,
-            "promotion_authority": False}
+            "promotion_authority": False,
+            **({"generated_storage": generated_summary,
+                "c_origin_verified": False} if generated_rodata else {})}
+
+
+def compare_source_symbols(raw_object: Path, configured_object: Path,
+                           function_name: str) -> dict[str, Any]:
+    """Default named-owner comparison; SECTION owners remain unsupported."""
+    return _compare_source_symbols(raw_object, configured_object, function_name)
+
+
+def compare_generated_rodata_source_symbols(raw_object: Path,
+                                            configured_object: Path,
+                                            function_name: str) -> dict[str, Any]:
+    """Explicit reviewed baseline route for func_800517E0's generated data.
+
+    This accepts no caller-provided geometry or owner map.  It proves only
+    correspondence between the two supplied objects, not their C provenance.
+    """
+    if function_name != generated_storage_fidelity.FUNCTION:
+        raise SourceFidelityError(
+            "generated-rodata route is limited to func_800517E0")
+    return _compare_source_symbols(raw_object, configured_object,
+                                   function_name, generated_rodata=True)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -284,10 +368,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--raw-object", required=True)
     parser.add_argument("--configured-object", required=True)
     parser.add_argument("--function", required=True)
+    parser.add_argument("--anim-generated-rodata", action="store_true",
+                        help="opt in to the fixed func_800517E0 generated-rodata baseline proof")
     args = parser.parse_args(argv)
     try:
-        report = compare_source_symbols(Path(args.raw_object),
-                                        Path(args.configured_object), args.function)
+        compare = (compare_generated_rodata_source_symbols
+                   if args.anim_generated_rodata else compare_source_symbols)
+        report = compare(Path(args.raw_object),
+                         Path(args.configured_object), args.function)
     except (OSError, ValueError, struct.error, SystemExit) as error:
         report = {"schema": "mickey-source-symbol-fidelity-v1",
                   "status": "unverifiable", "function": args.function,

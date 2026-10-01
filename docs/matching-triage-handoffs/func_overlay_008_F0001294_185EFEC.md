@@ -70,6 +70,28 @@ What remains (14 naming, 2 structural):
 - +0xDBC: `state->unkFE` held in v0 in the target, a3 here (3 words).
 - +0x115C: `state->unk349` carrier v0 in the target, v1 here (3 words).
 
+Decision variables reached with the instrumented uopt (proc ordinal 7; every
+force below read back `forced=` equal to the requested colour):
+
+- **+0xDBC (3 words): web 554 against web 551.** 551 is the `state->unkFE`
+  load (bbs 215-217, save 30/2 = 15). 554 is the `steeringInput >> 4` temp
+  in bb 215 (save 30, nocs 1): ugen writes it to v0, copies it to `index`
+  and branches on it, and as1 deletes the copy by renaming, so it never
+  appears in the object. Being decided first it takes v0 and leaves 551 a3.
+  `p1:w554=c6` alone gives 13 (only those three words move). Measured and
+  inert: seven spellings of the `>> 4` step and its zero test (assignment in
+  the condition, `!index`, if/else arms, the shift folded into the
+  subtraction), eight carriers for the drift step (21 to 600, never v0 for
+  551), and three forms each of the unkFC and unkFE updates.
+- **+0x20C (3 words): web 114**, the trunc result of `(s32) update` in the
+  loop-entry block (save 3). It takes v0; the target has v1, so something in
+  the target holds v0 across that block. `p1:w114=c2` alone gives 13; with
+  the force above, 10. Seven conversion spellings and ten carriers are inert.
+- +0xD8: with the factor test written on the field (`0.0f != state->unk5C`
+  and the field in the product) the `c.eq.s` operand order is the target's,
+  but the cached load and the factor then trade f0 and f2 (27); four float
+  carriers for either factor site do not trade them back (best 19).
+
 ## 2026-10-01 lane d-o008: 275 to 78, frame exact
 
 align_symbol now reads 1184 byte-exact, 67 register naming, 1 immediate, 9

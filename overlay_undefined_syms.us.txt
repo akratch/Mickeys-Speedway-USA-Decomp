@@ -900,6 +900,9 @@ overlay14SubmitHandleReloc = 0xf0000000;
 D_98 = 0x00000098;
 gOverlay15MovingStarCount = 0x00000008;
 gOverlay15MovingStars = 0x00000010;
+gOverlay15RainCapacity = 0x00000008;
+gOverlay15RainEnabled = 0x0000000c;
+gOverlay15RainPositions = 0x00000010;
 gOverlay15Resource10 = 0x00000010;
 gOverlay15Resource4 = 0x00000004;
 gOverlay15Resource48 = 0x00000048;
@@ -912,6 +915,7 @@ overlay15FinishDisplayListReloc = 0xf0000000;
 overlay15GetActiveCameraReloc = 0xf0000000;
 overlay15GetDimensionsReloc = 0xf0000000;
 overlay15ReleaseReloc = 0xf0000000;
+rainFastDraw_o015Reloc = 0xf0000000;
 starfieldFastMove_o015Reloc = 0xf0000000;
 
 /* overlay 16: overlay_016.c.o */
@@ -4421,9 +4425,9 @@ func_overlay_015_F00006B0_1872A48 = overlay15ReleaseResource10;
 func_overlay_015_F00009E0_1872D78 = overlay15UpdateMovingStars;
 func_overlay_015_F0000B7C_1872F14 = overlay15SetValueC;
 func_overlay_015_F0000B88_1872F20 = overlay15ClearValue7C;
+func_overlay_015_F0000B94_1872F2C = overlay15DrawRain;
 func_overlay_015_F000004C_18723E4 = overlay15InitStarsAndPalette;
 func_overlay_015_F00006E8_1872A80 = overlay15InitStars;
-func_overlay_015_F0000B94_1872F2C = overlay15DrawRain;
 
 /* overlay 16: overlay_016.c.o */
 func_overlay_016_F0000000_1873498 = overlay16BuildGradient;

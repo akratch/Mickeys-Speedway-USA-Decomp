@@ -2,11 +2,25 @@
 ### `overlay15DrawRain` plateau handoff
 
 - source: `src/overlays/o015/overlay_015.c`
-- score: 13/54 words
+- score: 0/54 words, promoted
 - frame: 0x40
 - relocations: 17
-- first mismatch: +0x74
-- summary: hypothesis=emit the high half alone, not la; spellings=direct local float[3] stayed 13 at delta 0, do-while sym+0/+4/+8 scored 38 at +24, unrolled 4-copy scored 47 at +32; stall=a straight-line symbol still lowers to la
+- first mismatch: none
+- summary: Matched. The rain field is a static struct reached through a pointer local taken at entry; colours and movement are field reads, so every access is direct and shares high halves.
+
+#### 2026-10-01, lane d-o015: matched on the overlay15MoveStars form
+
+Promoted at 54 of 54 words, delta 0, frame 0x40, 17 of 17 relocations. Before:
+13 masked words (the scalar-symbol form). The static field struct at BSS +0x50
+(movement at +0x80, colours at +0x98) reached through `field = &sOverlay15Rain`
+makes all of the offset and colour reads direct, so as1 shares one high half per
+aligned pair; the previous "uopt chooses absolute macro vs base register" decision
+variable was a property of the scalar-symbol shape. Priced edits: static-field
+form 13 to 0 in one cell (positions stay a text-side proxy). Section-relative
+records at 0xbfc-0xc34 dropped in mk/overlays.mk; `rainFastDraw` added to the
+overlay 15 `*Reloc` redefine list.
+
+Gates: gmake verify, check-overlay-syms and promotion-proof pass.
 
 Summary before this remeasure: Force-split of the offsets ilda matches target schedule except one extra lui; as1 does not share lui at. Next: ugen hi-only ilda, not la or per-use macros.
 

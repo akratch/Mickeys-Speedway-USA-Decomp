@@ -425,22 +425,13 @@ void overlay15ClearValue7C(void) {
 }
 
 /* Mickey-local reconstruction; the pinned DKR v77/v80 and JFG scans are negative. */
-typedef struct Overlay15RainOffsets {
-    u8 pad00[0x80];
-    f32 x;
-    f32 y;
-    f32 z;
-} Overlay15RainOffsets;
-
-extern Overlay15RainOffsets gOverlay15RainOffsets;
-
-/* Plateau (2026-08-25, ownership): linked full-BSS candidate is exact-size
- * 0xD8 with 13 differing words, first +0x74; the 119-flag lattice is flat.
- * Workbench: structure-mismatch; post-call load scheduling remains. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-01 on the overlay15MoveStars form: the rain field is a static
+ * struct reached through a pointer local, so the colour and offset reads are
+ * direct and share high halves. */
 void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
                        f32 projectionScale, f32 intensity) {
     s32 visibleCount;
+    Overlay15Field *field = &sOverlay15Rain;
     Overlay15CameraState *camera;
 
     if (gOverlay15RainEnabled != 0) {
@@ -448,26 +439,13 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
         if ((gOverlay15RainPositions != 0) && (visibleCount > 0)) {
             camera = overlay15GetActiveCameraReloc();
             rainFastDraw(framebuffer, width, height, visibleCount,
-                         gOverlay15RainPositions, gOverlay15RainColors,
-                         camera->angle + 0x8000, gOverlay15RainOffsets.x,
-                         gOverlay15RainOffsets.y, gOverlay15RainOffsets.z,
+                         gOverlay15RainPositions, field->colors,
+                         camera->angle + 0x8000, field->movement.x,
+                         field->movement.y, field->movement.z,
                          projectionScale);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o015/overlay_015/func_overlay_015_F0000B94_1872F2C.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay15DrawRain:start
- * symbol: overlay15DrawRain
- * score: 13/54 words
- * frame: 0x40
- * relocations: 17
- * first-mismatch: +0x74
- * summary: hypothesis=emit the high half alone, not la; spellings=direct local float[3] stayed 13 at delta 0, do-while sym+0/+4/+8 scored 38 at +24, unrolled 4-copy scored 47 at +32; stall=a straight-line symbol still lowers to la
- * PLATEAU-HANDOFF:overlay15DrawRain:end
- */
 
 /* PLATEAU-HANDOFF:overlay15InitStars:start
  * symbol: overlay15InitStars

@@ -309,19 +309,9 @@ u32 levelGetGfxIndex(s32 arg0) {
     return result;
 }
 
-#ifdef NON_MATCHING
 /* PROVENANCE: pinned JFG c82afff keeps levelInit assembly-only; later public
  * JFG 773e313/1a92d81 C provides structural and lifetime evidence only.
  * Mickey's call graph, fields, boundaries, and bytes remain decisive. */
-/* Fresh pad-free configured V0 is exactly 516 words, 389/516 positional,
- * frame 0x78 versus target 0x80, with all 110 offsets/types and 102 stable
- * identities. The eight typed trap aliases retain authenticated ABIs but stay
- * fail-closed against the target TrapDanglingJump symbol. JFG's separate s16
- * tune lifetime is a strict gain to 394/516. A fidelity-clean proc-8 allocator
- * trace proves the first mechanism is the eight-byte frame deficit; extending
- * the donor's meaningful lvlCount lifetime through setupLights is byte-flat.
- * Preserve this pad-free basin. ORT 526 has sole caller func_80028564+0x5F8;
- * do not restore the rejected volatile pad or repeat broad search. */
 void levelInit(s32 lvlIdx, s32 arg1, s32 arg2, s32 arg3) {
     s16 tune;
     s32 i;
@@ -332,6 +322,7 @@ void levelInit(s32 lvlIdx, s32 arg1, s32 arg2, s32 arg3) {
     s32 shouldPlay;
     s32 off;
     s32 freeSlot;
+    s32 resourceId;
 
     rumbleKill(1);
     D_800CF3C0 = piRomLoad(0x1E);
@@ -404,120 +395,24 @@ void levelInit(s32 lvlIdx, s32 arg1, s32 arg2, s32 arg3) {
         while (D_8007A0F4[D_800CF508] != -1) {
             D_800CF508++;
         }
-        /* The three doubled masks below are ugen phantom-pop carriers, not
-         * evidence: each redundant `& M` on an already-masked value folds to
-         * no instruction and still costs one integer temp-ring pop (L65), and
-         * the target's loop body allocates three temps more than the plain
-         * spelling does.  Removing any of them costs 87 words of pure ring
-         * phase in the whole tail of the function.  The `*(s16 *)((i << 1) +
-         * (u32)base)` access, by contrast, IS evidence: levelFreeAll, in this
-         * same file and one word-pair from exact, reads this same table that
-         * way, and it is what fixes the operand order of the address add.
-         *
-         * 2026-09-10, lane c6-named: the 16-word colour term is now closed
-         * against reordering as well as against reservation, from the traced
-         * interference list rather than from a sweep.  Web 104's twelve
-         * interferers are 288, 289, 290, 291, 295, 296, 297, 298, 307, 115,
-         * 106 and 99; exactly ONE of them (298) holds a caller-saved colour,
-         * and its save is 2.5 against web 104's 26.7, so raising it above the
-         * target needs eleven more loop references.  The rest are callee-saved
-         * because they are live across the loop and this loop calls, so no
-         * reordering of existing webs can supply the two caller-saved
-         * interferers on c1 and c2 that the target's a2 requires -- the two
-         * webs would have to live inside the loop body and not cross a call,
-         * and only a new web can do that.  The mirror lever found on overlay
-         * 86 the same day does not apply either: a web whose span reaches a
-         * call result has v0 struck from its `p1cost` candidate list, but web
-         * 104's list begins at colour 1, so v0 is offered and taken and the
-         * span is already short.  Naming the masked index or the store address
-         * as a loop-body local to manufacture the missing webs fails for a
-         * third reason: uopt re-materialises a cheap masked value at each use
-         * instead of keeping the local, so the loop body comes out
-         * byte-identical and the only effect is the frame cell the twelfth
-         * declaration costs (24 words, delta 0, both carriers, and 29 with
-         * both).
-         *
-         * 2026-09-10, lane w8-bigclose: the colour term is confirmed from the
-         * allocator's own records, and one axis it was never measured against
-         * is now retired outright.  An instrumented uopt (CDX log; its object
-         * is byte-identical to the tree's, which is the identity gate) records
-         * 1655 p1 records for this procedure and ZERO p2 -- level.c does emit
-         * 70 p2 records, but all of them belong to the file's small procedures,
-         * none to this one.  So [L106]'s ascending-web-number colouring never
-         * runs here and moving a defining statement cannot move a colour in
-         * this function; only [L100]'s save = totalsave/nocs orders anything.
-         * That is [L108]'s question and it costs one compile: ask it before
-         * spending a pass on definition position, declaration order or
-         * statement order, all three of which are the same dead axis here.
-         *
-         * The trace also confirms every number above and adds the reason the
-         * two terms move together.  Web 104 is save 26.666666 (nocs 3,
-         * totalsave 80) at cost 0 and is decided TWELFTH of this procedure's
-         * decisions; of the eleven decided before it, only three interfere with
-         * it, and their colours are exactly the two the closure names, which is
-         * why its forbidden set is that pair and it takes the first free
-         * colour.  The web that carries the resource table's address is decided
-         * far LATER, at save 2.0, which is why it currently takes the colour
-         * the target gives web 104: fix web 104 and the address web finds that
-         * colour taken and falls one further, which is the target's pair
-         * exactly.  The 16 words really are one decision, and the two
-         * interfering caller-saved webs it needs must be decided in the first
-         * eleven -- a constraint on their save, not on their position.
-         *
-         * 2026-09-11, lane f9-audit: those two webs were already in the
-         * function.  uopt's web is the SYMBOL, not the def-use chain --
-         * f_intfering intersects two live-BLOCK bit vectors, and a symbol's
-         * live blocks are the union over all of its uses -- so carrying the
-         * resource id in `shouldPlay` (the first tune loop's flag: a2, save
-         * 40, decided seventh, live in the blocks where the v0/v1 tune-loop
-         * temps 223/224 live) hands the loop value a web whose forbidden set
-         * is c1..c4.  It takes a2 and the address web falls to a3 behind it:
-         * 22 -> 6 at delta 0, frame unchanged.  Every other existing local
-         * was measured as the carrier (tune 17, lvlCount 30, j 31, freeSlot
-         * and i move the frame); a fresh local cannot do it because it has
-         * no second use.  `s16 resourceId` stays declared only to hold the
-         * frame cell the original spent on some local this function no
-         * longer reads; nothing in the object says which local that was.
-         * The same carrier trick does NOT reach the 6-word order term: a
-         * masked index named into j/lvlCount/i at the top of the body is
-         * copy-propagated back into every arm before live ranges form (88
-         * and 92), so L102 holds for a shared symbol too -- a carrier only
-         * works on a value that survives copy propagation.
-         *
-         * 2026-09-11, lane s1-one: three mechanisms retired against the order
-         * term, measured on levelFreeAll (the cheaper twin) and confirmed
-         * here.  Carrier identity is inert: the masked index named into every
-         * local that function already has, including the one with its own
-         * earlier live range, crossed with five address spellings, is either
-         * byte-identical to the inline form or costs four to eight bytes of
-         * narrowing.  L109's discarded-expression probes are inert: all three
-         * named forms are byte-identical, so the probe never survives to give
-         * the mask a second read.  And the phantom cannot be moved after the
-         * address add: a redundant AND takes its ring slot before its own
-         * operand subtree is evaluated, so it pops first wherever inside the
-         * index expression it is written -- a triple mask, the redundant mask
-         * on the shifted value, on the base and on the whole address, the
-         * all-ones spellings, `* 2` and the self-addition were each measured.
-         * Deleting the pop is not available either: the arm then spends four
-         * temps and costs 88 to 95 words, with the first mismatch moving back
-         * to +0x238, so the fifth pop is load-bearing well before this loop.
-         * Carrying the table read in the declared-and-unread `resourceId` is
-         * byte-identical, so that may be the local the frame cell belongs to,
-         * but it is not a lever. */
+        /* Each arm strips the two type bits from the id in place before it
+         * uses it. That one statement per arm is what the allocator needed:
+         * the id is a web of its own (no borrowed carrier, no unread pad), the
+         * tests are single masks, and the table read is a plain subscript. */
         for (off = 0; off < D_800CF508; off++) {
-            s16 resourceId;
-
-            shouldPlay = D_8007A0F4[off];
-            if ((shouldPlay & 0xC000) == 0xC000) {
-                D_800CF490[off] = func_80034448(shouldPlay & 0x3FFF);
-            } else if ((shouldPlay & 0x8000) & 0x8000) {
-                D_800CF490[off] = func_800355A0(shouldPlay & 0x3FFF, 0);
-            } else if ((shouldPlay & 0x4000) & 0x4000) {
-                D_800CF490[off] = func_8000486C(
-                    *(s16 *) ((((shouldPlay & 0x3FFF) & 0x3FFF) << 1) +
-                              (u32) D_800C94E0));
+            resourceId = D_8007A0F4[off];
+            if ((resourceId & 0xC000) == 0xC000) {
+                resourceId &= 0x3FFF;
+                D_800CF490[off] = func_80034448(resourceId);
+            } else if (resourceId & 0x8000) {
+                resourceId &= 0x3FFF;
+                D_800CF490[off] = func_800355A0(resourceId, 0);
+            } else if (resourceId & 0x4000) {
+                resourceId &= 0x3FFF;
+                D_800CF490[off] = func_8000486C(D_800C94E0[resourceId]);
             } else {
-                D_800CF490[off] = func_8001F520(shouldPlay & 0x3FFF, 0);
+                resourceId &= 0x3FFF;
+                D_800CF490[off] = func_8001F520(resourceId, 0);
             }
         }
         runlinkDownloadCode(0x17);
@@ -640,9 +535,6 @@ void levelInit(s32 lvlIdx, s32 arg1, s32 arg2, s32 arg3) {
     }
     func_80001708();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/level/levelInit.s")
-#endif
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
 void levelTunePlay(void) {
@@ -805,13 +697,3 @@ s32 levelInitRegionFlags(void) {
     }
     return 0;
 }
-
-/* PLATEAU-HANDOFF:levelInit:start
- * symbol: levelInit
- * score: 510/516 words
- * frame: 0x80
- * relocations: 110
- * first-mismatch: +0x328
- * summary: hypothesis=separate ring-mask evaluation with the draw count unchanged; spellings=statement double-mask stayed 6, use-site mask scored 19, comma-before-base scored 94; stall=the redundant mask still pops before its operand
- * PLATEAU-HANDOFF:levelInit:end
- */

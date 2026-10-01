@@ -4,14 +4,13 @@
 #include "overlays/offset_records.h"
 #include "overlays/overlay_045.h"
 
-#ifdef NON_MATCHING
 /* Tier B: overlay54PatchIndices stores resolved resource addresses in the
  * signed words copied by overlay54CopyOffsetRecords. Retain that shared
  * record type and the project's explicit pointer-to-word conversion. */
 
 /* Tier B: overlay 54's runtime records identify the resident calls and the
- * overlay 45/56 exports below. Their source declarations establish the ABI.
- * These externs retain overlay-specific linkage until the body is exact. */
+ * overlay 45/56 exports below. Their source declarations establish the ABI;
+ * the *_o054Reloc names are the generated relocation surface. */
 extern void camStandardOrtho_o054Reloc(MenuCommand **dlist, Mtx **matrix);
 extern void camSetNo_o054Reloc(s32 camera);
 extern void camSetScissor_o054Reloc(MenuCommand **dlist);
@@ -82,12 +81,12 @@ extern s32 o001_data_83E0_o054Reloc;
  * function's .data and .bss through LOCAL (section-relative) records, and
  * the shipped code shares one high half between stores to adjacent fields
  * of record 0, which as1 does only for a symbol defined in the same TU.
- * So the candidate defines the overlay's data exactly as
- * overlay54Initialize.c does (same order, bytes and section sizes, checked
- * against that object) with the three slide limits as separate arrays; the
- * target addresses them through three high halves. A promotion must drop
- * these sections and rebind the records, as overlay54Initialize's rule does.
- * The o54* names below are the old section-offset aliases. */
+ * So this TU defines the overlay's data exactly as overlay54Initialize.c
+ * does (same order, bytes and section sizes), with the three slide-limit
+ * pairs as separate arrays because the target addresses them through three
+ * high halves. overlay54Initialize.c owns the bytes: this object's .data
+ * and .bss are dropped at POSTPROCESS and their records rebound to
+ * zero-valued bases (mk/overlays.mk). */
 static s16 sOverlay54ResourceIds[18] = {
     2, 38, 39, 25, 26, 20, 21, 30, 31, 22, 40, 23, 24, 53, 80, 100, -1, 0,
 };
@@ -140,38 +139,6 @@ static Overlay45ResourceDescriptor *sOverlay54Current;
 static s16 sOverlay54Tail66C;
 static s16 sOverlay54Tail66E;
 
-#define o54Bss_0 sOverlay54Records
-#define o54Bss_10 (&sOverlay54Records[1])
-#define o54Bss_A0 sOverlay54State
-#define o54Bss_C0 sOverlay54ListCopyA
-#define o54Bss_140 sOverlay54ListCopyB
-#define o54Bss_1C0 sOverlay54ListCopyC
-#define o54Bss_280 sOverlay54ListCopyD
-#define o54Bss_340 sOverlay54ListCopyE
-#define o54Bss_5C0 sOverlay54ListCopyF
-#define o54Bss_640 sOverlay54Values
-#define o54Bss_648 sOverlay54Sentinels
-#define o54Bss_654 sOverlay54Flags
-#define o54Bss_658 sOverlay54Height
-#define o54Bss_65C sOverlay54Scale
-#define o54Bss_660 sOverlay54Bounds
-#define o54Bss_668 sOverlay54Current
-#define o54Bss_66C sOverlay54Tail66C
-#define o54Bss_66E sOverlay54Tail66E
-#define o54Data_78 sOverlay54ListC[0].x
-#define o54Data_88 sOverlay54ListC[1].x
-#define o54Data_CC sOverlay54ListE
-#define o54Data_18C sOverlay54EnterX
-#define o54Data_190 sOverlay54HiddenX
-#define o54Data_194 sOverlay54LeaveX
-#define o54Data_1E8 (&sOverlay54SourceRecords[1])
-#define o54Data_278 sOverlay54ListG
-#define o54Data_298 sOverlay54Tail298
-#define o54Data_2A8 sOverlay54Tail2A8
-#define o54Data_2AC sOverlay54Tail2AC
-#define o54Data_2B0 sOverlay54Tail2B0[0]
-#define o54Data_2B4 sOverlay54Tail2B4
-
 /* These fields fall in gaps in the partial ControlPlayer header. Their
  * signedness and widths come from this function's own loads. */
 #define O54_LAP(p) ((s8) (p)->pad37C[7])
@@ -179,137 +146,103 @@ static s16 sOverlay54Tail66E;
 #define O54_TIME(p) (*(s32 *) ((p)->pad3FC + 4))
 #define O54_TIME_DELTA(p) (*(s16 *) (p)->pad454)
 
+/* Independently reconstructed from Mickey-local evidence; no donor body.
+ * Matched 2026-10-01 from an 851-word plateau. What it took, in order:
+ *   - the TU is built with -Wab,-r4300_mul (mk/overlays.mk); with it IDO
+ *     emits the HUD height easing as the shipped rotated, branch-likely
+ *     loop from a plain `for` over the global, which no spelling reaches
+ *     without the flag (the family of o050..o055 HUD loops shares this);
+ *   - the icon call's mode parameter is unsigned (see its prototype);
+ *   - the alpha and item-flag rows are indexed at each use, the record
+ *     rows stay declared pointers;
+ *   - the time-delta arms fill records 0..8 in one loop each, reading the
+ *     textures from the resource table at each use, after assigning the
+ *     delta; the digit loop runs over records 1..8 of the same array;
+ *   - visibility resets inside its arm, and the bar Y is an if/else;
+ *   - every local at function scope, in the order the target's frame
+ *     ladder reads (register-only locals fill its unused cells). */
 void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
+    OverlayOffsetRecord *position;
+    OverlayOffsetRecord *lap;
     s32 playerIndex;
+    s32 i;
     s32 xOffset;
     s32 yOffset;
+    s8 *level;
+    s32 value;
+    ControlPlayer *player;
+    ControlActor *actor;
+    s32 x;
     s32 actorCount;
+    s32 y;
     s32 screenY;
     s32 minutes;
     s32 seconds;
     s32 centiseconds;
     s32 hudY;
-    u32 width;
-    u32 height;
-    s32 i;
-    s32 value;
-    s32 x;
-    s32 y;
     s32 visible;
     s32 buttons;
-    s32 texture;
-    s32 alternate;
+    s32 resetX;
+    s32 deltaTime;
+    s32 *displayMode;
+    ControlActor **actors;
+    OverlayOffsetRecord icon[2];
+    u32 width;
+    u32 height;
+    OverlayOffsetRecord *lapCount;
+    OverlayOffsetRecord *timer;
     s16 enterX;
     s16 hiddenX;
     s16 leaveX;
-    s32 resetX;
-    s32 deltaTime;
-    ControlActor **actors;
 
     camStandardOrtho_o054Reloc(&D_800D3140_o054Reloc, &D_800D3144_o054Reloc);
-    if (o54Bss_668 != NULL) {
-        o54Bss_66C += updateRate;
-        if (o54Bss_66C >= 61) {
-            if (o54Bss_66C >= 241) {
-                o54Bss_66E -= updateRate * 4;
-                if (o54Bss_66E < 0) {
-                    overlay45ReleaseDescriptor_o054Reloc(o54Bss_668);
-                    o54Bss_668 = NULL;
+    if (sOverlay54Current != NULL) {
+        sOverlay54Tail66C += updateRate;
+        if (sOverlay54Tail66C >= 61) {
+            if (sOverlay54Tail66C >= 241) {
+                sOverlay54Tail66E -= updateRate * 4;
+                if (sOverlay54Tail66E < 0) {
+                    overlay45ReleaseDescriptor_o054Reloc(sOverlay54Current);
+                    sOverlay54Current = NULL;
                 } else {
-                    overlay45SetMode_o054Reloc(o54Bss_668, o54Bss_66E);
+                    overlay45SetMode_o054Reloc(sOverlay54Current, sOverlay54Tail66E);
                 }
             } else {
-                o54Bss_66E += updateRate * 4;
-                if (o54Bss_66E >= 256) {
-                    o54Bss_66E = 255;
+                sOverlay54Tail66E += updateRate * 4;
+                if (sOverlay54Tail66E >= 256) {
+                    sOverlay54Tail66E = 255;
                 }
-                overlay45SetMode_o054Reloc(o54Bss_668, o54Bss_66E);
+                overlay45SetMode_o054Reloc(sOverlay54Current, sOverlay54Tail66E);
             }
         }
     }
     actors = (ControlActor **) func_80005750_o054Reloc(&actorCount);
     if (D_800C947C_o054Reloc == 0) {
-        f32 step;
-        f32 priorHeight;
-
-        i = 0;
-        if (updateRate > 0) {
-            s32 remainder;
-
-            remainder = updateRate & 3;
-            if (remainder != 0) {
-                i++;
-                priorHeight = o54Bss_658;
-                step = (-11.0f - priorHeight) * 0.125f;
-                if (i != remainder) {
-                    while (1) {
-                        i++;
-                        o54Bss_658 = priorHeight + step;
-                        priorHeight = o54Bss_658;
-                        step = (-11.0f - priorHeight) * 0.125f;
-                        if (i == remainder) {
-                            break;
-                        }
-                    }
-                }
-                o54Bss_658 = priorHeight + step;
-            }
-            if (i != updateRate) {
-                i += 4;
-                priorHeight = o54Bss_658;
-                step = (-11.0f - priorHeight) * 0.125f;
-                if (i != updateRate) {
-                    while (1) {
-                        i += 4;
-                        o54Bss_658 = priorHeight + step;
-                        o54Bss_658 += (-11.0f - o54Bss_658) * 0.125f;
-                        o54Bss_658 += (-11.0f - o54Bss_658) * 0.125f;
-                        o54Bss_658 += (-11.0f - o54Bss_658) * 0.125f;
-                        priorHeight = o54Bss_658;
-                        step = (-11.0f - priorHeight) * 0.125f;
-                        if (i == updateRate) {
-                            break;
-                        }
-                    }
-                }
-                o54Bss_658 = priorHeight + step;
-                o54Bss_658 += (-11.0f - o54Bss_658) * 0.125f;
-                o54Bss_658 += (-11.0f - o54Bss_658) * 0.125f;
-                o54Bss_658 += (-11.0f - o54Bss_658) * 0.125f;
-            }
+        for (i = 0; i < updateRate; i++) {
+            sOverlay54Height += (-11.0f - sOverlay54Height) * 0.125f;
         }
     }
-    func_80036544_o054Reloc(D_800D31C8_o054Reloc[2], &o54Data_2A8,
+    func_80036544_o054Reloc(D_800D31C8_o054Reloc[2], &sOverlay54Tail2A8,
         20, &D_800D3550_o054Reloc[2].frame, updateRate);
-    func_80036544_o054Reloc(D_800D31C8_o054Reloc[40], &o54Data_2A8,
+    func_80036544_o054Reloc(D_800D31C8_o054Reloc[40], &sOverlay54Tail2A8,
         20, &D_800D3550_o054Reloc[1].frame, updateRate);
-    hudY = (s32) o54Bss_658;
+    hudY = (s32) sOverlay54Height;
     viGetCurrentSize_o054Reloc((s32 *) &width, (s32 *) &height);
-    o54Data_2B0++;
-    o54Data_2B0 %= 10;
+    sOverlay54Tail2B0[0]++;
+    sOverlay54Tail2B0[0] %= 10;
 
     for (playerIndex = 0; playerIndex < D_8007BEF4_o054Reloc; playerIndex++) {
-        s8 *level;
-        ControlActor *actor;
-        ControlPlayer *player;
-        OverlayOffsetRecord *position;
-        OverlayOffsetRecord *lap;
-        OverlayOffsetRecord *lapCount;
-        OverlayOffsetRecord *timer;
-        const OverlayOffsetRecord *src;
-        OverlayOffsetRecord *dst;
-        s32 *displayMode;
 
         actor = actors[playerIndex];
         if (actor == NULL) {
             return;
         }
         player = actor->player;
-        position = o54Bss_C0[playerIndex];
-        lap = o54Bss_1C0[playerIndex];
-        lapCount = o54Bss_280[playerIndex];
-        timer = o54Bss_340[playerIndex];
-        displayMode = &o54Data_298[playerIndex];
+        position = sOverlay54ListCopyA[playerIndex];
+        lap = sOverlay54ListCopyC[playerIndex];
+        lapCount = sOverlay54ListCopyD[playerIndex];
+        timer = sOverlay54ListCopyE[playerIndex];
+        displayMode = &sOverlay54Tail298[playerIndex];
         camSetNo_o054Reloc(playerIndex);
         camSetScissor_o054Reloc(&D_800D3140_o054Reloc);
         value = O54_LAP(player) + 1;
@@ -325,17 +258,17 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
         lapCount[1].metadata = value << 16;
         lap[0].metadata = (player->unk192 / 10) << 16;
         lap[1].metadata = (player->unk192 % 10) << 16;
-        lap[2].metadata = (s32) (o54Bss_65C * 65536.0f);
+        lap[2].metadata = (s32) (sOverlay54Scale * 65536.0f);
         overlay54GetOffsets(playerIndex, 1, &xOffset, &yOffset);
         if ((lap[0].metadata >> 16) == 1) {
-            lap[0].x = o54Data_78 + xOffset + 1;
+            lap[0].x = sOverlay54ListC[0].x + xOffset + 1;
         } else {
-            lap[0].x = o54Data_78 + xOffset;
+            lap[0].x = sOverlay54ListC[0].x + xOffset;
         }
         if ((lap[1].metadata >> 16) == 1) {
-            lap[1].x = o54Data_88 + xOffset - 1;
+            lap[1].x = sOverlay54ListC[1].x + xOffset - 1;
         } else {
-            lap[1].x = o54Data_88 + xOffset;
+            lap[1].x = sOverlay54ListC[1].x + xOffset;
         }
         if (player->unk3BA != 255) {
             position[0].metadata = player->unk3BA * 65536;
@@ -348,7 +281,7 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
             func_800290A0_o054Reloc() == 0 &&
             func_8003A7D0_o054Reloc(actor) != O54_TIME(player)) {
             centiseconds -= centiseconds % 10;
-            centiseconds += o54Data_2B0;
+            centiseconds += sOverlay54Tail2B0[0];
         }
         timer[0].metadata = (minutes / 10) * 65536;
         timer[1].metadata = (minutes % 10) * 65536;
@@ -360,17 +293,17 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
         for (i = 0; i < 8; i++) {
             if ((timer[i].metadata >> 16) == 1) {
                 if (i == 0 || i == 3 || i == 6) {
-                    timer[i].x = o54Data_CC[i].x + xOffset + 1;
+                    timer[i].x = sOverlay54ListE[i].x + xOffset + 1;
                 } else {
-                    timer[i].x = o54Data_CC[i].x + xOffset - 1;
+                    timer[i].x = sOverlay54ListE[i].x + xOffset - 1;
                 }
             } else {
-                timer[i].x = o54Data_CC[i].x + xOffset;
+                timer[i].x = sOverlay54ListE[i].x + xOffset;
             }
         }
         if (player->flags1A8 & 8) {
             func_8002F618_o054Reloc(&D_800D3140_o054Reloc,
-                o54Bss_140[playerIndex], 0, hudY, 255, 255, 255, 255);
+                sOverlay54ListCopyB[playerIndex], 0, hudY, 255, 255, 255, 255);
         } else {
             func_8002F618_o054Reloc(&D_800D3140_o054Reloc,
                 position, 0, hudY, 255, 255, 255, 255);
@@ -402,27 +335,27 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
             D_800D3550_o054Reloc[4].rotationZ = (s32) ((u32) O54_TIME(player) * (u32) -65536) / 300;
             func_80039E34_o054Reloc(4);
             func_8002F618_o054Reloc(&D_800D3140_o054Reloc,
-                o54Bss_5C0[playerIndex], 0, hudY, 255, 255, 255, 255);
+                sOverlay54ListCopyF[playerIndex], 0, hudY, 255, 255, 255, 255);
             break;
         }
         if (player->unk19A != 255) {
-            o54Data_2B4[playerIndex] += updateRate * 16;
-            if (o54Data_2B4[playerIndex] >= 165) {
-                o54Data_2B4[playerIndex] = 164;
+            sOverlay54Tail2B4[playerIndex] += updateRate * 16;
+            if (sOverlay54Tail2B4[playerIndex] >= 165) {
+                sOverlay54Tail2B4[playerIndex] = 164;
             }
         } else {
-            o54Data_2B4[playerIndex] -= updateRate * 8;
-            if (o54Data_2B4[playerIndex] < 0) {
-                o54Data_2B4[playerIndex] = 0;
+            sOverlay54Tail2B4[playerIndex] -= updateRate * 8;
+            if (sOverlay54Tail2B4[playerIndex] < 0) {
+                sOverlay54Tail2B4[playerIndex] = 0;
             }
         }
-        if (o54Data_2B4[playerIndex] > 0) {
+        if (sOverlay54Tail2B4[playerIndex] > 0) {
             if (player->unk19C != 0) {
-                o54Bss_654[playerIndex] = 53;
+                sOverlay54Flags[playerIndex] = 53;
             } else if (player->unk19A != 255) {
-                o54Bss_654[playerIndex] = D_8007C180_o054Reloc[player->unk19A];
+                sOverlay54Flags[playerIndex] = D_8007C180_o054Reloc[player->unk19A];
             }
-            if (o54Bss_654[playerIndex] != -1) {
+            if (sOverlay54Flags[playerIndex] != -1) {
                 if (frontGetScreenMode_o054Reloc() == 1) {
                     x = (playerIndex & 1) ? 276 : 25;
                     y = (playerIndex & 2) ? 209 : 89;
@@ -430,65 +363,71 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
                     x = (playerIndex & 1) ? 276 : 25;
                     y = (playerIndex & 2) ? 197 : 89;
                 }
-                if (o54Bss_654[playerIndex] == 53) {
+                if (sOverlay54Flags[playerIndex] == 53) {
                     x -= 7;
                     y -= 6;
                 }
                 {
-                    OverlayOffsetRecord icon[2];
-
-                    icon[0].link = (s32) D_800D31C8_o054Reloc[o54Bss_654[playerIndex]];
+                    icon[0].link = (s32) D_800D31C8_o054Reloc[sOverlay54Flags[playerIndex]];
                     icon[0].value = 0;
                     icon[0].metadata = 0;
                     icon[0].x = 0;
                     icon[0].y = 0;
                     icon[1].link = 0;
                     func_8002FB34_o054Reloc(&D_800D3140_o054Reloc,
-                        icon, (f32) x, (f32) y, 0.66f, 0.66f, o54Data_2B4[playerIndex] | ~255, 1);
+                        icon, (f32) x, (f32) y, 0.66f, 0.66f, sOverlay54Tail2B4[playerIndex] | ~255, 1);
                 }
-                if (o54Bss_654[playerIndex] != 53 && player->unk19B >= 2) {
-                    o54Data_278[0].metadata = player->unk19B << 16;
-                    func_8002F618_o054Reloc(&D_800D3140_o054Reloc, o54Data_278,
-                        x + 18, y + 18, 0, 0, 0, o54Data_2B4[playerIndex]);
-                    func_8002F618_o054Reloc(&D_800D3140_o054Reloc, o54Data_278,
-                        x + 20, y + 20, 0, 0, 0, o54Data_2B4[playerIndex]);
-                    func_8002F618_o054Reloc(&D_800D3140_o054Reloc, o54Data_278,
+                if (sOverlay54Flags[playerIndex] != 53 && player->unk19B >= 2) {
+                    sOverlay54ListG[0].metadata = player->unk19B << 16;
+                    func_8002F618_o054Reloc(&D_800D3140_o054Reloc, sOverlay54ListG,
+                        x + 18, y + 18, 0, 0, 0, sOverlay54Tail2B4[playerIndex]);
+                    func_8002F618_o054Reloc(&D_800D3140_o054Reloc, sOverlay54ListG,
+                        x + 20, y + 20, 0, 0, 0, sOverlay54Tail2B4[playerIndex]);
+                    func_8002F618_o054Reloc(&D_800D3140_o054Reloc, sOverlay54ListG,
                         x + 19, y + 19, 255, 255, 255, 255);
                 }
             }
         } else {
-            o54Bss_654[playerIndex] = -1;
+            sOverlay54Flags[playerIndex] = -1;
         }
         x = playerIndex & 1;
-        enterX = o54Data_18C[x];
-        hiddenX = o54Data_190[x];
-        leaveX = o54Data_194[x];
+        enterX = sOverlay54EnterX[x];
+        hiddenX = sOverlay54HiddenX[x];
+        leaveX = sOverlay54LeaveX[x];
         if (player->unk388 != 0) {
             for (i = 0; i < updateRate; i++) {
-                o54Bss_660[playerIndex] += (enterX - o54Bss_660[playerIndex]) >> 3;
+                sOverlay54Bounds[playerIndex] += (enterX - sOverlay54Bounds[playerIndex]) >> 3;
             }
             visible = 1;
-        } else if (hiddenX == o54Bss_660[playerIndex]) {
+        } else if (hiddenX == sOverlay54Bounds[playerIndex]) {
             visible = 0;
         } else {
             for (i = 0; i < updateRate; i++) {
-                o54Bss_660[playerIndex] += (leaveX - o54Bss_660[playerIndex]) >> 3;
+                sOverlay54Bounds[playerIndex] += (leaveX - sOverlay54Bounds[playerIndex]) >> 3;
             }
-            if ((leaveX >> 6) == (o54Bss_660[playerIndex] >> 6)) {
-                o54Bss_660[playerIndex] = hiddenX;
+            if ((leaveX >> 6) == (sOverlay54Bounds[playerIndex] >> 6)) {
+                sOverlay54Bounds[playerIndex] = hiddenX;
                 visible = 0;
             } else {
                 visible = 1;
             }
         }
         if (visible) {
-            o54Bss_A0[0].x = o54Bss_660[playerIndex] >> 4;
+            sOverlay54State[0].x = sOverlay54Bounds[playerIndex] >> 4;
             if (frontGetScreenMode_o054Reloc() == 1) {
-                o54Bss_A0[0].y = playerIndex < 2 ? 40 : 160;
+                if (playerIndex < 2) {
+                    sOverlay54State[0].y = 40;
+                } else {
+                    sOverlay54State[0].y = 160;
+                }
             } else {
-                o54Bss_A0[0].y = playerIndex < 2 ? 45 : 153;
+                if (playerIndex < 2) {
+                    sOverlay54State[0].y = 45;
+                } else {
+                    sOverlay54State[0].y = 153;
+                }
             }
-            func_8002F618_o054Reloc(&D_800D3140_o054Reloc, o54Bss_A0,
+            func_8002F618_o054Reloc(&D_800D3140_o054Reloc, sOverlay54State,
                 0, 0, 255, 255, 255, 192);
         }
         x = x ? 2560 : 256;
@@ -501,52 +440,52 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
             if (player->unk456 >= updateRate) {
                 player->unk456 -= updateRate;
                 for (i = 0; i < updateRate; i++) {
-                    o54Bss_640[player->playerIndex] +=
-                        (x - o54Bss_640[player->playerIndex] + 816) >> 3;
-                    o54Bss_648[player->playerIndex] +=
-                        (screenY - o54Bss_648[player->playerIndex] + 560) >> 3;
+                    sOverlay54Values[player->playerIndex] +=
+                        (x - sOverlay54Values[player->playerIndex] + 816) >> 3;
+                    sOverlay54Sentinels[player->playerIndex] +=
+                        (screenY - sOverlay54Sentinels[player->playerIndex] + 560) >> 3;
                 }
             } else {
                 resetX = x - 1280;
-                if (resetX != o54Bss_640[player->playerIndex]) {
+                if (resetX != sOverlay54Values[player->playerIndex]) {
                     if (player->unk456 != -1 && O54_TIME_DELTA(player) < 0) {
                         amSndPlay_o054Reloc(505, NULL);
                         player->unk456 = -1;
                     }
                     for (i = 0; i < updateRate; i++) {
-                        o54Bss_640[player->playerIndex] +=
-                            (width * 8 + x - o54Bss_640[player->playerIndex] + 816) >> 3;
-                        o54Bss_648[player->playerIndex] +=
-                            (screenY - o54Bss_648[player->playerIndex] - 400) >> 3;
+                        sOverlay54Values[player->playerIndex] +=
+                            (width * 8 + x - sOverlay54Values[player->playerIndex] + 816) >> 3;
+                        sOverlay54Sentinels[player->playerIndex] +=
+                            (screenY - sOverlay54Sentinels[player->playerIndex] - 400) >> 3;
                     }
-                    if (x + width * 8 + 656 < (u32) o54Bss_640[player->playerIndex]) {
-                        o54Bss_640[player->playerIndex] = resetX;
-                        o54Bss_648[player->playerIndex] = screenY - 320;
+                    if (x + width * 8 + 656 < (u32) sOverlay54Values[player->playerIndex]) {
+                        sOverlay54Values[player->playerIndex] = resetX;
+                        sOverlay54Sentinels[player->playerIndex] = screenY - 320;
                     }
                 }
             }
             if (O54_TIME_DELTA(player) <= 0) {
-                o54Bss_0[0].metadata = 12 << 16;
+                sOverlay54Records[0].metadata = 12 << 16;
                 deltaTime = -O54_TIME_DELTA(player);
                 for (i = 0; i < 9; i++) {
-                    o54Bss_0[i].link = (s32) D_800D31C8_o054Reloc[20];
-                    o54Bss_0[i].value = (s32) D_800D31C8_o054Reloc[21];
+                    sOverlay54Records[i].link = (s32) D_800D31C8_o054Reloc[20];
+                    sOverlay54Records[i].value = (s32) D_800D31C8_o054Reloc[21];
                 }
             } else {
-                o54Bss_0[0].metadata = 13 << 16;
+                sOverlay54Records[0].metadata = 13 << 16;
                 deltaTime = O54_TIME_DELTA(player);
                 for (i = 0; i < 9; i++) {
-                    o54Bss_0[i].link = (s32) D_800D31C8_o054Reloc[80];
-                    o54Bss_0[i].value = (s32) D_800D31C8_o054Reloc[21];
+                    sOverlay54Records[i].link = (s32) D_800D31C8_o054Reloc[80];
+                    sOverlay54Records[i].value = (s32) D_800D31C8_o054Reloc[21];
                 }
             }
             overlay56SplitTime_o054Reloc(deltaTime, &minutes, &seconds, &centiseconds);
-            o54Bss_0[1].metadata = (minutes / 10) * 65536;
-            o54Bss_0[2].metadata = (minutes % 10) * 65536;
-            o54Bss_0[4].metadata = (seconds / 10) * 65536;
-            o54Bss_0[5].metadata = (seconds % 10) * 65536;
-            o54Bss_0[7].metadata = (centiseconds / 10) * 65536;
-            o54Bss_0[8].metadata = (centiseconds % 10) * 65536;
+            sOverlay54Records[1].metadata = (minutes / 10) * 65536;
+            sOverlay54Records[2].metadata = (minutes % 10) * 65536;
+            sOverlay54Records[4].metadata = (seconds / 10) * 65536;
+            sOverlay54Records[5].metadata = (seconds % 10) * 65536;
+            sOverlay54Records[7].metadata = (centiseconds / 10) * 65536;
+            sOverlay54Records[8].metadata = (centiseconds % 10) * 65536;
             for (i = 1; i < 9; i++) {
                 if ((sOverlay54Records[i].metadata >> 16) == 1) {
                     if (i == 1 || i == 4 || i == 7) {
@@ -558,9 +497,9 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
                     sOverlay54Records[i].x = sOverlay54SourceRecords[i].x;
                 }
             }
-            func_8002F618_o054Reloc(&D_800D3140_o054Reloc, o54Bss_0,
-                o54Bss_640[player->playerIndex] >> 4,
-                o54Bss_648[player->playerIndex] >> 4, 255, 255, 255, 255);
+            func_8002F618_o054Reloc(&D_800D3140_o054Reloc, sOverlay54Records,
+                sOverlay54Values[player->playerIndex] >> 4,
+                sOverlay54Sentinels[player->playerIndex] >> 4, 255, 255, 255, 255);
         }
         if (joyGetPressed_o054Reloc(playerIndex) & 1) {
             D_8007C1B0_o054Reloc ^= 1;
@@ -572,25 +511,25 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
             }
             switch (*(u8 *) func_80028F54_o054Reloc()) {
             case 3:
-                if (o001_data_83E0_o054Reloc == 0 && buttons != 0 && o54Data_2AC == 0) {
+                if (o001_data_83E0_o054Reloc == 0 && buttons != 0 && sOverlay54Tail2AC == 0) {
                     mainChangeCameras_o054Reloc(1);
                     func_800016EC_o054Reloc(1);
                     func_8003A590_o054Reloc();
                     func_80037414_o054Reloc(2, 4.0f, -1.0f, 0, 0, 0, 0);
                     mainChangeLevel_o054Reloc(18, 0, 0, 7, 1, 1);
                     func_800005CC_o054Reloc(3.0f, 0);
-                    o54Data_2AC = 1;
+                    sOverlay54Tail2AC = 1;
                 }
                 break;
             case 4:
-                if (o001_data_83E0_o054Reloc == 0 && buttons != 0 && o54Data_2AC == 0) {
+                if (o001_data_83E0_o054Reloc == 0 && buttons != 0 && sOverlay54Tail2AC == 0) {
                     mainChangeCameras_o054Reloc(1);
                     func_800016EC_o054Reloc(1);
                     func_8003A590_o054Reloc();
                     func_80037414_o054Reloc(2, 4.0f, -1.0f, 0, 0, 0, 0);
                     mainChangeLevel_o054Reloc(18, 0, 0, 7, 1, 1);
                     func_800005CC_o054Reloc(3.0f, 0);
-                    o54Data_2AC = 1;
+                    sOverlay54Tail2AC = 1;
                 }
                 break;
             }
@@ -598,16 +537,3 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
     }
     camSetNo_o054Reloc(0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o054/overlay54TailA/func_overlay_054_F00005AC_189F24C.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_054_F00005AC_189F24C:start
- * symbol: func_overlay_054_F00005AC_189F24C
- * score: 213 differing words
- * frame: 0x150
- * relocations: 273
- * first-mismatch: +0x0
- * summary: Data into C, per-arm 0..9 record loop, 1..8 digit loop: 213 at delta 0; height loop and frame remain.
- * PLATEAU-HANDOFF:func_overlay_054_F00005AC_189F24C:end
- */

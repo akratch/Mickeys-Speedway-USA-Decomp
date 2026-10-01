@@ -2,15 +2,45 @@
 ### `func_overlay_054_F00005AC_189F24C` plateau handoff
 
 - source: `src/overlays/o054/overlay54TailA.c`
-- score: 213 differing words
-- frame: 0x150
-- relocations: 273
-- first mismatch: +0x0
-- summary: Data into C, per-arm 0..9 record loop, 1..8 digit loop: 213 at delta 0; height loop and frame remain.
+- score: 0/1594 words, promoted
+- frame: 0x138
+- relocations: 269
+- first mismatch: none
+- summary: Matched. Built with -Wab,-r4300_mul, which makes IDO emit the HUD height easing as the shipped rotated loop from a plain for; overlay data defined in the TU; unsigned icon mode; indexed alpha and item rows; per-arm record loops; function-scope locals in the target's frame order.
 
 Summary before this remeasure: Unsigned icon mode, indexed alpha/item, split visibility arms, sign via record: 851 to 280 at delta 0.
 
 Summary before this remeasure: Exhaustive colour packing reaches 839; most aligned residual lies outside the colour axis.
+
+## 2026-10-01 lane d-big: matched and promoted (213 to 0)
+
+- Compiler flag: `-Wab,-r4300_mul` on this TU (mk/overlays.mk). The
+  height easing's rotated loop (the add of each update in a branch-likely
+  delay slot, the next update's load, subtract and multiply at the bottom,
+  a peeled group at the exit) is what IDO's back end emits for a plain
+  `for (i = 0; i < updateRate; i++) height += (-11.0f - height) * 0.125f;`
+  under that flag, and no spelling produces it without the flag: measured
+  on mini TUs with this toolchain, and Banjo-Kazooie's build (which passes
+  the same flag) shows the identical shape on `ml_vec3f_interpolate`.
+  Plain loop under the flag: 213 to 100 at delta 0, naming 0, leaving only
+  frame displacements. The overlay 50..55 HUD functions (o050, o051,
+  o052 TailB, o053, o055) and o047/o008/o084 carry the same loop shape in
+  their targets, so the flag is the first thing to try on each.
+- Frame: with the carried loop gone, every local declared at function
+  scope in the order the target's ladder reads, register-only locals in its
+  unused cells (two above the player index, one below it, two between the
+  level and actor pointers, one each after the actor and the actor count,
+  six after the HUD Y spill, three below height with the three s16 slide
+  limits packed). Frame 0x138, 100 to 4.
+- The bar Y position is an if/else, not a ternary (the ternary loads its
+  two constants in the other order): 4 to 0.
+- Promotion: the object drops its .data, .bss and .gptab copies after a
+  rebind of every section site to zero-valued placeholders
+  (config/normalizations/func_overlay_054_F00005AC_189F24C.rebind.spec,
+  141 rows generated from the object), and the 0.66f literal is
+  externalized onto the retained rodata by digest. `gmake verify` passes
+  from a fresh object; `promotion-proof` PASS (1594 words, frame 0x138,
+  269/269 relocations).
 
 ## 2026-10-01 lane d-big: four shape edits, 851 to 280 at delta 0
 

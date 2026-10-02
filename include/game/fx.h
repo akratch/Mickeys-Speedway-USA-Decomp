@@ -181,7 +181,6 @@ extern void fxScreenEffect(FxGfx **dList, s32 type, s32 value4, s32 value6,
                            s32 value10);
 extern f32 func_8002A8BC(s32 angle);
 extern f32 func_8002A8C0(s32 angle);
-extern f32 D_80083DE8;
 extern void func_800349A4(FxGfx **dList, s32 texture, s32 flags, s32 arg3);
 extern void func_80047CD8(FxGfx **dList, FxCone *cone, s32 flags, u8 alpha);
 extern void func_8004A10C(s32 *screen, u8 glyph, s32 x, s32 y, s32 arg4);

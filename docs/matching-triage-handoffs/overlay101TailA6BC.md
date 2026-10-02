@@ -2,11 +2,11 @@
 ### `overlay101TailA6BC` plateau handoff
 
 - source: `src/overlays/o101/overlay101TailA6BC.c`
-- score: 53 differing words
-- frame: 0x40
+- score: 0/292 words, promoted
+- frame: 0x38
 - relocations: 44
-- first mismatch: +0x0
-- summary: 53 words at size delta 0. Frame 0x40 vs 0x38 with the same slots. Second node-24 row and an unused 8-byte frame remain.
+- first mismatch: none
+- summary: Matched. The matched sibling overlay101TailAB4C's shape: a two-argument creator, a one-parameter function, and no handle or length local.
 
 Summary before this remeasure: 119 flags and ten source forms are nonexact; retained +1-word shape has one extra saved index web and 0x20 excess non-save frame.
 
@@ -39,5 +39,31 @@ A direct store of the creator result, with no handle local, matches the frame at
 Best body, tools/align_symbol.py: 262 byte-exact, 18 naming, 3 immediate, 13 really different, displacement tax 19. First mismatch +0x0 is the frame addiu. The one-sided words are the second node-24 row, +0x3E4 through +0x460. Reordering that row on one line scored 60. Splitting it onto separate lines in the target's byte-store order scored 61. Both reverted.
 
 Stall: those two spellings of the second row, plus moving the empty test off the first line, produced no better residual. Do not colour-sweep; size is zero but the frame cell count is still one alignment step high.
+
+#### 2026-10-02, lane x-o101: matched, 53 -> 0 at delta 0
+
+Priced on the fast direct compile (tools/fast_score.py, base copy measured
+53, equal to score_symbol.py):
+
+- Sibling shape and creator arity. The relocation table names all three
+  creator calls as one SYMBOL target, the same resident routine
+  overlay101TailAB4C calls with two arguments. Declared with two arguments,
+  the function taking only `base`, and every row written as one-name
+  counter subscripts in the sibling's statement order: 53 -> 8. The a2 the
+  shipped calls carry is the node count's own register left over, so the
+  w4-o101 third argument (`workIndex`, then the pre-bump `length`) and the
+  dead second parameter with its empty test were both artefacts of that
+  leftover.
+- Root header order kind, width2E, height30 (the w4-o101 reading): 8 -> 2.
+- The last two words were the frame, 0x40 against 0x38 with identical
+  slots. Each declared local held a 4-byte cell above the base + 0xA2
+  spill: with `handle` and `length` the spill sat at 0x34 and the frame was
+  0x40; without `handle` the frame was 0x38 but the spill moved to 0x30
+  under `length`'s cell. Storing the creator result straight into the node
+  and reading the opacity back from the stored length field (uopt forwards
+  the store, so the target's `andi` of v0 is the field's u8 read) removes
+  both cells: 2 -> 0, frame 0x38, spill at 0x34.
+
+gmake verify OK; check-overlay-syms and promotion-proof PASS.
 
 <!-- plateau-handoff:overlay101TailA6BC:end -->

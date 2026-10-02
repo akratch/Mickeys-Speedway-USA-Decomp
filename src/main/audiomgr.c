@@ -219,32 +219,45 @@ extern s32 D_80078DEC;
 s32 func_80001BE8(void) {
     return D_80078DEC;
 }
-/* PROVENANCE: body adapted from Diddy Kong Racing's public decomp,
- * src/audiomgr.c::__amHandleFrameMsg and __clearAudioDMA; Mickey's manager
- * fields, schedule state, and task layout remain authoritative. */
-/* Verdict: structure-mismatch; 350 differing sites, 372 candidate vs 336 target instructions. */
-/* First mismatch: function offset +0x00; candidate frame -96 vs target -88. */
-/* Gap: manager/task-base and cleanup/large-mode loop shapes remain displaced. */
+/* PROVENANCE: organisation adapted from Diddy Kong Racing's public decomp,
+ * src/audiomgr.c::__amHandleFrameMsg (the task setup) and __clearAudioDMA;
+ * Jet Force Gemini efd5abb's __amHandleFrameMsg is still GLOBAL_ASM but is the
+ * same code. Mickey's manager fields, schedule state and task layout come from
+ * the ROM. */
+/* 2026-10-02 (lane w2-audfont): rewritten from the listing, 350 masked words
+ * at size delta +144 -> 161 at delta 0. Open: the D_80078DE4 and DMA-state
+ * address webs take a1/a2 where the target has a2/a3 (which also lets as1
+ * hoist the 0x82 tag above the large-mode test), the large-mode `^ 1` test
+ * lands in a ring temp where the target has v0, and the task block's ring
+ * phase. */
 #ifdef NON_MATCHING
+typedef struct AudioManagerFrameState {
+    u8 pad000[0x280];
+    u8 *acmdList[2];
+    u8 *acmdListAlt[2];
+    u8 *acmdListLarge[2];
+    OSScTask task;
+    s16 frameSamples[3];
+    u16 pad30E;
+    u8 *outBuf[3];
+    u8 *outBufAlt[3];
+    u8 *outBufLarge[3];
+} AudioManagerFrameState;
+
+#define AMF (*(AudioManagerFrameState *)&D_800C7A50)
+
 void func_80001BF4(void) {
-    register AudioManagerState *manager;
-    AudioManagerDMABuffer *dmaBase;
-    AudioManagerDMABuffer *dmaPtr;
-    Acmd *cmdList;
+    s16 *audioPtr;
     Acmd *cmdp;
-    u8 *work;
-    u8 *buffer;
-    u8 *audioPtr;
-    s32 samplesLeft;
     s32 cmdLen;
+    s32 samplesLeft;
     s32 i;
+    u8 *buffer;
+    u8 *work;
 
     func_8000238C();
-    manager = (AudioManagerState *)&D_800C7A50;
-    samplesLeft = D_A4500004 >> 2;
-    osAiSetNextBuffer(
-        manager->cmdLists[D_80078DCC],
-        manager->frameSamples[D_80078DCC] << 2);
+    samplesLeft = *(vu32 *)0xA4500004 >> 2;
+    osAiSetNextBuffer(AMF.outBuf[D_80078DCC], AMF.frameSamples[D_80078DCC] << 2);
 
     if (D_80078DDC == 1) {
         D_800C91DC += 2;
@@ -259,65 +272,58 @@ void func_80001BF4(void) {
     if (D_80078DE4 > 0) {
         D_80078DE4--;
         if (D_80078DE4 <= 0) {
-            mmFree(manager->largeBufferStart);
-            mmFree(manager->largeData[0]);
-            for (i = 0; i != 0x834; i += sizeof(AudioManagerDMABuffer)) {
-                dmaPtr = (AudioManagerDMABuffer *)((u8 *)D_80078DC0 + i);
-                if (D_800C7DF8.firstUsed == dmaPtr) {
-                    D_800C7DF8.firstUsed =
-                        (AudioManagerDMABuffer *)dmaPtr->node.next;
+            mmFree(AMF.acmdListLarge[0]);
+            mmFree(AMF.outBufLarge[0]);
+            for (i = 0; i < 105; i++) {
+                if (D_800C7DF8.firstUsed == &D_80078DC0[i]) {
+                    D_800C7DF8.firstUsed = (AudioManagerDMABuffer *)D_80078DC0[i].node.next;
                 }
-                if (D_800C7DF8.firstFree == dmaPtr) {
-                    D_800C7DF8.firstFree =
-                        (AudioManagerDMABuffer *)dmaPtr->node.next;
+                if (D_800C7DF8.firstFree == &D_80078DC0[i]) {
+                    D_800C7DF8.firstFree = (AudioManagerDMABuffer *)D_80078DC0[i].node.next;
                 }
-                alUnlink(&dmaPtr->node);
+                alUnlink(&D_80078DC0[i].node);
             }
             mmFree(D_80078DC0);
             D_80078DC0 = NULL;
         }
     }
 
-    if (D_80078DE0 != D_80078DDC) {
+    if (D_80078DDC != D_80078DE0) {
         D_80078DE8 = 0;
-        if (((D_80078DDC ^ 1) == 0) && (D_80078DC0 == NULL)) {
-            manager->largeBufferStart = func_8002B280(0x2C100, 0x82);
-            manager->largeBufferEnd =
-                (u8 *)manager->largeBufferStart + 0x16080;
+        if ((D_80078DDC ^ 1) == 0 && D_80078DC0 == NULL) {
+            AMF.acmdListLarge[0] = func_8002B280(0x2C100, 0x82);
+            AMF.acmdListLarge[1] = AMF.acmdListLarge[0] + 0x16080;
             work = func_8002B280(D_800C8644 * 0x48, 0x82);
-            for (i = 0; i < 2; i++) {
-                manager->cmdLists[i] = work;
-                manager->largeData[i] = work;
+            for (i = 0; i < 3; i++) {
+                AMF.outBufLarge[i] = work;
+                AMF.outBuf[i] = work;
                 work += D_800C8644 * 0x18;
             }
-            manager->bufferStart = manager->largeBufferStart;
-            manager->bufferEnd = manager->largeBufferEnd;
-            dmaBase = func_8002B280(0xDA34, 0x82);
-            D_80078DC0 = dmaBase;
+            AMF.acmdList[0] = AMF.acmdListLarge[0];
+            AMF.acmdList[1] = AMF.acmdListLarge[1];
+            D_80078DC0 = func_8002B280(0xDA34, 0x82);
             if (D_800C7DF8.firstFree != NULL) {
-                alLink(&dmaBase->node, &D_800C7DF8.firstFree->node);
+                alLink(&D_80078DC0->node, &D_800C7DF8.firstFree->node);
             } else {
-                D_800C7DF8.firstFree = dmaBase;
-                dmaBase->node.next = NULL;
-                dmaBase->node.prev = NULL;
+                D_800C7DF8.firstFree = D_80078DC0;
+                D_80078DC0->node.next = NULL;
+                D_80078DC0->node.prev = NULL;
             }
-            dmaPtr = dmaBase;
-            buffer = (u8 *)dmaBase + 0x834;
-            for (i = 0; i != 0x820; i += sizeof(AudioManagerDMABuffer)) {
-                alLink(&(dmaPtr + 1)->node, &dmaPtr->node);
-                dmaPtr->ptr = (char *)buffer;
-                dmaPtr++;
+            buffer = (u8 *)D_80078DC0 + 0x834;
+            for (i = 0; i < 104; i++) {
+                alLink(&D_80078DC0[i + 1].node, &D_80078DC0[i].node);
+                D_80078DC0[i].ptr = (char *)buffer;
                 buffer += 0x200;
             }
-            dmaPtr->ptr = (char *)buffer;
+            D_80078DC0[i].ptr = (char *)buffer;
             D_800C91DC = 1;
         } else {
-            for (i = 0; i < 2; i++) {
-                manager->cmdLists[i] = manager->cmdListsAlt[i];
+            for (i = 0; i < 3; i++) {
+                AMF.outBuf[i] = AMF.outBufAlt[i];
             }
-            D_80078DE4 = 0xC;
-            manager->bufferStart = manager->altBufferStart;
-            manager->bufferEnd = manager->altBufferEnd;
+            D_80078DE4 = 12;
+            AMF.acmdList[0] = AMF.acmdListAlt[0];
+            AMF.acmdList[1] = AMF.acmdListAlt[1];
         }
         D_80078DE0 = D_80078DDC;
     }
@@ -328,49 +334,49 @@ void func_80001BF4(void) {
         D_80078DEC = D_800C91DC * 2;
     }
 
-    audioPtr = (u8 *)osVirtualToPhysical(
-        manager->cmdLists[D_80078DC8]);
-    if (((samplesLeft >= 0x159) != 0) && (D_80078DD8 != 0)) {
+    audioPtr = (s16 *)osVirtualToPhysical(AMF.outBuf[D_80078DC8]);
+    if ((samplesLeft >= 0x159) & D_80078DD8) {
         D_80078DD8 = 0;
-        manager->frameSamples[D_80078DC8] = D_800C8640;
+        AMF.frameSamples[D_80078DC8] = D_800C8640;
     } else {
         D_80078DD8 = 1;
-        manager->frameSamples[D_80078DC8] = D_800C863C;
+        AMF.frameSamples[D_80078DC8] = D_800C863C;
     }
     if (D_80078DDC == 1) {
-        manager->frameSamples[D_80078DC8] *= D_800C91DC;
+        AMF.frameSamples[D_80078DC8] *= D_800C91DC;
     }
 
-    cmdList = (Acmd *)((u8 **)&manager->bufferStart)[D_80078DC4];
-    cmdp = n_alAudioFrame(cmdList, &cmdLen, (s16 *)audioPtr,
-                          manager->frameSamples[D_80078DC4]);
+    cmdp = n_alAudioFrame((Acmd *)AMF.acmdList[D_80078DC4], &cmdLen, audioPtr,
+                          AMF.frameSamples[D_80078DC8]);
 
-    manager->task.msgQ = &D_800C7D9C;
-    manager->task.taskID = 1;
-    manager->task.unk58 = -1;
-    manager->task.flags = 2;
-    manager->task.next = NULL;
-    manager->task.msg = NULL;
-    manager->task.unk5C = 0;
-    manager->task.unk60 = 0xFF;
-    manager->task.unk64 = 0;
-    manager->task.list.t.type = M_AUDTASK;
-    manager->task.list.t.flags = OS_TASK_DP_WAIT;
-    manager->task.list.t.ucode_boot = D_80077950;
-    manager->task.list.t.ucode_boot_size =
-        (u8 *)D_80077AD0 - (u8 *)D_80077950;
-    manager->task.list.t.ucode = D_80076110;
-    manager->task.list.t.ucode_data = D_80084B00;
-    manager->task.list.t.ucode_data_size = 0x800;
-    manager->task.list.t.data_ptr = (u64 *)cmdList;
-    manager->task.list.t.data_size = (cmdp - cmdList) * sizeof(Acmd);
-    manager->task.list.t.yield_data_ptr = NULL;
-    manager->task.list.t.yield_data_size = 0;
+    AMF.task.msgQ = &D_800C7D9C;
+    AMF.task.taskID = 1;
+    AMF.task.unk58 = -1;
+    AMF.task.flags = 2;
+    AMF.task.next = NULL;
+    AMF.task.msg = NULL;
+    AMF.task.unk60 = 0xFF;
+    AMF.task.unk5C = 0;
+    AMF.task.unk64 = 0;
+    AMF.task.list.t.type = M_AUDTASK;
+    AMF.task.list.t.flags = OS_TASK_DP_WAIT;
+    AMF.task.list.t.ucode_boot = D_80077950;
+    AMF.task.list.t.ucode_boot_size = (u8 *)D_80077AD0 - (u8 *)D_80077950;
+    AMF.task.list.t.ucode = D_80076110;
+    AMF.task.list.t.ucode_data = D_80084B00;
+    AMF.task.list.t.ucode_size = 0x1000;
+    AMF.task.list.t.ucode_data_size = 0x800;
+    AMF.task.list.t.data_ptr = (u64 *)AMF.acmdList[D_80078DC4];
+    AMF.task.list.t.yield_data_ptr = NULL;
+    AMF.task.list.t.yield_data_size = 0;
+    AMF.task.list.t.data_size =
+        (cmdp - (Acmd *)AMF.acmdList[D_80078DC4]) * sizeof(Acmd);
 
-    osSendMesg(osScGetCmdQ(D_800BFA30), (OSMesg)&D_800C7CE8, 0);
+    osSendMesg(osScGetCmdQ(D_800BFA30), (OSMesg)&AMF.task, OS_MESG_NOBLOCK);
     D_80078DC4 ^= 1;
     D_80078DCC = D_80078DC8;
-    D_80078DC8 = (D_80078DC8 + 1) % 3;
+    D_80078DC8++;
+    D_80078DC8 %= 3;
     D_80078DD0++;
 }
 #else
@@ -523,10 +529,10 @@ void func_8000238C(void) {
 
 /* PLATEAU-HANDOFF:func_80001BF4:start
  * symbol: func_80001BF4
- * score: 350 differing words
- * frame: -0x60
- * relocations: 187
- * first-mismatch: +0x0
- * summary: Best DKR-derived frame handler; manager/task-base allocation and cleanup/large-mode loops remain structurally displaced.
+ * score: 161/336 words
+ * frame: 0x58
+ * relocations: 107
+ * first-mismatch: +0x68
+ * summary: Listing rewrite at delta 0 (was +144); open: DE4/DMA-state address webs a1/a2 vs target a2/a3, xor test in a ring temp not v0
  * PLATEAU-HANDOFF:func_80001BF4:end
  */

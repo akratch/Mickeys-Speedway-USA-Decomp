@@ -535,6 +535,21 @@
       "source_context_sha256": "A9K7.npZT.K9lk.kOSB.5KRK.ma4_.v8y0.G6wQ.gYGA.48D9.wxc"
     },
     {
+      "name": "func_80001BF4",
+      "file": "src/main/audiomgr.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 1344,
+      "objdiff_match_pct": null,
+      "differing_words": 166,
+      "first_mismatch_offset": 44,
+      "relocation_masked_differing_words": 161,
+      "relocation_masked_first_mismatch_offset": 104,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "nWQj.kChI.LAUT.wKXk.ebkk.nRfd.VE0Y.OAyT.8DuL._wuA.EtI"
+    },
+    {
       "name": "func_80010654",
       "file": "src/main/track.c",
       "overlay": null,
@@ -1433,21 +1448,6 @@
       "size_delta": -32,
       "category": "size-mismatch",
       "source_context_sha256": "t0_w.bhMl.XiQn.4SN-.fXau.SkKn.W4Nx.y7lz.rB2n.TN-h.EvQ"
-    },
-    {
-      "name": "func_80001BF4",
-      "file": "src/main/audiomgr.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1344,
-      "objdiff_match_pct": null,
-      "differing_words": 350,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 350,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": 144,
-      "category": "size-mismatch",
-      "source_context_sha256": "GUoD.R98m.HclI.FKYM.7do9.pD4M.yy8J.lVRQ.JgA6.FCY1.4pE"
     },
     {
       "name": "func_8001F520",

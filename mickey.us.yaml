@@ -718,6 +718,13 @@ segments:
       # at 0x8457C is output-section padding, not owned object bytes.
       - [0x83940, .rodata, main/diRcp]
       - [0x8457C, rodata]
+      # fx's literal pool opens with func_8004A380's "%d" and
+      # func_80047304's 0.33f scale (a literal: as an extern global its load
+      # could not be hoisted past that loop's trig calls, which reorders the
+      # prologue). func_800475E8's 102.4f at 0x849E8 and the object's last
+      # alignment word stay anonymous until that function matches.
+      - [0x849E0, .rodata, main/fx]
+      - [0x849E8, rodata]
       # func_8004C8D8's eight-entry texture-format switch table. The following
       # two zero words are output-section alignment, not owned object bytes.
       - [0x849F8, .rodata, main/font]

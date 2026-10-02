@@ -121,6 +121,20 @@
       "class": "metadata",
       "matched_c": null,
       "nonmatching": null,
+      "object": "build/src/main/fx.c.o",
+      "offset": null,
+      "overlay": null,
+      "size": null,
+      "source": "src/main/fx.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
       "object": "build/src/main/joy.c.o",
       "offset": null,
       "overlay": null,
@@ -9317,10 +9331,10 @@
     "altered_bytes": 9148,
     "by_class": {
       "altered": 5,
-      "metadata": 638,
+      "metadata": 639,
       "review-required": 1
     },
     "matched_c_bytes_with_postprocess": 329152,
-    "objects_with_postprocess": 644
+    "objects_with_postprocess": 645
   }
 }

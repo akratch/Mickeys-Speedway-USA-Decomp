@@ -2,11 +2,74 @@
 ### `func_overlay_008_F0001294_185EFEC` plateau handoff
 
 - source: `src/overlays/o008/overlay_008.c`
-- score: 16 differing words
+- score: 7 differing words
 - frame: 0xB0
 - relocations: 137
 - first mismatch: +0xD8
-- summary: Tuning read as a struct by field, or-assign flag updates, plain counter after the turn; left: v0/v1/a1 colours and one compare order.
+- summary: No driftDirection, stick read past the clamp copy, s16 modeFlags; left: v0 for w114, unkFE vs shift temp, one compare order.
+
+## 2026-10-02 lane h-r8: 16 to 7, size and frame exact
+
+Every edit was a `tools/shape_product.py` cell on the whole TU; the three
+sibling candidates still measure 438, 296 and 384.
+
+- **No `driftDirection` local** (16 to 15). `state->unk100` is read at each
+  use in the clamp, wobble and drift-step blocks. The 68/58 test's load then
+  shares the field's expression web with the clamp block's reload and takes
+  the a1 colour the target has (L131/L160). Deleting it only from the clamp
+  block is 30; keeping it and routing the 68/58 test through it gives the
+  sign-extension pair (+4) the previous lane saw.
+- **The stick is not copied through a carrier before the clamp** (the
+  decisive shape). With `steeringInput = state->unk428` and
+  `steeringTarget = steeringInput`, uopt propagates the copy and every clamp
+  compare reads the stick register; written `steeringTarget =
+  state->unk428` with the first test on the field, the copy survives and the
+  later compares read it, as shipped. Alone that cell is 423 at -4 bytes,
+  because `steeringInput` loses its first segment and its save rises to 34
+  (170/5) above `index` (28), which then loses v1.
+- **The cell that recovers it** (40-cell product over five carrier sites):
+  the two spin-arming stick tests and the brake-branch stick test read the
+  field directly, the wobble term rides `angleStep`, and `steeringInput`
+  keeps only the drift difference and the stick at the spin-out test
+  (save 20 = 60/3, below `index`). 12 at delta 0, equal to the forced price
+  of `steeringInput` to a0 on the unrecovered cell.
+- **`modeFlags` is `s16`** (12 to 9). As `u8` the three loads sit in a
+  conversion temporary that is one web across the pre-loop, in-loop and
+  selector sites and loses v0 to the symbol; `s16` or sharing `cooldown`
+  gives 9, `s32`/`u32` 13.
+- **The 1.6 clamp is one source line** (`if (1.6f < scale) { scale = 1.6f;
+  }`), 9 to 7: as1's line tie (L59) then schedules the constant's high half
+  before the `unk100` load as shipped.
+
+Measured flat on the new shape: five drift-step spellings, five `unkFC`
+update positions (worse off position 0), three update-loop forms and the
+pre-loop conversion spelled twice, six factor-test forms (the field read
+direct gives the target's compare order but trades f0/f2, 18), the spin
+factor through `value`/`speedLimit` (12).
+
+What remains (7 words):
+
+- +0xD8 compare operand order of the factor's zero test (1). Written on the
+  field (`if (state->unk5C != 0.0f)`, the field again in the product) the
+  order is the target's and the load becomes an expression web (w41, save
+  3/2 = 1.5) that `factor` (w44, 10/3 = 3.33, both pre-loop regions)
+  outranks, so they trade f0 and f2 (18). Forcing `p1:w44=c25` on that
+  cell gives 6, accepted. Measured and not better: either pre-loop region
+  through `value`, `speedLimit`, `scale` or a fresh local (`scale` in one
+  region gives the right colour there and f0 in the other; in both it
+  re-opens the loop's f2/f12 exchange, 119), and the field copied into
+  four carriers inside the test (9 to 20).
+- +0x20C: web 114, the `(s32) update` truncation, takes v0 with nothing
+  coloured v0 in its block; `p1:w114=c2` gives 4 (accepted). Ten carriers
+  for the pre-loop count are byte-identical (the carrier is propagated away
+  and the truncation temporary is coloured alone), and `while (n--)` forms
+  are 17 to 275.
+- +0xDBC: the `state->unkFE` load (w545, save 15) takes a3. The shift
+  temporary w548 (save 30, one block) is decided first and takes v0, and
+  with it forced to a3 the drift difference w542 (save 20) takes v0 instead
+  and the size moves -8; a force of w545 to v0 is then declined. The
+  decision variable is still the shift temporary's rank, now with
+  `steeringInput` between it and the load.
 
 ## 2026-10-02 lane e-o008: 78 to 16, size and frame exact
 

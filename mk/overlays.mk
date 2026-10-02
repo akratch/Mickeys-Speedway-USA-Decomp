@@ -1219,7 +1219,22 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailC144.c.o: CFLAGS += -woff 83
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailC144.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x5A4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailC6E8.c.o: CFLAGS += -woff 835
+# The compiler's private pool for this unit is the 25-entry selector switch
+# table; the retained overlay data segment already owns those bytes at
+# data_rodata +0x5CFC (rodata-relative +0xEAC, which the shipped %hi/%lo pair
+# encodes).  Rebind only metadata and discard the checked duplicate table;
+# no instruction or compiler addend is edited (overlay 58's form).
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailC6E8.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/overlay101TailC6E8.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101TailC6E8.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gO101TailC6E8SwitchTableReloc=0xEAC,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/overlay101TailC6E8.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:c66201ec8994a38d9d77fbbccffc99eea15957de363c2585dd3a6fe114388310 && \
+	$(OBJCOPY) --remove-section .rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4F4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawClock.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o101/overlay101DrawClock.c.o: POSTPROCESS = \

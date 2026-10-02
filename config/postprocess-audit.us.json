@@ -9034,15 +9034,18 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o101/overlay101TailC6E8.c.o",
       "offset": 50920,
       "overlay": 101,
       "size": 1268,
       "source": "src/overlays/o101/overlay101TailC6E8.c",
       "tools": [
-        "trim_elf_section.py"
+        "rebind_elf_relocations.py",
+        "externalize_elf_section.py",
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -9320,7 +9323,7 @@
       "metadata": 638,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 330320,
+    "matched_c_bytes_with_postprocess": 331588,
     "objects_with_postprocess": 644
   }
 }

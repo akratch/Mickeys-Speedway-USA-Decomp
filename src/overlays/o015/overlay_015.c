@@ -58,122 +58,76 @@ void overlay15ReleaseResource(void) {
     }
 }
 
-/* Plateau (2026-08-25, batch 36): canonical -O2 -mips2 is four bytes
- * short; best 230/247 words differ, first at +0x4. Field-order/count-address
- * lifetimes improved 238 to 230; lattice, playbook, and 40m permuter found no exact. */
-/* s1-b (2026-09-16): the palette index inits ahead of the colour block and the
- * zero/zMax stores ahead of colorDivisor's: 70 to 60. The size definition is
- * forwarded into a type-4 temp (s3) where the target keeps starIndex's web (s0). */
-/* s2-b (2026-09-16): 60 to 41. A self-redefinition of count (`count |= 0`)
- * in the entry block stops uopt forwarding `starIndex = count * 12` into its
- * uses, so the size stays in starIndex's symbol web (s0) and count keeps its
- * parameter copy (s2); uopt then deletes the redefinition (delta 0). On that
- * head the natural xMax-before-yRange order syncs the FP ring, and the count
- * store written to the global directly (no cast pointer) forms the address in
- * s7 itself. See docs/lastmile-forwarding-kill.md. */
-/* w20-o015 (2026-09-18): 41 to 19. Guard-local starIndex=1 (41 to 20).
- * Same-line allocate + starsAddress + store (L59) keeps addiu+sw
- * adjacent, 20 to 19; first structural moves to +0xF8. */
-/* d-o015 (2026-10-01): 19 to 17. Count store ahead of the bounds block and the
- * three palette index inits on one line (L59). */
-#ifdef NON_MATCHING
+/* The pointer word itself, +4 into the initialized block. gOverlay15Stars
+ * names the block base and is read through Overlay15StarPointerView by the
+ * functions below; this function forms the word's own address. */
+extern Overlay15Star *gOverlay15StarsWord;
+
+/*
+ * Matched 2026-10-02. One index drives both loops. The palette loop is the
+ * compiler's own four-way unrolling of `for (i = 0; i < 0x100; i++)`, and the
+ * `i + 1` it needs there is the same expression the star loop's `i++`
+ * computes, so the two share a register across both loops. The stars pointer
+ * is stored to the global and read back from it, which is what puts the
+ * word's address in a register, and both cursors start in their loop's
+ * initializer.
+ */
 void overlay15InitStarsAndPalette(s32 count, s32 xRange, s32 yRange,
                                   s32 zRange, u32 startColor, u32 endColor,
                                   s32 colorDivisor) {
     Overlay15Star *stars;
-    Overlay15Star **starsAddress;
+    Overlay15Star *star;
     Overlay15InitBounds *bounds;
     u16 *palette;
-    s32 starIndex;
-    /* Reuse the completed star-loop counters for the first two palette indices. */
-
-    s32 paletteIndex2;
-    s32 paletteIndex3;
+    s32 i;
     s32 startR;
     s32 startG;
     s32 startB;
     s32 deltaR;
     s32 deltaG;
     s32 deltaB;
-    s32 previousStarIndex;
 
-    starIndex = count * 12;
-    count |= 0; /* kills the multiply's operand: the definition is not forwarded */
-    stars = overlay15Allocate(starIndex + 0x200, 0x87); starsAddress = &gOverlay15Stars; *starsAddress = stars;
-    gOverlay15StarPalette = (u16 *) ((u8 *) *starsAddress + starIndex);
+    gOverlay15StarsWord = overlay15Allocate(count * 12 + 0x200, 0x87);
+    gOverlay15StarPalette = (u16 *) ((u8 *) gOverlay15StarsWord + count * 12);
     gOverlay15StarCount = count;
+    stars = gOverlay15StarsWord;
 
     bounds = &gOverlay15InitBounds;
     bounds->xRange = (f32) xRange;
     bounds->xMin = bounds->xRange * -0.5f;
     bounds->xMax = bounds->xRange * 0.5f;
     bounds->yRange = (f32) yRange;
-    xRange <<= 7;
     bounds->yMin = bounds->yRange * -0.5f;
-    yRange <<= 7;
     bounds->yMax = bounds->yRange * 0.5f;
     bounds->zRange = (f32) zRange;
-    zRange = (zRange + 1) << 8;
     bounds->zero = 0;
     bounds->zMax = bounds->zRange + 1.0f;
     bounds->colorDivisor = (f32) colorDivisor;
     bounds->zMin = 1.0f;
     bounds->colorStep = 255.0f / bounds->colorDivisor;
+    xRange <<= 7;
+    yRange <<= 7;
+    zRange = (zRange + 1) << 8;
 
-    previousStarIndex = 0;
-    if (count > 0) {
-        starIndex = 1; /* loop start; keeping this outside PRE-sinks palette's `starIndex = 1` onto the exit path */
-        do {
-            stars->x = (f32) overlay15RandomRange(-xRange, xRange) *
-                       (1.0f / 256.0f);
-            stars->y = (f32) overlay15RandomRange(-yRange, yRange) *
-                       (1.0f / 256.0f);
-            stars->z = (f32) overlay15RandomRange(0x100, zRange) *
-                       (1.0f / 256.0f);
-            previousStarIndex = starIndex;
-            starIndex++;
-            stars++;
-        } while (previousStarIndex < gOverlay15StarCount);
-        previousStarIndex = 0;
+    for (i = 0, star = stars; i < gOverlay15StarCount; i++, star++) {
+        star->x = (f32) overlay15RandomRange(-xRange, xRange) * (1.0f / 256.0f);
+        star->y = (f32) overlay15RandomRange(-yRange, yRange) * (1.0f / 256.0f);
+        star->z = (f32) overlay15RandomRange(0x100, zRange) * (1.0f / 256.0f);
     }
 
-    starIndex = 1; paletteIndex2 = 2; paletteIndex3 = 3;
     startR = (startColor >> 24) & 0xFF;
     startG = (startColor >> 16) & 0xFF;
     startB = (startColor >> 8) & 0xFF;
     deltaR = ((endColor >> 24) & 0xFF) - startR;
     deltaG = ((endColor >> 16) & 0xFF) - startG;
     deltaB = ((endColor >> 8) & 0xFF) - startB;
-
-    palette = gOverlay15StarPalette;
-
-
-    do {
+    for (i = 0, palette = gOverlay15StarPalette; i < 0x100; i++) {
         *palette++ =
-            (((((deltaR * previousStarIndex) >> 8) + startR) & 0xF8) << 8) |
-            (((((deltaG * previousStarIndex) >> 8) + startG) & 0xF8) << 3) |
-            (((((deltaB * previousStarIndex) >> 8) + startB) & 0xF8) >> 2) | 1;
-        *palette++ =
-            (((((deltaR * starIndex) >> 8) + startR) & 0xF8) << 8) |
-            (((((deltaG * starIndex) >> 8) + startG) & 0xF8) << 3) |
-            (((((deltaB * starIndex) >> 8) + startB) & 0xF8) >> 2) | 1;
-        *palette++ =
-            (((((deltaR * paletteIndex2) >> 8) + startR) & 0xF8) << 8) |
-            (((((deltaG * paletteIndex2) >> 8) + startG) & 0xF8) << 3) |
-            (((((deltaB * paletteIndex2) >> 8) + startB) & 0xF8) >> 2) | 1;
-        *palette++ =
-            (((((deltaR * paletteIndex3) >> 8) + startR) & 0xF8) << 8) |
-            (((((deltaG * paletteIndex3) >> 8) + startG) & 0xF8) << 3) |
-            (((((deltaB * paletteIndex3) >> 8) + startB) & 0xF8) >> 2) | 1;
-        previousStarIndex += 4;
-        starIndex += 4;
-        paletteIndex2 += 4;
-        paletteIndex3 += 4;
-    } while (previousStarIndex != 0x100);
+            (((((deltaR * i) >> 8) + startR) & 0xF8) << 8) |
+            (((((deltaG * i) >> 8) + startG) & 0xF8) << 3) |
+            (((((deltaB * i) >> 8) + startB) & 0xF8) >> 2) | 1;
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o015/overlay_015/func_overlay_015_F000004C_18723E4.s")
-#endif
 
 typedef struct Overlay15StarPointerView {
     u8 pad00[4];
@@ -436,13 +390,3 @@ void overlay15DrawRain(void *framebuffer, s32 width, s32 height,
         }
     }
 }
-
-/* PLATEAU-HANDOFF:overlay15InitStarsAndPalette:start
- * symbol: overlay15InitStarsAndPalette
- * score: 17/247 words
- * frame: 0x40
- * relocations: 14
- * first-mismatch: +0x70
- * summary: Count store before the bounds block and palette index inits on one line, 19 to 17; stars store base a1 vs a2 and block-1 tail order remain.
- * PLATEAU-HANDOFF:overlay15InitStarsAndPalette:end
- */

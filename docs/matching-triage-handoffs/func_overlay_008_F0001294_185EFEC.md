@@ -2,11 +2,77 @@
 ### `func_overlay_008_F0001294_185EFEC` plateau handoff
 
 - source: `src/overlays/o008/overlay_008.c`
-- score: 7 differing words
+- score: 3 differing words
 - frame: 0xB0
 - relocations: 137
-- first mismatch: +0xD8
-- summary: No driftDirection, stick read past the clamp copy, s16 modeFlags; left: v0 for w114, unkFE vs shift temp, one compare order.
+- first mismatch: +0x20C
+- summary: Field-direct factor test with clamp and use in two regions, unkFE through cooldown with the shift in a region: 7 to 3; left: the count's first read, v0 for v1.
+
+Summary before this remeasure: No driftDirection, stick read past the clamp copy, s16 modeFlags; left: v0 for w114, unkFE vs shift temp, one compare order.
+
+## 2026-10-02 lane x-near: 7 to 3, +0xD8 and +0xDBC closed from the records
+
+align_symbol now reads 1256 byte-exact, 3 register naming, 0 immediate, 0
+really different at size delta 0 (was 1252, 7, 0, 0); first mismatch
++0x20C. Instrumented records (proc 7, .text byte-identical to the stock
+object) read before every cell; about 90 cells measured with fast_score on
+candidate copies, each also compiled instrumented so the web table could be
+read. Siblings unchanged (F00034A0 103, F00042A8 240).
+
+- +0xD8 (1 word, now 0). The field-direct test (`if (state->unk5C != 0.0f)`)
+  gives the shipped operand order, and the field's load web (type 4, 3 refs
+  over blocks 6-7, save 1.5) then loses f0 to the region-1 factor symbol
+  (4 refs over 3 blocks, save 2.0). The lever is the factor web's BLOCK
+  COUNT (checklist item 18): with the clamp and the `D_10 *= factor` use
+  each inside a do-while(0), the factor web spans six blocks, nocs 3,
+  save 1.33, and is coloured after the load, which takes f0. One region
+  (five blocks, nocs 2) is still 13; two regions, or the factor statement
+  plus the clamp in regions, 6. Region 2's spin factor must then be a
+  different symbol (`scale`): shared with `factor` the merged web is 18.
+  Ternary clamps (`(factor < 0.1f) ? 0.1f : factor`, with factor, value,
+  speedLimit or no local) change the shape (+8, mov.s). An empty else arm
+  adds no block.
+- +0xDBC (3 words, now 0). The joint force p1:w548=c6 + p1:w545=c1 +
+  p1:w542=c3 scored 4 at delta 0 on the 7-word shape, so the colouring
+  {unkFE v0, difference a0, index v1, shift temporary anywhere but v0} is
+  the whole site; w545=c1 alone is declined (w548 holds v0 at decision
+  time). Two edits reach it from source: the unkFE value rides
+  `cooldown`'s symbol web (its merged web, 60 over 5 blocks, save 30, is
+  coloured v0 at decision 3, before the difference web at 20, which then
+  takes a0), and the shift `index = steeringInput >> 4` sits in a
+  do-while(0) (or `if (1)`) region, which stops uopt sharing the shift
+  between the store and the compare, so no one-block temporary (3 refs,
+  save 30) exists to take v0 or v1 first. `angle` as the carrier also
+  gives 3; turnDirection, braking and updateCount give -8 (their webs
+  are not coloured before the difference). Either edit alone fails: the
+  carrier with the plain shift lets the temporary take v1 before index
+  (75, index a0 from the head); the region without a carrier lets the
+  difference take v0 and drops two words (-8, 434), which is also the
+  signature of every force of w548 off v0 and of i-r8's temp-removing
+  spellings. Kills after the shift (or-equals 0, xor-equals 0,
+  and-equals -1) do not remove the temporary; L109 probes on the unkFE
+  read (three forms) leave its totalsave at 30. The if/else-arms form
+  makes the temporary two-block (save 15) but ugen then emits both arms
+  with copies (+8 here, netted by the -8 elsewhere: 101).
+- +0x20C (3 words, open). The trunc of `update` is a one-block type-4 web
+  in bb 28 (3 refs, save 3, decided 28th) offered every caller-saved
+  colour at cost 0 with only s0 forbidden, and the blocks live there are
+  s0-s3, the D_10 address (a3) and split webs; so v0 is first-free and
+  the target's v1 needs a v0-coloured web live in bb 28 or a call result
+  in its block set. Measured inert (all 3 at delta 0, web still
+  bbs=[28]): the conversion at five earlier positions (uopt re-creates it
+  at the use; only the web number moves), the count through index, angle,
+  steeringTarget, inputFlags or turnAmount, the test on the symbol with
+  the subtraction on the expression and vice versa, do-while(0) and
+  if (1) around the conversion, the subtraction, or both, and
+  `*(f32 *) &update` reads (which keep updateCount a symbol web in bb 28
+  coloured v0, same code). Post-decrement single-variable loops
+  (`while (n-- != 0)`, `for`, `if (n--) do while (n--)`, with
+  updatesRemaining, updateCount or index) are +4 and 269, not the "same
+  code" i-r8 recorded. modeFlags typed u8, s32, u32, s8 are 10, 11, 11,
+  11 and leave bb 28 untouched. index's v0 denial is the call result in
+  bb 1, not the shift temporary (it holds with the temporary decided
+  late), so index stays v1 whatever happens at +0xDBC.
 
 ## 2026-10-02 lane i-r8: 7 held, three residuals re-priced
 

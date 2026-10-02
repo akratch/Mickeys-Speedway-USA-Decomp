@@ -471,6 +471,8 @@ overlay59AppendValueReloc = 0xf0000000;
 
 /* overlay 8: overlay_008.c.o */
 D_10 = 0x00000010;
+D_14 = 0x00000014;
+D_18 = 0x00000018;
 D_2110 = 0x00002110;
 D_2210 = 0x00002210;
 D_2230 = 0x00002230;
@@ -553,14 +555,15 @@ gO8Value3B0 = 0x000003b0;
 gOverlay8ActivationGateTimerReloc = 0x00000000;
 gOverlay8Buffer = 0x00000000;
 gOverlay8IndexMode = 0x00000000;
-gOverlay8P2640Constants = 0x00000198;
-gOverlay8P4CF0Constants = 0x00000274;
+gOverlay8P0058Constants = 0x000000b0;
+gOverlay8P2640Constants = 0x0000017c;
+gOverlay8P4CF0Constants = 0x00000258;
 gOverlay8PhaseScales = 0x00000560;
 gOverlay8Primary = 0x00000000;
 gOverlay8ScaleLowerReloc = 0x000001d0;
 gOverlay8ScaleUpperReloc = 0x000001d4;
 gOverlay8Secondary = 0x00000000;
-gOverlay8UpdateChannelConstants = 0x000001b4;
+gOverlay8UpdateChannelConstants = 0x00000198;
 gOverlay8UpdateDecayReloc = 0x000001b8;
 gOverlay8UpdateLowerReloc = 0x000001b0;
 gOverlay8UpdateUpperReloc = 0x000001b4;
@@ -762,8 +765,6 @@ gOverlay12Value1598 = 0x00001598;
 overlay12LoadReloc = 0xf0000000;
 
 /* overlay 12: func_overlay_012_F00000C4_186D344.c.o */
-D_14 = 0x00000014;
-D_18 = 0x00000018;
 D_1C = 0x0000001c;
 overlay12ReleaseResource = 0xf0000000;
 overlay12ReleaseResourceAlt = 0xf0000000;

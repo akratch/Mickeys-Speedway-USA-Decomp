@@ -887,8 +887,9 @@ extern void o8P0058ModeReloc(O8P0058State *state, s32 mode);
 
 extern O8P0058Query *o8P0058AcquireReloc(O8P0058State *state);
 
+/* Resident +0x5A914, the same mode setter o8P34A0SetModeReloc calls. */
 extern void o8P0058SpawnReloc(O8P0058Owner *owner, s32 kind, s32 index,
-                              void *output);
+                              f32 blend);
 
 extern void o8P0058OrientReloc(O8P0058Owner *owner, O8P0058State *state);
 

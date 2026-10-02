@@ -22,7 +22,7 @@ import source_symbol_fidelity as sf  # noqa: E402
 
 FUNCTION = "func_overlay_008_F0001294_185EFEC"
 SOURCE = "src/overlays/o008/overlay_008.c"
-SOURCE_SHA256 = "f253f786ea27f3b40aa406e19d11b2ded0692814206ede7c7cc7ae80b8bb01ba"
+SOURCE_SHA256 = "1ed95afee68a96c4a602ba70d171b3b57c84a06f0c7637e4d924964f84fc3e3a"
 EXPECTED = {
     "impact_gate": ("gO8P1294ImpactGateReloc", (0xFFD, 0x31A4), 1),
     "color_gate": ("gO8P1294ColorGateReloc", (0xFFD, 0x31AC), 1),

@@ -21,24 +21,28 @@ void *overlay8GetIndexed(Overlay8IndexedObject *object) {
     return result;
 }
 
-/* Workbench p6: structure-mismatch; 511/527 candidate/target instructions, 438 words from +0x2C.
- * A six-entry surface buffer and direct bound globals restore the exact 0xA0 frame and improve
- * relocation offset/type alignment from 23 to 32; pointer/index surface forms compile equivalently.
- * Remains: 16 missing instructions and relocation records plus unresolved global identities. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-02.  The four selector reads are a plain for loop that the
+ * default -O2 unroller expands as shipped (the TU no longer carries
+ * -Wo,-loopunroll,0); the clamp bounds and the bounce thresholds are
+ * literals; the surface walk is `while (index--)`; the present flag is read
+ * from its global in the test, not through a carrier; the mode dispatch is a
+ * switch with the call arm second; the mode setter's last argument is a
+ * float; and the locals are declared in the shipped frame order, with one
+ * unused word. */
 void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
                                        s32 updateRate) {
     O8P0058State *state;
+    f32 floorHeight;
+    f32 value;
+    s32 pad;
     f32 vector[3];
     s16 angles[3];
-    O8P0058Surface surfaces[6];
     O8P0058Surface *surface;
-    f32 floorHeight;
-    f32 update;
-    f32 value;
     s32 count;
     s32 index;
     s32 present;
+    O8P0058Surface surfaces[6];
+    f32 update;
     O8P0058Query *query;
 
     state = owner->state64;
@@ -63,9 +67,8 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
     }
 
     query = o8P0058AcquireReloc(state);
-    present = gO8P0058PresentReloc;
     gO8P0058ResultReloc = query->initial0;
-    if (present != 0) {
+    if (gO8P0058PresentReloc != 0) {
         if (((state->modeFlags420 & 0x8000) != 0) &&
             (state->active183 == 0x80)) {
             state->active183 = (u8)gO8P0058ActiveReloc;
@@ -77,7 +80,7 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
         if ((state->active183 & 0x80) != 0) {
             if (state->active183 == 0x84) {
                 if (gO8P0058SpawnGateReloc != 0) {
-                    o8P0058SpawnReloc(owner, 0x18, -1, 0);
+                    o8P0058SpawnReloc(owner, 0x18, -1, 0.0f);
                 }
             } else if (state->active183 != 0x80) {
                 state->alternate184 = 1;
@@ -86,26 +89,26 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
         }
     }
 
-    if (state->lower4 < D_B0) {
-        state->lower4 = D_B0;
+    if (state->lower4 < -31.99f) {
+        state->lower4 = -31.99f;
     }
-    if (D_B4 < state->lower4) {
-        state->lower4 = D_B4;
+    if (31.99f < state->lower4) {
+        state->lower4 = 31.99f;
     }
-    if (state->upper8 < D_B0) {
-        state->upper8 = D_B0;
+    if (state->upper8 < -31.99f) {
+        state->upper8 = -31.99f;
     }
-    if (D_B4 < state->upper8) {
-        state->upper8 = D_B4;
+    if (31.99f < state->upper8) {
+        state->upper8 = 31.99f;
     }
 
     o8P0058OrientReloc(owner, state);
     angles[0] = -state->angleF0;
     angles[1] = -owner->angle2;
     angles[2] = -owner->angle4;
-    vector[0] = 0.0f;
-    vector[1] = -1.0f;
     vector[2] = 0.0f;
+    vector[1] = -1.0f;
+    vector[0] = 0.0f;
     o8P0058RotateReloc(angles, vector);
     state->direction60 = vector[0];
     state->direction64 = vector[1];
@@ -115,17 +118,15 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
                                 surfaces);
     floorHeight = -32768.0f;
     state->surface68 = -32768.0f;
-    if (count != 0) {
-        index = count - 1;
-        do {
-            surface = &surfaces[index];
-            if ((surface->flags4 & 0x10000) != 0) {
-                state->surface68 = surface->height0;
-            }
-            if ((surface->flags4 & 0x08000000) != 0) {
-                floorHeight = surface->height0;
-            }
-        } while (index-- != 0);
+    index = count;
+    while (index--) {
+        surface = &surfaces[index];
+        if ((surface->flags4 & 0x10000) != 0) {
+            state->surface68 = surface->height0;
+        }
+        if ((surface->flags4 & 0x08000000) != 0) {
+            floorHeight = surface->height0;
+        }
     }
 
     if (owner->y10 < state->surface68) {
@@ -153,18 +154,10 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
     } else {
         D_8 = 0.0f;
         D_C = 0.0f;
-        index = state->selectors320[0] & 0xF;
-        D_8 += D_310[index];
-        D_C += query->heights148[D_350[index]];
-        index = state->selectors320[1] & 0xF;
-        D_8 += D_310[index];
-        D_C += query->heights148[D_350[index]];
-        index = state->selectors320[2] & 0xF;
-        D_8 += D_310[index];
-        D_C += query->heights148[D_350[index]];
-        index = state->selectors320[3] & 0xF;
-        D_8 += D_310[index];
-        D_C += query->heights148[D_350[index]];
+        for (index = 0; index < 4; index++) {
+            D_8 += D_310[state->selectors320[index] & 0xF];
+            D_C += query->heights148[D_350[state->selectors320[index] & 0xF]];
+        }
         D_8 *= 0.25f;
         D_C *= 0.25f;
 
@@ -172,18 +165,22 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
             D_C = state->override17C;
         }
         if (state->surfaceActive2 != 0) {
-            D_C = D_B8;
+            D_C = 0.98f;
         }
-        if ((state->peerD4 != 0) && (D_BC < D_8)) {
-            D_8 += (D_BC - D_8) * state->peerD4->state64->blend14;
+        if ((state->peerD4 != 0) && (0.7f < D_8)) {
+            D_8 += (0.7f - D_8) * state->peerD4->state64->blend14;
         }
     }
 
-    if ((state->mode16C == 0) || (state->mode16C == 1)) {
-        update = (f32)updateRate;
-        func_overlay_008_F0001294_185EFEC(owner, state, update);
-    } else {
-        update = (f32)updateRate;
+    switch (state->mode16C) {
+        case 0:
+        case 1:
+            update = (f32)updateRate;
+            func_overlay_008_F0001294_185EFEC(owner, state, update);
+            break;
+        default:
+            update = (f32)updateRate;
+            break;
     }
     func_overlay_008_F000291C_1860674((O8P291CMotion *)owner,
                                       (O8P291CState *)state, update);
@@ -203,7 +200,7 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
             }
             o8P0058CreateReloc(6, owner->xC, owner->y10, owner->z14, 4,
                                &state->resourceB8);
-            value = D_C0;
+            value = -0.1f;
             state->bounceActive18C = 1;
             state->bounce54 = value + 1.0f;
             state->bounceVelocity3FC = value;
@@ -217,24 +214,21 @@ void func_overlay_008_F0000058_185DDB0(O8P0058Owner *owner,
 
     if (state->disabled18D == 0) {
         if ((state->bounceActive18C != 0) &&
-            (state->bounce54 == state->position50)) {
+            (state->position50 == state->bounce54)) {
             state->bounceVelocity3FC *= -0.5f;
-            value = state->bounceVelocity3FC;
-            if ((D_C4 < value) && (value < D_C8)) {
+            if ((-0.01f < state->bounceVelocity3FC) &&
+                (state->bounceVelocity3FC < 0.01f)) {
                 state->bounceActive18C = 0;
                 state->bounceVelocity3FC = 0.0f;
                 state->bounce54 = 1.0f;
                 return;
             }
-            state->bounce54 = value + 1.0f;
+            state->bounce54 = state->bounceVelocity3FC + 1.0f;
         }
     } else {
         state->bounceActive18C = 0;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o008/overlay_008/func_overlay_008_F0000058_185DDB0.s")
-#endif
 
 void func_overlay_008_F0000894_185E5EC(O8Owner *owner, O8State *state,
                                        s32 updateRate) {
@@ -2327,16 +2321,6 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
  * first-mismatch: +0x44
  * summary: Configured flags remain best; reconstruct FP lifetimes and named data identities to supply 17 words and 22 relocation records without changing the exact frame.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
- */
-
-/* PLATEAU-HANDOFF:func_overlay_008_F0000058_185DDB0:start
- * symbol: func_overlay_008_F0000058_185DDB0
- * score: 438 differing words
- * frame: 0xA0
- * relocations: 86
- * first-mismatch: +0x2C
- * summary: Six surface entries and direct bounds restore the exact frame; recover the remaining eight global relocation pairs and 16 instructions before allocator work.
- * PLATEAU-HANDOFF:func_overlay_008_F0000058_185DDB0:end
  */
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:start

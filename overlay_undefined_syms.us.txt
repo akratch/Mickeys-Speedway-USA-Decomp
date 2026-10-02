@@ -2115,9 +2115,48 @@ gOverlay53Offsets = 0x000000f0;
 overlay53QueryModeReloc = 0xf0000000;
 
 /* overlay 53: func_overlay_053_F0000240_189DBE8.c.o */
-D_118 = 0x00000118;
-D_140 = 0x00000140;
-D_288 = 0x00000288;
+D_8007C180_o053Reloc = 0x00000000;
+D_800C947C_o053Reloc = 0x00000000;
+D_800D3140_o053Reloc = 0x00000000;
+D_800D3144_o053Reloc = 0x00000000;
+D_800D31C8_o053Reloc = 0x00000000;
+D_800D3550_o053Reloc = 0x00000000;
+camSetNo_o053Reloc = 0xf0000000;
+camSetScissor_o053Reloc = 0xf0000000;
+camStandardOrtho_o053Reloc = 0xf0000000;
+ext_o1_83e0_o053Reloc = 0x00000000;
+freeFrontEndItem_o053Reloc = 0xf0000000;
+frontGet2PlayerSplit_o053Reloc = 0xf0000000;
+frontGetScreenMode_o053Reloc = 0xf0000000;
+func_800005CC_o053Reloc = 0xf0000000;
+func_800016EC_o053Reloc = 0xf0000000;
+func_80005750_o053Reloc = 0xf0000000;
+func_80028F54_o053Reloc = 0xf0000000;
+func_800290A0_o053Reloc = 0xf0000000;
+func_8002F618_o053Reloc = 0xf0000000;
+func_80034920_o053Reloc = 0xf0000000;
+func_80037414_o053Reloc = 0xf0000000;
+func_80039E34_o053Reloc = 0xf0000000;
+func_8003A590_o053Reloc = 0xf0000000;
+gOverlay53BlinkCounter = 0x00000114;
+gOverlay53ClockDigits = 0x00000140;
+gOverlay53ClockSplitX = 0x000000ec;
+gOverlay53HudHeight = 0x00000290;
+gOverlay53HudRowY = 0x000000dc;
+gOverlay53IconAlpha = 0x00000118;
+gOverlay53IconSplitX = 0x000000e4;
+gOverlay53ItemSplitX = 0x000000e8;
+gOverlay53Items = 0x00000288;
+gOverlay53TimeDigits = 0x00000000;
+gOverlay53TimeTemplate = 0x0000001c;
+gOverlay53TransitionDone = 0x00000110;
+levelGetLevel_o053Reloc = 0xf0000000;
+loadFrontEndItem_o053Reloc = 0xf0000000;
+mainChangeCameras_o053Reloc = 0xf0000000;
+mainChangeLevel_o053Reloc = 0xf0000000;
+mainGetMode_o053Reloc = 0xf0000000;
+overlay56SplitTime_o053Reloc = 0xf0000000;
+viGetCurrentSize_o053Reloc = 0xf0000000;
 
 /* overlay 53: overlay53ReleaseResources.c.o */
 gOverlay53Handle0 = 0x00000288;
@@ -4241,6 +4280,7 @@ overlay101DrawMarkerReloc = 0xf0000000;
 overlay101DrawSlotReloc = 0xf0000000;
 
 /* overlay 101: func_overlay_101_F0003A58_18DF278.c.o */
+D_118 = 0x00000118;
 D_1D0 = 0x000001d0;
 D_C64 = 0x00000c64;
 D_INPUT = 0x00000000;

@@ -3985,20 +3985,21 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                 type = kindOrEntry[j];
                 if ((type & 0x80) != 0) {
                     type &= 0x7F;
-                    if (type == 0) {
+                    switch (type) {
+                    case 0:
                         mode = 0x206;
-                    } else if (type == 1) {
+                        break;
+                    case 1:
                         mode = 6;
-                    } else if (type == 2) {
+                        break;
+                    case 2:
                         mode = 0x16;
                         func_80009220(arg0, arg1, arg2,
                                       (Objects09220Object *)object,
                                       (s32)textures[j],
                                       (Objects09220Source *)cones[j],
                                       alphas[j]);
-                    } else {
-                        /* Baseline placeholder: default-mode lifetime remains unproved. */
-                    mode = 0x3333;
+                        break;
                     }
                     command = (Objects09414Gfx *)*arg0;
                     *arg0 = (void *)(command + 1);
@@ -5376,10 +5377,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414
- * score: 323 differing words
+ * score: 287 differing words
  * frame: 0x198
  * relocations: 11
  * first-mismatch: +0x40
- * summary: Index plus entry-pointer static loop, cone read before the test, two s32 pads: 323 at +4, frame exact. Next: dynamic loop, type dispatch.
+ * summary: Delta 0: type &= 0x7F then a switch with no default, so mode keeps its home value. Next: entry-branch load order, prologue packet constants.
  * PLATEAU-HANDOFF:func_80009414:end
  */

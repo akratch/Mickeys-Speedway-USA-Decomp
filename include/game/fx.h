@@ -194,7 +194,6 @@ extern s16 D_8007D378[4];
 extern FxGfx D_8007D380[10];
 extern FxGfx D_8007D3D0[7];
 extern FxGfx D_8007D408[14];
-extern char D_80083DE0[];
 extern s32 *D_800D2FA0;
 
 #endif /* GAME_FX_H */

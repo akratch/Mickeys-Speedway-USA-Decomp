@@ -73,7 +73,6 @@ extern s16 Arctanf(f32 x, f32 y);
 extern s32 viGetVideoMode(void);
 extern void wakeUpdate(Wake *wake, f32 x, f32 height, f32 z, s16 angle,
                        s32 delta);
-extern f32 D_80083DE4;
 extern void mathOneFloatPY(void *source, f32 *result, s16 angle);
 extern void camSetScissor(Gfx **dlist);
 extern void func_80034920();
@@ -233,132 +232,82 @@ void func_800470B0(FxCone *cone, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
     vertex[-0xE] = 1;
 }
 
-#ifdef NON_MATCHING
-/* Workbench verdict: structure-mismatch, 175 differing words, first mismatch +0x4. */
-/* Candidate: 183/185 instructions with the target -0x180 frame; 64 structural words remain, so it is not shape-exact. */
-/* Shape status: scale invariants now use target-like f22/f24/f26; the extra s8/loop-limit web still shifts the setup. */
+/* PROVENANCE: JFG's public src/fx.c carries the corresponding cone routine as
+ * assembly only; this body is written from Mickey's own listing in the shape
+ * of its matched sibling func_800470B0.
+ * Matched by discarding the inherited m2c shape: a 17-point array walked by
+ * one `point` cursor (the second ring is `point[8]`), plain counted loops
+ * (the third vertex loop is IDO's own four-way unroll), and 0.33f written as
+ * the literal it is. The literal is the TU's own pool word (ROM 0x849E4); as a
+ * global it cannot be hoisted past the trig calls, which put scaleZ's load
+ * ahead of scaleX/scaleY in the schedule. `i` and the pad below the array
+ * place its home at sp+0x98. */
 void func_80047304(FxCone *cone, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
                    s16 arg5, f32 arg6, f32 arg7, f32 arg8) {
-    u8 *point;
     u8 *vertex;
-    FxCone *address;
-    FxCone *base;
-    f32 angle;
-    f32 scaleZ;
+    FxConePoint *point;
     f32 scaleX;
     f32 scaleY;
+    f32 scaleZ;
     f32 sine;
     f32 cosine;
-    f32 yScale;
+    FxConePoint points[17];
     s32 i;
-    s32 j;
-    s32 value;
-    u8 work[0x98];
+    s32 pad;
 
-    angle = arg8;
-    *(f32 *) (work + 8) = -angle;
-    point = work + 0xC;
-    i = 0;
     scaleX = arg6 * 4.0f;
     scaleY = arg7 * 4.0f;
-    *(f32 *) work = 0.0f;
-    *(f32 *) (work + 4) = 0.0f;
-    scaleZ = -(angle * D_80083DE4);
-    while (i < 8) {
-        value = i << 0xD;
-        sine = func_8002A8C0(value);
-        cosine = func_8002A8BC(value);
-        i += 1;
-        point += 0xC;
-        *(f32 *) (point - 0xC) = arg6 * sine;
-        *(f32 *) (point - 4) = 0.0f;
-        *(f32 *) (point + 0x5C) = scaleZ;
-        yScale = scaleY * cosine;
-        *(f32 *) (point - 8) = arg7 * cosine;
-        *(f32 *) (point + 0x54) = 2.0f * (scaleX * sine);
-        *(f32 *) (point + 0x58) = 2.0f * yScale;
+    scaleZ = -(arg8 * 0.33f);
+    points[0].x = 0.0f;
+    points[0].y = 0.0f;
+    points[0].z = -arg8;
+    point = &points[1];
+    for (i = 0; i < 8; i++) {
+        sine = func_8002A8C0(i << 13);
+        cosine = func_8002A8BC(i << 13);
+        point->x = arg6 * sine;
+        point->y = arg7 * cosine;
+        point->z = 0.0f;
+        point[8].x = 2.0f * (scaleX * sine);
+        point[8].y = 2.0f * (scaleY * cosine);
+        point[8].z = scaleZ;
+        point++;
     }
-
-    base = cone;
-    address = cone;
-    j = 0;
-    point = work;
-    while (j < 8) {
-        func_80048080(0x11, arg1, arg2, arg3, (s32) arg4, (s32) arg5,
-                      (FxConePoint *) point, *(void **) ((u8 *) address + 8),
-                      0xFF);
-        j += 4;
-        address = (FxCone *) ((u8 *) address + 4);
+    for (i = 0; i < 2; i++) {
+        func_80048080(17, arg1, arg2, arg3, arg4, arg5, points,
+                      cone->addresses[i], 0xFF);
     }
-
-    vertex = base->vertices;
-    i = 1;
-    do {
-        s32 index;
-        s32 next;
-
-        index = i & 7;
-        next = i + 8;
-        vertex[1] = (u8) i;
-        vertex[0x11] = (u8) i;
-        i += 1;
+    vertex = cone->vertices;
+    for (i = 1; i < 9; i++) {
         vertex[0] = 0;
-        vertex[2] = (u8) next;
-        vertex[3] = (u8) (index + 9);
+        vertex[1] = i;
+        vertex[2] = i + 8;
+        vertex[3] = (i & 7) + 9;
         vertex[0x10] = 0;
-        vertex[0x12] = (u8) (index + 9);
-        vertex[0x13] = (u8) (index + 1);
+        vertex[0x11] = i;
+        vertex[0x12] = (i & 7) + 9;
+        vertex[0x13] = (i & 7) + 1;
         vertex += 0x20;
-    } while (i < 9);
-    i = 1;
-    do {
-        s32 index;
-        s32 next;
-
-        index = i & 7;
-        next = i + 8;
-        vertex[1] = (u8) i;
-        vertex[0x11] = (u8) i;
-        i += 1;
+    }
+    for (i = 1; i < 9; i++) {
         vertex[0] = 0;
-        vertex[2] = (u8) (index + 9);
-        vertex[3] = (u8) next;
+        vertex[1] = i;
+        vertex[2] = (i & 7) + 9;
+        vertex[3] = i + 8;
         vertex[0x10] = 0;
-        vertex[0x12] = (u8) (index + 1);
-        vertex[0x13] = (u8) (index + 9);
+        vertex[0x11] = i;
+        vertex[0x12] = (i & 7) + 1;
+        vertex[0x13] = (i & 7) + 9;
         vertex += 0x20;
-    } while (i < 9);
-    i = 1;
-    do {
-        s32 index;
-        s32 next;
-
-        index = i + 1;
-        next = i + 2;
-        value = i + 3;
-        vertex[1] = (u8) i;
-        i += 4;
-        vertex[0x32] = (u8) ((value & 7) + 1);
-        vertex[0x22] = (u8) ((next & 7) + 1);
-        vertex[0x12] = (u8) ((index & 7) + 1);
-        vertex[0x31] = (u8) value;
-        vertex[0x21] = (u8) next;
-        vertex[0x11] = (u8) index;
-        vertex[0x10] = 0;
-        vertex[0x13] = 0;
-        vertex[0x20] = 0;
-        vertex[0x23] = 0;
-        vertex[0x30] = 0;
-        vertex[0x33] = 0;
-        vertex += 0x40;
-        vertex[-0x40] = 0;
-        vertex[-0x3E] = (u8) ((i - 4) + 1);
-        vertex[-0x3D] = 0;
-    } while (i != 9);
+    }
+    for (i = 1; i < 9; i++) {
+        vertex[0] = 0;
+        vertex[1] = i;
+        vertex[2] = (i & 7) + 1;
+        vertex[3] = 0;
+        vertex += 0x10;
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/func_80047304.s")
-#endif
 #ifdef NON_MATCHING
 /* Mickey-derived draft; JFG's corresponding fxMakeConeTextureCoords body is
  * also assembly-only and supplies no adaptable C source. */
@@ -1831,7 +1780,7 @@ void func_8004A380(s32 x, s32 y, s32 value, s32 minimumWidth, s32 arg4) {
 
     length = 0;
     index = 0;
-    sprintf(text, D_80083DE0, value);
+    sprintf(text, "%d", value);
     if (text[length] != '\0') {
         do {
             length++;
@@ -2301,17 +2250,6 @@ void func_8004AF68(void) {
  * over the integer temp ring where it previously showed two incoherent ones,
  * which is the L127 ring-phase fact rather than a set of colour questions.
  */
-
-/* PLATEAU-HANDOFF:func_80047304:start
- * symbol: func_80047304
- * score: 158 differing words
- * frame: 0x180
- * relocations: 5
- * first-mismatch: 0x4
- * summary: Hoisted bound plus one scale local failed: lt-bound +8/186, ne-bound 0/161, in-loop scaleZ +8/175. None beat 158 at delta 0. Stall.
- * PLATEAU-HANDOFF:func_80047304:end
- */
-
 
 /* PLATEAU-HANDOFF:fxSPDPRipple:start
  * symbol: fxSPDPRipple

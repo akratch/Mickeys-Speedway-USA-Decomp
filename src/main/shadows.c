@@ -491,9 +491,23 @@ typedef struct Shadow168Angle {
 #define SH168_F32(p, o) (*(f32 *) ((u8 *) (p) + (o)))
 #define SH168_PTR(p, o) (*(void **) ((u8 *) (p) + (o)))
 
-/* Workbench verdict: structure-mismatch, 553 differing words; first mismatch +0x4. */
-/* Candidate is 563/556 instructions with the exact 0x190-byte target frame. */
-/* Relocation count is exact at 48; allocation/CFG order and identities remain unresolved. */
+/* Workbench verdict: 439 masked words at size +12, frame 0x190 exact (was 534 at +28).
+ * 2026-10-02 (lane x-shad), this is DKR's shadow_generate with the shadow
+ * globals gathered into the stack query struct:
+ *   - the corner points are seeded from query.x8/query.z10, not from the x/z
+ *     arguments: the arguments then have one use each and x/y take f12/f14
+ *     as in the target (534 at +28 to 502 at -4);
+ *   - the ratio block reuses point0 for the cosine and the ratio (its spill
+ *     lands at point0's home +0xF8) and writes the zero-sine arm as 2.0, a
+ *     double literal, which gives that use its own constant web as in the
+ *     target: the block is word-for-word the target's;
+ *   - the declarations put three scalars above result (+0x104), count at
+ *     +0x100 and sine at +0xE0;
+ *   - `* 10` (an int literal) in the unrotated corner path stops 10.0f being
+ *     one web with the head's multiply and hoisted into f18 after the calls.
+ * Left: the rotated-corner path keeps -point0, -point4 and the
+ * expanded-cosine product in memory locals (+0x58, +0x50, +0x5C) and copies
+ * halfX to +0x38 in the target; this body's homes there are one slot off. */
 void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
                    f32 arg5, s16 arg6) {
     typedef struct Shadow168Query {
@@ -518,25 +532,25 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
         f32 bounds40[4];
     } Shadow168Query;
 
-    s32 result[32];
     void *matrix;
     s32 value;
-    f32 radius;
-    f32 base;
+    s32 i;
+    s32 result[32];
+    s32 count;
     f32 distance;
-    f32 sine;
-    f32 cosine;
-    f32 ratio;
     f32 point0;
     f32 point2;
     f32 point4;
     f32 point6;
     f32 objectScale;
+    f32 cosine;
+    f32 sine;
+    s32 active;
     Shadow168Query query;
     f32 points[8];
-    s32 count;
-    s32 i;
-    s32 active;
+    f32 ratio;
+    f32 radius;
+    f32 base;
     void *arg2 = arg2p;
 
     query.x8 = arg3;
@@ -572,19 +586,19 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
     query.halfZ38 = query.halfX34;
     query.expanded3C = 1.0f;
     if (arg1 != NULL) {
-        cosine = func_8002A8BC(SH168_S16(arg1, 2));
-        if (cosine > 0.0f) {
+        point0 = func_8002A8BC(SH168_S16(arg1, 2));
+        if (point0 > 0.0f) {
             sine = func_8002A8C0(SH168_S16(arg1, 2));
             if (sine != 0.0f) {
-                ratio = cosine / sine;
-                if (ratio > 2.0f) {
-                    ratio = 2.0f;
+                point0 = point0 / sine;
+                if (point0 > 2.0f) {
+                    point0 = 2.0f;
                 }
             } else {
-                ratio = 2.0f;
+                point0 = 2.0;
             }
             query.expanded3C +=
-                (0.25f * ratio * (f32) SH168_U8(arg2, 0x12)) /
+                (0.25f * point0 * (f32) SH168_U8(arg2, 0x12)) /
                 query.halfZ38;
         }
     }
@@ -601,8 +615,8 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
     query.inverseScale2C = 144.0f / query.inverseScale2C;
 
     for (i = 0; i < 4; i++) {
-        points[i * 2] = arg3;
-        points[(i * 2) + 1] = arg5;
+        points[i * 2] = query.x8;
+        points[(i * 2) + 1] = query.z10;
     }
 
     if (arg1 != NULL) {
@@ -635,8 +649,8 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
                 point6 = SH168_F32(arg2, 4) *
                          ((f32) SH168_S16(matrix, 0x40) * objectScale);
             } else {
-                point0 *= 10.0f;
-                point2 *= 10.0f;
+                point0 *= 10;
+                point2 *= 10;
                 point4 = SH168_F32(arg2, 0) * -10.0f;
                 point6 = SH168_F32(arg2, 4) * -10.0f;
             }
@@ -1396,10 +1410,10 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_80016890:start
  * symbol: func_80016890
- * score: 534/563 words
+ * score: 439/556 words
  * frame: 0x190
  * relocations: 48
- * first-mismatch: +0x8
- * summary: 563->534, delta +60->+28: radius as query field, arg2 copied to a local (s3), query stores first, f32* points arg
+ * first-mismatch: +0x10
+ * summary: DKR shadow_generate shape: 534/+28 to 439/+12 (points from query, point0 ratio, 2.0 literal, int 10); left: rotated-corner memory locals
  * PLATEAU-HANDOFF:func_80016890:end
  */

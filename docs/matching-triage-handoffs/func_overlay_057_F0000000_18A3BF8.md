@@ -2,11 +2,13 @@
 ### `func_overlay_057_F0000000_18A3BF8` plateau handoff
 
 - source: `src/overlays/o057/func_overlay_057_F0000000_18A3BF8.c`
-- score: 84/597 words
-- frame: 0x88
+- score: 19/597 words
+- frame: 0x78
 - relocations: 246
-- first mismatch: +0x8
-- summary: 84 at 0: pair table via (i<<2) keeps i; own counter for 0x36 loop. Open: s-reg order (i s1/ptr s0), frame 0x88 vs 0x78.
+- first mismatch: +0x150
+- summary: 19 at 0, frame exact: locals reused (descriptor walks spawns, entry is loop end). Open: loop preheader lui order, 0x36 delay slot, one ring draw.
+
+Summary before this remeasure: 84 at 0: pair table via (i<<2) keeps i; own counter for 0x36 loop. Open: s-reg order (i s1/ptr s0), frame 0x88 vs 0x78.
 
 Summary before this remeasure: 100 at -8: target keeps i live in s1 in the final spawn loop, uopt here strength-reduces both arrays; frame 0x88 vs 0x78.
 
@@ -124,5 +126,55 @@ worse. The frame is 0x88 against 0x78 with every packet and the choice mask
 at the target's offsets: two reserved cells below the final packet that no
 declared local accounts for (removing code moves them, they never carry
 traffic). Bare blocks were removed at no change.
+
+## 2026-10-02 (lane `j-o057`): 84 -> 19 at delta 0, frame 0x78 exact
+
+Every step is a local-set or carrier rewrite measured with `tools/fast_score.py`
+and `tools/shape_product.py`; the uopt records (`p1dec` save/nocs) were read
+with the instrumented toolchain to pick each one.
+
+  - Locals cut to the frame: `path`/`spawned`/`result` are one pointer
+    (`object`, one struct type covering +0x8/+0x16/+0x3C/+0x68), `stride`
+    folded into `i`, the 0x36-loop counter is `value`. Seven scalars plus the
+    two packets land every home at the target's offset and frame 0x78:
+    84 -> 76 (frame alone is 20 words).
+  - Flag test `((flags & 0x1C0) >> 6) >= 3` instead of `(< 3) ^ 1`, and the
+    final packet storing z, state, byte0B, byte0A: 76 -> 57.
+  - `descriptor` reused as the final loop's walk over gO57Spawned150Reloc:
+    the walk becomes part of the highest-save symbol web and takes s0, so `i`
+    falls to s1 in the choice and final loops as in the target: 57 -> 45.
+    (Records: `i` 27.67 against the SR walk temporary 20.5 before.)
+  - `entry` reused as every descriptor loop's end pointer (end and the id walk
+    are s1 in the target) and the index tables subscripted by `value`, so the
+    index walk is an SR temporary that sits in s2 below the end: 45 -> 41.
+    A `resourceIndex` symbol always outranks the end (124/5 = 24.8 against
+    137/8 = 17.1) unless assigned before the singles, which costs 49 words.
+  - Preheader statement order `value = 0; entry = end; descriptor = start;`:
+    41 -> 29 (12 cells).
+  - The 0x27C..0x31C fill is one 10-row loop (`O57Row`, stride 0x10); IDO
+    peels the two remainder rows, which are the 27C/28C stores. With value10
+    then read at each use (no carrier) the seed block is exact: 29 -> 21.
+    Neither edit alone moves (value10 shares block 37 with the fill walk).
+  - The mask compare with the local first, and `i = 0` before the walk's
+    assignment: 21 -> 19.
+
+Open, 19 words, decision variables named:
+
+  - Descriptor loops, 8 words: the target's preheader emits the index-table
+    `lui` first and the `addiu`s in reverse (LIFO), ours FIFO with the SR
+    init last. Folding statements onto one line, all six orders, and a
+    one-line (macro-like) loop body were measured flat or worse; a pointer
+    symbol for the index gets the order but outranks the end pointer.
+  - 0x36 loop, 4 words: delay slot holds the counter step instead of the
+    store, and the two `addiu`s order. Folding `value = 0; descriptor = ...;
+    entry = ...;` onto one line fixes the order (2 words) but is unnatural.
+  - Final loop, 7 words: preheader `addiu` order, and one ring draw. The
+    freelist trace shows ours draws t5 for 0x80 where the target's sequence
+    (kind t3, mode t2, x t4/t7, y t6, 0x80 t9, state t8, 2 t0) needs t5 spent
+    before the loop and x/y emitted before byte0B. Store-order products (120
+    and 96 cells) are flat; the missing earlier draw is not located.
+
+Do not re-run: the declaration-order sweeps (560 and 210 cells, all flat once
+the set is right), seed carrier products, index-loop line folding.
 
 <!-- plateau-handoff:func_overlay_057_F0000000_18A3BF8:end -->

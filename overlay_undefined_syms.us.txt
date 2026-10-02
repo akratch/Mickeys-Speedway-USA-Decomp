@@ -3755,8 +3755,29 @@ overlay86SelectPositionReloc = 0xf0000000;
 /* overlay 87: overlay87InitializeObject.c.o */
 gOverlay87InitScaleReloc = 0x00000000;
 
-/* overlay 87: overlay87ReleaseCurrent.c.o */
+/* overlay 87: func_overlay_087_F0000128_18D3090.c.o */
+Arctanf_o087Reloc = 0xf0000000;
+Powerf_o087Reloc = 0xf0000000;
+dAngle_o087Reloc = 0xf0000000;
+func_80002FE0_o087Reloc = 0xf0000000;
+func_80008128_o087Reloc = 0xf0000000;
+func_8002A8BC_o087Reloc = 0xf0000000;
+func_8002A8C0_o087Reloc = 0xf0000000;
+func_8005ABA8_o087Reloc = 0xf0000000;
+func_8005AD64_o087Reloc = 0xf0000000;
+gOverlay87ApproachFactor = 0x0000000c;
 gOverlay87Current = 0x00000000;
+gOverlay87Gravity = 0x00000020;
+gOverlay87NegativeAcceleration = 0x0000001c;
+gOverlay87NegativeDivisor = 0x00000018;
+gOverlay87PositiveAcceleration = 0x00000014;
+gOverlay87PositiveDivisor = 0x00000010;
+gOverlay87StraightFactor = 0x00000008;
+gOverlay87TurnFactor = 0x00000004;
+gOverlay87UpdateTable = 0x00000000;
+sqrtf_o087Reloc = 0xf0000000;
+
+/* overlay 87: overlay87ReleaseCurrent.c.o */
 overlay87ReleaseReloc = 0xf0000000;
 
 /* overlay 87: overlay87HasNearby.c.o */

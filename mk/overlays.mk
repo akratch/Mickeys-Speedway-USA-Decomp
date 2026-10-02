@@ -1610,6 +1610,17 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87InitializeObject.c.o: POSTPROCESS
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x128
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/func_overlay_087_F0000128_18D3090.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/func_overlay_087_F0000128_18D3090.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym Arctanf=Arctanf_o087Reloc \
+		--redefine-sym Powerf=Powerf_o087Reloc \
+		--redefine-sym dAngle=dAngle_o087Reloc \
+		--redefine-sym func_80002FE0=func_80002FE0_o087Reloc \
+		--redefine-sym func_80008128=func_80008128_o087Reloc \
+		--redefine-sym func_8002A8BC=func_8002A8BC_o087Reloc \
+		--redefine-sym func_8002A8C0=func_8002A8C0_o087Reloc \
+		--redefine-sym func_8005ABA8=func_8005ABA8_o087Reloc \
+		--redefine-sym func_8005AD64=func_8005AD64_o087Reloc \
+		--redefine-sym sqrtf=sqrtf_o087Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x768
 # All four random-range calls are instruction-natural and share retail's
 # offset-zero stored overlay carrier; retain distinct runtime identities in

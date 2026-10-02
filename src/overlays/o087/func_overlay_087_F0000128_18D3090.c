@@ -56,16 +56,16 @@ extern s32 Arctanf(f32 y, f32 x);
 extern f32 sqrtf(f32 value);
 extern f32 func_8002A8C0(s16 angle);
 extern f32 func_8002A8BC(s16 angle);
-extern void func_80008128(Overlay87MotionObject *object, f32 x, f32 y, f32 z);
+extern s32 func_80008128(Overlay87MotionObject *object, f32 x, f32 y, f32 z);
 extern s32 func_8005ABA8(Overlay87MotionObject *object, void *update,
                          f32 updateRate);
 extern void func_8005AD64(Overlay87MotionObject *object, s32 mode, s32 index,
                           f32 value);
 
-/* Workbench: structure-mismatch; 0x760 candidate vs 0x768 target, frame -104,
- * 193 masked words differ first at +0x2C. Numerator/crossing, lifetime,
- * nested-scope, and bounded permutation levers are exhausted; verticalDelta's FP spill schedule and opcode order block closure. */
-#ifdef NON_MATCHING
+/* Matched: f32 0 passed as the integer literal 0, func_80008128 returning s32
+ * (as its other callers declare it), verticalDelta reused as the divisor term
+ * in the lift test, dx reused for the X step, newAngle/crossed reused for the
+ * turn delta, and two unused s32 locals that place the frame homes. */
 void func_overlay_087_F0000128_18D3090(Overlay87MotionObject *object,
                                        s32 updateRate) {
     Overlay87MotionState *state;
@@ -74,14 +74,13 @@ void func_overlay_087_F0000128_18D3090(Overlay87MotionObject *object,
     f32 dz;
     f32 distance;
     f32 update;
-    f32 moveX;
     f32 moveZ;
-    s32 nearby;
-    s32 oldAngle;
     s32 newAngle;
     s32 crossed;
-    s32 delta;
-    s32 reverseDelta;
+    s32 oldAngle;
+    s32 unused1;
+    s32 nearby;
+    s32 unused2;
 
     update = updateRate;
     state = object->state;
@@ -89,7 +88,7 @@ void func_overlay_087_F0000128_18D3090(Overlay87MotionObject *object,
     if ((nearby != 0) && (state->phase == 0)) {
         state->phase = 1;
         state->targetHeight = state->y + state->liftOffset;
-        func_8005AD64(object, 0, -1, 0.0f);
+        func_8005AD64(object, 0, -1, 0);
         if (gOverlay87Current == NULL) {
             func_80002FE0(0x1BD, state->x, state->y, state->z, 4,
                           &gOverlay87Current);
@@ -194,28 +193,29 @@ void func_overlay_087_F0000128_18D3090(Overlay87MotionObject *object,
             if ((state->verticalVelocity == 0.0f) &&
                 (verticalDelta >= -3.0f) && (verticalDelta <= 3.0f)) {
                 state->phase = 0;
-                func_8005AD64(object, 2, -1, 0.0f);
+                func_8005AD64(object, 2, -1, 0);
                 object->verticalVelocity = 0.0f;
             }
         }
 
         if (state->phase != 0) {
             if (object->verticalVelocity >= 0.0f) {
-                if (state->targetHeight <=
-                    object->y +
-                        (-(object->verticalVelocity * object->verticalVelocity) /
-                         gOverlay87PositiveDivisor)) {
+                verticalDelta = -(object->verticalVelocity * object->verticalVelocity) /
+                                gOverlay87PositiveDivisor;
+                if (state->targetHeight <= object->y + verticalDelta) {
                     state->verticalAcceleration = 0.0f;
                 } else {
                     state->verticalAcceleration =
                         gOverlay87PositiveAcceleration;
                 }
-            } else if ((object->y +
-                        (-(object->verticalVelocity * object->verticalVelocity) /
-                         gOverlay87NegativeDivisor)) < state->targetHeight) {
-                state->verticalAcceleration = gOverlay87NegativeAcceleration;
             } else {
-                state->verticalAcceleration = 0.0f;
+                verticalDelta = -(object->verticalVelocity * object->verticalVelocity) /
+                                gOverlay87NegativeDivisor;
+                if ((object->y + verticalDelta) < state->targetHeight) {
+                    state->verticalAcceleration = gOverlay87NegativeAcceleration;
+                } else {
+                    state->verticalAcceleration = 0.0f;
+                }
             }
             verticalDelta =
                 (object->verticalVelocity * update) +
@@ -225,35 +225,22 @@ void func_overlay_087_F0000128_18D3090(Overlay87MotionObject *object,
                 (state->verticalAcceleration + gOverlay87Gravity) * update;
         }
 
-        moveX = func_8002A8C0(state->angle) * distance;
+        dx = func_8002A8C0(state->angle) * distance;
         moveZ = func_8002A8BC(state->angle) * distance;
-        func_80008128(object, moveX, verticalDelta, moveZ);
-        delta = (state->angle - oldAngle) & 0xFFFF;
-        reverseDelta = (oldAngle - state->angle) & 0xFFFF;
-        if (reverseDelta < delta) {
-            delta = -reverseDelta;
+        func_80008128(object, dx, verticalDelta, moveZ);
+        newAngle = (state->angle - oldAngle) & 0xFFFF;
+        crossed = (oldAngle - state->angle) & 0xFFFF;
+        if (crossed < newAngle) {
+            newAngle = -crossed;
         }
-        object->turnAmount = -delta * 3;
+        object->turnAmount = -newAngle * 3;
         object->liftAmount = object->verticalVelocity * 1000.0f;
     }
 
     if ((func_8005ABA8(object, gOverlay87UpdateTable[object->updateMode],
                        update) != 0) &&
         (object->updateMode == 0)) {
-        func_8005AD64(object, 1, -1, 0.0f);
+        func_8005AD64(object, 1, -1, 0);
     }
     object->angle = state->angle + 0x4000;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o087/func_overlay_087_F0000128_18D3090/func_overlay_087_F0000128_18D3090.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_087_F0000128_18D3090:start
- * symbol: func_overlay_087_F0000128_18D3090
- * score: 160 differing words
- * frame: 0x68
- * relocations: 38
- * first-mismatch: +0x2C
- * summary: Angle stored per arm: 193 to 160 at delta -16. verticalDelta is stored at definition here; the target saves before the first call and restores once.
- * PLATEAU-HANDOFF:func_overlay_087_F0000128_18D3090:end
- */

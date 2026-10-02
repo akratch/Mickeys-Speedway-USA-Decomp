@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 155,
-  "resolved": 155,
+  "queue_size": 154,
+  "resolved": 154,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 155,
-  "relocation_masked_coverage": 155,
+  "source_context_coverage": 154,
+  "relocation_masked_coverage": 154,
   "functions": [
     {
       "name": "func_80019AB8",
@@ -68,6 +68,36 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "ww7a.e_90.FOZl.-YEz._3L2.IB1i.lELj.6jDZ.sNiG.3e-7.H8Q"
+    },
+    {
+      "name": "func_overlay_057_F0000000_18A3BF8",
+      "file": "src/overlays/o057/func_overlay_057_F0000000_18A3BF8.c",
+      "overlay": 57,
+      "tu": "overlays/o057",
+      "size_bytes": 2388,
+      "objdiff_match_pct": null,
+      "differing_words": 71,
+      "first_mismatch_offset": 16,
+      "relocation_masked_differing_words": 19,
+      "relocation_masked_first_mismatch_offset": 336,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "cdJP.L6-1.mizr.wOil.acUe.MxWT.Qem2.tNCO.VGz7.R7Gc.aFg"
+    },
+    {
+      "name": "func_overlay_001_F000438C_185076C",
+      "file": "src/overlays/o001/overlay_001_tail.c",
+      "overlay": 1,
+      "tu": "overlays/o001",
+      "size_bytes": 6168,
+      "objdiff_match_pct": null,
+      "differing_words": 89,
+      "first_mismatch_offset": 332,
+      "relocation_masked_differing_words": 41,
+      "relocation_masked_first_mismatch_offset": 2084,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "lt5S.e_3H.sK8N.KZI3.j8Bx.lRGd.FbQc.JQaE.Rf7q.Bbof.saI"
     },
     {
       "name": "func_overlay_073_F0000D70_18CB830",
@@ -308,21 +338,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "2HKf.UFPL.jy-B.b10v.wwvE.EyF7.ggKA.tVsm.Au6N.7nxI.vf8"
-    },
-    {
-      "name": "func_overlay_057_F0000000_18A3BF8",
-      "file": "src/overlays/o057/func_overlay_057_F0000000_18A3BF8.c",
-      "overlay": 57,
-      "tu": "overlays/o057",
-      "size_bytes": 2388,
-      "objdiff_match_pct": null,
-      "differing_words": 131,
-      "first_mismatch_offset": 8,
-      "relocation_masked_differing_words": 84,
-      "relocation_masked_first_mismatch_offset": 8,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "hgJ7.CmkN._uBJ.6XUb.B90U.oTuI.IbUF.eAHH.MBX_.b4sT.PxI"
     },
     {
       "name": "func_overlay_031_F0000000_187F520",
@@ -1255,21 +1270,6 @@
       "source_context_sha256": "Nnbu.FyTS.Qc7l.ykvv.uG35.58g4.sAqr.GfWp.4t4S.seT_.MAg"
     },
     {
-      "name": "func_overlay_001_F000438C_185076C",
-      "file": "src/overlays/o001/overlay_001_tail.c",
-      "overlay": 1,
-      "tu": "overlays/o001",
-      "size_bytes": 6168,
-      "objdiff_match_pct": null,
-      "differing_words": 1078,
-      "first_mismatch_offset": 332,
-      "relocation_masked_differing_words": 1061,
-      "relocation_masked_first_mismatch_offset": 368,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "XsAR.Zdlc.Wx-m.rpgG.uNLq.2c2h.V687.mdME.iLXU.Hp0y.JuE"
-    },
-    {
       "name": "func_80058250",
       "file": "src/main/vehicle_sounds.c",
       "overlay": null,
@@ -1463,21 +1463,6 @@
       "size_delta": -16,
       "category": "size-mismatch",
       "source_context_sha256": "-07E.mWtK.OkTb.HLMg.9gWG.8Kuq.AnIX.9j64.atm-.sNdO.-1Y"
-    },
-    {
-      "name": "func_overlay_087_F0000128_18D3090",
-      "file": "src/overlays/o087/func_overlay_087_F0000128_18D3090.c",
-      "overlay": 87,
-      "tu": "overlays/o087",
-      "size_bytes": 1896,
-      "objdiff_match_pct": null,
-      "differing_words": 163,
-      "first_mismatch_offset": 44,
-      "relocation_masked_differing_words": 160,
-      "relocation_masked_first_mismatch_offset": 44,
-      "size_delta": -16,
-      "category": "size-mismatch",
-      "source_context_sha256": "XFsq.cdEf.Ap1L.a-Ij.QGFT.CshV.3eJ8.KBTl.uW3c.BMxR.Hik"
     },
     {
       "name": "func_80036544",

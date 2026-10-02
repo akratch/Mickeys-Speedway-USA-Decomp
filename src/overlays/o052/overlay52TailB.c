@@ -209,15 +209,17 @@ static s16 o52_bss_4D2;
  * in declaration order (the item-count icon's Y spills to the fourth after
  * halfHeight), so the icon position has its own locals; the screen-mode
  * bit and the pad buttons share one local (both colour s0 in the shipped
- * code). The lap count and the time difference ride in iconX's local, the
- * shadow alpha has its own and is passed as (u8) (the cast spends the ring
- * draw the shipped code has). The second HUD pointer is taken just before
- * its draw call, and the split-screen 53-item icon assigns X before Y. The
+ * code), and the time difference rides in iconX's local (s1 in the shipped
+ * code; loaded then negated, which weights that web above iconY's). The
+ * lap count and the shadow alpha each have their own local, and the
+ * second HUD records are indexed at each use rather than held in a
+ * pointer. The alpha is passed as (u8): the cast spends the ring draw the
+ * shipped code has. The
  * clock hand is a multiply by -65536 (as1's -r4300_mul expansion: negate
  * into at, then shift). */
 void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
     s32 i;
-    s32 alpha;
+    s32 lap;
     s32 player;
     s32 desiredItems[2];
     s32 bits;
@@ -228,7 +230,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
     Overlay52Racer *racer;
     Overlay52Entry *digits;
     s32 racerCount;
-    Overlay52Entry *secondary;
+    s32 alpha;
     s32 minutes;
     s32 seconds;
     s32 hundredths;
@@ -367,7 +369,6 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
         }
         if (o52_data_240[player] != 0) {
             digits = o52_bss_A0[player];
-            secondary = o52_bss_100[player];
             func_overlay_052_F0000540_189ABB0(o52_data_80, digits, player, 1);
             digits[0].value8 = (racer->value192 / 10) << 16;
             digits[1].value8 = (racer->value192 % 10) << 16;
@@ -378,18 +379,18 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                 digits[1].x--;
             }
             func_8002F618(&D_800D3140, digits, 0, hudOffset, 255, 255, 255, 255);
-            iconX = racer->lap + 1;
+            lap = racer->lap + 1;
             if (racer->value45C != 0) {
-                iconX++;
+                lap++;
             }
-            if (iconX >= 4) {
-                iconX = 3;
+            if (lap >= 4) {
+                lap = 3;
             }
-            if (iconX <= 0) {
-                iconX = 1;
+            if (lap <= 0) {
+                lap = 1;
             }
-            secondary[1].value8 = iconX << 16;
-            func_8002F618(&D_800D3140, secondary, 0, hudOffset, 255, 255, 255, 255);
+            o52_bss_100[player][1].value8 = lap << 16;
+            func_8002F618(&D_800D3140, o52_bss_100[player], 0, hudOffset, 255, 255, 255, 255);
             func_80034920(&D_800D3140);
             if (split != 0) {
                 D_800D3550[1].unkC = o52_data_254[racer->playerIndex];
@@ -437,8 +438,8 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             }
             D_800D3550[4].unk4 = racer->time * -65536 / 300;
             func_80039E34(4);
-            secondary = o52_bss_340[player];
-            func_8002F618(&D_800D3140, secondary, 0, hudOffset, 255, 255, 255, 255);
+            func_8002F618(&D_800D3140, o52_bss_340[player], 0,
+ hudOffset, 255, 255, 255, 255);
         }
         if (o52_data_320[player] > 0 && o52_bss_4A8[player] != -1) {
             if (split != 0) {
@@ -535,7 +536,8 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
             }
             if (racer->timeDifference <= 0) {
                 o52_bss_160[0].value8 = 12 << 16;
-                iconX = -racer->timeDifference;
+                iconX = racer->timeDifference;
+                iconX = -iconX;
                 for (i = 0; i < 9; i++) {
                     o52_bss_160[i].resource = D_800D31C8[20];
                     o52_bss_160[i].alternate = D_800D31C8[21];
@@ -614,10 +616,10 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:start
  * symbol: func_overlay_052_F000063C_189ACAC
- * score: 19 differing words
+ * score: 2 differing words
  * frame: 0x118
  * relocations: 314
  * first-mismatch: +0x5E0
- * summary: Address-order ring fixes: late HUD pointer, compare/rounding order, (u8) alpha: 500 to 19. Open: lap s1 not v0 (iconX web).
+ * summary: Own lap/alpha locals, HUD rows indexed, difference loaded then negated: 19 to 2. Open: player*48 spill cell 0x64 not 0x60.
  * PLATEAU-HANDOFF:func_overlay_052_F000063C_189ACAC:end
  */

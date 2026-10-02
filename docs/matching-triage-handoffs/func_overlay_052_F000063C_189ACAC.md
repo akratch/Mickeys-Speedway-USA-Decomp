@@ -2,11 +2,13 @@
 ### `func_overlay_052_F000063C_189ACAC` plateau handoff
 
 - source: `src/overlays/o052/overlay52TailB.c`
-- score: 19 differing words
+- score: 2 differing words
 - frame: 0x118
 - relocations: 314
 - first mismatch: +0x5E0
-- summary: Address-order ring fixes: late HUD pointer, compare/rounding order, (u8) alpha: 500 to 19. Open: lap s1 not v0 (iconX web).
+- summary: Own lap/alpha locals, HUD rows indexed, difference loaded then negated: 19 to 2. Open: player*48 spill cell 0x64 not 0x60.
+
+Summary before this remeasure: Address-order ring fixes: late HUD pointer, compare/rounding order, (u8) alpha: 500 to 19. Open: lap s1 not v0 (iconX web).
 
 Summary before this remeasure: Lap and alpha in i, mode bit and buttons one local: 506 to 500. Open: lap colours t1 not v0; temp-ring rotation after +0xE00.
 
@@ -18,7 +20,7 @@ Summary before this remeasure: -r4300_mul + TU-local o52 data, indexed item loop
 
 Summary before this remeasure: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
 
-## 2026-10-02 h-o052b: 500 to 19, read in address order
+## 2026-10-02 h-o052b: 500 to 2, read in address order
 
 The lap count's colour was not what rotated the tail. Giving the lap a
 call-free symbol of its own puts it in v0 as shipped (a block-scoped local
@@ -46,13 +48,30 @@ regress positionally when the local registers match the target:
   former `difference`): 19 at +0. The slide-bar value is then a3 as shipped
   (it was s1/t0 because the time difference shared value1's symbol).
 
-Remaining 19: the lap count is s1 here (iconX's colour) where shipped is v0;
-the 0x60/0x64 spill cell for the player*48 row offset; and the lap store's
-as1 schedule at +0x870. Taking the lap out of iconX's symbol (any call-free
-symbol, 8x8x8 role product) recolours iconX/iconY (iconX s4, iconY s1, t2
-freed into the ring) and the function shrinks 24 bytes, so iconX's web
-needs the lap's uses for its priority in this source; the shipped source
-gives that priority some other way.
+At 19 the lap count was s1 (iconX's colour) where shipped is v0. Taking it
+out of iconX's symbol recoloured iconX/iconY (iconX s4, iconY s1, t2 freed
+into the ring, -24 bytes). The uopt colouring records (`CDX_LOG`) said why:
+iconY's web is 40/2 = 20.0, iconX alone 20.0 (wins the tie on web number),
+iconX with the time difference 70/4 = 17.5 (loses), with the lap as well
+150/6 = 25.0. The shipped code does keep the time difference in s1, so it
+is iconX's symbol; what lifts that web is the spelling of the negative arm:
+
+- `iconX = racer->timeDifference; iconX = -iconX;` (load, then negate the
+  local) instead of `iconX = -racer->timeDifference;`: the web has one more
+  def and use, and with the lap in `i` the function is 17 at +0.
+- The lap then needs a symbol of its own (v0 as shipped), and so does the
+  alpha (subtract v1, cast t1 as shipped); every existing symbol either
+  merges a colour or adds a frame home (a fresh local pushes the uopt spill
+  cells down 4: 65). The second HUD pointer is the spare: `secondary` is
+  indexed at each use (`o52_bss_100[player]`, `o52_bss_340[player]`) and its
+  declaration becomes the alpha's: 2 at +0. The lap store's schedule at
+  +0x870 closed with it.
+
+Remaining 2: one ugen spill cell. The player*48 row offset (shared by the
+o52_bss_0/A0/100 rows) is stored at sp+0x64 here where shipped is sp+0x60
+(+0x5E0 store, +0x720 reload); the cells' other occupants match. Flat
+(2): the toggle spelling, `digits` before or after the toggle (17 before),
+the lap-arm `digits` assignment before or after its first call.
 
 ## 2026-10-02 f-o052b (fourth bank): 506 to 500, and where it stops
 

@@ -228,21 +228,23 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
 }
 
 /* Mickey-local rendering reconstruction; donor scans are exact-negative.
- * 2026-10-01: 195 -> 100 positional at +4 bytes, 25 aligned (230 of 255 words
- * byte-exact). Plain locals plus one unused 0x28-byte local land the frame;
- * selecting the intensity with if/else instead of default-then-override fixes
- * the saved-register order and four colours; masking the red channel like the
- * others restores a ring draw; one command per line in opcode-first order
- * settles the as1 ties; one vertex pointer local serves both batches and the
- * finish call. Open: one extra constant move at +0x284. The target holds the
- * mode call's last zero in the fourth argument register from before the
- * synchronise command and sets the second argument once before the branch;
- * every spelling here is constant-propagated into two moves. */
+ * 2026-10-01: 195 -> 100 positional at +4 bytes (frame, intensity if/else,
+ * masked red channel, one command per line). 2026-10-02 (lane x-o101):
+ * 100 -> 12 at delta 0. The relocation table names the closing call as
+ * resident camPopModelMtx, which takes ONE argument: the a1 the shipped call
+ * carries is the second vertex pointer (or the mode call's NULL) left over,
+ * not an argument, and passing a vertex pointer to it was the +4. The
+ * texture-part and mode calls are one resident routine, func_800349A4
+ * (dlist, texture, flags, frame). The last 12 words are exactly two colour
+ * decisions: forcing the first vertex address web to a3 and the second to a1
+ * (CDX p1, proc 2) scores 0, each alone 4 and 8; the shard has the record. */
 /* One display-list command per source line, opcode word first, as a GBI macro
  * expands: as1 breaks its scheduling ties on physical line numbers. */
 #define O27_WRITE_COMMAND(word0, word1) \
     command = *commands; *commands = command + 1; command->w0 = (word0); command->w1 = (word1)
 
+extern void camPopModelMtx(O27Command **commands);
+extern void func_800349A4(O27Command **commands, void *texture, s32 flags, s32 frame);
 #ifdef NON_MATCHING
 void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
                                        s16 *arg2, O27Object *object) {
@@ -292,7 +294,7 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
 
         displayList = *object->renderResource->displayList;
         overlay27Prepare(commands, arg1, &transform, 1.0f, 0.0f);
-        overlay27DrawPart(commands, displayList, 0x214, 0);
+        func_800349A4(commands, displayList, 0x214, 0);
 
         O27_WRITE_COMMAND(0xFA000000, ((((intensity * 0x60) >> 8) & 0xFF) << 24) | ((((intensity * 0xE0) >> 8) & 0xFF) << 16) | ((((intensity * 0xFF) >> 8) & 0xFF) << 8) | (state->fade & 0xFF));
 
@@ -305,9 +307,8 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
 
         O27_WRITE_COMMAND(0xE7000000, 0);
 
-        verts = 0;
         if (state->pulseTimer != 0) {
-            overlay27SetMode(commands, 0, 5, 0);
+            func_800349A4(commands, NULL, 5, 0);
 
             O27_WRITE_COMMAND(0xFA000000, (state->pulseTimer & 0xFF) | 0xFFFF0000);
             verts = D_80000118;
@@ -323,7 +324,7 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
 
         O27_WRITE_COMMAND(0xFB000000, 0xFFFFFF00);
 
-        overlay27Finish(commands, verts);
+        camPopModelMtx(commands);
     }
 
     oldScale = object->scale;
@@ -408,10 +409,10 @@ s32 overlay27Activate(O27Object *object) {
 
 /* PLATEAU-HANDOFF:func_overlay_027_F0000624_187BFFC:start
  * symbol: func_overlay_027_F0000624_187BFFC
- * score: 100 differing words
+ * score: 12 differing words
  * frame: 0x98
  * relocations: 15
- * first-mismatch: +0x70
- * summary: Delta +4, 25 aligned rows. Open: one extra constant move at +0x284 for the mode call's zero arguments.
+ * first-mismatch: +0x1FC
+ * summary: 12 words at delta 0: two colour decisions, the two vertex-address webs (a0/v1 here, a3/a1 in the target); forcing both scores 0.
  * PLATEAU-HANDOFF:func_overlay_027_F0000624_187BFFC:end
  */

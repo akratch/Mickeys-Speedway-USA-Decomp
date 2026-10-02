@@ -302,6 +302,15 @@
     },
     {
       "kind": "overlay-padding",
+      "overlay": 46,
+      "source": "overlays/o046/overlay_046_padding",
+      "owner_offset": "0x195C",
+      "owner_size": "0x4",
+      "offset": "0x195C",
+      "size": "0x4"
+    },
+    {
+      "kind": "overlay-padding",
       "overlay": 47,
       "source": "overlays/o047/overlay_047_padding",
       "owner_offset": "0x2DE8",
@@ -757,15 +766,6 @@
       "owner_offset": "0x910",
       "owner_size": "0x990",
       "offset": "0x129c",
-      "size": "0x4"
-    },
-    {
-      "kind": "overlay-trailing-alignment",
-      "overlay": 46,
-      "source": "overlays/o046/func_overlay_046_F0001228_188F620",
-      "owner_offset": "0x1228",
-      "owner_size": "0x738",
-      "offset": "0x195c",
       "size": "0x4"
     },
     {

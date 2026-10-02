@@ -1842,11 +1842,17 @@ gOverlay46Value = 0x00000494;
 /* overlay 46: func_overlay_046_F0001228_188F620.c.o */
 D_1450 = 0x00001450;
 D_1458 = 0x00001458;
+D_194 = 0x00000194;
 D_19C = 0x0000019c;
+D_230 = 0x00000230;
 D_2718 = 0x00002718;
 D_494 = 0x00000494;
 D_498 = 0x00000498;
-D_80000230 = 0x80000230;
+D_800D31C8_o046Reloc = 0x00000000;
+amSndPlay_o046Reloc = 0xf0000000;
+func_80023A08_o046Reloc = 0xf0000000;
+func_8002A8BC_o046Reloc = 0xf0000000;
+func_800349A4_o046Reloc = 0xf0000000;
 
 /* overlay 47: func_overlay_047_F0000000_1890E18.c.o */
 D_8007BF68_o047Reloc = 0x00000000;
@@ -1958,7 +1964,6 @@ overlay65UpdateReloc = 0xf0000000;
 
 /* overlay 50: overlay50Initialize.c.o */
 D_12C = 0x0000012c;
-D_230 = 0x00000230;
 D_2B0 = 0x000002b0;
 D_2C0 = 0x000002c0;
 D_2E0 = 0x000002e0;

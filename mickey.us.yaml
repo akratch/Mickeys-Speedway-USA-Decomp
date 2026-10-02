@@ -1837,6 +1837,7 @@ segments:
       - [0x188F524, c, overlay46Submit]
       - [0x188F548, c, overlay46InitializeBuffers]
       - [0x188F620, c, func_overlay_046_F0001228_188F620]
+      - [0x188FD54, asm, overlay_046_padding]
       - [0x188FD58, bin, overlay_046_data_rodata]
       - [0x18900E8, bin, overlay_046_reloc1]
       - [0x18905B8, bin, overlay_046_reloc2]

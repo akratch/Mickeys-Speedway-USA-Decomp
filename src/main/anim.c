@@ -775,120 +775,115 @@ extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
  * globals, sound-object offset, and final compiler output are independently
  * established from Mickey's ROM.
  *
- * 92 masked words at size delta 0 and the target's 0x40 frame (2026-10-01,
- * lane d-res2). The frame was one local too many: the camera-clear cursor
- * is gone (an indexed loop over `offset`), every declared local reserves a
- * frame home. The or-zero below still costs one ring draw (t7 -> t8 at the
- * first test); the bare pointer hoists the address above the first branch.
- * Size-exact at 287 words. Early playback loads keep the state address
- * across the trap; the or-zero on those loads is the copy-prop barrier,
- * and that pointer dies before the path loops. The store and the
- * post-loop test reload the global. Remaining: frame 0x48 vs 0x40 and
- * the command shift after PAL math. A barrier on the store regressed.
+ * 33 masked words at size delta 0 and the target's 0x40 frame (2026-10-02,
+ * lane n-anim), rewritten as plain C: early returns, literal time scales,
+ * indexed path loops, no state-address carrier. The NTSC duration scale
+ * reads a copy of the duration taken before the branch and multiplies it in
+ * place in two statements (`*= 3`, then `* 2 / 10`); that is what keeps
+ * the copy move and the PAL arm's direct shift. `D_8007D69C++` re-reads the
+ * cursor global. The two unused leading locals give originalRate its 0x34
+ * home. Remaining: command and the clock read trade a0/a1, and the
+ * sound-handle test loads straight into a0 where the target uses v0.
  * Retain NON_MATCHING. */
 #ifdef NON_MATCHING
 void func_80051364(s32 updateRate) {
+    s32 pad;
+    s32 pad2;
+    s32 originalRate;
     AnimPath *path;
     AnimPathObject *object;
-    s32 originalRate;
-    s32 offset;
-    s32 adjustedRate;
-    s32 cmd; s32 *playing;
-    s32 newClock;
     AnimStreamEntry *command;
+    s32 i;
+    s32 newClock;
+    s32 adjustedRate;
     u16 cmdWord;
-    u16 duration;
     f32 timeScale;
     f32 speed;
 
-    if (D_8007D68C != NULL) {
-        playing = &D_8007D6A4; if (*(s32 *)((u32) playing | 0) != 0) {
+    if (D_8007D68C == NULL) {
+        return;
+    }
+    if (D_8007D6A4 == 0) {
+        return;
+    }
+    if (osTvType == 0) {
+        timeScale = 0.02f;
+    } else {
+        timeScale = 1.0f / 60.0f;
+    }
+    originalRate = updateRate;
+    if (D_8007D6B0 > 0) {
+        TrapDanglingJump(updateRate);
+    }
+    command = D_8007D69C;
+    if (command != NULL && D_8007D6A4 == 1 && ((cmdWord = command->command) >> 8) == 0x7B) {
+        if ((f32) command->duration / 100.0f <
+            (f32) (D_8007D6A8 + updateRate) * timeScale) {
+            adjustedRate = command->duration;
             if (osTvType == 0) {
-                timeScale = D_80083FAC;
+                adjustedRate >>= 1;
             } else {
-                timeScale = D_80083FB0;
+                adjustedRate *= 3;
+                adjustedRate = (adjustedRate * 2) / 10;
             }
-            originalRate = updateRate; if (D_8007D6B0 > 0) {
-                TrapDanglingJump(updateRate);
+            updateRate = adjustedRate - D_8007D6A8;
+            D_8007D69C++;
+            D_8007D6A4 = (s8) cmdWord;
+            if (D_8007D6A4 == 0) {
+                originalRate = updateRate;
             }
-            command = D_8007D69C; if (command != NULL) {
-                if (*(s32 *)((u32) playing | 0) == 1) {
-                    cmdWord = command->command; if ((cmdWord >> 8) == 0x7B) {
-                        duration = command->duration;
-                        if (((f32) (u32) duration / 100.0f) <
-                            ((f32) (u32) (D_8007D6A8 + updateRate) *
-                             timeScale)) {
-                            if (osTvType == 0) {
-                                adjustedRate = duration >> 1;
-                            } else {
-                                adjustedRate = (duration * 6) / 10;
-                            }
-                            updateRate = adjustedRate - D_8007D6A8;
-                            D_8007D69C = command + 1; cmd = (s8) cmdWord; *playing = cmd; if (cmd == 0) {
-                                originalRate = updateRate;
-                            }
-                        }
-                    }
+        }
+    }
+    if (updateRate <= 0) {
+        return;
+    }
+    newClock = D_8007D6A8 + updateRate;
+    for (i = 0; i < 4; i++) {
+        D_800D6B08[i] = NULL;
+    }
+    if (D_8007D6BC != 0) {
+        if (updateRate < D_8007D6BC) {
+            D_8007D6B4 += D_8007D6B8 * updateRate;
+            D_8007D6BC -= updateRate;
+        } else {
+            D_8007D6B4 += D_8007D6B8 * D_8007D6BC;
+            D_8007D6BC = 0;
+        }
+    }
+    D_8007D6A8 = newClock;
+    D_8007D6AC = (f32) (u32) newClock * timeScale;
+    for (i = 0; i < 256; i++) {
+        path = D_800D6B00[i];
+        if (path != NULL && (path->flags & 5)) {
+            animUpdateTrap(path, updateRate * timeScale, updateRate,
+                           originalRate);
+        }
+    }
+    if (D_8007D6A4 == 1) {
+        func_800517E0();
+    }
+    TrapDanglingJump(updateRate);
+    TrapDanglingJump(updateRate);
+    TrapDanglingJump(updateRate);
+    for (i = 0; i < 256; i++) {
+        path = D_800D6B00[i];
+        if (path != NULL) {
+            object = path->unk8;
+            if (object != NULL && object->soundHandle != NULL) {
+                func_800031C0(object->soundHandle, object->x, object->y,
+                              object->z);
+                if (path->unk28 != 100 || path->unk29 != 0) {
+                    speed = sqrtf(object->velocityX * object->velocityX +
+                                  object->velocityY * object->velocityY +
+                                  object->velocityZ * object->velocityZ);
+                    func_800030B4(object->soundHandle,
+                                  path->unk28 + path->unk29 * speed);
                 }
-            }
-            if (updateRate > 0) {
-                newClock = D_8007D6A8 + updateRate; for (offset = 0; offset < 4; offset++) {
-                    D_800D6B08[offset] = NULL;
-                }
-                if (D_8007D6BC != 0) {
-                    if (updateRate < D_8007D6BC) {
-                        D_8007D6B4 += D_8007D6B8 * (f32) updateRate;
-                        D_8007D6BC -= updateRate;
-                    } else {
-                        D_8007D6B4 += D_8007D6B8 * (f32) D_8007D6BC;
-                        D_8007D6BC = 0;
-                    }
-                }
-                D_8007D6A8 = newClock; D_8007D6AC = (f32) (u32) newClock * timeScale;
-                offset = 0; do {
-                    path = *(AnimPath **) ((u8 *) D_800D6B00 + offset);
-                    if ((path != NULL) && (path->flags & 5)) {
-                        animUpdateTrap(path, (f32) updateRate * timeScale,
-                                       updateRate, originalRate);
-                    }
-                    offset += 4;
-                } while (offset < 0x400);
-                if (D_8007D6A4 == 1) {
-                    func_800517E0();
-                }
-                TrapDanglingJump(updateRate); /* runtime: overlay 41 +0x000 */
-                TrapDanglingJump(updateRate); /* runtime: overlay 41 +0x124 */
-                TrapDanglingJump(updateRate); /* runtime: overlay 41 +0x1B00 */
-                offset = 0; do {
-                    path = *(AnimPath **) ((u8 *) D_800D6B00 + offset);
-                    if (path != NULL) {
-                        object = path->unk8;
-                        if ((object != NULL) &&
-                            (object->soundHandle != NULL)) {
-                            func_800031C0(object->soundHandle, object->x,
-                                          object->y, object->z);
-                            if ((path->unk28 != 0x64) ||
-                                (path->unk29 != 0)) {
-                                speed = sqrtf((object->velocityX *
-                                               object->velocityX) +
-                                              (object->velocityY *
-                                               object->velocityY) +
-                                              (object->velocityZ *
-                                               object->velocityZ));
-                                func_800030B4(
-                                    object->soundHandle,
-                                    (u32) ((f32) path->unk28 +
-                                           ((f32) path->unk29 * speed)) &
-                                        0xFF);
-                            }
-                        }
-                    }
-                    offset += 4;
-                } while (offset != 0x400);
             }
         }
     }
 }
+
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_80051364.s")
 #endif
@@ -2735,14 +2730,16 @@ extern f32 D_8008420C;
  * squares and cross-multiplies the six coordinates and the six doubled
  * coordinates directly.
  *
- * Plateau: 380 of 370 words, 374 differing from +0x8, frame 0xD8 -- the
- * target's. The previous candidate was an untranslated m2c draft whose ~40
- * single-use temporaries each reserved a stack home; that alone held the
- * frame at 0x188, 176 bytes above the target. Inlining them and letting the
- * dead coordinate carriers hold the later quadratic values reaches the exact
- * frame. What is left is ten words of surplus code: the target keeps arg1 in
- * a saved register and homes arg0, and it needs only one callee-saved
- * floating-point register where this candidate needs two.
+ * Plateau (2026-10-02, lane n-anim): 366 masked words at size delta +4
+ * (from 374 at +40). Locals follow the target's home ladder (quadratic
+ * terms, then the six vector components, then hit, then the position
+ * coordinates and their doubles); the dead coordinate carriers hold 4a, b*b,
+ * -b and 2a exactly where the target reuses their homes; the doubled second
+ * position is an inline sum. Assigning the vector pointers before the
+ * flags test reproduces the target's pointer-register vector access
+ * (+12 bytes, same score). Left: the target keeps arg1 in s0 (forcing that
+ * colour alone reaches size -8), spills arg0 at entry, rematerializes the
+ * position pointers after the quadratic, and declares four more homes.
  */
 s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                   s32 arg2, AnimCollisionShape *arg3,
@@ -2750,30 +2747,29 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     AnimVec3f *firstPoint;
     AnimVec3f *secondPoint;
     f32 radiusSq;
+    f32 discriminant;
+    f32 fraction;
+    AnimVec3f *firstVector;
+    AnimVec3f *secondVector;
     f32 quadA;
     f32 quadB;
     f32 quadC;
-    f32 discriminant;
-    f32 fraction;
     f32 stepX1;
     f32 stepY1;
     f32 stepZ1;
     f32 stepX2;
     f32 stepY2;
     f32 stepZ2;
-    f32 x1;
-    f32 y1;
-    f32 z1;
-    f32 x2;
-    f32 y2;
-    f32 z2;
-    f32 twoX1;
-    f32 twoY1;
-    f32 twoZ1;
-    f32 twoX2;
-    f32 twoY2;
-    f32 twoZ2;
     s32 hit;
+    f32 z2;
+    f32 z1;
+    f32 twoZ1;
+    f32 x1;
+    f32 twoX1;
+    f32 x2;
+    f32 y1;
+    f32 twoY1;
+    f32 y2;
 
     radiusSq = arg1->radius + arg3->radius;
     hit = 0;
@@ -2784,65 +2780,60 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
         stepX1 = secondPoint->x - firstPoint->x;
         stepY1 = secondPoint->y - firstPoint->y;
         stepZ1 = secondPoint->z - firstPoint->z;
-        if (((stepX1 * stepX1) + (stepY1 * stepY1) + (stepZ1 * stepZ1)) <=
-            radiusSq) {
+        if (stepX1 * stepX1 + stepY1 * stepY1 + stepZ1 * stepZ1 <= radiusSq) {
             arg4->object = arg0;
             arg4->value = arg2;
             arg4->fraction = 0.0f;
             return 1;
         }
     }
-    firstPoint = &arg1->vector;
-    stepX1 = firstPoint->x;
-    secondPoint = &arg3->vector;
-    stepX2 = secondPoint->x;
-    stepY1 = firstPoint->y;
-    stepY2 = secondPoint->y;
-    stepZ1 = firstPoint->z;
-    stepZ2 = secondPoint->z;
-    secondPoint = &arg3->position;
-    firstPoint = &arg1->position;
+    firstVector = &arg1->vector;
+    secondVector = &arg3->vector;
+    stepX1 = firstVector->x;
+    stepX2 = secondVector->x;
+    stepY1 = firstVector->y;
+    stepY2 = secondVector->y;
+    stepZ1 = firstVector->z;
+    stepZ2 = secondVector->z;
     quadA = (stepZ2 * stepZ2) +
             ((stepZ1 * stepZ1) - (2.0f * stepZ1 * stepZ2)) +
             (((stepX1 * stepX1) - (2.0f * stepX1 * stepX2)) +
              (stepX2 * stepX2) +
              (((stepY1 * stepY1) - (2.0f * stepY1 * stepY2)) +
               (stepY2 * stepY2)));
+    secondPoint = &arg3->position;
+    firstPoint = &arg1->position;
     z2 = secondPoint->z;
-    twoZ2 = 2.0f * z2;
     z1 = firstPoint->z;
-    twoZ1 = 2.0f * z1;
+    twoZ1 = z1 + z1;
     x1 = firstPoint->x;
-    twoX1 = 2.0f * x1;
+    twoX1 = x1 + x1;
     x2 = secondPoint->x;
-    twoX2 = 2.0f * x2;
     y1 = firstPoint->y;
-    twoY1 = 2.0f * y1;
+    twoY1 = y1 + y1;
     y2 = secondPoint->y;
-    twoY2 = y2 + y2;
-    quadB = ((stepZ2 * twoZ2) +
-             (((twoZ1 * stepZ1) - (twoZ1 * stepZ2)) - (twoZ2 * stepZ1))) +
-            ((((twoX1 * stepX1) - (twoX1 * stepX2)) - (twoX2 * stepX1)) +
-             (twoX2 * stepX2) +
-             ((((twoY1 * stepY1) - (twoY1 * stepY2)) - (twoY2 * stepY1)) +
-              (twoY2 * stepY2)));
+    quadB = ((stepZ2 * (z2 + z2)) +
+             (((twoZ1 * stepZ1) - (twoZ1 * stepZ2)) - ((z2 + z2) * stepZ1))) +
+            ((((twoX1 * stepX1) - (twoX1 * stepX2)) - ((x2 + x2) * stepX1)) +
+             ((x2 + x2) * stepX2) +
+             ((((twoY1 * stepY1) - (twoY1 * stepY2)) - ((y2 + y2) * stepY1)) +
+              ((y2 + y2) * stepY2)));
     quadC = (z2 * z2) + ((z1 * z1) - (twoZ1 * z2)) +
             (((x1 * x1) - (twoX1 * x2)) + (x2 * x2) +
              (((y1 * y1) - (twoY1 * y2)) + (y2 * y2)));
     if (quadA != 0.0f) {
-        twoZ2 = 4.0f * quadA;
-        discriminant = twoZ2 * (quadC - radiusSq);
-        twoX2 = quadB * quadB;
-        if (discriminant < twoX2) {
-            discriminant = sqrtf(twoX2 - discriminant);
-            hit = 0;
-            quadB = -quadB;
-            quadA = 2.0f * quadA;
-            fraction = (quadB - discriminant) / quadA;
-            if ((fraction >= 0.0f) && (fraction <= 1.0f)) {
-                discriminant = twoZ2 * (quadC - (radiusSq + 83.0f));
-                if (discriminant < twoX2) {
-                    fraction = (quadB - sqrtf(twoX2 - discriminant)) / quadA;
+        z1 = 4.0f * quadA;
+        discriminant = z1 * (quadC - radiusSq);
+        z2 = quadB * quadB;
+        if (discriminant < z2) {
+            discriminant = sqrtf(z2 - discriminant);
+            twoZ1 = -quadB;
+            x1 = 2.0f * quadA;
+            fraction = (twoZ1 - discriminant) / x1;
+            if (fraction >= 0.0f && fraction <= 1.0f) {
+                discriminant = z1 * (quadC - (radiusSq + 83.0f));
+                if (discriminant < z2) {
+                    fraction = (twoZ1 - sqrtf(z2 - discriminant)) / x1;
                     hit = 1;
                     if (fraction > 1.0f) {
                         fraction = 1.0f;
@@ -2857,12 +2848,10 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                 stepX1 = arg3->edge.x - arg1->edge.x;
                 stepY1 = arg3->edge.y - arg1->edge.y;
                 stepZ1 = arg3->edge.z - arg1->edge.z;
-                if (((stepX1 * stepX1) + (stepY1 * stepY1) +
-                     (stepZ1 * stepZ1)) <= radiusSq) {
-                    discriminant = twoZ2 * (quadC - (radiusSq + 83.0f));
-                    if (discriminant < twoX2) {
-                        fraction =
-                            (quadB - sqrtf(twoX2 - discriminant)) / quadA;
+                if (stepX1 * stepX1 + stepY1 * stepY1 + stepZ1 * stepZ1 <= radiusSq) {
+                    discriminant = z1 * (quadC - (radiusSq + 83.0f));
+                    if (discriminant < z2) {
+                        fraction = (twoZ1 - sqrtf(z2 - discriminant)) / x1;
                         hit = 1;
                         if (fraction > 1.0f) {
                             fraction = 1.0f;
@@ -2881,8 +2870,7 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
         stepX1 = arg3->edge.x - arg1->edge.x;
         stepY1 = arg3->edge.y - arg1->edge.y;
         stepZ1 = arg3->edge.z - arg1->edge.z;
-        if (((stepX1 * stepX1) + (stepY1 * stepY1) + (stepZ1 * stepZ1)) <=
-            radiusSq) {
+        if (stepX1 * stepX1 + stepY1 * stepY1 + stepZ1 * stepZ1 <= radiusSq) {
             arg4->object = arg0;
             arg4->value = arg2;
             hit = 1;
@@ -2938,39 +2926,39 @@ typedef struct HitResolveRotation {
 extern void mathOneFloatYPR(HitResolveRotation *rotation, AnimVec3f *vector);
 
 /*
- * Bare-pragma reconstruction from Mickey's collision response assembly.
- * The public JFG hit.c family supplies role context only; Mickey fixes every
- * field offset, call identity and arithmetic association below.
+ * PROVENANCE: the public JFG hit.c family supplies role context only; Mickey
+ * fixes every field offset, call identity and arithmetic association below.
  *
- * Plateau: 431 of 445 words, 420 differing from +0x38, frame 0xB8 -- the
- * target's. The frame came from carrier count, not from a spill: every
- * declared f32 in this TU reserves a home whether or not it is
- * register-coloured, so the six scalars whose live ranges end before the
- * response tail carry the tail's own values instead of being declared twice.
- * What remains is a real 14-word code deficit, not an allocation difference;
- * audit the impulse and effect-position groups against the target before any
- * further allocator reading.
+ * Matched 2026-10-02 (lane n-anim) from 420 masked words: the direction,
+ * relative-velocity and rotated vectors are f32[3] locals (memory-resident,
+ * stored then reloaded) and the rotation an s16[3]; the effect position
+ * reuses the x/y/z offset locals; locals are declared in the target's
+ * frame order (highest home first); `step` is an unused home and impulse is
+ * declared last so its spill lands below the rotation.
  */
-#ifdef NON_MATCHING
 void func_80055104(HitCopyState *first, HitCopyState *second, f32 scale) {
     HitCopySource *firstSource;
     HitCopySource *secondSource;
     HitResolveVehicle *firstVehicle;
     HitResolveVehicle *secondVehicle;
     HitResolveMass *mass;
-    void *firstCollision;
-    void *secondCollision;
-    HitResolveRotation rotation;
-    AnimVec3f rotated;
-    AnimVec3f direction;
-    AnimVec3f effectPosition;
+    f32 direction[3];
+    f32 relative[3];
+    f32 vector[3];
+    f32 dot;
+    f32 step;
     f32 firstMass;
     f32 secondMass;
+    f32 x;
+    f32 y;
+    f32 z;
     f32 distance;
-    f32 relativeVelocity;
+    f32 volume;
+    f32 maxVolume;
+    void *firstCollision;
+    void *secondCollision;
+    s16 rotation[3];
     f32 impulse;
-    f32 firstScale;
-    f32 secondScale;
 
     firstVehicle = (HitResolveVehicle *) first->target;
     firstSource = first->source;
@@ -2980,73 +2968,67 @@ void func_80055104(HitCopyState *first, HitCopyState *second, f32 scale) {
     secondVehicle = (HitResolveVehicle *) second->target;
     mass = (HitResolveMass *) TrapDanglingJump(secondVehicle);
     secondMass = mass->mass;
-    direction.x = secondSource->current.x - firstSource->current.x;
-    direction.y = secondSource->current.y - firstSource->current.y;
-    direction.z = secondSource->current.z - firstSource->current.z;
-    distance = sqrtf((direction.x * direction.x) +
-                     (direction.y * direction.y) +
-                     (direction.z * direction.z));
-    direction.x /= distance;
-    direction.y /= distance;
-    direction.z /= distance;
-    relativeVelocity =
-        ((firstVehicle->velocity.x - secondVehicle->velocity.x) * direction.x) +
-        ((firstVehicle->velocity.y - secondVehicle->velocity.y) * direction.y) +
-        ((firstVehicle->velocity.z - secondVehicle->velocity.z) * direction.z);
-    impulse = (D_800841F0 * relativeVelocity) /
-              ((1.0f / firstMass) + (1.0f / secondMass));
-    firstScale = impulse / firstMass;
-    firstVehicle->velocity.x += firstScale * direction.x;
-    firstVehicle->velocity.y += firstScale * direction.y;
-    firstVehicle->velocity.z += firstScale * direction.z;
-    rotation.x = -(firstVehicle->rotationY + firstVehicle->rotationX);
-    rotation.y = -*(s16 *) ((u8 *) first + 2);
-    rotation.z = -*(s16 *) ((u8 *) first + 4);
-    rotated = firstVehicle->velocity;
-    mathOneFloatYPR(&rotation, &rotated);
-    firstVehicle->rotatedZ = rotated.z;
-    firstVehicle->rotatedX = rotated.x;
-    secondScale = impulse / secondMass;
-    secondVehicle->velocity.x -= secondScale * direction.x;
-    secondVehicle->velocity.y -= secondScale * direction.y;
-    secondVehicle->velocity.z -= secondScale * direction.z;
-    rotation.x = -(secondVehicle->rotationY + secondVehicle->rotationX);
-    rotation.y = -*(s16 *) ((u8 *) second + 2);
-    rotation.z = -*(s16 *) ((u8 *) second + 4);
-    rotated = secondVehicle->velocity;
-    mathOneFloatYPR(&rotation, &rotated);
-    secondVehicle->rotatedZ = rotated.z;
-    secondVehicle->rotatedX = rotated.x;
-    secondScale = first->position.y - firstSource->previous.y;
-    firstScale = first->position.x - firstSource->previous.x;
-    impulse = first->position.z - firstSource->previous.z;
-    firstSource->previous.x =
-        (firstVehicle->velocity.x * scale) + firstSource->current.x;
-    firstSource->previous.y =
-        (firstVehicle->velocity.y * scale) + firstSource->current.y;
-    firstSource->previous.z =
-        (firstVehicle->velocity.z * scale) + firstSource->current.z;
-    first->position.x = firstSource->previous.x + firstScale;
-    first->position.y = firstSource->previous.y + secondScale;
-    first->position.z = firstSource->previous.z + impulse;
-    secondScale = second->position.y - secondSource->previous.y;
-    firstScale = second->position.x - secondSource->previous.x;
-    impulse = second->position.z - secondSource->previous.z;
-    secondSource->previous.x =
-        (secondVehicle->velocity.x * scale) + secondSource->current.x;
-    secondSource->previous.y =
-        (secondVehicle->velocity.y * scale) + secondSource->current.y;
-    secondSource->previous.z =
-        (secondVehicle->velocity.z * scale) + secondSource->current.z;
-    second->position.x = secondSource->previous.x + firstScale;
-    second->position.y = secondSource->previous.y + secondScale;
-    second->position.z = secondSource->previous.z + impulse;
-
+    direction[0] = secondSource->current.x - firstSource->current.x;
+    direction[1] = secondSource->current.y - firstSource->current.y;
+    direction[2] = secondSource->current.z - firstSource->current.z;
+    distance = sqrtf(direction[0] * direction[0] + direction[1] * direction[1] +
+                     direction[2] * direction[2]);
+    direction[0] /= distance;
+    direction[1] /= distance;
+    direction[2] /= distance;
+    relative[0] = firstVehicle->velocity.x - secondVehicle->velocity.x;
+    relative[1] = firstVehicle->velocity.y - secondVehicle->velocity.y;
+    relative[2] = firstVehicle->velocity.z - secondVehicle->velocity.z;
+    dot = relative[0] * direction[0] + relative[1] * direction[1] +
+          relative[2] * direction[2];
+    impulse = (D_800841F0 * dot) / (1.0f / firstMass + 1.0f / secondMass);
+    firstVehicle->velocity.x += (impulse / firstMass) * direction[0];
+    firstVehicle->velocity.y += (impulse / firstMass) * direction[1];
+    firstVehicle->velocity.z += (impulse / firstMass) * direction[2];
+    rotation[0] = -(firstVehicle->rotationY + firstVehicle->rotationX);
+    rotation[1] = -*(s16 *) ((u8 *) first + 2);
+    rotation[2] = -*(s16 *) ((u8 *) first + 4);
+    vector[0] = firstVehicle->velocity.x;
+    vector[1] = firstVehicle->velocity.y;
+    vector[2] = firstVehicle->velocity.z;
+    mathOneFloatYPR((HitResolveRotation *) rotation, (AnimVec3f *) vector);
+    firstVehicle->rotatedZ = vector[2];
+    firstVehicle->rotatedX = vector[0];
+    secondVehicle->velocity.x -= (impulse / secondMass) * direction[0];
+    secondVehicle->velocity.y -= (impulse / secondMass) * direction[1];
+    secondVehicle->velocity.z -= (impulse / secondMass) * direction[2];
+    rotation[0] = -(secondVehicle->rotationY + secondVehicle->rotationX);
+    rotation[1] = -*(s16 *) ((u8 *) second + 2);
+    rotation[2] = -*(s16 *) ((u8 *) second + 4);
+    vector[0] = secondVehicle->velocity.x;
+    vector[1] = secondVehicle->velocity.y;
+    vector[2] = secondVehicle->velocity.z;
+    mathOneFloatYPR((HitResolveRotation *) rotation, (AnimVec3f *) vector);
+    secondVehicle->rotatedZ = vector[2];
+    secondVehicle->rotatedX = vector[0];
+    x = first->position.x - firstSource->previous.x;
+    y = first->position.y - firstSource->previous.y;
+    z = first->position.z - firstSource->previous.z;
+    firstSource->previous.x = firstVehicle->velocity.x * scale + firstSource->current.x;
+    firstSource->previous.y = firstVehicle->velocity.y * scale + firstSource->current.y;
+    firstSource->previous.z = firstVehicle->velocity.z * scale + firstSource->current.z;
+    first->position.x = firstSource->previous.x + x;
+    first->position.y = firstSource->previous.y + y;
+    first->position.z = firstSource->previous.z + z;
+    x = second->position.x - secondSource->previous.x;
+    y = second->position.y - secondSource->previous.y;
+    z = second->position.z - secondSource->previous.z;
+    secondSource->previous.x = secondVehicle->velocity.x * scale + secondSource->current.x;
+    secondSource->previous.y = secondVehicle->velocity.y * scale + secondSource->current.y;
+    secondSource->previous.z = secondVehicle->velocity.z * scale + secondSource->current.z;
+    second->position.x = secondSource->previous.x + x;
+    second->position.y = secondSource->previous.y + y;
+    second->position.z = secondSource->previous.z + z;
     firstCollision = (void *) TrapDanglingJump(firstVehicle->collisionData);
     secondCollision = (void *) TrapDanglingJump(secondVehicle->collisionData);
-    if (((firstVehicle->collisionMode != 0) ||
-         ((firstCollision == NULL) && (secondCollision != NULL))) &&
-        (TrapDanglingJump(second, secondVehicle) != 0)) {
+    if ((firstVehicle->collisionMode != 0 ||
+         (firstCollision == NULL && secondCollision != NULL)) &&
+        TrapDanglingJump(second, secondVehicle) != 0) {
         firstVehicle->collisionCountA++;
         secondVehicle->collisionCountB++;
         if (*func_80028F54() == 5) {
@@ -3054,9 +3036,9 @@ void func_80055104(HitCopyState *first, HitCopyState *second, f32 scale) {
         }
         TrapDanglingJump(first, second);
     }
-    if (((secondVehicle->collisionMode != 0) ||
-         ((secondCollision == NULL) && (firstCollision != NULL))) &&
-        (TrapDanglingJump(first, firstVehicle) != 0)) {
+    if ((secondVehicle->collisionMode != 0 ||
+         (secondCollision == NULL && firstCollision != NULL)) &&
+        TrapDanglingJump(first, firstVehicle) != 0) {
         firstVehicle->collisionCountB++;
         secondVehicle->collisionCountA++;
         if (*func_80028F54() == 5) {
@@ -3064,40 +3046,32 @@ void func_80055104(HitCopyState *first, HitCopyState *second, f32 scale) {
         }
         TrapDanglingJump(second, first);
     }
-
-    firstVehicle->collisionTimer = 0x64;
-    secondVehicle->collisionTimer = 0x64;
-    if (relativeVelocity > 4.0f) {
-        distance = distance * 0.5f;
-        effectPosition.x =
-            (direction.x * distance) + firstSource->current.x;
-        effectPosition.y =
-            (direction.y * distance) + firstSource->current.y;
-        effectPosition.z =
-            (direction.z * distance) + firstSource->current.z;
-        firstMass = (f32) func_80001620(7);
-        secondMass = (relativeVelocity / 20.0f) * firstMass;
-        if (firstMass < secondMass) {
-            secondMass = firstMass;
+    firstVehicle->collisionTimer = 100;
+    secondVehicle->collisionTimer = 100;
+    if (dot > 4.0f) {
+        distance *= 0.5f;
+        x = direction[0] * distance + firstSource->current.x;
+        y = direction[1] * distance + firstSource->current.y;
+        z = direction[2] * distance + firstSource->current.z;
+        maxVolume = func_80001620(7);
+        volume = (dot / 20.0f) * maxVolume;
+        if (maxVolume < volume) {
+            volume = maxVolume;
         }
         if (firstVehicle->soundHandle != NULL) {
             func_800031E8(firstVehicle->soundHandle);
         }
-        func_80002FE0(7, effectPosition.x, effectPosition.y,
-                      effectPosition.z, 4,
-                      &firstVehicle->soundHandle);
-        func_8000309C(firstVehicle->soundHandle, (u8) secondMass);
+        func_80002FE0(7, x, y, z, 4, &firstVehicle->soundHandle);
+        func_8000309C(firstVehicle->soundHandle, volume);
         if (!(firstVehicle->flags & 1)) {
-            rumbleStart(firstVehicle->playerIndex, 0x32, 0.4f);
+            rumbleStart(firstVehicle->playerIndex, 50, 0.4f);
         }
         if (!(secondVehicle->flags & 1)) {
-            rumbleStart(secondVehicle->playerIndex, 0x32, 0.4f);
+            rumbleStart(secondVehicle->playerIndex, 50, 0.4f);
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_80055104.s")
-#endif
+
 /* Mickey-local collision response reconstructed from its resident ABI. */
 void func_800557F8(HitCopyState *first, HitCopyState *second, f32 unused) {
     s32 priority;
@@ -3511,155 +3485,159 @@ void func_80056274(HitCopyState *first, HitCopyState *second, f32 unused) {
     TrapDanglingJump(first, 6, firstTarget);
     TrapDanglingJump(second, 0xA);
 }
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: JFG's public assembly-only hitVectorCheck establishes the
- * collision role and broad case ordering. This typed body is reconstructed
- * from Mickey's target, its m2c dataflow, and Mickey's neighboring collision
- * helpers; Mickey's bytes remain authoritative.
+ * collision role and broad case ordering; Mickey's fields, helper calls and
+ * bytes are authoritative.
+ *
+ * Matched 2026-10-02 (lane n-anim) from 637 masked words: every vector is an
+ * f32[3] local (memory-resident), locals are declared in the target's frame
+ * order, the cylinder test carries its offset and closest point in one x/y/z
+ * set, the end caps offset from the edge point, and the radius sum is the
+ * first statement.
  */
 s32 func_800563B4(s32 object, AnimCollisionShape *first, s32 value,
                   AnimCollisionShape *second, AnimCollisionResult *result) {
-    AnimVec3f axis;
-    AnimVec3f direction;
-    AnimVec3f point;
-    AnimVec3f endpoint;
-    AnimVec3f minimum;
-    AnimVec3f maximum;
+    f32 axis[3];
+    f32 direction[3];
+    f32 point[3];
+    f32 endpoint[3];
+    f32 minimum[3];
+    f32 maximum[3];
+    f32 x;
+    f32 y;
+    f32 z;
     f32 length;
     f32 radius;
     f32 near;
     f32 far;
+    f32 projection;
     f32 normalX;
     f32 normalY;
     f32 normalZ;
-    f32 projection;
-    s32 face;
     s32 status;
+    s32 face;
 
-    direction.x = first->vector.x;
-    direction.y = first->vector.y;
     radius = first->radius + second->radius;
-    direction.z = first->vector.z;
+    direction[0] = first->vector.x;
+    direction[1] = first->vector.y;
+    direction[2] = first->vector.z;
     status = 0;
-    length = (direction.z * direction.z) +
-             ((direction.x * direction.x) +
-              (direction.y * direction.y));
-
+    length = direction[0] * direction[0] + direction[1] * direction[1] +
+             direction[2] * direction[2];
     if (second->shape == 0) {
         if (length > 0.0f) {
             length = sqrtf(length);
-            direction.x /= length;
-            direction.y /= length;
-            direction.z /= length;
+            direction[0] /= length;
+            direction[1] /= length;
+            direction[2] /= length;
         }
-        if (func_80012574(&first->position, &direction, &second->edge,
-                          radius, &near, &far) != 0) {
-            if ((near >= 0.0f) && (near <= length)) {
+        if (func_80012574(&first->position, (AnimVec3f *) direction,
+                          &second->edge, radius, &near, &far) != 0) {
+            if (near >= 0.0f && near <= length) {
                 status = 1;
-                point.x = (direction.x * near) + first->position.x;
-                point.y = (direction.y * near) + first->position.y;
-                point.z = (direction.z * near) + first->position.z;
-                normalX = (point.x - second->edge.x) / radius;
-                normalY = (point.y - second->edge.y) / radius;
+                point[0] = direction[0] * near + first->position.x;
+                point[1] = direction[1] * near + first->position.y;
+                point[2] = direction[2] * near + first->position.z;
+                normalX = (point[0] - second->edge.x) / radius;
+                normalY = (point[1] - second->edge.y) / radius;
+                normalZ = (point[2] - second->edge.z) / radius;
                 near /= length;
-                normalZ = (point.z - second->edge.z) / radius;
-            } else if ((first->flags & 2) && (near < 0.0f) && (far > 0.0f)) {
+            } else if ((first->flags & 2) && near < 0.0f && far > 0.0f) {
                 status = 2;
             }
         }
     } else if (second->shape == 1) {
         if (length > 0.0f) {
             length = sqrtf(length);
-            direction.x /= length;
-            direction.y /= length;
-            direction.z /= length;
+            direction[0] /= length;
+            direction[1] /= length;
+            direction[2] /= length;
         }
-        axis.x = 0.0f;
-        axis.z = 0.0f;
-        axis.y = 1.0f;
-        if (func_80012234(&first->position, &direction, &second->position,
-                          &axis, radius, &near, &far) != 0) {
-            if ((near >= 0.0f) && (near <= length)) {
-                point.x = (direction.x * near) + first->position.x;
-                point.y = (direction.y * near) + first->position.y;
-                point.z = (direction.z * near) + first->position.z;
-                projection =
-                    (((point.x - second->position.x) * axis.x) +
-                     ((point.y - second->position.y) * axis.y) +
-                     ((point.z - second->position.z) * axis.z)) /
-                    ((axis.z * axis.z) +
-                     ((axis.x * axis.x) + (axis.y * axis.y)));
-                if ((-second->height <= projection) &&
-                    (projection <= second->height)) {
+        axis[0] = 0.0f;
+        axis[2] = 0.0f;
+        axis[1] = 1.0f;
+        if (func_80012234(&first->position, (AnimVec3f *) direction,
+                          &second->position, (AnimVec3f *) axis, radius,
+                          &near, &far) != 0) {
+            if (near >= 0.0f && near <= length) {
+                point[0] = direction[0] * near + first->position.x;
+                point[1] = direction[1] * near + first->position.y;
+                point[2] = direction[2] * near + first->position.z;
+                x = point[0] - second->position.x;
+                y = point[1] - second->position.y;
+                z = point[2] - second->position.z;
+                projection = (x * axis[0] + y * axis[1] + z * axis[2]) /
+                             (axis[0] * axis[0] + axis[1] * axis[1] +
+                              axis[2] * axis[2]);
+                if (-second->height <= projection &&
+                    projection <= second->height) {
                     status = 1;
-                    normalX =
-                        (point.x - ((axis.x * projection) +
-                                    second->position.x)) / radius;
-                    normalY =
-                        (point.y - ((axis.y * projection) +
-                                    second->position.y)) / radius;
-                    normalZ =
-                        (point.z - ((axis.z * projection) +
-                                    second->position.z)) / radius;
+                    x = axis[0] * projection + second->position.x;
+                    y = axis[1] * projection + second->position.y;
+                    z = axis[2] * projection + second->position.z;
+                    normalX = (point[0] - x) / radius;
+                    normalY = (point[1] - y) / radius;
+                    normalZ = (point[2] - z) / radius;
                     near /= length;
                 }
-            } else if ((first->flags & 2) && (near < 0.0f) && (far > 0.0f)) {
+            } else if ((first->flags & 2) && near < 0.0f && far > 0.0f) {
                 status = 2;
             }
         }
         if (status == 0) {
-            endpoint.x = second->position.x - (axis.x * second->height);
-            endpoint.y = second->position.y - (axis.y * second->height);
-            endpoint.z = second->position.z - (axis.z * second->height);
-            if (func_80012574(&first->position, &direction, &endpoint,
-                              radius, &near, &far) != 0) {
-                if ((near >= 0.0f) && (near <= length)) {
+            endpoint[0] = second->edge.x - axis[0] * second->height;
+            endpoint[1] = second->edge.y - axis[1] * second->height;
+            endpoint[2] = second->edge.z - axis[2] * second->height;
+            if (func_80012574(&first->position, (AnimVec3f *) direction,
+                              (AnimVec3f *) endpoint, radius, &near,
+                              &far) != 0) {
+                if (near >= 0.0f && near <= length) {
                     status = 1;
-                    point.x = (direction.x * near) + first->position.x;
-                    point.y = (direction.y * near) + first->position.y;
-                    point.z = (direction.z * near) + first->position.z;
-                    normalX = (point.x - endpoint.x) / radius;
-                    normalY = (point.y - endpoint.y) / radius;
-                    normalZ = (point.z - endpoint.z) / radius;
+                    point[0] = direction[0] * near + first->position.x;
+                    point[1] = direction[1] * near + first->position.y;
+                    point[2] = direction[2] * near + first->position.z;
+                    normalX = (point[0] - endpoint[0]) / radius;
+                    normalY = (point[1] - endpoint[1]) / radius;
+                    normalZ = (point[2] - endpoint[2]) / radius;
                     near /= length;
-                } else if ((first->flags & 2) && (near < 0.0f) &&
-                           (far > 0.0f)) {
+                } else if ((first->flags & 2) && near < 0.0f && far > 0.0f) {
                     status = 2;
                 }
             }
         }
         if (status == 0) {
-            endpoint.x = (axis.x * second->height) + second->position.x;
-            endpoint.y = (axis.y * second->height) + second->position.y;
-            endpoint.z = (axis.z * second->height) + second->position.z;
-            if (func_80012574(&first->position, &direction, &endpoint,
-                              radius, &near, &far) != 0) {
-                if ((near >= 0.0f) && (near <= length)) {
+            endpoint[0] = axis[0] * second->height + second->edge.x;
+            endpoint[1] = axis[1] * second->height + second->edge.y;
+            endpoint[2] = axis[2] * second->height + second->edge.z;
+            if (func_80012574(&first->position, (AnimVec3f *) direction,
+                              (AnimVec3f *) endpoint, radius, &near,
+                              &far) != 0) {
+                if (near >= 0.0f && near <= length) {
                     status = 1;
-                    point.x = (direction.x * near) + first->position.x;
-                    point.y = (direction.y * near) + first->position.y;
-                    point.z = (direction.z * near) + first->position.z;
-                    normalX = (point.x - endpoint.x) / radius;
-                    normalY = (point.y - endpoint.y) / radius;
-                    normalZ = (point.z - endpoint.z) / radius;
+                    point[0] = direction[0] * near + first->position.x;
+                    point[1] = direction[1] * near + first->position.y;
+                    point[2] = direction[2] * near + first->position.z;
+                    normalX = (point[0] - endpoint[0]) / radius;
+                    normalY = (point[1] - endpoint[1]) / radius;
+                    normalZ = (point[2] - endpoint[2]) / radius;
                     near /= length;
-                } else if ((first->flags & 2) && (near < 0.0f) &&
-                           (far > 0.0f)) {
+                } else if ((first->flags & 2) && near < 0.0f && far > 0.0f) {
                     status = 2;
                 }
             }
         }
     } else if (second->shape == 2) {
-        minimum.x = (second->edge.x - second->radius) - first->radius;
-        minimum.y = (second->edge.y - second->height) - first->height;
-        minimum.z = (second->edge.z - second->radius) - first->radius;
-        maximum.x = second->edge.x + second->radius + first->radius;
-        maximum.y = second->edge.y + second->height + first->height;
-        maximum.z = second->edge.z + second->radius + first->radius;
-        face = func_800131AC(&first->position, &direction, &minimum, &maximum,
+        minimum[0] = second->edge.x - second->radius - first->radius;
+        minimum[1] = second->edge.y - second->height - first->height;
+        minimum[2] = second->edge.z - second->radius - first->radius;
+        maximum[0] = second->edge.x + second->radius + first->radius;
+        maximum[1] = second->edge.y + second->height + first->height;
+        maximum[2] = second->edge.z + second->radius + first->radius;
+        face = func_800131AC(&first->position, (AnimVec3f *) direction,
+                             (AnimVec3f *) minimum, (AnimVec3f *) maximum,
                              &near, &far);
-        if ((face != 0) && (near >= 0.0f) && (near <= 1.0f)) {
+        if (face != 0 && near >= 0.0f && near <= 1.0f) {
             switch (face) {
                 case 1:
                     normalY = 0.0f;
@@ -3700,17 +3678,16 @@ s32 func_800563B4(s32 object, AnimCollisionShape *first, s32 value,
                     break;
             }
         } else if (first->flags & 2) {
-            if ((minimum.x <= first->position.x) &&
-                (first->position.x <= maximum.x) &&
-                (minimum.y <= first->position.y) &&
-                (first->position.y <= maximum.y) &&
-                (minimum.z <= first->position.z) &&
-                (first->position.z <= maximum.z)) {
+            if (minimum[0] <= first->position.x &&
+                first->position.x <= maximum[0] &&
+                minimum[1] <= first->position.y &&
+                first->position.y <= maximum[1] &&
+                minimum[2] <= first->position.z &&
+                first->position.z <= maximum[2]) {
                 status = 2;
             }
         }
     }
-
     if (status == 1) {
         result->object = object;
         result->value = value;
@@ -3725,9 +3702,6 @@ s32 func_800563B4(s32 object, AnimCollisionShape *first, s32 value,
     }
     return status;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_800563B4.s")
-#endif
 
 f32 func_8002A8BC(s32 angle);
 f32 func_8002A8C0(s32 angle);
@@ -4174,22 +4148,22 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80051364:start
  * symbol: func_80051364
- * score: 92 differing words
+ * score: 33 differing words
  * frame: 0x40
- * relocations: 49
- * first-mismatch: +0x2C
- * summary: 94 to 92 with the exact frame: no camera cursor local. Left: the or-zero state reads draw one extra ring temp (t7 vs t8), shifting the rest
+ * relocations: 47
+ * first-mismatch: +0x88
+ * summary: 92 to 33: plain C rewrite, in-place NTSC scale copy, cursor-global increment. Left: a0/a1 trades (command/clock, clock/D6B4), v0 sound handle
  * PLATEAU-HANDOFF:func_80051364:end
  */
 
 
 /* PLATEAU-HANDOFF:func_80054B3C:start
  * symbol: func_80054B3C
- * score: 374 differing words
- * frame: 0xD8
+ * score: 366 differing words
+ * frame: 0xC0
  * relocations: 3
- * first-mismatch: +0x8
- * summary: Rewritten as ordinary C; the frame now matches the target's 0xD8 and the candidate is 380 of 370 words, so the residual is ten words of surplus code plus register roles rather than allocation.
+ * first-mismatch: +0x0
+ * summary: 374 to 366, size +40 to +4: home-ladder locals, dead carriers hold 4a/b*b/-b/2a. Left: arg1 in s0, arg0 entry spill, 4 more homes
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 
@@ -4201,26 +4175,6 @@ void fmvInit(void) {
  * first-mismatch: +0x24
  * summary: Size now exact at 229 words and frame 0x70; impulse dots-then-divide closed the missing word. Residual is the early 25.0f materialization rotating the FP ring from +0x24.
  * PLATEAU-HANDOFF:func_80056DD8:end
- */
-
-/* PLATEAU-HANDOFF:func_80055104:start
- * symbol: func_80055104
- * score: 420 differing words
- * frame: 0xB8
- * relocations: 23
- * first-mismatch: +0x38
- * summary: Frame now matches at 0xB8 and the first fourteen words are exact; candidate is 431 of 445 words, so the deficit is real missing code rather than allocation.
- * PLATEAU-HANDOFF:func_80055104:end
- */
-
-/* PLATEAU-HANDOFF:func_800563B4:start
- * symbol: func_800563B4
- * score: 637 differing words
- * frame: 0xD8
- * relocations: 11
- * first-mismatch: +0x1C
- * summary: Re-measured under the TU's -Wab,-r4300_mul selection and unchanged; candidate is 609 of 649 words with the exact frame, so the deficit is missing radius/vector work rather than allocation.
- * PLATEAU-HANDOFF:func_800563B4:end
  */
 
 /* PLATEAU-HANDOFF:func_80053868:start

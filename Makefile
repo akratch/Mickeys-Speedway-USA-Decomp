@@ -1256,12 +1256,31 @@ $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: CFLAGS += -Wo,-loopunroll,0 -Wab,-r4300_m
 # The path reset trap needs a typed alias to preserve its f32 argument.
 # Canonicalize only the undefined symbol name; section contents are unchanged.
 # func_800508D4's 0.01f literal owns one word of the anim literal pool; the
-# rest of IDO's 0x10-byte input section is alignment padding, and the still
+# rest of IDO's input section is alignment padding, and the still
 # anonymous pool (0.02f onward) begins immediately after it.
+# func_800563B4's six-entry face switch table already lives in that retained
+# pool (jtbl_800841F4, directly after D_800841F0), and its entries name the
+# six case labels. Export those labels at their .text offsets, rebind the
+# table's %hi/%lo pair from the compiler's private .rodata copy (in-place
+# addend 4) to D_800841F0, whose address plus 4 is the retained table, then
+# drop the checked duplicate table and its relocations. No instruction word
+# or addend is edited.
+$(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: $(TOOLS_DIR)/rebind_elf_relocations.py \
+    $(TOOLS_DIR)/trim_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym animResetTrap=TrapDanglingJump $@ && \
 	$(OBJCOPY) --redefine-sym hitCopyFirstTrap=TrapDanglingJump $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x4
+	$(OBJCOPY) --add-symbol .L80056C38=.text:0x6C38,global \
+	    --add-symbol .L80056C54=.text:0x6C54,global \
+	    --add-symbol .L80056C68=.text:0x6C68,global \
+	    --add-symbol .L80056C84=.text:0x6C84,global \
+	    --add-symbol .L80056C98=.text:0x6C98,global \
+	    --add-symbol .L80056CB4=.text:0x6CB4,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+	    0x6C24:.rodata:D_800841F0 0x6C2C:.rodata:D_800841F0 && \
+	$(OBJCOPY) --remove-section=.rel.rodata $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x4 \
+	    sha256:e9739b2f444aa9553825f049d40986c3d21ab1fa194bf048ab7f97b66a9c57a0
 
 # menu.c compiles at the plain game-code preset. It once carried
 # -Wo,-loopunroll,0 "for func_80038878"; that flag was measured byte-inert for

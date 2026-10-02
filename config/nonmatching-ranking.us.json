@@ -1711,13 +1711,13 @@
       "tu": "overlays/o045",
       "size_bytes": 2696,
       "objdiff_match_pct": null,
-      "differing_words": 573,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 573,
-      "relocation_masked_first_mismatch_offset": 0,
+      "differing_words": 566,
+      "first_mismatch_offset": 4,
+      "relocation_masked_differing_words": 566,
+      "relocation_masked_first_mismatch_offset": 4,
       "size_delta": -4,
       "category": "size-mismatch",
-      "source_context_sha256": "ZB5p.FmGZ.Ett-.r8tm.-UGR.7pDu.62l5.QLSD.NKLq.0ydi._NA"
+      "source_context_sha256": "dNym.Gd0w.qle8.lCUj.Ewgt.i5q_.XTEQ.utLo.KwNR.cYDF.RuY"
     },
     {
       "name": "func_overlay_012_F0000910_186DB90",

@@ -79,27 +79,21 @@ extern f32 func_8002A8C0(s32 angle);
  * ints converted at use, one packet macro per command (gDma1p for the
  * vertex load), the -0xA0 screen offset applied after the sine/cosine
  * calls, and the corner pair (x, y) negated in place for the lower row.
- * Remains: allocator -- left/right/textureBottom take caller-saved
- * registers spilled across the angle calls in the target, element and
- * textureRight take s7/fp; frame 0x188 vs 0x190. */
+ * 573 -> 566 (lane w2-ovle, 2026-10-02): locals declared in the target's
+ * frame-ladder order put the frame at 0x190 and savedFont (+0x18C), the
+ * loop bound (+0x184), activeColour (+0x150) and textureBottom's spill
+ * (+0x154) on their shipped homes; aligned byte-exact 179 -> 193. Remains:
+ * allocator -- the target spills left/right/textureBottom to their homes
+ * across the angle calls and keeps textureLeft/Top/Right in s5/s6/fp, and
+ * keeps current in memory at +0x108. */
 #define PKT(pkt, a, b) { Gfx *_g = (Gfx *)(pkt)++; _g->words.w0 = (a); _g->words.w1 = (b); }
 #ifdef NON_MATCHING
 void func_overlay_045_F0001158_188D5B0(
     Gfx **displayList, Overlay45Vertex **vertexPtr, void *unused,
     Overlay45ResourceDescriptor *descriptor) {
-    DialogueBoxBackground *window;
-    Overlay45Element *element;
-    Overlay45FontData *font;
-    Overlay45GlyphData *glyph;
-    Overlay45Vertex *vertices;
-    Overlay45Triangle *triangles;
-    Gfx *dList;
-    Gfx *fontCommands;
-    u8 *current;
-    u8 first;
-    u8 second;
     s32 savedFont;
-    s32 activeColour;
+    s32 pad188;
+    s32 loopY;
     s32 left;
     s32 top;
     s32 right;
@@ -109,11 +103,10 @@ void func_overlay_045_F0001158_188D5B0(
     s32 textureLeft;
     s32 textureTop;
     s32 textureRight;
-    s32 textureBottom;
-    s32 loopY;
     s32 upper;
     s32 lower;
-    u32 vertexAddress;
+    s32 textureBottom;
+    s32 activeColour;
     f32 sine;
     f32 x;
     f32 y;
@@ -126,6 +119,19 @@ void func_overlay_045_F0001158_188D5B0(
     f32 rightFloat;
     f32 upperFloat;
     f32 lowerFloat;
+    s32 pad12C;
+    u8 *current;
+    Overlay45FontData *font;
+    Overlay45GlyphData *glyph;
+    Gfx *dList;
+    Gfx *fontCommands;
+    Overlay45Vertex *vertices;
+    Overlay45Triangle *triangles;
+    DialogueBoxBackground *window;
+    Overlay45Element *element;
+    u8 first;
+    u8 second;
+    u32 vertexAddress;
 
     if (descriptor == NULL) {
         return;
@@ -340,10 +346,10 @@ void func_overlay_045_F0001158_188D5B0(
 
 /* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
  * symbol: func_overlay_045_F0001158_188D5B0
- * score: 573/674 words
- * frame: 0x188
+ * score: 566/674 words
+ * frame: 0x190
  * relocations: 25
- * first-mismatch: +0x0
- * summary: 573 at -4: float element coords, int rows, packet macros, -0xA0 after the angle calls; remains allocator (left/right spill) and frame 0x188 vs 0x190.
+ * first-mismatch: +0x4
+ * summary: 566 at -4: locals in frame-ladder order, frame 0x190. Open: left/right take s-regs; target saves them around the angle calls.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

@@ -205,7 +205,6 @@ extern void overlay58EnsureResource(void);
  */
 #ifdef NON_MATCHING
 void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
-    Overlay58Status *status;
     Overlay58AnimPath *path;
     Overlay58PathGeometry *geometry;
     Overlay58Vec3f *verts;
@@ -215,6 +214,7 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
     s16 end;
     s32 marker;
     s32 selection;
+    Overlay58Status *status;
     s32 stage;
     s32 buttons;
     s32 mode;
@@ -456,7 +456,6 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
     path = func_800508B4(3);
     if ((path != 0) && (D_68 > 0)) {
         geometry = *path->object->geometry;
-        verts = geometry->vertices;
         func_800221E8(&gOverlay58DisplayListReloc,
                       &gOverlay58MatrixReloc);
         command = gOverlay58DisplayListReloc++;
@@ -498,9 +497,9 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                     }
                 }
                 overlay58DrawSegmentStrip(
-                    verts[start].x, verts[start].y,
-                    verts[start].z, verts[end].x,
-                    verts[end].y, verts[end].z,
+                    geometry->vertices[start].x, geometry->vertices[start].y,
+                    geometry->vertices[start].z, geometry->vertices[end].x,
+                    geometry->vertices[end].y, geometry->vertices[end].z,
                     D_2C0);
                 D_2C0 += increment;
                 if (D_2C0 > 1.0f) {
@@ -508,15 +507,15 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                     if (D_2BC != 0) {
                         amSndStop(D_2BC);
                     }
-                    overlay58DrawPointQuad((s32)verts[end].x,
-                                           (s32)verts[end].y,
-                                           (s32)verts[end].z);
+                    overlay58DrawPointQuad((s32)geometry->vertices[end].x,
+                                           (s32)geometry->vertices[end].y,
+                                           (s32)geometry->vertices[end].z);
                 }
             } else {
                 overlay58DrawSegmentStrip(
-                    verts[start].x, verts[start].y,
-                    verts[start].z, verts[end].x,
-                    verts[end].y, verts[end].z,
+                    geometry->vertices[start].x, geometry->vertices[start].y,
+                    geometry->vertices[start].z, geometry->vertices[end].x,
+                    geometry->vertices[end].y, geometry->vertices[end].z,
                     1.0f);
             }
 
@@ -538,15 +537,15 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                 if (marker != -1) {
                     overlay58DrawLargePointQuad(
                         (s32)((f32)D_B8[status->player][0] +
-                              verts[marker].x),
-                        (s32)verts[marker].y,
+                              geometry->vertices[marker].x),
+                        (s32)geometry->vertices[marker].y,
                         (s32)((f32)D_B8[status->player][1] +
-                              verts[marker].z));
+                              geometry->vertices[marker].z));
                 }
             }
-            overlay58DrawPointQuad((s32)verts[start].x,
-                                   (s32)verts[start].y,
-                                   (s32)verts[start].z);
+            overlay58DrawPointQuad((s32)geometry->vertices[start].x,
+                                   (s32)geometry->vertices[start].y,
+                                   (s32)geometry->vertices[start].z);
         }
     }
 }
@@ -556,10 +555,10 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_058_F00005FC_18AF7E4:start
  * symbol: func_overlay_058_F00005FC_18AF7E4
- * score: 536 differing words
+ * score: 509/829 words
  * frame: 0xA0
  * relocations: 269
  * first-mismatch: +0x0
- * summary: Pair 5 extra-ILOD (-12), lines 514, 525, 548; pair 1 s8 line 207. Split D_1A0 cursor; marker=-1 inside bit test. Stall: neg1, volatile scale, per-draw reloads.
+ * summary: Vertices read as geometry->vertices at each use (536 to 511), decl hill climb 509, size delta -12 to +4; ninth saved web (s8) remains, frame 0xA0 against 0x88.
  * PLATEAU-HANDOFF:func_overlay_058_F00005FC_18AF7E4:end
  */

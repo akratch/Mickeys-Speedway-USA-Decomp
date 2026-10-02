@@ -153,7 +153,6 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
     f32 unusedF;
     Overlay29TailState *state;
     Overlay29TailRecord *record;
-    Overlay29TailLinkedObject *linked;
     Overlay29TailEntity *linkedEntity;
     f32 acceleration;
     f32 velocityStep;
@@ -161,6 +160,7 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
     f32 targetX;
     f32 targetY;
     f32 targetZ;
+    Overlay29TailLinkedObject *linked;
     f32 dx;
     f32 dy;
     f32 dz;
@@ -322,10 +322,10 @@ void func_overlay_029_F00005C4_187D874(Overlay29TailObject *object,
 
 /* PLATEAU-HANDOFF:func_overlay_029_F00005C4_187D874:start
  * symbol: func_overlay_029_F00005C4_187D874
- * score: 364 differing words
+ * score: 360/583 words
  * frame: 0xC8
  * relocations: 43
  * first-mismatch: +0xA0
- * summary: Leftover updateRate OR-zero and a third unused pointer close convert-to-temp at frame 0xC8. Masked 364, first +0xA0. Records-unroll triples remain.
+ * summary: Declaration-order hill climb 364 to 360; records block still hand-unrolled with updateRateF in f14 (target f20).
  * PLATEAU-HANDOFF:func_overlay_029_F00005C4_187D874:end
  */

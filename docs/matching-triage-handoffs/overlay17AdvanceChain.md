@@ -108,4 +108,14 @@ configured stock probes, `finalize_plateau.py`, and
 `tools/gates.sh verify cleanroom check-docs`. The guarded fallback remains
 canonical, with no new matching credit.
 
+#### 2026-10-02, lane g-ovl5: no change, 49
+
+- All 68 dependency-valid orders of the eight setup statements (count, old
+  buffer, source cursor, new buffer, store, write cursor, destination cursor,
+  count scaling): every one scores 49.
+- Target reading: count lives in a3 and count minus one in t0 as separate webs;
+  the old buffer is a2 and chain stays in a0, where this build puts the old
+  buffer in a0 over the chain parameter. The scaling constant 10 is held in a
+  register for two multiplies (source and destination offsets) while the copy
+  count is shift-and-add.
 <!-- plateau-handoff:overlay17AdvanceChain:end -->

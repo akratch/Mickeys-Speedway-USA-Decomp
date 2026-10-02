@@ -20,4 +20,14 @@
 - blocker: command and color lifetime still rebuilds RGB inside the loop and reloads `colorA0` / `colorA1` / remaining / `commands-1` instead of keeping the target's live `a0`/`a1`/`a2`. Next lever is a size-0 spelling of that hoist, not another frame or FP term-order edit
 
 Header regenerated from the ranking on 2026-09-23 (check_shard_metrics --write); it read first mismatch +0x0.
+#### 2026-10-02, lane g-ovl5: no change, 155
+
+- Loop spellings (`while (count--)`, `for` count-down, count-up): count-down
+  and while forms are 155 (canonicalised), count-up 225; `count-- != 0`
+  against `count--`: inert. Giving the constant 3 its own local: inert.
+- Volatile off on green and blue: 184 at +8 (as before).
+- Declaration-order hill climb over the 16 declarations (comma lists split):
+  floor 155.
+- Target colours: s1 holds the divisor 3 and ra holds the sync opcode; this
+  build swaps them. Colour order of those two constants is the open variable.
 <!-- plateau-handoff:overlay100DrawMotion:end -->

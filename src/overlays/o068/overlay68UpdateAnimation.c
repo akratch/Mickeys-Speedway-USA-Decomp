@@ -87,9 +87,9 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
     s32 index;
     Overlay68Keyframe *current;
     f32 tangentZ;
-    s32 atStart;
     Overlay68Animation *animation;
     Overlay68Keyframe *before;
+    s32 atStart;
     Overlay68Keyframe *after;
     Overlay68Keyframe *afterAfter;
     f32 tangentX;
@@ -223,10 +223,10 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
 
 /* PLATEAU-HANDOFF:overlay68UpdateAnimation:start
  * symbol: overlay68UpdateAnimation
- * score: 183 differing words
+ * score: 180/356 words
  * frame: 0x78
  * relocations: 15
  * first-mismatch: +0x1C
- * summary: Opacity no-op mask (ring phase) and declaration order: 213 to 183. State web t2 against t1 is a global t-pool shift.
+ * summary: Declaration-order hill climb 183 to 180; state web t2 against t1 (t-pool shift) remains.
  * PLATEAU-HANDOFF:overlay68UpdateAnimation:end
  */

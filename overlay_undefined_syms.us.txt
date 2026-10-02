@@ -1294,12 +1294,26 @@ overlay7DispatchModesReloc = 0xf0000000;
 /* overlay 26: overlay26InitializeObject.c.o */
 D_B18 = 0x00000b18;
 
-/* overlay 26: func_overlay_026_F0000B18_187AF10.c.o */
+/* overlay 26: func_overlay_026_F00001A0_187A598.c.o */
+Arctanf_o026Reloc = 0xf0000000;
+Powerf_o026Reloc = 0xf0000000;
+dAngle_o026Reloc = 0xf0000000;
+func_80006EA0_o026Reloc = 0xf0000000;
+func_80008128_o026Reloc = 0xf0000000;
+func_80010900_o026Reloc = 0xf0000000;
+func_8001DCD0_o026Reloc = 0xf0000000;
+func_8002A8BC_o026Reloc = 0xf0000000;
+func_8002A8C0_o026Reloc = 0xf0000000;
+func_overlay_026_F0000D24_187B11CReloc = 0xf0000000;
+gOverlay26UpdatePoolReloc = 0x00000000;
+mathDiffAngle_o026Reloc = 0xf0000000;
+overlay26RecordMinimumReloc = 0xf0000000;
+partUpdateTriggers_o026Reloc = 0xf0000000;
 sqrtf_o026Reloc = 0xf0000000;
+trackMakePolylist_o026Reloc = 0xf0000000;
 
 /* overlay 26: overlay26HandleEffects.c.o */
 func_80002FE0_o026Reloc = 0xf0000000;
-func_80006EA0_o026Reloc = 0xf0000000;
 func_8002997C_o026Reloc = 0xf0000000;
 func_80029FE4_o026Reloc = 0xf0000000;
 func_8002A910_o026Reloc = 0xf0000000;

@@ -80,4 +80,32 @@ Summary before this remeasure: The +4 size delta is a cancellation, not a findab
   inline (500 at +8), increment after the call (501 at +8), `status` volatile
   (857 at +188). Decision variable: what keeps the `&D_2C0` web below `12` in
   colouring order.
+
+#### 2026-10-02, lane w6-o058: draw-loop addresses do not split case 3
+
+Assigned lever: a draw-loop address that does not CSE with the case-3
+LDA. Three shape products, no cell below 109 at size delta 0. Case 3's
+expression was not edited. Tracked body unchanged.
+
+- Draw loop only. Control 109 at delta 0, first +0x41C. A u8 byte
+  scale of the same element was text-identical. A flat s16 index and
+  the same index off row 1 cancelled by 4 bytes both scored 142, with
+  the new words in the loop rather than in case 3. Integer
+  offsets-first adds scored 236 and 237 at delta +4. Case 3's words
+  did not move.
+- The same addresses on the later uses (case 5's level load, both
+  mainChangeLevel loads, and the draw loop). Integer form on the three
+  single loads was byte-identical to the control. Flat forms scored
+  232 or 246 at delta 0. No word before +0x500 changed, and the first
+  mismatch stayed +0x41C.
+- One named s16 pointer per stage, born outside the mapping loop and
+  used only as the two cells: 150 and 166 at delta 0. The natural
+  pointer grows the frame from 0x88 to 0x90 and still rematerializes
+  case 3 through v1.
+
+The loop already emits the target's offsets-first address. Spellings
+that fold to that shape do not split case 3. Spellings that do not
+fold leave case 3 byte-identical and make the loop worse. Three
+attempts, no better residual. Stop under ADR 0018. Score remains
+109/829, frame 0x88, first +0x41C.
 <!-- plateau-handoff:func_overlay_058_F00005FC_18AF7E4:end -->

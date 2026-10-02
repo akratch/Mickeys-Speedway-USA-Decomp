@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 357216,
-  "nonmatching_overlay_c_bytes": 111388,
+  "matched_overlay_c_bytes": 359768,
+  "nonmatching_overlay_c_bytes": 108836,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4560,
   "bss_bytes": 77680,
@@ -19607,7 +19607,7 @@
      "type": "c",
      "source": "overlays/o101/overlay101TailAB4C",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xB544",

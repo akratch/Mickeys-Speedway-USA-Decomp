@@ -86,60 +86,31 @@ extern O101TailAB4CInputs gO101TailAB4CInputs;
 extern u8 gO101TailAB4CAssetD90;
 extern u8 gO101TailAB4CFinalObject3F14;
 
-/* Old-style declarations avoid asserting unproved formal arity while calls
- * preserve each site's three-register physical image. */
-extern void *o101TailAB4CCreator1Reloc();
-extern void *o101TailAB4CCreator2Reloc();
-extern void *o101TailAB4CCreator3Reloc();
+/* All three sprite nodes are created by the same resident routine (one
+ * SYMBOL target in the relocation table), and it takes two arguments: the
+ * third register the shipped calls carry is a leftover, not an argument. */
+extern void *o101TailAB4CCreatorReloc(s32 key, void *source);
 extern void o101TailAB4CFinalizerReloc(void *object);
 extern s32 overlay101ByteLength(u8 *text);
 
-/* Workbench p5 read this as `structure-mismatch` at 636 differing words from
- * +0x4, with the candidate 665 instructions against 638 and overrunning its
- * 2,552-byte owner by 108 bytes. Lane p10-o101, 2026-09-12, retired most of
- * that as a carrier problem, using the shape that closed six other builders in
- * this overlay on the same day.
- * L145 -- `nodeIndex`, `orderIndex`, `node32`, `node24`, and the three pool
- *   carriers `node24CountPtr`, `node24Pool` and `node24Stride` are all gone;
- *   every store is spelled through the array subscript of the counter global
- *   itself, so the subscript written on both sides of each call is ONE IR name
- *   (L131) and the pre-call counter read lands in a ring temporary, which a
- *   local can never be (L130). The bump moves to the end of its group.
- *   This overlay's counters have ONE name each here, so the lever applies
- *   whole-body, unlike the BA34 tail where the order counter has two.
- * L144/L103 -- the `opacityScale` local is gone too; the multiplier is the
- *   `(f32)(s32)1` literal in place, as in every matched sibling.
- * Lane w13-o101, 2026-09-18: 579 masked at delta -8 -> 499 at delta 0.
- * L103 -- sprite nodes 2 and 3 were CSE'ing node 1's `0.0f`, so the two
- *   `mtc1 $zero` the target emits for those nodes were missing. Distinct
- *   spellings `0.00f` and `0.000f` split the pool entries (L103) and close
- *   the size. `(f32)(s32)0` on both nodes only reached delta -4 (the cvt
- *   overshoots); `(f32)(s32)1` for node 1's scale regresses to -8.
- * L149 -- `u8 length` without a second `& 0xFF` is byte-identical to the
- *   inherited `s32` plus mask; the per-row addiu-3 is not a folded extra
- *   draw. draw_census stays 19 GP draws per text row (21 on the first).
- * L154 -- `pool[count]` vs `*(Node24 *)((u8 *)pool + count * 0x18)` is
- *   byte-identical; the array form is kept as the matched-sibling spelling.
- * The remaining per-row addiu-3 pair is the same `childType = 3` constant
- *   materialized late (ours) vs with mode=2 and kind=4 (target). Hoisting
- *   the chain stores ahead of mode is 470 positional / 154 structural
- *   against 499 / 74 -- worse aligned. child then childType, and
- *   `(s32)(u8)3`, are inert. Integer census is 24 percent coherent across
- *   33 windows (not a ring phase). FP is one clean six-cycle at 98 percent.
- * NEXT LEVER: get constant 3 demanded in the post-call materialization
- *   window with 2 and 4, without moving the previousType copy. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-02 (lane q-ovl10), 499 -> 0 at delta 0. Over the
+ * one-name counter-subscript shape of lanes p10/w13 (L145/L131), three
+ * edits: the creator called with its real two arguments (499 -> 100, the
+ * old three-argument image was a leftover a2), value14 = 0.0f on all three
+ * sprite nodes as ONE pool web with only the scales split by spelling
+ * (L103; 100 -> 13), and the line order kind before width2E in the root
+ * header and value14 before value18 in nodes 2 and 3 (13 -> 0). */
 void func_overlay_101_F000AB4C_18E636C(void) {
     void *handle;
     u8 length;
 
-    gO101TailAB4CRoot.height30 = 0xF0; gO101TailAB4CRoot.width2E = 0x140; gO101TailAB4CRoot.kind = 4; gO101TailAB4CRoot.asset34 = &gO101TailAB4CAssetD90; gO101TailAB4CRoot.color32 = 0xFF; gO101TailAB4CRoot.color33 = 0xFF; gO101TailAB4CRoot.value26 = 0; gO101TailAB4CRoot.value28 = 0; gO101TailAB4CRoot.value2A = 0; gO101TailAB4CRoot.value2C = 0; gO101TailAB4CRoot.chainType = 0; gO101TailAB4CRoot.chain = NULL; gO101TailAB4COrderSlots[gO101TailAB4COrderCount] = &gO101TailAB4CRoot.chainType; gO101TailAB4COrderCount = gO101TailAB4COrderCount + 1;
+    gO101TailAB4CRoot.height30 = 0xF0; gO101TailAB4CRoot.kind = 4; gO101TailAB4CRoot.width2E = 0x140; gO101TailAB4CRoot.asset34 = &gO101TailAB4CAssetD90; gO101TailAB4CRoot.color32 = 0xFF; gO101TailAB4CRoot.color33 = 0xFF; gO101TailAB4CRoot.value26 = 0; gO101TailAB4CRoot.value28 = 0; gO101TailAB4CRoot.value2A = 0; gO101TailAB4CRoot.value2C = 0; gO101TailAB4CRoot.chainType = 0; gO101TailAB4CRoot.chain = NULL; gO101TailAB4COrderSlots[gO101TailAB4COrderCount] = &gO101TailAB4CRoot.chainType; gO101TailAB4COrderCount = gO101TailAB4COrderCount + 1;
 
-    gO101TailAB4CNodes32[gO101TailAB4CNode32Count].x = 0xF0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].y = 0x154; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value10 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].color12 = 0xFF; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].color13 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value18 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].scale = 1.0f; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value14 = 0.0f; handle = o101TailAB4CCreator1Reloc(0x91, NULL, gO101TailAB4COrderCount); gO101TailAB4CNodes32[gO101TailAB4CNode32Count].previousType = gO101TailAB4CRoot.chainType; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].previous = gO101TailAB4CRoot.chain; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].handle = handle; gO101TailAB4CRoot.chainType = 2; gO101TailAB4CRoot.chain = &gO101TailAB4CNodes32[gO101TailAB4CNode32Count]; gO101TailAB4CNode32Count = gO101TailAB4CNode32Count + 1;
+    gO101TailAB4CNodes32[gO101TailAB4CNode32Count].x = 0xF0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].y = 0x154; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value10 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].color12 = 0xFF; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].color13 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value18 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].scale = 1.0f; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value14 = 0.0f; handle = o101TailAB4CCreatorReloc(0x91, NULL); gO101TailAB4CNodes32[gO101TailAB4CNode32Count].previousType = gO101TailAB4CRoot.chainType; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].previous = gO101TailAB4CRoot.chain; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].handle = handle; gO101TailAB4CRoot.chainType = 2; gO101TailAB4CRoot.chain = &gO101TailAB4CNodes32[gO101TailAB4CNode32Count]; gO101TailAB4CNode32Count = gO101TailAB4CNode32Count + 1;
 
-    gO101TailAB4CNodes32[gO101TailAB4CNode32Count].x = 0x8C; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].y = 0x88; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value10 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].color12 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].color13 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value18 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].scale = 0.00f; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value14 = 0.00f; handle = o101TailAB4CCreator2Reloc(0xA8, NULL, gO101TailAB4CNodes32); gO101TailAB4CNodes32[gO101TailAB4CNode32Count].previousType = gO101TailAB4CRoot.chainType; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].previous = gO101TailAB4CRoot.chain; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].handle = handle; gO101TailAB4CRoot.chainType = 2; gO101TailAB4CRoot.chain = &gO101TailAB4CNodes32[gO101TailAB4CNode32Count]; gO101TailAB4CNode32Count = gO101TailAB4CNode32Count + 1;
+    gO101TailAB4CNodes32[gO101TailAB4CNode32Count].x = 0x8C; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].y = 0x88; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value10 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].color12 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].color13 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value14 = 0.0f; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value18 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].scale = 0.00f; handle = o101TailAB4CCreatorReloc(0xA8, NULL); gO101TailAB4CNodes32[gO101TailAB4CNode32Count].previousType = gO101TailAB4CRoot.chainType; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].previous = gO101TailAB4CRoot.chain; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].handle = handle; gO101TailAB4CRoot.chainType = 2; gO101TailAB4CRoot.chain = &gO101TailAB4CNodes32[gO101TailAB4CNode32Count]; gO101TailAB4CNode32Count = gO101TailAB4CNode32Count + 1;
 
-    gO101TailAB4CNodes32[gO101TailAB4CNode32Count].x = 0xB4; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].y = 0x88; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value10 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].color12 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].color13 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value18 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].scale = 0.000f; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value14 = 0.000f; handle = o101TailAB4CCreator3Reloc(0xA8, NULL, gO101TailAB4CNodes32); gO101TailAB4CNodes32[gO101TailAB4CNode32Count].previousType = gO101TailAB4CRoot.chainType; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].previous = gO101TailAB4CRoot.chain; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].handle = handle; gO101TailAB4CRoot.chainType = 2; gO101TailAB4CRoot.chain = &gO101TailAB4CNodes32[gO101TailAB4CNode32Count]; gO101TailAB4CNode32Count = gO101TailAB4CNode32Count + 1;
+    gO101TailAB4CNodes32[gO101TailAB4CNode32Count].x = 0xB4; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].y = 0x88; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value10 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].color12 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].color13 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value14 = 0.0f; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].value18 = 0; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].scale = 0.000f; handle = o101TailAB4CCreatorReloc(0xA8, NULL); gO101TailAB4CNodes32[gO101TailAB4CNode32Count].previousType = gO101TailAB4CRoot.chainType; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].previous = gO101TailAB4CRoot.chain; gO101TailAB4CNodes32[gO101TailAB4CNode32Count].handle = handle; gO101TailAB4CRoot.chainType = 2; gO101TailAB4CRoot.chain = &gO101TailAB4CNodes32[gO101TailAB4CNode32Count]; gO101TailAB4CNode32Count = gO101TailAB4CNode32Count + 1;
 
     gO101TailAB4CRoot.x42 = 0x20; gO101TailAB4CRoot.width44 = 0x18; gO101TailAB4CRoot.y46 = 0x28; gO101TailAB4CRoot.height48 = 0x18; gO101TailAB4CRoot.value4A = 0xF0; gO101TailAB4CRoot.value4C = 0xAA; gO101TailAB4CRoot.mode40 = 0; gO101TailAB4CRoot.color4E = 0xFF; gO101TailAB4CRoot.color4F = 0xFF; gO101TailAB4CRoot.childType = 0; gO101TailAB4CRoot.child = NULL; gO101TailAB4CRoot.data50 = gO101TailAB4CInputs.data158; gO101TailAB4COrderSlots[gO101TailAB4COrderCount] = &gO101TailAB4CRoot.childType; gO101TailAB4COrderCount = gO101TailAB4COrderCount + 1;
 
@@ -165,16 +136,3 @@ void func_overlay_101_F000AB4C_18E636C(void) {
 
     o101TailAB4CFinalizerReloc(&gO101TailAB4CFinalObject3F14);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o101/overlay101TailAB4C/func_overlay_101_F000AB4C_18E636C.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_101_F000AB4C_18E636C:start
- * symbol: func_overlay_101_F000AB4C_18E636C
- * score: 499/638 words
- * frame: 0x48
- * relocations: 108
- * first-mismatch: +0x10
- * summary: 499 masked at size delta 0 after L103 split of the three 0.0f pool entries on sprite nodes; per-row addiu-3 is childType=3 materialized late, not a folded L149 draw. 237 exact / 340 naming / 5 imm / 74 structural.
- * PLATEAU-HANDOFF:func_overlay_101_F000AB4C_18E636C:end
- */

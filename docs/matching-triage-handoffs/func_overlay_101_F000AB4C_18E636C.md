@@ -2,11 +2,32 @@
 ### `func_overlay_101_F000AB4C_18E636C` plateau handoff
 
 - source: `src/overlays/o101/overlay101TailAB4C.c`
-- score: 499/638 words
+- score: 0/638 words, promoted
 - frame: 0x48
-- relocations: 108
-- first mismatch: +0x10
-- summary: 499 masked at size delta 0 after L103 split of the three 0.0f pool entries on sprite nodes; per-row addiu-3 is childType=3 materialized late, not a folded L149 draw. 237 exact / 340 naming / 5 imm / 74 structural.
+- relocations: 48
+- first mismatch: none
+- summary: Matched. The creator takes two arguments, value14 is one 0.0f pool web across the sprite nodes, and two line orders closed the rest.
+
+
+#### 2026-10-02, lane q-ovl10: matched, 499 -> 0 at delta 0
+
+Priced on the fast direct compile, over the inherited one-name counter
+subscript shape:
+
+- Creator arity. All three sprite-node creator calls are one SYMBOL target
+  (one resident routine); declared with two arguments, the leftover a2 the
+  old three-argument image modelled comes out of the allocator by itself.
+  499 -> 100.
+- value14 = 0.0f on all three sprite nodes is one pool web held in f20;
+  only the two later scales take split spellings (0.00f, 0.000f). The
+  earlier lane split value14 as well. 100 -> 13.
+- Line order: kind before width2E in the root header (13 -> 4), and
+  value14 before value18 in sprite nodes 2 and 3 (4 -> 0).
+
+Promotion: TU completed, atlas rewritten (no mixed range), extract,
+overlay-syms, build, overlay-syms, build; verify, check-overlay-syms and
+promotion-proof all pass. The three creator placeholder names became one,
+o101TailAB4CCreatorReloc.
 
 #### 2026-09-18, lane w13-o101: close size, reopen the addiu-3 hoist
 

@@ -2713,10 +2713,20 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0000000_18A3BF8.c.o: POS
 		sha256:8331339c4a36b067bfd51dbb9354792b63fed3c4aa69893b7386269e8345fd0a && \
 	$(OBJCOPY) --remove-section .rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x954
-ifeq ($(NON_MATCHING),0)
+# The grid quad draw is instruction-exact. Its resident callees and data go
+# through the generated surface entries; the trim only pins the size.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001020_18A4C18.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym D_800D3140=D_800D3140_o057Reloc \
+		--redefine-sym D_800D3144=D_800D3144_o057Reloc \
+		--redefine-sym D_800D3148=D_800D3148_o057Reloc \
+		--redefine-sym D_800D31C8=D_800D31C8_o057Reloc \
+		--redefine-sym func_8002109C=func_8002109C_o057Reloc \
+		--redefine-sym func_800221E8=func_800221E8_o057Reloc \
+		--redefine-sym func_800349A4=func_800349A4_o057Reloc \
+		--redefine-sym func_800367A4=func_800367A4_o057Reloc \
+		--redefine-sym func_800508B4=func_800508B4_o057Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x958
-endif
 # The mode dispatch is instruction-exact. Its switch table is the retained
 # overlay table at rodata +0xB0: bind the two table references to that owner
 # and drop the compiler's private copy by digest. No instruction changes.
@@ -3470,10 +3480,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57UpdateModeState.c.o: POSTPROCESS 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57HandleModeInput.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_057_F0004064_18A7C5C=overlay57HandleModeInput $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x364
-ifeq ($(NON_MATCHING),0)
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001020_18A4C18.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x958
-endif
 # overlay57UpdateModeTrigger owns overlay 57's local BSS block. IDO only shares
 # one `lui $at` between the two constant-index setup stores when the array is
 # defined in this translation unit, and that shared materialisation is in the

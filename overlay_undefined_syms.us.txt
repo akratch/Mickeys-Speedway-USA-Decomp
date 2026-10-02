@@ -2507,7 +2507,21 @@ O57_renderObject0954 = 0x00000000;
 /* overlay 57: func_overlay_057_F0001020_18A4C18.c.o */
 D_4D4 = 0x000004d4;
 D_4E4 = 0x000004e4;
-D_80000060 = 0x80000060;
+D_800D3140_o057Reloc = 0x00000000;
+D_800D3144_o057Reloc = 0x00000000;
+D_800D3148_o057Reloc = 0x00000000;
+D_800D31C8_o057Reloc = 0x00000000;
+func_8002109C_o057Reloc = 0xf0000000;
+func_800221E8_o057Reloc = 0xf0000000;
+func_800349A4_o057Reloc = 0xf0000000;
+func_800367A4_o057Reloc = 0xf0000000;
+gO57GridAlpha13C = 0x0000013c;
+gO57GridBlendA8 = 0x000000a8;
+gO57GridBlendAC = 0x000000ac;
+gO57GridMode184 = 0x00000184;
+gO57GridRecord160 = 0x00000160;
+gO57GridTriangles = 0x00000000;
+gOverlay57TableIndex = 0x00000000;
 
 /* overlay 57: overlay57ReleaseAll.c.o */
 gOverlay57Object100 = 0x00000100;
@@ -2546,7 +2560,6 @@ gOverlay57ModeFlag = 0x00000144;
 gOverlay57Selection100 = 0x00000100;
 gOverlay57Selection108 = 0x00000108;
 gOverlay57State = 0x0000011c;
-gOverlay57TableIndex = 0x00000000;
 gOverlay57Timer = 0x00000118;
 gOverlay57UpdateSelection = 0x000004f8;
 overlay57LayoutDescriptorReloc = 0xf0000000;

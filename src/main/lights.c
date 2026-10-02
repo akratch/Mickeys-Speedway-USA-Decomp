@@ -912,29 +912,19 @@ f32 lightDirectionCalc(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg
     }
     return var_f2;
 }
-/* 63 masked words at size delta 0, frame 0xC8 with the target's slot ladder,
- * first mismatch +0x80 (was 155 at delta -4). Track B, 2026-09-23:
- *   - lightData is assigned once before the scale test and again after it.
- *     The first definition is dead on the unscaled path, so uopt sinks it
- *     into the scaled branch; the target computes description + 0x10 in both
- *     places and addresses the branch through it. One pointer declared once
- *     was hoisted above the test and folded into the offsets: the -4. 75.
- *   - declarations ordered so count, the four saved values and changed take
- *     the top homes, local sits at 0x70 and cameraDelta at 0x50: 63, and the
- *     immediate bucket is empty.
- * 2026-10-01 (lane d-res2): 63 -> 56. The scale block loads the factor's
- * D_8007C85C between the green and blue saves instead of after all three,
- * which pulls the hoisted high-half draw two ring positions earlier (t6 where
- * the target has t4). All 420 orders of the nine statements that follow it
- * are inert (56), as are all 120 orders of the five opening statements bar
- * this one; `changed = 1` placed earlier is worse (63 to 73).
- * Left (older note, numbers now smaller), 57 naming rows and one moved word: the three single-block CSE temps
- * of the scaling arithmetic (web numbers 78, 86 and 88 on this shape, save
- * 3 each) are coloured v0, v1 and a0 here where the target leaves them in
- * ring temps, and the ring phase differs downstream (t0-t4 against t5-t9); and
- * the changed = 1 constant is drawn later than the target draws it. */
-/* PROVENANCE: JFG public decomp src/lights.c names this routine lightObject; that entry is still assembly, so Mickey's fields, globals, and calls are authoritative below. */
-#ifdef NON_MATCHING
+/* PROVENANCE: JFG public decomp src/lights.c names this routine lightObject; that entry is still assembly, so Mickey's fields, globals, and calls are authoritative below.
+ *
+ * Matched 2026-10-02 (lane x-res; earlier passes Track B, d-res2, e-res3).
+ * lightData is assigned before the scale test and again after it (uopt sinks
+ * the dead first definition into the scaled branch). The scale is read from
+ * description->scale0 at both uses, with no local: as a local it swapped the
+ * c.eq.s and mul.s operand order. The factor is computed first in the scaled
+ * block, so its D_8007C85C draw follows the two test draws. The scaled bytes
+ * are written back through lightData and blue16 is computed from the two
+ * stored fields, then packed10 from blue16: uopt forwards each stored value,
+ * so the products and their difference stay ring temporaries instead of three
+ * globally coloured webs. Three unused declarations keep the 0x70 local block
+ * and the 0x50 cameraDelta home. */
 void func_80019AB8(LightPosition *position, LightObjectContext *object,
                    LightDescription *description, f32 *matrix) {
     s32 count;
@@ -945,10 +935,10 @@ void func_80019AB8(LightPosition *position, LightObjectContext *object,
     s32 changed;
     f32 local[4][4];
     LightData *lightData;
-    f32 scale;
+    f32 unusedScale;
     f32 factor;
-    s32 redValue;
-    s32 greenValue;
+    s32 unusedRed;
+    s32 unusedGreen;
     f32 cameraDelta[3];
     LightObjectState *state;
     s16 jointCount;
@@ -965,22 +955,18 @@ void func_80019AB8(LightPosition *position, LightObjectContext *object,
         }
         if (description != NULL) {
             changed = 0;
-            scale = description->scale0;
             lightData = (LightData *) ((u8 *) description + 0x10);
-            if ((1.0f != scale) ||
+            if ((1.0f != description->scale0) ||
                 ((D_8007C854 != 0) && (D_8007C85C != 0xFF))) {
+                factor = description->scale0 * ((f32) D_8007C85C * D_800817C8);
                 savedRed = lightData->red15;
                 savedGreen = lightData->green17;
-                factor = scale * ((f32) D_8007C85C * D_800817C8);
                 savedBlue = lightData->blue16;
                 savedPacked = lightData->packed10;
-                redValue = (s32) ((f32) savedRed * factor);
-                lightData->red15 = (u8) redValue;
-                greenValue = (s32) ((f32) savedGreen * factor);
-                lightData->blue16 = (u8) (redValue - greenValue);
-                lightData->packed10 =
-                    ((redValue - greenValue) & 0xFF) << lightData->shift14;
-                lightData->green17 = (u8) greenValue;
+                lightData->red15 = (s32) (savedRed * factor);
+                lightData->green17 = (s32) (savedGreen * factor);
+                lightData->blue16 = lightData->red15 - lightData->green17;
+                lightData->packed10 = lightData->blue16 << lightData->shift14;
                 changed = 1;
             }
             jointCount = description->jointCountE;
@@ -1022,9 +1008,6 @@ void func_80019AB8(LightPosition *position, LightObjectContext *object,
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/lights/func_80019AB8.s")
-#endif
 /* PROVENANCE: adapted from JFG's public decomp comparison and Mickey's own assembly. */
 void lightDefaultObjectLight(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s32 arg4) {
     func_80019DE8(&D_800CB298, arg0, arg1, arg2, arg3, arg4);
@@ -1146,16 +1129,6 @@ s32 lightKillGlowingLight(void) {
     camlightDelete();
     return 1;
 }
-
-/* PLATEAU-HANDOFF:func_80019AB8:start
- * symbol: func_80019AB8
- * score: 56/184 words
- * frame: 0xC8
- * relocations: 28
- * first-mismatch: +0x80
- * summary: 63 to 56: factor load between the green and blue saves moves the high-half draw two ring slots. Left: ring phase t4 vs t6 and the changed constant draw
- * PLATEAU-HANDOFF:func_80019AB8:end
- */
 
 /* PLATEAU-HANDOFF:func_8001953C:start
  * symbol: func_8001953C

@@ -102,6 +102,14 @@ a target at 80%+ residual, port the counterpart's natural shape before the
 checklist; the tool also lists the unnamed callees whose naming would
 sharpen the match. A hit is a lead, read both bodies, and record
 `PROVENANCE` at the point of use.
+`tools/sibling_scan.py [--symbol NAME] [--min 0.45]` ranks MATCHED functions
+as sibling shapes for every unmatched target, by opcode-sequence similarity of
+the target listing to what our C compiled to (two seconds for the queue).
+Run it before writing a first draft: on 2026-10-02 the sibling-copy lever
+closed o051 F00000D0 (1,928 B of pure GLOBAL_ASM), o073 F0000D70, o002
+F0001364 and func_8000F198, each from a lead of 0.48-0.78. A lead is not
+proof; o051's scan named o055 and the relocation records named the real
+sibling, o050 F0000334 (the only other module calling the same o059 functions).
 `tools/shape_lint.py <symbol>` lists the candidate's inherited artefacts
 against the checklist below, each with the axis name to give it in a product
 candidate; run it before writing the first cell. `tools/score_symbol.py
@@ -385,6 +393,30 @@ order of how often they decided a match:
     unchanged. This is statement placement. Checklist item 11, the
     inherited unroll cap, is a separate measurement and is not this
     lever.
+
+23. **A literal's type is part of its IR identity.** `== 2U` and `== 2`
+    are different constant webs, so typing one use's literal gives that use
+    a web of its own and moves which saved register each takes. One product
+    over `int` against `unsigned` literals at the kind tests and axis bounds
+    took func_80053868 from 522 to 438 (x-anim, 2026-10-02).
+24. **A cast round-trip gives a value its own IR name.**
+    `(void *)(s32)object->soundHandle` as a call argument splits the tested
+    load from the argument copy, so the load is offered v0 and the copy
+    fills the branch delay slot as shipped (func_80051364, 12 -> 9).
+25. **One extern name can stand for two ROM objects, and one object can
+    carry two names.** The relocation records decide it (item 20). Both
+    open residuals on o058 F00005FC were a case-3 table and a camera mode
+    word sharing a name with a different object (109 -> 89); o101 C6E8's
+    selector and queue were one symbol (106 -> 0); o051's sibling was
+    found from the records (only o050 and o051 call the same o059
+    functions), not from the opcode scan.
+26. **Sibling copy before reconstruction.** Run `tools/sibling_scan.py`
+    first. In wave X, leads of 0.48-0.78 against a matched function closed
+    o051 F00000D0, o002 F0001364, o011 F00022E8, o073 F0000D70,
+    func_8000F198, func_8000BB84 and fxScreenEffect, most in under ten
+    cycles. A donor in another decomp also counts: func_800180B4 is DKR's
+    `func_8002DE30` (DKR `src/tracks.c`), and `donor_match.py` missed it
+    because the counterpart calls only unnamed helpers.
 
 ### Promotion traps (each cost a lane a cycle on 2026-10-01)
 

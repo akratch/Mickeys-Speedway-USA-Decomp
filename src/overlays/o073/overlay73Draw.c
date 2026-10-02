@@ -5,8 +5,18 @@ typedef struct Overlay73Command {
     u32 w1;
 } Overlay73Command;
 
+typedef struct Overlay73Vertex {
+    s16 x;
+    s16 y;
+    s16 z;
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
+} Overlay73Vertex;
+
 typedef struct Overlay73DrawState {
-    u8 pad00[0x78];
+    Overlay73Vertex vertices[12];
     void *resource;
     u8 vertexBank;
 } Overlay73DrawState;
@@ -25,65 +35,47 @@ extern void func_80034554(Overlay73Command **commands, void *resource,
                          s32 mode, s32 flags);
 extern void func_800241BC(Overlay73Command **commands);
 
-/* Workbench: exact 78-word / 0x30 frame, 42 masked, first +0x1C.
- * Writing the 0x05710080 word before D_80000000 closes that pair's birth order
- * (structural 4 to 2). Remaining: vertices spill +0x28 vs +0x2C, and the
- * vertexBank load in v0 vs a ring temp. Colour landscape floor 39 (w43 to a1). */
-#ifdef NON_MATCHING
+/*
+ * PROVENANCE: the packet macros below are adapted from the Jet Force Gemini
+ * decompilation (include/PR/gbi.h gDPSetPrimColor and gDma1p, include/PR/mbi.h
+ * _SHIFTL, include/f3ddkr.h gSPVertexJFG and gSPPolygon,
+ * include/PR/os_convert.h OS_PHYSICAL_TO_K0), a permitted source under
+ * docs/CLEANROOM.md, by way of the matched overlay 71 renderer
+ * func_overlay_071_F0000870_18CA390, whose shape this function copies.  No
+ * function body was imported.
+ *
+ * Matched 2026-10-02 as a sibling copy of that overlay 71 renderer: every
+ * command is its packet macro, and the vertex bank is a subscript into an
+ * array of ten-byte vertices, `vertices[vertexBank * 6]`, so the address is
+ * the index times six times the element size -- the shipped 3*2 then 5*2
+ * multiply chain, which a single `* 60` byte offset folds into 15*4.  The
+ * unused `pad` between `vertices` and `state` lands the 0x30 frame and the
+ * vertices spill at +0x2C.
+ */
+#define O73_SHIFTL(v, s, w) ((u32)(((u32)(v) & ((0x01 << (w)) - 1)) << (s)))
+#define O73_RGBA(r, g, b, a) (O73_SHIFTL(r, 24, 8) | O73_SHIFTL(g, 16, 8) | O73_SHIFTL(b, 8, 8) | O73_SHIFTL(a, 0, 8))
+#define O73_SET_PRIM_COLOR(pkt, m, l, r, g, b, a) { Overlay73Command *_g = (Overlay73Command *)(pkt); _g->w0 = (O73_SHIFTL(0xFA, 24, 8) | O73_SHIFTL(m, 8, 8) | O73_SHIFTL(l, 0, 8)); _g->w1 = O73_RGBA(r, g, b, a); }
+#define O73_DMA1P(pkt, c, s, l, p) { Overlay73Command *_g = (Overlay73Command *)(pkt); _g->w0 = (O73_SHIFTL((c), 24, 8) | O73_SHIFTL((p), 16, 8) | O73_SHIFTL((l), 0, 16)); _g->w1 = (unsigned int)(s); }
+#define O73_VERTEX(pkt, v, n, v0) O73_DMA1P(pkt, 0x04, v, ((((n) << 3) + ((n) << 1))) + 8, ((n))<<3|(((u32)(v) & 6))|(v0))
+#define O73_POLYGON(dl, ptr, numTris, texEnabled) { Overlay73Command *_g = (Overlay73Command *)(dl); _g->w0 = O73_SHIFTL((((numTris) - 1) << 4) | (texEnabled), 16, 8) | O73_SHIFTL(0x05, 24, 8) | O73_SHIFTL(((numTris)*16), 0, 16); _g->w1 = (unsigned int)(ptr); }
+#define O73_PHYSICAL_TO_K0(x) (void *)(((u32)(x) + 0x80000000))
+
 void func_overlay_073_F0000D70_18CB830(Overlay73Command **commands,
                                        s32 context,
                                        Overlay73DrawObject *object) {
-    Overlay73Command *command;
-    u8 * volatile vertices;
+    Overlay73Vertex *vertices;
+    s32 pad;
     Overlay73DrawState *state;
-    u32 physicalVertices;
-    s32 vertexBank;
-    s32 vertexOffset;
 
     state = object->state;
     if (state->resource != NULL) {
-        vertexBank = state->vertexBank;
-        vertexOffset = (vertexBank << 2) - vertexBank;
-        vertexOffset <<= 1;
-        vertexOffset = (vertexOffset << 2) + vertexOffset;
-        vertexOffset <<= 1;
-        vertices = (u8 *)state + vertexOffset;
+        vertices = &state->vertices[state->vertexBank * 6];
         func_8002409C(commands, context, object, 1.0f, 0.0f);
-
-        command = *commands;
-        *commands = command + 1;
-        command->w0 = 0xFA000000; command->w1 = object->alpha | 0xFFFFFF00;
-
+        O73_SET_PRIM_COLOR((*commands)++, 0, 0, 255, 255, 255, object->alpha);
         func_80034554(commands, state->resource, 0xE, 0);
-
-        command = *commands;
-        *commands = command + 1;
-        physicalVertices = (u32)vertices + 0x80000000;
-        command->w0 = (((((physicalVertices) & 6) | 0x30) & 0xFF)
-                       << 16) |
-                      0x04000000 | 0x44;
-        command->w1 = physicalVertices;
-
-        command = *commands;
-        *commands = command + 1;
-        command->w0 = 0x05710080; command->w1 = (u32)D_80000000;
-
-        command = *commands;
-        *commands = command + 1;
-        command->w0 = 0xFA000000; command->w1 = object->alpha | 0xFFFFFF00;
+        O73_VERTEX((*commands)++, O73_PHYSICAL_TO_K0(vertices), 6, 0);
+        O73_POLYGON((*commands)++, D_80000000, 8, 1);
+        O73_SET_PRIM_COLOR((*commands)++, 0, 0, 255, 255, 255, object->alpha);
         func_800241BC(commands);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o073/overlay73Draw/func_overlay_073_F0000D70_18CB830.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_073_F0000D70_18CB830:start
- * symbol: func_overlay_073_F0000D70_18CB830
- * score: 42/78 words
- * frame: 0x30
- * relocations: 5
- * first-mismatch: +0x1C
- * summary: w0-first closed 0x0571/D_80000000 birth order (structural 4 to 2). Residual: spill +0x28 vs +0x2C and LBU v0 vs t7. Colour floor 39. L145/L97/lineno exhausted.
- * PLATEAU-HANDOFF:func_overlay_073_F0000D70_18CB830:end
- */

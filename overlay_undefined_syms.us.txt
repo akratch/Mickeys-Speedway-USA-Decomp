@@ -751,6 +751,10 @@ overlay11ResetMenuReloc = 0xf0000000;
 overlay11SetHandleValueReloc = 0xf0000000;
 overlay11StopOverlay66Reloc = 0xf0000000;
 
+/* overlay 11: func_overlay_011_F00022E8_186AB30.c.o */
+gOverlay11ModeOptionSwitchTableReloc = 0x00000068;
+gOverlay11NextModeReloc = 0x00000000;
+
 /* overlay 11: overlay11ReleaseGroup4.c.o */
 gOverlay11GroupEnd4 = 0x000001d8;
 gOverlay11GroupHandles = 0x000001c8;
@@ -1594,6 +1598,9 @@ gOverlay40Entries = 0x00000000;
 
 /* overlay 40: overlay40UpdateEntries.c.o */
 gOverlay40Objects = 0x00000000;
+
+/* overlay 40: overlay40BuildFrame.c.o */
+overlay40DrawRectanglesReloc = 0xf0000000;
 
 /* overlay 40: overlay40DrawEntries.c.o */
 overlay40DrawFrame = 0xf00001a0;
@@ -3763,6 +3770,11 @@ overlay68FinishEntryPromoteReloc = 0xf0000000;
 /* overlay 68: overlay68InitializeObject.c.o */
 overlay68ConfigureReloc = 0xf0000000;
 
+/* overlay 68: overlay68DrawSortedEntries.c.o */
+overlay68MeasureVectorReloc = 0xf0000000;
+overlay68PrepareDrawReloc = 0xf0000000;
+overlay68SubmitEntryReloc = 0xf0000000;
+
 /* overlay 68: overlay68RebuildSecondaryEntry.c.o */
 gOverlay68KindMap = 0x00000014;
 overlay68GetBlurEffectReloc = 0xf0000000;
@@ -3814,6 +3826,11 @@ func_80034554_o071Reloc = 0xf0000000;
 gOverlay72ComponentScale = 0x00000000;
 overlay72ApplyReloc = 0xf0000000;
 overlay72QueryReloc = 0xf0000000;
+
+/* overlay 73: overlay73Draw.c.o */
+func_8002409C_o073Reloc = 0xf0000000;
+func_800241BC_o073Reloc = 0xf0000000;
+func_80034554_o073Reloc = 0xf0000000;
 
 /* overlay 74: overlay74Init.c.o */
 gOverlay74Flags = 0x00000000;

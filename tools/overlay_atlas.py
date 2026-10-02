@@ -1722,6 +1722,7 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x77C, 0x928, "overlay63UpdateSequence"),
     ],
     68: [
+        (0xEFC, 0x1250, "overlay68DrawSortedEntries"),
         (0x1250, 0x1438, "overlay68RebuildSecondaryEntry"),
     ],
     89: [

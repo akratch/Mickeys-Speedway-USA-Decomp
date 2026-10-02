@@ -43,4 +43,24 @@ f20 across the three head arms (`mtc1 zero,f20` is redefined in each arm after
 the calls); here it is a caller-saved f12 web per use, which is the open
 decision variable.
 
+
+## 2026-10-02 (lane x-shad): counterpart named, indexed rewrite measured worse
+
+This function is Diddy Kong Racing's `func_8002F440` (public DKR decomp,
+`src/tracks.c`; the shadow vertex and triangle emitter), with Mickey's buffer
+limits and early `return 0`, a packed texture word per vertex (u in the high half, v in the low)
+and the shadow globals read from the query struct. The early returns skip
+the count write-back, so Mickey's source holds the three counts in locals,
+as the m2c draft does.
+
+Measured: the DKR shape with Mickey locals written as indexed accesses
+(`vertices[i]` of each polygon, `D_800C9D48[...]` and `D_800C9F58[...]`
+indexed, vertex and triangle records reached through pointers advanced once
+per record, indexed `projected[i]`, typed structs, plain for loops): 267
+masked at size +12, frame 16 bytes short. `tools/insertion_pairs.py` reads
+the target's address-constant words before the polygon loop (+0xF4 to
++0x118) as target-only and the candidate's in-loop constants as
+candidate-only, so the cursor shape of the m2c draft is the source shape
+here and the indexed form is not a better base than the 217 draft. The open
+decision is unchanged (0.0f in f20 in the target, f12 here).
 <!-- plateau-handoff:func_80017BCC:end -->

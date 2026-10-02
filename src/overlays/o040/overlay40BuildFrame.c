@@ -8,108 +8,82 @@ typedef struct Overlay40FrameRecord {
     u32 color;
 } Overlay40FrameRecord;
 
-extern void frontDrawRectangles(void *displayList, s32 count,
-                                Overlay40FrameRecord *records, s32 translucent);
+/* frontDrawRectangles (resident 0x80039380), reached through the overlay
+ * loader's SYMBOL record; the placeholder carries the shipped jal addend. */
+extern void overlay40DrawRectanglesReloc(void *displayList, s32 count,
+                                         Overlay40FrameRecord *records,
+                                         s32 translucent);
 
-/* `right`/`bottom`/`color` are declared before `records` so the eight
- * 12-byte records land at sp+0x40. `scratch` is the eight-byte aggregate
- * kept at the end of the list so the frame stays 0xB0.
- *
- * `bottom` is assigned at its first use (the rec2.bottom comma) so the
- * height load is not initially ready and cannot beat colour packing.
- * `#line 20` on rec2.right/bottom lets x+3 beat the ra save (lineno 24). */
-#line 22
-#ifdef NON_MATCHING
+/* Matched 2026-10-02 (lane x-ovlb), 60 -> 0 masked words. Earlier lanes had
+ * the eight records as constant subscripts, with #line directives, a volatile
+ * round trip and a padding aggregate. What closed it was writing the records
+ * the plain way:
+ * - one cursor walks the array, so IDO keeps the last record's base in a
+ *   register (the target's v0 = sp+0x94) and spills one shared sum for
+ *   register pressure, as the target does. Nothing in the source asks for
+ *   either;
+ * - the cursor is declared before the array, with the three scalars, so the
+ *   array lands at sp+0x40;
+ * - each field store is on its own line. A one-line macro gives all five
+ *   stores one line number, and as1 then breaks the tie in the wrong order. */
 void overlay40BuildFrame(void *displayList, s32 x, s32 y, s32 width,
                          s32 height, s32 red, s32 green, s32 blue, s32 alpha) {
-#line 26
     s32 right;
     s32 bottom;
-    s32 bottomPlus2;
     u32 color;
+    Overlay40FrameRecord *rec;
     Overlay40FrameRecord records[8];
-    s32 scratch[2];
-#line 40
-    (void)&scratch;
 
-#line 72
     right = x + width;
-#line 78
+    bottom = y + height;
     color = (red << 24) | (green << 16) | (blue << 8) | (alpha & 0xFF);
-
-#line 95
-    records[0].left = x - 2;
-    records[0].top = y - 2;
-    records[0].right = right + 2;
-    records[0].bottom = y + 3;
-    records[0].color = 0;
-
-#line 101
-    records[1].left = x;
-    records[1].top = y;
-    records[1].right = right + 1;
-    records[1].bottom = y + 1;
-    records[1].color = color;
-
-#line 107
-    records[2].left = x - 2;
-    records[2].top = y - 2;
-#line 20
-    records[2].right = x + 3;
-    records[2].bottom = (bottom = y + height, bottomPlus2 = bottom + 2, bottomPlus2);
-#line 111
-    records[2].color = 0;
-
-#line 113
-    records[3].left = x;
-    records[3].top = y + 1;
-    records[3].right = x + 1;
-    records[3].bottom = bottom;
-    records[3].color = color;
-
-#line 119
-    records[4].left = right - 2;
-    records[4].top = y - 2;
-    records[4].right = right + 3;
-#line 125
-    records[4].bottom = *(volatile s32 *)&bottomPlus2;
-#line 129
-    records[4].color = 0;
-
-#line 131
-    records[5].left = right;
-    records[5].top = y + 1;
-    records[5].right = right + 1;
-    records[5].bottom = bottom;
-    records[5].color = color;
-
-#line 137
-    records[6].left = x - 2;
-    records[6].top = bottom - 2;
-    records[6].right = right + 2;
-    records[6].bottom = bottom + 3;
-    records[6].color = 0;
-
-#line 143
-    records[7].left = x;
-    records[7].top = bottom;
-    records[7].right = right + 1;
-    records[7].bottom = bottom + 1;
-    records[7].color = color;
-
-#line 149
-    frontDrawRectangles(displayList, 8, records, 0);
+    rec = records;
+    rec->left = x - 2;
+    rec->top = y - 2;
+    rec->right = right + 2;
+    rec->bottom = y + 3;
+    rec->color = 0;
+    rec++;
+    rec->left = x;
+    rec->top = y;
+    rec->right = right + 1;
+    rec->bottom = y + 1;
+    rec->color = color;
+    rec++;
+    rec->left = x - 2;
+    rec->top = y - 2;
+    rec->right = x + 3;
+    rec->bottom = bottom + 2;
+    rec->color = 0;
+    rec++;
+    rec->left = x;
+    rec->top = y + 1;
+    rec->right = x + 1;
+    rec->bottom = bottom;
+    rec->color = color;
+    rec++;
+    rec->left = right - 2;
+    rec->top = y - 2;
+    rec->right = right + 3;
+    rec->bottom = bottom + 2;
+    rec->color = 0;
+    rec++;
+    rec->left = right;
+    rec->top = y + 1;
+    rec->right = right + 1;
+    rec->bottom = bottom;
+    rec->color = color;
+    rec++;
+    rec->left = x - 2;
+    rec->top = bottom - 2;
+    rec->right = right + 2;
+    rec->bottom = bottom + 3;
+    rec->color = 0;
+    rec++;
+    rec->left = x;
+    rec->top = bottom;
+    rec->right = right + 1;
+    rec->bottom = bottom + 1;
+    rec->color = color;
+    overlay40DrawRectanglesReloc(displayList, 8, records, 0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o040/overlay40BuildFrame/func_overlay_040_F00001A0_1886A50.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay40BuildFrame:start
- * symbol: overlay40BuildFrame
- * score: 60/81 words
- * frame: 0xB0
- * relocations: 1
- * first-mismatch: +0x30
- * summary: colour packing and rec0.bottom now match; ra-save still beats bottom addu; rec7 is stack-relative
- * PLATEAU-HANDOFF:overlay40BuildFrame:end
- */

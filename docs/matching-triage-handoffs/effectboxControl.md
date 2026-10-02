@@ -2,11 +2,13 @@
 ### `effectboxControl` plateau handoff
 
 - source: `src/main/spranim.c`
-- score: 51/193 words
+- score: 47/193 words
 - frame: 0x80
 - relocations: 5
-- first mismatch: +0x48
-- summary: 57 to 51 by declaration placement (state spill now below the hit list). Left: hit-index spill 0x7C vs 0x6C; cursor/index a2/a3 roles swapped
+- first mismatch: +0xDC
+- summary: 51 to 47: counted loop, hit local, nine-entry list, homes at 0x6C/0x44. Left: cursor/index a3/a2 roles (forced 34) and the hit load split in two webs
+
+Summary before this remeasure: 57 to 51 by declaration placement (state spill now below the hit list). Left: hit-index spill 0x7C vs 0x6C; cursor/index a2/a3 roles swapped
 
 Summary before this remeasure: Exhaustive landscape reaches 38 only by forcing web 60 to a2; source cursor removal regressed structurally and declaration/counter forms were byte-flat.
 #### 2026-09-12 (lane `lane/p7-res2`): 60 to 57 on one named local; the two stack homes are not a declaration question
@@ -92,5 +94,37 @@ subscript): 51, 51, 58, 187. The target's delay slot loads the state pointer
 into a0 (`lw a0,0x64(v1)` in the beql slot) where the candidate copies the hit
 into a0 and loads the state into v1; the spill-cell (0x7C against 0x6C) row is
 unchanged.
+
+## 2026-10-02 (lane x-res): 51 to 47, natural loop and homes
+
+Rewritten as the target reads: a plain `for (i = 0; i < hitCount; i++)`
+inside `if (hitCount != 0)` (IDO's unroller gives the target's remainder loop
+and four-copy body; for, do-while and while are byte-identical), the hit
+read into a local, `planeIndex < 1` for the target's bgtz. The two spill
+homes are declaration homes: nine hit entries (0x48..0x6B), `entry` above
+them at 0x6C and `state` below at 0x44, with any four scalars declared ahead
+of `entry` (all 24 orders of hitCount, i, hit and st are identical). 47 at
+delta 0, first mismatch +0xDC; homes and frame now agree.
+
+Priced with forces on proc 4 (identity-gated, accepted forced=N):
+
+- cursor web 57 to a3 and index web 49 to a2 (the target's roles): 34.
+- adding the active-flag web 60 to a2: 28.
+- the remaining rows are the hit load. In the remainder loop and the first
+  unrolled copy uopt keeps the loaded pointer (webs 58, 78) and the `hit`
+  variable (web 54) as two interfering webs joined by a move in the
+  active-test delay slot; forcing web 54 onto v1 is declined (interference),
+  so no colour reaches the target's single web there. The target loads the
+  state pointer into a0 from that one web.
+
+Measured flat or worse on this shape: block-scope `hit`, a `continue` form
+of the test, five store spellings (named st, direct field, typed word index,
+st assigned before the test, a struct-typed destination). Any second
+`hits[i]` read (store through `hits[i]`, no hit local) stops the unroller
+(size delta -188 to -200).
+
+Open: what makes uopt treat the hit load and the `hit` variable as one web
+in the target (the decision variable is the copy in the remainder loop and
+first unrolled copy); then the cursor/index ranking.
 
 <!-- plateau-handoff:effectboxControl:end -->

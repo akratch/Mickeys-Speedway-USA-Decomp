@@ -2,11 +2,13 @@
 ### `overlay25UpdateEffect` plateau handoff
 
 - source: `src/overlays/o025/overlay_025.c`
-- score: 74/259 words
+- score: 19/259 words
 - frame: 0xA0
 - relocations: 25
-- first mismatch: +0x3C
-- summary: hypothesis=source-authentic save-ratio so web 122 follows web 129, or 12 bytes of else-arm home; spellings=post-loop use 106 at +24, second post-loop use 103 at +8, hit struct kept at 74 and delta 0; stall=the save-ratio uses spilled and s4 is unproved, while objects homes at +0x4C
+- first mismatch: +0x2A0
+- summary: Listing rewrite 74 to 19 at delta 0. Open: hit-loop index (tot 32) outranks its cursor (tot 31) for s3; delta f0 for f2; one as1 slot.
+
+Summary before this remeasure: hypothesis=source-authentic save-ratio so web 122 follows web 129, or 12 bytes of else-arm home; spellings=post-loop use 106 at +24, second post-loop use 103 at +8, hit struct kept at 74 and delta 0; stall=the save-ratio uses spilled and s4 is unproved, while objects homes at +0x4C
 
 Summary before this remeasure: Hybrid L99 homes 82 to 76. Objects 0x58 vs 0x4C. Colour floor 63 via p1:w122=c18; L100 leftovers do not rank other onto s4 unforced.
 
@@ -144,4 +146,36 @@ Spellings, at most three:
 Stall: web 122 on s4 is unproved. The kept edit does not colour it; the
 save-ratio spellings spill before they can. Packed force 63 was not
 re-run and is not a match.
+#### 2026-10-02, lane x-ovla: rewrite pass, 74 to 19 at delta 0
+
+The inherited body was the m2c shape (a `remaining--` do-while with an
+explicit guard, a 12-byte hit struct, a separate `current` carrier). Rewritten
+from the listing and measured as products (shape_product, masked words):
+
+- Natural body: `steps = updateRate - 1; while (steps--)` over the state
+  fields with no carriers, the hit loop as `while (count--)` reading
+  `objects[count]`, every local at function scope: 78 at delta 0, first
+  mismatch moved from +0x3C to +0xCC (the movement arm is exact).
+  Reusing the parameter (`updateRate--; while (updateRate--)`) is 232 at +8.
+- `radius = 4` (or `4.0`) instead of `4.0f`, with radius declared before
+  position: 27. With `4.0f` the radius shares one constant web with the else
+  arm's two `4.0f` and is coloured f2; the target gives it a ring temporary,
+  and every float temporary after it was one ring step out.
+- Lifetime decremented before duration in the else arm: 21 (the t6/t8 draw
+  order at +0x190).
+- objects[6] declared after count, other, delta and otherState: 19, every
+  frame slot equal (frame_census). Each declared scalar takes a 4-byte cell
+  here, so the target's 16 bytes between position and the array are those
+  four locals. Larger arrays or unused pads grow the frame to 0xA8.
+- Hit-loop spellings (`delta` read through `objects[count]`, pointer
+  arithmetic, `while (count != 0) { count--;`, `objects[--count]`,
+  `count-- > 0`): 19 or a size change.
+
+Remaining 19 (aligned 240 exact, 17 naming, 2 structural): the hit loop's
+index and the cursor uopt strength-reduces from `objects[count]` take s3/s4
+the wrong way round. Decision records (proc 1, 31 p1 decisions): index web
+totalsave 32, nocs 5, save 6.4 against the cursor's 31, nocs 5, save 6.2;
+the target needs the cursor ranked first. `delta` is coloured f0 (c24) where
+the target has f2 (c25), and as1 orders `hitSomething = 1` against the two
+argument moves differently around the `enabled` test.
 <!-- plateau-handoff:overlay25UpdateEffect:end -->

@@ -73,7 +73,6 @@ extern s16 Arctanf(f32 x, f32 y);
 extern s32 viGetVideoMode(void);
 extern void wakeUpdate(Wake *wake, f32 x, f32 height, f32 z, s16 angle,
                        s32 delta);
-extern f32 D_80083DE4;
 extern void mathOneFloatPY(void *source, f32 *result, s16 angle);
 extern void camSetScissor(Gfx **dlist);
 extern void func_80034920();
@@ -233,253 +232,160 @@ void func_800470B0(FxCone *cone, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
     vertex[-0xE] = 1;
 }
 
-#ifdef NON_MATCHING
-/* Workbench verdict: structure-mismatch, 175 differing words, first mismatch +0x4. */
-/* Candidate: 183/185 instructions with the target -0x180 frame; 64 structural words remain, so it is not shape-exact. */
-/* Shape status: scale invariants now use target-like f22/f24/f26; the extra s8/loop-limit web still shifts the setup. */
+/* PROVENANCE: JFG's public src/fx.c carries the corresponding cone routine as
+ * assembly only; this body is written from Mickey's own listing in the shape
+ * of its matched sibling func_800470B0.
+ * Matched by discarding the inherited m2c shape: a 17-point array walked by
+ * one `point` cursor (the second ring is `point[8]`), plain counted loops
+ * (the third vertex loop is IDO's own four-way unroll), and 0.33f written as
+ * the literal it is. The literal is the TU's own pool word (ROM 0x849E4); as a
+ * global it cannot be hoisted past the trig calls, which put scaleZ's load
+ * ahead of scaleX/scaleY in the schedule. `i` and the pad below the array
+ * place its home at sp+0x98. */
 void func_80047304(FxCone *cone, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
                    s16 arg5, f32 arg6, f32 arg7, f32 arg8) {
-    u8 *point;
     u8 *vertex;
-    FxCone *address;
-    FxCone *base;
-    f32 angle;
-    f32 scaleZ;
+    FxConePoint *point;
     f32 scaleX;
     f32 scaleY;
+    f32 scaleZ;
     f32 sine;
     f32 cosine;
-    f32 yScale;
+    FxConePoint points[17];
     s32 i;
-    s32 j;
-    s32 value;
-    u8 work[0x98];
+    s32 pad;
 
-    angle = arg8;
-    *(f32 *) (work + 8) = -angle;
-    point = work + 0xC;
-    i = 0;
     scaleX = arg6 * 4.0f;
     scaleY = arg7 * 4.0f;
-    *(f32 *) work = 0.0f;
-    *(f32 *) (work + 4) = 0.0f;
-    scaleZ = -(angle * D_80083DE4);
-    while (i < 8) {
-        value = i << 0xD;
-        sine = func_8002A8C0(value);
-        cosine = func_8002A8BC(value);
-        i += 1;
-        point += 0xC;
-        *(f32 *) (point - 0xC) = arg6 * sine;
-        *(f32 *) (point - 4) = 0.0f;
-        *(f32 *) (point + 0x5C) = scaleZ;
-        yScale = scaleY * cosine;
-        *(f32 *) (point - 8) = arg7 * cosine;
-        *(f32 *) (point + 0x54) = 2.0f * (scaleX * sine);
-        *(f32 *) (point + 0x58) = 2.0f * yScale;
+    scaleZ = -(arg8 * 0.33f);
+    points[0].x = 0.0f;
+    points[0].y = 0.0f;
+    points[0].z = -arg8;
+    point = &points[1];
+    for (i = 0; i < 8; i++) {
+        sine = func_8002A8C0(i << 13);
+        cosine = func_8002A8BC(i << 13);
+        point->x = arg6 * sine;
+        point->y = arg7 * cosine;
+        point->z = 0.0f;
+        point[8].x = 2.0f * (scaleX * sine);
+        point[8].y = 2.0f * (scaleY * cosine);
+        point[8].z = scaleZ;
+        point++;
     }
-
-    base = cone;
-    address = cone;
-    j = 0;
-    point = work;
-    while (j < 8) {
-        func_80048080(0x11, arg1, arg2, arg3, (s32) arg4, (s32) arg5,
-                      (FxConePoint *) point, *(void **) ((u8 *) address + 8),
-                      0xFF);
-        j += 4;
-        address = (FxCone *) ((u8 *) address + 4);
+    for (i = 0; i < 2; i++) {
+        func_80048080(17, arg1, arg2, arg3, arg4, arg5, points,
+                      cone->addresses[i], 0xFF);
     }
-
-    vertex = base->vertices;
-    i = 1;
-    do {
-        s32 index;
-        s32 next;
-
-        index = i & 7;
-        next = i + 8;
-        vertex[1] = (u8) i;
-        vertex[0x11] = (u8) i;
-        i += 1;
+    vertex = cone->vertices;
+    for (i = 1; i < 9; i++) {
         vertex[0] = 0;
-        vertex[2] = (u8) next;
-        vertex[3] = (u8) (index + 9);
+        vertex[1] = i;
+        vertex[2] = i + 8;
+        vertex[3] = (i & 7) + 9;
         vertex[0x10] = 0;
-        vertex[0x12] = (u8) (index + 9);
-        vertex[0x13] = (u8) (index + 1);
+        vertex[0x11] = i;
+        vertex[0x12] = (i & 7) + 9;
+        vertex[0x13] = (i & 7) + 1;
         vertex += 0x20;
-    } while (i < 9);
-    i = 1;
-    do {
-        s32 index;
-        s32 next;
-
-        index = i & 7;
-        next = i + 8;
-        vertex[1] = (u8) i;
-        vertex[0x11] = (u8) i;
-        i += 1;
+    }
+    for (i = 1; i < 9; i++) {
         vertex[0] = 0;
-        vertex[2] = (u8) (index + 9);
-        vertex[3] = (u8) next;
+        vertex[1] = i;
+        vertex[2] = (i & 7) + 9;
+        vertex[3] = i + 8;
         vertex[0x10] = 0;
-        vertex[0x12] = (u8) (index + 1);
-        vertex[0x13] = (u8) (index + 9);
+        vertex[0x11] = i;
+        vertex[0x12] = (i & 7) + 1;
+        vertex[0x13] = (i & 7) + 9;
         vertex += 0x20;
-    } while (i < 9);
-    i = 1;
-    do {
-        s32 index;
-        s32 next;
-
-        index = i + 1;
-        next = i + 2;
-        value = i + 3;
-        vertex[1] = (u8) i;
-        i += 4;
-        vertex[0x32] = (u8) ((value & 7) + 1);
-        vertex[0x22] = (u8) ((next & 7) + 1);
-        vertex[0x12] = (u8) ((index & 7) + 1);
-        vertex[0x31] = (u8) value;
-        vertex[0x21] = (u8) next;
-        vertex[0x11] = (u8) index;
-        vertex[0x10] = 0;
-        vertex[0x13] = 0;
-        vertex[0x20] = 0;
-        vertex[0x23] = 0;
-        vertex[0x30] = 0;
-        vertex[0x33] = 0;
-        vertex += 0x40;
-        vertex[-0x40] = 0;
-        vertex[-0x3E] = (u8) ((i - 4) + 1);
-        vertex[-0x3D] = 0;
-    } while (i != 9);
+    }
+    for (i = 1; i < 9; i++) {
+        vertex[0] = 0;
+        vertex[1] = i;
+        vertex[2] = (i & 7) + 1;
+        vertex[3] = 0;
+        vertex += 0x10;
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/func_80047304.s")
-#endif
+/* PROVENANCE: JFG's fxMakeConeTextureCoords body is assembly-only; this is
+ * written from Mickey's own listing. Natural rewrite (390 words at +780 ->
+ * 33 at size delta 0): plain loops that IDO unrolls itself, segmentCount
+ * reused as the 32-vertex countdown, 102.4f as the TU's own literal (ROM
+ * 0x849E8, still in the anonymous pool), and the edge scales converted
+ * inline. Residual: one ugen ring draw. The t[] base temporary is drawn
+ * ahead of the two (f32) edge conversions in this source's loop preheader
+ * and after them in the target's, so every ring register from there on is
+ * one phase off. */
 #ifdef NON_MATCHING
-/* Mickey-derived draft; JFG's corresponding fxMakeConeTextureCoords body is
- * also assembly-only and supplies no adaptable C source. */
-/* Workbench: structure-mismatch, 390 differing words, first mismatch +0x0. */
-/* Configured shape is 446/251 words with frames -0x108/-0xF8 and 6/6 relocs. */
-/* -Wo,-loopunroll,0 gives 247 words and 178 differences but needs an isolated
- * compile boundary; widening fx.c's flags is not target-supported. */
 void func_800475E8(FxCone *cone, s16 angle) {
-    FxConeTextureInfo *textureInfo;
+    FxConeTextureInfo *texture;
     FxConeVertex *vertex;
     s32 width;
     s32 height;
-    s32 currentAngle;
-    s32 angleStep;
     s32 segmentCount;
+    s32 step;
+    s16 s[20];
+    s16 t[20];
     s32 i;
-    s16 y[20];
-    s16 x[20];
+    s32 currentAngle;
+    f32 sine;
+    f32 cosine;
 
     currentAngle = angle;
-    if (cone != 0) {
-        textureInfo = cone->texture.pointer;
-        if (textureInfo != 0) {
-            width = textureInfo->width * 16;
-            height = textureInfo->height * 16;
-            vertex = (FxConeVertex *) cone->vertices;
-            if (cone->segmentCount == 0) {
-                f32 widthEdge = (f32)(width - 1);
-                f32 scale = D_80083DE8;
-                f32 heightEdge = (f32)(height - 1);
-                i = 0;
-                do {
-                    f32 sine = func_8002A8C0(currentAngle);
-                    f32 cosine = func_8002A8BC(currentAngle);
-
-                    currentAngle += 0x2000;
-                    y[i + 1] = (s32)(scale * sine) + width;
-                    x[i + 1] = (s32)(scale * cosine) + height;
-                    y[i + 9] = (s32)(widthEdge * sine) + width;
-                    x[i + 9] = (s32)(heightEdge * cosine) + height;
-                    i++;
-                } while (i != 8);
-
-                i = 31;
-                do {
-                    vertex->s0 = y[vertex->index0];
-                    vertex->t0 = x[vertex->index0];
-                    vertex->s1 = y[vertex->index1];
-                    vertex->t1 = x[vertex->index1];
-                    vertex->s2 = y[vertex->index2];
-                    vertex->t2 = x[vertex->index2];
-                    vertex++;
-                    i--;
-                } while (i != 0);
-                segmentCount = 8;
-                angleStep = 0x2000;
-            } else {
-                segmentCount = cone->segmentCount;
-                angleStep = 0x10000 / segmentCount;
-            }
-
-            {
-                s16 *yIt = y;
-                s16 *xIt = x;
-                s16 *xEnd = &x[segmentCount + 1];
-
-                if (segmentCount >= 0) {
-                    do {
-                        *yIt = (s32)(func_8002A8C0(angle) *
-                                     (f32)(width - 1)) + width;
-                        *xIt = (s32)(func_8002A8BC(angle) *
-                                     (f32)(height - 1)) + height;
-                        angle += angleStep;
-                        xIt++;
-                        yIt++;
-                    } while (xIt != xEnd);
-                }
-            }
-
-            i = 0;
-            if (segmentCount > 0) {
-                while (i != (segmentCount & 3)) {
-                    vertex->s0 = y[i];
-                    vertex->t0 = x[i];
-                    vertex->s1 = y[i + 1];
-                    vertex->t1 = x[i + 1];
-                    vertex->s2 = width;
-                    vertex->t2 = height;
-                    vertex++;
-                    i++;
-                }
-                while (i != segmentCount) {
-                    vertex[0].s0 = y[i + 0];
-                    vertex[0].t0 = x[i + 0];
-                    vertex[0].s1 = y[i + 1];
-                    vertex[0].t1 = x[i + 1];
-                    vertex[0].s2 = width;
-                    vertex[0].t2 = height;
-                    vertex[1].s0 = y[i + 1];
-                    vertex[1].t0 = x[i + 1];
-                    vertex[1].s1 = y[i + 2];
-                    vertex[1].t1 = x[i + 2];
-                    vertex[1].s2 = width;
-                    vertex[1].t2 = height;
-                    vertex[2].s0 = y[i + 2];
-                    vertex[2].t0 = x[i + 2];
-                    vertex[2].s1 = y[i + 3];
-                    vertex[2].t1 = x[i + 3];
-                    vertex[2].s2 = width;
-                    vertex[2].t2 = height;
-                    vertex[3].s0 = y[i + 3];
-                    vertex[3].t0 = x[i + 3];
-                    vertex[3].s1 = y[i + 4];
-                    vertex[3].t1 = x[i + 4];
-                    vertex[3].s2 = width;
-                    vertex[3].t2 = height;
-                    vertex += 4;
-                    i += 4;
-                }
-            }
+    if (cone == NULL) {
+        return;
+    }
+    texture = cone->texture.pointer;
+    if (texture == NULL) {
+        return;
+    }
+    width = texture->width * 16;
+    height = texture->height * 16;
+    vertex = (FxConeVertex *) cone->vertices;
+    if (cone->segmentCount == 0) {
+        for (i = 0; i != 8; i++) {
+            sine = func_8002A8C0(currentAngle);
+            cosine = func_8002A8BC(currentAngle);
+            s[i + 1] = (s32) (102.4f * sine) + width;
+            t[i + 1] = (s32) (102.4f * cosine) + height;
+            s[i + 9] = (s32) ((f32) (width - 1) * sine) + width;
+            t[i + 9] = (s32) ((f32) (height - 1) * cosine) + height;
+            currentAngle += 0x2000;
         }
+        segmentCount = 32;
+        while (segmentCount--) {
+            vertex->s0 = s[vertex->index0];
+            vertex->t0 = t[vertex->index0];
+            vertex->s1 = s[vertex->index1];
+            vertex->t1 = t[vertex->index1];
+            vertex->s2 = s[vertex->index2];
+            vertex->t2 = t[vertex->index2];
+            vertex++;
+        }
+        segmentCount = 8;
+        step = 0x2000;
+    } else {
+        segmentCount = cone->segmentCount;
+        step = 0x10000 / segmentCount;
+    }
+    i = 0;
+    if (segmentCount >= 0) {
+        do {
+            s[i] = (s32) (func_8002A8C0(angle) * (f32) (width - 1)) + width;
+            t[i] = (s32) (func_8002A8BC(angle) * (f32) (height - 1)) + height;
+            angle += step;
+            i++;
+        } while (i <= segmentCount);
+    }
+    for (i = 0; i < segmentCount; i++) {
+        vertex->s0 = s[i];
+        vertex->t0 = t[i];
+        vertex->s1 = s[i + 1];
+        vertex->t1 = t[i + 1];
+        vertex->s2 = width;
+        vertex->t2 = height;
+        vertex++;
     }
 }
 #else
@@ -1831,7 +1737,7 @@ void func_8004A380(s32 x, s32 y, s32 value, s32 minimumWidth, s32 arg4) {
 
     length = 0;
     index = 0;
-    sprintf(text, D_80083DE0, value);
+    sprintf(text, "%d", value);
     if (text[length] != '\0') {
         do {
             length++;
@@ -2038,108 +1944,64 @@ void func_8004A9CC(FxGfx **dList) {
     }
     D_8007D478 = 0;
 }
-/* Workbench: structure-mismatch, 121 differing words, first mismatch +0x8. */
-/* Structural gap: target 147 instructions/frame -0x30 versus candidate 143/-0x30. */
-/* Three edits took the geometry from 140 words to 143, against a target whose
- * instruction multiset differs from this one only by three register copies and
- * one shift:
- *   - the cursor and limit are defined inside the guarded block rather than
- *     before it, which shortens each web's span and emits the copy the target
- *     has (L100; the same lever that closed func_80010900);
- *   - the display-list pointer is advanced once in place and then re-read, so
- *     uopt cannot fold the two writebacks into one dead store.
- * What remains is a whole-function t6-t9 ring phase (one closed four-cycle) plus
- * the target's unfolded (arg4 << 5) << 16; naming or respelling the hoisted
- * loop invariants does not reach either -- see the handoff block at the end of
- * this file. */
-#ifdef NON_MATCHING
-void fxScreenEffect(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3,
-                    s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
-    FxGfx *var_t1;
-    s32 *var_s5;
-    s32 temp_t2;
-    s32 temp_v0;
-    s32 var_a2;
-    s32 temp_t6;
-    s32 temp_t7;
-    s32 temp_t8;
-    s32 temp_t9;
-    s32 lim;
-    FxGfx *temp_t7_2;
-    FxGfx *temp_v0_2;
-    FxGfx *temp_v0_3;
-    FxGfx *temp_v0_4;
-    FxGfx *temp_v0_5;
-    FxGfx *temp_v0_6;
-    FxGfx *temp_v0_7;
-    FxGfx *temp_v0_8;
-    temp_v0 = viGetVideoMode();
-    if (temp_v0 != 2) {
-        if (temp_v0 != 3) {
-            var_s5 = (s32 *)D_8007D3D0;
-        } else {
-            var_s5 = (s32 *)D_8007D408;
-        }
-    } else {
-        var_s5 = (s32 *)D_8007D408;
+/* PROVENANCE: the screen-copy loop follows the matched sibling func_80036F08
+ * (adapted there from JFG src/screen.c:screenDraw); this body is written from
+ * Mickey's own listing.
+ * Matched by discarding the inherited m2c shape (eight packet carriers, a
+ * copied cursor and limit) for the sibling's: one packet macro per command on
+ * (*dList)++, gSPTextureRectangle for the E4/B3/B2 triple, the four
+ * coordinates rescaled in place with arg5 itself as the row cursor, the
+ * texture s taken from arg4 before the rescale (that is the unfolded
+ * (arg4 << 5) << 16), the offset added to the base, case 3 laid out before
+ * case 2, and the DMA command's w1 written before its w0. */
+void fxScreenEffect(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
+                    s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
+    FxGfx *table;
+    u16 *screen;
+    s32 top;
+    s32 s;
+
+    switch (viGetVideoMode()) {
+    case 3:
+        table = D_8007D408;
+        break;
+    case 2:
+        table = D_8007D408;
+        break;
+    default:
+        table = D_8007D3D0;
+        break;
     }
-    temp_v0_2 = *dList;
-    *dList = temp_v0_2 + 1;
-    temp_v0_2->w1 = (u32)D_8007D380;
-    temp_v0_3 = *dList;
-    temp_v0_2->w0 = 0x06000000;
-    *dList = temp_v0_3 + 1;
-    temp_v0_3->w0 = 0xFA000000;
-    temp_v0_3->w1 = arg8;
-    var_t1 = (FxGfx *)((arg2 * arg5 * 2) + arg1);
-    temp_t7 = arg5 * 4;
-    temp_t9 = arg7 * 4;
-    temp_t6 = arg4 * 4;
-    temp_t8 = arg6 * 4;
-    if (temp_t7 < temp_t9) {
-        var_a2 = temp_t7;
-        lim = temp_t9;
-        do {
-            temp_t2 = var_a2;
-            var_a2 += 0x10;
-            (*dList)->w1 = (u32)var_t1;
-            (*dList)->w0 = (u32)*var_s5;
-            var_t1 = (FxGfx *)((s32)var_t1 + (arg2 * 8));
-            *dList = *dList + 1;
-            temp_t7_2 = *dList;
-            *dList = temp_t7_2 + 1;
-            temp_t7_2->w1 = (u32)((s32)var_s5 + 0x80000008);
-            temp_t7_2->w0 = 0x07060030;
-            if (lim < var_a2) {
-                var_a2 = lim;
-            }
-            temp_v0_4 = *dList;
-            *dList = temp_v0_4 + 1;
-            temp_v0_4->w1 = ((temp_t6 & 0xFFF) << 12) | (temp_t2 & 0xFFF);
-            temp_v0_4->w0 = (((temp_t8 & 0xFFF) << 12) | 0xE4000000) | (var_a2 & 0xFFF);
-            temp_v0_5 = *dList;
-            *dList = temp_v0_5 + 1;
-            temp_v0_5->w1 = ((arg4 << 5) << 16);
-            temp_v0_5->w0 = 0xB3000000;
-            temp_v0_6 = *dList;
-            *dList = temp_v0_6 + 1;
-            temp_v0_6->w1 = 0x04000400;
-            temp_v0_6->w0 = 0xB2000000;
-        } while (var_a2 < lim);
+    gSPDisplayList((*dList)++, D_8007D380);
+    gDPSetColor((*dList)++, G_SETPRIMCOLOR, arg8);
+    screen = arg2 * arg5 + (u16 *) arg1;
+    s = arg4 << 5;
+    arg4 <<= 2;
+    arg5 <<= 2;
+    arg6 <<= 2;
+    arg7 <<= 2;
+    while (arg5 < arg7) {
+        (*dList)->w0 = table->w0;
+        (*dList)->w1 = (u32) screen;
+        (*dList)++;
+        {
+            FxGfx *_g = (*dList)++;
+            _g->w1 = (u32) (table + 1) + 0x80000000;
+            _g->w0 = 0x07060030;
+        }
+        screen += arg2 * 4;
+        top = arg5;
+        arg5 += 16;
+        if (arg5 > arg7) {
+            arg5 = arg7;
+        }
+        gSPTextureRectangle((*dList)++, arg4, top, arg6, arg5, 0, s, 0,
+                            1 << 10, 1 << 10);
     }
     func_80034920(dList);
-    temp_v0_7 = *dList;
-    *dList = temp_v0_7 + 1;
-    temp_v0_7->w1 = -1;
-    temp_v0_7->w0 = 0xFA000000;
-    temp_v0_8 = *dList;
-    *dList = temp_v0_8 + 1;
-    temp_v0_8->w1 = -1;
-    temp_v0_8->w0 = 0xFB000000;
+    gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, 255);
+    gDPSetEnvColor((*dList)++, 255, 255, 255, 255);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/fxScreenEffect.s")
-#endif
 /* Resets the four texture slots and records, per slot, whether its callback
  * is still the dangling-jump trap.
  *
@@ -2262,57 +2124,6 @@ void func_8004AF68(void) {
 
 
 
-/* Axis log for the fxScreenEffect residual, recorded 2026-09-11. Kept outside
- * the structured marker below because that marker admits only its six fields,
- * one physical line each.
- *
- * The instrument that mattered was the instruction multiset, not the positional
- * count: at 123 words the candidate differed from the target by exactly five
- * register copies, one shift and one display-list writeback, and every other
- * mnemonic count already agreed. Three of those five are now closed.
- *
- * What paid, each measured alone:
- *   - the cursor initialiser moved inside the guarded block, +1 word;
- *   - the limit given a guard-local carrier, +1 word;
- *   - the display-list pointer advanced once in place and then re-read, +1 word,
- *     which also broke the 123 plateau to 122. The draft's two adjacent
- *     writebacks were folding into one dead store.
- *
- * What did not, all flat unless noted:
- *   - 32 forms naming each of five hoisted loop invariants as a preheader local
- *     against inlining it: byte-identical in all 32.
- *   - 243 forms of the same five at three spellings each (inline, one-step
- *     named, two-step compound assignment): masked 123 and size delta -24 in
- *     every cell.
- *   - 8 forms moving the two scaled values and the cursor initialiser between
- *     the pre-guard block and the guarded block: only the cursor pays.
- *   - 32 forms adding a guard-local carrier for the limit, the two scaled
- *     values, the stride and the base: only the limit pays.
- *   - 5 store and advance topologies for the second in-loop command: the
- *     advance-then-re-read form pays and is adopted; two others lose a word.
- *   - 6 region barriers and 4 arithmetic spellings against the unfolded
- *     (arg4 << 5) << 16 the target holds: none blocks the fold.
- *   - 4 stride spellings (pointer increment, array index, cast-and-add, named):
- *     byte-identical except the named form, which regresses.
- *   - parameter reassignment, rescaling arg4, arg5 and arg7 in place: regresses
- *     to 143 and drops one stack-argument load the target has.
- *
- * After these edits the register census resolves into a single closed four-cycle
- * over the integer temp ring where it previously showed two incoherent ones,
- * which is the L127 ring-phase fact rather than a set of colour questions.
- */
-
-/* PLATEAU-HANDOFF:func_80047304:start
- * symbol: func_80047304
- * score: 158 differing words
- * frame: 0x180
- * relocations: 5
- * first-mismatch: 0x4
- * summary: Hoisted bound plus one scale local failed: lt-bound +8/186, ne-bound 0/161, in-loop scaleZ +8/175. None beat 158 at delta 0. Stall.
- * PLATEAU-HANDOFF:func_80047304:end
- */
-
-
 /* PLATEAU-HANDOFF:fxSPDPRipple:start
  * symbol: fxSPDPRipple
  * score: 169 differing words
@@ -2323,23 +2134,13 @@ void func_8004AF68(void) {
  * PLATEAU-HANDOFF:fxSPDPRipple:end
  */
 
-/* PLATEAU-HANDOFF:fxScreenEffect:start
- * symbol: fxScreenEffect
- * score: 116/147 words
- * frame: 0x30
- * relocations: 10
- * first-mismatch: +0x8
- * summary: Minus-16-byte residual has structural aligned rows and no colour-only route; donor audit adds no mechanism.
- * PLATEAU-HANDOFF:fxScreenEffect:end
- */
-
 /* PLATEAU-HANDOFF:func_800475E8:start
  * symbol: func_800475E8
- * score: 390 differing words
- * frame: 0x108
+ * score: 33/251 words
+ * frame: 0xF8
  * relocations: 6
- * first-mismatch: 0x0
- * summary: JFG efd5abb remains assembly-only; zero source attempts. Need new vertex-loop source or proved build boundary evidence.
+ * first-mismatch: +0x10
+ * summary: 390 at +780 to 33 at delta 0 by natural rewrite. Residual: one ring draw, the t base temp before the two f32 edge conversions.
  * PLATEAU-HANDOFF:func_800475E8:end
  */
 

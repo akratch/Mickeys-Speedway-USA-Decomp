@@ -49,61 +49,60 @@ void overlay25InitializeEffect(Overlay25Object *object,
     }
 }
 
-/*
- * 2026-09-24: else-arm 12-byte hit struct (other, delta, otherState) is
- * declared before objects[6]. Frame stays 0xA0 and the array homes at
- * 0x4C with the target. Masked 74; the naming residual is unchanged.
- */
-/* Ownership trial (2026-08-28): fixed the TU's +0x20..+0x40 .rodata range;
- * linked promotion is text-differs with 386 in-range words, first at +0x0.
- * Module growth is cleared; the remaining gap is codegen/register allocation. */
+/* 2026-10-02 rewrite from the listing (lane x-ovla), 74 -> 19 masked at
+ * delta 0: no m2c carriers; the movement loop as `steps = updateRate - 1;
+ * while (steps--)` over the state fields; `radius = 4` (an int literal, so
+ * the 4.0f the else arm compares and stores is a separate constant and the
+ * radius takes a ring temporary); radius declared before position; the
+ * lifetime decrement before the duration one; the hit loop as
+ * `while (count--)`; and objects[6] declared last, after the four hit-loop
+ * locals whose cells sit between position and the array. Open: the hit
+ * loop's index and its strength-reduced cursor take s3/s4 the wrong way
+ * round, delta takes f0 for f2, and one as1 slot order. */
 #ifdef NON_MATCHING
 void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
-    void *unused; /* L99: declared first so hitSomething homes at 0x98 */
+    void *unused;
     s32 hitSomething;
     Overlay25EffectState *state;
+    f32 x;
+    f32 y;
+    f32 z;
+    s32 steps;
+    f32 radius;
+    Overlay25Vector position;
+    s32 count;
+    Overlay25Object *other;
+    f32 delta;
+    Overlay25EntityState *otherState;
+    Overlay25Object *objects[6];
 
     state = &object->state->effect;
     if (state->activeDuration != 0) {
-        s32 remaining;
-        f32 accum;
-        f32 moveX;
-        f32 moveZ;
-        f32 radius;
-        Overlay25Vector position;
-
         state->activeDuration -= updateRate;
-        object->value = 2.0f * object->transform->value;
-        remaining = updateRate - 2;
+        object->value = object->transform->value * 2.0f;
         if (state->activeDuration <= 0) {
             overlay25DestroyReloc(object);
             return;
         }
-
-        accum = state->lift;
-        moveX = state->velocityX;
-        moveZ = state->velocityZ;
-        state->lift = accum - 1.1034483f;
-        if (updateRate - 1) {
-            do {
-                f32 current = state->lift;
-                moveX += state->velocityX;
-                state->lift = current - 1.1034483f;
-                moveZ += state->velocityZ;
-                accum += current;
-            } while (remaining--);
+        y = state->lift;
+        x = state->velocityX;
+        z = state->velocityZ;
+        state->lift -= 1.1034483f;
+        steps = updateRate - 1;
+        while (steps--) {
+            x += state->velocityX;
+            y += state->lift;
+            z += state->velocityZ;
+            state->lift -= 1.1034483f;
         }
-
         position.x = object->x;
         position.y = object->y;
         position.z = *(f32 *)&object->z;
-        overlay25MoveReloc(object, moveX, accum, moveZ);
-
-        radius = 4.0f;
-        overlay25SweepReloc(1, &position, (Overlay25Vector *)&object->x,
-                            &radius, 0, 0);
-        if (overlay25TraceReloc(&position, (Overlay25Vector *)&object->x,
-                                radius, object, overlay25SetVectorFlagsReloc)) {
+        overlay25MoveReloc(object, x, y, z);
+        radius = 4;
+        overlay25SweepReloc(1, &position, (Overlay25Vector *)&object->x, &radius, 0, 0);
+        if (overlay25TraceReloc(&position, (Overlay25Vector *)&object->x, radius, object,
+                                overlay25SetVectorFlagsReloc)) {
             if (state->flags & 4) {
                 overlay25DestroyReloc(object);
                 return;
@@ -114,64 +113,48 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
             object->flags |= 0x800;
         }
     } else {
-        struct {
-            Overlay25Object *other;
-            f32 delta;
-            Overlay25EntityState *otherState;
-        } hit;
-        Overlay25Object *objects[6];
-        s32 count;
-        s32 index;
-
-        state->duration -= updateRate;
         state->lifetime -= updateRate;
+        state->duration -= updateRate;
         if (state->duration < 0) {
             state->duration = 0;
         }
-
         if (state->lifetime <= 0) {
             updateRate = -state->lifetime;
             state->lifetime = 0;
-            state->multiplier -= 0.4f * (f32)updateRate;
+            state->multiplier -= 0.4f * updateRate;
             if (state->multiplier <= 0.1f) {
                 overlay25DestroyReloc(object);
                 return;
             }
         } else {
-            state->multiplier += 0.4f * (f32)updateRate;
+            state->multiplier += 0.4f * updateRate;
             if (state->multiplier > 4.0f) {
                 state->multiplier = 4.0f;
             }
-
-            count = overlay25QueryObjectsReloc(
-                object->x, object->y, object->z,
-                object->value * state->multiplier * 16.0f, 1, objects);
+            count = overlay25QueryObjectsReloc(object->x, object->y, object->z,
+                                               object->value * state->multiplier * 16.0f,
+                                               1, objects);
             hitSomething = 0;
-            if (count != 0) {
-                index = count - 1;
-                do {
-                    hit.other = objects[index];
-                    hit.delta = hit.other->y - object->y;
-
-                    if ((hit.other != state->owner) || (state->duration == 0)) {
-                        hit.otherState = &hit.other->state->entity;
-                        if ((hit.otherState->height < -5.0f) &&
-                            (hit.delta > -24.0f) && (hit.delta < 24.0f) &&
-                            (hit.otherState->enabled != 0)) {
-                            hitSomething = 1;
-                            if (overlay25CanHitReloc(hit.other, hit.otherState)) {
-                                overlay7DispatchModesReloc(state->owner, hit.other);
-                                state->owner->state->entity.ownerHitCount++;
-                                hit.otherState->selfHitCount++;
-                                if (overlay25GetStatusReloc()->type == 5) {
-                                    overlay25NotifyHitReloc(hit.other);
-                                }
+            while (count--) {
+                other = objects[count];
+                delta = other->y - object->y;
+                if ((other != state->owner) || (state->duration == 0)) {
+                    otherState = &other->state->entity;
+                    if ((otherState->height < -5.0f) && (delta > -24.0f) &&
+                        (delta < 24.0f) && (otherState->enabled != 0)) {
+                        hitSomething = 1;
+                        if (overlay25CanHitReloc(other, otherState)) {
+                            overlay7DispatchModesReloc(state->owner, other);
+                            state->owner->state->entity.ownerHitCount++;
+                            otherState->selfHitCount++;
+                            if (overlay25GetStatusReloc()->type == 5) {
+                                overlay25NotifyHitReloc(other);
                             }
                         }
                     }
-                } while (index--);
+                }
             }
-            if (hitSomething != 0) {
+            if (hitSomething) {
                 state->lifetime = 0;
             }
         }
@@ -205,10 +188,10 @@ void overlay25SetVectorFlags(s32 unused0, Overlay25Vector *out, s32 unused2,
 
 /* PLATEAU-HANDOFF:overlay25UpdateEffect:start
  * symbol: overlay25UpdateEffect
- * score: 74/259 words
+ * score: 19/259 words
  * frame: 0xA0
  * relocations: 25
- * first-mismatch: +0x3C
- * summary: hypothesis=source-authentic save-ratio so web 122 follows web 129, or 12 bytes of else-arm home; spellings=post-loop use 106 at +24, second post-loop use 103 at +8, hit struct kept at 74 and delta 0; stall=the save-ratio uses spilled and s4 is unproved, while objects homes at +0x4C
+ * first-mismatch: +0x2A0
+ * summary: Listing rewrite 74 to 19 at delta 0. Open: hit-loop index (tot 32) outranks its cursor (tot 31) for s3; delta f0 for f2; one as1 slot.
  * PLATEAU-HANDOFF:overlay25UpdateEffect:end
  */

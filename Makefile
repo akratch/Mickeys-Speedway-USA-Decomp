@@ -706,6 +706,11 @@ $(BUILD_DIR)/$(SRC_DIR)/main/shadows.c.o: CFLAGS += -Wab,-r4300_mul
 # The safety property is the ROM: a flag disturbing any function these units
 # already match would break the byte-identical rebuild. `gmake verify` passes.
 $(BUILD_DIR)/$(SRC_DIR)/main/fx.c.o: CFLAGS += -Wab,-r4300_mul
+# fx's "%d" and func_80047304's 0.33f own the first two words of the fx
+# literal pool (ROM 0x849E0); the rest of IDO's 0x10-byte input section is
+# alignment padding, and the still anonymous 102.4f begins right after it.
+$(BUILD_DIR)/$(SRC_DIR)/main/fx.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x8
 $(BUILD_DIR)/$(SRC_DIR)/main/frontend_37D50.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/block_506D0.c.o: CFLAGS += -Wab,-r4300_mul
 

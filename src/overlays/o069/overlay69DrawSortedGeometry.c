@@ -1,11 +1,10 @@
 #include "PR/ultratypes.h"
 
-#define SHARED_DRAW_FUNCTION overlay69DrawSortedGeometry
-#define SHARED_FIXED_RESOURCE_RELOC overlay69DrawFixedResourceReloc
-#define SHARED_METRIC_RELOC overlay69MetricReloc
-#define SHARED_TRANSFORM_RELOC overlay69PrepareTransformReloc
-#define SHARED_DYNAMIC_SUBMIT_RELOC overlay69SubmitDynamicReloc
-#define SHARED_FIXED_SUBMIT_RELOC overlay69DrawConeReloc
+/*
+ * Overlay 88 ships this renderer byte for byte: its TU renames this file's
+ * function and callee symbols to its own and includes it, so one body serves
+ * both modules.
+ */
 
 #define SHARED_SET_ENV_WHITE_ZERO_ALPHA(packet)             \
     {                                                        \
@@ -117,43 +116,37 @@ typedef struct SharedDynamicSubmit {
     void *payload20;
 } SharedDynamicSubmit;
 
-extern void SHARED_FIXED_RESOURCE_RELOC(SharedCommand **commands,
+extern void overlay69DrawFixedResourceReloc(SharedCommand **commands,
                                         void *resource);
-extern f32 SHARED_METRIC_RELOC(f32 x, f32 y, f32 z);
-extern void SHARED_TRANSFORM_RELOC(SharedTransform *transform);
-extern void SHARED_DYNAMIC_SUBMIT_RELOC(
+extern f32 overlay69MetricReloc(f32 x, f32 y, f32 z);
+extern void overlay69PrepareTransformReloc(SharedTransform *transform);
+extern void overlay69SubmitDynamicReloc(
     SharedCommand **commands, void *renderArg1, void *renderArg2,
     SharedTransform *transform, void *objectResource,
     SharedDynamicSubmit *submit, s32 mode, u8 flags);
-extern void SHARED_FIXED_SUBMIT_RELOC(SharedCommand **commands,
+extern void overlay69DrawConeReloc(SharedCommand **commands,
                                       void *reference, s32 mode, u8 key);
 
 /* DKR v77/v80 and JFG have no exact donor for this renderer. */
 /*
- * Plateau (this run: the full flag lattice plus seven structural candidates):
- * canonical MIPS-II is exact-size with 140 differing words, first at +0x0.
- * The target frame is eight bytes smaller even though every accessed local
- * has the same offset; the remaining body differences are allocator and
- * scheduling webs.  Direct typed fixed-array indexing was four bytes short
- * with 195 differences, while partial and full typed-local aggregates were
- * 12 and 32 bytes short with 206 and 329 differences.  The eight-element
- * s16 key array is target-supported but codegen-neutral.  A bounded permuter
- * batch could not import the macro-defined shared function body.
+ * Rewritten 2026-10-02 from the listing (lane x-sort): 140 -> 57 masked words
+ * at size delta 0 and the target's 0x148 frame.  What moved it: two scalar
+ * homes above order[] instead of four (the frame), the sort's swap through
+ * one temporary instead of left/right carriers (one ring draw per inner
+ * iteration, 130 -> 63), count++ before i++ via a for-loop header on the
+ * dynamic collect loop, and the entry pointer formed before its index slot.
+ * The remaining residual starts in the fixed collect block: the target
+ * recomputes sp+count*4 for the geometry store in a fresh ring register,
+ * which reads as one more ring draw between the reference store and the
+ * geometry store than this source spends.  Ordering the stores refs, keys,
+ * geometry keeps size delta 0; refs, geometry, keys (the target's emission
+ * order) lets as1 delete the repeated address and loses four bytes.
  */
 #ifdef NON_MATCHING
-#define OVERLAY69_COMPILE_SHARED_BODY
-#endif
-#ifdef overlay69DrawSortedGeometry
-#define OVERLAY69_COMPILE_SHARED_BODY
-#endif
-
-#ifdef OVERLAY69_COMPILE_SHARED_BODY
-void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
+void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
                           void *renderArg2, SharedRenderObject *object) {
-    register SharedDrawState *state;
-    register SharedResourceSet *resources;
-    register SharedDynamicEntry *entry;
-    register SharedVec3 *vector;
+    SharedDrawState *state;
+    SharedResourceSet *resources;
     s16 order[8];
     s16 fixedKeys[8];
     f32 inverseScale;
@@ -161,18 +154,17 @@ void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
     SharedDynamicSubmit submit;
     void *fixedGeometry[8];
     f32 metrics[8];
-    register void *reference;
+    void *reference;
     void *fixedRefs[8];
-    register SharedCommand **commandList;
-    register s16 accepted;
-    register s16 index;
-    register s16 inner;
-    register s16 left;
-    register s16 right;
-    register s16 count;
-    s32 outputOffset;
+    SharedDynamicEntry *entry;
+    SharedVec3 *vector;
+    s16 count;
+    s16 i;
+    s16 j;
+    s16 left;
+    s16 right;
+    s16 slot;
 
-    commandList = commands;
     if (object->flags6 & 0x400) {
         return;
     }
@@ -180,36 +172,30 @@ void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
     state = object->drawState;
     resources = object->resourcesBySelector[object->selector];
 
-    SHARED_SET_ENV_WHITE_ZERO_ALPHA((*commandList)++);
+    SHARED_SET_ENV_WHITE_ZERO_ALPHA((*commands)++);
 
-    for (index = 0; index < 4; index++) {
-        if (state->fixedResources[index] != NULL) {
-            SHARED_FIXED_RESOURCE_RELOC(
-                commandList, state->fixedResources[index]);
+    for (i = 0; i < 4; i++) {
+        if (state->fixedResources[i] != NULL) {
+            overlay69DrawFixedResourceReloc(commands, state->fixedResources[i]);
         }
     }
     entry = object->dynamicEntries;
     if (entry != NULL) {
         if (!object->gate->suppressBySelector[object->selector]) {
-            index = 0;
-            accepted = 0;
-            while ((index < object->dynamicCount) && (index < 8)) {
+            for (i = 0, count = 0; (i < object->dynamicCount) && (i < 8); i++) {
                 vector = &resources->vectors[entry->vectorIndex];
-                metrics[accepted] = SHARED_METRIC_RELOC(
-                    vector->x, vector->y, vector->z);
-                order[accepted] = accepted;
-                index++;
-                accepted++;
+                metrics[count] = overlay69MetricReloc(vector->x, vector->y, vector->z);
+                order[count] = count;
+                count++;
                 entry++;
             }
 
-            for (index = accepted - 1; index > 0; index--) {
-                for (inner = 0; inner < index; inner++) {
-                    right = order[inner + 1];
-                    left = order[inner];
-                    if (metrics[right] < metrics[left]) {
-                        order[inner] = right;
-                        order[inner + 1] = left;
+            for (i = count - 1; i > 0; i--) {
+                for (j = 0; j < i; j++) {
+                    if (metrics[order[j + 1]] < metrics[order[j]]) {
+                        left = order[j];
+                        order[j] = order[j + 1];
+                        order[j + 1] = left;
                     }
                 }
             }
@@ -221,27 +207,26 @@ void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
             transform.position.x = state->position.x;
             transform.position.y = state->position.y;
             transform.position.z = state->position.z;
-            SHARED_TRANSFORM_RELOC(&transform);
+            overlay69PrepareTransformReloc(&transform);
 
             inverseScale = 1.0f / object->gate->scale;
             submit.mode6 = 3;
             submit.constant1C = 0x3333;
-            for (index = 0; index < accepted; index++) {
-                count = order[index];
-                entry = &object->dynamicEntries[count];
+            for (i = 0; i < count; i++) {
+                entry = &object->dynamicEntries[order[i]];
+                slot = order[i];
                 vector = &resources->vectors[entry->vectorIndex];
-                submit.half0 = state->dynamicHalf0[count];
-                submit.half2 = state->dynamicHalf8[count];
+                submit.half0 = state->dynamicHalf0[slot];
+                submit.half2 = state->dynamicHalf8[slot];
                 submit.scale8 = entry->scale * inverseScale;
                 submit.vector.x = vector->x;
                 submit.vector.y = vector->y;
                 submit.vector.z = vector->z;
                 submit.oneC = 1.0f;
                 submit.payload20 = entry->payload;
-                SHARED_DYNAMIC_SUBMIT_RELOC(
-                    commandList, renderArg1, renderArg2, &transform,
-                    object->submitResource50, &submit, 0xE,
-                    object->submitFlags39);
+                overlay69SubmitDynamicReloc(commands, renderArg1, renderArg2,
+                                            &transform, object->submitResource50,
+                                            &submit, 0xE, object->submitFlags39);
             }
         }
     }
@@ -250,49 +235,43 @@ void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
         return;
     }
 
-    index = 0;
-    accepted = 0;
-    while (index < 4) {
-        if ((state->fixedActive[index] != 0) &&
-            ((reference = state->fixedRefs[index]) != NULL)) {
-            vector = &resources->vectors[state->fixedVectorIndex[index]];
-            order[accepted] = accepted;
-            metrics[accepted] = SHARED_METRIC_RELOC(
-                vector->x, vector->y, vector->z);
-            outputOffset = accepted << 2;
-            *(void **)((u8 *)fixedRefs + outputOffset) = reference;
-            *(void **)((u8 *)fixedGeometry + outputOffset) =
+    i = 0;
+    count = 0;
+    while (i < 4) {
+        if ((state->fixedActive[i] != 0) &&
+            ((reference = state->fixedRefs[i]) != NULL)) {
+            vector = &resources->vectors[state->fixedVectorIndex[i]];
+            order[count] = count;
+            metrics[count] = overlay69MetricReloc(vector->x, vector->y, vector->z);
+            fixedRefs[count] = reference;
+            fixedKeys[count] = state->fixedActive[i];
+            fixedGeometry[count] =
                 (u8 *)resources->geometryBases[resources->geometryGroup] +
-                (state->fixedGeometryIndex[index] * 64);
-            fixedKeys[accepted] = state->fixedActive[index];
-            accepted++;
+                (state->fixedGeometryIndex[i] * 64);
+            count++;
         }
-        index++;
+        i++;
     }
 
-    if (accepted > 0) {
-        for (index = accepted - 1; index > 0; index--) {
-            for (inner = 0; inner < index; inner++) {
-                right = order[inner + 1];
-                left = order[inner];
-                if (metrics[right] < metrics[left]) {
-                    order[inner] = right;
-                    order[inner + 1] = left;
+    if (count > 0) {
+        for (i = count - 1; i > 0; i--) {
+            for (j = 0; j < i; j++) {
+                if (metrics[order[j + 1]] < metrics[order[j]]) {
+                    left = order[j];
+                    order[j] = order[j + 1];
+                    order[j + 1] = left;
                 }
             }
         }
 
-        for (index = 0; index < accepted; index++) {
-            SHARED_LOAD_FIXED_GEOMETRY(
-                (*commandList)++,
-                (void *)((u32)fixedGeometry[order[index]] +
-                         0x80000000U));
-            SHARED_FIXED_SUBMIT_RELOC(
-                commandList, fixedRefs[order[index]], 6,
-                (u8)fixedKeys[order[index]]);
+        for (i = 0; i < count; i++) {
+            SHARED_LOAD_FIXED_GEOMETRY((*commands)++,
+                (void *)((u32)fixedGeometry[order[i]] + 0x80000000U));
+            overlay69DrawConeReloc(commands, fixedRefs[order[i]], 6,
+                                      (u8)fixedKeys[order[i]]);
         }
 
-        SHARED_APPEND_TRAILING_STATE((*commandList)++);
+        SHARED_APPEND_TRAILING_STATE((*commands)++);
     }
 }
 
@@ -300,4 +279,12 @@ void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o069/overlay69DrawSortedGeometry/func_overlay_069_F0000170_18C8BD8.s")
 #endif
 
-#undef OVERLAY69_COMPILE_SHARED_BODY
+/* PLATEAU-HANDOFF:overlay69DrawSortedGeometry:start
+ * symbol: overlay69DrawSortedGeometry
+ * score: 57/359 words
+ * frame: 0x148
+ * relocations: 6
+ * first-mismatch: +0x3DC
+ * summary: Listing rewrite at the target frame. Exact up to the fixed collect block, where the geometry store needs one more ring draw.
+ * PLATEAU-HANDOFF:overlay69DrawSortedGeometry:end
+ */

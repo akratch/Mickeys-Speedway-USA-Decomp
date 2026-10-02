@@ -1,0 +1,47 @@
+<!-- plateau-handoff:overlay69DrawSortedGeometry:start -->
+### `overlay69DrawSortedGeometry` plateau handoff
+
+- source: `src/overlays/o069/overlay69DrawSortedGeometry.c`
+- score: 57/359 words
+- frame: 0x148
+- relocations: 6
+- first mismatch: +0x3DC
+- summary: Listing rewrite at the target frame. Exact up to the fixed collect block, where the geometry store needs one more ring draw.
+#### 2026-10-02, lane x-sort: made measurable, rewritten, 140 to 57
+
+The body was not in the queue: overlay 69 compiled it under a private guard
+and overlay 88 included it, so no tool could score it. Overlay 69 now holds a
+standard NON_MATCHING definition of the real symbol; overlay 88 renames the
+function and its five callee proxies to its own symbols and includes the file,
+and its NON_MATCHING object is byte-identical in .text to overlay 69's. Both
+modules' relocation tables agree call for call (one camGetProjZ role at both
+metric sites, the overlay 17 resource draw, the camera transform, camDoSprite,
+the draw-cone call).
+
+Measured steps (masked words, size delta), each a product cell:
+
+- Natural rewrite, no register, no carrier copy of commands, no byte-offset
+  stores, two scalar homes declared above order[]: frame 0x148, but 190 at -4.
+- count++ before i++ in the dynamic collect loop (draw census): 187 at -4.
+- Fixed-block statement order refs, keys, geometry: 135 at 0; with the
+  increments on one line, 130.
+- Bubble-sort swap through one temporary instead of left/right carriers (the
+  target spends one more ring draw per inner iteration): 130 to 63.
+- Submit loop forms the entry pointer before its order slot: 59.
+- Dynamic collect loop as for (i = 0, count = 0; ...; i++): 57.
+
+Everything before +0x3DC is now byte-exact. The residual is one ring position
+in the fixed collect block, after the reference store. The freelist replay
+shows the target's geometry store draws its address register from the list
+head one position later than this source does. With the stores in the
+target's emission order (refs, geometry, keys) this source recomputes
+sp+count*4 into the same register the reference store used and as1 deletes
+the copy (four bytes short); the target's copy lands in a fresh register.
+Inert or worse, all measured: casts on the geometry value, Mtx-typed geometry
+bases, pointer-form stores, do/while(0) and if(1) regions (frame moves),
+count++ placement, five spellings of the active/reference test, while
+against for. Next: find the source construct that spends one ring draw
+between the reference store and the geometry store without emitting code
+(an as1-deleted move), or read the fixed sort and final loop once that block
+is exact; both later regions currently differ only by the inherited shift.
+<!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

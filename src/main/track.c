@@ -4415,24 +4415,21 @@ void func_800133FC(TrackVertex *arg0, TrackVertex *arg1,
     *arg6 = -((x0 * nx) + (y0 * ny) + (z0 * nz));
 }
 /*
- * PROVENANCE: Mickey-only reconstruction from the target's collision-query
- * callers, resident track layouts, and the neighboring collision helpers;
- * no published donor body is used here.
+ * PROVENANCE: Mickey reconstruction from the target's collision-query
+ * callers, resident track layouts, and the neighboring collision helpers.
+ * The plane lookup's statement pair (index scaled by four into a local, then
+ * an f32 subscript) is adapted from Diddy Kong Racing's src/tracks.c, which
+ * reads `collisionFacets[j].basePlaneIndex << 2` the same way.
  */
-#ifdef NON_MATCHING
-/* 2 masked words at size delta 0 and the target's 0x138 frame (189 -> 2,
- * 2026-10-02 lane x-track): rewritten from the listing in func_8001398C's
- * indexed shape (segment index read at both uses, so uopt builds the index
- * cursor and the spill homes are compiler temps; a while (batchNumber--)
- * batch walk whose counter the sort's inner loop reuses), declarations
- * ordered for the homes (compareMask first; segmentIndices[32] after the
- * batch counter; plane, then five locals, then batch), the vertex y tests
- * written other-vertex-first, resultCount cleared after the height default,
- * the triangle index assigned after the two buffer pointers, and the plane
- * index read through an eight-byte stride. Left: the else arm's surfaces
- * base load, which the target emits after the index load and before the
- * scale (+0x280/+0x28C, two ring names); the same blocker as
- * func_8001398C's +0x1A8. */
+/* Matched 2026-10-02 (lane z-track). Listing rewrite in func_8001398C's
+ * indexed shape (lane x-track, 189 -> 2), closed by the plane lookup: the
+ * facet's plane index is scaled by four into the block's scratch local and
+ * then indexes the planes as an f32 array, the DKR tracks.c form
+ * (`var = facets[j].basePlaneIndex << 2; planes[var]`). uopt folds the two
+ * shifts into one and forwards the index as an unnamed value, so the base is
+ * loaded between the index load and its scale and is the add's first
+ * operand. Reusing the visibility local keeps the frame; a fresh local adds
+ * a cell and moves three spill homes. */
 u32 func_8001357C(f32 arg0, f32 arg1, f32 *arg2, s32 arg3, void *arg4) {
     s32 compareMask;
     s32 x;
@@ -4485,11 +4482,11 @@ u32 func_8001357C(f32 arg0, f32 arg1, f32 *arg2, s32 arg3, void *arg4) {
                     triangleIndex = batch->v0;
                     if (batch->v0 < batch[1].v0) {
                         do {
-                            u32 visibility =
+                            u32 temp =
                                 segment->visibilityMasks[triangleIndex] &
                                 compareMask;
-                            if ((visibility >> 16) != 0 &&
-                                (visibility & 0xFFFF) != 0) {
+                            if ((temp >> 16) != 0 &&
+                                (temp & 0xFFFF) != 0) {
                                 vertex0 = &vertices[triangle->vertex0];
                                 vertex1 = &vertices[triangle->vertex1];
                                 vertex2 = &vertices[triangle->vertex2];
@@ -4505,9 +4502,9 @@ u32 func_8001357C(f32 arg0, f32 arg1, f32 *arg2, s32 arg3, void *arg4) {
                                                           &plane.distance);
                                             surface = &plane;
                                         } else {
-                                            surface = &segment->surfaces[
-                                                *(u16 *) ((u8 *) segment->surfaceIndices +
-                                                          triangleIndex * 8)];
+                                            temp = *(u16 *) ((u8 *) segment->surfaceIndices +
+                                                             triangleIndex * 8) << 2;
+                                            surface = (TrackPlane *) &((f32 *) segment->surfaces)[temp];
                                         }
                                         if (surface->y > 0.0f) {
                                             height = -(((surface->x * arg0) +
@@ -4559,9 +4556,6 @@ u32 func_8001357C(f32 arg0, f32 arg1, f32 *arg2, s32 arg3, void *arg4) {
     }
     return resultCount;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8001357C.s")
-#endif
 #ifdef NON_MATCHING
 /* PROVENANCE: JFG's public track.c retains this collision collector as
  * assembly; Mickey's segment, batch, plane and hit-list accesses are used. */
@@ -5448,16 +5442,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * first-mismatch: +0x0
  * summary: Scoped plane FP lifetimes lower the candidate frame from 0x60 to 0x50; accepted web 163 force to c32 scores 95 but source route remains unproved.
  * PLATEAU-HANDOFF:func_800103D4:end
- */
-
-/* PLATEAU-HANDOFF:func_8001357C:start
- * symbol: func_8001357C
- * score: 2/260 words
- * frame: 0x138
- * relocations: 8
- * first-mismatch: +0x280
- * summary: Listing rewrite in the 8001398C indexed shape, 189 -> 2; left: surfaces base load between plane-index load and scale (as 8001398C +0x1A8).
- * PLATEAU-HANDOFF:func_8001357C:end
  */
 
 /* PLATEAU-HANDOFF:func_8000E5EC:start

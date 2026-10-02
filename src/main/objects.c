@@ -3912,6 +3912,8 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
     Objects09414StaticEntry *staticEntry;
     Objects09414Entry *entry;
     Objects09414Vector *vector;
+    s32 pad1;
+    s32 pad2;
 
     object = (Objects09414Object *)arg3;
     resource = object->unk64;
@@ -3919,12 +3921,10 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
 
     command = (Objects09414Gfx *)*arg0;
     *arg0 = (void *)(command + 1);
-    command->w1 = 0;
-    command->w0 = 0xE7000000;
+    command->w0 = 0xE7000000; command->w1 = 0;
     command = (Objects09414Gfx *)*arg0;
     *arg0 = (void *)(command + 1);
-    command->w1 = (u32)-0x100;
-    command->w0 = 0xFB000000;
+    command->w0 = 0xFB000000; command->w1 = (u32)-0x100;
 
     for (i = 0; i < 4; i++) {
         if (*(s32 *)((u8 *)resource + 0x134 + (i * 4)) != 0) {
@@ -3935,11 +3935,10 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
     data = object->unk40;
     if (data->unk1E[object->unk93] == 0) {
         count = 0;
-        for (i = 0; i < 4; i++) {
-            staticEntry = (Objects09414StaticEntry *)
-                ((u8 *)resource + 0x34C + (i * 0xC));
-            if ((staticEntry->unk4 != 0) && (staticEntry->unk8 != NULL)) {
-                cone = staticEntry->unk8;
+        staticEntry = (Objects09414StaticEntry *)((u8 *)resource + 0x34C);
+        for (i = 0; i < 4; i++, staticEntry++) {
+            cone = staticEntry->unk8;
+            if ((staticEntry->unk4 != 0) && (cone != NULL)) {
                 vector = &root->unk40[staticEntry->unk2];
                 depths[count] = camGetProjZ(vector->x, vector->y, vector->z);
                 cones[count] = cone;
@@ -3952,15 +3951,18 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
             }
         }
 
-        if ((resource->unk158 == 0) && (object->unk60 != NULL)) {
+        if (resource->unk158 == 0) {
             entry = object->unk60;
-            for (i = 0; (i < object->unk8C) && (i != 4); i++, entry++) {
-                vector = &root->unk40[entry->unk4];
-                depths[count] = camGetProjZ(vector->x, vector->y, vector->z);
-                entries[count] = entry;
-                kindOrEntry[count] = i;
-                sortIndex[count] = count;
-                count += 1;
+            if (entry != NULL) {
+                for (i = 0; (i < object->unk8C) && (i != 4); i++, entry++) {
+                    vector = &root->unk40[entry->unk4];
+                    depths[count] = camGetProjZ(vector->x, vector->y,
+                                                vector->z);
+                    entries[count] = entry;
+                    kindOrEntry[count] = i;
+                    sortIndex[count] = count;
+                    count += 1;
+                }
             }
         }
 
@@ -3984,20 +3986,21 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                 type = kindOrEntry[j];
                 if ((type & 0x80) != 0) {
                     type &= 0x7F;
-                    if (type == 0) {
+                    switch (type) {
+                    case 0:
                         mode = 0x206;
-                    } else if (type == 1) {
+                        break;
+                    case 1:
                         mode = 6;
-                    } else if (type == 2) {
-                        mode = 0x16;
+                        break;
+                    case 2:
                         func_80009220(arg0, arg1, arg2,
                                       (Objects09220Object *)object,
                                       (s32)textures[j],
                                       (Objects09220Source *)cones[j],
                                       alphas[j]);
-                    } else {
-                        /* Baseline placeholder: default-mode lifetime remains unproved. */
-                    mode = 0x3333;
+                        mode = 0x16;
+                        break;
                     }
                     command = (Objects09414Gfx *)*arg0;
                     *arg0 = (void *)(command + 1);
@@ -4011,13 +4014,13 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                     command->w1 = 0;
                 } else {
                     entry = entries[j];
+                    vector = &root->unk40[entry->unk4];
                     sprite.angle = *(s16 *)((u8 *)resource + 0x10C +
                                              (type * 2));
                     sprite.frame = *(s16 *)((u8 *)resource + 0x114 +
                                              (type * 2));
                     sprite.transformScale = entry->unk8 * inverseScale;
                     sprite.matrixScale = resource->unk50;
-                    vector = &root->unk40[entry->unk4];
                     sprite.x = vector->x;
                     sprite.y = *(f32 *)((u8 *)resource + 0x11C +
                                         (type * 4)) + vector->y;
@@ -4030,15 +4033,15 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
             }
         }
 
-        if (*(s32 *)((u8 *)resource + 0xD0) != 0) {
-            TrapDanglingJump(arg0, arg1, *(s32 *)((u8 *)resource + 0xD0));
-        }
-        if (*(s32 *)((u8 *)resource + 0xD4) != 0) {
-            TrapDanglingJump(arg0, arg1, arg2, *(s32 *)((u8 *)resource + 0xD4));
-        }
-        if (*(s32 *)((u8 *)resource + 0xD8) != 0) {
-            TrapDanglingJump(arg0, arg1, *(s32 *)((u8 *)resource + 0xD8));
-        }
+    }
+    if (*(s32 *)((u8 *)resource + 0xD0) != 0) {
+        TrapDanglingJump(arg0, arg1, *(s32 *)((u8 *)resource + 0xD0));
+    }
+    if (*(s32 *)((u8 *)resource + 0xD4) != 0) {
+        TrapDanglingJump(arg0, arg1, arg2, *(s32 *)((u8 *)resource + 0xD4));
+    }
+    if (*(s32 *)((u8 *)resource + 0xD8) != 0) {
+        TrapDanglingJump(arg0, arg1, *(s32 *)((u8 *)resource + 0xD8));
     }
 }
 #else
@@ -5375,10 +5378,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414
- * score: 398 differing words
+ * score: 243 differing words
  * frame: 0x198
  * relocations: 11
- * first-mismatch: +0x0
- * summary: Workbench structure-mismatch: structure-buckets. Next: authenticate the default-mode lifetime and sort-prefix source before further scheduling work.
+ * first-mismatch: +0xC0
+ * summary: Delta 0, exact through +0xBC. Five one-sided pairs left: static-loop unk8 load, object reload, sort j=1, entries address, then the temp ring.
  * PLATEAU-HANDOFF:func_80009414:end
  */

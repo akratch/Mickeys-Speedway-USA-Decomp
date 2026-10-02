@@ -4620,8 +4620,21 @@ o101PresCCreatorReloc = 0xf0000000;
 o101PresCResetReloc = 0xf0000000;
 
 /* overlay 101: overlay101BuildPresentationD.c.o */
-D_3948 = 0x00003948;
-D_D68 = 0x00000d68;
+gO101PresDAssetD68 = 0x00000d68;
+gO101PresDFinalObject3948 = 0x00003948;
+gO101PresDInputs = 0x00000000;
+gO101PresDNode20Count = 0x000001c8;
+gO101PresDNode24Count = 0x000001d0;
+gO101PresDNode32Count = 0x000001cc;
+gO101PresDNodes20 = 0x00000200;
+gO101PresDNodes24 = 0x00000540;
+gO101PresDNodes32 = 0x00000340;
+gO101PresDOrderCount = 0x000001c4;
+gO101PresDOrderSlots = 0x000001c0;
+gO101PresDRoot = 0x00000000;
+o101PresDCreateCompactReloc = 0xf0000000;
+o101PresDCreatorReloc = 0xf0000000;
+o101PresDResetReloc = 0xf0000000;
 
 /* overlay 101: overlay101TailA6BC.c.o */
 gO101TailAssetD7C = 0x00000d7c;

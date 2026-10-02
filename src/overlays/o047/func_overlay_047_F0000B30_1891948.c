@@ -718,6 +718,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
  * frame: 0x280
  * relocations: 320
  * first-mismatch: +0x4
- * summary: Flag + TU statics + no actor carrier + count-first bars + struct blend: 1377/+4 (was 1580/+4). Next: prologue copy, LDA merge, 3C8 fold.
+ * summary: Records: D_800D3058 one object, addend 0 at every loop base; walk on i drops the +4 and lands s5-s8 but i (73.0) outranks speed and actor. 1377/+4.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

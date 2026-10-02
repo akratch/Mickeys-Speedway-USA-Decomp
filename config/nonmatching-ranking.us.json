@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 119,
-  "resolved": 119,
+  "queue_size": 118,
+  "resolved": 118,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 119,
-  "relocation_masked_coverage": 119,
+  "source_context_coverage": 118,
+  "relocation_masked_coverage": 118,
   "functions": [
     {
       "name": "func_overlay_008_F0001294_185EFEC",
@@ -1195,21 +1195,6 @@
       "source_context_sha256": "9LG5.G8Lf.1GL0.BjdI.XuVe.ukit.VlZ8.PZxn.uto9.-4ug.xYY"
     },
     {
-      "name": "func_80001740",
-      "file": "src/main/audiomgr.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 836,
-      "objdiff_match_pct": null,
-      "differing_words": 154,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 153,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": -24,
-      "category": "size-mismatch",
-      "source_context_sha256": "ZOen.F-BH.X6d_.pN7j.EeXl.dUsa.77Ui.8lnT.Asw-.Gd8A.bGY"
-    },
-    {
       "name": "func_800103D4",
       "file": "src/main/track.c",
       "overlay": null,
@@ -1477,7 +1462,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 144,
       "category": "size-mismatch",
-      "source_context_sha256": "yP3o.12Sf.Rz-i.uZ8j.6rJB.qQ1i.dY3S.iAqf.gosb.m1Zy.psY"
+      "source_context_sha256": "GUoD.R98m.HclI.FKYM.7do9.pD4M.yy8J.lVRQ.JgA6.FCY1.4pE"
     },
     {
       "name": "func_8001F520",

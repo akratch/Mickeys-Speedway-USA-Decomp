@@ -6,7 +6,9 @@
 - frame: frameless
 - relocations: 2
 - first mismatch: +0x4
-- summary: hypothesis=clobber a0 after the VERTEX increment without an extra word; spellings=macro assign inert at 69, L104 redefine 70 at +4, in-place cast 82 at +20; stall=a0 stays live and all three were reverted
+- summary: 2026-10-02 stall stays 69/77 delta 0 first +0x4. Saved pointer is copy-propagated (inert). Shift-length and inlined count*2+2 stop the doubled*10+28 fold but land at 74 and delta -4. Pointer or-zero grows to delta +4. vertexCount or-zero and statement-ordered env colour are inert on that short shape.
+
+Summary before this remeasure: hypothesis=clobber a0 after the VERTEX increment without an extra word; spellings=macro assign inert at 69, L104 redefine 70 at +4, in-place cast 82 at +20; stall=a0 stays live and all three were reverted
 
 Summary before this remeasure: L100 empty-if pair 73 to 69 at delta 0. Leaf, zero p1 probes. Cursor force t0 is 68. Missing a0 copy at +0x4. D_80000000 identity fail-closed.
 
@@ -77,4 +79,54 @@ the extra word the delayed-vertexCount spelling adds, so the saved-list copy
 survives at +0x4; then a unique overlay-local triangle symbol for the two
 relocations. Colour of the cursor web is priced at one word and is not the
 remainder.
+
+## 2026-10-02 lane w7-o83
+
+Flags. mk/overlays.mk gives this object POSTPROCESS redefine plus trim only.
+No loop-unroll cap, no Olimit, and no -O2 -g3 line exists, so nothing was
+removed. -Wab,-r4300_mul is not set and was not added. The overlay-wide ISA
+stays -mips2 -32 and OPT_FLAGS stays -O2.
+
+shape_lint reported zero artefacts. Its copy pattern does not see a typed
+declaration, so the saved display-list local was still measured. overlay_tables
+--json for overlay 83: text 2912 bytes, data 272, two reloc tables of 88 bytes
+each. The function owns two LOCAL records, HI16 then LO16, at text offsets
+0x964 and 0x970, symbol index 0xB60, the data-section base. They are not
+SYMBOL records. D_80000000 is only a placeholder for the linked immediate.
+
+Attempt 1. Product on the saved-pointer axis and the vertex-length spelling.
+shape_product measured 6 cells. Floor 69 masked at delta 0, the tracked body.
+Dropping the saved local is byte-inert at 69: copy propagation deletes it, so
+it is not the missing opening move. Removing the empty if pair returns 73 at
+delta 0, the regression already recorded. The trailing else, an inlined
+count*2+2 with no doubled or vertex local, is not an axis value to
+shape_product; scored by hand it is 74 masked at delta -4. Writing the vertex
+length as shifts (the permitted Jet Force Gemini gSPVertexJFG spelling) does
+the same. Both stop reassociation of (doubled+2)*10+8 into doubled*10+28, and
+the length then uses vertexCount the way the target does. The function is 304
+bytes. insertion_pairs names the target-only word at +0x4 as a move. The other
+one-sided words are the env colour schedule and the triangle-count shift
+hoisted into the first multiply delay. Not adopted: masked words rose, and the
+size delta left zero.
+
+Attempt 2. On that short shift-length shape, a pointer identity meant to keep
+a real copy web. or-zero and and-0xFFFFFFFF, with the empty ifs, score 76 at
+delta +4. Without the ifs, 75 at delta +4. The identity does not fold to a
+free move. It adds two words. Not adopted.
+
+Attempt 3. Same short shape. vertexCount or-zero, a definition already wrapped
+in or-zero, and an env colour built red then green then blue after the opcode
+store. All six cells are 74 masked at delta -4, identical to the bare shift
+shape. Inert.
+
+Stall, ADR 0018. Three attempts, no better residual. Best tracked score
+remains 69 of 77 words, size delta 0, first mismatch +0x4, frameless. The
+opening move still needs the display-list parameter to leave a0. That web is
+coloured first and a0 is its cheapest colour, so a later vertexCount web
+cannot take a0 while their ranges overlap. The cursor colour sweep was not
+repeated.
+
+Next lever: number vertexCount ahead of the display-list parameter so a0 is
+taken first, without a word the 304-byte shape has no room for. Bind the two
+LOCAL records to the overlay data base before any promotion.
 <!-- plateau-handoff:overlay83DrawStrip:end -->

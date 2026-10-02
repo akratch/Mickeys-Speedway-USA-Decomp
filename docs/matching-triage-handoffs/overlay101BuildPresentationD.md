@@ -245,4 +245,30 @@ Retained body is the u8 length form. Decision variable is still the node-20
 base's save 0.5 against cost 2, with no source-reachable extra occurrence
 that copy-prop will count. Colour floor 113 is diagnostic, not a match.
 
+#### 2026-10-02, lane w7-o101d: colour pool identity, ADR 0018
+
+Flag check before any other edit. mk/overlays.mk gives this object only
+POSTPROCESS rename plus a .text trim to 0x338. mk/overlay_aliases.generated.mk
+has no rule for it. There is no -Wo,-loopunroll,0, no -Olimit, no -O2 -g3,
+and no -Wab,-r4300_mul. Nothing was removed.
+
+tools/fast_score.py on the tracked TU reproduces 824 bytes, 131 raw, 130
+masked, delta 0, first +0x10. The target materialises 0xFF once into s1 and
+reuses that register for every full-brightness store. The node-24 colour
+bytes are 0xFF, 0xFF, 0, 0xFF. The target has no 0xC0 immediate, and the
+final call takes no colour argument. The candidate's colour stores already
+agree with those bytes.
+
+Three products, scored with tools/shape_product.py --jobs 2. None adopted.
+The floor stays 130 at delta 0. Every cell that tied 130 is text-identical
+to the baseline object.
+
+- 54 cells. Per-use (s32)(255.0f), (s32)(510.0f * 0.5f) and (s32)(510.0f / 2.0f) are text-identical to the 0xFF literal. So are opacity written (f32)(s32)1, opacityScale as 2.0f * 0.5f or 2.0f / 2.0f, scale 1.0f versus 1.00f, and 0.0f versus 0.00f versus 0.5f - 0.5f. Hoisting the folded pool expression into a local reads 202 at +16. The node-24 expression count * 0 + 0xFF reads 154 at +4. count * 0 + 0xC0 on color1, and on color1 plus color2, reads 156 at +8.
+- 30 cells. length * 0.5f * 2.0f and length / 2.0f * 2.0f are byte-identical to each other and read 143 at +4. The same pair through the opacityScale local is byte-identical and reads 157 at +16. length * (2.0f / 2.0f) folds away and is text-identical to baseline. Splitting the node-24 0xFF sites between the integer literal and either float-pool spelling, including one site against the others, is text-identical to baseline.
+- 6 cells, color1 only. (s32)(384.0f * 0.5f) and (s32)(384.0f / 2.0f) are text-identical, 145 at +4: both fold to the integer 0xC0, which this target does not store. opacityScale * 255.0f and opacityScale * 192.0f do not fold (158 at +20) and those two objects differ. (s32)(opacityScale * 0.0f) + 0xFF reads 147 at +16.
+
+Eliminated. Here / 2.0f and * 0.5f are one object whenever both were compiled, whether the result folds to 1.0f, to 0xFF, or to 0xC0, or survives as a live multiply. The matched tail in overlay101TailAB4C.c spells a shared 0.0f against 0.00f and 0.000f scales and multiplies opacity by (f32)(s32)1; those spellings do not split a web on this function. The sibling counter * 0 + 0xC0 expression is the wrong value and costs instructions. No source change.
+
+Retained body is the tracked u8-length form at 130 masked, delta 0, first +0x10.
+
 <!-- plateau-handoff:overlay101BuildPresentationD:end -->

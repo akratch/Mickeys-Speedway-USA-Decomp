@@ -1800,7 +1800,9 @@ bytes and disassembly never belong here.
   schedules it into the delay slot again. Limits: nesting the assignment in
   the guarding if, wrapping the call or the assignment in a region, and
   folding it into a pointer leave the statement free or change the value.
-  An inherited `-Wo,-loopunroll,0` is checklist item 11, a separate
+  If the assignment is already sitting in the delay slot, the for-init
+  spelling is inert. An inherited `-Wo,-loopunroll,0` is checklist item
+  11, a separate
   measurement, and does not by itself move a delay-slot residual. Evidence:
   the matched overlay 1 rank function in
   `src/overlays/o001/func_overlay_001_F0002B4C_184EF2C.c`.

@@ -26,6 +26,7 @@ typedef struct JoyPad {
     u8 unused;
 } JoyPad;
 
+extern void osContGetReadData(JoyPad *);
 extern JoyPad D_800CF370[];
 extern JoyPad D_800CF388[];
 extern s8 D_800CF372[];
@@ -45,7 +46,6 @@ extern void joyResetMap(void);
 extern void rumbleTick(s32);
 extern u8 D_800D3128[];
 
-#ifdef NON_MATCHING
 #define joySaveActionA func_8002C94C
 #define joySaveActionB func_8002CB18
 #define joySaveActionC func_8002CD6C
@@ -56,7 +56,7 @@ extern u8 D_800D3128[];
 #define joySaveActionH func_800580F0
 extern void joySaveActionA(s32);
 extern void joySaveActionB(void);
-extern void joySaveActionC(s32 *, s32, s32 *);
+extern void joySaveActionC(void);
 extern void joySaveActionD(void *);
 extern void joySaveActionE(void *);
 extern void joySaveActionG(void);
@@ -72,7 +72,6 @@ extern void joySaveActionH(s32);
 #define joySecurityMask D_8007A0C8
 #define joyDisableAll D_8007A0C0
 #define joySaveState D_800D3128
-#endif
 
 s8 joyClamp(s8 stickMag);
 
@@ -122,31 +121,22 @@ s32 joyInit(void) {
     return -1;
 }
 
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: body structure adapted from Jet Force Gemini src/joy.c::joyRead;
  * Mickey's save-flag calls and byte identity are decisive.
- * The authorized re-audit at JFG upstream efd5abb found this body unchanged
- * from c82affff's src/controller.c; its header split adds no Mickey-relevant
- * joyRead prototype that this translation unit did not already carry.
  *
- * Plateau: six loop/storage/type hypotheses preserve the target's 159
- * instructions, 636-byte boundary and -0x38 frame. The first mismatch is
- * +0x18, where the split extern layout gives the message local a different
- * stack slot. More decisively, original TU-local adjacency lets IDO use
- * D_800CF388, D_800CF3BC and D_800CF3B0 as three loop endpoints; the split C
- * instead materializes preceding extern bases plus their array sizes, leaving
- * 48 differing words and six relocation-identity mismatches. The full flag
- * lattice was unchanged. A bounded permuter improved 5,795 to 5,305 only by
- * inventing a do-while guard, which was rejected.
- *
- * 2026-09-12 (lane p7-res2): `i` is declared before `unusedMsg` on purpose.
- * That order, and only that order, puts the message local on the stack slot
- * the target uses; frame_census then reports the same four-rung ladder on both
- * sides and the first mismatch moves from +0x18 to +0x2C. It is worth one word
- * (48 -> 47) and it is all but one of the immediate-only bucket. Eight other
- * declaration and padding forms, every array length for the message local
- * among them, are flat or worse.
+ * Matched 2026-10-02 (lane w2-front) by three source facts, none of them
+ * allocator work:
+ *  - osContGetReadData has a real `void` prototype. Without one IDO treats
+ *    the call as returning int, and the controller-array cursor web, which
+ *    spans all three loops, is no longer offered v0 (38 -> 0 words).
+ *  - func_8002CD6C takes no arguments (its definition in saves.c is void);
+ *    the a0/a1/a2 the target leaves at that call are the second loop's
+ *    leftovers, not arguments.
+ *  - `i` is assigned again inside the receive block. A later definition of
+ *    the counter in the same region keeps uopt from rewriting the second
+ *    loop's `<` exit test into `!=`; without it the function is 4 bytes
+ *    short.
  */
 s32 joyRead(s32 saveDataFlags, s32 updateRate) {
     s32 i;
@@ -168,13 +158,14 @@ s32 joyRead(s32 saveDataFlags, s32 updateRate) {
         }
         if (saveDataFlags != 0) {
             if (saveDataFlags & 0x80000000) {
-                joySaveActionC(&joyConnectedCount, 1, &joyConnectedCount);
+                joySaveActionC();
             }
             if (saveDataFlags & 0x40000000) {
                 joySaveActionB();
             }
             if (saveDataFlags & 0x20000000) {
-                joySaveActionA(saveDataFlags & 0x1F);
+                i = saveDataFlags & 0x1F;
+                joySaveActionA(i);
             }
             if (saveDataFlags & 0x00800000) {
                 joySaveActionF(joySaveState);
@@ -214,9 +205,6 @@ s32 joyRead(s32 saveDataFlags, s32 updateRate) {
     }
     return saveDataFlags;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/joy/joyRead.s")
-#endif
 
 /*
  * PROVENANCE: body adapted from JFG src/joy.c; Mickey byte identity is decisive.
@@ -353,13 +341,3 @@ void arithmeticFunction(u8 *challenge, u8 *response) {
 s32 joyCharVal(void) {
     return 1;
 }
-
-/* PLATEAU-HANDOFF:joyRead:start
- * symbol: joyRead
- * score: 47/159 words
- * frame: 0x38
- * relocations: 55
- * first-mismatch: +0x2C
- * summary: 18-web scan and seven-subset lattice reach diagnostic floor 40. Endpoint source probes fail; existing flag/count ownership narrows the next source question.
- * PLATEAU-HANDOFF:joyRead:end
- */

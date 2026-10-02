@@ -1,5 +1,16 @@
 # Overlay 51 reconstruction identity audit
 
+**Status (2026-10-02): matched and promoted.** The function is now exact C in
+`src/overlays/o051/overlay_051.c`, written as the cut-down copy of overlay 50's
+matched `func_overlay_050_F0000334_1896CA4` and built with `-Wab,-r4300_mul`;
+the TU has no `GLOBAL_ASM` left. The data identities below were merged to one
+name per object: `gOverlay51Mode`/`gOverlay51Index` are `gOverlay51Item`,
+`gOverlay51InitialValue` is `gOverlay51HudHeight`, `gOverlay51Resource1C` and
+`gOverlay51ResourceBC` are the glyph rows `gOverlay51TimeGlyphs` and
+`gOverlay51ClockGlyphs`, and `gOverlay51InlineResource` is
+`gOverlay51Resource0`. The rest of this page is the pre-match receipt, kept as
+written.
+
 This is a read-only identity receipt, not a candidate, match or reopen grant.
 The owned fallback is `func_overlay_051_F00000D0_18999D0` in
 `src/overlays/o051/overlay_051.c`, module 51 text +0xD0 through +0x858

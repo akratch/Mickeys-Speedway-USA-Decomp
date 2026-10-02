@@ -1636,6 +1636,12 @@ MIXED_TU_EXACT_C_RANGES = {
             "canonical mixed-TU object and linked bytes exact",
         ),
         (
+            0x0D0,
+            0x858,
+            "func_overlay_051_F00000D0_18999D0",
+            "canonical mixed-TU object and linked bytes exact",
+        ),
+        (
             0x858,
             0x8AC,
             "overlay51ReleaseState",

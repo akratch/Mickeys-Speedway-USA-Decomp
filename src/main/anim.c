@@ -2181,10 +2181,12 @@ void func_800573C8(HitOverlapState *state, HitOverlapVolume *other,
  * reads the object into `firstObject` before its shape, the target's s6
  * (580), and the overlap-result kind tests read `firstObject->unk44`
  * directly, so `firstKind` is not one web with the pair-loop read and the
- * kind chain takes a0/v1 as the target does (528). Left: the target hoists
- * the kind constant 2 and keeps the axis loops and the pair loops' j in
- * one saved register (s2); the min-fraction loop keeps pairIndex in a1;
- * a ring draw before the iteration count. */
+ * kind chain takes a0/v1 as the target does (528). The min-fraction loop
+ * reads through `selectedPair = &D_800D7560[i]`, so the unrolled copies
+ * re-load the fraction they assign, as the target's do (522). Left: the
+ * target hoists the kind constant 2 and keeps the axis loops' counter in
+ * a saved register (s2); pairIndex stays in a1 from the while head; the
+ * displacement loop re-reads movingCount each pass. */
 void func_80053868(s32 updateRate) {
     f32 remainingTime;
     f32 fraction;
@@ -2393,8 +2395,9 @@ void func_80053868(s32 updateRate) {
             }
         }
         for (i = 0; i < pairCount; i++) {
-            if (D_800D7560[i].fraction <= fraction) {
-                fraction = D_800D7560[i].fraction;
+            selectedPair = &D_800D7560[i];
+            if (selectedPair->fraction <= fraction) {
+                fraction = selectedPair->fraction;
                 pairIndex = i;
             }
         }
@@ -3946,11 +3949,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80053868:start
  * symbol: func_80053868
- * score: 528 differing words
+ * score: 522 differing words
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: 710 to 528: homes exact, head reads firstObject->unk48, firstObject local in every moving loop, result-kind tests direct. Left: hoisted 2, s2 axis/j, pairIndex a1
+ * summary: 710 to 522: homes exact, head reads firstObject->unk48, firstObject in every moving loop, direct result-kind tests, pair pointer in min loop. Left: hoisted 2, s2 axis
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

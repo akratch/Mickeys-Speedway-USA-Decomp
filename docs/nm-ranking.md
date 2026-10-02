@@ -281,7 +281,7 @@ Relocation-masked mismatch evidence covers **84 / 84** resolved rows. The raw co
 |---|---:|
 | raw `differing_words <= 5` | 1 |
 | relocation-masked `differing_words <= 5` | 1 |
-| raw `differing_words <= 10` | 3 |
+| raw `differing_words <= 10` | 4 |
 | relocation-masked `differing_words <= 10` | 4 |
 | raw `differing_words <= 20` | 8 |
 | relocation-masked `differing_words <= 20` | 8 |
@@ -295,8 +295,8 @@ units remain distinct.
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/track.c` | `func_8001357C` | `main` | `register-only` | 1,040 | 2 | 2 | 640 | 640 | 0 | — |
-| 2 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 8 | 8 | 424 | 424 | 0 | — |
-| 3 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 12 | 9 | 96 | 136 | 0 | — |
+| 2 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
+| 3 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 8 | 8 | 424 | 424 | 0 | — |
 | 4 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
 | 5 | `src/overlays/o027/overlay_027.c` | `func_overlay_027_F0000624_187BFFC` | `o027` | `other` | 1,016 | 12 | 12 | 508 | 508 | 0 | — |
 | 6 | `src/main/track.c` | `func_8000E5EC` | `main` | `other` | 820 | 13 | 12 | 180 | 260 | 0 | — |

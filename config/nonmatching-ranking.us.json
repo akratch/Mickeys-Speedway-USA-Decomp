@@ -25,6 +25,21 @@
       "source_context_sha256": "oUtp.idXV.B6Wn.8W5U.w4LZ.yLyA.NoA7.ToWK.cX5N.OaeF.0DU"
     },
     {
+      "name": "func_8005830C",
+      "file": "src/main/vehicle_sounds.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 3048,
+      "objdiff_match_pct": null,
+      "differing_words": 15,
+      "first_mismatch_offset": 392,
+      "relocation_masked_differing_words": 6,
+      "relocation_masked_first_mismatch_offset": 1620,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "3SIB.6h2N.ylWt._QTd.BOXG.pG3-.-S_e.Xq1A.x77K.WI8W.gwc"
+    },
+    {
       "name": "func_overlay_008_F0001294_185EFEC",
       "file": "src/overlays/o008/overlay_008.c",
       "overlay": 8,
@@ -2003,21 +2018,6 @@
       "size_delta": 28,
       "category": "size-mismatch",
       "source_context_sha256": "XJHA.D5hW.E-2Y.ILPE.TmEM.yK2R.-aoW.BeBe.YrPe.n3o0.skE"
-    },
-    {
-      "name": "func_8005830C",
-      "file": "src/main/vehicle_sounds.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 3048,
-      "objdiff_match_pct": null,
-      "differing_words": 698,
-      "first_mismatch_offset": 8,
-      "relocation_masked_differing_words": 697,
-      "relocation_masked_first_mismatch_offset": 8,
-      "size_delta": -12,
-      "category": "size-mismatch",
-      "source_context_sha256": "-hKX.3HqB.Mnto.UPfh.3TpY.Xbzh._LP2.Hg3x.jG3L.4C7f.BBc"
     },
     {
       "name": "func_overlay_073_F0000190_18CAC50",

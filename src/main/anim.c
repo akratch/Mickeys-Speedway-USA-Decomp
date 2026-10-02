@@ -775,15 +775,18 @@ extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
  * globals, sound-object offset, and final compiler output are independently
  * established from Mickey's ROM.
  *
- * 33 masked words at size delta 0 and the target's 0x40 frame (2026-10-02,
- * lane n-anim), rewritten as plain C: early returns, literal time scales,
- * indexed path loops, no state-address carrier. The NTSC duration scale
- * reads a copy of the duration taken before the branch and multiplies it in
- * place in two statements (`*= 3`, then `* 2 / 10`); that is what keeps
- * the copy move and the PAL arm's direct shift. `D_8007D69C++` re-reads the
- * cursor global. The two unused leading locals give originalRate its 0x34
- * home. Remaining: command and the clock read trade a0/a1, and the
- * sound-handle test loads straight into a0 where the target uses v0.
+ * 22 masked words at size delta 0 and the target's 0x40 frame (2026-10-02,
+ * lanes n-anim and o-anim2), plain C: early returns, literal time scales,
+ * indexed path loops, no state-address carrier. The NTSC scale is one
+ * expression, `* 3 * 2 / 10`: IDO expands the folded *6 in one register,
+ * as the target does. The state store precedes the cursor increment (that
+ * is the target's draw order for the two values as1 hoists above the
+ * compare), and the clock float re-reads the stored global. `D_8007D69C++`
+ * re-reads the cursor global; the two unused leading locals give
+ * originalRate its 0x34 home. Remaining: command/clock and their two
+ * address webs rank the wrong way (16 words; forcing all four colours
+ * leaves 6), the two stores issue in source order, the new-clock add takes
+ * its operands swapped, and the sound-handle test loads into a0, not v0.
  * Retain NON_MATCHING. */
 #ifdef NON_MATCHING
 void func_80051364(s32 updateRate) {
@@ -823,12 +826,11 @@ void func_80051364(s32 updateRate) {
             if (osTvType == 0) {
                 adjustedRate >>= 1;
             } else {
-                adjustedRate *= 3;
-                adjustedRate = (adjustedRate * 2) / 10;
+                adjustedRate = adjustedRate * 3 * 2 / 10;
             }
             updateRate = adjustedRate - D_8007D6A8;
-            D_8007D69C++;
             D_8007D6A4 = (s8) cmdWord;
+            D_8007D69C++;
             if (D_8007D6A4 == 0) {
                 originalRate = updateRate;
             }
@@ -851,7 +853,7 @@ void func_80051364(s32 updateRate) {
         }
     }
     D_8007D6A8 = newClock;
-    D_8007D6AC = (f32) (u32) newClock * timeScale;
+    D_8007D6AC = D_8007D6A8 * timeScale;
     for (i = 0; i < 256; i++) {
         path = D_800D6B00[i];
         if (path != NULL && (path->flags & 5)) {
@@ -4148,11 +4150,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80051364:start
  * symbol: func_80051364
- * score: 33 differing words
+ * score: 22 differing words
  * frame: 0x40
  * relocations: 47
- * first-mismatch: +0x88
- * summary: 92 to 33: plain C rewrite, in-place NTSC scale copy, cursor-global increment. Left: a0/a1 trades (command/clock, clock/D6B4), v0 sound handle
+ * first-mismatch: +0x80
+ * summary: 33 to 22: folded *3*2 NTSC scale, state store before cursor increment, clock float re-reads the global. Left: 4 address/value colour ranks (16)
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

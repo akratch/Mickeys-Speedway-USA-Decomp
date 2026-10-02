@@ -22,10 +22,10 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 362312,
-  "nonmatching_overlay_c_bytes": 106292,
+  "matched_overlay_c_bytes": 368148,
+  "nonmatching_overlay_c_bytes": 100456,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4560,
+  "owned_data_rodata_bytes": 4660,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -10609,7 +10609,7 @@
      "type": "c",
      "source": "overlays/o051/overlay_051",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x8AC",
@@ -10701,33 +10701,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 61
-   },
-   "mixed_tu_exact_c_ranges": [
-    {
-     "offset": "0x0",
-     "end_offset": "0x80",
-     "size": "0x80",
-     "label": "overlay51Initialize",
-     "source": "overlays/o051/overlay_051",
-     "evidence": "canonical mixed-TU object and linked bytes exact"
-    },
-    {
-     "offset": "0x80",
-     "end_offset": "0xD0",
-     "size": "0x50",
-     "label": "overlay51PatchIndices",
-     "source": "overlays/o051/overlay_051",
-     "evidence": "canonical mixed-TU object and linked bytes exact"
-    },
-    {
-     "offset": "0x858",
-     "end_offset": "0x8AC",
-     "size": "0x54",
-     "label": "overlay51ReleaseState",
-     "source": "overlays/o051/overlay_051",
-     "evidence": "canonical mixed-TU object and linked bytes exact"
-    }
-   ]
+   }
   },
   {
    "overlay": 52,
@@ -12048,7 +12022,7 @@
      "type": "c",
      "source": "overlays/o058/func_overlay_058_F0000000_18AF1E8",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x5C0",
@@ -19598,7 +19572,7 @@
      "type": "c",
      "source": "overlays/o101/overlay101TailA6BC",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xAB4C",
@@ -19643,7 +19617,7 @@
      "type": "c",
      "source": "overlays/o101/overlay101TailC6E8",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xCBDC",
@@ -20014,7 +19988,19 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 102
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x5CFC",
+     "end_offset": "0x5D60",
+     "size": "0x64",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o101/overlay101TailC6E8",
+     "trial_function": "func_overlay_101_F000C6E8_18E7F08",
+     "externalized": true
+    }
+   ]
   },
   {
    "overlay": 102,

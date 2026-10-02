@@ -2,11 +2,13 @@
 ### `func_8002EBE0` plateau handoff
 
 - source: `src/main/rcpFast3d.c`
-- score: 89/255 words
+- score: 0/255 words, promoted
 - frame: 0x88
 - relocations: 2
-- first mismatch: +0x138
-- summary: Listing rewrite: delta 0, frame exact. Left: 39 naming rows and three copies from the post-decrement loop webs and the colour copy.
+- first mismatch: none
+- summary: Matched. Gradient step packs its colour inline twice and the flat band names it in an s32 local; the step loop sits in an if (1) region so its first test is its own block; i is cleared before bandStart.
+
+Summary before this remeasure: Listing rewrite: delta 0, frame exact. Left: 39 naming rows and three copies from the post-decrement loop webs and the colour copy.
 
 Summary before this remeasure: Exact-sized C keeps a 0x58 versus 0x88 frame after RGB aggregate and lifetime forms; next lever is an authentic early-live-web source shape.
 #### 2026-10-02 (lane `w2-front`): rewritten from the listing, 218 -> 89 at delta 0, frame exact
@@ -65,4 +67,39 @@ Axes measured on this shape and flat: colour as a var, inline, the OR 1 split ou
 as a compound OR-assign; r/g/b as s32, u8 or u32; colour as s32, u32, u16 or s16; the outer loop
 as `while`, `!= 0` or `for`; `y = 0` before or after screenHeight (after is
 2 better).
+
+#### 2026-10-02 (lane `z-res`): matched, 89 -> 0 at delta 0, promoted
+
+Three edits on the w2-front body, found in this order.
+
+1. **Colour forms.** With the fill colour packed inline twice in BOTH branches
+   the aligner read 221 byte-exact, 27 naming, 4 immediate, 3 structural at
+   +8, and the gradient loop kept the target's dead copy of the packed value.
+   The copy is uopt saving a repeated expression; which branch keeps it is
+   decided by which branch names the value in a local. The exact cell is the
+   gradient inline and the flat band through an `s32 colour` local.
+2. **The pre-loop steps web.** Forcing the divisor web onto v1 (CDX_PROC=5,
+   `p1:w96=c2`, accepted) scored 17 at delta 0 and removed both stray copies,
+   so the whole residual was that one colour. The cause is not a colour
+   question. The target's first loop test copies the divisor into the
+   post-decrement temporary; ours had no such copy because `steps = expr` and
+   the first `steps--` test shared a block, so the temporary was assigned an
+   expression node and the dead store was dropped. A copy of a VARIABLE
+   survives (the `screens--` test keeps one). Putting the loop in an `if (1)`
+   region starts a block at its first test: the temporary now holds v0 in
+   that block, the divisor takes v1 unforced, and the counter is numbered
+   ahead of the three offsets (a0, then a1 to a3). 83 at +8 became 13 at 0.
+   `do { } while (0);` and `if (1) { }` as separate statements ahead of the
+   loop read 55; a do-while around the offset clears reads 59.
+3. **Flat band webs.** The last 13 words were bandStart in a0 against t0.
+   uopt splits a basic block that holds too many expression entries (about
+   64 here), and the split fell between the two word stores of the flat
+   band's fill rectangle, halving the save of its packet pointer and end-row
+   webs (150 against bandStart's 255). The `colour` local shrinks the block
+   so both webs stay in one block at 300, are coloured first and take a0 and
+   a1, leaving bandStart t0.
+
+`i = 0` before `bandStart = 0` fixes the last two words (emission order).
+A 336-cell product over these axes holds 20 exact cells; the adopted one is
+the smallest edit.
 <!-- plateau-handoff:func_8002EBE0:end -->

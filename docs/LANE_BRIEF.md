@@ -380,8 +380,10 @@ order of how often they decided a match:
     comma makes the assignment the last init expression and it returns
     to the delay slot. Nesting it in the guarding if, wrapping the call
     or the assignment in a region, and folding it into the pointer do
-    not hold it there. This is statement placement. Checklist item 11,
-    the inherited unroll cap, is a separate measurement and is not this
+    not hold it there. If that assignment is already the instruction in
+    the delay slot, moving it into the for-init leaves the object
+    unchanged. This is statement placement. Checklist item 11, the
+    inherited unroll cap, is a separate measurement and is not this
     lever.
 
 ### Promotion traps (each cost a lane a cycle on 2026-10-01)

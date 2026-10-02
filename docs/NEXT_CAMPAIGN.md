@@ -1,72 +1,84 @@
-# Next wave after the overlay 1 promotion (2026-10-02)
+# Next wave after the seven plateaus (2026-10-02)
 
-This file is the single next-wave handoff. It replaces the previous
-reconstruction brief. The byte totals below were recomputed from the
-integrated tree (`gmake progress`, and the generated snapshot in
-`docs/nm-ranking.md` / `config/nonmatching-ranking.us.json`) after the
-overlay 1 promotion and the seven banked lanes were merged. Recompute
-again before quoting them.
+This file is the single next-wave handoff. It replaces the overlay 1
+promotion brief. The byte totals below were recomputed from the
+integrated tree after this wave's seven lanes were merged. Recompute
+again before quoting them. No function in this wave is an exact match.
 
 ## This wave
 
-One exact match. Seven other attempts, none of them matches.
+Zero exact matches. One adopted improvement, still short of the ROM.
+Six plateaus with the source left as it was.
 
-**Match.** `func_overlay_001_F0002B4C_184EF2C`, 1,804 owned bytes.
-`gmake promotion-proof` reported 451 words, frame `0xB0`, relocations
-68/68, identity static. The lane's linked ROM hash is
-`507341c0a40ca3e9a7cee969b396ee53facfb548`. The spelling that matched is
-`for (sum = 0, k = 0; k < state->lap; k++)` after
-`state = func_80005820(i)->state`: the zero stays with the induction, so
-as1 fills that call's delay slot with the argument copy. The reversed
-comma was measured and was not the match. Nesting the zero in the rank
-test, wrapping the call or the zero in a region, and folding the zero
-into the pointer did not beat the baseline. The TU's inherited
-`-Wo,-loopunroll,0` was removed first and did not change the score; it
-stayed off. `-Wab,-r4300_mul` stayed, because it is the proved hazard
-schedule. The lever is checklist item 22 in `docs/LANE_BRIEF.md` and the
-delay-slot entry in `docs/ido-learnings.md`.
+**Adopted, not a match.** `overlay1LoadBuildRecords`
+(`src/overlays/o001/overlay_001_head.c`, 2,288 target bytes). The clear
+loop now writes each field through `D_1BA0[index]` instead of walking
+one pointer backward. That moved the size deficit from 92 bytes to 52
+(13 words short) and the masked residual from 470 words to 469. Frame
+stays `0xD8`, first mismatch stays `+0x34`, relocations stay 114.
+Folding `0x1BA0` through `0x1DCC` into one owner went the other way
+(549 masked, 156 bytes short) and was reverted. A null-base spelling of
+the `0x94` length is byte-identical to `D_1D8C * 0x94`, so it does not
+defeat the hoisted multiply by 148. The TU's only flag is
+`-Wab,-r4300_mul`. The adopted clear is four source lines shorter than
+the pointer walk; four comment lines sit in front of
+`overlay1InitializeModeState` so the matched functions below stay on
+their original line numbers. `insertion_pairs` was run on the pre-edit
+body only.
 
-**Banked improvement, not a match.** `rain_render_splashes` went from
-105 to 100 masked words at size delta 0 (1,616 bytes, first mismatch
-still +0x94). Each splash colour byte is `0xFF` combined with
-`index - index`. The `0xFF` web itself did not move; the five words are
-the index web. A second store of each colour byte and building alpha
-from the other channels both grow the function. Stopped there.
+**Plateaus (ADR 0018: three attempts, no better residual, nothing
+adopted).**
 
-**Plateaus (ADR 0018: three attempts, no better residual at size delta
-0, nothing adopted).**
-
-- `func_8001398C` (track.c) stays 8 masked of 330, 1,320 bytes, first
-  +0x1A8. A 25-cell product of the surface-address and sort-preheader
-  axes floored at 8. Putting the surfaces base in another local removes
-  those words and costs a five-temp cycle. Do not repeat that product.
-- `func_80051364` (anim.c) stays 12 masked, 1,148 bytes, first +0x88.
-  No zero-new-block use raises only the command web at size delta 0.
-  Or-zero and and-zero are byte-identical. Reloading `command` after
-  the cursor increment raises the web and grows the function. That idea
-  is eliminated.
-- `overlay15InitStarsAndPalette` stays 17 masked of 247, 988 bytes,
-  first +0x70. The matched siblings' static-field-through-pointer form
-  scores 224 at size delta -4: IDO folds the field into the store
-  displacement and deletes the address temporary. A late copy of the
-  allocate result does the same. Palette index inits after the colour
-  deltas are inert; after the palette load they are worse.
-- `func_overlay_058_F00005FC_18AF7E4` stays 109 masked of 829, 3,316
-  bytes, frame `0x88`, first +0x41C. Draw-loop addresses that do not
-  CSE with the case-3 load leave case 3 byte-identical, and the
-  spellings that fold to the target's offsets-first address do not
-  split case 3. A named per-stage pointer grows the frame to `0x90`.
-- `func_overlay_008_F00034A0_18611F8` stays 103 masked, 3,592 bytes,
-  first +0x1C. Every denial of v0 that adds a use costs words. The
-  two-argument event call is byte-identical to the three-argument call,
-  because `selectedMode` is already in the third argument register. The
-  previously forced 89-word shape was not reproduced from source.
-- `func_800349A4` stays 172 masked of 272, 1,088 bytes, frame `0x40`,
-  first +0x24. The only callee, `func_80034920`, is already one
-  argument and void, which is what the relocation says. Moving
-  `D_8007B680` to the cache compare puts the low half in the target
-  delay slot and drops the high half. An extra local reaches the
-  target spill slot only by growing the frame to `0x48`.
+- `func_overlay_001_F0001D78_184E158` stays 268 masked of 627 words,
+  size delta 0, first `+0x2C`. The matched rank function's typed
+  `D_1DA0_State` alias is byte-identical. Checklist item 22 at the
+  lap-compare zero stays at 268: that zero is already in the following
+  call's delay slot, which is where the target has it. Per-region
+  pointer locals shrink the function by 140 bytes, grow the frame from
+  `0x70` to `0x78`, and replace the commoned address with a held
+  pointer. Forcing the value web onto `a1` is declined. The forbidden
+  mask is `v0` through `a3`, and the first legal colour is `t0`. The
+  only flag is `-Wab,-r4300_mul`.
+- `overlay101BuildPresentationD` stays 130 masked, 824 bytes, size
+  delta 0, first `+0x10`. The target stores `0xFF` once and reuses it.
+  There is no `0xC0` immediate. `/ 2.0f` and `* 0.5f` compile to one
+  object wherever both were built, including the cells that fold to
+  `0xC0`. That `0xC0` spelling is the wrong value and grows the
+  function. The matched tail's `0.0f` / `0.00f` / `(f32)(s32)1`
+  spellings do not split a pool entry here. No per-file codegen flag
+  was present.
+- `overlay83DrawStrip` stays 69 of 77 words, size delta 0, first
+  `+0x4`, frameless. The saved display-list pointer is copy-propagated
+  and inert. Writing the vertex length as shifts, or inlining
+  `count * 2 + 2`, stops the `doubled * 10 + 28` fold and scores 74 at
+  size delta -4. Pointer or-zero on that short shape grows. The opening
+  move still needs the display-list parameter off `a0` without a word
+  the 304-byte shape cannot afford.
+- `overlay48InitializeState` stays 47 masked, 228 target bytes, size
+  delta -16, first `+0x0`. A pre-loop index, a cursor induction, and a
+  for-init counter all lose the scaled seed cursor. The floors were 60
+  and 57 masked at size delta +16. The guarded body is unchanged. No
+  colour sweep: the size delta is not 0.
+- `func_8003C80C` (`weather_tail.c`) stays 103 of 118, size delta 0,
+  first `+0x14`, frame `0x38`. Indexing the destination instead of
+  walking the pointer scores 110 at delta +4. `while (var_t0--)` scores
+  120 at delta +24. The `for` countdown unrolls to 161 at delta +240.
+  The `do-while` at 8 is the size-matching form. The colour loop lerps
+  three bytes and copies the fourth, so the rain `0xFF` shape is not
+  this function. The only call is after the loop and its delay is a
+  spill, so checklist item 22 has no for-init to fill. No per-file
+  flags.
+- `func_overlay_079_F0000FA0_18CDF40` stays 143 masked of 184, size
+  delta 0, frame `0x98`, first masked mismatch `+0x3C`. The matched
+  overlay 26 plane callback is the wrong else: this target slides with
+  arctan, and that sibling copies the hit point. A 144-cell product of
+  the difference floored at 177 masked, size delta +12, with no cell at
+  delta 0. Splitting one product is byte-identical. Dropping `volatile`
+  on the plane constant scores 144, one word worse. The two `0.01f`
+  pool slots are distinct addresses. The relocation count is 13, not
+  the old call-only count of 5: three `sqrtf`, `Arctanf`,
+  `func_8002A8BC`, and four local pairs. The only flag is
+  `-Wab,-r4300_mul`.
 
 ## The arithmetic
 
@@ -76,137 +88,81 @@ resolved 741,548 / 943,640 = 78.58%
 queue 134 functions / 186,904 bytes
 ```
 
-`gmake progress` printed `resolved: 741548 / 943640 whole-program text
-(78.58%)`. The ranking snapshot printed 134 queued identities and
-186,904 bytes. The gap is `754,912 - 741,548`.
+`gmake progress` printed `functions: 1291 matched / 1460 total (88.42%)`
+and `resolved: 741548 / 943640 whole-program text (78.58%)`. The ranking
+snapshot printed 134 queued identities and 186,904 bytes. The gap is
+`754,912 - 741,548`. The matched-byte total is the same as before this
+wave: every attempt is still `NON_MATCHING`. The integration verify
+printed `OK build/mickey.us.z64 matches the expected US ROM hash`
+(`507341c0a40ca3e9a7cee969b396ee53facfb548`).
 
-What is left is still reconstruction. The ranking's closest rows under
-20 masked words are the plateaus and parked functions named below, not
-a fresh near-match.
+## Tool gaps worth recording
+
+None of these blocked a proof. They are why a lane's first printed row
+disagreed with the score it was actually judging.
+
+- `tools/fast_score.py --diff` skips `lui` and `jal` rows, so the first
+  printed line can be later than the masked first mismatch.
+  `fast_score` also does not print the frame or the relocation count.
+- `tools/shape_lint.py` misses a typed declaration and an empty `if`.
+  Its extractor starts at a forward declaration, so the first hits in
+  `weather_tail.c` belong to the matched `func_8003C770`.
+- `tools/shape_product.py` ignores a bare `#else`, treats only `==` and
+  `!=` as axis values, reports the floor without naming which cell
+  produced it, and does not print an opcode census. One spelling in the
+  overlay 48 product never became a value and was not scored.
+- `tools/overlay_tables.py --json` prints module headers. Per-site
+  records come from `read_module_relocations`, which has no overlay
+  filter.
+- `tools/insertion_pairs.py` attributes a one-sided word to the nearest
+  source line, which does not prove that expression owns the
+  instruction. Its ownership check fails when the candidate object sits
+  outside the translation unit. It was not re-run after the
+  load-records adoption.
+- Stock `uopt -Wo,-zdbug:2` aborts in `wrapper_ecvt` and does not print
+  a forbidden mask. The instrumented compiler printed the `v0`–`a3`
+  mask when `CDX_LOG`, `CDX_OUT`, and `CDX_PROC` were set.
+
+A cold `gmake -j2` in a fresh lane failed at link until
+`gmake overlay-syms`. That trap is already in `CLAUDE.md`.
 
 ## Next concrete action
 
-Do not reopen this wave's seven plateaus, the parked allocator set, R8,
-`func_80028FCC`, or either whale, unless the assignment states a lever
-the shard does not already record. One owner per translation unit.
-Before any other edit on a new target, remove that TU's inherited
+Do not reopen this wave's six untouched plateaus, the parked allocator
+set, R8, `func_80028FCC`, or either whale, unless the assignment states
+a lever the shard does not already record. One owner per translation
+unit. Before any other edit on a new target, remove that TU's inherited
 per-file overrides (`-Wo,-loopunroll,0`, `-Olimit`, `-O2 -g3`) and
 re-score. Leave `-Wab,-r4300_mul` where a matched sibling in the same
 TU already needs it. If the strip unmatches a sibling, restore it.
 
+`func_overlay_101_F000C6E8_18E7F08` and both `NON_MATCHING` functions in
+`font.c` were not assigned. `lane/p65c-o101b` and `lane/p65g-font` each
+have an unmerged plateau commit on those translation units. The DKR
+`render_text_string` shape is already the disclosed organisation of
+`func_8004B1DC`; the open stall there is the packet cursor. Presentation
+A, B, and C stay closed: the shared-shape fold was measured in lane
+`s1-trio`, and this wave's colour-pool pass on D says the `0xC0`
+expression is the wrong value for D.
+
 Then assign, only after `tools/ready_queue.py` and a zero-exit
 `tools/lane_status.py --symbol` `base-only` verdict:
 
-1. `func_overlay_001_F0001D78_184E158` (2,508 bytes, 268 masked, size
-   delta 0). Different TU from the function matched above, same
-   overlay, so the new match is the sibling template. Checklist items
-   6, 7 and 22, in that order.
-2. Overlay 101, one file each: `func_overlay_101_F000C6E8_18E7F08`
-   (1,268 bytes, 106 masked) and the four `BuildPresentation` functions
-   (824, 832, 832 and 832 bytes; masked 130, 136, 136, 136). The
-   previous handoff recorded that one shape fix may close the four.
-   Test that; do not assume it.
-3. `overlay1LoadBuildRecords` (`overlay_001_head.c`, 2,288 bytes, 470
-   masked, size delta -92). Size mismatch: `insertion_pairs.py` before
-   any last-mile edit.
-4. `func_8004B1DC` (font.c, 2,224 bytes, 452 masked, size delta 0). The
-   permitted DKR `render_text_string` shape was recorded untried.
-   Disclose it with a `PROVENANCE` note if it is adopted.
+1. `overlay1LoadBuildRecords`, different lever from the one just spent.
+   The kept body is the per-field clear at 469 masked and 52 bytes
+   short. `insertion_pairs` on that adopted body, then one construct
+   that emits the missing scaled cursor or the unhoisted `0x94` length
+   without a new relocation and without changing the file's line count.
+   Do not repeat the single `0x1BA0..0x1DCC` owner or the null-base
+   length. No colour sweep while the size delta is nonzero.
+2. `func_overlay_001_F0001D78_184E158`, only with a kill that splits the
+   loaded-value web so `a1` is legal, while the commoned address and
+   the existing reloads stay. Do not repeat the typed alias, checklist
+   item 22 at this zero, or a per-region held pointer.
+3. A fresh base-only function from `tools/ready_queue.py`, one per
+   translation unit. Checklist item 22 only where a free assignment
+   follows a call and is not already the delay-slot instruction.
 
 `track.c`, `anim.c`, `weather.c`, `textures_354C8.c`, `overlay_008.c`,
-`overlay_015.c`, and the overlay 58 TU just attempted are free for a
-*different* function only. Do not put a second owner on the function
-this wave plateaued.
-
-## Still do not assign
-
-- R8, `func_overlay_008_F0001294_185EFEC`: 5,036 bytes, 7 masked, size
-  delta 0. Three passes are already in the shard. This wave did not
-  take it. A new lever only.
-- `func_80028FCC`: 108 bytes, 10 masked. Recorded flat. Low value.
-- Parked allocator plateaus: `func_80019AB8`, the overlay 73 draw, `joyRead`,
-  `overlay17AdvanceChain`, `effectboxControl`, overlay 25's update, and
-  the overlay 27 sibling. They stay parked.
-- Whales, one new idea each and nothing repeated: `func_800517E0`
-  (7,232 bytes, 1,782 masked, size delta -332) and
-  `func_overlay_047_F0000B30_1891948` (8,672 bytes, 1,377 masked, size
-  delta +4). Together 15,904 bytes, more than the 13,364-byte gap.
-
-## What worked
-
-Each item is a numbered entry in `docs/LANE_BRIEF.md`. The brief carries
-the measurements.
-
-1. Rewrite the shape; do not polish the plateau.
-2. Fake globals are literals.
-3. Remove inherited per-file overrides first. This wave's overlay 1
-   strip did not move the score; the match was item 22. Still strip
-   first. The flag has hidden matches on other TUs.
-4. `-Wab,-r4300_mul` for the rotated branch-likely float loop.
-5. Data defined in the TU, in ROM order, dropped at POSTPROCESS.
-6. Sibling copy, once one function in the module matches.
-7. Decode `tools/overlay_tables.py --json` before rewriting an m2c body.
-8. Frame homes are declared locals, in declaration order.
-9. Hidden ring draws from a natural narrowing, a store-then-reload, or
-   a cast.
-10. Basic-block count decides saved-register ties (`do { } while (0)`).
-11. Expression-table order: the entry made first wins a tie.
-12. Callee arity and return type are relocation facts.
-13. Constant spelling is pool identity (`/ 2.0f` against `* 0.5f`).
-14. A free assignment after a call fills that call's delay slot. Bind it
-    into the for-init ahead of the induction. Brief item 22.
-
-## Tools, in the order a lane uses them
-
-| tool | what it answers |
-|---|---|
-| `tools/ready_queue.py` | which rows are `base-only` now |
-| `tools/lane_status.py --symbol S` | whether a stale lane holds S |
-| `tools/shape_lint.py S` | inherited artefacts, each with a product axis |
-| `tools/donor_match.py S` | permitted-decomp counterparts; weak on unnamed callees |
-| `tools/overlay_tables.py --json` | which relocation names are one object |
-| `tools/fast_score.py S cand.c --diff` | one candidate, the TU's real flags |
-| `tools/shape_product.py S cand.c --jobs 3` | a `#if SHAPE_axis == n` product |
-| `tools/insertion_pairs.py S` | on a size mismatch, which construct emitted the extra word |
-| `tools/align_symbol.py`, `residual_map.py`, `frame_census.py`, `register_census.py`, `draw_census.py` | residual bucket, window, frame, registers, ring draws |
-| instrumented `uopt` (`CDX_PROC`, `CDX_FORCE`, `CDX_OUT`) | the price of one allocator decision |
-| `tools/finalize_plateau.py` | a checked shard; if it refuses, write the shard by hand and re-measure |
-| `tools/gates.sh` | verify, cleanroom, check-docs, check-tooling; its own exit status |
-| `tools/merge_lane.sh` / `tools/merge_lanes.sh` / `tools/land.sh` | one match lane, then a bank-only batch, then land only a batch that contains a match |
-| `tools/lane_fleet.py` | commits ahead, dirty files |
-
-`gmake -j4` inside a lane. Never `tools/gates.sh --promotion` inside one.
-Never edit the primary checkout while a merge runs. Promotion traps in
-the brief still apply: `--redefine-sym` for every resident callee, no
-shared `D_` name across overlays, `gmake overlay-syms` then a rebuild
-after `extract` and after any `symbol_addrs.us.txt` edit.
-
-## How to run the wave
-
-1. `tools/ready_queue.py --scan 60 --top 20`, then `lane_status` on each
-   chosen symbol. Prefer the four targets under "Next concrete action".
-2. `tools/new_lane.sh <name> campaign/unchain`. One TU per lane.
-   Reconstruction and near-matches go to the stronger model. Sibling-shaped
-   batches are the only work the weaker model has returned matches on;
-   it returned none on allocator plateaus.
-3. Strip inherited overrides, re-score, then the tool order above.
-   Adopt a cell only when `size_delta` shrinks, or masked words shrink
-   at delta 0. Stop on ADR 0018.
-4. `tools/merge_lane.sh` for a lane that matched. `tools/merge_lanes.sh`
-   for a bank-only batch. `tools/land.sh` only when the batch contains
-   an exact match.
-5. Record a new reusable lever in `docs/LANE_BRIEF.md` the day it is
-   measured, without per-function scores, and a generic entry in
-   `docs/ido-learnings.md` when an exact result proved it.
-
-## Known tool gaps, still open
-
-This wave did not need them. They are still worth an hour each.
-
-- `finalize_plateau.py` refuses a plateau block that is not an EOF
-  suffix, and any tree with a dirty ranking.
-- `donor_match.py` is blind when callees are unnamed `func_` symbols.
-- `shape_product.py` needs an explicit `== 0` before a bare `#else` arm
-  becomes a cell.
-- The scoreboard's function count does not move on an overlay
-  promotion. The byte total is the number to quote.
+`overlay_015.c`, and the overlay 58 TU from the previous wave are still
+free for a different function only.

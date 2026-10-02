@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 365804,
-  "nonmatching_overlay_c_bytes": 102800,
+  "matched_overlay_c_bytes": 362688,
+  "nonmatching_overlay_c_bytes": 105916,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4560,
   "bss_bytes": 77680,
@@ -1284,7 +1284,7 @@
      "type": "c",
      "source": "overlays/o002/func_overlay_002_F0001364_185815C",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x1658",
@@ -3187,7 +3187,7 @@
      "type": "c",
      "source": "overlays/o011/func_overlay_011_F00022E8_186AB30",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x2714",
@@ -3757,7 +3757,7 @@
      "type": "c",
      "source": "overlays/o014/func_overlay_014_F000013C_186FA14",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x31C",
@@ -4521,7 +4521,7 @@
      "type": "c",
      "source": "overlays/o017/overlay17CalculateEndpoints",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x318",
@@ -8522,7 +8522,7 @@
      "type": "c",
      "source": "overlays/o040/overlay40BuildFrame",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x2E4",
@@ -10609,7 +10609,7 @@
      "type": "c",
      "source": "overlays/o051/overlay_051",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x8AC",
@@ -10701,7 +10701,33 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 61
-   }
+   },
+   "mixed_tu_exact_c_ranges": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x80",
+     "size": "0x80",
+     "label": "overlay51Initialize",
+     "source": "overlays/o051/overlay_051",
+     "evidence": "canonical mixed-TU object and linked bytes exact"
+    },
+    {
+     "offset": "0x80",
+     "end_offset": "0xD0",
+     "size": "0x50",
+     "label": "overlay51PatchIndices",
+     "source": "overlays/o051/overlay_051",
+     "evidence": "canonical mixed-TU object and linked bytes exact"
+    },
+    {
+     "offset": "0x858",
+     "end_offset": "0x8AC",
+     "size": "0x54",
+     "label": "overlay51ReleaseState",
+     "source": "overlays/o051/overlay_051",
+     "evidence": "canonical mixed-TU object and linked bytes exact"
+    }
+   ]
   },
   {
    "overlay": 52,

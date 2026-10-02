@@ -1546,13 +1546,13 @@
       "tu": "overlays/o101",
       "size_bytes": 1172,
       "objdiff_match_pct": null,
-      "differing_words": 263,
-      "first_mismatch_offset": 52,
-      "relocation_masked_differing_words": 263,
-      "relocation_masked_first_mismatch_offset": 52,
+      "differing_words": 257,
+      "first_mismatch_offset": 68,
+      "relocation_masked_differing_words": 257,
+      "relocation_masked_first_mismatch_offset": 68,
       "size_delta": -8,
       "category": "size-mismatch",
-      "source_context_sha256": "wTrF.E6Q0.HaNu.h3i-.BVdU.kLi-.xtO7.vngt.i1Nk.gc6j.Y5U"
+      "source_context_sha256": "gDGe.IED9.qHQE.QzZP.mD69.Blif.08Fg.1Upb.kMUV.lIbJ.uEg"
     },
     {
       "name": "func_8002FB34",

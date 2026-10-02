@@ -1915,25 +1915,38 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o008/overlay_008/func_overlay_008_F00034A0_18611F8.s")
 #endif
 
-/* NON_MATCHING: exact size and frame, 240 masked words (2026-10-02).  The
+/* NON_MATCHING: exact size and frame, 126 masked words (2026-10-02).  The
  * tables are real data symbols (D_2188, D_21C8, D_2208, D_2220), the float
  * constants are this function's literal pool, every step loop is
  * `remaining = steps; while (remaining--)`, the random draw precedes the
  * re-read of D_0[mode], the relative trig calls take the unclamped table
- * angle, the position sums are separate locals from the trig products, and
- * the locals follow the shipped frame order.  Left: register colouring
- * (update in f0, phase in f14, randomMode in a2) and the D_2220 load's
- * schedule.  GLOBAL_ASM stays canonical. */
+ * angle, and the position sums are separate locals from the trig products.
+ *
+ * One float local carries the phase, the velocity reduction, the blend
+ * constant, the +-10 height target and the tilt target: uopt colours a
+ * symbol as one web, the union spans the trig calls, so it is denied f0 and
+ * takes f14 throughout, as shipped (two pads keep its old cells).  The tail
+ * is the matched overlay 9 sibling's: `posX += tilt * trig; posZ -= ...;`
+ * then three plain sums, and `tilt *= (f32)magnitude * 0.035f`.  The sample
+ * call returns nothing, so update is offered f0 after it.
+ *
+ * Left: the integer webs of the table lookup (randomMode a2, tableIndex a0,
+ * their sum in v1, no shared `randomMode * 4`), the `steps` home (0x34
+ * shipped, a compiler temporary at 0x2C here) and the counter reload after
+ * the approach loop.  The gate word read as `O8_S32(0)` is a resident symbol
+ * (records at +0x2CC/+0x3C4): declared as one, its high half is hoisted
+ * after the approach loop as shipped, at +4 bytes until that reload moves.
+ * GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
                                        O8P42A8Owner *owner, f32 update) {
     O8P42A8State *state;
     s32 mode;
-    f32 phase;
+    f32 pad1;
     f32 smoothing;
     s32 tableAngle;
     s32 targetAngle;
-    f32 targetTilt;
+    f32 pad2;
     f32 posX;
     f32 posY;
     f32 posZ;
@@ -1986,22 +1999,22 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     tableAngle = D_2208[randomMode];
     targetMotion = D_2188[(randomMode * 4) + tableIndex];
     targetHeight = D_21C8[(randomMode * 4) + tableIndex];
-    phase = D_2210[mode];
+    smoothing = D_2210[mode];
     if ((state->lowering349 == 0) && (state->lock191 == 0)) {
-        phase += 0.08f * update;
-        if (phase > 1.0f) {
-            phase = 1.0f;
+        smoothing += 0.08f * update;
+        if (smoothing > 1.0f) {
+            smoothing = 1.0f;
         }
     } else {
-        phase -= 0.125f * update;
-        if (phase < 0.0f) {
-            phase = 0.0f;
+        smoothing -= 0.125f * update;
+        if (smoothing < 0.0f) {
+            smoothing = 0.0f;
         }
     }
-    D_2210[mode] = phase;
+    D_2210[mode] = smoothing;
 
     state->directionDC = 0x8000 - state->angleF0;
-    targetHeight += phase * D_2220[randomMode];
+    targetHeight += smoothing * D_2220[randomMode];
     acceleration = state->accelerationE4;
     steering = state->steeringE0;
     targetAngle = tableAngle - ((owner->angle2 * 3) >> 2);
@@ -2070,14 +2083,14 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     baseZ = lateral * secondTrig;
 
     if (state->sign102 == 0) {
-        targetTilt = -10.0f;
+        smoothing = -10.0f;
     } else {
-        targetTilt = 10.0f;
+        smoothing = 10.0f;
     }
     remaining = steps;
     while (remaining--) {
         state->heightE8 +=
-            (targetTilt - state->heightE8) * 0.0915f;
+            (smoothing - state->heightE8) * 0.0915f;
     }
 
     posX = owner->xC + (state->offset14 * state->heightE8);
@@ -2087,31 +2100,30 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     secondTrig = o8P42A8TrigBReloc(state->directionDC + 0x4000);
 
     if (state->modifier100 != 0) {
-        targetTilt = (f32)(state->modifier100 * -12);
+        smoothing = (f32)(state->modifier100 * -12);
     } else if ((state->flags41C & 0x8000) != 0) {
-        targetTilt = state->velocity4;
-        if (targetTilt < 0.0f) {
-            targetTilt = -targetTilt;
+        smoothing = state->velocity4;
+        if (smoothing < 0.0f) {
+            smoothing = -smoothing;
         }
-        if (targetTilt > 1.0f) {
-            targetTilt = 1.0f;
+        if (smoothing > 1.0f) {
+            smoothing = 1.0f;
         }
-        targetTilt = targetTilt * (f32)state->magnitude108 *
-                     0.035f;
+        smoothing *= (f32)state->magnitude108 * 0.035f;
     } else {
-        targetTilt = 0.0f;
+        smoothing = 0.0f;
     }
 
     remaining = steps;
     while (remaining--) {
-        state->tiltEC +=
-            (targetTilt - state->tiltEC) * 0.0435f;
+        state->tiltEC += (smoothing - state->tiltEC) * 0.0435f;
     }
 
-    targetTilt = state->tiltEC;
-    actor->xC = posX + (targetTilt * firstTrig) + baseX;
+    posX += state->tiltEC * firstTrig;
+    posZ -= state->tiltEC * secondTrig;
+    actor->xC = posX + baseX;
     actor->y10 = posY + baseY;
-    actor->z14 = posZ - (targetTilt * secondTrig) + baseZ;
+    actor->z14 = posZ + baseZ;
     actor->angle0 = state->directionDC;
 
     remaining = steps;
@@ -2356,11 +2368,11 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000
- * score: 240/447 words
+ * score: 126/447 words
  * frame: 0xA0
  * relocations: 40
- * first-mismatch: +0x44
- * summary: Real tables, literal pool, while (remaining--) loops, shipped frame order: 240 at delta 0; left is register colouring.
+ * first-mismatch: +0x11C
+ * summary: One float carrier (phase to tilt target) on f14, sibling tail, void sample call: 240 to 126. Left: table-lookup int webs, steps home, counter reload.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
  */
 

@@ -3912,6 +3912,8 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
     Objects09414StaticEntry *staticEntry;
     Objects09414Entry *entry;
     Objects09414Vector *vector;
+    s32 pad1;
+    s32 pad2;
 
     object = (Objects09414Object *)arg3;
     resource = object->unk64;
@@ -3935,11 +3937,10 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
     data = object->unk40;
     if (data->unk1E[object->unk93] == 0) {
         count = 0;
-        for (i = 0; i < 4; i++) {
-            staticEntry = (Objects09414StaticEntry *)
-                ((u8 *)resource + 0x34C + (i * 0xC));
-            if ((staticEntry->unk4 != 0) && (staticEntry->unk8 != NULL)) {
-                cone = staticEntry->unk8;
+        staticEntry = (Objects09414StaticEntry *)((u8 *)resource + 0x34C);
+        for (i = 0; i < 4; i++, staticEntry++) {
+            cone = staticEntry->unk8;
+            if ((staticEntry->unk4 != 0) && (cone != NULL)) {
                 vector = &root->unk40[staticEntry->unk2];
                 depths[count] = camGetProjZ(vector->x, vector->y, vector->z);
                 cones[count] = cone;
@@ -5375,10 +5376,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414
- * score: 398 differing words
+ * score: 323 differing words
  * frame: 0x198
  * relocations: 11
- * first-mismatch: +0x0
- * summary: Workbench structure-mismatch: structure-buckets. Next: authenticate the default-mode lifetime and sort-prefix source before further scheduling work.
+ * first-mismatch: +0x40
+ * summary: Index plus entry-pointer static loop, cone read before the test, two s32 pads: 323 at +4, frame exact. Next: dynamic loop, type dispatch.
  * PLATEAU-HANDOFF:func_80009414:end
  */

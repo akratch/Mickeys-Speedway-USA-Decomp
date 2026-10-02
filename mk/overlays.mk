@@ -2851,8 +2851,15 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58FinalizePackedStatus.c.o: POSTPRO
 		--redefine-sym func_8003A680=func_8003A680_o058Reloc $@
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58EnsureResource.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F0000000_18AF1E8.c.o: CFLAGS += -Wo,-loopunroll,0
+# The race-order update is instruction-exact. Its four resident callees and
+# overlay 56's time splitter go through the generated surface entries.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F0000000_18AF1E8.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym func_80028F54=func_80028F54_o058Reloc \
+		--redefine-sym initColourCycle=initColourCycle_o058Reloc \
+		--redefine-sym joyResetMap=joyResetMap_o058Reloc \
+		--redefine-sym loadFrontEndList=loadFrontEndList_o058Reloc \
+		--redefine-sym overlay56SplitTime=overlay58Overlay56SplitTimeReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x5C0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xCF4

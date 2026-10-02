@@ -2,11 +2,21 @@
 ### `func_overlay_058_F0000000_18AF1E8` plateau handoff
 
 - source: `src/overlays/o058/func_overlay_058_F0000000_18AF1E8.c`
-- score: 295/368 words
-- frame: 0x78
-- relocations: 95
-- first mismatch: +0x0
-- summary: Target block solved at 52 bytes, thirteen declarations; six carriers must merge and the surviving positions are pinned.
+- score: 0/368 words, promoted
+- frame: 0x60
+- relocations: 101
+- first mismatch: none
+- summary: Matched. Rewritten in the matched whale's shape (indexed tables, one symbol per object, count read at each test), 295 to 77; the gap clamp reusing the swap flag instead of its own local took the last 77.
+
+## 2026-10-02 (lane x-o058): matched, 295 to 0, promoted
+
+The inherited candidate was an m2c shape: hand-walked cursors over alias extern names (D_7C, D_94, D_AC, D_C4 for element one of D_78, D_90, D_A8, D_C0, and a separate end symbol for the player-slot table, which the relocation table shows is the same symbol at addend 0xD0), nineteen declared locals, and `register` everywhere. Rewritten from the listing in the whale's vocabulary -- every table indexed by `i`, `D_8007BEF8_o058Reloc` read at each loop test, the whale's race-entry type so the byte at +0x1C is `counters[class]++`, a four-iteration indexed loop for the player slots -- the first compile measured 77 masked at size delta 0, frame 0x68 against 0x60.
+
+The 77 were one local. A separate `gap` for the rank-gap clamp costs two frame cells and leaves initColourCycle's constant 10 at the call; with the clamp written into `swapped` (dead after the rank sort) the frame is 0x60, uopt hoists the 10 into a1 ahead of the gap loop, and the gap and table base take a2 and v1 as shipped. 0 masked, 19 relocation-only words, delta 0.
+
+So the closure above ("six carriers must merge and the surviving positions are pinned") was a statement about the inherited shape: the natural source declares ten locals, not thirteen, and no carrier merge was needed beyond the one reuse. `-Wo,-loopunroll,0` was not load-bearing (the object is byte-identical with and without it) and is removed. Promotion proof: 368 words, frame 0x60, 101 of 101 relocations, identity static. Resident calls and overlay 56's time splitter are renamed on this object's POSTPROCESS.
+
+Summary before this match: Target block solved at 52 bytes, thirteen declarations; six carriers must merge and the surviving positions are pinned.
 
 ## 2026-09-11 the target's block solved: thirteen declarations, positions pinned (lane `lane/o11-frames`)
 

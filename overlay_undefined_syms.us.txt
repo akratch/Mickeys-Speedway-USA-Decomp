@@ -2262,10 +2262,43 @@ gOverlay55Offsets = 0x000000e0;
 overlay55QueryModeReloc = 0xf0000000;
 
 /* overlay 55: func_overlay_055_F000031C_18A1E34.c.o */
-D_304 = 0x00000304;
-D_308 = 0x00000308;
-D_A0 = 0x000000a0;
-D_F4 = 0x000000f4;
+D_8007BEF4_o055Reloc = 0x00000000;
+D_8007C180_o055Reloc = 0x00000000;
+D_800C947C_o055Reloc = 0x00000000;
+D_800D3140_o055Reloc = 0x00000000;
+D_800D3144_o055Reloc = 0x00000000;
+D_800D31C8_o055Reloc = 0x00000000;
+D_800D3550_o055Reloc = 0x00000000;
+camSetNo_o055Reloc = 0xf0000000;
+camSetScissor_o055Reloc = 0xf0000000;
+camStandardOrtho_o055Reloc = 0xf0000000;
+ext_o1_83e0_o055Reloc = 0x00000000;
+frontGetScreenMode_o055Reloc = 0xf0000000;
+func_800005CC_o055Reloc = 0xf0000000;
+func_800016EC_o055Reloc = 0xf0000000;
+func_80005750_o055Reloc = 0xf0000000;
+func_80028F54_o055Reloc = 0xf0000000;
+func_800290A0_o055Reloc = 0xf0000000;
+func_8002F618_o055Reloc = 0xf0000000;
+func_8002FB34_o055Reloc = 0xf0000000;
+func_80034920_o055Reloc = 0xf0000000;
+func_80037414_o055Reloc = 0xf0000000;
+func_80039E34_o055Reloc = 0xf0000000;
+func_8003A590_o055Reloc = 0xf0000000;
+gOverlay55BlinkCounter = 0x000000f4;
+gOverlay55ClockDigits = 0x00000280;
+gOverlay55HudHeight = 0x00000308;
+gOverlay55IconAlpha = 0x000000f8;
+gOverlay55Items = 0x00000304;
+gOverlay55TimeDigits = 0x00000000;
+gOverlay55TimeTemplate = 0x00000020;
+gOverlay55TransitionDone = 0x000000f0;
+levelGetLevel_o055Reloc = 0xf0000000;
+mainChangeCameras_o055Reloc = 0xf0000000;
+mainChangeLevel_o055Reloc = 0xf0000000;
+mainGetMode_o055Reloc = 0xf0000000;
+overlay56SplitTime_o055Reloc = 0xf0000000;
+viGetCurrentSize_o055Reloc = 0xf0000000;
 
 /* overlay 55: overlay55ReleaseAll.c.o */
 gOverlay55ResourceA = 0x00000000;
@@ -4091,6 +4124,9 @@ overlay99SpawnEntryReloc = 0xf0000000;
 
 /* overlay 99: overlay99ProjectVector.c.o */
 overlay99SqrtReloc = 0xf0000000;
+
+/* overlay 99: overlay99ApplySegment.c.o */
+D_A0 = 0x000000a0;
 
 /* overlay 99: overlay99BuildHeightGrid.c.o */
 gOverlay99Arg4 = 0x000000a4;

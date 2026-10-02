@@ -2,11 +2,11 @@
 ### `func_overlay_055_F000031C_18A1E34` plateau handoff
 
 - source: `src/overlays/o055/func_overlay_055_F000031C_18A1E34.c`
-- score: 57 differing words
+- score: 0/581 words, promoted
 - frame: 0xE0
 - relocations: 102
-- first mismatch: +0x2C0
-- summary: 375 at +4 to 57 at delta 0: rewritten as overlay 53's matched sibling; clock-row spill cell and item reload placement open
+- first mismatch: none
+- summary: Matched. Clock address taken after the digit row, item read once at the icon join, the 53 arm's coordinates masked, arm stores and packet words one line each.
 
 Summary before this remeasure: V0: 575/581 words, exact 0xE0 frame, 445 raw diffs. Relocs 90 versus 102; 34 sites and 20 identities align. Display/transition lifetime web persists.
 
@@ -81,4 +81,35 @@ Open, 57 words, aligned 31 naming, 4 immediate, 17 structural:
   at the use, and as1 fills that delay slot with D_800D31C8's high half
   instead. Everything after +0x72C (the item test, the command stores,
   the transition tail) is that one-word shift and its ring phase.
+### Matched, 2026-10-02 (lane/m-o055)
+
+57 masked at delta 0 became 0, promoted. Every edit was measured as a cell of
+a `tools/shape_product.py` product; numbers are masked words, all at delta 0.
+
+- The clock row's spill cell (0x5C against 0x60): `clock =
+  gOverlay55ClockDigits[player]` as a local assigned right after `digits`, in
+  place of one unused pad (any declared local takes a frame cell here, so each
+  new local replaces a pad). 57 to 55 alone. Assigned before `digits`: 67;
+  just before the clock call: 57.
+- The item: `item = gOverlay55Items[player]` read once at the icon's join
+  (before the x/y stores) and used for both the 53 test and the resource
+  index, in place of a second pad. 57 to 45 alone, 43 with the clock local.
+  The reload of the spilled item pointer then lands in the screen-mode call's
+  delay slot as shipped. Read right after frontGetScreenMode (before the
+  branch): 87 at best; through an `&gOverlay55Items[player]` pointer local
+  assigned after the call: 64 at best.
+- Join stores x before y, and unk08 before unk04: 43 to 39.
+- The 53 arm's two coordinates masked, `(iconX - 7) & 0xFFFF` (one ring draw
+  each that the store deletes, checklist 16): 39 to 6. Casts `(s16)` instead:
+  39/40; `transform.x -= 7`: 40.
+- The arm's two stores (x first) on one source line, and the prim-colour
+  packet's w0/w1 on one line (L59, as a macro expansion would place them):
+  6 to 0. Each alone: 2. `gDPSetPrimColor` itself adds a block-local frame
+  cell (13 at best), so the written-out pair stays.
+
+Promotion: mk/overlays.mk renames the resident and overlay 1/56 names to the
+`_o055Reloc` surface (overlay56SplitTime was UNRESOLVED otherwise, and the
+bare D_800 names would have become global value lines) and externalizes the
+0.66f one-constant `.rodata` pool by digest (without it the pool linked into
+the overlay and shifted the ROM).
 <!-- plateau-handoff:func_overlay_055_F000031C_18A1E34:end -->

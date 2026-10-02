@@ -2813,8 +2813,47 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55Initialize.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x13C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/overlay55ReleaseAll.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x38
+# Matched C. The resident and overlay 1/56 names it reads and calls are
+# renamed to per-module placeholders, as for overlay 53's sibling, so the
+# generated relocation surface values them from this module's stored addends.
+# The icon scale 0.66f is a literal whose one-constant pool duplicates the
+# retained overlay data (the shipped hi/lo pair stores addend zero): assert the
+# pool by digest and bind the pair to the loader-owned base.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/func_overlay_055_F000031C_18A1E34.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x914
+	$(OBJCOPY) \
+		--redefine-sym camSetNo=camSetNo_o055Reloc \
+		--redefine-sym camSetScissor=camSetScissor_o055Reloc \
+		--redefine-sym camStandardOrtho=camStandardOrtho_o055Reloc \
+		--redefine-sym frontGetScreenMode=frontGetScreenMode_o055Reloc \
+		--redefine-sym func_800005CC=func_800005CC_o055Reloc \
+		--redefine-sym func_800016EC=func_800016EC_o055Reloc \
+		--redefine-sym func_80005750=func_80005750_o055Reloc \
+		--redefine-sym func_80028F54=func_80028F54_o055Reloc \
+		--redefine-sym func_800290A0=func_800290A0_o055Reloc \
+		--redefine-sym func_8002F618=func_8002F618_o055Reloc \
+		--redefine-sym func_8002FB34=func_8002FB34_o055Reloc \
+		--redefine-sym func_80034920=func_80034920_o055Reloc \
+		--redefine-sym func_80037414=func_80037414_o055Reloc \
+		--redefine-sym func_80039E34=func_80039E34_o055Reloc \
+		--redefine-sym func_8003A590=func_8003A590_o055Reloc \
+		--redefine-sym levelGetLevel=levelGetLevel_o055Reloc \
+		--redefine-sym mainChangeCameras=mainChangeCameras_o055Reloc \
+		--redefine-sym mainChangeLevel=mainChangeLevel_o055Reloc \
+		--redefine-sym mainGetMode=mainGetMode_o055Reloc \
+		--redefine-sym viGetCurrentSize=viGetCurrentSize_o055Reloc \
+		--redefine-sym overlay56SplitTime=overlay56SplitTime_o055Reloc \
+		--redefine-sym D_8007BEF4=D_8007BEF4_o055Reloc \
+		--redefine-sym D_8007C180=D_8007C180_o055Reloc \
+		--redefine-sym D_800C947C=D_800C947C_o055Reloc \
+		--redefine-sym D_800D3140=D_800D3140_o055Reloc \
+		--redefine-sym D_800D3144=D_800D3144_o055Reloc \
+		--redefine-sym D_800D31C8=D_800D31C8_o055Reloc \
+		--redefine-sym D_800D3550=D_800D3550_o055Reloc \
+		--redefine-sym ext_o1_83e0=ext_o1_83e0_o055Reloc \
+		$@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x914 && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:d131bb7de7509c98fc3533790f960348a16e2e461e7d1f5ffff1cd58ae2243e0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/func_overlay_055_F000031C_18A1E34.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/overlay58ReleaseResources.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x3C

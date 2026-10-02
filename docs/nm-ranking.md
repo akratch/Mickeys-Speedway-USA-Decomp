@@ -271,15 +271,16 @@ Relocation-masked mismatch evidence covers **131 / 131** resolved rows. The raw 
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `other` | 82 | 62.6% |
+| `schedule-only` | 1 | 0.8% |
+| `other` | 81 | 61.8% |
 | `size-mismatch` | 49 | 37.4% |
 
 ### Differing-word thresholds
 
 | Threshold | Count |
 |---|---:|
-| raw `differing_words <= 5` | 0 |
-| relocation-masked `differing_words <= 5` | 0 |
+| raw `differing_words <= 5` | 1 |
+| relocation-masked `differing_words <= 5` | 1 |
 | raw `differing_words <= 10` | 3 |
 | relocation-masked `differing_words <= 10` | 4 |
 | raw `differing_words <= 20` | 5 |
@@ -293,7 +294,7 @@ units remain distinct.
 
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | `src/main/textures_354C8.c` | `func_800355A0` | `main` | `other` | 1,076 | 7 | 7 | 72 | 72 | 0 | — |
+| 1 | `src/main/textures_354C8.c` | `func_800355A0` | `main` | `schedule-only` | 1,076 | 2 | 2 | 72 | 72 | 0 | — |
 | 2 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0001294_185EFEC` | `o008` | `other` | 5,036 | 60 | 7 | 112 | 216 | 0 | — |
 | 3 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 8 | 8 | 424 | 424 | 0 | — |
 | 4 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |

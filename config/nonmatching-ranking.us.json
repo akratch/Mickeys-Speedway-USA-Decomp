@@ -16,13 +16,13 @@
       "tu": "main",
       "size_bytes": 1076,
       "objdiff_match_pct": null,
-      "differing_words": 7,
+      "differing_words": 2,
       "first_mismatch_offset": 72,
-      "relocation_masked_differing_words": 7,
+      "relocation_masked_differing_words": 2,
       "relocation_masked_first_mismatch_offset": 72,
       "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "nDNo.7U6G.GJpS.UqbJ.fWAL.IgFF.-ryu.XnBb.9HUe.3tbQ.4PU"
+      "category": "schedule-only",
+      "source_context_sha256": "DT97.kyBB.VuMo.RBSj.c2Nx.r8A7.daeS.VYuu.peB4.wtfe.LL8"
     },
     {
       "name": "func_overlay_008_F0001294_185EFEC",
@@ -742,7 +742,7 @@
       "relocation_masked_first_mismatch_offset": 36,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "3hNf.2ow9.Sbay.QQUs.ZNBx.ehTg.PPK_.73TS.NNpp.1kxM.Nzw"
+      "source_context_sha256": "LH6e.Hjom.ZNk0.SuNl.rn81.RFTP.sKEY.s09Q.VOdQ.F3Qt.jnY"
     },
     {
       "name": "overlay20UpdateGrid",

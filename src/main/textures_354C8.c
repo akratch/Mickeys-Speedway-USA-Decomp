@@ -548,9 +548,12 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
  * D_800D2FF8[spriteId] and [spriteId + 1], and the triangle pointer is
  * newSprite + triangleOffset (the target reloads that home). The two `+=`
  * chains give the target's operand order for the display-list and texture
- * offsets. Left: vertexOffset and commandOffset take a2/a3 where the target
- * has a3/t0 (forced: 7 -> 4), their addu operand order, and the cacheFull
- * clear the target schedules into the bounds test's delay slot. */
+ * offsets. 7 -> 2: the vertex, texture-pointer and command sizes are written
+ * with sizeof, which makes those terms unsigned; the unsigned terms are new
+ * IR names, and they fix vertexOffset/commandOffset's registers (a3/t0) and
+ * their addu operand order together. Left, 2 words: as1 fills the bounds
+ * test's delay slot with the hoisted D_800D2FF8 high half where the target
+ * has the cacheFull clear. */
 Sprite *func_800355A0(s32 spriteId, s32 flags) {
     Sprite *refSprite;
     Sprite *newSprite;
@@ -604,14 +607,14 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
         i = spriteAsset->numberOfFrames;
     }
 
-    triangleOffset = (s32)align16((u8 *)(spriteAsset->numberOfFrames * 4 + 0x18));
+    triangleOffset = (s32)align16((u8 *)(spriteAsset->numberOfFrames * sizeof(Gfx *) + 0x18));
     displayListOffset = triangleOffset;
-    displayListOffset += ((i * 2) * 16);
+    displayListOffset += ((i * 2) * sizeof(SpriteTriangle));
     textureOffset = displayListOffset;
-    textureOffset += ((i * 4) * 8);
+    textureOffset += ((i * 4) * sizeof(Gfx));
     textureOffset += (spriteAsset->numberOfFrames * sizeof(Gfx));
-    vertexOffset = textureOffset + (i * 4);
-    commandOffset = vertexOffset + ((i * 4) * 10);
+    vertexOffset = textureOffset + (i * sizeof(TextureFrameHeader *));
+    commandOffset = vertexOffset + ((i * 4) * sizeof(SpriteVertex));
     size = (s32)align16((u8 *)(commandOffset + (i * 2)));
     newSprite = func_8002B314(size, 0x8E);
     if (newSprite == NULL) {
@@ -682,11 +685,11 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
 }
 /* PLATEAU-HANDOFF:func_800355A0:start
  * symbol: func_800355A0
- * score: 7/269 words
+ * score: 2/269 words
  * frame: 0x68
  * relocations: 44
  * first-mismatch: +0x48
- * summary: 105 to 7: direct cache and ROM-table reads, triangleOffset reloaded, += offset chains. Left: vertex/command offsets a2/a3 vs a3/t0 and the cacheFull delay slot
+ * summary: 7 to 2: sizeof-typed (unsigned) vertex, texture and command sizes fix the a3/t0 offsets. Left: as1 fills the bounds-test delay slot with the D_800D2FF8 high half
  * PLATEAU-HANDOFF:func_800355A0:end
  */
 #else

@@ -388,7 +388,7 @@ void func_80037BF4(void) {
 }
 extern u8 D_7BE40[];
 extern s32 D_800D2FAC;
-extern void camStandardPersp(Gfx **, Mtx **);
+extern void camStandardPersp(Gfx **, Mtx **, MainVertex **);
 extern void func_80034920(Gfx **);
 extern u8 D_8007BEC0[];
 extern void viGetCurrentSize(s32 *, s32 *);
@@ -403,121 +403,114 @@ extern void func_80037BF4(void);
         *(pkt) = _cmd + 1; \
     } while (0)
 
-/* Workbench verdict: structure-mismatch, 314 differing words; target 327/candidate 311 words. */
-/* First mismatch: +0x0; both frames now 0xE0. */
-/* Structural gap: uopt hoists this loop's opcode and address constants into
- * callee-saved registers where the ROM re-materialises them inside the loop. */
+/* Draws the backdrop as a 16x8 grid of texture tiles, each loaded with the
+ * six-packet tile load and drawn as two vertex rows and four triangles.
+ * 2026-10-02 (lane w2-front): rewritten from the listing with one packet
+ * macro per command on (*gfx)++. 314 words at -64 bytes -> 302 at delta 0.
+ * camStandardPersp takes three arguments (the target passes a2 through
+ * untouched), which is what moves gfx from a2 to a3. The physical vertex
+ * address is a local, so each packet loads the buffer index once. The open
+ * residual is in docs/matching-triage-handoffs/func_80037C74.md. */
 #ifdef NON_MATCHING
-void func_80037C74(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
-    s32 spD8;
-    s32 spB8;
-    s32 sp40;
-    s32 temp_s3;
-    s32 temp_t0;
-    s32 temp_v1;
-    s32 temp_v1_2;
-    s32 var_a0;
-    s32 var_a2;
-    s32 var_ra;
-    s32 var_s0;
-    s32 var_s1;
-    s32 var_t2;
-    s32 var_t3;
-    s32 var_t4;
-    s32 var_v1;
+#define _SHIFTL(v, s, w) ((u32) (((u32) (v) & ((0x01 << (w)) - 1)) << (s)))
+#define FE_PKT(pkt, word0, word1) \
+    { \
+        Gfx *_g = (Gfx *) (pkt); \
+        _g->words.w0 = (word0); \
+        _g->words.w1 = (word1); \
+    }
+#define FE_LOADTILE(pkt, uls, ult, lrs, lrt) \
+    FE_PKT(pkt, 0xF4000000 | _SHIFTL((uls) << 2, 12, 12) | _SHIFTL((ult) << 2, 0, 12), \
+           _SHIFTL(7, 24, 3) | _SHIFTL((lrs) << 2, 12, 12) | _SHIFTL((lrt) << 2, 0, 12))
+#define FE_SETTILE(pkt, line, word1) FE_PKT(pkt, 0xF5100000 | _SHIFTL(line, 9, 9), word1)
+#define FE_TILESIZE(pkt, lrs, lrt) \
+    FE_PKT(pkt, 0xF2000000, _SHIFTL((lrs) << 2, 12, 12) | _SHIFTL((lrt) << 2, 0, 12))
+#define FE_VERTEX(pkt, v, n, v0) \
+    FE_PKT(pkt, 0x04000000 | _SHIFTL(((n) << 3) | ((u32) (v) & 6), 16, 8) | ((v0) << 9) | ((n) * 10 + 8), \
+           (u32) (v))
+#define OS_K0_TO_PHYSICAL(x) (u32) (((char *) (x) - 0x80000000))
+
+void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
+    s32 row;
+    s32 col;
+    s32 x;
+    s32 y;
+    s32 uls;
+    s32 ult;
+    s32 lrs;
+    s32 lrt;
+    s32 colour;
+    s32 rowColour;
+    s32 width;
+    u32 v;
 
     if (D_8007BE80 != 0) {
-        camStandardPersp(arg0, arg1);
-        FRONTEND_EMIT(arg0, 0xE7000000, 0);
-        FRONTEND_EMIT(arg0, 0xED000000, 0x5003C0);
-        FRONTEND_EMIT(arg0, 0xEF30000F, 0);
-        FRONTEND_EMIT(arg0, 0xF7000000, 0x10001);
-        FRONTEND_EMIT(arg0, 0xF64FC3BC, 0);
-        FRONTEND_EMIT(arg0, 0xE7000000, 0);
-        FRONTEND_EMIT(arg0, 0xB6000000, 0x10001);
-        var_a0 = 0;
-        if ((D_8007BE90 == 2) || (D_8007BE90 == 3)) {
-            FRONTEND_EMIT(arg0, 0xFC357E04, 0x1F10F3FF);
-            FRONTEND_EMIT(arg0, 0xEF182C0F, 0x0F0A4000);
+        camStandardPersp(gfx, mtx, vtx);
+        FE_PKT((*gfx)++, 0xE7000000, 0);
+        FE_PKT((*gfx)++, 0xED000000, 0x5003C0);
+        FE_PKT((*gfx)++, 0xEF30000F, 0);
+        FE_PKT((*gfx)++, 0xF7000000, 0x10001);
+        FE_PKT((*gfx)++, 0xF64FC3BC, 0);
+        FE_PKT((*gfx)++, 0xE7000000, 0);
+        FE_PKT((*gfx)++, 0xB6000000, 0x10001);
+        if (D_8007BE90 == 2 || D_8007BE90 == 3) {
+            FE_PKT((*gfx)++, 0xFC357E04, 0x1F10F3FF);
+            FE_PKT((*gfx)++, 0xEF182C0F, 0x0F0A4000);
         } else {
-            FRONTEND_EMIT(arg0, 0xFC121824, 0xFF33FFFF);
-            FRONTEND_EMIT(arg0, 0xEF082C0F, 0x0F0A4000);
+            FE_PKT((*gfx)++, 0xFC121824, 0xFF33FFFF);
+            FE_PKT((*gfx)++, 0xEF082C0F, 0x0F0A4000);
         }
-        FRONTEND_EMIT(arg0, 0xFD10013F, D_800D2FAC);
-        sp40 = 0;
-        spD8 = 0;
-        spB8 = (D_8007BEB0 << 5) / 1024;
-        do {
-            var_v1 = 0;
-            var_s0 = spB8;
-            var_ra = sp40 * 0xA;
-            var_s1 = 0;
-            temp_s3 = var_a0 + 0xF;
-loop_7:
-            if (var_v1 - 1 > 0) {
-                var_t3 = var_v1 - 1;
-            } else {
-                var_t3 = 0;
+        FE_PKT((*gfx)++, 0xFD10013F, D_800D2FAC);
+        colour = (D_8007BEB0 << 5) / 1024;
+        y = 0;
+        for (row = 0; row < 16; row++) {
+            x = 0;
+            rowColour = colour;
+            for (col = 0; col < 16; col += 2) {
+                if (x - 1 > 0) {
+                    uls = x - 1;
+                } else {
+                    uls = 0;
+                }
+                if (y - 1 > 0) {
+                    ult = y - 1;
+                } else {
+                    ult = 0;
+                }
+                if (x + 40 < 319) {
+                    lrs = x + 40;
+                } else {
+                    lrs = 319;
+                }
+                if (y + 15 < 239) {
+                    lrt = y + 15;
+                } else {
+                    lrt = 239;
+                }
+                width = lrs - uls;
+                FE_SETTILE((*gfx)++, (((width + 1) * 2) + 7) >> 3, 0x07080200);
+                FE_PKT((*gfx)++, 0xE6000000, 0);
+                FE_LOADTILE((*gfx)++, uls, ult, lrs, lrt);
+                FE_PKT((*gfx)++, 0xE7000000, 0);
+                FE_SETTILE((*gfx)++, (((width + 1) * 2) + 7) >> 3, 0x00080200);
+                FE_TILESIZE((*gfx)++, width - 1, lrt - ult - 1);
+                if (D_8007BE90 == 2 || D_8007BE90 == 3) {
+                    FE_PKT((*gfx)++, 0xFA000000, rowColour);
+                    rowColour ^= ~0xFF;
+                }
+                v = OS_K0_TO_PHYSICAL(&((FrontendVertex **) &D_8007BE88)[D_8007BE84][row * 17 + col]);
+                FE_VERTEX((*gfx)++, v, 3, 0);
+                v = OS_K0_TO_PHYSICAL(&((FrontendVertex **) &D_8007BE88)[D_8007BE84][row * 17 + col + 17]);
+                FE_VERTEX((*gfx)++, v, 3, 3);
+                FE_PKT((*gfx)++, 0x05310040, D_7BE40);
+                x += 40;
             }
-            if (var_a0 - 1 > 0) {
-                var_t4 = var_a0 - 1;
-            } else {
-                var_t4 = 0;
+            y += 15;
+            if (row & 1) {
+                colour ^= ~0xFF;
             }
-            if (var_v1 + 0x28 < 0x13F) {
-                var_t2 = var_v1 + 0x28;
-            } else {
-                var_t2 = 0x13F;
-            }
-            temp_t0 = var_t2 - var_t3;
-            if (temp_s3 < 0xEF) {
-                var_a2 = temp_s3;
-            } else {
-                var_a2 = 0xEF;
-            }
-            FRONTEND_EMIT(arg0, (((((temp_t0 * 2) + 9) >> 3) & 0x1FF) << 9) | 0xF5100000, 0x07080200);
-            FRONTEND_EMIT(arg0, 0xE6000000, 0);
-            FRONTEND_EMIT(arg0,
-                          (((var_t3 * 4) & 0xFFF) << 12) |
-                              0xF4000000 | ((var_t4 * 4) & 0xFFF),
-                          (((var_t2 * 4) & 0xFFF) << 12) |
-                              0x07000000 | ((var_a2 * 4) & 0xFFF));
-            FRONTEND_EMIT(arg0, 0xE7000000, 0);
-            FRONTEND_EMIT(arg0, (((((temp_t0 * 2) + 9) >> 3) & 0x1FF) << 9) | 0xF5100000, 0x00080200);
-            FRONTEND_EMIT(arg0, 0xF2000000,
-                          ((((temp_t0 - 1) * 4) & 0xFFF) << 12) |
-                              (((var_a2 - var_t4 - 1) * 4) & 0xFFF));
-            if ((D_8007BE90 == 2) || (D_8007BE90 == 3)) {
-                FRONTEND_EMIT(arg0, 0xFA000000, var_s0);
-                var_s0 ^= -0x100;
-            }
-            var_s1 += 2;
-            temp_v1 = ((Gfx **) &D_8007BE88)[D_8007BE84];
-            temp_v1 += var_ra + 0x80000000;
-            FRONTEND_EMIT(arg0,
-                          (((((temp_v1 & 6) | 0x18) & 0xFF) << 16) |
-                              0x04000026),
-                          temp_v1);
-            temp_v1_2 = ((Gfx **) &D_8007BE88)[D_8007BE84];
-            temp_v1_2 += var_ra + 0xAA + 0x80000000;
-            FRONTEND_EMIT(arg0,
-                          (((((temp_v1_2 & 6) | 0x18) & 0xFF) << 16) |
-                              0x04000626),
-                          temp_v1_2);
-            FRONTEND_EMIT(arg0, 0x05310040, D_7BE40);
-            var_ra += 0x14;
-            var_v1 = var_v1 + 0x28;
-            if (var_s1 != 0x10) {
-                goto loop_7;
-            }
-            var_a0 = temp_s3;
-            if (spD8 & 1) {
-                spB8 ^= -0x100;
-            }
-            spD8 = spD8 + 1;
-            sp40 += 0x11;
-        } while (spD8 != 0x10);
-        func_80034920(arg0);
+        }
+        func_80034920(gfx);
     }
 }
 #else
@@ -625,11 +618,11 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
 
 /* PLATEAU-HANDOFF:func_80037C74:start
  * symbol: func_80037C74
- * score: 314 differing words
- * frame: 0xE0
+ * score: 302/327 words
+ * frame: 0xF0
  * relocations: 18
- * first-mismatch: +0x34
- * summary: Frame closed and one missing emit site restored, 324 to 314 words and size delta -76 to -64. The frame was a pointer census, not a scalar one: every block-scoped Gfx cursor inside the emit macro owns four bytes of frame even though it is register-allocated, so the frame is 0x40 plus four bytes per cursor plus four per declared scalar plus twelve bytes of compiler temp, rounded to eight -- collapsing twenty-one per-site cursors to one shared cursor moved the frame 0xF0 to 0xA0, exactly four times twenty. The target's 0xE0 solves to twenty-two cursors and sixteen declared scalars where the m2c draft had twenty-one and twenty-one; four of the draft's temps were inlined to reach it and the masked count fell only ten words, so the frame was never the dominant cause. Counting the target's cursor write-backs gives twenty-two emit sites against the draft's twenty-one; the missing one repeats the loop's first command word against a different second word, immediately after the fourth command of the loop body, and restoring it is worth six words of the size deficit. What remains is one axis and it is not colouring: uopt hoists this loop's opcode and address constants into callee-saved registers and the ROM does not, re-materialising each one inside the loop through the assembler's own temporary. Both sides use all nine callee-saved registers and disagree only on which invariants win them, so the lever is loop register pressure, not declaration order.
+ * first-mismatch: +0x0
+ * summary: Listing rewrite on (*gfx)++ closes the size gap (-64 to 0). Left: frame 0xF0 against 0xE0, and which loop constants win callee-saved registers.
  * PLATEAU-HANDOFF:func_80037C74:end
  */
 

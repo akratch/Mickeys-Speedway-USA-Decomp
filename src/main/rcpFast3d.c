@@ -591,13 +591,19 @@ void func_8002F618(RcpCommand **arg0, RcpTextureNode *arg1, s32 arg2,
  * its DMA command and its prim colour reset differ from DKR. Mickey's target
  * decides those.
  *
- * 2026-10-02 (lane w2-front): this rewrite closes the size gap (-20 -> 0) and
- * the frame (0xE0). Two of its features change the allocation regime:
+ * 2026-10-02 (lane w2-front): 272 words at -20 bytes -> 155 at delta 0, frame
+ * exact. What moved it, in order:
  * - The flip and position setup sits inside `if (tex != NULL)`, with a cursor
  *   separate from arg1. That removes one basic block, and L56's callee toll
  *   becomes 9.75 against the caller cost of 10. xScale and yScale then take
  *   f20/f22 as in the target.
- * - tex->data is held in a local across the texture helper call.
+ * - The texture helper takes four arguments: (tex, offset, halfCmd, element).
+ *   halfCmd is NULL before the loop and is the texrect's second packet cursor
+ *   afterwards, so the target's `a2 = 0` and its a3 cursor are argument homes.
+ * - The texrect is written longhand with named cursors, as in func_8002F618.
+ * - dmaDlist is reused for tex->data, and the DMA count is a local.
+ * - Declaration order places width/height and the spilled locals on the
+ *   target's cells.
  * The open residual is in docs/matching-triage-handoffs/func_8002FB34.md.
  */
 void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
@@ -605,22 +611,26 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
     RcpTextureInfo *tex;
     u8 *dmaDlist;
     RcpCommand *dlist;
-    s32 bFlipX;
-    s32 bFlipY;
     s32 s;
     s32 t;
     s32 dsdx;
+    s32 width;
+    s32 height;
     s32 dtdy;
     s32 ulx;
     s32 uly;
     s32 lrx;
     s32 lry;
+    s32 count;
+    RcpCommand *blockCmd;
+    RcpCommand *rectCmd;
+    RcpCommand *halfCmd;
+    RcpCommand *lastCmd;
     s32 xPos4x;
     s32 yPos4x;
-    s32 width;
-    s32 height;
+    s32 bFlipX;
+    s32 bFlipY;
     RcpTextureNode *element;
-    u32 *data;
 
     width = 0;
     height = 0;
@@ -647,12 +657,13 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
         _g->w1 = colour;
     }
     tex = arg1->texture;
+    halfCmd = NULL;
     if (tex != NULL) {
-        element = arg1;
-        bFlipX = flags & 0x1000;
-        bFlipY = flags & 0x2000;
         xPos4x = xPos * 4.0f;
         yPos4x = yPos * 4.0f;
+        bFlipX = flags & 0x1000;
+        bFlipY = flags & 0x2000;
+        element = arg1;
         do {
             if (!bFlipX) {
                 ulx = (s32) (element->x * xScale) + xPos4x;
@@ -696,19 +707,24 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
                         t += (-uly * dtdy) >> 7;
                         uly = 0;
                     }
-                    data = tex->data;
-                    dlist->w0 = *data;
-                    dlist->w1 = func_800348D4(tex, element->packedOffset) + 0x80000000U;
+                    dmaDlist = (u8 *) tex->data;
+                    dlist->w0 = *(u32 *) dmaDlist;
+                    dlist->w1 = func_800348D4(tex, element->packedOffset, halfCmd, element) + 0x80000000U;
                     dlist++;
-                    data += 2;
-                    {
-                        RcpCommand *_g = dlist++;
-                        _g->w0 = (((tex->count - 1) & 0xFF) << 16) | 0x07000000 |
-                                 (((tex->count - 1) * 8) & 0xFFFF);
-                        _g->w1 = (u32) data + 0x80000000U;
-                    }
-                    gSPTextureRectangle((Gfx *) dlist++, ulx, uly, lrx, lry, G_TX_RENDERTILE,
-                                        s, t, dsdx, dtdy);
+                    dmaDlist += 8;
+                    blockCmd = dlist++;
+                    count = tex->count - 1;
+                    blockCmd->w0 = ((count & 0xFF) << 16) | 0x07000000 | ((count * 8) & 0xFFFF);
+                    blockCmd->w1 = (u32) dmaDlist + 0x80000000U;
+                    rectCmd = dlist++;
+                    rectCmd->w0 = (_SHIFTL(G_TEXRECT, 24, 8) | _SHIFTL(lrx, 12, 12) | _SHIFTL(lry, 0, 12));
+                    rectCmd->w1 = (_SHIFTL(G_TX_RENDERTILE, 24, 3) | _SHIFTL(ulx, 12, 12) | _SHIFTL(uly, 0, 12));
+                    halfCmd = dlist++;
+                    halfCmd->w0 = _SHIFTL(G_RDPHALF_1, 24, 8);
+                    halfCmd->w1 = (_SHIFTL(s, 16, 16) | _SHIFTL(t, 0, 16));
+                    lastCmd = dlist++;
+                    lastCmd->w0 = _SHIFTL(G_RDPHALF_2, 24, 8);
+                    lastCmd->w1 = (_SHIFTL(dsdx, 16, 16) | _SHIFTL(dtdy, 0, 16));
                 }
             }
             tex = element[1].texture;
@@ -740,10 +756,10 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
 
 /* PLATEAU-HANDOFF:func_8002FB34:start
  * symbol: func_8002FB34
- * score: 285/359 words
+ * score: 155/359 words
  * frame: 0xE0
  * relocations: 9
- * first-mismatch: +0x4
- * summary: Size gap closed (-20 to 0) and frame exact; aligned byte-exact 109 to 197. Left: callee-saved order and a folded data+8 constant.
+ * first-mismatch: +0x88
+ * summary: Four-argument helper call and longhand texrect: 285 to 155 at delta 0, frame exact. Left: one ring phase from +0x88 and packet store order.
  * PLATEAU-HANDOFF:func_8002FB34:end
  */

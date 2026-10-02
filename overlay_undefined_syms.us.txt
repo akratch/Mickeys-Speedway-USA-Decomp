@@ -4465,8 +4465,21 @@ o101PresACreatorReloc = 0xf0000000;
 o101PresAResetReloc = 0xf0000000;
 
 /* overlay 101: overlay101BuildPresentationB.c.o */
-D_34E8 = 0x000034e8;
-D_D40 = 0x00000d40;
+gO101PresBAssetD40 = 0x00000d40;
+gO101PresBFinalObject34E8 = 0x000034e8;
+gO101PresBInputs = 0x00000000;
+gO101PresBNode20Count = 0x000001c8;
+gO101PresBNode24Count = 0x000001d0;
+gO101PresBNode32Count = 0x000001cc;
+gO101PresBNodes20 = 0x00000200;
+gO101PresBNodes24 = 0x00000540;
+gO101PresBNodes32 = 0x00000340;
+gO101PresBOrderCount = 0x000001c4;
+gO101PresBOrderSlots = 0x000001c0;
+gO101PresBRoot = 0x00000000;
+o101PresBCreateCompactReloc = 0xf0000000;
+o101PresBCreatorReloc = 0xf0000000;
+o101PresBResetReloc = 0xf0000000;
 
 /* overlay 101: overlay101BuildPresentationC.c.o */
 D_3718 = 0x00003718;

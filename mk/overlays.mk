@@ -2982,10 +2982,26 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87ReleaseCurrent.c.o: POSTPROCESS =
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87HasNearby.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/overlay87HasNearby.c.o: CFLAGS += -Wab,-r4300_mul
-# NON_MATCHING fallback assembly supplies the retail body; restore the
-# friendly source symbol and retain the exact text extent when needed.
+# The function defines overlay 50's .data and .bss at their recorded offsets
+# (as func_overlay_050_F0000334_1896CA4 does); the retained overlay image owns
+# the bytes, so these copies are dropped and their sites rebound to
+# zero-valued bases. Its 0.7f literal is a one-constant pool duplicating the
+# retained overlay rodata at +0x4: the pair is rebound to a base valued 0x4
+# and the pool asserted by digest; no instruction is edited.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50Initialize.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/overlay50Initialize.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50Initialize.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_050_F0000000_1896970=func_overlay_050_F0000000_1896970 $@ && \
+	$(OBJCOPY) --add-symbol gOverlay50InitDataBaseReloc=0x0,global \
+		--add-symbol gOverlay50InitBssBaseReloc=0x0,global \
+		--add-symbol gOverlay50InitScaleReloc=0x4,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/overlay50Initialize.rebind.spec && \
+	$(OBJCOPY) --remove-section=.data --remove-section=.bss \
+		--remove-section=.gptab.data --remove-section=.gptab.bss $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:54719d33292c6bb1573315eb3140be35c277ea530a17f384ba3a0027e82bf244 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2E4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o050/overlay50PatchIndices.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x50

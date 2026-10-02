@@ -2096,14 +2096,15 @@ overlay48SetModeReloc = 0xf0000000;
 /* overlay 48: overlay48InitializeState.c.o */
 D_174 = 0x00000174;
 D_274 = 0x00000274;
-
-/* overlay 48: overlay48UpdateState.c.o */
 gOverlay48Entries = 0x00000000;
 gOverlay48Finished = 0x0000005a;
+gOverlay48Script = 0x00000054;
+gOverlay48ScriptIndex = 0x00000058;
+gOverlay48Timer = 0x00000050;
+
+/* overlay 48: overlay48UpdateState.c.o */
 gOverlay48ResourceIndex = 0x00000058;
 gOverlay48ResourceTable = 0x00000000;
-gOverlay48Script = 0x00000054;
-gOverlay48Timer = 0x00000050;
 gOverlay48TransitionValue = 0x00000470;
 overlay45ReleaseHandle = 0xf0000000;
 overlay45SetHandleValue = 0xf0000000;

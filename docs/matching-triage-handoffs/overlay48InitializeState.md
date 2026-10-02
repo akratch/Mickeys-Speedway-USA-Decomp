@@ -2,11 +2,11 @@
 ### `overlay48InitializeState` plateau handoff
 
 - source: `src/overlays/o048/overlay48InitializeState.c`
-- score: 47 differing words
+- score: 0/57 words, promoted
 - frame: 0x18
 - relocations: 24
-- first mismatch: +0x0
-- summary: Hand-unroll folds index=1 to addiu+2; loops peel record 0. Missing sll+addu cursor and v0+=0x30. Colour refused at nonzero size.
+- first mismatch: none
+- summary: Matched. A plain for loop with i primary and the walking record secondary, initialised i then record; the hand-unrolled body was the m2c shape.
 #### 2026-09-13, lane k1: authenticated draw-census follow-up
 
 Fresh configured stock compilation reproduces 228 target bytes,

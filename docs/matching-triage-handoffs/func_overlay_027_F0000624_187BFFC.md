@@ -2,11 +2,13 @@
 ### `func_overlay_027_F0000624_187BFFC` plateau handoff
 
 - source: `src/overlays/o027/overlay_027.c`
-- score: 100 differing words
+- score: 12 differing words
 - frame: 0x98
 - relocations: 15
-- first mismatch: +0x70
-- summary: Delta +4, 25 aligned rows. Open: one extra constant move at +0x284 for the mode call's zero arguments.
+- first mismatch: +0x1FC
+- summary: 12 words at delta 0: two colour decisions, the two vertex-address webs (a0/v1 here, a3/a1 in the target); forcing both scores 0.
+
+Summary before this remeasure: Delta +4, 25 aligned rows. Open: one extra constant move at +0x284 for the mode call's zero arguments.
 
 Summary before this remeasure: Fresh V0 on b4d1624a reproduces 1016B/254w and the 15-site ambiguity; no new identity or donor evidence; body untouched.
 
@@ -41,4 +43,32 @@ Next lever: obtain a non-circular overlay-local identity for `D_80000050` and
 the shifted relocation sites. Only a newly authenticated source or allocator
 mechanism may then reopen the body; do not repeat the old register/lifetime
 family or weaken relocation identity checks.
+#### 2026-10-02, lane x-o101: real callee arities, 100 to 12 at delta 0
+
+The relocation table names every call. The closing call (+0x9A0) is a
+SYMBOL record for resident camPopModelMtx, which takes one argument
+(camera.c, matched); the inherited body passed the second vertex pointer to
+it, and that was the +4 and the "extra constant move". The a1 the shipped
+call carries is a leftover. The texture-part call (+0x77C) and the mode
+call (+0x8B8) are one resident routine, func_800349A4 (dlist, texture,
+flags, frame), so both are now spelled as that one callee. With the real
+arity: 100 to 12 at size delta 0.
+
+tools/align_symbol.py: 242 byte-exact, 10 naming, 0 immediate, 2 really
+different (was 230 exact of 255 at +4).
+
+Decision variable, priced with the instrumented uopt (identity gate passed,
+proc 2 of the TU, 21 p1 decisions): the 12 words are exactly two colour
+decisions. Web 119 is the first vertex address (D_80000000, block 15) and
+takes a0, the lowest free colour at cost 0; web 141 is the second
+(D_80000118, block 18) and takes v1. Forcing p1:w119=c6 (a3) and
+p1:w141=c4 (a1), both accepted, scores 0; w119 alone 4, w141 alone 8.
+Every caller-saved colour costs 0 for both webs, so the target's choice
+needs a0-a2 (and v1, a0) taken by interfering webs in those blocks that this
+body does not have. Not reached by: the mode call's arguments as a
+zeroed variable (16 cells, all 12), the frame parameter as s16, an untyped
+callee prototype, the vertex pointers through a local or written in place,
+one model-data base symbol for the four arrays (170 at +24: one held base
+web), or the TU's data as one struct.
+
 <!-- plateau-handoff:func_overlay_027_F0000624_187BFFC:end -->

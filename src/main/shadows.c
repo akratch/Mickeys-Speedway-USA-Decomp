@@ -471,7 +471,7 @@ extern s32 func_8000FD68(s32 *result, s16 xMin, s16 zMin, s16 xMax,
                          s32 yMin, s32 yMax, s32 yMax2);
 extern void shadowBoundingBox(s32 count, f32 *points, f32 *xMin,
                               f32 *zMin, f32 *xMax, f32 *zMax);
-extern void func_80017140(void *query, f32 *points, void *sector, s32 gridMask);
+extern void func_80017140();
 extern s32 func_80017BCC(void *query, void *angles, void *surface);
 extern void func_80018654();
 extern f32 D_800817A4;
@@ -718,220 +718,185 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
 #pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/func_80016890.s")
 #endif
 /*
- * PROVENANCE: organized from the public JFG shadow polygon pipeline and
- * Mickey's own m2c control flow; all field offsets and buffer limits remain
- * Mickey-only evidence.
+ * PROVENANCE: adapted from the public Diddy Kong Racing decompilation,
+ * src/tracks.c func_8002E904 (the per-segment shadow polygon builder that
+ * feeds func_8002FF6C, here func_80017660). Mickey drops DKR's water
+ * argument, adds the collision-plane test against 0.5f, caps the vertex table
+ * at 0x20 and reads the shadow globals from the query struct; its offsets,
+ * flag mask and globals are authoritative.
  */
 #ifdef NON_MATCHING
-/* Workbench verdict: 285 masked words at size delta 0 (was 300 at -12).
- * Track B, 2026-09-23:
- *   - the polygon buffer keeps its offset (ten declared words precede it);
- *     below it the declaration order now lands the target's homes: var_t1
- *     +0xBC, var_ra +0xB8, temp_a1 +0xB4, surfaceId +0x94, var_v1 +0x80,
- *     sp7C +0x7C, var_a0 +0x78. The two s16 locals share one word.
- *   - surfaceId read through its address after the calls is stored at its
- *     definition (as the target does) instead of being sunk to its use with
- *     temp_a0 kept live: -12 to -4.
- *   - sp7C at function scope read through its address stays home-resident,
- *     as the target's per-iteration reload shows: delta 0.
- * Measured and not adopted: holding D_800CAF58 in a local for the slot
- * address and the increment (the target never reloads it) gives 98
- * byte-exact words against 88 here but size delta -16; the fill loop
- * written with the byte index (not the scaled offset) carried across the
- * rotation matches the target's body shape but is +12; a declared
- * polygon-end pointer unrolls the loop (+744). Left: the literal 3 hoisted
- * into s7 (the target keeps slti and re-materialises 3 and the polygon
- * address at each call, hoisting only polygon+0x30), and arg2 held in t5. */
-void func_80017140(void *arg0, f32 *arg1, void *arg2, s32 arg3) {
-    u8 *var_a3;
-    u8 *temp_a3;
-    u8 *temp_t1;
-    u8 *temp_t2;
-    u8 *temp_v0;
-    u8 *var_v0;
-    u8 *var_v1_2;
-    u8 *var_v1_3;
-    u8 *var_v1_4;
-    f32 pointHeight;
-    u8 polygon[0x58];
-    s32 var_t1;
-    s32 var_ra;
-    s32 temp_a1;
-    s16 temp_v0_3;
-    s16 temp_v1;
-    s32 var_a0_3;
-    s32 var_a1;
-    s32 var_a1_2;
-    s32 var_a2;
-    s32 var_t0;
-    s32 var_lo;
-    s32 surfaceId;
-    s32 temp_s1;
-    s32 temp_t9;
-    s32 var_a0_2;
-    s32 var_a2_2;
-    s32 var_v1;
-    s32 sp7C;
-    s32 var_a0;
-    s32 var_t0_2;
-    s32 vertexOffset;
-    s32 temp_v0_4;
-    u32 temp_a0;
-    u32 temp_v0_2;
+/* 2026-10-02 (lane x-shad): the DKR shape replaces the m2c draft (285 masked
+ * at delta 0, aligned 88 exact / 133 naming / 9 immediate / 116 really
+ * different). This body is 296 masked at size +16 with frame 0x140 and every
+ * target home exact (fifteen scalars; the strength-reduction temporaries land
+ * at +0x80, +0x7C and +0x78 in the target's order); its aligned residual
+ * after insertion shadow is 159 against the draft's 258.
+ * The +16 is two allocator split decisions (instrumented records, proc 6):
+ *   - arg2's piece rejects the outer loop head (L161 margin -4), so the head
+ *     reloads arg2 from its home every iteration where the target copies a2
+ *     into t5 once in the preheader;
+ *   - the face*8 and face*4 temporaries (save 23.85, nocs 13) reject the
+ *     latch at margins -1 and -2, so they stay in memory where the target
+ *     keeps them in v1/a0 across preheader, head and latch.
+ * Byte-inert here: nested against merged Y tests, continue against nested
+ * face test, the cap spelled > 0x1F, literal-type and cast round-trip forms
+ * of the -1 and argument webs. One store after the found/not-found arms is
+ * size +12 but aligned 173. */
+typedef struct ShadowClipPoint {
+    f32 x;
+    f32 y;
+    f32 z;
+    s16 unkC;
+    s16 unkE;
+} ShadowClipPoint;
 
-    var_t0 = *(s16 *) ((u8 *) arg2 + 0x24);
-    var_t1 = 0;
-    if (var_t0 > 0) {
-        sp7C = 0;
-        do {
-            temp_v0 = *(u8 **) ((u8 *) arg2 + 0xC) + *(s32 *) &sp7C;
-            temp_a0 = *(u32 *) (temp_v0 + 0xC);
-            if (!(temp_a0 & 0x08013880)) {
-                var_ra = *(s16 *) (temp_v0 + 0x8);
-                temp_a1 = *(s16 *) (temp_v0 + 0x18);
-                surfaceId = (temp_a0 >> 24) & 7;
-                vertexOffset = *(s16 *) (temp_v0 + 0x6);
-                temp_s1 = (s32) (*(u8 **) ((u8 *) arg2 + 0x0) +
-                                  (((vertexOffset << 2) + vertexOffset) << 1));
-                if (var_ra < temp_a1) {
-                    var_v1 = var_ra * 8;
-                    var_a0 = var_ra * 4;
-                    do {
-                        temp_t9 = *(u16 *) (*(u8 **) ((u8 *) arg2 + 0x18) + var_v1) * 4;
-                        temp_v0_2 = *(u32 *)
-                            (*(u8 **) ((u8 *) arg2 + 0x10) + var_a0) & arg3;
-                        if ((temp_v0_2 & 0xFFFF) &&
-                            ((temp_v0_2 >> 0x10) != 0) &&
-                            (*(f32 *) (*(u8 **) ((u8 *) arg2 + 0x1C) +
-                                       (temp_t9 * 4) + 0x4) > 0.5f)) {
-                            var_a0_2 = 1;
-                            temp_a3 = *(u8 **) ((u8 *) arg2 + 0x4) + (var_ra * 0x10);
-                            var_v1_2 = temp_a3 + 1;
-                            var_a1 = *(s16 *)
-                                (temp_s1 + (*(u8 *) (temp_a3 + 1) * 0xA) + 0x2);
-                            var_a2 = var_a1;
-                            do {
-                                var_a0_2 += 1;
-                                temp_v0_3 = *(s16 *)
-                                    (temp_s1 + (*(u8 *) (var_v1_2 + 1) * 0xA) + 0x2);
-                                if (temp_v0_3 < var_a1) {
-                                    var_a1 = temp_v0_3;
-                                } else if (var_a2 < temp_v0_3) {
-                                    var_a2 = temp_v0_3;
+typedef struct ShadowVertexSlot {
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 *plane;
+} ShadowVertexSlot;
+
+typedef struct ShadowPolygonSlot {
+    u8 count;
+    u8 flags;
+    s8 vertices[8];
+    s16 shade;
+} ShadowPolygonSlot;
+
+typedef struct ShadowFacet {
+    u16 basePlaneIndex;
+    u16 edgePlanes[3];
+} ShadowFacet;
+
+typedef struct ShadowCollSector {
+    ShadowPoint *vertices;
+    ShadowTriangle *triangles;
+    u8 pad8[4];
+    ShadowBlock *batches;
+    u32 *faceMasks;
+    u8 pad14[4];
+    ShadowFacet *collisionFacets;
+    f32 *collisionPlanes;
+    u8 pad20[4];
+    s16 numberOfBatches;
+} ShadowCollSector;
+
+typedef struct ShadowGenQuery {
+    s32 surface0;
+    f32 *plane4;
+    f32 x8;
+    f32 yC;
+    f32 z10;
+    s16 type14;
+    s16 lowerY16;
+    s16 upperY18;
+    u8 pad1A[2];
+    f32 scale1C;
+    f32 minimum20;
+    f32 height24;
+    u8 pad28[0x18];
+    f32 bounds40[4];
+} ShadowGenQuery;
+
+void func_80017140(ShadowGenQuery *arg0, f32 *arg1, ShadowCollSector *arg2, s32 arg3) {
+    ShadowClipPoint sp100[8];
+    s32 spAC;
+    s32 curFacesOffset;
+    s32 nextFacesOffset;
+    ShadowTriangle *triangles;
+    ShadowPoint *vertices;
+    s32 yPos;
+    s32 minY;
+    s32 foundIndex;
+    s32 maxY;
+    s32 temp_t6;
+    s32 sp88;
+    s32 someCount;
+    s32 i2;
+    s32 i;
+    s32 k;
+
+    for (spAC = 0; spAC < arg2->numberOfBatches; spAC++) {
+        if (!(arg2->batches[spAC].flags & 0x08013880)) {
+            curFacesOffset = arg2->batches[spAC].facesOffset;
+            nextFacesOffset = arg2->batches[spAC + 1].facesOffset;
+            sp88 = (arg2->batches[spAC].flags >> 24) & 7;
+            vertices = &arg2->vertices[arg2->batches[spAC].verticesOffset];
+            for (; curFacesOffset < nextFacesOffset; curFacesOffset++) {
+                temp_t6 = arg2->collisionFacets[curFacesOffset].basePlaneIndex * 4;
+                if (((arg2->faceMasks[curFacesOffset] & arg3) & 0xFFFF) &&
+                    ((arg2->faceMasks[curFacesOffset] & arg3) >> 16) &&
+                    (arg2->collisionPlanes[temp_t6 + 1] > 0.5f)) {
+                    triangles = &arg2->triangles[curFacesOffset];
+                    maxY = minY = vertices[triangles->verticesArray[1]].y;
+                    for (i = 1; i < 3; i++) {
+                        yPos = vertices[triangles->verticesArray[i + 1]].y;
+                        if (yPos < minY) {
+                            minY = yPos;
+                        } else if (maxY < yPos) {
+                            maxY = yPos;
+                        }
+                    }
+                    if (arg0->upperY18 >= minY) {
+                        if (maxY >= arg0->lowerY16) {
+                            for (i = 0; i < 3; i++) {
+                                sp100[i].x = vertices[triangles->verticesArray[i + 1]].x;
+                                sp100[i].z = vertices[triangles->verticesArray[i + 1]].z;
+                                sp100[i].unkE = -1;
+                            }
+                            if (shadowBoxPolyOverlap(arg0->bounds40[0], arg0->bounds40[1],
+                                                     arg0->bounds40[2], arg0->bounds40[3], 3,
+                                                     sp100) != 0) {
+                                arg0->plane4 = &arg2->collisionPlanes[temp_t6];
+                                if (arg0->height24 > 0.0f) {
+                                    func_80018544(arg0, sp100);
                                 }
-                                var_v1_2 += 1;
-                            } while (var_a0_2 < 3);
-                            if (*(s16 *) ((u8 *) arg0 + 0x18) >= var_a1) {
-                                var_v1_3 = temp_a3;
-                                if (var_a2 >= *(s16 *) ((u8 *) arg0 + 0x16)) {
-                                    var_v0 = polygon;
-                                    var_v0 += 0x10;
-                                    var_lo = 0xA * *(u8 *) (var_v1_3 + 1);
-                                    while (var_v0 != polygon + 0x30) {
-                                        var_v0 += 0x10;
-                                        var_v1_3 += 1;
-                                        *(f32 *) (var_v0 - 0x20) =
-                                            (f32) *(s16 *) (temp_s1 + var_lo);
-                                        *(s16 *) (var_v0 - 0x12) = -1;
-                                        *(f32 *) (var_v0 - 0x18) =
-                                            (f32) *(s16 *)
-                                                (temp_s1 + (*(u8 *) (var_v1_3 + 0x0) * 0xA) + 0x4);
-                                        var_lo = *(u8 *) (var_v1_3 + 1) * 0xA;
-                                    }
-                                    *(f32 *) (var_v0 - 0x10) =
-                                        (f32) *(s16 *) (temp_s1 + var_lo);
-                                    *(s16 *) (var_v0 - 0x2) = -1;
-                                    *(f32 *) (var_v0 - 0x8) =
-                                        (f32) *(s16 *)
-                                            (temp_s1 + (*(u8 *) (var_v1_3 + 1) * 0xA) + 0x4);
-                                    if (shadowBoxPolyOverlap(
-                                            *(f32 *) ((u8 *) arg0 + 0x40),
-                                            *(f32 *) ((u8 *) arg0 + 0x44),
-                                            *(f32 *) ((u8 *) arg0 + 0x48),
-                                            *(f32 *) ((u8 *) arg0 + 0x4C), 3,
-                                            polygon) != 0) {
-                                        *(u8 **) ((u8 *) arg0 + 0x4) =
-                                            *(u8 **) ((u8 *) arg2 + 0x1C) +
-                                            (temp_t9 * 4);
-                                        if (*(f32 *) ((u8 *) arg0 + 0x24) > 0.0f) {
-                                            func_80018544(arg0, polygon);
-                                        }
-                                        temp_v0_4 = func_80017660(arg0, 3, polygon, 4, arg1);
-                                        if (temp_v0_4 >= 3) {
-                                            temp_t2 = D_800CAF60 + (D_800CAF58 * 0xC);
-                                            *(u8 *) (temp_t2 + 1) = 0;
-                                            var_t0_2 = 0;
-                                            if (temp_v0_4 > 0) {
-                                                var_a3 = polygon;
-                                                do {
-                                                    temp_v1 = *(s16 *) (var_a3 + 0xE);
-                                                    var_a1_2 = -1;
-                                                    var_a0_3 = 0;
-                                                    if (temp_v1 < 0) {
-                                                        var_a2_2 = D_800C9D40;
-                                                        temp_t1 = temp_t2 + var_t0_2;
-                                                        if (var_a2_2 > 0) {
-                                                            var_v1_4 = D_800C9D48;
-loop_27:
-                                                            if ((*(f32 *) (var_v1_4 + 0x0) ==
-                                                                 *(f32 *) (var_a3 + 0x0)) &&
-                                                                (*(f32 *) (var_v1_4 + 0x8) ==
-                                                                 *(f32 *) (var_a3 + 0x8))) {
-                                                                var_a1_2 = var_a0_3;
-                                                            }
-                                                            var_a0_3 += 1;
-                                                            var_v1_4 += 0x10;
-                                                            if ((var_a0_3 < var_a2_2) &&
-                                                                (var_a1_2 == -1)) {
-                                                                goto loop_27;
-                                                            }
-                                                        }
-                                                        if (var_a1_2 == -1) {
-                                                            if (var_a2_2 >= 0x20) {
-                                                                D_800C9D40 = 0x1F;
-                                                                var_a2_2 = 0x1F;
-                                                            }
-                                                            var_v1_4 = D_800C9D48 + (var_a2_2 * 0x10);
-                                                            *(f32 *) (var_v1_4 + 0x0) = *(f32 *) (var_a3 + 0x0);
-                                                            *(f32 *) (var_v1_4 + 0x8) = *(f32 *) (var_a3 + 0x8);
-                                                            D_800C9D40 = var_a2_2 + 1;
-                                                            *(s8 *) (temp_t1 + 0x2) = var_a2_2;
-                                                            *(s32 *) (var_v1_4 + 0xC) =
-                                                                *(s32 *) ((u8 *) arg0 + 0x4);
-                                                        } else {
-                                                            *(s8 *) (temp_t1 + 0x2) = var_a1_2;
-                                                        }
-                                                    } else {
-                                                        *(s8 *) (temp_t2 + var_t0_2 + 0x2) = temp_v1;
-                                                        *(u8 *) (temp_t2 + 1) |= (1 << var_t0_2);
-                                                    }
-                                                    var_t0_2 += 1;
-                                                    var_a3 += 0x10;
-                                                } while (var_t0_2 != temp_v0_4);
+                                someCount = func_80017660(arg0, 3, sp100, 4, (s32) arg1);
+                                if (someCount >= 3) {
+                                    ((ShadowPolygonSlot *) D_800CAF60)[D_800CAF58].flags = 0;
+                                    for (i2 = 0; i2 < someCount; i2++) {
+                                        if (sp100[i2].unkE < 0) {
+                                            foundIndex = -1;
+                                            i = 0;
+                                            while ((i < D_800C9D40) && (foundIndex == -1)) {
+                                                if ((((ShadowVertexSlot *) D_800C9D48)[i].x == sp100[i2].x) &&
+                                                    (((ShadowVertexSlot *) D_800C9D48)[i].z == sp100[i2].z)) {
+                                                    foundIndex = i;
+                                                }
+                                                i++;
                                             }
-                                            *(u8 *) (temp_t2 + 0x0) = temp_v0_4;
-                                            *(s16 *) (temp_t2 + 0xA) = *(s32 *) &surfaceId;
-                                            D_800CAF58 += 1;
-                                            if ((D_800CB268 >= 0) &&
-                                                (*(s32 *) &surfaceId != D_800CB268)) {
-                                                D_800CB26C = 0;
+                                            if (foundIndex == -1) {
+                                                if (D_800C9D40 >= 0x20) {
+                                                    D_800C9D40 = 0x1F;
+                                                }
+                                                ((ShadowVertexSlot *) D_800C9D48)[D_800C9D40].x = sp100[i2].x;
+                                                ((ShadowVertexSlot *) D_800C9D48)[D_800C9D40].plane = arg0->plane4;
+                                                ((ShadowVertexSlot *) D_800C9D48)[D_800C9D40].z = sp100[i2].z;
+                                                ((ShadowPolygonSlot *) D_800CAF60)[D_800CAF58].vertices[i2] = D_800C9D40++;
+                                            } else {
+                                                ((ShadowPolygonSlot *) D_800CAF60)[D_800CAF58].vertices[i2] = foundIndex;
                                             }
-                                            D_800CB268 = *(s32 *) &surfaceId;
+                                        } else {
+                                            ((ShadowPolygonSlot *) D_800CAF60)[D_800CAF58].vertices[i2] = sp100[i2].unkE;
+                                            ((ShadowPolygonSlot *) D_800CAF60)[D_800CAF58].flags |= 1 << i2;
                                         }
                                     }
+                                    ((ShadowPolygonSlot *) D_800CAF60)[D_800CAF58].count = someCount;
+                                    ((ShadowPolygonSlot *) D_800CAF60)[D_800CAF58].shade = sp88;
+                                    D_800CAF58 += 1;
+                                    if ((D_800CB268 >= 0) && (sp88 != D_800CB268)) {
+                                        D_800CB26C = 0;
+                                    }
+                                    D_800CB268 = sp88;
                                 }
                             }
                         }
-                        var_ra += 1;
-                        var_v1 += 8;
-                        var_a0 += 4;
-                    } while (var_ra < temp_a1);
-                    var_t0 = *(s16 *) ((u8 *) arg2 + 0x24);
+                    }
                 }
             }
-            var_t1 += 1;
-            sp7C += 0x10;
-        } while (var_t1 < var_t0);
+        }
     }
 }
 #else
@@ -1401,11 +1366,11 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_80017140:start
  * symbol: func_80017140
- * score: 285/328 words
+ * score: 296/328 words
  * frame: 0x140
- * relocations: 19
- * first-mismatch: +0x44
- * summary: Delta 0 (was -12) via target home order and address-form surfaceId/sp7C; left: hoisted literal 3 and polygon base, uncached D_800CAF58
+ * relocations: 21
+ * first-mismatch: +0x4C
+ * summary: DKR func_8002E904 shape: aligned residual 159 vs 258 at +16; left: arg2 outer-head split (margin -4), face-index temps reject the latch (-1, -2)
  * PLATEAU-HANDOFF:func_80017140:end
  */
 

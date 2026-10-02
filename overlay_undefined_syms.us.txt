@@ -4449,8 +4449,18 @@ D_3B78 = 0x00003b78;
 D_D7C = 0x00000d7c;
 
 /* overlay 101: overlay101TailAB4C.c.o */
-D_3F14 = 0x00003f14;
-D_D90 = 0x00000d90;
+gO101TailAB4CAssetD90 = 0x00000d90;
+gO101TailAB4CFinalObject3F14 = 0x00003f14;
+gO101TailAB4CInputs = 0x00000000;
+gO101TailAB4CNode24Count = 0x000001d0;
+gO101TailAB4CNode32Count = 0x000001cc;
+gO101TailAB4CNodes24 = 0x00000540;
+gO101TailAB4CNodes32 = 0x00000340;
+gO101TailAB4COrderCount = 0x000001c4;
+gO101TailAB4COrderSlots = 0x000001c0;
+gO101TailAB4CRoot = 0x00000000;
+o101TailAB4CCreatorReloc = 0xf0000000;
+o101TailAB4CFinalizerReloc = 0xf0000000;
 
 /* overlay 101: overlay101TailB544.c.o */
 D_4358 = 0x00004358;

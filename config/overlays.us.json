@@ -22,10 +22,10 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 371276,
-  "nonmatching_overlay_c_bytes": 97328,
+  "matched_overlay_c_bytes": 364736,
+  "nonmatching_overlay_c_bytes": 103868,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4660,
+  "owned_data_rodata_bytes": 4560,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -647,7 +647,7 @@
      "type": "c",
      "source": "overlays/o001/func_overlay_001_F0003258_184F638",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x3578",
@@ -1284,7 +1284,7 @@
      "type": "c",
      "source": "overlays/o002/func_overlay_002_F0001364_185815C",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x1658",
@@ -4521,7 +4521,7 @@
      "type": "c",
      "source": "overlays/o017/overlay17CalculateEndpoints",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x318",
@@ -6929,7 +6929,7 @@
      "type": "c",
      "source": "overlays/o031/overlay31BuildLookupTables",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x2E8",
@@ -10435,7 +10435,7 @@
      "type": "c",
      "source": "overlays/o050/overlay50Initialize",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x2E4",
@@ -12022,7 +12022,7 @@
      "type": "c",
      "source": "overlays/o058/func_overlay_058_F0000000_18AF1E8",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x5C0",
@@ -14677,7 +14677,7 @@
      "type": "c",
      "source": "overlays/o073/overlay73Draw",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0xEA8",
@@ -19572,7 +19572,7 @@
      "type": "c",
      "source": "overlays/o101/overlay101TailA6BC",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0xAB4C",
@@ -19617,7 +19617,7 @@
      "type": "c",
      "source": "overlays/o101/overlay101TailC6E8",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0xCBDC",
@@ -19988,19 +19988,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 102
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x5CFC",
-     "end_offset": "0x5D60",
-     "size": "0x64",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o101/overlay101TailC6E8",
-     "trial_function": "func_overlay_101_F000C6E8_18E7F08",
-     "externalized": true
-    }
-   ]
+   }
   },
   {
    "overlay": 102,

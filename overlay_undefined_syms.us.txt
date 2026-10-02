@@ -2038,25 +2038,44 @@ gOverlay52Objects = 0x00000000;
 D_27C = 0x0000027c;
 
 /* overlay 52: overlay52TailB.c.o */
-D_100 = 0x00000100;
-D_150 = 0x00000150;
-D_170 = 0x00000170;
-D_180 = 0x00000180;
-D_1F0 = 0x000001f0;
-D_240 = 0x00000240;
-D_24C = 0x0000024c;
-D_2F4 = 0x000002f4;
-D_4A0 = 0x000004a0;
-D_4A8 = 0x000004a8;
-D_4B0 = 0x000004b0;
-D_4B4 = 0x000004b4;
-D_4B8 = 0x000004b8;
-D_4C4 = 0x000004c4;
-D_4C8 = 0x000004c8;
-D_4CC = 0x000004cc;
-D_4D0 = 0x000004d0;
-D_4D2 = 0x000004d2;
-D_A0 = 0x000000a0;
+D_8007C180_o052Reloc = 0x00000000;
+D_8007C1B0_o052Reloc = 0x00000000;
+D_800C947C_o052Reloc = 0x00000000;
+D_800D3140_o052Reloc = 0x00000000;
+D_800D3144_o052Reloc = 0x00000000;
+D_800D31C8_o052Reloc = 0x00000000;
+D_800D3550_o052Reloc = 0x00000000;
+amSndPlay_o052Reloc = 0xf0000000;
+camSetNo_o052Reloc = 0xf0000000;
+camSetScissor_o052Reloc = 0xf0000000;
+camStandardOrtho_o052Reloc = 0xf0000000;
+ext_o1_83e0_o052Reloc = 0x00000000;
+freeFrontEndItem_o052Reloc = 0xf0000000;
+frontGet2PlayerSplit_o052Reloc = 0xf0000000;
+frontGetScreenMode_o052Reloc = 0xf0000000;
+func_800005CC_o052Reloc = 0xf0000000;
+func_800016EC_o052Reloc = 0xf0000000;
+func_80005750_o052Reloc = 0xf0000000;
+func_80028F54_o052Reloc = 0xf0000000;
+func_800290A0_o052Reloc = 0xf0000000;
+func_8002F618_o052Reloc = 0xf0000000;
+func_80034920_o052Reloc = 0xf0000000;
+func_80034DE4_o052Reloc = 0xf0000000;
+func_80036544_o052Reloc = 0xf0000000;
+func_80037414_o052Reloc = 0xf0000000;
+func_80039E34_o052Reloc = 0xf0000000;
+func_8003A590_o052Reloc = 0xf0000000;
+func_8003A7D0_o052Reloc = 0xf0000000;
+joyGetPressed_o052Reloc = 0xf0000000;
+levelGetLevel_o052Reloc = 0xf0000000;
+loadFrontEndItem_o052Reloc = 0xf0000000;
+mainChangeCameras_o052Reloc = 0xf0000000;
+mainChangeLevel_o052Reloc = 0xf0000000;
+mainGetMode_o052Reloc = 0xf0000000;
+overlay45ReleaseDescriptor_o052Reloc = 0xf0000000;
+overlay45SetMode_o052Reloc = 0xf0000000;
+overlay56SplitTime_o052Reloc = 0xf0000000;
+viGetCurrentSize_o052Reloc = 0xf0000000;
 
 /* overlay 52: overlay52Cleanup.c.o */
 gOverlay52Resource = 0x000004cc;
@@ -2202,6 +2221,7 @@ overlay55QueryModeReloc = 0xf0000000;
 /* overlay 55: func_overlay_055_F000031C_18A1E34.c.o */
 D_304 = 0x00000304;
 D_308 = 0x00000308;
+D_A0 = 0x000000a0;
 D_F4 = 0x000000f4;
 
 /* overlay 55: overlay55ReleaseAll.c.o */
@@ -2224,9 +2244,12 @@ overlay56LoadResourceReloc = 0xf0000000;
 overlay56ReleaseResourceReloc = 0xf0000000;
 
 /* overlay 57: func_overlay_057_F0000000_18A3BF8.c.o */
+D_100 = 0x00000100;
 D_130 = 0x00000130;
 D_134 = 0x00000134;
+D_150 = 0x00000150;
 D_17C = 0x0000017c;
+D_180 = 0x00000180;
 D_18C = 0x0000018c;
 D_1A8 = 0x000001a8;
 D_29C = 0x0000029c;

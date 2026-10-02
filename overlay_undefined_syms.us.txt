@@ -675,17 +675,37 @@ overlay11ResidentFloatReloc = 0xf0000000;
 overlay11ResidentModeReloc = 0xf0000000;
 
 /* overlay 11: func_overlay_011_F0000150_1868998.c.o */
-D_1B0 = 0x000001b0;
-D_1B8 = 0x000001b8;
-D_1BA = 0x000001ba;
-D_1BC = 0x000001bc;
-D_200 = 0x00000200;
-D_204 = 0x00000204;
+amTuneSetFadeScaled_o011Reloc = 0xf0000000;
+camStandardOrtho_o011Reloc = 0xf0000000;
+func_80028F54_o011Reloc = 0xf0000000;
+func_800290A0_o011Reloc = 0xf0000000;
+func_800290AC_o011Reloc = 0xf0000000;
+func_800291D8_o011Reloc = 0xf0000000;
+func_8002A8C0_o011Reloc = 0xf0000000;
+func_800349A4_o011Reloc = 0xf0000000;
+gO11DisplayListReloc = 0x00000000;
+gO11MatrixReloc = 0x00000000;
+gO11VertexReloc = 0x00000000;
+gOverlay11Fade = 0x000001b0;
+gOverlay11GameStateReloc = 0x00000000;
+gOverlay11GridPhases = 0x00000000;
+gOverlay11GridTriangles = 0x00000030;
+gOverlay11HighlightStep = 0x000001bc;
+gOverlay11InputDelay = 0x00000200;
+gOverlay11Mode = 0x000001c0;
+gOverlay11OptionAction = 0x000001c4;
+gOverlay11OptionDone = 0x00000204;
+gOverlay11OptionHighlight = 0x000001b8;
+gOverlay11PadIndex = 0x000001c4;
+joyGetPressed_o011Reloc = 0xf0000000;
+mathRnd_o011Reloc = 0xf0000000;
+overlay11ResetMenuReloc = 0xf0000000;
+overlay11StopOverlay66Reloc = 0xf0000000;
+viGetCurrentSize_o011Reloc = 0xf0000000;
 
 /* overlay 11: overlay11CreateHandles.c.o */
 gOverlay11DirectResource = 0x00000000;
 gOverlay11Handles = 0x000001f0;
-gOverlay11Mode = 0x000001c0;
 gOverlay11Resources = 0x00000000;
 overlay11CreateReloc = 0xf0000000;
 overlay11SetValue = 0xf0000000;
@@ -717,8 +737,11 @@ overlay11PlaySoundReloc = 0xf0000000;
 overlay11ReadInputReloc = 0xf0000000;
 
 /* overlay 11: overlay11UpdateMenu.c.o */
+D_1B8 = 0x000001b8;
+D_1BC = 0x000001bc;
 D_1C4 = 0x000001c4;
 D_1CC = 0x000001cc;
+D_204 = 0x00000204;
 D_cfgA = 0x00000000;
 D_cfgB = 0x00000000;
 D_cfgC = 0x00000000;
@@ -747,30 +770,18 @@ gOverlay11FiveOptionSwitchTableReloc = 0x00000040;
 
 /* overlay 11: func_overlay_011_F0001E4C_186A694.c.o */
 amSndPlay_o011Reloc = 0xf0000000;
-amTuneSetFadeScaled_o011Reloc = 0xf0000000;
 func_80005820_o011Reloc = 0xf0000000;
-func_80028F54_o011Reloc = 0xf0000000;
-func_800290AC_o011Reloc = 0xf0000000;
-func_800291D8_o011Reloc = 0xf0000000;
 gOverlay11ConfigAReloc = 0x00000000;
 gOverlay11ConfigBReloc = 0x00000000;
 gOverlay11GameStateFlagReloc = 0x00000000;
-gOverlay11GameStateReloc = 0x00000000;
-gOverlay11OptionAction = 0x000001c4;
-gOverlay11OptionDone = 0x00000204;
 gOverlay11OptionHandles = 0x000001c8;
-gOverlay11OptionHighlight = 0x000001b8;
 gOverlay11OptionIndex = 0x000001bc;
 gOverlay11OptionSwitchTableReloc = 0x00000054;
-gOverlay11PadIndex = 0x000001c4;
 gOverlay11StickXReloc = 0x00000000;
-joyGetPressed_o011Reloc = 0xf0000000;
 levelGetNumber_o011Reloc = 0xf0000000;
 mainChangeCameras_o011Reloc = 0xf0000000;
 mainChangeLevel_o011Reloc = 0xf0000000;
-overlay11ResetMenuReloc = 0xf0000000;
 overlay11SetHandleValueReloc = 0xf0000000;
-overlay11StopOverlay66Reloc = 0xf0000000;
 
 /* overlay 11: func_overlay_011_F00022E8_186AB30.c.o */
 gOverlay11ModeOptionSwitchTableReloc = 0x00000068;
@@ -4611,6 +4622,7 @@ overlay101ResetReloc = 0xf0000000;
 
 /* overlay 101: func_overlay_101_F000512C_18E094C.c.o */
 D_1C8 = 0x000001c8;
+D_200 = 0x00000200;
 D_C78 = 0x00000c78;
 D_CE0 = 0x00000ce0;
 

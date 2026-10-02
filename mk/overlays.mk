@@ -2416,7 +2416,16 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o013/overlay13DrawActive.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x298
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11EnableHandles.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xD8
+# The menu background draw is instruction-exact. Its .rodata (two 0.05f
+# pool entries and the six-entry mode switch table) is the retained overlay
+# rodata at +0x20: assert the compiler's copy by digest and anchor its three
+# references there. No instruction changes.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/func_overlay_011_F0000150_1868998.c.o: \
+	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/func_overlay_011_F0000150_1868998.c.o: POSTPROCESS = \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:3cf0f06d2f930b6c90429208150d97e1f581e7c06d733df19d664be285427112 0x20 && \
+	$(OBJCOPY) --remove-section .rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8C8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11DisableHandles.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA0

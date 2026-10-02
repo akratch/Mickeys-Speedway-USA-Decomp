@@ -698,7 +698,10 @@ segments:
       # func_800389CC, func_80038BC4 and func_80038E1C's consecutive nineteen-entry
       # tables, plus the ROM's one zero pad word before the next float table.
       - [0x83334, .rodata, main/menu]
-      - [0x83430, rodata]
+      # weather's literal pool: rain_render_splashes' 0.175f age step, then
+      # three words of the object's own alignment padding.
+      - [0x83430, .rodata, main/weather]
+      - [0x83440, rodata]
       # func_80040740's switch table, then func_80040B88's two float literals
       # and one word of the object's own section padding.
       - [0x83658, .rodata, main/particles]

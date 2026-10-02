@@ -180,14 +180,8 @@ extern s32 D_8007C3C8;
 extern RainSplash D_8007C3E4[16];
 extern u8 D_7C6A8;
 extern s32 D_8007C6E8;
-extern f32 D_8007C6C8;
-extern f32 D_8007C6CC;
-extern f32 D_8007C6D0;
-extern f32 D_8007C6D4;
-extern f32 D_8007C6D8;
-extern f32 D_8007C6DC;
-extern f32 D_8007C6E0;
-extern f32 D_8007C6E4;
+extern f32 D_8007C6C8[4];
+extern f32 D_8007C6D8[4];
 extern s32 D_8007C6EC;
 extern s32 D_8007C6F0;
 extern s32 D_8007C6F4;
@@ -203,7 +197,6 @@ extern WeatherTexture *D_8007C718;
 extern s32 D_8007C71C;
 extern void *D_8007C720;
 extern void *D_800D40E4;
-extern f32 D_80082830;
 extern s32 osTvType;
 
 extern s32 func_800299E8(s32 min, s32 max);
@@ -746,42 +739,44 @@ void rain_update(s32 updateRate) {
     rain_lightning(updateRate);
 }
 /*
- * PROVENANCE -- control flow, spawn while-loop, delay increment, and splash
- * search adapted from Jet Force Gemini's public retail-derived
+ * PROVENANCE -- control flow, spawn while-loop, delay increment, splash
+ * search, the 0.175f/4.0f literals and the plain 0xFF vertex colours adapted
+ * from Jet Force Gemini's public retail-derived
  * src/weather.c::func_8005C188_5CD88 C body. Mickey's single height query,
- * random bounds, type test, age global, and display-list words remain
- * authoritative. Four unused pointer declarations hold the 0xB8 frame (L99).
+ * random bounds, type test, and display-list words remain authoritative.
+ *
+ * Matched 2026-10-02 (lane x-res; earlier passes d-res1, e-res3, w6-rain).
+ * What closed it, each measured as a product: the four splash vertices are
+ * one counted loop over two four-float offset tables, which IDO's unroller
+ * expands into the target's four copies (100 -> 8, the s1/s2/s3 ranking that
+ * every earlier pass worked on is the unrolled loop's, not a colour fact); the
+ * age step is the 0.175f literal (a loop-invariant constant web, where a
+ * global load or an `age` carrier swaps f20/f22); each display-list packet is
+ * one GBI-style macro on one line, which gives the target's w1-before-w0
+ * store order for every independent packet with no per-packet reordering;
+ * the block-scope packet pointers and two unused declarations place the
+ * height-result home at 0x84 in the 0xB8 frame.
  */
-#ifdef NON_MATCHING
-/* 2026-10-02 (lane e-res3): 109 -> 105. Shape checklist item 6: a 64-cell product
- * over the store order of the six display-list packets in the draw loop; the
- * FA C0E0FFFF, 0x05110020 and final FA packets store w1 before w0. The four
- * vertex-field store orders (xyz/colour, 81-cell probe) are best as written.
- * 2026-10-02 (lane w6-rain): 105 -> 100. Each colour byte is 0xFF combined
- * with index minus index. The type-2 0xFF web stays at save 40, totalsave
- * 160; the index web's nocs grows from 6 to 7 and its save falls from 56.8
- * to 48.7. A second store of 0xFF, and a u8 retype of the existing masks,
- * do not raise that web at size delta 0. */
+#define RAIN_PACKET(pkt, word0, word1)                                        \
+    {                                                                          \
+        Gfx *_g = (Gfx *) (pkt);                                               \
+        _g->w0 = (word0);                                                      \
+        _g->w1 = (word1);                                                      \
+    }
 void rain_render_splashes(s32 updateRate) {
-    void *unused0;
-    void *unused1;
-    void *unused2;
-    void *unused3;
+    s32 unused0;
     RainSplash *splash;
     RainPlayer *player;
     s32 density;
-    s32 delay;
-    s32 countdown;
     s32 index;
     s32 found;
     s32 temp;
-    RainHeight **heightResult;
     f32 radius;
     f32 x;
     f32 z;
-    f32 age;
-    Gfx *cmd;
-    s16 *vertex;
+    s32 j;
+    s32 unused1;
+    RainHeight **heightResult;
 
     if (D_8007C714 == NULL || D_8007C718 == NULL) {
         return;
@@ -830,85 +825,39 @@ void rain_render_splashes(s32 updateRate) {
             }
         }
     }
-    cmd = D_800D40CC;
-    D_800D40CC = cmd + 1;
-    cmd->w0 = 0xFB000000;
-    cmd->w1 = (u32) -0x100;
-    age = D_80082830;
+    RAIN_PACKET(D_800D40CC++, 0xFB000000, (u32) -0x100);
     splash = D_8007C3E4;
     for (index = 0; index < 0x10; index++, splash++) {
         if (splash->state != 0) {
-            splash->age += (f32) updateRate * age;
+            splash->age += updateRate * 0.175f;
             if (splash->age < 4.0f) {
                 if (splash->state == 1) {
-                    cmd = D_800D40CC;
-                    D_800D40CC = cmd + 1;
-                    cmd->w0 = 0xFA000000;
-                    cmd->w1 = (u32) ((splash->alpha & 0xFF) | ~0xFF);
+                    RAIN_PACKET(D_800D40CC++, 0xFA000000, (u32) ((splash->alpha & 0xFF) | ~0xFF));
                     func_80023A08(&D_800D40CC, &D_800D40D0, &D_800D40D4,
                                   splash, D_8007C714, 0xE, 0);
                 } else {
                     func_800349A4(&D_800D40CC, D_8007C718, 0xE, 0);
-                    cmd = D_800D40CC;
-                    D_800D40CC = cmd + 1;
-                    cmd->w1 = 0xC0E0FFFF;
-                    cmd->w0 = 0xFA000000;
-                    cmd = D_800D40CC;
-                    D_800D40CC = cmd + 1;
-                    cmd->w0 = ((((((s32) D_800D40D4 + 0x80000000) & 6) | 0x20) & 0xFF) << 16) |
-                               0x04000000 | 0x30;
-                    cmd->w1 = (u32) ((s32) D_800D40D4 + 0x80000000);
-                    cmd = D_800D40CC;
-                    D_800D40CC = cmd + 1;
-                    cmd->w1 = (u32) &D_7C6A8;
-                    cmd->w0 = 0x05110020;
-
-                    D_800D40D4->x = (s16) (D_8007C6C8 * splash->age + splash->x);
-                    D_800D40D4->y = (s16) splash->height;
-                    D_800D40D4->z = (s16) (D_8007C6D8 * splash->age + splash->z);
-                    D_800D40D4->r = (u8) (0xFF ^ (index - index));
-                    D_800D40D4->g = (u8) (0xFF ^ (index - index));
-                    D_800D40D4->b = (u8) (0xFF ^ (index - index));
-                    D_800D40D4->a = (u8) (0xFF ^ (index - index));
-                    D_800D40D4++;
-                    D_800D40D4->x = (s16) (D_8007C6CC * splash->age + splash->x);
-                    D_800D40D4->y = (s16) splash->height;
-                    D_800D40D4->z = (s16) (D_8007C6DC * splash->age + splash->z);
-                    D_800D40D4->r = (u8) (0xFF ^ (index - index));
-                    D_800D40D4->g = (u8) (0xFF ^ (index - index));
-                    D_800D40D4->b = (u8) (0xFF ^ (index - index));
-                    D_800D40D4->a = (u8) (0xFF ^ (index - index));
-                    D_800D40D4++;
-                    D_800D40D4->x = (s16) (D_8007C6D0 * splash->age + splash->x);
-                    D_800D40D4->y = (s16) splash->height;
-                    D_800D40D4->z = (s16) (D_8007C6E0 * splash->age + splash->z);
-                    D_800D40D4->r = (u8) (0xFF ^ (index - index));
-                    D_800D40D4->g = (u8) (0xFF ^ (index - index));
-                    D_800D40D4->b = (u8) (0xFF ^ (index - index));
-                    D_800D40D4->a = (u8) (0xFF ^ (index - index));
-                    D_800D40D4++;
-                    D_800D40D4->x = (s16) (D_8007C6D4 * splash->age + splash->x);
-                    D_800D40D4->y = (s16) splash->height;
-                    D_800D40D4->z = (s16) (D_8007C6E4 * splash->age + splash->z);
-                    D_800D40D4->r = (u8) (0xFF ^ (index - index));
-                    D_800D40D4->g = (u8) (0xFF ^ (index - index));
-                    D_800D40D4->b = (u8) (0xFF ^ (index - index));
-                    D_800D40D4->a = (u8) (0xFF ^ (index - index));
-                    D_800D40D4++;
+                    RAIN_PACKET(D_800D40CC++, 0xFA000000, 0xC0E0FFFF);
+                    RAIN_PACKET(D_800D40CC++, ((((((s32) D_800D40D4 + 0x80000000) & 6) | 0x20) & 0xFF) << 16) | 0x04000000 | 0x30, (u32) ((s32) D_800D40D4 + 0x80000000));
+                    RAIN_PACKET(D_800D40CC++, 0x05110020, (u32) &D_7C6A8);
+                    for (j = 0; j < 4; j++) {
+                        D_800D40D4->x = (D_8007C6C8[j] * splash->age) + splash->x;
+                        D_800D40D4->y = splash->height;
+                        D_800D40D4->z = (D_8007C6D8[j] * splash->age) + splash->z;
+                        D_800D40D4->r = 0xFF;
+                        D_800D40D4->g = 0xFF;
+                        D_800D40D4->b = 0xFF;
+                        D_800D40D4->a = 0xFF;
+                        D_800D40D4++;
+                    }
                 }
             } else {
                 splash->state = 0;
             }
         }
     }
-    cmd = D_800D40CC;
-    D_800D40CC = cmd + 1;
-    cmd->w1 = (u32) -1;
-    cmd->w0 = 0xFA000000;
+    RAIN_PACKET(D_800D40CC++, 0xFA000000, (u32) -1);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/weather/rain_render_splashes.s")
-#endif
 /*
  * PROVENANCE -- body adapted from Diddy Kong Racing's and Jet Force Gemini's
  * public retail-derived src/weather.c::rain_lightning. Mickey's thresholds,
@@ -959,13 +908,3 @@ void rain_sound(s32 updateRate) {
         func_800031C0(D_8007C720, x, y, z);
     }
 }
-
-/* PLATEAU-HANDOFF:rain_render_splashes:start
- * symbol: rain_render_splashes
- * score: 100/404 words
- * frame: 0xB8
- * relocations: 0
- * first-mismatch: +0x94
- * summary: Index-difference colour stores (105->100); 0xFF web still save 40, totalsave 160, below splash 76.8
- * PLATEAU-HANDOFF:rain_render_splashes:end
- */

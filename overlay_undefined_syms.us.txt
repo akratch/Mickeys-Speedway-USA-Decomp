@@ -1314,6 +1314,13 @@ overlay30ResetReloc = 0xf0000000;
 overlay30ResourceSizeReloc = 0xf0000000;
 overlay30SetupReloc = 0xf0000000;
 
+/* overlay 31: overlay31BuildLookupTables.c.o */
+func_8002A8BC_o031Reloc = 0xf0000000;
+func_8002A8C0_o031Reloc = 0xf0000000;
+gOverlay31FloatRows = 0x00000000;
+gOverlay31IndexRows = 0x00000000;
+overlay31AllocateReloc = 0xf0000000;
+
 /* overlay 31: overlay31InitializeParticleAssets.c.o */
 gOverlay31AssetStates = 0x00000000;
 gOverlay31BehaviourAssetCount = 0x00000000;
@@ -1325,9 +1332,6 @@ gOverlay31ParticleAssets = 0x00000000;
 overlay31BuildPalettesReloc = 0xf0000000;
 overlay31GetMiscAssetReloc = 0xf0000000;
 overlay31LoadAssetTableReloc = 0xf0000000;
-
-/* overlay 31: overlay31BuildPalettes.c.o */
-overlay31AllocateReloc = 0xf0000000;
 
 /* overlay 31: overlay31InitializeBuffers.c.o */
 gOverlay31Configs = 0x00000000;

@@ -1843,10 +1843,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o020/func_overlay_020_F0001148_1877720.c.o: POS
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x33C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31CreateRecords.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xB8
-# NON_MATCHING fallback assembly supplies the retail body; restore the
-# friendly source symbol and retain the exact text extent when needed.
+# Exact C; trim only compiler section alignment beyond the function's
+# 0x2E8-byte extent.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31BuildLookupTables.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_031_F0000000_187F520=func_overlay_031_F0000000_187F520 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2E8
 # Exact C owns all 245 words and 54 relocation records. Trim only compiler
 # section alignment beyond the function's measured 0x3D4-byte extent.

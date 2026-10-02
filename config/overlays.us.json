@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 362312,
-  "nonmatching_overlay_c_bytes": 106292,
+  "matched_overlay_c_bytes": 363056,
+  "nonmatching_overlay_c_bytes": 105548,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4560,
   "bss_bytes": 77680,
@@ -6929,7 +6929,7 @@
      "type": "c",
      "source": "overlays/o031/overlay31BuildLookupTables",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x2E8",

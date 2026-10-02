@@ -896,12 +896,13 @@ extern void *LOCAL_BSS_1D9C;
  * layouts follow Mickey's runtime identities and access widths. The
  * declarations follow the target's home ladder (every declared local takes a
  * slot in declaration order here, so a new local must replace a free one).
- * 2026-10-02 (g-o001big), 1061 to 48 at delta 0: `while (n--)` for the
+ * 2026-10-02 (g-o001big), 1061 to 41 at delta 0: `while (n--)` for the
  * surface and update loops, an else-arm for the last slope case, the angle
  * magnitude and the slope/spin/decel/steering factor in their own locals
  * (impulse keeps `scale`, the target's 0x80 home), the decel amount in
- * `work`, field reads instead of the value2 carriers, the impulse velocity
- * and the action callback, the limit product level-first, the slope factor
+ * `extraScale` with the interpolation, field reads instead of the value2
+ * carriers, the impulse velocity and the action callback, the limit
+ * product level-first, the slope factor
  * as slope * tuning[3] * 0.5f, the steering value as one expression, `+=`
  * for the reverse-speed steps, deltaZ before inverseUpdate and the three
  * velocity stores before the position updates (all of these move ugen's
@@ -1240,9 +1241,9 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
             } else if (keys & 0x8000) {
                 if ((state->boostMode == 1) || (state->boostMode == 2)) {
                     if (G_offd_31a4 == 0) {
-                        work = 0.3334f;
+                        extraScale = 0.3334f;
                     } else {
-                        work = 0.5f;
+                        extraScale = 0.5f;
                     }
                 } else {
                     if (state->forwardVelocity > 0.0f) {
@@ -1254,16 +1255,16 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
                         extraScale = work - (f32) index;
                     }
                     work = tuning[index + 17];
-                    work = ((tuning[index + 18] - work) * extraScale) + work;
+                    extraScale = ((tuning[index + 18] - work) * extraScale) + work;
                 }
-                work *= state->speedScale;
+                extraScale *= state->speedScale;
                 if (state->forwardVelocity < -limit) {
                     state->forwardVelocity *= 0.99f;
                     if (-limit < state->forwardVelocity) {
                         state->forwardVelocity = -limit;
                     }
                 } else {
-                    state->forwardVelocity -= work;
+                    state->forwardVelocity -= extraScale;
                     if (state->forwardVelocity < -limit) {
                         state->forwardVelocity = -limit;
                     }
@@ -3208,10 +3209,10 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C
- * score: 48/1542 words
+ * score: 41/1542 words
  * frame: 0x138
  * relocations: 184
  * first-mismatch: +0x824
- * summary: Decel amount in work, impulse velocity read direct, += reverse steps: 61 to 48; rest is float ring order and a few colours
+ * summary: Decel amount in extraScale beside the interpolation: 48 to 41; rest is float ring order, steering work colour, action loop reload
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
  */

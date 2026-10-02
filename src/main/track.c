@@ -3183,7 +3183,14 @@ s32 func_80010900(TrackVec3f *arg0, TrackVec3f *arg1, f32 arg2, s32 arg3,
  * the update-loop pointers are set before the minimum search. Left: the
  * index/bit saved-register pair (s6/s7 swapped), failureMask held in a
  * register in the main loop, the stack homes below direction, and the
- * minimum-index * 12 spelled as shifts instead of adds. */
+ * minimum-index * 12 spelled as shifts instead of adds.
+ * 167 (195 -> 167, 2026-10-02 lane p-track3): the bit-over-index save probe
+ * in the retry loop (s6/s7 now as in the target), the failure branch clears
+ * collision before setting the failure bit, and the main-loop tail shifts
+ * bit after the scale cursor. Left: 67 stack-displacement words (the target
+ * has about nine more declared homes and no unused compiler cells below
+ * `record`), the copy loops' relative pointer in v0 where the target has a0
+ * (the remainder bound takes v0 there), and the minimum-index * 12. */
 typedef struct TrackContactRecord {
     s32 unk0;
     f32 unk4[12];
@@ -3272,6 +3279,10 @@ s32 func_80010B4C(s32 count, f32 *start, f32 *end, f32 *radius,
             tries = 0;
             scale = *scalePtr;
             do {
+                /* L109 probe, deleted by uopt: two depth-3 references lift
+                 * bit's save from 234 to 401 above index's 268, so bit
+                 * takes s6 and index s7 as in the target (193 -> 167). */
+                bit = bit | 0;
                 collision = 0;
                 auxiliaryResult = 0;
                 direction.x = point[0] - rel[0];
@@ -3314,15 +3325,15 @@ s32 func_80010B4C(s32 count, f32 *start, f32 *end, f32 *radius,
                         tries++;
                         if (tries >= 11) {
                             collisionMask = 0;
-                            failureMask |= 0x40000000;
                             collision = 0;
+                            failureMask |= 0x40000000;
                         }
                     }
                 }
             } while (collision != 0);
             index++;
-            bit <<= 1;
             scalePtr++;
+            bit <<= 1;
         } while ((index < count) && (failureMask == 0));
         if (((collisionMask != 0) && (attempt >= 11)) || (failureMask != 0)) {
             resultMask = 0;
@@ -4611,6 +4622,9 @@ u32 func_8001357C(f32 arg0, f32 arg1, f32 *arg2, s32 arg3, void *arg4) {
  * save-300 tie (a0, left a1) while the loads are still emitted left first.
  * Left: AND operand order (+0x15C), surface-base load order (+0x1A8), the
  * hit-list and unrolled-sort preheader sll/addu orders (+0x34C, +0x400).
+ * 8 (11 -> 8, 2026-10-02 lane p-track3): batchFlags is s32, which puts it
+ * first in the AND, and the hit-list loop tests `++orderIndex`. Left: the
+ * surface-base load order (+0x1A8, 4) and the sort preheader (+0x400, 4).
  * Previous, 45 (70 -> 45, 2026-10-02 lane n-track): the compare mask is a block-scope local of the segment loop (its
  * spill cell is then the target's 0x90), the three plane coefficients are
  * locals read after the mathXZInTri call and the height is stored straight
@@ -4649,7 +4663,7 @@ s32 func_8001398C(f32 arg0, f32 arg1, s32 arg2, void **arg3) {
     s32 z;
     s32 batchNumber;
     s32 triangleIndex;
-    u32 batchFlags;
+    s32 batchFlags;
     s8 textureFlag;
     s32 resultCount;
     s32 orderIndex;
@@ -4757,8 +4771,7 @@ s32 func_8001398C(f32 arg0, f32 arg1, s32 arg2, void **arg3) {
     if (resultCount > 0) {
         do {
             D_800C9CD0[orderIndex] = &hit[orderIndex];
-            orderIndex++;
-        } while (orderIndex != resultCount);
+        } while (++orderIndex != resultCount);
     }
     do {
         orderIndex = 0;
@@ -5577,11 +5590,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001398C:start
  * symbol: func_8001398C
- * score: 11/330 words
+ * score: 8/330 words
  * frame: 0x140
  * relocations: 21
- * first-mismatch: +0x15C
- * summary: Dead right-element store breaks the sort tie (45->11); left: AND order, surface-base load, two preheader orders.
+ * first-mismatch: +0x1A8
+ * summary: s32 batchFlags fixes AND order, ++orderIndex hit-list test (11->8); left: surface-base load +0x1A8, sort preheader +0x400.
  * PLATEAU-HANDOFF:func_8001398C:end
  */
 
@@ -5607,10 +5620,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80010B4C:start
  * symbol: func_80010B4C
- * score: 195/678 words
+ * score: 167/678 words
  * frame: 0x148
  * relocations: 9
  * first-mismatch: +0x54
- * summary: Sibling-shape rewrite (662 at +56 -> 195 at 0); left: index/bit s6/s7, failureMask spill, homes below direction.
+ * summary: bit save probe flips s6/s7, failure-branch and tail order (195->167); left: 67 stack homes, copy-loop v0/a0, min*12.
  * PLATEAU-HANDOFF:func_80010B4C:end
  */

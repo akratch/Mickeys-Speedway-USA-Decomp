@@ -281,8 +281,8 @@ Relocation-masked mismatch evidence covers **142 / 142** resolved rows. The raw 
 |---|---:|
 | raw `differing_words <= 5` | 0 |
 | relocation-masked `differing_words <= 5` | 0 |
-| raw `differing_words <= 10` | 1 |
-| relocation-masked `differing_words <= 10` | 2 |
+| raw `differing_words <= 10` | 2 |
+| relocation-masked `differing_words <= 10` | 3 |
 | raw `differing_words <= 20` | 4 |
 | relocation-masked `differing_words <= 20` | 5 |
 
@@ -296,8 +296,8 @@ units remain distinct.
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/lights.c` | `func_80019AB8` | `main` | `register-only` | 736 | 56 | 56 | 128 | 128 | 0 | — |
 | 2 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0001294_185EFEC` | `o008` | `other` | 5,036 | 60 | 7 | 112 | 216 | 0 | — |
-| 3 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
-| 4 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 11 | 11 | 348 | 348 | 0 | — |
+| 3 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 8 | 8 | 424 | 424 | 0 | — |
+| 4 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
 | 5 | `src/overlays/o015/overlay_015.c` | `overlay15InitStarsAndPalette` | `o015` | `other` | 988 | 18 | 17 | 112 | 112 | 0 | — |
 | 6 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 36 | 33 | 96 | 136 | 0 | — |
 | 7 | `src/overlays/o073/overlay73Draw.c` | `func_overlay_073_F0000D70_18CB830` | `o073` | `other` | 312 | 42 | 42 | 28 | 28 | 0 | — |
@@ -340,17 +340,17 @@ units remain distinct.
 | 44 | `src/overlays/o012/func_overlay_012_F00003A8_186D628.c` | `func_overlay_012_F00003A8_186D628` | `o012` | `other` | 1,384 | 159 | 159 | 200 | 200 | 0 | — |
 | 45 | `src/overlays/o038/overlay38UpdateParticles.c` | `func_overlay_038_F0000154_1885E64` | `o038` | `other` | 808 | 160 | 159 | 32 | 32 | 0 | — |
 | 46 | `src/main/track.c` | `func_80010654` | `main` | `other` | 684 | 162 | 162 | 0 | 0 | 0 | — |
-| 47 | `src/main/fx.c` | `fxSPDPRipple` | `main` | `other` | 928 | 169 | 169 | 104 | 104 | 0 | — |
-| 48 | `src/overlays/o020/overlay20UpdateGrid.c` | `overlay20UpdateGrid` | `o020` | `other` | 860 | 173 | 173 | 0 | 0 | 0 | — |
-| 49 | `src/main/textures_354C8.c` | `func_800349A4` | `main` | `other` | 1,088 | 175 | 175 | 36 | 36 | 0 | — |
-| 50 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 177 | 177 | 36 | 36 | 0 | — |
-| 51 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 180 | 180 | 28 | 28 | 0 | — |
-| 52 | `src/main/fx.c` | `func_80049B14` | `main` | `other` | 824 | 181 | 181 | 4 | 4 | 0 | — |
-| 53 | `src/main/track.c` | `func_8000F198` | `main` | `other` | 996 | 185 | 185 | 0 | 0 | 0 | — |
-| 54 | `src/main/track.c` | `func_800140CC` | `main` | `other` | 868 | 187 | 187 | 0 | 0 | 0 | — |
-| 55 | `src/main/track.c` | `func_8001357C` | `main` | `other` | 1,040 | 189 | 189 | 8 | 8 | 0 | — |
-| 56 | `src/overlays/o099/overlay99ApplySegment.c` | `overlay99ApplySegment` | `o099` | `other` | 920 | 191 | 190 | 80 | 80 | 0 | — |
-| 57 | `src/main/track.c` | `func_80010B4C` | `main` | `other` | 2,712 | 195 | 195 | 84 | 84 | 0 | — |
+| 47 | `src/main/track.c` | `func_80010B4C` | `main` | `other` | 2,712 | 167 | 167 | 84 | 84 | 0 | — |
+| 48 | `src/main/fx.c` | `fxSPDPRipple` | `main` | `other` | 928 | 169 | 169 | 104 | 104 | 0 | — |
+| 49 | `src/overlays/o020/overlay20UpdateGrid.c` | `overlay20UpdateGrid` | `o020` | `other` | 860 | 173 | 173 | 0 | 0 | 0 | — |
+| 50 | `src/main/textures_354C8.c` | `func_800349A4` | `main` | `other` | 1,088 | 175 | 175 | 36 | 36 | 0 | — |
+| 51 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 177 | 177 | 36 | 36 | 0 | — |
+| 52 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 180 | 180 | 28 | 28 | 0 | — |
+| 53 | `src/main/fx.c` | `func_80049B14` | `main` | `other` | 824 | 181 | 181 | 4 | 4 | 0 | — |
+| 54 | `src/main/track.c` | `func_8000F198` | `main` | `other` | 996 | 185 | 185 | 0 | 0 | 0 | — |
+| 55 | `src/main/track.c` | `func_800140CC` | `main` | `other` | 868 | 187 | 187 | 0 | 0 | 0 | — |
+| 56 | `src/main/track.c` | `func_8001357C` | `main` | `other` | 1,040 | 189 | 189 | 8 | 8 | 0 | — |
+| 57 | `src/overlays/o099/overlay99ApplySegment.c` | `overlay99ApplySegment` | `o099` | `other` | 920 | 191 | 190 | 80 | 80 | 0 | — |
 | 58 | `src/main/shadows.c` | `func_80017BCC` | `main` | `other` | 1,256 | 217 | 217 | 88 | 88 | 0 | — |
 | 59 | `src/main/rcpFast3d.c` | `func_8002EBE0` | `main` | `other` | 1,020 | 218 | 218 | 0 | 0 | 0 | — |
 | 60 | `src/main/models.c` | `func_8002057C` | `main` | `other` | 1,368 | 220 | 220 | 60 | 60 | 0 | — |

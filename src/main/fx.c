@@ -1797,10 +1797,22 @@ void func_8004A51C(void) {
         record++;
     }
 }
-#ifdef NON_MATCHING
 /* PROVENANCE -- Jet Force Gemini's public fx.c places the same-named
  * fxSPDPRipple routine at this TU boundary, but publishes assembly only.
- * Mickey's target assembly supplies the fields, constants, and call order. */
+ * Mickey's target assembly supplies the fields, constants, and call order.
+ *
+ * Matched by discarding the inherited shape. What decided it, in order:
+ * the three wave phases are this function's own statics (ROM 0x7DF70, the
+ * TU's .data), so each is a register web with by-name loads and stores and
+ * no address web; the packets are the SDK macros, whose unused `_g` copies
+ * still take colours (a0 in the setup block, v1 in the colour block);
+ * rippleEnabled is read from the level at each use; the three samples are
+ * one expression, so each result is saved in the next call's delay slot; the
+ * clamp is a conditional expression, whose empty arm is the extra block that
+ * ranks the hoisted fill-rectangle word above alphaHigh and alphaLow, which
+ * then live in their homes; alpha is rescaled in place; and `top`, a copy of
+ * the row taken before the colour packet, is the web that keeps t1 out of
+ * the temporary ring. */
 typedef struct FxRippleLevel {
     u8 pad00[0xFA];
     u8 rippleEnabled;
@@ -1809,64 +1821,45 @@ typedef struct FxRippleLevel {
 extern FxRippleLevel *levelGetLevel(void);
 extern s32 func_8002A204(s16 angle);
 
-/* w4-fx: volatile alphaHigh/alphaLow spill to 0x8C/0x84 so the hoisted arg3
- * command term keeps s8. next holds rippleEnabled once; a second field load
- * appears if that carrier is removed. Two unused pads (not four) hold frame
- * 0xA8. 169 masked, size delta 0. The three global addresses still CSE to
- * lui+addiu; scalar and volatile spellings of them were identical. */
 void fxSPDPRipple(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
                   s32 arg5) {
-    FxGfx *command;
+    static s16 sPhaseA = 0;
+    static s16 sPhaseB = 0x5555;
+    static s16 sPhaseC = 0xAAAA;
     FxRippleLevel *level;
     s32 angleA;
     s32 angleB;
     s32 angleC;
     s32 i;
-    volatile s32 alphaHigh;
+    s32 pad;
+    s32 alphaHigh;
     s32 alphaMid;
-    volatile s32 alphaLow;
-    s32 waveB;
-    s32 waveA;
+    s32 alphaLow;
     s32 wave;
     s32 red;
     s32 green;
     s32 blue;
     s32 alpha;
+    s32 top;
     s32 next;
-    s16 baseA;
-    s16 baseB;
-    s16 baseC;
-    s32 pad2;
-    s32 cmdHi;
 
     level = levelGetLevel();
     if ((level != NULL) && (level->rippleEnabled != 0)) {
         func_800349A4(dList, 0, 4, 0);
-        command = *dList;
-        *dList = command + 1;
-        command->w0 = 0xFCFFFFFF;
-        command->w1 = 0xFFFDF6FB;
-        baseA = D_8007D370[0] + ((arg5 << 0xD) >> 4);
-        baseB = D_8007D374[0] + ((arg5 * -0x3C00) >> 4);
-        baseC = D_8007D378[0] + ((arg5 * 0x1800) >> 4);
-        D_8007D370[0] = baseA;
-        angleA = baseA + (arg2 << 0xA);
-        D_8007D374[0] = baseB;
-        D_8007D378[0] = baseC;
-        next = level->rippleEnabled;
-        alphaMid = (next * 0x50) >> 7;
-        angleB = baseB + (arg2 * 0xBA2);
-        angleC = baseC + (arg2 * 0x28F);
-        alphaHigh = (next * 0x58) >> 7;
-        alphaLow = (next * 0x48) >> 7;
-        i = arg2;
-        if (i < arg4) {
-            cmdHi = ((arg3 & 0x3FF) << 0xE) | 0xF6000000;
-            do {
-            waveB = func_8002A204(angleB);
-            waveA = func_8002A204(angleA);
-            wave = ((func_8002A204(angleC) << 6) + (waveA * 0xC0) +
-                    (waveB * 0x60)) >> 8;
+        gDPSetCombineMode((*dList)++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+        sPhaseA += (arg5 << 0xD) >> 4;
+        sPhaseB += (arg5 * -0x3C00) >> 4;
+        sPhaseC += (arg5 * 0x1800) >> 4;
+        angleA = sPhaseA + (arg2 << 0xA);
+        angleB = sPhaseB + (arg2 * 0xBA2);
+        angleC = sPhaseC + (arg2 * 0x28F);
+        alphaHigh = (level->rippleEnabled * 0x58) >> 7;
+        alphaMid = (level->rippleEnabled * 0x50) >> 7;
+        alphaLow = (level->rippleEnabled * 0x48) >> 7;
+        for (i = arg2; i < arg4; i++) {
+            wave = ((func_8002A204(angleA) * 0xC0) +
+                    (func_8002A204(angleB) * 0x60) +
+                    (func_8002A204(angleC) << 6)) >> 8;
             if (wave < 0) {
                 wave = -wave;
                 red = 8;
@@ -1879,39 +1872,23 @@ void fxSPDPRipple(FxGfx **dList, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
                 blue = 0xFF;
                 alpha = alphaHigh;
             }
-            if (wave > 0x10000) {
-                wave = 0x10000;
-            }
-            command = *dList;
+            wave = (wave > 0x10000) ? 0x10000 : wave;
+            red = (((red - 0x20) * wave) >> 0x10) + 0x20;
+            green = (((green - 0x78) * wave) >> 0x10) + 0x78;
+            blue = (((blue - 0xFF) * wave) >> 0x10) + 0xFF;
+            alpha = (((alpha - alphaMid) * wave) >> 0x10) + alphaMid;
             angleA += 0x400;
             angleB += 0xBA2;
             angleC += 0x28F;
-            red = (((red - 0x20) * wave) >> 0x10) + 0x20;
-            *dList = command + 1;
-            command->w0 = 0xFA000000;
-            green = (((green - 0x78) * wave) >> 0x10) + 0x78;
-            blue = (((blue - 0xFF) * wave) >> 0x10) + 0xFF;
-            command->w1 = (red << 0x18) | ((green & 0xFF) << 0x10) |
-                          ((blue & 0xFF) << 8) |
-                          (((((alpha - alphaMid) * wave) >> 0x10) + alphaMid) &
-                           0xFF);
-            command = *dList;
-            *dList = command + 1;
-            command->w0 = cmdHi | (((i + 1) & 0x3FF) * 4);
-            command->w1 = ((arg1 & 0x3FF) << 0xE) | ((i & 0x3FF) * 4);
-            command = *dList;
-            *dList = command + 1;
-            command->w1 = 0;
-            command->w0 = 0xE7000000;
-                i++;
-            } while (i != arg4);
+            top = i;
+            gDPSetPrimColor((*dList)++, 0, 0, red, green, blue, alpha);
+            next = i + 1;
+            gDPFillRectangle((*dList)++, arg1, top, arg3, next);
+            gDPPipeSync((*dList)++);
         }
         func_80034920(dList);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/fxSPDPRipple.s")
-#endif
 void fxQueueScreenEffect(s32 type, s32 value4, s32 value6, s32 value8,
                          s32 valueA, s32 valueC, s32 valueE, s32 value10) {
     FxScreenEffect *effect;
@@ -2124,16 +2101,6 @@ void func_8004AF68(void) {
 }
 
 
-
-/* PLATEAU-HANDOFF:fxSPDPRipple:start
- * symbol: fxSPDPRipple
- * score: 169 differing words
- * frame: 0xA8
- * relocations: 12
- * first-mismatch: +0x68
- * summary: extra-ILOD pair was alphaHigh in s8, not the w1 store. volatile alphas and one rippleEnabled load: size 0, 169 words. Stall: lines 2043-2049 address CSE.
- * PLATEAU-HANDOFF:fxSPDPRipple:end
- */
 
 /* PLATEAU-HANDOFF:func_80049B14:start
  * symbol: func_80049B14

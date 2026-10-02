@@ -2730,14 +2730,16 @@ extern f32 D_8008420C;
  * squares and cross-multiplies the six coordinates and the six doubled
  * coordinates directly.
  *
- * Plateau: 380 of 370 words, 374 differing from +0x8, frame 0xD8 -- the
- * target's. The previous candidate was an untranslated m2c draft whose ~40
- * single-use temporaries each reserved a stack home; that alone held the
- * frame at 0x188, 176 bytes above the target. Inlining them and letting the
- * dead coordinate carriers hold the later quadratic values reaches the exact
- * frame. What is left is ten words of surplus code: the target keeps arg1 in
- * a saved register and homes arg0, and it needs only one callee-saved
- * floating-point register where this candidate needs two.
+ * Plateau (2026-10-02, lane n-anim): 366 masked words at size delta +4
+ * (from 374 at +40). Locals follow the target's home ladder (quadratic
+ * terms, then the six vector components, then hit, then the position
+ * coordinates and their doubles); the dead coordinate carriers hold 4a, b*b,
+ * -b and 2a exactly where the target reuses their homes; the doubled second
+ * position is an inline sum. Assigning the vector pointers before the
+ * flags test reproduces the target's pointer-register vector access
+ * (+12 bytes, same score). Left: the target keeps arg1 in s0 (forcing that
+ * colour alone reaches size -8), spills arg0 at entry, rematerializes the
+ * position pointers after the quadratic, and declares four more homes.
  */
 s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                   s32 arg2, AnimCollisionShape *arg3,
@@ -2745,30 +2747,29 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     AnimVec3f *firstPoint;
     AnimVec3f *secondPoint;
     f32 radiusSq;
+    f32 discriminant;
+    f32 fraction;
+    AnimVec3f *firstVector;
+    AnimVec3f *secondVector;
     f32 quadA;
     f32 quadB;
     f32 quadC;
-    f32 discriminant;
-    f32 fraction;
     f32 stepX1;
     f32 stepY1;
     f32 stepZ1;
     f32 stepX2;
     f32 stepY2;
     f32 stepZ2;
-    f32 x1;
-    f32 y1;
-    f32 z1;
-    f32 x2;
-    f32 y2;
-    f32 z2;
-    f32 twoX1;
-    f32 twoY1;
-    f32 twoZ1;
-    f32 twoX2;
-    f32 twoY2;
-    f32 twoZ2;
     s32 hit;
+    f32 z2;
+    f32 z1;
+    f32 twoZ1;
+    f32 x1;
+    f32 twoX1;
+    f32 x2;
+    f32 y1;
+    f32 twoY1;
+    f32 y2;
 
     radiusSq = arg1->radius + arg3->radius;
     hit = 0;
@@ -2779,65 +2780,60 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
         stepX1 = secondPoint->x - firstPoint->x;
         stepY1 = secondPoint->y - firstPoint->y;
         stepZ1 = secondPoint->z - firstPoint->z;
-        if (((stepX1 * stepX1) + (stepY1 * stepY1) + (stepZ1 * stepZ1)) <=
-            radiusSq) {
+        if (stepX1 * stepX1 + stepY1 * stepY1 + stepZ1 * stepZ1 <= radiusSq) {
             arg4->object = arg0;
             arg4->value = arg2;
             arg4->fraction = 0.0f;
             return 1;
         }
     }
-    firstPoint = &arg1->vector;
-    stepX1 = firstPoint->x;
-    secondPoint = &arg3->vector;
-    stepX2 = secondPoint->x;
-    stepY1 = firstPoint->y;
-    stepY2 = secondPoint->y;
-    stepZ1 = firstPoint->z;
-    stepZ2 = secondPoint->z;
-    secondPoint = &arg3->position;
-    firstPoint = &arg1->position;
+    firstVector = &arg1->vector;
+    secondVector = &arg3->vector;
+    stepX1 = firstVector->x;
+    stepX2 = secondVector->x;
+    stepY1 = firstVector->y;
+    stepY2 = secondVector->y;
+    stepZ1 = firstVector->z;
+    stepZ2 = secondVector->z;
     quadA = (stepZ2 * stepZ2) +
             ((stepZ1 * stepZ1) - (2.0f * stepZ1 * stepZ2)) +
             (((stepX1 * stepX1) - (2.0f * stepX1 * stepX2)) +
              (stepX2 * stepX2) +
              (((stepY1 * stepY1) - (2.0f * stepY1 * stepY2)) +
               (stepY2 * stepY2)));
+    secondPoint = &arg3->position;
+    firstPoint = &arg1->position;
     z2 = secondPoint->z;
-    twoZ2 = 2.0f * z2;
     z1 = firstPoint->z;
-    twoZ1 = 2.0f * z1;
+    twoZ1 = z1 + z1;
     x1 = firstPoint->x;
-    twoX1 = 2.0f * x1;
+    twoX1 = x1 + x1;
     x2 = secondPoint->x;
-    twoX2 = 2.0f * x2;
     y1 = firstPoint->y;
-    twoY1 = 2.0f * y1;
+    twoY1 = y1 + y1;
     y2 = secondPoint->y;
-    twoY2 = y2 + y2;
-    quadB = ((stepZ2 * twoZ2) +
-             (((twoZ1 * stepZ1) - (twoZ1 * stepZ2)) - (twoZ2 * stepZ1))) +
-            ((((twoX1 * stepX1) - (twoX1 * stepX2)) - (twoX2 * stepX1)) +
-             (twoX2 * stepX2) +
-             ((((twoY1 * stepY1) - (twoY1 * stepY2)) - (twoY2 * stepY1)) +
-              (twoY2 * stepY2)));
+    quadB = ((stepZ2 * (z2 + z2)) +
+             (((twoZ1 * stepZ1) - (twoZ1 * stepZ2)) - ((z2 + z2) * stepZ1))) +
+            ((((twoX1 * stepX1) - (twoX1 * stepX2)) - ((x2 + x2) * stepX1)) +
+             ((x2 + x2) * stepX2) +
+             ((((twoY1 * stepY1) - (twoY1 * stepY2)) - ((y2 + y2) * stepY1)) +
+              ((y2 + y2) * stepY2)));
     quadC = (z2 * z2) + ((z1 * z1) - (twoZ1 * z2)) +
             (((x1 * x1) - (twoX1 * x2)) + (x2 * x2) +
              (((y1 * y1) - (twoY1 * y2)) + (y2 * y2)));
     if (quadA != 0.0f) {
-        twoZ2 = 4.0f * quadA;
-        discriminant = twoZ2 * (quadC - radiusSq);
-        twoX2 = quadB * quadB;
-        if (discriminant < twoX2) {
-            discriminant = sqrtf(twoX2 - discriminant);
-            hit = 0;
-            quadB = -quadB;
-            quadA = 2.0f * quadA;
-            fraction = (quadB - discriminant) / quadA;
-            if ((fraction >= 0.0f) && (fraction <= 1.0f)) {
-                discriminant = twoZ2 * (quadC - (radiusSq + 83.0f));
-                if (discriminant < twoX2) {
-                    fraction = (quadB - sqrtf(twoX2 - discriminant)) / quadA;
+        z1 = 4.0f * quadA;
+        discriminant = z1 * (quadC - radiusSq);
+        z2 = quadB * quadB;
+        if (discriminant < z2) {
+            discriminant = sqrtf(z2 - discriminant);
+            twoZ1 = -quadB;
+            x1 = 2.0f * quadA;
+            fraction = (twoZ1 - discriminant) / x1;
+            if (fraction >= 0.0f && fraction <= 1.0f) {
+                discriminant = z1 * (quadC - (radiusSq + 83.0f));
+                if (discriminant < z2) {
+                    fraction = (twoZ1 - sqrtf(z2 - discriminant)) / x1;
                     hit = 1;
                     if (fraction > 1.0f) {
                         fraction = 1.0f;
@@ -2852,12 +2848,10 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                 stepX1 = arg3->edge.x - arg1->edge.x;
                 stepY1 = arg3->edge.y - arg1->edge.y;
                 stepZ1 = arg3->edge.z - arg1->edge.z;
-                if (((stepX1 * stepX1) + (stepY1 * stepY1) +
-                     (stepZ1 * stepZ1)) <= radiusSq) {
-                    discriminant = twoZ2 * (quadC - (radiusSq + 83.0f));
-                    if (discriminant < twoX2) {
-                        fraction =
-                            (quadB - sqrtf(twoX2 - discriminant)) / quadA;
+                if (stepX1 * stepX1 + stepY1 * stepY1 + stepZ1 * stepZ1 <= radiusSq) {
+                    discriminant = z1 * (quadC - (radiusSq + 83.0f));
+                    if (discriminant < z2) {
+                        fraction = (twoZ1 - sqrtf(z2 - discriminant)) / x1;
                         hit = 1;
                         if (fraction > 1.0f) {
                             fraction = 1.0f;
@@ -2876,8 +2870,7 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
         stepX1 = arg3->edge.x - arg1->edge.x;
         stepY1 = arg3->edge.y - arg1->edge.y;
         stepZ1 = arg3->edge.z - arg1->edge.z;
-        if (((stepX1 * stepX1) + (stepY1 * stepY1) + (stepZ1 * stepZ1)) <=
-            radiusSq) {
+        if (stepX1 * stepX1 + stepY1 * stepY1 + stepZ1 * stepZ1 <= radiusSq) {
             arg4->object = arg0;
             arg4->value = arg2;
             hit = 1;
@@ -4166,11 +4159,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80054B3C:start
  * symbol: func_80054B3C
- * score: 374 differing words
- * frame: 0xD8
+ * score: 366 differing words
+ * frame: 0xC0
  * relocations: 3
- * first-mismatch: +0x8
- * summary: Rewritten as ordinary C; the frame now matches the target's 0xD8 and the candidate is 380 of 370 words, so the residual is ten words of surplus code plus register roles rather than allocation.
+ * first-mismatch: +0x0
+ * summary: 374 to 366, size +40 to +4: home-ladder locals, dead carriers hold 4a/b*b/-b/2a. Left: arg1 in s0, arg0 entry spill, 4 more homes
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

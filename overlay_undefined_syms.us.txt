@@ -1977,12 +1977,20 @@ overlay49RefractOutputReloc = 0xf0000000;
 overlay65UpdateReloc = 0xf0000000;
 
 /* overlay 50: overlay50Initialize.c.o */
-D_12C = 0x0000012c;
-D_2B0 = 0x000002b0;
-D_2C0 = 0x000002c0;
-D_2E0 = 0x000002e0;
-D_AC = 0x000000ac;
-D_BC = 0x000000bc;
+D_800D304E_o050Reloc = 0x00000000;
+D_800D3550_o050Reloc = 0x00000000;
+func_80000510_o050Reloc = 0xf0000000;
+func_80028F54_o050Reloc = 0xf0000000;
+func_8003A5A0_o050Reloc = 0xf0000000;
+func_8004B0A4_o050Reloc = 0xf0000000;
+gOverlay50InitScaleReloc = 0x00000004;
+levelGetNumber_o050Reloc = 0xf0000000;
+loadFrontEndList_o050Reloc = 0xf0000000;
+overlay45CreateDescriptor_o050Reloc = 0xf0000000;
+overlay45SetMode_o050Reloc = 0xf0000000;
+overlay56LoadResource_o050Reloc = 0xf0000000;
+runlinkDownloadCode_o050Reloc = 0xf0000000;
+setupFrontEndList_o050Reloc = 0xf0000000;
 
 /* overlay 50: overlay50PatchIndices.c.o */
 gOverlay50Objects = 0x00000000;
@@ -1996,14 +2004,12 @@ D_800C947C_o050Reloc = 0x00000000;
 D_800D3140_o050Reloc = 0x00000000;
 D_800D3144_o050Reloc = 0x00000000;
 D_800D31C8_o050Reloc = 0x00000000;
-D_800D3550_o050Reloc = 0x00000000;
 amSndPlay_o050Reloc = 0xf0000000;
 camStandardOrtho_o050Reloc = 0xf0000000;
 fontColour_o050Reloc = 0xf0000000;
 freeFrontEndItem_o050Reloc = 0xf0000000;
 func_800005CC_o050Reloc = 0xf0000000;
 func_800016EC_o050Reloc = 0xf0000000;
-func_80028F54_o050Reloc = 0xf0000000;
 func_800290A0_o050Reloc = 0xf0000000;
 func_8002F618_o050Reloc = 0xf0000000;
 func_80034920_o050Reloc = 0xf0000000;
@@ -2013,7 +2019,6 @@ func_80039E34_o050Reloc = 0xf0000000;
 func_8003A590_o050Reloc = 0xf0000000;
 func_8003A7D0_o050Reloc = 0xf0000000;
 func_8004A4B0_o050Reloc = 0xf0000000;
-func_8004B0A4_o050Reloc = 0xf0000000;
 func_8004B0DC_o050Reloc = 0xf0000000;
 func_8004B0F8_o050Reloc = 0xf0000000;
 joyGetPressed_o050Reloc = 0xf0000000;
@@ -2026,7 +2031,6 @@ o50Overlay1StateReloc = 0x00000000;
 o50ReverseScale = 0x00000008;
 o50SpeedText = 0x00000000;
 overlay45ReleaseDescriptor_o050Reloc = 0xf0000000;
-overlay45SetMode_o050Reloc = 0xf0000000;
 overlay56SplitTime_o050Reloc = 0xf0000000;
 overlay59BuildList_o050Reloc = 0xf0000000;
 overlay59DrawFrame_o050Reloc = 0xf0000000;
@@ -2051,6 +2055,7 @@ overlay50SplitTimeReloc = 0xf0000000;
 overlay50SubmitGlyphsReloc = 0xf0000000;
 
 /* overlay 51: overlay_051.c.o */
+D_BC = 0x000000bc;
 D_E0 = 0x000000e0;
 gOverlay51Handle = 0x00000000;
 gOverlay51Index = 0x000000e0;
@@ -2959,6 +2964,7 @@ D_74 = 0x00000074;
 D_90 = 0x00000090;
 D_94 = 0x00000094;
 D_A8 = 0x000000a8;
+D_AC = 0x000000ac;
 D_E8 = 0x000000e8;
 
 /* overlay 58: overlay58ReleaseResources.c.o */
@@ -2968,6 +2974,7 @@ overlay58ReleaseReloc = 0xf0000000;
 
 /* overlay 58: func_overlay_058_F00005FC_18AF7E4.c.o */
 D_1A0 = 0x000001a0;
+D_2B0 = 0x000002b0;
 D_2BC = 0x000002bc;
 
 /* overlay 58: overlay58SetNodeValue.c.o */

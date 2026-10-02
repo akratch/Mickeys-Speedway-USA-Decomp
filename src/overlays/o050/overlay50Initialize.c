@@ -1,189 +1,156 @@
 #include "PR/ultratypes.h"
 
-typedef struct O50Record {
-    u8 pad00[0x08];
-    s32 value08;
-    s16 value0C;
-    s16 value0E;
-    u8 pad10[0x08];
-    s32 value18;
-    s16 value1C;
-    s16 value1E;
-    u8 pad20[0x08];
-    s32 value28;
-    s16 value2C;
-    s16 value2E;
-    u8 pad30[0x08];
-    s32 value38;
-    s16 value3C;
-    s16 value3E;
-} O50Record;
+typedef struct O50Glyph {
+    void *texture;
+    void *alternate;
+    s32 glyph;
+    s16 x;
+    s16 y;
+} O50Glyph;
 
-typedef struct O50Config {
-    u8 pad00[0x04];
-    s16 value04;
-    u8 pad06[0x22];
-    f32 value28;
-    f32 value2C;
-    u8 pad30[0x5C];
-    f32 value8C;
-} O50Config;
+/* Tier D: the layout func_overlay_050_F0000334_1896CA4 gives this array. */
+typedef struct O50MenuObject {
+    s16 value00;
+    s16 value02;
+    s16 angle;
+    s16 index;
+    f32 value08;
+    f32 x;
+    f32 y;
+    f32 value14;
+    f32 frame;
+    u8 pad1C[4];
+} O50MenuObject;
 
-typedef struct O50Locals {
-    u8 *savedFlag;
-    u32 unused;
-} O50Locals;
+/* Overlay 50 was one translation unit (see func_overlay_050_F0000334_1896CA4):
+ * its runtime records address this function's .data and .bss through LOCAL
+ * (section-relative) records, and as1 shares one high half across the stores
+ * to adjacent fields of record 0 only for a TU-local symbol. So this TU, like
+ * that one, defines the overlay's data at the offsets the records address.
+ * The bytes belong to the retained overlay image: these zero initializers only
+ * fix the layout, and the object's .data, .bss and .rodata are dropped at
+ * POSTPROCESS with their records rebound to zero-valued bases
+ * (mk/overlays.mk). */
+static s32 sOverlay50Data000[27] = { 0 };
+static O50Glyph D_6C[4] = { 0 };
+static O50Glyph D_AC[3] = { 0 };
+static O50Glyph D_DC[2] = { 0 };
+static O50Glyph D_FC[3] = { 0 };
+static O50Glyph D_12C[10] = { 0 };
+static O50Glyph D_1CC[5] = { 0 };
+static s16 D_21C = 0;
+static O50Glyph sOverlay50LapTemplate[10] = { 0 };
+static O50Glyph D_2C0[2] = { 0 };
+static O50Glyph D_2E0[2] = { 0 };
+static O50Glyph D_300[2] = { 0 };
+static s8 o50Data320[8] = { 0 };
+static s32 D_328 = 0;
+static s8 D_32C[4] = { 0 };
+static s8 o50Data330[4] = { 0 };
+static s32 D_334 = 0;
+static s32 sOverlay50Data338 = 0;
+static s32 D_33C = 0;
+static s32 sOverlay50Data340[12] = { 0 };
 
-extern s16 D_0;
-extern s32 D_8;
-extern s16 D_C;
-extern s16 D_E;
-extern O50Record D_10[2];
-extern u8 D_48;
-extern u8 D_6C;
-extern s32 D_A0;
-extern f32 D_A4;
-extern f32 D_A8;
-extern s32 D_AC;
-extern s32 D_B0[3];
-extern s32 D_BC;
-extern s32 D_C0;
-extern void *D_C4;
-extern s16 D_C8;
-extern s16 D_CA;
-extern s32 D_DC;
-extern O50Record D_FC;
-extern u8 D_12C;
-extern u8 D_1CC;
-extern s32 D_228;
-extern s16 D_22C;
-extern s16 D_22E;
-extern O50Record D_230[2];
-extern u8 D_2B0;
-extern u8 D_2C0;
-extern u8 D_2E0;
-extern u8 D_300;
-extern s8 D_330;
-extern O50Config gO50Config;
-extern f32 gO50FloatSource;
+static O50Glyph o50LapGlyphs[10];
+static s32 sOverlay50BssA0;
+static f32 D_A4;
+static f32 D_A8;
+static s32 sOverlay50BssAC;
+static s32 D_B0[3];
+static s32 D_BC;
+static s32 D_C0;
+static void *o50BssC4;
+static s16 D_C8;
+static s16 D_CA;
 
-extern u8 *o50AcquireFlagReloc();
-extern void o50LoadReloc();
-extern void o50ConfigureReloc();
-extern void o50SetModeReloc();
-extern void o50EnableReloc();
-extern void overlay50PatchIndices(void *entry);
-extern void o50PrepareReloc();
-extern s16 o50ReadValueReloc();
-extern u8 *o50GetStateReloc();
-extern void o50SelectReloc();
-extern void *o50CreateA(void);
-extern void *o50CreateB(void *value);
-extern void *o50CreateC(void *value);
-extern void *o50CreateD(void *value, s32 x, s32 y, s32 count);
-extern void o50FinalizeReloc(void *value, void *arg);
+/* Tier B: runtime export identities; the *_o050Reloc names are the generated
+ * relocation surface. */
+extern O50MenuObject D_800D3550_o050Reloc[];
+extern s16 D_800D304E_o050Reloc;
 
-/* Workbench p7 batch 12: structure-mismatch; exact 185 instructions/-0x20 frame, 104 masked/112 raw words, first non-relocation +0x104.
- * Levers: config/value28/fill ordering improved the inherited 108-word floor; an end-pointer variant shortened output, while prior config/copy/flag probes stayed negative.
- * Remains: config-base coloring, record-copy schedule, and relocation identities; GLOBAL_ASM stays canonical. */
-#ifdef NON_MATCHING
+u8 *func_80028F54_o050Reloc(void); /* 0:+0x28B04 */
+void loadFrontEndList_o050Reloc(void *list); /* 0:+0x39738 */
+void setupFrontEndList_o050Reloc(void *list); /* 0:+0x39900 */
+void func_80000510_o050Reloc(s32); /* 0:+0xC0 */
+void runlinkDownloadCode_o050Reloc(s32); /* 0:+0x31828 */
+void overlay56LoadResource_o050Reloc(void); /* 56:+0x118 */
+s32 levelGetNumber_o050Reloc(void); /* 0:+0x2630C */
+void func_8004B0A4_o050Reloc(s32); /* 0:+0x4AC54 */
+void *func_8003A5A0_o050Reloc(s32); /* 0:+0x3A150 */
+void *overlay45CreateDescriptor_o050Reloc(void *, s32, s32, s32); /* 45:+0xC */
+void overlay45SetMode_o050Reloc(void *, s32); /* 45:+0x1BE0 */
+void overlay50PatchIndices(void *entry);
+
+/* Matched 2026-10-02 from a 104-word plateau. What it took:
+ *   - the overlay's data defined in the TU (see above), so the copy loop
+ *     indexes two real arrays and IDO's default unroller emits the shipped
+ *     one-plus-two-by-four copy;
+ *   - the descriptor stored to its global and read back from it, with no
+ *     carrier local: the global's address is then one web hoisted above the
+ *     branch, and as1 puts the NULL store in a branch-likely delay slot
+ *     (no -Wab,-r4300_mul needed);
+ *   - one resident callee (func_80028F54) called twice and levelGetNumber
+ *     called twice, where the inherited candidate had four names for them;
+ *   - 0.7f as a literal and an unused leading local for the saved-flag home.
+ */
 void func_overlay_050_F0000000_1896970(void) {
-    volatile O50Locals locals;
-    s32 *fill;
-    O50Record *source;
-    O50Record *dest;
-    O50Record *end;
-    O50Config *config;
-    u8 *state;
-    void *object;
+    s32 pad;
+    u8 *saved;
+    s32 i;
 
-    locals.savedFlag = o50AcquireFlagReloc();
-    o50LoadReloc(&D_0);
-    o50ConfigureReloc(&D_48);
-    o50SetModeReloc(4);
-    D_A0 = 0x104;
-    o50EnableReloc(0xB);
+    saved = func_80028F54_o050Reloc();
+    loadFrontEndList_o050Reloc(sOverlay50Data000);
+    setupFrontEndList_o050Reloc(&sOverlay50Data000[18]);
+    func_80000510_o050Reloc(4);
+    sOverlay50BssA0 = 0x104;
+    runlinkDownloadCode_o050Reloc(0xB);
 
-    overlay50PatchIndices(&D_6C);
-    overlay50PatchIndices(&D_12C);
-    overlay50PatchIndices(&D_AC);
-    overlay50PatchIndices(&D_DC);
-    overlay50PatchIndices(&D_FC);
-    overlay50PatchIndices(&D_300);
-    overlay50PatchIndices(&D_2C0);
-    overlay50PatchIndices(&D_2E0);
-    overlay50PatchIndices(&D_1CC);
+    overlay50PatchIndices(D_6C);
+    overlay50PatchIndices(D_12C);
+    overlay50PatchIndices(D_AC);
+    overlay50PatchIndices(D_DC);
+    overlay50PatchIndices(D_FC);
+    overlay50PatchIndices(D_300);
+    overlay50PatchIndices(D_2C0);
+    overlay50PatchIndices(D_2E0);
+    overlay50PatchIndices(D_1CC);
 
-    config = &gO50Config;
     D_A4 = -100.0f;
     D_A8 = 120.0f;
-    config->value8C = 42.0f;
-    config->value2C = -78.0f;
-    config->value28 = gO50FloatSource;
-    fill = D_B0;
-    config->value04 = 0x4000;
-    do {
-        *fill++ = 0xA0;
-    } while (fill < (s32 *)&D_BC);
-
-    o50PrepareReloc();
-    D_330 = -1;
-    D_0 = o50ReadValueReloc();
-    D_BC = -0x500;
-    D_C0 = -0x140;
-    D_8 = D_228;
-    D_E = D_22E;
-    D_C = D_22C;
-
-    source = D_230;
-    dest = D_10;
-    end = (O50Record *)&D_2B0;
-    do {
-        dest->value0C = source->value0C;
-        dest->value0E = source->value0E;
-        dest->value1C = source->value1C;
-        dest->value38 = source->value38;
-        dest->value3E = source->value3E;
-        dest->value1E = source->value1E;
-        dest->value18 = source->value18;
-        dest->value2C = source->value2C;
-        dest->value2E = source->value2E;
-        dest->value28 = source->value28;
-        dest->value3C = source->value3C;
-        dest->value08 = source->value08;
-        source++;
-        dest++;
-    } while (source != end);
-
-    state = o50GetStateReloc();
-    if (*state == 1) {
-        config->value2C += -40.0f;
-        D_FC.value0C -= 0x28;
-        D_FC.value1C -= 0x28;
+    D_800D3550_o050Reloc[4].x = 42.0f;
+    D_800D3550_o050Reloc[1].x = -78.0f;
+    D_800D3550_o050Reloc[1].value08 = 0.7f;
+    D_800D3550_o050Reloc[0].angle = 0x4000;
+    for (i = 0; i < 3; i++) {
+        D_B0[i] = 0xA0;
     }
 
-    if (*locals.savedFlag != 0) {
-        D_C4 = NULL;
+    overlay56LoadResource_o050Reloc();
+    o50Data330[0] = -1;
+    D_800D304E_o050Reloc = levelGetNumber_o050Reloc();
+    D_BC = -0x500;
+    D_C0 = -0x140;
+    for (i = 0; i < 9; i++) {
+        o50LapGlyphs[i].x = sOverlay50LapTemplate[i].x;
+        o50LapGlyphs[i].y = sOverlay50LapTemplate[i].y;
+        o50LapGlyphs[i].glyph = sOverlay50LapTemplate[i].glyph;
+    }
+
+    if (*func_80028F54_o050Reloc() == 1) {
+        D_800D3550_o050Reloc[1].x += -40.0f;
+        D_FC[0].x -= 0x28;
+        D_FC[1].x -= 0x28;
+    }
+
+    if (*saved == 0) {
+        func_8004B0A4_o050Reloc(3);
+        o50BssC4 = overlay45CreateDescriptor_o050Reloc(
+            func_8003A5A0_o050Reloc(levelGetNumber_o050Reloc()), 0xA0, 0x78, 0xC);
+        overlay45SetMode_o050Reloc(o50BssC4, 0);
     } else {
-        o50SelectReloc(3);
-        object = o50CreateD(o50CreateB(o50CreateA()),
-                            0xA0, 0x78, 0xC);
-        D_C4 = object;
-        o50FinalizeReloc(object, NULL);
+        o50BssC4 = NULL;
     }
     D_CA = 0;
     D_C8 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o050/overlay50Initialize/func_overlay_050_F0000000_1896970.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_050_F0000000_1896970:start
- * symbol: func_overlay_050_F0000000_1896970
- * score: 104/185 words
- * frame: 0x20
- * relocations: 98
- * first-mismatch: +0xC0
- * summary: Fresh proc-0 census: 35 draws/324 emissions. Record-copy schedule and saved-flag traffic remain unresolved; physical-line control is inert.
- * PLATEAU-HANDOFF:func_overlay_050_F0000000_1896970:end
- */

@@ -57,21 +57,16 @@ s32 func_8003484C(void *texture);
 void texLoadTextureAddr(s32 id, s32 value);
 void func_80034424(s32 enabled);
 void func_80034920(Gfx **displayList);
-void func_800349A4(Gfx **displayList, void *texture, s32 flags, s16 parameter);
+void func_800349A4(Gfx **displayList, void *texture, s32 flags, s32 parameter);
 void func_80020AD4(void);
 void func_8005AAC0(void *animation);
 extern s32 func_8004D7A8(s32 assetId, s32 assetOffset);
 extern u8 *func_8004D7E0(u8 *compressed, u8 *output);
 extern s32 func_8005A7A0(void *model, s32 modelId);
 extern s32 piRomLoadSection(u32 assetId, u32 address, s32 offset, s32 size);
-#ifdef NON_MATCHING
 struct ModelGfxSource;
 s32 func_8002057C(Gfx **out, struct ModelGfxSource *model, s32 arg2, s32 arg3,
                   s32 arg4, s32 arg5, s32 arg6);
-#else
-u8 func_8002057C(void **out, ObjectModel *model, s32 arg2, s32 arg3, s32 arg4,
-                 s32 arg5, s32 arg6);
-#endif
 void mmFree(void *ptr);
 
 /*
@@ -743,10 +738,11 @@ void func_800203E0(ObjectModel *model) {
         } while (loaded < model->numberOfTextures);
     }
     if (model->unk68 == NULL) {
-        model->textureAnimationCount = func_8002057C(&model->unk68, model, 0, 0, 0, 0xFF, 0);
+        model->textureAnimationCount = func_8002057C((Gfx **)&model->unk68,
+                                                     (struct ModelGfxSource *)model, 0, 0, 0, 0xFF, 0);
     }
     if (model->unk6C == NULL) {
-        func_8002057C(&model->unk6C, model, 4, 0, 0, 0xFF, 0);
+        func_8002057C((Gfx **)&model->unk6C, (struct ModelGfxSource *)model, 4, 0, 0, 0xFF, 0);
     }
 }
 /* Mickey-only reconstruction; JFG supplied no adoptable helper name or body. */
@@ -840,34 +836,49 @@ void func_80020B10(Gfx **displayList, s8 *textureIds, s8 *slots,
                    struct ModelTextureUsage *usage, s32 entryIndex,
                    u32 textureBase);
 
-/* PROVENANCE: declaration and cursor lifetimes are adapted from JFG upstream
- * efd5abb's corresponding makeModelGfx function. JFG retains that function as
- * GLOBAL_ASM; Mickey's own layout, constants, and bytes remain authority. */
-/* 2026-10-02 (lane e-res3): 225 -> 220. The BC00000A and triangle packets store
- * w1 before w0 (a 256-cell product over the store order of the eight
- * packets; the other six are inert or worse). Frame 0xD0 unchanged.
- * PLATEAU (2026-09-11): 229/342 words differ, first +0x3C; frame 0xD0 on both sides.
- * The 2026-08-31 plateau was measured at frame 0xC0 against the target's 0xD0: the
- * slots[] length is the L112 free parameter that solves it, and 13..16 all give 0xD0. */
-#ifdef NON_MATCHING
+/* PROVENANCE: declaration lifetimes were first adapted from JFG upstream
+ * efd5abb's corresponding makeModelGfx function, which JFG retains as
+ * GLOBAL_ASM; Mickey's own layout, constants, and bytes remain authority.
+ * Matched 2026-10-02 (lane x-models) by rewriting the inherited m2c shape:
+ * one-line packet macros (as1's same-line tie stores w1 first), the vertex
+ * length as (n << 3) + (n << 1) + 8 and the mode-0 address multiply unsigned,
+ * an s32 parameter (the callee takes s32), partFlags reused for the combined
+ * flags with the 0x800 test reading part->flags, an s32 texture index,
+ * partIndex reused as the copy counter, and the declaration order that lays
+ * the homes down from 0xCC exactly as the target does. */
+/* PROVENANCE: the packet layouts follow DKR's f3ddkr.h gSPVertexDKR,
+ * gSPPolygon and gSPSelectMatrixDKR (operand-before-opcode w0 order); the
+ * vertex length and destination fields are Mickey's own encoding. */
+#define gSPModelVertex(pkt, v, n, v0) { Gfx *_g = (Gfx *)(pkt); _g->words.w0 = _SHIFTL(((n) << 3) | ((u32)(v) & 6), 16, 8) | _SHIFTL(4, 24, 8) | _SHIFTL(MODEL_VTX_LEN(n) | ((v0) << 9), 0, 16); _g->words.w1 = (unsigned int)(v); }
+#define MODEL_VTX_LEN(n) (((n) << 3) + ((n) << 1) + 8)
+#define gSPModelPolygon(pkt, ptr, numTris, tex) { Gfx *_g = (Gfx *)(pkt); _g->words.w0 = _SHIFTL((((numTris) - 1) << 4) | (tex), 16, 8) | _SHIFTL(5, 24, 8) | _SHIFTL((numTris) * 16, 0, 16); _g->words.w1 = (unsigned int)(ptr); }
+#define gSPModelSelectMatrix(pkt, num) gMoveWd(pkt, 0x0A, 0, (num) << 6)
+#define MODEL_PHYS(x) ((u32)(x) & 0x0FFFFFFF)
+
 s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
                   s32 lowerGroup, s32 upperGroup, s32 forceSimple) {
     s32 partIndex;
-    s8 slots[16];
     Gfx *sourceDisplayList;
     ModelGfxPart *part;
-    ModelGfxCacheEntry *cacheEntry;
     ModelGfxTexture *texture;
-    void *lastTexture;
-    s32 lastParameter;
-    s32 cacheCount;
-    s32 cacheEnabled;
     s32 vertexCount;
     s32 triangleCount;
-    s32 commandCount;
-    u32 i;
+    u32 commandCount;
     s32 previousVertex;
-    Gfx *command;
+    s32 slotIndex;
+    s32 nextVertex;
+    s32 lastParameter;
+    s32 parameter;
+    s32 cacheEnabled;
+    s32 partFlags;
+    s32 cacheCount;
+    s8 slots[4];
+    s32 textureIndex;
+    void *lastTexture;
+    s16 vertexStart;
+    s16 vertexIndex;
+    void *address;
+    ModelGfxCacheEntry *cacheEntry;
     Gfx *displayList;
 
     part = model->parts;
@@ -885,12 +896,8 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
     } else if (forceSimple != 0) {
         func_80020AD4();
         func_80034920(NULL);
-        command = displayList++;
-        command->words.w1 = 0;
-        command->words.w0 = 0xE7000000;
-        command = displayList++;
-        command->words.w0 = 0xB7000000;
-        command->words.w1 = 0x10001;
+        gDPPipeSync(displayList++);
+        gSPSetGeometryMode(displayList++, G_ZBUFFER | G_FOG);
     }
 
     partIndex = 0;
@@ -898,20 +905,16 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
     cacheCount = 0;
     if (model->partCount > 0) {
         do {
-            s8 group = part->group;
-            s32 partFlags = part->flags;
+            partFlags = part->flags;
 
-            if (group >= lowerGroup && group <= upperGroup && !(partFlags & 0x800)) {
-                s32 combinedFlags;
-                s16 parameter;
-                s16 vertexStart = part->vertexStart;
-                s16 vertexIndex = part->vertexIndex;
-                u8 textureIndex = part->textureIndex;
-                void *address;
+            if (part->group >= lowerGroup && part->group <= upperGroup && !(part->flags & 0x800)) {
 
+                vertexStart = part->vertexStart;
+                vertexIndex = part->vertexIndex;
                 vertexCount = part[1].vertexStart - vertexStart;
                 triangleCount = part[1].vertexIndex - vertexIndex;
                 address = model->vertices + (vertexIndex << 4);
+                textureIndex = part->textureIndex;
                 if (textureIndex == 0xFF || forceSimple != 0) {
                     parameter = 0;
                     texture = NULL;
@@ -922,7 +925,7 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
                     cacheEnabled = 1;
                 }
 
-                combinedFlags = (partFlags | flags | D_80079C00) & mask;
+                partFlags = (partFlags | flags | D_80079C00) & mask;
                 if (model->hasTextures != 0 && texture != NULL &&
                     (texture != lastTexture || parameter != lastParameter)) {
                     cacheEntry->parameter = parameter;
@@ -944,87 +947,49 @@ s32 func_8002057C(Gfx **out, ModelGfxSource *model, s32 flags, s32 mask,
                 lastTexture = texture;
                 lastParameter = parameter;
 
-                func_800349A4(&displayList, texture, combinedFlags, parameter);
+                func_800349A4(&displayList, texture, partFlags, parameter);
                 if (model->mode == 0) {
-                    s32 vertexAddress = (vertexStart * 0xA) & 0x0FFFFFFF;
-
-                    command = displayList++;
-                    command->words.w0 = ((((vertexCount << 3) | (vertexAddress & 6)) & 0xFF) << 16) |
-                                        0x04000000 | ((vertexCount * 0xA + 8) & 0xFFFF);
-                    command->words.w1 = vertexAddress;
+                    gSPModelVertex(displayList++, MODEL_PHYS(vertexStart * 10U), vertexCount, 0);
                 } else {
-                    s32 slotIndex = 0;
-
-                    previousVertex = 0;
                     func_80020B10(&displayList, &part->group, slots,
                                    (struct ModelTextureUsage *)model, partIndex, 0);
-                    if (vertexCount > 0) {
-                        s32 nextVertex;
-
-                        do {
-                            s32 segmentVertexCount;
-                            s32 vertexAddress;
-
+                    for (slotIndex = 0, previousVertex = 0; previousVertex < vertexCount; previousVertex = nextVertex, slotIndex++) {
+                        gSPModelSelectMatrix(displayList++, slots[slotIndex]);
+                        if (slotIndex < 2) {
+                            nextVertex = part->segmentEnds[slotIndex];
+                        } else {
                             nextVertex = vertexCount;
-                            command = displayList++;
-                            command->words.w1 = slots[slotIndex] << 6;
-                            command->words.w0 = 0xBC00000A;
-                            if (slotIndex < 2) {
-                                nextVertex = part->segmentEnds[slotIndex];
-                            }
-                            segmentVertexCount = nextVertex - previousVertex;
-                            vertexAddress = ((vertexStart + previousVertex) * 0xA) & 0x0FFFFFFF;
-                            command = displayList++;
-                            command->words.w0 = ((((segmentVertexCount << 3) | (vertexAddress & 6)) & 0xFF) << 16) |
-                                                0x04000000 |
-                                                (((segmentVertexCount * 0xA + 8) |
-                                                  (previousVertex << 9)) & 0xFFFF);
-                            command->words.w1 = vertexAddress;
-                            previousVertex = nextVertex;
-                            slotIndex++;
-                        } while (nextVertex < vertexCount);
+                        }
+                        gSPModelVertex(displayList++, MODEL_PHYS((vertexStart + previousVertex) * 10),
+                                       nextVertex - previousVertex, previousVertex);
                     }
                 }
-
-                command = displayList++;
-                command->words.w1 = (s32)address & 0x0FFFFFFF;
-                command->words.w0 = (((((triangleCount - 1) << 4) | cacheEnabled) & 0xFF) << 16) |
-                                    0x05000000 | ((triangleCount << 4) & 0xFFFF);
+                gSPModelPolygon(displayList++, MODEL_PHYS(address), triangleCount, cacheEnabled);
             }
             partIndex++;
             part++;
         } while (partIndex < model->partCount);
     }
 
-    command = displayList++;
-    command->words.w1 = 0;
-    command->words.w0 = 0xE7000000;
-    command = displayList++;
-    command->words.w1 = 0;
-    command->words.w0 = 0xB8000000;
+    gDPPipeSync(displayList++);
+    gSPEndDisplayList(displayList++);
 
     commandCount = displayList - D_800CB4A4;
     displayList = *out = func_8002B314(commandCount * sizeof(Gfx), 0x8A);
-    i = 0;
     if (displayList != NULL) {
         sourceDisplayList = D_800CB4A4;
-        if (commandCount != 0) {
-            do {
-                displayList->words.w0 = sourceDisplayList->words.w0;
-                displayList->words.w1 = sourceDisplayList->words.w1;
-                sourceDisplayList++;
-                displayList++;
-                i++;
-            } while (i < (u32)commandCount);
+        for (partIndex = 0; partIndex < commandCount; partIndex++) {
+            displayList->words.w0 = sourceDisplayList->words.w0;
+            displayList->words.w1 = sourceDisplayList->words.w1;
+            sourceDisplayList++;
+            displayList++;
         }
     }
+
     func_80034424(0);
     D_8007BD98 = 0;
     return cacheCount;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/models/func_8002057C.s")
-#endif
 /*
  * PROVENANCE -- JFG's built models.c object supplies the exact corresponding
  * skeleton at func_8003E100, but no public C body. This body is reconstructed
@@ -1356,16 +1321,6 @@ void func_8002109C(ModelPointOwner *owner) {
         } while (i < source->pointCount);
     }
 }
-
-/* PLATEAU-HANDOFF:func_8002057C:start
- * symbol: func_8002057C
- * score: 220/342 words
- * frame: 0xD0
- * relocations: 21
- * first-mismatch: +0x3C
- * summary: BC/triangle packets store w1 first (225->220); open: s-reg cycle, 0xA constant outranks part pointer (s3 vs s5)
- * PLATEAU-HANDOFF:func_8002057C:end
- */
 
 /* PLATEAU-HANDOFF:func_8001FC50:start
  * symbol: func_8001FC50

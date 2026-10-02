@@ -775,120 +775,115 @@ extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
  * globals, sound-object offset, and final compiler output are independently
  * established from Mickey's ROM.
  *
- * 92 masked words at size delta 0 and the target's 0x40 frame (2026-10-01,
- * lane d-res2). The frame was one local too many: the camera-clear cursor
- * is gone (an indexed loop over `offset`), every declared local reserves a
- * frame home. The or-zero below still costs one ring draw (t7 -> t8 at the
- * first test); the bare pointer hoists the address above the first branch.
- * Size-exact at 287 words. Early playback loads keep the state address
- * across the trap; the or-zero on those loads is the copy-prop barrier,
- * and that pointer dies before the path loops. The store and the
- * post-loop test reload the global. Remaining: frame 0x48 vs 0x40 and
- * the command shift after PAL math. A barrier on the store regressed.
+ * 33 masked words at size delta 0 and the target's 0x40 frame (2026-10-02,
+ * lane n-anim), rewritten as plain C: early returns, literal time scales,
+ * indexed path loops, no state-address carrier. The NTSC duration scale
+ * reads a copy of the duration taken before the branch and multiplies it in
+ * place in two statements (`*= 3`, then `* 2 / 10`); that is what keeps
+ * the copy move and the PAL arm's direct shift. `D_8007D69C++` re-reads the
+ * cursor global. The two unused leading locals give originalRate its 0x34
+ * home. Remaining: command and the clock read trade a0/a1, and the
+ * sound-handle test loads straight into a0 where the target uses v0.
  * Retain NON_MATCHING. */
 #ifdef NON_MATCHING
 void func_80051364(s32 updateRate) {
+    s32 pad;
+    s32 pad2;
+    s32 originalRate;
     AnimPath *path;
     AnimPathObject *object;
-    s32 originalRate;
-    s32 offset;
-    s32 adjustedRate;
-    s32 cmd; s32 *playing;
-    s32 newClock;
     AnimStreamEntry *command;
+    s32 i;
+    s32 newClock;
+    s32 adjustedRate;
     u16 cmdWord;
-    u16 duration;
     f32 timeScale;
     f32 speed;
 
-    if (D_8007D68C != NULL) {
-        playing = &D_8007D6A4; if (*(s32 *)((u32) playing | 0) != 0) {
+    if (D_8007D68C == NULL) {
+        return;
+    }
+    if (D_8007D6A4 == 0) {
+        return;
+    }
+    if (osTvType == 0) {
+        timeScale = 0.02f;
+    } else {
+        timeScale = 1.0f / 60.0f;
+    }
+    originalRate = updateRate;
+    if (D_8007D6B0 > 0) {
+        TrapDanglingJump(updateRate);
+    }
+    command = D_8007D69C;
+    if (command != NULL && D_8007D6A4 == 1 && ((cmdWord = command->command) >> 8) == 0x7B) {
+        if ((f32) command->duration / 100.0f <
+            (f32) (D_8007D6A8 + updateRate) * timeScale) {
+            adjustedRate = command->duration;
             if (osTvType == 0) {
-                timeScale = D_80083FAC;
+                adjustedRate >>= 1;
             } else {
-                timeScale = D_80083FB0;
+                adjustedRate *= 3;
+                adjustedRate = (adjustedRate * 2) / 10;
             }
-            originalRate = updateRate; if (D_8007D6B0 > 0) {
-                TrapDanglingJump(updateRate);
+            updateRate = adjustedRate - D_8007D6A8;
+            D_8007D69C++;
+            D_8007D6A4 = (s8) cmdWord;
+            if (D_8007D6A4 == 0) {
+                originalRate = updateRate;
             }
-            command = D_8007D69C; if (command != NULL) {
-                if (*(s32 *)((u32) playing | 0) == 1) {
-                    cmdWord = command->command; if ((cmdWord >> 8) == 0x7B) {
-                        duration = command->duration;
-                        if (((f32) (u32) duration / 100.0f) <
-                            ((f32) (u32) (D_8007D6A8 + updateRate) *
-                             timeScale)) {
-                            if (osTvType == 0) {
-                                adjustedRate = duration >> 1;
-                            } else {
-                                adjustedRate = (duration * 6) / 10;
-                            }
-                            updateRate = adjustedRate - D_8007D6A8;
-                            D_8007D69C = command + 1; cmd = (s8) cmdWord; *playing = cmd; if (cmd == 0) {
-                                originalRate = updateRate;
-                            }
-                        }
-                    }
+        }
+    }
+    if (updateRate <= 0) {
+        return;
+    }
+    newClock = D_8007D6A8 + updateRate;
+    for (i = 0; i < 4; i++) {
+        D_800D6B08[i] = NULL;
+    }
+    if (D_8007D6BC != 0) {
+        if (updateRate < D_8007D6BC) {
+            D_8007D6B4 += D_8007D6B8 * updateRate;
+            D_8007D6BC -= updateRate;
+        } else {
+            D_8007D6B4 += D_8007D6B8 * D_8007D6BC;
+            D_8007D6BC = 0;
+        }
+    }
+    D_8007D6A8 = newClock;
+    D_8007D6AC = (f32) (u32) newClock * timeScale;
+    for (i = 0; i < 256; i++) {
+        path = D_800D6B00[i];
+        if (path != NULL && (path->flags & 5)) {
+            animUpdateTrap(path, updateRate * timeScale, updateRate,
+                           originalRate);
+        }
+    }
+    if (D_8007D6A4 == 1) {
+        func_800517E0();
+    }
+    TrapDanglingJump(updateRate);
+    TrapDanglingJump(updateRate);
+    TrapDanglingJump(updateRate);
+    for (i = 0; i < 256; i++) {
+        path = D_800D6B00[i];
+        if (path != NULL) {
+            object = path->unk8;
+            if (object != NULL && object->soundHandle != NULL) {
+                func_800031C0(object->soundHandle, object->x, object->y,
+                              object->z);
+                if (path->unk28 != 100 || path->unk29 != 0) {
+                    speed = sqrtf(object->velocityX * object->velocityX +
+                                  object->velocityY * object->velocityY +
+                                  object->velocityZ * object->velocityZ);
+                    func_800030B4(object->soundHandle,
+                                  path->unk28 + path->unk29 * speed);
                 }
-            }
-            if (updateRate > 0) {
-                newClock = D_8007D6A8 + updateRate; for (offset = 0; offset < 4; offset++) {
-                    D_800D6B08[offset] = NULL;
-                }
-                if (D_8007D6BC != 0) {
-                    if (updateRate < D_8007D6BC) {
-                        D_8007D6B4 += D_8007D6B8 * (f32) updateRate;
-                        D_8007D6BC -= updateRate;
-                    } else {
-                        D_8007D6B4 += D_8007D6B8 * (f32) D_8007D6BC;
-                        D_8007D6BC = 0;
-                    }
-                }
-                D_8007D6A8 = newClock; D_8007D6AC = (f32) (u32) newClock * timeScale;
-                offset = 0; do {
-                    path = *(AnimPath **) ((u8 *) D_800D6B00 + offset);
-                    if ((path != NULL) && (path->flags & 5)) {
-                        animUpdateTrap(path, (f32) updateRate * timeScale,
-                                       updateRate, originalRate);
-                    }
-                    offset += 4;
-                } while (offset < 0x400);
-                if (D_8007D6A4 == 1) {
-                    func_800517E0();
-                }
-                TrapDanglingJump(updateRate); /* runtime: overlay 41 +0x000 */
-                TrapDanglingJump(updateRate); /* runtime: overlay 41 +0x124 */
-                TrapDanglingJump(updateRate); /* runtime: overlay 41 +0x1B00 */
-                offset = 0; do {
-                    path = *(AnimPath **) ((u8 *) D_800D6B00 + offset);
-                    if (path != NULL) {
-                        object = path->unk8;
-                        if ((object != NULL) &&
-                            (object->soundHandle != NULL)) {
-                            func_800031C0(object->soundHandle, object->x,
-                                          object->y, object->z);
-                            if ((path->unk28 != 0x64) ||
-                                (path->unk29 != 0)) {
-                                speed = sqrtf((object->velocityX *
-                                               object->velocityX) +
-                                              (object->velocityY *
-                                               object->velocityY) +
-                                              (object->velocityZ *
-                                               object->velocityZ));
-                                func_800030B4(
-                                    object->soundHandle,
-                                    (u32) ((f32) path->unk28 +
-                                           ((f32) path->unk29 * speed)) &
-                                        0xFF);
-                            }
-                        }
-                    }
-                    offset += 4;
-                } while (offset != 0x400);
             }
         }
     }
 }
+
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_80051364.s")
 #endif
@@ -4174,11 +4169,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80051364:start
  * symbol: func_80051364
- * score: 92 differing words
+ * score: 33 differing words
  * frame: 0x40
- * relocations: 49
- * first-mismatch: +0x2C
- * summary: 94 to 92 with the exact frame: no camera cursor local. Left: the or-zero state reads draw one extra ring temp (t7 vs t8), shifting the rest
+ * relocations: 47
+ * first-mismatch: +0x88
+ * summary: 92 to 33: plain C rewrite, in-place NTSC scale copy, cursor-global increment. Left: a0/a1 trades (command/clock, clock/D6B4), v0 sound handle
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

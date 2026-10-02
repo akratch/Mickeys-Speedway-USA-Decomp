@@ -44,4 +44,39 @@ against for. Next: find the source construct that spends one ring draw
 between the reference store and the geometry store without emitting code
 (an as1-deleted move), or read the fixed sort and final loop once that block
 is exact; both later regions currently differ only by the inherited shift.
+#### 2026-10-02, lane x-sort (cycle-46 pass): the residual is one ugen draw
+
+Measured on the full TU with the stores in refs, geometry, keys order, the
+freelist trace replayed per draw, and a small test TU with the same store
+tree. Findings:
+
+- ugen evaluates a store's value before its address in every case measured
+  (stack array, pointer field and plain pointer targets; values of one to
+  eight registers). So the target's geometry-store address register is not
+  an address-first evaluation; it is one extra ring draw at the head of the
+  geometry statement.
+- Proof by construction: spelling the index load
+  `*(state->fixedGeometryIndex + i)` makes uopt compute state + i afresh, which
+  spends exactly that draw (one visible addu). With it, every register in the
+  fixed block, the fixed sort and the final loop matches the target; what
+  remains is that one addu, the schedule around it inside the block, and the
+  state/resources colour swap its extra use of state causes. So the whole 57 is one invisible draw before the
+  geometry index load, and nothing else.
+- Spellings uopt normalises away (object byte-identical, 115 at -4 in this
+  order): casts and round-trips on the stored value, the index, the base,
+  the group and the count (s32, u32, s16, void * round-trips); OR-zero,
+  XOR-zero, AND-minus-one and +0 probes on the index; 64 against 64U, 0x40,
+  64 * idx, shifts; volatile and address-taken reads of the index, group,
+  base and reference; self-assignments of count, i and reference between the
+  stores; six reference types. Spellings that change size: (s16) casts,
+  count - 1 indexing after an early count++, a shifted G index (+4 each);
+  regions and slot copies (frame or size moves).
+- A bounded permuter run (25 minutes, the body is now importable) found
+  nothing better under the ranking's scorer; its best cell is the -4 order.
+
+Next: a construct that makes ugen compute the geometry address (sp plus
+count*4) at the head of the statement into a free temporary, so the store's
+own recomputation lands in the same register and as1 deletes it; or one that
+copies the index load through a second temporary as1 renames away. Either
+spends the draw without a word.
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

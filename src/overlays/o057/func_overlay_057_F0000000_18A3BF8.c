@@ -103,15 +103,10 @@ extern Overlay45ResourceDescriptor *gO57Descriptor78Reloc;
 extern Overlay45ResourceDescriptor *gO57Descriptor78PrepareReloc;
 extern Overlay45ResourceDescriptor *gO57DescriptorFCReloc;
 extern Overlay45ResourceDescriptor *gO57Descriptors08Reloc[9];
-extern Overlay45ResourceDescriptor *gO57Descriptors2CEndReloc[];
 extern Overlay45ResourceDescriptor *gO57Descriptors30Reloc[9];
-extern Overlay45ResourceDescriptor *gO57Descriptors54EndReloc[];
 extern Overlay45ResourceDescriptor *gO57Descriptors80Reloc[24];
-extern Overlay45ResourceDescriptor *gO57DescriptorsE0EndReloc[];
 extern Overlay45ResourceDescriptor *gO57DescriptorsE0Reloc[6];
-extern Overlay45ResourceDescriptor *gO57DescriptorsF8EndReloc[];
 extern Overlay45ResourceDescriptor *gO57Descriptors58Reloc[5];
-extern Overlay45ResourceDescriptor *gO57Descriptors6CEndReloc[];
 extern Overlay45ResourceDescriptor *gO57DescriptorList80Reloc;
 extern s16 gO57DescriptorIndicesD8Reloc[9];
 extern s16 gO57DescriptorIndicesECReloc[9];
@@ -188,42 +183,31 @@ extern void o57PublishChoicesReloc(void);
 extern void func_8003A754(void);
 extern void func_8005AD64(O57Thing *spawned, s32 mode, s32 index,
                           f32 value);
+/* Overlay 45 entry points, reached through the relocation surface. */
+extern Overlay45ResourceDescriptor *overlay45CreateDescriptor_o057Reloc(
+    const char *text, s16 width, s16 height, s32 flags);
+extern void overlay45SetMode_o057Reloc(Overlay45ResourceDescriptor *descriptor,
+                                       s32 mode);
 
 /* Overlay 57 text +0x0..+0x954, the module initializer.
  *
- * 2026-10-01 (lane d-o057): 276 -> 100 by rewriting inherited shape (the bss
- * fog pair D_134, two packet locals, `while (*entry != -1)` id walks, the f32
- * prototype, a plain `|=` choice mask, a float zero for func_8005AD64).
- * 2026-10-02 (lane e-o057): 100 at -8 -> 84 at 0 (the pair table read as
- * `(u8 *)table + (i << 2)` keeps `i` live as the target does).
- *
- * 2026-10-02 (lane j-o057): 84 -> 19 masked at delta 0, frame 0x78 exact. The
- * target declares few locals and reuses them across regions (L99 frame cells,
- * L100 web priorities):
- *  - `descriptor` is also the final loop's walk over gO57Spawned150Reloc, so
- *    that walk outranks `i` (target s0/s1) instead of being an SR temporary;
- *  - `entry` is also every descriptor loop's end pointer (target s1 in both);
- *  - the index tables are subscripted by the one counter `value`, so uopt
- *    strength-reduces them into s2 below the end pointer;
- *  - the 0x27C..0x31C seed fill is one 10-row loop (IDO peels the two
- *    remainder rows), and value10 is read at each use, so no carrier shares
- *    v0 with the fill's walk;
- *  - one ring path/spawn/result pointer (`object`), an unreferenced `pad`
- *    cell, `>= 3` for the flag test, the mask compare with the local first.
- * Open (19 words): the descriptor loops' preheader lui order (index first in
- * the target), the 0x36 loop's delay-slot choice, the final loop's preheader
- * order and one ring draw (0x80 in t9, the target draws t5 earlier). */
-#ifdef NON_MATCHING
+ * Every descriptor loop is a plain indexed `for (i = 0; i < N; i++)`: uopt
+ * strength-reduces the subscripts and LFTR supplies the end pointer, so the
+ * preheader address order (index table first) and the end/index registers
+ * (s1/s2, because `i` itself spans each preheader) follow from the shape.
+ * The final loop indexes the pair table as an s16 array by `i << 1`, keeps the
+ * state pointer in a local (v1), and stores byte0B after the pair. `pad0` and
+ * `pad1` are unreferenced frame cells (L99). */
 void func_overlay_057_F0000000_18A3BF8(void) {
-    Overlay45ResourceDescriptor **descriptor;
+    s32 pad0;
     s32 *entry;
     s32 i;
     u8 choiceMask;
     O57SpawnPacket packet;
-    s32 value;
+    O57SpawnState *spawnState;
     O57Thing *object;
     O57FinalSpawnPacket final;
-    s32 pad;
+    s32 pad1;
 
     gO57Current100Reloc = gO57ResidentCurrentReloc;
     gO57Pending104Reloc = 0;
@@ -233,76 +217,51 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     func_8004B0A4(3);
     fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
 
-    gO57Descriptor00Reloc = overlay45CreateDescriptor(
+    gO57Descriptor00Reloc = overlay45CreateDescriptor_o057Reloc(
         gO57ResourceTableReloc->entries[0x40], 0xA0, -0x28, 4);
-    gO57DescriptorF8Reloc = overlay45CreateDescriptor(
+    gO57DescriptorF8Reloc = overlay45CreateDescriptor_o057Reloc(
         gO57ResourceTableReloc->entries[0x3C], 0xA0, -0x28, 4);
-    gO57Descriptor6CReloc = overlay45CreateDescriptor(
+    gO57Descriptor6CReloc = overlay45CreateDescriptor_o057Reloc(
         gO57ResourceTableReloc->entries[0x41], 0xA0, 0x104, 4);
-    gO57Descriptor70Reloc = overlay45CreateDescriptor(
+    gO57Descriptor70Reloc = overlay45CreateDescriptor_o057Reloc(
         gO57ResourceTableReloc->entries[0x42], 0xA0, 0x104, 4);
-    gO57Descriptor74Reloc = overlay45CreateDescriptor(
+    gO57Descriptor74Reloc = overlay45CreateDescriptor_o057Reloc(
         gO57ResourceTableReloc->entries[0x43], 0xA0, 0x104, 4);
-    gO57Descriptor78Reloc = overlay45CreateDescriptor(
+    gO57Descriptor78Reloc = overlay45CreateDescriptor_o057Reloc(
         gO57ResourceTableReloc->entries[0x44], 0xA0, 0x104, 4);
-    gO57DescriptorFCReloc = overlay45CreateDescriptor(
+    gO57DescriptorFCReloc = overlay45CreateDescriptor_o057Reloc(
         gO57ResourceTableReloc->entries[0x6D], 0xA0, -0x20, 4);
 
-    value = 0;
-    entry = (s32 *)gO57Descriptors2CEndReloc;
-    descriptor = gO57Descriptors08Reloc;
-    do {
-        *descriptor = overlay45CreateDescriptor(
-            gO57ResourceTableReloc->entries[gO57DescriptorIndicesD8Reloc[value]], 0xA0, 0xBE,
+    for (i = 0; i < 9; i++) {
+        gO57Descriptors08Reloc[i] = overlay45CreateDescriptor_o057Reloc(
+            gO57ResourceTableReloc->entries[gO57DescriptorIndicesD8Reloc[i]], 0xA0, 0xBE,
             0x204);
-        overlay45SetMode(*descriptor, 0);
-        descriptor++;
-        value++;
-    } while (descriptor < (Overlay45ResourceDescriptor **)entry);
+        overlay45SetMode_o057Reloc(gO57Descriptors08Reloc[i], 0);
+    }
 
-    value = 0;
-    entry = (s32 *)gO57Descriptors54EndReloc;
-    descriptor = gO57Descriptors30Reloc;
-    do {
-        *descriptor = overlay45CreateDescriptor(
-            gO57ResourceTableReloc->entries[gO57DescriptorIndicesECReloc[value]], 0xA0, 0xBE,
+    for (i = 0; i < 9; i++) {
+        gO57Descriptors30Reloc[i] = overlay45CreateDescriptor_o057Reloc(
+            gO57ResourceTableReloc->entries[gO57DescriptorIndicesECReloc[i]], 0xA0, 0xBE,
             0x204);
-        overlay45SetMode(*descriptor, 0);
-        descriptor++;
-        value++;
-    } while (descriptor < (Overlay45ResourceDescriptor **)entry);
+        overlay45SetMode_o057Reloc(gO57Descriptors30Reloc[i], 0);
+    }
 
-    value = 0;
-    entry = (s32 *)gO57DescriptorsE0EndReloc;
-    descriptor = gO57Descriptors80Reloc;
-    do {
-        *descriptor = overlay45CreateDescriptor(
-            gO57ResourceTableReloc->entries[gO57DescriptorIndices100Reloc[value]], 0xA0, 0x104, 4);
-        overlay45SetMode(*descriptor, 0);
-        descriptor++;
-        value++;
-    } while (descriptor < (Overlay45ResourceDescriptor **)entry);
+    for (i = 0; i < 24; i++) {
+        gO57Descriptors80Reloc[i] = overlay45CreateDescriptor_o057Reloc(
+            gO57ResourceTableReloc->entries[gO57DescriptorIndices100Reloc[i]], 0xA0, 0x104, 4);
+        overlay45SetMode_o057Reloc(gO57Descriptors80Reloc[i], 0);
+    }
 
-    value = 0;
-    entry = (s32 *)gO57DescriptorsF8EndReloc;
-    descriptor = gO57DescriptorsE0Reloc;
-    do {
-        *descriptor = overlay45CreateDescriptor(
-            gO57ResourceTableReloc->entries[gO57DescriptorIndices130Reloc[value]], 0xA0, 0x104, 4);
-        overlay45SetMode(*descriptor, 0);
-        descriptor++;
-        value++;
-    } while (descriptor < (Overlay45ResourceDescriptor **)entry);
+    for (i = 0; i < 6; i++) {
+        gO57DescriptorsE0Reloc[i] = overlay45CreateDescriptor_o057Reloc(
+            gO57ResourceTableReloc->entries[gO57DescriptorIndices130Reloc[i]], 0xA0, 0x104, 4);
+        overlay45SetMode_o057Reloc(gO57DescriptorsE0Reloc[i], 0);
+    }
 
-    value = 0;
-    descriptor = gO57Descriptors58Reloc;
-    entry = (s32 *)gO57Descriptors6CEndReloc;
-    do {
-        *descriptor = overlay45CreateDescriptor(
-            gO57ResourceTableReloc->entries[0x36 + value], 0xA0, -0x28, 4);
-        descriptor++;
-        value++;
-    } while (descriptor < (Overlay45ResourceDescriptor **)entry);
+    for (i = 0; i < 5; i++) {
+        gO57Descriptors58Reloc[i] = overlay45CreateDescriptor_o057Reloc(
+            gO57ResourceTableReloc->entries[0x36 + i], 0xA0, -0x28, 4);
+    }
 
     o57PrepareDescriptorReloc(gO57Descriptor00PrepareReloc, 0xFF);
     o57PrepareDescriptorReloc(gO57DescriptorF8PrepareReloc, 0xFF);
@@ -448,34 +407,18 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     gO57Value110Reloc = -140.0f;
     gO57Value124Reloc = 0;
 
-    i = 0;
-    descriptor = (Overlay45ResourceDescriptor **)gO57Spawned150Reloc;
-    do {
+    for (i = 0; i < 4; i++) {
         final.kind = 0x138;
         final.mode = 0xE;
+        final.x = ((s16 *)gO57SpawnPairs3E8Reloc)[i << 1];
+        final.y = ((s16 *)gO57SpawnPairs3E8Reloc)[(i << 1) + 1];
         final.z = 0;
         final.state = 0;
         final.byte0B = 0x80;
         final.byte0A = 0;
-        final.x = *(s16 *)((u8 *)gO57SpawnPairs3E8Reloc + (i << 2));
-        final.y = *(s16 *)((u8 *)gO57SpawnPairs3E8Reloc + (i << 2) + 2);
-        *descriptor = (Overlay45ResourceDescriptor *)func_8000590C(&final, 0);
-        (*((O57Thing *)*descriptor)->state)->mode = 2;
-        func_8005AD64((O57Thing *)*descriptor, 0, 0, 0.0f);
-        descriptor++;
-        i++;
-    } while (i != 4);
+        gO57Spawned150Reloc[i] = func_8000590C(&final, 0);
+        spawnState = *gO57Spawned150Reloc[i]->state;
+        spawnState->mode = 2;
+        func_8005AD64(gO57Spawned150Reloc[i], 0, 0, 0.0f);
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o057/func_overlay_057_F0000000_18A3BF8/func_overlay_057_F0000000_18A3BF8.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_057_F0000000_18A3BF8:start
- * symbol: func_overlay_057_F0000000_18A3BF8
- * score: 19/597 words
- * frame: 0x78
- * relocations: 246
- * first-mismatch: +0x150
- * summary: 19 at 0, frame exact: locals reused (descriptor walks spawns, entry is loop end). Open: loop preheader lui order, 0x36 delay slot, one ring draw.
- * PLATEAU-HANDOFF:func_overlay_057_F0000000_18A3BF8:end
- */

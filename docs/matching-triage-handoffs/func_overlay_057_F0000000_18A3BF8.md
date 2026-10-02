@@ -2,11 +2,13 @@
 ### `func_overlay_057_F0000000_18A3BF8` plateau handoff
 
 - source: `src/overlays/o057/func_overlay_057_F0000000_18A3BF8.c`
-- score: 19/597 words
+- score: 0/597 words, promoted
 - frame: 0x78
-- relocations: 246
-- first mismatch: +0x150
-- summary: 19 at 0, frame exact: locals reused (descriptor walks spawns, entry is loop end). Open: loop preheader lui order, 0x36 delay slot, one ring draw.
+- relocations: 248
+- first mismatch: none
+- summary: Matched. Indexed for loops everywhere (i spans each preheader, so LFTR end s1 / index walk s2), s16 pair table by i << 1, state pointer local, byte0B after the pair.
+
+Summary before this remeasure: 19 at 0, frame exact: locals reused (descriptor walks spawns, entry is loop end). Open: loop preheader lui order, 0x36 delay slot, one ring draw.
 
 Summary before this remeasure: 84 at 0: pair table via (i<<2) keeps i; own counter for 0x36 loop. Open: s-reg order (i s1/ptr s0), frame 0x88 vs 0x78.
 
@@ -176,5 +178,47 @@ Open, 19 words, decision variables named:
 
 Do not re-run: the declaration-order sweeps (560 and 210 cells, all flat once
 the set is right), seed carrier products, index-loop line folding.
+
+## 2026-10-02 (lane `l-o057`): 19 -> 0 at delta 0, promoted
+
+The previous lane's reuse of `descriptor` and `entry` across regions was a
+priority stand-in for the shape below; with it gone both are unreferenced
+(`descriptor` stays as `pad0`, a frame cell). Measured with
+`tools/fast_score.py` and `tools/shape_product.py --jobs 3`, records read with
+the instrumented `uopt` (`p1dec`) and the ugen freelist trace.
+
+  - The 0x36 loop as a `for` whose header holds init, bound and both steps
+    (one source line, L59): delay slot and address order exact, 19 -> 15. Not
+    kept: superseded by the next edit.
+  - Every descriptor loop as `for (i = 0; i < N; i++)` subscripting both
+    arrays (dl x counter x 0x36-form product, 12 cells): 15 -> 7. uopt
+    creates the index walk, the descriptor walk and the LFTR end in the
+    target's order (index table first, LIFO addius). The register order is
+    the counter's web: `i` spans each loop preheader (records: block 10, 15,
+    20, 25, 30), so it forbids s1 to the index walk (bbs 10-13) but not to
+    the end (bbs 11-13); with `value` as the counter it is a 2.5-save v1 web
+    and the index walk takes s1. With every loop indexed and `value` as the
+    counter, no end pointer is hoisted at all (565-585 at -20/-24): s2 is
+    then unpaid when the end webs (save 5) are decided.
+  - Final loop as `for (i = 0; i < 4; i++)` with `gO57Spawned150Reloc[i]`
+    (6 forms x 2 pair spellings): 7 -> 5. `[i].first` is strength-reduced
+    and drops `i` (580 at -24).
+  - The spawned state pointer in a local (`spawnState`, which takes the
+    unreferenced `value` cell): it is p1-coloured v1 as in the target, so it
+    leaves the ring and `2` draws t0: 5 -> 6 alone.
+  - The pair table read as an s16 array, `[i << 1]` and `[(i << 1) + 1]`,
+    with byte0B stored after the pair (6 spellings x 2 positions): 6 -> 2
+    (0x80 in t9).
+  - Store order product (24 orders of z/state/byte0B/byte0A x 7 pair
+    positions, 168 cells): 12 exact cells; kept kind, mode, x, y, z, state,
+    byte0B, byte0A. 2 -> 0.
+
+Promotion: overlay 45 calls through `overlay45CreateDescriptor_o057Reloc` and
+`overlay45SetMode_o057Reloc`; ten resident callees renamed in POSTPROCESS; the
+mode switch table is the retained overlay rodata at +0x6C (data +0x5AC..0x5E8),
+bound by `gOverlay57InitModeJumpTableReloc` with a rebind spec, the private
+copy externalised by digest, and an atlas ownership row. `gO57Rows27CReloc`
+binds to 0x27C. `gmake verify` and `promotion-proof` (248/248 relocations)
+pass.
 
 <!-- plateau-handoff:func_overlay_057_F0000000_18A3BF8:end -->

@@ -908,7 +908,16 @@ extern void *LOCAL_BSS_1D9C;
  * velocity stores before the position updates (all of these move ugen's
  * register draws), the decel scaled before its test, the `< 0` zeros the
  * target materialises with mtc1, and the steering `* 16384` spelled apart
- * from the angle block's 16384.0f so that constant stays a register web. */
+ * from the angle block's 16384.0f so that constant stays a register web.
+ * 2026-10-02 (k-o001big), 41 to 26: the action predicate's and
+ * func_800299E8's results tested by an empty `if`; with the result unused
+ * uopt reloads actionMode / forwardVelocity only on the call path, the
+ * target reloads at the join on every path. 26 to 21: the steering input in
+ * extraScale (the target's f14 is input and factor), the clamp in its own
+ * local, and both speed-limit blends as `(work = speedLimit) + ...`; work's
+ * save then beats extraScale's (33 against 30) and work takes f12.
+ * 21 to 9: blend 1 loads into the clamp local by the same assignment
+ * expression, so the clamp, the blend load and work all take f12. */
 #ifdef NON_MATCHING
 void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) {
     f32 absAngle;
@@ -947,7 +956,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
     s32 steering;
     s32 level;
     f32 speed;
-    s32 pad64;
+    f32 clampLimit;
     s32 index;
     s32 pad5C;
     s32 collision;
@@ -1280,7 +1289,8 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
                 }
             }
             if ((-0.2f < state->forwardVelocity) && (state->forwardVelocity < 0.2f)) {
-                func_800299E8(0, 127);
+                if (func_800299E8(0, 127) != 0) {
+                }
             }
             if (state->controlXjoy >= 0x42) {
                 steering = -0x1F4;
@@ -1289,18 +1299,18 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
             } else {
                 steering = (-state->controlXjoy * 500) / 65;
             }
-            work = -2.0f - state->forwardVelocity;
+            extraScale = -2.0f - state->forwardVelocity;
             state->steeringAngle = (s16) (state->steeringAngle + ((s32) (steering - state->steeringAngle) >> 1));
-            if (work > 0.0f) {
-                extraScale = (func_8002A8BC((s32) (work * 1310.72f)) * 0.25f) + 0.75f;
+            if (extraScale > 0.0f) {
+                extraScale = (func_8002A8BC((s32) (extraScale * 1310.72f)) * 0.25f) + 0.75f;
             } else {
-                if (work < 0) {
-                    work = -work;
+                if (extraScale < 0) {
+                    extraScale = -extraScale;
                 }
-                if (work > 2.0f) {
-                    work = 2.0f;
+                if (extraScale > 2.0f) {
+                    extraScale = 2.0f;
                 }
-                extraScale = (func_8002A8BC((s32) (work * 16384)) + 1.0f) * 0.5f;
+                extraScale = (func_8002A8BC((s32) (extraScale * 16384)) + 1.0f) * 0.5f;
             }
             if (state->forwardVelocity > 0.0f) {
                 extraScale = -extraScale;
@@ -1410,24 +1420,23 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         state->actualVelocityZ = (object->z - state->previousZ) * inverseUpdate;
         if ((state->field16A == 0) && (collision != NULL)) {
             value = func_8002A878(0.9f, gOverlay1TimerStep);
-            work = state->speedLimit;
-            state->speedLimit = work + ((3.0f - work) * (1.0f - value));
-            work = *(volatile f32 *)&state->speedLimit;
-            if (state->forwardVelocity < (-work)) {
-                state->forwardVelocity = (-work);
+            state->speedLimit = (clampLimit = state->speedLimit) + ((3.0f - clampLimit) * (1.0f - value));
+            clampLimit = *(volatile f32 *)&state->speedLimit;
+            if (state->forwardVelocity < (-clampLimit)) {
+                state->forwardVelocity = (-clampLimit);
             }
-            if (work < state->forwardVelocity) {
-                state->forwardVelocity = work;
+            if (clampLimit < state->forwardVelocity) {
+                state->forwardVelocity = clampLimit;
             }
-            if (state->sideVelocity < (-work)) {
-                state->sideVelocity = (-work);
+            if (state->sideVelocity < (-clampLimit)) {
+                state->sideVelocity = (-clampLimit);
             }
-            if (work < state->sideVelocity) {
-                state->sideVelocity = work;
+            if (clampLimit < state->sideVelocity) {
+                state->sideVelocity = clampLimit;
             }
         } else {
             value = func_8002A878(0.825f, gOverlay1TimerStep);
-            state->speedLimit += (25.0f - state->speedLimit) * (1.0f - value);
+            state->speedLimit = (work = state->speedLimit) + ((25.0f - work) * (1.0f - value));
         }
         func_overlay_008_F00049A4_18626FC(state);
         state->outputScale = func_overlay_008_F00034A0_18611F8(object, state, limit, D_4);
@@ -1437,7 +1446,8 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
             if (index != state->actionMode) {
                 predicate = action->test;
                 if ((predicate != NULL) && (action->mask & (1 << state->actionMode))) {
-                    predicate();
+                    if (predicate() != 0) {
+                    }
                 }
             }
         }
@@ -3209,10 +3219,10 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C
- * score: 41/1542 words
+ * score: 9/1542 words
  * frame: 0x138
  * relocations: 184
  * first-mismatch: +0x824
- * summary: Decel amount in extraScale beside the interpolation: 48 to 41; rest is float ring order, steering work colour, action loop reload
+ * summary: Steering input in extraScale, assignment-expression blends, clamp local: 41 to 9; rest is slope eval order and updateRate reload
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
  */

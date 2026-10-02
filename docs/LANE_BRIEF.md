@@ -332,6 +332,19 @@ order of how often they decided a match:
     section-relative records, sections dropped by POSTPROCESS) is what lets
     an initialiser's loops index real arrays; three initialisers matched
     only after it.
+18. **Basic-block count decides saved-register ties.** A web's save divisor
+    is `1 + floor((blocks + 2) / 4)` over the blocks its range spans, so two
+    webs tied on `totalsave` are ordered by how many blocks each spans. The
+    source supplies blocks at zero instruction cost with a one-line
+    `do { ... } while (0)` macro around a statement group (the GBI macros
+    are exactly this), an `if`/`else` the candidate folded into a
+    conditional expression, or a `&&` chain. o035 (77 -> 0) and o063
+    (104 -> 0) both closed on it; read the decision records' `nocs` for the
+    tied pair before choosing which statement to wrap.
+19. **A float value the target saves once across calls is a local assigned
+    once** before the first call and never re-read from its field (o087's
+    missing four words); a value the target SPILLS has few references, so
+    the target's source re-reads the field rather than holding it (o053).
 
 ### Promotion traps (each cost a lane a cycle on 2026-10-01)
 

@@ -1759,22 +1759,23 @@ void func_8004A0F0(void) {
     D_800D6038[1] = 0;
     D_800D6040 = 0;
 }
-/* Exact 157-instruction extent; the residual is one register class. The target
- * carries the glyph-row cursor in t5 and the end pointer in ra -- both
- * caller-saved, ra being dead after the one call -- and saves only s0 and ra,
- * for a -0x58 frame. This source puts the end pointer in s1, which adds the
- * eighth save slot and the extra 8 bytes of frame, and every offset after it
- * follows. Declaration order does not move it (all 14 permutations flat) and an
- * unused declaration is dropped before it reaches the frame. */
-/* PROVENANCE: JFG's corresponding routine is assembly-only; this body is reconstructed from Mickey's own m2c draft and headers. */
-#ifdef NON_MATCHING
+/* PROVENANCE: JFG's corresponding routine is assembly-only; this body is
+ * reconstructed from Mickey's own listing.
+ *
+ * Matched by rewriting the inherited hand-unrolled m2c shape: the 9-column loop
+ * is a plain counted `for` that IDO's default unroller expands (one remainder
+ * copy, then four per pass); the mask/shift pair is an if/else (the target's
+ * branch over an empty arm); the pixel offset is added to the base, not the
+ * base to the offset; the masked channel is held in `value` itself, with the
+ * old channel XORed out before the increment is added (that one reuse is what
+ * orders the colours: value v1, old pixel a0); and the pattern cursor is
+ * started on the `do` line, which is the as1 tie-break that hoists the end
+ * pointer's address before the cursor's. */
 void func_8004A10C(s32 *screen, u8 glyph, s32 x, s32 y, s32 arg4) {
-    u32 *pattern;
-    u32 *patternEnd;
     u16 *pixel;
-    s32 glyphValue;
     s32 colorMask;
     s32 shift;
+    u32 *pattern;
     s32 column;
     s32 rowBits;
     s32 bit;
@@ -1784,112 +1785,40 @@ void func_8004A10C(s32 *screen, u8 glyph, s32 x, s32 y, s32 arg4) {
     s32 width;
     s32 height;
 
-    glyphValue = glyph;
     viGetCurrentSize(&width, &height);
-    colorMask = 0x7C0;
-    shift = 6;
-    pattern = D_8007D320;
-    patternEnd = (u32 *) D_8007D364;
-    pixel = ((u16 *) screen) + ((y * width) + x);
+    pixel = (y * width + x) + (u16 *) screen;
     if (arg4 != 0) {
         colorMask = 0xF800;
-        shift = 0xB;
+        shift = 11;
+    } else {
+        colorMask = 0x7C0;
+        shift = 6;
     }
-    do {
+    pattern = D_8007D320; do {
         rowBits = *pattern;
-        column = 1;
-        intensity = 4;
-        bit = rowBits & 7;
-        rowBits >>= 3;
-        if (bit != 0) {
-            if (glyphValue & (1 << bit)) {
-                intensity = 0x10;
+        for (column = 0; column < 9; column++) {
+            bit = rowBits & 7;
+            rowBits >>= 3;
+            if (bit != 0) {
+                intensity = 4;
+                if (glyph & (1 << bit)) {
+                    intensity = 16;
+                }
+                oldPixel = *pixel;
+                value = oldPixel & colorMask;
+                oldPixel ^= value;
+                value += intensity << shift;
+                if (value & ~colorMask) {
+                    value = colorMask;
+                }
+                *pixel = oldPixel | value;
             }
-            oldPixel = *pixel;
-            bit = oldPixel & colorMask;
-            value = bit + (intensity << shift);
-            if ((~colorMask & value) != 0) {
-                value = colorMask;
-            }
-            *pixel = (oldPixel ^ bit) | value;
+            pixel++;
         }
-        pixel++;
-    loop_9:
-        bit = rowBits & 7;
-        rowBits >>= 3;
-        if (bit != 0) {
-            intensity = 4;
-            if (glyphValue & (1 << bit)) {
-                intensity = 0x10;
-            }
-            oldPixel = *pixel;
-            bit = oldPixel & colorMask;
-            value = bit + (intensity << shift);
-            if ((~colorMask & value) != 0) {
-                value = colorMask;
-            }
-            *pixel = (oldPixel ^ bit) | value;
-        }
-        bit = rowBits & 7;
-        rowBits >>= 3;
-        pixel++;
-        if (bit != 0) {
-            intensity = 4;
-            if (glyphValue & (1 << bit)) {
-                intensity = 0x10;
-            }
-            oldPixel = *pixel;
-            bit = oldPixel & colorMask;
-            value = bit + (intensity << shift);
-            if ((~colorMask & value) != 0) {
-                value = colorMask;
-            }
-            *pixel = (oldPixel ^ bit) | value;
-        }
-        bit = rowBits & 7;
-        rowBits >>= 3;
-        pixel++;
-        if (bit != 0) {
-            intensity = 4;
-            if (glyphValue & (1 << bit)) {
-                intensity = 0x10;
-            }
-            oldPixel = *pixel;
-            bit = oldPixel & colorMask;
-            value = bit + (intensity << shift);
-            if ((~colorMask & value) != 0) {
-                value = colorMask;
-            }
-            *pixel = (oldPixel ^ bit) | value;
-        }
-        bit = rowBits & 7;
-        rowBits >>= 3;
-        pixel++;
-        if (bit != 0) {
-            intensity = 4;
-            if (glyphValue & (1 << bit)) {
-                intensity = 0x10;
-            }
-            oldPixel = *pixel;
-            bit = oldPixel & colorMask;
-            value = bit + (intensity << shift);
-            if ((~colorMask & value) != 0) {
-                value = colorMask;
-            }
-            *pixel = (oldPixel ^ bit) | value;
-        }
-        column += 4;
-        pixel++;
-        if (column != 9) {
-            goto loop_9;
-        }
-        pattern++;
         pixel += width - 9;
-    } while (pattern != patternEnd);
+        pattern++;
+    } while (pattern != (u32 *) D_8007D364);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/func_8004A10C.s")
-#endif
 /* PROVENANCE: role adapted from JFG src/fx.c::func_8006DF90; both bodies are
  * assembly-only, so this reconstruction is Mickey-derived. */
 /* Workbench: instruction-words-identical, 0 differing words; 76 instructions/frame -0x80. */
@@ -2371,16 +2300,6 @@ void func_8004AF68(void) {
  * After these edits the register census resolves into a single closed four-cycle
  * over the integer temp ring where it previously showed two incoherent ones,
  * which is the L127 ring-phase fact rather than a set of colour questions.
- */
-
-/* PLATEAU-HANDOFF:func_8004A10C:start
- * symbol: func_8004A10C
- * score: 132 differing words
- * frame: 0x60
- * relocations: 5
- * first-mismatch: 0x0
- * summary: the 8-byte frame excess is one saved register: the target carries both glyph-row pointers in t5 and ra, this source spends s1 on the end pointer. Extent is exact at 157 words.
- * PLATEAU-HANDOFF:func_8004A10C:end
  */
 
 /* PLATEAU-HANDOFF:func_80047304:start

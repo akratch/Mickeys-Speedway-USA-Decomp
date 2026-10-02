@@ -915,7 +915,9 @@ extern void *LOCAL_BSS_1D9C;
  * target reloads at the join on every path. 26 to 21: the steering input in
  * extraScale (the target's f14 is input and factor), the clamp in its own
  * local, and both speed-limit blends as `(work = speedLimit) + ...`; work's
- * save then beats extraScale's (33 against 30) and work takes f12. */
+ * save then beats extraScale's (33 against 30) and work takes f12.
+ * 21 to 9: blend 1 loads into the clamp local by the same assignment
+ * expression, so the clamp, the blend load and work all take f12. */
 #ifdef NON_MATCHING
 void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) {
     f32 absAngle;
@@ -1418,7 +1420,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         state->actualVelocityZ = (object->z - state->previousZ) * inverseUpdate;
         if ((state->field16A == 0) && (collision != NULL)) {
             value = func_8002A878(0.9f, gOverlay1TimerStep);
-            state->speedLimit = (work = state->speedLimit) + ((3.0f - work) * (1.0f - value));
+            state->speedLimit = (clampLimit = state->speedLimit) + ((3.0f - clampLimit) * (1.0f - value));
             clampLimit = *(volatile f32 *)&state->speedLimit;
             if (state->forwardVelocity < (-clampLimit)) {
                 state->forwardVelocity = (-clampLimit);
@@ -3217,10 +3219,10 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C
- * score: 21/1542 words
+ * score: 9/1542 words
  * frame: 0x138
  * relocations: 184
  * first-mismatch: +0x824
- * summary: Steering input in extraScale, (work = speedLimit) blends, clamp local: 26 to 21; rest is clamp colour, slope eval order, updateRate
+ * summary: Steering input in extraScale, assignment-expression blends, clamp local: 41 to 9; rest is slope eval order and updateRate reload
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
  */

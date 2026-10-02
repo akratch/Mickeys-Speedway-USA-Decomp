@@ -398,29 +398,22 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: POSTPROCESS = \
 		--redefine-sym func_overlay_004_F0000138_185A7B0=overlay4UpdateObjectMotion $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xCAC
 O8_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o
+$(O8_OBJ): config/normalizations/overlay8P0058.rebind.spec
 $(O8_OBJ): config/normalizations/overlay8UpdateChannels.rebind.spec
 $(O8_OBJ): config/normalizations/overlay8P2640.rebind.spec
 $(O8_OBJ): config/normalizations/overlay8P4CF0.rebind.spec
-# The object's .rodata is three literal pools in function order: the +0x2640
-# emitter's two floats (retail 0x198, 0x19C), the +0x3018 channel update's
-# (retail 0x1BC on), then the +0x4CF0 surface update's seven (retail 0x290
-# on).  Each pool is rebound to an absolute anchor and keeps its
-# section-relative addend, so the second anchor is 0x1BC less the eight bytes
-# that precede it and the third is 0x290 less the 0x1C bytes that precede it.
-# -Wo,-loopunroll,0: the shipped +0x34A0 body walks its four-entry angle
-# array as a single rolled do-while, while the default -O2 unroller emitted a
-# four-wide body plus a runtime remainder prologue from the two-variable
-# counter form this file used to carry.  The whole ROM still rebuilds
-# byte-identically with the flag, so no already-matched function in this
-# translation unit depends on unrolling.
-#
-# Re-measured against the current source: the flag is now byte-inert.  Every
-# function in this unit compiles to identical .text with and without it, in
-# both the canonical and -DNON_MATCHING builds, because the single-counter
-# do-while spelling already denies the rotator its peel.  Keep it as the
-# recorded constraint; it is not a lever for this unit's other unmatched
-# functions.  See docs/ido-learnings.md.
-$(O8_OBJ): CFLAGS += -Wab,-r4300_mul -Wo,-loopunroll,0
+# The object's .rodata is four literal pools in function order: the +0x0058
+# update's seven floats (retail 0xB0 on), the +0x2640 emitter's two (retail
+# 0x198, 0x19C), the +0x3018 channel update's (retail 0x1BC on), then the
+# +0x4CF0 surface update's seven (retail 0x290 on).  Each pool is rebound to
+# an absolute anchor and keeps its section-relative addend, so each anchor is
+# its retail offset less the bytes that precede it in the object: 0x198 less
+# 0x1C, 0x1BC less 0x24, 0x290 less 0x38.
+# No -Wo,-loopunroll,0 (removed 2026-10-02).  It was added for the +0x34A0
+# body's angle loop and was byte-inert on every function of this unit by then;
+# the +0x0058 body's four selector reads are a plain for loop that the
+# default -O2 unroller expands exactly as shipped, which the flag forbade.
+$(O8_OBJ): CFLAGS += -Wab,-r4300_mul
 $(O8_OBJ): POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
 		gO8P34A0ScaleReloc=D_0 $@ && \
@@ -520,11 +513,15 @@ $(O8_OBJ): POSTPROCESS = \
 		func_overlay_008_F0003018_1860D70=overlay8UpdateChannels $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x5128 && \
 	$(OBJCOPY) --add-symbol \
-		gOverlay8P2640Constants=0x198,global $@ && \
+		gOverlay8P0058Constants=0xB0,global $@ && \
 	$(OBJCOPY) --add-symbol \
-		gOverlay8UpdateChannelConstants=0x1B4,global $@ && \
+		gOverlay8P2640Constants=0x17C,global $@ && \
 	$(OBJCOPY) --add-symbol \
-		gOverlay8P4CF0Constants=0x274,global $@ && \
+		gOverlay8UpdateChannelConstants=0x198,global $@ && \
+	$(OBJCOPY) --add-symbol \
+		gOverlay8P4CF0Constants=0x258,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/overlay8P0058.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay8P2640.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
@@ -532,7 +529,7 @@ $(O8_OBJ): POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay8P4CF0.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:11fab3c6eaac14d2852f3778b062522b0a4093f35e7fd2df756119c6a16ed4f3
+		sha256:ceb22277ab824cbb76d3e0c5de3143e2e0f1248afc11a3d1667901b3e93b76de
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \

@@ -309,15 +309,16 @@ void func_80047304(FxCone *cone, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
     }
 }
 /* PROVENANCE: JFG's fxMakeConeTextureCoords body is assembly-only; this is
- * written from Mickey's own listing. Natural rewrite (390 words at +780 ->
- * 33 at size delta 0): plain loops that IDO unrolls itself, segmentCount
- * reused as the 32-vertex countdown, 102.4f as the TU's own literal (ROM
- * 0x849E8, still in the anonymous pool), and the edge scales converted
- * inline. Residual: one ugen ring draw. The t[] base temporary is drawn
- * ahead of the two (f32) edge conversions in this source's loop preheader
- * and after them in the target's, so every ring register from there on is
- * one phase off. */
-#ifdef NON_MATCHING
+ * written from Mickey's own listing.
+ * Matched by a natural rewrite (plain loops IDO unrolls itself, 102.4f as
+ * the TU's own literal) and then one ring draw. The common loop's preheader
+ * emits its items in expression-number order, numbered at first occurrence:
+ * with the edge scales spelled inline in the eight-point loop, the t[] base
+ * was numbered ahead of them and its temporary took the first ring register.
+ * Assigning widthEdge/heightEdge before that loop numbers (width - 1) and
+ * (height - 1) first. segmentCount carries the eight-point angle and the
+ * 32-vertex countdown as well as the count, which with the texture local
+ * keeps the frame at 0xF8 and the arrays at sp+0xB8/sp+0x90. */
 void func_800475E8(FxCone *cone, s16 angle) {
     FxConeTextureInfo *texture;
     FxConeVertex *vertex;
@@ -327,15 +328,16 @@ void func_800475E8(FxCone *cone, s16 angle) {
     s32 step;
     s16 s[20];
     s16 t[20];
+    f32 widthEdge;
+    f32 heightEdge;
     s32 i;
-    s32 currentAngle;
     f32 sine;
     f32 cosine;
 
-    currentAngle = angle;
     if (cone == NULL) {
         return;
     }
+    segmentCount = angle;
     texture = cone->texture.pointer;
     if (texture == NULL) {
         return;
@@ -344,14 +346,16 @@ void func_800475E8(FxCone *cone, s16 angle) {
     height = texture->height * 16;
     vertex = (FxConeVertex *) cone->vertices;
     if (cone->segmentCount == 0) {
+        widthEdge = width - 1;
+        heightEdge = height - 1;
         for (i = 0; i != 8; i++) {
-            sine = func_8002A8C0(currentAngle);
-            cosine = func_8002A8BC(currentAngle);
+            sine = func_8002A8C0(segmentCount);
+            cosine = func_8002A8BC(segmentCount);
             s[i + 1] = (s32) (102.4f * sine) + width;
             t[i + 1] = (s32) (102.4f * cosine) + height;
-            s[i + 9] = (s32) ((f32) (width - 1) * sine) + width;
-            t[i + 9] = (s32) ((f32) (height - 1) * cosine) + height;
-            currentAngle += 0x2000;
+            s[i + 9] = (s32) (widthEdge * sine) + width;
+            t[i + 9] = (s32) (heightEdge * cosine) + height;
+            segmentCount += 0x2000;
         }
         segmentCount = 32;
         while (segmentCount--) {
@@ -388,9 +392,6 @@ void func_800475E8(FxCone *cone, s16 angle) {
         vertex++;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/func_800475E8.s")
-#endif
 /* PROVENANCE: JFG's fxMakeConeLength role identifies the routine; this body is reconstructed from Mickey's target offsets and m2c control flow.
  * Matched 2026-09-23 (Track B, lane B-fx). What closed it, in order:
  *  - frame 0x150: six declared slots above points and five between points
@@ -2132,16 +2133,6 @@ void func_8004AF68(void) {
  * first-mismatch: +0x68
  * summary: extra-ILOD pair was alphaHigh in s8, not the w1 store. volatile alphas and one rippleEnabled load: size 0, 169 words. Stall: lines 2043-2049 address CSE.
  * PLATEAU-HANDOFF:fxSPDPRipple:end
- */
-
-/* PLATEAU-HANDOFF:func_800475E8:start
- * symbol: func_800475E8
- * score: 33/251 words
- * frame: 0xF8
- * relocations: 6
- * first-mismatch: +0x10
- * summary: 390 at +780 to 33 at delta 0 by natural rewrite. Residual: one ring draw, the t base temp before the two f32 edge conversions.
- * PLATEAU-HANDOFF:func_800475E8:end
  */
 
 /* PLATEAU-HANDOFF:func_80049B14:start

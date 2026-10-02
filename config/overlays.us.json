@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 363056,
-  "nonmatching_overlay_c_bytes": 105548,
+  "matched_overlay_c_bytes": 364092,
+  "nonmatching_overlay_c_bytes": 104512,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4560,
   "bss_bytes": 77680,
@@ -5876,7 +5876,7 @@
      "type": "c",
      "source": "overlays/o025/overlay_025",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x608",
@@ -5957,24 +5957,6 @@
     "exact_donor_match": null,
     "priority_rank": 56
    },
-   "mixed_tu_exact_c_ranges": [
-    {
-     "offset": "0x0",
-     "end_offset": "0x17C",
-     "size": "0x17C",
-     "label": "overlay25InitializeEffect",
-     "source": "overlays/o025/overlay_025",
-     "evidence": "canonical mixed-TU object, nine runtime relocations, and linked bytes exact"
-    },
-    {
-     "offset": "0x588",
-     "end_offset": "0x608",
-     "size": "0x80",
-     "label": "overlay25SetVectorFlags",
-     "source": "overlays/o025/overlay_025",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    }
-   ],
    "data_rodata_ownership": [
     {
      "offset": "0x20",
@@ -5983,7 +5965,8 @@
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o025/overlay_025",
-     "trial_function": "overlay25UpdateEffect"
+     "trial_function": "overlay25UpdateEffect",
+     "externalized": true
     }
    ]
   },

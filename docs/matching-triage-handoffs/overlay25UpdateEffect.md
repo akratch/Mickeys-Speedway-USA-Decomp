@@ -2,11 +2,13 @@
 ### `overlay25UpdateEffect` plateau handoff
 
 - source: `src/overlays/o025/overlay_025.c`
-- score: 16/259 words
+- score: 0/259 words, promoted
 - frame: 0xA0
 - relocations: 25
-- first mismatch: +0x2A0
-- summary: Height difference reuses dead y (f2): 19 to 16. Open: hit-loop index (tot 32) outranks its cursor (tot 31) for s3 (13 words); one as1 slot (3).
+- first mismatch: none
+- summary: Matched. Listing rewrite; dead `y` carries the height difference; early continue on the disabled test; hit result held in dead `steps` across hitSomething = 1.
+
+Summary before this remeasure: 16/259 words at size delta 0, frame 0xA0, first mismatch +0x2A0.
 
 Summary before this remeasure: Listing rewrite 74 to 19 at delta 0. Open: hit-loop index (tot 32) outranks its cursor (tot 31) for s3; delta f0 for f2; one as1 slot.
 
@@ -220,4 +222,33 @@ the movement loop (62), `count-- != 0` (256, -8), and putting
 - The as1 slot (3 words: the target hoists both argument moves above the
   `enabled` test and puts `hitSomething = 1` in the delay slot) did not move
   with any of these.
+#### 2026-10-02, lane x-ovla (resumed): 16 to 0, matched and promoted
+
+Two edits closed the last 16 words; both were measured with shape_product.
+
+- One extra block inside the loop is worth 13 words, as the records
+  predicted. With `goto g; g:` placed before the call, before
+  `otherState =`, or after `selfHitCount++`, the score is 3 (42 at the loop
+  top). The natural form is an early `continue`:
+  `if (otherState->enabled == 0) { continue; }` split out of the `&&` chain
+  gives 3, and so does `if (!overlay25CanHitReloc(other, otherState))
+  { continue; }`. A continue on `other == owner` alone is 16, and all four
+  tests as one continue is 22.
+- The last 3 were the as1 order around the `enabled` test. In ugen's output
+  `li t8,1; sw` comes before the two argument moves, and no line or
+  comma-expression placement changed that. Holding the hit check's result in
+  `steps` (dead in this arm) across the store gives 0:
+  `steps = overlay25CanHitReloc(other, otherState); hitSomething = 1;
+  if (steps) {`. The ugen order becomes moves, jal, store, which is the
+  shipped delay-slot order.
+
+Promotion: the TU now has no GLOBAL_ASM. Its compiled .rodata is the
+retained overlay rodata at +0x20 byte for byte: the updater's six literals,
+then overlay25SetVectorFlags' 0.707f, which is now a literal in place of the
+extern gOverlay25Threshold (valued at that rodata offset). POSTPROCESS asserts
+that pool by digest and externalizes it onto a zero base, and the atlas
+ownership row is marked externalized. The callee names are the
+`overlay25*Reloc` surface. gmake verify OK (also after a fresh object
+rebuild), check-overlay-syms up to date, promotion-proof PASS 25/25
+relocations. POSTPROCESS audit class: metadata.
 <!-- plateau-handoff:overlay25UpdateEffect:end -->

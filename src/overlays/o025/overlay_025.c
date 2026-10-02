@@ -49,19 +49,19 @@ void overlay25InitializeEffect(Overlay25Object *object,
     }
 }
 
-/* 2026-10-02 rewrite from the listing (lane x-ovla), 74 -> 19 masked at
- * delta 0: no m2c carriers; the movement loop as `steps = updateRate - 1;
- * while (steps--)` over the state fields; `radius = 4` (an int literal, so
- * the 4.0f the else arm compares and stores is a separate constant and the
- * radius takes a ring temporary); radius declared before position; the
- * lifetime decrement before the duration one; the hit loop as
- * `while (count--)`; and objects[6] declared last, after the four hit-loop
- * locals whose cells sit between position and the array. The height
- * difference in the hit loop reuses `y`, dead in that arm, which puts it in
- * the movement accumulator's f2 (19 -> 16); `delta` keeps its cell. Open:
- * the hit loop's index and its strength-reduced cursor take s3/s4 the wrong
- * way round (13 words), and one as1 slot order (3). */
-#ifdef NON_MATCHING
+/* No corresponding DKR/JFG donor was found.
+ *
+ * Matched 2026-10-02 (lane x-ovla) from a 74-word plateau by rewriting the
+ * m2c shape: the movement loop as `steps = updateRate - 1; while (steps--)`
+ * over the state fields; `radius = 4`, so the radius takes a ring temporary
+ * instead of sharing the else arm's 4.0f constant; the lifetime decrement
+ * before the duration one; `while (count--)` over objects[], declared last
+ * after the four hit-loop locals whose cells sit above it (`delta` keeps its
+ * cell); the height difference carried in `y`, dead in this arm, which gives
+ * it y's f2; the disabled test as an early `continue`, one more block inside
+ * the loop, which ranks the strength-reduced cursor above the index for s3;
+ * and the hit check's result held in `steps` (also dead here) across the
+ * `hitSomething = 1` store, which is the shipped delay-slot order. */
 void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
     void *unused;
     s32 hitSomething;
@@ -143,9 +143,13 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
                 if ((other != state->owner) || (state->duration == 0)) {
                     otherState = &other->state->entity;
                     if ((otherState->height < -5.0f) && (y > -24.0f) &&
-                        (y < 24.0f) && (otherState->enabled != 0)) {
+                        (y < 24.0f)) {
+                        if (otherState->enabled == 0) {
+                            continue;
+                        }
+                        steps = overlay25CanHitReloc(other, otherState);
                         hitSomething = 1;
-                        if (overlay25CanHitReloc(other, otherState)) {
+                        if (steps) {
                             overlay7DispatchModesReloc(state->owner, other);
                             state->owner->state->entity.ownerHitCount++;
                             otherState->selfHitCount++;
@@ -167,9 +171,6 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
         object->vector->y = state->multiplier * object->transform->scaleY;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o025/overlay_025/func_overlay_025_F000017C_1879E04.s")
-#endif
 
 /* No corresponding DKR/JFG source or object match was found. */
 void overlay25SetVectorFlags(s32 unused0, Overlay25Vector *out, s32 unused2,
@@ -181,19 +182,9 @@ void overlay25SetVectorFlags(s32 unused0, Overlay25Vector *out, s32 unused2,
     out->x = source->vector.x;
     out->y = source->vector.y;
     out->z = source->vector.z;
-    if ((gOverlay25Threshold < source->value) || (source->flags & 0x10000000)) {
+    if ((0.707f < source->value) || (source->flags & 0x10000000)) {
         state->flags |= 2;
         return;
     }
     state->flags |= 4;
 }
-
-/* PLATEAU-HANDOFF:overlay25UpdateEffect:start
- * symbol: overlay25UpdateEffect
- * score: 16/259 words
- * frame: 0xA0
- * relocations: 25
- * first-mismatch: +0x2A0
- * summary: Height difference reuses dead y (f2): 19 to 16. Open: hit-loop index (tot 32) outranks its cursor (tot 31) for s3 (13 words); one as1 slot (3).
- * PLATEAU-HANDOFF:overlay25UpdateEffect:end
- */

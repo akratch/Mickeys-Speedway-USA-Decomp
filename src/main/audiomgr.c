@@ -20,28 +20,24 @@ typedef struct AudioManagerDMAState {
     AudioManagerDMABuffer *firstFree;
 } AudioManagerDMAState;
 
-typedef struct Overlay5SoundConfig {
-    void *field00;
-    s32 field04;
-    s32 field08;
-    s32 field0C;
-    s32 field10;
-    void *field14;
-    s32 field18;
-    s8 field1C;
-} Overlay5SoundConfig;
-
-typedef struct AudioManagerConfig {
-    void *field00;
-    s32 field04;
-    s32 field08;
+/* ALSynConfig in its RAREDIFFS layout (byte fxType[4], params[2]); see
+ * include/n_audio/libaudio.h. Declared here because this TU does not build
+ * with RAREDIFFS. */
+typedef struct AudioManagerSynConfig {
+    s32 maxVVoices;
+    s32 maxPVoices;
+    s32 maxUpdates;
     s32 maxFXbusses;
     ALDMANew dmaproc;
     ALHeap *heap;
     s32 outputRate;
     u8 fxType[4];
-    void *params[2];
-} AudioManagerConfig;
+    s32 *params[2];
+} AudioManagerSynConfig;
+
+typedef struct AudioManagerEffectParams {
+    u32 words[0x108 / sizeof(u32)];
+} AudioManagerEffectParams;
 
 typedef struct AudioManagerState {
     u8 pad000[0x280];
@@ -63,7 +59,6 @@ extern AudioManagerDMAState D_800C7DF8;
 extern AudioManagerDMABuffer D_800C7E08[];
 extern s32 func_80002188(s32 addr, s32 len, void *state);
 extern OSThread D_800C7A50;
-extern s16 D_800C7A56[];
 extern ALHeap *D_800BFA34;
 extern u8 D_80078DF4[];
 extern u32 D_80078DD0;
@@ -114,94 +109,78 @@ extern void func_8000238C(void);
 extern void func_80001BF4(void);
 extern void func_80002134(void);
 
-/* PROVENANCE: body adapted from Diddy Kong Racing's public decomp,
- * src/audiomgr.c::amCreateAudioMgr, cross-checked against Jet Force Gemini
- * efd5abb src/audiomgr.c::amCreateAudioMgr (still unmatched there; same SGI
- * initializer call order). Mickey's config, heap sizes, DMA stride, and
- * queue depth remain authoritative. */
-/* Verdict: size-mismatch; 153 masked words, 203 candidate vs 209 target instructions. */
-/* First mismatch: function offset +0x00; candidate frame 0x158 vs target 0x150. */
-/* Gap: six missing words (sltu, two lui, addiu, or, nop) and 8 extra frame bytes. */
-#ifdef NON_MATCHING
-typedef struct AudioManagerEffectParams {
-    u32 words[0x108 / sizeof(u32)];
-} AudioManagerEffectParams;
+#define AM (*(AudioManagerState *)&D_800C7A50)
 
-void func_80001740(Overlay5SoundConfig *configArg, s32 priority, void *context) {
+/* PROVENANCE: organisation adapted from Diddy Kong Racing's public decomp,
+ * src/audiomgr.c::amCreateAudioMgr, and Banjo-Kazooie's public decomp,
+ * src/core1/code_1D00.c::audioManager_create (the 184-sample frame rounding
+ * and the DMA buffer chain); Jet Force Gemini efd5abb's amCreateAudioMgr is
+ * still GLOBAL_ASM but has the same 0x150 frame. Mickey's config, heap sizes,
+ * DMA stride and queue depth come from the ROM.
+ * Matched 2026-10-02 (lane w2-audfont), 153 masked words at size delta -24 ->
+ * 0, by rewriting the inherited shape from the listing: frameSize read and
+ * written as its global (no int carrier), one allocation cursor `mem` for all
+ * three heap blocks, the DMA chain as an indexed for loop over the array with
+ * the trailing `[i].ptr` store, and the 0x108-byte effect parameters declared
+ * at function scope after the three scalars (L99: that puts them at sp+0x3C
+ * in the 0x150 frame; in an inner block they sit at 0x40 in 0x158). */
+void func_80001740(AudioManagerSynConfig *c, s32 pri, OSSched *audSched) {
     s32 i;
     f32 fsize;
-    u8 *dmaMemory;
-    AudioManagerDMABuffer *dmaPtr;
-    AudioManagerDMABuffer *prevDmaPtr;
+    u8 *mem;
+    AudioManagerEffectParams params;
 
-    D_800BFA30 = (OSSched *)context;
-    D_800BFA34 = (ALHeap *)configArg->field14;
-    configArg->field18 = osAiSetFrequency(0x5604);
-    ((AudioManagerConfig *)configArg)->dmaproc = audioManager_DMAInitProc;
+    D_800BFA30 = audSched;
+    D_800BFA34 = c->heap;
+    c->outputRate = osAiSetFrequency(0x5604);
+    c->dmaproc = audioManager_DMAInitProc;
 
-    for (i = 0; i < configArg->field0C; i++) {
-        if (((AudioManagerConfig *)configArg)->fxType[i] == AL_FX_CUSTOM) {
-            AudioManagerEffectParams customParams;
-
-            customParams = *(AudioManagerEffectParams *)D_80078DF4;
-            ((AudioManagerConfig *)configArg)->params[i] = &customParams;
+    for (i = 0; i < c->maxFXbusses; i++) {
+        if (c->fxType[i] == AL_FX_CUSTOM) {
+            params = *(AudioManagerEffectParams *)D_80078DF4;
+            c->params[i] = (s32 *)&params;
         }
     }
+    n_alInit(&D_800C7C80, (ALSynConfig *)c);
 
-    n_alInit(&D_800C7C80, (ALSynConfig *)configArg);
-    fsize = ((f32)configArg->field18 * 2) / (f32)D_800D2FB0;
-    i = (s32)fsize;
-    D_800C863C = i;
-    if ((f32)i < fsize) {
-        i++;
-        D_800C863C = i;
+    fsize = (f32)c->outputRate * 2 / (f32)D_800D2FB0;
+    D_800C863C = (s32)fsize;
+    if (D_800C863C < fsize) {
+        D_800C863C++;
     }
-    i = ((i / 0xB8) * 0xB8) + 0xB8;
-    D_800C863C = i;
-    D_800C8640 = i - 0xB8;
+    D_800C863C = ((D_800C863C / 184) + 1) * 184;
+    D_800C8640 = D_800C863C - 184;
     D_800C8644 = 0x1000;
 
-    ((AudioManagerState *)&D_800C7A50)->bufferStart =
-        alHeapDBAlloc(0, 0, (ALHeap *)configArg->field14, 1, 0x7580);
-    ((AudioManagerState *)&D_800C7A50)->bufferEnd =
-        ((AudioManagerState *)&D_800C7A50)->bufferStart + 0x3AC0;
-    ((AudioManagerState *)&D_800C7A50)->altBufferStart =
-        ((AudioManagerState *)&D_800C7A50)->bufferStart;
-    ((AudioManagerState *)&D_800C7A50)->altBufferEnd =
-        ((AudioManagerState *)&D_800C7A50)->bufferEnd;
+    mem = alHeapDBAlloc(0, 0, c->heap, 1, 0x7580);
+    AM.bufferStart = mem;
+    AM.bufferEnd = mem + 0x3AC0;
+    AM.altBufferStart = AM.bufferStart;
+    AM.altBufferEnd = AM.bufferEnd;
 
-    dmaMemory = alHeapDBAlloc(0, 0, (ALHeap *)configArg->field14, 1,
-                              D_800C8644 * 0xC);
+    mem = alHeapDBAlloc(0, 0, c->heap, 1, D_800C8644 * 12);
     for (i = 0; i < 3; i++) {
-        ((AudioManagerState *)&D_800C7A50)->cmdLists[i] = dmaMemory;
-        ((AudioManagerState *)&D_800C7A50)->cmdListsAlt[i] = dmaMemory;
-        ((AudioManagerState *)&D_800C7A50)->frameSamples[i] = 0;
-        dmaMemory += D_800C8644 * 4;
+        AM.cmdLists[i] = mem;
+        AM.cmdListsAlt[i] = mem;
+        AM.frameSamples[i] = 0;
+        mem += D_800C8644 * 4;
     }
 
-    dmaMemory = alHeapDBAlloc(0, 0, (ALHeap *)configArg->field14, 1, 0xD200);
+    mem = alHeapDBAlloc(0, 0, c->heap, 1, 0xD200);
     D_800C7E08[0].node.prev = NULL;
     D_800C7E08[0].node.next = NULL;
-    dmaPtr = &D_800C7E08[1];
-    prevDmaPtr = &D_800C7E08[0];
-    do {
-        alLink(&dmaPtr->node, &prevDmaPtr->node);
-        dmaPtr++;
-        prevDmaPtr->ptr = dmaMemory;
-        prevDmaPtr++;
-        dmaMemory += 0x200;
-    } while (dmaPtr != (AudioManagerDMABuffer *)&D_800C863C);
-    prevDmaPtr->ptr = dmaMemory;
+    for (i = 0; i < 104; i++) {
+        alLink(&D_800C7E08[i + 1].node, &D_800C7E08[i].node);
+        D_800C7E08[i].ptr = (char *)mem;
+        mem += 0x200;
+    }
+    D_800C7E08[i].ptr = (char *)mem;
 
     osCreateMesgQueue(&D_800C7D9C, D_800C7DD4, 8);
     osCreateMesgQueue(&D_800C7D84, D_800C7DB4, 8);
-    osCreateMesgQueue(&D_800C9020, D_800C9038, 0x69);
-    osCreateThread((OSThread *)&D_800C7A50, -4, func_80001A84, NULL,
-                   D_800C7A48, priority);
+    osCreateMesgQueue(&D_800C9020, D_800C9038, 105);
+    osCreateThread(&D_800C7A50, -4, func_80001A84, NULL, D_800C7A48, pri);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audiomgr/func_80001740.s")
-#endif
 
 /* PROVENANCE: body adapted from Diddy Kong Racing's public decomp,
  * src/audiomgr.c::__amMain; Mickey's queue globals and message flow remain authoritative. */
@@ -541,16 +520,6 @@ void func_8000238C(void) {
 
     D_80078DD4 = 0;
 }
-
-/* PLATEAU-HANDOFF:func_80001740:start
- * symbol: func_80001740
- * score: 153 differing words
- * frame: -0x158
- * relocations: 58
- * first-mismatch: +0x0
- * summary: JFG confirms 0x150 frame; best remains 203/209 at 0x158, masked 153. Missing sltu, two lui, addiu, or, nop. Next: emit those six with no new stack home.
- * PLATEAU-HANDOFF:func_80001740:end
- */
 
 /* PLATEAU-HANDOFF:func_80001BF4:start
  * symbol: func_80001BF4

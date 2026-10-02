@@ -2,11 +2,37 @@
 ### `func_overlay_090_F00000FC_18D4BF4` plateau handoff
 
 - source: `src/overlays/o090/overlay_090.c`
-- score: 327/648 words
+- score: 0/648 words, promoted
 - frame: 0xC8
 - relocations: 58
-- first mismatch: +0x74
-- summary: 327 at -8: literal floats, goto loop, field rereads, s16 sound pointer; remains the switch load uopt moves into loop predecessors, soundPitch split.
+- first mismatch: none
+- summary: Matched. do-while state machine with the rate reset before its test and no default arm, -Wab,-r4300_mul, sound pitch reusing animationValue declared after delta.
+
+#### 2026-10-02, lane w2-ovlc: 327 at -8 to 0, promoted
+
+- The goto loop was the inherited shape. With a separate back-edge block
+  (goto, `while (1)` with break, `for (;;)`, a `&&` loop test) uopt's PRE
+  places the `state->active` load and `transitioned = 0` in that block, so
+  the head never reloads. A do-while whose last statement is
+  `updateRate = 0` has a critical back edge and reloads at the head, but
+  uopt then hoists the reset into every case and the `default:` block (499
+  at +16). Deleting `default: break;` sends the jump table's out-of-range
+  branch straight to the loop test, the reset stays there and as1 puts it in
+  the back branch's delay slot: 327 at -8 to 130 at -20.
+- `-Wab,-r4300_mul`: the target's nop between the paired `owner->x`
+  products is the VR4300 multiply workaround (one word).
+- The target spills the sound pitch through 0x90(sp) across mathRnd and the
+  two sound calls. Reusing `animationValue` (whose merged web interferes with
+  every callee-saved float in the loop) reproduces the spill: 130 to 4 at
+  delta 0. Its home is a declaration-order slot; declared after `delta`,
+  with `transitioned` moved above `remaining` to keep delta at 0x94, it lands
+  at 0x90: 4 to 0.
+- Promotion: the TU is now all C (overlay90Initialize was already exact).
+  The pool (six floats, the switch table, 0.003f) is the retained data at
+  data_rodata +0x8; sixteen HI/LO records rebind to gOverlay90StatePoolReloc
+  (0x8) and the duplicate is digest-checked and dropped (overlay 86's form).
+  gmake verify OK, check-overlay-syms up to date, promotion-proof PASS
+  (648 words, frame 0xC8, 58/58 relocations).
 
 Summary before this remeasure: Reconstruct state-machine CFG and local lifetimes to add nine instructions while reducing non-save frame use by 24 bytes.
 

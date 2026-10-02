@@ -612,8 +612,8 @@ typedef struct O8P1294Tuning {
 } O8P1294Tuning;
 
 /* NON_MATCHING reconstruction: exact 1259-word size, the target's 0xB0 frame
- * with an identical home ladder, and no one-sided words; 16 masked
- * differences remain.
+ * with an identical home ladder, and no one-sided words; 3 masked
+ * differences remain (the update count's first read, v0 for v1).
  * What moved it from 636 (2026-10-01): the pool floats are literals at each
  * use, one pool entry per use as shipped; state fields are read directly
  * rather than through a shared value carrier; scale is multiplied by D_8 in
@@ -638,6 +638,15 @@ typedef struct O8P1294Tuning {
  * the copy and the later clamp tests read it; the spin-arming tests read the
  * stick directly; the wobble term rides angleStep; modeFlags is s16; the
  * 1.6 clamp is one source line.
+ * 7 to 3 (lane x-near, 2026-10-02), both from the decision records: the
+ * pre-loop factor test reads the field (that is the shipped c.eq.s operand
+ * order) and the field's load web outranks the factor's only when the
+ * factor web spans six blocks, so its clamp and its use each sit in a
+ * do-while(0) region (nocs 3, save 4/3 under the load's 3/2) and region 2
+ * borrows scale; the drift step's unkFE value rides cooldown's symbol web,
+ * whose save of 30 is coloured v0 before the difference web (20), and the
+ * shift sits in a region so it is written straight into index rather than
+ * through a one-block temporary that would otherwise take v0 first.
  * The update loop tests the old counter; the braking global is a halfword;
  * mathDiffAngle accepts the full requested angle. */
 #ifdef NON_MATCHING
@@ -658,8 +667,8 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
     s32 turnDirection;
     s32 effectMask;
     s32 index;              /* speed level, curve index, yaw step, then the drift step */
-    s16 cooldown;
-    f32 scale;
+    s16 cooldown;           /* unkA2 cooldown, then the unkFE drift value */
+    f32 scale;              /* loop scale, and the spin factor before the loop */
     s8 animation;
     s16 modeFlags;          /* read as one web with the unk349 bits; u8 splits it */
     f32 speedLimit;
@@ -667,7 +676,7 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
     O8P1294ColorTarget *colorTarget;
     u8 *color;
     f32 *curve;
-    f32 factor;             /* pre-loop only; keeps scale a loop-only web */
+    f32 factor;             /* the pre-loop speed factor only */
 
     tuning = overlay8GetIndexed((Overlay8IndexedObject *)state);
     impactBoost = 0;
@@ -681,25 +690,25 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
         D_10 *= 1.0f + (-0.3f * state->unkD4->state64->blend14);
     }
     if (state->unk185 == 0) {
-        if ((value = state->unk5C) != 0.0f) {
-            factor = 1.0f - value * 0.5f * tuning->unkC;
-            if (factor < 0.1f) {
-                factor = 0.1f;
-            }
-            D_10 *= factor;
+        if (state->unk5C != 0.0f) {
+            factor = 1.0f - state->unk5C * 0.5f * tuning->unkC;
+            /* Two regions: factor then spans six blocks and the unk5C load
+             * is coloured first (f0), as shipped. */
+            do { if (factor < 0.1f) { factor = 0.1f; } } while (0);
+            do { D_10 *= factor; } while (0);
         }
     }
     if (state->unk102 != 0) {
         animation = owner->unk3B;
         if ((animation == 0x10) || (animation == 0xF)) {
-            factor = owner->unk28 * 1.5f;
-            if (factor > 1.0f) {
-                factor = 1.0f;
+            scale = owner->unk28 * 1.5f;
+            if (scale > 1.0f) {
+                scale = 1.0f;
             }
             if (state->unk102 > 0) {
-                factor = -factor;
+                scale = -scale;
             }
-            state->unk104 = (s16) (s32) (65536.0f * factor);
+            state->unk104 = (s16) (s32) (65536.0f * scale);
             if (owner->unk28 == 1.0f) {
                 state->unk102 = 0;
                 state->unk104 = 0;
@@ -988,12 +997,13 @@ block_74:
                 turnAmount = 0x2EE;
             }
             state->unkFC += turnAmount;
-            steeringInput = (state->unk100 << 0xD) - state->unkFE;
-            index = steeringInput >> 4;
+            cooldown = state->unkFE; /* v0 before the difference is coloured */
+            steeringInput = (state->unk100 << 0xD) - cooldown;
+            do { index = steeringInput >> 4; } while (0); /* no shift temporary */
             if (index == 0) {
                 index = steeringInput;
             }
-            state->unkFE += index;
+            state->unkFE = cooldown + index;
             if (state->unk100 != 0) {
                 steeringInput = state->unk428;
                 if (((steeringInput >= 0x1A) && (state->unk100 < 0)) || ((steeringInput < -0x19) && (state->unk100 > 0))) {
@@ -2313,6 +2323,20 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
     }
 }
 
+/* Natural owner for the overlay's original 0x20-byte BSS range.  The live
+ * fields occupy 0x1C bytes; the remaining four bytes are section reservation. */
+typedef struct {
+    s16 *commandBuffer;
+    s16 effectFlag;
+    f32 surfaceSteeringScale;
+    f32 surfaceMotionScale;
+    f32 speedLimit;
+    s32 leftAlphaEnabled;
+    s32 rightAlphaEnabled;
+} Overlay8BssOwner;
+
+Overlay8BssOwner gOverlay8BssOwner;
+
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000
  * score: 240/447 words
@@ -2335,24 +2359,10 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:start
  * symbol: func_overlay_008_F0001294_185EFEC
- * score: 7 differing words
+ * score: 3 differing words
  * frame: 0xB0
  * relocations: 137
- * first-mismatch: +0xD8
- * summary: No driftDirection, stick read past the clamp copy, s16 modeFlags; left: v0 for w114, unkFE vs shift temp, one compare order.
+ * first-mismatch: +0x20C
+ * summary: Field-direct factor test with clamp and use in two regions, unkFE through cooldown with the shift in a region: 7 to 3; left: the count's first read, v0 for v1.
  * PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:end
  */
-
-/* Natural owner for the overlay's original 0x20-byte BSS range.  The live
- * fields occupy 0x1C bytes; the remaining four bytes are section reservation. */
-typedef struct {
-    s16 *commandBuffer;
-    s16 effectFlag;
-    f32 surfaceSteeringScale;
-    f32 surfaceMotionScale;
-    f32 speedLimit;
-    s32 leftAlphaEnabled;
-    s32 rightAlphaEnabled;
-} Overlay8BssOwner;
-
-Overlay8BssOwner gOverlay8BssOwner;

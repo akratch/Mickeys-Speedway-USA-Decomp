@@ -799,7 +799,19 @@ D_20 = 0x00000020;
 D_1520 = 0x00001520;
 
 /* overlay 12: func_overlay_012_F00003A8_186D628.c.o */
-D_1598 = 0x00001598;
+Arctanf_o012Reloc = 0xf0000000;
+func_8001291C_o012Reloc = 0xf0000000;
+func_8002A8BC_o012Reloc = 0xf0000000;
+func_8002A8C0_o012Reloc = 0xf0000000;
+func_80036544_o012Reloc = 0xf0000000;
+gOverlay12EffectCount = 0x00000000;
+gOverlay12Effects = 0x00000020;
+gOverlay12ParticleCount = 0x00000004;
+gOverlay12Particles = 0x00001520;
+gOverlay12Resource5 = 0x0000001c;
+mathRnd_o012Reloc = 0xf0000000;
+sqrtf_o012Reloc = 0xf0000000;
+trackGetTrack_o012Reloc = 0xf0000000;
 
 /* overlay 12: func_overlay_012_F0000910_186DB90.c.o */
 D_80000040 = 0x80000040;
@@ -1720,7 +1732,17 @@ overlay42SetupDisplayBReloc = 0xf0000000;
 D_120 = 0x00000120;
 
 /* overlay 43: func_overlay_043_F0000BE4_188ABB4.c.o */
-D_800000B8 = 0x800000b8;
+gO43BssBaseReloc = 0x00000000;
+gO43DataBaseReloc = 0x00000000;
+gO43QueueCountReloc = 0x000000c8;
+gO43RenderPendingReloc = 0x00000000;
+gO43RodataBaseReloc = 0x00000000;
+gO43VertexSourceReloc = 0x00000000;
+overlay43InitDpReloc = 0xf0000000;
+overlay43MtxMulReloc = 0xf0000000;
+overlay43MtxToMtxReloc = 0xf0000000;
+overlay43RcpTraceReloc = 0xf0000000;
+overlay43RspSegmentReloc = 0xf0000000;
 
 /* overlay 43: overlay43ComputeMotion.c.o */
 func_80029FE4_o043Reloc = 0xf0000000;
@@ -4135,9 +4157,30 @@ overlay89SetPrimaryReloc = 0xf0000000;
 overlay89UpdateReloc = 0xf00001a8;
 
 /* overlay 90: overlay_090.c.o */
+amSndPlay_o090Reloc = 0xf0000000;
+camGetMode_o090Reloc = 0xf0000000;
+func_80000510_o090Reloc = 0xf0000000;
+func_80002FE0_o090Reloc = 0xf0000000;
+func_8000309C_o090Reloc = 0xf0000000;
+func_800030B4_o090Reloc = 0xf0000000;
+func_800031C0_o090Reloc = 0xf0000000;
+func_800031E8_o090Reloc = 0xf0000000;
+func_80006EA0_o090Reloc = 0xf0000000;
+func_8000FAE0_o090Reloc = 0xf0000000;
+func_8002A8BC_o090Reloc = 0xf0000000;
+func_8002A8C0_o090Reloc = 0xf0000000;
+func_8005ABA8_o090Reloc = 0xf0000000;
+func_8005AD64_o090Reloc = 0xf0000000;
+gOverlay90SequenceDoneReloc = 0x00000000;
+gOverlay90SequenceStateReloc = 0x00000000;
+gOverlay90StatePoolReloc = 0x00000008;
 gOverlay90Value1C = 0x00000000;
 gOverlay90Value20 = 0x00000004;
+levelGetLevel_o090Reloc = 0xf0000000;
+mathRnd_o090Reloc = 0xf0000000;
 overlay90CommitReloc = 0xf0000000;
+overlay90SequenceReloc = 0xf0000000;
+pointListRPY_o090Reloc = 0xf0000000;
 
 /* overlay 91: overlay_091_mul.c.o */
 overlay91BeginRenderReloc = 0xf0000000;
@@ -4517,8 +4560,21 @@ D_2F8C = 0x00002f8c;
 D_D18 = 0x00000d18;
 
 /* overlay 101: overlay101BuildPresentationA.c.o */
-D_32B8 = 0x000032b8;
-D_D2C = 0x00000d2c;
+gO101PresAAssetD2C = 0x00000d2c;
+gO101PresAFinalObject32B8 = 0x000032b8;
+gO101PresAInputs = 0x00000000;
+gO101PresANode20Count = 0x000001c8;
+gO101PresANode24Count = 0x000001d0;
+gO101PresANode32Count = 0x000001cc;
+gO101PresANodes20 = 0x00000200;
+gO101PresANodes24 = 0x00000540;
+gO101PresANodes32 = 0x00000340;
+gO101PresAOrderCount = 0x000001c4;
+gO101PresAOrderSlots = 0x000001c0;
+gO101PresARoot = 0x00000000;
+o101PresACreateCompactReloc = 0xf0000000;
+o101PresACreatorReloc = 0xf0000000;
+o101PresAResetReloc = 0xf0000000;
 
 /* overlay 101: overlay101BuildPresentationB.c.o */
 D_34E8 = 0x000034e8;

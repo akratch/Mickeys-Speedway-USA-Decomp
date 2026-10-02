@@ -6,9 +6,6 @@ typedef struct Overlay12TrackHeight {
     s16 height;
 } Overlay12TrackHeight;
 
-extern f32 gOverlay12Gravity;
-extern f32 gOverlay12Acceleration;
-extern f32 gOverlay12RandomScale;
 extern s32 func_8001291C(f32 *previous, f32 *current,
                          f32 *result, s32 mask, s32 flags);
 extern s32 mathRnd(s32 minimum, s32 maximum);
@@ -23,27 +20,23 @@ extern s32 func_80036544(void *entry, s32 *mode, s32 animationId,
  * JFG's bloodSpurtUpdateAll is the closest masked-skeleton sibling, but its
  * public source is GLOBAL_ASM. This body is reconstructed from Mickey only.
  *
- * 169 -> 159 (lane e-ovl3, 2026-10-02): frame homes belong to declared
- * locals even when they live in registers, later declarations lower. The
- * order here (two pointers, rate, minimum height, one pad word, the ten
- * float temporaries, the 10-float buffer, mode, then the particle pointer,
- * counter and angles) reproduces the target's frame ladder exactly.
- * Frame exact; what is left is ring phase and scheduling in case 1.
- *
- * Size 0, frame 0x110, 226 masked. Named gRate yields delay-slot cvt without
- * an f22 copy; indexed effects close the walking-pointer extra; unsigned
- * sltiu spells the particle test; a volatile value pointer plus collision[10]
- * yields bnel plus sb. Colour landscape floor 224.
+ * Matched 159 -> 0 (lane w2-ovle, 2026-10-02) by discarding the inherited
+ * case-1 carriers: y0 and y2 are updated in place with no tempA or gRate
+ * local (y2 is then one CSE web in f0, and the rate keeps one web that is
+ * spilled to its own home across the collision calls), the three physics
+ * constants are literals in this TU's pool, the root sums the x term first,
+ * collided is set after both vertices, the particle loop reads its flag
+ * into a local of its own (the lowest frame home) and both loops initialise
+ * their walking pointer in the for-init.
  */
-#ifdef NON_MATCHING
 void func_overlay_012_F00003A8_186D628(s32 updateRate) {
     /*
      * PROVENANCE: JFG's public src/camlight.c uses an output buffer for
      * trackNearestIntersection; Mickey's accesses are indices 0-9.
      * Frame homes follow declaration order, later declarations lower: the
      * mode word sits directly under the buffer (+0xA8 under +0xAC) when it is
-     * declared after it, and the late-declared pointer, counter and angles
-     * fill the rest below it (frame_census ladder is exact).
+     * declared after it, and the late-declared pointer, counter, angles and
+     * particle flag fill the rest below it.
      */
     Overlay12TrackHeight *track;
     Overlay12Effect *effect;
@@ -67,24 +60,22 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
     s16 pitch;
     s16 yaw;
     s16 randomAngle;
+    s32 active;
 
     track = (Overlay12TrackHeight *)trackGetTrack();
     minimumHeight = (f32)track->height - 1000.0f;
     for (i = 0, effect = gOverlay12Effects; i < 64; i++, effect++) {
         switch (effect->active) {
         case 1:
-            tempA = effect->y2;
-            {
-                f32 gRate = gOverlay12Gravity * updateRateF;
-                effect->y0 += (tempA * updateRateF) + (gRate * updateRateF);
-            }
+            effect->y0 += (effect->y2 * updateRateF) +
+                          (-0.05f * updateRateF * updateRateF);
             if (effect->y0 < minimumHeight) {
                 effect->active = 0;
                 gOverlay12EffectCount--;
             } else {
                 effect->x0 += effect->x2 * updateRateF;
                 effect->z0 += effect->z2 * updateRateF;
-                effect->y2 = tempA + (gOverlay12Acceleration * updateRateF);
+                effect->y2 += -0.1f * updateRateF;
                 if ((((i & 1) != 0) && (gOverlay12Value1598 != 0)) ||
                     (((i & 1) == 0) && (gOverlay12Value1598 == 0))) {
                     if (func_8001291C(&effect->x1, &effect->x0, collision,
@@ -99,13 +90,12 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
                         effect->scaleY =
                             (255 - (((((u32 *)collision)[9] >> 24) & 7) << 5)) << 5;
                         effect->value *=
-                            2.0f + ((f32)(mathRnd(0, 255) - 128) *
-                                    gOverlay12RandomScale);
+                            2.0f + ((f32)(mathRnd(0, 255) - 128) * 0.0078f);
 
                         if (((s32 *)collision)[0] == 0) {
                             pitch = Arctanf(collision[5],
-                                            sqrtf((collision[6] * collision[6]) +
-                                                  (collision[4] * collision[4]))) -
+                                            sqrtf((collision[4] * collision[4]) +
+                                                  (collision[6] * collision[6]))) -
                                     0x4000;
                             yaw = Arctanf(-collision[4], -collision[6]);
                             randomAngle = (s16)mathRnd(-0x8000, 0x7FFF);
@@ -115,20 +105,18 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
                             cosinePitch = func_8002A8C0(-pitch);
                             sineYaw = func_8002A8BC(yaw);
                             cosineYaw = func_8002A8C0(yaw);
+
                             tempA = ((-10.0f * sineRandom) +
                                      (10.0f * cosineRandom)) * effect->value;
                             tempB = ((10.0f * sineRandom) -
                                      (-10.0f * cosineRandom)) * effect->value;
                             tempC = tempB * sinePitch;
-                            effect->collided = 1;
                             xBasis = tempB * cosinePitch;
                             effect->vertexY0 = (s16)xBasis;
                             effect->vertexX0 =
-                                (s16)((tempA * sineYaw) +
-                                      (tempC * cosineYaw));
+                                (s16)((tempA * sineYaw) + (tempC * cosineYaw));
                             effect->vertexZ0 =
-                                (s16)((tempC * sineYaw) -
-                                      (tempA * cosineYaw));
+                                (s16)((tempC * sineYaw) - (tempA * cosineYaw));
 
                             tempA = ((10.0f * sineRandom) +
                                      (10.0f * cosineRandom)) * effect->value;
@@ -138,11 +126,10 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
                             xBasis = tempB * cosinePitch;
                             effect->vertexY1 = (s16)xBasis;
                             effect->vertexX1 =
-                                (s16)((tempA * sineYaw) +
-                                      (tempC * cosineYaw));
+                                (s16)((tempA * sineYaw) + (tempC * cosineYaw));
                             effect->vertexZ1 =
-                                (s16)((tempC * sineYaw) -
-                                      (tempA * cosineYaw));
+                                (s16)((tempC * sineYaw) - (tempA * cosineYaw));
+                            effect->collided = 1;
                         } else {
                             effect->collided = 0;
                         }
@@ -174,9 +161,9 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
 
     gOverlay12Value1598 ^= 1;
     mode = 1;
-    particle = gOverlay12Particles;
-    for (i = 0; i < 5; i++, particle++) {
-        if (((u32)((u32)particle->active < 1u)) == 0) {
+    for (i = 0, particle = gOverlay12Particles; i < 5; i++, particle++) {
+        active = particle->active;
+        if ((active == 0) == FALSE) {
             if (func_80036544(gOverlay12Resource5, &mode, 15,
                               &particle->velocity, updateRate) != 0) {
                 particle->active = 0;
@@ -185,16 +172,3 @@ void func_overlay_012_F00003A8_186D628(s32 updateRate) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o012/func_overlay_012_F00003A8_186D628/func_overlay_012_F00003A8_186D628.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_012_F00003A8_186D628:start
- * symbol: func_overlay_012_F00003A8_186D628
- * score: 159/346 words
- * frame: 0x110
- * relocations: 33
- * first-mismatch: +0xC8
- * summary: Locals declared in frame-ladder order (homes follow declaration): 169 to 159. Open: FP ring phase in case 1.
- * PLATEAU-HANDOFF:func_overlay_012_F00003A8_186D628:end
- */

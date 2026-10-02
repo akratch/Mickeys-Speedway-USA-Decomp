@@ -2605,10 +2605,33 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/func_overlay_011_F0001E4C_186A694.c.o: POS
 		sha256:48290777f7df3b6d1161aa730c2fc4fb1c29eb0ee77b5e395dd5fbc4dc145418 && \
 	$(OBJCOPY) --remove-section .rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x49C
-# NON_MATCHING fallback assembly supplies the retail body; restore the
-# friendly source symbol and retain the exact text extent when needed.
+# The sibling option-menu update is instruction-exact, written as the copy of
+# func_overlay_011_F0001E4C_186A694 above. Its resident callees go through
+# the generated surface entries, and its switch table is the retained
+# overlay table at rodata +0x68: bind the two table references to that owner
+# and drop the compiler's private copy by digest. No instruction changes.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o011/func_overlay_011_F00022E8_186AB30.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/func_overlay_011_F00022E8_186AB30.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/func_overlay_011_F00022E8_186AB30.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_011_F00022E8_186AB30=func_overlay_011_F00022E8_186AB30 $@ && \
+	$(OBJCOPY) \
+		--redefine-sym amSndPlay=amSndPlay_o011Reloc \
+		--redefine-sym amTuneSetFadeScaled=amTuneSetFadeScaled_o011Reloc \
+		--redefine-sym func_80005820=func_80005820_o011Reloc \
+		--redefine-sym func_80028F54=func_80028F54_o011Reloc \
+		--redefine-sym func_800290AC=func_800290AC_o011Reloc \
+		--redefine-sym func_800291D8=func_800291D8_o011Reloc \
+		--redefine-sym joyGetPressed=joyGetPressed_o011Reloc \
+		--redefine-sym levelGetNumber=levelGetNumber_o011Reloc \
+		--redefine-sym mainChangeCameras=mainChangeCameras_o011Reloc \
+		--redefine-sym mainChangeLevel=mainChangeLevel_o011Reloc \
+		--add-symbol gOverlay11ModeOptionSwitchTableReloc=0x68,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_011_F00022E8_186AB30.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:dc72499309bd6a0f4e3c714903a5310fd3406829d2857b1c3abffd88023f2868 && \
+	$(OBJCOPY) --remove-section .rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x42C
 # Overlay-local data addends are encoded in retail, while its runtime calls
 # use the extracted range's offset-zero carrier.

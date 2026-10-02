@@ -8,6 +8,44 @@
 - first mismatch: +0x70
 - summary: Count store before the bounds block and palette index inits on one line, 19 to 17; stars store base a1 vs a2 and block-1 tail order remain.
 
+#### 2026-10-02, lane x-near: the palette loop is IDO's unroller, 17 held
+
+Baseline reproduced at 17 masked, delta zero, frame 0x40, first +0x70;
+residual_map 230 exact, 5 naming (a1 to a2 x4, t7 to t6 x2), 0 immediate,
+12 structural at +0x100 and +0x200. Instrumented records (proc 2) read
+for the base. 19 cells with fast_score on candidate copies; nothing
+adopted, tracked body unchanged.
+
+The palette tail's three index inits (`li s0,1; li a0,2; li a1,3`) sit
+LAST in the target's preheader, after the bound `addiu t4, zero, 0x100`
+and the palette load, because they are the default -O2 unroller's
+induction copies, not source statements: the shipped loop is
+`for (i = 0; i < 0x100; i++) *palette++ = ...` unrolled by four. Written
+that way (explicit init, `<` test; the variable may be previousStarIndex,
+paletteIndex2 or a fresh local, with or without the two spare
+declarations and the post-loop zero), the candidate is 199 at size delta
+-4 with the inits, the bound and the `addiu v0, v0, 8` cursor step in the
+shipped order and position; insertion_pairs reads one open pair from
++0x130 with 100 aligned rows after shadow, 81 of them naming, and the
+one-sided words a constant at +0x130, a move at +0x1C4 and a candidate
+load at +0x210. The naming rows are the head's s0 and s1 exchanged: with
+the palette uses gone, starIndex's web (85 over 11 blocks, save 21.25 in
+the base, s0 first) loses 40 of its total and the stars cursor (51 over 6,
+save 17) is coloured s0 ahead of it. Driving the unrolled loop with
+starIndex itself (five spellings: `<`, `!=`, init inside or outside the
+guard, the loop-counter pair folded to `previousStarIndex = starIndex++`)
+is +12 bytes, 246, with the frame moving to 0x48. Without the explicit
+init (`for (; previousStarIndex < 0x100; ...)`) the loop is not unrolled
+(-288); `!=` or do-while forms unroll by eight (+208).
+
+So the natural palette shape is measured and the decision variable it
+leaves is the head's s0 rank: starIndex's web must keep a total of about
+70 across the unrolled shape, or the cursor's must fall under it, before
+the -4 word (the +0x130 constant, likely the 1/256 pool load that the
+target hoists above the guard) is worth chasing. The hand-unrolled form
+in the tracked source is a hand copy of the unroller's output and buys
+the colours by construction at the cost of the three inits' position.
+
 Summary before this remeasure: Same-line allocate+starsAddress+store keeps addiu+sw adjacent, 20 to 19; stars address still a1 (force p1:w317=c5 is 16), block 1 tail order and palette index inits remain.
 
 #### 2026-09-13, lane l1: counter reuse and measured bounds scheduling

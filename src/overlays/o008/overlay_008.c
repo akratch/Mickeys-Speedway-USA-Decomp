@@ -1538,17 +1538,18 @@ void overlay8ScaleOutputs(void *unused, Overlay8ScaleState *state,
     }
 }
 
-/* NON_MATCHING: exact size and frame, 296 masked words.  Every stack home is
- * at its shipped offset (2026-10-01, lane d-o008): the terrain query's
- * pointer and the four -1 scratch words are separate locals (an escaping
- * pointer and an array the stores keep alive), and the update count is
- * declared between trigB and blend, which puts the scratch block at +0x58
- * and the pointer at +0x40 under the three float homes, as shipped.
- * The float constants D_1D8..D_25C are this function's own literal pool,
- * one entry per use; written as literals the body is one word short until
- * the selector burst's second address materialisation is reproduced (the
- * shipped code rebuilds &gOverlay8Buffer for the second command pair and
- * reloads it after the store).  GLOBAL_ASM stays canonical. */
+/* NON_MATCHING: exact size and frame, 133 masked words (2026-10-02).  Every
+ * stack home is at its shipped offset: the terrain query's pointer and the
+ * four -1 scratch words are separate locals, and the update count is
+ * declared between trigB and blend.  The float constants are this function's
+ * own literal pool, one entry per use.  The effect call is
+ * overlay7DispatchSelection, which takes two arguments: the shipped 0xC in
+ * a2 is selectedMode itself, so a third argument costs selectedMode its a2.
+ * `limit` is read plainly (it stays in f18).  One structural gap is left: the
+ * shipped burst rebuilds &gOverlay8Buffer before the second command pair
+ * (three words); the approach loop here is a for loop whose extra words pay
+ * for it, where the shipped loop is the while (index--) form.  See the shard.
+ * GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                                       O8P34A0State *state, f32 limit,
@@ -1586,20 +1587,20 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
             selectedMode = 6;
             if ((state->flags41C & 0x4000) != 0) {
                 selectedMode = 0x16;
-                selectedValue = D_1D8;
+                selectedValue = 0.05f;
             } else {
-                selectedValue = D_1DC;
+                selectedValue = 0.05f;
             }
         } else if (state->direction100 > 0) {
             selectedMode = 7;
             if ((state->flags41C & 0x4000) != 0) {
                 selectedMode = 0x17;
-                selectedValue = D_1E0;
+                selectedValue = 0.05f;
             } else {
-                selectedValue = D_1E4;
+                selectedValue = 0.05f;
             }
         } else {
-            selectedValue = D_1E8;
+            selectedValue = 0.04f;
             if ((state->flags1A8 & 1) != 0) {
                 state->smoothed38A -= state->smoothed38A / 8;
                 state->smoothed38A += state->steering108 / 8;
@@ -1636,32 +1637,32 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
             if ((owner->mode3B == 8) && (owner->scale28 == 1.0f)) {
                 blend = 1.0f;
                 selectedMode = 0xA;
-                selectedValue = D_1EC;
+                selectedValue = 0.04f;
             } else if (owner->mode3B != 0xA) {
                 selectedMode = 8;
-                selectedValue = D_1F0;
+                selectedValue = 0.025f;
             }
         } else if ((owner->mode3B == 9) && (owner->scale28 == 1.0f)) {
             blend = 1.0f;
             selectedMode = 0xB;
-            selectedValue = D_1F4;
+            selectedValue = 0.04f;
         } else if (owner->mode3B != 0xB) {
             selectedMode = 9;
-            selectedValue = D_1F8;
+            selectedValue = 0.025f;
         }
     } else {
         selectedMode = 0;
-        selectedValue = D_1FC;
+        selectedValue = 0.04f;
         if ((owner->mode3B == 0x11) || (owner->mode3B == 0x12)) {
             if (owner->scale28 != 1.0f) {
                 selectedMode = owner->mode3B;
-                selectedValue = D_200;
+                selectedValue = 0.008f;
             }
         } else if ((owner->mode3B == 0) &&
                    (o8P34A0RandomReloc(0, 0x3FF) >= 0x3FB)) {
             blend = 0.0f;
             selectedMode = o8P34A0RandomReloc(0x11, 0x12);
-            selectedValue = D_204;
+            selectedValue = 0.008f;
         }
     }
 
@@ -1669,8 +1670,8 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
         if (owner->mode3B == 0xC) {
             selectedMode = 0xC;
             blend = 0.0f;
-            gO8P34A0ScaleReloc *= D_208;
-            selectedValue = D_20C;
+            gO8P34A0ScaleReloc *= 0.9f;
+            selectedValue = 0.0667f;
             result = 40.0f;
         } else {
             sampleCount = o8P34A0TerrainReloc(owner->xC, owner->z14,
@@ -1682,18 +1683,20 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                     do {
                         result = **sample;
                         index++;
+                        if (result < owner->y10) {
+                            break;
+                        }
                         sample++;
-                    } while ((result >= owner->y10) &&
-                             (index != sampleCount));
+                    } while (index != sampleCount);
                 }
                 result = owner->y10 - result;
                 if (result > 40.0f) {
-                    gO8P34A0ScaleReloc *= D_210;
+                    gO8P34A0ScaleReloc *= 0.9f;
                     state->mode16C = 1;
                     selectedMode = 0xC;
                     blend = 0.0f;
-                    selectedValue = D_214;
-                    o8P34A0EffectReloc(owner, 0x15, 0xC);
+                    selectedValue = 0.0667f;
+                    o8P34A0EffectReloc(owner, 0x15);
                 }
             }
         }
@@ -1704,18 +1707,18 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
         ((ownerMode == 0xE) && (owner->scale28 != 1.0f))) {
         selectedMode = 0xE;
         blend = 0.0f;
-        selectedValue = (gO8P34A0ModeReloc == 0) ? D_218 : D_21C;
+        selectedValue = (gO8P34A0ModeReloc == 0) ? 0.0167f : 0.0134f;
     } else if (((ownerMode == 0x13) || (ownerMode == 0x14) ||
                 (ownerMode == 0x15)) &&
                (owner->scale28 != 1.0f)) {
         selectedMode = ownerMode;
         blend = 0.0f;
-        selectedValue = D_220;
+        selectedValue = 0.0334f;
     } else if (((state->flags41C & 0x2000) != 0) &&
                ((state->gate19B == 0) || (state->gate19C != 0))) {
         selectedMode = 0xD;
         blend = 0.0f;
-        selectedValue = D_224;
+        selectedValue = 0.0334f;
     }
 
     if (state->overrideMode193 != 0) {
@@ -1729,8 +1732,8 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
         (ownerMode != 0x14) && (ownerMode != 0x15)) {
         state->activity3C8 += 2.0f;
         blend = 0.0f;
-        selectedValue = D_228;
-        if ((state->value8C <= D_22C) || (D_230 <= state->value8C)) {
+        selectedValue = 0.0334f;
+        if ((state->value8C <= -0.707f) || (0.707f <= state->value8C)) {
             selectedMode = 0x13;
             ownerMode = owner->mode3B;
         } else if (state->value90 >= 0.0f) {
@@ -1745,15 +1748,15 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     if ((ownerMode == 0x18) && (owner->scale28 != 1.0f)) {
         selectedMode = 0x18;
         blend = 0.0f;
-        selectedValue = D_234;
+        selectedValue = 0.0111f;
     } else if (state->secondary102 > 0) {
         selectedMode = 0xF;
         blend = 0.0f;
-        selectedValue = D_238;
+        selectedValue = 0.0111f;
     } else if (state->secondary102 < 0) {
         selectedMode = 0x10;
         blend = 0.0f;
-        selectedValue = D_23C;
+        selectedValue = 0.0111f;
     }
 
     if (selectedMode != ownerMode) {
@@ -1777,7 +1780,7 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     }
     for (; index < 4; index++) {
         state->angles114[index] +=
-            (s32)(state->motion4 * update * D_240);
+            (s32)(state->motion4 * update * 1638.4f);
     }
 
     target = state->steering428;
@@ -1790,11 +1793,10 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     }
     steps = (s32)update;
     if (steps != 0) {
-        index = steps - 1;
-        do {
+        for (index = 0; index != steps; index++) {
             state->angle110 +=
                 o8P34A0ApproachReloc(state->angle110, target) >> 2;
-        } while (index-- != 0);
+        }
     }
     state->angle112 = state->angle110;
 
@@ -1809,16 +1811,15 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     func_overlay_008_F00049E8_1862740(owner, state, update);
 
     if (state->kind1 == 4) {
-        /* Address-form reads reload limit from its incoming slot (L144). */
-        if ((state->motion4 < 0.0f) && (*(f32 *)&limit != 0.0f)) {
-            if (state->motion4 < -*(f32 *)&limit) {
+        if ((state->motion4 < 0.0f) && (limit != 0.0f)) {
+            if (state->motion4 < -limit) {
                 outputAngle = -0x3000;
             } else {
-                outputAngle = (s16)(s32)((12288.0f / *(f32 *)&limit) *
+                outputAngle = (s16)(s32)((12288.0f / limit) *
                                          state->motion4);
             }
-            trigA = D_244;
-            strength = -state->motion4 / *(f32 *)&limit;
+            trigA = 6.283185f;
+            strength = -state->motion4 / limit;
             delta = (update / 60.0f) * strength * 25.0f;
             state->phase3EC += delta;
             state->phase3F0 += delta;
@@ -1831,19 +1832,19 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
             trigA = o8P34A0TrigAReloc(
                 (s32)((state->phase3EC / trigA) * 65536.0f));
             trigB = o8P34A0TrigBReloc(
-                (s32)((state->phase3F0 / D_248) * 65536.0f));
+                (s32)((state->phase3F0 / 6.283185f) * 65536.0f));
             factor = strength * 4096.0f;
             state->output3F8 = -outputAngle;
             state->output3F4 = outputAngle + (s32)(factor * trigA);
             state->output3F6 = outputAngle + (s32)(factor * trigB);
         } else {
-            factor = 1.0f - o8P34A0DecayReloc(D_24C, steps);
+            factor = 1.0f - o8P34A0DecayReloc(0.95f, steps);
             state->output3F4 =
                 o8P34A0BlendReloc(state->output3F4, 0, factor);
-            factor = 1.0f - o8P34A0DecayReloc(D_250, steps);
+            factor = 1.0f - o8P34A0DecayReloc(0.95f, steps);
             state->output3F6 =
                 o8P34A0BlendReloc(state->output3F6, 0, factor);
-            factor = 1.0f - o8P34A0DecayReloc(D_254, steps);
+            factor = 1.0f - o8P34A0DecayReloc(0.95f, steps);
             state->output3F8 =
                 o8P34A0BlendReloc(state->output3F8, 0, factor);
         }
@@ -1863,7 +1864,7 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
         gOverlay8Buffer++;
     } else if (state->kind1 == 2) {
         if ((state->motion4 < 0.0f) && (limit != 0.0f)) {
-            factor = D_258;
+            factor = 6.283185f;
             strength = -state->motion4 / limit;
             state->phase3EC += (update / 60.0f) * strength * 30.0f;
             if (factor <= state->phase3EC) {
@@ -1873,7 +1874,7 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                 (s32)((state->phase3EC / factor) * 65536.0f));
             state->output3F4 = (s32)(8192.0f * strength * trigA);
         } else {
-            factor = 1.0f - o8P34A0DecayReloc(D_25C, steps);
+            factor = 1.0f - o8P34A0DecayReloc(0.95f, steps);
             state->output3F4 =
                 o8P34A0BlendReloc(state->output3F4, 0, factor);
         }
@@ -2340,11 +2341,11 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:start
  * symbol: func_overlay_008_F00034A0_18611F8
- * score: 296/324 words
+ * score: 133/324 words
  * frame: 0x80
  * relocations: 107
  * first-mismatch: +0x1C
- * summary: Frame ladder exact via split query pointer and scratch array; literal pool needs the second gOverlay8Buffer address build to fit.
+ * summary: Two-arg effect call, plain limit, literal pool: 133 at delta 0; the burst's second &gOverlay8Buffer build is the one gap.
  * PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:end
  */
 

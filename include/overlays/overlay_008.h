@@ -968,7 +968,8 @@ extern s32 o8P34A0RandomReloc(s32 low, s32 high);
 extern s32 o8P34A0TerrainReloc(f32 x, f32 z, s32 flags,
                                f32 ***samples);
 
-extern void o8P34A0EffectReloc(O8P34A0Owner *owner, s32 kind, s32 mode);
+/* overlay7DispatchSelection(owner, selection): two arguments. */
+extern void o8P34A0EffectReloc(O8P34A0Owner *owner, s32 kind);
 
 extern void o8P34A0SetModeReloc(O8P34A0Owner *owner, s32 mode, s32 index,
                                 f32 blend);

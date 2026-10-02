@@ -4,9 +4,8 @@
 #undef NULL
 #define NULL 0
 
-/* Pool slots +0x0..+0xC belong to func_overlay_009_F0000000_1866678, which
- * is still assembly; the compiler's own literals follow from +0xC. */
-static const u8 sOverlay9ConstantPoolBase[0xC] = { 0 };
+/* The TU's literal pool starts with func_overlay_009_F0000000_1866678's
+ * three thresholds at +0x0..+0xC; the later functions' literals follow. */
 
 /*
  * Overlay 9, ADR 0006 consolidation. Functions remain in retail ROM order.
@@ -17,27 +16,73 @@ static const u8 sOverlay9ConstantPoolBase[0xC] = { 0 };
 extern void func_overlay_009_F00010A4_186771C(void *object, void *state,
                                                f32 steps);
 
-/* PLATEAU: exact 0x78 frame. Narrowed scalar lifetimes removed the excess.
- * Static relocation proof remains closed on the ambiguous consolidated
- * F00010A4 identity (static 52, runtime 63). GPR spill homes follow
- * declaration order; the handoff has the current score and next lever. */
-#ifdef NON_MATCHING
+/* Tier D: field widths and offsets from this caller's loads and stores. */
+typedef struct O9Entry {
+    void *data;
+    u8 pad04[4];
+    s16 count;
+    s16 index;
+    void *items[1];
+} O9Entry;
+
+typedef struct O9Model {
+    u8 pad00[0x1E];
+    s8 flags[1];
+} O9Model;
+
+typedef struct O9Params {
+    f32 unk00;
+    f32 unk04;
+    f32 unk08;
+    u8 pad0C[0x10];
+    f32 unk1C;
+    s16 angle20;
+    s16 angle22;
+    u8 pad24[6];
+    s16 angle2A;
+    f32 unk2C;
+} O9Params;
+
+/* The parameter block at .data +0x2D0 is one object whose address the four
+ * helpers receive. as1 shares one high half between the stores to angle22
+ * and angle2A only for a symbol the TU defines, so the TU lays the block
+ * out at its recorded offset. The bytes belong to the retained overlay
+ * image: these zero initializers only fix the layout, and the object's
+ * .data is dropped at POSTPROCESS with this function's records rebound to a
+ * zero-valued base (mk/overlays.mk). The other functions keep the D_ names. */
+static u8 sOverlay9Data000[0x2D0] = { 0 };
+static O9Params sOverlay9Params = { 0 };
+
+/* PROVENANCE: Mickey-derived from the assigned overlay assembly range; no donor body was imported.
+ *
+ * Matched 2026-10-02, 120 words to 0. The parameter block is reached through
+ * a pointer local, so every field access is an indirect one with its own
+ * high half: stores through the packet cursor then force the angle reloads,
+ * the angle stores force the cursor reloads, and no address web forms
+ * (checklist item 10). The mode test is a two-case switch, which numbers
+ * the selector ahead of the cursor's address and gives them v1 and t0. The
+ * step conversion is written at both calls, the model flag and the entry's
+ * item are array subscripts, and the locals are declared in home order. */
 void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
+    void *state;
+    O9Params *params = &sOverlay9Params;
     f32 vector[3];
     s16 angles[3];
-    void *entry;
-    f32 savedY;
-    f32 stepFloat;
+    void *handle;
     void *entryData;
     void *savedEntry;
-    void *state;
+    f32 current;
+    f32 target;
+    f32 savedY;
+    f32 rate;
+    s32 remaining;
 
     state = M2C_FIELD(object, void **, 0x64);
-    D_410 = (s16 *)((u8 *)state + 0x1B8);
+    gOverlay9PacketCursor = (s16 *)((u8 *)state + 0x1B8);
     M2C_FIELD(object, s32 *, 0x80) = 0;
     savedEntry = *M2C_FIELD(object, void ***, 0x68);
     ext_o0_1ee14(state, M2C_FIELD(state, s8 *, 0));
-    G_rt_458c4 = D_390;
+    G_rt_458c4 = 0.1f;
 
     if (M2C_FIELD(state, f32 *, 4) < -30.0f) {
         M2C_FIELD(state, f32 *, 4) = -30.0f;
@@ -76,34 +121,31 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
         M2C_FIELD(state, f32 *, 0x6C) = 0.0f;
     }
 
-    if ((M2C_FIELD(state, u8 *, 0x16C) == 0) ||
-        (M2C_FIELD(state, u8 *, 0x16C) == 1)) {
-        func_overlay_009_F0000744_1866DBC(object, state, &D_2D0, steps);
+    switch (M2C_FIELD(state, u8 *, 0x16C)) {
+        case 0:
+        case 1:
+            func_overlay_009_F0000744_1866DBC(object, state, params, steps);
+            break;
     }
-    stepFloat = (f32)steps;
-    func_overlay_009_F0000CE4_186735C(object, state, &D_2D0, stepFloat);
-    func_overlay_009_F00010A4_186771C(object, state, stepFloat);
-    func_overlay_009_F0000F6C_18675E4(object, &D_2D0, steps);
-    func_overlay_009_F0000540_1866BB8(object, state, &D_2D0, steps);
+    func_overlay_009_F0000CE4_186735C(object, state, params, (f32)steps);
+    func_overlay_009_F00010A4_186771C(object, state, (f32)steps);
+    func_overlay_009_F0000F6C_18675E4(object, params, steps);
+    func_overlay_009_F0000540_1866BB8(object, state, params, steps);
 
-    D_2F0 = (s16)(D_2F0 + (((s32)(3072.0f * D_2EC) + 0x400) * steps));
-    *D_410++ = 0x22;
-    *D_410++ = D_2F0;
-    D_2F2 = (s16)(D_2F2 +
-        (((s32)(3072.0f * (D_2D8 - 1.0f)) + 0x400) * steps));
-    *D_410++ = 0x24;
-    *D_410++ = D_2F2;
-    D_2FA = (s16)(D_2FA + (steps << 8));
-    *D_410++ = 0x2000;
+    params->angle20 = (s16)(params->angle20 +
+        (((s32)(3072.0f * params->unk1C) + 0x400) * steps));
+    *gOverlay9PacketCursor++ = 0x22;
+    *gOverlay9PacketCursor++ = params->angle20;
+    params->angle22 = (s16)(params->angle22 +
+        (((s32)(3072.0f * (params->unk08 - 1.0f)) + 0x400) * steps));
+    *gOverlay9PacketCursor++ = 0x24;
+    *gOverlay9PacketCursor++ = params->angle22;
+    params->angle2A = (s16)(params->angle2A + (steps << 8));
+    *gOverlay9PacketCursor++ = 0x2000;
 
-    if ((M2C_FIELD((u8 *)M2C_FIELD(object, void **, 0x40) +
-                       M2C_FIELD(object, u8 *, 0x93), s8 *, 0x1E) == 0) &&
+    if ((M2C_FIELD(object, O9Model **, 0x40)
+             ->flags[M2C_FIELD(object, u8 *, 0x93)] == 0) &&
         (savedEntry != NULL) && (M2C_FIELD(savedEntry, s16 *, 8) != 0)) {
-        f32 current;
-        f32 target;
-        f32 rate;
-        s32 remaining;
-
         entryData = M2C_FIELD(savedEntry, void **, 0);
         savedY = M2C_FIELD(object, f32 *, 0x10);
         current = M2C_FIELD(state, f32 *, 4);
@@ -112,25 +154,24 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
             (current > 2.0f) ||
             (M2C_FIELD(state, s32 *, 0x42C) >= 0x15)) {
             target = 0.0f;
-            rate = D_394;
+            rate = 0.03f;
         } else {
             target = 4.0f;
-            rate = D_398;
+            rate = 0.0125f;
         }
         remaining = steps - 1;
         if (steps != 0) {
-            current = D_2FC;
+            current = params->unk2C;
             do {
                 current += (target - current) * rate;
             } while (remaining--);
-            D_2FC = current;
+            params->unk2C = current;
         }
         M2C_FIELD(object, f32 *, 0x10) +=
-            D_2FC * ext_o0_2a470(D_2FA);
+            params->unk2C * ext_o0_2a470(params->angle2A);
         ext_o0_5aac4(savedEntry, entryData, object);
         ext_o0_19668(object, savedEntry, M2C_FIELD(object, void **, 0x50),
-                      M2C_FIELD((u8 *)savedEntry +
-                          (M2C_FIELD(savedEntry, s16 *, 0xA) * 4), void **, 0xC));
+                      ((O9Entry *)savedEntry)->items[((O9Entry *)savedEntry)->index]);
         M2C_FIELD(savedEntry, s16 *, 8) = 0;
         M2C_FIELD(object, f32 *, 0x10) = savedY;
     }
@@ -139,7 +180,7 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
     ext_o0_1d510(object, state, NULL, NULL, steps);
     if (M2C_FIELD(state, u8 *, 0x349) != 0) {
         if (M2C_FIELD(state, u8 *, 0x16C) == 1) {
-            void *handle = M2C_FIELD(state, void **, 0xB8);
+            handle = M2C_FIELD(state, void **, 0xB8);
             M2C_FIELD(state, u8 *, 0x16C) = 0;
             M2C_FIELD(state, s8 *, 0x16E) = 8;
             if (handle != NULL) {
@@ -160,9 +201,7 @@ void func_overlay_009_F0000000_1866678(void *object, s32 steps) {
     }
     ext_o0_3e99c(object, steps);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o009/overlay_009/func_overlay_009_F0000000_1866678.s")
-#endif
+
 /* PROVENANCE: Mickey-derived from the assigned overlay assembly range; no donor body was imported.
  *
  * Matched 2026-10-01. The three thresholds are float literals, not globals:
@@ -606,14 +645,3 @@ void func_overlay_009_F00010B4_186772C(O9MotionResult *out, O9MotionOwner *owner
         } while (i--);
     }
 }
-
-
-/* PLATEAU-HANDOFF:func_overlay_009_F0000000_1866678:start
- * symbol: func_overlay_009_F0000000_1866678
- * score: 120/336 words
- * frame: 0x78
- * relocations: 63
- * first-mismatch: +0xE4
- * summary: GPR spills now match 0x50 and 0x54 after declaration reorder. 125 to 120 masked at delta 0. Arrays still +8, savedY -16, stepFloat temp +4.
- * PLATEAU-HANDOFF:func_overlay_009_F0000000_1866678:end
- */

@@ -2,11 +2,13 @@
 ### `func_overlay_001_F0002B4C_184EF2C` plateau handoff
 
 - source: `src/overlays/o001/func_overlay_001_F0002B4C_184EF2C.c`
-- score: 186/451 words
+- score: 6/451 words
 - frame: 0xB0
 - relocations: 63
-- first mismatch: +0xE4
-- summary: Listing rewrite in while(i--) shape with per-site identities: 433 to 186 masked, size -16 to 0, frame exact; temp ring offset from +0xE4 open.
+- first mismatch: +0x60C
+- summary: Per-region locals (other/otherState, prev, k, swap first): 186 to 6; open: sum = 0 lands in the bottom jal delay slot instead of the a0 copy.
+
+Summary before this remeasure: Listing rewrite in while(i--) shape with per-site identities: 433 to 186 masked, size -16 to 0, frame exact; temp ring offset from +0xE4 open.
 
 Summary before this remeasure: Candidate is four instructions shorter and unresolved relocation identities prevent a linked trial; schedule allocation remains the next lever.
 
@@ -43,4 +45,33 @@ and loop form. register_census reads the residual as 11 windows with 51%
 coherence, so it is not one ring phase: the next lever is the decision
 records (the sort's a0/a1 and f0/f2 colours, the s0/s1/s2 cycle in the gap
 loop), not another spelling lattice.
+
+## 2026-10-02 (lane `p-ovl8`): per-region locals, 186 -> 6
+
+The 11 register windows were not independent colour decisions: most were
+webs merged across regions by reusing one local (L131, checklist 14).
+Measured with `tools/shape_product.py`, each step a product cell:
+
+  - The anchor, rank and leader regions read their object into `other`
+    (not the pair loop's `object`, which lives across sqrtf in s5): 243
+    cells over the object/state variable of each region, 186 -> 64. The
+    early ring offset at +0xE4 closed with it; it was this merge, not the
+    copy loop (copy-loop and flag-store spellings, 60 cells, were flat).
+  - Sort reads `swap = w[i]` before the compare (f0/f2 and a0/a1 land),
+    and the leader reads `otherState = other->state` once (s4, as the
+    target): 24 cells, 64 -> 27.
+  - The bottom loop's previous-rank state is its own local `prev` (a0;
+    `otherState` is live across calls in s4) and its split index its own
+    `k` (s0; `j` and `changed` merge with the pair and sort webs). Each new
+    declared local moves the +0x54 spill cell down 4 bytes (21-position
+    sweep, flat at 32), so `dz` and `dx` are written inline at the sqrtf
+    call to keep the count: 27 -> 6. Inlining `delta` or `step` instead
+    changes the size.
+
+Open (6 words at +0x60C): uopt emits the bottom loop's `sum = 0` (and
+`k = 0` when written) before the first func_80005820 call, so as1 puts it in
+that jal's delay slot and hoists the argument copy above the D_1DC0 branch;
+the target has both zeroes after the call. Placement of the two inits
+(before/after the call, either order, dropped) and six head spellings
+(intermediate object, `(*f()).state`, `if (x)`) are flat at 6.
 <!-- plateau-handoff:func_overlay_001_F0002B4C_184EF2C:end -->

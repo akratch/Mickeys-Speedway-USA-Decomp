@@ -141,7 +141,7 @@ extern u8 D_8007A588[];
 extern u8 D_8007A5C0[];
 extern u8 D_8007A600[];
 extern s32 func_800348D4(void *texture, s32 frame, ...);
-extern void func_80034910(void *, ...);
+extern void func_80034910();
 
 OSMesgQueue *osScGetInterruptQ(OSSched *scheduler);
 void osWritebackDCacheAll(void);
@@ -273,97 +273,85 @@ void func_8002EBD4(u32 value) {
     D_8007A3B0 = value;
 }
 #ifdef NON_MATCHING
-/* Workbench: structure-mismatch, exact 255 instructions; 218 words differ, first +0x0, frames 0x88/0x58.
- * Reset-lifetime/ABI spellings, flag lattice, constant audit, and bounded permuter left the canonical candidate unchanged.
- * Remains: target's larger save/non-save frame and early command/local register structure are unresolved. */
-void func_8002EBE0(RcpCommand **dlist, s32 width, s32 height,
-                   u32 colours) {
-    RcpCommand *cmd;
-    s32 y;
-    RcpGradientColour *entry;
+/*
+ * Draws the sky gradient: eight bands per screen, split for two players. A
+ * band either fills flat or steps its colour every two lines toward the next
+ * entry's. Written from the listing on 2026-10-02 (lane w2-front). The open
+ * residual is recorded in docs/matching-triage-handoffs/func_8002EBE0.md.
+ */
+void func_8002EBE0(RcpCommand **dlist, s32 width, s32 height, u32 colours) {
+    s32 pad[15];
     s32 screens;
-    s32 screensLeft;
+    s32 pad2;
+    RcpCommand *cmd;
+    s32 mode;
     s32 screenHeight;
-    s32 bandIndex;
+    s32 y;
+    s32 i;
     s32 bandStart;
-    s32 bandEnd;
     s32 steps;
-    s32 stepsLeft;
-    s32 redOffset;
-    s32 greenOffset;
-    s32 blueOffset;
     s32 redStep;
     s32 greenStep;
     s32 blueStep;
-    s32 colour;
-    s32 nextY;
-    s32 mode;
+    s32 redOffset;
+    s32 greenOffset;
+    s32 blueOffset;
+    s32 r;
+    s32 g;
+    s32 b;
+    u32 colour;
+    RcpGradientColour *entry;
 
     cmd = *dlist;
-    y = 0;
-    bandStart = 0;
-    bandIndex = 0;
     screens = 1;
     mode = camGetMode();
-    if ((mode >= 2) ||
-        ((mode == 1) && (frontGet2PlayerSplit() == 0))) {
+    if (mode >= 2 || (mode == 1 && frontGet2PlayerSplit() == 0)) {
         screens = 2;
     }
-
     gDPPipeSync(cmd++);
     gDPSetScissor(cmd++, G_SC_NON_INTERLACE, 0, 0, width - 1, height - 1);
     RCP_SET_FILL_CYCLE(cmd++);
     screenHeight = height >> (screens - 1);
-
-    screensLeft = screens - 1;
-    if (screens != 0) {
+    y = 0;
+    while (screens--) {
+        entry = (RcpGradientColour *) colours;
+        bandStart = 0;
+        i = 0;
         do {
-            entry = (RcpGradientColour *) colours;
-            do {
-                bandIndex++;
-                if (entry->interpolate != 0) {
-                    bandEnd = bandStart + screenHeight;
-                    steps = (bandEnd >> 4) - (bandStart >> 4);
-                    redStep = (((entry + 1)->red - entry->red) << 16) / steps;
-                    greenStep = (((entry + 1)->green - entry->green) << 16) / steps;
-                    blueStep = (((entry + 1)->blue - entry->blue) << 16) / steps;
-                    redOffset = 0;
-                    greenOffset = 0;
-                    blueOffset = 0;
-                    stepsLeft = steps - 1;
-                    if (steps != 0) {
-                        do {
-                            colour = GPACK_RGBA5551(
-                                entry->red + (redOffset >> 16),
-                                entry->green + (greenOffset >> 16),
-                                entry->blue + (blueOffset >> 16), 1);
-                            gDPSetFillColor(
-                                cmd++, (colour << 16) | colour);
-                            nextY = y + 2;
-                            gDPFillRectangle(cmd++, 0, y, width, nextY);
-                            redOffset += redStep;
-                            greenOffset += greenStep;
-                            blueOffset += blueStep;
-                            y = nextY;
-                        } while (stepsLeft-- != 0);
-                    }
-                } else {
-                    colour = GPACK_RGBA5551(entry->red, entry->green,
-                                           entry->blue, 1);
+            i++;
+            if (entry->interpolate) {
+                steps = ((bandStart + screenHeight) >> 4) - (bandStart >> 4);
+                redStep = ((entry[1].red - entry->red) << 16) / steps;
+                greenStep = ((entry[1].green - entry->green) << 16) / steps;
+                blueStep = ((entry[1].blue - entry->blue) << 16) / steps;
+                redOffset = 0;
+                greenOffset = 0;
+                blueOffset = 0;
+                while (steps--) {
+                    r = entry->red + (redOffset >> 16);
+                    g = entry->green + (greenOffset >> 16);
+                    b = entry->blue + (blueOffset >> 16);
+                    colour = GPACK_RGBA5551(r, g, b, 1);
                     gDPSetFillColor(cmd++, (colour << 16) | colour);
-                    bandEnd = bandStart + screenHeight;
-                    nextY = y + (((bandEnd >> 4) - (bandStart >> 4)) * 2);
-                    gDPFillRectangle(cmd++, 0, y, width, nextY);
-                    y = nextY;
+                    gDPFillRectangle(cmd++, 0, y, width, y + 2);
+                    redOffset += redStep;
+                    greenOffset += greenStep;
+                    blueOffset += blueStep;
+                    y += 2;
                 }
-                bandStart = bandEnd;
-                entry++;
-            } while (bandIndex != 8);
-            bandStart = 0;
-            bandIndex = 0;
-        } while (screensLeft-- != 0);
+            } else {
+                r = entry->red;
+                g = entry->green;
+                b = entry->blue;
+                gDPSetFillColor(cmd++, (GPACK_RGBA5551(r, g, b, 1) << 16) | GPACK_RGBA5551(r, g, b, 1));
+                gDPFillRectangle(cmd++, 0, y, width,
+                                 y + (((bandStart + screenHeight) >> 4) - (bandStart >> 4)) * 2);
+                y += (((bandStart + screenHeight) >> 4) - (bandStart >> 4)) * 2;
+            }
+            bandStart += screenHeight;
+            entry++;
+        } while (i != 8);
     }
-
     gDPPipeSync(cmd++);
     *dlist = cmd;
 }
@@ -597,20 +585,26 @@ void func_8002F618(RcpCommand **arg0, RcpTextureNode *arg1, s32 arg2,
     }
 }
 #ifdef NON_MATCHING
-/* PROVENANCE -- the scaled rectangle loop is adapted from Diddy Kong Racing's
- * public src/rcp_dkr.c:texrect_draw_scaled. Mickey's target field offsets,
- * helper calls, and command layout are retained as the controlling evidence. */
-/* Workbench verdict: structure-mismatch; 272 differing words, first mismatch +0x40.
- * Target 359 instructions/frame -224; candidate 354 instructions/frame -224.
- * Both objects have nine relocations, seven with exact identity; the remaining
- * gap is texture/command live-range allocation and a five-instruction deficit. */
-void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 arg2,
-                   f32 arg3, f32 arg4, f32 arg5, s32 arg6, s32 arg7) {
+/*
+ * PROVENANCE: the scaled rectangle loop is adapted from Diddy Kong Racing's
+ * public src/rcp_dkr.c:texrect_draw_scaled. Mickey's texture fetch helper,
+ * its DMA command and its prim colour reset differ from DKR. Mickey's target
+ * decides those.
+ *
+ * 2026-10-02 (lane w2-front): this rewrite closes the size gap (-20 -> 0) and
+ * the frame (0xE0). Two of its features change the allocation regime:
+ * - The flip and position setup sits inside `if (tex != NULL)`, with a cursor
+ *   separate from arg1. That removes one basic block, and L56's callee toll
+ *   becomes 9.75 against the caller cost of 10. xScale and yScale then take
+ *   f20/f22 as in the target.
+ * - tex->data is held in a local across the texture helper call.
+ * The open residual is in docs/matching-triage-handoffs/func_8002FB34.md.
+ */
+void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
+                   f32 xScale, f32 yScale, u32 colour, s32 flags) {
     RcpTextureInfo *tex;
+    u8 *dmaDlist;
     RcpCommand *dlist;
-    RcpCommand *rectCmd;
-    RcpCommand *scissorCmd;
-    RcpTextureNode *element;
     s32 bFlipX;
     s32 bFlipY;
     s32 s;
@@ -625,11 +619,8 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 arg2,
     s32 yPos4x;
     s32 width;
     s32 height;
-    s32 countMinusOne;
-    f32 xScale;
-    f32 yScale;
-    u8 *dmaDlist;
-    void *helperArg;
+    RcpTextureNode *element;
+    u32 *data;
 
     width = 0;
     height = 0;
@@ -637,55 +628,52 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 arg2,
     viGetCurrentSize(&width, &height);
     height *= 4;
     width *= 4;
-    if ((arg6 & 0xFF) == 0xFF) {
-        dmaDlist = D_8007A5C0 + ((arg7 & 0xFF) * 0x10);
+    if ((colour & 0xFF) == 0xFF) {
+        dmaDlist = D_8007A5C0 + ((flags & 0xFF) * 0x10);
     } else {
-        dmaDlist = D_8007A600 + ((arg7 & 0xFF) * 0x10);
+        dmaDlist = D_8007A600 + ((flags & 0xFF) * 0x10);
     }
-
-    xScale = arg4 * 4.0f;
-    yScale = arg5 * 4.0f;
+    xScale *= 4.0f;
+    yScale *= 4.0f;
     RCP_DISPLAY_LIST(dlist++, D_8007A588);
     {
-        RcpCommand *dmaCmd = dlist++;
-        dmaCmd->w1 = (u32)dmaDlist + 0x80000000U;
-        dmaCmd->w0 = 0x07020010;
+        RcpCommand *_g = dlist++;
+        _g->w0 = 0x07020010;
+        _g->w1 = (u32) dmaDlist + 0x80000000U;
     }
     {
-        RcpCommand *colourCmd = dlist++;
-        colourCmd->w0 = 0xFA000000;
-        colourCmd->w1 = (u32)arg6;
+        RcpCommand *_g = dlist++;
+        _g->w0 = 0xFA000000;
+        _g->w1 = colour;
     }
-
     tex = arg1->texture;
-    helperArg = NULL;
     if (tex != NULL) {
         element = arg1;
-        bFlipX = arg7 & 0x1000;
-        bFlipY = arg7 & 0x2000;
-        xPos4x = (s32)(arg2 * 4.0f);
-        yPos4x = (s32)(arg3 * 4.0f);
+        bFlipX = flags & 0x1000;
+        bFlipY = flags & 0x2000;
+        xPos4x = xPos * 4.0f;
+        yPos4x = yPos * 4.0f;
         do {
             if (!bFlipX) {
-                ulx = (s32)((f32)element->x * xScale) + xPos4x;
+                ulx = (s32) (element->x * xScale) + xPos4x;
             } else {
-                lrx = xPos4x - (s32)((f32)element->x * xScale);
-                ulx = lrx - (s32)(tex->width * xScale);
+                lrx = xPos4x - (s32) (element->x * xScale);
+                ulx = lrx - (s32) (tex->width * xScale);
             }
             if (!bFlipY) {
-                uly = (s32)((f32)element->y * yScale) + yPos4x;
+                uly = (s32) (element->y * yScale) + yPos4x;
             } else {
-                lry = yPos4x - (s32)((f32)element->y * yScale);
-                uly = lry - (s32)(tex->height * yScale);
+                lry = yPos4x - (s32) (element->y * yScale);
+                uly = lry - (s32) (tex->height * yScale);
             }
-            if ((ulx < width) && (uly < height)) {
+            if (ulx < width && uly < height) {
                 if (!bFlipX) {
-                    lrx = (s32)(tex->width * xScale) + ulx;
+                    lrx = (s32) (tex->width * xScale) + ulx;
                 }
                 if (!bFlipY) {
-                    lry = (s32)(tex->height * yScale) + uly;
+                    lry = (s32) (tex->height * yScale) + uly;
                 }
-                if ((lrx > 0) && (lry > 0) && (ulx < lrx) && (uly < lry)) {
+                if (lrx > 0 && lry > 0 && ulx < lrx && uly < lry) {
                     dsdx = ((tex->width - 1) << 12) / (lrx - ulx);
                     if (bFlipX) {
                         s = (tex->width - 1) << 5;
@@ -708,41 +696,33 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 arg2,
                         t += (-uly * dtdy) >> 7;
                         uly = 0;
                     }
-                    dlist->w0 = *tex->data;
-                    dlist->w1 = func_800348D4(tex, element->packedOffset, helperArg,
-                                              (void **)element) + 0x80000000U;
+                    data = tex->data;
+                    dlist->w0 = *data;
+                    dlist->w1 = func_800348D4(tex, element->packedOffset) + 0x80000000U;
                     dlist++;
-                    countMinusOne = tex->count - 1;
-                    dlist->w0 = (((countMinusOne & 0xFF) << 16) |
-                                 0x07000000 | ((countMinusOne * 8) & 0xFFFF));
-                    dlist->w1 = (u32)(tex->data + 2) + 0x80000000U;
-                    dlist++;
-                    rectCmd = dlist;
-                    rectCmd->w0 = ((lrx & 0xFFF) << 12) |
-                                   0xE4000000 | (lry & 0xFFF);
-                    rectCmd->w1 = ((ulx & 0xFFF) << 12) | (uly & 0xFFF);
-                    dlist++;
-                    scissorCmd = dlist;
-                    scissorCmd->w0 = 0xB3000000;
-                    scissorCmd->w1 = (s << 16) | (t & 0xFFFF);
-                    dlist++;
-                    dlist->w0 = 0xB2000000;
-                    dlist->w1 = (dsdx << 16) | (dtdy & 0xFFFF);
-                    dlist++;
+                    data += 2;
+                    {
+                        RcpCommand *_g = dlist++;
+                        _g->w0 = (((tex->count - 1) & 0xFF) << 16) | 0x07000000 |
+                                 (((tex->count - 1) * 8) & 0xFFFF);
+                        _g->w1 = (u32) data + 0x80000000U;
+                    }
+                    gSPTextureRectangle((Gfx *) dlist++, ulx, uly, lrx, lry, G_TX_RENDERTILE,
+                                        s, t, dsdx, dtdy);
                 }
             }
             tex = element[1].texture;
             element++;
         } while (tex != NULL);
     }
-    RCP_PIPE_SYNC(dlist++);
+    gDPPipeSync((Gfx *) dlist++);
     {
-        RcpCommand *colourCmd = dlist++;
-        colourCmd->w1 = -1;
-        colourCmd->w0 = 0xFA000000;
+        RcpCommand *_g = dlist++;
+        _g->w0 = 0xFA000000;
+        _g->w1 = 0xFFFFFFFF;
     }
     *arg0 = dlist;
-    func_80034910((void *)(s32)countMinusOne);
+    func_80034910();
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/rcpFast3d/func_8002FB34.s")
@@ -750,20 +730,20 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 arg2,
 
 /* PLATEAU-HANDOFF:func_8002EBE0:start
  * symbol: func_8002EBE0
- * score: 218 differing words
- * frame: 0x58
+ * score: 89/255 words
+ * frame: 0x88
  * relocations: 2
- * first-mismatch: +0x0
- * summary: Exact-sized C keeps a 0x58 versus 0x88 frame after RGB aggregate and lifetime forms; next lever is an authentic early-live-web source shape.
+ * first-mismatch: +0x138
+ * summary: Listing rewrite: delta 0, frame exact. Left: 39 naming rows and three copies from the post-decrement loop webs and the colour copy.
  * PLATEAU-HANDOFF:func_8002EBE0:end
  */
 
 /* PLATEAU-HANDOFF:func_8002FB34:start
  * symbol: func_8002FB34
- * score: 272 differing words
+ * score: 285/359 words
  * frame: 0xE0
  * relocations: 9
- * first-mismatch: +0x40
- * summary: Five-word deficit and command/texture live-range allocation remain; seven of nine relocation identities align.
+ * first-mismatch: +0x4
+ * summary: Size gap closed (-20 to 0) and frame exact; aligned byte-exact 109 to 197. Left: callee-saved order and a folded data+8 constant.
  * PLATEAU-HANDOFF:func_8002FB34:end
  */

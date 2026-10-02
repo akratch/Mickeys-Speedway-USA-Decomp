@@ -491,23 +491,39 @@ typedef struct Shadow168Angle {
 #define SH168_F32(p, o) (*(f32 *) ((u8 *) (p) + (o)))
 #define SH168_PTR(p, o) (*(void **) ((u8 *) (p) + (o)))
 
-/* Workbench verdict: 439 masked words at size +12, frame 0x190 exact (was 534 at +28).
- * 2026-10-02 (lane x-shad), this is DKR's shadow_generate with the shadow
- * globals gathered into the stack query struct:
+/* Workbench verdict: 315 masked words at size delta 0, frame 0x1A0 (target
+ * 0x190); was 439 at +12. This is DKR's shadow_generate with the shadow
+ * globals gathered into the stack query struct.
+ * 2026-10-02 (lane x-shad):
  *   - the corner points are seeded from query.x8/query.z10, not from the x/z
- *     arguments: the arguments then have one use each and x/y take f12/f14
- *     as in the target (534 at +28 to 502 at -4);
+ *     arguments, so x/y take f12/f14 as in the target;
  *   - the ratio block reuses point0 for the cosine and the ratio (its spill
  *     lands at point0's home +0xF8) and writes the zero-sine arm as 2.0, a
- *     double literal, which gives that use its own constant web as in the
- *     target: the block is word-for-word the target's;
- *   - the declarations put three scalars above result (+0x104), count at
- *     +0x100 and sine at +0xE0;
- *   - `* 10` (an int literal) in the unrotated corner path stops 10.0f being
- *     one web with the head's multiply and hoisted into f18 after the calls.
- * Left: the rotated-corner path keeps -point0, -point4 and the
- * expanded-cosine product in memory locals (+0x58, +0x50, +0x5C) and copies
- * halfX to +0x38 in the target; this body's homes there are one slot off. */
+ *     double literal;
+ *   - three scalars above result (+0x104), count at +0x100, sine at +0xE0.
+ * 2026-10-02 (lane z-shad), measured with the four scratch FP registers
+ * erased, because their names are one ring phase for the whole function
+ * (ugen's free list at entry is the state the function's own code leaves at
+ * its end, so no local edit fixes the first draw):
+ *   - the rotated-corner path names four products in the extent variables
+ *     (point2 = halfX*cos, point4 = halfZ*sin, point0 = halfX*sin,
+ *     point6 = expanded*sin) and keeps the negated and expanded-cosine
+ *     products in a four-float array, temp[2], temp[0] and temp[3]: the
+ *     target's +0x58, +0x50 and +0x5C stores with their immediate reloads.
+ *     That path is now the target's word for word;
+ *   - the unrotated path assigns all four extents from the two fields and
+ *     scales them in place in both arms, with 10.0f and -10.0f literals;
+ *   - the model is reached through a named instance pointer (the target
+ *     keeps it in v1), and the centre sums read points[0], [2], [4], [6] in
+ *     order.
+ * Left, in address order: the distance and its 1024.0f bound take f0 and f2
+ * swapped, and the half-extent product is a ring temporary where the target
+ * has f0 (+0xAC to +0x148); the unrotated path after its two calls, where
+ * the target also stores its products in temp[] (+0x5C, +0x58, +0x54, +0x50,
+ * frame 0x190) and reloads point4 and point6 through two compiler cells
+ * (+0x38, +0x3C). Writing those four products into temp[] here gives the
+ * target's frame and 291 words at +16: point2 then keeps a register across
+ * the calls where the target splits all three of point2, point4, point6. */
 void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
                    f32 arg5, s16 arg6) {
     typedef struct Shadow168Query {
@@ -548,10 +564,10 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
     s32 active;
     Shadow168Query query;
     f32 points[8];
-    f32 ratio;
+    void *modInst;
     f32 radius;
-    f32 base;
     void *arg2 = arg2p;
+    f32 temp[4];
 
     query.x8 = arg3;
     query.yC = arg4;
@@ -622,37 +638,41 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
     if (arg1 != NULL) {
         sine = func_8002A8C0(SH168_S16(arg1, 0));
         cosine = func_8002A8BC(SH168_S16(arg1, 0));
-        point0 = query.halfX34 * cosine;
-        point2 = query.halfZ38 * sine;
-        point4 = query.halfZ38 * cosine;
+        point2 = query.halfX34 * cosine;
+        point4 = query.halfZ38 * sine;
+        temp[2] = -point2;
+        points[0] += temp[2] - point4;
+        point0 = query.halfX34 * sine;
+        temp[0] = -(query.halfZ38 * cosine);
+        points[1] += temp[0] + point0;
+        points[2] += point2 - point4;
+        points[3] += temp[0] - point0;
         point6 = query.expanded3C * sine;
-        points[0] += -point0 - point2;
-        points[1] += (query.halfX34 * sine) - point4;
-        points[2] += point0 - point2;
-        points[3] += -point4 - (query.halfX34 * sine);
-        points[4] += point0 + point6;
-        points[5] += (query.expanded3C * cosine) - (query.halfX34 * sine);
-        points[6] += -point0 + point6;
-        points[7] += (query.expanded3C * cosine) + (query.halfX34 * sine);
+        points[4] += point2 + point6;
+        temp[3] = query.expanded3C * cosine;
+        points[5] += temp[3] - point0;
+        points[6] += temp[2] + point6;
+        points[7] += temp[3] + point0;
     } else {
         value = SH168_U8(arg2, 0x10) & 0x20;
-        point2 = SH168_F32(arg2, 4);
-        point0 = SH168_F32(arg2, 0);
-        if ((value != 0) || (point2 != point0)) {
+        if ((value != 0) || (SH168_F32(arg2, 4) != SH168_F32(arg2, 0))) {
+            point0 = SH168_F32(arg2, 0);
+            point2 = SH168_F32(arg2, 4);
+            point4 = SH168_F32(arg2, 0);
+            point6 = SH168_F32(arg2, 4);
             if (value != 0) {
                 objectScale = SH168_F32(arg0, 8);
-                matrix = SH168_PTR(SH168_PTR(arg0, 0x68), 0);
+                modInst = SH168_PTR(SH168_PTR(arg0, 0x68), 0);
+                matrix = SH168_PTR(modInst, 0);
                 point0 *= (f32) SH168_S16(matrix, 0x42) * objectScale;
                 point2 *= (f32) SH168_S16(matrix, 0x46) * objectScale;
-                point4 = SH168_F32(arg2, 0) *
-                         ((f32) SH168_S16(matrix, 0x3C) * objectScale);
-                point6 = SH168_F32(arg2, 4) *
-                         ((f32) SH168_S16(matrix, 0x40) * objectScale);
+                point4 *= (f32) SH168_S16(matrix, 0x3C) * objectScale;
+                point6 *= (f32) SH168_S16(matrix, 0x40) * objectScale;
             } else {
-                point0 *= 10;
-                point2 *= 10;
-                point4 = SH168_F32(arg2, 0) * -10.0f;
-                point6 = SH168_F32(arg2, 4) * -10.0f;
+                point0 *= 10.0f;
+                point2 *= 10.0f;
+                point4 *= -10.0f;
+                point6 *= -10.0f;
             }
             sine = func_8002A8C0(SH168_S16(arg0, 0));
             cosine = func_8002A8BC(SH168_S16(arg0, 0));
@@ -679,8 +699,8 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
         }
     }
 
-    D_800CB270 = (points[6] + points[0] + points[2] + points[4]) * 0.25f;
-    D_800CB274 = (points[7] + points[1] + points[3] + points[5]) * 0.25f;
+    D_800CB270 = (points[0] + points[2] + points[4] + points[6]) * 0.25f;
+    D_800CB274 = (points[1] + points[3] + points[5] + points[7]) * 0.25f;
     shadowBoundingBox(4, points, &query.bounds40[0], &query.bounds40[1],
                       &query.bounds40[2], &query.bounds40[3]);
     count = func_8000FD68(result, (s16) (s32) query.bounds40[0],
@@ -1381,10 +1401,10 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_80016890:start
  * symbol: func_80016890
- * score: 439/556 words
- * frame: 0x190
+ * score: 315/556 words
+ * frame: 0x1A0
  * relocations: 48
- * first-mismatch: +0x10
- * summary: DKR shadow_generate shape: 534/+28 to 439/+12 (points from query, point0 ratio, 2.0 literal, int 10); left: rotated-corner memory locals
+ * first-mismatch: +0x0
+ * summary: rotated corners exact via a temp[4] array: 439/+12 to 315/0; left: head f0/f2 swap, unrotated post-call products (291 at +16 with frame 0x190)
  * PLATEAU-HANDOFF:func_80016890:end
  */

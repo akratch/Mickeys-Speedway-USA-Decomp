@@ -1609,6 +1609,7 @@ MIXED_TU_EXACT_C_RANGES = {
     35: [
         (0x01E0, 0x0770, "func_overlay_035_F00001E0_1881EC0"),
         (0x0770, 0x0B40, "func_overlay_035_F0000770_1882450"),
+        (0x0B40, 0x1380, "func_overlay_035_F0000B40_1882820"),
     ],
     51: [
         (
@@ -1688,6 +1689,7 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x2F54, 0x32CC, "func_overlay_060_F0002F54_18BCD2C"),
     ],
     63: [
+        (0x1D4, 0x74C, "overlay63UpdateEffects"),
         (0x77C, 0x928, "overlay63UpdateSequence"),
     ],
     68: [

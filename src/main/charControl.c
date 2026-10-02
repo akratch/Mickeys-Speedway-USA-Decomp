@@ -47,8 +47,6 @@ extern s16 D_800CB470;
 extern s16 D_800CB472;
 extern s16 D_800CB474;
 extern s16 D_800CB476;
-extern ControlCollisionState D_800CB2C0;
-extern ControlCameraState *D_800CB300;
 extern u8 D_8007BF10;
 extern f32 D_80081840;
 extern f32 D_80081844;
@@ -59,6 +57,13 @@ extern f32 D_80081854;
 extern f32 D_80081858;
 extern f32 D_8008185C;
 extern f32 D_80081860;
+/* charControl's BSS, in target address order (IDO lays .bss out in declaration
+ * order): the collision callback state at 0x800CB2C0, the camera state pointer
+ * at 0x800CB300, and the shared gravity scalar at 0x800CB304. The collision
+ * state must be defined here: as1 shares one high half per aligned pair only
+ * for a symbol its TU defines, which is the target's form in func_8001EC44. */
+ControlCollisionState D_800CB2C0;
+ControlCameraState *D_800CB300;
 /* Shared gravity scalar; original resident/overlay uses are single precision. */
 f32 D_800CB304;
 

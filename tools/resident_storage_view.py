@@ -37,12 +37,12 @@ LOADER_RECIPE = '0c80ca4b26661342a8eb479d905aa636e31b01980b911b8c4a43f67d4017b30
 SOURCE_PINS = {
     'impact_gate': ('src/main/anim.c', 'e75ea3d245cf5076d769b603ff82fc2a50ce04c7d1a100d91de4ea4d0898dfc3'),
     'color_gate': ('src/main/objects.c', '9c88fe52160f7515f97007d6e57f6b640f772b7f81c4d23cf1389d9e50ecc3c0'),
-    'gravity': ('src/main/charControl.c', 'bd1010309d38485300c8db1f27208370f4642bb73f92e72d3f6098cd7e2f3c89'),
+    'gravity': ('src/main/charControl.c', 'f1451f759d9ab13c931904652def4fa3852ffc9ad6cc62a999c621862122a088'),
 }
 WITNESSES = {
     'impact_gate': {'function':'func_80050348','owner':'D_8007BF04','external':'D_8007BF04','selector':0xFFD,'offset':0x31A4,'size':532,'relocs':22,'uses':3,'recipe':'c9ae34a06b5294868c9bb0a05f888ab6b7942dbf9c6861830bf560a1208858e6','renames':('animResetTrap','hitCopyFirstTrap','TrapDanglingJump')},
     'color_gate': {'function':'func_80005548','owner':'D_8007BF0C','external':'D_8007BF0C','selector':0xFFD,'offset':0x31AC,'size':348,'relocs':3,'uses':1,'recipe':'52b5e15f163b4eab2263185588b5847570d1e8f7a200eeae4f2a2fec51720eb8','renames':('objectsSizeDefaultBranch','objectsInitDefaultBranch','objectsControlDefaultBranch','objectsSwitchTablesBase')},
-    'gravity': {'function':'', 'owner':'D_800CB304','source':'src/main/charControl.c','address':0x800CB304,'size':4,'recipe':'22174bb0b30080a22443639d4e286bee8d82f88c67afc9bb40e48be8f6dde8bf'},
+    'gravity': {'function':'', 'owner':'D_800CB304','source':'src/main/charControl.c','address':0x800CB304,'section_address':0x800CB2C0,'size':4,'recipe':'35995259a63973d80aad9abcf387537cb76de50c2135e5926ae657fe9351dd3e'},
 }
 LOADED = {Path(m.__file__): pp.sha256_file(Path(m.__file__)) for m in
           (fp, ot, batch, pp, rs, sf, sv, cc, receipts)}
@@ -365,15 +365,15 @@ def _gravity(out,deadline):
     raw_object_sha=pp.sha256_file(rawpath)
     _assert_same_snapshot(before,_common_context(source,cfg,recipe_text,command,metadata,dependency_specs,proof_paths,extra_paths,deadline,recipe_specs,expected_recipes),'gravity source/tool/build')
     raw=rs.Elf(rawpath); bss_i=raw.names.index('.bss'); bss_header=raw.sh[bss_i]
-    need(bss_header[1]==8 and bss_header[2]&3==3 and bss_header[5]==16 and bss_header[8]==16,'raw gravity BSS geometry is not the reviewed 16-byte aligned tail')
-    symbol=sv.unique_symbol(raw,'D_800CB304'); need(symbol[4]==bss_i and symbol[1]==0 and symbol[2]==4 and symbol[3]&15==1,'raw gravity object is not one global four-byte f32 owner')
+    need(bss_header[1]==8 and bss_header[2]&3==3 and bss_header[5]==0x50 and bss_header[8]==16,'raw charControl BSS geometry is not the reviewed 0x50-byte aligned tail')
+    symbol=sv.unique_symbol(raw,'D_800CB304'); need(symbol[4]==bss_i and symbol[1]==0x44 and symbol[2]==4 and symbol[3]&15==1,'raw gravity object is not the global four-byte f32 owner at 0x44')
     need(not any(sec=='.bss' for sec,_,_,_ in raw.relocations()),'raw gravity BSS has relocations')
     replay=out/'normalized.o'; shutil.copyfile(rawpath,replay)
     trim=['python3','tools/trim_elf_bss.py',str(replay),'D_800CB304','4']
     trim_result=batch.bounded_capture(trim,deadline,check=True); (out/'trim.log').write_text(trim_result.stdout)
     normalized_object_sha=pp.sha256_file(replay)
     norm=rs.Elf(replay); nh=norm.sh[norm.names.index('.bss')]
-    need(nh[5]==4 and nh[8]==4,'authorized trailing alignment normalization did not produce 4-byte BSS')
+    need(nh[5]==0x48 and nh[8]==4,'authorized trailing alignment normalization did not produce the 0x48-byte BSS')
     # The comparator intentionally skips bytes for SHT_NOBITS; no NOBITS bytes are read.
     rs._reserved_witness_fidelity(norm,rs.Elf(cfg))
     fp.require_fresh_evidence(owner_res)
@@ -384,12 +384,12 @@ def _gravity(out,deadline):
     need(loader_preflight['preflight']['status']=='complete' and loader_preflight['workbench']['differing_words']==0,'fresh exact loader/ROM proof failed')
     linked=rs.Elf(fp.TARGET_ELF); owner=sv.unique_symbol(linked,'D_800CB304'); need(owner[4]>0 and linked.names[owner[4]]=='.main_bss' and owner[1]==spec['address'] and owner[2]==4 and owner[3]&15==1,'linked gravity BSS owner differs')
     placements=rs.linked_input_sections(); matches=[(obj,sec,start,size) for (obj,sec),(start,size) in placements.items() if obj=='build/src/main/charControl.c.o' and sec=='.bss']
-    need(matches==[('build/src/main/charControl.c.o','.bss',spec['address'],4)],'linked map does not place the normalized owner uniquely')
+    need(matches==[('build/src/main/charControl.c.o','.bss',spec['section_address'],0x48)],'linked map does not place the normalized owner uniquely')
     need(sv.body_digest(loader_cpp_before,'ResolveRelocAddress')==LOADER_BODY,'reviewed loader BSS semantics changed')
     anchor=sv.unique_symbol(linked,'D_80085A40'); need(anchor[1]==0x80085A40 and anchor[1]+0x458C4==owner[1],'BSS loader anchor equation differs')
     yaml_text=(ROOT/'mickey.us.yaml').read_text()
-    need(len(re.findall(r'^\s*- \{ type: \.bss, vram: 0x800CB304, name: main/charControl \}\s*$',yaml_text,re.M))==1,
-         'canonical YAML does not name the exact gravity BSS origin')
+    need(len(re.findall(r'^\s*- \{ type: \.bss, vram: 0x800CB2C0, name: main/charControl \}\s*$',yaml_text,re.M))==1,
+         'canonical YAML does not name the exact charControl BSS origin')
     # BSS is NOBITS: deliberately no ROM byte access or zero comparison.
     cpp_after=_preprocess(args,sr,deadline); need(cpp_before==cpp_after,'gravity preprocessed source changed')
     (out/'preprocessed-after.c').write_text(cpp_after)
@@ -406,8 +406,8 @@ def _gravity(out,deadline):
       'resolver_admission':False,'matching_credit':0,'source':sr,'source_sha256':before['source'],
       'configured_recipe_fingerprint':fp_hash,'raw_stock_object_sha256':raw_object_sha,
       'normalized_object_sha256':normalized_object_sha,'configured_object_sha256':before['configured_object'],'source_declaration_line':decl_line,
-      'raw_bss':{'type':'SHT_NOBITS','size':16,'alignment':16,'owner_offset':0,'owner_size':4},
-      'normalized_bss':{'type':'SHT_NOBITS','size':4,'alignment':4},'linked_owner':{'name':'D_800CB304','address':owner[1],'size':owner[2],'section':'.main_bss','input':matches[0][0]},
+      'raw_bss':{'type':'SHT_NOBITS','size':0x50,'alignment':16,'owner_offset':0x44,'owner_size':4},
+      'normalized_bss':{'type':'SHT_NOBITS','size':0x48,'alignment':4},'linked_owner':{'name':'D_800CB304','address':owner[1],'size':owner[2],'section':'.main_bss','input':matches[0][0]},
       'loader_view':{'selector':0xFFF,'offset':0x458C4,'anchor':'D_80085A40','anchor_address':anchor[1],'physical_address':owner[1],'loader_body_sha256':LOADER_BODY},
       'fresh_owner_tu_preflight':owner_preflight,'fresh_loader_preflight':loader_preflight,
       'preprocessed_self_context':ctx,'freshness_before':before,'freshness_after':after,

@@ -721,13 +721,13 @@ segments:
       # at 0x8457C is output-section padding, not owned object bytes.
       - [0x83940, .rodata, main/diRcp]
       - [0x8457C, rodata]
-      # fx's literal pool opens with func_8004A380's "%d" and
-      # func_80047304's 0.33f scale (a literal: as an extern global its load
-      # could not be hoisted past that loop's trig calls, which reorders the
-      # prologue). func_800475E8's 102.4f at 0x849E8 and the object's last
-      # alignment word stay anonymous until that function matches.
+      # fx's literal pool: func_8004A380's "%d", func_80047304's 0.33f scale
+      # (a literal: as an extern global its load could not be hoisted past
+      # that loop's trig calls, which reorders the prologue), func_800475E8's
+      # 102.4f, and the object's own alignment word -- IDO's whole 0x10-byte
+      # input section, so no trim.
       - [0x849E0, .rodata, main/fx]
-      - [0x849E8, rodata]
+      - [0x849F0, rodata]
       # func_8004C8D8's eight-entry texture-format switch table. The following
       # two zero words are output-section alignment, not owned object bytes.
       - [0x849F8, .rodata, main/font]
@@ -767,8 +767,11 @@ segments:
       - [0x85700, rodata]
       # BSS is zero-filled by the entrypoint; no ROM bytes back it.
       - { start: 0x86640, type: bss, vram: 0x80085A40 }
-      # Shared gravity: resident and overlay memory uses prove this four-byte scalar.
-      - { type: .bss, vram: 0x800CB304, name: main/charControl }
+      # charControl owns 0x800CB2C0-0x800CB307: the 0x40-byte collision callback
+      # state, the camera state pointer, and the shared gravity scalar (resident
+      # and overlay memory uses prove the four-byte f32). IDO pads the input
+      # section to 0x50; the POSTPROCESS rule trims the alignment tail.
+      - { type: .bss, vram: 0x800CB2C0, name: main/charControl }
       - { type: bss, vram: 0x800CB308, name: bss_gap_D800CB308 }
       # The joy controller-state globals own this contiguous BSS block; the
       # reset loop only recovers the target address materialization here.
@@ -2945,6 +2948,7 @@ segments:
       - [0x18D9DB0, c, overlay99RenderSortedEntries]
       - [0x18DA154, c, overlay99RenderSegments]
       - [0x18DA38C, c, func_overlay_099_F0000DDC_18DA38C]
+      - [0x18DA90C, asm, overlay_099_padding]
       - [0x18DA910, bin, overlay_099_data_rodata]
       - [0x18DA9D0, bin, overlay_099_reloc1]
       - [0x18DAB40, bin, overlay_099_reloc2]

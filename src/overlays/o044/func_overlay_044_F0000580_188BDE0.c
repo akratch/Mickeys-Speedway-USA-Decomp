@@ -1,9 +1,31 @@
 #include "PR/ultratypes.h"
 
-typedef struct Overlay44Gfx {
+/*
+ * Overlay 44: draw the animation's two 16-bit frames as one two-tile
+ * texture rectangle per TMEM-sized strip.
+ *
+ * Rewritten 2026-10-02 from the listing (lane w2-capbuf): libultra-style
+ * gDPLoadMultiBlockS / gSPTextureRectangle packet macros on (*dl)++, the
+ * strip loop as in JFG screen.c's screenDraw (a semantic relative, no code
+ * adapted), the frame-source fields read through the global at each use,
+ * and an unsigned stride.  304 -> 13 masked words at size delta 0.
+ *
+ * Open: the stride's conversion copy is a type-4 temp whose preheader web
+ * ties xh and dsdx at save 1.0 and loses on web number (97/105 < 117), so
+ * it takes a3 where the shipped code has it in a0 with xh in a2 and dsdx in
+ * a3.  Forcing p1:w117=c3,w97=c5,w105=c6 scores 5 (schedule-only: the
+ * scale *= 65536 multiply issues three slots later).
+ */
+
+typedef struct {
     u32 w0;
     u32 w1;
-} Overlay44Gfx;
+} Gwords;
+
+typedef union {
+    Gwords words;
+    long long force_structure_alignment;
+} Gfx;
 
 typedef struct Overlay44FrameSource {
     s16 dimension0;
@@ -27,145 +49,180 @@ typedef struct Overlay44AnimationState {
     s8 protectedSlot0;
     s8 protectedSlot1;
     s8 cachedFrame[4];
-    void *handles[4];
+    u8 *handles[4];
 } Overlay44AnimationState;
 
-#define OVERLAY44_CMD(pkt, a, b)         \
-    {                                    \
-        Overlay44Gfx *_g = (pkt);        \
-        _g->w0 = (u32)(a);               \
-        _g->w1 = (u32)(b);               \
-    }
+#define _SHIFTL(v, s, w) ((u32)(((u32)(v) & ((0x01 << (w)) - 1)) << (s)))
+#ifndef NULL
+#define NULL 0
+#endif
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+
+#define gDma1p(pkt, c, s, l, p) {                                           \
+    Gfx *_g = (Gfx *)(pkt);                                                 \
+    _g->words.w0 = (_SHIFTL((c), 24, 8) | _SHIFTL((p), 16, 8) |              \
+                    _SHIFTL((l), 0, 16));                                   \
+    _g->words.w1 = (u32)(s);                                                \
+}
+#define gSPDisplayList(pkt, dl) gDma1p(pkt, 0x06, dl, 0, 0)
+#define gImmp1(pkt, c, p0) {                                                \
+    Gfx *_g = (Gfx *)(pkt);                                                 \
+    _g->words.w0 = _SHIFTL((c), 24, 8);                                     \
+    _g->words.w1 = (u32)(p0);                                               \
+}
+#define gDPNoParam(pkt, cmd) {                                              \
+    Gfx *_g = (Gfx *)(pkt);                                                 \
+    _g->words.w0 = _SHIFTL((cmd), 24, 8);                                   \
+    _g->words.w1 = 0;                                                       \
+}
+#define gDPSetColor(pkt, c, d) {                                            \
+    Gfx *_g = (Gfx *)(pkt);                                                 \
+    _g->words.w0 = _SHIFTL((c), 24, 8);                                     \
+    _g->words.w1 = (u32)(d);                                                \
+}
+#define DPRGBColor(pkt, cmd, r, g, b, a)                                    \
+    gDPSetColor(pkt, cmd, (_SHIFTL(r, 24, 8) | _SHIFTL(g, 16, 8) |          \
+                           _SHIFTL(b, 8, 8) | _SHIFTL(a, 0, 8)))
+#define gDPSetEnvColor(pkt, r, g, b, a) DPRGBColor(pkt, 0xFB, r, g, b, a)
+#define gDPSetPrimColor(pkt, m, l, r, g, b, a) {                            \
+    Gfx *_g = (Gfx *)(pkt);                                                 \
+    _g->words.w0 = (_SHIFTL(0xFA, 24, 8) | _SHIFTL((m), 8, 8) |             \
+                    _SHIFTL((l), 0, 8));                                    \
+    _g->words.w1 = (_SHIFTL(r, 24, 8) | _SHIFTL(g, 16, 8) |                 \
+                    _SHIFTL(b, 8, 8) | _SHIFTL(a, 0, 8));                   \
+}
+#define gDPLoadSync(pkt) gDPNoParam(pkt, 0xE6)
+#define gDPPipeSync(pkt) gDPNoParam(pkt, 0xE7)
+#define gDPSetTextureImage(pkt, f, s, w, i) {                               \
+    Gfx *_g = (Gfx *)(pkt);                                                 \
+    _g->words.w0 = _SHIFTL(0xFD, 24, 8) | _SHIFTL((f), 21, 3) |             \
+                   _SHIFTL((s), 19, 2) | _SHIFTL((w) - 1, 0, 12);           \
+    _g->words.w1 = (u32)(i);                                                \
+}
+#define gDPSetTile(pkt, fmt, siz, line, tmem, tile, palette, cmt,           \
+                   maskt, shiftt, cms, masks, shifts) {                     \
+    Gfx *_g = (Gfx *)(pkt);                                                 \
+    _g->words.w0 = _SHIFTL(0xF5, 24, 8) | _SHIFTL((fmt), 21, 3) |           \
+                   _SHIFTL((siz), 19, 2) | _SHIFTL((line), 9, 9) |          \
+                   _SHIFTL((tmem), 0, 9);                                   \
+    _g->words.w1 = _SHIFTL((tile), 24, 3) | _SHIFTL((palette), 20, 4) |     \
+                   _SHIFTL((cmt), 18, 2) | _SHIFTL((maskt), 14, 4) |        \
+                   _SHIFTL((shiftt), 10, 4) | _SHIFTL((cms), 8, 2) |        \
+                   _SHIFTL((masks), 4, 4) | _SHIFTL((shifts), 0, 4);        \
+}
+#define gDPLoadBlock(pkt, tile, uls, ult, lrs, dxt) {                       \
+    Gfx *_g = (Gfx *)(pkt);                                                 \
+    _g->words.w0 = (_SHIFTL(0xF3, 24, 8) | _SHIFTL((uls), 12, 12) |         \
+                    _SHIFTL((ult), 0, 12));                                 \
+    _g->words.w1 = (_SHIFTL((tile), 24, 3) |                                \
+                    (_SHIFTL(MIN((lrs), 0x7FF), 12, 12)) |                  \
+                    _SHIFTL((dxt), 0, 12));                                 \
+}
+#define gDPSetTileSize(pkt, t, uls, ult, lrs, lrt) {                        \
+    Gfx *_g = (Gfx *)(pkt);                                                 \
+    _g->words.w0 = (_SHIFTL(0xF2, 24, 8) | _SHIFTL((uls), 12, 12) |         \
+                    _SHIFTL((ult), 0, 12));                                 \
+    _g->words.w1 = (_SHIFTL((t), 24, 3) | _SHIFTL((lrs), 12, 12) |          \
+                    _SHIFTL((lrt), 0, 12));                                 \
+}
+#define G_IM_FMT_RGBA 0
+#define G_IM_SIZ_16b 2
+#define G_TX_LOADTILE 7
+#define G_TX_CLAMP 2
+#define gDPLoadMultiBlockS(pkt, timg, tmem, rtile, fmt, siz, width, height, \
+                           pal, cms, cmt, masks, maskt, shifts, shiftt) {   \
+    gDPSetTextureImage(pkt, fmt, siz, 1, timg);                             \
+    gDPSetTile(pkt, fmt, siz, 0, tmem, G_TX_LOADTILE, 0, cmt, maskt,        \
+               shiftt, cms, masks, shifts);                                 \
+    gDPLoadSync(pkt);                                                       \
+    gDPLoadBlock(pkt, G_TX_LOADTILE, 0, 0, ((width) * (height)) - 1, 0);    \
+    gDPPipeSync(pkt);                                                       \
+    gDPSetTile(pkt, fmt, siz, ((((width) * 2) + 7) >> 3), tmem, rtile, pal, \
+               cmt, maskt, shiftt, cms, masks, shifts);                     \
+    gDPSetTileSize(pkt, rtile, 0, 0, ((width) - 1) << 2,                    \
+                   ((height) - 1) << 2);                                    \
+}
+#define gSPTextureRectangle(pkt, xl, yl, xh, yh, tile, s, t, dsdx, dtdy) {  \
+    Gfx *_g = (Gfx *)(pkt);                                                 \
+    _g->words.w0 = (_SHIFTL(0xE4, 24, 8) | _SHIFTL((xh), 12, 12) |          \
+                    _SHIFTL((yh), 0, 12));                                  \
+    _g->words.w1 = (_SHIFTL((tile), 24, 3) | _SHIFTL((xl), 12, 12) |        \
+                    _SHIFTL((yl), 0, 12));                                  \
+    gImmp1(pkt, 0xB3, (_SHIFTL((s), 16, 16) | _SHIFTL((t), 0, 16)));        \
+    gImmp1(pkt, 0xB2, (_SHIFTL((dsdx), 16, 16) | _SHIFTL((dtdy), 0, 16)));  \
+}
 
 extern Overlay44FrameSource *gOverlay44FrameSources;
-extern u8 D_0[];
-extern u8 D_28[];
-extern void func_overlay_044_F0000000_188B860();
+extern Gfx D_0[];
+extern Gfx D_28[];
+extern void func_overlay_044_F0000000_188B860(Gfx **dl);
 
-/* Frame closed to 0x100 by dissolving extra mips_to_c s32s (L134) and placing
- * five used-but-colored working s32s between the width and y-prev homes (L99).
- * Reading arg0 through its own address emits the unreloaded home store and
- * colours the pointer copy into a2, which closes the missing word. */
-/* No external donor body was used. */
 #ifdef NON_MATCHING
-void func_overlay_044_F0000580_188BDE0(
-    Overlay44AnimationState *arg0,
-    Overlay44Gfx **arg1,
-    f32 arg2) {
-    s32 spFC;
-    s32 var_t2;
-    s32 var_t3;
-    s32 temp_t4_2;
-    s32 var_t5;
-    s32 temp_t0;
-    s32 spE4;
-    u8 *var_s0;
-    u8 *var_s1;
-    s32 var_a3;
-    Overlay44AnimationState *state;
+void func_overlay_044_F0000580_188BDE0(Overlay44AnimationState *state,
+                                       Gfx **dl, f32 scale) {
+    s32 width;
+    s32 height;
+    s32 rows;
+    s32 maxRows;
+    s32 x;
+    s32 xh;
+    s32 yPrev;
+    s32 y;
+    s32 dsdx;
+    s32 stride;
+    u8 *tex0;
+    u8 *tex1;
+    s32 alpha;
 
-    state = *(Overlay44AnimationState **)&arg0;
-    if (state != 0) {
-        if (state->sourceIndex != -1) {
-            var_s0 = state->handles[state->protectedSlot0];
-            spFC = gOverlay44FrameSources[state->sourceIndex].dimension0;
-            var_t3 = gOverlay44FrameSources[state->sourceIndex].dimension1;
-            var_s1 = state->handles[state->protectedSlot1];
-            if (arg2 == 1.0f) {
-                OVERLAY44_CMD((*arg1)++, 0x06000000, D_0);
-            } else {
-                OVERLAY44_CMD((*arg1)++, 0x06000000, D_28);
-            }
-
-            var_t2 = state->subtype;
-            OVERLAY44_CMD((*arg1)++, 0xFA000000,
-                (var_t2 << 24) | (var_t2 << 16) | (var_t2 << 8) | 0xFF);
-            var_t2 = state->phase & 0xFF;
-            OVERLAY44_CMD((*arg1)++, 0xFB000000,
-                (var_t2 << 24) | (var_t2 << 16) | (var_t2 << 8) | var_t2);
-
-            var_t2 = state->value8 * 4;
-            spE4 = state->valueA << 16;
-            if (var_t3 != 0) {
-                s32 sp64;
-                s32 sp58;
-                s32 sp54;
-                s32 sp50;
-                s32 sp4C;
-                s32 sp48;
-                s32 sp44;
-                s32 sp40;
-
-                sp64 = spFC * 2;
-                temp_t4_2 = (0x800 / sp64) & ~1;
-                sp58 = ((((sp64 + 7) >> 3) & 0x1FF) << 9) | 0xF5100000;
-                sp54 = sp58 | 0x100;
-                sp50 = (((spFC - 1) * 4) & 0xFFF) << 12;
-                sp4C = sp50 | 0x01000000;
-                sp48 = ((((s32)((f32)spFC * arg2 * 4.0f) + var_t2) & 0xFFF)
-                        << 12) | 0xE4000000;
-                sp44 = (var_t2 & 0xFFF) << 12;
-                var_a3 = (s32)(1024.0f / arg2);
-                sp40 = ((var_a3 & 0xFFFF) << 16) | (var_a3 & 0xFFFF);
-                var_t5 = spE4;
-                arg2 *= 65536.0f;
-
-                do {
-                    var_t2 = var_t3;
-                    if (temp_t4_2 < var_t3) {
-                        var_t2 = temp_t4_2;
-                        var_t3 -= temp_t4_2;
-                    } else {
-                        var_t3 = 0;
-                    }
-
-                    OVERLAY44_CMD((*arg1)++, 0xFD100000, var_s1);
-                    OVERLAY44_CMD((*arg1)++, 0xF5100100, 0x07080200);
-                    var_t5 += (s32)((f32)var_t2 * arg2);
-                    OVERLAY44_CMD((*arg1)++, 0xE6000000, 0);
-                    temp_t0 = (spFC * var_t2) - 1;
-                    var_a3 = 0x7FF;
-                    if (temp_t0 < 0x7FF) {
-                        var_a3 = temp_t0;
-                    }
-                    OVERLAY44_CMD((*arg1)++, 0xF3000000,
-                        ((var_a3 & 0xFFF) << 12) | 0x07000000);
-                    OVERLAY44_CMD((*arg1)++, 0xE7000000, 0);
-                    OVERLAY44_CMD((*arg1)++, sp54, 0x01080200);
-                    OVERLAY44_CMD((*arg1)++, 0xF2000000,
-                        sp4C | (((var_t2 - 1) * 4) & 0xFFF));
-
-                    OVERLAY44_CMD((*arg1)++, 0xFD100000, var_s0);
-                    OVERLAY44_CMD((*arg1)++, 0xF5100000, 0x07080200);
-                    OVERLAY44_CMD((*arg1)++, 0xE6000000, 0);
-                    var_a3 = 0x7FF;
-                    if (temp_t0 < 0x7FF) {
-                        var_a3 = temp_t0;
-                    }
-                    OVERLAY44_CMD((*arg1)++, 0xF3000000,
-                        ((var_a3 & 0xFFF) << 12) | 0x07000000);
-                    OVERLAY44_CMD((*arg1)++, 0xE7000000, 0);
-                    OVERLAY44_CMD((*arg1)++, sp58, 0x00080200);
-                    OVERLAY44_CMD((*arg1)++, 0xF2000000,
-                        sp50 | (((var_t2 - 1) * 4) & 0xFFF));
-
-                    OVERLAY44_CMD((*arg1)++,
-                        sp48 | ((var_t5 >> 14) & 0xFFF),
-                        sp44 | ((spE4 >> 14) & 0xFFF));
-                    OVERLAY44_CMD((*arg1)++, 0xB3000000, 0);
-                    OVERLAY44_CMD((*arg1)++, 0xB2000000, sp40);
-
-                    spE4 = var_t5;
-                    var_s0 += var_t2 * sp64;
-                    var_s1 += var_t2 * sp64;
-                } while (var_t3 != 0);
-            }
-
-            func_overlay_044_F0000000_188B860(arg1);
-            OVERLAY44_CMD((*arg1)++, 0xFA000000, 0xFFFFFFFF);
-            OVERLAY44_CMD((*arg1)++, 0xFB000000, 0xFFFFFFFF);
-        }
+    if (state == NULL || state->sourceIndex == -1) {
+        return;
     }
+    width = gOverlay44FrameSources[state->sourceIndex].dimension0;
+    height = gOverlay44FrameSources[state->sourceIndex].dimension1;
+    tex0 = state->handles[state->protectedSlot0];
+    tex1 = state->handles[state->protectedSlot1];
+    alpha = state->phase & 0xFF;
+    if (scale == 1.0f) {
+        gSPDisplayList((*dl)++, D_0);
+    } else {
+        gSPDisplayList((*dl)++, D_28);
+    }
+    gDPSetPrimColor((*dl)++, 0, 0, state->subtype, state->subtype,
+                    state->subtype, 255);
+    gDPSetEnvColor((*dl)++, alpha, alpha, alpha, alpha);
+    x = state->value8 * 4;
+    y = yPrev = state->valueA << 16;
+    xh = (s32)(width * scale * 4.0f) + x;
+    dsdx = (s32)(1024.0f / scale);
+    scale *= 65536.0f;
+    if (height != 0) {
+        stride = (u32)width * 2;
+        maxRows = (0x800 / stride) & ~1;
+        do {
+            if (maxRows < height) {
+                rows = maxRows;
+                height -= maxRows;
+            } else {
+                rows = height;
+                height = 0;
+            }
+            y += (s32)(rows * scale);
+            gDPLoadMultiBlockS((*dl)++, tex1, 0x100, 1, G_IM_FMT_RGBA,
+                               G_IM_SIZ_16b, width, rows, 0, G_TX_CLAMP,
+                               G_TX_CLAMP, 0, 0, 0, 0);
+            gDPLoadMultiBlockS((*dl)++, tex0, 0, 0, G_IM_FMT_RGBA,
+                               G_IM_SIZ_16b, width, rows, 0, G_TX_CLAMP,
+                               G_TX_CLAMP, 0, 0, 0, 0);
+            gSPTextureRectangle((*dl)++, x, yPrev >> 14, xh, y >> 14, 0, 0, 0,
+                                dsdx, dsdx);
+            yPrev = y;
+            tex0 += rows * stride;
+            tex1 += rows * stride;
+        } while (height != 0);
+    }
+    func_overlay_044_F0000000_188B860(dl);
+    gDPSetPrimColor((*dl)++, 0, 0, 255, 255, 255, 255);
+    gDPSetEnvColor((*dl)++, 255, 255, 255, 255);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o044/func_overlay_044_F0000580_188BDE0/func_overlay_044_F0000580_188BDE0.s")
@@ -173,10 +230,10 @@ void func_overlay_044_F0000580_188BDE0(
 
 /* PLATEAU-HANDOFF:func_overlay_044_F0000580_188BDE0:start
  * symbol: func_overlay_044_F0000580_188BDE0
- * score: 304 differing words
+ * score: 13 differing words
  * frame: 0x100
  * relocations: 7
- * first-mismatch: +0x8
- * summary: Line 151 macro split was inert. arg0 address-read: 338 to 304, delta 0, unreloaded home store plus a2 copy. Stall: s32 reorder misses 0x64/0x58/0x50.
+ * first-mismatch: +0x188
+ * summary: Rewrite from listing, 304 to 13 at delta 0. Stride temp loses a0 to xh/dsdx on web number; forced colours score 5 (schedule only).
  * PLATEAU-HANDOFF:func_overlay_044_F0000580_188BDE0:end
  */

@@ -121,7 +121,6 @@ typedef struct Overlay25VectorObject {
 
 extern u16 gOverlay25GlobalFlagsReloc;
 extern const u8 gOverlay25ColorsReloc[];
-extern f32 gOverlay25Threshold;
 
 extern f32 func_8002A8C0(s32 angle);
 extern f32 func_8002A8BC(s32 angle);

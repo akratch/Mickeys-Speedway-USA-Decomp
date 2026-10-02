@@ -121,20 +121,6 @@
       "class": "metadata",
       "matched_c": null,
       "nonmatching": null,
-      "object": "build/src/main/fx.c.o",
-      "offset": null,
-      "overlay": null,
-      "size": null,
-      "source": "src/main/fx.c",
-      "tools": [
-        "trim_elf_section.py"
-      ]
-    },
-    {
-      "c_owned": null,
-      "class": "metadata",
-      "matched_c": null,
-      "nonmatching": null,
       "object": "build/src/main/joy.c.o",
       "offset": null,
       "overlay": null,
@@ -1068,16 +1054,18 @@
     },
     {
       "c_owned": true,
-      "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "class": "altered",
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o011/func_overlay_011_F0000150_1868998.c.o",
       "offset": 336,
       "overlay": 11,
       "size": 2248,
       "source": "src/overlays/o011/func_overlay_011_F0000150_1868998.c",
       "tools": [
-        "trim_elf_section.py"
+        "externalize_elf_section.py",
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -2521,8 +2509,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o020/overlay20UpdateGrid.c.o",
       "offset": 2664,
       "overlay": 20,
@@ -2579,15 +2567,18 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o022/func_overlay_022_F00002B0_18783B8.c.o",
       "offset": 688,
       "overlay": 22,
       "size": 1996,
       "source": "src/overlays/o022/func_overlay_022_F00002B0_18783B8.c",
       "tools": [
-        "trim_elf_section.py"
+        "rebind_elf_relocations.py",
+        "externalize_elf_section.py",
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -2708,8 +2699,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o025/overlay_025.c.o",
       "offset": 0,
       "overlay": 25,
@@ -2717,6 +2708,7 @@
       "source": "src/overlays/o025/overlay_025.c",
       "tools": [
         "trim_elf_section.py",
+        "externalize_elf_section.py",
         "objcopy"
       ]
     },
@@ -2828,15 +2820,18 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o029/func_overlay_029_F00005C4_187D874.c.o",
       "offset": 1476,
       "overlay": 29,
       "size": 2332,
       "source": "src/overlays/o029/func_overlay_029_F00005C4_187D874.c",
       "tools": [
-        "trim_elf_section.py"
+        "rebind_elf_relocations.py",
+        "externalize_elf_section.py",
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -3712,8 +3707,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o038/func_overlay_038_F000047C_188618C.c.o",
       "offset": 1148,
       "overlay": 38,
@@ -8084,12 +8079,12 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c.o",
       "offset": 3548,
       "overlay": 99,
-      "size": 1412,
+      "size": 1408,
       "source": "src/overlays/o099/func_overlay_099_F0000DDC_18DA38C.c",
       "tools": [
         "trim_elf_section.py"
@@ -9347,13 +9342,13 @@
   ],
   "schema_version": 3,
   "summary": {
-    "altered_bytes": 9148,
+    "altered_bytes": 11396,
     "by_class": {
-      "altered": 5,
-      "metadata": 639,
+      "altered": 6,
+      "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 357420,
-    "objects_with_postprocess": 645
+    "matched_c_bytes_with_postprocess": 368684,
+    "objects_with_postprocess": 644
   }
 }

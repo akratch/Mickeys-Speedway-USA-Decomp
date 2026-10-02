@@ -706,11 +706,6 @@ $(BUILD_DIR)/$(SRC_DIR)/main/shadows.c.o: CFLAGS += -Wab,-r4300_mul
 # The safety property is the ROM: a flag disturbing any function these units
 # already match would break the byte-identical rebuild. `gmake verify` passes.
 $(BUILD_DIR)/$(SRC_DIR)/main/fx.c.o: CFLAGS += -Wab,-r4300_mul
-# fx's "%d" and func_80047304's 0.33f own the first two words of the fx
-# literal pool (ROM 0x849E0); the rest of IDO's 0x10-byte input section is
-# alignment padding, and the still anonymous 102.4f begins right after it.
-$(BUILD_DIR)/$(SRC_DIR)/main/fx.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x8
 $(BUILD_DIR)/$(SRC_DIR)/main/frontend_37D50.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/block_506D0.c.o: CFLAGS += -Wab,-r4300_mul
 
@@ -1343,12 +1338,30 @@ $(BUILD_DIR)/$(SRC_DIR)/main/charControl.c.o: CFLAGS += -Wab,-r4300_mul
 # func_8001C4C0's effect-spawn dangling call needs its observed twelve-argument
 # prototype without changing the other shared TrapDanglingJump call sites.
 # Canonicalize only the undefined alias name; section contents are unchanged.
-# The lone gravity scalar owns four BSS bytes; IDO rounds its section to 16.
-# Normalize only proved NOBITS tail alignment, preserving executable bytes.
+# The TU's BSS is the collision callback state, the camera state pointer and
+# the gravity scalar (0x48 bytes); IDO rounds its section to 0x50. Normalize
+# only the proved NOBITS tail alignment after the gravity scalar, preserving
+# executable bytes.
 $(BUILD_DIR)/$(SRC_DIR)/main/charControl.c.o: $(TOOLS_DIR)/trim_elf_bss.py
+# The retail code names the collision state's fields by address (the
+# GLOBAL_ASM bodies still do), while the C owns one ControlCollisionState;
+# add global field aliases at their .bss offsets after the trim. No
+# instruction or data byte is changed.
 $(BUILD_DIR)/$(SRC_DIR)/main/charControl.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym charControlEffectSpawnTrap=TrapDanglingJump $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_bss.py $@ D_800CB304 4
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_bss.py $@ D_800CB304 4 && \
+	$(OBJCOPY) --add-symbol D_800CB2C4=.bss:0x4,global,object \
+		--add-symbol D_800CB2C8=.bss:0x8,global,object \
+		--add-symbol D_800CB2CC=.bss:0xC,global,object \
+		--add-symbol D_800CB2D0=.bss:0x10,global,object \
+		--add-symbol D_800CB2D4=.bss:0x14,global,object \
+		--add-symbol D_800CB2D8=.bss:0x18,global,object \
+		--add-symbol D_800CB2DC=.bss:0x1C,global,object \
+		--add-symbol D_800CB2E0=.bss:0x20,global,object \
+		--add-symbol D_800CB2E4=.bss:0x24,global,object \
+		--add-symbol D_800CB2F8=.bss:0x38,global,object \
+		--add-symbol D_800CB2FC=.bss:0x3C,global,object \
+		--add-symbol D_800CB2FD=.bss:0x3D,global,object $@
 
 # The positional-audio distance loops retain the R4300 multiply schedule;
 # the full flag lattice selects this mode for amPlayAudioMap.

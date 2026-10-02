@@ -19,8 +19,6 @@ extern void *gOverlay12Resources[];
 extern s32 gOverlay12EffectColors[];
 extern s32 gOverlay12ParticleColors[];
 extern u8 gOverlay12QuadTriangles[];
-extern f32 gOverlay12DrawDistanceScale;
-extern f32 gOverlay12BillboardScale;
 extern void func_800349A4(Overlay12Gfx **displayList, void *resource,
                           s32 mode, s32 flags);
 extern f32 func_80024938(f32 x, f32 y, f32 z);
@@ -35,7 +33,7 @@ extern void func_80034DF0(u8 firstR, u8 firstG, u8 firstB,
 extern void func_80023CCC(Overlay12Gfx **displayList, s32 *matrix,
                           Overlay12Vertex **vertices, void *resource,
                           s32 x, s32 y, s32 z, s32 arg7, f32 scale,
-                          s32 arg9, f32 frame, s32 mode, s32 alpha);
+                          f32 arg9, f32 frame, s32 mode, s32 alpha);
 extern void func_80034E48(void);
 
 #define OVERLAY12_EMIT(cursor, first, second) do { \
@@ -48,9 +46,15 @@ extern void func_80034E48(void);
  * JFG's bloodSpurtsDraw is the closest masked-skeleton sibling, but its
  * public source is GLOBAL_ASM. This body is reconstructed from Mickey only.
  */
-/* Plateau p5: workbench structure-mismatch; 606/611 instructions, 581 positional words, first +0x0; frame -312 vs -328. */
-/* Levers tried: two-web dead reads at four priorities/placements and a same-expression read-count dial; baseline remains best. */
-/* Remains: an in-branch read forces f30 and a -320 frame but emits 614 instructions, overshooting the target; retain GLOBAL_ASM. */
+/* Plateau 2026-10-02 (lane w2-ovle): 581 at -20 -> 606 positional at -4
+ * (aligned byte-exact 117 -> 130). The rodata-relative +0xC/+0x10 scales
+ * are this TU's own float literals (0.01f, 1.8f; overlay 12's pool continues
+ * from the update function's three), the billboard's ninth argument is the
+ * float 1.0f, and the colour words are masked in place (primary before the
+ * resource test, secondary inside it), the s3/s4 shape the target keeps.
+ * Open decision variable: the target hoists 2.0f into f28 above 1024.0f
+ * (f30) and 0.0f (f26); here 2.0f's constant web (one use, save 10/13)
+ * loses to 1.0f, which is used in both loops. */
 #ifdef NON_MATCHING
 void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                                        s32 *matrixPtr,
@@ -72,8 +76,6 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     f32 velocityX;
     f32 velocityY;
     f32 velocityZ;
-    f32 maximumDistance;
-    f32 two;
     Overlay12Vertex *quad;
     s32 *color;
     Overlay12Effect *effect;
@@ -88,8 +90,6 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     displayList = *displayListPtr;
     matrix = *matrixPtr;
     vertices = *verticesPtr;
-    maximumDistance = 1024.0f;
-    two = 2.0f;
     effect = gOverlay12Effects;
     for (i = 0; i < 64; i++, effect++) {
         if (effect->active != 0) {
@@ -110,13 +110,13 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                 alpha = (effect->lifetime * 255) / 120;
             }
             resource = gOverlay12Resources[4 + effect->kind2];
+            primary &= ~0xFF;
             if (resource != NULL) {
+                secondary &= ~0xFF;
                 func_800349A4(&displayList, resource, 0x203, 0);
                 OVERLAY12_EMIT(displayList, 0xE7000000, 0);
-                OVERLAY12_EMIT(displayList, 0xFA000000,
-                               (primary & ~0xFF) | alpha);
-                OVERLAY12_EMIT(displayList, 0xFB000000,
-                               (secondary & ~0xFF) | alpha);
+                OVERLAY12_EMIT(displayList, 0xFA000000, primary | alpha);
+                OVERLAY12_EMIT(displayList, 0xFB000000, secondary | alpha);
                 OVERLAY12_EMIT(
                     displayList,
                     0x04000030U |
@@ -134,10 +134,10 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                 if (distance < 0.0f) {
                     distance = 0.0f;
                 }
-                if (distance > maximumDistance) {
-                    distance = maximumDistance;
+                if (distance > 1024.0f) {
+                    distance = 1024.0f;
                 }
-                factor = two + (distance * gOverlay12DrawDistanceScale);
+                factor = 2.0f + (distance * 0.01f);
                 centerX = effect->collisionX * factor + effect->x0;
                 centerY = effect->collisionY * factor + effect->y0;
                 centerZ = effect->collisionZ * factor + effect->z0;
@@ -211,8 +211,8 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             func_80023CCC(&displayList, &matrix, &vertices,
                           gOverlay12Resource5,
                           (s32)effect->x0, (s32)effect->y0, (s32)effect->z0,
-                          0, effect->value * gOverlay12BillboardScale,
-                          0x3F800000, effect->zero, 14, 255);
+                          0, effect->value * 1.8f,
+                          1.0f, effect->zero, 14, 255);
             func_80034E48();
             break;
         }
@@ -231,7 +231,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             func_80023CCC(&displayList, &matrix, &vertices,
                           gOverlay12Resource5,
                           (s32)particle->x, (s32)particle->y, (s32)particle->z,
-                          0, 4.0f, 0x3F800000, particle->velocity, 14, 255);
+                          0, 4.0f, 1.0f, particle->velocity, 14, 255);
         }
     }
     func_80034E48();
@@ -247,10 +247,10 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
 
 /* PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:start
  * symbol: func_overlay_012_F0000910_186DB90
- * score: 581 differing words
- * frame: -0x138
+ * score: 606 differing words
+ * frame: 0x130
  * relocations: 36
  * first-mismatch: +0x0
- * summary: Fresh V0 retains a five-instruction, 16-byte-frame deficit; missing target f30 lifetime cascades through saved-FPR, stack, and register allocation.
+ * summary: Literal scales, float 1.0f, in-place colour masks: -20 to -4, aligned exact 117 to 130. Open: 2.0f not hoisted into f28.
  * PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:end
  */

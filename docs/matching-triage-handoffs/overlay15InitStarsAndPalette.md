@@ -46,6 +46,30 @@ target hoists above the guard) is worth chasing. The hand-unrolled form
 in the tracked source is a hand copy of the unroller's output and buys
 the colours by construction at the cost of the three inits' position.
 
+Second pass, same lane (records, proc 2, on each shape). The s0 rank is
+recovered by a TWO-variable palette loop that the unroller doubles:
+`for (previousStarIndex = 0, starIndex = 1; previousStarIndex < 0x100;
+previousStarIndex += 2, starIndex += 2)` with one store per variable.
+starIndex's web is then 135 over 9 blocks (save 45, coloured s0 second,
+before the cursor at 17, s1), the primary index previousStarIndex is v1
+and the unroller's copy of it is a0, exactly the target's four induction
+registers but one: the copy of starIndex (the target's `addiu a1, zero, 3`
+and `addiu a1, a1, 4`) is not materialised, so the shape is 197 masked at
+size -8 (insertion_pairs: target-only const +0x130, moves +0x1C4 and
++0x1E0, const +0x230; candidate-only alu +0x1F4 and load +0x210). `!=`,
+statement inits, swapped init order and dropping the post-loop zero are
+the same 197/-8; a fresh second variable instead of starIndex gives the
+swapped head back (199/-8). Spelling the four entries with two base
+variables and derived `+ 2` expressions, or one variable and `+ 1..3`,
+spills the derived indices (frame 0x80 to 0xB8, +32 to +72). The
+decision variable the natural shape now leaves is the unroller's
+treatment of the second induction variable: the target carries a copy of
+both variables, this compiler copies only the primary one from this
+source. A later pass should look for the source that makes starIndex an
+independent induction variable in uopt's eyes (not affine in
+previousStarIndex), e.g. a different initial value expression or a
+reference that is not a multiple of the primary's stride.
+
 Summary before this remeasure: Same-line allocate+starsAddress+store keeps addiu+sw adjacent, 20 to 19; stars address still a1 (force p1:w317=c5 is 16), block 1 tail order and palette index inits remain.
 
 #### 2026-09-13, lane l1: counter reuse and measured bounds scheduling

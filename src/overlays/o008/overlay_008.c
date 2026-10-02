@@ -611,9 +611,16 @@ typedef struct O8P1294Tuning {
     f32 unkC8[16];
 } O8P1294Tuning;
 
-/* NON_MATCHING reconstruction: exact 1259-word size, the target's 0xB0 frame
- * with an identical home ladder, and no one-sided words; 3 masked
- * differences remain (the update count's first read, v0 for v1).
+/* Matched 2026-10-02 (lane x-near) and promoted: 1259 words, the 0xB0 frame,
+ * 137 relocations.  The last three words were the update count's first read
+ * (v0 for v1): the count is `index` (the one symbol web coloured v1 here),
+ * and the dead store `update = 0.0f` after the conversion is what keeps it
+ * one -- it redefines the conversion's operand, so uopt cannot forward
+ * `(s32) update` into the two uses as a one-block temporary that takes v0
+ * first, and the trunc is written straight into index's register; the store
+ * itself is removed as redundant (delta 0).  Every spelling that kept the
+ * operand intact (five positions, ten carriers, kills of the result,
+ * cast round-trips, literal types, regions) left the temporary in place.
  * What moved it from 636 (2026-10-01): the pool floats are literals at each
  * use, one pool entry per use as shipped; state fields are read directly
  * rather than through a shared value carrier; scale is multiplied by D_8 in
@@ -649,7 +656,6 @@ typedef struct O8P1294Tuning {
  * through a one-block temporary that would otherwise take v0 first.
  * The update loop tests the old counter; the braking global is a halfword;
  * mathDiffAngle accepts the full requested angle. */
-#ifdef NON_MATCHING
 void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
                                        O8P1294State *state, f32 update) {
     s32 updateCount;
@@ -678,7 +684,7 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
     f32 *curve;
     f32 factor;             /* the pre-loop speed factor only */
 
-    tuning = overlay8GetIndexed((Overlay8IndexedObject *)state);
+    tuning = o8P1294IndexedReloc((Overlay8IndexedObject *)state);
     impactBoost = 0;
     index = state->unk192;
     effectMask = 0;
@@ -725,12 +731,12 @@ void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
         !(inputFlags & 0x8000))) {
         state->unk184 = 0U;
     }
-    updateCount = (s32) update;
-    updatesRemaining = updateCount - 1;
-    if (updateCount != 0) {
+    index = (s32) update;
+    update = 0.0f; /* kills the conversion's operand: index keeps the count (v1) */
+    updatesRemaining = index - 1;
+    if (index != 0) {
         do {
-            value = func_overlay_008_F0001000_185ED58(
-                owner, (O8PhaseState *)state, D_10);
+            value = o8P1294PhaseReloc(owner, (O8PhaseState *)state, D_10);
             speedLimit = value;
             if (31.99f < value) {
                 speedLimit = 31.99f;
@@ -1138,10 +1144,6 @@ block_74:
         }
     }
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o008/overlay_008/func_overlay_008_F0001294_185EFEC.s")
-#endif
 
 /* Matched 2026-10-01 (was 11/183).  Three edits, needed together:
  *   the two pool floats are literals at their uses, with no magnitudeScale
@@ -2355,14 +2357,4 @@ Overlay8BssOwner gOverlay8BssOwner;
  * first-mismatch: +0x1C
  * summary: Each command pair its own block: the address webs stop interfering; first pair's web and the mode3B web still take v0, not v1.
  * PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:end
- */
-
-/* PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:start
- * symbol: func_overlay_008_F0001294_185EFEC
- * score: 3 differing words
- * frame: 0xB0
- * relocations: 137
- * first-mismatch: +0x20C
- * summary: Field-direct factor test with clamp and use in two regions, unkFE through cooldown with the shift in a region: 7 to 3; left: the count's first read, v0 for v1.
- * PLATEAU-HANDOFF:func_overlay_008_F0001294_185EFEC:end
  */

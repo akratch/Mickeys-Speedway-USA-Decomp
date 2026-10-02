@@ -2,11 +2,11 @@
 ### `func_overlay_027_F0000624_187BFFC` plateau handoff
 
 - source: `src/overlays/o027/overlay_027.c`
-- score: 100 differing words
+- score: 12 differing words
 - frame: 0x98
 - relocations: 15
-- first mismatch: +0x70
-- summary: Delta +4, 25 aligned rows. Open: one extra constant move at +0x284 for the mode call's zero arguments.
+- first mismatch: +0x1FC
+- summary: 12 words at delta 0: two colour decisions, the two vertex-address webs (a0/v1 here, a3/a1 in the target); forcing both scores 0.
 
 Summary before this remeasure: Fresh V0 on b4d1624a reproduces 1016B/254w and the 15-site ambiguity; no new identity or donor evidence; body untouched.
 

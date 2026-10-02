@@ -146,6 +146,18 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         (0x174, 0x190, "func_overlay_014_F0001830_1871108", ".rodata", "func_overlay_014_F0001830_1871108", True),
     ],
     25: [(0x20, 0x40, "overlay_025", ".rodata", "overlay25UpdateEffect")],
+    # The record/targeting update's five float literals, rodata-relative +0x0.
+    29: [
+        (
+            0x0,
+            0x14,
+            "func_overlay_029_F00005C4_187D874",
+            ".rodata",
+            "func_overlay_029_F00005C4_187D874",
+            True,
+        )
+    ],
+    25: [(0x20, 0x40, "overlay_025", ".rodata", "overlay25UpdateEffect", True)],
     41: [
         (0x0, 0x3C, "overlay41SampleCurve", ".rodata", "func_overlay_041_F00002AC_18875E4"),
         (0x3C, 0x54, "overlay41UpdateCurveObject", ".rodata", "func_overlay_041_F0000854_1887B8C"),
@@ -873,6 +885,7 @@ TEXT_SUBSEGMENTS = {
         (0x800, "c", "overlay99RenderSortedEntries"),
         (0xBA4, "c", "overlay99RenderSegments"),
         (0xDDC, "c", "func_overlay_099_F0000DDC_18DA38C"),
+        (0x135C, "asm", "overlay_099_padding"),
     ],
     100: [
         (0x000, "c", "overlay100InitializeMotion"),
@@ -1512,6 +1525,7 @@ MIXED_TU_EXACT_C_RANGES = {
         (0xE88, 0xF1C, "func_overlay_008_F0000E88_185EBE0"),
         (0xF1C, 0x1000, "func_overlay_008_F0000F1C_185EC74"),
         (0x1000, 0x1294, "func_overlay_008_F0001000_185ED58"),
+        (0x1294, 0x2640, "func_overlay_008_F0001294_185EFEC"),
         (0x2640, 0x291C, "func_overlay_008_F0002640_1860398"),
         (
             0x291C,

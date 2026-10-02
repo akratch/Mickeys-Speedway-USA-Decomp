@@ -22,10 +22,10 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 388024,
-  "nonmatching_overlay_c_bytes": 80580,
+  "matched_overlay_c_bytes": 403816,
+  "nonmatching_overlay_c_bytes": 64784,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4752,
+  "owned_data_rodata_bytes": 4772,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -2586,6 +2586,14 @@
      "evidence": "pre-consolidation metadata-only object; linked bytes exact"
     },
     {
+     "offset": "0x1294",
+     "end_offset": "0x2640",
+     "size": "0x13AC",
+     "label": "func_overlay_008_F0001294_185EFEC",
+     "source": "overlays/o008/overlay_008",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    },
+    {
      "offset": "0x2640",
      "end_offset": "0x291C",
      "size": "0x2DC",
@@ -3010,7 +3018,7 @@
      "type": "c",
      "source": "overlays/o011/func_overlay_011_F0000150_1868998",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xA18",
@@ -4986,7 +4994,7 @@
      "type": "c",
      "source": "overlays/o020/overlay20UpdateGrid",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xDC4",
@@ -5375,7 +5383,7 @@
      "type": "c",
      "source": "overlays/o022/func_overlay_022_F00002B0_18783B8",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xA7C",
@@ -5834,7 +5842,7 @@
      "type": "c",
      "source": "overlays/o025/overlay_025",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x608",
@@ -5915,24 +5923,6 @@
     "exact_donor_match": null,
     "priority_rank": 56
    },
-   "mixed_tu_exact_c_ranges": [
-    {
-     "offset": "0x0",
-     "end_offset": "0x17C",
-     "size": "0x17C",
-     "label": "overlay25InitializeEffect",
-     "source": "overlays/o025/overlay_025",
-     "evidence": "canonical mixed-TU object, nine runtime relocations, and linked bytes exact"
-    },
-    {
-     "offset": "0x588",
-     "end_offset": "0x608",
-     "size": "0x80",
-     "label": "overlay25SetVectorFlags",
-     "source": "overlays/o025/overlay_025",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    }
-   ],
    "data_rodata_ownership": [
     {
      "offset": "0x20",
@@ -5941,7 +5931,8 @@
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o025/overlay_025",
-     "trial_function": "overlay25UpdateEffect"
+     "trial_function": "overlay25UpdateEffect",
+     "externalized": true
     }
    ]
   },
@@ -6574,7 +6565,7 @@
      "type": "c",
      "source": "overlays/o029/func_overlay_029_F00005C4_187D874",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xEE0",
@@ -6744,7 +6735,19 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 42
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x14",
+     "size": "0x14",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o029/func_overlay_029_F00005C4_187D874",
+     "trial_function": "func_overlay_029_F00005C4_187D874",
+     "externalized": true
+    }
+   ]
   },
   {
    "overlay": 30,
@@ -8218,7 +8221,7 @@
      "type": "c",
      "source": "overlays/o038/func_overlay_038_F000047C_188618C",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x7E8",
@@ -18656,12 +18659,21 @@
     },
     {
      "offset": "0xDDC",
-     "end_offset": "0x1360",
-     "size": "0x584",
+     "end_offset": "0x135C",
+     "size": "0x580",
      "type": "c",
      "source": "overlays/o099/func_overlay_099_F0000DDC_18DA38C",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
+    },
+    {
+     "offset": "0x135C",
+     "end_offset": "0x1360",
+     "size": "0x4",
+     "type": "asm",
+     "source": "overlays/o099/overlay_099_padding",
+     "matched": false,
+     "nonmatching": false
     }
    ],
    "bss_size": "0x0",

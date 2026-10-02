@@ -370,36 +370,44 @@ void func_80034E48(void) {
 #ifdef NON_MATCHING
 /* PROVENANCE: control-flow shape adapted from Jet Force Gemini's public
  * asm/nonmatchings/textures/sprDPset.s. Mickey's fields, globals, calls, and
- * compiler output remain authoritative. */
+ * compiler output remain authoritative.
+ *
+ * 2026-10-02 (lane o-res6), 461 at -32 to 424 at delta 0: the fx callee
+ * takes two arguments (func_8004ADE8(index, texture), so the cursor and
+ * flags stay in a2/a3 as the target's call does); the frame count is
+ * unsigned (the target's u32-to-float fixup); the wrap product is cast to
+ * s32 before the float subtract; colour, sync and geometry commands are gbi
+ * macros on dl++; both frame textures are read before the two DMA commands,
+ * the second addressed as cmd + 7. Left: frame 0xC8 against 0xB0 (six
+ * declared slots too many) and register naming. */
 void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
     TextureRenderSettings *settings;
     TextureFrameHeader *texture;
     Sprite *sprite = arg1;
     Gfx *dl;
     Gfx *frameCommands;
-    f32 frame;
     s32 frameIndex;
     s32 settingsIndex;
     s32 opacity;
     s32 tableFlags;
     s32 stateKey;
     s32 restoreColor;
-    s32 frameCount;
+    u32 frameCount;
     s32 texturesPerFrame;
     s32 nextFrame;
     s32 currentTexture;
     s32 nextTexture;
     s32 i;
     s32 j;
+    TextureFrameHeader *nextTex;
 
     frameCount = sprite->numberOfFrames;
-    frame = arg3;
-    if ((f32)frameCount <= frame) {
-        frame -= (s32)(frame / frameCount) * frameCount;
-    } else if (frame < 0.0f) {
-        frame = 0.0f;
+    if ((f32)frameCount <= arg3) {
+        arg3 -= (s32)((s32)(arg3 / frameCount) * frameCount);
+    } else if (arg3 < 0.0f) {
+        arg3 = 0.0f;
     }
-    frameIndex = (s32)frame;
+    frameIndex = (s32)arg3;
     arg2 |= sprite->drawFlags;
     arg2 &= ~D_8007BD90;
     dl = *arg0;
@@ -414,7 +422,7 @@ void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
     }
     if (arg2 & 0x40) {
         settingsIndex |= 1;
-        opacity = (u8)((frame - frameIndex) * 255.0f);
+        opacity = (u8)((arg3 - frameIndex) * 255.0f);
     } else {
         opacity = 0xFF;
     }
@@ -425,41 +433,22 @@ void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
         if (arg2 & 0x200) {
             settingsIndex |= 4;
             if (D_8007BD9C == 0) {
-                dl->words.w0 = 0xFA000000;
-                dl->words.w1 = (sprite->metadata[0] << 24) |
-                               (sprite->metadata[1] << 16) |
-                               (sprite->metadata[2] << 8) | arg4;
-                dl++;
-                dl->words.w0 = 0xFB000000;
-                dl->words.w1 = (sprite->metadata[3] << 24) |
-                               (sprite->metadata[4] << 16) |
-                               (sprite->metadata[5] << 8) | opacity;
-                dl++;
+                gDPSetPrimColor(dl++, 0, 0, sprite->metadata[0], sprite->metadata[1],
+                                sprite->metadata[2], arg4);
+                gDPSetEnvColor(dl++, sprite->metadata[3], sprite->metadata[4],
+                               sprite->metadata[5], opacity);
             } else {
-                dl->words.w0 = 0xFA000000;
-                dl->words.w1 = (D_800D3038 << 24) | (D_800D3039 << 16) |
-                               (D_800D303A << 8) | arg4;
-                dl++;
-                dl->words.w0 = 0xFB000000;
-                dl->words.w1 = (D_800D303B << 24) | (D_800D303C << 16) |
-                               (D_800D303D << 8) | opacity;
-                dl++;
+                gDPSetPrimColor(dl++, 0, 0, D_800D3038, D_800D3039, D_800D303A, arg4);
+                gDPSetEnvColor(dl++, D_800D303B, D_800D303C, D_800D303D, opacity);
             }
         } else {
             if (arg2 & 0x400) {
                 settingsIndex |= 8;
-                dl->words.w0 = 0xFA000000;
-                dl->words.w1 = (sprite->metadata[0] << 24) |
-                               (sprite->metadata[1] << 16) |
-                               (sprite->metadata[2] << 8) | arg4;
-                dl++;
-                dl->words.w0 = 0xFB000000;
-                dl->words.w1 = (opacity & 0xFF) | ~0xFF;
-                dl++;
+                gDPSetPrimColor(dl++, 0, 0, sprite->metadata[0], sprite->metadata[1],
+                                sprite->metadata[2], arg4);
+                gDPSetEnvColor(dl++, 255, 255, 255, opacity);
             } else if (arg2 & 0x40) {
-                dl->words.w0 = 0xFB000000;
-                dl->words.w1 = (opacity & 0xFF) | ~0xFF;
-                dl++;
+                gDPSetEnvColor(dl++, 255, 255, 255, opacity);
             }
         }
     }
@@ -470,36 +459,26 @@ void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
     if ((D_800D302C != stateKey) || (D_800D3020 != D_8007BA80)) {
         D_800D302C = stateKey;
         D_800D3020 = D_8007BA80;
-        dl->words.w0 = 0xE7000000;
-        dl->words.w1 = 0;
-        dl++;
+        gDPPipeSync(dl++);
         if (tableFlags & 2) {
             if (D_800D3030 == 0) {
-                dl->words.w0 = 0xB7000000;
-                dl->words.w1 = 1;
-                dl++;
+                gSPSetGeometryMode(dl++, G_ZBUFFER);
             }
             D_800D3030 = 1;
         } else {
             if (D_800D3030 != 0) {
-                dl->words.w0 = 0xB6000000;
-                dl->words.w1 = 1;
-                dl++;
+                gSPClearGeometryMode(dl++, G_ZBUFFER);
             }
             D_800D3030 = 0;
         }
         if (tableFlags & 8) {
             if (D_800D3034 == 0) {
-                dl->words.w0 = 0xB7000000;
-                dl->words.w1 = 0x10000;
-                dl++;
+                gSPSetGeometryMode(dl++, G_FOG);
             }
             D_800D3034 = 1;
         } else {
             if (D_800D3034 != 0) {
-                dl->words.w0 = 0xB6000000;
-                dl->words.w1 = 0x10000;
-                dl++;
+                gSPClearGeometryMode(dl++, G_FOG);
             }
             D_800D3034 = 0;
         }
@@ -514,7 +493,7 @@ void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
     D_800D3028 = 0;
     texture = sprite->textures[0];
     if (texture->pad1A != 0) {
-        func_8004ADE8(frame, texture->pad1A, texture, dl, arg2);
+        func_8004ADE8(texture->pad1A, texture);
     }
     if (sprite->drawFlags & 0x40) {
         nextFrame = frameIndex + 1;
@@ -530,13 +509,9 @@ void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
         nextTexture = texturesPerFrame * nextFrame;
         for (i = 0; i < texturesPerFrame; i++) {
             texture = sprite->textures[currentTexture + i];
-            dl->words.w0 = 0x07070038;
-            dl->words.w1 = (u32)texture->cmd + 0x80000000;
-            dl++;
-            dl->words.w0 = 0x07070038;
-            dl->words.w1 = (u32)sprite->textures[nextTexture + i]->cmd +
-                           0x80000038;
-            dl++;
+            nextTex = sprite->textures[nextTexture + i];
+            gDkrDmaDisplayList(dl++, (u32)texture->cmd + 0x80000000, 7);
+            gDkrDmaDisplayList(dl++, (u32)(nextTex->cmd + 7) + 0x80000000, 7);
             for (j = 0; j < sprite->commandOffsets[i]; j++) {
                 dl->words.w0 = frameCommands->words.w0;
                 dl->words.w1 = frameCommands->words.w1;
@@ -544,28 +519,22 @@ void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
                 frameCommands++;
             }
         }
-        dl->words.w0 = 0xE7000000;
-        dl->words.w1 = 0;
-        dl++;
+        gDPPipeSync(dl++);
     } else {
-        dl->words.w0 = 0x06000000;
-        dl->words.w1 = (u32)sprite->frameDisplayLists[frameIndex];
-        dl++;
+        gSPDisplayList(dl++, sprite->frameDisplayLists[frameIndex]);
     }
     if (restoreColor != 0) {
-        dl->words.w0 = 0xFA000000;
-        dl->words.w1 = -1;
-        dl++;
+        gDPSetPrimColor(dl++, 0, 0, 255, 255, 255, 255);
     }
     *arg0 = dl;
 }
 /* PLATEAU-HANDOFF:func_80034E54:start
  * symbol: func_80034E54
- * score: 461 differing target-offset words
- * frame: 0x80 (target 0xB0)
+ * score: 424/467 words
+ * frame: 0xC8 (target 0xB0)
  * relocations: 43
  * first-mismatch: +0x0
- * summary: Complete JFG-guided semantic C emits 459 versus 467 instructions; the retained tree improves the placeholder by five target-offset words, but it lacks the target's s1 carrier and 0x30 non-save frame bytes.
+ * summary: Delta 0 (was -32): two-arg fx callee, u32 frame count, gbi macros on dl++, both textures read before the DMAs. Left: frame 0xC8 vs 0xB0, naming.
  * PLATEAU-HANDOFF:func_80034E54:end
  */
 #else

@@ -1071,8 +1071,11 @@ $(BUILD_DIR)/$(SRC_DIR)/main/textures_34E60.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1A8
 $(BUILD_DIR)/$(SRC_DIR)/main/textures_35024.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x47C
+# func_80035F48's two switch tables (0x34 bytes) are the TU's only rodata;
+# discard IDO's input-section padding after them.
 $(BUILD_DIR)/$(SRC_DIR)/main/textures_354C8.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2188
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2188 && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x34
 # The audiomgr block ends at the measured 0xD7C boundary; discard only IDO's
 # trailing section-alignment word before the following 0x30BC TU.
 $(BUILD_DIR)/$(SRC_DIR)/main/audiomgr.c.o: POSTPROCESS = \

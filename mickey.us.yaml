@@ -650,8 +650,9 @@ segments:
       #
       #   1. RODATA ORDER FOLLOWS TEXT ORDER, EXACTLY. The pre-carve inventory
       #      covered 35 functions and forty-four tables. After devmgr's table
-      #      moved into C objects, the 10 jump tables still emitted in asm/
-      #      remain monotonically increasing in text and table address -- ZERO
+      #      and func_80035F48's two moved into C objects, the 8 jump tables
+      #      still emitted in asm/ remain monotonically increasing in text
+      #      and table address -- ZERO
       #      INVERSIONS. They run from jtbl_80081694 through jtbl_800841F4, so
       #      .rodata can continue to be carved TU by TU in text order.
       #
@@ -691,6 +692,9 @@ segments:
       # zero word is output-section padding, not owned object bytes.
       - [0x8309C, .rodata, main/gameVi]
       - [0x830CC, rodata]
+      # func_80035F48's six-entry and seven-entry texture-format switch tables.
+      - [0x8323C, .rodata, main/textures_354C8]
+      - [0x83270, rodata]
       # func_800389CC, func_80038BC4 and func_80038E1C's consecutive nineteen-entry
       # tables, plus the ROM's one zero pad word before the next float table.
       - [0x83334, .rodata, main/menu]

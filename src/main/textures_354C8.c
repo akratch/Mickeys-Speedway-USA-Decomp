@@ -939,239 +939,135 @@ void func_80035E88(TextureFrameHeader *tex, Gfx *displayList) {
     }
     tex->numberOfCommands = dlist - tex->cmd;
 }
-#ifdef NON_MATCHING
-/* PROVENANCE: Jet Force Gemini's public src/textures.c:func_80057C50 provides
- * the broad source structure; Mickey's headers, target assembly, and ROM bytes
- * remain authoritative for this game's fields, control flow, and command words.
- * The reconstruction keeps byte-oriented command cursors and expresses the
- * command words as ordinary C stores rather than transplanted instructions. */
-#define M2C_FIELD(expr, type_ptr, offset) (*(type_ptr)((u8 *)(expr) + (offset)))
+/*
+ * PROVENANCE: adapted from Jet Force Gemini's public src/textures.c
+ * func_8005719C_57D9C (the texture-load display-list builder: the two format
+ * switches, mipmap size sum, explicit load commands and per-level tiles).
+ * Mickey's 4-bit line width, swapped-load LoadBlock (dxt 0), field offsets
+ * and compiled bytes are authoritative.
+ *
+ * Matched 2026-10-02 (from 371 masked at -84): the donor body written with
+ * the standard gbi macros on a local cursor, the tile line inlined at both
+ * uses, and fourteen locals laid out so the four switch-assigned sizes land
+ * at the target's homes (two before them, one between them and imgFmt).
+ */
+#define OS_PHYSICAL_TO_K0(x) (void *)(((u32)(x) + 0x80000000))
 void func_80035F48(u8 **dlist, TextureFrameHeader *tex, s32 rtile,
                    s32 tmem) {
-    s32 sp84;
-    s32 sp80;
-    s32 sp7C;
-    s32 sp78;
-    s32 sp70;
-    u8 *sp4C;
-    u8 *sp48;
-    s32 sp10;
-    s32 temp_a0_2;
-    s32 temp_a0_3;
-    s32 temp_lo;
-    s32 temp_s1;
-    s32 temp_s1_2;
-    s32 temp_t3;
-    s32 temp_t3_2;
-    s32 temp_t4;
-    s32 temp_t6;
-    s32 temp_t7;
-    s32 temp_t7_2;
-    s32 temp_t8;
-    s32 temp_t8_2;
-    s32 temp_t9;
-    s32 temp_v1_2;
-    s32 var_a2;
-    s32 var_a3;
-    s32 var_s0;
-    s32 var_t3;
-    s32 var_t3_2;
-    s32 var_v0;
-    s32 var_v0_2;
-    s32 var_v1;
-    u16 var_t1;
-    u16 var_t2;
-    u32 temp_v0;
-    u8 temp_a0;
-    u8 temp_v1;
-    u8 *temp_t0;
-    u8 *temp_t0_10;
-    u8 *temp_t0_11;
-    u8 *temp_t0_2;
-    u8 *temp_t0_3;
-    u8 *temp_t0_4;
-    u8 *temp_t0_5;
-    u8 *temp_t0_6;
-    u8 *temp_t0_7;
-    u8 *temp_t0_8;
-    u8 *temp_t0_9;
-    u8 *var_t0;
-    u8 *var_t0_2;
+    s32 texHeight;
+    s32 texWidth;
+    s32 tileImgSiz;
+    s32 imgSiz;
+    s32 imgSizIncr;
+    s32 imgSizShift;
+    u32 texFormat;
+    s32 imgFmt;
+    s32 texFlags;
+    s32 line;
+    s32 imgSizTileBytes;
+    s32 i;
+    s32 size;
+    Gfx *dl;
 
-    temp_v1 = M2C_FIELD(tex, u8 *, 2);
-    var_s0 = rtile;
-    temp_t0 = *dlist;
-    temp_v0 = temp_v1 & 0xF;
-    temp_t7 = ((s32)temp_v1 >> 4) & 0xF;
-    var_t2 = M2C_FIELD(tex, u16 *, 6);
-    var_t1 = M2C_FIELD(tex, u16 *, 8);
-    switch (temp_v0) {
+    dl = (Gfx *) *dlist;
+    texFormat = tex->format & 0xF;
+    texFlags = (tex->format >> 4) & 0xF;
+    texWidth = tex->width;
+    texHeight = tex->height;
+    switch (texFormat) {
     case 0:
-        sp84 = 3;
-        sp80 = 3;
-        sp7C = 0;
-        sp78 = 0;
-        var_v0 = 2;
+        tileImgSiz = G_IM_SIZ_32b;
+        imgSiz = G_IM_SIZ_32b;
+        imgSizIncr = 0;
+        imgSizShift = 0;
+        imgSizTileBytes = 2;
         break;
     case 1:
     case 4:
-        sp84 = 2;
-        sp80 = 2;
-        sp7C = 0;
-        sp78 = 0;
-        var_v0 = 2;
+        tileImgSiz = G_IM_SIZ_16b;
+        imgSiz = G_IM_SIZ_16b;
+        imgSizIncr = 0;
+        imgSizShift = 0;
+        imgSizTileBytes = 2;
         break;
     case 2:
     case 5:
-        sp84 = 1;
-        sp80 = 2;
-        sp7C = 1;
-        sp78 = 1;
-        var_v0 = 1;
+        tileImgSiz = G_IM_SIZ_8b;
+        imgSiz = G_IM_SIZ_16b;
+        imgSizIncr = 1;
+        imgSizShift = 1;
+        imgSizTileBytes = 1;
         break;
     default:
-        sp84 = 0;
-        sp80 = 2;
-        sp7C = 3;
-        sp78 = 2;
-        var_v0 = 0;
+        tileImgSiz = G_IM_SIZ_4b;
+        imgSiz = G_IM_SIZ_16b;
+        imgSizIncr = 3;
+        imgSizShift = 2;
+        imgSizTileBytes = 0;
         break;
     }
-    switch (temp_v0) {
+    switch (texFormat) {
     case 0:
     case 1:
-        sp70 = 0;
-        if ((temp_t7 == 0) || (temp_t7 == 2)) {
-            M2C_FIELD(tex, s16 *, 4) = (s16)(M2C_FIELD(tex, s16 *, 4) | 4);
+        imgFmt = G_IM_FMT_RGBA;
+        if ((texFlags == 0) || (texFlags == 2)) {
+            tex->flags |= 4;
         }
         break;
     case 4:
     case 5:
     case 6:
-        sp70 = 3;
-        M2C_FIELD(tex, s16 *, 4) = (s16)(M2C_FIELD(tex, s16 *, 4) | 4);
+        imgFmt = G_IM_FMT_IA;
+        tex->flags |= 4;
         break;
     default:
-        sp70 = 4;
+        imgFmt = G_IM_FMT_I;
         break;
     }
-    if (sp84 == 0) {
-        var_a2 = (s32)var_t2 >> 1;
+    if (tileImgSiz == 0) {
+        line = texWidth >> 1;
     } else {
-        var_a2 = var_t2 * var_v0;
+        line = texWidth * imgSizTileBytes;
     }
-    temp_a0 = M2C_FIELD(tex, u8 *, 0x1B);
-    temp_t3 = (sp70 & 7) << 0x15;
-    var_a3 = tmem;
-    if ((s32)temp_a0 >= 2) {
-        var_v0_2 = 0;
-        var_v1 = 0;
-        if ((s32)temp_a0 > 0) {
-            do {
-                temp_lo = ((s32)var_t2 >> var_v0_2) * ((s32)var_t1 >> var_v0_2);
-                var_v0_2 += 1;
-                var_v1 += temp_lo;
-            } while (var_v0_2 < (s32)temp_a0);
-            var_v0_2 = 0;
+    if (tex->unk1B >= 2) {
+        i = 0;
+        size = 0;
+        for (; i < tex->unk1B; i++) {
+            size += (texWidth >> i) * (texHeight >> i);
         }
-        temp_t3_2 = (sp70 & 7) << 0x15;
-        temp_t4 = (sp80 & 3) << 0x13;
-        M2C_FIELD(temp_t0, s32 *, 0) = (s32)(temp_t3_2 | 0xFD000000 | temp_t4);
-        M2C_FIELD(temp_t0, void **, 4) = (void *)((u8 *)tex + 0x80000020);
-        temp_t0_2 = temp_t0 + 8;
-        temp_t6 = temp_t3_2 | 0xF5000000;
-        sp10 = temp_t6;
-        M2C_FIELD(temp_t0_2, s32 *, 4) = 0x07000000;
-        M2C_FIELD(temp_t0_2, s32 *, 0) = (s32)(temp_t6 | temp_t4 | (var_a3 & 0x1FF));
-        temp_t0_3 = temp_t0_2 + 8;
-        sp4C = temp_t0_3;
-        temp_t0_4 = temp_t0_3 + 8;
-        M2C_FIELD(sp4C, s32 *, 0) = 0xE6000000;
-        var_t3 = 0x7FF;
-        M2C_FIELD(sp4C, s32 *, 4) = 0;
-        sp48 = temp_t0_4;
-        temp_t0_5 = temp_t0_4 + 8;
-        M2C_FIELD(sp48, s32 *, 0) = 0xF3000000;
-        temp_a0_2 = ((s32)(var_v1 + sp7C) >> sp78) - 1;
-        if (temp_a0_2 < 0x7FF) {
-            var_t3 = temp_a0_2;
+        gDPSetTextureImage(dl++, imgFmt, imgSiz, 1, OS_PHYSICAL_TO_K0(tex + 1));
+        gDPSetTile(dl++, imgFmt, imgSiz, 0, tmem, G_TX_LOADTILE, 0, 0, 0, 0, 0, 0, 0);
+        gDPLoadSync(dl++);
+        gDPLoadBlock(dl++, G_TX_LOADTILE, 0, 0, ((size + imgSizIncr) >> imgSizShift) - 1, 0);
+        gDPPipeSync(dl++);
+        for (i = 0; i < tex->unk1B; i++) {
+            gDPSetTile(dl++, imgFmt, tileImgSiz, (line + 7) >> 3, tmem, rtile, 0, tex->unk1E,
+                       tex->unk1F - i, i, tex->unk1C, tex->isCompressed - i, i);
+            gDPSetTileSize(dl++, rtile, 0, 0, (texWidth - 1) << G_TEXTURE_IMAGE_FRAC,
+                           (texHeight - 1) << G_TEXTURE_IMAGE_FRAC);
+            tmem += ((line + 7) >> 3) * texHeight;
+            rtile++;
+            texWidth >>= 1;
+            texHeight >>= 1;
+            line >>= 1;
         }
-        M2C_FIELD(sp48, s32 *, 4) = (s32)(((var_t3 & 0xFFF) << 0xC) | 0x07000000);
-        M2C_FIELD(temp_t0_5, s32 *, 0) = 0xE7000000;
-        M2C_FIELD(temp_t0_5, s32 *, 4) = 0;
-        var_t0 = temp_t0_5 + 8;
-        if ((s32)M2C_FIELD(tex, u8 *, 0x1B) > 0) {
-            do {
-                temp_t8 = (s32)(var_a2 + 7) >> 3;
-                M2C_FIELD(var_t0, s32 *, 0) = (s32)(sp10 | ((sp84 & 3) << 0x13) | ((temp_t8 & 0x1FF) << 9) | (var_a3 & 0x1FF));
-                temp_t7_2 = (var_s0 & 7) << 0x18;
-                temp_s1 = var_v0_2 & 0xF;
-                temp_t0_6 = var_t0 + 8;
-                M2C_FIELD(var_t0, s32 *, 4) = (s32)(temp_t7_2 | ((M2C_FIELD(tex, u8 *, 0x1E) & 3) << 0x12) | (((M2C_FIELD(tex, u8 *, 0x1F) - var_v0_2) & 0xF) << 0xE) | (temp_s1 << 0xA) | ((M2C_FIELD(tex, u8 *, 0x1C) & 3) << 8) | (((M2C_FIELD(tex, u8 *, 0x1D) - var_v0_2) & 0xF) * 0x10) | temp_s1);
-                M2C_FIELD(temp_t0_6, s32 *, 0) = 0xF2000000;
-                M2C_FIELD(temp_t0_6, s32 *, 4) = (s32)(temp_t7_2 | ((((var_t2 - 1) * 4) & 0xFFF) << 0xC) | (((var_t1 - 1) * 4) & 0xFFF));
-                var_v0_2 += 1;
-                var_t0 = temp_t0_6 + 8;
-                var_a3 += temp_t8 * var_t1;
-                var_s0 += 1;
-                var_t2 = (u16)((s32)var_t2 >> 1);
-                var_t1 = (u16)((s32)var_t1 >> 1);
-                var_a2 >>= 1;
-            } while (var_v0_2 < (s32)M2C_FIELD(tex, u8 *, 0x1B));
-        }
-        var_t0_2 = var_t0 + 8;
-        M2C_FIELD(var_t0, s32 *, 0) = (s32)((((M2C_FIELD(tex, u8 *, 0x1B) - 1) & 7) << 0xB) | 0xBB000000 | 1);
-        M2C_FIELD(var_t0, s32 *, 4) = 0;
-        M2C_FIELD(var_t0_2, s32 *, 0) = 0xB8000000;
-        M2C_FIELD(var_t0_2, s32 *, 4) = 0;
+        gSPTexture(dl++, 0, 0, tex->unk1B - 1, 0, 1);
+        gSPEndDisplayList(dl++);
     } else {
-        temp_t9 = (sp80 & 3) << 0x13;
-        temp_s1_2 = temp_t3 | 0xF5000000;
-        temp_t0_7 = temp_t0 + 8;
-        temp_a0_3 = var_a3 & 0x1FF;
-        M2C_FIELD(temp_t0, s32 *, 0) = (s32)(temp_t3 | 0xFD000000 | temp_t9);
-        M2C_FIELD(temp_t0, void **, 4) = (void *)((u8 *)tex + 0x80000020);
-        M2C_FIELD(temp_t0_7, s32 *, 0) = (s32)(temp_s1_2 | temp_t9 | temp_a0_3);
-        temp_t0_8 = temp_t0_7 + 8;
-        M2C_FIELD(temp_t0_7, s32 *, 4) = (s32)(((M2C_FIELD(tex, u8 *, 0x1E) & 3) << 0x12) | 0x07000000 | ((M2C_FIELD(tex, u8 *, 0x1F) & 0xF) << 0xE) | ((M2C_FIELD(tex, u8 *, 0x1C) & 3) << 8) | ((M2C_FIELD(tex, u8 *, 0x1D) & 0xF) * 0x10));
-        temp_t0_9 = temp_t0_8 + 8;
-        M2C_FIELD(temp_t0_8, s32 *, 0) = 0xE6000000;
-        M2C_FIELD(temp_t0_8, s32 *, 4) = 0;
-        M2C_FIELD(temp_t0_9, s32 *, 0) = 0xF3000000;
-        temp_v1_2 = ((s32)((var_t2 * var_t1) + sp7C) >> sp78) - 1;
-        sp10 = temp_s1_2;
-        temp_t0_10 = temp_t0_9 + 8;
-        if (temp_v1_2 < 0x7FF) {
-            var_t3_2 = temp_v1_2;
-        } else {
-            var_t3_2 = 0x7FF;
-        }
-        M2C_FIELD(temp_t0_9, s32 *, 4) = (s32)(((var_t3_2 & 0xFFF) << 0xC) | 0x07000000);
-        M2C_FIELD(temp_t0_10, s32 *, 0) = 0xE7000000;
-        M2C_FIELD(temp_t0_10, s32 *, 4) = 0;
-        temp_t0_11 = temp_t0_10 + 8;
-        M2C_FIELD(temp_t0_11, s32 *, 0) = (s32)(sp10 | ((sp84 & 3) << 0x13) | ((((s32)(var_a2 + 7) >> 3) & 0x1FF) << 9) | temp_a0_3);
-        temp_t8_2 = (var_s0 & 7) << 0x18;
-        var_t0_2 = temp_t0_11 + 8;
-        M2C_FIELD(temp_t0_11, s32 *, 4) = (s32)(temp_t8_2 | ((M2C_FIELD(tex, u8 *, 0x1E) & 3) << 0x12) | ((M2C_FIELD(tex, u8 *, 0x1F) & 0xF) << 0xE) | ((M2C_FIELD(tex, u8 *, 0x1C) & 3) << 8) | ((M2C_FIELD(tex, u8 *, 0x1D) & 0xF) * 0x10));
-        M2C_FIELD(var_t0_2, s32 *, 0) = 0xF2000000;
-        M2C_FIELD(var_t0_2, s32 *, 4) = (s32)(temp_t8_2 | ((((var_t2 - 1) * 4) & 0xFFF) << 0xC) | (((var_t1 - 1) * 4) & 0xFFF));
+        gDPSetTextureImage(dl++, imgFmt, imgSiz, 1, OS_PHYSICAL_TO_K0(tex + 1));
+        gDPSetTile(dl++, imgFmt, imgSiz, 0, tmem, G_TX_LOADTILE, 0, tex->unk1E, tex->unk1F, 0,
+                   tex->unk1C, tex->isCompressed, 0);
+        gDPLoadSync(dl++);
+        gDPLoadBlock(dl++, G_TX_LOADTILE, 0, 0,
+                     ((texWidth * texHeight + imgSizIncr) >> imgSizShift) - 1, 0);
+        gDPPipeSync(dl++);
+        gDPSetTile(dl++, imgFmt, tileImgSiz, (line + 7) >> 3, tmem, rtile, 0, tex->unk1E,
+                   tex->unk1F, 0, tex->unk1C, tex->isCompressed, 0);
+        gDPSetTileSize(dl++, rtile, 0, 0, (texWidth - 1) << G_TEXTURE_IMAGE_FRAC,
+                       (texHeight - 1) << G_TEXTURE_IMAGE_FRAC);
     }
-    *dlist = var_t0_2 + 8;
+    *dlist = (u8 *) dl;
 }
-#undef M2C_FIELD
-/* PLATEAU-HANDOFF:func_80035F48:start
- * symbol: func_80035F48
- * score: 371 differing words
- * frame: 0x88 (target 0x90)
- * relocations: 4
- * first-mismatch: +0x0
- * summary: Complete semantic C emits 362 versus 383 instructions; delaying the TMEM carrier improves positional differences by 14 words, but the texture pointer occupies s0 and displaces the target's rtile carrier.
- * PLATEAU-HANDOFF:func_80035F48:end
- */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/textures_354C8/func_80035F48.s")
-#endif
 #ifdef NON_MATCHING
 extern f32 D_80082670;
 

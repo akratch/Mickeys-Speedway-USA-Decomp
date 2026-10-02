@@ -2664,7 +2664,32 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57BeginMode.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x90
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57StartMode.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x98
+# The module initializer is instruction-exact. Its mode switch table is the
+# retained overlay table at rodata +0x6C: bind the two table references to
+# that owner and drop the compiler's private copy by digest. Its resident
+# callees go through the generated surface entries.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0000000_18A3BF8.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/func_overlay_057_F0000000_18A3BF8.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0000000_18A3BF8.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym animseqStartPath=animseqStartPath_o057Reloc \
+		--redefine-sym fontColour=fontColour_o057Reloc \
+		--redefine-sym func_8000590C=func_8000590C_o057Reloc \
+		--redefine-sym func_80028F54=func_80028F54_o057Reloc \
+		--redefine-sym func_8003A754=func_8003A754_o057Reloc \
+		--redefine-sym func_8004B0A4=func_8004B0A4_o057Reloc \
+		--redefine-sym func_800508B4=func_800508B4_o057Reloc \
+		--redefine-sym func_8005AD64=func_8005AD64_o057Reloc \
+		--redefine-sym initColourCycle=initColourCycle_o057Reloc \
+		--redefine-sym joyResetMap=joyResetMap_o057Reloc \
+		--add-symbol gOverlay57InitModeJumpTableReloc=0x6C,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_057_F0000000_18A3BF8.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:8331339c4a36b067bfd51dbb9354792b63fed3c4aa69893b7386269e8345fd0a && \
+	$(OBJCOPY) --remove-section .rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x954
 ifeq ($(NON_MATCHING),0)
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001020_18A4C18.c.o: POSTPROCESS = \
@@ -3335,8 +3360,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/overlay57HandleModeInput.c.o: POSTPROCESS 
 	$(OBJCOPY) --redefine-sym func_overlay_057_F0004064_18A7C5C=overlay57HandleModeInput $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x364
 ifeq ($(NON_MATCHING),0)
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0000000_18A3BF8.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x954
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0001020_18A4C18.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x958
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o057/func_overlay_057_F0004460_18A8058.c.o: POSTPROCESS = \

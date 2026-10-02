@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 152,
-  "resolved": 152,
+  "queue_size": 151,
+  "resolved": 151,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 152,
-  "relocation_masked_coverage": 152,
+  "source_context_coverage": 151,
+  "relocation_masked_coverage": 151,
   "functions": [
     {
       "name": "func_80019AB8",
@@ -68,21 +68,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "ww7a.e_90.FOZl.-YEz._3L2.IB1i.lELj.6jDZ.sNiG.3e-7.H8Q"
-    },
-    {
-      "name": "func_overlay_057_F0000000_18A3BF8",
-      "file": "src/overlays/o057/func_overlay_057_F0000000_18A3BF8.c",
-      "overlay": 57,
-      "tu": "overlays/o057",
-      "size_bytes": 2388,
-      "objdiff_match_pct": null,
-      "differing_words": 71,
-      "first_mismatch_offset": 16,
-      "relocation_masked_differing_words": 19,
-      "relocation_masked_first_mismatch_offset": 336,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "cdJP.L6-1.mizr.wOil.acUe.MxWT.Qem2.tNCO.VGz7.R7Gc.aFg"
     },
     {
       "name": "func_overlay_001_F000438C_185076C",

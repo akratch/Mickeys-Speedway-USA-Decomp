@@ -1850,11 +1850,24 @@ overlay42SetupDisplayBReloc = 0xf0000000;
 /* overlay 43: overlay43FlushPending.c.o */
 D_120 = 0x00000120;
 
+/* overlay 43: func_overlay_043_F0000324_188A2F4.c.o */
+Arctanf_o043Reloc = 0xf0000000;
+dAngle_o043Reloc = 0xf0000000;
+func_8002A82C_o043Reloc = 0xf0000000;
+func_8002AE10_o043Reloc = 0xf0000000;
+gO43FallbackReloc = 0x00000000;
+gO43QueueCountReloc = 0x000000c8;
+gO43QueueReloc = 0x00000120;
+gO43RecordsReloc = 0x00000000;
+gO43RenderPendingReloc = 0x00000000;
+levelGetLevel_o043Reloc = 0xf0000000;
+mtxf_mul_o043Reloc = 0xf0000000;
+mtxf_transform_point_o043Reloc = 0xf0000000;
+sqrtf_o043Reloc = 0xf0000000;
+
 /* overlay 43: func_overlay_043_F0000BE4_188ABB4.c.o */
 gO43BssBaseReloc = 0x00000000;
 gO43DataBaseReloc = 0x00000000;
-gO43QueueCountReloc = 0x000000c8;
-gO43RenderPendingReloc = 0x00000000;
 gO43RodataBaseReloc = 0x00000000;
 gO43VertexSourceReloc = 0x00000000;
 overlay43InitDpReloc = 0xf0000000;
@@ -1865,7 +1878,6 @@ overlay43RspSegmentReloc = 0xf0000000;
 
 /* overlay 43: overlay43ComputeMotion.c.o */
 func_80029FE4_o043Reloc = 0xf0000000;
-func_8002A82C_o043Reloc = 0xf0000000;
 
 /* overlay 44: overlay44CreateAnimationState.c.o */
 gOverlay44FrameSources = 0x00000000;

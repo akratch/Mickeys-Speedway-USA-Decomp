@@ -1326,7 +1326,29 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43ReleaseResources.c.o: POSTPROCESS
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay43ReleaseResources.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA4
+# Exact C. The target keeps the radius multiply out of the call's delay
+# slot, which is -Wab,-r4300_mul. Eight resident callees go through the
+# generated surface entries. The image scale is a float literal, so the
+# compiler emits a one-constant pool that duplicates the retained overlay
+# data at rodata-relative +0x20; assert the pool by digest and bind the pair
+# to an absolute anchor. No instruction is edited.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000324_188A2F4.c.o: \
+	CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000324_188A2F4.c.o: \
+	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000324_188A2F4.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym Arctanf=Arctanf_o043Reloc \
+		--redefine-sym dAngle=dAngle_o043Reloc \
+		--redefine-sym func_8002A82C=func_8002A82C_o043Reloc \
+		--redefine-sym func_8002AE10=func_8002AE10_o043Reloc \
+		--redefine-sym levelGetLevel=levelGetLevel_o043Reloc \
+		--redefine-sym mtxf_mul=mtxf_mul_o043Reloc \
+		--redefine-sym mtxf_transform_point=mtxf_transform_point_o043Reloc \
+		--redefine-sym sqrtf=sqrtf_o043Reloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:02fb70d8d98c50b94917c42e9e6c45e563dbdeaa61f451dbaf9a7ad53d047e6c \
+		0x20 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8C0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000BE4_188ABB4.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4C4

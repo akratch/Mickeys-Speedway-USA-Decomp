@@ -377,7 +377,7 @@ void func_80034E48(void) {
  * asm/nonmatchings/textures/sprDPset.s. Mickey's fields, globals, calls, and
  * compiler output remain authoritative.
  *
- * 2026-10-02 (lane o-tex), 424 to 13 at delta 0: the wrap quotient is its
+ * 2026-10-02 (lane o-tex), 424 to 5 at delta 0: the wrap quotient is its
  * own local (it takes a0, not a ring temp); frameIndex is assigned once after
  * the wrap, before the cursor read, and the empty test on it (the idiom
  * func_80035E88 keeps) holds the one truncation in the join block where uopt
@@ -388,8 +388,9 @@ void func_80034E48(void) {
  * target's branch over an empty else); the texture-count division comes
  * first in the frame-list block; the second DMA adds 0x80000038 directly;
  * the six colour bytes are named fields (array subscripts reassociate the
- * colour OR chain). Left: a v0/v1 swap in the render-settings copy, nextFrame
- * split over a0/a1, and one compare's operand order. */
+ * colour OR chain); an empty test between the two upper-table words splits
+ * the tie that gave the upper offset v0; the cached table pointer is
+ * compared through its typed cast. Left: nextFrame split over a0/a1. */
 void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) {
     TextureRenderSettings *settings;
     TextureFrameHeader *texture;
@@ -459,7 +460,7 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
     settings = &D_8007BA80[settingsIndex];
     tableFlags = settings->flags | (flags & settings->mask);
     stateKey = (settingsIndex << 8) | tableFlags;
-    if ((stateKey != D_800D302C) || (D_800D3020 != D_8007BA80)) {
+    if ((stateKey != D_800D302C) || ((TextureRenderSettings *)D_800D3020 != D_8007BA80)) {
         D_800D302C = stateKey;
         D_800D3020 = D_8007BA80;
         gDPPipeSync(dl++);
@@ -486,6 +487,8 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
             D_800D3034 = 0;
         }
         dl->words.w0 = settings->upper[tableFlags >> 3].words.w0;
+        if (tableFlags) {
+        }
         dl->words.w1 = settings->upper[tableFlags >> 3].words.w1;
         dl++;
         dl->words.w0 = settings->lower[tableFlags].words.w0;
@@ -534,11 +537,11 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
 }
 /* PLATEAU-HANDOFF:func_80034E54:start
  * symbol: func_80034E54
- * score: 13/467 words
+ * score: 5/467 words
  * frame: 0xB0 (target 0xB0)
  * relocations: 43
- * first-mismatch: +0x3e4
- * summary: 424 to 13 at delta 0: quotient local, one frameIndex truncation held by an empty test, named colour bytes. Left: v0/v1 swap, nextFrame split.
+ * first-mismatch: +0x590
+ * summary: 424 to 5 at delta 0. Left: nextFrame is copy-propagated (a0 web plus an a1 copy) where the target keeps one a1 web.
  * PLATEAU-HANDOFF:func_80034E54:end
  */
 #else

@@ -426,10 +426,10 @@ units remain distinct.
 | 130 | `src/overlays/o011/func_overlay_011_F0000150_1868998.c` | `func_overlay_011_F0000150_1868998` | `o011` | `size-mismatch` | 2,248 | 531 | 529 | 0 | 0 | -8 | — |
 | 131 | `src/main/shadows.c` | `func_80016890` | `main` | `size-mismatch` | 2,224 | 535 | 534 | 8 | 8 | 28 | — |
 | 132 | `src/overlays/o056/overlay_056.c` | `func_overlay_056_F00001A0_18A2F18` | `o056` | `size-mismatch` | 2,324 | 538 | 538 | 80 | 80 | 40 | — |
-| 133 | `src/overlays/o090/overlay_090.c` | `func_overlay_090_F00000FC_18D4BF4` | `o090` | `size-mismatch` | 2,592 | 575 | 575 | 0 | 0 | -36 | — |
-| 134 | `src/overlays/o012/func_overlay_012_F0000910_186DB90.c` | `func_overlay_012_F0000910_186DB90` | `o012` | `size-mismatch` | 2,444 | 581 | 581 | 0 | 0 | -20 | — |
-| 135 | `src/overlays/o001/func_overlay_001_F0001D78_184E158.c` | `func_overlay_001_F0001D78_184E158` | `o001` | `size-mismatch` | 2,508 | 587 | 584 | 0 | 0 | -112 | — |
-| 136 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `size-mismatch` | 2,696 | 593 | 593 | 0 | 0 | 28 | — |
+| 133 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `size-mismatch` | 2,696 | 573 | 573 | 0 | 0 | -4 | — |
+| 134 | `src/overlays/o090/overlay_090.c` | `func_overlay_090_F00000FC_18D4BF4` | `o090` | `size-mismatch` | 2,592 | 575 | 575 | 0 | 0 | -36 | — |
+| 135 | `src/overlays/o012/func_overlay_012_F0000910_186DB90.c` | `func_overlay_012_F0000910_186DB90` | `o012` | `size-mismatch` | 2,444 | 581 | 581 | 0 | 0 | -20 | — |
+| 136 | `src/overlays/o001/func_overlay_001_F0001D78_184E158.c` | `func_overlay_001_F0001D78_184E158` | `o001` | `size-mismatch` | 2,508 | 587 | 584 | 0 | 0 | -112 | — |
 | 137 | `src/main/vehicle_sounds.c` | `func_8005830C` | `main` | `size-mismatch` | 3,048 | 698 | 697 | 8 | 8 | -16 | — |
 | 138 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `size-mismatch` | 3,040 | 756 | 755 | 16 | 16 | 24 | — |
 | 139 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 1,394 | 1,377 | 4 | 4 | 4 | — |

@@ -995,6 +995,10 @@ overlay16AllocateReloc = 0xf0000000;
 overlay16BuildGradientReloc = 0xf0000000;
 overlay16ReleaseReloc = 0xf0000000;
 
+/* overlay 17: overlay17CalculateEndpoints.c.o */
+overlay17SqrtReloc = 0xf0000000;
+overlay17TransformReloc = 0xf0000000;
+
 /* overlay 17: overlay17ReleaseChain.c.o */
 overlay17ReleaseReloc = 0xf0000000;
 

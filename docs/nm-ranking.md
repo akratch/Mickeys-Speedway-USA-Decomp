@@ -280,7 +280,7 @@ Relocation-masked mismatch evidence covers **134 / 134** resolved rows. The raw 
 | Threshold | Count |
 |---|---:|
 | raw `differing_words <= 5` | 0 |
-| relocation-masked `differing_words <= 5` | 0 |
+| relocation-masked `differing_words <= 5` | 1 |
 | raw `differing_words <= 10` | 2 |
 | relocation-masked `differing_words <= 10` | 3 |
 | raw `differing_words <= 20` | 4 |
@@ -295,7 +295,7 @@ units remain distinct.
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/lights.c` | `func_80019AB8` | `main` | `register-only` | 736 | 56 | 56 | 128 | 128 | 0 | — |
-| 2 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0001294_185EFEC` | `o008` | `other` | 5,036 | 60 | 7 | 112 | 216 | 0 | — |
+| 2 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0001294_185EFEC` | `o008` | `other` | 5,036 | 56 | 3 | 112 | 524 | 0 | — |
 | 3 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 8 | 8 | 424 | 424 | 0 | — |
 | 4 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
 | 5 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 15 | 12 | 96 | 136 | 0 | — |

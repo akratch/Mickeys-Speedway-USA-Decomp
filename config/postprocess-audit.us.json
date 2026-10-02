@@ -2259,8 +2259,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o019/overlay19BuildPlanes.c.o",
       "offset": 480,
       "overlay": 19,
@@ -9343,7 +9343,7 @@
       "metadata": 639,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 339148,
+    "matched_c_bytes_with_postprocess": 341276,
     "objects_with_postprocess": 645
   }
 }

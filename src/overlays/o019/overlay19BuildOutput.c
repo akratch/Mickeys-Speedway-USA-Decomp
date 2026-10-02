@@ -40,7 +40,7 @@ void overlay19BuildOutput(
 
     overlay19BuildSpatialMasks(context, (O19Group *)group, *outputSlot);
     cursor += group->itemCount * sizeof(u32);
-    (*outputSlot)->unknown08 = cursor;
+    (*outputSlot)->planes = (f32 *)cursor;
 
     cursor += overlay19BuildPlanes(
         context, (O19Group *)group, *outputSlot) * 0x10;

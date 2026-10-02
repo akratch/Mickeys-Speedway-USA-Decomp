@@ -66,30 +66,26 @@ extern Overlay36NodeDataA gOverlay36NodeA;
 extern Overlay36NodeDataB gOverlay36NodeB;
 
 extern u32 overlay36ChooseReloc();
-extern f32 overlay36MeasureReloc(Overlay36Object *object, s32 mode);
+extern f32 overlay36MeasureReloc(Overlay36Object *object);
 extern Overlay36Choice *overlay36GetChoiceReloc(s8 selector, s32 arg1);
 extern void func_overlay_036_F0000914_1883DCC(Overlay36Object *object,
                                               s32 arg1, s32 state,
                                               s32 enabled);
 
-/* V0 stays exact-sized at 170 words, frame 0x38, first mismatch +0x3C.
- * The candidate-only word is the homed object reload scheduled before the
- * mode branch; the target emits the shared 5-argument first and fills that
- * delay with the reload. Restoring (blend * 10) + ((1 - blend) * value)
- * emits the target-only +0x12C pad and grows to 171, so that pad is the
- * blend-term compensation, not a second independent insertion. A shared
- * local 5 copy-propagates back into both arms; inverting the mode test
- * hoists the 5 but changes the branch to equality. Identity gate PASS on
- * proc 0 (15 p1, 0 p2, unforced). GLOBAL_ASM stays canonical. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-02. Three edits closed it from 71 words: the overlay 1
+ * distance callee takes the object alone (the 5 the old candidate passed it
+ * was the random call's own argument, which as1 hoists above the mode
+ * branch); the blend is written weight-term first; and both walks are
+ * `i = 14; while (i--)`, whose guard block orders the preheader as shipped.
+ * `i` is declared ahead of `position` for the position home. */
 void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 arg1,
                                        volatile s32 arg2,
                                        volatile s32 arg3) {
     Overlay36Inner *inner;
     s32 total;
     s32 state;
-    s32 position;
     s32 i;
+    s32 position;
     f32 value;
     f32 blend;
 
@@ -99,7 +95,7 @@ void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 arg1,
         if (gOverlay36Mode == 3) {
             state = gOverlay36AltTable.values[overlay36ChooseReloc(0, 5)];
         } else {
-            value = ((overlay36MeasureReloc(object, 5) /
+            value = ((overlay36MeasureReloc(object) /
                       gOverlay36ScaleDivisor.value) *
                          gOverlay36ScaleMultiplier.value) +
                     ((f32)inner->strength * gOverlay36StrengthMultiplier.value);
@@ -114,7 +110,7 @@ void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 arg1,
                     blend = (f32)choice->value;
                 }
                 blend *= 0.015625f;
-                value = ((1.0f - blend) * value) + (blend * 10.0f);
+                value = (blend * 10.0f) + ((1.0f - blend) * value);
             }
 
             state = -1;
@@ -123,18 +119,18 @@ void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 arg1,
                 position = 9;
             }
 
-            i = 13;
-            do {
+            i = 14;
+            while (i--) {
                 if (gOverlay36EnabledMask & (1 << i)) {
                     state = i;
                     total += gOverlay36Weights[i][position];
                 }
-            } while (i--);
+            }
 
             if (total >= 2) {
                 state = overlay36ChooseReloc(1, total, state, position);
-                i = 13;
-                do {
+                i = 14;
+                while (i--) {
                     if (gOverlay36EnabledMask & (1 << i)) {
                         state -= gOverlay36Weights[i][position];
                         if (state <= 0) {
@@ -142,7 +138,7 @@ void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 arg1,
                             break;
                         }
                     }
-                } while (i--);
+                }
             }
 
             if (state == -1) {
@@ -159,16 +155,3 @@ void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 arg1,
     }
     gOverlay36NodeB.node->flags6 |= 0x400;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o036/overlay36ChooseWeightedState/func_overlay_036_F0000A60_1883F18.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_036_F0000A60_1883F18:start
- * symbol: func_overlay_036_F0000A60_1883F18
- * score: 71/170 words
- * frame: 0x38
- * relocations: 33
- * first-mismatch: +0x3C
- * summary: Mode-branch delay tie: extra object reload vs shared 5. Target blend order exposes size +1. Copy-prop blocks parent 5. Identity gate PASS proc 0.
- * PLATEAU-HANDOFF:func_overlay_036_F0000A60_1883F18:end
- */

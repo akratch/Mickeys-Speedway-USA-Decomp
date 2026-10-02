@@ -1584,6 +1584,9 @@ gOverlay40Entries = 0x00000000;
 /* overlay 40: overlay40UpdateEntries.c.o */
 gOverlay40Objects = 0x00000000;
 
+/* overlay 40: overlay40BuildFrame.c.o */
+overlay40DrawRectanglesReloc = 0xf0000000;
+
 /* overlay 40: overlay40DrawEntries.c.o */
 overlay40DrawFrame = 0xf00001a0;
 overlay40ProjectReloc = 0xf0000000;

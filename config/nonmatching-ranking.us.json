@@ -1321,13 +1321,13 @@
       "tu": "overlays/o020",
       "size_bytes": 1080,
       "objdiff_match_pct": null,
-      "differing_words": 256,
+      "differing_words": 251,
       "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 256,
+      "relocation_masked_differing_words": 251,
       "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": -24,
+      "size_delta": -4,
       "category": "size-mismatch",
-      "source_context_sha256": "dU3J.RjRF.-P_j._sAE.SnmI.KAOx.soqo.9M2s.PRqO.TUmX.gqo"
+      "source_context_sha256": "p1ZD.EUnK.ZRJz.7hkK.rDH4.0c3S._eT6.LvcT.DC8f.Nwz3.AQA"
     },
     {
       "name": "func_overlay_101_F0002510_18DDD30",

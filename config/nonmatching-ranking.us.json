@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 84,
-  "resolved": 84,
+  "queue_size": 83,
+  "resolved": 83,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 84,
-  "relocation_masked_coverage": 84,
+  "source_context_coverage": 83,
+  "relocation_masked_coverage": 83,
   "functions": [
     {
       "name": "func_8001357C",
@@ -460,21 +460,6 @@
       "source_context_sha256": "NdBm.7CpS.3p_F.nfts.skyb.71ho.15C_.Ehxz.1x97.sX7V.5ew"
     },
     {
-      "name": "fxSPDPRipple",
-      "file": "src/main/fx.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 928,
-      "objdiff_match_pct": null,
-      "differing_words": 169,
-      "first_mismatch_offset": 104,
-      "relocation_masked_differing_words": 169,
-      "relocation_masked_first_mismatch_offset": 104,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "fT8Z.434y.foTo.Vvi_.O7Wg.9kdT.tRm3.eSqu.AM_o.9JDt.3l0"
-    },
-    {
       "name": "func_800349A4",
       "file": "src/main/textures_354C8.c",
       "overlay": null,
@@ -517,7 +502,7 @@
       "relocation_masked_first_mismatch_offset": 4,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "XNkP.SrXs.8No4.qM9O.IwCs.oU8U.JMxk.YNX7.MCUm.UONl.yro"
+      "source_context_sha256": "xeUY.hLQ6.kDAL.rveu.BQWB.t1ri.BI_Y.t6eX.FMlb.4Qkm.LBI"
     },
     {
       "name": "overlay99ApplySegment",
@@ -667,7 +652,7 @@
       "relocation_masked_first_mismatch_offset": 52,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "i_QG.NP17.T5mW.Rkgm.rp0R.WbuH.QHiy.dPSB.icAG.k6RB.ZoY"
+      "source_context_sha256": "P9KU.OFb0.hM1l.aI1h.MQoC.T42N.JCVN.favy.E8Gs.SnAK.Pgw"
     },
     {
       "name": "func_80045D34",
@@ -1072,7 +1057,7 @@
       "relocation_masked_first_mismatch_offset": 12,
       "size_delta": -32,
       "category": "size-mismatch",
-      "source_context_sha256": "m87c.nRFm.pkeO.gDnU.pO6X.2boD.snsl.EI-8.A8Qe.GhBE.oEs"
+      "source_context_sha256": "iJJZ.O4Tm.7qaf.iUws.u5Dy.b_MM.CpEs.aiVB.LsIZ.FfhR.2Jk"
     },
     {
       "name": "func_80038190",

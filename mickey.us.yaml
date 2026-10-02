@@ -585,6 +585,11 @@ segments:
       # The adjacent raw data resumes immediately after its eight owned bytes.
       - [0x7B260, .data, main/sched]
       - [0x7B268, data]
+      # fxSPDPRipple's three function-static wave phases (0, 0x5555, 0xAAAA),
+      # one word each, and the zero word that rounds IDO's .data input
+      # section to 16 bytes: fx.c.o's whole section, so no trim.
+      - [0x7DF70, .data, main/fx]
+      - [0x7DF80, data]
       # n_csplayer's 127-entry timing table followed by its zero flag. The
       # 0x200-byte object section and first address are fixed by the compiled
       # candidate and Mickey's own relocations.

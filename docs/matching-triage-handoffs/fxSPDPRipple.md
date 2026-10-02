@@ -2,11 +2,13 @@
 ### `fxSPDPRipple` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 169 differing words
+- score: 0/232 words, promoted
 - frame: 0xA8
-- relocations: 12
-- first mismatch: +0x68
-- summary: extra-ILOD pair was alphaHigh in s8, not the w1 store. volatile alphas and one rippleEnabled load: size 0, 169 words. Stall: lines 2043-2049 address CSE.
+- relocations: 18
+- first mismatch: none
+- summary: Matched. The three wave phases are the function's own statics (ROM 0x7DF70, carved to fx.c's .data), the packets are the SDK macros, the three samples are one expression, the clamp is a conditional expression, and a copy of the row index taken before the colour packet keeps t1 out of the temporary ring.
+
+Summary before this remeasure: extra-ILOD pair was alphaHigh in s8, not the w1 store. volatile alphas and one rippleEnabled load: size 0, 169 words. Stall: lines 2043-2049 address CSE.
 
 Summary before this remeasure: Delta +8 is alphaHigh/alphaLow winning a 2.75 save tie over the hoisted arg3 command temp; splitting both forces delta 0 at 163.
 
@@ -127,5 +129,50 @@ gDPSetCombineMode/gDPSetPrimColor/gDPFillRectangle/gDPPipeSync, plain for
 loop) measures 204 at delta 0 (inherited 169), frame 0x98 against 0xA8.
 Decision variable: which webs occupy c1-c13 in the setup block so the three
 address webs are split.
+
+Matched 2026-10-02 (lane z-fxchar), 169 -> 0 at size delta 0, `gmake verify`
+OK. Every earlier pass held the inherited shape fixed (extern angle arrays,
+hand-written packets through one `command` local, `waveA`/`waveB` locals) and
+asked the allocator to reproduce the target inside it. Measured steps, each
+read from the globalcolor decision records:
+
+- The three angle globals as statics defined by the TU: uopt makes each a
+  value web loaded and stored by name (`lui X; lh X` and `lui at; sh`), with
+  no address web. As extern arrays or extern scalars the address constant is
+  a web of its own and is coloured whenever a register is free. This is why
+  the "three uncoloured address webs" looked like register pressure. ROM
+  0x7DF70..0x7DF80 is now `main/fx`'s .data (0, 0x5555, 0xAAAA, one word
+  each, and the zero word IDO rounds the section with).
+- `level->rippleEnabled` read at each of the three alpha statements: the
+  load is one common-subexpression web (save 4.0) and takes v1. Held in a
+  local, the alphas are forwarded into the arms and recomputed per iteration.
+- SDK packet macros. Each macro's `_g` is a symbol web that is coloured and
+  then never used, because the code runs off the `*dList` temporary. The
+  setup block's `_g` (save 3.0) takes a0, which is what pushes arg5 to a1 and
+  the three phases to a2, a3 and t0.
+- The clamp as `wave = (wave > 0x10000) ? 0x10000 : wave;`. Its empty arm is
+  one more basic block inside alphaHigh's and alphaLow's range, so their save
+  divisor goes from 4 to 5 (2.75 to 2.2) while the hoisted fill-rectangle
+  word stays at 2.75 and takes s8. Both alphas then split and live in their
+  homes, as shipped, with no `volatile`.
+- The three samples as one expression,
+  `(f(angleA) * 0xC0) + (f(angleB) * 0x60) + (f(angleC) << 6)`: each result
+  is copied to its saved register in the next call's delay slot. With
+  `waveA`/`waveB` locals the copy precedes the argument and the argument
+  takes the delay slot.
+- alpha rescaled in place like the three colours.
+- uopt ends the colour block after the first loop packet. `next = i + 1`
+  after that packet is a one-block web (save 30) that takes v1; `top = i`
+  before it is a two-block copy web (save 10) that is decided last in the
+  colour block and takes t1, which removes t1 from ugen's temporary ring.
+  Without it every ring draw in the function is one register early (147
+  words); with it, 10: six frame offsets and the four delay-slot rows of the
+  second and third calls.
+- One unused `s32` above alphaHigh puts the homes at 0x8C and 0x84.
+
+Closures this breaks: "the residual is register pressure in the setup block,
+not spelling" (the spelling was the storage class), and "the next lever is
+whatever lowers the alpha webs' save below 2.75" is confirmed, the lever
+being a block count.
 
 <!-- plateau-handoff:fxSPDPRipple:end -->

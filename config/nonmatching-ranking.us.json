@@ -1996,13 +1996,13 @@
       "tu": "overlays/o011",
       "size_bytes": 2248,
       "objdiff_match_pct": null,
-      "differing_words": 538,
+      "differing_words": 531,
       "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 535,
+      "relocation_masked_differing_words": 529,
       "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": -120,
+      "size_delta": -8,
       "category": "size-mismatch",
-      "source_context_sha256": "NHGS.31t9.y-ju.XlI6.tmHx.mbty.8ati.NfVC.5ICl.F7Sp.v-c"
+      "source_context_sha256": "oCAo.4A0j.C5k-.7mpw.TLSg.lsnB.J6py.WAH2.MxNa.BWjN.12Y"
     },
     {
       "name": "func_overlay_058_F00005FC_18AF7E4",

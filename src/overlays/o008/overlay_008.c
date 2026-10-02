@@ -1532,7 +1532,7 @@ void overlay8ScaleOutputs(void *unused, Overlay8ScaleState *state,
     }
 }
 
-/* NON_MATCHING: exact size and frame, 104 masked words (2026-10-02).  Every
+/* NON_MATCHING: exact size and frame, 103 masked words (2026-10-02).  Every
  * stack home is at its shipped offset: the terrain query's pointer and the
  * four -1 scratch words are separate locals, and the update count is
  * declared between trigB and blend.  The float constants are this function's
@@ -1541,9 +1541,11 @@ void overlay8ScaleOutputs(void *unused, Overlay8ScaleState *state,
  * plainly, and the approach loop is `while (index--)`.  The command burst
  * reaches the buffer through a second name from its second pair on: that
  * gives the shipped second address build, into v1 after the first pair's
- * last store.  Left: the first pair's address web takes v0 where the shipped
- * one takes v1 (so the second build is hoisted), and the temp-ring rows that
- * follow.  GLOBAL_ASM stays canonical. */
+ * last store.  Each pair is its own block: with the boundary the two address
+ * webs no longer interfere, so forcing the first to v1 alone gives 89.  Left:
+ * the first pair's web takes v0 where the shipped one takes v1, and the
+ * owner->mode3B web of the motion tests likewise (both forced: 77).  GLOBAL_ASM
+ * stays canonical. */
 #ifdef NON_MATCHING
 f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                                       O8P34A0State *state, f32 limit,
@@ -1793,14 +1795,18 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     }
     state->angle112 = state->angle110;
 
-    *gOverlay8Buffer = 3;
-    gOverlay8Buffer++;
-    *gOverlay8Buffer = state->angle144;
-    gOverlay8Buffer++;
-    *gOverlay8CommandBuffer = 9;
-    gOverlay8CommandBuffer++;
-    *gOverlay8CommandBuffer = state->angle146;
-    gOverlay8CommandBuffer++;
+    do {
+        *gOverlay8Buffer = 3;
+        gOverlay8Buffer++;
+        *gOverlay8Buffer = state->angle144;
+        gOverlay8Buffer++;
+    } while (0);
+    do {
+        *gOverlay8CommandBuffer = 9;
+        gOverlay8CommandBuffer++;
+        *gOverlay8CommandBuffer = state->angle146;
+        gOverlay8CommandBuffer++;
+    } while (0);
     func_overlay_008_F00049E8_1862740(owner, state, update);
 
     if (state->kind1 == 4) {
@@ -2319,11 +2325,11 @@ void func_overlay_008_F0004CF0_1862A48(O8P4CF0Actor *actor,
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:start
  * symbol: func_overlay_008_F00034A0_18611F8
- * score: 104/324 words
+ * score: 103/324 words
  * frame: 0x80
  * relocations: 107
  * first-mismatch: +0x1C
- * summary: Second buffer name from the second command pair on reproduces the address rebuild; the first pair's address web takes v0, not v1.
+ * summary: Each command pair its own block: the address webs stop interfering; first pair's web and the mode3B web still take v0, not v1.
  * PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:end
  */
 

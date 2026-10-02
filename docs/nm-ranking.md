@@ -317,8 +317,8 @@ units remain distinct.
 | 21 | `src/overlays/o038/func_overlay_038_F000047C_188618C.c` | `func_overlay_038_F000047C_188618C` | `o038` | `other` | 876 | 90 | 90 | 192 | 192 | 0 | — |
 | 22 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 93 | 92 | 44 | 44 | 0 | — |
 | 23 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 103 | 103 | 20 | 20 | 0 | — |
-| 24 | `src/overlays/o050/overlay50Initialize.c` | `func_overlay_050_F0000000_1896970` | `o050` | `other` | 740 | 112 | 104 | 60 | 192 | 0 | — |
-| 25 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 138 | 104 | 28 | 28 | 0 | — |
+| 24 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 137 | 103 | 28 | 28 | 0 | — |
+| 25 | `src/overlays/o050/overlay50Initialize.c` | `func_overlay_050_F0000000_1896970` | `o050` | `other` | 740 | 112 | 104 | 60 | 192 | 0 | — |
 | 26 | `src/main/font.c` | `func_8004C690` | `main` | `other` | 584 | 105 | 105 | 0 | 0 | 0 | — |
 | 27 | `src/main/textures_354C8.c` | `func_800355A0` | `main` | `other` | 1,076 | 105 | 105 | 72 | 72 | 0 | — |
 | 28 | `src/main/weather.c` | `rain_render_splashes` | `main` | `other` | 1,616 | 105 | 105 | 148 | 148 | 0 | — |

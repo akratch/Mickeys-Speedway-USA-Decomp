@@ -117,6 +117,11 @@ gO1RankWeights = 0x00000000;
 gO1RankWord800C947C = 0x00000000;
 levelGetLevel_o001Reloc = 0xf0000000;
 
+/* overlay 1: func_overlay_001_F0003258_184F638.c.o */
+func_80028F54_o001Reloc = 0xf0000000;
+gOverlay1RankSentinelLiteral = 0x000000e4;
+overlay1Overlay7DispatchSelectionReloc = 0xf0000000;
+
 /* overlay 1: overlay_001_tail.c.o */
 Arctanf_o001Reloc = 0xf0000000;
 D_160 = 0x00000160;

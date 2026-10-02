@@ -1463,6 +1463,7 @@ MIXED_TU_EXACT_C_RANGES = {
     8: [
         (0x000, 0x008, "overlay8Ignore"),
         (0x008, 0x058, "overlay8GetIndexed"),
+        (0x058, 0x894, "func_overlay_008_F0000058_185DDB0"),
         (
             0x894,
             0xE88,

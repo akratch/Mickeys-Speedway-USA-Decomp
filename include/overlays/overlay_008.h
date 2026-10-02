@@ -834,6 +834,10 @@ extern const f32 gOverlay8ScaleUpperReloc;
 extern u8 D_0[];
 
 extern f32 D_2210[];
+extern f32 D_2188[];
+extern f32 D_21C8[];
+extern s16 D_2208[];
+extern f32 D_2220[];
 
 extern f32 o8P42A8SampleReloc(f32 value, s32 mode);
 
@@ -887,8 +891,9 @@ extern void o8P0058ModeReloc(O8P0058State *state, s32 mode);
 
 extern O8P0058Query *o8P0058AcquireReloc(O8P0058State *state);
 
+/* Resident +0x5A914, the same mode setter o8P34A0SetModeReloc calls. */
 extern void o8P0058SpawnReloc(O8P0058Owner *owner, s32 kind, s32 index,
-                              void *output);
+                              f32 blend);
 
 extern void o8P0058OrientReloc(O8P0058Owner *owner, O8P0058State *state);
 
@@ -968,7 +973,8 @@ extern s32 o8P34A0RandomReloc(s32 low, s32 high);
 extern s32 o8P34A0TerrainReloc(f32 x, f32 z, s32 flags,
                                f32 ***samples);
 
-extern void o8P34A0EffectReloc(O8P34A0Owner *owner, s32 kind, s32 mode);
+/* overlay7DispatchSelection(owner, selection): two arguments. */
+extern void o8P34A0EffectReloc(O8P34A0Owner *owner, s32 kind);
 
 extern void o8P34A0SetModeReloc(O8P34A0Owner *owner, s32 mode, s32 index,
                                 f32 blend);
@@ -996,6 +1002,9 @@ extern void func_overlay_008_F00049E8_1862740(O8P34A0Owner *owner,
                                               f32 update);
 
 extern s16 *gOverlay8Buffer;
+/* The same command cursor (the BSS owner's commandBuffer) under the second
+ * name the +0x34A0 body uses from its second command pair on. */
+extern s16 *gOverlay8CommandBuffer;
 
 extern s16 gOverlay8Value;
 

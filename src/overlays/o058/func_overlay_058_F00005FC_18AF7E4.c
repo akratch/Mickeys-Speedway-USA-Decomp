@@ -66,7 +66,6 @@ extern s32 D_70;
 extern Overlay58OrderEntry *D_90[];
 extern s16 D_B8[][2];
 extern s8 D_F8[];
-extern f32 D_120;
 extern s16 D_1A0[];
 extern u8 D_2A8[];
 extern s32 D_2B0;
@@ -77,6 +76,8 @@ extern s32 D_DC;
 
 extern u8 gOverlay58MenuGateReloc;
 extern s16 gOverlay58SelectionTableReloc[][4];
+extern s16 gOverlay58UnlockTableReloc[][4];
+extern s32 D_o058_5E50[6];
 typedef struct Overlay58Options {
     u32 flags;
     u8 pad04[0xF];
@@ -137,17 +138,37 @@ extern void overlay58EnsureResource(void);
  *     carries that store in its delay slot).
  *   - The menu bits and the screen-mode nibble are one object (one ROM-table
  *     symbol, addends 0 and 0x13).
- *   - The case-3 selection row is addressed as `&table[0][0] + player * 4`.
+ *   - (Superseded below) the case-3 row was addressed as
+ *     `&table[0][0] + player * 4`.
  *   - Locals are declared in frame order (status first at 0x7C, increment
  *     at 0x58); the unused `verts`, `buttons`, `mode` and `selection` are
  *     gone, and the large-point-quad z offset is an f32 temporary (137 at
  *     +4 -> 109 at 0).
  *
- * Open: the case-3 table base and the `mainChangeCameras` mode address are
- * saved registers across their calls in the target (s0, s1).  Here the
- * case-3 table address joins the drawing loop's into one long web that is
- * only offered s8 (cost 46) and splits.  The quad's x offset still adds
- * after z; the `D_2BC == 0` load is scheduled later here.
+ * 2026-10-02, lane x-o058: 109 -> 89 at size delta 0, from the relocation
+ * table rather than the allocator.  Both "open" webs were one extern name
+ * standing for two ROM objects:
+ *   - Case 3 reads a different resident table (ROM-table symbol 0x754,
+ *     resident +0x33F8) from the one the drawing loop, case 5 and the level
+ *     calls read (symbol 0x666, +0x3360, the whale's D_8007C0C0).  With its
+ *     own extern (`gOverlay58UnlockTableReloc`) the case-3 LDA no longer
+ *     joins the loop's web, takes s0 across func_800291B4 as shipped, and
+ *     the natural `table[player][active + 1]` spelling is exact there.
+ *   - The `= -1` stores in cases 0 and 3 are to overlay BSS +0x0, the
+ *     whale's `D_o058_5E50[0]`, not to the camera mode global (resident
+ *     +0x3440) that `mainChangeCameras` reads; separated, the mode address
+ *     is held in s1 across that call as shipped.
+ *   - `D_120` is rodata +0x120, the literal 0.02f (checklist item 2), and
+ *     the clamp is `D_2C0 += increment; if (D_2C0 > 1.0f)` (the `progress`
+ *     local is gone); start/end are s32.
+ * Open (89 = 26 frame-displacement immediates, 50 naming, 13 structural):
+ * the frame is 0x90 against 0x88 -- the natural case-3 spelling adds eight
+ * bytes of frame with no new stack traffic (the flat `&table[0][0] + p * 4`
+ * spelling keeps 0x88 but misses case 3), so status/param homes are 8 high;
+ * the increment block draws (f32)updateRate before the 0.02f load and
+ * computes the float compare before `D_2BC == 0` (operand order and `&`
+ * order are canonicalised: 8 orders flat); the large-point-quad x/z offset
+ * conversions are emitted in the wrong order.
  */
 #ifdef NON_MATCHING
 void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
@@ -156,12 +177,11 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
     Overlay58Status *status;
     Overlay58Gfx *command;
     s16 *mapping;
-    s16 start;
-    s16 end;
+    s32 start;
+    s32 end;
     s32 marker;
     s32 stage;
     f32 *progressPtr;
-    f32 progress;
     f32 increment;
     f32 offsetZ;
 
@@ -183,7 +203,7 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
             D_44 = 8;
         } else if (status->mode == 5) {
             D_44 = 2;
-            gOverlay58CameraModeReloc = -1;
+            D_o058_5E50[0] = -1;
         } else {
             D_44 = 1;
         }
@@ -259,7 +279,7 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                     D_44 = 8;
                 } else if (status->mode == 5) {
                     D_44 = 2;
-                    gOverlay58CameraModeReloc = -1;
+                    D_o058_5E50[0] = -1;
                 } else {
                     D_44 = 1;
                 }
@@ -269,17 +289,14 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                 }
                 if (gOverlay58MenuGateReloc == 0) {
                     if (status->active < 3) {
-                        if ((&gOverlay58SelectionTableReloc[0][0] +
-                             status->player * 4)[status->active + 1] != -1) {
+                        if (gOverlay58UnlockTableReloc[status->player][status->active + 1] != -1) {
                             if (!(gOverlay58MenuBitsReloc.bits13 &
-                                  (1 << (&gOverlay58SelectionTableReloc[0][0] +
-                                         status->player * 4)[status->active + 1]))) {
+                                  (1 << gOverlay58UnlockTableReloc[status->player][status->active + 1]))) {
                                 gOverlay58MenuBitsReloc.bits13 |=
-                                    1 << (&gOverlay58SelectionTableReloc[0][0] +
-                                          status->player * 4)[status->active + 1];
+                                    1 << gOverlay58UnlockTableReloc[status->player][status->active + 1];
                                 func_800291B4();
                                 func_8003A680(
-                                    (&gOverlay58SelectionTableReloc[0][0] + status->player * 4)[status->active + 1] +
+                                    gOverlay58UnlockTableReloc[status->player][status->active + 1] +
                                     0xE);
                             }
                         }
@@ -434,7 +451,7 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
             }
 
             if (stage == D_6C) {
-                increment = D_120 * (f32)updateRate;
+                increment = 0.02f * (f32)updateRate;
                 if ((D_2BC == 0) & (*progressPtr < 1.0f)) {
                     if (D_30 == 3) {
                         amSndPlay(0x32B, &D_2BC, D_6C);
@@ -445,9 +462,8 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                     geometry->vertices[start].z, geometry->vertices[end].x,
                     geometry->vertices[end].y, geometry->vertices[end].z,
                     D_2C0);
-                progress = D_2C0 + increment;
-                D_2C0 = progress;
-                if (progress > 1.0f) {
+                D_2C0 += increment;
+                if (D_2C0 > 1.0f) {
                     D_2C0 = 1.0f;
                     if (D_2BC != 0) {
                         amSndStop(D_2BC);
@@ -486,6 +502,7 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                         (s32)((f32)D_B8[status->player][0] +
                               geometry->vertices[marker].x),
                         (s32)geometry->vertices[marker].y, (s32)offsetZ);
+
                 }
             }
             overlay58DrawPointQuad((s32)geometry->vertices[start].x,
@@ -500,10 +517,10 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_058_F00005FC_18AF7E4:start
  * symbol: func_overlay_058_F00005FC_18AF7E4
- * score: 109/829 words
- * frame: 0x88
- * relocations: 278
- * first-mismatch: +0x41C
- * summary: Plain -O2; D_2C0 compares via entry pointer; frame-order locals, z offset temp. Open: case-3 table web joins loop web (s8 only), s1 cam.
+ * score: 89/829 words
+ * frame: 0x90
+ * relocations: 267
+ * first-mismatch: +0x0
+ * summary: Case 3 has its own resident table; -1 stores are D_o058_5E50[0]; 0.02f literal. s0/s1 webs exact. Open: frame 0x90 vs 0x88, draw order, quad offsets.
  * PLATEAU-HANDOFF:func_overlay_058_F00005FC_18AF7E4:end
  */

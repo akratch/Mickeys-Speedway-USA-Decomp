@@ -2,11 +2,71 @@
 ### `func_overlay_058_F00005FC_18AF7E4` plateau handoff
 
 - source: `src/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c`
-- score: 109/829 words
-- frame: 0x88
-- relocations: 278
-- first mismatch: +0x41C
-- summary: Plain -O2; D_2C0 compares via entry pointer; frame-order locals, z offset temp. Open: case-3 table web joins loop web (s8 only), s1 cam.
+- score: 89/829 words
+- frame: 0x90
+- relocations: 267
+- first mismatch: +0x0
+- summary: Case 3 has its own resident table; -1 stores are D_o058_5E50[0]; 0.02f literal. s0/s1 webs exact. Open: frame 0x90 vs 0x88, draw order, quad offsets.
+
+Summary before this remeasure: Plain -O2; D_2C0 compares via entry pointer; frame-order locals, z offset temp. Open: case-3 table web joins loop web (s8 only), s1 cam.
+
+#### 2026-10-02, lane x-o058: 109 to 89 at size delta 0, from the relocation table
+
+Both webs every earlier pass called "open" were one extern name standing for
+two ROM objects (checklist item 20), so no spelling or force inside the
+inherited shape could reach them:
+
+- Case 3's table loads are SYMBOL records for ROM-table entry 0x754 (resident
+  +0x33F8); the drawing loop, case 5's level load and both mainChangeLevel
+  argument loads are entry 0x666 (+0x3360, the whale's D_8007C0C0). Giving
+  case 3 its own extern stops its LDA joining the loop's web: it takes s0
+  across func_800291B4 as shipped, and the natural
+  `table[player][active + 1]` spelling is then exact in case 3 (the flat
+  `&table[0][0] + player * 4` spelling with the right symbol misses case 3 by
+  a ring rotation, 278).
+- The `= -1` stores in cases 0 and 3 are LOCAL records against overlay BSS
+  +0x0 (the whale's D_o058_5E50[0]), not the camera mode global (+0x3440)
+  that mainChangeCameras reads. Separated, the mode address is held in s1
+  across that call as shipped.
+- D_120 is a LOCAL record against rodata +0x120: the literal 0.02f. With the
+  literal and `D_2C0 += increment; if (D_2C0 > 1.0f)` (no progress local):
+  109 to 92; start and end as s32 (or any one-cell declaration change): 89.
+
+Aligner before and after: byte-exact 733 to 744, register naming 69 to 50,
+immediate only 7 to 26, really different 26 to 13.
+
+What is open, measured:
+
+- Frame 0x90 against 0x88. The natural case-3 spelling adds eight bytes of
+  frame with no new stack traffic (the flat spelling keeps 0x88), so the
+  status and parameter homes read 8 high: most of the 26 immediate-only
+  words. Declaration-count products (unused pads 0 to 2, progress declared,
+  s16 or s32 start/end, offsetZ kept or inlined: 32 cells) toggle the
+  increment home between 0x58 and 0x5C and never reach 0x88. Six spellings
+  of the case-3 access (row+1, 1+row, pointer-to-[1], row pointer + 1, flat
+  index, flat [0] index) leave the frame at 0x90 or break case 3.
+- The increment block: the target loads 0.02f before converting updateRate
+  and computes `D_2BC == 0` before the float compare. Both operand orders of
+  the multiply and three orders of the `&` measured byte-identical (uopt
+  canonicalises them); `!D_2BC & ...` is worse (213 at +4).
+- The large-point-quad: the target converts both offsets first and adds x
+  before z; an inline call measured +4.
+
+Later the same sitting, measured on the banked 89 shape: the frame is a
+declaration count after all. Dropping the `offsetZ` local and declaring
+start/end as an s16 pair lands the frame at exactly 0x88 (status 0x7C,
+increment 0x58, end spill 0x50, all as shipped), but every inline spelling of
+the large-point-quad call (offset first or vertex first, with or without the
+(f32) casts, four cells) converts and sums x before converting z's offset and
+pays one mtc1 hazard nop: 90 masked at +4. The shipped order converts both
+offsets first, then sums x, then z, then truncates y, all in ring registers;
+declared f32 offset locals take f0/f2 instead (90 at delta 0, frame 0x98).
+
+Next lever: the quad call's offset order without a declared float. With the
+frame then exact, what remains is that call and the increment block's draw
+order, both of which are ugen emission order, so read them with
+`tools/draw_census.py` and the DKWB freelist trace rather than another
+spelling product.
 
 Summary before this remeasure: Plain -O2 (no -g3); &D_2C0 compares via entry pointer drop s8; frame order. Open: s0/s1 address webs, quad offsets.
 

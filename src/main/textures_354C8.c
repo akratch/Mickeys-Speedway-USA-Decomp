@@ -534,26 +534,25 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
     }
     *dlist = dl;
 }
-#ifdef NON_MATCHING
 /* PROVENANCE: control-flow shape adapted from Diddy Kong Racing's public
  * src/textures_sprites.c::tex_load_sprite and cross-checked against Jet Force
  * Gemini's public texLoadSprite object. Mickey's allocation layout, fields,
- * globals, calls, and compiler output remain authoritative. */
-/* The six word locals are declared in the order of their stack homes
- * (cacheNum 0x5C, then the offsets down to commandOffset at 0x48); the small
- * scalars follow so they pack below them.
- * 2026-10-02 (lane x-res): 105 -> 7 at delta 0, three edits that were each
- * flat or worse alone on the inherited shape: the free-slot scan reads
- * D_800D2FFC[i << 1] directly (no node pointer), the ROM table is read as
- * D_800D2FF8[spriteId] and [spriteId + 1], and the triangle pointer is
- * newSprite + triangleOffset (the target reloads that home). The two `+=`
- * chains give the target's operand order for the display-list and texture
- * offsets. 7 -> 2: the vertex, texture-pointer and command sizes are written
- * with sizeof, which makes those terms unsigned; the unsigned terms are new
- * IR names, and they fix vertexOffset/commandOffset's registers (a3/t0) and
- * their addu operand order together. Left, 2 words: as1 fills the bounds
- * test's delay slot with the hoisted D_800D2FF8 high half where the target
- * has the cacheFull clear. */
+ * globals, calls, and compiler output remain authoritative.
+ *
+ * Matched 2026-10-02 (lanes w30-tex, d-res1, e-res3, x-res). The six word
+ * locals are declared in the order of their stack homes (cacheNum 0x5C down
+ * to commandOffset 0x48) with the small scalars after them. What closed it:
+ * the free-slot scan and the ROM table read their globals directly (no node
+ * or entry pointer locals); the triangle pointer is newSprite +
+ * triangleOffset, reloaded from its home; the display-list and texture
+ * offsets are `+=` chains (operand order); the per-texture sizes are written
+ * with sizeof, whose unsigned terms are their own IR names and give
+ * vertexOffset/commandOffset the a3/t0 registers; and cacheFull is cleared
+ * beside cacheNum, between the two cache scans, not in the first loop's
+ * init. That last one is an as1 fact read from its scheduler trace: the
+ * first loop's preheader needs both of its remaining instructions to cover
+ * the count load's latency, so as1 can only lift the clear into the bounds
+ * test's delay slot when it comes from the second scan's block. */
 Sprite *func_800355A0(s32 spriteId, s32 flags) {
     Sprite *refSprite;
     Sprite *newSprite;
@@ -576,7 +575,7 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
         return NULL;
     }
 
-    for (i = 0, cacheFull = 0; i < D_800D3008; i++) {
+    for (i = 0; i < D_800D3008; i++) {
         if (spriteId == D_800D2FFC[i << 1]) {
             refSprite = (Sprite *)D_800D2FFC[(i << 1) + 1];
             refSprite->numberOfInstances++;
@@ -584,6 +583,7 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
         }
     }
 
+    cacheFull = 0;
     cacheNum = -1;
     for (i = 0; i < D_800D3008; i++) {
         if (D_800D2FFC[i << 1] == -1) {
@@ -683,18 +683,6 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
     newSprite->numberOfInstances = 1;
     return newSprite;
 }
-/* PLATEAU-HANDOFF:func_800355A0:start
- * symbol: func_800355A0
- * score: 2/269 words
- * frame: 0x68
- * relocations: 44
- * first-mismatch: +0x48
- * summary: 7 to 2: sizeof-typed (unsigned) vertex, texture and command sizes fix the a3/t0 offsets. Left: as1 fills the bounds-test delay slot with the D_800D2FF8 high half
- * PLATEAU-HANDOFF:func_800355A0:end
- */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/textures_354C8/func_800355A0.s")
-#endif
 
 void func_800359D4(Sprite *sprite) {
     s32 i;

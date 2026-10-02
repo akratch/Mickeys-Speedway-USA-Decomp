@@ -4597,8 +4597,14 @@ u32 func_8001357C(f32 arg0, f32 arg1, f32 *arg2, s32 arg3, void *arg4) {
 #ifdef NON_MATCHING
 /* PROVENANCE: JFG's public track.c retains this collision collector as
  * assembly; Mickey's segment, batch, plane and hit-list accesses are used. */
-/* 45 masked words at size delta 0, frame exact (70 -> 45, 2026-10-02 lane
- * n-track): the compare mask is a block-scope local of the segment loop (its
+/* 11 masked words at size delta 0, frame exact (45 -> 11, 2026-10-02 lane
+ * o-track2): the sort body opens with `temporary = D_800C9CD0[i + 1];`, a
+ * store the compiler deletes but which enters the right element first in
+ * uopt's expression table, so the right pointer is chain 0 and wins the
+ * save-300 tie (a0, left a1) while the loads are still emitted left first.
+ * Left: AND operand order (+0x15C), surface-base load order (+0x1A8), the
+ * hit-list and unrolled-sort preheader sll/addu orders (+0x34C, +0x400).
+ * Previous, 45 (70 -> 45, 2026-10-02 lane n-track): the compare mask is a block-scope local of the segment loop (its
  * spill cell is then the target's 0x90), the three plane coefficients are
  * locals read after the mathXZInTri call and the height is stored straight
  * into the hit (f0/f2/f12 webs, ring div/neg), the two unused pads and the
@@ -4751,6 +4757,7 @@ s32 func_8001398C(f32 arg0, f32 arg1, s32 arg2, void **arg3) {
         orderIndex = 0;
         changed = 1;
         for (; orderIndex < resultCount - 1; orderIndex++) {
+            temporary = D_800C9CD0[orderIndex + 1];
             if (*(f32 *) D_800C9CD0[orderIndex] <
                 *(f32 *) D_800C9CD0[orderIndex + 1]) {
                 temporary = D_800C9CD0[orderIndex];
@@ -5563,11 +5570,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001398C:start
  * symbol: func_8001398C
- * score: 45/330 words
+ * score: 11/330 words
  * frame: 0x140
  * relocations: 21
  * first-mismatch: +0x15C
- * summary: Plane locals, block mask, pads, decl order (70->45); open: sort a0/a1 save tie 300/300 by web number, worth 31.
+ * summary: Dead right-element store breaks the sort tie (45->11); left: AND order, surface-base load, two preheader orders.
  * PLATEAU-HANDOFF:func_8001398C:end
  */
 

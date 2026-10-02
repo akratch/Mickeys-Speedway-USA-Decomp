@@ -3169,13 +3169,31 @@ s32 func_80010900(TrackVec3f *arg0, TrackVec3f *arg1, f32 arg2, s32 arg3,
 }
 #ifdef NON_MATCHING
 /*
- * PROVENANCE: Mickey's m2c collision-response draft and the resident ray
- * helper declarations reconstruct this player-intersection loop; no external
- * function body is adapted. The record writes retain the assembly offsets.
+ * PROVENANCE: rewritten from the listing in the shape of the matched
+ * single-ray sibling func_80010900 (same author); no external function body
+ * is adapted. The record layout is the assembly offsets.
  */
-/* Workbench verdict: structure-mismatch, 662 differing words, first mismatch +0x0. */
-/* Candidate has 692/678 words and nine relocations, with frame -0x158 versus -0x148. */
-/* Remaining gap: fourteen excess words, a 16-byte frame excess, and unresolved FP/pointer scheduling. */
+/* 195 masked words at size delta 0, frame exact (662 at +56 -> 195,
+ * 2026-10-02 lane o-track2): the three copy loops walk two pointers with a
+ * separate counter (no index * 12 preheaders), the main loop's index is its
+ * own variable and every other loop counts with `i` (one shared web had put
+ * the later loops on a saved register), the main loop forms its two point
+ * addresses as `index + index + index`, records are reached through a
+ * `record` pointer, the length reuses lengthSquared as in the sibling, and
+ * the update-loop pointers are set before the minimum search. Left: the
+ * index/bit saved-register pair (s6/s7 swapped), failureMask held in a
+ * register in the main loop, the stack homes below direction, and the
+ * minimum-index * 12 spelled as shifts instead of adds. */
+typedef struct TrackContactRecord {
+    s32 unk0;
+    f32 unk4[12];
+    f32 distance;
+    s32 unk38;
+    u8 unk3C;
+    u8 flags;
+    u8 pad3E[2];
+} TrackContactRecord;
+
 struct TrackCollisionSurface;
 struct TrackCollisionRecord;
 extern void func_800115E4(
@@ -3183,185 +3201,174 @@ extern void func_800115E4(
     struct TrackCollisionSurface *surface,
     struct TrackCollisionRecord *record);
 
-#define B4C_U8(base, offset) (*(u8 *) ((u8 *) (base) + (offset)))
-#define B4C_S32(base, offset) (*(s32 *) ((u8 *) (base) + (offset)))
-#define B4C_F32(base, offset) (*(f32 *) ((u8 *) (base) + (offset)))
-
-s32 func_80010B4C(s32 arg0, void *arg1, f32 *arg2, f32 *arg3,
-                  void *arg4, void *arg5, void *arg6) {
+s32 func_80010B4C(s32 count, f32 *start, f32 *end, f32 *radius,
+                  TrackContactRecord *records, f32 *origin, s32 arg6) {
     TrackRayHit intersection;
-    f32 relative[16];
+    f32 relative[12];
     TrackRayPoint direction;
-    TrackRayPoint *start;
-    TrackRayPoint *end;
-    u8 *record;
-    f32 *scalePtr;
+    f32 *rel;
+    f32 *point;
     f32 lengthSquared;
-    f32 length;
     f32 minimumLength;
     f32 scale;
     s32 minimumIndex;
-    s32 count;
+    u32 collisionMask;
+    s32 tries;
+    u32 resultMask;
     s32 index;
     s32 attempt;
     u32 bit;
-    u32 collisionMask;
-    u32 resultMask;
     u32 failureMask;
     s32 collision;
     s32 queryResult;
     s32 auxiliaryResult;
+    s32 pad88;
+    s32 i;
+    f32 *scalePtr;
+    TrackContactRecord *record;
 
-    if (arg5 != NULL) {
-        for (index = 0; index < arg0; index++) {
-            relative[index * 3] =
-                ((f32 *) arg2)[index * 3] - B4C_F32(arg5, 0);
-            relative[(index * 3) + 1] =
-                ((f32 *) arg2)[(index * 3) + 1] - B4C_F32(arg5, 4);
-            relative[(index * 3) + 2] =
-                ((f32 *) arg2)[(index * 3) + 2] - B4C_F32(arg5, 8);
+    if (origin != NULL) {
+        rel = relative;
+        point = end;
+        for (i = 0; i < count; i++) {
+            rel[0] = point[0] - origin[0];
+            rel[1] = point[1] - origin[1];
+            rel[2] = point[2] - origin[2];
+            rel += 3;
+            point += 3;
         }
     }
-    if (arg0 > 0) {
-        for (index = 0; index < arg0; index++) {
-            record = (u8 *) ((u32) arg4 + (index * 0x40));
-            B4C_S32(record, 0) = 0;
-            B4C_U8(record, 0x3D) = 0;
-            B4C_F32(record, 4) = 0.0f;
-            B4C_F32(record, 8) = 0.0f;
-            B4C_F32(record, 0xC) = 0.0f;
-            B4C_F32(record, 0x10) = 0.0f;
-            B4C_F32(record, 0x14) = 0.0f;
-            B4C_F32(record, 0x18) = 0.0f;
-            B4C_F32(record, 0x1C) = 0.0f;
-            B4C_F32(record, 0x20) = 0.0f;
-            B4C_F32(record, 0x24) = 0.0f;
-            B4C_F32(record, 0x28) = 0.0f;
-            B4C_F32(record, 0x2C) = 0.0f;
-            B4C_F32(record, 0x30) = 0.0f;
-            B4C_F32(record, 0x34) = 32000.0f;
-            B4C_U8(record, 0x3C) = 0;
-            B4C_S32(record, 0x38) = 0;
-        }
+    for (i = 0; i < count; i++) {
+        record = &records[i];
+        record->unk0 = 0;
+        record->flags = 0;
+        record->unk4[0] = 0.0f;
+        record->unk4[1] = 0.0f;
+        record->unk4[2] = 0.0f;
+        record->unk4[3] = 0.0f;
+        record->unk4[4] = 0.0f;
+        record->unk4[5] = 0.0f;
+        record->unk4[6] = 0.0f;
+        record->unk4[7] = 0.0f;
+        record->unk4[8] = 0.0f;
+        record->unk4[9] = 0.0f;
+        record->unk4[10] = 0.0f;
+        record->unk4[11] = 0.0f;
+        record->distance = 32000.0f;
+        record->unk3C = 0;
+        record->unk38 = 0;
     }
     resultMask = 0;
     attempt = 0;
     failureMask = 0;
     do {
+        index = 0;
         collisionMask = 0;
         bit = 1;
-        scalePtr = arg3;
-        index = 0;
+        scalePtr = radius;
         do {
-            start = (TrackRayPoint *) ((u8 *) arg1 + (index * 0xC));
-            end = (TrackRayPoint *) ((u8 *) arg2 + (index * 0xC));
+            rel = &start[index + index + index];
+            point = &end[index + index + index];
+            tries = 0;
             scale = *scalePtr;
-            count = 0;
             do {
                 collision = 0;
                 auxiliaryResult = 0;
-                direction.x = end->x - start->x;
-                direction.y = end->y - start->y;
-                direction.z = end->z - start->z;
-                lengthSquared = (direction.z * direction.z) +
+                direction.x = point[0] - rel[0];
+                direction.y = point[1] - rel[1];
+                direction.z = point[2] - rel[2];
+                lengthSquared = ((&direction.x)[2] * (&direction.x)[2]) +
                                 ((direction.x * direction.x) +
                                  (direction.y * direction.y));
                 if (lengthSquared > 0.0f) {
-                    length = sqrtf(lengthSquared);
-                    intersection.ratio = length;
-                    direction.x /= length;
-                    direction.y /= length;
-                    direction.z /= length;
+                    lengthSquared = sqrtf(lengthSquared);
+                    intersection.ratio = lengthSquared;
+                    direction.x /= lengthSquared;
+                    direction.y /= lengthSquared;
+                    direction.z /= lengthSquared;
                     if (D_800C9D28 != 0) {
-                        queryResult = func_80011980(
-                            start, end,
-                            &direction, length, scale, 0.0f,
-                            &intersection);
+                        queryResult = func_80011980((TrackRayPoint *) rel, (TrackRayPoint *) point,
+                                                    &direction, lengthSquared,
+                                                    scale, 0.0f, &intersection);
                     } else {
-                        queryResult = func_80011980(
-                            start, end,
-                            &direction, length, scale, scale,
-                            &intersection);
+                        queryResult = func_80011980((TrackRayPoint *) rel, (TrackRayPoint *) point,
+                                                    &direction, lengthSquared,
+                                                    scale, scale, &intersection);
                     }
                     if (D_800C9D28 != 0) {
                         auxiliaryResult = func_80011CDC(
-                            (TrackVec3f *) start, (TrackVec3f *) &direction,
-                            scale, (TrackRayHit *) &intersection);
+                            (TrackVec3f *) rel, (TrackVec3f *) &direction,
+                            scale, &intersection);
                     }
                     if ((queryResult | auxiliaryResult) != 0) {
-                        record = (u8 *) ((u32) arg4 + (index * 0x40));
-                        func_800115E4(
-                            (s32) start, (TrackVec3f *) end, &direction, length,
-                            (struct TrackCollisionSurface *) &intersection,
-                            (struct TrackCollisionRecord *) record);
-                        B4C_F32(record, 0x34) = intersection.ratio;
+                        record = &records[index];
+                        func_800115E4((s32) rel, (TrackVec3f *) point,
+                                      (TrackVec3f *) &direction, lengthSquared,
+                                      (struct TrackCollisionSurface *) &intersection,
+                                      (struct TrackCollisionRecord *) record);
+                        record->distance = intersection.ratio;
                         collision = 1;
                         collisionMask |= bit;
                     }
                     if (collision != 0) {
-                        count++;
-                        if (count >= 0xB) {
+                        tries++;
+                        if (tries >= 11) {
                             collisionMask = 0;
-                            collision = 0;
                             failureMask |= 0x40000000;
+                            collision = 0;
                         }
                     }
                 }
             } while (collision != 0);
-            bit <<= 1;
             index++;
+            bit <<= 1;
             scalePtr++;
-        } while ((index < arg0) && (failureMask == 0));
-        if (((collisionMask != 0) && (attempt >= 0xB)) ||
-            (failureMask != 0)) {
-            for (index = 0; index < arg0; index++) {
-                ((f32 *) arg2)[index * 3] =
-                    ((f32 *) arg1)[index * 3];
-                ((f32 *) arg2)[(index * 3) + 1] =
-                    ((f32 *) arg1)[(index * 3) + 1];
-                ((f32 *) arg2)[(index * 3) + 2] =
-                    ((f32 *) arg1)[(index * 3) + 2];
-            }
+        } while ((index < count) && (failureMask == 0));
+        if (((collisionMask != 0) && (attempt >= 11)) || (failureMask != 0)) {
             resultMask = 0;
-            B4C_F32(arg5, 0) = B4C_F32(arg1, 0) - relative[0];
-            B4C_F32(arg5, 4) = B4C_F32(arg1, 4) - relative[1];
-            B4C_F32(arg5, 8) = B4C_F32(arg1, 8) - relative[2];
-            if (attempt >= 0xB) {
+            point = end;
+            rel = start;
+            for (i = 0; i < count; i++) {
+                point[0] = rel[0];
+                point[1] = rel[1];
+                point[2] = rel[2];
+                point += 3;
+                rel += 3;
+            }
+            origin[0] = start[0] - relative[0];
+            origin[1] = start[1] - relative[1];
+            origin[2] = start[2] - relative[2];
+            if (attempt >= 11) {
                 failureMask |= 0x80000000;
             }
-        } else if (collisionMask != 0) {
+        } else if ((collisionMask != 0) && (origin != NULL)) {
             minimumIndex = 0;
-            if (arg5 != NULL) {
-                minimumLength = 32000.0f;
-                bit = 1;
-                for (index = 0; index < arg0; index++) {
-                    if ((collisionMask & bit) != 0) {
-                        record = (u8 *) ((u32) arg4 + (index * 0x40));
-                        if (B4C_F32(record, 0x34) < minimumLength) {
-                            minimumIndex = index;
-                            minimumLength = B4C_F32(record, 0x34);
-                        }
+            minimumLength = 32000.0f;
+            bit = 1;
+            rel = relative;
+            point = end;
+            for (i = 0; i < count; i++) {
+                if (collisionMask & bit) {
+                    record = &records[i];
+                    if (record->distance < minimumLength) {
+                        minimumIndex = i;
+                        minimumLength = record->distance;
                     }
-                    bit <<= 1;
                 }
-                record = (u8 *) ((u32) arg4 + (minimumIndex * 0x40));
-                B4C_U8(record, 0x3D) |= 1;
-                B4C_F32(arg5, 0) = B4C_F32(arg2, minimumIndex * 0xC) -
-                          relative[minimumIndex * 3];
-                B4C_F32(arg5, 4) = B4C_F32(arg2, (minimumIndex * 0xC) + 4) -
-                          relative[(minimumIndex * 3) + 1];
-                B4C_F32(arg5, 8) = B4C_F32(arg2, (minimumIndex * 0xC) + 8) -
-                          relative[(minimumIndex * 3) + 2];
-                for (index = 0; index < arg0; index++) {
-                    B4C_F32(arg2, index * 0xC) =
-                        relative[index * 3] + B4C_F32(arg5, 0);
-                    B4C_F32(arg2, (index * 0xC) + 4) =
-                        relative[(index * 3) + 1] + B4C_F32(arg5, 4);
-                    B4C_F32(arg2, (index * 0xC) + 8) =
-                        relative[(index * 3) + 2] + B4C_F32(arg5, 8);
-                }
-                resultMask |= collisionMask;
+                bit <<= 1;
             }
+            records[minimumIndex].flags |= 1;
+            origin[0] = end[minimumIndex * 3] - relative[minimumIndex * 3];
+            origin[1] = end[minimumIndex * 3 + 1] - relative[minimumIndex * 3 + 1];
+            origin[2] = end[minimumIndex * 3 + 2] - relative[minimumIndex * 3 + 2];
+            for (i = 0; i < count; i++) {
+                point[0] = rel[0] + origin[0];
+                point[1] = rel[1] + origin[1];
+                point[2] = rel[2] + origin[2];
+                rel += 3;
+                point += 3;
+            }
+            resultMask |= collisionMask;
         }
         attempt++;
     } while ((collisionMask != 0) && (failureMask == 0));
@@ -5600,10 +5607,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80010B4C:start
  * symbol: func_80010B4C
- * score: 662 differing words
- * frame: 0x158
+ * score: 195/678 words
+ * frame: 0x148
  * relocations: 9
- * first-mismatch: +0x0
- * summary: Mickey m2c fixes caller ABI and distance state; corrected candidate retains 662 diffs after five stalled follow-ups. Next: source-proved lifetimes.
+ * first-mismatch: +0x54
+ * summary: Sibling-shape rewrite (662 at +56 -> 195 at 0); left: index/bit s6/s7, failureMask spill, homes below direction.
  * PLATEAU-HANDOFF:func_80010B4C:end
  */

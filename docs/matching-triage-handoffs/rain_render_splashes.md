@@ -2,11 +2,11 @@
 ### `rain_render_splashes` plateau handoff
 
 - source: `src/main/weather.c`
-- score: 105/404 words
+- score: 100/404 words
 - frame: 0xB8
 - relocations: 0
 - first mismatch: +0x94
-- summary: Packet store order (109->105); open: s1/s2/s3 ring, splash/index above delay-address and 0xFF webs
+- summary: Index-difference colour stores (105->100); 0xFF web still save 40, totalsave 160, below splash 76.8
 
 Summary before this remeasure: 109 with the height-result home at the target 0x84 and a for render loop; the s1/s2/s3 ring is one ranking: delay address and 0xFF outrank splash and index.
 - ownership: resident text 0x8003BBF8 through 0x8003C248, 0x650 bytes; the next symbol is `rain_lightning`, so there is no owned tail padding.
@@ -52,5 +52,44 @@ order of the four splash vertices keeps the written order (105; every other
 cell 128-152). A function-scope `vtx` local for the vertices is 117 (the
 declaration moves the frame homes). The s1/s2/s3 ring decision variable from
 2026-10-01 is unchanged.
+
+## 2026-10-02 (lane w6-rain): 105 to 100, 0xFF web unmoved
+
+No per-file CFLAGS or OPT_FLAGS. weather.c POSTPROCESS only renames trap
+aliases. Configured command is -O2 -mips2 -32. Baseline remeasure: 1616
+bytes, 105 masked words, size delta 0, first mismatch +0x94.
+
+The type-2 0xFF web is proc 14 web 234, raw value 0xFF, dtype 8, save 40,
+nocs 4, totalsave 160, coloured s3. Splash web 36 stays at save 76.8 on s1.
+Sixteen loop uses at weight 10 account for the 160. Beating splash at the
+same nocs needs totalsave above 307.
+
+Attempt 1, 14 cells, shape_product jobs 2. Colour stores written as 0xFF
+xor, plus, or minus (index - index), on one site and on all sixteen, plus
+a packed shift reconstruction of the env and final prim words. All sixteen
+cancelling stores score 100 at size delta 0 (xor, add, and sub alike). One
+site stays 105. The triple u8 sum and the packed words stay 105. The
+adopted xor does not add a 0xFF use: totalsave stays 160 and the web stays
+on s3. The index web keeps totalsave 341 while nocs grows from 6 to 7, so
+its save falls from 56.8 to 48.7, and two lower callee-saved colours swap.
+That is the five-word improvement.
+
+Attempt 2, 6 cells. A second store of each colour byte is size delta +128
+(198 and 236 masked). Folding the alpha byte as the or of the three
+channels with 0xFF is size delta +96. Neither is size-neutral, so neither
+is adopted. A real second store is not deleted after the use count.
+
+Attempt 3, 10 cells. Casting the existing alpha mask and the vertex-pointer
+mask to u8, and adding a cancelling (u8) 0xFF difference to the loop bound,
+are byte-flat on both the 105-word and 100-word bases.
+
+Do not retry: a second colour store, an or of the stored channels back into
+alpha, a u8 cast of those two masks, a cancelling u8 difference on the loop
+bound, triple u8 arithmetic of 0xFF, or packed shifts of 0xFF for the env
+and final prim words. Or-zero probes stay closed from the earlier shard.
+
+Open: the dtype-8 0xFF web still needs a size-neutral use uopt counts.
+Identities fold before the count, and a store that is not an identity is
+emitted. Splash remains on s1.
 
 <!-- plateau-handoff:rain_render_splashes:end -->

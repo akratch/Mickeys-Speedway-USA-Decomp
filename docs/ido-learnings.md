@@ -1789,6 +1789,22 @@ bytes and disassembly never belong here.
   `ugen` is unaffected, and the listing must be re-derived after every source
   edit.
 
+- **An independent assignment that uopt leaves as its own statement can fill
+  the preceding call's delay slot.** as1 takes a later instruction that does
+  not use the call's result and places it in the `jal` delay slot. When the
+  target's delay slot is the argument copy, that assignment has to stop being
+  a free statement. Write it in the following loop's for-init, before the
+  induction (`for (sum = 0, k = 0; ...)`), so it stays in the induction
+  sequence and the delay slot keeps the argument setup. The reversed order
+  (`k = 0, sum = 0`) makes the assignment the last init expression, and as1
+  schedules it into the delay slot again. Limits: nesting the assignment in
+  the guarding if, wrapping the call or the assignment in a region, and
+  folding it into a pointer leave the statement free or change the value.
+  An inherited `-Wo,-loopunroll,0` is checklist item 11, a separate
+  measurement, and does not by itself move a delay-slot residual. Evidence:
+  the matched overlay 1 rank function in
+  `src/overlays/o001/func_overlay_001_F0002B4C_184EF2C.c`.
+
 - **A promotion must preserve the physical line count, or it moves the next
   function.** Removing a `#ifdef NON_MATCHING` guard deletes four lines and
   rewriting the plateau comment above it usually deletes more; every function

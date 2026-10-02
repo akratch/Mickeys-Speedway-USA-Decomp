@@ -371,6 +371,18 @@ order of how often they decided a match:
     registers until a dead read of the second element, placed before the
     compare, entered it into the table first; the compiler deletes the
     read and keeps the order (track.c func_8001398C, 45 -> 11).
+22. **An independent assignment after a call can fill that call's jal
+    delay slot.** uopt leaves the assignment as its own statement, and
+    as1 schedules it into the delay slot when it does not use the call's
+    result. Write it in the following loop's for-init, ahead of the
+    induction (`for (sum = 0, k = 0; ...)`), so it stays with the
+    induction and the delay slot keeps the argument copy. The reversed
+    comma makes the assignment the last init expression and it returns
+    to the delay slot. Nesting it in the guarding if, wrapping the call
+    or the assignment in a region, and folding it into the pointer do
+    not hold it there. This is statement placement. Checklist item 11,
+    the inherited unroll cap, is a separate measurement and is not this
+    lever.
 
 ### Promotion traps (each cost a lane a cycle on 2026-10-01)
 

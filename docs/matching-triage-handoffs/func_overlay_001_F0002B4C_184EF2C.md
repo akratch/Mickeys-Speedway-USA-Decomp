@@ -2,11 +2,15 @@
 ### `func_overlay_001_F0002B4C_184EF2C` plateau handoff
 
 - source: `src/overlays/o001/func_overlay_001_F0002B4C_184EF2C.c`
-- score: 6/451 words
+- score: 0/451 words, promoted
 - frame: 0xB0
-- relocations: 63
-- first mismatch: +0x60C
-- summary: Per-region locals (other/otherState, prev, k, swap first): 186 to 6; open: sum = 0 lands in the bottom jal delay slot instead of the a0 copy.
+- relocations: 68
+- first mismatch: none
+- summary: Matched. for (sum = 0, k = 0) keeps the zero with the induction init, so the func_80005820 delay slot is the argument copy. Reversed comma is 2 words. The loopunroll override was not load-bearing.
+
+## 2026-10-02 (lane w6-o001b): matched, 6 to 0
+
+Deleting `-Wo,-loopunroll,0` left the same 6 masked words at size delta 0, first mismatch +0x60C, so the six head spellings already called flat were not repeated. Nesting `sum = 0` in the rank test, wrapping the call in a do/while or if region, and folding the zero into the pointer expression were byte-identical to that baseline or worse (the region forms scored 9). The adopted spelling deletes the separate `sum = 0` and writes `for (sum = 0, k = 0; k < state->lap; k++)`. Promotion proof: 451 words, frame 0xB0, 68 relocations, identity static. Resident calls are renamed on this object's POSTPROCESS.
 
 Summary before this remeasure: Listing rewrite in while(i--) shape with per-site identities: 433 to 186 masked, size -16 to 0, frame exact; temp ring offset from +0xE4 open.
 

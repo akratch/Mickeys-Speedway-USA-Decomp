@@ -1831,13 +1831,13 @@
       "tu": "overlays/o001",
       "size_bytes": 2288,
       "objdiff_match_pct": null,
-      "differing_words": 491,
+      "differing_words": 490,
       "first_mismatch_offset": 52,
-      "relocation_masked_differing_words": 470,
+      "relocation_masked_differing_words": 469,
       "relocation_masked_first_mismatch_offset": 52,
-      "size_delta": -92,
+      "size_delta": -52,
       "category": "size-mismatch",
-      "source_context_sha256": "ubVe.Dgpy.E33w.m9eg.FEc7.L8PR.n-oT.K8wS.sWMn.KBPl.At4"
+      "source_context_sha256": "cREK.m4sp.A6YR.GNQG.Z_le.rToD.Ph--.nJC6.61C_.-9Ml.Gs8"
     },
     {
       "name": "func_overlay_061_F0000B84_18BFF4C",

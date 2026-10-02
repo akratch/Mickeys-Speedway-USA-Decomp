@@ -303,12 +303,10 @@ extern f32 func_overlay_001_F0000F84_184D364(
     f32 x0, f32 y0, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3,
     s32 scale);
 
-/* Plateau reproof (2026-08-31): configured V0 remains 0x5C bytes short,
- * differs in 470/572 masked positional words, and first diverges at +0x34.
- * Correcting the packed link width and metric-window layout reduces aligned
- * constant differences by eight, but local-data ownership still emits 114
- * candidate relocations against the target's 32. Consolidate that owner
- * before further source-level scheduling work. */
+/* Plateau reproof (2026-10-02): 469 masked words, 52 bytes short, frame 0xD8,
+ * first mismatch +0x34, 114 relocations. One BSS owner for 0x1BA0..0x1DCC
+ * shortened the function further and was reverted. The adopted spelling
+ * writes each cleared group field through D_1BA0[index]. */
 #ifdef NON_MATCHING
 void overlay1LoadBuildRecords(void) {
     Overlay1PackedRecord *records;
@@ -389,16 +387,14 @@ void overlay1LoadBuildRecords(void) {
 
         index = D_1D80 - 1;
         if (D_1D80 != 0) {
-            group = &D_1BA0[index];
             do {
-                group->points = NULL;
-                group->count = 0;
-                group->previous = NULL;
-                group->next = NULL;
-                group->selector = 0;
-                group->field14 = 0;
-                group->field18 = 0;
-                group--;
+                D_1BA0[index].points = NULL;
+                D_1BA0[index].count = 0;
+                D_1BA0[index].previous = NULL;
+                D_1BA0[index].next = NULL;
+                D_1BA0[index].selector = 0;
+                D_1BA0[index].field14 = 0;
+                D_1BA0[index].field18 = 0;
             } while (index-- != 0);
         }
 
@@ -814,10 +810,10 @@ void overlay1CallReset(void) {
 
 /* PLATEAU-HANDOFF:overlay1LoadBuildRecords:start
  * symbol: overlay1LoadBuildRecords
- * score: 470 differing words
+ * score: 469 differing words
  * frame: 0xD8
  * relocations: 114
  * first-mismatch: +0x34
- * summary: Exact frame; 23 words short. Local-data ownership creates 114 candidate versus 32 target relocations; consolidate the owner before further source matching.
+ * summary: Exact frame; 13 words short. Per-field group clear adopted. One BSS owner and a null-base 0x94 length do not close the rest.
  * PLATEAU-HANDOFF:overlay1LoadBuildRecords:end
  */

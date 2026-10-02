@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 134,
-  "resolved": 134,
+  "queue_size": 133,
+  "resolved": 133,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 134,
-  "relocation_masked_coverage": 134,
+  "source_context_coverage": 133,
+  "relocation_masked_coverage": 133,
   "functions": [
     {
       "name": "func_80019AB8",
@@ -173,21 +173,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "gcTk.0x-C.jBPg.2gvl.wZzx.OEzX.i2US.zSl1.sMW7.Anmx.mpg"
-    },
-    {
-      "name": "overlay101TailA6BC",
-      "file": "src/overlays/o101/overlay101TailA6BC.c",
-      "overlay": 101,
-      "tu": "overlays/o101",
-      "size_bytes": 1168,
-      "objdiff_match_pct": null,
-      "differing_words": 57,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 53,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "3leT.G6fO.Wr_k.8OM3.eWHs.lh0F.PRQ_.wzWs.ZagB.BOVJ.W4U"
     },
     {
       "name": "overlay40BuildFrame",

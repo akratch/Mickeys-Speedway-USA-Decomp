@@ -94,12 +94,6 @@ typedef struct AnimCameraTarget {
 typedef struct AnimLightReset {
     s32 unk0;
     u8 pad4[0xC];
-    s32 unk10;
-    u8 pad14[0xC];
-    s32 unk20;
-    u8 pad24[0xC];
-    s32 unk30;
-    u8 pad34[0xC];
 } AnimLightReset;
 
 typedef struct AnimScrollReset {
@@ -196,7 +190,7 @@ extern void *D_800D6B18[16];
 extern AnimScrollReset D_800D6B58[8];
 extern AnimLockonReset D_800D6BF8[8];
 extern AnimLockonReset D_800D6C38[];
-extern AnimLightReset D_800D6C58[3];
+extern AnimLightReset D_800D6C58[12];
 
 typedef struct AnimPauseSlot {
     s16 unk0;

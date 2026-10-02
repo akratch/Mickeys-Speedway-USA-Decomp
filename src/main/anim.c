@@ -475,6 +475,7 @@ void func_80050AD4(u8 pathIndex) {
 void func_80050BF4(void)
 {
   s32 emptyIndex;
+  s32 i;
   s32 offset;
   int new_var;
   u8 *cursor;
@@ -490,7 +491,7 @@ void func_80050BF4(void)
   }
   while (((u32) cursor) < ((u32) D_800D6C38));
   D_8007D6B0 = 0;
- cursor = (u8 *) D_800D6C58; do { cursor += 0x40; *((s32 *) (cursor - 0x40)) = 0; *((s32 *) (cursor - 0x30)) = 0; *((s32 *) (cursor - 0x20)) = 0; *((s32 *) (cursor - 0x10)) = 0; } while (cursor != ((u8 *) D_800D6D18)); D_800D6C3E = 0; D_800D6C44 = 0;
+ for (i = 0; i < 12; i++) { D_800D6C58[i].unk0 = 0; } D_800D6C3E = 0; D_800D6C44 = 0;
   D_800D6C48 = 0;
   D_800D6C52 = 0xFF;
   D_800D6C54 = D_800D6C52;
@@ -553,6 +554,7 @@ void func_80050DF0(s32 levelId) {
  */
 void func_80050E9C(void) {
     s32 emptyIndex;
+    s32 i;
     u8 *cursor;
     AnimScrollReset *scroll;
     AnimLockonReset *lockon;
@@ -593,13 +595,7 @@ void func_80050E9C(void) {
         } while ((u32) cursor < (u32) D_800D6C38);
 
         D_8007D6B0 = 0;
-        cursor = (u8 *) D_800D6C58; do {
-            cursor += 0x40;
-            *(s32 *) (cursor - 0x40) = 0;
-            *(s32 *) (cursor - 0x30) = 0;
-            *(s32 *) (cursor - 0x20) = 0;
-            *(s32 *) (cursor - 0x10) = 0;
-        } while (cursor != (u8 *) D_800D6D18);
+        for (i = 0; i < 12; i++) { D_800D6C58[i].unk0 = 0; }
 
         D_800D6C3E = (pathIndex < 0x100) * 0;
         D_800D6C44 = 0;
@@ -775,15 +771,18 @@ extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
  * globals, sound-object offset, and final compiler output are independently
  * established from Mickey's ROM.
  *
- * 33 masked words at size delta 0 and the target's 0x40 frame (2026-10-02,
- * lane n-anim), rewritten as plain C: early returns, literal time scales,
- * indexed path loops, no state-address carrier. The NTSC duration scale
- * reads a copy of the duration taken before the branch and multiplies it in
- * place in two statements (`*= 3`, then `* 2 / 10`); that is what keeps
- * the copy move and the PAL arm's direct shift. `D_8007D69C++` re-reads the
- * cursor global. The two unused leading locals give originalRate its 0x34
- * home. Remaining: command and the clock read trade a0/a1, and the
- * sound-handle test loads straight into a0 where the target uses v0.
+ * 22 masked words at size delta 0 and the target's 0x40 frame (2026-10-02,
+ * lanes n-anim and o-anim2), plain C: early returns, literal time scales,
+ * indexed path loops, no state-address carrier. The NTSC scale is one
+ * expression, `* 3 * 2 / 10`: IDO expands the folded *6 in one register,
+ * as the target does. The state store precedes the cursor increment (that
+ * is the target's draw order for the two values as1 hoists above the
+ * compare), and the clock float re-reads the stored global. `D_8007D69C++`
+ * re-reads the cursor global; the two unused leading locals give
+ * originalRate its 0x34 home. Remaining: command/clock and their two
+ * address webs rank the wrong way (16 words; forcing all four colours
+ * leaves 6), the two stores issue in source order, the new-clock add takes
+ * its operands swapped, and the sound-handle test loads into a0, not v0.
  * Retain NON_MATCHING. */
 #ifdef NON_MATCHING
 void func_80051364(s32 updateRate) {
@@ -823,12 +822,11 @@ void func_80051364(s32 updateRate) {
             if (osTvType == 0) {
                 adjustedRate >>= 1;
             } else {
-                adjustedRate *= 3;
-                adjustedRate = (adjustedRate * 2) / 10;
+                adjustedRate = adjustedRate * 3 * 2 / 10;
             }
             updateRate = adjustedRate - D_8007D6A8;
-            D_8007D69C++;
             D_8007D6A4 = (s8) cmdWord;
+            D_8007D69C++;
             if (D_8007D6A4 == 0) {
                 originalRate = updateRate;
             }
@@ -851,7 +849,7 @@ void func_80051364(s32 updateRate) {
         }
     }
     D_8007D6A8 = newClock;
-    D_8007D6AC = (f32) (u32) newClock * timeScale;
+    D_8007D6AC = D_8007D6A8 * timeScale;
     for (i = 0; i < 256; i++) {
         path = D_800D6B00[i];
         if (path != NULL && (path->flags & 5)) {
@@ -2167,8 +2165,13 @@ void func_800573C8(HitOverlapState *state, HitOverlapVolume *other,
  */
 #ifdef NON_MATCHING
 /* NON_MATCHING: collision-update reconstruction; Mickey-only field/ABI audit.
- * Reuse phase-local scratch values and order stack homes from the target
- * accesses. The vector result carrier preserves the repeated float dataflow. */
+ * 710 masked words at size delta 0 and the target's 0xF8 frame (2026-10-02,
+ * lane o-anim2). Every loop is a plain counted `for` over the object and
+ * pair arrays: the target's remainder-then-four-way copies are IDO's default
+ * unroller, which anim.c now compiles with (the TU's former
+ * -Wo,-loopunroll,0 hid them, and the hand-unrolled copies written under it
+ * were 240 bytes short). Left: allocation; the homes from offset[] down sit
+ * one to two words above the target's. */
 void func_80053868(s32 updateRate) {
     f32 remainingTime;
     f32 fraction;
@@ -2176,11 +2179,9 @@ void func_80053868(s32 updateRate) {
     f32 high;
     f32 extent;
     Func538Pair *selectedPair;
-    Func538Pair *pairCursor;
     Func538Vertex *vertex;
     f32 offset[3];
     Func538Object **otherCursor;
-    Func538Object **movingCursor;
     Func538Object *firstObject;
     Func538Object *secondObject;
     Func538Shape *firstShape;
@@ -2196,7 +2197,6 @@ void func_80053868(s32 updateRate) {
     s32 i;
     s32 j;
     s32 axis;
-    s32 remainder;
     s32 result;
     s16 firstKind;
     s16 secondKind;
@@ -2207,380 +2207,195 @@ void func_80053868(s32 updateRate) {
     otherCursor = func_8000572C(&firstIndex, &objectCount);
     fixedCount = 0;
     movingCount = 0;
-    i = firstIndex;
-    if (firstIndex < objectCount) {
-        movingCursor = &otherCursor[firstIndex];
-        do {
-            firstObject = *movingCursor;
-            firstShape = firstObject->unk48;
-            if ((firstObject->unk91 == 0) && (firstShape != NULL)) {
+    for (i = firstIndex; i < objectCount; i++) {
+        firstObject = otherCursor[i];
+        firstShape = firstObject->unk48;
+        if ((firstObject->unk91 == 0) && (firstShape != NULL)) {
+            kind = firstShape->unk9;
+            if ((kind == 2) || (kind == 1)) {
+                if (firstShape->unk60 != -1) {
+                    firstShape->previous[0] = firstShape->position[0];
+                    firstShape->previous[1] = firstShape->position[1];
+                    vertex = firstObject->unk68[firstObject->unk3A]->unk40 + firstShape->unk60;
+                    firstShape->previous[2] = firstShape->position[2];
+                    firstShape->position[0] = vertex->unk0;
+                    firstShape->position[1] = vertex->unk4;
+                    firstShape->position[2] = vertex->unk8;
+                } else {
+                    firstShape->previous[0] = firstShape->position[0];
+                    firstShape->previous[1] = firstShape->position[1];
+                    firstShape->previous[2] = firstShape->position[2];
+                    firstShape->position[0] = firstObject->unkC;
+                    firstShape->position[1] = firstObject->unk10;
+                    firstShape->position[2] = firstObject->unk14;
+                    if ((firstShape->unk0 | firstShape->unk2 | firstShape->unk4) != 0) {
+                        offset[0] = firstShape->unkC;
+                        offset[1] = firstShape->unk10;
+                        offset[2] = firstShape->unk14;
+                        mathOneFloatRPY((ControlTransform *) firstObject, &offset[0]);
+                        firstShape->position[0] += offset[0];
+                        firstShape->position[1] += offset[1];
+                        firstShape->position[2] += offset[2];
+                    }
+                    firstShape->position[1] += firstShape->unk54;
+                }
                 kind = firstShape->unk9;
-                if ((kind == 2) || (kind == 1)) {
-                    if (firstShape->unk60 != -1) {
-                        firstShape->previous[0] = firstShape->position[0];
-                        firstShape->previous[1] = firstShape->position[1];
-                        vertex = firstObject->unk68[firstObject->unk3A]->unk40 + firstShape->unk60;
-                        firstShape->previous[2] = firstShape->position[2];
-                        firstShape->position[0] = vertex->unk0;
-                        firstShape->position[1] = vertex->unk4;
-                        firstShape->position[2] = vertex->unk8;
-                    } else {
-                        firstShape->previous[0] = firstShape->position[0];
-                        firstShape->previous[1] = firstShape->position[1];
-                        firstShape->previous[2] = firstShape->position[2];
-                        firstShape->position[0] = firstObject->unkC;
-                        firstShape->position[1] = firstObject->unk10;
-                        firstShape->position[2] = firstObject->unk14;
-                        if ((firstShape->unk0 | firstShape->unk2 | firstShape->unk4) != 0) {
-                            offset[0] = firstShape->unkC;
-                            offset[1] = firstShape->unk10;
-                            offset[2] = firstShape->unk14;
-                            mathOneFloatRPY((ControlTransform *) firstObject, &offset[0]);
-                            firstShape->position[0] += offset[0];
-                            firstShape->position[1] += offset[1];
-                            firstShape->position[2] += offset[2];
+                if (kind == 2) {
+                    extent = firstShape->unk58 + 5.0f;
+                    for (axis = 0; axis < 3; axis++) {
+                        low = firstShape->previous[axis];
+                        high = firstShape->position[axis];
+                        if (low < high) {
+                            firstShape->minimum[axis] = low;
+                            firstShape->maximum[axis] = high;
+                        } else {
+                            firstShape->minimum[axis] = high;
+                            firstShape->maximum[axis] = low;
                         }
-                        firstShape->position[1] += firstShape->unk54;
+                        firstShape->minimum[axis] -= extent;
+                        firstShape->maximum[axis] += extent;
                     }
-                    kind = firstShape->unk9;
-                    if (kind == 2) {
-                        extent = firstShape->unk58 + 5.0f;
-                        for (axis = 0; axis < 3; axis++) {
-                            low = firstShape->previous[axis];
-                            high = firstShape->position[axis];
-                            if (low < high) {
-                                firstShape->minimum[axis] = low;
-                                firstShape->maximum[axis] = high;
-                            } else {
-                                firstShape->minimum[axis] = high;
-                                firstShape->maximum[axis] = low;
-                            }
-                            firstShape->minimum[axis] -= extent;
-                            firstShape->maximum[axis] += extent;
-                        }
-                    } else if (kind == 1) {
-                        low = firstShape->position[0];
-                        fraction = firstShape->position[2];
-                        extent = firstShape->unk58 + 5.0f;
-                        high = firstShape->position[1];
-                        firstShape->minimum[0] = (low - extent);
-                        firstShape->maximum[0] = (low + extent);
-                        firstShape->minimum[2] = (fraction - extent);
-                        firstShape->maximum[2] = (fraction + extent);
-                        extent = firstShape->unk5C + 5.0f;
-                        firstShape->minimum[1] = (high - extent);
-                        firstShape->maximum[1] = (high + extent);
-                    }
+                } else if (kind == 1) {
+                    low = firstShape->position[0];
+                    fraction = firstShape->position[2];
+                    extent = firstShape->unk58 + 5.0f;
+                    high = firstShape->position[1];
+                    firstShape->minimum[0] = (low - extent);
+                    firstShape->maximum[0] = (low + extent);
+                    firstShape->minimum[2] = (fraction - extent);
+                    firstShape->maximum[2] = (fraction + extent);
+                    extent = firstShape->unk5C + 5.0f;
+                    firstShape->minimum[1] = (high - extent);
+                    firstShape->maximum[1] = (high + extent);
                 }
-                if (firstShape->unk6 & 1) {
-                    kind = firstShape->unk9;
-                    if (((kind == 0) || (kind == 1)) && (fixedCount < 0x100)) {
-                        D_800D6D60[fixedCount] = firstObject;
-                        fixedCount += 1;
-                    } else if ((kind == 2) && (movingCount < 0x100)) {
-                        D_800D7160[movingCount] = firstObject;
-                        movingCount += 1;
-                    }
-                }
-                firstShape->unk61 = 0;
-                firstShape->unk62 = 0;
-                firstShape->unk63 = 0;
-                firstShape->unk64 = 0.0f;
             }
-            i += 1;
-            movingCursor++;
-        } while (i < objectCount);
+            if (firstShape->unk6 & 1) {
+                kind = firstShape->unk9;
+                if (((kind == 0) || (kind == 1)) && (fixedCount < 0x100)) {
+                    D_800D6D60[fixedCount] = firstObject;
+                    fixedCount += 1;
+                } else if ((kind == 2) && (movingCount < 0x100)) {
+                    D_800D7160[movingCount] = firstObject;
+                    movingCount += 1;
+                }
+            }
+            firstShape->unk61 = 0;
+            firstShape->unk62 = 0;
+            firstShape->unk63 = 0;
+            firstShape->unk64 = 0.0f;
+        }
     }
     iteration = 0;
     while (remainingTime > 0.0f) {
         fraction = 1.0f;
         pairCount = 0;
-        i = 0;
         pairIndex = -1;
-        if (movingCount > 0) {
-            movingCursor = D_800D7160;
-            do {
-                firstShape = (*movingCursor)->unk48;
-                firstShape->displacement[0] = firstShape->position[0] - firstShape->previous[0];
-                firstShape->displacement[1] = firstShape->position[1] - firstShape->previous[1];
-                firstShape->displacement[2] = firstShape->position[2] - firstShape->previous[2];
-                extent = firstShape->unk58 + 5.0f;
-                for (axis = 0; axis < 3; axis++) {
-                    low = firstShape->previous[axis];
-                    high = firstShape->position[axis];
-                    if (low < high) {
-                        firstShape->minimum[axis] = low;
-                        firstShape->maximum[axis] = high;
-                    } else {
-                        firstShape->minimum[axis] = high;
-                        firstShape->maximum[axis] = low;
-                    }
-                    firstShape->minimum[axis] -= extent;
-                    firstShape->maximum[axis] += extent;
+        for (i = 0; i < movingCount; i++) {
+            firstShape = D_800D7160[i]->unk48;
+            firstShape->displacement[0] = firstShape->position[0] - firstShape->previous[0];
+            firstShape->displacement[1] = firstShape->position[1] - firstShape->previous[1];
+            firstShape->displacement[2] = firstShape->position[2] - firstShape->previous[2];
+            extent = firstShape->unk58 + 5.0f;
+            for (axis = 0; axis < 3; axis++) {
+                low = firstShape->previous[axis];
+                high = firstShape->position[axis];
+                if (low < high) {
+                    firstShape->minimum[axis] = low;
+                    firstShape->maximum[axis] = high;
+                } else {
+                    firstShape->minimum[axis] = high;
+                    firstShape->maximum[axis] = low;
                 }
-                i += 1;
-                movingCursor++;
-            } while (i != movingCount);
-            i = 0;
+                firstShape->minimum[axis] -= extent;
+                firstShape->maximum[axis] += extent;
+            }
         }
-        movingCursor = D_800D7160;
-        if (movingCount > 0) {
-            do {
-                firstObject = *movingCursor;
-                j = 0;
-                firstShape = firstObject->unk48;
-                if (fixedCount > 0) {
-                    otherCursor = D_800D6D60;
-                    do {
-                        secondObject = *otherCursor;
-                        secondShape = secondObject->unk48;
-                        if ((firstShape->unk6 & 1) && (secondShape->unk6 & 1) && (secondObject != firstShape->unk70)) {
-                            if (firstObject != secondShape->unk70) {
-                                axis = 0;
-                                overlaps = 1;
-                                do {
-                                    high = firstShape->minimum[axis];
-                                    low = secondShape->minimum[axis];
-                                    if ((high < low) && (firstShape->maximum[axis] < low)) {
-                                        overlaps = 0;
-                                    } else {
-                                        low = secondShape->maximum[axis];
-                                        if ((low < high) && (low < firstShape->maximum[axis])) {
-                                            overlaps = 0;
-                                        }
-                                    }
-                                    axis++;
-                                } while ((axis < 3) && overlaps);
-                                if (overlaps != 0) {
-                                    result = func_800563B4((s32) firstObject, (AnimCollisionShape *) firstShape, (s32) secondObject, (AnimCollisionShape *) secondShape, (AnimCollisionResult *) FUNC538_PAIR(pairCount));
-                                    if ((result == 0) && (secondShape->unk9 == 1)) {
-                                        func_800573C8((HitOverlapState *) firstObject, (HitOverlapVolume *) firstShape, (HitOverlapState *) secondObject, (HitOverlapVolume *) secondShape);
-                                    } else if (result == 1) {
-                                        if (pairCount < 0xF) {
-                                            pairCount += 1;
-                                        }
-                                    } else if (result == 2) {
-                                        firstKind = firstObject->unk44;
-                                        if (firstKind == 0x40U) {
-                                            TrapDanglingJump(firstObject, 1);
-                                        } else if (firstKind == 0x39U) {
-                                            TrapDanglingJump(firstObject, 5);
-                                        } else if (firstKind == 0x3AU) {
-                                            TrapDanglingJump(firstObject, 5);
-                                        }
-                                    }
+        for (i = 0; i < movingCount; i++) {
+            firstObject = D_800D7160[i];
+            firstShape = firstObject->unk48;
+            for (j = 0; j < fixedCount; j++) {
+                secondObject = D_800D6D60[j];
+                secondShape = secondObject->unk48;
+                if ((firstShape->unk6 & 1) && (secondShape->unk6 & 1) && (secondObject != firstShape->unk70)) {
+                    if (firstObject != secondShape->unk70) {
+                        axis = 0;
+                        overlaps = 1;
+                        do {
+                            high = firstShape->minimum[axis];
+                            low = secondShape->minimum[axis];
+                            if ((high < low) && (firstShape->maximum[axis] < low)) {
+                                overlaps = 0;
+                            } else {
+                                low = secondShape->maximum[axis];
+                                if ((low < high) && (low < firstShape->maximum[axis])) {
+                                    overlaps = 0;
                                 }
                             }
-                        }
-                        j += 1;
-                        otherCursor++;
-                    } while (j != fixedCount);
-                }
-                j = i + 1;
-                if (j < movingCount) {
-                    otherCursor = &D_800D7160[j];
-                    do {
-                        secondObject = *otherCursor;
-                        secondShape = secondObject->unk48;
-                        if ((firstShape->unk6 & 1) && (secondShape->unk6 & 1) && (secondObject != firstShape->unk70)) {
-                            if (firstObject != secondShape->unk70) {
-                                axis = 0;
-                                overlaps = 1;
-                                do {
-                                    high = firstShape->minimum[axis];
-                                    low = secondShape->minimum[axis];
-                                    if ((high < low) && (firstShape->maximum[axis] < low)) {
-                                        overlaps = 0;
-                                    } else {
-                                        low = secondShape->maximum[axis];
-                                        if ((low < high) && (low < firstShape->maximum[axis])) {
-                                            overlaps = 0;
-                                        }
-                                    }
-                                    axis++;
-                                } while ((axis < 3) && overlaps);
-                                if ((overlaps != 0) && (func_80054B3C((s32) firstObject, (AnimCollisionShape *) firstShape, (s32) secondObject, (AnimCollisionShape *) secondShape, (AnimCollisionResult *) FUNC538_PAIR(pairCount)) != 0) && (pairCount < 0xF)) {
+                            axis++;
+                        } while ((axis < 3) && overlaps);
+                        if (overlaps != 0) {
+                            result = func_800563B4((s32) firstObject, (AnimCollisionShape *) firstShape, (s32) secondObject, (AnimCollisionShape *) secondShape, (AnimCollisionResult *) FUNC538_PAIR(pairCount));
+                            if ((result == 0) && (secondShape->unk9 == 1)) {
+                                func_800573C8((HitOverlapState *) firstObject, (HitOverlapVolume *) firstShape, (HitOverlapState *) secondObject, (HitOverlapVolume *) secondShape);
+                            } else if (result == 1) {
+                                if (pairCount < 0xF) {
                                     pairCount += 1;
                                 }
+                            } else if (result == 2) {
+                                firstKind = firstObject->unk44;
+                                if (firstKind == 0x40U) {
+                                    TrapDanglingJump(firstObject, 1);
+                                } else if (firstKind == 0x39U) {
+                                    TrapDanglingJump(firstObject, 5);
+                                } else if (firstKind == 0x3AU) {
+                                    TrapDanglingJump(firstObject, 5);
+                                }
                             }
                         }
-                        j += 1;
-                        otherCursor++;
-                    } while (j != movingCount);
+                    }
                 }
-                i++;
-                movingCursor++;
-            } while (i != movingCount);
-            i = 0;
-        }
-        if (pairCount > 0) {
-            remainder = pairCount & 3;
-            if (remainder != 0) {
-                pairCursor = FUNC538_PAIR(i);
-                do {
-                    low = pairCursor->fraction;
-                    if (low <= fraction) {
-                        fraction = low;
-                        pairIndex = i;
-                    }
-                    i += 1;
-                    pairCursor++;
-                } while (i != remainder);
             }
-            if (i < pairCount) {
-                pairCursor = FUNC538_PAIR(i);
-                do {
-                    low = pairCursor->fraction;
-                    if (low <= fraction) {
-                        fraction = low;
-                        pairIndex = i;
+            for (j = i + 1; j < movingCount; j++) {
+                secondObject = D_800D7160[j];
+                secondShape = secondObject->unk48;
+                if ((firstShape->unk6 & 1) && (secondShape->unk6 & 1) && (secondObject != firstShape->unk70)) {
+                    if (firstObject != secondShape->unk70) {
+                        axis = 0;
+                        overlaps = 1;
+                        do {
+                            high = firstShape->minimum[axis];
+                            low = secondShape->minimum[axis];
+                            if ((high < low) && (firstShape->maximum[axis] < low)) {
+                                overlaps = 0;
+                            } else {
+                                low = secondShape->maximum[axis];
+                                if ((low < high) && (low < firstShape->maximum[axis])) {
+                                    overlaps = 0;
+                                }
+                            }
+                            axis++;
+                        } while ((axis < 3) && overlaps);
+                        if ((overlaps != 0) && (func_80054B3C((s32) firstObject, (AnimCollisionShape *) firstShape, (s32) secondObject, (AnimCollisionShape *) secondShape, (AnimCollisionResult *) FUNC538_PAIR(pairCount)) != 0) && (pairCount < 0xF)) {
+                            pairCount += 1;
+                        }
                     }
-                    if (pairCursor[1].fraction <= fraction) {
-                        fraction = pairCursor[1].fraction;
-                        pairIndex = i + 1;
-                    }
-                    if (pairCursor[2].fraction <= fraction) {
-                        fraction = pairCursor[2].fraction;
-                        pairIndex = i + 2;
-                    }
-                    if (pairCursor[3].fraction <= fraction) {
-                        fraction = pairCursor[3].fraction;
-                        pairIndex = i + 3;
-                    }
-                    i += 4;
-                    pairCursor += 4;
-                } while (i != pairCount);
+                }
+            }
+        }
+        for (i = 0; i < pairCount; i++) {
+            if (D_800D7560[i].fraction <= fraction) {
+                fraction = D_800D7560[i].fraction;
+                pairIndex = i;
             }
         }
         if (pairIndex != -1) {
             selectedPair = FUNC538_PAIR(pairIndex);
-            i = 0;
-            remainder = movingCount & 3;
             remainingTime *= 1.0f - selectedPair->fraction;
-            if (movingCount > 0) {
-                if (remainder != 0) {
-                    movingCursor = &D_800D7160[i];
-                    i++;
-                    firstObject = *movingCursor;
-                    if (i < remainder) {
-                        do {
-                            firstShape = firstObject->unk48;
-                            i += 1;
-                            movingCursor++;
-                            fraction = firstShape->displacement[0] * selectedPair->fraction;
-                            fraction = firstShape->previous[0] + fraction;
-                            firstShape->previous[0] = fraction;
-                            fraction = firstShape->displacement[1] * selectedPair->fraction;
-                            fraction = firstShape->previous[1] + fraction;
-                            firstShape->previous[1] = fraction;
-                            fraction = firstShape->displacement[2] * selectedPair->fraction;
-                            fraction = firstShape->previous[2] + fraction;
-                            firstShape->previous[2] = fraction;
-                            firstObject = *movingCursor;
-                        } while (i != remainder);
-                    }
-                    firstShape = firstObject->unk48;
-                    fraction = firstShape->displacement[0] * selectedPair->fraction;
-                    fraction = firstShape->previous[0] + fraction;
-                    firstShape->previous[0] = fraction;
-                    fraction = firstShape->displacement[1] * selectedPair->fraction;
-                    fraction = firstShape->previous[1] + fraction;
-                    firstShape->previous[1] = fraction;
-                    fraction = firstShape->displacement[2] * selectedPair->fraction;
-                    fraction = firstShape->previous[2] + fraction;
-                    firstShape->previous[2] = fraction;
-                }
-                if (i < movingCount) {
-                    otherCursor = &D_800D7160[movingCount];
-                    movingCursor = &D_800D7160[i + 4];
-                    firstObject = movingCursor[-4];
-                    if (movingCursor != otherCursor) {
-                        do {
-                            firstShape = firstObject->unk48;
-                            movingCursor += 4;
-                            fraction = firstShape->displacement[0] * selectedPair->fraction;
-                            fraction = firstShape->previous[0] + fraction;
-                            firstShape->previous[0] = fraction;
-                            fraction = firstShape->displacement[1] * selectedPair->fraction;
-                            fraction = firstShape->previous[1] + fraction;
-                            firstShape->previous[1] = fraction;
-                            fraction = firstShape->displacement[2] * selectedPair->fraction;
-                            fraction = firstShape->previous[2] + fraction;
-                            firstShape->previous[2] = fraction;
-                            firstShape = movingCursor[-7]->unk48;
-                            fraction = firstShape->displacement[0] * selectedPair->fraction;
-                            fraction = firstShape->previous[0] + fraction;
-                            firstShape->previous[0] = fraction;
-                            fraction = firstShape->displacement[1] * selectedPair->fraction;
-                            fraction = firstShape->previous[1] + fraction;
-                            firstShape->previous[1] = fraction;
-                            fraction = firstShape->displacement[2] * selectedPair->fraction;
-                            fraction = firstShape->previous[2] + fraction;
-                            firstShape->previous[2] = fraction;
-                            firstShape = movingCursor[-6]->unk48;
-                            fraction = firstShape->displacement[0] * selectedPair->fraction;
-                            fraction = firstShape->previous[0] + fraction;
-                            firstShape->previous[0] = fraction;
-                            fraction = firstShape->displacement[1] * selectedPair->fraction;
-                            fraction = firstShape->previous[1] + fraction;
-                            firstShape->previous[1] = fraction;
-                            fraction = firstShape->displacement[2] * selectedPair->fraction;
-                            fraction = firstShape->previous[2] + fraction;
-                            firstShape->previous[2] = fraction;
-                            firstShape = movingCursor[-5]->unk48;
-                            fraction = firstShape->displacement[0] * selectedPair->fraction;
-                            fraction = firstShape->previous[0] + fraction;
-                            firstShape->previous[0] = fraction;
-                            fraction = firstShape->displacement[1] * selectedPair->fraction;
-                            fraction = firstShape->previous[1] + fraction;
-                            firstShape->previous[1] = fraction;
-                            fraction = firstShape->displacement[2] * selectedPair->fraction;
-                            fraction = firstShape->previous[2] + fraction;
-                            firstShape->previous[2] = fraction;
-                            firstObject = movingCursor[-4];
-                        } while (movingCursor != otherCursor);
-                    }
-                    firstShape = firstObject->unk48;
-                    fraction = firstShape->displacement[0] * selectedPair->fraction;
-                    fraction = firstShape->previous[0] + fraction;
-                    firstShape->previous[0] = fraction;
-                    fraction = firstShape->displacement[1] * selectedPair->fraction;
-                    fraction = firstShape->previous[1] + fraction;
-                    firstShape->previous[1] = fraction;
-                    fraction = firstShape->displacement[2] * selectedPair->fraction;
-                    fraction = firstShape->previous[2] + fraction;
-                    firstShape->previous[2] = fraction;
-                    firstShape = movingCursor[-3]->unk48;
-                    fraction = firstShape->displacement[0] * selectedPair->fraction;
-                    fraction = firstShape->previous[0] + fraction;
-                    firstShape->previous[0] = fraction;
-                    fraction = firstShape->displacement[1] * selectedPair->fraction;
-                    fraction = firstShape->previous[1] + fraction;
-                    firstShape->previous[1] = fraction;
-                    fraction = firstShape->displacement[2] * selectedPair->fraction;
-                    fraction = firstShape->previous[2] + fraction;
-                    firstShape->previous[2] = fraction;
-                    firstShape = movingCursor[-2]->unk48;
-                    fraction = firstShape->displacement[0] * selectedPair->fraction;
-                    fraction = firstShape->previous[0] + fraction;
-                    firstShape->previous[0] = fraction;
-                    fraction = firstShape->displacement[1] * selectedPair->fraction;
-                    fraction = firstShape->previous[1] + fraction;
-                    firstShape->previous[1] = fraction;
-                    fraction = firstShape->displacement[2] * selectedPair->fraction;
-                    fraction = firstShape->previous[2] + fraction;
-                    firstShape->previous[2] = fraction;
-                    firstShape = movingCursor[-1]->unk48;
-                    fraction = firstShape->displacement[0] * selectedPair->fraction;
-                    fraction = firstShape->previous[0] + fraction;
-                    firstShape->previous[0] = fraction;
-                    fraction = firstShape->displacement[1] * selectedPair->fraction;
-                    fraction = firstShape->previous[1] + fraction;
-                    firstShape->previous[1] = fraction;
-                    fraction = firstShape->displacement[2] * selectedPair->fraction;
-                    fraction = firstShape->previous[2] + fraction;
-                    firstShape->previous[2] = fraction;
-                }
+            for (i = 0; i < movingCount; i++) {
+                firstShape = D_800D7160[i]->unk48;
+                firstShape->previous[0] += firstShape->displacement[0] * selectedPair->fraction;
+                firstShape->previous[1] += firstShape->displacement[1] * selectedPair->fraction;
+                firstShape->previous[2] += firstShape->displacement[2] * selectedPair->fraction;
             }
             firstObject = selectedPair->first;
             secondObject = selectedPair->second;
@@ -2630,71 +2445,11 @@ void func_80053868(s32 updateRate) {
             }
             iteration++;
             if (iteration >= 0xB) {
-                i = 0;
-                if (movingCount > 0) {
-                    remainder = movingCount & 3;
-                    if (remainder != 0) {
-                        movingCursor = &D_800D7160[i];
-                        i++;
-                        firstObject = *movingCursor;
-                        if (i < remainder) {
-                            do {
-                                firstShape = firstObject->unk48;
-                                i += 1;
-                                movingCursor++;
-                                firstShape->position[0] = firstShape->previous[0];
-                                firstShape->position[1] = firstShape->previous[1];
-                                firstShape->position[2] = firstShape->previous[2];
-                                firstObject = *movingCursor;
-                            } while (i != remainder);
-                        }
-                        firstShape = firstObject->unk48;
-                        firstShape->position[0] = firstShape->previous[0];
-                        firstShape->position[1] = firstShape->previous[1];
-                        firstShape->position[2] = firstShape->previous[2];
-                    }
-                    if (i < movingCount) {
-                        otherCursor = &D_800D7160[movingCount];
-                        movingCursor = &D_800D7160[i + 4];
-                        firstShape = movingCursor[-4]->unk48;
-                        if (movingCursor != otherCursor) {
-                            do {
-                                firstShape->position[0] = firstShape->previous[0];
-                                firstShape->position[1] = firstShape->previous[1];
-                                firstShape->position[2] = firstShape->previous[2];
-                                firstObject = movingCursor[-3];
-                                movingCursor += 4;
-                                firstShape = firstObject->unk48;
-                                firstShape->position[0] = firstShape->previous[0];
-                                firstShape->position[1] = firstShape->previous[1];
-                                firstShape->position[2] = firstShape->previous[2];
-                                firstShape = movingCursor[-6]->unk48;
-                                firstShape->position[0] = firstShape->previous[0];
-                                firstShape->position[1] = firstShape->previous[1];
-                                firstShape->position[2] = firstShape->previous[2];
-                                firstShape = movingCursor[-5]->unk48;
-                                firstShape->position[0] = firstShape->previous[0];
-                                firstShape->position[1] = firstShape->previous[1];
-                                firstShape->position[2] = firstShape->previous[2];
-                                firstShape = movingCursor[-4]->unk48;
-                            } while (movingCursor != otherCursor);
-                        }
-                        firstShape->position[0] = firstShape->previous[0];
-                        firstShape->position[1] = firstShape->previous[1];
-                        firstShape->position[2] = firstShape->previous[2];
-                        firstShape = movingCursor[-3]->unk48;
-                        firstShape->position[0] = firstShape->previous[0];
-                        firstShape->position[1] = firstShape->previous[1];
-                        firstShape->position[2] = firstShape->previous[2];
-                        firstShape = movingCursor[-2]->unk48;
-                        firstShape->position[0] = firstShape->previous[0];
-                        firstShape->position[1] = firstShape->previous[1];
-                        firstShape->position[2] = firstShape->previous[2];
-                        firstShape = movingCursor[-1]->unk48;
-                        firstShape->position[0] = firstShape->previous[0];
-                        firstShape->position[1] = firstShape->previous[1];
-                        firstShape->position[2] = firstShape->previous[2];
-                    }
+                for (i = 0; i < movingCount; i++) {
+                    firstShape = D_800D7160[i]->unk48;
+                    firstShape->position[0] = firstShape->previous[0];
+                    firstShape->position[1] = firstShape->previous[1];
+                    firstShape->position[2] = firstShape->previous[2];
                 }
                 remainingTime = 0.0f;
             }
@@ -4148,11 +3903,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80051364:start
  * symbol: func_80051364
- * score: 33 differing words
+ * score: 22 differing words
  * frame: 0x40
  * relocations: 47
- * first-mismatch: +0x88
- * summary: 92 to 33: plain C rewrite, in-place NTSC scale copy, cursor-global increment. Left: a0/a1 trades (command/clock, clock/D6B4), v0 sound handle
+ * first-mismatch: +0x80
+ * summary: 33 to 22: folded *3*2 NTSC scale, state store before cursor increment, clock float re-reads the global. Left: 4 address/value colour ranks (16)
  * PLATEAU-HANDOFF:func_80051364:end
  */
 
@@ -4179,11 +3934,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80053868:start
  * symbol: func_80053868
- * score: 1169 differing words
+ * score: 710 differing words
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0xC
- * summary: 457 aligned exact words; exact frame; 60 words short. Callback constant force recovers 48 words; vector region remains allocation/peeling.
+ * summary: 1169 at -240 to 710 at size 0: TU unroll cap dropped, all loops plain counted for loops (IDO's own 4-way unroll). Left: allocation, homes 1-2 words high
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

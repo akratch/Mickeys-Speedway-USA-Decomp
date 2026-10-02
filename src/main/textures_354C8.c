@@ -1034,117 +1034,95 @@ void func_80035F48(u8 **dlist, TextureFrameHeader *tex, s32 rtile,
     }
     *dlist = (u8 *) dl;
 }
-#ifdef NON_MATCHING
 extern f32 D_80082670;
 
-s32 func_80036544(u8 *arg0, s32 *arg1, s32 arg2, f32 *arg3, s32 arg4) {
-    s32 var_a3;
-    f32 temp_f0;
-    f32 var_f0;
-    f32 var_f12;
-    f32 var_f16;
-    f32 var_f2;
-    f32 var_f6;
-    f32 var_f6_2;
-    s32 temp_a0;
-    s32 temp_a2;
-    s32 temp_v0;
-    u8 temp_t1;
-    u8 temp_t3;
-    u8 temp_t5;
-    u8 temp_t8;
-    u8 *temp_t0;
+/* Matched 2026-10-02 (lane x-res), from the m2c body at size delta +80: the
+ * mode bits are read from *flags at each use (a local copy let uopt
+ * rematerialise every mask at its use; reading the flags word keeps the
+ * three masks in v1/a0/a2 from the top, which is why the sprite, speed and
+ * frame arguments live in their homes); the three masks, the cleared result
+ * and the current frame are set before the texture is fetched; the
+ * non-ping-pong minimum is written after its maximum; and the end-of-range
+ * flag is set at the end of each ping-pong arm but once after the
+ * loop/clamp choice otherwise. D_80082670 is 0.01f. */
+s32 func_80036544(Sprite *sprite, s32 *flags, s32 speed, f32 *frame, s32 updateRate) {
+    TextureFrameHeader *tex;
+    s32 reverse;
+    s32 pingPong;
+    s32 loop;
+    s32 finished;
+    f32 curFrame;
+    f32 minFrame;
+    f32 maxFrame;
 
-    temp_v0 = *arg1;
-    if (!(temp_v0 & 1)) {
+    if (!(*flags & 1)) {
         return 0;
     }
-    temp_t0 = *TEXTURE_FIELD(arg0, u8 ***, 0x10);
-    temp_a0 = temp_v0 & 8;
-    temp_a2 = temp_v0 & 4;
-    var_a3 = 0;
-    temp_f0 = *arg3;
-    if (!(TEXTURE_FIELD(temp_t0, s16 *, 4) & 0x40)) {
-        if (temp_a2 != 0) {
-            temp_t3 = TEXTURE_FIELD(arg0, u8 *, 0);
-            var_f6 = (f32)temp_t3;
-            if ((s32)temp_t3 < 0) {
-                var_f6 += 4294967296.0f;
-            }
-            var_f2 = var_f6 - 0.5f;
-            if (temp_a0 != 0) {
-                var_f12 = 0.5f;
+    reverse = *flags & 2;
+    loop = *flags & 8;
+    pingPong = *flags & 4;
+    finished = 0;
+    curFrame = *frame;
+    tex = sprite->textures[0];
+    if (!(tex->flags & 0x40)) {
+        if (pingPong) {
+            maxFrame = (f32)(u32)sprite->numberOfFrames - 0.5f;
+            if (loop) {
+                minFrame = 0.5f;
             } else {
-                var_f12 = 0.0f;
+                minFrame = 0.0f;
             }
         } else {
-            temp_t5 = TEXTURE_FIELD(arg0, u8 *, 0);
-            var_f16 = (f32)temp_t5;
-            if ((s32)temp_t5 < 0) {
-                var_f16 += 4294967296.0f;
-            }
-            var_f12 = 0.0f;
-            var_f2 = var_f16 - D_80082670;
+            maxFrame = (f32)(u32)sprite->numberOfFrames - D_80082670;
+            minFrame = 0.0f;
         }
     } else {
-        var_f12 = 0.0f;
-        if ((temp_a2 != 0) || (temp_a0 == 0) || !(TEXTURE_FIELD(temp_t0, u8 *, 3) & 2)) {
-            temp_t1 = TEXTURE_FIELD(arg0, u8 *, 0);
-            var_f6_2 = (f32)temp_t1;
-            if ((s32)temp_t1 < 0) {
-                var_f6_2 += 4294967296.0f;
-            }
-            var_f2 = var_f6_2 - 1.0f;
+        minFrame = 0.0f;
+        if (pingPong || !loop || !(tex->spriteFlags & 2)) {
+            maxFrame = (f32)(u32)sprite->numberOfFrames - 1.0f;
         } else {
-            temp_t8 = TEXTURE_FIELD(arg0, u8 *, 0);
-            var_f2 = (f32)temp_t8;
-            if ((s32)temp_t8 < 0) {
-                var_f2 += 4294967296.0f;
-            }
+            maxFrame = (f32)(u32)sprite->numberOfFrames;
         }
     }
-    if (temp_v0 & 2) {
-        var_f0 = temp_f0 - ((f32)(arg2 * arg4) / 60.0f);
-        if (var_f0 < var_f12) {
-            if (temp_a2 != 0) {
-                var_a3 = 1;
-                if (temp_a0 != 0) {
-                    *arg1 = temp_v0 & ~2;
-                    var_f0 = (var_f12 - var_f0) + var_f12;
-                    var_a3 = 1;
+    if (reverse) {
+        curFrame -= (f32)(speed * updateRate) / 60.0f;
+        if (curFrame < minFrame) {
+            if (pingPong) {
+                if (loop) {
+                    *flags &= ~2;
+                    curFrame = (minFrame - curFrame) + minFrame;
+                    finished = 1;
                 } else {
-                    var_f0 = var_f12;
+                    curFrame = minFrame;
+                    finished = 1;
                 }
             } else {
-                var_a3 = 1;
-                if (temp_a0 != 0) {
-                    var_f0 += var_f2;
+                if (loop) {
+                    curFrame += maxFrame;
                 } else {
-                    var_f0 = var_f12;
-                    var_a3 = 1;
+                    curFrame = minFrame;
                 }
+                finished = 1;
             }
         }
     } else {
-        var_f0 = temp_f0 + ((f32)(arg2 * arg4) / 60.0f);
-        if (var_f2 < var_f0) {
-            var_a3 = 1;
-            if (temp_a2 != 0) {
-                *arg1 = temp_v0 | 2;
-                var_f0 = var_f2 - (var_f0 - var_f2);
-            } else if (temp_a0 != 0) {
-                var_f0 -= var_f2;
+        curFrame += (f32)(speed * updateRate) / 60.0f;
+        if (maxFrame < curFrame) {
+            finished = 1;
+            if (pingPong) {
+                *flags |= 2;
+                curFrame = maxFrame - (curFrame - maxFrame);
+            } else if (loop) {
+                curFrame -= maxFrame;
             } else {
-                var_f0 = var_f2;
+                curFrame = maxFrame;
             }
         }
     }
-    *arg3 = var_f0;
-    return var_a3;
+    *frame = curFrame;
+    return finished;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/textures_354C8/func_80036544.s")
-#endif
+
 
 void func_800367A4(u8 *arg0, s32 *arg1, s32 arg2, f32 *arg3, s32 arg4) {
     Sprite sprite;
@@ -1153,7 +1131,7 @@ void func_800367A4(u8 *arg0, s32 *arg1, s32 arg2, f32 *arg3, s32 arg4) {
     texture = (TextureFrameHeader *)arg0;
     sprite.textures = &texture;
     sprite.numberOfFrames = (u8)(texture->numOfTextures >> 8);
-    func_80036544((u8 *)&sprite, arg1, arg2, arg3, arg4);
+    func_80036544(&sprite, arg1, arg2, arg3, arg4);
 }
 
 /* JFG's texAnimateTexture body, with Mickey's four-bit flag relocation and

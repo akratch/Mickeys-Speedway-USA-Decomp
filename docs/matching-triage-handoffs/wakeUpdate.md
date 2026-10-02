@@ -114,4 +114,25 @@ polygonOffset (31/6) over polyCount and outputCount (42/12 each). Every
 emitted reference count matches the target, so the extra weight is in IR
 occurrences the listing does not show; the per-web detail records give no
 occurrence list.
+Lane x-fx, 2026-10-02 (not banked: 302 > 253 on the masked count). A typed
+rewrite from the listing reaches size delta 0 with only 24 structural rows
+left (244 register-naming rows), so the inherited offset-cast shape is not
+needed for structure. Three structural facts, each measured:
+- the four vertex buffers are ONE array at +0x18 (vertex = buffers[state],
+  secondary = buffers[state + 2]; triangles at +0x28). That is the target's
+  doubled state*4 address (two sll/addu pairs); separate arrays CSE it.
+  wakeAllocate's four-element fill at +0x18 agrees.
+- the vertex cursor advances before the first vertex's stores (accessed as
+  vertex[-1]) and again between the second vertex's alpha and y stores; one
+  `vertex += 2` at the end costs four bytes and the schedule.
+- the `started` flag declared fourth puts its call-spill home at sp+0x80.
+Typed layout used: sample 0x14 (u8 time, u8 alpha, s16 angle, s16 v,
+s16 y, f32 x, f32 z, f32 width), vertex 10 bytes (s16 x,y,z; u8 r,g,b,a),
+triangle 0x10 (u8 flags, vi0, vi1, vi2; s16 u/v pairs), batch 0x10
+(vertices, secondary, tris, s16 vertexCount, s16 triCount). Decision variable
+reached: p1 colour order across the whole loop (wake s4/index s6/stripIndex
+s5/triCount s7/vertexCount s8 in the target; the rewrite shifts each by one
+slot), plus the polygonOffset spill home (0x6C target, 0x60 here). Not
+reached: the records for that order.
+
 <!-- plateau-handoff:wakeUpdate:end -->

@@ -115,4 +115,17 @@ the halfword store. Scalar declarations, a volatile cast at the use, and
 volatile scalar declarations were byte-identical; the address CSE survived
 all three. No further size or masked improvement.
 
+Lane x-fx, 2026-10-02 (no source change). Measured: the target reads the
+three angle globals straight into the base variables' registers with
+`lui X; lh X,%lo(X)` and stores them late through `lui at`, i.e. their
+address-constant webs are NOT coloured. Forcing the three type-1 address
+webs to split (p1 force, accepted) reproduces exactly that load form, so the
+residual there is register pressure in the setup block, not spelling: array
+and scalar declarations, volatile, `+=` and read-early/write-late forms all
+CSE the address when a colour is free. A natural rewrite (packet macros
+gDPSetCombineMode/gDPSetPrimColor/gDPFillRectangle/gDPPipeSync, plain for
+loop) measures 204 at delta 0 (inherited 169), frame 0x98 against 0xA8.
+Decision variable: which webs occupy c1-c13 in the setup block so the three
+address webs are split.
+
 <!-- plateau-handoff:fxSPDPRipple:end -->

@@ -2,11 +2,13 @@
 ### `overlay17CreateChain` plateau handoff
 
 - source: `src/overlays/o017/overlay17CreateChain.c`
-- score: 83 differing words
+- score: 65 differing words
 - frame: 0x80
 - relocations: 7
 - first mismatch: +0x34
-- summary: Declaration order and chain->red masked with 0xFF (ring phase): 115 to 83. Template-loop webs rotate one position; halfBufferBytes in a3 not t7.
+- summary: One counter shared by both loops: 83 to 65. Open: half-buffer size coloured a3 not ring t7; else-arm template address coloured not a pre-branch ring temp.
+
+Summary before this remeasure: Declaration order and chain->red masked with 0xFF (ring phase): 115 to 83. Template-loop webs rotate one position; halfBufferBytes in a3 not t7.
 
 Summary before this remeasure: Template pointer is source on the no-material arm; source-before-destination; while(x--) loops: 130 to 115, frame 0x80 closed. Ring colour rotation remains.
 
@@ -55,4 +57,37 @@ Priced edits, each measured with tools/shape_product.py at size delta 0:
 - Template loop as `do/while (index--)` or `for (index = 15; index >= 0; ...)`:
   both 83 (canonicalised); count-up loops 190 at +128.
 - Declaration-order hill climb over the 6 locals: floor 83.
+
+#### 2026-10-02, lane x-ovlb: one shared loop counter, 83 -> 65
+
+The decision records ranked the two loop counters and the template loop's
+post-decrement copy as separate webs. In the target the template-copy loop
+and the alpha-clearing loop use the same registers for counter and copy
+(a0 and v1), and uopt colours a symbol as one web. Writing both loops with
+`index`, so the separate `vertex` counter goes away, gives the template loop
+the target's v0/a1/a0/a2/a3 assignment. 65 at delta 0. Aligned buckets:
+141 exact, 31 naming, 7 immediate, 21 structural. The one-sided words are
+at +0xC0 and +0x190.
+
+Measured and rejected:
+
+- Five spellings of the half-buffer size and the alloc argument. Computing
+  it after the call, inline, or through sizeof was 84 to 184.
+- An 8-cell product over where `source`/`destination` are initialised and
+  whether the else arm stores the template constant directly. The cells that
+  stay well-defined are 65, 90 and 149. The 64 cell reads `source` before it
+  is set in the else arm and is rejected.
+- A fully natural rewrite, with indexed template copy, resident alloc and
+  texture calls on their real arity, and a separate `size` local, is 185 at
+  +12. The target keeps the header size in s0, which is the chain variable,
+  so the size and the chain must be one symbol.
+
+Still open, each one a named web:
+
+- `halfBufferBytes` before the alloc call. The target computes it in ring
+  temp t7 and stores it straight to its home at sp+0x38. Ours colours that
+  segment a3.
+- The else arm's template address. The target forms it in ring temp t2 in
+  the block before the branch and rematerialises it in the textured arm
+  (v0). Ours has one coloured web plus a copy.
 <!-- plateau-handoff:overlay17CreateChain:end -->

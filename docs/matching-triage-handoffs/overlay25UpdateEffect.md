@@ -178,4 +178,15 @@ totalsave 32, nocs 5, save 6.4 against the cursor's 31, nocs 5, save 6.2;
 the target needs the cursor ranked first. `delta` is coloured f0 (c24) where
 the target has f2 (c25), and as1 orders `hitSomething = 1` against the two
 argument moves differently around the `enabled` test.
+#### 2026-10-02, lane x-ovla: the 19 priced by force
+
+Forcing the hit-loop index (web 115) to s4 (c18) and its cursor (web 123) to
+s3 (c17), both accepted (`forced=18`/`forced=17`), scores 6 at delta 0: the
+priority swap is 13 of the 19 words. The other 6 are `delta` in f0 for f2
+(three words) and the `enabled` test's slot (three words: the target hoists
+both argument moves and puts `hitSomething = 1` in the delay slot). Flat at
+19: the index as a separate `i` (`i = count; while (i--)`), the explicit
+guarded do-while (21), `for` forms (size changes), sharing one counter with
+the movement loop (62), `count-- != 0` (256, -8), and putting
+`hitSomething = 1` on the call's line or the `&&` chain on one line.
 <!-- plateau-handoff:overlay25UpdateEffect:end -->

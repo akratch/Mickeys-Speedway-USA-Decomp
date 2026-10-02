@@ -41,4 +41,15 @@ Next lever: obtain a non-circular overlay-local identity for `D_80000050` and
 the shifted relocation sites. Only a newly authenticated source or allocator
 mechanism may then reopen the body; do not repeat the old register/lifetime
 family or weaken relocation identity checks.
+#### 2026-10-02, lane x-ovla: mode-call arguments, flat at 100 (+4)
+
+The target reads as one variable split across two registers: the first
+batch's vertex pointer is in a3, a3 is cleared right after the synchronise
+command, a1 is cleared once before the pulse branch (it serves both the mode
+call's second argument and the finish call's argument on the not-taken
+path), and a2 = 5 sits in the branch delay slot. Passing the vertex variable
+to the mode call (`(commands, 0, 5, verts)`, `(commands, verts, 5, verts)`,
+`(commands, verts, 5, 0)`) is byte-identical to the literal zeros: uopt
+propagates `verts = 0` into every argument, so a source form that reaches the
+target has to keep that zero from being a known constant at the call.
 <!-- plateau-handoff:func_overlay_027_F0000624_187BFFC:end -->

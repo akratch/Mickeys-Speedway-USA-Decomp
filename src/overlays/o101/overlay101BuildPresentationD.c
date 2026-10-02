@@ -1,6 +1,6 @@
 #include "PR/ultratypes.h"
 
-typedef struct Overlay101BuilderRoot {
+typedef struct O101PresDRoot {
     u8 pad00[0x1C];
     s32 chainType;
     void *chain;
@@ -27,10 +27,10 @@ typedef struct Overlay101BuilderRoot {
     s16 value4C;
     u8 color4E;
     u8 color4F;
-    void *text50;
-} Overlay101BuilderRoot;
+    void *data50;
+} O101PresDRoot;
 
-typedef struct Overlay101Node32 {
+typedef struct O101PresDNode32 {
     s32 previousType;
     void *previous;
     s16 x;
@@ -42,18 +42,18 @@ typedef struct Overlay101Node32 {
     f32 value14;
     s32 value18;
     void *handle;
-} Overlay101Node32;
+} O101PresDNode32;
 
-typedef struct Overlay101Node20 {
+typedef struct O101PresDNode20 {
     s32 previousType;
     void *previous;
     s16 x;
     s16 y;
     f32 scale;
     void *handle;
-} Overlay101Node20;
+} O101PresDNode20;
 
-typedef struct Overlay101Node24 {
+typedef struct O101PresDNode24 {
     s32 previousType;
     void *previous;
     s16 x;
@@ -66,157 +66,60 @@ typedef struct Overlay101Node24 {
     u8 color2;
     u8 color3;
     u8 kind;
-    void *text;
-} Overlay101Node24;
+    u8 *text;
+} O101PresDNode24;
 
-/* Lane c2-o101 (2026-09-10) resolved four of the A/B alias pairs against the
- * target's own addressing: the order array, the order counter, the node-20
- * pool and the node-20 counter each show ONE address in the target where this
- * candidate declared two, so the B members were folded into the A members.
- * That is worth five masked words on every sibling in this family. The
- * node-24 counter is also one address in the target, but folding it costs a
- * further instruction here and is left split until the allocator web that
- * causes it is understood. The remaining A/B aliases are unproven either way. */
-/* Every remaining A/B alias below is a distinct relocation identity, even
- * where its workbench link placeholder has the same encoded addend as its
- * sibling. */
-extern Overlay101BuilderRoot gOverlay101BuilderRoot;
-extern s32 gOverlay101BuilderRootChainReloc;
-extern s32 gOverlay101BuilderRootChildReloc;
-extern s32 gOverlay101BuilderOrderCountA;
-extern void *gOverlay101BuilderOrderA[];
+typedef struct O101PresDInputs {
+    u8 pad000[0x144];
+    void *data144;
+    u8 *text148;
+} O101PresDInputs;
 
-extern s32 gOverlay101BuilderNode20CountA;
-extern Overlay101Node20 gOverlay101BuilderNodes20A[];
+extern O101PresDRoot gO101PresDRoot;
+extern s32 gO101PresDOrderCount;
+extern void *gO101PresDOrderSlots[];
+extern s32 gO101PresDNode32Count;
+extern O101PresDNode32 gO101PresDNodes32[];
+extern s32 gO101PresDNode20Count;
+extern O101PresDNode20 gO101PresDNodes20[];
+extern s32 gO101PresDNode24Count;
+extern O101PresDNode24 gO101PresDNodes24[];
+extern O101PresDInputs gO101PresDInputs;
+extern u8 gO101PresDAssetD68;
+extern u8 gO101PresDFinalObject3948;
 
-extern s32 gOverlay101BuilderNode32CountA;
-extern s32 gOverlay101BuilderNode32CountB;
-extern Overlay101Node32 gOverlay101BuilderNodes32A[];
-extern Overlay101Node32 gOverlay101BuilderNodes32B[];
-
-extern s32 gOverlay101BuilderNode24CountA;
-extern s32 gOverlay101BuilderNode24CountB;
-extern Overlay101Node24 gOverlay101BuilderNodes24A[];
-extern Overlay101Node24 gOverlay101BuilderNodes24B[];
-
-extern u8 gOverlay101BuilderAssetD;
-extern void *gOverlay101BuilderTextD;
-extern u8 *gOverlay101BuilderInput144;
-extern u8 *gOverlay101BuilderInput148;
-
-/* The two create calls intentionally have different arities. The old-style
- * declaration preserves that real call surface without inventing an ABI. */
-extern void *overlay101BuilderCreateReloc();
-extern void overlay101BuilderCreateFinalReloc(void *text, s32 index,
-                                               s32 *count);
+/* Every call but the byte-length one is a SYMBOL relocation record, so
+ * each callee is a placeholder. The sprite creator is the resident routine
+ * the tail builders (overlay101TailA6BC/AB4C/C6E8) call with two arguments,
+ * the compact creator the one overlay101TailC6E8 calls with (key, node),
+ * and the closing call is overlay101Reset (overlay 101 +0x1BB4) with one
+ * argument; the a1-a3 the shipped calls carry are leftovers. */
+extern void *o101PresDCreatorReloc(s32 key, void *source);
+extern void *o101PresDCreateCompactReloc(s32 key, O101PresDNode20 *node);
+extern void o101PresDResetReloc(void *value);
 extern s32 overlay101ByteLength(u8 *text);
 
-/* Exact overlay 101 body at +0xA384.
- *
- * Lane s1-trio (2026-09-11) took the four presentation builders from 161, 157,
- * 163 and 151 masked words to 145, 145, 145 and 131, each measured separately.
- * Three source-shape levers, none costing an instruction:
- *
- * L59 -- every assignment group down to the node-24 header is ONE physical
- *   line. as1 minimises (start_time, -aftercycles, -latency, addr, lineno,
- *   ready-list position); with a group's stores on separate lines `lineno` is
- *   the deciding key and emits them in source order, while the ROM emits
- *   several of these groups' constant materialisations reversed. Folding
- *   retires the key and the raw ready-list order supplies the reversal. The
- *   minimal paying set is the root header, the node-32 pre-call group and the
- *   root's second header; folding the other four is flat on the positional
- *   count and moves three words out of the structural bucket into the naming
- *   one, which is the better residual to inherit. All 1,024 fold subsets were
- *   measured on each of the four.
- * The node-24 text store goes BEFORE the counter bump, never last. Worth four
- *   words on the A, B and C relatives and six on D. All 1,440 orders of the
- *   eight tail statements were measured on B: 145 is the floor, 80 orders
- *   reach it and the worst reads 149.
- *
- * Refuted here, each measured. The quadruplet's call-spanning-web lever --
- *   storing handle, previousType and previous through the PRE-call node-32
- *   pointer -- reads 184 at a size delta of +12: this relative's target
- *   re-reads the counter after the call and stores through the recomputed
- *   pointer, which is what this shape already does. The `volatile` casts the
- *   A, C and D relatives carried in the tail are exactly inert and are gone.
- *   Inlining the node-24 or node-32 index local reads 148 and 155; merging the
- *   two node-24 index locals reads 206 at +8, so the counter partition is
- *   already separated as it should be.
- * Lane w25-o101d (2026-09-19) adopted the A/B/C u8 length local and (s8)
- *   store cast: 131 to 130 at delta 0. Identity-gate proc 0; 21 coloured
- *   webs unchanged. Packed forces reach 118, split-base lattice 113; no
- *   force scores 0. See the shard for the L109 and L131 negatives on the
- *   node-20 base.
- * See docs/matching-triage-handoffs/overlay101BuildPresentationD.md for the
- * remaining residual and the decision variable that blocks it. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-02 (lane x-o101), from 136 masked words (130 on D) at
+ * delta 0, by discarding the inherited shape after decoding the relocation
+ * table and writing the body in the matched tail builders' form: one symbol
+ * per object (the A/B alias pairs were each one address), one-name counter
+ * subscripts with each creator result stored straight into its node, the
+ * calls at their real arities (the "dim colour in a2" and the four-argument
+ * closing call were the leftover a1-a3 of a one-argument overlay101Reset),
+ * and the opacity read back from the stored length. The four presentation
+ * builders are one function with different constants. The last two orders
+ * were the second root header's data, childType, child and the node-24
+ * childType before child. */
 void overlay101BuildPresentationD(void) {
-    s32 orderIndex;
-    s32 node32IndexA;
-    s32 node32IndexB;
-    s32 node20Index;
-    s32 node24IndexA;
-    s32 node24IndexB;
-    s32 previousType;
-    void *previous;
-    void *handle;
-    u8 length;
-    f32 opacityScale;
-    s32 compactSelector;
-    Overlay101Node32 *node32A;
-    Overlay101Node32 *node32B;
-    Overlay101Node20 *node20A;
-    Overlay101Node20 *node20B;
-    Overlay101Node24 *node24A;
-    Overlay101Node24 *node24B;
+    gO101PresDRoot.kind = 4; gO101PresDRoot.width2E = 0x140; gO101PresDRoot.height30 = 0xF0; gO101PresDRoot.asset34 = &gO101PresDAssetD68; gO101PresDRoot.color32 = 0xFF; gO101PresDRoot.color33 = 0xFF; gO101PresDRoot.value26 = 0; gO101PresDRoot.value28 = 0; gO101PresDRoot.value2A = 0; gO101PresDRoot.value2C = 0; gO101PresDRoot.chainType = 0; gO101PresDRoot.chain = NULL; gO101PresDOrderSlots[gO101PresDOrderCount] = &gO101PresDRoot.chainType; gO101PresDOrderCount = gO101PresDOrderCount + 1;
 
-    opacityScale = 1.0f; orderIndex = gOverlay101BuilderOrderCountA; gOverlay101BuilderRoot.height30 = 0xF0; gOverlay101BuilderRoot.width2E = 0x140; gOverlay101BuilderRoot.kind = 4; gOverlay101BuilderRoot.asset34 = &gOverlay101BuilderAssetD; gOverlay101BuilderRoot.color32 = 0xFF; gOverlay101BuilderRoot.color33 = 0xFF; gOverlay101BuilderRoot.value26 = 0; gOverlay101BuilderRoot.value28 = 0; gOverlay101BuilderRoot.value2A = 0; gOverlay101BuilderRoot.value2C = 0; gOverlay101BuilderRoot.chainType = 0; gOverlay101BuilderRoot.chain = NULL; gOverlay101BuilderOrderA[orderIndex] = &gOverlay101BuilderRootChainReloc; gOverlay101BuilderOrderCountA = orderIndex + 1;
+    gO101PresDNodes32[gO101PresDNode32Count].x = 0xF2; gO101PresDNodes32[gO101PresDNode32Count].y = 0x14E; gO101PresDNodes32[gO101PresDNode32Count].value10 = 0; gO101PresDNodes32[gO101PresDNode32Count].color12 = 0xFF; gO101PresDNodes32[gO101PresDNode32Count].color13 = 0; gO101PresDNodes32[gO101PresDNode32Count].value18 = 0; gO101PresDNodes32[gO101PresDNode32Count].scale = 1.0f; gO101PresDNodes32[gO101PresDNode32Count].value14 = 0.0f; gO101PresDNodes32[gO101PresDNode32Count].handle = o101PresDCreatorReloc(0x91, NULL); gO101PresDNodes32[gO101PresDNode32Count].previousType = gO101PresDRoot.chainType; gO101PresDNodes32[gO101PresDNode32Count].previous = gO101PresDRoot.chain; gO101PresDRoot.chainType = 2; gO101PresDRoot.chain = &gO101PresDNodes32[gO101PresDNode32Count]; gO101PresDNode32Count = gO101PresDNode32Count + 1;
 
-    node32IndexA = gOverlay101BuilderNode32CountA; node32A = &gOverlay101BuilderNodes32A[node32IndexA]; node32A->x = 0xF2; node32A->y = 0x14E; node32A->value10 = 0; node32A->color12 = 0xFF; node32A->color13 = 0; node32A->value18 = 0; node32A->scale = 1.0f; node32A->value14 = 0.0f; handle = overlay101BuilderCreateReloc(0x91, NULL, orderIndex);
+    gO101PresDRoot.x42 = 0x20; gO101PresDRoot.y46 = 0x50; gO101PresDRoot.value4A = 0xA0; gO101PresDRoot.value4C = 0xAE; gO101PresDRoot.width44 = 0x18; gO101PresDRoot.height48 = 0x18; gO101PresDRoot.mode40 = 0; gO101PresDRoot.color4E = 0xFF; gO101PresDRoot.color4F = 0xFF; gO101PresDRoot.data50 = gO101PresDInputs.data144; gO101PresDRoot.childType = 0; gO101PresDRoot.child = NULL; gO101PresDOrderSlots[gO101PresDOrderCount] = &gO101PresDRoot.childType; gO101PresDOrderCount = gO101PresDOrderCount + 1;
 
-    node32IndexB = gOverlay101BuilderNode32CountB; node32B = &gOverlay101BuilderNodes32B[node32IndexB]; node32B->previousType = gOverlay101BuilderRoot.chainType; node32B->previous = gOverlay101BuilderRoot.chain; gOverlay101BuilderNode32CountB = node32IndexB + 1; gOverlay101BuilderRoot.chainType = 2; gOverlay101BuilderRoot.chain = node32B; node32B->handle = handle;
+    gO101PresDNodes20[gO101PresDNode20Count].x = 0x10; gO101PresDNodes20[gO101PresDNode20Count].y = 0x16; gO101PresDNodes20[gO101PresDNode20Count].scale = 1.0f; gO101PresDNodes20[gO101PresDNode20Count].handle = o101PresDCreateCompactReloc(0x18, &gO101PresDNodes20[gO101PresDNode20Count]); gO101PresDNodes20[gO101PresDNode20Count].previousType = gO101PresDRoot.childType; gO101PresDNodes20[gO101PresDNode20Count].previous = gO101PresDRoot.child; gO101PresDRoot.childType = 1; gO101PresDRoot.child = &gO101PresDNodes20[gO101PresDNode20Count]; gO101PresDNode20Count = gO101PresDNode20Count + 1;
 
-    orderIndex = gOverlay101BuilderOrderCountA; gOverlay101BuilderRoot.x42 = 0x20; gOverlay101BuilderRoot.y46 = 0x50; gOverlay101BuilderRoot.value4A = 0xA0; gOverlay101BuilderRoot.value4C = 0xAE; compactSelector = 0x18; gOverlay101BuilderRoot.width44 = compactSelector; gOverlay101BuilderRoot.height48 = compactSelector; gOverlay101BuilderRoot.mode40 = 0; gOverlay101BuilderRoot.color4E = 0xFF; gOverlay101BuilderRoot.color4F = 0xFF; gOverlay101BuilderRoot.child = NULL; gOverlay101BuilderRoot.childType = 0; gOverlay101BuilderRoot.text50 = gOverlay101BuilderInput144; gOverlay101BuilderOrderA[orderIndex] = &gOverlay101BuilderRootChildReloc; gOverlay101BuilderOrderCountA = orderIndex + 1;
+    gO101PresDNodes24[gO101PresDNode24Count].x = 0x50; gO101PresDNodes24[gO101PresDNode24Count].y = 0x9C; gO101PresDNodes24[gO101PresDNode24Count].length = overlay101ByteLength(gO101PresDInputs.text148); gO101PresDNodes24[gO101PresDNode24Count].opacity = (s8)(s32)((f32)(u32)gO101PresDNodes24[gO101PresDNode24Count].length * (f32)(s32)1); gO101PresDNodes24[gO101PresDNode24Count].mode = 2; gO101PresDNodes24[gO101PresDNode24Count].color0 = 0xFF; gO101PresDNodes24[gO101PresDNode24Count].color1 = 0xFF; gO101PresDNodes24[gO101PresDNode24Count].color2 = 0; gO101PresDNodes24[gO101PresDNode24Count].color3 = 0xFF; gO101PresDNodes24[gO101PresDNode24Count].kind = 4; gO101PresDNodes24[gO101PresDNode24Count].text = gO101PresDInputs.text148; gO101PresDNodes24[gO101PresDNode24Count].previousType = gO101PresDRoot.childType; gO101PresDNodes24[gO101PresDNode24Count].previous = gO101PresDRoot.child; gO101PresDRoot.childType = 3; gO101PresDRoot.child = &gO101PresDNodes24[gO101PresDNode24Count]; gO101PresDNode24Count = gO101PresDNode24Count + 1;
 
-    node20Index = gOverlay101BuilderNode20CountA; node20A = &gOverlay101BuilderNodes20A[node20Index]; node20A->x = 0x10; node20A->y = 0x16; node20A->scale = 1.0f; handle = overlay101BuilderCreateReloc(compactSelector, node20A, orderIndex, node32IndexB);
-
-    node20Index = gOverlay101BuilderNode20CountA; node20B = &gOverlay101BuilderNodes20A[node20Index]; previousType = gOverlay101BuilderRoot.childType; previous = gOverlay101BuilderRoot.child; gOverlay101BuilderNode20CountA = node20Index + 1; gOverlay101BuilderRoot.childType = 1; gOverlay101BuilderRoot.child = node20B; node20B->handle = handle; node20B->previousType = previousType; node20B->previous = previous;
-
-    node24IndexA = gOverlay101BuilderNode24CountA; node24A = &gOverlay101BuilderNodes24A[node24IndexA]; node24A->x = 0x50; node24A->y = 0x9C; length = overlay101ByteLength(gOverlay101BuilderInput148);
-
-    node24IndexB = gOverlay101BuilderNode24CountB;
-    node24B = &gOverlay101BuilderNodes24B[node24IndexB];
-    node24B->length = (s8)length;
-    node24B->opacity =
-        (s8)(s32)((f32)(u32)length * opacityScale);
-    node24B->kind = 4;
-    node24B->mode = 2;
-    node24B->color0 = 0xFF;
-    node24B->color1 = 0xFF;
-    node24B->color2 = 0;
-    node24B->color3 = 0xFF;
-
-    previousType = gOverlay101BuilderRoot.childType;
-    previous = gOverlay101BuilderRoot.child;
-    node24B->text = gOverlay101BuilderInput148;
-    gOverlay101BuilderNode24CountB = node24IndexB + 1;
-    gOverlay101BuilderRoot.child = node24B;
-    gOverlay101BuilderRoot.childType = 3;
-    node24B->previousType = previousType;
-    node24B->previous = previous;
-    overlay101BuilderCreateFinalReloc(&gOverlay101BuilderTextD, node24IndexB,
-                                      &gOverlay101BuilderNode24CountB);
+    o101PresDResetReloc(&gO101PresDFinalObject3948);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o101/overlay101BuildPresentationD/func_overlay_101_F000A384_18E5BA4.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay101BuildPresentationD:start
- * symbol: overlay101BuildPresentationD
- * score: 130 differing words
- * frame: 0x20
- * relocations: 52
- * first-mismatch: +0x10
- * summary: u8 length 131 to 130. Packed forces 118, split-base 113, none score 0. L109/L131 do not raise the node-20 base save.
- * PLATEAU-HANDOFF:overlay101BuildPresentationD:end
- */

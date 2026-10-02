@@ -8578,8 +8578,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o101/overlay101BuildPresentationC.c.o",
       "offset": 41028,
       "overlay": 101,
@@ -8592,8 +8592,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o101/overlay101BuildPresentationD.c.o",
       "offset": 41860,
       "overlay": 101,
@@ -9350,7 +9350,7 @@
       "metadata": 639,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 353216,
+    "matched_c_bytes_with_postprocess": 354872,
     "objects_with_postprocess": 645
   }
 }

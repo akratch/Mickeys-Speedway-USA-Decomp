@@ -39,9 +39,13 @@ extern u32 joyGetButtons(s32 controller);
 /* Mickey-only reconstruction. The closest permitted reference skeleton is
  * too weak to establish a donor body (masked 4-gram Jaccard 0.077). */
 /* NON_MATCHING: the second scan loads lastCandidate from objects[index]
- * and copies it to candidate. 353 masked words at size delta 0, frame
- * 0x880, first +0x20. A separate post-loop copy and a shared order+1
- * store both move the size off zero. */
+ * and copies it to candidate. 198 masked words at size delta 0, frame
+ * 0x888 against 0x880 (one compiler temp cell too many). From 353: the
+ * declarations in home order (lastCandidate 0x6C, closest 0x68, previous
+ * 0x64, ..., count 0x38), an explicit return after the no-closest arm, the
+ * order stores chained (`route->order = input->order = ...`, input stored
+ * first), and the tail's start as `count - 1U` (L151: an int 1 lets uopt
+ * hoist the joypad branch's `count - 1` and share it with the tail). */
 #ifdef NON_MATCHING
 void func_overlay_002_F0001DF8_1858BF0(Overlay2RouteObject *object,
                                         Overlay2RouteInput *input) {
@@ -50,21 +54,21 @@ void func_overlay_002_F0001DF8_1858BF0(Overlay2RouteObject *object,
     s32 index;
     Overlay2RouteObject **objects;
     u16 indices[0x400];
-    Overlay2RouteObject *candidate;
     Overlay2RouteObject *lastCandidate;
     Overlay2RouteObject *closest;
     Overlay2RouteObject *previous;
     Overlay2RouteObject *next;
     Overlay2RouteState *closestRoute;
-    Overlay2RouteState *route;
     Overlay2RouteState *candidateRoute;
+    Overlay2RouteState *route;
     Overlay2ObjectHeader *header;
     s32 closestIndex;
-    s32 count;
     s32 position;
     u32 bestDistance;
     u32 distance;
     u32 previousDistance;
+    s32 count;
+    Overlay2RouteObject *candidate;
 
     objects = func_8000572C(&start, &end);
     route = object->route;
@@ -107,19 +111,18 @@ void func_overlay_002_F0001DF8_1858BF0(Overlay2RouteObject *object,
         } else {
             input->group = 1;
             route->group = 1;
+            return;
         }
 
         if (route->group == 0) {
             input->group = closestRoute->group;
             route->group = closestRoute->group;
             if (count == 1) {
-                input->order = 1;
-                route->order = 1;
+                input->order = route->order = 1;
                 return;
             }
             if (count == 2) {
-                input->order = 2;
-                route->order = 2;
+                input->order = route->order = 2;
                 return;
             }
 
@@ -148,15 +151,14 @@ void func_overlay_002_F0001DF8_1858BF0(Overlay2RouteObject *object,
                 }
 
                 candidateRoute = previous->route;
-                position = count - 1;
+                position = count - 1U;
                 while (candidateRoute->order < position) {
                     candidate = objects[indices[position]];
                     candidate->route->order++;
                     candidate->header->order++;
                     position--;
                 }
-                input->order = candidateRoute->order + 1;
-                route->order = candidateRoute->order + 1;
+                route->order = input->order = candidateRoute->order + 1;
                 return;
             }
 
@@ -171,10 +173,10 @@ void func_overlay_002_F0001DF8_1858BF0(Overlay2RouteObject *object,
 
 /* PLATEAU-HANDOFF:func_overlay_002_F0001DF8_1858BF0:start
  * symbol: func_overlay_002_F0001DF8_1858BF0
- * score: 353/460 words
- * frame: 0x880
+ * score: 198/460 words
+ * frame: 0x888
  * relocations: 5
- * first-mismatch: +0x20
- * summary: extra-ILOD pair at the previousDistance call line. Delta 0 via lastCandidate carrier. Stall: order share -12, register inert, header hoist flat, post-loop +16.
+ * first-mismatch: +0x0
+ * summary: Home-order locals, no-closest return, chained order stores, 1U tail start: 353 to 198 at delta 0; frame 0x888 vs 0x880 (one temp cell).
  * PLATEAU-HANDOFF:func_overlay_002_F0001DF8_1858BF0:end
  */

@@ -212,7 +212,10 @@ typedef struct Overlay1PackedRecord {
     s16 value8;
     u8 group;
     u8 slot;
-    u16 link;
+    union {
+        u16 index;
+        u8 byte;
+    } link;
 } Overlay1PackedRecord;
 
 typedef struct Overlay1Point {
@@ -303,313 +306,310 @@ extern f32 func_overlay_001_F0000F84_184D364(
     f32 x0, f32 y0, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3,
     s32 scale);
 
-/* Plateau reproof (2026-10-02): 469 masked words, 52 bytes short, frame 0xD8,
- * first mismatch +0x34, 114 relocations. One BSS owner for 0x1BA0..0x1DCC
- * shortened the function further and was reverted. The adopted spelling
- * writes each cleared group field through D_1BA0[index]. */
+/* 2026-10-02 x-o058: rewritten in the overlay's while (i--) / record-walk
+ * shape from the listing: 469 masked at -52 bytes -> 20 at size delta 0,
+ * frame 0xD8 exact. The notes below the body (inside the guard, standing in
+ * for the line padding that keeps later functions on their numbers) say how. */
 #ifdef NON_MATCHING
+extern s32 gO1Finishers;
+extern s32 G_o1_83e0;
+extern s32 G_o1_83e4;
+extern u8 gO1PlayerCount;
+extern u8 gO1PlayerBase;
+extern u8 gO1RankOrder[];
+extern s32 gOverlay1Data[];
+extern u8 D_1DC8[];
 void overlay1LoadBuildRecords(void) {
+    Overlay1LargeRecord *large;
     Overlay1PackedRecord *records;
-    Overlay1PackedRecord *record;
     s32 size;
+    Overlay1PackedRecord *record;
+    Overlay1PackedRecord *entry;
+    Overlay1PackedRecord *node;
     s32 offset;
-    s32 clearIndex;
+    s32 i;
+    s32 j;
+    s32 k;
     s32 value;
-    s32 index;
-    s32 loopValue;
-    s32 pointIndex;
+    Overlay1LargeRecord *sourceA;
+    Overlay1LargeRecord *sourceB;
+    Overlay1LargeRecord *sourceC;
     Overlay1Group *group;
     Overlay1Group *link;
     Overlay1Point *point;
+    f32 score;
+    f32 maximum;
+    f32 minimum;
+    f32 scale;
+    f32 total;
 
     overlay1LoadPackedRecordsReloc(&records, &size, 1);
     D_1D7C = 0;
     D_1D80 = 0;
     D_1D8C = 0;
-    D_0 = 0;
+    gO1Finishers = 0;
     D_1D90 = 0;
     D_1DBC = 0;
     D_1D98 = 0;
-    gOverlay1RankDelta = gOverlay1RankBase - gOverlay1RankLimit;
-    gOverlay1ModeConstant = 3;
-
-    if (gOverlay1ConfigMode != 0) {
-        if (gOverlay1ConfigMode != 1) {
-            if (gOverlay1ConfigMode == 2) {
-                D_1DAC = 1.0f;
-                D_1DB0 = 1.0f;
-                D_1DB4 = 1.25f;
-                D_1DB8 = 0.25f;
-            }
-        } else {
-            D_1DAC = D_BC;
-            D_1DB0 = D_C0;
-            D_1DB4 = D_C4;
-            D_1DB8 = 0.5f;
-        }
-    } else {
-        D_1DAC = D_C8;
-        D_1DB0 = D_CC;
-        D_1DB4 = D_D0;
+    G_o1_83e0 = gO1PlayerCount - gO1PlayerBase;
+    G_o1_83e4 = 3;
+    switch (gOverlay1ConfigMode) {
+    case 2:
+        D_1DAC = 1.0f;
+        D_1DB0 = 1.0f;
+        D_1DB4 = 1.25f;
+        D_1DB8 = 0.25f;
+        break;
+    case 1:
+        D_1DAC = 0.8f;
+        D_1DB0 = 0.98f;
+        D_1DB4 = 1.15f;
+        D_1DB8 = 0.5f;
+        break;
+    case 0:
+        D_1DAC = 0.65f;
+        D_1DB0 = 0.9f;
+        D_1DB4 = 1.1f;
         D_1DB8 = 0.75f;
+        break;
+    }
+    i = 6;
+    while (i--) {
+        gO1RankOrder[i] = 0xFF;
     }
 
-    clearIndex = 5;
-    do {
-        D_0_Clear[clearIndex] = 0xFF;
-    } while (clearIndex-- != 0);
-
-    offset = 0;
-    record = records;
-    if (size > 0) {
-        do {
-            if (record->type == 0xC8) {
-                D_1D7C++;
-                value = record->group + 1;
-                if (D_1D80 < value) {
-                    D_1D80 = value;
-                }
+    for (offset = 0, record = records; offset < size; offset += record->size, record = (Overlay1PackedRecord *)((u8 *)record + record->size)) {
+        if (record->type == 0xC8) {
+            D_1D7C++;
+            if (D_1D80 < record->group + 1) {
+                D_1D80 = record->group + 1;
             }
-            offset += record->size;
-            record = (Overlay1PackedRecord *)((u8 *)record + record->size);
-        } while (offset < size);
+        }
     }
 
-    if (D_1D80 != 0) {
+    if (D_1D80 == 0) {
+        goto large;
+    }
+    {
         if (D_1BA0 != NULL) {
             overlay1ReleaseBuildMemoryReloc(D_1BA0);
         }
         if (D_1D70 != NULL) {
             overlay1ReleaseBuildMemoryReloc(D_1D70);
         }
-        D_1BA0 = overlay1AllocateBuildMemoryReloc(D_1D80 * 0x1C, 0x85);
-        D_1D70 = overlay1AllocateBuildMemoryReloc(D_1D7C * 4, 0x85);
-
-        index = D_1D80 - 1;
-        if (D_1D80 != 0) {
-            do {
-                D_1BA0[index].points = NULL;
-                D_1BA0[index].count = 0;
-                D_1BA0[index].previous = NULL;
-                D_1BA0[index].next = NULL;
-                D_1BA0[index].selector = 0;
-                D_1BA0[index].field14 = 0;
-                D_1BA0[index].field18 = 0;
-            } while (index-- != 0);
+        D_1BA0 = overlay1AllocateBuildMemoryReloc(D_1D80 * sizeof(Overlay1Group), 0x85);
+        D_1D70 = overlay1AllocateBuildMemoryReloc(D_1D7C * sizeof(Overlay1Point), 0x85);
+        k = D_1D80;
+        while (k--) {
+            D_1BA0[k].points = NULL;
+            D_1BA0[k].count = 0;
+            D_1BA0[k].previous = NULL;
+            D_1BA0[k].next = NULL;
+            D_1BA0[k].selector = 0;
+            D_1BA0[k].field14 = 0;
+            D_1BA0[k].field18 = 0;
         }
-
-        offset = 0;
-        record = records;
-        if (size > 0) {
-            do {
-                if (record->type == 0xC8) {
-                    D_1BA0[record->group].count++;
-                }
-                offset += record->size;
-                record = (Overlay1PackedRecord *)((u8 *)record + record->size);
-            } while (offset < size);
+        for (offset = 0, entry = records; offset < size; offset += entry->size, entry = (Overlay1PackedRecord *)((u8 *)entry + entry->size)) {
+            if (entry->type == 0xC8) {
+                D_1BA0[entry->group].count++;
+            }
         }
-
-        pointIndex = 0;
-        index = 0;
-        if (D_1D80 > 0) {
-            group = D_1BA0;
-            do {
-                group->points = &D_1D70[pointIndex];
-                pointIndex += group->count;
-                group++;
-                index++;
-            } while (index < D_1D80);
+        for (j = 0, k = 0; k < D_1D80; k++) {
+            D_1BA0[k].points = &D_1D70[j];
+            j += D_1BA0[k].count;
         }
-
-        offset = 0;
-        record = records;
-        if (size > 0) {
-            do {
-                if (record->type == 0xC8) {
-                    point = &D_1BA0[record->group].points[record->slot];
-                    point->first = record->value4;
-                    point->second = record->value8;
-                }
-                offset += record->size;
-                record = (Overlay1PackedRecord *)((u8 *)record + record->size);
-            } while (offset < size);
+        for (offset = 0, entry = records; offset < size; offset += entry->size, entry = (Overlay1PackedRecord *)((u8 *)entry + entry->size)) {
+            if (entry->type == 0xC8) {
+                group = &D_1BA0[entry->group];
+                point = &group->points[entry->slot];
+                point->first = entry->value4;
+                point->second = entry->value8;
+            }
         }
-
-        offset = 0;
-        record = records;
-        if (size > 0) {
-            do {
-                if (record->type == 0xC9) {
-                    group = &D_1BA0[record->group];
-                    group->selector = record->slot;
-                    if (record->link != 0) {
-                        link = &D_1BA0[record->link];
-                        while (link->next != NULL) {
-                            link = link->next;
-                        }
-                        if (link == group) {
-                            overlay1RejectBuildCycleReloc(link);
-                        } else {
-                            link->next = group;
-                            group->previous = link;
-                        }
+        for (offset = 0, node = records; offset < size; offset += node->size, node = (Overlay1PackedRecord *)((u8 *)node + node->size)) {
+            if (node->type == 0xC9) {
+                group = &D_1BA0[node->group];
+                group->selector = node->slot;
+                if (node->link.byte != 0) {
+                    link = &D_1BA0[node->link.byte];
+                    while (link->next != NULL) {
+                        link = link->next;
+                    }
+                    if (link == group) {
+                        overlay1RejectBuildCycleReloc(link);
+                    } else {
+                        link->next = group;
+                        group->previous = link;
                     }
                 }
-                offset += record->size;
-                record = (Overlay1PackedRecord *)((u8 *)record + record->size);
-            } while (offset < size);
+            }
         }
-
-        index = D_1D80 - 2;
+        j = D_1D80 - 1;
         group = &D_1BA0[1];
-        if ((D_1D80 - 1) > 0) {
-            do {
-                if (group->previous == NULL) {
-                    overlay1FinalizeBuildGroupReloc(group);
-                }
-                group++;
-            } while (index-- > 0);
+        while (j-- > 0) {
+            if (group->previous == NULL) {
+                overlay1FinalizeBuildGroupReloc(group);
+            }
+            group++;
         }
         D_1BA4 = overlay1SubmitBuildReloc(1);
-    } else {
-        offset = 0;
-        record = records;
-        if (size > 0) {
-            do {
-                if (record->type == 0xCA) {
-                    value = record->link + 1;
-                    if (D_1D8C < value) {
-                        D_1D8C = value;
-                    }
+        return;
+    }
+large:
+    {
+        for (offset = 0, record = records; offset < size; offset += record->size, record = (Overlay1PackedRecord *)((u8 *)record + record->size)) {
+            if (record->type == 0xCA) {
+                if (D_1D8C < record->link.index + 1) {
+                    D_1D8C = record->link.index + 1;
                 }
-                offset += record->size;
-                record = (Overlay1PackedRecord *)((u8 *)record + record->size);
-            } while (offset < size);
+            }
         }
-
-        value = D_1D8C * 0x94;
+        value = D_1D8C * sizeof(Overlay1LargeRecord);
         if (value != 0) {
             D_1D58 = overlay1AllocateBuildMemoryReloc(value, 0x85);
             overlay1ClearLargeRecordsReloc(D_1D58, value);
-            offset = 0;
-            record = records;
-            if (size > 0) {
-                do {
-                    if (record->type == 0xCA) {
-                        overlay1DecodeLargeRecordReloc(
-                            &D_1D58[record->link], record, 0);
-                    }
-                    offset += record->size;
-                    record = (Overlay1PackedRecord *)((u8 *)record + record->size);
-                } while (offset < size);
+            for (offset = 0, record = records; offset < size; offset += record->size, record = (Overlay1PackedRecord *)((u8 *)record + record->size)) {
+                if (record->type == 0xCA) {
+                    overlay1DecodeLargeRecordReloc(&D_1D58[record->link.index], record, 0);
+                }
             }
         } else {
             D_1D58 = NULL;
         }
-
-        if (D_1D58 == NULL) {
-            gOverlay1ModeConstant = 0;
-            overlay1ReportMissingLargeReloc(
-                (s32)(gOverlay1MissingLargeContext + D_1D98Read), 2, 2);
+        if (D_1D58 != NULL) {
+            G_o1_83e4 = 1;
+        } else {
+            G_o1_83e4 = 0;
+            overlay1ReportMissingLargeReloc(gOverlay1Data[0], 2, 2);
             return;
         }
-        {
-            f32 total;
-            f32 maximum;
-            f32 minimum;
-            f32 score;
-            f32 scale;
-            Overlay1LargeRecord *sourceA;
-            Overlay1LargeRecord *sourceB;
-            Overlay1LargeRecord *sourceC;
-            Overlay1LargeRecord *large;
-            Overlay1MetricCursor *metric;
-            Overlay1MetricCursor *metricA;
-            Overlay1MetricCursor *metricB;
-            Overlay1MetricCursor *metricC;
-
-            gOverlay1ModeConstant = 1;
-            D_1D5C = &D_1D58[D_1D8C - 1];
-
-            offset = 0;
-            record = records;
-            if (size > 0) {
-                do {
-                    if (record->type == 0xCA) {
-                        large = &D_1D58[record->link];
-                        maximum = 0.0f;
-                        minimum = D_D4;
-                        sourceA = overlay1GetMetricSourceAReloc(large);
-                        sourceB = overlay1GetMetricSourceBReloc(sourceA);
-                        sourceC = overlay1GetMetricSourceCReloc(large);
-                        index = 7;
-                        metric = (Overlay1MetricCursor *)((u8 *)large + 0x70);
-                        metricA = (Overlay1MetricCursor *)((u8 *)sourceA + 0x70);
-                        metricB = (Overlay1MetricCursor *)((u8 *)sourceB + 0x70);
-                        metricC = (Overlay1MetricCursor *)((u8 *)sourceC + 0x70);
-                        do {
-                            score = func_overlay_001_F0000F84_184D364(
-                                metricC->metric.x, metricC->metric.y,
-                                metric->metric.x, metric->metric.y,
-                                metricA->metric.x, metricA->metric.y,
-                                metricB->metric.x, metricB->metric.y, 0x10);
-                            metric->metric.score = score;
-                            if (metric->metric.rank != 0) {
-                                if (maximum < score) {
-                                    maximum = score;
-                                }
-                                if (score < minimum) {
-                                    minimum = score;
-                                }
-                            }
-                            loopValue = index;
-                            metric = (Overlay1MetricCursor *)((u8 *)metric - 0x10);
-                            metricA = (Overlay1MetricCursor *)((u8 *)metricA - 0x10);
-                            metricB = (Overlay1MetricCursor *)((u8 *)metricB - 0x10);
-                            metricC = (Overlay1MetricCursor *)((u8 *)metricC - 0x10);
-                            index--;
-                        } while (loopValue != 0);
-                        if (maximum != minimum) {
-                            scale = 51.0f / (maximum - minimum);
-                            index = 7;
-                            metric = (Overlay1MetricCursor *)((u8 *)large + 0x70);
-                            do {
-                                if (metric->metric.rank != 0) {
-                                    metric->metric.rank = (s8)(s32)(
-                                        (f32)metric->metric.rank +
-                                        ((maximum - metric->metric.score) * scale));
-                                    if (index == 3) {
-                                        metric->metric.rank += 5;
-                                    }
-                                }
-                                loopValue = index;
-                                metric = (Overlay1MetricCursor *)((u8 *)metric - 0x10);
-                                index--;
-                            } while (loopValue != 0);
+        D_1D5C = &D_1D58[D_1D8C - 1];
+        for (offset = 0, record = records; offset < size; offset += record->size, record = (Overlay1PackedRecord *)((u8 *)record + record->size)) {
+            if (record->type == 0xCA) {
+                large = &D_1D58[record->link.index];
+                maximum = 0.0f;
+                minimum = 3.4028235e38f;
+                sourceA = overlay1GetMetricSourceAReloc(large);
+                sourceB = overlay1GetMetricSourceBReloc(sourceA);
+                sourceC = overlay1GetMetricSourceCReloc(large);
+                i = 8;
+                while (i--) {
+                    score = func_overlay_001_F0000F84_184D364(
+                        sourceC->metrics[i].x, sourceC->metrics[i].y,
+                        large->metrics[i].x, large->metrics[i].y,
+                        sourceA->metrics[i].x, sourceA->metrics[i].y,
+                        sourceB->metrics[i].x, sourceB->metrics[i].y, 0x10);
+                    large->metrics[i].score = score;
+                    if (large->metrics[i].rank != 0) {
+                        if (maximum < score) {
+                            maximum = score;
+                        }
+                        if (score < minimum) {
+                            minimum = score;
                         }
                     }
-                    value = record->size;
-                    offset += value;
-                    record = (Overlay1PackedRecord *)((u8 *)record + value);
-                } while (offset < size);
+                }
+                if (maximum != minimum) {
+                    scale = 51.0f / (maximum - minimum);
+                    i = 8;
+                    while (i--) {
+                        if (large->metrics[i].rank != 0) {
+                            large->metrics[i].rank = (f32)large->metrics[i].rank + (maximum - large->metrics[i].score) * scale;
+                            if (i == 3) {
+                                large->metrics[i].rank += 5;
+                            }
+                        }
+                    }
+                }
             }
-
-            total = 0.0f;
-            index = D_1D8C - 1;
-            if (D_1D8C != 0) {
-                do {
-                total += D_1D58Read->metrics[3].score;
-                } while (index-- != 0);
-            }
-            D_1DA8 = total / (f32)D_1D8C;
-            index = 4;
-            do {
-                D_1DCC[index] = 0;
-            } while (index-- != 0);
+        }
+        total = 0.0f;
+        large = D_1D58;
+        i = D_1D8C;
+        while (i--) {
+            total += large->metrics[3].score;
+        }
+        D_1DA8 = total / (f32)D_1D8C;
+        i = 5;
+        while (i--) {
+            D_1DC8[i] = 0;
         }
     }
 }
+/*
+ * What moved it, measured with tools/fast_score.py on this TU:
+ *  - identities from the runtime relocation table: the "rank delta" and
+ *    "mode constant" are G_o1_83e0 and G_o1_83e4 (SYMBOL records into this
+ *    overlay's BSS), D_0 is resident gO1Finishers, the 0xFF clear is
+ *    gO1RankOrder[0..5], the last clear is D_1DC8[0..4], the report's
+ *    argument is the word at this overlay's .data +0, and D_BC..D_D4 are
+ *    rodata literals (0.8, 0.98, 1.15, 0.65, 0.9, 1.1, FLT_MAX);
+ *  - a switch on the config mode, every loop in the while (i--) idiom or a
+ *    plain record walk with no do/while guard copies: 469 at -52 -> 450 at -16;
+ *  - the group-less path is reached by goto (the shipped layout jumps over
+ *    the group code from a block holding only the records reload): -> 298 at
+ *    -12; the missing-large test is an if/else whose else returns: -> 181 at -4;
+ *  - the closing average reads D_1D58 once through a pointer local, so the
+ *    score load hoists out of its loop: -> 144 at size delta 0;
+ *  - one variable per loop role (k for the clear and points index, j for the
+ *    point index and the finalize count, entry for the two count/point walks,
+ *    node for the link walk): -> 49, frame 0xD8;
+ *  - declaration order putting the homes where shipped: -> 20.
+ * Open (20): the two running-maximum stores rematerialise their address in
+ * the target (lui at) instead of using the held register; the rank-adjust
+ * and average float registers are one ring position off; the FLT_MAX load
+ * and the large pointer argument trade places around the first source call.
+ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_head/func_overlay_001_F00010C8_184D4A8.s")
@@ -814,10 +814,10 @@ void overlay1CallReset(void) {
 
 /* PLATEAU-HANDOFF:overlay1LoadBuildRecords:start
  * symbol: overlay1LoadBuildRecords
- * score: 469 differing words
+ * score: 20/572 words
  * frame: 0xD8
- * relocations: 114
- * first-mismatch: +0x34
- * summary: Exact frame; 13 words short. Per-field group clear adopted. One BSS owner and a null-base 0x94 length do not close the rest.
+ * relocations: 110
+ * first-mismatch: +0x1F0
+ * summary: Rewritten in the overlay idiom with relocation identities: 469 at -52 to 20 at size 0, frame exact. Open: max-store address rematerialised, FP ring, arg order.
  * PLATEAU-HANDOFF:overlay1LoadBuildRecords:end
  */

@@ -2,11 +2,65 @@
 ### `overlay1LoadBuildRecords` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_head.c`
-- score: 469 differing words
+- score: 20/572 words
 - frame: 0xD8
-- relocations: 114
-- first mismatch: +0x34
-- summary: Exact frame; 13 words short. Per-field group clear adopted. One BSS owner and a null-base 0x94 length do not close the rest.
+- relocations: 110
+- first mismatch: +0x1F0
+- summary: Rewritten in the overlay idiom with relocation identities: 469 at -52 to 20 at size 0, frame exact. Open: max-store address rematerialised, FP ring, arg order.
+
+Summary before this remeasure: Exact frame; 13 words short. Per-field group clear adopted. One BSS owner and a null-base 0x94 length do not close the rest.
+
+### 2026-10-02 (lane x-o058): rewrite, 469 at -52 to 20 at size delta 0
+
+The inherited body was rewritten from the listing in overlay 1's own idiom
+(the matched F0002B4C/F0003258 shape), after decoding the runtime relocation
+records. Measured in order with tools/fast_score.py on the head TU:
+
+- Identities. The "rank delta" and "mode constant" stores are G_o1_83e0 and
+  G_o1_83e4 (SYMBOL records into overlay 1 BSS +0x0/+0x4); `D_0` is resident
+  gO1Finishers (selector 0xFFF +0x4C1FC, the counter F0001D78 increments);
+  the operands of the delta are resident +0x3198 and +0x319C; the 0xFF clear
+  is gO1RankOrder[0..5]; the closing clear is D_1DC8[0..4] (the shipped
+  address is D_1DC8 + 4 walking down, not D_1DCC upward); the report's first
+  argument is the word at overlay 1 .data +0; D_BC..D_D4 are LOCAL records
+  against rodata, i.e. the literals 0.8, 0.98, 1.15, 0.65, 0.9, 1.1 and
+  FLT_MAX. The 0xC9 records carry a byte at +0xC, the 0xCA records a halfword.
+- Shape: a switch on the config mode; every counted loop in the overlay's
+  while (i--) idiom; every record walk a plain for with no guard copy: 450 at
+  -16.
+- Layout: the group-less path is reached by goto (the shipped code jumps
+  over the group code from a block holding only the records reload): 298 at
+  -12. The missing-large test is an if/else whose else reports and returns:
+  181 at -4.
+- The closing average reads D_1D58 once through a pointer local, so the
+  score load hoists out of its loop: 144 at size delta 0.
+- One variable per loop role (the shipped registers say which loops share a
+  web): k for the group clear and the point-base loop, j for the point index
+  and the finalize count, entry for the two count/point walks, node for the
+  link walk. 49, and the frame is 0xD8.
+- Declaration order putting records, size and the two spilled metric sources
+  on their shipped homes: 20.
+
+Aligner at 20: byte-exact 552, naming 12, immediate 0, really different 8.
+
+Open, measured:
+
+- The two running-maximum stores (D_1D80 in the first walk, D_1D8C in the
+  large walk) rematerialise their address with lui in the target; ours store
+  through the held address register, so as1 turns the skip into a
+  branch-likely. Spelling the update through a value local (two forms) is 42;
+  the loads keep the held register in both builds, so this reads as a split
+  of the address web at the store block, not a spelling.
+- The rank-adjust and average blocks use the float ring one position off.
+- The FLT_MAX load and the large-pointer argument trade places around the
+  first metric-source call; four statement orders of large/maximum/minimum
+  measured 20 to 22.
+- The average loop's pointer takes a caller-saved register in the target;
+  reusing sourceC for it is 29.
+
+Next lever: the instrumented uopt decision records for the D_1D80 address
+web (does globalcolor split it at the store block in the target's shape),
+then the DKWB freelist trace for the two float blocks.
 
 - identity: Overlay 1 text `+0x10C8..+0x19B8`, ROM `0x184D4A8..0x184DD98`, 2,288 executable bytes with no credited padding
 - ABI and flags: `void overlay1LoadBuildRecords(void)`, configured `-O2 -mips2 -32`; candidate and target frames are both `0xD8`

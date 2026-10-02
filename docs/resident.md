@@ -3314,9 +3314,10 @@ function bytes and call relocation match.
 The Mickey-derived logarithm-series helper `func_80058EF4` is exact under
 `-O2 -mips2 -32 -Wab,-r4300_mul`. A named loop-invariant square reproduces
 the target FP lifetime coloring, and a direct integer-constant multiplication
-reproduces its return-register coalescing. All 36 executable words and the
-`D_80084318` relocation pair match; the following `0x0C` bytes are TU padding
-and receive no credit. Exact executable C in `main/vehicle_sounds` now totals
+reproduces its return-register coalescing. All 36 executable words match; its
+0.001f literal is the last word of the TU's own `.rodata` (carved at
+`0x84EF0` since 2026-10-02); the following `0x0C` bytes are TU padding and
+receive no credit. Exact executable C in `main/vehicle_sounds` now totals
 `0xF4` bytes.
 
 The remaining vehicle functions plateau without exact credit.

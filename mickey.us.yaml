@@ -729,6 +729,9 @@ segments:
       # the anim functions that use it match.
       - [0x84BA8, .rodata, main/anim]
       - [0x84BAC, rodata]
+      # vehicle_sounds' literal pool: func_8005830C's ten floats, then
+      # func_80058EF4's 0.001f; the last word is the object's alignment pad.
+      - [0x84EF0, .rodata, main/vehicle_sounds]
       # gsSnd diagnostics followed by func_8005BA40's 16-entry switch table.
       - [0x84F20, .rodata, main/gsSnd]
       # Five n_csplayer jump tables, in the same order and with the same

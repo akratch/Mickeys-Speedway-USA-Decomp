@@ -174,7 +174,6 @@ void func_80034920(Gfx **dlist) {
     }
     D_8007BD8C = 0;
 }
-#ifdef NON_MATCHING
 /* PROVENANCE: gDkrDmaDisplayList as defined in Jet Force Gemini's public
  * include/f3ddkr.h (G_DMADL is command 7). */
 #define gDkrDmaDisplayList(pkt, address, numberOfCommands)                     \
@@ -185,6 +184,7 @@ void func_80034920(Gfx **dlist) {
                         _SHIFTL((numberOfCommands * 8), 0, 16));               \
         _g->words.w1 = (unsigned int)(address);                                \
     }
+#ifdef NON_MATCHING
 /*
  * PROVENANCE: Jet Force Gemini's public texDPTextureX establishes the related
  * texture/render-state role.  This body's fields, tables, control flow, and
@@ -193,6 +193,7 @@ void func_80034920(Gfx **dlist) {
 void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
                    s32 frame) {
     TextureRenderSettings *settings;
+    TextureRenderSettings *table;
     Gfx *dl;
     Gfx *textureCommands;
     u8 *currentTexture;
@@ -204,7 +205,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     s32 hasTexture;
     s32 settingsIndex;
     s32 tableFlags;
-    s32 *cachedState;
+    s32 stateKey;
 
     if (D_8007BD8C != 0) {
         oldBlockedFlags = D_8007BD90;
@@ -215,7 +216,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     hasTexture = 0;
     dl = *dlist;
     if (tex != NULL) {
-        settings = D_8007B680;
+        table = D_8007B680;
         numTextures = tex->numOfTextures >> 8;
         frameIndex = frame >> 16;
         if ((numTextures >= 2) && (frameIndex < numTextures) &&
@@ -267,7 +268,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
             }
         }
     } else {
-        settings = D_8007B980;
+        table = D_8007B980;
     }
 
     if ((flags & 0x80) && (D_8007BD98 != 0)) {
@@ -293,13 +294,12 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
         settingsIndex += 8;
     }
 
-    settings += settingsIndex;
+    settings = &table[settingsIndex];
     tableFlags = settings->flags | (flags & settings->mask);
-    cachedState = &D_800D302C;
-    if ((*cachedState != ((settingsIndex << 8) | tableFlags)) ||
-        (D_800D3020 != settings)) {
-        *cachedState = (settingsIndex << 8) | tableFlags;
-        D_800D3020 = settings;
+    stateKey = (settingsIndex << 8) | tableFlags;
+    if ((D_800D302C != stateKey) || (D_800D3020 != table)) {
+        D_800D302C = stateKey;
+        D_800D3020 = table;
         gDPPipeSync(dl++);
         if (tableFlags & 2) {
             if (D_800D3030 == 0) {
@@ -338,16 +338,19 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
  * commands are gSPDisplayList and gDkrDmaDisplayList; the wrap takes an else
  * arm; numTextures is declared ahead of oldBlockedFlags so that home lands at
  * -0x1C; settings is assigned at the head of the texture arm. A pointer to
- * D_800D302C, live across its load and store, stops the early address hold
- * and restores the target store order. Reusing an integer for that address
- * grew by 4 bytes. Left: register naming from +0x24. */
+ * D_800D302C, live across its load and store, stopped the early address
+ * hold; since 2026-10-02 (lane p-tex2) the cache compare is the sibling
+ * func_80034E54's: a state key compared and stored directly, and
+ * D_800D3020 caching the table BASE (the target compares and stores the
+ * unindexed table register), the indexed entry read through its own
+ * pointer (175 to 172). Left: register naming from +0x24. */
 /* PLATEAU-HANDOFF:func_800349A4:start
  * symbol: func_800349A4
- * score: 175 differing words
- * frame: 0x40
+ * score: 172/272 words
+ * frame: 0x40 (target 0x40)
  * relocations: 39
  * first-mismatch: +0x24
- * summary: Delta 0, 175 masked, frame 0x40, 39 relocs. A D_800D302C pointer rematerializes the load and store; integer reuse grew by 4. Left: naming from +0x24.
+ * summary: 175 to 172 at delta 0: D_800D3020 caches the table base, the state key is compared directly. Left: register naming from +0x24.
  * PLATEAU-HANDOFF:func_800349A4:end
  */
 #else
@@ -372,25 +375,21 @@ void func_80034DF0(u8 red, u8 green, u8 blue, u8 alternateRed,
 void func_80034E48(void) {
     D_8007BD9C = 0;
 }
-#ifdef NON_MATCHING
 /* PROVENANCE: control-flow shape adapted from Jet Force Gemini's public
  * asm/nonmatchings/textures/sprDPset.s. Mickey's fields, globals, calls, and
  * compiler output remain authoritative.
  *
- * 2026-10-02 (lane o-tex), 424 to 5 at delta 0: the wrap quotient is its
- * own local (it takes a0, not a ring temp); frameIndex is assigned once after
- * the wrap, before the cursor read, and the empty test on it (the idiom
- * func_80035E88 keeps) holds the one truncation in the join block where uopt
- * would otherwise sink a copy into each arm; the frame counts and the
- * per-frame texture count are read from the sprite at each use; frameIndex
- * is reused for the next frame's texture base, which keeps currentTexture a
- * live variable spilled at its home; the next-frame wrap is if/else (the
- * target's branch over an empty else); the texture-count division comes
- * first in the frame-list block; the second DMA adds 0x80000038 directly;
- * the six colour bytes are named fields (array subscripts reassociate the
- * colour OR chain); an empty test between the two upper-table words splits
- * the tie that gave the upper offset v0; the cached table pointer is
- * compared through its typed cast. Left: nextFrame split over a0/a1. */
+ * Matched 2026-10-02 (lanes o-res6, o-tex, p-tex2): the wrap quotient is its
+ * own local; frameIndex is assigned once after the wrap with an empty test on
+ * it (keeps the truncation in the join block); frame counts are read from the
+ * sprite at each use; the next-frame wrap is if/else; the colour bytes are
+ * named fields; an empty test splits the upper-table tie; the cached table
+ * pointer is compared through its typed cast. The last 5 words: frameIndex is
+ * scaled in place into the current texture base right after
+ * `nextFrame = frameIndex + 1`, which kills frameIndex between the increment
+ * and its compare, so uopt cannot propagate the expression into the compare
+ * and nextFrame stays one a1 web; frameIndex declared at the former
+ * currentTexture home and one unused pad keep the 0x90/0x84 and temp slots. */
 void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) {
     TextureRenderSettings *settings;
     TextureFrameHeader *texture;
@@ -399,15 +398,15 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
     s32 settingsIndex;
     s32 opacity;
     s32 texturesPerFrame;
-    s32 currentTexture;
+    s32 frameIndex;
     s32 tableFlags;
     s32 stateKey;
     Gfx *dl;
     s32 nextTexture;
     s32 nextFrame;
+    s32 pad;
     s32 i;
     s32 j;
-    s32 frameIndex;
 
     if ((f32)(u32)sprite->numberOfFrames <= frame) {
         i = frame / (u32)sprite->numberOfFrames;
@@ -503,9 +502,9 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
     }
     if (sprite->drawFlags & 0x40) {
         texturesPerFrame = sprite->numberOfTextures / sprite->numberOfFrames;
-        nextFrame = frameIndex + 1;
-        currentTexture = texturesPerFrame * frameIndex;
         frameCommands = sprite->frameDisplayLists[0];
+        nextFrame = frameIndex + 1;
+        frameIndex = texturesPerFrame * frameIndex;
         if (nextFrame >= sprite->numberOfFrames) {
             if (sprite->spriteFlags != 0) {
                 nextFrame = 0;
@@ -513,10 +512,10 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
                 nextFrame--;
             }
         }
-        frameIndex = texturesPerFrame * nextFrame;
+        nextTexture = texturesPerFrame * nextFrame;
         for (i = 0; i < texturesPerFrame; i++) {
-            texture = sprite->textures[currentTexture + i];
-            nextTex = sprite->textures[frameIndex + i];
+            texture = sprite->textures[frameIndex + i];
+            nextTex = sprite->textures[nextTexture + i];
             gDkrDmaDisplayList(dl++, (u32)texture->cmd + 0x80000000, 7);
             gDkrDmaDisplayList(dl++, (u32)nextTex->cmd + 0x80000038, 7);
             for (j = 0; j < sprite->commandOffsets[i]; j++) {
@@ -535,18 +534,6 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
     }
     *dlist = dl;
 }
-/* PLATEAU-HANDOFF:func_80034E54:start
- * symbol: func_80034E54
- * score: 5/467 words
- * frame: 0xB0 (target 0xB0)
- * relocations: 43
- * first-mismatch: +0x590
- * summary: 424 to 5 at delta 0. Left: nextFrame is copy-propagated (a0 web plus an a1 copy) where the target keeps one a1 web.
- * PLATEAU-HANDOFF:func_80034E54:end
- */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/textures_354C8/func_80034E54.s")
-#endif
 #ifdef NON_MATCHING
 /* PROVENANCE: control-flow shape adapted from Diddy Kong Racing's public
  * src/textures_sprites.c::tex_load_sprite and cross-checked against Jet Force

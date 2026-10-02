@@ -4764,15 +4764,17 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o052/overlay52TailB.c.o",
       "offset": 1596,
       "overlay": 52,
       "size": 6748,
       "source": "src/overlays/o052/overlay52TailB.c",
       "tools": [
-        "trim_elf_section.py"
+        "rebind_elf_relocations.py",
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -9290,7 +9292,7 @@
       "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 278272,
+    "matched_c_bytes_with_postprocess": 285020,
     "objects_with_postprocess": 643
   }
 }

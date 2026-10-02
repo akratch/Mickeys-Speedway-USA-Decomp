@@ -2,11 +2,17 @@
 ### `func_overlay_052_F000063C_189ACAC` plateau handoff
 
 - source: `src/overlays/o052/overlay52TailB.c`
-- score: 500 differing words
+- score: 0/1687 words, promoted
 - frame: 0x118
 - relocations: 314
-- first mismatch: +0x5E0
-- summary: Lap and alpha in i, mode bit and buttons one local: 506 to 500. Open: lap colours t1 not v0; temp-ring rotation after +0xE00.
+- first mismatch: none
+- summary: Matched. -Wab,-r4300_mul; overlay data defined in the TU and dropped at link; the shipped set of locals (lap and alpha own, time difference in iconX's, first and second HUD rows indexed); (u8) alpha; shipped evaluation orders.
+
+Summary before this remeasure: Own lap/alpha locals, HUD rows indexed, difference loaded then negated: 19 to 2. Open: player*48 spill cell 0x64 not 0x60.
+
+Summary before this remeasure: Address-order ring fixes: late HUD pointer, compare/rounding order, (u8) alpha: 500 to 19. Open: lap s1 not v0 (iconX web).
+
+Summary before this remeasure: Lap and alpha in i, mode bit and buttons one local: 506 to 500. Open: lap colours t1 not v0; temp-ring rotation after +0xE00.
 
 Summary before this remeasure: Clock hand as *-65536, digit fix-up over records 1..8, local reuse: 602 to 506 at delta 0. Open: register ring after +0xE00.
 
@@ -15,6 +21,72 @@ Summary before this remeasure: Icon x/y own locals, slide test inverted, differe
 Summary before this remeasure: -r4300_mul + TU-local o52 data, indexed item loops, 9-record fill: 1337 to 814 at delta 0. Next: windows 0xD00-0x1500.
 
 Summary before this remeasure: Live size 6748/0. Counted recurrence does not unroll. L160 slot/digits and L99/L100 probes inert or worse. Next: shared 24C lui and blez delay of i=0.
+
+## 2026-10-02 h-o052b: 500 to 0, read in address order; promoted
+
+The lap count's colour was not what rotated the tail. Giving the lap a
+call-free symbol of its own puts it in v0 as shipped (a block-scoped local
+does too, but its frame home pushes every uopt spill cell down 4: 530), and
+the rotation after +0xE00 stays (500). The ugen freelist trace
+(`DKWB_UGEN_SCHED=1`, FIFO) showed the timer arm's first draws already out
+of phase, so each region was fixed in address order, keeping cells that
+regress positionally when the local registers match the target:
+
+- Second HUD pointer (`secondary = o52_bss_340[player]`) assigned just
+  before its draw call; uopt still hoists it, but after the record-row base,
+  so the arm entry draws match. Lap/time-difference compare written
+  `racer->lap != level->laps` (level->laps is then read first, as shipped),
+  and the hundredths rounding as `hundredths -= hundredths % 10;
+  hundredths += o52_data_31C;` (the subtract lands in a0 as shipped). In a
+  product of the three with the pointer order: 409 at +0 (the arm itself
+  matched only in the 445/453 cells; 409 was a different compensation).
+- Split-screen 53-item icon assigns X before Y; the full-screen arms keep X
+  first (the per-arm draw orders then match): 446 at +0 (the product's 282
+  cell had matching totals but wrong arms).
+- Shadow alpha held unmasked and passed as `(u8)alpha` (item 16: the cast
+  spends the draw that closes the ring for the rest of the function): 34.
+- Item-count block in the order iconX, iconY, alpha, count store: 26.
+- Lap count and time difference in iconX's symbol, alpha in its own (the
+  former `difference`): 19 at +0. The slide-bar value is then a3 as shipped
+  (it was s1/t0 because the time difference shared value1's symbol).
+
+At 19 the lap count was s1 (iconX's colour) where shipped is v0. Taking it
+out of iconX's symbol recoloured iconX/iconY (iconX s4, iconY s1, t2 freed
+into the ring, -24 bytes). The uopt colouring records (`CDX_LOG`) said why:
+iconY's web is 40/2 = 20.0, iconX alone 20.0 (wins the tie on web number),
+iconX with the time difference 70/4 = 17.5 (loses), with the lap as well
+150/6 = 25.0. The shipped code does keep the time difference in s1, so it
+is iconX's symbol; what lifts that web is the spelling of the negative arm:
+
+- `iconX = racer->timeDifference; iconX = -iconX;` (load, then negate the
+  local) instead of `iconX = -racer->timeDifference;`: the web has one more
+  def and use, and with the lap in `i` the function is 17 at +0.
+- The lap then needs a symbol of its own (v0 as shipped), and so does the
+  alpha (subtract v1, cast t1 as shipped); every existing symbol either
+  merges a colour or adds a frame home (a fresh local pushes the uopt spill
+  cells down 4: 65). The second HUD pointer is the spare: `secondary` is
+  indexed at each use (`o52_bss_100[player]`, `o52_bss_340[player]`) and its
+  declaration becomes the alpha's: 2 at +0. The lap store's schedule at
+  +0x870 closed with it.
+
+The last 2 words were the player*48 row offset (shared by the o52_bss_0,
+A0 and 100 rows) spilled to sp+0x64 where shipped is sp+0x60. Indexing the
+first HUD row at each use (`o52_bss_0[player][k]`, no `digits` for that
+region; the lap and timer arms keep it) puts it in sp+0x60: 0 masked words
+at +0, frame 0x118. Flat at 2 first: the toggle spelling, the lap-arm
+`digits` before or after its first call. Extern declarations of the
+overlay data instead of the TU-local definitions measure 1,598 words at
++16, so the data stays defined here and is dropped at POSTPROCESS.
+
+Promotion (o054 TailA's form): the object's .data/.bss sections are removed
+after its 172 section-relative text relocations are rebound to zero-valued
+bases (`config/normalizations/func_overlay_052_F000063C_189ACAC.rebind.spec`),
+so only overlay52Initialize's copy of overlay 52's data is linked; the 27
+resident callees, the three overlay 45/56 callees and the eight resident
+data names are renamed to `*_o052Reloc` placeholders in the POSTPROCESS rule.
+No .rodata is emitted (every float constant is an immediate). `gmake
+verify`, `check-overlay-syms` and `promotion-proof` (314/314 relocations)
+pass.
 
 ## 2026-10-02 f-o052b (fourth bank): 506 to 500, and where it stops
 

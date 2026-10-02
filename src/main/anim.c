@@ -3492,155 +3492,159 @@ void func_80056274(HitCopyState *first, HitCopyState *second, f32 unused) {
     TrapDanglingJump(first, 6, firstTarget);
     TrapDanglingJump(second, 0xA);
 }
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: JFG's public assembly-only hitVectorCheck establishes the
- * collision role and broad case ordering. This typed body is reconstructed
- * from Mickey's target, its m2c dataflow, and Mickey's neighboring collision
- * helpers; Mickey's bytes remain authoritative.
+ * collision role and broad case ordering; Mickey's fields, helper calls and
+ * bytes are authoritative.
+ *
+ * Matched 2026-10-02 (lane n-anim) from 637 masked words: every vector is an
+ * f32[3] local (memory-resident), locals are declared in the target's frame
+ * order, the cylinder test carries its offset and closest point in one x/y/z
+ * set, the end caps offset from the edge point, and the radius sum is the
+ * first statement.
  */
 s32 func_800563B4(s32 object, AnimCollisionShape *first, s32 value,
                   AnimCollisionShape *second, AnimCollisionResult *result) {
-    AnimVec3f axis;
-    AnimVec3f direction;
-    AnimVec3f point;
-    AnimVec3f endpoint;
-    AnimVec3f minimum;
-    AnimVec3f maximum;
+    f32 axis[3];
+    f32 direction[3];
+    f32 point[3];
+    f32 endpoint[3];
+    f32 minimum[3];
+    f32 maximum[3];
+    f32 x;
+    f32 y;
+    f32 z;
     f32 length;
     f32 radius;
     f32 near;
     f32 far;
+    f32 projection;
     f32 normalX;
     f32 normalY;
     f32 normalZ;
-    f32 projection;
-    s32 face;
     s32 status;
+    s32 face;
 
-    direction.x = first->vector.x;
-    direction.y = first->vector.y;
     radius = first->radius + second->radius;
-    direction.z = first->vector.z;
+    direction[0] = first->vector.x;
+    direction[1] = first->vector.y;
+    direction[2] = first->vector.z;
     status = 0;
-    length = (direction.z * direction.z) +
-             ((direction.x * direction.x) +
-              (direction.y * direction.y));
-
+    length = direction[0] * direction[0] + direction[1] * direction[1] +
+             direction[2] * direction[2];
     if (second->shape == 0) {
         if (length > 0.0f) {
             length = sqrtf(length);
-            direction.x /= length;
-            direction.y /= length;
-            direction.z /= length;
+            direction[0] /= length;
+            direction[1] /= length;
+            direction[2] /= length;
         }
-        if (func_80012574(&first->position, &direction, &second->edge,
-                          radius, &near, &far) != 0) {
-            if ((near >= 0.0f) && (near <= length)) {
+        if (func_80012574(&first->position, (AnimVec3f *) direction,
+                          &second->edge, radius, &near, &far) != 0) {
+            if (near >= 0.0f && near <= length) {
                 status = 1;
-                point.x = (direction.x * near) + first->position.x;
-                point.y = (direction.y * near) + first->position.y;
-                point.z = (direction.z * near) + first->position.z;
-                normalX = (point.x - second->edge.x) / radius;
-                normalY = (point.y - second->edge.y) / radius;
+                point[0] = direction[0] * near + first->position.x;
+                point[1] = direction[1] * near + first->position.y;
+                point[2] = direction[2] * near + first->position.z;
+                normalX = (point[0] - second->edge.x) / radius;
+                normalY = (point[1] - second->edge.y) / radius;
+                normalZ = (point[2] - second->edge.z) / radius;
                 near /= length;
-                normalZ = (point.z - second->edge.z) / radius;
-            } else if ((first->flags & 2) && (near < 0.0f) && (far > 0.0f)) {
+            } else if ((first->flags & 2) && near < 0.0f && far > 0.0f) {
                 status = 2;
             }
         }
     } else if (second->shape == 1) {
         if (length > 0.0f) {
             length = sqrtf(length);
-            direction.x /= length;
-            direction.y /= length;
-            direction.z /= length;
+            direction[0] /= length;
+            direction[1] /= length;
+            direction[2] /= length;
         }
-        axis.x = 0.0f;
-        axis.z = 0.0f;
-        axis.y = 1.0f;
-        if (func_80012234(&first->position, &direction, &second->position,
-                          &axis, radius, &near, &far) != 0) {
-            if ((near >= 0.0f) && (near <= length)) {
-                point.x = (direction.x * near) + first->position.x;
-                point.y = (direction.y * near) + first->position.y;
-                point.z = (direction.z * near) + first->position.z;
-                projection =
-                    (((point.x - second->position.x) * axis.x) +
-                     ((point.y - second->position.y) * axis.y) +
-                     ((point.z - second->position.z) * axis.z)) /
-                    ((axis.z * axis.z) +
-                     ((axis.x * axis.x) + (axis.y * axis.y)));
-                if ((-second->height <= projection) &&
-                    (projection <= second->height)) {
+        axis[0] = 0.0f;
+        axis[2] = 0.0f;
+        axis[1] = 1.0f;
+        if (func_80012234(&first->position, (AnimVec3f *) direction,
+                          &second->position, (AnimVec3f *) axis, radius,
+                          &near, &far) != 0) {
+            if (near >= 0.0f && near <= length) {
+                point[0] = direction[0] * near + first->position.x;
+                point[1] = direction[1] * near + first->position.y;
+                point[2] = direction[2] * near + first->position.z;
+                x = point[0] - second->position.x;
+                y = point[1] - second->position.y;
+                z = point[2] - second->position.z;
+                projection = (x * axis[0] + y * axis[1] + z * axis[2]) /
+                             (axis[0] * axis[0] + axis[1] * axis[1] +
+                              axis[2] * axis[2]);
+                if (-second->height <= projection &&
+                    projection <= second->height) {
                     status = 1;
-                    normalX =
-                        (point.x - ((axis.x * projection) +
-                                    second->position.x)) / radius;
-                    normalY =
-                        (point.y - ((axis.y * projection) +
-                                    second->position.y)) / radius;
-                    normalZ =
-                        (point.z - ((axis.z * projection) +
-                                    second->position.z)) / radius;
+                    x = axis[0] * projection + second->position.x;
+                    y = axis[1] * projection + second->position.y;
+                    z = axis[2] * projection + second->position.z;
+                    normalX = (point[0] - x) / radius;
+                    normalY = (point[1] - y) / radius;
+                    normalZ = (point[2] - z) / radius;
                     near /= length;
                 }
-            } else if ((first->flags & 2) && (near < 0.0f) && (far > 0.0f)) {
+            } else if ((first->flags & 2) && near < 0.0f && far > 0.0f) {
                 status = 2;
             }
         }
         if (status == 0) {
-            endpoint.x = second->position.x - (axis.x * second->height);
-            endpoint.y = second->position.y - (axis.y * second->height);
-            endpoint.z = second->position.z - (axis.z * second->height);
-            if (func_80012574(&first->position, &direction, &endpoint,
-                              radius, &near, &far) != 0) {
-                if ((near >= 0.0f) && (near <= length)) {
+            endpoint[0] = second->edge.x - axis[0] * second->height;
+            endpoint[1] = second->edge.y - axis[1] * second->height;
+            endpoint[2] = second->edge.z - axis[2] * second->height;
+            if (func_80012574(&first->position, (AnimVec3f *) direction,
+                              (AnimVec3f *) endpoint, radius, &near,
+                              &far) != 0) {
+                if (near >= 0.0f && near <= length) {
                     status = 1;
-                    point.x = (direction.x * near) + first->position.x;
-                    point.y = (direction.y * near) + first->position.y;
-                    point.z = (direction.z * near) + first->position.z;
-                    normalX = (point.x - endpoint.x) / radius;
-                    normalY = (point.y - endpoint.y) / radius;
-                    normalZ = (point.z - endpoint.z) / radius;
+                    point[0] = direction[0] * near + first->position.x;
+                    point[1] = direction[1] * near + first->position.y;
+                    point[2] = direction[2] * near + first->position.z;
+                    normalX = (point[0] - endpoint[0]) / radius;
+                    normalY = (point[1] - endpoint[1]) / radius;
+                    normalZ = (point[2] - endpoint[2]) / radius;
                     near /= length;
-                } else if ((first->flags & 2) && (near < 0.0f) &&
-                           (far > 0.0f)) {
+                } else if ((first->flags & 2) && near < 0.0f && far > 0.0f) {
                     status = 2;
                 }
             }
         }
         if (status == 0) {
-            endpoint.x = (axis.x * second->height) + second->position.x;
-            endpoint.y = (axis.y * second->height) + second->position.y;
-            endpoint.z = (axis.z * second->height) + second->position.z;
-            if (func_80012574(&first->position, &direction, &endpoint,
-                              radius, &near, &far) != 0) {
-                if ((near >= 0.0f) && (near <= length)) {
+            endpoint[0] = axis[0] * second->height + second->edge.x;
+            endpoint[1] = axis[1] * second->height + second->edge.y;
+            endpoint[2] = axis[2] * second->height + second->edge.z;
+            if (func_80012574(&first->position, (AnimVec3f *) direction,
+                              (AnimVec3f *) endpoint, radius, &near,
+                              &far) != 0) {
+                if (near >= 0.0f && near <= length) {
                     status = 1;
-                    point.x = (direction.x * near) + first->position.x;
-                    point.y = (direction.y * near) + first->position.y;
-                    point.z = (direction.z * near) + first->position.z;
-                    normalX = (point.x - endpoint.x) / radius;
-                    normalY = (point.y - endpoint.y) / radius;
-                    normalZ = (point.z - endpoint.z) / radius;
+                    point[0] = direction[0] * near + first->position.x;
+                    point[1] = direction[1] * near + first->position.y;
+                    point[2] = direction[2] * near + first->position.z;
+                    normalX = (point[0] - endpoint[0]) / radius;
+                    normalY = (point[1] - endpoint[1]) / radius;
+                    normalZ = (point[2] - endpoint[2]) / radius;
                     near /= length;
-                } else if ((first->flags & 2) && (near < 0.0f) &&
-                           (far > 0.0f)) {
+                } else if ((first->flags & 2) && near < 0.0f && far > 0.0f) {
                     status = 2;
                 }
             }
         }
     } else if (second->shape == 2) {
-        minimum.x = (second->edge.x - second->radius) - first->radius;
-        minimum.y = (second->edge.y - second->height) - first->height;
-        minimum.z = (second->edge.z - second->radius) - first->radius;
-        maximum.x = second->edge.x + second->radius + first->radius;
-        maximum.y = second->edge.y + second->height + first->height;
-        maximum.z = second->edge.z + second->radius + first->radius;
-        face = func_800131AC(&first->position, &direction, &minimum, &maximum,
+        minimum[0] = second->edge.x - second->radius - first->radius;
+        minimum[1] = second->edge.y - second->height - first->height;
+        minimum[2] = second->edge.z - second->radius - first->radius;
+        maximum[0] = second->edge.x + second->radius + first->radius;
+        maximum[1] = second->edge.y + second->height + first->height;
+        maximum[2] = second->edge.z + second->radius + first->radius;
+        face = func_800131AC(&first->position, (AnimVec3f *) direction,
+                             (AnimVec3f *) minimum, (AnimVec3f *) maximum,
                              &near, &far);
-        if ((face != 0) && (near >= 0.0f) && (near <= 1.0f)) {
+        if (face != 0 && near >= 0.0f && near <= 1.0f) {
             switch (face) {
                 case 1:
                     normalY = 0.0f;
@@ -3681,17 +3685,16 @@ s32 func_800563B4(s32 object, AnimCollisionShape *first, s32 value,
                     break;
             }
         } else if (first->flags & 2) {
-            if ((minimum.x <= first->position.x) &&
-                (first->position.x <= maximum.x) &&
-                (minimum.y <= first->position.y) &&
-                (first->position.y <= maximum.y) &&
-                (minimum.z <= first->position.z) &&
-                (first->position.z <= maximum.z)) {
+            if (minimum[0] <= first->position.x &&
+                first->position.x <= maximum[0] &&
+                minimum[1] <= first->position.y &&
+                first->position.y <= maximum[1] &&
+                minimum[2] <= first->position.z &&
+                first->position.z <= maximum[2]) {
                 status = 2;
             }
         }
     }
-
     if (status == 1) {
         result->object = object;
         result->value = value;
@@ -3706,9 +3709,6 @@ s32 func_800563B4(s32 object, AnimCollisionShape *first, s32 value,
     }
     return status;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_800563B4.s")
-#endif
 
 f32 func_8002A8BC(s32 angle);
 f32 func_8002A8C0(s32 angle);
@@ -4182,16 +4182,6 @@ void fmvInit(void) {
  * first-mismatch: +0x24
  * summary: Size now exact at 229 words and frame 0x70; impulse dots-then-divide closed the missing word. Residual is the early 25.0f materialization rotating the FP ring from +0x24.
  * PLATEAU-HANDOFF:func_80056DD8:end
- */
-
-/* PLATEAU-HANDOFF:func_800563B4:start
- * symbol: func_800563B4
- * score: 637 differing words
- * frame: 0xD8
- * relocations: 11
- * first-mismatch: +0x1C
- * summary: Re-measured under the TU's -Wab,-r4300_mul selection and unchanged; candidate is 609 of 649 words with the exact frame, so the deficit is missing radius/vector work rather than allocation.
- * PLATEAU-HANDOFF:func_800563B4:end
  */
 
 /* PLATEAU-HANDOFF:func_80053868:start

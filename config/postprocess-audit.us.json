@@ -54,6 +54,7 @@
       "size": null,
       "source": "src/main/anim.c",
       "tools": [
+        "rebind_elf_relocations.py",
         "trim_elf_section.py",
         "objcopy"
       ]

@@ -306,11 +306,11 @@ extern f32 func_overlay_001_F0000F84_184D364(
     f32 x0, f32 y0, f32 x1, f32 y1, f32 x2, f32 y2, f32 x3, f32 y3,
     s32 scale);
 
-/* 2026-10-02 x-o058: rewritten in the overlay's while (i--) / record-walk
- * shape from the listing: 469 masked at -52 bytes -> 20 at size delta 0,
- * frame 0xD8 exact. The notes below the body (inside the guard, standing in
- * for the line padding that keeps later functions on their numbers) say how. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-02. Written from the listing in the overlay's while (i--)
+ * and record-walk shape, with identities from the runtime relocation table.
+ * The lines below the body are padding: later functions in this file match
+ * on their physical line numbers. */
+
 extern s32 gO1Finishers;
 extern s32 G_o1_83e0;
 extern s32 G_o1_83e4;
@@ -341,8 +341,8 @@ void overlay1LoadBuildRecords(void) {
     f32 maximum;
     f32 minimum;
     f32 scale;
-    f32 total;
-    Overlay1LargeRecord *base;
+    s32 *highest;
+    s32 candidate;
 
     overlay1LoadPackedRecordsReloc(&records, &size, 1);
     D_1D7C = 0;
@@ -382,9 +382,10 @@ void overlay1LoadBuildRecords(void) {
     for (offset = 0, record = records; offset < size; offset += record->size, record = (Overlay1PackedRecord *)((u8 *)record + record->size)) {
         if (record->type == 0xC8) {
             D_1D7C++;
-            if (D_1D80 < record->group + 1) {
-                D_1D80 = record->group + 1;
-            }
+            highest = &D_1D80;
+            candidate = record->group + 1;
+            k = candidate;
+            if (*highest < k) D_1D80 = k;
         }
     }
 
@@ -460,9 +461,10 @@ large:
     {
         for (offset = 0, record = records; offset < size; offset += record->size, record = (Overlay1PackedRecord *)((u8 *)record + record->size)) {
             if (record->type == 0xCA) {
-                if (D_1D8C < record->link.index + 1) {
-                    D_1D8C = record->link.index + 1;
-                }
+                highest = &D_1D8C;
+                candidate = record->link.index + 1;
+                k = candidate;
+                if (*highest < k) D_1D8C = k;
             }
         }
         value = D_1D8C * sizeof(Overlay1LargeRecord);
@@ -523,13 +525,13 @@ large:
                 }
             }
         }
-        total = 0.0f;
-        base = D_1D58;
+        scale = 0.0f;
+        sourceA = D_1D58;
         i = D_1D8C;
         while (i--) {
-            total += base->metrics[3].score;
+            scale += sourceA->metrics[3].score;
         }
-        D_1DA8 = total / (f32)D_1D8C;
+        D_1DA8 = scale / (f32)D_1D8C;
         i = 5;
         while (i--) {
             D_1DC8[i] = 0;
@@ -537,28 +539,11 @@ large:
     }
 }
 /*
- * What moved it, measured with tools/fast_score.py on this TU:
- *  - identities from the runtime relocation table: the "rank delta" and
- *    "mode constant" are G_o1_83e0 and G_o1_83e4 (SYMBOL records into this
- *    overlay's BSS), D_0 is resident gO1Finishers, the 0xFF clear is
- *    gO1RankOrder[0..5], the last clear is D_1DC8[0..4], the report's
- *    argument is the word at this overlay's .data +0, and D_BC..D_D4 are
- *    rodata literals (0.8, 0.98, 1.15, 0.65, 0.9, 1.1, FLT_MAX);
- *  - a switch on the config mode, every loop in the while (i--) idiom or a
- *    plain record walk with no do/while guard copies: 469 at -52 -> 450 at -16;
- *  - the group-less path is reached by goto (the shipped layout jumps over
- *    the group code from a block holding only the records reload): -> 298 at
- *    -12; the missing-large test is an if/else whose else returns: -> 181 at -4;
- *  - the closing average reads D_1D58 once through a pointer local, so the
- *    score load hoists out of its loop: -> 144 at size delta 0;
- *  - one variable per loop role (k for the clear and points index, j for the
- *    point index and the finalize count, entry for the two count/point walks,
- *    node for the link walk): -> 49, frame 0xD8;
- *  - declaration order putting the homes where shipped: -> 20;
- *  - the rank adjust as `rank += (max - score) * scale`: -> 10 (both float
- *    blocks); FLT_MAX on the first source call's line (L59): -> 8; the
- *    average through its own pointer local (base, caller-saved): -> 6.
- * Open (6): the two running-maximum stores rematerialise their address.
+ * The last six words were the two running-maximum updates. The shipped code
+ * reads the count through a held address and stores it by name, which is
+ * overlay1AssignRecordIndex's statement group: a pointer read, the candidate
+ * in its own local, a copy of it, then the store. The closing average reuses
+ * sourceA and scale so the frame keeps its 23 cells.
  */
 
 
@@ -611,9 +596,24 @@ large:
 
 
 
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_head/func_overlay_001_F00010C8_184D4A8.s")
-#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
  * The adopted clear is four source lines shorter than the pointer walk.
@@ -810,14 +810,3 @@ extern void overlay1ResetReloc(void);
 void overlay1CallReset(void) {
     overlay1ResetReloc();
 }
-
-
-/* PLATEAU-HANDOFF:overlay1LoadBuildRecords:start
- * symbol: overlay1LoadBuildRecords
- * score: 6/572 words
- * frame: 0xD8
- * relocations: 110
- * first-mismatch: +0x1F0
- * summary: Overlay idiom rewrite: 469 at -52 to 6 at size 0, frame exact. Open: the two running-max stores rematerialise their address (lui at) in the target.
- * PLATEAU-HANDOFF:overlay1LoadBuildRecords:end
- */

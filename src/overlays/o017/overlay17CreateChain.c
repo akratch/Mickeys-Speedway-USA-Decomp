@@ -58,16 +58,19 @@ typedef struct Overlay17Chain {
 extern Overlay17Template gOverlay17TemplateReloc[];
 extern void *func_overlay_017_F0000000_18739B8();
 
-/* Plateau (2026-08-25): exact-size 0x310, 130 words differ from +0x0;
- * removing an unused local reduced the frame from 0x90 to 0x88 (target 0x80).
- * The flag lattice was neutral; the 40-minute permuter bottomed out at 2440. */
+/* Plateau, 2026-10-02 (lane x-ovlb): 83 -> 65 masked at delta 0. The
+ * template loop and the alpha-clearing loop share one counter, `index`, as
+ * the target's shared a0/v1 counter and copy registers require; that fixed
+ * the template loop's colours. Still open: the half-buffer size is coloured
+ * a3 where the target has a ring temp (t7) stored straight to its home, and
+ * the else arm's template address is a coloured web where the target has a
+ * ring temp formed before the branch. */
 #ifdef NON_MATCHING
 Overlay17Chain *overlay17CreateChain(
     void *owner, s32 count, Overlay17Material *materialToken, s32 materialScale,
     f32 x, f32 y, f32 z, f32 radius,
     u8 red, u8 green, u8 blue, u8 alpha) {
     Overlay17Template *source;
-    s32 vertex;
     s32 buffer;
     Overlay17Template *destination;
     s32 halfBufferBytes;
@@ -149,12 +152,12 @@ Overlay17Chain *overlay17CreateChain(
         point[1].red = chain->red;
         point[1].green = chain->green;
         point[1].blue = chain->blue;
-        vertex = count * 2 - 1;
+        index = count * 2 - 1;
         if (count * 2 != 0) {
             do {
                 point->alpha = 0;
                 point++;
-            } while (vertex--);
+            } while (index--);
         }
     } while (buffer--);
     }
@@ -167,10 +170,10 @@ Overlay17Chain *overlay17CreateChain(
 
 /* PLATEAU-HANDOFF:overlay17CreateChain:start
  * symbol: overlay17CreateChain
- * score: 83 differing words
+ * score: 65 differing words
  * frame: 0x80
  * relocations: 7
  * first-mismatch: +0x34
- * summary: Declaration order and chain->red masked with 0xFF (ring phase): 115 to 83. Template-loop webs rotate one position; halfBufferBytes in a3 not t7.
+ * summary: One counter shared by both loops: 83 to 65. Open: half-buffer size coloured a3 not ring t7; else-arm template address coloured not a pre-branch ring temp.
  * PLATEAU-HANDOFF:overlay17CreateChain:end
  */

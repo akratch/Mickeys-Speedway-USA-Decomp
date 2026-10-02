@@ -1652,6 +1652,20 @@ overlay36GlobalCallReloc = 0xf0000000;
 gOverlay36AlternateEffects = 0x00000000;
 overlay36SpawnEffectReloc = 0xf0000000;
 
+/* overlay 36: overlay36ChooseWeightedState.c.o */
+gOverlay36AdjustEnabled = 0x00000000;
+gOverlay36AltTable = 0x00000000;
+gOverlay36EnabledMask = 0x00000000;
+gOverlay36NodeA = 0x00000000;
+gOverlay36NodeB = 0x00000000;
+gOverlay36ScaleDivisor = 0x00000000;
+gOverlay36ScaleMultiplier = 0x00000000;
+gOverlay36StrengthMultiplier = 0x00000000;
+gOverlay36Weights = 0x00000000;
+overlay36ChooseReloc = 0xf0000000;
+overlay36GetChoiceReloc = 0xf0000000;
+overlay36MeasureReloc = 0xf0000000;
+
 /* overlay 36: overlay36PrepareAndTick.c.o */
 overlay36ActionReloc = 0xf0000000;
 

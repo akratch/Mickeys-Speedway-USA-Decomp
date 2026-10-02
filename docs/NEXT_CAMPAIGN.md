@@ -7,16 +7,17 @@ file was written. Recompute before quoting.
 ## Where the tree is
 
 ```
-resolved 802,292 / 943,640 = 85.02%
-85% = 802,094 bytes, crossed by 198; 90% = 849,276 bytes
-queue 85 functions / 130,004 bytes
+resolved 804,716 / 943,640 = 85.28%
+85% = 802,094 bytes, crossed by 2,622; 90% = 849,276 bytes
+queue 84 functions / 127,580 bytes
 ```
 
 `gmake progress` printed `functions: 1310 matched / 1460 total (89.73%)`.
 The integration verify printed `OK build/mickey.us.z64 matches the expected
 US ROM hash` (`507341c0a40ca3e9a7cee969b396ee53facfb548`). Wave X started at
 741,548 bytes (78.58%), crossed 80% about forty-five minutes in, and
-crossed 85% at the close when `overlay1LoadBuildRecords` matched.
+crossed 85% when `overlay1LoadBuildRecords` matched. The overlay 26 update
+(2,424 bytes) followed from the candidate lane w2-ovlc left at 36 words.
 
 Every lane worktree is clean and nothing is running. The wave stopped on
 account usage, not on the queue.
@@ -49,12 +50,11 @@ code nobody is looking at.
 Numbers are from the ranking at the time of writing.
 
 - `func_8001357C` (src/main/track.c): 1,040 bytes, 2 masked words, size delta 0. The target loads the surfaces base between the plane-index load and its scale, base first in the add. 900 expression spellings scale first; a declared index gives the order but takes a colour. Next is an instrument question: which ugen handler emits an add whose second operand is a shift. The +0x1A8 pair of `func_8001398C` is the same blocker.
-- `func_overlay_027_F0000624_187BFFC` (src/overlays/o027/overlay_027.c): 1,016 bytes, 12 masked words, size delta 0. Two colour decisions on the two vertex-address webs (a0 and v1 here, a3 and a1 in the target). Forcing both (`p1:w119=c6`, `p1:w141=c4`, accepted) scores 0. Find what occupies a0-a2 across the first vertex command in the target's block 15.
+- `func_overlay_027_F0000624_187BFFC` (src/overlays/o027/overlay_027.c): 1,016 bytes, 12 masked words, size delta 0. Two colour decisions on the two vertex-address webs (a0 and v1 here, a3 and a1 in the target). Forcing both (`p1:w119=c6`, `p1:w141=c4`, accepted) scores 0. Measured since: a local, a direct symbol, two locals and a cast round-trip all compile identically (uopt makes one address web either way). The records give web 119 cost 0 on a0 through a3 with only v0, v1 and s0 forbidden, so it takes the lowest. The target's a3 needs three higher-priority webs holding a0-a2 in block 15, and the target's argument setup for the next call starts with a3: look for call-argument values that are webs live in that block.
 - `func_overlay_044_F0000580_188BDE0` (src/overlays/o044/func_overlay_044_F0000580_188BDE0.c): 1,396 bytes, 13 masked words, size delta 0. The stride conversion temp ties `xh` and `dsdx` on save and loses on web number. Forcing three webs scores 5, schedule-only. Give the stride temp a second reference in the preheader, or number it ahead of `xh` (first-occurrence numbering, checklist item 28).
 - `func_8000E5EC` (src/main/track.c): 820 bytes, 12 masked words, size delta 0. Two of four forces are needed. An empty `if (camera) {}` closes the camera pair (9) but is a diagnostic construct. The other pair needs the list cursor's save at exactly 30; block wrappers overshoot.
-- `func_80051364` (src/main/anim.c): 1,148 bytes, 9 masked words, size delta 0. A scratch shape reaches the target's a0/a1/a2 with no force at 7 words: the join written cursor increment, subtraction, state store, the first two each in a one-line `do { } while (0)`, and four blocks removed elsewhere (two early returns nested, the `updateRate <= 0` return nested, the camera clear as a do-while) so timeScale keeps f20. Not adopted in the tree; adopt it, then order the join block's draws.
+- `func_80051364` (src/main/anim.c): 1,148 bytes, 9 masked words, size delta 0. A scratch shape reaches the target's a0/a1/a2 with no force at 7 words: the join written cursor increment, subtraction, state store, the first two each in a one-line `do { } while (0)`, and four blocks removed elsewhere (two early returns nested, the `updateRate <= 0` return nested, the camera clear as a do-while) so timeScale keeps f20. Not adopted in the tree. The target computes the state conversion before the cursor add (both hoisted above the float compare) and stores subtraction, cursor, state. A further 205 cells (six statement orders, every region mask, a dead read into pad, state and cursor locals, an empty if) floor at 7: state-first gives the draw order and swaps the cmdWord and clock colours.
 - `overlay15InitStarsAndPalette` (src/overlays/o015/overlay_015.c): 988 bytes, 17 masked words, size delta 0. The palette tail is IDO's unroller on a one-variable `for`. A two-variable form restores starIndex's rank at 197/-8 because the unroller copies only the primary variable. Make starIndex an independent induction variable.
-- `func_overlay_026_F00001A0_187A598` (src/overlays/o026/func_overlay_026_F00001A0_187A598.c): 2,424 bytes, 455 masked words, size delta 0. The tree is unchanged, but a 36-word, delta-0 candidate exists outside the tree (the coordinator's campaign-handoffs scratch directory, `o026_36words_candidate.c`): the o029 recipe with one x/y/z set shared by the records, the heading deltas and the final distance. Next: a float prototype for the three `func_80008128` zero arguments and o029's final-block locals.
 - `func_overlay_020_F000038C_1876964` (src/overlays/o020/func_overlay_020_F000038C_1876964.c): 1,080 bytes, 251 masked words, size delta -4. One word short. The target computes all four vertex indices into saved registers before the first division and keeps the texture in fp.
 - `overlay69DrawSortedGeometry` (src/overlays/o069/overlay69DrawSortedGeometry.c): 1,436 bytes, 57 masked words, size delta 0. One body shared by overlays 69 and 88 (2,872 B together). The whole residual is one scratch draw before the geometry index load that must emit nothing. Every source construct that spends it is normalised away by uopt or emits a word. This is an instrument task (trace the ugen path on the `*(state->fixedGeometryIndex + i)` cell), not another spelling sweep.
 

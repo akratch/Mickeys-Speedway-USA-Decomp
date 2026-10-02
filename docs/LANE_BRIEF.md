@@ -452,6 +452,21 @@ order of how often they decided a match:
     cell, so look for byte-neutral merges elsewhere (a dead float or
     pointer local reused for a later role) before giving up on the frame.
 
+32. **A narrowing assignment into an existing narrow local supplies
+    scratch draws, evaluation order and operand order at once.** In the
+    overlay 26 update, `delta = (s32)(amplitude * x);` (delta is an `s16`
+    already declared for another role) followed by `heading + delta` was
+    the only exact form of twelve: the narrowing spends the two draws the
+    ring needed, the conversion is evaluated before the heading load, and
+    the add reads heading first. A mask or a `u16` cast on the conversion
+    gives the draws but not the operand order. Spelt inline with a call
+    in the expression, uopt canonicalises the operands and source order
+    does nothing; put the call result in a local first.
+33. **A float parameter passed plain `0` is its own immediate load.** With
+    the callee declared to take floats, `f(object, 0, 0, 0)` loads each
+    zero separately, as shipped; `0.0f` three times makes uopt share one
+    float zero and copy it (two instructions longer).
+
 ### Promotion traps (each cost a lane a cycle on 2026-10-01)
 
 1. `gmake verify`'s candidate guard rebuilds changed objects and discards the

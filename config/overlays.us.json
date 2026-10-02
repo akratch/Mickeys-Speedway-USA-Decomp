@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 370964,
-  "nonmatching_overlay_c_bytes": 97640,
+  "matched_overlay_c_bytes": 372348,
+  "nonmatching_overlay_c_bytes": 96256,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4660,
   "bss_bytes": 77680,
@@ -3435,7 +3435,7 @@
      "type": "c",
      "source": "overlays/o012/func_overlay_012_F00003A8_186D628",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x910",

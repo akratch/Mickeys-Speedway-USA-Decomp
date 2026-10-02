@@ -614,8 +614,24 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00002E4_186D564.c.o: POS
 		--redefine-sym gOverlay12Particles=D_1520 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xC4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00003A8_186D628.c.o: CFLAGS += -Wab,-r4300_mul
+# Exact C. Its three float literals duplicate the retained overlay data at
+# rodata-relative +0x0/+0x4/+0x8 (LOCAL records with those stored addends):
+# assert the pool by digest and bind it to the loader-owned base (overlay 7's
+# form), then trim compiler alignment beyond the 0x568-byte extent. The eight
+# resident callees are SYMBOL records and go through the _o012Reloc surface.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00003A8_186D628.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x568
+	$(OBJCOPY) \
+		--redefine-sym Arctanf=Arctanf_o012Reloc \
+		--redefine-sym func_8001291C=func_8001291C_o012Reloc \
+		--redefine-sym func_8002A8BC=func_8002A8BC_o012Reloc \
+		--redefine-sym func_8002A8C0=func_8002A8C0_o012Reloc \
+		--redefine-sym func_80036544=func_80036544_o012Reloc \
+		--redefine-sym mathRnd=mathRnd_o012Reloc \
+		--redefine-sym sqrtf=sqrtf_o012Reloc \
+		--redefine-sym trackGetTrack=trackGetTrack_o012Reloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x568 && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:43c85de24b2a93e5fd07941d9d508c8651dd80ad9465a64d0533fb6b19f4667d
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x990

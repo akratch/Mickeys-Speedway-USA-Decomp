@@ -77,31 +77,23 @@ typedef struct ShadowQuery {
     f32 *value50;
 } ShadowQuery;
 
-typedef struct ShadowWorld {
-    u8 pad0[4];
-    void *sectors4;
-    u32 *grid8;
-} ShadowWorld;
+typedef struct ShadowBox {
+    s32 words[3];
+} ShadowBox;
 
-typedef struct ShadowSector {
-    u8 *vertices0;
-    u8 *triangles4;
-    u8 pad8[4];
-    struct ShadowBlock *blocksC;
-    u32 *masks10;
-    u8 pad14[0x10];
-    s16 blockCount24;
-} ShadowSector;
-
+/* One 0x10-byte batch; a batch's faces end where the next batch's begin. */
 typedef struct ShadowBlock {
     u8 pad0[6];
-    s16 vertexBase6;
-    s16 firstVertex8;
+    s16 verticesOffset;
+    s16 facesOffset;
     u8 padA[2];
-    u32 flagsC;
-    u8 pad10[8];
-    s16 lastVertex18;
+    u32 flags;
 } ShadowBlock;
+
+typedef struct ShadowTriangle {
+    u8 verticesArray[4];
+    u8 pad4[0xC];
+} ShadowTriangle;
 
 typedef struct ShadowPoint {
     s16 x;
@@ -110,12 +102,22 @@ typedef struct ShadowPoint {
     u8 pad6[4];
 } ShadowPoint;
 
-typedef struct ShadowTriangle {
-    u8 pad0;
-    u8 vertex1;
-    u8 vertex2;
-    u8 vertex3;
-} ShadowTriangle;
+typedef struct ShadowSector {
+    ShadowPoint *vertices;
+    ShadowTriangle *triangles;
+    u8 pad8[4];
+    ShadowBlock *batches;
+    u32 *faceMasks;
+    u8 pad14[0x10];
+    s16 numberOfBatches;
+    u8 pad26[0x1A];
+} ShadowSector;
+
+typedef struct ShadowWorld {
+    u8 pad0[4];
+    ShadowSector *sectors;
+    ShadowBox *boundingBoxes;
+} ShadowWorld;
 extern s32 func_80017660(void *arg0, s32 arg1, void *arg2, s32 arg3, s32 arg4);
 extern void func_80018544(void *arg0, void *arg1);
 extern s32 shadowBoxPolyOverlap(f32 arg0, f32 arg1, f32 arg2, f32 arg3,
@@ -1321,135 +1323,82 @@ s32 func_80017BCC(void *arg0, void *arg1, void *arg2) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/func_80017BCC.s")
 #endif
-/* Workbench verdict: 61 masked words at size delta 0, first +0x34 (was 154
- * at delta -4). Track B, 2026-09-23:
- *   - the -4 was the target's sectorIndex spill: the target keeps it in a
- *     caller-saved register and stores/reloads its home +0x84 around the
- *     getXZCompareMask call, where uopt here gave it s0 at cost 0. Reading it
- *     after the call through its address (L144's address form) makes it a
- *     home-resident value: one store, one reload, delta 0, 66 words.
- *   - the shade update written without the oldValue and targetValue
- *     carriers (`*value += ...`) reproduces the target's float ring
- *     exactly: 66 -> 61.
- * Left: the store lands at the assignment (+0x74) where the target's
- * spill-style store sits just before the call (+0xB8); a t6/t7 ring phase
- * through the rest; and volume (web 6) taking v1 where the target has a1
- * (forcing p1:w6=c4 on this shape is 56, and the sector2E web then takes v1
- * unforced).
+/*
+ * PROVENANCE: adapted from the public Diddy Kong Racing decompilation,
+ * src/tracks.c func_8002DE30 (the object-under-shadow shade update): same
+ * loops, same per-face mask test and the same reuse of the sector index as
+ * the mask temporary, including its empty `if`.  Mickey's offsets, flag mask,
+ * shade shift and globals are authoritative.
  *
- * Measured IDO behaviour this body depends on (all reproduced in-lane):
- *   - the declared-local list sizes the 0x90 frame and its order fixes every
- *     stack home: home = frame_top - 4 * declaration_index, so yMax, yMin,
- *     blockNumber, mask and blockOffset must keep their positions.
- *   - a two-reference global CSEs its address into a pool register, which is
- *     why D_800CB284 is spelled twice rather than cached in a local.
- *   - a partially dead expression assigned to its own local is sunk to its
- *     use; reading block->flagsC directly keeps the shift where the target
- *     has it.
- *   - pointer arithmetic on a 10-byte element strength-reduces to shifts,
- *     while an indexed element access multiplies by the loop-hoisted stride.
- * PROVENANCE: Mickey's m2c control-flow draft and resident shadow offsets supply this reconstruction; no external body is copied. */
-#ifdef NON_MATCHING
+ * Matched 2026-10-02 (lane x-shad) from 61 masked words: the m2c-derived
+ * shape (explicit block offset carrier, triangle-vertex cursor, address-form
+ * sector index) was replaced by DKR's indexed `sector->batches[i]` loops.
+ * Two facts were load-bearing: the sector index reassigned to the face mask
+ * inside the face loop (that reuse is what spills it across the
+ * getXZCompareMask call instead of giving it s0), and the declaration order,
+ * which puts the index at home +0x84, `i` at +0x74 and the mask at +0x64.
+ */
 void func_800180B4(ShadowQuery *query) {
     s32 yMax;
     s32 yMin;
     s32 sectorIndex;
-    s32 y;
+    s32 k;
+    u32 shade;
+    s32 done;
+    s32 i;
     ShadowSector *sector;
-    ShadowBlock *block;
-    s32 blockNumber;
     ShadowTriangle *triangle;
-    ShadowPoint *vertexBase;
-    u8 *triangleVertex;
+    ShadowPoint *vertices;
     s32 mask;
-    u32 flags;
-    u32 maskWord;
-    s32 vertex;
-    s32 blockOffset;
-    s32 triangleNumber;
-    s32 firstPointOffset;
     s32 lowY;
     s32 highY;
-    s32 currentY;
-    f32 *value;
-    s32 done;
-    s32 shade;
+    s32 j;
 
     yMax = (s32) query->y10 + query->volume40->maxY6E;
     yMin = (s32) query->y10 + query->volume40->minY6C;
-    done = 0;
-    if (query->sector2E != -1) {
-        sectorIndex = query->sector2E;
-        mask = getXZCompareMask(
-            (u8 *) ((ShadowWorld *) D_800CB284)->grid8 +
-                (sectorIndex * 0xC),
-            (s32) (query->x0C - 16.0f),
-            (s32) (query->z14 - 16.0f),
-            (s32) (query->x0C + 16.0f),
-            (s32) (query->z14 + 16.0f));
-        blockNumber = 0;
-        sector = (ShadowSector *) ((u8 *) ((ShadowWorld *) D_800CB284)->sectors4 +
-                                  (*(s32 *) &sectorIndex << 6));
-        blockOffset = 0;
-        if (sector->blockCount24 > 0) {
-            block = sector->blocksC;
-            do {
-                if ((block->flagsC & 0x08013880) == 0) {
-                    shade = (block->flagsC >> 24) & 7;
-                    vertexBase = (ShadowPoint *) sector->vertices0 +
-                                 block->vertexBase6;
-                    vertex = block->firstVertex8;
-                    if ((vertex < block->lastVertex18) && (done == 0)) {
-                        do {
-                            maskWord = sector->masks10[vertex];
-                            maskWord &= mask;
-                            if (((maskWord & 0xFFFF) != 0) &&
-                                ((maskWord >> 16) != 0)) {
-                                triangleNumber = 1;
-                                triangle = (ShadowTriangle *)
-                                    ((u8 *) sector->triangles4 +
-                                     (vertex * 0x10));
-                                triangleVertex = &triangle->vertex1;
-                                lowY = vertexBase[*triangleVertex].y;
-                                highY = lowY;
-                                do {
-                                    triangleNumber++;
-                                    currentY = vertexBase[triangleVertex[1]].y;
-                                    if (currentY < lowY) {
-                                        lowY = currentY;
-                                    } else if (highY < currentY) {
-                                        highY = currentY;
-                                    }
-                                    triangleVertex++;
-                                } while (triangleNumber != 3);
-                                if ((highY >= yMin) && (yMax >= lowY) &&
-                                    (mathXZInTri((s32) query->x0C,
-                                                 (s32) query->z14,
-                                                 &vertexBase[triangle->vertex1],
-                                                 &vertexBase[triangle->vertex2],
-                                                 &vertexBase[triangle->vertex3]) != 0)) {
-                                    value = query->value50;
-                                    done = 1;
-                                    *value += ((1.0f - D_80079464[shade]) - *value) * D_800CB28C;
-                                }
+    sectorIndex = query->sector2E;
+    done = FALSE;
+    if (sectorIndex != -1) {
+        mask = getXZCompareMask(&((ShadowWorld *) D_800CB284)->boundingBoxes[sectorIndex],
+                                query->x0C - 16.0f, query->z14 - 16.0f,
+                                query->x0C + 16.0f, query->z14 + 16.0f);
+        sector = &((ShadowWorld *) D_800CB284)->sectors[sectorIndex];
+        for (i = 0; i < sector->numberOfBatches && !done; i++) {
+            if (!(sector->batches[i].flags & 0x08013880)) {
+                shade = (sector->batches[i].flags >> 24) & 7;
+                vertices = &sector->vertices[sector->batches[i].verticesOffset];
+                for (j = sector->batches[i].facesOffset;
+                     j < sector->batches[i + 1].facesOffset && !done; j++) {
+                    sectorIndex = sector->faceMasks[j] & mask;
+                    if (sectorIndex) {}
+                    if (((sector->faceMasks[j] & mask) & 0xFFFF) &&
+                        ((sector->faceMasks[j] & mask) >> 16)) {
+                        triangle = &sector->triangles[j];
+                        lowY = vertices[triangle->verticesArray[1]].y;
+                        highY = lowY;
+                        for (k = 1; k < 3; k++) {
+                            if (vertices[triangle->verticesArray[k + 1]].y < lowY) {
+                                lowY = vertices[triangle->verticesArray[k + 1]].y;
+                            } else if (highY < vertices[triangle->verticesArray[k + 1]].y) {
+                                highY = vertices[triangle->verticesArray[k + 1]].y;
                             }
-                            vertex++;
-                            block = (ShadowBlock *)
-                                ((u8 *) sector->blocksC + blockOffset);
-                        } while ((vertex < block->lastVertex18) &&
-                                 (done == 0));
+                        }
+                        if (highY >= yMin && yMax >= lowY) {
+                            if (mathXZInTri(query->x0C, query->z14,
+                                            &vertices[triangle->verticesArray[1]],
+                                            &vertices[triangle->verticesArray[2]],
+                                            &vertices[triangle->verticesArray[3]])) {
+                                done = TRUE;
+                                *query->value50 += ((1.0f - D_80079464[shade]) - *query->value50) *
+                                                   D_800CB28C;
+                            }
+                        }
                     }
                 }
-                blockOffset += 0x10;
-                block = (ShadowBlock *) ((u8 *) block + 0x10);
-                blockNumber++;
-            } while ((blockNumber < sector->blockCount24) && (done == 0));
+            }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/func_800180B4.s")
-#endif
 
 /* PLATEAU-HANDOFF:func_80017140:start
  * symbol: func_80017140
@@ -1459,16 +1408,6 @@ void func_800180B4(ShadowQuery *query) {
  * first-mismatch: +0x44
  * summary: Delta 0 (was -12) via target home order and address-form surfaceId/sp7C; left: hoisted literal 3 and polygon base, uncached D_800CAF58
  * PLATEAU-HANDOFF:func_80017140:end
- */
-
-/* PLATEAU-HANDOFF:func_800180B4:start
- * symbol: func_800180B4
- * score: 61/206 words
- * frame: 0x90
- * relocations: 8
- * first-mismatch: +0x34
- * summary: Delta 0 via address-form sectorIndex after the call; 61 left: store placement, t6/t7 ring phase, volume w6 on v1 (w6=c4 prices 56)
- * PLATEAU-HANDOFF:func_800180B4:end
  */
 
 /* PLATEAU-HANDOFF:func_80017BCC:start

@@ -257,7 +257,7 @@ Text outside the markers remains authored and is preserved byte-for-byte.
 > `config/nonmatching-ranking.us.json`. Do not edit this region by hand;
 > `--check-doc` and `gmake check-docs` fail on any drift.
 
-The snapshot contains **133 queued identities**: **133 resolved measurements** and **0 unresolved identities**. Resolved target size totals **185,736 bytes (181.4 KiB)**.
+The snapshot contains **133 queued identities**: **133 resolved measurements** and **0 unresolved identities**. Resolved target size totals **186,080 bytes (181.7 KiB)**.
 
 Resolved rows span **41 overlays** and **1 resident TU group** (`main`).
 
@@ -305,9 +305,9 @@ units remain distinct.
 | 9 | `src/main/joy.c` | `joyRead` | `main` | `other` | 636 | 48 | 47 | 44 | 44 | 0 | — |
 | 10 | `src/overlays/o017/overlay17AdvanceChain.c` | `overlay17AdvanceChain` | `o017` | `other` | 588 | 49 | 49 | 24 | 24 | 0 | — |
 | 11 | `src/main/spranim.c` | `effectboxControl` | `main` | `other` | 772 | 51 | 51 | 72 | 72 | 0 | — |
-| 12 | `src/overlays/o040/overlay40BuildFrame.c` | `overlay40BuildFrame` | `o040` | `other` | 324 | 60 | 60 | 48 | 48 | 0 | — |
-| 13 | `src/main/objects.c` | `func_8000BB84` | `main` | `other` | 260 | 61 | 61 | 0 | 0 | 0 | — |
-| 14 | `src/main/shadows.c` | `func_800180B4` | `main` | `other` | 824 | 61 | 61 | 52 | 52 | 0 | — |
+| 12 | `src/overlays/o101/overlay101TailA6BC.c` | `overlay101TailA6BC` | `o101` | `other` | 1,168 | 57 | 53 | 0 | 0 | 0 | — |
+| 13 | `src/overlays/o040/overlay40BuildFrame.c` | `overlay40BuildFrame` | `o040` | `other` | 324 | 60 | 60 | 48 | 48 | 0 | — |
+| 14 | `src/main/objects.c` | `func_8000BB84` | `main` | `other` | 260 | 61 | 61 | 0 | 0 | 0 | — |
 | 15 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 69 | 69 | 4 | 4 | 0 | — |
 | 16 | `src/overlays/o036/overlay36ChooseWeightedState.c` | `func_overlay_036_F0000A60_1883F18` | `o036` | `other` | 680 | 71 | 71 | 60 | 60 | 0 | — |
 | 17 | `src/overlays/o025/overlay_025.c` | `overlay25UpdateEffect` | `o025` | `other` | 1,036 | 74 | 74 | 60 | 60 | 0 | — |

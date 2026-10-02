@@ -779,15 +779,6 @@
     },
     {
       "kind": "resident-trailing-alignment",
-      "symbol": "func_800180B4",
-      "source": "main/shadows",
-      "vram": "0x800180b4",
-      "owner_size": "0x33c",
-      "offset": "0x338",
-      "size": "0x4"
-    },
-    {
-      "kind": "resident-trailing-alignment",
       "symbol": "func_8003C80C",
       "source": "main/weather_tail",
       "vram": "0x8003c80c",

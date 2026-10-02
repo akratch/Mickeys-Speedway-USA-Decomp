@@ -1726,13 +1726,13 @@
       "tu": "overlays/o012",
       "size_bytes": 2444,
       "objdiff_match_pct": null,
-      "differing_words": 581,
+      "differing_words": 606,
       "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 581,
+      "relocation_masked_differing_words": 606,
       "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": -20,
+      "size_delta": -4,
       "category": "size-mismatch",
-      "source_context_sha256": "Kr2n.JDCT.-j2T.v_OU.Wn4P.C3Py.jUMa.nzcn.NzyI.CmZ9.2Tk"
+      "source_context_sha256": "0vqc.gc4X.uugI.dQdq.fAUA.ggUa._0XF.hn6R.lmIr.Pn66.X80"
     },
     {
       "name": "func_overlay_073_F0000190_18CAC50",

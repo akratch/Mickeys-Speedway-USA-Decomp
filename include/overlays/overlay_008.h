@@ -921,6 +921,13 @@ extern void o8P0058CreateReloc(s32 kind, f32 x, f32 y, f32 z, s32 mode,
 
 extern void o8P0058BounceReloc(O8P0058State *state, s32 kind, f32 scale);
 
+/* The +0x1294 update's two same-module calls are SYMBOL records (the shipped
+ * words carry the module base), so they go through placeholders as the
+ * +0x0058 body's do: the indexed tuning lookup and the +0x1000 phase helper. */
+extern void *o8P1294IndexedReloc(Overlay8IndexedObject *object);
+
+extern f32 o8P1294PhaseReloc(void *unused, O8PhaseState *state, f32 input);
+
 extern void func_overlay_008_F0001294_185EFEC(O8P1294Owner *owner,
                                               O8P1294State *state,
                                               f32 update);

@@ -73,9 +73,11 @@ extern void func_overlay_011_F0002714_186AF5C(s32 updateRate);
         gO11VertexReloc++; \
     } while (0)
 
-/* Workbench plateau: structure-mismatch, 532/562 instructions, target/candidate frames
- * 0x178/0x190, 535 positional words, first +0x0. Call/ABI and stack-home inspection
- * left the 0x78-byte grid/table schedule deficit unresolved. */
+/* 2026-10-02 n-ovl6: the scissor word is a float expression
+ * (`(s32)((width - 1) * 4.0f) & 0xFFF`, 535 to 522 and -120 to -32 bytes),
+ * the column parity is a signed `% 2`, and its stride a `(parity * 7) << 9`
+ * (529 masked, -8 bytes). Open: the target keeps updateRate in s3 and the
+ * grid-row pointer in a stack home; the candidate reloads updateRate. */
 #ifdef NON_MATCHING
 void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
                                         O11Vertex **vertices,
@@ -115,8 +117,8 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
     func_80033CBC(&width, &height);
     gO11DisplayListReloc->w0 = 0xED000000;
     gO11DisplayListReloc->w1 =
-        ((((u32)(width - 1) * 4) & 0xFFF) << 12) |
-        (((u32)(height - 1) * 4) & 0xFFF);
+        ((((s32)((width - 1) * 4.0f)) & 0xFFF) << 12) |
+        (((s32)((height - 1) * 4.0f)) & 0xFFF);
     gO11DisplayListReloc++;
     func_80022A50(&gO11DisplayListReloc, &gO11MatrixReloc);
     func_800349A4(&gO11DisplayListReloc, 0, 4, 0);
@@ -148,12 +150,12 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
             s32 parity;
 
             command = gO11DisplayListReloc++;
-            parity = column & 1;
+            parity = column % 2;
             command->w0 = 0x04000000 |
                           (((((u32)gO11VertexReloc | 0x80000000) & 6) |
                             0x38) <<
                            16) |
-                          (((parity * 0xE00) | 0x4E) & 0xFFFF);
+                          ((((parity * 7) << 9) | 0x4E) & 0xFFFF);
             command->w1 = (u32)gO11VertexReloc | 0x80000000;
             if (column != 0) {
                 command = gO11DisplayListReloc++;
@@ -243,10 +245,10 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
 
 /* PLATEAU-HANDOFF:func_overlay_011_F0000150_1868998:start
  * symbol: func_overlay_011_F0000150_1868998
- * score: 535/562 words
+ * score: 529/564 words
  * frame: 0x190
- * relocations: 73
+ * relocations: 20
  * first-mismatch: +0x0
- * summary: V0 is 30 words short (532/562; 538 raw), frame 0x190 vs 0x178; relocations are 73 vs 75 with 13 aligned sites and 5 identities.
+ * summary: Float scissor word, signed parity and (parity*7)<<9: 535 to 529 masked, size -120 to -8; updateRate s3 and frame open.
  * PLATEAU-HANDOFF:func_overlay_011_F0000150_1868998:end
  */

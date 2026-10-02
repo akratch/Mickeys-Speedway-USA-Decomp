@@ -2,11 +2,13 @@
 ### `func_8000DFBC` plateau handoff
 
 - source: `src/main/track.c`
-- score: 303 differing words
+- score: 0/396 words, promoted
 - frame: 0x70
 - relocations: 51
-- first mismatch: +0x48
-- summary: Declaring batchIndex and groupIndex first improves 304 to 303. Size stays +8, frame 0x70, first +0x48. Stall: the spill/reload pair on the tail-call lines remains after that declaration reorder.
+- first mismatch: none
+- summary: Matched. Listing rewrite: while loop, packet macros, else-arm default, masked env local, opcode-first polygon word, frame homes.
+
+Summary before this remeasure: Declaring batchIndex and groupIndex first improves 304 to 303. Size stays +8, frame 0x70, first +0x48. Stall: the spill/reload pair on the tail-call lines remains after that declaration reorder.
 
 Summary before this remeasure: Correct next-batch vertex boundary and unsigned command types; five m2c structural follow-ups fail to improve. Next: batch/display-list lifetimes.
 
@@ -38,4 +40,52 @@ Summary before this remeasure: Correct next-batch vertex boundary and unsigned c
 - relocations: 51
 - first mismatch: +0x48
 - summary: Exact frame and relocation count; 2-word structural drift remains, and flag sweep lacks unique resident ownership metadata.
+#### 2026-10-02, lane n-track: 303 at +8 to 103 at size delta 0
+
+Rewritten from the target listing (the DKR counterpart `render_level_segment`
+shares only the per-batch packet code), then measured as products with the
+direct compile; numbers are masked words, with the aligned residual from
+`residual_map.py` where the size differed:
+
+- Plain rewrite with `D_800C9520++` packet macros, batch counts read from
+  the segment at each use, while-loops for the two batch walks: 380 at -4.
+- Eight locals declared between `itemIndex` and `segment` put the homes at
+  0x40 (segment), 0x64, 0x68 and the batch-index spill at 0x6C: 374, frame
+  exact.
+- The outer loop is a `while`, not an early return plus do-while: the
+  inverted entry test is the target's bgtz/blezl pair and the &D_800C9520
+  address constant is formed at the loop head: 242 at delta 0.
+- Vertex DMA length as `(n << 3) + (n << 1) + 8` (n << 3 shared with the low
+  byte) and the prim colour taking `D_8007C858` directly: aligned 211 -> 145
+  at -4.
+- The texture default is an `else` arm instead of default-then-override
+  (checklist item 8; the target branches over an empty arm): 103 at delta 0.
+- Neutral or worse: env colour through a local or the expression (equal),
+  the three polygon-word operand orders (tw 1 and 2 cost 8 and 17), a
+  separate local for the child's instance pointer (equal), `* 10` and
+  `((n * 4 + n) << 1)` vertex sizes (238-244 before the else arm).
+- Left at 103 (90 naming, 9 structural): a closed integer ring cycle of
+  six registers from +0x200 through the env-colour and packet code, and the
+  polygon word computing n - 1 before n * 16 (one-sided +0x310/+0x320), with
+  a second one-sided pair in the shadow-object calls (+0x44C/+0x45C).
+
+#### 2026-10-02, lane n-track: 103 to 0, promoted
+
+On the 103 base above, products with the direct compile (masked words, delta 0):
+
+- Env colour value masked once into the local, `value = (textureS >> 8) &
+  0xFF` (checklist item 16, one more draw): 103 -> 58. Condition spellings
+  around it (cast or no cast on the texture flags) neutral.
+- Else arm assigns `texture = NULL` before `alpha = 0`: 58 -> 56.
+- The shadow instance is re-read through the object
+  (`*(object + 0x4C) + 0x1C`) instead of reusing the child carrier: 56 -> 43;
+  a separate instance local costs a frame cell (102).
+- The polygon word is written opcode first, then the count byte, then the
+  length: 43 -> 0. Length-first or byte-last orders read 49-52 and a
+  `(n - 1) * 16` byte is four bytes short.
+
+`gmake extract`, `gmake overlay-syms`, `gmake -j4`, `gmake verify` pass with
+the guard removed; the five overlay draw calls are written as
+TrapDanglingJump, which is what the target's call words name.
+
 <!-- plateau-handoff:func_8000DFBC:end -->

@@ -1634,221 +1634,159 @@ s32 func_8000DDE4(s32 key, s32 recordCount, TrackKeyRecord *records,
     }
     return matchCount;
 }
-#ifdef NON_MATCHING
 /* PROVENANCE: JFG's public track.c supplies the resident track draw-loop
  * organization; Mickey's segment and display-list accesses are authoritative. */
-/* Candidate: 398/396 words, 303 differing, first mismatch +0x48, frame 0x70 exact. */
-/* Declaring batchIndex and groupIndex ahead of the pointers saves one word. */
-/* The +8 tail spills and the display-list schedule are unchanged. */
+/* Matched 2026-10-02 (lane n-track) by rewriting from the listing: a plain
+ * while loop (its inverted entry test is the bgtz/blezl pair), batch counts
+ * read from the segment at each use, D_800C9520++ packet macros, the
+ * texture default as an else arm, the env value masked once into a local,
+ * the polygon word opcode-first, the shadow instance re-read through the
+ * object, and eight locals between itemIndex and segment for the homes. */
 struct TrackShadowObject;
 struct TrackShadowInstance;
 extern void func_800140CC(struct TrackShadowObject *,
                           struct TrackShadowInstance *);
-extern void overlay69DrawSortedGeometry(Gfx **, Mtx **, TrackVertex **, void *);
-extern void overlay88DrawSortedGeometry(Gfx **, Mtx **, TrackVertex **, void *);
-extern void overlay68DrawSortedEntries(Gfx **, Mtx **, TrackVertex **, void *);
-extern void overlay29DrawGroups(Gfx **, Mtx **, void *);
+
+/* PROVENANCE: the two packet macros follow Diddy Kong Racing's public
+ * include/f3ddkr.h (gSPVertexDKR, gSPPolygon), adapted to Mickey's 10-byte
+ * track vertices: the DMA length is n * 10 + 8 written as two shifts, and the
+ * low byte is n << 3 with the vertex address's 6 bits. */
+#define TRACK_VTX(pkt, v, n)                                                 \
+    gDma1p(pkt, 0x04, v, ((((n) << 3) + ((n) << 1)) + 8),                    \
+           ((n) << 3) | ((u32) (v) & 6))
+#define TRACK_TRI(pkt, t, n, tex) {                                          \
+    Gfx *_g = (Gfx *) (pkt);                                                 \
+    _g->words.w0 = _SHIFTL(0x05, 24, 8) |                                    \
+                   _SHIFTL((((n) - 1) << 4) | (tex), 16, 8) |                \
+                   _SHIFTL((n) * 16, 0, 16);                                 \
+    _g->words.w1 = (unsigned int) (t);                                       \
+}
 
 void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 batchIndex;
     s32 groupIndex;
-    TrackSegment *segment;
-    TrackBatch *batch;
-    Gfx *gfx;
-    TrackTextureHeader *texture;
-    u8 *object;
-    u8 *objectChild;
+    s32 itemIndex;
+    u8 *child;
     u8 *vertex;
     u8 *triangle;
-    s16 batchCount;
-    s32 itemIndex;
     s32 alpha;
     u32 mode;
-    s32 vertexCount;
     s32 textureS;
-    u32 vertexAddress;
     s32 objectMode;
-    u32 value;
-    s16 objectType;
+    s32 value;
+    TrackSegment *segment;
+    TrackBatch *batch;
+    TrackTextureHeader *texture;
+    u8 *object;
 
-    batchIndex = 0;
     segment = &D_800792E8->segments[arg0];
     batch = segment->batches;
     groupIndex = 0;
     itemIndex = 0;
-    batchCount = segment->batchCount;
-    if (batchCount <= 0 && arg2 <= 0) {
-        return;
-    }
-    do {
-        if ((batchIndex < batchCount) &&
-            ((itemIndex >= arg2) ||
-             (batchIndex <
-              *(s16 *) (((u8 **) (u32) arg3)[itemIndex] + 2)))) {
-            if ((arg1 & (1U << groupIndex)) &&
-                (groupIndex == batch->unk1)) {
+    batchIndex = 0;
+    while (batchIndex < segment->batchCount || itemIndex < arg2) {
+        if (batchIndex < segment->batchCount &&
+            (itemIndex >= arg2 ||
+             batchIndex < *(s16 *) (((u8 **) arg3)[itemIndex] + 2))) {
+            if ((arg1 & (1 << groupIndex)) && groupIndex == batch->unk1) {
                 if (D_8007C854 != 0) {
-                    gfx = D_800C9520;
-                    gfx->words.w0 = 0xFA000000;
-                    value = D_8007C858 & 0xFF;
-                    gfx->words.w1 = (value << 24) | (value << 16) |
-                                     (value << 8) | 0xFF;
-                    gfx++;
-                    D_800C9520 = gfx;
-                    batchCount = segment->batchCount;
+                    gDPSetPrimColor(D_800C9520++, 0, 0, D_8007C858, D_8007C858, D_8007C858, 255);
                 }
-                if ((batchIndex < batchCount) &&
-                    (groupIndex == batch->unk1)) {
-                    do {
-                        mode = batch->flags;
-                        if (!(mode & 0x800)) {
-                            alpha = 0;
-                            texture = NULL;
-                            if (batch->textureIndex != 0xFF) {
-                                alpha = 1;
-                                texture =
-                                    D_800792E8->textures[batch->textureIndex]
-                                        .texture;
-                            }
-                            textureS = batch->frame << 8;
-                            vertex = (u8 *) segment->lightData +
-                                     (batch->u0 * 0xA);
-                            triangle = (u8 *) segment->vertexData +
-                                       (batch->v0 * 0x10);
-                            if ((texture != NULL) &&
-                                ((s16) texture->flags & 0x40) &&
-                                ((mode & 0x30) != 0x20)) {
-                                gfx = D_800C9520;
-                                gfx->words.w0 = 0xFB000000;
-                                value = (textureS >> 8) & 0xFF;
-                                gfx->words.w1 = (value << 24) |
-                                                 (value << 16) |
-                                                 (value << 8) | value;
-                                gfx++;
-                                D_800C9520 = gfx;
-                            } else {
-                                gfx = D_800C9520;
-                                gfx->words.w0 = 0xFB000000;
-                                gfx->words.w1 = -0x100;
-                                gfx++;
-                                D_800C9520 = gfx;
-                            }
-                            if (!(mode & 0x180)) {
-                                mode |= D_800C9544;
-                            }
-                            objectMode = mode & 0x4000;
-                            if (objectMode != 0) {
-                                func_800343F0(2);
-                            }
-                            func_800349A4(&D_800C9520, texture,
-                                          mode | 2, textureS);
-                            if (objectMode != 0) {
-                                texEnableModes(2);
-                            }
-                            vertexAddress = (u32) vertex + 0x80000000U;
-                            vertexCount = batch[1].u0 - batch->u0;
-                            gfx = D_800C9520;
-                            gfx->words.w1 = vertexAddress;
-                            gfx->words.w0 = (((vertexCount * 0xA) + 8) & 0xFFFF) |
-                                             0x04000000 |
-                                             ((((vertexCount * 8) |
-                                                (vertexAddress & 6)) & 0xFF) << 16);
-                            gfx++;
-                            D_800C9520 = gfx;
-                            gfx->words.w1 = (u32) triangle + 0x80000000U;
-                            vertexCount = batch[1].v0 - batch->v0;
-                            gfx->words.w0 = ((vertexCount * 0x10) & 0xFFFF) |
-                                             0x05000000 |
-                                             (((((vertexCount - 1) * 0x10) |
-                                                alpha) & 0xFF) << 16);
-                            gfx++;
-                            D_800C9520 = gfx;
-                            batch = (TrackBatch *) ((u8 *) batch + 0x10);
-                            batchIndex++;
-                            batchCount = segment->batchCount;
+                while (batchIndex < segment->batchCount && batch->unk1 == groupIndex) {
+                    mode = batch->flags;
+                    if (!(mode & 0x800)) {
+                        if (batch->textureIndex != 0xFF) {
+                            alpha = 1;
+                            texture = D_800792E8->textures[batch->textureIndex].texture;
                         } else {
-                            batch = (TrackBatch *) ((u8 *) batch + 0x10);
-                            batchIndex++;
+                            texture = NULL;
+                            alpha = 0;
                         }
-                    } while ((batchIndex < batchCount) &&
-                             (batch->unk1 == groupIndex));
-                    batchCount = segment->batchCount;
+                        vertex = (u8 *) segment->lightData + (batch->u0 * 0xA);
+                        triangle = (u8 *) segment->vertexData + (batch->v0 * 0x10);
+                        textureS = batch->frame << 8;
+                        if (texture != NULL && ((s16) texture->flags & 0x40) &&
+                            (mode & 0x30) != 0x20) {
+                            value = (textureS >> 8) & 0xFF;
+                            gDPSetEnvColor(D_800C9520++, value, value, value, value);
+                        } else {
+                            gDPSetEnvColor(D_800C9520++, 255, 255, 255, 0);
+                        }
+                        if (!(mode & 0x180)) {
+                            mode |= D_800C9544;
+                        }
+                        objectMode = mode & 0x4000;
+                        if (objectMode) {
+                            func_800343F0(2);
+                        }
+                        func_800349A4(&D_800C9520, texture, mode | 2, textureS);
+                        if (objectMode) {
+                            texEnableModes(2);
+                        }
+                        TRACK_VTX(D_800C9520++, vertex + 0x80000000, batch[1].u0 - batch->u0);
+                        TRACK_TRI(D_800C9520++, triangle + 0x80000000, batch[1].v0 - batch->v0, alpha);
+                    }
+                    batchIndex++;
+                    batch++;
                 }
                 if (D_8007C854 != 0) {
-                    gfx = D_800C9520;
-                    gfx->words.w1 = 0;
-                    gfx->words.w0 = 0xE7000000;
-                    gfx++;
-                    gfx->words.w1 = -1;
-                    gfx->words.w0 = 0xFA000000;
-                    gfx++;
-                    D_800C9520 = gfx;
+                    gDPPipeSync(D_800C9520++);
+                    gDPSetPrimColor(D_800C9520++, 0, 0, 255, 255, 255, 255);
                 }
-            } else if ((batchIndex < batchCount) &&
-                       (batch->unk1 == groupIndex)) {
-                do {
-                    batch = (TrackBatch *) ((u8 *) batch + 0x10);
+            } else {
+                while (batchIndex < segment->batchCount && batch->unk1 == groupIndex) {
                     batchIndex++;
-                } while ((batchIndex < batchCount) &&
-                         (batch->unk1 == groupIndex));
+                    batch++;
+                }
             }
             groupIndex++;
         } else {
-            object = *(u8 **)
-                (((u8 **) (u32) arg3)[itemIndex++] + 4);
-            objectChild = *(u8 **) (object + 0x4C);
-            if ((objectChild != NULL) && (*(u8 *) (object + 0x8E) == 0)) {
-                if (*(u8 *) (objectChild + 0x10) & 8) {
-                    u8 *child = *(u8 **) (objectChild + 0x1C);
-                    if (child != NULL) {
+            object = *(u8 **) (((u8 **) arg3)[itemIndex++] + 4);
+            child = *(u8 **) (object + 0x4C);
+            if (child != NULL && *(u8 *) (object + 0x8E) == 0) {
+                if (*(u8 *) (child + 0x10) & 8) {
+                    if (*(u8 **) (*(u8 **) (object + 0x4C) + 0x1C) != NULL) {
                         func_800140CC((struct TrackShadowObject *) object,
-                                      (struct TrackShadowInstance *) child);
+                                      *(struct TrackShadowInstance **)
+                                          (*(u8 **) (object + 0x4C) + 0x1C));
                     }
                 }
                 func_800140CC((struct TrackShadowObject *) object,
-                              *(struct TrackShadowInstance **)
-                                  (object + 0x4C));
+                              *(struct TrackShadowInstance **) (object + 0x4C));
             }
             func_80009E78(&D_800C9520, &D_800C9524, &D_800C9528,
                           (TrackSkyObject *) object);
-            value = *(s32 *) (object + 0x54);
-            if (value != 0) {
-                func_80049518(value, &D_800C9520);
+            if (*(s32 *) (object + 0x54) != 0) {
+                func_80049518(*(s32 *) (object + 0x54), &D_800C9520);
             }
             if (*(s16 *) (object + 6) & 0x200) {
-                objectType = *(s16 *) (object + 0x44);
-                switch (objectType) {
+                switch (*(s16 *) (object + 0x44)) {
                 case 1:
-                    func_80009414(&D_800C9520, &D_800C9524,
-                                  &D_800C9528, object);
+                    func_80009414(&D_800C9520, &D_800C9524, &D_800C9528, object);
                     break;
                 case 0x1D:
-                    overlay69DrawSortedGeometry(&D_800C9520, &D_800C9524,
-                                                &D_800C9528, object);
+                    TrapDanglingJump(&D_800C9520, &D_800C9524,
+                                     &D_800C9528, object);
                     break;
                 case 0x49:
-                    overlay88DrawSortedGeometry(&D_800C9520, &D_800C9524,
-                                                &D_800C9528, object);
+                    TrapDanglingJump(&D_800C9520, &D_800C9524,
+                                     &D_800C9528, object);
                     break;
                 case 0x3F:
-                    overlay68DrawSortedEntries(&D_800C9520, &D_800C9524,
-                                               &D_800C9528, object);
+                    TrapDanglingJump(&D_800C9520, &D_800C9524,
+                                     &D_800C9528, object);
                     break;
                 case 0x39:
                     TrapDanglingJump(&D_800C9520, &D_800C9524, object);
                     break;
                 case 0x3A:
-                    overlay29DrawGroups(&D_800C9520, &D_800C9524, object);
+                    TrapDanglingJump(&D_800C9520, &D_800C9524, object);
                     break;
                 }
             }
         }
-    } while ((batchIndex < (batchCount = segment->batchCount)) ||
-             (itemIndex < arg2));
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000DFBC.s")
-#endif
 #ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c draft and resident track/particle call surfaces
@@ -4659,7 +4597,17 @@ u32 func_8001357C(f32 arg0, f32 arg1, f32 *arg2, s32 arg3, void *arg4) {
 #ifdef NON_MATCHING
 /* PROVENANCE: JFG's public track.c retains this collision collector as
  * assembly; Mickey's segment, batch, plane and hit-list accesses are used. */
-/* 70 masked words at size delta 0 and the target's 0x140 frame (163 -> 83
+/* 45 masked words at size delta 0, frame exact (70 -> 45, 2026-10-02 lane
+ * n-track): the compare mask is a block-scope local of the segment loop (its
+ * spill cell is then the target's 0x90), the three plane coefficients are
+ * locals read after the mathXZInTri call and the height is stored straight
+ * into the hit (f0/f2/f12 webs, ring div/neg), the two unused pads and the
+ * height local are gone and `surface` is declared after segmentNumber (homes
+ * 0x104/0x100/0xAC), vertex addresses are spelled offset-first, and the hit
+ * flags are stored before the texture flag. Left: the sort loop's a0/a1
+ * roles (a save tie, 300 vs 300, broken by web number; forcing it is worth
+ * 31 words), surface-base load order, the batch-flag AND operand order.
+ * Previous: 70 masked words at size delta 0 and the target's 0x140 frame (163 -> 83
  * 2026-10-01 lane d-res2, 83 -> 70 lane e-res3: the sort is a for loop with
  * `orderIndex = 0; changed = 1;` ahead of it, which fixes the loop entry
  * order; the a0/a1 roles of the compare webs are still swapped).
@@ -4681,29 +4629,28 @@ s32 func_8001398C(f32 arg0, f32 arg1, s32 arg2, void **arg3) {
         u8 pad0D[3];
     } TrackCollisionHit;
 
+    f32 px;
+    f32 pz;
+    f32 pd;
     s32 x;
     s32 z;
-    s32 segmentIndex;
     s32 batchNumber;
     s32 triangleIndex;
-    s32 compareMask;
     u32 batchFlags;
     s8 textureFlag;
     s32 resultCount;
     s32 orderIndex;
-    s32 orderCount;
     s32 changed;
     s32 firstTriangle;
     s32 lastTriangle;
     s32 segmentCount;
     s32 segmentNumber;
+    TrackPlane *surface;
     s16 textureOffset;
-    f32 height;
     TrackSegment *segment;
     TrackBatch *batch;
     TrackTriangle *triangle;
     s16 segmentIndices[32];
-    TrackPlane *surface;
     TrackCollisionHit *hit;
     TrackVertex *vertex0;
     TrackVertex *vertex1;
@@ -4723,6 +4670,7 @@ s32 func_8001398C(f32 arg0, f32 arg1, s32 arg2, void **arg3) {
     segmentNumber = 0;
     if (segmentCount > 0) {
         do {
+        s32 compareMask;
         segment = &D_800792E8->segments[segmentIndices[segmentNumber]];
         compareMask = getXZCompareMask(
             &D_800792E8->segmentBounds[segmentIndices[segmentNumber]], x, z, x, z);
@@ -4758,27 +4706,22 @@ s32 func_8001398C(f32 arg0, f32 arg1, s32 arg2, void **arg3) {
                                     ((u8 *) segment->vertexData +
                                      (triangleIndex * 0x10));
                                 vertex0 = (TrackVertex *)
-                                    ((u8 *) segment->lightData +
-                                     ((triangle->vertex0 + textureOffset) * 0xA));
+                                    (((triangle->vertex0 + textureOffset) * 0xA) + (u8 *) segment->lightData);
                                 vertex1 = (TrackVertex *)
-                                    ((u8 *) segment->lightData +
-                                     ((triangle->vertex1 + textureOffset) * 0xA));
+                                    (((triangle->vertex1 + textureOffset) * 0xA) + (u8 *) segment->lightData);
                                 vertex2 = (TrackVertex *)
-                                    ((u8 *) segment->lightData +
-                                     ((triangle->vertex2 + textureOffset) * 0xA));
+                                    (((triangle->vertex2 + textureOffset) * 0xA) + (u8 *) segment->lightData);
                                 if (mathXZInTri(x, z, vertex0, vertex1,
                                                 vertex2) != 0) {
-                                    height = -(((surface->x * arg0) +
-                                                     (surface->z * arg1) +
-                                                     surface->distance) /
-                                                    planeHeight);
-                                    hit = (TrackCollisionHit *) D_800C9B90 +
-                                          resultCount;
-                                    hit->height = height;
+                                    px = surface->x;
+                                    pz = surface->z;
+                                    pd = surface->distance;
+                                    hit = (TrackCollisionHit *) D_800C9B90 + resultCount;
+                                    hit->height = -(((px * arg0) + (pz * arg1) + pd) / planeHeight);
                                     hit->surface = surface;
                                     resultCount++;
-                                    hit->textureFlag = textureFlag;
                                     hit->flags = segment->batches[batchNumber].flags;
+                                    hit->textureFlag = textureFlag;
                                     if (resultCount >= 0x14) {
                                         triangleIndex = lastTriangle;
                                         batchNumber = segment->batchCount;
@@ -5598,16 +5541,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * PLATEAU-HANDOFF:func_8001357C:end
  */
 
-/* PLATEAU-HANDOFF:func_8000DFBC:start
- * symbol: func_8000DFBC
- * score: 303 differing words
- * frame: 0x70
- * relocations: 51
- * first-mismatch: +0x48
- * summary: Declaring batchIndex and groupIndex first improves 304 to 303. Size stays +8, frame 0x70, first +0x48. Stall: the spill/reload pair on the tail-call lines remains after that declaration reorder.
- * PLATEAU-HANDOFF:func_8000DFBC:end
- */
-
 /* PLATEAU-HANDOFF:func_8000E5EC:start
  * symbol: func_8000E5EC
  * score: 185/205 words
@@ -5630,11 +5563,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001398C:start
  * symbol: func_8001398C
- * score: 70/330 words
+ * score: 45/330 words
  * frame: 0x140
  * relocations: 21
  * first-mismatch: +0x15C
- * summary: Sort loop reshaped (83->70); open: compare webs a0/a1 roles, plane loads in ring temps not f0/f2/f12.
+ * summary: Plane locals, block mask, pads, decl order (70->45); open: sort a0/a1 save tie 300/300 by web number, worth 31.
  * PLATEAU-HANDOFF:func_8001398C:end
  */
 

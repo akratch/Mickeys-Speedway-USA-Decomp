@@ -23,6 +23,20 @@ typedef struct Overlay46Particle {
     void *resource38;
 } Overlay46Particle;
 
+typedef struct Overlay46DrawPoint {
+    s16 value00;
+    s16 value02;
+    s16 value04;
+    s16 angle06;
+    f32 scale08;
+    f32 baseX0C;
+    f32 baseY10;
+    f32 value14;
+    u8 pad18[0x10];
+    f32 value28;
+    u8 pad2C[8];
+} Overlay46DrawPoint;
+
 typedef struct Overlay46Emitter {
     f32 x;
     f32 y;
@@ -72,7 +86,7 @@ extern f32 func_8002A8C0(s32 angle);
 extern s32 mathRnd(s32 minimum, s32 maximum);
 extern void camStandardOrtho(void *commands, void *matrices);
 extern void func_80023A08(void *commands, void *matrices, void *vertices,
-                          Overlay46Particle *particle, void *resource,
+                          Overlay46DrawPoint *particle, void *resource,
                           s32 flags, s32 alpha);
 extern void func_800349A4(void *commands, void *texture, s32 flags, s32 parameter);
 
@@ -92,16 +106,17 @@ extern void func_800349A4(void *commands, void *texture, s32 flags, s32 paramete
 #define O46_PHYSICAL(p) ((u32)((u8 *)(p) + 0x80000000))
 
 /* 2026-10-02 o-ovl7: rewritten from the target listing in the matched
- * sibling func_overlay_046_F0000874_188EC6C's shape: the draw point is an
- * Overlay46Particle on the stack (its +0x28 is the 0.0f store), the display
- * list, matrix and vertex cursors are passed by address, each command is one
- * packet macro (gDPSetPrimColor and the track.c vertex/polygon forms), the
- * emitter is read through D_1450 at every use, the spawn and draw loops are
- * indexed by i (the dead `or s6,zero,zero` is the draw loop's i = 0), the
- * spawn search ends with `j = 200`, and the batch size is if/else with the
- * 16 arm first. 415 masked words at -96 to 10 at 0. Open: the frame is
- * 0xF8 against 0xF0 (cc -g3 shows every macro's block-scoped _g takes a
- * home, seven here), and the batch macros' n+2 web colours a1 against a0. */
+ * sibling func_overlay_046_F0000874_188EC6C's shape: the draw point is a
+ * 0x34-byte stack struct (its +0x28 is the 0.0f store; the 0x3C particle
+ * type leaves the frame 8 bytes long), the display list, matrix and vertex
+ * cursors are passed by address, each command is one packet macro
+ * (gDPSetPrimColor and the track.c vertex/polygon forms), the emitter is read
+ * through D_1450 at every use, the spawn and draw loops are indexed by i (the
+ * dead `or s6,zero,zero` is the draw loop's i = 0), the spawn search ends
+ * with `j = 200`, and the batch size is if/else with the 16 arm first.
+ * 415 masked words at -96 to 8 at 0, frame 0xF0 exact. Open: the batch
+ * macros' n+2 web takes a1 because the polygon macro's block-scoped _g web
+ * (same save, lower web number) takes a0 first; the target has n+2 in a0. */
 #ifdef NON_MATCHING
 void func_overlay_046_F0001228_188F620(s32 updateRate) {
     Overlay46TrailVertex *vertex;
@@ -111,7 +126,7 @@ void func_overlay_046_F0001228_188F620(s32 updateRate) {
     s32 remaining;
     f32 halfX;
     f32 halfY;
-    Overlay46Particle point;
+    Overlay46DrawPoint point;
     s32 count;
 
     if (D_19C < D_494) {
@@ -234,10 +249,10 @@ void func_overlay_046_F0001228_188F620(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_046_F0001228_188F620:start
  * symbol: func_overlay_046_F0001228_188F620
- * score: 10/461 words
- * frame: 0xF8
+ * score: 8/461 words
+ * frame: 0xF0
  * relocations: 63
- * first-mismatch: +0x0
- * summary: Sibling-shape rewrite: 415 to 10 masked, size -96 to 0; frame 0xF8 vs 0xF0 (seven macro-block _g homes) and one a0/a1 colour open.
+ * first-mismatch: +0x494
+ * summary: 0x34-byte draw point fixes the frame (0xF0): 10 to 8; open: batch n+2 web in a1 (polygon _g takes a0 first on a save tie).
  * PLATEAU-HANDOFF:func_overlay_046_F0001228_188F620:end
  */

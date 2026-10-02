@@ -4118,9 +4118,30 @@ overlay89SetPrimaryReloc = 0xf0000000;
 overlay89UpdateReloc = 0xf00001a8;
 
 /* overlay 90: overlay_090.c.o */
+amSndPlay_o090Reloc = 0xf0000000;
+camGetMode_o090Reloc = 0xf0000000;
+func_80000510_o090Reloc = 0xf0000000;
+func_80002FE0_o090Reloc = 0xf0000000;
+func_8000309C_o090Reloc = 0xf0000000;
+func_800030B4_o090Reloc = 0xf0000000;
+func_800031C0_o090Reloc = 0xf0000000;
+func_800031E8_o090Reloc = 0xf0000000;
+func_80006EA0_o090Reloc = 0xf0000000;
+func_8000FAE0_o090Reloc = 0xf0000000;
+func_8002A8BC_o090Reloc = 0xf0000000;
+func_8002A8C0_o090Reloc = 0xf0000000;
+func_8005ABA8_o090Reloc = 0xf0000000;
+func_8005AD64_o090Reloc = 0xf0000000;
+gOverlay90SequenceDoneReloc = 0x00000000;
+gOverlay90SequenceStateReloc = 0x00000000;
+gOverlay90StatePoolReloc = 0x00000008;
 gOverlay90Value1C = 0x00000000;
 gOverlay90Value20 = 0x00000004;
+levelGetLevel_o090Reloc = 0xf0000000;
+mathRnd_o090Reloc = 0xf0000000;
 overlay90CommitReloc = 0xf0000000;
+overlay90SequenceReloc = 0xf0000000;
+pointListRPY_o090Reloc = 0xf0000000;
 
 /* overlay 91: overlay_091_mul.c.o */
 overlay91BeginRenderReloc = 0xf0000000;

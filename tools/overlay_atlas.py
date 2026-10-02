@@ -190,6 +190,18 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
+    # The state machine's float literals and seven-entry switch table,
+    # rodata-relative +0x8, after overlay90Initialize's two data words.
+    90: [
+        (
+            0x8,
+            0x40,
+            "overlay_090",
+            ".rodata",
+            "func_overlay_090_F00000FC_18D4BF4",
+            True,
+        )
+    ],
     # The 25-entry selector switch table, rodata-relative +0xEAC; it ends the
     # module's initialized data.
     101: [

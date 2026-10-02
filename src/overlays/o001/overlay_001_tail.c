@@ -896,13 +896,14 @@ extern void *LOCAL_BSS_1D9C;
  * layouts follow Mickey's runtime identities and access widths. The
  * declarations follow the target's home ladder (every declared local takes a
  * slot in declaration order here, so a new local must replace a free one).
- * 2026-10-02 (g-o001big), 1061 to 61 at delta 0: `while (n--)` for the
+ * 2026-10-02 (g-o001big), 1061 to 48 at delta 0: `while (n--)` for the
  * surface and update loops, an else-arm for the last slope case, the angle
  * magnitude and the slope/spin/decel/steering factor in their own locals
- * (impulse keeps `scale`, the target's 0x80 home), field reads instead of
- * the value2 carriers and the action callback, the limit product
- * level-first, the slope factor as slope * tuning[3] * 0.5f, the steering
- * value as one expression, deltaZ before inverseUpdate and the three
+ * (impulse keeps `scale`, the target's 0x80 home), the decel amount in
+ * `work`, field reads instead of the value2 carriers, the impulse velocity
+ * and the action callback, the limit product level-first, the slope factor
+ * as slope * tuning[3] * 0.5f, the steering value as one expression, `+=`
+ * for the reverse-speed steps, deltaZ before inverseUpdate and the three
  * velocity stores before the position updates (all of these move ugen's
  * register draws), the decel scaled before its test, the `< 0` zeros the
  * target materialises with mtc1, and the steering `* 16384` spelled apart
@@ -1221,12 +1222,12 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
                     func_overlay_008_F00049DC_1862734(1);
                 }
                 if (state->forwardVelocity < 0.0f) {
-                    state->forwardVelocity = (f32) (state->forwardVelocity + tuning[(s32) -state->forwardVelocity + 50]);
+                    state->forwardVelocity += tuning[(s32) -state->forwardVelocity + 50];
                     if ((state->forwardVelocity > 0.0f) && (state->controlYjoy >= -0x1E)) {
                         state->forwardVelocity = 0.0f;
                     }
                 } else if (state->controlYjoy < -0x1E) {
-                    state->forwardVelocity = (f32) (state->forwardVelocity + tuning[(s32) state->forwardVelocity + 8]);
+                    state->forwardVelocity += tuning[(s32) state->forwardVelocity + 8];
                     if (state->forwardVelocity > 6.0f) {
                         state->forwardVelocity = 6.0f;
                     }
@@ -1239,9 +1240,9 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
             } else if (keys & 0x8000) {
                 if ((state->boostMode == 1) || (state->boostMode == 2)) {
                     if (G_offd_31a4 == 0) {
-                        value2 = 0.3334f;
+                        work = 0.3334f;
                     } else {
-                        value2 = 0.5f;
+                        work = 0.5f;
                     }
                 } else {
                     if (state->forwardVelocity > 0.0f) {
@@ -1253,16 +1254,16 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
                         extraScale = work - (f32) index;
                     }
                     work = tuning[index + 17];
-                    value2 = ((tuning[index + 18] - work) * extraScale) + work;
+                    work = ((tuning[index + 18] - work) * extraScale) + work;
                 }
-                value2 *= state->speedScale;
+                work *= state->speedScale;
                 if (state->forwardVelocity < -limit) {
                     state->forwardVelocity *= 0.99f;
                     if (-limit < state->forwardVelocity) {
                         state->forwardVelocity = -limit;
                     }
                 } else {
-                    state->forwardVelocity -= value2;
+                    state->forwardVelocity -= work;
                     if (state->forwardVelocity < -limit) {
                         state->forwardVelocity = -limit;
                     }
@@ -1355,9 +1356,8 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
                     state->sideVelocity = 0.0f;
                 }
             }
-            value = state->impulseVelocity;
-            scale = 1.0f - (value / state->impulseInitial);
-            state->impulseVelocity = (f32) (value + (state->impulseAcceleration * D_4));
+            scale = 1.0f - (state->impulseVelocity / state->impulseInitial);
+            state->impulseVelocity += state->impulseAcceleration * D_4;
             velocityX = func_8002A8C0(heading) * state->forwardVelocity * scale;
             velocityZ = func_8002A8BC(heading) * state->forwardVelocity * scale;
         } else {
@@ -3208,10 +3208,10 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C
- * score: 61/1542 words
+ * score: 48/1542 words
  * frame: 0x138
  * relocations: 184
  * first-mismatch: +0x824
- * summary: Expression/statement order moves ugen draws: steering one expression, deltaZ first, velocity stores first; callback read direct: 144 to 61
+ * summary: Decel amount in work, impulse velocity read direct, += reverse steps: 61 to 48; rest is float ring order and a few colours
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
  */

@@ -8,6 +8,29 @@
 - first mismatch: +0x104
 - summary: Listing rewrite 185 -> 12; left two v0/v1 ties: forces p1:w61=c2,w52=c1,w4=c2,w17=c1 (proc 23) score 0.
 
+#### 2026-10-02, lane x-track, second pass: one force left (still 12)
+
+Single forces on the banked source (proc 23): `p1:w61=c2` alone scores 3
+and `p1:w4=c2` alone 9; together they score 0, so webs 52 and 17 follow.
+Pair B (the camera block's segment-count load taking v0) closes from
+source: keeping the `camGetPtr()` result live through the camera test
+(`camera = camGetPtr(); i = camera->segmentIndex;` and a trailing empty
+`if (camera) {}` after `i *= ...`) scores 9 with only pair A left, and
+`p1:w66=c2` on that source scores 0. The empty conditional is
+diagnostic, as in func_8003A754, so it is not banked; a natural statement
+that holds the call result over those three blocks would be. Other camera
+spellings (field re-read at each use, `camera` held but not re-used, the
+assignment inside the condition) score 12 to 14.
+
+Pair A is a near tie: the list cursor (62/2) beats the shared
+post-decrement temporary (60/2), and the target needs the temporary first
+while the cursor still beats the then-loop's byte load (30/1) and `j`
+(64/3). That ordering needs the cursor at exactly 30 (a tie at 30 goes to
+the temporary, the lower web number) or the temporary at 31. Wrapping
+either flag loop's body in `do { } while (0)` or `if (1) { }` raises the
+cursor's block count to nocs 3 (20.7), which puts it behind the byte load
+and `j` as well (16 to 32 words).
+
 #### 2026-10-02, lane x-track: 185 to 12 at delta 0
 
 The m2c body was replaced by a rewrite from the listing. Direct-compile

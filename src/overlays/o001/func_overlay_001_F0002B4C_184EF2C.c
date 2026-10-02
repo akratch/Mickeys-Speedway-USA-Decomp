@@ -83,10 +83,12 @@ extern void func_overlay_001_F0002AA4_184EE84(s32 arg0);
  * `otherState` (the leader too, held in s4 like the pair loop's); the sort
  * reads `swap` before the compare; the bottom loop's previous-rank state is
  * its own `prev` (a0) and its split index its own `k`, with `dz` inlined so
- * the local count (and the +0x54 spill cell) is unchanged. Open: `sum = 0`
- * is emitted before the bottom loop's first call, so as1 fills that jal's
- * delay slot with it instead of the argument copy (6 words, +0x60C). */
-#ifdef NON_MATCHING
+ * the local count (and the +0x54 spill cell) is unchanged.
+ * 2026-10-02 w6-o001b: matched by deleting the separate `sum = 0` and
+ * writing `for (sum = 0, k = 0; ...)`. That keeps the zero with the
+ * induction init, so as1 fills the func_80005820 delay slot with the
+ * argument copy. The reversed comma is 2 words. `-Wo,-loopunroll,0` was
+ * not load-bearing (still 6 words) and is gone. */
 void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
     void *level;
     s32 count;
@@ -253,10 +255,10 @@ void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
     while (i--) {
         if (D_1DC0[i] != 0) {
             state = func_80005820(i)->state;
-            sum = 0;
             if (state->rank != 0) {
                 prev = func_80005820(gO1RankOrder[state->rank - 1])->state;
-                for (k = 0; k < state->lap; k++) {
+                /* sum then k: the other comma order leaves sum in the jal slot. */
+                for (sum = 0, k = 0; k < state->lap; k++) {
                     sum += prev->split[k];
                 }
                 delta = state->total - sum;
@@ -272,16 +274,3 @@ void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/func_overlay_001_F0002B4C_184EF2C/func_overlay_001_F0002B4C_184EF2C.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_001_F0002B4C_184EF2C:start
- * symbol: func_overlay_001_F0002B4C_184EF2C
- * score: 6/451 words
- * frame: 0xB0
- * relocations: 63
- * first-mismatch: +0x60C
- * summary: Per-region locals (other/otherState, prev, k, swap first): 186 to 6; open: sum = 0 lands in the bottom jal delay slot instead of the a0 copy.
- * PLATEAU-HANDOFF:func_overlay_001_F0002B4C_184EF2C:end
- */

@@ -3763,6 +3763,11 @@ overlay68FinishEntryPromoteReloc = 0xf0000000;
 /* overlay 68: overlay68InitializeObject.c.o */
 overlay68ConfigureReloc = 0xf0000000;
 
+/* overlay 68: overlay68DrawSortedEntries.c.o */
+overlay68MeasureVectorReloc = 0xf0000000;
+overlay68PrepareDrawReloc = 0xf0000000;
+overlay68SubmitEntryReloc = 0xf0000000;
+
 /* overlay 68: overlay68RebuildSecondaryEntry.c.o */
 gOverlay68KindMap = 0x00000014;
 overlay68GetBlurEffectReloc = 0xf0000000;

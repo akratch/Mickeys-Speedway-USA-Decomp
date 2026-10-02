@@ -482,6 +482,12 @@ gOverlay7PrimaryModes = 0x000002a4;
 gOverlay7ValuesEnd = 0x000002aa;
 mathRnd_o007Reloc = 0xf0000000;
 overlay59AppendValueReloc = 0xf0000000;
+overlay7GetCheckIndexReloc = 0xf0000000;
+overlay7GetCheckTableReloc = 0xf0000000;
+overlay7GetCurrentReloc = 0xf0000000;
+overlay7GetModeReloc = 0xf0000000;
+overlay7RecordCheckReloc = 0xf0000000;
+overlay7SetOwnerModeReloc = 0xf0000000;
 
 /* overlay 8: overlay_008.c.o */
 D_10 = 0x00000010;
@@ -4763,11 +4769,11 @@ func_overlay_007_F0000298_185C120 = overlay7AppendEntry;
 
 /* overlay 7: overlay_007_tail.c.o */
 func_overlay_007_F0000894_185C71C = overlay7DispatchModes;
+func_overlay_007_F0000AA0_185C928 = overlay7UpdateOwnerMode;
 func_overlay_007_F0000CCC_185CB54 = overlay7DispatchSelection;
 func_overlay_007_F0000DBC_185CC44 = overlay7CommitSelection;
 func_overlay_007_F0000EDC_185CD64 = overlay7FillValues;
 func_overlay_007_F0000F08_185CD90 = overlay7InitPool;
-func_overlay_007_F0000AA0_185C928 = overlay7UpdateOwnerMode;
 
 /* overlay 8: overlay_008.c.o */
 func_overlay_008_F0000000_185DD58 = overlay8Ignore;

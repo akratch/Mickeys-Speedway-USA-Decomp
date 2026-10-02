@@ -1446,6 +1446,7 @@ MIXED_TU_EXACT_C_RANGES = {
             "overlay7DispatchModes",
             "canonical mixed-TU object, 23 text plus seven switch-table runtime relocations, and linked bytes exact",
         ),
+        (0xAA0, 0xCCC, "overlay7UpdateOwnerMode"),
         (
             0xCCC,
             0xDBC,

@@ -1257,13 +1257,21 @@ overlay24RenderHelperReloc = 0xf0000000;
 overlay24UpdateRelationReloc = 0xf0000000;
 
 /* overlay 25: overlay_025.c.o */
-D_588 = 0x00000588;
 gOverlay25ColorsReloc = 0x00000000;
 gOverlay25GlobalFlagsReloc = 0x00000000;
-gOverlay25Threshold = 0x00000018;
+overlay25CanHitReloc = 0xf0000000;
 overlay25CosReloc = 0xf0000000;
+overlay25DestroyReloc = 0xf0000000;
+overlay25GetStatusReloc = 0xf0000000;
+overlay25MoveReloc = 0xf0000000;
+overlay25NotifyHitReloc = 0xf0000000;
+overlay25QueryObjectsReloc = 0xf0000000;
 overlay25RandomReloc = 0xf0000000;
+overlay25SetVectorFlagsReloc = 0x00000588;
 overlay25SinReloc = 0xf0000000;
+overlay25SweepReloc = 0xf0000000;
+overlay25TraceReloc = 0xf0000000;
+overlay7DispatchModesReloc = 0xf0000000;
 
 /* overlay 26: overlay26InitializeObject.c.o */
 D_B18 = 0x00000b18;
@@ -5393,8 +5401,8 @@ func_overlay_024_F0000284_1879A6C = overlay24RenderState;
 
 /* overlay 25: overlay_025.c.o */
 func_overlay_025_F0000000_1879C88 = overlay25InitializeEffect;
-func_overlay_025_F0000588_187A210 = overlay25SetVectorFlags;
 func_overlay_025_F000017C_1879E04 = overlay25UpdateEffect;
+func_overlay_025_F0000588_187A210 = overlay25SetVectorFlags;
 
 /* overlay 27: overlay_027.c.o */
 func_overlay_027_F0000000_187B9D8 = overlay27Init;

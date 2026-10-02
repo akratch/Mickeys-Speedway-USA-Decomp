@@ -157,6 +157,7 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
+    25: [(0x20, 0x40, "overlay_025", ".rodata", "overlay25UpdateEffect", True)],
     41: [
         (0x0, 0x3C, "overlay41SampleCurve", ".rodata", "func_overlay_041_F00002AC_18875E4"),
         (0x3C, 0x54, "overlay41UpdateCurveObject", ".rodata", "func_overlay_041_F0000854_1887B8C"),

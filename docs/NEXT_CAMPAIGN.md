@@ -141,7 +141,7 @@ constant 2 hoisted into a2 in the target; axis loops counting in s2),
 (2,592 B, 327 at -8), `func_8001DD70` (2,132 B, 224: the records-address web
 is only splittable by a wrong offset; needs a different idea),
 `func_overlay_092_F0000308` (1,832 B, 119), `func_overlay_008_F00042A8`
-(1,788 B, 240), `rain_render_splashes` (1,616 B, 105),
+(1,788 B, 240), `rain_render_splashes` (1,616 B, 100),
 `overlay68UpdateAnimation` (1,424 B, 180), `func_overlay_012_F00003A8`
 (1,384 B, 159), `func_800349A4` (1,088 B, 172), `func_80054B3C` (anim.c,
 1,480 B, 349).

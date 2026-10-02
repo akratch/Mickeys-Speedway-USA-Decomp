@@ -756,7 +756,12 @@ void rain_update(s32 updateRate) {
 /* 2026-10-02 (lane e-res3): 109 -> 105. Shape checklist item 6: a 64-cell product
  * over the store order of the six display-list packets in the draw loop; the
  * FA C0E0FFFF, 0x05110020 and final FA packets store w1 before w0. The four
- * vertex-field store orders (xyz/colour, 81-cell probe) are best as written. */
+ * vertex-field store orders (xyz/colour, 81-cell probe) are best as written.
+ * 2026-10-02 (lane w6-rain): 105 -> 100. Each colour byte is 0xFF combined
+ * with index minus index. The type-2 0xFF web stays at save 40, totalsave
+ * 160; the index web's nocs grows from 6 to 7 and its save falls from 56.8
+ * to 48.7. A second store of 0xFF, and a u8 retype of the existing masks,
+ * do not raise that web at size delta 0. */
 void rain_render_splashes(s32 updateRate) {
     void *unused0;
     void *unused1;
@@ -861,34 +866,34 @@ void rain_render_splashes(s32 updateRate) {
                     D_800D40D4->x = (s16) (D_8007C6C8 * splash->age + splash->x);
                     D_800D40D4->y = (s16) splash->height;
                     D_800D40D4->z = (s16) (D_8007C6D8 * splash->age + splash->z);
-                    D_800D40D4->r = 0xFF;
-                    D_800D40D4->g = 0xFF;
-                    D_800D40D4->b = 0xFF;
-                    D_800D40D4->a = 0xFF;
+                    D_800D40D4->r = (u8) (0xFF ^ (index - index));
+                    D_800D40D4->g = (u8) (0xFF ^ (index - index));
+                    D_800D40D4->b = (u8) (0xFF ^ (index - index));
+                    D_800D40D4->a = (u8) (0xFF ^ (index - index));
                     D_800D40D4++;
                     D_800D40D4->x = (s16) (D_8007C6CC * splash->age + splash->x);
                     D_800D40D4->y = (s16) splash->height;
                     D_800D40D4->z = (s16) (D_8007C6DC * splash->age + splash->z);
-                    D_800D40D4->r = 0xFF;
-                    D_800D40D4->g = 0xFF;
-                    D_800D40D4->b = 0xFF;
-                    D_800D40D4->a = 0xFF;
+                    D_800D40D4->r = (u8) (0xFF ^ (index - index));
+                    D_800D40D4->g = (u8) (0xFF ^ (index - index));
+                    D_800D40D4->b = (u8) (0xFF ^ (index - index));
+                    D_800D40D4->a = (u8) (0xFF ^ (index - index));
                     D_800D40D4++;
                     D_800D40D4->x = (s16) (D_8007C6D0 * splash->age + splash->x);
                     D_800D40D4->y = (s16) splash->height;
                     D_800D40D4->z = (s16) (D_8007C6E0 * splash->age + splash->z);
-                    D_800D40D4->r = 0xFF;
-                    D_800D40D4->g = 0xFF;
-                    D_800D40D4->b = 0xFF;
-                    D_800D40D4->a = 0xFF;
+                    D_800D40D4->r = (u8) (0xFF ^ (index - index));
+                    D_800D40D4->g = (u8) (0xFF ^ (index - index));
+                    D_800D40D4->b = (u8) (0xFF ^ (index - index));
+                    D_800D40D4->a = (u8) (0xFF ^ (index - index));
                     D_800D40D4++;
                     D_800D40D4->x = (s16) (D_8007C6D4 * splash->age + splash->x);
                     D_800D40D4->y = (s16) splash->height;
                     D_800D40D4->z = (s16) (D_8007C6E4 * splash->age + splash->z);
-                    D_800D40D4->r = 0xFF;
-                    D_800D40D4->g = 0xFF;
-                    D_800D40D4->b = 0xFF;
-                    D_800D40D4->a = 0xFF;
+                    D_800D40D4->r = (u8) (0xFF ^ (index - index));
+                    D_800D40D4->g = (u8) (0xFF ^ (index - index));
+                    D_800D40D4->b = (u8) (0xFF ^ (index - index));
+                    D_800D40D4->a = (u8) (0xFF ^ (index - index));
                     D_800D40D4++;
                 }
             } else {
@@ -957,10 +962,10 @@ void rain_sound(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:rain_render_splashes:start
  * symbol: rain_render_splashes
- * score: 105/404 words
+ * score: 100/404 words
  * frame: 0xB8
  * relocations: 0
  * first-mismatch: +0x94
- * summary: Packet store order (109->105); open: s1/s2/s3 ring, splash/index above delay-address and 0xFF webs
+ * summary: Index-difference colour stores (105->100); 0xFF web still save 40, totalsave 160, below splash 76.8
  * PLATEAU-HANDOFF:rain_render_splashes:end
  */

@@ -66,6 +66,11 @@ gmake overlay-atlas-write >/dev/null 2>&1 || true
 .venv/bin/python tools/refresh_atlas_digest.py >/dev/null
 gmake extract 2>&1 | tail -1
 .venv/bin/python tools/fix_stale_externs.py | tail -1
+# Two lanes that each retire a ranking row auto-merge the JSON's rows cleanly
+# but keep one header count, so the merged file says one more function than it
+# lists and --write-doc refuses it. Re-measure the whole queue instead of
+# trusting the merge (CLAUDE.md, "A clean auto-merge of a generated file").
+.venv/bin/python tools/nm_ranking.py --out config/nonmatching-ranking.us.json --no-table 2>&1 | tail -1
 .venv/bin/python tools/nm_ranking.py --write-doc >/dev/null
 # Plateau shards are projected from the source markers. A batch that lands
 # several lanes can leave one shard behind its marker, which fails

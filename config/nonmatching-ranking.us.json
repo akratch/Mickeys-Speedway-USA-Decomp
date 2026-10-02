@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 133,
-  "resolved": 133,
+  "queue_size": 132,
+  "resolved": 132,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 133,
-  "relocation_masked_coverage": 133,
+  "source_context_coverage": 132,
+  "relocation_masked_coverage": 132,
   "functions": [
     {
       "name": "func_80019AB8",

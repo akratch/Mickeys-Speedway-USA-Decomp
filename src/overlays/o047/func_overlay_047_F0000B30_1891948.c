@@ -78,34 +78,73 @@ extern Overlay47Command *D_800D3140;
 extern Mtx *D_800D3144;
 extern void *D_800D3148;
 extern void *D_800D31C8[];
-extern s8 ov47Bss_0;
-extern Overlay47Icon ov47Bss_8[];
-extern Overlay47TextureNode ov47Bss_1C0[];
-extern Overlay47Position ov47Bss_210[], ov47Bss_280[], ov47Bss_2F0;
-extern s8 ov47Bss_300[10];
-extern s8 ov47Bss_30A, ov47Bss_30B;
-extern void *ov47Bss_310;
-extern Overlay45ResourceDescriptor *ov47Bss_314, *ov47Bss_318;
-extern Overlay45ResourceDescriptor *ov47Bss_31C, *ov47Bss_320;
-extern s32 ov47Bss_324, ov47Bss_328[4], ov47Bss_338;
-extern u8 ov47Data_0[], ov47Data_8C[], ov47Data_118[];
-extern u8 ov47Data_198[], ov47Data_1C0[], ov47Data_228[], ov47Data_268[];
-extern Overlay47Command ov47Data_2A8[], ov47Data_300[];
-extern s8 ov47Data_3C8[][4];
-extern s8 ov47Data_3CC[][4];
-extern u32 ov47Data_3DC[5];
-extern f32 ov47Data_3F0[6];
-extern s8 ov47Data_474[], ov47Data_480[];
-extern u16 ov47Data_48C[10], ov47Data_4A0[10], ov47Data_4B4[10];
-extern s8 ov47Data_4C8[][4];
-extern Overlay47TextureNode ov47Data_4F0;
-extern s16 ov47Data_510[10];
-extern s8 ov47Data_524[10];
-extern s32 ov47Data_530[4];
-extern f32 ov47Data_540, ov47Data_544;
-extern s32 ov47Data_548;
-extern f32 ov47Data_54C;
-extern s32 ov47Data_550, ov47Data_554;
+/* Overlay 47's .data and .bss as TU statics at their recorded offsets, in the
+ * layout func_overlay_047_F0000000_1890E18 defines (Tier D, from the LOCAL
+ * relocation addends). Only the NON_MATCHING body sees them; a promotion must
+ * drop these sections at POSTPROCESS as that TU's rule does. The blend value
+ * and its speed (+0x540/+0x544) are one struct: measured -4 bytes at the tail
+ * against two scalars (2026-10-02). */
+static u8 ov47Data_0[0x8C] = { 0 };
+static u8 ov47Data_8C[0x8C] = { 0 };
+static u8 ov47Data_118[0x80] = { 0 };
+static u8 ov47Data_198[0x28] = { 0 };
+static u8 ov47Data_1C0[0x68] = { 0 };
+static u8 ov47Data_228[0x40] = { 0 };
+static u8 ov47Data_268[0x40] = { 0 };
+static Overlay47Command ov47Data_2A8[11] = { 0 };
+static Overlay47Command ov47Data_300[11] = { 0 };
+static s16 D_358[12] = { 0 };
+static s16 D_370[2] = { 0 };
+static s16 D_374[12] = { 0 };
+static void *D_38C[10] = { 0 };
+static u8 sO47Data3B4[0x14] = { 0 };
+static s8 ov47Data_3C8[1][4] = { 0 };
+static s8 ov47Data_3CC[4][4] = { 0 };
+static u32 ov47Data_3DC[5] = { 0 };
+static f32 ov47Data_3F0[5] = { 0 };
+static f32 D_404[15] = { 0 };
+static s8 D_440[12] = { 0 };
+static s8 D_44C[12] = { 0 };
+static s8 D_458[12] = { 0 };
+static s8 D_464[12] = { 0 };
+static u8 sO47Data470[4] = { 0 };
+static s8 ov47Data_474[12] = { 0 };
+static s8 ov47Data_480[12] = { 0 };
+static u16 ov47Data_48C[10] = { 0 };
+static u16 ov47Data_4A0[10] = { 0 };
+static u16 ov47Data_4B4[10] = { 0 };
+static s8 ov47Data_4C8[10][4] = { 0 };
+static Overlay47TextureNode ov47Data_4F0 = { 0 };
+static u8 sO47Data500[0x10] = { 0 };
+static s16 ov47Data_510[10] = { 0 };
+static s8 ov47Data_524[12] = { 0 };
+static s32 ov47Data_530[4] = { 0 };
+static struct { f32 value; f32 speed; } ov47Data_540 = { 0 };
+static s32 ov47Data_548 = 0;
+static f32 ov47Data_54C = 0;
+static s32 ov47Data_550 = 0;
+static s32 ov47Data_554 = 0;
+static u8 sO47Data558[8] = { 0 };
+
+static s8 ov47Bss_0;
+static Overlay47Icon ov47Bss_8[10];
+static Overlay47TextureNode ov47Bss_1C0[5];
+static Overlay47Position ov47Bss_210[7];
+static Overlay47Position ov47Bss_280[7];
+static Overlay47Position ov47Bss_2F0;
+static s8 ov47Bss_300[10];
+static s8 ov47Bss_30A;
+static s8 ov47Bss_30B;
+static void *ov47Bss_30C;
+static void *ov47Bss_310;
+static Overlay45ResourceDescriptor *ov47Bss_314;
+static Overlay45ResourceDescriptor *ov47Bss_318;
+static Overlay45ResourceDescriptor *ov47Bss_31C;
+static Overlay45ResourceDescriptor *ov47Bss_320;
+static s32 ov47Bss_324;
+static s32 ov47Bss_328[4];
+static s32 ov47Bss_338;
+static s32 ov47Bss_33C;
 
 extern u16 joyGetPressed(s32 player);
 extern void amSndPlay(u16 soundId, void **handle);
@@ -192,9 +231,9 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     f32 oldSelector;
     f32 **height;
     Overlay47Player *player;
-    Overlay47Actor *actor;
     Overlay47TextureScroll *scroll;
     Overlay47Icon *icon;
+    s32 pad;
 
     rate = updateRate;
     ov47Bss_30B = 0;
@@ -203,17 +242,17 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     start = 0;
     activeCount = 0;
     back = 0;
-    p3 = D_800D3058;
+    player = D_800D3058;
     do {
-        if (p3->active != 0) {
+        if (player->active != 0) {
             activeCount++;
-            if (p3->ready == 0) {
+            if (player->ready == 0) {
                 allReady = 0;
                 ov47Bss_338 = 0;
             }
         }
-        p3++;
-    } while (p3 < D_800D3058 + 4);
+        player++;
+    } while (player < D_800D3058 + 4);
     slot = 0;
     if (allReady && ((activeCount == 1) || (activeCount == 4))) {
         ov47Bss_338 = 1;
@@ -241,13 +280,12 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                     ov47Bss_30A++;
                     amSndPlay(12, NULL);
                     amSndPlay(25, NULL);
-                    actor = player->actor;
-                    if (actor != NULL) {
-                        if (actor->kind != ov47Data_510[player->selector]) {
-                            func_80006EA0(actor);
+                    if (player->actor != NULL) {
+                        if (player->actor->kind != ov47Data_510[player->selector]) {
+                            func_80006EA0(player->actor);
                             func_overlay_047_F0002D10_1893B28(player);
                         } else {
-                            func_8005AD64(actor, 1, -1, 0.0f);
+                            func_8005AD64(player->actor, 1, -1, 0.0f);
                         }
                     }
                     if (ov47Bss_0 > 0) {
@@ -283,7 +321,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                     }
                 }
                 if ((joyGetPressed(controller) & 0x9000) && !player->leaving &&
-                    (actor = player->actor) != NULL && !ov47Bss_324) {
+                    player->actor != NULL && !ov47Bss_324) {
                     if (allReady) {
                         if (!ov47Bss_338) {
                             ov47Bss_338 = 1;
@@ -298,24 +336,21 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                         if (player->sound != NULL) amSndStop(player->sound);
                         amSndPlay(ov47Data_48C[ov47Data_524[player->selector]], &player->sound);
                     }
-                    actor = player->actor;
-                    func_8005AD64(actor, 2, -1, 0.0f);
+                    func_8005AD64(player->actor, 2, -1, 0.0f);
                 } else if ((joyGetPressed(controller) & 0x4000) && !player->leaving) {
-                    actor = player->actor;
-                    if (actor != NULL && !ov47Bss_324 && !start) {
+                    if (player->actor != NULL && !ov47Bss_324 && !start) {
                         if (player->ready) {
                             player->ready = 0;
                             allReady = 0;
-                            func_8005AD64(actor, 0, -1, 0.0f);
+                            func_8005AD64(player->actor, 0, -1, 0.0f);
                             if (player->sound != NULL) amSndStop(player->sound);
                             amSndPlay(ov47Data_4A0[ov47Data_524[player->selector]], &player->sound);
                         } else if (D_8007C1A0 >= 2) {
                             player->active = 0;
                             ov47Bss_300[player->selector] = 0;
-                            actor = player->actor;
-                            if (actor != NULL) {
+                            if (player->actor != NULL) {
                                 player->leaving = 1;
-                                func_8005AD64(actor, 5, -1, 0.0f);
+                                func_8005AD64(player->actor, 5, -1, 0.0f);
                                 amSndPlay(24, NULL);
                             }
                             D_8007C1A0--;
@@ -368,9 +403,8 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             if (func_8001398C(player->x, player->z, 0x1000, &height)) {
                 player->y = **height;
             }
-            actor = player->actor;
-            oldFrame = actor->frameValue;
-            func_8005ABA8(actor, ov47Data_3F0[(s8)actor->frame], rate);
+            oldFrame = player->actor->frameValue;
+            func_8005ABA8(player->actor, ov47Data_3F0[(s8)player->actor->frame], rate);
             scroll = player->actor->scroll;
             for (i = 0; i < 4; i++) {
                 (&scroll->a)[i] += speed;
@@ -404,69 +438,58 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                     func_overlay_047_F0002D10_1893B28(player);
                 }
             }
-            actor = player->actor;
-            if (actor != NULL) {
-                actor->trigger = 0;
-                actor = player->actor;
-                switch (actor->frame) {
+            if (player->actor != NULL) {
+                player->actor->trigger = 0;
+                switch (player->actor->frame) {
                     case 1:
-                        if (0.3f <= actor->frameValue && actor->frameValue < 0.65f) {
-                            actor->trigger = 15;
-                            actor = player->actor;
+                        if (0.3f <= player->actor->frameValue && player->actor->frameValue < 0.65f) {
+                            player->actor->trigger = 15;
                         }
-                        if (oldFrame < 0.3f && 0.3f <= actor->frameValue) {
+                        if (oldFrame < 0.3f && 0.3f <= player->actor->frameValue) {
                             amSndPlay(26, NULL);
-                            actor = player->actor;
                         }
-                        if (actor->frameValue == 1.0f) {
-                            func_8005AD64(actor, 0, -1, 0.0f);
+                        if (player->actor->frameValue == 1.0f) {
+                            func_8005AD64(player->actor, 0, -1, 0.0f);
                             player->idleTimer = mathRnd(30, 300);
-                            actor = player->actor;
                         }
                         break;
                     case 3:
                     case 4:
-                        if (actor->frameValue == 1.0f) {
-                            func_8005AD64(actor, 0, 0, 0.0f);
+                        if (player->actor->frameValue == 1.0f) {
+                            func_8005AD64(player->actor, 0, 0, 0.0f);
                             player->idleTimer = mathRnd(30, 300);
-                            actor = player->actor;
                         }
                         break;
                     case 0:
                         if (player->idleTimer > 0) {
                             player->idleTimer -= updateRate;
-                        } else if (actor->frameValue < 0.02f) {
+                        } else if (player->actor->frameValue < 0.02f) {
                             func_8005AD64(player->actor, mathRnd(3, 4), -1, 0.0f);
                         }
-                        actor = player->actor;
                         break;
                     case 5:
-                        actor->trigger = 15;
-                        actor = player->actor;
-                        if (0.8f < actor->frameValue && player->leaving) {
+                        player->actor->trigger = 15;
+                        if (0.8f < player->actor->frameValue && player->leaving) {
                             player->leaving = 0;
                             slot--;
                             ov47Bss_30A--;
-                            actor = player->actor;
                         }
                         break;
                     case 2:
-                        if (actor->frameValue == 1.0f) {
-                            func_8005AD64(actor, 0, -1, 0.0f);
+                        if (player->actor->frameValue == 1.0f) {
+                            func_8005AD64(player->actor, 0, -1, 0.0f);
                             player->idleTimer = mathRnd(30, 300);
-                            actor = player->actor;
                         }
                         break;
                 }
                 if (!player->leaving && !player->active) {
                     if ((player->x - ov47Bss_2F0.x) * (player->x - ov47Bss_2F0.x) +
                         (player->z - ov47Bss_2F0.z) * (player->z - ov47Bss_2F0.z) < 1000.0f) {
-                        func_80006EA0(actor);
+                        func_80006EA0(player->actor);
                         player->actor = NULL;
-                        actor = NULL;
                     }
                 }
-                if (actor != NULL) partUpdateTriggers(actor, updateRate);
+                if (player->actor != NULL) partUpdateTriggers(player->actor, updateRate);
             }
         }
     }
@@ -542,9 +565,11 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         O47_COMMAND(0x01000040, O47_PHYSICAL(D_800D3144));
         D_800D3144++;
         colour = ov47Data_3DC[colourIndex];
+        red = colour >> 24;
+        green = colour >> 16;
+        blue = colour >> 8;
         O47_COMMAND(0x06000000, ov47Data_300);
-        O47_COMMAND(0xFA000000, ((u32)(colour >> 24) << 24) |
-            (((colour >> 16) & 255) << 16) | (((colour >> 8) & 255) << 8) | 255);
+        O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
         O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
         O47_VERTICES(ov47Data_198, 4);
         O47_COMMAND(0x05100020, O47_PHYSICAL(ov47Data_1C0));
@@ -566,9 +591,9 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             green = (colour >> 16) & 255;
             blue = (colour >> 8) & 255;
             O47_COMMAND(0xFA000000,
-                ((u32)(s32)(red + (255 - red) * ov47Data_540) << 24) |
-                (((s32)(green + (255 - green) * ov47Data_540) & 255) << 16) |
-                (((s32)(blue + (255 - blue) * ov47Data_540) & 255) << 8) | 255);
+                ((u32)(s32)(red + (255 - red) * ov47Data_540.value) << 24) |
+                (((s32)(green + (255 - green) * ov47Data_540.value) & 255) << 16) |
+                (((s32)(blue + (255 - blue) * ov47Data_540.value) & 255) << 8) | 255);
             O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
             O47_VERTICES(ov47Data_0, 14);
             O47_COMMAND(0x05710080, O47_PHYSICAL(ov47Data_118));
@@ -638,8 +663,8 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                 O47_COMMAND(0xEF002C0F, 0x00504340);
                 O47_COMMAND(0xB6000000, 0x00010001);
                 O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
-                O47_COMMAND(0xFA000000, ov47Data_3DC[controller]);
                 count = ov47Data_4C8[ov47Data_524[p3->selector]][stat];
+                O47_COMMAND(0xFA000000, ov47Data_3DC[controller]);
                 while (count--) {
                     O47_RECTANGLE(barX, barY);
                     barX += 8;
@@ -669,13 +694,13 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     }
     func_80021504(oldFov, 1);
     func_800221E8(&D_800D3140, NULL);
-    ov47Data_540 += ov47Data_544 * rate;
-    if (ov47Data_540 > 1.0f) {
-        ov47Data_544 = -ov47Data_544;
-        ov47Data_540 = 2.0f - ov47Data_540;
-    } else if (ov47Data_540 < 0.0f) {
-        ov47Data_540 = -ov47Data_540;
-        ov47Data_544 = -ov47Data_544;
+    ov47Data_540.value += ov47Data_540.speed * rate;
+    if (ov47Data_540.value > 1.0f) {
+        ov47Data_540.speed = -ov47Data_540.speed;
+        ov47Data_540.value = 2.0f - ov47Data_540.value;
+    } else if (ov47Data_540.value < 0.0f) {
+        ov47Data_540.value = -ov47Data_540.value;
+        ov47Data_540.speed = -ov47Data_540.speed;
     }
     if (ov47Bss_30B) {
         if (ov47Bss_310 != NULL) amSndStop(ov47Bss_310);
@@ -689,10 +714,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 1580 differing words
+ * score: 1377 differing words
  * frame: 0x280
- * relocations: 316
+ * relocations: 320
  * first-mismatch: +0x4
- * summary: Pair 1 +0x4 line 199 rate=updateRate is move_to_dest. register, same-line fold, dying s32: stall, still +4/1580.
+ * summary: Flag + TU statics + no actor carrier + count-first bars + struct blend: 1377/+4 (was 1580/+4). Next: prologue copy, LDA merge, 3C8 fold.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

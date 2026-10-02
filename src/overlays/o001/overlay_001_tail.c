@@ -908,7 +908,11 @@ extern void *LOCAL_BSS_1D9C;
  * velocity stores before the position updates (all of these move ugen's
  * register draws), the decel scaled before its test, the `< 0` zeros the
  * target materialises with mtc1, and the steering `* 16384` spelled apart
- * from the angle block's 16384.0f so that constant stays a register web. */
+ * from the angle block's 16384.0f so that constant stays a register web.
+ * 2026-10-02 (k-o001big), 41 to 26: the action predicate's and
+ * func_800299E8's results tested by an empty `if`; with the result unused
+ * uopt reloads actionMode / forwardVelocity only on the call path, the
+ * target reloads at the join on every path. */
 #ifdef NON_MATCHING
 void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) {
     f32 absAngle;
@@ -1280,7 +1284,8 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
                 }
             }
             if ((-0.2f < state->forwardVelocity) && (state->forwardVelocity < 0.2f)) {
-                func_800299E8(0, 127);
+                if (func_800299E8(0, 127) != 0) {
+                }
             }
             if (state->controlXjoy >= 0x42) {
                 steering = -0x1F4;
@@ -1437,7 +1442,8 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
             if (index != state->actionMode) {
                 predicate = action->test;
                 if ((predicate != NULL) && (action->mask & (1 << state->actionMode))) {
-                    predicate();
+                    if (predicate() != 0) {
+                    }
                 }
             }
         }
@@ -3209,10 +3215,10 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
  * symbol: func_overlay_001_F000438C_185076C
- * score: 41/1542 words
+ * score: 26/1542 words
  * frame: 0x138
  * relocations: 184
  * first-mismatch: +0x824
- * summary: Decel amount in extraScale beside the interpolation: 48 to 41; rest is float ring order, steering work colour, action loop reload
+ * summary: Call results tested by empty ifs move two reloads to the join: 41 to 26; rest is slope eval order, work/extraScale priority tie
  * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
  */

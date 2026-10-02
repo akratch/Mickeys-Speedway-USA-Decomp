@@ -271,20 +271,20 @@ Relocation-masked mismatch evidence covers **132 / 132** resolved rows. The raw 
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `register-only` | 1 | 0.8% |
-| `other` | 80 | 60.6% |
+| `register-only` | 2 | 1.5% |
+| `other` | 79 | 59.8% |
 | `size-mismatch` | 51 | 38.6% |
 
 ### Differing-word thresholds
 
 | Threshold | Count |
 |---|---:|
-| raw `differing_words <= 5` | 0 |
-| relocation-masked `differing_words <= 5` | 0 |
-| raw `differing_words <= 10` | 2 |
-| relocation-masked `differing_words <= 10` | 3 |
-| raw `differing_words <= 20` | 4 |
-| relocation-masked `differing_words <= 20` | 5 |
+| raw `differing_words <= 5` | 1 |
+| relocation-masked `differing_words <= 5` | 1 |
+| raw `differing_words <= 10` | 3 |
+| relocation-masked `differing_words <= 10` | 4 |
+| raw `differing_words <= 20` | 5 |
+| relocation-masked `differing_words <= 20` | 6 |
 
 ### Complete ranked queue
 
@@ -294,61 +294,61 @@ units remain distinct.
 
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | `src/main/lights.c` | `func_80019AB8` | `main` | `register-only` | 736 | 56 | 56 | 128 | 128 | 0 | — |
-| 2 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0001294_185EFEC` | `o008` | `other` | 5,036 | 60 | 7 | 112 | 216 | 0 | — |
-| 3 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 8 | 8 | 424 | 424 | 0 | — |
-| 4 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
-| 5 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 15 | 12 | 96 | 136 | 0 | — |
-| 6 | `src/overlays/o015/overlay_015.c` | `overlay15InitStarsAndPalette` | `o015` | `other` | 988 | 18 | 17 | 112 | 112 | 0 | — |
-| 7 | `src/overlays/o073/overlay73Draw.c` | `func_overlay_073_F0000D70_18CB830` | `o073` | `other` | 312 | 42 | 42 | 28 | 28 | 0 | — |
-| 8 | `src/main/matrix.c` | `MatrixMultiplyVec4` | `main` | `other` | 212 | 47 | 47 | 0 | 0 | 0 | — |
-| 9 | `src/main/joy.c` | `joyRead` | `main` | `other` | 636 | 48 | 47 | 44 | 44 | 0 | — |
-| 10 | `src/overlays/o017/overlay17AdvanceChain.c` | `overlay17AdvanceChain` | `o017` | `other` | 588 | 49 | 49 | 24 | 24 | 0 | — |
-| 11 | `src/main/spranim.c` | `effectboxControl` | `main` | `other` | 772 | 51 | 51 | 72 | 72 | 0 | — |
-| 12 | `src/overlays/o101/overlay101TailA6BC.c` | `overlay101TailA6BC` | `o101` | `other` | 1,168 | 57 | 53 | 0 | 0 | 0 | — |
-| 13 | `src/overlays/o040/overlay40BuildFrame.c` | `overlay40BuildFrame` | `o040` | `other` | 324 | 60 | 60 | 48 | 48 | 0 | — |
-| 14 | `src/main/objects.c` | `func_8000BB84` | `main` | `other` | 260 | 61 | 61 | 0 | 0 | 0 | — |
-| 15 | `src/main/shadows.c` | `func_800180B4` | `main` | `other` | 824 | 61 | 61 | 52 | 52 | 0 | — |
-| 16 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 69 | 69 | 4 | 4 | 0 | — |
-| 17 | `src/overlays/o036/overlay36ChooseWeightedState.c` | `func_overlay_036_F0000A60_1883F18` | `o036` | `other` | 680 | 71 | 71 | 60 | 60 | 0 | — |
-| 18 | `src/overlays/o025/overlay_025.c` | `overlay25UpdateEffect` | `o025` | `other` | 1,036 | 74 | 74 | 60 | 60 | 0 | — |
-| 19 | `src/overlays/o007/overlay_007_tail.c` | `overlay7UpdateOwnerMode` | `o007` | `other` | 556 | 81 | 81 | 16 | 16 | 0 | — |
-| 20 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 83 | 83 | 52 | 52 | 0 | — |
-| 21 | `src/overlays/o031/overlay31BuildLookupTables.c` | `func_overlay_031_F0000000_187F520` | `o031` | `other` | 744 | 86 | 86 | 52 | 52 | 0 | — |
-| 22 | `src/overlays/o038/func_overlay_038_F000047C_188618C.c` | `func_overlay_038_F000047C_188618C` | `o038` | `other` | 876 | 90 | 90 | 192 | 192 | 0 | — |
-| 23 | `src/main/weather.c` | `rain_render_splashes` | `main` | `other` | 1,616 | 100 | 100 | 148 | 148 | 0 | — |
-| 24 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 103 | 103 | 20 | 20 | 0 | — |
-| 25 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 137 | 103 | 28 | 28 | 0 | — |
-| 26 | `src/overlays/o050/overlay50Initialize.c` | `func_overlay_050_F0000000_1896970` | `o050` | `other` | 740 | 112 | 104 | 60 | 192 | 0 | — |
-| 27 | `src/main/font.c` | `func_8004C690` | `main` | `other` | 584 | 105 | 105 | 0 | 0 | 0 | — |
-| 28 | `src/main/textures_354C8.c` | `func_800355A0` | `main` | `other` | 1,076 | 105 | 105 | 72 | 72 | 0 | — |
-| 29 | `src/overlays/o101/overlay101TailC6E8.c` | `func_overlay_101_F000C6E8_18E7F08` | `o101` | `other` | 1,268 | 113 | 106 | 76 | 76 | 0 | — |
-| 30 | `src/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c` | `func_overlay_058_F00005FC_18AF7E4` | `o058` | `other` | 3,316 | 150 | 109 | 68 | 1,052 | 0 | — |
-| 31 | `src/overlays/o092/func_overlay_092_F0000308_18D6228.c` | `func_overlay_092_F0000308_18D6228` | `o092` | `other` | 1,832 | 120 | 119 | 336 | 544 | 0 | — |
-| 32 | `src/overlays/o009/overlay_009.c` | `func_overlay_009_F0000000_1866678` | `o009` | `other` | 1,344 | 126 | 120 | 228 | 228 | 0 | — |
-| 33 | `src/overlays/o017/overlay17CalculateEndpoints.c` | `overlay17CalculateEndpoints` | `o017` | `other` | 792 | 121 | 121 | 36 | 36 | 0 | — |
-| 34 | `src/overlays/o002/func_overlay_002_F0001364_185815C.c` | `func_overlay_002_F0001364_185815C` | `o002` | `other` | 756 | 123 | 123 | 8 | 8 | 0 | — |
-| 35 | `src/overlays/o101/overlay101BuildPresentationD.c` | `overlay101BuildPresentationD` | `o101` | `other` | 824 | 131 | 130 | 16 | 16 | 0 | — |
-| 36 | `src/main/fx.c` | `func_8004A10C` | `main` | `other` | 628 | 132 | 132 | 0 | 0 | 0 | — |
-| 37 | `src/overlays/o101/overlay101BuildPresentationA.c` | `overlay101BuildPresentationA` | `o101` | `other` | 832 | 137 | 136 | 16 | 16 | 0 | — |
-| 38 | `src/overlays/o101/overlay101BuildPresentationB.c` | `overlay101BuildPresentationB` | `o101` | `other` | 832 | 137 | 136 | 16 | 16 | 0 | — |
-| 39 | `src/overlays/o101/overlay101BuildPresentationC.c` | `overlay101BuildPresentationC` | `o101` | `other` | 832 | 137 | 136 | 16 | 16 | 0 | — |
-| 40 | `src/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c` | `func_overlay_079_F0000FA0_18CDF40` | `o079` | `other` | 736 | 144 | 143 | 56 | 60 | 0 | — |
-| 41 | `src/overlays/o068/overlay68DrawSortedEntries.c` | `overlay68DrawSortedEntries` | `o068` | `other` | 852 | 144 | 144 | 76 | 76 | 0 | — |
-| 42 | `src/main/objects.c` | `func_8000A39C` | `main` | `other` | 656 | 154 | 154 | 4 | 4 | 0 | — |
-| 43 | `src/overlays/o100/overlay100DrawMotion.c` | `overlay100DrawMotion` | `o100` | `other` | 972 | 155 | 155 | 48 | 48 | 0 | — |
-| 44 | `src/main/fx.c` | `func_80047304` | `main` | `other` | 740 | 158 | 158 | 4 | 4 | 0 | — |
-| 45 | `src/overlays/o012/func_overlay_012_F00003A8_186D628.c` | `func_overlay_012_F00003A8_186D628` | `o012` | `other` | 1,384 | 159 | 159 | 200 | 200 | 0 | — |
-| 46 | `src/overlays/o038/overlay38UpdateParticles.c` | `func_overlay_038_F0000154_1885E64` | `o038` | `other` | 808 | 160 | 159 | 32 | 32 | 0 | — |
-| 47 | `src/main/track.c` | `func_80010654` | `main` | `other` | 684 | 162 | 162 | 0 | 0 | 0 | — |
-| 48 | `src/main/track.c` | `func_80010B4C` | `main` | `other` | 2,712 | 167 | 167 | 84 | 84 | 0 | — |
-| 49 | `src/main/fx.c` | `fxSPDPRipple` | `main` | `other` | 928 | 169 | 169 | 104 | 104 | 0 | — |
-| 50 | `src/main/textures_354C8.c` | `func_800349A4` | `main` | `other` | 1,088 | 172 | 172 | 36 | 36 | 0 | — |
-| 51 | `src/overlays/o020/overlay20UpdateGrid.c` | `overlay20UpdateGrid` | `o020` | `other` | 860 | 173 | 173 | 0 | 0 | 0 | — |
-| 52 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 177 | 177 | 36 | 36 | 0 | — |
-| 53 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 180 | 180 | 28 | 28 | 0 | — |
-| 54 | `src/main/fx.c` | `func_80049B14` | `main` | `other` | 824 | 181 | 181 | 4 | 4 | 0 | — |
-| 55 | `src/main/track.c` | `func_8001357C` | `main` | `other` | 1,040 | 189 | 189 | 8 | 8 | 0 | — |
+| 1 | `src/main/track.c` | `func_8001357C` | `main` | `register-only` | 1,040 | 2 | 2 | 640 | 640 | 0 | — |
+| 2 | `src/main/lights.c` | `func_80019AB8` | `main` | `register-only` | 736 | 56 | 56 | 128 | 128 | 0 | — |
+| 3 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0001294_185EFEC` | `o008` | `other` | 5,036 | 60 | 7 | 112 | 216 | 0 | — |
+| 4 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 8 | 8 | 424 | 424 | 0 | — |
+| 5 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
+| 6 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 15 | 12 | 96 | 136 | 0 | — |
+| 7 | `src/overlays/o015/overlay_015.c` | `overlay15InitStarsAndPalette` | `o015` | `other` | 988 | 18 | 17 | 112 | 112 | 0 | — |
+| 8 | `src/overlays/o073/overlay73Draw.c` | `func_overlay_073_F0000D70_18CB830` | `o073` | `other` | 312 | 42 | 42 | 28 | 28 | 0 | — |
+| 9 | `src/main/matrix.c` | `MatrixMultiplyVec4` | `main` | `other` | 212 | 47 | 47 | 0 | 0 | 0 | — |
+| 10 | `src/main/joy.c` | `joyRead` | `main` | `other` | 636 | 48 | 47 | 44 | 44 | 0 | — |
+| 11 | `src/overlays/o017/overlay17AdvanceChain.c` | `overlay17AdvanceChain` | `o017` | `other` | 588 | 49 | 49 | 24 | 24 | 0 | — |
+| 12 | `src/main/spranim.c` | `effectboxControl` | `main` | `other` | 772 | 51 | 51 | 72 | 72 | 0 | — |
+| 13 | `src/overlays/o101/overlay101TailA6BC.c` | `overlay101TailA6BC` | `o101` | `other` | 1,168 | 57 | 53 | 0 | 0 | 0 | — |
+| 14 | `src/overlays/o040/overlay40BuildFrame.c` | `overlay40BuildFrame` | `o040` | `other` | 324 | 60 | 60 | 48 | 48 | 0 | — |
+| 15 | `src/main/objects.c` | `func_8000BB84` | `main` | `other` | 260 | 61 | 61 | 0 | 0 | 0 | — |
+| 16 | `src/main/shadows.c` | `func_800180B4` | `main` | `other` | 824 | 61 | 61 | 52 | 52 | 0 | — |
+| 17 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 69 | 69 | 4 | 4 | 0 | — |
+| 18 | `src/overlays/o036/overlay36ChooseWeightedState.c` | `func_overlay_036_F0000A60_1883F18` | `o036` | `other` | 680 | 71 | 71 | 60 | 60 | 0 | — |
+| 19 | `src/overlays/o025/overlay_025.c` | `overlay25UpdateEffect` | `o025` | `other` | 1,036 | 74 | 74 | 60 | 60 | 0 | — |
+| 20 | `src/overlays/o007/overlay_007_tail.c` | `overlay7UpdateOwnerMode` | `o007` | `other` | 556 | 81 | 81 | 16 | 16 | 0 | — |
+| 21 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 83 | 83 | 52 | 52 | 0 | — |
+| 22 | `src/overlays/o031/overlay31BuildLookupTables.c` | `func_overlay_031_F0000000_187F520` | `o031` | `other` | 744 | 86 | 86 | 52 | 52 | 0 | — |
+| 23 | `src/overlays/o038/func_overlay_038_F000047C_188618C.c` | `func_overlay_038_F000047C_188618C` | `o038` | `other` | 876 | 90 | 90 | 192 | 192 | 0 | — |
+| 24 | `src/main/weather.c` | `rain_render_splashes` | `main` | `other` | 1,616 | 100 | 100 | 148 | 148 | 0 | — |
+| 25 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 103 | 103 | 20 | 20 | 0 | — |
+| 26 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 137 | 103 | 28 | 28 | 0 | — |
+| 27 | `src/overlays/o050/overlay50Initialize.c` | `func_overlay_050_F0000000_1896970` | `o050` | `other` | 740 | 112 | 104 | 60 | 192 | 0 | — |
+| 28 | `src/main/font.c` | `func_8004C690` | `main` | `other` | 584 | 105 | 105 | 0 | 0 | 0 | — |
+| 29 | `src/main/textures_354C8.c` | `func_800355A0` | `main` | `other` | 1,076 | 105 | 105 | 72 | 72 | 0 | — |
+| 30 | `src/overlays/o101/overlay101TailC6E8.c` | `func_overlay_101_F000C6E8_18E7F08` | `o101` | `other` | 1,268 | 113 | 106 | 76 | 76 | 0 | — |
+| 31 | `src/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c` | `func_overlay_058_F00005FC_18AF7E4` | `o058` | `other` | 3,316 | 150 | 109 | 68 | 1,052 | 0 | — |
+| 32 | `src/overlays/o092/func_overlay_092_F0000308_18D6228.c` | `func_overlay_092_F0000308_18D6228` | `o092` | `other` | 1,832 | 120 | 119 | 336 | 544 | 0 | — |
+| 33 | `src/overlays/o009/overlay_009.c` | `func_overlay_009_F0000000_1866678` | `o009` | `other` | 1,344 | 126 | 120 | 228 | 228 | 0 | — |
+| 34 | `src/overlays/o017/overlay17CalculateEndpoints.c` | `overlay17CalculateEndpoints` | `o017` | `other` | 792 | 121 | 121 | 36 | 36 | 0 | — |
+| 35 | `src/overlays/o002/func_overlay_002_F0001364_185815C.c` | `func_overlay_002_F0001364_185815C` | `o002` | `other` | 756 | 123 | 123 | 8 | 8 | 0 | — |
+| 36 | `src/overlays/o101/overlay101BuildPresentationD.c` | `overlay101BuildPresentationD` | `o101` | `other` | 824 | 131 | 130 | 16 | 16 | 0 | — |
+| 37 | `src/main/fx.c` | `func_8004A10C` | `main` | `other` | 628 | 132 | 132 | 0 | 0 | 0 | — |
+| 38 | `src/overlays/o101/overlay101BuildPresentationA.c` | `overlay101BuildPresentationA` | `o101` | `other` | 832 | 137 | 136 | 16 | 16 | 0 | — |
+| 39 | `src/overlays/o101/overlay101BuildPresentationB.c` | `overlay101BuildPresentationB` | `o101` | `other` | 832 | 137 | 136 | 16 | 16 | 0 | — |
+| 40 | `src/overlays/o101/overlay101BuildPresentationC.c` | `overlay101BuildPresentationC` | `o101` | `other` | 832 | 137 | 136 | 16 | 16 | 0 | — |
+| 41 | `src/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c` | `func_overlay_079_F0000FA0_18CDF40` | `o079` | `other` | 736 | 144 | 143 | 56 | 60 | 0 | — |
+| 42 | `src/overlays/o068/overlay68DrawSortedEntries.c` | `overlay68DrawSortedEntries` | `o068` | `other` | 852 | 144 | 144 | 76 | 76 | 0 | — |
+| 43 | `src/main/objects.c` | `func_8000A39C` | `main` | `other` | 656 | 154 | 154 | 4 | 4 | 0 | — |
+| 44 | `src/overlays/o100/overlay100DrawMotion.c` | `overlay100DrawMotion` | `o100` | `other` | 972 | 155 | 155 | 48 | 48 | 0 | — |
+| 45 | `src/main/fx.c` | `func_80047304` | `main` | `other` | 740 | 158 | 158 | 4 | 4 | 0 | — |
+| 46 | `src/overlays/o012/func_overlay_012_F00003A8_186D628.c` | `func_overlay_012_F00003A8_186D628` | `o012` | `other` | 1,384 | 159 | 159 | 200 | 200 | 0 | — |
+| 47 | `src/overlays/o038/overlay38UpdateParticles.c` | `func_overlay_038_F0000154_1885E64` | `o038` | `other` | 808 | 160 | 159 | 32 | 32 | 0 | — |
+| 48 | `src/main/track.c` | `func_80010654` | `main` | `other` | 684 | 162 | 162 | 0 | 0 | 0 | — |
+| 49 | `src/main/track.c` | `func_80010B4C` | `main` | `other` | 2,712 | 167 | 167 | 84 | 84 | 0 | — |
+| 50 | `src/main/fx.c` | `fxSPDPRipple` | `main` | `other` | 928 | 169 | 169 | 104 | 104 | 0 | — |
+| 51 | `src/main/textures_354C8.c` | `func_800349A4` | `main` | `other` | 1,088 | 172 | 172 | 36 | 36 | 0 | — |
+| 52 | `src/overlays/o020/overlay20UpdateGrid.c` | `overlay20UpdateGrid` | `o020` | `other` | 860 | 173 | 173 | 0 | 0 | 0 | — |
+| 53 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 177 | 177 | 36 | 36 | 0 | — |
+| 54 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 180 | 180 | 28 | 28 | 0 | — |
+| 55 | `src/main/fx.c` | `func_80049B14` | `main` | `other` | 824 | 181 | 181 | 4 | 4 | 0 | — |
 | 56 | `src/overlays/o099/overlay99ApplySegment.c` | `overlay99ApplySegment` | `o099` | `other` | 920 | 191 | 190 | 80 | 80 | 0 | — |
 | 57 | `src/main/shadows.c` | `func_80017BCC` | `main` | `other` | 1,256 | 217 | 217 | 88 | 88 | 0 | — |
 | 58 | `src/main/rcpFast3d.c` | `func_8002EBE0` | `main` | `other` | 1,020 | 218 | 218 | 0 | 0 | 0 | — |

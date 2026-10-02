@@ -799,7 +799,19 @@ D_20 = 0x00000020;
 D_1520 = 0x00001520;
 
 /* overlay 12: func_overlay_012_F00003A8_186D628.c.o */
-D_1598 = 0x00001598;
+Arctanf_o012Reloc = 0xf0000000;
+func_8001291C_o012Reloc = 0xf0000000;
+func_8002A8BC_o012Reloc = 0xf0000000;
+func_8002A8C0_o012Reloc = 0xf0000000;
+func_80036544_o012Reloc = 0xf0000000;
+gOverlay12EffectCount = 0x00000000;
+gOverlay12Effects = 0x00000020;
+gOverlay12ParticleCount = 0x00000004;
+gOverlay12Particles = 0x00001520;
+gOverlay12Resource5 = 0x0000001c;
+mathRnd_o012Reloc = 0xf0000000;
+sqrtf_o012Reloc = 0xf0000000;
+trackGetTrack_o012Reloc = 0xf0000000;
 
 /* overlay 12: func_overlay_012_F0000910_186DB90.c.o */
 D_80000040 = 0x80000040;

@@ -1,12 +1,17 @@
-<!-- plateau-handoff:func_overlay_001_F000438C_185076C:start -->
-### `func_overlay_001_F000438C_185076C` plateau handoff
+<!-- plateau-handoff:overlay1UpdateObjectPhysics:start -->
+### `overlay1UpdateObjectPhysics` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_tail.c`
-- score: 9/1542 words
+- score: 0/1542 words, promoted
 - frame: 0x138
 - relocations: 184
-- first mismatch: +0x824
-- summary: Steering input in extraScale, assignment-expression blends, clamp local: 41 to 9; rest is slope eval order and updateRate reload
+- first mismatch: none
+- summary: Matched. Slope factor read as a tuning-head field after the product; reverse timer tested as `if (state->reverseTimer)`; promoted as overlay1UpdateObjectPhysics.
+
+Formerly `func_overlay_001_F000438C_185076C`; the C definition took the
+friendly name when it was promoted.
+
+Summary before this remeasure: Steering input in extraScale, assignment-expression blends, clamp local: 41 to 9; rest is slope eval order and updateRate reload
 
 Summary before this remeasure: Steering input in extraScale, (work = speedLimit) blends, clamp local: 26 to 21; rest is clamp colour, slope eval order, updateRate
 
@@ -724,4 +729,41 @@ section for the decision variable).
   forwarded from the stored blend (-4 bytes); the forms that kill the
   forwarding naturally put the blend load back in f14 (21).
 
-<!-- plateau-handoff:func_overlay_001_F000438C_185076C:end -->
+#### 2026-10-02, lane m-o001big: 9 to 0, matched and promoted
+
+Priced with `tools/shape_product.py` on the k-o001big base (9 words):
+
+- the slope factor (4 words). Fourteen spellings with `tuning[3]` as an
+  array element (product bound to `extraScale`/`value`/`work`/`value2`/
+  `deltaX` first, `.5f`, `0.5F`, `/ 2`, `/ 2.0f`, `*(tuning + 3)`, operand
+  swaps) score 187-192: each loads the element before the product and
+  rotates the float ring for the rest of the function. Read as a struct
+  field, `state->slope * 0.5f * ((O1PhysicsTuningHead *)tuning)->slopeFactor`
+  evaluates the product first: 9 to 3 (same with `0.5f * slope * field`;
+  `slope * field * 0.5f` 8, `field * slope * 0.5f` 9, `field * (slope *
+  0.5f)` 188). A standalone file shows the same split: the field load is
+  the second `mul.s` operand, the element load the first. Reading
+  `*tuning` and `tuning[2]` through the struct as well is flat (3).
+- the updateRate reload (3 words). Reusing `angleOffset` for `keys`,
+  `steering`, `remaining` or `collision` (16 cells): 3 at best. The test
+  `if (state->reverseTimer)` instead of `!= 0` alone takes the reload to
+  a0: 3 to 0 in all 12 cells of a 24-cell product over the test spelling,
+  the compare operand order, the subtract form (`(u8)(...)`, plain, `-=`)
+  and the `-0x64`/`-100` constant; the `!= 0` half of the product is 3
+  everywhere.
+- the clamp's `volatile` reload (item c) was not a residual on this base
+  and is kept as the previous lane wrote it.
+
+Promotion: the TU lost its last `GLOBAL_ASM`. Its `.rodata` now holds this
+function's 26 float literals between ChoosePath's four and the DispatchMode
+table, contiguous with them in the shipped data (shipped LOCAL addends
++0xF8..+0x15C), so the 52 HI16/LO16 records bind to
+`gOverlay1ChoosePathLiterals` (0xE8) through
+`config/normalizations/overlay1UpdateObjectPhysics.rebind.spec`;
+`gOverlay1ModeTable` moves from 0x154 to 0xEC (the table is now at object
++0x78) and the pool digest is re-asserted. Eleven cross-overlay callees
+(overlays 2, 7 and 8) are `*Reloc` placeholders: every shipped call word
+stores 0. Eighteen resident callees gained `--redefine-sym <n>=<n>_o001Reloc`
+lines. `.text` trim 0x4664 unchanged.
+
+<!-- plateau-handoff:overlay1UpdateObjectPhysics:end -->

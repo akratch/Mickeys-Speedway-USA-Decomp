@@ -25,4 +25,14 @@ Follow-up 2. Dropping `volatile` on the plane constant stays at size delta 0 but
 Kept measurement: 736 bytes, 143 masked of 184 words, 144 raw, size delta 0, frame `0x98`, first masked mismatch `+0x3C` (raw `+0x38`). Aligner: 65 byte-exact, 80 register naming, 5 immediate only, 38 really different, displacement tax 20. First naming `+0x3C`, first immediate `+0x60`, first structural `+0x9C`. Register census: no integer substitutions. Float swaps `f8`/`f6` and `f4`/`f10` dominate, but coherence is 73 percent across 16 windows, so it is not one ring phase. Frame census: both frames `0x98`. Target-only homes `0x84`, `0x74`, `0x70`, `0x6C`, `0x68`, `0x54`. Candidate-only homes `0x80`, `0x7C`, `0x78`, `0x60`, `0x50`. That is not a one-pad shift. The sibling local set moved the frame by 12 bytes instead of landing those homes.
 
 Tool gaps: `overlay_tables.py --json` prints module headers only; per-site op and addend come from `read_module_relocations` in that script, which has no overlay filter. `shape_product.py` only treats `==` and `!=` as axis values. No full ROM verify, because the result is not exact. A cold `gmake -j2` failed at link until `gmake overlay-syms`; the retry linked.
+
+### 2026-10-02, lane w2-ovld: the home ladder fits overlay 29's declaration order
+
+Not adopted (the kept body is unchanged). Measured with `tools/fast_score.py` on scratch candidates:
+
+- The target stores the first branch's cross Y and Z at sp+0x6C and sp+0x68 and the second branch's amount and projected X, Y at sp+0x74, sp+0x70, sp+0x6C, with the plane constant at sp+0x84. `overlay29ProjectPoint`'s declaration order (state, three normals, projected X/Y/Z, lengthSquared, cross X/Y/Z) with the plane constant inserted fifth puts lengthSquared, crossX, crossY, crossZ on exactly those four cells; the second branch then reuses lengthSquared for the amount and crossX/crossY for the projected point. The target's spill of the first branch's projected X at sp+0x54 is the first cell under sixteen declared locals.
+- That candidate (overlay 26's first branch, non-volatile plane constant, a `dist` local for the dot and the quotient): 137 masked at size delta -4, frame 0x80, every relative home agreeing. The missing word pair is that spill: here the projected X takes a saved register, in the target f14 saved around the call.
+- A third vector for the normalised projection and the second branch's deltas, sharing registers the way the target's colours suggest: 184 to 190 at +24 to +40. Refuted.
+
+Open: which first-branch values the target keeps in caller-saved colours (ny in f16, cross X and the squared length in f12, projected X in f14).
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

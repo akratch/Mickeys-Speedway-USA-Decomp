@@ -196,12 +196,18 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_build.c.o: CFLAGS += -Wab,-r43
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_build.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x424
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_head.c.o: CFLAGS += -Wab,-r4300_mul
+# overlay1LoadBuildRecords is instruction-exact. Its seven float literals
+# (0.8, 0.98, 1.15, 0.65, 0.9, 1.1 and FLT_MAX) are a pool that duplicates the
+# retained overlay data at rodata-relative +0xBC (the shipped hi/lo pairs are
+# LOCAL records): bind the pairs to an absolute 0xBC symbol, the form the
+# overlay's rank-weight update uses, and assert the pool by digest. Resident
+# callees go through the generated surface entries; no instruction is edited.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_head.c.o: config/normalizations/overlay1LoadBuildRecords.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_head.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_overlay_001_F0000CA8_184D088=overlay1InterpolatePath \
 		--redefine-sym func_overlay_001_F0000DF4_184D1D4=overlay1ResolveMotionPoint \
 		--redefine-sym func_overlay_001_F0000F84_184D364=overlay1MeasureCurves \
-		--redefine-sym func_overlay_001_F00010C8_184D4A8=overlay1LoadBuildRecords \
 		--redefine-sym func_overlay_001_F0000614_184C9F4=overlay1ModeResolverReloc \
 		--redefine-sym func_overlay_001_F0001A54_184DE34=overlay1BuildObjectMappings \
 		--redefine-sym sqrtf=sqrtf_o001Reloc \
@@ -210,7 +216,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_head.c.o: POSTPROCESS = \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o001Reloc $@ && \
 	$(OBJCOPY) --redefine-sym overlay1SquareRoot=func_overlay_001_F0000000_184C3E0 $@ && \
 	$(OBJCOPY) --redefine-sym overlay1AngleFromIndex=func_overlay_001_F0000000_184C3E0 $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x11A4
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x11A4 && \
+	$(OBJCOPY) --add-symbol gOverlay1BuildRecordsPool=0xBC,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/overlay1LoadBuildRecords.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:a9e8bb2ddde2c0045fe459a7a498fe7611a867b6388de34508f2f49849204ffa
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/func_overlay_001_F0001D78_184E158.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/func_overlay_001_F0001D78_184E158.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x9CC

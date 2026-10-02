@@ -2,11 +2,11 @@
 ### `overlay1LoadBuildRecords` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_head.c`
-- score: 6/572 words
+- score: 0/572 words, promoted
 - frame: 0xD8
-- relocations: 110
-- first mismatch: +0x1F0
-- summary: Overlay idiom rewrite: 469 at -52 to 6 at size 0, frame exact. Open: the two running-max stores rematerialise their address (lui at) in the target.
+- relocations: 114
+- first mismatch: none
+- summary: Matched. The two running-maximum updates are overlay1AssignRecordIndex's statement group; the closing average reuses sourceA and scale to hold the 23-cell frame.
 
 Summary before this remeasure: Rewritten in the overlay idiom with relocation identities: 469 at -52 to 20 at size 0, frame exact. Open: max-store address rematerialised, FP ring, arg order.
 
@@ -145,4 +145,33 @@ D_1D8C = next;`). Port that statement group verbatim, its two value locals
 included, into both walks (re-solving the frame, which gains cells), and read
 webs 378/379 afterwards: the pointer read alone did not change the store
 here, so the two distinct value locals are the untested part.
+
+### 2026-10-02 (coordinator, lane y-lbr): 6 to 0, promoted
+
+Measured with tools/fast_score.py on the whole TU, each step at size delta 0.
+
+- The six words were the two running-maximum stores. The shipped code loads
+  the count through its held address register and stores it by name with a
+  fresh high half. That is the statement group of the matched
+  overlay1AssignRecordIndex: a pointer local set to the count's address, the
+  candidate value in its own local, a copy of it, then a pointer read in the
+  test and a store by name.
+- Which parts are needed: the pointer plus ONE value local leaves both sites
+  open (37, all frame). The pointer plus two value locals closes both. The
+  copy can be an existing integer local (i, j, k or value: zero non-frame
+  differences) but the candidate must be a fresh local (reusing k is 6
+  non-frame words, value 17, offset 41, j 46, i 355).
+- Frame: the pointer and the candidate are two new cells (25 locals, frame
+  0xE0). Two merges are byte-neutral: the closing total carried in scale
+  (also neutral in score), and the closing-average pointer carried in sourceA
+  (large is 2 words, sourceB 3, sourceC 8). With both the frame is 0xD8 and
+  the function is 0 masked words.
+- Promotion: the seven float literals are a pool at rodata-relative 0xBC.
+  The fourteen hi/lo references are rebound to the absolute symbol
+  gOverlay1BuildRecordsPool and the TU's rodata is asserted by digest, the
+  form the overlay's rank-weight update uses. This was the TU's last
+  GLOBAL_ASM body. `gmake verify` printed OK, promotion-proof passed with
+  572 words, frame 0xD8, and 114 of 114 relocations.
+- Later functions in the file match on their physical line numbers, so the
+  guard lines and the old notes were replaced line for line.
 <!-- plateau-handoff:overlay1LoadBuildRecords:end -->

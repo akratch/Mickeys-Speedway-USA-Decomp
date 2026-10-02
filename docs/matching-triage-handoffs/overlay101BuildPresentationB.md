@@ -2,11 +2,11 @@
 ### `overlay101BuildPresentationB` plateau handoff
 
 - source: `src/overlays/o101/overlay101BuildPresentationB.c`
-- score: 136 differing words
+- score: 0/208 words, promoted
 - frame: 0x20
 - relocations: 52
-- first mismatch: +0x10
-- summary: Delta 0: dim colour as counter*0+0xC0 is an expression web that takes a2 (type-2 const never does). 136 at 0x20; colour ceiling to re-derive.
+- first mismatch: none
+- summary: Matched. Rewritten in the matched tail builders' shape after decoding the relocation table; the four presentation builders are one function with different constants.
 
 Summary before this remeasure: Identity-gate proc 0. Extra 0xC0 into a2; w198=c5 declined. Copy/L97/L144/L145/fallthrough/remat leave +4. Force floor 134 at +4.
 
@@ -575,5 +575,34 @@ three consecutive layout and carrier attempts with no better residual.
 #### 2026-09-24, lane w4-o101: natural spellings of the * 0 + diagnostic
 
 The dim-colour line is `gOverlay101BuilderNode24CountB * 0 + 0xC0`. Three natural spellings were compiled against that object: the multiply commuted (`0 * counter + 0xC0`), the add commuted (`0xC0 + counter * 0`), and a parenthesized product (`(counter * 0) + 0xC0`). Each object differed, so the diagnostic stays. The earlier note that `(x - x)`, `(x & 0)`, `(x ^ x)` and casts fold early still stands; those were not re-run.
+
+#### 2026-10-02, lane x-o101: matched, 136 -> 0 at delta 0, promoted
+
+About twelve lanes worked this family as a colour and allocator problem
+inside one inherited shape. The relocation table retires that shape:
+
+- The A/B alias pairs (order array and count, node-32, node-20 and node-24
+  pools and counts) are each one LOCAL address, the same bss objects
+  overlay101TailA6BC and overlay101TailC6E8 use.
+- The sprite creator is the resident routine the tail builders call with
+  two arguments, the compact creator is the one overlay101TailC6E8 calls
+  with (key, node), and the closing call is a SYMBOL record for
+  overlay101Reset (overlay 101 +0x1BB4), which takes one argument. The
+  a1-a3 the shipped closing call carries (the node-24 count, the dim colour,
+  the count's address) are leftovers, so the "dim colour as an expression web
+  that takes a2" closure and the four-argument final call described the
+  leftover registers, not the function.
+- A, B, C and D are one function: only the root asset, the input slot pair,
+  the compact key (0x15..0x18; on D it is the 0x18 already loaded for the
+  header, so the separate load vanishes), the node-24 colours and the closing
+  object differ.
+
+Written in the overlay101TailA6BC/C6E8 form (one-name counter subscripts,
+each creator result stored straight into its node, the opacity read back
+from the stored length, header stores on one line), the first candidate
+scored 10 on A. Two line orders closed it: the node-24 childType before
+child (10 -> 8) and the second root header's data, childType, child
+(8 -> 0); the same source with each builder's constants is 0 on B, C and D.
+gmake verify OK; check-overlay-syms and promotion-proof PASS.
 
 <!-- plateau-handoff:overlay101BuildPresentationB:end -->

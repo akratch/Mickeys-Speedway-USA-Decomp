@@ -29,12 +29,15 @@ extern void *gO11MatrixReloc;
 extern O11Vertex *gO11VertexReloc;
 
 extern f32 D_1B0;
-extern f32 D_20;
-extern f32 D_24;
 extern s16 D_1B8;
 extern s16 D_1BC;
 extern s32 D_1C0;
 extern s32 D_1C4;
+/* Relocation identities (checklist item 20): the pad index is bss +0x1C4,
+ * a different object from the option action at data +0x1C4, and options 4
+ * and 5 test the resident game-state word, not the action. */
+extern s32 gO11PadIndex;
+extern s32 gO11GameStateReloc;
 extern s32 D_200;
 extern s32 D_204;
 
@@ -77,7 +80,12 @@ extern void func_overlay_011_F0002714_186AF5C(s32 updateRate);
  * (`(s32)((width - 1) * 4.0f) & 0xFFF`, 535 to 522 and -120 to -32 bytes),
  * the column parity is a signed `% 2`, and its stride a `(parity * 7) << 9`
  * (529 masked, -8 bytes). Open: the target keeps updateRate in s3 and the
- * grid-row pointer in a stack home; the candidate reloads updateRate. */
+ * grid-row pointer in a stack home; the candidate reloads updateRate.
+ * 2026-10-02 x-o051: with the pad index read through its own bss object the
+ * size is -4 (534 masked). The target's six lower rows per column are one
+ * loop that IDO unrolled by four after a two-row remainder (the main pass
+ * indexes from a constant 3); every loop spelling measured here stays
+ * rolled (-316 to -392 bytes), so what lets uopt unroll it is open. */
 #ifdef NON_MATCHING
 void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
                                         O11Vertex **vertices,
@@ -98,12 +106,14 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
                 }
             }
         }
-        D_1B0 += D_20 * (f32)updateRate;
+        /* Two rodata pool entries of 0.05f (+0x20, +0x24): the pool is keyed
+         * on spelling (L103), so the two uses are spelled differently. */
+        D_1B0 += 0.05f * (f32)updateRate;
         if (D_1B0 > 1.0f) {
             D_1B0 = 1.0f;
         }
     } else {
-        D_1B0 -= D_24 * (f32)updateRate;
+        D_1B0 -= .05f * (f32)updateRate;
         if (D_1B0 <= 0.0f) {
             D_1B0 = 0.0f;
             return;
@@ -178,7 +188,7 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
 
     if ((D_200 == 0) && (D_204 == 0)) {
         if ((D_1C0 == 0) && (D_1C4 == 0) &&
-            (func_8002554C(D_1C4) & 0x5000)) {
+            (func_8002554C(gO11PadIndex) & 0x5000)) {
             overlay66Select(0);
             func_800290AC(0);
             func_800291D8(0x1E);
@@ -215,7 +225,7 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
                     break;
                 case 4:
                 case 5:
-                    if (D_1C4 == 1) {
+                    if (gO11GameStateReloc == 1) {
                         func_overlay_011_F00022E8_186AB30(updateRate);
                     } else {
                         func_overlay_011_F0001E4C_186A694(updateRate);
@@ -245,10 +255,10 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
 
 /* PLATEAU-HANDOFF:func_overlay_011_F0000150_1868998:start
  * symbol: func_overlay_011_F0000150_1868998
- * score: 529/564 words
+ * score: 534/564 words
  * frame: 0x190
- * relocations: 20
+ * relocations: 81
  * first-mismatch: +0x0
- * summary: Float scissor word, signed parity and (parity*7)<<9: 535 to 529 masked, size -120 to -8; updateRate s3 and frame open.
+ * summary: Pad index split from the action (bss vs data +0x1C4), game-state word for options 4/5: size -8 to -4 at 534; row loop unroll open.
  * PLATEAU-HANDOFF:func_overlay_011_F0000150_1868998:end
  */

@@ -1244,15 +1244,18 @@ $(BUILD_DIR)/$(SRC_DIR)/main/gsSnd.c.o: OPT_FLAGS := -g
 # are not retained.
 $(BUILD_DIR)/$(SRC_DIR)/main/models_5B300.c.o: CFLAGS += -Wo,-loopunroll,0
 
-# The resident animation TU's reset loops use IDO's non-unrolled form. The
-# canonical setting otherwise expands the 0x40-byte light-record reset by four;
-# the flag lattice selects this setting before any source permutation.
-# -Wab,-r4300_mul is the same lattice's selection for func_800573C8: with it
-# the configured full-TU object is instruction-word identical to the target
-# over all 233 words, and without it two scheduler-tied words at +0xDC differ
-# under every source spelling tried. Impact review: the whole ROM still
-# rebuilds byte-identically, so no already-matched function in this TU moves.
-$(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: CFLAGS += -Wo,-loopunroll,0 -Wab,-r4300_mul
+# anim.c compiles with IDO's default loop unroller. It once carried
+# -Wo,-loopunroll,0 "for the 0x40-byte light-record reset"; that reset is a
+# plain twelve-entry loop over 0x10-byte records, which the default unroller
+# turns into the target's four-store body, and with that loop written so the
+# flag is byte-inert for every matched function in the TU. Without it
+# func_80053868's hand-unrolled copies become IDO's own unrolled loops
+# (size delta -240 to 0). -Wab,-r4300_mul is the flag lattice's selection
+# for func_800573C8: with it the configured full-TU object is
+# instruction-word identical to the target over all 233 words, and without
+# it two scheduler-tied words at +0xDC differ under every source spelling
+# tried.
+$(BUILD_DIR)/$(SRC_DIR)/main/anim.c.o: CFLAGS += -Wab,-r4300_mul
 # The path reset trap needs a typed alias to preserve its f32 argument.
 # Canonicalize only the undefined symbol name; section contents are unchanged.
 # func_800508D4's 0.01f literal owns one word of the anim literal pool; the

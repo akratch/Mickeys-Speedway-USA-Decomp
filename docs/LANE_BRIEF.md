@@ -358,6 +358,19 @@ order of how often they decided a match:
     once** before the first call and never re-read from its field (o087's
     missing four words); a value the target SPILLS has few references, so
     the target's source re-reads the field rather than holding it (o053).
+20. **Decode the overlay's relocation table before rewriting an m2c
+    candidate.** `tools/overlay_tables.py --json` names, per call site and
+    data site, which stored addends are one object and which call words
+    are one callee. Inherited candidates split one global across several
+    extern names, cross two tables, and call one callee under two names;
+    each of those is a web the target does not have. Two overlay 57
+    functions (585 and 356 words) matched in one pass once the table had
+    been read and the body rewritten in the matched sibling's shape.
+21. **A tie in uopt's expression table goes to the entry made first.** Two
+    pointer webs tied on save (600/2 against 900/3) took the wrong
+    registers until a dead read of the second element, placed before the
+    compare, entered it into the table first; the compiler deletes the
+    read and keeps the order (track.c func_8001398C, 45 -> 11).
 
 ### Promotion traps (each cost a lane a cycle on 2026-10-01)
 

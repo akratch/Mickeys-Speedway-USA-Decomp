@@ -22,10 +22,13 @@ zero words, assembly owners or particular filenames are padding.
   overlay 46 at 0x195C..0x1960 and overlay 99 at 0x135C..0x1360. The final
   return and its delay slot precede the excluded range. Overlay 9's final
   exact island ends at the exclusion boundary.
-- The ELF extents of `func_800180B4`, `func_8003C80C` and `func_8002B040`
-  include respectively four, twelve and eight alignment bytes after their
-  extracted function end labels and completed return delay slots. Their
-  executable extents remain 824, 472 and 136 bytes.
+- The ELF extents of `func_8003C80C` and `func_8002B040` include
+  respectively twelve and eight alignment bytes after their extracted
+  function end labels and completed return delay slots. Their executable
+  extents remain 472 and 136 bytes. `func_800180B4` carried four such bytes
+  until it was matched in C (2026-10-02); its compiled ELF extent is now its
+  824 executable bytes, the alignment word lies outside every function
+  extent, and its exclusion row was retired.
 - `func_8005800C` is a separate four-byte alignment identity. The preceding
   `osFlashReadArray` ends at 0x80058008 after a return and its executed nop
   delay slot; the next function starts at 0x80058010. The isolated identity

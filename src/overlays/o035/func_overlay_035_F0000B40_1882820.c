@@ -53,34 +53,37 @@ extern void call_o0_0_2B318(void *value);
 extern f32 sqrtf(f32 value);
 
 /*
- * Delta 0 at 130 masked words (lane B3-rl35): rebuilt on DKR's
- * track_init_collision shape. Size came from span fields read by subscript
- * (SR owns the span offset), plane stores indexed by counter << 2 with the
- * increment after them, s32 neighbour, and the opposite-vertex test through
- * a plane pointer taken before the edge maths. pad0, span and spanOffset
- * are unreferenced frame holders (L99). Left: IV creation order in the edge
- * loop (scratch + i * 8 before i * 8) rotates the t6/t9 ring, and s5-s7
- * colour order.
- *
- * 130 -> 103 (lane c-big, 2026-10-01): the opposite-vertex distance is
- * assigned to `mag` before the test, which colours it and gives the third
- * vertex component the target's float register in both passes; the edge
- * loop skips a finished edge with `continue`, whose extra block ranks the
- * scratch pointer ahead of the edge + 1 temporary for the last callee-saved
- * register; and the copy loop is a plain `*dst++ = *src++` (byte-inert).
- *
- * 103 -> 77 (lane e-ovl3, 2026-10-02): the five empty `if (counter < 0) {}`
- * blocks hold basic blocks only (no instruction, delta 0). A web's save
- * divisor grows with the blocks its range spans, so they re-rank the counter,
- * span index and span offset webs: three in the first pass's span loop (one
- * after the triangle end load, two after the flag test), one at the top of
- * the second pass's triangle loop and one after its span loop. Coordinate
- * descent over 17 probe sites; conditions on other variables scored the
- * same or worse. The true source shape that supplies these blocks is open.
+ * Delta 0, 9 masked words (lane j-o035, 2026-10-02), rebuilt on DKR's
+ * track_init_collision shape. The second pass reads its triangle's plane
+ * index as `idx = plane * 4` in one expression (no separate shift), which
+ * puts the scratch pointer first in the triangle preheader and keeps the
+ * second pass's span index and offset as the target's split webs. The span
+ * fields are read through a do-while(0) macro in both passes and the first
+ * pass's plane is written through another; their region blocks set the
+ * counter, span index and span offset priorities (they replace the empty
+ * `if (counter < 0) {}` probes of the previous lanes). Left: the
+ * opposite-vertex index and the edge-offset induction temporary take each
+ * other's caller-saved register (save 400 against 387.5).
  *
  * PROVENANCE: adapted from Diddy Kong Racing,
  * src/object_models.c (model_init_collision).
  */
+#define O35_SPAN_RANGE(s, index, start, base, end) \
+    do { \
+        start = (s)->spans[index].triangleStart; \
+        base = (s)->spans[index].vertexBase; \
+        end = (s)->spans[(index) + 1].triangleStart; \
+    } while (0)
+
+#define O35_ADD_PLANE(s, counter, x, y, z, px, py, pz) \
+    do { \
+        (s)->planes[(counter) << 2] = x; \
+        (s)->planes[((counter) << 2) + 1] = y; \
+        (s)->planes[((counter) << 2) + 2] = z; \
+        (s)->planes[((counter) << 2) + 3] = -((px) * (x) + (py) * (y) + (pz) * (z)); \
+        (counter)++; \
+    } while (0)
+
 #ifdef NON_MATCHING
 s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
     s32 pad0;
@@ -124,17 +127,9 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
 
     counter = 0;
     for (spanIndex = 0; spanIndex < s->spanCount; spanIndex++) {
-        triStart = s->spans[spanIndex].triangleStart;
-        vertexBase = s->spans[spanIndex].vertexBase;
-        triEnd = s->spans[spanIndex + 1].triangleStart;
-        if (counter < 0) {
-        }
+        O35_SPAN_RANGE(s, spanIndex, triStart, vertexBase, triEnd);
         if (s->spans[spanIndex].flags & 0x1080) {
             triStart = triEnd;
-        }
-        if (counter < 0) {
-        }
-        if (counter < 0) {
         }
         for (i = triStart; i < triEnd; i++) {
             v = &s->vertices[s->triangles[i].selectors[0] + vertexBase];
@@ -159,11 +154,7 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
                 nz /= mag;
             }
             s->records[i].plane = counter;
-            s->planes[counter << 2] = nx;
-            s->planes[(counter << 2) + 1] = ny;
-            s->planes[(counter << 2) + 2] = nz;
-            s->planes[(counter << 2) + 3] = -(x1 * nx + y1 * ny + z1 * nz);
-            counter++;
+            O35_ADD_PLANE(s, counter, nx, ny, nz, x1, y1, z1);
         }
     }
 
@@ -173,19 +164,15 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
     }
 
     for (spanIndex = 0; spanIndex < s->spanCount; spanIndex++) {
-        triStart = s->spans[spanIndex].triangleStart;
-        vertexBase = s->spans[spanIndex].vertexBase;
-        triEnd = s->spans[spanIndex + 1].triangleStart;
+        O35_SPAN_RANGE(s, spanIndex, triStart, vertexBase, triEnd);
         if (s->spans[spanIndex].flags & 0x1080) {
             triStart = triEnd;
         }
         for (i = triStart; i < triEnd; i++) {
-            if (counter < 0) {
-            }
-            idx = s->records[i].plane;
-            nx = s->planes[4 * idx + 0];
-            ny = s->planes[4 * idx + 1];
-            nz = s->planes[4 * idx + 2];
+            idx = s->records[i].plane * 4;
+            nx = s->planes[idx + 0];
+            ny = s->planes[idx + 1];
+            nz = s->planes[idx + 2];
             for (edge = 0; edge < 3; edge++) {
                 next = edge + 1;
                 if (next >= 3) {
@@ -259,8 +246,6 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
                 counter++;
             }
         }
-        if (counter < 0) {
-        }
     }
     call_o0_0_2B318(scratch);
     return counter;
@@ -271,10 +256,10 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
 
 /* PLATEAU-HANDOFF:func_overlay_035_F0000B40_1882820:start
  * symbol: func_overlay_035_F0000B40_1882820
- * score: 77/528 words
+ * score: 9/528 words
  * frame: 0x130
  * relocations: 7
- * first-mismatch: +0xA0
- * summary: Empty blocks re-rank the span/counter webs: 103 to 77. Open: preheader IV order, ring rows.
+ * first-mismatch: +0x3D4
+ * summary: Macro blocks and one-expression idx replace all probes: 77 to 9. Open: oppVertIndex vs edge-offset IV in t2/t3.
  * PLATEAU-HANDOFF:func_overlay_035_F0000B40_1882820:end
  */

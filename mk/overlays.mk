@@ -1986,6 +1986,35 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/overlay46UpdateTransition.c.o: POSTPROCESS
 		0x13C:5:gOverlay46FadeOutput \
 		0x140:6:gOverlay46FadeOutput && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x15C
+# Every call in the particle updater is an overlay-local call through the
+# offset-zero carrier (jal 0 plus a runtime record): the first callee name is
+# redefined onto the carrier and the other sites are rebound onto it.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65UpdateParticles.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65UpdateParticles.c.o: POSTPROCESS = \
+	$(OBJCOPY) --redefine-sym o65BeginDraw=func_overlay_065_F0000000_18C4268 $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		0xB4:o65GetCamera:func_overlay_065_F0000000_18C4268 \
+		0xC0:o65PrepareCamera:func_overlay_065_F0000000_18C4268 \
+		0xCC:o65LoadCursor:func_overlay_065_F0000000_18C4268 \
+		0x270:o65RandomRange:func_overlay_065_F0000000_18C4268 \
+		0x298:o65RandomRange:func_overlay_065_F0000000_18C4268 \
+		0x2AC:o65RandomRange:func_overlay_065_F0000000_18C4268 \
+		0x2BC:o65Sin:func_overlay_065_F0000000_18C4268 \
+		0x2C8:o65Cos:func_overlay_065_F0000000_18C4268 \
+		0x318:o65RandomRange:func_overlay_065_F0000000_18C4268 \
+		0x328:o65RandomRange:func_overlay_065_F0000000_18C4268 \
+		0x338:o65RandomRange:func_overlay_065_F0000000_18C4268 \
+		0x348:o65RandomRange:func_overlay_065_F0000000_18C4268 \
+		0x358:o65RandomRange:func_overlay_065_F0000000_18C4268 \
+		0x368:o65RandomRange:func_overlay_065_F0000000_18C4268 \
+		0x378:o65RandomRange:func_overlay_065_F0000000_18C4268 \
+		0x388:o65RandomRange:func_overlay_065_F0000000_18C4268 \
+		0x3B0:o65FindGround:func_overlay_065_F0000000_18C4268 \
+		0x5F4:o65RandomRange:func_overlay_065_F0000000_18C4268 \
+		0x648:o65Cos:func_overlay_065_F0000000_18C4268 \
+		0x680:o65Transform:func_overlay_065_F0000000_18C4268 && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xB40
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Release.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o065/overlay65Initialize.c.o: POSTPROCESS = \

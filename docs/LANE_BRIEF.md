@@ -311,7 +311,12 @@ order of how often they decided a match:
     direct accesses that share one high half per aligned pair in every block
     but the entry's (two o015 matches).
 11. **Per-file flag overrides inherited from a plateau** (`-Olimit`, unroll
-    caps) can hide the regime: two main.c functions only match optimised.
+    caps) hide the regime. `-Wo,-loopunroll,0` alone hid four matches
+    (o010, o050, o047 F0000000, o008 F0000058: the target's "hand-unrolled"
+    copies were IDO's default unroller). Before anything else, remove every
+    inherited override on the TU, re-score every function in it, and keep
+    the override only if some function regresses; `check_isa_overrides.py`
+    rules on what remains.
 12. **The rotated, branch-likely float easing loop is `-Wab,-r4300_mul`.**
     With that per-file flag IDO emits the shape from a plain `for` loop; no
     source spelling reproduces it without the flag, and with it the

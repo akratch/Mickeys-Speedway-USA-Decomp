@@ -18,9 +18,9 @@ s32 func_overlay_002_F0001364_185815C(f32 x1, f32 y1, f32 x2, f32 y2,
     f32 b1;
     f32 c1;
     f32 a2;
+    f32 r1;
     f32 b2;
     f32 c2;
-    f32 r1;
     f32 r2;
     f32 denom;
     f32 offset;
@@ -88,10 +88,10 @@ s32 func_overlay_002_F0001364_185815C(f32 x1, f32 y1, f32 x2, f32 y2,
 
 /* PLATEAU-HANDOFF:func_overlay_002_F0001364_185815C:start
  * symbol: func_overlay_002_F0001364_185815C
- * score: 64/189 words
+ * score: 123/189 words
  * frame: 0x60
  * relocations: 0
  * first-mismatch: +0x8
- * summary: Negated c1/c2 term rotations are byte-flat; denom rotation emits 190 words and escapes ownership; combinations lack a natural gain.
+ * summary: Declaration-order hill climb 125 to 123; pure float ring phase remains.
  * PLATEAU-HANDOFF:func_overlay_002_F0001364_185815C:end
  */

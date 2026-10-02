@@ -2,11 +2,42 @@
 ### `overlay65UpdateParticles` plateau handoff
 
 - source: `src/overlays/o065/overlay65UpdateParticles.c`
-- score: 458/720 words
+- score: 0/720 words, promoted
 - frame: 0xF8
 - relocations: 64
-- first mismatch: +0x50
-- summary: Size closed 0 at frame 0xF8. Colour 267 probes floor 395 on one c8 radius. Cursor still one-behind. overlay65Initialize identities untouched.
+- first mismatch: none
+- summary: Matched. Vertex block as a counted loop (depth 2), packet macros, locals cut to one per role, volatile and register dropped.
+
+#### 2026-10-02, lane g-ovl5: matched, 458 to 0
+
+Priced edits, each measured with fast_score / shape_product (masked words, size
+delta 0 unless stated):
+- Declaration order cut (spawnCount, transformed, ground positions): 458 to 454.
+  This moved transformed to 0x9C and spawnCount to 0xD4 as in the target.
+- The four vertex writes as `for (n = 4; n != 0; n--)` with a word index
+  `idx += 3` over the transformed points: 454 to 375 at +12. The loop depth
+  was the cause of the saved-register order: alpha, the transformed base and
+  radius sit in s3/s4/s0 only when that block is depth 2 (uopt unrolls it
+  four times with no exit test; a count-up loop or a pointer-increment loop
+  does not give the same iv-indexed copies and the transformed copies fold to
+  sp offsets).
+- Packet macros (JFG gSPVertexJFG / gSPPolygon, PROVENANCE in source) for the
+  batch flush and the tail: 368 to 251, size delta 12 to 0.
+- Dropping `volatile` on spawnCount: 245 to 68. It was inert until the loop
+  and macros were right; a plain local is spilled by uopt to the same 0xD4 home.
+- Colour/store order of the spawn block (r, g, b, then active): 68 to 63.
+- Locals: `point` replaced by `transformed`, the vertex loop counter and the
+  tail count reusing groundCount (one fewer home each): frame 0x108 to 0xF8.
+  48, then a declaration-order hill climb 48 to 34 (11 moves of 17 locals).
+- Update statements back to `x += y * arg2` in source order: 34 to 17.
+- Prologue statement order (commands, cursor, buffer swap, particle,
+  spawnCount, remaining): 17 to 7.
+- Tail count written inline `(6 - remaining)`: 7 to 0.
+
+Promotion: atlas written (TU completed, no range entry), extract, overlay-syms
+twice, `mk/overlays.mk` POSTPROCESS for the object (first callee redefined onto
+the offset-zero carrier, the other 20 call sites rebound, trim 0xB40).
+verify, check-overlay-syms and promotion-proof (720 words, relocations 64/64) pass.
 
 #### 2026-09-19, lane w29-o065b: size closed; colour floor 395
 

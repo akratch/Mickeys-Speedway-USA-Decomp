@@ -2188,14 +2188,18 @@ void func_800573C8(HitOverlapState *state, HitOverlapVolume *other,
  * kind chain takes a0/v1 as the target does (528). The min-fraction loop
  * reads through `selectedPair = &D_800D7560[i]`, so the unrolled copies
  * re-load the fraction they assign, as the target's do (522). The bounds
- * test's kind literal is `2U` and both bounds axis loops compare with `3U`
- * (lane x-anim): a literal's type is part of its IR identity (L151), so
- * these uses become constant webs of their own and the first loop's
- * saved-register ladder (s4, s5, s7) lands as the target's (438). Left:
- * the target keeps one 2 web in a2 for all three first-loop kind tests,
- * 3 in v1 and 12 in s3, rematerializing 2 and 3 after calls; the axis
- * loops' counter is a saved register (s2); pairIndex stays in a1 from
- * the while head; the displacement loop re-reads movingCount each pass. */
+ * test's kind literal is `2U` (lane x-anim): a literal's type is part of
+ * its IR identity (L151), so that use becomes a constant web of its own
+ * and the first loop's saved-register ladder lands as the target's (438).
+ * The vertex path loads the model pointer into `secondObject`, which is
+ * dead in the first loop: reusing an existing local adds no frame cell
+ * and the model load stops spending a ring draw, so the first loop's
+ * temporaries are no longer one step off the target's (393). Left: the
+ * target keeps one 2 web in a2 for all three first-loop kind tests, 3 in
+ * v1 and 12 in s3, and holds the model pointer in v1 (here secondObject's
+ * s5); the axis loops' counter is a saved register (s2); pairIndex stays
+ * in a1 from the while head; the displacement loop re-reads movingCount
+ * each pass. */
 void func_80053868(s32 updateRate) {
     f32 remainingTime;
     f32 fraction;
@@ -2237,7 +2241,8 @@ void func_80053868(s32 updateRate) {
         if ((firstObject->unk91 == 0) && (firstObject->unk48 != NULL)) {
             if ((firstObject->unk48->unk9 == 2) || (firstObject->unk48->unk9 == 1)) {
                 if (firstObject->unk48->unk60 != -1) {
-                    vertex = firstObject->unk68[firstObject->unk3A]->unk40 + firstShape->unk60;
+                    secondObject = (Func538Object *) firstObject->unk68[firstObject->unk3A];
+                    vertex = ((Func538Model *) secondObject)->unk40 + firstShape->unk60;
                     firstShape->previous[0] = firstShape->position[0];
                     firstShape->previous[1] = firstShape->position[1];
                     firstShape->previous[2] = firstShape->position[2];
@@ -2264,7 +2269,7 @@ void func_80053868(s32 updateRate) {
                 }
                 if (firstShape->unk9 == 2U) {
                     extent = firstShape->unk58 + 5.0f;
-                    for (axis = 0; axis < 3U; axis++) {
+                    for (axis = 0; axis < 3; axis++) {
                         low = firstShape->previous[axis];
                         high = firstShape->position[axis];
                         if (low < high) {
@@ -2318,7 +2323,7 @@ void func_80053868(s32 updateRate) {
             firstShape->displacement[1] = firstShape->position[1] - firstShape->previous[1];
             firstShape->displacement[2] = firstShape->position[2] - firstShape->previous[2];
             extent = firstShape->unk58 + 5.0f;
-            for (axis = 0; axis < 3U; axis++) {
+            for (axis = 0; axis < 3; axis++) {
                 low = firstShape->previous[axis];
                 high = firstShape->position[axis];
                 if (low < high) {
@@ -3964,11 +3969,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80053868:start
  * symbol: func_80053868
- * score: 438 differing words
+ * score: 393 differing words
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: Literal types as IR identity: bounds kind test 2U and both bounds axis loops 3U split the constant webs; first-loop s4/s5/s7 now the target (522 to 438).
+ * summary: Model pointer carried in the dead secondObject (no new cell): first-loop ring back in phase (438 to 393). Left: 2/3/12 constant webs, s2 axis/j, pairIndex a1.
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

@@ -141,7 +141,7 @@ extern u8 D_8007A588[];
 extern u8 D_8007A5C0[];
 extern u8 D_8007A600[];
 extern s32 func_800348D4(void *texture, s32 frame, ...);
-extern void func_80034910(void *, ...);
+extern void func_80034910();
 
 OSMesgQueue *osScGetInterruptQ(OSSched *scheduler);
 void osWritebackDCacheAll(void);
@@ -585,20 +585,26 @@ void func_8002F618(RcpCommand **arg0, RcpTextureNode *arg1, s32 arg2,
     }
 }
 #ifdef NON_MATCHING
-/* PROVENANCE -- the scaled rectangle loop is adapted from Diddy Kong Racing's
- * public src/rcp_dkr.c:texrect_draw_scaled. Mickey's target field offsets,
- * helper calls, and command layout are retained as the controlling evidence. */
-/* Workbench verdict: structure-mismatch; 272 differing words, first mismatch +0x40.
- * Target 359 instructions/frame -224; candidate 354 instructions/frame -224.
- * Both objects have nine relocations, seven with exact identity; the remaining
- * gap is texture/command live-range allocation and a five-instruction deficit. */
-void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 arg2,
-                   f32 arg3, f32 arg4, f32 arg5, s32 arg6, s32 arg7) {
+/*
+ * PROVENANCE: the scaled rectangle loop is adapted from Diddy Kong Racing's
+ * public src/rcp_dkr.c:texrect_draw_scaled. Mickey's texture fetch helper,
+ * its DMA command and its prim colour reset differ from DKR. Mickey's target
+ * decides those.
+ *
+ * 2026-10-02 (lane w2-front): this rewrite closes the size gap (-20 -> 0) and
+ * the frame (0xE0). Two of its features change the allocation regime:
+ * - The flip and position setup sits inside `if (tex != NULL)`, with a cursor
+ *   separate from arg1. That removes one basic block, and L56's callee toll
+ *   becomes 9.75 against the caller cost of 10. xScale and yScale then take
+ *   f20/f22 as in the target.
+ * - tex->data is held in a local across the texture helper call.
+ * The open residual is in docs/matching-triage-handoffs/func_8002FB34.md.
+ */
+void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
+                   f32 xScale, f32 yScale, u32 colour, s32 flags) {
     RcpTextureInfo *tex;
+    u8 *dmaDlist;
     RcpCommand *dlist;
-    RcpCommand *rectCmd;
-    RcpCommand *scissorCmd;
-    RcpTextureNode *element;
     s32 bFlipX;
     s32 bFlipY;
     s32 s;
@@ -613,11 +619,8 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 arg2,
     s32 yPos4x;
     s32 width;
     s32 height;
-    s32 countMinusOne;
-    f32 xScale;
-    f32 yScale;
-    u8 *dmaDlist;
-    void *helperArg;
+    RcpTextureNode *element;
+    u32 *data;
 
     width = 0;
     height = 0;
@@ -625,55 +628,52 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 arg2,
     viGetCurrentSize(&width, &height);
     height *= 4;
     width *= 4;
-    if ((arg6 & 0xFF) == 0xFF) {
-        dmaDlist = D_8007A5C0 + ((arg7 & 0xFF) * 0x10);
+    if ((colour & 0xFF) == 0xFF) {
+        dmaDlist = D_8007A5C0 + ((flags & 0xFF) * 0x10);
     } else {
-        dmaDlist = D_8007A600 + ((arg7 & 0xFF) * 0x10);
+        dmaDlist = D_8007A600 + ((flags & 0xFF) * 0x10);
     }
-
-    xScale = arg4 * 4.0f;
-    yScale = arg5 * 4.0f;
+    xScale *= 4.0f;
+    yScale *= 4.0f;
     RCP_DISPLAY_LIST(dlist++, D_8007A588);
     {
-        RcpCommand *dmaCmd = dlist++;
-        dmaCmd->w1 = (u32)dmaDlist + 0x80000000U;
-        dmaCmd->w0 = 0x07020010;
+        RcpCommand *_g = dlist++;
+        _g->w0 = 0x07020010;
+        _g->w1 = (u32) dmaDlist + 0x80000000U;
     }
     {
-        RcpCommand *colourCmd = dlist++;
-        colourCmd->w0 = 0xFA000000;
-        colourCmd->w1 = (u32)arg6;
+        RcpCommand *_g = dlist++;
+        _g->w0 = 0xFA000000;
+        _g->w1 = colour;
     }
-
     tex = arg1->texture;
-    helperArg = NULL;
     if (tex != NULL) {
         element = arg1;
-        bFlipX = arg7 & 0x1000;
-        bFlipY = arg7 & 0x2000;
-        xPos4x = (s32)(arg2 * 4.0f);
-        yPos4x = (s32)(arg3 * 4.0f);
+        bFlipX = flags & 0x1000;
+        bFlipY = flags & 0x2000;
+        xPos4x = xPos * 4.0f;
+        yPos4x = yPos * 4.0f;
         do {
             if (!bFlipX) {
-                ulx = (s32)((f32)element->x * xScale) + xPos4x;
+                ulx = (s32) (element->x * xScale) + xPos4x;
             } else {
-                lrx = xPos4x - (s32)((f32)element->x * xScale);
-                ulx = lrx - (s32)(tex->width * xScale);
+                lrx = xPos4x - (s32) (element->x * xScale);
+                ulx = lrx - (s32) (tex->width * xScale);
             }
             if (!bFlipY) {
-                uly = (s32)((f32)element->y * yScale) + yPos4x;
+                uly = (s32) (element->y * yScale) + yPos4x;
             } else {
-                lry = yPos4x - (s32)((f32)element->y * yScale);
-                uly = lry - (s32)(tex->height * yScale);
+                lry = yPos4x - (s32) (element->y * yScale);
+                uly = lry - (s32) (tex->height * yScale);
             }
-            if ((ulx < width) && (uly < height)) {
+            if (ulx < width && uly < height) {
                 if (!bFlipX) {
-                    lrx = (s32)(tex->width * xScale) + ulx;
+                    lrx = (s32) (tex->width * xScale) + ulx;
                 }
                 if (!bFlipY) {
-                    lry = (s32)(tex->height * yScale) + uly;
+                    lry = (s32) (tex->height * yScale) + uly;
                 }
-                if ((lrx > 0) && (lry > 0) && (ulx < lrx) && (uly < lry)) {
+                if (lrx > 0 && lry > 0 && ulx < lrx && uly < lry) {
                     dsdx = ((tex->width - 1) << 12) / (lrx - ulx);
                     if (bFlipX) {
                         s = (tex->width - 1) << 5;
@@ -696,41 +696,33 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 arg2,
                         t += (-uly * dtdy) >> 7;
                         uly = 0;
                     }
-                    dlist->w0 = *tex->data;
-                    dlist->w1 = func_800348D4(tex, element->packedOffset, helperArg,
-                                              (void **)element) + 0x80000000U;
+                    data = tex->data;
+                    dlist->w0 = *data;
+                    dlist->w1 = func_800348D4(tex, element->packedOffset) + 0x80000000U;
                     dlist++;
-                    countMinusOne = tex->count - 1;
-                    dlist->w0 = (((countMinusOne & 0xFF) << 16) |
-                                 0x07000000 | ((countMinusOne * 8) & 0xFFFF));
-                    dlist->w1 = (u32)(tex->data + 2) + 0x80000000U;
-                    dlist++;
-                    rectCmd = dlist;
-                    rectCmd->w0 = ((lrx & 0xFFF) << 12) |
-                                   0xE4000000 | (lry & 0xFFF);
-                    rectCmd->w1 = ((ulx & 0xFFF) << 12) | (uly & 0xFFF);
-                    dlist++;
-                    scissorCmd = dlist;
-                    scissorCmd->w0 = 0xB3000000;
-                    scissorCmd->w1 = (s << 16) | (t & 0xFFFF);
-                    dlist++;
-                    dlist->w0 = 0xB2000000;
-                    dlist->w1 = (dsdx << 16) | (dtdy & 0xFFFF);
-                    dlist++;
+                    data += 2;
+                    {
+                        RcpCommand *_g = dlist++;
+                        _g->w0 = (((tex->count - 1) & 0xFF) << 16) | 0x07000000 |
+                                 (((tex->count - 1) * 8) & 0xFFFF);
+                        _g->w1 = (u32) data + 0x80000000U;
+                    }
+                    gSPTextureRectangle((Gfx *) dlist++, ulx, uly, lrx, lry, G_TX_RENDERTILE,
+                                        s, t, dsdx, dtdy);
                 }
             }
             tex = element[1].texture;
             element++;
         } while (tex != NULL);
     }
-    RCP_PIPE_SYNC(dlist++);
+    gDPPipeSync((Gfx *) dlist++);
     {
-        RcpCommand *colourCmd = dlist++;
-        colourCmd->w1 = -1;
-        colourCmd->w0 = 0xFA000000;
+        RcpCommand *_g = dlist++;
+        _g->w0 = 0xFA000000;
+        _g->w1 = 0xFFFFFFFF;
     }
     *arg0 = dlist;
-    func_80034910((void *)(s32)countMinusOne);
+    func_80034910();
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/rcpFast3d/func_8002FB34.s")
@@ -748,10 +740,10 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 arg2,
 
 /* PLATEAU-HANDOFF:func_8002FB34:start
  * symbol: func_8002FB34
- * score: 272 differing words
+ * score: 285/359 words
  * frame: 0xE0
  * relocations: 9
- * first-mismatch: +0x40
- * summary: Five-word deficit and command/texture live-range allocation remain; seven of nine relocation identities align.
+ * first-mismatch: +0x4
+ * summary: Size gap closed (-20 to 0) and frame exact; aligned byte-exact 109 to 197. Left: callee-saved order and a folded data+8 constant.
  * PLATEAU-HANDOFF:func_8002FB34:end
  */

@@ -2,11 +2,13 @@
 ### `effectboxControl` plateau handoff
 
 - source: `src/main/spranim.c`
-- score: 47/193 words
+- score: 0/193 words, promoted
 - frame: 0x80
 - relocations: 5
-- first mismatch: +0xDC
-- summary: 51 to 47: counted loop, hit local, nine-entry list, homes at 0x6C/0x44. Left: cursor/index a3/a2 roles (forced 34) and the hit load split in two webs
+- first mismatch: none
+- summary: Matched. The hit is read into one local and copied to a second, and the attach store sits in a do-while(0) block; uopt then replaces the variable by the saved hits[i] in the remainder loop and first unrolled copy.
+
+Summary before this remeasure: 51 to 47: counted loop, hit local, nine-entry list, homes at 0x6C/0x44. Left: cursor/index a3/a2 roles (forced 34) and the hit load split in two webs
 
 Summary before this remeasure: 57 to 51 by declaration placement (state spill now below the hit list). Left: hit-index spill 0x7C vs 0x6C; cursor/index a2/a3 roles swapped
 
@@ -127,4 +129,40 @@ Open: what makes uopt treat the hit load and the `hit` variable as one web
 in the target (the decision variable is the copy in the remainder loop and
 first unrolled copy); then the cursor/index ranking.
 
+
+## 2026-10-02 (lane z-res): matched, 47 to 0 at delta 0, promoted
+
+The decision variable, read from `-Wo,-zdbug:2` (uoptlist) and the decision
+records together.
+
+- After unrolling, `hits[i]` occurs twice (the remainder loop and the first
+  unrolled copy), so uopt saves it as an expression web. COPY PROPAGATION
+  then replaces `hit` by that saved expression in every block that does not
+  ALTER memory. The dot-product block qualifies. The store block does not,
+  because the attach store is in it: the kill is per block, not per
+  statement. So `hit` stayed live across test, dot and store, interfered
+  with the saved expression, and cost the move in the delay slot. That one
+  membership is the whole 47: with the existing priority order the target's
+  st in a0, active flag in a2, index in a2 and cursor in a3 all follow once
+  the variable's web is confined to copies two to four (v0).
+- `do { store } while (0)` starts a block at the store, and the state read
+  ahead of it is replaced too. Alone it is 144 at +8: every use is now
+  replaced, the assignment is dead and removed, and `hits[i]` is loaded in
+  the dot block and again in the store block.
+- What keeps the load in the test block is a copy of a VARIABLE:
+  `object = hits[i]; hit = object;`. uopt drops a dead copy of an expression
+  and keeps the chain through a variable. Alone it is 60 at delta 0.
+- Together: 13, all frame offsets. `object` declared after `state` puts the
+  two spill homes back at 0x6C and 0x44: 0.
+
+Measured on the way and worse: `st = hit->state64` ahead of the test (122
+at -8); a second explicit `hits[i]` or a second state read (unroll factor
+drops to 2, -168 to -200; one extra float add still unrolls by four, so the
+unroller's threshold is a body-size count); `hits[i++]` (54 at 0, gives the
+index, cursor and flag colours without a force but moves the cursor step
+into the test block); dead uses of `hit`.
+
+Closures broken: "forcing web 54 onto v1 is declined, so no colour reaches
+the target's single web" was true of the shape; the web's block set was the
+variable, not its colour.
 <!-- plateau-handoff:effectboxControl:end -->

@@ -7,15 +7,16 @@ file was written. Recompute before quoting.
 ## Where the tree is
 
 ```
-resolved 800,004 / 943,640 = 84.78%
-85% = 802,094 bytes, gap 2,090
-queue 86 functions / 132,292 bytes
+resolved 802,292 / 943,640 = 85.02%
+85% = 802,094 bytes, crossed by 198; 90% = 849,276 bytes
+queue 85 functions / 130,004 bytes
 ```
 
 `gmake progress` printed `functions: 1310 matched / 1460 total (89.73%)`.
 The integration verify printed `OK build/mickey.us.z64 matches the expected
 US ROM hash` (`507341c0a40ca3e9a7cee969b396ee53facfb548`). Wave X started at
-741,548 bytes (78.58%) and crossed 80% about forty-five minutes in.
+741,548 bytes (78.58%), crossed 80% about forty-five minutes in, and
+crossed 85% at the close when `overlay1LoadBuildRecords` matched.
 
 Every lane worktree is clean and nothing is running. The wave stopped on
 account usage, not on the queue.
@@ -47,7 +48,6 @@ code nobody is looking at.
 
 Numbers are from the ranking at the time of writing.
 
-- `overlay1LoadBuildRecords` (src/overlays/o001/overlay_001_head.c): 2,288 bytes, 6 masked words, size delta 0. Two sites of three words (the `D_1D80` and `D_1D8C` stores): the target stores directly with a fresh high half, ours stores through the held address register. Untested: port the matched `overlay1AssignRecordIndex` statement group (in `overlay_001_tail.c`) into both walks, with its two value locals `newIndex` and `next`, then re-solve the frame. About 55 lvalue/region cells are already flat.
 - `func_8001357C` (src/main/track.c): 1,040 bytes, 2 masked words, size delta 0. The target loads the surfaces base between the plane-index load and its scale, base first in the add. 900 expression spellings scale first; a declared index gives the order but takes a colour. Next is an instrument question: which ugen handler emits an add whose second operand is a shift. The +0x1A8 pair of `func_8001398C` is the same blocker.
 - `func_overlay_027_F0000624_187BFFC` (src/overlays/o027/overlay_027.c): 1,016 bytes, 12 masked words, size delta 0. Two colour decisions on the two vertex-address webs (a0 and v1 here, a3 and a1 in the target). Forcing both (`p1:w119=c6`, `p1:w141=c4`, accepted) scores 0. Find what occupies a0-a2 across the first vertex command in the target's block 15.
 - `func_overlay_044_F0000580_188BDE0` (src/overlays/o044/func_overlay_044_F0000580_188BDE0.c): 1,396 bytes, 13 masked words, size delta 0. The stride conversion temp ties `xh` and `dsdx` on save and loses on web number. Forcing three webs scores 5, schedule-only. Give the stride temp a second reference in the preheader, or number it ahead of `xh` (first-occurrence numbering, checklist item 28).
@@ -120,8 +120,10 @@ in each shard: `func_80053868` (522 to 393), `func_80009414` (398 at +20 to
 
 One owner per translation unit, as before. In this order:
 
-1. `overlay1LoadBuildRecords`. Its six words are worth more than the gap to
-   85% on their own, and the next step is named above.
+1. Check every near-miss above for the pattern that closed
+   `overlay1LoadBuildRecords` (checklist item 31): a conditional store
+   where the target loads a global through a held register and stores it
+   with a fresh high half.
 2. Promote nothing from the scratch candidates without re-measuring them on
    the current tree: adopt the overlay 26 candidate and the `func_80051364`
    shape, bank each, then work the residual.

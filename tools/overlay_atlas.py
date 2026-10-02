@@ -1281,6 +1281,7 @@ MIXED_TU_EXACT_C_RANGES = {
             "canonical mixed-TU object and linked bytes exact",
         ),
         (0x10C0, 0x10C8, "overlay1Noop"),
+        (0x10C8, 0x19B8, "overlay1LoadBuildRecords"),
         (0x19B8, 0x1A54, "overlay1InitializeModeState"),
         (0x1A54, 0x1CA4, "overlay1BuildObjectMappings"),
         (0x1CA4, 0x1D58, "overlay1ReleaseRecords"),

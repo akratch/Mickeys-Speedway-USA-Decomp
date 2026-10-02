@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 403816,
-  "nonmatching_overlay_c_bytes": 64784,
+  "matched_overlay_c_bytes": 406104,
+  "nonmatching_overlay_c_bytes": 62496,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4772,
   "bss_bytes": 77680,
@@ -611,7 +611,7 @@
      "type": "c",
      "source": "overlays/o001/overlay_001_head",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x1D78",
@@ -1067,80 +1067,6 @@
     "exact_donor_match": null,
     "priority_rank": 76
    },
-   "mixed_tu_exact_c_ranges": [
-    {
-     "offset": "0xBD4",
-     "end_offset": "0xCA8",
-     "size": "0xD4",
-     "label": "overlay1InitMotionScale",
-     "source": "overlays/o001/overlay_001_head",
-     "evidence": "canonical mixed-TU object and linked bytes exact"
-    },
-    {
-     "offset": "0xCA8",
-     "end_offset": "0xDF4",
-     "size": "0x14C",
-     "label": "overlay1InterpolatePath",
-     "source": "overlays/o001/overlay_001_head",
-     "evidence": "canonical mixed-TU object, all 13 runtime relocations, and linked bytes exact"
-    },
-    {
-     "offset": "0xDF4",
-     "end_offset": "0xF84",
-     "size": "0x190",
-     "label": "overlay1ResolveMotionPoint",
-     "source": "overlays/o001/overlay_001_head",
-     "evidence": "canonical mixed-TU object, 11 runtime relocations, and linked bytes exact"
-    },
-    {
-     "offset": "0xF84",
-     "end_offset": "0x10C0",
-     "size": "0x13C",
-     "label": "overlay1MeasureCurves",
-     "source": "overlays/o001/overlay_001_head",
-     "evidence": "canonical mixed-TU object and linked bytes exact"
-    },
-    {
-     "offset": "0x10C0",
-     "end_offset": "0x10C8",
-     "size": "0x8",
-     "label": "overlay1Noop",
-     "source": "overlays/o001/overlay_001_head",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x19B8",
-     "end_offset": "0x1A54",
-     "size": "0x9C",
-     "label": "overlay1InitializeModeState",
-     "source": "overlays/o001/overlay_001_head",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x1A54",
-     "end_offset": "0x1CA4",
-     "size": "0x250",
-     "label": "overlay1BuildObjectMappings",
-     "source": "overlays/o001/overlay_001_head",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x1CA4",
-     "end_offset": "0x1D58",
-     "size": "0xB4",
-     "label": "overlay1ReleaseRecords",
-     "source": "overlays/o001/overlay_001_head",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x1D58",
-     "end_offset": "0x1D78",
-     "size": "0x20",
-     "label": "overlay1CallReset",
-     "source": "overlays/o001/overlay_001_head",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    }
-   ],
    "data_rodata_ownership": [
     {
      "offset": "0x274",

@@ -441,6 +441,17 @@ order of how often they decided a match:
     the object is extern; carve it into the TU's `.bss` first
     (`D_800CB2C0` into charControl.c).
 
+31. **A global loaded through its held address but stored with a fresh
+    high half is a pointer read, a value copy, and a store by name.**
+    `p = &g; v = expr; n = v; if (*p < n) g = n;` is the statement group of
+    the matched `overlay1AssignRecordIndex`, and it closed
+    `overlay1LoadBuildRecords` from 6 words. The copy is the part that
+    matters: the pointer with one value local leaves the store going
+    through the register. The copy may reuse an existing integer local at
+    no cost; the first value local may not. Each new local is a frame
+    cell, so look for byte-neutral merges elsewhere (a dead float or
+    pointer local reused for a later role) before giving up on the frame.
+
 ### Promotion traps (each cost a lane a cycle on 2026-10-01)
 
 1. `gmake verify`'s candidate guard rebuilds changed objects and discards the

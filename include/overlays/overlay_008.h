@@ -839,7 +839,7 @@ extern f32 D_21C8[];
 extern s16 D_2208[];
 extern f32 D_2220[];
 
-extern f32 o8P42A8SampleReloc(f32 value, s32 mode);
+extern void o8P42A8SampleReloc(f32 value, s32 mode);
 
 extern s32 o8P42A8RandomReloc(void);
 

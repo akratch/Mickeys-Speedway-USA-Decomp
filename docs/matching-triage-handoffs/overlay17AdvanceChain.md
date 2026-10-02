@@ -2,11 +2,11 @@
 ### `overlay17AdvanceChain` plateau handoff
 
 - source: `src/overlays/o017/overlay17AdvanceChain.c`
-- score: 47/147 words
+- score: 0/147 words, promoted
 - frame: 0x70
 - relocations: 1
-- first mismatch: +0x18
-- summary: Vertex-indexed buffers, one shared loop counter: 49 to 47 unforced. Open: copy count needs a shift expansion into v0, not the t2 constant.
+- first mismatch: none
+- summary: Matched. No local count; unsigned indices share one constant register, the signed copy count of the same unsigned (count - 1) expands to shifts.
 
 Fresh configured evidence on 2026-09-04 re-proves the owned overlay-17
 `+0x668..+0x8B4` range at 147 instructions, frame `0x70`, and 96/147
@@ -107,6 +107,26 @@ preserved; no broad declaration or pointer sweep was repeated. Commands:
 configured stock probes, `finalize_plateau.py`, and
 `tools/gates.sh verify cleanroom check-docs`. The guarded fallback remains
 canonical, with no new matching credit.
+
+#### 2026-10-02, coordinator: matched, 47 to 0
+
+Three measured rules, each from a one-function micro-experiment:
+
+- IDO multiplies by a constant with shifts when that constant has one use
+  in the function, and loads it into a register and multiplies when two or
+  more multiplies share it. The constant's identity includes its type, so
+  an unsigned index scaling and a signed multiply by ten do not share.
+- `(x - 1) * 10` is distributed to `x * 10 - 10` unless the subtraction is
+  unsigned and has a second use.
+- `n = expr; while (n--)` computes straight into the counter and keeps the
+  pre-decrement copy only when `expr` reads memory; from a local it is
+  forwarded into a temporary and the copy disappears.
+
+So: no local count (every read is `chain->count`), both indices unsigned
+(`(chain->count - 1U) << 1`, `(u32)chain->count << 1`), and the copy count
+`(s32)(chain->count - 1U) * 10`. That left only the frame, 8 bytes large
+from the unused `count` declaration; removing it and declaring `n` first
+is exact.
 
 #### 2026-10-02, lane g-ovl5: no change, 49
 

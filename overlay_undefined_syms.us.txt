@@ -1713,7 +1713,17 @@ overlay42SetupDisplayBReloc = 0xf0000000;
 D_120 = 0x00000120;
 
 /* overlay 43: func_overlay_043_F0000BE4_188ABB4.c.o */
-D_800000B8 = 0x800000b8;
+gO43BssBaseReloc = 0x00000000;
+gO43DataBaseReloc = 0x00000000;
+gO43QueueCountReloc = 0x000000c8;
+gO43RenderPendingReloc = 0x00000000;
+gO43RodataBaseReloc = 0x00000000;
+gO43VertexSourceReloc = 0x00000000;
+overlay43InitDpReloc = 0xf0000000;
+overlay43MtxMulReloc = 0xf0000000;
+overlay43MtxToMtxReloc = 0xf0000000;
+overlay43RcpTraceReloc = 0xf0000000;
+overlay43RspSegmentReloc = 0xf0000000;
 
 /* overlay 43: overlay43ComputeMotion.c.o */
 func_80029FE4_o043Reloc = 0xf0000000;

@@ -1404,8 +1404,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43ReleaseResources.c.o: POSTPROCESS
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000324_188A2F4.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8C0
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000BE4_188ABB4.c.o: \
-	MIPSISET := -mips1 -32
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000BE4_188ABB4.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4C4
 # The scale is a float literal, so the compiler emits a one-constant pool

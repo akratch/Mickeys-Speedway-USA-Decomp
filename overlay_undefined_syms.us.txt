@@ -1125,6 +1125,12 @@ overlay20SqrtReloc = 0xf0000000;
 /* overlay 20: overlay20DrawResource.c.o */
 overlay20DrawResourceReloc = 0xf0000000;
 
+/* overlay 20: overlay20UpdateGrid.c.o */
+ext_o0_6ec00 = 0xf0000000;
+func_8002A8C0_o020Reloc = 0xf0000000;
+gOverlay20Entries = 0x00000000;
+gOverlay20EntryCount = 0x00000000;
+
 /* overlay 20: overlay20ConfigureEntry.c.o */
 D_80 = 0x00000080;
 
@@ -1134,8 +1140,6 @@ overlay20CreateReloc = 0xf0000000;
 
 /* overlay 20: overlay20RemoveEntry.c.o */
 D_4DC = 0x000004dc;
-gOverlay20Entries = 0x00000000;
-gOverlay20EntryCount = 0x00000000;
 
 /* overlay 20: func_overlay_020_F0001148_1877720.c.o */
 gOverlay20TailXLimit = 0x0000002c;

@@ -2517,8 +2517,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o020/overlay20UpdateGrid.c.o",
       "offset": 2664,
       "overlay": 20,
@@ -9343,7 +9343,7 @@
       "metadata": 639,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 341276,
+    "matched_c_bytes_with_postprocess": 342136,
     "objects_with_postprocess": 645
   }
 }

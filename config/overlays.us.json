@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 373404,
-  "nonmatching_overlay_c_bytes": 95200,
+  "matched_overlay_c_bytes": 374264,
+  "nonmatching_overlay_c_bytes": 94340,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4660,
   "bss_bytes": 77680,
@@ -5028,7 +5028,7 @@
      "type": "c",
      "source": "overlays/o020/overlay20UpdateGrid",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xDC4",

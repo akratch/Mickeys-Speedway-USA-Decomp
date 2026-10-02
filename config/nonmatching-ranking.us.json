@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 133,
-  "resolved": 133,
+  "queue_size": 132,
+  "resolved": 132,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 133,
-  "relocation_masked_coverage": 133,
+  "source_context_coverage": 132,
+  "relocation_masked_coverage": 132,
   "functions": [
     {
       "name": "func_80019AB8",
@@ -1433,21 +1433,6 @@
       "size_delta": 80,
       "category": "size-mismatch",
       "source_context_sha256": "emCu.iS2O.y4GL.WEYB.eI7i.dRoA.1Lof.LJ_W.MwnF.bmRR.bR4"
-    },
-    {
-      "name": "func_overlay_001_F0003258_184F638",
-      "file": "src/overlays/o001/func_overlay_001_F0003258_184F638.c",
-      "overlay": 1,
-      "tu": "overlays/o001",
-      "size_bytes": 800,
-      "objdiff_match_pct": null,
-      "differing_words": 183,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 182,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": -48,
-      "category": "size-mismatch",
-      "source_context_sha256": "RXKH.w3cE.W-Of.3_ZV.if5J.CNVf.dSCN.TZOs.SroX.0oe5.pTk"
     },
     {
       "name": "func_8000E5EC",

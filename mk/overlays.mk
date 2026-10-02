@@ -224,10 +224,26 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/func_overlay_001_F0002B4C_184EF2C.c.o: POS
 		--redefine-sym func_800291D8=func_800291D8_o001Reloc \
 		--redefine-sym func_8005830C=func_8005830C_o001Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x70C
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/func_overlay_001_F0003258_184F638.c.o: CFLAGS += -Wab,-r4300_mul
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/func_overlay_001_F0003258_184F638.c.o: OPT_FLAGS := -O2 -Wo,-loopunroll,0
+# The rank-weight update is instruction-exact. Its -666.0f sentinel is a
+# one-constant pool that duplicates the retained overlay data at
+# rodata-relative +0xE4 (the shipped hi/lo pair is a LOCAL record with stored
+# addend 0xE4): bind the pair to an absolute 0xE4 symbol (overlay_001.c's
+# literal form) and assert the pool by digest. The three resident callees and
+# overlay 7's selection dispatch go through the generated surface entries; no
+# instruction is edited.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/func_overlay_001_F0003258_184F638.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x320
+	$(OBJCOPY) \
+		--redefine-sym func_80005750=func_80005750_o001Reloc \
+		--redefine-sym func_80028F54=func_80028F54_o001Reloc \
+		--redefine-sym levelGetLevel=levelGetLevel_o001Reloc \
+		--redefine-sym overlay7DispatchSelection=overlay1Overlay7DispatchSelectionReloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x320 && \
+	$(OBJCOPY) --add-symbol gOverlay1RankSentinelLiteral=0xE4,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		0x84:.rodata:gOverlay1RankSentinelLiteral \
+		0xA0:.rodata:gOverlay1RankSentinelLiteral && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:e0209c986e6e6bc1c834c0bc7b6616de0b4512a3cbadf1f68ab10c158c66bc53
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_middle.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_overlay_001_F0002744_184EB24=overlay1FindNextAngle \

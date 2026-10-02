@@ -62,61 +62,30 @@ extern Overlay48S16At4 gOverlay48HeaderLifetime;
 extern Overlay48S16At8 gOverlay48HeaderSeed;
 extern Overlay48U8AtA gOverlay48HeaderActive;
 extern s32 gOverlay48HeaderHandle;
-extern Overlay48S16At50 gOverlay48Timer;
-extern Overlay48S16At54 gOverlay48Script;
-extern Overlay48S16At58 gOverlay48ScriptIndex;
-extern Overlay48S16At5A gOverlay48Finished;
+extern s16 gOverlay48Timer;
+extern void *gOverlay48Script;
+extern s16 gOverlay48ScriptIndex;
+extern s16 gOverlay48Finished;
 extern void func_overlay_048_F0000000_1895408();
 
-#ifdef NON_MATCHING
-/* Bounded plateau: 10/57 positional words, first mismatch +0x0; candidate
- * 53 words versus target 57. Natural array/loop/BSS forms cannot retain the
- * target's unrolled index setup without changing its direct-store schedule. */
+/* Matched 2026-10-02. One loop over the five entries with the entry pointer
+ * walking beside the index: IDO runs the remainder iteration first (entry 0,
+ * constant addresses) and unrolls the other four, and because the index is
+ * the secondary variable it stays a run-time 1 for the seed address. */
 void overlay48InitializeState(void) {
-    register volatile s16 *initial;
-    s32 index;
+    Overlay48Record *entry;
+    s32 i;
 
-    gOverlay48HeaderSeed.value = D_274.initial;
-    gOverlay48HeaderLifetime.value = 0;
-    gOverlay48HeaderActive.value = 0;
-    gOverlay48HeaderHandle = 0;
-
-    index = 1;
-    D_10[0].lifetime = 0;
-    D_10[0].active = 0;
-    initial = &D_274.values[index];
-    D_10[1].active = 0;
-    D_10[1].lifetime = 0;
-    D_10[0].handle = 0;
-    D_10[0].seed = initial[0];
-    D_10[2].active = 0;
-    D_10[2].lifetime = 0;
-    D_10[1].handle = 0;
-    D_10[1].seed = initial[1];
-    D_10[3].active = 0;
-    D_10[3].lifetime = 0;
-    D_10[2].handle = 0;
-    D_10[2].seed = initial[2];
-    D_10[3].handle = 0;
-    D_10[3].seed = initial[3];
-
-    gOverlay48Timer.value = 0;
-    gOverlay48ScriptIndex.value = 0;
-    gOverlay48Finished.value = 0;
-    gOverlay48Script.value = D_174;
+    for (i = 0, entry = gOverlay48Entries; i < 5; i++, entry++) {
+        entry->lifetime = 0;
+        entry->active = 0;
+        entry->seed = D_274.values[i];
+        entry->handle = 0;
+    }
+    gOverlay48Timer = 0;
+    gOverlay48ScriptIndex = 0;
+    gOverlay48Finished = 0;
+    gOverlay48Script = D_174;
     func_overlay_048_F0000000_1895408(0x16);
     func_overlay_048_F0000000_1895408();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o048/overlay48InitializeState/func_overlay_048_F0000060_1895468.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay48InitializeState:start
- * symbol: overlay48InitializeState
- * score: 47 differing words
- * frame: 0x18
- * relocations: 24
- * first-mismatch: +0x0
- * summary: Hand-unroll folds index=1 to addiu+2; loops peel record 0. Missing sll+addu cursor and v0+=0x30. Colour refused at nonzero size.
- * PLATEAU-HANDOFF:overlay48InitializeState:end
- */

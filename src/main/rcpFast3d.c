@@ -38,14 +38,12 @@ typedef struct RcpTextureNode {
     s16 y;
 } RcpTextureNode;
 
-#ifdef NON_MATCHING
 typedef struct RcpGradientColour {
     u8 red;
     u8 green;
     u8 blue;
     u8 interpolate;
 } RcpGradientColour;
-#endif
 
 #define RCP_DISPLAY_LIST(command, list) \
     { \
@@ -148,10 +146,8 @@ void osWritebackDCacheAll(void);
 s32 TrapDanglingJump(void);
 s32 camIsUserView(s32 arg0);
 s32 camGetVisibleUserView(s32 arg0, s32 *x1, s32 *y1, s32 *x2, s32 *y2);
-#ifdef NON_MATCHING
 s32 camGetMode(void);
 s32 frontGet2PlayerSplit(void);
-#endif
 void camSetScissor(RcpCommand **dlist);
 void func_8002EBE0(RcpCommand **dlist, s32 width, s32 height, u32 value);
 void rcpClearZBuffer(RcpCommand **dlist, u32 width, u32 height, s32 x1,
@@ -272,12 +268,17 @@ void bgdraw_fillcolour(s32 red, s32 green, s32 blue) {
 void func_8002EBD4(u32 value) {
     D_8007A3B0 = value;
 }
-#ifdef NON_MATCHING
 /*
  * Draws the sky gradient: eight bands per screen, split for two players. A
  * band either fills flat or steps its colour every two lines toward the next
- * entry's. Written from the listing on 2026-10-02 (lane w2-front). The open
- * residual is recorded in docs/matching-triage-handoffs/func_8002EBE0.md.
+ * entry's. Written from the listing on 2026-10-02 (lane w2-front) and matched
+ * the same day (lane z-res) by three edits: the gradient step packs its
+ * colour inline twice in the fill-colour packet, while the flat band names
+ * it in an s32 local (so uopt saves the packed value only in the loop); the
+ * step loop sits in an `if (1)` region, which puts its first test in a block
+ * of its own so the post-decrement copy is of a variable and survives; and
+ * `i` is cleared before `bandStart`. The pad cells reproduce the 0x88 frame
+ * and are not claimed as the original's declarations.
  */
 void func_8002EBE0(RcpCommand **dlist, s32 width, s32 height, u32 colours) {
     s32 pad[15];
@@ -299,7 +300,7 @@ void func_8002EBE0(RcpCommand **dlist, s32 width, s32 height, u32 colours) {
     s32 r;
     s32 g;
     s32 b;
-    u32 colour;
+    s32 colour;
     RcpGradientColour *entry;
 
     cmd = *dlist;
@@ -315,8 +316,8 @@ void func_8002EBE0(RcpCommand **dlist, s32 width, s32 height, u32 colours) {
     y = 0;
     while (screens--) {
         entry = (RcpGradientColour *) colours;
-        bandStart = 0;
         i = 0;
+        bandStart = 0;
         do {
             i++;
             if (entry->interpolate) {
@@ -327,12 +328,11 @@ void func_8002EBE0(RcpCommand **dlist, s32 width, s32 height, u32 colours) {
                 redOffset = 0;
                 greenOffset = 0;
                 blueOffset = 0;
-                while (steps--) {
+                if (1) while (steps--) {
                     r = entry->red + (redOffset >> 16);
                     g = entry->green + (greenOffset >> 16);
                     b = entry->blue + (blueOffset >> 16);
-                    colour = GPACK_RGBA5551(r, g, b, 1);
-                    gDPSetFillColor(cmd++, (colour << 16) | colour);
+                    gDPSetFillColor(cmd++, (GPACK_RGBA5551(r, g, b, 1) << 16) | GPACK_RGBA5551(r, g, b, 1));
                     gDPFillRectangle(cmd++, 0, y, width, y + 2);
                     redOffset += redStep;
                     greenOffset += greenStep;
@@ -343,7 +343,8 @@ void func_8002EBE0(RcpCommand **dlist, s32 width, s32 height, u32 colours) {
                 r = entry->red;
                 g = entry->green;
                 b = entry->blue;
-                gDPSetFillColor(cmd++, (GPACK_RGBA5551(r, g, b, 1) << 16) | GPACK_RGBA5551(r, g, b, 1));
+                colour = GPACK_RGBA5551(r, g, b, 1);
+                gDPSetFillColor(cmd++, (colour << 16) | colour);
                 gDPFillRectangle(cmd++, 0, y, width,
                                  y + (((bandStart + screenHeight) >> 4) - (bandStart >> 4)) * 2);
                 y += (((bandStart + screenHeight) >> 4) - (bandStart >> 4)) * 2;
@@ -355,9 +356,6 @@ void func_8002EBE0(RcpCommand **dlist, s32 width, s32 height, u32 colours) {
     gDPPipeSync(cmd++);
     *dlist = cmd;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/rcpFast3d/func_8002EBE0.s")
-#endif
 /* PROVENANCE: command sequence adapted from DKR's public src/rcp_dkr.c:bgdraw_render. */
 void rcpClearZBuffer(RcpCommand **arg0, u32 arg1, u32 arg2, s32 arg3,
                      s32 arg4, s32 arg5, s32 arg6) {
@@ -743,16 +741,6 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/rcpFast3d/func_8002FB34.s")
 #endif
-
-/* PLATEAU-HANDOFF:func_8002EBE0:start
- * symbol: func_8002EBE0
- * score: 89/255 words
- * frame: 0x88
- * relocations: 2
- * first-mismatch: +0x138
- * summary: Listing rewrite: delta 0, frame exact. Left: 39 naming rows and three copies from the post-decrement loop webs and the colour copy.
- * PLATEAU-HANDOFF:func_8002EBE0:end
- */
 
 /* PLATEAU-HANDOFF:func_8002FB34:start
  * symbol: func_8002FB34

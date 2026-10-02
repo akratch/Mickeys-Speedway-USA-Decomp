@@ -64,7 +64,7 @@ extern s32 D_68;
 extern s32 D_6C;
 extern s32 D_70;
 extern Overlay58OrderEntry *D_90[];
-extern s16 D_B8[][2];
+extern s16 D_B8[];
 extern s8 D_F8[];
 extern s16 D_1A0[];
 extern u8 D_2A8[];
@@ -72,6 +72,7 @@ extern s32 D_2B0;
 extern s32 D_2B4;
 extern s32 D_2BC;
 extern f32 D_2C0;
+extern f32 D_o058_5CE0;
 extern s32 D_DC;
 
 extern u8 gOverlay58MenuGateReloc;
@@ -121,71 +122,54 @@ extern void func_overlay_058_F000138C_18B0574(s32 updateRate);
 extern void overlay58EnsureResource(void);
 
 /*
- * Mickey-only reconstruction (no permitted donor counterpart).
+ * Mickey-only reconstruction (no permitted donor counterpart).  Exact.
  *
- * 2026-10-02, lane q-ovl9: 509 at +4 -> 109 at size delta 0.
- *   - The per-file `-O2 -g3` override was inherited and is refuted by the
- *     target's own prologue: the first `jal` carries the parameter home store
- *     in its delay slot, which `-g3` never schedules.  The overlay's matched
- *     whale builds at plain `-O2`, and so does this TU now.
- *   - The ninth callee-saved web was `&D_2C0`.  Its two comparisons against
- *     1.0f read through a pointer taken at entry, which keeps them out of the
- *     address web; with four direct references left the web costs less than
- *     a ninth saved register and is not coloured, so s8 and the 0x10 frame
- *     surplus disappear and the arg load after the sound call is fresh, as
- *     in the target.
- *   - `D_54 = 0` is stored in both arms of the mode test (the target's `b`
- *     carries that store in its delay slot).
+ * What the shipped code fixes about the source, in the order it was found:
+ *   - Plain `-O2`: the first `jal` carries the parameter home store in its
+ *     delay slot, which `-g3` never schedules.
+ *   - `D_54 = 0` is stored in both arms of the case-4 mode test.
  *   - The menu bits and the screen-mode nibble are one object (one ROM-table
  *     symbol, addends 0 and 0x13).
- *   - (Superseded below) the case-3 row was addressed as
- *     `&table[0][0] + player * 4`.
- *   - Locals are declared in frame order (status first at 0x7C, increment
- *     at 0x58); the unused `verts`, `buttons`, `mode` and `selection` are
- *     gone, and the large-point-quad z offset is an f32 temporary (137 at
- *     +4 -> 109 at 0).
- *
- * 2026-10-02, lane x-o058: 109 -> 89 at size delta 0, from the relocation
- * table rather than the allocator.  Both "open" webs were one extern name
- * standing for two ROM objects:
- *   - Case 3 reads a different resident table (ROM-table symbol 0x754,
- *     resident +0x33F8) from the one the drawing loop, case 5 and the level
- *     calls read (symbol 0x666, +0x3360, the whale's D_8007C0C0).  With its
- *     own extern (`gOverlay58UnlockTableReloc`) the case-3 LDA no longer
- *     joins the loop's web, takes s0 across func_800291B4 as shipped, and
- *     the natural `table[player][active + 1]` spelling is exact there.
- *   - The `= -1` stores in cases 0 and 3 are to overlay BSS +0x0, the
- *     whale's `D_o058_5E50[0]`, not to the camera mode global (resident
- *     +0x3440) that `mainChangeCameras` reads; separated, the mode address
- *     is held in s1 across that call as shipped.
- *   - `D_120` is rodata +0x120, the literal 0.02f (checklist item 2), and
- *     the clamp is `D_2C0 += increment; if (D_2C0 > 1.0f)` (the `progress`
- *     local is gone); start/end are s32.
- * Open (89 = 26 frame-displacement immediates, 50 naming, 13 structural):
- * the frame is 0x90 against 0x88 -- the natural case-3 spelling adds eight
- * bytes of frame with no new stack traffic (the flat `&table[0][0] + p * 4`
- * spelling keeps 0x88 but misses case 3), so status/param homes are 8 high;
- * the increment block draws (f32)updateRate before the 0.02f load and
- * computes the float compare before `D_2BC == 0` (operand order and `&`
- * order are canonicalised: 8 orders flat); the large-point-quad x/z offset
- * conversions are emitted in the wrong order.
+ *   - Case 3 reads its own resident table (ROM-table symbol 0x754), not the
+ *     one the drawing loop, case 5 and the level calls read (symbol 0x666);
+ *     the `= -1` stores in cases 0 and 3 go to overlay BSS +0x0
+ *     (`D_o058_5E50[0]`), not to the camera mode global.
+ *   - The progress float (data +0x2C0) is read under two names.  The two
+ *     compares (`< 1.0f` and `1.0f ==`) are not the same uopt variable as the
+ *     strip argument, the `+=` and the clamp: the shipped code reloads the
+ *     strip argument after the join instead of carrying the compare's read
+ *     around the sound call, and the address is never hoisted into a ninth
+ *     saved register (four references, not six).  The compares therefore use
+ *     the module-offset spelling `D_o058_5CE0` for the same word.  Written
+ *     through a pointer local instead, the `&` and the `==` take the wrong
+ *     operand order and the frame gains a cell.
+ *   - `increment = 0.02f; increment *= updateRate;` loads the literal before
+ *     the conversion and keeps it the multiply's left operand; one
+ *     expression is canonicalised the other way round in every spelling.
+ *   - `1.0f == progress`, constant first, is the shipped `c.eq.s` order.
+ *   - The large point quad's x and z are `s32` locals assigned before the
+ *     call, vertex first (`vertex + offset`), so x and z are complete before
+ *     y is read and the offset conversion is the add's left operand; the
+ *     offsets are one flat `s16` table indexed `player * 2` and
+ *     `player * 2 + 1`.
+ *   - The frame is a declaration count: 40 bytes of locals, status third.
+ *     The mapping scan is an indexed `for` over `D_1A0` using `marker` as
+ *     its index (uopt creates the cursor), so there is no cursor local, and
+ *     start/end are an `s16` pair.
  */
-#ifdef NON_MATCHING
 void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
     Overlay58AnimPath *path;
     Overlay58PathGeometry *geometry;
     Overlay58Status *status;
     Overlay58Gfx *command;
-    s16 *mapping;
-    s32 start;
-    s32 end;
+    s16 start;
+    s16 end;
     s32 marker;
     s32 stage;
-    f32 *progressPtr;
     f32 increment;
-    f32 offsetZ;
+    s32 x;
+    s32 z;
 
-    progressPtr = &D_2C0;
     status = func_80028F54();
     D_70 = 0;
     switch (D_30) {
@@ -425,34 +409,24 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
         for (stage = 0; stage <= D_6C; stage++) {
             start = 0;
             end = 0;
-            /*
-             * The initial sentinel is a direct load of D_1A0[0]. The cursor
-             * is a second address, born inside the taken path, so the skip
-             * branch can carry that lui and marker's -1 is not hoisted
-             * across the draws.
-             */
-            if (D_1A0[0] != -1) {
-                mapping = D_1A0;
-                do {
-                    if (mapping[0] ==
-                        gOverlay58SelectionTableReloc[status->player][stage]) {
-                        start = mapping[1];
-                    }
-                    if (stage == 3) {
-                        end = 0x13;
-                    } else if (
-                        mapping[0] ==
-                        gOverlay58SelectionTableReloc[status->player]
-                                                     [stage + 1]) {
-                        end = mapping[1];
-                    }
-                    mapping += 2;
-                } while (mapping[0] != -1);
+            for (marker = 0; D_1A0[marker] != -1; marker += 2) {
+                if (D_1A0[marker] ==
+                    gOverlay58SelectionTableReloc[status->player][stage]) {
+                    start = D_1A0[marker + 1];
+                }
+                if (stage == 3) {
+                    end = 0x13;
+                } else if (D_1A0[marker] ==
+                           gOverlay58SelectionTableReloc[status->player]
+                                                        [stage + 1]) {
+                    end = D_1A0[marker + 1];
+                }
             }
 
             if (stage == D_6C) {
-                increment = 0.02f * (f32)updateRate;
-                if ((D_2BC == 0) & (*progressPtr < 1.0f)) {
+                increment = 0.02f;
+                increment *= updateRate;
+                if ((D_2BC == 0) & (D_o058_5CE0 < 1.0f)) {
                     if (D_30 == 3) {
                         amSndPlay(0x32B, &D_2BC, D_6C);
                     }
@@ -491,18 +465,17 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                     if (stage == 3) {
                         marker = start;
                     } else if ((D_6C == 2) && (stage == 2) &&
-                               (*progressPtr == 1.0f)) {
+                               (1.0f == D_o058_5CE0)) {
                         marker = end;
                     }
                 }
                 if (marker != -1) {
-                    offsetZ = D_B8[status->player][1] +
-                              geometry->vertices[marker].z;
+                    x = geometry->vertices[marker].x +
+                        D_B8[status->player * 2];
+                    z = geometry->vertices[marker].z +
+                        D_B8[status->player * 2 + 1];
                     overlay58DrawLargePointQuad(
-                        (s32)((f32)D_B8[status->player][0] +
-                              geometry->vertices[marker].x),
-                        (s32)geometry->vertices[marker].y, (s32)offsetZ);
-
+                        x, (s32)geometry->vertices[marker].y, z);
                 }
             }
             overlay58DrawPointQuad((s32)geometry->vertices[start].x,
@@ -511,16 +484,3 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o058/func_overlay_058_F00005FC_18AF7E4/func_overlay_058_F00005FC_18AF7E4.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_058_F00005FC_18AF7E4:start
- * symbol: func_overlay_058_F00005FC_18AF7E4
- * score: 89/829 words
- * frame: 0x90
- * relocations: 267
- * first-mismatch: +0x0
- * summary: Case 3 has its own resident table; -1 stores are D_o058_5E50[0]; 0.02f literal. s0/s1 webs exact. Open: frame 0x90 vs 0x88, draw order, quad offsets.
- * PLATEAU-HANDOFF:func_overlay_058_F00005FC_18AF7E4:end
- */

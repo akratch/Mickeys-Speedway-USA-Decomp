@@ -39,103 +39,63 @@ void func_8003C770(s32 arg0, s32 arg1) {
     func_8003C80C(0, arg1, index);
 }
 
-extern u8 *D_8007C838[];
-extern u8 D_800D40F0[];
-extern void func_8002EBD4(u32 value);
+typedef struct WeatherColor {
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
+} WeatherColor;
 
-/* The one-word deficit was two missing register copies, and cause and cure are
- * the same line pair.
- *
- * Census against the target was `lw +1, move -2`. The target initialises the
- * two palette cursors with `move v0,t3` and `move a3,t4` from the pair it has
- * just loaded out of the frame table, keeping four live carriers: two for the
- * loaded pointers, which it still needs after the loop for the two tail
- * interpolations, and two for the cursors the loop advances. Assigning the
- * cursors from the named `temp_t3`/`temp_t4` gives each pointer one carrier,
- * so no copy is emitted and `temp_t4` is spilled to the frame and reloaded
- * instead -- the extra `lw`.
- *
- * Spelling the two cursor initialisers as the table read again, rather than as
- * the named locals, restores both copies and removes the spill: 118 words
- * against 118, instruction delta zero, every opcode count equal, frame 0x38
- * on both sides, and the aligned structural residual down from 75 to 45. The
- * values are provably identical -- `temp_t2` is a local, the reads have no
- * intervening store, and `sp20`/`sp1C` still take the named locals, which is
- * what keeps them alive across the call.
- *
- * L99: an unused pointer first (not pad[8]) keeps frame 0x38 and moves the
- * extra home from +0x18 to +0x24, 104 to 103 masked, draws unchanged. Named
- * size levers (remat-delete, empty-if, leftover OR-zero, comma-assign, L160)
- * are flat or size -4. The first delay is still the arg copy; target extra
- * home remains +0x30. */
-/* PROVENANCE: palette layouts and interpolation control flow are reconstructed from Mickey's target accesses; no external donor body was used. */
+typedef struct WeatherKey {
+    WeatherColor colors[9];
+    s32 unk24;
+    s32 unk28;
+} WeatherKey;
+
+extern WeatherKey *D_8007C838[];
+extern WeatherColor D_800D40F0[];
+extern void func_8002EBD4(WeatherColor *colors);
+
 #ifdef NON_MATCHING
-void func_8003C80C(s32 arg0) {
-    void *pad;
-    s32 sp30;
-    u8 *sp20;
-    u8 *sp1C;
-    u8 *temp_t3;
-    u8 *temp_t4;
-    s32 temp_lo;
-    s32 temp_t6;
-    s32 temp_v0;
-    s32 temp_v1;
-    s32 var_a1;
-    s32 var_t0;
-    u8 *var_a3;
-    u8 *var_v0;
-    u8 temp_a0;
-    u8 temp_a1;
-    u8 temp_a2;
-    u8 temp_t7;
-    u8 *var_v1;
-    void *temp_t2;
+void func_8003C80C(s32 arg0, s32 time) {
+    s32 i;
+    s32 frac;
+    WeatherColor *dst;
+    WeatherColor *src0;
+    WeatherColor *src1;
+    WeatherKey *from;
+    WeatherKey *to;
 
     if (D_8007C854 != 0) {
-        var_v1 = D_800D40F0;
-        var_a1 = D_8007C864 + arg0;
-        D_8007C864 = var_a1;
-        var_t0 = 8;
-        if (var_a1 >= D_8007C868) {
-            do {
-                D_8007C864 = var_a1 - D_8007C868;
-                temp_t6 = D_8007C860 + 1;
-                D_8007C860 = temp_t6;
-                if (temp_t6 >= 6) {
-                    D_8007C860 = 0;
-                }
-                var_a1 = D_8007C864;
-            } while (var_a1 >= D_8007C868);
+        time = D_8007C864 + arg0;
+        D_8007C864 = time;
+        i = 8;
+        while (time >= D_8007C868) {
+            D_8007C864 = time - D_8007C868;
+            D_8007C860++;
+            if (D_8007C860 >= 6) {
+                D_8007C860 = 0;
+            }
+            time = D_8007C864;
         }
-        temp_t2 = (void *) ((D_8007C860 * 4) + (s32) D_8007C838);
-        temp_t3 = *(u8 **) temp_t2;
-        temp_t4 = *(u8 **) ((u8 *) temp_t2 + 4);
-        temp_lo = (var_a1 << 0x10) / D_8007C868;
-        var_v0 = *(u8 **) temp_t2;
-        var_a3 = *(u8 **) ((u8 *) temp_t2 + 4);
+        from = D_8007C838[D_8007C860];
+        to = D_8007C838[D_8007C860 + 1];
+        frac = (time << 16) / D_8007C868;
+        src0 = from->colors;
+        src1 = to->colors;
+        dst = D_800D40F0;
         do {
-            temp_a0 = *var_v0;
-            temp_t7 = *var_a3;
-            var_v0 += 4;
-            var_a3 += 4;
-            var_v1 += 4;
-            var_v1[-4] = (s8) ((((temp_t7 - temp_a0) * temp_lo) >> 0x10) + temp_a0);
-            temp_a1 = var_v0[-3];
-            var_v1[-3] = (s8) ((((var_a3[-3] - temp_a1) * temp_lo) >> 0x10) + temp_a1);
-            temp_a2 = var_v0[-2];
-            var_v1[-2] = (s8) ((((var_a3[-2] - temp_a2) * temp_lo) >> 0x10) + temp_a2);
-            var_v1[-1] = var_v0[-1];
-            var_t0 -= 1;
-        } while (var_t0 != 0);
-        sp30 = temp_lo;
-        sp20 = temp_t3;
-        sp1C = temp_t4;
-        func_8002EBD4((u32) D_800D40F0);
-        temp_v0 = *(s32 *) (sp20 + 0x24);
-        D_8007C858 = temp_v0 + ((*(s32 *) (sp1C + 0x24) - temp_v0) * sp30 >> 0x10);
-        temp_v1 = *(s32 *) (sp20 + 0x28);
-        D_8007C85C = temp_v1 + ((*(s32 *) (sp1C + 0x28) - temp_v1) * sp30 >> 0x10);
+            dst->r = src0->r + (((src1->r - src0->r) * frac) >> 16);
+            dst->g = src0->g + (((src1->g - src0->g) * frac) >> 16);
+            dst->b = src0->b + (((src1->b - src0->b) * frac) >> 16);
+            dst->a = src0->a;
+            src0++;
+            src1++;
+            dst++;
+        } while (i--);
+        func_8002EBD4(D_800D40F0);
+        D_8007C858 = from->unk24 + (((to->unk24 - from->unk24) * frac) >> 16);
+        D_8007C85C = from->unk28 + (((to->unk28 - from->unk28) * frac) >> 16);
     }
 }
 #else
@@ -144,10 +104,10 @@ void func_8003C80C(s32 arg0) {
 
 /* PLATEAU-HANDOFF:func_8003C80C:start
  * symbol: func_8003C80C
- * score: 103/118 words
+ * score: 74/118 words
  * frame: 0x38
  * relocations: 21
  * first-mismatch: +0x14
- * summary: L99 unused pointer: 103/118, extra home +0x24 not +0x30. remat/empty-if size -4; leftover/comma/L160 flat. First delay still the arg copy.
+ * summary: Nine colours (do-while, post-decrement from 8), time in the second parameter: 103 to 74 at delta 0. Open: dst wants v1 before the byte webs.
  * PLATEAU-HANDOFF:func_8003C80C:end
  */

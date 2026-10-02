@@ -861,7 +861,6 @@ $(O15_OBJ): \
 $(O15_OBJ): CFLAGS += -Wab,-r4300_mul
 $(O15_OBJ): POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym func_overlay_015_F000004C_18723E4=overlay15InitStarsAndPalette \
 		--redefine-sym func_overlay_015_F0000428_18727C0=overlay15MoveStars \
 		--redefine-sym func_overlay_015_F0000500_1872898=overlay15DrawScreenStars \
 		--redefine-sym func_overlay_015_F00006E8_1872A80=overlay15InitStars \
@@ -2388,7 +2387,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/func_overlay_002_F0001A94_185888C.c.o: \
 	POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x364 \
 		000000000000000000000000
+# Exact C. Its three resident callees go through the generated surface
+# entries; no instruction changes.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/func_overlay_002_F0001DF8_1858BF0.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym func_8000572C=func_8000572C_o002Reloc \
+		--redefine-sym func_8000BCB0=func_8000BCB0_o002Reloc \
+		--redefine-sym joyGetButtons=joyGetButtons_o002Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x730
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60DrawBorder.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x10C
@@ -2749,7 +2754,39 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F0000000_18AF1E8.c.o: POS
 		--redefine-sym loadFrontEndList=loadFrontEndList_o058Reloc \
 		--redefine-sym overlay56SplitTime=overlay58Overlay56SplitTimeReloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x5C0
+# Exact C. The compiler's private pool for this unit is the seven-entry state
+# switch table followed by the 0.02f literal; the retained overlay data
+# segment already owns those bytes at data_rodata +0x3D4 (rodata-relative
+# +0x104, which the shipped %hi/%lo pairs encode). Rebind the four references
+# to a pool symbol and discard the digest-checked duplicate, the whale's
+# metadata-only form; no instruction or compiler addend is edited. The thirteen
+# resident callees and overlay 41's scale test go through surface entries.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/func_overlay_058_F00005FC_18AF7E4.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym amSndPlay=amSndPlay_o058Reloc \
+		--redefine-sym amSndStop=amSndStop_o058Reloc \
+		--redefine-sym animseqStartPath=animseqStartPath_o058Reloc \
+		--redefine-sym animseqStopPath=animseqStopPath_o058Reloc \
+		--redefine-sym func_800221E8=func_800221E8_o058Reloc \
+		--redefine-sym func_80028F54=func_80028F54_o058Reloc \
+		--redefine-sym func_800291B4=func_800291B4_o058Reloc \
+		--redefine-sym func_8003A680=func_8003A680_o058Reloc \
+		--redefine-sym func_8005055C=func_8005055C_o058Reloc \
+		--redefine-sym func_800508B4=func_800508B4_o058Reloc \
+		--redefine-sym joyCreateMap=joyCreateMap_o058Reloc \
+		--redefine-sym mainChangeCameras=mainChangeCameras_o058Reloc \
+		--redefine-sym mainChangeLevel=mainChangeLevel_o058Reloc \
+		--redefine-sym overlay41IsUnitScale=overlay41IsUnitScale_o058Reloc \
+		--add-symbol gOverlay58StatePoolReloc=0x104,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_058_F00005FC_18AF7E4.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:ae888b2b74f48833a0133b07724e89710d4efed14898ebecea7763d646d347a8 && \
+	$(OBJCOPY) --remove-section .rel.rodata $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xCF4
 # The compiler's private pool for this unit is the thirteen-entry mode-switch
 # table; the retained overlay data segment already owns those bytes at
@@ -3347,7 +3384,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o049/overlay_049.c.o: POSTPROCESS = \
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o048/overlay48InitializeState.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_048_F0000060_1895468=overlay48InitializeState $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xE4
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.

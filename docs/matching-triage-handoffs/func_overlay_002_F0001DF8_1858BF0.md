@@ -2,11 +2,11 @@
 ### `func_overlay_002_F0001DF8_1858BF0` plateau handoff
 
 - source: `src/overlays/o002/func_overlay_002_F0001DF8_1858BF0.c`
-- score: 198/460 words
-- frame: 0x888
+- score: 0/460 words, promoted
+- frame: 0x880
 - relocations: 5
-- first mismatch: +0x0
-- summary: Home-order locals, no-closest return, chained order stores, 1U tail start: 353 to 198 at delta 0; frame 0x888 vs 0x880 (one temp cell).
+- first mismatch: none
+- summary: Matched. One candidate local for both scans and the renumbering loop (fourteen locals, frame 0x880), a single continue in the second scan, closestIndex and the two route locals reused, an early return on a nonzero group, and the renumbering start in the for-init.
 
 Summary before this remeasure: extra-ILOD pair at the previousDistance call line. Delta 0 via lastCandidate carrier. Stall: order share -12, register inert, header hoist flat, post-loop +16.
 
@@ -60,4 +60,45 @@ Open, in order:
 - The position loop loads both route and header before the two increments
   and reloads candidateRoute->order at the bottom; preloading them into
   closestRoute/header locals measured 208 against 198.
+#### 2026-10-02, lane z-ovl1: 198 to 0, promoted
+
+The split carrier (lastCandidate plus a trailing candidate) was the frame
+cell: fifteen locals where the target has fourteen. Replacing the loop
+temporary with any existing local gave frame 0x880 at once. What then
+decided the registers, read from the allocator records (save is totalsave
+over nocs, nocs is 1 + floor((blocks + 2) / 4)):
+
+- index took a1 at 188/12 = 15.67 against the renumbering cursor's
+  31/2 = 15.5, where the target has index in t0 and both cursors in a1.
+- the unroller's bound took a2 at 13/3 = 4.33 against the indices base at
+  51/12 = 4.25, where the target has the base in a2 and the bound in t3.
+- forcing those two (index c7, base c5, bound c10; all accepted) left only
+  ring phase after the group copy, so the structure was already right.
+
+One `continue` for the three rejecting tests of the second scan adds
+blocks to every web spanning that loop: index falls to 188/15 = 12.53 and
+the bound to 13/4 = 3.25 below the base at 51/14 = 3.64, and both orders
+land with no force. Three separate `continue` statements stop the
+unroller (size -172).
+
+The rest, each measured:
+
+- closestIndex reused for the closest object's slot (t3 in both roles),
+  closestRoute for `previous->route` in the renumbering loop (a3 in both),
+  candidateRoute and header loaded before the two increments.
+- `if (route->group != 0) return;` ahead of the chained
+  `route->group = input->group = closestRoute->group`: the copy block then
+  reloads route after the store, the word the chained form had been
+  missing.
+- `route->order = input->order = K`, input stored first.
+- `closestIndex == count - 1` for the last-slot test (operand order).
+- `for (index = count - 1; ...; index--)`: with the start as its own
+  statement the copy is emitted before the cursor setup (2 words,
+  schedule-only); in the for-init it follows it (checklist item 22).
+
+Broken closure: the earlier section's "a natural single-candidate rewrite
+gives candidate a callee-saved register, so the split carrier is
+load-bearing" was true of the shape it held fixed (no continue, separate
+position and tail locals). With the reuse above the single candidate is
+exact.
 <!-- plateau-handoff:func_overlay_002_F0001DF8_1858BF0:end -->

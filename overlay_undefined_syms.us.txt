@@ -357,6 +357,11 @@ gOverlay2QueryY1Reloc = 0x0000004c;
 overlay2ContainsPointReloc = 0xf0000000;
 overlay2Overlay1GetEntryReloc = 0xf0000000;
 
+/* overlay 2: func_overlay_002_F0001DF8_1858BF0.c.o */
+func_8000572C_o002Reloc = 0xf0000000;
+func_8000BCB0_o002Reloc = 0xf0000000;
+joyGetButtons_o002Reloc = 0xf0000000;
+
 /* overlay 3: overlay3ContainsValue.c.o */
 gOverlay3Entries = 0x00000028;
 
@@ -1037,6 +1042,7 @@ overlay14LookupObjectReloc = 0xf0000000;
 overlay14SubmitHandleReloc = 0xf0000000;
 
 /* overlay 15: overlay_015.c.o */
+gOverlay15InitBounds = 0x00000000;
 gOverlay15MovingStarCount = 0x00000008;
 gOverlay15MovingStars = 0x00000010;
 gOverlay15RainCapacity = 0x00000008;
@@ -1047,8 +1053,10 @@ gOverlay15Resource10 = 0x00000010;
 gOverlay15Resource4 = 0x00000004;
 gOverlay15Resource48 = 0x00000048;
 gOverlay15StarCount = 0x00000000;
+gOverlay15StarPalette = 0x00000048;
 gOverlay15StarSetup = 0x00000018;
 gOverlay15Stars = 0x00000000;
+gOverlay15StarsWord = 0x00000004;
 gOverlay15Value7C = 0x0000007c;
 gOverlay15ValueC = 0x0000000c;
 overlay15Allocate = 0xf0000000;
@@ -1652,6 +1660,20 @@ overlay36GlobalCallReloc = 0xf0000000;
 gOverlay36AlternateEffects = 0x00000000;
 overlay36SpawnEffectReloc = 0xf0000000;
 
+/* overlay 36: overlay36ChooseWeightedState.c.o */
+gOverlay36AdjustEnabled = 0x00000000;
+gOverlay36AltTable = 0x00000000;
+gOverlay36EnabledMask = 0x00000000;
+gOverlay36NodeA = 0x00000000;
+gOverlay36NodeB = 0x00000000;
+gOverlay36ScaleDivisor = 0x00000000;
+gOverlay36ScaleMultiplier = 0x00000000;
+gOverlay36StrengthMultiplier = 0x00000000;
+gOverlay36Weights = 0x00000000;
+overlay36ChooseReloc = 0xf0000000;
+overlay36GetChoiceReloc = 0xf0000000;
+overlay36MeasureReloc = 0xf0000000;
+
 /* overlay 36: overlay36PrepareAndTick.c.o */
 overlay36ActionReloc = 0xf0000000;
 
@@ -2096,14 +2118,15 @@ overlay48SetModeReloc = 0xf0000000;
 /* overlay 48: overlay48InitializeState.c.o */
 D_174 = 0x00000174;
 D_274 = 0x00000274;
-
-/* overlay 48: overlay48UpdateState.c.o */
 gOverlay48Entries = 0x00000000;
 gOverlay48Finished = 0x0000005a;
+gOverlay48Script = 0x00000054;
+gOverlay48ScriptIndex = 0x00000058;
+gOverlay48Timer = 0x00000050;
+
+/* overlay 48: overlay48UpdateState.c.o */
 gOverlay48ResourceIndex = 0x00000058;
 gOverlay48ResourceTable = 0x00000000;
-gOverlay48Script = 0x00000054;
-gOverlay48Timer = 0x00000050;
 gOverlay48TransitionValue = 0x00000470;
 overlay45ReleaseHandle = 0xf0000000;
 overlay45SetHandleValue = 0xf0000000;
@@ -3183,8 +3206,46 @@ overlay58ReleaseReloc = 0xf0000000;
 /* overlay 58: func_overlay_058_F00005FC_18AF7E4.c.o */
 D_1A0 = 0x000001a0;
 D_2B0 = 0x000002b0;
+D_2B4 = 0x000002b4;
 D_2BC = 0x000002bc;
+D_2C0 = 0x000002c0;
 D_90 = 0x00000090;
+D_o058_5CE0 = 0x000002c0;
+D_o058_5E50 = 0x00000000;
+amSndPlay_o058Reloc = 0xf0000000;
+amSndStop_o058Reloc = 0xf0000000;
+animseqStartPath_o058Reloc = 0xf0000000;
+animseqStopPath_o058Reloc = 0xf0000000;
+func_800221E8_o058Reloc = 0xf0000000;
+func_800291B4_o058Reloc = 0xf0000000;
+func_8003A680_o058Reloc = 0xf0000000;
+func_8005055C_o058Reloc = 0xf0000000;
+func_800508B4_o058Reloc = 0xf0000000;
+gOverlay58CameraGateReloc = 0x00000000;
+gOverlay58CameraModeReloc = 0x00000000;
+gOverlay58ConfigAReloc = 0x00000000;
+gOverlay58ConfigBReloc = 0x00000000;
+gOverlay58ConfigCReloc = 0x00000000;
+gOverlay58ControllerCountReloc = 0x00000000;
+gOverlay58ControllerModeReloc = 0x00000000;
+gOverlay58DisplayListReloc = 0x00000000;
+gOverlay58InputReloc = 0x00000000;
+gOverlay58LevelReloc = 0x00000000;
+gOverlay58MatrixReloc = 0x00000000;
+gOverlay58MenuBitsReloc = 0x00000000;
+gOverlay58MenuGateReloc = 0x00000000;
+gOverlay58MenuReadyReloc = 0x00000000;
+gOverlay58PlayerReloc = 0x00000000;
+gOverlay58SelectionTableReloc = 0x00000000;
+gOverlay58StatePoolReloc = 0x00000104;
+gOverlay58TrackReloc = 0x00000000;
+gOverlay58TransitionModeReloc = 0x00000000;
+gOverlay58UnlockTableReloc = 0x00000000;
+gOverlay58VehicleReloc = 0x00000000;
+joyCreateMap_o058Reloc = 0xf0000000;
+mainChangeCameras_o058Reloc = 0xf0000000;
+mainChangeLevel_o058Reloc = 0xf0000000;
+overlay41IsUnitScale_o058Reloc = 0xf0000000;
 
 /* overlay 58: overlay58SetNodeValue.c.o */
 overlay58ConfigureNodeReloc = 0xf0000000;
@@ -3244,7 +3305,6 @@ D_o058_5DB0 = 0x000000c0;
 D_o058_5DB4 = 0x000000c4;
 D_o058_5DB8 = 0x000000c8;
 D_o058_5DC4 = 0x000000d4;
-D_o058_5E50 = 0x00000000;
 D_o058_5E84 = 0x00000034;
 D_o058_5E88 = 0x00000038;
 D_o058_5E8C = 0x0000003c;
@@ -3259,9 +3319,6 @@ D_o058_5EAC = 0x0000005c;
 D_o058_5EB0 = 0x00000060;
 D_o058_5EB4 = 0x00000064;
 D_o058_5EC0 = 0x00000070;
-amSndPlay_o058Reloc = 0xf0000000;
-animseqStartPath_o058Reloc = 0xf0000000;
-animseqStopPath_o058Reloc = 0xf0000000;
 fontColour_o058Reloc = 0xf0000000;
 func_80029120_o058Reloc = 0xf0000000;
 func_8002917C_o058Reloc = 0xf0000000;
@@ -3274,13 +3331,8 @@ func_8003A700_o058Reloc = 0xf0000000;
 func_8003A754_o058Reloc = 0xf0000000;
 func_8004B0A4_o058Reloc = 0xf0000000;
 func_8004B0F8_o058Reloc = 0xf0000000;
-func_8005055C_o058Reloc = 0xf0000000;
-func_800508B4_o058Reloc = 0xf0000000;
 gOverlay58ModeJumpTableReloc = 0x00000124;
-joyCreateMap_o058Reloc = 0xf0000000;
 levelGetBlurEffect_o058Reloc = 0xf0000000;
-mainChangeCameras_o058Reloc = 0xf0000000;
-mainChangeLevel_o058Reloc = 0xf0000000;
 mainSetAnimGroup_o058Reloc = 0xf0000000;
 sprintf_o058Reloc = 0xf0000000;
 
@@ -3320,8 +3372,6 @@ gOverlay58TrackedResource = 0x00000000;
 overlay58LoadResourceReloc = 0xf0000000;
 
 /* overlay 58: overlay58FinalizePackedStatus.c.o */
-func_800291B4_o058Reloc = 0xf0000000;
-func_8003A680_o058Reloc = 0xf0000000;
 gOverlay58ExtendedPackedMode = 0x00000000;
 gOverlay58FinalizerGate = 0x00000000;
 gOverlay58PackedMode = 0x00000000;
@@ -5312,6 +5362,7 @@ func_overlay_014_F0001B7C_1871454 = overlay14FinalizeActiveHandle;
 /* overlay 15: overlay_015.c.o */
 func_overlay_015_F0000000_1872398 = overlay15GetResource4;
 func_overlay_015_F000000C_18723A4 = overlay15ReleaseResource;
+func_overlay_015_F000004C_18723E4 = overlay15InitStarsAndPalette;
 func_overlay_015_F0000428_18727C0 = overlay15MoveStars;
 func_overlay_015_F0000500_1872898 = overlay15DrawScreenStars;
 func_overlay_015_F00006A4_1872A3C = overlay15GetResource10;
@@ -5321,7 +5372,6 @@ func_overlay_015_F00009E0_1872D78 = overlay15UpdateMovingStars;
 func_overlay_015_F0000B7C_1872F14 = overlay15SetValueC;
 func_overlay_015_F0000B88_1872F20 = overlay15ClearValue7C;
 func_overlay_015_F0000B94_1872F2C = overlay15DrawRain;
-func_overlay_015_F000004C_18723E4 = overlay15InitStarsAndPalette;
 
 /* overlay 16: overlay_016.c.o */
 func_overlay_016_F0000000_1873498 = overlay16BuildGradient;

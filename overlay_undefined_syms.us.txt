@@ -3323,6 +3323,11 @@ overlay65AllocateReloc = 0xf0000000;
 /* overlay 65: overlay65UpdateParticles.c.o */
 D_1908 = 0x00001908;
 D_1D8 = 0x000001d8;
+D_2970 = 0x00002970;
+D_2974 = 0x00002974;
+D_2978 = 0x00002978;
+D_297C = 0x0000297c;
+D_2980 = 0x00002980;
 D_2988 = 0x00002988;
 
 /* overlay 65: overlay65Release.c.o */
@@ -3338,8 +3343,6 @@ gOverlay65Slots = 0x00000100;
 
 /* overlay 65: func_overlay_065_F0000C38_18C4EA0.c.o */
 D_1900 = 0x00001900;
-D_2978 = 0x00002978;
-D_297C = 0x0000297c;
 D_800000C0 = 0x800000c0;
 camSetNo_o065Reloc = 0xf0000000;
 func_80021970_o065Reloc = 0xf0000000;

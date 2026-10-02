@@ -73,6 +73,18 @@ extern s32 o65FindGround(f32, f32, s32, f32 ***);
 extern void o65Transform(s32, s16 *, O65Vec3f *, O65Vec3f *);
 extern void func_overlay_065_F0000C38_18C4EA0(O65Command **, s32 *, s32);
 
+/*
+ * PROVENANCE: packet macros adapted from the Jet Force Gemini decompilation
+ * (include/PR/gbi.h gDma1p, include/PR/mbi.h _SHIFTL, include/f3ddkr.h
+ * gSPVertexJFG and gSPPolygon, include/PR/os_convert.h OS_PHYSICAL_TO_K0), a
+ * permitted source under docs/CLEANROOM.md; same adaptation as overlay 58.
+ */
+#define O65_SHIFTL(v, s, w) ((unsigned int)(((unsigned int)(v) & ((0x01 << (w)) - 1)) << (s)))
+#define O65_DMA1P(pkt, c, s, l, p) { O65Command *_g = (O65Command *)(pkt); _g->w0 = (O65_SHIFTL((c), 24, 8) | O65_SHIFTL((p), 16, 8) | O65_SHIFTL((l), 0, 16)); _g->w1 = (unsigned int)(s); }
+#define O65_VERTEX(pkt, v, n, v0) O65_DMA1P(pkt, 4, v, ((((n) << 3) + ((n) << 1))) + 8, ((n))<<3|(((u32)(v) & 6))|(v0))
+#define O65_POLYGON(dl, ptr, numTris, texEnabled) { O65Command *_g = (O65Command *)(dl); _g->w0 = O65_SHIFTL((((numTris) - 1) << 4) | (texEnabled), 16, 8) | O65_SHIFTL(5, 24, 8) | O65_SHIFTL(((numTris)*16), 0, 16); _g->w1 = (unsigned int)(ptr); }
+#define O65_K0(x) (void *)(((u32)(x)+0x80000000))
+
 #define O65_MODE D_20C
 #define O65_INPUT D_208
 #define O65_CAMERA_X D_2970
@@ -82,41 +94,40 @@ extern void func_overlay_065_F0000C38_18C4EA0(O65Command **, s32 *, s32);
 #define O65_BUFFER_TABLE D_2980
 
 /*
- * Size closed at 720 words / frame 0xF8: load *arg1 while a1 is live, then
- * write transformed points through a word-index cursor ((s32 *)point + i,
- * i += 3) reused on groundIndex. Colour cannot close the remaining residual.
+ * Matched (2026-10-02). The four vertex writes are one counted loop over
+ * the transformed points (uopt unrolls it, which is what made the vertex
+ * block a depth-2 region and put radius and the point base in saved
+ * registers); the batch flush and tail use the packet macros above; the
+ * working set is one local per role with no carrier copies of constants.
  */
-#ifdef NON_MATCHING
 void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
                                         s32 arg2) {
     O65Command *commands;
     O65Vertex *batchStart;
     s32 cursor;
-    volatile s32 spawnCount;
-    O65Vec3f transformed[4];
-    f32 **ground;
     O65Camera *camera;
     O65Particle *particle;
     s32 groundCount;
     s32 groundIndex;
     s32 particleIndex;
+    s32 spawnCount;
     s32 remaining;
     s16 radius;
+    O65Vec3f transformed[4];
     f32 lateralX;
     f32 lateralZ;
     f32 sinAngle;
     f32 cosAngle;
+    f32 **ground;
     u8 *colors;
-    register u8 alpha;
-    register O65Vec3f *point;
 
     commands = *arg0;
     cursor = *arg1;
+    D_2988 = O65_BUFFER_TABLE[D_210];
+    D_210 ^= 1;
     particle = D_1908;
     spawnCount = 4;
     remaining = 6;
-    D_2988 = O65_BUFFER_TABLE[D_210];
-    D_210 ^= 1;
     o65BeginDraw(&commands, O65_INPUT, 3, 0);
     camera = o65GetCamera(0);
     o65PrepareCamera(0);
@@ -133,8 +144,6 @@ void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
     }
     O65_CAMERA_X = camera->x;
     O65_CAMERA_Z = camera->z;
-    point = transformed;
-    alpha = 0xFF;
 
     do {
         if (particle->active != 0) {
@@ -187,41 +196,31 @@ void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
             colors = &D_1C0[o65RandomRange(0, 6) * 3];
             particle->r = colors[0];
             particle->g = colors[1];
-            particle->active = 1;
             particle->b = colors[2];
+            particle->active = 1;
             spawnCount--;
         }
 
         if (particle->active != 0) {
             radius = (s16)(o65Cos(particle->angle) * 50.0f);
-            o65Transform(4, &particle->dx, D_1D8, point);
+            o65Transform(4, &particle->dx, D_1D8, transformed);
             remaining--;
-            groundIndex = 3;
-#define O65_WRITE_VTX(vtx) \
-                D_2988->x = (s16)((vtx)->x + (f32)(particle->x + radius)); \
-                D_2988->y = (s16)((vtx)->y + (f32)particle->y); \
-                D_2988->z = (s16)((vtx)->z + (f32)(particle->z + radius)); \
-                D_2988->r = particle->r; \
-                D_2988->g = particle->g; \
-                D_2988->b = particle->b; \
-                D_2988->a = alpha; \
-                D_2988++
-            O65_WRITE_VTX(point);
-            O65_WRITE_VTX((O65Vec3f *)((s32 *)point + groundIndex));
-            groundIndex += 3;
-            O65_WRITE_VTX((O65Vec3f *)((s32 *)point + groundIndex));
-            groundIndex += 3;
-            O65_WRITE_VTX((O65Vec3f *)((s32 *)point + groundIndex));
-#undef O65_WRITE_VTX
+            groundIndex = 0;
+            for (groundCount = 4; groundCount != 0; groundCount--) {
+                D_2988->x = (s16)(((O65Vec3f *)((s32 *)transformed + groundIndex))->x + (f32)(particle->x + radius));
+                D_2988->y = (s16)(((O65Vec3f *)((s32 *)transformed + groundIndex))->y + (f32)particle->y);
+                D_2988->z = (s16)(((O65Vec3f *)((s32 *)transformed + groundIndex))->z + (f32)(particle->z + radius));
+                D_2988->r = particle->r;
+                D_2988->g = particle->g;
+                D_2988->b = particle->b;
+                D_2988->a = 0xFF;
+                D_2988++;
+                groundIndex += 3;
+            }
 
             if (remaining == 0) {
-                commands->w0 = 0x040000F8U |
-                    (((((u32)batchStart + 0x80000000U) & 6U) | 0xC0U) << 16);
-                commands->w1 = (u32)batchStart + 0x80000000U;
-                commands++;
-                commands->w0 = 0x05B100C0U;
-                commands->w1 = (u32)&D_80000000;
-                commands++;
+                O65_VERTEX(commands++, O65_K0(batchStart), 24, 0);
+                O65_POLYGON(commands++, D_80000000, 12, 1);
                 remaining = 6;
                 batchStart = D_2988;
             }
@@ -231,18 +230,8 @@ void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
     } while (particleIndex != 150);
 
     if (remaining != 6) {
-        s32 used = 6 - remaining;
-        s32 vertexCount = used * 4;
-        commands->w0 = 0x04000000U |
-            (((vertexCount * 8 | (((u32)batchStart + 0x80000000U) & 6U)) & 0xFFU) << 16) |
-            ((used * 40 + 8) & 0xFFFF);
-        commands->w1 = (u32)batchStart + 0x80000000U;
-        commands++;
-        commands->w0 = 0x05000000U |
-            (((((used * 2 - 1) * 16) | 1) & 0xFFU) << 16) |
-            ((used * 2 * 16) & 0xFFFF);
-        commands->w1 = (u32)&D_80000000;
-        commands++;
+        O65_VERTEX(commands++, O65_K0(batchStart), (6 - remaining) * 4, 0);
+        O65_POLYGON(commands++, D_80000000, (6 - remaining) * 2, 1);
     }
 
     *arg0 = commands;
@@ -250,16 +239,3 @@ void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
     func_overlay_065_F0000C38_18C4EA0(arg0, arg1, arg2);
     O65_MODE = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o065/overlay65UpdateParticles/func_overlay_065_F0000080_18C42E8.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay65UpdateParticles:start
- * symbol: overlay65UpdateParticles
- * score: 458/720 words
- * frame: 0xF8
- * relocations: 64
- * first-mismatch: +0x50
- * summary: Size closed 0 at frame 0xF8. Colour 267 probes floor 395 on one c8 radius. Cursor still one-behind. overlay65Initialize identities untouched.
- * PLATEAU-HANDOFF:overlay65UpdateParticles:end
- */

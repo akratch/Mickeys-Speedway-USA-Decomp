@@ -4560,8 +4560,21 @@ D_2F8C = 0x00002f8c;
 D_D18 = 0x00000d18;
 
 /* overlay 101: overlay101BuildPresentationA.c.o */
-D_32B8 = 0x000032b8;
-D_D2C = 0x00000d2c;
+gO101PresAAssetD2C = 0x00000d2c;
+gO101PresAFinalObject32B8 = 0x000032b8;
+gO101PresAInputs = 0x00000000;
+gO101PresANode20Count = 0x000001c8;
+gO101PresANode24Count = 0x000001d0;
+gO101PresANode32Count = 0x000001cc;
+gO101PresANodes20 = 0x00000200;
+gO101PresANodes24 = 0x00000540;
+gO101PresANodes32 = 0x00000340;
+gO101PresAOrderCount = 0x000001c4;
+gO101PresAOrderSlots = 0x000001c0;
+gO101PresARoot = 0x00000000;
+o101PresACreateCompactReloc = 0xf0000000;
+o101PresACreatorReloc = 0xf0000000;
+o101PresAResetReloc = 0xf0000000;
 
 /* overlay 101: overlay101BuildPresentationB.c.o */
 D_34E8 = 0x000034e8;

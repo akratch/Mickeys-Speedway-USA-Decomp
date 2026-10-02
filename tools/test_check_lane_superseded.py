@@ -54,7 +54,10 @@ class LiveQueueTests(unittest.TestCase):
                         "a friendly-named overlay candidate must read as queued")
 
     def test_the_queue_is_not_empty(self):
-        self.assertGreater(len(cls.live_queue()), 100)
+        # Guards against discovery collapsing (the pragma-name grep reported
+        # nearly everything as matched), not against the queue shrinking. The
+        # floor was 100 until matching took the queue to 98 on 2026-10-02.
+        self.assertGreater(len(cls.live_queue()), 10)
 
 
 if __name__ == "__main__":

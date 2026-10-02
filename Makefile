@@ -709,6 +709,14 @@ $(BUILD_DIR)/$(SRC_DIR)/main/fx.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/frontend_37D50.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/block_506D0.c.o: CFLAGS += -Wab,-r4300_mul
 
+# rcpFast3d.c on the same flag (2026-10-02, lane z-res). func_8002FB34 holds
+# two adjacent single-precision multiplies ahead of its texture loop; without
+# the flag as1 sinks both past the prim-colour packet and into the loop
+# guard's delay slot, with it they sit where the ROM has them and the function
+# is byte-exact. Every other function in the unit is unchanged by the flag
+# (`gmake verify` passes with the object rebuilt).
+$(BUILD_DIR)/$(SRC_DIR)/main/rcpFast3d.c.o: CFLAGS += -Wab,-r4300_mul
+
 # One overlay TU on the same evidence (2026-09-12, lane p9-tight). The flag
 # buys the same class change here: overlay1FindType47ByAngle goes 18 masked
 # words to 10 at size delta 0, and what it removes is the whole structural

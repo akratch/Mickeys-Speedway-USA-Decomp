@@ -1440,11 +1440,11 @@ void func_8001DCD0(s16 rotation, ControlVector3 *vector, s16 *pitch, s16 *yaw);
  * size delta 0 throughout.  The home set is now exact except for two compiler
  * temps (0x7C here against the target's 0x84 and 0x8C).
  *
- * Measured and REJECTED: merging pointIndex and collisionIndex into a single
- * index -- the target's `move s2,zero` sits on the collision loop's exit path,
- * which reads like one shared index, but the merge drops ten instructions
- * (size delta -40) and byte-exact to 288, so the target has at least two.
- * Hoisting either index reset to the previous loop's exit costs +4 words. */
+ * 2026-10-02: one shared index for all four loops is right after all.  On
+ * its own it was -40 bytes because a register freed by the merge let the
+ * count stay out of memory; the target spends that register on `rec`, a
+ * per-iteration copy of the walking record pointer that the tail reads after
+ * `record += 1`.  With both, 299 -> 224 at size delta 0. */
 s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     ControlVector3 *pointSource;
     u8 *pointDest;
@@ -1476,7 +1476,7 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     s16 spA2;
     s16 spA0;
     s32 pointIndex;
-    s32 collisionIndex;
+    CharControlGroundRecord *rec;
     f32 var_f4;
     f32 temp_f14;
     u32 temp_v0_2;
@@ -1510,12 +1510,13 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
             player->unk344 = 0;
             bit = 1;
             collisionMask = temp_v0 & 0x3FFFFFFF;
-            collisionIndex = 0;
+            pointIndex = 0;
             if (spB8 > 0) {
                 record = (CharControlGroundRecord *) records;
                 player320 = (u8 *) player;
                 player324 = (u8 *) player;
                 do {
+                    rec = record;
                     if ((collisionMask & 1) != 0) {
                         if (record->unk3D & 0x12) {
                             player->unk349 = (u8) (player->unk349 | bit);
@@ -1586,16 +1587,16 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
                             player->unk34A = (u8) (player->unk34A | bit);
                         }
                     }
-                    player320[0x320] = record->unk3C;
-                    *(s32 *) (player324 + 0x324) = record->unk38;
-                    player->unk344 |= record->unk38;
                     record += 1;
-                    collisionIndex += 1;
+                    player320[0x320] = rec->unk3C;
+                    *(s32 *) (player324 + 0x324) = rec->unk38;
+                    player->unk344 |= rec->unk38;
+                    pointIndex += 1;
                     player320 += 1;
                     player324 += 4;
                     bit = (bit * 2) & 0xFF;
                     collisionMask >>= 1;
-                } while (collisionIndex != spB8);
+                } while (pointIndex != spB8);
             }
         }
     }
@@ -1608,7 +1609,7 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
             sp104.z = 0.0f;
             sp104.y = -50.0f;
             mathOneFloatRPY((ControlTransform *) actor, &sp104.x);
-            collisionIndex = 0;
+            pointIndex = 0;
             if (spB8 > 0) {
                 pointSource = (ControlVector3 *) points;
                 do {
@@ -1623,8 +1624,8 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
                         sp118 += spEC.z;
                     }
                     pointSource += 1;
-                    collisionIndex += 1;
-                } while (collisionIndex != spB8);
+                    pointIndex += 1;
+                } while (pointIndex != spB8);
             }
         }
         pointSource = (ControlVector3 *) points;
@@ -2129,10 +2130,10 @@ void controlClearPlayerSetup(void) {
 
 /* PLATEAU-HANDOFF:func_8001DD70:start
  * symbol: func_8001DD70
- * score: 299/533 words
+ * score: 224/533 words
  * frame: 0x268
  * relocations: 23
- * first-mismatch: +0x54
- * summary: tools/frame_census.py named the cause the frame total hid: 19 slots only this candidate used and 24 only the target did, at an already-exact 0x268. Declaring to the target's ladder closed the home set -- one flat list in the target's order, records before points before radius, the spE0/sp104/spA4 triples spelled as single objects so uopt cannot constant-propagate the members whose address never escapes, spEC left as three separate locals so its tail members still hoist out of the accumulate loop -- and with record = records moved into the loop preheader (L110) and both != spB8 guards respelled < spB8, 433 falls to 299 with byte-exact 146 -> 390 and really different 131 -> 57. Only two compiler temps differ now, 0x7C against 0x84 and 0x8C. Rejected with measurements: one shared loop index is -40 bytes and 288 byte-exact, so the target has at least two; hoisting either index reset to the previous loop's exit is +4 words.
+ * first-mismatch: +0x168
+ * summary: One shared loop index plus a per-iteration record copy read after the step: 299 to 224 at delta 0. Left: records address web coloured s4, bit not split.
  * PLATEAU-HANDOFF:func_8001DD70:end
  */

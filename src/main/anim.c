@@ -2507,9 +2507,13 @@ extern f32 D_8008420C;
  * -b and 2a exactly where the target reuses their homes; the doubled second
  * position is an inline sum. Assigning the vector pointers before the
  * flags test reproduces the target's pointer-register vector access
- * (+12 bytes, same score). Left: the target keeps arg1 in s0 (forcing that
- * colour alone reaches size -8), spills arg0 at entry, rematerializes the
- * position pointers after the quadratic, and declares four more homes.
+ * (+12 bytes, same score). An empty `if (1) { }` region between the radius
+ * sum and `hit = 0` (lane p-anim3, 366 at +4 to 349 at size 0) homes arg0
+ * at entry as the target does (`hit` takes a0, so arg0 is left uncoloured);
+ * placed anywhere after `hit = 0` it is inert. Left: the target keeps arg1
+ * in s0 and hit in t0, defines the position pointers at entry (v0, a0)
+ * where this candidate rematerializes them per block, and declares four
+ * more homes (frame 0xD8 against 0xC0).
  */
 s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                   s32 arg2, AnimCollisionShape *arg3,
@@ -2542,6 +2546,8 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     f32 y2;
 
     radiusSq = arg1->radius + arg3->radius;
+    if (1) {
+    }
     hit = 0;
     firstPoint = &arg1->position;
     radiusSq = radiusSq * radiusSq;
@@ -3929,11 +3935,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80054B3C:start
  * symbol: func_80054B3C
- * score: 366 differing words
+ * score: 349 differing words
  * frame: 0xC0
  * relocations: 3
  * first-mismatch: +0x0
- * summary: 374 to 366, size +40 to +4: home-ladder locals, dead carriers hold 4a/b*b/-b/2a. Left: arg1 in s0, arg0 entry spill, 4 more homes
+ * summary: 366 at +4 to 349 at size 0: empty region before hit = 0 homes arg0 at entry. Left: arg1 s0, hit t0, entry pointer webs, 4 homes
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

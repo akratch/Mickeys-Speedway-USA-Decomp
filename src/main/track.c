@@ -4659,7 +4659,17 @@ u32 func_8001357C(f32 arg0, f32 arg1, f32 *arg2, s32 arg3, void *arg4) {
 #ifdef NON_MATCHING
 /* PROVENANCE: JFG's public track.c retains this collision collector as
  * assembly; Mickey's segment, batch, plane and hit-list accesses are used. */
-/* 70 masked words at size delta 0 and the target's 0x140 frame (163 -> 83
+/* 45 masked words at size delta 0, frame exact (70 -> 45, 2026-10-02 lane
+ * n-track): the compare mask is a block-scope local of the segment loop (its
+ * spill cell is then the target's 0x90), the three plane coefficients are
+ * locals read after the mathXZInTri call and the height is stored straight
+ * into the hit (f0/f2/f12 webs, ring div/neg), the two unused pads and the
+ * height local are gone and `surface` is declared after segmentNumber (homes
+ * 0x104/0x100/0xAC), vertex addresses are spelled offset-first, and the hit
+ * flags are stored before the texture flag. Left: the sort loop's a0/a1
+ * roles (a save tie, 300 vs 300, broken by web number; forcing it is worth
+ * 31 words), surface-base load order, the batch-flag AND operand order.
+ * Previous: 70 masked words at size delta 0 and the target's 0x140 frame (163 -> 83
  * 2026-10-01 lane d-res2, 83 -> 70 lane e-res3: the sort is a for loop with
  * `orderIndex = 0; changed = 1;` ahead of it, which fixes the loop entry
  * order; the a0/a1 roles of the compare webs are still swapped).
@@ -4681,29 +4691,28 @@ s32 func_8001398C(f32 arg0, f32 arg1, s32 arg2, void **arg3) {
         u8 pad0D[3];
     } TrackCollisionHit;
 
+    f32 px;
+    f32 pz;
+    f32 pd;
     s32 x;
     s32 z;
-    s32 segmentIndex;
     s32 batchNumber;
     s32 triangleIndex;
-    s32 compareMask;
     u32 batchFlags;
     s8 textureFlag;
     s32 resultCount;
     s32 orderIndex;
-    s32 orderCount;
     s32 changed;
     s32 firstTriangle;
     s32 lastTriangle;
     s32 segmentCount;
     s32 segmentNumber;
+    TrackPlane *surface;
     s16 textureOffset;
-    f32 height;
     TrackSegment *segment;
     TrackBatch *batch;
     TrackTriangle *triangle;
     s16 segmentIndices[32];
-    TrackPlane *surface;
     TrackCollisionHit *hit;
     TrackVertex *vertex0;
     TrackVertex *vertex1;
@@ -4723,6 +4732,7 @@ s32 func_8001398C(f32 arg0, f32 arg1, s32 arg2, void **arg3) {
     segmentNumber = 0;
     if (segmentCount > 0) {
         do {
+        s32 compareMask;
         segment = &D_800792E8->segments[segmentIndices[segmentNumber]];
         compareMask = getXZCompareMask(
             &D_800792E8->segmentBounds[segmentIndices[segmentNumber]], x, z, x, z);
@@ -4758,27 +4768,22 @@ s32 func_8001398C(f32 arg0, f32 arg1, s32 arg2, void **arg3) {
                                     ((u8 *) segment->vertexData +
                                      (triangleIndex * 0x10));
                                 vertex0 = (TrackVertex *)
-                                    ((u8 *) segment->lightData +
-                                     ((triangle->vertex0 + textureOffset) * 0xA));
+                                    (((triangle->vertex0 + textureOffset) * 0xA) + (u8 *) segment->lightData);
                                 vertex1 = (TrackVertex *)
-                                    ((u8 *) segment->lightData +
-                                     ((triangle->vertex1 + textureOffset) * 0xA));
+                                    (((triangle->vertex1 + textureOffset) * 0xA) + (u8 *) segment->lightData);
                                 vertex2 = (TrackVertex *)
-                                    ((u8 *) segment->lightData +
-                                     ((triangle->vertex2 + textureOffset) * 0xA));
+                                    (((triangle->vertex2 + textureOffset) * 0xA) + (u8 *) segment->lightData);
                                 if (mathXZInTri(x, z, vertex0, vertex1,
                                                 vertex2) != 0) {
-                                    height = -(((surface->x * arg0) +
-                                                     (surface->z * arg1) +
-                                                     surface->distance) /
-                                                    planeHeight);
-                                    hit = (TrackCollisionHit *) D_800C9B90 +
-                                          resultCount;
-                                    hit->height = height;
+                                    px = surface->x;
+                                    pz = surface->z;
+                                    pd = surface->distance;
+                                    hit = (TrackCollisionHit *) D_800C9B90 + resultCount;
+                                    hit->height = -(((px * arg0) + (pz * arg1) + pd) / planeHeight);
                                     hit->surface = surface;
                                     resultCount++;
-                                    hit->textureFlag = textureFlag;
                                     hit->flags = segment->batches[batchNumber].flags;
+                                    hit->textureFlag = textureFlag;
                                     if (resultCount >= 0x14) {
                                         triangleIndex = lastTriangle;
                                         batchNumber = segment->batchCount;
@@ -5630,11 +5635,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001398C:start
  * symbol: func_8001398C
- * score: 70/330 words
+ * score: 45/330 words
  * frame: 0x140
  * relocations: 21
  * first-mismatch: +0x15C
- * summary: Sort loop reshaped (83->70); open: compare webs a0/a1 roles, plane loads in ring temps not f0/f2/f12.
+ * summary: Plane locals, block mask, pads, decl order (70->45); open: sort a0/a1 save tie 300/300 by web number, worth 31.
  * PLATEAU-HANDOFF:func_8001398C:end
  */
 

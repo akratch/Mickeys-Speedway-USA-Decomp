@@ -10,28 +10,20 @@ typedef struct Overlay20InitVertex {
     u8 alpha;
 } Overlay20InitVertex;
 
-typedef struct Overlay20InitTile {
-    u8 command0;
-    u8 index0;
-    u8 index1;
-    u8 index9;
-    s16 x0a;
-    s16 y0a;
-    s16 x1a;
-    s16 y0b;
-    s16 x0b;
-    s16 y1a;
-    u8 command1;
-    u8 index1b;
-    u8 index9b;
-    u8 index10;
-    s16 x1b;
-    s16 y0c;
-    s16 x0c;
-    s16 y1b;
-    s16 x1c;
-    s16 y1c;
-} Overlay20InitTile;
+typedef struct Overlay20TexCoords {
+    s16 u;
+    s16 v;
+} Overlay20TexCoords;
+
+typedef struct Overlay20Triangle {
+    u8 flags;
+    u8 vi0;
+    u8 vi1;
+    u8 vi2;
+    Overlay20TexCoords uv0;
+    Overlay20TexCoords uv1;
+    Overlay20TexCoords uv2;
+} Overlay20Triangle;
 
 typedef struct Overlay20InitTexture {
     u8 pad00[6];
@@ -55,48 +47,55 @@ typedef struct Overlay20InitGrid {
     f32 positiveScale;
     f32 displacementScale;
     Overlay20InitVertex *buffers[2];
-    Overlay20InitTile *tiles;
+    Overlay20Triangle *triangles;
     Overlay20InitTexture *texture;
 } Overlay20InitGrid;
 
 extern void *func_overlay_020_F0000000_18765D8();
 
-/* PLATEAU (2026-08-26): workbench structure-mismatch; best 256/270 words, first +0x0.
- * Flag lattice, top-level texture lifetime, cursor, command/store, and saved-register probes did not close it.
- * Candidate remains 6 instructions short with a 0x38 frame versus target 0x40. */
+/*
+ * Rewritten from the listing (lane w2-ovld, 2026-10-02): the vertex and
+ * triangle buffers are fetched into one variable and walked through a second
+ * (the target copies the buffer into the walker in the null test's delay
+ * slot), the triangles are DKR's 16-byte Triangle pairs, and the second
+ * triangle's indices come from `index++` (the target computes index + 9 once
+ * and copies it for the second triangle). 251 masked at size delta -4,
+ * against 256 at -24 for the inherited body. Open: the target keeps the
+ * texture in fp and computes all four vertex indices before the first
+ * division; here they are computed at their stores.
+ */
 #ifdef NON_MATCHING
 Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
     Overlay20InitVertex *vertex;
-    Overlay20InitTile *tile;
-    s32 bufferIndex;
-    s32 vertexBytes;
-    s32 tileBytes;
-    s32 column;
+    Overlay20Triangle *tri;
+    Overlay20InitVertex *buffer;
+    Overlay20Triangle *tris;
+    Overlay20InitTexture *texture;
+    s32 size;
+    s32 i;
     s32 row;
-    s32 columnNext;
-    s32 rowNext;
-    s32 textureColumn;
-    s32 x0;
-    s32 x1;
-    s32 y0;
-    s32 y1;
+    s32 col;
+    s32 index;
+    s32 u0;
+    s32 u1;
+    s32 v0;
+    s32 v1;
 
-    vertexBytes = (grid->columns + 1) * (grid->rows + 1) *
-                  sizeof(Overlay20InitVertex);
-    for (bufferIndex = 0; bufferIndex < 2; bufferIndex++) {
-        vertex = grid->buffers[bufferIndex];
-        if (vertex == NULL) {
-            vertex = func_overlay_020_F0000000_18765D8(vertexBytes, 0x87);
-            grid->buffers[bufferIndex] = vertex;
+    size = (grid->columns + 1) * (grid->rows + 1) * sizeof(Overlay20InitVertex);
+    texture = grid->texture;
+    for (i = 0; i < 2; i++) {
+        buffer = grid->buffers[i];
+        if (buffer == NULL) {
+            buffer = func_overlay_020_F0000000_18765D8(size, 0x87);
+            grid->buffers[i] = buffer;
         }
+        vertex = buffer;
         if (vertex != NULL) {
             for (row = 0; row <= grid->rows; row++) {
-                for (column = 0; column <= grid->columns; column++) {
-                    vertex->x = grid->minX +
-                                ((column * grid->width) / grid->columns);
+                for (col = 0; col <= grid->columns; col++) {
+                    vertex->x = grid->minX + (col * grid->width) / grid->columns;
                     vertex->value = grid->baseValue;
-                    vertex->y = grid->minY +
-                                ((row * grid->height) / grid->rows);
+                    vertex->y = grid->minY + (row * grid->height) / grid->rows;
                     vertex->red = 0xFF;
                     vertex->green = 0xFF;
                     vertex->blue = 0xFF;
@@ -107,60 +106,49 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
         }
     }
 
-    tileBytes = (grid->columns * grid->rows) << 5;
-    tile = grid->tiles;
-    if (tile == NULL) {
-        tile = func_overlay_020_F0000000_18765D8(tileBytes, 0x87);
-        grid->tiles = tile;
+    size = (grid->columns * grid->rows) << 5;
+    tris = grid->triangles;
+    if (tris == NULL) {
+        tris = func_overlay_020_F0000000_18765D8(size, 0x87);
+        grid->triangles = tris;
     }
-    if (tile != NULL) {
+    tri = tris;
+    if (tri != NULL) {
         for (row = 0; row < grid->rows; row++) {
-            for (column = 0; column < grid->columns; column++) {
-                columnNext = column + 1;
-                rowNext = row + 1;
-                textureColumn = column & 7;
-
-                x0 = (((grid->textureScaleX * column) *
-                       grid->texture->width) << 5) /
-                     grid->columns;
-                x1 = (((grid->textureScaleX * columnNext) *
-                       grid->texture->width) << 5) /
-                     grid->columns;
-                y0 = (((grid->textureScaleY * row) *
-                       grid->texture->height) << 5) /
-                     grid->rows;
-                y1 = (((grid->textureScaleY * rowNext) *
-                       grid->texture->height) << 5) /
-                     grid->rows;
-
-                tile->command0 = 0x40;
-                tile->index0 = textureColumn;
-                tile->index1 = textureColumn + 1;
-                tile->index9 = textureColumn + 9;
-                tile->x0a = x0;
-                tile->y0a = y0;
-                tile->x1a = x1;
-                tile->y0b = y0;
-                tile->x0b = x0;
-                tile->y1a = y1;
-                tile->command1 = 0x40;
-                tile->index1b = textureColumn + 1;
-                tile->index9b = textureColumn + 9;
-                tile->index10 = textureColumn + 10;
-                tile->x1b = x1;
-                tile->y0c = y0;
-                tile->x0c = x0;
-                tile->y1b = y1;
-                tile->x1c = x1;
-                tile->y1c = y1;
-                tile++;
+            for (col = 0; col < grid->columns; col++) {
+                index = col & 7;
+                u0 = ((grid->textureScaleX * col * texture->width) << 5) / grid->columns;
+                u1 = ((grid->textureScaleX * (col + 1) * texture->width) << 5) / grid->columns;
+                v0 = ((grid->textureScaleY * row * texture->height) << 5) / grid->rows;
+                v1 = ((grid->textureScaleY * (row + 1) * texture->height) << 5) / grid->rows;
+                tri[0].flags = 0x40;
+                tri[0].vi0 = index;
+                tri[0].vi1 = index + 1;
+                tri[0].vi2 = index + 9;
+                tri[0].uv0.u = u0;
+                tri[0].uv0.v = v0;
+                tri[0].uv1.u = u1;
+                tri[0].uv1.v = v0;
+                tri[0].uv2.u = u0;
+                tri[0].uv2.v = v1;
+                tri[1].flags = 0x40;
+                index++;
+                tri[1].vi0 = index;
+                tri[1].vi1 = index + 8;
+                tri[1].vi2 = index + 9;
+                tri[1].uv0.u = u1;
+                tri[1].uv0.v = v0;
+                tri[1].uv1.u = u0;
+                tri[1].uv1.v = v1;
+                tri[1].uv2.u = u1;
+                tri[1].uv2.v = v1;
+                tri += 2;
             }
         }
     }
 
     grid->bufferIndex = 1;
-    if ((grid->buffers[0] == NULL) || (grid->buffers[1] == NULL) ||
-        (grid->tiles == NULL)) {
+    if (grid->buffers[0] == NULL || grid->buffers[1] == NULL || grid->triangles == NULL) {
         func_overlay_020_F0000000_18765D8(grid);
         grid = NULL;
     }
@@ -172,10 +160,10 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
 
 /* PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:start
  * symbol: func_overlay_020_F000038C_1876964
- * score: 256 differing words
- * frame: -0x38
+ * score: 251/270 words
+ * frame: 0x38
  * relocations: 3
  * first-mismatch: +0x0
- * summary: Target is 270 words/frame 0x40 versus 264/frame 0x38; all three call relocation sites remain shifted.
+ * summary: Listing rewrite (buffer/walker pair, Triangle pairs, index++): 256 at -24 to 251 at -4. Open: fp texture, early vertex indices.
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

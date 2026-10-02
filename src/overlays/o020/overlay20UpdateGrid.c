@@ -47,165 +47,82 @@ extern Overlay20Entry *gOverlay20Entries[];
 extern f32 ext_o0_6ec00(f32 value);
 extern f32 func_8002A8C0(s32 angle);
 
-#ifndef OVERLAY20_OVERLAP_CAPACITY
-#define OVERLAY20_OVERLAP_CAPACITY 50
-#endif
-#ifdef REGISTER_LOCALS
-#define O20_REGISTER register
-#else
-#define O20_REGISTER
-#endif
-
 /*
- * The overlap pointer is not a separate local: indexing the array directly
- * avoids the spill, and dx/dy/amplitude are written inline. Declared homes
- * still pad the frame to 0x170 against the target 0x140. register, a
- * scan-only pointer, and dropping minX/minY do not close it.
+ * Matched (lane w2-ovld, 2026-10-02) by rewriting from the listing: one
+ * index both scans the entry list and counts the vertices down (a separate
+ * scan index leaves a dead `i = 0` web that takes t2 out of the temp ring),
+ * the inner loop has its own index, maxX/maxY re-read the grid origin, the
+ * vertex buffer is fetched before the vertex count, and the overlap array is
+ * sized for the 32 entries overlay20ConfigureEntry allows, declared after the
+ * scalars (two of which are unused) so it lands at sp+0x6C in the 0x140 frame.
  */
-#ifdef NON_MATCHING
 void overlay20UpdateGrid(Overlay20Grid *grid) {
-    Overlay20Entry *overlaps[OVERLAY20_OVERLAP_CAPACITY];
-#ifndef SCOPED_LOCALS
-    O20_REGISTER Overlay20Entry **cursor;
-    O20_REGISTER Overlay20Entry **end;
-    O20_REGISTER Overlay20Entry **overlapCursor;
-    O20_REGISTER Overlay20Entry *entry;
-    O20_REGISTER Overlay20Vertex *vertex;
-    O20_REGISTER s16 minX;
-    O20_REGISTER s16 minY;
-#ifdef EXPLICIT_BOUNDS
-    O20_REGISTER s32 maxX;
-    O20_REGISTER s32 maxY;
-    O20_REGISTER s32 entryCount;
-#endif
-    O20_REGISTER s16 vertexX;
-    O20_REGISTER s16 vertexY;
-    O20_REGISTER s32 overlapCount;
-    O20_REGISTER s32 remaining;
-    O20_REGISTER s32 overlapIndex;
-    O20_REGISTER f32 total;
-    O20_REGISTER f32 distanceSquared;
-    O20_REGISTER f32 distance;
-    O20_REGISTER f32 output;
-    O20_REGISTER s8 color;
-#else
-    O20_REGISTER s32 overlapCount;
-#endif
+    Overlay20Entry *entry;
+    Overlay20Vertex *vertex;
+    s32 minX;
+    s32 minY;
+    s32 maxX;
+    s32 maxY;
+    s32 pad0;
+    s32 overlapCount;
+    s32 i;
+    s32 vertexX;
+    s32 vertexY;
+    f32 total;
+    f32 dx;
+    f32 dy;
+    f32 distanceSquared;
+    f32 distance;
+    f32 amplitude;
+    f32 output;
+    s32 color;
+    s32 pad1;
+    s32 j;
+    Overlay20Entry *overlaps[32];
 
-#ifdef SCOPED_LOCALS
-    {
-    O20_REGISTER Overlay20Entry **cursor;
-    O20_REGISTER Overlay20Entry **end;
-    O20_REGISTER Overlay20Entry *entry;
-    O20_REGISTER s16 minX;
-    O20_REGISTER s16 minY;
-#ifdef EXPLICIT_BOUNDS
-    O20_REGISTER s32 maxX;
-    O20_REGISTER s32 maxY;
-    O20_REGISTER s32 entryCount;
-#endif
-#endif
     grid->bufferIndex ^= 1;
-#ifdef EXPLICIT_BOUNDS
-    entryCount = gOverlay20EntryCount;
-#endif
     minX = grid->minX;
     minY = grid->minY;
+    maxX = grid->minX + grid->width;
+    maxY = grid->minY + grid->height;
     overlapCount = 0;
-
-#ifdef EXPLICIT_BOUNDS
-    maxX = minX + grid->width;
-    maxY = minY + grid->height;
-    if (entryCount > 0) {
-#else
-    if (gOverlay20EntryCount > 0) {
-#endif
-        cursor = gOverlay20Entries;
-#ifdef EXPLICIT_BOUNDS
-        end = cursor + entryCount;
-#else
-        end = cursor + gOverlay20EntryCount;
-#endif
-#ifndef SCAN_TOP_LOAD
-        entry = *cursor;
-#endif
-        do {
-#ifdef SCAN_TOP_LOAD
-            entry = *cursor;
-#endif
-            cursor++;
-#ifdef EXPLICIT_BOUNDS
-            if (entry != 0 && maxX >= entry->minX && maxY >= entry->minY &&
-#else
-            if (entry != 0 && minX + grid->width >= entry->minX &&
-                minY + grid->height >= entry->minY &&
-#endif
-                entry->maxX >= minX && entry->maxY >= minY) {
-                overlaps[overlapCount++] = entry;
-            }
-#if defined(EXPLICIT_BOUNDS) && !defined(SCAN_TOP_LOAD)
-            entry = *cursor;
-#elif !defined(EXPLICIT_BOUNDS) && !defined(SCAN_TOP_LOAD)
-            if (cursor < end) {
-                entry = *cursor;
-            }
-#endif
-        } while (cursor < end);
+    for (i = 0; i < gOverlay20EntryCount; i++) {
+        entry = gOverlay20Entries[i];
+        if (entry != NULL && entry->minX <= maxX && entry->minY <= maxY &&
+            entry->maxX >= minX && entry->maxY >= minY) {
+            overlaps[overlapCount++] = entry;
+        }
     }
-#ifdef SCOPED_LOCALS
-    }
-    {
-    O20_REGISTER Overlay20Entry **overlapCursor;
-    O20_REGISTER Overlay20Entry *entry;
-    O20_REGISTER Overlay20Vertex *vertex;
-    O20_REGISTER s16 vertexX;
-    O20_REGISTER s16 vertexY;
-    O20_REGISTER s32 remaining;
-    O20_REGISTER s32 overlapIndex;
-    O20_REGISTER f32 total;
-    O20_REGISTER f32 distanceSquared;
-    O20_REGISTER f32 distance;
-    O20_REGISTER f32 amplitude;
-    O20_REGISTER f32 output;
-    O20_REGISTER s8 color;
-#endif
 
-    remaining = (grid->columnsMinusOne + 1) * (grid->rowsMinusOne + 1);
     vertex = grid->buffers[grid->bufferIndex];
-
+    i = (grid->columnsMinusOne + 1) * (grid->rowsMinusOne + 1);
     if (overlapCount == 0) {
-        while (remaining-- != 0) {
+        while (i--) {
+            vertex->value = grid->baseValue;
+            vertex->red = grid->baseColor;
+            vertex->green = grid->baseColor;
+            vertex->blue = grid->baseColor;
             vertex++;
-            vertex[-1].value = grid->baseValue;
-            vertex[-1].red = grid->baseColor;
-            vertex[-1].green = grid->baseColor;
-            vertex[-1].blue = grid->baseColor;
         }
     } else {
-        while (remaining-- != 0) {
+        while (i--) {
             vertexX = vertex->x;
             vertexY = vertex->y;
             total = 0.0f;
-            overlapIndex = 0;
-            if (overlapCount > 0) {
-                overlapCursor = overlaps;
-                do {
-                    entry = *overlapCursor;
-                    if (entry->minX < vertexX && entry->minY < vertexY &&
-                        vertexX < entry->maxX && vertexY < entry->maxY) {
-                        distanceSquared = ((f32)vertexX - entry->x) * ((f32)vertexX - entry->x) +
-                            ((f32)vertexY - entry->y) * ((f32)vertexY - entry->y);
-                        if (distanceSquared < entry->radiusSquared) {
-                            distance = ext_o0_6ec00(distanceSquared);
-                            total += func_8002A8C0(entry->phase + (s32)(entry->frequency * distance)) *
-                                ((entry->radius - distance) * entry->radiusRatio);
-                        }
+            for (j = 0; j < overlapCount; j++) {
+                entry = overlaps[j];
+                if (entry->minX < vertexX && entry->minY < vertexY &&
+                    vertexX < entry->maxX && vertexY < entry->maxY) {
+                    dx = vertexX - entry->x;
+                    dy = vertexY - entry->y;
+                    distanceSquared = dx * dx + dy * dy;
+                    if (distanceSquared < entry->radiusSquared) {
+                        distance = ext_o0_6ec00(distanceSquared);
+                        amplitude = (entry->radius - distance) * entry->radiusRatio;
+                        total += func_8002A8C0(entry->phase + (s32)(entry->frequency * distance)) * amplitude;
                     }
-                    overlapIndex++;
-                    overlapCursor++;
-                } while (overlapIndex != overlapCount);
+                }
             }
-
             output = grid->displacementScale * total;
             if (total < 0.0f) {
                 if (output <= -1.0f) {
@@ -218,29 +135,12 @@ void overlay20UpdateGrid(Overlay20Grid *grid) {
             } else {
                 output *= grid->positiveScale;
             }
-
             color = grid->baseColor + (s32)output;
+            vertex->value = grid->baseValue + (s32)total;
+            vertex->red = color;
+            vertex->green = color;
+            vertex->blue = color;
             vertex++;
-            vertex[-1].value = grid->baseValue + (s32)total;
-            vertex[-1].red = color;
-            vertex[-1].green = color;
-            vertex[-1].blue = color;
         }
     }
-#ifdef SCOPED_LOCALS
-    }
-#endif
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o020/overlay20UpdateGrid/func_overlay_020_F0000A68_1877040.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay20UpdateGrid:start
- * symbol: overlay20UpdateGrid
- * score: 173 differing words
- * frame: 0x170
- * relocations: 6
- * first-mismatch: +0x0
- * summary: 173 words, delta 0, frame 0x170. missing-CSE pair is the overlapBase spill at the entryCount test line; dx/dy/amplitude inlines held size, minX/minY and pointer restore regressed. Stall: size is closed, frame stays 0x170 against 0x140.
- * PLATEAU-HANDOFF:overlay20UpdateGrid:end
- */

@@ -75,12 +75,17 @@ extern void func_overlay_001_F0002AA4_184EE84(s32 arg0);
  * value), with the relocation identities read per site: the resident rank
  * order and weight tables, the per-object pair table, the mode byte, and the
  * resident callees (levelGetLevel, func_80005750, func_8005830C, sqrtf,
- * func_800291D8, func_80005820). The outer pair state and the bottom loop's
- * state are one local (its home at +0x7C), the inner and rank-loop states
- * another; locals in the target's frame order. 433 to 186 masked words, size
- * -16 to 0, frame 0xB0 exact. Open: a temp-ring offset from +0xE4 and the
- * sort's float and a0/a1 colours (register_census: 11 windows, not one
- * ring phase). */
+ * func_800291D8, func_80005820). 433 to 186 masked words, size -16 to 0,
+ * frame 0xB0 exact.
+ * 2026-10-02 p-ovl8: 186 to 6 by giving each region its own locals (L131
+ * and checklist 14): the pair loop alone uses `object`; the anchor, rank and
+ * leader regions read their object into `other` and its state into
+ * `otherState` (the leader too, held in s4 like the pair loop's); the sort
+ * reads `swap` before the compare; the bottom loop's previous-rank state is
+ * its own `prev` (a0) and its split index its own `k`, with `dz` inlined so
+ * the local count (and the +0x54 spill cell) is unchanged. Open: `sum = 0`
+ * is emitted before the bottom loop's first call, so as1 fills that jal's
+ * delay slot with it instead of the argument copy (6 words, +0x60C). */
 #ifdef NON_MATCHING
 void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
     void *level;
@@ -96,13 +101,13 @@ void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
     s32 sum;
     f32 anchor;
     O1RankState *state;
+    s32 k;
     O1RankState *otherState;
     f32 step;
     f32 swap;
     u8 swapIndex;
-    f32 dx;
-    f32 dz;
     s32 delta;
+    O1RankState *prev;
 
     level = levelGetLevel();
     list = func_80005750(&count);
@@ -170,9 +175,8 @@ void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
                 reverse = &D_1BA8[otherState->index][state->index];
                 if (i != j) {
                     if (pair->valid == 0) {
-                        dx = object->x - other->x;
-                        dz = object->z - other->z;
-                        pair->distance = sqrtf(dx * dx + dz * dz);
+                        pair->distance = sqrtf((object->x - other->x) * (object->x - other->x) +
+                                               (object->z - other->z) * (object->z - other->z));
                         pair->angle = func_overlay_001_F00000E4_184C4C4(D_1DA0_State->offset, otherState->offset);
                         reverse->distance = pair->distance;
                         reverse->angle = -pair->angle;
@@ -191,8 +195,8 @@ void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
             changed = 0;
             i = count - 1;
             while (i--) {
-                if (gO1RankWeights[i] < gO1RankWeights[i + 1]) {
-                    swap = gO1RankWeights[i];
+                swap = gO1RankWeights[i];
+                if (swap < gO1RankWeights[i + 1]) {
                     gO1RankWeights[i] = gO1RankWeights[i + 1];
                     gO1RankWeights[i + 1] = swap;
                     swapIndex = gO1RankOrder[i];
@@ -206,8 +210,8 @@ void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
         anchor = gO1RankWeights[0];
         i = count;
         while (i--) {
-            object = list[gO1RankOrder[i]];
-            otherState = object->state;
+            other = list[gO1RankOrder[i]];
+            otherState = other->state;
             if (!(otherState->flags & 1)) {
                 anchor = (f32)(otherState->lap * D_1D8C) + otherState->offset;
                 break;
@@ -217,8 +221,8 @@ void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
         step = D_1DB8 / (f32)D_1D8C;
         i = count;
         while (i--) {
-            object = list[gO1RankOrder[i]];
-            otherState = object->state;
+            other = list[gO1RankOrder[i]];
+            otherState = other->state;
             if (gO1RankMode == 2) {
                 otherState->spacing = (gO1RankWeights[0] - gO1RankWeights[i]) * step + D_1DB0;
             } else {
@@ -234,10 +238,11 @@ void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
             }
         }
 
-        object = list[gO1RankOrder[0]];
-        if (D_1D74 != object->state->id) {
-            D_1D74 = object->state->id;
-            D_1D98 = object;
+        other = list[gO1RankOrder[0]];
+        otherState = other->state;
+        if (D_1D74 != otherState->id) {
+            D_1D74 = otherState->id;
+            D_1D98 = other;
         }
     }
 
@@ -249,17 +254,16 @@ void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
         if (D_1DC0[i] != 0) {
             state = func_80005820(i)->state;
             sum = 0;
-            j = 0;
             if (state->rank != 0) {
-                otherState = func_80005820(gO1RankOrder[state->rank - 1])->state;
-                for (j = 0; j < state->lap; j++) {
-                    sum += otherState->split[j];
+                prev = func_80005820(gO1RankOrder[state->rank - 1])->state;
+                for (k = 0; k < state->lap; k++) {
+                    sum += prev->split[k];
                 }
                 delta = state->total - sum;
                 if (delta >= -0x7FFE && delta < 0x7FFF) {
-                    if (state->rank == 1 && otherState->lap < 3) {
-                        otherState->gap = delta;
-                        otherState->gapTimer = 0xB4;
+                    if (state->rank == 1 && prev->lap < 3) {
+                        prev->gap = delta;
+                        prev->gapTimer = 0xB4;
                     }
                     state->gap = -delta;
                     state->gapTimer = 0xB4;
@@ -274,10 +278,10 @@ void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
 
 /* PLATEAU-HANDOFF:func_overlay_001_F0002B4C_184EF2C:start
  * symbol: func_overlay_001_F0002B4C_184EF2C
- * score: 186/451 words
+ * score: 6/451 words
  * frame: 0xB0
  * relocations: 63
- * first-mismatch: +0xE4
- * summary: Listing rewrite in while(i--) shape with per-site identities: 433 to 186 masked, size -16 to 0, frame exact; temp ring offset from +0xE4 open.
+ * first-mismatch: +0x60C
+ * summary: Per-region locals (other/otherState, prev, k, swap first): 186 to 6; open: sum = 0 lands in the bottom jal delay slot instead of the a0 copy.
  * PLATEAU-HANDOFF:func_overlay_001_F0002B4C_184EF2C:end
  */

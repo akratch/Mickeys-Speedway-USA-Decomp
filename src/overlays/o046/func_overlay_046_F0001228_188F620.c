@@ -105,19 +105,16 @@ extern void func_800349A4(void *commands, void *texture, s32 flags, s32 paramete
 
 #define O46_PHYSICAL(p) ((u32)((u8 *)(p) + 0x80000000))
 
-/* 2026-10-02 o-ovl7: rewritten from the target listing in the matched
- * sibling func_overlay_046_F0000874_188EC6C's shape: the draw point is a
- * 0x34-byte stack struct (its +0x28 is the 0.0f store; the 0x3C particle
- * type leaves the frame 8 bytes long), the display list, matrix and vertex
- * cursors are passed by address, each command is one packet macro
- * (gDPSetPrimColor and the track.c vertex/polygon forms), the emitter is read
- * through D_1450 at every use, the spawn and draw loops are indexed by i (the
- * dead `or s6,zero,zero` is the draw loop's i = 0), the spawn search ends
- * with `j = 200`, and the batch size is if/else with the 16 arm first.
- * 415 masked words at -96 to 8 at 0, frame 0xF0 exact. Open: the batch
- * macros' n+2 web takes a1 because the polygon macro's block-scoped _g web
- * (same save, lower web number) takes a0 first; the target has n+2 in a0. */
-#ifdef NON_MATCHING
+/* Overlay 46 text +0x1228..+0x195C, the trail and spark draw. Matched
+ * 2026-10-02 (lanes o-ovl7, p-ovl8) from 415 masked words at -96, rewritten
+ * from the target listing in the matched sibling
+ * func_overlay_046_F0000874_188EC6C's shape: the draw point is a 0x34-byte
+ * stack struct, the cursors are passed by address, each command is one
+ * packet macro, the emitter is read through D_1450 at every use, and the
+ * spawn and draw loops are indexed. The last 8 words were the batch vertex
+ * count n+2: it is a variable k assigned on its own line (a0 in the loop),
+ * and the remainder block spells `count % 16` at each use with no variable,
+ * so its k web is numbered ahead of the expression webs (v1). */
 void func_overlay_046_F0001228_188F620(s32 updateRate) {
     Overlay46TrailVertex *vertex;
     s32 i;
@@ -128,6 +125,7 @@ void func_overlay_046_F0001228_188F620(s32 updateRate) {
     f32 halfY;
     Overlay46DrawPoint point;
     s32 count;
+    s32 k;
 
     if (D_19C < D_494) {
         D_494 -= updateRate;
@@ -207,15 +205,16 @@ void func_overlay_046_F0001228_188F620(s32 updateRate) {
         } else {
             j = remaining;
         }
-        O46_SP_VERTEX(gDisplayListHead++, O46_PHYSICAL(vertex), j + 2, 0);
+        k = j + 2;
+        O46_SP_VERTEX(gDisplayListHead++, O46_PHYSICAL(vertex), k, 0);
         O46_SP_POLYGON(gDisplayListHead++, O46_PHYSICAL(D_230), j, 1);
         remaining -= j;
         vertex += j;
     }
-    j = count % 16;
-    if (j != 0) {
-        O46_SP_VERTEX(gDisplayListHead++, O46_PHYSICAL(vertex), j + 2, 0);
-        O46_SP_POLYGON(gDisplayListHead++, O46_PHYSICAL(D_230), j, 1);
+    if (count % 16 != 0) {
+        k = count % 16 + 2;
+        O46_SP_VERTEX(gDisplayListHead++, O46_PHYSICAL(vertex), k, 0);
+        O46_SP_POLYGON(gDisplayListHead++, O46_PHYSICAL(D_230), count % 16, 1);
     }
 
     if (D_2718 > 0) {
@@ -243,16 +242,3 @@ void func_overlay_046_F0001228_188F620(s32 updateRate) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o046/func_overlay_046_F0001228_188F620/func_overlay_046_F0001228_188F620.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_046_F0001228_188F620:start
- * symbol: func_overlay_046_F0001228_188F620
- * score: 8/461 words
- * frame: 0xF0
- * relocations: 63
- * first-mismatch: +0x494
- * summary: 0x34-byte draw point fixes the frame (0xF0): 10 to 8; open: batch n+2 web in a1 (polygon _g takes a0 first on a save tie).
- * PLATEAU-HANDOFF:func_overlay_046_F0001228_188F620:end
- */

@@ -94,6 +94,14 @@ shapes from one candidate: mark each alternative with a preprocessor axis
 every cell of the Cartesian product in parallel and ranks them by masked words
 and size delta. Six cells a second; a 500-cell product is under two minutes.
 Its exit status is 0 only when an exact delta-0 cell exists.
+`tools/donor_match.py <symbol>` ranks Jet Force Gemini / Diddy Kong Racing /
+Perfect Dark / Banjo / Conker functions as counterparts of a target by the
+named callees they share (verbatim libultra names, adopted names, and the
+donor names `symbol_addrs.us.txt` comments record for `func_` symbols). On
+a target at 80%+ residual, port the counterpart's natural shape before the
+checklist; the tool also lists the unnamed callees whose naming would
+sharpen the match. A hit is a lead, read both bodies, and record
+`PROVENANCE` at the point of use.
 `tools/shape_lint.py <symbol>` lists the candidate's inherited artefacts
 against the checklist below, each with the axis name to give it in a product
 candidate; run it before writing the first cell. `tools/score_symbol.py

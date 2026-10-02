@@ -4611,6 +4611,14 @@ u32 func_8001357C(f32 arg0, f32 arg1, f32 *arg2, s32 arg3, void *arg4) {
  * 8 (11 -> 8, 2026-10-02 lane p-track3): batchFlags is s32, which puts it
  * first in the AND, and the hit-list loop tests `++orderIndex`. Left: the
  * surface-base load order (+0x1A8, 4) and the sort preheader (+0x400, 4).
+ * 2026-10-02 lane w6-track, still 8 at delta 0: an explicit order product
+ * and two follow-ups did not beat it. Evaluating the surfaces base before
+ * the index hits the target slot only when a named carrier receives the
+ * load, and that carrier rotates the temp ring (71). A swapped scalar
+ * compare, a line-split for header, and a dead end-element store are
+ * byte-identical. Pointer compares and a named bound change the size.
+ * Still open: an unnamed temp for that base load, and the bound shift
+ * before the index shift, without hoisting the bound.
  * Previous, 45 (70 -> 45, 2026-10-02 lane n-track): the compare mask is a block-scope local of the segment loop (its
  * spill cell is then the target's 0x90), the three plane coefficients are
  * locals read after the mathXZInTri call and the height is stored straight
@@ -5580,7 +5588,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0x140
  * relocations: 21
  * first-mismatch: +0x1A8
- * summary: s32 batchFlags fixes AND order, ++orderIndex hit-list test (11->8); left: surface-base load +0x1A8, sort preheader +0x400.
+ * summary: s32 batchFlags fixes AND order, ++orderIndex hit-list test (11->8). w6 order product stays 8: early surfaces load hits the target slot only via a carrier register and rotates a five-temp cycle (71); pointer for-conditions and a named bound change size. Left: unnamed surfaces load at +0x1A8, bound shift before index shift at +0x400.
  * PLATEAU-HANDOFF:func_8001398C:end
  */
 

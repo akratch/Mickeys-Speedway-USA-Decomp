@@ -273,97 +273,85 @@ void func_8002EBD4(u32 value) {
     D_8007A3B0 = value;
 }
 #ifdef NON_MATCHING
-/* Workbench: structure-mismatch, exact 255 instructions; 218 words differ, first +0x0, frames 0x88/0x58.
- * Reset-lifetime/ABI spellings, flag lattice, constant audit, and bounded permuter left the canonical candidate unchanged.
- * Remains: target's larger save/non-save frame and early command/local register structure are unresolved. */
-void func_8002EBE0(RcpCommand **dlist, s32 width, s32 height,
-                   u32 colours) {
-    RcpCommand *cmd;
-    s32 y;
-    RcpGradientColour *entry;
+/*
+ * Draws the sky gradient: eight bands per screen, split for two players. A
+ * band either fills flat or steps its colour every two lines toward the next
+ * entry's. Written from the listing on 2026-10-02 (lane w2-front). The open
+ * residual is recorded in docs/matching-triage-handoffs/func_8002EBE0.md.
+ */
+void func_8002EBE0(RcpCommand **dlist, s32 width, s32 height, u32 colours) {
+    s32 pad[15];
     s32 screens;
-    s32 screensLeft;
+    s32 pad2;
+    RcpCommand *cmd;
+    s32 mode;
     s32 screenHeight;
-    s32 bandIndex;
+    s32 y;
+    s32 i;
     s32 bandStart;
-    s32 bandEnd;
     s32 steps;
-    s32 stepsLeft;
-    s32 redOffset;
-    s32 greenOffset;
-    s32 blueOffset;
     s32 redStep;
     s32 greenStep;
     s32 blueStep;
-    s32 colour;
-    s32 nextY;
-    s32 mode;
+    s32 redOffset;
+    s32 greenOffset;
+    s32 blueOffset;
+    s32 r;
+    s32 g;
+    s32 b;
+    u32 colour;
+    RcpGradientColour *entry;
 
     cmd = *dlist;
-    y = 0;
-    bandStart = 0;
-    bandIndex = 0;
     screens = 1;
     mode = camGetMode();
-    if ((mode >= 2) ||
-        ((mode == 1) && (frontGet2PlayerSplit() == 0))) {
+    if (mode >= 2 || (mode == 1 && frontGet2PlayerSplit() == 0)) {
         screens = 2;
     }
-
     gDPPipeSync(cmd++);
     gDPSetScissor(cmd++, G_SC_NON_INTERLACE, 0, 0, width - 1, height - 1);
     RCP_SET_FILL_CYCLE(cmd++);
     screenHeight = height >> (screens - 1);
-
-    screensLeft = screens - 1;
-    if (screens != 0) {
+    y = 0;
+    while (screens--) {
+        entry = (RcpGradientColour *) colours;
+        bandStart = 0;
+        i = 0;
         do {
-            entry = (RcpGradientColour *) colours;
-            do {
-                bandIndex++;
-                if (entry->interpolate != 0) {
-                    bandEnd = bandStart + screenHeight;
-                    steps = (bandEnd >> 4) - (bandStart >> 4);
-                    redStep = (((entry + 1)->red - entry->red) << 16) / steps;
-                    greenStep = (((entry + 1)->green - entry->green) << 16) / steps;
-                    blueStep = (((entry + 1)->blue - entry->blue) << 16) / steps;
-                    redOffset = 0;
-                    greenOffset = 0;
-                    blueOffset = 0;
-                    stepsLeft = steps - 1;
-                    if (steps != 0) {
-                        do {
-                            colour = GPACK_RGBA5551(
-                                entry->red + (redOffset >> 16),
-                                entry->green + (greenOffset >> 16),
-                                entry->blue + (blueOffset >> 16), 1);
-                            gDPSetFillColor(
-                                cmd++, (colour << 16) | colour);
-                            nextY = y + 2;
-                            gDPFillRectangle(cmd++, 0, y, width, nextY);
-                            redOffset += redStep;
-                            greenOffset += greenStep;
-                            blueOffset += blueStep;
-                            y = nextY;
-                        } while (stepsLeft-- != 0);
-                    }
-                } else {
-                    colour = GPACK_RGBA5551(entry->red, entry->green,
-                                           entry->blue, 1);
+            i++;
+            if (entry->interpolate) {
+                steps = ((bandStart + screenHeight) >> 4) - (bandStart >> 4);
+                redStep = ((entry[1].red - entry->red) << 16) / steps;
+                greenStep = ((entry[1].green - entry->green) << 16) / steps;
+                blueStep = ((entry[1].blue - entry->blue) << 16) / steps;
+                redOffset = 0;
+                greenOffset = 0;
+                blueOffset = 0;
+                while (steps--) {
+                    r = entry->red + (redOffset >> 16);
+                    g = entry->green + (greenOffset >> 16);
+                    b = entry->blue + (blueOffset >> 16);
+                    colour = GPACK_RGBA5551(r, g, b, 1);
                     gDPSetFillColor(cmd++, (colour << 16) | colour);
-                    bandEnd = bandStart + screenHeight;
-                    nextY = y + (((bandEnd >> 4) - (bandStart >> 4)) * 2);
-                    gDPFillRectangle(cmd++, 0, y, width, nextY);
-                    y = nextY;
+                    gDPFillRectangle(cmd++, 0, y, width, y + 2);
+                    redOffset += redStep;
+                    greenOffset += greenStep;
+                    blueOffset += blueStep;
+                    y += 2;
                 }
-                bandStart = bandEnd;
-                entry++;
-            } while (bandIndex != 8);
-            bandStart = 0;
-            bandIndex = 0;
-        } while (screensLeft-- != 0);
+            } else {
+                r = entry->red;
+                g = entry->green;
+                b = entry->blue;
+                gDPSetFillColor(cmd++, (GPACK_RGBA5551(r, g, b, 1) << 16) | GPACK_RGBA5551(r, g, b, 1));
+                gDPFillRectangle(cmd++, 0, y, width,
+                                 y + (((bandStart + screenHeight) >> 4) - (bandStart >> 4)) * 2);
+                y += (((bandStart + screenHeight) >> 4) - (bandStart >> 4)) * 2;
+            }
+            bandStart += screenHeight;
+            entry++;
+        } while (i != 8);
     }
-
     gDPPipeSync(cmd++);
     *dlist = cmd;
 }
@@ -750,11 +738,11 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 arg2,
 
 /* PLATEAU-HANDOFF:func_8002EBE0:start
  * symbol: func_8002EBE0
- * score: 218 differing words
- * frame: 0x58
+ * score: 89/255 words
+ * frame: 0x88
  * relocations: 2
- * first-mismatch: +0x0
- * summary: Exact-sized C keeps a 0x58 versus 0x88 frame after RGB aggregate and lifetime forms; next lever is an authentic early-live-web source shape.
+ * first-mismatch: +0x138
+ * summary: Listing rewrite: delta 0, frame exact. Left: 39 naming rows and three copies from the post-decrement loop webs and the colour copy.
  * PLATEAU-HANDOFF:func_8002EBE0:end
  */
 

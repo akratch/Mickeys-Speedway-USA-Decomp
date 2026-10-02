@@ -834,6 +834,10 @@ extern const f32 gOverlay8ScaleUpperReloc;
 extern u8 D_0[];
 
 extern f32 D_2210[];
+extern f32 D_2188[];
+extern f32 D_21C8[];
+extern s16 D_2208[];
+extern f32 D_2220[];
 
 extern f32 o8P42A8SampleReloc(f32 value, s32 mode);
 

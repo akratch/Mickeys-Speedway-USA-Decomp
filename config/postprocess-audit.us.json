@@ -3387,8 +3387,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o036/overlay36ChooseWeightedState.c.o",
       "offset": 2656,
       "overlay": 36,
@@ -4580,16 +4580,15 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o048/overlay48InitializeState.c.o",
       "offset": 96,
       "overlay": 48,
       "size": 228,
       "source": "src/overlays/o048/overlay48InitializeState.c",
       "tools": [
-        "trim_elf_section.py",
-        "objcopy"
+        "trim_elf_section.py"
       ]
     },
     {
@@ -9356,7 +9355,7 @@
       "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 378940,
+    "matched_c_bytes_with_postprocess": 379848,
     "objects_with_postprocess": 644
   }
 }

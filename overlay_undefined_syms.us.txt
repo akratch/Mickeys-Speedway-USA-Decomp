@@ -1424,6 +1424,10 @@ call_o0_0_2DE90 = 0xf0000000;
 call_o0_0_4D390 = 0xf0000000;
 call_o0_0_CF68 = 0xf0000000;
 
+/* overlay 35: func_overlay_035_F0000B40_1882820.c.o */
+D_o35_skip_collision_edges = 0x00000004;
+sqrtf_o035Reloc = 0xf0000000;
+
 /* overlay 36: overlay36InitObject.c.o */
 gOverlay36Mode = 0x00000000;
 overlay36AcquireReloc = 0xf0000000;
@@ -3342,9 +3346,38 @@ o63SetColorReloc = 0xf0000000;
 o63SetModeReloc = 0xf0000000;
 
 /* overlay 63: overlay63UpdateEffects.c.o */
-D_190 = 0x00000190;
-D_194 = 0x00000194;
-D_198 = 0x00000198;
+gO63DrawContextReloc = 0x00000000;
+gO63ExternalFlagsReloc = 0x00000000;
+gO63ExternalStateAReloc = 0x00000000;
+gO63ExternalStateBReloc = 0x00000000;
+gO63ExternalTimerReloc = 0x000000d4;
+gO63Fade = 0x0000018c;
+gO63FadeDirection = 0x00000190;
+gO63FadeTimer = 0x0000019c;
+gO63Local2C = 0x0000002c;
+gO63Local30 = 0x00000030;
+gO63ObjectFloat = 0x00000008;
+gO63Opacity = 0x00000004;
+gO63OpacityContextReloc = 0x00000000;
+gO63Particles = 0x00000010;
+gO63RenderContextReloc = 0x00000000;
+gO63RenderMatrixReloc = 0x00000000;
+gO63TriggerTimer = 0x00000198;
+gO63Triggered = 0x00000194;
+o63CanDrawReloc = 0xf0000000;
+o63CheckTriggerReloc = 0xf0000000;
+o63CommitStateReloc = 0xf0000000;
+o63ConfigureStateReloc = 0xf0000000;
+o63DrawRectReloc = 0xf0000000;
+o63PrepareRender2Reloc = 0xf0000000;
+o63PrepareRenderReloc = 0xf0000000;
+o63RenderParticleReloc = 0xf0000000;
+o63ResetTimerReloc = 0xf0000000;
+o63SetOpacityReloc = 0xf0000000;
+o63SetStateReloc = 0xf0000000;
+o63SinReloc = 0xf0000000;
+o63StartTriggerReloc = 0xf0000000;
+o63UpdateObjectReloc = 0xf0000000;
 
 /* overlay 63: overlay63Release.c.o */
 gOverlay63Block = 0x00000000;

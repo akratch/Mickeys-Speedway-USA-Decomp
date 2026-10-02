@@ -1,4 +1,5 @@
 #include "PR/ultratypes.h"
+#include "n_audio/mbi.h"
 
 typedef struct O63Particle {
     void *resource;
@@ -32,11 +33,6 @@ typedef struct O63LocalObject {
     s32 fixed8;
 } O63LocalObject;
 
-typedef struct O63Gfx {
-    u32 word0;
-    u32 word1;
-} O63Gfx;
-
 extern s32 o63CheckTriggerReloc(void);
 extern void o63StartTriggerReloc(s32, s32, s32, s32, s32, s32, s32);
 extern void o63SetStateReloc(s32);
@@ -44,11 +40,11 @@ extern void o63CommitStateReloc(void);
 extern void o63ConfigureStateReloc(s32, s32, s32, s32, s32, s32);
 extern void o63ResetTimerReloc(s32);
 extern s32 o63CanDrawReloc(void);
-extern void o63DrawRectReloc(s32, O63LocalObject *, s32, s32, s32, s32, s32, s32);
+extern void o63DrawRectReloc(void *, O63LocalObject *, s32, s32, s32, s32, s32, s32);
 extern void o63SetOpacityReloc(void *, s32);
 extern void o63UpdateObjectReloc(s32, void *, s32, f32 *, s32);
-extern void o63PrepareRenderReloc(s32);
-extern void o63PrepareRender2Reloc(s32, void *);
+extern void o63PrepareRenderReloc(void *);
+extern void o63PrepareRender2Reloc(void *, void *);
 extern s16 o63RandomReloc(s32, s32);
 extern f32 o63SinReloc(u16);
 extern void o63RenderParticleReloc(void *, void *, void *, O63RenderPosition *, void *, s32, s32);
@@ -58,7 +54,7 @@ extern u32 gO63ExternalFlagsReloc;
 extern s32 gO63ExternalTimerReloc;
 extern s32 gO63ExternalStateAReloc;
 extern s32 gO63ExternalStateBReloc;
-extern O63Gfx *gO63DrawContextReloc;
+extern Gfx *gO63DrawContextReloc;
 extern void *gO63OpacityContextReloc;
 extern void *gO63RenderContextReloc;
 extern void *gO63RenderMatrixReloc;
@@ -67,7 +63,7 @@ extern s32 gO63Opacity;
 extern f32 gO63ObjectFloat;
 extern void *gO63Local2C;
 extern O63LocalObject gO63Local30;
-extern O63Particle gO63Particles[18];
+extern O63Particle gO63Particles[19];
 extern s32 gO63Fade;
 extern s32 gO63FadeDirection;
 extern s32 gO63Triggered;
@@ -75,14 +71,23 @@ extern s32 gO63TriggerTimer;
 extern s32 gO63FadeTimer;
 
 /*
- * Plateau: 104 masked words at delta 0, frame 0xF8 exact.  The particle loop
- * decrements the cursor and then reads the fields in place (the carriers
- * angle/angleRate were inherited): 137 to 109, and one spare local word
- * restores the target's frame: 104.  What remains is the saved-register
- * rotation: the target holds updateRate in s6 and the fade address in s7
- * (ours the reverse), and the draw/render contexts in s5/s4 (ours reversed).
+ * Matched (lane j-o035, 2026-10-02). The draw-context calls take the
+ * context address as a pointer, the particle cursor starts at the end of
+ * gO63Particles (not at the fade word's address), the two packets use the
+ * GBI macros, the loop is `count = 19; while (count--)`, the particle
+ * position stores run x, y, z-plane, height, and the position reset is a
+ * do-while(0) macro whose region ranks the render context ahead of the
+ * draw context for the callee-saved registers.
  */
-#ifdef NON_MATCHING
+#define O63_RESET_POSITION(p) \
+    do { \
+        (p).x = 0; \
+        (p).y = 0; \
+        (p).z = 0; \
+        (p).scale = 1.0f; \
+        (p).scratch28 = 0.0f; \
+    } while (0)
+
 void overlay63UpdateEffects(s32 updateRate) {
     O63RenderPosition pos;
     O63Particle *particle;
@@ -148,34 +153,25 @@ void overlay63UpdateEffects(s32 updateRate) {
     }
 
     if ((gO63Opacity != 0) && (o63CanDrawReloc() == 0)) {
-        o63DrawRectReloc((s32)&gO63DrawContextReloc, &gO63Local30, 0x40, 0xCC, 0xFF, 0xFF, 0xFF, gO63Opacity);
-        o63DrawRectReloc((s32)&gO63DrawContextReloc, &gO63Local30, 0x100, 0xCC, 0xFF, 0xFF, 0xFF, gO63Opacity);
+        o63DrawRectReloc(&gO63DrawContextReloc, &gO63Local30, 0x40, 0xCC, 0xFF, 0xFF, 0xFF, gO63Opacity);
+        o63DrawRectReloc(&gO63DrawContextReloc, &gO63Local30, 0x100, 0xCC, 0xFF, 0xFF, 0xFF, gO63Opacity);
         o63SetOpacityReloc(gO63OpacityContextReloc, gO63Opacity);
         o63UpdateObjectReloc(gO63Local30.word0, &gO63Local2C, 2, &gO63ObjectFloat, updateRate);
         gO63Local30.fixed8 = (s32)(gO63ObjectFloat * 65536.0f);
     }
 
-    o63PrepareRenderReloc((s32)&gO63DrawContextReloc);
-    o63PrepareRender2Reloc((s32)&gO63DrawContextReloc, &gO63RenderContextReloc);
+    o63PrepareRenderReloc(&gO63DrawContextReloc);
+    o63PrepareRender2Reloc(&gO63DrawContextReloc, &gO63RenderContextReloc);
     if (gO63Fade != 0) {
-        O63Gfx *gfx;
 
-        pos.x = 0;
-        pos.y = 0;
-        pos.z = 0;
-        pos.scale = 1.0f;
-        pos.scratch28 = 0.0f;
+        O63_RESET_POSITION(pos);
 
-        gfx = gO63DrawContextReloc++;
-        gfx->word0 = 0xE7000000;
-        gfx->word1 = 0;
-        gfx = gO63DrawContextReloc++;
-        gfx->word0 = 0xFA000000;
-        gfx->word1 = (gO63Fade & 0xFF) | ~0xFF;
+        gDPPipeSync(gO63DrawContextReloc++);
+        gDPSetPrimColor(gO63DrawContextReloc++, 0, 0, 0xFF, 0xFF, 0xFF, gO63Fade);
 
-        particle = (O63Particle *)&gO63Fade;
-        count = 18;
-        do {
+        particle = &gO63Particles[19];
+        count = 19;
+        while (count--) {
             particle--;
             particle->angle = particle->angle + particle->angleRate * updateRate;
             if (particle->angle >= 0x8001) {
@@ -192,8 +188,8 @@ void overlay63UpdateEffects(s32 updateRate) {
             }
             particle->jitter = (s8)(s32)(o63SinReloc(particle->angle) * 5.0f);
             pos.posX = (f32)particle->x;
-            pos.posZ = 0.0f;
             pos.posY = (f32)(particle->y + particle->jitter);
+            pos.posZ = 0.0f;
             pos.z = particle->height;
             if (gO63Fade < 0xFF) {
                 o63RenderParticleReloc(&gO63DrawContextReloc, &gO63RenderContextReloc,
@@ -202,20 +198,7 @@ void overlay63UpdateEffects(s32 updateRate) {
                 o63RenderParticleReloc(&gO63DrawContextReloc, &gO63RenderContextReloc,
                     &gO63RenderMatrixReloc, &pos, particle->resource, 0x8001, gO63Fade);
             }
-        } while (count--);
+        }
     }
     func_overlay_063_F000077C_18C3304(updateRate);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o063/overlay63UpdateEffects/func_overlay_063_F00001D4_18C2D5C.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay63UpdateEffects:start
- * symbol: overlay63UpdateEffects
- * score: 104/350 words
- * frame: 0xF8
- * relocations: 71
- * first-mismatch: +0x14
- * summary: Loop reads fields after the decrement, one spare local word: 137 to 104. Open: s6/s7 and s4/s5 pairs reversed.
- * PLATEAU-HANDOFF:overlay63UpdateEffects:end
- */

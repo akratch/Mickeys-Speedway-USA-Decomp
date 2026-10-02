@@ -164,6 +164,16 @@ FIXED_DATA_RODATA_OWNERSHIP = {
     ],
     46: [(0x364, 0x378, "overlay46UpdateSequence", ".rodata", "func_overlay_046_F0000120_188E518", True)],
     58: [
+        # The seven-entry state switch table and the 0.02f literal,
+        # rodata-relative +0x104 through +0x124.
+        (
+            0x3D4,
+            0x3F4,
+            "func_overlay_058_F00005FC_18AF7E4",
+            ".rodata",
+            "func_overlay_058_F00005FC_18AF7E4",
+            True,
+        ),
         (
             0x3F4,
             0x428,
@@ -1744,6 +1754,7 @@ MIXED_TU_EXACT_C_RANGES = {
         ),
     ],
     58: [
+        (0x5FC, 0x12F0, "func_overlay_058_F00005FC_18AF7E4"),
         (
             0x138C,
             0x4C04,

@@ -257,9 +257,9 @@ Text outside the markers remains authored and is preserved byte-for-byte.
 > `config/nonmatching-ranking.us.json`. Do not edit this region by hand;
 > `--check-doc` and `gmake check-docs` fail on any drift.
 
-The snapshot contains **83 queued identities**: **83 resolved measurements** and **0 unresolved identities**. Resolved target size totals **126,540 bytes (123.6 KiB)**.
+The snapshot contains **83 queued identities**: **83 resolved measurements** and **0 unresolved identities**. Resolved target size totals **124,264 bytes (121.4 KiB)**.
 
-Resolved rows span **30 overlays** and **1 resident TU group** (`main`).
+Resolved rows span **29 overlays** and **1 resident TU group** (`main`).
 
 A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 83** resolved rows.
 
@@ -271,19 +271,20 @@ Relocation-masked mismatch evidence covers **83 / 83** resolved rows. The raw co
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `other` | 52 | 62.7% |
+| `register-only` | 1 | 1.2% |
+| `other` | 51 | 61.4% |
 | `size-mismatch` | 31 | 37.3% |
 
 ### Differing-word thresholds
 
 | Threshold | Count |
 |---|---:|
-| raw `differing_words <= 5` | 0 |
-| relocation-masked `differing_words <= 5` | 0 |
-| raw `differing_words <= 10` | 2 |
-| relocation-masked `differing_words <= 10` | 3 |
-| raw `differing_words <= 20` | 7 |
-| relocation-masked `differing_words <= 20` | 7 |
+| raw `differing_words <= 5` | 1 |
+| relocation-masked `differing_words <= 5` | 1 |
+| raw `differing_words <= 10` | 3 |
+| relocation-masked `differing_words <= 10` | 4 |
+| raw `differing_words <= 20` | 8 |
+| relocation-masked `differing_words <= 20` | 8 |
 
 ### Complete ranked queue
 
@@ -293,22 +294,22 @@ units remain distinct.
 
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 8 | 8 | 424 | 424 | 0 | — |
-| 2 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 12 | 9 | 96 | 136 | 0 | — |
-| 3 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
-| 4 | `src/overlays/o027/overlay_027.c` | `func_overlay_027_F0000624_187BFFC` | `o027` | `other` | 1,016 | 12 | 12 | 508 | 508 | 0 | — |
-| 5 | `src/main/track.c` | `func_8000E5EC` | `main` | `other` | 820 | 13 | 12 | 180 | 260 | 0 | — |
-| 6 | `src/overlays/o044/func_overlay_044_F0000580_188BDE0.c` | `func_overlay_044_F0000580_188BDE0` | `o044` | `other` | 1,396 | 13 | 13 | 392 | 392 | 0 | — |
-| 7 | `src/overlays/o015/overlay_015.c` | `overlay15InitStarsAndPalette` | `o015` | `other` | 988 | 18 | 17 | 112 | 112 | 0 | — |
-| 8 | `src/main/matrix.c` | `MatrixMultiplyVec4` | `main` | `other` | 212 | 47 | 47 | 0 | 0 | 0 | — |
-| 9 | `src/main/spranim.c` | `effectboxControl` | `main` | `other` | 772 | 47 | 47 | 220 | 220 | 0 | — |
-| 10 | `src/overlays/o017/overlay17AdvanceChain.c` | `overlay17AdvanceChain` | `o017` | `other` | 588 | 47 | 47 | 24 | 24 | 0 | — |
-| 11 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
-| 12 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 65 | 65 | 52 | 52 | 0 | — |
-| 13 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 69 | 69 | 4 | 4 | 0 | — |
-| 14 | `src/overlays/o036/overlay36ChooseWeightedState.c` | `func_overlay_036_F0000A60_1883F18` | `o036` | `other` | 680 | 71 | 71 | 60 | 60 | 0 | — |
-| 15 | `src/main/rcpFast3d.c` | `func_8002EBE0` | `main` | `other` | 1,020 | 89 | 89 | 312 | 312 | 0 | — |
-| 16 | `src/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c` | `func_overlay_058_F00005FC_18AF7E4` | `o058` | `other` | 3,316 | 130 | 89 | 0 | 0 | 0 | — |
+| 1 | `src/main/track.c` | `func_8001357C` | `main` | `register-only` | 1,040 | 2 | 2 | 640 | 640 | 0 | — |
+| 2 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 8 | 8 | 424 | 424 | 0 | — |
+| 3 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 12 | 9 | 96 | 136 | 0 | — |
+| 4 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
+| 5 | `src/overlays/o027/overlay_027.c` | `func_overlay_027_F0000624_187BFFC` | `o027` | `other` | 1,016 | 12 | 12 | 508 | 508 | 0 | — |
+| 6 | `src/main/track.c` | `func_8000E5EC` | `main` | `other` | 820 | 13 | 12 | 180 | 260 | 0 | — |
+| 7 | `src/overlays/o044/func_overlay_044_F0000580_188BDE0.c` | `func_overlay_044_F0000580_188BDE0` | `o044` | `other` | 1,396 | 13 | 13 | 392 | 392 | 0 | — |
+| 8 | `src/overlays/o015/overlay_015.c` | `overlay15InitStarsAndPalette` | `o015` | `other` | 988 | 18 | 17 | 112 | 112 | 0 | — |
+| 9 | `src/main/matrix.c` | `MatrixMultiplyVec4` | `main` | `other` | 212 | 47 | 47 | 0 | 0 | 0 | — |
+| 10 | `src/main/spranim.c` | `effectboxControl` | `main` | `other` | 772 | 47 | 47 | 220 | 220 | 0 | — |
+| 11 | `src/overlays/o017/overlay17AdvanceChain.c` | `overlay17AdvanceChain` | `o017` | `other` | 588 | 47 | 47 | 24 | 24 | 0 | — |
+| 12 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
+| 13 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 65 | 65 | 52 | 52 | 0 | — |
+| 14 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 69 | 69 | 4 | 4 | 0 | — |
+| 15 | `src/overlays/o036/overlay36ChooseWeightedState.c` | `func_overlay_036_F0000A60_1883F18` | `o036` | `other` | 680 | 71 | 71 | 60 | 60 | 0 | — |
+| 16 | `src/main/rcpFast3d.c` | `func_8002EBE0` | `main` | `other` | 1,020 | 89 | 89 | 312 | 312 | 0 | — |
 | 17 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 103 | 103 | 20 | 20 | 0 | — |
 | 18 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 137 | 103 | 28 | 28 | 0 | — |
 | 19 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 108 | 108 | 212 | 212 | 0 | — |

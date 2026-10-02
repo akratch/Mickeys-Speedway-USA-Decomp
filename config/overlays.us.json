@@ -22,10 +22,10 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 409436,
-  "nonmatching_overlay_c_bytes": 59164,
+  "matched_overlay_c_bytes": 411844,
+  "nonmatching_overlay_c_bytes": 56756,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4772,
+  "owned_data_rodata_bytes": 4804,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -7680,7 +7680,7 @@
      "type": "c",
      "source": "overlays/o036/overlay36ChooseWeightedState",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0xD08",
@@ -10046,7 +10046,7 @@
      "type": "c",
      "source": "overlays/o048/overlay48InitializeState",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x144",
@@ -11927,7 +11927,7 @@
      "type": "c",
      "source": "overlays/o058/func_overlay_058_F00005FC_18AF7E4",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x12F0",
@@ -12094,6 +12094,16 @@
     "priority_rank": 103
    },
    "data_rodata_ownership": [
+    {
+     "offset": "0x3D4",
+     "end_offset": "0x3F4",
+     "size": "0x20",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o058/func_overlay_058_F00005FC_18AF7E4",
+     "trial_function": "func_overlay_058_F00005FC_18AF7E4",
+     "externalized": true
+    },
     {
      "offset": "0x3F4",
      "end_offset": "0x428",

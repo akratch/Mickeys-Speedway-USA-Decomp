@@ -1928,10 +1928,20 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0000874_188EC6C.c.o: POS
 		sha256:3f747d583b175b6db0aa98ac4c009a476406195eba33de3c112c6bdba325d2e4 0xC && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x708
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0001228_188F620.c.o: OPT_FLAGS := -O2 -Wo,-loopunroll,0
-ifneq ($(NON_MATCHING),1)
+# The trail and spark draw is instruction-exact. Its resident callees and the
+# resident texture table go through the generated surface entries; the trim
+# only pins the size.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o046/func_overlay_046_F0001228_188F620.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x738
-endif
+	$(OBJCOPY) \
+		--redefine-sym D_800D31C8=D_800D31C8_o046Reloc \
+		--redefine-sym amSndPlay=amSndPlay_o046Reloc \
+		--redefine-sym camStandardOrtho=camStandardOrtho_o046Reloc \
+		--redefine-sym func_80023A08=func_80023A08_o046Reloc \
+		--redefine-sym func_8002A8BC=func_8002A8BC_o046Reloc \
+		--redefine-sym func_8002A8C0=func_8002A8C0_o046Reloc \
+		--redefine-sym func_800349A4=func_800349A4_o046Reloc \
+		--redefine-sym mathRnd=mathRnd_o046Reloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x734
 # The sequence update is instruction-exact. Its sixteen resident callees go
 # through the generated surface entries, and its switch table is the retained
 # overlay table at rodata +0x34: bind the two table references to that owner

@@ -1060,6 +1060,7 @@ TEXT_SUBSEGMENTS = {
         (0x112C, "c", "overlay46Submit"),
         (0x1150, "c", "overlay46InitializeBuffers"),
         (0x1228, "c", "func_overlay_046_F0001228_188F620"),
+        (0x195C, "asm", "overlay_046_padding"),
     ],
     48: [
         (0x000, "c", "overlay48Initialize"),

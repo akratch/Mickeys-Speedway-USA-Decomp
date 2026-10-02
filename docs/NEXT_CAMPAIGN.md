@@ -1,179 +1,193 @@
-# Track B: the small-delta campaign (from 2026-09-23)
+# The reconstruction campaign: 77% to 80% and beyond (from 2026-10-02)
 
-The last-mile harvest is over. Waves w32 through w36 (2026-09-19) ran
-thirteen colour lanes for two matches; wave w36 went 0 for 4. The cheap
-delta-0 pool is thirteen functions, five of them barred or proved. This file
-is the campaign that replaces it. Every number below was recomputed from the
-tree on 2026-09-23 after the tooling batch landed; recompute again before
-quoting any of them.
-
-Run `tools/triage.py` before every wave (warm runs take seconds now; a run
-after a merge refills the classifier cache and takes about two minutes).
-Read `docs/small-delta-census.md` and `docs/forced-floor-census.md` next to
-it. Those three are the assignment arithmetic; this document is the
-strategy that consumes them.
+This file replaces the Track B plan. Everything Track B set out to do is done
+and then some: between 2026-10-01 and 2026-10-02 the tree went from 61.4% to
+77.4% matched, about 110 functions, with the methods, tools and traps written
+into `docs/LANE_BRIEF.md` as they were learned. This document is the outbrief
+of that sprint and the scope of the next one, written so that a less capable
+agent can run it: what is left, in what order, with which tool, and what each
+open function's recorded decision variable is. Every number was recomputed
+from the tree on 2026-10-02; recompute before quoting (`gmake progress`,
+`config/nonmatching-ranking.us.json`).
 
 ## The arithmetic
 
-    resolved 579,724 / 944,344 = 61.39%
-    65% = 613,823 bytes, gap 34,099
-    queue 260 functions / 346,588 bytes; 28 of them not assignable
+    resolved 730,344 / 943,640 = 77.40%   (public master ea73ed322 + banks)
+    80% = 754,912 bytes, gap 24,568
+    queue 140 functions / 198,108 bytes
 
-| group | functions | bytes | masked words |
-|---|---:|---:|---:|
-| delta-0 (colour work) | 110 | 133,340 | 16,316 |
-| small-delta, 0 < \|Δ\| ≤ 12 | 52 | 68,232 | 13,740 |
-| big-delta | 69 | 123,096 | 27,780 |
+What is left is **reconstruction, not polish**. Roughly 15 queue rows sit
+under 60 masked words; the other 125 are inherited m2c-shaped candidates at
+60-100% residual whose author's shape nobody has written yet. The sprint's
+yield numbers say what to expect: an Opus lane on a batch of such functions
+returned one to four matches per session; a Sonnet lane returned zero to
+one, and zero on every sub-60-word allocator plateau it was given. Spend
+Sonnet on batches whose shape is already known from a matched sibling, and
+Opus on everything else.
 
-Not assignable: 14 functions (13,616 bytes) are **colour-exhausted**, with a
-proved forced floor above zero at delta 0 (`docs/forced-floor-census.md`);
-7 are already integrated and 7 carry a stale ledger. Triage names them and
-leaves them out of every route.
+## What worked, in the order it was learned
 
-Each group alone could cover the gap to 65%. The delta-0 route is the
-cheapest by words (33 functions, 34,928 bytes, 1,326 masked words), but
-those are the functions colour lanes have been plateauing on for two
-weeks; the words are cheap to count and expensive to move.
+Each item below is now a numbered entry in `docs/LANE_BRIEF.md`'s shape
+checklist; the brief carries the measurements, this is the summary.
 
-## What the insertion-pair census changed
+1. **Rewrite the shape; do not polish the plateau.** Every closure in the
+   shard archive describes an inherited candidate, not the function. Read the
+   target listing, write the function as its author would have, list the
+   candidate's artefacts (`tools/shape_lint.py`), measure a product of
+   natural alternatives (`tools/shape_product.py`). Cells that regress alone
+   are exact together.
+2. **Fake globals are literals.** A float extern whose relocation record is
+   local to the module's rodata is a literal in the TU's pool; write it at
+   each use. Closed o007, o009, o027, o043, o084 and parts of overlay 8.
+3. **Remove inherited per-file overrides first.** `-Wo,-loopunroll,0` hid
+   five matches (o010, o050, o047, o008, anim.c); the target's "hand-unrolled"
+   copies were IDO's default unroller. `-Olimit` hid two in main.c.
+4. **`-Wab,-r4300_mul`** is what produces the rotated branch-likely float
+   easing loop from a plain `for`; it closed both 6 KB initialisers and the
+   overlay 47/52/53/55/84 family needed it before anything else moved.
+5. **Data defined in the TU.** Overlay initialisers and HUD code only match
+   when the overlay's `.data`/`.bss` are typed statics in ROM order in that
+   TU, dropped at POSTPROCESS with a rebind spec (overlay 54 TailA is the
+   template; o050, o052 x2, o047 followed).
+6. **Sibling copy.** Once a module has one matched function, its siblings
+   share the author's idiom (bitfield flag words, direct global reads,
+   `while (n--)` fills, indexed loops, one-line packet macros, early returns
+   kept at the end, `(u8)` casts on byte arguments). o053 was closed by
+   rewriting it as the cut-down copy of the matched overlay52TailB; eight
+   overlay 57 functions fell this way.
+7. **Decode the relocation table before rewriting an m2c overlay candidate**
+   (`tools/overlay_tables.py --json`): which named globals are one object,
+   which callee names are one callee. Two overlay 57 functions at 585 and
+   356 words matched in one pass once the table had been read.
+8. **Frame homes are a count of declared locals** (every declared local takes
+   a slot, in declaration order); spill cells below them move with loop
+   indexing; a padded struct or union standing in for locals is always
+   inherited. `tools/frame_census.py` and `cc -g3` read both sides.
+9. **Hidden ring draws** come from natural spellings: a masked narrow store
+   (`field = (field - n) & 0xFF`), a store-then-reload of a global, a
+   bitfield extract, a cast on a counter increment, a `(u8)` call argument.
+   One such draw was worth 149 words on R8 and closed o084 from 37.
+10. **Basic-block count decides saved-register ties** (a web's save divisor
+    is `1 + floor((blocks + 2) / 4)`); a one-line `do { } while (0)` macro
+    around a statement group supplies blocks at no instruction cost. Closed
+    o035 and o063.
+11. **Expression-table order breaks priority ties:** a dead read of the
+    second element, placed before the compare, enters it into uopt's table
+    first (track.c, 45 to 11).
 
-`tools/insertion_pairs.py` (landed 2026-09-23) reads each small-delta
-function's one-sided words: which pair they form, how much positional
-shadow (L155) they cast, what class of word they are, and which source line
-and ugen construct emitted them. `gmake small-delta-census` runs it over the
-class.
+## Tools, in the order a lane uses them
 
-The previous plan assumed the class was "mostly shadow". It is not:
+| tool | what it answers | cost |
+|---|---|---|
+| `tools/ready_queue.py` | which rows are assignable now (`base-only`), ranked | minutes |
+| `tools/lane_status.py --symbol S` | whether a stale lane holds S | seconds |
+| `tools/shape_lint.py S` | the candidate's inherited artefacts, each with a product axis | seconds |
+| `tools/donor_match.py S` | permitted-decomp counterparts by shared named callees; weak when callees are unnamed | 1 s |
+| `tools/overlay_tables.py --json` | the overlay's runtime relocation records (which names are one object) | seconds |
+| `tools/fast_score.py S cand.c --diff` | compile one candidate with the configured flags and score it | 1 s |
+| `tools/shape_product.py S cand.c --jobs 3` | every cell of a `#if SHAPE_axis == n` product, ranked | 6 cells/s |
+| `tools/insertion_pairs.py S` | on a size mismatch: which word is extra or missing and which construct emitted it | seconds |
+| `tools/align_symbol.py`, `residual_map.py`, `frame_census.py`, `register_census.py`, `draw_census.py` | the four residual buckets, per-window splits, frame homes, register cycles, ring draws per source line | seconds to a minute |
+| instrumented `uopt` (`CDX_PROC`, `CDX_FORCE`, `CDX_OUT`) | price one allocator decision in words; confirm web numbers after an edit | minutes |
+| `tools/finalize_plateau.py` | bank an improvement with a checked shard header (refuses dirty rankings and inline plateau blocks; then do it by hand: block, shard, `nm_ranking.py --refresh-stale`, `--write-doc`, gates, commit) | minutes |
+| `tools/gates.sh --staged` | the five gates before every commit; read its exit status, never pipe it | 2-6 min |
+| `tools/merge_lane.sh`, `tools/merge_lanes.sh`, `tools/land.sh` | integrate one lane / a batch under one gate run / land on master | 10-20 min each |
+| `tools/lane_fleet.py` | per lane: commits ahead, dirty files, matches | seconds |
 
-    positional masked words 14,421
-    of which shadow          3,629   (25%)
-    aligned after shadow    10,792
-    in-pair register naming  4,359   (an upper bound on what one fix drags)
+Promotion traps (brief, "Promotion traps") are the other half of the tool
+knowledge: resident callees renamed to `_oNNNReloc` in the object's
+POSTPROCESS rule, cross-overlay callees as `*Reloc` placeholders, rodata
+externalised by digest, jump tables bound to the retained table, TU hash pins
+repinned in the same commit, and `gmake overlay-syms && gmake` after any
+header edit.
 
-So subtracting the shadow does not make these functions cheap; it makes
-them *addressable*. 55 of 58 are fully owned: every extra or missing word
-has a line and a construct. Labels: missing-CSE 28, spill/reload 11,
-split-not-copy 6, extra-ISTR 5, extra-ILOD 4, control-flow 2, callee-save 1.
-The label names the word and the line, not the spelling that removes it.
-That spelling is the lane's job, and it is a different job from a colour
-sweep.
+## The next phase, scoped
 
-## Wave 1: seven Track B lanes
+### Tier 1: priced near-matches (about 10 KB, one Opus lane each or a pair)
 
-One owner per translation unit; `dispatch_check.py` refuses a split and
-refuses a small-delta symbol to a lane not marked `--track LANE=B`.
-Targets are the census order, smallest aligned residual first, grouped by
-TU so each lane's second target is in a file it already understands.
+These carry a decision variable and a priced force in their shard; the work
+is finding the source form that makes uopt take the decision itself.
 
-| lane | targets (aligned residual after shadow, label) | bytes |
-|---|---|---:|
-| `B-obj` | `func_80006EE4` (17, control-flow), `func_80006B04` (45, extra-ISTR), `func_8000831C` (76, missing-CSE), `func_800084C4` (91, missing-CSE, 81 of it in-pair naming) | 2,300 |
-| `B-small` | `func_8006E7E0` (1, one frame word), `func_80024978` camera.c (12, missing-CSE), `func_80030610` sched.c (24, missing-CSE), `func_8002B040` matrix.c (29, spill/reload) | 1,240 |
-| `B-ovsmall` | `func_overlay_008_F0001000_185ED58` (29, control-flow), `func_overlay_014_F0001830_1871108` (46, split-not-copy, frame +8) | 1,464 |
-| `B-track` | `func_8000D820` (57, split-not-copy), `func_8000DB34` (94, missing-CSE, Δ −12), `func_800133FC` (97, spill/reload, one unowned word) | 1,416 |
-| `B-fx` | `wakeDraw` (89, spill/reload, frame −56), `func_800479D4` (90, extra-ISTR, frame −8), `func_80049B14` (117, split-not-copy) | 2,304 |
-| `B-o020` | `overlay20UpdateGrid` (57, missing-CSE, frame +72), `func_overlay_020_F0001148_1877720` (137, spill/reload) | 1,688 |
-| `B-resmix` | `func_80037414` frontend (44, missing-CSE, frame +8), `func_800180B4` shadows (82, missing-CSE), `func_8004C690` font (92, split-not-copy), `func_80019AB8` lights (109, missing-CSE) | 2,724 |
+| function | bytes | words | what is open (shard has the numbers) |
+|---|---:|---:|---|
+| `func_80034E54` (textures_354C8.c) | 1,868 | 5 | `frameIndex + 1` is copied into the compare as an a0 web plus an a1 copy; both forces declined with a forbidden mask; write the incremented value once, compare and store the same web |
+| `func_overlay_008_F0001294_185EFEC` (R8) | 5,036 | 7 | three allocator rankings (compare operand at +0xD8; `(s32) update` conversion takes v0; the unkFE load loses to a shift temporary); three Opus passes already; take it only with a new lever |
+| `func_8001398C` (track.c) | 1,320 | 8 | surface-base load order at +0x1A8 and the sort preheader order at +0x400 |
+| `func_overlay_046_F0001228_188F620` | 1,844 | 8 | one value, the batch macros' n+2, lands in a1 because the polygon macro's block-scoped `_g` ties it; a function-scope `_g` or a split spelling of n+2 |
+| `overlay15InitStarsAndPalette` | 988 | 17 | stars-store base a1 vs a2 and the block-1 tail; the static-field-through-pointer form of its three matched siblings |
+| `func_80051364` (anim.c) | 1,148 | 22 | two rankings: the clock read buys a ring draw but raises the clock address web; read it once into a local used at both sites |
+| `func_80028FCC` (main.c) | 108 | 10 | three return stores each reading its own ring temporary; 140 spellings flat; low value |
 
-Scope 13,136 bytes. Planned at the measured rate of the last two weeks
-(roughly one match per five lanes once a class is past its first few
-closes) this wave is worth 3 to 6 matches, 3 to 8 KB. It is also the first
-measurement of the method itself; the second wave is planned from what the
-first one reports, not from this table.
+### Tier 2: banked reconstructions, exact size (about 25 KB)
 
-### The Track B lane protocol
+Shape is right, allocation is not. Each has a window map in its shard.
+`residual_map.py` first, then one product per window.
 
-1. **Cycle 0, uncounted:** `tools/insertion_pairs.py <symbol>` and
-   `tools/residual_map.py <symbol>`. Write down the pair(s), the owning
-   line, the construct and the class before touching the source.
-2. **Change the owning line, not the residual.** A `missing-CSE` word is an
-   expression the target computed once and the candidate twice; a
-   `spill/reload` word is a home the target never allocated; a
-   `split-not-copy` word is a web uopt split where the target's stayed one
-   web (LANE_BRIEF laws L145–L154 on carriers apply). Re-spell that line
-   and re-score. A size delta that reaches 0 is the milestone, even if the
-   masked count rises: the function moves to the delta-0 pool and the
-   colour instruments apply from there.
-3. **Do not run a colour landscape on a nonzero delta.** The census shows
-   why: at most 4,359 of 10,792 aligned words could be naming, and none of
-   them can move until the inserted word is gone.
-4. **A frame delta is a declared home**, and `tools/frame_census.py` names
-   it. Close the frame before the words when both are off.
-5. Stop on ADR 0018: three consecutive attempts with no better residual, no
-   new identity, and no eliminated hypothesis. Then write the handoff with
-   the pair, the line and the spellings tried, so the next reader does not
-   repeat them.
+`func_overlay_008_F00034A0` (3,592 B, 103), `func_80010B4C` (2,712 B, 167),
+`func_80053868` (anim.c, 4,820 B, 710: a v1/a0 two-cycle over 40 rows and 24
+rows wanting s6), `func_8001DD70` (2,132 B, 224: the records-address web is
+only splittable by a wrong offset; needs a different idea), `func_overlay_092_F0000308`
+(1,832 B, 119), `func_overlay_001_F0002B4C` (1,804 B, 186), `func_overlay_008_F00042A8`
+(1,788 B, 240), `rain_render_splashes` (1,616 B, 105), `overlay68UpdateAnimation`
+(1,424 B, 180), `func_overlay_012_F00003A8` (1,384 B, 159).
 
-## Track A, kept warm
+### Tier 3: reconstructions with a template (about 40 KB)
 
-Two delta-0 lanes at most, and only where triage reports a tight cluster
-(identical word counts across siblings): the overlay 101 triple at 143
-words each and the two `main` pairs at 154 words. One lead per cluster. No
-other delta-0 dispatch until a lane reports a new mechanism.
+Inherited m2c shape in a module that has matched siblings. Method: items 3,
+5, 6, 7 above, in that order, then the checklist. Expect one to three
+matches per Opus lane of five.
 
-## Do not spend a lane on this
+Overlay 1: `F0001D78` (2,508 B), `overlay1LoadBuildRecords` (2,288 B).
+Overlay 57: nothing left. Overlay 101: `TailAB4C` (2,552 B), `TailC6E8`
+(1,268 B), the four `BuildPresentation` functions (3,320 B, one fix closes
+four, 1,300 Sonnet cells found nothing). Overlays 19, 22, 43, 45, 56, 61,
+90, 11, 12, 64, 29, 58 (one function each, 2,000-3,300 B). track.c:
+`func_8000E920` (2,168 B, 314 at +8), `func_8001291C` (2,192 B, needs a
+rewrite from the listing). textures_354C8.c: `func_800349A4`,
+`func_800355A0`. font.c: `func_8004B1DC` (2,224 B). vehicle_sounds.c:
+`func_8005830C` (3,048 B: its float "globals" are its own rodata literals,
+untried).
 
-- `overlay57UpdateModeState`: floor of 2, barred (`config/unassignable-symbols.us.json`).
-- The 14 colour-exhausted functions in `docs/forced-floor-census.md`, in a colour lane. A structural lane may take one only with a named reason the handoff does not already refute.
-- `overlay1UpdateRangeFlags` and the rest of the overlay-1 tail: one file, one owner, and that owner is not a Track B lane.
-- Any function whose census row says `owned: no` as a first target. The three (`func_800133FC`, `func_8001EC44`, `func_overlay_001_F000438C_185076C`) each carry one unowned word; take them second, after a sibling in the same TU has taught the lane the file.
+### Tier 4: the two whales and the parked
 
-## Coordinator work, not lanes
+`func_800517E0` (anim.c, 7,232 B, 1,782 at -332): a wholesale allocation
+difference (one 293-word insertion pair spanning the body; the constant 6000
+held in a3 across the loop; 20 more declared locals than ours, but per-case
+locals were refuted). `func_overlay_047_F0000B30` (8,672 B, 1,377 at +4):
+register colouring that every structural edit disturbs. Both need a new
+idea, not another pass. Parked allocator plateaus under 60 words (o025, o027
+sibling, o073, joyRead, effectboxControl, func_80019AB8, overlay17AdvanceChain)
+returned nothing to three Sonnet passes each; do not spend Sonnet on them.
 
-- Done 2026-09-23 (lane tb-follow): the classifier cache is keyed on each
-  symbol's own evidence (source, shard and ledger blobs and last-change
-  commits, its authorization row) instead of the base commit, so a merge
-  batch no longer refills it cold, and `lane_status.py --symbols` -- hence
-  `tools/authorize_reopen.py` -- uses it.
-- Six `objects.c` handoffs need a remeasure before their pins can arm;
-  `overlay7UpdateOwnerMode` needs a new authorization with a reason.
-- `gmake check-promotion-proofs` (lane tb-proofs) must reach zero failures
-  and then join the `--promotion` gate set.
-- The lane brief's colour-first ordering needs a Track B paragraph that
-  points at this protocol; the instrument section already describes the
-  reader.
+## How to run a wave (the coordinator's loop)
 
-## What the 2026-09-19 waves produced (kept for rate planning)
+1. `tools/ready_queue.py --scan 60 --top 20`; pick targets per lane by TU,
+   one owner per TU; prefer the tiers above.
+2. `tools/new_lane.sh <name> campaign/unchain` per lane; dispatch with the
+   brief plus the target's shard; Opus for reconstruction and near-matches,
+   Sonnet for sibling-shaped batches only. Ten lanes run comfortably; keep
+   `gmake -j4` in lanes and never run `tools/gates.sh --promotion` inside one.
+3. On each report: `tools/merge_lane.sh <name>` (or `merge_lanes.sh` for a
+   batch of bank-only lanes). If it stops, read the last lines of its log:
+   the two recurring causes are a stale ranking row (`nm_ranking.py
+   --refresh-stale`, `--write-doc`, gate, commit) and a build-state rename
+   loss (`gmake overlay-syms && gmake -j4`). Never edit the primary checkout
+   while a merge runs.
+4. `tools/land.sh` after every batch that carries a match. Reclaim finished
+   worktrees with `tools/reclaim_worktrees.py --apply --exclude <running>`.
+5. Record new levers in `docs/LANE_BRIEF.md` the day they are measured; a
+   lever that lives only in a report is lost by the next wave.
 
-- 60.72% → 61.39% (+6,316 bytes) over waves w32–w36: two matches
-  (`overlay1BendPathPoint`, `overlay34SortAndDraw`) and eleven plateaus.
-- Every plateau handoff records a colour landscape that came back flat, and
-  every one of those functions now sits in the colour-exhausted or unproved
-  rows of the forced-floor census. That is the measurement behind moving the
-  campaign to Track B.
+## Known tool gaps worth an hour each
 
-## Footguns that still apply
-
-Never pipe a gate. Renew reopen pins after the last handoff edit.
-Regenerate generated files after a merge rather than trusting the merge.
-One owner per TU. A force is a diagnostic. Score a forced object directly,
-never through `score_symbol.py`'s recompile. And, new this week:
-`tools/wb_compare.sh` declares a stock build; under any exported `CDX_*` or
-`DKWB_*` variable it refuses until the caller says `--build-env forced`, and
-an exact result without a declared stock build is `claim: unverified`, not a
-match.
-
-## Waves 1 and 2, measured (2026-09-23)
-
-Thirteen Track B lanes on 34 symbols. Recomputed from the tree at landing:
-
-    61.39% -> 62.34%   (+8,968 bytes, 16 matches, 13 lanes)
-    a further 6 functions brought to size delta 0 and left in the delta-0 pool
-
-Per-lane yield was 1.2 matches, six times the last-mile rate of the
-previous week. Every lane reported the same two things: the reader named
-the owning line every time, and the mechanism about half the time. The
-recurring mechanisms it did not name are workbench backlog items 33 to 41
-(ISA-hazard nops, self-reassignment copies, narrow-parameter stores,
-memory-across-call, unprototyped callees, constant call arguments, L56
-block pricing) and the corrected L99 in the brief. Frame census plus a
-declaration lattice closed the frame on every match; a match's last step is
-now order and layout, never colour.
-
-Three closes used inert spellings (`| 0`, empty `do {} while (0)`) and are
-in `docs/cleanup-queue.md`; two overlay 101 candidates at delta 0 carry a
-`* 0 +` diagnostic that needs a natural equivalent before promotion.
-
-Wave 3 should be planned from `docs/small-delta-census.md` in census order
-again (34 functions, 56,540 bytes remain in the class), with the delta-0
-leftovers from these waves as second targets in the same TUs.
+- `finalize_plateau.py` refuses TUs whose plateau blocks are not an EOF
+  suffix and any tree with a dirty ranking; lanes work around it by hand
+  every time. Teach it to refresh the ranking itself and to accept inline
+  blocks.
+- `donor_match.py` is blind when a target's callees are unnamed `func_`
+  symbols (most of main/). Naming callees in `symbol_addrs.us.txt` from
+  their matched callers would make it useful on the resident residue.
+- `shape_product.py` needs an explicit `== 0` to make a bare `#else` arm a
+  cell; document or infer it.
+- The scoreboard's "functions matched" count does not move on overlay
+  promotions; the byte totals are authoritative.

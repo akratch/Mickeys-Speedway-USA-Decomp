@@ -2938,6 +2938,7 @@ segments:
       - [0x18D9DB0, c, overlay99RenderSortedEntries]
       - [0x18DA154, c, overlay99RenderSegments]
       - [0x18DA38C, c, func_overlay_099_F0000DDC_18DA38C]
+      - [0x18DA90C, asm, overlay_099_padding]
       - [0x18DA910, bin, overlay_099_data_rodata]
       - [0x18DA9D0, bin, overlay_099_reloc1]
       - [0x18DAB40, bin, overlay_099_reloc2]

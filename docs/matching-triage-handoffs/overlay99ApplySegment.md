@@ -2,11 +2,11 @@
 ### `overlay99ApplySegment` plateau handoff
 
 - source: `src/overlays/o099/overlay99ApplySegment.c`
-- score: 190/230 words
+- score: 0/230 words, promoted
 - frame: 0xD0
 - relocations: 27
-- first mismatch: +0x50
-- summary: Size 0 at frame 0xD0. L115 x-reuse, overlay22 empty if(var_s0), volatile sp88. 190 masked; stack homes still +0xB4 not +0xA0.
+- first mismatch: none
+- summary: Matched. Written from the listing: the parameter reused for the side distance, one local for the along fraction and the edge wave, plain plane locals, and the multiply-hazard flag.
 
 #### 2026-09-19, lane w30-o099: size and frame closed; 190 remains
 
@@ -44,4 +44,40 @@ Colour is now legal (size 0) but 81 structural rows are not a colour residual;
 do not start `--every-colour` until the candidate-only trunc/mfc1/sw at +0x104
 and the target-only lwc1/mtc1 cluster at +0x1B8 are named. Keep overlay99
 relocation identities untouched.
+
+#### 2026-10-02, lane z-ovl2: matched, 190 to 0, promoted
+
+The inherited body was the m2c shape with two volatiles and an empty if. It
+was replaced by a body written from the listing; each step measured with
+`tools/fast_score.py`.
+
+- Natural loops (`for` over the two global bounds), plane terms as plain
+  locals, no volatile and no empty if: 185 at -16.
+- The segment ends re-read from the record instead of two carrier locals:
+  171 at -28. The loads now come in the shipped order (x1, x0, z1, z0).
+- The decision records then showed the saved float registers in a different
+  order: ours gave the loop x the first one (shared with the side distance,
+  whose blocks it does not touch). The target's order (side f20, width f22,
+  along f24, x f26, z f28, wave f30, and t arriving in f20) needs x to
+  interfere with the side distance and the along fraction to interfere with
+  both side and width. Both follow from variable reuse: the parameter `t`
+  is the side distance, and one local carries the along fraction and later
+  the edge wave. 79 at -12, every register agreeing.
+- `-Wab,-r4300_mul` on the object: the three missing words were the
+  multiply-hazard pads. 24 at 0.
+- Declarations in home order with one unused cell, the grid pointer loaded
+  after the angle terms (its two scratch draws come after the conversion's),
+  and the final product assigned to a local before the conversion (the
+  target holds it in f2): 0.
+
+The plane coefficient at +0x88 and the side plane's constant at +0x84 are
+ordinary uncoloured locals: a store followed by a reload is what an
+uncoloured local looks like, and it was what `volatile` had been standing in
+for.
+
+Promotion: the pool literal is 182.0444f, not 65536/360 (the two differ in
+the last bits); the one-literal pool is externalized by digest against the
+retained rodata at +0x0. The two resident trig callees are placeholders.
+`gmake verify` printed OK; promotion-proof passed with 230 words, frame
+0xD0, and 27 of 27 relocations.
 <!-- plateau-handoff:overlay99ApplySegment:end -->

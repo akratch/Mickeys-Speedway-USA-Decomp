@@ -2732,26 +2732,18 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99InitializeEntries.c.o: POSTPROCES
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1B8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ProjectVector.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x84
+# Exact C. -Wab,-r4300_mul supplies the three multiply-hazard pads the
+# target carries. Its one pool literal (182.0444f) duplicates the retained
+# overlay rodata at +0x0, which the shipped hi/lo pair encodes: the pool is
+# asserted by digest and externalized; no instruction is edited. The two
+# resident trig callees are placeholders.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py
-ifeq ($(NON_MATCHING),1)
-# The compiler's private constants duplicate the retained overlay table at +0xB0.
-# Rebind only those text relocations; the linked default path remains GLOBAL_ASM.
+	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol overlay99ApplySegmentPrivateTable=0xB0,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0xBC:.rodata:overlay99ApplySegmentPrivateTable \
-		0xE4:.rodata:overlay99ApplySegmentPrivateTable && \
-	$(OBJCOPY) --remove-section=.rodata $@ && \
-	$(OBJCOPY) --redefine-sym \
-		func_overlay_099_F00002A0_18D9850=overlay99ApplySegment $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:15fbd0fd7f255861ebff752dc2b8e418edd9110dfe29426ed775e3dc124c3f17 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x398
-else
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym \
-		func_overlay_099_F00002A0_18D9850=overlay99ApplySegment $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x398
-endif
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99BuildHeightGrid.c.o: CFLAGS += -Wo,-loopunroll,0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99BuildHeightGrid.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \

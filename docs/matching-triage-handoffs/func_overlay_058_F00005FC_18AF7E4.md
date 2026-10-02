@@ -2,11 +2,72 @@
 ### `func_overlay_058_F00005FC_18AF7E4` plateau handoff
 
 - source: `src/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c`
-- score: 89/829 words
-- frame: 0x90
+- score: 0/829 words, promoted
+- frame: 0x88
 - relocations: 267
-- first mismatch: +0x0
-- summary: Case 3 has its own resident table; -1 stores are D_o058_5E50[0]; 0.02f literal. s0/s1 webs exact. Open: frame 0x90 vs 0x88, draw order, quad offsets.
+- first mismatch: none
+- summary: Matched. Compound multiply, int x/z locals vertex first, progress compares under a second name, indexed mapping loop on marker; frame is 40 bytes of locals.
+
+#### 2026-10-02, lane z-o008: 89 to 0, promoted
+
+Every remaining word was one of four source facts, each found by a product
+and none by a force. Aligner on arrival: byte-exact 744, register naming 50,
+immediate only 26, really different 13. After: 829 of 829.
+
+- The multiply. `increment = 0.02f; increment *= updateRate;` loads the
+  literal before the conversion and keeps it the left operand. Nine
+  single-expression spellings (casts on either side, both orders, a double
+  literal) are byte-identical to each other and wrong; the compound form is
+  not canonicalised. The float scratch ring was one free out of phase from
+  here to the end of the function, which is what the earlier "draw order"
+  rows at the strip and point-quad calls were (120 to 105 on the working
+  shape).
+- The large point quad. Target ugen order, read off the float free list
+  (six registers, FIFO): x complete and moved to a0, then z complete and
+  moved to a2, then y. So x and z are `s32` locals assigned before the call
+  and y is evaluated at the call; "converts both offsets first" was as1
+  hoisting z's `mtc1` into x's hazard slot, possible only once the ring phase
+  is right. Operand order follows the source reversed when one side needs an
+  implicit conversion: `vertex + offset` gives the shipped conversion-left
+  add (53 against 105 at +4 for `offset + vertex`). The offsets as one flat
+  `s16` table indexed `player * 2` and `player * 2 + 1` put the player byte
+  in v0 with the copy in the delay slot (53 to 42).
+- The progress float under two names. A 512-cell product over which of its
+  seven references go through the entry pointer, both `&` orders and both
+  `==` orders: the floor was 26, all frame words, with the two compares
+  direct and the strip argument indirect. The pointer on the compares is
+  what reversed the `&` and the `c.eq.s` operands; `1.0f == progress`
+  (constant first) is the shipped compare order. Giving the compares a
+  second extern name (`D_o058_5CE0`, the whale's module-offset spelling of
+  data +0x2C0) keeps four references on the first name, so the address is
+  not hoisted into a ninth saved register and the strip argument reload is
+  not carried around the sound call, with no pointer local. An alias on the
+  strip argument and the `+=` instead measured 173 at +12.
+- The frame. Declared locals are laid out in declaration order from the top
+  and every one takes its cell whether or not it is ever in memory; sibling
+  block scopes do not share cells (64 scoping cells at each start/end
+  width, every one identical to its function-scope control). The
+  increment's home is a uopt temporary below the declared area, so its own
+  declaration position is inert. Target: 40 bytes of locals with status
+  third. The mapping scan as `for (marker = 0; D_1A0[marker] != -1;
+  marker += 2)` compiles to the same walking pointer (uopt creates the
+  cursor and the entry test is still the direct load of element 0) and
+  removes the cursor local; with the pointer local gone as well the count is
+  40 and every home lands.
+
+Promotion: the seven-entry switch table and the 0.02f literal are the
+retained bytes at data_rodata +0x3D4 (rodata-relative +0x104), rebound to
+`gOverlay58StatePoolReloc` and externalized by digest with an atlas
+ownership row, the whale's form. Thirteen resident callees and overlay 41's
+scale test go through surface entries. `gmake verify` printed OK;
+promotion-proof passed (829 words, frame 0x88, 267 of 267 relocations).
+
+Closures this breaks, with the measurement: "both operand orders of the
+multiply are byte-identical (uopt canonicalises them)" is true of one
+expression and false of the compound assignment; "offset first or vertex
+first, four cells identical" held only for the inline call, where the
+x, y, z argument order hid it; "the frame never reaches 0x88 with the
+natural case-3 spelling" was a declaration count with two locals too many.
 
 Summary before this remeasure: Plain -O2; D_2C0 compares via entry pointer; frame-order locals, z offset temp. Open: case-3 table web joins loop web (s8 only), s1 cam.
 

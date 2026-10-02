@@ -231,13 +231,15 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_middle.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x408
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: config/normalizations/overlay1DispatchMode.rebind.spec
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: config/normalizations/overlay1UpdateObjectPhysics.rebind.spec
 # The eight-entry table retains its raw owner at initialized-data +0x274.
 # Its runtime LOCAL base is +0x110 into initialized data: bind the unchanged
 # compiler pair to stored addend +0x164, without editing instruction fields.
 # The object's .rodata is ChoosePath's four float literals (-1.2f, 400.5f,
-# 0.1f, 0.1f; shipped LOCAL addends +0xE8..+0xF4) followed by that table at
-# +0x10, so the table symbol is 0x164 - 0x10 and the literal pairs bind to a
-# base of 0xE8. Assert the whole pool by digest.
+# 0.1f, 0.1f; shipped LOCAL addends +0xE8..+0xF4), then UpdateObjectPhysics's
+# 26 (+0xF8..+0x15C), then that table at object +0x78, so the table symbol
+# is 0x164 - 0x78 and every literal pair binds to a base of 0xE8. Assert the
+# whole pool by digest.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_overlay_001_F0003578_184F958=overlay1InitializeGaugeObjects \
@@ -272,6 +274,24 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 		--redefine-sym func_overlay_001_F0006A14_1852DF4=overlay1ConsumeNearbyPending \
 		--redefine-sym func_overlay_001_F0006D4C_185312C=overlay1UpdateAimedTransient \
 		--redefine-sym func_8002A910=func_8002A910_o001Reloc \
+		--redefine-sym func_80002FE0=func_80002FE0_o001Reloc \
+		--redefine-sym func_800031C0=func_800031C0_o001Reloc \
+		--redefine-sym func_800031E8=func_800031E8_o001Reloc \
+		--redefine-sym func_80008128=func_80008128_o001Reloc \
+		--redefine-sym func_8001357C=func_8001357C_o001Reloc \
+		--redefine-sym func_8001D41C=func_8001D41C_o001Reloc \
+		--redefine-sym func_8001D910=func_8001D910_o001Reloc \
+		--redefine-sym func_8001D960=func_8001D960_o001Reloc \
+		--redefine-sym func_8001DD70=func_8001DD70_o001Reloc \
+		--redefine-sym func_8001E5C4=func_8001E5C4_o001Reloc \
+		--redefine-sym func_8001F14C=func_8001F14C_o001Reloc \
+		--redefine-sym func_8001F25C=func_8001F25C_o001Reloc \
+		--redefine-sym func_8002675C=func_8002675C_o001Reloc \
+		--redefine-sym func_800299E8=func_800299E8_o001Reloc \
+		--redefine-sym func_80029F2C=func_80029F2C_o001Reloc \
+		--redefine-sym func_8002A878=func_8002A878_o001Reloc \
+		--redefine-sym func_8002AA0C=func_8002AA0C_o001Reloc \
+		--redefine-sym func_8003EDEC=func_8003EDEC_o001Reloc \
 		--redefine-sym func_8002A8BC=func_8002A8BC_o001Reloc \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o001Reloc \
 		--redefine-sym func_overlay_001_F0007130_1853510=overlay1UpdateTransient \
@@ -289,10 +309,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4664 && \
 	candidate_rodata_size=$$( $(OBJDUMP) -h $@ | awk '$$2 == ".rodata" { print $$3; exit }' ); \
 	if [ -n "$$candidate_rodata_size" ] && [ "$$candidate_rodata_size" != "00000000" ]; then \
-		$(OBJCOPY) --add-symbol gOverlay1ModeTable=0x154,global \
+		$(OBJCOPY) --add-symbol gOverlay1ModeTable=0xEC,global \
 			--add-symbol gOverlay1ChoosePathLiterals=0xE8,global $@ && \
 		$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 			@config/normalizations/overlay1DispatchMode.rebind.spec && \
+		$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+			@config/normalizations/overlay1UpdateObjectPhysics.rebind.spec && \
 		$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 			0x4B8:.rodata:gOverlay1ChoosePathLiterals \
 			0x4FC:.rodata:gOverlay1ChoosePathLiterals \
@@ -303,7 +325,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 			0x734:.rodata:gOverlay1ChoosePathLiterals \
 			0x738:.rodata:gOverlay1ChoosePathLiterals && \
 		$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-			sha256:446deb530f49dcc54cb8246aae673ad119189f428937f9a4d561f5fb873ec363 && \
+			sha256:19bf9f9139510fe5a4bb8f6ac08f0857e9d257e0fb70474f046534d12c6e46da && \
 		$(OBJCOPY) --remove-section=.rel.rodata $@; \
 	fi
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_create.c.o: CFLAGS += -Wab,-r4300_mul

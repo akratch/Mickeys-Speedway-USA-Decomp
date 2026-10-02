@@ -1286,6 +1286,7 @@ MIXED_TU_EXACT_C_RANGES = {
             "overlay1TransitionState",
             "canonical mixed-TU object, 13 runtime relocations, and linked ROM bytes exact",
         ),
+        (0x438C, 0x5BA4, "overlay1UpdateObjectPhysics"),
         (0x5BA4, 0x5BC0, "overlay1InitTimedState"),
         (0x5BC0, 0x5BF4, "overlay1ConsumeTimer"),
         (

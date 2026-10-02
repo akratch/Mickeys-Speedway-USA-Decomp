@@ -1,18 +1,10 @@
 #include "PR/ultratypes.h"
 
 /*
- * Overlay 88 ships this renderer byte for byte: its TU defines
- * SHARED_DRAW_FUNCTION and the callee names to its own symbols and includes
- * this file, so one body serves both modules.
+ * Overlay 88 ships this renderer byte for byte: its TU renames this file's
+ * function and callee symbols to its own and includes it, so one body serves
+ * both modules.
  */
-#ifndef SHARED_DRAW_FUNCTION
-#define SHARED_DRAW_FUNCTION overlay69DrawSortedGeometry
-#define SHARED_FIXED_RESOURCE_RELOC overlay69DrawFixedResourceReloc
-#define SHARED_METRIC_RELOC overlay69MetricReloc
-#define SHARED_TRANSFORM_RELOC overlay69PrepareTransformReloc
-#define SHARED_DYNAMIC_SUBMIT_RELOC overlay69SubmitDynamicReloc
-#define SHARED_FIXED_SUBMIT_RELOC overlay69DrawConeReloc
-#endif
 
 #define SHARED_SET_ENV_WHITE_ZERO_ALPHA(packet)             \
     {                                                        \
@@ -124,15 +116,15 @@ typedef struct SharedDynamicSubmit {
     void *payload20;
 } SharedDynamicSubmit;
 
-extern void SHARED_FIXED_RESOURCE_RELOC(SharedCommand **commands,
+extern void overlay69DrawFixedResourceReloc(SharedCommand **commands,
                                         void *resource);
-extern f32 SHARED_METRIC_RELOC(f32 x, f32 y, f32 z);
-extern void SHARED_TRANSFORM_RELOC(SharedTransform *transform);
-extern void SHARED_DYNAMIC_SUBMIT_RELOC(
+extern f32 overlay69MetricReloc(f32 x, f32 y, f32 z);
+extern void overlay69PrepareTransformReloc(SharedTransform *transform);
+extern void overlay69SubmitDynamicReloc(
     SharedCommand **commands, void *renderArg1, void *renderArg2,
     SharedTransform *transform, void *objectResource,
     SharedDynamicSubmit *submit, s32 mode, u8 flags);
-extern void SHARED_FIXED_SUBMIT_RELOC(SharedCommand **commands,
+extern void overlay69DrawConeReloc(SharedCommand **commands,
                                       void *reference, s32 mode, u8 key);
 
 /* DKR v77/v80 and JFG have no exact donor for this renderer. */
@@ -151,7 +143,7 @@ extern void SHARED_FIXED_SUBMIT_RELOC(SharedCommand **commands,
  * order) lets as1 delete the repeated address and loses four bytes.
  */
 #ifdef NON_MATCHING
-void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
+void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
                           void *renderArg2, SharedRenderObject *object) {
     SharedDrawState *state;
     SharedResourceSet *resources;
@@ -184,7 +176,7 @@ void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
 
     for (i = 0; i < 4; i++) {
         if (state->fixedResources[i] != NULL) {
-            SHARED_FIXED_RESOURCE_RELOC(commands, state->fixedResources[i]);
+            overlay69DrawFixedResourceReloc(commands, state->fixedResources[i]);
         }
     }
     entry = object->dynamicEntries;
@@ -192,7 +184,7 @@ void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
         if (!object->gate->suppressBySelector[object->selector]) {
             for (i = 0, count = 0; (i < object->dynamicCount) && (i < 8); i++) {
                 vector = &resources->vectors[entry->vectorIndex];
-                metrics[count] = SHARED_METRIC_RELOC(vector->x, vector->y, vector->z);
+                metrics[count] = overlay69MetricReloc(vector->x, vector->y, vector->z);
                 order[count] = count;
                 count++;
                 entry++;
@@ -215,7 +207,7 @@ void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
             transform.position.x = state->position.x;
             transform.position.y = state->position.y;
             transform.position.z = state->position.z;
-            SHARED_TRANSFORM_RELOC(&transform);
+            overlay69PrepareTransformReloc(&transform);
 
             inverseScale = 1.0f / object->gate->scale;
             submit.mode6 = 3;
@@ -232,7 +224,7 @@ void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
                 submit.vector.z = vector->z;
                 submit.oneC = 1.0f;
                 submit.payload20 = entry->payload;
-                SHARED_DYNAMIC_SUBMIT_RELOC(commands, renderArg1, renderArg2,
+                overlay69SubmitDynamicReloc(commands, renderArg1, renderArg2,
                                             &transform, object->submitResource50,
                                             &submit, 0xE, object->submitFlags39);
             }
@@ -250,7 +242,7 @@ void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
             ((reference = state->fixedRefs[i]) != NULL)) {
             vector = &resources->vectors[state->fixedVectorIndex[i]];
             order[count] = count;
-            metrics[count] = SHARED_METRIC_RELOC(vector->x, vector->y, vector->z);
+            metrics[count] = overlay69MetricReloc(vector->x, vector->y, vector->z);
             fixedRefs[count] = reference;
             fixedKeys[count] = state->fixedActive[i];
             fixedGeometry[count] =
@@ -275,7 +267,7 @@ void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
         for (i = 0; i < count; i++) {
             SHARED_LOAD_FIXED_GEOMETRY((*commands)++,
                 (void *)((u32)fixedGeometry[order[i]] + 0x80000000U));
-            SHARED_FIXED_SUBMIT_RELOC(commands, fixedRefs[order[i]], 6,
+            overlay69DrawConeReloc(commands, fixedRefs[order[i]], 6,
                                       (u8)fixedKeys[order[i]]);
         }
 
@@ -286,3 +278,13 @@ void SHARED_DRAW_FUNCTION(SharedCommand **commands, void *renderArg1,
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o069/overlay69DrawSortedGeometry/func_overlay_069_F0000170_18C8BD8.s")
 #endif
+
+/* PLATEAU-HANDOFF:overlay69DrawSortedGeometry:start
+ * symbol: overlay69DrawSortedGeometry
+ * score: 57/359 words
+ * frame: 0x148
+ * relocations: 6
+ * first-mismatch: +0x3DC
+ * summary: Listing rewrite at the target frame. Exact up to the fixed collect block, where the geometry store needs one more ring draw.
+ * PLATEAU-HANDOFF:overlay69DrawSortedGeometry:end
+ */

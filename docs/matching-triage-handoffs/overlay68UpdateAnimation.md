@@ -2,11 +2,13 @@
 ### `overlay68UpdateAnimation` plateau handoff
 
 - source: `src/overlays/o068/overlay68UpdateAnimation.c`
-- score: 183 differing words
+- score: 180/356 words
 - frame: 0x78
 - relocations: 15
 - first mismatch: +0x1C
-- summary: Opacity no-op mask (ring phase) and declaration order: 213 to 183. State web t2 against t1 is a global t-pool shift.
+- summary: Declaration-order hill climb 183 to 180; state web t2 against t1 (t-pool shift) remains.
+
+Summary before this remeasure: Opacity no-op mask (ring phase) and declaration order: 213 to 183. State web t2 against t1 is a global t-pool shift.
 
 Summary before this remeasure: Pointer walk matches duration-loop shape at delta 0, 213/356, first +0x1C; state stays t1 not t2. Subscript walk grew 16 bytes, reverted. No colour sweep.
 

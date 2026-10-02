@@ -1789,31 +1789,36 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 }
 #ifdef NON_MATCHING
 /*
- * PROVENANCE: Mickey's m2c draft and resident track/particle call surfaces
- * reconstruct this draw/update coordinator; no external function body is adapted.
+ * PROVENANCE: Mickey's listing and resident track/particle call surfaces
+ * reconstruct this draw/update coordinator. Diddy Kong Racing's public
+ * `render_level_geometry_and_objects` (src/tracks.c) is the counterpart
+ * routine (segment list, per-segment visibility flags, opaque pass); no
+ * body is adapted from it.
  */
-/* Workbench verdict: structure-mismatch, 185 differing words, first mismatch +0x0. */
-/* Candidate: 209/205 instructions with a -0xE8 frame versus target -0xD8; all 56 relocations are present, with 14 offset/type and 9 identity sites aligned. */
-/* Shape status: the 128-byte segment list and nested dispatch are reconstructed; temporary-local stack layout and early loop scheduling remain unresolved. */
+/* 12 masked words at size delta 0 and the target's 0xD8 frame (185 -> 12,
+ * 2026-10-02 lane x-track): rewritten from the listing with while (j--)
+ * loops over segmentList, the camera segment held in the loop counter i and
+ * scaled in place (i *= segmentCount), a separate counter j for the two
+ * flag loops, and the declarations ordered for the homes (visibleCount
+ * third, resultCount fourth, records after the list). Left: two v0/v1
+ * colour decisions. Forcing p1:w61=c2,w52=c1,w4=c2,w17=c1 on this source
+ * (proc 23) scores 0: the shared post-decrement temp (web 52, save 60/2)
+ * loses v0 to the list cursor (web 61, 62/2), and the camera block's
+ * segment-count load (web 4, 3/2) takes v0 ahead of web 17 (3/3). */
 void func_8000E5EC(s32 updateRate, s32 arg1) {
-    u8 *segment;
-    s32 resultCount;
+    s32 i;
+    s32 cameraSegment;
     s32 visibleCount;
-    s32 segmentIndex;
-    s32 lastIndex;
-    s32 displayOffset;
-    s32 *visibility;
-    s16 cameraSegment;
-    s16 segmentCount;
-    u8 mode;
-    s32 *segmentFlags;
-    s32 displayList;
+    s32 resultCount;
+    s32 j;
     u8 segmentList[128];
+    TrackKeyRecord *records;
+    TrackKeyRecord **matches;
 
     visibleCount = 1;
     if (D_800792E8->segmentCount >= 2) {
         if (levelGetLevel()[0x106] == 0) {
-            func_8000FA2C(&visibleCount, segmentList);
+            func_8000FA2C(&visibleCount, (s32) segmentList);
         } else {
             func_8000F57C(&visibleCount, segmentList);
         }
@@ -1824,37 +1829,22 @@ void func_8000E5EC(s32 updateRate, s32 arg1) {
         visibleCount = 0;
     }
     D_800C95B0[0] = -1;
-    segmentIndex = 1;
-    if (D_800792E8->segmentCount > 0) {
-        segmentFlags = D_800C95B4;
-        do {
-            *segmentFlags++ = 0;
-            segmentIndex++;
-        } while (D_800792E8->segmentCount >= segmentIndex);
+    for (i = 1; i <= D_800792E8->segmentCount; i++) {
+        D_800C95B0[i] = 0;
     }
-    if ((D_80079260 != 0) || (D_80079264 != 0)) {
-        cameraSegment = camGetPtr()->segmentIndex;
-        segmentCount = D_800792E8->segmentCount;
-        if ((cameraSegment >= 0) && (cameraSegment < segmentCount) &&
-            (D_8007926C == 0)) {
-            lastIndex = visibleCount - 1;
-            segment = segmentList + lastIndex;
-            if (visibleCount != 0) {
-                do {
-                    mode = *segment--;
-                    visibility = D_800792E8->visibility;
-                    D_800C95B0[mode + 1] =
-                        visibility[(cameraSegment * segmentCount) + mode];
-                } while (lastIndex-- != 0);
+    if (D_80079260 != 0 || D_80079264 != 0) {
+        i = camGetPtr()->segmentIndex;
+        if (i >= 0 && i < D_800792E8->segmentCount && D_8007926C == NULL) {
+            i *= D_800792E8->segmentCount;
+            j = visibleCount;
+            while (j--) {
+                D_800C95B0[segmentList[j] + 1] =
+                    D_800792E8->visibility[i + segmentList[j]];
             }
         } else {
-            lastIndex = visibleCount - 1;
-            if (visibleCount != 0) {
-                segment = segmentList + lastIndex;
-                do {
-                    mode = *segment--;
-                    D_800C95B0[mode + 1] = -1;
-                } while (lastIndex-- != 0);
+            j = visibleCount;
+            while (j--) {
+                D_800C95B0[segmentList[j] + 1] = -1;
             }
         }
         if (D_800792E8->segmentCount < 2) {
@@ -1862,34 +1852,29 @@ void func_8000E5EC(s32 updateRate, s32 arg1) {
         }
     }
     resultCount = 0;
-    displayList = (s32) D_800C9548;
+    records = D_800C9548;
     if (D_80079268 != 0) {
         resultCount = func_8000DB34(visibleCount, segmentList,
-                                    (TrackRouteResult *) displayList);
+                                    (TrackRouteResult *) records);
     }
     func_8000D978(0, arg1);
     func_80034920(&D_800C9520);
-    if ((D_8007A124 == 0) && (camGetMode() == 0)) {
+    if (D_8007A124 == 0 && camGetMode() == 0) {
         partDraw(&D_800C9520, (s32) &D_800C9524, 1);
     }
     func_80034920(&D_800C9520);
-    lastIndex = visibleCount - 1;
-    if (visibleCount != 0) {
-        segment = segmentList + lastIndex;
-        displayOffset = (resultCount * 8) + displayList;
-        do {
-            func_8000DFBC(*segment, D_800C95B0[*segment + 1],
-                          func_8000DDE4(*segment, resultCount,
-                                        (TrackKeyRecord *) displayList,
-                                        (TrackKeyRecord **) displayOffset),
-                          displayOffset);
-            segment--;
-        } while (lastIndex-- != 0);
+    i = visibleCount;
+    matches = (TrackKeyRecord **) &records[resultCount];
+    while (i--) {
+        func_8000DFBC(segmentList[i], D_800C95B0[segmentList[i] + 1],
+                      func_8000DDE4(segmentList[i], resultCount, records,
+                                    matches),
+                      (s32) matches);
     }
     if (runlinkIsModuleLoaded(0x22) != 0) {
         TrapDanglingJump(&D_800C9520, &D_800C9528);
     }
-    if ((D_8007A124 == 0) && (camGetMode() == 0)) {
+    if (D_8007A124 == 0 && camGetMode() == 0) {
         partDraw(&D_800C9520, (s32) &D_800C9524, 0);
     }
     D_800C9544 = 0;
@@ -5477,11 +5462,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8000E5EC:start
  * symbol: func_8000E5EC
- * score: 185/205 words
- * frame: 0xE8
+ * score: 12/205 words
+ * frame: 0xD8
  * relocations: 56
- * first-mismatch: +0x0
- * summary: Scoped-carrier forms are inert; direct visibility access changes the 31-draw schedule but regresses to 187 words. The 0x10 frame deficit remains.
+ * first-mismatch: +0x104
+ * summary: Listing rewrite 185 -> 12; left two v0/v1 ties: forces p1:w61=c2,w52=c1,w4=c2,w17=c1 (proc 23) score 0.
  * PLATEAU-HANDOFF:func_8000E5EC:end
  */
 

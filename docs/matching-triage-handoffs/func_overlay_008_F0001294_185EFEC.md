@@ -49,9 +49,21 @@ factor through `value`/`speedLimit` (12).
 
 What remains (7 words):
 
-- +0xD8 compare operand order of the factor's zero test (1).
+- +0xD8 compare operand order of the factor's zero test (1). Written on the
+  field (`if (state->unk5C != 0.0f)`, the field again in the product) the
+  order is the target's and the load becomes an expression web (w41, save
+  3/2 = 1.5) that `factor` (w44, 10/3 = 3.33, both pre-loop regions)
+  outranks, so they trade f0 and f2 (18). Forcing `p1:w44=c25` on that
+  cell gives 6, accepted. Measured and not better: either pre-loop region
+  through `value`, `speedLimit`, `scale` or a fresh local (`scale` in one
+  region gives the right colour there and f0 in the other; in both it
+  re-opens the loop's f2/f12 exchange, 119), and the field copied into
+  four carriers inside the test (9 to 20).
 - +0x20C: web 114, the `(s32) update` truncation, takes v0 with nothing
-  coloured v0 in its block; `p1:w114=c2` gives 4 (accepted).
+  coloured v0 in its block; `p1:w114=c2` gives 4 (accepted). Ten carriers
+  for the pre-loop count are byte-identical (the carrier is propagated away
+  and the truncation temporary is coloured alone), and `while (n--)` forms
+  are 17 to 275.
 - +0xDBC: the `state->unkFE` load (w545, save 15) takes a3. The shift
   temporary w548 (save 30, one block) is decided first and takes v0, and
   with it forced to a3 the drift difference w542 (save 20) takes v0 instead

@@ -3661,8 +3661,22 @@ overlay84Atan2 = 0xf0000000;
 overlay84GetNodes = 0xf0000000;
 overlay84UpdateCurrent = 0xf0000314;
 
-/* overlay 84: overlay84UpdateResource.c.o */
+/* overlay 84: func_overlay_084_F0000314_18D07F4.c.o */
+Arctanf_o084Reloc = 0xf0000000;
+amSndPlay_o084Reloc = 0xf0000000;
+camGetPtr_o084Reloc = 0xf0000000;
+camSetNo_o084Reloc = 0xf0000000;
+dAngle_o084Reloc = 0xf0000000;
+func_8000FAE0_o084Reloc = 0xf0000000;
+func_8002A8BC_o084Reloc = 0xf0000000;
+func_8002A8C0_o084Reloc = 0xf0000000;
+gOverlay84BlendStep = 0x00000000;
+gOverlay84InputAxis = 0x00000000;
 gOverlay84InputFlags = 0x00000000;
+mathDiffAngle_o084Reloc = 0xf0000000;
+overlay84AdvanceCurrentReloc = 0xf0000000;
+
+/* overlay 84: overlay84UpdateResource.c.o */
 overlay84ConfigureResource = 0xf0000000;
 overlay84GetResource = 0xf0000000;
 overlay84ReleaseResource = 0xf0000000;

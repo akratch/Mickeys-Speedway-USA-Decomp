@@ -2189,6 +2189,16 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84InitializeAndUpdate.c.o: POSTPROC
 	$(OBJCOPY) --redefine-sym func_overlay_084_F0000048_18D0528=overlay84InitializeAndUpdate $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2CC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/func_overlay_084_F0000314_18D07F4.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym Arctanf=Arctanf_o084Reloc \
+		--redefine-sym amSndPlay=amSndPlay_o084Reloc \
+		--redefine-sym camGetPtr=camGetPtr_o084Reloc \
+		--redefine-sym camSetNo=camSetNo_o084Reloc \
+		--redefine-sym dAngle=dAngle_o084Reloc \
+		--redefine-sym func_8000FAE0=func_8000FAE0_o084Reloc \
+		--redefine-sym func_8002A8BC=func_8002A8BC_o084Reloc \
+		--redefine-sym func_8002A8C0=func_8002A8C0_o084Reloc \
+		--redefine-sym mathDiffAngle=mathDiffAngle_o084Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x740
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/func_overlay_084_F0000314_18D07F4.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o084/overlay84GetActive.c.o: POSTPROCESS = \

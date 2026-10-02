@@ -22,10 +22,10 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 368148,
-  "nonmatching_overlay_c_bytes": 100456,
+  "matched_overlay_c_bytes": 363980,
+  "nonmatching_overlay_c_bytes": 104624,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4660,
+  "owned_data_rodata_bytes": 4560,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -3757,7 +3757,7 @@
      "type": "c",
      "source": "overlays/o014/func_overlay_014_F000013C_186FA14",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x31C",
@@ -10435,7 +10435,7 @@
      "type": "c",
      "source": "overlays/o050/overlay50Initialize",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x2E4",
@@ -12022,7 +12022,7 @@
      "type": "c",
      "source": "overlays/o058/func_overlay_058_F0000000_18AF1E8",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x5C0",
@@ -19572,7 +19572,7 @@
      "type": "c",
      "source": "overlays/o101/overlay101TailA6BC",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0xAB4C",
@@ -19617,7 +19617,7 @@
      "type": "c",
      "source": "overlays/o101/overlay101TailC6E8",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0xCBDC",
@@ -19988,19 +19988,7 @@
     "pilot_role": null,
     "exact_donor_match": null,
     "priority_rank": 102
-   },
-   "data_rodata_ownership": [
-    {
-     "offset": "0x5CFC",
-     "end_offset": "0x5D60",
-     "size": "0x64",
-     "type": "c",
-     "section": ".rodata",
-     "source": "overlays/o101/overlay101TailC6E8",
-     "trial_function": "func_overlay_101_F000C6E8_18E7F08",
-     "externalized": true
-    }
-   ]
+   }
   },
   {
    "overlay": 102,

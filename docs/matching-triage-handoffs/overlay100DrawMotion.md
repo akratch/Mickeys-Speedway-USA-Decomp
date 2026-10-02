@@ -30,4 +30,21 @@ Header regenerated from the ranking on 2026-09-23 (check_shard_metrics --write);
   floor 155.
 - Target colours: s1 holds the divisor 3 and ra holds the sync opcode; this
   build swaps them. Colour order of those two constants is the open variable.
+#### 2026-10-02, lane x-ovla: natural rewrite measured, not adopted (155 kept)
+
+A body written from the listing (no volatile, no register, `while (row--)`,
+`while (count--)`, the alpha step as `alpha = alphaStep * (3 - row)` inside
+the loop so uopt strength-reduces it, the colour word and constants hoisted
+by the compiler) keeps the 26-cell declaration list and lands frame 0xC0 and
+the green/blue spills at 0x9C/0x98 without volatile, but scores 191 to 192 at
+size -4 against the inherited 155 at delta 0. Findings to carry:
+- With u8 parameters on the angle-preparation call each colour argument gets
+  an `andi`; the target passes the raw `lbu` values (s32 parameters), though
+  on the inherited body this alone is flat (155).
+- The target's first argument to that call is the segment packet's own
+  pointer (`or a0, a3, zero` before the two stores, never recomputed); every
+  spelling tried either recomputes `commands - 1` or grows the frame
+  (a named packet pointer in place of an unused pad: 207 at +8, frame 0xE0).
+- `if (motion != NULL) { ... }` against an early return, and `* 4` against
+  `<< 2`, are flat.
 <!-- plateau-handoff:overlay100DrawMotion:end -->

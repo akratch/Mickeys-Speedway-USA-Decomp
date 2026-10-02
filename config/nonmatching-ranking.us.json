@@ -1,29 +1,14 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 134,
-  "resolved": 134,
+  "queue_size": 133,
+  "resolved": 133,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 134,
-  "relocation_masked_coverage": 134,
+  "source_context_coverage": 133,
+  "relocation_masked_coverage": 133,
   "functions": [
-    {
-      "name": "func_80019AB8",
-      "file": "src/main/lights.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 736,
-      "objdiff_match_pct": null,
-      "differing_words": 56,
-      "first_mismatch_offset": 128,
-      "relocation_masked_differing_words": 56,
-      "relocation_masked_first_mismatch_offset": 128,
-      "size_delta": 0,
-      "category": "register-only",
-      "source_context_sha256": "oUtp.idXV.B6Wn.8W5U.w4LZ.yLyA.NoA7.ToWK.cX5N.OaeF.0DU"
-    },
     {
       "name": "func_overlay_008_F0001294_185EFEC",
       "file": "src/overlays/o008/overlay_008.c",
@@ -1537,7 +1522,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 32,
       "category": "size-mismatch",
-      "source_context_sha256": "9IH2.AaIf.UaQt.JGPz.gT_k.sCut.D270.byVQ.QrA4.jFtS.xmc"
+      "source_context_sha256": "uC8S.lUgX.w7sM.XOma.sHzg.-Q3H.L6_q.E-Hv.TrgU.gctF.rvs"
     },
     {
       "name": "refractOutputAssembler",

@@ -27,11 +27,6 @@ typedef struct O57AnimObject {
     f32 z;
 } O57AnimObject;
 
-typedef struct O57AnimPath {
-    u8 pad00[8];
-    O57AnimObject *object;
-} O57AnimPath;
-
 typedef struct O57SpawnPacket {
     s16 kind;
     u8 mode;
@@ -61,21 +56,20 @@ typedef struct O57SpawnState {
     s16 mode;
 } O57SpawnState;
 
-typedef struct O57Spawned {
-    u8 pad00[0x3C];
+typedef struct O57Thing {
+    u8 pad00[8];
+    O57AnimObject *object;
+    u8 pad0C[0xA];
+    u8 flags;
+    u8 pad17[0x25];
     s32 field3C;
     u8 pad40[0x28];
     O57SpawnState **state;
-} O57Spawned;
+} O57Thing;
 
 typedef struct O57ModeObject {
     s32 value;
 } O57ModeObject;
-
-typedef struct O57ModeResult {
-    u8 pad00[0x16];
-    u8 flags;
-} O57ModeResult;
 
 typedef struct O57Choice {
     u8 pad00[0x2A];
@@ -132,9 +126,11 @@ extern s32 gO57Value23CReloc;
 extern s32 gO57Value25CReloc;
 extern s32 gO57Value32CReloc;
 extern s32 gO57Value34CReloc;
-extern s32 gO57Value27CReloc;
-extern s32 gO57Value28CReloc;
-extern s32 gO57Values29CReloc[32];
+typedef struct O57Row {
+    s32 value;
+    u8 pad04[0xC];
+} O57Row;
+extern O57Row gO57Rows27CReloc[10];
 
 extern s32 gO57Mode11CReloc;
 extern s32 gO57Value128Reloc;
@@ -173,7 +169,7 @@ extern s32 gO57Value19CReloc;
 extern f32 gO57Value110Reloc;
 extern s32 gO57Value124Reloc;
 extern O57Pair gO57SpawnPairs3E8Reloc[4];
-extern O57Spawned *gO57Spawned150Reloc[4];
+extern O57Thing *gO57Spawned150Reloc[4];
 
 extern void *func_80028F54(void);
 extern void func_8004B0A4(s32 font);
@@ -182,51 +178,52 @@ extern void o57PrepareDescriptorReloc(Overlay45ResourceDescriptor *descriptor,
                                       s32 value);
 extern void o57PrepareDescriptorListReloc(void *list);
 extern void animseqStartPath(u8 pathId);
-extern O57AnimPath *func_800508B4(u8 pathId);
-extern O57Spawned *func_8000590C(void *packet, s32 mode);
+extern O57Thing *func_800508B4(u8 pathId);
+extern O57Thing *func_8000590C(void *packet, s32 mode);
 extern void initColourCycle(void *cycle, s32 count);
 extern void joyResetMap(void);
 extern s32 o57QueryModeReloc(void);
 extern void overlay57SetNodeValue(s32 id, s32 argument, f32 value);
 extern void o57PublishChoicesReloc(void);
 extern void func_8003A754(void);
-extern void func_8005AD64(O57Spawned *spawned, s32 mode, s32 index,
+extern void func_8005AD64(O57Thing *spawned, s32 mode, s32 index,
                           f32 value);
 
 /* Overlay 57 text +0x0..+0x954, the module initializer.
  *
- * 2026-10-01 (lane d-o057): 276 masked at size delta -20 -> 100 at -8 by
- * rewriting inherited shape. The 0x134/0x138 stores are the bss fog pair
- * (D_134), not the data id list the switch walks (the relocation records
- * separate the two sections); the spawn packets are two locals, not a union,
- * and the final one stores z; the id walks are `while (*entry != -1)` reading
- * the entry at each use with the f32 prototype; the choice mask is a plain
- * `|=`; func_8005AD64's last argument is a float zero; the initial packet
- * assigns scale before kind and state.
+ * 2026-10-01 (lane d-o057): 276 -> 100 by rewriting inherited shape (the bss
+ * fog pair D_134, two packet locals, `while (*entry != -1)` id walks, the f32
+ * prototype, a plain `|=` choice mask, a float zero for func_8005AD64).
+ * 2026-10-02 (lane e-o057): 100 at -8 -> 84 at 0 (the pair table read as
+ * `(u8 *)table + (i << 2)` keeps `i` live as the target does).
  *
- * 2026-10-02 (lane e-o057): 100 at -8 -> 84 at 0. The final spawn loop reads
- * the pair table as `(u8 *)table + (i << 2)` (a shift, not an ixa, so uopt
- * keeps `i` and its sll/addu instead of walking both arrays), the call
- * argument re-reads the spawned array, and the descriptor loop that counts
- * 0x36 + n uses its own counter (`id`) so the choice/spawn `i` is one web.
- * Open: register order (target i=s1, array walk s0; ours swapped, and the
- * descriptor loops swap resourceIndex/end) and the frame, 0x88 against 0x78. */
+ * 2026-10-02 (lane j-o057): 84 -> 19 masked at delta 0, frame 0x78 exact. The
+ * target declares few locals and reuses them across regions (L99 frame cells,
+ * L100 web priorities):
+ *  - `descriptor` is also the final loop's walk over gO57Spawned150Reloc, so
+ *    that walk outranks `i` (target s0/s1) instead of being an SR temporary;
+ *  - `entry` is also every descriptor loop's end pointer (target s1 in both);
+ *  - the index tables are subscripted by the one counter `value`, so uopt
+ *    strength-reduces them into s2 below the end pointer;
+ *  - the 0x27C..0x31C seed fill is one 10-row loop (IDO peels the two
+ *    remainder rows), and value10 is read at each use, so no carrier shares
+ *    v0 with the fill's walk;
+ *  - one ring path/spawn/result pointer (`object`), an unreferenced `pad`
+ *    cell, `>= 3` for the flag test, the mask compare with the local first.
+ * Open (19 words): the descriptor loops' preheader lui order (index first in
+ * the target), the 0x36 loop's delay-slot choice, the final loop's preheader
+ * order and one ring draw (0x80 in t9, the target draws t5 earlier). */
 #ifdef NON_MATCHING
 void func_overlay_057_F0000000_18A3BF8(void) {
-    u8 choiceMask;
-    O57FinalSpawnPacket final;
     Overlay45ResourceDescriptor **descriptor;
-    s16 *resourceIndex;
-    Overlay45ResourceDescriptor **descriptorEnd;
+    s32 *entry;
     s32 i;
+    u8 choiceMask;
     O57SpawnPacket packet;
     s32 value;
-    s32 stride;
-    O57Spawned *spawned;
-    O57AnimPath *path;
-    O57ModeResult *result;
-    s32 *entry;
-    s32 id;
+    O57Thing *object;
+    O57FinalSpawnPacket final;
+    s32 pad;
 
     gO57Current100Reloc = gO57ResidentCurrentReloc;
     gO57Pending104Reloc = 0;
@@ -235,7 +232,6 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     gO57Runtime1B8Reloc = func_80028F54();
     func_8004B0A4(3);
     fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-
 
     gO57Descriptor00Reloc = overlay45CreateDescriptor(
         gO57ResourceTableReloc->entries[0x40], 0xA0, -0x28, 4);
@@ -252,61 +248,61 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     gO57DescriptorFCReloc = overlay45CreateDescriptor(
         gO57ResourceTableReloc->entries[0x6D], 0xA0, -0x20, 4);
 
-    resourceIndex = gO57DescriptorIndicesD8Reloc;
+    value = 0;
+    entry = (s32 *)gO57Descriptors2CEndReloc;
     descriptor = gO57Descriptors08Reloc;
-    descriptorEnd = gO57Descriptors2CEndReloc;
     do {
         *descriptor = overlay45CreateDescriptor(
-            gO57ResourceTableReloc->entries[*resourceIndex], 0xA0, 0xBE,
+            gO57ResourceTableReloc->entries[gO57DescriptorIndicesD8Reloc[value]], 0xA0, 0xBE,
             0x204);
         overlay45SetMode(*descriptor, 0);
         descriptor++;
-        resourceIndex++;
-    } while (descriptor < descriptorEnd);
+        value++;
+    } while (descriptor < (Overlay45ResourceDescriptor **)entry);
 
-    resourceIndex = gO57DescriptorIndicesECReloc;
+    value = 0;
+    entry = (s32 *)gO57Descriptors54EndReloc;
     descriptor = gO57Descriptors30Reloc;
-    descriptorEnd = gO57Descriptors54EndReloc;
     do {
         *descriptor = overlay45CreateDescriptor(
-            gO57ResourceTableReloc->entries[*resourceIndex], 0xA0, 0xBE,
+            gO57ResourceTableReloc->entries[gO57DescriptorIndicesECReloc[value]], 0xA0, 0xBE,
             0x204);
         overlay45SetMode(*descriptor, 0);
         descriptor++;
-        resourceIndex++;
-    } while (descriptor < descriptorEnd);
+        value++;
+    } while (descriptor < (Overlay45ResourceDescriptor **)entry);
 
-    resourceIndex = gO57DescriptorIndices100Reloc;
+    value = 0;
+    entry = (s32 *)gO57DescriptorsE0EndReloc;
     descriptor = gO57Descriptors80Reloc;
-    descriptorEnd = gO57DescriptorsE0EndReloc;
     do {
         *descriptor = overlay45CreateDescriptor(
-            gO57ResourceTableReloc->entries[*resourceIndex], 0xA0, 0x104, 4);
+            gO57ResourceTableReloc->entries[gO57DescriptorIndices100Reloc[value]], 0xA0, 0x104, 4);
         overlay45SetMode(*descriptor, 0);
         descriptor++;
-        resourceIndex++;
-    } while (descriptor < descriptorEnd);
+        value++;
+    } while (descriptor < (Overlay45ResourceDescriptor **)entry);
 
-    resourceIndex = gO57DescriptorIndices130Reloc;
+    value = 0;
+    entry = (s32 *)gO57DescriptorsF8EndReloc;
     descriptor = gO57DescriptorsE0Reloc;
-    descriptorEnd = gO57DescriptorsF8EndReloc;
     do {
         *descriptor = overlay45CreateDescriptor(
-            gO57ResourceTableReloc->entries[*resourceIndex], 0xA0, 0x104, 4);
+            gO57ResourceTableReloc->entries[gO57DescriptorIndices130Reloc[value]], 0xA0, 0x104, 4);
         overlay45SetMode(*descriptor, 0);
         descriptor++;
-        resourceIndex++;
-    } while (descriptor < descriptorEnd);
+        value++;
+    } while (descriptor < (Overlay45ResourceDescriptor **)entry);
 
+    value = 0;
     descriptor = gO57Descriptors58Reloc;
-    descriptorEnd = gO57Descriptors6CEndReloc;
-    id = 0;
+    entry = (s32 *)gO57Descriptors6CEndReloc;
     do {
         *descriptor = overlay45CreateDescriptor(
-            gO57ResourceTableReloc->entries[0x36 + id], 0xA0, -0x28, 4);
+            gO57ResourceTableReloc->entries[0x36 + value], 0xA0, -0x28, 4);
         descriptor++;
-        id++;
-    } while (descriptor < descriptorEnd);
+        value++;
+    } while (descriptor < (Overlay45ResourceDescriptor **)entry);
 
     o57PrepareDescriptorReloc(gO57Descriptor00PrepareReloc, 0xFF);
     o57PrepareDescriptorReloc(gO57DescriptorF8PrepareReloc, 0xFF);
@@ -317,19 +313,14 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     o57PrepareDescriptorListReloc(&gO57DescriptorList80Reloc);
     o57PrepareDescriptorListReloc(&gO57DescriptorList130Reloc);
 
-
     gO57Value1FCReloc = gO57SeedDataReloc.value0C;
-    value = gO57SeedDataReloc.value10;
-    gO57Value21CReloc = value;
+    gO57Value21CReloc = gO57SeedDataReloc.value10;
     gO57Value23CReloc = gO57SeedDataReloc.value14;
-    gO57Value25CReloc = value;
+    gO57Value25CReloc = gO57SeedDataReloc.value10;
     gO57Value32CReloc = gO57SeedDataReloc.value1EC;
     gO57Value34CReloc = gO57SeedDataReloc.value1F4;
-    value = gO57SeedDataReloc.value1C;
-    gO57Value27CReloc = value;
-    gO57Value28CReloc = value;
-    for (stride = 0; stride < 32; stride += 4) {
-        gO57Values29CReloc[stride] = value;
+    for (i = 0; i < 10; i++) {
+        gO57Rows27CReloc[i].value = gO57SeedDataReloc.value1C;
     }
 
     gO57Mode11CReloc = 0;
@@ -346,26 +337,26 @@ void func_overlay_057_F0000000_18A3BF8(void) {
 
     animseqStartPath(0x3C);
 
-    path = func_800508B4(0x3C);
-    if (path->object != 0) {
+    object = func_800508B4(0x3C);
+    if (object->object != 0) {
         packet.mode = 0x14;
         packet.flags = 0;
-        packet.x = path->object->x;
-        packet.y = path->object->y;
-        packet.z = path->object->z;
-        packet.angle = path->object->angle;
-        packet.scale = path->object->scale;
+        packet.x = object->object->x;
+        packet.y = object->object->y;
+        packet.z = object->object->z;
+        packet.angle = object->object->angle;
+        packet.scale = object->object->scale;
         packet.kind = 0x35;
         packet.state = 0;
-        spawned = func_8000590C(&packet, 1);
-        if (spawned != 0) {
-            spawned->field3C = 0;
+        object = func_8000590C(&packet, 1);
+        if (object != 0) {
+            object->field3C = 0;
         }
         packet.kind = 0x38;
         packet.state = 1;
-        spawned = func_8000590C(&packet, 1);
-        if (spawned != 0) {
-            spawned->field3C = 0;
+        object = func_8000590C(&packet, 1);
+        if (object != 0) {
+            object->field3C = 0;
         }
     }
 
@@ -378,10 +369,9 @@ void func_overlay_057_F0000000_18A3BF8(void) {
         gO57State118Reloc = 0xB;
         gO57ModeObject180Reloc.value = 0x2E;
         animseqStartPath(((u8 *)&gO57ModeObject180Reloc)[3]);
-        result = (O57ModeResult *)func_800508B4(
-            ((u8 *)&gO57ModeObject180Reloc)[3]);
-        if (result != 0) {
-            result->flags |= 2;
+        object = func_800508B4(((u8 *)&gO57ModeObject180Reloc)[3]);
+        if (object != 0) {
+            object->flags |= 2;
         }
         gO57SpecialModeReloc = 0;
         gO57SpecialByteReloc = 1;
@@ -409,10 +399,9 @@ void func_overlay_057_F0000000_18A3BF8(void) {
         gO57State118Reloc = 0xA;
         gO57ModeObject180Reloc.value = 0x50;
         animseqStartPath(((u8 *)&gO57ModeObject180Reloc)[3]);
-        result = (O57ModeResult *)func_800508B4(
-            ((u8 *)&gO57ModeObject180Reloc)[3]);
-        if (result != 0) {
-            result->flags |= 2;
+        object = func_800508B4(((u8 *)&gO57ModeObject180Reloc)[3]);
+        if (object != 0) {
+            object->flags |= 2;
         }
         gO57SpecialModeReloc = 5;
         break;
@@ -420,10 +409,9 @@ void func_overlay_057_F0000000_18A3BF8(void) {
         gO57State118Reloc = 0x14;
         gO57ModeObject180Reloc.value = 0x54;
         animseqStartPath(((u8 *)&gO57ModeObject180Reloc)[3]);
-        result = (O57ModeResult *)func_800508B4(
-            ((u8 *)&gO57ModeObject180Reloc)[3]);
-        if (result != 0) {
-            result->flags |= 2;
+        object = func_800508B4(((u8 *)&gO57ModeObject180Reloc)[3]);
+        if (object != 0) {
+            object->flags |= 2;
         }
         if (gO57SpecialConditionReloc == 1) {
             gO57SpecialModeReloc = 7;
@@ -433,13 +421,12 @@ void func_overlay_057_F0000000_18A3BF8(void) {
         break;
     }
 
-
     for (i = 0; i < 4; i++) {
         if (gO57ChoicesReloc[i].enabled != 0) {
             choiceMask |= 1 << i;
         }
     }
-    if ((gO57ChoiceMaskReloc != choiceMask) ||
+    if ((choiceMask != gO57ChoiceMaskReloc) ||
         (gO57ChoiceMaskReferenceReloc != gO57ChoiceSourceReloc)) {
         o57PublishChoicesReloc();
         gO57ChoiceDirtyReloc = 0;
@@ -449,8 +436,7 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     }
 
     gO57Value188Reloc = 0;
-    gO57Value18CReloc =
-        ((((gO57ResidentFlags10Reloc & 0x1C0) >> 6) < 3) ^ 1);
+    gO57Value18CReloc = ((gO57ResidentFlags10Reloc & 0x1C0) >> 6) >= 3;
     if (gO57Value18CReloc != 0) {
         gO57Value190Reloc = 3;
     } else {
@@ -462,21 +448,21 @@ void func_overlay_057_F0000000_18A3BF8(void) {
     gO57Value110Reloc = -140.0f;
     gO57Value124Reloc = 0;
 
-
     i = 0;
+    descriptor = (Overlay45ResourceDescriptor **)gO57Spawned150Reloc;
     do {
         final.kind = 0x138;
         final.mode = 0xE;
         final.z = 0;
-        final.byte0A = 0;
         final.state = 0;
         final.byte0B = 0x80;
+        final.byte0A = 0;
         final.x = *(s16 *)((u8 *)gO57SpawnPairs3E8Reloc + (i << 2));
         final.y = *(s16 *)((u8 *)gO57SpawnPairs3E8Reloc + (i << 2) + 2);
-        spawned = func_8000590C(&final, 0);
-        gO57Spawned150Reloc[i] = spawned;
-        (*spawned->state)->mode = 2;
-        func_8005AD64(gO57Spawned150Reloc[i], 0, 0, 0.0f);
+        *descriptor = (Overlay45ResourceDescriptor *)func_8000590C(&final, 0);
+        (*((O57Thing *)*descriptor)->state)->mode = 2;
+        func_8005AD64((O57Thing *)*descriptor, 0, 0, 0.0f);
+        descriptor++;
         i++;
     } while (i != 4);
 }
@@ -486,10 +472,10 @@ void func_overlay_057_F0000000_18A3BF8(void) {
 
 /* PLATEAU-HANDOFF:func_overlay_057_F0000000_18A3BF8:start
  * symbol: func_overlay_057_F0000000_18A3BF8
- * score: 84/597 words
- * frame: 0x88
+ * score: 19/597 words
+ * frame: 0x78
  * relocations: 246
- * first-mismatch: +0x8
- * summary: 84 at 0: pair table via (i<<2) keeps i; own counter for 0x36 loop. Open: s-reg order (i s1/ptr s0), frame 0x88 vs 0x78.
+ * first-mismatch: +0x150
+ * summary: 19 at 0, frame exact: locals reused (descriptor walks spawns, entry is loop end). Open: loop preheader lui order, 0x36 delay slot, one ring draw.
  * PLATEAU-HANDOFF:func_overlay_057_F0000000_18A3BF8:end
  */

@@ -284,7 +284,7 @@ Relocation-masked mismatch evidence covers **155 / 155** resolved rows. The raw 
 | raw `differing_words <= 10` | 1 |
 | relocation-masked `differing_words <= 10` | 2 |
 | raw `differing_words <= 20` | 3 |
-| relocation-masked `differing_words <= 20` | 4 |
+| relocation-masked `differing_words <= 20` | 5 |
 
 ### Complete ranked queue
 
@@ -298,24 +298,24 @@ units remain distinct.
 | 2 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F0001294_185EFEC` | `o008` | `other` | 5,036 | 60 | 7 | 112 | 216 | 0 | — |
 | 3 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
 | 4 | `src/overlays/o015/overlay_015.c` | `overlay15InitStarsAndPalette` | `o015` | `other` | 988 | 18 | 17 | 112 | 112 | 0 | — |
-| 5 | `src/overlays/o001/overlay_001_tail.c` | `func_overlay_001_F000438C_185076C` | `o001` | `other` | 6,168 | 89 | 41 | 332 | 2,084 | 0 | — |
-| 6 | `src/overlays/o073/overlay73Draw.c` | `func_overlay_073_F0000D70_18CB830` | `o073` | `other` | 312 | 42 | 42 | 28 | 28 | 0 | — |
-| 7 | `src/main/matrix.c` | `MatrixMultiplyVec4` | `main` | `other` | 212 | 47 | 47 | 0 | 0 | 0 | — |
-| 8 | `src/main/joy.c` | `joyRead` | `main` | `other` | 636 | 48 | 47 | 44 | 44 | 0 | — |
-| 9 | `src/overlays/o017/overlay17AdvanceChain.c` | `overlay17AdvanceChain` | `o017` | `other` | 588 | 49 | 49 | 24 | 24 | 0 | — |
-| 10 | `src/main/spranim.c` | `effectboxControl` | `main` | `other` | 772 | 51 | 51 | 72 | 72 | 0 | — |
-| 11 | `src/overlays/o101/overlay101TailA6BC.c` | `overlay101TailA6BC` | `o101` | `other` | 1,168 | 57 | 53 | 0 | 0 | 0 | — |
-| 12 | `src/overlays/o040/overlay40BuildFrame.c` | `overlay40BuildFrame` | `o040` | `other` | 324 | 60 | 60 | 48 | 48 | 0 | — |
-| 13 | `src/main/objects.c` | `func_8000BB84` | `main` | `other` | 260 | 61 | 61 | 0 | 0 | 0 | — |
-| 14 | `src/main/shadows.c` | `func_800180B4` | `main` | `other` | 824 | 61 | 61 | 52 | 52 | 0 | — |
-| 15 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 69 | 69 | 4 | 4 | 0 | — |
-| 16 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 70 | 70 | 348 | 348 | 0 | — |
-| 17 | `src/overlays/o036/overlay36ChooseWeightedState.c` | `func_overlay_036_F0000A60_1883F18` | `o036` | `other` | 680 | 71 | 71 | 60 | 60 | 0 | — |
-| 18 | `src/overlays/o025/overlay_025.c` | `overlay25UpdateEffect` | `o025` | `other` | 1,036 | 74 | 74 | 60 | 60 | 0 | — |
-| 19 | `src/overlays/o035/func_overlay_035_F0000B40_1882820.c` | `func_overlay_035_F0000B40_1882820` | `o035` | `other` | 2,112 | 78 | 77 | 160 | 160 | 0 | — |
-| 20 | `src/overlays/o007/overlay_007_tail.c` | `overlay7UpdateOwnerMode` | `o007` | `other` | 556 | 81 | 81 | 16 | 16 | 0 | — |
-| 21 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 83 | 83 | 52 | 52 | 0 | — |
-| 22 | `src/overlays/o057/func_overlay_057_F0000000_18A3BF8.c` | `func_overlay_057_F0000000_18A3BF8` | `o057` | `other` | 2,388 | 131 | 84 | 8 | 8 | 0 | — |
+| 5 | `src/overlays/o057/func_overlay_057_F0000000_18A3BF8.c` | `func_overlay_057_F0000000_18A3BF8` | `o057` | `other` | 2,388 | 71 | 19 | 16 | 336 | 0 | — |
+| 6 | `src/overlays/o001/overlay_001_tail.c` | `func_overlay_001_F000438C_185076C` | `o001` | `other` | 6,168 | 89 | 41 | 332 | 2,084 | 0 | — |
+| 7 | `src/overlays/o073/overlay73Draw.c` | `func_overlay_073_F0000D70_18CB830` | `o073` | `other` | 312 | 42 | 42 | 28 | 28 | 0 | — |
+| 8 | `src/main/matrix.c` | `MatrixMultiplyVec4` | `main` | `other` | 212 | 47 | 47 | 0 | 0 | 0 | — |
+| 9 | `src/main/joy.c` | `joyRead` | `main` | `other` | 636 | 48 | 47 | 44 | 44 | 0 | — |
+| 10 | `src/overlays/o017/overlay17AdvanceChain.c` | `overlay17AdvanceChain` | `o017` | `other` | 588 | 49 | 49 | 24 | 24 | 0 | — |
+| 11 | `src/main/spranim.c` | `effectboxControl` | `main` | `other` | 772 | 51 | 51 | 72 | 72 | 0 | — |
+| 12 | `src/overlays/o101/overlay101TailA6BC.c` | `overlay101TailA6BC` | `o101` | `other` | 1,168 | 57 | 53 | 0 | 0 | 0 | — |
+| 13 | `src/overlays/o040/overlay40BuildFrame.c` | `overlay40BuildFrame` | `o040` | `other` | 324 | 60 | 60 | 48 | 48 | 0 | — |
+| 14 | `src/main/objects.c` | `func_8000BB84` | `main` | `other` | 260 | 61 | 61 | 0 | 0 | 0 | — |
+| 15 | `src/main/shadows.c` | `func_800180B4` | `main` | `other` | 824 | 61 | 61 | 52 | 52 | 0 | — |
+| 16 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 69 | 69 | 4 | 4 | 0 | — |
+| 17 | `src/main/track.c` | `func_8001398C` | `main` | `other` | 1,320 | 70 | 70 | 348 | 348 | 0 | — |
+| 18 | `src/overlays/o036/overlay36ChooseWeightedState.c` | `func_overlay_036_F0000A60_1883F18` | `o036` | `other` | 680 | 71 | 71 | 60 | 60 | 0 | — |
+| 19 | `src/overlays/o025/overlay_025.c` | `overlay25UpdateEffect` | `o025` | `other` | 1,036 | 74 | 74 | 60 | 60 | 0 | — |
+| 20 | `src/overlays/o035/func_overlay_035_F0000B40_1882820.c` | `func_overlay_035_F0000B40_1882820` | `o035` | `other` | 2,112 | 78 | 77 | 160 | 160 | 0 | — |
+| 21 | `src/overlays/o007/overlay_007_tail.c` | `overlay7UpdateOwnerMode` | `o007` | `other` | 556 | 81 | 81 | 16 | 16 | 0 | — |
+| 22 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 83 | 83 | 52 | 52 | 0 | — |
 | 23 | `src/overlays/o031/overlay31BuildLookupTables.c` | `func_overlay_031_F0000000_187F520` | `o031` | `other` | 744 | 86 | 86 | 52 | 52 | 0 | — |
 | 24 | `src/overlays/o038/func_overlay_038_F000047C_188618C.c` | `func_overlay_038_F000047C_188618C` | `o038` | `other` | 876 | 90 | 90 | 192 | 192 | 0 | — |
 | 25 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 93 | 92 | 44 | 44 | 0 | — |

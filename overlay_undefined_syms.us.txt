@@ -1298,6 +1298,19 @@ func_overlay_029_F00010C4_187E374Reloc = 0xf0000000;
 mathOneFloatRPY_o029Reloc = 0xf0000000;
 trackMakePolylist_o029Reloc = 0xf0000000;
 
+/* overlay 29: func_overlay_029_F00005C4_187D874.c.o */
+Arctanf_o029Reloc = 0xf0000000;
+func_80006EA0_o029Reloc = 0xf0000000;
+func_80008128_o029Reloc = 0xf0000000;
+gOverlay29UpdatePoolReloc = 0x00000000;
+mathDiffAngle_o029Reloc = 0xf0000000;
+mathOneFloatPY_o029Reloc = 0xf0000000;
+overlay29FindPreviousAngleReloc = 0xf0000000;
+overlay29RecordMinimumReloc = 0xf0000000;
+overlay29TestDirectionReloc = 0xf0000000;
+partUpdateTriggers_o029Reloc = 0xf0000000;
+sqrtf_o029Reloc = 0xf0000000;
+
 /* overlay 29: overlay29ProjectPoint.c.o */
 gOverlay29MinimumYReloc = 0x00000000;
 

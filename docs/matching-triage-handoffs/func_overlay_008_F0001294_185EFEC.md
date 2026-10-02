@@ -8,7 +8,46 @@
 - first mismatch: +0xD8
 - summary: No driftDirection, stick read past the clamp copy, s16 modeFlags; left: v0 for w114, unkFE vs shift temp, one compare order.
 
-## 2026-10-02 lane h-r8: 16 to 7, size and frame exact
+## 2026-10-02 lane i-r8: 7 held, three residuals re-priced
+
+21 `tools/shape_product.py` products (about 150 cells) on the 7-word
+shape; no cell below 7. Instrumented records (proc 7, identity-gated
+against the configured object) on the base and on the cells named below.
+
+- +0xD8 (1 word). The compare order follows the operand's IR kind: a
+  symbol operand (`value`, assigned in the test, two statements, constant
+  on either side, `!(... == 0.0f)`, empty-then-else) is always emitted
+  value first; a load expression is emitted constant first, as shipped.
+  Integer `0` / truthiness tests materialise a second constant (+4, 1191).
+  On the field-direct shape the field web (w41, bb 6-7, save 3/2) loses
+  f0 to `factor`; split by region, region 1 through `speedLimit` and
+  region 2 through `scale` fixes +0xD8 and the field's f0 but gives region
+  1 speedLimit's loop colour f14 (10); region 1 `factor` alone still
+  outranks the field (save 4/2 = 2.0 against 1.5, 13); region 1 `scale`
+  and region 2 `factor` puts region 2 in f0 (11); `scale` in both is 119.
+  Seven clamp spellings and block-scoped factor locals do not move the
+  saves. The shipped colours need the field web ranked above a region-1
+  symbol that also takes f2, which no natural spelling measured gives.
+- +0x20C (3 words). w114 (the trunc, bb 28 only, save 3) has every
+  caller-saved colour at cost 0 and only s0 forbidden; the only webs
+  live in bb 28 are the s-register symbols, the a3 `D_10` address and
+  split (memory) webs, so nothing denies v0. Moving the conversion to an
+  earlier block (three positions) or writing `(s32) update` at both uses
+  compiles byte-identically (uopt re-materialises it at the use).
+  `while (n--)` / `if (n--) do ... while (n--)` give the same code with a
+  spill home moved (9); `!= 0` forms add an sltu (+4). Five pre-loop and
+  three loop-bottom count spellings, and u32/int types of both counters,
+  are byte-identical.
+- +0xDBC (3 words). w548 (shift temp, save 30, bb 215) outranks w545
+  (unkFE load, 30/2) and w542 (drift difference, 20/3 blocks). The
+  target needs w545 decided before both, or w548 absent with w542 denied
+  v0. Every edit that removes the temp or the difference carrier (the
+  expression spelt at the shift, the fallback, or both; the shift tested
+  directly; ternaries; `>>=` in place) gives w545 v0 but rotates
+  a0/a1/a2 and drops two target words (the unkFC argument load at +0xD84
+  and the state move at +0xE34): -8, 425 to 439, the same signature as
+  forcing w548 to a3. Ten step carriers (including a fresh local, -8) and
+  the index/steeringInput role swap (10) do not help.
 
 Every edit was a `tools/shape_product.py` cell on the whole TU; the three
 sibling candidates still measure 438, 296 and 384.

@@ -2071,9 +2071,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay38UpdateParticles.c.o: POSTPROCESS 
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x328
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F000047C_188618C.c.o: CFLAGS += \
-	-Wab,-r4300_mul -DO38_TRANSFORM_TAIL -DO38_TAIL_SIZE=8 \
-	-DO38_VOLATILE_TEST -DO38_POOL_CURSOR -DO38_FINISH_ONE \
-	-DO38_VOLATILE_FINAL
+	-Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F000047C_188618C.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x36C
 

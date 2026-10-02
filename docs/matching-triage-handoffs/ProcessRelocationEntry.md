@@ -2,11 +2,42 @@
 ### `ProcessRelocationEntry` plateau handoff
 
 - source: `src/main/runlink.c`
-- score: 126 differing words
-- frame: 0x48
+- score: 0/146 words, promoted
+- frame: 0x40
 - relocations: 25
-- first mismatch: +0x0
-- summary: Pair 4 (+0x210, split-not-copy) is the move at line 423. hiAddr size 0/137, inlined hi 127, u32 carrier 129, text-base hoist 127. Stall: a1 forbidden, s1 stays.
+- first mismatch: none
+- summary: Matched. JFG's body against the plain word bitfield of the record, JFG's local order with its unused pad, and a u32 cast on each section base.
+
+#### 2026-10-02 (lane `w2-front`): matched from a fresh rewrite; the inherited shape was the residual
+
+126 masked at size +4 -> 0 at delta 0, `gmake verify` OK. Every pass before
+this one varied spellings inside the inherited body. That body read the
+record through the byte union (`u.n.mode`, `u.b.flags`) and wrote the op
+nibble back as the OR of `op & 0xF` and `flags & 0xFFF0`. Those masks are what IDO emits
+for a store into a 4-bit field. Read that way the target is a plain bitfield
+write, and the rest follows from writing the function as
+`tools/overlay_tables.py` decodes the record (`offset = info >> 8`,
+`mode = (info >> 4) & 0xF`, `op = info & 0xF`):
+
+1. `mode` and `op` are read from a `u32 targetOffset:24, mode:4, op:4`
+   view of the info word (added to `RelocationEntry`'s union as `u.f`). `op` is
+   saved on entry, set to SYMBOL for a DATA record, and restored on every exit.
+   The locals are declared in JFG's order, with its unused `s32 pad`.
+   patchLocation, mode, resolvedAddr and nextPatchLocation then take the
+   target's spill homes 0x3C, 0x38, 0x34 and 0x30, op takes 0x24, s1
+   disappears and the frame is 0x40. First compile: 6 masked words, size
+   delta 0.
+2. The last 6 words were the two section-base sums, offset drawn before base.
+   L52: a cast is a node, so `(u32) D_800D2DB0 + offset` draws the base first.
+   `(u32)`, `(s32)` and `(u8 *)` casts all give 0. The uncast forms,
+   `&base[offset]`, `offset + base`, and the context-struct field
+   `D_800D2DA8.dataBase[offset]` are all 6. That product ran 4 base spellings
+   by 4 offset spellings.
+
+What this breaks: every lever in the August and September notes
+("a1 forbidden, s1 stays", declaration-order and hiAddr variants, the
+compiler-identity hypothesis). Those notes were about the byte-union shape.
+On the bitfield shape patchLocation is never offered a callee-saved register.
 
 Summary before this remeasure: Remeasured 2026-09-23: 126 masked at size delta +4, frame 0x48 against 0x40, relocations 25 of 25; a1/a3 after the call stay structural.
 

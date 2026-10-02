@@ -1688,6 +1688,7 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x2F54, 0x32CC, "func_overlay_060_F0002F54_18BCD2C"),
     ],
     63: [
+        (0x1D4, 0x74C, "overlay63UpdateEffects"),
         (0x77C, 0x928, "overlay63UpdateSequence"),
     ],
     68: [

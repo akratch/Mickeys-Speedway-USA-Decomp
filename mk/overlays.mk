@@ -3411,7 +3411,34 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay26HandleEffects.c.o: POSTPROCESS = 
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F00001A0_187A598.c.o: CFLAGS += -Wab,-r4300_mul
 ifneq ($(NON_MATCHING),1)
+# Exact C. Its compiler pool (-0.1f, -0.2f, 6.283185f and two 0.9f) duplicates
+# the retained overlay data at rodata-relative +0x0, which the shipped hi/lo
+# pairs encode. Rebind the ten references to a pool symbol and discard the
+# digest-checked duplicate, overlay 29's metadata-only form; no instruction is
+# edited. The thirteen resident callees go through the generated surface
+# entries.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F00001A0_187A598.c.o: \
+	config/normalizations/func_overlay_026_F00001A0_187A598.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F00001A0_187A598.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym Arctanf=Arctanf_o026Reloc \
+		--redefine-sym Powerf=Powerf_o026Reloc \
+		--redefine-sym dAngle=dAngle_o026Reloc \
+		--redefine-sym func_80006EA0=func_80006EA0_o026Reloc \
+		--redefine-sym func_80008128=func_80008128_o026Reloc \
+		--redefine-sym func_80010900=func_80010900_o026Reloc \
+		--redefine-sym func_8001DCD0=func_8001DCD0_o026Reloc \
+		--redefine-sym func_8002A8BC=func_8002A8BC_o026Reloc \
+		--redefine-sym func_8002A8C0=func_8002A8C0_o026Reloc \
+		--redefine-sym mathDiffAngle=mathDiffAngle_o026Reloc \
+		--redefine-sym partUpdateTriggers=partUpdateTriggers_o026Reloc \
+		--redefine-sym sqrtf=sqrtf_o026Reloc \
+		--redefine-sym trackMakePolylist=trackMakePolylist_o026Reloc \
+		--add-symbol gOverlay26UpdatePoolReloc=0x0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_026_F00001A0_187A598.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:65b37d85616c58b2a7b1db845df735b73a82241585f505fda670a9739bdeea4b && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x978
 endif
 

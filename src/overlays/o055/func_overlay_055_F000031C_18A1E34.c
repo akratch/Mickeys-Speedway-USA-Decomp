@@ -97,18 +97,18 @@ extern void func_80037414(s32, f32, f32, s32, s32, s32, s32);
 extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
 extern void func_800005CC(f32, u8);
 
-#ifdef NON_MATCHING
 /* Overlay 55's HUD update: the four-player sibling of overlay 53's
  * func_overlay_053_F0000240_189DBE8 and of overlay52TailB, written the same
- * way (2026-10-02). Callees and resident data are the ones this overlay's
- * relocation records name, with overlay52TailB's prototypes (u8 colour and
- * mode arguments; func_8002FB34's last argument is u8, which keeps the 1 out
- * of s4). The digit rows are written through `digits` (the shipped code
- * reloads each dividend after the row stores), the counter increment is a
- * (u8) truncation (one ring draw), the icon's resource is read before the
- * display-list command (the item value then stays in one web), and one
- * unused local under gameState places the spill cells. 375 masked at +4
- * to 57 at delta 0; the open words are listed in the handoff shard. */
+ * way. Callees and resident data are the ones this overlay's relocation
+ * records name, with overlay52TailB's prototypes (u8 colour and mode
+ * arguments; func_8002FB34's last argument is u8). Built with -Wab,-r4300_mul
+ * (mk/overlays.mk) for the rotated easing loop. The declarations are the
+ * shipped frame: `item` and `clock` sit where the frame has otherwise unused
+ * cells. The clock row's address is taken after the digit row's (that orders
+ * its spill cell), the item is read once at the icon's join, the counter
+ * increment is a (u8) truncation and the icon's 53 arm masks its two
+ * coordinates (each one ring draw). The arm's two stores and the packet's
+ * two words share a line each, as a macro expansion would (L59). */
 void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
     s32 i;
     s32 player;
@@ -127,12 +127,12 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
     s32 iconY;
     Overlay55DisplayCommand *command;
     s32 pad1;
-    s32 pad0;
+    s32 item;
     Overlay55Transform transform;
     s32 width;
     s32 height;
     u8 *gameState;
-    s32 padLow;
+    Overlay55Digit *clock;
 
     gameState = func_80028F54();
     camStandardOrtho(&D_800D3140, &D_800D3144);
@@ -156,6 +156,7 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
         camSetScissor(&D_800D3140);
         if (*gameState == 6) {
             digits = gOverlay55TimeDigits[player];
+            clock = gOverlay55ClockDigits[player];
             overlay56SplitTime(state->time, &minutes, &seconds, &centiseconds);
             level = levelGetLevel();
             if (D_800C947C == 0 && state->racerIndex != level->laps &&
@@ -189,7 +190,7 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
             D_800D3550[4].unk10 = (-digitY - hudOffset) + 0x74;
             D_800D3550[4].unk4 = state->time * -65536 / 300;
             func_80039E34(4);
-            func_8002F618(&D_800D3140, gOverlay55ClockDigits[player], 0, hudOffset, 255, 255, 255, 255);
+            func_8002F618(&D_800D3140, clock, 0, hudOffset, 255, 255, 255, 255);
         }
         if (state->character != 255) {
             gOverlay55IconAlpha[player] += updateRate * 16;
@@ -216,19 +217,18 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
                     iconX = (player & 1) ? 0x1A2 : 0x25;
                     iconY = (player < 2) ? 0x86 : 0x12A;
                 }
-                transform.y = iconY;
+                item = gOverlay55Items[player];
                 transform.x = iconX;
-                if (gOverlay55Items[player] == 53) {
-                    transform.y = iconY - 6;
-                    transform.x = iconX - 7;
+                transform.y = iconY;
+                if (item == 53) {
+                    transform.x = (iconX - 7) & 0xFFFF; transform.y = (iconY - 6) & 0xFFFF;
                 }
-                transform.resource = D_800D31C8[gOverlay55Items[player]];
-                transform.unk04 = 0;
+                transform.resource = D_800D31C8[item];
                 transform.unk08 = 0;
+                transform.unk04 = 0;
                 transform.unk10 = 0;
                 command = D_800D3140++;
-                command->w0 = 0xFA000000;
-                command->w1 = 0xFFFFFFFF;
+                command->w0 = 0xFA000000; command->w1 = 0xFFFFFFFF;
                 func_8002FB34(&D_800D3140, &transform, 0.0f, 0.0f, 0.66f, 0.66f,
                               gOverlay55IconAlpha[player] | ~0xFF, 1);
             }
@@ -249,16 +249,3 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
     camStandardOrtho(&D_800D3140, &D_800D3144);
     camSetNo(0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o055/func_overlay_055_F000031C_18A1E34/func_overlay_055_F000031C_18A1E34.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_055_F000031C_18A1E34:start
- * symbol: func_overlay_055_F000031C_18A1E34
- * score: 57 differing words
- * frame: 0xE0
- * relocations: 102
- * first-mismatch: +0x2C0
- * summary: 375 at +4 to 57 at delta 0: rewritten as overlay 53's matched sibling; clock-row spill cell and item reload placement open
- * PLATEAU-HANDOFF:func_overlay_055_F000031C_18A1E34:end
- */

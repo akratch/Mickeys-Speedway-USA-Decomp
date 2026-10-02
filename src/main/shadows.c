@@ -470,7 +470,7 @@ extern s32 func_8000FD68(s32 *result, s16 xMin, s16 zMin, s16 xMax,
                          s32 yMin, s32 yMax, s32 yMax2);
 extern void shadowBoundingBox(s32 count, f32 *points, f32 *xMin,
                               f32 *zMin, f32 *xMax, f32 *zMax);
-extern void func_80017140(void *query, s32 mask, void *sector, s32 gridMask);
+extern void func_80017140(void *query, f32 *points, void *sector, s32 gridMask);
 extern s32 func_80017BCC(void *query, void *angles, void *surface);
 extern void func_80018654();
 extern f32 D_800817A4;
@@ -493,7 +493,7 @@ typedef struct Shadow168Angle {
 /* Workbench verdict: structure-mismatch, 553 differing words; first mismatch +0x4. */
 /* Candidate is 563/556 instructions with the exact 0x190-byte target frame. */
 /* Relocation count is exact at 48; allocation/CFG order and identities remain unresolved. */
-void func_80016890(void *arg0, void *arg1, void *arg2, f32 arg3, f32 arg4,
+void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
                    f32 arg5, s16 arg6) {
     typedef struct Shadow168Query {
         s32 surface0;
@@ -536,19 +536,20 @@ void func_80016890(void *arg0, void *arg1, void *arg2, f32 arg3, f32 arg4,
     s32 count;
     s32 i;
     s32 active;
+    void *arg2 = arg2p;
 
-    SH168_S16((u8 *) arg2 + (SH168_U8(arg2, 0x13) * 2), 0x14) =
-        (s16) D_80079454;
-    query.surface0 = SH168_S32(arg2, 8);
     query.x8 = arg3;
     query.yC = arg4;
     query.z10 = arg5;
     query.type14 = arg6;
+    query.scale1C = 2.0f;
+    SH168_S16((u8 *) arg2 + (SH168_U8(arg2, 0x13) * 2), 0x14) =
+        (s16) D_80079454;
+    query.surface0 = SH168_S32(arg2, 8);
     query.lowerY16 = (s16) ((s32) SH168_S16(SH168_PTR(arg0, 0x40), 0x6C) +
                             (s32) arg4);
     query.upperY18 = (s16) ((s32) SH168_S16(SH168_PTR(arg0, 0x40), 0x6E) +
                             (s32) arg4);
-    query.scale1C = 2.0f;
 
     if (SH168_S16(arg0, 0x44) != 1) {
         distance = SH168_F32(arg0, 0x30);
@@ -565,10 +566,9 @@ void func_80016890(void *arg0, void *arg1, void *arg2, f32 arg3, f32 arg4,
         query.scale1C += distance * D_800817A4;
     }
 
-    radius = SH168_F32(arg2, 0);
-    base = radius * 10.0f;
-    query.halfX34 = base;
-    query.halfZ38 = base;
+    query.inverseScale2C = SH168_F32(arg2, 0);
+    query.halfX34 = query.inverseScale2C * 10.0f;
+    query.halfZ38 = query.halfX34;
     query.expanded3C = 1.0f;
     if (arg1 != NULL) {
         cosine = func_8002A8BC(SH168_S16(arg1, 2));
@@ -588,7 +588,7 @@ void func_80016890(void *arg0, void *arg1, void *arg2, f32 arg3, f32 arg4,
         }
     }
     query.expanded3C *= query.halfZ38;
-    query.area30 = 2.0f * base * (query.halfZ38 + query.expanded3C);
+    query.area30 = 2.0f * query.halfX34 * (query.halfZ38 + query.expanded3C);
 
     query.height24 =
         (f32) SH168_S16(SH168_PTR(arg0, 0x40), 0x6C) * 0.125f;
@@ -597,7 +597,7 @@ void func_80016890(void *arg0, void *arg1, void *arg2, f32 arg3, f32 arg4,
     }
     query.heightRange28 = 7.0f * query.height24;
     query.minimum20 = -32768.0f;
-    query.inverseScale2C = 144.0f / radius;
+    query.inverseScale2C = 144.0f / query.inverseScale2C;
 
     for (i = 0; i < 4; i++) {
         points[i * 2] = arg3;
@@ -687,7 +687,7 @@ void func_80016890(void *arg0, void *arg1, void *arg2, f32 arg3, f32 arg4,
                     (result[i] * 0xC),
                 (s32) query.bounds40[0], (s32) query.bounds40[1],
                 (s32) query.bounds40[2], (s32) query.bounds40[3]);
-            func_80017140(&query, (s32) &points[0],
+            func_80017140(&query, &points[0],
                           *(u8 **) ((u8 *) (s32) D_800CB284 + 4) +
                               (result[i] << 6),
                           value);
@@ -741,7 +741,7 @@ void func_80016890(void *arg0, void *arg1, void *arg2, f32 arg3, f32 arg4,
  * polygon-end pointer unrolls the loop (+744). Left: the literal 3 hoisted
  * into s7 (the target keeps slti and re-materialises 3 and the polygon
  * address at each call, hoisting only polygon+0x30), and arg2 held in t5. */
-void func_80017140(void *arg0, s32 arg1, void *arg2, s32 arg3) {
+void func_80017140(void *arg0, f32 *arg1, void *arg2, s32 arg3) {
     u8 *var_a3;
     u8 *temp_a3;
     u8 *temp_t1;
@@ -1493,10 +1493,10 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_80016890:start
  * symbol: func_80016890
- * score: 563/571 words
+ * score: 534/563 words
  * frame: 0x190
  * relocations: 48
- * first-mismatch: +0x4
- * summary: Corrected-scheduler baseline: eight target FP hazard nops remain; no new source mechanism or draw-schedule evidence was found.
+ * first-mismatch: +0x8
+ * summary: 563->534, delta +60->+28: radius as query field, arg2 copied to a local (s3), query stores first, f32* points arg
  * PLATEAU-HANDOFF:func_80016890:end
  */

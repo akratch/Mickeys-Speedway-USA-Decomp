@@ -47,10 +47,10 @@ extern f32 D_8;
 extern f32 D_C;
 extern u8 D_A7C[];
 
-extern s16 Arctanf(f32 y, f32 x);
+extern s32 Arctanf(f32 y, f32 x);
 extern f32 sqrtf(f32 value);
-extern f32 func_8002A8BC(s32 angle);
-extern f32 func_8002A8C0(s32 angle);
+extern f32 func_8002A8BC(s16 angle);
+extern f32 func_8002A8C0(s16 angle);
 extern void trackMakePolylist(s32 count, O22Vec3f *start, O22Vec3f *end,
                               f32 *distance, void *arg4, s32 arg5);
 extern s32 func_80010900(O22Vec3f *start, O22Vec3f *end, f32 distance,
@@ -69,13 +69,19 @@ extern void func_80036544(void *entry, s32 *mode, s32 animationId,
 /* Nested exclusive-block f32 carriers produced the 0xE0 frame. Dropping them
  * closes the frame to 0x90; an unused pointer restores the 8-byte rounding
  * cell. $f20 went away once speed was stored to state before the bounce
- * calls. Size is still 3 words short. */
+ * calls. Size is still 3 words short.
+ *
+ * 2026-10-02 (lane q-ovl9), 448 -> 402: the target truncates the outer
+ * Arctanf result before passing it on (`sll`/`sra`), so Arctanf returns s32
+ * and the sine/cosine helpers take s16; one f32 conversion of updateRate
+ * serves all three axes (`unusedStep` keeps the home it had). D_4, D_8 and
+ * D_C are this function's rodata literals (14.4f, 0.8f, 0.03f), inert here. */
 #ifdef NON_MATCHING
 void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
     O22State *state;
     O22Model *model;
     f32 deltaTime;
-    f32 step;
+    f32 unusedStep;
     f32 distance;
     f32 accelerationX;
     f32 accelerationY;
@@ -91,7 +97,6 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
 
     state = object->state;
     deltaTime = (f32)updateRate;
-    step = (f32)updateRate;
     distance = D_4;
     object->flags80 = 0;
     model = object->model;
@@ -125,11 +130,11 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
                           (0.5f * accelerationX * deltaTime * deltaTime);
     object->position.y += (object->velocity.y * deltaTime) +
                           (0.5f * accelerationY * deltaTime * deltaTime);
-    object->position.z += (object->velocity.z * step) +
-                          (0.5f * accelerationZ * step * step);
+    object->position.z += (object->velocity.z * deltaTime) +
+                          (0.5f * accelerationZ * deltaTime * deltaTime);
     object->velocity.x = object->velocity.x + (accelerationX * deltaTime);
     object->velocity.y = object->velocity.y + (accelerationY * deltaTime);
-    object->velocity.z = object->velocity.z + (accelerationZ * step);
+    object->velocity.z = object->velocity.z + (accelerationZ * deltaTime);
     state->flags = 0;
 
     trackMakePolylist(1, &state->previousPosition, &object->position,
@@ -211,7 +216,7 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
             }
         } else if (state->flags & 2) {
             object->velocity.y =
-                (object->position.y - state->previousPosition.y) / step;
+                (object->position.y - state->previousPosition.y) / deltaTime;
             if (state->mode == 1) {
                 speed = (object->velocity.x * object->velocity.x) +
                         (object->velocity.y * object->velocity.y) +
@@ -221,7 +226,7 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
                     object->velocity.x /= speed;
                     object->velocity.y /= speed;
                     object->velocity.z /= speed;
-                    speed -= D_C * step;
+                    speed -= D_C * deltaTime;
                     object->velocity.x *= speed;
                     object->velocity.y *= speed;
                     object->velocity.z *= speed;
@@ -261,10 +266,10 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_022_F00002B0_18783B8:start
  * symbol: func_overlay_022_F00002B0_18783B8
- * score: 448/499 words
+ * score: 402/499 words
  * frame: 0x90
  * relocations: 29
- * first-mismatch: +0x1C
- * summary: Pair 4 +0x5F0 owns L213 stack-load, L224 move, L237 stack-load. Unowned call gone. f20 if speed crosses calls; volatile reload stays masked 448.
+ * first-mismatch: +0x28
+ * summary: Arctanf returns s32, sine/cosine take s16 (outer result truncated); one updateRate float for all axes. 3 words short.
  * PLATEAU-HANDOFF:func_overlay_022_F00002B0_18783B8:end
  */

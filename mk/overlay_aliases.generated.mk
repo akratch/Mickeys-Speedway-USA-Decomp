@@ -15,7 +15,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CreateChain.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_017_F0000318_1873CD0=overlay17CreateChain $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19BuildPlanes.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_019_F00001E0_1875438=overlay19BuildPlanes $@
+	$(OBJCOPY) \
+		--redefine-sym func_overlay_019_F00001E0_1875438=overlay19BuildPlanes \
+		--redefine-sym sqrtf=sqrtf_o019Reloc $@
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o019/overlay19ClassifyEdge.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_019_F0000D78_1875FD0=overlay19ClassifyEdge $@

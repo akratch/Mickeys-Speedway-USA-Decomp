@@ -98,235 +98,204 @@ void modInitModels(void) {
     }
     D_800CB490--;
 }
-#ifdef NON_MATCHING
-/* PROVENANCE: cache-loop and stack-home lifetimes are adapted from JFG
- * upstream efd5abb's corresponding modLoadModel assembly. JFG retains that
- * function as GLOBAL_ASM; Mickey's cache tables, layout, and bytes remain
- * authority. */
-/* Workbench verdict: structure-mismatch, 365/401 words differ; first mismatch is at +0x8. */
-/* Target is 401 instructions/frame -120; candidate is 396 instructions/frame -136. */
-/* The JFG carrier pass removed five words and 0x28 frame bytes; the remaining pool web needs source provenance. */
-void *func_8001F520(s32 arg0, s32 arg1) {
-    u8 *entry;
-    u8 *model;
-    u8 *source;
-    u8 *table;
-    s32 highBit;
-    s32 modelId;
-    s32 cacheIndex;
-    s32 freeIndex;
-    s8 fromFree;
-    s8 newSlot;
-    s32 sourceStart;
-    s32 sourceSize;
-    s32 allocationSize;
+typedef struct ModelGfxPart {
+    u8 textureIndex;
+    s8 group;
+    u8 pad2[2];
+    s8 segmentEnds[2];
+    s16 vertexStart;
+    s16 vertexIndex;
+    u8 padA;
+    u8 textureParameter;
+    u32 flags;
+} ModelGfxPart;
+
+/* Matched 2026-10-02 (lane x-models) by porting DKR's object_model_init
+ * shape over the inherited m2c body: the ASSETCACHE shift macros (no strength
+ * reduction of the cache scan), the VERSION_79 rollback flags as s8 locals,
+ * struct fields for the relocated pointers, a separate counter for the nested
+ * display-list loop (which keeps i caller-saved), and declaration order for
+ * the home ladder. */
+/* PROVENANCE: adapted from DKR's object_model_init (src/object_models.c, the
+ * VERSION_79 cache rollback); Mickey's fields, nested display lists, texture
+ * cleanup and instance builders are its own. */
+/* DKR macros.h ASSETCACHE_ID/ASSETCACHE_PTR: one cache entry is an id word
+ * followed by a pointer word. */
+#define MODEL_CACHE_ID(x) ((x << 1) + 0)
+#define MODEL_CACHE_PTR(x) ((x << 1) + 1)
+
+void *func_8001F520(s32 modelID, s32 flags) {
     s32 i;
     s32 j;
+    s32 cacheIndex;
+    s32 highBit;
+    ObjectModel *objMdl;
+    s32 romOffset;
+    s32 compressedSize;
+    void *instance;
     s32 start;
+    s8 fromFree;
+    s8 cacheChanged;
+    s32 unused; /* unreferenced: the target's home ladder has a cell here (L99) */
+    s32 modelSize;
+    s32 group;
+    u32 compressedData;
     s32 last;
-    void *result;
 
-    highBit = arg0 & 0x8000;
-    modelId = arg0 ^ highBit;
-    if (modelId >= D_800CB490) {
-        modelId = 0;
+    highBit = modelID & 0x8000;
+    modelID ^= highBit;
+    if (modelID >= D_800CB490) {
+        modelID = 0;
     }
-    cacheIndex = 0;
-    if (D_800CB48C > 0) {
-        do {
-            entry = (u8 *) D_800CB484 + (cacheIndex * 8);
-            if (modelId == *(s32 *) entry) {
-                model = *(u8 **) (entry + 4);
-                if (highBit != 0) {
-                    result = func_8001FBCC((void *) model);
-                } else {
-                    result = func_8001FC50((void *) model, arg1 & 3);
-                }
-                if (result != 0) {
-                    *(s16 *) (model + 0x4C) += 1;
-                }
-                return result;
+    for (i = 0; i < D_800CB48C; i++) {
+        if (modelID == D_800CB484[MODEL_CACHE_ID(i)]) {
+            objMdl = (ObjectModel *) D_800CB484[MODEL_CACHE_PTR(i)];
+            if (highBit) {
+                instance = func_8001FBCC((ModelCopySource *) objMdl);
+            } else {
+                instance = func_8001FC50((ModelInstanceSource *) objMdl, flags & 3);
             }
-            cacheIndex++;
-        } while (cacheIndex < D_800CB48C);
+            if (instance != NULL) {
+                objMdl->references++;
+            }
+            return instance;
+        }
     }
-    fromFree = 0;
-    newSlot = 0;
+    fromFree = FALSE;
+    cacheChanged = FALSE;
     if (D_800CB494 > 0) {
         D_800CB494--;
-        fromFree = 1;
-        freeIndex = *(s32 *) ((u8 *) D_800CB488 +
-                              (D_800CB494 * 4));
+        fromFree = TRUE;
+        cacheIndex = D_800CB488[D_800CB494];
     } else {
-        freeIndex = D_800CB48C;
-        newSlot = 1;
+        cacheIndex = D_800CB48C;
+        cacheChanged = TRUE;
         D_800CB48C++;
     }
-    source = (u8 *) D_800CB480 + (modelId * 4);
-    sourceStart = *(s32 *) source;
-    sourceSize = *(s32 *) (source + 4) - sourceStart;
-    allocationSize = func_8004D7A8(0x27, sourceStart) + 0x80;
-    model = (u8 *) func_8002B314(allocationSize, 0x8A);
-    if (model == NULL) {
-        if (fromFree != 0) {
+    romOffset = D_800CB480[modelID];
+    compressedSize = D_800CB480[modelID + 1] - romOffset;
+    modelSize = func_8004D7A8(0x27, romOffset) + sizeof(ObjectModel);
+    objMdl = (ObjectModel *) func_8002B314(modelSize, 0x8A);
+    if (objMdl == NULL) {
+        if (fromFree) {
             D_800CB494++;
         }
-        if (newSlot != 0) {
+        if (cacheChanged) {
             D_800CB48C--;
         }
-        return 0;
+        return NULL;
     }
-    source = model + allocationSize - sourceSize;
-    piRomLoadSection(0x27, (u32) source, sourceStart, sourceSize);
-    func_8004D7E0(source, model);
-    if (*(s32 *) (model + 0x70) != 0) {
-        *(void **) (model + 0x78) =
-            func_8002B314((*(s32 *) (model + 0x70) * 4) + 4, 0x8A);
-        if (*(void **) (model + 0x78) == NULL) {
-            if (fromFree != 0) {
+    compressedData = (u32) ((u8 *) objMdl + modelSize) - compressedSize;
+    piRomLoadSection(0x27, compressedData, romOffset, compressedSize);
+    func_8004D7E0((u8 *) compressedData, (u8 *) objMdl);
+    if (objMdl->nestedCount != 0) {
+        objMdl->nestedAllocations = (void **) func_8002B314((objMdl->nestedCount * 4) + 4, 0x8A);
+        if (objMdl->nestedAllocations == NULL) {
+            if (fromFree) {
                 D_800CB494++;
             }
-            if (newSlot != 0) {
+            if (cacheChanged) {
                 D_800CB48C--;
             }
-            return 0;
+            return NULL;
         }
     } else {
-        *(void **) (model + 0x78) = NULL;
+        objMdl->nestedAllocations = NULL;
     }
-    *(void **) (model + 0x18) =
-        (u8 *) *(void **) (model + 0x18) + (u32) model;
-    *(void **) (model + 0x1C) =
-        (u8 *) *(void **) (model + 0x1C) + (u32) model;
-    *(void **) (model + 0x20) =
-        (u8 *) *(void **) (model + 0x20) + (u32) model;
-    *(void **) (model + 0x24) =
-        (u8 *) *(void **) (model + 0x24) + (u32) model;
-    *(void **) (model + 0x74) =
-        (u8 *) *(void **) (model + 0x74) + (u32) model;
-    *(void **) (model + 0x30) =
-        (u8 *) *(void **) (model + 0x30) + (u32) model;
-    *(void **) (model + 0x34) =
-        (u8 *) *(void **) (model + 0x34) + (u32) model;
-    *(void **) (model + 0x38) =
-        (u8 *) *(void **) (model + 0x38) + (u32) model;
-    *(void **) (model + 0x60) =
-        (u8 *) *(void **) (model + 0x60) + (u32) model;
-    if (*(void **) (model + 0x64) != NULL) {
-        *(void **) (model + 0x64) =
-            (u8 *) *(void **) (model + 0x64) + (u32) model;
+    objMdl->textures = (ModelTexture *) ((s32) objMdl->textures + (u8 *) objMdl);
+    objMdl->vertices = (void *) ((s32) objMdl->vertices + (u8 *) objMdl);
+    objMdl->triangles = (void *) ((s32) objMdl->triangles + (u8 *) objMdl);
+    objMdl->batches = (struct ModelGfxPart *) ((s32) objMdl->batches + (u8 *) objMdl);
+    objMdl->nestedGroups = (u8 *) ((s32) objMdl->nestedGroups + (u8 *) objMdl);
+    objMdl->unk30 = (void *) ((s32) objMdl->unk30 + (u8 *) objMdl);
+    objMdl->unk34 = (void *) ((s32) objMdl->unk34 + (u8 *) objMdl);
+    objMdl->unk38 = (void *) ((s32) objMdl->unk38 + (u8 *) objMdl);
+    objMdl->unk60 = (void *) ((s32) objMdl->unk60 + (u8 *) objMdl);
+    if (objMdl->unk64 != NULL) {
+        objMdl->unk64 = (void *) ((s32) objMdl->unk64 + (u8 *) objMdl);
     }
-    *(void **) (model + 0x5C) =
-        (u8 *) *(void **) (model + 0x5C) + (u32) model;
-    if (*(void **) (model + 0x54) != NULL) {
-        *(void **) (model + 0x54) =
-            (u8 *) *(void **) (model + 0x54) + (u32) model;
+    objMdl->unk5C = (void *) ((s32) objMdl->unk5C + (u8 *) objMdl);
+    if (objMdl->unk54 != NULL) {
+        objMdl->unk54 = (void *) ((s32) objMdl->unk54 + (u8 *) objMdl);
     }
-    *(s16 *) (model + 0x4C) = 1;
-    *(s8 *) (model + 0x4E) = 0;
-    *(s32 *) (model + 0x58) = 0;
-    *(s32 *) (model + 0x50) = 0;
-    *(void **) (model + 0x28) = NULL;
-    *(s32 *) (model + 0x68) = 0;
-    *(s32 *) (model + 0x6C) = 0;
-    cacheIndex = 0;
-    if (*(u8 *) (model + 0x10) > 0) {
-        table = *(u8 **) (model + 0x18);
-        i = 0;
-        do {
-            *(void **) (table + i) =
-                func_80034448(*(s16 *) (table + i + 6));
-            if (*(void **) (table + i) == NULL) {
-                j = 0;
-                i = 0;
-                while (j < cacheIndex) {
-                    func_800347A0(*(void **) (table + i));
-                    *(void **) (table + i) = NULL;
-                    j++;
-                    i += 8;
-                }
-                while (j < *(u8 *) (model + 0x10)) {
-                    *(void **) (table + i) = NULL;
-                    j++;
-                    i += 8;
-                }
-                goto load_fail;
+    objMdl->references = 1;
+    objMdl->animationCount = 0;
+    objMdl->unk58 = NULL;
+    objMdl->animations = NULL;
+    objMdl->unk28 = NULL;
+    objMdl->unk68 = NULL;
+    objMdl->unk6C = NULL;
+    for (i = 0; i < objMdl->numberOfTextures; i++) {
+        objMdl->textures[i].texture = func_80034448(objMdl->textures[i].textureId);
+        if (objMdl->textures[i].texture == NULL) {
+            for (j = 0; j < i; j++) {
+                func_800347A0(objMdl->textures[j].texture);
+                objMdl->textures[j].texture = NULL;
             }
-            cacheIndex++;
-            i += 8;
-        } while (cacheIndex < *(u8 *) (model + 0x10));
+            for (; j < objMdl->numberOfTextures; j++) {
+                objMdl->textures[j].texture = NULL;
+            }
+            goto block_30;
+        }
     }
-    table = *(u8 **) (model + 0x24);
-    i = 0;
-    while ((i < *(s16 *) (model + 0x16)) &&
-           ((table[0] == 0xFF) || (table[0] < *(u8 *) (model + 0x10)))) {
-        table += 0x10;
-        i++;
+    for (i = 0; i < objMdl->numberOfBatches; i++) {
+        if (objMdl->batches[i].textureIndex != 0xFF &&
+            objMdl->batches[i].textureIndex >= objMdl->numberOfTextures) {
+            goto block_30;
+        }
     }
-    if (i != *(s16 *) (model + 0x16)) {
-        goto load_fail;
+    if (func_8005A7A0(objMdl, modelID) == 0) {
+        goto block_30;
     }
-    if ((func_8005A7A0(model, modelId) == 0) ||
-        ((*(u8 *) (model + 0x11) != 0) &&
-         ((*(void **) (model + 0x28) =
-             func_8002B314(*(u8 *) (model + 0x10) * 8, 0x8A)) == NULL))) {
-        goto load_fail;
+    if (objMdl->unk11 != 0) {
+        objMdl->unk28 = func_8002B314(objMdl->numberOfTextures * 8, 0x8A);
+        if (objMdl->unk28 == NULL) {
+            goto block_30;
+        }
     }
-    if (*(s32 *) (model + 0x70) != 0) {
+    if (objMdl->nestedCount != 0) {
         start = 0;
-        i = 0;
-        while (i < *(s32 *) (model + 0x70)) {
-            last = *(*(u8 **) (model + 0x74) + i) - 1;
-            func_8002057C((Gfx **) (*(u8 **) (model + 0x78) + (i * 4)),
-                          (ObjectModel *) model, 0, 0,
+        for (group = 0; group < objMdl->nestedCount; group++) {
+            last = objMdl->nestedGroups[group] - 1;
+            func_8002057C((Gfx **) &objMdl->nestedAllocations[group], (struct ModelGfxSource *) objMdl, 0, 0,
                           start, last, 0);
             start = last + 1;
-            i++;
         }
-        func_8002057C((Gfx **) (*(u8 **) (model + 0x78) + (i * 4)),
-                      (ObjectModel *) model, 0, 0,
+        func_8002057C((Gfx **) &objMdl->nestedAllocations[group], (struct ModelGfxSource *) objMdl, 0, 0,
                       start, 0xFF, 0);
     } else {
-        *(u8 *) (model + 0x2C) =
-            (u8) func_8002057C((Gfx **) (model + 0x68),
-                               (ObjectModel *) model, 0, 0,
-                               0, 0xFF, 0);
-        if (*(s32 *) (model + 0x68) != 0) {
-            func_8002057C((Gfx **) (model + 0x6C),
-                          (ObjectModel *) model, 4, 0,
-                          0, 0xFF, 0);
-            if (*(s32 *) (model + 0x6C) == 0) {
-                goto load_fail;
-            }
+        objMdl->textureAnimationCount = func_8002057C((Gfx **) &objMdl->unk68,
+                                                      (struct ModelGfxSource *) objMdl, 0, 0, 0, 0xFF, 0);
+        if (objMdl->unk68 == NULL) {
+            goto block_30;
+        }
+        func_8002057C((Gfx **) &objMdl->unk6C, (struct ModelGfxSource *) objMdl, 4, 0, 0, 0xFF, 0);
+        if (objMdl->unk6C == NULL) {
+            goto block_30;
         }
     }
-    if (highBit != 0) {
-        result = func_8001FBCC((void *) model);
+    if (highBit) {
+        instance = func_8001FBCC((ModelCopySource *) objMdl);
     } else {
-        result = func_8001FC50((void *) model, arg1 & 3);
+        instance = func_8001FC50((ModelInstanceSource *) objMdl, flags & 3);
     }
-    if (result == 0) {
-        goto load_fail;
+    if (instance != NULL) {
+        D_800CB484[MODEL_CACHE_ID(cacheIndex)] = modelID;
+        D_800CB484[MODEL_CACHE_PTR(cacheIndex)] = (s32) objMdl;
+        if (D_800CB48C < 0x55) {
+            return instance;
+        }
     }
-    entry = (u8 *) D_800CB484 + (freeIndex * 8);
-    *(s32 *) entry = modelId;
-    *(void **) (entry + 4) = model;
-    if (D_800CB48C < 0x55) {
-        return result;
-    }
-load_fail:
-    if (newSlot != 0) {
+block_30:
+    if (cacheChanged) {
         D_800CB48C--;
     }
-    if (fromFree != 0) {
+    if (fromFree) {
         D_800CB494++;
     }
-    func_80020278((ObjectModel *) model);
-    return 0;
+    func_80020278(objMdl);
+    return NULL;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/models/func_8001F520.s")
-#endif
 /*
  * PROVENANCE -- JFG's built models.c object supplies the exact corresponding
  * skeleton at func_8003BE68, but no public C body. This body is reconstructed
@@ -786,17 +755,6 @@ s32 modelGetModelFlags(void) {
     return D_80079C00;
 }
 
-typedef struct ModelGfxPart {
-    u8 textureIndex;
-    s8 group;
-    u8 pad2[2];
-    s8 segmentEnds[2];
-    s16 vertexStart;
-    s16 vertexIndex;
-    u8 padA;
-    u8 textureParameter;
-    u32 flags;
-} ModelGfxPart;
 
 typedef struct ModelGfxTextureRef {
     void *texture;
@@ -1330,14 +1288,4 @@ void func_8002109C(ModelPointOwner *owner) {
  * first-mismatch: +0x18
  * summary: Delta 0, frame 0x78; naming left: target keeps modeBytes homed in both arms and gives pointBytes ra, here modeBytes takes ra
  * PLATEAU-HANDOFF:func_8001FC50:end
- */
-
-/* PLATEAU-HANDOFF:func_8001F520:start
- * symbol: func_8001F520
- * score: 365/401 words
- * frame: 0x88
- * relocations: 46
- * first-mismatch: +0x8
- * summary: JFG count reloads and carrier reuse removed five words and 0x28 frame bytes; the remaining pool web needs source provenance.
- * PLATEAU-HANDOFF:func_8001F520:end
  */

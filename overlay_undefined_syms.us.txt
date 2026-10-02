@@ -487,6 +487,12 @@ gOverlay7PrimaryModes = 0x000002a4;
 gOverlay7ValuesEnd = 0x000002aa;
 mathRnd_o007Reloc = 0xf0000000;
 overlay59AppendValueReloc = 0xf0000000;
+overlay7GetCheckIndexReloc = 0xf0000000;
+overlay7GetCheckTableReloc = 0xf0000000;
+overlay7GetCurrentReloc = 0xf0000000;
+overlay7GetModeReloc = 0xf0000000;
+overlay7RecordCheckReloc = 0xf0000000;
+overlay7SetOwnerModeReloc = 0xf0000000;
 
 /* overlay 8: overlay_008.c.o */
 D_10 = 0x00000010;
@@ -1122,6 +1128,9 @@ o19BeginReloc = 0xf0000000;
 o19CopyReloc = 0xf0000000;
 o19FreeReloc = 0xf0000000;
 o19StateReloc = 0xf0000000;
+
+/* overlay 19: overlay19BuildPlanes.c.o */
+sqrtf_o019Reloc = 0xf0000000;
 
 /* overlay 20: overlay20ReleaseTree.c.o */
 overlay20ReleaseTreeReloc = 0xf0000000;
@@ -4577,8 +4586,21 @@ o101PresACreatorReloc = 0xf0000000;
 o101PresAResetReloc = 0xf0000000;
 
 /* overlay 101: overlay101BuildPresentationB.c.o */
-D_34E8 = 0x000034e8;
-D_D40 = 0x00000d40;
+gO101PresBAssetD40 = 0x00000d40;
+gO101PresBFinalObject34E8 = 0x000034e8;
+gO101PresBInputs = 0x00000000;
+gO101PresBNode20Count = 0x000001c8;
+gO101PresBNode24Count = 0x000001d0;
+gO101PresBNode32Count = 0x000001cc;
+gO101PresBNodes20 = 0x00000200;
+gO101PresBNodes24 = 0x00000540;
+gO101PresBNodes32 = 0x00000340;
+gO101PresBOrderCount = 0x000001c4;
+gO101PresBOrderSlots = 0x000001c0;
+gO101PresBRoot = 0x00000000;
+o101PresBCreateCompactReloc = 0xf0000000;
+o101PresBCreatorReloc = 0xf0000000;
+o101PresBResetReloc = 0xf0000000;
 
 /* overlay 101: overlay101BuildPresentationC.c.o */
 D_3718 = 0x00003718;
@@ -4934,11 +4956,11 @@ func_overlay_007_F0000298_185C120 = overlay7AppendEntry;
 
 /* overlay 7: overlay_007_tail.c.o */
 func_overlay_007_F0000894_185C71C = overlay7DispatchModes;
+func_overlay_007_F0000AA0_185C928 = overlay7UpdateOwnerMode;
 func_overlay_007_F0000CCC_185CB54 = overlay7DispatchSelection;
 func_overlay_007_F0000DBC_185CC44 = overlay7CommitSelection;
 func_overlay_007_F0000EDC_185CD64 = overlay7FillValues;
 func_overlay_007_F0000F08_185CD90 = overlay7InitPool;
-func_overlay_007_F0000AA0_185C928 = overlay7UpdateOwnerMode;
 
 /* overlay 8: overlay_008.c.o */
 func_overlay_008_F0000000_185DD58 = overlay8Ignore;

@@ -162,6 +162,18 @@ typedef struct RelocationEntry {
             /* 0x07 */ u8 mode : 4; /* RELOC_TYPE_* */
             /* 0x07 */ u8 op : 4;   /* RELOC_OP_*, the same nibble the word test reads */
         } n;
+        /*
+         * The plain word bitfield, as tools/overlay_tables.py decodes the
+         * record: offset = info >> 8, mode = (info >> 4) & 0xF, op = info & 0xF.
+         * ProcessRelocationEntry is written against this view. Its `andi 0xFFF0`
+         * byte stores are IDO's insert into the 4-bit `op` field. The source
+         * does not mask anything.
+         */
+        /* 0x04 */ struct {
+            /* 0x04 */ u32 targetOffset : 24;
+            /* 0x07 */ u32 mode : 4;
+            /* 0x07 */ u32 op : 4;
+        } f;
     } u;
 } RelocationEntry; /* sizeof == 0x8 */
 

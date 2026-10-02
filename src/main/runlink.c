@@ -16,7 +16,7 @@
  * docs/CLEANROOM.md (a published, retail-derived decompilation), and it is
  * stated here rather than left for a reader to infer from the similarity.
  *
- * What makes that adaptation *sound* for every function below except one is
+ * What makes that adaptation *sound* for every function below is
  * that each is validated by byte-identity against Mickey's own ROM: the
  * compiled C reproduces Mickey's instructions exactly, so JFG's shape is not
  * being taken on trust, it is being confirmed against this game's binary.
@@ -34,9 +34,8 @@
  *     Mickey's instruction offsets; only OverlayHeader carries fields this
  *     project has not yet touched, and the header says which those are.
  *
- * The one function without that backstop is ProcessRelocationEntry, which is
- * parked non-matching. Its provenance note is attached to it directly, because
- * for that one the adaptation is load-bearing and unverified.
+ * ProcessRelocationEntry was the last function here without that backstop.
+ * It matched on 2026-10-02. Its provenance note is attached to it directly.
  *
  * Flags: -O2 -mips2 -32. The -O2 is the project default; the -mips2 is a
  * measured deviation and the first evidence about how GAME code (as opposed to
@@ -69,7 +68,6 @@ extern char D_80082410[];
 extern void runlinkResumeCode(s32 overlayIndex);
 extern void runlinkFreeCode(s32 overlayIndex);
 extern void runlinkUnloadOverlay(s32 overlayIndex);
-extern s32 func_80031A30(RelocationEntry *relocEntry, s32 otIndex);
 extern void *func_8002B280(s32 size, s32 tag);
 extern void mmFree(void *address);
 extern s32 mmGetDelay(void);
@@ -227,155 +225,52 @@ void PatchInstruction(MipsInstruction *instr, u32 address, u8 patchOp) {
     osWritebackDCache(instr, sizeof(MipsInstruction));
     osInvalICache(instr, sizeof(MipsInstruction));
 }
-/* Plateau (2026-08-25): -O2 -mips2 stays 0x4 long, with 126 differing words from +0x0.
- * Splitting the pointer lifetime removes s1 and yields the a3 caller spill, but grows the frame;
- * type, pool-order, volatile-home, result-reuse, and register-hint variants miss a1/a3 after the call. */
-#ifdef NON_MATCHING
-/*
- * ProcessRelocationEntry -- PARKED, not matched. ROM 0x32630-0x32878.
- *
- * Applies one relocation record and returns how many records it consumed: a
- * HI16 record needs its matching LO16 to know whether the low half will sign
- * extend, so mode 5 reads the next record too and returns 2, everything else
- * returns 1. The body below is complete and believed semantically right; what
- * it does not reproduce is IDO's register allocation.
- *
- * NONMATCHING-notes:
- *
- *  - Residual after fifteen source variants: verdict=structure-mismatch,
- *    words=126, regs=121, insns=147 against the ROM's 146, with a 0x48-byte
- *    candidate frame against the target's 0x40. Measured with
- *    `decomp-workbench diagnose-dumps` plus two `campaign` runs, 8 variants
- *    then 7, both recorded in the one ledger named below. The brief's parking
- *    rule asked for five campaigns; two were run. See the report.
- *
- *  - The single mechanical cause, named by the workbench's web analysis:
- *    web `a3->s1`, count 8. The ROM keeps `patchLocation` in a temp register
- *    and caller-saves it around the ResolveRelocAddress call (`sw a3,0x3c(sp)`
- *    at 0x32690, `lw a3,0x3c(sp)` at 0x326A4); every candidate instead
- *    promotes it to the callee-saved s1. That costs one `sw s1` in the
- *    prologue and one `lw s1` in the epilogue -- the entire instruction-count
- *    delta -- and every downstream register name shifts with it. The ROM
- *    promotes exactly one value to a callee-saved register, `relocEntry` in
- *    s0, and stack-homes five locals: op at 0x24, nextPatchLocation at 0x30,
- *    resolvedAddr at 0x34, mode at 0x38, patchLocation at 0x3c.
- *
- *  - Variants tried, all ranked by the campaign at
- *    .decomp-workbench/campaigns/ProcessRelocationEntry-5073763cae48/:
- *      baseline                                        words=126
- *      no separate hi-immediate local                  words=128
- *      patchLocation declared first among locals       words=128
- *      patchLocation declared last among locals        words=127
- *      mode/op unsigned rather than signed             words=126 (identical object)
- *      &base[index] rather than base + index           words=126 (identical object)
- *      field-guide lever 7, a code-free `if (g) {}`    words=144 (worse)
- *    Second run, the temp-fifo-phase playbook and the branch-likely lead:
- *      lever 14, call argument hoisted to a local      words=126 (identical object)
- *      lever 14 + the hoist reused for the lookups     words=129
- *      lever 15, phantom pop in a real `if`            words=147 (worse)
- *      lever 16, redundant assembler-folded mask       words=148 (worse)
- *      two nested `if`s rather than one `&&`           words=126 (identical object)
- *      nested `if`s + lever 14 together                words=126 (identical object)
- *    Declaration order moves the pool but never demotes patchLocation out of
- *    s1, and six variants across the two runs produced objects byte-identical
- *    to the baseline -- the front end canonicalizes those spellings away
- *    before the allocator ever sees them.
- *
- *  - What was ruled out. The extra instruction is NOT a missing/extra
- *    statement: opcode multisets agree everywhere except the s1 save/restore
- *    pair, and the constant sites the workbench flags are all frame offsets
- *    shifted by that same save. It is also not the flags nibble: the mode and
- *    operation reads match the ROM instruction for instruction.
- *
- *  - Three leads, all now TRIED AND DEAD, recorded so nobody repeats them.
- *    (1) The ROM emits `bnezl` at 0x326F4/0x3270C where every candidate emits
- *    `bnez`, which suggested the guard was two nested `if`s rather than one
- *    `&&`. It is not: the nested form compiles to an object byte-identical to
- *    the `&&` form, so the branch-likely selection is downstream of the
- *    allocation problem, not a cause of it. (2) The temp-fifo-phase playbook
- *    (levers 14-16) is the documented lever for this class and does not move
- *    it -- hoisting the call argument to a local before the divergence is
- *    another byte-identical object, and levers 15 and 16 both regress. (3) A
- *    fresh 119-combination flag sweep and an explicit `-O2 -g0 -mips2 -32`
- *    schedule probe both retain the stock 147-instruction, 126-word object;
- *    `-O2 -g3` regresses to 128 words.
- *
- *  - What is left to try, for the next person. The allocation decision is
- *    uopt's, so only the unsampled pool-position family (8-13) remains. Failing
- *    that, this is a candidate for the compiler-identity question that
- *    src/main/matrix.c raises: if the float code says this ROM was not built by
- *    the IDO 5.3 in tools/ido/, then an allocator difference in integer code is
- *    exactly the second symptom that hypothesis predicts, and no amount of
- *    source rewriting will close it.
- *
- * The C is kept, under NON_MATCHING, rather than deleted -- but see the
- * provenance note above before trusting it. It is the best available reading
- * of the function, not a verified one.
- */
 /*
  * Apply one relocation record, and report how many records were consumed.
  *
  * A HI16 record needs its matching LO16 to know whether the low half will sign
- * extend, so mode 5 reads the *next* record too and returns 2; everything else
+ * extend, so mode 5 reads the *next* record too and returns 2. Everything else
  * returns 1. The caller's loop advances by the return value.
  *
- * PROVENANCE -- this body is ADAPTED FROM JFG's public decomp, and it is the
- * one function in this file where that matters.
+ * PROVENANCE: adapted from Jet Force Gemini's published src/runLink.c
+ * ProcessRelocationEntry, a permitted source under docs/CLEANROOM.md. That
+ * includes its local declaration order and its unused `pad`, which together
+ * place patchLocation, mode, resolvedAddr and nextPatchLocation at the target's
+ * stack homes 0x3C..0x30 and op at 0x24. Mickey's ROM is decisive, and it
+ * differs from JFG in three places. There is no HI16-without-LO16 check. The
+ * 0xFFC clamp is `>=`. The section bases are Mickey's text and data base
+ * globals.
  *
- * An earlier version of this comment claimed the body was "written from
- * Mickey's ROM rather than adapted: same name, independently derived code."
- * That was false and has been corrected. The body follows JFG's
- * ProcessRelocationEntry statement for statement -- same control flow, same
- * `>= 0xFFC` clamp, same sign-extension of the low half, same guard before
- * the unresolved-symbol substitution, same terminal flags expression in all
- * three exits. The reasoning that produced the false claim was that JFG ships
- * its version as non-matching, so mine "had to be" independent. That does not
- * follow: an unvalidated implementation is still the thing I read and
- * followed.
- *
- * Why this one matters more than the rest of the file: every other function
- * here is checked by byte-identity against Mickey's ROM, which converts a
- * borrowed shape into a verified one. This function is parked non-matching, so
- * it has no such backstop. Its correctness currently rests on JFG agreement
- * plus my reading of Mickey's asm -- and JFG agreement is NOT evidence about
- * Mickey, because JFG's own version is unvalidated too. Treat every statement
- * below as a hypothesis about Mickey until the function matches.
- *
- * VALIDATION MUST COME FROM MICKEY'S ASM. The disassembly is at
- * asm/nonmatchings/main/runlink/func_80031A30.s (ROM 0x32630-0x32878). Read it
- * against this body statement by statement before trusting any line; do not
- * treat "JFG does it this way" as a reason for anything.
- *
- * One inherited expression is called out specifically, because a reviewer
- * flagged it as evidence of copying and was right to look:
- * `relocEntry->u.b.flags &= 0xFFF0` masks a u8 field with a 16-bit constant,
- * which is a no-op above bit 7 and reads like a quirk carried over from JFG.
- * It is carried over. It is ALSO corroborated by Mickey's own ROM, which emits
- * `andi ...,0xFFF0` at 0x32668, 0x32790, 0x32830 and 0x32858 -- writing
- * `& 0xF0` instead changes the assembled immediate, so the expression is
- * load-bearing rather than cosmetic. Both facts are true at once: it is
- * inherited from JFG *and* it is what Mickey's instruction encodes. Kept, with
- * this note, rather than removed.
+ * Matched 2026-10-02 (lane w2-front) by the following changes, from 126
+ * masked words at size +4:
+ *  - The record is read through the plain word bitfield (RelocationEntry
+ *    u.f, the format tools/overlay_tables.py decodes). `op` is saved on
+ *    entry, cleared for a data-section record, and written back on each
+ *    exit. The inherited body's `flags & 0xFFF0` expressions were IDO's
+ *    bitfield insert. They were never source.
+ *  - The locals are declared in JFG's order, with the unused pad. That alone
+ *    removed s1 and reached 6 words at size delta 0.
+ *  - The section base is cast to u32 before the offset is added. The cast is
+ *    a node (L52), so the base is drawn before the offset, as in the target.
  */
 s32 ProcessRelocationEntry(RelocationEntry *relocEntry, s32 otIndex) {
-    u32 resolvedAddr;
-    u32 combinedAddr;
-    u32 hiImmediate;
-    u32 loImmediate;
     MipsInstruction *patchLocation;
-    MipsInstruction *nextPatchLocation;
-    s32 overlayNumber;
     s32 mode;
+    u32 resolvedAddr;
+    MipsInstruction *nextPatchLocation;
+    s32 pad;
+    s32 overlayNumber;
     s32 op;
+    u32 nextLo;
+    u32 currLo;
 
-    op = relocEntry->u.info & 0xF;
-    mode = relocEntry->u.n.mode;
-
-    if (op == RELOC_OP_DATA) {
-        patchLocation = (MipsInstruction *) (D_800D2DB0 + (relocEntry->u.info >> 8));
-        relocEntry->u.b.flags &= 0xFFF0;
+    mode = relocEntry->u.f.mode;
+    op = relocEntry->u.f.op;
+    if (relocEntry->u.f.op == RELOC_OP_DATA) {
+        patchLocation = (MipsInstruction *) ((u32) D_800D2DB0 + relocEntry->u.f.targetOffset);
+        relocEntry->u.f.op = RELOC_OP_SYMBOL;
     } else {
-        patchLocation = (MipsInstruction *) (D_800D2DAC + (relocEntry->u.info >> 8));
+        patchLocation = (MipsInstruction *) ((u32) D_800D2DAC + relocEntry->u.f.targetOffset);
     }
 
     resolvedAddr = (u32) ResolveRelocAddress(relocEntry->symbolIndex, otIndex, relocEntry, patchLocation);
@@ -385,48 +280,42 @@ s32 ProcessRelocationEntry(RelocationEntry *relocEntry, s32 otIndex) {
         if (overlayNumber >= 0xFFC) {
             overlayNumber = 0;
         }
-        if ((relocEntry->u.info & 0xF) == RELOC_OP_SYMBOL && overlayTable[overlayNumber].vramBase == 0) {
+        if (relocEntry->u.f.op == RELOC_OP_SYMBOL && overlayTable[overlayNumber].vramBase == 0) {
             resolvedAddr = (u32) &D_800D2DC4;
         }
-
-        nextPatchLocation = (MipsInstruction *) (D_800D2DAC + (relocEntry[1].u.info >> 8));
-        hiImmediate = patchLocation->i.immediate;
-        loImmediate = nextPatchLocation->i.immediate;
-        if (loImmediate & 0x8000) {
-            loImmediate |= 0xFFFF0000;
+        nextPatchLocation =
+            (MipsInstruction *) ((u32) D_800D2DAC + relocEntry[1].u.f.targetOffset);
+        currLo = patchLocation->i.immediate;
+        nextLo = nextPatchLocation->i.immediate;
+        if (nextLo & 0x8000) {
+            nextLo |= 0xFFFF0000;
         }
-        combinedAddr = (hiImmediate << 16) + loImmediate;
-        if (combinedAddr != (u32) &D_800D2DC4) {
-            resolvedAddr += combinedAddr;
+        currLo = (currLo << 16) + nextLo;
+        if (currLo != (u32) &D_800D2DC4) {
+            resolvedAddr += currLo;
         }
-
         PatchInstruction(patchLocation, resolvedAddr, RELOC_TYPE_HI16);
         PatchInstruction(nextPatchLocation, resolvedAddr, RELOC_TYPE_LO16);
-        relocEntry->u.b.flags = (op & 0xF) | (relocEntry->u.b.flags & 0xFFF0);
+        relocEntry->u.f.op = op;
         return 2;
-    }
-
-    if (mode == RELOC_TYPE_LO16) {
+    } else if (mode == RELOC_TYPE_LO16) {
         overlayNumber = overlayRomTable[relocEntry->symbolIndex].overlayNumber;
         if (overlayNumber >= 0xFFC) {
             overlayNumber = 0;
         }
-        if ((relocEntry->u.info & 0xF) == RELOC_OP_SYMBOL && overlayTable[overlayNumber].vramBase == 0) {
+        if (relocEntry->u.f.op == RELOC_OP_SYMBOL && overlayTable[overlayNumber].vramBase == 0) {
             resolvedAddr = (u32) &D_800D2DC4;
         }
-
-        PatchInstruction(patchLocation, resolvedAddr + patchLocation->i.immediate, RELOC_TYPE_LO16);
-        relocEntry->u.b.flags = (op & 0xF) | (relocEntry->u.b.flags & 0xFFF0);
+        resolvedAddr += patchLocation->i.immediate;
+        PatchInstruction(patchLocation, resolvedAddr, RELOC_TYPE_LO16);
+        relocEntry->u.f.op = op;
+        return 1;
+    } else {
+        PatchInstruction(patchLocation, resolvedAddr, mode);
+        relocEntry->u.f.op = op;
         return 1;
     }
-
-    PatchInstruction(patchLocation, resolvedAddr, mode);
-    relocEntry->u.b.flags = (op & 0xF) | (relocEntry->u.b.flags & 0xFFF0);
-    return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/runlink/func_80031A30.s")
-#endif
 
 /*
  * PROVENANCE: adapted from Jet Force Gemini's permitted published
@@ -517,7 +406,7 @@ s32 runlinkDownloadCode(s32 overlayIndex) {
         relocCount = (u32) overlay->relocTableSize2 >> 3;
         relocEntry = relocTable;
         while (relocCount-- > 0) {
-            if (func_80031A30(relocEntry, overlayIndex) == 2) {
+            if (ProcessRelocationEntry(relocEntry, overlayIndex) == 2) {
                 relocCount--;
                 relocEntry++;
             }
@@ -531,7 +420,7 @@ s32 runlinkDownloadCode(s32 overlayIndex) {
     relocCount = (u32) (u16) overlay->relocTableSize >> 3;
     relocEntry = (RelocationEntry *) D_800D2DA8.relocBase;
     while (relocCount-- > 0) {
-        if (func_80031A30(relocEntry, overlayIndex) == 2) {
+        if (ProcessRelocationEntry(relocEntry, overlayIndex) == 2) {
             relocCount--;
             relocEntry++;
         }
@@ -568,7 +457,7 @@ s32 runlinkDownloadCode(s32 overlayIndex) {
                 if (overlayNumber == overlayIndex &&
                     ((relocEntry->u.info & 0xF) == RELOC_OP_SYMBOL ||
                      (relocEntry->u.info & 0xF) == RELOC_OP_DATA)) {
-                    if (func_80031A30(relocEntry, otherIndex) == 2) {
+                    if (ProcessRelocationEntry(relocEntry, otherIndex) == 2) {
                         relocCount--;
                         relocEntry++;
                     }
@@ -1082,7 +971,7 @@ void runlinkResumeCode(s32 overlayIndex) {
             relocEntry = relocTable;
             while (relocCount-- > 0) {
                 if ((relocEntry->u.info >> 8) < (u32) overlay->textSize &&
-                    func_80031A30(relocEntry, overlayIndex) == 2) {
+                    ProcessRelocationEntry(relocEntry, overlayIndex) == 2) {
                     relocCount--;
                     relocEntry++;
                 }
@@ -1097,7 +986,7 @@ void runlinkResumeCode(s32 overlayIndex) {
         relocEntry = (RelocationEntry *) D_800D2DA8.relocBase;
         while (relocCount-- > 0) {
             if ((relocEntry->u.info >> 8) < (u32) overlay->textSize &&
-                func_80031A30(relocEntry, overlayIndex) == 2) {
+                ProcessRelocationEntry(relocEntry, overlayIndex) == 2) {
                 relocCount--;
                 relocEntry++;
             }
@@ -1135,7 +1024,7 @@ void runlinkResumeCode(s32 overlayIndex) {
                     if (overlayNumber == overlayIndex &&
                         ((relocEntry->u.info & 0xF) == RELOC_OP_SYMBOL ||
                          (relocEntry->u.info & 0xF) == RELOC_OP_DATA)) {
-                        if (func_80031A30(relocEntry, otherIndex) == 2) {
+                        if (ProcessRelocationEntry(relocEntry, otherIndex) == 2) {
                             relocCount--;
                             relocEntry++;
                         }
@@ -1317,13 +1206,3 @@ s32 runlinkGetAddressInfo(u32 address, s32 *moduleId, s32 *moduleAddress,
     }
     return 0;
 }
-
-/* PLATEAU-HANDOFF:ProcessRelocationEntry:start
- * symbol: ProcessRelocationEntry
- * score: 126 differing words
- * frame: 0x48
- * relocations: 25
- * first-mismatch: +0x0
- * summary: Pair 4 (+0x210, split-not-copy) is the move at line 423. hiAddr size 0/137, inlined hi 127, u32 carrier 129, text-base hoist 127. Stall: a1 forbidden, s1 stays.
- * PLATEAU-HANDOFF:ProcessRelocationEntry:end
- */

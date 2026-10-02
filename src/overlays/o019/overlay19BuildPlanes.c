@@ -1,203 +1,188 @@
 #include "overlays/overlay019.h"
 
-typedef struct O19Plane {
-    f32 x;
-    f32 y;
-    f32 z;
-    f32 d;
-} O19Plane;
-
-typedef struct O19ScratchRecord {
-    u16 item;
-    u16 edgeNeighbor[3];
-} O19ScratchRecord;
-
 extern void *o19AllocateReloc(s32 size, s32 tag);
 extern void o19FreeReloc(void *value);
 extern f32 sqrtf(f32 value);
 
-/* Independent Mickey-only reconstruction, saved before consulting prior work. */
-#ifdef NON_MATCHING
-s32 overlay19BuildPlanes(
-    O19Context *context, O19Group *group, O19Output *output) {
-    O19ScratchRecord *scratch;
-    O19ScratchRecord *scratchRecord;
-    O19ScratchRecord *record;
-    O19Span *span;
-    O19Point *point;
-    O19Vertex *v0;
-    O19Vertex *v1;
-    O19Vertex *v2;
-    O19Plane *planes;
-    O19Plane *plane;
-    O19Plane *neighborPlane;
-    f32 x0, y0, z0;
+/*
+ * Matched (lane w2-ovld, 2026-10-02) as the sibling of overlay 35's
+ * func_overlay_035_F0000B40_1882820, both adapted from Diddy Kong Racing's
+ * collision-plane builder. Differences from the o035 copy that the listing
+ * fixes: word copy of the records, 10.0f bisector scale, plane cross products
+ * relative to the second vertex in both passes, no early exit. What closed it:
+ * no do-while(0) macros anywhere (they split the group parameter's live range
+ * at the copy loop), the edge body under `if (neighbor != 0xFFFF)` rather than
+ * a `continue`, the neighbour scan as a do-while, and the unused pads and the
+ * oppVertIndex position that set the frame homes.
+ *
+ * PROVENANCE: adapted from Diddy Kong Racing, src/tracks.c
+ * (track_init_collision) and src/object_models.c (model_init_collision), by
+ * way of the matched overlay 35 function.
+ */
+s32 overlay19BuildPlanes(O19Context *context, O19Group *group, O19Output *output) {
+    s32 pad0;
+    O19AdjacencyRecord *scratch;
+    s32 *scratchRecord;
+    s32 *record;
+    s32 copyIndex;
     f32 x1, y1, z1;
     f32 x2, y2, z2;
+    f32 x3, y3, z3;
     f32 nx, ny, nz;
-    volatile f32 rawNx, rawNy;
-    f32 length;
-    f32 ex, ey, ez;
+    f32 mag;
+    s32 pad1;
+    f32 x5, y5, z5;
+    s32 triStart;
+    O19Vertex *v;
+    s32 i;
+    s32 triEnd;
+    s32 vertexBase;
     s32 spanIndex;
-    s32 spanOffset;
-    s32 item;
+    s32 j;
     s32 edge;
-    s32 nextEdge;
-    s32 oppositeEdge;
-    s32 planeCount;
-    s16 itemEnd;
-    s16 vertexBase;
-    u32 neighbor;
+    s32 counter;
+    s32 idx;
+    s32 next;
+    s32 opp;
+    s32 oppVertIndex;
+    s32 vertIndex;
+    s32 nextVertIndex;
+    s32 neighbor;
+    s32 pad2;
+    f32 *plane;
 
-    scratch = o19AllocateReloc(group->itemCount * sizeof(O19ScratchRecord), 0x8A);
-    {
-        s32 *scratchWord = (s32 *)scratch;
-        s32 *recordWord = (s32 *)output->records;
-
-        item = 0;
-        if (group->itemCount * 2 > 0) {
-            do {
-                *scratchWord++ = *recordWord++;
-                item++;
-            } while (item < group->itemCount * 2);
-        }
+    scratch = o19AllocateReloc(group->itemCount * (s32)sizeof(O19AdjacencyRecord), 0x8A);
+    record = (s32 *)output->records;
+    scratchRecord = (s32 *)scratch;
+    for (copyIndex = 0; copyIndex < group->itemCount * 2; copyIndex++) {
+        *scratchRecord++ = *record++;
     }
 
-    planes = (O19Plane *)output->unknown08;
-    planeCount = 0;
-    spanOffset = 0;
-    for (spanIndex = 0; spanIndex < group->spanCount; spanIndex++, spanOffset += sizeof(O19Span)) {
-        span = (O19Span *)((u8 *)group->spans + spanOffset);
-        item = span->itemStart;
-        itemEnd = (span + 1)->itemStart;
-        vertexBase = span->vertexBase;
-        if (span->flags & 0x1080) {
-            item = itemEnd;
+    counter = 0;
+    for (spanIndex = 0; spanIndex < group->spanCount; spanIndex++) {
+        triStart = group->spans[spanIndex].itemStart;
+        vertexBase = group->spans[spanIndex].vertexBase;
+        triEnd = group->spans[spanIndex + 1].itemStart;
+        if (group->spans[spanIndex].flags & 0x1080) {
+            triStart = triEnd;
         }
-        while (item < itemEnd) {
-            point = &group->points[item];
-            v0 = (O19Vertex *)((u8 *)context->vertices +
-                              (point->selectors[0] + vertexBase) * sizeof(O19Vertex));
-            x0 = v0->x; y0 = v0->y; z0 = v0->z;
-            v0 = (O19Vertex *)((u8 *)context->vertices +
-                              (point->selectors[1] + vertexBase) * sizeof(O19Vertex));
-            x1 = v0->x; y1 = v0->y; z1 = v0->z;
-            v0 = (O19Vertex *)((u8 *)context->vertices +
-                              (point->selectors[2] + vertexBase) * sizeof(O19Vertex));
-            x2 = v0->x; y2 = v0->y; z2 = v0->z;
-            rawNx = ((y1 - y0) * (z2 - z1)) - ((z1 - z0) * (y2 - y1));
-            nx = rawNx;
-            rawNy = ((z1 - z0) * (x2 - x1)) - ((x1 - x0) * (z2 - z1));
-            ny = rawNy;
-            nz = ((x1 - x0) * (y2 - y1)) - ((y1 - y0) * (x2 - x1));
-            length = sqrtf((rawNx * rawNx) + (rawNy * rawNy) + (nz * nz));
-            if (length > 0.0f) {
-                nx = rawNx / length;
-                ny = rawNy / length;
-                nz /= length;
+        for (i = triStart; i < triEnd; i++) {
+            v = &context->vertices[group->points[i].selectors[0] + vertexBase];
+            x1 = v->x;
+            y1 = v->y;
+            z1 = v->z;
+            v = &context->vertices[group->points[i].selectors[1] + vertexBase];
+            x2 = v->x;
+            y2 = v->y;
+            z2 = v->z;
+            v = &context->vertices[group->points[i].selectors[2] + vertexBase];
+            x3 = v->x;
+            y3 = v->y;
+            z3 = v->z;
+            nx = (y2 - y1) * (z3 - z2) - (z2 - z1) * (y3 - y2);
+            ny = (z2 - z1) * (x3 - x2) - (x2 - x1) * (z3 - z2);
+            nz = (x2 - x1) * (y3 - y2) - (y2 - y1) * (x3 - x2);
+            mag = sqrtf(nx * nx + ny * ny + nz * nz);
+            if (mag > 0.0f) {
+                nx /= mag;
+                ny /= mag;
+                nz /= mag;
             }
-            output->records[item].item = planeCount;
-            plane = &planes[planeCount++];
-            plane->x = nx;
-            plane->y = ny;
-            plane->z = nz;
-            plane->d = -((x0 * nx) + (y0 * ny) + (z0 * nz));
-            item++;
+            output->records[i].item = counter;
+            output->planes[counter << 2] = nx;
+            output->planes[(counter << 2) + 1] = ny;
+            output->planes[(counter << 2) + 2] = nz;
+            output->planes[(counter << 2) + 3] = -(x1 * nx + y1 * ny + z1 * nz);
+            counter++;
         }
     }
 
-    spanOffset = 0;
-    for (spanIndex = 0; spanIndex < group->spanCount; spanIndex++, spanOffset += sizeof(O19Span)) {
-        span = (O19Span *)((u8 *)group->spans + spanOffset);
-        item = span->itemStart;
-        itemEnd = (span + 1)->itemStart;
-        vertexBase = span->vertexBase;
-        if (span->flags & 0x1080) {
-            item = itemEnd;
+    for (spanIndex = 0; spanIndex < group->spanCount; spanIndex++) {
+        triStart = group->spans[spanIndex].itemStart;
+        vertexBase = group->spans[spanIndex].vertexBase;
+        triEnd = group->spans[spanIndex + 1].itemStart;
+        if (group->spans[spanIndex].flags & 0x1080) {
+            triStart = triEnd;
         }
-        while (item < itemEnd) {
-            scratchRecord = &scratch[item];
-            plane = &planes[output->records[item].item];
+        for (i = triStart; i < triEnd; i++) {
+            idx = output->records[i].item * 4;
+            nx = output->planes[idx + 0];
+            ny = output->planes[idx + 1];
+            nz = output->planes[idx + 2];
             for (edge = 0; edge < 3; edge++) {
-                nextEdge = edge + 1;
-                if (nextEdge >= 3) nextEdge = 0;
-                oppositeEdge = nextEdge + 1;
-                if (oppositeEdge >= 3) oppositeEdge = 0;
-                neighbor = scratchRecord->edgeNeighbor[edge];
+                next = edge + 1;
+                if (next >= 3) {
+                    next = 0;
+                }
+                opp = next + 1;
+                if (opp >= 3) {
+                    opp = 0;
+                }
+                vertIndex = group->points[i].selectors[edge] + vertexBase;
+                nextVertIndex = group->points[i].selectors[next] + vertexBase;
+                oppVertIndex = group->points[i].selectors[opp] + vertexBase;
+                neighbor = scratch[i].edgeNeighbor[edge];
                 if (neighbor != 0xFFFF) {
                     if (neighbor == 0xFFFE) {
-                        neighborPlane = &planes[output->records[item].item];
+                        idx = output->records[i].item * 4;
                     } else {
-                        neighborPlane = &planes[output->records[neighbor].item];
+                        idx = output->records[neighbor].item * 4;
                     }
-                    v0 = (O19Vertex *)((u8 *)context->vertices +
-                                      (point = &group->points[item],
-                                       (point->selectors[edge] + vertexBase) * sizeof(O19Vertex)));
-                    v1 = (O19Vertex *)((u8 *)context->vertices +
-                                      (point->selectors[nextEdge] + vertexBase) * sizeof(O19Vertex));
-                    x0 = v0->x; y0 = v0->y; z0 = v0->z;
-                    x1 = v1->x; y1 = v1->y; z1 = v1->z;
-                    ex = (((neighborPlane->x + plane->x) * 10.0f) + x0) - x1;
-                    ey = (((neighborPlane->y + plane->y) * 10.0f) + y0) - y1;
-                    ez = (((neighborPlane->z + plane->z) * 10.0f) + z0) - z1;
-                    nx = ((y1 - y0) * ez) - ((z1 - z0) * ey);
-                    ny = ((z1 - z0) * ex) - ((x1 - x0) * ez);
-                    nz = ((x1 - x0) * ey) - ((y1 - y0) * ex);
-                    length = sqrtf((nx * nx) + (ny * ny) + (nz * nz));
-                    if (length > 0.0f) {
-                        nx /= length;
-                        ny /= length;
-                        nz /= length;
+                    plane = &output->planes[idx];
+                    x5 = output->planes[idx + 0] + nx;
+                    y5 = output->planes[idx + 1] + ny;
+                    z5 = output->planes[idx + 2] + nz;
+                    v = &context->vertices[vertIndex];
+                    x1 = v->x;
+                    y1 = v->y;
+                    z1 = v->z;
+                    v = &context->vertices[nextVertIndex];
+                    x2 = v->x;
+                    y2 = v->y;
+                    z2 = v->z;
+                    x3 = x5 * 10.0f + x1;
+                    y3 = y5 * 10.0f + y1;
+                    z3 = z5 * 10.0f + z1;
+                    x5 = (y2 - y1) * (z3 - z2) - (z2 - z1) * (y3 - y2);
+                    y5 = (z2 - z1) * (x3 - x2) - (x2 - x1) * (z3 - z2);
+                    z5 = (x2 - x1) * (y3 - y2) - (y2 - y1) * (x3 - x2);
+                    mag = sqrtf(x5 * x5 + y5 * y5 + z5 * z5);
+                    if (mag > 0.0f) {
+                        x5 /= mag;
+                        y5 /= mag;
+                        z5 /= mag;
                     }
                     if (neighbor == 0xFFFE) {
-                        group->points[item].unknown00 |= 1 << edge;
+                        group->points[i].unknown00 |= 1 << edge;
                     } else {
-                        s32 halfOffset;
-                        record = &scratch[neighbor];
-                        halfOffset = 0;
-                        while (halfOffset != 6) {
-                            if (item == record->edgeNeighbor[halfOffset >> 1]) {
-                                output->records[neighbor].edgeNeighbor[halfOffset >> 1] =
-                                    planeCount | 0x8000;
-                                record->edgeNeighbor[halfOffset >> 1] = 0xFFFF;
+                        j = 0;
+                        do {
+                            if (scratch[neighbor].edgeNeighbor[j] == i) {
+                                output->records[neighbor].edgeNeighbor[j] = counter | 0x8000;
+                                scratch[neighbor].edgeNeighbor[j] = 0xFFFF;
                             }
-                            halfOffset += 2;
-                        }
-                        v2 = (O19Vertex *)((u8 *)context->vertices +
-                                          (point->selectors[oppositeEdge] + vertexBase) *
-                                              sizeof(O19Vertex));
-                        if ((neighborPlane->d +
-                             ((v2->x * neighborPlane->x) +
-                              (v2->y * neighborPlane->y) +
-                              (v2->z * neighborPlane->z))) < 0.0f) {
-                            group->points[item].unknown00 |= 1 << edge;
+                            j++;
+                        } while (j < 3);
+                        v = &context->vertices[oppVertIndex];
+                        x3 = v->x;
+                        y3 = v->y;
+                        z3 = v->z;
+                        mag = x3 * plane[0] + y3 * plane[1] + z3 * plane[2] + plane[3];
+                        if (mag < 0.0f) {
+                            group->points[i].unknown00 |= 1 << edge;
                         }
                     }
-                    output->records[item].edgeNeighbor[edge] = planeCount;
-                    scratchRecord->edgeNeighbor[edge] = 0xFFFF;
-                    plane = &planes[planeCount++];
-                    plane->x = nx;
-                    plane->y = ny;
-                    plane->z = nz;
-                    plane->d = -((x0 * nx) + (y0 * ny) + (z0 * nz));
+                    output->records[i].edgeNeighbor[edge] = counter;
+                    scratch[i].edgeNeighbor[edge] = 0xFFFF;
+                    output->planes[counter << 2] = x5;
+                    output->planes[(counter << 2) + 1] = y5;
+                    output->planes[(counter << 2) + 2] = z5;
+                    output->planes[(counter << 2) + 3] = -(x1 * x5 + y1 * y5 + z1 * z5);
+                    counter++;
                 }
             }
-            item++;
         }
     }
     o19FreeReloc(scratch);
-    return planeCount;
+    return counter;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o019/overlay19BuildPlanes/func_overlay_019_F00001E0_1875438.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay19BuildPlanes:start
- * symbol: overlay19BuildPlanes
- * score: 512 differing words
- * frame: 0x140
- * relocations: 4
- * first-mismatch: +0x48
- * summary: Exact frame is retained, but broad structure/register divergence remains after the full flag lattice and ten coherent source hypotheses.
- * PLATEAU-HANDOFF:overlay19BuildPlanes:end
- */

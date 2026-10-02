@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 380304,
-  "nonmatching_overlay_c_bytes": 88300,
+  "matched_overlay_c_bytes": 383820,
+  "nonmatching_overlay_c_bytes": 84784,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4716,
   "bss_bytes": 77680,
@@ -2052,7 +2052,7 @@
      "type": "c",
      "source": "overlays/o007/overlay_007_tail",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xFB8",
@@ -2192,48 +2192,6 @@
     "exact_donor_match": null,
     "priority_rank": 47
    },
-   "mixed_tu_exact_c_ranges": [
-    {
-     "offset": "0x894",
-     "end_offset": "0xAA0",
-     "size": "0x20C",
-     "label": "overlay7DispatchModes",
-     "source": "overlays/o007/overlay_007_tail",
-     "evidence": "canonical mixed-TU object, 23 text plus seven switch-table runtime relocations, and linked bytes exact"
-    },
-    {
-     "offset": "0xCCC",
-     "end_offset": "0xDBC",
-     "size": "0xF0",
-     "label": "overlay7DispatchSelection",
-     "source": "overlays/o007/overlay_007_tail",
-     "evidence": "canonical mixed-TU object, all 13 runtime relocations, and linked bytes exact"
-    },
-    {
-     "offset": "0xDBC",
-     "end_offset": "0xEDC",
-     "size": "0x120",
-     "label": "overlay7CommitSelection",
-     "source": "overlays/o007/overlay_007_tail",
-     "evidence": "canonical mixed-TU object, 17 runtime relocations with two declared metadata filters, and linked bytes exact"
-    },
-    {
-     "offset": "0xEDC",
-     "end_offset": "0xF08",
-     "size": "0x2C",
-     "label": "overlay7FillValues",
-     "source": "overlays/o007/overlay_007_tail",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0xF08",
-     "end_offset": "0xFB8",
-     "size": "0xB0",
-     "label": "overlay7InitPool",
-     "source": "overlays/o007/overlay_007_tail",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    }
-   ],
    "data_rodata_ownership": [
     {
      "offset": "0x934",
@@ -4834,7 +4792,7 @@
      "type": "c",
      "source": "overlays/o019/overlay19BuildPlanes",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xA30",
@@ -19547,7 +19505,7 @@
      "type": "c",
      "source": "overlays/o101/overlay101BuildPresentationB",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xA044",

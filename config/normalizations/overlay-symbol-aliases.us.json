@@ -43,6 +43,10 @@
         {
           "from": "func_overlay_019_F00001E0_1875438",
           "to": "overlay19BuildPlanes"
+        },
+        {
+          "from": "sqrtf",
+          "to": "sqrtf_o019Reloc"
         }
       ]
     },

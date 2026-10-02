@@ -826,6 +826,7 @@ __osPopThread = 0x8004F808; // type:func size:0x10   ROM 0x50408  src/os/excepta
 // ---------------------------------------------------------------------------
 ResolveRelocAddress = 0x800317F0; // type:func size:0x188  tier-C donor-jfg
 PatchInstruction = 0x80031978; // type:func size:0xB8  tier-C donor-jfg
+ProcessRelocationEntry = 0x80031A30; // type:func size:0x248 ROM 0x32630 tier-A matched C donor-jfg-src/runLink.c/ProcessRelocationEntry byte-identity
 runlinkIsModuleLoaded = 0x80032284; // type:func size:0x18  tier-C donor-jfg
 runlinkCallResumeFunction = 0x8003229C; // type:func size:0x9C  tier-C donor-jfg
 runlinkFreeCode = 0x80032338; // type:func size:0x2E0 ROM 0x32F38 tier-A matched C donor-jfg-src/runLink.c/runlinkFreeCode Mickey packed records and section anchors

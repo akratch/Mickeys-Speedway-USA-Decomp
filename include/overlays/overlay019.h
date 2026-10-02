@@ -46,14 +46,14 @@ typedef struct O19Group {
 } O19Group;
 
 typedef struct O19AdjacencyRecord {
-    s16 item;
-    s16 edgeNeighbor[3];
+    u16 item;
+    u16 edgeNeighbor[3];
 } O19AdjacencyRecord;
 
 typedef struct O19Output {
     O19AdjacencyRecord *records;
     u32 *masks;
-    void *unknown08;
+    f32 *planes;
 } O19Output;
 
 s32 overlay19BuildPlanes(

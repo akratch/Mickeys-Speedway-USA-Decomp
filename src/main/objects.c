@@ -4354,10 +4354,16 @@ s32 func_8000A244(s32 *arg0) {
     D_800C94B2 = i;
     return i;
 }
-/* Lane lm-obj: plain counted walk `current = *objects++` over the depth
- * update. The hand-unrolled remainder-plus-4x body was +300 / 231 masked;
- * this is delta 0 / 154. Entry still colours arg0 instead of spilling it. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-02 (lane x-sib2) from 154 masked words.  The update pass is
+ * the countdown `for (count = n; count != 0; count--)` on the same local the
+ * sort pass counts with (IDO unrolls it with the shipped negated remainder;
+ * the earlier `> 0` and `while (n--)` forms stay rolled and `i` from zero gives
+ * the positive remainder); `arg1 - arg0` is never stored, so it is spilled as
+ * a temporary and the frame is 0x58; `arg0 * 4` is written at both uses with
+ * `arg0` never assigned, so it stays in its incoming home and the shift is
+ * copied once for the sort pass; and the loop header shares one physical line
+ * with its first statement, which orders the unrolled body's pointer and
+ * counter steps as shipped (L59). */
 void func_8000A39C(s32 arg0, s32 arg1) {
     s32 passCount;
     Objects0A39CObject *current;
@@ -4366,32 +4372,22 @@ void func_8000A39C(s32 arg0, s32 arg1) {
     f32 matrixX;
     f32 matrixY;
     Objects0A39CObject **objects;
-    s32 sortOffset;
     f32 matrixZ;
     f32 matrixW;
     f32 currentDepth;
     f32 nextDepth;
-    s32 difference;
     s32 updateCount;
-    s32 i;
     s32 sorted;
 
-    difference = arg0;
-    difference = arg1 - difference;
-    if (difference > 0) {
-        passCount = difference;
+    if (arg1 - arg0 > 0) {
+        passCount = arg1 - arg0;
         matrix = (Objects0A39CMatrix *)camGetRotationMtx();
         matrixX = matrix->unk8;
         matrixY = matrix->unk18;
         matrixZ = matrix->unk28;
         matrixW = matrix->unk38;
-        arg0 *= 4;
-        objects = (Objects0A39CObject **)(arg0 + (u8 *)D_800C9494);
-
-        difference += 1;
-        sortOffset = arg0;
-        for (i = 0; i < difference; i++) {
-            current = *objects++;
+        objects = (Objects0A39CObject **)((arg0 * 4) + (u8 *)D_800C9494);
+        for (updateCount = (arg1 - arg0) + 1; updateCount != 0; updateCount--) { current = *objects++;
             if (current != NULL) {
                 current->unk30 = -((current->unkC * matrixX) +
                                   (current->unk10 * matrixY) +
@@ -4400,7 +4396,7 @@ void func_8000A39C(s32 arg0, s32 arg1) {
         }
 
         do {
-            objects = (Objects0A39CObject **)(sortOffset + (u8 *)D_800C9494);
+            objects = (Objects0A39CObject **)((arg0 * 4) + (u8 *)D_800C9494);
             updateCount = passCount;
             passCount -= 1;
             current = objects[0];
@@ -4428,9 +4424,6 @@ void func_8000A39C(s32 arg0, s32 arg1) {
         } while ((passCount != 0) && (sorted == 0));
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_8000A39C.s")
-#endif
 /* PROVENANCE: body adapted from Jet Force Gemini's public src/objects.c
  * setObjectViewNormal; Mickey's target globals and byte output are authoritative. */
 void func_8000A62C(f32 x, f32 y, f32 z) {
@@ -5379,16 +5372,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 
 
-
-/* PLATEAU-HANDOFF:func_8000A39C:start
- * symbol: func_8000A39C
- * score: 154 differing words
- * frame: 0x58
- * relocations: 3
- * first-mismatch: +0x4
- * summary: Delta 0 after unroller restoration. 79 exact, 70 naming, 17 structural. Insertion pairs at plus-4/plus-1C and plus-27C/plus-64. Unmodified arg0 spills and restores ra but loses two words and grows the frame; decrementing counted loops stay rolled; only for-i-from-zero unrolls and it cannot emit the target remainder.
- * PLATEAU-HANDOFF:func_8000A39C:end
- */
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414

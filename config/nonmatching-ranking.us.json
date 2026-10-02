@@ -1645,6 +1645,21 @@
       "source_context_sha256": "yP3o.12Sf.Rz-i.uZ8j.6rJB.qQ1i.dY3S.iAqf.gosb.m1Zy.psY"
     },
     {
+      "name": "func_overlay_057_F0004460_18A8058",
+      "file": "src/overlays/o057/func_overlay_057_F0004460_18A8058.c",
+      "overlay": 57,
+      "tu": "overlays/o057",
+      "size_bytes": 1976,
+      "objdiff_match_pct": null,
+      "differing_words": 363,
+      "first_mismatch_offset": 0,
+      "relocation_masked_differing_words": 356,
+      "relocation_masked_first_mismatch_offset": 0,
+      "size_delta": -28,
+      "category": "size-mismatch",
+      "source_context_sha256": "yTw9.0mh2.ZSHR.wbmo.-uGy.h54n.5Wtx.Ushb.XoUx.HUku.tEc"
+    },
+    {
       "name": "func_8001F520",
       "file": "src/main/models.c",
       "overlay": null,
@@ -1855,21 +1870,6 @@
       "source_context_sha256": "dESr.Peix.td6x.-oAR.wt7E.ZtvS.5-7O.u-Sq.zt3M.n2aW.ExE"
     },
     {
-      "name": "func_overlay_057_F0004460_18A8058",
-      "file": "src/overlays/o057/func_overlay_057_F0004460_18A8058.c",
-      "overlay": 57,
-      "tu": "overlays/o057",
-      "size_bytes": 1976,
-      "objdiff_match_pct": null,
-      "differing_words": 447,
-      "first_mismatch_offset": 4,
-      "relocation_masked_differing_words": 446,
-      "relocation_masked_first_mismatch_offset": 4,
-      "size_delta": -144,
-      "category": "size-mismatch",
-      "source_context_sha256": "6bwt.lvyc.OY-9.EknJ.yk30.UdYG.0aoE.ln58.fHri.yeVD.LXM"
-    },
-    {
       "name": "func_overlay_022_F00002B0_18783B8",
       "file": "src/overlays/o022/func_overlay_022_F00002B0_18783B8.c",
       "overlay": 22,
@@ -2011,13 +2011,13 @@
       "tu": "overlays/o011",
       "size_bytes": 2248,
       "objdiff_match_pct": null,
-      "differing_words": 538,
+      "differing_words": 531,
       "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 535,
+      "relocation_masked_differing_words": 529,
       "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": -120,
+      "size_delta": -8,
       "category": "size-mismatch",
-      "source_context_sha256": "NHGS.31t9.y-ju.XlI6.tmHx.mbty.8ati.NfVC.5ICl.F7Sp.v-c"
+      "source_context_sha256": "oCAo.4A0j.C5k-.7mpw.TLSg.lsnB.J6py.WAH2.MxNa.BWjN.12Y"
     },
     {
       "name": "func_overlay_058_F00005FC_18AF7E4",

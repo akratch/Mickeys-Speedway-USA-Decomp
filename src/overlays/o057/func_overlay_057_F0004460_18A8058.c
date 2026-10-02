@@ -26,6 +26,15 @@ typedef struct O57MenuLink {
     s32 index;
 } O57MenuLink;
 
+typedef struct O57MenuState {
+    u32 pad:14;
+    u32 unlockPending:1;
+    u32 rest:17;
+    u8 pad04[0xF];
+    u8 unlockMask;
+} O57MenuState;
+
+extern O57MenuState gO57MenuStateReloc;
 extern s32 gOverlay57ModeFlag;
 extern O57MenuTransition gO57ModeSetup21C;
 extern s16 gO57MenuInputXReloc;
@@ -85,19 +94,28 @@ extern void o57MenuPrepareReloc(void);
 extern void o57MenuResetReloc(s32 value);
 extern void o57MenuApplyCameraReloc(s32 camera);
 extern void o57MenuClearUnlockReloc(void);
+extern void o57MenuMarkUnlockReloc(void);
+extern void o57MenuApplyUnlockReloc(s32 value);
 extern void o57MenuCommitUnlockReloc(s32 value);
 
-/* Workbench p4: structure-mismatch; 449 positional/450 raw words differ,
- * 458/494 instructions, first +0x4, frame exact -88. Levers: selection/output
- * pointer lifetime and declaration order; remains saved-register web. */
+/* 2026-10-02 n-ovl6: rewritten in the shape of the matched sibling
+ * func_overlay_057_F00060F8_18A9CF0 (countdown fill, pointer-compare choice
+ * walk, count loops, link walks reading the link at each use) and with the
+ * unlock block the target carries inside `kind == 1` (a bitfield flag word
+ * tested by shift-and-sign, a mask byte OR, two further calls). 446 to 356
+ * masked words, size delta -144 to -28 (7 words short), frame still 0x68
+ * against 0x58 (the locals' homes sit 16 bytes higher). */
 #ifdef NON_MATCHING
 void func_overlay_057_F0004460_18A8058(s32 updateRate) {
-    s8 activePlayers[10];
     s8 enabled[4];
+    u8 activePlayers[10];
+    s32 count;
     s32 i;
     s32 x;
     s32 y;
+    s32 index;
     s32 current;
+    O57MenuLink *link;
 
     gOverlay57ModeFlag = 0;
     i = 0;
@@ -161,8 +179,9 @@ void func_overlay_057_F0004460_18A8058(s32 updateRate) {
             gO57ModeSixthByte = (gO57MenuSelectionReloc == 3);
         }
 
-        for (i = 0; i < 10; i++) {
-            activePlayers[i] = 1;
+        count = 10;
+        while (count--) {
+            activePlayers[count] = 1;
         }
         if (gO57MenuKindReloc == 1) {
             o57MenuPrepareReloc();
@@ -181,13 +200,12 @@ void func_overlay_057_F0004460_18A8058(s32 updateRate) {
         } while (&gO57ModeChoices[i] != gO57ModeChoicesEnd);
 
         y = 0;
-        i = x * sizeof(O57MenuOutput);
-        while (i < 6 * (s32)sizeof(O57MenuOutput)) {
+        for (count = x; count < 6; count++) {
             while (activePlayers[y] == 0) {
                 y++;
             }
-            ((O57MenuOutput *)((u8 *)gO57ModeOutputs + i))->controller = y++;
-            i += sizeof(O57MenuOutput);
+            gO57ModeOutputs[count].controller = y;
+            y++;
         }
 
         joyCreateMap(enabled);
@@ -204,8 +222,22 @@ void func_overlay_057_F0004460_18A8058(s32 updateRate) {
 
         gO57MenuTransitionFlagReloc = 0;
         if (gO57MenuKindReloc == 1) {
-            o57MenuClearUnlockReloc();
-            o57MenuCommitUnlockReloc(0);
+            if (gO57MenuStateReloc.unlockPending) {
+                gO57MenuStateReloc.unlockPending = 0;
+                o57MenuClearUnlockReloc();
+                o57MenuCommitUnlockReloc(0);
+            }
+            y = gO57MenuLevelTableReloc[gO57ModeOutputs[0].mode]
+                                       [gO57ModeOutputs[0].variant];
+            if (y != -1) {
+                if (!(gO57MenuStateReloc.unlockMask & (1 << y))) {
+                    gO57MenuStateReloc.unlockMask |= 1 << y;
+                    o57MenuMarkUnlockReloc();
+                    o57MenuApplyUnlockReloc(
+                        gO57MenuCourseTableReloc[gO57ModeOutputs[0].mode]
+                                                [gO57ModeOutputs[0].variant] + 0xE);
+                }
+            }
         }
 
         if (gO57MenuUnlockCountReloc > 0) {
@@ -240,22 +272,17 @@ void func_overlay_057_F0004460_18A8058(s32 updateRate) {
         gOverlay57State = 0;
         overlay84ActivateCurrent(3);
 
-        i = 0;
-        if (gO57ModePrimaryIds[i].index != -1) {
-            do {
-                x = gO57ModePrimaryIds[i].index;
-                animseqStartPath(x & 0xFF);
-                overlay57SetNodeValue(x, gO57MenuPrimaryValues[x],
-                                      0x3BE56042);
-                i++;
-            } while (gO57ModePrimaryIds[i].index != -1);
+        link = gO57ModePrimaryIds;
+        while (link->index != -1) {
+            animseqStartPath(link->index & 0xFF);
+            overlay57SetNodeValue(link->index, gO57MenuPrimaryValues[link->index],
+                                  0x3BE56042);
+            link++;
         }
-        i = 0;
-        if (gO57ModeSecondaryIds[i].index != -1) {
-            do {
-                animseqStopPath(gO57ModeSecondaryIds[i].index & 0xFF);
-                i++;
-            } while (gO57ModeSecondaryIds[i].index != -1);
+        link = gO57ModeSecondaryIds;
+        while (link->index != -1) {
+            animseqStopPath(link->index & 0xFF);
+            link++;
         }
         gOverlay57State = 0;
     }
@@ -266,10 +293,10 @@ void func_overlay_057_F0004460_18A8058(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_057_F0004460_18A8058:start
  * symbol: func_overlay_057_F0004460_18A8058
- * score: 446/494 words
- * frame: 0x58
+ * score: 356/447 words
+ * frame: 0x68
  * relocations: 235
- * first-mismatch: +0x4
- * summary: In-place halfword smoothing idiom adopted (449 to 446) and the loop already unrolls; the target keeps updateRate in s0 and saves s1 where the candidate saves no callee-saved register and reloads the argument home, and s8 x and y move the size delta from -144 to -100 at a cost of 11 masked words.
+ * first-mismatch: +0x0
+ * summary: Sibling-shape rewrite plus unlock bitfield block: 446 to 356 masked, size -144 to -28; frame 0x68 vs 0x58 open.
  * PLATEAU-HANDOFF:func_overlay_057_F0004460_18A8058:end
  */

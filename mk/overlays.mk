@@ -2387,7 +2387,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/func_overlay_002_F0001A94_185888C.c.o: \
 	POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x364 \
 		000000000000000000000000
+# Exact C. Its three resident callees go through the generated surface
+# entries; no instruction changes.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o002/func_overlay_002_F0001DF8_1858BF0.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym func_8000572C=func_8000572C_o002Reloc \
+		--redefine-sym func_8000BCB0=func_8000BCB0_o002Reloc \
+		--redefine-sym joyGetButtons=joyGetButtons_o002Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x730
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o060/overlay60DrawBorder.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x10C

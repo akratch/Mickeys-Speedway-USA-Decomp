@@ -413,7 +413,7 @@ units remain distinct.
 | 117 | `src/main/objects.c` | `func_80009414` | `main` | `size-mismatch` | 1,684 | 398 | 398 | 0 | 0 | 20 | — |
 | 118 | `src/overlays/o022/func_overlay_022_F00002B0_18783B8.c` | `func_overlay_022_F00002B0_18783B8` | `o022` | `size-mismatch` | 1,996 | 403 | 402 | 32 | 40 | -12 | — |
 | 119 | `src/main/charControl.c` | `func_8001E5C4` | `main` | `size-mismatch` | 1,664 | 411 | 408 | 0 | 0 | -16 | — |
-| 120 | `src/main/shadows.c` | `shadowGenerate` | `main` | `size-mismatch` | 2,040 | 445 | 445 | 12 | 12 | 40 | — |
+| 120 | `src/main/shadows.c` | `shadowGenerate` | `main` | `size-mismatch` | 2,040 | 432 | 432 | 280 | 280 | 40 | — |
 | 121 | `src/overlays/o001/overlay_001_head.c` | `overlay1LoadBuildRecords` | `o001` | `size-mismatch` | 2,288 | 490 | 469 | 52 | 52 | -52 | — |
 | 122 | `src/overlays/o061/func_overlay_061_F0000B84_18BFF4C.c` | `func_overlay_061_F0000B84_18BFF4C` | `o061` | `size-mismatch` | 2,548 | 499 | 476 | 0 | 0 | -64 | — |
 | 123 | `src/overlays/o043/func_overlay_043_F0000324_188A2F4.c` | `func_overlay_043_F0000324_188A2F4` | `o043` | `size-mismatch` | 2,240 | 495 | 494 | 96 | 96 | -4 | — |

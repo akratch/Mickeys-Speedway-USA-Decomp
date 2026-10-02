@@ -1184,11 +1184,25 @@ func_8003E99C_o022Reloc = 0xf0000000;
 func_overlay_022_F0000D30_1878E38Reloc = 0xf0000000;
 gOverlay22DistanceReloc = 0x00000000;
 
-/* overlay 22: overlay22RemoveObject.c.o */
+/* overlay 22: func_overlay_022_F00002B0_18783B8.c.o */
+Arctanf_o022Reloc = 0xf0000000;
+func_80001620_o022Reloc = 0xf0000000;
 func_80002FE0_o022Reloc = 0xf0000000;
+func_8000309C_o022Reloc = 0xf0000000;
+func_800031E8_o022Reloc = 0xf0000000;
+func_80008128_o022Reloc = 0xf0000000;
+func_80010900_o022Reloc = 0xf0000000;
+func_8002A8BC_o022Reloc = 0xf0000000;
+func_8002A8C0_o022Reloc = 0xf0000000;
+func_80036544_o022Reloc = 0xf0000000;
+gOverlay22UpdatePoolReloc = 0x00000004;
+partUpdateTriggers_o022Reloc = 0xf0000000;
+sqrtf_o022Reloc = 0xf0000000;
+trackMakePolylist_o022Reloc = 0xf0000000;
+
+/* overlay 22: overlay22RemoveObject.c.o */
 func_80006EA0_o022Reloc = 0xf0000000;
 gOverlay22Nodes = 0x00000000;
-partUpdateTriggers_o022Reloc = 0xf0000000;
 
 /* overlay 23: overlay23SpawnAttachments.c.o */
 overlay23RandomRangeReloc = 0xf0000000;

@@ -1244,10 +1244,9 @@ $(BUILD_DIR)/$(SRC_DIR)/main/level.c.o: POSTPROCESS = \
 # The gsSnd flag lattice reproduces its debug-shaped epilogues only with bare -g.
 $(BUILD_DIR)/$(SRC_DIR)/main/gsSnd.c.o: OPT_FLAGS := -g
 
-# The animation-cache source requires a clean current full-TU baseline under
-# this override; retained isolated C omitted it, and historical lattice outputs
-# are not retained.
-$(BUILD_DIR)/$(SRC_DIR)/main/models_5B300.c.o: CFLAGS += -Wo,-loopunroll,0
+# models_5B300.c compiles with the stock flags. It once carried
+# -Wo,-loopunroll,0; removing it left every matched function in the TU
+# byte-identical and func_8005AF14 unchanged (2026-10-02, lane x-models).
 
 # anim.c compiles with IDO's default loop unroller. It once carried
 # -Wo,-loopunroll,0 "for the 0x40-byte light-record reset"; that reset is a

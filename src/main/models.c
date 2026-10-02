@@ -528,16 +528,11 @@ ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCo
             instance->state[0] = (s16 *)end;
             instance->state[1] = (s16 *)(end + 0x50);
 
+            /* The natural nested loop: IDO's default unroller emits the
+             * target's four-store body (byte-identical to the old goto form). */
             for (i = 0; i < 2; i++) {
-                j = 0;
-state_reset_loop:
+                for (j = 0; j < 40; j++) {
                     instance->state[i][j] = 0;
-                    instance->state[i][j + 1] = 0;
-                    instance->state[i][j + 2] = 0;
-                    instance->state[i][j + 3] = 0;
-                j += 4;
-                if (j != 40) {
-                    goto state_reset_loop;
                 }
             }
         }

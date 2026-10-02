@@ -112,7 +112,7 @@
       "relocation_masked_first_mismatch_offset": 136,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "_Uhj.iKwo.TToZ.NjLS.KJ52.dTsn.QA0S.AHEE.hD_J.XDyZ.Xds"
+      "source_context_sha256": "ZEj1.a8G9.CUvn.MzWC.WTlq.6x9E.ACpd.JQlr.XyzZ.dLEd.JNY"
     },
     {
       "name": "overlay15InitStarsAndPalette",
@@ -787,7 +787,7 @@
       "relocation_masked_first_mismatch_offset": 36,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "qt27.mcnt.-4tt.DZck.NZcy.DsMS.uIN3.1Sgm.McW7.vNCM.2as"
+      "source_context_sha256": "77Pm.UgeX.mczz.bKGr.9Yx9.h2ey.KDtH.O8DW.D5zF.bqbs.MNw"
     },
     {
       "name": "overlay68UpdateAnimation",
@@ -1261,13 +1261,13 @@
       "tu": "main",
       "size_bytes": 4820,
       "objdiff_match_pct": null,
-      "differing_words": 710,
-      "first_mismatch_offset": 12,
-      "relocation_masked_differing_words": 710,
-      "relocation_masked_first_mismatch_offset": 12,
+      "differing_words": 627,
+      "first_mismatch_offset": 112,
+      "relocation_masked_differing_words": 627,
+      "relocation_masked_first_mismatch_offset": 112,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "O_VY.T61h.YWxR.fDlW.pQxY.Sr2E.0Umy.QItC.hfOw.Ox_D.Z1E"
+      "source_context_sha256": "o5oH.gIJq.VlBD.NZ1X.pkl6.lsbF.DcZx.6dDD.c4_p.61U5.R1g"
     },
     {
       "name": "func_80058250",
@@ -1747,7 +1747,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 4,
       "category": "size-mismatch",
-      "source_context_sha256": "iHlP.NkWW.1oKc.D6WB.4ZB-.i1kE.g-Jf.4URD.fcwf.KVhY.xFI"
+      "source_context_sha256": "znb5.fPAs.PYMP.TRAj.O6JW.J0Tr.9E99.Q8CC.sqK-.5E61.lbg"
     },
     {
       "name": "func_8005AF14",
@@ -2107,7 +2107,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": -332,
       "category": "size-mismatch",
-      "source_context_sha256": "gHt0.8BwL.geHy.OwGI.9nPQ.npco.WCmI.X4a7.rMlI.EyG7.1DQ"
+      "source_context_sha256": "iGP1.9VME.NzKl.I_HB.o0EX.RyEB.5j0Q.Kcf-.ogCc.OGCR.4Dc"
     }
   ],
   "unresolved_functions": []

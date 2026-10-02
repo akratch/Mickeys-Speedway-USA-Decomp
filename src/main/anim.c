@@ -2171,14 +2171,22 @@ void func_800573C8(HitOverlapState *state, HitOverlapVolume *other,
  * pair arrays: the target's remainder-then-four-way copies are IDO's default
  * unroller, which anim.c now compiles with (the TU's former
  * -Wo,-loopunroll,0 hid them, and the hand-unrolled copies written under it
- * were 240 bytes short). Left: allocation; the homes from offset[] down sit
- * one to two words above the target's. */
+ * were 240 bytes short). 627 (lane p-anim3): the homes are the target's
+ * (a z-position local in the kind 1 bounds instead of reusing `fraction`,
+ * which also lets `fraction` keep f20 from entry; one unused local after
+ * secondShape; no `kind` or `result` locals, the call result reusing
+ * `overlaps`), and the first loop's head tests read `firstObject->unk48`
+ * directly, so the load is a v0 expression web copied to s1 as in the
+ * target. Left: the target hoists the kind constant 2 and keeps the axis
+ * loops and the pair loops' j in one saved register (s2), the moving
+ * object in s6 in every loop, and a v1/a0 two-cycle in the pair loops. */
 void func_80053868(s32 updateRate) {
     f32 remainingTime;
     f32 fraction;
     f32 low;
     f32 high;
     f32 extent;
+    f32 zpos;
     Func538Pair *selectedPair;
     Func538Vertex *vertex;
     f32 offset[3];
@@ -2187,6 +2195,7 @@ void func_80053868(s32 updateRate) {
     Func538Object *secondObject;
     Func538Shape *firstShape;
     Func538Shape *secondShape;
+    s32 pad;
     s32 firstIndex;
     s32 objectCount;
     s32 fixedCount;
@@ -2198,10 +2207,8 @@ void func_80053868(s32 updateRate) {
     s32 i;
     s32 j;
     s32 axis;
-    s32 result;
     s16 firstKind;
     s16 secondKind;
-    u8 kind;
 
     fraction = (f32) updateRate;
     remainingTime = fraction;
@@ -2211,13 +2218,12 @@ void func_80053868(s32 updateRate) {
     for (i = firstIndex; i < objectCount; i++) {
         firstObject = otherCursor[i];
         firstShape = firstObject->unk48;
-        if ((firstObject->unk91 == 0) && (firstShape != NULL)) {
-            kind = firstShape->unk9;
-            if ((kind == 2) || (kind == 1)) {
-                if (firstShape->unk60 != -1) {
+        if ((firstObject->unk91 == 0) && (firstObject->unk48 != NULL)) {
+            if ((firstObject->unk48->unk9 == 2) || (firstObject->unk48->unk9 == 1)) {
+                if (firstObject->unk48->unk60 != -1) {
+                    vertex = firstObject->unk68[firstObject->unk3A]->unk40 + firstShape->unk60;
                     firstShape->previous[0] = firstShape->position[0];
                     firstShape->previous[1] = firstShape->position[1];
-                    vertex = firstObject->unk68[firstObject->unk3A]->unk40 + firstShape->unk60;
                     firstShape->previous[2] = firstShape->position[2];
                     firstShape->position[0] = vertex->unk0;
                     firstShape->position[1] = vertex->unk4;
@@ -2240,8 +2246,7 @@ void func_80053868(s32 updateRate) {
                     }
                     firstShape->position[1] += firstShape->unk54;
                 }
-                kind = firstShape->unk9;
-                if (kind == 2) {
+                if (firstShape->unk9 == 2) {
                     extent = firstShape->unk58 + 5.0f;
                     for (axis = 0; axis < 3; axis++) {
                         low = firstShape->previous[axis];
@@ -2256,26 +2261,25 @@ void func_80053868(s32 updateRate) {
                         firstShape->minimum[axis] -= extent;
                         firstShape->maximum[axis] += extent;
                     }
-                } else if (kind == 1) {
+                } else if (firstShape->unk9 == 1) {
                     low = firstShape->position[0];
-                    fraction = firstShape->position[2];
+                    zpos = firstShape->position[2];
                     extent = firstShape->unk58 + 5.0f;
                     high = firstShape->position[1];
                     firstShape->minimum[0] = (low - extent);
                     firstShape->maximum[0] = (low + extent);
-                    firstShape->minimum[2] = (fraction - extent);
-                    firstShape->maximum[2] = (fraction + extent);
+                    firstShape->minimum[2] = (zpos - extent);
+                    firstShape->maximum[2] = (zpos + extent);
                     extent = firstShape->unk5C + 5.0f;
                     firstShape->minimum[1] = (high - extent);
                     firstShape->maximum[1] = (high + extent);
                 }
             }
             if (firstShape->unk6 & 1) {
-                kind = firstShape->unk9;
-                if (((kind == 0) || (kind == 1)) && (fixedCount < 0x100)) {
+                if (((firstShape->unk9 == 0) || (firstShape->unk9 == 1)) && (fixedCount < 0x100)) {
                     D_800D6D60[fixedCount] = firstObject;
                     fixedCount += 1;
-                } else if ((kind == 2) && (movingCount < 0x100)) {
+                } else if ((firstShape->unk9 == 2) && (movingCount < 0x100)) {
                     D_800D7160[movingCount] = firstObject;
                     movingCount += 1;
                 }
@@ -2335,14 +2339,14 @@ void func_80053868(s32 updateRate) {
                             axis++;
                         } while ((axis < 3) && overlaps);
                         if (overlaps != 0) {
-                            result = func_800563B4((s32) firstObject, (AnimCollisionShape *) firstShape, (s32) secondObject, (AnimCollisionShape *) secondShape, (AnimCollisionResult *) FUNC538_PAIR(pairCount));
-                            if ((result == 0) && (secondShape->unk9 == 1)) {
+                            overlaps = func_800563B4((s32) firstObject, (AnimCollisionShape *) firstShape, (s32) secondObject, (AnimCollisionShape *) secondShape, (AnimCollisionResult *) FUNC538_PAIR(pairCount));
+                            if ((overlaps == 0) && (secondShape->unk9 == 1)) {
                                 func_800573C8((HitOverlapState *) firstObject, (HitOverlapVolume *) firstShape, (HitOverlapState *) secondObject, (HitOverlapVolume *) secondShape);
-                            } else if (result == 1) {
+                            } else if (overlaps == 1) {
                                 if (pairCount < 0xF) {
                                     pairCount += 1;
                                 }
-                            } else if (result == 2) {
+                            } else if (overlaps == 2) {
                                 firstKind = firstObject->unk44;
                                 if (firstKind == 0x40U) {
                                     TrapDanglingJump(firstObject, 1);
@@ -3935,11 +3939,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80053868:start
  * symbol: func_80053868
- * score: 710 differing words
+ * score: 627 differing words
  * frame: 0xF8
  * relocations: 59
- * first-mismatch: +0xC
- * summary: 1169 at -240 to 710 at size 0: TU unroll cap dropped, all loops plain counted for loops (IDO's own 4-way unroll). Left: allocation, homes 1-2 words high
+ * first-mismatch: +0x70
+ * summary: 710 to 627: homes exact (zpos, pad, no kind/result locals), first-loop head reads firstObject->unk48. Left: hoisted 2, s2 axis/j, s6 object
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

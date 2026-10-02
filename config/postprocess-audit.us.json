@@ -495,8 +495,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o001/overlay_001_tail.c.o",
       "offset": 13688,
       "overlay": 1,
@@ -9297,7 +9297,7 @@
       "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 292816,
+    "matched_c_bytes_with_postprocess": 310836,
     "objects_with_postprocess": 643
   }
 }

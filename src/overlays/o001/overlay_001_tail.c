@@ -844,22 +844,23 @@ typedef struct O1PhysicsActionMode {
 extern O1PhysicsPathMode gO1PhysicsPaths[4];
 extern O1PhysicsActionMode gO1PhysicsActions[6];
 
-/* Call identities come from the shipped overlay relocation table. */
+/* Call identities come from the shipped overlay relocation table. Every
+ * cross-overlay callee is a *Reloc placeholder: the shipped words store 0. */
 s32 func_overlay_001_F00004B4_184C894(void *object);
 s32 func_overlay_001_F0007D6C_185414C(s16, s16, s16, s16,
                                      s16 *, s16 *, void *);
-f32 *func_overlay_008_F0000008_185DD60(void *state);
+f32 *func_overlay_008_F0000008_185DD60Reloc(void *state);
 void func_8001F25C(void *state, s32 disabled);
-void func_overlay_008_F00049DC_1862734(s32 value);
+void func_overlay_008_F00049DC_1862734Reloc(s32 value);
 void func_8001D910(void *object, void *state);
 void func_80029F2C(s16 *angles, f32 *vector);
 u32 func_8001357C(f32 x, f32 z, f32 *height, s32 flags, void *surfaces);
 void func_8001F14C(void *object, void *state);
-s32 func_overlay_002_F000123C_1858034(f32 x, f32 z, void *region);
+s32 func_overlay_002_F000123C_1858034Reloc(f32 x, f32 z, void *region);
 s32 func_8002A910(f32 x, f32 z);
 s32 func_8002AA0C(s16 first, s16 second);
-void func_overlay_007_F0000EDC_185CD64(void);
-f32 func_overlay_008_F0001000_185ED58(void *object, void *state, f32 limit);
+void func_overlay_007_F0000EDC_185CD64Reloc(void);
+f32 func_overlay_008_F0001000_185ED58Reloc(void *object, void *state, f32 limit);
 s32 func_8002675C(void);
 s32 func_800299E8(s32 minimum, s32 maximum);
 f32 func_8002A8BC(s32 angle);
@@ -871,14 +872,14 @@ f32 func_8002A8C0(s32 angle);
 s32 func_8001E5C4(void *object, void *state, f32 update);
 s32 func_8001DD70(void *object, void *state, f32 update);
 s32 func_80008128(void *object, f32 x, f32 y, f32 z);
-void func_overlay_008_F00049A4_18626FC(void *state);
-f32 func_overlay_008_F00034A0_18611F8(void *object, void *state, f32 limit, f32 update);
-void func_overlay_008_F00049B4_186270C(void *unused);
+void func_overlay_008_F00049A4_18626FCReloc(void *state);
+f32 func_overlay_008_F00034A0_18611F8Reloc(void *object, void *state, f32 limit, f32 update);
+void func_overlay_008_F00049B4_186270CReloc(void *unused);
 void func_8001D41C(void *object, void *state, s32 update);
-void func_overlay_008_F0003278_1860FD0(void *object, void *state, s32 update);
+void func_overlay_008_F0003278_1860FD0Reloc(void *object, void *state, s32 update);
 void func_8001D960(void *object, void *state, s32 mode, s32 kind, s32 update);
-void func_overlay_008_F0002EC0_1860C18(void *object, void *state, s32 update);
-void func_overlay_008_F0003018_1860D70(void *object, void *state, f32 scale, s32 update);
+void func_overlay_008_F0002EC0_1860C18Reloc(void *object, void *state, s32 update);
+void func_overlay_008_F0003018_1860D70Reloc(void *object, void *state, f32 scale, s32 update);
 void func_8003EDEC(void *object, s32 update);
 extern f32 D_4;
 extern s32 gOverlay1Mode;
@@ -892,34 +893,23 @@ extern s32 gOverlay1TimerStep;
 extern void *LOCAL_BSS_1BA4;
 extern void *LOCAL_BSS_1D9C;
 
-/* Typed reconstruction remains NON_MATCHING. The object/state and callback
- * layouts follow Mickey's runtime identities and access widths. The
- * declarations follow the target's home ladder (every declared local takes a
- * slot in declaration order here, so a new local must replace a free one).
- * 2026-10-02 (g-o001big), 1061 to 41 at delta 0: `while (n--)` for the
- * surface and update loops, an else-arm for the last slope case, the angle
- * magnitude and the slope/spin/decel/steering factor in their own locals
- * (impulse keeps `scale`, the target's 0x80 home), the decel amount in
- * `extraScale` with the interpolation, field reads instead of the value2
- * carriers, the impulse velocity and the action callback, the limit
- * product level-first, the slope factor
- * as slope * tuning[3] * 0.5f, the steering value as one expression, `+=`
- * for the reverse-speed steps, deltaZ before inverseUpdate and the three
- * velocity stores before the position updates (all of these move ugen's
- * register draws), the decel scaled before its test, the `< 0` zeros the
- * target materialises with mtc1, and the steering `* 16384` spelled apart
- * from the angle block's 16384.0f so that constant stays a register web.
- * 2026-10-02 (k-o001big), 41 to 26: the action predicate's and
- * func_800299E8's results tested by an empty `if`; with the result unused
- * uopt reloads actionMode / forwardVelocity only on the call path, the
- * target reloads at the join on every path. 26 to 21: the steering input in
- * extraScale (the target's f14 is input and factor), the clamp in its own
- * local, and both speed-limit blends as `(work = speedLimit) + ...`; work's
- * save then beats extraScale's (33 against 30) and work takes f12.
- * 21 to 9: blend 1 loads into the clamp local by the same assignment
- * expression, so the clamp, the blend load and work all take f12. */
-#ifdef NON_MATCHING
-void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) {
+/* The first four words of the tuning block; only the slope factor is read
+ * through it (an array element loads before the product, a field after). */
+typedef struct O1PhysicsTuningHead {
+    f32 gravity;
+    f32 unk4;
+    f32 levelStep;
+    f32 slopeFactor;
+} O1PhysicsTuningHead;
+
+/* Every declared local takes a home in declaration order (the target's
+ * ladder), so a new local must replace a free one. Load-bearing shapes: the
+ * empty `if` around the action predicate and func_800299E8 (reloads at the
+ * join), the speed-limit blends as `(work = speedLimit) + ...`, the slope
+ * factor read as a tuning-head field (the product evaluates first), and the
+ * reverse timer tested without `!= 0` (its updateRate reload takes a0).
+ * Shard: docs/matching-triage-handoffs/overlay1UpdateObjectPhysics.md. */
+void overlay1UpdateObjectPhysics(O1PhysicsObject *object, s32 updateRate) {
     f32 absAngle;
     f32 *tuning;
     O1PhysicsSurface surfaces[8];
@@ -968,7 +958,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
 
     state = object->state;
     if (func_overlay_001_F00004B4_184C894(object) != 0) {
-        tuning = func_overlay_008_F0000008_185DD60(state);
+        tuning = func_overlay_008_F0000008_185DD60Reloc(state);
         G_rt_458c4 = *tuning;
         if (gOverlay1Mode == 1) {
             if ((G_rt_43a3c == 0) && (state->joypadDisabled == 0) && (state->spinTimer == 0) && !(state->flags1A8 & 8)) {
@@ -995,7 +985,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         gOverlay1TimerStep = updateRate;
         D_4 = (f32) updateRate;
         speed = -state->forwardVelocity;
-        func_overlay_008_F00049DC_1862734(NULL);
+        func_overlay_008_F00049DC_1862734Reloc(NULL);
         object->flags80 = 0;
         state->controlXjoy = 0;
         state->controlYjoy = 0;
@@ -1065,12 +1055,12 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         gO1PhysicsPaths[state->pathMode].position(&targetX, &targetZ);
         if (D_1BA4 != NULL) {
 
-            if (func_overlay_002_F000123C_1858034(((O1PhysicsObject *)D_1D9C)->x, ((O1PhysicsObject *)D_1D9C)->z, D_1BA4) != NULL) {
+            if (func_overlay_002_F000123C_1858034Reloc(((O1PhysicsObject *)D_1D9C)->x, ((O1PhysicsObject *)D_1D9C)->z, D_1BA4) != NULL) {
 
                 ((O1PhysicsState *)D_1DA0)->pathStartX = ((O1PhysicsObject *)D_1D9C)->x;
                 ((O1PhysicsState *)D_1DA0)->pathStartZ = ((O1PhysicsObject *)D_1D9C)->z;
             }
-            if (func_overlay_002_F000123C_1858034(targetX, targetZ, D_1BA4) != NULL) {
+            if (func_overlay_002_F000123C_1858034Reloc(targetX, targetZ, D_1BA4) != NULL) {
                 ((O1PhysicsState *)D_1DA0)->pathEndX = targetX;
                 ((O1PhysicsState *)D_1DA0)->pathEndZ = targetZ;
             }
@@ -1137,7 +1127,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
             if (speed < 0.01f) {
                 state->controlKeys = (s32) (state->controlKeys | 0x8000);
             }
-            if (state->reverseTimer != 0) {
+            if (state->reverseTimer) {
                 if (updateRate < (s32) state->reverseTimer) {
                     state->reverseTimer = (u8) (state->reverseTimer - updateRate);
                 } else {
@@ -1161,7 +1151,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
             state->boostScale = 1.0f;
         }
         if (G_rt_43a3c != 0) {
-            func_overlay_007_F0000EDC_185CD64();
+            func_overlay_007_F0000EDC_185CD64Reloc();
         }
         if (state->joypadDisabled != 0) {
             state->controlXjoy = 0;
@@ -1174,7 +1164,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         }
         if (state->boostMode == 0) {
             if (state->slope != 0.0f) {
-                extraScale = 1.0f - (state->slope * tuning[3] * 0.5f);
+                extraScale = 1.0f - (state->slope * 0.5f * ((O1PhysicsTuningHead *)tuning)->slopeFactor);
                 if (extraScale < 0.1f) {
                     extraScale = 0.1f;
                 }
@@ -1200,7 +1190,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         }
         remaining = gOverlay1TimerStep;
         while (remaining--) {
-            limit = func_overlay_008_F0001000_185ED58(object, state, limit);
+            limit = func_overlay_008_F0001000_185ED58Reloc(object, state, limit);
             keys = state->controlKeys;
             if (((keys & 0x4000) == 0) && (state->slope > 0.0f) && (state->forwardVelocity < -limit)) {
                 applySlope = 1;
@@ -1229,7 +1219,7 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
             state->field100 = 0;
             if (keys & 0x4000) {
                 if (state->forwardVelocity < -5.0f) {
-                    func_overlay_008_F00049DC_1862734(1);
+                    func_overlay_008_F00049DC_1862734Reloc(1);
                 }
                 if (state->forwardVelocity < 0.0f) {
                     state->forwardVelocity += tuning[(s32) -state->forwardVelocity + 50];
@@ -1438,9 +1428,9 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
             value = func_8002A878(0.825f, gOverlay1TimerStep);
             state->speedLimit = (work = state->speedLimit) + ((25.0f - work) * (1.0f - value));
         }
-        func_overlay_008_F00049A4_18626FC(state);
-        state->outputScale = func_overlay_008_F00034A0_18611F8(object, state, limit, D_4);
-        func_overlay_008_F00049B4_186270C(state);
+        func_overlay_008_F00049A4_18626FCReloc(state);
+        state->outputScale = func_overlay_008_F00034A0_18611F8Reloc(object, state, limit, D_4);
+        func_overlay_008_F00049B4_186270CReloc(state);
         func_8001D41C(object, state, gOverlay1TimerStep);
         for (index = 2, action = &gO1PhysicsActions[2]; index != 6; index++, action++) {
             if (index != state->actionMode) {
@@ -1454,19 +1444,16 @@ void func_overlay_001_F000438C_185076C(O1PhysicsObject *object, s32 updateRate) 
         if (gO1PhysicsActions[state->actionMode].update != NULL) {
             gO1PhysicsActions[state->actionMode].update();
         }
-        func_overlay_008_F0003278_1860FD0(object, state, gOverlay1TimerStep);
+        func_overlay_008_F0003278_1860FD0Reloc(object, state, gOverlay1TimerStep);
         func_8001D960(object, state, 0, 3, gOverlay1TimerStep);
-        func_overlay_008_F0002EC0_1860C18(object, state, gOverlay1TimerStep);
-        func_overlay_008_F0003018_1860D70(object, state, state->outputScale, gOverlay1TimerStep);
+        func_overlay_008_F0002EC0_1860C18Reloc(object, state, gOverlay1TimerStep);
+        func_overlay_008_F0003018_1860D70Reloc(object, state, state->outputScale, gOverlay1TimerStep);
         func_8003EDEC(object, gOverlay1TimerStep);
         if ((state->field349 != 0) && (state->field16C == 1)) {
             state->field16C = 0U;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_tail/func_overlay_001_F000438C_185076C.s")
-#endif
 
 /* ---- overlay1InitTimedState ---- */
 
@@ -3214,15 +3201,3 @@ Overlay1PoolRecord *overlay1FindBestRecord(void) {
     } while (remaining--);
     return result;
 }
-
-
-
-/* PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:start
- * symbol: func_overlay_001_F000438C_185076C
- * score: 9/1542 words
- * frame: 0x138
- * relocations: 184
- * first-mismatch: +0x824
- * summary: Steering input in extraScale, assignment-expression blends, clamp local: 41 to 9; rest is slope eval order and updateRate reload
- * PLATEAU-HANDOFF:func_overlay_001_F000438C_185076C:end
- */

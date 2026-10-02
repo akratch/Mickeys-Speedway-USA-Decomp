@@ -9005,8 +9005,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o101/overlay101TailAB4C.c.o",
       "offset": 43852,
       "overlay": 101,
@@ -9319,7 +9319,7 @@
       "metadata": 638,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 324796,
+    "matched_c_bytes_with_postprocess": 327348,
     "objects_with_postprocess": 644
   }
 }

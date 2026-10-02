@@ -74,9 +74,15 @@ extern f32 func_8002A8C0(s32 angle);
  * records, descriptor fields, and final control flow come from Mickey's own
  * instructions and callers.
  */
-/* Workbench p5: structure-mismatch; 681/674 candidate/target instructions, 593 differing words from +0x0, frame -0x178 vs -0x190.
- * Lever: 16-bit scissor locals regressed to 685 instructions; frame/parameter/angle/operand probes remain exhausted.
- * Remains: broad descriptor/window/vertex structure and register residual. */
+/* Plateau 2026-10-02 (lane q-ovl10): 573 masked at -4 (was 593 at +28).
+ * Priced edits: element x/y are floats truncated at use, upper/lower are
+ * ints converted at use, one packet macro per command (gDma1p for the
+ * vertex load), the -0xA0 screen offset applied after the sine/cosine
+ * calls, and the corner pair (x, y) negated in place for the lower row.
+ * Remains: allocator -- left/right/textureBottom take caller-saved
+ * registers spilled across the angle calls in the target, element and
+ * textureRight take s7/fp; frame 0x188 vs 0x190. */
+#define PKT(pkt, a, b) { Gfx *_g = (Gfx *)(pkt)++; _g->words.w0 = (a); _g->words.w1 = (b); }
 #ifdef NON_MATCHING
 void func_overlay_045_F0001158_188D5B0(
     Gfx **displayList, Overlay45Vertex **vertexPtr, void *unused,
@@ -93,7 +99,7 @@ void func_overlay_045_F0001158_188D5B0(
     u8 first;
     u8 second;
     s32 savedFont;
-    volatile s32 activeColour;
+    s32 activeColour;
     s32 left;
     s32 top;
     s32 right;
@@ -105,8 +111,12 @@ void func_overlay_045_F0001158_188D5B0(
     s32 textureRight;
     s32 textureBottom;
     s32 loopY;
+    s32 upper;
+    s32 lower;
     u32 vertexAddress;
     f32 sine;
+    f32 x;
+    f32 y;
     f32 cosine;
     f32 halfWidth;
     f32 halfHeight;
@@ -214,29 +224,17 @@ void func_overlay_045_F0001158_188D5B0(
                     dList->words.w1 = D_800D6638 + glyph->textureOffset;
                     dList++;
                     fontCommands++;
-                    vertexAddress = (u32)vertices + 0x80000000;
                     if (font->format == 4) {
-                        dList->words.w0 = 0x07060030;
-                        dList->words.w1 = (u32)fontCommands + 0x80000000;
-                        dList++;
+                        PKT(dList, 0x07060030, (u32)fontCommands + 0x80000000);
                         dList->words.w0 = fontCommands[6].words.w0;
                         dList->words.w1 = D_800D6638 + glyph->textureOffset2;
                         dList++;
                         fontCommands += 7;
                     }
-                    dList->words.w0 = 0x07080040;
-                    dList->words.w1 = (u32)fontCommands + 0x80000000;
-                    dList++;
-                    dList->words.w0 = 0xEF082C0F;
-                    dList->words.w1 = 0x00504240;
-                    dList++;
-                    dList->words.w0 = 0x04000030 |
-                        (((((vertexAddress & 6) | 0x20) & 0xFF) << 16));
-                    dList->words.w1 = vertexAddress;
-                    dList++;
-                    dList->words.w0 = 0x05110020;
-                    dList->words.w1 = (u32)triangles + 0x80000000;
-                    dList++;
+                    PKT(dList, 0x07080040, (u32)fontCommands + 0x80000000);
+                    PKT(dList, 0xEF082C0F, 0x00504240);
+                    gDma1p(dList++, G_VTX, (u32)vertices + 0x80000000, 0x30, (4 << 3) | (((u32)vertices + 0x80000000) & 6));
+                    PKT(dList, 0x05110020, (u32)triangles + 0x80000000);
 
                     if (descriptor->unk10 != 0.0f) {
                         f32 expandX;
@@ -250,67 +248,45 @@ void func_overlay_045_F0001158_188D5B0(
                         bottom = (s32)((f32)bottom + expandY);
                     }
 
-                    upperFloat = (f32)((0x78 - top) + element->unk12 +
-                                       element->unk1E);
-                    lowerFloat = (f32)((0x78 - bottom) + element->unk12 +
-                                       element->unk1E);
-                    left -= 0xA0;
-                    right -= 0xA0;
+                    upper = (0x78 - top) + element->unk12 + element->unk1E;
+                    lower = (0x78 - bottom) + element->unk12 + element->unk1E;
                     sine = func_8002A8BC(
                         element->unk0A + ((s16)element->unk20 << 8));
                     cosine = func_8002A8C0(
                         element->unk0A + ((s16)element->unk20 << 8));
+                    left -= 0xA0;
+                    right -= 0xA0;
                     halfWidth = (f32)(right - left) * 0.5f;
-                    halfHeight = (upperFloat - lowerFloat) * 0.5f;
-                    negativeHalfWidth = -halfWidth;
-                    negativeHalfHeight = -halfHeight;
-                    leftFloat = (f32)left;
-                    rightFloat = (f32)right;
-
-                    vertices[0].x = (s32)(leftFloat +
-                        (((negativeHalfWidth * sine) -
-                          (halfHeight * cosine)) - negativeHalfWidth));
-                    vertices[0].y = (s32)(upperFloat +
-                        (((halfHeight * sine) +
-                          (negativeHalfWidth * cosine)) - halfHeight));
+                    halfHeight = (f32)(upper - lower) * 0.5f;
+                    x = -halfWidth;
+                    y = halfHeight;
+                    vertices[0].x = (f32)left + ((x * sine - y * cosine) - x);
+                    vertices[0].y = (f32)upper + ((y * sine + x * cosine) - y);
                     vertices[0].z = 0;
                     vertices[0].red = 0xFF;
                     vertices[0].green = 0xFF;
                     vertices[0].blue = 0xFF;
                     vertices[0].alpha = 0xFF;
-
-                    vertices[1].x = (s32)(rightFloat +
-                        (((halfWidth * sine) - (halfHeight * cosine)) -
-                         halfWidth));
-                    vertices[1].y = (s32)(upperFloat +
-                        (((halfHeight * sine) + (halfWidth * cosine)) -
-                         halfHeight));
+                    x = halfWidth;
+                    vertices[1].x = (f32)right + ((x * sine - y * cosine) - x);
+                    vertices[1].y = (f32)upper + ((y * sine + x * cosine) - y);
                     vertices[1].z = 0;
                     vertices[1].red = 0xFF;
                     vertices[1].green = 0xFF;
                     vertices[1].blue = 0xFF;
                     vertices[1].alpha = 0xFF;
-
-                    vertices[2].x = (s32)(leftFloat +
-                        (((negativeHalfWidth * sine) -
-                          (negativeHalfHeight * cosine)) -
-                         negativeHalfWidth));
-                    vertices[2].y = (s32)(lowerFloat +
-                        (((negativeHalfHeight * sine) +
-                          (negativeHalfWidth * cosine)) -
-                         negativeHalfHeight));
+                    x = -x;
+                    y = -y;
+                    vertices[2].x = (f32)left + ((x * sine - y * cosine) - x);
+                    vertices[2].y = (f32)lower + ((y * sine + x * cosine) - y);
                     vertices[2].z = 0;
                     vertices[2].red = 0xFF;
                     vertices[2].green = 0xFF;
                     vertices[2].blue = 0xFF;
                     vertices[2].alpha = 0xFF;
-
-                    vertices[3].x = (s32)(rightFloat +
-                        (((halfWidth * sine) -
-                          (negativeHalfHeight * cosine)) - halfWidth));
-                    vertices[3].y = (s32)(lowerFloat +
-                        (((negativeHalfHeight * sine) +
-                          (halfWidth * cosine)) - negativeHalfHeight));
+                    x = -x;
+                    vertices[3].x = (f32)right + ((x * sine - y * cosine) - x);
+                    vertices[3].y = (f32)lower + ((y * sine + x * cosine) - y);
                     vertices[3].z = 0;
                     vertices[3].red = 0xFF;
                     vertices[3].green = 0xFF;
@@ -364,10 +340,10 @@ void func_overlay_045_F0001158_188D5B0(
 
 /* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
  * symbol: func_overlay_045_F0001158_188D5B0
- * score: 593/674 words
- * frame: 0x178
+ * score: 573/674 words
+ * frame: 0x188
  * relocations: 25
  * first-mismatch: +0x0
- * summary: V0 overruns its 2696-byte owner by 28 bytes (681/674; 593 differences), frame 0x178 vs 0x190; relocation identity proof is unavailable.
+ * summary: 573 at -4: float element coords, int rows, packet macros, -0xA0 after the angle calls; remains allocator (left/right spill) and frame 0x188 vs 0x190.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

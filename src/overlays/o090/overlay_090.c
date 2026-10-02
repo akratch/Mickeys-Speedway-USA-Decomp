@@ -82,7 +82,7 @@ extern s32 gOverlay90SequenceStateReloc;
 extern s32 gOverlay90SequenceDoneReloc;
 
 extern void pointListRPY(s32 count, s16 *rotation, f32 *input, f32 *output);
-extern void func_8005ABA8(Overlay90Owner *owner, f32 value, f32 updateRate);
+extern s32 func_8005ABA8(Overlay90Owner *owner, f32 value, f32 updateRate);
 extern void func_8005AD64(Overlay90Owner *owner, s32 mode, s32 index,
                           f32 startFrame);
 extern void amSndPlay(s32 soundId, void **handle);
@@ -102,33 +102,36 @@ extern void func_800031C0(void *handle, f32 x, f32 y, f32 z);
 extern void func_8000309C(void *handle, u8 volume);
 extern void func_800030B4(void *handle, u8 pitch);
 
-/* Plateau p5: workbench structure-mismatch; 639/648 instructions, 575 positional words, first +0x0; frame -224 vs -200. */
-/* Levers tried: zero/local ablations, vector array form, register sound pitch, cached-loop inlining, and scoped animation values. */
-/* Remains: two cache ablations shrink the frame by 8 but worsen structure; the other homes and state-machine CFG remain unresolved. */
+/* Plateau 2026-10-02 (lane q-ovl10): 327 masked at -8 (was 575 at -36).
+ * Priced edits: the rodata floats are literals at each use (0.0167f in
+ * case 2), func_8005ABA8 returns a value (frees v0 for the flag webs), case
+ * 1's loop is while (remaining--), case 5 rereads state->flag, case 2 sets
+ * displayIndex, *owner->attachment is read without a guard, the sound
+ * words go through an s16 pointer taken before the 1024.0f scale, forward
+ * is value20 + -100.0f after the radial call, and locals are in frame
+ * order (0xC8). Remains: uopt moves the switch's state->active load into
+ * the goto loop's predecessors (the target reloads it at the label), and
+ * soundPitch takes f20 where the target splits it through 0x90(sp). */
 #ifdef NON_MATCHING
 void func_overlay_090_F00000FC_18D4BF4(Overlay90Owner *owner,
                                         s32 updateRate) {
     Overlay90State *state;
     f32 sine;
     f32 cosine;
+    s32 originalUpdateRate;
     f32 radial;
     f32 side;
     f32 forward;
     f32 animationValue;
-    f32 soundPitch;
-    f32 scaleDecay;
-    f32 scaleStep;
-    f32 maximumAnimation;
-    f32 animationRate;
-    f32 riseRate;
-    f32 motionDecay;
-    f32 zero;
-    s32 originalUpdateRate;
     s32 remaining;
     s32 displayIndex;
+    Overlay90Vector delta;
+    f32 soundPitch;
     s32 transitioned;
     s32 value;
-    Overlay90Vector delta;
+    s16 *sound;
+
+
 
     state = owner->state;
     originalUpdateRate = updateRate;
@@ -138,27 +141,20 @@ void func_overlay_090_F00000FC_18D4BF4(Overlay90Owner *owner,
     if ((state->active == 1) || (state->active == 7)) {
         remaining = updateRate - 1;
         if (updateRate != 0) {
-            scaleDecay = OVERLAY90_DATA.scaleDecay;
             do {
-                state->value30 *= scaleDecay;
+                state->value30 *= 0.9f;
             } while (remaining--);
         }
     } else {
         remaining = updateRate - 1;
         if (updateRate != 0) {
-            scaleStep = OVERLAY90_DATA.scaleStep;
             do {
                 state->value30 +=
-                    (8.0f - state->value30) * scaleStep;
+                    (8.0f - state->value30) * 0.05f;
             } while (remaining--);
         }
     }
 
-    maximumAnimation = OVERLAY90_DATA.maximumAnimation;
-    animationRate = OVERLAY90_DATA.animationRate;
-    riseRate = OVERLAY90_DATA.riseRate;
-    zero = 0.0f;
-    motionDecay = OVERLAY90_DATA.motionDecay;
 
 process_mode:
     transitioned = 0;
@@ -169,29 +165,28 @@ process_mode:
         if (updateRate < remaining) {
             remaining = updateRate;
         }
-        if (remaining != 0) {
-            remaining--;
-            do {
+        {
+            while (remaining--) {
                 state->value26 += state->value2C;
                 state->value28 += state->value2E;
-                state->value14 *= motionDecay;
+                state->value14 *= 0.981f;
                 if (state->value2E > 0) {
                     state->value2E--;
                 }
-                delta.x = zero;
-                delta.y = zero;
+                delta.x = 0.0f;
+                delta.y = 0.0f;
                 delta.z = -state->value14;
                 pointListRPY(1, &state->value24, &delta.x, &delta.x);
                 state->value18 += delta.x;
                 state->value1C += delta.y;
                 state->value20 += delta.z;
-            } while (remaining--);
+            }
         }
         animationValue =
-            state->value14 * OVERLAY90_DATA.animationScale +
-            animationRate;
-        if (animationValue > maximumAnimation) {
-            animationValue = maximumAnimation;
+            state->value14 * 0.003f +
+            0.01f;
+        if (animationValue > 0.025f) {
+            animationValue = 0.025f;
         }
         func_8005ABA8(owner, animationValue, (f32)updateRate);
         state->flag += updateRate;
@@ -199,24 +194,25 @@ process_mode:
             state->flag -= 0xF0;
             state->active = 2;
             state->value14 = 0.0f;
-            func_8005AD64(owner, 2, -1, zero);
+            func_8005AD64(owner, 2, -1, 0.0f);
             transitioned = 1;
         }
         break;
     case 2:
-        func_8005ABA8(owner, 0.016669f, (f32)updateRate);
+        displayIndex = 0;
+        func_8005ABA8(owner, 0.0167f, (f32)updateRate);
         state->flag += updateRate;
         if (state->flag >= 0x78) {
             state->flag -= 0x78;
             state->active = 3;
-            func_8005AD64(owner, 1, -1, zero);
+            func_8005AD64(owner, 1, -1, 0.0f);
             amSndPlay(0x12, 0);
             overlay90SequenceReloc(0x1D);
         }
         break;
     case 3:
         displayIndex = 1;
-        func_8005ABA8(owner, animationRate, (f32)updateRate);
+        func_8005ABA8(owner, 0.01f, (f32)updateRate);
         state->flag += updateRate;
         if (state->flag >= 0x3C) {
             state->flag -= 0x3C;
@@ -227,7 +223,7 @@ process_mode:
         break;
     case 4:
         displayIndex = 2;
-        func_8005ABA8(owner, animationRate, (f32)updateRate);
+        func_8005ABA8(owner, 0.01f, (f32)updateRate);
         state->flag += updateRate;
         if (state->flag >= 0x3C) {
             state->flag -= 0x3C;
@@ -240,16 +236,15 @@ process_mode:
         break;
     case 5:
         displayIndex = 3;
-        func_8005ABA8(owner, animationRate, (f32)updateRate);
+        func_8005ABA8(owner, 0.01f, (f32)updateRate);
         state->flag += updateRate;
-        value = state->flag;
-        if (value >= 0x1E) {
+        if (state->flag >= 0x1E) {
             gOverlay90SequenceStateReloc = 0x83;
-        } else if (value >= 0xF) {
+        } else if (state->flag >= 0xF) {
             gOverlay90SequenceStateReloc = 0x84;
         }
-        if (value >= 0x3C) {
-            state->flag = value - 0x3C;
+        if (state->flag >= 0x3C) {
+            state->flag -= 0x3C;
             state->active = 6;
             amSndPlay(0x15, 0);
             overlay90SequenceReloc(0x1F);
@@ -259,14 +254,14 @@ process_mode:
         break;
     case 6:
         displayIndex = 4;
-        func_8005ABA8(owner, animationRate, (f32)updateRate);
+        func_8005ABA8(owner, 0.01f, (f32)updateRate);
         state->flag += updateRate;
         if (state->flag >= 0x3C) {
             state->flag -= 0x3C;
             state->active = 7;
             state->value2E = 0;
             state->value2C = -0x40;
-            func_8005AD64(owner, 0, -1, zero);
+            func_8005AD64(owner, 0, -1, 0.0f);
             if (camGetMode() == 0) {
                 Overlay90Level *level;
 
@@ -285,7 +280,7 @@ process_mode:
         remaining = updateRate - 1;
         if (updateRate != 0) {
             do {
-                state->value10 += riseRate;
+                state->value10 += 0.050f;
                 state->value14 += state->value10;
                 state->value24 += state->value2A;
                 state->value26 += state->value2C;
@@ -310,16 +305,16 @@ process_mode:
         if (state->value28 > 0x2000) {
             state->value28 = 0x2000;
         }
-        delta.x = zero;
-        delta.y = zero;
+        delta.x = 0.0f;
+        delta.y = 0.0f;
         delta.z = -state->value14 * (f32)updateRate;
         pointListRPY(1, &state->value24, &delta.x, &delta.x);
         state->value18 += delta.x;
         state->value1C += delta.y;
         state->value20 += delta.z;
-        animationValue = state->value14 * animationRate;
-        if (animationValue > maximumAnimation) {
-            animationValue = maximumAnimation;
+        animationValue = state->value14 * 0.01f;
+        if (animationValue > 0.025f) {
+            animationValue = 0.025f;
         }
         func_8005ABA8(owner, animationValue, (f32)updateRate);
         state->value3C -= updateRate;
@@ -344,42 +339,43 @@ process_mode:
         goto process_mode;
     }
 
-    if (owner->attachment != 0) {
+    {
         Overlay90Attachment *attachment;
         Overlay90AttachmentEntry *entry;
 
         attachment = *owner->attachment;
-        if ((attachment != 0) && (attachment->entries != 0)) {
+        if (attachment != 0) {
             entry = attachment->entries;
-            remaining = attachment->header->count - 1;
-            if (attachment->header->count != 0) {
-                do {
+            if (entry != 0) {
+                remaining = attachment->header->count;
+                while (remaining--) {
                     if (entry->flags & 0x100000) {
                         entry->value = displayIndex << 8;
                     }
                     entry++;
-                } while (remaining--);
+                }
             }
         }
     }
 
+    sound = &state->value3E;
     value = (s32)(state->value14 * 1024.0f) + 0x800;
     if (value > 0x1800) {
         value = 0x1800;
     }
     state->value36 += value * originalUpdateRate;
-    state->value3E = 0xD;
-    state->value40 = state->value36;
-    state->value42 = 0x13;
-    state->value44 = state->value36;
-    state->value46 = 0x2000;
+    *sound++ = 0xD;
+    *sound++ = state->value36;
+    *sound++ = 0x13;
+    *sound++ = state->value36;
+    *sound = 0x2000;
 
     sine = func_8002A8BC(state->angle);
     cosine = func_8002A8C0(state->angle);
     side = state->value18;
-    forward = state->value20 - 100.0f;
     radial = func_8002A8C0(state->value34) * state->value30 +
-             state->value1C + 80.0f;
+             (state->value1C + 80.0f);
+    forward = state->value20 + -100.0f;
     owner->x = side * sine + forward * cosine + state->x;
     owner->y = state->y + radial;
     owner->z = forward * sine - side * cosine + state->z;
@@ -409,10 +405,10 @@ process_mode:
 
 /* PLATEAU-HANDOFF:func_overlay_090_F00000FC_18D4BF4:start
  * symbol: func_overlay_090_F00000FC_18D4BF4
- * score: 575 differing words
- * frame: 0xE0
+ * score: 327/648 words
+ * frame: 0xC8
  * relocations: 58
- * first-mismatch: +0x0
- * summary: Reconstruct state-machine CFG and local lifetimes to add nine instructions while reducing non-save frame use by 24 bytes.
+ * first-mismatch: +0x74
+ * summary: 327 at -8: literal floats, goto loop, field rereads, s16 sound pointer; remains the switch load uopt moves into loop predecessors, soundPitch split.
  * PLATEAU-HANDOFF:func_overlay_090_F00000FC_18D4BF4:end
  */

@@ -2,12 +2,11 @@
 ### `fxScreenEffect` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 116/147 words
+- score: 0/147 words, promoted
 - frame: 0x30
 - relocations: 10
-- first mismatch: +0x8
-- summary: Minus-16-byte residual has structural aligned rows and no colour-only route; donor audit adds no mechanism.
-- summary: Minus-16-byte residual has structural aligned rows and no colour-only route; donor audit adds no mechanism.
+- first mismatch: none
+- summary: Matched. Rewritten in the shape of the matched sibling func_80036F08: packet macros on (*dList)++, gSPTextureRectangle, coordinates rescaled in place with arg5 as the row cursor, s taken from arg4 before the rescale, offset plus base, case 3 before case 2, DMA w1 before w0.
 
 
 Reopening audit (2026-09-08), evidence D: PROVENANCE inspection of Jet Force
@@ -46,5 +45,16 @@ Prior plateau evidence retained (historical measurements and exhausted forms):
 - relocation identity: Candidate and target each have 10 static relocations; 7 offsets, types, and identities align in fallback-static evidence.
 - flag lattice: All 119 combinations were nonexact. The `-O2 -g3 -mips2` diagnostic was 141 words with 131 differing words and first mismatch `+0x4`; its remaining ABI/structure mismatch does not justify a translation-unit flag change.
 - donor result: Mickey-only `m2c` reproduced the stale candidate; JFG provides assembly-only structural context, and the similarity scan found no credible exact C donor.
+
+Matched 2026-10-02 (lane x-fx). The closures above ("no colour-only
+route", "needs donor C showing a stack-argument preload") and the in-source
+axis log (some 350 spellings measured flat) all varied spellings inside the
+inherited m2c shape. Rewritten in the shape of the matched sibling
+func_80036F08 (opcode similarity 0.56, coordinator lead) it was 116 at
+delta -16 in one compile; then, as one product: the texture s held in a
+local taken from arg4 before the in-place rescale (delta -16 -> -4, this is
+the target's unfolded shift pair), arg5 itself as the row cursor (112 -> 7,
+delta 0), offset plus base (7), case 3 written before case 2 and the DMA
+command's w1 before its w0 (7 -> 0).
 
 <!-- plateau-handoff:fxScreenEffect:end -->

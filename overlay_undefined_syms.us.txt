@@ -3815,6 +3815,11 @@ gOverlay72ComponentScale = 0x00000000;
 overlay72ApplyReloc = 0xf0000000;
 overlay72QueryReloc = 0xf0000000;
 
+/* overlay 73: overlay73Draw.c.o */
+func_8002409C_o073Reloc = 0xf0000000;
+func_800241BC_o073Reloc = 0xf0000000;
+func_80034554_o073Reloc = 0xf0000000;
+
 /* overlay 74: overlay74Init.c.o */
 gOverlay74Flags = 0x00000000;
 gOverlay74Scale = 0x00000000;

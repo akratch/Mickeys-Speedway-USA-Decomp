@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 370964,
-  "nonmatching_overlay_c_bytes": 97640,
+  "matched_overlay_c_bytes": 368460,
+  "nonmatching_overlay_c_bytes": 100144,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4660,
   "bss_bytes": 77680,
@@ -647,7 +647,7 @@
      "type": "c",
      "source": "overlays/o001/func_overlay_001_F0003258_184F638",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x3578",
@@ -3757,7 +3757,7 @@
      "type": "c",
      "source": "overlays/o014/func_overlay_014_F000013C_186FA14",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x31C",
@@ -4521,7 +4521,7 @@
      "type": "c",
      "source": "overlays/o017/overlay17CalculateEndpoints",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x318",
@@ -6929,7 +6929,7 @@
      "type": "c",
      "source": "overlays/o031/overlay31BuildLookupTables",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x2E8",
@@ -14677,7 +14677,7 @@
      "type": "c",
      "source": "overlays/o073/overlay73Draw",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xEA8",

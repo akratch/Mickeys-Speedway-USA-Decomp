@@ -1,11 +1,9 @@
 #include "PR/ultratypes.h"
 
-typedef struct Overlay17StripPoint {
-    s16 x0, y0, z0;
-    u8 r0, g0, b0, a0;
-    s16 x1, y1, z1;
-    u8 r1, g1, b1, a1;
-} Overlay17StripPoint;
+typedef struct Overlay17Vertex {
+    s16 x, y, z;
+    u8 r, g, b, a;
+} Overlay17Vertex;
 
 typedef struct Overlay17Chain {
     s16 count;
@@ -13,83 +11,73 @@ typedef struct Overlay17Chain {
     u8 pad03[0x21];
     u8 red, green, blue, alpha;
     u8 pad28[4];
-    Overlay17StripPoint *buffers[2];
+    Overlay17Vertex *buffers[2];
 } Overlay17Chain;
 
 extern void func_overlay_017_F0000000_18739B8(Overlay17Chain *chain,
                                                f32 *x0, f32 *y0, f32 *z0,
                                                f32 *x1, f32 *y1, f32 *z1);
 
-/* NON_MATCHING: exact size and frame; the remaining deficit is in the
- * pre-call copy setup. See the symbol-owned handoff for measured closures. */
+/* Plateau, 2026-10-02 (lane x-ovlb): 49 -> 47 masked at delta 0. The
+ * buffers are arrays of 10-byte vertices indexed by pair, instead of byte
+ * offsets on halfword cursors, and both loops use one counter `n`, which is
+ * the target's v0/v1 pair. Still open is the copy count: the target expands
+ * (count - 1) * 10 into the counter register with shifts, while the two
+ * buffer offsets share the constant 10 in t2. Every source spelling
+ * measured either distributes the multiply (count * 10 - 10) or lets the
+ * copy count share the constant register. See the handoff shard. */
 #ifdef NON_MATCHING
 void overlay17AdvanceChain(Overlay17Chain *chain, s32 useAlpha) {
     s32 count;
-    s32 savedAlpha;
+    s32 alpha;
     f32 x0, y0, z0, x1, y1, z1;
-    u16 *sourceCursor;
-    u16 *destinationCursor;
-    Overlay17StripPoint *writeCursor;
-    u8 oldBuffer;
-    u8 newBuffer;
+    u16 *src;
+    u16 *dst;
+    Overlay17Vertex *vtx;
+    s32 n;
 
     if (chain == 0) {
         return;
     }
 
     count = chain->count;
-    oldBuffer = chain->selectedBuffer;
-    sourceCursor = (u16 *)((u8 *)chain->buffers[oldBuffer] +
-                           (((count - 1) << 1) * 10));
-    newBuffer = oldBuffer ^ 1;
-    chain->selectedBuffer = newBuffer;
-    writeCursor = chain->buffers[newBuffer];
-    destinationCursor = (u16 *)((u8 *)writeCursor +
-                                ((count << 1) * 10));
-    count--;
-    count = (count << 2) + count;
-    count <<= 1;
-    if (count--) {
-        do {
-            u16 value = sourceCursor[-1];
-            destinationCursor--;
-            sourceCursor--;
-            *destinationCursor = value;
-        } while (count--);
-        writeCursor = chain->buffers[chain->selectedBuffer];
+    src = (u16 *)&chain->buffers[chain->selectedBuffer][(count - 1U) << 1];
+    chain->selectedBuffer ^= 1;
+    dst = (u16 *)&chain->buffers[chain->selectedBuffer][count << 1];
+    n = (count - 1U) * 10;
+    while (n--) {
+        *--dst = *--src;
     }
-    if (useAlpha != 0) {
-        savedAlpha = chain->alpha;
+    vtx = chain->buffers[chain->selectedBuffer];
+    if (useAlpha) {
+        alpha = chain->alpha;
     } else {
-        savedAlpha = 0;
+        alpha = 0;
     }
-    func_overlay_017_F0000000_18739B8(chain, &x0, &y0, &z0,
-                                      &x1, &y1, &z1);
-
-    writeCursor->x0 = (s16)(s32)x0;
-    writeCursor->y0 = (s16)(s32)y0;
-    writeCursor->z0 = (s16)(s32)z0;
-    writeCursor->r0 = chain->red;
-    writeCursor->g0 = chain->green;
-    writeCursor->b0 = chain->blue;
-    writeCursor->a0 = (u8)savedAlpha;
-    writeCursor->x1 = (s16)(s32)x1;
-    writeCursor->y1 = (s16)(s32)y1;
-    writeCursor->z1 = (s16)(s32)z1;
-    writeCursor->r1 = chain->red;
-    writeCursor->g1 = chain->green;
-    writeCursor->b1 = chain->blue;
-    writeCursor->a1 = (u8)savedAlpha;
-    writeCursor++;
-
-    count = chain->count - 1;
-    while (count--) {
-        if (writeCursor->a0 != 0) {
-            savedAlpha = (chain->alpha * count) / (chain->count - 1);
-            writeCursor->a0 = (u8)savedAlpha;
-            writeCursor->a1 = (u8)savedAlpha;
+    func_overlay_017_F0000000_18739B8(chain, &x0, &y0, &z0, &x1, &y1, &z1);
+    vtx[0].x = x0;
+    vtx[0].y = y0;
+    vtx[0].z = z0;
+    vtx[0].r = chain->red;
+    vtx[0].g = chain->green;
+    vtx[0].b = chain->blue;
+    vtx[0].a = alpha;
+    vtx[1].x = x1;
+    vtx[1].y = y1;
+    vtx[1].z = z1;
+    vtx[1].r = chain->red;
+    vtx[1].g = chain->green;
+    vtx[1].b = chain->blue;
+    vtx[1].a = alpha;
+    vtx += 2;
+    n = chain->count - 1;
+    while (n--) {
+        if (vtx[0].a != 0) {
+            alpha = (chain->alpha * n) / (chain->count - 1);
+            vtx[0].a = alpha;
+            vtx[1].a = alpha;
         }
-        writeCursor++;
+        vtx += 2;
     }
 }
 #else
@@ -98,10 +86,10 @@ void overlay17AdvanceChain(Overlay17Chain *chain, s32 useAlpha) {
 
 /* PLATEAU-HANDOFF:overlay17AdvanceChain:start
  * symbol: overlay17AdvanceChain
- * score: 49/147 words
+ * score: 47/147 words
  * frame: 0x70
  * relocations: 1
  * first-mismatch: +0x18
- * summary: Exhaustive colour landscape: only web 52 reaches 47 under force; indexed-copy forms regressed structurally, so the source cursor remains guarded.
+ * summary: Vertex-indexed buffers, one shared loop counter: 49 to 47 unforced. Open: copy count needs a shift expansion into v0, not the t2 constant.
  * PLATEAU-HANDOFF:overlay17AdvanceChain:end
  */

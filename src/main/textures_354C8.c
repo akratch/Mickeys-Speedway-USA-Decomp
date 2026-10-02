@@ -193,6 +193,7 @@ void func_80034920(Gfx **dlist) {
 void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
                    s32 frame) {
     TextureRenderSettings *settings;
+    TextureRenderSettings *table;
     Gfx *dl;
     Gfx *textureCommands;
     u8 *currentTexture;
@@ -204,7 +205,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     s32 hasTexture;
     s32 settingsIndex;
     s32 tableFlags;
-    s32 *cachedState;
+    s32 stateKey;
 
     if (D_8007BD8C != 0) {
         oldBlockedFlags = D_8007BD90;
@@ -215,7 +216,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     hasTexture = 0;
     dl = *dlist;
     if (tex != NULL) {
-        settings = D_8007B680;
+        table = D_8007B680;
         numTextures = tex->numOfTextures >> 8;
         frameIndex = frame >> 16;
         if ((numTextures >= 2) && (frameIndex < numTextures) &&
@@ -267,7 +268,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
             }
         }
     } else {
-        settings = D_8007B980;
+        table = D_8007B980;
     }
 
     if ((flags & 0x80) && (D_8007BD98 != 0)) {
@@ -293,13 +294,12 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
         settingsIndex += 8;
     }
 
-    settings += settingsIndex;
+    settings = &table[settingsIndex];
     tableFlags = settings->flags | (flags & settings->mask);
-    cachedState = &D_800D302C;
-    if ((*cachedState != ((settingsIndex << 8) | tableFlags)) ||
-        (D_800D3020 != settings)) {
-        *cachedState = (settingsIndex << 8) | tableFlags;
-        D_800D3020 = settings;
+    stateKey = (settingsIndex << 8) | tableFlags;
+    if ((D_800D302C != stateKey) || (D_800D3020 != table)) {
+        D_800D302C = stateKey;
+        D_800D3020 = table;
         gDPPipeSync(dl++);
         if (tableFlags & 2) {
             if (D_800D3030 == 0) {
@@ -338,16 +338,19 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
  * commands are gSPDisplayList and gDkrDmaDisplayList; the wrap takes an else
  * arm; numTextures is declared ahead of oldBlockedFlags so that home lands at
  * -0x1C; settings is assigned at the head of the texture arm. A pointer to
- * D_800D302C, live across its load and store, stops the early address hold
- * and restores the target store order. Reusing an integer for that address
- * grew by 4 bytes. Left: register naming from +0x24. */
+ * D_800D302C, live across its load and store, stopped the early address
+ * hold; since 2026-10-02 (lane p-tex2) the cache compare is the sibling
+ * func_80034E54's: a state key compared and stored directly, and
+ * D_800D3020 caching the table BASE (the target compares and stores the
+ * unindexed table register), the indexed entry read through its own
+ * pointer (175 to 172). Left: register naming from +0x24. */
 /* PLATEAU-HANDOFF:func_800349A4:start
  * symbol: func_800349A4
- * score: 175 differing words
- * frame: 0x40
+ * score: 172/272 words
+ * frame: 0x40 (target 0x40)
  * relocations: 39
  * first-mismatch: +0x24
- * summary: Delta 0, 175 masked, frame 0x40, 39 relocs. A D_800D302C pointer rematerializes the load and store; integer reuse grew by 4. Left: naming from +0x24.
+ * summary: 175 to 172 at delta 0: D_800D3020 caches the table base, the state key is compared directly. Left: register naming from +0x24.
  * PLATEAU-HANDOFF:func_800349A4:end
  */
 #else

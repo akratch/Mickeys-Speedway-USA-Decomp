@@ -2168,118 +2168,104 @@ void func_8000E920(s32 arg0, s32 arg1) {
 /* PROVENANCE -- JFG's public track.c supplies the surrounding display-list
  * routine and texture vocabulary, while this Mickey body follows its own
  * fields, call sites, and assembly-only command schedule. */
-#ifdef NON_MATCHING
-/* Workbench verdict: structure-mismatch; 185 differing words, first mismatch +0x0. */
-/* Exact 249-word size; candidate frame 0x58 versus target 0x70, 18/21 relocation sites exact. */
-/* Unsigned batch flags preserve the recovered masks; the 24-byte frame deficit remains. */
+/* Matched 2026-10-02 (lane x-track) by rewriting from the listing in the
+ * shape of the matched sibling func_8000DFBC: a while (batchCount--) loop
+ * over the segment's batches, the texture default as an else arm, the env
+ * value masked once into a local, D_800C9520++ packet macros, the 0x4000
+ * case first in the switch (case bodies are laid out in source order), a
+ * one-argument func_800343F0 call, and s32 flags and masks (a u32 flags word
+ * swaps the AND operands). */
 void func_8000F198(s32 arg0, s32 arg1, s32 arg2) {
-    TrackSegment *segment;
     TrackBatch *batch;
     TrackTextureHeader *texture;
-    s32 specialFlags;
-    s32 sp5C;
-    s32 sp58;
-    u32 vertexAddress;
-    u32 positionAddress;
-    s32 textureFrame;
-    u32 textureFlags;
-    s32 hasTexture;
-    s32 vertexCount;
-    s32 positionCount;
-    s32 color;
+    u8 *vertex;
+    u8 *triangle;
+    s32 renderMask;
+    s32 skipMask;
+    s32 flags;
+    s32 alpha;
+    s32 textureS;
+    s32 special;
+    s32 value;
+    TrackSegment *segment;
     s32 batchCount;
-    s32 index;
 
     if (D_8007C854 != 0) {
-        gDPSetPrimColor(D_800C9520++, 0, 0, D_8007C858 & 0xFF,
-                        D_8007C858 & 0xFF, D_8007C858 & 0xFF, 0xFF);
+        gDPSetPrimColor(D_800C9520++, 0, 0, D_8007C858, D_8007C858,
+                        D_8007C858, 255);
     }
-
     segment = &D_800792E8->segments[arg0];
     switch (arg2) {
-    case 4:
-        sp5C = 0xC904;
-        sp58 = 0xC800;
-        break;
     case 0x4000:
-        func_800343F0(2, arg0);
-        sp5C = 0x4800;
-        sp58 = 0x800;
+        func_800343F0(2);
+        renderMask = 0x4800;
+        skipMask = 0x800;
+        break;
+    case 4:
+        renderMask = 0xC904;
+        skipMask = 0xC800;
         break;
     case 0x8000:
-        sp5C = 0xC800;
-        sp58 = 0x4800;
+        renderMask = 0xC800;
+        skipMask = 0x4800;
         break;
     default:
-        sp5C = -1;
-        sp58 = 0xC904;
+        renderMask = -1;
+        skipMask = 0xC904;
         break;
     }
-
     batchCount = segment->batchCount;
     batch = segment->batches;
-    if (batchCount != 0) {
-        index = batchCount - 1;
-        do {
-            if ((1U << batch->unk1) & arg1) {
-                textureFlags = batch->flags;
-                if ((textureFlags & sp5C) && !(textureFlags & sp58)) {
+    while (batchCount--) {
+        if ((1 << batch->unk1) & arg1) {
+            flags = batch->flags;
+            if ((flags & renderMask) && !(flags & skipMask)) {
+                if (batch->textureIndex != 0xFF) {
+                    alpha = 1;
+                    texture = D_800792E8->textures[batch->textureIndex].texture;
+                } else {
                     texture = NULL;
-                    hasTexture = 0;
-                    if (batch->textureIndex != 0xFF) {
-                        hasTexture = 1;
-                        texture = D_800792E8->textures[batch->textureIndex].texture;
-                    }
-                    vertexAddress = (u32) segment->lightData +
-                                    (batch->u0 * 0xA);
-                    positionAddress = (u32) segment->vertexData +
-                                      (batch->v0 * 0x10);
-                    textureFrame = batch->frame << 8;
-                    if ((texture != NULL) && ((s16) texture->flags & 0x40) &&
-                        ((textureFlags & 0x30) != 0x20)) {
-                        color = (textureFrame >> 8) & 0xFF;
-                        gDPSetEnvColor(D_800C9520++, color, color, color,
-                                       color);
-                    } else {
-                        gDPSetEnvColor(D_800C9520++, 0xFF, 0xFF, 0xFF, 0);
-                    }
-                    if (!(textureFlags & 0x180)) {
-                        textureFlags |= D_800C9544;
-                    }
-                    specialFlags = textureFlags & 0x20000;
-                    if ((specialFlags != 0) && (texture != NULL)) {
-                        func_80014ECC(texture, textureFrame, textureFlags);
-                    } else {
-                        func_800349A4(&D_800C9520, texture,
-                                      textureFlags | 2, textureFrame);
-                    }
-                    vertexAddress += 0x80000000;
-                    vertexCount = batch[1].u0 - batch->u0;
-                    TRACK_SP_VERTEX(D_800C9520++, vertexAddress,
-                                    vertexCount, 0);
-                    positionCount = batch[1].v0 - batch->v0;
-                    positionAddress += 0x80000000;
-                    TRACK_SP_POLYGON(D_800C9520++, positionAddress,
-                                     positionCount, hasTexture);
-                    if (specialFlags != 0) {
-                        func_80034920(&D_800C9520);
-                    }
+                    alpha = 0;
+                }
+                vertex = (u8 *) segment->lightData + (batch->u0 * 0xA);
+                triangle = (u8 *) segment->vertexData + (batch->v0 * 0x10);
+                textureS = batch->frame << 8;
+                if (texture != NULL && ((s16) texture->flags & 0x40) &&
+                    (flags & 0x30) != 0x20) {
+                    value = (textureS >> 8) & 0xFF;
+                    gDPSetEnvColor(D_800C9520++, value, value, value, value);
+                } else {
+                    gDPSetEnvColor(D_800C9520++, 255, 255, 255, 0);
+                }
+                if (!(flags & 0x180)) {
+                    flags |= D_800C9544;
+                }
+                special = flags & 0x20000;
+                if (special && texture != NULL) {
+                    func_80014ECC(texture, textureS, flags);
+                } else {
+                    func_800349A4(&D_800C9520, texture, flags | 2,
+                                  textureS);
+                }
+                TRACK_VTX(D_800C9520++, vertex + 0x80000000,
+                          batch[1].u0 - batch->u0);
+                TRACK_TRI(D_800C9520++, triangle + 0x80000000,
+                          batch[1].v0 - batch->v0, alpha);
+                if (special) {
+                    func_80034920(&D_800C9520);
                 }
             }
-            batch++;
-        } while (index--);
+        }
+        batch++;
     }
     if (arg2 == 0x4000) {
         texEnableModes(2);
     }
     if (D_8007C854 != 0) {
         gDPPipeSync(D_800C9520++);
-        gDPSetPrimColor(D_800C9520++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
+        gDPSetPrimColor(D_800C9520++, 0, 0, 255, 255, 255, 255);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000F198.s")
-#endif
 /*
  * PROVENANCE: Jet Force Gemini's public assembly-only `trackGetBlockList` in
  * `src/track.c` supplies tier-D TU-position and role context. The body and
@@ -5444,16 +5430,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
     intensity = (frame >> 8) & 0xFF;
     gDPSetEnvColor(D_800C9520++, intensity, intensity, intensity, intensity);
 }
-
-/* PLATEAU-HANDOFF:func_8000F198:start
- * symbol: func_8000F198
- * score: 185 differing words
- * frame: 0x58
- * relocations: 21
- * first-mismatch: +0x0
- * summary: Unsigned batch flag types preserve 185 differences and exact249-word size; m2c adds no missing CFG. Next: counter and flag home evidence.
- * PLATEAU-HANDOFF:func_8000F198:end
- */
 
 /* PLATEAU-HANDOFF:func_80011980:start
  * symbol: func_80011980

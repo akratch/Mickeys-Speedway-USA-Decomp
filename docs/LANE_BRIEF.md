@@ -418,6 +418,29 @@ order of how often they decided a match:
     `func_8002DE30` (DKR `src/tracks.c`), and `donor_match.py` missed it
     because the counterpart calls only unnamed helpers.
 
+27. **A dead store can stop uopt forwarding a conversion as a one-block
+    temporary.** R8's last three words (the count's first read in v0 where
+    the target has v1) closed by making the count the symbol web that owns
+    v1 and writing `update = 0.0f` after the conversion; uopt deletes the
+    store as redundant and no longer forwards `(s32) update`. Twenty-five
+    result-side kills, cast round-trips and literal types were inert there.
+28. **uopt numbers expressions at first occurrence, and a loop preheader
+    emits in that order.** Assigning `(width - 1)` and `(height - 1)` to
+    locals before the loop numbered them ahead of a table base and fixed
+    every register in func_800475E8 (33 -> 13); the same idea is item 21's
+    dead read.
+29. **What makes IDO unroll.** A `do { } while (0)` macro as the loop body
+    stops the unroller in a function that makes a call after the loop; the
+    same stores as bare statements unroll (o011 F0000150, 534 -> 0). A
+    `!= 0` countdown unrolls with the shipped negated remainder, while
+    `> 0` tests and `while (n--)` stay rolled (func_8000A39C). An explicit
+    init in the `for` is needed, and the unroller copies only the primary
+    induction variable (o015).
+30. **as1 shares one high half per access only for symbols the TU
+    defines.** A pointer local taken at entry (item 10) is not enough when
+    the object is extern; carve it into the TU's `.bss` first
+    (`D_800CB2C0` into charControl.c).
+
 ### Promotion traps (each cost a lane a cycle on 2026-10-01)
 
 1. `gmake verify`'s candidate guard rebuilds changed objects and discards the
@@ -858,6 +881,14 @@ shadow -- the dispatch order for Track B.
     pass. Three times here, twice landing a commit on a red gate. Run
     `tools/gates.sh` (add `--staged` before a commit, `--promotion` after one),
     which keeps status and output apart and names every failure in a verdict.
+
+15. **Never kill by pattern.** `pkill -f "tools/gates.sh --staged"` matches
+    every lane's gate run, not yours; one lane's cleanup killed other lanes'
+    verifies mid-run (exit 144). Kill the process id you started.
+16. **Never chain a commit onto a gate run.** `gates.sh --staged; git commit`
+    commits whatever the gates said, and one commit landed on a test that
+    had timed out under load. Write
+    `if tools/gates.sh --staged; then git commit ...; fi`.
 
 ## Rules, non-negotiable
 

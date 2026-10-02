@@ -1,168 +1,136 @@
-# Next wave after the seven plateaus (2026-10-02)
+# Next wave after wave X (2026-10-02)
 
-This file is the single next-wave handoff. It replaces the overlay 1
-promotion brief. The byte totals below were recomputed from the
-integrated tree after this wave's seven lanes were merged. Recompute
-again before quoting them. No function in this wave is an exact match.
+This file is the single next-wave handoff. It replaces the wave-7 handoff.
+Every byte total below was recomputed from the integrated tree when this
+file was written. Recompute before quoting.
 
-## This wave
-
-Zero exact matches. One adopted improvement, still short of the ROM.
-Six plateaus with the source left as it was.
-
-**Adopted, not a match.** `overlay1LoadBuildRecords`
-(`src/overlays/o001/overlay_001_head.c`, 2,288 target bytes). The clear
-loop now writes each field through `D_1BA0[index]` instead of walking
-one pointer backward. That moved the size deficit from 92 bytes to 52
-(13 words short) and the masked residual from 470 words to 469. Frame
-stays `0xD8`, first mismatch stays `+0x34`, relocations stay 114.
-Folding `0x1BA0` through `0x1DCC` into one owner went the other way
-(549 masked, 156 bytes short) and was reverted. A null-base spelling of
-the `0x94` length is byte-identical to `D_1D8C * 0x94`, so it does not
-defeat the hoisted multiply by 148. The TU's only flag is
-`-Wab,-r4300_mul`. The adopted clear is four source lines shorter than
-the pointer walk; four comment lines sit in front of
-`overlay1InitializeModeState` so the matched functions below stay on
-their original line numbers. `insertion_pairs` was run on the pre-edit
-body only.
-
-**Plateaus (ADR 0018: three attempts, no better residual, nothing
-adopted).**
-
-- `func_overlay_001_F0001D78_184E158` stays 268 masked of 627 words,
-  size delta 0, first `+0x2C`. The matched rank function's typed
-  `D_1DA0_State` alias is byte-identical. Checklist item 22 at the
-  lap-compare zero stays at 268: that zero is already in the following
-  call's delay slot, which is where the target has it. Per-region
-  pointer locals shrink the function by 140 bytes, grow the frame from
-  `0x70` to `0x78`, and replace the commoned address with a held
-  pointer. Forcing the value web onto `a1` is declined. The forbidden
-  mask is `v0` through `a3`, and the first legal colour is `t0`. The
-  only flag is `-Wab,-r4300_mul`.
-- `overlay101BuildPresentationD` stays 130 masked, 824 bytes, size
-  delta 0, first `+0x10`. The target stores `0xFF` once and reuses it.
-  There is no `0xC0` immediate. `/ 2.0f` and `* 0.5f` compile to one
-  object wherever both were built, including the cells that fold to
-  `0xC0`. That `0xC0` spelling is the wrong value and grows the
-  function. The matched tail's `0.0f` / `0.00f` / `(f32)(s32)1`
-  spellings do not split a pool entry here. No per-file codegen flag
-  was present.
-- `overlay83DrawStrip` stays 69 of 77 words, size delta 0, first
-  `+0x4`, frameless. The saved display-list pointer is copy-propagated
-  and inert. Writing the vertex length as shifts, or inlining
-  `count * 2 + 2`, stops the `doubled * 10 + 28` fold and scores 74 at
-  size delta -4. Pointer or-zero on that short shape grows. The opening
-  move still needs the display-list parameter off `a0` without a word
-  the 304-byte shape cannot afford.
-- `overlay48InitializeState` stays 47 masked, 228 target bytes, size
-  delta -16, first `+0x0`. A pre-loop index, a cursor induction, and a
-  for-init counter all lose the scaled seed cursor. The floors were 60
-  and 57 masked at size delta +16. The guarded body is unchanged. No
-  colour sweep: the size delta is not 0.
-- `func_8003C80C` (`weather_tail.c`) stays 103 of 118, size delta 0,
-  first `+0x14`, frame `0x38`. Indexing the destination instead of
-  walking the pointer scores 110 at delta +4. `while (var_t0--)` scores
-  120 at delta +24. The `for` countdown unrolls to 161 at delta +240.
-  The `do-while` at 8 is the size-matching form. The colour loop lerps
-  three bytes and copies the fourth, so the rain `0xFF` shape is not
-  this function. The only call is after the loop and its delay is a
-  spill, so checklist item 22 has no for-init to fill. No per-file
-  flags.
-- `func_overlay_079_F0000FA0_18CDF40` stays 143 masked of 184, size
-  delta 0, frame `0x98`, first masked mismatch `+0x3C`. The matched
-  overlay 26 plane callback is the wrong else: this target slides with
-  arctan, and that sibling copies the hit point. A 144-cell product of
-  the difference floored at 177 masked, size delta +12, with no cell at
-  delta 0. Splitting one product is byte-identical. Dropping `volatile`
-  on the plane constant scores 144, one word worse. The two `0.01f`
-  pool slots are distinct addresses. The relocation count is 13, not
-  the old call-only count of 5: three `sqrtf`, `Arctanf`,
-  `func_8002A8BC`, and four local pairs. The only flag is
-  `-Wab,-r4300_mul`.
-
-## The arithmetic
+## Where the tree is
 
 ```
-resolved 741,548 / 943,640 = 78.58%
-80% = 754,912 bytes, gap 13,364
-queue 134 functions / 186,904 bytes
+resolved 800,004 / 943,640 = 84.78%
+85% = 802,094 bytes, gap 2,090
+queue 86 functions / 132,292 bytes
 ```
 
-`gmake progress` printed `functions: 1291 matched / 1460 total (88.42%)`
-and `resolved: 741548 / 943640 whole-program text (78.58%)`. The ranking
-snapshot printed 134 queued identities and 186,904 bytes. The gap is
-`754,912 - 741,548`. The matched-byte total is the same as before this
-wave: every attempt is still `NON_MATCHING`. The integration verify
-printed `OK build/mickey.us.z64 matches the expected US ROM hash`
-(`507341c0a40ca3e9a7cee969b396ee53facfb548`).
+`gmake progress` printed `functions: 1310 matched / 1460 total (89.73%)`.
+The integration verify printed `OK build/mickey.us.z64 matches the expected
+US ROM hash` (`507341c0a40ca3e9a7cee969b396ee53facfb548`). Wave X started at
+741,548 bytes (78.58%) and crossed 80% about forty-five minutes in.
 
-## Tool gaps worth recording
+Every lane worktree is clean and nothing is running. The wave stopped on
+account usage, not on the queue.
 
-None of these blocked a proof. They are why a lane's first printed row
-disagreed with the score it was actually judging.
+## What chose the targets
 
-- `tools/fast_score.py --diff` skips `lui` and `jal` rows, so the first
-  printed line can be later than the masked first mismatch.
-  `fast_score` also does not print the frame or the relocation count.
-- `tools/shape_lint.py` misses a typed declaration and an empty `if`.
-  Its extractor starts at a forward declaration, so the first hits in
-  `weather_tail.c` belong to the matched `func_8003C770`.
-- `tools/shape_product.py` ignores a bare `#else`, treats only `==` and
-  `!=` as axis values, reports the floor without naming which cell
-  produced it, and does not print an opcode census. One spelling in the
-  overlay 48 product never became a value and was not scored.
-- `tools/overlay_tables.py --json` prints module headers. Per-site
-  records come from `read_module_relocations`, which has no overlay
-  filter.
-- `tools/insertion_pairs.py` attributes a one-sided word to the nearest
-  source line, which does not prove that expression owns the
-  instruction. Its ownership check fails when the candidate object sits
-  outside the translation unit. It was not re-run after the
-  load-records adoption.
-- Stock `uopt -Wo,-zdbug:2` aborts in `wrapper_ecvt` and does not print
-  a forbidden mask. The instrumented compiler printed the `v0`–`a3`
-  mask when `CDX_LOG`, `CDX_OUT`, and `CDX_PROC` were set.
+The wave before this one spent seven lanes on small allocator plateaus that
+had already had four to six passes and matched nothing. Wave X ranked the
+queue differently, and both rules are worth keeping:
 
-A cold `gmake -j2` in a fresh lane failed at link until
-`gmake overlay-syms`. That trap is already in `CLAUDE.md`.
+- **Has the function had a rewrite pass since the shape checklist existed?**
+  Count the dated sections in its shard. About sixty queued functions had
+  none, and most of the wave's matches came from them, including several
+  2-3 KB functions at 90% residual that had never had a lane.
+- **Does a matched function have the same shape?** `tools/sibling_scan.py`
+  ranks every unmatched listing against every matched compiled function in
+  about two seconds. Re-run it after each batch: new matches become new
+  siblings (`fxScreenEffect` matched, then became the lead for an overlay 66
+  function an hour later).
+
+Three kinds of code were invisible to the ranking and so to every earlier
+lane: a body shared by two overlays through `#include` and macro renames
+(overlays 69 and 88), a body kept in an `.inc` file (overlay 14), and a pure
+`GLOBAL_ASM` function with no candidate (overlay 51). Compare the progress
+report's NON_MATCHING bytes with the ranking's queue bytes; a difference is
+code nobody is looking at.
+
+## Near-misses, each with its next step
+
+Numbers are from the ranking at the time of writing.
+
+- `overlay1LoadBuildRecords` (src/overlays/o001/overlay_001_head.c): 2,288 bytes, 6 masked words, size delta 0. Two sites of three words (the `D_1D80` and `D_1D8C` stores): the target stores directly with a fresh high half, ours stores through the held address register. Untested: port the matched `overlay1AssignRecordIndex` statement group (in `overlay_001_tail.c`) into both walks, with its two value locals `newIndex` and `next`, then re-solve the frame. About 55 lvalue/region cells are already flat.
+- `func_8001357C` (src/main/track.c): 1,040 bytes, 2 masked words, size delta 0. The target loads the surfaces base between the plane-index load and its scale, base first in the add. 900 expression spellings scale first; a declared index gives the order but takes a colour. Next is an instrument question: which ugen handler emits an add whose second operand is a shift. The +0x1A8 pair of `func_8001398C` is the same blocker.
+- `func_overlay_027_F0000624_187BFFC` (src/overlays/o027/overlay_027.c): 1,016 bytes, 12 masked words, size delta 0. Two colour decisions on the two vertex-address webs (a0 and v1 here, a3 and a1 in the target). Forcing both (`p1:w119=c6`, `p1:w141=c4`, accepted) scores 0. Find what occupies a0-a2 across the first vertex command in the target's block 15.
+- `func_overlay_044_F0000580_188BDE0` (src/overlays/o044/func_overlay_044_F0000580_188BDE0.c): 1,396 bytes, 13 masked words, size delta 0. The stride conversion temp ties `xh` and `dsdx` on save and loses on web number. Forcing three webs scores 5, schedule-only. Give the stride temp a second reference in the preheader, or number it ahead of `xh` (first-occurrence numbering, checklist item 28).
+- `func_8000E5EC` (src/main/track.c): 820 bytes, 12 masked words, size delta 0. Two of four forces are needed. An empty `if (camera) {}` closes the camera pair (9) but is a diagnostic construct. The other pair needs the list cursor's save at exactly 30; block wrappers overshoot.
+- `func_80051364` (src/main/anim.c): 1,148 bytes, 9 masked words, size delta 0. A scratch shape reaches the target's a0/a1/a2 with no force at 7 words: the join written cursor increment, subtraction, state store, the first two each in a one-line `do { } while (0)`, and four blocks removed elsewhere (two early returns nested, the `updateRate <= 0` return nested, the camera clear as a do-while) so timeScale keeps f20. Not adopted in the tree; adopt it, then order the join block's draws.
+- `overlay15InitStarsAndPalette` (src/overlays/o015/overlay_015.c): 988 bytes, 17 masked words, size delta 0. The palette tail is IDO's unroller on a one-variable `for`. A two-variable form restores starIndex's rank at 197/-8 because the unroller copies only the primary variable. Make starIndex an independent induction variable.
+- `func_overlay_026_F00001A0_187A598` (src/overlays/o026/func_overlay_026_F00001A0_187A598.c): 2,424 bytes, 455 masked words, size delta 0. The tree is unchanged, but a 36-word, delta-0 candidate exists outside the tree (the coordinator's campaign-handoffs scratch directory, `o026_36words_candidate.c`): the o029 recipe with one x/y/z set shared by the records, the heading deltas and the final distance. Next: a float prototype for the three `func_80008128` zero arguments and o029's final-block locals.
+- `func_overlay_020_F000038C_1876964` (src/overlays/o020/func_overlay_020_F000038C_1876964.c): 1,080 bytes, 251 masked words, size delta -4. One word short. The target computes all four vertex indices into saved registers before the first division and keeps the texture in fp.
+- `overlay69DrawSortedGeometry` (src/overlays/o069/overlay69DrawSortedGeometry.c): 1,436 bytes, 57 masked words, size delta 0. One body shared by overlays 69 and 88 (2,872 B together). The whole residual is one scratch draw before the geometry index load that must emit nothing. Every source construct that spends it is normalised away by uopt or emits a word. This is an instrument task (trace the ugen path on the `*(state->fixedGeometryIndex + i)` cell), not another spelling sweep.
+
+Also moved a long way without closing, with the decision variable recorded
+in each shard: `func_80053868` (522 to 393), `func_80009414` (398 at +20 to
+243 at 0), `func_8002FB34` (272 at -20 to 155 at 0), `func_8002EBE0` (218 to
+89), `func_overlay_058_F00005FC_18AF7E4` (109 to 89), `overlay68UpdateAnimation`
+(180 to 108), `func_overlay_002_F0001DF8_1858BF0` (353 to 198),
+`func_80016890` (534 at +28 to 439 at +12), `overlay17CreateChain` (83 to 65).
+
+## Not started
+
+- `func_overlay_047_F0000B30_1891948` (8,672 bytes). A dispatch was written
+  and never ran. The untested lead: its shard's decision variable 2 says a
+  second extern name for the first loop reproduces the target's separate
+  address materialisations and was rejected as an alias artefact. Checklist
+  item 25 was measured three times this wave: decode the relocation records
+  for every site naming that address before believing it is one object.
+- `overlay68UpdateAnimation`, `func_8003C80C` (0.44 to the matched
+  `overlay34InterpolateColor`), `overlay83DrawStrip`, `overlay48InitializeState`:
+  a lane was dispatched and stopped before its first compile.
+- `func_8004B1DC` and `func_80001BF4`: the owning lane closed its other two
+  targets and stopped.
+- `func_8001EC44` and `func_8001E5C4`: `D_800CB2C0` is now carved into
+  `charControl.c`'s `.bss`, which is what the target's one-high-half-per-access
+  stores need (as1 shares a high half only for symbols the TU defines). The
+  product on `func_8001EC44` from the recorded 201 and 221 cells is next.
+- `overlay99ApplySegment`, `func_overlay_043_F0000324_188A2F4`,
+  `func_overlay_056_F00001A0_18A2F18`, `overlay98RenderReflections`,
+  `func_overlay_009_F0000000_1866678`, `overlay100DrawMotion`.
+
+## Closed with evidence; do not reopen without a new lever
+
+- `matrix.c`: the ROM uses odd single-precision float registers no IDO
+  build emits. See the file's own notes.
+- `func_800517E0`: 332 bytes short on two allocator outcomes; per-case
+  locals were measured and did not move it.
+- `overlay57UpdateModeState`: listed in `config/unassignable-symbols.us.json`.
+
+## What the tooling learned
+
+- `tools/merge_lanes.sh` re-measures the ranking after merging and runs
+  `check-tooling` with the other gates. A batch that stops part-way leaves
+  merge commits without the regeneration step, so `verify` and `check-docs`
+  read red (a stale `config/overlays.us.json`) until the batch is re-run.
+- `mk/overlays.mk` grows by a rule per promotion and crossed the clean-room
+  256 KiB limit during this wave. Two finished overlays' rule blocks now
+  live in `mk/overlay_014.mk` and `mk/overlay_057.mk`, included at their
+  old positions. The file has roughly fifteen promotions of headroom; move
+  another finished overlay's contiguous block the same way when it runs
+  out, and prove it with a sorted `gmake -pn` comparison, because objects do
+  not depend on mk files and `verify` alone proves nothing.
+- Gaps lanes reported: `finalize_plateau.py --commit` refuses the
+  regenerated ranking that `check-docs` then demands; `shape_product.py`
+  omits value 0 for an axis never compared with 0; `fast_score.py` refuses
+  a symbol with no `NON_MATCHING` block and its `git grep` fallback finds
+  nothing on macOS; `donor_match.py` misses a counterpart that calls only
+  unnamed helpers (three DKR counterparts were found by hand).
+  `tools/resident_storage_view.py --key gravity` refuses after the
+  `charControl.c` carve and was not investigated.
 
 ## Next concrete action
 
-Do not reopen this wave's six untouched plateaus, the parked allocator
-set, R8, `func_80028FCC`, or either whale, unless the assignment states
-a lever the shard does not already record. One owner per translation
-unit. Before any other edit on a new target, remove that TU's inherited
-per-file overrides (`-Wo,-loopunroll,0`, `-Olimit`, `-O2 -g3`) and
-re-score. Leave `-Wab,-r4300_mul` where a matched sibling in the same
-TU already needs it. If the strip unmatches a sibling, restore it.
+One owner per translation unit, as before. In this order:
 
-`func_overlay_101_F000C6E8_18E7F08` and both `NON_MATCHING` functions in
-`font.c` were not assigned. `lane/p65c-o101b` and `lane/p65g-font` each
-have an unmerged plateau commit on those translation units. The DKR
-`render_text_string` shape is already the disclosed organisation of
-`func_8004B1DC`; the open stall there is the packet cursor. Presentation
-A, B, and C stay closed: the shared-shape fold was measured in lane
-`s1-trio`, and this wave's colour-pool pass on D says the `0xC0`
-expression is the wrong value for D.
+1. `overlay1LoadBuildRecords`. Its six words are worth more than the gap to
+   85% on their own, and the next step is named above.
+2. Promote nothing from the scratch candidates without re-measuring them on
+   the current tree: adopt the overlay 26 candidate and the `func_80051364`
+   shape, bank each, then work the residual.
+3. `func_overlay_027_F0000624_187BFFC` and `func_overlay_044_F0000580_188BDE0`:
+   both score zero or near it under accepted forces, so each is a question
+   about one ranking, not about shape.
+4. Run `tools/sibling_scan.py --min 0.4`, then give the functions under
+   "Not started" one rewrite pass each.
 
-Then assign, only after `tools/ready_queue.py` and a zero-exit
-`tools/lane_status.py --symbol` `base-only` verdict:
-
-1. `overlay1LoadBuildRecords`, different lever from the one just spent.
-   The kept body is the per-field clear at 469 masked and 52 bytes
-   short. `insertion_pairs` on that adopted body, then one construct
-   that emits the missing scaled cursor or the unhoisted `0x94` length
-   without a new relocation and without changing the file's line count.
-   Do not repeat the single `0x1BA0..0x1DCC` owner or the null-base
-   length. No colour sweep while the size delta is nonzero.
-2. `func_overlay_001_F0001D78_184E158`, only with a kill that splits the
-   loaded-value web so `a1` is legal, while the commoned address and
-   the existing reloads stay. Do not repeat the typed alias, checklist
-   item 22 at this zero, or a per-region held pointer.
-3. A fresh base-only function from `tools/ready_queue.py`, one per
-   translation unit. Checklist item 22 only where a free assignment
-   follows a call and is not already the delay-slot instruction.
-
-`track.c`, `anim.c`, `weather.c`, `textures_354C8.c`, `overlay_008.c`,
-`overlay_015.c`, and the overlay 58 TU from the previous wave are still
-free for a different function only.
+A twenty-lane fleet used a week of account usage in about four hours.
+Fewer lanes, each resumed on its own recorded next step when it finishes,
+produced as much per token as fresh lanes and kept the module knowledge.

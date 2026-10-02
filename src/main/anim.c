@@ -771,19 +771,22 @@ extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
  * globals, sound-object offset, and final compiler output are independently
  * established from Mickey's ROM.
  *
- * 22 masked words at size delta 0 and the target's 0x40 frame (2026-10-02,
- * lanes n-anim and o-anim2), plain C: early returns, literal time scales,
- * indexed path loops, no state-address carrier. The NTSC scale is one
- * expression, `* 3 * 2 / 10`: IDO expands the folded *6 in one register,
- * as the target does. The state store precedes the cursor increment (that
- * is the target's draw order for the two values as1 hoists above the
- * compare), and the clock float re-reads the stored global. `D_8007D69C++`
- * re-reads the cursor global; the two unused leading locals give
- * originalRate its 0x34 home. Remaining: command/clock and their two
- * address webs rank the wrong way (16 words; forcing all four colours
- * leaves 6), the two stores issue in source order, the new-clock add takes
- * its operands swapped, and the sound-handle test loads into a0, not v0.
- * Retain NON_MATCHING. */
+ * 12 masked words at size delta 0 and the target's 0x40 frame (2026-10-02,
+ * lanes n-anim, o-anim2 and p-anim3), plain C: early returns, literal time
+ * scales, indexed path loops, no state-address carrier. The NTSC scale is
+ * one expression, `* 3 * 2 / 10`: IDO expands the folded *6 in one
+ * register, as the target does. The state store precedes the cursor
+ * increment (the target's draw order for the two values as1 hoists above
+ * the compare). The clock advances in place, `D_8007D6A8 += updateRate`,
+ * with no new-clock local: uopt hoists the load and add above the camera
+ * clear, the float re-read of the stored global supplies the ring draw the
+ * path loops need, and the clock address web keeps one reference, so the
+ * cursor and clock address webs rank as the target's (22 to 13). The
+ * subtraction after the two stores puts the cursor store before the
+ * branch (13 to 12). Remaining: the command web (save 3/3) ranks below the
+ * clock value web (3/2), 7 words; the subtraction and the state store
+ * trade places around the branch, 2; the sound-handle test loads into a0,
+ * not v0, 3. Retain NON_MATCHING. */
 #ifdef NON_MATCHING
 void func_80051364(s32 updateRate) {
     s32 pad;
@@ -793,7 +796,6 @@ void func_80051364(s32 updateRate) {
     AnimPathObject *object;
     AnimStreamEntry *command;
     s32 i;
-    s32 newClock;
     s32 adjustedRate;
     u16 cmdWord;
     f32 timeScale;
@@ -824,9 +826,9 @@ void func_80051364(s32 updateRate) {
             } else {
                 adjustedRate = adjustedRate * 3 * 2 / 10;
             }
-            updateRate = adjustedRate - D_8007D6A8;
             D_8007D6A4 = (s8) cmdWord;
             D_8007D69C++;
+            updateRate = adjustedRate - D_8007D6A8;
             if (D_8007D6A4 == 0) {
                 originalRate = updateRate;
             }
@@ -835,7 +837,6 @@ void func_80051364(s32 updateRate) {
     if (updateRate <= 0) {
         return;
     }
-    newClock = D_8007D6A8 + updateRate;
     for (i = 0; i < 4; i++) {
         D_800D6B08[i] = NULL;
     }
@@ -848,7 +849,7 @@ void func_80051364(s32 updateRate) {
             D_8007D6BC = 0;
         }
     }
-    D_8007D6A8 = newClock;
+    D_8007D6A8 += updateRate;
     D_8007D6AC = D_8007D6A8 * timeScale;
     for (i = 0; i < 256; i++) {
         path = D_800D6B00[i];
@@ -3903,11 +3904,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80051364:start
  * symbol: func_80051364
- * score: 22 differing words
+ * score: 12 differing words
  * frame: 0x40
  * relocations: 47
- * first-mismatch: +0x80
- * summary: 33 to 22: folded *3*2 NTSC scale, state store before cursor increment, clock float re-reads the global. Left: 4 address/value colour ranks (16)
+ * first-mismatch: +0x88
+ * summary: 22 to 12: clock advanced in place (no new-clock local), subtraction after the stores. Left: command 3/3 below clock 3/2 (7), delay slot (2), handle (3)
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

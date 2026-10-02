@@ -2,11 +2,46 @@
 ### `joyRead` plateau handoff
 
 - source: `src/main/joy.c`
-- score: 47/159 words
+- score: 0/159 words, promoted
 - frame: 0x38
 - relocations: 55
-- first mismatch: +0x2C
-- summary: 18-web scan and seven-subset lattice reach diagnostic floor 40. Endpoint source probes fail; existing flag/count ownership narrows the next source question.
+- first mismatch: none
+- summary: Matched. A void prototype for osContGetReadData, a zero-argument call to func_8002CD6C, and a second definition of i inside the receive block.
+
+#### 2026-10-02 (lane `w2-front`): matched; both earlier closures were about the wrong variable
+
+47 -> 0 at size delta 0, `gmake verify` OK. Three source facts, measured in
+this order:
+
+1. **Call arity (checklist item 9).** `func_8002CD6C` is `void (void)` in
+   `saves.c`. The inherited candidate passed `(&count, 1, &count)` to
+   reproduce the registers the target leaves at that call. With no arguments
+   the function went 4 bytes short (135 masked): the copies were standing in
+   for a loop-test word.
+2. **The second loop's exit test.** uopt rewrites a counted loop's `i < 4`
+   exit test into `!=` (L153), unless the counter is defined again later in the
+   same region. The first loop keeps `<` because the second loop's `i = 0`
+   follows it. The second loop keeps `<` in the target, so `i` is defined again
+   inside the receive block. Measured on a mini TU: a later definition dominated
+   by the loop exit keeps `sltu`, and a definition after the region's join point
+   does not. A dead `i = 0` after the loop, one before `rumbleTick`, and
+   `i = saveDataFlags & 0x1F` feeding `func_8002C94C` all score the same (38,
+   delta 0). The last one is the form kept. This resolves the "endpoint
+   identity" question below. The endpoint is not shared with the call
+   arguments. The call has none, and the registers are the loop's leftovers.
+3. **A void prototype for `osContGetReadData`.** The TU had none, so cfe
+   treated it as returning int. The allocator records (procedure 2) showed the
+   controller-array cursor web, which spans all three loops, with v0 missing
+   from its `p1cost` list (forbidden mask `0x40000000`). It was therefore
+   coloured v1, and the remaining 38 words were one v0/v1 cycle across the
+   three loops. Declaring `extern void osContGetReadData(JoyPad *)` gave 38 -> 0.
+
+What this breaks: the 2026-09-12 closure ("no source form inside this function
+reaches it; the lever is which translation unit owns the pad arrays") and the
+p23 floor of 40 from forces. Both were measured on the 3-argument call shape.
+The pad arrays remain `extern`. Defining them in the TU was measured as
+byte-inert (38 both ways).
+
 #### 2026-09-12 (lane `lane/p7-res2`): the frame ladder is exact; the residual is two loop endpoint symbols
 
 48 to 47, and the stack is now byte-identical in shape. **Declaring `s32 i;`

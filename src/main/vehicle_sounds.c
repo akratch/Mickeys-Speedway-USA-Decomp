@@ -10,8 +10,7 @@
  * measured cross-title file boundary.
  *
  * PROVENANCE: JFG's permitted src/audio_manager_36D0.c and audio.h were read
- * to identify the shared positional-sound API. No body is adapted from them;
- * all four functions remain Mickey's generated assembly.
+ * to identify the shared positional-sound API. No body is adapted from them.
  */
 
 #include "PR/ultratypes.h"
@@ -84,7 +83,6 @@ extern f32 D_8007F988[];
 extern f32 D_8007F9B0[];
 extern f32 D_8007F9D8[];
 extern f32 D_8007FA00[];
-extern f32 D_80084318;
 
 f32 alCents2Ratio(s32 cents);
 void func_80002FE0(u16 soundId, f32 x, f32 y, f32 z, u8 arg4,
@@ -127,7 +125,6 @@ void func_800582A8(void) {
     } while (slot != end);
 }
 
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: source-level organization and terminology are adapted from
  * Diddy Kong Racing's permitted published src/audio_vehicle.c functions
@@ -144,9 +141,10 @@ void func_800582A8(void) {
  * relative velocity reuses `speed` (one home at 0xBC); ratio and range are
  * spill temps, not homes. The doppler smoothing divides by 2.0f: written
  * as `* 0.5f` it shares the pitch's "0.5f" constant, and that one ucode
- * constant spans the racer loop and loses f12 (409 to 8). Left: cameras
- * takes s6 and the 0x54 stride s7, the target the other way round
- * (totalsave 201 against 200). The three pads keep the 0x118 frame.
+ * constant spans the racer loop and loses f12 (409 to 8). The empty test on
+ * cameras after the camera loop extends its range by one block, so the
+ * 0x54 stride constant outranks it for s6 (save 200/19 against 201/20); the
+ * three pads keep the 0x118 frame. Matched.
  */
 void func_8005830C(s32 updateRate) {
     VehicleObject *object;
@@ -394,11 +392,10 @@ void func_8005830C(s32 updateRate) {
                 func_800031E8(slot->handle);
             }
         }
+        if (cameras) {
+        }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/vehicle_sounds/func_8005830C.s")
-#endif
 
 /*
  * Exact under -O2 -mips2 -32 -Wab,-r4300_mul. Naming the loop-invariant
@@ -420,23 +417,13 @@ f32 func_80058EF4(f32 arg0) {
     arg0 = (arg0 - one) / (one + arg0);
     term = arg0;
     squared = arg0 * arg0;
-    if (D_80084318 < (result - previous)) {
+    if (0.001f < (result - previous)) {
         do {
             previous = result;
             result += term / divisor;
             divisor += 2;
             term *= squared;
-        } while (D_80084318 < (result - previous));
+        } while (0.001f < (result - previous));
     }
     return result * (s32)2;
 }
-
-/* PLATEAU-HANDOFF:func_8005830C:start
- * symbol: func_8005830C
- * score: 6/762 words
- * frame: 0x118 (target 0x118)
- * relocations: 88
- * first-mismatch: +0x654
- * summary: 697 to 6 at delta 0. Left: cameras (totalsave 201) outranks the 0x54 stride constant (200) for s6; the target has them swapped.
- * PLATEAU-HANDOFF:func_8005830C:end
- */

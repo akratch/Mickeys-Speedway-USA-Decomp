@@ -10,6 +10,21 @@
   "relocation_masked_coverage": 132,
   "functions": [
     {
+      "name": "func_800355A0",
+      "file": "src/main/textures_354C8.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 1076,
+      "objdiff_match_pct": null,
+      "differing_words": 7,
+      "first_mismatch_offset": 72,
+      "relocation_masked_differing_words": 7,
+      "relocation_masked_first_mismatch_offset": 72,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "y3uo.Yj_b.1t0w.oc-Y.1SxX.Vb71.-G0f.JWJT.ZeVz.EE6K.59g"
+    },
+    {
       "name": "func_overlay_008_F0001294_185EFEC",
       "file": "src/overlays/o008/overlay_008.c",
       "overlay": 8,
@@ -385,21 +400,6 @@
       "source_context_sha256": "gk9R._4NM.9FBV.PHng.PPAr.4RRr.h8WK.WaZF.DSO0.yKQw.7Jw"
     },
     {
-      "name": "func_800355A0",
-      "file": "src/main/textures_354C8.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1076,
-      "objdiff_match_pct": null,
-      "differing_words": 105,
-      "first_mismatch_offset": 72,
-      "relocation_masked_differing_words": 105,
-      "relocation_masked_first_mismatch_offset": 72,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "K8V3.BxIG.OF-4.Q2-p.gu3s.0U2U.-8Lo.ZD9J.kAVZ.twJW.BAY"
-    },
-    {
       "name": "func_overlay_101_F000C6E8_18E7F08",
       "file": "src/overlays/o101/overlay101TailC6E8.c",
       "overlay": 101,
@@ -727,7 +727,7 @@
       "relocation_masked_first_mismatch_offset": 36,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "P0EX.cOoM.s0bI.fbYy._YfU.qgN9.NYmE.HwTA.LEo9.0QHK.jZ4"
+      "source_context_sha256": "FXQa.WL34.U8jr.Uxl4.DkLa.cyVo.06H-.Sg49.a4el.mL8l.TEc"
     },
     {
       "name": "overlay20UpdateGrid",
@@ -1417,7 +1417,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 80,
       "category": "size-mismatch",
-      "source_context_sha256": "emCu.iS2O.y4GL.WEYB.eI7i.dRoA.1Lof.LJ_W.MwnF.bmRR.bR4"
+      "source_context_sha256": "OJn7.oxBo.Im0h.n4dG.di92.OwJE.UEhw.AiLa.NpW3.YSV3.TLw"
     },
     {
       "name": "func_overlay_001_F0003258_184F638",

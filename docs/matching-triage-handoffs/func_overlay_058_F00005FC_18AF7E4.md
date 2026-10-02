@@ -52,9 +52,21 @@ What is open, measured:
 - The large-point-quad: the target converts both offsets first and adds x
   before z; an inline call measured +4.
 
-Next lever: read the frame. Compile the 0x88 flat-spelling candidate and the
-0x90 natural one under the instrumented uopt and compare which temporaries
-each reserves; the eight bytes are a uopt temp, not a declared local.
+Later the same sitting, measured on the banked 89 shape: the frame is a
+declaration count after all. Dropping the `offsetZ` local and declaring
+start/end as an s16 pair lands the frame at exactly 0x88 (status 0x7C,
+increment 0x58, end spill 0x50, all as shipped), but every inline spelling of
+the large-point-quad call (offset first or vertex first, with or without the
+(f32) casts, four cells) converts and sums x before converting z's offset and
+pays one mtc1 hazard nop: 90 masked at +4. The shipped order converts both
+offsets first, then sums x, then z, then truncates y, all in ring registers;
+declared f32 offset locals take f0/f2 instead (90 at delta 0, frame 0x98).
+
+Next lever: the quad call's offset order without a declared float. With the
+frame then exact, what remains is that call and the increment block's draw
+order, both of which are ugen emission order, so read them with
+`tools/draw_census.py` and the DKWB freelist trace rather than another
+spelling product.
 
 Summary before this remeasure: Plain -O2 (no -g3); &D_2C0 compares via entry pointer drop s8; frame order. Open: s0/s1 address webs, quad offsets.
 

@@ -71,22 +71,7 @@ typedef struct VehicleCamera {
     /* 0x18 */ u8 pad18[0x54 - 0x18];
 } VehicleCamera;
 
-void *D_800D78B0;
-f32 sVehicleSoundPreviousDistance0;
-f32 D_800D78B8;
-void *D_800D78BC;
-void *D_800D78C0;
-f32 sVehicleSoundPreviousDistance1;
-f32 D_800D78C8;
-void *D_800D78CC;
-void *D_800D78D0;
-f32 sVehicleSoundPreviousDistance2;
-f32 D_800D78D8;
-void *D_800D78DC;
-void *D_800D78E0;
-f32 sVehicleSoundPreviousDistance3;
-f32 D_800D78E8;
-void *D_800D78EC;
+VehicleSoundSlot D_800D78B0[4];
 extern s32 D_800D78F0;
 extern u8 D_8007BF04;
 extern u8 D_8007BF0C;
@@ -126,39 +111,21 @@ s32 mathRnd(s32 minimum, s32 maximum);
 f32 sqrtf(f32 value);
 f32 func_80058EF4(f32 value);
 
-#ifdef NON_MATCHING
-/* Bounded plateau: owns ROM 0x58E50..0x58EA8, 22 frameless words with no
- * padding. Configured full-TU C is 26 words, matches 3/22 positionally, first
- * +0x0, and carries 24 relocations against the target's 20. The four-word
- * excess is one redundant high-half load per slot: the target uses two direct
- * absolute bases for three stores while retaining separately named LO16s.
- * The previous 119-row lattice, aggregate/volatile-slot families, and this
- * pass's target ordering, TU-local-scalar, comma-expression, racer-base pointer,
- * and volatile split-tail forms are all nonexact; none strictly improves V0.
- * The sole caller is func_80004FE0+0x54C and no credible donor exists. Resume
- * only with an original declaration/TU model that naturally emits that mixed
- * relocation shape, or evidence that this initializer was handwritten; do
- * not repeat flags or these storage forms. Assembly remains canonical. */
+/* The four camera sound slots are one array: a plain loop that IDO unrolls
+ * gives the target's shared high half per pair of stores, which the sixteen
+ * separately named scalars this TU used to define could not (2026-10-02). */
 void func_80058250(void) {
-    D_800D78B0 = 0;
-    D_800D78B8 = 0.0f;
-    D_800D78BC = 0;
-    D_800D78C0 = 0;
-    D_800D78C8 = 0.0f;
-    D_800D78CC = 0;
-    D_800D78D0 = 0;
-    D_800D78D8 = 0.0f;
-    D_800D78DC = 0;
-    D_800D78E0 = 0;
-    D_800D78E8 = 0.0f;
-    D_800D78EC = 0;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        D_800D78B0[i].handle = 0;
+        D_800D78B0[i].dopplerPitch = 0.0f;
+        D_800D78B0[i].racerObject = 0;
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/vehicle_sounds/func_80058250.s")
-#endif
 
 void func_800582A8(void) {
-    VehicleSoundSlot *slot = (VehicleSoundSlot *)&D_800D78B0, *end = (VehicleSoundSlot *)&D_800D78F0;
+    VehicleSoundSlot *slot = D_800D78B0, *end = (VehicleSoundSlot *)&D_800D78F0;
     do {
         if (slot->handle != 0) {
             func_800031E8(slot->handle);
@@ -427,7 +394,7 @@ void func_8005830C(s32 updateRate) {
         cameraIndex = cameraCount - 1;
         if (cameraCount != 0) {
             do {
-                slot = &((VehicleSoundSlot *)&D_800D78B0)[cameraIndex];
+                slot = &D_800D78B0[cameraIndex];
                 object = slot->racerObject;
                 candidate = 0;
                 if (object != 0 && object == slot->handle &&
@@ -604,14 +571,4 @@ f32 func_80058EF4(f32 arg0) {
  * first-mismatch: +0x8
  * summary: 758 vs 762 instructions; frame now exact at 0x118 and the whole saved-register and spill-temp block matches by offset and use count, so the residual is the declared-local ORDER plus eight unhomed float values
  * PLATEAU-HANDOFF:func_8005830C:end
- */
-
-/* PLATEAU-HANDOFF:func_80058250:start
- * symbol: func_80058250
- * score: 19/22 words
- * frame: frameless
- * relocations: 24
- * first-mismatch: +0x0
- * summary: hypothesis=one symbol shares the high half; spellings=offset, reversed, struct all 22 at +16; stall=size stays +16, masked rises 19 to 22
- * PLATEAU-HANDOFF:func_80058250:end
  */

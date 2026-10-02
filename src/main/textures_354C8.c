@@ -541,11 +541,16 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
  * globals, calls, and compiler output remain authoritative. */
 /* The six word locals are declared in the order of their stack homes
  * (cacheNum 0x5C, then the offsets down to commandOffset at 0x48); the small
- * scalars follow so they pack below them. triangleOffset is never read: the
- * triangle pointer is rebuilt from displayListOffset, which is the target's
- * shape, and the declaration holds the home. Plateau 2026-10-01 (lane d-res1):
- * 109 -> 106, natural source with no allocator cues. 2026-10-02 (lane e-res3):
- * 106 -> 105 by reading the ROM table through one entry pointer. */
+ * scalars follow so they pack below them.
+ * 2026-10-02 (lane x-res): 105 -> 7 at delta 0, three edits that were each
+ * flat or worse alone on the inherited shape: the free-slot scan reads
+ * D_800D2FFC[i << 1] directly (no node pointer), the ROM table is read as
+ * D_800D2FF8[spriteId] and [spriteId + 1], and the triangle pointer is
+ * newSprite + triangleOffset (the target reloads that home). The two `+=`
+ * chains give the target's operand order for the display-list and texture
+ * offsets. Left: vertexOffset and commandOffset take a2/a3 where the target
+ * has a3/t0 (forced: 7 -> 4), their addu operand order, and the cacheFull
+ * clear the target schedules into the bounds test's delay slot. */
 Sprite *func_800355A0(s32 spriteId, s32 flags) {
     Sprite *refSprite;
     Sprite *newSprite;
@@ -578,8 +583,7 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
 
     cacheNum = -1;
     for (i = 0; i < D_800D3008; i++) {
-        s32 *node = &D_800D2FFC[i << 1];
-        if (node[0] == -1) {
+        if (D_800D2FFC[i << 1] == -1) {
             cacheNum = i;
         }
     }
@@ -590,12 +594,9 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
         D_800D3008++;
     }
 
-    {
-        s32 *entry = &D_800D2FF8[spriteId];
-        size = entry[0];
-        spriteAsset = D_800D3000;
-        piRomLoadSection(0x15, (u32)spriteAsset, size, entry[1] - size);
-    }
+    size = D_800D2FF8[spriteId];
+    spriteAsset = D_800D3000;
+    piRomLoadSection(0x15, (u32)spriteAsset, size, D_800D2FF8[spriteId + 1] - size);
 
     numTextures = spriteAsset->frameTexOffsets[spriteAsset->numberOfFrames];
     i = numTextures;
@@ -604,9 +605,11 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
     }
 
     triangleOffset = (s32)align16((u8 *)(spriteAsset->numberOfFrames * 4 + 0x18));
-    displayListOffset = triangleOffset + ((i * 2) * 16);
-    textureOffset = displayListOffset + ((i * 4) * 8) +
-                    (spriteAsset->numberOfFrames * sizeof(Gfx));
+    displayListOffset = triangleOffset;
+    displayListOffset += ((i * 2) * 16);
+    textureOffset = displayListOffset;
+    textureOffset += ((i * 4) * 8);
+    textureOffset += (spriteAsset->numberOfFrames * sizeof(Gfx));
     vertexOffset = textureOffset + (i * 4);
     commandOffset = vertexOffset + ((i * 4) * 10);
     size = (s32)align16((u8 *)(commandOffset + (i * 2)));
@@ -618,7 +621,7 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
         return NULL;
     }
 
-    D_800D3018 = (SpriteTriangle *)((u8 *)newSprite + (displayListOffset - ((i * 2) * 16)));
+    D_800D3018 = (SpriteTriangle *)((u8 *)newSprite + triangleOffset);
     D_800D3014 = (Gfx *)((u8 *)newSprite + displayListOffset);
     D_800D3010 = (SpriteVertex *)((u8 *)newSprite + vertexOffset);
     newSprite->textures =
@@ -679,11 +682,11 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
 }
 /* PLATEAU-HANDOFF:func_800355A0:start
  * symbol: func_800355A0
- * score: 105 differing words
+ * score: 7/269 words
  * frame: 0x68
  * relocations: 44
  * first-mismatch: +0x48
- * summary: Table entry pointer (106->105); open: target hoists the D_800D2FF8 lui and the id shift into block 2, here the shift lands in block 1
+ * summary: 105 to 7: direct cache and ROM-table reads, triangleOffset reloaded, += offset chains. Left: vertex/command offsets a2/a3 vs a3/t0 and the cacheFull delay slot
  * PLATEAU-HANDOFF:func_800355A0:end
  */
 #else

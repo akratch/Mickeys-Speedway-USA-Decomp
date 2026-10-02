@@ -256,9 +256,9 @@
       "source_commit": "48c801c51b096b2f955b862ef2892e39bd39e778"
     },
     "func_8001398C": {
-      "ledger_commit": "8c3cbabbd0e7e953586925bc00886bb166054163",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "5be279fb74ba06379d78c41b4252c98f961a00e1"
+      "ledger_commit": "a6b7d8c051e4923532111ab5343afd3fb95c8b3c",
+      "reason": "Open sites +0x1A8 (surface-base load order) and +0x400 (sort preheader) were named, not product-measured. One shape product on those two orders is the untried pass. Keep proved -Wab,-r4300_mul.",
+      "source_commit": "a6b7d8c051e4923532111ab5343afd3fb95c8b3c"
     },
     "func_800140CC": {
       "ledger_commit": "5cafbf70916743b98c06ea2a57da440401dd2a0f",
@@ -506,9 +506,9 @@
       "source_commit": "6f9e72e6fb41e2b3e351dfbc3546b6dae585a8fd"
     },
     "func_800349A4": {
-      "ledger_commit": "15c6074cc9e8c991045f5df48cb37ce1222ac859",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "15c6074cc9e8c991045f5df48cb37ce1222ac859"
+      "ledger_commit": "aa0095f856536355b7b7a840777140fdf4f1a939",
+      "reason": "172 masked words at delta 0, first mismatch +0x24, after the table-base cache. Untried: callee arity and return type from the relocation records, then one window product. This TU has no CFLAGS override.",
+      "source_commit": "aa0095f856536355b7b7a840777140fdf4f1a939"
     },
     "func_80034E54": {
       "ledger_commit": "8744e6484324325c1b899182492ff1962767c33d",
@@ -771,9 +771,9 @@
       "source_commit": "838f8ff7d18ce66f00c1ab7470b30bee06dbf5b5"
     },
     "func_80051364": {
-      "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "36695d7fdb4a328537c6ba5af963e47901bd4ddc"
+      "ledger_commit": "47e0766c406c5b23d7b80d1c5cdf2a6b46e8246b",
+      "reason": "Command web save 3/3 sits under the clock web 3/2; forcing both is 5 words. Added blocks steal timeScale f20. Untried: a zero-new-block use that raises only the command web. Keep proved r4300_mul.",
+      "source_commit": "47e0766c406c5b23d7b80d1c5cdf2a6b46e8246b"
     },
     "func_800517E0": {
       "ledger_commit": "171a68c474d894eaa7541a0a86d07a61df09a408",
@@ -871,9 +871,9 @@
       "source_commit": "4730f79d5488a6a563a1e17af4ed1a3c1816a9b4"
     },
     "func_overlay_001_F0002B4C_184EF2C": {
-      "ledger_commit": "09d684a74d55e986f6d9b90209c946260027ba12",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "09d684a74d55e986f6d9b90209c946260027ba12"
+      "ledger_commit": "4dc44cda0633438eb7386b6d2509035b41c9bafb",
+      "reason": "Inherited -Wo,-loopunroll,0 is still on this one-function TU. The 6-word jal-delay plateau was scored under that override. Strip it and re-score before any other edit.",
+      "source_commit": "4dc44cda0633438eb7386b6d2509035b41c9bafb"
     },
     "func_overlay_001_F0003258_184F638": {
       "ledger_commit": "c5a39a71356daf84e3b6cd77fbb0156ea65bfb11",
@@ -946,9 +946,9 @@
       "source_commit": "a1d4f1cf4ba697c250080c1b4c3c3b913bf471d4"
     },
     "func_overlay_008_F00034A0_18611F8": {
-      "ledger_commit": "b594e37a1dec2009e81653c9c93502d5557d4cd4",
-      "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "6b373a9d4785050dc742a18c98883d8557e420ba"
+      "ledger_commit": "2477bb91a0e78c38927d9111cd5d0c50b19205a5",
+      "reason": "Pair blocks are banked at 103. Forcing the first address web off v0 scores 89 and is accepted. Untried: a v0 denial that is not a new call and not a cursor local, both of which scored worse.",
+      "source_commit": "2477bb91a0e78c38927d9111cd5d0c50b19205a5"
     },
     "func_overlay_008_F00042A8_1862000": {
       "ledger_commit": "5e995cbeeb737527af555da27e8bdba214ece1da",
@@ -1296,9 +1296,9 @@
       "source_commit": "e5a9bc76443714e261a8e52facc1e2b0bd2321d8"
     },
     "func_overlay_058_F00005FC_18AF7E4": {
-      "ledger_commit": "3e37b097fafca921ca9955230b19c6675d2fb8ed",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "3e37b097fafca921ca9955230b19c6675d2fb8ed"
+      "ledger_commit": "cecf768a0cec46361f607d99a8bd9340b86fdb8d",
+      "reason": "Case-3 table LDA joins the draw loop into one 26-block web offered only s8. Untried: a draw-loop address expression that does not CSE with that LDA, so case 3 can keep s0.",
+      "source_commit": "cecf768a0cec46361f607d99a8bd9340b86fdb8d"
     },
     "func_overlay_060_F0000000_18B9DD8": {
       "ledger_commit": "14d10ff4c6e39d40d8072f0e43f0b846e91beaf6",
@@ -1586,9 +1586,9 @@
       "source_commit": "7cf4e7f482f499efd8daecf1e9615cd9264feeb0"
     },
     "overlay15InitStarsAndPalette": {
-      "ledger_commit": "904cffa9db87143ce96cd8a6928cc5945f9024a2",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "b39a489cae66acb9cfa460eb4ffcc9d84939d009"
+      "ledger_commit": "7821e1fbfa1ecb9d9b6d6c86435892e252361c50",
+      "reason": "Stars-store base is a1 against the target a2. Matched siblings in this TU take a static field through a pointer; that spelling is untried here. Keep proved -Wab,-r4300_mul.",
+      "source_commit": "7821e1fbfa1ecb9d9b6d6c86435892e252361c50"
     },
     "overlay15MoveStars": {
       "ledger_commit": "e442425b481c1852a0b87af0d12e2aa969ef952f",
@@ -2096,9 +2096,9 @@
       "source_commit": "a6b36ef53e00d3421dec82342b756c7a16b9b226"
     },
     "rain_render_splashes": {
-      "ledger_commit": "79a4e2dd7e4c08eef36f152eeb26d28268a73309",
-      "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
-      "source_commit": "79a4e2dd7e4c08eef36f152eeb26d28268a73309"
+      "ledger_commit": "351cbecf4e21d8bba1440d6a27ca43fca58bcd19",
+      "reason": "The 0xFF type-2 web save 40 loses to splash save 76.8, and or-zero forms are flat. Untried: a second live 0xFF use in the render loop that uopt cannot delete. weather.c has no CFLAGS override.",
+      "source_commit": "351cbecf4e21d8bba1440d6a27ca43fca58bcd19"
     },
     "render_epc_lock_up_display": {
       "ledger_commit": "05c3032cb90ee5fbe4ed3f5f6353bd24e0c6c52f",

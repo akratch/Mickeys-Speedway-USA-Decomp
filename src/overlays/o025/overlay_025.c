@@ -56,9 +56,11 @@ void overlay25InitializeEffect(Overlay25Object *object,
  * radius takes a ring temporary); radius declared before position; the
  * lifetime decrement before the duration one; the hit loop as
  * `while (count--)`; and objects[6] declared last, after the four hit-loop
- * locals whose cells sit between position and the array. Open: the hit
- * loop's index and its strength-reduced cursor take s3/s4 the wrong way
- * round, delta takes f0 for f2, and one as1 slot order. */
+ * locals whose cells sit between position and the array. The height
+ * difference in the hit loop reuses `y`, dead in that arm, which puts it in
+ * the movement accumulator's f2 (19 -> 16); `delta` keeps its cell. Open:
+ * the hit loop's index and its strength-reduced cursor take s3/s4 the wrong
+ * way round (13 words), and one as1 slot order (3). */
 #ifdef NON_MATCHING
 void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
     void *unused;
@@ -137,11 +139,11 @@ void overlay25UpdateEffect(Overlay25Object *object, s32 updateRate) {
             hitSomething = 0;
             while (count--) {
                 other = objects[count];
-                delta = other->y - object->y;
+                y = other->y - object->y;
                 if ((other != state->owner) || (state->duration == 0)) {
                     otherState = &other->state->entity;
-                    if ((otherState->height < -5.0f) && (delta > -24.0f) &&
-                        (delta < 24.0f) && (otherState->enabled != 0)) {
+                    if ((otherState->height < -5.0f) && (y > -24.0f) &&
+                        (y < 24.0f) && (otherState->enabled != 0)) {
                         hitSomething = 1;
                         if (overlay25CanHitReloc(other, otherState)) {
                             overlay7DispatchModesReloc(state->owner, other);
@@ -188,10 +190,10 @@ void overlay25SetVectorFlags(s32 unused0, Overlay25Vector *out, s32 unused2,
 
 /* PLATEAU-HANDOFF:overlay25UpdateEffect:start
  * symbol: overlay25UpdateEffect
- * score: 19/259 words
+ * score: 16/259 words
  * frame: 0xA0
  * relocations: 25
  * first-mismatch: +0x2A0
- * summary: Listing rewrite 74 to 19 at delta 0. Open: hit-loop index (tot 32) outranks its cursor (tot 31) for s3; delta f0 for f2; one as1 slot.
+ * summary: Height difference reuses dead y (f2): 19 to 16. Open: hit-loop index (tot 32) outranks its cursor (tot 31) for s3 (13 words); one as1 slot (3).
  * PLATEAU-HANDOFF:overlay25UpdateEffect:end
  */

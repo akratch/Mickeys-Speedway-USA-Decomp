@@ -2,11 +2,13 @@
 ### `overlay25UpdateEffect` plateau handoff
 
 - source: `src/overlays/o025/overlay_025.c`
-- score: 19/259 words
+- score: 16/259 words
 - frame: 0xA0
 - relocations: 25
 - first mismatch: +0x2A0
-- summary: Listing rewrite 74 to 19 at delta 0. Open: hit-loop index (tot 32) outranks its cursor (tot 31) for s3; delta f0 for f2; one as1 slot.
+- summary: Height difference reuses dead y (f2): 19 to 16. Open: hit-loop index (tot 32) outranks its cursor (tot 31) for s3 (13 words); one as1 slot (3).
+
+Summary before this remeasure: Listing rewrite 74 to 19 at delta 0. Open: hit-loop index (tot 32) outranks its cursor (tot 31) for s3; delta f0 for f2; one as1 slot.
 
 Summary before this remeasure: hypothesis=source-authentic save-ratio so web 122 follows web 129, or 12 bytes of else-arm home; spellings=post-loop use 106 at +24, second post-loop use 103 at +8, hit struct kept at 74 and delta 0; stall=the save-ratio uses spilled and s4 is unproved, while objects homes at +0x4C
 
@@ -189,4 +191,33 @@ both argument moves and puts `hitSomething = 1` in the delay slot). Flat at
 guarded do-while (21), `for` forms (size changes), sharing one counter with
 the movement loop (62), `count-- != 0` (256, -8), and putting
 `hitSomething = 1` on the call's line or the `&&` chain on one line.
+#### 2026-10-02, lane x-ovla (resumed): 19 to 16, the ranking reached
+
+- Lever (a), a dead local carrying a value: the hit loop's height difference
+  written into `y` (the movement accumulator, dead in this arm) instead of
+  `delta`: 16. `y` is one web across both arms and takes its f2 there, which
+  is the target's delta register. `x` 24, `z` 27, `radius` 99 (+12).
+  The declared `delta` keeps its cell; removing it would move objects.
+- Index/cursor ranking. Records (proc 1): index web 115, type 3,
+  totalsave 32, blocks 27..42 and 49 (17), nocs 5, save 6.4; cursor web 123,
+  type 4, totalsave 31, blocks 28..42 and 49 (16), nocs 5, save 6.2. The index
+  has exactly one block the cursor lacks (the guard). nocs is
+  1 + floor((blocks + 2) / 4), so the swap needs the index at 18 blocks with
+  the cursor at 17 (or any b = 2 mod 4 with the cursor one less).
+  Every zero-instruction region tried adds blocks in pairs to both ranges:
+  do { } while (0) around each of five loop statement groups (32 cells, 19 or
+  55, at five wraps both reach nocs 8), around the query call, the
+  `hitSomething = 0` store, the whole loop or the post-loop test (19 to 59;
+  the index range still starts at the guard, so blocks before it never
+  count), `if (1)` (same as do-while), and unreferenced labels (inert).
+  An odd block count inside the loop is the open lever.
+- Totalsave from source, all flat or worse: dead reads of `objects[count]`
+  at the loop top, after the load, at the body end, `(void)` and compare
+  forms (19, the reads are deleted before counting); an explicit cursor
+  in the unused pad cell (41 to 76); the index as `updateRate` (+4) or
+  `steps` (59); `count` declared in the else arm or the inner arm (18, the
+  array home moves, no swap).
+- The as1 slot (3 words: the target hoists both argument moves above the
+  `enabled` test and puts `hitSomething = 1` in the delay slot) did not move
+  with any of these.
 <!-- plateau-handoff:overlay25UpdateEffect:end -->

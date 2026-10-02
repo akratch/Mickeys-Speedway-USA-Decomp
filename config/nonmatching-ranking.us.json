@@ -115,6 +115,21 @@
       "source_context_sha256": "3bTM.44Ob.Tgja.3j7M.IH1S.CzPQ.U_-o.HKac.4twG.yiq3.ftg"
     },
     {
+      "name": "effectboxControl",
+      "file": "src/main/spranim.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 772,
+      "objdiff_match_pct": null,
+      "differing_words": 47,
+      "first_mismatch_offset": 220,
+      "relocation_masked_differing_words": 47,
+      "relocation_masked_first_mismatch_offset": 220,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "nwoI.6HBu.20DG.Y4vs.Ge_1.8LuY.nYEU.42NP.11TI.bEFu.vkA"
+    },
+    {
       "name": "joyRead",
       "file": "src/main/joy.c",
       "overlay": null,
@@ -143,21 +158,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "QpZY.KaQc.uJW9.LsW_.y58U.NiN0.wVaH.-jg_._tND.9JJE.BcU"
-    },
-    {
-      "name": "effectboxControl",
-      "file": "src/main/spranim.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 772,
-      "objdiff_match_pct": null,
-      "differing_words": 51,
-      "first_mismatch_offset": 72,
-      "relocation_masked_differing_words": 51,
-      "relocation_masked_first_mismatch_offset": 72,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "gcTk.0x-C.jBPg.2gvl.wZzx.OEzX.i2US.zSl1.sMW7.Anmx.mpg"
     },
     {
       "name": "overlay101TailA6BC",
@@ -1357,7 +1357,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": -16,
       "category": "size-mismatch",
-      "source_context_sha256": "Tk81.vqOX.rKEQ.t5XH.TIbV.SS4I.m_Ph.q4qA.1Hue.-eSx.PuI"
+      "source_context_sha256": "SAVO.V8LS.mWxc.y3iP.nhZ5.MpCm.dxbB.8KDG._uoW.pA8e.GH8"
     },
     {
       "name": "func_8002AE10",

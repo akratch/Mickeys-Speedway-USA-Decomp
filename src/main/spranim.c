@@ -204,22 +204,22 @@ void spranimOnceControl(SpranimOnceState *state, s32 updateRate) {
     }
 }
 #ifdef NON_MATCHING
-/* 51 masked words at size delta 0 and the exact 0x80 frame (was 57),
- * 2026-10-01 lane d-res2: every local declared once at the top of the
- * function (no nested scopes), the state pointer declared after the hit list
- * and the pointers before it, which moves the state spill from above the hit
- * list to below it as in the target (a 150 s declaration-order climb, 57 ->
- * 51). Left: the hit-index spill sits 0x10 above the target's 0x6C, and the
- * loop cursor/index pair takes a2/a3 in the opposite roles. */
-/*
- * 2026-09-12 (lane p7-res2): the `st` local in the store body is load-bearing.
- * Naming the hit's state pointer before storing through it is worth three words
- * (60 -> 57): it draws the allocator slot that puts the second unrolled loop
- * body back on the target's temporaries (L76). Five other store spellings --
- * a typed destination cast, word-indexing at 0x32, and a typed hit list --
- * are byte-flat. The hit list stays at ten entries: eleven lengths were
- * measured and every other one is worse.
- */
+/* 47 masked words at size delta 0 and the exact 0x80 frame (was 51),
+ * 2026-10-02 lane x-res: rewritten as a plain counted loop over the hit list
+ * (IDO unrolls it by four, as in the target) with the hit read into a local
+ * and the state pointer named before the store; the hit list is nine
+ * entries, and four scalars declared above `entry`, `hits` and `state` put
+ * the two spill homes at the target's 0x6C and 0x44 (the order of those four
+ * is inert). The `planeIndex < 1` bound is the target's bgtz.
+ * Left, priced with forces on proc 4 (CDX_PROC=4): the cursor web taking a3
+ * and the index web a2 (target roles) is 47 -> 34; the remaining rows are the
+ * hit load: uopt keeps the loaded pointer and the `hit` variable as two
+ * interfering webs (v1 and a0, joined by a move in the active-test delay
+ * slot) in the remainder loop and the first unrolled copy, where the target
+ * has one web and loads the state pointer into a0. Loop form (for, do-while,
+ * while), block-scope `hit`, `continue` form of the test, and five store
+ * spellings were measured flat or worse; any second `hits[i]` read stops the
+ * unroller. */
 /* PROVENANCE: JFG's public effectboxControl assembly establishes the trigger/hit-list idiom; all Mickey offsets and calls below are reconstructed locally. */
 typedef struct SpranimEffectBox {
     u8 pad0[0xC];
@@ -244,16 +244,16 @@ extern u8 D_800794B0[];
 extern s32 func_8002905C(u8 type, void *state);
 
 void effectboxControl(SpranimEffectBox *arg0, s32 arg1) {
-    u8 *entry;
-    SpranimB798Target *hit;
     s32 hitCount;
-    s32 processed;
-    void *hits[10];
-    SpranimEffectState *state;
+    s32 i;
+    SpranimB798Target *hit;
     void *st;
+    u8 *entry;
+    SpranimB798Target *hits[9];
+    SpranimEffectState *state;
 
     state = arg0->state64;
-    if ((state->planeIndex >= 0) && (state->planeIndex <= 0)) {
+    if ((state->planeIndex >= 0) && (state->planeIndex < 1)) {
         entry = &D_800794B0[state->planeIndex * 4];
         if (entry[0] != 0xFF && func_8002905C(entry[0], state) != entry[1]) {
             return;
@@ -265,20 +265,14 @@ void effectboxControl(SpranimEffectBox *arg0, s32 arg1) {
 
     hitCount = func_8005776C(arg0->x, arg0->y, arg0->z, (f32) state->radius, 0, hits);
     if (hitCount != 0) {
-        processed = 0;
-        if (hitCount > 0) {
-            do {
-                hit = ((SpranimB798Target **) hits)[processed];
-
-                if ((state->active == 0) ||
-                    ((state->normalX * hit->x) + (state->normalY * hit->y) +
-                     (state->normalZ * hit->z) + state->distance < 0.0f)) {
-                    st = hit->state64;
-
-                    *(void **)((u8 *) st + 0xC8) = arg0;
-                }
-                processed++;
-            } while (processed < hitCount);
+        for (i = 0; i < hitCount; i++) {
+            hit = hits[i];
+            if ((state->active == 0) ||
+                ((state->normalX * hit->x) + (state->normalY * hit->y) +
+                 (state->normalZ * hit->z) + state->distance < 0.0f)) {
+                st = hit->state64;
+                *(void **) ((u8 *) st + 0xC8) = arg0;
+            }
         }
     }
 }
@@ -422,11 +416,11 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
 
 /* PLATEAU-HANDOFF:effectboxControl:start
  * symbol: effectboxControl
- * score: 51/193 words
+ * score: 47/193 words
  * frame: 0x80
  * relocations: 5
- * first-mismatch: +0x48
- * summary: 57 to 51 by declaration placement (state spill now below the hit list). Left: hit-index spill 0x7C vs 0x6C; cursor/index a2/a3 roles swapped
+ * first-mismatch: +0xDC
+ * summary: 51 to 47: counted loop, hit local, nine-entry list, homes at 0x6C/0x44. Left: cursor/index a3/a2 roles (forced 34) and the hit load split in two webs
  * PLATEAU-HANDOFF:effectboxControl:end
  */
 

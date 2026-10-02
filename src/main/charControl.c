@@ -208,7 +208,9 @@ void pointListRPY(s32 count, s16 *rotation, f32 *input, f32 *output);
 void func_8001EFFC(ControlTransform *transform, ControlPlayer *player, f32 *output);
 f32 func_8002A8BC(s32 angle);
 f32 func_8002A8C0(s32 angle);
-s16 Arctanf(f32 x, f32 y);
+/* Returns int: func_8001EC44 narrows the result itself before the call that
+ * consumes it, and func_8001DCD0 stores it through s16 pointers. */
+s32 Arctanf(f32 x, f32 y);
 f32 sqrtf(f32 value);
 void mathOneFloatRPY(ControlTransform *transform, f32 *output);
 s32 mathRnd(s32 minimum, s32 maximum);
@@ -1891,71 +1893,87 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
 /* PROVENANCE -- JFG's public charControl.c identifies the corresponding
  * controlSquashCheckPrior routine, but publishes assembly only; this body is
  * reconstructed from Mickey's fields, calls, branch conditions, and stores. */
-#ifdef NON_MATCHING
-/* Track B (B3-char): size delta 0 and frame 0xA0 as the target. The reused
- * x/y/z and u/v/w carriers and the in-place "x -= u" updates are what keep
- * u/v/w from being copy-propagated away; see the handoff for what remains. */
+/* Matched by rewriting from the listing in the shape of the matched overlay
+ * 26 sibling (func_overlay_026_F0000B18_187AF10). What decided it: the point
+ * is read through pos-> at each use, so the three loads and the two shared
+ * products are uopt's own temporaries (the stack cells at 0x4C..0x5C); the
+ * projection is built in dx/dy/dz and normalised in place; the collision
+ * state is written through a pointer local taken at entry; Arctanf returns
+ * int, so the (s16) cast is the shipped sign extension; and in the last
+ * branch `len` carries the plane offset while `delta` keeps a copy for after
+ * the calls. `len` is overwritten by the square root, so that copy cannot be
+ * propagated: the offset is a one-block web that takes f0 and `delta` lives
+ * in its home, which is what pushes the three point temporaries to f18, a
+ * split f0 and a split f12. */
 void func_8001EC44(s32 arg0, ControlVector3 *pos, ControlVector3 *vel,
                    f32 radius, ControlCollisionPlane *plane) {
-    f32 nx, ny, nz;
-    f32 x, y, z;
+    ControlCollisionState *state = &D_800CB2C0;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    f32 delta;
+    f32 u;
+    f32 v;
+    f32 w;
+    f32 nx;
+    f32 ny;
+    f32 nz;
+    f32 d;
     f32 value;
-    f32 vx, vz;
-    f32 u, v, w;
     f32 len;
-    f32 pad; /* unreferenced: without it the frame is not 0xA0 (L99) */
     f32 angle;
 
     nx = plane->x;
     ny = plane->y;
     nz = plane->z;
-    x = pos->x;
-    y = pos->y;
-    z = pos->z;
-    value = nx * x + ny * y + z * nz + plane->distance;
+    d = plane->distance;
+    value = (pos->z * nz) + ((nx * pos->x) + (ny * pos->y)) + d;
     if ((D_8008187C <= ny) || (plane->flags & 0x10000000)) {
-        vz = vel->z;
-        vx = vel->x;
-        u = vz * ny;
-        v = (nz * vx) - (vz * nx);
-        w = -(vx * ny);
-        x = (v * nz) - (w * ny);
-        v = (u * ny) - (v * nx);
-        u = (w * nx) - (u * nz);
-        len = (x * x) + (u * u) + (v * v);
+        u = vel->z * ny;
+        v = -(vel->z * nx) + (nz * vel->x);
+        w = -(vel->x * ny);
+        dx = (v * nz) - (w * ny);
+        dy = (w * nx) - (u * nz);
+        dz = (u * ny) - (v * nx);
+        len = (dx * dx) + (dy * dy) + (dz * dz);
         if (D_80081880 < len) {
             len = sqrtf(len);
+            dx /= len;
+            dy /= len;
+            dz /= len;
             value = radius - plane->unk1C;
-            pos->x = plane->unk10 + (value * (x / len));
-            pos->y = plane->unk14 + (value * (u / len));
-            pos->z = plane->unk18 + (value * (v / len));
+            pos->x = plane->unk10 + (value * dx);
+            pos->y = plane->unk14 + (value * dy);
+            pos->z = plane->unk18 + (value * dz);
         } else {
-            pos->y = (-(pos->z * nz + nx * pos->x + plane->distance) / ny) + D_80081884;
+            pos->y = (-((pos->z * nz) + (nx * pos->x) + d) / ny) + D_80081884;
         }
-        D_800CB2C4 = nx;
-        D_800CB2C8 = ny;
-        D_800CB2CC = nz;
-        D_800CB2FD |= 2;
+        state->unk04 = nx;
+        state->unk08 = ny;
+        state->unk0C = nz;
+        state->state |= 2;
     } else if (ny <= D_80081888) {
         value = D_8008188C - value;
-        pos->x = x + (value * nx);
-        pos->y = y + (value * ny);
-        pos->z = z + (value * nz);
-        D_800CB2DC = nx;
-        D_800CB2E0 = ny;
-        D_800CB2E4 = nz;
-        D_800CB2FD |= 8;
+        pos->x = pos->x + (value * nx);
+        pos->y = pos->y + (value * ny);
+        pos->z = pos->z + (value * nz);
+        state->unk1C = nx;
+        state->unk20 = ny;
+        state->unk24 = nz;
+        state->state |= 8;
     } else {
-        value = D_80081890 - value;
-        u = x + (value * nx);
-        v = y + (value * ny);
-        w = z + (value * nz);
-        x -= u;
-        y -= v;
-        z -= w;
-        angle = func_8002A8BC(Arctanf(y, sqrtf((x * x) + (z * z))));
+        len = D_80081890 - value;
+        delta = len;
+        u = pos->x + (len * nx);
+        v = pos->y + (len * ny);
+        w = pos->z + (len * nz);
+        dx = pos->x - u;
+        dy = pos->y - v;
+        dz = pos->z - w;
+        len = sqrtf((dx * dx) + (dz * dz));
+        angle = func_8002A8BC((s16) Arctanf(dy, len));
         if (angle != 0.0f) {
-            value = value / angle;
+            value = delta / angle;
             len = sqrtf((nx * nx) + (nz * nz));
             pos->x += value * (nx / len);
             pos->z += value * (nz / len);
@@ -1964,22 +1982,14 @@ void func_8001EC44(s32 arg0, ControlVector3 *pos, ControlVector3 *vel,
             pos->y = v;
             pos->z = w;
         }
-        D_800CB2D0.x = nx;
-        D_800CB2D0.y = ny;
-        D_800CB2D8 = nz;
-        D_800CB2FD |= 4;
+        state->unk10 = nx;
+        state->unk14 = ny;
+        state->unk18 = nz;
+        state->state |= 4;
     }
-    /* Diagnostic stand-in, not the original: the target's procedure has two
-     * more uopt basic blocks than this body, which lifts the callee-save toll
-     * from 4.75/4.85 to 5.0+ so pos and plane stay in a1/a3 and are saved
-     * around the calls, as the target does. This dead if supplies them. */
-    if (arg0 == 0x7FFF) { arg0 = 0; }
-    D_800CB2F8 = plane->flags;
-    D_800CB2FC = plane->kind;
+    state->flags = plane->flags;
+    state->mode = plane->kind;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/func_8001EC44.s")
-#endif
 void func_8001EFFC(ControlTransform *transform, ControlPlayer *player, f32 *output) {
     f32 *current;
     s32 index;
@@ -2111,16 +2121,6 @@ void controlClearPlayerSetup(void) {
     D_80079BF8 = 0;
 }
 
-
-/* PLATEAU-HANDOFF:func_8001EC44:start
- * symbol: func_8001EC44
- * score: 224 differing words
- * frame: 0xA0
- * relocations: 43
- * first-mismatch: +0xC
- * summary: No natural spelling matched the dead-if bytes. Inert end regions do; (void)arg0 and a sixth parameter do not. Sibling entry is delta -4. Dead if kept.
- * PLATEAU-HANDOFF:func_8001EC44:end
- */
 
 /* PLATEAU-HANDOFF:func_8001E5C4:start
  * symbol: func_8001E5C4

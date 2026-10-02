@@ -1002,6 +1002,9 @@ extern void func_overlay_008_F00049E8_1862740(O8P34A0Owner *owner,
                                               f32 update);
 
 extern s16 *gOverlay8Buffer;
+/* The same command cursor (the BSS owner's commandBuffer) under the second
+ * name the +0x34A0 body uses from its second command pair on. */
+extern s16 *gOverlay8CommandBuffer;
 
 extern s16 gOverlay8Value;
 

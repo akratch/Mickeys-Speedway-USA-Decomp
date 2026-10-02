@@ -12,9 +12,9 @@ from the tree on 2026-10-02; recompute before quoting (`gmake progress`,
 
 ## The arithmetic
 
-    resolved 730,344 / 943,640 = 77.40%   (public master ea73ed322 + banks)
-    80% = 754,912 bytes, gap 24,568
-    queue 140 functions / 198,108 bytes
+    resolved 739,744 / 943,640 = 78.39%   (public master e804103d8)
+    80% = 754,912 bytes, gap 15,168
+    queue 135 functions / 188,708 bytes
 
 What is left is **reconstruction, not polish**. Roughly 15 queue rows sit
 under 60 masked words; the other 125 are inherited m2c-shaped candidates at
@@ -74,6 +74,16 @@ checklist; the brief carries the measurements, this is the summary.
 11. **Expression-table order breaks priority ties:** a dead read of the
     second element, placed before the compare, enters it into uopt's table
     first (track.c, 45 to 11).
+12. **Callee arity and return type are relocation facts, not candidate
+    facts.** A target that passes two arguments where the candidate passes
+    three (overlay 101 TailAB4C, 499 to 100 on that edit alone; overlay 8
+    F00034A0) or whose callee returns a value the candidate declares void
+    (o090, o087, overlay 8 F0002640) colours every following register
+    wrong. Read the callee's own definition or its matched callers.
+13. **Constant spelling is pool identity.** `/ 2.0f` and `* 0.5f` are the
+    same arithmetic and different pool entries; spelling one `* 0.5f` made
+    it share a register with another `0.5f` and cost a function 400 words
+    (vehicle_sounds). `0.100000001f` keeps a second `0.1` entry (objects.c).
 
 ## Tools, in the order a lane uses them
 
@@ -110,12 +120,11 @@ is finding the source form that makes uopt take the decision itself.
 
 | function | bytes | words | what is open (shard has the numbers) |
 |---|---:|---:|---|
-| `func_80034E54` (textures_354C8.c) | 1,868 | 5 | `frameIndex + 1` is copied into the compare as an a0 web plus an a1 copy; both forces declined with a forbidden mask; write the incremented value once, compare and store the same web |
 | `func_overlay_008_F0001294_185EFEC` (R8) | 5,036 | 7 | three allocator rankings (compare operand at +0xD8; `(s32) update` conversion takes v0; the unkFE load loses to a shift temporary); three Opus passes already; take it only with a new lever |
 | `func_8001398C` (track.c) | 1,320 | 8 | surface-base load order at +0x1A8 and the sort preheader order at +0x400 |
-| `func_overlay_046_F0001228_188F620` | 1,844 | 8 | one value, the batch macros' n+2, lands in a1 because the polygon macro's block-scoped `_g` ties it; a function-scope `_g` or a split spelling of n+2 |
+| `func_overlay_001_F0002B4C_184EF2C` | 1,804 | 6 | uopt emits the bottom loop's `sum = 0` before the first call so as1 fills that delay slot with it; init placement and loop forms flat |
 | `overlay15InitStarsAndPalette` | 988 | 17 | stars-store base a1 vs a2 and the block-1 tail; the static-field-through-pointer form of its three matched siblings |
-| `func_80051364` (anim.c) | 1,148 | 22 | two rankings: the clock read buys a ring draw but raises the clock address web; read it once into a local used at both sites |
+| `func_80051364` (anim.c) | 1,148 | 12 | command web 3/3 against the clock value web 3/2; forcing both takes it to 5; every added block costs timeScale its f20 |
 | `func_80028FCC` (main.c) | 108 | 10 | three return stores each reading its own ring temporary; 140 spellings flat; low value |
 
 ### Tier 2: banked reconstructions, exact size (about 25 KB)
@@ -123,13 +132,19 @@ is finding the source form that makes uopt take the decision itself.
 Shape is right, allocation is not. Each has a window map in its shard.
 `residual_map.py` first, then one product per window.
 
-`func_overlay_008_F00034A0` (3,592 B, 103), `func_80010B4C` (2,712 B, 167),
-`func_80053868` (anim.c, 4,820 B, 710: a v1/a0 two-cycle over 40 rows and 24
-rows wanting s6), `func_8001DD70` (2,132 B, 224: the records-address web is
-only splittable by a wrong offset; needs a different idea), `func_overlay_092_F0000308`
-(1,832 B, 119), `func_overlay_001_F0002B4C` (1,804 B, 186), `func_overlay_008_F00042A8`
-(1,788 B, 240), `rain_render_splashes` (1,616 B, 105), `overlay68UpdateAnimation`
-(1,424 B, 180), `func_overlay_012_F00003A8` (1,384 B, 159).
+`func_overlay_058_F00005FC` (3,316 B, 109: the case-3 table-address web joins
+the drawing loop's into one 26-block web offered only s8; the target keeps a
+case-3-only web in s0), `func_overlay_008_F00034A0` (3,592 B, 103),
+`func_80010B4C` (2,712 B, 167), `func_80053868` (anim.c, 4,820 B, 522: the
+constant 2 hoisted into a2 in the target; axis loops counting in s2),
+`func_overlay_001_F0001D78` (2,508 B, 268), `func_overlay_090_F00000FC`
+(2,592 B, 327 at -8), `func_8001DD70` (2,132 B, 224: the records-address web
+is only splittable by a wrong offset; needs a different idea),
+`func_overlay_092_F0000308` (1,832 B, 119), `func_overlay_008_F00042A8`
+(1,788 B, 240), `rain_render_splashes` (1,616 B, 105),
+`overlay68UpdateAnimation` (1,424 B, 180), `func_overlay_012_F00003A8`
+(1,384 B, 159), `func_800349A4` (1,088 B, 172), `func_80054B3C` (anim.c,
+1,480 B, 349).
 
 ### Tier 3: reconstructions with a template (about 40 KB)
 
@@ -137,16 +152,15 @@ Inherited m2c shape in a module that has matched siblings. Method: items 3,
 5, 6, 7 above, in that order, then the checklist. Expect one to three
 matches per Opus lane of five.
 
-Overlay 1: `F0001D78` (2,508 B), `overlay1LoadBuildRecords` (2,288 B).
-Overlay 57: nothing left. Overlay 101: `TailAB4C` (2,552 B), `TailC6E8`
-(1,268 B), the four `BuildPresentation` functions (3,320 B, one fix closes
-four, 1,300 Sonnet cells found nothing). Overlays 19, 22, 43, 45, 56, 61,
-90, 11, 12, 64, 29, 58 (one function each, 2,000-3,300 B). track.c:
-`func_8000E920` (2,168 B, 314 at +8), `func_8001291C` (2,192 B, needs a
-rewrite from the listing). textures_354C8.c: `func_800349A4`,
-`func_800355A0`. font.c: `func_8004B1DC` (2,224 B). vehicle_sounds.c:
-`func_8005830C` (3,048 B: its float "globals" are its own rodata literals,
-untried).
+Overlay 1: `overlay1LoadBuildRecords` (2,288 B). Overlay 57: nothing left.
+Overlay 101: `TailC6E8` (1,268 B), the four `BuildPresentation` functions
+(3,320 B, one fix closes four, 1,300 Sonnet cells found nothing). Overlays
+19, 22 (402), 43, 45 (573), 56, 61, 11, 12, 64, 29 (one function each,
+2,000-3,300 B; o061 needs a 9-state switch rebuilt, o056 is raw-offset
+m2c). track.c: `func_8000E920` (2,168 B, 314 at +8), `func_8001291C`
+(2,192 B, needs a rewrite from the listing). textures_354C8.c:
+`func_800355A0` (105). font.c: `func_8004B1DC` (2,224 B; DKR
+`render_text_string` shape untried).
 
 ### Tier 4: the two whales and the parked
 
@@ -154,7 +168,9 @@ untried).
 difference (one 293-word insertion pair spanning the body; the constant 6000
 held in a3 across the loop; 20 more declared locals than ours, but per-case
 locals were refuted). `func_overlay_047_F0000B30` (8,672 B, 1,377 at +4):
-register colouring that every structural edit disturbs. Both need a new
+register colouring that every structural edit disturbs. Together they are
+15,904 bytes, more than the whole remaining gap to 80%, which is why they
+are worth one more idea each from a strong model and nothing from a weak one. Both need a new
 idea, not another pass. Parked allocator plateaus under 60 words (o025, o027
 sibling, o073, joyRead, effectboxControl, func_80019AB8, overlay17AdvanceChain)
 returned nothing to three Sonnet passes each; do not spend Sonnet on them.
@@ -177,6 +193,17 @@ returned nothing to three Sonnet passes each; do not spend Sonnet on them.
    worktrees with `tools/reclaim_worktrees.py --apply --exclude <running>`.
 5. Record new levers in `docs/LANE_BRIEF.md` the day they are measured; a
    lever that lives only in a report is lost by the next wave.
+
+## The sprint in numbers
+
+Two days, 2026-10-01 and 2026-10-02: 61.4% to 78.4%, about 120 functions
+matched, roughly 45 lanes (Opus and Sonnet) coordinated from one session,
+every batch landed on public master with the ROM byte-identical. Per-lane
+yield: Opus lanes returned one to four matches per session on reconstruction
+targets and closed every sub-20-word residue they were given except R8;
+Sonnet lanes returned up to seven matches on checklist-shaped batches
+(wave A) and zero on every allocator plateau and on every reconstruction
+batch. Six matches were hidden behind inherited per-file overrides.
 
 ## Known tool gaps worth an hour each
 

@@ -589,7 +589,21 @@ $(O8_OBJ): POSTPROCESS = \
 		sha256:83eab06de7958c29521dd38565ece7d6210be9be772d33f0c9a92473f3e43c51
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: CFLAGS += -Wab,-r4300_mul
+# func_overlay_009_F0000000_1866678 defines overlay 9's parameter block in
+# this object's .data at its recorded offset (+0x2D0); the retained overlay
+# image owns the bytes, so the copy is dropped and its 35 sites rebound to a
+# zero-valued base. Its three thresholds head the TU's literal pool, which
+# duplicates the retained overlay rodata and is asserted by digest. The TU
+# is 0x151C bytes; the module's last word (+0x151C) is the
+# overlay_009_padding row, so the trim only pins the natural extent.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	config/normalizations/func_overlay_009_F0000000_1866678.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay9DataBaseReloc=0x0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_009_F0000000_1866678.rebind.spec && \
+	$(OBJCOPY) --remove-section=.data --remove-section=.gptab.data $@ && \
 	$(OBJCOPY) --redefine-sym \
 		ext_o0_1353c=overlay9HeightQueryReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
@@ -606,9 +620,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 		o9P540MathDiffAngleReloc=overlay9AngleDifferenceReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
 		o9P540CosReloc=overlay9CosineReloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1520 && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x151C && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:5e45f46f4effae3642aad8ec5bc46a960b4e1de95d12c4a76f12183279ec1c14
+		sha256:2c21a6f383952f9246cda00fcc1f0456af3e324811b7ca17f018fd4c4f0658d9
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeParticleAssets.c.o: POSTPROCESS = \

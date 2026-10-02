@@ -1027,14 +1027,15 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o009/overlay_009.c.o",
       "offset": 0,
       "overlay": 9,
-      "size": 5408,
+      "size": 5404,
       "source": "src/overlays/o009/overlay_009.c",
       "tools": [
+        "rebind_elf_relocations.py",
         "trim_elf_section.py",
         "externalize_elf_section.py",
         "objcopy"
@@ -3387,8 +3388,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o036/overlay36ChooseWeightedState.c.o",
       "offset": 2656,
       "overlay": 36,
@@ -9353,7 +9354,7 @@
       "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 375624,
+    "matched_c_bytes_with_postprocess": 381708,
     "objects_with_postprocess": 644
   }
 }

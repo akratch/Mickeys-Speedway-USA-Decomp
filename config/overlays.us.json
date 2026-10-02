@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 409208,
-  "nonmatching_overlay_c_bytes": 59392,
+  "matched_overlay_c_bytes": 410552,
+  "nonmatching_overlay_c_bytes": 58044,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4772,
   "bss_bytes": 77680,
@@ -2673,12 +2673,21 @@
    "text_ownership": [
     {
      "offset": "0x0",
-     "end_offset": "0x1520",
-     "size": "0x1520",
+     "end_offset": "0x151C",
+     "size": "0x151C",
      "type": "c",
      "source": "overlays/o009/overlay_009",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
+    },
+    {
+     "offset": "0x151C",
+     "end_offset": "0x1520",
+     "size": "0x4",
+     "type": "asm",
+     "source": "overlays/o009/overlay_009_padding",
+     "matched": false,
+     "nonmatching": false
     }
    ],
    "bss_size": "0x10",
@@ -2738,64 +2747,6 @@
     "exact_donor_match": null,
     "priority_rank": 90
    },
-   "mixed_tu_exact_c_ranges": [
-    {
-     "offset": "0x540",
-     "end_offset": "0x744",
-     "size": "0x204",
-     "label": "func_overlay_009_F0000540_1866BB8",
-     "source": "overlays/o009/overlay_009",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x744",
-     "end_offset": "0x9BC",
-     "size": "0x278",
-     "label": "func_overlay_009_F0000744_1866DBC",
-     "source": "overlays/o009/overlay_009",
-     "evidence": "stock C, nine raw runtime identities, and linked ROM bytes exact"
-    },
-    {
-     "offset": "0x9BC",
-     "end_offset": "0xCE4",
-     "size": "0x328",
-     "label": "func_overlay_009_F00009BC_1867034",
-     "source": "overlays/o009/overlay_009",
-     "evidence": "canonical mixed-TU object and linked bytes exact"
-    },
-    {
-     "offset": "0xCE4",
-     "end_offset": "0xF6C",
-     "size": "0x288",
-     "label": "func_overlay_009_F0000CE4_186735C",
-     "source": "overlays/o009/overlay_009",
-     "evidence": "canonical mixed-TU object and linked bytes exact"
-    },
-    {
-     "offset": "0xF6C",
-     "end_offset": "0x10A4",
-     "size": "0x138",
-     "label": "func_overlay_009_F0000F6C_18675E4",
-     "source": "overlays/o009/overlay_009",
-     "evidence": "canonical mixed-TU object and linked bytes exact"
-    },
-    {
-     "offset": "0x10A4",
-     "end_offset": "0x10B4",
-     "size": "0x10",
-     "label": "overlay9Ignore",
-     "source": "overlays/o009/overlay_009",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0x10B4",
-     "end_offset": "0x151C",
-     "size": "0x468",
-     "label": "func_overlay_009_F00010B4_186772C",
-     "source": "overlays/o009/overlay_009",
-     "evidence": "canonical mixed-TU object and linked bytes exact"
-    }
-   ],
    "data_rodata_ownership": [
     {
      "offset": "0x390",

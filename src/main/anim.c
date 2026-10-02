@@ -783,10 +783,14 @@ extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
  * path loops need, and the clock address web keeps one reference, so the
  * cursor and clock address webs rank as the target's (22 to 13). The
  * subtraction after the two stores puts the cursor store before the
- * branch (13 to 12). Remaining: the command web (save 3/3) ranks below the
- * clock value web (3/2), 7 words; the subtraction and the state store
- * trade places around the branch, 2; the sound-handle test loads into a0,
- * not v0, 3. Retain NON_MATCHING. */
+ * branch (13 to 12). The sound-handle argument round-trips through s32
+ * (`(void *) (s32) object->soundHandle`): the conversion gives the argument
+ * its own IR name, so the test's load is a separate web that ends at a
+ * copy instead of reaching the call, is offered v0, and the copy into a0
+ * fills the non-likely branch's delay slot as in the target (12 to 9).
+ * Remaining: the command web (save 3/3) ranks below the clock value web
+ * (3/2), 7 words; the subtraction and the state store trade places around
+ * the branch, 2. Retain NON_MATCHING. */
 #ifdef NON_MATCHING
 void func_80051364(s32 updateRate) {
     s32 pad;
@@ -869,8 +873,8 @@ void func_80051364(s32 updateRate) {
         if (path != NULL) {
             object = path->unk8;
             if (object != NULL && object->soundHandle != NULL) {
-                func_800031C0(object->soundHandle, object->x, object->y,
-                              object->z);
+                func_800031C0((void *) (s32) object->soundHandle,
+                              object->x, object->y, object->z);
                 if (path->unk28 != 100 || path->unk29 != 0) {
                     speed = sqrtf(object->velocityX * object->velocityX +
                                   object->velocityY * object->velocityY +
@@ -3924,11 +3928,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80051364:start
  * symbol: func_80051364
- * score: 12 differing words
+ * score: 9 differing words
  * frame: 0x40
  * relocations: 47
  * first-mismatch: +0x88
- * summary: Zero-block uses leave command at totalsave 3 nocs 3. A post-store reload takes a0 at totalsave 6 but size +8; folding it drops the gain.
+ * summary: Handle arg cast through s32: test load is its own web, offered v0; copy fills the delay slot (12 to 9). Left: command 3/3 below clock 3/2 (7), slot (2).
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

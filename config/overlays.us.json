@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 374264,
-  "nonmatching_overlay_c_bytes": 94340,
+  "matched_overlay_c_bytes": 373592,
+  "nonmatching_overlay_c_bytes": 95008,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4660,
   "bss_bytes": 77680,
@@ -4834,7 +4834,7 @@
      "type": "c",
      "source": "overlays/o019/overlay19BuildPlanes",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0xA30",
@@ -5028,7 +5028,7 @@
      "type": "c",
      "source": "overlays/o020/overlay20UpdateGrid",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0xDC4",
@@ -9253,7 +9253,7 @@
      "type": "c",
      "source": "overlays/o043/func_overlay_043_F0000BE4_188ABB4",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x10A8",
@@ -14677,7 +14677,7 @@
      "type": "c",
      "source": "overlays/o073/overlay73Draw",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0xEA8",
@@ -18684,12 +18684,21 @@
     },
     {
      "offset": "0xDDC",
-     "end_offset": "0x1360",
-     "size": "0x584",
+     "end_offset": "0x135C",
+     "size": "0x580",
      "type": "c",
      "source": "overlays/o099/func_overlay_099_F0000DDC_18DA38C",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
+    },
+    {
+     "offset": "0x135C",
+     "end_offset": "0x1360",
+     "size": "0x4",
+     "type": "asm",
+     "source": "overlays/o099/overlay_099_padding",
+     "matched": false,
+     "nonmatching": false
     }
    ],
    "bss_size": "0x0",

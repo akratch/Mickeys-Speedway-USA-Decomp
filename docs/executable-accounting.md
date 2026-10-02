@@ -22,6 +22,11 @@ zero words, assembly owners or particular filenames are padding.
   overlay 46 at 0x195C..0x1960 and overlay 99 at 0x135C..0x1360. The final
   return and its delay slot precede the excluded range. Overlay 9's final
   exact island ends at the exclusion boundary.
+  Overlays 46 and 99 have since had their final functions matched in C
+  (2026-10-02). A matched function's object ends at its return, so each of
+  those two words became its own `overlay_0NN_padding` owner; the manifest
+  now holds 84 overlay padding owners (664 bytes) and two trailing-alignment
+  rows (overlays 9 and 12, 8 bytes). The excluded total is unchanged.
 - The ELF extents of `func_8003C80C` and `func_8002B040` include
   respectively twelve and eight alignment bytes after their extracted
   function end labels and completed return delay slots. Their executable

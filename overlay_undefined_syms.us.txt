@@ -4398,6 +4398,15 @@ overlay99Func80009E78Reloc = 0xf0000000;
 overlay99Func80034920Reloc = 0xf0000000;
 overlay99GetCurrentSizeReloc = 0xf0000000;
 
+/* overlay 99: func_overlay_099_F0000DDC_18DA38C.c.o */
+gO99BlurSourceReloc = 0x00000000;
+gO99FramebufferReloc = 0x00000000;
+gO99TrianglesReloc = 0x00000000;
+gO99VertexBufferIndexReloc = 0x00000000;
+gO99VertexBuffersReloc = 0x00000000;
+overlay99CamStandardPerspReloc = 0xf0000000;
+overlay99RenderSegmentsReloc = 0xf0000000;
+
 /* overlay 100: overlay100InitializeMotion.c.o */
 gOverlay100CountReloc = 0x00000000;
 gOverlay100EntriesReloc = 0x00000000;

@@ -873,6 +873,7 @@ TEXT_SUBSEGMENTS = {
         (0x800, "c", "overlay99RenderSortedEntries"),
         (0xBA4, "c", "overlay99RenderSegments"),
         (0xDDC, "c", "func_overlay_099_F0000DDC_18DA38C"),
+        (0x135C, "asm", "overlay_099_padding"),
     ],
     100: [
         (0x000, "c", "overlay100InitializeMotion"),

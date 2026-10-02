@@ -400,6 +400,21 @@
       "source_context_sha256": "2ouj.zDI6.z7Gg.uSjp.k0mY.WLhx.0YeO.wAFV.0tcT.wU0m.vHA"
     },
     {
+      "name": "func_8001E5C4",
+      "file": "src/main/charControl.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 1664,
+      "objdiff_match_pct": null,
+      "differing_words": 168,
+      "first_mismatch_offset": 80,
+      "relocation_masked_differing_words": 157,
+      "relocation_masked_first_mismatch_offset": 80,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "XCao.bou0.eTUO.W1go.tVxp.ikPS.x2-y.Nt6c.LGGv.T0TX.6Iw"
+    },
+    {
       "name": "func_overlay_038_F0000154_1885E64",
       "file": "src/overlays/o038/overlay38UpdateParticles.c",
       "overlay": 38,
@@ -562,7 +577,7 @@
       "relocation_masked_first_mismatch_offset": 360,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "bMno.boj7.E13S._NsK.0GMA.gLYe.n3yQ.1aZN.z6E7.ijBx.ybk"
+      "source_context_sha256": "D4ah.z6pt.y96T.D_hr.EK34.nzmS.rab1.okfD.nZUp.6DyA.R6c"
     },
     {
       "name": "overlay36UpdateInteractiveEntity",
@@ -1073,21 +1088,6 @@
       "size_delta": 12,
       "category": "size-mismatch",
       "source_context_sha256": "u4cP.tI9C.wL9P.Q85n.7KRI.4ygj.67C_.Eq8L.mR27.eSM5.Ns0"
-    },
-    {
-      "name": "func_8001E5C4",
-      "file": "src/main/charControl.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1664,
-      "objdiff_match_pct": null,
-      "differing_words": 411,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 408,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": -16,
-      "category": "size-mismatch",
-      "source_context_sha256": "GZz6.7E47.NGsD.YNrP.qvjV.83ae.n1Hr.gCyi.Qx30.Xl5A.jRo"
     },
     {
       "name": "shadowGenerate",

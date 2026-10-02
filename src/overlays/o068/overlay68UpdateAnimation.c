@@ -71,29 +71,33 @@ extern s32 gOverlay68GlobalFlagReloc;
 #define OVERLAY68_GLOBAL_FLAG gOverlay68GlobalFlagReloc
 
 /*
- * PLATEAU: pointer walk of the duration loop. The cursor is the addressed
- * keyframe, advanced one record per trip and reloaded from the animation
- * on the break arm. Loop shape matches at size 0. State stays out of t2,
- * so the positional residual is naming. 213/356 words, frame 0x78, 15
- * relocations, first at +0x1C.
- *
+ * 2026-10-02 (lane x-sort), 180 -> 108 at size 0: the duration loop carries
+ * the keyframe index in `index` (stored as index + 1, re-read into index in
+ * the exit test), which makes one web of the loop index and the neighbour
+ * index and gives state t2, current t1, index t0, animation a2 and the
+ * stride a3 as the target has them.  The declarations follow the target's
+ * home map (atStart 0x6C, tangents 0x60/0x5C, current 0x58, before 0x54,
+ * after 0x4C, afterAfter 0x48, state 0x40) with two unused cells at the
+ * bottom for the 0x78 frame.
  */
 #ifdef NON_MATCHING
 void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
     s32 direction;
     s32 animationOpacity;
+    s32 atStart;
     s16 angle;
     s32 opacity;
-    s32 index;
-    Overlay68Keyframe *current;
+    f32 tangentX;
     f32 tangentZ;
-    Overlay68Animation *animation;
+    Overlay68Keyframe *current;
     Overlay68Keyframe *before;
-    s32 atStart;
+    s32 index;
     Overlay68Keyframe *after;
     Overlay68Keyframe *afterAfter;
-    f32 tangentX;
+    Overlay68Animation *animation;
     Overlay68ObjectState *state;
+    s32 unused1;
+    s32 unused2;
 
     state = object->state;
     if (OVERLAY68_GLOBAL_FLAG != 0) {
@@ -128,12 +132,13 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
             state->opacity = animationOpacity & 0xFF;
 
             state->elapsed += updateRate;
-            current = &animation->keyframes[state->keyframeIndex];
+            index = state->keyframeIndex;
+            current = &animation->keyframes[index];
             while (state->elapsed >= current->duration) {
                 state->elapsed -= current->duration;
-                state->keyframeIndex++;
+                state->keyframeIndex = index + 1;
                 current++;
-                if (state->keyframeIndex >= animation->keyframeCount) {
+                if ((index = state->keyframeIndex) >= animation->keyframeCount) {
                     state->keyframeIndex = animation->keyframeCount - 1;
                     state->elapsed = 0;
                     state->active = 0;
@@ -223,10 +228,10 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
 
 /* PLATEAU-HANDOFF:overlay68UpdateAnimation:start
  * symbol: overlay68UpdateAnimation
- * score: 180/356 words
+ * score: 108/356 words
  * frame: 0x78
  * relocations: 15
- * first-mismatch: +0x1C
- * summary: Declaration-order hill climb 183 to 180; state web t2 against t1 (t-pool shift) remains.
+ * first-mismatch: +0xD4
+ * summary: Loop index carried in a local and target home order: state t2, index t0. Left: a one-draw ring shift at +0xD4 and the neighbour pointers' colours.
  * PLATEAU-HANDOFF:overlay68UpdateAnimation:end
  */

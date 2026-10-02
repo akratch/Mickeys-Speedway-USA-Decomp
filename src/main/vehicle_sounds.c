@@ -10,8 +10,7 @@
  * measured cross-title file boundary.
  *
  * PROVENANCE: JFG's permitted src/audio_manager_36D0.c and audio.h were read
- * to identify the shared positional-sound API. No body is adapted from them;
- * all four functions remain Mickey's generated assembly.
+ * to identify the shared positional-sound API. No body is adapted from them.
  */
 
 #include "PR/ultratypes.h"
@@ -71,22 +70,7 @@ typedef struct VehicleCamera {
     /* 0x18 */ u8 pad18[0x54 - 0x18];
 } VehicleCamera;
 
-void *D_800D78B0;
-f32 sVehicleSoundPreviousDistance0;
-f32 D_800D78B8;
-void *D_800D78BC;
-void *D_800D78C0;
-f32 sVehicleSoundPreviousDistance1;
-f32 D_800D78C8;
-void *D_800D78CC;
-void *D_800D78D0;
-f32 sVehicleSoundPreviousDistance2;
-f32 D_800D78D8;
-void *D_800D78DC;
-void *D_800D78E0;
-f32 sVehicleSoundPreviousDistance3;
-f32 D_800D78E8;
-void *D_800D78EC;
+VehicleSoundSlot D_800D78B0[4];
 extern s32 D_800D78F0;
 extern u8 D_8007BF04;
 extern u8 D_8007BF0C;
@@ -99,17 +83,6 @@ extern f32 D_8007F988[];
 extern f32 D_8007F9B0[];
 extern f32 D_8007F9D8[];
 extern f32 D_8007FA00[];
-extern f32 D_800842F0;
-extern f32 D_800842F4;
-extern f32 D_800842F8;
-extern f32 D_800842FC;
-extern f32 D_80084300;
-extern f32 D_80084304;
-extern f32 D_80084308;
-extern f32 D_8008430C;
-extern f32 D_80084310;
-extern f32 D_80084314;
-extern f32 D_80084318;
 
 f32 alCents2Ratio(s32 cents);
 void func_80002FE0(u16 soundId, f32 x, f32 y, f32 z, u8 arg4,
@@ -126,39 +99,21 @@ s32 mathRnd(s32 minimum, s32 maximum);
 f32 sqrtf(f32 value);
 f32 func_80058EF4(f32 value);
 
-#ifdef NON_MATCHING
-/* Bounded plateau: owns ROM 0x58E50..0x58EA8, 22 frameless words with no
- * padding. Configured full-TU C is 26 words, matches 3/22 positionally, first
- * +0x0, and carries 24 relocations against the target's 20. The four-word
- * excess is one redundant high-half load per slot: the target uses two direct
- * absolute bases for three stores while retaining separately named LO16s.
- * The previous 119-row lattice, aggregate/volatile-slot families, and this
- * pass's target ordering, TU-local-scalar, comma-expression, racer-base pointer,
- * and volatile split-tail forms are all nonexact; none strictly improves V0.
- * The sole caller is func_80004FE0+0x54C and no credible donor exists. Resume
- * only with an original declaration/TU model that naturally emits that mixed
- * relocation shape, or evidence that this initializer was handwritten; do
- * not repeat flags or these storage forms. Assembly remains canonical. */
+/* The four camera sound slots are one array: a plain loop that IDO unrolls
+ * gives the target's shared high half per pair of stores, which the sixteen
+ * separately named scalars this TU used to define could not (2026-10-02). */
 void func_80058250(void) {
-    D_800D78B0 = 0;
-    D_800D78B8 = 0.0f;
-    D_800D78BC = 0;
-    D_800D78C0 = 0;
-    D_800D78C8 = 0.0f;
-    D_800D78CC = 0;
-    D_800D78D0 = 0;
-    D_800D78D8 = 0.0f;
-    D_800D78DC = 0;
-    D_800D78E0 = 0;
-    D_800D78E8 = 0.0f;
-    D_800D78EC = 0;
+    s32 i;
+
+    for (i = 0; i < 4; i++) {
+        D_800D78B0[i].handle = 0;
+        D_800D78B0[i].dopplerPitch = 0.0f;
+        D_800D78B0[i].racerObject = 0;
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/vehicle_sounds/func_80058250.s")
-#endif
 
 void func_800582A8(void) {
-    VehicleSoundSlot *slot = (VehicleSoundSlot *)&D_800D78B0, *end = (VehicleSoundSlot *)&D_800D78F0;
+    VehicleSoundSlot *slot = D_800D78B0, *end = (VehicleSoundSlot *)&D_800D78F0;
     do {
         if (slot->handle != 0) {
             func_800031E8(slot->handle);
@@ -170,7 +125,6 @@ void func_800582A8(void) {
     } while (slot != end);
 }
 
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: source-level organization and terminology are adapted from
  * Diddy Kong Racing's permitted published src/audio_vehicle.c functions
@@ -178,392 +132,270 @@ void func_800582A8(void) {
  * offsets, tables, control flow, constants and positional-audio calls decide
  * this body.
  *
- * Fresh p10 workbench: 758/762 candidate/target instructions and frame 0x118.
- * The retained unsigned vehicle ID and pointer setup order reduce opcode
- * mismatches without changing the positional score; DKR organization remains
- * provenance-only.
- *
- * Frame closed (2026-09-10).  `unused0` above is a frame-census slot, not a
- * value: the declared-local list was one 4-byte slot short, and adding one
- * takes the frame from 0x110 to the target's 0x118 exactly (the local block
- * quantizes in 8-byte steps).  Identical rows go 273 -> 278 of 762 and the
- * register-masked alignment 484 -> 490.  Its identity is unknown; whatever
- * real local it stands for, the census says there is one.
- *
- * With the frames equal the stack census separates cleanly, and that is the
- * useful part.  Every one of the twenty slots from 0x10 to 0x84 -- the
- * saved-register block and all of the spill temporaries -- now matches the
- * target exactly, by offset and by use count.  The entire residual lives in
- * the declared-local block above 0xA0, and it is an ORDER problem, not a size
- * one: the local with eight uses sits at frame_top-4 here and at frame_top-16
- * in the target, so the target declares roughly three more 4-byte locals
- * ahead of it.  The next lever is to permute the declaration list against the
- * target's use-count fingerprint, which is (8,4,3,2,2,8,6,2) reading down from
- * its first homed local against (8,6,2,1,1,1,4) here.
- *
- * The loop idiom question is settled, against the obvious guess.  The
- * candidate emitted thirteen `sltu reg,zero,counter` boolean materializations
- * that the target does not have -- the target has none at all -- and the
- * temptation is to reach for a different loop form.  Do not: the target's own
- * back-edge tests the counter and decrements it in the branch delay slot,
- * which is exactly `while (x-- != 0)`, the form already committed here.
- * Rewriting the three loops as `--x != -1` does remove all thirteen `sltu`,
- * but replaces them with thirteen equally spurious `addiu x,x,-1` duplicated
- * into the same branch-likely slots, and costs a register-masked identical
- * row; `--x >= 0` is worse again at -6.  All sixty-four combinations of four
- * loop forms across the three loops were measured and none is exact.  What
- * fills those slots in the target is float stores: the target has twenty
- * `swc1` against twelve here, and eight more homed float values is also what
- * would give ugen something real to sink into each likely slot.  Chase the
- * float homes, not the loop condition.
- *
- * The flag lattice was re-run over seven configurations; the shipped
- * `-Wab,-r4300_mul -O2 -mips2` is the best on the alignment and -mips1 costs
- * about a hundred instructions.
+ * 2026-10-02 (lane p-tex2), 697 at -16 to 6 at delta 0: rewritten from the
+ * target listing. The D_800842F0..D_80084314 externs were this function's
+ * own float literals; the loops are `while (i--)` over indexed arrays (uopt
+ * makes the pointers); the profile scan is a 4-trip for loop IDO unrolls;
+ * the slots are one array; min/max/volume scale and the engine intensity
+ * are plain locals the target reads uninitialised from their homes;
+ * relative velocity reuses `speed` (one home at 0xBC); ratio and range are
+ * spill temps, not homes. The doppler smoothing divides by 2.0f: written
+ * as `* 0.5f` it shares the pitch's "0.5f" constant, and that one ucode
+ * constant spans the racer loop and loses f12 (409 to 8). The empty test on
+ * cameras after the camera loop extends its range by one block, so the
+ * 0x54 stride constant outranks it for s6 (save 200/19 against 201/20); the
+ * three pads keep the 0x118 frame. Matched.
  */
 void func_8005830C(s32 updateRate) {
-    s32 racerCount;
-    s32 racerIndex;
-    s32 cameraCount;
-    s32 cameraIndex;
-    s32 scanIndex;
-    s16 bestPriority;
-    s32 secondarySoundId;
-    s32 volume;
-    f32 speed;
-    f32 minimumSpeed;
-    f32 maximumSpeed;
-    f32 volumeScale;
-    f32 range;
-    f32 ratio;
-    f32 nearestDistance;
-    f32 deltaX;
-    f32 deltaY;
-    f32 deltaZ;
-    f32 relativeVelocity;
-    f32 cents;
-    f32 engineIntensity;
-    f32 basePitch;
-    f32 storedMinimumSpeed;
-    f32 storedMaximumSpeed;
-    f32 storedVolumeScale;
-    f32 storedEngineIntensity;
-    f32 unused0;
-    VehicleObject **racers;
-    VehicleObject **racerPtr;
     VehicleObject *object;
     VehicleObject *candidate;
     VehicleRacerState *racer;
+    s32 racerCount;
     VehicleSoundProfile *profile;
     VehicleSoundSlot *slot;
     VehicleCamera *cameras;
+    s32 i;
+    s32 j;
+    s32 k;
+    VehicleObject **racers;
+    s32 soundId;
+    s32 bestPriority;
+    s32 volume;
+    f32 engineIntensity;
+    f32 nearestDistance;
+    f32 distance;
+    f32 deltaX;
+    f32 deltaY;
+    f32 deltaZ;
+    f32 minimumSpeed;
+    f32 maximumSpeed;
+    f32 speed;
+    f32 pad_rv;
+    f32 cents;
+    f32 pitch;
+    f32 basePitch;
+    f32 ratio;
+    f32 volumeScale;
+    f32 secondaryVolumeScale;
+    f32 range;
+    s32 pad0;
+    s32 pad1;
+    s32 pad2;
 
-    nearestDistance = D_800842F0;
+    nearestDistance = 1000000000.0f;
     racers = func_80005750(&racerCount);
-    engineIntensity = storedEngineIntensity;
-    racerIndex = racerCount - 1;
-    if (racerCount != 0) {
-        racerPtr = racers + racerIndex;
-        volumeScale = storedVolumeScale;
-        minimumSpeed = storedMinimumSpeed;
-        maximumSpeed = storedMaximumSpeed;
-        do {
-            object = *racerPtr;
-            racer = object->racer;
-            if (racer->raceFinished != 0) {
+    i = racerCount;
+    while (i--) {
+        object = racers[i];
+        racer = object->racer;
+        if (racer->raceFinished != 0) {
+            if (racer->engineSound != 0) {
+                func_800031E8(racer->engineSound);
+            }
+            if (racer->secondarySound != 0) {
+                func_800031E8(racer->secondarySound);
+            }
+        } else {
+            engineIntensity = racer->speed;
+            if (D_8007BF04 == 0) {
+                engineIntensity *= D_8007F938[racer->characterId];
+                basePitch = D_8007F988[racer->characterId];
+                volumeScale = D_8007F9D8[racer->characterId];
+                soundId = D_8007F910[racer->characterId];
+            } else {
+                engineIntensity *= D_8007F960[racer->characterId];
+                basePitch = D_8007F9B0[racer->characterId];
+                volumeScale = D_8007FA00[racer->characterId];
+                soundId = D_8007F924[racer->characterId];
+            }
+            engineIntensity += mathRnd(-10, 10) * 0.1f;
+            if (engineIntensity < 0.0f) {
+                engineIntensity = -engineIntensity;
+            }
+            if (engineIntensity > 21.0f) {
+                engineIntensity = 21.0f;
+            }
+            racer->engineIntensity = engineIntensity;
+            if (racer->intensityOffsetDisabled == 0) {
+                racer->engineIntensity += 3.0f;
+            }
+            if ((racer->flags & 0x20) && (racer->flags & 1) && (racer->flags & 0x10)) {
                 if (racer->engineSound != 0) {
                     func_800031E8(racer->engineSound);
                 }
-                if (racer->secondarySound != 0) {
-                    func_800031E8(racer->secondarySound);
+            }
+            if ((!(racer->flags & 1) || func_8003A550() != 0) && racer->raceFinished == 0) {
+                if (racer->engineSound == 0) {
+                    func_80002FE0(soundId, object->x, object->y, object->z, 1, &racer->engineSound);
                 }
-            } else {
-                engineIntensity = racer->speed;
-                if (D_8007BF04 == 0) {
-                    basePitch = D_8007F988[racer->characterId];
-                    engineIntensity *= D_8007F938[racer->characterId];
-                    secondarySoundId = D_8007F910[racer->characterId];
-                    volumeScale = D_8007F9D8[racer->characterId];
-                } else {
-                    basePitch = D_8007F9B0[racer->characterId];
-                    engineIntensity *= D_8007F960[racer->characterId];
-                    secondarySoundId = D_8007F924[racer->characterId];
-                    volumeScale = D_8007FA00[racer->characterId];
-                }
-                engineIntensity += (f32)mathRnd(-10, 10) * D_800842F4;
+                func_800031C0(racer->engineSound, object->x, object->y, object->z);
+                func_800030B4(racer->engineSound, (s32)(racer->engineIntensity * 6.0f + basePitch));
                 if (engineIntensity < 0.0f) {
                     engineIntensity = -engineIntensity;
                 }
                 if (engineIntensity > 21.0f) {
                     engineIntensity = 21.0f;
                 }
-                racer->engineIntensity = engineIntensity;
-                if (racer->intensityOffsetDisabled == 0) {
-                    racer->engineIntensity += 3.0f;
+                volume = 85.0f - engineIntensity * volumeScale;
+                if (volume > 60) {
+                    volume = 60;
                 }
+                func_8000309C(racer->engineSound, volume);
+            }
+            if (((racer->flags & 0x20) || func_8003A550() != 0) && racer->raceFinished == 0) {
+                speed = racer->speed;
+                soundId = 0;
+                bestPriority = 0;
+                if (speed < 0.0f) {
+                    speed = -speed;
+                }
+                if (racer->vehicleId != 0 && speed > 3.0f) {
+                    minimumSpeed = 3.0f;
+                    maximumSpeed = 18.0f;
+                    secondaryVolumeScale = 0.5f;
+                    soundId = 0x23;
+                } else {
+                    for (k = 0; k < 4; k++) {
+                        profile = &D_8007F810[racer->soundProfile[k] & 0xF];
+                        if (bestPriority < profile->priority && profile->minimumSpeed < speed) {
+                            bestPriority = profile->priority;
+                            soundId = profile->soundId;
+                            minimumSpeed = profile->minimumSpeed;
+                            maximumSpeed = profile->maximumSpeed;
+                            secondaryVolumeScale = profile->volumeScale;
+                        }
+                    }
+                }
+                if (racer->secondarySound != 0 && soundId != racer->secondarySoundId) {
+                    func_800031E8(racer->secondarySound);
+                    racer->secondarySoundId = 0;
+                }
+                if (soundId != 0) {
+                    racer->secondarySoundId = soundId;
+                    range = maximumSpeed - minimumSpeed;
+                    if (maximumSpeed < speed) {
+                        speed = maximumSpeed;
+                    }
+                    if (racer->secondarySound == 0) {
+                        func_80002FE0(soundId, object->x, object->y, object->z, 1, &racer->secondarySound);
+                    }
+                    func_800031C0(racer->secondarySound, object->x, object->y, object->z);
+                    ratio = (speed - minimumSpeed) / range;
+                    func_800030B4(racer->secondarySound, (s32)((ratio * 0.5f + 0.5f) * 100.0f));
+                    func_8000309C(racer->secondarySound, (s32)(ratio * 100.0f * secondaryVolumeScale) + 20);
+                }
+            }
+        }
+    }
 
-                if ((racer->flags & 0x20) && (racer->flags & 1) &&
-                    (racer->flags & 0x10)) {
-                    if (racer->engineSound != 0) {
-                        func_800031E8(racer->engineSound);
+    if (func_8003A550() == 0) {
+        i = mainGetNumberOfCameras();
+        cameras = camGetListPtr();
+        while (i--) {
+            slot = &D_800D78B0[i];
+            object = slot->racerObject;
+            candidate = 0;
+            if (object != 0 && object == slot->handle) {
+                racer = object->racer;
+                if (racer->raceFinished != 0) {
+                    func_800031E8(slot->handle);
+                }
+            }
+            if (D_8007BF0C != 0) {
+                for (j = 0; j < racerCount; j++) {
+                    object = racers[j];
+                    racer = object->racer;
+                    if ((racer->flags & 1) && (racer->flags & 0x20) && racer->raceFinished == 0 &&
+                        i == racer->playerIndex) {
+                        deltaX = object->x - cameras[i].x;
+                        deltaY = object->y - cameras[i].y;
+                        deltaZ = object->z - cameras[i].z;
+                        nearestDistance = sqrtf(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+                        candidate = object;
+                        j = racerCount;
                     }
                 }
-                if ((!(racer->flags & 1) || func_8003A550() != 0) &&
-                    racer->raceFinished == 0) {
-                    if (racer->engineSound == 0) {
-                        func_80002FE0(secondarySoundId, object->x, object->y,
-                                       object->z, 1, &racer->engineSound);
+            } else {
+                j = racerCount;
+                while (j--) {
+                    object = racers[j];
+                    racer = object->racer;
+                    if ((racer->flags & 1) && racer->raceFinished == 0) {
+                        deltaX = object->x - cameras[i].x;
+                        deltaY = object->y - cameras[i].y;
+                        deltaZ = object->z - cameras[i].z;
+                        distance = sqrtf(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+                        if (distance < nearestDistance && distance < 5000.0f) {
+                            nearestDistance = distance;
+                            candidate = object;
+                        }
                     }
-                    func_800031C0(racer->engineSound, object->x, object->y,
-                                   object->z);
-                    func_800030B4(
-                        racer->engineSound,
-                        (s32)((racer->engineIntensity * 6.0f) + basePitch) &
-                            0xFF);
-                    engineIntensity = racer->engineIntensity;
+                }
+            }
+            if (candidate != 0) {
+                if (candidate == slot->racerObject) {
+                    racer = candidate->racer;
+                    speed = (nearestDistance - slot->previousDistance) / updateRate;
+                    if (speed > 15.0f) {
+                        speed = 15.0f;
+                    } else if (speed < -15.0f) {
+                        speed = -15.0f;
+                    }
+                    if (D_8007BF04 == 0) {
+                        basePitch = D_8007F988[racer->characterId];
+                        volumeScale = D_8007F9D8[racer->characterId];
+                        soundId = D_8007F910[racer->characterId];
+                    } else {
+                        basePitch = D_8007F9B0[racer->characterId];
+                        volumeScale = D_8007FA00[racer->characterId];
+                        soundId = D_8007F924[racer->characterId];
+                    }
+                    cents = func_80058EF4(racer->engineIntensity) * 1731.234f;
+                    if (6.99f < speed && speed <= 7.0f) {
+                        speed = 6.99f;
+                    } else if (speed >= 7.0f && speed < 7.01f) {
+                        speed = 7.01f;
+                    }
+                    ratio = alCents2Ratio((7.0f + speed) / (7.0f - speed) * cents);
+                    slot->dopplerPitch += (ratio - slot->dopplerPitch) / 2.0f;
+                    if (0.3f < slot->dopplerPitch) {
+                        slot->dopplerPitch = 0.3f;
+                    } else if (slot->dopplerPitch < 0.0f) {
+                        slot->dopplerPitch = 0.0f;
+                    }
+                    if (slot->handle == 0) {
+                        func_80002FE0(soundId, candidate->x, candidate->y, candidate->z, 1, &slot->handle);
+                    }
+                    func_800031C0(slot->handle, candidate->x, candidate->y, candidate->z);
+                    pitch = slot->dopplerPitch * 100.0f + basePitch + racer->engineIntensity * 6.0f;
+                    if (pitch > 200.0f) {
+                        pitch = 200.0f;
+                    }
+                    func_800030B4(slot->handle, (s32)pitch);
                     if (engineIntensity < 0.0f) {
                         engineIntensity = -engineIntensity;
                     }
                     if (engineIntensity > 21.0f) {
                         engineIntensity = 21.0f;
                     }
-                    volume = 85.0f - (engineIntensity * volumeScale);
-                    if (volume >= 61) {
+                    volume = 85.0f - engineIntensity * volumeScale;
+                    if (volume > 60) {
                         volume = 60;
                     }
-                    func_8000309C(racer->engineSound, volume & 0xFF);
-                }
-
-                if (((racer->flags & 0x20) || func_8003A550() != 0) &&
-                    racer->raceFinished == 0) {
-                    speed = racer->speed;
-                    secondarySoundId = 0;
-                    bestPriority = 0;
-                    if (speed < 0.0f) {
-                        speed = -speed;
-                    }
-                    if (racer->vehicleId != 0 && speed > 3.0f) {
-                        minimumSpeed = 3.0f;
-                        maximumSpeed = 18.0f;
-                        volumeScale = 0.5f;
-                        secondarySoundId = 0x23;
-                    } else {
-                        profile = &D_8007F810[racer->soundProfile[0] & 0xF];
-                        if (profile->priority > 0 &&
-                            profile->minimumSpeed < speed) {
-                            bestPriority = profile->priority;
-                            secondarySoundId = profile->soundId;
-                            minimumSpeed = profile->minimumSpeed;
-                            maximumSpeed = profile->maximumSpeed;
-                            volumeScale = profile->volumeScale;
-                        }
-                        profile = &D_8007F810[racer->soundProfile[1] & 0xF];
-                        if (bestPriority < profile->priority &&
-                            profile->minimumSpeed < speed) {
-                            bestPriority = profile->priority;
-                            secondarySoundId = profile->soundId;
-                            minimumSpeed = profile->minimumSpeed;
-                            maximumSpeed = profile->maximumSpeed;
-                            volumeScale = profile->volumeScale;
-                        }
-                        profile = &D_8007F810[racer->soundProfile[2] & 0xF];
-                        if (bestPriority < profile->priority &&
-                            profile->minimumSpeed < speed) {
-                            bestPriority = profile->priority;
-                            secondarySoundId = profile->soundId;
-                            minimumSpeed = profile->minimumSpeed;
-                            maximumSpeed = profile->maximumSpeed;
-                            volumeScale = profile->volumeScale;
-                        }
-                        profile = &D_8007F810[racer->soundProfile[3] & 0xF];
-                        if (bestPriority < profile->priority &&
-                            profile->minimumSpeed < speed) {
-                            secondarySoundId = profile->soundId;
-                            minimumSpeed = profile->minimumSpeed;
-                            maximumSpeed = profile->maximumSpeed;
-                            volumeScale = profile->volumeScale;
-                        }
-                    }
-                    if (racer->secondarySound != 0 &&
-                        secondarySoundId != racer->secondarySoundId) {
-                        func_800031E8(racer->secondarySound);
-                        racer->secondarySoundId = 0;
-                    }
-                    if (secondarySoundId != 0) {
-                        racer->secondarySoundId = secondarySoundId;
-                        range = maximumSpeed - minimumSpeed;
-                        if (maximumSpeed < speed) {
-                            speed = maximumSpeed;
-                        }
-                        if (racer->secondarySound == 0) {
-                            func_80002FE0(secondarySoundId, object->x, object->y,
-                                           object->z, 1,
-                                           &racer->secondarySound);
-                        }
-                        func_800031C0(racer->secondarySound, object->x,
-                                       object->y, object->z);
-                        ratio = (speed - minimumSpeed) / range;
-                        func_800030B4(
-                            racer->secondarySound,
-                            (s32)(((ratio * 0.5f) + 0.5f) * 100.0f) & 0xFF);
-                        func_8000309C(
-                            racer->secondarySound,
-                            ((s32)(ratio * 100.0f * volumeScale) + 20) &
-                                0xFF);
-                    }
-                }
-            }
-            racerPtr--;
-        } while (racerIndex-- != 0);
-        storedVolumeScale = volumeScale;
-        storedMinimumSpeed = minimumSpeed;
-        storedMaximumSpeed = maximumSpeed;
-        storedEngineIntensity = engineIntensity;
-    }
-
-    if (func_8003A550() == 0) {
-        cameraCount = mainGetNumberOfCameras();
-        cameras = camGetListPtr();
-        cameraIndex = cameraCount - 1;
-        if (cameraCount != 0) {
-            do {
-                slot = &((VehicleSoundSlot *)&D_800D78B0)[cameraIndex];
-                object = slot->racerObject;
-                candidate = 0;
-                if (object != 0 && object == slot->handle &&
-                    object->racer->raceFinished != 0) {
-                    func_800031E8(slot->handle);
-                }
-
-                if (D_8007BF0C != 0) {
-                    scanIndex = 0;
-                    if (racerCount > 0) {
-                        do {
-                            object = racers[scanIndex];
-                            racer = object->racer;
-                            if ((racer->flags & 1) && (racer->flags & 0x20) &&
-                                racer->raceFinished == 0 &&
-                                cameraIndex == racer->playerIndex) {
-                                deltaX = object->x - cameras[cameraIndex].x;
-                                deltaY = object->y - cameras[cameraIndex].y;
-                                deltaZ = object->z - cameras[cameraIndex].z;
-                                nearestDistance = sqrtf(
-                                    (deltaX * deltaX) + (deltaY * deltaY) +
-                                    (deltaZ * deltaZ));
-                                candidate = object;
-                                scanIndex = racerCount;
-                            }
-                            scanIndex++;
-                        } while (scanIndex < racerCount);
-                    }
-                } else {
-                    scanIndex = racerCount - 1;
-                    if (racerCount != 0) {
-                        racerPtr = racers + scanIndex;
-                        do {
-                            object = *racerPtr;
-                            racer = object->racer;
-                            if ((racer->flags & 1) &&
-                                racer->raceFinished == 0) {
-                                deltaX = object->x - cameras[cameraIndex].x;
-                                deltaY = object->y - cameras[cameraIndex].y;
-                                deltaZ = object->z - cameras[cameraIndex].z;
-                                range = sqrtf((deltaX * deltaX) +
-                                              (deltaY * deltaY) +
-                                              (deltaZ * deltaZ));
-                                if (range < nearestDistance &&
-                                    range < D_800842F8) {
-                                    nearestDistance = range;
-                                    candidate = object;
-                                }
-                            }
-                            racerPtr--;
-                        } while (scanIndex-- != 0);
-                    }
-                }
-
-                if (candidate != 0) {
-                    if (candidate == slot->racerObject) {
-                        racer = candidate->racer;
-                        relativeVelocity =
-                            (nearestDistance - slot->previousDistance) /
-                            (f32)updateRate;
-                        if (relativeVelocity > 15.0f) {
-                            relativeVelocity = 15.0f;
-                        } else if (relativeVelocity < -15.0f) {
-                            relativeVelocity = -15.0f;
-                        }
-                        if (D_8007BF04 == 0) {
-                            basePitch = D_8007F988[racer->characterId];
-                            secondarySoundId =
-                                D_8007F910[racer->characterId];
-                            volumeScale = D_8007F9D8[racer->characterId];
-                        } else {
-                            basePitch = D_8007F9B0[racer->characterId];
-                            secondarySoundId =
-                                D_8007F924[racer->characterId];
-                            volumeScale = D_8007FA00[racer->characterId];
-                        }
-                        cents = func_80058EF4(racer->engineIntensity) *
-                                D_800842FC;
-                        if (D_80084300 < relativeVelocity &&
-                            relativeVelocity <= 7.0f) {
-                            relativeVelocity = D_80084304;
-                        } else if (relativeVelocity >= 7.0f &&
-                                   relativeVelocity < D_80084308) {
-                            relativeVelocity = D_8008430C;
-                        }
-                        ratio = alCents2Ratio(
-                            (s32)(((7.0f + relativeVelocity) /
-                                   (7.0f - relativeVelocity)) *
-                                  cents));
-                        slot->dopplerPitch +=
-                            (ratio - slot->dopplerPitch) * 0.5f;
-                        if (D_80084310 < slot->dopplerPitch) {
-                            slot->dopplerPitch = D_80084314;
-                        } else if (slot->dopplerPitch < 0.0f) {
-                            slot->dopplerPitch = 0.0f;
-                        }
-                        if (slot->handle == 0) {
-                            func_80002FE0(secondarySoundId, candidate->x,
-                                           candidate->y, candidate->z, 1,
-                                           &slot->handle);
-                        }
-                        func_800031C0(slot->handle, candidate->x,
-                                       candidate->y, candidate->z);
-                        ratio = (slot->dopplerPitch * 100.0f) + basePitch +
-                                (racer->engineIntensity * 6.0f);
-                        if (ratio > 200.0f) {
-                            ratio = 200.0f;
-                        }
-                        func_800030B4(slot->handle, (s32)ratio & 0xFF);
-                        engineIntensity = storedEngineIntensity;
-                        if (engineIntensity < 0.0f) {
-                            engineIntensity = -engineIntensity;
-                        }
-                        if (engineIntensity > 21.0f) {
-                            engineIntensity = 21.0f;
-                        }
-                        volume = 85.0f - (engineIntensity * volumeScale);
-                        if (volume >= 61) {
-                            volume = 60;
-                        }
-                        func_8000309C(slot->handle, volume & 0xFF);
-                    } else if (slot->handle != 0) {
-                        func_800031E8(slot->handle);
-                    }
-                    slot->racerObject = candidate;
-                    slot->previousDistance = nearestDistance;
+                    func_8000309C(slot->handle, volume);
                 } else if (slot->handle != 0) {
                     func_800031E8(slot->handle);
                 }
-            } while (cameraIndex-- != 0);
+                slot->racerObject = candidate;
+                slot->previousDistance = nearestDistance;
+            } else if (slot->handle != 0) {
+                func_800031E8(slot->handle);
+            }
+        }
+        if (cameras) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/vehicle_sounds/func_8005830C.s")
-#endif
 
 /*
  * Exact under -O2 -mips2 -32 -Wab,-r4300_mul. Naming the loop-invariant
@@ -585,33 +417,13 @@ f32 func_80058EF4(f32 arg0) {
     arg0 = (arg0 - one) / (one + arg0);
     term = arg0;
     squared = arg0 * arg0;
-    if (D_80084318 < (result - previous)) {
+    if (0.001f < (result - previous)) {
         do {
             previous = result;
             result += term / divisor;
             divisor += 2;
             term *= squared;
-        } while (D_80084318 < (result - previous));
+        } while (0.001f < (result - previous));
     }
     return result * (s32)2;
 }
-
-/* PLATEAU-HANDOFF:func_8005830C:start
- * symbol: func_8005830C
- * score: 697 differing words
- * frame: 0x118
- * relocations: 88
- * first-mismatch: +0x8
- * summary: 758 vs 762 instructions; frame now exact at 0x118 and the whole saved-register and spill-temp block matches by offset and use count, so the residual is the declared-local ORDER plus eight unhomed float values
- * PLATEAU-HANDOFF:func_8005830C:end
- */
-
-/* PLATEAU-HANDOFF:func_80058250:start
- * symbol: func_80058250
- * score: 19/22 words
- * frame: frameless
- * relocations: 24
- * first-mismatch: +0x0
- * summary: hypothesis=one symbol shares the high half; spellings=offset, reversed, struct all 22 at +16; stall=size stays +16, masked rises 19 to 22
- * PLATEAU-HANDOFF:func_80058250:end
- */

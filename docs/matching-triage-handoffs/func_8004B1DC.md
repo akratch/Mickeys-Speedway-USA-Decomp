@@ -74,4 +74,18 @@ is +0x60, and the first missing target word is at +0x74. A lane picking this up
 should start from the size deficit and the caller-saved allocation of the setup
 block, and should not open a register-class investigation until the eight words
 close.
+
+## 2026-10-02 (lane p-tex2): read only, no change banked
+
+Aligned at delta 0: 191 byte-exact, 250 naming, 10 immediate, 121 really
+different, with one- and two-word insertions at +0x84, +0x94, +0x208,
++0x214, +0x310 and +0x344. Read against the listing: the first
+gSPDisplayList really is written through `(*displayList)++` after the
+cursor was copied (the target reloads displayList into a1 for it); the
+scissor command is written through a copied cursor (`v0 = dl; dl += 8`),
+but that packet form alone is 476 at -8 against 452. The closest donor is
+DKR's render_text_string (font.c), whose scissor clamp, alignment and
+per-glyph structure this body follows; a rewrite from the listing in that
+donor's shape (the method that closed func_8005830C from 697) is the
+untried lever.
 <!-- plateau-handoff:func_8004B1DC:end -->

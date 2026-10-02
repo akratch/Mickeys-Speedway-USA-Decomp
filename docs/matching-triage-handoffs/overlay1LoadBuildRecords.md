@@ -2,11 +2,13 @@
 ### `overlay1LoadBuildRecords` plateau handoff
 
 - source: `src/overlays/o001/overlay_001_head.c`
-- score: 20/572 words
+- score: 6/572 words
 - frame: 0xD8
 - relocations: 110
 - first mismatch: +0x1F0
-- summary: Rewritten in the overlay idiom with relocation identities: 469 at -52 to 20 at size 0, frame exact. Open: max-store address rematerialised, FP ring, arg order.
+- summary: Overlay idiom rewrite: 469 at -52 to 6 at size 0, frame exact. Open: the two running-max stores rematerialise their address (lui at) in the target.
+
+Summary before this remeasure: Rewritten in the overlay idiom with relocation identities: 469 at -52 to 20 at size 0, frame exact. Open: max-store address rematerialised, FP ring, arg order.
 
 Summary before this remeasure: Exact frame; 13 words short. Per-field group clear adopted. One BSS owner and a null-base 0x94 length do not close the rest.
 
@@ -61,6 +63,25 @@ Open, measured:
 Next lever: the instrumented uopt decision records for the D_1D80 address
 web (does globalcolor split it at the store block in the target's shape),
 then the DKWB freelist trace for the two float blocks.
+
+Later the same sitting, 20 to 6 at size delta 0:
+
+- The rank adjust written `rank += (maximum - score) * scale` puts both float
+  blocks (the adjust and the closing average) on the shipped ring: 20 to 10.
+  The other four spellings of that expression (operand orders, an explicit
+  (f32) on the read) are 20.
+- FLT_MAX assigned on the same source line as the first metric-source call:
+  as1 then fills that call's delay slot with the literal load and leaves the
+  argument copy before it, as shipped (L59): 10 to 8. Five statement orders of
+  large/maximum/minimum on separate lines are 10 to 12.
+- The closing average through its own pointer local (`base`, which the
+  allocator gives a caller-saved register, as shipped): 8 to 6. Reusing the
+  metric loop's `large` keeps it in s6; reusing sourceA also measures 6.
+
+Aligner at 6: byte-exact 566, naming 0, immediate 0, really different 6.
+All six are the two running-maximum stores. Alias names for the stores (a
+second extern for the same address) are 460 at +16; storing through
+`*(s32 *)&global` is byte-identical to the plain store.
 
 - identity: Overlay 1 text `+0x10C8..+0x19B8`, ROM `0x184D4A8..0x184DD98`, 2,288 executable bytes with no credited padding
 - ABI and flags: `void overlay1LoadBuildRecords(void)`, configured `-O2 -mips2 -32`; candidate and target frames are both `0xD8`

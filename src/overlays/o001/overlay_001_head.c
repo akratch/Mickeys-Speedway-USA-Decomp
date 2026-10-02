@@ -342,6 +342,7 @@ void overlay1LoadBuildRecords(void) {
     f32 minimum;
     f32 scale;
     f32 total;
+    Overlay1LargeRecord *base;
 
     overlay1LoadPackedRecordsReloc(&records, &size, 1);
     D_1D7C = 0;
@@ -488,8 +489,7 @@ large:
             if (record->type == 0xCA) {
                 large = &D_1D58[record->link.index];
                 maximum = 0.0f;
-                minimum = 3.4028235e38f;
-                sourceA = overlay1GetMetricSourceAReloc(large);
+                minimum = 3.4028235e38f; sourceA = overlay1GetMetricSourceAReloc(large);
                 sourceB = overlay1GetMetricSourceBReloc(sourceA);
                 sourceC = overlay1GetMetricSourceCReloc(large);
                 i = 8;
@@ -514,7 +514,7 @@ large:
                     i = 8;
                     while (i--) {
                         if (large->metrics[i].rank != 0) {
-                            large->metrics[i].rank = (f32)large->metrics[i].rank + (maximum - large->metrics[i].score) * scale;
+                            large->metrics[i].rank += (maximum - large->metrics[i].score) * scale;
                             if (i == 3) {
                                 large->metrics[i].rank += 5;
                             }
@@ -524,10 +524,10 @@ large:
             }
         }
         total = 0.0f;
-        large = D_1D58;
+        base = D_1D58;
         i = D_1D8C;
         while (i--) {
-            total += large->metrics[3].score;
+            total += base->metrics[3].score;
         }
         D_1DA8 = total / (f32)D_1D8C;
         i = 5;
@@ -554,11 +554,11 @@ large:
  *  - one variable per loop role (k for the clear and points index, j for the
  *    point index and the finalize count, entry for the two count/point walks,
  *    node for the link walk): -> 49, frame 0xD8;
- *  - declaration order putting the homes where shipped: -> 20.
- * Open (20): the two running-maximum stores rematerialise their address in
- * the target (lui at) instead of using the held register; the rank-adjust
- * and average float registers are one ring position off; the FLT_MAX load
- * and the large pointer argument trade places around the first source call.
+ *  - declaration order putting the homes where shipped: -> 20;
+ *  - the rank adjust as `rank += (max - score) * scale`: -> 10 (both float
+ *    blocks); FLT_MAX on the first source call's line (L59): -> 8; the
+ *    average through its own pointer local (base, caller-saved): -> 6.
+ * Open (6): the two running-maximum stores rematerialise their address.
  */
 
 
@@ -814,10 +814,10 @@ void overlay1CallReset(void) {
 
 /* PLATEAU-HANDOFF:overlay1LoadBuildRecords:start
  * symbol: overlay1LoadBuildRecords
- * score: 20/572 words
+ * score: 6/572 words
  * frame: 0xD8
  * relocations: 110
  * first-mismatch: +0x1F0
- * summary: Rewritten in the overlay idiom with relocation identities: 469 at -52 to 20 at size 0, frame exact. Open: max-store address rematerialised, FP ring, arg order.
+ * summary: Overlay idiom rewrite: 469 at -52 to 6 at size 0, frame exact. Open: the two running-max stores rematerialise their address (lui at) in the target.
  * PLATEAU-HANDOFF:overlay1LoadBuildRecords:end
  */

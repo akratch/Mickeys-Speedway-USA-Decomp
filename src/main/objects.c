@@ -5305,39 +5305,40 @@ void func_8000B3CC(Objects0B3CCObject *object, s32 arg1) {
         }
     }
 }
-/* Workbench verdict: structure-mismatch; 61 differing words (65/65). */
-/* First mismatch: +0x0; target frame is 0x28, candidate frame is 0x30. */
-/* Structural gap: FP register/stack allocation and argument homes differ. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-02 (lane x-sib2) from 61 masked words.  Three edits, each
+ * measured: one local carries the reflection factor and then the time scale,
+ * and with the two pointer locals that makes ten locals, the 0x28 frame and
+ * the shipped homes for the reflected vector, normal and dot; an empty
+ * `if (1) {}` opens a block before the scale, without which the scale
+ * interferes with every caller-saved float web of the one-block body and is
+ * split to memory (+12 bytes); and the dot product adds the z term to the
+ * x+y pair, the only exact association in a 96-cell product over operand
+ * order, association and the negation spelling. */
 void func_8000BB84(s32 arg0, Objects0BB84Vec3 *arg1, Objects0BB84Vec3 *arg2,
                    f32 arg3, Objects0BB84Plane *arg4, Objects0BB84Object *arg5) {
-    f32 normalX;
-    f32 normalY;
-    f32 normalZ;
-    f32 inputX;
-    f32 inputY;
-    f32 inputZ;
-    f32 dot;
-    f32 factor;
+    Objects0BB84Output *output;
+    Objects0BB84Depth *depth;
     f32 reflectedX;
     f32 reflectedY;
     f32 reflectedZ;
     f32 scale;
-    Objects0BB84Output *output;
+    f32 normalX;
+    f32 normalY;
+    f32 normalZ;
+    f32 dot;
 
     output = arg5->unk78;
+    depth = arg5->unk40->unkE0;
     normalX = arg4->x;
     normalY = arg4->y;
     normalZ = arg4->z;
-    inputX = arg2->x;
-    inputY = arg2->y;
-    inputZ = arg2->z;
-    dot = (normalX * inputX) + (normalY * inputY) + (normalZ * inputZ);
-    factor = 2.0f * -dot;
-    reflectedX = inputX + (factor * normalX);
-    reflectedY = inputY + (factor * normalY);
-    reflectedZ = inputZ + (factor * normalZ);
-    scale = (arg3 - arg4->unk1C) * arg5->unk40->unkE0->unk10;
+    dot = (normalZ * arg2->z) + ((normalX * arg2->x) + (normalY * arg2->y));
+    scale = 2.0f * -dot;
+    reflectedX = arg2->x + (scale * normalX);
+    reflectedY = arg2->y + (scale * normalY);
+    reflectedZ = arg2->z + (scale * normalZ);
+    if (1) {}
+    scale = (arg3 - arg4->unk1C) * depth->unk10;
     arg1->x = arg4->unk10 + (scale * reflectedX);
     arg1->y = arg4->unk14 + (scale * reflectedY);
     arg1->z = arg4->unk18 + (scale * reflectedZ);
@@ -5345,9 +5346,6 @@ void func_8000BB84(s32 arg0, Objects0BB84Vec3 *arg1, Objects0BB84Vec3 *arg2,
     output->y = normalY;
     output->z = normalZ;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_8000BB84.s")
-#endif
 void GetRomlistInfo(s32 *romlist, s32 *size, s32 index) {
     *romlist = D_800C94C0[index];
     *size = D_800C94C8[index];
@@ -5381,16 +5379,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 
 
-
-/* PLATEAU-HANDOFF:func_8000BB84:start
- * symbol: func_8000BB84
- * score: 61 differing words
- * frame: 0x30
- * relocations: 0
- * first-mismatch: +0x0
- * summary: Remeasured 2026-09-23: 61 masked at delta 0; frame 0x30 against the target's 0x28, FP register and stack allocation unresolved.
- * PLATEAU-HANDOFF:func_8000BB84:end
- */
 
 /* PLATEAU-HANDOFF:func_8000A39C:start
  * symbol: func_8000A39C

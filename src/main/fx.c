@@ -308,127 +308,84 @@ void func_80047304(FxCone *cone, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
         vertex += 0x10;
     }
 }
+/* PROVENANCE: JFG's fxMakeConeTextureCoords body is assembly-only; this is
+ * written from Mickey's own listing. Natural rewrite (390 words at +780 ->
+ * 33 at size delta 0): plain loops that IDO unrolls itself, segmentCount
+ * reused as the 32-vertex countdown, 102.4f as the TU's own literal (ROM
+ * 0x849E8, still in the anonymous pool), and the edge scales converted
+ * inline. Residual: one ugen ring draw. The t[] base temporary is drawn
+ * ahead of the two (f32) edge conversions in this source's loop preheader
+ * and after them in the target's, so every ring register from there on is
+ * one phase off. */
 #ifdef NON_MATCHING
-/* Mickey-derived draft; JFG's corresponding fxMakeConeTextureCoords body is
- * also assembly-only and supplies no adaptable C source. */
-/* Workbench: structure-mismatch, 390 differing words, first mismatch +0x0. */
-/* Configured shape is 446/251 words with frames -0x108/-0xF8 and 6/6 relocs. */
-/* -Wo,-loopunroll,0 gives 247 words and 178 differences but needs an isolated
- * compile boundary; widening fx.c's flags is not target-supported. */
 void func_800475E8(FxCone *cone, s16 angle) {
-    FxConeTextureInfo *textureInfo;
+    FxConeTextureInfo *texture;
     FxConeVertex *vertex;
     s32 width;
     s32 height;
-    s32 currentAngle;
-    s32 angleStep;
     s32 segmentCount;
+    s32 step;
+    s16 s[20];
+    s16 t[20];
     s32 i;
-    s16 y[20];
-    s16 x[20];
+    s32 currentAngle;
+    f32 sine;
+    f32 cosine;
 
     currentAngle = angle;
-    if (cone != 0) {
-        textureInfo = cone->texture.pointer;
-        if (textureInfo != 0) {
-            width = textureInfo->width * 16;
-            height = textureInfo->height * 16;
-            vertex = (FxConeVertex *) cone->vertices;
-            if (cone->segmentCount == 0) {
-                f32 widthEdge = (f32)(width - 1);
-                f32 scale = D_80083DE8;
-                f32 heightEdge = (f32)(height - 1);
-                i = 0;
-                do {
-                    f32 sine = func_8002A8C0(currentAngle);
-                    f32 cosine = func_8002A8BC(currentAngle);
-
-                    currentAngle += 0x2000;
-                    y[i + 1] = (s32)(scale * sine) + width;
-                    x[i + 1] = (s32)(scale * cosine) + height;
-                    y[i + 9] = (s32)(widthEdge * sine) + width;
-                    x[i + 9] = (s32)(heightEdge * cosine) + height;
-                    i++;
-                } while (i != 8);
-
-                i = 31;
-                do {
-                    vertex->s0 = y[vertex->index0];
-                    vertex->t0 = x[vertex->index0];
-                    vertex->s1 = y[vertex->index1];
-                    vertex->t1 = x[vertex->index1];
-                    vertex->s2 = y[vertex->index2];
-                    vertex->t2 = x[vertex->index2];
-                    vertex++;
-                    i--;
-                } while (i != 0);
-                segmentCount = 8;
-                angleStep = 0x2000;
-            } else {
-                segmentCount = cone->segmentCount;
-                angleStep = 0x10000 / segmentCount;
-            }
-
-            {
-                s16 *yIt = y;
-                s16 *xIt = x;
-                s16 *xEnd = &x[segmentCount + 1];
-
-                if (segmentCount >= 0) {
-                    do {
-                        *yIt = (s32)(func_8002A8C0(angle) *
-                                     (f32)(width - 1)) + width;
-                        *xIt = (s32)(func_8002A8BC(angle) *
-                                     (f32)(height - 1)) + height;
-                        angle += angleStep;
-                        xIt++;
-                        yIt++;
-                    } while (xIt != xEnd);
-                }
-            }
-
-            i = 0;
-            if (segmentCount > 0) {
-                while (i != (segmentCount & 3)) {
-                    vertex->s0 = y[i];
-                    vertex->t0 = x[i];
-                    vertex->s1 = y[i + 1];
-                    vertex->t1 = x[i + 1];
-                    vertex->s2 = width;
-                    vertex->t2 = height;
-                    vertex++;
-                    i++;
-                }
-                while (i != segmentCount) {
-                    vertex[0].s0 = y[i + 0];
-                    vertex[0].t0 = x[i + 0];
-                    vertex[0].s1 = y[i + 1];
-                    vertex[0].t1 = x[i + 1];
-                    vertex[0].s2 = width;
-                    vertex[0].t2 = height;
-                    vertex[1].s0 = y[i + 1];
-                    vertex[1].t0 = x[i + 1];
-                    vertex[1].s1 = y[i + 2];
-                    vertex[1].t1 = x[i + 2];
-                    vertex[1].s2 = width;
-                    vertex[1].t2 = height;
-                    vertex[2].s0 = y[i + 2];
-                    vertex[2].t0 = x[i + 2];
-                    vertex[2].s1 = y[i + 3];
-                    vertex[2].t1 = x[i + 3];
-                    vertex[2].s2 = width;
-                    vertex[2].t2 = height;
-                    vertex[3].s0 = y[i + 3];
-                    vertex[3].t0 = x[i + 3];
-                    vertex[3].s1 = y[i + 4];
-                    vertex[3].t1 = x[i + 4];
-                    vertex[3].s2 = width;
-                    vertex[3].t2 = height;
-                    vertex += 4;
-                    i += 4;
-                }
-            }
+    if (cone == NULL) {
+        return;
+    }
+    texture = cone->texture.pointer;
+    if (texture == NULL) {
+        return;
+    }
+    width = texture->width * 16;
+    height = texture->height * 16;
+    vertex = (FxConeVertex *) cone->vertices;
+    if (cone->segmentCount == 0) {
+        for (i = 0; i != 8; i++) {
+            sine = func_8002A8C0(currentAngle);
+            cosine = func_8002A8BC(currentAngle);
+            s[i + 1] = (s32) (102.4f * sine) + width;
+            t[i + 1] = (s32) (102.4f * cosine) + height;
+            s[i + 9] = (s32) ((f32) (width - 1) * sine) + width;
+            t[i + 9] = (s32) ((f32) (height - 1) * cosine) + height;
+            currentAngle += 0x2000;
         }
+        segmentCount = 32;
+        while (segmentCount--) {
+            vertex->s0 = s[vertex->index0];
+            vertex->t0 = t[vertex->index0];
+            vertex->s1 = s[vertex->index1];
+            vertex->t1 = t[vertex->index1];
+            vertex->s2 = s[vertex->index2];
+            vertex->t2 = t[vertex->index2];
+            vertex++;
+        }
+        segmentCount = 8;
+        step = 0x2000;
+    } else {
+        segmentCount = cone->segmentCount;
+        step = 0x10000 / segmentCount;
+    }
+    i = 0;
+    if (segmentCount >= 0) {
+        do {
+            s[i] = (s32) (func_8002A8C0(angle) * (f32) (width - 1)) + width;
+            t[i] = (s32) (func_8002A8BC(angle) * (f32) (height - 1)) + height;
+            angle += step;
+            i++;
+        } while (i <= segmentCount);
+    }
+    for (i = 0; i < segmentCount; i++) {
+        vertex->s0 = s[i];
+        vertex->t0 = t[i];
+        vertex->s1 = s[i + 1];
+        vertex->t1 = t[i + 1];
+        vertex->s2 = width;
+        vertex->t2 = height;
+        vertex++;
     }
 }
 #else
@@ -2179,11 +2136,11 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:func_800475E8:start
  * symbol: func_800475E8
- * score: 390 differing words
- * frame: 0x108
+ * score: 33/251 words
+ * frame: 0xF8
  * relocations: 6
- * first-mismatch: 0x0
- * summary: JFG efd5abb remains assembly-only; zero source attempts. Need new vertex-loop source or proved build boundary evidence.
+ * first-mismatch: +0x10
+ * summary: 390 at +780 to 33 at delta 0 by natural rewrite. Residual: one ring draw, the t base temp before the two f32 edge conversions.
  * PLATEAU-HANDOFF:func_800475E8:end
  */
 

@@ -107,4 +107,42 @@ Attempt 3, 0x94 length. shape_product.py --jobs 2, one axis. Cell 0 is D_1D8C * 
 Stop. Three attempts, and the dispatch cap of one owner consolidation plus two insertion-pair spellings is spent. Attempt 2 is the only better residual. No exact promotion. The kept object still multiplies by 148 for the allocation size and for the large-record end pointer; those sites were not given a second spelling after the address difference proved flat.
 
 Tool gaps: insertion_pairs was not re-run on the adopted body, so the one-sided map above is the pre-edit body. shape_product reports the floor and not which multiply survived. fast_score does not print frame or relocation count; those were taken from the kept object. No ROM verify, because size_delta is not 0.
+
+### 2026-10-02 (lane x-o058), wrap-up: the six words that remain
+
+Exactly two sites of three words each, nothing else differs:
+
+- +0x1F0, +0x1F4, +0x1F8: the D_1D80 running-maximum store in the first
+  record walk. The target branches with a plain beqz, fills its delay slot
+  with the high half of D_1D80 and stores through that; ours stores through
+  the held address register (s6), so as1 makes the branch likely and copies
+  the size load into the slot.
+- +0x55C, +0x560, +0x564: the same shape for the D_1D8C store in the
+  large-record walk (held register a1).
+
+In both builds the loads of those globals use the held register; only the
+conditional store differs. Measured flat at 6 (the store still goes through
+the register): store through `*(s32 *)&g`, `*(u32 *)&g`, `*(void **)&g`,
+`(&g)[0]`, a volatile-qualified lvalue on either side, a do/while(0) or
+if (1) region round the store, compare operand orders, `continue` forms of
+both walks, a pointer local taken from `&g` for the compare (three
+declaration positions), chained or same-line zeroing of the three counters,
+and `+= 1` for the count. Worse: a value local (9 to 28), ternary or
+self-assign forms (450 at +8), a second extern name or array or struct alias
+for the store (233 to 460, uopt then folds the loads), `p1:w378=s` and
+`p1:w379=s` forces on the two address webs (both accepted; every reference
+rematerialises, 552 at +16 and 554 at +4).
+
+Records on our build (instrumented uopt, proc 5, identity gate passed): the
+address webs are 378 (D_1D80, s6, save 2.19, nocs 16, totalsave 35) and 379
+(D_1D8C, a1, save 2.63, nocs 8); both are decision=color and both list the
+store block as a referenced block.
+
+Next thing to try: matched `overlay1AssignRecordIndex` in overlay_001_tail.c
+ships this exact D_1D8C update with a direct store (`recordIndex = &D_1D8C;
+newIndex = record->index + 1; next = newIndex; if (*recordIndex < next)
+D_1D8C = next;`). Port that statement group verbatim, its two value locals
+included, into both walks (re-solving the frame, which gains cells), and read
+webs 378/379 afterwards: the pointer read alone did not change the store
+here, so the two distinct value locals are the untested part.
 <!-- plateau-handoff:overlay1LoadBuildRecords:end -->

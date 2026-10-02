@@ -8099,16 +8099,16 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o099/overlay99ApplySegment.c.o",
       "offset": 672,
       "overlay": 99,
       "size": 920,
       "source": "src/overlays/o099/overlay99ApplySegment.c",
       "tools": [
-        "trim_elf_section.py",
-        "objcopy"
+        "externalize_elf_section.py",
+        "trim_elf_section.py"
       ]
     },
     {
@@ -9354,7 +9354,7 @@
       "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 381708,
+    "matched_c_bytes_with_postprocess": 382628,
     "objects_with_postprocess": 644
   }
 }

@@ -4471,11 +4471,6 @@ overlay99SpawnEntryReloc = 0xf0000000;
 overlay99SqrtReloc = 0xf0000000;
 
 /* overlay 99: overlay99ApplySegment.c.o */
-D_9C = 0x0000009c;
-D_A0 = 0x000000a0;
-D_A8 = 0x000000a8;
-
-/* overlay 99: overlay99BuildHeightGrid.c.o */
 gOverlay99Arg4 = 0x000000a4;
 gOverlay99Arg5 = 0x000000a8;
 gOverlay99CurrentGrid = 0x00000000;
@@ -4483,9 +4478,13 @@ gOverlay99GridHeight = 0x00000098;
 gOverlay99GridWidth = 0x00000094;
 gOverlay99Grids = 0x00000000;
 gOverlay99HeightMinusOne = 0x000000a0;
+gOverlay99WidthMinusOne = 0x0000009c;
+overlay99AngleWavePhaseReloc = 0xf0000000;
+overlay99AngleWaveReloc = 0xf0000000;
+
+/* overlay 99: overlay99BuildHeightGrid.c.o */
 gOverlay99SegmentCount = 0x00000090;
 gOverlay99Segments = 0x00000000;
-gOverlay99WidthMinusOne = 0x0000009c;
 
 /* overlay 99: overlay99RenderSortedEntries.c.o */
 gOverlay99IntensityScale = 0x00000008;
@@ -4675,6 +4674,7 @@ overlay101DrawSlotReloc = 0xf0000000;
 D_118 = 0x00000118;
 D_1D0 = 0x000001d0;
 D_8C = 0x0000008c;
+D_A8 = 0x000000a8;
 D_C64 = 0x00000c64;
 D_E0 = 0x000000e0;
 D_INPUT = 0x00000000;

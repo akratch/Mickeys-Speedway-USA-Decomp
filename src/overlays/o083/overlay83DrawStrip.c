@@ -78,6 +78,6 @@ void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
  * frame: frameless
  * relocations: 2
  * first-mismatch: +0x4
- * summary: hypothesis=clobber a0 after the VERTEX increment without an extra word; spellings=macro assign inert at 69, L104 redefine 70 at +4, in-place cast 82 at +20; stall=a0 stays live and all three were reverted
+ * summary: 2026-10-02 stall stays 69/77 delta 0 first +0x4. Saved pointer is copy-propagated (inert). Shift-length and inlined count*2+2 stop the doubled*10+28 fold but land at 74 and delta -4. Pointer or-zero grows to delta +4. vertexCount or-zero and statement-ordered env colour are inert on that short shape.
  * PLATEAU-HANDOFF:overlay83DrawStrip:end
  */

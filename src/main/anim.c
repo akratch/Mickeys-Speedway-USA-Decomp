@@ -2187,10 +2187,15 @@ void func_800573C8(HitOverlapState *state, HitOverlapVolume *other,
  * directly, so `firstKind` is not one web with the pair-loop read and the
  * kind chain takes a0/v1 as the target does (528). The min-fraction loop
  * reads through `selectedPair = &D_800D7560[i]`, so the unrolled copies
- * re-load the fraction they assign, as the target's do (522). Left: the
- * target hoists the kind constant 2 and keeps the axis loops' counter in
- * a saved register (s2); pairIndex stays in a1 from the while head; the
- * displacement loop re-reads movingCount each pass. */
+ * re-load the fraction they assign, as the target's do (522). The bounds
+ * test's kind literal is `2U` and both bounds axis loops compare with `3U`
+ * (lane x-anim): a literal's type is part of its IR identity (L151), so
+ * these uses become constant webs of their own and the first loop's
+ * saved-register ladder (s4, s5, s7) lands as the target's (438). Left:
+ * the target keeps one 2 web in a2 for all three first-loop kind tests,
+ * 3 in v1 and 12 in s3, rematerializing 2 and 3 after calls; the axis
+ * loops' counter is a saved register (s2); pairIndex stays in a1 from
+ * the while head; the displacement loop re-reads movingCount each pass. */
 void func_80053868(s32 updateRate) {
     f32 remainingTime;
     f32 fraction;
@@ -2257,9 +2262,9 @@ void func_80053868(s32 updateRate) {
                     }
                     firstShape->position[1] += firstShape->unk54;
                 }
-                if (firstShape->unk9 == 2) {
+                if (firstShape->unk9 == 2U) {
                     extent = firstShape->unk58 + 5.0f;
-                    for (axis = 0; axis < 3; axis++) {
+                    for (axis = 0; axis < 3U; axis++) {
                         low = firstShape->previous[axis];
                         high = firstShape->position[axis];
                         if (low < high) {
@@ -2313,7 +2318,7 @@ void func_80053868(s32 updateRate) {
             firstShape->displacement[1] = firstShape->position[1] - firstShape->previous[1];
             firstShape->displacement[2] = firstShape->position[2] - firstShape->previous[2];
             extent = firstShape->unk58 + 5.0f;
-            for (axis = 0; axis < 3; axis++) {
+            for (axis = 0; axis < 3U; axis++) {
                 low = firstShape->previous[axis];
                 high = firstShape->position[axis];
                 if (low < high) {
@@ -3959,11 +3964,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80053868:start
  * symbol: func_80053868
- * score: 522 differing words
+ * score: 438 differing words
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: 710 to 522: homes exact, head reads firstObject->unk48, firstObject in every moving loop, direct result-kind tests, pair pointer in min loop. Left: hoisted 2, s2 axis
+ * summary: Literal types as IR identity: bounds kind test 2U and both bounds axis loops 3U split the constant webs; first-loop s4/s5/s7 now the target (522 to 438).
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

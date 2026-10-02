@@ -421,16 +421,18 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o004/overlay_004.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xCAC
 O8_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o008/overlay_008.c.o
 $(O8_OBJ): config/normalizations/overlay8P0058.rebind.spec
+$(O8_OBJ): config/normalizations/overlay8P1294.rebind.spec
 $(O8_OBJ): config/normalizations/overlay8UpdateChannels.rebind.spec
 $(O8_OBJ): config/normalizations/overlay8P2640.rebind.spec
 $(O8_OBJ): config/normalizations/overlay8P4CF0.rebind.spec
-# The object's .rodata is four literal pools in function order: the +0x0058
-# update's seven floats (retail 0xB0 on), the +0x2640 emitter's two (retail
-# 0x198, 0x19C), the +0x3018 channel update's (retail 0x1BC on), then the
-# +0x4CF0 surface update's seven (retail 0x290 on).  Each pool is rebound to
-# an absolute anchor and keeps its section-relative addend, so each anchor is
-# its retail offset less the bytes that precede it in the object: 0x198 less
-# 0x1C, 0x1BC less 0x24, 0x290 less 0x38.
+# The object's .rodata is five literal pools in function order: the +0x0058
+# update's seven floats (retail 0xB0 on), the +0x1294 update's forty (one
+# entry per use, retail 0xF8 through 0x194), the +0x2640 emitter's two
+# (retail 0x198, 0x19C), the +0x3018 channel update's (retail 0x1BC on), then
+# the +0x4CF0 surface update's (retail 0x290 on).  Each pool is rebound to an
+# absolute anchor and keeps its section-relative addend, so each anchor is its
+# retail offset less the bytes that precede it in the object: 0xF8 less 0x1C,
+# 0x198 less 0xBC, 0x1BC less 0xC4, 0x290 less 0xD8.
 # No -Wo,-loopunroll,0 (removed 2026-10-02).  It was added for the +0x34A0
 # body's angle loop and was byte-inert on every function of this unit by then;
 # the +0x0058 body's four selector reads are a plain for loop that the
@@ -533,17 +535,39 @@ $(O8_OBJ): POSTPROCESS = \
 		overlay8EmitChannel=func_8001F320_o008Reloc $@ && \
 	$(OBJCOPY) --redefine-sym \
 		func_overlay_008_F0003018_1860D70=overlay8UpdateChannels $@ && \
+	$(OBJCOPY) --redefine-sym \
+		o8P1294IndexedReloc=func_overlay_008_F0000000_185DD58 $@ && \
+	$(OBJCOPY) --redefine-sym \
+		o8P1294PhaseReloc=func_overlay_008_F0000000_185DD58 $@ && \
+	$(OBJCOPY) --redefine-sym \
+		controlSetRumble=controlSetRumble_o008Reloc $@ && \
+	$(OBJCOPY) --redefine-sym \
+		func_800299E8=func_800299E8_o008Reloc $@ && \
+	$(OBJCOPY) --redefine-sym \
+		func_800031E8=func_800031E8_o008Reloc $@ && \
+	$(OBJCOPY) --redefine-sym \
+		func_80002FE0=func_80002FE0_o008Reloc $@ && \
+	$(OBJCOPY) --redefine-sym \
+		func_800031C0=func_800031C0_o008Reloc $@ && \
+	$(OBJCOPY) --redefine-sym \
+		func_8002A204=func_8002A204_o008Reloc $@ && \
+	$(OBJCOPY) --redefine-sym \
+		mathDiffAngle=mathDiffAngle_o008Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x5128 && \
 	$(OBJCOPY) --add-symbol \
 		gOverlay8P0058Constants=0xB0,global $@ && \
 	$(OBJCOPY) --add-symbol \
-		gOverlay8P2640Constants=0x17C,global $@ && \
+		gOverlay8P1294Constants=0xDC,global $@ && \
 	$(OBJCOPY) --add-symbol \
-		gOverlay8UpdateChannelConstants=0x198,global $@ && \
+		gOverlay8P2640Constants=0xDC,global $@ && \
 	$(OBJCOPY) --add-symbol \
-		gOverlay8P4CF0Constants=0x258,global $@ && \
+		gOverlay8UpdateChannelConstants=0xF8,global $@ && \
+	$(OBJCOPY) --add-symbol \
+		gOverlay8P4CF0Constants=0x1B8,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay8P0058.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/overlay8P1294.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay8P2640.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
@@ -551,7 +575,7 @@ $(O8_OBJ): POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay8P4CF0.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:ceb22277ab824cbb76d3e0c5de3143e2e0f1248afc11a3d1667901b3e93b76de
+		sha256:83eab06de7958c29521dd38565ece7d6210be9be772d33f0c9a92473f3e43c51
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \

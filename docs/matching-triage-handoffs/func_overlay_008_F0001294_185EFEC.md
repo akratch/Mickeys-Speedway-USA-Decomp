@@ -2,13 +2,45 @@
 ### `func_overlay_008_F0001294_185EFEC` plateau handoff
 
 - source: `src/overlays/o008/overlay_008.c`
-- score: 3 differing words
+- score: 0/1259 words, promoted
 - frame: 0xB0
 - relocations: 137
-- first mismatch: +0x20C
-- summary: Field-direct factor test with clamp and use in two regions, unkFE through cooldown with the shift in a region: 7 to 3; left: the count's first read, v0 for v1.
+- first mismatch: none
+- summary: Matched. Count in index with a dead store to the update parameter (kills the conversion's operand), field-direct factor test with its clamp and use in two regions, unkFE through cooldown with the shift in a region.
 
-Summary before this remeasure: No driftDirection, stick read past the clamp copy, s16 modeFlags; left: v0 for w114, unkFE vs shift temp, one compare order.
+Summary before this remeasure: Field-direct factor test with clamp and use in two regions, unkFE through cooldown with the shift in a region: 7 to 3; left: the count's first read, v0 for v1.
+
+## 2026-10-02 lane x-near: 3 to 0 and promoted
+
+The last three words (+0x20C, the update count's first read in v0 for v1)
+closed on the operand side of the forwarding. The count symbol is `index`
+(the one symbol web coloured v1, decided fifth with v0 denied by the
+entry call's result), and `update = 0.0f` written right after
+`index = (s32) update` redefines the conversion's operand, so uopt cannot
+forward `(s32) update` into the subtraction and the test as a one-block
+temporary; the trunc is written straight into index's register and the
+store is removed as redundant (size delta 0). This is the o015 s2-b kill
+(count or-equals 0) applied to a float parameter. Inert at 3, all delta 0:
+kills of the RESULT variable (or-equals, xor-equals, and-equals on index or
+updateCount, before or after the conversion), the cast round-trip
+`(s32)(u32)` on either use or on the conversion itself, literal types (1u,
+0u), float self-operations on the operand (`update *= 1.0f`, `+= 0.0f`,
+`update = update`), and the same dead store with updateCount or angle as the
+count symbol; the address-taken or-equals on the home shatters the
+schedule (+12, 1114). The partial uoptlist (uopt aborts in ecvt after this
+procedure's copy propagation) was not needed.
+
+The score is 0 masked with 53 relocation-spelling words, and the promotion
+sequence verified: the two same-module calls are SYMBOL records and go
+through `o8P1294IndexedReloc` / `o8P1294PhaseReloc` placeholders renamed
+to the module base; the seven resident callees take `*_o008Reloc` renames
+in POSTPROCESS; the forty literal-pool references (one entry per use, clamp
+pairs included) rebind to `gOverlay8P1294Constants = 0xDC` (retail 0xF8
+less the 0x1C bytes of the +0x0058 pool, measured as a constant 0xDC shift
+over all forty sites) and the three later pool anchors move down by the
+0xA0 bytes of this pool; `gmake verify` OK, `check-overlay-syms` up to
+date, promotion proof PASS (1259 words, frame 0xB0, 137/137 relocations,
+static-plus-runtime-table-and-linked-rom).
 
 ## 2026-10-02 lane x-near: 7 to 3, +0xD8 and +0xDBC closed from the records
 

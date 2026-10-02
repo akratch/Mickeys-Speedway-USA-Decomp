@@ -102,6 +102,14 @@ a target at 80%+ residual, port the counterpart's natural shape before the
 checklist; the tool also lists the unnamed callees whose naming would
 sharpen the match. A hit is a lead, read both bodies, and record
 `PROVENANCE` at the point of use.
+`tools/sibling_scan.py [--symbol NAME] [--min 0.45]` ranks MATCHED functions
+as sibling shapes for every unmatched target, by opcode-sequence similarity of
+the target listing to what our C compiled to (two seconds for the queue).
+Run it before writing a first draft: on 2026-10-02 the sibling-copy lever
+closed o051 F00000D0 (1,928 B of pure GLOBAL_ASM), o073 F0000D70, o002
+F0001364 and func_8000F198, each from a lead of 0.48-0.78. A lead is not
+proof; o051's scan named o055 and the relocation records named the real
+sibling, o050 F0000334 (the only other module calling the same o059 functions).
 `tools/shape_lint.py <symbol>` lists the candidate's inherited artefacts
 against the checklist below, each with the axis name to give it in a product
 candidate; run it before writing the first cell. `tools/score_symbol.py

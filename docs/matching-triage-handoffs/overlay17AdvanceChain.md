@@ -2,11 +2,11 @@
 ### `overlay17AdvanceChain` plateau handoff
 
 - source: `src/overlays/o017/overlay17AdvanceChain.c`
-- score: 49/147 words
+- score: 47/147 words
 - frame: 0x70
 - relocations: 1
 - first mismatch: +0x18
-- summary: Exhaustive colour landscape: only web 52 reaches 47 under force; indexed-copy forms regressed structurally, so the source cursor remains guarded.
+- summary: Vertex-indexed buffers, one shared loop counter: 49 to 47 unforced. Open: copy count needs a shift expansion into v0, not the t2 constant.
 
 Fresh configured evidence on 2026-09-04 re-proves the owned overlay-17
 `+0x668..+0x8B4` range at 147 instructions, frame `0x70`, and 96/147
@@ -118,4 +118,37 @@ canonical, with no new matching credit.
   buffer in a0 over the chain parameter. The scaling constant 10 is held in a
   register for two multiplies (source and destination offsets) while the copy
   count is shift-and-add.
+
+#### 2026-10-02, lane x-ovlb: natural indexing, 49 -> 47 unforced
+
+The candidate now indexes the buffers as arrays of a 10-byte vertex,
+`&buffers[old][(count - 1U) << 1]` and `&buffers[new][count << 1]`. It
+copies with `while (n--) *--dst = *--src;` and uses the same `n` for the
+fade loop, so both loops get the target's v0 counter and v1 copy. Aligned
+buckets went from 110/21/1/18 to 125/8/0/16 (exact/naming/immediate/
+structural). 47 is the number the September exhaustive landscape reached
+only by forcing web 52; it now needs no force.
+
+The decision variable is the copy count. The target keeps `count - 1` as a
+coloured web (t0), uses it for the source pair index, and expands
+`* 10` into the counter register (v0) with shifts, while the two buffer
+offsets share the constant 10 as a register (t2). What was measured, at
+size delta 0 unless noted:
+
+- `(count - 1) * 10`, with the subtraction in signed, unsigned or cast
+  forms, through a separate local, through `count--`, or placed before or
+  after the pointer setup. uopt either distributes it to `count * 10 - 10`
+  (135 at -4) or multiplies it with the shared t2 register (47 to 123).
+- `* 5 << 1`, `* 5 * 2`, `(x << 2) + x` written out, and sizeof-derived
+  spellings. The *5 forms are expanded but distributed (80, 129). The
+  explicit shifts land in ring temps, not the counter (64 to 117).
+- Byte-offset arithmetic for the two pointers, as in the old candidate.
+  It is no better (80 to 135).
+- A 128-cell type product over the source index, destination index and
+  copy-count spellings. Floor 47; the six best cells all keep the source
+  index unsigned.
+
+Next: get the decision records for the copy-count web. The question is
+whether any IR shape leaves a `mpy` by an immediate 10 for ugen to expand,
+rather than a use of the constant web.
 <!-- plateau-handoff:overlay17AdvanceChain:end -->

@@ -113,6 +113,9 @@ run_gate gmake check-docs
 run_gate gmake check-scoreboard
 run_gate gmake check-overlay-syms
 run_gate gmake cleanroom
+# Lane commits pass check-tooling one at a time; a property of the combined
+# tree (the live queue's size, for one) only shows up here.
+run_gate gmake check-tooling
 if ! git diff --quiet || ! git diff --cached --quiet; then
   git add -A README.md docs/nm-ranking.md docs/matching-triage-handoffs config overlay_undefined_syms.us.txt mickey.us.yaml 2>/dev/null || true
   git diff --cached --quiet || git commit -q -m "Regenerate derived artifacts after batch integration"

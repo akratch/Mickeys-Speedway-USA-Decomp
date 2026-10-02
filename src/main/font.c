@@ -855,151 +855,132 @@ void func_8004C5A4(char *input, char *output, s32 number) {
     } while (currentChar);
 }
 
-/* 105 masked words at size delta 0, exact 0x70 frame and slot ladder, first
- * +0x0 (was 106 at delta -4). Track B, 2026-09-23:
- *   - the parameter is u8: the target stores the incoming a0 to its home
- *     and masks it, which is what a narrow parameter does. That word was the
- *     -4 (138 at delta 0; the caller func_8004B1DC moves 465 -> 451).
- *   - the ROM offset is computed before the header copy, as in the target.
- *   - the copy has no tmp carrier (`*destination++ = *source++`) and keeps
- *     the OR-zero on copyIndex that stops the unroller: the rolled sltiu
- *     loop with the load in a ring temp, 117.
- *   - declarations put eight scalars above savedHeader and header right
- *     below it, result four slots further: the target's homes 0x40, 0x3C
- *     and 0x2C, 113. Order is otherwise inert (a 120-swap climb found
- *     nothing; this procedure calls, so only save ratios decide colour).
- *   - the found branch returns early, which puts the v0 copy in each path
- *     as the target has it, 110.
- *   - destination, copyIndex, source initialised in that order, which is
- *     the web order that gives the loop v0/v1/a0, 106; on one line, 105.
- * Left: the characterIndex copy lands at entry where the target splits it
- * at the fill block (+0x24 against +0x108), and the search-loop webs take
- * the caller-saved colours in a different order (index, runLength,
- * blockCount, fontIndex, entries). */
-#ifdef NON_MATCHING
+/* The 16-byte header at the front of each glyph's cache allocation. */
+typedef struct FontGlyphHeader {
+    u16 textureOffset;
+    u16 textureOffset2;
+    u8 left;
+    u8 top;
+    u8 right;
+    u8 bottom;
+    u8 advance;
+    u8 pad9[7];
+} FontGlyphHeader;
+
 /*
  * PROVENANCE -- source organization was cross-checked against JFG's
- * permitted published func_80071B08 cache allocator. Mickey's own m2c
- * draft, constants, structure offsets, and loader call determine this body.
- */
+ * permitted published func_80071B08 cache allocator. Mickey's constants,
+ * structure offsets, and loader call come from the ROM.
+ *
+ * Matched 2026-10-02 (lane w2-audfont), 105 masked words -> 0 at size delta
+ * 0, by rewriting the inherited shape from the listing:
+ *   - both searches walk one `entry` cursor reset from the D_800D663C global
+ *     (no `entries` local), and the free-run search is a `while` whose guard
+ *     uopt folds to the target's `blockCount != 0` test;
+ *   - the glyph header is a struct (header->textureOffset etc.), which puts
+ *     the allocation offset first in the two textureOffset adds;
+ *   - the save loop keeps the OR-zero increment (the only spelling found
+ *     that leaves k a non-basic induction variable: rolled, `sltiu`);
+ *   - dst/k/src tie on save (31/2), so globalcolor takes them in web order,
+ *     which is first reference in the source. Initialising `dst` at its
+ *     declaration numbers it first (v0) while `k = 0` is still emitted first
+ *     in the preheader, which is the target's schedule;
+ *   - `next` at function scope and two unused locals after `result` give the
+ *     0x70 frame with the target's homes (L99): header 0x3C, result 0x2C,
+ *     savedHeader 0x40. */
 FontGlyphData *func_8004C690(u8 character) {
     FontSpacingData *font;
-    FontGlyphData *entries;
     FontGlyphData *entry;
-    s32 *source;
-    s32 *destination;
-    s32 index;
+    s32 i;
     s32 runLength;
-    s32 remaining;
-    s32 savedHeader[4];
-    s32 *header;
     u32 blockCount;
-    u32 copyIndex;
     s32 fontIndex;
-    FontGlyphData *result;
-    s32 characterIndex;
+    s32 *src;
+    s32 *dst = NULL;
+    s32 savedHeader[4];
+    FontGlyphHeader *header;
     s32 offset;
+    u32 k;
+    u8 next;
+    FontGlyphData *result;
+    s32 unused1;
+    s32 unused2;
 
-    characterIndex = character & 0xFF;
     fontIndex = D_800D60E0;
-    result = NULL;
-    index = 0;
     font = &D_800D60E4[fontIndex];
-    entries = D_800D663C;
-    entry = entries;
-    do {
-        index++;
-        if (fontIndex == entry->font && characterIndex == entry->character) {
+    result = NULL;
+    entry = D_800D663C;
+    for (i = 0; i < 256 && result == NULL; i++) {
+        if (entry->font == fontIndex && entry->character == character) {
             result = entry;
         }
         entry++;
-    } while (index < 0x100 && result == NULL);
-
-    entry = entries;
+    }
     if (result != NULL) {
-        u8 nextLength;
-
         entry = result;
         do {
-            nextLength = entry->chainLength;
+            next = entry->chainLength;
             entry->state = 2;
             entry++;
-        } while (nextLength != 0);
+        } while (next != 0);
         return result;
-    } else {
-        index = 0;
-        runLength = 0;
-        blockCount = ((u32) font->textureSize + 0xEF) >> 8;
-        if (blockCount != 0) {
-            do {
-                index++;
-                if (entry->state == 0) {
-                    if (runLength == 0) {
-                        result = entry;
-                    }
-                    runLength++;
-                } else {
-                    runLength = 0;
-                }
-                entry++;
-            } while (index < 0x100 && runLength != blockCount);
-        }
-
-        entry = result;
-        if (runLength == blockCount) {
-            remaining = blockCount - 1;
-            if (remaining >= 0) {
-                do {
-                    blockCount = entry->chainLength;
-                    entry->chainLength = remaining;
-                    remaining--;
-                    entry->font = fontIndex;
-                    entry->character = characterIndex;
-                    entry->state = 2;
-                    entry++;
-                } while (remaining >= 0);
+    }
+    entry = D_800D663C;
+    i = 0;
+    runLength = 0;
+    blockCount = (u32)(font->textureSize + 0xEF) >> 8;
+    while (i < 256 && runLength != blockCount) {
+        i++;
+        if (entry->state == 0) {
+            if (runLength == 0) {
+                result = entry;
             }
-            if (blockCount != 0) {
-                do {
-                    blockCount = entry->chainLength;
-                    entry->font = 0xFF;
-                    entry->chainLength = 0;
-                    entry++;
-                } while (blockCount != 0);
-            }
-
-            offset = font->romOffset + (characterIndex * font->textureSize);
-            header = (s32 *)
-                ((D_800D6638 + result->allocationOffset) - 0x10);
-            destination = savedHeader; copyIndex = 0; source = header;
-            do {
-                copyIndex = (copyIndex | 0) + 1;
-                *destination++ = *source++;
-            } while (copyIndex < 4U);
-
-            piRomLoadSection(0x39, header, offset, font->textureSize);
-            result->textureOffset =
-                (result->allocationOffset + ((u16 *) header)[0]) - 0x10;
-            result->textureOffset2 =
-                (result->allocationOffset + ((u16 *) header)[1]) - 0x10;
-            result->left = ((u8 *) header)[4];
-            result->top = ((u8 *) header)[5];
-            result->right = ((u8 *) header)[6];
-            result->bottom = ((u8 *) header)[7];
-            result->advance = ((u8 *) header)[8];
-            header[0] = savedHeader[0];
-            header[1] = savedHeader[1];
-            header[2] = savedHeader[2];
-            header[3] = savedHeader[3];
+            runLength++;
         } else {
-            result = NULL;
+            runLength = 0;
         }
+        entry++;
+    }
+    if (runLength == blockCount) {
+        entry = result;
+        for (i = blockCount - 1; i >= 0; i--) {
+            blockCount = entry->chainLength;
+            entry->chainLength = i;
+            entry->font = fontIndex;
+            entry->character = character;
+            entry->state = 2;
+            entry++;
+        }
+        while (blockCount != 0) {
+            blockCount = entry->chainLength;
+            entry->font = 0xFF;
+            entry->chainLength = 0;
+            entry++;
+        }
+        header = (FontGlyphHeader *)((u8 *)D_800D6638 + result->allocationOffset - 0x10);
+        offset = font->romOffset + character * font->textureSize;
+        k = 0; dst = savedHeader; src = (s32 *)header;
+        do {
+            k = (k | 0) + 1;
+            *dst++ = *src++;
+        } while (k < 4);
+        piRomLoadSection(0x39, header, offset, font->textureSize);
+        result->textureOffset = (result->allocationOffset + header->textureOffset) - 0x10;
+        result->textureOffset2 = (result->allocationOffset + header->textureOffset2) - 0x10;
+        result->left = header->left;
+        result->top = header->top;
+        result->right = header->right;
+        result->bottom = header->bottom;
+        result->advance = header->advance;
+        ((s32 *)header)[0] = savedHeader[0];
+        ((s32 *)header)[1] = savedHeader[1];
+        ((s32 *)header)[2] = savedHeader[2];
+        ((s32 *)header)[3] = savedHeader[3];
+    } else {
+        result = NULL;
     }
     return result;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/font/func_8004C690.s")
-#endif
 void func_8004C8D8(FontTextureHeader *texture, s32 unused) {
     Gfx *displayList;
     Gfx *state;
@@ -1254,14 +1235,4 @@ u8 func_8004D5C0(s32 font) {
  * first-mismatch: +0x4
  * summary: hypothesis=postincrement packet cursor instead of a delayed dList increment; spellings=empty if(1) and wrapped if(1) left the fold at delta -44, Gfx *packet = dList++ kept; stall=size delta is 0 at 452 masked words and the mechanism is display-list only
  * PLATEAU-HANDOFF:func_8004B1DC:end
- */
-
-/* PLATEAU-HANDOFF:func_8004C690:start
- * symbol: func_8004C690
- * score: 105/146 words
- * frame: 0x70
- * relocations: 9
- * first-mismatch: +0x0
- * summary: hypothesis=search-prologue statement order index, runLength, blockCount, fontIndex, entries; spellings=separate hoist 114, comma hoist 114, early-zero or-read 145 at delta +8; stall=none beat 105 at delta 0 and the body was reverted
- * PLATEAU-HANDOFF:func_8004C690:end
  */

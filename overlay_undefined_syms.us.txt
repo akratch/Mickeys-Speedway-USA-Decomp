@@ -3529,11 +3529,37 @@ overlay61SelectModeReloc = 0xf0000000;
 overlay61SetupReloc = 0xf0000000;
 
 /* overlay 61: func_overlay_061_F0000B84_18BFF4C.c.o */
-D_150 = 0x00000150;
-D_15C = 0x0000015c;
-D_5D0 = 0x000005d0;
-D_94 = 0x00000094;
-D_9C = 0x0000009c;
+amSndPlay_o061Reloc = 0xf0000000;
+func_8002F618_o061Reloc = 0xf0000000;
+func_800367A4_o061Reloc = 0xf0000000;
+gOverlay61Animation0 = 0x00000028;
+gOverlay61Animation1 = 0x00000050;
+gOverlay61DirExts = 0x00000040;
+gOverlay61DirNames = 0x00000000;
+gOverlay61DirSizes = 0x00000080;
+gOverlay61DirTypes = 0x000000c0;
+gOverlay61Entries = 0x000000d0;
+gOverlay61EntryCount = 0x00000098;
+gOverlay61Error = 0x000000a8;
+gOverlay61ErrorBack = 0x000000b0;
+gOverlay61ErrorNext = 0x000000ac;
+gOverlay61FreeLabel = 0x0000015c;
+gOverlay61FreeSpace = 0x00000094;
+gOverlay61GhostEntry = 0x00000000;
+gOverlay61GhostLabel = 0x00000150;
+gOverlay61MenuJumpTableReloc = 0x00000188;
+gOverlay61NewFileName = 0x000005d0;
+gOverlay61Selection = 0x0000009c;
+gOverlay61Sprite0 = 0x00000008;
+gOverlay61Sprite1 = 0x00000030;
+gOverlay61State = 0x000000a4;
+gOverlay61Time0 = 0x0000002c;
+gOverlay61Time1 = 0x00000054;
+mainTitlePageInit_o061Reloc = 0xf0000000;
+overlay61SetModeReloc = 0xf0000000;
+packDeleteFile_o061Reloc = 0xf0000000;
+packDirectory_o061Reloc = 0xf0000000;
+packFreeSpace_o061Reloc = 0xf0000000;
 
 /* overlay 61: overlay61ReleaseResources.c.o */
 gOverlay61Resource58Reloc = 0x00000058;
@@ -4320,6 +4346,7 @@ overlay99SpawnEntryReloc = 0xf0000000;
 overlay99SqrtReloc = 0xf0000000;
 
 /* overlay 99: overlay99ApplySegment.c.o */
+D_9C = 0x0000009c;
 D_A0 = 0x000000a0;
 D_A8 = 0x000000a8;
 

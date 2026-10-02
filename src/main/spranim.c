@@ -298,34 +298,35 @@ void texscrollControl(TexscrollState *state, s32 updateRate) {
     func_8000D16C(entry->textureIndex, x, y, updateRate);
 }
 #ifdef NON_MATCHING
-/* Workbench verdict: structure-mismatch, 131 differing words, first mismatch +0x0. */
-/* Candidate: 171/175 instructions, a 0xD0 frame versus target 0xE0, and 3/9 exact relocation identities. */
-/* Shape status: signed plane tests, intersection arithmetic, and action dispatch are preserved; FP lifetimes and stack homes remain non-exact. */
+/* 2026-10-02 (lane x-res): 131 at size delta -16 -> 128 at delta 0. The
+ * intersection point is a three-float array (the target keeps its y in a
+ * stack home and reloads it for both height tests) and the plane radius is
+ * read into a local; the plane fields are the typed SpranimPlane members.
+ * Left: the frame (0xC0 here, 0xE0 in the target), the target's six
+ * callee-saved FP webs (it rematerialises 0.0f at each compare where this
+ * build hoists it), and the object's y/z spilled to homes at 0x8C/0x88. */
 /* PROVENANCE: JFG's public character-plane control role supplies the idiom; Mickey's fields, globals, and action calls are authoritative below. */
 void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
     SpranimPlane *plane;
-    SpranimB798Target **objectPtr;
-    void *targetState;
+    SpranimB798Target **objects;
+    SpranimB798Target *object;
+    u8 *targetState;
     s32 count;
     s32 i;
     f32 firstDistance;
     f32 secondDistance;
     f32 fraction;
-    f32 hitX;
-    f32 hitY;
-    f32 hitZ;
+    f32 hit[3];
     f32 deltaX;
     f32 deltaZ;
     f32 radius;
 
     plane = arg0->state64;
-    objectPtr = (SpranimB798Target **) func_80005750(&count);
-    for (i = 0; i < count; i++, objectPtr++) {
-        SpranimB798Target *object = *objectPtr;
-
+    objects = (SpranimB798Target **) func_80005750(&count);
+    for (i = 0; i < count; i++) {
+        object = objects[i];
         targetState = object->state64;
-        if ((*(u16 *)((u8 *) targetState + 0x1A8) & 1) &&
-            (*(s8 *) targetState != 0)) {
+        if ((*(u16 *)(targetState + 0x1A8) & 1) && (*(s8 *) targetState != 0)) {
             continue;
         }
         firstDistance = plane->distance +
@@ -333,35 +334,35 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
              (plane->normalZ * object->z));
         if (firstDistance < 0.0f) {
             secondDistance = plane->distance +
-                ((plane->normalX * *(f32 *)((u8 *) targetState + 0x38)) +
-             (plane->normalY * *(f32 *)((u8 *) targetState + 0x3C)) +
-             (plane->normalZ * *(f32 *)((u8 *) targetState + 0x40)));
+                ((plane->normalX * *(f32 *)(targetState + 0x38)) +
+                 (plane->normalY * *(f32 *)(targetState + 0x3C)) +
+                 (plane->normalZ * *(f32 *)(targetState + 0x40)));
             if (secondDistance >= 0.0f) {
                 fraction = secondDistance / (secondDistance - firstDistance);
-                hitX = *(f32 *)((u8 *) targetState + 0x38) + fraction *
-                    (object->x - *(f32 *)((u8 *) targetState + 0x38));
-                hitY = *(f32 *)((u8 *) targetState + 0x3C) + fraction *
-                    (object->y - *(f32 *)((u8 *) targetState + 0x3C));
-                hitZ = *(f32 *)((u8 *) targetState + 0x40) + fraction *
-                    (object->z - *(f32 *)((u8 *) targetState + 0x40));
-                deltaX = hitX - arg0->x;
-                deltaZ = hitZ - arg0->z;
+                hit[0] = *(f32 *)(targetState + 0x38) +
+                         fraction * (object->x - *(f32 *)(targetState + 0x38));
+                hit[1] = *(f32 *)(targetState + 0x3C) +
+                         fraction * (object->y - *(f32 *)(targetState + 0x3C));
+                hit[2] = *(f32 *)(targetState + 0x40) +
+                         fraction * (object->z - *(f32 *)(targetState + 0x40));
+                deltaX = hit[0] - arg0->x;
+                deltaZ = hit[2] - arg0->z;
                 radius = plane->radius;
                 if (((deltaX * deltaX) + (deltaZ * deltaZ) <= radius) &&
-                    (arg0->y <= hitY) && (hitY <= plane->maxY)) {
+                    (arg0->y <= hit[1]) && (hit[1] <= plane->maxY)) {
                     switch (plane->mode) {
                     case 0:
                         if (D_8007BF0C == 0) {
-                            if (*(s16 *)((u8 *) plane + 0x1A) == 0) {
+                            if (plane->parameter == 0) {
                                 animseqResetGroup();
                                 animseqPlay();
-                            } else if (*(s16 *)((u8 *) plane + 0x1A) == 1) {
+                            } else if (plane->parameter == 1) {
                                 animseqPlay();
                             }
                         }
                         break;
                     case 1:
-                        TrapDanglingJump(*(s16 *)((u8 *) plane + 0x1A));
+                        TrapDanglingJump(plane->parameter);
                         break;
                     case 2:
                         TrapDanglingJump();
@@ -426,10 +427,10 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
 
 /* PLATEAU-HANDOFF:func_8001B798:start
  * symbol: func_8001B798
- * score: 44/175 words
- * frame: 0xD0
+ * score: 128/175 words
+ * frame: 0xC0
  * relocations: 9
  * first-mismatch: +0x0
- * summary: Configured O2/MIPS-II is best; target frame is 0xE0, only 3/9 relocation identities align, and the FP lifetime/stack-home web remains.
+ * summary: -16 to delta 0 (131 to 128): hit point as a three-float array, radius local. Left: frame 0xC0 vs target 0xE0 and the six callee-saved FP webs
  * PLATEAU-HANDOFF:func_8001B798:end
  */

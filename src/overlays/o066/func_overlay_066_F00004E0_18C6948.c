@@ -93,6 +93,6 @@ void func_overlay_066_F00004E0_18C6948(register Gfx **displayList,
  * frame: 0x78
  * relocations: 19
  * first-mismatch: +0x0
- * summary: Candidate is three words short; target frame 0xA8 needs extra s3/s4 saves. Flags, alias/type/declaration/loop/macro/register routes are exhausted.
+ * summary: Thirteen words short (delta -52): the target keeps limit, the rectangle x part and s as opaque register invariants; no tested source does. JFG screenDraw is the sibling.
  * PLATEAU-HANDOFF:func_overlay_066_F00004E0_18C6948:end
  */

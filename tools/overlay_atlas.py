@@ -146,6 +146,17 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         (0x174, 0x190, "func_overlay_014_F0001830_1871108", ".rodata", "func_overlay_014_F0001830_1871108", True),
     ],
     25: [(0x20, 0x40, "overlay_025", ".rodata", "overlay25UpdateEffect")],
+    # The record/targeting update's five float literals, rodata-relative +0x0.
+    29: [
+        (
+            0x0,
+            0x14,
+            "func_overlay_029_F00005C4_187D874",
+            ".rodata",
+            "func_overlay_029_F00005C4_187D874",
+            True,
+        )
+    ],
     41: [
         (0x0, 0x3C, "overlay41SampleCurve", ".rodata", "func_overlay_041_F00002AC_18875E4"),
         (0x3C, 0x54, "overlay41UpdateCurveObject", ".rodata", "func_overlay_041_F0000854_1887B8C"),

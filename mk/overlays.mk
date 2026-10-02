@@ -751,11 +751,36 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29Sample.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x128
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29InitializeObject.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x198
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/func_overlay_029_F00005C4_187D874.c.o: CFLAGS += -Wab,-r4300_mul
-ifneq ($(NON_MATCHING),1)
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/func_overlay_029_F00005C4_187D874.c.o: POSTPROCESS = \
+# Exact C. Its compiler pool -- -0.1f, -0.2f, FLT_MAX, 750.0f and 0.4f --
+# duplicates the retained overlay data at data_rodata +0x0 (rodata-relative
+# +0x0, which the shipped %hi/%lo pairs encode). Rebind the ten references to
+# a pool symbol and discard the digest-checked duplicate; no instruction or
+# compiler addend is edited (overlay 86's metadata-only form). The nine
+# resident callees go through the generated surface entries.
+O29_05C4_OBJ := \
+	$(BUILD_DIR)/$(SRC_DIR)/overlays/o029/func_overlay_029_F00005C4_187D874.c.o
+$(O29_05C4_OBJ): \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	$(TOOLS_DIR)/externalize_elf_section.py \
+	config/normalizations/func_overlay_029_F00005C4_187D874.rebind.spec
+$(O29_05C4_OBJ): CFLAGS += -Wab,-r4300_mul
+$(O29_05C4_OBJ): POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym func_80006EA0=func_80006EA0_o029Reloc \
+		--redefine-sym partUpdateTriggers=partUpdateTriggers_o029Reloc \
+		--redefine-sym sqrtf=sqrtf_o029Reloc \
+		--redefine-sym Arctanf=Arctanf_o029Reloc \
+		--redefine-sym mathDiffAngle=mathDiffAngle_o029Reloc \
+		--redefine-sym mathOneFloatPY=mathOneFloatPY_o029Reloc \
+		--redefine-sym func_80008128=func_80008128_o029Reloc \
+		--redefine-sym trackMakePolylist=trackMakePolylist_o029Reloc \
+		--redefine-sym func_80010900=func_80010900_o029Reloc \
+		--add-symbol gOverlay29UpdatePoolReloc=0x0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_029_F00005C4_187D874.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:b59302a556a40d537bcc94b8e036c741672de52d8d671fb8bf20d087fa0b8930 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x91C
-endif
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29HandleEffects.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o029/overlay29HandleEffects.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x404

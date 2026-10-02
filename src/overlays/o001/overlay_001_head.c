@@ -615,6 +615,10 @@ void overlay1LoadBuildRecords(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/overlay_001_head/func_overlay_001_F00010C8_184D4A8.s")
 #endif
 
+/*
+ * The adopted clear is four source lines shorter than the pointer walk.
+ * These lines keep later matched functions on their original numbers.
+ */
 /* ---- overlay1InitializeModeState ---- */
 
 

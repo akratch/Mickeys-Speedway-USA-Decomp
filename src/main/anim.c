@@ -2177,9 +2177,14 @@ void func_800573C8(HitOverlapState *state, HitOverlapVolume *other,
  * secondShape; no `kind` or `result` locals, the call result reusing
  * `overlaps`), and the first loop's head tests read `firstObject->unk48`
  * directly, so the load is a v0 expression web copied to s1 as in the
- * target. Left: the target hoists the kind constant 2 and keeps the axis
- * loops and the pair loops' j in one saved register (s2), the moving
- * object in s6 in every loop, and a v1/a0 two-cycle in the pair loops. */
+ * target (627). Every moving-array loop (displacement, advance, restore)
+ * reads the object into `firstObject` before its shape, the target's s6
+ * (580), and the overlap-result kind tests read `firstObject->unk44`
+ * directly, so `firstKind` is not one web with the pair-loop read and the
+ * kind chain takes a0/v1 as the target does (528). Left: the target hoists
+ * the kind constant 2 and keeps the axis loops and the pair loops' j in
+ * one saved register (s2); the min-fraction loop keeps pairIndex in a1;
+ * a ring draw before the iteration count. */
 void func_80053868(s32 updateRate) {
     f32 remainingTime;
     f32 fraction;
@@ -2296,7 +2301,8 @@ void func_80053868(s32 updateRate) {
         pairCount = 0;
         pairIndex = -1;
         for (i = 0; i < movingCount; i++) {
-            firstShape = D_800D7160[i]->unk48;
+            firstObject = D_800D7160[i];
+            firstShape = firstObject->unk48;
             firstShape->displacement[0] = firstShape->position[0] - firstShape->previous[0];
             firstShape->displacement[1] = firstShape->position[1] - firstShape->previous[1];
             firstShape->displacement[2] = firstShape->position[2] - firstShape->previous[2];
@@ -2347,12 +2353,11 @@ void func_80053868(s32 updateRate) {
                                     pairCount += 1;
                                 }
                             } else if (overlaps == 2) {
-                                firstKind = firstObject->unk44;
-                                if (firstKind == 0x40U) {
+                                if (firstObject->unk44 == 0x40U) {
                                     TrapDanglingJump(firstObject, 1);
-                                } else if (firstKind == 0x39U) {
+                                } else if (firstObject->unk44 == 0x39U) {
                                     TrapDanglingJump(firstObject, 5);
-                                } else if (firstKind == 0x3AU) {
+                                } else if (firstObject->unk44 == 0x3AU) {
                                     TrapDanglingJump(firstObject, 5);
                                 }
                             }
@@ -2397,7 +2402,8 @@ void func_80053868(s32 updateRate) {
             selectedPair = FUNC538_PAIR(pairIndex);
             remainingTime *= 1.0f - selectedPair->fraction;
             for (i = 0; i < movingCount; i++) {
-                firstShape = D_800D7160[i]->unk48;
+                firstObject = D_800D7160[i];
+                firstShape = firstObject->unk48;
                 firstShape->previous[0] += firstShape->displacement[0] * selectedPair->fraction;
                 firstShape->previous[1] += firstShape->displacement[1] * selectedPair->fraction;
                 firstShape->previous[2] += firstShape->displacement[2] * selectedPair->fraction;
@@ -2451,7 +2457,8 @@ void func_80053868(s32 updateRate) {
             iteration++;
             if (iteration >= 0xB) {
                 for (i = 0; i < movingCount; i++) {
-                    firstShape = D_800D7160[i]->unk48;
+                    firstObject = D_800D7160[i];
+                    firstShape = firstObject->unk48;
                     firstShape->position[0] = firstShape->previous[0];
                     firstShape->position[1] = firstShape->previous[1];
                     firstShape->position[2] = firstShape->previous[2];
@@ -3939,11 +3946,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80053868:start
  * symbol: func_80053868
- * score: 627 differing words
+ * score: 528 differing words
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: 710 to 627: homes exact (zpos, pad, no kind/result locals), first-loop head reads firstObject->unk48. Left: hoisted 2, s2 axis/j, s6 object
+ * summary: 710 to 528: homes exact, head reads firstObject->unk48, firstObject local in every moving loop, result-kind tests direct. Left: hoisted 2, s2 axis/j, pairIndex a1
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

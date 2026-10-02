@@ -112,7 +112,7 @@
       "relocation_masked_first_mismatch_offset": 136,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "ZEj1.a8G9.CUvn.MzWC.WTlq.6x9E.ACpd.JQlr.XyzZ.dLEd.JNY"
+      "source_context_sha256": "1q5l.ROaW.VW2l.6smI.CmML.Z0kn.nXox.TTN1.xvGK.d9vK.qRs"
     },
     {
       "name": "overlay15InitStarsAndPalette",
@@ -787,7 +787,7 @@
       "relocation_masked_first_mismatch_offset": 36,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "77Pm.UgeX.mczz.bKGr.9Yx9.h2ey.KDtH.O8DW.D5zF.bqbs.MNw"
+      "source_context_sha256": "9Afx.IvQe.x8Yy.sZP-.EHx3.CjUO.ULTX.ukBT.rrJl.PlbW.W_o"
     },
     {
       "name": "overlay68UpdateAnimation",
@@ -1261,13 +1261,13 @@
       "tu": "main",
       "size_bytes": 4820,
       "objdiff_match_pct": null,
-      "differing_words": 627,
+      "differing_words": 528,
       "first_mismatch_offset": 112,
-      "relocation_masked_differing_words": 627,
+      "relocation_masked_differing_words": 528,
       "relocation_masked_first_mismatch_offset": 112,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "o5oH.gIJq.VlBD.NZ1X.pkl6.lsbF.DcZx.6dDD.c4_p.61U5.R1g"
+      "source_context_sha256": "_Q78.ptzv.F_RD.FRZ1.ObOF.Vhcb.tjlG.3JgU.es_d.mnFq.vXo"
     },
     {
       "name": "func_80058250",
@@ -1747,7 +1747,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 4,
       "category": "size-mismatch",
-      "source_context_sha256": "znb5.fPAs.PYMP.TRAj.O6JW.J0Tr.9E99.Q8CC.sqK-.5E61.lbg"
+      "source_context_sha256": "A6e8.CsJ_.D1R8.ha9N.hZhZ.Q2kX.zXoJ.-MUg._7SX.OVXv.NPI"
     },
     {
       "name": "func_8005AF14",
@@ -2107,7 +2107,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": -332,
       "category": "size-mismatch",
-      "source_context_sha256": "iGP1.9VME.NzKl.I_HB.o0EX.RyEB.5j0Q.Kcf-.ogCc.OGCR.4Dc"
+      "source_context_sha256": "_-y2.L4ri.LKDE.nkR6.OAdj.eqQF.CFIE.6PF9.w98N.qhm0.iYU"
     }
   ],
   "unresolved_functions": []

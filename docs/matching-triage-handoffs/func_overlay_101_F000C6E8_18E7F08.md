@@ -2,11 +2,11 @@
 ### `func_overlay_101_F000C6E8_18E7F08` plateau handoff
 
 - source: `src/overlays/o101/overlay101TailC6E8.c`
-- score: 106/317 words
+- score: 0/317 words, promoted
 - frame: 0x18
 - relocations: 91
-- first mismatch: +0x4C
-- summary: Proc-0 census confirms 40 draws; named three-local interference and root-initialization schedule remain unavailable at exact geometry.
+- first mismatch: none
+- summary: Matched. Rewritten in the matched siblings' shape after decoding the relocation table: one queue symbol, a plain indexed shift loop, one-name counter subscripts and two-argument creators.
 - assignment base: `23dd98ede1da869df2df0948c80efeeb403caa6e`
 - owned range: overlay 101 `+0xC6E8..+0xCBDC`, 1,268 bytes / 317 words, with no target-size delta
 - baseline: 131 raw and 125 relocation-aware positional differences; normalized distance 117; first raw mismatch `+0x8` and first relocation-masked mismatch `+0x34`
@@ -85,5 +85,40 @@ blockclimb, `tools/finalize_plateau.py`, `tools/gates.sh`. The 91 runtime
 relocations still lack a complete identity proof; no promotion was attempted.
 The unchanged assembly fallback passes full-ROM verification. Only the source
 handoff comment and this shard are refreshed.
+
+#### 2026-10-02, lane x-o101: matched, 106 -> 0 at delta 0, promoted
+
+Every earlier pass varied spellings and forces inside the inherited m2c
+shape (node pointer and index carriers, captured prior indices, four-argument
+creators, a walking queue cursor, two extern names for the queue). The
+relocation table says otherwise, and the rewrite was priced on the fast
+direct compile (base copy measured 106, equal to score_symbol.py):
+
+- The selector and the queue base are one SYMBOL target (resident data
+  +0x31DC), so the selector is the queue's first byte; the queue count is
+  +0x31E4.
+- The two sprite creators (0x8F, 0x90) are one resident routine, the same
+  one overlay101TailAB4C and overlay101TailA6BC call with two arguments; the
+  a2/a3 the shipped calls carry are the root and order-count addresses left
+  in those registers. The compact creator also takes two (key, node).
+- Cases 14 to 19 are overlay101TailA6BC with 0..5, 22/23 are
+  overlay101TailBA34 with 0/1, the special and default calls are
+  overlay101Reset(NULL), and the 0x5F1/0x5F2/0x58 acquires are one routine.
+- Written in the siblings' form (one-name counter subscripts, creator result
+  stored straight into the node, the queue shift as
+  `for (i = 0; i < count; i++) queue[i] = queue[i + 1];`) the first
+  candidate scored 274 at +8. The extra words were a second count test: the
+  for loop's own guard is the target's second `blez`, so the inner
+  `if (count > 0)` the inherited shape carried is redundant. Without it: 0
+  masked at delta 0.
+
+Promotion: every call is a placeholder (all are SYMBOL records, including
+case 10's overlay101BuildPresentationA, which the old candidate called
+directly). The 25-entry switch table duplicates the retained rodata at
+data_rodata +0x5CFC (rodata-relative +0xEAC): overlay 58's metadata-only
+form, the two text references rebound to gO101TailC6E8SwitchTableReloc, the
+pool externalized by digest, an externalized ownership row in the atlas.
+gmake verify OK; check-overlay-syms and promotion-proof PASS (317 words,
+91/91 relocations).
 
 <!-- plateau-handoff:func_overlay_101_F000C6E8_18E7F08:end -->

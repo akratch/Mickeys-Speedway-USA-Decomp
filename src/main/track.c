@@ -2168,118 +2168,104 @@ void func_8000E920(s32 arg0, s32 arg1) {
 /* PROVENANCE -- JFG's public track.c supplies the surrounding display-list
  * routine and texture vocabulary, while this Mickey body follows its own
  * fields, call sites, and assembly-only command schedule. */
-#ifdef NON_MATCHING
-/* Workbench verdict: structure-mismatch; 185 differing words, first mismatch +0x0. */
-/* Exact 249-word size; candidate frame 0x58 versus target 0x70, 18/21 relocation sites exact. */
-/* Unsigned batch flags preserve the recovered masks; the 24-byte frame deficit remains. */
+/* Matched 2026-10-02 (lane x-track) by rewriting from the listing in the
+ * shape of the matched sibling func_8000DFBC: a while (batchCount--) loop
+ * over the segment's batches, the texture default as an else arm, the env
+ * value masked once into a local, D_800C9520++ packet macros, the 0x4000
+ * case first in the switch (case bodies are laid out in source order), a
+ * one-argument func_800343F0 call, and s32 flags and masks (a u32 flags word
+ * swaps the AND operands). */
 void func_8000F198(s32 arg0, s32 arg1, s32 arg2) {
-    TrackSegment *segment;
     TrackBatch *batch;
     TrackTextureHeader *texture;
-    s32 specialFlags;
-    s32 sp5C;
-    s32 sp58;
-    u32 vertexAddress;
-    u32 positionAddress;
-    s32 textureFrame;
-    u32 textureFlags;
-    s32 hasTexture;
-    s32 vertexCount;
-    s32 positionCount;
-    s32 color;
+    u8 *vertex;
+    u8 *triangle;
+    s32 renderMask;
+    s32 skipMask;
+    s32 flags;
+    s32 alpha;
+    s32 textureS;
+    s32 special;
+    s32 value;
+    TrackSegment *segment;
     s32 batchCount;
-    s32 index;
 
     if (D_8007C854 != 0) {
-        gDPSetPrimColor(D_800C9520++, 0, 0, D_8007C858 & 0xFF,
-                        D_8007C858 & 0xFF, D_8007C858 & 0xFF, 0xFF);
+        gDPSetPrimColor(D_800C9520++, 0, 0, D_8007C858, D_8007C858,
+                        D_8007C858, 255);
     }
-
     segment = &D_800792E8->segments[arg0];
     switch (arg2) {
-    case 4:
-        sp5C = 0xC904;
-        sp58 = 0xC800;
-        break;
     case 0x4000:
-        func_800343F0(2, arg0);
-        sp5C = 0x4800;
-        sp58 = 0x800;
+        func_800343F0(2);
+        renderMask = 0x4800;
+        skipMask = 0x800;
+        break;
+    case 4:
+        renderMask = 0xC904;
+        skipMask = 0xC800;
         break;
     case 0x8000:
-        sp5C = 0xC800;
-        sp58 = 0x4800;
+        renderMask = 0xC800;
+        skipMask = 0x4800;
         break;
     default:
-        sp5C = -1;
-        sp58 = 0xC904;
+        renderMask = -1;
+        skipMask = 0xC904;
         break;
     }
-
     batchCount = segment->batchCount;
     batch = segment->batches;
-    if (batchCount != 0) {
-        index = batchCount - 1;
-        do {
-            if ((1U << batch->unk1) & arg1) {
-                textureFlags = batch->flags;
-                if ((textureFlags & sp5C) && !(textureFlags & sp58)) {
+    while (batchCount--) {
+        if ((1 << batch->unk1) & arg1) {
+            flags = batch->flags;
+            if ((flags & renderMask) && !(flags & skipMask)) {
+                if (batch->textureIndex != 0xFF) {
+                    alpha = 1;
+                    texture = D_800792E8->textures[batch->textureIndex].texture;
+                } else {
                     texture = NULL;
-                    hasTexture = 0;
-                    if (batch->textureIndex != 0xFF) {
-                        hasTexture = 1;
-                        texture = D_800792E8->textures[batch->textureIndex].texture;
-                    }
-                    vertexAddress = (u32) segment->lightData +
-                                    (batch->u0 * 0xA);
-                    positionAddress = (u32) segment->vertexData +
-                                      (batch->v0 * 0x10);
-                    textureFrame = batch->frame << 8;
-                    if ((texture != NULL) && ((s16) texture->flags & 0x40) &&
-                        ((textureFlags & 0x30) != 0x20)) {
-                        color = (textureFrame >> 8) & 0xFF;
-                        gDPSetEnvColor(D_800C9520++, color, color, color,
-                                       color);
-                    } else {
-                        gDPSetEnvColor(D_800C9520++, 0xFF, 0xFF, 0xFF, 0);
-                    }
-                    if (!(textureFlags & 0x180)) {
-                        textureFlags |= D_800C9544;
-                    }
-                    specialFlags = textureFlags & 0x20000;
-                    if ((specialFlags != 0) && (texture != NULL)) {
-                        func_80014ECC(texture, textureFrame, textureFlags);
-                    } else {
-                        func_800349A4(&D_800C9520, texture,
-                                      textureFlags | 2, textureFrame);
-                    }
-                    vertexAddress += 0x80000000;
-                    vertexCount = batch[1].u0 - batch->u0;
-                    TRACK_SP_VERTEX(D_800C9520++, vertexAddress,
-                                    vertexCount, 0);
-                    positionCount = batch[1].v0 - batch->v0;
-                    positionAddress += 0x80000000;
-                    TRACK_SP_POLYGON(D_800C9520++, positionAddress,
-                                     positionCount, hasTexture);
-                    if (specialFlags != 0) {
-                        func_80034920(&D_800C9520);
-                    }
+                    alpha = 0;
+                }
+                vertex = (u8 *) segment->lightData + (batch->u0 * 0xA);
+                triangle = (u8 *) segment->vertexData + (batch->v0 * 0x10);
+                textureS = batch->frame << 8;
+                if (texture != NULL && ((s16) texture->flags & 0x40) &&
+                    (flags & 0x30) != 0x20) {
+                    value = (textureS >> 8) & 0xFF;
+                    gDPSetEnvColor(D_800C9520++, value, value, value, value);
+                } else {
+                    gDPSetEnvColor(D_800C9520++, 255, 255, 255, 0);
+                }
+                if (!(flags & 0x180)) {
+                    flags |= D_800C9544;
+                }
+                special = flags & 0x20000;
+                if (special && texture != NULL) {
+                    func_80014ECC(texture, textureS, flags);
+                } else {
+                    func_800349A4(&D_800C9520, texture, flags | 2,
+                                  textureS);
+                }
+                TRACK_VTX(D_800C9520++, vertex + 0x80000000,
+                          batch[1].u0 - batch->u0);
+                TRACK_TRI(D_800C9520++, triangle + 0x80000000,
+                          batch[1].v0 - batch->v0, alpha);
+                if (special) {
+                    func_80034920(&D_800C9520);
                 }
             }
-            batch++;
-        } while (index--);
+        }
+        batch++;
     }
     if (arg2 == 0x4000) {
         texEnableModes(2);
     }
     if (D_8007C854 != 0) {
         gDPPipeSync(D_800C9520++);
-        gDPSetPrimColor(D_800C9520++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
+        gDPSetPrimColor(D_800C9520++, 0, 0, 255, 255, 255, 255);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000F198.s")
-#endif
 /*
  * PROVENANCE: Jet Force Gemini's public assembly-only `trackGetBlockList` in
  * `src/track.c` supplies tier-D TU-position and role context. The body and
@@ -4878,10 +4864,13 @@ void func_80013EC0(void) {
     }
     D_80079274 = 0;
 }
-#ifdef NON_MATCHING
 /*
- * PROVENANCE: Mickey's m2c display-list draft and resident shadow-buffer and
- * command offsets reconstruct this renderer; no external function body is adapted.
+ * PROVENANCE: the shape follows Diddy Kong Racing's public `src/tracks.c`,
+ * `shadow_render`: the mesh's first vertex alpha read into `alpha` and then
+ * scaled by the object's opacity, a heap-record cursor walked from the mesh
+ * start, the vertex and triangle counts read and then reused for the spans,
+ * and the `gSPVertexDKR`/`gSPPolygon` packet pair. Mickey's shadow-buffer
+ * ABI, per-kind colour setup and two-mesh instance layout are authoritative.
  */
 typedef struct TrackShadowObject {
     u8 pad00[0x39];
@@ -4899,9 +4888,8 @@ typedef struct TrackShadowInstance {
     u8 active;
     u8 pad11[2];
     u8 count;
-    s16 shadowIndex;
-    u8 pad16[2];
-    s16 endIndex;
+    s16 meshStart[2];
+    s16 meshEnd[2];
 } TrackShadowInstance;
 
 /* Adjacent eight-byte descriptors supply the next index and vertex boundaries. */
@@ -4918,133 +4906,85 @@ typedef struct TrackShadowMaterial {
     u8 blue;
 } TrackShadowMaterial;
 
-/* Workbench verdict: structure-mismatch, 187 differing words, first mismatch +0x0. */
-/* Candidate: 217/217 instructions with a -0x90 frame versus target -0xA8; 3/4 relocation placements align. */
-/* Shape status: alpha branches, 8-byte shadow stepping, geometry commands, and FA/FB cleanup writes are preserved, but it is not shape-exact. */
-void func_800140CC(TrackShadowObject *object, TrackShadowInstance *instance) {
-    s32 loopIndex;
-    s32 closeTexture;
-    s32 closeCombiner;
-    void *commandBuffer;
-    void *indexBuffer;
-    void *vertexBuffer;
-    s32 shadowCount;
-    s32 alphaValue;
-    s32 commandMode;
-    s32 textureSpan;
-    s32 indexSpan;
-    u32 vertexAddress;
-    u32 indexAddress;
-    s16 shadowIndex;
-    TrackShadowInstance *current;
-    TrackShadowBatch *shadow;
-    u8 active;
+/* Matched 2026-10-02 (lane x-track) by rewriting from the listing in the
+ * DKR shadow_render shape: typed vertex/triangle buffers, the vertex alpha
+ * read into alpha before the opacity scale (the target loads it straight
+ * into alpha's register), one count variable each for the first index and
+ * the span, a heap cursor, the 0xE flags default as an else arm (it fills
+ * the kind branch's delay slot), and one unreferenced local between the
+ * triangle and vertex buffers for the 0xA8 frame's homes. */
+void func_800140CC(TrackShadowObject *object, TrackShadowInstance *shadow) {
+    s32 k;
+    s32 i;
+    s32 alpha;
+    s32 flags;
     TrackShadowMaterial *material;
-    Gfx *command;
+    s32 closePrim;
+    s32 closeEnv;
+    s32 numVerts;
+    s32 numTris;
+    TrackShadowBatch *heapData;
+    TrackTriangle *triangles;
+    s32 unused;
+    TrackVertex *vertices;
+    TrackVertex *vtx;
+    TrackTriangle *tri;
+    TrackShadowBatch *heap;
 
-    active = instance->active;
-    if (active != 0) {
-        shadowGetBuffers(active, &vertexBuffer, &indexBuffer,
-                         &commandBuffer);
-        loopIndex = 0;
-        current = instance;
-        if (current->count > 0) {
-            do {
-                shadowIndex = current->shadowIndex;
-                if (shadowIndex != -1) {
-                    shadow = (TrackShadowBatch *) commandBuffer + shadowIndex;
-                    shadowCount = (s32) object->alpha *
-                                  *(u8 *) ((u8 *) vertexBuffer +
-                                  (shadow->firstVertex * 0x0A) + 9);
-                    shadowCount >>= 8;
-                    if (shadowCount > 0) {
-                        commandMode = 0x0E;
-                        if (object->kind == 0x3C) {
-                            command = D_800C9520;
-                            material = object->material;
-                            D_800C9520 = command + 1;
-                            command->words.w1 = (shadowCount & 0xFF) | ~0xFF;
-                            command->words.w0 = 0xFA000000;
-                            command = D_800C9520;
-                            commandMode = 0x20E;
-                            D_800C9520 = command + 1;
-                            command->words.w0 = 0xFB000000;
-                            command->words.w1 = ((u32) material->red << 24) |
-                                                ((u32) material->green << 16) |
-                                                ((u32) material->blue << 8);
-                            closeTexture = 1;
-                            closeCombiner = 1;
+    if (shadow->active) {
+        shadowGetBuffers(shadow->active, (void **) &vertices,
+                         (void **) &triangles, (void **) &heapData);
+        for (k = 0; k < shadow->count; k++) {
+            if (shadow->meshStart[k] != -1) {
+                i = shadow->meshStart[k];
+                heap = &heapData[i];
+                alpha = vertices[heap->firstVertex].a;
+                alpha = (object->alpha * alpha) >> 8;
+                if (alpha > 0) {
+                    if (object->kind == 0x3C) {
+                        material = object->material;
+                        gDPSetPrimColor(D_800C9520++, 0, 0, 255, 255, 255, alpha);
+                        flags = 0x20E;
+                        gDPSetEnvColor(D_800C9520++, material->red,
+                                       material->green, material->blue, 0);
+                        closePrim = TRUE;
+                        closeEnv = TRUE;
+                    } else {
+                        flags = 0xE;
+                        closeEnv = FALSE;
+                        if (object->kind == 0x35 || object->kind == 0x58) {
+                            gDPSetPrimColor(D_800C9520++, 0, 0, 255, 255, 255, alpha);
+                            closePrim = alpha != 255;
                         } else {
-                            closeCombiner = 0;
-                            if ((object->kind == 0x35) ||
-                                (object->kind == 0x58)) {
-                                command = D_800C9520;
-                                D_800C9520 = command + 1;
-                                command->words.w0 = 0xFA000000;
-                                command->words.w1 = (shadowCount & 0xFF) | ~0xFF;
-                                closeTexture = shadowCount != 0xFF;
-                            } else {
-                                command = D_800C9520;
-                                D_800C9520 = command + 1;
-                                command->words.w1 = shadowCount & 0xFF;
-                                command->words.w0 = 0xFA000000;
-                                closeTexture = 1;
-                            }
-                        }
-                        shadowIndex = current->shadowIndex;
-                        while (shadowIndex < current->endIndex) {
-                            func_800349A4(&D_800C9520, shadow->texture,
-                                          commandMode,
-                                          instance->textureScale << 8);
-                            command = D_800C9520;
-                            D_800C9520 = command + 1;
-                            textureSpan = shadow[1].firstVertex -
-                                          shadow->firstVertex;
-                            vertexAddress = (u32) vertexBuffer +
-                                            (shadow->firstVertex * 10) +
-                                            0x80000000U;
-                            command->words.w0 = (((((textureSpan * 8) |
-                                                   (vertexAddress & 6)) & 0xFF) << 16) |
-                                                 0x04000000 |
-                                                 ((textureSpan * 10 + 8) & 0xFFFF));
-                            command->words.w1 = vertexAddress;
-                            command = D_800C9520;
-                            D_800C9520 = command + 1;
-                            indexSpan = shadow[1].firstIndex -
-                                        shadow->firstIndex;
-                            indexAddress = (shadow->firstIndex * 16) +
-                                           (u32) indexBuffer + 0x80000000U;
-                            command->words.w1 = indexAddress;
-                            command->words.w0 = ((((((indexSpan - 1) * 16) |
-                                                   1) & 0xFF) << 16) |
-                                                 0x05000000 |
-                                                 ((indexSpan * 16) & 0xFFFF));
-                            shadowIndex++;
-                            shadow++;
-                        }
-                        if (closeTexture != 0) {
-                            command = D_800C9520;
-                            D_800C9520 = command + 1;
-                            command->words.w1 = -1;
-                            command->words.w0 = 0xFA000000;
-                        }
-                        if (closeCombiner != 0) {
-                            command = D_800C9520;
-                            D_800C9520 = command + 1;
-                            command->words.w1 = -0x100;
-                            command->words.w0 = 0xFB000000;
+                            gDPSetPrimColor(D_800C9520++, 0, 0, 0, 0, 0, alpha);
+                            closePrim = TRUE;
                         }
                     }
+                    while (i < shadow->meshEnd[k]) {
+                        func_800349A4(&D_800C9520, heap->texture, flags,
+                                      shadow->textureScale << 8);
+                        numTris = heap->firstIndex;
+                        numVerts = heap->firstVertex;
+                        tri = &triangles[numTris];
+                        vtx = &vertices[numVerts];
+                        numTris = heap[1].firstIndex - numTris;
+                        numVerts = heap[1].firstVertex - numVerts;
+                        TRACK_VTX(D_800C9520++, (u8 *) vtx + 0x80000000, numVerts);
+                        TRACK_TRI(D_800C9520++, (u8 *) tri + 0x80000000, numTris, 1);
+                        i++;
+                        heap++;
+                    }
+                    if (closePrim) {
+                        gDPSetPrimColor(D_800C9520++, 0, 0, 255, 255, 255, 255);
+                    }
+                    if (closeEnv) {
+                        gDPSetEnvColor(D_800C9520++, 255, 255, 255, 0);
+                    }
                 }
-                current = (TrackShadowInstance *) ((u8 *) current + 2);
-                loopIndex++;
-            } while (loopIndex < instance->count);
+            }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_800140CC.s")
-#endif
 /*
  * PROVENANCE: adapted from Jet Force Gemini's public `src/track.c`, function
  * `trackSetFog`. Mickey's function boundary and fog-data accesses are
@@ -5490,26 +5430,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
     intensity = (frame >> 8) & 0xFF;
     gDPSetEnvColor(D_800C9520++, intensity, intensity, intensity, intensity);
 }
-
-/* PLATEAU-HANDOFF:func_800140CC:start
- * symbol: func_800140CC
- * score: 187 differing words
- * frame: 0x90
- * relocations: 4
- * first-mismatch: +0x0
- * summary: Recovered shadow buffer ABI and eight-byte records; 187 differences remain. Next: source evidence for flag and pointer stack homes.
- * PLATEAU-HANDOFF:func_800140CC:end
- */
-
-/* PLATEAU-HANDOFF:func_8000F198:start
- * symbol: func_8000F198
- * score: 185 differing words
- * frame: 0x58
- * relocations: 21
- * first-mismatch: +0x0
- * summary: Unsigned batch flag types preserve 185 differences and exact249-word size; m2c adds no missing CFG. Next: counter and flag home evidence.
- * PLATEAU-HANDOFF:func_8000F198:end
- */
 
 /* PLATEAU-HANDOFF:func_80011980:start
  * symbol: func_80011980

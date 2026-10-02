@@ -190,6 +190,18 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
+    # The 25-entry selector switch table, rodata-relative +0xEAC; it ends the
+    # module's initialized data.
+    101: [
+        (
+            0x5CFC,
+            0x5D60,
+            "overlay101TailC6E8",
+            ".rodata",
+            "func_overlay_101_F000C6E8_18E7F08",
+            True,
+        )
+    ],
 }
 
 # Permanent interior initialized-storage owners. These rows participate in
@@ -1633,6 +1645,12 @@ MIXED_TU_EXACT_C_RANGES = {
             0x080,
             0x0D0,
             "overlay51PatchIndices",
+            "canonical mixed-TU object and linked bytes exact",
+        ),
+        (
+            0x0D0,
+            0x858,
+            "func_overlay_051_F00000D0_18999D0",
             "canonical mixed-TU object and linked bytes exact",
         ),
         (

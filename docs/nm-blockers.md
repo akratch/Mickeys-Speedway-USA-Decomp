@@ -204,7 +204,7 @@ This is a names-only audit of every function body guarded by `NON_MATCHING` in `
 | `func_overlay_013_F0000580_186F098` | `src/overlays/o013/overlay13DrawRecord.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_013_F0000284_186ED9C` | `src/overlays/o013/overlay13ProcessRecord.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_014_F0000000_186F8D8` | `src/overlays/o014/func_overlay_014_F0000000_186F8D8.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_overlay_014_F000013C_186FA14` | `src/overlays/o014/func_overlay_014_F000013C_186FA14.c` | none | — | No ownership change; continue source/codegen work. |
+| `func_overlay_014_F000013C_186FA14` | `src/overlays/o014/func_overlay_014_F000013C_186FA14.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `func_overlay_014_F00009F4_18702CC` | `src/overlays/o014/func_overlay_014_F00009F4_18702CC.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `func_overlay_014_F0001540_1870E18` | `src/overlays/o014/func_overlay_014_F0001540_1870E18.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_overlay_014_F0001830_1871108` | `src/overlays/o014/func_overlay_014_F0001830_1871108.c` | resolved-plateau | overlay 14 switch table | TU-owned `+0x174..+0x190` table clears module growth. Retained imported evidence is 196/201 normalized words (`+0x1F4,+0x1F8,+0x1FC,+0x200,+0x208`), frame `0x90`, with 21 records and exact switch payload, but carried one false callee for eight calls. Reprove the repaired six font identities, then one target-shaped case-7 schedule rung; park if flat. |

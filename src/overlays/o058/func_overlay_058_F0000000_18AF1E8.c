@@ -1,363 +1,236 @@
 #include "PR/ultratypes.h"
+#include "overlays/overlay_056.h"
 
-typedef struct Overlay58OrderEntry {
-    u8 pad00[3];
-    u8 gap03;
-    s32 value04;
-    u8 pad08[0x14];
-    u8 progress1C;
-    u8 pad1D[5];
-    u16 rank22;
-    u8 pad24[4];
-} Overlay58OrderEntry;
+/* Matched 2026-10-02 (lane x-o058) by rewriting the inherited shape, not by
+ * any allocator work: 295 -> 0 masked words at size delta 0, frame 0x60.
+ *
+ * The previous candidate walked hand-made cursors over alias extern names
+ * (D_7C for D_78 + 4, D_94, D_AC, D_C4, a separate "end" symbol for the tag
+ * table) and declared nineteen locals.  The function is the matched whale's
+ * vocabulary instead: every table is indexed by `i` and strength reduction
+ * makes the cursors, the entry count is read from its global at each loop
+ * test, and the entry type is the whale's race entry (so the 0x1C byte
+ * increment is `counters[class]++`).  That one rewrite is 295 -> 77.
+ *
+ * The last 77 were one local: the rank-gap clamp reuses `swapped` instead of
+ * declaring its own.  A separate `gap` costs two frame cells (0x68 against
+ * 0x60) and leaves the constant 10 for initColourCycle unhoisted, which moves
+ * the gap into v1 and the table base into a1.  -Wo,-loopunroll,0 was not
+ * load-bearing (identical object either way) and is removed. */
 
-typedef struct Overlay58OrderState {
+typedef struct RcpTextureInfo RcpTextureInfo;
+
+typedef struct RcpTextureNode {
+    RcpTextureInfo *texture;
+    RcpTextureInfo *alternate;
+    u32 packedOffset;
+    s16 x;
+    s16 y;
+} RcpTextureNode;
+
+typedef struct Overlay58RaceEntry {
+    u8 character;
+    u8 variant;
+    u8 variantCopy;
+    u8 gap;
+    s32 value;
+    s32 lapTimes[3];
+    u8 pad14[8];
+    u8 counters[6];
+    u16 rank;
+    u8 flags[4];
+} Overlay58RaceEntry;
+
+typedef struct Overlay58RaceState {
     u8 mode;
     u8 active;
     u8 player;
     u8 countdown;
-    Overlay58OrderEntry entries[6];
-} Overlay58OrderState;
+    Overlay58RaceEntry entries[6];
+} Overlay58RaceState;
 
-typedef struct Overlay58TagSource {
+/* Tier D: stride and the one field read here. */
+typedef struct Overlay58PlayerSlot {
     u8 pad00[0x2A];
-    s8 tag2A;
+    s8 enabled;
     u8 pad2B[9];
-} Overlay58TagSource;
+} Overlay58PlayerSlot;
 
-typedef struct Overlay58SnapshotSource {
-    u8 pad00[0xC];
-    s32 value0C;
-    s32 value10;
-    s32 value14;
-    u8 pad18[0x1D4];
-    s32 value1EC;
-} Overlay58SnapshotSource;
+typedef struct Overlay58LanguageText {
+    char *text[182];
+} Overlay58LanguageText;
 
-typedef struct Overlay58GameState {
-    u8 pad00[0x50];
-    s32 value50;
-    u8 pad54[0x3C];
-    s32 value90;
-    s32 value94;
-    s32 value98;
-    u8 pad9C[0x124];
-    s32 value1C0;
-} Overlay58GameState;
+typedef struct ColourCycle {
+    s32 frame;
+    s32 time;
+    u8 red;
+    u8 green;
+    u8 blue;
+    u8 alpha;
+    struct ColourCycle *table;
+} ColourCycle;
 
-extern Overlay58SnapshotSource gOverlay58SnapshotSourceReloc;
-extern Overlay58TagSource gOverlay58TagSourcesReloc[];
-extern Overlay58TagSource gOverlay58TagSourcesEndReloc[];
-extern Overlay58GameState *gOverlay58GameStateReloc;
-extern u8 gOverlay58EntryCountReloc;
-extern u8 gOverlay58UpdateGateReloc;
-extern u16 gOverlay58PackedFlagsReloc;
-extern s32 gOverlay58ModeReloc;
-extern s32 gOverlay58FrameCounterReloc;
-
-extern s32 D_18[4];
-extern s32 D_28;
-extern s32 D_2C;
-extern s32 D_30;
-extern s32 D_6C;
-extern s32 D_74;
-extern Overlay58OrderEntry *D_78[6];
-extern Overlay58OrderEntry *D_90[6];
-extern Overlay58OrderEntry *D_7C[];
-extern Overlay58OrderEntry *D_94[];
-extern s32 D_A8[6];
-extern s32 D_C0[6];
-extern s32 D_AC[];
-extern s32 D_C4[];
-extern u8 D_C8[];
-extern s8 D_F8[6];
-extern s32 D_108[];
-extern s32 D_120;
-extern s32 D_140;
-extern s32 D_160;
-extern s32 D_180;
-extern s32 D_D8;
-extern s32 D_DC;
-extern s32 D_E0;
-extern u8 D_E8[];
-
-extern Overlay58OrderState *overlay58GetOrderStateReloc(void);
-extern void overlay58ResetOrderStateReloc(void *state);
-extern void overlay58BeginOrderUpdateReloc(void);
-extern void overlay58SplitOrderValueReloc(s32 value, s32 *part0, s32 *part1,
-                                          s32 *part2);
-extern void overlay58BuildOrderReloc(void *state, s32 count, s32 gap);
+extern Overlay58RaceState *func_80028F54(void);
+extern void loadFrontEndList(s16 *assetGroup);
+extern void joyResetMap(void);
+extern void initColourCycle(ColourCycle *cycle, s32 tableIndex);
 extern void overlay58FinalizePackedStatus(void);
 
-/* Every Reloc name is provisional; normalized assembly does not bind it. */
-/* Declaration order set to the target's home ladder 2026-09-11, byte-inert
- * (295 masked, 109 aligned-exact, 165 naming, 18 immediate before and after).
- * `count` is second only to carry the ladder; any single local does, and four
- * choices measured identical. */
-/*
- * Plateau (2026-09-10): 295 of 368 relocation-masked words differ, down from
- * 296, at exact 368-word size.  One safe change: the two stores in the seeding
- * loop are swapped.  They go through disjoint arrays and write the same value,
- * so the order is inert.
- *
- * The frame, not the words, is this function's live problem: 0x78 against the
- * target's 0x60, a 24-byte surplus at EXACT instruction count.  Measured, not
- * inferred: adding N unused `s32` declarations grows the frame in an 8-byte
- * step every second declaration and moves no word at all (0/1 pads 0x78, 2/3
- * 0x80, 4/5 0x88, 6 0x90), so the declared block is a rounded quantum charged
- * per declaration whether or not the local is ever used or coloured.  Removing
- * the three `right*` out-parameters buys 16 of the 24 bytes (0x78 -> 0x68).
- * So the target's declared block is five or six cells smaller than this one,
- * and the six address-taken `left*`/`right*` cells are where to look: `&x` in
- * an argument list is what forces a memory home.  Re-spelling them as two
- * `s32[3]` arrays or one `s32[6]` is byte-flat -- same cells, same frame --
- * and a form that keeps both calls but only three cells lands at 0x68 with a
- * 52-byte code deficit, so the reconstruction has to remove declarations
- * without removing the second call.
- *
- * Also measured here: `register` is inert.  Stripping it from all 37 locals
- * changes neither the words nor the frame (ido-5.3 L16).
- */
-#ifdef NON_MATCHING
+extern u8 D_8007BEF8_o058Reloc;
+extern u8 D_8007BF0C_o058Reloc;
+extern u16 D_8007BF1C_o058Reloc;
+extern s32 D_8007BF6C_o058Reloc;
+extern Overlay58LanguageText *D_8007C0B8_o058Reloc;
+extern s32 D_8007C1B4_o058Reloc;
+extern Overlay58PlayerSlot D_800D3058_o058Reloc[];
+extern RcpTextureInfo *D_800D31C8_o058Reloc[];
+
+extern s16 D_o058_5AE8[];
+extern s32 D_o058_5B28[6];
+extern RcpTextureNode D_o058_5B40[];
+extern RcpTextureNode D_o058_5B60[];
+extern RcpTextureNode D_o058_5B80[];
+extern RcpTextureNode D_o058_5BA0[];
+extern char *D_o058_5E68[4];
+extern s32 D_o058_5E78;
+extern s32 D_o058_5E7C;
+extern s32 D_o058_5E80;
+extern s32 D_o058_5EBC;
+extern s32 D_o058_5EC4;
+extern Overlay58RaceEntry *D_o058_5EC8[6];
+extern Overlay58RaceEntry *D_o058_5EE0[6];
+extern s32 D_o058_5EF8[6];
+extern s32 D_o058_5F10[6];
+extern s32 D_o058_5F28;
+extern s32 D_o058_5F2C;
+extern s32 D_o058_5F30;
+extern ColourCycle D_o058_5F38;
+extern s8 D_o058_5F48[4];
+
 void func_overlay_058_F0000000_18AF1E8(void) {
-    register s32 i;
-    register s32 count;
-    s32 left0;
-    s32 right0;
-    s32 left1;
-    s32 right1;
-    s32 left2;
-    s32 right2;
-    Overlay58OrderState *state;
-    Overlay58OrderEntry *entry;
-    Overlay58OrderEntry *next;
-    register Overlay58OrderEntry **orderCursor;
-    register Overlay58OrderEntry **rankCursor;
-    Overlay58TagSource *tagSource;
-    s8 *tag;
-    s32 *classCursor;
-    register s32 limit;
-    register s32 swapped;
-    register s32 gap;
+    s32 i;
+    s32 swapped;
+    s32 minutesA;
+    s32 minutesB;
+    s32 secondsA;
+    s32 secondsB;
+    s32 centisA;
+    s32 centisB;
+    Overlay58RaceState *state;
+    Overlay58RaceEntry *entry;
 
-    state = overlay58GetOrderStateReloc();
-    overlay58ResetOrderStateReloc(D_C8);
-    D_120 = gOverlay58SnapshotSourceReloc.value0C;
-    D_140 = gOverlay58SnapshotSourceReloc.value10;
-    D_160 = gOverlay58SnapshotSourceReloc.value14;
-    D_180 = gOverlay58SnapshotSourceReloc.value1EC;
-    D_30 = 0;
-    overlay58BeginOrderUpdateReloc();
-
-    tag = D_F8;
-    tagSource = gOverlay58TagSourcesReloc;
-    do {
-        *tag++ = tagSource->tag2A;
-        tagSource++;
-    } while (tagSource < gOverlay58TagSourcesEndReloc);
-
-    D_6C = state->active;
-    count = gOverlay58EntryCountReloc;
-    if (count > 0) {
-        orderCursor = D_78;
-        rankCursor = D_90;
-        entry = &state->entries[0];
-        do {
-            rankCursor++;
-            rankCursor[-1] = entry;
-            *orderCursor = entry;
-            entry++;
-            orderCursor++;
-        } while (rankCursor < &D_90[count]);
+    state = func_80028F54();
+    loadFrontEndList(D_o058_5AE8);
+    D_o058_5B40[0].texture = D_800D31C8_o058Reloc[3];
+    D_o058_5B60[0].texture = D_800D31C8_o058Reloc[4];
+    D_o058_5B80[0].texture = D_800D31C8_o058Reloc[5];
+    D_o058_5BA0[0].texture = D_800D31C8_o058Reloc[0x7B];
+    D_o058_5E80 = 0;
+    joyResetMap();
+    for (i = 0; i < 4; i++) {
+        D_o058_5F48[i] = D_800D3058_o058Reloc[i].enabled;
     }
-
-    limit = count - 1;
+    D_o058_5EBC = state->active;
+    for (i = 0; i < D_8007BEF8_o058Reloc; i++) {
+        D_o058_5EC8[i] = &state->entries[i];
+        D_o058_5EE0[i] = &state->entries[i];
+    }
     if (state->mode == 5) {
-        if (limit > 0) {
-            do {
-                swapped = 0;
-                orderCursor = D_78;
-                rankCursor = &D_78[limit];
-                do {
-                    entry = orderCursor[0];
-                    next = orderCursor[1];
-                    if (entry->value04 < next->value04) {
-                        orderCursor[0] = next;
-                        orderCursor[1] = entry;
-                        swapped = 1;
-                    }
-                    orderCursor++;
-                } while (orderCursor < rankCursor);
-            } while (swapped != 0);
-        }
-    } else {
-        if (limit > 0) {
-            do {
-                swapped = 0;
-                orderCursor = D_78;
-                rankCursor = &D_78[limit];
-                do {
-                    entry = orderCursor[0];
-                    next = orderCursor[1];
-                    if (next->value04 < entry->value04) {
-                        orderCursor[0] = next;
-                        orderCursor[1] = entry;
-                        swapped = 1;
-                    }
-                    orderCursor++;
-                } while (orderCursor < rankCursor);
-            } while (swapped != 0);
-        }
-    }
-
-    D_A8[0] = 0;
-    i = 1;
-    if (i < gOverlay58EntryCountReloc) {
-        orderCursor = D_7C;
-        classCursor = D_AC;
         do {
-            overlay58SplitOrderValueReloc(orderCursor[-1]->value04, &left0,
-                                          &left1, &left2);
-            overlay58SplitOrderValueReloc(orderCursor[0]->value04, &right0,
-                                          &right1, &right2);
-            if ((left0 == right0) && (left1 == right1) &&
-                (left2 == right2)) {
-                classCursor[0] = classCursor[-1];
-            } else {
-                classCursor[0] = i;
-            }
-            i++;
-            orderCursor++;
-            classCursor++;
-        } while (i < gOverlay58EntryCountReloc);
-    }
-
-    i = 0;
-    if (i < gOverlay58EntryCountReloc) {
-        do {
-            if (&state->entries[0] == D_78[i]) {
-                D_74 = i;
-                i = 6;
-            }
-            i++;
-        } while (i < gOverlay58EntryCountReloc);
-        i = 0;
-    }
-    if (((D_74 < 4) || (gOverlay58UpdateGateReloc != 0)) &&
-        (state->mode != 1)) {
-        if (i < gOverlay58EntryCountReloc) {
-            orderCursor = D_78;
-            classCursor = D_A8;
-            do {
-                entry = (Overlay58OrderEntry *)((u8 *)*orderCursor +
-                                                *classCursor);
-                ((u8 *)entry)[0x1C]++;
-                entry = *orderCursor;
-                entry->rank22 += D_108[*classCursor];
-                entry = *orderCursor;
-                if (entry->rank22 >= 10000) {
-                    entry->rank22 = 9999;
-                }
-                count = gOverlay58EntryCountReloc;
-                i++;
-                orderCursor++;
-                classCursor++;
-            } while (i < count);
-        }
-        i = 0;
-    } else if ((state->active != 0) &&
-               ((gOverlay58PackedFlagsReloc & 0x100) == 0)) {
-        state->countdown--;
-    }
-
-    limit = gOverlay58EntryCountReloc - 1;
-    do {
-        swapped = 0;
-        if (limit > 0) {
-            orderCursor = D_90;
-            rankCursor = &D_90[limit];
-            do {
-                entry = orderCursor[0];
-                next = orderCursor[1];
-                if (entry->rank22 < next->rank22) {
-                    orderCursor[0] = next;
-                    orderCursor[1] = entry;
+            swapped = 0;
+            for (i = 0; i < D_8007BEF8_o058Reloc - 1; i++) {
+                if (D_o058_5EC8[i]->value < D_o058_5EC8[i + 1]->value) {
+                    entry = D_o058_5EC8[i];
+                    D_o058_5EC8[i] = D_o058_5EC8[i + 1];
+                    D_o058_5EC8[i + 1] = entry;
                     swapped = 1;
                 }
-                orderCursor++;
-            } while (orderCursor < rankCursor);
-            i = 0;
+            }
+        } while (swapped);
+    } else {
+        do {
+            swapped = 0;
+            for (i = 0; i < D_8007BEF8_o058Reloc - 1; i++) {
+                if (D_o058_5EC8[i]->value > D_o058_5EC8[i + 1]->value) {
+                    entry = D_o058_5EC8[i];
+                    D_o058_5EC8[i] = D_o058_5EC8[i + 1];
+                    D_o058_5EC8[i + 1] = entry;
+                    swapped = 1;
+                }
+            }
+        } while (swapped);
+    }
+    D_o058_5EF8[0] = 0;
+    for (i = 1; i < D_8007BEF8_o058Reloc; i++) {
+        overlay56SplitTime(D_o058_5EC8[i - 1]->value, &minutesA, &secondsA, &centisA);
+        overlay56SplitTime(D_o058_5EC8[i]->value, &minutesB, &secondsB, &centisB);
+        if ((minutesA == minutesB) && (secondsA == secondsB) && (centisA == centisB)) {
+            D_o058_5EF8[i] = D_o058_5EF8[i - 1];
+        } else {
+            D_o058_5EF8[i] = i;
         }
-    } while (swapped != 0);
-
-    i = 0;
-    if (i < gOverlay58EntryCountReloc) {
-        orderCursor = D_90;
-        do {
-            entry = *orderCursor;
-            gap = D_90[0]->rank22 - entry->rank22;
-            if (gap >= 101) {
-                gap = 100;
-            }
-            entry->gap03 = gap;
-            count = gOverlay58EntryCountReloc;
-            i++;
-            orderCursor++;
-        } while (i < count);
     }
-
-    D_C0[0] = 0;
-    i = 1;
-    if (i < gOverlay58EntryCountReloc) {
-        orderCursor = D_94;
-        classCursor = D_C4;
-        do {
-            entry = orderCursor[-1];
-            next = orderCursor[0];
-            if (entry->rank22 == next->rank22) {
-                classCursor[0] = classCursor[-1];
-            } else {
-                classCursor[0] = i;
-            }
-            i++;
-            orderCursor++;
-            classCursor++;
-        } while (i < gOverlay58EntryCountReloc);
+    for (i = 0; i < D_8007BEF8_o058Reloc; i++) {
+        if (state->entries == D_o058_5EC8[i]) {
+            D_o058_5EC4 = i;
+            i = 6;
+        }
     }
-
-    D_D8 = 0;
-    overlay58BuildOrderReloc(D_E8, 10, gap);
-    D_2C = 0;
-    if (gOverlay58ModeReloc == 3) {
-        D_28 = 3;
+    if (((D_o058_5EC4 < 4) || (D_8007BF0C_o058Reloc != 0)) && (state->mode != 1)) {
+        for (i = 0; i < D_8007BEF8_o058Reloc; i++) {
+            D_o058_5EC8[i]->counters[D_o058_5EF8[i]]++;
+            D_o058_5EC8[i]->rank += D_o058_5B28[D_o058_5EF8[i]];
+            if (D_o058_5EC8[i]->rank > 9999) {
+                D_o058_5EC8[i]->rank = 9999;
+            }
+        }
+    } else if ((state->active != 0) && !(D_8007BF1C_o058Reloc & 0x100)) {
+        state->countdown--;
+    }
+    do {
+        swapped = 0;
+        for (i = 0; i < D_8007BEF8_o058Reloc - 1; i++) {
+            if (D_o058_5EE0[i]->rank < D_o058_5EE0[i + 1]->rank) {
+                entry = D_o058_5EE0[i];
+                D_o058_5EE0[i] = D_o058_5EE0[i + 1];
+                D_o058_5EE0[i + 1] = entry;
+                swapped = 1;
+            }
+        }
+    } while (swapped);
+    for (i = 0; i < D_8007BEF8_o058Reloc; i++) {
+        swapped = D_o058_5EE0[0]->rank - D_o058_5EE0[i]->rank;
+        if (swapped > 100) {
+            swapped = 100;
+        }
+        D_o058_5EE0[i]->gap = swapped;
+    }
+    D_o058_5F10[0] = 0;
+    for (i = 1; i < D_8007BEF8_o058Reloc; i++) {
+        if (D_o058_5EE0[i - 1]->rank == D_o058_5EE0[i]->rank) {
+            D_o058_5F10[i] = D_o058_5F10[i - 1];
+        } else {
+            D_o058_5F10[i] = i;
+        }
+    }
+    D_o058_5F28 = 0;
+    initColourCycle(&D_o058_5F38, 10);
+    D_o058_5E7C = 0;
+    if (D_8007C1B4_o058Reloc == 3) {
+        D_o058_5E78 = 3;
     } else {
-        D_28 = 0;
+        D_o058_5E78 = 0;
     }
-
     if (state->mode != 5) {
-        D_18[0] = gOverlay58GameStateReloc->value90;
+        D_o058_5E68[0] = D_8007C0B8_o058Reloc->text[0x24];
     } else {
-        D_18[0] = gOverlay58GameStateReloc->value1C0;
+        D_o058_5E68[0] = D_8007C0B8_o058Reloc->text[0x70];
     }
-    D_18[1] = gOverlay58GameStateReloc->value94;
-    D_18[2] = gOverlay58GameStateReloc->value98;
-    D_18[3] = gOverlay58GameStateReloc->value50;
-
+    D_o058_5E68[1] = D_8007C0B8_o058Reloc->text[0x25];
+    D_o058_5E68[2] = D_8007C0B8_o058Reloc->text[0x26];
+    D_o058_5E68[3] = D_8007C0B8_o058Reloc->text[0x14];
     overlay58FinalizePackedStatus();
-    D_DC = 1;
-    D_E0 = 0;
-    gOverlay58FrameCounterReloc++;
+    D_o058_5F2C = 1;
+    D_o058_5F30 = 0;
+    D_8007BF6C_o058Reloc++;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o058/func_overlay_058_F0000000_18AF1E8/func_overlay_058_F0000000_18AF1E8.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_058_F0000000_18AF1E8:start
- * symbol: func_overlay_058_F0000000_18AF1E8
- * score: 295/368 words
- * frame: 0x78
- * relocations: 95
- * first-mismatch: +0x0
- * summary: Target block solved at 52 bytes, thirteen declarations; six carriers must merge and the surviving positions are pinned.
- * PLATEAU-HANDOFF:func_overlay_058_F0000000_18AF1E8:end
- */

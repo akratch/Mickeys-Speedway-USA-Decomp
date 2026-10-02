@@ -31,21 +31,31 @@ extern void overlay17TransformReloc(
     s32 mode, Overlay17Transform *transform, f32 *source, f32 *destination);
 extern f32 overlay17SqrtReloc(f32 value);
 
-/* Plateau (2026-08-25): exact-size 0x318, 133 words differ from +0x24;
- * reverse pointer fill closed the frame from 0x60 to the target's 0x58.
- * The flag lattice was neutral; the 40-minute permuter reached score 3035. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-02 (lane x-ovlb). Four edits closed it from 121 words:
+ * - the TU takes -Wab,-r4300_mul: the target's `mul.s; nop; mul.s` pair and
+ *   the rotated branch-likely transform loop are that flag's output;
+ * - `scale` is the one length variable, assigned the squared length and then
+ *   overwritten; it is live into the sqrtf call, so IDO stores it once and
+ *   never reloads it (the old volatile spelling reloaded it three times);
+ * - the tail is written in source order (scale both deltas, store the old
+ *   position, clear dirty, then derive the far endpoint), which is the order
+ *   the float ring needs;
+ * - both loops share one index. The transform loop compares element
+ *   addresses so IDO keeps the target's unsigned pointer test instead of
+ *   rewriting it to an equality, and with no separate cursor variable the
+ *   function needs one fewer register cell, which puts `scale`'s home at the
+ *   target's sp+0x24.
+ * The `transform != 0` test in the no-owner arm is dead, and the target
+ * keeps it. */
 void overlay17CalculateEndpoints(
     Overlay17ChainHead *chain, f32 *outX0, f32 *outY0, f32 *outZ0,
     f32 *outX1, f32 *outY1, f32 *outZ1) {
     s32 index;
+    f32 deltaX;
     f32 deltaZ;
     f32 scale;
-    volatile f32 lengthSquared;
     f32 points[6];
     Overlay17Transform *transform;
-    f32 *point;
-    f32 deltaX;
 
     if (chain != 0) {
         transform = chain->transform;
@@ -65,22 +75,20 @@ void overlay17CalculateEndpoints(
                 deltaX = 0.0f;
                 deltaZ = 0.0f;
             }
-            lengthSquared = (deltaX * deltaX) + (deltaZ * deltaZ);
-            scale = lengthSquared;
-            if (lengthSquared > 0.0f) {
-                scale = (chain->radius * transform->scale) /
-                        overlay17SqrtReloc(lengthSquared);
+            scale = (deltaX * deltaX) + (deltaZ * deltaZ);
+            if (scale > 0.0f) {
+                scale = (chain->radius * transform->scale) / overlay17SqrtReloc(scale);
             }
             deltaX *= scale;
             deltaZ *= scale;
             chain->oldX = points[0];
             chain->oldY = points[1];
-            chain->dirty = 0;
             chain->oldZ = points[2];
+            chain->dirty = 0;
             points[3] = points[0] + deltaZ;
-            points[0] -= deltaZ;
             points[4] = points[1];
             points[5] = points[2] - deltaX;
+            points[0] -= deltaZ;
             points[2] += deltaX;
         } else {
             points[0] = chain->x - chain->radius;
@@ -91,19 +99,17 @@ void overlay17CalculateEndpoints(
             points[5] = chain->z;
             if (transform != 0) {
                 overlay17TransformReloc(2, transform, points, points);
-                point = points;
-                do {
-                    point[0] = (point[0] * transform->scale) + transform->x;
-                    point[1] = (point[1] * transform->scale) + transform->y;
-                    point[2] = (point[2] * transform->scale) + transform->z;
-                } while ((point += 3) < &points[6]);
+                for (index = 0; &points[index] < &points[6]; index += 3) {
+                    points[index + 0] = (points[index + 0] * transform->scale) + transform->x;
+                    points[index + 1] = (points[index + 1] * transform->scale) + transform->y;
+                    points[index + 2] = (points[index + 2] * transform->scale) + transform->z;
+                }
             }
         }
     } else {
-        point = &points[5];
         index = 5;
         do {
-            *point-- = 0.0f;
+            points[index] = 0.0f;
         } while (index--);
     }
 
@@ -114,16 +120,3 @@ void overlay17CalculateEndpoints(
     *outY1 = points[4];
     *outZ1 = points[5];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o017/overlay17CalculateEndpoints/func_overlay_017_F0000000_18739B8.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay17CalculateEndpoints:start
- * symbol: overlay17CalculateEndpoints
- * score: 121 differing words
- * frame: 0x58
- * relocations: 3
- * first-mismatch: +0x24
- * summary: Declaration order moves points to 0x30: 133 to 121. Volatile lengthSquared reloads where the target stores once and keeps f18 live.
- * PLATEAU-HANDOFF:overlay17CalculateEndpoints:end
- */

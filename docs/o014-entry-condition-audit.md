@@ -1,11 +1,25 @@
 # Overlay 14 entry-condition audit
 
 - source: `src/overlays/o014/func_overlay_014_F000013C_186FA14.c`
-- score: 29 differing words
-- frame: 0x30
+- score: 0/120 words, promoted
+- frame: 0x28
 - relocations: 20
-- first mismatch: +0x0
-- summary: Entry-condition repair premise disproved; source unchanged.
+- first mismatch: none
+- summary: Matched. Entry-condition repair premise disproved; the guard really is always taken.
+## 2026-10-02 match
+
+Rewritten from the listing and promoted. The 29-word residual was two
+things, neither of them the entry condition: the group walk was byte
+arithmetic on an `s16` cursor, which emits the offset-first add, where the
+shipped add is cursor-first (indexing the group's own rule array,
+`&entry->rules[entry->count]`, gives it); and the locals' declaration order
+cost one extra frame cell pair (0x30 against 0x28). The inherited carrier
+`right = group--` / `right = count--` was load-bearing: it is the dead copy
+both shipped loops carry. Both while-loop spellings compute a boolean
+instead: `while ((right = n--) != 0)` measured 18 words at size delta 0 on
+the final shape, and `while (n-- != 0)` 82 words at +0x10 bytes on the
+s16-cursor shape.
+
 ## 2026-09-27 entry-condition audit
 
 The assigned hypothesis was that complementary source returns incorrectly made

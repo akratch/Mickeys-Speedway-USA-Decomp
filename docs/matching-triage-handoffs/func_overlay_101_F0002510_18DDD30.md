@@ -2,11 +2,13 @@
 ### `func_overlay_101_F0002510_18DDD30` plateau handoff
 
 - source: `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c`
-- score: 291 differing words
-- frame: 0xF8
+- score: 263 differing words
+- frame: 0xE8
 - relocations: 6
-- first mismatch: +0x0
-- summary: 291 words, size +8, frame 0xF8 vs 0xE8. Bounds-array and width-local spellings did not beat it.
+- first mismatch: +0x34
+- summary: 263 words at size -8 (was 291 at +8), frame 0xE8 exact, SDK GBI macro body. Left: the y split, left/top in s3/s1, rotated hoisted rect words.
+
+Summary before this remeasure: 291 words, size +8, frame 0xF8 vs 0xE8. Bounds-array and width-local spellings did not beat it.
 
 Summary before this remeasure: Rebuilt on the four decoded SYMBOL callees and this overlay's own display-list command idiom; structural residual 142 to 125 and size delta -52 to +8, where the +8 is one extra callee-saved register, while the positional count went 276 to 291 because the frame is 0xF8 against 0xE8.
 
@@ -108,4 +110,53 @@ insertion_pairs: size +8, frame +16, label missing-CSE, aligned residual 266. Th
 Packing left/top/right/bottom into one array was byte-inert at 291. Hoisting texture width and height into locals for every use grew the frame to 0x110 and the size delta to -44 (293 masked). A width local around only the division scored 294 at delta +12. All three reverted. The body is the inherited one.
 
 Stall: those three spellings of the missing-CSE pair's owning lines (the bounds addresses, and the width load) produced no better residual, no new identity beyond the array being inert, and eliminated hoisting the texture dimensions. Do not colour-sweep while the size is off. The open lever is still the tenth callee-saved register.
+#### 2026-10-02, lane x-o101: SDK GBI macro body, 291 to 263, frame exact
+
+The command stream is the SDK GBI macro set, read off the words: G_DL push
+0x06 with D_230, G_SETPRIMCOLOR from the node's intensity and alpha, then
+per row `gDPLoadTextureBlockS(gfx++, source, G_IM_FMT_RGBA, G_IM_SIZ_16b,
+texture->width, rows, 0, clamp, clamp, nomask, nomask, nolod, nolod)` (the
+LoadBlock dxt of 0 is the S variant's; the target's MIN() branch is its
+texel clamp) and `gSPTextureRectangle(gfx++, ...)` with dsdx and dtdy
+1 << 10 (old GBI: RDPHALF_1 0xB3, RDPHALF_2 0xB2). The source is included
+from the tree's include/n_audio/gbi.h with _SHIFTL/_SHIFTR defined as mbi.h
+does; without them every _SHIFTL compiles as an implicit call. The texture
+rows are a u16 pointer stepped by the stride (the target's pre-loop
+stride * 2).
+
+Measured with tools/align_symbol.py, before and after:
+
+  - before (lane p11 body): size +8, positional 291, byte-exact 46, naming
+    128, immediate 13, really different 125, displacement tax 25.
+  - after: size -8, positional 263, byte-exact 214, naming 52, immediate 8,
+    really different 24, displacement tax 179.
+
+The frame closed on a law this function makes easy to read: every declared
+local takes a cell, top-down in declaration order, register-allocated or
+not. With the bounds declared first they sat at 0xEC..0xE0; the target's
+0xB8..0xAC with the stride spill at 0xA8 below them means eleven locals
+declared ahead of `left` and `stride` right after `bottom`. One cell too
+many remained (0xF0); dropping the nextY carrier (`drawY += chunkRows * 4`,
+the rectangle taking `drawY + chunkRows * 4`) gives 0xE8. Merging rowOffset
+into sourceY also gives 0xE8 but scores 266 against 264.
+
+Axes measured flat on this body (each a full product): x/y statement order
+(2 better than y first), edge sums as locals in either order (inline is +12
+bytes), four spellings of edgeY, three spellings of the clip chain, the
+0x800 / width quotient as a named local, while against guarded do-while,
+and five positions of `source += stride` (end of loop body 263, others 264;
+splitting gDPLoadTextureBlockS into its parts to put the increment before
+the LoadBlock does not move it into the target's block).
+
+What is left is allocation, all of it in register_census: one global mapping
+explains 74% (seven windows). The target computes y into v1 and copies it to
+a callee-saved s4 (one target-only move at +0x98), keeps left and top in
+s3/s1 before the scissor call where this body loads left straight into a1,
+holds the shift in ra and the mask in a3 (here s4 and ra), and its four
+hoisted rectangle words sit one register round from these (s1..s4). The
+size -8 is those one-sided moves: target-only at +0x98, +0xD4, +0x1BC and
++0x208 plus the dList reload at +0x14C; candidate-only moves at +0x160,
++0x1E0 and +0x22C. The next lever is the y split: find what makes uopt keep
+the clip-test y and the post-call y as two webs.
+
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

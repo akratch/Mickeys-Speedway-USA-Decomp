@@ -2,11 +2,11 @@
 ### `overlay17CalculateEndpoints` plateau handoff
 
 - source: `src/overlays/o017/overlay17CalculateEndpoints.c`
-- score: 121 differing words
+- score: 0/198 words, promoted
 - frame: 0x58
 - relocations: 3
-- first mismatch: +0x24
-- summary: Declaration order moves points to 0x30: 133 to 121. Volatile lengthSquared reloads where the target stores once and keeps f18 live.
+- first mismatch: none
+- summary: Matched. Per-file -Wab,-r4300_mul; one scale variable that is stored once and never reloaded; the tail in source order; one shared index whose transform loop compares element addresses.
 
 Summary before this remeasure: Fresh V0 retains 133 differences; call proxies have no exact sibling witness, zero identities resolve, and only one relocation site aligns.
 
@@ -39,4 +39,31 @@ squared once to 0x24 and keeps f18 live, where volatile emits two reloads.
 - Target reading: the length-squared store at 0x24 is never reloaded (the
   value stays in f18), and the two-point transform loop is unrolled by two with
   a `sltu` guard; neither is reproduced yet.
+
+#### 2026-10-02, lane x-ovlb: matched and promoted
+
+121 -> 0 at size delta 0, frame 0x58, three call relocations, verified.
+The steps, each measured in turn:
+
+- Per-file `-Wab,-r4300_mul`. The target has a nop between two `mul.s`
+  and a rotated loop that ends in a branch-likely, and IDO emits both only
+  with that flag. Under the flag the old volatile spelling grew by 8 bytes
+  (two extra reloads). The flag did not change AdvanceChain or CreateChain.
+- No separate squared-length variable: `scale` gets the squared length and
+  is overwritten by the sqrtf quotient. Of eight spellings measured this is
+  the only one at delta 0, and it scored 83. The target's one store with no
+  reload is `scale` being live into the call, not a volatile.
+- The tail order was searched over 1,440 dependency-valid statement orders.
+  The natural order was best, at 3: scale both deltas, store oldX/oldY/oldZ,
+  clear dirty, write points 3/4/5, then adjust points 0 and 2. Putting
+  `index = 5` before the cursor in the zero loop gave 1.
+- The last word was where `scale` lives on the stack: sp+0x20 against the
+  target's sp+0x24. Declaration order does not reach it; 210 placements of
+  index/scale/point all scored 1. What reaches it is how many integer loop
+  variables the function has. An index plus a cursor gets two register cells,
+  and the target has one. Writing the transform loop with the shared index
+  costs a different instruction, because IDO turns `index < 6` into an
+  equality branch. Comparing the element addresses
+  (`&points[index] < &points[6]`) keeps the target's unsigned pointer test,
+  and that closed the function.
 <!-- plateau-handoff:overlay17CalculateEndpoints:end -->

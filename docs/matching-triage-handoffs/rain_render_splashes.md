@@ -2,11 +2,13 @@
 ### `rain_render_splashes` plateau handoff
 
 - source: `src/main/weather.c`
-- score: 100/404 words
+- score: 0/404 words, promoted
 - frame: 0xB8
 - relocations: 0
-- first mismatch: +0x94
-- summary: Index-difference colour stores (105->100); 0xFF web still save 40, totalsave 160, below splash 76.8
+- first mismatch: none
+- summary: Matched. The four splash vertices are one counted loop over two offset tables (IDO unrolls it), the age step is the 0.175f literal, and each packet is one GBI-style macro line.
+
+Summary before this remeasure: Index-difference colour stores (105->100); 0xFF web still save 40, totalsave 160, below splash 76.8
 
 Summary before this remeasure: 109 with the height-result home at the target 0x84 and a for render loop; the s1/s2/s3 ring is one ranking: delay address and 0xFF outrank splash and index.
 - ownership: resident text 0x8003BBF8 through 0x8003C248, 0x650 bytes; the next symbol is `rain_lightning`, so there is no owned tail padding.
@@ -91,5 +93,44 @@ and final prim words. Or-zero probes stay closed from the earlier shard.
 Open: the dtype-8 0xFF web still needs a size-neutral use uopt counts.
 Identities fold before the count, and a store that is not an identity is
 emitted. Splash remains on s1.
+
+## 2026-10-02 (lane x-res): 100 to 0, promoted with its rodata
+
+The callee-saved ranking every earlier pass worked on was a property of the
+inherited shape, not of the function. Rewritten from the JFG body
+(func_8005C188_5CD88) and measured as products with `tools/shape_product.py`:
+
+- The age step is `updateRate * 0.175f`. D_80082830 was the TU's own literal
+  (the first word of the old 0x83430 rodata blob, three zero pad words after
+  it). As a literal it is a loop-invariant constant web and takes f20 as in
+  the target; the `age` carrier or a global load gives the f20/f22 swap.
+- Each display-list packet is one macro on one line, w0 then w1, writing
+  through a block-scope `Gfx *` (the libultra GBI spelling). On one line the
+  independent packets store w1 first, exactly the target's order, so no
+  per-packet store order is needed (the e-res3 product was measuring
+  multi-line expansions).
+- With those, 79 masked at delta 0, all one s1/s2/s3 rotation: the
+  candidate's splash web (save 76.8) outranked the 0xFF web (40).
+- The four splash vertices are `for (j = 0; j < 4; j++)` over
+  `D_8007C6C8[j]` and `D_8007C6D8[j]` (two four-float offset tables; the
+  eight scalar externs were one object each). IDO's unroller emits the
+  target's four copies, and the ranking falls out: 79 to 8 in one compile,
+  the 8 being the frame the new `j` local adds.
+- Frame: the block-scope packet pointers take homes; one unused declaration
+  at the top and one between `j` and `heightResult` (declared last) put the
+  height-result home at 0x84 in the 0xB8 frame. 0 at delta 0. The `0xFF ^
+  (index - index)` stores are plain 0xFF again.
+
+The TU now owns its literal pool: `mickey.us.yaml` carves 0x83430 as weather
+`.rodata` (0x10 bytes, identical to ROM) and the remaining blob starts at
+0x83440.
+
+Closures broken: the d-res1/w6-rain reading that the residual is the 0xFF
+web's save against splash's (no zero-size use raises it) was true only of the
+hand-unrolled vertex block; e-res3's per-packet store order was a property of
+multi-line packet writes.
+
+Gates: gmake verify OK on the promoted tree, scoreboard and ranking
+regenerated.
 
 <!-- plateau-handoff:rain_render_splashes:end -->

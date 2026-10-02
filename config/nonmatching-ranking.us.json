@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 119,
-  "resolved": 119,
+  "queue_size": 118,
+  "resolved": 118,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 119,
-  "relocation_masked_coverage": 119,
+  "source_context_coverage": 118,
+  "relocation_masked_coverage": 118,
   "functions": [
     {
       "name": "func_overlay_008_F0001294_185EFEC",
@@ -1148,21 +1148,6 @@
       "size_delta": 80,
       "category": "size-mismatch",
       "source_context_sha256": "gDFU.tH1w.GZlZ.cwmV.8p6K.9swm.kauQ.pBHa.78Rv.rDN5.6-I"
-    },
-    {
-      "name": "ProcessRelocationEntry",
-      "file": "src/main/runlink.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 584,
-      "objdiff_match_pct": null,
-      "differing_words": 126,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 126,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": 4,
-      "category": "size-mismatch",
-      "source_context_sha256": "zHu3.Vx4u.MRJ7.8JMN.O-DL.-dSl.ZNG8.KEut.yLX2.c7NF.gYY"
     },
     {
       "name": "func_8001B798",

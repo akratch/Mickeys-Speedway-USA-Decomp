@@ -284,7 +284,7 @@ Relocation-masked mismatch evidence covers **83 / 83** resolved rows. The raw co
 | raw `differing_words <= 10` | 3 |
 | relocation-masked `differing_words <= 10` | 4 |
 | raw `differing_words <= 20` | 8 |
-| relocation-masked `differing_words <= 20` | 8 |
+| relocation-masked `differing_words <= 20` | 9 |
 
 ### Complete ranked queue
 
@@ -302,16 +302,16 @@ units remain distinct.
 | 6 | `src/main/track.c` | `func_8000E5EC` | `main` | `other` | 820 | 13 | 12 | 180 | 260 | 0 | — |
 | 7 | `src/overlays/o044/func_overlay_044_F0000580_188BDE0.c` | `func_overlay_044_F0000580_188BDE0` | `o044` | `other` | 1,396 | 13 | 13 | 392 | 392 | 0 | — |
 | 8 | `src/overlays/o015/overlay_015.c` | `overlay15InitStarsAndPalette` | `o015` | `other` | 988 | 18 | 17 | 112 | 112 | 0 | — |
-| 9 | `src/main/matrix.c` | `MatrixMultiplyVec4` | `main` | `other` | 212 | 47 | 47 | 0 | 0 | 0 | — |
-| 10 | `src/main/spranim.c` | `effectboxControl` | `main` | `other` | 772 | 47 | 47 | 220 | 220 | 0 | — |
-| 11 | `src/overlays/o017/overlay17AdvanceChain.c` | `overlay17AdvanceChain` | `o017` | `other` | 588 | 47 | 47 | 24 | 24 | 0 | — |
-| 12 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
-| 13 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 65 | 65 | 52 | 52 | 0 | — |
-| 14 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 69 | 69 | 4 | 4 | 0 | — |
-| 15 | `src/overlays/o036/overlay36ChooseWeightedState.c` | `func_overlay_036_F0000A60_1883F18` | `o036` | `other` | 680 | 71 | 71 | 60 | 60 | 0 | — |
-| 16 | `src/main/rcpFast3d.c` | `func_8002EBE0` | `main` | `other` | 1,020 | 89 | 89 | 312 | 312 | 0 | — |
-| 17 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 103 | 103 | 20 | 20 | 0 | — |
-| 18 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 137 | 103 | 28 | 28 | 0 | — |
+| 9 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 52 | 17 | 156 | 1,916 | 0 | — |
+| 10 | `src/main/matrix.c` | `MatrixMultiplyVec4` | `main` | `other` | 212 | 47 | 47 | 0 | 0 | 0 | — |
+| 11 | `src/main/spranim.c` | `effectboxControl` | `main` | `other` | 772 | 47 | 47 | 220 | 220 | 0 | — |
+| 12 | `src/overlays/o017/overlay17AdvanceChain.c` | `overlay17AdvanceChain` | `o017` | `other` | 588 | 47 | 47 | 24 | 24 | 0 | — |
+| 13 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
+| 14 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 65 | 65 | 52 | 52 | 0 | — |
+| 15 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 69 | 69 | 4 | 4 | 0 | — |
+| 16 | `src/overlays/o036/overlay36ChooseWeightedState.c` | `func_overlay_036_F0000A60_1883F18` | `o036` | `other` | 680 | 71 | 71 | 60 | 60 | 0 | — |
+| 17 | `src/main/rcpFast3d.c` | `func_8002EBE0` | `main` | `other` | 1,020 | 89 | 89 | 312 | 312 | 0 | — |
+| 18 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 103 | 103 | 20 | 20 | 0 | — |
 | 19 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 108 | 108 | 212 | 212 | 0 | — |
 | 20 | `src/overlays/o092/func_overlay_092_F0000308_18D6228.c` | `func_overlay_092_F0000308_18D6228` | `o092` | `other` | 1,832 | 120 | 119 | 336 | 544 | 0 | — |
 | 21 | `src/overlays/o009/overlay_009.c` | `func_overlay_009_F0000000_1866678` | `o009` | `other` | 1,344 | 126 | 120 | 228 | 228 | 0 | — |

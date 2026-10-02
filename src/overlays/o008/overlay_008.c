@@ -1544,20 +1544,30 @@ void overlay8ScaleOutputs(void *unused, Overlay8ScaleState *state,
     }
 }
 
-/* NON_MATCHING: exact size and frame, 103 masked words (2026-10-02).  Every
+/* NON_MATCHING: exact size and frame, 17 masked words (2026-10-02).  Every
  * stack home is at its shipped offset: the terrain query's pointer and the
  * four -1 scratch words are separate locals, and the update count is
  * declared between trigB and blend.  The float constants are this function's
  * own literal pool, one entry per use.  The effect call is
  * overlay7DispatchSelection, which takes two arguments.  `limit` is read
- * plainly, and the approach loop is `while (index--)`.  The command burst
- * reaches the buffer through a second name from its second pair on: that
- * gives the shipped second address build, into v1 after the first pair's
- * last store.  Each pair is its own block: with the boundary the two address
- * webs no longer interfere, so forcing the first to v1 alone gives 89.  Left:
- * the first pair's web takes v0 where the shipped one takes v1, and the
- * owner->mode3B web of the motion tests likewise (both forced: 77).  GLOBAL_ASM
- * stays canonical. */
+ * plainly, and the approach loop is `while (index--)`.
+ *
+ * The motion tests read the mode through `ownerMode`, assigned in each arm:
+ * uopt colours a symbol as one web, so those reads take the v1 the later
+ * tests take (an expression web there takes v0).  The kind-4 outputs add
+ * `(s16)(strength * trig)` to the angle, with `strength *= 4096.0f` in place
+ * and the negated angle stored last: the deleted narrowing spends the three
+ * scratch draws the whole command burst after it was rotated by.  The zero
+ * initialisers are result, blend, selectedValue; the 0xA/0xB arms assign the
+ * mode before blend; the landing flag is stored after the animation rate.
+ *
+ * The command burst reaches the buffer through a second name from its second
+ * pair on: that gives the shipped second address build.  Each pair is its own
+ * block, so the two address webs do not interfere.  Left (17): the first
+ * pair's one-block address web takes v0 where the shipped one takes v1 (14
+ * words; forced, exact); the approach loop saves the counter after loading
+ * the second argument, shipped before (2); the mode compare's operands are
+ * reversed (1).  GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                                       O8P34A0State *state, f32 limit,
@@ -1587,8 +1597,8 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     scratch[2] = -1;
     scratch[3] = -1;
     result = 0.0f;
-    selectedValue = 0.0f;
     blend = 0.0f;
+    selectedValue = 0.0f;
 
     if (state->motion4 < -0.5f) {
         if (state->direction100 < 0) {
@@ -1642,31 +1652,36 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
         }
     } else if (state->motion4 > 0.5f) {
         if (state->steering108 >= 0x11) {
-            if ((owner->mode3B == 8) && (owner->scale28 == 1.0f)) {
-                blend = 1.0f;
+            ownerMode = owner->mode3B;
+            if ((ownerMode == 8) && (owner->scale28 == 1.0f)) {
                 selectedMode = 0xA;
+                blend = 1.0f;
                 selectedValue = 0.04f;
-            } else if (owner->mode3B != 0xA) {
+            } else if (ownerMode != 0xA) {
                 selectedMode = 8;
                 selectedValue = 0.025f;
             }
-        } else if ((owner->mode3B == 9) && (owner->scale28 == 1.0f)) {
-            blend = 1.0f;
-            selectedMode = 0xB;
-            selectedValue = 0.04f;
-        } else if (owner->mode3B != 0xB) {
-            selectedMode = 9;
-            selectedValue = 0.025f;
+        } else {
+            ownerMode = owner->mode3B;
+            if ((ownerMode == 9) && (owner->scale28 == 1.0f)) {
+                selectedMode = 0xB;
+                blend = 1.0f;
+                selectedValue = 0.04f;
+            } else if (ownerMode != 0xB) {
+                selectedMode = 9;
+                selectedValue = 0.025f;
+            }
         }
     } else {
         selectedMode = 0;
         selectedValue = 0.04f;
-        if ((owner->mode3B == 0x11) || (owner->mode3B == 0x12)) {
+        ownerMode = owner->mode3B;
+        if ((ownerMode == 0x11) || (ownerMode == 0x12)) {
             if (owner->scale28 != 1.0f) {
-                selectedMode = owner->mode3B;
+                selectedMode = ownerMode;
                 selectedValue = 0.008f;
             }
-        } else if ((owner->mode3B == 0) &&
+        } else if ((ownerMode == 0) &&
                    (o8P34A0RandomReloc(0, 0x3FF) >= 0x3FB)) {
             blend = 0.0f;
             selectedMode = o8P34A0RandomReloc(0x11, 0x12);
@@ -1700,10 +1715,10 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                 result = owner->y10 - result;
                 if (result > 40.0f) {
                     gO8P34A0ScaleReloc *= 0.9f;
-                    state->mode16C = 1;
                     selectedMode = 0xC;
                     blend = 0.0f;
                     selectedValue = 0.0667f;
+                    state->mode16C = 1;
                     o8P34A0EffectReloc(owner, 0x15);
                 }
             }
@@ -1844,10 +1859,10 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                 (s32)((state->phase3EC / trigA) * 65536.0f));
             trigB = o8P34A0TrigBReloc(
                 (s32)((state->phase3F0 / 6.283185f) * 65536.0f));
-            factor = strength * 4096.0f;
+            strength *= 4096.0f;
+            state->output3F4 = outputAngle + (s16)(strength * trigA);
+            state->output3F6 = outputAngle + (s16)(strength * trigB);
             state->output3F8 = -outputAngle;
-            state->output3F4 = outputAngle + (s32)(factor * trigA);
-            state->output3F6 = outputAngle + (s32)(factor * trigB);
         } else {
             factor = 1.0f - o8P34A0DecayReloc(0.95f, steps);
             state->output3F4 =
@@ -2351,10 +2366,10 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:start
  * symbol: func_overlay_008_F00034A0_18611F8
- * score: 103/324 words
+ * score: 17/898 words
  * frame: 0x80
  * relocations: 107
- * first-mismatch: +0x1C
- * summary: Each command pair its own block: the address webs stop interfering; first pair's web and the mode3B web still take v0, not v1.
+ * first-mismatch: +0x77C
+ * summary: ownerMode symbol web, (s16) trig sums, statement orders: 103 to 17. Left: first pair web v0 not v1 (14), loop save order (2), mode compare (1).
  * PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:end
  */

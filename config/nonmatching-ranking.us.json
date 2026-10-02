@@ -85,6 +85,21 @@
       "source_context_sha256": "5wWu.9fxd.p0x6.OVbj.QutP.VmB9.qYN-.A0MN.mnEv.AOU7.Llk"
     },
     {
+      "name": "func_80034E54",
+      "file": "src/main/textures_354C8.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 1868,
+      "objdiff_match_pct": null,
+      "differing_words": 43,
+      "first_mismatch_offset": 264,
+      "relocation_masked_differing_words": 43,
+      "relocation_masked_first_mismatch_offset": 264,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "gueP.NZ8h.PSCU.0nrZ.DvEM.whpq.MeZ8.xvLJ.KC3a.4meV.dpM"
+    },
+    {
       "name": "func_8001398C",
       "file": "src/main/track.c",
       "overlay": null,
@@ -412,7 +427,7 @@
       "relocation_masked_first_mismatch_offset": 72,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "myiW.4151.UzvF.zPXG.rNP-.J_cU.5mTz.LKot.0eSH.S1PY.lso"
+      "source_context_sha256": "daVj.um_g.JCAM.PeTw.dbZc.V5wd.EHeU.TJiY.tMA2.VfkF.0wI"
     },
     {
       "name": "rain_render_splashes",
@@ -742,7 +757,7 @@
       "relocation_masked_first_mismatch_offset": 36,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "WCiS.I1nz.zo_u.JHIZ.b6sS._B5F.J_W5.NEte.EM0T.aEdG.ln8"
+      "source_context_sha256": "JSKM.J70D.ndPJ.jFDa.H6_x.gUF6.Tb9U.aan5.EstA.0nPX.UBw"
     },
     {
       "name": "func_80056DD8",
@@ -1150,21 +1165,6 @@
       "source_context_sha256": "Dh2h.A_Vb.q4ML.fOQ9.osvG.Ywcn.979o.oR7n.WN9X.SMN0.JCM"
     },
     {
-      "name": "func_80034E54",
-      "file": "src/main/textures_354C8.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1868,
-      "objdiff_match_pct": null,
-      "differing_words": 425,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 424,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "YAyB.AXsh.ucTN.wv2U.B5vo.uo_t.G7Kb.65fW.J7lD.piQ9.nJM"
-    },
-    {
       "name": "func_8004B1DC",
       "file": "src/main/font.c",
       "overlay": null,
@@ -1417,7 +1417,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 80,
       "category": "size-mismatch",
-      "source_context_sha256": "_Zys.O3U5.lqVA.kk8A.g5dG.-zv5.7Hsf.uTpP.PWiT.bJmx.kN8"
+      "source_context_sha256": "dq2i.0m6i.Xyvp.8PtW.4w3f.oFmk.13pL.mYLG.r6X8.nZnP.Wps"
     },
     {
       "name": "func_overlay_001_F0003258_184F638",

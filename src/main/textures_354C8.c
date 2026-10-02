@@ -67,7 +67,12 @@ typedef struct Sprite {
     s16 numberOfTextures;
     s16 numberOfInstances;
     s16 drawFlags;
-    u8 metadata[6];
+    u8 primRed;
+    u8 primGreen;
+    u8 primBlue;
+    u8 envRed;
+    u8 envGreen;
+    u8 envBlue;
     u8 pad0E[2];
     TextureFrameHeader **textures;
     u8 *commandOffsets;
@@ -372,47 +377,48 @@ void func_80034E48(void) {
  * asm/nonmatchings/textures/sprDPset.s. Mickey's fields, globals, calls, and
  * compiler output remain authoritative.
  *
- * 2026-10-02 (lane o-res6), 461 at -32 to 424 at delta 0: the fx callee
- * takes two arguments (func_8004ADE8(index, texture), so the cursor and
- * flags stay in a2/a3 as the target's call does); the frame count is
- * unsigned (the target's u32-to-float fixup); the wrap product is cast to
- * s32 before the float subtract; colour, sync and geometry commands are gbi
- * macros on dl++; both frame textures are read before the two DMA commands,
- * the second addressed as cmd + 7. Left: frame 0xC8 against 0xB0 (six
- * declared slots too many) and register naming. */
-void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
+ * 2026-10-02 (lane o-tex), 424 to 43 at delta 0: the wrap quotient is its
+ * own local (it takes a0, not a ring temp); frameIndex is assigned once after
+ * the wrap and before the cursor read, and the 0x40 arm subtracts it from
+ * frame in place, so uopt keeps the one truncation in the join block; the
+ * frame counts and the per-frame texture count are read from the sprite at
+ * each use; frameIndex is reused for the next frame's texture base, which
+ * keeps currentTexture a live variable spilled at its home; the next-frame
+ * wrap is if/else (the target's branch over an empty else); the second DMA
+ * adds 0x80000038 directly; the six colour bytes are named fields (array
+ * subscripts reassociate the colour OR chain). Left: the opacity fraction's
+ * float temps, the call's argument copies, a v0/v1 swap in the settings
+ * copy, and frameIndex's spill slot. */
+void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) {
     TextureRenderSettings *settings;
     TextureFrameHeader *texture;
-    Sprite *sprite = arg1;
-    Gfx *dl;
+    TextureFrameHeader *nextTex;
     Gfx *frameCommands;
-    s32 frameIndex;
     s32 settingsIndex;
     s32 opacity;
+    s32 texturesPerFrame;
+    s32 currentTexture;
     s32 tableFlags;
     s32 stateKey;
-    s32 restoreColor;
-    u32 frameCount;
-    s32 texturesPerFrame;
-    s32 nextFrame;
-    s32 currentTexture;
+    Gfx *dl;
     s32 nextTexture;
+    s32 nextFrame;
     s32 i;
     s32 j;
-    TextureFrameHeader *nextTex;
+    s32 frameIndex;
 
-    frameCount = sprite->numberOfFrames;
-    if ((f32)frameCount <= arg3) {
-        arg3 -= (s32)((s32)(arg3 / frameCount) * frameCount);
-    } else if (arg3 < 0.0f) {
-        arg3 = 0.0f;
+    if ((f32)(u32)sprite->numberOfFrames <= frame) {
+        i = frame / (u32)sprite->numberOfFrames;
+        frame -= (s32)(i * (u32)sprite->numberOfFrames);
+    } else if (frame < 0.0f) {
+        frame = 0.0f;
     }
-    frameIndex = (s32)arg3;
-    arg2 |= sprite->drawFlags;
-    arg2 &= ~D_8007BD90;
-    dl = *arg0;
+    frameIndex = frame;
+    dl = *dlist;
+    flags |= sprite->drawFlags;
+    flags &= ~D_8007BD90;
     settingsIndex = 0;
-    switch (arg2 & 0xC000) {
+    switch (flags & 0xC000) {
     case 0x4000:
         settingsIndex = 0x10;
         break;
@@ -420,9 +426,10 @@ void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
         settingsIndex = 0x20;
         break;
     }
-    if (arg2 & 0x40) {
+    if (flags & 0x40) {
         settingsIndex |= 1;
-        opacity = (u8)((arg3 - frameIndex) * 255.0f);
+        frame -= frameIndex;
+        opacity = (u8)(frame * 255.0f);
     } else {
         opacity = 0xFF;
     }
@@ -430,32 +437,26 @@ void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
         settingsIndex |= 2;
     }
     if (D_8007BD80 == 0) {
-        if (arg2 & 0x200) {
+        if (flags & 0x200) {
             settingsIndex |= 4;
             if (D_8007BD9C == 0) {
-                gDPSetPrimColor(dl++, 0, 0, sprite->metadata[0], sprite->metadata[1],
-                                sprite->metadata[2], arg4);
-                gDPSetEnvColor(dl++, sprite->metadata[3], sprite->metadata[4],
-                               sprite->metadata[5], opacity);
+                gDPSetPrimColor(dl++, 0, 0, sprite->primRed, sprite->primGreen, sprite->primBlue, alpha);
+                gDPSetEnvColor(dl++, sprite->envRed, sprite->envGreen, sprite->envBlue, opacity);
             } else {
-                gDPSetPrimColor(dl++, 0, 0, D_800D3038, D_800D3039, D_800D303A, arg4);
+                gDPSetPrimColor(dl++, 0, 0, D_800D3038, D_800D3039, D_800D303A, alpha);
                 gDPSetEnvColor(dl++, D_800D303B, D_800D303C, D_800D303D, opacity);
             }
-        } else {
-            if (arg2 & 0x400) {
-                settingsIndex |= 8;
-                gDPSetPrimColor(dl++, 0, 0, sprite->metadata[0], sprite->metadata[1],
-                                sprite->metadata[2], arg4);
-                gDPSetEnvColor(dl++, 255, 255, 255, opacity);
-            } else if (arg2 & 0x40) {
-                gDPSetEnvColor(dl++, 255, 255, 255, opacity);
-            }
+        } else if (flags & 0x400) {
+            settingsIndex |= 8;
+            gDPSetPrimColor(dl++, 0, 0, sprite->primRed, sprite->primGreen, sprite->primBlue, alpha);
+            gDPSetEnvColor(dl++, 255, 255, 255, opacity);
+        } else if (flags & 0x40) {
+            gDPSetEnvColor(dl++, 255, 255, 255, opacity);
         }
     }
     settings = &D_8007BA80[settingsIndex];
-    tableFlags = settings->flags | (arg2 & settings->mask);
+    tableFlags = settings->flags | (flags & settings->mask);
     stateKey = (settingsIndex << 8) | tableFlags;
-    restoreColor = arg2 & 0x200;
     if ((D_800D302C != stateKey) || (D_800D3020 != D_8007BA80)) {
         D_800D302C = stateKey;
         D_800D3020 = D_8007BA80;
@@ -492,26 +493,27 @@ void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
     D_800D3024 = 0;
     D_800D3028 = 0;
     texture = sprite->textures[0];
-    if (texture->pad1A != 0) {
+    if (texture->pad1A) {
         func_8004ADE8(texture->pad1A, texture);
     }
     if (sprite->drawFlags & 0x40) {
         nextFrame = frameIndex + 1;
         frameCommands = sprite->frameDisplayLists[0];
-        texturesPerFrame = sprite->numberOfTextures / frameCount;
+        texturesPerFrame = sprite->numberOfTextures / sprite->numberOfFrames;
         currentTexture = texturesPerFrame * frameIndex;
-        if (nextFrame >= frameCount) {
-            nextFrame--;
+        if (nextFrame >= sprite->numberOfFrames) {
             if (sprite->spriteFlags != 0) {
                 nextFrame = 0;
+            } else {
+                nextFrame--;
             }
         }
-        nextTexture = texturesPerFrame * nextFrame;
+        frameIndex = texturesPerFrame * nextFrame;
         for (i = 0; i < texturesPerFrame; i++) {
             texture = sprite->textures[currentTexture + i];
-            nextTex = sprite->textures[nextTexture + i];
+            nextTex = sprite->textures[frameIndex + i];
             gDkrDmaDisplayList(dl++, (u32)texture->cmd + 0x80000000, 7);
-            gDkrDmaDisplayList(dl++, (u32)(nextTex->cmd + 7) + 0x80000000, 7);
+            gDkrDmaDisplayList(dl++, (u32)nextTex->cmd + 0x80000038, 7);
             for (j = 0; j < sprite->commandOffsets[i]; j++) {
                 dl->words.w0 = frameCommands->words.w0;
                 dl->words.w1 = frameCommands->words.w1;
@@ -523,18 +525,18 @@ void func_80034E54(Gfx **arg0, Sprite *arg1, s32 arg2, f32 arg3, u8 arg4) {
     } else {
         gSPDisplayList(dl++, sprite->frameDisplayLists[frameIndex]);
     }
-    if (restoreColor != 0) {
+    if (flags & 0x200) {
         gDPSetPrimColor(dl++, 0, 0, 255, 255, 255, 255);
     }
-    *arg0 = dl;
+    *dlist = dl;
 }
 /* PLATEAU-HANDOFF:func_80034E54:start
  * symbol: func_80034E54
- * score: 424/467 words
- * frame: 0xC8 (target 0xB0)
+ * score: 43/467 words
+ * frame: 0xB0 (target 0xB0)
  * relocations: 43
- * first-mismatch: +0x0
- * summary: Delta 0 (was -32): two-arg fx callee, u32 frame count, gbi macros on dl++, both textures read before the DMAs. Left: frame 0xC8 vs 0xB0, naming.
+ * first-mismatch: +0x108
+ * summary: 424 to 43 at delta 0: quotient local, one frameIndex web reused, sprite fields re-read, if/else wrap, named colour bytes. Left: opacity float temps.
  * PLATEAU-HANDOFF:func_80034E54:end
  */
 #else
@@ -659,12 +661,12 @@ Sprite *func_800355A0(s32 spriteId, s32 flags) {
     }
 
     newSprite->numberOfTextures = numTextures;
-    newSprite->metadata[0] = spriteAsset->metadata[0];
-    newSprite->metadata[1] = spriteAsset->metadata[1];
-    newSprite->metadata[2] = spriteAsset->metadata[2];
-    newSprite->metadata[3] = spriteAsset->metadata[3];
-    newSprite->metadata[4] = spriteAsset->metadata[4];
-    newSprite->metadata[5] = spriteAsset->metadata[5];
+    newSprite->primRed = spriteAsset->metadata[0];
+    newSprite->primGreen = spriteAsset->metadata[1];
+    newSprite->primBlue = spriteAsset->metadata[2];
+    newSprite->envRed = spriteAsset->metadata[3];
+    newSprite->envGreen = spriteAsset->metadata[4];
+    newSprite->envBlue = spriteAsset->metadata[5];
     newSprite->numberOfFrames = spriteAsset->numberOfFrames;
     for (i = 0; i < spriteAsset->numberOfFrames; i++) {
         newSprite->frameDisplayLists[i] = D_800D3014;

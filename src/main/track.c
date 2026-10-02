@@ -1634,28 +1634,18 @@ s32 func_8000DDE4(s32 key, s32 recordCount, TrackKeyRecord *records,
     }
     return matchCount;
 }
-#ifdef NON_MATCHING
 /* PROVENANCE: JFG's public track.c supplies the resident track draw-loop
  * organization; Mickey's segment and display-list accesses are authoritative. */
-/* 103 masked words at size delta 0, frame 0x70 exact (303 at +8 -> 103,
- * 2026-10-02 lane n-track). Rewritten from the listing: the outer loop is a
- * plain while (its inverted entry test is the target's bgtz/blezl pair, and
- * the &D_800C9520 constant is then formed at the loop head), every batch
- * count is read from the segment at its use, the display list is written
- * with D_800C9520++ packet macros (prim colour taking D_8007C858 directly),
- * the texture default is an else arm (the target's branch over an empty
- * arm), the vertex size is n << 3 plus n << 1, and eight locals are
- * declared between itemIndex and segment so the homes land at 0x40/0x64/
- * 0x68. Left: integer ring phase through the env-colour and packet code
- * (one seven-cycle from +0x200) and the polygon word's evaluation order. */
+/* Matched 2026-10-02 (lane n-track) by rewriting from the listing: a plain
+ * while loop (its inverted entry test is the bgtz/blezl pair), batch counts
+ * read from the segment at each use, D_800C9520++ packet macros, the
+ * texture default as an else arm, the env value masked once into a local,
+ * the polygon word opcode-first, the shadow instance re-read through the
+ * object, and eight locals between itemIndex and segment for the homes. */
 struct TrackShadowObject;
 struct TrackShadowInstance;
 extern void func_800140CC(struct TrackShadowObject *,
                           struct TrackShadowInstance *);
-extern void overlay69DrawSortedGeometry(Gfx **, Mtx **, TrackVertex **, void *);
-extern void overlay88DrawSortedGeometry(Gfx **, Mtx **, TrackVertex **, void *);
-extern void overlay68DrawSortedEntries(Gfx **, Mtx **, TrackVertex **, void *);
-extern void overlay29DrawGroups(Gfx **, Mtx **, void *);
 
 /* PROVENANCE: the two packet macros follow Diddy Kong Racing's public
  * include/f3ddkr.h (gSPVertexDKR, gSPPolygon), adapted to Mickey's 10-byte
@@ -1666,8 +1656,9 @@ extern void overlay29DrawGroups(Gfx **, Mtx **, void *);
            ((n) << 3) | ((u32) (v) & 6))
 #define TRACK_TRI(pkt, t, n, tex) {                                          \
     Gfx *_g = (Gfx *) (pkt);                                                 \
-    _g->words.w0 = _SHIFTL((((n) - 1) << 4) | (tex), 16, 8) |                \
-                   _SHIFTL(0x05, 24, 8) | _SHIFTL((n) * 16, 0, 16);          \
+    _g->words.w0 = _SHIFTL(0x05, 24, 8) |                                    \
+                   _SHIFTL((((n) - 1) << 4) | (tex), 16, 8) |                \
+                   _SHIFTL((n) * 16, 0, 16);                                 \
     _g->words.w1 = (unsigned int) (t);                                       \
 }
 
@@ -1708,15 +1699,15 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                             alpha = 1;
                             texture = D_800792E8->textures[batch->textureIndex].texture;
                         } else {
-                            alpha = 0;
                             texture = NULL;
+                            alpha = 0;
                         }
                         vertex = (u8 *) segment->lightData + (batch->u0 * 0xA);
                         triangle = (u8 *) segment->vertexData + (batch->v0 * 0x10);
                         textureS = batch->frame << 8;
                         if (texture != NULL && ((s16) texture->flags & 0x40) &&
                             (mode & 0x30) != 0x20) {
-                            value = textureS >> 8;
+                            value = (textureS >> 8) & 0xFF;
                             gDPSetEnvColor(D_800C9520++, value, value, value, value);
                         } else {
                             gDPSetEnvColor(D_800C9520++, 255, 255, 255, 0);
@@ -1754,10 +1745,10 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             child = *(u8 **) (object + 0x4C);
             if (child != NULL && *(u8 *) (object + 0x8E) == 0) {
                 if (*(u8 *) (child + 0x10) & 8) {
-                    child = *(u8 **) (child + 0x1C);
-                    if (child != NULL) {
+                    if (*(u8 **) (*(u8 **) (object + 0x4C) + 0x1C) != NULL) {
                         func_800140CC((struct TrackShadowObject *) object,
-                                      (struct TrackShadowInstance *) child);
+                                      *(struct TrackShadowInstance **)
+                                          (*(u8 **) (object + 0x4C) + 0x1C));
                     }
                 }
                 func_800140CC((struct TrackShadowObject *) object,
@@ -1774,31 +1765,28 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
                     func_80009414(&D_800C9520, &D_800C9524, &D_800C9528, object);
                     break;
                 case 0x1D:
-                    overlay69DrawSortedGeometry(&D_800C9520, &D_800C9524,
-                                                &D_800C9528, object);
+                    TrapDanglingJump(&D_800C9520, &D_800C9524,
+                                     &D_800C9528, object);
                     break;
                 case 0x49:
-                    overlay88DrawSortedGeometry(&D_800C9520, &D_800C9524,
-                                                &D_800C9528, object);
+                    TrapDanglingJump(&D_800C9520, &D_800C9524,
+                                     &D_800C9528, object);
                     break;
                 case 0x3F:
-                    overlay68DrawSortedEntries(&D_800C9520, &D_800C9524,
-                                               &D_800C9528, object);
+                    TrapDanglingJump(&D_800C9520, &D_800C9524,
+                                     &D_800C9528, object);
                     break;
                 case 0x39:
                     TrapDanglingJump(&D_800C9520, &D_800C9524, object);
                     break;
                 case 0x3A:
-                    overlay29DrawGroups(&D_800C9520, &D_800C9524, object);
+                    TrapDanglingJump(&D_800C9520, &D_800C9524, object);
                     break;
                 }
             }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000DFBC.s")
-#endif
 #ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c draft and resident track/particle call surfaces
@@ -5551,16 +5539,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * first-mismatch: +0x8
  * summary: Mickey m2c sort and flag reload recover exact260-word size/frame and improve 289 to189 differences. Next: early call/home lifetime evidence.
  * PLATEAU-HANDOFF:func_8001357C:end
- */
-
-/* PLATEAU-HANDOFF:func_8000DFBC:start
- * symbol: func_8000DFBC
- * score: 103/396 words
- * frame: 0x70
- * relocations: 51
- * first-mismatch: +0xB4
- * summary: Rewrite: while loop, packet macros, else-arm default, frame homes (303 at +8 -> 103 at 0); open: ring phase from +0x200.
- * PLATEAU-HANDOFF:func_8000DFBC:end
  */
 
 /* PLATEAU-HANDOFF:func_8000E5EC:start

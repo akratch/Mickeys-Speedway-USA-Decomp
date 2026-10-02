@@ -861,7 +861,6 @@ $(O15_OBJ): \
 $(O15_OBJ): CFLAGS += -Wab,-r4300_mul
 $(O15_OBJ): POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym func_overlay_015_F000004C_18723E4=overlay15InitStarsAndPalette \
 		--redefine-sym func_overlay_015_F0000428_18727C0=overlay15MoveStars \
 		--redefine-sym func_overlay_015_F0000500_1872898=overlay15DrawScreenStars \
 		--redefine-sym func_overlay_015_F00006E8_1872A80=overlay15InitStars \

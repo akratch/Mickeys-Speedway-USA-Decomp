@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 83,
-  "resolved": 83,
+  "queue_size": 82,
+  "resolved": 82,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 83,
-  "relocation_masked_coverage": 83,
+  "source_context_coverage": 82,
+  "relocation_masked_coverage": 82,
   "functions": [
     {
       "name": "func_8001357C",
@@ -113,21 +113,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "HcyJ.ggtY.g2EJ.EfeZ.XJcn.IyXG.7l6N.WVTR.btQg.ecay.Ahs"
-    },
-    {
-      "name": "overlay15InitStarsAndPalette",
-      "file": "src/overlays/o015/overlay_015.c",
-      "overlay": 15,
-      "tu": "overlays/o015",
-      "size_bytes": 988,
-      "objdiff_match_pct": null,
-      "differing_words": 18,
-      "first_mismatch_offset": 112,
-      "relocation_masked_differing_words": 17,
-      "relocation_masked_first_mismatch_offset": 112,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "ww7a.e_90.FOZl.-YEz._3L2.IB1i.lELj.6jDZ.sNiG.3e-7.H8Q"
     },
     {
       "name": "MatrixMultiplyVec4",
@@ -247,7 +232,7 @@
       "relocation_masked_first_mismatch_offset": 20,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "6Ew7.J712.Ovu9.PP_X.vUG3.opSR.KFTv.ymuI.sB1U.nGX9.hfo"
+      "source_context_sha256": "B3EX.C5kg.Jcs9.OSTB.jnIO.Co6t.-z_m._ZA8.oiXw.8V3q.lfw"
     },
     {
       "name": "func_8002EBE0",

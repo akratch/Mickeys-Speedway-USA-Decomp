@@ -2,11 +2,38 @@
 ### `overlay15InitStarsAndPalette` plateau handoff
 
 - source: `src/overlays/o015/overlay_015.c`
-- score: 17/247 words
+- score: 0/247 words, promoted
 - frame: 0x40
 - relocations: 14
-- first mismatch: +0x70
-- summary: Count store before the bounds block and palette index inits on one line, 19 to 17; stars store base a1 vs a2 and block-1 tail order remain.
+- first mismatch: none
+- summary: Matched. One index for both loops; the palette loop is the unroller's own, and its i+1 is the star loop's i++.
+
+#### 2026-10-02, coordinator: matched from the natural source, 17 to 0
+
+Every earlier pass shaped the first draft's two counters and its
+hand-unrolled palette body. Written the way the function reads, it is
+exact:
+
+- one index `i` drives both loops, `for (i = 0, star = stars; i <
+  gOverlay15StarCount; i++, star++)` and `for (i = 0, palette =
+  gOverlay15StarPalette; i < 0x100; i++)`. The compiler unrolls the second
+  by four, and the `i + 1` it needs there is the same expression the first
+  loop's `i++` computes, so one register carries it across both loops. That
+  is the shipped "previous index" and "index" pair, and it puts the three
+  induction inits after the bound.
+- the stars pointer is stored to the global and read back from it for the
+  palette address and the cursor. The read is forwarded, but the address has
+  two uses, so it is formed in a register (the shipped a2).
+- the three range shifts are plain statements after the bounds block.
+- taking the palette pointer in the loop initializer, not before the colour
+  block, puts its load after the bound.
+
+Measured ladder with fast_score: natural with a direct store 222 at -4;
+address through a local pointer 111; store and read back through the
+global 4 (`star` in the initializer; 9 as a statement, 13 walking `stars`
+itself, 16 indexed); palette pointer in the initializer 0. The pointer
+word is named `gOverlay15StarsWord` (+4) because `gOverlay15Stars` names
+the block base for the view the other functions use.
 
 #### 2026-10-02, lane x-near: the palette loop is IDO's unroller, 17 held
 

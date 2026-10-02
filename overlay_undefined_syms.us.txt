@@ -746,6 +746,10 @@ overlay11ResetMenuReloc = 0xf0000000;
 overlay11SetHandleValueReloc = 0xf0000000;
 overlay11StopOverlay66Reloc = 0xf0000000;
 
+/* overlay 11: func_overlay_011_F00022E8_186AB30.c.o */
+gOverlay11ModeOptionSwitchTableReloc = 0x00000068;
+gOverlay11NextModeReloc = 0x00000000;
+
 /* overlay 11: overlay11ReleaseGroup4.c.o */
 gOverlay11GroupEnd4 = 0x000001d8;
 gOverlay11GroupHandles = 0x000001c8;

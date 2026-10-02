@@ -1,200 +1,134 @@
-typedef signed short s16;
-typedef signed int s32;
-typedef unsigned int u32;
-typedef unsigned char u8;
-typedef float f32;
+#include "PR/ultratypes.h"
+#include "n_audio/mbi.h"
 
-typedef struct O38Command { u32 w0, w1; } O38Command;
-typedef struct O38Position { f32 x, y, z; } O38Position;
 typedef struct O38Transform {
-    s16 angle0, angle2, angle4;
-    s16 pad06;
-    O38Position position;
+    s16 rotationY;
+    s16 rotationX;
+    s16 rotationZ;
+    s16 flags;
     f32 scale;
-#ifdef O38_TRANSFORM_TAIL
-#ifndef O38_TAIL_SIZE
-#define O38_TAIL_SIZE 0x10
-#endif
-    u8 tail[O38_TAIL_SIZE];
-#endif
+    f32 x;
+    f32 y;
+    f32 z;
 } O38Transform;
+
 typedef struct O38Particle {
-    f32 velocity;
+    f32 scale;
     f32 x, y, z;
-    f32 directionX, directionY, directionZ;
+    f32 dx, dy, dz;
 } O38Particle;
+
 typedef struct O38Pool {
-    s32 count, alpha;
+    s32 count;
+    s32 alpha;
     O38Particle particles[20];
 } O38Pool;
+
 typedef struct O38Object {
-    s16 type, pad02;
-    f32 pad04;
-    f32 x, y, z;
-    f32 scale;
+    O38Transform trans;
     u8 pad18[0x4C];
     O38Pool *pool;
     void **resource;
 } O38Object;
-typedef struct O38Camera { u8 pad00[0xC]; f32 x, y, z; } O38Camera;
 
+typedef struct O38Camera {
+    O38Transform trans;
+} O38Camera;
+
+/* Overlay 38's own vertex and triangle data, reached through the module's
+ * LOCAL relocation records. */
 extern u8 gO38ObjectVertices[];
 extern u8 gO38ObjectTriangles[];
 extern u8 gO38ParticleVertices[];
 extern u8 gO38ParticleTriangles[];
-extern void o38ApplyTransform(O38Command **commands, void *context,
-                              O38Transform *transform, f32 scale, f32 extra);
-extern void o38DrawResource(O38Command **commands, void *resource,
-                            s32 mode, s32 flags);
-/* K&R so the object draw passes the vertex address and the particle draw does not. */
-extern void o38FinishDraw();
-extern O38Camera *o38GetCamera(void);
-extern s32 o38Atan2(f32 y, f32 x);
-extern f32 sqrtf(f32 value);
 
-#define EMIT_COLOR(commands, color) do { \
-    O38Command *command = *(commands); \
-    *(commands) = command + 1; \
-    command->w0 = 0xFA000000U; \
-    command->w1 = (color); \
-} while (0)
-#define EMIT_GEOMETRY(commands, vertices, triangles) do { \
-    O38Command *command = *(commands); \
-    *(commands) = command + 1; \
-    command->w0 = (((((((u32)(vertices) & 6U) | 0x20U) & 0xFFU) << 16) | \
-                    0x04000000U) | 0x30U); \
-    command->w1 = (u32)(vertices); \
-    command = *(commands); \
-    *(commands) = command + 1; \
-    command->w0 = 0x05110020U; \
-    command->w1 = (u32)(triangles); \
-} while (0)
-#define EMIT_SYNC(commands) do { \
-    volatile O38Command *command = *(commands); \
-    *(commands) = (O38Command *)(command + 1); \
-    command->w1 = 0; \
-    command->w0 = 0xE7000000U; \
-} while (0)
-#define EMIT_FINAL_COLOR(commands) do { \
-    volatile O38Command *command = *(commands); \
-    *(commands) = (O38Command *)(command + 1); \
-    command->w1 = 0xFFFFFFFFU; \
-    command->w0 = 0xFA000000U; \
-} while (0)
-#define EMIT_FINAL_COLOR_FRESH(commands) do { \
-    volatile O38Command *command = *(commands); \
-    *(commands) = (O38Command *)(command + 1); \
-    command->w1 = 0xFFFFFFFFU; \
-    ((volatile s32 *)command)[0] = -100663296; \
-} while (0)
+/* Resident callees, reached through SYMBOL records: camPushModelMtx,
+ * func_800349A4, camPopModelMtx, camGetPtr, Arctanf and sqrtf. */
+extern void o38PushMatrixReloc(Gfx **dList, s32 context,
+                               O38Transform *transform, f32 scale, f32 offset);
+extern void o38DrawTextureReloc(Gfx **dList, void *texture, s32 flags,
+                                s32 arg3);
+extern void o38PopMatrixReloc(Gfx **dList);
+extern O38Camera *o38GetCameraReloc(void);
+extern s16 o38ArctanReloc(f32 y, f32 x);
+extern f32 o38SqrtReloc(f32 value);
 
-/* 90 masked words at delta 0, frame 0xE8, first +0xC0. The object finish passes
- * the vertex address and the particle finish does not; that pins the pointer.
- * The colour constant still takes a2 rather than a temp, and as1 keeps the
- * loop-header and packet-store order against statement order and line folds. */
-#ifdef NON_MATCHING
-void func_overlay_038_F000047C_188618C(O38Command **commands, void *context,
-                                       O38Object *object)
-{
-    struct O38Locals {
-        O38Transform transform;
-        O38Pool *pool;
-    } locals;
-#define transform locals.transform
-#define pool locals.pool
+/* PROVENANCE: the two packet macros are Jet Force Gemini's gSPVertexJFG and
+ * gSPPolygon (include/f3ddkr.h in its public decompilation, a permitted
+ * source under docs/CLEANROOM.md), copied for the vertex-load and
+ * triangle-list commands this overlay emits. */
+#define gSPVertexJFG(pkt, v, n, v0) \
+    gDma1p(pkt, G_VTX, v, ((((n) << 3) + ((n) << 1))) + 8, \
+           ((n)) << 3 | (((u32)(v) & 6)) | (v0))
+#define gSPPolygon(dl, ptr, numTris, texEnabled) { \
+    Gfx *_g = (Gfx *)(dl); \
+    _g->words.w0 = _SHIFTL((((numTris) - 1) << 4) | (texEnabled), 16, 8) | \
+                   _SHIFTL(5, 24, 8) | _SHIFTL(((numTris) * 16), 0, 16); \
+    _g->words.w1 = (unsigned int)(ptr); \
+}
+
+/* Draw the object's quad, then one camera-facing quad per live particle.
+ *
+ * Matched 2026-10-02 (lane x-ovlb), 90 -> 0 masked words, by rewriting it in
+ * the shape of the matched resident func_8003D25C (src/main/particles.c).
+ * The old candidate held 87 register-naming words behind volatile packet
+ * cursors, a struct standing in for the frame, a pool byte cursor and a
+ * K&R call. The plain form needs none of them:
+ * - every packet is one GBI macro on `(*dList)++`;
+ * - the transform is the ordinary 0x18-byte struct, and the object and the
+ *   camera both start with one, so their fields are read by name;
+ * - the loop is `for (i = 0; i < 20; i++)` over `&pool->particles[i]`; IDO
+ *   makes the byte counter and the pool cursor itself;
+ * - the locals are declared pool, particle, camera, transform, then the
+ *   scalars, which puts the transform at sp+0xC4 under two pointer cells. */
+void func_overlay_038_F000047C_188618C(Gfx **dList, s32 context, O38Object *object) {
+    O38Pool *pool;
     O38Particle *particle;
-#ifdef O38_POOL_CURSOR
-    char *poolCursor;
-#endif
     O38Camera *camera;
-    f32 deltaX, deltaY, deltaZ;
-    s32 offset;
+    O38Transform transform;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    s32 i;
 
-#undef pool
-    locals.pool = object->pool;
-#define pool locals.pool
-
-    transform.angle0 = object->type;
-    transform.angle2 = 0x4000;
-    transform.angle4 = 0;
-    transform.position.x = object->x;
-    transform.position.y = object->y;
-    transform.position.z = object->z;
-    transform.scale = object->scale;
-    o38ApplyTransform(commands, context, &transform, 1.0f, 0.0f);
-    o38DrawResource(commands, *object->resource, 0x10, 0);
-    EMIT_COLOR(commands, 0xFFFFFF00U | (pool->alpha & 0xFF));
-    EMIT_GEOMETRY(commands, gO38ObjectVertices, gO38ObjectTriangles);
-    EMIT_SYNC(commands);
-#ifdef O38_VOLATILE_FINAL
-    EMIT_FINAL_COLOR(commands);
-#else
-    EMIT_COLOR(commands, 0xFFFFFFFFU);
-#endif
-    o38FinishDraw(commands, gO38ObjectVertices);
-
-    camera = o38GetCamera();
-    particle = pool->particles;
-#ifdef O38_POOL_CURSOR
-    offset = 0; poolCursor = (char *)pool;
-    for (; offset != 0x230;
-         offset += sizeof(O38Particle), poolCursor += sizeof(O38Particle)) {
-        particle = (O38Particle *)(poolCursor + 8);
-#else
-    for (offset = 0; offset != 0x230; offset += sizeof(O38Particle), particle++) {
-#endif
-#ifdef O38_VOLATILE_TEST
-        if (object->z <= *(volatile f32 *)&particle->y) {
-#else
-        if (object->z <= particle->y) {
-#endif
-            deltaX = particle->x - camera->x;
-            deltaY = particle->y - camera->y;
-            deltaZ = particle->z - camera->z;
-            transform.angle0 = o38Atan2(deltaX, deltaZ);
-            transform.angle2 = o38Atan2(-deltaY,
-                                        sqrtf(deltaX * deltaX + deltaZ * deltaZ)) + 0x8000;
-            transform.angle4 = 0;
-            transform.position.x = particle->velocity;
-            transform.position.y = particle->x;
-            transform.position.z = particle->y;
-            transform.scale = particle->z;
-            o38ApplyTransform(commands, context, &transform, 1.0f, 0.0f);
-            o38DrawResource(commands, object->resource[1], 0x10, 0);
-            EMIT_COLOR(commands, 0xFFFFFF00U | (pool->alpha & 0xFF));
-            {
-                O38Command *command = *commands;
-                *commands = command + 1;
-                command->w1 = (u32)gO38ParticleVertices;
-                command->w0 = (((((((u32)gO38ParticleVertices & 6U) | 0x20U) & 0xFFU) << 16) |
-                               0x04000000U) | 0x30U);
-                command = *commands;
-                *commands = command + 1;
-                command->w1 = (u32)gO38ParticleTriangles;
-                command->w0 = 0x05110020U;
-            }
-            EMIT_SYNC(commands);
-#ifdef O38_VOLATILE_FINAL
-            EMIT_FINAL_COLOR_FRESH(commands);
-#else
-            EMIT_COLOR(commands, 0xFFFFFFFFU);
-#endif
-            o38FinishDraw(commands);
+    pool = object->pool;
+    transform.rotationY = object->trans.rotationY;
+    transform.rotationX = 0x4000;
+    transform.rotationZ = 0;
+    transform.scale = object->trans.scale;
+    transform.x = object->trans.x;
+    transform.y = object->trans.y;
+    transform.z = object->trans.z;
+    o38PushMatrixReloc(dList, context, &transform, 1.0f, 0.0f);
+    o38DrawTextureReloc(dList, object->resource[0], 0x10, 0);
+    gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, pool->alpha);
+    gSPVertexJFG((*dList)++, gO38ObjectVertices, 4, 0);
+    gSPPolygon((*dList)++, gO38ObjectTriangles, 2, 1);
+    gDPPipeSync((*dList)++);
+    gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, 255);
+    o38PopMatrixReloc(dList);
+    camera = o38GetCameraReloc();
+    for (i = 0; i < 20; i++) {
+        particle = &pool->particles[i];
+        if (object->trans.y <= particle->y) {
+            dx = particle->x - camera->trans.x;
+            dy = particle->y - camera->trans.y;
+            dz = particle->z - camera->trans.z;
+            transform.rotationY = o38ArctanReloc(dx, dz);
+            transform.rotationX = o38ArctanReloc(-dy, o38SqrtReloc(dx * dx + dz * dz)) + 0x8000;
+            transform.rotationZ = 0;
+            transform.scale = particle->scale;
+            transform.x = particle->x;
+            transform.y = particle->y;
+            transform.z = particle->z;
+            o38PushMatrixReloc(dList, context, &transform, 1.0f, 0.0f);
+            o38DrawTextureReloc(dList, object->resource[1], 0x10, 0);
+            gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, pool->alpha);
+            gSPVertexJFG((*dList)++, gO38ParticleVertices, 4, 0);
+            gSPPolygon((*dList)++, gO38ParticleTriangles, 2, 1);
+            gDPPipeSync((*dList)++);
+            gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, 255);
+            o38PopMatrixReloc(dList);
         }
     }
-#undef pool
-#undef transform
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o038/func_overlay_038_F000047C_188618C/func_overlay_038_F000047C_188618C.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_038_F000047C_188618C:start
- * symbol: func_overlay_038_F000047C_188618C
- * score: 90 differing words
- * frame: 0xE8
- * relocations: 18
- * first-mismatch: +0xC0
- * summary: 90 masked at delta 0. Arity split pins the vertex pointer. Stall: the constant-web pair stays in a2 at the +0xC0 line; forcing t0 scores 43 and saved regs then 27, and schedule edits do not stick.
- * PLATEAU-HANDOFF:func_overlay_038_F000047C_188618C:end
- */

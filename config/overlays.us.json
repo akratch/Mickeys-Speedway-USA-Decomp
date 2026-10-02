@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 364092,
-  "nonmatching_overlay_c_bytes": 104512,
+  "matched_overlay_c_bytes": 364120,
+  "nonmatching_overlay_c_bytes": 104484,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4560,
   "bss_bytes": 77680,
@@ -2052,7 +2052,7 @@
      "type": "c",
      "source": "overlays/o007/overlay_007_tail",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0xFB8",
@@ -2192,48 +2192,6 @@
     "exact_donor_match": null,
     "priority_rank": 47
    },
-   "mixed_tu_exact_c_ranges": [
-    {
-     "offset": "0x894",
-     "end_offset": "0xAA0",
-     "size": "0x20C",
-     "label": "overlay7DispatchModes",
-     "source": "overlays/o007/overlay_007_tail",
-     "evidence": "canonical mixed-TU object, 23 text plus seven switch-table runtime relocations, and linked bytes exact"
-    },
-    {
-     "offset": "0xCCC",
-     "end_offset": "0xDBC",
-     "size": "0xF0",
-     "label": "overlay7DispatchSelection",
-     "source": "overlays/o007/overlay_007_tail",
-     "evidence": "canonical mixed-TU object, all 13 runtime relocations, and linked bytes exact"
-    },
-    {
-     "offset": "0xDBC",
-     "end_offset": "0xEDC",
-     "size": "0x120",
-     "label": "overlay7CommitSelection",
-     "source": "overlays/o007/overlay_007_tail",
-     "evidence": "canonical mixed-TU object, 17 runtime relocations with two declared metadata filters, and linked bytes exact"
-    },
-    {
-     "offset": "0xEDC",
-     "end_offset": "0xF08",
-     "size": "0x2C",
-     "label": "overlay7FillValues",
-     "source": "overlays/o007/overlay_007_tail",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    },
-    {
-     "offset": "0xF08",
-     "end_offset": "0xFB8",
-     "size": "0xB0",
-     "label": "overlay7InitPool",
-     "source": "overlays/o007/overlay_007_tail",
-     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
-    }
-   ],
    "data_rodata_ownership": [
     {
      "offset": "0x934",
@@ -4521,7 +4479,7 @@
      "type": "c",
      "source": "overlays/o017/overlay17CalculateEndpoints",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x318",
@@ -5876,7 +5834,7 @@
      "type": "c",
      "source": "overlays/o025/overlay_025",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x608",
@@ -5957,6 +5915,24 @@
     "exact_donor_match": null,
     "priority_rank": 56
    },
+   "mixed_tu_exact_c_ranges": [
+    {
+     "offset": "0x0",
+     "end_offset": "0x17C",
+     "size": "0x17C",
+     "label": "overlay25InitializeEffect",
+     "source": "overlays/o025/overlay_025",
+     "evidence": "canonical mixed-TU object, nine runtime relocations, and linked bytes exact"
+    },
+    {
+     "offset": "0x588",
+     "end_offset": "0x608",
+     "size": "0x80",
+     "label": "overlay25SetVectorFlags",
+     "source": "overlays/o025/overlay_025",
+     "evidence": "pre-consolidation metadata-only object; linked bytes exact"
+    }
+   ],
    "data_rodata_ownership": [
     {
      "offset": "0x20",
@@ -5965,8 +5941,7 @@
      "type": "c",
      "section": ".rodata",
      "source": "overlays/o025/overlay_025",
-     "trial_function": "overlay25UpdateEffect",
-     "externalized": true
+     "trial_function": "overlay25UpdateEffect"
     }
    ]
   },
@@ -6912,7 +6887,7 @@
      "type": "c",
      "source": "overlays/o031/overlay31BuildLookupTables",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x2E8",
@@ -8243,7 +8218,7 @@
      "type": "c",
      "source": "overlays/o038/func_overlay_038_F000047C_188618C",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x7E8",
@@ -8505,7 +8480,7 @@
      "type": "c",
      "source": "overlays/o040/overlay40BuildFrame",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x2E4",
@@ -10418,7 +10393,7 @@
      "type": "c",
      "source": "overlays/o050/overlay50Initialize",
      "matched": true,
-     "nonmatching": false
+     "nonmatching": true
     },
     {
      "offset": "0x2E4",

@@ -60,10 +60,13 @@ void func_80034920(Gfx **displayList);
  * (exact): every declared local takes a frame cell top-down in declaration
  * order here, so eleven locals precede the four bounds (target homes 0xB8..
  * 0xAC with the stride spill at 0xA8 below them) and dropping the nextY
- * carrier removed the one cell too many. What is left is allocation: the
- * target splits y into v1 and a callee-saved copy around the clip tests,
- * holds left/top in s3/s1 before the scissor call, and rotates the four
- * hoisted rectangle words one place against this candidate.
+ * carrier removed the one cell too many. Early returns for the type, null
+ * and clip tests, and the 0x800 / width quotient held in `rows` itself (the
+ * target's s7), took it to 257 at -8 with 228 of the aligned words exact.
+ * What is left is allocation: the target splits y into v1 and a
+ * callee-saved copy around the clip tests, holds left/top in s3/s1 before
+ * the scissor call, and rotates the hoisted rectangle words one place
+ * against this candidate. See the shard for the y-split lead.
  */
 #ifdef NON_MATCHING
 void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
@@ -91,76 +94,80 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     s32 edgeX;
     s32 edgeY;
 
-    if ((node->type == 2) || (node->type == 4)) {
-        texture = element->texture;
-        if (texture != NULL) {
-            overlay101GetBoundsReloc(node, &left, &top, &right, &bottom);
-            x = node->x + element->x;
-            y = node->y + element->y;
-            edgeX = x + texture->width;
-            edgeY = y + texture->height;
-            if ((right >= x) && (bottom >= y) && (edgeX >= left) && (edgeY >= top)) {
-                overlay101SetScissorReloc(dList, left, top, right, bottom);
-                if ((0x800 / texture->width) >= 8) {
-                    shift = 3;
-                } else if ((0x800 / texture->width) >= 4) {
-                    shift = 2;
-                } else {
-                    shift = 1;
-                }
-                rows = 1 << shift;
-                stride = texture->width * rows;
-                gfx = *dList;
-                if (x < left) {
-                    drawX = left;
-                    sourceX = left - x;
-                } else {
-                    drawX = x;
-                    sourceX = 0;
-                }
-                drawWidth = texture->width - sourceX;
-                if ((right - drawX) < drawWidth) {
-                    drawWidth = right - drawX;
-                }
-                if (y < top) {
-                    drawY = top;
-                    sourceY = top - y;
-                } else {
-                    drawY = y;
-                    sourceY = 0;
-                }
-                drawHeight = texture->height - sourceY;
-                if ((bottom - drawY) < drawHeight) {
-                    drawHeight = bottom - drawY;
-                }
-                source = &texture->pixels[stride * (sourceY >> shift)];
-                rowOffset = (sourceY & (rows - 1)) << 5;
-                drawY *= 4;
-                drawX *= 4;
-                drawWidth *= 4;
-                sourceX <<= 5;
-                gSPDisplayList(gfx++, D_230);
-                gDPSetPrimColor(gfx++, 0, 0, node->intensity, node->intensity, node->intensity, node->alpha);
-                while (drawHeight > 0) {
-                    gDPLoadTextureBlockS(gfx++, source, G_IM_FMT_RGBA, G_IM_SIZ_16b, texture->width, rows, 0,
-                                         G_TX_CLAMP, G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-                    chunkRows = rows - (rowOffset >> 5);
-                    if (drawHeight < chunkRows) {
-                        chunkRows = drawHeight;
-                    }
-                    gSPTextureRectangle(gfx++, drawX, drawY, drawX + drawWidth, drawY + chunkRows * 4, G_TX_RENDERTILE,
-                                        sourceX, rowOffset, 1 << 10, 1 << 10);
-                    drawHeight -= chunkRows;
-                    rowOffset = 0;
-                    drawY += chunkRows * 4;
-                    source += stride;
-                }
-                *dList = gfx;
-                func_80034920(dList);
-                overlay101SetScissorReloc(dList, 0, 0, 1000, 1000);
-            }
-        }
+    if ((node->type != 2) && (node->type != 4)) {
+        return;
     }
+    texture = element->texture;
+    if (texture == NULL) {
+        return;
+    }
+    overlay101GetBoundsReloc(node, &left, &top, &right, &bottom);
+    x = node->x + element->x;
+    y = node->y + element->y;
+    edgeX = x + texture->width;
+    edgeY = y + texture->height;
+    if ((right < x) || (bottom < y) || (edgeX < left) || (edgeY < top)) {
+        return;
+    }
+    overlay101SetScissorReloc(dList, left, top, right, bottom);
+    rows = 0x800 / texture->width;
+    if (rows >= 8) {
+        shift = 3;
+    } else if (rows >= 4) {
+        shift = 2;
+    } else {
+        shift = 1;
+    }
+    rows = 1 << shift;
+    stride = texture->width * rows;
+    gfx = *dList;
+    if (x < left) {
+        drawX = left;
+        sourceX = left - x;
+    } else {
+        drawX = x;
+        sourceX = 0;
+    }
+    drawWidth = texture->width - sourceX;
+    if ((right - drawX) < drawWidth) {
+        drawWidth = right - drawX;
+    }
+    if (y < top) {
+        drawY = top;
+        sourceY = top - y;
+    } else {
+        drawY = y;
+        sourceY = 0;
+    }
+    drawHeight = texture->height - sourceY;
+    if ((bottom - drawY) < drawHeight) {
+        drawHeight = bottom - drawY;
+    }
+    source = &texture->pixels[stride * (sourceY >> shift)];
+    rowOffset = (sourceY & (rows - 1)) << 5;
+    drawY *= 4;
+    drawX *= 4;
+    drawWidth *= 4;
+    sourceX <<= 5;
+    gSPDisplayList(gfx++, D_230);
+    gDPSetPrimColor(gfx++, 0, 0, node->intensity, node->intensity, node->intensity, node->alpha);
+    while (drawHeight > 0) {
+        gDPLoadTextureBlockS(gfx++, source, G_IM_FMT_RGBA, G_IM_SIZ_16b, texture->width, rows, 0,
+                             G_TX_CLAMP, G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+        chunkRows = rows - (rowOffset >> 5);
+        if (drawHeight < chunkRows) {
+            chunkRows = drawHeight;
+        }
+        gSPTextureRectangle(gfx++, drawX, drawY, drawX + drawWidth, drawY + chunkRows * 4, G_TX_RENDERTILE,
+                            sourceX, rowOffset, 1 << 10, 1 << 10);
+        drawHeight -= chunkRows;
+        rowOffset = 0;
+        drawY += chunkRows * 4;
+        source += stride;
+    }
+    *dList = gfx;
+    func_80034920(dList);
+    overlay101SetScissorReloc(dList, 0, 0, 1000, 1000);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o101/func_overlay_101_F0002510_18DDD30/func_overlay_101_F0002510_18DDD30.s")
@@ -168,10 +175,10 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
 
 /* PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:start
  * symbol: func_overlay_101_F0002510_18DDD30
- * score: 263 differing words
+ * score: 257 differing words
  * frame: 0xE8
  * relocations: 6
- * first-mismatch: +0x34
- * summary: 263 words at size -8 (was 291 at +8), frame 0xE8 exact, SDK GBI macro body. Left: the y split, left/top in s3/s1, rotated hoisted rect words.
+ * first-mismatch: +0x44
+ * summary: 257 words at size -8, frame 0xE8 exact, SDK GBI body with early returns. Left: the y split, left/top in s3/s1, rotated hoisted rect words.
  * PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:end
  */

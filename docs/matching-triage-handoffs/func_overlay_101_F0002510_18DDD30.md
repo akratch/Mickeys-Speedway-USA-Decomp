@@ -2,11 +2,13 @@
 ### `func_overlay_101_F0002510_18DDD30` plateau handoff
 
 - source: `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c`
-- score: 263 differing words
+- score: 257 differing words
 - frame: 0xE8
 - relocations: 6
-- first mismatch: +0x34
-- summary: 263 words at size -8 (was 291 at +8), frame 0xE8 exact, SDK GBI macro body. Left: the y split, left/top in s3/s1, rotated hoisted rect words.
+- first mismatch: +0x44
+- summary: 257 words at size -8, frame 0xE8 exact, SDK GBI body with early returns. Left: the y split, left/top in s3/s1, rotated hoisted rect words.
+
+Summary before this remeasure: 263 words at size -8 (was 291 at +8), frame 0xE8 exact, SDK GBI macro body. Left: the y split, left/top in s3/s1, rotated hoisted rect words.
 
 Summary before this remeasure: 291 words, size +8, frame 0xF8 vs 0xE8. Bounds-array and width-local spellings did not beat it.
 
@@ -158,5 +160,36 @@ size -8 is those one-sided moves: target-only at +0x98, +0xD4, +0x1BC and
 +0x208 plus the dList reload at +0x14C; candidate-only moves at +0x160,
 +0x1E0 and +0x22C. The next lever is the y split: find what makes uopt keep
 the clip-test y and the post-call y as two webs.
+
+#### 2026-10-02, lane x-o101 (second pass): early returns, 263 to 257
+
+Two more shape facts on the same body, both at size -8 and frame 0xE8:
+
+- The type, null and clip tests as early returns (`if (...) return;`)
+  instead of nested ifs: 263 to 257 at the cell level; the aligned residual
+  after shadow fell 118 to 73. Separate `if` statements per clip test are
+  +16 bytes (286 at +8).
+- The 0x800 / width quotient held in `rows` itself (`rows = 0x800 /
+  texture->width; if (rows >= 8) ...; rows = 1 << shift;`) puts the
+  quotient in s7 as the target does; positional score unchanged, aligned
+  residual 73 to 70.
+
+tools/align_symbol.py now: size -8, positional 257, byte-exact 228, naming
+38, immediate 8, really different 24.
+
+The y split is reachable from source and is the lead for the next lane.
+Spelling the bottom test with the expression (`bottom < node->y +
+element->y`, y still assigned from the same expression) makes uopt emit the
+target's copy of y into a callee-saved register right after its definition:
+259 at size -4. It then assigns node and the y copy s4/s5 the other way
+round from the target (one priority fact), so the aligned rows regress;
+not adopted.
+
+Delta-0 cells exist and are traps. A `u8 intensity` local for the
+primary colour plus reusing x as drawX (or y as drawY) reaches 190-199 at
+size 0 with the frame and bounds homes exact, but the zero comes from x or
+y being spilled to its frame home where the target keeps it in a register:
+align_symbol reads 144 exact, 105 naming, 48 really different on the best
+of them, against 228/38/24 here. Do not bank those.
 
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

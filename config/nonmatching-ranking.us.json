@@ -976,13 +976,13 @@
       "tu": "overlays/o064",
       "size_bytes": 1680,
       "objdiff_match_pct": null,
-      "differing_words": 401,
+      "differing_words": 382,
       "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 401,
+      "relocation_masked_differing_words": 382,
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "Dh2h.A_Vb.q4ML.fOQ9.osvG.Ywcn.979o.oR7n.WN9X.SMN0.JCM"
+      "source_context_sha256": "crgV.QO1A.U3xs.vO1o.u4Q_.GU6t.YF8H.iYan.urpn.Mp-w.oBo"
     },
     {
       "name": "func_8004B1DC",

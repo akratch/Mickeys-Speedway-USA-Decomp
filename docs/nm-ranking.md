@@ -357,7 +357,7 @@ units remain distinct.
 | 62 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 349 | 349 | 0 | 0 | 0 | — |
 | 63 | `src/overlays/o002/func_overlay_002_F0001DF8_1858BF0.c` | `func_overlay_002_F0001DF8_1858BF0` | `o002` | `other` | 1,840 | 353 | 353 | 32 | 32 | 0 | — |
 | 64 | `src/overlays/o029/func_overlay_029_F00005C4_187D874.c` | `func_overlay_029_F00005C4_187D874` | `o029` | `other` | 2,332 | 362 | 360 | 160 | 160 | 0 | — |
-| 65 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 401 | 401 | 0 | 0 | 0 | — |
+| 65 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 382 | 382 | 0 | 0 | 0 | — |
 | 66 | `src/main/font.c` | `func_8004B1DC` | `main` | `other` | 2,224 | 453 | 452 | 4 | 4 | 0 | — |
 | 67 | `src/overlays/o026/func_overlay_026_F00001A0_187A598.c` | `func_overlay_026_F00001A0_187A598` | `o026` | `other` | 2,424 | 457 | 455 | 156 | 156 | 0 | — |
 | 68 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 522 | 522 | 112 | 112 | 0 | — |

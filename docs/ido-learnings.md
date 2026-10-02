@@ -2641,10 +2641,22 @@ bytes and disassembly never belong here.
   size. Prove original storage width and neighboring boundaries first, then
   normalize only compiler tail alignment and section metadata. NOBITS has no
   file payload: reading bytes at its file offset cannot prove zero padding.
-  The [BSS metadata helper](../tools/trim_elf_bss.py) requires a sole sized
-  object and rejects unexplained extents, other owners and stored relocations;
-  its synthetic controls verify that executable bytes stay unchanged. This
-  does not justify trimming original BSS storage or inventing padding fields.
+  The [BSS metadata helper](../tools/trim_elf_bss.py) trims after the last
+  typed object (earlier objects must start at zero and may not overlap) and
+  rejects unexplained extents, unnamed owners and stored relocations; its
+  synthetic controls verify that executable bytes stay unchanged. This does
+  not justify trimming original BSS storage or inventing padding fields.
+
+- **as1 shares one `%hi` per aligned pair only for a symbol its TU defines.**
+  Two accesses to one struct at offsets 8 and 12 reuse a single `lui at` when
+  the struct is defined (static or global) in the translation unit, and take
+  two luis when it is `extern`; offset 4 stays alone either way. Measured on a
+  tiny TU and on func_8001EC44, whose stores to the collision state at
+  0x800CB2C4..CC show C4 alone and C8/CC shared, so the state belongs to
+  charControl.c's BSS (owned since 2026-10-02). Read a target's lui sharing as
+  storage-ownership evidence. The companion form, separate luis with no
+  materialized base, comes from a pointer local taken at entry (the
+  checklist's "static data reached through a pointer local").
 
 ## Adding a learning
 

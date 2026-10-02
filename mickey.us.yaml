@@ -757,8 +757,11 @@ segments:
       - [0x85700, rodata]
       # BSS is zero-filled by the entrypoint; no ROM bytes back it.
       - { start: 0x86640, type: bss, vram: 0x80085A40 }
-      # Shared gravity: resident and overlay memory uses prove this four-byte scalar.
-      - { type: .bss, vram: 0x800CB304, name: main/charControl }
+      # charControl owns 0x800CB2C0-0x800CB307: the 0x40-byte collision callback
+      # state, the camera state pointer, and the shared gravity scalar (resident
+      # and overlay memory uses prove the four-byte f32). IDO pads the input
+      # section to 0x50; the POSTPROCESS rule trims the alignment tail.
+      - { type: .bss, vram: 0x800CB2C0, name: main/charControl }
       - { type: bss, vram: 0x800CB308, name: bss_gap_D800CB308 }
       # The joy controller-state globals own this contiguous BSS block; the
       # reset loop only recovers the target address materialization here.

@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
-"""Trim compiler-only NOBITS tail alignment around one proved typed BSS object.
+"""Trim compiler-only NOBITS tail alignment after a proved typed BSS object.
 
 This changes only the section size and alignment metadata. Callers must prove
-original storage ownership and the object's C type; object size alone does not
+original storage ownership and the objects' C types; object size alone does not
 establish a retail allocation. No executable or initialized bytes are changed.
+
+The named symbol is the section's last typed object: every other typed object
+in the section must end at or before it starts, the lowest object must start at
+offset zero, and objects may not overlap. The section is trimmed to the named
+object's end, which must be exactly the compiler's alignment tail away from the
+original section size.
 """
 import argparse
 from pathlib import Path
@@ -44,10 +50,22 @@ def trim(path, symbol_name, alignment):
         if kind != STT_OBJECT:
             raise ValueError('unproved non-object symbol in BSS')
         objects.append((name, value, size))
-    if len(objects) != 1 or objects[0][0] != symbol_name:
-        raise ValueError('requires sole named typed object')
-    _, value, size = objects[0]
-    if value != 0 or size <= 0 or size % alignment:
+    named = [entry for entry in objects if entry[0] == symbol_name]
+    if len(named) != 1:
+        raise ValueError('requires one named typed object')
+    _, value, extent = named[0]
+    if extent <= 0 or any(size <= 0 for _, _, size in objects):
+        raise ValueError('typed objects must have a positive extent')
+    ordered = sorted(objects, key=lambda entry: (entry[1], entry[1] + entry[2]))
+    if ordered[-1][0] != symbol_name or any(
+            other[1] + other[2] > value for other in objects if other[0] != symbol_name):
+        raise ValueError('named object must be the last typed object')
+    if ordered[0][1] != 0:
+        raise ValueError('lowest typed object must start at zero')
+    if any(a[1] + a[2] > b[1] for a, b in zip(ordered, ordered[1:])):
+        raise ValueError('typed objects overlap')
+    size = value + extent
+    if size % alignment:
         raise ValueError('object must start at zero and occupy aligned extent')
     if old_size != ((size + old_alignment - 1) & -old_alignment):
         raise ValueError('tail is not precisely compiler section alignment')

@@ -9,13 +9,15 @@ import trim_elf_bss as tool
 from reloc_surface import Elf
 
 
-def fixture(path, *, size=4, old_size=16, flags=3, nobits=True, extra=False):
+def fixture(path, *, size=4, old_size=16, flags=3, nobits=True, extra=False, leading=0, leading_size=None, value=0):
     names = b'\0.text\0.bss\0.shstrtab\0.symtab\0.strtab\0'
     strings = b'\0gravity\0other\0'
     symbol = lambda name, value, extent, info, section: struct.pack(
         '>IIIBBH', name, value, extent, info, 0, section)
     symbols = bytes(16) + symbol(0, 0, old_size, 3, 2)
-    symbols += symbol(1, 0, size, 17, 2)
+    if leading:
+        symbols += symbol(9, 0, leading if leading_size is None else leading_size, 17, 2)
+    symbols += symbol(1, leading if value == 0 else value, size, 17, 2)
     if extra:
         symbols += symbol(9, 4, 4, 17, 2)
     data = bytearray(52)
@@ -69,6 +71,28 @@ class TestTrimBss(unittest.TestCase):
             snapshot = path.read_bytes()
             tool.trim(path, 'gravity', 4)
             self.assertEqual(snapshot, path.read_bytes())
+
+    def test_leading_objects_trim_to_the_last_end(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'object.o'
+            fixture(path, leading=4)
+            tool.trim(path, 'gravity', 4)
+            _, header = Elf(path).section('.bss')
+            self.assertEqual((header[5], header[8]), (8, 4))
+
+    def test_leading_object_refusals_preserve_object(self):
+        cases = [{'leading': 4, 'leading_size': 8},
+                 {'leading': 4, 'value': 2},
+                 {'leading': 4, 'old_size': 32}]
+        for options in cases:
+            with self.subTest(options=options):
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory) / 'object.o'
+                    fixture(path, **options)
+                    original = path.read_bytes()
+                    with self.assertRaises(ValueError):
+                        tool.trim(path, 'gravity', 4)
+                    self.assertEqual(original, path.read_bytes())
 
     def test_refusals_preserve_object(self):
         cases = [({'extra': True}, 'gravity', 4), ({'size': 0}, 'gravity', 4),

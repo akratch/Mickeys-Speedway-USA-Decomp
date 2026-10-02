@@ -218,45 +218,44 @@ typedef struct ShadowGenerateAngle {
 #define SG_F32(p, o) (*(f32 *) ((u8 *) (p) + (o)))
 #define SG_PTR(p, o) (*(void **) ((u8 *) (p) + (o)))
 
-/* Workbench verdict: structure-mismatch, 445 differing words, first mismatch +0xC. */
-/* Candidate is 520/510 instructions with frame -0x150 versus target -0x138; it is not shape-exact. */
+/* Workbench verdict: structure-mismatch, 432 masked words at size +40, first mismatch +0x118. */
+/* Candidate is 520/510 instructions; frame 0x138 is exact since 2026-10-02 (lane x-shad): the
+ * five unused f32 locals are gone and the declaration order puts four scalars above first and
+ * selected (homes +0x124/+0x120), seven between them and the two arrays (+0xEC, +0xDC) and two
+ * more before objects (+0xD0). An s16 local still spills to +0xAA where the target keeps the
+ * type in fp. */
 /* Relocation count is exact at 63; local lifetimes and branch spelling still control the register web. */
 void shadowGenerate(s32 arg0, s32 arg1) {
-    s32 first;
-    s32 selected;
-    ShadowGenerateAngle angles[4];
-    ShadowGenerateAngle *anglePointers[4];
-    void **objects;
-    void *object;
-    void *info;
-    void *surface;
-    void *model;
-    void *part;
-    void *partData;
-    void *angleSource;
-    u8 *level;
     f32 x;
     f32 y;
     f32 z;
     f32 distance;
+    s32 first;
+    s32 selected;
     f32 limit;
     f32 scale;
     f32 a;
     f32 b;
     f32 c;
-    f32 d;
-    f32 e;
-    f32 f;
-    f32 g;
-    f32 h;
-    s16 type;
-    s16 objectType;
-    s16 lowAngle;
-    s32 angleCount;
+    u8 * level;
+    void * model;
+    ShadowGenerateAngle angles[4];
+    ShadowGenerateAngle *anglePointers[4];
+    void * part;
+    void * partData;
+    void **objects;
+    void * angleSource;
+    void * object;
+    void * info;
+    void * surface;
     s32 i;
     s32 j;
     s32 k;
     s32 value;
+    s32 angleCount;
+    s16 type;
+    s16 objectType;
+    s16 lowAngle;
 
     selected = (arg0 & 2) | D_80079458;
     D_80079440 = D_80079410[selected];
@@ -1422,11 +1421,11 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:shadowGenerate:start
  * symbol: shadowGenerate
- * score: 445 differing words
- * frame: 0x150
+ * score: 432/510 words
+ * frame: 0x138
  * relocations: 63
- * first-mismatch: +0xC
- * summary: Fresh V0 is 520/510 words with 445 differences; frames 0x150/0x138. Both have 63 relocations; 29 sites and identities align. Prior mechanisms closed.
+ * first-mismatch: +0x118
+ * summary: Frame exact at 0x138 (unused f32s dropped, homes reordered): 445 to 432 at +40; an s16 still spills to +0xAA where the target keeps type in fp
  * PLATEAU-HANDOFF:shadowGenerate:end
  */
 

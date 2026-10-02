@@ -855,7 +855,10 @@ overlay14FreeReloc = 0xf0000000;
 overlay14InitializeReloc = 0xf0000000;
 
 /* overlay 14: func_overlay_014_F000013C_186FA14.c.o */
-D_F0 = 0x000000f0;
+frontGetLanguage_o014Reloc = 0xf0000000;
+gOverlay14Field110 = 0x00000110;
+overlay14ResetReloc = 0xf0000000;
+piRomLoad_o014Reloc = 0xf0000000;
 
 /* overlay 14: overlay14ApplyValues.c.o */
 D_128 = 0x00000128;
@@ -875,7 +878,6 @@ gOverlay14ValueF8 = 0x000000f8;
 gOverlay14CommandHeader = 0x000000fc;
 
 /* overlay 14: overlay14CreateValue.c.o */
-frontGetLanguage_o014Reloc = 0xf0000000;
 gOverlay14SlotCountE8 = 0x000000e8;
 gOverlay14Slots28 = 0x00000028;
 

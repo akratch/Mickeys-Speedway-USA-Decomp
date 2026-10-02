@@ -264,4 +264,28 @@ ugen still emits la bounds (a0), la stars (a1), la count (s7). Next:
 an a1 occupant that survives copy-prop in block 1, then the three
 palette inits after lw on that shape.
 
+#### 2026-10-02, lane w6-o015: sibling field pointer stays at 17
+
+Assigned lever: the stars store base written as the matched siblings'
+static field through a pointer. Measured with shape_product on a
+candidate copy. Nothing adopted. Tracked body unchanged.
+
+- Control, address of gOverlay15Stars: 17 masked, delta 0, first +0x70.
+- Same-line address of the field at offset 4, a pointer to that view
+  taken at entry, and a slot address taken at entry: each 224 masked
+  at delta -4. IDO folds the offset into the store displacement and
+  deletes the address temporary the target keeps.
+- residual_map, window 0x80, on the delta-0 object: 230 byte-exact,
+  5 naming, 0 immediate, 12 structural. Naming is a1 to a2 on the
+  stars address and t7 to t6. Structural rows sit at +0x100 and +0x200.
+- Late copy of the allocate result into the loop cursor: 224 at
+  delta -4 just before the count guard, 232 at delta -4 inside it.
+- Palette index inits after the colour deltas stay 17. The same inits
+  after the palette load score 18.
+
+Three attempts, no better residual at size delta 0. The sibling pointer
+form and the late copy are eliminated: both drop one instruction. Index
+placement after the deltas is inert, and placement after the load is
+worse. Stop under ADR 0018. Score remains 17/247, frame 0x40, first +0x70.
+
 <!-- plateau-handoff:overlay15InitStarsAndPalette:end -->

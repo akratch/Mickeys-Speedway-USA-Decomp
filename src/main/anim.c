@@ -3928,7 +3928,7 @@ void fmvInit(void) {
  * frame: 0x40
  * relocations: 47
  * first-mismatch: +0x88
- * summary: 22 to 12: clock advanced in place (no new-clock local), subtraction after the stores. Left: command 3/3 below clock 3/2 (7), delay slot (2), handle (3)
+ * summary: Zero-block uses leave command at totalsave 3 nocs 3. A post-store reload takes a0 at totalsave 6 but size +8; folding it drops the gain.
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

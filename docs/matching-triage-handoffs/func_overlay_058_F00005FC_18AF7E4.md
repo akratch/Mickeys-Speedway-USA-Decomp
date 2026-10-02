@@ -2,11 +2,13 @@
 ### `func_overlay_058_F00005FC_18AF7E4` plateau handoff
 
 - source: `src/overlays/o058/func_overlay_058_F00005FC_18AF7E4.c`
-- score: 137/829 words
+- score: 109/829 words
 - frame: 0x88
 - relocations: 278
 - first mismatch: +0x41C
-- summary: Plain -O2 (no -g3); &D_2C0 compares via entry pointer drop s8; frame order. Open: s0/s1 address webs, quad offsets.
+- summary: Plain -O2; D_2C0 compares via entry pointer; frame-order locals, z offset temp. Open: case-3 table web joins loop web (s8 only), s1 cam.
+
+Summary before this remeasure: Plain -O2 (no -g3); &D_2C0 compares via entry pointer drop s8; frame order. Open: s0/s1 address webs, quad offsets.
 
 #### 2026-10-02, lane q-ovl9: 509 at +4 to 137 at +4, frame 0x88
 
@@ -43,6 +45,18 @@
   but take two frame slots (0x90); dropping `selection` frees one,
   dropping `command` costs 140 words. The `D_2BC == 0` load is scheduled
   later than the target's; swapping the `&` operands is untested.
+
+- Same day, second bank: 137 at +4 to 109 at size delta 0. The z offset
+  of the large point quad as an f32 temporary converts both offsets before
+  the vertex loads (removes the hazard nop); `selection` read at each use
+  (CSE'd to one load) frees the slot it needs. Two temporaries (x and z)
+  give 133 at delta 0 but frame 0x90. `(*progressPtr < 1.0f) & (D_2BC ==
+  0)` is byte-identical; `!D_2BC & ...` is 248.
+- Records on the 109 shape: the case 3 `&SelectionTable` address web spans
+  from case 3 into the drawing loop (26 blocks, totalsave 7) and is offered
+  only s8 at cost 46, so it splits; the target keeps a case-3-only web in
+  s0. The loop's table address is the same LDA, which is why every
+  spelling of the case 3 access alone is inert.
 
 Summary before this remeasure: Vertices read as geometry->vertices at each use (536 to 511), decl hill climb 509, size delta -12 to +4; ninth saved web (s8) remains, frame 0xA0 against 0x88.
 

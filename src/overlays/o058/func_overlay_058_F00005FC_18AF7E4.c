@@ -122,7 +122,7 @@ extern void overlay58EnsureResource(void);
 /*
  * Mickey-only reconstruction (no permitted donor counterpart).
  *
- * 2026-10-02, lane q-ovl9: 509 -> 137 masked at size delta +4.
+ * 2026-10-02, lane q-ovl9: 509 at +4 -> 109 at size delta 0.
  *   - The per-file `-O2 -g3` override was inherited and is refuted by the
  *     target's own prologue: the first `jal` carries the parameter home store
  *     in its delay slot, which `-g3` never schedules.  The overlay's matched
@@ -139,13 +139,15 @@ extern void overlay58EnsureResource(void);
  *     symbol, addends 0 and 0x13).
  *   - The case-3 selection row is addressed as `&table[0][0] + player * 4`.
  *   - Locals are declared in frame order (status first at 0x7C, increment
- *     at 0x58); the unused `verts`, `buttons` and `mode` are gone.
+ *     at 0x58); the unused `verts`, `buttons`, `mode` and `selection` are
+ *     gone, and the large-point-quad z offset is an f32 temporary (137 at
+ *     +4 -> 109 at 0).
  *
  * Open: the case-3 table base and the `mainChangeCameras` mode address are
- * saved registers across their calls in the target (s0, s1) and
- * rematerialised here; the large-point-quad offsets convert before the
- * vertex loads in the target (two f32 temporaries do it at delta 0 but take
- * two frame slots); the `D_2BC == 0` load is scheduled later here.
+ * saved registers across their calls in the target (s0, s1).  Here the
+ * case-3 table address joins the drawing loop's into one long web that is
+ * only offered s8 (cost 46) and splits.  The quad's x offset still adds
+ * after z; the `D_2BC == 0` load is scheduled later here.
  */
 #ifdef NON_MATCHING
 void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
@@ -157,11 +159,11 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
     s16 start;
     s16 end;
     s32 marker;
-    s32 selection;
     s32 stage;
     f32 *progressPtr;
     f32 progress;
     f32 increment;
+    f32 offsetZ;
 
     progressPtr = &D_2C0;
     status = func_80028F54();
@@ -267,11 +269,14 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                 }
                 if (gOverlay58MenuGateReloc == 0) {
                     if (status->active < 3) {
-                        selection =
-                            (&gOverlay58SelectionTableReloc[0][0] + status->player * 4)[status->active + 1];
-                        if (selection != -1) {
-                            if (!(gOverlay58MenuBitsReloc.bits13 & (1 << selection))) {
-                                gOverlay58MenuBitsReloc.bits13 |= 1 << selection;
+                        if ((&gOverlay58SelectionTableReloc[0][0] +
+                             status->player * 4)[status->active + 1] != -1) {
+                            if (!(gOverlay58MenuBitsReloc.bits13 &
+                                  (1 << (&gOverlay58SelectionTableReloc[0][0] +
+                                         status->player * 4)[status->active + 1]))) {
+                                gOverlay58MenuBitsReloc.bits13 |=
+                                    1 << (&gOverlay58SelectionTableReloc[0][0] +
+                                          status->player * 4)[status->active + 1];
                                 func_800291B4();
                                 func_8003A680(
                                     (&gOverlay58SelectionTableReloc[0][0] + status->player * 4)[status->active + 1] +
@@ -475,12 +480,12 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
                     }
                 }
                 if (marker != -1) {
+                    offsetZ = D_B8[status->player][1] +
+                              geometry->vertices[marker].z;
                     overlay58DrawLargePointQuad(
                         (s32)((f32)D_B8[status->player][0] +
                               geometry->vertices[marker].x),
-                        (s32)geometry->vertices[marker].y,
-                        (s32)((f32)D_B8[status->player][1] +
-                              geometry->vertices[marker].z));
+                        (s32)geometry->vertices[marker].y, (s32)offsetZ);
                 }
             }
             overlay58DrawPointQuad((s32)geometry->vertices[start].x,
@@ -495,10 +500,10 @@ void func_overlay_058_F00005FC_18AF7E4(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_058_F00005FC_18AF7E4:start
  * symbol: func_overlay_058_F00005FC_18AF7E4
- * score: 137/829 words
+ * score: 109/829 words
  * frame: 0x88
  * relocations: 278
  * first-mismatch: +0x41C
- * summary: Plain -O2 (no -g3); &D_2C0 compares via entry pointer drop s8; frame order. Open: s0/s1 address webs, quad offsets.
+ * summary: Plain -O2; D_2C0 compares via entry pointer; frame-order locals, z offset temp. Open: case-3 table web joins loop web (s8 only), s1 cam.
  * PLATEAU-HANDOFF:func_overlay_058_F00005FC_18AF7E4:end
  */

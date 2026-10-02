@@ -357,6 +357,11 @@ gOverlay2QueryY1Reloc = 0x0000004c;
 overlay2ContainsPointReloc = 0xf0000000;
 overlay2Overlay1GetEntryReloc = 0xf0000000;
 
+/* overlay 2: func_overlay_002_F0001DF8_1858BF0.c.o */
+func_8000572C_o002Reloc = 0xf0000000;
+func_8000BCB0_o002Reloc = 0xf0000000;
+joyGetButtons_o002Reloc = 0xf0000000;
+
 /* overlay 3: overlay3ContainsValue.c.o */
 gOverlay3Entries = 0x00000028;
 

@@ -22,10 +22,10 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 372348,
-  "nonmatching_overlay_c_bytes": 96256,
+  "matched_overlay_c_bytes": 374896,
+  "nonmatching_overlay_c_bytes": 93708,
   "data_rodata_bytes": 61312,
-  "owned_data_rodata_bytes": 4660,
+  "owned_data_rodata_bytes": 4696,
   "bss_bytes": 77680,
   "module_rom_bytes": 678912,
   "resident_relocations": 375,
@@ -12748,7 +12748,7 @@
      "type": "c",
      "source": "overlays/o061/func_overlay_061_F0000B84_18BFF4C",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x1578",
@@ -12872,7 +12872,19 @@
     "pilot_role": "DKR-backed semantic crosswalk (ghost/controller-pak UI)",
     "exact_donor_match": null,
     "priority_rank": 106
-   }
+   },
+   "data_rodata_ownership": [
+    {
+     "offset": "0x278",
+     "end_offset": "0x29C",
+     "size": "0x24",
+     "type": "c",
+     "section": ".rodata",
+     "source": "overlays/o061/func_overlay_061_F0000B84_18BFF4C",
+     "trial_function": "func_overlay_061_F0000B84_18BFF4C",
+     "externalized": true
+    }
+   ]
   },
   {
    "overlay": 62,

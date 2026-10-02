@@ -180,6 +180,17 @@ FIXED_DATA_RODATA_OWNERSHIP = {
         )
     ],
     59: [(0x76C, 0x78C, "overlay59Advance", ".rodata", "overlay59Advance", True)],
+    # The 9-entry menu switch table, rodata-relative +0x188.
+    61: [
+        (
+            0x278,
+            0x29C,
+            "func_overlay_061_F0000B84_18BFF4C",
+            ".rodata",
+            "func_overlay_061_F0000B84_18BFF4C",
+            True,
+        )
+    ],
     86: [
         (
             0x80,

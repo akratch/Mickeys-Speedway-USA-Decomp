@@ -2508,7 +2508,21 @@ O57_renderObject0954 = 0x00000000;
 /* overlay 57: func_overlay_057_F0001020_18A4C18.c.o */
 D_4D4 = 0x000004d4;
 D_4E4 = 0x000004e4;
-D_80000060 = 0x80000060;
+D_800D3140_o057Reloc = 0x00000000;
+D_800D3144_o057Reloc = 0x00000000;
+D_800D3148_o057Reloc = 0x00000000;
+D_800D31C8_o057Reloc = 0x00000000;
+func_8002109C_o057Reloc = 0xf0000000;
+func_800221E8_o057Reloc = 0xf0000000;
+func_800349A4_o057Reloc = 0xf0000000;
+func_800367A4_o057Reloc = 0xf0000000;
+gO57GridAlpha13C = 0x0000013c;
+gO57GridBlendA8 = 0x000000a8;
+gO57GridBlendAC = 0x000000ac;
+gO57GridMode184 = 0x00000184;
+gO57GridRecord160 = 0x00000160;
+gO57GridTriangles = 0x00000000;
+gOverlay57TableIndex = 0x00000000;
 
 /* overlay 57: overlay57ReleaseAll.c.o */
 gOverlay57Object100 = 0x00000100;
@@ -2547,7 +2561,6 @@ gOverlay57ModeFlag = 0x00000144;
 gOverlay57Selection100 = 0x00000100;
 gOverlay57Selection108 = 0x00000108;
 gOverlay57State = 0x0000011c;
-gOverlay57TableIndex = 0x00000000;
 gOverlay57Timer = 0x00000118;
 gOverlay57UpdateSelection = 0x000004f8;
 overlay57LayoutDescriptorReloc = 0xf0000000;
@@ -2752,9 +2765,44 @@ overlay57StartPrepareReloc = 0xf0000000;
 overlay57StartQueryReloc = 0xf0000000;
 
 /* overlay 57: func_overlay_057_F0004460_18A8058.c.o */
-D_1A0 = 0x000001a0;
-D_21C = 0x0000021c;
-D_36C = 0x0000036c;
+amSndPlay_o057Reloc = 0xf0000000;
+animseqStopPath_o057Reloc = 0xf0000000;
+func_80005548_o057Reloc = 0xf0000000;
+func_800291B4_o057Reloc = 0xf0000000;
+func_8003A680_o057Reloc = 0xf0000000;
+gO57CourseTable = 0x00000000;
+gO57MenuSelectionCountReloc = 0x00000190;
+gO57MiddleData31B4 = 0x00000000;
+gO57MiddleData31E4 = 0x00000000;
+gO57MiddleData31E8 = 0x00000000;
+gO57MiddleData31EC = 0x00000000;
+gO57MiddleData31F0 = 0x00000000;
+gO57MiddleData31F4 = 0x00000000;
+gO57MiddleFlags = 0x00000000;
+gO57UnlockTable = 0x00000000;
+gOverlay57ControllerMap = 0x0000036c;
+gOverlay57LayoutBusy = 0x00000130;
+gOverlay57MenuButtons = 0x00000000;
+gOverlay57MenuByte0 = 0x00000000;
+gOverlay57MenuByte1 = 0x00000000;
+gOverlay57MenuByte2 = 0x00000000;
+gOverlay57MenuByte3 = 0x00000000;
+gOverlay57MenuEntries = 0x000001b8;
+gOverlay57MenuHalf = 0x00000000;
+gOverlay57MenuInputY = 0x00000000;
+gOverlay57MenuSources = 0x00000000;
+gOverlay57MirrorFlag = 0x00000000;
+gOverlay57MirrorSelection = 0x00000000;
+gOverlay57PlayerCount = 0x00000000;
+joyCreateMap_o057Reloc = 0xf0000000;
+mainChangeCameras_o057Reloc = 0xf0000000;
+mainChangeLevel_o057Reloc = 0xf0000000;
+mainSetAnimGroup_o057Reloc = 0xf0000000;
+mainSetMode_o057Reloc = 0xf0000000;
+o57MenuO84F0001060Reloc = 0xf0000000;
+o57MenuO84F00012FCReloc = 0xf0000000;
+o57MenuO84F0001350Reloc = 0xf0000000;
+o57MenuO84F0001398Reloc = 0xf0000000;
 
 /* overlay 57: overlay57UpdateModeTrigger.c.o */
 overlay57TailFindObjectReloc = 0xf0000000;
@@ -2772,7 +2820,6 @@ overlay57StartReloc = 0xf0000000;
 
 /* overlay 57: func_overlay_057_F0004E18_18A8A10.c.o */
 func_80000F94_o057Reloc = 0xf0000000;
-func_80005548_o057Reloc = 0xf0000000;
 func_80022A50_o057Reloc = 0xf0000000;
 func_80025444_o057Reloc = 0xf0000000;
 func_80025D60_o057Reloc = 0xf0000000;
@@ -2780,12 +2827,10 @@ func_80028374_o057Reloc = 0xf0000000;
 func_80028528_o057Reloc = 0xf0000000;
 func_80028540_o057Reloc = 0xf0000000;
 func_80028D24_o057Reloc = 0xf0000000;
-func_800291B4_o057Reloc = 0xf0000000;
 func_800291C4_o057Reloc = 0xf0000000;
 func_8002F618_o057Reloc = 0xf0000000;
 func_8002FB34_o057Reloc = 0xf0000000;
 func_80039E34_o057Reloc = 0xf0000000;
-func_8003A680_o057Reloc = 0xf0000000;
 func_8003A700_o057Reloc = 0xf0000000;
 func_800429A4_o057Reloc = 0xf0000000;
 func_8004B0B8_o057Reloc = 0xf0000000;
@@ -2807,20 +2852,13 @@ gO57MiddleData319C = 0x00000000;
 gO57MiddleData31A4 = 0x00000000;
 gO57MiddleData31A8 = 0x00000000;
 gO57MiddleData31AC = 0x00000000;
-gO57MiddleData31B4 = 0x00000000;
 gO57MiddleData31B8 = 0x00000000;
-gO57MiddleData31E4 = 0x00000000;
-gO57MiddleData31E8 = 0x00000000;
-gO57MiddleData31EC = 0x00000000;
-gO57MiddleData31F0 = 0x00000000;
-gO57MiddleData31F4 = 0x00000000;
 gO57MiddleData3208 = 0x00000000;
 gO57MiddleData3214 = 0x00000000;
 gO57MiddleDisplayList = 0x00000000;
 gO57MiddleEmptyFormat = 0x0000004c;
 gO57MiddleFade = 0x0000013c;
 gO57MiddleFadeDelay = 0x00000140;
-gO57MiddleFlags = 0x00000000;
 gO57MiddleGraphics = 0x00000000;
 gO57MiddleHorizontal = 0x00000000;
 gO57MiddleInfo = 0x000001a8;
@@ -2858,42 +2896,19 @@ o57MiddleO84F0001350Reloc = 0xf0000000;
 o57MiddleO84F0001398Reloc = 0xf0000000;
 
 /* overlay 57: func_overlay_057_F00060F8_18A9CF0.c.o */
-amSndPlay_o057Reloc = 0xf0000000;
-animseqStopPath_o057Reloc = 0xf0000000;
-gOverlay57ControllerMap = 0x0000036c;
-gOverlay57LayoutBusy = 0x00000130;
 gOverlay57LayoutValue = 0x00000104;
 gOverlay57Layouts = 0x000000e0;
 gOverlay57LevelBySelection = 0x00000000;
-gOverlay57MenuButtons = 0x00000000;
-gOverlay57MenuByte0 = 0x00000000;
-gOverlay57MenuByte1 = 0x00000000;
-gOverlay57MenuByte2 = 0x00000000;
-gOverlay57MenuByte3 = 0x00000000;
-gOverlay57MenuEntries = 0x000001b8;
-gOverlay57MenuHalf = 0x00000000;
 gOverlay57MenuInputX = 0x00000000;
-gOverlay57MenuInputY = 0x00000000;
-gOverlay57MenuSources = 0x00000000;
-gOverlay57MirrorFlag = 0x00000000;
-gOverlay57MirrorSelection = 0x00000000;
 gOverlay57NodeArguments = 0x0000017c;
 gOverlay57ObjectReady = 0x000004cc;
-gOverlay57PlayerCount = 0x00000000;
 gOverlay57PreviousLayoutValue = 0x0000010c;
 gOverlay57PreviousSelection = 0x00000164;
 gOverlay57Selection = 0x00000160;
 gOverlay57StartLinks = 0x00000134;
 gOverlay57StopLinks = 0x000001a0;
-joyCreateMap_o057Reloc = 0xf0000000;
-mainChangeCameras_o057Reloc = 0xf0000000;
-mainChangeLevel_o057Reloc = 0xf0000000;
-mainSetMode_o057Reloc = 0xf0000000;
 o57MenuO45F0000314Reloc = 0xf0000000;
 o57MenuO84F0000C74Reloc = 0xf0000000;
-o57MenuO84F0001060Reloc = 0xf0000000;
-o57MenuO84F0001350Reloc = 0xf0000000;
-o57MenuO84F0001398Reloc = 0xf0000000;
 
 /* overlay 57: overlay57SetNodeValue.c.o */
 overlay57ConfigureNodeReloc = 0xf0000000;
@@ -2933,6 +2948,7 @@ gOverlay58OptionalResource = 0x000002bc;
 overlay58ReleaseReloc = 0xf0000000;
 
 /* overlay 58: func_overlay_058_F00005FC_18AF7E4.c.o */
+D_1A0 = 0x000001a0;
 D_2BC = 0x000002bc;
 
 /* overlay 58: overlay58SetNodeValue.c.o */
@@ -3626,6 +3642,9 @@ func_8002A8BC_o065Reloc = 0xf0000000;
 func_8002A8C0_o065Reloc = 0xf0000000;
 func_800349A4_o065Reloc = 0xf0000000;
 mathRnd_o065Reloc = 0xf0000000;
+
+/* overlay 65: overlay65SpawnRecord.c.o */
+D_21C = 0x0000021c;
 
 /* overlay 66: overlay66Select.c.o */
 gOverlay66Current = 0x000000fc;

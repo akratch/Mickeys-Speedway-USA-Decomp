@@ -377,18 +377,19 @@ void func_80034E48(void) {
  * asm/nonmatchings/textures/sprDPset.s. Mickey's fields, globals, calls, and
  * compiler output remain authoritative.
  *
- * 2026-10-02 (lane o-tex), 424 to 43 at delta 0: the wrap quotient is its
+ * 2026-10-02 (lane o-tex), 424 to 13 at delta 0: the wrap quotient is its
  * own local (it takes a0, not a ring temp); frameIndex is assigned once after
- * the wrap and before the cursor read, and the 0x40 arm subtracts it from
- * frame in place, so uopt keeps the one truncation in the join block; the
- * frame counts and the per-frame texture count are read from the sprite at
- * each use; frameIndex is reused for the next frame's texture base, which
- * keeps currentTexture a live variable spilled at its home; the next-frame
- * wrap is if/else (the target's branch over an empty else); the second DMA
- * adds 0x80000038 directly; the six colour bytes are named fields (array
- * subscripts reassociate the colour OR chain). Left: the opacity fraction's
- * float temps, the call's argument copies, a v0/v1 swap in the settings
- * copy, and frameIndex's spill slot. */
+ * the wrap, before the cursor read, and the empty test on it (the idiom
+ * func_80035E88 keeps) holds the one truncation in the join block where uopt
+ * would otherwise sink a copy into each arm; the frame counts and the
+ * per-frame texture count are read from the sprite at each use; frameIndex
+ * is reused for the next frame's texture base, which keeps currentTexture a
+ * live variable spilled at its home; the next-frame wrap is if/else (the
+ * target's branch over an empty else); the texture-count division comes
+ * first in the frame-list block; the second DMA adds 0x80000038 directly;
+ * the six colour bytes are named fields (array subscripts reassociate the
+ * colour OR chain). Left: a v0/v1 swap in the render-settings copy, nextFrame
+ * split over a0/a1, and one compare's operand order. */
 void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) {
     TextureRenderSettings *settings;
     TextureFrameHeader *texture;
@@ -414,6 +415,8 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
         frame = 0.0f;
     }
     frameIndex = frame;
+    if (frameIndex) {
+    }
     dl = *dlist;
     flags |= sprite->drawFlags;
     flags &= ~D_8007BD90;
@@ -428,8 +431,7 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
     }
     if (flags & 0x40) {
         settingsIndex |= 1;
-        frame -= frameIndex;
-        opacity = (u8)(frame * 255.0f);
+        opacity = (u8)((frame - frameIndex) * 255.0f);
     } else {
         opacity = 0xFF;
     }
@@ -457,7 +459,7 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
     settings = &D_8007BA80[settingsIndex];
     tableFlags = settings->flags | (flags & settings->mask);
     stateKey = (settingsIndex << 8) | tableFlags;
-    if ((D_800D302C != stateKey) || (D_800D3020 != D_8007BA80)) {
+    if ((stateKey != D_800D302C) || (D_800D3020 != D_8007BA80)) {
         D_800D302C = stateKey;
         D_800D3020 = D_8007BA80;
         gDPPipeSync(dl++);
@@ -497,10 +499,10 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
         func_8004ADE8(texture->pad1A, texture);
     }
     if (sprite->drawFlags & 0x40) {
-        nextFrame = frameIndex + 1;
-        frameCommands = sprite->frameDisplayLists[0];
         texturesPerFrame = sprite->numberOfTextures / sprite->numberOfFrames;
+        nextFrame = frameIndex + 1;
         currentTexture = texturesPerFrame * frameIndex;
+        frameCommands = sprite->frameDisplayLists[0];
         if (nextFrame >= sprite->numberOfFrames) {
             if (sprite->spriteFlags != 0) {
                 nextFrame = 0;
@@ -532,11 +534,11 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
 }
 /* PLATEAU-HANDOFF:func_80034E54:start
  * symbol: func_80034E54
- * score: 43/467 words
+ * score: 13/467 words
  * frame: 0xB0 (target 0xB0)
  * relocations: 43
- * first-mismatch: +0x108
- * summary: 424 to 43 at delta 0: quotient local, one frameIndex web reused, sprite fields re-read, if/else wrap, named colour bytes. Left: opacity float temps.
+ * first-mismatch: +0x3e4
+ * summary: 424 to 13 at delta 0: quotient local, one frameIndex truncation held by an empty test, named colour bytes. Left: v0/v1 swap, nextFrame split.
  * PLATEAU-HANDOFF:func_80034E54:end
  */
 #else

@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 82,
-  "resolved": 82,
+  "queue_size": 81,
+  "resolved": 81,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 82,
-  "relocation_masked_coverage": 82,
+  "source_context_coverage": 81,
+  "relocation_masked_coverage": 81,
   "functions": [
     {
       "name": "func_8001357C",
@@ -143,21 +143,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "JTJ4.ZCzc.XpqJ.blHy.8Ju0.AQry.6qZw.--1A.Bb32.FRNU.KBM"
-    },
-    {
-      "name": "overlay17AdvanceChain",
-      "file": "src/overlays/o017/overlay17AdvanceChain.c",
-      "overlay": 17,
-      "tu": "overlays/o017",
-      "size_bytes": 588,
-      "objdiff_match_pct": null,
-      "differing_words": 47,
-      "first_mismatch_offset": 24,
-      "relocation_masked_differing_words": 47,
-      "relocation_masked_first_mismatch_offset": 24,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "fwT9.GeD2.vrfo.SMSz.ZpQ3.FI85.GtnG.c683.Iw6r.WGkq.WMQ"
     },
     {
       "name": "overlay69DrawSortedGeometry",

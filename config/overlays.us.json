@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 409744,
-  "nonmatching_overlay_c_bytes": 58856,
+  "matched_overlay_c_bytes": 410332,
+  "nonmatching_overlay_c_bytes": 58268,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4772,
   "bss_bytes": 77680,
@@ -4350,7 +4350,7 @@
      "type": "c",
      "source": "overlays/o017/overlay17AdvanceChain",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x8B4",

@@ -1129,6 +1129,9 @@ o19CopyReloc = 0xf0000000;
 o19FreeReloc = 0xf0000000;
 o19StateReloc = 0xf0000000;
 
+/* overlay 19: overlay19BuildPlanes.c.o */
+sqrtf_o019Reloc = 0xf0000000;
+
 /* overlay 20: overlay20ReleaseTree.c.o */
 overlay20ReleaseTreeReloc = 0xf0000000;
 

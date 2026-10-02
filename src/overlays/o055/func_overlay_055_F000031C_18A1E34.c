@@ -1,7 +1,8 @@
 #include "ultra64.h"
 
 typedef struct Overlay55Digit {
-    u8 pad00[8];
+    void *resource;
+    void *alternate;
     s32 value;
     s16 x;
     s16 y;
@@ -23,8 +24,13 @@ typedef struct Overlay55Object {
     Overlay55PlayerState *state;
 } Overlay55Object;
 
+typedef struct Overlay55Level {
+    u8 pad00[0x86];
+    s8 laps;
+} Overlay55Level;
+
 typedef struct Overlay55Transform {
-    s32 resource;
+    void *resource;
     s32 unk04;
     s32 unk08;
     s16 x;
@@ -32,30 +38,32 @@ typedef struct Overlay55Transform {
     s32 unk10;
 } Overlay55Transform;
 
-typedef struct Overlay55MenuPlacement {
-    u8 pad00[0x84];
-    s16 angle;
-    u8 pad86[6];
-    f32 x;
-    f32 y;
-} Overlay55MenuPlacement;
+typedef struct MenuCurrentObject {
+    s16 unk0;
+    s16 unk2;
+    s16 unk4;
+    s16 index;
+    f32 unk8;
+    f32 unkC;
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+    s8 pad1C[4];
+} MenuCurrentObject;
 
 typedef struct Overlay55DisplayCommand {
     u32 w0;
     u32 w1;
 } Overlay55DisplayCommand;
 
-extern Overlay55Digit D_20[];
-extern Overlay55Digit D_50[];
-extern Overlay55Digit D_80[];
-extern Overlay55Digit D_A0[];
-extern Overlay55Digit D_280[];
-extern s8 D_F4;
-extern s32 D_F8[];
-extern s8 D_304[];
-extern f32 D_308;
-extern s16 gOverlay55CharacterIcons[];
-extern void *gOverlay55IconObjects[];
+extern Overlay55Digit gOverlay55TimeDigits[4][10];
+extern Overlay55Digit gOverlay55ClockDigits[4][2];
+extern Overlay55Digit gOverlay55TimeTemplate[];
+extern s32 gOverlay55TransitionDone;
+extern s8 gOverlay55BlinkCounter;
+extern s32 gOverlay55IconAlpha[];
+extern s8 gOverlay55Items[];
+extern f32 gOverlay55HudHeight;
 
 extern u8 D_8007BEF4;
 extern s16 D_8007C180[];
@@ -63,203 +71,182 @@ extern s32 D_800C947C;
 extern Overlay55DisplayCommand *D_800D3140;
 extern void *D_800D3144;
 extern void *D_800D31C8[];
-extern Overlay55MenuPlacement D_800D3550[];
-extern s32 gOverlay1TransitionStateReloc;
+extern MenuCurrentObject D_800D3550[];
+extern s32 ext_o1_83e0;
 
 extern u8 *func_80028F54(void);
-extern void func_80022A50();
-extern Overlay55Object **func_80005750(s32 *count);
-extern void viGetCurrentSize();
-extern void camSetNo();
-extern void func_80022610();
-extern void overlay56SplitTime();
-extern u8 *levelGetLevel(void);
+extern void camStandardOrtho(Overlay55DisplayCommand **, void **);
+extern Overlay55Object **func_80005750(s32 *);
+extern void viGetCurrentSize(s32 *, s32 *);
+extern void camSetNo(s32);
+extern void camSetScissor(Overlay55DisplayCommand **);
+extern void overlay56SplitTime(s32, s32 *, s32 *, s32 *);
+extern Overlay55Level *levelGetLevel(void);
 extern s32 func_800290A0(void);
-extern void overlay55GetOffsets();
-extern void func_80034920();
-extern void func_8002F618();
-extern void func_80039E34();
+extern void overlay55GetOffsets(s32, s32, s32 *, s32 *);
+extern void func_80034920(Overlay55DisplayCommand **);
+extern void func_8002F618(Overlay55DisplayCommand **, Overlay55Digit *, s32, s32, u8, u8, u8, u8);
+extern void func_80039E34(s32);
 extern s32 frontGetScreenMode(void);
-extern void func_8002FB34(void *, Overlay55Transform *, s32, s32, f32, f32,
-                         s32, s32);
+extern void func_8002FB34(Overlay55DisplayCommand **, Overlay55Transform *, f32, f32, f32, f32, s32, u8);
 extern s32 mainGetMode(void);
-extern void mainChangeCameras();
-extern void func_800016EC();
+extern void mainChangeCameras(s32);
+extern void func_800016EC(u8);
 extern void func_8003A590(void);
 extern void func_80037414(s32, f32, f32, s32, s32, s32, s32);
-extern void mainChangeLevel();
-extern void func_800005CC(f32, s32);
+extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
+extern void func_800005CC(f32, u8);
 
 #ifdef NON_MATCHING
-/* Mickey-local reconstruction. The display-list and transition call roles
- * are established by this overlay's relocation records; the object layout is
- * shared with the resident player-control code.
- * 2026-10-02: the declaration order puts every declared home on the shipped
- * stack offsets (the 0xE0 frame now agrees slot for slot above 0x78); the
- * player state, icon cell and placement are read as expressions, which the
- * shipped code's register pressure requires (445 to 375 masked words). */
+/* Overlay 55's HUD update: the four-player sibling of overlay 53's
+ * func_overlay_053_F0000240_189DBE8 and of overlay52TailB, written the same
+ * way (2026-10-02). Callees and resident data are the ones this overlay's
+ * relocation records name, with overlay52TailB's prototypes (u8 colour and
+ * mode arguments; func_8002FB34's last argument is u8, which keeps the 1 out
+ * of s4). The digit rows are written through `digits` (the shipped code
+ * reloads each dividend after the row stores), the counter increment is a
+ * (u8) truncation (one ring draw), the icon's resource is read before the
+ * display-list command (the item value then stays in one web), and one
+ * unused local under gameState places the spill cells. 375 masked at +4
+ * to 57 at delta 0; the open words are listed in the handoff shard. */
 void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
-    Overlay55Object **objects;
-    Overlay55Digit *digit;
+    s32 i;
+    s32 player;
     s32 digitX;
     s32 digitY;
-    s32 pad;
-    s16 iconX;
+    Overlay55Object **objects;
+    Overlay55PlayerState *state;
     Overlay55Digit *digits;
-    u8 *level;
+    Overlay55Level *level;
     s32 objectCount;
     s32 minutes;
     s32 seconds;
     s32 centiseconds;
-    s32 heightOffset;
-    Overlay55Digit *source;
+    s32 hudOffset;
+    s32 iconX;
+    s32 iconY;
     Overlay55DisplayCommand *command;
-    Overlay55Object *object;
-    s32 playerIndex;
-    s32 *alpha;
+    s32 pad1;
+    s32 pad0;
     Overlay55Transform transform;
-    s32 screenWidth;
-    s32 screenHeight;
+    s32 width;
+    s32 height;
     u8 *gameState;
-    s16 iconY;
+    s32 padLow;
 
     gameState = func_80028F54();
-    func_80022A50(&D_800D3140, &D_800D3144);
+    camStandardOrtho(&D_800D3140, &D_800D3144);
     objects = func_80005750(&objectCount);
-
     if (D_800C947C == 0) {
-        s32 fadeIndex;
-
-        for (fadeIndex = 0; fadeIndex < updateRate; fadeIndex++) {
-            D_308 += (-11.0f - D_308) * 0.125f;
+        for (i = 0; i < updateRate; i++) {
+            gOverlay55HudHeight += (-11.0f - gOverlay55HudHeight) * 0.125f;
         }
     }
-    heightOffset = (s32) D_308;
-    viGetCurrentSize(&screenWidth, &screenHeight);
-    D_F4 += 1;
-    D_F4 = (s8) ((s8) D_F4 % 10);
+    hudOffset = (s32)gOverlay55HudHeight;
+    viGetCurrentSize(&width, &height);
+    gOverlay55BlinkCounter = (u8)(gOverlay55BlinkCounter + 1);
+    gOverlay55BlinkCounter %= 10;
 
-    for (playerIndex = 0; playerIndex < D_8007BEF4; playerIndex++) {
-        object = objects[playerIndex];
-        if (object == NULL) {
-            continue;
+    for (player = 0; player < D_8007BEF4; player++) {
+        if (objects[player] == NULL) {
+            return;
         }
-        alpha = &D_F8[playerIndex];
-
-        camSetNo(playerIndex);
-        func_80022610(&D_800D3140);
-        if (gameState[0] == 6) {
-            digits = (Overlay55Digit *)
-                ((u8 *) D_20 + (playerIndex * 0xA0));
-            overlay56SplitTime(object->state->time, &minutes, &seconds,
-                               &centiseconds);
+        state = objects[player]->state;
+        camSetNo(player);
+        camSetScissor(&D_800D3140);
+        if (*gameState == 6) {
+            digits = gOverlay55TimeDigits[player];
+            overlay56SplitTime(state->time, &minutes, &seconds, &centiseconds);
             level = levelGetLevel();
-            if ((D_800C947C == 0) &&
-                (level[0x86] != (u8) object->state->racerIndex) &&
-                (func_800290A0() == 0) && (object->state->time != 0x83D60)) {
-                centiseconds = (centiseconds - (centiseconds % 10)) + D_F4;
+            if (D_800C947C == 0 && state->racerIndex != level->laps &&
+                func_800290A0() == 0 && state->time != 0x83D60) {
+                centiseconds -= centiseconds % 10;
+                centiseconds += gOverlay55BlinkCounter;
             }
-
             digits[0].value = (minutes / 10) << 16;
             digits[1].value = (minutes % 10) << 16;
             digits[3].value = (seconds / 10) << 16;
             digits[4].value = (seconds % 10) << 16;
             digits[6].value = (centiseconds / 10) << 16;
             digits[7].value = (centiseconds % 10) << 16;
-
-            overlay55GetOffsets(playerIndex, 0, &digitX, &digitY);
-            source = D_20;
-            digit = digits;
-            do {
-                if ((digit->value >> 16) == 1) {
-                    if ((source == D_20) || (source == D_50) ||
-                        (source == D_80)) {
-                        digit->x = source->x + digitX + 1;
+            overlay55GetOffsets(player, 0, &digitX, &digitY);
+            for (i = 0; i < 8; i++) {
+                if ((digits[i].value >> 16) == 1) {
+                    if (i == 0 || i == 3 || i == 6) {
+                        digits[i].x = gOverlay55TimeTemplate[i].x + digitX + 1;
                     } else {
-                        digit->x = source->x + digitX - 1;
+                        digits[i].x = gOverlay55TimeTemplate[i].x + digitX - 1;
                     }
                 } else {
-                    digit->x = source->x + digitX;
+                    digits[i].x = gOverlay55TimeTemplate[i].x + digitX;
                 }
-                source++;
-                digit++;
-            } while (source != D_A0);
-
+            }
             func_80034920(&D_800D3140);
-            func_8002F618(NULL, digits, 0, heightOffset,
-                          0xFF, 0xFF, 0xFF, 0xFF);
+            func_8002F618(&D_800D3140, digits, 0, hudOffset, 255, 255, 255, 255);
             func_80034920(&D_800D3140);
-
-            overlay55GetOffsets(playerIndex, 0, &digitX, &digitY);
-            D_800D3550[0].x = digitX - 0xAD;
-            D_800D3550[0].y = (-digitY - heightOffset) + 0x74;
-            D_800D3550[0].angle = (s16) ((object->state->time * -0x10000) / 300);
+            overlay55GetOffsets(player, 0, &digitX, &digitY);
+            D_800D3550[4].unkC = digitX - 0xAD;
+            D_800D3550[4].unk10 = (-digitY - hudOffset) + 0x74;
+            D_800D3550[4].unk4 = state->time * -65536 / 300;
             func_80039E34(4);
-            func_8002F618(NULL, &D_280[playerIndex * 2], 0, heightOffset,
-                          0xFF, 0xFF, 0xFF, 0xFF);
+            func_8002F618(&D_800D3140, gOverlay55ClockDigits[player], 0, hudOffset, 255, 255, 255, 255);
         }
-
-        if (object->state->character != 0xFF) {
-            *alpha += updateRate * 0x10;
-            if (*alpha >= 0xA5) {
-                *alpha = 0xA4;
+        if (state->character != 255) {
+            gOverlay55IconAlpha[player] += updateRate * 16;
+            if (gOverlay55IconAlpha[player] >= 0xA5) {
+                gOverlay55IconAlpha[player] = 0xA4;
             }
         } else {
-            *alpha -= updateRate * 8;
-            if (*alpha < 0) {
-                *alpha = 0;
+            gOverlay55IconAlpha[player] -= updateRate * 8;
+            if (gOverlay55IconAlpha[player] < 0) {
+                gOverlay55IconAlpha[player] = 0;
             }
         }
-
-        if (*alpha > 0) {
-            if (object->state->effectTimer != 0) {
-                D_304[playerIndex] = 0x35;
-            } else if (object->state->character != 0xFF) {
-                D_304[playerIndex] = (s8) D_8007C180[object->state->character];
+        if (gOverlay55IconAlpha[player] > 0) {
+            if (state->effectTimer != 0) {
+                gOverlay55Items[player] = 53;
+            } else if (state->character != 255) {
+                gOverlay55Items[player] = D_8007C180[state->character];
             }
-
-            if (D_304[playerIndex] != -1) {
+            if (gOverlay55Items[player] != -1) {
                 if (frontGetScreenMode() == 1) {
-                    iconX = (playerIndex & 1) ? 0x1A2 : 0x25;
-                    iconY = (playerIndex < 2) ? 0x86 : 0x13C;
+                    iconX = (player & 1) ? 0x1A2 : 0x25;
+                    iconY = (player < 2) ? 0x86 : 0x13C;
                 } else {
-                    iconX = (playerIndex & 1) ? 0x1A2 : 0x25;
-                    iconY = (playerIndex < 2) ? 0x86 : 0x12A;
+                    iconX = (player & 1) ? 0x1A2 : 0x25;
+                    iconY = (player < 2) ? 0x86 : 0x12A;
                 }
-                if (D_304[playerIndex] == 0x35) {
-                    iconX -= 7;
-                    iconY -= 6;
+                transform.y = iconY;
+                transform.x = iconX;
+                if (gOverlay55Items[player] == 53) {
+                    transform.y = iconY - 6;
+                    transform.x = iconX - 7;
                 }
-
+                transform.resource = D_800D31C8[gOverlay55Items[player]];
+                transform.unk04 = 0;
+                transform.unk08 = 0;
+                transform.unk10 = 0;
                 command = D_800D3140++;
                 command->w0 = 0xFA000000;
                 command->w1 = 0xFFFFFFFF;
-                transform.resource = (s32) D_800D31C8[D_304[playerIndex]];
-                transform.unk04 = 0;
-                transform.unk08 = 0;
-                transform.x = iconY;
-                transform.y = iconX;
-                transform.unk10 = 0;
-                func_8002FB34(NULL, &transform, 0, 0, 0.0f, 0.0f,
-                              *alpha | ~0xFF, 1);
+                func_8002FB34(&D_800D3140, &transform, 0.0f, 0.0f, 0.66f, 0.66f,
+                              gOverlay55IconAlpha[player] | ~0xFF, 1);
             }
         } else {
-            D_304[playerIndex] = -1;
+            gOverlay55Items[player] = -1;
         }
-
-        if ((mainGetMode() == 0) && (func_80028F54()[0] == 5) &&
-            (D_800C947C == 0) && (gOverlay1TransitionStateReloc == 0)) {
+        if (mainGetMode() == 0 && *func_80028F54() == 5 && ext_o1_83e0 == 0 &&
+            gOverlay55TransitionDone == 0) {
             mainChangeCameras(1);
             func_800016EC(1);
             func_8003A590();
             func_80037414(2, 4.0f, -1.0f, 0, 0, 0, 0);
-            mainChangeLevel(0x12, 0, 0, 7, 1, 1);
+            mainChangeLevel(18, 0, 0, 7, 1, 1);
             func_800005CC(3.0f, 0);
-            gOverlay1TransitionStateReloc = 1;
+            gOverlay55TransitionDone = 1;
         }
     }
-
-    func_80022A50(&D_800D3140, &D_800D3144);
+    camStandardOrtho(&D_800D3140, &D_800D3144);
     camSetNo(0);
 }
 #else
@@ -268,10 +255,10 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_055_F000031C_18A1E34:start
  * symbol: func_overlay_055_F000031C_18A1E34
- * score: 375 differing words
+ * score: 57 differing words
  * frame: 0xE0
- * relocations: 90
- * first-mismatch: +0x1D0
- * summary: 445 to 375: slot-exact declaration order, three alias locals read as expressions; temp-ring and spill cells open
+ * relocations: 102
+ * first-mismatch: +0x2C0
+ * summary: 375 at +4 to 57 at delta 0: rewritten as overlay 53's matched sibling; clock-row spill cell and item reload placement open
  * PLATEAU-HANDOFF:func_overlay_055_F000031C_18A1E34:end
  */

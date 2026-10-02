@@ -2902,6 +2902,42 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53Initialize.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/overlay53CopyOffsetEntries.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xD4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/func_overlay_053_F0000240_189DBE8.c.o: CFLAGS += -Wab,-r4300_mul
+# Matched C. The resident and overlay 1/56 names it reads and calls are
+# renamed to per-module placeholders, as for overlay52TailB, so the
+# generated relocation surface values them from this module's stored addends.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o053/func_overlay_053_F0000240_189DBE8.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym camSetNo=camSetNo_o053Reloc \
+		--redefine-sym camSetScissor=camSetScissor_o053Reloc \
+		--redefine-sym camStandardOrtho=camStandardOrtho_o053Reloc \
+		--redefine-sym freeFrontEndItem=freeFrontEndItem_o053Reloc \
+		--redefine-sym frontGet2PlayerSplit=frontGet2PlayerSplit_o053Reloc \
+		--redefine-sym frontGetScreenMode=frontGetScreenMode_o053Reloc \
+		--redefine-sym func_800005CC=func_800005CC_o053Reloc \
+		--redefine-sym func_800016EC=func_800016EC_o053Reloc \
+		--redefine-sym func_80005750=func_80005750_o053Reloc \
+		--redefine-sym func_80028F54=func_80028F54_o053Reloc \
+		--redefine-sym func_800290A0=func_800290A0_o053Reloc \
+		--redefine-sym func_8002F618=func_8002F618_o053Reloc \
+		--redefine-sym func_80034920=func_80034920_o053Reloc \
+		--redefine-sym func_80037414=func_80037414_o053Reloc \
+		--redefine-sym func_80039E34=func_80039E34_o053Reloc \
+		--redefine-sym func_8003A590=func_8003A590_o053Reloc \
+		--redefine-sym levelGetLevel=levelGetLevel_o053Reloc \
+		--redefine-sym loadFrontEndItem=loadFrontEndItem_o053Reloc \
+		--redefine-sym mainChangeCameras=mainChangeCameras_o053Reloc \
+		--redefine-sym mainChangeLevel=mainChangeLevel_o053Reloc \
+		--redefine-sym mainGetMode=mainGetMode_o053Reloc \
+		--redefine-sym viGetCurrentSize=viGetCurrentSize_o053Reloc \
+		--redefine-sym overlay56SplitTime=overlay56SplitTime_o053Reloc \
+		--redefine-sym D_8007C180=D_8007C180_o053Reloc \
+		--redefine-sym D_800C947C=D_800C947C_o053Reloc \
+		--redefine-sym D_800D3140=D_800D3140_o053Reloc \
+		--redefine-sym D_800D3144=D_800D3144_o053Reloc \
+		--redefine-sym D_800D31C8=D_800D31C8_o053Reloc \
+		--redefine-sym D_800D3550=D_800D3550_o053Reloc \
+		--redefine-sym ext_o1_83e0=ext_o1_83e0_o053Reloc \
+		$@
 # overlay54Initialize owns overlay 54's .data and .bss.  Its text reaches them
 # through the object's own section symbols; the shipped words are
 # section-relative, so every site is rebound to a zero-valued base.

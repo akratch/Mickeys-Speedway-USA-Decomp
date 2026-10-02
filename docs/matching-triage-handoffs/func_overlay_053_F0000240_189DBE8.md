@@ -2,11 +2,11 @@
 ### `func_overlay_053_F0000240_189DBE8` plateau handoff
 
 - source: `src/overlays/o053/func_overlay_053_F0000240_189DBE8.c`
-- score: 403 differing words
-- frame: 0xF8
+- score: 0/636 words, promoted
+- frame: 0xD8
 - relocations: 117
-- first mismatch: +0x0
-- summary: 636 to 403 at delta 0: -Wab,-r4300_mul, single loop var, paired div/mod; frame 0xF8 vs 0xD8 open
+- first mismatch: none
+- summary: Matched. Rewritten as overlay52TailB is written: real callees and prototypes from the relocation records, player/i loops, rows indexed at each use.
 
 Summary before this remeasure: 608/636 instructions, -112 bytes (was +308). Residual: loop store rotation, frame 0x178 vs 0xD8, unrecovered indexed tables.
 ### Structural pass, 2026-09-11 (lane/p9-struct)
@@ -115,4 +115,41 @@ declared scalar homes (two above `spC8`, three between `spA4` and the packet);
 the candidate declares 12 plus the two quotient temps, and removing
 `obj`/`q`/`inner`/`ent` regressed 403 to 430 to 515. The first mismatch is the
 prologue's frame size, so every stack offset still differs.
+### Matched, 2026-10-02 (lane/l-o053)
+
+403 masked at delta 0 (frame 0xF8) became 0 and the function is promoted.
+The five-local variant from the section above (426 masked, frame 0xD8)
+was the starting point; a 648-cell product over which variable each of
+the six loops uses, the clock-row type and the second item test floored
+at 401, so the loop-variable reading was not the lever.
+
+The lever was the sibling. This function is a cut-down copy of
+overlay52TailB (matched): the same easing loop, the same item free/load
+loops, the same digit rows, icon packet, and transition tail. Its
+relocation records name every callee (camStandardOrtho, func_80005750,
+levelGetLevel, freeFrontEndItem, loadFrontEndItem, camSetNo,
+camSetScissor, overlay56SplitTime, func_8002F618, func_80034920,
+frontGetScreenMode, func_80039E34, frontGet2PlayerSplit, mainGetMode,
+func_800016EC, func_8003A590, func_80037414, mainChangeLevel,
+func_800005CC) and the resident data (D_800C947C, D_800D3140/3144,
+D_800D31C8, D_800D3550 entry 4, D_8007C180, overlay 1's 0x83E0 flag), so
+the scaffold's single stand-in callee hid every prototype. Priced:
+
+- the whole function rewritten in overlay52TailB's shape, with its
+  prototypes (u8 colour arguments to func_8002F618, u8 to func_800016EC
+  and func_800005CC), `player` for the two racer loops and `i` for the
+  others, the time rows and the clock row as one `[2][10]` entry type
+  indexed at each use (the shared player*160 term), icon[2] as the
+  packet (it fills the three slots under hudOffset): 426 to 217 at +4.
+- the lap compare as `racer->lap != level->laps` and the screen-mode
+  arm storing x before y (both overlay52TailB's order; a 16-cell product
+  over these and the remainder spelling): 217 to 12 at delta 0. The
+  remainder written as two statements is required (one expression: 146
+  and worse).
+- the split icon arm storing x before y in both branches: 12 to 0.
+
+The overlay-local data are plain externs valued by `gmake overlay-syms`
+(gOverlay53TimeDigits 0x0, gOverlay53ClockDigits 0x140, and so on); no
+TU-defined data or rebind spec was needed. mk/overlays.mk renames the
+resident and overlay 1/56 names to the `_o053Reloc` surface.
 <!-- plateau-handoff:func_overlay_053_F0000240_189DBE8:end -->

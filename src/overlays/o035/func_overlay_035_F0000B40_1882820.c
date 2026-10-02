@@ -53,20 +53,16 @@ extern void call_o0_0_2B318(void *value);
 extern f32 sqrtf(f32 value);
 
 /*
- * Delta 0, 9 masked words (lane j-o035, 2026-10-02), rebuilt on DKR's
- * track_init_collision shape. The second pass reads its triangle's plane
- * index as `idx = plane * 4` in one expression (no separate shift), which
- * puts the scratch pointer first in the triangle preheader and keeps the
- * second pass's span index and offset as the target's split webs. The span
- * fields are read through a do-while(0) macro in both passes and the first
- * pass's plane is written through another; their region blocks set the
- * counter, span index and span offset priorities (they replace the empty
- * `if (counter < 0) {}` probes of the previous lanes). Left: the
- * opposite-vertex index and the edge-offset induction temporary take each
- * other's caller-saved register (save 400 against 387.5).
+ * Matched (lane j-o035, 2026-10-02) on DKR's track_init_collision shape.
+ * The second pass reads its plane index as `idx = plane * 4` in one
+ * expression. The span reads, the normalisation in both passes and the
+ * first pass's second and third vertex reads go through do-while(0)
+ * macros; their region blocks set the saved-register order of the counter,
+ * span index and offset, edge index, opposite vertex and edge-offset webs
+ * (measured, the macro split itself is not recovered from anything).
  *
- * PROVENANCE: adapted from Diddy Kong Racing,
- * src/object_models.c (model_init_collision).
+ * PROVENANCE: adapted from Diddy Kong Racing, src/tracks.c
+ * (track_init_collision) and src/object_models.c (model_init_collision).
  */
 #define O35_SPAN_RANGE(s, index, start, base, end) \
     do { \
@@ -75,16 +71,24 @@ extern f32 sqrtf(f32 value);
         end = (s)->spans[(index) + 1].triangleStart; \
     } while (0)
 
-#define O35_ADD_PLANE(s, counter, x, y, z, px, py, pz) \
+#define O35_READ_VERTEX(v, s, index, outX, outY, outZ) \
     do { \
-        (s)->planes[(counter) << 2] = x; \
-        (s)->planes[((counter) << 2) + 1] = y; \
-        (s)->planes[((counter) << 2) + 2] = z; \
-        (s)->planes[((counter) << 2) + 3] = -((px) * (x) + (py) * (y) + (pz) * (z)); \
-        (counter)++; \
+        v = &(s)->vertices[index]; \
+        outX = (v)->x; \
+        outY = (v)->y; \
+        outZ = (v)->z; \
     } while (0)
 
-#ifdef NON_MATCHING
+#define O35_NORMALIZE(x, y, z, mag) \
+    do { \
+        mag = sqrtf((x) * (x) + (y) * (y) + (z) * (z)); \
+        if (mag > 0.0f) { \
+            x /= mag; \
+            y /= mag; \
+            z /= mag; \
+        } \
+    } while (0)
+
 s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
     s32 pad0;
     O35CollisionRecord *scratch;
@@ -136,25 +140,18 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
             x1 = v->x;
             y1 = v->y;
             z1 = v->z;
-            v = &s->vertices[s->triangles[i].selectors[1] + vertexBase];
-            x2 = v->x;
-            y2 = v->y;
-            z2 = v->z;
-            v = &s->vertices[s->triangles[i].selectors[2] + vertexBase];
-            x3 = v->x;
-            y3 = v->y;
-            z3 = v->z;
+            O35_READ_VERTEX(v, s, s->triangles[i].selectors[1] + vertexBase, x2, y2, z2);
+            O35_READ_VERTEX(v, s, s->triangles[i].selectors[2] + vertexBase, x3, y3, z3);
             nx = (y2 - y1) * (z3 - z2) - (z2 - z1) * (y3 - y2);
             ny = (z2 - z1) * (x3 - x2) - (x2 - x1) * (z3 - z2);
             nz = (x2 - x1) * (y3 - y2) - (y2 - y1) * (x3 - x2);
-            mag = sqrtf(nx * nx + ny * ny + nz * nz);
-            if (mag > 0.0f) {
-                nx /= mag;
-                ny /= mag;
-                nz /= mag;
-            }
+            O35_NORMALIZE(nx, ny, nz, mag);
             s->records[i].plane = counter;
-            O35_ADD_PLANE(s, counter, nx, ny, nz, x1, y1, z1);
+            s->planes[counter << 2] = nx;
+            s->planes[(counter << 2) + 1] = ny;
+            s->planes[(counter << 2) + 2] = nz;
+            s->planes[(counter << 2) + 3] = -(x1 * nx + y1 * ny + z1 * nz);
+            counter++;
         }
     }
 
@@ -212,12 +209,7 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
                 x5 = (y2 - y1) * (z3 - z1) - (z2 - z1) * (y3 - y1);
                 y5 = (z2 - z1) * (x3 - x1) - (x2 - x1) * (z3 - z1);
                 z5 = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
-                mag = sqrtf(x5 * x5 + y5 * y5 + z5 * z5);
-                if (mag > 0.0f) {
-                    x5 /= mag;
-                    y5 /= mag;
-                    z5 /= mag;
-                }
+                O35_NORMALIZE(x5, y5, z5, mag);
                 if (neighbor == 0xFFFE) {
                     s->triangles[i].flags |= 1 << edge;
                 } else {
@@ -250,16 +242,3 @@ s32 func_overlay_035_F0000B40_1882820(O35CollisionSegment *s) {
     call_o0_0_2B318(scratch);
     return counter;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o035/func_overlay_035_F0000B40_1882820/func_overlay_035_F0000B40_1882820.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_035_F0000B40_1882820:start
- * symbol: func_overlay_035_F0000B40_1882820
- * score: 9/528 words
- * frame: 0x130
- * relocations: 7
- * first-mismatch: +0x3D4
- * summary: Macro blocks and one-expression idx replace all probes: 77 to 9. Open: oppVertIndex vs edge-offset IV in t2/t3.
- * PLATEAU-HANDOFF:func_overlay_035_F0000B40_1882820:end
- */

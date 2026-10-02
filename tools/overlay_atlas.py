@@ -1609,6 +1609,7 @@ MIXED_TU_EXACT_C_RANGES = {
     35: [
         (0x01E0, 0x0770, "func_overlay_035_F00001E0_1881EC0"),
         (0x0770, 0x0B40, "func_overlay_035_F0000770_1882450"),
+        (0x0B40, 0x1380, "func_overlay_035_F0000B40_1882820"),
     ],
     51: [
         (

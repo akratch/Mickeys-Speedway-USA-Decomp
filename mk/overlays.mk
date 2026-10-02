@@ -3241,6 +3241,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/func_overlay_035_F00001E0_1881EC0.c.o: POS
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/func_overlay_035_F0000B40_1882820.c.o: CFLAGS += \
 	-Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o035/func_overlay_035_F0000B40_1882820.c.o: POSTPROCESS = \
+	$(OBJCOPY) --redefine-sym sqrtf=sqrtf_o035Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x840
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay26HandleEffects.c.o: CFLAGS += -Wab,-r4300_mul

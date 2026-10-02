@@ -29,4 +29,14 @@ Non-volatile lengthSquared (plain, or with a volatile write-only sink) was
 measured and is 12 to 16 bytes short, with a different float ring from the
 first block; volatile stays. Remaining blocker: the target stores the length
 squared once to 0x24 and keeps f18 live, where volatile emits two reloads.
+#### 2026-10-02, lane g-ovl5: no change, 121
+
+- Product over volatile on/off, three spellings of the zero fill and two of
+  the transform loop (12 cells): floor 121 (volatile on, current loops).
+  Volatile off is 168 to 177 at -4 to -16 with frame 0x60 against 0x58, first
+  mismatch moving to +0x18 (a float ring one position off in the scale loads).
+- Declaration-order hill climb over the 8 locals: floor 121.
+- Target reading: the length-squared store at 0x24 is never reloaded (the
+  value stays in f18), and the two-point transform loop is unrolled by two with
+  a `sltu` guard; neither is reproduced yet.
 <!-- plateau-handoff:overlay17CalculateEndpoints:end -->

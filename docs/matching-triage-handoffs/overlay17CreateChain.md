@@ -50,4 +50,9 @@ Priced edits, each measured with tools/shape_product.py at size delta 0:
   and are flat.
 - Left: 58 naming rows, 10 structural; the template-loop webs still rotate one
   position and halfBufferBytes takes a3 where the target holds a ring temp.
+#### 2026-10-02, lane g-ovl5: no change, 83
+
+- Template loop as `do/while (index--)` or `for (index = 15; index >= 0; ...)`:
+  both 83 (canonicalised); count-up loops 190 at +128.
+- Declaration-order hill climb over the 6 locals: floor 83.
 <!-- plateau-handoff:overlay17CreateChain:end -->

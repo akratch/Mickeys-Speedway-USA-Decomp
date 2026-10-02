@@ -51,4 +51,12 @@ Flag lattice and permuter stay closed.
 - Remaining: the state web is t2 in the target and t1 here, current t1 against
   t0, index t0 against v1; a global one-position shift of the t-pool colours
   (93 percent coherent mapping, 162 naming rows).
+#### 2026-10-02, lane g-ovl5: 183 to 180
+
+- Declaration-order hill climb over 14 declarations, 183 to 180.
+- Keyframe neighbour selection as separate ifs, a ternary chain, or with the
+  after-after default taken from `after`: 308 to 309 at -8; the comma form kept.
+- Spending an extra t-pool draw before the state load (an OR-zero on
+  updateRate, a ternary, if/else, an `&= 0xFFFF`, a state null test): all
+  inert or worse; the one-position shift is not reached from the head.
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

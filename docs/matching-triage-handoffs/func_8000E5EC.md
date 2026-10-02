@@ -2,11 +2,41 @@
 ### `func_8000E5EC` plateau handoff
 
 - source: `src/main/track.c`
-- score: 185/205 words
-- frame: 0xE8
+- score: 12/205 words
+- frame: 0xD8
 - relocations: 56
-- first mismatch: +0x0
-- summary: Scoped-carrier forms are inert; direct visibility access changes the 31-draw schedule but regresses to 187 words. The 0x10 frame deficit remains.
+- first mismatch: +0x104
+- summary: Listing rewrite 185 -> 12; left two v0/v1 ties: forces p1:w61=c2,w52=c1,w4=c2,w17=c1 (proc 23) score 0.
+
+#### 2026-10-02, lane x-track: 185 to 12 at delta 0
+
+The m2c body was replaced by a rewrite from the listing. Direct-compile
+measurements (masked words, size delta):
+
+- Natural rewrite (indexed segmentList, `while (j--)` flag loops, one
+  counter): 166 at -4. Separate counter `j` for the two flag loops (the
+  final loop's counter spans calls, theirs do not): 160 at -12.
+- Camera block: the camera segment held in the final loop's counter `i`
+  (the target keeps it, then the product, in s1) and scaled in place,
+  `i *= D_800792E8->segmentCount`, with the count read in the condition
+  (a 10-cell product over carrier and spelling): 43 at 0.
+- Declarations for the 0xD8 homes (visibleCount third, resultCount fourth,
+  one more slot before `segmentList[128]`, `records` after it): 12 at 0.
+- Flat at 12: three `while` spellings per loop (`--j >= 0`, `j-- != 0`,
+  `j-- > 0` all regress), index-operand order, `u32` counter, explicit `!= 0`.
+
+The 12 words are v0/v1 only. Instrumented records on this source
+(proc 23): forcing `p1:w61=c2,p1:w52=c1,p1:w4=c2,p1:w17=c1` scores 0 masked
+at delta 0 (all four accepted). Web 52 is the post-decrement temporary that
+all three `while (x--)` loops share (bbs 23, 28, 46; totalsave 60, nocs 2);
+web 61 is the segment-list cursor of both flag loops (62/2) and is
+coloured first, so the cursor takes v0. Web 4 is the camera block's
+segment-count load (3/2) and takes v0 ahead of web 17 (3/3). The next lever
+is a source form that moves two units of `totalsave` between the cursor
+and the shared temp (a tie at 60 goes to web 52, the lower number).
+
+
+Summary before this remeasure: Scoped-carrier forms are inert; direct visibility access changes the 31-draw schedule but regresses to 187 words. The 0x10 frame deficit remains.
 
 #### Mickey m2c structural audit, 2026-09-08
 

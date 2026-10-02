@@ -65,7 +65,6 @@ extern void func_overlay_011_F00022E8_186AB30(s32 updateRate);
 extern void func_overlay_011_F0002714_186AF5C(s32 updateRate);
 
 #define O11_WRITE_VERTEX(vertexX, vertexY, vertexAlpha) \
-    do { \
         gO11VertexReloc->x = (vertexX); \
         gO11VertexReloc->y = (vertexY); \
         gO11VertexReloc->z = 0; \
@@ -73,19 +72,23 @@ extern void func_overlay_011_F0002714_186AF5C(s32 updateRate);
         gO11VertexReloc->g = 0; \
         gO11VertexReloc->b = 0; \
         gO11VertexReloc->a = (vertexAlpha); \
-        gO11VertexReloc++; \
-    } while (0)
+        gO11VertexReloc++
 
 /* 2026-10-02 n-ovl6: the scissor word is a float expression
  * (`(s32)((width - 1) * 4.0f) & 0xFFF`, 535 to 522 and -120 to -32 bytes),
  * the column parity is a signed `% 2`, and its stride a `(parity * 7) << 9`
- * (529 masked, -8 bytes). Open: the target keeps updateRate in s3 and the
- * grid-row pointer in a stack home; the candidate reloads updateRate.
- * 2026-10-02 x-o051: with the pad index read through its own bss object the
- * size is -4 (534 masked). The target's six lower rows per column are one
- * loop that IDO unrolled by four after a two-row remainder (the main pass
- * indexes from a constant 3); every loop spelling measured here stays
- * rolled (-316 to -392 bytes), so what lets uopt unroll it is open. */
+ * (529 masked, -8 bytes).
+ * 2026-10-02 x-o051 (534 at -4 to 298 at -8, frame now 0x178):
+ * - the vertex writer is a bare statement list, not a `do { } while (0)`
+ *   macro: the region the wrapper opens is what stopped IDO unrolling the
+ *   six-row loop (in a non-leaf; a leaf unrolls either way). The six rows
+ *   are one `for (row = 1; row < 7; row++)` loop, unrolled by four after a
+ *   two-row remainder exactly as shipped;
+ * - every packet is `command = gO11DisplayListReloc++` then two stores;
+ * - x, top, y and the row y are plain s32 locals (no s16 re-extension);
+ * - the vertex-address byte is masked (`& 0xFF`) before the shift;
+ * - the pad index is bss +0x1C4 (not the action at data +0x1C4) and
+ *   options 4/5 test the resident game-state word. */
 #ifdef NON_MATCHING
 void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
                                         O11Vertex **vertices,
@@ -93,9 +96,14 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
     u8 alpha[13][17];
     u32 width;
     u32 height;
+    s32 x;
+    s32 top;
+    s32 y;
+    s32 yy;
     s32 row;
     s32 column;
     s32 block;
+    O11Gfx *command;
 
     if (func_800290A0() != 0) {
         if (D_1B0 == 0.0f) {
@@ -125,16 +133,16 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
     gO11VertexReloc = *vertices;
 
     func_80033CBC(&width, &height);
-    gO11DisplayListReloc->w0 = 0xED000000;
-    gO11DisplayListReloc->w1 =
+    command = gO11DisplayListReloc++;
+    command->w0 = 0xED000000;
+    command->w1 =
         ((((s32)((width - 1) * 4.0f)) & 0xFFF) << 12) |
         (((s32)((height - 1) * 4.0f)) & 0xFFF);
-    gO11DisplayListReloc++;
     func_80022A50(&gO11DisplayListReloc, &gO11MatrixReloc);
     func_800349A4(&gO11DisplayListReloc, 0, 4, 0);
-    gO11DisplayListReloc->w0 = 0xFCFFFFFF;
-    gO11DisplayListReloc->w1 = 0xFFFE793C;
-    gO11DisplayListReloc++;
+    command = gO11DisplayListReloc++;
+    command->w0 = 0xFCFFFFFF;
+    command->w1 = 0xFFFE793C;
 
     for (row = 0; row < 13; row++) {
         for (column = 0; column < 17; column++) {
@@ -147,41 +155,28 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
     }
 
     for (block = 0; block < 2; block++) {
-        s16 x;
-        s16 top;
-        s16 y;
-
         x = -160;
-        top = 120 - (block * 120);
-        y = 100 - (block * 120);
+        top = 120 - block * 120;
+        y = 100 - block * 120;
         for (column = 0; column < 17; column++) {
-            O11Gfx *command;
-            s32 gridRow;
-            s32 parity;
-
             command = gO11DisplayListReloc++;
-            parity = column % 2;
             command->w0 = 0x04000000 |
-                          (((((u32)gO11VertexReloc | 0x80000000) & 6) |
-                            0x38) <<
-                           16) |
-                          ((((parity * 7) << 9) | 0x4E) & 0xFFFF);
-            command->w1 = (u32)gO11VertexReloc | 0x80000000;
+                          ((((((u32)gO11VertexReloc + 0x80000000) & 6) |
+                            0x38) & 0xFF) << 16) |
+                          ((((column % 2 * 7) << 9) | 0x4E) & 0xFFFF);
+            command->w1 = (u32)gO11VertexReloc + 0x80000000;
             if (column != 0) {
                 command = gO11DisplayListReloc++;
                 command->w0 = 0x05B100C0;
                 command->w1 =
-                    (u32)(gO11GridTriangles + (parity * 0xC0)) | 0x80000000;
+                    (u32)(gO11GridTriangles + (column % 2 * 0xC0)) + 0x80000000;
             }
-
-            gridRow = block * 6;
-            O11_WRITE_VERTEX(x, top, alpha[gridRow][column]);
-            O11_WRITE_VERTEX(x, y, alpha[gridRow + 1][column]);
-            O11_WRITE_VERTEX(x, y - 20, alpha[gridRow + 2][column]);
-            O11_WRITE_VERTEX(x, y - 40, alpha[gridRow + 3][column]);
-            O11_WRITE_VERTEX(x, y - 60, alpha[gridRow + 4][column]);
-            O11_WRITE_VERTEX(x, y - 80, alpha[gridRow + 5][column]);
-            O11_WRITE_VERTEX(x, y - 100, alpha[gridRow + 6][column]);
+            O11_WRITE_VERTEX(x, top, alpha[block * 6][column]);
+            yy = y;
+            for (row = 1; row < 7; row++) {
+                O11_WRITE_VERTEX(x, yy, alpha[block * 6 + row][column]);
+                yy -= 20;
+            }
             x += 20;
         }
     }
@@ -196,8 +191,6 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
             func_8003A754();
             D_204 = 1;
         } else {
-            O11Status *status;
-
             D_1B8 += D_1BC * updateRate;
             if (D_1B8 >= 0x100) {
                 D_1B8 = 0x1FF - D_1B8;
@@ -209,8 +202,7 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
             if (D_1C0 != 0) {
                 func_overlay_011_F00011D0_1869A18(updateRate);
             } else {
-                status = func_80028F54();
-                switch (status->mode) {
+                switch (func_80028F54()->mode) {
                 case 0:
                     func_overlay_011_F0001398_1869BE0(updateRate);
                     break;
@@ -255,10 +247,10 @@ void func_overlay_011_F0000150_1868998(O11Gfx **displayList, void **matrix,
 
 /* PLATEAU-HANDOFF:func_overlay_011_F0000150_1868998:start
  * symbol: func_overlay_011_F0000150_1868998
- * score: 534/564 words
- * frame: 0x190
+ * score: 298/564 words
+ * frame: 0x178
  * relocations: 81
- * first-mismatch: +0x0
- * summary: Pad index split from the action (bss vs data +0x1C4), game-state word for options 4/5: size -8 to -4 at 534; row loop unroll open.
+ * first-mismatch: +0x7C
+ * summary: Bare vertex writer (a do-while(0) macro stops IDO's unroller), command packets, s32 coordinates: 534 to 298 at -8, frame 0x178.
  * PLATEAU-HANDOFF:func_overlay_011_F0000150_1868998:end
  */

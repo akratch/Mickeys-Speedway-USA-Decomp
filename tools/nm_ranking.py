@@ -181,11 +181,25 @@ def relocations(
     return result
 
 
+#: asm-processor's own directive, written by splat into a listing that carries
+#: migrated `.late_rodata` (a TU that owns its whole `.rodata` while the
+#: function is still assembled). gas rejects it as an unknown pseudo-op; the
+#: section itself assembles under its own name and is never scored.
+_LATE_RODATA_ALIGNMENT_RE = re.compile(
+    r"^[ \t]*\.late_rodata_alignment[ \t]+\d+[ \t]*$", re.MULTILINE)
+
+
+def standalone_listing(listing: str) -> str:
+    """Return `listing` with the directives only asm-processor understands removed."""
+    return _LATE_RODATA_ALIGNMENT_RE.sub("", listing)
+
+
 def assemble_target(target_asm: pathlib.Path, target_o: pathlib.Path) -> None:
     """Assemble a prepared target when import.py did not leave target.o."""
     standalone = target_o.with_suffix(".standalone.s")
     prelude = ROOT / "tools" / "permuter" / "prelude.inc"
-    standalone.write_text(prelude.read_text() + target_asm.read_text())
+    standalone.write_text(
+        prelude.read_text() + standalone_listing(target_asm.read_text()))
     command = shlex.split(pb.ASSEMBLER_COMMAND) + [
         str(standalone), "-o", str(target_o)
     ]

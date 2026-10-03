@@ -686,6 +686,13 @@ segments:
       # with func_80007118's 92-entry table (formerly jtbl_80080D2C).
       - [0x8192C, .rodata, main/objects]
       - [0x82138, rodata]
+      # track's whole .rodata input section, 0x260 bytes: fourteen
+      # "track/track.c" strings (two in matched C, twelve migrated into
+      # func_8000E920's listing), three unreferenced warning strings, then
+      # the literal pool and func_800103D4's two switch tables in text
+      # order. The eight bytes before it are the previous object's padding.
+      - [0x82140, .rodata, main/track]
+      - [0x823A0, rodata]
       # func_80019934's five-entry distance-mode switch table.
       - [0x823B4, .rodata, main/lights]
       - [0x823C8, rodata]

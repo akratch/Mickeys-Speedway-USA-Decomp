@@ -189,7 +189,7 @@ void shadowGetBuffers(s32 arg0, void **arg1, void **arg2, void **arg3) {
  */
 extern s16 Arctanf(f32 x, f32 y);
 extern f32 Powerf(f32 value);
-extern s32 TrapDanglingJump();
+extern s32 TrapDanglingJump(void *object, s32 mode, f32 updateRate);
 extern f32 camDistance(f32 x, f32 y, f32 z);
 extern s32 camGetMode(void);
 extern f32 sqrtf(f32 value);
@@ -1391,11 +1391,11 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:shadowGenerate:start
  * symbol: shadowGenerate
- * score: 432/510 words
+ * score: 419/510 words
  * frame: 0x138
  * relocations: 63
  * first-mismatch: +0x118
- * summary: Frame exact at 0x138 (unused f32s dropped, homes reordered): 445 to 432 at +40; an s16 still spills to +0xAA where the target keeps type in fp
+ * summary: Typed owned trap calls remove default float promotion: 432/+40 to 419/+24; exact frame retained. Remaining type-home and structural residual needs new source evidence.
  * PLATEAU-HANDOFF:shadowGenerate:end
  */
 

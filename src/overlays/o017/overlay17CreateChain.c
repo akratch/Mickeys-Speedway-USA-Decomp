@@ -55,7 +55,8 @@ typedef struct Overlay17Chain {
     Overlay17Template *template;
 } Overlay17Chain;
 
-extern Overlay17Template gOverlay17TemplateReloc[];
+/* YAML-owned initialized data and stock sizeof prove sixteen 16-byte records. */
+extern Overlay17Template gOverlay17TemplateReloc[16];
 extern void *func_8002B280(s32 size, u32 colourTag);
 struct TextureHeader;
 extern struct TextureHeader *func_80034448(s32 textureId);
@@ -182,6 +183,6 @@ Overlay17Chain *overlay17CreateChain(
  * frame: 0x80
  * relocations: 7
  * first-mismatch: +0x3C
- * summary: Authenticated allocation/material/endpoint calls: 65 to 45; all three call identities align. Open: pre-call size result coloured a2, stack home four bytes high, and one template pair emitted instead of two.
+ * summary: Authenticated allocation/material/endpoint calls: 65 to 45; all three call identities align. The independently owned template extent is 16 records; faithful pass captures retain one baseline address definition and two in the branch-local diagnostic. Pre-call size is already coloured a2; five candidate relocations still differ from seven target records.
  * PLATEAU-HANDOFF:overlay17CreateChain:end
  */

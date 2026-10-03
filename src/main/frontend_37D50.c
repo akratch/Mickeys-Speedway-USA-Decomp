@@ -388,7 +388,7 @@ void func_80037BF4(void) {
 }
 extern u8 D_7BE40[];
 extern s32 D_800D2FAC;
-extern void camStandardPersp(Gfx **, Mtx **, MainVertex **);
+extern void camStandardPersp(Gfx **, Mtx **);
 extern void func_80034920(Gfx **);
 extern u8 D_8007BEC0[];
 extern void viGetCurrentSize(s32 *, s32 *);
@@ -405,11 +405,11 @@ extern void func_80037BF4(void);
 
 /* Draws the backdrop as a 16x8 grid of texture tiles, each loaded with the
  * six-packet tile load and drawn as two vertex rows and four triangles.
- * 2026-10-02 (lane w2-front): rewritten from the listing with one packet
- * macro per command on (*gfx)++. 314 words at -64 bytes -> 302 at delta 0.
- * camStandardPersp takes three arguments (the target passes a2 through
- * untouched), which is what moves gfx from a2 to a3. The physical vertex
- * address is a local, so each packet loads the buffer index once. The open
+ * 2026-10-03: exact overlay 99's typed vertex carrier and row-index shape,
+ * plus the matched two-argument camera ABI, improve 302 to 191 words.
+ * The third formal here is unused; argument-register contents do not prove
+ * a callee's arity. Coordinates follow the bounded row/column indices and
+ * the frame is now the target's 0xE0. The remaining measured plateau
  * residual is in docs/matching-triage-handoffs/func_80037C74.md. */
 #ifdef NON_MATCHING
 #define _SHIFTL(v, s, w) ((u32) (((u32) (v) & ((0x01 << (w)) - 1)) << (s)))
@@ -433,19 +433,19 @@ extern void func_80037BF4(void);
 void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
     s32 row;
     s32 col;
-    s32 x;
-    s32 y;
+
+
     s32 uls;
     s32 ult;
     s32 lrs;
     s32 lrt;
     s32 colour;
     s32 rowColour;
-    s32 width;
-    u32 v;
+
+    FrontendVertex *v;
 
     if (D_8007BE80 != 0) {
-        camStandardPersp(gfx, mtx, vtx);
+        camStandardPersp(gfx, mtx);
         FE_PKT((*gfx)++, 0xE7000000, 0);
         FE_PKT((*gfx)++, 0xED000000, 0x5003C0);
         FE_PKT((*gfx)++, 0xEF30000F, 0);
@@ -462,50 +462,50 @@ void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
         }
         FE_PKT((*gfx)++, 0xFD10013F, D_800D2FAC);
         colour = (D_8007BEB0 << 5) / 1024;
-        y = 0;
+
         for (row = 0; row < 16; row++) {
-            x = 0;
+
             rowColour = colour;
             for (col = 0; col < 16; col += 2) {
-                if (x - 1 > 0) {
-                    uls = x - 1;
+                if (col * 20 - 1 > 0) {
+                    uls = col * 20 - 1;
                 } else {
                     uls = 0;
                 }
-                if (y - 1 > 0) {
-                    ult = y - 1;
+                if (row * 15 - 1 > 0) {
+                    ult = row * 15 - 1;
                 } else {
                     ult = 0;
                 }
-                if (x + 40 < 319) {
-                    lrs = x + 40;
+                if (col * 20 + 40 < 319) {
+                    lrs = col * 20 + 40;
                 } else {
                     lrs = 319;
                 }
-                if (y + 15 < 239) {
-                    lrt = y + 15;
+                if (row * 15 + 15 < 239) {
+                    lrt = row * 15 + 15;
                 } else {
                     lrt = 239;
                 }
-                width = lrs - uls;
-                FE_SETTILE((*gfx)++, (((width + 1) * 2) + 7) >> 3, 0x07080200);
+
+                FE_SETTILE((*gfx)++, ((((lrs - uls) + 1) * 2) + 7) >> 3, 0x07080200);
                 FE_PKT((*gfx)++, 0xE6000000, 0);
                 FE_LOADTILE((*gfx)++, uls, ult, lrs, lrt);
                 FE_PKT((*gfx)++, 0xE7000000, 0);
-                FE_SETTILE((*gfx)++, (((width + 1) * 2) + 7) >> 3, 0x00080200);
-                FE_TILESIZE((*gfx)++, width - 1, lrt - ult - 1);
+                FE_SETTILE((*gfx)++, ((((lrs - uls) + 1) * 2) + 7) >> 3, 0x00080200);
+                FE_TILESIZE((*gfx)++, (lrs - uls) - 1, lrt - ult - 1);
                 if (D_8007BE90 == 2 || D_8007BE90 == 3) {
                     FE_PKT((*gfx)++, 0xFA000000, rowColour);
                     rowColour ^= ~0xFF;
                 }
-                v = OS_K0_TO_PHYSICAL(&((FrontendVertex **) &D_8007BE88)[D_8007BE84][row * 17 + col]);
-                FE_VERTEX((*gfx)++, v, 3, 0);
-                v = OS_K0_TO_PHYSICAL(&((FrontendVertex **) &D_8007BE88)[D_8007BE84][row * 17 + col + 17]);
-                FE_VERTEX((*gfx)++, v, 3, 3);
+                v = &((FrontendVertex **) &D_8007BE88)[D_8007BE84][row * 17 + col];
+                FE_VERTEX((*gfx)++, OS_K0_TO_PHYSICAL(v), 3, 0);
+                v = &((FrontendVertex **) &D_8007BE88)[D_8007BE84][(row + 1) * 17 + col];
+                FE_VERTEX((*gfx)++, OS_K0_TO_PHYSICAL(v), 3, 3);
                 FE_PKT((*gfx)++, 0x05310040, D_7BE40);
-                x += 40;
+
             }
-            y += 15;
+
             if (row & 1) {
                 colour ^= ~0xFF;
             }
@@ -618,11 +618,11 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
 
 /* PLATEAU-HANDOFF:func_80037C74:start
  * symbol: func_80037C74
- * score: 302/327 words
- * frame: 0xF0
+ * score: 191/327 words
+ * frame: 0xE0
  * relocations: 18
- * first-mismatch: +0x0
- * summary: Listing rewrite on (*gfx)++ closes the size gap (-64 to 0). Left: frame 0xF0 against 0xE0, and which loop constants win callee-saved registers.
+ * first-mismatch: +0x100
+ * summary: Typed vertex carrier and proved integer coordinates close the frame; camera ABI corrected from matched definition. Loop webs remain structural, not exact.
  * PLATEAU-HANDOFF:func_80037C74:end
  */
 

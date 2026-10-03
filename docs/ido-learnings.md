@@ -2372,6 +2372,29 @@ bytes and disassembly never belong here.
   linked relocation identities. It is an access-shape lever, not permission to
   relabel unrelated storage or a universal preference for structs. See the
   [member-scale source closure](matching-triage-handoffs/overlay89InitializeEffect.md).
+
+- **Vector member shape can change code generation at identical offsets.**
+  **Symptom:** a floating-point routine has the expected operations and frame,
+  yet its load/product schedule differs broadly from an exact sibling.
+  **Measured lever:** compare an array member such as `f32 f[3]` with the
+  caller's authenticated type containing separate scalar members. A controlled
+  full-TU type contrast, with the expressions and storage layout retained,
+  changed the emitted point-load and product schedule; ordinary source using
+  the scalar-member view subsequently passed stock, relocation and linked-ROM
+  proof. Array-member and named-member spelling are therefore compiler inputs,
+  even when their access widths and byte offsets agree. Different front-end
+  access identities, common-expression handling or lifetime formation are
+  possible explanations; this experiment did not trace the owning pass and
+  does not establish which internal mechanism caused the change.
+  **Limits:** prove the actual caller storage, size, alignment, member offsets,
+  qualifiers and alias semantics before changing the owned prototype and body.
+  Report a prototype correction as changed declaration context, then compare
+  every other full-TU consumer and reprove literal-pool bindings. This is a
+  source-type reconstruction lever, not permission to cast unrelated storage,
+  change shared headers for one score, or prefer scalar members universally.
+  The durable evidence is the
+  [collision-response closure](matching-triage-handoffs/func_800115E4.md).
+
 - **A region can cross a caller-versus-callee cost threshold without changing
   the call set.** When the desired caller register is offered but narrowly
   loses to the first saved register, inspect both prices before changing save

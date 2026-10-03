@@ -2905,16 +2905,8 @@ def _is_undefined_data_carrier(candidate_elf, name, width):
 
 def _merge_explicit_storage_identities(imported, identities, ambiguous, evidence):
     """Let reviewed owner proof clear correlation ambiguity, never a conflict."""
-    for name, identity in imported.items():
-        independent = {tuple(row["base_identity"])
-                       for row in evidence.get(name, [])
-                       if row.get("independent")
-                       and row.get("base_identity") is not None}
-        if any(proposed != identity for proposed in independent):
-            raise SurfaceComparisonError(
-                "explicit typed-storage proof conflicts with independent identity")
-        identities[name] = identity
-        ambiguous.discard(name)
+    from binary_storage_witness import merge_owner_identities
+    merge_owner_identities(imported, identities, ambiguous, evidence, SurfaceComparisonError)
 
 
 def _merge_independent_resident_bindings(imported, identities, ambiguous,
@@ -4811,7 +4803,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                                 include_candidate_identities=False,
                                 measure_size_delta=False,
                                 include_diagnostics=False, reserved_storage_witnesses=None,
-                                explicit_overlay_storage_bindings=False):
+                                explicit_overlay_storage_bindings=False,
+                                binary_storage_witnesses=None):
     """Compare one candidate's relocation surface with the shipped target's.
 
     ``measure_size_delta`` admits exactly one ownership overrun: a candidate
@@ -4882,6 +4875,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
 
     if reserved_storage_witnesses is not None and overlay is None:
         raise SurfaceComparisonError("reserved storage witness requests require an overlay candidate")
+    if binary_storage_witnesses is not None and overlay is None:
+        raise SurfaceComparisonError("binary storage witnesses require an overlay candidate")
     rom = rom_path.read_bytes()
     explicit_storage_registry = None
     explicit_storage_registry_path = None
@@ -4904,7 +4899,7 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
             target_value, target_size, target_section, values_path,
             resident_runtime_records)
     evidence = ({} if include_diagnostics or reserved_storage_witnesses is not None
-                or explicit_overlay_storage_bindings else None)
+                or explicit_overlay_storage_bindings or binary_storage_witnesses is not None else None)
     resident_binding_module = None
     resident_binding_receipt = None
     resident_imported = {}
@@ -4959,6 +4954,12 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
         imported, imported_receipts = _explicit_reserved_storage_witnesses(
             reserved_storage_witnesses, candidate_elf, candidate_start, candidate_size,
             overlay, atlas, target_elf, rom, evidence=evidence)
+    binary_imported, binary_receipts = {}, []
+    if binary_storage_witnesses is not None:
+        import binary_storage_witness
+        binary_imported, binary_receipts = binary_storage_witness.collect(
+            sys.modules[__name__], binary_storage_witnesses, candidate_elf,
+            candidate_start, candidate_size, module_row, target_elf, rom, values_path, evidence=evidence)
     if overlay is not None:
         overlay_data_identities, ambiguous_overlay_data = (
             _stable_overlay_data_identities(
@@ -4968,7 +4969,7 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
                 target_records=target_records,
                 own_range=(target_start, target_start + target_size),
                 evidence=evidence,
-                explicit_foreign_names=set(imported) | set(resident_imported),
+                explicit_foreign_names=set(imported) | set(resident_imported) | set(binary_imported),
                 root=REPO,
                 explicit_storage_registry=explicit_storage_registry,
                 explicit_storage_registry_path=explicit_storage_registry_path,
@@ -5002,6 +5003,9 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
         _merge_independent_resident_bindings(
             resident_imported, identities, ambiguous_identities,
             evidence, values_path, candidate_redefine_aliases)
+    if binary_imported:
+        _merge_explicit_storage_identities(binary_imported, identities, ambiguous_identities, evidence)
+        ambiguous_overlay_data.difference_update(binary_imported)
     numeric_values = _numeric_assignments(values_path)
     candidate_records = _candidate_surface_records(
         candidate_elf, candidate_start, candidate_size, target_records,
@@ -5010,6 +5014,8 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
     result = compare_record_sets(target_records, candidate_records)
     if reserved_storage_witnesses is not None:
         result["reserved_storage_witnesses"] = imported_receipts
+    if binary_storage_witnesses is not None:
+        result["binary_storage_witnesses"] = binary_receipts
     if include_diagnostics:
         result["diagnostics"] = relocation_diagnostics(
             candidate_elf, candidate_start, candidate_size, target_records,
@@ -5053,6 +5059,7 @@ def function_surface_comparison(symbol, candidate_object, target_elf_path,
 
 
 def cmd_compare(argv):
+    import binary_storage_witness
     parser = argparse.ArgumentParser(
         prog="reloc_surface.py compare",
         description="Compare one candidate function's static relocations "
@@ -5076,6 +5083,7 @@ def cmd_compare(argv):
                         help="explicit named cross-overlay reserved-storage bindings; recompiles witnesses")
     parser.add_argument("--explicit-overlay-storage-bindings", action="store_true",
                         help="enable reviewed, freshness-checked typed overlay-storage bindings")
+    binary_storage_witness.add_option(parser)
     parser.add_argument("--explain", action="store_true",
                         help="include per-site reasons, witness routes and grouped symbols")
     parser.add_argument("--check", action="store_true",
@@ -5090,7 +5098,8 @@ def cmd_compare(argv):
             source=args.source, include_diagnostics=args.explain,
             reserved_storage_witnesses=(json.loads(args.reserved_storage_witnesses.read_text())
                                         if args.reserved_storage_witnesses else None),
-            explicit_overlay_storage_bindings=args.explicit_overlay_storage_bindings)
+            explicit_overlay_storage_bindings=args.explicit_overlay_storage_bindings,
+            binary_storage_witnesses=binary_storage_witness.read_option(args))
     except (OSError, ValueError, SurfaceComparisonError) as error:
         parser.error(str(error))
     if args.json:

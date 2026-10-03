@@ -15,6 +15,7 @@
 set -u
 
 remote_name=${1-origin}
+remote_url=${2-}
 
 root=$(git rev-parse --show-toplevel) || exit 1
 cd "$root" || exit 1
@@ -47,11 +48,12 @@ while read -r local_ref local_sha remote_ref remote_sha; do
 		# Scan the commits this push can introduce, and only those.  Excluding
 		# refs/remotes/* is not good enough: those refs go stale across a
 		# history rewrite and would then hide commits the push transmits.  Ask
-		# the remote which heads it has right now, and exclude a tip only when
+		# the actual push destination ($2), not the named remote's fetch URL,
+		# which heads it has right now, and exclude a tip only when
 		# this clone actually has that commit.  If the remote cannot be read,
 		# scan the whole branch.  That fails closed.
 		tips_file=$(mktemp)
-		if git ls-remote --heads "$remote_name" >"$tips_file"; then
+		if [ -n "$remote_url" ] && git ls-remote --heads -- "$remote_url" >"$tips_file"; then
 			exclude=""
 			while read -r tip refname; do
 				[ -n "${tip:-}" ] || continue
@@ -69,7 +71,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
 			fi
 		else
 			rm -f "$tips_file"
-			echo "pre-push: cannot read heads from $remote_name; scanning the whole branch" >&2
+			echo "pre-push: cannot read heads from the push destination; scanning the whole branch" >&2
 			range="$local_sha"
 			label="$remote_ref (new branch, full scan)"
 		fi

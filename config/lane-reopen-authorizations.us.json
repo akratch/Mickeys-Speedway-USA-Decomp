@@ -1181,9 +1181,9 @@
       "source_commit": "6f5fe225d8013f75ebcfcde099073bac2db8da26"
     },
     "func_overlay_044_F0000580_188BDE0": {
-      "ledger_commit": "4b5b877f8713e71bbd4ca6e946c06e512505d4b0",
-      "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
-      "source_commit": "1183b89f43bb6de3b4b0df9f1b1ea2c688d6a427"
+      "ledger_commit": "34a144842e349bc166b1f75ba9230dd2f1d416da",
+      "reason": "PR105 proves defined dead-assignment naming can reshape IDO. ADR0017 diagnostic names unsigned width operand via existing rows local, overwritten before any read; test stride copy priority. No flags, padding, widths or live-value changes.",
+      "source_commit": "34a144842e349bc166b1f75ba9230dd2f1d416da"
     },
     "func_overlay_045_F0001158_188D5B0": {
       "ledger_commit": "ee1979c9c6ab196b134e8788aa1542f34a5e18c7",
@@ -1392,7 +1392,7 @@
     },
     "func_overlay_092_F0000308_18D6228": {
       "ledger_commit": "f603d15311334d27644708f3099fa8fe5f016604",
-      "reason": "Named x descriptor and c26 zero-cost transport support one case1 positionTag call using already-stored state coordinates to test local call-argument affinity. Preserve values, widths and order; old blend/address grids remain closed.",
+      "reason": "ADR0017 inert diagnostic: four-byte nonvolatile single-f32-field x wrapper tests CFE storage candidacy without padding, field reversal, widths or call-order changes. Baseline call uses; no original-type claim; old scalar grids closed.",
       "source_commit": "c59928498b4beb36d94a75b72791c66a24634850"
     },
     "func_overlay_099_F0000DDC_18DA38C": {

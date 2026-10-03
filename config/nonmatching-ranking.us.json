@@ -100,6 +100,21 @@
       "source_context_sha256": "2y1o.31ZH.7EoT.yGMk._k-5.rWAR.EqPN.BeZ4.y5Wm.W6tU.aEE"
     },
     {
+      "name": "overlay17CreateChain",
+      "file": "src/overlays/o017/overlay17CreateChain.c",
+      "overlay": 17,
+      "tu": "overlays/o017",
+      "size_bytes": 784,
+      "objdiff_match_pct": null,
+      "differing_words": 45,
+      "first_mismatch_offset": 60,
+      "relocation_masked_differing_words": 45,
+      "relocation_masked_first_mismatch_offset": 60,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "VefY.pRNF.RJ5M.IArP.P67Z.-S9O.gH-n.BzWS.f7kf.nGyx.WEs"
+    },
+    {
       "name": "MatrixMultiplyVec4",
       "file": "src/main/matrix.c",
       "overlay": null,
@@ -128,21 +143,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "9Ss9.OVUB.pg-_.WKdf.xHlq.uSkK.nXmM.4CP_.84r1.CNi4.zZk"
-    },
-    {
-      "name": "overlay17CreateChain",
-      "file": "src/overlays/o017/overlay17CreateChain.c",
-      "overlay": 17,
-      "tu": "overlays/o017",
-      "size_bytes": 784,
-      "objdiff_match_pct": null,
-      "differing_words": 65,
-      "first_mismatch_offset": 52,
-      "relocation_masked_differing_words": 65,
-      "relocation_masked_first_mismatch_offset": 52,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "fZOH.PdM5.2AmQ.bRZR.IP2I.TD_w.gqVH.eP3f.0QKV.rAoz.GZw"
     },
     {
       "name": "overlay83DrawStrip",

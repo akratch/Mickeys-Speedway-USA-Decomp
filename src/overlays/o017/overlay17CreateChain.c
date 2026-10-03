@@ -56,7 +56,13 @@ typedef struct Overlay17Chain {
 } Overlay17Chain;
 
 extern Overlay17Template gOverlay17TemplateReloc[];
-extern void *func_overlay_017_F0000000_18739B8();
+extern void *func_8002B280(s32 size, u32 colourTag);
+struct TextureHeader;
+extern struct TextureHeader *func_80034448(s32 textureId);
+struct Overlay17ChainHead;
+extern void overlay17CalculateEndpoints(struct Overlay17ChainHead *chain, f32 *x0, f32 *y0, f32 *z0,
+                                        f32 *x1, f32 *y1, f32 *z1);
+
 
 /* Plateau, 2026-10-02 (lane x-ovlb): 83 -> 65 masked at delta 0. The
  * template loop and the alpha-clearing loop share one counter, `index`, as
@@ -64,7 +70,9 @@ extern void *func_overlay_017_F0000000_18739B8();
  * the template loop's colours. Still open: the half-buffer size is coloured
  * a3 where the target has a ring temp (t7) stored straight to its home, and
  * the else arm's template address is a coloured web where the target has a
- * ring temp formed before the branch. */
+ * ring temp formed before the branch. On 2026-10-03 the three calls were
+ * identified independently and given their real declarations and arities,
+ * closing 65 to 45 masked differences without changing the size local. */
 #ifdef NON_MATCHING
 Overlay17Chain *overlay17CreateChain(
     void *owner, s32 count, Overlay17Material *materialToken, s32 materialScale,
@@ -83,12 +91,12 @@ Overlay17Chain *overlay17CreateChain(
         chain = (Overlay17Chain *)0x140;
     }
     halfBufferBytes = count * 20;
-    chain = func_overlay_017_F0000000_18739B8(
-        (s32)chain + (halfBufferBytes * 2), 0x87, count);
+    chain = func_8002B280(
+        (s32)chain + (halfBufferBytes * 2), 0x87);
     if (chain != 0) {
 
     if (materialToken != (Overlay17Material *)-1) {
-        chain->material = func_overlay_017_F0000000_18739B8(materialToken);
+        chain->material = (Overlay17Material *)func_80034448((s32)materialToken);
         chain->buffers[0] = (Overlay17Pair *)((u8 *)chain + 0x140);
         chain->buffers[1] = (Overlay17Pair *)((u8 *)chain->buffers[0] + halfBufferBytes);
     } else {
@@ -134,8 +142,8 @@ Overlay17Chain *overlay17CreateChain(
     chain->blue = blue;
     chain->alpha = alpha;
     chain->owner = owner;
-    func_overlay_017_F0000000_18739B8(
-        chain, &x0, &y0, &z0, &x1, &y1, &z1);
+    overlay17CalculateEndpoints(
+        (struct Overlay17ChainHead *)chain, &x0, &y0, &z0, &x1, &y1, &z1);
 
     buffer = 1;
     do {
@@ -170,10 +178,10 @@ Overlay17Chain *overlay17CreateChain(
 
 /* PLATEAU-HANDOFF:overlay17CreateChain:start
  * symbol: overlay17CreateChain
- * score: 65 differing words
+ * score: 45 differing words
  * frame: 0x80
  * relocations: 7
- * first-mismatch: +0x34
- * summary: One counter shared by both loops: 83 to 65. Open: half-buffer size coloured a3 not ring t7; else-arm template address coloured not a pre-branch ring temp.
+ * first-mismatch: +0x3C
+ * summary: Authenticated allocation/material/endpoint calls: 65 to 45; all three call identities align. Open: pre-call size result coloured a2, stack home four bytes high, and one template pair emitted instead of two.
  * PLATEAU-HANDOFF:overlay17CreateChain:end
  */

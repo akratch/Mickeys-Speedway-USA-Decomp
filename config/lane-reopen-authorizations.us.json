@@ -1616,9 +1616,9 @@
       "source_commit": "bae7a665c6332e12471d3d0c44d98f3b5f134ac2"
     },
     "overlay17CreateChain": {
-      "ledger_commit": "8158e70087a5322a62fa3db4401bc926b7c37eab",
-      "reason": "New exact same-family overlay17AdvanceChain permits testing constant type/expression sharing and template-address lifetime against a proved compiler shape; inherited natural rewrite is excluded.",
-      "source_commit": "8158e70087a5322a62fa3db4401bc926b7c37eab"
+      "ledger_commit": "8b42125a7c7070e5c129b70f6a01edf5d8452505",
+      "reason": "Authenticated 45-word ABI baseline isolates the missing template pair. Faithful CFE/uopt/ugen capture will distinguish PRE merging from UGEN reuse before source edits; independently prove the fixed template extent.",
+      "source_commit": "8b42125a7c7070e5c129b70f6a01edf5d8452505"
     },
     "overlay17DrawStrip": {
       "ledger_commit": "e4abe37e7e1ab6f9afade5656e102c4c6cecc19f",
@@ -2121,9 +2121,9 @@
       "source_commit": "f7f4e7f64f4bd01738c98cd8fc5f106cffa80ec8"
     },
     "shadowGenerate": {
-      "ledger_commit": "662a3124339d7a605f4e3985f19c9021064f4961",
-      "reason": "Decompiler-assisted structural reconstruction: m2c draft from this game's own extracted assembly, recovering call/global identities and types before CFG work. Size-deficit targets no permutation or flag lattice can close.",
-      "source_commit": "662a3124339d7a605f4e3985f19c9021064f4961"
+      "ledger_commit": "f69a6fcb694c54c4096b39ea8b2fe532fc33aed7",
+      "reason": "Main relocation178/179 proves exact o043+0x324 calls. Candidate promotes the third f32 trap argument to f64 while retail transports one32-bit float; test the sole local typed trap declaration without changing metadata.",
+      "source_commit": "baeed0592e384ed510d1e1d506449086d8ea7adc"
     },
     "snow_render": {
       "ledger_commit": "4a19eaf4143fd79a7053188c64f8656016aae2cf",

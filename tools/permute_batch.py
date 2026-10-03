@@ -423,8 +423,11 @@ class BuildRecipe:
 def compiler_arguments(line: str, source: str, obj: str) -> tuple[str, ...]:
     """Preserve every real IDO flag, define and include in its original order."""
     words = shlex.split(line)
+    if words.count("tools/ido/cc") != 1:
+        raise ValueError("ambiguous configured IDO compiler")
     cc = words.index("tools/ido/cc")
-    wrapped = (cc == 2 and words[1] == "tools/asm-processor/build.py"
+    wrapped = (cc in (2, 3) and words[1] == "tools/asm-processor/build.py"
+               and words[2:cc] in ([], ["--force"])
                and Path(words[0]).name.startswith("python"))
     if cc != 0 and not wrapped:
         raise ValueError("unsupported compiler wrapper; cannot prove scratch command fidelity")

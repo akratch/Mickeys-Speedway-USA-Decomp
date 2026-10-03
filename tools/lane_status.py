@@ -27,6 +27,7 @@ from pathlib import Path, PurePosixPath
 
 import finalize_plateau
 import integration_base
+import proof_provenance
 
 
 MATCH_RE = re.compile(r"^match(?:ed)?\s+([A-Za-z_][A-Za-z0-9_]*)\b", re.I)
@@ -293,12 +294,161 @@ def malformed_legacy_marker(text: str | None, symbol: str) -> bool:
     return text.count(start) != 1 or text.count(end) != 1 or len(blocks) != 1
 
 
+def _comment_visible(text: str) -> str:
+    lexical = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|/\*.*?\*/|//[^\n]*', re.S)
+    return lexical.sub(lambda m: re.sub(r'[^\n]', ' ', m[0])
+                       if m[0].startswith(('/*', '//')) else m[0], text)
+
+
+def _overlay_candidate_owner(ref: str, path: str, symbol: str, fallback: str) -> bool:
+    """Authenticate a candidate tuple, without treating atlas flags as C proof."""
+    owner = re.fullmatch(r'src/overlays/o([0-9]{3})/[A-Za-z0-9_]+\.c', path)
+    generated = re.fullmatch(r'func_overlay_([0-9]{3})_F([0-9A-F]{7})_([0-9A-F]+)',
+                             PurePosixPath(fallback).stem)
+    if owner is None or generated is None or owner[1] != generated[1]:
+        return False
+    if PurePosixPath(fallback).stem not in source_fallback_aliases(ref, path, symbol):
+        return False
+    try:
+        atlas = json.loads(show_file(ref, 'config/overlays.us.json') or '')
+        modules = [m for m in atlas['modules'] if m['overlay'] == int(owner[1])]
+        if len(modules) != 1:
+            return False
+        module = modules[0]
+        rows = [r for r in module['text_ownership'] if r['source'] == path[4:-2]]
+        if len(rows) != 1:
+            return False
+        row = rows[0]
+        start, end, size = (int(row[k], 0) for k in ('offset', 'end_offset', 'size'))
+        text = module['sections']['text']
+        rom, text_size = int(text['start'], 0), int(text['size'], 0)
+        return (row['type'] == 'c' and row['nonmatching'] is True
+                and start == int(generated[2], 16) and 0 <= start < end <= text_size
+                and end - start == size and size % 4 == 0
+                and rom + start == int(generated[3], 16)
+                and sum(int(r['offset'], 0) < end and start < int(r['end_offset'], 0)
+                        for r in module['text_ownership']) == 1)
+    except (KeyError, TypeError, ValueError):
+        return False
+
+
+def renamed_included_source(ref: str, path: str, symbol: str) -> tuple[str, tuple[str, ...]] | None:
+    """Resolve only one guarded overlay wrapper with simple identifier aliases.
+
+    Every byte comes from Git objects. Select the included file's authenticated
+    NON_MATCHING branch, then perform only object-like identifier substitution;
+    strings/comments are never rewritten. This bounded source view is scheduling
+    evidence, not preprocessing of arbitrary C or a matched-C donor certificate.
+    """
+    wrapper = show_file(ref, path)
+    if wrapper is None:
+        return None
+    visible = _comment_visible(wrapper)
+    guard = re.search(
+        r'(?m)^#ifdef NON_MATCHING\s*\n'
+        r'#include "(?P<include>src/overlays/o[0-9]{3}/[A-Za-z0-9_]+\.c)"\s*\n'
+        r'#else\s*\n#pragma GLOBAL_ASM\("(?P<fallback>[^"\n]+)"\)\s*\n'
+        r'#endif\b', visible)
+    if guard is None or visible[guard.end():].strip():
+        return None
+    aliases = {}
+    for line in visible[:guard.start()].splitlines():
+        if not line.strip():
+            continue
+        pair = re.fullmatch(r'#define ([A-Za-z_]\w*) ([A-Za-z_]\w*)\s*', line)
+        if pair is None or pair[1] in aliases:
+            return None
+        aliases[pair[1]] = pair[2]
+    originals = [old for old, new in aliases.items() if new == symbol]
+    if (len(originals) != 1 or len(set(aliases.values())) != len(aliases)
+            or set(aliases) & set(aliases.values())):
+        return None
+    original, dependency = originals[0], guard['include']
+    owner_overlay = re.fullmatch(r'src/overlays/o([0-9]{3})/[A-Za-z0-9_]+\.c', path)
+    dependency_overlay = re.fullmatch(r'src/overlays/o([0-9]{3})/[A-Za-z0-9_]+\.c', dependency)
+    if owner_overlay is None or dependency_overlay is None:
+        return None
+    if any(not re.fullmatch(rf'overlay{int(dependency_overlay[1])}[A-Z][A-Za-z0-9_]*', old)
+           or not re.fullmatch(rf'overlay{int(owner_overlay[1])}[A-Z][A-Za-z0-9_]*', new)
+           for old, new in aliases.items()):
+        return None
+    if dependency == path or not _overlay_candidate_owner(ref, path, symbol, guard['fallback']):
+        return None
+    body = show_file(ref, dependency)
+    if body is None:
+        return None
+    body_view = _comment_visible(body)
+    facts = proof_provenance.source_facts(body, original)
+    if len(facts.definitions) != 1 or facts.definitions[0].non_matching_state is not True:
+        return None
+    # The dependency must be the same bounded single-guard C form, not an
+    # assembly-only include, another wrapper, a conditional or declaration macro.
+    includes = re.findall(r'(?m)^\s*#\s*include[^\n]*', body_view)
+    if any(not re.fullmatch(r'\s*#include "PR/ultratypes.h"\s*', line) for line in includes):
+        return None
+    if includes:
+        header = show_file(ref, 'include/PR/ultratypes.h')
+        if header is None:
+            return None
+        header_view = _comment_visible(header)
+        if (proof_provenance._all_pragmas(header)
+                or re.search(r'(?m)^\s*#\s*include\b', header_view)
+                or re.search(r'(?m)^\s*#\s*(?:define|undef)\s+NON_MATCHING\b', header_view)):
+            return None
+    conditionals = re.findall(r'(?m)^\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b([^\n]*)', body_view)
+    if [(kind, arg.strip()) for kind, arg in conditionals] != [
+            ('ifdef', 'NON_MATCHING'), ('else', ''), ('endif', '')]:
+        return None
+    if any(re.search(rf'(?m)^\s*#\s*(?:define|undef)\s+{re.escape(name)}\b', body_view)
+           for name in set(aliases) | set(aliases.values())):
+        return None
+    if re.search(r'(?m)^\s*#\s*(?:define|include).*?(?:##|#[ \t]*[A-Za-z_])', body_view):
+        return None
+    try:
+        candidate = finalize_plateau.require_guarded_candidate(
+            body_view, original, source_fallback_aliases(ref, dependency, original))
+    except finalize_plateau.PlateauError:
+        return None
+    pragmas = proof_provenance._all_pragmas(body)
+    if (len(pragmas) != 1 or pragmas[0].path != candidate.fallback
+            or pragmas[0].non_matching_state is not False):
+        return None
+    if ''.join(body_view.splitlines(keepends=True)[candidate.endif_line + 1:]).strip():
+        return None
+    if not _overlay_candidate_owner(ref, dependency, original, candidate.fallback):
+        return None
+    # Reject aliases supplied by build/header macros. Metadata rename rules are
+    # not macro definitions and therefore do not make this source uncertain.
+    names = '|'.join(re.escape(n) for n in sorted(set(aliases) | set(aliases.values())))
+    overrides = subprocess.run(
+        ['git', 'grep', '-n', '-E', '-e',
+         rf'#[[:space:]]*(define|undef)[[:space:]]+({names})([^A-Za-z0-9_]|$)|-D({names})(=|[^A-Za-z0-9_]|$)',
+         ref, '--', 'Makefile', 'mk', 'config', 'include'],
+        text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if overrides.returncode not in (0, 1):
+        raise RuntimeError('cannot authenticate renamed include macro overrides')
+    if overrides.returncode == 0:
+        return None
+    lines = body.splitlines(keepends=True)
+    selected = ''.join(lines[:candidate.ifdef_line] + lines[candidate.ifdef_line + 1:candidate.else_line])
+    lexical = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|/\*.*?\*/|//[^\n]*|\b[A-Za-z_]\w*\b', re.S)
+    selected = lexical.sub(lambda m: aliases.get(m[0], m[0]), selected)
+    expanded = ('#ifdef NON_MATCHING\n' + selected + '\n#else\n#pragma GLOBAL_ASM("'
+                + guard['fallback'] + '")\n#endif\n')
+    if not guarded_fallback(expanded, symbol, source_fallback_aliases(ref, path, symbol)):
+        return None
+    expanded_facts = proof_provenance.source_facts(expanded, symbol)
+    if len(expanded_facts.definitions) != 1 or expanded_facts.definitions[0].non_matching_state is not True:
+        return None
+    return expanded, (dependency,)
+
+
 @lru_cache(maxsize=4096)
 def indirect_source(ref: str, path: str, symbol: str) -> tuple[str, tuple[str, ...]] | None:
-    """Recognize one local included candidate with a default signature macro.
+    """Recognize a bounded signature include or guarded overlay-name wrapper.
 
     This is source ownership, not compiler preprocessing or match proof. Only
-    the literal include/guard shape is supported; ambiguous signatures, macro
+    the reviewed literal include/guard shapes are supported; ambiguous signatures, macro
     overrides, missing blobs and nested source includes remain unassignable.
     Dependency bytes and history participate in pins, cache and lane ownership.
     """
@@ -307,10 +457,7 @@ def indirect_source(ref: str, path: str, symbol: str) -> tuple[str, tuple[str, .
     wrapper = show_file(ref, path)
     if wrapper is None:
         return None
-    def visible(text: str) -> str:
-        lexical = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|/\*.*?\*/|//[^\n]*', re.S)
-        return lexical.sub(lambda m: re.sub(r'[^\n]', ' ', m[0])
-                           if m[0].startswith(('/*', '//')) else m[0], text)
+    visible = _comment_visible
 
     wrapper_view = visible(wrapper)
     guard = re.search(
@@ -319,7 +466,7 @@ def indirect_source(ref: str, path: str, symbol: str) -> tuple[str, tuple[str, .
         r'#else\s*\n#pragma GLOBAL_ASM\("(?P<fallback>[^"\n]+)"\)\s*\n'
         r'#endif\b', wrapper_view)
     if guard is None or len(re.findall(r'#\s*ifdef\s+NON_MATCHING\b', wrapper)) != 1:
-        return None
+        return renamed_included_source(ref, path, symbol)
     prefix = re.sub(r'\\\n', '', wrapper_view[:guard.start()])
     if any(line.strip() and not re.match(r'^#define [A-Za-z_]\w*\b', line)
            for line in prefix.splitlines()) or wrapper_view[guard.end():].strip():
@@ -408,7 +555,8 @@ def source_identity(ref: str, symbol: str) -> tuple[str | None, str | None]:
         path = row.split(":", 1)[1] if ":" in row else row
         scanned.append(path)
         text = show_file(ref, path)
-        if text is not None and definition.search(text):
+        if (text is not None and definition.search(text)
+                and proof_provenance.source_facts(text, symbol).definitions):
             paths.append(path)
     paths = sorted(set(paths) | {path for path in scanned
                                 if indirect_source(ref, path, symbol) is not None})
@@ -458,13 +606,14 @@ def source_identity_index(
                 FUNCTION_DEFINITION_TEMPLATE.format(symbol=re.escape(symbol)),
                 re.DOTALL,
             )
-            if definition.search(text):
+            if (definition.search(text)
+                    and proof_provenance.source_facts(text, symbol).definitions):
                 found[symbol].append(path)
     identities: dict[str, tuple[str | None, str | None]] = {}
     for symbol in ordered:
         definitions = sorted(set(found[symbol]) | {
             path for path in paths if objects[path] is not None
-            and '.inc"' in objects[path][1]
+            and '#include' in objects[path][1]
             and indirect_source(ref, path, symbol) is not None})
         if len(definitions) == 1:
             identities[symbol] = (definitions[0], None)
@@ -1198,7 +1347,7 @@ ASSIGNMENT_CACHE_FILE = "entries.json"
 ASSIGNMENT_CACHE_KEYS_PER_SYMBOL = 4
 # The classifier's own code is part of every key: a logic change must never be
 # answered from a verdict an older rule produced.
-_CACHE_CODE_FILES = ("lane_status.py", "finalize_plateau.py")
+_CACHE_CODE_FILES = ("lane_status.py", "finalize_plateau.py", "proof_provenance.py")
 
 
 def path_anchor(ref: str, path: str) -> str | None:
@@ -1859,7 +2008,7 @@ def _settled_status(
             authorized_source = reopen_authorization["source_commit"]
             authorized_ledger = reopen_authorization["ledger_commit"]
             latest_authorizable_source = base_source_commit
-            if guard_count == 1:
+            if guard_count == 1 and included is None:
                 latest_authorizable_source = (
                     latest_path_commit(base, path) or base_source_commit
                 )

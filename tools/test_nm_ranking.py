@@ -261,6 +261,23 @@ class ConfiguredContextTests(unittest.TestCase):
                 self.assertNotEqual(initial, ranking.assembly_dependencies(source, []))
 
 
+class StandaloneListingTests(unittest.TestCase):
+    def test_asm_processor_alignment_directive_is_removed_for_gas(self):
+        listing = (".section .late_rodata\n.late_rodata_alignment 4\n"
+                   "dlabel jtbl_EXAMPLE\n    .word .LEXAMPLE\n"
+                   ".section .text\nglabel exampleSwitch\n    nop\n")
+        out = ranking.standalone_listing(listing)
+        self.assertNotIn(".late_rodata_alignment", out)
+        self.assertIn(".section .late_rodata\n", out)
+        self.assertIn("glabel exampleSwitch\n    nop\n", out)
+        self.assertEqual(out.count("\n"), listing.count("\n"),
+                         "line numbers are preserved")
+
+    def test_a_listing_without_migrated_rodata_is_unchanged(self):
+        listing = "glabel examplePlain\n    nop\nendlabel examplePlain\n"
+        self.assertEqual(ranking.standalone_listing(listing), listing)
+
+
 class CoverageTests(unittest.TestCase):
     def test_full_identity_audit_includes_missing_retired_and_unresolved(self):
         good = ("src/main/good.c", "good")

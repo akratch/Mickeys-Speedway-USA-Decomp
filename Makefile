@@ -291,8 +291,14 @@ extract:
 # glabel for it survives anywhere under asm/, so the matched count silently
 # under-reports until the file is deleted. It ran after every split rather than
 # being remembered.
+#
+# The same hook normalizes the rodata splat migrates into a listing when a TU
+# owns its whole `.rodata` while some of its functions are still assembled
+# (track.c is the first): string alignment and jump-table target labels are
+# put into the forms the vendored asm-processor parses. See the tool's header.
 prune-asm:
 	@$(PYTHON) $(TOOLS_DIR)/prune_stale_asm.py $(BASENAME).$(VERSION).yaml
+	@$(PYTHON) $(TOOLS_DIR)/normalize_migrated_rodata.py
 
 verify:
 ifneq ($(NON_MATCHING),0)

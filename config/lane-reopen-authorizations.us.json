@@ -217,8 +217,8 @@
     },
     "func_800115E4": {
       "ledger_commit": "4f395d0801dfc7406e0a7e316e8cac4df42ead3f",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "4fae65aaadfbfbecc32b63140e6822d0a6593c11"
+      "reason": "Maintenance remeasurement: source plateau postdates the shard. Reconcile current configured-TU evidence before a separate sibling packet using newly exact func_8001EC44 (0.92 shape lead).",
+      "source_commit": "662ffe23ec507b9a9487fff01f042d2395ef375c"
     },
     "func_80011980": {
       "ledger_commit": "44cb74e61f14fa08715a0ec690c2128eb198fb1e",
@@ -1616,9 +1616,9 @@
       "source_commit": "bae7a665c6332e12471d3d0c44d98f3b5f134ac2"
     },
     "overlay17CreateChain": {
-      "ledger_commit": "43e0fd94d7fc2e44a7dbf293c5d566292c5169df",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "43e0fd94d7fc2e44a7dbf293c5d566292c5169df"
+      "ledger_commit": "8158e70087a5322a62fa3db4401bc926b7c37eab",
+      "reason": "New exact same-family overlay17AdvanceChain permits testing constant type/expression sharing and template-address lifetime against a proved compiler shape; inherited natural rewrite is excluded.",
+      "source_commit": "8158e70087a5322a62fa3db4401bc926b7c37eab"
     },
     "overlay17DrawStrip": {
       "ledger_commit": "e4abe37e7e1ab6f9afade5656e102c4c6cecc19f",

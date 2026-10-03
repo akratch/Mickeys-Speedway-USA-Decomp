@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 66,
-  "resolved": 66,
+  "queue_size": 65,
+  "resolved": 65,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 66,
-  "relocation_masked_coverage": 66,
+  "source_context_coverage": 65,
+  "relocation_masked_coverage": 65,
   "functions": [
     {
       "name": "func_80051364",
@@ -713,21 +713,6 @@
       "size_delta": -52,
       "category": "size-mismatch",
       "source_context_sha256": "sHNt.UQbl.KN5K.7-7-.5pKE.dppo.GruZ.shRO.ZoFJ.Zdpp.Uls"
-    },
-    {
-      "name": "func_800115E4",
-      "file": "src/main/track.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 924,
-      "objdiff_match_pct": null,
-      "differing_words": 217,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 217,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": 24,
-      "category": "size-mismatch",
-      "source_context_sha256": "EAhG.OOPq.0OAB.nY_p.T_np.4GB4.Iby8.eKWx.OEAm.ovrj.MLE"
     },
     {
       "name": "func_8001953C",

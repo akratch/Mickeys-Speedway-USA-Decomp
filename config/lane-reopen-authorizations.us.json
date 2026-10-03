@@ -216,8 +216,8 @@
       "source_commit": "6b44a39a27e1eefe70b05469cf7864125c27829a"
     },
     "func_800115E4": {
-      "ledger_commit": "4f395d0801dfc7406e0a7e316e8cac4df42ead3f",
-      "reason": "Maintenance remeasurement: source plateau postdates the shard. Reconcile current configured-TU evidence before a separate sibling packet using newly exact func_8001EC44 (0.92 shape lead).",
+      "ledger_commit": "d6c465039dee614393a970320ae5309c2523d78a",
+      "reason": "New exact sibling func_8001EC44 plus Mickey return ABI proves s32 Arctanf with explicit s16 cast; target six FP saves and first-cross carrier reuse contradict current projected locals. Test ABI and lifetime separately.",
       "source_commit": "662ffe23ec507b9a9487fff01f042d2395ef375c"
     },
     "func_80011980": {
@@ -556,9 +556,9 @@
       "source_commit": "61406aec20668803eb19e5654e70b52c32043ce6"
     },
     "func_80037C74": {
-      "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "15923576c9c5cceb2b5cf48a150819e2fb5f3939"
+      "ledger_commit": "d5eb9664e410ddd85f844c771e4d67a9e871d639",
+      "reason": "Transfer exact o099 typed vertex-pointer and separate row-index webs plus for-header second inductions; current u32 K0 carrier folds +170 and loses base hoist. Sibling proof closes analogous latch and pointer structure.",
+      "source_commit": "d5eb9664e410ddd85f844c771e4d67a9e871d639"
     },
     "func_80038190": {
       "ledger_commit": "15923576c9c5cceb2b5cf48a150819e2fb5f3939",
@@ -601,9 +601,9 @@
       "source_commit": "d761f310ac67783655771b8e27248a85663e086b"
     },
     "func_8003C80C": {
-      "ledger_commit": "a9c059d4a9b2ae1c607c671614599549dd7316bc",
-      "reason": "Class change: the reconstruction pass closed the size question, so these are delta 0 and permutable for the first time. A size-mismatch cannot be closed by permutation; these now can be.",
-      "source_commit": "a9c059d4a9b2ae1c607c671614599549dd7316bc"
+      "ledger_commit": "858baafea9c9d4e4992ed03e1be3d9e1fef847c1",
+      "reason": "Exact overlay34InterpolateColor supplies unsigned product with explicit signed narrowing before arithmetic shift. Test this missing expression-type axis on nine-color weather loop; prior loop/arg/cursor sweeps excluded.",
+      "source_commit": "858baafea9c9d4e4992ed03e1be3d9e1fef847c1"
     },
     "func_8003D25C": {
       "ledger_commit": "c9b3576bcf074247d3ae71a69eca1237e2290f8f",

@@ -2097,7 +2097,7 @@ void controlClearPlayerSetup(void) {
  * frame: 0xD0
  * relocations: 53
  * first-mismatch: +0x50
- * summary: Rewritten from the listing, 408 at -16 to 157 at delta 0, frame exact. Left: abs-dot is a temp plus copy, not one f14 web split at sqrtf; bounce block order.
+ * summary: 157 at delta 0, frame exact. Left: abs-dot is a temp plus copy, not one f14 web split at sqrtf. Bounce order and the first three adds were swept and stay at 157.
  * PLATEAU-HANDOFF:func_8001E5C4:end
  */
 

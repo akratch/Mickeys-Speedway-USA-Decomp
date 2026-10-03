@@ -1778,7 +1778,6 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
         }
     }
 }
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's listing and resident track/particle call surfaces
  * reconstruct this draw/update coordinator. Diddy Kong Racing's public
@@ -1786,16 +1785,6 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
  * routine (segment list, per-segment visibility flags, opaque pass); no
  * body is adapted from it.
  */
-/* 12 masked words at size delta 0 and the target's 0xD8 frame (185 -> 12,
- * 2026-10-02 lane x-track): rewritten from the listing with while (j--)
- * loops over segmentList, the camera segment held in the loop counter i and
- * scaled in place (i *= segmentCount), a separate counter j for the two
- * flag loops, and the declarations ordered for the homes (visibleCount
- * third, resultCount fourth, records after the list). Left: two v0/v1
- * colour decisions. Forcing p1:w61=c2,w52=c1,w4=c2,w17=c1 on this source
- * (proc 23) scores 0: the shared post-decrement temp (web 52, save 60/2)
- * loses v0 to the list cursor (web 61, 62/2), and the camera block's
- * segment-count load (web 4, 3/2) takes v0 ahead of web 17 (3/3). */
 void func_8000E5EC(s32 updateRate, s32 arg1) {
     s32 i;
     s32 cameraSegment;
@@ -1826,7 +1815,9 @@ void func_8000E5EC(s32 updateRate, s32 arg1) {
     if (D_80079260 != 0 || D_80079264 != 0) {
         i = camGetPtr()->segmentIndex;
         if (i >= 0 && i < D_800792E8->segmentCount && D_8007926C == NULL) {
-            i *= D_800792E8->segmentCount;
+            /* Inert: resultCount is assigned 0 before any read. The store
+             * is the retail register colour. See docs/cleanup-queue.md. */
+            i *= (resultCount = D_800792E8->segmentCount);
             j = visibleCount;
             while (j--) {
                 D_800C95B0[segmentList[j] + 1] =
@@ -1870,9 +1861,6 @@ void func_8000E5EC(s32 updateRate, s32 arg1) {
     }
     D_800C9544 = 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000E5EC.s")
-#endif
 #ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c control-flow draft and the resident track
@@ -5366,16 +5354,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * first-mismatch: +0x0
  * summary: Scoped plane FP lifetimes lower the candidate frame from 0x60 to 0x50; accepted web 163 force to c32 scores 95 but source route remains unproved.
  * PLATEAU-HANDOFF:func_800103D4:end
- */
-
-/* PLATEAU-HANDOFF:func_8000E5EC:start
- * symbol: func_8000E5EC
- * score: 12/205 words
- * frame: 0xD8
- * relocations: 56
- * first-mismatch: +0x104
- * summary: Listing rewrite 185 -> 12; left two v0/v1 ties: forces p1:w61=c2,w52=c1,w4=c2,w17=c1 (proc 23) score 0.
- * PLATEAU-HANDOFF:func_8000E5EC:end
  */
 
 /* PLATEAU-HANDOFF:func_80011CDC:start

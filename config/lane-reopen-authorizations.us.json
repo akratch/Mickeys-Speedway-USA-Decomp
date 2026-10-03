@@ -346,9 +346,9 @@
       "source_commit": "53044477cdaceea811dd82a33c337ba4b5389fed"
     },
     "func_8001E5C4": {
-      "ledger_commit": "3f0974df76ebe6d31458bbf70a7b430940cc8843",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "7d552f6b24771fb6f8092b889123a021a88ece64"
+      "ledger_commit": "b972ee324b329e9964aa74462aa4bbb274742d4b",
+      "reason": "Correct side-expression evaluation into the existing speed>8 guard to avoid uninitialized velocity inputs, then test unmeasured bounce ordering and authenticate dot spill lifetime; old spelling grids remain closed.",
+      "source_commit": "b972ee324b329e9964aa74462aa4bbb274742d4b"
     },
     "func_8001EC44": {
       "ledger_commit": "0e7343460dbc2d7a3acf1dd55bf9b0433fedf79a",
@@ -1996,9 +1996,9 @@
       "source_commit": "b1a8f39f5b1fc714777b997b9ab76e3692e6ee8f"
     },
     "overlay68UpdateAnimation": {
-      "ledger_commit": "f7be9efd7f5c608dace701425edc3a038b0469ca",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "f7be9efd7f5c608dace701425edc3a038b0469ca"
+      "ledger_commit": "c0ec1fef623edf31f3a452df67961e79563610ce",
+      "reason": "Current draw trace attributes the pre-0xD4 extra GP draw to inherited opacity mask; remove that diagnosed redundant mask on the improved 108-word body, then test authentic neighbor lifetimes. Old broad grids remain closed.",
+      "source_commit": "c0ec1fef623edf31f3a452df67961e79563610ce"
     },
     "overlay74Update": {
       "ledger_commit": "e2eb59251353c04c5914fad172c6d6806e9c8122",

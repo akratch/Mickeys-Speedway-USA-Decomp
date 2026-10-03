@@ -871,13 +871,13 @@
       "tu": "main",
       "size_bytes": 2040,
       "objdiff_match_pct": null,
-      "differing_words": 432,
+      "differing_words": 419,
       "first_mismatch_offset": 280,
-      "relocation_masked_differing_words": 432,
+      "relocation_masked_differing_words": 419,
       "relocation_masked_first_mismatch_offset": 280,
-      "size_delta": 40,
+      "size_delta": 24,
       "category": "size-mismatch",
-      "source_context_sha256": "rtux.deNG.q0iM.8ZPQ.E81B.jiMQ.ySur.YZ3a.yZFn.hqXk.OME"
+      "source_context_sha256": "HVjR.dnUB.JDtA.m3mD.HUK1._0EY.QMo8.4UP-.4KD7.fWmG.Z6M"
     },
     {
       "name": "func_8001291C",

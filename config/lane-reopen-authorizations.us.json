@@ -227,7 +227,7 @@
     },
     "func_80011CDC": {
       "ledger_commit": "0b2affd78b0766abdc4d5cfd10c8d3f707417a1e",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
+      "reason": "Exact 115E4 proves named vector input fields can change IDO allocation. Exact 10900 caller storage and stock layout prove TrackRayPoint input views; test the untried origin/direction member contrast with full-TU collateral proof.",
       "source_commit": "0b2affd78b0766abdc4d5cfd10c8d3f707417a1e"
     },
     "func_80012234": {

@@ -1391,9 +1391,9 @@
       "source_commit": "82d35dd9da593db1737ff17f35f84ab1ee8a81f8"
     },
     "func_overlay_092_F0000308_18D6228": {
-      "ledger_commit": "f2c8d6f9553282c6bc14721d1d3c1223fc835d0f",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
-      "source_commit": "c4c2c5547f1314c7c6c703b36d9c57a26fc49c91"
+      "ledger_commit": "f603d15311334d27644708f3099fa8fe5f016604",
+      "reason": "Named x descriptor and c26 zero-cost transport support one case1 positionTag call using already-stored state coordinates to test local call-argument affinity. Preserve values, widths and order; old blend/address grids remain closed.",
+      "source_commit": "c59928498b4beb36d94a75b72791c66a24634850"
     },
     "func_overlay_099_F0000DDC_18DA38C": {
       "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",

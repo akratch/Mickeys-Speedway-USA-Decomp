@@ -2,11 +2,11 @@
 ### `overlay17CreateChain` plateau handoff
 
 - source: `src/overlays/o017/overlay17CreateChain.c`
-- score: 65 differing words
+- score: 45 differing words
 - frame: 0x80
 - relocations: 7
-- first mismatch: +0x34
-- summary: One counter shared by both loops: 83 to 65. Open: half-buffer size coloured a3 not ring t7; else-arm template address coloured not a pre-branch ring temp.
+- first mismatch: +0x3C
+- summary: Authenticated allocation/material/endpoint calls: 65 to 45; all three call identities align. Open: pre-call size result coloured a2, stack home four bytes high, and one template pair emitted instead of two.
 
 Summary before this remeasure: Declaration order and chain->red masked with 0xFF (ring phase): 115 to 83. Template-loop webs rotate one position; halfBufferBytes in a3 not t7.
 
@@ -90,4 +90,100 @@ Still open, each one a named web:
 - The else arm's template address. The target forms it in ring temp t2 in
   the block before the branch and rematerialises it in the textured arm
   (v0). Ours has one coloured web plus a copy.
+
+### 2026-10-03, lane codex-chain-constructor-20261003: sibling constant-identity packet
+
+The newly exact `overlay17AdvanceChain` establishes that signed and unsigned
+constant identities can separate a shared scaling constant from an immediate
+multiply. This packet tested that mechanism on constructor allocation size,
+rather than repeating the constructor's prior full natural rewrite or flag
+lattice. Assignment base `5d6feb466` authorized the source/handoff pair
+`8158e70087a5322a62fa3db4401bc926b7c37eab`.
+
+The configured full-TU baseline reproduces **65 raw/masked differences, zero
+size delta, 784 bytes, and a 128-byte frame**; its first mismatch remains
+`+0x34`. The actual IDO-preprocessed compiler input compared with itself is
+`unchanged`. A direct configured stock compile reproduces the configured
+candidate's measurement. The canonical fallback ROM rebuild also passes the
+expected hash. None of these baseline proofs accepts the guarded candidate.
+
+Measured causes and outcomes, preserved privately in `build/causal-chain/`:
+
+- Changing the multiply to `count * 20U`, or casting its index to `u32`,
+  is byte-identical to the baseline: both remain 65 at zero delta. The exact
+  sibling's constant-type separation does not explain this allocation web.
+- Removing the size local and repeating the signed or unsigned product
+  distributes the allocation multiply and loses the shared half-buffer
+  expression: both score 190 at delta +8. Keeping explicit pair indexing
+  restores the target extent, but scores 71 and shrinks the frame to 120
+  bytes. This isolates expression sharing from stack-home ownership; neither
+  removes the pooled allocation-size web.
+- A diagnostic initial template snapshot stored before the material branch,
+  overwritten by the destination on the textured arm, scores 132 at delta
+  -12. It retains one template address pair. The initialization's earlier
+  lifetime does not produce the target's independent rematerialization. This
+  nonexact diagnostic remains ignored and is not adopted.
+
+The data-owner review supplies an independent route for a future template
+binding: YAML already owns the 256-byte Overlay 17 initialized-data range
+with its binary-wrapper object, whose start/end symbols span exactly that
+range. This extent agrees with the constructor's sixteen 16-byte template
+records and starts at the required module data boundary. No other committed
+Overlay 17 source or runtime relocation directly references that owner.
+The route is evidence for a future owner-backed binding, not permission to
+normalize a mismatching relocation schedule or create a target-assisted proxy.
+
+Acceptance is still blocked by **seven target runtime records versus five
+candidate static records**: two template address pairs are required, while
+one is emitted. The first two calls also require distinct authenticated
+resident identities and ABI declarations; the baseline's one old-style thunk
+currently conflates allocation, material lookup, and endpoint calculation.
+The target's template sites are `+0xA4/+0xB0` and `+0xC4/+0xCC`; the
+candidate's sole pair is `+0xA4/+0xA8`.
+
+No source body changed and no matching credit is claimed. Stop early under
+ADR 0018: the sibling's available signedness mechanism is now ruled out and
+the prior placement/index/declaration grids remain closed. A useful reopening
+must explain the allocation-size web's pre-call temporary versus post-call
+colored reload, or trace the template address's PRE/rematerialization decision
+with a faithful compiler capture. Mere source placement permutations are not
+new evidence. A future near-exact candidate must additionally bind the
+independently owned data symbol and prove distinct call identities, exact
+relocation multiplicity/sites, linked ownership, and full ROM identity.
+
+
+### 2026-10-03 follow-up: authenticated calls, 65 to 45
+
+The runtime-table identities independently resolve the allocation call to
+`func_8002B280` in `src/main/memory.c` and the material lookup to
+`func_80034448` in `src/main/textures_35024.c`; their committed definitions
+establish `void *(s32, u32)` and `struct TextureHeader *(s32)`.
+Opaque declarations retain the helpers' real structure tags; explicit casts
+bridge the constructor's local layout facades without changing pointer bits.
+The endpoint call names the now exact same-overlay `overlay17CalculateEndpoints`
+and returns `void`. The allocation's artificial third argument is removed;
+the material token is converted to the helper's 32-bit integer argument.
+The constructor's public ABI, size expression/local, call order, loops and
+field accesses remain unchanged. This call-only correction is source
+reconstruction, independently reviewed against Mickey's own helper definitions.
+
+Configured full-TU measurement improves **65 to 45 raw/masked differences**
+at **784 bytes, zero size delta, frame 128**, first mismatch `+0x3C`.
+Stable relocation identity alignment improves **one to three**: all three
+call identities now agree. The template mismatch remains: candidate five
+records versus target seven, with the same sole candidate template pair.
+Thus this is an improved `NON_MATCHING` body, not a match or byte credit.
+Baseline and corrected source/object/relocation receipts remain privately
+preserved beside the earlier diagnostics.
+
+Three focused continuations tested stack-home and constant identity:
+addressing the size local through a pointer gives 138 at zero delta;
+self-assignment before multiplication and an unsigned size local each remain
+45. Addressing the local does not provide the target's home/topology; the
+self-assignment and unsigned spellings add no information. Stop with 45 as
+the admissible best and no further placement or typing permutations. The
+next causal packet needs faithful optimizer evidence for the pre-call size
+web split or template rematerialization, followed by the independently
+owned-data binding and complete relocation proof before promotion.
+
 <!-- plateau-handoff:overlay17CreateChain:end -->

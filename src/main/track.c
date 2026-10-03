@@ -381,12 +381,6 @@ extern s32 D_80079354;
 extern f32 D_80081770;
 extern f32 D_80081774;
 extern f32 D_80081790;
-extern f32 D_80081778;
-extern f32 D_8008177C;
-extern f32 D_80081780;
-extern f32 D_80081784;
-extern f32 D_80081788;
-extern f32 D_8008178C;
 extern s8 D_80079260;
 extern s8 D_80079264;
 extern s8 D_80079268;
@@ -3154,7 +3148,7 @@ typedef struct TrackContactRecord {
 struct TrackCollisionSurface;
 struct TrackCollisionRecord;
 extern void func_800115E4(
-    s32 mode, TrackVec3f *position, TrackVec3f *offset, f32 scale,
+    s32 mode, TrackRayPoint *position, TrackRayPoint *offset, f32 scale,
     struct TrackCollisionSurface *surface,
     struct TrackCollisionRecord *record);
 
@@ -3263,8 +3257,8 @@ s32 func_80010B4C(s32 count, f32 *start, f32 *end, f32 *radius,
                     }
                     if ((queryResult | auxiliaryResult) != 0) {
                         record = &records[index];
-                        func_800115E4((s32) rel, (TrackVec3f *) point,
-                                      (TrackVec3f *) &direction, lengthSquared,
+                        func_800115E4((s32) rel, (TrackRayPoint *) point,
+                                      &direction, lengthSquared,
                                       (struct TrackCollisionSurface *) &intersection,
                                       (struct TrackCollisionRecord *) record);
                         record->distance = intersection.ratio;
@@ -3341,10 +3335,11 @@ s32 func_80010B4C(s32 count, f32 *start, f32 *end, f32 *radius,
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80010B4C.s")
 #endif
-#ifdef NON_MATCHING
 /*
- * PROVENANCE: Mickey's m2c collision-response draft and resident plane and
- * record offsets reconstruct this routine; no external function body is adapted.
+ * PROVENANCE: Mickey's collision-response fields, calls and bytes are authority.
+ * The newly matched Mickey func_8001EC44 in charControl.c supplies the shared
+ * cross-product and projected-point carrier organization; no external body is
+ * adapted. TrackRayPoint is the caller's existing three-float scalar view.
  */
 typedef struct TrackCollisionSurface {
     f32 x;
@@ -3379,123 +3374,100 @@ typedef struct TrackCollisionRecord {
     u8 value3D;
 } TrackCollisionRecord;
 
-s16 Arctanf(f32 x, f32 y);
+s32 Arctanf(f32 x, f32 y);
 
-/* Workbench verdict: structure-mismatch, 217 differing words, first mismatch +0x0. */
-/* Candidate: 237/231 words, frame 0xA0 versus 0x98, 6/17 relocation sites exact. */
-/* Mickey m2c restores the defined flag test and numerator negation before division. */
-void func_800115E4(s32 mode, TrackVec3f *position, TrackVec3f *offset,
-                   f32 scale, TrackCollisionSurface *surface,
+/* Named vector members preserve the compiler's separate scalar identities.
+ * The three first-cross carriers become the projected point in the last branch;
+ * len is reused while delta preserves the plane offset across calls. Arctanf
+ * returns an integer angle, explicitly narrowed for the signed consumer. */
+void func_800115E4(s32 mode, TrackRayPoint *pos, TrackRayPoint *vel,
+                   f32 radius, TrackCollisionSurface *plane,
                    TrackCollisionRecord *record) {
-    f32 firstCrossX;
-    f32 firstCrossY;
-    f32 crossX;
-    f32 crossY;
-    f32 crossZ;
-    f32 surfaceDistance;
-    f32 surfaceX;
-    f32 surfaceY;
-    f32 surfaceZ;
-    f32 planeValue;
-    f32 crossLengthSquared;
-    f32 crossLength;
-    f32 distance;
-    f32 time;
-    f32 projectedX;
-    f32 projectedY;
-    f32 projectedZ;
-    f32 differenceX;
-    f32 differenceY;
-    f32 differenceZ;
+    f32 dx;
+    f32 v;
+    f32 dz;
+    f32 d;
+    f32 u;
+    f32 dy;
+    f32 w;
+    f32 nx;
+    f32 ny;
+    f32 nz;
+    f32 delta;
+    f32 len;
+    f32 value;
     f32 angle;
-    f32 horizontalLength;
-    s16 angleValue;
 
-    surfaceDistance = surface->distance;
-    surfaceX = surface->x;
-    surfaceY = surface->y;
-    surfaceZ = surface->z;
-    planeValue = (position->f[2] * surfaceZ) +
-                 ((surfaceX * position->f[0]) +
-                  (surfaceY * position->f[1])) + surfaceDistance;
-    if ((D_80081778 <= surfaceY) || (surface->flags & 0x10000000)) {
-        firstCrossX = offset->f[2] * surfaceY;
-        firstCrossY = (surfaceZ * offset->f[0]) -
-                      (offset->f[2] * surfaceX);
-        crossZ = -(offset->f[0] * surfaceY);
-        crossX = (firstCrossY * surfaceZ) - (crossZ * surfaceY);
-        crossY = (crossZ * surfaceX) - (firstCrossX * surfaceZ);
-        crossZ = (firstCrossX * surfaceY) - (firstCrossY * surfaceX);
-        crossLengthSquared = (crossX * crossX) +
-                             (crossY * crossY) +
-                             (crossZ * crossZ);
-        if (D_8008177C < crossLengthSquared) {
-            distance = sqrtf(crossLengthSquared);
-            time = scale - surface->positionDistance;
-            position->f[0] = surface->positionX +
-                             (time * (crossX / distance));
-            position->f[1] = surface->positionY +
-                             (time * (crossY / distance));
-            position->f[2] = surface->positionZ +
-                             (time * (crossZ / distance));
+    nx = plane->x;
+    ny = plane->y;
+    nz = plane->z;
+    d = plane->distance;
+    value = (pos->z * nz) + ((nx * pos->x) + (ny * pos->y)) + d;
+    if ((0.707f <= ny) || (plane->flags & 0x10000000)) {
+        u = vel->z * ny;
+        v = -(vel->z * nx) + (nz * vel->x);
+        w = -(vel->x * ny);
+        dx = (v * nz) - (w * ny);
+        dy = (w * nx) - (u * nz);
+        dz = (u * ny) - (v * nx);
+        len = (dx * dx) + (dy * dy) + (dz * dz);
+        if (0.1f < len) {
+            len = sqrtf(len);
+            dx /= len;
+            dy /= len;
+            dz /= len;
+            value = radius - plane->positionDistance;
+            pos->x = plane->positionX + (value * dx);
+            pos->y = plane->positionY + (value * dy);
+            pos->z = plane->positionZ + (value * dz);
         } else {
-            position->f[1] = (-((position->f[2] * surfaceZ) +
-                                 (surfaceX * position->f[0]) +
-                                 surfaceDistance) / surfaceY) + D_80081780;
+            pos->y = (-((pos->z * nz) + (nx * pos->x) + d) / ny) + 0.01f;
         }
-        record->pointY = surfaceX;
-        record->pointZ = surfaceY;
-        record->value0C = surfaceZ;
+        record->pointY = nx;
+        record->pointZ = ny;
+        record->value0C = nz;
         record->value3D |= 2;
-    } else if (surfaceY <= D_80081784) {
-        distance = D_80081788 - planeValue;
-        position->f[0] += distance * surfaceX;
-        position->f[1] += distance * surfaceY;
-        position->f[2] += distance * surfaceZ;
-        record->value1C = surfaceX;
-        record->value20 = surfaceY;
-        record->value24 = surfaceZ;
+    } else if (ny <= -0.866f) {
+        value = 0.01f - value;
+        pos->x = pos->x + (value * nx);
+        pos->y = pos->y + (value * ny);
+        pos->z = pos->z + (value * nz);
+        record->value1C = nx;
+        record->value20 = ny;
+        record->value24 = nz;
         record->value3D |= 8;
     } else {
-        projectedX = position->f[0];
-        projectedY = position->f[1];
-        projectedZ = position->f[2];
-        distance = D_8008178C - planeValue;
-        projectedX = projectedX + (distance * surfaceX);
-        projectedY = projectedY + (distance * surfaceY);
-        projectedZ = projectedZ + (distance * surfaceZ);
-        differenceX = position->f[0] - projectedX;
-        differenceY = position->f[1] - projectedY;
-        differenceZ = position->f[2] - projectedZ;
-        angle = sqrtf((differenceX * differenceX) +
-                      (differenceZ * differenceZ));
-        angleValue = Arctanf(differenceY, angle);
-        angle = func_8002A8BC(angleValue);
+        len = 0.01f - value;
+        delta = len;
+        u = pos->x + (len * nx);
+        v = pos->y + (len * ny);
+        w = pos->z + (len * nz);
+        dx = pos->x - u;
+        dy = pos->y - v;
+        dz = pos->z - w;
+        len = sqrtf((dx * dx) + (dz * dz));
+        angle = func_8002A8BC((s16) Arctanf(dy, len));
         if (angle != 0.0f) {
-            time = distance / angle;
-            horizontalLength = sqrtf((surfaceX * surfaceX) +
-                                     (surfaceZ * surfaceZ));
-            position->f[0] += time * (surfaceX / horizontalLength);
-            position->f[2] += time * (surfaceZ / horizontalLength);
+            value = delta / angle;
+            len = sqrtf((nx * nx) + (nz * nz));
+            pos->x += value * (nx / len);
+            pos->z += value * (nz / len);
         } else {
-            position->f[0] = projectedX;
-            position->f[1] = projectedY;
-            position->f[2] = projectedZ;
+            pos->x = u;
+            pos->y = v;
+            pos->z = w;
         }
-        record->value10 = surfaceX;
-        record->value14 = surfaceY;
-        record->value18 = surfaceZ;
+        record->value10 = nx;
+        record->value14 = ny;
+        record->value18 = nz;
         record->value3D |= 4;
     }
-    record->value28 = surfaceX;
-    record->value2C = surfaceY;
-    record->value30 = surfaceZ;
-    record->value38 = surface->flags;
-    record->value3C = surface->material;
+    record->value28 = nx;
+    record->value2C = ny;
+    record->value30 = nz;
+    record->value38 = plane->flags;
+    record->value3C = plane->material;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_800115E4.s")
-#endif
 #ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c collision-query draft and resident node/plane
@@ -5385,15 +5357,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * PLATEAU-HANDOFF:func_80010654:end
  */
 
-/* PLATEAU-HANDOFF:func_800115E4:start
- * symbol: func_800115E4
- * score: 217 differing words
- * frame: 0xa0
- * relocations: 17
- * first-mismatch: +0x0
- * summary: Mickey flag and negation order improve 231 to 217 differences, 6/17 relocation sites exact. Next: source-attributed FP home evidence.
- * PLATEAU-HANDOFF:func_800115E4:end
- */
 
 /* PLATEAU-HANDOFF:func_800103D4:start
  * symbol: func_800103D4

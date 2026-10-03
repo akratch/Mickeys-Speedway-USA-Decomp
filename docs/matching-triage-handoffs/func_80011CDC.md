@@ -49,4 +49,38 @@ Summary before this remeasure: Mickey m2c reproduces existing edge/endpoint test
 - relocations: 11
 - first mismatch: +0x0
 - summary: Plane-difference locals improve 339 to 327 diffs and recover target saves; texture-global hoisting still spills the counter (344 vs 342 words, 11 vs 15 relocs).
+#### 2026-10-03: isolated named input-vector contrast
+
+The authorized packet on `a9ff430a183f5c61e6e838b8ae2d3bda32f86f15`
+tested the existing `TrackRayPoint` input-member view suggested by the exact
+collision-response sibling. Stock IDO layout assertions and the caller audit
+establish twelve-byte vectors, four-byte alignment and member offsets zero,
+four and eight. The input views preserve float width, qualifiers, call order
+and arithmetic association; the existing helper prototypes remain unchanged
+through explicit boundary casts.
+
+The fresh configured full-TU baseline reproduces 347 candidate versus 342
+target words, 329 differences, first `+0x0`, and frame `0xC8` versus `0xC0`.
+Naming both inputs produces 330 differences at unchanged size and frame.
+Direction-only is byte-identical to that both-input candidate; origin-only
+is byte-identical to the baseline. Direction spelling changes 109 candidate
+words starting at `+0x10C`, but no compiler-internal cause is attributed to
+that observation. This eliminates the direct input-member transfer hypothesis
+under the current body; it does not justify another lifetime or colour sweep.
+
+All three contrasts preserve the other 65 full-TU functions' sizes, bytes
+and relocation tuples, and preserve data and rodata. Every canonical object
+retains all 66 functions unchanged because the target still uses its fallback.
+Actual compiler-input self-context and section/symbol/relocation fidelity
+pass for the baseline and every contrast. The intentional prototype and
+caller-cast context changes are disclosed rather than labelled body-only.
+Sources, objects, measurements and receipts remain private under ignored
+`build/wb/track-input-members/`.
+
+The original source and 329-word baseline are retained; no matching credit
+is claimed. Stop after the three isolated contrasts because neither input
+view improves the residual or frame. Further work requires newly authenticated
+source or compiler evidence for the remaining lifetime/allocation deficit,
+not the sibling analogy or these exhausted representations.
+
 <!-- plateau-handoff:func_80011CDC:end -->

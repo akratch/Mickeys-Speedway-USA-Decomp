@@ -42,22 +42,37 @@ while read -r local_ref local_sha remote_ref remote_sha; do
 		range="$remote_sha..$local_sha"
 		label="$remote_ref ($range)"
 	else
-		# New branch, or a remote tip this clone has never seen: scan the whole
-		# branch.
+		# New branch, or a remote tip this clone has never seen.
 		#
-		# An earlier version excluded everything reachable from the local
-		# remote-tracking refs, reasoning that the remote already has those
-		# commits.  That is only true while those refs are current, and the
-		# operation that strands them -- a history rewrite -- is precisely the
-		# operation this repository has already had to perform once.  A stale
-		# refs/remotes entry would exclude commits the push does in fact
-		# transmit, narrowing the scan at the moment it matters most.
-		#
-		# So: exclude nothing here.  A full-branch scan of this repository's
-		# entire history costs under a second, which is not worth trading any
-		# amount of correctness for.
-		range="$local_sha"
-		label="$remote_ref (new branch, full scan)"
+		# Scan the commits this push can introduce, and only those.  Excluding
+		# refs/remotes/* is not good enough: those refs go stale across a
+		# history rewrite and would then hide commits the push transmits.  Ask
+		# the remote which heads it has right now, and exclude a tip only when
+		# this clone actually has that commit.  If the remote cannot be read,
+		# scan the whole branch.  That fails closed.
+		tips_file=$(mktemp)
+		if git ls-remote --heads "$remote_name" >"$tips_file"; then
+			exclude=""
+			while read -r tip refname; do
+				[ -n "${tip:-}" ] || continue
+				if git cat-file -e "$tip^{commit}" 2>/dev/null; then
+					exclude="$exclude $tip"
+				fi
+			done <"$tips_file"
+			rm -f "$tips_file"
+			if [ -n "$exclude" ]; then
+				range="$local_sha --not$exclude"
+				label="$remote_ref (new branch, commits not already on $remote_name)"
+			else
+				range="$local_sha"
+				label="$remote_ref (new branch, full scan)"
+			fi
+		else
+			rm -f "$tips_file"
+			echo "pre-push: cannot read heads from $remote_name; scanning the whole branch" >&2
+			range="$local_sha"
+			label="$remote_ref (new branch, full scan)"
+		fi
 	fi
 
 	echo "pre-push: clean-room scan of $label"

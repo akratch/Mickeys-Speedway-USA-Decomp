@@ -224,13 +224,19 @@ s32 func_80001BE8(void) {
  * Jet Force Gemini efd5abb's __amHandleFrameMsg is still GLOBAL_ASM but is the
  * same code. Mickey's manager fields, schedule state and task layout come from
  * the ROM. */
-/* 2026-10-02 (lane w2-audfont): rewritten from the listing, 350 masked words
- * at size delta +144 -> 161 at delta 0. Open: the D_80078DE4 and DMA-state
- * address webs take a1/a2 where the target has a2/a3 (which also lets as1
- * hoist the 0x82 tag above the large-mode test), the large-mode `^ 1` test
- * lands in a ring temp where the target has v0, and the task block's ring
- * phase. */
-#ifdef NON_MATCHING
+/* Rewritten from the listing on 2026-10-02 (lane w2-audfont, 350 masked words
+ * at +144 -> 161 at delta 0) and matched the same day (lane z-res) by:
+ * - the large-mode test's `D_80078DDC ^ 1` computed into a local BEFORE the
+ *   outer mode test, so it is a web (v0) and not a ring temporary, which
+ *   also puts the ring in phase for the rest of the function (161 -> 70);
+ * - one cursor, `buffer`, for both the output buffers and the DMA buffers,
+ *   as func_80001740 uses one `mem`: its web then spans the two-argument
+ *   calls, is denied a0/a1 and takes a2, and the two address webs follow
+ *   (70 -> 30);
+ * - statement order, which is as1's schedule: the alt command lists are
+ *   copied before `D_80078DE4 = 12`, the frame-sample store precedes the
+ *   D_80078DD8 store, taskID precedes msgQ, and the yield fields follow
+ *   data_size (30 -> 0). */
 typedef struct AudioManagerFrameState {
     u8 pad000[0x280];
     u8 *acmdList[2];
@@ -253,7 +259,7 @@ void func_80001BF4(void) {
     s32 samplesLeft;
     s32 i;
     u8 *buffer;
-    u8 *work;
+    s32 large;
 
     func_8000238C();
     samplesLeft = *(vu32 *)0xA4500004 >> 2;
@@ -288,16 +294,17 @@ void func_80001BF4(void) {
         }
     }
 
+    large = D_80078DDC ^ 1;
     if (D_80078DDC != D_80078DE0) {
         D_80078DE8 = 0;
-        if ((D_80078DDC ^ 1) == 0 && D_80078DC0 == NULL) {
+        if (large == 0 && D_80078DC0 == NULL) {
             AMF.acmdListLarge[0] = func_8002B280(0x2C100, 0x82);
             AMF.acmdListLarge[1] = AMF.acmdListLarge[0] + 0x16080;
-            work = func_8002B280(D_800C8644 * 0x48, 0x82);
+            buffer = func_8002B280(D_800C8644 * 0x48, 0x82);
             for (i = 0; i < 3; i++) {
-                AMF.outBufLarge[i] = work;
-                AMF.outBuf[i] = work;
-                work += D_800C8644 * 0x18;
+                AMF.outBufLarge[i] = buffer;
+                AMF.outBuf[i] = buffer;
+                buffer += D_800C8644 * 0x18;
             }
             AMF.acmdList[0] = AMF.acmdListLarge[0];
             AMF.acmdList[1] = AMF.acmdListLarge[1];
@@ -321,9 +328,9 @@ void func_80001BF4(void) {
             for (i = 0; i < 3; i++) {
                 AMF.outBuf[i] = AMF.outBufAlt[i];
             }
-            D_80078DE4 = 12;
             AMF.acmdList[0] = AMF.acmdListAlt[0];
             AMF.acmdList[1] = AMF.acmdListAlt[1];
+            D_80078DE4 = 12;
         }
         D_80078DE0 = D_80078DDC;
     }
@@ -336,11 +343,11 @@ void func_80001BF4(void) {
 
     audioPtr = (s16 *)osVirtualToPhysical(AMF.outBuf[D_80078DC8]);
     if ((samplesLeft >= 0x159) & D_80078DD8) {
-        D_80078DD8 = 0;
         AMF.frameSamples[D_80078DC8] = D_800C8640;
+        D_80078DD8 = 0;
     } else {
-        D_80078DD8 = 1;
         AMF.frameSamples[D_80078DC8] = D_800C863C;
+        D_80078DD8 = 1;
     }
     if (D_80078DDC == 1) {
         AMF.frameSamples[D_80078DC8] *= D_800C91DC;
@@ -349,8 +356,8 @@ void func_80001BF4(void) {
     cmdp = n_alAudioFrame((Acmd *)AMF.acmdList[D_80078DC4], &cmdLen, audioPtr,
                           AMF.frameSamples[D_80078DC8]);
 
-    AMF.task.msgQ = &D_800C7D9C;
     AMF.task.taskID = 1;
+    AMF.task.msgQ = &D_800C7D9C;
     AMF.task.unk58 = -1;
     AMF.task.flags = 2;
     AMF.task.next = NULL;
@@ -367,10 +374,10 @@ void func_80001BF4(void) {
     AMF.task.list.t.ucode_size = 0x1000;
     AMF.task.list.t.ucode_data_size = 0x800;
     AMF.task.list.t.data_ptr = (u64 *)AMF.acmdList[D_80078DC4];
-    AMF.task.list.t.yield_data_ptr = NULL;
-    AMF.task.list.t.yield_data_size = 0;
     AMF.task.list.t.data_size =
         (cmdp - (Acmd *)AMF.acmdList[D_80078DC4]) * sizeof(Acmd);
+    AMF.task.list.t.yield_data_ptr = NULL;
+    AMF.task.list.t.yield_data_size = 0;
 
     osSendMesg(osScGetCmdQ(D_800BFA30), (OSMesg)&AMF.task, OS_MESG_NOBLOCK);
     D_80078DC4 ^= 1;
@@ -379,9 +386,6 @@ void func_80001BF4(void) {
     D_80078DC8 %= 3;
     D_80078DD0++;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/audiomgr/func_80001BF4.s")
-#endif
 /* PROVENANCE: control-flow and audio-completion intent cross-checked against Jet Force Gemini's
  * public src/audiomgr.c::__amHandleDoneMsg; Mickey's ROM-derived globals remain authoritative. */
 /* Matched 2026-09-17 (lane w6-audio), 9 -> 0 masked words at delta 0,
@@ -526,13 +530,3 @@ void func_8000238C(void) {
 
     D_80078DD4 = 0;
 }
-
-/* PLATEAU-HANDOFF:func_80001BF4:start
- * symbol: func_80001BF4
- * score: 161/336 words
- * frame: 0x58
- * relocations: 107
- * first-mismatch: +0x68
- * summary: Listing rewrite at delta 0 (was +144); open: DE4/DMA-state address webs a1/a2 vs target a2/a3, xor test in a ring temp not v0
- * PLATEAU-HANDOFF:func_80001BF4:end
- */

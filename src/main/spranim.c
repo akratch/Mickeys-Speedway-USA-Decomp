@@ -203,23 +203,18 @@ void spranimOnceControl(SpranimOnceState *state, s32 updateRate) {
         func_80006EA0(state);
     }
 }
-#ifdef NON_MATCHING
-/* 47 masked words at size delta 0 and the exact 0x80 frame (was 51),
- * 2026-10-02 lane x-res: rewritten as a plain counted loop over the hit list
- * (IDO unrolls it by four, as in the target) with the hit read into a local
- * and the state pointer named before the store; the hit list is nine
- * entries, and four scalars declared above `entry`, `hits` and `state` put
- * the two spill homes at the target's 0x6C and 0x44 (the order of those four
- * is inert). The `planeIndex < 1` bound is the target's bgtz.
- * Left, priced with forces on proc 4 (CDX_PROC=4): the cursor web taking a3
- * and the index web a2 (target roles) is 47 -> 34; the remaining rows are the
- * hit load: uopt keeps the loaded pointer and the `hit` variable as two
- * interfering webs (v1 and a0, joined by a move in the active-test delay
- * slot) in the remainder loop and the first unrolled copy, where the target
- * has one web and loads the state pointer into a0. Loop form (for, do-while,
- * while), block-scope `hit`, `continue` form of the test, and five store
- * spellings were measured flat or worse; any second `hits[i]` read stops the
- * unroller. */
+/* Matched 2026-10-02 (lane z-res) from lane x-res's 47-word body. The plain
+ * counted loop over the hit list is unrolled by four, so `hits[i]` occurs in
+ * the remainder loop and in the first copy and uopt saves it; it then
+ * replaces a variable assigned from it wherever the block does not alter
+ * memory. Two things were needed and each alone is worse: the hit is read
+ * into `object` and copied to `hit`, which keeps the load in the test block
+ * (a copy of a variable survives where a dead copy of an expression is
+ * dropped), and the attach store sits in a `do { } while (0)`, which starts
+ * a block at the store so the state read ahead of it is replaced too. The
+ * variable then lives only in copies two to four and takes v0, and every
+ * other register follows. `object` is declared last so the two spill homes
+ * stay at 0x6C and 0x44. */
 /* PROVENANCE: JFG's public effectboxControl assembly establishes the trigger/hit-list idiom; all Mickey offsets and calls below are reconstructed locally. */
 typedef struct SpranimEffectBox {
     u8 pad0[0xC];
@@ -251,6 +246,7 @@ void effectboxControl(SpranimEffectBox *arg0, s32 arg1) {
     u8 *entry;
     SpranimB798Target *hits[9];
     SpranimEffectState *state;
+    void *object;
 
     state = arg0->state64;
     if ((state->planeIndex >= 0) && (state->planeIndex < 1)) {
@@ -266,19 +262,17 @@ void effectboxControl(SpranimEffectBox *arg0, s32 arg1) {
     hitCount = func_8005776C(arg0->x, arg0->y, arg0->z, (f32) state->radius, 0, hits);
     if (hitCount != 0) {
         for (i = 0; i < hitCount; i++) {
-            hit = hits[i];
+            object = hits[i];
+            hit = object;
             if ((state->active == 0) ||
                 ((state->normalX * hit->x) + (state->normalY * hit->y) +
                  (state->normalZ * hit->z) + state->distance < 0.0f)) {
                 st = hit->state64;
-                *(void **) ((u8 *) st + 0xC8) = arg0;
+                do { *(void **) ((u8 *) st + 0xC8) = arg0; } while (0);
             }
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/spranim/effectboxControl.s")
-#endif
 /* PROVENANCE -- adapted from JFG's public asm/nonmatchings/spranim/texscrollControl.s, with Mickey's object offset. */
 void texscrollControl(TexscrollState *state, s32 updateRate) {
     s32 x;
@@ -414,16 +408,6 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
     frame = (arg0->flags88 & 3) << 8;
     func_80020D8C(arg0->entries68[index], 0, frame, arg0);
 }
-
-/* PLATEAU-HANDOFF:effectboxControl:start
- * symbol: effectboxControl
- * score: 47/193 words
- * frame: 0x80
- * relocations: 5
- * first-mismatch: +0xDC
- * summary: 51 to 47: counted loop, hit local, nine-entry list, homes at 0x6C/0x44. Left: cursor/index a3/a2 roles (forced 34) and the hit load split in two webs
- * PLATEAU-HANDOFF:effectboxControl:end
- */
 
 /* PLATEAU-HANDOFF:func_8001B798:start
  * symbol: func_8001B798

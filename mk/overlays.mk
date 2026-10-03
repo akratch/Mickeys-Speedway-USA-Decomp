@@ -589,7 +589,21 @@ $(O8_OBJ): POSTPROCESS = \
 		sha256:83eab06de7958c29521dd38565ece7d6210be9be772d33f0c9a92473f3e43c51
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: CFLAGS += -Wab,-r4300_mul
+# func_overlay_009_F0000000_1866678 defines overlay 9's parameter block in
+# this object's .data at its recorded offset (+0x2D0); the retained overlay
+# image owns the bytes, so the copy is dropped and its 35 sites rebound to a
+# zero-valued base. Its three thresholds head the TU's literal pool, which
+# duplicates the retained overlay rodata and is asserted by digest. The TU
+# is 0x151C bytes; the module's last word (+0x151C) is the
+# overlay_009_padding row, so the trim only pins the natural extent.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: \
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	config/normalizations/func_overlay_009_F0000000_1866678.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
+	$(OBJCOPY) --add-symbol gOverlay9DataBaseReloc=0x0,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_009_F0000000_1866678.rebind.spec && \
+	$(OBJCOPY) --remove-section=.data --remove-section=.gptab.data $@ && \
 	$(OBJCOPY) --redefine-sym \
 		ext_o0_1353c=overlay9HeightQueryReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
@@ -606,9 +620,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 		o9P540MathDiffAngleReloc=overlay9AngleDifferenceReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
 		o9P540CosReloc=overlay9CosineReloc $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1520 && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x151C && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:5e45f46f4effae3642aad8ec5bc46a960b4e1de95d12c4a76f12183279ec1c14
+		sha256:2c21a6f383952f9246cda00fcc1f0456af3e324811b7ca17f018fd4c4f0658d9
 # NON_MATCHING fallback assembly supplies the retail body; restore the
 # friendly source symbol and retain the exact text extent when needed.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o031/overlay31InitializeParticleAssets.c.o: POSTPROCESS = \
@@ -1325,7 +1339,29 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/overlay43ReleaseResources.c.o: POSTPROCESS
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay43ReleaseResources.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA4
+# Exact C. The target keeps the radius multiply out of the call's delay
+# slot, which is -Wab,-r4300_mul. Eight resident callees go through the
+# generated surface entries. The image scale is a float literal, so the
+# compiler emits a one-constant pool that duplicates the retained overlay
+# data at rodata-relative +0x20; assert the pool by digest and bind the pair
+# to an absolute anchor. No instruction is edited.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000324_188A2F4.c.o: \
+	CFLAGS += -Wab,-r4300_mul
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000324_188A2F4.c.o: \
+	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000324_188A2F4.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym Arctanf=Arctanf_o043Reloc \
+		--redefine-sym dAngle=dAngle_o043Reloc \
+		--redefine-sym func_8002A82C=func_8002A82C_o043Reloc \
+		--redefine-sym func_8002AE10=func_8002AE10_o043Reloc \
+		--redefine-sym levelGetLevel=levelGetLevel_o043Reloc \
+		--redefine-sym mtxf_mul=mtxf_mul_o043Reloc \
+		--redefine-sym mtxf_transform_point=mtxf_transform_point_o043Reloc \
+		--redefine-sym sqrtf=sqrtf_o043Reloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:02fb70d8d98c50b94917c42e9e6c45e563dbdeaa61f451dbaf9a7ad53d047e6c \
+		0x20 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x8C0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o043/func_overlay_043_F0000BE4_188ABB4.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x4C4
@@ -2696,26 +2732,18 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99InitializeEntries.c.o: POSTPROCES
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x1B8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ProjectVector.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x84
+# Exact C. -Wab,-r4300_mul supplies the three multiply-hazard pads the
+# target carries. Its one pool literal (182.0444f) duplicates the retained
+# overlay rodata at +0x0, which the shipped hi/lo pair encodes: the pool is
+# asserted by digest and externalized; no instruction is edited. The two
+# resident trig callees are placeholders.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py
-ifeq ($(NON_MATCHING),1)
-# The compiler's private constants duplicate the retained overlay table at +0xB0.
-# Rebind only those text relocations; the linked default path remains GLOBAL_ASM.
+	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: POSTPROCESS = \
-	$(OBJCOPY) --add-symbol overlay99ApplySegmentPrivateTable=0xB0,global $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-		0xBC:.rodata:overlay99ApplySegmentPrivateTable \
-		0xE4:.rodata:overlay99ApplySegmentPrivateTable && \
-	$(OBJCOPY) --remove-section=.rodata $@ && \
-	$(OBJCOPY) --redefine-sym \
-		func_overlay_099_F00002A0_18D9850=overlay99ApplySegment $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:15fbd0fd7f255861ebff752dc2b8e418edd9110dfe29426ed775e3dc124c3f17 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x398
-else
-$(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99ApplySegment.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym \
-		func_overlay_099_F00002A0_18D9850=overlay99ApplySegment $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x398
-endif
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99BuildHeightGrid.c.o: CFLAGS += -Wo,-loopunroll,0
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o099/overlay99BuildHeightGrid.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
@@ -2817,7 +2845,6 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17CalculateEndpoints.c.o: POSTPROCE
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17ReleaseChain.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x40
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17AdvanceChain.c.o: POSTPROCESS = \
-	$(OBJCOPY) --redefine-sym func_overlay_017_F0000668_1874020=overlay17AdvanceChain $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x24C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o017/overlay17DrawStrip.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_017_F00008B4_187426C=overlay17DrawStrip $@ && \

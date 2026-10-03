@@ -1028,14 +1028,15 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o009/overlay_009.c.o",
       "offset": 0,
       "overlay": 9,
-      "size": 5408,
+      "size": 5404,
       "source": "src/overlays/o009/overlay_009.c",
       "tools": [
+        "rebind_elf_relocations.py",
         "trim_elf_section.py",
         "externalize_elf_section.py",
         "objcopy"
@@ -2095,16 +2096,15 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o017/overlay17AdvanceChain.c.o",
       "offset": 1640,
       "overlay": 17,
       "size": 588,
       "source": "src/overlays/o017/overlay17AdvanceChain.c",
       "tools": [
-        "trim_elf_section.py",
-        "objcopy"
+        "trim_elf_section.py"
       ]
     },
     {
@@ -4103,16 +4103,18 @@
     },
     {
       "c_owned": true,
-      "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "class": "altered",
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o043/func_overlay_043_F0000324_188A2F4.c.o",
       "offset": 804,
       "overlay": 43,
       "size": 2240,
       "source": "src/overlays/o043/func_overlay_043_F0000324_188A2F4.c",
       "tools": [
-        "trim_elf_section.py"
+        "externalize_elf_section.py",
+        "trim_elf_section.py",
+        "objcopy"
       ]
     },
     {
@@ -8101,16 +8103,16 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o099/overlay99ApplySegment.c.o",
       "offset": 672,
       "overlay": 99,
       "size": 920,
       "source": "src/overlays/o099/overlay99ApplySegment.c",
       "tools": [
-        "trim_elf_section.py",
-        "objcopy"
+        "externalize_elf_section.py",
+        "trim_elf_section.py"
       ]
     },
     {
@@ -9350,13 +9352,13 @@
   ],
   "schema_version": 3,
   "summary": {
-    "altered_bytes": 11396,
+    "altered_bytes": 13636,
     "by_class": {
-      "altered": 6,
-      "metadata": 637,
+      "altered": 7,
+      "metadata": 636,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 384868,
+    "matched_c_bytes_with_postprocess": 394020,
     "objects_with_postprocess": 644
   }
 }

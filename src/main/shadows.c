@@ -491,23 +491,39 @@ typedef struct Shadow168Angle {
 #define SH168_F32(p, o) (*(f32 *) ((u8 *) (p) + (o)))
 #define SH168_PTR(p, o) (*(void **) ((u8 *) (p) + (o)))
 
-/* Workbench verdict: 439 masked words at size +12, frame 0x190 exact (was 534 at +28).
- * 2026-10-02 (lane x-shad), this is DKR's shadow_generate with the shadow
- * globals gathered into the stack query struct:
+/* Workbench verdict: 315 masked words at size delta 0, frame 0x1A0 (target
+ * 0x190); was 439 at +12. This is DKR's shadow_generate with the shadow
+ * globals gathered into the stack query struct.
+ * 2026-10-02 (lane x-shad):
  *   - the corner points are seeded from query.x8/query.z10, not from the x/z
- *     arguments: the arguments then have one use each and x/y take f12/f14
- *     as in the target (534 at +28 to 502 at -4);
+ *     arguments, so x/y take f12/f14 as in the target;
  *   - the ratio block reuses point0 for the cosine and the ratio (its spill
  *     lands at point0's home +0xF8) and writes the zero-sine arm as 2.0, a
- *     double literal, which gives that use its own constant web as in the
- *     target: the block is word-for-word the target's;
- *   - the declarations put three scalars above result (+0x104), count at
- *     +0x100 and sine at +0xE0;
- *   - `* 10` (an int literal) in the unrotated corner path stops 10.0f being
- *     one web with the head's multiply and hoisted into f18 after the calls.
- * Left: the rotated-corner path keeps -point0, -point4 and the
- * expanded-cosine product in memory locals (+0x58, +0x50, +0x5C) and copies
- * halfX to +0x38 in the target; this body's homes there are one slot off. */
+ *     double literal;
+ *   - three scalars above result (+0x104), count at +0x100, sine at +0xE0.
+ * 2026-10-02 (lane z-shad), measured with the four scratch FP registers
+ * erased, because their names are one ring phase for the whole function
+ * (ugen's free list at entry is the state the function's own code leaves at
+ * its end, so no local edit fixes the first draw):
+ *   - the rotated-corner path names four products in the extent variables
+ *     (point2 = halfX*cos, point4 = halfZ*sin, point0 = halfX*sin,
+ *     point6 = expanded*sin) and keeps the negated and expanded-cosine
+ *     products in a four-float array, temp[2], temp[0] and temp[3]: the
+ *     target's +0x58, +0x50 and +0x5C stores with their immediate reloads.
+ *     That path is now the target's word for word;
+ *   - the unrotated path assigns all four extents from the two fields and
+ *     scales them in place in both arms, with 10.0f and -10.0f literals;
+ *   - the model is reached through a named instance pointer (the target
+ *     keeps it in v1), and the centre sums read points[0], [2], [4], [6] in
+ *     order.
+ * Left, in address order: the distance and its 1024.0f bound take f0 and f2
+ * swapped, and the half-extent product is a ring temporary where the target
+ * has f0 (+0xAC to +0x148); the unrotated path after its two calls, where
+ * the target also stores its products in temp[] (+0x5C, +0x58, +0x54, +0x50,
+ * frame 0x190) and reloads point4 and point6 through two compiler cells
+ * (+0x38, +0x3C). Writing those four products into temp[] here gives the
+ * target's frame and 291 words at +16: point2 then keeps a register across
+ * the calls where the target splits all three of point2, point4, point6. */
 void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
                    f32 arg5, s16 arg6) {
     typedef struct Shadow168Query {
@@ -548,10 +564,10 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
     s32 active;
     Shadow168Query query;
     f32 points[8];
-    f32 ratio;
+    void *modInst;
     f32 radius;
-    f32 base;
     void *arg2 = arg2p;
+    f32 temp[4];
 
     query.x8 = arg3;
     query.yC = arg4;
@@ -622,37 +638,41 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
     if (arg1 != NULL) {
         sine = func_8002A8C0(SH168_S16(arg1, 0));
         cosine = func_8002A8BC(SH168_S16(arg1, 0));
-        point0 = query.halfX34 * cosine;
-        point2 = query.halfZ38 * sine;
-        point4 = query.halfZ38 * cosine;
+        point2 = query.halfX34 * cosine;
+        point4 = query.halfZ38 * sine;
+        temp[2] = -point2;
+        points[0] += temp[2] - point4;
+        point0 = query.halfX34 * sine;
+        temp[0] = -(query.halfZ38 * cosine);
+        points[1] += temp[0] + point0;
+        points[2] += point2 - point4;
+        points[3] += temp[0] - point0;
         point6 = query.expanded3C * sine;
-        points[0] += -point0 - point2;
-        points[1] += (query.halfX34 * sine) - point4;
-        points[2] += point0 - point2;
-        points[3] += -point4 - (query.halfX34 * sine);
-        points[4] += point0 + point6;
-        points[5] += (query.expanded3C * cosine) - (query.halfX34 * sine);
-        points[6] += -point0 + point6;
-        points[7] += (query.expanded3C * cosine) + (query.halfX34 * sine);
+        points[4] += point2 + point6;
+        temp[3] = query.expanded3C * cosine;
+        points[5] += temp[3] - point0;
+        points[6] += temp[2] + point6;
+        points[7] += temp[3] + point0;
     } else {
         value = SH168_U8(arg2, 0x10) & 0x20;
-        point2 = SH168_F32(arg2, 4);
-        point0 = SH168_F32(arg2, 0);
-        if ((value != 0) || (point2 != point0)) {
+        if ((value != 0) || (SH168_F32(arg2, 4) != SH168_F32(arg2, 0))) {
+            point0 = SH168_F32(arg2, 0);
+            point2 = SH168_F32(arg2, 4);
+            point4 = SH168_F32(arg2, 0);
+            point6 = SH168_F32(arg2, 4);
             if (value != 0) {
                 objectScale = SH168_F32(arg0, 8);
-                matrix = SH168_PTR(SH168_PTR(arg0, 0x68), 0);
+                modInst = SH168_PTR(SH168_PTR(arg0, 0x68), 0);
+                matrix = SH168_PTR(modInst, 0);
                 point0 *= (f32) SH168_S16(matrix, 0x42) * objectScale;
                 point2 *= (f32) SH168_S16(matrix, 0x46) * objectScale;
-                point4 = SH168_F32(arg2, 0) *
-                         ((f32) SH168_S16(matrix, 0x3C) * objectScale);
-                point6 = SH168_F32(arg2, 4) *
-                         ((f32) SH168_S16(matrix, 0x40) * objectScale);
+                point4 *= (f32) SH168_S16(matrix, 0x3C) * objectScale;
+                point6 *= (f32) SH168_S16(matrix, 0x40) * objectScale;
             } else {
-                point0 *= 10;
-                point2 *= 10;
-                point4 = SH168_F32(arg2, 0) * -10.0f;
-                point6 = SH168_F32(arg2, 4) * -10.0f;
+                point0 *= 10.0f;
+                point2 *= 10.0f;
+                point4 *= -10.0f;
+                point6 *= -10.0f;
             }
             sine = func_8002A8C0(SH168_S16(arg0, 0));
             cosine = func_8002A8BC(SH168_S16(arg0, 0));
@@ -679,8 +699,8 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
         }
     }
 
-    D_800CB270 = (points[6] + points[0] + points[2] + points[4]) * 0.25f;
-    D_800CB274 = (points[7] + points[1] + points[3] + points[5]) * 0.25f;
+    D_800CB270 = (points[0] + points[2] + points[4] + points[6]) * 0.25f;
+    D_800CB274 = (points[1] + points[3] + points[5] + points[7]) * 0.25f;
     shadowBoundingBox(4, points, &query.bounds40[0], &query.bounds40[1],
                       &query.bounds40[2], &query.bounds40[3]);
     count = func_8000FD68(result, (s16) (s32) query.bounds40[0],
@@ -1088,219 +1108,200 @@ s32 func_80017660(void *arg0, s32 arg1, void *arg2, s32 arg3, s32 arg4) {
     return vertexCount;
 }
 /*
- * PROVENANCE: adapted from the public Diddy Kong Racing/JFG shadow-buffer
- * and projected-triangle organization; Mickey's target bytes, globals, and
- * resident buffer layouts determine the field bindings below.
+ * PROVENANCE: adapted from the public Diddy Kong Racing decompilation,
+ * src/tracks.c func_8002F440 (the shadow vertex and triangle emitter); the
+ * sibling in JFG's public assembly, func_8001F7C8, corroborates the shape.
+ * Mickey holds the three output counts in locals so the early `return 0`
+ * exits skip the write-back, packs each texture coordinate pair into one
+ * word, and reads the shadow parameters from the query struct. Mickey's
+ * target bytes, globals and buffer layouts are authoritative.
+ *
+ * Matched 2026-10-02 (lane z-shad) from 217 masked words. What closed it,
+ * in the order measured:
+ *   - the sine and cosine are plain assignments from the two calls; the
+ *     allocator spills the sine across the second call by itself (home
+ *     +0xA8). The frame is the declaration list with no padding: six
+ *     scalars above `projected[6]` (home +0xD8), eleven between it and
+ *     the sine, fourteen below;
+ *   - the two scales read the query fields directly and the half extents
+ *     are copied to locals afterwards; the shared field loads are then
+ *     expression temporaries that hold f0/f2 in the head, which is what
+ *     puts the height in f12 and the 0.0f constant in f20;
+ *   - the fade is its own float, initialised 255.0f and scaled in place
+ *     (`fade *= 1.0f - ...`), separate from the centre x read later;
+ *   - the rotation is in place with one saved copy of x (`savedX = x`);
+ *     as1 folds the copy by renaming, which is the target's f12;
+ *   - the low texture half is narrowed with an (s16) cast before the mask
+ *     (two ring draws the assembler deletes), the high half is not;
+ *   - counts are read before the buffer cursors, vertex before triangle;
+ *   - the polygon vertex index is read by subscript, so uopt creates the
+ *     byte cursor and as1 pulls its copy up into the loop head;
+ *   - `polygon = D_800CAF60;` on its own line and the index zeroed in the
+ *     `for` header give the head block's constant order.
  */
-#ifdef NON_MATCHING
-/* 2026-10-01 (lane d-res1): the three m2c goto loops written as do-while
- * loops are 217 masked at delta 0 (was 221): same statements, same order.
- * Workbench verdict: 221 masked words at size delta 0 (was 270 at +8).
- * Track B, 2026-09-23:
- *   - the +8 was one extra callee-saved FP register. The loop carried the two
- *     rotation deltas as fresh temps where the target reassigns the loaded
- *     coordinates (x -= cx; z -= cz), which freed a caller-saved FP register
- *     and stopped 1.0f being hoisted into f20.
- *   - the cosine result is copied into var_f16 inside each arm, after the
- *     sine reload, which is the target's duplicated arm tail (delta 0).
- *   - the frame is a declaration count: nine words before projected, eleven
- *     between it and spA8 (home +0xA8), and two unreferenced pads (L99).
- *   - var_a1 is a plain int shifted in place (no u8 mask); z is loaded in
- *     each arm; the rotated pair is two named results.
- * Left: the sine is spilled by the allocator in the target (store in the
- * second jal's delay slot) where this form stores at the assignment; 0.0f
- * shares f20 with var_f0 in the target while here it is a separate web in
- * f12, and var_f18/var_f0 take f20/f18 swapped (forcing p1 var_f18=c29,
- * var_f0=c30, zero=c30 prices 215); a separate x-delta web, which the
- * target's f12 suggests, costs +24 here by re-hoisting 1.0f. */
 s32 func_80017BCC(void *arg0, void *arg1, void *arg2) {
-    s32 var_fp;
-    s32 var_s4;
-    s32 var_s7;
-    s32 var_t2;
-    s32 var_t3;
-    s32 var_v1;
-    s32 var_a0_2;
-    s32 var_a1_2;
-    s32 var_t5;
-    u32 projected[3];
-    u8 *var_a0;
-    u8 *var_a2;
-    u8 *var_a3;
-    u8 *var_s6;
-    u8 *var_t4;
-    u8 *var_v0;
-    u8 *temp_v0;
-    s32 var_a1;
-    u8 vertexCount;
-    f32 temp_f0;
-    f32 temp_f12;
-    f32 temp_f2;
-    f32 spA8;
-    f32 temp_f2_2;
-    f32 var_f0;
-    f32 var_f0_2;
-    f32 var_f12;
-    f32 var_f14;
-    f32 var_f16;
-    f32 var_f18;
-    f32 var_f22;
-    f32 var_f24;
-    f32 var_f26;
-    f32 var_f28;
-    s32 pad0;
-    s32 pad1;
+    s32 polygonIndex;
+    s32 flags;
+    u8 *triangle;
+    u8 *vertex;
+    s32 alpha;
+    s32 firstIndex;
+    u32 projected[6];
+    s32 batchCount;
+    s32 vertexCount;
+    s32 triangleCount;
+    s32 index0;
+    s32 index1;
+    s32 i;
+    u8 *batch;
+    u8 *polygon;
+    u8 *point;
+    u8 *texture;
+    f32 cosine;
+    f32 sine;
+    f32 x;
+    f32 y;
+    f32 z;
+    f32 savedX;
+    f32 centreX;
+    f32 centreZ;
+    f32 scaleU;
+    f32 scaleV;
+    f32 halfX;
+    f32 halfZ;
+    f32 height;
+    f32 rise;
+    f32 factor;
+    f32 fade;
 
     if ((*(u8 *) ((u8 *) arg2 + 0x10) & 0x10) != 0) {
-        var_f14 = 0.0f;
-        var_f16 = 1.0f;
+        sine = 0.0f;
+        cosine = 1.0f;
     } else {
         if (arg1 != NULL) {
-            spA8 = func_8002A8C0(*(s16 *) ((u8 *) arg1 + 0x0));
-            var_f0 = func_8002A8BC(*(s16 *) ((u8 *) arg1 + 0x0));
-            var_f14 = *(f32 *) &spA8;
-            var_f16 = var_f0;
+            sine = func_8002A8C0(*(s16 *) ((u8 *) arg1 + 0x0));
+            cosine = func_8002A8BC(*(s16 *) ((u8 *) arg1 + 0x0));
         } else {
-            spA8 = func_8002A8C0(*(s16 *) ((u8 *) arg0 + 0x14));
-            var_f0 = func_8002A8BC(*(s16 *) ((u8 *) arg0 + 0x14));
-            var_f14 = *(f32 *) &spA8;
-            var_f16 = var_f0;
+            sine = func_8002A8C0(*(s16 *) ((u8 *) arg0 + 0x14));
+            cosine = func_8002A8BC(*(s16 *) ((u8 *) arg0 + 0x14));
         }
     }
-    temp_v0 = *(u8 **) ((u8 *) arg0 + 0x0);
-    var_f26 = *(f32 *) ((u8 *) arg0 + 0x34);
-    temp_f12 = *(f32 *) ((u8 *) arg0 + 0x24);
-    var_f28 = *(f32 *) ((u8 *) arg0 + 0x38);
-    var_f18 = 255.0f;
-    var_t5 = 0x19;
-    var_f22 = (f32) (*(u16 *) (temp_v0 + 0x6) * 0x10) / var_f26;
-    var_t4 = D_800CAF60;
-    var_s7 = 0;
-    var_f24 = (f32) (*(u16 *) (temp_v0 + 0x8) << 5) /
-              (var_f28 + *(f32 *) ((u8 *) arg0 + 0x3C));
-    if (temp_f12 > 0.0f) {
-        temp_f2 = *(f32 *) ((u8 *) arg0 + 0xC) -
-                  *(f32 *) ((u8 *) arg0 + 0x20);
-        if (temp_f12 < temp_f2) {
-            var_f18 = 255.0f *
-                      (1.0f - ((temp_f2 - temp_f12) /
-                               *(f32 *) ((u8 *) arg0 + 0x28)));
-            if (var_f18 < 0.0f) {
-                var_f18 = 0.0f;
+    texture = *(u8 **) ((u8 *) arg0 + 0x0);
+    scaleU = (f32) (*(u16 *) (texture + 0x6) * 0x10) / *(f32 *) ((u8 *) arg0 + 0x34);
+    scaleV = (f32) (*(u16 *) (texture + 0x8) << 5) /
+             (*(f32 *) ((u8 *) arg0 + 0x3C) + *(f32 *) ((u8 *) arg0 + 0x38));
+    halfX = *(f32 *) ((u8 *) arg0 + 0x34);
+    height = *(f32 *) ((u8 *) arg0 + 0x24);
+    halfZ = *(f32 *) ((u8 *) arg0 + 0x38);
+    fade = 255.0f;
+    firstIndex = 0x19;
+    if (height > 0.0f) {
+        rise = *(f32 *) ((u8 *) arg0 + 0xC) - *(f32 *) ((u8 *) arg0 + 0x20);
+        if (height < rise) {
+            fade *= 1.0f - ((rise - height) / *(f32 *) ((u8 *) arg0 + 0x28));
+            if (fade < 0.0f) {
+                fade = 0.0f;
             }
         }
-        if (temp_f2 > 0.0f) {
-            temp_f0 = (temp_f2 / 200.0f) + 1.0f;
-            var_f22 *= temp_f0;
-            var_f26 /= temp_f0;
-            var_f24 *= temp_f0;
-            var_f28 /= temp_f0;
+        if (rise > 0.0f) {
+            factor = (rise / 200.0f) + 1.0f;
+            scaleU *= factor;
+            halfX /= factor;
+            scaleV *= factor;
+            halfZ /= factor;
         }
     }
-    var_s4 = (s32) (var_f18 * D_800CB260);
+    alpha = (s32) (fade * D_800CB260);
     if (arg1 != NULL) {
-        var_s4 = (s32) (*(s16 *) ((u8 *) arg1 + 0x4) * var_s4) >> 8;
+        alpha = (s32) (*(s16 *) ((u8 *) arg1 + 0x4) * alpha) >> 8;
     }
-    var_f18 = D_800CB270;
-    var_f0 = D_800CB274;
-    var_t2 = D_8007944C;
-    var_t3 = D_80079450;
-    var_a3 = D_80079444 + (var_t3 * 0x10);
-    var_fp = D_80079454;
-    var_a2 = D_80079440 + (var_t2 * 0xA);
-    var_s6 = D_80079448 + (var_fp * 8);
-    if (D_800CAF58 > 0) {
-        do {
-            var_a0 = var_t4;
-            if ((*(u8 *) (var_t4 + 0x0) + var_t5) >= 0x18) {
-                *(s16 *) (var_s6 + 0x6) = var_t2;
-                *(s16 *) (var_s6 + 0x4) = var_t3;
-                var_s6 += 8;
-                var_fp += 1;
-                var_t5 = 0;
-                *(u32 *) (var_s6 - 0x8) = *(u32 *) ((u8 *) arg0 + 0x0);
+    centreX = D_800CB270;
+    centreZ = D_800CB274;
+    vertexCount = D_8007944C;
+    triangleCount = D_80079450;
+    batchCount = D_80079454;
+    vertex = D_80079440 + (vertexCount * 0xA);
+    triangle = D_80079444 + (triangleCount * 0x10);
+    batch = D_80079448 + (batchCount * 8);
+    polygon = D_800CAF60;
+    for (polygonIndex = 0; polygonIndex < D_800CAF58; polygonIndex++) {
+        if ((*(u8 *) (polygon + 0x0) + firstIndex) >= 0x18) {
+            *(u32 *) (batch + 0x0) = *(u32 *) ((u8 *) arg0 + 0x0);
+            *(s16 *) (batch + 0x6) = vertexCount;
+            *(s16 *) (batch + 0x4) = triangleCount;
+            batch += 8;
+            batchCount += 1;
+            firstIndex = 0;
+        }
+        if (batchCount >= D_800CB280) {
+            return 0;
+        }
+        flags = *(u8 *) (polygon + 0x1);
+        for (i = 0; i < *(u8 *) (polygon + 0x0); i++) {
+            if (flags & 1) {
+                point = &D_800C9F58[*(u8 *) (polygon + i + 0x2) << 5];
+                x = *(f32 *) (point + 0x0);
+                y = *(f32 *) (point + 0x4);
+                z = *(f32 *) (point + 0x8);
+            } else {
+                point = &D_800C9D48[*(u8 *) (polygon + i + 0x2) * 0x10];
+                x = *(f32 *) (point + 0x0);
+                y = *(f32 *) (point + 0x4);
+                z = *(f32 *) (point + 0x8);
             }
-            if (var_fp >= D_800CB280) {
+            flags = flags >> 1;
+            vertexCount += 1;
+            vertex += 0xA;
+            *(s16 *) (vertex - 0xA) = (s32) x;
+            *(s16 *) (vertex - 0x8) = (s32) (*(f32 *) ((u8 *) arg0 + 0x1C) + y);
+            *(s16 *) (vertex - 0x6) = (s32) z;
+            *(u8 *) (vertex - 0x4) = 0xFF;
+            *(u8 *) (vertex - 0x3) = 0xFF;
+            *(u8 *) (vertex - 0x2) = 0xFF;
+            *(s8 *) (vertex - 0x1) = (s8) alpha;
+            if (vertexCount >= D_800CB278) {
                 return 0;
             }
-            var_a1 = *(u8 *) (var_t4 + 0x1);
-            var_v1 = 0;
-            vertexCount = *(u8 *) (var_t4 + 0x0);
-            if ((s32) vertexCount > 0) {
-                do {
-                    if (var_a1 & 1) {
-                        var_v0 = D_800C9F58 + (*(u8 *) (var_a0 + 0x2) << 5);
-                        var_f0_2 = *(f32 *) (var_v0 + 0x0);
-                        var_f12 = *(f32 *) (var_v0 + 0x4);
-                        temp_f2_2 = *(f32 *) (var_v0 + 0x8);
-                    } else {
-                        var_v0 = D_800C9D48 + (*(u8 *) (var_a0 + 0x2) * 0x10);
-                        var_f0_2 = *(f32 *) (var_v0 + 0x0);
-                        var_f12 = *(f32 *) (var_v0 + 0x4);
-                        temp_f2_2 = *(f32 *) (var_v0 + 0x8);
-                    }
-                    var_a1 = var_a1 >> 1;
-                    var_t2 += 1;
-                    var_a2 += 0xA;
-                    *(s16 *) (var_a2 - 0xA) = (s32) var_f0_2;
-                    *(u8 *) (var_a2 - 0x4) = 0xFF;
-                    *(u8 *) (var_a2 - 0x3) = 0xFF;
-                    *(u8 *) (var_a2 - 0x2) = 0xFF;
-                    *(s8 *) (var_a2 - 0x1) = (s8) var_s4;
-                    *(s16 *) (var_a2 - 0x6) = (s32) temp_f2_2;
-                    *(s16 *) (var_a2 - 0x8) =
-                        (s32) (*(f32 *) ((u8 *) arg0 + 0x1C) + var_f12);
-                    if (var_t2 >= D_800CB278) {
-                        return 0;
-                    }
-                    var_f0_2 -= var_f18;
-                    var_a0 += 1;
-                    temp_f2_2 -= var_f0;
-                    temp_f0 = (var_f0_2 * var_f16) - (temp_f2_2 * var_f14);
-                    temp_f2_2 = (temp_f2_2 * var_f16) + (var_f0_2 * var_f14);
-                    projected[var_v1] =
-                        ((s32) ((temp_f2_2 + var_f28) * var_f24) & 0xFFFF) |
-                        ((s32) (var_f22 * (temp_f0 + var_f26)) << 0x10);
-                    var_v1 += 1;
-                } while (var_v1 < (s32) *(u8 *) (var_t4 + 0x0));
-            }
-            var_v1 = 1;
-            if ((*(u8 *) (var_t4 + 0x0) - 1) >= 2) {
-                var_a0_2 = var_t5 + 1;
-                var_a1_2 = var_a0_2 + 1;
-                var_v0 = (u8 *) &projected[1];
-                do {
-                    *(u8 *) (var_a3 + 0x0) = 0;
-                    *(u8 *) (var_a3 + 0x1) = var_a0_2;
-                    *(u8 *) (var_a3 + 0x2) = var_a1_2;
-                    *(u8 *) (var_a3 + 0x3) = var_t5;
-                    var_t3 += 1;
-                    var_v1 += 1;
-                    *(u32 *) (var_a3 + 0x4) = *(u32 *) (var_v0 + 0x0);
-                    var_a3 += 0x10;
-                    *(u32 *) (var_a3 - 0x8) = *(u32 *) (var_v0 + 0x4);
-                    *(u32 *) (var_a3 - 0x4) = projected[0];
-                    if (var_t3 >= D_800CB27C) {
-                        return 0;
-                    }
-                    var_v0 += 4;
-                    var_a0_2 += 1;
-                    var_a1_2 += 1;
-                } while (var_v1 < (*(u8 *) (var_t4 + 0x0) - 1));
-            }
-            var_s7 += 1;
-            var_t5 += *(u8 *) (var_t4 + 0x0);
-            var_t4 += 0xC;
-        } while (var_s7 < D_800CAF58);
+            x -= centreX;
+            z -= centreZ;
+            savedX = x;
+            x = (x * cosine) - (z * sine);
+            z = (z * cosine) + (savedX * sine);
+            projected[i] = ((s16) ((z + halfZ) * scaleV) & 0xFFFF) |
+                           ((s32) (scaleU * (x + halfX)) << 0x10);
+        }
+        i = 1;
+        if ((*(u8 *) (polygon + 0x0) - 1) >= 2) {
+            index0 = firstIndex + i;
+            index1 = index0 + 1;
+            point = (u8 *) &projected[1];
+            do {
+                *(u8 *) (triangle + 0x0) = 0;
+                *(u8 *) (triangle + 0x1) = index0;
+                *(u8 *) (triangle + 0x2) = index1;
+                *(u8 *) (triangle + 0x3) = firstIndex;
+                triangleCount += 1;
+                i += 1;
+                *(u32 *) (triangle + 0x4) = *(u32 *) (point + 0x0);
+                triangle += 0x10;
+                *(u32 *) (triangle - 0x8) = *(u32 *) (point + 0x4);
+                *(u32 *) (triangle - 0x4) = projected[0];
+                if (triangleCount >= D_800CB27C) {
+                    return 0;
+                }
+                point += 4;
+                index0 += 1;
+                index1 += 1;
+            } while (i < (*(u8 *) (polygon + 0x0) - 1));
+        }
+        firstIndex += *(u8 *) (polygon + 0x0);
+        polygon += 0xC;
     }
-    D_8007944C = var_t2;
-    D_80079450 = var_t3;
-    D_80079454 = var_fp;
+    D_8007944C = vertexCount;
+    D_80079450 = triangleCount;
+    D_80079454 = batchCount;
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/func_80017BCC.s")
-#endif
 /*
  * PROVENANCE: adapted from the public Diddy Kong Racing decompilation,
  * src/tracks.c func_8002DE30 (the object-under-shadow shade update): same
@@ -1388,16 +1389,6 @@ void func_800180B4(ShadowQuery *query) {
  * PLATEAU-HANDOFF:func_80017140:end
  */
 
-/* PLATEAU-HANDOFF:func_80017BCC:start
- * symbol: func_80017BCC
- * score: 217/314 words
- * frame: 0x108
- * relocations: 44
- * first-mismatch: +0x58
- * summary: goto loops as do-while 221 to 217; open: zero constant in f20 vs f12 and the s7/fp batch-counter swap (p1 ranking)
- * PLATEAU-HANDOFF:func_80017BCC:end
- */
-
 /* PLATEAU-HANDOFF:shadowGenerate:start
  * symbol: shadowGenerate
  * score: 432/510 words
@@ -1410,10 +1401,10 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_80016890:start
  * symbol: func_80016890
- * score: 439/556 words
- * frame: 0x190
+ * score: 315/556 words
+ * frame: 0x1A0
  * relocations: 48
- * first-mismatch: +0x10
- * summary: DKR shadow_generate shape: 534/+28 to 439/+12 (points from query, point0 ratio, 2.0 literal, int 10); left: rotated-corner memory locals
+ * first-mismatch: +0x0
+ * summary: rotated corners exact via a temp[4] array: 439/+12 to 315/0; left: head f0/f2 swap, unrotated post-call products (291 at +16 with frame 0x190)
  * PLATEAU-HANDOFF:func_80016890:end
  */

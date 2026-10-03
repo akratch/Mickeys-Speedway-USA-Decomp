@@ -208,7 +208,9 @@ void pointListRPY(s32 count, s16 *rotation, f32 *input, f32 *output);
 void func_8001EFFC(ControlTransform *transform, ControlPlayer *player, f32 *output);
 f32 func_8002A8BC(s32 angle);
 f32 func_8002A8C0(s32 angle);
-s16 Arctanf(f32 x, f32 y);
+/* Returns int: func_8001EC44 narrows the result itself before the call that
+ * consumes it, and func_8001DCD0 stores it through s16 pointers. */
+s32 Arctanf(f32 x, f32 y);
 f32 sqrtf(f32 value);
 void mathOneFloatRPY(ControlTransform *transform, f32 *output);
 s32 mathRnd(s32 minimum, s32 maximum);
@@ -1681,81 +1683,63 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
  * controlSquashCheckPrior routine, but publishes assembly only; this body is
  * reconstructed from Mickey's fields, calls, branch conditions, and stores. */
 #ifdef NON_MATCHING
-/* Workbench verdict: structure-mismatch, 410 differing words, first mismatch +0x0. */
-/* Candidate shape: 412 instructions/frame -0xE0 versus target 416/-0xD0. */
-/* Explicit vector locals repair semantics; loop/frame allocation remains.
- * Declaration census, 2026-09-09: nine m2c-only carriers went into the stack
- * slots the target already writes (sp64, sp68/sp6C, sp50) or straight into
- * their uses, taking the frame -0x100 -> -0xE0 at 410 -> 408 words with the
- * instruction count untouched.  The exact target frame -0xD0 is reachable
- * from here -- reading actor->velocityX/Z directly and inlining var_f8 lands
- * it -- but it is NOT the binding constraint: that spelling costs +4 words,
- * 46 more alignment gaps and takes the instruction count from 4 short of the
- * target to 6 short.  A frame that is too LARGE while the instruction count
- * is too SMALL means this candidate homes locals the target does not and
- * misses spills the target has; close the four missing instructions first. */
+/* Rewritten from the listing (lane z-fxchar, 2026-10-02): 408 at -16 to 157
+ * at size delta 0, frame 0xD0 as the target. What moved it: the sixteen-word
+ * clear as `while (n--)`; the collision state read through a pointer local
+ * taken at entry (each read is then a by-name load, re-read after every
+ * store through `player`); the three flag bytes set by OR; `(u8) flags & 1`,
+ * whose deleted mask is the ring draw the target spends; `!player->unk198`,
+ * which keeps the count in one register; and the six scalar locals placed in
+ * the six cells the target leaves unused. What remains is in the handoff. */
 s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
-    s16 sp40;
-    s16 sp3E;
-    s16 sp3C;
-    s16 sp3A;
-    s16 sp38;
-    s32 sp44;
-    ControlVector3 spBC;
-    ControlVector3 spB0;
-    ControlVector3 spA4;
-    ControlVector3 sp98;
-    f32 sp94;
-    f32 sp90;
-    f32 sp8C;
-    ControlVector3 sp80;
-    f32 sp7C;
-    f32 sp78;
-    f32 sp74;
-    f32 sp70;
-    f32 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    s32 sp2C;
-    f32 temp_f0_2;
-    f32 temp_f0_3;
-    f32 temp_f16_2;
-    f32 temp_f2;
-    f32 var_f8;
-    s32 *var_v1;
-    s32 var_a2;
-    u32 temp_v0;
-    var_v1 = (s32 *) &D_800CB2C0;
-    var_a2 = 0xF;
-    do {
-        *var_v1 = 0;
-        var_v1++;
-        var_a2--;
-    } while (var_a2 != 0);
-    pointListRPY(player->unk2BC, (s16 *) actor, player->unk2C0, &spB0.x);
-    spBC.x = spB0.x + actor->x;
-    spBC.y = spB0.y + actor->y;
-    spBC.z = spB0.z + actor->z;
-    sp70 = player->unk2B8->w;
-    sp2C = (s32) &player->unk2F0;
-    trackMakePolylist(1, (ControlVector3 *) sp2C,
-                      &spBC, &sp70,
+    ControlCollisionState *state = &D_800CB2C0;
+    s32 *p;
+    ControlVector3 pos;
+    ControlVector3 offset;
+    ControlVector3 sum;
+    ControlVector3 down;
+    ControlVector3 end;
+    ControlVector3 hit;
+    ControlVector3 forward;
+    f32 radius;
+    f32 nx;
+    f32 nz;
+    f32 len;
+    s32 n;
+    u32 flags;
+    f32 vxn;
+    f32 vzn;
+    f32 dot;
+    f32 speed;
+    f32 side;
+    s32 result;
+    s16 rot[3];
+    s16 pitch;
+    s16 yaw;
+
+    p = (s32 *) state;
+    n = 16;
+    while (n--) {
+        *p++ = 0;
+    }
+    pointListRPY(player->unk2BC, (s16 *) actor, player->unk2C0, &offset.x);
+    pos.x = offset.x + actor->x;
+    pos.y = offset.y + actor->y;
+    pos.z = offset.z + actor->z;
+    radius = player->unk2B8->w;
+    trackMakePolylist(1, (ControlVector3 *) &player->unk2F0, &pos, &radius,
                       player->unk33C, 1);
-    temp_v0 = (u32) func_80010900(
-        (ControlVector3 *) sp2C, &spBC, sp70,
-        (s32) actor, (void *) func_8001EC44);
-    actor->x = spBC.x - spB0.x;
-    actor->y = spBC.y - spB0.y;
-    actor->z = spBC.z - spB0.z;
-    sp44 = 0;
-    if ((temp_v0 >> 0x1E) != 0) {
+    flags = (u32) func_80010900((ControlVector3 *) &player->unk2F0, &pos,
+                                radius, (s32) actor, (void *) func_8001EC44);
+    actor->x = pos.x - offset.x;
+    actor->y = pos.y - offset.y;
+    actor->z = pos.z - offset.z;
+    result = 0;
+    if ((flags >> 0x1E) != 0) {
         actor->x = player->unk38;
         actor->y = player->unk3C;
         actor->z = player->unk40;
-        sp44 = 2;
+        result = 2;
     } else {
         player->unk349 = 0;
         player->unk34A = 0;
@@ -1763,106 +1747,93 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
         player->unk18E = 0;
         player->unk334 = 0;
         player->unk344 = 0;
-        if ((temp_v0 & 1) != 0) {
-            if (D_800CB2FD & 0x12) {
-                player->unk349 = 1;
-                if ((D_800CB2FD & 0x10) &&
-                    (D_800CB2C0.hitObject != 0)) {
-                    player->unk334 = D_800CB2C0.hitObject;
+        if ((u8) flags & 1) {
+            if (state->state & 0x12) {
+                player->unk349 |= 1;
+                if ((state->state & 0x10) && (state->hitObject != NULL)) {
+                    player->unk334 = (s32) state->hitObject;
                 }
             }
-            if (D_800CB2FD & 0x48) {
-                player->unk34B = (u8) (player->unk34B | 1);
+            if (state->state & 0x48) {
+                player->unk34B |= 1;
             }
-            if (D_800CB2FD & 0x24) {
-                sp74 = 0.0f;
-                sp78 = 0.0f;
-                sp7C = -1.0f;
-                sp3E = 0;
-                sp40 = 0;
-                sp3C = actor->rotationX;
-                mathOneFloatRPY((ControlTransform *) &sp3C, &sp74);
-                sp64 = sqrtf((D_800CB2D8 * D_800CB2D8) +
-                             (D_800CB2D0.x * D_800CB2D0.x));
-                sp6C = D_800CB2D0.x / sp64;
-                sp68 = D_800CB2D8 / sp64;
-                player->unk90 = (sp68 * sp74) -
-                                (sp7C * sp6C);
-                sp50 = (sp7C * sp68) +
-                       (sp74 * sp6C);
-                player->unk8C = sp50;
-                if (sp50 < 0.0f) {
-                    sp50 = -sp50;
+            if (state->state & 0x24) {
+                forward.x = 0.0f;
+                forward.y = 0.0f;
+                forward.z = -1.0f;
+                rot[0] = actor->rotationX;
+                rot[1] = 0;
+                rot[2] = 0;
+                mathOneFloatRPY((ControlTransform *) rot, &forward.x);
+                len = sqrtf((state->unk18 * state->unk18) +
+                            (state->unk10 * state->unk10));
+                nx = state->unk10 / len;
+                nz = state->unk18 / len;
+                player->unk90 = (nz * forward.x) - (forward.z * nx);
+                dot = (forward.z * nz) + (forward.x * nx);
+                player->unk8C = dot;
+                if (dot < 0.0f) {
+                    dot = -dot;
                 }
-                temp_f0_2 = actor->velocityX;
-                temp_f2 = actor->velocityZ;
-                temp_f0_3 = sqrtf((temp_f0_2 * temp_f0_2) +
-                                  (temp_f2 * temp_f2));
-                if (temp_f0_3 > 0.0f) {
-                    sp58 = temp_f0_2 / temp_f0_3;
-                    sp54 = temp_f2 / temp_f0_3;
+                speed = sqrtf((actor->velocityX * actor->velocityX) +
+                              (actor->velocityZ * actor->velocityZ));
+                if (speed > 0.0f) {
+                    vxn = actor->velocityX / speed;
+                    vzn = actor->velocityZ / speed;
                 }
-                temp_f16_2 = (sp6C * sp58) + (sp68 * sp54);
-                if ((player->unk198 == 0) && (temp_f0_3 > 8.0f) &&
-                    ((temp_f16_2 < D_80081864) ||
-                     (D_80081868 < temp_f16_2))) {
+                side = (nx * vxn) + (nz * vzn);
+                if (!player->unk198 && (speed > 8.0f) &&
+                    ((side < D_80081864) || (D_80081868 < side))) {
                     player->unk78 = 0.0f;
-                    player->unk74 = ((2.0f * -temp_f16_2) * sp6C) + sp58;
-                    player->unk7C = ((2.0f * -temp_f16_2) * sp68) + sp54;
-                    player->unk80 = ((D_8008186C * sp50) + 0.5f) *
-                                    temp_f0_3;
-                    player->unk84 = player->unk80;
+                    player->unk74 = ((2.0f * -side) * nx) + vxn;
+                    player->unk7C = ((2.0f * -side) * nz) + vzn;
+                    dot = ((D_8008186C * dot) + 0.5f) * speed;
+                    player->unk80 = dot;
+                    player->unk84 = dot;
                     player->unk181 = 1;
-                    player->unk4 = (f32) (player->unk4 * 0.5f);
+                    player->unk4 *= 0.5f;
                     player->unk88 = D_80081870;
-                    player->unk8 = (f32) (player->unk8 * 0.5f);
+                    player->unk8 *= 0.5f;
                 } else {
-                    var_f8 = (f32) player->unk198;
-                    if (var_f8 < 240.0f) {
-                        player->unk198 = (u8) (player->unk198 +
-                                                (s32) updateRate);
+                    if ((f32) player->unk198 < 240.0f) {
+                        player->unk198 += (s32) updateRate;
                     } else {
                         player->unk198 = 0;
                         player->unk166 = 1;
                     }
-                    sp44 = 1;
+                    result = 1;
                 }
-                player->unk34A = (u8) (player->unk34A | 1);
+                player->unk34A |= 1;
             }
         }
-        player->unk320 = D_800CB2FC;
-        player->unk324 = D_800CB2F8;
-        player->unk344 = (s32) (player->unk344 | D_800CB2F8);
+        player->unk320 = state->mode;
+        player->unk324 = state->flags;
+        player->unk344 |= state->flags;
     }
-    spA4.x = 0.0f;
-    spA4.y = 0.0f;
-    spA4.z = 0.0f;
+    sum.x = 0.0f;
+    sum.y = 0.0f;
+    sum.z = 0.0f;
     if (player->unk16C != 1) {
-        sp98.x = 0.0f;
-        sp98.y = -50.0f;
-        sp98.z = 0.0f;
-        mathOneFloatRPY((ControlTransform *) actor, &sp98.x);
-        sp8C = sp98.x + spBC.x;
-        sp90 = sp98.y + spBC.y;
-        sp64 = 1.0f;
-        sp94 = sp98.z + spBC.z;
-        if (func_80010654(&spBC, (ControlVector3 *) &sp8C,
-                          &sp80, &sp64) != 0) {
-            spA4.x += sp80.x;
-            spA4.y += sp80.y;
-            spA4.z += sp80.z;
+        down.x = 0.0f;
+        down.y = -50.0f;
+        down.z = 0.0f;
+        mathOneFloatRPY((ControlTransform *) actor, &down.x);
+        end.x = down.x + pos.x;
+        end.y = down.y + pos.y;
+        end.z = down.z + pos.z;
+        len = 1.0f;
+        if (func_80010654(&pos, &end, &hit, &len) != 0) {
+            sum.x += hit.x;
+            sum.y += hit.y;
+            sum.z += hit.z;
         }
     }
     if (player->unk173 == 0) {
-        sp2C = (s32) updateRate;
-        func_8001DCD0(actor->rotationX, &spA4,
-                      &sp3A, &sp38);
-        actor->rotationZ = dAngle(
-            actor->rotationZ, sp3A,
-            1.0f - Powerf(D_80081874, sp2C));
-        actor->rotationY = dAngle(
-            actor->rotationY, sp38,
-            1.0f - Powerf(D_80081878, sp2C));
+        func_8001DCD0(actor->rotationX, &sum, &pitch, &yaw);
+        actor->rotationZ = dAngle(actor->rotationZ, pitch,
+                                  1.0f - Powerf(D_80081874, (s32) updateRate));
+        actor->rotationY = dAngle(actor->rotationY, yaw,
+                                  1.0f - Powerf(D_80081878, (s32) updateRate));
     }
     if (actor->rotationZ >= 0x3001) {
         actor->rotationZ = 0x3000;
@@ -1880,10 +1851,10 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     if (player->unk34A == 0) {
         player->unk198 = 0;
     }
-    player->unk2F0 = spBC.x;
-    player->unk2F4 = spBC.y;
-    player->unk2F8 = spBC.z;
-    return sp44;
+    player->unk2F0 = pos.x;
+    player->unk2F4 = pos.y;
+    player->unk2F8 = pos.z;
+    return result;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/func_8001E5C4.s")
@@ -1891,71 +1862,87 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
 /* PROVENANCE -- JFG's public charControl.c identifies the corresponding
  * controlSquashCheckPrior routine, but publishes assembly only; this body is
  * reconstructed from Mickey's fields, calls, branch conditions, and stores. */
-#ifdef NON_MATCHING
-/* Track B (B3-char): size delta 0 and frame 0xA0 as the target. The reused
- * x/y/z and u/v/w carriers and the in-place "x -= u" updates are what keep
- * u/v/w from being copy-propagated away; see the handoff for what remains. */
+/* Matched by rewriting from the listing in the shape of the matched overlay
+ * 26 sibling (func_overlay_026_F0000B18_187AF10). What decided it: the point
+ * is read through pos-> at each use, so the three loads and the two shared
+ * products are uopt's own temporaries (the stack cells at 0x4C..0x5C); the
+ * projection is built in dx/dy/dz and normalised in place; the collision
+ * state is written through a pointer local taken at entry; Arctanf returns
+ * int, so the (s16) cast is the shipped sign extension; and in the last
+ * branch `len` carries the plane offset while `delta` keeps a copy for after
+ * the calls. `len` is overwritten by the square root, so that copy cannot be
+ * propagated: the offset is a one-block web that takes f0 and `delta` lives
+ * in its home, which is what pushes the three point temporaries to f18, a
+ * split f0 and a split f12. */
 void func_8001EC44(s32 arg0, ControlVector3 *pos, ControlVector3 *vel,
                    f32 radius, ControlCollisionPlane *plane) {
-    f32 nx, ny, nz;
-    f32 x, y, z;
+    ControlCollisionState *state = &D_800CB2C0;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    f32 delta;
+    f32 u;
+    f32 v;
+    f32 w;
+    f32 nx;
+    f32 ny;
+    f32 nz;
+    f32 d;
     f32 value;
-    f32 vx, vz;
-    f32 u, v, w;
     f32 len;
-    f32 pad; /* unreferenced: without it the frame is not 0xA0 (L99) */
     f32 angle;
 
     nx = plane->x;
     ny = plane->y;
     nz = plane->z;
-    x = pos->x;
-    y = pos->y;
-    z = pos->z;
-    value = nx * x + ny * y + z * nz + plane->distance;
+    d = plane->distance;
+    value = (pos->z * nz) + ((nx * pos->x) + (ny * pos->y)) + d;
     if ((D_8008187C <= ny) || (plane->flags & 0x10000000)) {
-        vz = vel->z;
-        vx = vel->x;
-        u = vz * ny;
-        v = (nz * vx) - (vz * nx);
-        w = -(vx * ny);
-        x = (v * nz) - (w * ny);
-        v = (u * ny) - (v * nx);
-        u = (w * nx) - (u * nz);
-        len = (x * x) + (u * u) + (v * v);
+        u = vel->z * ny;
+        v = -(vel->z * nx) + (nz * vel->x);
+        w = -(vel->x * ny);
+        dx = (v * nz) - (w * ny);
+        dy = (w * nx) - (u * nz);
+        dz = (u * ny) - (v * nx);
+        len = (dx * dx) + (dy * dy) + (dz * dz);
         if (D_80081880 < len) {
             len = sqrtf(len);
+            dx /= len;
+            dy /= len;
+            dz /= len;
             value = radius - plane->unk1C;
-            pos->x = plane->unk10 + (value * (x / len));
-            pos->y = plane->unk14 + (value * (u / len));
-            pos->z = plane->unk18 + (value * (v / len));
+            pos->x = plane->unk10 + (value * dx);
+            pos->y = plane->unk14 + (value * dy);
+            pos->z = plane->unk18 + (value * dz);
         } else {
-            pos->y = (-(pos->z * nz + nx * pos->x + plane->distance) / ny) + D_80081884;
+            pos->y = (-((pos->z * nz) + (nx * pos->x) + d) / ny) + D_80081884;
         }
-        D_800CB2C4 = nx;
-        D_800CB2C8 = ny;
-        D_800CB2CC = nz;
-        D_800CB2FD |= 2;
+        state->unk04 = nx;
+        state->unk08 = ny;
+        state->unk0C = nz;
+        state->state |= 2;
     } else if (ny <= D_80081888) {
         value = D_8008188C - value;
-        pos->x = x + (value * nx);
-        pos->y = y + (value * ny);
-        pos->z = z + (value * nz);
-        D_800CB2DC = nx;
-        D_800CB2E0 = ny;
-        D_800CB2E4 = nz;
-        D_800CB2FD |= 8;
+        pos->x = pos->x + (value * nx);
+        pos->y = pos->y + (value * ny);
+        pos->z = pos->z + (value * nz);
+        state->unk1C = nx;
+        state->unk20 = ny;
+        state->unk24 = nz;
+        state->state |= 8;
     } else {
-        value = D_80081890 - value;
-        u = x + (value * nx);
-        v = y + (value * ny);
-        w = z + (value * nz);
-        x -= u;
-        y -= v;
-        z -= w;
-        angle = func_8002A8BC(Arctanf(y, sqrtf((x * x) + (z * z))));
+        len = D_80081890 - value;
+        delta = len;
+        u = pos->x + (len * nx);
+        v = pos->y + (len * ny);
+        w = pos->z + (len * nz);
+        dx = pos->x - u;
+        dy = pos->y - v;
+        dz = pos->z - w;
+        len = sqrtf((dx * dx) + (dz * dz));
+        angle = func_8002A8BC((s16) Arctanf(dy, len));
         if (angle != 0.0f) {
-            value = value / angle;
+            value = delta / angle;
             len = sqrtf((nx * nx) + (nz * nz));
             pos->x += value * (nx / len);
             pos->z += value * (nz / len);
@@ -1964,22 +1951,14 @@ void func_8001EC44(s32 arg0, ControlVector3 *pos, ControlVector3 *vel,
             pos->y = v;
             pos->z = w;
         }
-        D_800CB2D0.x = nx;
-        D_800CB2D0.y = ny;
-        D_800CB2D8 = nz;
-        D_800CB2FD |= 4;
+        state->unk10 = nx;
+        state->unk14 = ny;
+        state->unk18 = nz;
+        state->state |= 4;
     }
-    /* Diagnostic stand-in, not the original: the target's procedure has two
-     * more uopt basic blocks than this body, which lifts the callee-save toll
-     * from 4.75/4.85 to 5.0+ so pos and plane stay in a1/a3 and are saved
-     * around the calls, as the target does. This dead if supplies them. */
-    if (arg0 == 0x7FFF) { arg0 = 0; }
-    D_800CB2F8 = plane->flags;
-    D_800CB2FC = plane->kind;
+    state->flags = plane->flags;
+    state->mode = plane->kind;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/func_8001EC44.s")
-#endif
 void func_8001EFFC(ControlTransform *transform, ControlPlayer *player, f32 *output) {
     f32 *current;
     s32 index;
@@ -2112,23 +2091,13 @@ void controlClearPlayerSetup(void) {
 }
 
 
-/* PLATEAU-HANDOFF:func_8001EC44:start
- * symbol: func_8001EC44
- * score: 224 differing words
- * frame: 0xA0
- * relocations: 43
- * first-mismatch: +0xC
- * summary: No natural spelling matched the dead-if bytes. Inert end regions do; (void)arg0 and a sixth parameter do not. Sibling entry is delta -4. Dead if kept.
- * PLATEAU-HANDOFF:func_8001EC44:end
- */
-
 /* PLATEAU-HANDOFF:func_8001E5C4:start
  * symbol: func_8001E5C4
- * score: 408/416 words
- * frame: 0xE0
+ * score: 157/416 words
+ * frame: 0xD0
  * relocations: 53
- * first-mismatch: +0x0
- * summary: Nine m2c-only carriers folded into the stack slots the target already writes took the frame 0x100 -> 0xE0 at an unchanged instruction count. The exact 0xD0 frame is reachable but costs +4 words and 46 more gaps, so the frame is not the binding constraint -- the candidate is four instructions SHORT of the target while its frame is too large, which means missing spills. Close the instruction count first.
+ * first-mismatch: +0x50
+ * summary: Rewritten from the listing, 408 at -16 to 157 at delta 0, frame exact. Left: abs-dot is a temp plus copy, not one f14 web split at sqrtf; bounce block order.
  * PLATEAU-HANDOFF:func_8001E5C4:end
  */
 

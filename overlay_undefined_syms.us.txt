@@ -649,10 +649,16 @@ D_380 = 0x00000380;
 D_388 = 0x00000388;
 D_78 = 0x00000078;
 D_7C = 0x0000007c;
+ext_o0_1312c = 0xf0000000;
+ext_o0_1d4c0 = 0xf0000000;
 ext_o0_1d920 = 0xf0000000;
+ext_o0_1ee14 = 0xf0000000;
 ext_o0_210b4 = 0xf0000000;
 ext_o0_214c8 = 0xf0000000;
+ext_o0_29adc = 0xf0000000;
 ext_o0_2a5bc = 0xf0000000;
+ext_o0_5aac4 = 0xf0000000;
+gOverlay9PacketCursor = 0x00000000;
 overlay9AngleDifferenceReloc = 0xf0000000;
 overlay9CosineReloc = 0xf0000000;
 overlay9HeightQueryReloc = 0xf0000000;
@@ -1867,11 +1873,24 @@ overlay42SetupDisplayBReloc = 0xf0000000;
 /* overlay 43: overlay43FlushPending.c.o */
 D_120 = 0x00000120;
 
+/* overlay 43: func_overlay_043_F0000324_188A2F4.c.o */
+Arctanf_o043Reloc = 0xf0000000;
+dAngle_o043Reloc = 0xf0000000;
+func_8002A82C_o043Reloc = 0xf0000000;
+func_8002AE10_o043Reloc = 0xf0000000;
+gO43FallbackReloc = 0x00000000;
+gO43QueueCountReloc = 0x000000c8;
+gO43QueueReloc = 0x00000120;
+gO43RecordsReloc = 0x00000000;
+gO43RenderPendingReloc = 0x00000000;
+levelGetLevel_o043Reloc = 0xf0000000;
+mtxf_mul_o043Reloc = 0xf0000000;
+mtxf_transform_point_o043Reloc = 0xf0000000;
+sqrtf_o043Reloc = 0xf0000000;
+
 /* overlay 43: func_overlay_043_F0000BE4_188ABB4.c.o */
 gO43BssBaseReloc = 0x00000000;
 gO43DataBaseReloc = 0x00000000;
-gO43QueueCountReloc = 0x000000c8;
-gO43RenderPendingReloc = 0x00000000;
 gO43RodataBaseReloc = 0x00000000;
 gO43VertexSourceReloc = 0x00000000;
 overlay43InitDpReloc = 0xf0000000;
@@ -1882,7 +1901,6 @@ overlay43RspSegmentReloc = 0xf0000000;
 
 /* overlay 43: overlay43ComputeMotion.c.o */
 func_80029FE4_o043Reloc = 0xf0000000;
-func_8002A82C_o043Reloc = 0xf0000000;
 
 /* overlay 44: overlay44CreateAnimationState.c.o */
 gOverlay44FrameSources = 0x00000000;
@@ -4501,11 +4519,6 @@ overlay99SpawnEntryReloc = 0xf0000000;
 overlay99SqrtReloc = 0xf0000000;
 
 /* overlay 99: overlay99ApplySegment.c.o */
-D_9C = 0x0000009c;
-D_A0 = 0x000000a0;
-D_A8 = 0x000000a8;
-
-/* overlay 99: overlay99BuildHeightGrid.c.o */
 gOverlay99Arg4 = 0x000000a4;
 gOverlay99Arg5 = 0x000000a8;
 gOverlay99CurrentGrid = 0x00000000;
@@ -4513,9 +4526,13 @@ gOverlay99GridHeight = 0x00000098;
 gOverlay99GridWidth = 0x00000094;
 gOverlay99Grids = 0x00000000;
 gOverlay99HeightMinusOne = 0x000000a0;
+gOverlay99WidthMinusOne = 0x0000009c;
+overlay99AngleWavePhaseReloc = 0xf0000000;
+overlay99AngleWaveReloc = 0xf0000000;
+
+/* overlay 99: overlay99BuildHeightGrid.c.o */
 gOverlay99SegmentCount = 0x00000090;
 gOverlay99Segments = 0x00000000;
-gOverlay99WidthMinusOne = 0x0000009c;
 
 /* overlay 99: overlay99RenderSortedEntries.c.o */
 gOverlay99IntensityScale = 0x00000008;
@@ -4705,6 +4722,7 @@ overlay101DrawSlotReloc = 0xf0000000;
 D_118 = 0x00000118;
 D_1D0 = 0x000001d0;
 D_8C = 0x0000008c;
+D_A8 = 0x000000a8;
 D_C64 = 0x00000c64;
 D_E0 = 0x000000e0;
 D_INPUT = 0x00000000;

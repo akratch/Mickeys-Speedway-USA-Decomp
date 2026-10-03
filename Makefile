@@ -291,8 +291,14 @@ extract:
 # glabel for it survives anywhere under asm/, so the matched count silently
 # under-reports until the file is deleted. It ran after every split rather than
 # being remembered.
+#
+# The same hook normalizes the rodata splat migrates into a listing when a TU
+# owns its whole `.rodata` while some of its functions are still assembled
+# (track.c is the first): string alignment and jump-table target labels are
+# put into the forms the vendored asm-processor parses. See the tool's header.
 prune-asm:
 	@$(PYTHON) $(TOOLS_DIR)/prune_stale_asm.py $(BASENAME).$(VERSION).yaml
+	@$(PYTHON) $(TOOLS_DIR)/normalize_migrated_rodata.py
 
 verify:
 ifneq ($(NON_MATCHING),0)
@@ -708,6 +714,14 @@ $(BUILD_DIR)/$(SRC_DIR)/main/shadows.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/fx.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/frontend_37D50.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/block_506D0.c.o: CFLAGS += -Wab,-r4300_mul
+
+# rcpFast3d.c on the same flag (2026-10-02, lane z-res). func_8002FB34 holds
+# two adjacent single-precision multiplies ahead of its texture loop; without
+# the flag as1 sinks both past the prim-colour packet and into the loop
+# guard's delay slot, with it they sit where the ROM has them and the function
+# is byte-exact. Every other function in the unit is unchanged by the flag
+# (`gmake verify` passes with the object rebuilt).
+$(BUILD_DIR)/$(SRC_DIR)/main/rcpFast3d.c.o: CFLAGS += -Wab,-r4300_mul
 
 # One overlay TU on the same evidence (2026-09-12, lane p9-tight). The flag
 # buys the same class change here: overlay1FindType47ByAngle goes 18 masked

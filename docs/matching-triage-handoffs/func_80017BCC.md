@@ -2,11 +2,13 @@
 ### `func_80017BCC` plateau handoff
 
 - source: `src/main/shadows.c`
-- score: 217/314 words
+- score: 0/314 words, promoted
 - frame: 0x108
 - relocations: 44
-- first mismatch: +0x58
-- summary: goto loops as do-while 221 to 217; open: zero constant in f20 vs f12 and the s7/fp batch-counter swap (p1 ranking)
+- first mismatch: none
+- summary: Matched. 217 to 0 on 2026-10-02 (lane z-shad) by rewriting the inherited m2c shape; the eight edits are listed in the last section
+
+Summary before this remeasure: goto loops as do-while 221 to 217; open: zero constant in f20 vs f12 and the s7/fp batch-counter swap (p1 ranking)
 
 Summary before this remeasure: Frame exact at 0x108; re-measured under the corrected R4300 multiply scheduler, which adds the three FP hazard nops the target carries.
 
@@ -63,4 +65,61 @@ the target's address-constant words before the polygon loop (+0xF4 to
 candidate-only, so the cursor shape of the m2c draft is the source shape
 here and the indexed form is not a better base than the 217 draft. The open
 decision is unchanged (0.0f in f20 in the target, f12 here).
+
+## 2026-10-02 (lane z-shad): matched, 217 to 0
+
+`gmake verify` prints the expected hash with the function compiled from C.
+Every step was measured alone on the step before it (masked words at size
+delta 0 unless stated):
+
+  - the sine and cosine as plain assignments from the two calls, with no
+    address-form home: 217 to 216. The allocator spills the sine across the
+    second call by itself; the store lands in the second call's delay slot.
+  - counts read before the buffer cursors, vertex cursor before triangle
+    cursor: 216 to 212. The tell is which four high halves as1 pulls up
+    into the head block; they are the first four global loads in statement
+    order.
+  - the two scales divide by the query fields and the half extents are
+    copied to locals afterwards: 212 to 166 at +4. The shared field loads
+    become expression temporaries that hold f0 and f2 in the head block
+    (as1 folds their copies away, so nothing shows), which is what denies
+    f0 and f2 to the height and the zero constant. Scale webs then tie the
+    extent webs on save and win on web number.
+  - a float `fade` separate from the centre x: 166 to 155. The zero
+    constant takes f20 and the fade f18.
+  - `fade *= 1.0f - ...` on a fade initialised 255.0f, instead of
+    `fade = 255.0f * (...)`: 155 to 146. uopt propagates the constant into
+    the multiply with the constant as left operand, which is the shipped
+    operand order and free-list order.
+  - in-place rotation with one saved copy (`x -= cx; z -= cz; saved = x;
+    x = x * c - z * s; z = z * c + saved * s;`): 146 to 130. The x and z
+    webs tie at nine references and x wins on number; as1 deletes the copy
+    by renaming, which is the target's separate f12.
+  - polygon pointer and index initialised at the loop, the vertex cursor
+    not assigned in the loop head, the `u8` count carrier removed: 130 to
+    75 at delta 0. The index web then outranks the batch counter (s7
+    against fp) and the count is one web in t0.
+  - batch stores in the order texture, vertex count, triangle count, and
+    vertex stores in the order x, y, z, colour bytes on separate lines:
+    75 to 60.
+  - `(s16)` on the low texture half only: 60 to 38. The cast is two ring
+    draws that as1 deletes; with it on both halves the high half is one
+    draw long.
+  - `&D_800C9F58[index << 5]` (subscript, base first) and the second
+    triangle index initialised from the loop index variable instead of the
+    literal 1: 38 to 35; the declaration list without padding
+    (`projected[6]`, six scalars above it): 35 to 26.
+  - the polygon vertex index read by subscript `polygon[i + 2]` with no
+    declared byte cursor: 26 to 4. uopt creates the cursor and as1 pulls
+    its copy into the loop head beside the pulled high half.
+  - `polygon = D_800CAF60;` on its own line and the index zeroed in the
+    `for` header: 4 to 0.
+
+Two things here are general. as1 pulls constant materialisations and
+register copies up from later blocks into an earlier block that has idle
+cycles, one instruction per trial, and keeps a pull only when the donor
+block gets shorter; so where a `lui`, `li` or `move` sits in the target says
+little about which block its statement is in, and the order of the pulled
+group is statement order. And a field load shared by two statements is an
+expression temporary with a colour of its own even when as1 removes its copy.
 <!-- plateau-handoff:func_80017BCC:end -->

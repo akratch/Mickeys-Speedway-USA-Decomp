@@ -59,15 +59,6 @@ typedef struct RcpGradientColour {
         cmd->w1 = 0; \
     }
 
-#ifdef NON_MATCHING
-#define RCP_WRITE_COMMAND(command, word0, word1) \
-    { \
-        RcpCommand *writeCmd = (command)++; \
-        writeCmd->w0 = (word0); \
-        writeCmd->w1 = (word1); \
-    }
-#endif
-
 #define RCP_SET_COLOR_IMAGE(command, width, address) \
     { \
         RcpCommand *cmd = (command); \
@@ -582,27 +573,26 @@ void func_8002F618(RcpCommand **arg0, RcpTextureNode *arg1, s32 arg2,
         func_80034910(lastCmd);
     }
 }
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: the scaled rectangle loop is adapted from Diddy Kong Racing's
- * public src/rcp_dkr.c:texrect_draw_scaled. Mickey's texture fetch helper,
- * its DMA command and its prim colour reset differ from DKR. Mickey's target
- * decides those.
+ * public src/rcp_dkr.c:texrect_draw_scaled, including its `(u8) flags & 0xFF`
+ * table select. Mickey's texture fetch helper, its DMA command and its prim
+ * colour reset differ from DKR. Mickey's target decides those.
  *
- * 2026-10-02 (lane w2-front): 272 words at -20 bytes -> 155 at delta 0, frame
- * exact. What moved it, in order:
- * - The flip and position setup sits inside `if (tex != NULL)`, with a cursor
- *   separate from arg1. That removes one basic block, and L56's callee toll
- *   becomes 9.75 against the caller cost of 10. xScale and yScale then take
- *   f20/f22 as in the target.
- * - The texture helper takes four arguments: (tex, offset, halfCmd, element).
- *   halfCmd is NULL before the loop and is the texrect's second packet cursor
- *   afterwards, so the target's `a2 = 0` and its a3 cursor are argument homes.
- * - The texrect is written longhand with named cursors, as in func_8002F618.
- * - dmaDlist is reused for tex->data, and the DMA count is a local.
- * - Declaration order places width/height and the spilled locals on the
- *   target's cells.
- * The open residual is in docs/matching-triage-handoffs/func_8002FB34.md.
+ * Matched 2026-10-02 (lane z-res) from lane w2-front's 155-word body by:
+ * - the double mask on the table index, which spends the ring draw the
+ *   target spends before the masked index (155 -> 39);
+ * - each packet's cursor and two stores on one source line, as a macro
+ *   expansion would be, which gives as1 the target's store order (39 -> 20);
+ * - an indexed node loop with a three-argument helper call, so the node
+ *   cursor is uopt's own induction temporary and is saved in a temporary
+ *   cell after the four hoisted scalars, not on a declared home;
+ * - the display-list packet written through lastCmd, which removes one
+ *   declared cell and puts those five cells on the target's offsets;
+ * - `-Wab,-r4300_mul` on the unit (Makefile), which places the two scale
+ *   multiplies.
+ * The flip and position setup stays inside `if (tex != NULL)`: it removes a
+ * basic block, so xScale and yScale take f20/f22 (lane w2-front).
  */
 void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
                    f32 xScale, f32 yScale, u32 colour, s32 flags) {
@@ -628,7 +618,7 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
     s32 yPos4x;
     s32 bFlipX;
     s32 bFlipY;
-    RcpTextureNode *element;
+    s32 i;
 
     width = 0;
     height = 0;
@@ -637,23 +627,15 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
     height *= 4;
     width *= 4;
     if ((colour & 0xFF) == 0xFF) {
-        dmaDlist = D_8007A5C0 + ((flags & 0xFF) * 0x10);
+        dmaDlist = D_8007A5C0 + ((u8) (flags & 0xFF) * 0x10);
     } else {
-        dmaDlist = D_8007A600 + ((flags & 0xFF) * 0x10);
+        dmaDlist = D_8007A600 + ((u8) (flags & 0xFF) * 0x10);
     }
     xScale *= 4.0f;
     yScale *= 4.0f;
-    RCP_DISPLAY_LIST(dlist++, D_8007A588);
-    {
-        RcpCommand *_g = dlist++;
-        _g->w0 = 0x07020010;
-        _g->w1 = (u32) dmaDlist + 0x80000000U;
-    }
-    {
-        RcpCommand *_g = dlist++;
-        _g->w0 = 0xFA000000;
-        _g->w1 = colour;
-    }
+    lastCmd = dlist++; lastCmd->w0 = 0x06000000; lastCmd->w1 = (u32) (D_8007A588);
+    { RcpCommand *_g = dlist++; _g->w0 = 0x07020010; _g->w1 = (u32) dmaDlist + 0x80000000U; }
+    { RcpCommand *_g = dlist++; _g->w0 = 0xFA000000; _g->w1 = colour; }
     tex = arg1->texture;
     halfCmd = NULL;
     if (tex != NULL) {
@@ -661,18 +643,18 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
         yPos4x = yPos * 4.0f;
         bFlipX = flags & 0x1000;
         bFlipY = flags & 0x2000;
-        element = arg1;
+        i = 0;
         do {
             if (!bFlipX) {
-                ulx = (s32) (element->x * xScale) + xPos4x;
+                ulx = (s32) (arg1[i].x * xScale) + xPos4x;
             } else {
-                lrx = xPos4x - (s32) (element->x * xScale);
+                lrx = xPos4x - (s32) (arg1[i].x * xScale);
                 ulx = lrx - (s32) (tex->width * xScale);
             }
             if (!bFlipY) {
-                uly = (s32) (element->y * yScale) + yPos4x;
+                uly = (s32) (arg1[i].y * yScale) + yPos4x;
             } else {
-                lry = yPos4x - (s32) (element->y * yScale);
+                lry = yPos4x - (s32) (arg1[i].y * yScale);
                 uly = lry - (s32) (tex->height * yScale);
             }
             if (ulx < width && uly < height) {
@@ -707,47 +689,21 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
                     }
                     dmaDlist = (u8 *) tex->data;
                     dlist->w0 = *(u32 *) dmaDlist;
-                    dlist->w1 = func_800348D4(tex, element->packedOffset, halfCmd, element) + 0x80000000U;
+                    dlist->w1 = func_800348D4(tex, arg1[i].packedOffset, halfCmd) + 0x80000000U;
                     dlist++;
                     dmaDlist += 8;
-                    blockCmd = dlist++;
-                    count = tex->count - 1;
-                    blockCmd->w0 = ((count & 0xFF) << 16) | 0x07000000 | ((count * 8) & 0xFFFF);
-                    blockCmd->w1 = (u32) dmaDlist + 0x80000000U;
-                    rectCmd = dlist++;
-                    rectCmd->w0 = (_SHIFTL(G_TEXRECT, 24, 8) | _SHIFTL(lrx, 12, 12) | _SHIFTL(lry, 0, 12));
-                    rectCmd->w1 = (_SHIFTL(G_TX_RENDERTILE, 24, 3) | _SHIFTL(ulx, 12, 12) | _SHIFTL(uly, 0, 12));
-                    halfCmd = dlist++;
-                    halfCmd->w0 = _SHIFTL(G_RDPHALF_1, 24, 8);
-                    halfCmd->w1 = (_SHIFTL(s, 16, 16) | _SHIFTL(t, 0, 16));
-                    lastCmd = dlist++;
-                    lastCmd->w0 = _SHIFTL(G_RDPHALF_2, 24, 8);
-                    lastCmd->w1 = (_SHIFTL(dsdx, 16, 16) | _SHIFTL(dtdy, 0, 16));
+                    blockCmd = dlist++; count = tex->count - 1; blockCmd->w0 = ((count & 0xFF) << 16) | 0x07000000 | ((count * 8) & 0xFFFF); blockCmd->w1 = (u32) dmaDlist + 0x80000000U;
+                    rectCmd = dlist++; rectCmd->w0 = (_SHIFTL(G_TEXRECT, 24, 8) | _SHIFTL(lrx, 12, 12) | _SHIFTL(lry, 0, 12)); rectCmd->w1 = (_SHIFTL(G_TX_RENDERTILE, 24, 3) | _SHIFTL(ulx, 12, 12) | _SHIFTL(uly, 0, 12));
+                    halfCmd = dlist++; halfCmd->w0 = _SHIFTL(G_RDPHALF_1, 24, 8); halfCmd->w1 = (_SHIFTL(s, 16, 16) | _SHIFTL(t, 0, 16));
+                    lastCmd = dlist++; lastCmd->w0 = _SHIFTL(G_RDPHALF_2, 24, 8); lastCmd->w1 = (_SHIFTL(dsdx, 16, 16) | _SHIFTL(dtdy, 0, 16));
                 }
             }
-            tex = element[1].texture;
-            element++;
+            tex = arg1[i + 1].texture;
+            i++;
         } while (tex != NULL);
     }
     gDPPipeSync((Gfx *) dlist++);
-    {
-        RcpCommand *_g = dlist++;
-        _g->w0 = 0xFA000000;
-        _g->w1 = 0xFFFFFFFF;
-    }
+    { RcpCommand *_g = dlist++; _g->w0 = 0xFA000000; _g->w1 = 0xFFFFFFFF; }
     *arg0 = dlist;
     func_80034910();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/rcpFast3d/func_8002FB34.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_8002FB34:start
- * symbol: func_8002FB34
- * score: 155/359 words
- * frame: 0xE0
- * relocations: 9
- * first-mismatch: +0x88
- * summary: Four-argument helper call and longhand texrect: 285 to 155 at delta 0, frame exact. Left: one ring phase from +0x88 and packet store order.
- * PLATEAU-HANDOFF:func_8002FB34:end
- */

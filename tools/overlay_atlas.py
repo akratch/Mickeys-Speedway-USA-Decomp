@@ -360,6 +360,7 @@ TEXT_SUBSEGMENTS = {
     ],
     9: [
         (0x0000, "c", "overlay_009"),
+        (0x151C, "asm", "overlay_009_padding"),
     ],
     10: [
         (0x000, "c", "overlay10Initialize"),
@@ -1565,6 +1566,12 @@ MIXED_TU_EXACT_C_RANGES = {
         (0x4CF0, 0x5128, "func_overlay_008_F0004CF0_1862A48"),
     ],
     9: [
+        (
+            0x0000,
+            0x0540,
+            "func_overlay_009_F0000000_1866678",
+            "canonical mixed-TU object, 63 runtime relocations, and linked bytes exact",
+        ),
         (0x0540, 0x0744, "func_overlay_009_F0000540_1866BB8"),
         (
             0x0744,

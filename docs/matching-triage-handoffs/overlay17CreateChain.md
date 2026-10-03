@@ -6,7 +6,7 @@
 - frame: 0x80
 - relocations: 7
 - first mismatch: +0x3C
-- summary: Authenticated allocation/material/endpoint calls: 65 to 45; all three call identities align. Open: pre-call size result coloured a2, stack home four bytes high, and one template pair emitted instead of two.
+- summary: Authenticated allocation/material/endpoint calls: 65 to 45; all three call identities align. The independently owned template extent is 16 records; faithful pass captures retain one baseline address definition and two in the branch-local diagnostic. Pre-call size is already coloured a2; five candidate relocations still differ from seven target records.
 
 Summary before this remeasure: Declaration order and chain->red masked with 0xFF (ring phase): 115 to 83. Template-loop webs rotate one position; halfBufferBytes in a3 not t7.
 
@@ -185,5 +185,58 @@ the admissible best and no further placement or typing permutations. The
 next causal packet needs faithful optimizer evidence for the pre-call size
 web split or template rematerialization, followed by the independently
 owned-data binding and complete relocation proof before promotion.
+
+### 2026-10-03, lane codex-constructor-trace-20261003: owned extent and phase boundary
+
+The actual configured baseline reproduces **45 raw/masked differences, 784
+bytes, zero size delta, frame 128**, first mismatch `+0x3C`. Captured actual
+asm-processor compiler input accepts self-context comparison. Stock pass
+captures agree with configured output in executable sections, relocations and
+symbols; instrumented index/detail captures pass the same fidelity gates.
+Named Ucode and the complete procedure index map the constructor to ordinal
+zero, with 25 allocator decisions. These are diagnostic compiler receipts,
+not matching proof.
+
+The canonical YAML named binary owner independently fixes the template range
+at Overlay 17 `+0xA90..+0xB90`. Its unique wrapper and linked start/end symbols,
+whole 256-byte initialized section, asset and private ROM range agree.
+Stock compiler sizeof probes prove a 16-byte POD element and 256-byte array,
+with executable fidelity. The accepted owner witness additionally proves
+alignment two and binds current source, compiler recipe/dependencies and
+owner inputs. This authorizes the sole reconstruction change: the existing
+external array now has its proven extent `[16]`. Generated code remains at
+45 differences with the same size, frame and first mismatch.
+
+The full opt-in witness uses an ignored values file and a **separate diagnostic
+ELF** whose carrier is bound to absolute zero. This proves all five candidate
+identities without deriving owner identity from target relocation sites. It
+still refuses the five-versus-seven record count and displaced sites, with
+four offset/type and stable-identity alignments. The zero-bound ELF is not a
+physical-owner promotion link and earns no matching credit; a future exact
+candidate still needs reviewed real-owner binding and linked/full-ROM proof.
+
+Measured phase findings:
+
+- The baseline CFE stream has one template address definition; optimized UGEN
+  input retains one. It does not contain two surviving definitions that UGEN
+  later collapses.
+- A defined, private branch-local diagnostic initializes the same template
+  cursor inside the material arm and assigns the global template directly in
+  the else arm. It has two CFE address definitions and retains both after
+  optimization. Fresh procedure mapping and stock/instrumented fidelity pass;
+  its 142 differences at delta +4 remain ignored. This eliminates address
+  elimination before UGEN for that form, without repeating a score search.
+- The baseline optimized input already assigns the pre-call half-buffer
+  product to `a2`; the discrepancy precedes UGEN. This does not authenticate a
+  source-to-allocator-web join or a producer-emitted final stack home.
+
+The installed profile emits no PRE decision events or symbol-table identity
+surface. Source semantics and final-home ownership remain unavailable; raw
+words, line numbers and web ordinals cannot supply those facts. Stop early
+under ADR 0018 with one stage-only source diagnostic: the assigned definition
+mechanisms are resolved and provide no further authentic source lever.
+Private captures remain under `build/constructor-trace/`. Resume only with an
+independently instrumented PRE/rematerialization or stable web/home producer,
+followed by exact relocation multiplicity/sites and linked owned bytes.
 
 <!-- plateau-handoff:overlay17CreateChain:end -->

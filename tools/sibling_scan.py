@@ -20,9 +20,10 @@ two sequences. Registers, immediates and relocations are ignored: two bodies
 that differ only in allocation or in which globals they touch still score
 high, which is the point.
 
-A lead at 0.9+ with the target's exact length can be the target's own
-GLOBAL_ASM body compiled under an alias name (o069/o088 share one body under
-`#define` renames): check that the candidate really is matched C.
+Candidates must have a C definition in the configured canonical preprocessing
+output (NON_MATCHING=0). Overlay candidates must also lie within their source's
+reviewed exact-C atlas range. This excludes GLOBAL_ASM bodies even when their
+compiled symbol was renamed or their candidate C lives in an included file.
 
 A score is a lead, not a verdict. Read both bodies and the target's
 relocation records (tools/overlay_tables.py) before porting: the o051 lead
@@ -40,9 +41,17 @@ import json
 import multiprocessing
 import os
 import re
+import shlex
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
+
+import finalize_plateau
+import nm_ranking
+import overlay_atlas
+import permute_batch
+import reloc_surface
 
 ROOT = Path(__file__).resolve().parent.parent
 OBJDUMP = ROOT / "tools" / "binutils" / "mips64-elf-objdump"
@@ -50,6 +59,108 @@ RANKING = ROOT / "config" / "nonmatching-ranking.us.json"
 LISTING_ROW = re.compile(r"\s*/\*\s*[0-9A-F]+ [0-9A-F]+ [0-9A-F]{8} \*/\s+(\S+)")
 DIS_FUNC = re.compile(r"^[0-9a-f]+ <([^>]+)>:")
 DIS_ROW = re.compile(r"^\s+[0-9a-f]+:\s+(\S+)")
+
+
+class CandidateProofError(ValueError):
+    """Canonical C ownership could not be established."""
+
+
+def canonical_commands(objects: list[str]) -> dict[str, list[str]]:
+    """Recover real preprocessing flags in one read-only Make dry run."""
+    sources = {os.path.relpath(obj, ROOT): os.path.relpath(obj, ROOT)[6:-2]
+               for obj in objects}
+    command = ["gmake", "--no-print-directory", "-n", "NON_MATCHING=0"]
+    for source in sources.values():
+        command.extend(["-W", source])
+    command.extend(sources)
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=120)
+    if result.returncode:
+        raise CandidateProofError(result.stderr.strip() or "cannot expand canonical recipes")
+    commands = {}
+    for line in result.stdout.replace("\\\n", " ").splitlines():
+        if "tools/ido/cc" not in line and "python3 tools/ido-phases.py" not in line:
+            continue
+        words = shlex.split(line)
+        outputs = [obj for obj in sources if obj in words]
+        if len(outputs) != 1:
+            raise CandidateProofError("compiler recipe has ambiguous object ownership")
+        obj = outputs[0]
+        if obj in commands:
+            raise CandidateProofError(f"duplicate canonical recipe: {obj}")
+        try:
+            # The phase driver changes optimization stages, not CPP input.
+            compiler_line = line.replace("python3 tools/ido-phases.py", "tools/ido/cc")
+            flags = permute_batch.compiler_arguments(compiler_line, sources[obj], obj)
+        except ValueError as exc:
+            raise CandidateProofError(str(exc)) from exc
+        # Phase-driver codegen switches can override IDO's -E stage selection.
+        # Retain the real recipe's CPP inputs, not its optimization pipeline.
+        cpp_flags = []
+        index = 0
+        while index < len(flags):
+            flag = flags[index]
+            if flag == "-DNON_MATCHING" or flag.startswith("-DNON_MATCHING="):
+                raise CandidateProofError(f"canonical recipe enables candidate C: {obj}")
+            if flag in {"-I", "-D", "-U"}:
+                if index + 1 >= len(flags):
+                    raise CandidateProofError(f"missing preprocessing operand: {obj}")
+                if flag == "-D" and flags[index + 1].split("=", 1)[0] == "NON_MATCHING":
+                    raise CandidateProofError(f"canonical recipe enables candidate C: {obj}")
+                cpp_flags.extend(flags[index:index + 2])
+                index += 2
+                continue
+            if (flag.startswith(("-I", "-D", "-U", "-mips"))
+                    or flag in {"-nostdinc", "-32", "-Xcpluscomm"}):
+                cpp_flags.append(flag)
+            index += 1
+        commands[str(ROOT / obj)] = [str(ROOT / "tools/ido/cc"), "-E", *cpp_flags, sources[obj]]
+    if set(commands) != set(objects):
+        raise CandidateProofError("missing canonical recipes: " + ", ".join(
+            os.path.relpath(obj, ROOT) for obj in set(objects) - set(commands)))
+    return commands
+
+
+def overlay_owners(atlas: dict) -> dict[str, tuple[int, list[tuple[int, int]]]]:
+    """Source-to-range proof, retaining mixed-TU exact islands separately."""
+    exact = overlay_atlas.exact_c_index(atlas)
+    owners = {}
+    for module in atlas["modules"]:
+        for row in module.get("text_ownership", []):
+            if row.get("type") != "c":
+                continue
+            source = "src/" + row["source"] + ".c"
+            if source in owners:
+                raise CandidateProofError(f"ambiguous atlas source owner: {source}")
+            ranges = [(item["offset"], item["end_offset"]) for item in exact.values()
+                      if item["overlay"] == module["overlay"] and item["source"] == row["source"]]
+            owners[source] = (int(row["offset"], 0), ranges)
+    return owners
+
+
+def authenticated_names(text: str, symbols: list[tuple], source: str,
+                        owners: dict) -> set[str]:
+    """Accept only emitted functions with a canonical C definition and owner."""
+    # IDO preprocessing resolves guards, includes and macro-renamed definitions.
+    # Pragma operands remain strings, so they cannot satisfy the definition regex.
+    text = re.sub(r'^\s*#.*$', '', text, flags=re.MULTILINE)
+    accepted = set()
+    for name, value, size, info, section in symbols:
+        if info & 0xF != 2 or section == 0 or size <= 0:
+            continue
+        definition = re.compile(finalize_plateau.DEFINITION_TEMPLATE.format(
+            symbol=re.escape(name)), re.MULTILINE | re.DOTALL)
+        if len(definition.findall(text)) != 1:
+            continue
+        if source.startswith("src/overlays/"):
+            owner = owners.get(source)
+            if owner is None:
+                continue
+            base, ranges = owner
+            if not any(start <= base + value and base + value + size <= end
+                       for start, end in ranges):
+                continue
+        accepted.add(name)
+    return accepted
 
 
 def listing_mnemonics(path: Path) -> list[str]:
@@ -63,19 +174,46 @@ def listing_mnemonics(path: Path) -> list[str]:
     return out
 
 
-def object_functions(obj: str) -> tuple[str, dict[str, list[str]]]:
-    """Mnemonic sequences of every function symbol in one object."""
-    text = subprocess.run(
+def preprocess_source(command: list[str]) -> str:
+    """Resolve canonical guards/includes/aliases without compiling a candidate."""
+    # IDO's standalone -E path does not honor // comments like its compiling
+    # path does (-Xcpluscomm). Strip comments, retaining string literals and
+    # directives, and preserve the original local include search directory.
+    source = ROOT / command[-1]
+    with tempfile.TemporaryDirectory(prefix="sibling-cpp-") as directory:
+        prepared = Path(directory) / source.name
+        prepared.write_text(nm_ranking.strip_c_comments(source.read_text()))
+        preprocessed = subprocess.run([*command[:-1], "-I", str(source.parent), str(prepared)],
+                                      cwd=ROOT, capture_output=True, text=True, timeout=30)
+    if preprocessed.returncode:
+        raise CandidateProofError(f"canonical preprocessing failed: {command[-1]}: "
+                                  + preprocessed.stderr.strip())
+    return preprocessed.stdout
+
+
+def object_functions(item: tuple[str, list[str], dict]) -> tuple[str, dict[str, list[str]]]:
+    """Mnemonic sequences of authenticated canonical C functions in one object."""
+    obj, command, owners = item
+    text = preprocess_source(command)
+    elf = reloc_surface.Elf(Path(obj))
+    symbols = [symbol for symbol in elf.symbols()
+               if symbol[4] < len(elf.names) and elf.names[symbol[4]] == ".text"]
+    names = authenticated_names(text, symbols,
+                                os.path.relpath(obj, ROOT)[6:-2], owners)
+    dumped = subprocess.run(
         [str(OBJDUMP), "-d", "-z", "--no-show-raw-insn", obj],
-        capture_output=True, text=True, check=False,
-    ).stdout
+        capture_output=True, text=True, check=False, timeout=30,
+    )
+    if dumped.returncode:
+        raise CandidateProofError(f"object disassembly failed: {os.path.relpath(obj, ROOT)}")
     functions: dict[str, list[str]] = {}
     current = None
-    for line in text.splitlines():
+    for line in dumped.stdout.splitlines():
         match = DIS_FUNC.match(line)
         if match:
-            current = match.group(1)
-            functions[current] = []
+            current = match.group(1) if match.group(1) in names else None
+            if current is not None:
+                functions[current] = []
             continue
         match = DIS_ROW.match(line)
         if match and current is not None:
@@ -159,8 +297,17 @@ def main(argv: list[str] | None = None) -> int:
     if not objects:
         print("no compiled objects under build/src (run gmake first)", file=sys.stderr)
         return 2
-    with multiprocessing.get_context("fork").Pool(args.jobs) as pool:
-        dumped = pool.map(object_functions, objects)
+    try:
+        commands = canonical_commands(objects)
+        owners = overlay_owners(json.loads((ROOT / "config/overlays.us.json").read_text()))
+        with multiprocessing.get_context("fork").Pool(args.jobs) as pool:
+            dumped = pool.map(object_functions, [(obj, commands[obj], owners) for obj in objects])
+    except (CandidateProofError, overlay_atlas.AtlasDeltaError, OSError,
+            subprocess.TimeoutExpired, ValueError) as exc:
+        print(f"cannot authenticate matched-C siblings: {exc}", file=sys.stderr)
+        return 2
+    _CANDIDATES.clear()
+    _GRAMS.clear()
     for obj, functions in dumped:
         rel = os.path.relpath(obj, ROOT)
         for name, seq in functions.items():

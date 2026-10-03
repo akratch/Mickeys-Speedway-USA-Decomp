@@ -951,9 +951,9 @@
       "source_commit": "2477bb91a0e78c38927d9111cd5d0c50b19205a5"
     },
     "func_overlay_008_F00042A8_1862000": {
-      "ledger_commit": "5e995cbeeb737527af555da27e8bdba214ece1da",
-      "reason": "ADR 0018 stall-rule reopen for a whole-TU batch: these plateaus were filed under the superseded attempt cap. One owner works the unit under the stall rule with a single shared flag-lattice run.",
-      "source_commit": "5e995cbeeb737527af555da27e8bdba214ece1da"
+      "ledger_commit": "dcf5c64748aa9be315d18ad4347ae51ce823f380",
+      "reason": "Authenticated D800C947C runtime gate and UOPT seed restoration before velocity CFG justify a distinct first-approach counter identity to defer the reload. Preserve later counters and call order; old same-symbol grids stay closed.",
+      "source_commit": "dcf5c64748aa9be315d18ad4347ae51ce823f380"
     },
     "func_overlay_008_F0004CF0_1862A48": {
       "ledger_commit": "a35c4cb721efdcc49b48ba1dda0cb04b8cfa2aa2",

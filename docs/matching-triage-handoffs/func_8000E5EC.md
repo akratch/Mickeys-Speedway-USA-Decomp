@@ -2,11 +2,17 @@
 ### `func_8000E5EC` plateau handoff
 
 - source: `src/main/track.c`
-- score: 12/205 words
+- score: 0 differing words
 - frame: 0xD8
 - relocations: 56
-- first mismatch: +0x104
-- summary: Listing rewrite 185 -> 12; left two v0/v1 ties: forces p1:w61=c2,w52=c1,w4=c2,w17=c1 (proc 23) score 0.
+- first mismatch: none
+- summary: Matched. The segment-count product is stored into resultCount, which is overwritten before any read; that inert store is the retail register colour and is on the cleanup queue.
+
+#### Exact closure, 2026-10-03
+
+- The listing rewrite was already at 12 masked words, frame 0xD8, size delta 0. Storing the segment count into `resultCount` inside the product (`i *= (resultCount = segmentCount)`) closes those words. `resultCount` is assigned 0 before it is read, so the store is inert and is recorded in `docs/cleanup-queue.md`.
+- The clear loop's pointer relocation names `D_800C95B0` with a 4-byte in-instruction addend. That address is `D_800C95B4`. `promotion_trial.py` reports the linked function exact against the US ROM.
+- No flag, YAML, or post-compile instruction edit. The fallback assembly is removed.
 
 #### 2026-10-02, lane x-track, second pass: one force left (still 12)
 

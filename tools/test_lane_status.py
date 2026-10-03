@@ -1570,6 +1570,238 @@ class IndirectSourceTests(unittest.TestCase):
         self.assertEqual(verdict.reason_code, 'source-identity')
 
 
+class RenamedIncludedSourceTests(unittest.TestCase):
+    command = LaneStatusAssignmentTests.command
+    commit = LaneStatusAssignmentTests.commit
+    status = LaneStatusAssignmentTests.status
+    authorize_reopen = LaneStatusAssignmentTests.authorize_reopen
+    _clear = AssignmentCacheTests._clear
+    classify = AssignmentCacheTests.classify
+    cache_dir = AssignmentCacheTests.cache_dir
+    tearDown = AssignmentCacheTests.tearDown
+
+    def setUp(self):
+        LaneStatusAssignmentTests.setUp(self)
+        self.dep = Path('src/overlays/o069/shared.c')
+        (self.repo / self.dep.parent).mkdir(parents=True)
+        self.original = 'overlay69DrawSortedGeometry'
+        self.generated = 'func_overlay_043_F00001A4_18801A4'
+        self.dep_generated = 'func_overlay_069_F0000170_18C0170'
+        self.wrapper = (f'#define {self.original} {SYMBOL}\n'
+                        '#define overlay69SubmitDynamicReloc overlay43SubmitDynamicReloc\n'
+                        '#ifdef NON_MATCHING\n'
+                        f'#include "{self.dep}"\n#else\n'
+                        f'#pragma GLOBAL_ASM("asm/{self.generated}.s")\n#endif\n')
+        self.body = ('#include "PR/ultratypes.h"\n'
+                     'extern void overlay69SubmitDynamicReloc(void);\n'
+                     '#ifdef NON_MATCHING\n'
+                     f'void {self.original}(void) {{\n'
+                     '    overlay69SubmitDynamicReloc();\n}\n#else\n'
+                     f'#pragma GLOBAL_ASM("asm/{self.dep_generated}.s")\n#endif\n')
+        (self.repo / SOURCE_PATH).write_text(self.wrapper)
+        (self.repo / self.dep).write_text(self.body)
+        (self.repo / 'include/PR').mkdir(parents=True)
+        (self.repo / 'include/PR/ultratypes.h').write_text('typedef int s32;\n')
+        (self.repo / 'docs/matching-triage.md').write_text('')
+        (self.repo / 'mk').mkdir()
+        rules = ''
+        for path, generated, symbol in [(SOURCE_PATH,self.generated,SYMBOL),
+                                      (self.dep,self.dep_generated,self.original)]:
+            rules += (f'$(BUILD_DIR)/$(SRC_DIR)/{str(path)[4:]}.o: POSTPROCESS = '
+                      f'$(OBJCOPY) --redefine-sym {generated}={symbol} $@\n')
+        (self.repo / 'mk/overlays.mk').write_text(rules)
+        self.atlas = {'modules': []}
+        for overlay, path, offset, rom in [(43,SOURCE_PATH,0x1A4,0x1880000),
+                                          (69,self.dep,0x170,0x18C0000)]:
+            self.atlas['modules'].append({'overlay': overlay,
+                'sections': {'text': {'start':hex(rom),'size':'0x800'}},
+                'text_ownership':[{'offset':hex(offset),'end_offset':hex(offset+0x59C),
+                                  'size':'0x59C','type':'c','matched':True,
+                                  'nonmatching':True,'source':str(path)[4:-2]}]})
+        (self.repo / 'config').mkdir(exist_ok=True)
+        self.atlas_path = self.repo / 'config/overlays.us.json'
+        self.atlas_path.write_text(json.dumps(self.atlas))
+        self.source_commit = self.commit('Introduce guarded renamed C include')
+
+    def test_scalar_batch_and_cold_warm_cache_identify_wrapper(self):
+        uncached,_ = self.classify(None)
+        cold,_ = self.classify(self.cache_dir())
+        warm,cache = self.classify(self.cache_dir())
+        self.assertEqual(uncached.state,'base-only')
+        self.assertEqual(uncached.source_path,SOURCE_PATH.as_posix())
+        self.assertEqual(uncached,cold)
+        self.assertEqual(cold,warm)
+        self.assertEqual(cache.hits,1)
+        result,report = self.status()
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual(report['assignment']['source_path'],SOURCE_PATH.as_posix())
+
+    def test_dependency_only_lane_work_is_active_with_warm_cache(self):
+        self.classify(self.cache_dir())
+        self.command('git','checkout','-qb','lane/dependency-owner')
+        (self.repo / self.dep).write_text(self.body.replace('    overlay69Submit', '    /* owned change */ overlay69Submit'))
+        self.commit('Match overlay69DrawSortedGeometry')
+        self.command('git','checkout','-q','campaign/unchain')
+        verdict,cache=self.classify(self.cache_dir())
+        self.assertEqual(cache.hits,1)
+        self.assertEqual(verdict.state,'active')
+        self.assertIn('lane/dependency-owner',verdict.active_lanes)
+
+    def test_missing_dependency_and_changed_wrapper_or_removed_guard_are_closed(self):
+        self.classify(self.cache_dir())
+        self.command('git','checkout','-qb','lane/wrapper-owner')
+        (self.repo / SOURCE_PATH).write_text(self.wrapper.replace('overlay43SubmitDynamicReloc','otherSubmitReloc'))
+        self.commit('Change owned alias only')
+        self.command('git','checkout','-q','campaign/unchain')
+        verdict,_=self.classify(self.cache_dir())
+        self.assertEqual(verdict.state,'active')
+        self.command('git','branch','-D','lane/wrapper-owner')
+        self.command('git','checkout','-qb','lane/guard-owner')
+        (self.repo / self.dep).write_text(self.body.replace('#ifdef NON_MATCHING','#if 0'))
+        self.commit('Remove included candidate selection')
+        self.command('git','checkout','-q','campaign/unchain')
+        verdict,_=self.classify(self.cache_dir())
+        self.assertEqual(verdict.state,'active')
+        self.command('git','branch','-D','lane/guard-owner')
+        (self.repo / self.dep).unlink()
+        self.commit('Remove source dependency')
+        verdict,_=self.classify(self.cache_dir())
+        self.assertEqual(verdict.reason_code,'source-identity')
+
+    def test_base_only_dependency_change_does_not_claim_old_unchanged_lane(self):
+        self.command('git','branch','lane/old-unchanged')
+        (self.repo / self.dep).write_text(self.body+'\n/* base-only dependency update */\n')
+        self.commit('Update source dependency')
+        verdict,_=self.classify(None)
+        self.assertEqual(verdict.state,'base-only')
+        self.assertEqual(verdict.active_lanes,[])
+
+    def test_null_pin_tracks_composite_dependency_history_both_directions(self):
+        (self.repo / self.dep).write_text(self.body+'\n/* recorded work */\n')
+        plateau=self.commit('Plateau included renderer')
+        self.authorize_reopen(plateau,None)
+        before,_=self.classify(self.cache_dir())
+        self.assertEqual(before.state,'base-only')
+        (self.repo / self.dep).write_text(self.body+'\n/* new recorded attempt */\n')
+        latest=self.commit('Advance included body only')
+        after,_=self.classify(self.cache_dir())
+        self.assertNotEqual(after.state,'base-only')
+        self.assertEqual(after.source_commit,latest)
+        self.authorize_reopen(latest,None)
+        fresh,_=self.classify(self.cache_dir())
+        self.assertEqual(fresh.state,'base-only')
+        self.assertEqual(fresh.source_commit,latest)
+
+    def test_nonnull_pin_consumption_and_fresh_composite_pin(self):
+        (self.repo / SHARD_PATH.parent).mkdir(exist_ok=True)
+        (self.repo / SHARD_PATH).write_text(shard())
+        (self.repo / self.dep).write_text(self.body+'\n/* plateau */\n')
+        plateau=self.commit('Plateau included renderer with own shard')
+        self.authorize_reopen(plateau,plateau)
+        before,_=self.classify(self.cache_dir())
+        self.assertEqual(before.state,'base-only')
+        (self.repo / self.dep).write_text(self.body+'\n/* later attempt */\n')
+        latest=self.commit('Advance included body only')
+        after,_=self.classify(self.cache_dir())
+        self.assertNotEqual(after.state,'base-only')
+        self.authorize_reopen(latest,plateau)
+        fresh,_=self.classify(self.cache_dir())
+        self.assertEqual(fresh.state,'base-only')
+
+    def test_foreign_dependency_shard_is_not_target_ledger(self):
+        directory=self.repo / SHARD_PATH.parent
+        directory.mkdir(exist_ok=True)
+        (directory / (self.original+'.md')).write_text(shard(source=str(self.dep),symbol=self.original))
+        (self.repo / self.dep).write_text(self.body+'\n/* plateau */\n')
+        self.commit('Plateau shared source')
+        verdict,_=self.classify(None)
+        self.assertEqual(verdict.state,'stale-ledger')
+        self.assertIsNone(verdict.ledger_commit)
+
+    def test_malformed_alias_and_include_forms_fail_closed(self):
+        cases=[
+            (self.wrapper.replace(f'#define {self.original} ',f'#define {self.original}() '),self.body),
+            (self.wrapper.replace(str(self.dep),'../shared.c'),self.body),
+            (self.wrapper.replace('#ifdef NON_MATCHING','#if OTHER'),self.body),
+            (self.wrapper+'void '+SYMBOL+'(void) {}\n',self.body),
+            (self.wrapper.replace('#else','#include "extra.c"\n#else'),self.body),
+            (self.wrapper.replace('#ifdef NON_MATCHING', '#ifdef NON_MATCHING\n/*\nvoid '+SYMBOL+'(void) {}\n*/'),self.body.replace('void '+self.original+'(void) {','void other(void) {')),
+            (self.wrapper,self.body.replace('#ifdef NON_MATCHING','#if 0')),
+            (self.wrapper,self.body.replace('void '+self.original+'(void) {','void other(void) {')),
+            (self.wrapper,self.body+'#include "nested.c"\n'),
+            (self.wrapper,self.body+'void trailing(void) {}\n'),
+            (self.wrapper,'#pragma GLOBAL_ASM("asm/sidecar.s")\n'+self.body),
+            (self.wrapper,self.body.replace('PR/ultratypes.h','CONFIG_HEADER')),
+            (self.wrapper,self.body+'#define '+self.original+' other\n'),
+            (self.wrapper,self.body.replace('void '+self.original+'(void) {\n    overlay69SubmitDynamicReloc();\n}', '/* void '+self.original+'(void) {} */')),
+            (self.wrapper,self.body.replace('void '+self.original+'(void) {\n    overlay69SubmitDynamicReloc();\n}', 'const char *decoy = \"void '+self.original+'(void) {}\";')),
+        ]
+        for wrapper,body in cases:
+            with self.subTest(wrapper=wrapper,body=body):
+                (self.repo / SOURCE_PATH).write_text(wrapper)
+                (self.repo / self.dep).write_text(body)
+                self.commit('Reject malformed include')
+                verdict,_=self.classify(None)
+                self.assertNotEqual(verdict.state,'base-only')
+
+    def test_identifier_expansion_preserves_strings_and_comments(self):
+        body=self.body.replace('    overlay69SubmitDynamicReloc();',
+            '    const char *label = "overlay69SubmitDynamicReloc";\n'
+            '    /* overlay69SubmitDynamicReloc */\n'
+            '    overlay69SubmitDynamicReloc();')
+        (self.repo / self.dep).write_text(body)
+        self.commit('Preserve literal alias spelling')
+        self._clear()
+        previous=Path.cwd()
+        os.chdir(self.repo)
+        try:
+            expanded,_=ls.indirect_source('campaign/unchain',str(SOURCE_PATH),SYMBOL)
+        finally:
+            os.chdir(previous)
+        self.assertIn('"overlay69SubmitDynamicReloc"',expanded)
+        self.assertIn('/* overlay69SubmitDynamicReloc */',expanded)
+        self.assertIn('    overlay43SubmitDynamicReloc();',expanded)
+
+    def test_header_cannot_disable_guard_or_hide_an_alias_override(self):
+        header=self.repo / 'include/PR/ultratypes.h'
+        for text in ['#undef NON_MATCHING\n', '#include "nested.h"\n',
+                     '#pragma GLOBAL_ASM("asm/header.s")\n',
+                     '#define '+self.original+' foreign\n']:
+            with self.subTest(header=text):
+                header.write_text(text)
+                self.commit('Reject hidden preprocessing override')
+                verdict,_=self.classify(None)
+                self.assertEqual(verdict.reason_code,'source-identity')
+
+    def test_wrong_tuple_and_duplicate_owner_fail_closed(self):
+        import copy
+        original=copy.deepcopy(self.atlas)
+        variants=[]
+        for key,value in [('nonmatching',False),('offset','0x100'),('source','overlays/o043/foreign')]:
+            variant=copy.deepcopy(original);variant['modules'][0]['text_ownership'][0][key]=value;variants.append(variant)
+        variant=copy.deepcopy(original);variant['modules'][0]['overlay']=88;variants.append(variant)
+        variant=copy.deepcopy(original);variant['modules'][0]['sections']['text']['start']='0x1890000';variants.append(variant)
+        variant=copy.deepcopy(original);variant['modules'][0]['text_ownership']*=2;variants.append(variant)
+        variant=copy.deepcopy(original);variant['modules'][0]['text_ownership'].append({'offset':'0x200','end_offset':'0x210','source':'overlays/o043/other'});variants.append(variant)
+        for variant in variants:
+            with self.subTest(atlas=variant):
+                self.atlas_path.write_text(json.dumps(variant));self.commit('Reject ambiguous or foreign tuple')
+                verdict,_=self.classify(None)
+                self.assertEqual(verdict.reason_code,'source-identity')
+
+    def test_duplicate_wrapper_and_build_macro_override_fail_closed(self):
+        other=self.repo / SOURCE_PATH.parent / 'duplicate.c'
+        other.write_text(candidate())
+        self.commit('Duplicate exact source definition')
+        verdict,_=self.classify(None)
+        self.assertIn('ambiguous',verdict.reason)
+        other.unlink()
+        (self.repo / 'Makefile').write_text('CFLAGS += -D'+self.original+'=foreign\n')
+        self.commit('Override source alias from flags')
+        verdict,_=self.classify(None)
+        self.assertEqual(verdict.reason_code,'source-identity')
+
+
 class LaneRefQueryTests(unittest.TestCase):
     def tearDown(self) -> None:
         ls.show_file.cache_clear()

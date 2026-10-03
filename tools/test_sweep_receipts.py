@@ -401,6 +401,28 @@ class RecipeTests(unittest.TestCase):
                          ["tools/ido/cc", *args, "-DNON_MATCHING"])
         self.assertTrue(parsed["objdump_command"].startswith("tools/binutils/"))
 
+    def test_force_static_metadata_wrapper_preserves_ido_tail(self):
+        source, obj = "src/fixture.c", "build/src/fixture.c.o"
+        line = (".venv/bin/python tools/asm-processor/build.py tools/ido/cc -- "
+                "tools/binutils/mips64-elf-as -32 -- -c -non_shared -G 0 "
+                "-O2 -mips2 -DBUILD_VERSION=7 -DRAREDIFFS -I 'fixture include' "
+                f"-Xphase,uopt,+ -Xphase,uopt,-O1 -o {obj} {source}")
+        expected = batch.compiler_arguments(line, source, obj)
+        forced = line.replace("build.py tools/ido/cc", "build.py --force tools/ido/cc")
+        self.assertEqual(batch.compiler_arguments(forced, source, obj), expected)
+        self.assertNotIn("--force", expected)
+
+    def test_static_metadata_wrapper_options_fail_closed(self):
+        tail = " -- tools/binutils/mips64-elf-as -32 -- -c -O2 -mips2 -o out.o fixture.c"
+        for prefix in (
+                ".venv/bin/python tools/asm-processor/build.py --unknown tools/ido/cc",
+                ".venv/bin/python tools/asm-processor/build.py --force --force tools/ido/cc",
+                ".venv/bin/python --force tools/asm-processor/build.py tools/ido/cc",
+                ".venv/bin/python tools/asm-processor/build.py tools/ido/cc --force",
+                ".venv/bin/python tools/asm-processor/build.py tools/ido/cc tools/ido/cc"):
+            with self.subTest(prefix=prefix), self.assertRaises(ValueError):
+                batch.compiler_arguments(prefix + tail, "fixture.c", "out.o")
+
     def test_unsupported_wrapper_and_shell_fail_closed(self):
         for line in ("ccache tools/ido/cc -c -O2 -mips2 -o out.o fixture.c",
                      "env MODE=test tools/ido/cc -c -O2 -mips2 -o out.o fixture.c",

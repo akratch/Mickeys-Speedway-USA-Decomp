@@ -140,6 +140,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o007/func_overlay_007_F0000324_185C1AC.c.o: CFL
 # This pool initializer is naturally instruction-exact. Its ten local-BSS
 # records are already owned by overlay 7's shipped runtime relocation table,
 # so retain their exact zero-base addends without static-link adjustment.
+# This fully-C unit still needs asm-processor's local static-symbol conversion:
+# the named BSS definitions witness the filtered records in promotion proofs.
+# --force runs that metadata pass without changing the stock compiler flags.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007_tail.c.o: ASM_PROCESSOR += --force
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007_tail.c.o: \
 	$(TOOLS_DIR)/filter_elf_relocations.py \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
@@ -867,6 +871,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o014/overlay14ReleaseCurrent.c.o: POSTPROCESS =
 # must not adjust them a second time: drop them, as overlay 57 does. No
 # instruction word is edited.
 O15_OBJ := $(BUILD_DIR)/$(SRC_DIR)/overlays/o015/overlay_015.c.o
+# Retain the existing local BSS names after the last GLOBAL_ASM is removed.
+# Promotion proofs use these physical section definitions; this metadata pass
+# leaves the stock compiler flags, allocated bytes and relocations unchanged.
+$(O15_OBJ): ASM_PROCESSOR += --force
 $(O15_OBJ): \
 	$(TOOLS_DIR)/rebind_elf_relocations.py \
 	$(TOOLS_DIR)/externalize_elf_section.py \

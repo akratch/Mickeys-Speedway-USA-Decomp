@@ -85,8 +85,14 @@ gmake overlay-syms 2>&1 | tail -1
 verify_log=$(mktemp -t mickey-batch-verify)
 set +e
 tools/with_verify_lock.sh gmake -j"$build_jobs" verify >"$verify_log" 2>&1
+verify_status=$?
 set -e
 out=$(tail -1 "$verify_log"); echo "$out"
+if [ "$verify_status" -ne 0 ]; then
+  echo "verify FAILED (exit=$verify_status) for the batch; full log: $verify_log" >&2
+  tail -40 "$verify_log" >&2
+  exit "$verify_status"
+fi
 case "$out" in
   OK*) rm -f "$verify_log" ;;
   *) echo "verify FAILED for the batch; recover with git reset --hard $base" >&2

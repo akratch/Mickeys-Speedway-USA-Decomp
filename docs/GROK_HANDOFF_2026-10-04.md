@@ -35,6 +35,8 @@ The body is not kept.
 `func_overlay_101_F0002510_18DDD30`'s y assignment, placed before the x
 assignment, scores 262 masked words at size delta -8, against a proved
 baseline of 257 at -8. The body is not kept.
+`func_8003C80C` with `register` on the time parameter scores the same 74
+masked words at 472 bytes. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

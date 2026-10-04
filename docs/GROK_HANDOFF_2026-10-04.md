@@ -25,7 +25,11 @@ the missing colour. Defining that counter immediately before the colour
 loop is hoisted back across the time loop and leaves the positional
 residual at 74. `func_80028FCC` does not take second arguments 0, 1 and 2:
 that pattern scores 12 positional words against the 10-word baseline and
-was reverted. None of these is a match, and none is landed. Raw
+was reverted. Overlay 66's filter was then reopened for one spelling:
+binding the trailing 1 to the blue field before the channel OR. The
+configured baseline stayed 249 masked words at 1184 bytes, and the owned
+text was byte-identical, so that association is folded. None of these is a
+match, and none is landed. Raw
 resident assembly and the shared overlay 88 body remain in the gap; their
 latest committed notes do not name an untried source form that is currently
 assignable.

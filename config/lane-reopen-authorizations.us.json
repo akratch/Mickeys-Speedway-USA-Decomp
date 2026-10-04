@@ -1315,11 +1315,6 @@
       "reason": "Decompiler-assisted structural reconstruction: m2c draft from this game's own extracted assembly, recovering call/global identities and types before CFG work. Size-deficit targets no permutation or flag lattice can close.",
       "source_commit": "e9bfc8dba9d7bdccca23ba32a145c7d39d17ca83"
     },
-    "func_overlay_066_F0000040_18C64A8": {
-      "ledger_commit": "d347f068935fe81a1a955aecdf9ab2c51509def7",
-      "reason": "ADR 0018 reopen: colour probes and comma, empty-if, or-zero, and index spellings left five insertion pairs. Bind the filter trailing 1 to the blue field before the channel OR; predict the ori-versus-shift pair closes at the same 1184 bytes.",
-      "source_commit": "2ae0d808cb43ce82e70b2b75cd0c6ede83d7ede2"
-    },
     "func_overlay_066_F00004E0_18C6948": {
       "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",
       "reason": "Reconstruction sweep at 8 to 16 bytes: the candidate is a few instructions out, and today's cause list names the usual reasons -- a missing copy, a block fallthrough, an address rematerialized once too often.",

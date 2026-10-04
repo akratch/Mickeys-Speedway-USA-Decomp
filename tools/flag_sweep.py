@@ -154,7 +154,7 @@ PHASE_VARIANTS = [
             "-Xphase,as1,-O3",
         ],
         "use_ido_phases": True,
-        "note": "all four IDO phases at -O3 (ll.c/ldiv.c's flag group)",
+        "note": "legacy appended -O3 phase options; UOPT retains its -O2 veto",
     },
 ]
 

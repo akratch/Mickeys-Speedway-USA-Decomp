@@ -42,7 +42,7 @@ extern u8 D_80000000[];
 }
 
 #ifdef NON_MATCHING
-/* Workbench: structure-mismatch, 69 differing words, first mismatch +0x04.
+/* Workbench: structure-mismatch, 68 differing words, first mismatch +0x04.
  * Exact 77-instruction size and four-command CFG; packet arithmetic is reordered.
  * Trailing empty if (vertexCount) then if (count) are L100 occurrences; reverse
  * order is 73, and each probe alone is 72 and 71. */
@@ -54,10 +54,10 @@ void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
 
     count = strip->count;
     if (count != 0) {
-        SET_PRIM((*displayList)++, 255, 255, 255, 255);
-        SET_ENV((*displayList)++, strip->red, strip->green, strip->blue, 255);
         doubledCount = count * 2;
         vertexCount = doubledCount + 2;
+        SET_PRIM((*displayList)++, 255, 255, 255, 255);
+        SET_ENV((*displayList)++, strip->red, strip->green, strip->blue, 255);
         VERTEX((*displayList)++,
                (u8 *)&strip[strip->vertexIndex] + 0x800000F0,
                vertexCount, 0);
@@ -74,10 +74,10 @@ void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
 
 /* PLATEAU-HANDOFF:overlay83DrawStrip:start
  * symbol: overlay83DrawStrip
- * score: 69/77 words
+ * score: 68/77 words
  * frame: frameless
  * relocations: 2
  * first-mismatch: +0x4
- * summary: 2026-10-02 stall stays 69/77 delta 0 first +0x4. Saved pointer is copy-propagated (inert). Shift-length and inlined count*2+2 stop the doubled*10+28 fold but land at 74 and delta -4. Pointer or-zero grows to delta +4. vertexCount or-zero and statement-ordered env colour are inert on that short shape.
+ * summary: vertexCount defined before the packet stores scores 68/77 at delta 0, first +0x4. Dead zeros, pointer-copy placement and an early address local do not give vertexCount a0. The opening display-list copy is still absent.
  * PLATEAU-HANDOFF:overlay83DrawStrip:end
  */

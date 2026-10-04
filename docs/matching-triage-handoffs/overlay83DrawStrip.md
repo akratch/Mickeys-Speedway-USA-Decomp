@@ -2,11 +2,11 @@
 ### `overlay83DrawStrip` plateau handoff
 
 - source: `src/overlays/o083/overlay83DrawStrip.c`
-- score: 69/77 words
+- score: 68/77 words
 - frame: frameless
 - relocations: 2
 - first mismatch: +0x4
-- summary: 2026-10-02 stall stays 69/77 delta 0 first +0x4. Saved pointer is copy-propagated (inert). Shift-length and inlined count*2+2 stop the doubled*10+28 fold but land at 74 and delta -4. Pointer or-zero grows to delta +4. vertexCount or-zero and statement-ordered env colour are inert on that short shape.
+- summary: vertexCount defined before the packet stores scores 68/77 at delta 0, first +0x4. Dead zeros, pointer-copy placement and an early address local do not give vertexCount a0. The opening display-list copy is still absent.
 
 Summary before this remeasure: hypothesis=clobber a0 after the VERTEX increment without an extra word; spellings=macro assign inert at 69, L104 redefine 70 at +4, in-place cast 82 at +20; stall=a0 stays live and all three were reverted
 
@@ -129,4 +129,33 @@ repeated.
 Next lever: number vertexCount ahead of the display-list parameter so a0 is
 taken first, without a word the 304-byte shape has no room for. Bind the two
 LOCAL records to the overlay data base before any promotion.
+
+#### 2026-10-04, vertexCount numbering
+
+Configured full-TU baseline reproduced 77/77 words, 69 raw and masked
+differences, first mismatch +0x4, frameless, two relocations, and zero
+exact relocation identities. The opening gap is the absent copy of the
+display-list parameter; the target then reuses that register for
+vertexCount. Six controls:
+
+- A dead zero before the saved pointer was deleted and left the 69-word
+  residual. Eliminated.
+- Defining doubledCount and vertexCount before the packet stores, on the
+  size-exact body: 68 differences, aligned register class 45 to 33, first
+  still +0x4. Retained. vertexCount still does not take the parameter
+  register, so the opening copy is not emitted.
+- Moving the saved-pointer assignment to the statement between the count
+  load and the branch left that 68-word result unchanged. Eliminated.
+- A dead zero inside the block, with the packet stores between it and the
+  real definition, returned to 69. Eliminated.
+- The same saved-pointer assignment inside the branch condition left the
+  68-word result unchanged. Eliminated.
+- Naming the vertex address before the colour stores shortened the function
+  by two words and scored 76. Reverted.
+
+The retained body is the early vertexCount definition. No match and no
+byte credit. Do not repeat these six controls, the 304-byte shift-length
+shape, the empty-if grid, or the cursor colour sweep. A later packet needs
+a different way to make the parameter copy survive once vertexCount is
+live, without a new stack home or an added word.
 <!-- plateau-handoff:overlay83DrawStrip:end -->

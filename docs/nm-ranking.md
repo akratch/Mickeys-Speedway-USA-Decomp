@@ -300,7 +300,7 @@ units remain distinct.
 | 5 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 45 | 45 | 60 | 60 | 0 | — |
 | 6 | `src/main/matrix.c` | `MatrixMultiplyVec4` | `main` | `other` | 212 | 47 | 47 | 0 | 0 | 0 | — |
 | 7 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
-| 8 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 69 | 69 | 4 | 4 | 0 | — |
+| 8 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 68 | 68 | 4 | 4 | 0 | — |
 | 9 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 74 | 74 | 20 | 20 | 0 | — |
 | 10 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 108 | 108 | 212 | 212 | 0 | — |
 | 11 | `src/overlays/o092/func_overlay_092_F0000308_18D6228.c` | `func_overlay_092_F0000308_18D6228` | `o092` | `other` | 1,832 | 120 | 119 | 336 | 544 | 0 | — |

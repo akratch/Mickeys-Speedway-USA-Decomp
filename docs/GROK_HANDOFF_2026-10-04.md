@@ -1,6 +1,23 @@
 # Grok handoff: the remaining route to complete executable accounting
 
 Snapshot: 2026-10-04, integration source baseline `a1356f56e`.
+
+## Current addendum
+
+The snapshot totals were recomputed from the built tree and still match:
+832,780 / 943,640 resolved executable bytes. The commits after that
+measurement keep every changed body behind `NON_MATCHING`, so they do not
+move the account. No new match.
+
+`func_80010654`'s matched-family lifetime packet is closed: an outer array
+index scored 163, output-pointer copies left 162 words, and a difference
+aggregate was scalar-replaced. `overlay83DrawStrip` is a diagnostic
+improvement only, 69 to 68 masked words at the same 308 bytes, first
+mismatch still +0x4. Dead zeros, pointer-copy placement, and an early
+address local did not make vertexCount take the parameter register. Both
+are recorded and not landed. Raw resident assembly and the shared overlay
+88 body remain in the gap; their latest committed notes do not name an
+untried source form that is currently assignable.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

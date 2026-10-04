@@ -825,11 +825,6 @@
       "reason": "Closed before L142/L144/L131/L139 existed. L142: a call-spanning web is denied exactly the argument registers those calls load, so arity is the lever not the ratio. L144: address-taking forces the reload without volatile edges.",
       "source_commit": "c83b2645e2a2bc3525574543255a6919f8df2d22"
     },
-    "func_8005AF14": {
-      "ledger_commit": "4b49dcc7d39f490e02f02953601161361d074730",
-      "reason": "New source identity: func_8002B040 takes three floats in matrix.c, and overlay 94 passes 0.0f. This TU declares s32 and passes integer bit patterns. Predict float arguments remove the three extra words and close the +12 byte gap.",
-      "source_commit": "7b2238a357082cc1efc8185806e8bbd79941222a"
-    },
     "func_8006E7E0": {
       "ledger_commit": "f3a89e25f45adda7a25a7d4d99ace3cb785872d0",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",

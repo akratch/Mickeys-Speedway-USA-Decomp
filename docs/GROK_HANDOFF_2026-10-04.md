@@ -67,7 +67,11 @@ projectedX and closed without keeping it: the proved baseline is 143
 masked words at 736 bytes and frame 0x98, and the union grew the
 function by one instruction, escaped translation-unit ownership, and
 scored 159 raw words at the same frame. The four-constant array was
-already measured at size +12 and was not retried. Raw resident assembly (9,908 bytes) and the shared
+already measured at size +12 and was not retried.
+`func_8005AF14` was reopened for float arguments to `func_8002B040` and
+closed without keeping them: the proved baseline is 377 differing words
+at 1852 candidate bytes against 1840, and the float calls scored 391
+words at 1860 bytes. Raw resident assembly (9,908 bytes) and the shared
 overlay 88 body remain in the gap; their latest committed notes do not
 name an untried source form that is currently assignable.
 The owner requested this handoff because weekly model usage is nearly spent.

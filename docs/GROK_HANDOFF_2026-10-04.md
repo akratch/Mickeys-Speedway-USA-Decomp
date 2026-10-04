@@ -62,6 +62,10 @@ text is byte-identical to the proved baseline. The body is not kept.
 `overlay83DrawStrip` with vertexCount stored into the display-list parameter
 and passed to the vertex macro scores 80 masked words at size delta +20,
 against a proved baseline of 68 at delta 0. The body is not kept.
+`func_overlay_066_F0000040_18C64A8` with the six preamble channel extracts
+written directly into the colour registers scores the same 249 masked
+words at size delta 0. The configured objects are byte-identical. The body
+is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

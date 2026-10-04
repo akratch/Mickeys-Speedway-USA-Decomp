@@ -1913,8 +1913,8 @@ void overlay1UpdateCountdown(void) {
     object = (u8 *)gOverlay1CountdownObject;
     amount = gOverlay1CountdownAmount;
     countdown = *(u16 *)(object + 0x394); mode = 0x78; object += 0x390;
-    /* Legacy inert spelling present in the retained exact C producer; whether
-     * it is codegen-required has not been isolated. Tracked in
+    /* Legacy inert condition. Removing it keeps the symbol size and
+     * reschedules the function, so it stays. Tracked in
      * docs/cleanup-queue.md. */
     if ((((u32)object & mode) != 0) && (object == 0)) {
     }

@@ -19,7 +19,9 @@ source should read as ordinary C, and the stock object has to stay
 byte-identical. `overlay7FillValues` now stores with an ordinary `*value = 0xF0`.
 The comma operand was not required. The post-processed translation-unit object
 matches the previous one, and `gmake verify` still rebuilds the US ROM. The
-empty `!value` condition remains load-bearing.
+empty `!value` condition remains load-bearing. Removing only
+`overlay1UpdateCountdown`'s impossible condition keeps every symbol size and
+reschedules that function, so the condition stays.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

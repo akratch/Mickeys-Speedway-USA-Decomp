@@ -256,9 +256,9 @@
       "source_commit": "5cafbf70916743b98c06ea2a57da440401dd2a0f"
     },
     "func_80016890": {
-      "ledger_commit": "806368f00ad1c5547a42e908dcef3397085508ec",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "806368f00ad1c5547a42e908dcef3397085508ec"
+      "ledger_commit": "777490905ff74acde5aed98b339e0ff9c219fe0f",
+      "reason": "Name the unrotated post-call products as scalars so each product is its own web. The temp-array form already scored 291 at size plus 16. Keep scalars only if positional words fall at size delta 0.",
+      "source_commit": "777490905ff74acde5aed98b339e0ff9c219fe0f"
     },
     "func_80017140": {
       "ledger_commit": "ebebc73b95c90ed7c1da04f066884118591e5f69",

@@ -1101,8 +1101,8 @@
       "source_commit": "4de9d969fb135ff26cfb85ecbb1a6d44569b2017"
     },
     "func_overlay_038_F0000154_1885E64": {
-      "ledger_commit": "2886af0d298c36a9ee5b6b440d9d9852f1407afb",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
+      "ledger_commit": "61705308131babd660a517ec1fbbaeb5c6be0269",
+      "reason": "New lever: overlay92 float/u32 union self-copy on dt. Target copies the conversion into f14 in the early-out delay slot; this body leaves dt in f0. Predict same 0x38 frame and fewer words at delta 0.",
       "source_commit": "2886af0d298c36a9ee5b6b440d9d9852f1407afb"
     },
     "func_overlay_038_F000047C_188618C": {

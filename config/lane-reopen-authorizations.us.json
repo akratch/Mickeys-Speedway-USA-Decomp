@@ -125,6 +125,11 @@
       "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
       "source_commit": "f8cf33fb2535e0cfb05d96faa448bf5282bb9a67"
     },
+    "func_80009414": {
+      "ledger_commit": "bf0603a7331e8c25065c9485c89214264786ffef",
+      "reason": "Hoist count zero and the static-entry base before the unk1E test. Distinct from the closed render-loop entries address. Predict masked words fall at delta 0 with frame 0x198.",
+      "source_commit": "3e5293b564cb4e0bba7fddbe0c1b028fe6a55fbe"
+    },
     "func_80009AA8": {
       "ledger_commit": "bd719b24f0578b9ce0de4d1774d0a5061df98fdf",
       "reason": "New mechanisms measured since this closed: lever 51 (a hand-written cursor blocks the register names; uopt never coalesces the base it invented itself) and the L88 composition rule, where each edit alone is a regression.",

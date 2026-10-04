@@ -32,6 +32,9 @@ rises from 260 to 267. The frame stays 0x10 against 0x48. The body is not kept.
 `func_8003C80C`'s colour destination, defined before the counter init, scores
 115 masked words at size delta +4, against a proved baseline of 74 at delta 0.
 The body is not kept.
+`func_overlay_101_F0002510_18DDD30`'s y assignment, placed before the x
+assignment, scores 262 masked words at size delta -8, against a proved
+baseline of 257 at -8. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

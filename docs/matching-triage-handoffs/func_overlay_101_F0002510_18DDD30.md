@@ -212,4 +212,13 @@ and 12 more candidate bytes than the baseline, and worse than the
 bottom-test sum alone (259 at -4). The extra sum is not folded into the
 copy. The body is not kept. Do not repeat this pair.
 
+#### 2026-10-04: computing y before x stays two instructions short
+
+Configured full-TU baseline: 257 raw and masked words, target 1172 bytes,
+size delta -8, first mismatch +0x44. Exchanging only the two assignment
+statements, so y is computed before x, recompiled to 262 raw and masked
+words at the same size delta and the same first mismatch. The missing copy
+is not emitted. The restored body re-scores 257 at delta -8. The body is
+not kept. Do not repeat this statement exchange.
+
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

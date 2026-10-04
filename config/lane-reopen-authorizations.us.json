@@ -481,8 +481,8 @@
       "source_commit": "6f9e72e6fb41e2b3e351dfbc3546b6dae585a8fd"
     },
     "func_800349A4": {
-      "ledger_commit": "aa0095f856536355b7b7a840777140fdf4f1a939",
-      "reason": "172 masked words at delta 0, first mismatch +0x24, after the table-base cache. Untried: callee arity and return type from the relocation records, then one window product. This TU has no CFLAGS override.",
+      "ledger_commit": "fa141be305225c045469dfbf195f1d06f38b2536",
+      "reason": "Scale frameIndex in place after nextFrame = frameIndex + 1, the kill that kept the matched sibling's nextFrame as one web. The arity product is closed; this spelling is not.",
       "source_commit": "aa0095f856536355b7b7a840777140fdf4f1a939"
     },
     "func_80034E54": {

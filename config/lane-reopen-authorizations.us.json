@@ -1270,6 +1270,11 @@
       "reason": "Decompiler-assisted structural reconstruction: m2c draft from this game's own extracted assembly, recovering call/global identities and types before CFG work. Size-deficit targets no permutation or flag lattice can close.",
       "source_commit": "e9bfc8dba9d7bdccca23ba32a145c7d39d17ca83"
     },
+    "func_overlay_066_F0000040_18C64A8": {
+      "ledger_commit": "a672ef93a5f100e7e555a707af550ba5cd213acf",
+      "reason": "Write the six preamble channel extracts directly into the colour registers. Predict the component copy moves drop and the masked count falls at size delta 0.",
+      "source_commit": "2ae0d808cb43ce82e70b2b75cd0c6ede83d7ede2"
+    },
     "func_overlay_071_F0000870_18CA390": {
       "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",

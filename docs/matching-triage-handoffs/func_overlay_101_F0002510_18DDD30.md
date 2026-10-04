@@ -230,4 +230,16 @@ recompiled to the same 257 words at delta -8. The 292-word owned text is
 byte-identical to the baseline. The body is not kept. Do not repeat this
 copy. It is not the closed repeated-sum spelling.
 
+#### 2026-10-04: a second y-sum recompute stays on the rejected cell
+
+Configured full-TU baseline: 257 raw and masked words, target 1172 bytes,
+size delta -8, first mismatch +0x44. Recomputing `node->y + element->y`
+for both the height edge and the bottom test recompiled to 259 raw and
+masked words, size delta -4, first mismatch +0x3C. That is the same cell
+as the bottom-test sum alone. Aligned exact words are 128, naming 139,
+immediate 7, and really different 24, against the recorded baseline of
+228 exact, 38 naming, 8 immediate, and 24 really different. The restored
+body re-scores 257 at delta -8. The body is not kept. Do not repeat this
+pair of recomputes.
+
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

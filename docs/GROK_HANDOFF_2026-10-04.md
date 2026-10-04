@@ -72,6 +72,10 @@ at delta 0. The body is not kept.
 `func_80009414` with each of those slots loaded once into the existing
 pad1 home scores the same 234 masked words at size delta 0. The configured
 objects are byte-identical. The body is not kept.
+`func_overlay_101_F0002510_18DDD30` with the y sum recomputed for the
+height edge and the bottom test scores 259 masked words at size delta -4,
+against a proved baseline of 257 at -8. Aligned exact words fall from 228
+to 128. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

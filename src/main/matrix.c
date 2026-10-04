@@ -449,3 +449,13 @@ void func_8002B040(MtxF matrix, f32 arg1, f32 arg2, f32 arg3,
  * summary: JFG-identical hand assembly uses odd FP registers and frame 0x8. Reopen only for reservation-aware patched codegen or a proven matching C donor.
  * PLATEAU-HANDOFF:func_8002AE10:end
  */
+
+/* PLATEAU-HANDOFF:MatrixMultiplyVec4:start
+ * symbol: MatrixMultiplyVec4
+ * score: 47 differing words
+ * frame: frameless
+ * relocations: 0
+ * first-mismatch: +0x0
+ * summary: Configured -O2 is 53 of 53 words and all 47 differences are floating-point register mismatches. The first divergence is the odd-single class. No supported source lever; reopen only for reservation-aware codegen.
+ * PLATEAU-HANDOFF:MatrixMultiplyVec4:end
+ */

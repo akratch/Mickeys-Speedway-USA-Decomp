@@ -28,7 +28,11 @@ that pattern scores 12 positional words against the 10-word baseline and
 was reverted. Overlay 66's filter was then reopened for one spelling:
 binding the trailing 1 to the blue field before the channel OR. The
 configured baseline stayed 249 masked words at 1184 bytes, and the owned
-text was byte-identical, so that association is folded. None of these is a
+text was byte-identical, so that association is folded.
+`MatrixMultiplyVec4` was then diagnosed on its configured full-TU build:
+53 of 53 words, frameless, and all 47 differences are floating-point
+register mismatches. The first divergence is the odd-single class, and no
+source lever is supported. No source edit was made. None of these is a
 match, and none is landed. Raw
 resident assembly and the shared overlay 88 body remain in the gap; their
 latest committed notes do not name an untried source form that is currently

@@ -2,13 +2,13 @@
 ### `func_overlay_044_F0000580_188BDE0` plateau handoff
 
 - source: `src/overlays/o044/func_overlay_044_F0000580_188BDE0.c`
-- score: 13 differing words
+- score: 349/349 words
 - frame: 0x100
 - relocations: 7
-- first mismatch: +0x188
-- summary: Rewrite from listing, 304 to 13 at delta 0. Stride temp loses a0 to xh/dsdx on web number; forced colours score 5 (schedule only).
+- first mismatch: none
+- summary: Matched 2026-10-04: early byte-stride definition, explicit signed conversion at division, and TU-local R4300 multiply scheduling. Full ROM and all seven relocation identities proved exact.
 
-Summary before this remeasure: Line 151 macro split was inert. arg0 address-read: 338 to 304, delta 0, unreloaded home store plus a2 copy. Stall: s32 reorder misses 0x64/0x58/0x50.
+Historical plateau summary: Line 151 macro split was inert. arg0 address-read: 338 to 304, delta 0, unreloaded home store plus a2 copy. Stall: s32 reorder misses 0x64/0x58/0x50.
 
 Summary before this remeasure: Frame 0x100 exact. Size -4 (348 vs 349). Incoming pointer web stays in a0; a2 copy and a0 home store are the missing word plus the 0x100 slot.
 - assignment base: `cbaed235`
@@ -89,5 +89,22 @@ cautions persist in the workbench comparison and are not identity proof.
 No exact result or matching credit. This bounded naming mechanism is closed;
 do not repeat it as a dead-assignment grid. The preexisting conversion-copy
 priority and multiply scheduling questions remain.
+
+#### 2026-10-04: exact C closure
+
+The stock full-TU baseline reproduced 13 differing words. Moving the unsigned
+byte-stride definition before the rectangle dimensions changed allocation as
+predicted, but initially left 67 differences. Repeating its signed conversion
+at the guarded strip division reduced this to five scheduling differences.
+The existing R4300 multiply scheduling option, applied only to this single-function
+TU, closed all five. No forced allocator, inert carrier, or instruction editing
+is used by the accepted build.
+
+Canonical promotion proof reports 349/349 linked words, frame 0x100, and 7/7
+relocation identities, using the runtime overlay table and linked ROM for the
+fallback symbol alias. The complete ROM rebuild matches the expected US SHA-1.
+The owned range remains overlay 44 +0x580 through +0xAF4 (1,396 bytes).
+No remaining deficit. Source and build flags are the retained exact artifact;
+compiler output, controls, and proof receipts remain in ignored build evidence.
 
 <!-- plateau-handoff:func_overlay_044_F0000580_188BDE0:end -->

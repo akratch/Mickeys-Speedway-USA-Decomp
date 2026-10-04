@@ -80,6 +80,9 @@ to 128. The body is not kept.
 the dead buffer-loop index scores 175 masked words at size delta +4, against
 a proved baseline of 251 at -4. Really-different aligned words rise from 38
 to 50. The body is not kept.
+`func_8001FC50` with the matrixBytes zero moved from the entry into the else
+scores the same 271 masked words at size delta 0. The function text is
+byte-identical to the proved baseline. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

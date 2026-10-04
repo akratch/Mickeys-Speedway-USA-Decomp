@@ -2734,6 +2734,21 @@ bytes and disassembly never belong here.
   materialized base, comes from a pointer local taken at entry (the
   checklist's "static data reached through a pointer local").
 
+- **An initialized union representation self-copy can retain a float in its
+  stack home.** A controlled stock full-TU comparison found that a float/unsigned
+  word union plus an integer-member self-copy changed the float lifetime and
+  downstream temporary allocation without changing frame size or arithmetic.
+  Removing the copy or replacing it with an unused member read lost the effect.
+  This is a measured source-form lever, not proof of a particular optimizer
+  phase or original debug macro. It relies on configured IDO/o32 union
+  representation behavior; establish equal widths, initialized bits and
+  nonvolatile local storage first. Such an inert diagnostic requires the
+  authorized causal workflow, independent semantic review, source disclosure
+  and cleanup tracking before exact promotion. The exact camera-update closure
+  in [the overlay 92 handoff](matching-triage-handoffs/func_overlay_092_F0000308_18D6228.md)
+  also required individual addition order and an existing signed angle local;
+  the copy alone did not establish a match.
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

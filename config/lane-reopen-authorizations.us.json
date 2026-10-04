@@ -1100,11 +1100,6 @@
       "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
       "source_commit": "4de9d969fb135ff26cfb85ecbb1a6d44569b2017"
     },
-    "func_overlay_038_F0000154_1885E64": {
-      "ledger_commit": "61705308131babd660a517ec1fbbaeb5c6be0269",
-      "reason": "New lever: overlay92 float/u32 union self-copy on dt. Target copies the conversion into f14 in the early-out delay slot; this body leaves dt in f0. Predict same 0x38 frame and fewer words at delta 0.",
-      "source_commit": "2886af0d298c36a9ee5b6b440d9d9852f1407afb"
-    },
     "func_overlay_038_F000047C_188618C": {
       "ledger_commit": "07c7bc32795e0b8d1f2ff2a93cc9fb2605df6543",
       "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 93 masked words is a schedule or structure defect the permuter can still move.",

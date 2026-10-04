@@ -56,7 +56,12 @@ reopened for named product scalars and then closed with no source edit:
 the proved full-TU baseline is 315 masked words at 2224 bytes, frame
 0x1A0 against 0x190, with zero opcode and zero structural mismatches,
 and the retained note already gives those products to `temp[]` at 291
-words and size +16. Raw resident assembly (9,908 bytes) and the shared
+words and size +16. `func_overlay_038_F0000154_1885E64` was reopened
+for the overlay 92 union self-copy and closed without that edit: the
+proved baseline is 159 masked words at 808 bytes and frame 0x38, and
+the six pool relocations are one local base at offsets 0, 4 and 8. An
+array and an extern struct of that pool each address-take it, score 180
+words, and shorten the function to 804 bytes. Neither was kept. Raw resident assembly (9,908 bytes) and the shared
 overlay 88 body remain in the gap; their latest committed notes do not
 name an untried source form that is currently assignable.
 The owner requested this handoff because weekly model usage is nearly spent.

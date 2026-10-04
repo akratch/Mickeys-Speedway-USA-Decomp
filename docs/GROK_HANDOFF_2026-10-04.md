@@ -56,6 +56,9 @@ at delta 0. The body is not kept.
 `func_overlay_066_F0000040_18C64A8` without the red2/green2/blue2 copies
 scores the same 249 masked words at size delta 0. The owned text is
 byte-identical to the proved baseline. The body is not kept.
+`func_overlay_101_F0002510_18DDD30` with y copied into sourceY before the
+scissor call scores the same 257 masked words at size delta -8. The owned
+text is byte-identical to the proved baseline. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

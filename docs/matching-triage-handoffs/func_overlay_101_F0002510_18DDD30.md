@@ -221,4 +221,13 @@ words at the same size delta and the same first mismatch. The missing copy
 is not emitted. The restored body re-scores 257 at delta -8. The body is
 not kept. Do not repeat this statement exchange.
 
+#### 2026-10-04: copying y into sourceY is coalesced
+
+Configured full-TU baseline: 257 raw and masked words, target 1172 bytes,
+size delta -8, first mismatch +0x44. Assigning that y to the existing
+sourceY local before the scissor call, and reading sourceY afterwards,
+recompiled to the same 257 words at delta -8. The 292-word owned text is
+byte-identical to the baseline. The body is not kept. Do not repeat this
+copy. It is not the closed repeated-sum spelling.
+
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

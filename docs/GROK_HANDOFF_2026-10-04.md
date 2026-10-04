@@ -78,7 +78,8 @@ proved baseline is 202 differing words at 764 candidate bytes against
 `func_overlay_101_F0002510_18DDD30` was reopened for declaring y before x
 on the repeated y sum and closed without keeping it: the proved baseline
 is 257 differing words at 1164 candidate bytes against 1172, and that
-form scored 259 words at 1168 bytes. Raw resident assembly (9,908 bytes) and the shared
+form scored 259 words at 1168 bytes.
+`func_overlay_045_F0001158_188D5B0` was reopened for float screen coordinates after the 0xA0 bias and the body was kept: the proved baseline is 566 differing words at 2692 candidate bytes against 2696, and the float locals score 561 words at 2696 bytes, size delta 0, frame 0x190, first mismatch still +0x4. That is a diagnostic improvement, not a match. The call-spanning left/right spill remains open. Raw resident assembly (9,908 bytes) and the shared
 overlay 88 body remain in the gap; their latest committed notes do not
 name an untried source form that is currently assignable.
 The owner requested this handoff because weekly model usage is nearly spent.

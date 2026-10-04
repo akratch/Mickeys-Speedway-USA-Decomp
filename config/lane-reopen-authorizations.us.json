@@ -201,8 +201,8 @@
       "source_commit": "ae3ca05774314ba3962e97a639f0cd4faae2d19d"
     },
     "func_80010654": {
-      "ledger_commit": "07c7bc32795e0b8d1f2ff2a93cc9fb2605df6543",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
+      "ledger_commit": "a74c93b55b8ccec7f69f76f68a06bfc66fcd3a95",
+      "reason": "func_80010B4C matched after the literal plateau. Re-audit aggregate views, pointer roles and definition lifetimes against that matched track family. Do not repeat the closed literal contrast or home grid.",
       "source_commit": "27a9a088b8a8e179bd1d85d18039737fb8487508"
     },
     "func_80010900": {

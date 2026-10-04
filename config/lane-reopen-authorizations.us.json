@@ -831,8 +831,8 @@
       "source_commit": "f3a89e25f45adda7a25a7d4d99ace3cb785872d0"
     },
     "func_overlay_001_F0001D78_184E158": {
-      "ledger_commit": "da603477e5a5bd7f360da4cbd284db00dc2033a6",
-      "reason": "Matched overlay 1 rank function is a new sibling template. Apply its reloc-decoded call and table shape to the open D_1DA0 web, and checklist item 22 only where a free assignment follows a call. Do not repeat the listing rewrite.",
+      "ledger_commit": "5b5a83abe4b15c3cd0566a0340da0f8bb7ed7a1f",
+      "reason": "Assign D_1DA0 to a local again after each call that forbids a0-a3. One expression web is measured; per-region locals are the shard's untried split.",
       "source_commit": "da603477e5a5bd7f360da4cbd284db00dc2033a6"
     },
     "func_overlay_001_F0002B4C_184EF2C": {

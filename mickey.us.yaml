@@ -696,6 +696,9 @@ segments:
       # func_80019934's five-entry distance-mode switch table.
       - [0x823B4, .rodata, main/lights]
       - [0x823C8, rodata]
+      # charControl scalar pool, followed by its section alignment.
+      - [0x82440, .rodata, main/charControl]
+      - [0x824A0, rodata]
       # osScGetTaskType's seven-entry switch table and __scSchedule's
       # seven-entry switch table share this sched-owned rodata input section.
       - [0x82FD8, .rodata, main/sched]

@@ -712,6 +712,19 @@ Where the boundary comes from:
   five in `n_csplayer`, one in `n_reverb`, one in `main/font`, and the table
   promoted with `xprintf`. This leaves the per-TU carve strategy intact.
 
+The charControl scalar pool at ROM `0x82440`–`0x824A0` is now owned by
+`src/main/charControl.c` (Tier A: the complete `0x60`-byte readonly input
+section equals that ROM range). Its 23 single-precision cells follow their
+consuming functions in text order; the last four bytes are section alignment.
+Data-only assembly pragmas preserve their separate identities and existing
+external references. The two unmatched functions retain their original cells
+in separate companion guards selected with their assembly fallbacks. A
+single-function C activation must also deselect its companion data group;
+its literal pool and ordering require fresh proof before promotion. The carve
+preserves all 14,480 TU text bytes, 350 relocation rows and function boundaries,
+and the full ROM remains exact.
+It adds no executable matching credit.
+
 Two toolchain facts govern the per-TU split:
 
 - Typing the tail as rodata labels every jump *target* in the text it lands in.

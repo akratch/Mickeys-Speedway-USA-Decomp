@@ -3099,30 +3099,11 @@ s32 func_80010900(TrackVec3f *arg0, TrackVec3f *arg1, f32 arg2, s32 arg3,
     } while (var_s2 != 0);
     return sp68 | sp6C;
 }
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: rewritten from the listing in the shape of the matched
  * single-ray sibling func_80010900 (same author); no external function body
  * is adapted. The record layout is the assembly offsets.
  */
-/* 195 masked words at size delta 0, frame exact (662 at +56 -> 195,
- * 2026-10-02 lane o-track2): the three copy loops walk two pointers with a
- * separate counter (no index * 12 preheaders), the main loop's index is its
- * own variable and every other loop counts with `i` (one shared web had put
- * the later loops on a saved register), the main loop forms its two point
- * addresses as `index + index + index`, records are reached through a
- * `record` pointer, the length reuses lengthSquared as in the sibling, and
- * the update-loop pointers are set before the minimum search. Left: the
- * index/bit saved-register pair (s6/s7 swapped), failureMask held in a
- * register in the main loop, the stack homes below direction, and the
- * minimum-index * 12 spelled as shifts instead of adds.
- * 167 (195 -> 167, 2026-10-02 lane p-track3): the bit-over-index save probe
- * in the retry loop (s6/s7 now as in the target), the failure branch clears
- * collision before setting the failure bit, and the main-loop tail shifts
- * bit after the scale cursor. Left: 67 stack-displacement words (the target
- * has about nine more declared homes and no unused compiler cells below
- * `record`), the copy loops' relative pointer in v0 where the target has a0
- * (the remainder bound takes v0 there), and the minimum-index * 12. */
 typedef struct TrackContactRecord {
     s32 unk0;
     f32 unk4[12];
@@ -3143,8 +3124,16 @@ extern void func_800115E4(
 s32 func_80010B4C(s32 count, f32 *start, f32 *end, f32 *radius,
                   TrackContactRecord *records, f32 *origin, s32 arg6) {
     TrackRayHit intersection;
+    s32 collision;
+    s32 queryResult;
+    s32 auxiliaryResult;
+    f32 *relativeCursor;
+    s32 i;
     f32 relative[12];
-    TrackRayPoint direction;
+    union {
+        TrackRayPoint point;
+        f32 f[3];
+    } direction;
     f32 *rel;
     f32 *point;
     f32 lengthSquared;
@@ -3158,22 +3147,16 @@ s32 func_80010B4C(s32 count, f32 *start, f32 *end, f32 *radius,
     s32 attempt;
     u32 bit;
     u32 failureMask;
-    s32 collision;
-    s32 queryResult;
-    s32 auxiliaryResult;
-    s32 pad88;
-    s32 i;
-    f32 *scalePtr;
     TrackContactRecord *record;
 
     if (origin != NULL) {
-        rel = relative;
+        relativeCursor = relative;
         point = end;
         for (i = 0; i < count; i++) {
-            rel[0] = point[0] - origin[0];
-            rel[1] = point[1] - origin[1];
-            rel[2] = point[2] - origin[2];
-            rel += 3;
+            relativeCursor[0] = point[0] - origin[0];
+            relativeCursor[1] = point[1] - origin[1];
+            relativeCursor[2] = point[2] - origin[2];
+            relativeCursor += 3;
             point += 3;
         }
     }
@@ -3204,49 +3187,47 @@ s32 func_80010B4C(s32 count, f32 *start, f32 *end, f32 *radius,
         index = 0;
         collisionMask = 0;
         bit = 1;
-        scalePtr = radius;
         do {
             rel = &start[index + index + index];
+            scale = radius[index];
             point = &end[index + index + index];
             tries = 0;
-            scale = *scalePtr;
             do {
-                /* L109 probe, deleted by uopt: two depth-3 references lift
-                 * bit's save from 234 to 401 above index's 268, so bit
-                 * takes s6 and index s7 as in the target (193 -> 167). */
+                /* Defined, inert allocation aid: bit is initialized above.
+                 * Retained for exact IDO output; see docs/cleanup-queue.md. */
                 bit = bit | 0;
                 collision = 0;
                 auxiliaryResult = 0;
-                direction.x = point[0] - rel[0];
-                direction.y = point[1] - rel[1];
-                direction.z = point[2] - rel[2];
-                lengthSquared = ((&direction.x)[2] * (&direction.x)[2]) +
-                                ((direction.x * direction.x) +
-                                 (direction.y * direction.y));
+                direction.point.x = point[0] - rel[0];
+                direction.point.y = point[1] - rel[1];
+                direction.point.z = point[2] - rel[2];
+                lengthSquared = (direction.f[2] * direction.f[2]) +
+                                ((direction.point.x * direction.point.x) +
+                                 (direction.point.y * direction.point.y));
                 if (lengthSquared > 0.0f) {
                     lengthSquared = sqrtf(lengthSquared);
                     intersection.ratio = lengthSquared;
-                    direction.x /= lengthSquared;
-                    direction.y /= lengthSquared;
-                    direction.z /= lengthSquared;
+                    direction.point.x /= lengthSquared;
+                    direction.point.y /= lengthSquared;
+                    direction.point.z /= lengthSquared;
                     if (D_800C9D28 != 0) {
                         queryResult = func_80011980((TrackRayPoint *) rel, (TrackRayPoint *) point,
-                                                    &direction, lengthSquared,
+                                                    &direction.point, lengthSquared,
                                                     scale, 0.0f, &intersection);
                     } else {
                         queryResult = func_80011980((TrackRayPoint *) rel, (TrackRayPoint *) point,
-                                                    &direction, lengthSquared,
+                                                    &direction.point, lengthSquared,
                                                     scale, scale, &intersection);
                     }
                     if (D_800C9D28 != 0) {
                         auxiliaryResult = func_80011CDC(
-                            (TrackVec3f *) rel, (TrackVec3f *) &direction,
+                            (TrackVec3f *) rel, (TrackVec3f *) &direction.point,
                             scale, &intersection);
                     }
                     if ((queryResult | auxiliaryResult) != 0) {
                         record = &records[index];
                         func_800115E4((s32) rel, (TrackRayPoint *) point,
-                                      &direction, lengthSquared,
+                                      &direction.point, lengthSquared,
                                       (struct TrackCollisionSurface *) &intersection,
                                       (struct TrackCollisionRecord *) record);
                         record->distance = intersection.ratio;
@@ -3264,14 +3245,14 @@ s32 func_80010B4C(s32 count, f32 *start, f32 *end, f32 *radius,
                 }
             } while (collision != 0);
             index++;
-            scalePtr++;
             bit <<= 1;
         } while ((index < count) && (failureMask == 0));
         if (((collisionMask != 0) && (attempt >= 11)) || (failureMask != 0)) {
-            resultMask = 0;
             point = end;
             rel = start;
-            for (i = 0; i < count; i++) {
+            i = 0;
+            resultMask = 0;
+            for (; i < count; i++) {
                 point[0] = rel[0];
                 point[1] = rel[1];
                 point[2] = rel[2];
@@ -3288,9 +3269,10 @@ s32 func_80010B4C(s32 count, f32 *start, f32 *end, f32 *radius,
             minimumIndex = 0;
             minimumLength = 32000.0f;
             bit = 1;
-            rel = relative;
-            point = end;
-            for (i = 0; i < count; i++) {
+            i = 0;
+            relativeCursor = relative;
+            rel = end;
+            for (; i < count; i++) {
                 if (collisionMask & bit) {
                     record = &records[i];
                     if (record->distance < minimumLength) {
@@ -3300,16 +3282,16 @@ s32 func_80010B4C(s32 count, f32 *start, f32 *end, f32 *radius,
                 }
                 bit <<= 1;
             }
-            records[minimumIndex].flags |= 1;
-            origin[0] = end[minimumIndex * 3] - relative[minimumIndex * 3];
-            origin[1] = end[minimumIndex * 3 + 1] - relative[minimumIndex * 3 + 1];
-            origin[2] = end[minimumIndex * 3 + 2] - relative[minimumIndex * 3 + 2];
+            record = &records[minimumIndex];
+            record->flags |= 1;
+            origin[0] = end[(minimumIndex + minimumIndex + minimumIndex)] - relative[(minimumIndex + minimumIndex + minimumIndex)];
+            origin[1] = end[(minimumIndex + minimumIndex + minimumIndex) + 1] - relative[(minimumIndex + minimumIndex + minimumIndex) + 1];
+            origin[2] = end[(minimumIndex + minimumIndex + minimumIndex) + 2] - relative[(minimumIndex + minimumIndex + minimumIndex) + 2];
             for (i = 0; i < count; i++) {
-                point[0] = rel[0] + origin[0];
-                point[1] = rel[1] + origin[1];
-                point[2] = rel[2] + origin[2];
-                rel += 3;
-                point += 3;
+                *rel++ = origin[0] + relativeCursor[0];
+                *rel++ = origin[1] + relativeCursor[1];
+                *rel++ = origin[2] + relativeCursor[2];
+                relativeCursor += 3;
             }
             resultMask |= collisionMask;
         }
@@ -3317,12 +3299,7 @@ s32 func_80010B4C(s32 count, f32 *start, f32 *end, f32 *radius,
     } while ((collisionMask != 0) && (failureMask == 0));
     return resultMask | failureMask;
 }
-#undef B4C_U8
-#undef B4C_S32
-#undef B4C_F32
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80010B4C.s")
-#endif
+
 /*
  * PROVENANCE: Mickey's collision-response fields, calls and bytes are authority.
  * The newly matched Mickey func_8001EC44 in charControl.c supplies the shared
@@ -5384,14 +5361,4 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * first-mismatch: +0x0
  * summary: Mickey m2c fixes batch stride and best-hit state; retained 499 diffs, target-count alternative preserved. Next: authenticated source lifetimes.
  * PLATEAU-HANDOFF:func_8001291C:end
- */
-
-/* PLATEAU-HANDOFF:func_80010B4C:start
- * symbol: func_80010B4C
- * score: 167/678 words
- * frame: 0x148
- * relocations: 9
- * first-mismatch: +0x54
- * summary: bit save probe flips s6/s7, failure-branch and tail order (195->167); left: 67 stack homes, copy-loop v0/a0, min*12.
- * PLATEAU-HANDOFF:func_80010B4C:end
  */

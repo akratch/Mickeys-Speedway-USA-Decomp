@@ -1545,7 +1545,18 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o092/overlay92FindNearestCourse.c.o: POSTPROCES
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o092/func_overlay_092_F0000308_18D6228.c.o: CFLAGS += \
 	-Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o092/func_overlay_092_F0000308_18D6228.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x728
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x728 && \
+	$(OBJCOPY) --redefine-sym Arctanf=Arctanf_o092Reloc \
+		--redefine-sym _bcopy=_bcopy_o092Reloc \
+		--redefine-sym func_8000FAE0=func_8000FAE0_o092Reloc \
+		--redefine-sym func_8002A8BC=func_8002A8BC_o092Reloc \
+		--redefine-sym func_8002A8C0=func_8002A8C0_o092Reloc \
+		--redefine-sym levelGetNumber=levelGetNumber_o092Reloc \
+		--redefine-sym mathDiffAngle=mathDiffAngle_o092Reloc \
+		--redefine-sym mathRnd=mathRnd_o092Reloc \
+		--redefine-sym sqrtf=sqrtf_o092Reloc \
+		--redefine-sym func_overlay_001_F0000DF4_184D1D4=overlay92ResolveMotionPointReloc \
+		--redefine-sym func_overlay_008_F00042A8_1862000=overlay92UpdateActorReloc $@
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o093/overlay_093.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xEC
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o093/overlay_093.c.o: CFLAGS += -Wab,-r4300_mul

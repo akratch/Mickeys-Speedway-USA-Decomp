@@ -126,9 +126,9 @@
       "source_commit": "f8cf33fb2535e0cfb05d96faa448bf5282bb9a67"
     },
     "func_80009414": {
-      "ledger_commit": "16dbb11e971d979e0bc4ee5cb1c358b921a63e39",
-      "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
-      "source_commit": "59d344d38fe34eda70d66ccc8ce5b51ebbc88e1c"
+      "ledger_commit": "e4d940ed4eefbda93137ed22cfbf2a46ff64d9eb",
+      "reason": "ADR 0018 reopen: static loop loads unk8 before the unk4 test. Move the load into the true arm so it follows that test. Predict positional words fall at the same 1684 bytes and frame.",
+      "source_commit": "e4d940ed4eefbda93137ed22cfbf2a46ff64d9eb"
     },
     "func_80009AA8": {
       "ledger_commit": "bd719b24f0578b9ce0de4d1774d0a5061df98fdf",

@@ -55,4 +55,14 @@ ownership. The frame stayed 0x98. Exact is false, opcode mismatches are
 118, and raw words are 159. The verdict stays structure-mismatch. The
 body is not kept. Do not reopen this function for another union spelling
 of projectedX, or for an array or struct of the four collision constants.
+
+#### 2026-10-04: ny as plane->normal.y grows the function
+
+Configured full-TU baseline: 143 masked and 144 raw words, target 736
+bytes, size delta 0, first masked mismatch +0x3C, frame 0x98. Replacing
+the declared `ny` local with `plane->normal.y` at each use recompiled to
+170 masked words at size delta +8. The first masked mismatch moved to
++0x34. The restored body re-scores 143 masked words at delta 0. The body
+is not kept. Do not replace this declared normal with the field expression.
+
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

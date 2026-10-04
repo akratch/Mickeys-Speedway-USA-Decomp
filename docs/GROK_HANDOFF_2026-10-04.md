@@ -50,6 +50,9 @@ not kept.
 `overlay83DrawStrip` with the display-list parameter reassigned to
 `doubledCount + 2` scores 82 masked words at size delta +20, against a
 proved baseline of 68 at delta 0. The body is not kept.
+`func_overlay_079_F0000FA0_18CDF40` with `ny` replaced by `plane->normal.y`
+scores 170 masked words at size delta +8, against a proved baseline of 143
+at delta 0. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

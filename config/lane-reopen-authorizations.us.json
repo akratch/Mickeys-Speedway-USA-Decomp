@@ -1181,8 +1181,8 @@
       "source_commit": "6f5fe225d8013f75ebcfcde099073bac2db8da26"
     },
     "func_overlay_044_F0000580_188BDE0": {
-      "ledger_commit": "34a144842e349bc166b1f75ba9230dd2f1d416da",
-      "reason": "PR105 proves defined dead-assignment naming can reshape IDO. ADR0017 diagnostic names unsigned width operand via existing rows local, overwritten before any read; test stride copy priority. No flags, padding, widths or live-value changes.",
+      "ledger_commit": "ae2f1a42d94288572f8397efd877fa00b2674e57",
+      "reason": "One-function 90-minute packet: typed 16-bit texture cursors test row-stride expression creation and allocation priority on the current 13-word baseline; preserve exact byte advances and packet writes. Prior dead-width carriers stay closed.",
       "source_commit": "34a144842e349bc166b1f75ba9230dd2f1d416da"
     },
     "func_overlay_045_F0001158_188D5B0": {

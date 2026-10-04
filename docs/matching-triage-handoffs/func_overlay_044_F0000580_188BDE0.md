@@ -2,13 +2,13 @@
 ### `func_overlay_044_F0000580_188BDE0` plateau handoff
 
 - source: `src/overlays/o044/func_overlay_044_F0000580_188BDE0.c`
-- score: 13 differing words
+- score: 349/349 words
 - frame: 0x100
 - relocations: 7
-- first mismatch: +0x188
-- summary: Rewrite from listing, 304 to 13 at delta 0. Stride temp loses a0 to xh/dsdx on web number; forced colours score 5 (schedule only).
+- first mismatch: none
+- summary: Matched 2026-10-04: early byte-stride definition, explicit signed conversion at division, and TU-local R4300 multiply scheduling. Full ROM and all seven relocation identities proved exact.
 
-Summary before this remeasure: Line 151 macro split was inert. arg0 address-read: 338 to 304, delta 0, unreloaded home store plus a2 copy. Stall: s32 reorder misses 0x64/0x58/0x50.
+Historical plateau summary: Line 151 macro split was inert. arg0 address-read: 338 to 304, delta 0, unreloaded home store plus a2 copy. Stall: s32 reorder misses 0x64/0x58/0x50.
 
 Summary before this remeasure: Frame 0x100 exact. Size -4 (348 vs 349). Incoming pointer web stays in a0; a2 copy and a0 home store are the missing word plus the 0x100 slot.
 - assignment base: `cbaed235`
@@ -60,4 +60,51 @@ than shipped. Flat, all at 13: return structure (4 forms), declaration
 order (8), xh/dsdx/stride types, xh operand order, stride spelling (7
 unsigned forms), stride position, pre-loop statement order (15 legal
 permutations) and line folding (8).
+
+#### 2026-10-03, lane codex-o044-dead-carrier: named width operand does not close the stride copy
+
+The exact track closure in PR105 motivated an ADR0017 defined inert diagnostic,
+not an original-source claim. Assignment gate was zero-exit `base-only` on
+committed authorization `06020986e`; full-TU stock baseline reproduces 349 words,
+13 raw/masked differences, first `+0x188`, frame `0x100`. The nearest skeleton
+relative is JFG `fmvDraw` (0.1982); no reference source was adopted.
+
+All contrasts reuse the existing ordinary `s32 rows` local, whose later loop
+assignment dominates every real read. No address escape, flags, padding, width
+change, or live value change was introduced:
+
+- Naming width inside the unsigned stride operand: 13 words, first `+0x188`,
+  frame `0x100`, unchanged opcode/register residual. The dead assignment does
+  not supply the needed allocation lever.
+- Naming width in a separate statement immediately before that operand: same
+  13 words and geometry. Statement separation does not rescue the mechanism.
+- Moving that definition before `xh`, with its value used only for the later
+  unsigned stride operand: 91 words, first `+0`, frame `0xF8`, size unchanged.
+  Earlier definition changes allocation/home geometry, but loses the target
+  frame rather than closing the stride-copy priority.
+
+Restored the admitted baseline source. All diagnostic source/object/summary
+artifacts remain ignored under `build/o044-dead-carrier/`. Four relocation-name
+cautions persist in the workbench comparison and are not identity proof.
+No exact result or matching credit. This bounded naming mechanism is closed;
+do not repeat it as a dead-assignment grid. The preexisting conversion-copy
+priority and multiply scheduling questions remain.
+
+#### 2026-10-04: exact C closure
+
+The stock full-TU baseline reproduced 13 differing words. Moving the unsigned
+byte-stride definition before the rectangle dimensions changed allocation as
+predicted, but initially left 67 differences. Repeating its signed conversion
+at the guarded strip division reduced this to five scheduling differences.
+The existing R4300 multiply scheduling option, applied only to this single-function
+TU, closed all five. No forced allocator, inert carrier, or instruction editing
+is used by the accepted build.
+
+Canonical promotion proof reports 349/349 linked words, frame 0x100, and 7/7
+relocation identities, using the runtime overlay table and linked ROM for the
+fallback symbol alias. The complete ROM rebuild matches the expected US SHA-1.
+The owned range remains overlay 44 +0x580 through +0xAF4 (1,396 bytes).
+No remaining deficit. Source and build flags are the retained exact artifact;
+compiler output, controls, and proof receipts remain in ignored build evidence.
+
 <!-- plateau-handoff:func_overlay_044_F0000580_188BDE0:end -->

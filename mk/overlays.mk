@@ -1412,6 +1412,8 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o044/overlay44UpdateFrameCache.c.o: POSTPROCESS
 	$(OBJCOPY) --redefine-sym \
 		func_overlay_044_F0000294_188BAF4=overlay44UpdateFrameCache $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2EC
+# This TU requires the R4300 multiply scheduling mode.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o044/func_overlay_044_F0000580_188BDE0.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o044/func_overlay_044_F0000580_188BDE0.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x574
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay69Init.c.o: POSTPROCESS = \

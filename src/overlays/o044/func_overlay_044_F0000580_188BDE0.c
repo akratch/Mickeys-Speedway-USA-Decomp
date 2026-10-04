@@ -8,13 +8,11 @@
  * gDPLoadMultiBlockS / gSPTextureRectangle packet macros on (*dl)++, the
  * strip loop as in JFG screen.c's screenDraw (a semantic relative, no code
  * adapted), the frame-source fields read through the global at each use,
- * and an unsigned stride.  304 -> 13 masked words at size delta 0.
+ * and an unsigned stride.
  *
- * Open: the stride's conversion copy is a type-4 temp whose preheader web
- * ties xh and dsdx at save 1.0 and loses on web number (97/105 < 117), so
- * it takes a3 where the shipped code has it in a0 with xh in a2 and dsdx in
- * a3.  Forcing p1:w117=c3,w97=c5,w105=c6 scores 5 (schedule-only: the
- * scale *= 65536 multiply issues three slots later).
+ * The byte stride is established before the rectangle dimensions; its signed
+ * conversion is repeated at the strip division. This preserves IDO's allocation
+ * order. The TU uses the R4300 multiply scheduling mode.
  */
 
 typedef struct {
@@ -157,7 +155,6 @@ extern Gfx D_0[];
 extern Gfx D_28[];
 extern void func_overlay_044_F0000000_188B860(Gfx **dl);
 
-#ifdef NON_MATCHING
 void func_overlay_044_F0000580_188BDE0(Overlay44AnimationState *state,
                                        Gfx **dl, f32 scale) {
     s32 width;
@@ -192,12 +189,12 @@ void func_overlay_044_F0000580_188BDE0(Overlay44AnimationState *state,
     gDPSetEnvColor((*dl)++, alpha, alpha, alpha, alpha);
     x = state->value8 * 4;
     y = yPrev = state->valueA << 16;
+    stride = (u32)width * 2;
     xh = (s32)(width * scale * 4.0f) + x;
     dsdx = (s32)(1024.0f / scale);
     scale *= 65536.0f;
     if (height != 0) {
-        stride = (u32)width * 2;
-        maxRows = (0x800 / stride) & ~1;
+        maxRows = (0x800 / ((s32)((u32)width * 2))) & ~1;
         do {
             if (maxRows < height) {
                 rows = maxRows;
@@ -224,16 +221,3 @@ void func_overlay_044_F0000580_188BDE0(Overlay44AnimationState *state,
     gDPSetPrimColor((*dl)++, 0, 0, 255, 255, 255, 255);
     gDPSetEnvColor((*dl)++, 255, 255, 255, 255);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o044/func_overlay_044_F0000580_188BDE0/func_overlay_044_F0000580_188BDE0.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_044_F0000580_188BDE0:start
- * symbol: func_overlay_044_F0000580_188BDE0
- * score: 13 differing words
- * frame: 0x100
- * relocations: 7
- * first-mismatch: +0x188
- * summary: Rewrite from listing, 304 to 13 at delta 0. Stride temp loses a0 to xh/dsdx on web number; forced colours score 5 (schedule only).
- * PLATEAU-HANDOFF:func_overlay_044_F0000580_188BDE0:end
- */

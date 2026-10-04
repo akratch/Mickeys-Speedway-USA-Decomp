@@ -14,10 +14,15 @@ index scored 163, output-pointer copies left 162 words, and a difference
 aggregate was scalar-replaced. `overlay83DrawStrip` is a diagnostic
 improvement only, 69 to 68 masked words at the same 308 bytes, first
 mismatch still +0x4. Dead zeros, pointer-copy placement, and an early
-address local did not make vertexCount take the parameter register. Both
-are recorded and not landed. Raw resident assembly and the shared overlay
-88 body remain in the gap; their latest committed notes do not name an
-untried source form that is currently assignable.
+address local did not make vertexCount take the parameter register.
+`func_8003C80C`'s destination-pointer numbering packet is closed on the
+unchanged 74-word body: storing alpha first scored 79, and defining the
+destination before the source pointers grew the function to 119 words. The
+register pool, including v1, already matched, so that lever cannot create
+the missing colour. None of these is a match, and none is landed. Raw
+resident assembly and the shared overlay 88 body remain in the gap; their
+latest committed notes do not name an untried source form that is currently
+assignable.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

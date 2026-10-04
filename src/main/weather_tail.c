@@ -108,6 +108,6 @@ void func_8003C80C(s32 arg0, s32 time) {
  * frame: 0x38
  * relocations: 21
  * first-mismatch: +0x14
- * summary: Nine colours (do-while, post-decrement from 8), time in the second parameter: 103 to 74 at delta 0. Open: dst wants v1 before the byte webs.
+ * summary: Nine colours (do-while, post-decrement from 8), time in the second parameter: 103 to 74 at delta 0. Defining dst before the source pointers grows the body; the v1 pool already matches.
  * PLATEAU-HANDOFF:func_8003C80C:end
  */

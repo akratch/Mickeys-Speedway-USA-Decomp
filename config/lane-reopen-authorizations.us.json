@@ -1346,9 +1346,9 @@
       "source_commit": "303a0613fd5d42b32e22acf0a49d7811d50c8a8d"
     },
     "func_overlay_101_F0002510_18DDD30": {
-      "ledger_commit": "44c895585154361267b5585404f636a5159bc553",
-      "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
-      "source_commit": "44c895585154361267b5585404f636a5159bc553"
+      "ledger_commit": "a3312c97d53dccfbf494aa180019de0953529a11",
+      "reason": "New form on the measured y split: declare y before x, and repeat the y sum in the bottom test. Predict that numbering y first swaps which saved register node and the y copy take, and pulls the 8-byte deficit toward zero.",
+      "source_commit": "a3312c97d53dccfbf494aa180019de0953529a11"
     },
     "func_overlay_101_F0003A58_18DF278": {
       "ledger_commit": "20ac4b70f33839b06eba329c9e94b6362367844b",

@@ -516,6 +516,19 @@ bytes and disassembly never belong here.
   allocation. This is a measured source-form lever, not a rule that every late
   return-register mismatch comes from a callee prototype. Evidence: the exact
   resident sprite-segment renderer in `docs/resident.md`.
+- Sequential component postincrements can change a cursor's allocation even
+  when fixed subscripts followed by one aggregate increment have identical
+  pointer effects. First recover which copy phases actually share a cursor;
+  then compare these equivalent walks while preserving component access order
+  and the final pointer value. In a resident multi-point collision routine,
+  this source spelling reproduced a diagnostically isolated pointer-color
+  decision with stock IDO. Separately, moving a real indexed load between
+  independent pointer definitions changed only its strength-reduced cursor's
+  stack home, without changing the frame or executable size. This is measured
+  source-order sensitivity, not proof that a particular unnamed slot belonged
+  to an original source variable. Do not add padding or accept forced output;
+  require the full owned-byte, relocation and ROM proofs. Evidence:
+  [multi-point collision closure](matching-triage-handoffs/func_80010B4C.md).
 - Correct frame size does not prove the source's stack objects. A callee that
   reads and writes a full vector, or consumes a transform with a later frame
   field, can expose a draft's undersized arrays and disconnected locals.

@@ -211,9 +211,9 @@
       "source_commit": "8072dce733b389b3e132c51351293d1dfef907d9"
     },
     "func_80010B4C": {
-      "ledger_commit": "ade24e9c6989bcab55c9c637f75d1e21248fd651",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "6b44a39a27e1eefe70b05469cf7864125c27829a"
+      "ledger_commit": "a6b7d8c051e4923532111ab5343afd3fb95c8b3c",
+      "reason": "90-minute causal packet: reprove sibling/callee context, then separate copy-loop expression lifetimes from scalar homes using typed three-component storage and cursor roles. Preserve frame, guards and call order; stop on ADR0018 stall.",
+      "source_commit": "98825c148f2b6b8142271fb6b6f0a8604153eefc"
     },
     "func_800115E4": {
       "ledger_commit": "d6c465039dee614393a970320ae5309c2523d78a",

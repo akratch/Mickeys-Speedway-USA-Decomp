@@ -40,6 +40,9 @@ masked words at 472 bytes. The body is not kept.
 `func_overlay_045_F0001158_188D5B0`'s glyph-metric box size scores 580
 masked words at size delta -8, against a proved baseline of 561 at delta 0.
 The body is not kept.
+`func_overlay_012_F0000910_186DB90` with the center scale repeated on each
+axis scores 595 masked words at size delta -8, against a proved baseline of
+606 at delta -4. Aligned residual rises from 504 to 505. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

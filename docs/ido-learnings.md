@@ -373,8 +373,21 @@ bytes and disassembly never belong here.
   than caching the loaded value in a local. Caching it in a local instead keeps
   the *value* live across the call and both shortens the address's live range
   and adds a local; spelling the global twice reproduces the reload the target
-  performs. Limits: this is about the address web, not aliasing -- IDO reloads
-  the value after a call in both spellings.
+  performs. Limits: distinguish retention of the address from retention of the
+  loaded value; neither establishes that the global is immutable.
+- **A named readonly coefficient can be retained across calls without becoming
+  a compiler literal.** In a controlled stock full-TU experiment, two direct
+  reads kept a global address and reloaded its value after a call. One used
+  `f32` local, assigned after the preceding call and consumed by both later
+  calls, instead kept the loaded value in a saved floating-point register.
+  This preserved the original named readonly cells and their physical order,
+  whereas literal substitution changed pool order. Authenticate the same
+  physical cell and prove that the intervening operations cannot change its
+  value before capturing it; equal values in distinct cells do not establish
+  that identity. Plain copying of a finite `f32` adds no arithmetic rounding.
+  The local can change stack homes even when frame size stays fixed, so compare
+  those independently. This is a value-lifetime lever, not permission to cache
+  mutable or volatile state, a guarantee of allocation, or linked match proof.
 - A post-call `g ^= 1; use(g)` of a non-volatile global keeps the address as
   one coloured web through both regions and copy-props the xor into the later
   use, so the subscript consumes the xor result rather than a reload. Qualifying

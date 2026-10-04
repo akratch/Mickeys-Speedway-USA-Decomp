@@ -83,6 +83,10 @@ to 50. The body is not kept.
 `func_8001FC50` with the matrixBytes zero moved from the entry into the else
 scores the same 271 masked words at size delta 0. The function text is
 byte-identical to the proved baseline. The body is not kept.
+`func_overlay_045_F0001158_188D5B0` with left and right cast to float before
+the angle calls, and the 0xA0 bias subtracted after, scores 570 masked words
+at size delta +12, against a proved baseline of 561 at delta 0. The body is
+not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

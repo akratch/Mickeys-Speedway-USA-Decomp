@@ -192,4 +192,14 @@ y being spilled to its frame home where the target keeps it in a register:
 align_symbol reads 144 exact, 105 naming, 48 really different on the best
 of them, against 228/38/24 here. Do not bank those.
 
+#### 2026-10-04: declaring y first leaves the repeated sum at 259
+
+The configured full-TU baseline is 291 words against 293, 257 differing,
+frame 0xE8 on both sides, and an instruction deficit of 2. Declaring y
+before x and repeating the y sum in the bottom test recompiled to 292
+words, 259 differing, the same frame, and a deficit of 1. That is the
+259-word result already measured for the repeated sum alone, so putting
+y first did not change the saved-register assignment. The body is not
+kept. Do not reopen this function to declare y earlier.
+
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

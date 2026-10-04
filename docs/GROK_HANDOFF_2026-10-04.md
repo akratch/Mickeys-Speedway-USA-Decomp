@@ -74,7 +74,11 @@ at 1852 candidate bytes against 1840, and the float calls scored 391
 words at 1860 bytes. `func_overlay_066_F00004E0_18C6948` was
 reopened for the screen-size if/else and closed without keeping it: the
 proved baseline is 202 differing words at 764 candidate bytes against
-816, and the if/else scored 225 words at 900 bytes. Raw resident assembly (9,908 bytes) and the shared
+816, and the if/else scored 225 words at 900 bytes.
+`func_overlay_101_F0002510_18DDD30` was reopened for declaring y before x
+on the repeated y sum and closed without keeping it: the proved baseline
+is 257 differing words at 1164 candidate bytes against 1172, and that
+form scored 259 words at 1168 bytes. Raw resident assembly (9,908 bytes) and the shared
 overlay 88 body remain in the gap; their latest committed notes do not
 name an untried source form that is currently assignable.
 The owner requested this handoff because weekly model usage is nearly spent.

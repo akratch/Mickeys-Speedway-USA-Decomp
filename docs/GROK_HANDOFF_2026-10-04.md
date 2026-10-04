@@ -51,10 +51,14 @@ scored the same 234 words and was not kept. The sort remainder that
 starts `j` at 1 then scored 256 words at the same 1684 bytes and frame,
 and forming the entries address before the type test grew the frame to
 0x1A0 and scored 286. Neither was kept. That body is retained and its
-reopen is closed. None of those diagnostic edits is a match. Raw
-resident assembly (9,908 bytes) and the shared overlay 88 body remain in
-the gap; their latest committed notes do not name an untried source form
-that is currently assignable.
+reopen is closed. None of those diagnostic edits is a match. `func_80016890` was
+reopened for named product scalars and then closed with no source edit:
+the proved full-TU baseline is 315 masked words at 2224 bytes, frame
+0x1A0 against 0x190, with zero opcode and zero structural mismatches,
+and the retained note already gives those products to `temp[]` at 291
+words and size +16. Raw resident assembly (9,908 bytes) and the shared
+overlay 88 body remain in the gap; their latest committed notes do not
+name an untried source form that is currently assignable.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

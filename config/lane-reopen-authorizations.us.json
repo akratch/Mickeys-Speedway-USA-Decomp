@@ -1316,8 +1316,8 @@
       "source_commit": "e9bfc8dba9d7bdccca23ba32a145c7d39d17ca83"
     },
     "func_overlay_066_F0000040_18C64A8": {
-      "ledger_commit": "2ae0d808cb43ce82e70b2b75cd0c6ede83d7ede2",
-      "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
+      "ledger_commit": "d347f068935fe81a1a955aecdf9ab2c51509def7",
+      "reason": "ADR 0018 reopen: colour probes and comma, empty-if, or-zero, and index spellings left five insertion pairs. Bind the filter trailing 1 to the blue field before the channel OR; predict the ori-versus-shift pair closes at the same 1184 bytes.",
       "source_commit": "2ae0d808cb43ce82e70b2b75cd0c6ede83d7ede2"
     },
     "func_overlay_066_F00004E0_18C6948": {

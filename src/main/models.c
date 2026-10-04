@@ -424,8 +424,8 @@ struct ModelConstructedInstance {
  * written as indexed stores through state[i], which reloads the pointer per
  * store as the target does (the goto keeps uopt from unrolling it); and
  * matrixBytes carrying the matrix count before it is shifted (x = f(x)).
- * Remains: register naming. The target keeps modeBytes in its home from both
- * arms and gives pointBytes ra; here modeBytes is coloured ra and spilled. */
+ * Remains: register naming. dataBytes48 follows the doubled matrix term in
+ * the size sum; modeBytes still takes ra, and pointBytes does not. */
 #ifdef NON_MATCHING
 ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCopies) {
     ModelConstructedInstance *instanceCursor;
@@ -477,12 +477,12 @@ ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCo
         extraBytes = source->copyCount * 8 + 0xA8;
     }
 
-    instance = func_8002B314((matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes + dataBytes44 +
-                     dataBytes48 + coordinateBytes + extraBytes + 0x58, 0x8A);
+    instance = func_8002B314((matrixBytes << 1) + dataBytes48 + (pointBytes * pointCopies) + modeBytes + dataBytes44 +
+                     coordinateBytes + extraBytes + 0x58, 0x8A);
     if (instance != NULL) {
         clear = (u32 *)instance;
-        words = ((matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes + dataBytes44 +
-                     dataBytes48 + coordinateBytes + extraBytes + 0x58) >> 2;
+        words = ((matrixBytes << 1) + dataBytes48 + (pointBytes * pointCopies) + modeBytes + dataBytes44 +
+                     coordinateBytes + extraBytes + 0x58) >> 2;
 
         while (words--) {
             *clear++ = 0;
@@ -1277,10 +1277,10 @@ void func_8002109C(ModelPointOwner *owner) {
 
 /* PLATEAU-HANDOFF:func_8001FC50:start
  * symbol: func_8001FC50
- * score: 277 differing words
+ * score: 271 differing words
  * frame: 0x78
  * relocations: 3
  * first-mismatch: +0x18
- * summary: Delta 0, frame 0x78; naming left: target keeps modeBytes homed in both arms and gives pointBytes ra, here modeBytes takes ra
+ * summary: Delta 0, frame 0x78; size sum adds dataBytes48 after the doubled matrix term (271). modeBytes still takes ra
  * PLATEAU-HANDOFF:func_8001FC50:end
  */

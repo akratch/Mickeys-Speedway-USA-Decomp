@@ -355,11 +355,6 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "cbcfcadc14e0cda0060b6faea6b44c231ed6ad92"
     },
-    "func_8001FC50": {
-      "ledger_commit": "4b49dcc7d39f490e02f02953601161361d074730",
-      "reason": "ADR 0018 reopen: the matrixBytes shift CSE takes a3, which the target gives to dataBytes48 before the allocator call. Add dataBytes48 directly to that shift in the size sum; predict that piece takes a3 at the same 1332 bytes and frame 0x78.",
-      "source_commit": "4b49dcc7d39f490e02f02953601161361d074730"
-    },
     "func_8002057C": {
       "ledger_commit": "92fb6d1093596e7220265a46202bf31b4fef5aa7",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",

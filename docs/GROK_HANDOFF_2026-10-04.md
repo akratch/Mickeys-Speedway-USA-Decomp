@@ -32,8 +32,13 @@ text was byte-identical, so that association is folded.
 `MatrixMultiplyVec4` was then diagnosed on its configured full-TU build:
 53 of 53 words, frameless, and all 47 differences are floating-point
 register mismatches. The first divergence is the odd-single class, and no
-source lever is supported. No source edit was made. None of these is a
-match, and none is landed. Raw
+source lever is supported. No source edit was made.
+`func_8001FC50` was reopened for one size-sum order: add dataBytes48
+immediately after the doubled matrix term. The configured ranking scorer
+measures 271 differing words at 1332 bytes, size delta 0, first mismatch
+still +0x18, down from 277. The predicted colour transfer did not happen,
+and the early temporary is still a3 here. The body is retained and the
+reopen is closed. None of these is a match, and none is landed. Raw
 resident assembly and the shared overlay 88 body remain in the gap; their
 latest committed notes do not name an untried source form that is currently
 assignable.

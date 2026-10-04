@@ -35,4 +35,24 @@ Not adopted (the kept body is unchanged). Measured with `tools/fast_score.py` on
 - A third vector for the normalised projection and the second branch's deltas, sharing registers the way the target's colours suggest: 184 to 190 at +24 to +40. Refuted.
 
 Open: which first-branch values the target keeps in caller-saved colours (ny in f16, cross X and the squared length in f12, projected X in f14).
+
+#### 2026-10-04: projectedX union self-copy grows the function
+
+Reopened for the overlay 92 float/unsigned-word union self-copy on
+projectedX. The configured full-TU baseline of the carrier body is 736
+bytes, 184 words on both sides, 143 masked and 144 raw, frame 0x98 on
+both sides, first mismatch +0x38, 119 opcode mismatches, and 18
+relocation sites that name different symbols. The verdict is
+structure-mismatch. Diagnose names the constants first: the candidate
+relocates four separate collision constants where the ROM table uses one
+local pool. The shared-array binding of those four floats was already
+measured at size +12 and was not retried.
+
+The union replaced projectedX and copied its integer member onto itself
+before the first square root. The compile grew the function to 185
+instructions against 184, so the candidate escaped translation-unit
+ownership. The frame stayed 0x98. Exact is false, opcode mismatches are
+118, and raw words are 159. The verdict stays structure-mismatch. The
+body is not kept. Do not reopen this function for another union spelling
+of projectedX, or for an array or struct of the four collision constants.
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

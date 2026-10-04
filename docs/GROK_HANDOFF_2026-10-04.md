@@ -61,7 +61,13 @@ for the overlay 92 union self-copy and closed without that edit: the
 proved baseline is 159 masked words at 808 bytes and frame 0x38, and
 the six pool relocations are one local base at offsets 0, 4 and 8. An
 array and an extern struct of that pool each address-take it, score 180
-words, and shorten the function to 804 bytes. Neither was kept. Raw resident assembly (9,908 bytes) and the shared
+words, and shorten the function to 804 bytes. Neither was kept.
+`func_overlay_079_F0000FA0_18CDF40` was reopened for the same union on
+projectedX and closed without keeping it: the proved baseline is 143
+masked words at 736 bytes and frame 0x98, and the union grew the
+function by one instruction, escaped translation-unit ownership, and
+scored 159 raw words at the same frame. The four-constant array was
+already measured at size +12 and was not retried. Raw resident assembly (9,908 bytes) and the shared
 overlay 88 body remain in the gap; their latest committed notes do not
 name an untried source form that is currently assignable.
 The owner requested this handoff because weekly model usage is nearly spent.

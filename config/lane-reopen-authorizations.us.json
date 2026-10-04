@@ -1320,11 +1320,6 @@
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",
       "source_commit": "eeeb9d7fef50e0478d524e4814abaed5a846d4fb"
     },
-    "func_overlay_079_F0000FA0_18CDF40": {
-      "ledger_commit": "efe86dcfc7c35ebb89305ec273ececce9de3ecf7",
-      "reason": "New lever: overlay92 float/u32 union self-copy on projectedX. Target spills that float and reloads it in f14 around sqrtf; this body keeps it in a saved register. Predict same 0x98 frame and fewer words.",
-      "source_commit": "33cecba3c8a10060df5649ad785028df65738a64"
-    },
     "func_overlay_084_F0000314_18D07F4": {
       "ledger_commit": "930c2122a519bbb3fa6554d341e3271509717efc",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",

@@ -175,10 +175,25 @@ bytes and disassembly never belong here.
   for every incoming-scalar web even though it is not forbidden. A
   `CDX_FORCE` onto c28 is accepted and emits the third `mtc1` at `-O2`;
   driver `-O3` colours it naturally. `tools/ido-phases.py` phase-all-O3
-  appends `-O3` after the driver's `-O2`, and uopt uses the first flag, so
-  that lattice row is inert for this lowering. Extra copy, address form,
+  appends `-O3` after the driver's `-O2`. UOPT records `-O2` as a sticky
+  veto and clears its `-O3` mode after scanning the options, regardless of
+  their order, so that lattice row is inert for this lowering. Extra copy, address form,
   region split, and store-kill rotate which formal spills and do not make
   c28 finite. Evidence: `func_8002B040` identity-gated proc 5, forced=28.
+
+- **Duplicate optimization levels are phase-specific.** In pristine IDO 5.3
+  UOPT, `-O2` suppresses `-O3` regardless of their order. Appending a phase
+  override therefore does not prove that UOPT uses the requested level.
+  Inspect the actual phase command and its parser before treating a mixed
+  invocation as coverage. The ordinary flag sweep removes the configured
+  optimization level before adding one driver level; its direct `-O3` rows
+  remain separate evidence. The mixed phase-all-O3 row retains the driver's
+  `-O2` and must not be described as all phases using `-O3`. This finding
+  does not invalidate the phase-uopt-O1 row: UOPT handles `-O1` through
+  different persistent mode flags. Preserve already-exact invocations;
+  changing them needs consumer impact review and linked/ROM reproof.
+  Limit: this is UOPT option parsing, not a general precedence rule for
+  CFE, UGEN, AS1, debug levels, or other flags.
 
 - That same flag is decidable from the target bytes *before* any source work,
   and the test is cheap: disassemble each unmatched function's own fallback

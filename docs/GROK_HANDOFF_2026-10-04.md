@@ -76,6 +76,10 @@ objects are byte-identical. The body is not kept.
 height edge and the bottom test scores 259 masked words at size delta -4,
 against a proved baseline of 257 at -8. Aligned exact words fall from 228
 to 128. The body is not kept.
+`func_overlay_020_F000038C_1876964` with the next-row texture scale held in
+the dead buffer-loop index scores 175 masked words at size delta +4, against
+a proved baseline of 251 at -4. Really-different aligned words rise from 38
+to 50. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

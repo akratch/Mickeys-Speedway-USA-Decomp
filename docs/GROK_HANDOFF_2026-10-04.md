@@ -25,6 +25,10 @@ reschedules that function, so the condition stays.
 `func_overlay_101_F0002510_18DDD30`'s bottom test and `sourceY` written from
 `node->y + element->y` score 268 masked words at size delta +4, against a
 proved baseline of 257 at -8. The body is not kept.
+`refractOutputAssembler`'s per-slot end checks score the same 248 masked
+words at size delta -52, against a proved baseline of 248 at -140. Aligned
+really-different words fall from 175 to 168 and the total aligned residual
+rises from 260 to 267. The frame stays 0x10 against 0x48. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

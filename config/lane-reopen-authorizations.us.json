@@ -1146,9 +1146,9 @@
       "source_commit": "34a144842e349bc166b1f75ba9230dd2f1d416da"
     },
     "func_overlay_045_F0001158_188D5B0": {
-      "ledger_commit": "ee1979c9c6ab196b134e8788aa1542f34a5e18c7",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "e36288cf4bc286285c32981048dcca36761ee340"
+      "ledger_commit": "e271a74b13b18353c3781ee5bcfd485e02975c7a",
+      "reason": "Declared f32 screen coordinates after the integer 0xA0 bias are unmeasured. Integer copies fold and hoist; these float locals can keep the post-call adjusted webs.",
+      "source_commit": "e271a74b13b18353c3781ee5bcfd485e02975c7a"
     },
     "func_overlay_046_F0000120_188E518": {
       "ledger_commit": "13d845651227cec3dd99c346ca39e63341b48ecc",

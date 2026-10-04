@@ -216,12 +216,13 @@ def stale_extract_names(asm_dir, src_dir="src"):
     return {name for name in labelled if name not in referenced}
 
 
-def resident_guarded_fallbacks(text):
+def resident_guarded_fallbacks(text, *, validate_data=None):
     """Read direct NON_MATCHING definition/fallback pairs, not a search queue.
 
     Multiple definitions in one guard and renamed fallback symbols are valid.
     Declarations alone are not C coverage. Unsupported/ambiguous pairs refuse
-    accounting instead of silently treating them as missing source.
+    accounting instead of silently treating them as missing source. A standalone
+    inverse guard is data-only only after the caller authenticates each file.
     """
     noise = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', re.S)
     blank = lambda value: "".join("\n" if c == "\n" else " " for c in value)
@@ -236,9 +237,10 @@ def resident_guarded_fallbacks(text):
         kind, argument = match[1], match[2].strip()
         if kind in {"if", "ifdef", "ifndef"}:
             target = kind == "ifdef" and argument == "NON_MATCHING"
-            if re.search(r"\bNON_MATCHING\b", argument) and not target:
+            data_guard = kind == "ifndef" and argument == "NON_MATCHING"
+            if re.search(r"\bNON_MATCHING\b", argument) and not (target or data_guard):
                 raise RuntimeError("unsupported resident NON_MATCHING guard")
-            stack.append({"target": target, "start": match.end(), "branches": [],
+            stack.append({"target": target, "data": data_guard, "start": match.end(), "branches": [],
                           "nested": bool(stack)})
         elif not stack:
             raise RuntimeError("unbalanced resident source guards")
@@ -246,6 +248,19 @@ def resident_guarded_fallbacks(text):
             stack[-1]["branches"].append((kind, match.start(), match.end()))
         else:
             guard = stack.pop()
+            if guard["data"]:
+                content = text[guard["start"]:match.start()]
+                paths = pragma.findall(content)
+                if (guard["nested"] or guard["branches"] or not paths
+                        or len(paths) != len(set(paths))
+                        or pragma.sub("", content).strip()):
+                    raise RuntimeError("ambiguous resident data-only NON_MATCHING guard")
+                if validate_data is None:
+                    raise RuntimeError("resident data fallback requires section authentication")
+                for path in paths:
+                    if validate_data(path) is not True:
+                        raise RuntimeError("resident data fallback was not authenticated")
+                continue
             if not guard["target"]:
                 continue
             branches = guard["branches"]
@@ -296,16 +311,66 @@ def resident_guarded_fallbacks(text):
     return result
 
 
+
+def validate_resident_data_fallback(root, source, spelling, function_names):
+    """Authenticate the bounded splat readonly-scalar form, never a function.
+
+    A D_ filename is not evidence: glabel/alabel define executable ELF types.
+    Only an owning main TU's regular file with one object label and one numeric
+    float in .rodata is supported. Unknown assembly syntax fails closed.
+    """
+    root, source, path = Path(root), Path(source), Path(spelling)
+    name = path.stem
+    if (spelling != path.as_posix() or source.parent != root / "src/main"
+            or not re.fullmatch(r"D_[0-9A-Fa-f]{8}", name)
+            or path.parts != ("asm", "nonmatchings", "main", source.stem, name + ".s")
+            or name in function_names):
+        raise RuntimeError(f"invalid resident data fallback identity: {spelling}")
+    target = root / path
+    if (not target.is_file() or any(parent.is_symlink() for parent in
+            [target, *target.parents] if parent != root and parent.is_relative_to(root))
+            or not target.resolve().is_relative_to(root.resolve())):
+        raise RuntimeError(f"missing or nonregular resident data fallback: {spelling}")
+    text = target.read_text(encoding="utf-8")
+    text = re.sub(r"/\*.*?\*/|#[^\n]*", "", text, flags=re.S)
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if not lines or lines.pop(0) != ".section .rodata":
+        raise RuntimeError(f"resident data fallback requires readonly section: {spelling}")
+    if lines and re.fullmatch(r"\.balign[ \t]+4", lines[0]):
+        lines.pop(0)
+    if not lines or lines.pop(0) != "dlabel " + name:
+        raise RuntimeError(f"resident data fallback requires unique object label: {spelling}")
+    scalar = r"\.float[ \t]+[-+]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?"
+    if not lines or not re.fullmatch(scalar, lines.pop(0)):
+        raise RuntimeError(f"unsupported resident readonly scalar: {spelling}")
+    if lines and (lines[0] == "enddlabel " + name or re.fullmatch(
+            rf"\.size[ \t]+{re.escape(name)}[ \t]*,[ \t]*\.[ \t]*-[ \t]*{re.escape(name)}", lines[0])):
+        lines.pop(0)
+    if lines:
+        raise RuntimeError(f"ambiguous or executable resident data fallback: {spelling}")
+    return True
+
+
 def get_resident_nonmatching_functions(root, all_funcs, func_addrs,
                                       matched_funcs, verified_asm_funcs,
                                       identity_records):
     """Reclassify existing resident ELF extents; never add matching credit."""
     root = Path(root)
     owners = {}
+    data_owners = set()
+    function_names = set(all_funcs) | {record[0] for record in identity_records}
     for source in sorted((root / "src").rglob("*.c")):
         if "overlays" in source.relative_to(root / "src").parts:
             continue
-        for spelling in resident_guarded_fallbacks(source.read_text(encoding="utf-8")):
+        def validate_data(spelling):
+            validate_resident_data_fallback(root, source, spelling, function_names)
+            if spelling in data_owners:
+                raise RuntimeError(f"duplicate resident data fallback: {spelling}")
+            data_owners.add(spelling)
+            return True
+
+        for spelling in resident_guarded_fallbacks(
+                source.read_text(encoding="utf-8"), validate_data=validate_data):
             path = Path(spelling)
             if (path.is_absolute() or ".." in path.parts or path.suffix != ".s"
                     or path.parts[:2] != ("asm", "nonmatchings")):

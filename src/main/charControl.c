@@ -303,6 +303,9 @@ f32 func_8001BB90(s32 cameraIndex) {
  */
 /* PROVENANCE: JFG's corresponding character-control routine supplied the control-flow role;
  * all field offsets, calls, and the body below are reconstructed from Mickey. */
+/* Existing readonly scalar cells, in their owning function order. */
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081840.s")
+
 void func_8001BBB4(ControlActor *actor, ControlPlayer *player, f32 arg2) {
     ControlTrackState *track;
     s32 surfaceIndex;
@@ -573,6 +576,9 @@ void controlPlayerReInit(ControlActor *actor, f32 x, f32 y, f32 z, s16 arg4, s16
  * the slot byte is `i << 3`, which uopt does not strength-reduce; and
  * unk10, unkFE, unk4C, unk3BA and the spawn packet's owner are written in
  * the target's store order, with `i = 0` folded onto the line its tie needs. */
+/* Existing readonly scalar cells, in their owning function order. */
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081844.s")
+
 void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode) {
     ControlPlayer *player;
     CharControlEffectDefinition *effect;
@@ -816,6 +822,10 @@ void func_8001CB0C(ControlTransform *transform, ControlPlayer *player) {
  * words; declaring a *new* local for it instead of reusing var_f12 pushed
  * every compiler temp 4 bytes down the frame and cost 25 displacement words.
  * Both halves are needed: 53 -> 39 -> 0. */
+/* Existing readonly scalar cells, in their owning function order. */
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081848.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_8008184C.s")
+
 void func_8001CB84(ControlActor *actor, s32 updateRate) {
     f32 sp7C;
     f32 var_f12;
@@ -1402,6 +1412,15 @@ void func_8001DCD0(s16 rotation, ControlVector3 *vector, s16 *pitch, s16 *yaw);
 /* PROVENANCE: JFG's public charControl.c and hit.c identify the related
  * ground-hit and polygon-edge control family, but publish assembly only;
  * this body is reconstructed from Mickey's collision records and fields. */
+#ifndef NON_MATCHING
+/* Existing readonly scalar cells, in their owning function order. */
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081850.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081854.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081858.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_8008185C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081860.s")
+#endif
+
 #ifdef NON_MATCHING
 /* Workbench verdict: structure-mismatch, 433 differing words, first mismatch +0x0. */
 /* Candidate shape: 533 instructions and frame -0x268, both exact; 260 alignment gaps. */
@@ -1682,6 +1701,16 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
 /* PROVENANCE: JFG's public charControl.c identifies the corresponding
  * controlSquashCheckPrior routine, but publishes assembly only; this body is
  * reconstructed from Mickey's fields, calls, branch conditions, and stores. */
+#ifndef NON_MATCHING
+/* Existing readonly scalar cells, in their owning function order. */
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081864.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081868.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_8008186C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081870.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081874.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081878.s")
+#endif
+
 #ifdef NON_MATCHING
 /* Rewritten from the listing (lane z-fxchar, 2026-10-02): 408 at -16 to 157
  * at size delta 0, frame 0xD0 as the target. What moved it: the sixteen-word
@@ -1874,6 +1903,14 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
  * propagated: the offset is a one-block web that takes f0 and `delta` lives
  * in its home, which is what pushes the three point temporaries to f18, a
  * split f0 and a split f12. */
+/* Existing readonly scalar cells, in their owning function order. */
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_8008187C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081880.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081884.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081888.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_8008188C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081890.s")
+
 void func_8001EC44(s32 arg0, ControlVector3 *pos, ControlVector3 *vel,
                    f32 radius, ControlCollisionPlane *plane) {
     ControlCollisionState *state = &D_800CB2C0;
@@ -1976,6 +2013,10 @@ void func_8001EFFC(ControlTransform *transform, ControlPlayer *player, f32 *outp
         } while (index < player->unk2BC);
     }
 }
+/* Existing readonly scalar cells, in their owning function order. */
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081894.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081898.s")
+
 void func_8001F09C(ControlPlayer *player, s32 updateRate) {
     f32 rate;
 

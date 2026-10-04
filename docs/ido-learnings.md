@@ -31,6 +31,18 @@ bytes and disassembly never belong here.
 
 ### From a proved colour force to ordinary source
 
+- **Symptom:** a signed-conversion temporary loses an allocation tie to
+  rectangle calculations, although its value is loop-invariant. **Mechanism:**
+  the first surviving definition can establish allocation priority; moving a
+  definition alone can also hoist dependent arithmetic and disturb spill homes.
+  **Lever:** establish the unsigned byte-stride value before competing
+  calculations, then repeat its explicit signed conversion at the guarded
+  division where that signed value is needed. This can preserve the desired
+  allocation while restoring the division and spill schedule. **Limits:**
+  preserve integer widths, conversion behavior, and the division guard;
+  compare the complete TU. A remaining FP multiply schedule can independently
+  require the existing TU-local R4300 scheduling option. Only the stock
+  compiler, exact relocations, linked bytes, and ROM proof establish closure.
 - **Symptom:** an accepted force removes a register-only residual, but the
   unforced web keeps choosing the lowest free colour. **Mechanism:** source
   reconstruction can erase an earlier interfering web by spelling a walking

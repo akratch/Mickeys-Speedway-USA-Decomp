@@ -41,8 +41,9 @@ and the early temporary is still a3 here. The body is retained and the
 reopen is closed. `func_80009414` then moved its static-loop `unk8` load
 to after the `unk4` test. The same scorer measures 234 differing words at
 1684 bytes, size delta 0, frame 0x198, first mismatch still +0xC0, down
-from 243. That body is retained and its reopen is closed. None of these
-is a match, and none is landed. Raw
+from 243. Reassigning `object` from `arg3` in the dynamic-loop test then
+scored the same 234 words and was not kept. That body is retained and
+its reopen is closed. None of these is a match, and none is landed. Raw
 resident assembly and the shared overlay 88 body remain in the gap; their
 latest committed notes do not name an untried source form that is currently
 assignable.

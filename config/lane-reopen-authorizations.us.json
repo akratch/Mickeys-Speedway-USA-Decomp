@@ -200,11 +200,6 @@
       "reason": "Reconstruction sweep at 8 to 16 bytes: the candidate is a few instructions out, and today's cause list names the usual reasons -- a missing copy, a block fallthrough, an address rematerialized once too often.",
       "source_commit": "ae3ca05774314ba3962e97a639f0cd4faae2d19d"
     },
-    "func_80010654": {
-      "ledger_commit": "a74c93b55b8ccec7f69f76f68a06bfc66fcd3a95",
-      "reason": "func_80010B4C matched after the literal plateau. Re-audit aggregate views, pointer roles and definition lifetimes against that matched track family. Do not repeat the closed literal contrast or home grid.",
-      "source_commit": "27a9a088b8a8e179bd1d85d18039737fb8487508"
-    },
     "func_80010900": {
       "ledger_commit": "8072dce733b389b3e132c51351293d1dfef907d9",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",

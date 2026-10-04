@@ -190,6 +190,107 @@ class ResidentAccountingTests(unittest.TestCase):
         self.assertEqual(len(records), 2)
 
 
+
+def data_guard(paths=("asm/nonmatchings/main/example/D_10000000.s",)):
+    return ("#ifndef NON_MATCHING\n"
+            + "\n".join(f'#pragma GLOBAL_ASM("{path}")' for path in paths)
+            + "\n#endif\n")
+
+
+class DataGuardTests(unittest.TestCase):
+    def test_requires_authentication_and_never_returns_function(self):
+        with self.assertRaisesRegex(RuntimeError, 'requires section authentication'):
+            progress.resident_guarded_fallbacks(data_guard())
+        seen = []
+        def accept(path):
+            seen.append(path)
+            return True
+        self.assertEqual(progress.resident_guarded_fallbacks(data_guard(), validate_data=accept), [])
+        self.assertEqual(seen, ['asm/nonmatchings/main/example/D_10000000.s'])
+        with self.assertRaisesRegex(RuntimeError, 'not authenticated'):
+            progress.resident_guarded_fallbacks(data_guard(), validate_data=lambda _: False)
+
+    def test_ambiguous_inverse_guards_refuse_before_validator(self):
+        original = data_guard()
+        for text in (original.replace('#endif', '#else\n#endif'),
+                     original.replace('#endif', '#elif OTHER\n#endif'),
+                     original.replace('#endif', ''),
+                     '#if OTHER\n' + original + '#endif\n',
+                     original.replace('#pragma', '#if OTHER\n#pragma').replace('#endif', '#endif\n#endif'),
+                     original.replace('#endif', 'void function(void) {}\n#endif'),
+                     original.replace('#endif', 'extern float value;\n#endif'),
+                     original.replace('#ifndef NON_MATCHING', '#if !defined(NON_MATCHING)'),
+                     data_guard(('asm/nonmatchings/main/example/D_10000000.s',) * 2)):
+            with self.subTest(text=text), self.assertRaises(RuntimeError):
+                progress.resident_guarded_fallbacks(text, validate_data=lambda _: self.fail('validator reached'))
+
+
+class DataAccountingTests(unittest.TestCase):
+    count = ResidentAccountingTests.count
+
+    def setUp(self):
+        ResidentAccountingTests.setUp(self)
+        self.data = self.asm.with_name('D_10000000.s')
+        self.valid = '.section .rodata\n.balign 4\ndlabel D_10000000\n.float 1.25\nenddlabel D_10000000\n'
+        self.data.write_text(self.valid)
+        self.source.write_text(data_guard() + guarded())
+
+    def test_scalar_guards_preserve_function_partition(self):
+        self.assertEqual(self.count(), {'first'})
+        for ending in ('', 'enddlabel D_10000000\n', '.size D_10000000, . - D_10000000\n'):
+            self.data.write_text(self.valid.replace('enddlabel D_10000000\n', ending))
+            self.assertEqual(self.count(), {'first'})
+
+    def test_executable_and_unknown_data_syntax_refuse(self):
+        for text in (self.valid.replace('.rodata', '.text'),
+                     self.valid.replace('.rodata', '.data'),
+                     self.valid.replace('dlabel D_10000000', 'glabel D_10000000', 1),
+                     self.valid.replace('dlabel D_10000000', 'alabel D_10000000', 1),
+                     self.valid.replace('.float 1.25', 'nop'),
+                     self.valid.replace('.float 1.25', '.include "foreign.inc"'),
+                     self.valid.replace('.float 1.25', '.float 1.25\n.float 2.5'),
+                     self.valid + '.section .text\n',
+                     self.valid.replace('enddlabel D_10000000', '.type D_10000000, @function')):
+            self.data.write_text(text)
+            with self.subTest(text=text), self.assertRaises(RuntimeError):
+                self.count()
+
+    def test_data_label_cannot_be_an_elf_function_even_if_zero_sized(self):
+        self.records.append(('D_10000000', 5000, 0))
+        with self.assertRaisesRegex(RuntimeError, 'data fallback identity'):
+            self.count()
+
+    def test_wrong_duplicate_and_foreign_labels_refuse(self):
+        for text in (self.valid.replace('D_10000000', 'D_10000004'),
+                     self.valid + 'dlabel D_10000004\n',
+                     self.valid.replace('.float 1.25', 'dlabel D_10000000\n.float 1.25')):
+            self.data.write_text(text)
+            with self.subTest(text=text), self.assertRaises(RuntimeError):
+                self.count()
+
+    def test_foreign_owner_unsafe_and_missing_paths_refuse(self):
+        for path in ('asm/nonmatchings/main/foreign/D_10000000.s',
+                     'asm/nonmatchings/main/example/first.s',
+                     'asm/nonmatchings/main/example/./D_10000000.s',
+                     'asm//nonmatchings/main/example/D_10000000.s',
+                     '../D_10000000.s', '/tmp/D_10000000.s'):
+            self.source.write_text(data_guard((path,)) + guarded())
+            with self.subTest(path=path), self.assertRaises(RuntimeError):
+                self.count()
+        self.source.write_text(data_guard() + guarded())
+        self.data.unlink()
+        with self.assertRaisesRegex(RuntimeError, 'missing or nonregular'):
+            self.count()
+        self.data.symlink_to(self.asm)
+        with self.assertRaisesRegex(RuntimeError, 'missing or nonregular'):
+            self.count()
+
+    def test_duplicate_data_guard_refuses(self):
+        self.source.write_text(data_guard() * 2 + guarded())
+        with self.assertRaisesRegex(RuntimeError, 'duplicate resident data'):
+            self.count()
+
+
 if __name__ == '__main__':
     unittest.main()
 

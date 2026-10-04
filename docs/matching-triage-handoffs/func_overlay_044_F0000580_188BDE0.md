@@ -60,4 +60,34 @@ than shipped. Flat, all at 13: return structure (4 forms), declaration
 order (8), xh/dsdx/stride types, xh operand order, stride spelling (7
 unsigned forms), stride position, pre-loop statement order (15 legal
 permutations) and line folding (8).
+
+#### 2026-10-03, lane codex-o044-dead-carrier: named width operand does not close the stride copy
+
+The exact track closure in PR105 motivated an ADR0017 defined inert diagnostic,
+not an original-source claim. Assignment gate was zero-exit `base-only` on
+committed authorization `06020986e`; full-TU stock baseline reproduces 349 words,
+13 raw/masked differences, first `+0x188`, frame `0x100`. The nearest skeleton
+relative is JFG `fmvDraw` (0.1982); no reference source was adopted.
+
+All contrasts reuse the existing ordinary `s32 rows` local, whose later loop
+assignment dominates every real read. No address escape, flags, padding, width
+change, or live value change was introduced:
+
+- Naming width inside the unsigned stride operand: 13 words, first `+0x188`,
+  frame `0x100`, unchanged opcode/register residual. The dead assignment does
+  not supply the needed allocation lever.
+- Naming width in a separate statement immediately before that operand: same
+  13 words and geometry. Statement separation does not rescue the mechanism.
+- Moving that definition before `xh`, with its value used only for the later
+  unsigned stride operand: 91 words, first `+0`, frame `0xF8`, size unchanged.
+  Earlier definition changes allocation/home geometry, but loses the target
+  frame rather than closing the stride-copy priority.
+
+Restored the admitted baseline source. All diagnostic source/object/summary
+artifacts remain ignored under `build/o044-dead-carrier/`. Four relocation-name
+cautions persist in the workbench comparison and are not identity proof.
+No exact result or matching credit. This bounded naming mechanism is closed;
+do not repeat it as a dead-assignment grid. The preexisting conversion-copy
+priority and multiply scheduling questions remain.
+
 <!-- plateau-handoff:func_overlay_044_F0000580_188BDE0:end -->

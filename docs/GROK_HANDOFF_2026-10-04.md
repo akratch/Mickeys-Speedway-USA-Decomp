@@ -90,6 +90,9 @@ not kept.
 `func_800349A4` with the clamp arm written as `nextFrame--` scores 243 masked
 words at size delta -4, against a proved baseline of 172 at delta 0. The body
 is not kept.
+`func_80017140` with the plane index formed after the overlap call scores 310
+masked words at size delta -16, against a proved baseline of 296 at +16. The
+body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

@@ -47,6 +47,9 @@ axis scores 595 masked words at size delta -8, against a proved baseline of
 the unk1E test scores 237 masked words at size delta 0, against a proved
 baseline of 234. The first mismatch moves from +0xC0 to +0xBC. The body is
 not kept.
+`overlay83DrawStrip` with the display-list parameter reassigned to
+`doubledCount + 2` scores 82 masked words at size delta +20, against a
+proved baseline of 68 at delta 0. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

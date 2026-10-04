@@ -170,4 +170,15 @@ that scored comparison unchanged at the same size and frame. The whole
 object digest moved and the function comparison did not, which is the
 line-metadata effect of a folded identity. Eliminated. The tracked body is
 unchanged. No bytes are credited. Do not repeat this identity family.
+
+#### 2026-10-04: parameter reassigned to the vertex count
+
+Configured full-TU baseline: 68 raw and masked words, target 308 bytes,
+size delta 0, first mismatch +0x4. Reassigning the display-list parameter
+to `doubledCount + 2` after its cursor increment, and using that value in
+the expanded vertex command, recompiled to 82 masked words at size delta
++20. The first mismatch moved to +0x0. The restored body re-scores 68 at
+delta 0. The body is not kept. Do not expand the vertex command into a
+parameter reassignment.
+
 <!-- plateau-handoff:overlay83DrawStrip:end -->

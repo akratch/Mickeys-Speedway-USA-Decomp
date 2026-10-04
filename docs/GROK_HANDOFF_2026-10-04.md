@@ -4,10 +4,15 @@ Snapshot: 2026-10-04, integration source baseline `a1356f56e`.
 
 ## Current addendum
 
-The snapshot totals were recomputed from the built tree and still match:
-832,780 / 943,640 resolved executable bytes. The commits after that
-measurement keep every changed body behind `NON_MATCHING`, so they do not
-move the account. No new match.
+Recomputed from the built ELF after merging the published integration
+branch: 834,612 / 943,640 resolved executable bytes (88.4460%). Remaining
+109,028. `gmake verify` reproduced ROM
+`507341c0a40ca3e9a7cee969b396ee53facfb548`. Functions stay 1,322 / 1,460.
+`func_overlay_092_F0000308_18D6228` was already on `origin/master`: 1,832
+overlay C bytes, 458 words, 33 relocation identities in that commit's
+proof. This checkout reproduced the byte gain. The ranked queue is 61.
+The local diagnostic commits below stay behind `NON_MATCHING` and are not
+matches.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference
@@ -46,10 +51,10 @@ scored the same 234 words and was not kept. The sort remainder that
 starts `j` at 1 then scored 256 words at the same 1684 bytes and frame,
 and forming the entries address before the type test grew the frame to
 0x1A0 and scored 286. Neither was kept. That body is retained and its
-reopen is closed. None of these is a match, and none is landed. Raw
-resident assembly and the shared overlay 88 body remain in the gap; their
-latest committed notes do not name an untried source form that is currently
-assignable.
+reopen is closed. None of those diagnostic edits is a match. Raw
+resident assembly (9,908 bytes) and the shared overlay 88 body remain in
+the gap; their latest committed notes do not name an untried source form
+that is currently assignable.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

@@ -23,7 +23,9 @@ destination before the source pointers grew the function to 119 words. The
 register pool, including v1, already matched, so that lever cannot create
 the missing colour. Defining that counter immediately before the colour
 loop is hoisted back across the time loop and leaves the positional
-residual at 74. None of these is a match, and none is landed. Raw
+residual at 74. `func_80028FCC` does not take second arguments 0, 1 and 2:
+that pattern scores 12 positional words against the 10-word baseline and
+was reverted. None of these is a match, and none is landed. Raw
 resident assembly and the shared overlay 88 body remain in the gap; their
 latest committed notes do not name an untried source form that is currently
 assignable.

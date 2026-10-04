@@ -274,4 +274,12 @@ the branch target. What is not explained is a source form whose three stores
 read three ring temporaries. Every form measured keeps the value in one
 coloured web or returns a constant.
 
+### 2026-10-04, lane grok-main28fcc: varying second arguments regress
+
+Configured full-TU baseline reproduced 27/27 words, 10 positional
+differences, first +0x1C, frame 0x18, and 3/3 exact relocation identities.
+Passing second arguments 0, 1 and 2 scores 12 positional differences at the
+same size and frame, with matched words 17 to 15. Mickey's calls do not
+take that player-index pattern. Reverted. No bytes are credited. Do not
+repeat this argument pattern.
 <!-- plateau-handoff:func_80028FCC:end -->

@@ -3937,8 +3937,8 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
         count = 0;
         staticEntry = (Objects09414StaticEntry *)((u8 *)resource + 0x34C);
         for (i = 0; i < 4; i++, staticEntry++) {
-            cone = staticEntry->unk8;
-            if ((staticEntry->unk4 != 0) && (cone != NULL)) {
+            if (staticEntry->unk4 != 0) { cone = staticEntry->unk8;
+            if (cone != NULL) {
                 vector = &root->unk40[staticEntry->unk2];
                 depths[count] = camGetProjZ(vector->x, vector->y, vector->z);
                 cones[count] = cone;
@@ -3948,7 +3948,7 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                 kindOrEntry[count] = staticEntry->unk0 | 0x80;
                 sortIndex[count] = count;
                 count += 1;
-            }
+            } }
         }
 
         if (resource->unk158 == 0) {
@@ -5378,10 +5378,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414
- * score: 243 differing words
+ * score: 234 differing words
  * frame: 0x198
  * relocations: 11
  * first-mismatch: +0xC0
- * summary: Delta 0, exact through +0xBC. Five one-sided pairs left: static-loop unk8 load, object reload, sort j=1, entries address, then the temp ring.
+ * summary: Delta 0, frame 0x198. unk8 loads after the unk4 test (234). Left: object reload, sort j=1, entries address, temp ring.
  * PLATEAU-HANDOFF:func_80009414:end
  */

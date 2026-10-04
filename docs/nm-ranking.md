@@ -316,8 +316,8 @@ units remain distinct.
 | 21 | `src/main/fx.c` | `func_80049B14` | `main` | `other` | 824 | 181 | 181 | 4 | 4 | 0 | — |
 | 22 | `src/main/frontend_37D50.c` | `func_80037C74` | `main` | `other` | 1,308 | 191 | 191 | 256 | 256 | 0 | — |
 | 23 | `src/main/charControl.c` | `func_8001DD70` | `main` | `other` | 2,132 | 224 | 224 | 360 | 360 | 0 | — |
-| 24 | `src/overlays/o036/overlay36UpdateInteractiveEntity.c` | `overlay36UpdateInteractiveEntity` | `o036` | `other` | 1,220 | 238 | 235 | 24 | 44 | 0 | — |
-| 25 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 243 | 243 | 192 | 192 | 0 | — |
+| 24 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 234 | 234 | 192 | 192 | 0 | — |
+| 25 | `src/overlays/o036/overlay36UpdateInteractiveEntity.c` | `overlay36UpdateInteractiveEntity` | `o036` | `other` | 1,220 | 238 | 235 | 24 | 44 | 0 | — |
 | 26 | `src/overlays/o066/overlay66SmoothAndDraw.c` | `func_overlay_066_F0000040_18C64A8` | `o066` | `other` | 1,184 | 251 | 249 | 4 | 132 | 0 | — |
 | 27 | `src/main/fx.c` | `wakeUpdate` | `main` | `other` | 1,592 | 253 | 253 | 52 | 52 | 0 | — |
 | 28 | `src/main/diCpu.c` | `func_80045D34` | `main` | `other` | 1,836 | 270 | 254 | 12 | 12 | 0 | — |

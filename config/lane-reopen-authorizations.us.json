@@ -826,8 +826,8 @@
       "source_commit": "c83b2645e2a2bc3525574543255a6919f8df2d22"
     },
     "func_8005AF14": {
-      "ledger_commit": "7b2238a357082cc1efc8185806e8bbd79941222a",
-      "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
+      "ledger_commit": "4b49dcc7d39f490e02f02953601161361d074730",
+      "reason": "New source identity: func_8002B040 takes three floats in matrix.c, and overlay 94 passes 0.0f. This TU declares s32 and passes integer bit patterns. Predict float arguments remove the three extra words and close the +12 byte gap.",
       "source_commit": "7b2238a357082cc1efc8185806e8bbd79941222a"
     },
     "func_8006E7E0": {

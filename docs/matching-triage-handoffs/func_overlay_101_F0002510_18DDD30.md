@@ -202,4 +202,14 @@ words, 259 differing, the same frame, and a deficit of 1. That is the
 y first did not change the saved-register assignment. The body is not
 kept. Do not reopen this function to declare y earlier.
 
+#### 2026-10-04: sourceY from the y sum grows the function
+
+Configured full-TU baseline: size delta -8, 257 raw and masked words, first
+mismatch +0x44. Writing both the bottom comparison and
+`sourceY = top - y` as `node->y + element->y` measures size delta +4, 268
+raw and masked words, first mismatch +0x34. That is 11 more differing words
+and 12 more candidate bytes than the baseline, and worse than the
+bottom-test sum alone (259 at -4). The extra sum is not folded into the
+copy. The body is not kept. Do not repeat this pair.
+
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

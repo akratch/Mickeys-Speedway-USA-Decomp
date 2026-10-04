@@ -22,6 +22,9 @@ matches the previous one, and `gmake verify` still rebuilds the US ROM. The
 empty `!value` condition remains load-bearing. Removing only
 `overlay1UpdateCountdown`'s impossible condition keeps every symbol size and
 reschedules that function, so the condition stays.
+`func_overlay_101_F0002510_18DDD30`'s bottom test and `sourceY` written from
+`node->y + element->y` score 268 masked words at size delta +4, against a
+proved baseline of 257 at -8. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

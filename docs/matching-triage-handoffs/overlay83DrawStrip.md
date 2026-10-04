@@ -158,4 +158,16 @@ byte credit. Do not repeat these six controls, the 304-byte shift-length
 shape, the empty-if grid, or the cursor colour sweep. A later packet needs
 a different way to make the parameter copy survive once vertexCount is
 live, without a new stack home or an added word.
+
+### 2026-10-04, lane grok-o083-copy: folded or-zero does not keep the copy
+
+Configured full-TU baseline reproduced 77/77 words, 68 raw differences,
+aligned differences 55, structural 22, register 33, first +0x4, frameless,
+two relocations and zero exact identities.
+
+Casting the saved display-list initializer through a folded or-zero left
+that scored comparison unchanged at the same size and frame. The whole
+object digest moved and the function comparison did not, which is the
+line-metadata effect of a folded identity. Eliminated. The tracked body is
+unchanged. No bytes are credited. Do not repeat this identity family.
 <!-- plateau-handoff:overlay83DrawStrip:end -->

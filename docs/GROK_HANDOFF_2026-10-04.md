@@ -14,7 +14,9 @@ index scored 163, output-pointer copies left 162 words, and a difference
 aggregate was scalar-replaced. `overlay83DrawStrip` is a diagnostic
 improvement only, 69 to 68 masked words at the same 308 bytes, first
 mismatch still +0x4. Dead zeros, pointer-copy placement, and an early
-address local did not make vertexCount take the parameter register.
+address local did not make vertexCount take the parameter register. The
+next authorized lever is a folded or-zero identity on the saved display-list
+pointer, which has not been measured yet.
 `func_8003C80C`'s destination-pointer numbering packet is closed on the
 unchanged 74-word body: storing alpha first scored 79, and defining the
 destination before the source pointers grew the function to 119 words. The

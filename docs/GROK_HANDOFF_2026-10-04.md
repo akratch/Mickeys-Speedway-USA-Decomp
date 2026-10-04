@@ -21,9 +21,9 @@ measured and left the 68-word comparison unchanged. It is eliminated.
 unchanged 74-word body: storing alpha first scored 79, and defining the
 destination before the source pointers grew the function to 119 words. The
 register pool, including v1, already matched, so that lever cannot create
-the missing colour. The next authorized lever defines the colour counter
-immediately before the colour loop, so it is not live across the time loop.
-None of the closed results is a match, and none is landed. Raw
+the missing colour. Defining that counter immediately before the colour
+loop is hoisted back across the time loop and leaves the positional
+residual at 74. None of these is a match, and none is landed. Raw
 resident assembly and the shared overlay 88 body remain in the gap; their
 latest committed notes do not name an untried source form that is currently
 assignable.

@@ -406,8 +406,8 @@
       "source_commit": "a5d2eeca202f3677ac36a88b2c1d90b1d09e9e3e"
     },
     "func_80028FCC": {
-      "ledger_commit": "a5a7dc3e6c1354821829579a8817d6af529c1737",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
+      "ledger_commit": "4db0f28bd9f747baec7607a81d717349e2563981",
+      "reason": "Test the successor note that the three calls are one player scan, with second arguments 0, 1 and 2. Revert unless the positional residual drops. Do not repeat the normalisation lattice, return types, or conditional expressions.",
       "source_commit": "a5a7dc3e6c1354821829579a8817d6af529c1737"
     },
     "func_80029274": {

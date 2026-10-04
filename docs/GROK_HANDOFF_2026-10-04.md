@@ -59,6 +59,9 @@ byte-identical to the proved baseline. The body is not kept.
 `func_overlay_101_F0002510_18DDD30` with y copied into sourceY before the
 scissor call scores the same 257 masked words at size delta -8. The owned
 text is byte-identical to the proved baseline. The body is not kept.
+`overlay83DrawStrip` with vertexCount stored into the display-list parameter
+and passed to the vertex macro scores 80 masked words at size delta +20,
+against a proved baseline of 68 at delta 0. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

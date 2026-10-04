@@ -181,4 +181,8 @@ the expanded vertex command, recompiled to 82 masked words at size delta
 delta 0. The body is not kept. Do not expand the vertex command into a
 parameter reassignment.
 
+#### 2026-10-04: vertexCount stored into the display-list parameter
+
+Configured full-TU baseline: 68 raw and masked words, target 308 bytes, size delta 0, first mismatch +0x4. Assigning that vertexCount into the display-list parameter after the colour stores, and passing the parameter to the unexpanded vertex macro, recompiled to 80 masked words at size delta +20. The first mismatch moved to +0x0. The restored body re-scores 68 at delta 0. The body is not kept. Do not repeat this parameter store.
+
 <!-- plateau-handoff:overlay83DrawStrip:end -->

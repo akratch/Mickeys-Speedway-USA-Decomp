@@ -66,6 +66,9 @@ against a proved baseline of 68 at delta 0. The body is not kept.
 written directly into the colour registers scores the same 249 masked
 words at size delta 0. The configured objects are byte-identical. The body
 is not kept.
+`func_80009414` with the resource slots at 0x134 walked by a 4-byte stride
+scores 294 masked words at size delta -4, against a proved baseline of 234
+at delta 0. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

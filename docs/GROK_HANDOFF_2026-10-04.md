@@ -14,6 +14,13 @@ proof. This checkout reproduced the byte gain. The ranked queue is 61.
 The local diagnostic commits below stay behind `NON_MATCHING` and are not
 matches.
 
+The follow-up requested on this branch is the cleanup queue: already-matched
+source should read as ordinary C, and the stock object has to stay
+byte-identical. `overlay7FillValues` now stores with an ordinary `*value = 0xF0`.
+The comma operand was not required. The post-processed translation-unit object
+matches the previous one, and `gmake verify` still rebuilds the US ROM. The
+empty `!value` condition remains load-bearing.
+
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference
 aggregate was scalar-replaced. `overlay83DrawStrip` is a diagnostic

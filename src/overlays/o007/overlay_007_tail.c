@@ -259,10 +259,9 @@ void overlay7CommitSelection(s32 selection)
   }
 }
 
-/* Pinned DKR v77/v80 and JFG object scans found no exact donor. Exact but
- * non-natural: the empty condition and dummy comma-expression operand are
- * semantically inert allocation aids preserving IDO's 11-word coloring.
- * Tracked in docs/cleanup-queue.md. */
+/* Pinned DKR v77/v80 and JFG object scans found no exact donor. The empty
+ * condition is inert and keeps the retail register assignment. The store is
+ * an ordinary write. See docs/cleanup-queue.md. */
 s32 overlay7FillValues(s16 *value) {
     s32 remaining;
 
@@ -271,7 +270,7 @@ s32 overlay7FillValues(s16 *value) {
     value = &gOverlay7ValuesEnd;
     remaining = 9;
     do {
-        *((0, value)) = 0xF0;
+        *value = 0xF0;
         value--;
     } while (remaining--);
 }

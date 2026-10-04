@@ -14,13 +14,16 @@ index scored 163, output-pointer copies left 162 words, and a difference
 aggregate was scalar-replaced. `overlay83DrawStrip` is a diagnostic
 improvement only, 69 to 68 masked words at the same 308 bytes, first
 mismatch still +0x4. Dead zeros, pointer-copy placement, and an early
-address local did not make vertexCount take the parameter register. A folded or-zero identity on the saved display-list pointer was then
+address local did not make vertexCount take the parameter register.
+A folded or-zero identity on the saved display-list pointer was then
 measured and left the 68-word comparison unchanged. It is eliminated.
 `func_8003C80C`'s destination-pointer numbering packet is closed on the
 unchanged 74-word body: storing alpha first scored 79, and defining the
 destination before the source pointers grew the function to 119 words. The
 register pool, including v1, already matched, so that lever cannot create
-the missing colour. None of these is a match, and none is landed. Raw
+the missing colour. The next authorized lever defines the colour counter
+immediately before the colour loop, so it is not live across the time loop.
+None of the closed results is a match, and none is landed. Raw
 resident assembly and the shared overlay 88 body remain in the gap; their
 latest committed notes do not name an untried source form that is currently
 assignable.

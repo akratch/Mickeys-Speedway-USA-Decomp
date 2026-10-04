@@ -2020,6 +2020,11 @@
       "reason": "The 0xFF type-2 web save 40 loses to splash save 76.8, and or-zero forms are flat. Untried: a second live 0xFF use in the render loop that uopt cannot delete. weather.c has no CFLAGS override.",
       "source_commit": "351cbecf4e21d8bba1440d6a27ca43fca58bcd19"
     },
+    "refractOutputAssembler": {
+      "ledger_commit": "a648b15d1ecd3b6af8c91c1196b25bee9e048e2d",
+      "reason": "The kept zero scan shares one end check. The same-extent sibling repeats that check on each advanced slot before one decode join. Score that untried 140-byte control shape once.",
+      "source_commit": "a648b15d1ecd3b6af8c91c1196b25bee9e048e2d"
+    },
     "render_epc_lock_up_display": {
       "ledger_commit": "05c3032cb90ee5fbe4ed3f5f6353bd24e0c6c52f",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",

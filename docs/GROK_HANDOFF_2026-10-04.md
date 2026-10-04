@@ -71,7 +71,10 @@ already measured at size +12 and was not retried.
 `func_8005AF14` was reopened for float arguments to `func_8002B040` and
 closed without keeping them: the proved baseline is 377 differing words
 at 1852 candidate bytes against 1840, and the float calls scored 391
-words at 1860 bytes. Raw resident assembly (9,908 bytes) and the shared
+words at 1860 bytes. `func_overlay_066_F00004E0_18C6948` was
+reopened for the screen-size if/else and closed without keeping it: the
+proved baseline is 202 differing words at 764 candidate bytes against
+816, and the if/else scored 225 words at 900 bytes. Raw resident assembly (9,908 bytes) and the shared
 overlay 88 body remain in the gap; their latest committed notes do not
 name an untried source form that is currently assignable.
 The owner requested this handoff because weekly model usage is nearly spent.

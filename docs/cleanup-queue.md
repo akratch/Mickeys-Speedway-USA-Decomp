@@ -19,6 +19,7 @@ not a correctness gap.
 
 | Function | TU | Non-natural form | Notes for the cleaner pass |
 |---|---|---|---|
+| `func_overlay_092_F0000308_18D6228` | overlay 92 camera update | initialized union representation self-copy `x.bits = x.bits` | Independently reviewed for IDO/o32; retains a stack-backed float lifetime without arithmetic or observable access. Seek natural spelling retaining 458 stock words, frame `0x70`, all 33 runtime relocation records and linked ROM identity. |
 | `func_80010B4C` | track.c multi-point collision | inherited unsigned `bit = bit OR 0` in the retry loop | Initialized, nonvolatile and semantically inert; independently reviewed. Seek a natural bit/index lifetime retaining 678 stock words, frame `0x148`, all nine relocation records and linked ROM identity. |
 | `func_8000E5EC` | track.c course display | dead `resultCount = segmentCount` inside the camera-segment product | `resultCount` is assigned 0 before any read. The store is what lets the product and the list cursor take the retail registers. Seek a natural live use retaining 205 words, frame `0xD8`, and the linked ROM bytes. |
 | `func_8000590C` | objects.c spawn | dead `aligned` pointer reused as the unk48 nested integer | The nested add commutes object-first only when that operand is an isvar, and a new local moves the 0x90 frame. `offset` already carries the unk4C nested value; `aligned` is dead after the copy. Seek a natural integer temp that keeps 719 words, frame `0x90`, and 99 relocations. |

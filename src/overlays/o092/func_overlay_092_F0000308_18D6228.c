@@ -45,6 +45,7 @@ typedef struct Overlay92UpdateConfig {
 } Overlay92UpdateConfig;
 
 extern Overlay92CameraRecord D_0[];
+/* Typed views of the retained module-local literal pool. */
 extern f32 D_8;
 extern f32 D_C;
 extern s32 overlay92TransitionFlagReloc;
@@ -64,23 +65,14 @@ extern void func_overlay_001_F0000DF4_184D1D4(void *owner, s32 path,
 extern s32 func_overlay_092_F0000068_18D5F88(void *owner, f32 *x, f32 *y,
                                              f32 *z, s32 *pathIndex);
 
-/* 2026-10-01 d-ovl1: the smoothing loop as `while (remaining--)` (157 to 148)
- * and the y and z blends written `((path - v) * wave) + v` (148 to 119);
- * the hand-rolled sentinel loop and add-first order were inherited. */
-/* Exact DKR v77/v80 and JFG object scans found no donor for this overlay. */
-/* Fresh V0 is exact-sized at 458 instructions / 0x728 bytes with frame 0x70:
- * 301/458 relocation-masked and 300/458 raw words match.  The first actionable
- * mismatch remains +0x94 (four opcode-order sites and 147 register rows), with
- * the 57-entry integer temporary lane exact.  All 33 runtime offsets/types
- * align; 24 identities are proved and nine remain unresolved.  The prior
- * constant/owner/pointer/width/loop/FP cap remains exhausted; postfix loop
- * regressed, leaving the loop-sentinel allocation and downstream FP webs. */
-#ifdef NON_MATCHING
+/* Reconstructed from Mickey-owned code and relocation evidence.
+ * The union self-copy is an independently reviewed IDO-specific allocation
+ * aid, not a claim about original source spelling. */
 void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
                                        Overlay92UpdateConfig *config,
                                        Overlay92CameraState *state,
                                        s32 update) {
-    f32 x;
+    union { f32 value; u32 bits; } x;
     f32 y;
     f32 z;
     f32 pathX;
@@ -128,27 +120,30 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
             }
 
             func_overlay_008_F00042A8_1862000(record, owner, (f32)update);
-            x = record->x;
+            x.value = record->x;
             y = record->y;
             z = record->z;
             func_overlay_001_F0000DF4_184D1D4(owner, 0, &pathX, &pathY,
                                               &pathZ);
-            x += (pathX - x) * wave;
+            /* Initialized representation self-copy: inert on IDO/o32.
+             * Retains the stack-backed float lifetime; see cleanup queue. */
+            x.bits = x.bits;
+            x.value = ((pathX - x.value) * wave) + x.value;
             y = ((((func_8002A8BC((s32)(wave * D_C)) * -0.5f) +
                     0.5f) *
                    30.0f) +
-                 (((pathY - y) * wave) + y));
-            z = ((pathZ - z) * wave) + z;
+                 (y + ((pathY - y) * wave)));
+            z = z + ((pathZ - z) * wave);
 
-            state->targetX = x;
+            state->targetX = x.value;
             state->x = state->targetX;
             state->targetY = y;
             state->y = state->targetY;
             state->targetZ = z;
             state->z = state->targetZ;
-            state->positionTag = func_8000FAE0(x, y, z);
+            state->positionTag = func_8000FAE0(x.value, y, z);
 
-            dx = x - owner->x;
+            dx = x.value - owner->x;
             dy = (y - owner->y) - 20.0f;
             dz = z - owner->z;
             wave = blend * 3.0f;
@@ -160,25 +155,25 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
                                      Arctanf(dz, dx) + 0x4000) *
                       wave) +
                       record->yaw);
+            level = (s16)Arctanf(dy, sqrtf((dx * dx) + (dz * dz)));
             state->pitch =
                 (s16)((record->pitch * (1.0f - wave)) +
-                      ((s16)Arctanf(dy,
-                                    sqrtf((dx * dx) + (dz * dz))) *
+                      (level *
                        wave));
             state->roll = (s16)(record->roll * (1.0f - wave));
             break;
 
         case 2:
             if (func_overlay_092_F0000068_18D5F88(
-                    owner, &x, &y, &z, &pathIndex) != 0) {
-                state->targetX = x;
+                    owner, &x.value, &y, &z, &pathIndex) != 0) {
+                state->targetX = x.value;
                 state->x = state->targetX;
                 state->targetY = y;
                 state->y = state->targetY;
                 state->targetZ = z;
                 state->z = state->targetZ;
-                state->positionTag = func_8000FAE0(x, y, z);
-                dx = x - owner->x;
+                state->positionTag = func_8000FAE0(x.value, y, z);
+                dx = x.value - owner->x;
                 dy = (y - owner->y) - 20.0f;
                 dz = z - owner->z;
             } else {
@@ -210,23 +205,23 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
             }
             if (state->pathIndex == -1) {
                 if ((func_overlay_092_F0000068_18D5F88(
-                         owner, &x, &y, &z, &pathIndex) == 0) ||
+                         owner, &x.value, &y, &z, &pathIndex) == 0) ||
                     (pathIndex == -1)) {
                     pathIndex = 3;
                 }
                 state->pathIndex = pathIndex;
             }
             state->pathIndex = 3;
-            func_overlay_001_F0000DF4_184D1D4(owner, state->pathIndex, &x,
+            func_overlay_001_F0000DF4_184D1D4(owner, state->pathIndex, &x.value,
                                               &y, &z);
-            state->targetX = x;
+            state->targetX = x.value;
             state->x = state->targetX;
             state->targetY = y;
             state->y = state->targetY;
             state->targetZ = z;
             state->z = state->targetZ;
-            state->positionTag = func_8000FAE0(x, y, z);
-            dx = x - owner->x;
+            state->positionTag = func_8000FAE0(x.value, y, z);
+            dx = x.value - owner->x;
             dy = (y - owner->y) - 20.0f;
             dz = z - owner->z;
             state->yaw = Arctanf(dz, dx) + 0x4000;
@@ -235,16 +230,3 @@ void func_overlay_092_F0000308_18D6228(Overlay92Owner *owner,
             break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o092/func_overlay_092_F0000308_18D6228/func_overlay_092_F0000308_18D6228.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_092_F0000308_18D6228:start
- * symbol: func_overlay_092_F0000308_18D6228
- * score: 119/458 words
- * frame: 0x70
- * relocations: 33
- * first-mismatch: +0x220
- * summary: Natural smoothing loop and add-last blends: 157 to 119. Open: x blend load order and FP ring phase from +0x220.
- * PLATEAU-HANDOFF:func_overlay_092_F0000308_18D6228:end
- */

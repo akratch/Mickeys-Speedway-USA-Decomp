@@ -4403,6 +4403,19 @@ gOverlay92DistanceParameters = 0x00000000;
 overlay92GetObjectRange = 0xf0000000;
 sqrtf_o092Reloc = 0xf0000000;
 
+/* overlay 92: func_overlay_092_F0000308_18D6228.c.o */
+Arctanf_o092Reloc = 0xf0000000;
+_bcopy_o092Reloc = 0xf0000000;
+func_8000FAE0_o092Reloc = 0xf0000000;
+func_8002A8BC_o092Reloc = 0xf0000000;
+func_8002A8C0_o092Reloc = 0xf0000000;
+levelGetNumber_o092Reloc = 0xf0000000;
+mathDiffAngle_o092Reloc = 0xf0000000;
+mathRnd_o092Reloc = 0xf0000000;
+overlay92ResolveMotionPointReloc = 0xf0000000;
+overlay92TransitionFlagReloc = 0x00000000;
+overlay92UpdateActorReloc = 0xf0000000;
+
 /* overlay 93: overlay_093.c.o */
 overlay93EmitReloc = 0xf0000000;
 overlay93FindTargetReloc = 0xf0000000;

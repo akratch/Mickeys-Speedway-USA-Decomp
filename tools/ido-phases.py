@@ -7,7 +7,8 @@ Why: tools/ido/cc's driver cannot express two things Mickey's bytes need.
   1. Running `uopt` at -O1.  The driver only runs uopt at -O2 and above, so
      "optimised by uopt at -O1" is unreachable through it.
   2. Per-phase -O levels generally (e.g. uopt -O3 with everything else -O2);
-     -W<pass>,-O<n> is inserted *before* the driver's own -O, so it loses.
+     mixed levels have phase-specific precedence. UOPT suppresses -O3
+     whenever -O2 is also present, regardless of option order.
 (`-fp32regs` does NOT need this script -- plain `cc -Wc,-mips3 -Wc,-fp32regs`
 works, because -W ISA options are appended after the driver's own.)
 
@@ -199,7 +200,9 @@ try:
     if uopt is not None and not uopt[0].endswith("uopt"):
         uopt = [os.path.join(IDO, "uopt")] + uopt
 
-    # ---- 3. apply per-phase overrides (appended last, so they win) ---------
+    # ---- 3. append requested phase options -------------------------------
+    # Precedence is phase-specific: UOPT's -O2 vetoes -O3 in either order.
+    # Preserve existing exact invocations; appending is not replacement.
     def run(tokens, phase, stdout=None):
         cmd = tokens + overrides[phase]
         if os.environ.get("IDO_PHASES_VERBOSE"):

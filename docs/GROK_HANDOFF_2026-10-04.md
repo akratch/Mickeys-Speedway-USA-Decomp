@@ -93,6 +93,9 @@ is not kept.
 `func_80017140` with the plane index formed after the overlap call scores 310
 masked words at size delta -16, against a proved baseline of 296 at +16. The
 body is not kept.
+`func_overlay_020_F000038C_1876964` with the horizontal texture scale factored
+through the dead buffer index scores 212 masked words at size delta -20,
+against a proved baseline of 251 at -4. The body is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

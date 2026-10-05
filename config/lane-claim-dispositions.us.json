@@ -120,6 +120,12 @@
       "state": "superseded",
       "decision_commit": "87f12abc853ab3b41df32e646e687f1d66b3891e",
       "reason": "Canonical now records the 17-word cursor plateau, the carrier packet, and the counter-read result. This lane tip does not change overlay_008.c, so it has no remaining scheduling claim."
+    },
+    "4af0b5a4cb68435b034d704d24eb6a2250aa6eff": {
+      "symbol": "overlay68UpdateAnimation",
+      "state": "superseded",
+      "decision_commit": "9c47a665816bbc11a9ffa1734b1700da5e3b08ed",
+      "reason": "Canonical kept the opacity store after the elapsed add at 106 masked words. This lane tip still has the 108-word body and only a handoff, so it has no remaining scheduling claim."
     }
   }
 }

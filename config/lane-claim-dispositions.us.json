@@ -108,6 +108,12 @@
       "state": "superseded",
       "decision_commit": "93f7cb9352d5c5de3e6d8cc03903fdac526208f7",
       "reason": "Canonical now records the same widened-field plateau. Both contrasts miss the 7-word baseline. This lane tip changes only that handoff and a stale authorization, so it has no remaining scheduling claim."
+    },
+    "70f9a96233221d5e92223d816d2de2df65d8245b": {
+      "symbol": "func_80028FCC",
+      "state": "superseded",
+      "decision_commit": "6cab133575c6722b281eadf12b785d36809683fa",
+      "reason": "Canonical now records the same 10-word early-return plateau and the carrier-representation closure. This lane tip does not change src/main/main.c, so it has no remaining scheduling claim on this symbol."
     }
   }
 }

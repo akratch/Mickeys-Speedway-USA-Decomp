@@ -90,4 +90,8 @@ Configured full-TU baseline remains 57 masked and 57 raw words, target 1436 byte
 - Incrementing count between the geometry store and a count-minus-one keys store scored 171 masked words at size delta +4. Not kept.
 
 The 57-word body stays. No bytes are credited. A later pass needs a zero-word draw that this reload, this order, and this pointer form do not produce.
+
+#### 2026-10-06: indexing the geometry store through a copy of count
+
+Configured full-TU baseline: 1436 bytes, 57 raw and 57 masked words, size delta 0, first mismatch +0x3DC. The copy is the existing unused `right` local, assigned from `count` and used only as the geometry-store index. The candidate scores 57 raw and 57 masked words at size delta 0, and the first mismatch stays +0x3DC. The object is not the baseline object. The masked count does not fall, so the 57-word body stays. Do not repeat this index copy.
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

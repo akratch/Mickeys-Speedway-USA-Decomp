@@ -10,7 +10,7 @@
 
 #### 2026-10-05: or-chain and three named carriers lose the size
 
-`a || b || c` and the same with `!= 0` on each call score 19 masked at −8 bytes. Three named `!= 0` results score 21 at +8. The early-return body at 10 words and 108 bytes stays. Do not repeat those three.
+An or-chain of the three calls, and the same chain with a nonzero test on each call, score 19 masked words at 8 bytes short. Three named nonzero results score 21 at 8 bytes over. The early-return body at 10 words and 108 bytes stays. Do not repeat those three.
 
 #### Owned pass, 2026-09-10 (lane/o7-small): the shape is known, not a donor
 

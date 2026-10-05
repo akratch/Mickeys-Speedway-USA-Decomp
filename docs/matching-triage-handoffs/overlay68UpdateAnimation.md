@@ -110,4 +110,10 @@ Spelling: assign elapsed from a comma whose left side stores the masked opacity 
 
 Result: 108 masked and 108 raw words, size delta 0, first mismatch +0xD4. The store moves back ahead of the load and the two-word gain disappears. Not kept. The 106-word body stays.
 
+## 2026-10-06: computing atStart before the neighbour copies
+
+The 106-word body scores 1424 bytes, 106 masked words, size delta 0, first mismatch +0xCC. The target computes index < 1 into v0 before the keyframe-count tests. This pass moves that assignment ahead of the neighbour pointer copies and leaves the index > 0 test in place.
+
+Result: 268 masked and 268 raw words, size delta +4. Not kept. The 106-word body stays. Do not repeat this early atStart.
+
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

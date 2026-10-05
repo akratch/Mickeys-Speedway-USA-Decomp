@@ -227,6 +227,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_020_F000038C_1876964` with the vertex count multiplied as rows before columns scores 186 masked words at size delta +4, against a proved baseline of 185 at delta +4. The body is not kept.
 `func_overlay_047_F0000B30_1891948` keeps the `ov47Data_3F0` load in the `func_8005ABA8` delay slot on both sides. The following scroll assignment is not that slot. The for-init spelling was not scored.
 `overlay83DrawStrip` with the integer locals declared ahead of the saved display-list pointer scores the same 58 masked words at size delta 0. The owned text is byte-identical to the kept body. The declaration order is not kept.
+`func_overlay_079_F0000FA0_18CDF40` with the first branch reusing value for the square root and the plane offset scores 159 masked words at size delta +8, against a proved baseline of 143 at delta 0. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

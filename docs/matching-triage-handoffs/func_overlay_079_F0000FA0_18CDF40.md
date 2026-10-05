@@ -77,4 +77,10 @@ Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, siz
 
 Deleting the function-scope `length`, which both block-scope lengths shadow, scored the same 143 masked and 144 raw words at size delta 0. The first masked mismatch stays +0x3C. Aligned exact stayed 65. Naming rose from 80 to 82 and really different fell from 38 to 36, so the aligned residual stays 123. The owned text is not the proved baseline. The body is not kept. Do not repeat this deletion. The field rewrite, the projectedX union, and the sqrt region stay closed.
 
+#### 2026-10-05: reusing value for the root and the offset grows the function
+
+Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, size delta 0, first masked mismatch +0x3C. Aligned exact 65, naming 80, immediate 5, really different 38, displacement tax 20. Candidate 184 words, target 184.
+
+The matched overlay 26 sibling carries the squared length, its square root, and the plane offset in one local. Writing those three assignments through `value`, and dropping the first branch's separate length, scored 159 masked and 160 raw words at size delta +8. The candidate grew to 186 words. Aligned exact rose from 65 to 68 and naming fell from 80 to 75, while really different rose from 38 to 40 and the displacement tax rose from 20 to 39. The aligned residual fell from 123 to 120, and the absolute size delta grew from 0 to 8. The first masked mismatch stays +0x3C. The body is not kept. The restored source re-scores 143 at delta 0. Do not repeat this reuse. The field rewrite, the projectedX union, the sqrt region, and the unused outer length stay closed.
+
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

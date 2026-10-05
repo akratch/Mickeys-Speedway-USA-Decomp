@@ -346,7 +346,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
  * pointer (175 to 172). Left: register naming from +0x24. */
 /* PLATEAU-HANDOFF:func_800349A4:start
  * symbol: func_800349A4
- * score: 172/272 words
+ * score: 162 differing words
  * frame: 0x40 (target 0x40)
  * relocations: 39
  * first-mismatch: +0x24

@@ -2,7 +2,7 @@
 ### `overlay83DrawStrip` plateau handoff
 
 - source: `src/overlays/o083/overlay83DrawStrip.c`
-- score: 68/77 words
+- score: 58 differing words
 - frame: frameless
 - relocations: 2
 - first mismatch: +0x4
@@ -257,4 +257,5 @@ Configured full-TU baseline: 58 masked and 58 raw words, target 308 bytes, size 
 
 Writing the vertex count as count times two plus two, and the polygon count as count times two, with the doubledCount local removed, scored the same 58 masked and 58 raw words at size delta 0. Aligned exact, naming, immediate, really different, and displacement tax stay 31, 36, 0, 13, and 9. The 308-byte function text is byte-identical to that baseline. The multiply is commoned, so the named local was not the extra pool web. The body is not kept. The restored source re-scores 58 masked words at size delta 0, and the owned text matches sha1 38e0bbbb3a1d5ee407323f3c49660be10781f7a5. Do not repeat this doubled-count deletion. The copy-and-length pair stays.
 
+Header regenerated from the ranking on 2026-10-06 (check_shard_metrics --write); it read score 68/77 words.
 <!-- plateau-handoff:overlay83DrawStrip:end -->

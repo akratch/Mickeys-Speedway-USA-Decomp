@@ -300,7 +300,7 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
 
 /* PLATEAU-HANDOFF:func_overlay_001_F0001D78_184E158:start
  * symbol: func_overlay_001_F0001D78_184E158
- * score: 268/627 words
+ * score: 263 differing words
  * frame: 0x70
  * relocations: 185
  * first-mismatch: +0x2C

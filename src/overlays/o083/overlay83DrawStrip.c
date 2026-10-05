@@ -75,7 +75,7 @@ void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
 
 /* PLATEAU-HANDOFF:overlay83DrawStrip:start
  * symbol: overlay83DrawStrip
- * score: 68/77 words
+ * score: 58 differing words
  * frame: frameless
  * relocations: 2
  * first-mismatch: +0x4

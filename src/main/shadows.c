@@ -1401,10 +1401,10 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_80016890:start
  * symbol: func_80016890
- * score: 315/556 words
+ * score: 31 differing words
  * frame: 0x1A0
  * relocations: 48
- * first-mismatch: +0x0
+ * first-mismatch: +0xAC
  * summary: rotated corners exact via a temp[4] array: 439/+12 to 315/0; left: head f0/f2 swap, unrotated post-call products (291 at +16 with frame 0x190)
  * PLATEAU-HANDOFF:func_80016890:end
  */

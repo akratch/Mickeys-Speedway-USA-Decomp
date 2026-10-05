@@ -344,10 +344,10 @@ void func_overlay_045_F0001158_188D5B0(
 
 /* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
  * symbol: func_overlay_045_F0001158_188D5B0
- * score: 561/674 words
+ * score: 424 differing words
  * frame: 0x190
  * relocations: 25
- * first-mismatch: +0x4
+ * first-mismatch: +0x0
  * summary: Float screen coordinates after the 0xA0 bias: 566 at -4 to 561 at size 0, frame 0x190. Left/right call spills remain open.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

@@ -166,10 +166,10 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
 
 /* PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:start
  * symbol: func_overlay_020_F000038C_1876964
- * score: 251/270 words
+ * score: 185 differing words
  * frame: 0x38
  * relocations: 3
- * first-mismatch: +0x0
+ * first-mismatch: +0x4
  * summary: Listing rewrite (buffer/walker pair, Triangle pairs, index++): 256 at -24 to 251 at -4. Open: fp texture, early vertex indices.
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

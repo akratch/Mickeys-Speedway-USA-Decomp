@@ -105,7 +105,7 @@ void func_8003C80C(s32 arg0, s32 time) {
 
 /* PLATEAU-HANDOFF:func_8003C80C:start
  * symbol: func_8003C80C
- * score: 74/118 words
+ * score: 43 differing words
  * frame: 0x38
  * relocations: 21
  * first-mismatch: +0x14

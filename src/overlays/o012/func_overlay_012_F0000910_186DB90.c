@@ -247,7 +247,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
 
 /* PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:start
  * symbol: func_overlay_012_F0000910_186DB90
- * score: 606 differing words
+ * score: 571 differing words
  * frame: 0x130
  * relocations: 36
  * first-mismatch: +0x0

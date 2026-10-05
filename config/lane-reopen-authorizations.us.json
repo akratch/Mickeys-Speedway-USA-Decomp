@@ -176,9 +176,9 @@
       "source_commit": "d7fa583e280d428aa9d51ac59c2bdec302838890"
     },
     "func_8000E920": {
-      "ledger_commit": "c0b83dd640c9598218b072bb555dc5279517775d",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "b5d21c7e812518dcc0d3c3549215452d141fca10"
+      "ledger_commit": "b8fc8d2360b5395a7cfa24af423eb8465ff8219f",
+      "reason": "Stale evidence. The plus-8-byte body is still short six frame cells, and the sltu loop tests are unrefuted. One pass measures only those cells.",
+      "source_commit": "a41e68123b45358efde11d318df416182d4a42b1"
     },
     "func_8000F198": {
       "ledger_commit": "60bc156a0b56adb0eb67380e01363e413b58fcc7",

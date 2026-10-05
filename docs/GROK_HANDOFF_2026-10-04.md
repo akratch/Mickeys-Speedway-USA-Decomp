@@ -194,6 +194,7 @@ name an untried source form that is currently assignable.
 `func_8003C80C` with only the first parameter, and the advanced time kept in a local, scores 103 masked words at size delta -4, against a proved baseline of 74 at delta 0. The body is not kept.
 `func_8003C80C` with the counter init after the time loop, inside `do { } while (0)`, scores 115 masked words at size delta +4, against a proved baseline of 74 at delta 0. The body is not kept.
 `func_800349A4` carrying the next-frame index in `hasTexture` scores 162 masked words at size delta 0, against a proved baseline of 172. The body is kept. It is not a match.
+`overlay83DrawStrip` with the vertex length written as the two shifts of vertexCount plus 8 scores 71 masked words at size delta -4, against a proved baseline of 68 at delta 0. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

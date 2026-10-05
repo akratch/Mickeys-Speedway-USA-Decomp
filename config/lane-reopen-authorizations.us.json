@@ -955,11 +955,6 @@
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "9d3b4722a37957437633b4b7adff25203819bec5"
     },
-    "func_overlay_012_F0000910_186DB90": {
-      "ledger_commit": "90a775042d9cdde71d3aa1c37e30fc3e74a7d40b",
-      "reason": "Kept body is 571 words at size 0 and frame 304 against 328. The pool is six colours long. Drop the quad alias and store through the vertex pointer.",
-      "source_commit": "90a775042d9cdde71d3aa1c37e30fc3e74a7d40b"
-    },
     "func_overlay_014_F0001540_1870E18": {
       "ledger_commit": "1f5bc9322f4c637ed149ff269f11b75686550d98",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",

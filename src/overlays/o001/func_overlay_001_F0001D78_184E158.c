@@ -120,7 +120,9 @@ extern f32 gO1RankWeights[];
  * overlay1InitMotionScale; the current state is read through D_1DA0 at each
  * use; the D_D8 "global" is the literal -666.0f. 584 differing words at
  * -112 to 268 masked at size 0, frame 0x70 exact (two leading pads and the
- * +0x5C/+0x50 pads place the homes). Open: the D_1DA0 web colours t0 where
+ * +0x5C/+0x50 pads place the homes). Declaring entry and j before table and
+ * valid moves those two homes down eight bytes and scores 263 masked words
+ * at the same size. Open: the D_1DA0 web colours t0 where
  * the target has a1 (its forbidden mask denies a0-a3), and modeIndex a2
  * against t0, which carry most of the naming residual. */
 #ifdef NON_MATCHING
@@ -134,10 +136,10 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
     f32 position;
     s32 pad50;
     Overlay1ObjectRef **list;
-    Overlay1LevelRecord *table;
-    s32 valid;
     s32 entry;
     s32 j;
+    Overlay1LevelRecord *table;
+    s32 valid;
     s32 i;
     Overlay1PathRecord *record;
 

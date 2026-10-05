@@ -86,9 +86,9 @@ void func_8003C80C(s32 arg0, s32 time) {
         src1 = to->colors;
         dst = D_800D40F0;
         do {
-            dst->r = src0->r + (((src1->r - src0->r) * frac) >> 16);
-            dst->g = src0->g + (((src1->g - src0->g) * frac) >> 16);
-            dst->b = src0->b + (((src1->b - src0->b) * frac) >> 16);
+            dst->r = (((src1->r - src0->r) * frac) >> 16) + src0->r;
+            dst->g = (((src1->g - src0->g) * frac) >> 16) + src0->g;
+            dst->b = (((src1->b - src0->b) * frac) >> 16) + src0->b;
             dst->a = src0->a;
             src0++;
             src1++;

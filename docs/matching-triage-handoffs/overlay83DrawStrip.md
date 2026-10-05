@@ -8,6 +8,10 @@
 - first mismatch: +0x4
 - summary: vertexCount defined before the packet stores scores 68/77 at delta 0, first +0x4. Dead zeros, pointer-copy placement and an early address local do not give vertexCount a0. The opening display-list copy is still absent.
 
+#### 2026-10-05: the saved display-list copy stays in a2
+
+Current body scores 58 masked at 308 bytes, delta 0. The opening copy is `move a2, a0`; the ROM has that copy in a3. Dropping `register`, declaring the counts first, and empty tests of `doubledCount` are all inert at 58. Web 19 (the copy, save 4) is coloured before web 22 (save 3), so it takes a2. Do not repeat those three.
+
 Summary before this remeasure: hypothesis=clobber a0 after the VERTEX increment without an extra word; spellings=macro assign inert at 69, L104 redefine 70 at +4, in-place cast 82 at +20; stall=a0 stays live and all three were reverted
 
 Summary before this remeasure: L100 empty-if pair 73 to 69 at delta 0. Leaf, zero p1 probes. Cursor force t0 is 68. Missing a0 copy at +0x4. D_80000000 identity fail-closed.

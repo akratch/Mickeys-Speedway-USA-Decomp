@@ -255,11 +255,6 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "5cafbf70916743b98c06ea2a57da440401dd2a0f"
     },
-    "func_80016890": {
-      "ledger_commit": "8f9d5e06c11dc893f9c97109e518a5da5bba905c",
-      "reason": "Nest the model-pointer loads so the inner pointer stays in v1 without declaring modInst. The two-assignment form copy-propagates into v0.",
-      "source_commit": "879820da8fd0d357e646fdf31e9565f9cb07b897"
-    },
     "func_80017140": {
       "ledger_commit": "ebebc73b95c90ed7c1da04f066884118591e5f69",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",

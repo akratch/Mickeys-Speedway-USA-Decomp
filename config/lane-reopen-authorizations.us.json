@@ -570,11 +570,6 @@
       "reason": "Reconstruction sweep at 8 to 16 bytes: the candidate is a few instructions out, and today's cause list names the usual reasons -- a missing copy, a block fallthrough, an address rematerialized once too often.",
       "source_commit": "d761f310ac67783655771b8e27248a85663e086b"
     },
-    "func_8003C80C": {
-      "ledger_commit": "2bb96684f557b752d9f9001be3ca1eb5a10c8403",
-      "reason": "The clock is captured from the global store so uopt materialises it once. The separate plus-equals and reload on the old body stays closed.",
-      "source_commit": "1fdefb11130320600fccfa8f00a022bc90e112b6"
-    },
     "func_8003D25C": {
       "ledger_commit": "c9b3576bcf074247d3ae71a69eca1237e2290f8f",
       "reason": "Class is register-only at 68 masked words, delta 0: routes to the forced-colour oracle and the permuter, mechanisms the recorded attempts did not use.",

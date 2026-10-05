@@ -132,6 +132,12 @@
       "state": "superseded",
       "decision_commit": "b7ac2e59783821b8123c16dc8d7d3467a0157524",
       "reason": "This lane tip does not change overlay_008.c. Its counter-cost packet was not adopted over the 126-word body, so it has no remaining scheduling claim."
+    },
+    "f1eba4257c4032579222db8c59bcbad87202d021": {
+      "symbol": "func_80010654",
+      "state": "superseded",
+      "decision_commit": "48921f11f86c9452e4bf9305d4506ec93e0ed0ab",
+      "reason": "This lane tip does not change track.c. Its literal-threshold packet scored 167 masked words and was not adopted over the 162-word body, so it has no remaining scheduling claim."
     }
   }
 }

@@ -736,9 +736,9 @@
       "source_commit": "838f8ff7d18ce66f00c1ab7470b30bee06dbf5b5"
     },
     "func_80051364": {
-      "ledger_commit": "47e0766c406c5b23d7b80d1c5cdf2a6b46e8246b",
-      "reason": "Command web save 3/3 sits under the clock web 3/2; forcing both is 5 words. Added blocks steal timeScale f20. Untried: a zero-new-block use that raises only the command web. Keep proved r4300_mul.",
-      "source_commit": "47e0766c406c5b23d7b80d1c5cdf2a6b46e8246b"
+      "ledger_commit": "93f7cb9352d5c5de3e6d8cc03903fdac526208f7",
+      "reason": "Despite the recorded join stall, one pass measures a zero-new-block use that raises only the command web. Added blocks steal timeScale. Typed-load contrasts stay closed.",
+      "source_commit": "6c43dc616af9b69dd370ae593d412f388371cf33"
     },
     "func_800517E0": {
       "ledger_commit": "171a68c474d894eaa7541a0a86d07a61df09a408",

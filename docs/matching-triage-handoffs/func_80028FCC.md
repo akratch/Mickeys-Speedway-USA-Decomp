@@ -286,4 +286,34 @@ Passing second arguments 0, 1 and 2 scores 12 positional differences at the
 same size and frame, with matched words 17 to 15. Mickey's calls do not
 take that player-index pattern. Reverted. No bytes are credited. Do not
 repeat this argument pattern.
+
+### 2026-10-04, Astra: omitted carrier representations closed
+
+The configured full-TU baseline reproduced 108 bytes, 10 masked differing
+words, first +0x1C, frame 0x18, and all three relocation identities. Actual
+compiler-input self-context and stock owned-byte/relocation fidelity passed.
+
+The newly authorized axis was representation of the normalized call carrier.
+A 64-bit carrier adds a large stack object and scores 41 differences at +80
+bytes. An aggregate carrier is scalar-replaced and is byte-identical to the
+retained 10-word baseline. Neither creates the target's three ring temporaries
+or per-arm return-register copies.
+
+This closes the omitted 64-bit/aggregate representation hypothesis. The
+retained early-return body is unchanged and no bytes are credited. Ignored
+compiler inputs, objects, scores and logs remain under `build/astra-boolean/`.
+Resume only with a mechanism that gives each call result an independent ring
+temporary while keeping the three call sites and branch delay-slot shape.
+
+#### 2026-10-04, lane `astra-o092-camera`
+
+An independent source sweep varied the three call-result normalizations across
+unsigned widths (`u8`, `u16`, `u32`), `!= 0`, `> 0U`, `!!`, and equivalent
+comparison spellings. The configured object stayed at 10 masked words for the
+legal size-matched forms; width narrowing emitted `andi` rather than the
+target's `sltu`, and named-result forms either retained the same carrier or
+changed the frame. No canonical source change is warranted. The unresolved
+mechanism remains the target's three independent ring temporaries and
+per-arm `v0` copies.
+
 <!-- plateau-handoff:func_80028FCC:end -->

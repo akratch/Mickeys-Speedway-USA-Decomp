@@ -278,6 +278,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_8003C80C` with both scalar lerps written as the shifted product plus the source word scores 45 masked words at size delta 0, against a proved baseline of 43 at delta 0. The aligned residual rises from 37 to 39, and the body is not kept.
 `func_overlay_012_F0000910_186DB90` with the masked intensity byte repeated at each primary-colour shift scores the same 571 masked words at size delta 0. The owned text differs from the proved baseline, every aligned bucket stays put, and the body is not kept.
 `func_overlay_045_F0001158_188D5B0` with the glyph width repeated as right minus left scores 425 masked words at size delta 0, against a proved baseline of 560 at delta 0. The aligned residual falls from 478 to 378, and the body is kept. It is not a match.
+`func_overlay_045_F0001158_188D5B0` with the glyph height repeated as bottom minus top scores 424 masked words at size delta 0, against that kept baseline of 425. The aligned residual stays 378, and the body is kept. It is not a match.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

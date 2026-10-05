@@ -229,4 +229,10 @@ Workbench on the kept 58-word body: 77 instructions both sides, frameless, mixed
 
 The kept body is a leaf. Its phase-2 colouring puts the hoisted display-list copy in the lowest free colour. Declaring `count`, `doubledCount`, and `vertexCount` ahead of that pointer scored the same 58 masked and 58 raw words at size delta 0. Aligned exact, naming, immediate, really different, and displacement tax stay 31, 36, 0, 13, and 9. The 308-byte function text is byte-identical to the kept body. The body is not changed. Do not repeat this declaration order. The copy-and-length pair and the register drop stay closed.
 
+#### 2026-10-05: routing every packet through the saved pointer grows the function
+
+Configured full-TU baseline on the kept pair: 58 masked and 58 raw words, target 308 bytes, size delta 0, first mismatch +0x4. Aligned exact 31, naming 36, immediate 0, really different 13, displacement tax 9. Candidate 77 words, target 77.
+
+Routing the primitive, environment, and vertex packets through the saved display-list pointer, leaving the assignment after vertexCount, scored 74 masked and 74 raw words at size delta +44. Candidate 88 words. Aligned exact fell from 31 to 25, naming fell from 36 to 32, immediate rose from 0 to 2, and really different rose from 13 to 31. Displacement tax stayed 9. The aligned residual rose from 49 to 65. The absolute size delta grew from 0 to 44. The body is not kept. The restored source re-scores 58 masked words at size delta 0, and the 308-byte function text matches the proved baseline. Do not repeat this all-packet saved pointer. The copy-and-length pair and the register drop stay closed.
+
 <!-- plateau-handoff:overlay83DrawStrip:end -->

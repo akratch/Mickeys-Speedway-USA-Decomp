@@ -266,4 +266,10 @@ Configured full-TU baseline: 257 masked and 257 raw words, target 1172 bytes, si
 
 Writing the bottom test as element->y + node->y, with y still assigned from node->y + element->y, scores 259 masked and 259 raw words at size delta -4. The candidate grows to 292 words. Aligned exact falls from 228 to 128, naming rises from 38 to 139, immediate falls from 8 to 7, and really different stays 24. The aligned residual rises from 70 to 170. Absolute size delta falls from 8 to 4, but the residual rises, so the body is not kept. These buckets are the same cell as the closed node->y + element->y recompute. The restored source re-scores 257 at delta -8, and the 1164-byte function text matches the proved baseline. Do not repeat this addend order. The repeated sum stays closed.
 
+#### 2026-10-05: narrowing y to s16 grows the residual
+
+Configured full-TU baseline: 257 masked and 257 raw words, target 1172 bytes, size delta -8, first masked mismatch +0x44. Aligned exact 228, naming 38, immediate 8, really different 24, displacement tax 187. Candidate 291 words, target 293. Owned text is 1164 bytes.
+
+Declaring y as s16, with x left as s32 and the clip expression unchanged, scores 263 masked and 263 raw words at size delta +4. The candidate grows to 294 words and 1176 bytes. The first masked mismatch stays +0x44. Aligned exact falls from 228 to 127, naming rises from 38 to 136, immediate falls from 8 to 6, and really different rises from 24 to 33. The aligned residual rises from 70 to 175. Absolute size delta falls from 8 to 4, but the residual rises, so the body is not kept. The restored source re-scores 257 at delta -8, and the 1164-byte function text matches the proved baseline. Do not repeat an s16 y.
+
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

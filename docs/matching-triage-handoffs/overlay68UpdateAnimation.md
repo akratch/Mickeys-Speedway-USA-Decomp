@@ -8,6 +8,10 @@
 - first mismatch: +0xD4
 - summary: Loop index carried in a local and target home order: state t2, index t0. Left: a one-draw ring shift at +0xD4 and the neighbour pointers' colours.
 
+#### 2026-10-05: narrowing the elapsed add does not rotate the ring
+
+`(s16)(state->elapsed + updateRate)`, `elapsed += (s16)updateRate`, and `(s16)((s32)elapsed + updateRate)` are each 108 masked words at 1,424 bytes, delta 0. The body is unchanged. Do not repeat those three casts.
+
 Summary before this remeasure: Declaration-order hill climb 183 to 180; state web t2 against t1 (t-pool shift) remains.
 
 Summary before this remeasure: Opacity no-op mask (ring phase) and declaration order: 213 to 183. State web t2 against t1 is a global t-pool shift.

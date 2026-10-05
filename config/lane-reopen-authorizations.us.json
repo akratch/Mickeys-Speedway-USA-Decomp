@@ -966,9 +966,9 @@
       "source_commit": "6c4abc4b47d6db6851eb62014bf6fa22da103022"
     },
     "func_overlay_020_F000038C_1876964": {
-      "ledger_commit": "e538e0705fde1503d5f4058b2e878a4edaa66299",
-      "reason": "The target reads grid fields through the argument before the saved copy. Read columns, rows, and texture through the existing row and col locals before the size product so that copy sinks. Predict the masked count falls at the same size.",
-      "source_commit": "08b6ed751299e5ce4c384b719f1ae2a978c5f3bd"
+      "ledger_commit": "b0707769d25676576150e02d365a01a1090b17c0",
+      "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
+      "source_commit": "ae445667ab4dc9fcad1809b1539944e4a13377f1"
     },
     "func_overlay_020_F0001148_1877720": {
       "ledger_commit": "3461024edafbc1901f4c6f777bcc844c47702471",

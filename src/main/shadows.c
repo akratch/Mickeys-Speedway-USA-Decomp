@@ -491,8 +491,8 @@ typedef struct Shadow168Angle {
 #define SH168_F32(p, o) (*(f32 *) ((u8 *) (p) + (o)))
 #define SH168_PTR(p, o) (*(void **) ((u8 *) (p) + (o)))
 
-/* Workbench verdict: 315 masked words at size delta 0, frame 0x1A0 (target
- * 0x190); was 439 at +12. This is DKR's shadow_generate with the shadow
+/* Workbench verdict: 31 masked words at size delta 0, frame 0x190 exact
+ * (was 315 at frame 0x1A0). This is DKR's shadow_generate with the shadow
  * globals gathered into the stack query struct.
  * 2026-10-02 (lane x-shad):
  *   - the corner points are seeded from query.x8/query.z10, not from the x/z
@@ -516,14 +516,14 @@ typedef struct Shadow168Angle {
  *   - the model is reached through a named instance pointer (the target
  *     keeps it in v1), and the centre sums read points[0], [2], [4], [6] in
  *     order.
- * Left, in address order: the distance and its 1024.0f bound take f0 and f2
- * swapped, and the half-extent product is a ring temporary where the target
- * has f0 (+0xAC to +0x148); the unrotated path after its two calls, where
- * the target also stores its products in temp[] (+0x5C, +0x58, +0x54, +0x50,
- * frame 0x190) and reloads point4 and point6 through two compiler cells
- * (+0x38, +0x3C). Writing those four products into temp[] here gives the
- * target's frame and 291 words at +16: point2 then keeps a register across
- * the calls where the target splits all three of point2, point4, point6. */
+ * Left: from +0xAC the distance and 1024.0f still swap f0 and f2 (14 naming
+ * words). Aligned residual is 525 exact, 14 naming, 17 immediate, and 0
+ * really different. Both half extents are inverseScale * 10.0f. radius, the
+ * arg2 copy, and modInst are not declared, which closed the frame at 0x190.
+ * Do not put those three locals back, and do not copy halfZ from halfX.
+ * The unrotated temp[] product spelling remains the rejected 291 at +16.
+ * point2's cross-call split is not what this measurement reopened.
+ * The open residual is the f0/f2 swap, not another local. */
 void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
                    f32 arg5, s16 arg6) {
     typedef struct Shadow168Query {
@@ -564,9 +564,9 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
     s32 active;
     Shadow168Query query;
     f32 points[8];
-    void *modInst;
-    f32 radius;
-    void *arg2 = arg2p;
+    /* modInst stays in a register; a declared local reserves a cell. */
+    /* radius is unread and still reserves a cell under IDO. */
+    /* arg2 is the incoming pointer; its parameter home is the save. */
     f32 temp[4];
 
     query.x8 = arg3;
@@ -574,9 +574,9 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
     query.z10 = arg5;
     query.type14 = arg6;
     query.scale1C = 2.0f;
-    SH168_S16((u8 *) arg2 + (SH168_U8(arg2, 0x13) * 2), 0x14) =
+    SH168_S16((u8 *) arg2p + (SH168_U8(arg2p, 0x13) * 2), 0x14) =
         (s16) D_80079454;
-    query.surface0 = SH168_S32(arg2, 8);
+    query.surface0 = SH168_S32(arg2p, 8);
     query.lowerY16 = (s16) ((s32) SH168_S16(SH168_PTR(arg0, 0x40), 0x6C) +
                             (s32) arg4);
     query.upperY18 = (s16) ((s32) SH168_S16(SH168_PTR(arg0, 0x40), 0x6E) +
@@ -597,9 +597,9 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
         query.scale1C += distance * D_800817A4;
     }
 
-    query.inverseScale2C = SH168_F32(arg2, 0);
+    query.inverseScale2C = SH168_F32(arg2p, 0);
     query.halfX34 = query.inverseScale2C * 10.0f;
-    query.halfZ38 = query.halfX34;
+    query.halfZ38 = query.inverseScale2C * 10.0f;
     query.expanded3C = 1.0f;
     if (arg1 != NULL) {
         point0 = func_8002A8BC(SH168_S16(arg1, 2));
@@ -614,7 +614,7 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
                 point0 = 2.0;
             }
             query.expanded3C +=
-                (0.25f * point0 * (f32) SH168_U8(arg2, 0x12)) /
+                (0.25f * point0 * (f32) SH168_U8(arg2p, 0x12)) /
                 query.halfZ38;
         }
     }
@@ -654,16 +654,16 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
         points[6] += temp[2] + point6;
         points[7] += temp[3] + point0;
     } else {
-        value = SH168_U8(arg2, 0x10) & 0x20;
-        if ((value != 0) || (SH168_F32(arg2, 4) != SH168_F32(arg2, 0))) {
-            point0 = SH168_F32(arg2, 0);
-            point2 = SH168_F32(arg2, 4);
-            point4 = SH168_F32(arg2, 0);
-            point6 = SH168_F32(arg2, 4);
+        value = SH168_U8(arg2p, 0x10) & 0x20;
+        if ((value != 0) || (SH168_F32(arg2p, 4) != SH168_F32(arg2p, 0))) {
+            point0 = SH168_F32(arg2p, 0);
+            point2 = SH168_F32(arg2p, 4);
+            point4 = SH168_F32(arg2p, 0);
+            point6 = SH168_F32(arg2p, 4);
             if (value != 0) {
                 objectScale = SH168_F32(arg0, 8);
-                modInst = SH168_PTR(SH168_PTR(arg0, 0x68), 0);
-                matrix = SH168_PTR(modInst, 0);
+                matrix = SH168_PTR(SH168_PTR(arg0, 0x68), 0);
+                matrix = SH168_PTR(matrix, 0);
                 point0 *= (f32) SH168_S16(matrix, 0x42) * objectScale;
                 point2 *= (f32) SH168_S16(matrix, 0x46) * objectScale;
                 point4 *= (f32) SH168_S16(matrix, 0x3C) * objectScale;
@@ -731,14 +731,14 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
     active = 1;
     if (D_800CAF58 > 0) {
         func_80018654(D_800C9D40, D_800C9D48, D_800C9F48, D_800C9F58);
-        if (func_80017BCC(&query, arg1, arg2) == 0) {
+        if (func_80017BCC(&query, arg1, arg2p) == 0) {
             active = 0;
         }
     }
-    SH168_S16((u8 *) arg2 + (SH168_U8(arg2, 0x13) * 2), 0x18) =
+    SH168_S16((u8 *) arg2p + (SH168_U8(arg2p, 0x13) * 2), 0x18) =
         (s16) D_80079454;
     if (active != 0) {
-        SH168_U8(arg2, 0x13) = (u8) (SH168_U8(arg2, 0x13) + 1);
+        SH168_U8(arg2p, 0x13) = (u8) (SH168_U8(arg2p, 0x13) + 1);
     }
 }
 #undef SH168_U8

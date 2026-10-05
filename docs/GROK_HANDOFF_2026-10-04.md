@@ -96,6 +96,12 @@ body is not kept.
 `func_overlay_020_F000038C_1876964` with the horizontal texture scale factored
 through the dead buffer index scores 212 masked words at size delta -20,
 against a proved baseline of 251 at -4. The body is not kept.
+`func_80016890` with both half extents written as `inverseScale * 10.0f`,
+and without the unused `radius`, the `arg2` copy, and the `modInst` local,
+scores 31 masked words at size delta 0 and frame 0x190, against a proved
+baseline of 315 masked words at frame 0x1A0. Aligned rows are 525 exact,
+14 naming, 17 immediate, and 0 really different. The body is kept. It is
+not a match. The remaining naming is the f0/f2 swap from +0xAC.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

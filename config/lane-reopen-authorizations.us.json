@@ -255,11 +255,6 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "5cafbf70916743b98c06ea2a57da440401dd2a0f"
     },
-    "func_80016890": {
-      "ledger_commit": "fdbe3188f0456c84d1dc4f528ac2f897593b2dc3",
-      "reason": "Repeat inverseScale times 10.0f into both half extents so the product web has two stores and can take f0. Not the closed temp array or named corner scalars.",
-      "source_commit": "777490905ff74acde5aed98b339e0ff9c219fe0f"
-    },
     "func_80017140": {
       "ledger_commit": "ebebc73b95c90ed7c1da04f066884118591e5f69",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",

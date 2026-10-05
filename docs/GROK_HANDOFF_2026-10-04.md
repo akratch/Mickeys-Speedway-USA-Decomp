@@ -263,6 +263,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_001_F0001D78_184E158` with two state pointers around overlay1FindClosestSample scores 324 masked words at size delta 0, against a proved baseline of 268 at delta 0. The aligned residual rises from 269 to 322, and the body is not kept.
 `func_8003C80C` with the three colour-channel products added on the left of the source bytes scores 43 masked words at size delta 0, against a proved baseline of 46 at delta 0. The aligned residual falls from 40 to 37, and the body is kept. It is not a match.
 `overlay83DrawStrip` with the doubled count written as count times two at both uses scores the same 58 masked words at size delta 0. The owned text is byte-identical to the proved baseline, and the body is not kept.
+`func_overlay_079_F0000FA0_18CDF40` with the register keyword removed from ny scores the same 143 masked words at size delta 0. The owned text is byte-identical to the proved baseline, and the body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

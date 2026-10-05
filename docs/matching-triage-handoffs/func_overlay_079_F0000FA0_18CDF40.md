@@ -107,4 +107,10 @@ Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, siz
 
 Deleting both block-scope length declarations, so both square roots use the function-scope length, scored 149 masked and 150 raw words at size delta 0. Aligned exact fell from 65 to 58, naming fell from 80 to 79, immediate rose from 5 to 12, and really different rose from 38 to 39. Displacement tax fell from 20 to 19. The aligned residual rose from 123 to 130. The first masked mismatch moved to entry. The frame stayed equal and the candidate stayed 184 words. The body is not kept. The restored source re-scores 143 masked words at delta 0. Do not repeat this shared length. The truthy flag test, the cross association, and the divide order stay closed.
 
+#### 2026-10-05: dropping register from ny does not change the object
+
+Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, size delta 0, first masked mismatch +0x3C. Aligned exact 65, naming 80, immediate 5, really different 38, displacement tax 20. Candidate 184 words, target 184. Owned text sha1 988af62cf5ea6522197832dc831728393b02f632.
+
+Writing ny as an ordinary float, without the register keyword, scores the same 143 masked and 144 raw words at size delta 0. Aligned exact, naming, immediate, really different, and displacement tax stay 65, 80, 5, 38, and 20. The 736-byte function text is byte-identical to the proved baseline. The keyword does not move the colour. The body is not kept. The restored source re-scores the same sha1. Do not repeat this register deletion. The shared length, the truthy flag test, the cross association, and the divide order stay closed.
+
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

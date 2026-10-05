@@ -210,6 +210,7 @@ name an untried source form that is currently assignable.
 `overlay83DrawStrip` with the display-list copy as the first statement inside the count test scores the same 68 masked words at size delta 0. The owned text is byte-identical to the proved baseline. The body is not kept.
 `func_overlay_045_F0001158_188D5B0` with the adjusted screen pair held by an or-zero identity scores 606 masked words at size delta +4, against a proved baseline of 561 at delta 0. The body is not kept.
 `func_overlay_020_F000038C_1876964` with a next-column local at the first triangle index scores the same 239 masked words at size delta -4. The owned text is byte-identical to the proved baseline. The body is not kept.
+`func_overlay_020_F000038C_1876964` with one next-column local used for both triangle indices scores 257 masked words at size delta -20, against a proved baseline of 239 at delta -4. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

@@ -224,16 +224,16 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
             currentTexture = ((u8 *)tex) + (frameIndex * tex->textureSize) +
                              sizeof(TextureFrameHeader);
             if ((tex->flags & 0x40) && (tex->unk1B < 2)) {
-                nextFrame = frameIndex + 1;
-                if (nextFrame >= numTextures) {
+                hasTexture = frameIndex + 1;
+                if (hasTexture >= numTextures) {
                     if (tex->spriteFlags & 2) {
-                        nextFrame = 0;
+                        hasTexture = 0;
                     } else {
-                        nextFrame = numTextures - 1;
+                        hasTexture = numTextures - 1;
                     }
                 }
                 nextTexture = ((u8 *)tex) +
-                              (nextFrame * tex->textureSize) +
+                              (hasTexture * tex->textureSize) +
                               sizeof(TextureFrameHeader);
             } else {
                 nextTexture = currentTexture;

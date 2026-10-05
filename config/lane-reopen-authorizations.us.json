@@ -480,11 +480,6 @@
       "reason": "New mechanism: levers 45 and 46 (repeat the field read to buy the copy; census the declarations before reading the frame) and law L87. None were available when this closed.",
       "source_commit": "6f9e72e6fb41e2b3e351dfbc3546b6dae585a8fd"
     },
-    "func_800349A4": {
-      "ledger_commit": "87b9db6f75edd92ed149cc8794ee88a06d49aaf7",
-      "reason": "nextFrame outranks numTextures for v1 (save 2.0 against 1.67). Carry the next-frame index in hasTexture, which is dead until it is set to 1, so nextFrame stops taking v1. The in-arm scale and the sibling decrement stay closed.",
-      "source_commit": "aa0095f856536355b7b7a840777140fdf4f1a939"
-    },
     "func_80034E54": {
       "ledger_commit": "8744e6484324325c1b899182492ff1962767c33d",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",

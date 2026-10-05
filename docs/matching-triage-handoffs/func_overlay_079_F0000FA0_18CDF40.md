@@ -95,4 +95,10 @@ Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, siz
 
 Writing crossY as `-(axis->z * nx) + (nz * axis->x)`, the matched overlay 26 association, scores the same 143 masked and 144 raw words at size delta 0. Aligned exact, naming, immediate, really different, and displacement tax stay 65, 80, 5, 38, and 20. The first masked mismatch stays +0x3C. The owned text differs from the kept subtraction. The body is not kept. The restored source re-scores 143 at delta 0. Do not repeat this association. The divide order stays closed.
 
+#### 2026-10-05: a truthy plane-flag test folds away
+
+Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, size delta 0, first masked mismatch +0x3C. Aligned exact 65, naming 80, immediate 5, really different 38, displacement tax 20. Candidate 184 words, target 184.
+
+Writing the plane flag test as a truthy mask, the form matched overlay 26 uses, scored the same 143 masked and 144 raw words at size delta 0. Aligned exact, naming, immediate, really different, and displacement tax stay 65, 80, 5, 38, and 20. The 736-byte function text is byte-identical to the proved baseline. The compare is folded. The body is not kept. The restored source is the proved baseline. Do not repeat this truthy flag test on the kept body. The cross association and the divide order stay closed.
+
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

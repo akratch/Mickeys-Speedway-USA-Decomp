@@ -126,6 +126,12 @@
       "state": "superseded",
       "decision_commit": "9c47a665816bbc11a9ffa1734b1700da5e3b08ed",
       "reason": "Canonical kept the opacity store after the elapsed add at 106 masked words. This lane tip still has the 108-word body and only a handoff, so it has no remaining scheduling claim."
+    },
+    "54e26099803f0405cfecfe1026c367ddc83f60dc": {
+      "symbol": "func_overlay_008_F00042A8_1862000",
+      "state": "superseded",
+      "decision_commit": "b7ac2e59783821b8123c16dc8d7d3467a0157524",
+      "reason": "This lane tip does not change overlay_008.c. Its counter-cost packet was not adopted over the 126-word body, so it has no remaining scheduling claim."
     }
   }
 }

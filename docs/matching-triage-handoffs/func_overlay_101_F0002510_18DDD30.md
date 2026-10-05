@@ -242,4 +242,10 @@ immediate 7, and really different 24, against the recorded baseline of
 body re-scores 257 at delta -8. The body is not kept. Do not repeat this
 pair of recomputes.
 
+#### 2026-10-05: recomputing the sum only for edgeY raises the residual
+
+Configured full-TU baseline remains 257 masked and 257 raw words, target 1172 bytes, size delta -8, first mismatch +0x44. Aligned exact 228, naming 38, immediate 8, really different 24, displacement tax 187.
+
+Writing `edgeY` as `(node->y + element->y) + texture->height`, with the bottom test still reading `y`, scored 261 masked words at the same size delta -8. Aligned exact fell from 228 to 224 and naming rose from 38 to 42. The first mismatch moved to +0x3C. The body is not kept. The restored source re-scores 257 at delta -8. Do not repeat this edge-only sum. It does not emit the missing copy.
+
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

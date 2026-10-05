@@ -1325,11 +1325,6 @@
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "303a0613fd5d42b32e22acf0a49d7811d50c8a8d"
     },
-    "func_overlay_101_F0002510_18DDD30": {
-      "ledger_commit": "1db2ff81296a74cf28ce094b72674ffeb800be17",
-      "reason": "Y is one web, so the callee-saved copy after its definition is missing and the body is 8 bytes short. Recompute the sum only for edgeY. The bottom-test and sourceY copies stay closed.",
-      "source_commit": "a3312c97d53dccfbf494aa180019de0953529a11"
-    },
     "func_overlay_101_F0003A58_18DF278": {
       "ledger_commit": "20ac4b70f33839b06eba329c9e94b6362367844b",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",

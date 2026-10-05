@@ -185,4 +185,10 @@ parameter reassignment.
 
 Configured full-TU baseline: 68 raw and masked words, target 308 bytes, size delta 0, first mismatch +0x4. Assigning that vertexCount into the display-list parameter after the colour stores, and passing the parameter to the unexpanded vertex macro, recompiled to 80 masked words at size delta +20. The first mismatch moved to +0x0. The restored body re-scores 68 at delta 0. The body is not kept. Do not repeat this parameter store.
 
+#### 2026-10-05: assigning the saved pointer after vertexCount adds a word
+
+Configured full-TU baseline remains 68 masked and 68 raw words, target 308 bytes, size delta 0, first mismatch +0x4. Aligned exact 31, naming 29, immediate 1, really different 22, displacement tax 16.
+
+Moving `savedDisplayList = displayList` to after `vertexCount = doubledCount + 2` scored 66 masked words at size delta +4, candidate 78 words. Aligned exact stayed 31 and naming fell from 29 to 28. The absolute size delta grew from 0 to 4. The body is not kept. The restored source re-scores 68 at delta 0. Do not repeat this late assignment. The opening copy is still absent.
+
 <!-- plateau-handoff:overlay83DrawStrip:end -->

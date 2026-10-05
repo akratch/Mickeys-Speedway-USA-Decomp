@@ -1950,11 +1950,6 @@
       "reason": "ADR0017 causal packet: trace declared-local versus compiler-temporary storage on the new 22-word body; test lexical lifetime sharing to raise linkedInit while shrinking the frame, preserving size and save set.",
       "source_commit": "224258eed67e7f326ddfcf7981b04a15af49cc35"
     },
-    "overlay83DrawStrip": {
-      "ledger_commit": "7575bf33e32218bbf419ee17ec7c2c67c46e5e42",
-      "reason": "Leaf p2 colours by ascending web number. The saved pointer is initialized before vertexCount, and the opening copy is still missing at 68 words. Assign it after vertexCount so the count can take a0. Not the closed post-VERTEX delay.",
-      "source_commit": "1ce94cb4ee8cf2a525774eec7afb7cffae2881a5"
-    },
     "overlay89InitializeEffect": {
       "ledger_commit": "fb9a096f575791e53907007f0bdb5aeaf6348437",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",

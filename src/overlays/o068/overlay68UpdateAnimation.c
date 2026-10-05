@@ -71,6 +71,8 @@ extern s32 gOverlay68GlobalFlagReloc;
 #define OVERLAY68_GLOBAL_FLAG gOverlay68GlobalFlagReloc
 
 /*
+ * 2026-10-06, 108 -> 106 at size 0: the opacity store follows the elapsed
+ * add. The mask stays; moving it past that add is what drops the two words.
  * 2026-10-02 (lane x-sort), 180 -> 108 at size 0: the duration loop carries
  * the keyframe index in `index` (stored as index + 1, re-read into index in
  * the exit test), which makes one web of the loop index and the neighbour
@@ -129,9 +131,8 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
             if (animationOpacity < 0) {
                 animationOpacity = 0;
             }
-            state->opacity = animationOpacity & 0xFF;
-
             state->elapsed += updateRate;
+            state->opacity = animationOpacity & 0xFF;
             index = state->keyframeIndex;
             current = &animation->keyframes[index];
             while (state->elapsed >= current->duration) {
@@ -228,10 +229,10 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
 
 /* PLATEAU-HANDOFF:overlay68UpdateAnimation:start
  * symbol: overlay68UpdateAnimation
- * score: 108/356 words
+ * score: 106/356 words
  * frame: 0x78
  * relocations: 15
- * first-mismatch: +0xD4
- * summary: Loop index carried in a local and target home order: state t2, index t0. Left: a one-draw ring shift at +0xD4 and the neighbour pointers' colours.
+ * first-mismatch: +0xCC
+ * summary: Opacity store follows the elapsed add: 108 to 106 at size 0. Left: the ring from +0xCC and the neighbour pointers' colours.
  * PLATEAU-HANDOFF:overlay68UpdateAnimation:end
  */

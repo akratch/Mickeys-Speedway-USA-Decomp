@@ -2,11 +2,11 @@
 ### `overlay68UpdateAnimation` plateau handoff
 
 - source: `src/overlays/o068/overlay68UpdateAnimation.c`
-- score: 108/356 words
+- score: 106/356 words
 - frame: 0x78
 - relocations: 15
-- first mismatch: +0xD4
-- summary: Loop index carried in a local and target home order: state t2, index t0. Left: a one-draw ring shift at +0xD4 and the neighbour pointers' colours.
+- first mismatch: +0xCC
+- summary: Opacity store follows the elapsed add: 108 to 106 at size 0. Left: the ring from +0xCC and the neighbour pointers' colours.
 
 #### 2026-10-05: narrowing the elapsed add does not rotate the ring
 
@@ -89,4 +89,17 @@ pointers' colours differ (target atStart v0, afterAfter v1, after t3, before
 t4). The ternary through `angle` is still load-bearing: plain ifs lose the
 branch-likely copy (-4) at this shape too. Next: draw census over the first
 0xD4 bytes against the target's registers, then the neighbour webs' records.
+
+#### 2026-10-03, lane codex-o068-phase: the opacity mask is not free to delete
+
+Removing only the redundant byte mask drops the early draw count and makes a long prefix exact, then scores 124 masked words at size delta 0 because the neighbour allocation moves. Separating the red sample scores 151 at frame 0x80. Moving the start predicate scores 272 at size delta +4. Sharing that predicate with the preceding-neighbour branch scores 208 at size delta 0. None is kept. Do not delete the mask to chase the early ring.
+
+## 2026-10-06: the opacity store follows the elapsed add
+
+Configured baseline: 1424 bytes, 108 masked and 108 raw, size delta 0, first mismatch +0xD4.
+
+The opacity store and the elapsed add are swapped. The mask stays on the store. Nothing between the two statements reads opacity.
+
+Result: 106 masked and 106 raw words, size delta 0, first mismatch +0xCC. The body is kept. It is not a match. The three elapsed-add casts and the mask deletion stay closed.
+
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

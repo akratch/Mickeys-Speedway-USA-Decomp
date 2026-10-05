@@ -966,9 +966,9 @@
       "source_commit": "6c4abc4b47d6db6851eb62014bf6fa22da103022"
     },
     "func_overlay_020_F000038C_1876964": {
-      "ledger_commit": "f9d8f7f12a64f143143b8ecccfac78deb0900ebb",
-      "reason": "Split index plus 9 into a second local and compute index plus 10 beside it. Predict the missing copy appears and the four-byte deficit closes.",
-      "source_commit": "163e88fc145c4e8ece06524d9daf2cbdaadae81b"
+      "ledger_commit": "b0707769d25676576150e02d365a01a1090b17c0",
+      "reason": "Closed before L131/L139/L140/L142/L144. L142 retires a save-ratio argument where the register was never offered; L144 retires a swept volatile axis; L140 retires a force sweep run without CDX_PROC.",
+      "source_commit": "ae445667ab4dc9fcad1809b1539944e4a13377f1"
     },
     "func_overlay_020_F0001148_1877720": {
       "ledger_commit": "3461024edafbc1901f4c6f777bcc844c47702471",

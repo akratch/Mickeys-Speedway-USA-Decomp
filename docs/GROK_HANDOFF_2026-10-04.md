@@ -252,6 +252,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_8001FC50` with the three count assignments in struct order scores 325 masked words at size delta +4, against a proved baseline of 271 at delta 0. The aligned residual falls from 261 to 244, and the body is not kept.
 `func_8001FC50` with the mode test inverted, both zeros in the equal arm, scores 322 masked words at size delta +4, against a proved baseline of 271 at delta 0. The aligned residual stays 261, and the body is not kept.
 `func_overlay_012_F0000910_186DB90` with 2.0f held in nearScale for the factor sum and the center X product scores the same 571 masked words at size delta 0. The owned text differs from the kept body, and every aligned bucket stays put. The body is not kept. `overlay83DrawStrip` with the entry test written `(count == 0) == 0` scores 75 masked words at size delta +4. The comparison emits an extra word, and the body is not kept.
+`func_overlay_020_F000038C_1876964` with the triangle column test written `(col >= grid->columns) == 0` scores 191 masked words at size delta +12, against a proved baseline of 185 at delta +4. The aligned residual falls from 111 to 101, the absolute size delta grows, and the body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

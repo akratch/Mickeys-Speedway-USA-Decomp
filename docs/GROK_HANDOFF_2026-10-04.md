@@ -240,6 +240,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_079_F0000FA0_18CDF40` with crossY written as a negation plus the other product scores the same 143 masked words at size delta 0. The owned text differs from the kept body, and every aligned bucket stays put. The body is not kept.
 `func_8003C80C` with the index wrap written as a less-than compare against zero scores 91 masked words at size delta 0, against a proved baseline of 69 at delta 0. The body is not kept.
 `func_overlay_066_F00004E0_18C6948` with the framebuffer copied to a fresh pointer inside the loop scores the same 202 masked words at size delta -52. The owned text differs from the kept body, and every aligned bucket stays put. The body is not kept.
+`func_overlay_066_F0000040_18C64A8` with the blue pack's forced low bit moved across the shift scores 247 masked words at size delta 0, against a proved baseline of 249 at delta 0. The aligned residual rises from 253 to 261, and the body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

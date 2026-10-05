@@ -260,4 +260,10 @@ Configured full-TU baseline: 257 masked and 257 raw words, target 1172 bytes, si
 
 Computing both `x` and `y` before `overlay101GetBoundsReloc`, the order used by matched `overlay101DrawElement`, scored 267 masked and 267 raw words at the same size delta -8. The candidate stayed 291 words. Aligned exact fell from 228 to 218, naming fell from 38 to 37, and really different rose from 24 to 35. The aligned residual rose from 70 to 80. The missing copy was not gained as a word. The body is not kept. The restored source re-scores 257 at delta -8. Do not repeat this placement.
 
+#### 2026-10-05: swapped y-sum addends stay on the rejected cell
+
+Configured full-TU baseline: 257 masked and 257 raw words, target 1172 bytes, size delta -8, first masked mismatch +0x44. Aligned exact 228, naming 38, immediate 8, really different 24, displacement tax 187. Candidate 291 words, target 293.
+
+Writing the bottom test as element->y + node->y, with y still assigned from node->y + element->y, scores 259 masked and 259 raw words at size delta -4. The candidate grows to 292 words. Aligned exact falls from 228 to 128, naming rises from 38 to 139, immediate falls from 8 to 7, and really different stays 24. The aligned residual rises from 70 to 170. Absolute size delta falls from 8 to 4, but the residual rises, so the body is not kept. These buckets are the same cell as the closed node->y + element->y recompute. The restored source re-scores 257 at delta -8, and the 1164-byte function text matches the proved baseline. Do not repeat this addend order. The repeated sum stays closed.
+
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

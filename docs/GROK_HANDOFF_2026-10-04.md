@@ -254,6 +254,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_012_F0000910_186DB90` with 2.0f held in nearScale for the factor sum and the center X product scores the same 571 masked words at size delta 0. The owned text differs from the kept body, and every aligned bucket stays put. The body is not kept. `overlay83DrawStrip` with the entry test written `(count == 0) == 0` scores 75 masked words at size delta +4. The comparison emits an extra word, and the body is not kept.
 `func_overlay_020_F000038C_1876964` with the triangle column test written `(col >= grid->columns) == 0` scores 191 masked words at size delta +12, against a proved baseline of 185 at delta +4. The aligned residual falls from 111 to 101, the absolute size delta grows, and the body is not kept.
 `func_overlay_047_F0000B30_1891948`'s label-count zero and player-pointer load are not the font-call delay slots. Both that call and `fontColour` already match the target delay families, and no source edit was scored.
+`func_overlay_101_F0002510_18DDD30` with the bottom test written `element->y + node->y` scores 259 masked words at size delta -4, against a proved baseline of 257 at delta -8. The aligned residual rises from 70 to 170, and the body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

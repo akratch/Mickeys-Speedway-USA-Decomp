@@ -955,11 +955,6 @@
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "9d3b4722a37957437633b4b7adff25203819bec5"
     },
-    "func_overlay_012_F0000910_186DB90": {
-      "ledger_commit": "e7765438353c5bcd0147e85b78ae8dd894bea436",
-      "reason": "One 2.0f loop use saves 10/13 and loses to 1024.0f at 20/13, so f28 stays empty. Distribute each center as collision times 2.0f plus the scaled term: three loop refs, one web, should outrank 1024. Not the closed three-axis sum.",
-      "source_commit": "f737e6a3fa7c8bfbf7ab2f0f23a6c380ffdd3776"
-    },
     "func_overlay_014_F0001540_1870E18": {
       "ledger_commit": "1f5bc9322f4c637ed149ff269f11b75686550d98",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",

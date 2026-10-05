@@ -30,6 +30,14 @@ Header regenerated from the ranking on 2026-09-23 (check_shard_metrics --write);
   floor 155.
 - Target colours: s1 holds the divisor 3 and ra holds the sync opcode; this
   build swaps them. Colour order of those two constants is the open variable.
+
+#### 2026-10-05: the null-check schedule does not move
+
+Configured full-TU baseline remains 155 masked and 155 raw words, target 972 bytes, size delta 0, first mismatch +0x30. The target saves the callee FP register and then tests the motion pointer. The candidate tests first.
+
+Wrapping the body in a nonzero test compiles to the same text as the early return. Not kept.
+
+Copying the incoming command pointer into the first frame slot before that test, and reading the copy at every later use, scores 156 masked words at size delta 0. Not kept. The 155-word body stays. Do not repeat either spelling.
 #### 2026-10-02, lane x-ovla: natural rewrite measured, not adopted (155 kept)
 
 A body written from the listing (no volatile, no register, `while (row--)`,

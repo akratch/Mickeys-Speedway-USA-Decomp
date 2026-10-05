@@ -247,6 +247,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_079_F0000FA0_18CDF40` with the plane flag test written as a truthy mask scores the same 143 masked words at size delta 0. The owned text is byte-identical to the proved baseline. The body is not kept.
 `func_overlay_020_F000038C_1876964` with a folded pointer identity after the opening field loads scores 224 masked words at size delta +28, against a proved baseline of 185 at delta +4. The aligned residual rises from 111 to 148, and the body is not kept.
 `func_80009414` with the resource-slot test written as a relational compared with zero scores 358 masked words at size delta +4, against a proved baseline of 234 at delta 0. The aligned residual falls from 199 to 187, and the body is not kept.
+`func_8003C80C` with the time global loaded before the add scores 46 masked words at size delta 0, against a proved baseline of 69 at delta 0. The body is kept. It is not a match.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

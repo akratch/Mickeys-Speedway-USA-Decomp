@@ -67,7 +67,8 @@ void func_8003C80C(s32 arg0, s32 time) {
     WeatherKey *to;
 
     if (D_8007C854 != 0) {
-        time = D_8007C864 + arg0;
+        time = D_8007C864;
+        time += arg0;
         D_8007C864 = time;
         i = 8;
         while ((time < D_8007C868) == 0) {

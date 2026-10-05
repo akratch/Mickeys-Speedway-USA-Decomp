@@ -205,6 +205,7 @@ name an untried source form that is currently assignable.
 `func_overlay_020_F000038C_1876964` with only index+9 held before the u/v divisions scores 239 masked words at size delta -4, against a proved baseline of 251 at delta -4. The body is kept. It is not a match.
 `func_overlay_045_F0001158_188D5B0` with the shared rotation computed once before the sine and cosine calls scores 600 masked words at size delta -4, against a proved baseline of 561 at delta 0. The body is not kept.
 `func_8003C80C` with the clock held in a local and the second parameter left unreferenced scores 73 masked words at size delta 0, against a proved baseline of 69 at delta 0. The body is not kept.
+`func_overlay_012_F0000910_186DB90` with centerX repeating the 2.0f sum beside the shared factor scores the same 606 masked words at size delta -4. The owned text is byte-identical to the proved baseline. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

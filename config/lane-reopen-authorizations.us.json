@@ -825,11 +825,6 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "f3a89e25f45adda7a25a7d4d99ace3cb785872d0"
     },
-    "func_overlay_001_F0001D78_184E158": {
-      "ledger_commit": "0388204bd290265e9cdf54996fedb6f9e2506ab0",
-      "reason": "Two locals around FindClosestSample, one consumed before the call and one born after, so those D_1DA0 webs do not span it. Not the closed single reassigned pointer.",
-      "source_commit": "da603477e5a5bd7f360da4cbd284db00dc2033a6"
-    },
     "func_overlay_001_F0002B4C_184EF2C": {
       "ledger_commit": "4dc44cda0633438eb7386b6d2509035b41c9bafb",
       "reason": "Inherited -Wo,-loopunroll,0 is still on this one-function TU. The 6-word jal-delay plateau was scored under that override. Strip it and re-score before any other edit.",

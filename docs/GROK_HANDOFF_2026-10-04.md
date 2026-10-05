@@ -260,6 +260,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_066_F00004E0_18C6948` with the loop limit defined before the display-list calls scores 174 masked words at size delta -44, against a proved baseline of 202 at delta -52. The aligned residual rises from 116 to 118, and the body is not kept.
 `func_overlay_012_F0000910_186DB90` with the volatile zero assigned after the pointer loads scores 558 masked words at size delta -12, against a proved baseline of 571 at delta 0. The aligned residual falls from 495 to 483, and the body is not kept.
 `func_overlay_101_F0002510_18DDD30` with y declared s16 scores 263 masked words at size delta +4, against a proved baseline of 257 at delta -8. The aligned residual rises from 70 to 175, and the body is not kept.
+`func_overlay_001_F0001D78_184E158` with two state pointers around overlay1FindClosestSample scores 324 masked words at size delta 0, against a proved baseline of 268 at delta 0. The aligned residual rises from 269 to 322, and the body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

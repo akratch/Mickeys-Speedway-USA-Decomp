@@ -916,9 +916,9 @@
       "source_commit": "2477bb91a0e78c38927d9111cd5d0c50b19205a5"
     },
     "func_overlay_008_F00042A8_1862000": {
-      "ledger_commit": "4b13c3ec33234160cf0d52829f3db5ad1cc50e0a",
-      "reason": "Despite the one-sided height-index stall, one pass scales the shared table index to a byte offset before both float loads, the overlay 9 sibling shape. Loop idioms stay closed.",
-      "source_commit": "dcf5c64748aa9be315d18ad4347ae51ce823f380"
+      "ledger_commit": "48921f11f86c9452e4bf9305d4506ec93e0ed0ab",
+      "reason": "Despite the byte-offset keep, one pass recomputes the D_2220 index as a shift of randomMode so the multiply is not shared. The one-sided height shift and the width grid stay closed.",
+      "source_commit": "c34c3dd23c3f8631702d3ff86fc550c8a8d19727"
     },
     "func_overlay_008_F0004CF0_1862A48": {
       "ledger_commit": "a35c4cb721efdcc49b48ba1dda0cb04b8cfa2aa2",

@@ -220,6 +220,7 @@ name an untried source form that is currently assignable.
 `overlay83DrawStrip` without `register` on that saved pointer scores the same 58 masked words at size delta 0. The owned text is byte-identical to the kept body. The keyword is not kept as a change.
 `func_overlay_066_F0000040_18C64A8` with the two proxy calls named `osInvalDCache` and `osWritebackDCacheAll` scores the same 249 masked words at size delta 0. The owned text is byte-identical to the proved baseline. The body is not kept.
 The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is register-class, and the workbench names no source lever. No body was changed.
+`func_overlay_066_F0000040_18C64A8` with D_F8's address held in a pointer born before the pixel loads scores 250 masked words at size delta 0, against a proved baseline of 249 at delta 0. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

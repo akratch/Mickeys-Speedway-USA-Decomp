@@ -257,6 +257,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_101_F0002510_18DDD30` with the bottom test written `element->y + node->y` scores 259 masked words at size delta -4, against a proved baseline of 257 at delta -8. The aligned residual rises from 70 to 170, and the body is not kept.
 `func_overlay_079_F0000FA0_18CDF40` with both square roots sharing one function-scope length scores 149 masked words at size delta 0, against a proved baseline of 143 at delta 0. The aligned residual rises from 123 to 130, and the body is not kept.
 `func_overlay_045_F0001158_188D5B0` with the upper sum repeated at its three uses scores 639 masked words at size delta +36, against a proved baseline of 560 at delta 0. The aligned residual rises from 478 to 541, and the body is not kept.
+`func_overlay_066_F00004E0_18C6948` with the loop limit defined before the display-list calls scores 174 masked words at size delta -44, against a proved baseline of 202 at delta -52. The aligned residual rises from 116 to 118, and the body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

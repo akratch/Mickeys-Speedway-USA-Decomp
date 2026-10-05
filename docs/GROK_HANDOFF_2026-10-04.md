@@ -269,6 +269,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_012_F0000910_186DB90` with both walking pointers born in the for-init scores the same 571 masked words at size delta 0. Naming falls from 276 to 274 and the aligned residual falls from 495 to 493, the masked count stays 571, and the body is not kept.
 `func_overlay_001_F0001D78_184E158` with entry and j declared before the table pointer scores 263 masked words at size delta 0, against a proved baseline of 268 at delta 0. The aligned residual falls from 269 to 264, and the body is kept. It is not a match.
 `func_overlay_045_F0001158_188D5B0` with element, first, second, and vertexAddress declared before current scores the same 560 masked words at size delta 0. The owned text differs from the proved baseline, every aligned bucket stays put, and the body is not kept.
+`func_overlay_066_F00004E0_18C6948` with the strip limit copied from an earlier local scores the same 202 masked words at size delta -52. The owned text matches the closed local-zero object, every aligned bucket stays put, and the body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

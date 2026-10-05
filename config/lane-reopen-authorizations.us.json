@@ -1270,11 +1270,6 @@
       "reason": "Decompiler-assisted structural reconstruction: m2c draft from this game's own extracted assembly, recovering call/global identities and types before CFG work. Size-deficit targets no permutation or flag lattice can close.",
       "source_commit": "e9bfc8dba9d7bdccca23ba32a145c7d39d17ca83"
     },
-    "func_overlay_066_F00004E0_18C6948": {
-      "ledger_commit": "5a4be725640c5ccc4091a9ef6881d61300fcab25",
-      "reason": "Copy the strip limit from an earlier local so the loop bound is register-resident when the exit rewrite runs. The compare should stay a register test, and 0x3C0 should remain a hoisted invariant.",
-      "source_commit": "d3fcf8ea6f4e562d75f6b0a7e7f97dc8b6482478"
-    },
     "func_overlay_071_F0000870_18CA390": {
       "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",

@@ -1920,6 +1920,11 @@
       "reason": "Current draw trace attributes the pre-0xD4 extra GP draw to inherited opacity mask; remove that diagnosed redundant mask on the improved 108-word body, then test authentic neighbor lifetimes. Old broad grids remain closed.",
       "source_commit": "c0ec1fef623edf31f3a452df67961e79563610ce"
     },
+    "overlay69DrawSortedGeometry": {
+      "ledger_commit": "4b789304abfa76e7c4f9dd118e7916ba9987bf58",
+      "reason": "One missing ring draw on the geometry address. Try a store-then-reload of fixedGeometry[count] so as1 folds the copy and the draw stays spent (L149). Closed casts, probes, and a named geometry base stay closed.",
+      "source_commit": "0c6942a2e1f185ce6530dc2e0a61085ee468a7d5"
+    },
     "overlay74Update": {
       "ledger_commit": "e2eb59251353c04c5914fad172c6d6806e9c8122",
       "reason": "New mechanism: law L87, uopt colours pool webs in first-surviving-definition order so schedule and colour are one decision, and the lock breaks at the use. Not tried; the permuter was also unfaithful here until today.",

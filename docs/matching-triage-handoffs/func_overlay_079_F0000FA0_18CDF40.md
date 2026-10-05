@@ -71,4 +71,10 @@ Configured full-TU baseline remains 143 masked and 144 raw words, target 736 byt
 
 Wrapping that first `sqrtf` in `do { } while (0)` scored 188 masked words at size delta +28, candidate 191 words. Aligned exact fell to 33 and really different rose to 68. First mismatch moved to entry. The region does not free f16 here. The body is not kept. The restored source re-scores 143 at delta 0. Do not repeat this region.
 
+#### 2026-10-05: the unused outer length does not move the home
+
+Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, size delta 0, first masked mismatch +0x3C. Aligned exact 65, naming 80, immediate 5, really different 38, displacement tax 20. Candidate 184 words, target 184.
+
+Deleting the function-scope `length`, which both block-scope lengths shadow, scored the same 143 masked and 144 raw words at size delta 0. The first masked mismatch stays +0x3C. Aligned exact stayed 65. Naming rose from 80 to 82 and really different fell from 38 to 36, so the aligned residual stays 123. The owned text is not the proved baseline. The body is not kept. Do not repeat this deletion. The field rewrite, the projectedX union, and the sqrt region stay closed.
+
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

@@ -135,4 +135,8 @@ s5/triCount s7/vertexCount s8 in the target; the rewrite shifts each by one
 slot), plus the polygonOffset spill home (0x6C target, 0x60 here). Not
 reached: the records for that order.
 
+#### 2026-10-05: hoisting the sample base grows the function
+
+Configured full-TU baseline: 253 masked and 253 raw words, target 1592 bytes, size delta 0. Loading wake's sample pointer once before the sample loop, and advancing that local inside the loop, scores 333 masked words at size delta +4. Not kept. The 253-word body stays. Do not repeat this hoist.
+
 <!-- plateau-handoff:wakeUpdate:end -->

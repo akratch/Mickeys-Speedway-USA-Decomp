@@ -1,6 +1,12 @@
 {
   "schema_version": 1,
   "claims": {
+    "85336ef5671a6137ce4fc0f52e7645ac8fce745e": {
+      "symbol": "overlay69DrawSortedGeometry",
+      "state": "superseded",
+      "decision_commit": "4b789304abfa76e7c4f9dd118e7916ba9987bf58",
+      "reason": "Canonical already holds the same 57-word fixed-block plateau and a newer exact-symbol handoff. This lane tip only restates that handoff, so it has no remaining scheduling claim."
+    },
     "704a9f3145ec923c9af54bba7fb6bfaee35605d5": {
       "symbol": "overlay1StartTimerCallbacks",
       "state": "rejected",

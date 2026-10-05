@@ -187,6 +187,7 @@ form scored 259 words at 1168 bytes.
 overlay 88 body remain in the gap; their latest committed notes do not
 name an untried source form that is currently assignable.
 `func_overlay_012_F0000910_186DB90` with each center written as collision times 2.0f plus the scaled term scores 612 masked words at size delta +8, against a proved baseline of 606 at delta -4. The body is not kept.
+`func_8003C80C` with the fraction assignment wrapped in `do { } while (0)` scores 117 masked words at size delta +12, against a proved baseline of 74 at delta 0. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

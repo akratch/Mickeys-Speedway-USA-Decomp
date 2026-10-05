@@ -1130,6 +1130,11 @@
       "reason": "One-function 90-minute packet: typed 16-bit texture cursors test row-stride expression creation and allocation priority on the current 13-word baseline; preserve exact byte advances and packet writes. Prior dead-width carriers stay closed.",
       "source_commit": "34a144842e349bc166b1f75ba9230dd2f1d416da"
     },
+    "func_overlay_045_F0001158_188D5B0": {
+      "ledger_commit": "272f2e89457ad63ba4d5f8c977974e09e499b017",
+      "reason": "The adjusted screen pair is still folded across the angle calls. Compute both float biases after sine and before cosine so the pair stays live across that call. Predict masked words fall at the same size.",
+      "source_commit": "df6ca4c510d235dba92f0ddcae8e1ef4ebcf0b6d"
+    },
     "func_overlay_046_F0000120_188E518": {
       "ledger_commit": "13d845651227cec3dd99c346ca39e63341b48ecc",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",

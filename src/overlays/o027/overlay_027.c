@@ -227,25 +227,24 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
     }
 }
 
-/* Mickey-local rendering reconstruction; donor scans are exact-negative.
- * 2026-10-01: 195 -> 100 positional at +4 bytes (frame, intensity if/else,
- * masked red channel, one command per line). 2026-10-02 (lane x-o101):
- * 100 -> 12 at delta 0. The relocation table names the closing call as
- * resident camPopModelMtx, which takes ONE argument: the a1 the shipped call
- * carries is the second vertex pointer (or the mode call's NULL) left over,
- * not an argument, and passing a vertex pointer to it was the +4. The
- * texture-part and mode calls are one resident routine, func_800349A4
- * (dlist, texture, flags, frame). The last 12 words are exactly two colour
- * decisions: forcing the first vertex address web to a3 and the second to a1
- * (CDX p1, proc 2) scores 0, each alone 4 and 8; the shard has the record. */
-/* One display-list command per source line, opcode word first, as a GBI macro
- * expands: as1 breaks its scheduling ties on physical line numbers. */
+/* Matched 2026-10-05. Each display-list word is its own pointer temporary:
+ * a shared command local leaves both vertex addresses one register too low.
+ * Those temporaries are the frame. camGetPtr's first halfword is the angle
+ * this routine negates; the child scale and the closing submit are the
+ * resident object helpers at those two call sites. */
 #define O27_WRITE_COMMAND(word0, word1) \
-    command = *commands; *commands = command + 1; command->w0 = (word0); command->w1 = (word1)
+    { O27Command *_g = (*commands)++; _g->w0 = (word0); _g->w1 = (word1); }
 
+extern s16 *camGetPtr(void);
+extern f32 func_80009F08(void *arg);
+extern void camPushModelMtx(O27Command **commands, void *mtx,
+                            O27Transform *transform, f32 scale, f32 scaleY);
+extern void func_800349A4(O27Command **commands, void *texture, s32 flags,
+                          s32 frame);
 extern void camPopModelMtx(O27Command **commands);
-extern void func_800349A4(O27Command **commands, void *texture, s32 flags, s32 frame);
-#ifdef NON_MATCHING
+extern void func_80009E78(O27Command **commands, void *arg1, s16 *arg2,
+                          O27Object *object);
+
 void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
                                        s16 *arg2, O27Object *object) {
     s32 intensity;
@@ -256,15 +255,13 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
     O27Child *child;
     O27State *state;
     s16 *value;
-    O27Command *command;
     u8 *verts;
-    u8 unused[0x28];
 
-    value = overlay27GetValue();
+    value = camGetPtr();
     state = object->state;
     child = (O27Child *)state->source;
     if (child != 0) {
-        scale = overlay27GetChildScale(child);
+        scale = func_80009F08(child);
     } else {
         scale = 1.0f;
     }
@@ -293,7 +290,7 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
         }
 
         displayList = *object->renderResource->displayList;
-        overlay27Prepare(commands, arg1, &transform, 1.0f, 0.0f);
+        camPushModelMtx(commands, arg1, &transform, 1.0f, 0.0f);
         func_800349A4(commands, displayList, 0x214, 0);
 
         O27_WRITE_COMMAND(0xFA000000, ((((intensity * 0x60) >> 8) & 0xFF) << 24) | ((((intensity * 0xE0) >> 8) & 0xFF) << 16) | ((((intensity * 0xFF) >> 8) & 0xFF) << 8) | (state->fade & 0xFF));
@@ -333,12 +330,9 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
     }
     object->scale *= scale;
     object->alpha = state->intensity;
-    overlay27Finalize(commands, arg1, arg2, object);
+    func_80009E78(commands, arg1, arg2, object);
     object->scale = oldScale;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o027/overlay_027/func_overlay_027_F0000624_187BFFC.s")
-#endif
 
 /* DKR v77/v80 and JFG contain no exact donor for this table transform. */
 /* Matched 2026-09-16 (lane s1-a). The last 19 words were the leaf's p2 web
@@ -407,12 +401,4 @@ s32 overlay27Activate(O27Object *object) {
 }
 
 
-/* PLATEAU-HANDOFF:func_overlay_027_F0000624_187BFFC:start
- * symbol: func_overlay_027_F0000624_187BFFC
- * score: 12 differing words
- * frame: 0x98
- * relocations: 15
- * first-mismatch: +0x1FC
- * summary: 12 words at delta 0: two colour decisions, the two vertex-address webs (a0/v1 here, a3/a1 in the target); forcing both scores 0.
- * PLATEAU-HANDOFF:func_overlay_027_F0000624_187BFFC:end
- */
+

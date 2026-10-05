@@ -241,4 +241,10 @@ Configured full-TU baseline on the kept pair: 58 masked and 58 raw words, target
 
 Writing SET_PRIM, SET_ENV, VERTEX, and POLYGON each on one source line, with comment padding so the function stays on the same line, scored the same 58 masked words at size delta 0. The 308-byte function text is byte-identical to the kept body. Joining each packet's two stores onto one line does not reorder them. The body is not changed. Do not repeat this one-line spelling. The copy-and-length pair stays closed.
 
+#### 2026-10-05: a fused entry comparison grows the function
+
+Configured full-TU baseline on the kept pair: 58 masked and 58 raw words, target 308 bytes, size delta 0, first mismatch +0x4. Aligned exact 31, naming 36, immediate 0, really different 13, displacement tax 9. Candidate 77 words, target 77.
+
+Writing the entry test as (count == 0) == 0 scored 75 masked and 75 raw words at size delta +4. The candidate grew to 78 words. Aligned exact fell from 31 to 16, naming rose from 36 to 48, immediate rose from 0 to 1, and really different rose from 13 to 16. Displacement tax rose from 9 to 10. The aligned residual rose from 49 to 65. The absolute size delta grew from 0 to 4. The body is not kept. The restored source re-scores 58 masked words at size delta 0, and the 308-byte function text matches the proved baseline. Do not repeat this entry spelling. The one-line packet macros stay closed.
+
 <!-- plateau-handoff:overlay83DrawStrip:end -->

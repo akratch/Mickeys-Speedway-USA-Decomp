@@ -258,4 +258,8 @@ Configured full-TU baseline: 58 masked and 58 raw words, target 308 bytes, size 
 Writing the vertex count as count times two plus two, and the polygon count as count times two, with the doubledCount local removed, scored the same 58 masked and 58 raw words at size delta 0. Aligned exact, naming, immediate, really different, and displacement tax stay 31, 36, 0, 13, and 9. The 308-byte function text is byte-identical to that baseline. The multiply is commoned, so the named local was not the extra pool web. The body is not kept. The restored source re-scores 58 masked words at size delta 0, and the owned text matches sha1 38e0bbbb3a1d5ee407323f3c49660be10781f7a5. Do not repeat this doubled-count deletion. The copy-and-length pair stays.
 
 Header regenerated from the ranking on 2026-10-06 (check_shard_metrics --write); it read score 68/77 words.
+
+#### 2026-10-06: a do-while around the saved pointer does not move a2
+
+Configured full-TU baseline: 308 bytes, 58 raw and 58 masked words, size delta 0, first mismatch +0x4. The ROM copy is `a3`; this body copies into `a2`. Wrapping `savedDisplayList = displayList` in `do { } while (0)` scores 58 raw and 58 masked words at size delta 0. The first mismatch stays +0x4. The object is not the baseline object. The masked count does not fall, so the 58-word body stays. Do not repeat this block.
 <!-- plateau-handoff:overlay83DrawStrip:end -->

@@ -230,6 +230,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_079_F0000FA0_18CDF40` with the first branch reusing value for the square root and the plane offset scores 159 masked words at size delta +8, against a proved baseline of 143 at delta 0. The body is not kept.
 `func_overlay_045_F0001158_188D5B0` with both screen biases between the sine and cosine calls scores the same 561 masked words at size delta 0. The owned text is byte-identical to the proved baseline. The placement is not kept.
 `func_overlay_020_F000038C_1876964` with columns, rows, and texture read into locals before the size product scores 209 masked words at size delta +4, against a proved baseline of 185 at delta +4. The body is not kept.
+`func_8003C80C` with the fraction declared before the counter scores the same 69 masked words at size delta 0. Naming falls from 47 to 45 and really different rises from 10 to 12. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

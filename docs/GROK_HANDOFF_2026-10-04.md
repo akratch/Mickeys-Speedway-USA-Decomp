@@ -203,6 +203,7 @@ name an untried source form that is currently assignable.
 `func_80009414` with divisor and frameCount in the render for-init before i scores the same 234 masked words at size delta 0. The aligned residual stays 199. The body is not kept.
 `func_overlay_020_F000038C_1876964` with the four vertex indices computed before the u/v divisions scores 257 masked words at size delta -20, against a proved baseline of 251 at delta -4. The aligned residual falls from 144 to 81, and the body is not kept.
 `func_overlay_020_F000038C_1876964` with only index+9 held before the u/v divisions scores 239 masked words at size delta -4, against a proved baseline of 251 at delta -4. The body is kept. It is not a match.
+`func_overlay_045_F0001158_188D5B0` with the shared rotation computed once before the sine and cosine calls scores 600 masked words at size delta -4, against a proved baseline of 561 at delta 0. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

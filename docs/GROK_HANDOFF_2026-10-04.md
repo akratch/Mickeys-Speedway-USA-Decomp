@@ -272,6 +272,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_066_F00004E0_18C6948` with the strip limit copied from an earlier local scores the same 202 masked words at size delta -52. The owned text matches the closed local-zero object, every aligned bucket stays put, and the body is not kept.
 `func_8005AF14` with the matrix-node address repeated at each use scores the same 377 masked words at size delta +12. The owned text differs from the proved baseline, every aligned bucket stays put, and the body is not kept.
 `func_overlay_012_F0000910_186DB90` with effect scaleX and particle type repeated at each use scores 582 masked words at size delta 0. The masked count rises from 571, the aligned residual rises from 495 to 499, and the body is not kept.
+`func_8005AF14` with the camera index repeated at each use scores 384 masked words at size delta +20. The size gap grows from +12, the aligned residual stays 327, and the body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

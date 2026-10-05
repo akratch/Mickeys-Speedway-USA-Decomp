@@ -138,6 +138,12 @@
       "state": "superseded",
       "decision_commit": "48921f11f86c9452e4bf9305d4506ec93e0ed0ab",
       "reason": "This lane tip does not change track.c. Its literal-threshold packet scored 167 masked words and was not adopted over the 162-word body, so it has no remaining scheduling claim."
+    },
+    "7dcfdbdcb6f1fbdd363506488b50c929e39a4799": {
+      "symbol": "func_80049B14",
+      "state": "superseded",
+      "decision_commit": "9f01fb4efe9c8e86b6003ea5e439b7be6802ae2d",
+      "reason": "This lane tip does not change fx.c. Its identity audit found no source lever over the 181-word body, so it has no remaining scheduling claim."
     }
   }
 }

@@ -280,6 +280,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_045_F0001158_188D5B0` with the glyph width repeated as right minus left scores 425 masked words at size delta 0, against a proved baseline of 560 at delta 0. The aligned residual falls from 478 to 378, and the body is kept. It is not a match.
 `func_overlay_045_F0001158_188D5B0` with the glyph height repeated as bottom minus top scores 424 masked words at size delta 0, against that kept baseline of 425. The aligned residual stays 378, and the body is kept. It is not a match.
 `func_overlay_045_F0001158_188D5B0` with the glyph texture offset written on the left of the resident base scores the same 424 masked words at size delta 0. The owned text matches the kept body, and the body is not kept.
+`func_overlay_012_F0000910_186DB90` with the two 2.0f uses wrapped in a do-while-zero region scores 592 masked words at size delta +4, against a proved baseline of 571 at delta 0. The aligned residual rises from 495 to 510, and the body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

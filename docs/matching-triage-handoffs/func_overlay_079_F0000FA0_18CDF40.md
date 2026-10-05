@@ -83,4 +83,10 @@ Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, siz
 
 The matched overlay 26 sibling carries the squared length, its square root, and the plane offset in one local. Writing those three assignments through `value`, and dropping the first branch's separate length, scored 159 masked and 160 raw words at size delta +8. The candidate grew to 186 words. Aligned exact rose from 65 to 68 and naming fell from 80 to 75, while really different rose from 38 to 40 and the displacement tax rose from 20 to 39. The aligned residual fell from 123 to 120, and the absolute size delta grew from 0 to 8. The first masked mismatch stays +0x3C. The body is not kept. The restored source re-scores 143 at delta 0. Do not repeat this reuse. The field rewrite, the projectedX union, the sqrt region, and the unused outer length stay closed.
 
+#### 2026-10-05: dividing X then Y then Z is byte-identical
+
+Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, size delta 0, first mismatch +0x3C. Aligned exact 65, naming 80, immediate 5, really different 38, displacement tax 20. Candidate 184 words, target 184.
+
+Dividing the normalised projection in the order X, then Y, then Z, matching overlay 26, scores the same 143 masked and 144 raw words at size delta 0. The owned text is byte-identical to the kept body. The three divides are independent, so their source order does not change the object. The body is not kept. The source is restored to Y, then X, then Z. Do not repeat this order. The value reuse stays closed.
+
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

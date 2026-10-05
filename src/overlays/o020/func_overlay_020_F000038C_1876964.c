@@ -76,6 +76,7 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
     s32 row;
     s32 col;
     s32 index;
+    s32 across;
     s32 u0;
     s32 u1;
     s32 v0;
@@ -117,6 +118,7 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
         for (row = 0; row < grid->rows; row++) {
             for (col = 0; col < grid->columns; col++) {
                 index = col & 7;
+                across = index + 9;
                 u0 = ((grid->textureScaleX * col * texture->width) << 5) / grid->columns;
                 u1 = ((grid->textureScaleX * (col + 1) * texture->width) << 5) / grid->columns;
                 v0 = ((grid->textureScaleY * row * texture->height) << 5) / grid->rows;
@@ -124,7 +126,7 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
                 tri[0].flags = 0x40;
                 tri[0].vi0 = index;
                 tri[0].vi1 = index + 1;
-                tri[0].vi2 = index + 9;
+                tri[0].vi2 = across;
                 tri[0].uv0.u = u0;
                 tri[0].uv0.v = v0;
                 tri[0].uv1.u = u1;
@@ -134,7 +136,7 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
                 tri[1].flags = 0x40;
                 index++;
                 tri[1].vi0 = index;
-                tri[1].vi1 = index + 8;
+                tri[1].vi1 = across;
                 tri[1].vi2 = index + 9;
                 tri[1].uv0.u = u1;
                 tri[1].uv0.v = v0;

@@ -1926,9 +1926,9 @@
       "source_commit": "b1a8f39f5b1fc714777b997b9ab76e3692e6ee8f"
     },
     "overlay68UpdateAnimation": {
-      "ledger_commit": "c0ec1fef623edf31f3a452df67961e79563610ce",
-      "reason": "Current draw trace attributes the pre-0xD4 extra GP draw to inherited opacity mask; remove that diagnosed redundant mask on the improved 108-word body, then test authentic neighbor lifetimes. Old broad grids remain closed.",
-      "source_commit": "c0ec1fef623edf31f3a452df67961e79563610ce"
+      "ledger_commit": "b7ac2e59783821b8123c16dc8d7d3467a0157524",
+      "reason": "Despite the comma-store stall, one pass computes atStart before the neighbour pointer copies so the compare can take v0. The elapsed casts, the mask deletion, and the predicate share stay closed.",
+      "source_commit": "9c47a665816bbc11a9ffa1734b1700da5e3b08ed"
     },
     "overlay69DrawSortedGeometry": {
       "ledger_commit": "c7419096d16de0105293606807ded85c794df3d2",

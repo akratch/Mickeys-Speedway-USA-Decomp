@@ -203,4 +203,10 @@ Configured full-TU baseline remains 68 masked and 68 raw words, target 308 bytes
 
 Assigning the saved display-list pointer as the first statement inside the count test scored the same 68 masked words at size delta 0. The translation unit text is byte-identical to that baseline. The move does not enter the branch delay. The body is not kept. The restored source re-scores 68 at delta 0. Do not repeat this count-block copy. The opening copy is still absent.
 
+#### 2026-10-05: an empty test of the saved pointer folds away
+
+Configured full-TU baseline: 68 masked and 68 raw words, target 308 bytes, size delta 0, first mismatch +0x4. Aligned exact 31, naming 29, immediate 1, really different 22, displacement tax 16. Candidate 77 words, target 77.
+
+An empty negated test of the saved display-list pointer, placed after the count load and before the count branch, scored the same 68 masked words at size delta 0. The owned text is byte-identical to that baseline. The test does not emit the opening copy. The body is not kept. The restored source re-scores 68 at delta 0, and the owned text matches the proved baseline. Do not repeat this empty test. The trailing empty tests and the count-block copy stay closed.
+
 <!-- plateau-handoff:overlay83DrawStrip:end -->

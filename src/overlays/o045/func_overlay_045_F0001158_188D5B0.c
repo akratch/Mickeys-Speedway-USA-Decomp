@@ -98,7 +98,6 @@ void func_overlay_045_F0001158_188D5B0(
     s32 top;
     s32 right;
     s32 bottom;
-    s32 glyphWidth;
     s32 glyphHeight;
     s32 textureLeft;
     s32 textureTop;
@@ -218,11 +217,10 @@ void func_overlay_045_F0001158_188D5B0(
                     top = (s32)element->y;
                     right = (glyph->right + left) - glyph->left;
                     bottom = (glyph->bottom + top) - glyph->top;
-                    glyphWidth = right - left;
                     glyphHeight = bottom - top;
                     textureLeft = glyph->left << 5;
                     textureTop = glyph->top << 5;
-                    textureRight = ((glyphWidth << 5) + textureLeft) - 0x20;
+                    textureRight = (((right - left) << 5) + textureLeft) - 0x20;
                     textureBottom = ((glyphHeight << 5) + textureTop) - 0x20;
 
                     fontCommands = font->displayList;
@@ -246,7 +244,7 @@ void func_overlay_045_F0001158_188D5B0(
                         f32 expandX;
                         f32 expandY;
 
-                        expandX = descriptor->unk10 * (f32)glyphWidth * 0.5f;
+                        expandX = descriptor->unk10 * (f32)(right - left) * 0.5f;
                         expandY = descriptor->unk10 * (f32)glyphHeight * 0.5f;
                         left = (s32)((f32)left - expandX);
                         right = (s32)((f32)right + expandX);

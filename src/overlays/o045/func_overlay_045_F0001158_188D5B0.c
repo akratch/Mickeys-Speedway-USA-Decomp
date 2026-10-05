@@ -256,12 +256,14 @@ void func_overlay_045_F0001158_188D5B0(
 
                     upper = (0x78 - top) + element->unk12 + element->unk1E;
                     lower = (0x78 - bottom) + element->unk12 + element->unk1E;
+                    pad188 = left;
+                    pad12C = right;
                     sine = func_8002A8BC(
                         element->unk0A + ((s16)element->unk20 << 8));
                     cosine = func_8002A8C0(
                         element->unk0A + ((s16)element->unk20 << 8));
-                    leftFloat = (f32)(left - 0xA0);
-                    rightFloat = (f32)(right - 0xA0);
+                    leftFloat = (f32)(pad188 - 0xA0);
+                    rightFloat = (f32)(pad12C - 0xA0);
                     halfWidth = (rightFloat - leftFloat) * 0.5f;
                     halfHeight = (f32)(upper - lower) * 0.5f;
                     x = -halfWidth;

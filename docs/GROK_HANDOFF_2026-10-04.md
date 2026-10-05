@@ -83,6 +83,10 @@ to 50. The body is not kept.
 `func_8001FC50` with the matrixBytes zero moved from the entry into the else
 scores the same 271 masked words at size delta 0. The function text is
 byte-identical to the proved baseline. The body is not kept.
+Walking its six field pointers through the existing `end` local scores 324
+masked words at size delta -56, and sharing only that base scores 311 at
+size delta -44, both against the same 271 at delta 0. The repeated shift
+is rematerialized. Neither body is kept.
 `func_overlay_045_F0001158_188D5B0` with left and right cast to float before
 the angle calls, and the 0xA0 bias subtracted after, scores 570 masked words
 at size delta +12, against a proved baseline of 561 at delta 0. The body is

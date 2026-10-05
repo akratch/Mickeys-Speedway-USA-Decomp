@@ -390,6 +390,11 @@
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
       "source_commit": "a5d2eeca202f3677ac36a88b2c1d90b1d09e9e3e"
     },
+    "func_80028FCC": {
+      "ledger_commit": "6cab133575c6722b281eadf12b785d36809683fa",
+      "reason": "Despite the recorded carrier stall, one pass measures a single-exit boolean. One result is assigned from each call compared with zero, with nested zero tests and one return. Per-arm returns and the or-chain stay closed.",
+      "source_commit": "a5a7dc3e6c1354821829579a8817d6af529c1737"
+    },
     "func_80029274": {
       "ledger_commit": "51cb0987182f14d492adfb269b5ea63a5f0201c1",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",

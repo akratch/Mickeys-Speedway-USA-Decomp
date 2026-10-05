@@ -113,4 +113,10 @@ Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, siz
 
 Writing ny as an ordinary float, without the register keyword, scores the same 143 masked and 144 raw words at size delta 0. Aligned exact, naming, immediate, really different, and displacement tax stay 65, 80, 5, 38, and 20. The 736-byte function text is byte-identical to the proved baseline. The keyword does not move the colour. The body is not kept. The restored source re-scores the same sha1. Do not repeat this register deletion. The shared length, the truthy flag test, the cross association, and the divide order stay closed.
 
+#### 2026-10-05: declaring projectedX ahead of crossZ leaves the buckets
+
+Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, size delta 0, first mismatch +0x3C. Aligned exact 65, naming 80, immediate 5, really different 38, displacement tax 20. Candidate 184 words, target 184. Aligned residual 123. Owned text sha1 988af62cf5ea6522197832dc831728393b02f632.
+
+Declaring projectedX immediately ahead of crossZ scored the same 143 masked and 144 raw words at size delta 0. Aligned exact, naming, immediate, really different, and displacement tax stayed 65, 80, 5, 38, and 20. The first mismatch stayed +0x3C. The 736-byte function text is not byte-identical: sha1 bfb72659061b0fba66c6810dbc13b1ea10e482fc. The body is not kept. The restored source re-scores the baseline sha1. Do not repeat this declaration swap. The unused length deletion and the lengthSquared reuse stay closed.
+
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

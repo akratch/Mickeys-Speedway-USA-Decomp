@@ -198,6 +198,7 @@ name an untried source form that is currently assignable.
 `func_8003C80C` with the time wrap spelled `(time < D_8007C868) == 0` scores 69 masked words at size delta 0, against a proved baseline of 74. The body is kept. 69 words remain.
 `func_overlay_066_F0000040_18C64A8` with the pixel cursor formed as a u32 byte advance of 6 scores the same 249 masked words at size delta 0. The owned text is byte-identical to the proved baseline. The body is not kept.
 `func_overlay_012_F0000910_186DB90` with 2.0f written as its own statement before the distance scale scores 595 masked words at size delta -8, against a proved baseline of 606 at delta -4. The body is not kept.
+`func_overlay_101_F0002510_18DDD30` with y computed before GetBounds scores 270 masked words at size delta -8, against a proved baseline of 257 at -8. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

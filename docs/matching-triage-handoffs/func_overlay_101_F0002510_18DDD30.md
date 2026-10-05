@@ -248,4 +248,10 @@ Configured full-TU baseline remains 257 masked and 257 raw words, target 1172 by
 
 Writing `edgeY` as `(node->y + element->y) + texture->height`, with the bottom test still reading `y`, scored 261 masked words at the same size delta -8. Aligned exact fell from 228 to 224 and naming rose from 38 to 42. The first mismatch moved to +0x3C. The body is not kept. The restored source re-scores 257 at delta -8. Do not repeat this edge-only sum. It does not emit the missing copy.
 
+#### 2026-10-05: computing y before GetBounds does not emit the copy
+
+Configured full-TU baseline: 257 masked and 257 raw words, target 1172 bytes, size delta -8, first mismatch +0x44. Aligned exact 228, naming 38, immediate 8, really different 24, displacement tax 187. Candidate 291 words, target 293.
+
+Computing `y` before `overlay101GetBoundsReloc`, and leaving `x` after that call, scored 270 masked and 270 raw words at the same size delta -8. The candidate stayed 291 words. Aligned exact fell from 228 to 219 and really different rose from 24 to 40. The aligned residual rose from 70 to 81. The missing copy was not gained as a word. The body is not kept. The restored source re-scores 257 at delta -8. Do not repeat this placement.
+
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

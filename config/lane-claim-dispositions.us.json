@@ -114,6 +114,12 @@
       "state": "superseded",
       "decision_commit": "6cab133575c6722b281eadf12b785d36809683fa",
       "reason": "Canonical now records the same 10-word early-return plateau and the carrier-representation closure. This lane tip does not change src/main/main.c, so it has no remaining scheduling claim on this symbol."
+    },
+    "a0547f6154526c0dba1f257583e2f5881020995c": {
+      "symbol": "func_overlay_008_F00034A0_18611F8",
+      "state": "superseded",
+      "decision_commit": "87f12abc853ab3b41df32e646e687f1d66b3891e",
+      "reason": "Canonical now records the 17-word cursor plateau, the carrier packet, and the counter-read result. This lane tip does not change overlay_008.c, so it has no remaining scheduling claim."
     }
   }
 }

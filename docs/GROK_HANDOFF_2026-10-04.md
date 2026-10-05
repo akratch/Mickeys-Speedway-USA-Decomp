@@ -234,6 +234,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_012_F0000910_186DB90` with center X written as collision times 2.0f plus the scaled term scores 571 masked words at size delta 0, against a proved baseline of 606 at delta -4. The body is kept. It is not a match.
 `func_overlay_012_F0000910_186DB90` with the quad alias removed scores 616 masked words at size delta +44, against that kept baseline of 571 at delta 0. The body is not kept. The kept frame is 304 bytes against 328.
 `func_overlay_012_F0000910_186DB90` with the center scale repeated at Y and Z scores the same 571 masked words at size delta 0. The owned text differs from the kept body, and every aligned bucket stays put. The body is not kept.
+`func_overlay_012_F0000910_186DB90` with the loop index and vertex pointer declared ahead of previous scores the same 571 masked words at size delta 0. The owned text differs from the kept body, and every aligned bucket stays put. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

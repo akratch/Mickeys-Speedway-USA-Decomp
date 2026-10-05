@@ -2061,9 +2061,9 @@
       "source_commit": "2d923387fa81afb05ef9fdd245dc8c67522adc73"
     },
     "wakeUpdate": {
-      "ledger_commit": "00919d11e8fff7c8cf4b43fd74ea998dbd6f8613",
-      "reason": "New target-proved unsigned halfword arithmetic closes the zero-input shift gap; ADR 0017 causal packet tests its minimal C spelling and resulting expression topology, not the closed colour-force or declaration grids.",
-      "source_commit": "0922cb435351df2dd39230eecba5c27bb725d2d9"
+      "ledger_commit": "04afc987dd1c99a0cbf8130894d037eb547254ed",
+      "reason": "The p1 save ratio is unrefuted: wake outranks secondaryVertices. One pass hoists the sample-base load out of the loop to cut wake reads without a new block.",
+      "source_commit": "acb9e136b0dbf64369a1be328f4a0b4a8e9ec274"
     }
   },
   "schema_version": 1

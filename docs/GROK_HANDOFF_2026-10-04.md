@@ -245,6 +245,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_045_F0001158_188D5B0` with left and right copied into the existing pad slots before the angle calls scores 560 masked words at size delta 0, against a proved baseline of 561. The body is kept. It is not a match.
 `overlay83DrawStrip` with the primitive, environment, and vertex packets routed through the saved display-list pointer scores 74 masked words at size delta +44, against a proved baseline of 58 at delta 0. The aligned residual rises from 49 to 65, and the body is not kept.
 `func_overlay_079_F0000FA0_18CDF40` with the plane flag test written as a truthy mask scores the same 143 masked words at size delta 0. The owned text is byte-identical to the proved baseline. The body is not kept.
+`func_overlay_020_F000038C_1876964` with a folded pointer identity after the opening field loads scores 224 masked words at size delta +28, against a proved baseline of 185 at delta +4. The aligned residual rises from 111 to 148, and the body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

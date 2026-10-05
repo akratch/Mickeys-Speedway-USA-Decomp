@@ -191,6 +191,7 @@ name an untried source form that is currently assignable.
 `overlay83DrawStrip` with the saved display-list pointer assigned after vertexCount scores 66 masked words at size delta +4, against a proved baseline of 68 at delta 0. The body is not kept.
 `func_overlay_101_F0002510_18DDD30` with the y sum recomputed only for edgeY scores 261 masked words at size delta -8, against a proved baseline of 257 at -8. The body is not kept.
 `func_8003C80C` does not take its counter init in the entry delay. That delay is an unread store of the second argument, and the target keeps the counter literal later. No body was scored. The body is not kept.
+`func_8003C80C` with only the first parameter, and the advanced time kept in a local, scores 103 masked words at size delta -4, against a proved baseline of 74 at delta 0. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

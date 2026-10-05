@@ -255,6 +255,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_020_F000038C_1876964` with the triangle column test written `(col >= grid->columns) == 0` scores 191 masked words at size delta +12, against a proved baseline of 185 at delta +4. The aligned residual falls from 111 to 101, the absolute size delta grows, and the body is not kept.
 `func_overlay_047_F0000B30_1891948`'s label-count zero and player-pointer load are not the font-call delay slots. Both that call and `fontColour` already match the target delay families, and no source edit was scored.
 `func_overlay_101_F0002510_18DDD30` with the bottom test written `element->y + node->y` scores 259 masked words at size delta -4, against a proved baseline of 257 at delta -8. The aligned residual rises from 70 to 170, and the body is not kept.
+`func_overlay_079_F0000FA0_18CDF40` with both square roots sharing one function-scope length scores 149 masked words at size delta 0, against a proved baseline of 143 at delta 0. The aligned residual rises from 123 to 130, and the body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

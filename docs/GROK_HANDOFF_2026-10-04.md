@@ -219,6 +219,7 @@ name an untried source form that is currently assignable.
 `overlay83DrawStrip` with the saved display-list pointer assigned after vertexCount, and the vertex length written as the two shifts of vertexCount plus 8, scores 58 masked words at size delta 0, against a proved baseline of 68 at delta 0. The body is kept. It is not a match.
 `overlay83DrawStrip` without `register` on that saved pointer scores the same 58 masked words at size delta 0. The owned text is byte-identical to the kept body. The keyword is not kept as a change.
 `func_overlay_066_F0000040_18C64A8` with the two proxy calls named `osInvalDCache` and `osWritebackDCacheAll` scores the same 249 masked words at size delta 0. The owned text is byte-identical to the proved baseline. The body is not kept.
+The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is register-class, and the workbench names no source lever. No body was changed.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

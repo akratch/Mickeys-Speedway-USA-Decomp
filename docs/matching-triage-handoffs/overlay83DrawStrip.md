@@ -221,4 +221,8 @@ Configured full-TU baseline on the kept pair: 58 masked and 58 raw words, target
 
 Removing `register` from the saved display-list pointer scored the same 58 masked words at size delta 0. The owned text is byte-identical to that kept body. The body is not changed. The keyword is not the colour lever at offset +0x4.
 
+#### 2026-10-05: the kept body has no supported source lever
+
+Workbench on the kept 58-word body: 77 instructions both sides, frameless, mixed residual with register 37, structural 12, schedule 0, and constant 2. The first divergence is register-class. The lever is none-known: frames agree, and no home, ring, or line-order measurement is present. Do not spend another declaration or keyword spelling until a ring trace or an as1 trace names the colour decision. The copy-and-length pair and the register drop stay closed.
+
 <!-- plateau-handoff:overlay83DrawStrip:end -->

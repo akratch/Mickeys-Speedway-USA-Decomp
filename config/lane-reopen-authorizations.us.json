@@ -955,6 +955,11 @@
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",
       "source_commit": "9d3b4722a37957437633b4b7adff25203819bec5"
     },
+    "func_overlay_012_F0000910_186DB90": {
+      "ledger_commit": "ef93d19fd7f3b0c2fcb5f715429ad7d2503b363f",
+      "reason": "Repeat effect scaleX and particle type at each use and drop the shared intensity local. That local crosses the draw calls, and the pool lane colours a web the target does not.",
+      "source_commit": "90a775042d9cdde71d3aa1c37e30fc3e74a7d40b"
+    },
     "func_overlay_014_F0001540_1870E18": {
       "ledger_commit": "1f5bc9322f4c637ed149ff269f11b75686550d98",
       "reason": "No exhaustive colour landscape in this shard; that measurement did not exist when the plateau was banked. Run tools/web_footprint.py --every-colour first, then L159 packing and L160. Three matched this way 2026-09-12.",

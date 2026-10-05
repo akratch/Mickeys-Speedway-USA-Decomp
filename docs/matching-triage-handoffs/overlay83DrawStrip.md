@@ -247,4 +247,10 @@ Configured full-TU baseline on the kept pair: 58 masked and 58 raw words, target
 
 Writing the entry test as (count == 0) == 0 scored 75 masked and 75 raw words at size delta +4. The candidate grew to 78 words. Aligned exact fell from 31 to 16, naming rose from 36 to 48, immediate rose from 0 to 1, and really different rose from 13 to 16. Displacement tax rose from 9 to 10. The aligned residual rose from 49 to 65. The absolute size delta grew from 0 to 4. The body is not kept. The restored source re-scores 58 masked words at size delta 0, and the 308-byte function text matches the proved baseline. Do not repeat this entry spelling. The one-line packet macros stay closed.
 
+#### 2026-10-05: dropping the doubled count is copy-propagated
+
+Configured full-TU baseline: 58 masked and 58 raw words, target 308 bytes, size delta 0, first mismatch +0x4. Aligned exact 31, naming 36, immediate 0, really different 13, displacement tax 9. Candidate 77 words, target 77. Owned text sha1 38e0bbbb3a1d5ee407323f3c49660be10781f7a5.
+
+Writing the vertex count as count times two plus two, and the polygon count as count times two, with the doubledCount local removed, scored the same 58 masked and 58 raw words at size delta 0. Aligned exact, naming, immediate, really different, and displacement tax stay 31, 36, 0, 13, and 9. The 308-byte function text is byte-identical to that baseline. The multiply is commoned, so the named local was not the extra pool web. The body is not kept. The restored source re-scores 58 masked words at size delta 0, and the owned text matches sha1 38e0bbbb3a1d5ee407323f3c49660be10781f7a5. Do not repeat this doubled-count deletion. The copy-and-length pair stays.
+
 <!-- plateau-handoff:overlay83DrawStrip:end -->

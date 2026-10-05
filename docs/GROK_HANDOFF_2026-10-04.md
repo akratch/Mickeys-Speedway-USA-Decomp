@@ -200,6 +200,7 @@ name an untried source form that is currently assignable.
 `func_overlay_012_F0000910_186DB90` with 2.0f written as its own statement before the distance scale scores 595 masked words at size delta -8, against a proved baseline of 606 at delta -4. The body is not kept.
 `func_overlay_101_F0002510_18DDD30` with y computed before GetBounds scores 270 masked words at size delta -8, against a proved baseline of 257 at -8. The body is not kept.
 `func_overlay_101_F0002510_18DDD30` with both x and y computed before GetBounds scores 267 masked words at size delta -8, against a proved baseline of 257 at -8. The body is not kept.
+`func_80009414` with divisor and frameCount in the render for-init before i scores the same 234 masked words at size delta 0. The aligned residual stays 199. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

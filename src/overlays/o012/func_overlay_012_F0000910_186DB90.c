@@ -138,7 +138,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                     distance = 1024.0f;
                 }
                 factor = 2.0f + (distance * 0.01f);
-                centerX = effect->collisionX * factor + effect->x0;
+                centerX = (effect->collisionX * 2.0f) + (effect->collisionX * (distance * 0.01f)) + effect->x0;
                 centerY = effect->collisionY * factor + effect->y0;
                 centerZ = effect->collisionZ * factor + effect->z0;
 

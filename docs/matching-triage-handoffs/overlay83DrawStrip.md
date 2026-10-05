@@ -235,4 +235,10 @@ Configured full-TU baseline on the kept pair: 58 masked and 58 raw words, target
 
 Routing the primitive, environment, and vertex packets through the saved display-list pointer, leaving the assignment after vertexCount, scored 74 masked and 74 raw words at size delta +44. Candidate 88 words. Aligned exact fell from 31 to 25, naming fell from 36 to 32, immediate rose from 0 to 2, and really different rose from 13 to 31. Displacement tax stayed 9. The aligned residual rose from 49 to 65. The absolute size delta grew from 0 to 44. The body is not kept. The restored source re-scores 58 masked words at size delta 0, and the 308-byte function text matches the proved baseline. Do not repeat this all-packet saved pointer. The copy-and-length pair and the register drop stay closed.
 
+#### 2026-10-05: one-line packet macros are inert
+
+Configured full-TU baseline on the kept pair: 58 masked and 58 raw words, target 308 bytes, size delta 0, first mismatch +0x4. Aligned exact 31, naming 36, immediate 0, really different 13, displacement tax 9. Candidate 77 words, target 77.
+
+Writing SET_PRIM, SET_ENV, VERTEX, and POLYGON each on one source line, with comment padding so the function stays on the same line, scored the same 58 masked words at size delta 0. The 308-byte function text is byte-identical to the kept body. Joining each packet's two stores onto one line does not reorder them. The body is not changed. Do not repeat this one-line spelling. The copy-and-length pair stays closed.
+
 <!-- plateau-handoff:overlay83DrawStrip:end -->

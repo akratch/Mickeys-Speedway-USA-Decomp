@@ -214,6 +214,7 @@ name an untried source form that is currently assignable.
 `func_overlay_066_F0000040_18C64A8` with the blue channel packed as a low-bit or before the 0x003F mask scores 250 masked words at size delta 0, against a proved baseline of 249 at delta 0. The body is not kept.
 `func_8003C80C` with the clock captured from the global store scores 72 masked words at size delta 0, against a proved baseline of 69 at delta 0. The body is not kept.
 `overlay83DrawStrip` with an empty negated test of the saved display-list pointer scores the same 68 masked words at size delta 0. The owned text is byte-identical to the proved baseline. The body is not kept.
+`func_8003C80C` with a K&R definition of its two parameters scores the same 69 masked words at size delta 0. The owned text is byte-identical to the proved baseline. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

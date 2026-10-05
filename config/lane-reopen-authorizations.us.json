@@ -1931,8 +1931,8 @@
       "source_commit": "c0ec1fef623edf31f3a452df67961e79563610ce"
     },
     "overlay69DrawSortedGeometry": {
-      "ledger_commit": "4b789304abfa76e7c4f9dd118e7916ba9987bf58",
-      "reason": "One missing ring draw on the geometry address. Try a store-then-reload of fixedGeometry[count] so as1 folds the copy and the draw stays spent (L149). Closed casts, probes, and a named geometry base stay closed.",
+      "ledger_commit": "c7419096d16de0105293606807ded85c794df3d2",
+      "reason": "Despite the four folded-address stalls, one pass indexes the geometry store through a copy of count so as1 can spend the missing ring draw without a word. Store order and the self-store stay closed.",
       "source_commit": "0c6942a2e1f185ce6530dc2e0a61085ee468a7d5"
     },
     "overlay74Update": {

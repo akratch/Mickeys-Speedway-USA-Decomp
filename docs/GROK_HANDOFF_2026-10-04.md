@@ -265,6 +265,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `overlay83DrawStrip` with the doubled count written as count times two at both uses scores the same 58 masked words at size delta 0. The owned text is byte-identical to the proved baseline, and the body is not kept.
 `func_overlay_079_F0000FA0_18CDF40` with the register keyword removed from ny scores the same 143 masked words at size delta 0. The owned text is byte-identical to the proved baseline, and the body is not kept.
 `func_overlay_066_F00004E0_18C6948` with the strip counter initialized from a local zero scores the same 202 masked words at size delta -52. The owned text differs from the proved baseline, every aligned bucket stays put, and the body is not kept.
+`func_overlay_045_F0001158_188D5B0` with the clip cursor initialized from the window origin scores 630 masked words at size delta +8. The aligned residual rises from 478 to 511, and the body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

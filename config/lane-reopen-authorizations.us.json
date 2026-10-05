@@ -570,6 +570,11 @@
       "reason": "Reconstruction sweep at 8 to 16 bytes: the candidate is a few instructions out, and today's cause list names the usual reasons -- a missing copy, a block fallthrough, an address rematerialized once too often.",
       "source_commit": "d761f310ac67783655771b8e27248a85663e086b"
     },
+    "func_8003C80C": {
+      "ledger_commit": "5a55a17874796396ca131d21e7f65da37791c3e5",
+      "reason": "Swap the three colour-channel lerp addends so the shifted product is on the left of the source byte. The fresh workbench names that operand order on the kept 46-word body. Leave the time update and the two scalar lerps unchanged.",
+      "source_commit": "5a55a17874796396ca131d21e7f65da37791c3e5"
+    },
     "func_8003D25C": {
       "ledger_commit": "c9b3576bcf074247d3ae71a69eca1237e2290f8f",
       "reason": "Class is register-only at 68 masked words, delta 0: routes to the forced-colour oracle and the permuter, mechanisms the recorded attempts did not use.",

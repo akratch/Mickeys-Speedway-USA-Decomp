@@ -65,4 +65,10 @@ the declared `ny` local with `plane->normal.y` at each use recompiled to
 +0x34. The restored body re-scores 143 masked words at delta 0. The body
 is not kept. Do not replace this declared normal with the field expression.
 
+#### 2026-10-05: a region around the first sqrt grows the function
+
+Configured full-TU baseline remains 143 masked and 144 raw words, target 736 bytes, size delta 0, first masked mismatch +0x3C. Aligned exact 65, naming 80, immediate 5, really different 38, displacement tax 20.
+
+Wrapping that first `sqrtf` in `do { } while (0)` scored 188 masked words at size delta +28, candidate 191 words. Aligned exact fell to 33 and really different rose to 68. First mismatch moved to entry. The region does not free f16 here. The body is not kept. The restored source re-scores 143 at delta 0. Do not repeat this region.
+
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

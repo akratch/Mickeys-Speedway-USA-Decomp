@@ -239,4 +239,10 @@ Private captures remain under `build/constructor-trace/`. Resume only with an
 independently instrumented PRE/rematerialization or stable web/home producer,
 followed by exact relocation multiplicity/sites and linked owned bytes.
 
+#### 2026-10-05: repeating the half-buffer product widens the function
+
+Configured full-TU baseline: 45 masked and 45 raw words, target 784 bytes, size delta 0, first mismatch +0x3C. Aligned exact 161, naming 11, immediate 10, really different 18, displacement tax 6. Candidate 196 words, target 196. Owned text sha1 c2f8207c311326cee69bfaaa485e580869db8afd.
+
+Deleting the declared half-buffer size and repeating count times 20 at the allocation and at both buffer offsets scores 195 masked and 195 raw words at size delta +8. The candidate grows to 198 words. Aligned exact falls from 161 to 74, naming rises from 11 to 79, immediate falls from 10 to 9, and really different rises from 18 to 41. Displacement tax rises from 6 to 66. The aligned residual rises from 39 to 129. The absolute size delta grows from 0 to 8. The first mismatch moves to +0x0. The body is not kept. The restored source re-scores 45 at delta 0, and the 784-byte function text matches sha1 c2f8207c311326cee69bfaaa485e580869db8afd. Do not repeat this product. The pointer-addressed size, the self-assignment, and the unsigned size stay closed.
+
 <!-- plateau-handoff:overlay17CreateChain:end -->

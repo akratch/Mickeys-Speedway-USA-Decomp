@@ -1536,8 +1536,8 @@
       "source_commit": "bae7a665c6332e12471d3d0c44d98f3b5f134ac2"
     },
     "overlay17CreateChain": {
-      "ledger_commit": "9de62ba14133cf91b3a7ee13e86c77cdc3fe1c39",
-      "reason": "Drop the declared half-buffer size and repeat count times 20 at each use. The workbench names that local as the extra pool colour on the 45-word body.",
+      "ledger_commit": "8b42125a7c7070e5c129b70f6a01edf5d8452505",
+      "reason": "Authenticated 45-word ABI baseline isolates the missing template pair. Faithful CFE/uopt/ugen capture will distinguish PRE merging from UGEN reuse before source edits; independently prove the fixed template extent.",
       "source_commit": "8b42125a7c7070e5c129b70f6a01edf5d8452505"
     },
     "overlay17DrawStrip": {

@@ -91,6 +91,9 @@ is rematerialized. Neither body is kept.
 the angle calls, and the 0xA0 bias subtracted after, scores 570 masked words
 at size delta +12, against a proved baseline of 561 at delta 0. The body is
 not kept.
+Subtracting that bias from `left` and `right` in place after the calls, then
+casting those integers into the existing float locals, scores 569 masked
+words at size delta 0 against the same 561. The body is not kept.
 `func_800349A4` with the clamp arm written as `nextFrame--` scores 243 masked
 words at size delta -4, against a proved baseline of 172 at delta 0. The body
 is not kept.

@@ -102,6 +102,12 @@
       "state": "superseded",
       "decision_commit": "93fad07b9050b3ca3c6579894ddfa3de12b2f9ed",
       "reason": "This historical tip changes only sibling overlay1FindPreviousUsable evidence already current in canonical; it has no overlay1ActivateObject delta."
+    },
+    "cdd09716fe7926c8069e5b51e41b269635dd188f": {
+      "symbol": "func_80051364",
+      "state": "superseded",
+      "decision_commit": "93f7cb9352d5c5de3e6d8cc03903fdac526208f7",
+      "reason": "Canonical now records the same widened-field plateau. Both contrasts miss the 7-word baseline. This lane tip changes only that handoff and a stale authorization, so it has no remaining scheduling claim."
     }
   }
 }

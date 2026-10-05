@@ -1950,6 +1950,11 @@
       "reason": "ADR0017 causal packet: trace declared-local versus compiler-temporary storage on the new 22-word body; test lexical lifetime sharing to raise linkedInit while shrinking the frame, preserving size and save set.",
       "source_commit": "224258eed67e7f326ddfcf7981b04a15af49cc35"
     },
+    "overlay83DrawStrip": {
+      "ledger_commit": "bff2a98964048c9efb6fe06bfa69b04f6a6a91d0",
+      "reason": "Length folds to doubled*10+28 while the n-field keeps vertexCount<<3. Spell the length as that shift plus vertexCount<<1 plus 8 on the current body so both share one shift. The old shift spelling was only the short inlined body.",
+      "source_commit": "1ce94cb4ee8cf2a525774eec7afb7cffae2881a5"
+    },
     "overlay89InitializeEffect": {
       "ledger_commit": "fb9a096f575791e53907007f0bdb5aeaf6348437",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",

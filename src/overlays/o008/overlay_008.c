@@ -1930,6 +1930,8 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
  * then three plain sums, and `tilt *= (f32)magnitude * 0.035f`.  The sample
  * call returns nothing, so update is offered f0 after it.
  *
+ * 2026-10-06, 126 -> 124 at size 0: the shared table index is a byte
+ * offset, `((randomMode * 4) + tableIndex) * 4`, before both float loads.
  * Left: the integer webs of the table lookup (randomMode a2, tableIndex a0,
  * their sum in v1, no shared `randomMode * 4`), the `steps` home (0x34
  * shipped, a compiler temporary at 0x2C here) and the counter reload after
@@ -1997,8 +1999,9 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     }
 
     tableAngle = D_2208[randomMode];
-    targetMotion = D_2188[(randomMode * 4) + tableIndex];
-    targetHeight = D_21C8[(randomMode * 4) + tableIndex];
+    tableIndex = ((randomMode * 4) + tableIndex) * 4;
+    targetMotion = *(f32 *)((u8 *)D_2188 + tableIndex);
+    targetHeight = *(f32 *)((u8 *)D_21C8 + tableIndex);
     smoothing = D_2210[mode];
     if ((state->lowering349 == 0) && (state->lock191 == 0)) {
         smoothing += 0.08f * update;
@@ -2368,11 +2371,11 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000
- * score: 126/447 words
+ * score: 124/447 words
  * frame: 0xA0
  * relocations: 40
- * first-mismatch: +0x11C
- * summary: One float carrier (phase to tilt target) on f14, sibling tail, void sample call: 240 to 126. Left: table-lookup int webs, steps home, counter reload.
+ * first-mismatch: +0x124
+ * summary: Byte-offset table index: 126 to 124 at size 0. Left: randomMode still off a2, steps home, counter reload.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
  */
 

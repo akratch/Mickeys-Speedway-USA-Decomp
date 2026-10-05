@@ -1270,6 +1270,11 @@
       "reason": "Decompiler-assisted structural reconstruction: m2c draft from this game's own extracted assembly, recovering call/global identities and types before CFG work. Size-deficit targets no permutation or flag lattice can close.",
       "source_commit": "e9bfc8dba9d7bdccca23ba32a145c7d39d17ca83"
     },
+    "func_overlay_066_F00004E0_18C6948": {
+      "ledger_commit": "6995d240c6e77373baec60ff6dbce760f88c8687",
+      "reason": "Copy the framebuffer to a fresh pointer inside the loop and advance from that pointer. The before-loop copy was inert. This is the per-iteration copy, not the closed screen-size branch.",
+      "source_commit": "d3fcf8ea6f4e562d75f6b0a7e7f97dc8b6482478"
+    },
     "func_overlay_071_F0000870_18CA390": {
       "ledger_commit": "498813bbefefcf2493219117e350b6db9980b886",
       "reason": "Laws L145-L154 banked 2026-09-12 reach these: delete-the-carrier for a ring temp, count draws not registers, order sweeps are shape-local, as1 picks largest aftercycles, constant type is IR identity, web number follows type.",

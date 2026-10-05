@@ -224,6 +224,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_020_F000038C_1876964` with a second name for index plus 9 and a separate index plus 10 scores 185 masked words at size delta +4, against a proved baseline of 239 at delta -4. The frame grows from 0x38 to 0x40. The body is kept. It is not a match.
 `func_overlay_020_F000038C_1876964` with the triangle null test written as a comparison with zero scores 199 masked words at size delta +12, against a proved baseline of 185 at delta +4. The body is not kept.
 `func_overlay_020_F000038C_1876964` with index plus 10 written only at its store scores 239 masked words at size delta -4, against a proved baseline of 185 at delta +4. The frame falls from 0x40 to 0x38. The body is not kept.
+`func_overlay_020_F000038C_1876964` with the vertex count multiplied as rows before columns scores 186 masked words at size delta +4, against a proved baseline of 185 at delta +4. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

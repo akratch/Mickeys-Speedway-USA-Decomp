@@ -119,4 +119,10 @@ Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, siz
 
 Declaring projectedX immediately ahead of crossZ scored the same 143 masked and 144 raw words at size delta 0. Aligned exact, naming, immediate, really different, and displacement tax stayed 65, 80, 5, 38, and 20. The first mismatch stayed +0x3C. The 736-byte function text is not byte-identical: sha1 bfb72659061b0fba66c6810dbc13b1ea10e482fc. The body is not kept. The restored source re-scores the baseline sha1. Do not repeat this declaration swap. The unused length deletion and the lengthSquared reuse stay closed.
 
+#### 2026-10-05: reusing value for crossZ shortens the function
+
+Configured full-TU baseline: 143 masked and 144 raw words, target 736 bytes, size delta 0, first mismatch +0x3C. Aligned exact 65, naming 80, immediate 5, really different 38, displacement tax 20. Candidate 184 words, target 184. Aligned residual 123. Owned text sha1 988af62cf5ea6522197832dc831728393b02f632.
+
+Carrying crossZ in value, and deleting the crossZ declaration, scored 156 masked and 157 raw words at size delta -4. The candidate shrank to 183 words and 732 bytes. Aligned exact stayed 65, naming fell from 80 to 78, immediate rose from 5 to 7, and really different fell from 38 to 36. Displacement tax rose from 20 to 35. The aligned residual fell from 123 to 121. The absolute size delta grew from 0 to 4. The first mismatch stayed +0x3C. Owned text sha1 7c04419e3f5baef1f2c928c8bb5b020d2c664fef. The body is not kept. The restored source re-scores the baseline sha1. Do not repeat this value carrier. The declaration swap, the unused length deletion, and the lengthSquared reuse stay closed.
+
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

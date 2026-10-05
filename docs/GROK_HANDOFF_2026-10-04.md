@@ -283,6 +283,7 @@ The kept `overlay83DrawStrip` body was diagnosed again. The first divergence is 
 `func_overlay_012_F0000910_186DB90` with the two 2.0f uses wrapped in a do-while-zero region scores 592 masked words at size delta +4, against a proved baseline of 571 at delta 0. The aligned residual rises from 495 to 510, and the body is not kept.
 `func_overlay_079_F0000FA0_18CDF40` with projectedX declared ahead of crossZ scores the same 143 masked words at size delta 0, and the aligned buckets stay put. The owned text changes, so the body is not kept.
 `func_overlay_079_F0000FA0_18CDF40` carrying crossZ in value scores 156 masked words at size delta -4, against a proved baseline of 143 at delta 0. The aligned residual falls from 123 to 121, and the body is not kept.
+`func_overlay_020_F000038C_1876964` reassigning grid through a bitwise or with zero after the size product is byte-identical to the proved baseline of 185 masked words at size delta +4. The body is not kept.
 The owner requested this handoff because weekly model usage is nearly spent.
 Continue matching; do not restart a tooling project or repeat exhausted sweeps.
 

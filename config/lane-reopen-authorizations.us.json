@@ -345,6 +345,11 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "cbcfcadc14e0cda0060b6faea6b44c231ed6ad92"
     },
+    "func_8001FC50": {
+      "ledger_commit": "a111148551245f708b34c7c4b6ae3386925e3191",
+      "reason": "Invert the mode test so both zeros are the equal arm. The kept else of the not-equal test only moved the matrix zero and was byte-identical. This asks whether the branch target, not the zero statement, selects the home store.",
+      "source_commit": "b1021a3eee2baf95bfdd659819d4e9034cb633d6"
+    },
     "func_8002057C": {
       "ledger_commit": "92fb6d1093596e7220265a46202bf31b4fef5aa7",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",

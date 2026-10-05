@@ -225,4 +225,8 @@ Removing `register` from the saved display-list pointer scored the same 58 maske
 
 Workbench on the kept 58-word body: 77 instructions both sides, frameless, mixed residual with register 37, structural 12, schedule 0, and constant 2. The first divergence is register-class. The lever is none-known: frames agree, and no home, ring, or line-order measurement is present. Do not spend another declaration or keyword spelling until a ring trace or an as1 trace names the colour decision. The copy-and-length pair and the register drop stay closed.
 
+#### 2026-10-05: integer locals ahead of the saved pointer are inert
+
+The kept body is a leaf. Its phase-2 colouring puts the hoisted display-list copy in the lowest free colour. Declaring `count`, `doubledCount`, and `vertexCount` ahead of that pointer scored the same 58 masked and 58 raw words at size delta 0. Aligned exact, naming, immediate, really different, and displacement tax stay 31, 36, 0, 13, and 9. The 308-byte function text is byte-identical to the kept body. The body is not changed. Do not repeat this declaration order. The copy-and-length pair and the register drop stay closed.
+
 <!-- plateau-handoff:overlay83DrawStrip:end -->

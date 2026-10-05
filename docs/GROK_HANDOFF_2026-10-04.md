@@ -103,6 +103,8 @@ body is not kept.
 `func_overlay_020_F000038C_1876964` with the horizontal texture scale factored
 through the dead buffer index scores 212 masked words at size delta -20,
 against a proved baseline of 251 at -4. The body is not kept.
+Holding only `row + 1` in that index, once per row, scores 264 masked words
+at size delta +8 against the same 251 at -4. The body is not kept.
 `func_80016890` with both half extents written as `inverseScale * 10.0f`,
 and without the unused `radius`, the `arg2` copy, and the `modInst` local,
 scores 31 masked words at size delta 0 and frame 0x190, against a proved

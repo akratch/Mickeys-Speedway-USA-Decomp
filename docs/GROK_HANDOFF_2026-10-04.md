@@ -102,6 +102,9 @@ scores 31 masked words at size delta 0 and frame 0x190, against a proved
 baseline of 315 masked words at frame 0x1A0. Aligned rows are 525 exact,
 14 naming, 17 immediate, and 0 really different. The body is kept. It is
 not a match. The remaining naming is the f0/f2 swap from +0xAC.
+Storing the four unrotated products in `temp[]` on that body scores 425
+masked words at size delta +4, against the kept 31 at delta 0. The body
+is not kept.
 
 `func_80010654`'s matched-family lifetime packet is closed: an outer array
 index scored 163, output-pointer copies left 162 words, and a difference

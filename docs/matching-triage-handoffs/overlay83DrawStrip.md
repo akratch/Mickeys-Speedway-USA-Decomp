@@ -209,4 +209,10 @@ Configured full-TU baseline: 68 masked and 68 raw words, target 308 bytes, size 
 
 An empty negated test of the saved display-list pointer, placed after the count load and before the count branch, scored the same 68 masked words at size delta 0. The owned text is byte-identical to that baseline. The test does not emit the opening copy. The body is not kept. The restored source re-scores 68 at delta 0, and the owned text matches the proved baseline. Do not repeat this empty test. The trailing empty tests and the count-block copy stay closed.
 
+#### 2026-10-05: the late copy and the shared-shift length cancel
+
+Configured full-TU baseline: 68 masked and 68 raw words, target 308 bytes, size delta 0, first mismatch +0x4. Aligned exact 31, naming 29, immediate 1, really different 22, displacement tax 16. Candidate 77 words, target 77.
+
+Assigning the saved display-list pointer after `vertexCount = doubledCount + 2`, and spelling the vertex length as `(vertexCount << 3) + (vertexCount << 1) + 8`, scored 58 masked and 58 raw words at size delta 0. Aligned exact stayed 31, naming rose from 29 to 36, immediate fell from 1 to 0, and really different fell from 22 to 13. Displacement tax fell from 16 to 9. The candidate stayed 77 words. The one-word target deletion at +0x4 is gone. The body is kept. It is not a match. Do not score either half alone again: the late assignment alone was 66 masked words at size delta +4, and the shifts alone were 71 at size delta -4.
+
 <!-- plateau-handoff:overlay83DrawStrip:end -->

@@ -31,7 +31,7 @@ extern u8 D_80000000[];
     cmd->w0 = SHIFTL(4, 24, 8) | \
               SHIFTL(((vertexCount) << 3) | ((u32)(address) & 6) | \
                          (firstVertex), 16, 8) | \
-              SHIFTL(((vertexCount) * 10) + 8, 0, 16); \
+              SHIFTL(((vertexCount) << 3) + ((vertexCount) << 1) + 8, 0, 16); \
     cmd->w1 = (u32)(address); \
 }
 #define POLYGON(packet, triangles, triangleCount, textured) { \
@@ -47,7 +47,7 @@ extern u8 D_80000000[];
  * Trailing empty if (vertexCount) then if (count) are L100 occurrences; reverse
  * order is 73, and each probe alone is 72 and 71. */
 void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
-    register Overlay83Command **savedDisplayList = displayList;
+    register Overlay83Command **savedDisplayList;
     s32 count;
     s32 doubledCount;
     s32 vertexCount;
@@ -56,6 +56,7 @@ void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
     if (count != 0) {
         doubledCount = count * 2;
         vertexCount = doubledCount + 2;
+        savedDisplayList = displayList;
         SET_PRIM((*displayList)++, 255, 255, 255, 255);
         SET_ENV((*displayList)++, strip->red, strip->green, strip->blue, 255);
         VERTEX((*displayList)++,

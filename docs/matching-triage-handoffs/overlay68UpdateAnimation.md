@@ -102,4 +102,12 @@ The opacity store and the elapsed add are swapped. The mask stays on the store. 
 
 Result: 106 masked and 106 raw words, size delta 0, first mismatch +0xCC. The body is kept. It is not a match. The three elapsed-add casts and the mask deletion stay closed.
 
+## 2026-10-06: folding the opacity store into the elapsed add
+
+The 106-word body loads elapsed before it stores opacity. The target stores the byte first.
+
+Spelling: assign elapsed from a comma whose left side stores the masked opacity and whose right side is the elapsed sum. No new local and no new block.
+
+Result: 108 masked and 108 raw words, size delta 0, first mismatch +0xD4. The store moves back ahead of the load and the two-word gain disappears. Not kept. The 106-word body stays.
+
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

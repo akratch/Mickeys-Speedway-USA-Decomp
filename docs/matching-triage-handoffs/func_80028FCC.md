@@ -316,4 +316,14 @@ changed the frame. No canonical source change is warranted. The unresolved
 mechanism remains the target's three independent ring temporaries and
 per-arm `v0` copies.
 
+## 2026-10-06: single-exit boolean is short
+
+The reopened pass asked for one single-exit boolean. Per-arm returns and the or-chain were not repeated.
+
+Spelling: one result local, each call compared with zero into that result, nested zero tests, and one return.
+
+Result against the 108-byte target: 19 masked words, 19 raw, size delta -8. The comparison result stays in one caller-saved register, and the function is 8 bytes short. Masked words do not fall at size delta 0. The tracked body is unchanged.
+
+This closes the reopened single-exit pass. The 10-word early-return body stays.
+
 <!-- plateau-handoff:func_80028FCC:end -->

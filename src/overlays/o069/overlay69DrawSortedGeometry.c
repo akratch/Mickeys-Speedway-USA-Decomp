@@ -285,6 +285,6 @@ void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
  * frame: 0x148
  * relocations: 6
  * first-mismatch: +0x3DC
- * summary: Listing rewrite at the target frame. Exact up to the fixed collect block, where the geometry store needs one more ring draw.
+ * summary: Listing rewrite at the target frame. Exact up to the fixed collect block, where the geometry store needs one more ring draw. A same-slot reload, the refs-geometry-keys order, a pointer index, and an early count increment were measured on 2026-10-05 and not kept.
  * PLATEAU-HANDOFF:overlay69DrawSortedGeometry:end
  */

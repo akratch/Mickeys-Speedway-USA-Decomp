@@ -6,7 +6,7 @@
 - frame: 0x148
 - relocations: 6
 - first mismatch: +0x3DC
-- summary: Listing rewrite at the target frame. Exact up to the fixed collect block, where the geometry store needs one more ring draw.
+- summary: Listing rewrite at the target frame. Exact up to the fixed collect block, where the geometry store needs one more ring draw. A same-slot reload, the refs-geometry-keys order, a pointer index, and an early count increment were measured on 2026-10-05 and not kept.
 #### 2026-10-02, lane x-sort: made measurable, rewritten, 140 to 57
 
 The body was not in the queue: overlay 69 compiled it under a private guard
@@ -79,4 +79,15 @@ count*4) at the head of the statement into a free temporary, so the store's
 own recomputation lands in the same register and as1 deletes it; or one that
 copies the index load through a second temporary as1 renames away. Either
 spends the draw without a word.
+
+#### 2026-10-05: four folded-address attempts stay off the 57-word body
+
+Configured full-TU baseline remains 57 masked and 57 raw words, target 1436 bytes, size delta 0, first mismatch +0x3DC. The kept store order is refs, keys, geometry.
+
+- A second store of fixedGeometry[count] from itself, the store-then-reload, scored 122 masked words at size delta +8. The copy survived as a real store. Not kept.
+- The target store order, refs then geometry then keys, scored 115 masked words at size delta -4. as1 still deletes the repeated stack address. Not kept. Do not repeat this order on the current body.
+- That order plus a pointer-plus-index load of the geometry byte scored 123 masked words at size delta +4. The added address and the deleted stack address do not cancel. Not kept.
+- Incrementing count between the geometry store and a count-minus-one keys store scored 171 masked words at size delta +4. Not kept.
+
+The 57-word body stays. No bytes are credited. A later pass needs a zero-word draw that this reload, this order, and this pointer form do not produce.
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

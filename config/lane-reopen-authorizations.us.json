@@ -536,9 +536,9 @@
       "source_commit": "61406aec20668803eb19e5654e70b52c32043ce6"
     },
     "func_80037C74": {
-      "ledger_commit": "d5eb9664e410ddd85f844c771e4d67a9e871d639",
-      "reason": "Transfer exact o099 typed vertex-pointer and separate row-index webs plus for-header second inductions; current u32 K0 carrier folds +170 and loses base hoist. Sibling proof closes analogous latch and pointer structure.",
-      "source_commit": "d5eb9664e410ddd85f844c771e4d67a9e871d639"
+      "ledger_commit": "08ac22b28868e6fb86e798a4a5a1d849d930a121",
+      "reason": "Despite the closed clamp and spelling sweeps, one pass builds the second vertex as the first physical address plus one row stride so 0x80000000 is not folded into the row offset. The camera ABI stays closed.",
+      "source_commit": "08ac22b28868e6fb86e798a4a5a1d849d930a121"
     },
     "func_80038190": {
       "ledger_commit": "15923576c9c5cceb2b5cf48a150819e2fb5f3939",

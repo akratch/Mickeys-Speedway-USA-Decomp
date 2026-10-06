@@ -263,4 +263,10 @@ The unmodified body scores 784 bytes, 45 raw and 45 masked words, size delta 0, 
 
 Declaring one unused s32 before the template pointer scores 36 masked and 36 raw words at size delta 0. The function stays 784 bytes. The first mismatch stays +0x3C. Aligned immediate rows fall from 10 to 0, and naming and structural rows stay at 11 and 10. The body is kept. It is not a match. Do not drop this slot: the size home moves back without it.
 
+#### 2026-10-06: multiplying the size local in place is folded
+
+The kept body scores 784 bytes, 36 raw and 36 masked words, size delta 0, first mismatch +0x3C. The ROM shifts the count in place. This body shifts it into a2. The size home is now the ROM slot.
+
+Copying count into the size and multiplying that local by 20 scores the same 36 masked and 36 raw words at size delta 0. The mismatch list is unchanged. The multiply is folded. Not kept. The 36-word body stays. Do not repeat this in-place multiply. The frame slot stays.
+
 <!-- plateau-handoff:overlay17CreateChain:end -->

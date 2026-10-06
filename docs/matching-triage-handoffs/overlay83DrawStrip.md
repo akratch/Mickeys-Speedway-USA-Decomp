@@ -268,4 +268,10 @@ Configured full-TU baseline: 308 bytes, 58 raw and 58 masked words, size delta 0
 The unmodified body scores 308 bytes, 58 raw and 58 masked words, size delta 0, first mismatch +0x4. The ROM copies the display-list pointer into a3. This body copies it into a2.
 
 Writing the pointer copy as a comma whose left side assigns vertexCount scores the same 58 masked and 58 raw words at size delta 0. The mismatch list is unchanged. Not kept. The 58-word body stays. Do not repeat this comma. The do-while block and the declaration order stay closed.
+
+#### 2026-10-06: ordered environment-color assignments grow the function
+
+The unmodified body scores 308 bytes, 58 raw and 58 masked words, size delta 0, first mismatch +0x4. The ROM loads the red byte before the green byte. This body loads green first, and the display-list copy stays in a2.
+
+Writing the environment color as four assignments, red shifted first and then or-equals of green, blue, and alpha, scores 73 masked and 73 raw words at size delta +12. The candidate grows by 12 bytes. Each or-equals stores the word. The copy stays in a2. Not kept. The 58-word body stays. Do not repeat this color sequence. The comma copy stays closed.
 <!-- plateau-handoff:overlay83DrawStrip:end -->

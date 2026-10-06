@@ -251,4 +251,10 @@ The unmodified body scores 784 bytes, 45 raw and 45 masked words, size delta 0, 
 
 Inlining count times 20 only in the allocation call, and assigning halfBufferBytes after that call returns, scores 192 masked and 192 raw words at size delta +8. The candidate grows by 8 bytes. The first mismatch moves to +0x18. Not kept. The 45-word body stays. Do not repeat this late product. The three-site repeat stays closed.
 
+#### 2026-10-06: an or-zero on the half-buffer product is inert
+
+The unmodified body scores 784 bytes, 45 raw and 45 masked words, size delta 0, first mismatch +0x3C. The ROM shifts the scaled count in t7. This body shifts it into a2.
+
+Folding an or-zero onto count times 20 scores the same 45 masked and 45 raw words at size delta 0. The mismatch list is unchanged. The identity is folded. Not kept. The 45-word body stays. Do not repeat this or-zero. The late product and the three-site repeat stay closed.
+
 <!-- plateau-handoff:overlay17CreateChain:end -->

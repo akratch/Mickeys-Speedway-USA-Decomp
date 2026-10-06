@@ -771,8 +771,8 @@
       "source_commit": "838f8ff7d18ce66f00c1ab7470b30bee06dbf5b5"
     },
     "func_80051364": {
-      "ledger_commit": "5fda4bb034f93ec317223be0d5984ddd7abf5490",
-      "reason": "Despite the early-cursor stall, one pass advances the cursor by four plus a cancelling sign-extend of the command word so the add waits for both shifts. The early increment stays closed.",
+      "ledger_commit": "f722219d46e2bb3db99cc72da515a5ccb5452e25",
+      "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 7 masked words is a schedule or structure defect the permuter can still move.",
       "source_commit": "6c43dc616af9b69dd370ae593d412f388371cf33"
     },
     "func_800517E0": {

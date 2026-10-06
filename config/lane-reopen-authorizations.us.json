@@ -706,8 +706,8 @@
       "source_commit": "e71d0977dfce6dbb522aed9af75dc3c6589bee0b"
     },
     "func_80049B14": {
-      "ledger_commit": "3bc297ba34c5af92e45d68f1344b72796cbafc1f",
-      "reason": "ADR 0018 stall rule, and at delta 4 bytes the candidate is not the same function: decompiler-assisted reconstruction applies where no permutation can.",
+      "ledger_commit": "5707d2bcb8d6ead2671abacef0408d1034bf15f5",
+      "reason": "Despite the named-mask stall, one pass copies delta into carry through an all-ones mask so carry can outrank the hoisted constants. The named mask stays closed.",
       "source_commit": "3bc297ba34c5af92e45d68f1344b72796cbafc1f"
     },
     "func_80049E4C": {

@@ -266,8 +266,8 @@
       "source_commit": "5cafbf70916743b98c06ea2a57da440401dd2a0f"
     },
     "func_80016890": {
-      "ledger_commit": "228bacea58829478693ceef56403c08182798445",
-      "reason": "Despite the cap-local stall, one pass folds the 1024 clamp into the scale product so the bound and the distance share one value. The comma, the less-than spelling, and the clamp region stay closed.",
+      "ledger_commit": "35468208b5f565b82030591f4bcfc5adfc8df827",
+      "reason": "Despite the clamp-ternary stall, one pass declares the temp array before the points array so its homes can move. The clamp spellings stay closed.",
       "source_commit": "879820da8fd0d357e646fdf31e9565f9cb07b897"
     },
     "func_80017140": {

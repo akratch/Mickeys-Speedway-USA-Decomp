@@ -332,4 +332,10 @@ The unmodified body scores 108 bytes, 10 raw and 10 masked words, size delta 0, 
 
 Holding each call in one local and returning that local compared with zero scores 10 masked and 10 raw words at size delta 0. The taken path normalizes v0 in place, and the branch still tests the raw value. The object differs and the masked count does not fall. Not kept. The 10-word body stays. Do not repeat this normalized return. The single-exit boolean and the or-chain stay closed.
 
+#### 2026-10-06: three two-instruction booleans grow the function
+
+The unmodified body scores 108 bytes, 10 raw and 10 masked words, size delta 0, first mismatch +0x1C. The ROM normalizes each call into its own ring temporary and copies that temporary into v0. This body branches on the raw return and materializes the constant 1.
+
+Storing each two-instruction boolean in its own local and returning that local scores 23 masked and 23 raw words at size delta +16. The candidate grows by 16 bytes. Each test is two set-less-than instructions, and the branches stay inverted. Not kept. The 10-word body stays. Do not repeat these three locals. The normalized return stays closed.
+
 <!-- plateau-handoff:func_80028FCC:end -->

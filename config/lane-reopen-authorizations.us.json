@@ -1176,9 +1176,9 @@
       "source_commit": "34a144842e349bc166b1f75ba9230dd2f1d416da"
     },
     "func_overlay_045_F0001158_188D5B0": {
-      "ledger_commit": "c570931c33ea0d581ab987f873e4cc103772b8c4",
-      "reason": "Despite the frame-pad keep, one pass reads unk10 once before the glyph loop so the descriptor web can fall below the triangle pointer. The glyph repeats stay.",
-      "source_commit": "c570931c33ea0d581ab987f873e4cc103772b8c4"
+      "ledger_commit": "a926f3759c4f4963195fd32b9ac3ec5f68febd99",
+      "reason": "Despite the window-load keep, one pass moves the four screen ints 16 bytes later so their homes can match the stack cluster. The window load and the allocation mask stay.",
+      "source_commit": "a926f3759c4f4963195fd32b9ac3ec5f68febd99"
     },
     "func_overlay_046_F0000120_188E518": {
       "ledger_commit": "13d845651227cec3dd99c346ca39e63341b48ecc",

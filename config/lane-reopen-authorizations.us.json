@@ -1596,9 +1596,9 @@
       "source_commit": "bae7a665c6332e12471d3d0c44d98f3b5f134ac2"
     },
     "overlay17CreateChain": {
-      "ledger_commit": "e5d82edfabdd1e262d42313e009ff0b8ce5eb9c1",
-      "reason": "Despite the late-product stall, one pass folds an or-zero onto the half-buffer product so the final shift can stay in the temporary. The late product and the three-site repeat stay closed.",
-      "source_commit": "8b42125a7c7070e5c129b70f6a01edf5d8452505"
+      "ledger_commit": "79162ea50d06ba47cde2ec9ce36c0b6b0dd38840",
+      "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 45 masked words is a schedule or structure defect the permuter can still move.",
+      "source_commit": "79162ea50d06ba47cde2ec9ce36c0b6b0dd38840"
     },
     "overlay17DrawStrip": {
       "ledger_commit": "e4abe37e7e1ab6f9afade5656e102c4c6cecc19f",

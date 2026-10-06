@@ -411,8 +411,8 @@
       "source_commit": "a5d2eeca202f3677ac36a88b2c1d90b1d09e9e3e"
     },
     "func_80028FCC": {
-      "ledger_commit": "9bcf6faee7044279fc5e0e6ed5bdf897236146e4",
-      "reason": "Despite the normalized-return stall, one pass stores each two-instruction boolean in its own local and returns that local. The shared-result return stays closed.",
+      "ledger_commit": "986e29417b5a9491c4c8f4572e514356a14f2805",
+      "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 10 masked words is a schedule or structure defect the permuter can still move.",
       "source_commit": "a5a7dc3e6c1354821829579a8817d6af529c1737"
     },
     "func_80029274": {

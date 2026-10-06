@@ -128,4 +128,12 @@ The unmodified body scores 1424 bytes, 106 raw and 106 masked words, size delta 
 
 Computing atStart after the neighbour copies and before the index-greater-than-zero test scores the same 106 masked and 106 raw words at size delta 0. The mismatch list is unchanged. Not kept. The 106-word body stays. Do not repeat this placement. The early atStart and the joined line stay closed.
 
+#### 2026-10-06: an aliasing opacity store does not move the elapsed reload
+
+The unmodified body scores 1424 bytes, 106 raw and 106 masked words, size delta 0, first mismatch +0xCC. The ROM stores the opacity byte and then loads elapsed. This body loads elapsed and then stores the byte.
+
+Storing the masked opacity through a byte pointer at that field scores the same 106 masked and 106 raw words at size delta 0. The mismatch list is unchanged. The store is folded. Not kept.
+
+Reading that byte back into the opacity local, on the direct field store, also scores 106 masked and 106 raw words at size delta 0. The mismatch list changes and the aligned split does not: 81 naming, 17 structural, 3 immediate. Not kept. The 106-word body stays. Do not repeat the byte pointer or this read-back. The joined line stays closed.
+
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

@@ -1981,8 +1981,8 @@
       "source_commit": "9c47a665816bbc11a9ffa1734b1700da5e3b08ed"
     },
     "overlay69DrawSortedGeometry": {
-      "ledger_commit": "a30381c999d01710f35aeb0fb4c2e6762de4e44f",
-      "reason": "Despite the pointer-index stall, one pass masks the fixed reference with all-ones before its store so the geometry address is recomputed. The pointer form stays closed.",
+      "ledger_commit": "0541cce370fedd01f9679c8b18629373c734a732",
+      "reason": "Despite the kept store order, one pass masks the geometry subscript count with all-ones so the stack address is recomputed. The reference mask stays closed.",
       "source_commit": "0c6942a2e1f185ce6530dc2e0a61085ee468a7d5"
     },
     "overlay74Update": {

@@ -761,8 +761,8 @@
       "source_commit": "838f8ff7d18ce66f00c1ab7470b30bee06dbf5b5"
     },
     "func_80051364": {
-      "ledger_commit": "93f7cb9352d5c5de3e6d8cc03903fdac526208f7",
-      "reason": "Despite the recorded join stall, one pass measures a zero-new-block use that raises only the command web. Added blocks steal timeScale. Typed-load contrasts stay closed.",
+      "ledger_commit": "ac3c26f248c0d839c9827535565b23e6b3c20f81",
+      "reason": "Despite the multiply-by-one stall, one pass advances the cursor before the PAL/NTSC scale so the sign-extend pair is not split. The join-order product stays closed.",
       "source_commit": "6c43dc616af9b69dd370ae593d412f388371cf33"
     },
     "func_800517E0": {

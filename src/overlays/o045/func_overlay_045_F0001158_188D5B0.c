@@ -322,6 +322,7 @@ void func_overlay_045_F0001158_188D5B0(
                     triangles[1].t2 = textureBottom;
 
                     vertices += 4;
+                    triangles = (Overlay45Triangle *)((s32)triangles & -1);
                     triangles += 2;
                 }
             }

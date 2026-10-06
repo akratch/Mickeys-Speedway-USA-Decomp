@@ -122,4 +122,10 @@ The unmodified body scores 1424 bytes, 106 raw and 106 masked words, size delta 
 
 Joining those two statements onto one source line scores the same 106 masked and 106 raw words at size delta 0. The mismatch list is unchanged. Not kept. The 106-word body stays. Do not repeat this joined line. The comma store and the early atStart stay closed.
 
+#### 2026-10-06: atStart before the positive-index test is inert
+
+The unmodified body scores 1424 bytes, 106 raw and 106 masked words, size delta 0, first mismatch +0xCC. The ROM stores the opacity byte and then loads elapsed. This body loads elapsed and then stores the byte.
+
+Computing atStart after the neighbour copies and before the index-greater-than-zero test scores the same 106 masked and 106 raw words at size delta 0. The mismatch list is unchanged. Not kept. The 106-word body stays. Do not repeat this placement. The early atStart and the joined line stay closed.
+
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

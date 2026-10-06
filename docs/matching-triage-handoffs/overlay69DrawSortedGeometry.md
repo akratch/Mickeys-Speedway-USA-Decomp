@@ -113,4 +113,10 @@ The unmodified body scores 1436 bytes, 57 raw and 57 masked words, size delta 0,
 
 Indexing that store with count masked by all-ones scores 115 masked and 115 raw words at size delta +4. The candidate grows by 4 bytes. The first mismatch moves to +0x44. Not kept. The 57-word body stays. Do not repeat this subscript mask. The reference mask stays closed.
 
+#### 2026-10-06: a byte truncation of the key grows the function
+
+The unmodified body scores 1436 bytes, 57 raw and 57 masked words, size delta 0, first mismatch +0x3DC. The ROM recomputes the stack address for the geometry store. This body reuses the address from the reference store.
+
+Storing the key and then truncating that stored half to a byte scores 156 masked and 156 raw words at size delta +12. The candidate grows by 12 bytes. Not kept. The 57-word body stays. Do not repeat this truncation. The subscript mask stays closed.
+
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

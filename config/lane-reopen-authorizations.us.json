@@ -201,9 +201,9 @@
       "source_commit": "ae3ca05774314ba3962e97a639f0cd4faae2d19d"
     },
     "func_80010654": {
-      "ledger_commit": "6ebb800fb227074c8a78adbabb1e159d0ea8567b",
-      "reason": "Despite the literal-threshold stall, one pass copies the edge halfword through a variable before the sign test, the effectboxControl copy that survives where an expression copy is dropped. Homes and the literal stay closed.",
-      "source_commit": "27a9a088b8a8e179bd1d85d18039737fb8487508"
+      "ledger_commit": "fe680991cd176f6ffa3b57d98a6f5b906c8bb3fd",
+      "reason": "Despite the frame-home keep, one pass initializes the edge index from a xor of the hit flag shifted left so the zero is not a literal. The ten frame slots stay.",
+      "source_commit": "fe680991cd176f6ffa3b57d98a6f5b906c8bb3fd"
     },
     "func_80010900": {
       "ledger_commit": "8072dce733b389b3e132c51351293d1dfef907d9",

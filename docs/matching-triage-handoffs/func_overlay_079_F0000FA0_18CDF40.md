@@ -129,4 +129,10 @@ Carrying crossZ in value, and deleting the crossZ declaration, scored 156 masked
 
 The kept body scores 736 bytes, 144 raw and 143 masked words, size delta 0, first mismatch +0x3C. The y component loads into f12. Loading x, then z, then y scores the same 143 masked words at size delta 0. The first mismatch stays +0x3C. The object is not the baseline object. The body is not kept. Do not repeat this load order.
 
+#### 2026-10-06: adding distance times zero to ny is folded
+
+The unmodified body scores 736 bytes, 144 raw and 143 masked words, size delta 0, first mismatch +0x3C. The ROM loads the plane y component into f16. This body loads it into f12.
+
+Adding distance times zero to that y load scores the same 143 masked and 144 raw words at size delta 0. The mismatch list is unchanged. The product is folded. Not kept. The 143-word body stays. Do not repeat this distance tie. The nx and nz load order stays closed.
+
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

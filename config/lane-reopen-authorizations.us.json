@@ -1591,8 +1591,8 @@
       "source_commit": "bae7a665c6332e12471d3d0c44d98f3b5f134ac2"
     },
     "overlay17CreateChain": {
-      "ledger_commit": "df97e2e3990f931763d91b13c9e8366a3a3557e4",
-      "reason": "Despite the repeated-product stall, one pass computes the half-buffer size after the allocation and inlines the product only in that call. The three-site repeat stays closed.",
+      "ledger_commit": "e5d82edfabdd1e262d42313e009ff0b8ce5eb9c1",
+      "reason": "Despite the late-product stall, one pass folds an or-zero onto the half-buffer product so the final shift can stay in the temporary. The late product and the three-site repeat stay closed.",
       "source_commit": "8b42125a7c7070e5c129b70f6a01edf5d8452505"
     },
     "overlay17DrawStrip": {

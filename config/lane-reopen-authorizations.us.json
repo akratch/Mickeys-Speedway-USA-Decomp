@@ -1976,8 +1976,8 @@
       "source_commit": "9c47a665816bbc11a9ffa1734b1700da5e3b08ed"
     },
     "overlay69DrawSortedGeometry": {
-      "ledger_commit": "c7419096d16de0105293606807ded85c794df3d2",
-      "reason": "Despite the four folded-address stalls, one pass indexes the geometry store through a copy of count so as1 can spend the missing ring draw without a word. Store order and the self-store stay closed.",
+      "ledger_commit": "217d841d2df806d720ab5211688c383eab502c18",
+      "reason": "Despite the count-index copy, one pass loads the geometry index through a pointer plus i on the kept store order. The target store order and the same-slot reload stay closed.",
       "source_commit": "0c6942a2e1f185ce6530dc2e0a61085ee468a7d5"
     },
     "overlay74Update": {

@@ -86,6 +86,12 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     u32 greenTerm;
     s32 component;
     s32 i;
+    s32 padFrame0;
+    s32 padFrame1;
+    s32 padFrame2;
+    s32 padFrame3;
+    s32 padFrame4;
+    s32 padFrame5;
 
     displayList = *displayListPtr;
     matrix = *matrixPtr;

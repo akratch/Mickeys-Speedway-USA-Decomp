@@ -601,8 +601,8 @@
       "source_commit": "d761f310ac67783655771b8e27248a85663e086b"
     },
     "func_8003C80C": {
-      "ledger_commit": "8c1c6b1e80cfd5fad0d30dbe67d1742f45a75102",
-      "reason": "Despite the frac-copy stall, one pass loads the clock through the loop index before that index is set to 8, so the add reads a temporary that dies at the counter assignment. The frac copy stays closed.",
+      "ledger_commit": "5b5e14be1f1c4f04c61c00050cec9fcdaf0cf66b",
+      "reason": "Despite the split clock load, one pass copies the clock through a short-lived local before adding the first argument. The split load stays.",
       "source_commit": "c28f6382c3b3699d98ae9875abd0773855efb676"
     },
     "func_8003D25C": {

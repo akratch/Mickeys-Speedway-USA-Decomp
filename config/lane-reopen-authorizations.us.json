@@ -771,8 +771,8 @@
       "source_commit": "838f8ff7d18ce66f00c1ab7470b30bee06dbf5b5"
     },
     "func_80051364": {
-      "ledger_commit": "ac3c26f248c0d839c9827535565b23e6b3c20f81",
-      "reason": "Despite the multiply-by-one stall, one pass advances the cursor before the PAL/NTSC scale so the sign-extend pair is not split. The join-order product stays closed.",
+      "ledger_commit": "5fda4bb034f93ec317223be0d5984ddd7abf5490",
+      "reason": "Despite the early-cursor stall, one pass advances the cursor by four plus a cancelling sign-extend of the command word so the add waits for both shifts. The early increment stays closed.",
       "source_commit": "6c43dc616af9b69dd370ae593d412f388371cf33"
     },
     "func_800517E0": {

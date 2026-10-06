@@ -355,6 +355,11 @@
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
       "source_commit": "cbcfcadc14e0cda0060b6faea6b44c231ed6ad92"
     },
+    "func_8001FC50": {
+      "ledger_commit": "ca8aec929957ba0daf1242e357babfa976833284",
+      "reason": "Despite the inverted-test stall, one pass marks modeBytes volatile so its zero is a home store. The else-arm zero and the count-order stalls stay closed.",
+      "source_commit": "b1021a3eee2baf95bfdd659819d4e9034cb633d6"
+    },
     "func_8002057C": {
       "ledger_commit": "92fb6d1093596e7220265a46202bf31b4fef5aa7",
       "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",

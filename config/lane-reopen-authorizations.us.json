@@ -2091,8 +2091,8 @@
       "source_commit": "2d923387fa81afb05ef9fdd245dc8c67522adc73"
     },
     "wakeUpdate": {
-      "ledger_commit": "04afc987dd1c99a0cbf8130894d037eb547254ed",
-      "reason": "The p1 save ratio is unrefuted: wake outranks secondaryVertices. One pass hoists the sample-base load out of the loop to cut wake reads without a new block.",
+      "ledger_commit": "26efe308d9915f91b756d63d21acbdc7c939fc4e",
+      "reason": "Despite the separate-index stall, one pass walks the first sample scan with vertexCount so index is only the second loop. The sample-base hoist stays closed.",
       "source_commit": "acb9e136b0dbf64369a1be328f4a0b4a8e9ec274"
     }
   },

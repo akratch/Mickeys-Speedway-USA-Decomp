@@ -139,4 +139,8 @@ reached: the records for that order.
 
 Configured full-TU baseline: 253 masked and 253 raw words, target 1592 bytes, size delta 0. Loading wake's sample pointer once before the sample loop, and advancing that local inside the loop, scores 333 masked words at size delta +4. Not kept. The 253-word body stays. Do not repeat this hoist.
 
+## 2026-10-06: the first scan walks vertexCount
+
+The unmodified body scores 1592 bytes, 253 raw and 253 masked words, size delta 0. The first sample scan advances vertexCount instead of index, so index exists only in the second loop. That scores 381 masked and 381 raw words at size delta -4. Not kept. The 253-word body stays. Do not repeat this scan.
+
 <!-- plateau-handoff:wakeUpdate:end -->

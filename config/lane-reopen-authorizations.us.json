@@ -1981,8 +1981,8 @@
       "source_commit": "9c47a665816bbc11a9ffa1734b1700da5e3b08ed"
     },
     "overlay69DrawSortedGeometry": {
-      "ledger_commit": "0541cce370fedd01f9679c8b18629373c734a732",
-      "reason": "Despite the kept store order, one pass masks the geometry subscript count with all-ones so the stack address is recomputed. The reference mask stays closed.",
+      "ledger_commit": "b1ff1b5bf31537269b4c92d402c256f1e788f091",
+      "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 57 masked words is a schedule or structure defect the permuter can still move.",
       "source_commit": "0c6942a2e1f185ce6530dc2e0a61085ee468a7d5"
     },
     "overlay74Update": {

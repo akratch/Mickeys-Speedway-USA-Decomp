@@ -326,4 +326,10 @@ Result against the 108-byte target: 19 masked words, 19 raw, size delta -8. The 
 
 This closes the reopened single-exit pass. The 10-word early-return body stays.
 
+#### 2026-10-06: returning the normalized call stays at 10
+
+The unmodified body scores 108 bytes, 10 raw and 10 masked words, size delta 0, first mismatch +0x1C. The ROM normalizes each call with a separate ring temporary and copies that temporary into v0. This body branches on the raw return and materializes the constant 1.
+
+Holding each call in one local and returning that local compared with zero scores 10 masked and 10 raw words at size delta 0. The taken path normalizes v0 in place, and the branch still tests the raw value. The object differs and the masked count does not fall. Not kept. The 10-word body stays. Do not repeat this normalized return. The single-exit boolean and the or-chain stay closed.
+
 <!-- plateau-handoff:func_80028FCC:end -->

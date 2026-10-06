@@ -1591,8 +1591,8 @@
       "source_commit": "bae7a665c6332e12471d3d0c44d98f3b5f134ac2"
     },
     "overlay17CreateChain": {
-      "ledger_commit": "8b42125a7c7070e5c129b70f6a01edf5d8452505",
-      "reason": "Authenticated 45-word ABI baseline isolates the missing template pair. Faithful CFE/uopt/ugen capture will distinguish PRE merging from UGEN reuse before source edits; independently prove the fixed template extent.",
+      "ledger_commit": "df97e2e3990f931763d91b13c9e8366a3a3557e4",
+      "reason": "Despite the repeated-product stall, one pass computes the half-buffer size after the allocation and inlines the product only in that call. The three-site repeat stays closed.",
       "source_commit": "8b42125a7c7070e5c129b70f6a01edf5d8452505"
     },
     "overlay17DrawStrip": {

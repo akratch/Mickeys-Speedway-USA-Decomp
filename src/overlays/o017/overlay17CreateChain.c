@@ -79,6 +79,7 @@ Overlay17Chain *overlay17CreateChain(
     void *owner, s32 count, Overlay17Material *materialToken, s32 materialScale,
     f32 x, f32 y, f32 z, f32 radius,
     u8 red, u8 green, u8 blue, u8 alpha) {
+    s32 padFrame;
     Overlay17Template *source;
     s32 buffer;
     Overlay17Template *destination;

@@ -257,4 +257,10 @@ The unmodified body scores 784 bytes, 45 raw and 45 masked words, size delta 0, 
 
 Folding an or-zero onto count times 20 scores the same 45 masked and 45 raw words at size delta 0. The mismatch list is unchanged. The identity is folded. Not kept. The 45-word body stays. Do not repeat this or-zero. The late product and the three-site repeat stay closed.
 
+#### 2026-10-06: one leading frame home moves the size slot
+
+The unmodified body scores 784 bytes, 45 raw and 45 masked words, size delta 0, first mismatch +0x3C. The half-buffer home sits four bytes above the ROM slot. Declaring the loop index before that size leaves the 45-word mismatch list unchanged.
+
+Declaring one unused s32 before the template pointer scores 36 masked and 36 raw words at size delta 0. The function stays 784 bytes. The first mismatch stays +0x3C. Aligned immediate rows fall from 10 to 0, and naming and structural rows stay at 11 and 10. The body is kept. It is not a match. Do not drop this slot: the size home moves back without it.
+
 <!-- plateau-handoff:overlay17CreateChain:end -->

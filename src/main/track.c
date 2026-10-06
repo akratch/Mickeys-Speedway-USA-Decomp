@@ -2883,6 +2883,16 @@ typedef struct TrackRayNode {
 /* Two callee-saves remain: a dead edge copy and the hoisted D_80081774 address. */
 s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
                   TrackPlane *result, f32 *maximum) {
+    s32 padFrame0;
+    s32 padFrame1;
+    s32 padFrame2;
+    s32 padFrame3;
+    s32 padFrame4;
+    s32 padFrame5;
+    s32 padFrame6;
+    s32 padFrame7;
+    s32 padFrame8;
+    s32 padFrame9;
     u8 *node;
     f32 planeX;
     f32 planeZ;

@@ -338,4 +338,10 @@ The unmodified body scores 108 bytes, 10 raw and 10 masked words, size delta 0, 
 
 Storing each two-instruction boolean in its own local and returning that local scores 23 masked and 23 raw words at size delta +16. The candidate grows by 16 bytes. Each test is two set-less-than instructions, and the branches stay inverted. Not kept. The 10-word body stays. Do not repeat these three locals. The normalized return stays closed.
 
+#### 2026-10-06: one reused unsigned compare grows the function
+
+The unmodified body scores 108 bytes, 10 raw and 10 masked words, size delta 0, first mismatch +0x1C. The ROM normalizes each call into its own ring temporary and copies that temporary into v0. This body branches on the raw return and materializes the constant 1.
+
+Reusing one local for an unsigned greater-than test, and returning that local from each early arm, scores 23 masked and 23 raw words at size delta +16. The candidate grows by 16 bytes. Not kept. The 10-word body stays. Do not repeat this reused unsigned compare. The three separate locals stay closed.
+
 <!-- plateau-handoff:func_80028FCC:end -->

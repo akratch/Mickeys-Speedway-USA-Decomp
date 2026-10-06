@@ -406,8 +406,8 @@
       "source_commit": "a5d2eeca202f3677ac36a88b2c1d90b1d09e9e3e"
     },
     "func_80028FCC": {
-      "ledger_commit": "6cab133575c6722b281eadf12b785d36809683fa",
-      "reason": "Despite the recorded carrier stall, one pass measures a single-exit boolean. One result is assigned from each call compared with zero, with nested zero tests and one return. Per-arm returns and the or-chain stay closed.",
+      "ledger_commit": "498fca5bae14b7a0cfd55c8de62ead13fe5e3629",
+      "reason": "Despite the single-exit stall, one pass returns the normalized call result from each early arm. The or-chain and the named-constant returns stay closed.",
       "source_commit": "a5a7dc3e6c1354821829579a8817d6af529c1737"
     },
     "func_80029274": {

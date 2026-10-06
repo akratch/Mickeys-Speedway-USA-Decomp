@@ -931,9 +931,9 @@
       "source_commit": "a1d4f1cf4ba697c250080c1b4c3c3b913bf471d4"
     },
     "func_overlay_008_F00034A0_18611F8": {
-      "ledger_commit": "2477bb91a0e78c38927d9111cd5d0c50b19205a5",
-      "reason": "Pair blocks are banked at 103. Forcing the first address web off v0 scores 89 and is accepted. Untried: a v0 denial that is not a new call and not a cursor local, both of which scored worse.",
-      "source_commit": "2477bb91a0e78c38927d9111cd5d0c50b19205a5"
+      "ledger_commit": "87f12abc853ab3b41df32e646e687f1d66b3891e",
+      "reason": "Despite the counter-read stall, one pass swaps the mode compare operands so the beql register order can match. The ownerMode width and the cursor carriers stay closed.",
+      "source_commit": "c5b98d20005fdc1948d9fc1264baf9e8b7aa53eb"
     },
     "func_overlay_008_F00042A8_1862000": {
       "ledger_commit": "48921f11f86c9452e4bf9305d4506ec93e0ed0ab",

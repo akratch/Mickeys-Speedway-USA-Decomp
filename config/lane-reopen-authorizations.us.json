@@ -266,8 +266,8 @@
       "source_commit": "5cafbf70916743b98c06ea2a57da440401dd2a0f"
     },
     "func_80016890": {
-      "ledger_commit": "35468208b5f565b82030591f4bcfc5adfc8df827",
-      "reason": "Despite the clamp-ternary stall, one pass declares the temp array before the points array so its homes can move. The clamp spellings stay closed.",
+      "ledger_commit": "9c49b242c41ba89e2548037c1b682a0041a6d0d7",
+      "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 31 masked words is a schedule or structure defect the permuter can still move.",
       "source_commit": "879820da8fd0d357e646fdf31e9565f9cb07b897"
     },
     "func_80017140": {

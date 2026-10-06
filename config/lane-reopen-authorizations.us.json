@@ -1976,8 +1976,8 @@
       "source_commit": "b1a8f39f5b1fc714777b997b9ab76e3692e6ee8f"
     },
     "overlay68UpdateAnimation": {
-      "ledger_commit": "3ba33791a86ea9eef946d30e3848fe8b437e3ba0",
-      "reason": "Despite the joined-line stall, one pass computes atStart after the neighbour copies and before the index-greater-than-zero test. The early atStart stays closed.",
+      "ledger_commit": "149b56b0062912fcde212cde6863bf9a55ad3851",
+      "reason": "Despite the opacity store following the elapsed add, one pass stores that byte through a pointer so the elapsed reload cannot pass it. The store order stays.",
       "source_commit": "9c47a665816bbc11a9ffa1734b1700da5e3b08ed"
     },
     "overlay69DrawSortedGeometry": {

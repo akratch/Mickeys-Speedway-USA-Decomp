@@ -506,8 +506,8 @@
       "source_commit": "6f9e72e6fb41e2b3e351dfbc3546b6dae585a8fd"
     },
     "func_800349A4": {
-      "ledger_commit": "228bacea58829478693ceef56403c08182798445",
-      "reason": "Despite the hasTexture index keep, one pass declares oldBlockedFlags after frameIndex so its spill can land at the ROM slot. The in-place scale and the clamp decrement stay closed.",
+      "ledger_commit": "081ea0540f1c72789a51e6ab82eecd8057f99ba4",
+      "reason": "Despite the declaration-order stall, one pass masks oldBlockedFlags with all-ones before the blocked-flags call so that value can take v1. The declaration order stays closed.",
       "source_commit": "228bacea58829478693ceef56403c08182798445"
     },
     "func_80034E54": {

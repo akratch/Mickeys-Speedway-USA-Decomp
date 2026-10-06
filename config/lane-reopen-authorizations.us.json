@@ -941,8 +941,8 @@
       "source_commit": "a1d4f1cf4ba697c250080c1b4c3c3b913bf471d4"
     },
     "func_overlay_008_F00034A0_18611F8": {
-      "ledger_commit": "aa95d48e97b55f932d85f1a181457bf8c0c9667f",
-      "reason": "Despite the compare-order stall, one pass masks the first buffer pointer with all-ones inside its command pair so that pointer can leave v0. The compare swap stays closed.",
+      "ledger_commit": "941f40e41043a87174cbf459ebb4b0ec45f2f266",
+      "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 17 masked words is a schedule or structure defect the permuter can still move.",
       "source_commit": "c5b98d20005fdc1948d9fc1264baf9e8b7aa53eb"
     },
     "func_overlay_008_F00042A8_1862000": {

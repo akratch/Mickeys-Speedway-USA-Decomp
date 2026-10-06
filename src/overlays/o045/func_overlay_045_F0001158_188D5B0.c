@@ -137,8 +137,8 @@ void func_overlay_045_F0001158_188D5B0(
         return;
     }
 
-    dList = *displayList;
     window = descriptor->unk28;
+    dList = *displayList;
     vertices = *vertexPtr;
     triangles = descriptor->allocation;
     func_8004D39C(descriptor->elementEnd, D_800D6648);

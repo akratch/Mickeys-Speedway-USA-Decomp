@@ -1971,8 +1971,8 @@
       "source_commit": "b1a8f39f5b1fc714777b997b9ab76e3692e6ee8f"
     },
     "overlay68UpdateAnimation": {
-      "ledger_commit": "b7ac2e59783821b8123c16dc8d7d3467a0157524",
-      "reason": "Despite the comma-store stall, one pass computes atStart before the neighbour pointer copies so the compare can take v0. The elapsed casts, the mask deletion, and the predicate share stay closed.",
+      "ledger_commit": "5c17125acd3afd41954ea29a3911c46de5c346d0",
+      "reason": "Despite the comma-store stall, one pass places the elapsed add and the opacity store on one source line so the scheduler can reorder them. The early atStart and the three elapsed casts stay closed.",
       "source_commit": "9c47a665816bbc11a9ffa1734b1700da5e3b08ed"
     },
     "overlay69DrawSortedGeometry": {

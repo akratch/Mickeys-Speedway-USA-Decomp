@@ -1346,8 +1346,8 @@
       "source_commit": "eeeb9d7fef50e0478d524e4814abaed5a846d4fb"
     },
     "func_overlay_079_F0000FA0_18CDF40": {
-      "ledger_commit": "cc04bc34c9935feac3ffbaba39f30e88214e8a1a",
-      "reason": "Despite the closed overlay 26 transfers, one pass loads nx and nz before ny so the y component can take f16. The register keyword, the cross association, and the divide order stay closed.",
+      "ledger_commit": "9f01fb4efe9c8e86b6003ea5e439b7be6802ae2d",
+      "reason": "Despite the normal-load stall, one pass adds distance times zero to ny so the parameter can take f12. The nx and nz load order stays closed.",
       "source_commit": "33cecba3c8a10060df5649ad785028df65738a64"
     },
     "func_overlay_084_F0000314_18D07F4": {

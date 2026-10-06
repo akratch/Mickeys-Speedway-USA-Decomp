@@ -100,4 +100,10 @@ Configured full-TU baseline: 1436 bytes, 57 raw and 57 masked words, size delta 
 The unmodified body scores 1436 bytes, 57 raw and 57 masked words, size delta 0, first mismatch +0x3DC. The stores stay refs, keys, then geometry.
 
 Loading the geometry index as a pointer plus i, instead of a subscript, scores 129 masked and 129 raw words at size delta +4. The candidate grows by 4 bytes. The first mismatch moves to +0x44. Not kept. The 57-word body stays. Do not repeat this pointer form on the kept order. The count-index copy and the target store order stay closed.
+
+#### 2026-10-06: an all-ones mask on the fixed reference is folded
+
+The unmodified body scores 1436 bytes, 57 raw and 57 masked words, size delta 0, first mismatch +0x3DC. The ROM recomputes the stack address for the geometry store. This body reuses the address from the reference store.
+
+Masking the reference with all-ones before that store scores the same 57 masked and 57 raw words at size delta 0. The mismatch list is unchanged. The identity is folded. Not kept. The 57-word body stays. Do not repeat this mask. The pointer form stays closed.
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

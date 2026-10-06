@@ -771,9 +771,9 @@
       "source_commit": "d727307ce9d582b3b893809aef234799ad179989"
     },
     "func_80054B3C": {
-      "ledger_commit": "024fe88424b51e306f96e702f142180489fd0859",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "4b1cb3fb4c85cadf5c6ce8472b9b4c949039d2f3"
+      "ledger_commit": "097a16d07881592bdc831144612d4469d201f106",
+      "reason": "Despite the empty-region closure, one pass keeps the entry position pointers live through the quadratic instead of reassigning them. The vector-pointer placement and the extra-home product stay closed.",
+      "source_commit": "097a16d07881592bdc831144612d4469d201f106"
     },
     "func_80055104": {
       "ledger_commit": "4b1cb3fb4c85cadf5c6ce8472b9b4c949039d2f3",

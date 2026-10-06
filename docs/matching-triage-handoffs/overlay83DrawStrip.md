@@ -262,4 +262,10 @@ Header regenerated from the ranking on 2026-10-06 (check_shard_metrics --write);
 #### 2026-10-06: a do-while around the saved pointer does not move a2
 
 Configured full-TU baseline: 308 bytes, 58 raw and 58 masked words, size delta 0, first mismatch +0x4. The ROM copy is `a3`; this body copies into `a2`. Wrapping `savedDisplayList = displayList` in `do { } while (0)` scores 58 raw and 58 masked words at size delta 0. The first mismatch stays +0x4. The object is not the baseline object. The masked count does not fall, so the 58-word body stays. Do not repeat this block.
+
+#### 2026-10-06: defining vertexCount inside the pointer copy is inert
+
+The unmodified body scores 308 bytes, 58 raw and 58 masked words, size delta 0, first mismatch +0x4. The ROM copies the display-list pointer into a3. This body copies it into a2.
+
+Writing the pointer copy as a comma whose left side assigns vertexCount scores the same 58 masked and 58 raw words at size delta 0. The mismatch list is unchanged. Not kept. The 58-word body stays. Do not repeat this comma. The do-while block and the declaration order stay closed.
 <!-- plateau-handoff:overlay83DrawStrip:end -->

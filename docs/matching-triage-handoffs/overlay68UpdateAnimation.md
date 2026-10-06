@@ -116,4 +116,10 @@ The 106-word body scores 1424 bytes, 106 masked words, size delta 0, first misma
 
 Result: 268 masked and 268 raw words, size delta +4. Not kept. The 106-word body stays. Do not repeat this early atStart.
 
+#### 2026-10-06: one source line for the elapsed add and the opacity store is inert
+
+The unmodified body scores 1424 bytes, 106 raw and 106 masked words, size delta 0, first mismatch +0xCC. The ROM stores the opacity byte and then loads elapsed. This body loads elapsed and then stores the byte.
+
+Joining those two statements onto one source line scores the same 106 masked and 106 raw words at size delta 0. The mismatch list is unchanged. Not kept. The 106-word body stays. Do not repeat this joined line. The comma store and the early atStart stay closed.
+
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

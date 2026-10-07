@@ -417,18 +417,15 @@ struct ModelConstructedInstance {
 /* PROVENANCE: local size and alignment lifetimes are adapted from JFG upstream
  * efd5abb's corresponding src/models.c function, func_8003BF58. JFG retains
  * that function as GLOBAL_ASM; Mickey's layout and bytes remain authority. */
-/* Workbench: size delta 0 and frame 0x78 both closed (from -12 and +8).
- * Closed by: declarations laid on the target's home ladder (every local at
- * function scope, 18 slots, instance at -0x40); no allocation-size local, so
- * the sum is a CSE temp spilled across the allocator call; the state reset
- * written as indexed stores through state[i], which reloads the pointer per
- * store as the target does (the goto keeps uopt from unrolling it); and
- * matrixBytes carrying the matrix count before it is shifted (x = f(x)).
- * Remains: register naming. dataBytes48 follows the doubled matrix term in
- * the size sum; modeBytes still takes ra, and pointBytes does not. */
-#ifdef NON_MATCHING
+/* Matched (lane b-models, 2026-10-07) by writing the function plainly: the
+ * matrix count read at each use with both zeros in the else arm (matrixBytes
+ * then spans one fewer block, so it outranks dataBytes44 and takes t4, which
+ * leaves modeBytes uncoloured in its home); the size sum in field order; `i`
+ * reused as the clear count and as the state-block address; the point copies
+ * indexed through (&pointsA)[i]; the coordinate triple stored by index; and
+ * points stored before status. The two unused slots hold the frame's homes. */
 ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCopies) {
-    ModelConstructedInstance *instanceCursor;
+    s32 unused0;
     s32 i;
     s32 j;
     s32 matrixBytes;
@@ -438,22 +435,20 @@ ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCo
     s32 coordinateBytes;
     s32 extraBytes;
     u32 *clear;
-    s32 words;
+    ModelInstancePoint *sourcePoint2;
     s32 modeBytes;
-    u8 *end;
+    s32 unused1;
     ModelInstancePoint *sourcePoint;
     ModelInstancePoint *destinationPoint;
     ModelConstructedInstance *instance;
     f32 *coordinate;
-    ModelInstancePoint *sourcePoint2;
 
-    matrixBytes = 0;
     if (source->mode != 0) {
-        matrixBytes = source->matrixCount;
-        modeBytes = matrixBytes * 0x1C + 0xC;
-        matrixBytes <<= 6;
+        modeBytes = source->matrixCount * 0x1C + 0xC;
+        matrixBytes = source->matrixCount * sizeof(MtxF);
     } else {
         modeBytes = 0;
+        matrixBytes = 0;
     }
 
     pointBytes = source->pointCount * sizeof(ModelInstancePoint);
@@ -477,14 +472,13 @@ ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCo
         extraBytes = source->copyCount * 8 + 0xA8;
     }
 
-    instance = func_8002B314((matrixBytes << 1) + dataBytes48 + (pointBytes * pointCopies) + modeBytes + dataBytes44 +
+    instance = func_8002B314((matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes + dataBytes44 + dataBytes48 +
                      coordinateBytes + extraBytes + 0x58, 0x8A);
     if (instance != NULL) {
         clear = (u32 *)instance;
-        words = ((matrixBytes << 1) + dataBytes48 + (pointBytes * pointCopies) + modeBytes + dataBytes44 +
+        i = ((matrixBytes << 1) + (pointBytes * pointCopies) + modeBytes + dataBytes44 + dataBytes48 +
                      coordinateBytes + extraBytes + 0x58) >> 2;
-
-        while (words--) {
+        while (i--) {
             *clear++ = 0;
         }
 
@@ -521,15 +515,13 @@ ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCo
         if (source->hasCopies != 0) {
             instance->copies = (ModelInstanceCopy *)((u8 *)instance + (matrixBytes << 1) + (pointBytes * pointCopies) +
                                                        modeBytes + dataBytes44 + dataBytes48 + coordinateBytes + 0x58);
-            end = (u8 *)(instance->copies + source->copyCount);
-            if (((s32)end & 7) != 0) {
-                end = end - ((s32)end & 7) + 8;
+            i = (s32)(instance->copies + source->copyCount);
+            if ((i & 7) != 0) {
+                i = i - (i & 7) + 8;
             }
-            instance->state[0] = (s16 *)end;
-            instance->state[1] = (s16 *)(end + 0x50);
+            instance->state[0] = (s16 *)i;
+            instance->state[1] = (s16 *)(i + 0x50);
 
-            /* The natural nested loop: IDO's default unroller emits the
-             * target's four-store body (byte-identical to the old goto form). */
             for (i = 0; i < 2; i++) {
                 for (j = 0; j < 40; j++) {
                     instance->state[i][j] = 0;
@@ -537,66 +529,46 @@ ModelConstructedInstance *func_8001FC50(ModelInstanceSource *source, s32 pointCo
             }
         }
 
-        i = 0;
-        if (pointCopies > 0) {
-            instanceCursor = instance;
-            do {
-                sourcePoint = source->points;
-                destinationPoint = instanceCursor->pointsA;
-                j = 0;
-                if (source->pointCount > 0) {
-                    do {
-                        destinationPoint->x = sourcePoint->x;
-                        destinationPoint->y = sourcePoint->y;
-                        destinationPoint->z = sourcePoint->z;
-                        destinationPoint->flags[0] = sourcePoint->flags[0];
-                        destinationPoint->flags[1] = sourcePoint->flags[1];
-                        destinationPoint->flags[2] = sourcePoint->flags[2];
-                        destinationPoint->flags[3] = sourcePoint->flags[3];
-                        j++;
-                        sourcePoint++;
-                        destinationPoint++;
-                    } while (j < source->pointCount);
-                }
-                i++;
-                instanceCursor = (ModelConstructedInstance *)((u8 *)instanceCursor + 4);
-            } while (i != pointCopies);
+        for (i = 0; i < pointCopies; i++) {
+            sourcePoint = source->points;
+            destinationPoint = (&instance->pointsA)[i];
+            for (j = 0; j < source->pointCount; j++) {
+                destinationPoint->x = sourcePoint->x;
+                destinationPoint->y = sourcePoint->y;
+                destinationPoint->z = sourcePoint->z;
+                destinationPoint->flags[0] = sourcePoint->flags[0];
+                destinationPoint->flags[1] = sourcePoint->flags[1];
+                destinationPoint->flags[2] = sourcePoint->flags[2];
+                destinationPoint->flags[3] = sourcePoint->flags[3];
+                sourcePoint++;
+                destinationPoint++;
+            }
         }
 
         if (source->mode == 0) {
             coordinate = instance->coordinates;
-            i = 0;
-            if (source->coordinateCount > 0) {
-                do {
-                    sourcePoint2 = &source->points[source->pointIndices[i].pointIndex];
-                    *coordinate++ = sourcePoint2->x;
-                    *coordinate++ = sourcePoint2->y;
-                    *coordinate++ = sourcePoint2->z;
-                    i++;
-                } while (i < source->coordinateCount);
+            for (i = 0; i < source->coordinateCount; i++) {
+                sourcePoint2 = &source->points[source->pointIndices[i].pointIndex];
+                coordinate[0] = sourcePoint2->x;
+                coordinate[1] = sourcePoint2->y;
+                coordinate[2] = sourcePoint2->z;
+                coordinate += 3;
             }
         }
 
         if (instance->copies != NULL) {
-            i = 0;
-            if (source->copyCount > 0) {
-                do {
-                    instance->copies[i].value0 = source->copies[i].value0;
-                    instance->copies[i].value2 = source->copies[i].value2;
-                    instance->copies[i].value4 = source->copies[i].value4;
-                    i++;
-                } while (i < source->copyCount);
+            for (i = 0; i < source->copyCount; i++) {
+                instance->copies[i].value0 = source->copies[i].value0;
+                instance->copies[i].value2 = source->copies[i].value2;
+                instance->copies[i].value4 = source->copies[i].value4;
             }
         }
         instance->source = source;
-        instance->status = 2;
         instance->points = instance->pointsA;
+        instance->status = 2;
     }
     return instance;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/models/func_8001FC50.s")
-#endif
 /*
  * PROVENANCE -- body adapted from JFG's public modFreeModel. Mickey omits
  * JFG's per-instance animation allocations; its model reference and cache
@@ -1274,13 +1246,3 @@ void func_8002109C(ModelPointOwner *owner) {
         } while (i < source->pointCount);
     }
 }
-
-/* PLATEAU-HANDOFF:func_8001FC50:start
- * symbol: func_8001FC50
- * score: 271 differing words
- * frame: 0x78
- * relocations: 3
- * first-mismatch: +0x18
- * summary: Delta 0, frame 0x78; size sum adds dataBytes48 after the doubled matrix term (271). modeBytes still takes ra
- * PLATEAU-HANDOFF:func_8001FC50:end
- */

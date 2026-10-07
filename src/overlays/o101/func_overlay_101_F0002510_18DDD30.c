@@ -63,10 +63,12 @@ void func_80034920(Gfx **displayList);
  * carrier removed the one cell too many. Early returns for the type, null
  * and clip tests, and the 0x800 / width quotient held in `rows` itself (the
  * target's s7), took it to 257 at -8 with 228 of the aligned words exact.
- * What is left is allocation: the target splits y into v1 and a
- * callee-saved copy around the clip tests, holds left/top in s3/s1 before
- * the scissor call, and rotates the hoisted rectangle words one place
- * against this candidate. See the shard for the y-split lead.
+ * Lane a-ovl3 (2026-10-07): the clip tests read the y origin from its own
+ * local and `y` is copied from it after the tests, which is the target's
+ * split of y (v1 for the tests, a callee-saved copy across the scissor
+ * call); 257 at -8 -> 90 at size delta 0. What is left is allocation and
+ * the clip block's schedule: the target computes the bottom edge before the
+ * tests and holds left/top in s3/s1 for the scissor call.
  */
 #ifdef NON_MATCHING
 void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
@@ -92,7 +94,7 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     s32 chunkRows;
     s32 rowOffset;
     s32 edgeX;
-    s32 edgeY;
+    s32 originY;
 
     if ((node->type != 2) && (node->type != 4)) {
         return;
@@ -103,12 +105,13 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     }
     overlay101GetBoundsReloc(node, &left, &top, &right, &bottom);
     x = node->x + element->x;
-    y = node->y + element->y;
+    originY = node->y + element->y;
     edgeX = x + texture->width;
-    edgeY = y + texture->height;
-    if ((right < x) || (bottom < y) || (edgeX < left) || (edgeY < top)) {
+    if ((right < x) || (bottom < originY) || (edgeX < left) ||
+        (originY + texture->height < top)) {
         return;
     }
+    y = originY;
     overlay101SetScissorReloc(dList, left, top, right, bottom);
     rows = 0x800 / texture->width;
     if (rows >= 8) {
@@ -175,10 +178,10 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
 
 /* PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:start
  * symbol: func_overlay_101_F0002510_18DDD30
- * score: 257 differing words
+ * score: 90 differing words
  * frame: 0xE8
  * relocations: 6
- * first-mismatch: +0x44
- * summary: 257 words at size -8, frame 0xE8 exact, SDK GBI body with early returns. Left: the y split, left/top in s3/s1, rotated hoisted rect words.
+ * first-mismatch: +0x70
+ * summary: y origin local tested, y copied after the clip tests (target's v1/s4 split): delta 0. Left: clip-block schedule, left/top in s3/s1.
  * PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:end
  */

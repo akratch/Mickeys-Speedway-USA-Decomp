@@ -2,11 +2,13 @@
 ### `func_overlay_101_F0002510_18DDD30` plateau handoff
 
 - source: `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c`
-- score: 257 differing words
+- score: 90 differing words
 - frame: 0xE8
 - relocations: 6
-- first mismatch: +0x44
-- summary: 257 words at size -8, frame 0xE8 exact, SDK GBI body with early returns. Left: the y split, left/top in s3/s1, rotated hoisted rect words.
+- first mismatch: +0x70
+- summary: y origin local tested, y copied after the clip tests (target's v1/s4 split): delta 0. Left: clip-block schedule, left/top in s3/s1.
+
+Summary before this remeasure: 257 words at size -8, frame 0xE8 exact, SDK GBI body with early returns. Left: the y split, left/top in s3/s1, rotated hoisted rect words.
 
 Summary before this remeasure: 263 words at size -8 (was 291 at +8), frame 0xE8 exact, SDK GBI macro body. Left: the y split, left/top in s3/s1, rotated hoisted rect words.
 
@@ -272,4 +274,9 @@ Configured full-TU baseline: 257 masked and 257 raw words, target 1172 bytes, si
 
 Declaring y as s16, with x left as s32 and the clip expression unchanged, scores 263 masked and 263 raw words at size delta +4. The candidate grows to 294 words and 1176 bytes. The first masked mismatch stays +0x44. Aligned exact falls from 228 to 127, naming rises from 38 to 136, immediate falls from 8 to 6, and really different rises from 24 to 33. The aligned residual rises from 70 to 175. Absolute size delta falls from 8 to 4, but the residual rises, so the body is not kept. The restored source re-scores 257 at delta -8, and the 1164-byte function text matches the proved baseline. Do not repeat an s16 y.
 
+#### 2026-10-07: a y origin local for the clip tests reaches delta 0
+
+Lane a-ovl3. Configured baseline 257 masked at size delta -8, aligned exact 228. The clip tests now read `originY = node->y + element->y` (declared where `edgeY` was, so the frame stays 0xE8), the bottom edge is written inline as `originY + texture->height`, and `y = originY` is assigned after the tests, before the scissor call. Result 90 masked at size delta 0, aligned exact 229, naming 36, immediate 4, really different 33. That is the target's split of y: the sum in v1 for the tests and a callee-saved copy across the call. Measured on the way: y computed before x (262 at -8), the sums inline in the tests with y assigned after (263 at -4), y assigned after the scissor call (270 at +8), y = originY before the tests (90 at 0, 226 exact), the bottom edge held in any existing later local (drawY, drawHeight, sourceY, chunkRows, rowOffset, y: all 257 at -8).
+
+Left: the target computes the bottom edge (a1) before the tests where this body adds it in the last test, holds left and top in s3 and s1 for the scissor call, and keeps the shift amount in ra.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

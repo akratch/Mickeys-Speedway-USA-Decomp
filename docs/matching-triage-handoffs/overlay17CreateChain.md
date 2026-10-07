@@ -2,11 +2,13 @@
 ### `overlay17CreateChain` plateau handoff
 
 - source: `src/overlays/o017/overlay17CreateChain.c`
-- score: 3 differing words
+- score: 0 differing words
 - frame: 0x80
 - relocations: 7
-- first mismatch: +0x3C
-- summary: Restored ff930eacb arm-exact body lost in a merge: 24 to 3 at delta 0. Open: web 12 (half-buffer size) pre-call piece in a2 where the target uses ring t7.
+- first mismatch: none
+- summary: Matched. The half-buffer size is a symbol assigned from count * 20 kept alive by an or-zero after the allocation; the arms read the expression.
+
+Summary before this remeasure: Restored ff930eacb arm-exact body lost in a merge: 24 to 3 at delta 0. Open: web 12 (half-buffer size) pre-call piece in a2 where the target uses ring t7.
 
 Summary before this remeasure: Arm-exact shape with the red mask dropped: 24 to 3 at delta 0. Open: web 12 splits only when totalsave <= bestcost (tree 4 vs 3); block count is not the lever.
 
@@ -486,4 +488,40 @@ a third post-call reference that emits nothing, or the shift reading the
 expression rather than the web), and read web 12, web 199 and count's
 pieces after each. Blocked by: no occurrence-level record in the
 instrumented uopt (only p1dec totals).
+
+#### 2026-10-07, lane i-near: matched, 3 to 0, the size web's definition is a symbol assignment
+
+Records on the 3-word body (web_report, identity-gated): web 12 is the
+expression `(count * 20)`, bb2 def+use 2, bb6 1, bb7 1, totalsave 4 against
+bestcost 3 (1 store plus 1 per spanned call, read off every web's p1cost rows),
+coloured a2 and defined straight into a2 (`sll a2`). The target's bb2 computes
+the product in t7, stores t7 in the delay slot and shifts t7, loads count into
+a2, reloads a2 at bb3 and spills it once around the texture call: a web
+coloured a2 whose definition ugen evaluated into a ring temp and copied, the
+copy deleted by as1 because a2 is dead at the call. Both the split reading and
+the three-piece reading fail the piece arithmetic (a post-call piece of two
+uses nets 1 against cost 1 and splits, measured under p1:w12=s, forced=-2 on
+the piece), so the shape is "coloured, copy-defined", not "split".
+
+The trigger for a copy-defined expression web is a symbol assigned from the
+expression. uopt substitutes the local away unless the substitution is
+killed; the kill that survives is an or-with-zero after the allocation
+(halfBufferBytes or-assigned with zero, deleted by the compiler), with the allocation
+reading the local and both buffer arms reading `count * 20`. 12-cell product:
+four exact cells (either allocation spelling, the kill before or inside the
+chain test); `^= 0` and a negation pair fold and read 3.
+
+Measured flat or worse on the way (none kept): kills on `count` (memory
+class, so the no-op emits: 183 at +4, 187 at +8); the or-zero with the arms
+still reading the local (7: the symbol web is coloured a2 at save 1.67, but a
+separate `(count * 20)` web takes v0 as the scratch for count and the spill
+goes to the local's own home at +0x6C instead of the temp slot +0x38);
+`register` (inert); seven self-redefinition spellings before the allocation
+(all fold, 3); eight conversion-wrapped definitions through u32, void*, u8*
+and Overlay17Pair* round trips (all fold, 3).
+
+Promoted: overlay-atlas-write, extract, overlay-syms, build, overlay-syms,
+build, `gmake verify` OK (507341c0a40ca3e9a7cee969b396ee53facfb548),
+check-overlay-syms up to date, promotion-proof PASS (194 words, frame 0x80,
+relocations 7/7). mk/overlays.mk gains a trim rule for the object.
 <!-- plateau-handoff:overlay17CreateChain:end -->

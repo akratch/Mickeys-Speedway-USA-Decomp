@@ -769,12 +769,12 @@
       "size": "0x8"
     },
     {
-      "kind": "overlay-trailing-alignment",
+      "kind": "overlay-padding",
       "overlay": 12,
-      "source": "overlays/o012/func_overlay_012_F0000910_186DB90",
-      "owner_offset": "0x910",
-      "owner_size": "0x990",
-      "offset": "0x129c",
+      "source": "overlays/o012/overlay_012_padding",
+      "owner_offset": "0x129C",
+      "owner_size": "0x4",
+      "offset": "0x129C",
       "size": "0x4"
     },
     {

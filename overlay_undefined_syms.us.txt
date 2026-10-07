@@ -891,8 +891,18 @@ sqrtf_o012Reloc = 0xf0000000;
 trackGetTrack_o012Reloc = 0xf0000000;
 
 /* overlay 12: func_overlay_012_F0000910_186DB90.c.o */
-D_80000040 = 0x80000040;
-D_C4 = 0x000000c4;
+func_800084C4_o012Reloc = 0xf0000000;
+func_80023CCC_o012Reloc = 0xf0000000;
+func_80024938_o012Reloc = 0xf0000000;
+func_800349A4_o012Reloc = 0xf0000000;
+func_80034DF0_o012Reloc = 0xf0000000;
+func_80034E48_o012Reloc = 0xf0000000;
+gOverlay12EffectColors = 0x00000064;
+gOverlay12ParticleColors = 0x000000c4;
+gOverlay12QuadTriangles = 0x00000040;
+gOverlay12Resources = 0x00000000;
+gOverlay12TrianglesA = 0x00000000;
+gOverlay12TrianglesB = 0x00000020;
 
 /* overlay 13: overlay13Initialize.c.o */
 gOverlay13Active = 0x00001000;
@@ -4830,6 +4840,7 @@ D_118 = 0x00000118;
 D_1D0 = 0x000001d0;
 D_8C = 0x0000008c;
 D_A8 = 0x000000a8;
+D_C4 = 0x000000c4;
 D_C64 = 0x00000c64;
 D_E0 = 0x000000e0;
 D_INPUT = 0x00000000;

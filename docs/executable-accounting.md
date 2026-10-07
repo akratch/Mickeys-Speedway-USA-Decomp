@@ -24,10 +24,11 @@ zero words, assembly owners or particular filenames are padding.
   exact island ends at the exclusion boundary.
   Overlays 46 and 99 have since had their final functions matched in C
   (2026-10-02), and overlay 9's translation unit was completed the same day.
-  A matched object ends at its return, so each of those three words became
-  its own `overlay_0NN_padding` owner; the manifest now holds 85 overlay
-  padding owners (668 bytes) and one trailing-alignment row (overlay 12, 4
-  bytes). The excluded total is unchanged.
+  Overlay 12's final function was matched in C on 2026-10-07.
+  A matched object ends at its return, so each of those four words became
+  its own `overlay_0NN_padding` owner; the manifest now holds 86 overlay
+  padding owners (672 bytes) and no trailing-alignment row. The excluded
+  total is unchanged.
 - The ELF extents of `func_8003C80C` and `func_8002B040` include
   respectively twelve and eight alignment bytes after their extracted
   function end labels and completed return delay slots. Their executable

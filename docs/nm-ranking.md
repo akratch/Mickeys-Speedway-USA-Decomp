@@ -310,7 +310,7 @@ units remain distinct.
 | 14 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `other` | 1,788 | 106 | 98 | 276 | 276 | 0 | — |
 | 15 | `src/main/models_5B300.c` | `func_8005AF14` | `main` | `other` | 1,840 | 114 | 114 | 408 | 408 | 0 | — |
 | 16 | `src/main/diCpu.c` | `func_80045D34` | `main` | `other` | 1,836 | 131 | 115 | 332 | 332 | 0 | — |
-| 17 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 117 | 117 | 1,816 | 1,816 | 0 | — |
+| 17 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 116 | 116 | 1,864 | 1,864 | 0 | — |
 | 18 | `src/overlays/o038/overlay38UpdateParticles.c` | `func_overlay_038_F0000154_1885E64` | `o038` | `other` | 808 | 160 | 159 | 32 | 32 | 0 | — |
 | 19 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 171 | 171 | 0 | 0 | 0 | — |
 | 20 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 189 | 189 | 216 | 216 | 0 | — |

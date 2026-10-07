@@ -93,7 +93,11 @@ extern f32 func_8002A8C0(s32 angle);
  * func_8004C690 takes a u8, as its definition in src/main/font.c does;
  * the escape byte is then loaded into a0 and copied into first's v0 as
  * shipped, and the colour packets take v1/a0. 119 -> 117: each triangle
- * writes vertex2 before vertex1. Earlier passes: see the shard. */
+ * writes vertex2 before vertex1. 117 -> 116 (lane e-ovl1): no dead
+ * `leftFloat = screenLeft;` store; the left conversion is then numbered at
+ * its first use and takes f26 as shipped. The dead `rightFloat` store stays:
+ * it numbers the right conversion ahead of the half-height webs (removing it
+ * is 117). Earlier passes: see the shard. */
 #define PKT(pkt, a, b) { Gfx *_g = (Gfx *)(pkt)++; _g->words.w0 = (a); _g->words.w1 = (b); }
 #ifdef NON_MATCHING
 void func_overlay_045_F0001158_188D5B0(
@@ -261,7 +265,6 @@ void func_overlay_045_F0001158_188D5B0(
                     screenLeft = left - 0xA0U;
                     screenRight = right - 0xA0U;
                     halfWidth = (f32)(s32)(screenRight - screenLeft) * 0.5f;
-                    leftFloat = screenLeft;
                     rightFloat = screenRight;
                     halfHeight = (f32)(upper - lower) * 0.5f;
                     negativeHalfWidth = -halfWidth;
@@ -348,10 +351,10 @@ void func_overlay_045_F0001158_188D5B0(
 
 /* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
  * symbol: func_overlay_045_F0001158_188D5B0
- * score: 117 differing words
+ * score: 116 differing words
  * frame: 0x190
  * relocations: 25
- * first-mismatch: +0x718
- * summary: 117 at size delta 0; only the float block remains: as1 store schedule behind which float web is spilled.
+ * first-mismatch: +0x748
+ * summary: 116 at size delta 0; the right conversion and nhh*sin tie at save 15 over 2 blocks and the lower web number (right) is decided first.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

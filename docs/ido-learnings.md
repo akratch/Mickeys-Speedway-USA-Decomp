@@ -2782,6 +2782,20 @@ bytes and disassembly never belong here.
   also required individual addition order and an existing signed angle local;
   the copy alone did not establish a match.
 
+- **Native unsigned-to-float conversion can duplicate an explicit correction.**
+  A decompiler-style unsigned cast followed by a signed-negative test and an
+  added unsigned-range correction can preserve both the compiler's native
+  correction and the explicit one. Inspect actual configured output before
+  counting these paths. A logical right shift by one proves a 32-bit value
+  lies in the signed-positive range; in that domain, removing the explicit
+  correction or using a signed initial conversion is semantically valid.
+  Stock full-TU controls showed that these alternatives retained different
+  frames and expression schedules, so eliminating duplicate paths does not
+  imply an exact reconstruction. Do not generalize the signed cast to an
+  unrestricted unsigned input or replace floating arithmetic without a range
+  and rounding proof. Evidence and negative controls: [the overlay 56
+  conversion packet](matching-triage-handoffs/func_overlay_056_F00001A0_18A2F18.md).
+
 ## Adding a learning
 
 Add a short entry only after the result is reproducible. Cite the durable

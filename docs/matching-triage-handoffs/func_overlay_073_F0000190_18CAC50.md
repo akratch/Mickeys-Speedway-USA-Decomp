@@ -2,11 +2,11 @@
 ### `func_overlay_073_F0000190_18CAC50` plateau handoff
 
 - source: `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c`
-- score: 146 differing words
+- score: 48 differing words
 - frame: 0x98
 - relocations: 46
 - first mismatch: +0x1E4
-- summary: 131 masked at size 0; ring in phase through case 3; case 3 else-arm and case 4 ring, float-rate spill +0x30 not +0x34.
+- summary: 33 masked at size 0; case 4 query schedule and index web, float colours f0/f2 in the velocity blocks, float-rate spill +0x30 not +0x34.
 
 Summary before this remeasure: 153 masked at size 0; target is two ring draws ahead from the case 1 angle difference; float-rate spill at +0x30 not +0x34.
 
@@ -315,5 +315,9 @@ structural rows.
   `(s16)` on the clamp or the call, an s16/s32 carrier for
   `object->angle`. An `(s16)` on the ramp product does add two folded
   draws, but before the ramp's add, so it misnames the ramp.
+
+- With the ring in phase, the velocity blocks of cases 3 and 4 read
+  `((Func073Target *)state->target)->data->y` at the use, with no
+  `data` local: 131 to 74 (case 3) to 33 (case 4) at size 0.
 
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

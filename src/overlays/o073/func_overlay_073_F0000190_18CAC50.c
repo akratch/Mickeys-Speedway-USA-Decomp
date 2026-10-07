@@ -250,8 +250,7 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
                 }
             }
 
-            data = ((Func073Target *)state->target)->data;
-            dy = data->y - object->y;
+            dy = ((Func073Target *)state->target)->data->y - object->y;
             if (dy < 0) {
                 object->velocityY -= D_30 * (f32)updateRate;
                 if (object->velocityY < dy) {
@@ -324,8 +323,7 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
                         state->angle = -state->angle;
                     }
                     object->angle += updateRate * state->angle;
-                    data = ((Func073Target *)state->target)->data;
-                    dy = data->y;
+                    dy = ((Func073Target *)state->target)->data->y;
                     if ((dy + 40.0f) < object->y) {
                         state->flags &= ~1;
                     } else if (object->y < dy) {
@@ -412,10 +410,10 @@ common:
 
 /* PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:start
  * symbol: func_overlay_073_F0000190_18CAC50
- * score: 146 differing words
+ * score: 48 differing words
  * frame: 0x98
  * relocations: 46
  * first-mismatch: +0x1E4
- * summary: 131 masked at size 0; ring in phase through case 3; case 3 else-arm and case 4 ring, float-rate spill +0x30 not +0x34.
+ * summary: 33 masked at size 0; case 4 query schedule and index web, float colours f0/f2 in the velocity blocks, float-rate spill +0x30 not +0x34.
  * PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:end
  */

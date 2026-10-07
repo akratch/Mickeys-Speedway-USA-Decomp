@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 31,
-  "resolved": 31,
+  "queue_size": 30,
+  "resolved": 30,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 31,
-  "relocation_masked_coverage": 31,
+  "source_context_coverage": 30,
+  "relocation_masked_coverage": 30,
   "functions": [
     {
       "name": "overlay17CreateChain",

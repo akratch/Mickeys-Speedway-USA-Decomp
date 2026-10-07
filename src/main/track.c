@@ -5217,6 +5217,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0x2A0
  * relocations: 13
  * first-mismatch: +0x0
- * summary: Natural rewrite in target frame order: 499 at -40 to 339 at +8. Left: bestTexture takes s8, frame 0x18 large, second-phase s-register roles.
+ * summary: Natural rewrite in target frame order, 339 at +8; the one-colour shift starts in the edge loop (inside a3 here, t0 in target)
  * PLATEAU-HANDOFF:func_8001291C:end
  */

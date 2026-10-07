@@ -93,4 +93,10 @@ private. The original tracked body is restored solely as the unchanged
 155-word diagnostic baseline: its volatile homes and unused pointers gain
 no new admissibility or matching credit. No candidate source is adopted.
 
+#### 2026-10-07, lane a-ovl2: GBI-macro rewrite fixes the loop preheader, not the colours
+
+Not adopted; the 155 body stays. Read from the listing: the colour word's red term carries a deleted `& 0xFF` (the `or t9,s3,zero` copy before the shift), so the source used `_SHIFTL`-style masks on all four channels, i.e. `gDPSetPrimColor(commands++, 0, 0, red, green, blue, alpha / 3)`; the other packets are `gSPDisplayList`, `gDPPipeSync` and `gDPFillRectangle(commands++, x, y, x + 1, y + 1)`. The colour arguments to the angle-preparation call are the CSE'd `lbu` loads in a1/a2, so its parameters are `s32`.
+
+A body written with those macros, non-volatile green and blue, `motion->remaining` read at each use, `while (row--)` and `while (count--)`, produces the target's preheader (0xFA000000 in s3, the divisor 3 in s1, 0xE7000000 in ra, 0xF6000000 in t1, 120 in t0, 1.0f and -10.0f in f24/f22, the packed RGB hoisted) and the target's loop body, but the frame is 0x90 to 0xD8 and red lands in memory instead of s3. Products over the packet pointer passed first to the preparation call (start local in five spellings, or `commands - 1`), three alpha-step forms, alpha strength-reduced or explicit, volatile or not and word order inside the macros: floor 173 masked at +8, and 204 at +8 for the non-volatile cells. In every cell with a `start` local that pointer takes s3 and colorA0 takes s1, where the target has start in a0, colorA0 in a1, colorA1 in a2, colorA2 in t0 and remaining in t1.
+
 <!-- plateau-handoff:overlay100DrawMotion:end -->

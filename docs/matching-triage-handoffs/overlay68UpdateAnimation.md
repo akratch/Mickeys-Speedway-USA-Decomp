@@ -2,11 +2,13 @@
 ### `overlay68UpdateAnimation` plateau handoff
 
 - source: `src/overlays/o068/overlay68UpdateAnimation.c`
-- score: 106/356 words
+- score: 6/356 words
 - frame: 0x78
 - relocations: 15
-- first mismatch: +0xCC
-- summary: Opacity store follows the elapsed add: 108 to 106 at size 0. Left: the ring from +0xCC and the neighbour pointers' colours.
+- first mismatch: +0x244
+- summary: Plain-if neighbours, copy order afterAfter/after/before, unmasked opacity before elapsed: 106 to 6. Left: atStart spills to a temp, not its home.
+
+Summary before this remeasure: Opacity store follows the elapsed add: 108 to 106 at size 0. Left: the ring from +0xCC and the neighbour pointers' colours.
 
 #### 2026-10-05: narrowing the elapsed add does not rotate the ring
 
@@ -135,5 +137,34 @@ The unmodified body scores 1424 bytes, 106 raw and 106 masked words, size delta 
 Storing the masked opacity through a byte pointer at that field scores the same 106 masked and 106 raw words at size delta 0. The mismatch list is unchanged. The store is folded. Not kept.
 
 Reading that byte back into the opacity local, on the direct field store, also scores 106 masked and 106 raw words at size delta 0. The mismatch list changes and the aligned split does not: 81 naming, 17 structural, 3 immediate. Not kept. The 106-word body stays. Do not repeat the byte pointer or this read-back. The joined line stays closed.
+
+## 2026-10-07, lane a-ovl2: 106 to 6, the neighbour selection rewritten
+
+The 2026-10-01 and 2026-10-02 closures said plain ifs lose the branch-likely copy and that the opacity mask is a load-bearing ring draw. Both were measured one at a time on the ternary shape; together they are the residual.
+
+- Plain `if (index < count - 2) afterAfter = current + 2;` with `before->red << 8` read in the first call's argument list: 132 masked at size 0. The branch-likely copy of the red load comes back once the red read is the first instruction of the join block (a separate `angle = before->red` local, or `opacity` reused, is -4).
+- On that shape, all eight orders of the three neighbour copies: afterAfter, after, before puts before in t4 and afterAfter in v1 as shipped.
+- Opacity store placement (four positions) times the mask: no mask, before the elapsed add, 6 masked at size 0. With the mask any placement is 106 or worse.
+
+Aligned now: 350 byte-exact, 0 naming, 6 immediate, 0 different. The six words are atStart's call-spanning spill: the target stores the v0 web to sp+0x6C (the third declared home) and reloads it for calls two to six; this body stores the same web to sp+0x34, a compiler temporary below the declared homes, so uopt is spilling an expression temporary for `index < 1` rather than the variable. Measured inert at 6: `index <= 0`, `!(index > 0)`, a conditional, `index == 0` (7), `state->keyframeIndex < 1`, `register`, `*&atStart`, u32. Reusing `opacity`, `direction` or `animationOpacity` as the carrier (each declared third) also spills to sp+0x34. `volatile` and `*(s32 *)&atStart` make every call reload the home but cost 4 bytes (309 masked). An s16 or u8 atStart, or an s16/u8 parameter, is +8. Reading `state->keyframeIndex` at every neighbour use instead of `index` is -4.
+
+## 2026-10-07, lane a-ovl2 (second budget): atStart as a symbol web, measured
+
+Instrumented records on the 6-word body: atStart's value is web 113, type 4 (an expression temporary), so its spill goes to the temporary area at sp+0x34; the declared atStart (home -0xC, sp+0x6C) has no web at all. One product over the forms that should make it a type-3 symbol web, checking `webdetail` per cell:
+
+- Narrower types (s16, u8, s8, u16 declared): type-3 atStart, but the frame ladder shifts and the function grows 8 bytes (226 positional).
+- if/else assignment (a phi): type-3, home sp+0x6C, but +4 bytes and branchy (315).
+- `atStart = state->keyframeIndex < 1` (memory operand, a store between definition and use): type-3 web 111, spilled to sp+0x6C as shipped, size 0, 107 positional. It costs index one reference (totalsave 37 to 36, nocs 4 to 3), index's save rises to 12.0, ties web 80 and wins on web number, and the integer colours cascade.
+- Reassigning index between the calls (`index = 0;` or `index = object->red;` after the red call): type-3 at sp+0x6C, but -4 bytes.
+- Field reads at every neighbour use: -4 bytes.
+- On the memory form, a `do { } while (0)` around the neighbour copies, the atStart assignment or the index load restores index nocs 4 (save 9.0, ranked after web 80): 96 positional. index then takes a1 because nothing denies it a1-a3; in the 6-word body it was denied a0-a3 because the propagated `index < 1` extended its range into the call block. The remaining atStart piece is denied v0-t3 (web 61, the CSE'd keyframeIndex load, holds v0) and takes t4, which removes t5 from the ring. Forcing index to t0 restores every colour except that piece; forcing web 111 to v0 colours the whole range and drops the split (-12 bytes).
+
+Law: a value is a symbol web (and spills to its home) only when uopt cannot rebuild it, but every form that achieves that here moves the neighbour index's block count or reference count by one.
+
+## 2026-10-07, lane a-ovl2 (third budget): the keyframeIndex re-read does not merge
+
+On the memory form plus the copy wrapper (96 positional): reading `atStart = state->keyframeIndex < 1` before or after `index = state->keyframeIndex` leaves the second load as its own type-4 web (61, block 25, v0); uopt does not share the two loads. Computing atStart from a second local copied from the load (`opacity = state->keyframeIndex; index = opacity; atStart = opacity < 1`) is copy-propagated back to type 4 (-4 bytes). The last atStart piece is not denied v0 by web 61 alone: afterAfter's last piece (web 102, save 0.667, nocs 3) is decided before atStart's (save 0.333) and takes v0, where the target has afterAfter v1 and atStart v0. A force cannot address only the last piece (the pieces share the web number; forcing it colours the whole range and drops the split, -12 bytes).
+
+Moving the memory-form assignment after the `count - 2` test gives a one-block range: atStart takes v1, 92 positional, size 0. What remains is the integer cascade from index: off the call block, index is no longer denied a0-a3 and takes a1 (target t0); forcing index to t0 restores those colours but some web then takes t5 and the ring shifts (162).
 
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

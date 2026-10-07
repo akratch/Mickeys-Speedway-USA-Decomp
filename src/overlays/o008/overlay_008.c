@@ -1950,7 +1950,16 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
  * counter at 0x28, not a per-path conversion temporary), and the two unused
  * f32 pads are gone: their cells belong to `steps` (after mode) and
  * `randomMode` (after targetAngle), with savedAngle declared last.
+ * 2026-10-07 (lane i-3), 96 -> 93 at size 0 with the gate read as the
+ * resident symbol it is (gO8P42A8GateReloc, the +0x2CC/+0x3C4 SYMBOL pair):
+ * the reset loop and the angle2 approach loop count with randomMode (dead
+ * after the D_2220 read), loops 3-6 with remaining. uopt places a counter's
+ * re-initialisation at the exit of the previous loop on the same variable,
+ * so with one counter everywhere loop 3's `steps - 1` reload sat at loop
+ * 2's exit (the one-sided word that kept the gate symbol at +4); on a
+ * second variable it sits in loop 3's guard delay slot, as shipped.
  * GLOBAL_ASM stays canonical. */
+extern s32 gO8P42A8GateReloc;
 #ifdef NON_MATCHING
 void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
                                        O8P42A8Owner *owner, f32 update) {
@@ -1987,8 +1996,8 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
 
     if (state->reset170 != 0) {
         savedAngle = actor->angle0;
-        remaining = steps;
-        while (remaining--) {
+        randomMode = steps;
+        while (randomMode--) {
             actor->angle0 +=
                 o8P42A8ApproachReloc(actor->angle0, savedAngle) >> 3;
             actor->angle2 +=
@@ -2038,8 +2047,8 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
         targetAngle = -0x2000;
     }
 
-    remaining = steps;
-    while (remaining--) {
+    randomMode = steps;
+    while (randomMode--) {
         actor->angle2 +=
             o8P42A8ApproachReloc(actor->angle2, targetAngle) >> 4;
     }
@@ -2072,7 +2081,7 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
         targetHeight = 10.0f;
     }
 
-    if (O8_S32(0) == 0) {
+    if (gO8P42A8GateReloc == 0) {
         smoothing = 0.0435f;
     } else {
         smoothing = 0.01f;
@@ -2380,11 +2389,11 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000
- * score: 96/447 words
+ * score: 93/447 words
  * frame: 0xA0
  * relocations: 40
  * first-mismatch: +0x114
- * summary: Step count converted once, pads replaced by steps/randomMode: frame ladder identical, 98 to 96. Left: counter reload at loop 2 exit, shared r*4.
+ * summary: Loops 1-2 count with randomMode, loops 3-6 with remaining, gate read as its resident symbol: 96 to 93. Left: shared randomMode*4 and its ring draw.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
  */
 

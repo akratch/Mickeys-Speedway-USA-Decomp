@@ -1331,9 +1331,9 @@
       "source_commit": "756b8f47b5a1a4096309f4afdf46e5b79a632797"
     },
     "func_overlay_073_F0000190_18CAC50": {
-      "ledger_commit": "6d1a5a5f869d09ef4c26bd56d609a4ca03b7a8a1",
-      "reason": "Reconstructed query storage now permits a joint automatic-home order and signed-angle carrier proof. Preserve hit buffer, vertex banks and shared timer tail; widening alone and closed loop controls remain closed.",
-      "source_commit": "6d1a5a5f869d09ef4c26bd56d609a4ca03b7a8a1"
+      "ledger_commit": "f8b533c1fb19cb39077e6fc9e1e02140f9bc8ada",
+      "reason": "Untested two-s16 delta/absStep copy separates product predicate from magnitude storage without a wide carrier. Current Ucode duplicates narrowing across short storage and wide predicate; later delta reassignment dominates all uses.",
+      "source_commit": "f8b533c1fb19cb39077e6fc9e1e02140f9bc8ada"
     },
     "func_overlay_073_F0000D70_18CB830": {
       "ledger_commit": "e7a08f17de8aa1791a595297a24f30d1c2063afd",

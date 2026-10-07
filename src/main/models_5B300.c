@@ -607,12 +607,11 @@ void func_8005AD64(ModelAnimationInstance *instance, s32 frame, s32 arg2,
  * intermediate before the constant, as shipped), the second Arctanf result
  * held in rawAngle so the add reads clampedAngle first, and a redundant
  * 0xFFFF mask on that sum (one deleted draw, L149). Each point loop takes a
- * vertex pointer first and forms the matrix as a byte offset added to the
- * slot base; a redundant 0xFFFF mask (node in loop 0, vertex index in loops
- * 1 and 2) spends a scratch draw (L149).
- * NON_MATCHING: 460 words, frame 0xF8, 32 masked words, all in loops 1 and
- * 2: the target draws output + 1 before the node load there. */
-#ifdef NON_MATCHING
+ * vertex pointer first and indexes the slot's matrices as a flat f32 array,
+ * [node * 16]: ugen shifts the node by 4 and the subscript multiplies by 4,
+ * and as1 folds the two into one sll while the second draw stays spent
+ * (L149), which is the ring draw the target spends before the node load in
+ * every loop (lane h-4, 2026-10-07; 32 to 0). */
 void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
                    ModelRenderModel *model) {
     ModelRenderAsset *asset;
@@ -742,32 +741,29 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
     output = instance->vertices[0];
     for (i = 0; i < context->count0; i++) {
         vertex = (ModelRenderVertex *) &context->vertexData[context->points0[i].vertex * 10];
-        mtxf_transform_point(*(Matrix *)((u8 *) instance->matrices[instance->activeSlot] + ((context->points0[i].node & 0xFFFF) << 6)),
+        mtxf_transform_point(*(Matrix *) &((f32 *) instance->matrices[instance->activeSlot])[context->points0[i].node * 16],
                              vertex->x, vertex->y, vertex->z,
                              output, output + 1, output + 2);
         output += 3;
     }
     output = instance->vertices[1];
     for (i = 0; i < context->count1; i++) {
-        vertex = (ModelRenderVertex *) &context->vertexData[(context->points1[i].vertex & 0xFFFF) * 10];
-        mtxf_transform_point(*(Matrix *)((u8 *) instance->matrices[instance->activeSlot] + (context->points1[i].node << 6)),
+        vertex = (ModelRenderVertex *) &context->vertexData[context->points1[i].vertex * 10];
+        mtxf_transform_point(*(Matrix *) &((f32 *) instance->matrices[instance->activeSlot])[context->points1[i].node * 16],
                              vertex->x, vertex->y, vertex->z,
                              output, output + 1, output + 2);
         output += 3;
     }
     output = instance->vertices[2];
     for (i = 0; i < context->count2; i++) {
-        vertex = (ModelRenderVertex *) &context->vertexData[(context->points2[i].vertex & 0xFFFF) * 10];
-        mtxf_transform_point(*(Matrix *)((u8 *) instance->matrices[instance->activeSlot] + (context->points2[i].node << 6)),
+        vertex = (ModelRenderVertex *) &context->vertexData[context->points2[i].vertex * 10];
+        mtxf_transform_point(*(Matrix *) &((f32 *) instance->matrices[instance->activeSlot])[context->points2[i].node * 16],
                              vertex->x, vertex->y, vertex->z,
                              output, output + 1, output + 2);
         output += 3;
     }
     camConvertMatrixList(matrixList, context->matrixCount);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/models_5B300/func_8005AF14.s")
-#endif
 
 /* Mickey-derived parented matrix-list builder; JFG retains its peer as asm. */
 void func_8005B644(Matrix *matrices, Matrix *root, ModelMatrixNode *node, s32 count) {
@@ -796,13 +792,3 @@ void func_8005B644(Matrix *matrices, Matrix *root, ModelMatrixNode *node, s32 co
         } while (i != count);
     }
 }
-
-/* PLATEAU-HANDOFF:func_8005AF14:start
- * symbol: func_8005AF14
- * score: 32/460 words
- * frame: 0xF8
- * relocations: 27
- * first-mismatch: +0x5B4
- * summary: Clamp arms in place on clampedAngle, masked rotation sum (71 to 32). Left: one ring draw before the node load in loops 1 and 2
- * PLATEAU-HANDOFF:func_8005AF14:end
- */

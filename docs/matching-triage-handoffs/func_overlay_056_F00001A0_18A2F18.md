@@ -230,4 +230,34 @@ Cycle-21 line: find the third call crossing for mapY (or a form where
 mapX loses one) and confirm with web 197 cost in the records before
 scoring; then the frame homes (frame_census) for the 61 immediate rows.
 
+#### 2026-10-07 (lane b-o056, resume): call-crossing cells for mapY
+
+Records read per cell (float webs, CDX_PROC=6) before scoring.
+
+- mapY rebased (mapY += offset) before func_800349A4, or between
+  func_800349A4 and func_8002A82C: web 197 goes callee c30 unforced at
+  20.75 (caller 40), mapX stays caller. Scored 289 and 280 aligned rows at
+  delta -8 and -4: the offset loads move ahead of the calls, which the
+  target does not do (it loads them after func_8002A82C). Not kept.
+- Not computing mapY at the loop head (sum written in both branches, PRE
+  hoist) with x/z as locals: mapY cost 20, x and z spill. Not kept.
+- The AI-branch marker.y store moved after the posX branch: cost 20. The
+  crossing count is per call, not per block; no block-level shortcut.
+- switch for the game-state reject: toll 20.50, 394 rows. Not kept.
+- Ternaries for the shift, alpha clamp, posX and the mirror negation:
+  cfe lowers them to the same blocks; only the clamp ternary moves two
+  naming rows (272 to 270) and is kept. Mirror-negation ternary gives
+  delta -4 but 317 rows.
+- ghostAlpha (web 339, save 10) is decided before racer (web 182, save
+  8.57), so s1 is not yet in the save mask and it takes v1 at caller 20.
+  The target's s1 needs racer decided first (higher save than ghostAlpha);
+  ghostAlpha typed u8/u32/s32, the colour arguments passed directly or
+  through red/green/blue, and racer re-read inline in the ghost loop: no
+  colour change (12 cells).
+
+Cycle-21 line: two allocator facts remain, both priced in the records.
+mapY needs a third call crossing with its rebase still after
+func_8002A82C (or mapX a cheaper one); ghostAlpha needs racer's save above
+10. Neither is a spelling of the regions already measured.
+
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

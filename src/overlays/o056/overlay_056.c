@@ -266,9 +266,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     cosA = func_8002A8BC(level->angle);
     sinA = func_8002A8C0(level->angle);
     alpha = gOverlay56ResourceState * 2;
-    if (alpha > 255) {
-        alpha = 255;
-    }
+    alpha = (alpha > 255) ? 255 : alpha;
     marker.unk4 = 0;
     marker.unk10 = 0;
     i = count;

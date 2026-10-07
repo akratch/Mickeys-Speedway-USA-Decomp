@@ -37,7 +37,7 @@
       "relocation_masked_first_mismatch_offset": 180,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "A4Is.6G1w.4EKy.Tu_3.Cum8.rqNN.sQam.zImm.Bdkk.1zbu.ZJI"
+      "source_context_sha256": "gerX.7f4_.PLzg.ShqY.vSnn.XCoZ.h1qj.TDXS.Hfzw.sv7I.3YA"
     },
     {
       "name": "func_80051364",
@@ -68,6 +68,21 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "YtVg.Sant.Qkco.QEsf.YwKI.K8Au.Pw2Q.39Tv.VOTS.mSgu.Pt0"
+    },
+    {
+      "name": "func_80011980",
+      "file": "src/main/track.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 860,
+      "objdiff_match_pct": null,
+      "differing_words": 11,
+      "first_mismatch_offset": 192,
+      "relocation_masked_differing_words": 10,
+      "relocation_masked_first_mismatch_offset": 192,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "3nDn.dCAG.jv7A.fTcM.-SYj.Geko.im-Y.IvXI.PClI.VXeH.kgc"
     },
     {
       "name": "func_overlay_073_F0000190_18CAC50",
@@ -158,21 +173,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "jbwF.1B4d.1lg4.WXEa.UKnM.8gnR.WXKI.YwF3.tnGj.HFOu.JPk"
-    },
-    {
-      "name": "func_80011980",
-      "file": "src/main/track.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 860,
-      "objdiff_match_pct": null,
-      "differing_words": 89,
-      "first_mismatch_offset": 148,
-      "relocation_masked_differing_words": 89,
-      "relocation_masked_first_mismatch_offset": 148,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "epJd.Pfh6._lBC.Wxo5.efTo.-DGm.0Qmt.BIZ7.HiMc.4q8v.AU4"
     },
     {
       "name": "func_overlay_101_F0002510_18DDD30",
@@ -517,7 +517,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 8,
       "category": "size-mismatch",
-      "source_context_sha256": "4Qqw.4Jzn.By0Y.5hkY.r09I.c2cP.p_nN.jzdK.awFA._EpI.Oj8"
+      "source_context_sha256": "CdRf.2UPT._5ld.0B8q.0f_r.TKH3.nXUF.t-vu.s1A1.N31m.cNg"
     },
     {
       "name": "func_overlay_012_F0000910_186DB90",

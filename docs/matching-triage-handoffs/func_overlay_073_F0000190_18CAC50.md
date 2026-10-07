@@ -2,11 +2,13 @@
 ### `func_overlay_073_F0000190_18CAC50` plateau handoff
 
 - source: `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c`
-- score: 29 differing words
+- score: 19 differing words
 - frame: 0x98
 - relocations: 46
-- first mismatch: +0x2B8
-- summary: 14 masked at size 0; the case 0 timer block reserves the extra temp that puts the spill at +0x30; case 4 query index web (8 words).
+- first mismatch: +0x7C8
+- summary: 4 masked at size 0, all naming in the case 4 query: hitIndex - 1 is an a1 web in the target with one extra folded ring draw; ours is a ring temp.
+
+Summary before this remeasure: 14 masked at size 0; the case 0 timer block reserves the extra temp that puts the spill at +0x30; case 4 query index web (8 words).
 
 Summary before this remeasure: 153 masked at size 0; target is two ring draws ahead from the case 1 angle difference; float-rate spill at +0x30 not +0x34.
 
@@ -375,5 +377,62 @@ structural rows.
   the index, the copy inside the count test, testing the index
   against 2, and pointer arithmetic for the subscript are flat or
   worse; none puts `hitIndex - 1` in a1.
+
+#### 2026-10-07, lane f-o073: the spill home and the count/index line, 14 to 4
+
+- Float-rate spill (+0x30 against +0x34): the extra 4-byte compiler cell
+  is reserved whenever `object->timer` is read in case 0 or before the
+  switch, by any read (the add, a compare, `(s32)object->timer`, a copy
+  into a local). A store alone (`object->timer = 0`), reads of other
+  object fields (x, scale, velocityY), `state->timer`, an int field, and
+  the same read placed in `default:` reserve nothing (18 cells). Writing
+  the case 0 add as `limit = (f32)updateRate * 0.004f; object->timer +=
+  limit;` (any existing float local: height and dx measure the same)
+  numbers the product before the timer read; the case 0 code is
+  byte-identical and the spill lands on +0x34: 14 to 8. The direct
+  `object->timer = (f32)updateRate * 0.004f + object->timer` also moves
+  the spill but swaps the add's operands (136). The cell follows which of
+  the two expressions uopt numbers first, not the spelling of the wrap.
+- Case 4 query, first block: the count assignment, the index copy and
+  the test (`hitCount = (s16)func(...); hitIndex = hitCount; if
+  (hitIndex != 0) {`) on one physical line: 8 to 4. as1's line tie-break
+  then schedules the index narrowing before the count narrowing and puts
+  the state reload in the beqz delay slot, as shipped. The same statements
+  on two or three lines, chained, in the predicate, or with blank lines:
+  8 (7 cells).
+- Remaining 4, all naming at +0x7C8 to +0x7D8: the target draws one more
+  ring temp between the beqz and the mathRnd narrowing (its sra takes t9,
+  ours t8) and computes `hitIndex - 1` into a1 as a web where ours is a
+  ring temp. Flat or worse on this shape (products of 432 and 128 cells
+  plus about 30 single cells): count/index assignment forms, test
+  spellings, the mathRnd result cast, s16 hitIndex (frame 0x90),
+  `hitIndex--`, `-= 1` and `= hitIndex - 1` (the web exists but takes a0
+  and no extra draw, so the ring runs one behind to the end: 65 to 69),
+  `hitCount = hitIndex - 1` with `hits[hitCount]` (substituted away, 4,
+  also with a store between, a region around the def or the use,
+  `register`, or-zero on the def, the use or as a statement), a second
+  real use (web in v0, +4 bytes), product-by-zero second uses, or-zero on
+  the mathRnd arguments, test or result, mathRnd returning s16/u16,
+  taking s16 parameters, or unprototyped.
+- Records (instrumented uopt, identity-gated): with `hitIndex = hitIndex
+  - 1` the a0 web does not appear among the p1 decisions; forcing the
+  three a0-coloured p1 webs near it (w301, w309, w316) to other colours
+  leaves the addiu in a0, so its colour is not a p1 choice. In the target
+  the count web (a1) and the subtraction (a1) do not interfere, so the
+  target's count web ends before the join block; ours spans it. The
+  decision variable is what colours that non-p1 web, and what draws the
+  extra ring temp in the if arm; both are open.
+
+- Resumed (lane f-o073): a 108-cell product over the if arm is flat at 4:
+  the count test as `>= 2`, `> 1`, `hitCount - 1 > 0`, `hitIndex - 1 > 0`,
+  `(hitCount - 1) != 0`, `hitIndex > 1`; the mathRnd arguments as
+  `hitCount`, `(s32)hitCount`, `hitCount + 0`, `(u16)hitCount`,
+  `(hitIndex, hitCount)`, `(1, hitIndex)`; the index as the ring temp,
+  `hitIndex = hitIndex - 1`, or masked with `& 7`. No cell draws the
+  extra ring temp or puts the subtraction in a1. Cycle-21 line: the
+  a-register of the join-block subtraction web is not a p1 decision, so
+  trace which pass assigns it (CDX_DETAIL_WEB on the `hitIndex = hitIndex
+  - 1` cell, then the ugen trace for any a-register ALLOC in that block);
+  the extra draw is between the beqz and the mathRnd narrowing.
 
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

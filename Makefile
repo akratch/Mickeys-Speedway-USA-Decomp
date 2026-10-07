@@ -1202,7 +1202,8 @@ $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: POSTPROCESS = \
 # only their names to the resident runtime linker's static trap carrier.
 $(BUILD_DIR)/$(SRC_DIR)/main/frontend_37D50.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym frontend38190BuildHeightGridReloc=TrapDanglingJump $@ && \
-	$(OBJCOPY) --redefine-sym frontend38190DrawHeightGridReloc=TrapDanglingJump $@
+	$(OBJCOPY) --redefine-sym frontend38190DrawHeightGridReloc=TrapDanglingJump $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .rodata 0x1C
 # JFG's source-level string migration reproduces diRcp's complete diagnostic
 # string block followed by the 0x100-byte switch-table span. The following
 # four zero bytes are output-section padding.

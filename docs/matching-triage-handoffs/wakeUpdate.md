@@ -2,11 +2,13 @@
 ### `wakeUpdate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 253/398 words
+- score: 198/398 words
 - frame: 0x90
 - relocations: 2
 - first mismatch: +0x34
-- summary: Second-loop wrap test as ++index (257 to 253, delta 0). Left: p1 order wake/secondaryVertices, index/stripIndex, polygonOffset over polyCount.
+- summary: OR-zero weight probes order secondaryVertices over wake and stripIndex over index (253 to 198 at 0). Left: polyCount/outputCount over polygonOffset.
+
+Summary before this remeasure: Second-loop wrap test as ++index (257 to 253, delta 0). Left: p1 order wake/secondaryVertices, index/stripIndex, polygonOffset over polyCount.
 
 Summary before this remeasure: Size delta 0, frame 0x90; residual is p1 colour order (wake/secondaryVertices, index/stripIndex swapped); four colour forces price it at 207.
 
@@ -142,5 +144,32 @@ Configured full-TU baseline: 253 masked and 253 raw words, target 1592 bytes, si
 ## 2026-10-06: the first scan walks vertexCount
 
 The unmodified body scores 1592 bytes, 253 raw and 253 masked words, size delta 0. The first sample scan advances vertexCount instead of index, so index exists only in the second loop. That scores 381 masked and 381 raw words at size delta -4. Not kept. The 253-word body stays. Do not repeat this scan.
+
+#### 2026-10-07, lane a-front: reference-count probes, 253 to 198 at delta 0
+
+Aligner after: byte-exact 205, register naming 173, immediate 2, really
+different 22. Five measured cycles (products of 6, 18, 10 and 10 cells,
+records on proc 13, instrumented .text identical to the stock object).
+
+- One OR-with-zero probe of secondaryVertices inside the sample loop (L109;
+  uopt deletes it, globalcolor counts it) raises its web to 141/6 (23.5)
+  over wake's 306/14 (21.86): secondaryVertices s3, wake s4, as shipped.
+  253 to 216. Position in the loop and a second probe are inert.
+- Three probes of stripIndex at the loop end raise it to 171/11 (15.55)
+  over index's 123/8 (15.38): stripIndex s5, index s6. 216 to 201; one
+  polyCount probe with them 198.
+- polyCount probes alone move only polyCount (to 122/12, s7). The target
+  also needs outputCount (42/12, on a1 here) above polygonOffset (31/6) so
+  outputCount takes fp and polygonOffset falls to a1 and spills: one to six
+  outputCount probes do exactly that (fp, as shipped, aligned exact rows 199
+  to 203) but measure 248 positionally, so they are not banked.
+
+The probes are a measured stand-in, not the source: the target's author
+reads these variables that often somewhere. Next: with the outputCount
+probe applied, the residual is the pre-loop region (the second sample
+pointer in v0 where ours keeps one s0 web for both regions, the mark flag in
+v1, the first scan's count in a1) plus a one-register ring shift in the
+counter block; give the pre-loop sample its own local and re-read the
+records. Then replace each probe with a real reference.
 
 <!-- plateau-handoff:wakeUpdate:end -->

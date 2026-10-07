@@ -515,10 +515,13 @@ void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
     }
 }
 
-/* Workbench verdict: structure-mismatch, 199 differing words; target/candidate 368 words. */
-/* First mismatch: +0x130; both frames are 0xE8. Static relocations remain nonexact. */
-/* Stack homes and mixed structural/register residual remain unresolved. */
-#ifdef NON_MATCHING
+/* func_80038190 matched 2026-10-07 (lane a-front) from 199 words: the
+ * segment additions are K0-to-physical subtractions (no shared 0x80000000
+ * register), var_a2 is declared first (frame homes), the tile loop is a for
+ * with both zero inits in its header, and OR-with-zero probes (law L109;
+ * uopt deletes them, globalcolor still counts them) on var_a2, var_a3 and
+ * two packet cursors rank those webs above var_t2, which then takes t2 as
+ * shipped. A source form carrying those reference counts is still unknown. */
 /* Resident runtime records 245/246 bind these distinct typed call sites to
  * overlay 99's height-grid builder and framebuffer-grid renderer. Both retain
  * the static trap carrier until the runtime linker installs their callees. */
@@ -541,6 +544,13 @@ extern void frontend38190DrawHeightGridReloc(Gfx **displayList, Mtx **matrices,
         _cmd->words.w1 = (u32) (data); \
     }
 
+#define FE38190_PROBE(pkt, opcode, data) \
+    { \
+        Gfx *_cmd = (*(pkt))++; \
+        _cmd = (Gfx *) ((u32) _cmd | 0); \
+        _cmd->words.w0 = (u32) (opcode); \
+        _cmd->words.w1 = (u32) (data); \
+    }
 void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
     s32 var_a2;
     s32 spE0;
@@ -598,14 +608,17 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
                 var_a3 += 0xA00;
                 FRONTEND38190_EMIT(arg0, 0xF5100000, 0x07080200);
                 FRONTEND38190_EMIT(arg0, 0xE6000000, 0);
-                FRONTEND38190_EMIT(arg0, 0xF3000000, 0x074FF01A);
+                FE38190_PROBE(arg0, 0xF3000000, 0x074FF01A);
                 FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
                 FRONTEND38190_EMIT(arg0, 0xF510A000, 0x80200);
                 FRONTEND38190_EMIT(arg0, 0xF2000000, 0x4FC00C);
-                FRONTEND38190_EMIT(arg0, 0xE4500000 | ((var_t2 * 4) & 0xFFF),
+                FE38190_PROBE(arg0, 0xE4500000 | ((var_t2 * 4) & 0xFFF),
                               (var_a2 * 4) & 0xFFF);
                 FRONTEND38190_EMIT(arg0, 0xB3000000, 0);
                 FRONTEND38190_EMIT(arg0, 0xB2000000, 0x10000400);
+                var_a2 = var_a2 | 0;
+                var_a2 = var_a2 | 0;
+                var_a3 = var_a3 | 0;
             }
             FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
             FRONTEND38190_EMIT(arg0, 0xBC000406,
@@ -626,17 +639,5 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
     }
 }
 #undef FRONTEND38190_EMIT
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/frontend_37D50/func_80038190.s")
-#endif
+#undef FE38190_PROBE
 #undef FRONTEND_EMIT
-
-/* PLATEAU-HANDOFF:func_80038190:start
- * symbol: func_80038190
- * score: 19/368 words
- * frame: 0xE8
- * relocations: 32
- * first-mismatch: +0x1C8
- * summary: K0-to-physical subtractions, var_a2 declared first, for loop: 199 to 19 at delta 0, naming only. Left: var_t2 save 20 must rank below 15.
- * PLATEAU-HANDOFF:func_80038190:end
- */

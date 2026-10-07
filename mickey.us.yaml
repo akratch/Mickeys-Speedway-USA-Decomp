@@ -733,6 +733,10 @@ segments:
       # func_80035F48's six-entry and seven-entry texture-format switch tables.
       - [0x8323C, .rodata, main/textures_354C8]
       - [0x83270, rodata]
+      # func_80038190's six-entry switch table plus one zero word of the
+      # object's own section padding; the "front/front.c" string follows.
+      - [0x832A4, .rodata, main/frontend_37D50]
+      - [0x832C0, rodata]
       # func_800389CC, func_80038BC4 and func_80038E1C's consecutive nineteen-entry
       # tables, plus the ROM's one zero pad word before the next float table.
       - [0x83334, .rodata, main/menu]

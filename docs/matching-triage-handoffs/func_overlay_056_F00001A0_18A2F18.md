@@ -2,11 +2,15 @@
 ### `func_overlay_056_F00001A0_18A2F18` plateau handoff
 
 - source: `src/overlays/o056/overlay_056.c`
-- score: 542 differing words
+- score: 152 differing words
 - frame: 0x1F8
 - relocations: 75
-- first mismatch: +0x4
-- summary: r4300_mul, u8 colour params, ghost racer local, frame ladder: 577 at -8 to 542 at 0; open: mapY caller cost 20 vs toll 21.
+- first mismatch: +0x160
+- summary: y sum merged into ghost x (mapY f20), frame ladder, ternary fade shift: 542 to 152 at 0; open: sum/mapX, cos/sin, scale/x colours.
+
+Summary before this remeasure: mapY in f20 via the y sum merged into the ghost x web, frame ladder for the f24 save: 542 to 163 at 0; open: sum/mapX, cos/sin, scale/x colour pairs.
+
+Summary before this remeasure: r4300_mul, u8 colour params, ghost racer local, frame ladder: 577 at -8 to 542 at 0; open: mapY caller cost 20 vs toll 21.
 
 Summary before this remeasure: Natural rewrite: aligned 316/121/61/90, delta -8; open: mapY web 197 takes caller c29 (20.0) under the 20.75 callee toll, no f24.
 
@@ -319,5 +323,96 @@ call block prices 1 unit and a call block holding a reference prices 2,
 look for a reference to mapY in the func_800349A4 or func_8002A82C block
 that emits no word; then drop two of the top cells (the f24 save adds 8
 bytes) and run frame_census.
+
+#### 2026-10-07 (lane e-big): mapY in f20 from a merged sum web; 542 to 163 at delta 0
+
+Aligned rows (residual_map --object), exact / naming / immediate /
+structural: entry 356 / 134 / 31 / 65 (542 at 0); retained
+420 / 154 / 2 / 4 (163 at 0), one one-sided word each way.
+
+- Records (CDX_PROC=6, configured command with only the compiler swapped).
+  A use of mapY between func_800349A4 and func_8002A82C prices web 194 at
+  caller 30 and it takes c30 unforced; a use before func_800349A4 or after
+  func_8002A82C does not. Measured: marker.y = mapY there (30, but a
+  store), -(-mapY) and mapY / 1.0f (30, but they emit), and
+  func_8002A82C(&mtxA + (s32)mapY * 0) (30, emits nothing; ugen folds the
+  product). Inert (cost 20): bare, void, self-assign, += 0.0f, * 1.0f,
+  (f32) cast, empty if, if (0), do-while-zero, & 0, dead local copy.
+- The shipped form needs no probe. The target computes the y sum into f18,
+  a register mapY does not hold, so the sum is not an in-place rebase. A
+  fresh local for it takes c24 (f0) and leaves mapY caller (291 at -4).
+  Assigning it to the ghost loop's x (or z) merges it into a web that is
+  offered no argument colour and is decided ahead of mapX; with c28 and c29
+  both held by interfering webs mapY is offered only the callee bank and
+  takes f20 with no probe (probe on or off: identical text).
+- Frame: the f24 save raises every sp-relative home by 8 (homes ascend
+  from the save area in reverse declaration order, so top pads only resize
+  the frame; 0 to 8 pads swept). Dropping the unused colour local and
+  placing two of red/green/blue/posX below ghostAlpha restores the ladder;
+  41 placements measured, 233 to 228 for the best, then the sum form.
+- Product (20 cells: x/z as main-loop locals, sum target in mapY/x/z/rotX/
+  inline, probe on/off): x/z locals in the main loop change size (+4 to
+  +24); inline sum 239 to 555; rotX 164; x or z 163.
+
+Open, all naming at delta 0: the sum takes f16 and mapX f18 (target f18 and
+f16: the merged x web, save 25, is decided ahead of mapX at 20); cos and sin
+are f24 and f22 (target f22 and f24: sin's save 41/12 outranks cos's 41/13
+because cos spans one more block); level->scale and the x product are f0
+and f2 (target f2 and f0); the D_84 pointer temporary sits at 0x74 against
+0x7C; the fade-shift head swaps a0 and v1.
+
+Cycle-21 line: give the y sum a web saved below 20 that still crosses a
+call elsewhere (so mapX is decided first and takes f16), then cos's save
+above sin's (one more weighted reference or one fewer spanned block), and
+read the ladder after each in the records before scoring.
+
+#### 2026-10-07 (lane e-big, second commit): fade shift as a conditional expression, 163 to 152
+
+The fade head swapped a0 and v1: the mode byte (web 9, CSE temp, save 3/2)
+and the shift local (web 12, save 3/2) tie and the byte, numbered first,
+takes v1. Product over the head (6 shapes by 2 orders of the clamp test,
+12 cells): writing the shift as `updateRate << ((D_800D3198 == 3) ? 2 : 1)`
+inside the add removes the shift local and gives the shipped a0/v1 (152 at
+delta 0, aligned 431 / 143 / 2 / 6). The if/else, a default-then-override,
+a ternary into the local, a negated test and a long-hand add stay at 163;
+shifting updateRate in place changes size; testing the state before the
+mode byte in the clamp costs 8 bytes. Also measured on this body: the y
+sum in mapY (548), a fresh local (546), x or z (152), inline (555); the
+ghost loop with inline products instead of x/z locals is +24 bytes in
+every sum form.
+
+#### 2026-10-07 (lane e-big, after the 152 commit): x and z as main-loop locals, the shipped colour split at +4
+
+Records on the 152 body: the merged x web (218, blocks 49 and 76) is
+decided at save 25 ahead of mapX (20) and takes c28, so the ghost loop's x
+is f16 against the shipped f0; level->scale is the web spanning both loops
+(c24) where the target's scale is f2.
+
+Writing the main loop with the ghost loop's own locals (x = obj->x *
+scale; z = obj->z * scale; rotX and mapY from them) and the y sum back as
+an in-place mapY rebase gives every float colour the target has: x c24
+(both loops, f0), scale c25 (f2), z c26 (f12), rotX c27, mapX c28, the
+rebased mapY symbol web c29 (f18, the shipped sum register), and uopt's
+CSE temp for the loop-head mapY value live across the calls takes c30
+(f20) with no probe. Aligned naming falls 143 to 93, but the cell is 373
+masked at +4: uopt evaluates the mapY temp's products before rotX's, so
+one extra R4300 mul.s hazard nop appears and the add leaves the branch
+delay slot; frame 0x200 (homes +8).
+
+Measured on that shape (product, about 70 distinct cells): mapY statement
+before or after rotX, rotX carried or written as in-place negation,
+if/else and ternary mirror forms; two or one top pads; five placements of
+ghostAlpha among the bottom cells. Floor 373 at +4 (mapY first), 376 at +8,
+377 at +16, 579 at -12 when mapY is written after the mirror block. Bottom
+placement and top pads do not move the masked count on this shape.
+
+Cycle-21 line: on the x/z-locals shape, make uopt emit rotX's products
+before the mapY CSE temp (the decision variable is expression numbering of
+the type-4 mapY temp against the rotX symbol web; brief items 21 and 28,
+a dead read or a first-occurrence edit ahead of the loop head), then
+re-fit the frame with frame_census. If that order is unreachable, the 152
+body's open pairs are the fallback: sum web save below 20 crossing a call
+elsewhere, and cos ahead of sin (cos spans one more block, 41/13 against
+41/12).
 
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

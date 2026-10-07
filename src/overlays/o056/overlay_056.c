@@ -66,8 +66,13 @@ void overlay56ReleaseResource(void) {
  * parameters u8 (o052's matched prototype; the ghost's one andi), a ghost-loop racer local
  * of its own (ghostAlpha then takes s1 behind racer), the packet cursor at function scope
  * and the declaration order that lands every home on the target's frame ladder.
- * Open: mapY (records web 194) takes caller c29 at cost 20 against the 21.0 callee toll
- * (nBB 84); the target spends f20 on it. */
+ * Lane e-big: the matrixTranslate y sum is assigned to the ghost loop's x (one merged web,
+ * offered no argument colour, decided ahead of mapX), which leaves mapY no caller colour so
+ * it takes f20 as shipped; the f24 save then needs the unused colour local gone and two
+ * cells below ghostAlpha (frame ladder); the fade shift is a conditional expression inside
+ * the add (the mode byte then takes a0 and the shift v1, as shipped).
+ * Open: sum/mapX colours swapped (f16/f18), cos/sin f22/f24 swapped, scale/x-product
+ * f0/f2 swapped, the D_84 pointer temp home (0x74 against 0x7C). */
 #ifdef NON_MATCHING
 typedef struct O56Gfx {
     u32 w0;
@@ -198,7 +203,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     O56Sprite *dot;
     O56Object *obj;
     O56Racer *racer;
-    s32 shift;
+    s32 pad6;
     s32 slot;
     f32 mapX;
     s32 alpha;
@@ -220,21 +225,15 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     f32 z;
     f32 mapY;
     f32 rotX;
-    u32 colour;
-    s32 red;
-    s32 ghostAlpha;
-    s32 green;
     s32 blue;
     s32 posX;
+    s32 ghostAlpha;
+    s32 red;
+    s32 green;
 
     gameState = func_80028F54();
     if (D_800C3A3C == 0) {
-        if (D_800D3198 == 3) {
-            shift = 2;
-        } else {
-            shift = 1;
-        }
-        gOverlay56ResourceState += updateRate << shift;
+        gOverlay56ResourceState += updateRate << ((D_800D3198 == 3) ? 2 : 1);
         if (D_800D3198 != 3 && gOverlay56ResourceState > 160) {
             gOverlay56ResourceState = 160;
         } else if (gOverlay56ResourceState > 255) {
@@ -299,9 +298,9 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
             } else {
                 mapX += (f32)(level->offsetX + D_78[slot]);
             }
-            mapY += (f32)(level->offsetY + D_84[slot]);
+            x = mapY + (f32)(level->offsetY + D_84[slot]);
             matrixTranslate(mapX - (f32)(screenWidth >> 1),
-                            (f32)(screenHeight >> 1) - mapY,
+                            (f32)(screenHeight >> 1) - x,
                             0.0f, &mtxA);
             if (D_800D31A8 != 0) {
                 func_8002A604(-(obj->angle - level->angle), &mtxA);
@@ -376,10 +375,10 @@ void overlay56UnpackColor(s32 index, u32 *red, s32 *green, s32 *blue) {
 
 /* PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:start
  * symbol: func_overlay_056_F00001A0_18A2F18
- * score: 542 differing words
+ * score: 152 differing words
  * frame: 0x1F8
  * relocations: 75
- * first-mismatch: +0x4
- * summary: r4300_mul, u8 colour params, ghost racer local, frame ladder: 577 at -8 to 542 at 0; open: mapY caller cost 20 vs toll 21.
+ * first-mismatch: +0x160
+ * summary: y sum merged into ghost x (mapY f20), frame ladder, ternary fade shift: 542 to 152 at 0; open: sum/mapX, cos/sin, scale/x colours.
  * PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:end
  */

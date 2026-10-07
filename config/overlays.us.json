@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 427748,
-  "nonmatching_overlay_c_bytes": 40848,
+  "matched_overlay_c_bytes": 428968,
+  "nonmatching_overlay_c_bytes": 39628,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4804,
   "bss_bytes": 77680,
@@ -7436,7 +7436,7 @@
      "type": "c",
      "source": "overlays/o036/overlay36UpdateInteractiveEntity",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x694",

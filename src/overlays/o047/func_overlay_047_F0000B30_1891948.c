@@ -718,6 +718,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
  * frame: 0x280
  * relocations: 320
  * first-mismatch: +0x4
- * summary: Records: D_800D3058 one object, addend 0 at every loop base; walk on i drops the +4 and lands s5-s8 but i (73.0) outranks speed and actor. 1377/+4.
+ * summary: The +4 is one colour: the &ov47Bss_338 entry piece ties a0/a2/a3 and takes a0 (p1:w966=c5 removes it). Indexed first+label loops give the s8 cursor. 1377/+4.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

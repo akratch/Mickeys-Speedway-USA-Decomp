@@ -2836,7 +2836,8 @@ typedef struct TrackRayNode {
  * word reused as the edge index (that reuse keeps the entry copy and the
  * unfolded index * 2 start); the first plane index read through the edge
  * variable numbers its web ahead of the plane pointer; i = 0 as its own
- * statement schedules the prologue. 9 masked words at delta 0.
+ * statement and i++ at the loop tail schedule the prologue and loop top.
+ * 7 masked words at delta 0.
  */
 s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
                   TrackPlane *result, f32 *maximum) {
@@ -2876,7 +2877,7 @@ s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
     dy = end->y - start->y;
     dz = end->z - start->z;
     i = 0;
-    for (; i < D_800C9D3C; i++) {
+    for (; i < D_800C9D3C;) {
         encoded = D_800C9D2C[i];
         if (encoded > 0) {
             node = (TrackRayNode *) (encoded | 0x80000000);
@@ -2929,6 +2930,7 @@ s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
                 }
             }
         }
+        i++;
     }
     return hit;
 }
@@ -5244,11 +5246,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80010654:start
  * symbol: func_80010654
- * score: 9 differing words
+ * score: 7 differing words
  * frame: 0x98
  * relocations: 8
- * first-mismatch: +0xa0
- * summary: Node word reused as the edge index, edge numbered by the first plane read, i = 0 split out: 21 to 9 at 0. Left: first index read in t3, target t8.
+ * first-mismatch: +0xb4
+ * summary: Edge index in the node word, edge numbered by the first plane read, i split out with a tail increment: 21 to 7 at 0. Left: first index load in t3, target t8.
  * PLATEAU-HANDOFF:func_80010654:end
  */
 

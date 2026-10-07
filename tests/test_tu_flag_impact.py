@@ -57,6 +57,44 @@ class FlagDeltaTests(unittest.TestCase):
             impact._parse_flag_values(("-o somewhere.o",), "trial")
 
 
+class RecipeIntegrationTests(unittest.TestCase):
+    def test_cache_and_compiler_receive_the_same_configured_recipe(self):
+        recipe = impact.pb.BuildRecipe(
+            ("-O2", "-mips2", "-32"), (), (), True,
+            ("-c", "-DLOCAL_FEATURE=1", "-I", "local/include", "-O2", "-mips2", "-32"),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source.c"
+            source.write_text("void candidate(void) {}\n")
+
+            def compile_source(tu, combo, outdir, defines, compiler_args):
+                self.assertEqual(tu, source)
+                self.assertEqual(defines, ("NON_MATCHING",))
+                self.assertEqual(
+                    compiler_args, ["-c", "-DLOCAL_FEATURE=1", "-I", "local/include"]
+                )
+                return fs.CompileResult(combo, True, outdir / "out.o", "", 0)
+
+            with (
+                patch.object(impact, "REPO", root),
+                patch.object(fs, "compilation_cache_identity", autospec=True,
+                             return_value=("synthetic-key", {"recipe": "synthetic"})) as identity,
+                patch.object(fs, "load_cached_result", return_value=None),
+                patch.object(fs, "compile_combo", autospec=True,
+                             side_effect=compile_source) as compiler,
+                patch.object(fs, "write_cached_result"),
+            ):
+                baseline, trial, _cache, compiled = impact.compile_variants(
+                    source, recipe, (*recipe.flags, "-Wab,-r4300_mul"), rescore=False
+                )
+            self.assertEqual(identity.call_args.args[3], recipe)
+            self.assertEqual(compiler.call_count, 2)
+            self.assertEqual(compiled, 2)
+            self.assertEqual(baseline.combo.extra, recipe.flags)
+            self.assertEqual(trial.combo.extra, (*recipe.flags, "-Wab,-r4300_mul"))
+
+
 class ConsumerEnumerationTests(unittest.TestCase):
     def test_every_guarded_function_in_the_tu_is_resolved(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -225,7 +263,9 @@ class CompleteReportTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(impact.ImpactError, "cache is incomplete for trial"):
                 impact.compile_variants(
-                    Path("source.c"), ("-O2",), ("-O2", "-Wab,-r4300_mul"),
+                    Path("source.c"),
+                    impact.pb.BuildRecipe(("-O2",), (), (), True, ("-c", "-O2")),
+                    ("-O2", "-Wab,-r4300_mul"),
                     rescore=True,
                 )
 

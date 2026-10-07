@@ -83,7 +83,11 @@ extern f32 func_8002A8C0(s32 angle);
  * into a pre-call r - l; the expand amounts reuse x and y instead of block
  * locals (frame 0x198 -> 0x190); the corner offsets go through
  * negativeHalfWidth/negativeHalfHeight, which gives the target's shared
- * products and its float spill. Earlier passes: see the shard. */
+ * products and its float spill. 153 -> 135: each vertex writes its colour
+ * bytes before z, and the x sums convert the screen offset inline
+ * ((f32)screenLeft + ...), which puts the conversion on the target's left
+ * operand; leftFloat/rightFloat stay declared as frame slots. Earlier
+ * passes: see the shard. */
 #define PKT(pkt, a, b) { Gfx *_g = (Gfx *)(pkt)++; _g->words.w0 = (a); _g->words.w1 = (b); }
 #ifdef NON_MATCHING
 void func_overlay_045_F0001158_188D5B0(
@@ -258,38 +262,38 @@ void func_overlay_045_F0001158_188D5B0(
                     negativeHalfHeight = -halfHeight;
                     x = negativeHalfWidth;
                     y = halfHeight;
-                    vertices[0].x = leftFloat + ((x * sine - y * cosine) - x);
+                    vertices[0].x = (f32)screenLeft + ((x * sine - y * cosine) - x);
                     vertices[0].y = (f32)upper + ((y * sine + x * cosine) - y);
-                    vertices[0].z = 0;
                     vertices[0].red = 0xFF;
                     vertices[0].green = 0xFF;
                     vertices[0].blue = 0xFF;
                     vertices[0].alpha = 0xFF;
+                    vertices[0].z = 0;
                     x = halfWidth;
-                    vertices[1].x = rightFloat + ((x * sine - y * cosine) - x);
+                    vertices[1].x = (f32)screenRight + ((x * sine - y * cosine) - x);
                     vertices[1].y = (f32)upper + ((y * sine + x * cosine) - y);
-                    vertices[1].z = 0;
                     vertices[1].red = 0xFF;
                     vertices[1].green = 0xFF;
                     vertices[1].blue = 0xFF;
                     vertices[1].alpha = 0xFF;
+                    vertices[1].z = 0;
                     x = negativeHalfWidth;
                     y = negativeHalfHeight;
-                    vertices[2].x = leftFloat + ((x * sine - y * cosine) - x);
+                    vertices[2].x = (f32)screenLeft + ((x * sine - y * cosine) - x);
                     vertices[2].y = (f32)lower + ((y * sine + x * cosine) - y);
-                    vertices[2].z = 0;
                     vertices[2].red = 0xFF;
                     vertices[2].green = 0xFF;
                     vertices[2].blue = 0xFF;
                     vertices[2].alpha = 0xFF;
+                    vertices[2].z = 0;
                     x = -negativeHalfWidth;
-                    vertices[3].x = rightFloat + ((x * sine - y * cosine) - x);
+                    vertices[3].x = (f32)screenRight + ((x * sine - y * cosine) - x);
                     vertices[3].y = (f32)lower + ((y * sine + x * cosine) - y);
-                    vertices[3].z = 0;
                     vertices[3].red = 0xFF;
                     vertices[3].green = 0xFF;
                     vertices[3].blue = 0xFF;
                     vertices[3].alpha = 0xFF;
+                    vertices[3].z = 0;
 
                     triangles[0].flags = 0x40;
                     triangles[0].vertex0 = 0;
@@ -338,10 +342,10 @@ void func_overlay_045_F0001158_188D5B0(
 
 /* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
  * symbol: func_overlay_045_F0001158_188D5B0
- * score: 153 differing words
+ * score: 135 differing words
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x208
- * summary: Sibling shape ported: 395 to 153 at size delta 0, frame 0x190. Vertex store order and the float spill slot remain.
+ * summary: Sibling shape plus colours-before-z and inline x conversions: 135 at size delta 0. Vertex float colours and escape-byte a0/v0 remain.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

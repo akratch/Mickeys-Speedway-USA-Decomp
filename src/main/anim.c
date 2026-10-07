@@ -3565,8 +3565,8 @@ f32 func_8002A8C0(s32 angle);
  * gives the cosine reload f2 and the sine f12 as shipped: 165 to 140 at
  * size 0. Later: no then-arm region (offsets X, Y, Z), and the else arm
  * names its plane dot and previous.y/previous.z reads (previous.y carried
- * in the dead `impulse`, which keeps the frame at 0x70), offsets Z, X, Y:
- * 140 to 97.
+ * in the dead `impulse`, which keeps the frame at 0x70), else offsets
+ * Y, Z, X: 140 to 95.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3642,9 +3642,9 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
                        ((previousZ * normal->z +
                          (normal->x * firstSource->previous.x +
                           normal->y * impulse)) - planeDot);
+        offsetY = first->position.y - firstSource->previous.y;
         offsetZ = first->position.z - firstSource->previous.z;
         offsetX = first->position.x - firstSource->previous.x;
-        offsetY = first->position.y - firstSource->previous.y;
         if (negDot) {
         }
         firstSource->previous.x += displacement * normal->x;
@@ -4003,11 +4003,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 97/229 words
+ * score: 95/229 words
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x24
- * summary: Named else-arm dot/previous reads, no then-arm region, cosine kill, compare carriers: 165 to 97 at size 0. Left: compare block, store order.
+ * summary: Named else-arm reads, else offsets Y,Z,X, cosine kill, compare carriers: 165 to 95 at size 0. Left: negDot store, compare block.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

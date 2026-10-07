@@ -301,7 +301,7 @@ units remain distinct.
 | 6 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 34 | 34 | 80 | 80 | 0 | — |
 | 7 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `other` | 1,788 | 55 | 45 | 324 | 656 | 0 | — |
 | 8 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
-| 9 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 97 | 97 | 36 | 36 | 0 | — |
+| 9 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 95 | 95 | 36 | 36 | 0 | — |
 | 10 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 116 | 116 | 1,864 | 1,864 | 0 | — |
 | 11 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 136 | 136 | 216 | 216 | 0 | — |
 | 12 | `src/main/fx.c` | `wakeUpdate` | `main` | `other` | 1,592 | 170 | 170 | 192 | 192 | 0 | — |

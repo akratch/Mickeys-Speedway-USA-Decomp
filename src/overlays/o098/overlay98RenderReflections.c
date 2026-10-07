@@ -77,7 +77,9 @@ extern u8 gO98SpecialVertices[];
  * set just before the inverse build. Then 227 to 226 (aligned residual
  * 100 to 71): the display-list pick reads node2->data into its own local
  * before the alpha test (the target's second load of the node's first
- * word), and the reflected arm fills its transform x, y, z, scale. */
+ * word), and the reflected arm fills its transform x, y, z, scale. modelDisplayList is
+ * a plain local again (226 to 225, aligned 66) once two blocks after the
+ * vertex packet give the target's callee-saved order. */
 #define O98_PACKET(word0, word1) gfx = *dl; *dl = gfx + 1; gfx->w0 = (word0); gfx->w1 = (word1)
 
 #ifdef NON_MATCHING
@@ -87,7 +89,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
     O98Node *node2;
     O98ModelData *model;
     Gfx *gfx;
-    void * volatile modelDisplayList;
+    void *modelDisplayList;
     void *savedDisplayList;
     O98Mtx matrixC;
     O98Mtx matrixB;
@@ -196,6 +198,14 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
                 if (drewObject) {
                     O98_PACKET(0xFA000000, object->alpha | ~0xFF);
                     O98_PACKET((((u32)node->partsA[node->partIndex] + 0x80000000) & 0xFFFFFF) | 0xBF000000, (u32)node2->vertexData + 0x80000000);
+                    /* Two zero-cost blocks: they carry specialModel and
+                     * modelDisplayList across the next save divisor (5.0 to
+                     * 4.29), so &matrixA takes s7, specialModel s8 and the
+                     * display-list pointer spills to its home as shipped.
+                     * A stand-in for whatever block structure the original
+                     * has here; see the shard. */
+                    do { } while (0);
+                    do { } while (0);
                     if (specialModel) {
                         if (stateIndex) {
                             O98_PACKET(0x02000050, (u32)gO98SpecialVertices + 0x80000000);
@@ -234,10 +244,10 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
 
 /* PLATEAU-HANDOFF:overlay98RenderReflections:start
  * symbol: overlay98RenderReflections
- * score: 226/389 words
+ * score: 225/389 words
  * frame: 0x1C8
  * relocations: 36
  * first-mismatch: +0xB0
- * summary: One-line packets, second node name and pick local, u32 matrix word: 267 to 226 at delta 0 (aligned 71); open: cursor's second home store at +0xFC.
+ * summary: Packets on one line, second node name and pick local, target callee-saved order: 267 to 225 at delta 0 (aligned 66); open: cursor's second home store at +0xFC.
  * PLATEAU-HANDOFF:overlay98RenderReflections:end
  */

@@ -2,11 +2,13 @@
 ### `overlay98RenderReflections` plateau handoff
 
 - source: `src/overlays/o098/overlay98RenderReflections.c`
-- score: 226/389 words
+- score: 225/389 words
 - frame: 0x1C8
 - relocations: 36
 - first mismatch: +0xB0
-- summary: One-line packets, second node name and pick local, u32 matrix word: 267 to 226 at delta 0 (aligned 71); open: cursor's second home store at +0xFC.
+- summary: Packets on one line, second node name and pick local, target callee-saved order: 267 to 225 at delta 0 (aligned 66); open: cursor's second home store at +0xFC.
+
+Summary before this remeasure: One-line packets, second node name and pick local, u32 matrix word: 267 to 226 at delta 0 (aligned 71); open: cursor's second home store at +0xFC.
 
 Summary before this remeasure: One-line packets, second node name after the state-index store, u32 matrix word: 267 to 227 at delta 0; open: one temp-ring draw before +0x200, node/model pair.
 
@@ -288,6 +290,20 @@ word; our compensating extra word is the modelDisplayList packet's own
 `lui at` for 0x80000000 at +0x450 (the target uses the s6 web there).
 Also s7/s8 swapped (&matrixA against specialModel, both save 5.0, tie to
 the lower web number).
+
+Third step (same lane), 226 to 225, aligned 71 to 66 (exact 326, naming
+27): records on the non-volatile modelDisplayList body read node2 6.0 (s5),
+the 0x80000000 web 5.83, and specialModel, modelDisplayList and &matrixA
+tied at 5.0 (30/6, 30/6, 60/12), so the lower web numbers take s7/s8 and
+&matrixA is split. Two zero-cost `do { } while (0)` blocks after the vertex
+packet move specialModel and modelDisplayList to nocs 7 (4.29) without
+touching node2: the records then give exactly the target's order (s5
+node2, s6 constant, s7 &matrixA, s8 specialModel, modelDisplayList spilled
+to its home), with modelDisplayList a plain local (volatile and plain are
+now identical). One block is inert, three equal two, four is worse (77).
+The two blocks are a stand-in: the vertex packet or the special-model
+packets as a do-while macro, or the special-model test as `specialModel &&
+stateIndex` / else-if, all measured worse (79 to 215 aligned).
 
 Cycle-21 line: the cursor's second home store is a range-split boundary
 store: read the p1dec split records for the cursor web (type-1 entry

@@ -189,6 +189,12 @@ void func_80034920(Gfx **dlist) {
  * PROVENANCE: Jet Force Gemini's public texDPTextureX establishes the related
  * texture/render-state role.  This body's fields, tables, control flow, and
  * display-list commands were reconstructed from Mickey's own function.
+ * 2026-10-07, lane c-res: 162 -> 62 masked at delta 0. The saved
+ * D_8007BD90 rides in numTextures (dead at that point), which gives the
+ * target its v1 web spilled to a temp across func_80034920 instead of a
+ * memory-resident local; `table = D_8007B680` is assigned at the merge
+ * after the frame block (the target materialises its low half there);
+ * and the state key is compared as `stateKey != D_800D302C`.
  */
 void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
                    s32 frame) {
@@ -199,7 +205,6 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     u8 *currentTexture;
     u8 *nextTexture;
     s32 numTextures;
-    s32 oldBlockedFlags;
     s32 frameIndex;
     s32 nextFrame;
     s32 hasTexture;
@@ -208,15 +213,14 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     s32 stateKey;
 
     if (D_8007BD8C != 0) {
-        oldBlockedFlags = D_8007BD90;
+        numTextures = D_8007BD90;
         func_80034920(dlist);
-        D_8007BD90 = oldBlockedFlags;
+        D_8007BD90 = numTextures;
     }
 
     hasTexture = 0;
     dl = *dlist;
     if (tex != NULL) {
-        table = D_8007B680;
         numTextures = tex->numOfTextures >> 8;
         frameIndex = frame >> 16;
         if ((numTextures >= 2) && (frameIndex < numTextures) &&
@@ -245,6 +249,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
 
         flags |= tex->flags;
         hasTexture = 1;
+        table = D_8007B680;
         if ((currentTexture != D_800D3024) ||
             (nextTexture != D_800D3028)) {
             D_800D3024 = currentTexture;
@@ -297,7 +302,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     settings = &table[settingsIndex];
     tableFlags = settings->flags | (flags & settings->mask);
     stateKey = (settingsIndex << 8) | tableFlags;
-    if ((D_800D302C != stateKey) || (D_800D3020 != table)) {
+    if ((stateKey != D_800D302C) || (D_800D3020 != table)) {
         D_800D302C = stateKey;
         D_800D3020 = table;
         gDPPipeSync(dl++);
@@ -346,11 +351,11 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
  * pointer (175 to 172). Left: register naming from +0x24. */
 /* PLATEAU-HANDOFF:func_800349A4:start
  * symbol: func_800349A4
- * score: 162 differing words
+ * score: 62 differing words
  * frame: 0x40 (target 0x40)
  * relocations: 39
- * first-mismatch: +0x24
- * summary: 175 to 172 at delta 0: D_800D3020 caches the table base, the state key is compared directly. Left: register naming from +0x24.
+ * first-mismatch: +0x60
+ * summary: 162 to 62 at delta 0: saved flags in numTextures, table at the merge, stateKey first. Left: table high half in the first block (one ring draw).
  * PLATEAU-HANDOFF:func_800349A4:end
  */
 #else

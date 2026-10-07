@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 437588,
-  "nonmatching_overlay_c_bytes": 31008,
+  "matched_overlay_c_bytes": 441644,
+  "nonmatching_overlay_c_bytes": 26952,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4804,
   "bss_bytes": 77680,
@@ -13127,7 +13127,7 @@
      "type": "c",
      "source": "overlays/o066/overlay66SmoothAndDraw",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x4E0",
@@ -13768,7 +13768,7 @@
      "type": "c",
      "source": "overlays/o069/overlay69DrawSortedGeometry",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x70C",
@@ -16681,7 +16681,7 @@
      "type": "c",
      "source": "overlays/o088/overlay88DrawSortedGeometry",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     }
    ],
    "bss_size": "0x0",

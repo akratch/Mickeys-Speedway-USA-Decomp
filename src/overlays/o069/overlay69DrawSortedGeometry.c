@@ -132,20 +132,16 @@ extern void func_80047CD8(SharedCommand **commands, void *reference,
 
 /* DKR v77/v80 and JFG have no exact donor for this renderer. */
 /*
- * Rewritten 2026-10-02 from the listing (lane x-sort): 140 -> 57 masked words
- * at size delta 0 and the target's 0x148 frame.  What moved it: two scalar
- * homes above order[] instead of four (the frame), the sort's swap through
- * one temporary instead of left/right carriers (one ring draw per inner
- * iteration, 130 -> 63), count++ before i++ via a for-loop header on the
- * dynamic collect loop, and the entry pointer formed before its index slot.
- * The remaining residual starts in the fixed collect block: the target
- * recomputes sp+count*4 for the geometry store in a fresh ring register,
- * which reads as one more ring draw between the reference store and the
- * geometry store than this source spends.  Ordering the stores refs, keys,
- * geometry keeps size delta 0; refs, geometry, keys (the target's emission
- * order) lets as1 delete the repeated address and loses four bytes.
+ * Rewritten 2026-10-02 from the listing (lane x-sort): two scalar homes
+ * above order[] (the frame), the sort's swap through one temporary, count++
+ * before i++ via a for-loop header on the dynamic collect loop, and the
+ * entry pointer formed before its index slot. Matched (lane i-7,
+ * 2026-10-07): the fixed collect stores refs, geometry, keys, with the
+ * geometry address an element of a word array scaled by 16. ugen shifts
+ * the index by 4 and the subscript by 2 into a second register, and as1
+ * folds the pair into one shift while the draw stays spent, which is the
+ * ring position the target's geometry store address lands on (brief item 43).
  */
-#ifdef NON_MATCHING
 void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
                           void *renderArg2, SharedRenderObject *object) {
     SharedDrawState *state;
@@ -247,10 +243,9 @@ void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
             order[count] = count;
             metrics[count] = camGetProjZ(vector->x, vector->y, vector->z);
             fixedRefs[count] = reference;
+            fixedGeometry[count] = &((s32 *)resources->geometryBases[
+                resources->geometryGroup])[state->fixedGeometryIndex[i] * 16];
             fixedKeys[count] = state->fixedActive[i];
-            fixedGeometry[count] =
-                (u8 *)resources->geometryBases[resources->geometryGroup] +
-                (state->fixedGeometryIndex[i] * 64);
             count++;
         }
         i++;
@@ -277,17 +272,3 @@ void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
         SHARED_APPEND_TRAILING_STATE((*commands)++);
     }
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o069/overlay69DrawSortedGeometry/func_overlay_069_F0000170_18C8BD8.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay69DrawSortedGeometry:start
- * symbol: overlay69DrawSortedGeometry
- * score: 57/359 words
- * frame: 0x148
- * relocations: 6
- * first-mismatch: +0x3DC
- * summary: Listing rewrite at the target frame. Exact up to the fixed collect block, where the geometry store needs one more ring draw. A same-slot reload, the refs-geometry-keys order, a pointer index, and an early count increment were measured on 2026-10-05 and not kept.
- * PLATEAU-HANDOFF:overlay69DrawSortedGeometry:end
- */

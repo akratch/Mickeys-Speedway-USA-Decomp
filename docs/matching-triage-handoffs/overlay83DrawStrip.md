@@ -274,4 +274,59 @@ Writing the pointer copy as a comma whose left side assigns vertexCount scores t
 The unmodified body scores 308 bytes, 58 raw and 58 masked words, size delta 0, first mismatch +0x4. The ROM loads the red byte before the green byte. This body loads green first, and the display-list copy stays in a2.
 
 Writing the environment color as four assignments, red shifted first and then or-equals of green, blue, and alpha, scores 73 masked and 73 raw words at size delta +12. The candidate grows by 12 bytes. Each or-equals stores the word. The copy stays in a2. Not kept. The 58-word body stays. Do not repeat this color sequence. The comma copy stays closed.
+
+
+#### 2026-10-07: SDK color packing improves the private residual
+
+Authorized packet `e1a24330a` passed the fresh, zero-exit base-only gate for
+source `ef9a4d0bb6fab88c5026be5dc5d27a4875bf1295` and handoff
+`5aadf33a72f9c301f6155bc7a7118399b6d44633`. The configured full-TU baseline
+reproduced 308 bytes, 58 raw and masked differences, first mismatch +0x4.
+Actual compiler input and preprocessing were captured; self-context was equal,
+and untouched compiler output agreed with the configured object's full text
+and named text relocations.
+
+Two new expression-domain controls were tested using Mickey's own SDK headers:
+
+- Unsigned integer-domain vertex address arithmetic retained 58 differences
+  and exact size. It avoids the old out-of-object pointer addition, but does
+  not fix the opening pointer-copy allocation.
+- Packing each color component through the SDK's unsigned, byte-masked
+  SHIFTL expression improved to 44 raw and masked differences at 308 bytes,
+  first +0x4. The environment-color packet became exact. Aligned residual
+  fell from 51 to 14, with constants eliminated.
+- Combining both changes retained 44 differences and reduced geometry edit
+  distance from 13 to 12. The remaining aligned classes are seven register
+  and six structural differences. An early polygon-length calculation still
+  occupies a pool register and shifts the vertex packet relative to target.
+
+The follow-up unsigned polygon multiplication, mask-before-shift bitfield,
+explicit shift, and fully unsigned polygon arithmetic controls did not improve
+44. The first and last reproduce the combined geometry; the middle two worsen
+it. These controls do not supply a new lever for the remaining early
+calculation. Pointer-copy, declaration, named-address and ordered-store
+families were not repeated. Stop under ADR 0018; do not reopen these arithmetic
+controls without new evidence.
+
+Separately, the existing binary-storage witness proved the canonical 272-byte
+initialized-data owner: actual compiler layout gives a one-byte opaque POD,
+272 elements and alignment one; wrapper, linked section and ROM bytes agree.
+The independent owner resolves both candidate relocation identities, but not
+the target's effective identities. A zero-valued carrier plus an explicit
+unsigned segment bias emits two additional arithmetic instructions rather than
+folding the bias into the relocation addend. That diagnostic is 316 bytes and
+has zero of two exact effective identities despite two resolved identities and
+two aligned offset/type records. Bare D_80000000 remains ambiguous. No tooling
+was changed and this owner proof earns no matching credit.
+
+All candidates, configured objects, captured inputs, scores, self-context,
+owner witness request and receipt remain private under `build/domain/` in
+lane `codex-o083-domain-20261007`. Best coherent candidate is `unsigned_sdk.c`;
+`sdk_color.c` isolates the measured gain. Storage diagnostics additionally
+change one external declaration to an opaque fixed array; that context change
+was explicitly reported, not treated as body-only equivalence. The original
+tracked source was restored and freshly recompiled to the 58-word baseline.
+No new match and no source change is adopted. Next action requires evidence
+for the remaining polygon expression's early allocation, followed by a
+reviewed representation of the independently proved data owner and bias.
 <!-- plateau-handoff:overlay83DrawStrip:end -->

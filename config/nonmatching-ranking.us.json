@@ -286,13 +286,13 @@
       "tu": "main",
       "size_bytes": 1312,
       "objdiff_match_pct": null,
-      "differing_words": 296,
+      "differing_words": 292,
       "first_mismatch_offset": 76,
-      "relocation_masked_differing_words": 296,
+      "relocation_masked_differing_words": 292,
       "relocation_masked_first_mismatch_offset": 76,
-      "size_delta": 16,
+      "size_delta": 12,
       "category": "size-mismatch",
-      "source_context_sha256": "2P_Q.b_DN.s57m.f5Bf.E3Q-.eENy.4reL.82fn.cOU7.iYW7.S_U"
+      "source_context_sha256": "KqI8.gGH3.lhPS.5maO.BiUL.adGK.JbCZ.72uj.EBlI.XCRh.HCw"
     },
     {
       "name": "wakeAllocate",

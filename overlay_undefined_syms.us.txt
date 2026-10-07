@@ -4019,6 +4019,17 @@ gOverlay66Current = 0x000000fc;
 gOverlay66Flag = 0x00000100;
 gOverlay66Timer = 0x000000f8;
 
+/* overlay 66: overlay66SmoothAndDraw.c.o */
+gOverlay66BssControl = 0x00000000;
+gOverlay66FinalSecondary = 0x00000000;
+gOverlay66FirstPrimary = 0x00000000;
+gOverlay66SharedFinal = 0x00000000;
+gOverlay66SharedFirst = 0x00000000;
+gOverlay66SharedMutation = 0x00000000;
+gOverlay66SharedPixels = 0x00000000;
+osInvalDCache_o066Reloc = 0xf0000000;
+osWritebackDCacheAll_o066Reloc = 0xf0000000;
+
 /* overlay 66: func_overlay_066_F00004E0_18C6948.c.o */
 D_88 = 0x00000088;
 func_80034920_o066Reloc = 0xf0000000;

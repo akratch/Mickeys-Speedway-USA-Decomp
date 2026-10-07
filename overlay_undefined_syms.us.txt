@@ -4104,6 +4104,13 @@ overlay68FillProbeReloc = 0xf0000000;
 overlay68FreeProbeReloc = 0xf0000000;
 overlay68MapResidentIndexReloc = 0xf0000000;
 
+/* overlay 69: overlay69DrawSortedGeometry.c.o */
+overlay69DrawConeReloc = 0xf0000000;
+overlay69DrawFixedResourceReloc = 0xf0000000;
+overlay69MetricReloc = 0xf0000000;
+overlay69PrepareTransformReloc = 0xf0000000;
+overlay69SubmitDynamicReloc = 0xf0000000;
+
 /* overlay 70: func_overlay_070_F00000D8_18C92A0.c.o */
 gOverlay70HeightTableReloc = 0x00000000;
 gOverlay70PairTableReloc = 0x00000000;
@@ -4425,6 +4432,13 @@ overlay87ReleaseReloc = 0xf0000000;
 
 /* overlay 87: overlay87HasNearby.c.o */
 overlay87GetEntriesReloc = 0xf0000000;
+
+/* overlay 88: overlay88DrawSortedGeometry.c.o */
+overlay88DrawConeReloc = 0xf0000000;
+overlay88DrawFixedResourceReloc = 0xf0000000;
+overlay88MetricReloc = 0xf0000000;
+overlay88PrepareTransformReloc = 0xf0000000;
+overlay88SubmitDynamicReloc = 0xf0000000;
 
 /* overlay 89: overlay89UpdateEffect.c.o */
 gOverlay89EffectScale = 0x00000000;

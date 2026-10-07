@@ -2,11 +2,13 @@
 ### `overlay69DrawSortedGeometry` plateau handoff
 
 - source: `src/overlays/o069/overlay69DrawSortedGeometry.c`
-- score: 57/359 words
+- score: 0 differing words
 - frame: 0x148
 - relocations: 6
-- first mismatch: +0x3DC
-- summary: Listing rewrite at the target frame. Exact up to the fixed collect block, where the geometry store needs one more ring draw. A same-slot reload, the refs-geometry-keys order, a pointer index, and an early count increment were measured on 2026-10-05 and not kept.
+- first mismatch: none
+- summary: Matched. Geometry address as a word subscript scaled by 16, stores refs, geometry, keys; shared by overlays 69 and 88.
+
+Summary before this remeasure: Listing rewrite at the target frame. Exact up to the fixed collect block, where the geometry store needs one more ring draw. A same-slot reload, the refs-geometry-keys order, a pointer index, and an early count increment were measured on 2026-10-05 and not kept.
 #### 2026-10-02, lane x-sort: made measurable, rewritten, 140 to 57
 
 The body was not in the queue: overlay 69 compiled it under a private guard
@@ -325,4 +327,25 @@ evaluation ugen begins with a register it frees without emitting (a CSE
 reload f_load_cse declines, or a cvt that f_eval_int_int_cvt folds), and
 read the trace on the refs-geometry-keys order.
 
+#### 2026-10-07, lane i-7: matched (scaled word subscript for the geometry address)
+
+The missing draw before the geometry index load is checklist item 43's
+scaled subscript. Writing the geometry value as an element of a word array
+scaled by 16 (`&((s32 *)base)[index * 16]`) makes ugen shift the index by 4
+and then scale the subscript by 2 into a second register; as1 folds the two
+shifts into the shipped single `sll 6`, but the second draw stays spent, so
+the store address lands one ring position later, on the register the target
+uses. With the stores in the order refs, geometry, keys (the order the
+earlier free-list replay pointed to), 0 masked at delta 0, aligned exact 359.
+
+Product (one cycle, 14 cells), masked at size delta:
+  - u32, u16 (index * 32), 16-byte struct (index * 4), 8-byte command
+    (index * 8) and f32 (index * 16) element types: 0 at 0 in the
+    refs, geometry, keys order, 48 at 0 in the kept refs, keys, geometry;
+  - the byte form (`(u8 *)base + index * 64`) and a 64-byte struct element
+    (`&((Geom64 *)base)[index]`): 57 at 0 kept order, 115 at -4 shipped
+    order, as before. A single scaled multiply spends no extra draw.
+
+Overlay 88 includes the same body; both objects pass promotion proof (359
+words, frame 0x148, 6 of 6 relocations).
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

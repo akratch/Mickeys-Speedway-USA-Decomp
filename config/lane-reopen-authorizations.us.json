@@ -946,8 +946,8 @@
       "source_commit": "c5b98d20005fdc1948d9fc1264baf9e8b7aa53eb"
     },
     "func_overlay_008_F00042A8_1862000": {
-      "ledger_commit": "d63a2786f5e754f18abf0a8c80307f7561753753",
-      "reason": "Despite the D_2220 shift stall, one pass rematerializes the scaled table index at both float loads so randomMode is not consumed into one shared offset. The one-sided height shift stays closed.",
+      "ledger_commit": "c12bfa941466d7216546bc084952ee13822ea602",
+      "reason": "Font-proved byte-mask phase transfer: test the nonvolatile u8 D_0 index load on the retained byte-offset body. Preserve one read and full value domain; closed random-mode CSE and index-type grids remain closed.",
       "source_commit": "c34c3dd23c3f8631702d3ff86fc550c8a8d19727"
     },
     "func_overlay_008_F0004CF0_1862A48": {

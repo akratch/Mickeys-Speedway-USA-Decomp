@@ -107,6 +107,9 @@ extern u8 gO1RankOrder[];
 extern f32 gO1RankWeights[];
 
 #define STATE ((Overlay1MotionState *)D_1DA0)
+/* The same pointer read as a word: a separate IR name, so its webs are
+ * coloured apart from the lap-logic reads (a1 there, as shipped). */
+#define STATE_W ((Overlay1MotionState *)*(s32 *)&D_1DA0)
 #define OWNER ((Overlay1Owner *)D_1D9C)
 #define PREV ((Overlay1PathRecord *)D_1D64)
 
@@ -122,9 +125,11 @@ extern f32 gO1RankWeights[];
  * -112 to 268 masked at size 0, frame 0x70 exact (two leading pads and the
  * +0x5C/+0x50 pads place the homes). Declaring entry and j before table and
  * valid moves those two homes down eight bytes and scores 263 masked words
- * at the same size. Open: the D_1DA0 web colours t0 where
- * the target has a1 (its forbidden mask denies a0-a3), and modeIndex a2
- * against t0, which carry most of the naming residual. */
+ * at the same size. 2026-10-07 a-ovl4: reading the state as a word
+ * (STATE_W) before the first direction test and from the second owner-mode
+ * update on gives those reads their own webs, which take a1 as shipped
+ * (263 -> 219 at size 0); the lap-logic stretch between still shares one
+ * web that colours a2. */
 #ifdef NON_MATCHING
 void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 count) {
     s32 padA;
@@ -145,15 +150,15 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
 
     results = func_80028F54();
     list = func_80005750(&objectCount);
-    if (!(STATE->flags & 1)) {
-        STATE->selector = overlay1FindClosestSample(OWNER->x, OWNER->z, D_1D64, STATE->weight);
-        STATE->selectorCopy = STATE->selector;
+    if (!(STATE_W->flags & 1)) {
+        STATE_W->selector = overlay1FindClosestSample(OWNER->x, OWNER->z, D_1D64, STATE_W->weight);
+        STATE_W->selectorCopy = STATE_W->selector;
     }
-    if (!(STATE->flags & 8)) {
-        position = (f32)(STATE->modeIndex * D_1D8C) + STATE->offset;
+    if (!(STATE_W->flags & 8)) {
+        position = (f32)(STATE_W->modeIndex * D_1D8C) + STATE_W->offset;
     }
     switched = 0;
-    if (!(STATE->flags & 8)) {
+    if (!(STATE_W->flags & 8)) {
         if (overlay1TestDirection(D_1D68, OWNER->x, OWNER->z) != 0) {
             switched = 1;
             record = (Overlay1PathRecord *)overlay1NextPointer((u8 *)D_1D6C);
@@ -218,9 +223,9 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
                             overlay7UpdateOwnerMode(D_1D9C, level->laps);
                         } else if (level->laps == STATE->modeIndex) {
                             overlay7UpdateOwnerMode(D_1D9C, level->laps);
-                            if (!(STATE->flags & 1)) {
+                            if (!(STATE_W->flags & 1)) {
                                 G_o1_83e0--;
-                                STATE->flags |= 0x11;
+                                STATE_W->flags |= 0x11;
                             }
                             gO1Finishers++;
                             if (gO1FinishEnabled != 0 && G_o1_83e0 == 1 && gO1Finishers + 1 == gO1PlayerCount) {
@@ -231,10 +236,10 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
                                 G_o1_83e0 = 0;
                                 func_8003A55C(0x1B);
                             }
-                            STATE->lastMode = STATE->nextMode;
-                            results[STATE->index].total = STATE->total;
-                            for (j = 0; j < STATE->modeIndex; j++) {
-                                results[STATE->index].split[j] = STATE->split[j];
+                            STATE_W->lastMode = STATE_W->nextMode;
+                            results[STATE_W->index].total = STATE_W->total;
+                            for (j = 0; j < STATE_W->modeIndex; j++) {
+                                results[STATE_W->index].split[j] = STATE_W->split[j];
                             }
                             if (results->mode == 1) {
                                 overlay68StartTimer();
@@ -248,7 +253,7 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
                     }
                 }
             }
-            STATE->mode3b2 = PREV->flags;
+            STATE_W->mode3b2 = PREV->flags;
         } else if (overlay1TestDirection(D_1D64, OWNER->x, OWNER->z) == 0) {
             switched = 1;
             record = (Overlay1PathRecord *)overlay1PreviousPointer((u8 *)D_1D60);
@@ -256,43 +261,43 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
             D_1D68 = PREV;
             D_1D64 = D_1D60;
             D_1D60 = record;
-            STATE->path = D_1D68 - (Overlay1PathRecord *)gOverlay1Start.records;
-            if (D_1D68->flags == 0 && STATE->lastMode == 0xFF && STATE->changed == 0) {
-                STATE->changed = 1;
-                if (STATE->modeIndex != -1) {
-                    STATE->modeIndex--;
+            STATE_W->path = D_1D68 - (Overlay1PathRecord *)gOverlay1Start.records;
+            if (D_1D68->flags == 0 && STATE_W->lastMode == 0xFF && STATE_W->changed == 0) {
+                STATE_W->changed = 1;
+                if (STATE_W->modeIndex != -1) {
+                    STATE_W->modeIndex--;
                 }
             }
-            STATE->mode3b2 = D_1D68->flags;
+            STATE_W->mode3b2 = D_1D68->flags;
         }
         if (switched) {
-            D_0208 = (u8 *)D_1D60 + STATE->selector * 0x10 + 0x14;
-            D_020C = (u8 *)D_1D64 + STATE->selector * 0x10 + 0x14;
-            D_0210 = (u8 *)D_1D68 + STATE->selector * 0x10 + 0x14;
-            D_0214 = (u8 *)D_1D6C + STATE->selector * 0x10 + 0x14;
+            D_0208 = (u8 *)D_1D60 + STATE_W->selector * 0x10 + 0x14;
+            D_020C = (u8 *)D_1D64 + STATE_W->selector * 0x10 + 0x14;
+            D_0210 = (u8 *)D_1D68 + STATE_W->selector * 0x10 + 0x14;
+            D_0214 = (u8 *)D_1D6C + STATE_W->selector * 0x10 + 0x14;
         }
         overlay1InitMotionScale();
     }
-    if (!(STATE->flags & 8)) {
-        gO1RankWeights[index] = (f32)(STATE->modeIndex * D_1D8C) + STATE->offset;
+    if (!(STATE_W->flags & 8)) {
+        gO1RankWeights[index] = (f32)(STATE_W->modeIndex * D_1D8C) + STATE_W->offset;
     } else {
         gO1RankWeights[index] = -666.0f;
     }
-    gO1RankOrder[index] = STATE->index;
-    if (!(STATE->flags & 8) && gO1RankWeights[index] < position) {
-        if (STATE->timer >= D_1D94) {
-            STATE->timer -= D_1D94;
+    gO1RankOrder[index] = STATE_W->index;
+    if (!(STATE_W->flags & 8) && gO1RankWeights[index] < position) {
+        if (STATE_W->timer >= D_1D94) {
+            STATE_W->timer -= D_1D94;
             return;
         }
-        if (!(STATE->flags & 1)) {
+        if (!(STATE_W->flags & 1)) {
             overlay7CommitSelection(8);
         }
-        STATE->timerState = 1;
-        STATE->timer = 0xF0;
+        STATE_W->timerState = 1;
+        STATE_W->timer = 0xF0;
         return;
     }
-    STATE->timer = 0xF0;
-    STATE->timerState = 0;
+    STATE_W->timer = 0xF0;
+    STATE_W->timerState = 0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o001/func_overlay_001_F0001D78_184E158/func_overlay_001_F0001D78_184E158.s")
@@ -300,10 +305,10 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
 
 /* PLATEAU-HANDOFF:func_overlay_001_F0001D78_184E158:start
  * symbol: func_overlay_001_F0001D78_184E158
- * score: 263 differing words
+ * score: 219/627 words
  * frame: 0x70
  * relocations: 185
- * first-mismatch: +0x2C
- * summary: Listing rewrite with decoded reloc identities: 584 at -112 to 268 at size 0, frame exact; open: D_1DA0 web t0 vs a1 (a0-a3 forbidden).
+ * first-mismatch: +0xB4
+ * summary: State read as a word outside the lap logic gets its own a1 webs: 263 to 219 at delta 0; open: lap-logic state web colours a2 (records in shard).
  * PLATEAU-HANDOFF:func_overlay_001_F0001D78_184E158:end
  */

@@ -321,7 +321,7 @@ units remain distinct.
 | 26 | `src/overlays/o066/overlay66SmoothAndDraw.c` | `func_overlay_066_F0000040_18C64A8` | `o066` | `other` | 1,184 | 251 | 249 | 4 | 132 | 0 | — |
 | 27 | `src/main/fx.c` | `wakeUpdate` | `main` | `other` | 1,592 | 253 | 253 | 52 | 52 | 0 | — |
 | 28 | `src/main/diCpu.c` | `func_80045D34` | `main` | `other` | 1,836 | 270 | 254 | 12 | 12 | 0 | — |
-| 29 | `src/overlays/o001/func_overlay_001_F0001D78_184E158.c` | `func_overlay_001_F0001D78_184E158` | `o001` | `other` | 2,508 | 290 | 263 | 44 | 44 | 0 | — |
+| 29 | `src/overlays/o001/func_overlay_001_F0001D78_184E158.c` | `func_overlay_001_F0001D78_184E158` | `o001` | `other` | 2,508 | 247 | 219 | 76 | 180 | 0 | — |
 | 30 | `src/main/models.c` | `func_8001FC50` | `main` | `other` | 1,332 | 271 | 271 | 24 | 24 | 0 | — |
 | 31 | `src/overlays/o098/overlay98RenderReflections.c` | `overlay98RenderReflections` | `o098` | `other` | 1,556 | 281 | 278 | 20 | 20 | 0 | — |
 | 32 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 349 | 349 | 0 | 0 | 0 | — |

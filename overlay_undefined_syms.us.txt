@@ -1759,6 +1759,9 @@ overlay37CallProxy = 0xf0000000;
 mathOneFloatPY_o038Reloc = 0xf0000000;
 mathRnd_o038Reloc = 0xf0000000;
 
+/* overlay 38: overlay38UpdateParticles.c.o */
+o38ReleaseObject = 0xf0000000;
+
 /* overlay 38: func_overlay_038_F000047C_188618C.c.o */
 gO38ObjectTriangles = 0x80000028;
 gO38ObjectVertices = 0x80000000;

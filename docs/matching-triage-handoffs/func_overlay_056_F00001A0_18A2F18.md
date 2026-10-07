@@ -89,4 +89,75 @@ supported executable, ABI or physical-storage fact; another component
 spelling, type or ordering grid is not a fresh mechanism. No C source or
 matching credit is adopted.
 
+#### 2026-10-07: duplicate half-dimension conversion corrections are real but nonexact
+
+The assigned source/handoff pair passed the zero-exit base-only gate at
+`a6c6a897e`. The configured full-TU baseline reproduces 591 versus 581
+instructions, 538 raw/masked differing words, size delta +40, and frame
+504 bytes. Actual configured compiler output contains four unsigned-float
+correction branches around the two half-dimensions; the target has two.
+Each baseline dimension first converts a u32 to float, then explicitly tests
+its signed interpretation and adds the unsigned correction again.
+
+Both inputs are logical right shifts by one, so their values lie in
+0..2147483647 for every 32-bit input. The explicit negative predicates are
+therefore unreachable. The packet removes only those two explicit fixup
+blocks, retaining the native unsigned conversions, the earlier signed-height
+conversion/correction, RGB expressions, declarations and other control flow.
+This is a defined semantic correction, not an invented operation or padding.
+
+Measured controls, as candidate words / byte delta / raw and masked
+mismatches / frame bytes / aligned structural rows:
+
+- Baseline: 591 / +40 / 538 / 504 / 195.
+- Width fixup removed: 587 / +24 / 580 / 496 / 321.
+- Height fixup removed: 585 / +16 / 578 / 496 / 184.
+- Both fixups removed (native-only): 575 / -24 / 553 / 496 / 172.
+
+The combined control retains exactly the target's two native conversion
+corrections. Its normalized distance falls from 593 to 573, but its frame is
+eight bytes short and its instruction count is six short. The single-site
+controls isolate the two removals; neither reaches exact code. The first
+positional mismatch is entry offset zero for all controls, versus baseline
++0x50. These are diagnostic full-TU comparisons, not relocation or linked
+identity proofs. No candidate is adopted and no matching bytes are credited.
+
+Captured actual compiler-input replay agrees with an independent configured
+stock invocation in allocated content, symbols and ordered relocations for
+baseline and all controls. Expanded compiler-input self/context comparisons
+pass; all seven C siblings retain their bytes, extents and relative relocation
+surfaces. Source and configured baseline allocated content/symbols/relocations
+are restored exactly. Inputs, objects, dumps and comparison/fidelity receipts
+remain ignored under `build/o056-half/`.
+
+A separately authorized contrast at `a36b99d4c` retains both manual fixups
+and changes only their initial conversions to `(f32)(s32)` of each shifted
+value. The same range proof makes both signed casts exact and defined. This
+removes the native correction paths while preserving the manual lowering.
+This manual-only form emits 579 words, size delta -8, the exact 504-byte
+frame, 521 raw/masked
+differences and first mismatch +0x40. Aligned constant/register/structural
+rows are 30/316/181, versus baseline 30/315/195; normalized distance worsens
+from 593 to 635. Actual context, stock executable/symbol/relocation fidelity
+and all seven sibling checks pass. This alternate form is also nonexact and
+remains private; it does not establish a promotable reconstruction. The two
+combined artifacts are retained in `build/o056-half/both/` (native-only) and
+`build/o056-half/signed-initial/` (manual-only), alongside the baseline and
+single-site controls.
+
+The two-word deficit is not a proved two-nop correction. The target's early
+rotated-coordinate multiplies have two hazard separators, while this candidate
+defers part of that arithmetic and has one adjacent multiply pair elsewhere.
+No further flag sweep, RGB spelling, home or allocation control is justified
+by that net size. Both ways of eliminating duplicate conversion lowering are
+now measured. Further work needs independent evidence for the remaining
+expression-availability differences and incomplete physical bindings.
+
+The restored canonical fallback passes full US ROM verification. A fresh-lane
+alias bootstrap initially preceded the guarded canonical-object rebuild and
+caused resident relocation overflows; regeneration after that rebuild restored
+the committed alias file exactly and verification passed. Documentation,
+clean-room and all 99 tooling test files pass. No game source or generated
+alias change is committed.
+
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

@@ -1626,7 +1626,6 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081878.s")
 #endif
 
-#ifdef NON_MATCHING
 /* Rewritten from the listing (lane z-fxchar, 2026-10-02): 408 at -16 to 157
  * at size delta 0, frame 0xD0 as the target. What moved it: the sixteen-word
  * clear as `while (n--)`; the collision state read through a pointer local
@@ -1641,7 +1640,10 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
  * Later the same day (resumed): forward and offset as f32[3] arrays, which
  * removes the dot copy (the target computes the dot straight into its
  * symbol), the dot written nx-term first, nz divided after nx, unk78 stored
- * after unk74, and the halving tail as unk88, unk181, unk4, unk8 (93 -> 8). */
+ * after unk74, and the halving tail as unk88, unk181, unk4, unk8 (93 -> 8).
+ * Matched 2026-10-07 by holding the bounce scale in `speed` (reused): the
+ * scale web then numbers after -side and 2*-side, so the three tied float
+ * webs take f2, f12, f14 as shipped. */
 s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     ControlCollisionState *state = &D_800CB2C0;
     s32 *p;
@@ -1738,7 +1740,9 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
                     player->unk74 = ((2.0f * -side) * nx) + vxn;
                     player->unk78 = 0.0f;
                     player->unk7C = ((2.0f * -side) * nz) + vzn;
-                    player->unk84 = player->unk80 = ((D_8008186C * dot) + 0.5f) * speed;
+                    speed = ((D_8008186C * dot) + 0.5f) * speed;
+                    player->unk80 = speed;
+                    player->unk84 = speed;
                     player->unk88 = D_80081870;
                     player->unk181 = 1;
                     player->unk4 *= 0.5f;
@@ -1805,9 +1809,6 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     player->unk2F8 = pos.z;
     return result;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/func_8001E5C4.s")
-#endif
 /* PROVENANCE -- JFG's public charControl.c identifies the corresponding
  * controlSquashCheckPrior routine, but publishes assembly only; this body is
  * reconstructed from Mickey's fields, calls, branch conditions, and stores. */
@@ -2052,15 +2053,6 @@ void controlClearPlayerSetup(void) {
 }
 
 
-/* PLATEAU-HANDOFF:func_8001E5C4:start
- * symbol: func_8001E5C4
- * score: 8/416 words
- * frame: 0xD0
- * relocations: 53
- * first-mismatch: +0x32C
- * summary: Arrays for forward/offset remove the dot copy: 93 to 8 at delta 0, naming only. Left: neg/2x/scale FP colours rotated (f2 f12 f14).
- * PLATEAU-HANDOFF:func_8001E5C4:end
- */
 
 
 /* PLATEAU-HANDOFF:func_8001DD70:start

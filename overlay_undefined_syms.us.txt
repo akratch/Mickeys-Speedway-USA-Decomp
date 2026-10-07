@@ -4037,6 +4037,14 @@ overlay68FinishEntryPromoteReloc = 0xf0000000;
 /* overlay 68: overlay68InitializeObject.c.o */
 overlay68ConfigureReloc = 0xf0000000;
 
+/* overlay 68: overlay68UpdateAnimation.c.o */
+gOverlay68GlobalFlagReloc = 0x00000000;
+overlay68AdvanceObjectReloc = 0xf0000000;
+overlay68Angle2Reloc = 0xf0000000;
+overlay68Angle3Reloc = 0xf0000000;
+overlay68AngleDifferenceReloc = 0xf0000000;
+overlay68SetDirectionReloc = 0xf0000000;
+
 /* overlay 68: overlay68DrawSortedEntries.c.o */
 overlay68MeasureVectorReloc = 0xf0000000;
 overlay68PrepareDrawReloc = 0xf0000000;

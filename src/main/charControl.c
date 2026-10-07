@@ -1412,40 +1412,41 @@ void func_8001DCD0(s16 rotation, ControlVector3 *vector, s16 *pitch, s16 *yaw);
 /* PROVENANCE: JFG's public charControl.c and hit.c identify the related
  * ground-hit and polygon-edge control family, but publish assembly only;
  * this body is reconstructed from Mickey's collision records and fields. */
-#ifndef NON_MATCHING
 /* Existing readonly scalar cells, in their owning function order. */
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081850.s")
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081854.s")
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081858.s")
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_8008185C.s")
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081860.s")
-#endif
 
-#ifdef NON_MATCHING
-/* 2026-10-07, lane a-char: rewritten from the listing in place of the
- * inherited m2c shape (aligned edit distance 158 -> 98, masked 224 -> 185 at
- * size delta 0). One index for every loop; `record = &records[i]` at the
- * loop top is the target's s4 copy; the accumulate and copy loops walk a
- * points pointer with a counted for; the float literals are written in place
- * (the D_80081850-60 cells are this TU's pool); no rate local. Open: the
- * `bit` web is not split around the 0x24 block (the target spills it to a
- * compiler temp there), dot takes f22 where the target spills it, and the
- * &hit address is hoisted into s4 where the target rematerialises it.
- * The `(u8) bit` cast at the unk34A update gives that read its own IR name
- * (185 -> 150); the target additionally spills it to a temp across the
- * block's calls. */
+/* Matched 2026-10-07 (lane c-res) from the natural rewrite (lane a-char, 224
+ * -> 150). What closed it: `bit` as a u8 (the target splits it across the
+ * 0x24 block's calls and spills it to a compiler temp); vec, acc, down, end
+ * and hit as f32[3] arrays (no dot copy); no `mask` or `scale` locals (the
+ * collision result is masked and shifted in place), which with `bit`
+ * declared beside `count` gives the target's homes and temps; nx divided
+ * before nz and the dot nx-term first; the halving tail as unk88, unk181,
+ * unk4, unk8; `hitResult |= 1` inside the non-bounce arm (the bounce arm
+ * branches past it), which also stops the hit address being hoisted into s4;
+ * and `(s32) timer + (s32) updateRate` for the add's operand order. The
+ * float cells above are this function's literal pool; written as literals
+ * the compiler would place them after every GLOBAL_ASM cell of the TU, so
+ * they stay externs. That costs two things the literals gave for free: the
+ * bounce scale is held in `speed` (as in func_8001E5C4) so the three tied
+ * float webs keep f2/f12/f14, and the 0.9 cell is read once into `d` so it is
+ * held in f22 across the two Powerf calls as the hoisted literal was. */
 s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     CharControlGroundRecord *record;
     s32 i;
-    u32 mask;
+    ControlVector3 *p;
     CharControlGroundRecord records[4];
     ControlVector3 points[4];
     f32 radius[4];
-    ControlVector3 acc;
-    ControlVector3 down;
-    ControlVector3 end;
-    ControlVector3 hit;
-    ControlVector3 vec;
+    f32 acc[3];
+    f32 down[3];
+    f32 end[3];
+    f32 hit[3];
+    f32 vec[3];
     u32 result;
     f32 speed;
     f32 dist;
@@ -1456,14 +1457,12 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     f32 dot;
     f32 d;
     s32 count;
-    f32 scale;
+    u8 bit;
     u32 timer;
     s32 hitResult;
     s16 rot[4];
     s16 pitch;
     s16 yaw;
-    u32 bit;
-    ControlVector3 *p;
     ControlVector3 *dst;
 
     func_8001EFFC((ControlTransform *) actor, player, &points[0].x);
@@ -1487,10 +1486,10 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
         player->unk334 = NULL;
         player->unk344 = 0;
         bit = 1;
-        mask = result & 0x3FFFFFFF;
+        result &= 0x3FFFFFFF;
         for (i = 0; i < count; i++) {
             record = &records[i];
-            if (mask & 1) {
+            if (result & 1) {
                 if (record->unk3D & 0x12) {
                     player->unk349 |= bit;
                     if ((record->unk3D & 0x10) && (record->hitObject != NULL)) {
@@ -1501,18 +1500,18 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
                     player->unk34B |= bit;
                 }
                 if (record->unk3D & 0x24) {
-                    vec.x = 0.0f;
-                    vec.y = 0.0f;
-                    vec.z = -1.0f;
+                    vec[0] = 0.0f;
+                    vec[1] = 0.0f;
+                    vec[2] = -1.0f;
+                    rot[0] = actor->rotationX;
                     rot[1] = 0;
                     rot[2] = 0;
-                    rot[0] = actor->rotationX;
-                    mathOneFloatRPY((ControlTransform *) rot, &vec.x);
+                    mathOneFloatRPY((ControlTransform *) rot, vec);
                     dist = sqrtf(record->unk18 * record->unk18 + record->unk10 * record->unk10);
-                    nz = record->unk18 / dist;
                     nx = record->unk10 / dist;
-                    player->unk90 = nz * vec.x - vec.z * nx;
-                    dot = vec.z * nz + vec.x * nx;
+                    nz = record->unk18 / dist;
+                    player->unk90 = nz * vec[0] - vec[2] * nx;
+                    dot = vec[0] * nx + vec[2] * nz;
                     player->unk8C = dot;
                     if (dot < 0.0f) {
                         dot = -dot;
@@ -1524,65 +1523,68 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
                     }
                     timer = player->unk198;
                     if (timer == 0 && speed > 8.0f &&
-                        ((d = nx * dirX + nz * dirZ) < -0.3f || 0.3f < d)) {
-                        player->unk78 = 0.0f;
+                        ((d = nx * dirX + nz * dirZ) < D_80081850 || D_80081854 < d)) {
                         player->unk74 = 2.0f * -d * nx + dirX;
+                        player->unk78 = 0.0f;
                         player->unk7C = 2.0f * -d * nz + dirZ;
-                        scale = (0.3f * dot + 0.5f) * speed;
-                        player->unk80 = scale;
-                        player->unk84 = scale;
-                        player->unk4 *= 0.5f;
-                        player->unk88 = -0.4f;
+                        speed = (D_80081858 * dot + 0.5f) * speed;
+                        player->unk80 = speed;
+                        player->unk84 = speed;
+                        player->unk88 = D_8008185C;
                         player->unk181 = 1;
+                        player->unk4 *= 0.5f;
                         player->unk8 *= 0.5f;
-                    } else if (player->flags1A8 & 1) {
-                        if ((f32) timer < 240.0f) {
-                            player->unk198 = timer + (s32) updateRate;
-                        } else {
-                            player->unk198 = 0;
-                            player->unk166 = 1;
-                        }
                     } else {
-                        player->unk198 = 1;
+                        if (player->flags1A8 & 1) {
+                            if ((f32) timer < 240.0f) {
+                                player->unk198 = (s32) timer + (s32) updateRate;
+                            } else {
+                                player->unk198 = 0;
+                                player->unk166 = 1;
+                            }
+                        } else {
+                            player->unk198 = 1;
+                        }
+                        hitResult |= 1;
                     }
-                    hitResult |= 1;
-                    player->unk34A |= (u8) bit;
+                    player->unk34A |= bit;
                 }
             }
             (&player->unk320)[i] = record->unk3C;
             (&player->unk324)[i] = record->unk38;
             player->unk344 |= record->unk38;
-            bit = (bit << 1) & 0xFF;
-            mask >>= 1;
+            bit <<= 1;
+            result >>= 1;
         }
     }
-    acc.x = 0.0f;
-    acc.y = 0.0f;
-    acc.z = 0.0f;
+    acc[0] = 0.0f;
+    acc[1] = 0.0f;
+    acc[2] = 0.0f;
     if (player->unk16C != 1) {
-        down.x = 0.0f;
-        down.z = 0.0f;
-        down.y = -50.0f;
-        mathOneFloatRPY((ControlTransform *) actor, &down.x);
+        down[0] = 0.0f;
+        down[2] = 0.0f;
+        down[1] = -50.0f;
+        mathOneFloatRPY((ControlTransform *) actor, down);
         p = points;
         for (i = 0; i < count; i++) {
-            end.x = down.x + p->x;
-            end.y = down.y + p->y;
-            end.z = down.z + p->z;
+            end[0] = down[0] + p->x;
+            end[1] = down[1] + p->y;
+            end[2] = down[2] + p->z;
             dist = 1.0f;
-            if (func_80010654(p, &end, &hit, &dist) != 0) {
-                acc.x += hit.x;
-                acc.y += hit.y;
-                acc.z += hit.z;
+            if (func_80010654(p, (ControlVector3 *) end, (ControlVector3 *) hit, &dist) != 0) {
+                acc[0] += hit[0];
+                acc[1] += hit[1];
+                acc[2] += hit[2];
             }
             p++;
         }
     }
     p = points;
     if (player->unk173 == 0) {
-        func_8001DCD0(actor->rotationX, &acc, &pitch, &yaw);
-        actor->rotationZ = dAngle(actor->rotationZ, pitch, 1.0f - Powerf(0.9f, (s32) updateRate));
-        actor->rotationY = dAngle(actor->rotationY, yaw, 1.0f - Powerf(0.9f, (s32) updateRate));
+        func_8001DCD0(actor->rotationX, (ControlVector3 *) acc, &pitch, &yaw);
+        d = D_80081860;
+        actor->rotationZ = dAngle(actor->rotationZ, pitch, 1.0f - Powerf(d, (s32) updateRate));
+        actor->rotationY = dAngle(actor->rotationY, yaw, 1.0f - Powerf(d, (s32) updateRate));
     }
     if (actor->rotationZ > 0x3000) {
         actor->rotationZ = 0x3000;
@@ -1610,9 +1612,6 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     }
     return hitResult;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/func_8001DD70.s")
-#endif
 /* PROVENANCE: JFG's public charControl.c identifies the corresponding
  * controlSquashCheckPrior routine, but publishes assembly only; this body is
  * reconstructed from Mickey's fields, calls, branch conditions, and stores. */
@@ -2051,16 +2050,3 @@ s32 controlGetPlayerSetup(s16 *arg0, s16 *arg1, s16 *arg2, s16 *arg3) {
 void controlClearPlayerSetup(void) {
     D_80079BF8 = 0;
 }
-
-
-
-
-/* PLATEAU-HANDOFF:func_8001DD70:start
- * symbol: func_8001DD70
- * score: 150/533 words
- * frame: 0x268
- * relocations: 23
- * first-mismatch: +0x168
- * summary: Natural rewrite plus a (u8) bit read at unk34A: 224 to 150 at delta 0. Left: the bit temp spill, the dot copy, the hit address hoist.
- * PLATEAU-HANDOFF:func_8001DD70:end
- */

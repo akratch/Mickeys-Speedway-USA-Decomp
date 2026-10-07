@@ -6813,9 +6813,9 @@
     },
     {
       "c_owned": true,
-      "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "class": "altered",
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c.o",
       "offset": 4000,
       "overlay": 79,
@@ -6823,6 +6823,7 @@
       "source": "src/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c",
       "tools": [
         "trim_elf_section.py",
+        "externalize_elf_section.py",
         "objcopy"
       ]
     },
@@ -9367,13 +9368,13 @@
   ],
   "schema_version": 3,
   "summary": {
-    "altered_bytes": 13636,
+    "altered_bytes": 14372,
     "by_class": {
-      "altered": 7,
-      "metadata": 637,
+      "altered": 8,
+      "metadata": 636,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 400256,
+    "matched_c_bytes_with_postprocess": 400992,
     "objects_with_postprocess": 645
   }
 }

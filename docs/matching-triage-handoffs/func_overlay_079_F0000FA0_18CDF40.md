@@ -2,11 +2,11 @@
 ### `func_overlay_079_F0000FA0_18CDF40` plateau handoff
 
 - source: `src/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c`
-- score: 41/184 words
+- score: 0/184 words, promoted
 - frame: 0x98
 - relocations: 13
-- first mismatch: +0x3C
-- summary: Fresh reproof unchanged; no caller, Conker donor, or proxy evidence resolves the 13-to-5 relocation mismatch.
+- first mismatch: none
+- summary: Matched. Rewritten in the shape of the resident sibling func_800115E4 (track.c) with literals at their uses and declaration order fixing the homes.
 
 ### 2026-10-02, lane w7-o079: sibling plane shape grows the frame
 
@@ -134,5 +134,16 @@ The kept body scores 736 bytes, 144 raw and 143 masked words, size delta 0, firs
 The unmodified body scores 736 bytes, 144 raw and 143 masked words, size delta 0, first mismatch +0x3C. The ROM loads the plane y component into f16. This body loads it into f12.
 
 Adding distance times zero to that y load scores the same 143 masked and 144 raw words at size delta 0. The mismatch list is unchanged. The product is folded. Not kept. The 143-word body stays. Do not repeat this distance tie. The nx and nz load order stays closed.
+
+### 2026-10-07, lane a-ovl2: matched from the resident sibling
+
+`tools/sibling_scan.py` ranked `func_800115E4` (src/main/track.c) at 0.66. It is the same collision response with one more branch (the `ny <= -0.866f` floor case) and a plane offset computed before the branch. Every earlier pass held the m2c carrier shape fixed; this one discarded it.
+
+- Copying the sibling with the middle branch removed, the offset computed at the top of the slide branch, and the three literals written at their uses (`0.707f`, `0.1f`, `0.01f` twice; IDO emits two separate pool words for the two `0.01f`, which are the shipped addends +0x38 and +0x3C) scored 149 masked at size delta +16. The memory-class set (plane constant, delta, u, v, w) already agreed with the target.
+- Declaration order nx, ny, nz, dx, d, dy, dz, len, delta, u, v, w, value, angle put every home on the target's cell: 147 masked, still +16.
+- One 192-cell product over which local holds the plane offset, the quotient `delta / angle`, the first branch's `radius - plane->distance`, and how `0.01f - value` reaches delta: floor 4 masked at delta 0. The four extra words were caller-save spills of the first branch's dy and of the quotient; reusing `len` for the first-branch offset and `value` for both slide-branch roles gives the target's saved colours.
+- Moving `state = object->state` ahead of `d = plane->constant` closed the entry schedule: 0 masked, 4 raw (the literal-pool addresses).
+
+Promotion: the object's .rodata is externalized onto the module pool at anchor 0x30, and the resident callees use the existing `_o079Reloc` surface names. `gmake verify` passed, `check-overlay-syms` up to date, `promotion-proof` PASS (184 words, frame 0x98, relocations 13/13).
 
 <!-- plateau-handoff:func_overlay_079_F0000FA0_18CDF40:end -->

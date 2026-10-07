@@ -27,111 +27,82 @@ typedef struct Overlay79CollisionObject {
 extern f32 sqrtf(f32 value);
 extern s32 Arctanf(f32 y, f32 x);
 extern f32 func_8002A8BC(s32 angle);
-extern f32 gOverlay79CollisionMinimumY;
-extern f32 gOverlay79CollisionEpsilon;
-extern f32 gOverlay79CollisionLift;
-extern f32 gOverlay79CollisionProjection;
 
-/* Workbench: structure-mismatch; exact 184-instruction schedule/frame, 146 diff sites/143 raw words, first +0x38.
- * Lever: removing the volatile f64 frame pad fixed the frame and improved the residual; normal-component register probes were inert.
- * Remains: 29 structural, 1 schedule, and 95 register rows after the FP pool split; GLOBAL_ASM stays canonical. */
-#ifdef NON_MATCHING
+/*
+ * PROVENANCE: copied from the shape of the matched resident sibling
+ * func_800115E4 (src/main/track.c), the same collision response with one
+ * branch fewer; no external function body is adapted. The plane offset is
+ * computed inside the slide branch, the three literals are written at their
+ * uses (the module's constant pool, two distinct 0.01f words), and the
+ * declaration order places d, delta, u, v and w on the target's stack homes.
+ */
 void func_overlay_079_F0000FA0_18CDF40(
-    void *unused, Overlay79Vector *position, Overlay79Vector *axis,
-    f32 distance, Overlay79Plane *plane, Overlay79CollisionObject *object) {
-    Overlay79CollisionState *state;
-    register f32 ny;
+    void *unused, Overlay79Vector *pos, Overlay79Vector *vel,
+    f32 radius, Overlay79Plane *plane, Overlay79CollisionObject *object) {
     f32 nx;
+    f32 ny;
     f32 nz;
-    f32 crossZ;
-    f32 projectedX;
-    f32 projectedY;
-    f32 projectedZ;
-    f32 crossX;
-    f32 crossY;
+    f32 dx;
+    f32 d;
+    f32 dy;
+    f32 dz;
+    f32 len;
+    f32 delta;
+    f32 u;
+    f32 v;
+    f32 w;
     f32 value;
-    f32 length;
-    f32 amount;
-    volatile f32 planeConstant;
+    f32 angle;
+    Overlay79CollisionState *state;
 
-    (void)unused;
-    ny = plane->normal.y;
     nx = plane->normal.x;
+    ny = plane->normal.y;
     nz = plane->normal.z;
     state = object->state;
-    planeConstant = plane->constant;
-    if ((gOverlay79CollisionMinimumY <= ny) ||
-        ((plane->flags & 0x10000000) != 0)) {
-        f32 length;
-
-        crossX = axis->z * ny;
-        crossY = (nz * axis->x) - (axis->z * nx);
-        crossZ = -(axis->x * ny);
-        projectedX = (crossY * nz) - (crossZ * ny);
-        projectedY = (crossZ * nx) - (crossX * nz);
-        projectedZ = (crossX * ny) - (crossY * nx);
-        value = (projectedX * projectedX) +
-                (projectedY * projectedY) +
-                (projectedZ * projectedZ);
-        if (gOverlay79CollisionEpsilon < value) {
-            length = sqrtf(value);
-            projectedY /= length;
-            projectedX /= length;
-            projectedZ /= length;
-            amount = distance - plane->distance;
-            position->x = plane->origin.x + (amount * projectedX);
-            position->y = plane->origin.y + (amount * projectedY);
-            position->z = plane->origin.z + (amount * projectedZ);
+    d = plane->constant;
+    if ((0.707f <= ny) || (plane->flags & 0x10000000)) {
+        u = vel->z * ny;
+        v = -(vel->z * nx) + (nz * vel->x);
+        w = -(vel->x * ny);
+        dx = (v * nz) - (w * ny);
+        dy = (w * nx) - (u * nz);
+        dz = (u * ny) - (v * nx);
+        len = (dx * dx) + (dy * dy) + (dz * dz);
+        if (0.1f < len) {
+            len = sqrtf(len);
+            dx /= len;
+            dy /= len;
+            dz /= len;
+            len = radius - plane->distance;
+            pos->x = plane->origin.x + (len * dx);
+            pos->y = plane->origin.y + (len * dy);
+            pos->z = plane->origin.z + (len * dz);
         } else {
-            position->y = (-((position->z * nz) +
-                             (nx * position->x) + planeConstant) /
-                           ny) +
-                          gOverlay79CollisionLift;
+            pos->y = (-((pos->z * nz) + (nx * pos->x) + d) / ny) + 0.01f;
         }
         state->flags |= 2;
-        return;
-    }
-
-    {
-        f32 length;
-
-    crossX = position->x;
-    crossY = position->y;
-    crossZ = position->z;
-    amount = gOverlay79CollisionProjection -
-            ((crossZ * nz) + ((nx * crossX) + (ny * crossY)) +
-             planeConstant);
-    projectedX = crossX + (amount * nx);
-    projectedY = crossY + (amount * ny);
-    projectedZ = crossZ + (amount * nz);
-    crossX -= projectedX;
-    crossZ -= projectedZ;
-    crossY -= projectedY;
-    length = sqrtf((crossX * crossX) + (crossZ * crossZ));
-    value = func_8002A8BC((s16)Arctanf(crossY, length));
-    if (value != 0.0f) {
-        amount /= value;
-        length = sqrtf((nx * nx) + (nz * nz));
-        position->x += amount * (nx / length);
-        position->z += amount * (nz / length);
     } else {
-        position->x = projectedX;
-        position->z = projectedZ;
-        position->y = projectedY;
-    }
-    state->flags |= 4;
+        value = (pos->z * nz) + ((nx * pos->x) + (ny * pos->y)) + d;
+        len = 0.01f - value;
+        delta = len;
+        u = pos->x + (len * nx);
+        v = pos->y + (len * ny);
+        w = pos->z + (len * nz);
+        dx = pos->x - u;
+        dy = pos->y - v;
+        dz = pos->z - w;
+        len = sqrtf((dx * dx) + (dz * dz));
+        angle = func_8002A8BC((s16) Arctanf(dy, len));
+        if (angle != 0.0f) {
+            value = delta / angle;
+            len = sqrtf((nx * nx) + (nz * nz));
+            pos->x += value * (nx / len);
+            pos->z += value * (nz / len);
+        } else {
+            pos->x = u;
+            pos->y = v;
+            pos->z = w;
+        }
+        state->flags |= 4;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o079/func_overlay_079_F0000FA0_18CDF40/func_overlay_079_F0000FA0_18CDF40.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_079_F0000FA0_18CDF40:start
- * symbol: func_overlay_079_F0000FA0_18CDF40
- * score: 41/184 words
- * frame: 0x98
- * relocations: 13
- * first-mismatch: +0x3C
- * summary: Fresh reproof unchanged; no caller, Conker donor, or proxy evidence resolves the 13-to-5 relocation mismatch.
- * PLATEAU-HANDOFF:func_overlay_079_F0000FA0_18CDF40:end
- */

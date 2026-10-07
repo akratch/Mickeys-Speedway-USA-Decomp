@@ -320,4 +320,14 @@ On the 90 body (90 masked, size delta 0). The originY local is copy-propagated: 
 
 Cycle-21: on the 259 cell the open question is the target's left in s3: the left value loaded for the third test and copied into a1 for the scissor call. Read that web's p1cost list on the 259 cell (forbidden mask against the scissor call's a0-a3) and find which shape makes it a callee-saved web; that is the missing word, and with it the ring phase.
 
+#### 2026-10-07 (lane h-3): bottom is the missing web
+
+On g-3's 259 cell (y assigned the sum before the tests, the bottom test and the edge local on the repeated sum; reproduced at 259, size delta -4). Records with the instrumented compiler (proc 0, 66 decisions; the instrumented object scores the same 259). The clip block's webs: the y sum w26 (v0, totalsave 4 over nocs 2, blocks 6-7), x's edge w28 (v1), y's edge w33 (a0), left w48 (a1), top w53 (s1), the y copy w22 (s5), node w0 (s4), shift w66 (s3). left's web spans the scissor call (blocks 8, 9, 12, 19) and its cost list offers only a1 at 0, s3/s4/s5 at 0.1 and every t register at 1e20. right and bottom are not webs at all: they are loads held in t9 and t6 across the test blocks.
+
+The target has bottom in v0, the y sum in v1, x's edge in a0, y's edge in a1 and left in s3: each of the four clip webs exactly one colour later than here, which is what a bottom web taking v0 first produces, and with a1 taken left has nothing cheaper than s3. Forces w26=c2, w28=c3, w33=c4, w48=c17 (all accepted) give the target's clip block colours and score 225 at +4: the y copy is then denied s5/s4 (shift takes s4) and spilled. Adding w0=c19 and w22=c18: w22 is never applied (forced=-2).
+
+Measured negative: bottom carried in a register local (a new local, or reusing chunkRows, drawHeight or rowOffset; read in the test only, or in the test and the call, or assigned inside the test), 16 cells: 259 to 269 at -4. uopt propagates the copy and bottom stays a t-register load.
+
+Cycle-21: the decision variable is whether bottom's load is a uopt web. Read why left and top become load webs here and bottom and right do not (their block spans and use counts in the records), and find the source in which bottom's load is a web coloured ahead of the y sum. No register-local spelling reaches it.
+
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

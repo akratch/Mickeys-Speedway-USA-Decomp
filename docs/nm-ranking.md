@@ -313,9 +313,9 @@ units remain distinct.
 | 18 | `src/main/textures_354C8.c` | `func_800349A4` | `main` | `other` | 1,088 | 162 | 162 | 36 | 36 | 0 | — |
 | 19 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 177 | 177 | 36 | 36 | 0 | — |
 | 20 | `src/main/fx.c` | `func_80049B14` | `main` | `other` | 824 | 181 | 181 | 4 | 4 | 0 | — |
-| 21 | `src/main/frontend_37D50.c` | `func_80037C74` | `main` | `other` | 1,308 | 191 | 191 | 256 | 256 | 0 | — |
-| 22 | `src/main/frontend_37D50.c` | `func_80038190` | `main` | `other` | 1,472 | 199 | 199 | 304 | 304 | 0 | — |
-| 23 | `src/main/charControl.c` | `func_8001DD70` | `main` | `other` | 2,132 | 224 | 224 | 360 | 360 | 0 | — |
+| 21 | `src/main/charControl.c` | `func_8001DD70` | `main` | `other` | 2,132 | 186 | 185 | 360 | 360 | 0 | — |
+| 22 | `src/main/frontend_37D50.c` | `func_80037C74` | `main` | `other` | 1,308 | 191 | 191 | 256 | 256 | 0 | — |
+| 23 | `src/main/frontend_37D50.c` | `func_80038190` | `main` | `other` | 1,472 | 199 | 199 | 304 | 304 | 0 | — |
 | 24 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 234 | 234 | 192 | 192 | 0 | — |
 | 25 | `src/overlays/o036/overlay36UpdateInteractiveEntity.c` | `overlay36UpdateInteractiveEntity` | `o036` | `other` | 1,220 | 238 | 235 | 24 | 44 | 0 | — |
 | 26 | `src/overlays/o066/overlay66SmoothAndDraw.c` | `func_overlay_066_F0000040_18C64A8` | `o066` | `other` | 1,184 | 251 | 249 | 4 | 132 | 0 | — |

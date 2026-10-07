@@ -1422,256 +1422,171 @@ void func_8001DCD0(s16 rotation, ControlVector3 *vector, s16 *pitch, s16 *yaw);
 #endif
 
 #ifdef NON_MATCHING
-/* Workbench verdict: structure-mismatch, 433 differing words, first mismatch +0x0. */
-/* Candidate shape: 533 instructions and frame -0x268, both exact; 260 alignment gaps. */
-/* Declared to the target's own stack ladder, read off tools/frame_census.py.
- * The frame was already exact at 0x268 and the census still reported 19 slots
- * only this candidate used and 24 only the target did, so the excess was never
- * a size question -- it was ORDER, and the four rules the census pinned down
- * are worth stating because none of them is visible in a frame total:
- *
- *  a. EVERY declared local reserves a home, in declaration order, descending
- *     from the frame top and aligned to its own type, whether or not it ever
- *     reaches memory.  The seven register-class locals this function used to
- *     declare first reserved 0x1C bytes above `points` and pushed every
- *     homed object 0xF8 too low.  That is L99 read forwards: the ladder is a
- *     linear readout of the declaration list, so the list can be solved for.
- *
- *  b. The target's order is records, points, radius -- largest first, and
- *     three register-class slots above records -- then the accumulator triple,
- *     the RPY triple, endpoint, the spEC triple, the spE0 triple, spD4, the
- *     three spilled floats, spB8, spAC, the rotation shorts.
- *
- *  c. A three-float local whose address escapes only through its FIRST member
- *     loses the other two: they are separate symbols, nothing escapes them,
- *     and uopt constant-propagates their stores away.  The target stores all
- *     three, so the target declares them as ONE object.  spE0 and sp104 are
- *     ControlVector3 here for that reason, and spA4 is an s16 array.  This is
- *     L118 in the other direction -- not "does the target declare it at all"
- *     but "does the target declare it SEPARATELY at all".
- *
- *  d. spEC/spF0/spF4 must stay three separate locals: the target hoists the
- *     spF0 and spF4 loads out of the accumulate loop exactly as separate
- *     non-escaping locals do, and making them one aggregate keeps them inside.
- *     Making spEC an aggregate and reverting was worth 109 words on its own.
- *
- * Two further edits were measured here, both structural rather than home:
- * `record = records` moved inside the `spB8 > 0` preheader so uopt cannot
- * merge the array's address with the call argument's (L110), worth 9 words
- * and the second `addiu ...,sp,348` the target emits; and the two `!= spB8`
- * loop guards respelled `< spB8` for the target's `blez`.
- *
- * Measured with tools/align_symbol.py: 433 -> 299 masked words, byte-exact
- * 146 -> 390 of 533, register naming 241 -> 79, really different 131 -> 57,
- * size delta 0 throughout.  The home set is now exact except for two compiler
- * temps (0x7C here against the target's 0x84 and 0x8C).
- *
- * 2026-10-02: one shared index for all four loops is right after all.  On
- * its own it was -40 bytes because a register freed by the merge let the
- * count stay out of memory; the target spends that register on `rec`, a
- * per-iteration copy of the walking record pointer that the tail reads after
- * `record += 1`.  With both, 299 -> 224 at size delta 0. */
+/* 2026-10-07, lane a-char: rewritten from the listing in place of the
+ * inherited m2c shape (aligned edit distance 158 -> 98, masked 224 -> 185 at
+ * size delta 0). One index for every loop; `record = &records[i]` at the
+ * loop top is the target's s4 copy; the accumulate and copy loops walk a
+ * points pointer with a counted for; the float literals are written in place
+ * (the D_80081850-60 cells are this TU's pool); no rate local. Open: the
+ * `bit` web is not split around the 0x24 block (the target spills it to a
+ * compiler temp there), dot takes f22 where the target spills it, and the
+ * &hit address is hoisted into s4 where the target rematerialises it. */
 s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
-    ControlVector3 *pointSource;
-    u8 *pointDest;
-    u32 temp_v0;
-    u8 records[0x100];
-    u8 points[0x30];
-    f32 radius[4];
-    volatile f32 sp118;
-    volatile f32 sp114;
-    f32 sp110;
-    ControlVector3 sp104;
-    ControlVector3 endpoint;
-    ControlVector3 spEC;
-    ControlVector3 spE0;
     CharControlGroundRecord *record;
-    u8 *player320;
-    f32 spD4;
-    u8 *player324;
+    s32 i;
+    u32 mask;
+    CharControlGroundRecord records[4];
+    ControlVector3 points[4];
+    f32 radius[4];
+    ControlVector3 acc;
+    ControlVector3 down;
+    ControlVector3 end;
+    ControlVector3 hit;
+    ControlVector3 vec;
+    u32 result;
+    f32 speed;
+    f32 dist;
+    f32 nz;
+    f32 nx;
+    f32 dirX;
+    f32 dirZ;
+    f32 dot;
+    f32 d;
+    s32 count;
+    f32 scale;
+    u32 timer;
+    s32 hitResult;
+    s16 rot[4];
+    s16 pitch;
+    s16 yaw;
     u32 bit;
-    f32 directionX;
-    f32 directionZ;
-    f32 normalZ;
-    f32 var_f18;
-    s32 spB8;
-    f32 normalX;
-    u32 collisionMask;
-    s32 spAC;
-    s16 spA4[4];
-    s16 spA2;
-    s16 spA0;
-    s32 pointIndex;
-    CharControlGroundRecord *rec;
-    f32 var_f4;
-    f32 temp_f14;
-    u32 temp_v0_2;
+    ControlVector3 *p;
+    ControlVector3 *dst;
 
-    func_8001EFFC((ControlTransform *) actor, player, (f32 *) points);
-    spB8 = player->unk2BC;
-    {
-        {
-
-        pointIndex = 0;
-        while (pointIndex < spB8) {
-            radius[pointIndex] = player->unk2B8[pointIndex].w;
-            pointIndex += 1;
-        }
-        trackMakePolylist(spB8, (ControlVector3 *) &player->unk2F0, points, radius,
-                          player->unk33C, 1);
-        temp_v0 = (u32) func_80010B4C(
-            spB8, &player->unk2F0, points, radius, records, &actor->x, actor);
-        spAC = 0;
-        if ((temp_v0 >> 30) != 0) {
-            actor->x = player->unk38;
-            actor->y = player->unk3C;
-            actor->z = player->unk40;
-            spAC = 2;
-        } else {
-            player->unk349 = 0;
-            player->unk34A = 0;
-            player->unk34B = 0;
-            player->unk18E = 0;
-            player->unk334 = NULL;
-            player->unk344 = 0;
-            bit = 1;
-            collisionMask = temp_v0 & 0x3FFFFFFF;
-            pointIndex = 0;
-            if (spB8 > 0) {
-                record = (CharControlGroundRecord *) records;
-                player320 = (u8 *) player;
-                player324 = (u8 *) player;
-                do {
-                    rec = record;
-                    if ((collisionMask & 1) != 0) {
-                        if (record->unk3D & 0x12) {
-                            player->unk349 = (u8) (player->unk349 | bit);
-                            if ((record->unk3D & 0x10) &&
-                                (record->hitObject != NULL)) {
-                                player->unk334 = record->hitObject;
-                            }
-                        }
-                        if (record->unk3D & 0x48) {
-                            player->unk34B = (u8) (player->unk34B | bit);
-                        }
-                        if (record->unk3D & 0x24) {
-                            spE0.x = 0.0f;
-                        spE0.y = 0.0f;
-                        spE0.z = -1.0f;
-                        spA4[1] = 0;
-                        spA4[2] = 0;
-                        spA4[0] = actor->rotationX;
-                        mathOneFloatRPY((ControlTransform *) spA4, &spE0.x);
-                        spD4 = sqrtf((record->unk18 * record->unk18) +
-                                     (record->unk10 * record->unk10));
-                        normalZ = record->unk18 / spD4;
-                        normalX = record->unk10 / spD4;
-                        player->unk90 = (normalZ * spE0.x) -
-                                        (spE0.z * normalX);
-                        var_f18 = (spE0.z * normalZ) +
-                                  (spE0.x * normalX);
-                        player->unk8C = var_f18;
-                        if (var_f18 < 0.0f) {
-                            var_f18 = -var_f18;
-                        }
-                        var_f4 = sqrtf((actor->velocityX * actor->velocityX) +
-                                       (actor->velocityZ * actor->velocityZ));
-                        if (var_f4 > 0.0f) {
-                            directionX = actor->velocityX / var_f4;
-                            directionZ = actor->velocityZ / var_f4;
-                        }
-                        temp_v0_2 = player->unk198;
-                        if ((temp_v0_2 == 0) && (var_f4 > 8.0f) &&
-                            ((((normalX * directionX) + (normalZ * directionZ)) < D_80081850) ||
-                             (D_80081854 < ((normalX * directionX) + (normalZ * directionZ))))) {
-                            player->unk78 = 0.0f;
-                            player->unk74 = ((2.0f * -((normalX * directionX) + (normalZ * directionZ))) * normalX) +
-                                            directionX;
-                            player->unk7C = ((2.0f * -((normalX * directionX) + (normalZ * directionZ))) * normalZ) +
-                                            directionZ;
-                            temp_f14 = ((D_80081858 * var_f18) + 0.5f) *
-                                       var_f4;
-                            player->unk80 = temp_f14;
-                            player->unk84 = temp_f14;
-                            player->unk181 = 1;
-                            player->unk4 *= 0.5f;
-                            player->unk88 = D_8008185C;
-                            player->unk8 *= 0.5f;
-                        } else if (player->flags1A8 & 1) {
-                            var_f4 = (f32) temp_v0_2;
-                            if (var_f4 < 240.0f) {
-                                player->unk198 = (u8) (temp_v0_2 +
-                                                       (s32) updateRate);
-                            } else {
-                                player->unk198 = 0;
-                                player->unk166 = 1;
-                            }
+    func_8001EFFC((ControlTransform *) actor, player, &points[0].x);
+    count = player->unk2BC;
+    for (i = 0; i < count; i++) {
+        radius[i] = player->unk2B8[i].w;
+    }
+    trackMakePolylist(count, (ControlVector3 *) &player->unk2F0, points, radius, player->unk33C, 1);
+    result = func_80010B4C(count, &player->unk2F0, points, radius, records, &actor->x, actor);
+    hitResult = 0;
+    if ((result >> 30) != 0) {
+        actor->x = player->unk38;
+        actor->y = player->unk3C;
+        actor->z = player->unk40;
+        hitResult = 2;
+    } else {
+        player->unk349 = 0;
+        player->unk34A = 0;
+        player->unk34B = 0;
+        player->unk18E = 0;
+        player->unk334 = NULL;
+        player->unk344 = 0;
+        bit = 1;
+        mask = result & 0x3FFFFFFF;
+        for (i = 0; i < count; i++) {
+            record = &records[i];
+            if (mask & 1) {
+                if (record->unk3D & 0x12) {
+                    player->unk349 |= bit;
+                    if ((record->unk3D & 0x10) && (record->hitObject != NULL)) {
+                        player->unk334 = record->hitObject;
+                    }
+                }
+                if (record->unk3D & 0x48) {
+                    player->unk34B |= bit;
+                }
+                if (record->unk3D & 0x24) {
+                    vec.x = 0.0f;
+                    vec.y = 0.0f;
+                    vec.z = -1.0f;
+                    rot[1] = 0;
+                    rot[2] = 0;
+                    rot[0] = actor->rotationX;
+                    mathOneFloatRPY((ControlTransform *) rot, &vec.x);
+                    dist = sqrtf(record->unk18 * record->unk18 + record->unk10 * record->unk10);
+                    nz = record->unk18 / dist;
+                    nx = record->unk10 / dist;
+                    player->unk90 = nz * vec.x - vec.z * nx;
+                    dot = vec.z * nz + vec.x * nx;
+                    player->unk8C = dot;
+                    if (dot < 0.0f) {
+                        dot = -dot;
+                    }
+                    speed = sqrtf(actor->velocityX * actor->velocityX + actor->velocityZ * actor->velocityZ);
+                    if (speed > 0.0f) {
+                        dirX = actor->velocityX / speed;
+                        dirZ = actor->velocityZ / speed;
+                    }
+                    timer = player->unk198;
+                    if (timer == 0 && speed > 8.0f &&
+                        ((d = nx * dirX + nz * dirZ) < -0.3f || 0.3f < d)) {
+                        player->unk78 = 0.0f;
+                        player->unk74 = 2.0f * -d * nx + dirX;
+                        player->unk7C = 2.0f * -d * nz + dirZ;
+                        scale = (0.3f * dot + 0.5f) * speed;
+                        player->unk80 = scale;
+                        player->unk84 = scale;
+                        player->unk4 *= 0.5f;
+                        player->unk88 = -0.4f;
+                        player->unk181 = 1;
+                        player->unk8 *= 0.5f;
+                    } else if (player->flags1A8 & 1) {
+                        if ((f32) timer < 240.0f) {
+                            player->unk198 = timer + (s32) updateRate;
                         } else {
-                            player->unk198 = 1;
+                            player->unk198 = 0;
+                            player->unk166 = 1;
                         }
-                            spAC |= 1;
-                            player->unk34A = (u8) (player->unk34A | bit);
-                        }
+                    } else {
+                        player->unk198 = 1;
                     }
-                    record += 1;
-                    player320[0x320] = rec->unk3C;
-                    *(s32 *) (player324 + 0x324) = rec->unk38;
-                    player->unk344 |= rec->unk38;
-                    pointIndex += 1;
-                    player320 += 1;
-                    player324 += 4;
-                    bit = (bit * 2) & 0xFF;
-                    collisionMask >>= 1;
-                } while (pointIndex != spB8);
+                    hitResult |= 1;
+                    player->unk34A |= bit;
+                }
             }
+            (&player->unk320)[i] = record->unk3C;
+            (&player->unk324)[i] = record->unk38;
+            player->unk344 |= record->unk38;
+            bit = (bit << 1) & 0xFF;
+            mask >>= 1;
         }
     }
-    {
-        sp110 = 0.0f;
-        sp114 = 0.0f;
-        sp118 = 0.0f;
-        if (player->unk16C != 1) {
-            sp104.x = 0.0f;
-            sp104.z = 0.0f;
-            sp104.y = -50.0f;
-            mathOneFloatRPY((ControlTransform *) actor, &sp104.x);
-            pointIndex = 0;
-            if (spB8 > 0) {
-                pointSource = (ControlVector3 *) points;
-                do {
-                    endpoint.x = sp104.x + pointSource->x;
-                    endpoint.y = sp104.y + pointSource->y;
-                    endpoint.z = sp104.z + pointSource->z;
-                    spD4 = 1.0f;
-                    if (func_80010654(pointSource, &endpoint,
-                                      &spEC, &spD4) != 0) {
-                        sp110 += spEC.x;
-                        sp114 += spEC.y;
-                        sp118 += spEC.z;
-                    }
-                    pointSource += 1;
-                    pointIndex += 1;
-                } while (pointIndex != spB8);
+    acc.x = 0.0f;
+    acc.y = 0.0f;
+    acc.z = 0.0f;
+    if (player->unk16C != 1) {
+        down.x = 0.0f;
+        down.z = 0.0f;
+        down.y = -50.0f;
+        mathOneFloatRPY((ControlTransform *) actor, &down.x);
+        p = points;
+        for (i = 0; i < count; i++) {
+            end.x = down.x + p->x;
+            end.y = down.y + p->y;
+            end.z = down.z + p->z;
+            dist = 1.0f;
+            if (func_80010654(p, &end, &hit, &dist) != 0) {
+                acc.x += hit.x;
+                acc.y += hit.y;
+                acc.z += hit.z;
             }
-        }
-        pointSource = (ControlVector3 *) points;
-        if (player->unk173 == 0) {
-            func_8001DCD0(actor->rotationX, (ControlVector3 *) &sp110,
-                          &spA2, &spA0);
-            actor->rotationZ = dAngle(
-                actor->rotationZ, spA2,
-                1.0f - Powerf(D_80081860, (s32) updateRate));
-            actor->rotationY = dAngle(
-                actor->rotationY, spA0,
-                1.0f - Powerf(D_80081860, (s32) updateRate));
+            p++;
         }
     }
-    if (actor->rotationZ >= 0x3001) {
+    p = points;
+    if (player->unk173 == 0) {
+        func_8001DCD0(actor->rotationX, &acc, &pitch, &yaw);
+        actor->rotationZ = dAngle(actor->rotationZ, pitch, 1.0f - Powerf(0.9f, (s32) updateRate));
+        actor->rotationY = dAngle(actor->rotationY, yaw, 1.0f - Powerf(0.9f, (s32) updateRate));
+    }
+    if (actor->rotationZ > 0x3000) {
         actor->rotationZ = 0x3000;
     } else if (actor->rotationZ < -0x3000) {
         actor->rotationZ = -0x3000;
     }
-    if (actor->rotationY >= 0x3001) {
+    if (actor->rotationY > 0x3000) {
         actor->rotationY = 0x3000;
     } else if (actor->rotationY < -0x3000) {
         actor->rotationY = -0x3000;
@@ -1682,18 +1597,15 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     if (player->unk34A == 0) {
         player->unk198 = 0;
     }
-    pointIndex = 0;
-    pointDest = (u8 *) &player->unk2F0;
-    while (pointIndex < spB8) {
-        *(f32 *) (pointDest + 0x00) = pointSource->x;
-        *(f32 *) (pointDest + 0x04) = pointSource->y;
-        *(f32 *) (pointDest + 0x08) = pointSource->z;
-        pointDest += 0x0C;
-        pointSource += 1;
-        pointIndex += 1;
+    dst = (ControlVector3 *) &player->unk2F0;
+    for (i = 0; i < count; i++) {
+        dst->x = p->x;
+        dst->y = p->y;
+        dst->z = p->z;
+        dst++;
+        p++;
     }
-        return spAC;
-    }
+    return hitResult;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/func_8001DD70.s")
@@ -2145,10 +2057,10 @@ void controlClearPlayerSetup(void) {
 
 /* PLATEAU-HANDOFF:func_8001DD70:start
  * symbol: func_8001DD70
- * score: 224/533 words
+ * score: 185/533 words
  * frame: 0x268
  * relocations: 23
  * first-mismatch: +0x168
- * summary: One shared loop index plus a per-iteration record copy read after the step: 299 to 224 at delta 0. Left: records address web coloured s4, bit not split.
+ * summary: Natural rewrite, 224 to 185 at delta 0. Left: bit not split around the 0x24 block, dot in f22 where the target spills it, hit address hoisted.
  * PLATEAU-HANDOFF:func_8001DD70:end
  */

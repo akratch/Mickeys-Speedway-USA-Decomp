@@ -22,8 +22,8 @@
   "modules": 107,
   "nonempty_modules": 106,
   "text_bytes": 469264,
-  "matched_overlay_c_bytes": 438372,
-  "nonmatching_overlay_c_bytes": 30224,
+  "matched_overlay_c_bytes": 444872,
+  "nonmatching_overlay_c_bytes": 23720,
   "data_rodata_bytes": 61312,
   "owned_data_rodata_bytes": 4804,
   "bss_bytes": 77680,
@@ -3282,12 +3282,21 @@
     },
     {
      "offset": "0x910",
-     "end_offset": "0x12A0",
-     "size": "0x990",
+     "end_offset": "0x129C",
+     "size": "0x98C",
      "type": "c",
      "source": "overlays/o012/func_overlay_012_F0000910_186DB90",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
+    },
+    {
+     "offset": "0x129C",
+     "end_offset": "0x12A0",
+     "size": "0x4",
+     "type": "asm",
+     "source": "overlays/o012/overlay_012_padding",
+     "matched": false,
+     "nonmatching": false
     }
    ],
    "bss_size": "0x15A0",
@@ -13127,7 +13136,7 @@
      "type": "c",
      "source": "overlays/o066/overlay66SmoothAndDraw",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x4E0",
@@ -13768,7 +13777,7 @@
      "type": "c",
      "source": "overlays/o069/overlay69DrawSortedGeometry",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     },
     {
      "offset": "0x70C",
@@ -16681,7 +16690,7 @@
      "type": "c",
      "source": "overlays/o088/overlay88DrawSortedGeometry",
      "matched": true,
-     "nonmatching": true
+     "nonmatching": false
     }
    ],
    "bss_size": "0x0",

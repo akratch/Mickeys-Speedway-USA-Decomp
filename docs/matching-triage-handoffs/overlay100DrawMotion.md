@@ -2,11 +2,11 @@
 ### `overlay100DrawMotion` plateau handoff
 
 - source: `src/overlays/o100/overlay100DrawMotion.c`
-- score: 113 differing words
+- score: 0/243 words, promoted
 - frame: 0xC0
 - relocations: 7
-- first mismatch: +0x194
-- summary: Void getters, GBI macros, if/else alpha clamp: 155 to 113. Left: preheader colour/alpha order, inner-loop FP colours.
+- first mismatch: none
+- summary: Matched. Depth and reciprocal as expressions at each use, point->y read into a local first, alpha inline in the colour packet, pads for the homes.
 
 Summary before this remeasure: L99 unused pointers declared first close frame 0xC0 with exact homes. Packed RGB hoist is plus two words. Command/color lifetime remains.
 - assignment base: `b05cf692e3fc02d376d334564fed1d6c1e0a8953`
@@ -141,4 +141,38 @@ word before the alpha product, ours the reverse) and the inner loop's FP
 colours: the target holds z in f12, x in f2, depth in f14 and the
 reciprocal in f16; ours z f14, x f16, depth f12, the reciprocal in f2 then
 copied to f18.
+#### 2026-10-07, lane c-o066 (resumed): matched and promoted, 113 to 0
+
+Records first (identity-gated: instrumented `.text` byte-identical to stock,
+proc 0). The FP colour table decodes c24 f0, c25 f2, c26 f12, c27 f14, c28
+f16, c29 f18, c30 f20 to c35 f30. On the 113 body the reciprocal was two
+webs (the quotient, save 300, nocs 1, c25 f2; the inverseDepth symbol, save
+100, nocs 2, c29 f18), hence the copy. Forcing inverseDepth to c28 and the
+x and z loads to c25/c26 was refused (forced=-2, forbidden at decision
+time), so the records were read for the source instead:
+
+- reciprocal written inline at both uses (no local): one expression web in
+  c28 f16 as shipped, but sin (save 40.2, nocs 5) then takes c29 f18 and is
+  spilled across the cos call: 184.
+- plus point->y read into a local at the top of the visible branch: that
+  load becomes the c29 web (the shipped early f18 load), sin returns to
+  c30 f20: 16 at delta 0.
+- count read before the frame pointer: 12 to 10. One unreferenced pointer
+  moved from above the colour locals to below them, the py local after
+  blue, five pads in all: the green/blue/command spill homes land
+  (0x9C/0x98/0x58): 6.
+- the last six words were depth (a symbol web, numbered first, c25 f2)
+  against the target's x in f2 and depth in f14: depth written as an
+  expression at each use, `-(point->x * cosAngle) + point->z * sinAngle`,
+  numbers the x load first: 0. With `z * sin - x * cos` it is 6, and with
+  the depth local assigned from either spelling 6 to 9. The unused `depth`
+  declaration stays as a frame cell (dropping it: 4).
+- the alpha product inline in the colour packet (no alpha local), so the
+  packed colour word is numbered and emitted first in the setup.
+
+gmake verify passes on the promoted tree (also from a freshly rebuilt
+object), check-overlay-syms is current and promotion-proof passes
+(relocations 7/7). The six callees and the segment are the C file's own
+`*Reloc` placeholders, now aliased by `gmake overlay-syms`; the old
+redefine-sym of the GLOBAL_ASM name is removed from POSTPROCESS.
 <!-- plateau-handoff:overlay100DrawMotion:end -->

@@ -181,7 +181,6 @@ void shadowGetBuffers(s32 arg0, void **arg1, void **arg2, void **arg3) {
     *arg2 = D_80079420[index];
     *arg3 = D_80079430[index];
 }
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c control-flow draft and resident shadow
  * declarations reconstruct this pipeline; no external function body is
@@ -218,13 +217,22 @@ typedef struct ShadowGenerateAngle {
 #define SG_F32(p, o) (*(f32 *) ((u8 *) (p) + (o)))
 #define SG_PTR(p, o) (*(void **) ((u8 *) (p) + (o)))
 
-/* Workbench verdict: structure-mismatch, 432 masked words at size +40, first mismatch +0x118. */
-/* Candidate is 520/510 instructions; frame 0x138 is exact since 2026-10-02 (lane x-shad): the
- * five unused f32 locals are gone and the declaration order puts four scalars above first and
- * selected (homes +0x124/+0x120), seven between them and the two arrays (+0xEC, +0xDC) and two
- * more before objects (+0xD0). An s16 local still spills to +0xAA where the target keeps the
- * type in fp. */
-/* Relocation count is exact at 63; local lifetimes and branch spelling still control the register web. */
+/* Matched 2026-10-07 (lane a-shad), 419 at +24 to 0. Frame 0x138 from
+ * lane x-shad's declaration order (2026-10-02), single-precision trap
+ * argument from 2026-10-03. The rest was the inherited m2c shape:
+ *   - one loop variable, k, counts the model parts, the sort passes and the
+ *     final func_80016890 loop (the target keeps all three in s2), which
+ *     frees fp for type; i stays declared for its frame cell;
+ *   - the trap result is j, not value (a2 there, v0 for value);
+ *   - the model tail reads object->0x50 at each use, so it is a caller-saved
+ *     reload after each call rather than the angle loop's saved model;
+ *   - angleSource is set in an if/else over `flags & 8 && link != NULL`;
+ *   - object->0x44 is read at each use after camGetMode, not carried;
+ *   - angleCount starts at 0 and becomes 1 under D_80079460 > 0;
+ *   - the angle pointer is stored after the three part loads, and the
+ *     material is stored before angleCount++;
+ *   - the sort's bound is assigned in its guard: (k = angleCount - 1) > 0;
+ *   - object->0x6 is s16 and info->0x14 is a u16 flag word. */
 void shadowGenerate(s32 arg0, s32 arg1) {
     f32 x;
     f32 y;
@@ -254,7 +262,6 @@ void shadowGenerate(s32 arg0, s32 arg1) {
     s32 value;
     s32 angleCount;
     s16 type;
-    s16 objectType;
     s16 lowAngle;
 
     selected = (arg0 & 2) | D_80079458;
@@ -287,32 +294,31 @@ void shadowGenerate(s32 arg0, s32 arg1) {
                     type = SG_S16(object, 0x0);
 
                     if (value == 1) {
-                        objectType = SG_S16(object, 0x44);
                         if (camGetMode() == 0) {
                             distance = camDistance(x, y, z);
-                        } else if ((objectType != 1) &&
-                                   (objectType != 0x35) &&
-                                   (objectType != 0x3C)) {
+                        } else if ((SG_S16(object, 0x44) != 1) &&
+                                   (SG_S16(object, 0x44) != 0x35) &&
+                                   (SG_S16(object, 0x44) != 0x3C)) {
                             distance = 32768.0f;
                         }
-                        if (objectType == 1) {
+                        if (SG_S16(object, 0x44) == 1) {
                             partData = SG_PTR(object, 0x64);
                             x = SG_F32(partData, 0x448);
                             y = SG_F32(partData, 0x44C);
                             z = SG_F32(partData, 0x450);
                             type = SG_S16(partData, 0x43C);
-                        } else if (objectType == 0x43) {
+                        } else if (SG_S16(object, 0x44) == 0x43) {
                             partData = SG_PTR(object, 0x64);
                             x = SG_F32(partData, 0x30);
                             y = SG_F32(partData, 0x34);
                             z = SG_F32(partData, 0x38);
-                        } else if (objectType == 0x1D) {
+                        } else if (SG_S16(object, 0x44) == 0x1D) {
                             partData = SG_PTR(object, 0x64);
                             x = SG_F32(partData, 0x44);
                             y = SG_F32(partData, 0x48);
                             z = SG_F32(partData, 0x4C);
                             type = SG_S16(partData, 0x50);
-                        } else if (objectType == 0x49) {
+                        } else if (SG_S16(object, 0x44) == 0x49) {
                             partData = SG_PTR(object, 0x64);
                             x = SG_F32(partData, 0x44);
                             y = SG_F32(partData, 0x48);
@@ -321,16 +327,16 @@ void shadowGenerate(s32 arg0, s32 arg1) {
                         }
                     }
 
-                    angleSource = NULL;
-                    if ((SG_U8(surface, 0x10) & 8) != 0) {
+                    if (((SG_U8(surface, 0x10) & 8) != 0) &&
+                        (SG_PTR(surface, 0x1C) != NULL)) {
                         angleSource = SG_PTR(surface, 0x1C);
-                        if (angleSource != NULL) {
-                            SG_U8(angleSource, 0x13) = 0;
-                        }
+                        SG_U8(angleSource, 0x13) = 0;
+                    } else {
+                        angleSource = NULL;
                     }
                     SG_U8(surface, 0x13) = 0;
-                    if (((SG_U16(object, 0x6) & 0x400) == 0) &&
-                        ((SG_S32(info, 0x14) & 1) == 0) &&
+                    if (((SG_S16(object, 0x6) & 0x400) == 0) &&
+                        ((SG_U16(info, 0x14) & 1) == 0) &&
                         (SG_F32(surface, 0) > 0.0f) &&
                         (SG_F32(surface, 4) > 0.0f)) {
                         limit = (f32) SG_S16(info, 0x68);
@@ -344,13 +350,13 @@ void shadowGenerate(s32 arg0, s32 arg1) {
                                 D_800CB260 = 1.0f;
                             }
                             if ((SG_U8(surface, 0x10) & 4) != 0) {
-                                value = 0;
+                                j = 0;
                                 if ((angleSource != NULL) &&
                                     ((SG_U8(angleSource, 0x10) & 8) != 0)) {
-                                    value = TrapDanglingJump(object, 0,
+                                    j = TrapDanglingJump(object, 0,
                                                               (f32) arg1);
                                 }
-                                if (value != 0) {
+                                if (j != 0) {
                                     func_80016890(object, NULL, angleSource,
                                                   x, y, z, type);
                                 } else {
@@ -368,8 +374,9 @@ void shadowGenerate(s32 arg0, s32 arg1) {
                                                   x, y, z, type);
                                 }
                             } else {
-                                angleCount = (D_80079460 > 0) ? 1 : 0;
-                                if (angleCount != 0) {
+                                angleCount = 0;
+                                if (D_80079460 > 0) {
+                                    angleCount = 1;
                                     anglePointers[0] =
                                         (ShadowGenerateAngle *) D_8007945C;
                                 }
@@ -381,28 +388,27 @@ void shadowGenerate(s32 arg0, s32 arg1) {
                                         do {
                                             partData = (u8 *) part + 0x10;
                                             if (SG_F32(part, 0x14) > 0.0f) {
-                                                anglePointers[angleCount] =
-                                                    &angles[angleCount];
                                                 a = SG_F32(partData, 0);
                                                 c = SG_F32(partData, 8);
                                                 b = SG_F32(partData, 4);
+                                                anglePointers[angleCount] =
+                                                    &angles[angleCount];
                                                 angles[angleCount].horizontal =
                                                     Arctanf(-a, -c);
                                                 angles[angleCount].vertical =
                                                     Arctanf(b, sqrtf((a * a) +
                                                                      (c * c)));
-                                                angleCount++;
-                                                angles[angleCount - 1].material =
+                                                angles[angleCount].material =
                                                     SG_U8(partData, 0x15);
+                                                angleCount++;
                                             }
                                             k++;
                                             part = (u8 *) part + 0x20;
                                         } while (k < SG_S16(model, 0xE));
                                     }
                                 }
-                                k = angleCount - 1;
                                 if (((s32) SG_U8(surface, 0x11) < angleCount) &&
-                                    (k > 0)) {
+                                    ((k = angleCount - 1) > 0)) {
                                     do {
                                         j = 0;
                                         while (j < k) {
@@ -417,28 +423,27 @@ void shadowGenerate(s32 arg0, s32 arg1) {
                                         k--;
                                     } while (k != 0);
                                 }
-                                i = 0;
+                                k = 0;
                                 while (((s32) SG_U8(surface, 0x13) <
                                         (s32) SG_U8(surface, 0x11)) &&
-                                       (i < angleCount)) {
-                                    func_80016890(object, anglePointers[i],
+                                       (k < angleCount)) {
+                                    func_80016890(object, anglePointers[k],
                                                   surface, x, y, z, type);
-                                    i++;
+                                    k++;
                                 }
                             }
                         }
                     }
-                    model = SG_PTR(object, 0x50);
-                    if (model != NULL) {
-                        if (SG_U8(model, 4) >= 2) {
+                    if (SG_PTR(object, 0x50) != NULL) {
+                        if (SG_U8(SG_PTR(object, 0x50), 4) >= 2) {
                             scale = D_800CB28C;
                             D_800CB28C = 1.0f;
                             func_800180B4((ShadowQuery *) object);
                             D_800CB28C = scale;
-                        } else if (SG_U8(model, 4) == 0) {
+                        } else if (SG_U8(SG_PTR(object, 0x50), 4) == 0) {
                             func_800180B4((ShadowQuery *) object);
                         }
-                        SG_U8(model, 4) = 0;
+                        SG_U8(SG_PTR(object, 0x50), 4) = 0;
                     }
                 }
             }
@@ -457,9 +462,6 @@ void shadowGenerate(s32 arg0, s32 arg1) {
 #undef SG_S32
 #undef SG_F32
 #undef SG_PTR
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/shadowGenerate.s")
-#endif
 /*
  * PROVENANCE: the query/polygon organization follows DKR's public
  * src/tracks.c shadow pipeline and JFG's public func_8001DF5C assembly.
@@ -1371,14 +1373,4 @@ void func_800180B4(ShadowQuery *query) {
  * first-mismatch: +0x4C
  * summary: DKR func_8002E904 shape: aligned residual 159 vs 258 at +16; left: arg2 outer-head split (margin -4), face-index temps reject the latch (-1, -2)
  * PLATEAU-HANDOFF:func_80017140:end
- */
-
-/* PLATEAU-HANDOFF:shadowGenerate:start
- * symbol: shadowGenerate
- * score: 419/510 words
- * frame: 0x138
- * relocations: 63
- * first-mismatch: +0x118
- * summary: Typed owned trap calls remove default float promotion: 432/+40 to 419/+24; exact frame retained. Remaining type-home and structural residual needs new source evidence.
- * PLATEAU-HANDOFF:shadowGenerate:end
  */

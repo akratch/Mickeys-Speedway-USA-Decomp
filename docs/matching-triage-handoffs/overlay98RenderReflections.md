@@ -177,4 +177,50 @@ Read from the aligned listing: the target loads the node into v0, copies it to s
 - The same variable assigned from a re-read of `object->nodes[object->nodeIndex]` (plain or through an s32 view of the slot) at the three positions: 313 to 361, all at +4 to +32.
 
 Next: dump the records for the node web and read whether it is offered a split (decision=split) in any form; a variable whose copy uopt keeps needs a redefinition of one of the two between the copy and its uses, which the listing does not show.
+#### 2026-10-07 (lane d-mid3): records read, the node is one coloured web; 18-cell product flat
+
+Records (instrumented uopt, CDX_PROC=0, .text byte-identical to the stock
+compile): the node is web 63, save 13.33 (80/6), coloured s4 at the 12.5
+toll; it is not split, and no decision=split record touches it. The
+model pointer is web 26 (a1). So in this body there is no globalcolor
+split that could produce the target's s3 and s5 pair: two webs have to
+exist before colouring.
+
+Read from the target listing: the second copy (s5) is taken after the
+state-index store and serves only the vertex-data word; the display-list
+pick re-reads node->data through v0 (the node temporary, not s3) in the
+alpha test's delay slot, while the model stays in a1 for the special
+byte and mode4E. So the target's re-read is based on the expression
+temporary for the node, which both node variables copy.
+
+Product, axes N (padNode as a second node variable: none, re-read of
+object->nodes[object->nodeIndex] before the alpha test, or a copy of
+node), V (stateIndex volatile) and D (display-list pick through model,
+node->data, or an s32 view of the node's first word), 18 cells:
+
+- every N2 (copy) cell equals its N0 cell: the copy is propagated;
+- N1 (re-read) is 325 to 354 at +12 to +36: the re-read reloads the
+  nodes array instead of reusing the node temporary;
+- D1 (node->data at the pick) with V0: uopt copies model into a0 and
+  uses v0, 313 at +4; with V1 the volatile store kills node->data and both
+  arms reload it through s4 (333 at +8), not one load before the branch;
+- D2 (s32 view): 333 at +8 throughout;
+- base 267 at 0 unchanged (V alone is inert).
+
+Then measured: a second node variable (in the padNode cell) assigned
+from the same subscript directly after the first, used only for the
+vertex word. Chained (node = node2 = subscript) it is propagated and the
+object is the base (267 at 0). As a separate statement it survives as a
+second name (328 at +8): node keeps s4 (web 63, save now 60/6), but the
+second name gets no register at all; it is stored to its home at
+entry (sw at +0x1BC) and reloaded for the vertex word.
+
+Cycle-21 line: the decision variable is the second node name's
+allocation: it exists (separate-statement form) but is homed instead of
+coloured, where the target gives it s5 with the same single use. Read its
+p1dec record (CDX_DETAIL_WEB on the home's web) to see whether it is a
+register candidate at all; if it is excluded, find what makes it
+memory-class (its first use is in the drewObject block, after both matrix
+arms), and try the copy placed after the state-index store as shipped.
+
 <!-- plateau-handoff:overlay98RenderReflections:end -->

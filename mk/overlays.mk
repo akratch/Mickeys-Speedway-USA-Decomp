@@ -1246,6 +1246,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o025/overlay_025.c.o: POSTPROCESS = \
 		sha256:258adccbc890f89cf0c2393e490673ba6b5f4d39ca12eeeb9f7d74881dd69d02
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xAF4
+# The minimap renderer's rotated-coordinate products carry the R4300 FP-mul
+# hazard nops; without this pass the candidate is two words short.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x168
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o039/overlay_039.c.o: OPT_FLAGS := -O2 -Wo,-loopunroll,0

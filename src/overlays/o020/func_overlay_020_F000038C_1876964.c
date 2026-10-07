@@ -83,6 +83,13 @@ extern void *func_overlay_020_F0000000_18765D8();
  * argument copy ahead of the entry field loads and the epilogue's s0
  * restore ahead of s1; without it both are as shipped. uopt's records are
  * unchanged by the flag. Left: the copy/index+9 and row/index rankings.
+ * 2026-10-07 (lane i-2), 44 -> 34: the vertex index is the `size`
+ * temporary, not a variable of its own. The incremented copy then joins
+ * size's web (the target keeps both in s4), which drops it below index + 9
+ * and rows in the priority order: index + 9 takes s2 and rows s3 as
+ * shipped. Left: the merged web's save (55 over six blocks) puts it after
+ * far and the 64 constant (s6 here, s4 in the target), and the col & 7 web
+ * still outranks row.
  */
 #ifdef NON_MATCHING
 Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
@@ -93,7 +100,6 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
     s32 i;
     s32 row;
     s32 col;
-    s32 index;
     s32 far;
     s32 u0;
     s32 u1;
@@ -135,12 +141,12 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
                 u1 = (((col + 1) * grid->textureScaleX * texture->width) << 5) / grid->columns;
                 v0 = ((grid->textureScaleY * row * texture->height) << 5) / grid->rows;
                 v1 = (((row + 1) * grid->textureScaleY * texture->height) << 5) / grid->rows;
-                index = col & 7;
-                far = index + 10;
+                size = col & 7;
+                far = size + 10;
                 tri[0].flags = 0x40;
-                tri[0].vi0 = index;
-                tri[0].vi2 = index + 9;
-                tri[0].vi1 = index + 1;
+                tri[0].vi0 = size;
+                tri[0].vi2 = size + 9;
+                tri[0].vi1 = size + 1;
                 tri[0].uv0.u = u0;
                 tri[0].uv0.v = v0;
                 tri[0].uv1.u = u1;
@@ -148,9 +154,9 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
                 tri[0].uv2.u = u0;
                 tri[0].uv2.v = v1;
                 tri[1].flags = 0x40;
-                tri[1].vi0 = index + 1;
-                index += 9;
-                tri[1].vi1 = index;
+                tri[1].vi0 = size + 1;
+                size += 9;
+                tri[1].vi1 = size;
                 tri[1].vi2 = far;
                 tri[1].uv0.u = u1;
                 tri[1].uv0.v = v0;
@@ -176,10 +182,10 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
 
 /* PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:start
  * symbol: func_overlay_020_F000038C_1876964
- * score: 44 differing words
+ * score: 34/270 words
  * frame: 0x40
  * relocations: 3
- * first-mismatch: +0x54
- * summary: Inherited -O2 -g3 override removed: entry copy and epilogue now as shipped, 68 to 44. Left: copy/index+9 ranking (22) and row/index ranking (9).
+ * first-mismatch: +0x50
+ * summary: Vertex index in the size temporary: index + 9 s2, rows s3 as shipped, 44 to 34. Left: copy web save 55 (s6), col and 7 over row.
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

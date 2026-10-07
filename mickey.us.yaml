@@ -1187,6 +1187,7 @@ segments:
       - [0x186D564, c, func_overlay_012_F00002E4_186D564]
       - [0x186D628, c, func_overlay_012_F00003A8_186D628]
       - [0x186DB90, c, func_overlay_012_F0000910_186DB90]
+      - [0x186E51C, asm, overlay_012_padding]
       - [0x186E520, bin, overlay_012_data_rodata]
       - [0x186E670, bin, overlay_012_reloc1]
       - [0x186E7A8, bin, overlay_012_reloc2]

@@ -705,8 +705,24 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F00003A8_186D628.c.o: POS
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:43c85de24b2a93e5fd07941d9d508c8651dd80ad9465a64d0533fb6b19f4667d
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: CFLAGS += -Wab,-r4300_mul
+# Exact C. Its two float literals (0.01f, 1.8f) duplicate the retained
+# overlay rodata at +0xC/+0x10, after the three of
+# func_overlay_012_F00003A8_186D628: assert the pool by digest and anchor it
+# there. The seven resident callees go through the _o012Reloc surface.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: \
+	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o012/func_overlay_012_F0000910_186DB90.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x990
+	$(OBJCOPY) \
+		--redefine-sym func_800084C4=func_800084C4_o012Reloc \
+		--redefine-sym func_80023CCC=func_80023CCC_o012Reloc \
+		--redefine-sym func_80024938=func_80024938_o012Reloc \
+		--redefine-sym func_800349A4=func_800349A4_o012Reloc \
+		--redefine-sym func_80034DF0=func_80034DF0_o012Reloc \
+		--redefine-sym func_80034E48=func_80034E48_o012Reloc \
+		--redefine-sym sqrtf=sqrtf_o012Reloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x98C && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:7e3ad0b04bf68a26c81389889b86122d1edb7aa3b037cfa4f65e6f131a6ab4a7 0xC
 include mk/overlay_014.mk
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o036/overlay36CallGlobal.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x30

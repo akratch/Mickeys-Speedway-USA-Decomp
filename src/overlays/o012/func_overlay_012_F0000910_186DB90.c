@@ -53,41 +53,28 @@ extern u8 gOverlay12TrianglesB[];
              O12_SHIFTL(5, 24, 8) | O12_SHIFTL((count) * 16, 0, 16); \
     _g->w1 = (u32)(address); \
 }
-#define OVERLAY12_EMIT(cursor, first, second) do { \
-    Overlay12Gfx *command = (cursor)++; \
-    command->w0 = (first); \
-    command->w1 = (second); \
-} while (0)
+#define OVERLAY12_EMIT(cursor, first, second) { \
+    Overlay12Gfx *_g = (Overlay12Gfx *)((cursor)++); \
+    _g->w0 = (first); \
+    _g->w1 = (second); \
+}
 
 /*
  * JFG's bloodSpurtsDraw is the closest masked-skeleton sibling, but its
  * public source is GLOBAL_ASM. This body is reconstructed from Mickey only.
  */
-/* Rewritten from the listing (lane c-o012, 2026-10-07): 569 -> 461
- * masked; lane h-8 (2026-10-07): 461 -> 429 masked, byte-exact rows 196 ->
- * 338. The colour words keep their stack homes and are masked into separate
- * locals; the volatile zero is stored after the three pointer loads and
- * never read, beside an unused s16 that puts it on the target's half-word;
- * declaration order reproduces the target's home ladder; the vertex packet
- * is the objects.c vertex/polygon command pair; the quad corners are written
- * through a walking pointer (the target's +0x1E base with negative
- * displacements); the collision vector is read through a pointer taken
- * before the clamp (the target's effect+0x2C base); the lifetime alpha is an
- * if/else; the secondary colour is one expression; in case 2 and the
- * particle loop the three colour PRODUCTS are s32 locals and the shift and
- * mask are written at the call (v1, t0, t1 as shipped). factor is set to
- * 2.0f before the distance call and the scaled distance added after the
- * clamp: the extra definition gives the 2.0f constant web the second
- * reference that ranks it above 1024.0f (f28 as shipped, 1.0f no longer
- * coloured), 429 at -8 -> 180 at delta 0. The four vertex colour writes
- * are one counted loop (IDO unrolls it; the loop weight puts the u8 255 in
- * s0 ahead of the effect pointer), 180 -> 122. Case 1 scales the three
- * velocity components in place (f20-f24 as shipped) and the secondary
- * colour is written red, green, blue (ugen then evaluates blue, red,
- * green as shipped), 122 -> 64. Case 1 keeps its scale in distance, so
- * factor is a resource-block value only (the distance, factor and centre
- * webs then take f2, f0, f12 as shipped), 64 -> 43. */
-#ifdef NON_MATCHING
+/*
+ * Matched 2026-10-07 (lane i-2) after rewrites by lanes c-o012 and h-8.
+ * Reconstructed from the listing: the GBI-style packet macros are bare
+ * braces (a do/while(0) form cut the resource block into extra uopt
+ * blocks); the vertex colour writes are one counted loop IDO unrolls;
+ * factor is set to 2.0f before the distance call and the scaled distance
+ * added after the clamp; case 1 scales the velocities in place through
+ * distance; the masked colour words are s32 and the primary colour's first
+ * term is cast to u32 (operand order of the ors); the case-2 and particle
+ * colour components are masked into their locals before the call; both
+ * loops initialise their cursor in the for-init.
+ */
 void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                                        s32 *matrixPtr,
                                        Overlay12Vertex **verticesPtr) {
@@ -98,8 +85,8 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     s32 intensity;
     u32 primary;
     u32 secondary;
-    u32 maskedPrimary;
-    u32 maskedSecondary;
+    s32 maskedPrimary;
+    s32 maskedSecondary;
     s32 blue;
     s32 red;
     f32 previous[3];
@@ -128,12 +115,11 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     matrix = *matrixPtr;
     vertices = *verticesPtr;
     unused = 0;
-    effect = gOverlay12Effects;
-    for (i = 0; i < 64; i++, effect++) {
+    for (i = 0, effect = gOverlay12Effects; i < 64; i++, effect++) {
         if (effect->active != 0) {
             intensity = effect->scaleX;
             component = ((intensity * 255) >> 5) & 0xFF00;
-            primary = component | (component << 8) | (component << 16) | 0xFF;
+            primary = (u32)component | (component << 8) | (component << 16) | 0xFF;
             color = &gOverlay12EffectColors[effect->type * 3];
             secondary = ((intensity * color[0] << 11) & 0xFF000000) |
                         ((intensity * color[1] * 8) & 0xFF0000) |
@@ -232,11 +218,11 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             break;
         case 2:
             color = &gOverlay12EffectColors[effect->type * 3];
-            red = color[0] * intensity;
-            green = color[1] * intensity;
-            blue = color[2] * intensity;
+            red = ((color[0] * intensity) >> 13) & 0xFF;
+            green = ((color[1] * intensity) >> 13) & 0xFF;
+            blue = ((color[2] * intensity) >> 13) & 0xFF;
             alpha = ((intensity * 255) >> 13) & 0xFF;
-            func_80034DF0(alpha, alpha, alpha, (red >> 13) & 0xFF, (green >> 13) & 0xFF, (blue >> 13) & 0xFF);
+            func_80034DF0(alpha, alpha, alpha, red, green, blue);
             func_80023CCC(&displayList, &matrix, &vertices,
                           gOverlay12Resource5,
                           (s32)effect->x0, (s32)effect->y0, (s32)effect->z0,
@@ -247,16 +233,15 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
         }
     }
 
-    particle = gOverlay12Particles;
-    for (i = 0; i < 5; i++, particle++) {
+    for (i = 0, particle = gOverlay12Particles; i < 5; i++, particle++) {
         if (particle->active != 0) {
             color = &gOverlay12ParticleColors[particle->variant * 3];
             intensity = particle->type;
-            red = color[0] * intensity;
-            green = color[1] * intensity;
-            blue = color[2] * intensity;
+            red = ((color[0] * intensity) >> 8) & 0xFF;
+            green = ((color[1] * intensity) >> 8) & 0xFF;
+            blue = ((color[2] * intensity) >> 8) & 0xFF;
             alpha = ((intensity * 255) >> 8) & 0xFF;
-            func_80034DF0(alpha, alpha, alpha, (red >> 8) & 0xFF, (green >> 8) & 0xFF, (blue >> 8) & 0xFF);
+            func_80034DF0(alpha, alpha, alpha, red, green, blue);
             func_80023CCC(&displayList, &matrix, &vertices,
                           gOverlay12Resource5,
                           (s32)particle->x, (s32)particle->y, (s32)particle->z,
@@ -269,16 +254,3 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     *matrixPtr = matrix;
     *verticesPtr = vertices;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o012/func_overlay_012_F0000910_186DB90/func_overlay_012_F0000910_186DB90.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:start
- * symbol: func_overlay_012_F0000910_186DB90
- * score: 43 differing words
- * frame: 0x148
- * relocations: 38
- * first-mismatch: +0xC4
- * summary: Case 1 scales through distance: FP triple as shipped, 64 to 43 at 0, all naming. Open: alpha t0, packet cursor a1, ring.
- * PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:end
- */

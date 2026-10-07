@@ -2,11 +2,11 @@
 ### `func_overlay_073_F0000190_18CAC50` plateau handoff
 
 - source: `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c`
-- score: 48 differing words
+- score: 35 differing words
 - frame: 0x98
 - relocations: 46
-- first mismatch: +0x1E4
-- summary: 33 masked at size 0; case 4 query schedule and index web, float colours f0/f2 in the velocity blocks, float-rate spill +0x30 not +0x34.
+- first mismatch: +0x2B8
+- summary: 20 masked at size 0; case 3 velocity zero colour, case 1 dz reload colour, float-rate spill +0x30 not +0x34, case 4 query index web.
 
 Summary before this remeasure: 153 masked at size 0; target is two ring draws ahead from the case 1 angle difference; float-rate spill at +0x30 not +0x34.
 
@@ -319,5 +319,17 @@ structural rows.
 - With the ring in phase, the velocity blocks of cases 3 and 4 read
   `((Func073Target *)state->target)->data->y` at the use, with no
   `data` local: 131 to 74 (case 3) to 33 (case 4) at size 0.
+
+- The first height difference in cases 1 and 3 (velocity steering) is
+  its own float local, `height`, declared in the dead s32 pad's slot
+  (pad replaced, frame unchanged); reusing `limit` or `dy` keeps one
+  web whose colour is f2 where the target has f0. 33 to 20 at size 0.
+  A new f32 declared elsewhere shifts every home (43 immediate rows).
+- Remaining 20: the case 3 velocity zero is f14 where the target has
+  f2 (int-zero against `0.0f` on the four compares: 16 cells, only
+  the all-int cell holds size 0); case 1 sqrtf reload of dz into f14
+  where the target uses f18; the float-rate spill +0x30 against +0x34;
+  and the case 4 query (narrowing schedule order and `hitIndex - 1`
+  coloured a1 in the target, a ring temp here).
 
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

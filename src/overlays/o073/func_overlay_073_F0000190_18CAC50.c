@@ -96,7 +96,7 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
     s32 horizontal;
     s32 vertical;
     s32 phase;
-    s32 stateAngle;
+    f32 height;
     s16 absStep;
     s16 delta;
     f32 dx;
@@ -166,16 +166,16 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
             }
         }
 
-        dy = state->y - object->y;
-        if (dy < 0) {
+        height = state->y - object->y;
+        if (height < 0) {
             object->velocityY -= D_24 * (f32)updateRate;
-            if (object->velocityY < dy) {
-                object->velocityY = dy;
+            if (object->velocityY < height) {
+                object->velocityY = height;
             }
-        } else if (dy > 0) {
+        } else if (height > 0) {
             object->velocityY += D_28 * (f32)updateRate;
-            if (dy < object->velocityY) {
-                object->velocityY = dy;
+            if (height < object->velocityY) {
+                object->velocityY = height;
             }
         } else {
             object->velocityY = 0;
@@ -250,16 +250,16 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
                 }
             }
 
-            dy = ((Func073Target *)state->target)->data->y - object->y;
-            if (dy < 0) {
+            height = ((Func073Target *)state->target)->data->y - object->y;
+            if (height < 0) {
                 object->velocityY -= D_30 * (f32)updateRate;
-                if (object->velocityY < dy) {
-                    object->velocityY = dy;
+                if (object->velocityY < height) {
+                    object->velocityY = height;
                 }
-            } else if (dy > 0) {
+            } else if (height > 0) {
                 object->velocityY += D_34 * (f32)updateRate;
-                if (dy < object->velocityY) {
-                    object->velocityY = dy;
+                if (height < object->velocityY) {
+                    object->velocityY = height;
                 }
             }
 
@@ -410,10 +410,10 @@ common:
 
 /* PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:start
  * symbol: func_overlay_073_F0000190_18CAC50
- * score: 48 differing words
+ * score: 35 differing words
  * frame: 0x98
  * relocations: 46
- * first-mismatch: +0x1E4
- * summary: 33 masked at size 0; case 4 query schedule and index web, float colours f0/f2 in the velocity blocks, float-rate spill +0x30 not +0x34.
+ * first-mismatch: +0x2B8
+ * summary: 20 masked at size 0; case 3 velocity zero colour, case 1 dz reload colour, float-rate spill +0x30 not +0x34, case 4 query index web.
  * PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:end
  */

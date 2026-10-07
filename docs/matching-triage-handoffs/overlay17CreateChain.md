@@ -2,11 +2,13 @@
 ### `overlay17CreateChain` plateau handoff
 
 - source: `src/overlays/o017/overlay17CreateChain.c`
-- score: 36 differing words
+- score: 24 differing words
 - frame: 0x80
 - relocations: 7
 - first mismatch: +0x3C
-- summary: Authenticated allocation/material/endpoint calls: 65 to 45; all three call identities align. The independently owned template extent is 16 records; faithful pass captures retain one baseline address definition and two in the branch-local diagnostic. Pre-call size is already coloured a2; five candidate relocations still differ from seven target records.
+- summary: count stored before dirty/selectedBuffer: 36 to 24 at delta 0. Open: the size web's def-only pre-call piece, and one ring draw on the arm-exact 46 shape.
+
+Summary before this remeasure: Authenticated allocation/material/endpoint calls: 65 to 45; all three call identities align. The independently owned template extent is 16 records; faithful pass captures retain one baseline address definition and two in the branch-local diagnostic. Pre-call size is already coloured a2; five candidate relocations still differ from seven target records.
 
 Summary before this remeasure: Declaration order and chain->red masked with 0xFF (ring phase): 115 to 83. Template-loop webs rotate one position; halfBufferBytes in a3 not t7.
 
@@ -325,5 +327,45 @@ So the target needs both the split and an uncoloured pre-call piece. The
 next step is the post-split pre-call piece's record: why the target leaves
 it uncoloured with v0 free, or whether its web is never formed. It is not a
 source-spelling question.
+
+#### 2026-10-07, lane f-o069: count stored first, 36 to 24; the arm shape and the size web
+
+Configured full-TU baseline re-scored 36 masked at delta 0, first +0x3C.
+
+- Kept: `chain->count = count;` moved before `chain->dirty = 1;` and
+  `chain->selectedBuffer = 0;` (the target loads count at the head of the
+  join block and as1 copies the load into both predecessors' delay slots):
+  36 to 24 at delta 0, aligned 173 exact, 14 naming, 0 immediate, 10
+  structural. The other three orders of those stores score 25, 33 and 36.
+- The size web (web 12: totalsave 4 against bestcost 3, coloured a2, blocks
+  2-7) did not move under: the embedded assignment
+  `alloc(header + (halfBufferBytes = count * 20) * 2)` and three spellings
+  of it (37, only the addu operand order moves); a separate `size` local
+  copied into halfBufferBytes (59, frame +8); `count * 40` and
+  `((count * 5) << 2) * 2` for the allocation (192 at +8, no CSE with the
+  variable); a one-element array home (138: the pre-call piece then
+  matches, `sw t7` from the ring and the shift from the temp, but both arms
+  reload per use and the home moves); address-taken (149); volatile (184 at
+  +4); a one-member struct or union (36, treated as the scalar). The target's
+  shape is a def-only pre-call piece (store to the home, shift from the
+  expression temp) and a coloured post-call piece reloaded once before the
+  arm branch and spilled across the texture call; no spelling here produced
+  it. Next: the records for a form whose pre-call shift reads the expression
+  temp rather than the variable.
+- Template arm. With source assigned inside the material arm and the else
+  arm storing the global directly, the order source, destination,
+  `chain->template = destination`, scales, index gives the whole arm and
+  loop body byte-exact (46 at delta 0, Q2); the residual is then the size
+  web plus one ring position from the endpoint-call argument addresses
+  onward (ours t2 t3 t4 for x1 y1 z1 against t1 t2 t3, every later ring
+  draw one ahead). Any order with destination before source splits the
+  destination into a pre-loop piece and a loop piece with a preheader copy
+  (54 to 76); destination or source assigned before the if also copies
+  (24 is that shape). The two 60.5-save loop webs (source, destination)
+  tie and the lower web number takes v0, so source must be numbered first.
+  The 46 shape is not kept because its count is above the kept 24; it is
+  the structural lead. Next on it: find the one extra ring draw between the
+  template loop and the join block (the else arm's `la` is a ring draw in
+  ours; the target forms that constant before the branch).
 
 <!-- plateau-handoff:overlay17CreateChain:end -->

@@ -169,4 +169,12 @@ measured (copy, chained assignment, reload, cast round-trip, 192 cells
 with the packet forms) creates it at delta 0. Block-scoped GBI-style
 packet macros give -12 as well.
 
+#### 2026-10-07 (lane c-ovla): second node web, two products, no change
+
+Read from the aligned listing: the target loads the node into v0, copies it to s3 at the model load and to s5 just before the alpha test, and the alpha test's display-list pick re-reads `->data` through v0 into a0 while the model stays in a1. That is either two source variables neither of which uopt copy-propagates, or a globalcolor split of one node web.
+
+- A second node variable in the `padNode` cell (frame unchanged), typed s32, u32, O98Node pointer or void pointer, assigned at the node load, after the state-index store or before the alpha test, used for the display-list pick and/or the vertex-data word: 36 cells, every one 267 at delta 0 (uopt propagates the copy in every form).
+- The same variable assigned from a re-read of `object->nodes[object->nodeIndex]` (plain or through an s32 view of the slot) at the three positions: 313 to 361, all at +4 to +32.
+
+Next: dump the records for the node web and read whether it is offered a split (decision=split) in any form; a variable whose copy uopt keeps needs a redefinition of one of the two between the copy and its uses, which the listing does not show.
 <!-- plateau-handoff:overlay98RenderReflections:end -->

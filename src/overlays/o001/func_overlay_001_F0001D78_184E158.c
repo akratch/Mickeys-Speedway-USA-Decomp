@@ -129,10 +129,14 @@ extern f32 gO1RankWeights[];
  * (STATE_W) before the first direction test and from the second owner-mode
  * update on gives those reads their own webs, which take a1 as shipped
  * (263 -> 219 at size 0); the lap-logic stretch between still shares one
- * web that colours a2. */
+ * web that colours a2. 2026-10-07 c-ovla: the list loop holds each
+ * object in its own local `ref` (a declared local is never a ring temp, so
+ * it takes a0 and the counter and cursor move to a1/a2 as shipped), the
+ * player-count compare is written count first, the lap compares state
+ * first, and the position sum offset first: 219 -> 131 at size 0. */
 #ifdef NON_MATCHING
 void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 count) {
-    s32 padA;
+    Overlay1ObjectRef *ref;
     s32 padB;
     s32 switched;
     s32 objectCount;
@@ -155,7 +159,7 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
         STATE_W->selectorCopy = STATE_W->selector;
     }
     if (!(STATE_W->flags & 8)) {
-        position = (f32)(STATE_W->modeIndex * D_1D8C) + STATE_W->offset;
+        position = STATE_W->offset + (f32)(STATE_W->modeIndex * D_1D8C);
     }
     switched = 0;
     if (!(STATE_W->flags & 8)) {
@@ -175,7 +179,7 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
                     STATE->modeIndex++;
                     D_1DC8[STATE->modeIndex]++;
                     STATE->nextMode = D_1DD0[STATE->modeIndex];
-                    if (level->laps == STATE->modeIndex) {
+                    if (STATE->modeIndex == level->laps) {
                         STATE->split[2] = (STATE->total / 3 - STATE->split[1] / 3 - STATE->split[0] / 3) * 3;
                     }
                     if (STATE->modeIndex < 0) {
@@ -190,7 +194,7 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
                     if (STATE->maxIndex < STATE->modeIndex) {
                         STATE->maxIndex = STATE->modeIndex;
                     }
-                    if (level->laps == STATE->modeIndex && G_o1_83e0 == 1 && !(STATE->flags & 1)) {
+                    if (STATE->modeIndex == level->laps && G_o1_83e0 == 1 && !(STATE->flags & 1)) {
                         if (results->mode == 1) {
                             valid = 0;
                             table = func_800291C4();
@@ -219,19 +223,20 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
                         }
                     }
                     if (STATE->modeIndex > 0) {
-                        if (level->laps == STATE->modeIndex + 1) {
+                        if (STATE->modeIndex + 1 == level->laps) {
                             overlay7UpdateOwnerMode(D_1D9C, level->laps);
-                        } else if (level->laps == STATE->modeIndex) {
+                        } else if (STATE->modeIndex == level->laps) {
                             overlay7UpdateOwnerMode(D_1D9C, level->laps);
                             if (!(STATE_W->flags & 1)) {
                                 G_o1_83e0--;
                                 STATE_W->flags |= 0x11;
                             }
                             gO1Finishers++;
-                            if (gO1FinishEnabled != 0 && G_o1_83e0 == 1 && gO1Finishers + 1 == gO1PlayerCount) {
+                            if (gO1FinishEnabled != 0 && G_o1_83e0 == 1 && gO1PlayerCount == gO1Finishers + 1) {
                                 i = objectCount;
                                 while (i--) {
-                                    list[i]->state->flags |= 1;
+                                    ref = list[i];
+                                    ref->state->flags |= 1;
                                 }
                                 G_o1_83e0 = 0;
                                 func_8003A55C(0x1B);
@@ -305,10 +310,10 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
 
 /* PLATEAU-HANDOFF:func_overlay_001_F0001D78_184E158:start
  * symbol: func_overlay_001_F0001D78_184E158
- * score: 219/627 words
+ * score: 131/627 words
  * frame: 0x70
  * relocations: 185
- * first-mismatch: +0xB4
- * summary: State read as a word outside the lap logic gets its own a1 webs: 263 to 219 at delta 0; open: lap-logic state web colours a2 (records in shard).
+ * first-mismatch: +0x174
+ * summary: List-loop element local, count-first and state-first compares, offset-first sum: 219 to 131 at delta 0; open: lap-logic state web a2 (target a1).
  * PLATEAU-HANDOFF:func_overlay_001_F0001D78_184E158:end
  */

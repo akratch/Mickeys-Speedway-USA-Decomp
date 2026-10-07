@@ -97,7 +97,15 @@ extern void overlay36ReleaseEntityReloc(Overlay36Entity *entity);
 extern void overlay36AnimateReloc(void *resource, s32 *mode, s32 count,
                                   void *angles, s32 elapsed);
 
-#ifdef NON_MATCHING
+/* Matched (lane c-ovla, 2026-10-07) from the a-ovl3 natural rewrite by:
+ * the record base taken at entry; the countdown and timer each copied
+ * after their nonzero test, the compare reading the field and the
+ * subtraction the copy (the timer's copy is the loop counter `count`, the
+ * countdown's a separate `temp` that the marker test reuses, which gives
+ * it the save to take v0 ahead of the countdown load); a `hit` local for
+ * the found object and a separately named reload of the slot for the
+ * state pointer; and found[9], an unobservable length that pays for the
+ * extra cell so the frame stays 0x80. */
 void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
                                        s32 elapsed) {
     Overlay36State *state;
@@ -106,23 +114,26 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
     s32 kind;
     f32 deltaY;
     s32 animation;
-    Overlay36Found *found[10];
+    s32 temp;
+    Overlay36Found *found[9];
     Overlay36FoundState *foundState;
+    Overlay36Found *hit;
 
     state = entity->state64;
+    record = gOverlay36Records;
     gOverlay36Elapsed = elapsed;
     gOverlay36CurrentEntity = entity;
     gOverlay36CurrentState = entity->state64;
 
-    count = state->countdownB;
-    if (count != 0) {
-        if (elapsed >= count) {
+    if (state->countdownB != 0) {
+        temp = state->countdownB;
+        if (elapsed >= state->countdownB) {
             state->countdownB = 0;
             overlay36ExpireReloc();
             return;
         }
-        if (count != 0xFF) {
-            state->countdownB = count - elapsed;
+        if (temp != 0xFF) {
+            state->countdownB = temp - elapsed;
         }
     }
 
@@ -136,7 +147,6 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
         }
     }
 
-    record = gOverlay36Records;
     count = 13;
     do {
         if (kind == record->kind0) {
@@ -146,10 +156,11 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
     } while (count--);
 
     if (state->timer4 != 0) {
+        count = state->timer4;
         if (elapsed >= state->timer4) {
             state->timer4 = 0;
         } else {
-            state->timer4 -= elapsed;
+            state->timer4 = count - elapsed;
         }
         if (record->timerCallback4 != 0) {
             record->timerCallback4(entity, elapsed);
@@ -194,8 +205,9 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
         return;
     }
 
-    if (entity->marker50 != 0) {
-        entity->marker50->active4 = 1;
+    temp = (s32)entity->marker50;
+    if (temp != 0) {
+        ((Overlay36Marker *)temp)->active4 = 1;
     }
 
     if (state->countdownB != 0) {
@@ -212,12 +224,16 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
 
     if (overlay36QueryReloc(entity->xC, entity->y10, entity->z14,
                             record->queryRadius2C, 1, found) != 0) {
-        deltaY = found[0]->y10 - entity->y10;
+        hit = found[0];
+        deltaY = hit->y10 - entity->y10;
         if ((record->minimumY30 < deltaY) && (deltaY < record->maximumY34)) {
-            foundState = found[0]->state64;
+            /* The target reloads found[0] here instead of reusing hit's
+             * register; an s32 read of the slot is a separate IR name, so
+             * uopt does not CSE it with hit's load. */
+            foundState = ((Overlay36Found *)*(s32 *)&found[0])->state64;
             if (state->flags6 & 2) {
                 if (record->alternateCallbackC != 0) {
-                    record->alternateCallbackC(found[0], entity);
+                    record->alternateCallbackC(hit, entity);
                 }
                 if (record->alternateEffect1E != 0) {
                     overlay36CreateEffectReloc(record->alternateEffect1E,
@@ -226,7 +242,7 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
                 }
             } else {
                 if (record->normalCallback8 != 0) {
-                    record->normalCallback8(found[0], entity,
+                    record->normalCallback8(hit, entity,
                                             record - gOverlay36Records,
                                             record->callbackArg2);
                 }
@@ -245,16 +261,3 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o036/overlay36UpdateInteractiveEntity/func_overlay_036_F00001D0_1883688.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay36UpdateInteractiveEntity:start
- * symbol: overlay36UpdateInteractiveEntity
- * score: 229 differing words
- * frame: 0x80
- * relocations: 24
- * first-mismatch: +0x2C
- * summary: Natural rewrite, frame exact, aligned 252/305 exact (was 187); left: countdown/timer split copies, remap hoist, found reload.
- * PLATEAU-HANDOFF:overlay36UpdateInteractiveEntity:end
- */

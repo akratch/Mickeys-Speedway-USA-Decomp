@@ -1648,7 +1648,18 @@ gOverlay36QueueBase = 0x00000000;
 overlay36QueueActionReloc = 0xf0000000;
 
 /* overlay 36: overlay36UpdateInteractiveEntity.c.o */
-D_B0 = 0x000000b0;
+gOverlay36CurrentEntity = 0x0000014c;
+gOverlay36CurrentState = 0x00000150;
+gOverlay36CurrentValue = 0x00000000;
+gOverlay36Elapsed = 0x00000148;
+gOverlay36Records = 0x000000b0;
+gOverlay36RemapEnabled = 0x00000000;
+overlay36AnimateReloc = 0xf0000000;
+overlay36ApplyPositionReloc = 0xf00000d4;
+overlay36CreateEffectReloc = 0xf0000000;
+overlay36ExpireReloc = 0xf0000000;
+overlay36ReleaseEntityReloc = 0xf0000000;
+overlay36UpdateReloc = 0xf0000000;
 
 /* overlay 36: overlay36SpawnTransient.c.o */
 overlay36SpawnReloc = 0xf0000000;

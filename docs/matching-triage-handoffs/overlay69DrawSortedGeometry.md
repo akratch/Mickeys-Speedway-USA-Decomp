@@ -300,4 +300,29 @@ temp, which this block has none of after the call. Cycle-21 line unchanged:
 instrument f_eval_2ops for its operand-order rule, since the value-first
 order and one draw are all that separate this block from the target.
 
+#### 2026-10-07, lane g-5: the geometry value through a reused pointer local
+
+Kept body re-scores 57 at delta 0, first +0x3DC (fast_score). One product,
+none kept: the geometry value computed into an existing pointer local
+(`vector` or `entry`, both dead after the call's arguments, so no new frame
+cell) and stored from it, with that assignment placed before the refs
+store, after it, or embedded in the geometry store, and the stores in
+refs-geometry-keys or refs-keys-geometry order. Eight cells: 281 to 316 at
++8 or +12. The local is coloured and its definition and store become
+separate statements, so the block grows instead of gaining a ring draw.
+
+Read (no build): in the decompiled ugen, `f_eval_2ops` orders a binary
+node's operands by the register-need byte at node offset 22, but the ISTR
+case of `f_eval` does not use it: it calls `f_eval` on the value operand
+unconditionally first and only then evaluates the address's register part.
+So value-first is the code path, not a measured tendency; address-first is
+closed for every store spelling, as f-o069 found.
+
+Cycle-21 line unchanged: one ring draw at the head of the geometry
+statement, which must come from a value-side construct (a draw-and-free on
+the value path before the index load). Next: instrument a value whose
+evaluation ugen begins with a register it frees without emitting (a CSE
+reload f_load_cse declines, or a cvt that f_eval_int_int_cvt folds), and
+read the trace on the refs-geometry-keys order.
+
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

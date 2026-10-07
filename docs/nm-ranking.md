@@ -257,7 +257,7 @@ Text outside the markers remains authored and is preserved byte-for-byte.
 > `config/nonmatching-ranking.us.json`. Do not edit this region by hand;
 > `--check-doc` and `gmake check-docs` fail on any drift.
 
-The snapshot contains **21 queued identities**: **21 resolved measurements** and **0 unresolved identities**. Resolved target size totals **45,900 bytes (44.8 KiB)**.
+The snapshot contains **21 queued identities**: **21 resolved measurements** and **0 unresolved identities**. Resolved target size totals **47,900 bytes (46.8 KiB)**.
 
 Resolved rows span **7 overlays** and **1 resident TU group** (`main`).
 
@@ -283,7 +283,7 @@ Relocation-masked mismatch evidence covers **21 / 21** resolved rows. The raw co
 | raw `differing_words <= 10` | 2 |
 | relocation-masked `differing_words <= 10` | 4 |
 | raw `differing_words <= 20` | 4 |
-| relocation-masked `differing_words <= 20` | 4 |
+| relocation-masked `differing_words <= 20` | 5 |
 
 ### Complete ranked queue
 
@@ -297,13 +297,13 @@ units remain distinct.
 | 2 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
 | 3 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 10 | 10 | 88 | 88 | 0 | — |
 | 4 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
-| 5 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 34 | 34 | 80 | 80 | 0 | — |
-| 6 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `other` | 1,788 | 55 | 45 | 324 | 656 | 0 | — |
-| 7 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
-| 8 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 116 | 116 | 1,864 | 1,864 | 0 | — |
-| 9 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 136 | 136 | 216 | 216 | 0 | — |
-| 10 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 165 | 165 | 36 | 36 | 0 | — |
-| 11 | `src/main/fx.c` | `wakeUpdate` | `main` | `other` | 1,592 | 170 | 170 | 192 | 192 | 0 | — |
+| 5 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 49 | 14 | 156 | 2,360 | 0 | — |
+| 6 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 34 | 34 | 80 | 80 | 0 | — |
+| 7 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `other` | 1,788 | 55 | 45 | 324 | 656 | 0 | — |
+| 8 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
+| 9 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 116 | 116 | 1,864 | 1,864 | 0 | — |
+| 10 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 136 | 136 | 216 | 216 | 0 | — |
+| 11 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 165 | 165 | 36 | 36 | 0 | — |
 | 12 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
 | 13 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 380 | 380 | 0 | 0 | 0 | — |
 | 14 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 392 | 392 | 112 | 112 | 0 | — |

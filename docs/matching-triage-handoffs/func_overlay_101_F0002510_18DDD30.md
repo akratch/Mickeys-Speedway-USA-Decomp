@@ -2,7 +2,7 @@
 ### `func_overlay_101_F0002510_18DDD30` plateau handoff
 
 - source: `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c`
-- score: 90 differing words
+- score: 90/293 words
 - frame: 0xE8
 - relocations: 6
 - first mismatch: +0x70
@@ -330,4 +330,17 @@ Measured negative: bottom carried in a register local (a new local, or reusing c
 
 Cycle-21: the decision variable is whether bottom's load is a uopt web. Read why left and top become load webs here and bottom and right do not (their block spans and use counts in the records), and find the source in which bottom's load is a web coloured ahead of the y sum. No register-local spelling reaches it.
 
+#### 2026-10-07, lane i-3: why bottom is not a web, read from the records
+
+Measured by tools/bank.py: masked 90 (raw 90), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 229, register naming 36, immediate only 4, really different 33.
+
+On the 90 body (90 masked, size delta 0, aligned exact 229, naming 36, immediate 4, really different 33). web_report, proc 0, identity gate passed, 64 decisions.
+
+- left (web 43) and top (web 50) are symbol webs of the address-taken locals, not load expressions. left: occurrences bb8 (the third test), bb12 (the scissor call), bb19 (after the call), gross 4, chargeA 3, net 1, nocs 2, save 0.5, coloured a1. top: bb12, bb23, bb24 (its test block bb9 is not an occurrence), gross 4, chargeA 2, save 1.0, coloured s1.
+- right (web 33) has one occurrence, bb12, gross 1, chargeA 1, net 0, verdict 2: never coloured. Its test-1 use is not part of the web.
+- bottom (var -60) has no symbol web at all: it appears only inside expression webs (`bottom - drawY`, web 120). It is the one bound whose address reaches GetBounds through the stack (the fifth argument), the likely reason it is not a promotion candidate.
+
+The shipped code has bottom in v0, loaded in the second test's block and stored as the scissor call's fifth argument: a web over bb7 to bb12. So the target's bottom is either a promoted symbol (its address not escaping through memory) or an expression web whose two loads were made one. Neither is reachable by spelling the clip tests (the closed products above). No source cycle was spent here.
+
+Cycle-21: decide which. Compile the 90 body with the GetBounds call's fifth argument passed through a pointer local (`s32 *bottomOut = &bottom;`), or with bottom's uses after the call read from a copy, and read whether a bottom web appears in the p1 records (web_report) before scoring.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

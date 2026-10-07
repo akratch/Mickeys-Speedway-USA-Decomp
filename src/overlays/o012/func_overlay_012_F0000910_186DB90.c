@@ -75,9 +75,12 @@ extern u8 gOverlay12TrianglesB[];
  * before the clamp (the target's effect+0x2C base); the lifetime alpha is an
  * if/else; the secondary colour is one expression; in case 2 and the
  * particle loop the three colour PRODUCTS are s32 locals and the shift and
- * mask are written at the call (v1, t0, t1 as shipped). Open: the FP
- * constant ranking (2.0f must outrank 1024.0f; forcing it plus the s0/s1
- * swap scores 108 at delta 0, see the shard). */
+ * mask are written at the call (v1, t0, t1 as shipped). factor is set to
+ * 2.0f before the distance call and the scaled distance added after the
+ * clamp: the extra definition gives the 2.0f constant web the second
+ * reference that ranks it above 1024.0f (f28 as shipped, 1.0f no longer
+ * coloured), 429 at -8 -> 180 at delta 0. Open: the effect pointer and the
+ * u8 255 trade s0 and s1 (see the shard). */
 #ifdef NON_MATCHING
 void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                                        s32 *matrixPtr,
@@ -151,6 +154,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                 O12_GFX_VERTEX(displayList++, VA, VB, 4, 0);
                 O12_GFX_POLYGON(displayList++, gOverlay12QuadTriangles + 0x80000000, 2, 1);
 
+                factor = 2.0f;
                 distance = -func_80024938(effect->x0, effect->y0, effect->z0);
                 if (distance < 0.0f) {
                     distance = -distance;
@@ -163,7 +167,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                 if (distance > 1024.0f) {
                     distance = 1024.0f;
                 }
-                factor = 2.0f + (distance * 0.01f);
+                factor += distance * 0.01f;
                 centerX = collision[0] * factor + effect->x0;
                 centerY = collision[1] * factor + effect->y0;
                 centerZ = collision[2] * factor + effect->z0;
@@ -275,10 +279,10 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
 
 /* PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:start
  * symbol: func_overlay_012_F0000910_186DB90
- * score: 429 differing words
+ * score: 180 differing words
  * frame: 0x148
  * relocations: 38
- * first-mismatch: +0x54
- * summary: Walking quad pointer, collision pointer, product locals, alpha if/else: 461 to 429 at -8. Open: 2.0f must outrank 1024.0f.
+ * first-mismatch: +0x68
+ * summary: factor = 2.0f in an earlier block ranks 2.0f above 1024.0f: 429 at -8 to 180 at 0. Open: s0/s1 (effect pointer vs u8 255).
  * PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:end
  */

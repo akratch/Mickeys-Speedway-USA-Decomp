@@ -186,6 +186,6 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
  * frame: 0x40
  * relocations: 3
  * first-mismatch: +0x50
- * summary: Vertex index in the size temporary: index + 9 s2, rows s3 as shipped, 44 to 34. Left: copy web save 55 (s6), col and 7 over row.
+ * summary: Forces price 24 words as the size/far/64 web order (10 left: the copy is substituted at its store); six source products flat at 34.
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

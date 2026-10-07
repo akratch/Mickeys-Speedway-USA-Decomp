@@ -1954,6 +1954,12 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
  * the byte scale a ring temporary), the D_2208 angle read follows them,
  * and the `& 0xFF` mask on the mode entry is gone: its draw only stood in
  * for the order of these reads.
+ * 2026-10-07 (lane j-1), 45 -> 3: loop 3's `remaining = steps;` is written
+ * right after loop 2, not before loop 3. uopt then makes loop 3's first
+ * test value (the post-decrement temporary, v1) at loop 2's exit, so the
+ * step count is reloaded into v1 there and held to loop 3's guard, as
+ * shipped, instead of a ring temporary that rotated the ring for the rest
+ * of the function.  Left: the loop 2 call's argument reload order.
  * GLOBAL_ASM stays canonical. */
 extern s32 gO8P42A8GateReloc;
 #ifdef NON_MATCHING
@@ -2047,6 +2053,7 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
         actor->angle2 +=
             o8P42A8ApproachReloc(actor->angle2, targetAngle) >> 4;
     }
+    remaining = steps;
 
     if (state->velocity4 < 0.0f) {
         smoothing = -6.0f * acceleration * state->velocity4;
@@ -2081,7 +2088,6 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     } else {
         smoothing = 0.01f;
     }
-    remaining = steps;
     while (remaining--) {
         actor->motion24 += (targetMotion - actor->motion24) * smoothing;
         actor->motion28 += (targetHeight - actor->motion28) * smoothing;
@@ -2384,10 +2390,10 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000
- * score: 45/447 words
+ * score: 3/447 words
  * frame: 0xA0
  * relocations: 40
  * first-mismatch: +0x290
- * summary: Row index inline at both table reads, angle read after, no mode mask: 54 to 45. Left: the steps piece after loop 2 (v1) and one ring draw.
+ * summary: Loop 3 counter set after loop 2: steps reload is the v1 post-decrement temp, 45 to 3. Left: loop 2 a1 reload is a block-head piece reload.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
  */

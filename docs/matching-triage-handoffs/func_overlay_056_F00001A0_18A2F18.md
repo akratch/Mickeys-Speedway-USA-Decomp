@@ -2,11 +2,13 @@
 ### `func_overlay_056_F00001A0_18A2F18` plateau handoff
 
 - source: `src/overlays/o056/overlay_056.c`
-- score: 577 differing words
-- frame: 0x1F0
+- score: 542 differing words
+- frame: 0x1F8
 - relocations: 75
-- first mismatch: +0x0
-- summary: Natural rewrite: aligned 316/121/61/90, delta -8; open: mapY web 197 takes caller c29 (20.0) under the 20.75 callee toll, no f24.
+- first mismatch: +0x4
+- summary: r4300_mul, u8 colour params, ghost racer local, frame ladder: 577 at -8 to 542 at 0; open: mapY caller cost 20 vs toll 21.
+
+Summary before this remeasure: Natural rewrite: aligned 316/121/61/90, delta -8; open: mapY web 197 takes caller c29 (20.0) under the 20.75 callee toll, no f24.
 
 Summary before this remeasure: Colour table reconstructed as a field at overlay-data +0x50 (gOverlay56Data.colors[index]) so both marker sites emit lui plus scaled addu plus lw 0x50 off the data-section base, the live pointer the target already holds. Indexing gOverlay56Colors by name still costs an extra addiu per site. Minimap sprite identity is gOverlay56Resource, not a NULL-page load. Aligned split 132 naming 244 immediate 28 structural 216 versus the prior 130/237/28/223; size is 591 versus 581 (delta +40) because the colour loads add the four missing base words plus leftover surplus elsewhere. The eight-word hole at target +0x6D8 remains unpack schedule: the target shifts RGB immediately after the load (green, blue, then red in the mode-branch delay slot) while this candidate still unpacks in the call. Identity-gate passed with CDX_PROC=6. Do not colour-landscape until size delta is 0. Ghost slots at D_800D1494 (alpha 255) and D_800D1498 (alpha 85) are identified but naming them did not move the aligned residual. Next: force the AI-site unpack before the mode branch without extra copies, then the unsigned-float surplus around +0x498.
 
@@ -259,5 +261,51 @@ Cycle-21 line: two allocator facts remain, both priced in the records.
 mapY needs a third call crossing with its rebase still after
 func_8002A82C (or mapX a cheaper one); ghostAlpha needs racer's save above
 10. Neither is a spelling of the regions already measured.
+
+#### 2026-10-07 (lane d-mid3): flag, callee prototype, ghost racer, frame ladder; 577 at -8 to 542 at 0
+
+Aligned rows (residual_map --object), exact / naming / immediate /
+structural, one-sided words in brackets:
+
+- Entry (tree): 318 / 119 / 61 / 74 (7 and 9), 577 at -8.
+- Declaration order rebuilt from the target's home ladder (frame_census):
+  eight cells above count, seven between count and mapX (target +0x1B4),
+  three between mapX and mtxA, one between gameState and dl, six between
+  height and ghostAlpha, three after it. Frame 0x1F8 exact, every traffic
+  home on the target offset. The six GBI macros each declared a block
+  local _g, and block locals take frame cells below every function-scope
+  local; the target has room for none, so the packet cursor is one
+  function-scope local (it takes one of the top cells). 352 / 142 / 22 / 56.
+- func_8002F618's colour parameters u8 (the matched o052 prototype): the
+  ghost call's three colour words become one andi of ghostAlpha as shipped.
+- The ghost loop reads the racer through its own local (ghostRacer). With
+  racer one web over both loops it interferes with ghostAlpha and its save
+  (60/7) sits under ghostAlpha's 10; split, ghostAlpha takes s1 with the
+  shipped load before and store after the ghost loop (lw/sw 0x8C).
+- -Wab,-r4300_mul on the TU: the two missing words were the R4300 mul.s
+  hazard nops in the rotated-coordinate products (target +0x400, +0x408,
+  +0x830). Size delta -12 to 0. gmake verify passes with the flag (the
+  TU's other functions are unchanged). 356 / 134 / 31 / 55 (5 and 5),
+  542 masked at delta 0.
+
+Measured and not kept: u8 ghostAlpha (s1 but a byte home, the target's is
+a word), u8 red/green/blue locals (main-loop unpack regresses, 577),
+do-while wraps around the ghost colour statement (toll 21.5, no colour
+change), mapY as a repeated expression instead of a local (+32 bytes,
+587), the mapY offset add inlined into the matrixTranslate argument
+(578).
+
+Decision variable, priced on this body (instrumented uopt, CDX_PROC=6,
+.text identity-gated; web numbers are this compile's): mapY is web 194,
+save 12.5, caller cost 20 at c29 against the callee toll 21.0 (nBB 84;
+the target's branch and call census is identical, so its toll is too).
+Forcing p1:w194=c30 is accepted and scores 278 positional at -4 (frame
+then needs two cells fewer for the f24 save). Placing the rebase between
+func_800349A4 and func_8002A82C prices the web at caller 30 and it opens
+f20 unforced (355 at delta 0, but the offset loads then precede
+func_8002A82C, which the target does not do; aligned 153 / 62 / 51). The
+same blocks, the only change being which call block carries the
+reference, so the caller price is per call block, 1 unit when the web
+is transparent through it and 2 when it is referenced there.
 
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

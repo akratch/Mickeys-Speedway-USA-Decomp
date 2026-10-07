@@ -56,14 +56,18 @@ void overlay56ReleaseResource(void) {
     }
 }
 
-/* Natural-source rewrite (2026-10-07): 579/581 instructions, frame 0x1F0 against 0x1F8.
+/* Natural-source rewrite (2026-10-07): 581/581 instructions at size delta 0, frame 0x1F8.
  * Shape edits that moved it: GBI packet macros taking dl++, one shared loop index per
  * loop family (while (i--)), three distinct resident mode bytes (game mode, player count,
  * mirror) instead of one alias name, the colour word read from the table at each unpack
  * with no carrier local, mapY rebased in place (mapY += ...), an else-if ghost selector,
  * and x/z products written inline so mapY is not forwarded past the calls.
- * Open: mapY (records web 197) takes caller c29 at cost 20.0 against the 20.75 callee
- * toll (L56: nBB 83); the target spends f20 on it, and ghostAlpha likewise. */
+ * Lane d-mid3: -Wab,-r4300_mul (the target's mul.s hazard nops), func_8002F618's colour
+ * parameters u8 (o052's matched prototype; the ghost's one andi), a ghost-loop racer local
+ * of its own (ghostAlpha then takes s1 behind racer), the packet cursor at function scope
+ * and the declaration order that lands every home on the target's frame ladder.
+ * Open: mapY (records web 194) takes caller c29 at cost 20 against the 21.0 callee toll
+ * (nBB 84); the target spends f20 on it. */
 #ifdef NON_MATCHING
 typedef struct O56Gfx {
     u32 w0;
@@ -136,7 +140,7 @@ extern s32 frontGet2PlayerSplit(void);
 extern void func_8002FB34(O56Gfx **displayList, O56Marker *marker, f32 x, f32 y,
                          f32 scaleX, f32 scaleY, s32 colour, s32 flags);
 extern void func_8002F618(O56Gfx **displayList, O56Marker *marker, s32 x, s32 y,
-                         s32 red, s32 green, s32 blue, s32 alpha);
+                         u8 red, u8 green, u8 blue, s32 alpha);
 extern void func_800349A4(O56Gfx **displayList, void *texture, s32 mode,
                          s32 flags);
 extern void func_8002A82C(O56Mtx *matrix);
@@ -161,38 +165,34 @@ extern u8 D_80000004[];
 extern u8 D_80000030[];
 
 #define O56_SHIFTL(v, s, w) ((unsigned int)(((unsigned int)(v) & ((0x01 << (w)) - 1)) << (s)))
-#define O56_PIPESYNC(pkt) { O56Gfx *_g = (O56Gfx *)(pkt); _g->w0 = O56_SHIFTL(0xE7, 24, 8); _g->w1 = 0; }
-#define O56_SCISSOR(pkt, mode, ulx, uly, lrx, lry) { O56Gfx *_g = (O56Gfx *)(pkt); \
+#define O56_PIPESYNC(pkt) { _g = (O56Gfx *)(pkt); _g->w0 = O56_SHIFTL(0xE7, 24, 8); _g->w1 = 0; }
+#define O56_SCISSOR(pkt, mode, ulx, uly, lrx, lry) { _g = (O56Gfx *)(pkt); \
     _g->w0 = O56_SHIFTL(0xED, 24, 8) | O56_SHIFTL((int)((float)(ulx) * 4.0F), 12, 12) | \
              O56_SHIFTL((int)((float)(uly) * 4.0F), 0, 12); \
     _g->w1 = O56_SHIFTL(mode, 24, 2) | O56_SHIFTL((int)((float)(lrx) * 4.0F), 12, 12) | \
              O56_SHIFTL((int)((float)(lry) * 4.0F), 0, 12); }
-#define O56_DMA1P(pkt, c, s, l, p) { O56Gfx *_g = (O56Gfx *)(pkt); \
+#define O56_DMA1P(pkt, c, s, l, p) { _g = (O56Gfx *)(pkt); \
     _g->w0 = O56_SHIFTL((c), 24, 8) | O56_SHIFTL((p), 16, 8) | O56_SHIFTL((l), 0, 16); \
     _g->w1 = (unsigned int)(s); }
 #define O56_MATRIX(pkt, m) O56_DMA1P(pkt, 1, (u32)(m) + 0x80000000, 0x40, 0)
 #define O56_VERTEX(pkt, v, n, v0) O56_DMA1P(pkt, 4, v, (((n) << 3) + ((n) << 1)) + 8, ((n) << 3) | ((u32)(v) & 6) | (v0))
-#define O56_POLYGON(pkt, ptr, numTris, tex) { O56Gfx *_g = (O56Gfx *)(pkt); \
+#define O56_POLYGON(pkt, ptr, numTris, tex) { _g = (O56Gfx *)(pkt); \
     _g->w0 = O56_SHIFTL((((numTris) - 1) << 4) | (tex), 16, 8) | O56_SHIFTL(5, 24, 8) | \
              O56_SHIFTL((numTris) * 16, 0, 16); \
     _g->w1 = (unsigned int)(ptr); }
-#define O56_PRIMCOLOR(pkt, rgba) { O56Gfx *_g = (O56Gfx *)(pkt); _g->w0 = O56_SHIFTL(0xFA, 24, 8); _g->w1 = (rgba); }
+#define O56_PRIMCOLOR(pkt, rgba) { _g = (O56Gfx *)(pkt); _g->w0 = O56_SHIFTL(0xFA, 24, 8); _g->w1 = (rgba); }
 
 void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCursor,
                                       s32 updateRate) {
+    s32 pad0;
+    s32 pad1;
+    s32 pad2;
+    s32 pad3;
+    s32 pad4;
+    s32 pad5;
+    O56Racer *ghostRacer;
+    O56Gfx *_g;
     s32 count;
-    O56Mtx mtxA;
-    O56Mtx mtxB;
-    O56Mtx mtxC;
-    u32 screenWidth;
-    u32 screenHeight;
-    O56Marker marker;
-    u8 *gameState;
-    O56Gfx *dl;
-    O56Mtx *mtx;
-    u32 width;
-    u32 height;
-    s32 ghostAlpha;
     O56Object **racers;
     O56Level *level;
     O56Sprite *dot;
@@ -200,17 +200,29 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     O56Racer *racer;
     s32 shift;
     s32 slot;
+    f32 mapX;
     s32 alpha;
     s32 i;
     f32 cosA;
+    O56Mtx mtxA;
+    O56Mtx mtxB;
+    O56Mtx mtxC;
+    u32 screenWidth;
+    u32 screenHeight;
+    O56Marker marker;
+    u8 *gameState;
     f32 sinA;
+    O56Gfx *dl;
+    O56Mtx *mtx;
+    u32 width;
+    u32 height;
     f32 x;
     f32 z;
-    f32 mapX;
     f32 mapY;
     f32 rotX;
     u32 colour;
     s32 red;
+    s32 ghostAlpha;
     s32 green;
     s32 blue;
     s32 posX;
@@ -338,13 +350,13 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
                 x = obj->x * level->scale;
                 z = obj->z * level->scale;
                 marker.sprite = D_800CD788[22];
-                racer = obj->racer;
+                ghostRacer = obj->racer;
                 red = green = blue = ghostAlpha;
                 marker.x = (x * cosA - z * sinA) - (f32)(dot->width >> 1);
                 marker.y = (z * cosA + x * sinA) - (f32)(dot->height >> 1);
                 func_8002F618(&dl, &marker, D_78[slot] + level->offsetX,
                               D_84[slot] + level->offsetY, red, green, blue,
-                              (racer->ghostAlpha * alpha) >> 7);
+                              (ghostRacer->ghostAlpha * alpha) >> 7);
             }
         }
     }
@@ -364,10 +376,10 @@ void overlay56UnpackColor(s32 index, u32 *red, s32 *green, s32 *blue) {
 
 /* PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:start
  * symbol: func_overlay_056_F00001A0_18A2F18
- * score: 577 differing words
- * frame: 0x1F0
+ * score: 542 differing words
+ * frame: 0x1F8
  * relocations: 75
- * first-mismatch: +0x0
- * summary: Natural rewrite: aligned 316/121/61/90, delta -8; open: mapY web 197 takes caller c29 (20.0) under the 20.75 callee toll, no f24.
+ * first-mismatch: +0x4
+ * summary: r4300_mul, u8 colour params, ghost racer local, frame ladder: 577 at -8 to 542 at 0; open: mapY caller cost 20 vs toll 21.
  * PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:end
  */

@@ -712,6 +712,9 @@ $(BUILD_DIR)/$(SRC_DIR)/main/shadows.c.o: CFLAGS += -Wab,-r4300_mul
 # The safety property is the ROM: a flag disturbing any function these units
 # already match would break the byte-identical rebuild. `gmake verify` passes.
 $(BUILD_DIR)/$(SRC_DIR)/main/fx.c.o: CFLAGS += -Wab,-r4300_mul
+# spranim.c: +8 on the 2026-09 shape, but func_8001B798 rewritten with delta
+# locals needs it (128 -> 48 at delta 0); every compiled function keeps its bytes.
+$(BUILD_DIR)/$(SRC_DIR)/main/spranim.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/frontend_37D50.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/main/block_506D0.c.o: CFLAGS += -Wab,-r4300_mul
 

@@ -324,7 +324,10 @@ order of how often they decided a match:
     copies were IDO's default unroller). Before anything else, remove every
     inherited override on the TU, re-score every function in it, and keep
     the override only if some function regresses; `check_isa_overrides.py`
-    rules on what remains.
+    rules on what remains. Do this before the first source cycle, not
+    after the plateau: o020 F000038C's inherited `-O2 -g3` hid 24 words
+    (68 -> 44 when dropped), none of which a source edit could reach.
+    A `-g3` alone also counts as an override.
 12. **The rotated, branch-likely float easing loop is `-Wab,-r4300_mul`.**
     With that per-file flag IDO emits the shape from a plain `for` loop; no
     source spelling reproduces it without the flag, and with it the
@@ -466,6 +469,118 @@ order of how often they decided a match:
     the callee declared to take floats, `f(object, 0, 0, 0)` loads each
     zero separately, as shipped; `0.0f` three times makes uopt share one
     float zero and copy it (two instructions longer).
+
+34. **A three-float local declared as a struct forwards its expression as
+    a value; declared `f32 x[3]` it is computed in place.** With the
+    struct, uopt forwards an expression over the members, so the symbol
+    is filled by a copy (ugen emits the `mov`; `cc -S` shows it) and later
+    uses read the temporary. As an array the same expression is computed
+    straight into the symbol, as shipped. Eleven dot and abs spellings on
+    the struct shape were flat. charControl func_8001E5C4: 54 -> 43
+    aligned from the array alone (157 -> 8 over the lane), and the same
+    edit in func_8001DD70 (lane a-char). Give the position offset the
+    same declaration for its load order (43 -> 8).
+35. **In a leaf function a GBI macro's cursor local emits nothing but is
+    still numbered and coloured.** Taking the display-list copy before the
+    first packet numbers the parameter's web (19) ahead of the packet's
+    `_g` web (22), so the parameter takes a2. Taking it after the first
+    packet lets `_g` take a2 first and the parameter lands in a3. A
+    placement grid found 0 for every placement after the first packet
+    (overlay83DrawStrip, 58 -> 0, lane a-ovl1).
+36. **Priority colouring considers only webs with at least 22
+    interferences; the rest are coloured afterwards in web order.** In
+    func_80049B14 the nine hoisted constants had 21 each and fell behind
+    the variables. One more web live across the record loop, a state
+    local (`mode = record->state;`, `s32`; `u8` adds an `andi` per use,
+    `s16` falls back to 178-185), made every constant constrained, and
+    181 at 0 became 105 at +4. The finish used the same count in the
+    other direction: a limit local for case 2 returned the constants to
+    22 and carry to 21 (28 -> 0). Read the interference counts in the
+    records before choosing which web to add or remove (lanes a-front,
+    c-fx).
+37. **Two constant terms grouped in parentheses draw one register;
+    ungrouped they draw two and fold afterwards (L149).** A
+    `FE_VERTEX`-style macro whose word 0 ORs `(3 << 9)` and `38` spent
+    eight draws against the first line's seven, so every later temporary
+    sat one register ahead. Writing the two terms as one parenthesised
+    group folds them in uopt: func_80037C74, 191 -> 19 -> 0
+    (`tools/draw_census.py --proc 10` found the line; lane a-front).
+38. **A call later in a block forbids only its argument registers for the
+    webs of that block; a call earlier in the block forbids v0.** The
+    instrumented allocator on o008 F00034A0 recorded `forbidden0
+    0x1c000000` (a0-a2) with the pair web still on v0 when the call
+    followed it, and `0x40000000` (v0 only) when a spare call preceded
+    it. v0 enters a block's mask only from an int-returning call
+    delivering into that block; a float result or float argument never
+    writes the integer mask, and parameter reads leave it empty (lanes
+    a-o008b, f-o008). Look for the earlier call in the target's block,
+    not a later one.
+39. **One variable for several loops frees a register for another
+    value.** shadowGenerate's model-part loop, sort passes and final call
+    loop use one `k` (the target keeps all three in s2), and that frees
+    fp for `type`, whose `s16` home at +0xAA had been the spill and reload
+    pairs: 419 at +24 -> 318 at -8 -> 0 (lane a-shad).
+40. **A declared, unused local can be load-bearing for the frame.**
+    Deleting `distance` in func_80016890 moved cells (165 masked), and
+    deleting the unused `i` in shadowGenerate moved the frame (29). Every
+    declared local takes a home in declaration order, so remove one only
+    by measuring the frame (lane a-shad).
+41. **`for (i = 0; i < n; i++, p++) { x = *p; }` is the pointer-walk
+    loop; `p[i]` is converted to a byte bound.** The indexed form shifts
+    the count by two and steps the index by four. The index-plus-cursor
+    form with both increments at the tail and `continue` on the skip
+    test reproduced func_8001B798's loop exactly, count reloaded from
+    its home each iteration (lane a-res1).
+42. **The return type can decide an `||` chain.** `s32` is `long` here;
+    an `||` expression has type `int`, so returning it from an `s32`
+    function carries an int-to-long conversion. With `int` the bare
+    chain gives the target's 27 instructions (ring temps copied to v0 in
+    the delay slots); with `long` the 25-instruction a0 form that every
+    earlier spelling collapsed to. func_80028FCC, 10 -> 0 by declaring
+    it `int` (lane d-near). Bisect the TU's includes before calling a
+    form closed.
+43. **A redundant mask or cast the compiler deletes can still spend the
+    scratch draw the target spends.** `planes[edge & 0xFFFF]` in
+    func_80010654 put the edge-loop index temps on t6/t7 as shipped,
+    7 -> 0; `(u16)`, `(s32)`, `(u32)`, `^ 0`, a mask on the load and
+    eight more spellings stayed at 7, and `& 0x7FFF` or `(s16)` gave 125
+    (lane d-near). The same draw is spent by `((f32 *) base)[node * 16]`:
+    ugen shifts the node by 4 and scales the subscript by 4 into a second
+    register, and as1 folds them into one shift but the draw stays.
+    func_8005AF14, 32 -> 0, which let the loop-0 node mask and the loop
+    1/2 vertex masks that had stood in for it go (lane h-4, e-res2).
+44. **An assigned dead read into an existing local breaks a save tie; a
+    bare dead read is inert.** `lowerWord = settings->lower[tableFlags]
+    .words.w0;` took func_800349A4 from 5 to 0 at all five positions
+    tried, while the bare expression statement was dropped before uopt
+    numbered anything, and `lowerWord = tableFlags << 3` stayed 5: the
+    load's address expression entering the table first is what reorders
+    webs 226 and 233 (lane e-res1, item 21).
+45. **Reading a global pointer as a word changes evaluation order in the
+    block.** In the o001 switched block, `*(s32 *)&D_1DA0` as the
+    selector made ugen evaluate the base load first with the pointer
+    reading, and as1 then lifted it across a test; the pointer spelling
+    everywhere (`STATE`, the word spelling deleted) took
+    func_overlay_001_F0001D78_184E158 from 62 to 0, where the word
+    spelling in the switched block floored at 77 (lane e-ovl2).
+46. **as1 moves the `lui` of a hoisted global address into an earlier
+    block when a register is free; uopt does not.** In func_800349A4 the
+    high half lands at +0x60 as shipped when the table's register is free
+    through the frame block, and one block later when it took a register
+    the frame block uses (lane e-res1). Look at which register the
+    address takes before placing the assignment.
+47. **A web splits only when totalsave <= bestcost, whatever wraps the
+    block count.** For overlay17CreateChain the size web (web 12) has
+    totalsave 4 against bestcost 3, so it does not split; block-count
+    wrappers left the rule alone (lane f-o069, shard). Compute both
+    numbers from the records before building a wrapper to force a split.
+48. **A no-op redefinition of a local kills uopt's forward substitution
+    into a later use.** `index = (s16)index;` (deleted by the compiler)
+    between the `atStart` statement and the call stopped uopt substituting
+    `index < 1` into the argument, so the symbol's call-block piece kept
+    a reference, was coloured v0 and saved with the call's spill group.
+    overlay68UpdateAnimation, 2 -> 0 masked (56-cell product, 16 exact
+    cells; lane g-near). Items 21 and 27 are the same family.
 
 ### Promotion traps (each cost a lane a cycle on 2026-10-01)
 
@@ -915,6 +1030,27 @@ shadow -- the dispatch order for Track B.
     commits whatever the gates said, and one commit landed on a test that
     had timed out under load. Write
     `if tools/gates.sh --staged; then git commit ...; fi`.
+
+### 2026-10-07 wave: three process traps
+
+17. **A lane's own follow-up commit can revert its matched source.**
+    overlay17CreateChain's 3-word body (source then destination inside the
+    material arm, else arm storing the template directly, red mask
+    dropped) was lost when an integration merge kept the older source and
+    scored 24 masked again. `ec86246a2` restored it to 3. After any merge
+    that touches a function you matched, re-score it with
+    `tools/score_symbol.py` before believing the shard's number.
+18. **A stale per-file override hides words that are not the function's.**
+    o020 F000038C carried an inherited `-O2 -g3` override; dropping it
+    moved the function from 68 to 44 masked, 24 words that no source edit
+    had been able to touch. Item 11 of the shape checklist is therefore a
+    first step, not an optional one: strip every per-file `CFLAGS`
+    override on the TU and re-score before the first source cycle.
+19. **Two lanes editing the same yaml comment count merged to a stale
+    number.** Both lanes changed a count in a comment of the same yaml;
+    after the merge the figure no longer matched the tree. The count is
+    derived, so recompute it from the tree after the merge and let
+    `gmake check-docs` confirm it, rather than resolving the hunk by eye.
 
 ## Rules, non-negotiable
 

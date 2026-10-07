@@ -2,11 +2,13 @@
 ### `func_overlay_073_F0000190_18CAC50` plateau handoff
 
 - source: `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c`
-- score: 19 differing words
+- score: 4/760 words
 - frame: 0x98
 - relocations: 46
 - first mismatch: +0x7C8
-- summary: 4 masked at size 0, all naming in the case 4 query: hitIndex - 1 is an a1 web in the target with one extra folded ring draw; ours is a ring temp.
+- summary: 4 masked at size 0, case 4 query: one ring temp drawn and released between the two narrowings with nothing emitted; no test or argument spelling draws it.
+
+Summary before this remeasure: 4 masked at size 0, all naming in the case 4 query: hitIndex - 1 is an a1 web in the target with one extra folded ring draw; ours is a ring temp.
 
 Summary before this remeasure: 14 masked at size 0; the case 0 timer block reserves the extra temp that puts the spill at +0x30; case 4 query index web (8 words).
 
@@ -511,4 +513,52 @@ then look for a source form whose test reads an expression temporary of
 the narrowed index rather than hitIndex itself. Do not re-run the
 spellings above.
 
+#### 2026-10-07, lane i-near: the fifth draw is not a spelling of the test or argument sites
+
+Measured by tools/bank.py: masked 4 (raw 19), size delta +0, candidate 760 words vs target 760. Aligned: byte-exact 756, register naming 4, immediate only 0, really different 0.
+
+Records (web_report, identity-gated): hitCount is web 212, a1, two
+occurrences (def at the query line, use at the count test); hitIndex is not a
+symbol web at all but the expression web 26 `cvtl($v0, @16)` coloured v1 over
+the query, test, mathRnd and join blocks. The target's `addiu a1, v1, -1` is
+hitCount's web redefined in the join, as g-near read it. Nothing in blocks
+87 to 92 is coloured a0, and no web for the mathRnd constant exists.
+
+The ugen trace on the tree body (draw_census, kept) shows no draw between
+the hitIndex narrowing (sra t7, emit 681) and the mathRnd narrowing (ALLOC
+t8, emit 693): the two tests read the symbol register through f_ureg and
+f_get_reg1, the constant goes straight into a0 through f_get_dest, the
+state spill and reload use t0. The function's only ring rotations with no
+emission are the switch dispatch (f_is_available: a draw of t4 freed before
+any emission) and a MOVE_END at line 289 (f_eval2 re-reading updateRate's
+load still held in t2, which moves t2 to the free list's tail). t8's last
+value before the query is the 0x180 clamp constant from line 277, in another
+block, so the target cannot be re-reading it; the touch is a draw whose
+instruction as1 folded, or a value freed late. The only foldable word in the
+span is `addiu a0, zero, 1` (a temp plus a deleted move when a0 is not free
+for f_get_dest), and nothing occupies a0 there in our records.
+
+Measured flat (do not repeat):
+
+- a frame-compensated product, 48 cells: hitIndex declared s16 with an s32
+  pad after it (positions 1 and 2) restores the 0x98 frame and reads exactly
+  the tree's 4 rows; pad elsewhere shifts the homes (10 to 44); the second
+  test's operand (hitCount against hitIndex) is inert because uopt makes
+  them one value; the kill-shape join is 64 in every cell as recorded.
+- a mini-TU scan of the query/test/mathRnd shape with the configured flags
+  (24 single-axis spellings, read from the ugen listing): the mathRnd
+  constant as (s32)1, 1U, (s16)1, 1L, 0x1; the second argument as hitIndex,
+  (s32)hitCount, (s16)hitIndex, hitCount + 0, hitIndex or zero; the first
+  test as hitCount, bare hitIndex, > 0, (s16)hitIndex != 0; the second test
+  as hitIndex >= 2, > 1, (s16)hitIndex >= 2, hitCount - 1 > 0, (s32)hitCount,
+  (s16)2, 2U. None draws exactly one extra ring temp with the same
+  instruction count; the explicit (s16) casts draw two and emit two.
+
+Cycle-21 line: the decision variable is still the construct that draws and
+releases one ring register between emit 681 and 693. Next: a scan of the
+mini TU over constructs that make f_get_dest refuse a0 for the constant
+(something pinned in a0 across the two tests: a web coloured a0 live into
+the mathRnd block, or a call argument moved through a0), read from the ugen
+trace, not the score; the records say no such web exists in the tree body,
+so it must be created by the source.
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

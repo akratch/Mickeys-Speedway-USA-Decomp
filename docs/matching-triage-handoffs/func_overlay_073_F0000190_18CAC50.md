@@ -6,7 +6,7 @@
 - frame: 0x98
 - relocations: 46
 - first mismatch: +0x2B8
-- summary: 14 masked at size 0; float-rate spill +0x30 not +0x34 (6 words), case 4 query narrowing order and index web (8 words).
+- summary: 14 masked at size 0; the case 0 timer block reserves the extra temp that puts the spill at +0x30; case 4 query index web (8 words).
 
 Summary before this remeasure: 153 masked at size 0; target is two ring draws ahead from the case 1 angle difference; float-rate spill at +0x30 not +0x34.
 
@@ -347,5 +347,20 @@ structural rows.
   carriers for the index (41 cells) are flat. `hitIndex--` makes the
   index a web (coloured a0, not a1) but no longer draws the ring
   register the target spends there (75).
+
+- The fourteen `D_20`..`D_54` externs are now float literals at the
+  point of use (0.004, 0.1, 0.064, 22500, 1.2, 1.6 in use order). Score
+  unchanged at 14; the compiled literal pool is byte-identical to the
+  target's (compared locally), which the promotion needs.
+- Spill home, located by bisection: removing the case 0 timer block
+  (both the add and the wrap) puts the float-rate spill at +0x34, the
+  target's home; removing either half alone, or cases 1, 3 or 4, does
+  not. Flat on the case 0 block: operand order, int or float
+  zero/one spellings, `+=` against an explicit add, the wrap's compare
+  and subtract forms, `break` for `goto common`, and a declared `f32
+  rate` after `hits` (uopt still spills to its own temp, 8 below the
+  lowest home). A double `1.0` moves it to +0x38, so the case 0 timer
+  code reserves one extra 4-byte frame temp that the target's
+  source does not.
 
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

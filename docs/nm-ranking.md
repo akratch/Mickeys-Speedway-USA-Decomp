@@ -281,9 +281,9 @@ Relocation-masked mismatch evidence covers **58 / 58** resolved rows. The raw co
 | raw `differing_words <= 5` | 0 |
 | relocation-masked `differing_words <= 5` | 0 |
 | raw `differing_words <= 10` | 2 |
-| relocation-masked `differing_words <= 10` | 2 |
-| raw `differing_words <= 20` | 2 |
-| relocation-masked `differing_words <= 20` | 3 |
+| relocation-masked `differing_words <= 10` | 3 |
+| raw `differing_words <= 20` | 3 |
+| relocation-masked `differing_words <= 20` | 4 |
 
 ### Complete ranked queue
 
@@ -294,15 +294,15 @@ units remain distinct.
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
-| 2 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
-| 3 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 52 | 17 | 156 | 1,916 | 0 | — |
-| 4 | `src/main/shadows.c` | `func_80016890` | `main` | `other` | 2,224 | 32 | 31 | 172 | 172 | 0 | — |
-| 5 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 36 | 36 | 60 | 60 | 0 | — |
-| 6 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 43 | 43 | 20 | 20 | 0 | — |
-| 7 | `src/main/matrix.c` | `MatrixMultiplyVec4` | `main` | `other` | 212 | 47 | 47 | 0 | 0 | 0 | — |
-| 8 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
-| 9 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 58 | 58 | 4 | 4 | 0 | — |
-| 10 | `src/main/charControl.c` | `func_8001E5C4` | `main` | `other` | 1,664 | 104 | 93 | 80 | 80 | 0 | — |
+| 2 | `src/main/charControl.c` | `func_8001E5C4` | `main` | `other` | 1,664 | 19 | 8 | 344 | 812 | 0 | — |
+| 3 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
+| 4 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 52 | 17 | 156 | 1,916 | 0 | — |
+| 5 | `src/main/shadows.c` | `func_80016890` | `main` | `other` | 2,224 | 32 | 31 | 172 | 172 | 0 | — |
+| 6 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 36 | 36 | 60 | 60 | 0 | — |
+| 7 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 43 | 43 | 20 | 20 | 0 | — |
+| 8 | `src/main/matrix.c` | `MatrixMultiplyVec4` | `main` | `other` | 212 | 47 | 47 | 0 | 0 | 0 | — |
+| 9 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
+| 10 | `src/overlays/o083/overlay83DrawStrip.c` | `overlay83DrawStrip` | `o083` | `other` | 308 | 58 | 58 | 4 | 4 | 0 | — |
 | 11 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 106 | 106 | 204 | 204 | 0 | — |
 | 12 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `other` | 1,788 | 132 | 124 | 292 | 292 | 0 | — |
 | 13 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 128 | 128 | 0 | 0 | 0 | — |

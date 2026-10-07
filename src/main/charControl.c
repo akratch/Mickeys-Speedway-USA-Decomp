@@ -1637,17 +1637,21 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
  * the six cells the target leaves unused. What remains is in the handoff.
  * 2026-10-07, lane a-char: the scale written to unk80 and copied to unk84
  * from the field (157 -> 93 at delta 0); the dot web then splits at the
- * speed sqrtf as shipped. */
+ * speed sqrtf as shipped.
+ * Later the same day (resumed): forward and offset as f32[3] arrays, which
+ * removes the dot copy (the target computes the dot straight into its
+ * symbol), the dot written nx-term first, nz divided after nx, unk78 stored
+ * after unk74, and the halving tail as unk88, unk181, unk4, unk8 (93 -> 8). */
 s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     ControlCollisionState *state = &D_800CB2C0;
     s32 *p;
     ControlVector3 pos;
-    ControlVector3 offset;
+    f32 offset[3];
     ControlVector3 sum;
     ControlVector3 down;
     ControlVector3 end;
     ControlVector3 hit;
-    ControlVector3 forward;
+    f32 forward[3];
     f32 radius;
     f32 nx;
     f32 nz;
@@ -1669,18 +1673,18 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     while (n--) {
         *p++ = 0;
     }
-    pointListRPY(player->unk2BC, (s16 *) actor, player->unk2C0, &offset.x);
-    pos.x = offset.x + actor->x;
-    pos.y = offset.y + actor->y;
-    pos.z = offset.z + actor->z;
+    pointListRPY(player->unk2BC, (s16 *) actor, player->unk2C0, offset);
+    pos.x = offset[0] + actor->x;
+    pos.y = offset[1] + actor->y;
+    pos.z = offset[2] + actor->z;
     radius = player->unk2B8->w;
     trackMakePolylist(1, (ControlVector3 *) &player->unk2F0, &pos, &radius,
                       player->unk33C, 1);
     flags = (u32) func_80010900((ControlVector3 *) &player->unk2F0, &pos,
                                 radius, (s32) actor, (void *) func_8001EC44);
-    actor->x = pos.x - offset.x;
-    actor->y = pos.y - offset.y;
-    actor->z = pos.z - offset.z;
+    actor->x = pos.x - offset[0];
+    actor->y = pos.y - offset[1];
+    actor->z = pos.z - offset[2];
     result = 0;
     if ((flags >> 0x1E) != 0) {
         actor->x = player->unk38;
@@ -1705,19 +1709,19 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
                 player->unk34B |= 1;
             }
             if (state->state & 0x24) {
-                forward.x = 0.0f;
-                forward.y = 0.0f;
-                forward.z = -1.0f;
+                forward[0] = 0.0f;
+                forward[1] = 0.0f;
+                forward[2] = -1.0f;
                 rot[0] = actor->rotationX;
                 rot[1] = 0;
                 rot[2] = 0;
-                mathOneFloatRPY((ControlTransform *) rot, &forward.x);
+                mathOneFloatRPY((ControlTransform *) rot, forward);
                 len = sqrtf((state->unk18 * state->unk18) +
                             (state->unk10 * state->unk10));
                 nx = state->unk10 / len;
                 nz = state->unk18 / len;
-                player->unk90 = (nz * forward.x) - (forward.z * nx);
-                dot = (forward.z * nz) + (forward.x * nx);
+                player->unk90 = (nz * forward[0]) - (forward[2] * nx);
+                dot = (forward[0] * nx) + (forward[2] * nz);
                 player->unk8C = dot;
                 if (dot < 0.0f) {
                     dot = -dot;
@@ -1731,14 +1735,13 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
                 side = (nx * vxn) + (nz * vzn);
                 if (!player->unk198 && (speed > 8.0f) &&
                     ((side < D_80081864) || (D_80081868 < side))) {
-                    player->unk78 = 0.0f;
                     player->unk74 = ((2.0f * -side) * nx) + vxn;
+                    player->unk78 = 0.0f;
                     player->unk7C = ((2.0f * -side) * nz) + vzn;
-                    player->unk80 = ((D_8008186C * dot) + 0.5f) * speed;
-                    player->unk84 = player->unk80;
+                    player->unk84 = player->unk80 = ((D_8008186C * dot) + 0.5f) * speed;
+                    player->unk88 = D_80081870;
                     player->unk181 = 1;
                     player->unk4 *= 0.5f;
-                    player->unk88 = D_80081870;
                     player->unk8 *= 0.5f;
                 } else {
                     if ((f32) player->unk198 < 240.0f) {
@@ -2051,11 +2054,11 @@ void controlClearPlayerSetup(void) {
 
 /* PLATEAU-HANDOFF:func_8001E5C4:start
  * symbol: func_8001E5C4
- * score: 93/416 words
+ * score: 8/416 words
  * frame: 0xD0
  * relocations: 53
- * first-mismatch: +0x50
- * summary: Scale stored to unk80 and copied from the field: 157 to 93 at delta 0. Left: the dot expression copy (mov) and the pos load order.
+ * first-mismatch: +0x32C
+ * summary: Arrays for forward/offset remove the dot copy: 93 to 8 at delta 0, naming only. Left: neg/2x/scale FP colours rotated (f2 f12 f14).
  * PLATEAU-HANDOFF:func_8001E5C4:end
  */
 

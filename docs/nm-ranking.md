@@ -282,8 +282,8 @@ Relocation-masked mismatch evidence covers **59 / 59** resolved rows. The raw co
 | relocation-masked `differing_words <= 5` | 0 |
 | raw `differing_words <= 10` | 2 |
 | relocation-masked `differing_words <= 10` | 2 |
-| raw `differing_words <= 20` | 2 |
-| relocation-masked `differing_words <= 20` | 3 |
+| raw `differing_words <= 20` | 3 |
+| relocation-masked `differing_words <= 20` | 4 |
 
 ### Complete ranked queue
 
@@ -295,8 +295,8 @@ units remain distinct.
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
 | 2 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
-| 3 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 52 | 17 | 156 | 1,916 | 0 | — |
-| 4 | `src/main/shadows.c` | `func_80016890` | `main` | `other` | 2,224 | 32 | 31 | 172 | 172 | 0 | — |
+| 3 | `src/main/shadows.c` | `func_80016890` | `main` | `other` | 2,224 | 13 | 12 | 172 | 172 | 0 | — |
+| 4 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 52 | 17 | 156 | 1,916 | 0 | — |
 | 5 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 36 | 36 | 60 | 60 | 0 | — |
 | 6 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 43 | 43 | 20 | 20 | 0 | — |
 | 7 | `src/main/matrix.c` | `MatrixMultiplyVec4` | `main` | `other` | 212 | 47 | 47 | 0 | 0 | 0 | — |

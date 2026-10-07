@@ -37,7 +37,7 @@
       "relocation_masked_first_mismatch_offset": 180,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "UZv3.AQKT.ksod.UXMQ.tjGG.Yol3.bdCR.Q2Ea.WNO8.bDy9.qzk"
+      "source_context_sha256": "cBqm._-iz.KD7O.4KZ8.f1HC.DV94.7bPY.P4Wk.aONm.y8rS.UMY"
     },
     {
       "name": "func_80051364",
@@ -130,6 +130,21 @@
       "source_context_sha256": "h8s_.XKYX.w3hh.WN0A.QzrX.u3uN.fFVC.bZcS.4R1k.ME6k.-08"
     },
     {
+      "name": "func_80011980",
+      "file": "src/main/track.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 860,
+      "objdiff_match_pct": null,
+      "differing_words": 89,
+      "first_mismatch_offset": 148,
+      "relocation_masked_differing_words": 89,
+      "relocation_masked_first_mismatch_offset": 148,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "TyoR.d7-S.H1xu.9x2M.RRI-.DK_N.GLUD._bR1.04he.jHLy.tog"
+    },
+    {
       "name": "func_overlay_101_F0002510_18DDD30",
       "file": "src/overlays/o101/func_overlay_101_F0002510_18DDD30.c",
       "overlay": 101,
@@ -173,21 +188,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "8HPd.cPyq.87I5.445Z.1qsN.-_1k.0u8m.lyu_.CYGy.U-3T.BUM"
-    },
-    {
-      "name": "func_80011980",
-      "file": "src/main/track.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 860,
-      "objdiff_match_pct": null,
-      "differing_words": 107,
-      "first_mismatch_offset": 4,
-      "relocation_masked_differing_words": 107,
-      "relocation_masked_first_mismatch_offset": 4,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "47Sk.C0cA.qB_m.DVdZ.soHa.V1Bl.nSk9.1J7X.lDtS.nYy9.bZw"
     },
     {
       "name": "func_8005AF14",
@@ -607,7 +607,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 8,
       "category": "size-mismatch",
-      "source_context_sha256": "WmUa.K78y.zg0G.S7Bs.XZmT.JQ_a.MvRt.eSH1.h4-7.DJud.IWc"
+      "source_context_sha256": "k4q0.9w2w._QOr.vO34.B_Qf.yYE-.eqXU.ZSVk.SN77.Vkh7.aYQ"
     },
     {
       "name": "func_overlay_056_F00001A0_18A2F18",

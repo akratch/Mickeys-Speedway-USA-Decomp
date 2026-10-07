@@ -2786,6 +2786,11 @@ typedef struct TrackRayPoint {
     f32 z;
 } TrackRayPoint;
 
+typedef struct TrackTextureFlags {
+    void *texture;
+    u8 pad04[3];
+    u8 flag;
+} TrackTextureFlags;
 #ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c draft and the resident collision-node and plane
@@ -3409,7 +3414,10 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
         if (encoded > 0) {
             node = (TrackRayNodeExtended *) (encoded | 0x80000000);
         } else {
-            entry = (u16 *) encoded;
+            /* A zero-cost block (brief checklist item 18): 107 -> 89. */
+            do {
+                entry = (u16 *) encoded;
+            } while (0);
             planes = node->planes;
             face = &planes[*entry];
             encoded = 0;
@@ -3450,8 +3458,8 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                             hit->y = ((0.01f + planeOffset) * planeY) + pointY;
                             hit->z = ((0.01f + planeOffset) * planeZ) + pointZ;
                             hit->faceData = node->metadata[D_800C9D30[segmentIndex]].data;
-                            hit->material = ((u8 *) &D_800792E8->textures[
-                                node->metadata[D_800C9D30[segmentIndex]].material])[7];
+                            hit->material = ((TrackTextureFlags *) D_800792E8->textures)[
+                                node->metadata[D_800C9D30[segmentIndex]].material].flag;
                             hit->ratio = ratio;
                             valid = 1;
                         }
@@ -3517,12 +3525,6 @@ typedef struct TrackClipOutput {
 extern s32 func_80012234(TrackVec3f *point, TrackVec3f *direction,
                          TrackVec3f *origin, TrackVec3f *planeDirection,
                          f32 radius, f32 *minimum, f32 *maximum);
-
-typedef struct TrackTextureFlags {
-    void *texture;
-    u8 pad04[3];
-    u8 flag;
-} TrackTextureFlags;
 
 s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
                   TrackRayHit *hit) {
@@ -5191,11 +5193,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80011980:start
  * symbol: func_80011980
- * score: 107 differing words
+ * score: 89 differing words
  * frame: 0xc8
  * relocations: 12
- * first-mismatch: +0x4
- * summary: Frame closed (0xC8) by the declaration ladder; node word as the edge index: 119 to 107 at delta 0. Left: callee-saved ranking of edge, sign, face.
+ * first-mismatch: +0x94
+ * summary: Struct-field material flag and one zero-cost block around the entry pointer: 107 to 89 at 0. Left: s-register roles of edge, sign, face.
  * PLATEAU-HANDOFF:func_80011980:end
  */
 

@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x10
-- summary: Divisors read wake->textureIndex back (store forwarded): tail temp ring aligned, naming 84 to 9 at -8. Left: dead v0/v1 copies before the call.
+- summary: Divisors read textureIndex back: tail ring aligned, naming 84 to 9 at -8. Left: dead v0/v1 copies before the call (split pieces).
+
+Summary before this remeasure: Divisors read wake->textureIndex back (store forwarded): tail temp ring aligned, naming 84 to 9 at -8. Left: dead v0/v1 copies before the call.
 
 Summary before this remeasure: Natural rewrite (own triangle count, if/else flags, word id, one cursor): -32 to -8, frame 0x90. Left: dead v0/v1 copies before the call.
 
@@ -278,5 +280,36 @@ Cycle-21 line: unchanged from c-fx (w14 must fail globalcolor and the
 block-2 pieces of w10/w14 must outrank 0.75); confirm any candidate with
 frame_census first, since the spill run moving to +0x24..+0x3C is the
 cheapest sign the pieces exist.
+
+#### 2026-10-07, lane h-7: four products, all flat (325 at -8 kept)
+
+Instrumented .text on proc 9 identical to the stock object. Each product
+measured with shape_product; no cell moved the size.
+
+- A size local for the allocation, sampleBytes inline or as a local, and
+  wake->segmentCount from segmentCount or from (frameCount + 5) >> 1:
+  8 cells, 325 or 327 at -8.
+- Unsigned literals on the four size products (the sizeof shape, which
+  converts the count operand): 16 cells, all 325, so uopt drops the
+  conversion and makes no second name for the count.
+- Position of bufferCount = 2 (7 places) times alpha = 2 (6 places):
+  42 cells, 325 or 327.
+- Dead reads of the counts into the existing i, j and cursor before the
+  first call (7 cells), and the count carried in j across both calls into
+  wake->segmentCount (2 cells): all 325; uopt copy-propagates every one.
+- Forces on proc 9 that take t5 from w14 (w16, w12, w295, w60, w70 to c12;
+  w14 to c13), accepted: 331 to 335, still -8. No colour force produces
+  the two pieces; they need a split, not a colour.
+
+Reading (proc 9 records): growth refusals elsewhere in the TU happen with
+colours left (left_after 7 to 11), so a piece is not refused for want of
+colours; the refusal rule is still unread. The two dead moves are the
+block-2 pieces of w10 and w14 whose uses as1 forwards back to t0 and t5.
+
+Cycle-21 line: unchanged (w14 must fail globalcolor and the block-2
+pieces of w10/w14 must be coloured before w320/w325's). First read the
+growv refusal rule from the records of a refused case (proc 47 has
+several), then look for the source change that makes w10's growth into
+block 2 refuse.
 
 <!-- plateau-handoff:wakeAllocate:end -->

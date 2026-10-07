@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 2
 - first mismatch: +0x34
-- summary: OR-zero weight probes order secondaryVertices over wake and stripIndex over index (253 to 198 at 0). Left: polyCount/outputCount over polygonOffset.
+- summary: Secondary cursor per vertex and polyCount per triangle replace two OR-zero probes (byte-identical, 195 at 0). Left: the three stripIndex probes.
+
+Summary before this remeasure: OR-zero weight probes order secondaryVertices over wake and stripIndex over index (253 to 198 at 0). Left: polyCount/outputCount over polygonOffset.
 
 Summary before this remeasure: Second-loop wrap test as ++index (257 to 253, delta 0). Left: p1 order wake/secondaryVertices, index/stripIndex, polygonOffset over polyCount.
 
@@ -210,5 +212,37 @@ references; decision variable: secondaryVertices' totalsave against
 wake's, 141/6 needed against 306/14, and stripIndex's 171/11 against
 index's 123/8, read on proc 13).
 
+
+#### 2026-10-07, lane h-7: two of the four probes are real source now (195 kept)
+
+Byte-identical object, 195 masked at delta 0, aligned byte-exact 208,
+naming 170, immediate 2, really different 22. Records on proc 13 for the
+probe-free form give the same ranking the probes gave:
+
+- secondaryVertices written one vertex at a time, the cursor advanced by
+  0xA after each vertex (stores at +0..+9, then the second vertex): uopt
+  folds the two steps into the shipped single add, and the web reads
+  141/6, over wake's 306/14, as shipped (s3 against s4). The three other
+  spellings of the same two steps (advance first, both advances first)
+  measure the same.
+- polyCount advanced once per triangle (two increments in the strip
+  branch): 62/12, ties polygonOffset's 31/6 and keeps s7 by web number.
+- With neither probe and no stripIndex probes: 210 (the un-probed body
+  was 250). With the three stripIndex probes kept: 195, the object
+  identical to the four-probe body.
+
+Measured, not adopted: the loop's vertexCount through its own local
+(count 260, mark 251, value 245; worse than the shared web); stripIndex
+advanced by two single increments after the strip stores (both forms
+raise its web to 141/11 but rotate the temp ring, 217 alone and 204 with
+two probes); the reset written as > 0x10 or as a conditional
+expression (flat).
+
+Cycle-21 line: the stripIndex probes. Decision variable: stripIndex's
+totalsave on proc 13 (111/11 with no probe, 141/11 with the single-step
+increments) against index's 123/8; it needs about 170. The single-step
+increments carry half of it at the cost of a ring rotation; look for the
+form that carries the rest without moving the draws (draw_census
+--compare against this body).
 
 <!-- plateau-handoff:wakeUpdate:end -->

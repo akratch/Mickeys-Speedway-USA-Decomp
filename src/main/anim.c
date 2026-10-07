@@ -3553,14 +3553,17 @@ f32 func_8002A8BC(s32 angle);
 f32 func_8002A8C0(s32 angle);
 
 /*
- * Plateau: 229/229 instructions, 171 masked words (2026-10-07, lane a-anim).
- * Natural shape: velocity, normal and previous-position fields are read at
- * every use (no carriers, no volatile), the then-arm correction is the
- * repeated `impulse / mass` (uopt homes it as the target does), and the else
- * arm writes the plane dot inline twice, once negated into the store-only
- * local. The target frame is 0x70 with 13 declared homes and five compiler
- * temporaries; this shape has the 13 declared homes but seven temporaries
- * (frame 0x78). See the shard.
+ * Plateau: 229/229 instructions, 165 masked words, frame 0x70 as shipped
+ * (2026-10-07, lane h-6). Natural shape: velocity, normal and
+ * previous-position fields are read at every use (no carriers, no volatile),
+ * the then-arm correction is the repeated `impulse / mass` (uopt homes it as
+ * the target does). The else arm computes the current-position dot first,
+ * negated into the store-only `negDot`; the empty `if (negDot)` after the
+ * else-arm offsets keeps that store (and with it the dot as the target's
+ * spilled temporary), and the previous-position dot is written z-first,
+ * `pz*nz + (nx*px + ny*py)`, as the target adds it. The empty region after
+ * the trig products starts a block for the offsets, so timeStep's last
+ * piece is coloured and loaded once, as shipped. See the shard.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3612,6 +3615,8 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         sine = -func_8002A8BC(*(s16 *) first);
         target->unk90 = normal->z * cosine - normal->x * sine;
         target->unk8C = normal->z * sine + cosine * normal->x;
+        if (1) {
+        }
         offsetY = first->position.y - firstSource->previous.y;
         offsetX = first->position.x - firstSource->previous.x;
         offsetZ = first->position.z - firstSource->previous.z;
@@ -3626,15 +3631,17 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
                    (firstSource->current.x * normal->x +
                     firstSource->current.y * normal->y));
         displacement = D_80084214 -
-                       ((normal->x * firstSource->previous.x +
-                         normal->y * firstSource->previous.y +
-                         firstSource->previous.z * normal->z) -
+                       ((firstSource->previous.z * normal->z +
+                         (normal->x * firstSource->previous.x +
+                          normal->y * firstSource->previous.y)) -
                         (normal->z * firstSource->current.z +
                          (firstSource->current.x * normal->x +
                           firstSource->current.y * normal->y)));
         offsetX = first->position.x - firstSource->previous.x;
         offsetY = first->position.y - firstSource->previous.y;
         offsetZ = first->position.z - firstSource->previous.z;
+        if (negDot) {
+        }
         firstSource->previous.x += displacement * normal->x;
         firstSource->previous.y += displacement * normal->y;
         firstSource->previous.z += displacement * normal->z;
@@ -3991,11 +3998,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 171 differing words
- * frame: 0x78
+ * score: 165 differing words
+ * frame: 0x70
  * relocations: 8
- * first-mismatch: +0x0
- * summary: Natural field-read shape, homed impulse/mass: 177 to 171 at size 0. Left: frame 0x78 (two surplus temps), FP ring one draw out at the compare.
+ * first-mismatch: +0x24
+ * summary: Then-arm block before the offsets (timeStep loaded once) and the empty if after the else offsets: aligned 161 to 154 at 165. Left: else-arm FP colours.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

@@ -1273,6 +1273,33 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o025/overlay_025.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:258adccbc890f89cf0c2393e490673ba6b5f4d39ca12eeeb9f7d74881dd69d02
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o056/overlay_056.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym camStandardOrtho=camStandardOrtho_o056Reloc \
+		--redefine-sym frontGet2PlayerSplit=frontGet2PlayerSplit_o056Reloc \
+		--redefine-sym func_80005750=func_80005750_o056Reloc \
+		--redefine-sym func_80024978=func_80024978_o056Reloc \
+		--redefine-sym func_80028F54=func_80028F54_o056Reloc \
+		--redefine-sym func_8002A604=func_8002A604_o056Reloc \
+		--redefine-sym func_8002A82C=func_8002A82C_o056Reloc \
+		--redefine-sym func_8002A8BC=func_8002A8BC_o056Reloc \
+		--redefine-sym func_8002A8C0=func_8002A8C0_o056Reloc \
+		--redefine-sym func_8002F618=func_8002F618_o056Reloc \
+		--redefine-sym func_8002FB34=func_8002FB34_o056Reloc \
+		--redefine-sym func_800349A4=func_800349A4_o056Reloc \
+		--redefine-sym levelGetLevel=levelGetLevel_o056Reloc \
+		--redefine-sym matrixTranslate=matrixTranslate_o056Reloc \
+		--redefine-sym mtxf_mul=mtxf_mul_o056Reloc \
+		--redefine-sym mtxf_to_mtx=mtxf_to_mtx_o056Reloc \
+		--redefine-sym viGetCurrentSize=viGetCurrentSize_o056Reloc \
+		--redefine-sym D_800C3A3C=D_800C3A3C_o056Reloc \
+		--redefine-sym D_800CD788=D_800CD788_o056Reloc \
+		--redefine-sym D_800D1494=D_800D1494_o056Reloc \
+		--redefine-sym D_800D1498=D_800D1498_o056Reloc \
+		--redefine-sym D_800D3194=D_800D3194_o056Reloc \
+		--redefine-sym D_800D3198=D_800D3198_o056Reloc \
+		--redefine-sym D_800D31A8=D_800D31A8_o056Reloc \
+		--redefine-sym D_800D3450=D_800D3450_o056Reloc \
+		$@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xAF4
 # The minimap renderer's rotated-coordinate products carry the R4300 FP-mul
 # hazard nops; without this pass the candidate is two words short.

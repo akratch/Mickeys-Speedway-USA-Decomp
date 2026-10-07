@@ -654,11 +654,11 @@ segments:
       # measured and recorded here:
       #
       #   1. RODATA ORDER FOLLOWS TEXT ORDER, EXACTLY. The pre-carve inventory
-      #      covered 35 functions and forty-four tables. After devmgr's table
-      #      and func_80035F48's two moved into C objects, the 8 jump tables
-      #      still emitted in asm/ remain monotonically increasing in text
-      #      and table address -- ZERO
-      #      INVERSIONS. They run from jtbl_80081694 through jtbl_800841F4, so
+      #      covered 35 functions and forty-four tables. After devmgr's table,
+      #      func_80035F48's two and func_800103D4's two moved into C objects,
+      #      the 6 jump tables still emitted in asm/ remain monotonically
+      #      increasing in text and table address -- ZERO
+      #      INVERSIONS. They run from jtbl_800826A4 through jtbl_800841F4, so
       #      .rodata can continue to be carved TU by TU in text order.
       #
       #   2. THE REFERENCED-FROM-CODE BOUND: 0x80080D24 (ROM 0x81924). That is

@@ -2701,7 +2701,6 @@ next_plane:
 }
 /* PROVENANCE: JFG's assembly-only object-alpha routine supplies the role and switch family;
  * Mickey's jump tables, fields, globals, and arithmetic are authoritative here. */
-#ifdef NON_MATCHING
 typedef struct TrackAlphaBounds {
     u8 pad00[0x16];
     s16 distanceLimit;
@@ -2724,13 +2723,12 @@ typedef struct TrackAlphaObject {
 } TrackAlphaObject;
 
 /*
- * Natural rewrite, 2026-10-07: a typed object, the per-kind alpha switch with
+ * Matched 2026-10-07 (natural rewrite): a typed object, the per-kind alpha switch with
  * the state pointer read once only in case 1, s32 truncating casts, the fade
  * scale as the literal 0.3f, and one counted loop over D_800C9578[i] with
- * named plane components; one s32 holds the kind and then the distance limit,
- * which puts the limit in v1. 12 masked words at delta 0, 8 of them the
- * target's relocated branches; the real residual is the fade remainder taking
- * f12 where the target has f16 (an accepted force onto colour 28 closes it).
+ * named plane components. Register-exact through variable reuse: one s32
+ * holds the kind and then the distance limit (v1), the fade scale overwrites
+ * range (f12), and the fade remainder lives in the plane loop's dist (f16).
  */
 #define object ((TrackAlphaObject *) objectArg)
 s32 func_800103D4(void *objectArg) {
@@ -2740,8 +2738,6 @@ s32 func_800103D4(void *objectArg) {
     u8 *state;
     f32 distance;
     f32 range;
-    f32 remaining;
-    f32 scale;
     f32 planeX;
     f32 planeY;
     f32 planeZ;
@@ -2795,10 +2791,10 @@ s32 func_800103D4(void *objectArg) {
         if (range < distance) {
             visible = 0;
         } else {
-            remaining = range - distance;
-            scale = range * 0.3f;
-            if (remaining < scale) {
-                object->alpha = (s32) (object->alpha * (remaining / scale));
+            dist = range - distance;
+            range = range * 0.3f;
+            if (dist < range) {
+                object->alpha = (s32) (object->alpha * (dist / range));
             }
         }
     }
@@ -2818,9 +2814,6 @@ s32 func_800103D4(void *objectArg) {
     return visible;
 }
 #undef object
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_800103D4.s")
-#endif
 typedef struct TrackRayPoint {
     f32 x;
     f32 y;
@@ -5260,16 +5253,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * PLATEAU-HANDOFF:func_80010654:end
  */
 
-
-/* PLATEAU-HANDOFF:func_800103D4:start
- * symbol: func_800103D4
- * score: 12 differing words
- * frame: 0x38
- * relocations: 12
- * first-mismatch: +0x44
- * summary: Natural rewrite, 158 at -16 to 12 at 0; 8 rows are relocated target branches. Left: fade remainder web takes f12, target f16 (force to c28 scores 8).
- * PLATEAU-HANDOFF:func_800103D4:end
- */
 
 /* PLATEAU-HANDOFF:func_80011CDC:start
  * symbol: func_80011CDC

@@ -306,9 +306,9 @@ units remain distinct.
 | 10 | `src/main/textures_354C8.c` | `func_800349A4` | `main` | `other` | 1,088 | 62 | 62 | 96 | 96 | 0 | — |
 | 11 | `src/overlays/o001/func_overlay_001_F0001D78_184E158.c` | `func_overlay_001_F0001D78_184E158` | `o001` | `other` | 2,508 | 102 | 62 | 76 | 956 | 0 | — |
 | 12 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 68 | 68 | 4 | 4 | 0 | — |
-| 13 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
-| 14 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `other` | 1,788 | 106 | 98 | 276 | 276 | 0 | — |
-| 15 | `src/main/models_5B300.c` | `func_8005AF14` | `main` | `other` | 1,840 | 114 | 114 | 408 | 408 | 0 | — |
+| 13 | `src/main/models_5B300.c` | `func_8005AF14` | `main` | `other` | 1,840 | 71 | 71 | 808 | 808 | 0 | — |
+| 14 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
+| 15 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `other` | 1,788 | 106 | 98 | 276 | 276 | 0 | — |
 | 16 | `src/main/diCpu.c` | `func_80045D34` | `main` | `other` | 1,836 | 131 | 115 | 332 | 332 | 0 | — |
 | 17 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 117 | 117 | 1,816 | 1,816 | 0 | — |
 | 18 | `src/overlays/o038/overlay38UpdateParticles.c` | `func_overlay_038_F0000154_1885E64` | `o038` | `other` | 808 | 160 | 159 | 32 | 32 | 0 | — |

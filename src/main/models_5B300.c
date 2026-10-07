@@ -603,11 +603,15 @@ void func_8005AD64(ModelAnimationInstance *instance, s32 frame, s32 arg2,
  * Rewritten plainly (lane b-models, 2026-10-07): the slot arrays as
  * matrices[2]/counts[2], the head and neck as &matrices[slot][8] and [9],
  * node 9's position read through a pointer, the three point loops indexed,
- * the clamp reflected through an unsigned short intermediate (one deleted
- * draw per arm, as shipped), the vertex fields read in the call.
- * NON_MATCHING: 460 words, frame 0xF8, 114 masked words; the remaining
- * residual is ring phase (free order after the clamp, the loop matrix
- * address operand order). */
+ * the first clamp arm updating rawAngle in place (its narrowing frees the
+ * intermediate before the constant, as shipped), the second Arctanf result
+ * held in rawAngle so the add reads clampedAngle first. Each point loop takes
+ * a vertex pointer first and forms the matrix as a byte offset added to the
+ * slot base; a redundant 0xFFFF mask (node in loop 0, vertex index in loops
+ * 1 and 2) spends the scratch draw the target's ring shows (L149).
+ * NON_MATCHING: 460 words, frame 0xF8, 71 masked words; the remaining
+ * residual is one extra draw: rawAngle's dead narrowing at the first
+ * Arctanf, which shifts the clamp's ring by one register. */
 #ifdef NON_MATCHING
 void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
                    ModelRenderModel *model) {
@@ -629,7 +633,7 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
     f32 dz;
     f32 sine;
     f32 cosine;
-    ModelRenderVertex *unusedVertex;
+    ModelRenderVertex *vertex;
     s16 yaw;
     s16 pitch;
     s16 rawAngle;
@@ -708,8 +712,8 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
         rawAngle = Arctanf(-((dx * cosine) + (dz * sine)), (dz * cosine) - (dx * sine));
         clampedAngle = rawAngle;
         if (rawAngle > 0x4000) {
-            excess = rawAngle - 0x4000;
-            clampedAngle = 0x4000 - excess;
+            rawAngle = rawAngle - 0x4000;
+            clampedAngle = 0x4000 - rawAngle;
         } else if (rawAngle < -0x4000) {
             excess = rawAngle + 0x4000;
             clampedAngle = -0x4000 - excess;
@@ -718,7 +722,8 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
         func_8002B040(head, Z2, 1.0f, Z2, &dx, &dy, &dz);
         sine = func_8002A8C0(angle);
         cosine = func_8002A8BC(angle);
-        transform.rotation2 = clampedAngle + Arctanf(-((dx * cosine) + (dz * sine)), dy);
+        rawAngle = Arctanf(-((dx * cosine) + (dz * sine)), dy);
+        transform.rotation2 = clampedAngle + rawAngle;
         transform.rotation0 = yaw;
         transform.rotation1 = pitch;
         transform.scale = model->transformScale;
@@ -736,28 +741,25 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
 
     output = instance->vertices[0];
     for (i = 0; i < context->count0; i++) {
-        mtxf_transform_point(instance->matrices[instance->activeSlot][context->points0[i].node],
-                             ((ModelRenderVertex *) &context->vertexData[context->points0[i].vertex * 10])->x,
-                             ((ModelRenderVertex *) &context->vertexData[context->points0[i].vertex * 10])->y,
-                             ((ModelRenderVertex *) &context->vertexData[context->points0[i].vertex * 10])->z,
+        vertex = (ModelRenderVertex *) &context->vertexData[context->points0[i].vertex * 10];
+        mtxf_transform_point(*(Matrix *)((u8 *) instance->matrices[instance->activeSlot] + ((context->points0[i].node & 0xFFFF) << 6)),
+                             vertex->x, vertex->y, vertex->z,
                              output, output + 1, output + 2);
         output += 3;
     }
     output = instance->vertices[1];
     for (i = 0; i < context->count1; i++) {
-        mtxf_transform_point(instance->matrices[instance->activeSlot][context->points1[i].node],
-                             ((ModelRenderVertex *) &context->vertexData[context->points1[i].vertex * 10])->x,
-                             ((ModelRenderVertex *) &context->vertexData[context->points1[i].vertex * 10])->y,
-                             ((ModelRenderVertex *) &context->vertexData[context->points1[i].vertex * 10])->z,
+        vertex = (ModelRenderVertex *) &context->vertexData[(context->points1[i].vertex & 0xFFFF) * 10];
+        mtxf_transform_point(*(Matrix *)((u8 *) instance->matrices[instance->activeSlot] + (context->points1[i].node << 6)),
+                             vertex->x, vertex->y, vertex->z,
                              output, output + 1, output + 2);
         output += 3;
     }
     output = instance->vertices[2];
     for (i = 0; i < context->count2; i++) {
-        mtxf_transform_point(instance->matrices[instance->activeSlot][context->points2[i].node],
-                             ((ModelRenderVertex *) &context->vertexData[context->points2[i].vertex * 10])->x,
-                             ((ModelRenderVertex *) &context->vertexData[context->points2[i].vertex * 10])->y,
-                             ((ModelRenderVertex *) &context->vertexData[context->points2[i].vertex * 10])->z,
+        vertex = (ModelRenderVertex *) &context->vertexData[(context->points2[i].vertex & 0xFFFF) * 10];
+        mtxf_transform_point(*(Matrix *)((u8 *) instance->matrices[instance->activeSlot] + (context->points2[i].node << 6)),
+                             vertex->x, vertex->y, vertex->z,
                              output, output + 1, output + 2);
         output += 3;
     }
@@ -797,10 +799,10 @@ void func_8005B644(Matrix *matrices, Matrix *root, ModelMatrixNode *node, s32 co
 
 /* PLATEAU-HANDOFF:func_8005AF14:start
  * symbol: func_8005AF14
- * score: 114/460 words
+ * score: 71/460 words
  * frame: 0xF8
  * relocations: 27
- * first-mismatch: +0x198
- * summary: Delta 0, frame 0xF8 (123 to 114): u16 clamp intermediate, vertex read in the call. Left: free order after the clamp, loop address order
+ * first-mismatch: +0x328
+ * summary: Vertex pointer first, byte-offset matrix, L149 masks, rawAngle in place (114 to 71). Left: dead narrowing of the first Arctanf result
  * PLATEAU-HANDOFF:func_8005AF14:end
  */

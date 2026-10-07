@@ -1631,7 +1631,10 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
  * store through `player`); the three flag bytes set by OR; `(u8) flags & 1`,
  * whose deleted mask is the ring draw the target spends; `!player->unk198`,
  * which keeps the count in one register; and the six scalar locals placed in
- * the six cells the target leaves unused. What remains is in the handoff. */
+ * the six cells the target leaves unused. What remains is in the handoff.
+ * 2026-10-07, lane a-char: the scale written to unk80 and copied to unk84
+ * from the field (157 -> 93 at delta 0); the dot web then splits at the
+ * speed sqrtf as shipped. */
 s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     ControlCollisionState *state = &D_800CB2C0;
     s32 *p;
@@ -1728,9 +1731,8 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
                     player->unk78 = 0.0f;
                     player->unk74 = ((2.0f * -side) * nx) + vxn;
                     player->unk7C = ((2.0f * -side) * nz) + vzn;
-                    dot = ((D_8008186C * dot) + 0.5f) * speed;
-                    player->unk80 = dot;
-                    player->unk84 = dot;
+                    player->unk80 = ((D_8008186C * dot) + 0.5f) * speed;
+                    player->unk84 = player->unk80;
                     player->unk181 = 1;
                     player->unk4 *= 0.5f;
                     player->unk88 = D_80081870;
@@ -2046,11 +2048,11 @@ void controlClearPlayerSetup(void) {
 
 /* PLATEAU-HANDOFF:func_8001E5C4:start
  * symbol: func_8001E5C4
- * score: 157/416 words
+ * score: 93/416 words
  * frame: 0xD0
  * relocations: 53
  * first-mismatch: +0x50
- * summary: 157 at delta 0, frame exact. Left: abs-dot is a temp plus copy, not one f14 web split at sqrtf. Bounce order and the first three adds were swept and stay at 157.
+ * summary: Scale stored to unk80 and copied from the field: 157 to 93 at delta 0. Left: the dot expression copy (mov) and the pos load order.
  * PLATEAU-HANDOFF:func_8001E5C4:end
  */
 

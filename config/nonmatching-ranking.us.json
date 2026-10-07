@@ -760,6 +760,21 @@
       "source_context_sha256": "LusG.81qm.oWKK.NpqP.LwSu.P_qD.1uOT.tyNf.oqBa.zhWl.CNo"
     },
     {
+      "name": "wakeAllocate",
+      "file": "src/main/fx.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 1404,
+      "objdiff_match_pct": null,
+      "differing_words": 325,
+      "first_mismatch_offset": 16,
+      "relocation_masked_differing_words": 325,
+      "relocation_masked_first_mismatch_offset": 16,
+      "size_delta": -8,
+      "category": "size-mismatch",
+      "source_context_sha256": "RGQl.-4x7.Oe90.JkUq.YErn.eJrq.k8y-.zzJG.7Kk4.zfIA.J6A"
+    },
+    {
       "name": "func_80011CDC",
       "file": "src/main/track.c",
       "overlay": null,
@@ -788,21 +803,6 @@
       "size_delta": 8,
       "category": "size-mismatch",
       "source_context_sha256": "Vsq2.qx55.hFmi.IXah._2Bo.R6t_.e3Q7.tQ13.rnd6.GjZi.LUs"
-    },
-    {
-      "name": "wakeAllocate",
-      "file": "src/main/fx.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1404,
-      "objdiff_match_pct": null,
-      "differing_words": 345,
-      "first_mismatch_offset": 12,
-      "relocation_masked_differing_words": 345,
-      "relocation_masked_first_mismatch_offset": 12,
-      "size_delta": -32,
-      "category": "size-mismatch",
-      "source_context_sha256": "yeFK.AEIo.yGhm.Ii8a._e17.UhHL.iarE.A9SW.lUw9.N4Ra.hQA"
     },
     {
       "name": "shadowGenerate",

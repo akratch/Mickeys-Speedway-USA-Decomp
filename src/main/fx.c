@@ -664,61 +664,68 @@ typedef struct FxWakeAllocation {
     s32 value3C;
 } FxWakeAllocation;
 
-/* Workbench verdict: structure-mismatch, 345 positional/203 normalized words; first mismatch is +0xC. */
-/* Candidate is 343/351 instructions with a -0x98 frame versus the target -0x90; all three call identities are present. */
-/* The allocation topology and unrolled initialization CFG are restored; four early stack homes and two moved blocks remain. */
+/* Natural-source pass (2026-10-07, lane a-front): -32 bytes -> -8.
+ *  - the triangle count is its own variable (segmentCount * 2 again): the
+ *    target's second fill loop bounds on a separate copy;
+ *  - the flags store is an if/else, the alpha default stays a plain
+ *    default-then-override, and the resource id is a full word;
+ *  - one pointer local walks both areas; no size/vertexBytes locals (frame
+ *    0x98 -> 0x90 and the target's home ladder for groupCount/alpha/triCount).
+ * Left: two dead copies the target makes before the first call (segment and
+ * group counts into v0/v1) and frameCount's pre-call piece in s0; see shard. */
 /* PROVENANCE: Mickey's own target accesses and caller ABI supply this reconstruction; JFG supplies only the published role/name. */
 Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
-                   f32 wakeValue84, s16 wakeValue8C, f32 wakeValue8E) {
+                   f32 wakeValue84, s32 wakeValue8C, f32 wakeValue8E) {
+    s32 i;
     FxWakeAllocation *wake;
-    u8 *vertexArea;
-    u8 *sampleArea;
+    u8 *cursor;
     s32 frameCount;
     s32 segmentCount;
     s32 segmentBytes;
-    s32 vertexBytes;
     s32 sampleBytes;
     s32 textureBytes;
     s32 groupCount;
-    s32 i;
-    s32 j;
-    s32 size;
     s32 alpha;
+    s32 j;
+    s32 triCount;
     s32 bufferCount;
 
     frameCount = (s32) (wakeValue88 * 60.0f);
     segmentCount = (frameCount + 5) >> 1;
     groupCount = segmentCount * 2;
+    triCount = segmentCount * 2;
     alpha = 2;
     bufferCount = 2;
     if (wakeType == 0) {
         alpha = 4;
     }
     segmentBytes = groupCount * 0xA;
-    vertexBytes = segmentCount * 0x14;
     sampleBytes = segmentCount * 0x10;
-    textureBytes = groupCount * 0x10;
-    size = sampleBytes + vertexBytes + (alpha * segmentBytes) +
-           (textureBytes * 2) + 0x40;
-    wake = func_8002B314(size, 0x87);
+    textureBytes = triCount * 0x10;
+    wake = func_8002B314(sampleBytes + (segmentCount * 0x14) + (alpha * segmentBytes) +
+                         (textureBytes * 2) + 0x40, 0x87);
     if (wake != NULL) {
-        vertexArea = (u8 *) wake + 0x40;
+        cursor = (u8 *) wake + 0x40;
         for (i = 0; i < bufferCount; i++) {
-            wake->vertexBuffers[i] = vertexArea + (i * textureBytes);
+            wake->vertexBuffers[i] = cursor + (i * textureBytes);
         }
-        sampleArea = wake->vertexBuffers[1] + textureBytes;
-        wake->vertices = sampleArea;
+        cursor = wake->vertexBuffers[1] + textureBytes;
+        wake->vertices = cursor;
         wake->sampleBuffers[2] = NULL;
         wake->sampleBuffers[3] = NULL;
-        sampleArea += sampleBytes;
-        wake->samples = sampleArea;
-        sampleArea += vertexBytes;
+        cursor += sampleBytes;
+        wake->samples = cursor;
+        cursor += (segmentCount * 0x14);
         for (i = 0; i < alpha; i++) {
-            wake->sampleBuffers[i] = sampleArea + (i * segmentBytes);
+            wake->sampleBuffers[i] = cursor + (i * segmentBytes);
         }
         wake->linked = func_80034448(wakeValue8C);
         if (wake->linked != NULL) {
-            wake->flags = wakeType != 0;
+            if (wakeType != 0) {
+                wake->flags = 1;
+            } else {
+                wake->flags = 0;
+            }
             wake->state = 0;
             wake->segmentCount = segmentCount;
             wake->value8 = 0;
@@ -738,17 +745,17 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
                 }
             }
             for (i = 0; i < bufferCount; i++) {
-                for (j = 0; j < groupCount; j++) {
+                for (j = 0; j < triCount; j++) {
                     wake->vertexBuffers[i][j * 0x10] = 0x40;
                 }
             }
             wake->value34 = 0;
+            wake->value36 =
+                (s16) ((wakeValue8E * 256.0f) / 60.0f);
             wake->value38 = 0;
             wake->value39 = 0;
             wake->value3A = 0;
             wake->value3B = 0;
-            wake->value36 =
-                (s16) ((wakeValue8E * 256.0f) / 60.0f);
         } else {
             mmFree(wake);
             wake = NULL;
@@ -848,7 +855,7 @@ typedef struct FxRippleOutput {
 extern void func_8001357C(f32 valueC, f32 value14, void *output,
                           s32 value, s32 zero);
 extern Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
-                          f32 wakeValue84, s16 wakeValue8C,
+                          f32 wakeValue84, s32 wakeValue8C,
                           f32 wakeValue8E);
 
 s32 func_80048760(void *arg0, s32 arg1) {
@@ -2114,11 +2121,11 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeAllocate:start
  * symbol: wakeAllocate
- * score: 345 differing words
- * frame: 0x98
+ * score: 325/351 words
+ * frame: 0x90
  * relocations: 3
- * first-mismatch: 0xc
- * summary: JFG efd5abb remains assembly-only; zero source attempts. Need new initialization homes and buffer-loop topology evidence.
+ * first-mismatch: +0x10
+ * summary: Natural rewrite (own triangle count, if/else flags, word id, one cursor): -32 to -8, frame 0x90. Left: dead v0/v1 copies before the call.
  * PLATEAU-HANDOFF:wakeAllocate:end
  */
 

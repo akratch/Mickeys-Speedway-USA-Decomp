@@ -311,9 +311,9 @@
       "source_commit": "3871c92be170f512c85f90d6fd3682e1e1a0adb0"
     },
     "func_8001B798": {
-      "ledger_commit": "bfb07d1c9d9255edf696b200f808a3cdc1c23b09",
-      "reason": "Reconstruction sweep at 8 to 16 bytes: the candidate is a few instructions out, and today's cause list names the usual reasons -- a missing copy, a block fallthrough, an address rematerialized once too often.",
-      "source_commit": "bfb07d1c9d9255edf696b200f808a3cdc1c23b09"
+      "ledger_commit": "4ffcf3f0dc0604b7f4cb029ac1ae4c93480e58ba",
+      "reason": "O073 proves integer-vs-float zero changes FP constant sharing. Test either/both distance comparisons against integer zero to split the hoisted zero; no coordinate, coefficient, loop, home or ABI edits.",
+      "source_commit": "7fd3edab8607afe7a89a4f16812f44f9cd75c45a"
     },
     "func_8001BBB4": {
       "ledger_commit": "770063553502c681e61f13366a408c249df4e797",

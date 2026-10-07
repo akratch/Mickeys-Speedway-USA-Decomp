@@ -153,11 +153,9 @@ void func_8004B13C(Gfx **displayList, s32 windowId, s32 xpos, s32 ypos,
     }
 }
 
-/* Workbench plateau: structure-mismatch, 51 differing words at exact size,
- * exact 0x80 frame and 42 candidate relocation records. The retained source
- * reconstruction closes the prior 452-word residual; allocation and schedule
- * differences remain, so the NON_MATCHING fallback stays authoritative. */
-#ifdef NON_MATCHING
+/* Matched stock IDO C: 556 words, frame 0x80, 42 exact relocations,
+ * linked owned bytes and full ROM identity. Inert source forms below were
+ * independently reviewed and remain documented in the cleanup queue. */
 /*
  * PROVENANCE -- source-level organization was adapted from Diddy Kong
  * Racing's permitted published src/font.c::render_text_string body. Mickey's own
@@ -315,6 +313,9 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
                 if (right > 0 && bottom > 0 &&
                     left < window->x2 && top < window->y2) {
                     glyph = func_8004C690(first);
+                    /* Inert nonvolatile test retained for stock IDO allocation.
+                     * Independently reviewed; see docs/cleanup-queue.md. */
+                    if (D_8007D540 && D_8007D540) { }
                     if (glyph != NULL) {
                         left *= 4;
                         top = (glyph->top + top) * 4;
@@ -359,14 +360,15 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
         } else {
             switch (first) {
                 default:
-                    x += font->characterWidth;
+                    /* The u8 mask is inert and preserves IDO temporary selection. */
+                    x += (s32)(font->characterWidth & 0xFFu);
                     break;
                 case '\n':
                     x = window->textOffsetX;
                     y += font->height;
                     break;
                 case '\t':
-                    x = (x + font->characterWidth * 4) -
+                    x += font->characterWidth * 4 -
                         ((x - window->textOffsetX) % (font->characterWidth * 4));
                     break;
                 case '\v':
@@ -389,9 +391,6 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
     }
 }
 
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/font/func_8004B1DC.s")
-#endif
 /* PROVENANCE: JFG's permitted src/font.c::fontStringWidth assembly-backed
  * NON_EQUIVALENT draft and DKR's unbuilt Japanese get_text_width branch inform
  * structure only; neither is genuine donor C. Mickey remains authoritative.
@@ -1200,13 +1199,3 @@ u8 *func_8004D40C(s32 font, char *text, s32 maxWidth, u8 **lineStart, s32 *outWi
 u8 func_8004D5C0(s32 font) {
     return D_800D60E4[font].height;
 }
-
-/* PLATEAU-HANDOFF:func_8004B1DC:start
- * symbol: func_8004B1DC
- * score: 51 differing words
- * frame: 0x80
- * relocations: 42
- * first-mismatch: +0x4
- * summary: 452 to 51 words; exact size/frame and object relocation surface. Byte-pointer texture addresses close structural rows; saved-register and width-branch allocation remain; linked identity open.
- * PLATEAU-HANDOFF:func_8004B1DC:end
- */

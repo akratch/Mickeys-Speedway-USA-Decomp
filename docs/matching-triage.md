@@ -109,7 +109,7 @@ colour affinity). These are the signature of class **F** — see
 ### Structural / donor (S) route — reference
 SDK/libultra donors (`__osSpSetPc`, `__osContRamRead/Write`, `__osBlockSum`,
 `__osPfsReleasePages`, `osPfsDeleteFile`, `joyInit`) matched via BK/JFG donors.
-`func_8004B1DC` (font, 509w) is an open S target (largely-wrong body, multi-hour RE).
+`func_8004B1DC` (font, 556 words) matched on 2026-10-07; see its handoff and cleanup entry.
 
 ## Routing rule of thumb
 1. Frame-exact + small word-diff + register/colour/schedule → **P** (permuter first — cheapest, and it has cracked cases hand analysis called unlevered).
@@ -125,7 +125,7 @@ shape was understood — another false-floor cluster. Newly routed:
 
 | Function | TU | Class | Note |
 |---|---|---|---|
-| `func_8004B1DC` | font | **P** | Frame-exact (0x80). The display-list `dList++` idiom batches base+displacement stores; target materialises a fresh pointer per command. m2c's distinct-next-pointer form defeats the batching but spills to a 9th saved reg — net-neutral, so keep the frame-exact base and **permute the rolling-pointer register allocation**. Micro-facts recorded in-source: window-0 y2 is standalone `D_800D64F2`; font ptr is `window->font`. |
+| `func_8004B1DC` | font | **Matched** | 556 stock words, frame `0x80`, all 42 relocation identities and linked ROM bytes exact. Full-ROM verification and independent semantic review passed; disclosed inert source forms remain on the cleanup queue. |
 | `func_80046AA8` | diCpu | **P** | −3 insns loop-guard, but residual dominated by v0/v1/a0 register swaps in the packed-glyph blit. |
 | `func_80012574` | track | **P! reproof** (was a false **P**-matched) | historical pre-cleanup configured full-TU diagnostic C was measured at 50/57 raw/normalized words, first `+0x50`, frame `0x48`, with `sqrtf` at `+0xA4`; no candidate object/hash survives. Dead stack-home aids are removed, so clean V0's score/shape/tuple are unknown. The isolated row omitted required `-Wab,-r4300_mul`. Five direct calls and ORT 308 are authenticated, with no runtime/overlay/pointer inbound. Rejected invented-guard 55/57 and normalized-stack zero remain non-creditable | clean V0; historical control only on structural regression; 119 configurations including V0, one trace, at most two trace-supported forms and strict-gain combination; cap 122 deterministic builds plus trace, 123 only for control, one 20-minute/2,000-candidate batch only after legal gain |
 | `func_8000D018` | track | **B — merged-TU blocker** | ✅ matched. Fixed surgically: a typed `#pragma weak trackCamPosTrap = TrapDanglingJump` alias + `objcopy --redefine-sym trackCamPosTrap=TrapDanglingJump` in the track.c.o rule, so the camera-position call passes (f32,f32,f32) single-precision without touching the shared TrapDanglingJump placeholder or its other call sites. |

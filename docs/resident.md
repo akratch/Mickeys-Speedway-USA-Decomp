@@ -238,7 +238,7 @@ overlay callers/callees outside the range were observed.
 | `0x4BCDC` | `0x1C` | `func_8004B0DC` | `fontBackground` | B/D, matched C | leaf; text-setup callers |
 | `0x4BCF8` | `0x44` | `func_8004B0F8` | `fontPrintXY` | B/D, matched C | calls `0x4BD3C` |
 | `0x4BD3C` | `0xA0` | `func_8004B13C` | `fontPrintWindowXY` | B/D, matched C | calls `0x4BDDC` |
-| `0x4BDDC` | `0x8B0` | `func_8004B1DC` | JFG `func_80070518` | D, plateau | calls `0x4DF9C`, `0x4C68C`, `0x4D290`, ext |
+| `0x4BDDC` | `0x8B0` | `func_8004B1DC` | JFG `func_80070518` | A, matched C | calls `0x4DF9C`, `0x4C68C`, `0x4D290`, ext |
 | `0x4C68C` | `0xB8` | `func_8004BA8C` | `fontStringWidth` | B/D, reproof | calls `0x4DF9C`; called twice by `0x4BDDC`, once by `0x4C8C4`, and by overlays 41 and 45 |
 | `0x4C744` | `0x9C` | `func_8004BB44` | `fontWindowSize` | D, matched C | leaf; ext callers |
 | `0x4C7E0` | `0x1C` | `func_8004BBE0` | `fontWindowUseFont` | D, matched C | leaf; ext callers |
@@ -276,12 +276,11 @@ overlay callers/callees outside the range were observed.
 | `0x4E3E0` | `0x60` | `func_8004D7E0` | `rzipUncompress` | A, matched C | IDO C exact; calls `gzip_inflate_block`; ext callers |
 | `0x4E440` | `0x620` | `func_8004D840` | `huft_build` | Tier B, matched C | DKR `src/gzip.c`; all 390 words, frame, relocations, and linked bytes exact; called by `main/gzip_asm` |
 
-`func_8004B1DC` has a readable DKR-JP-derived candidate under
-`NON_MATCHING`. Its best stock-flag build has the target's 128-byte frame and
-matches through function offset `+0x2C`, but is 28 instructions short with
-broad control-flow divergence after the initial null check. The flag lattice
-kept `-O2 -mips2` best; the unresolved issue is source organization and live
-ranges across the scissor and glyph loops, not a compiler-flag mismatch.
+`func_8004B1DC` is Evidence A exact C: 556 stock IDO words, frame `0x80`,
+all 42 relocation identities and linked ROM `0x4BDDC..0x4C68C` agree.
+The full ROM hash passes. Its disclosed inert nonvolatile condition and u8
+mask passed independent semantic review and are recorded in the cleanup queue.
+The permitted DKR source organization and JFG audit remain disclosed in source.
 
 `func_8004C690` remains tier-D `NON_MATCHING`: 105/146 words differ, 144/146 instructions, frame -112, first `+0x0`.
 Levers covered flags, widths/qualifiers, direct-global/font-index, copy AST/volatile, and block/pad homes.

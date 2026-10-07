@@ -2,11 +2,11 @@
 ### `func_8004B1DC` plateau handoff
 
 - source: `src/main/font.c`
-- score: 51 differing words
+- score: 0 differing words
 - frame: 0x80
 - relocations: 42
-- first mismatch: +0x4
-- summary: 452 to 51 words; exact size/frame and object relocation surface. Byte-pointer texture addresses close structural rows; saved-register and width-branch allocation remain; linked identity open.
+- first mismatch: none
+- summary: Matched: 556 stock IDO words, 42 exact relocation identities, frame 0x80, linked owned bytes and full ROM identity. Independently reviewed inert forms remain in the cleanup queue.
 
 ### 2026-10-04 Astra close-out candidate
 
@@ -141,5 +141,28 @@ newline increment reaches the target priority order but loses the separate
 case tail, proving a control-flow/allocation tradeoff rather than impossibility.
 Next: seek a source-faithful case/control-flow form that preserves the separate
 tails while reaching that priority order. Do not replay the above controls.
+
+#### 2026-10-07: matched with exact stock output and linked proof
+
+Promoted `src/main/font.c` from guarded candidate to C. The configured stock
+full TU now matches all 556 words (2,224 bytes), frame `0x80`, and all 42
+relocation identities. The promotion proof compares the real linked ROM range
+`0x4BDDC..0x4C68C`; full-ROM identity and the overlay relocation surface pass.
+
+The two-word diagnostic was closed by masking the default u8 character width,
+restoring the plain newline increment, and using compound tab advancement.
+The width mask and an empty duplicated nonvolatile colour-global test remain
+intentional inert source shaping. Independent semantic review found no new
+observable access or undefined behavior on the original defined domain; the
+source discloses both forms and `docs/cleanup-queue.md` records follow-up.
+No original debug-macro identity is claimed. Removing the empty test produces
+25 register differences; moving glyph allocation into its condition also
+produces 25, while duplicating the real glyph condition grows the function.
+
+Private source/object/score/context captures and independent review remain in
+`build/recovery-font/`. `promotion-proof.json` records verdict `exact`, 556
+words and 42/42 relocations. `gmake verify`, `gmake scoreboard`, and
+`tools/promotion_proof.py func_8004B1DC --canonical --json` passed. Further
+work on this symbol is cleanup only, with the exact body as the baseline.
 
 <!-- plateau-handoff:func_8004B1DC:end -->

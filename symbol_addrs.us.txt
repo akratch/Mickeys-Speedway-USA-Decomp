@@ -2662,6 +2662,7 @@ diCpuTraceInit = 0x800459B0; // type:func size:0x54 ROM 0x465b0 tier-A exact C, 
 fontSetWindow0 = 0x8004B040; // type:func size:0x24   ROM 0x4bc40  src/font.c.o  masked=2/9
 fontSetWindowNoise = 0x8004B070; // type:func size:0x34   ROM 0x4bc70  src/font.c.o  masked=6/13
 fontColour = 0x8004B0B8; // type:func size:0x24   ROM 0x4bcb8  src/font.c.o  masked=2/9
+func_8004B1DC = 0x8004B1DC; // type:func size:0x8B0 tier-A stock C byte identity, font text renderer, frame 0x80
 func_8004BA8C = 0x8004BA8C; // type:func size:0xB8 ROM 0x4c68c tier-B JFG fontStringWidth role/order NON_MATCHING reproof, historical policy-defective C 38/46, current metrics unknown
 fontWindowColour = 0x8004BBFC; // type:func size:0x40   ROM 0x4c7fc  src/font.c.o  masked=2/16
 fontWindowFontColour = 0x8004BC3C; // type:func size:0x48   ROM 0x4c83c  src/font.c.o  masked=2/18

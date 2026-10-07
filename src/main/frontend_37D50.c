@@ -405,17 +405,15 @@ extern void func_80037BF4(void);
 
 /* Draws the backdrop as a 16x8 grid of texture tiles, each loaded with the
  * six-packet tile load and drawn as two vertex rows and four triangles.
- * 2026-10-07 (lane a-front), 191 -> 19 words at delta 0:
+ * Matched 2026-10-07 (lane a-front) from 191 words by four edits:
  *  - the tile coordinates are induction variables, x += 40 per tile and
  *    y += 15 per row, not products of the row and column indices;
- *  - the triangle packet reads D_7BE40 through a block-scoped pointer local.
- *    Written inline, uopt hoists the address out of the loop and spills it
- *    (an extra frame cell, 0xE8); the local keeps it in the loop as shipped;
- *  - the vertex pointer is declared first, which puts row and colour on the
- *    target's homes, and x is reset before the row colour is copied.
- * The remaining residual is one integer-ring draw from the second vertex
- * packet to the loop end; see docs/matching-triage-handoffs/func_80037C74.md. */
-#ifdef NON_MATCHING
+ *  - the triangle packet reads D_7BE40 through a block-scoped pointer local:
+ *    written inline, uopt hoists the address out of the loop and spills it;
+ *  - the vertex pointer is declared first (row and colour homes), and x is
+ *    reset before the row colour is copied;
+ *  - the vertex packet's two constant terms are one parenthesised group, so
+ *    ugen spends no extra ring draw on a second immediate OR. */
 #define _SHIFTL(v, s, w) ((u32) (((u32) (v) & ((0x01 << (w)) - 1)) << (s)))
 #define FE_PKT(pkt, word0, word1) \
     { \
@@ -430,7 +428,7 @@ extern void func_80037BF4(void);
 #define FE_TILESIZE(pkt, lrs, lrt) \
     FE_PKT(pkt, 0xF2000000, _SHIFTL((lrs) << 2, 12, 12) | _SHIFTL((lrt) << 2, 0, 12))
 #define FE_VERTEX(pkt, v, n, v0) \
-    FE_PKT(pkt, 0x04000000 | _SHIFTL(((n) << 3) | ((u32) (v) & 6), 16, 8) | ((v0) << 9) | ((n) * 10 + 8), \
+    FE_PKT(pkt, 0x04000000 | _SHIFTL(((n) << 3) | ((u32) (v) & 6), 16, 8) | (((v0) << 9) | ((n) * 10 + 8)), \
            (u32) (v))
 #define OS_K0_TO_PHYSICAL(x) (u32) (((char *) (x) - 0x80000000))
 
@@ -516,9 +514,6 @@ void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
         func_80034920(gfx);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/frontend_37D50/func_80037C74.s")
-#endif
 
 /* Workbench verdict: structure-mismatch, 199 differing words; target/candidate 368 words. */
 /* First mismatch: +0x130; both frames are 0xE8. Static relocations remain nonexact. */
@@ -638,16 +633,6 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/frontend_37D50/func_80038190.s")
 #endif
 #undef FRONTEND_EMIT
-
-/* PLATEAU-HANDOFF:func_80037C74:start
- * symbol: func_80037C74
- * score: 19/327 words
- * frame: 0xE0
- * relocations: 18
- * first-mismatch: +0x46C
- * summary: Induction x/y coordinates and a block-local D_7BE40 pointer: 191 to 19 at delta 0, frame 0xE0. Left: one integer-ring draw from +0x46C.
- * PLATEAU-HANDOFF:func_80037C74:end
- */
 
 /* PLATEAU-HANDOFF:func_80038190:start
  * symbol: func_80038190

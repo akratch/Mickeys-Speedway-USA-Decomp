@@ -1,29 +1,14 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 59,
-  "resolved": 59,
+  "queue_size": 58,
+  "resolved": 58,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 59,
-  "relocation_masked_coverage": 59,
+  "source_context_coverage": 58,
+  "relocation_masked_coverage": 58,
   "functions": [
-    {
-      "name": "func_80037C74",
-      "file": "src/main/frontend_37D50.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1308,
-      "objdiff_match_pct": null,
-      "differing_words": 19,
-      "first_mismatch_offset": 1132,
-      "relocation_masked_differing_words": 19,
-      "relocation_masked_first_mismatch_offset": 1132,
-      "size_delta": 0,
-      "category": "register-only",
-      "source_context_sha256": "8bZf.s06P.PA0J.lkdl.49xe.zNK-.AJSd.wrXk.Z7Rp._UZm.I_0"
-    },
     {
       "name": "func_80051364",
       "file": "src/main/anim.c",

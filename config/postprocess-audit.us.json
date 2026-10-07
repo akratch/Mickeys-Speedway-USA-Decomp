@@ -127,6 +127,7 @@
       "size": null,
       "source": "src/main/frontend_37D50.c",
       "tools": [
+        "trim_elf_section.py",
         "objcopy"
       ]
     },

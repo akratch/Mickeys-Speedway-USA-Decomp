@@ -29,6 +29,24 @@ bytes and disassembly never belong here.
 
 ## Proven reusable behavior
 
+### In-place narrow updates can retain a converted value across calls
+
+- **Symptom:** a converted short value is computed after intervening calls,
+  while the target computes and preserves it before them. **Mechanism:** in a
+  controlled full-TU comparison, a separate successor local allowed IDO to
+  delay the scaling and conversion until their final use. Assigning that same
+  expression back to the original short local, removing only its successor,
+  retained the converted short across the calls and reproduced the target's
+  narrowing at the producer. **Lever:** when target dataflow supports an
+  in-place update, compare that spelling against distinct predecessor and
+  successor locals with exactly the same arithmetic and conversion widths.
+  **Limits:** preserve every later use and the full defined input domain;
+  declaration removal can also change homes and allocation. Earlier conversion
+  is not by itself a match. Compare aligned structure and relocation identities
+  alongside size and positional differences, and retain both candidates when
+  those measures disagree. This observation does not establish a universal
+  rule for IDO's internal motion or allocation passes.
+
 ### Equivalent zero literals can occupy distinct saved FP registers
 
 - **Symptom:** a shared floating zero occupies a saved register that the target

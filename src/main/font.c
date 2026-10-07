@@ -153,13 +153,12 @@ void func_8004B13C(Gfx **displayList, s32 windowId, s32 xpos, s32 ypos,
     }
 }
 
-/* Workbench plateau: structure-mismatch, 548/556 instructions, exact 0x80 frame,
- * 465 positional differences (466 raw), first raw mismatch +0x30. Restoring
- * GBI colour, sync, and fill macros closes 44 sites; register/CFG drift remains. */
-#ifdef NON_MATCHING
+/* Matched stock IDO C: 556 words, frame 0x80, 42 exact relocations,
+ * linked owned bytes and full ROM identity. Inert source forms below were
+ * independently reviewed and remain documented in the cleanup queue. */
 /*
  * PROVENANCE -- source-level organization was adapted from Diddy Kong
- * Racing's permitted published render_text_string body. Mickey's own
+ * Racing's permitted published src/font.c::render_text_string body. Mickey's own
  * instructions, m2c draft, fields, control bytes, and display-list words
  * determine this candidate.
  * Jet Force Gemini src/font.c::func_8006FD98_70998 was audited at efd5abb:
@@ -172,17 +171,16 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
     s32 savedFont;
     s32 x;
     s32 y;
-    s32 width;
-    s32 activeColour;
     s32 left;
     s32 top;
     s32 right;
     s32 bottom;
+    s32 spacing;
     s32 textureS;
     s32 textureT;
-    s32 spacing;
+    s32 width;
+    s32 activeColour;
     u8 first;
-    u8 second;
     char *current;
     FontSpacingData *font;
     FontGlyphData *glyph;
@@ -202,32 +200,34 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
 
     gSPDisplayList((*displayList)++, D_8007D490);
     if (window != D_800D64E8) {
-        s32 x1 = window->x1;
-        s32 y1 = window->y1;
-        s32 x2 = window->x2;
-        s32 y2 = window->y2;
+        left = window->x1;
+        top = window->y1;
+        right = window->x2;
+        bottom = window->y2;
 
-        if (D_800D64E8[0].x2 >= x1 && D_800D64F2 >= y1 &&
-            x2 >= 0 && y2 >= 0) {
-            if (x1 < 0) {
-                x1 = 0;
+        if (D_800D64E8[0].x2 >= left && D_800D64F2 >= top &&
+            right >= 0 && bottom >= 0) {
+            if (left < 0) {
+                left = 0;
             }
-            if (y1 < 0) {
-                y1 = 0;
+            if (top < 0) {
+                top = 0;
             }
-            if (D_800D64E8[0].x2 < x2) {
-                x2 = D_800D64E8[0].x2;
+            if (D_800D64E8[0].x2 < right) {
+                right = D_800D64E8[0].x2;
             }
-            if (D_800D64F2 < y2) {
-                y2 = D_800D64F2;
+            if (D_800D64F2 < bottom) {
+                bottom = D_800D64F2;
             }
-            dList->words.w0 = 0xED000000 |
-                (((s32) ((f32) x1 * 4.0f) & 0xFFF) << 12) |
-                ((s32) ((f32) y1 * 4.0f) & 0xFFF);
-            dList->words.w1 =
-                (((s32) ((f32) x2 * 4.0f) & 0xFFF) << 12) |
-                ((s32) ((f32) y2 * 4.0f) & 0xFFF);
-            dList++;
+            {
+            Gfx *packet = dList++;
+            packet->words.w0 = 0xED000000 |
+                (((s32) ((f32) left * 4.0f) & 0xFFF) << 12) |
+                ((s32) ((f32) top * 4.0f) & 0xFFF);
+            packet->words.w1 =
+                (((s32) ((f32) right * 4.0f) & 0xFFF) << 12) |
+                ((s32) ((f32) bottom * 4.0f) & 0xFFF);
+            }
         } else {
             return;
         }
@@ -258,17 +258,14 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
         if (width == -1) {
             width = func_8004BA8C(current, window->font, 0);
         }
+        right = x + width;
+        bottom = font->verticalExtent + y;
         gDPSetPrimColor(dList++, 0, 0, D_8007D538, D_8007D53C,
                         D_8007D540, 0);
-        {
-            Gfx *packet = dList++;
-
-            packet->words.w0 = 0x07020010;
-            packet->words.w1 = (u32) D_7D528;
-        }
+        gDma1p(dList++, 7, (u32) D_7D528, 16, 2);
         gDPFillRectangle(dList++, window->x1 + x, y + window->y1,
-                         window->x1 + x + width,
-                         font->verticalExtent + y + window->y1);
+                         right + window->x1,
+                         bottom + window->y1);
         gDPPipeSync(dList++);
     }
 
@@ -277,25 +274,24 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
                    window->textColourB, window->textColourA);
 
     activeColour = 0;
-    first = *current;
-    while (first != 0 && window->y2 >= y) {
-        current++;
+    while (*current != 0 && window->y2 >= y) {
+        first = *current++;
         spacing = 0;
         if (first & 0x80) {
-            second = *current++;
-            if (second == 0 || second == 0xF) {
+            first = *current++;
+            if (first == 0 || first == 0xF) {
                 spacing = font->characterWidth;
             } else {
                 if (D_800D664D != 0) {
-                    if (second == 2) {
+                    if (first == 2) {
                         gDPPipeSync(dList++);
                         gDPSetEnvColor(dList++, 0, 0, 0xFF, 0xFF);
                         activeColour = 1;
-                    } else if (second == 0xE) {
+                    } else if (first == 0xE) {
                         gDPPipeSync(dList++);
                         gDPSetEnvColor(dList++, 0, 0xFF, 0, 0xFF);
                         activeColour = 1;
-                    } else if (second >= 0x41 && second < 0x45) {
+                    } else if (first >= 0x41 && first < 0x45) {
                         gDPPipeSync(dList++);
                         gDPSetEnvColor(dList++, 0xFF, 0xFF, 0, 0xFF);
                         activeColour = 1;
@@ -311,69 +307,48 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
 
                 left = window->x1 + x;
                 top = window->y1 + y;
-                spacing = D_800D6628[D_800D60E0][second];
-                if (font->width + left > 0 && font->verticalExtent + top > 0 &&
+                right = font->width + left;
+                bottom = font->verticalExtent + top;
+                spacing = D_800D6628[D_800D60E0][first];
+                if (right > 0 && bottom > 0 &&
                     left < window->x2 && top < window->y2) {
-                    glyph = func_8004C690(second);
+                    glyph = func_8004C690(first);
+                    /* Inert nonvolatile test retained for stock IDO allocation.
+                     * Independently reviewed; see docs/cleanup-queue.md. */
+                    if (D_8007D540 && D_8007D540) { }
                     if (glyph != NULL) {
-                        right = ((glyph->right - glyph->left) * 4) + left * 4;
-                        bottom = ((glyph->bottom - glyph->top) * 4) +
-                                 (glyph->top + top) * 4;
                         left *= 4;
                         top = (glyph->top + top) * 4;
                         spacing = glyph->advance;
-                        textureS = glyph->left << 5;
-                        textureT = glyph->top << 5;
-                        if (left < 0 && right > 0) {
-                            textureS -= left * 8;
-                            left = 0;
+                        right = (glyph->right - glyph->left) * 4 + left;
+                        bottom = (glyph->bottom - glyph->top) * 4 + top;
+                        if (right > 0 && bottom > 0) {
+                            textureS = glyph->left << 5;
+                            textureT = glyph->top << 5;
+                            if (left < 0) {
+                                textureS -= left * 8;
+                                left = 0;
                         }
-                        if (top < 0 && bottom > 0) {
+                        if (top < 0) {
                             textureT -= top * 8;
                             top = 0;
                         }
 
                         fontCommands = font->displayList;
                         dList->words.w0 = fontCommands->words.w0;
-                        dList->words.w1 = D_800D6638 + glyph->textureOffset;
+                        dList->words.w1 = (u32)((u8 *)D_800D6638 + glyph->textureOffset);
                         dList++;
                         fontCommands++;
                         if (font->format == 4) {
-                            dList->words.w0 = 0x07060030;
-                            dList->words.w1 = (u32) fontCommands + 0x80000000;
-                            dList++;
+                            gDma1p(dList++, 7, (u32) fontCommands + 0x80000000, 48, 6);
                             dList->words.w0 = fontCommands[6].words.w0;
-                            dList->words.w1 = D_800D6638 + glyph->textureOffset2;
+                            dList->words.w1 = (u32)((u8 *)D_800D6638 + glyph->textureOffset2);
                             dList++;
                             fontCommands += 7;
                         }
-                        {
-                            Gfx *packet = dList++;
-
-                            packet->words.w0 = 0x07080040;
-                            packet->words.w1 = (u32) fontCommands + 0x80000000;
-                        }
-                        {
-                            Gfx *packet = dList++;
-
-                            packet->words.w0 = 0xE4000000 |
-                                               ((right & 0xFFF) << 12) |
-                                               (bottom & 0xFFF);
-                            packet->words.w1 = ((left & 0xFFF) << 12) |
-                                               (top & 0xFFF);
-                        }
-                        {
-                            Gfx *packet = dList++;
-
-                            packet->words.w0 = 0xB3000000;
-                            packet->words.w1 = (textureS << 16) |
-                                               (textureT & 0xFFFF);
-                        }
-                        {
-                            Gfx *packet = dList++;
-
-                            packet->words.w0 = 0xB2000000;
-                            packet->words.w1 = 0x04000400;
+                        gDma1p(dList++, 7, (u32) fontCommands + 0x80000000, 64, 8);
+                        gSPTextureRectangle(dList++, left, top, right, bottom,
+                            0, textureS, textureT, 0x400, 0x400);
                         }
                     }
                 }
@@ -385,15 +360,16 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
         } else {
             switch (first) {
                 default:
-                    x += font->characterWidth;
+                    /* The u8 mask is inert and preserves IDO temporary selection. */
+                    x += (s32)(font->characterWidth & 0xFFu);
                     break;
                 case '\n':
                     x = window->textOffsetX;
                     y += font->height;
                     break;
                 case '\t':
-                    width = font->characterWidth * 4;
-                    x = (x + width) - ((x - window->textOffsetX) % width);
+                    x += font->characterWidth * 4 -
+                        ((x - window->textOffsetX) % (font->characterWidth * 4));
                     break;
                 case '\v':
                     y += font->height;
@@ -403,7 +379,6 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
                     break;
             }
         }
-        first = *current;
     }
 
     window->xpos = x - window->textOffsetX;
@@ -415,9 +390,7 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
         camSetScissor(displayList);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/font/func_8004B1DC.s")
-#endif
+
 /* PROVENANCE: JFG's permitted src/font.c::fontStringWidth assembly-backed
  * NON_EQUIVALENT draft and DKR's unbuilt Japanese get_text_width branch inform
  * structure only; neither is genuine donor C. Mickey remains authoritative.
@@ -1226,13 +1199,3 @@ u8 *func_8004D40C(s32 font, char *text, s32 maxWidth, u8 **lineStart, s32 *outWi
 u8 func_8004D5C0(s32 font) {
     return D_800D60E4[font].height;
 }
-
-/* PLATEAU-HANDOFF:func_8004B1DC:start
- * symbol: func_8004B1DC
- * score: 452 differing words
- * frame: 0x80
- * relocations: 48
- * first-mismatch: +0x4
- * summary: hypothesis=postincrement packet cursor instead of a delayed dList increment; spellings=empty if(1) and wrapped if(1) left the fold at delta -44, Gfx *packet = dList++ kept; stall=size delta is 0 at 452 masked words and the mechanism is display-list only
- * PLATEAU-HANDOFF:func_8004B1DC:end
- */

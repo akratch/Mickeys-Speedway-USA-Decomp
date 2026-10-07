@@ -709,7 +709,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: POSTPROCESS = \
 		--redefine-sym func_800299E8=func_800299E8_o027Reloc \
 		--redefine-sym func_8002A878=func_8002A878_o027Reloc \
 		--redefine-sym func_8002BD58=func_8002BD58_o027Reloc \
-		--redefine-sym func_80036544=func_80036544_o027Reloc $@ && \
+		--redefine-sym func_80036544=func_80036544_o027Reloc \
+		--redefine-sym camGetPtr=camGetPtr_o027Reloc \
+		--redefine-sym func_80009F08=func_80009F08_o027Reloc \
+		--redefine-sym camPushModelMtx=camPushModelMtx_o027Reloc \
+		--redefine-sym func_800349A4=func_800349A4_o027Reloc \
+		--redefine-sym camPopModelMtx=camPopModelMtx_o027Reloc \
+		--redefine-sym func_80009E78=func_80009E78_o027Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xBC0 && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:dd6fc9f17b7ca59ee611df3687276c9a16893e66f1c08e0b6d5ef3800683dd6f

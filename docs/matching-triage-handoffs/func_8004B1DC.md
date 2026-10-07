@@ -2,11 +2,19 @@
 ### `func_8004B1DC` plateau handoff
 
 - source: `src/main/font.c`
-- score: 452 differing words
+- score: 0 differing words
 - frame: 0x80
-- relocations: 48
-- first mismatch: +0x4
-- summary: hypothesis=postincrement packet cursor instead of a delayed dList increment; spellings=empty if(1) and wrapped if(1) left the fold at delta -44, Gfx *packet = dList++ kept; stall=size delta is 0 at 452 masked words and the mechanism is display-list only
+- relocations: 42
+- first mismatch: none
+- summary: Matched: 556 stock IDO words, 42 exact relocation identities, frame 0x80, linked owned bytes and full ROM identity. Independently reviewed inert forms remain in the cleanup queue.
+
+### 2026-10-04 Astra close-out candidate
+
+The best source is committed in the lane as a reconstruction only. Private ignored evidence under `build/astra-font/` records the captured configured full-TU input, stock/instrumented compiler fidelity, workbench diagnostics, candidate scores, residual classification, and the allocator trace mapping `func_8004B1DC` to the 2,224-byte procedure. The retained score is 57 words at first mismatch `+0x4`, with no size delta and 42 candidate relocation records; the prior 68-word candidate is retained in the private experiment history.
+
+The remaining residual is concentrated in saved-register allocation and scheduling: the s3/s4 swap between alignment flags and y/active-colour, texture-base/offset order, and the default-ASCII-width branch. The next useful experiment is an authenticated live-block or type-use change that alters the saved-register allocation, followed by a field-evaluation-order experiment for the texture offsets. Macro, bounds, packet, tab-width, and glyph-coordinate hypotheses in this packet should not be replayed. No ROM-wide proof was run because the function is still guarded by `NON_MATCHING`.
+
+Summary before this remeasure: hypothesis=postincrement packet cursor instead of a delayed dList increment; spellings=empty if(1) and wrapped if(1) left the fold at delta -44, Gfx *packet = dList++ kept; stall=size delta is 0 at 452 masked words and the mechanism is display-list only
 
 Summary before this remeasure: Unchanged body; the u8 parameter on func_8004C690 moved this caller from 465 to 451 at the same size delta -32
 
@@ -88,4 +96,73 @@ DKR's render_text_string (font.c), whose scissor clamp, alignment and
 per-glyph structure this body follows; a rewrite from the listing in that
 donor's shape (the method that closed func_8005830C from 697) is the
 untried lever.
+### 2026-10-07: committed candidate reproduced in a fresh integration lane
+
+Recovered source from commit b9262cc9d and compiled the configured full TU with
+stock IDO. The current canonical baseline reproduces 452 masked words; the
+recovered body reproduces 57 raw and masked words, exact 2,224-byte size,
+0x80 frame, and first mismatch +0x4. Workbench reports 55 aligned register
+rows and four structural rows. Four relocation metadata differences remain;
+42 records alone does not establish relocation identity. The NON_MATCHING
+fallback remains in place. No matching credit is claimed.
+
+Private baseline/candidate scores and diagnosis are under build/recovery-font/.
+Next: review the four structural rows before revisiting allocator changes.
+
+### 2026-10-07: byte-pointer texture addresses close the structural residual
+
+The retained two texture-address expressions now add the glyph byte offset to
+an unsigned-byte pointer before converting to the display-list address word.
+The matched glyph allocator already uses this arena-relative pointer form:
+it derives the texture offsets from the allocation and texture header offsets.
+No external declaration, header, ABI, call order, or compiler flag changed.
+
+Fresh stock full-TU result: 51 raw and masked differing words, first +0x4,
+2,224 bytes, frame 0x80. All aligned opcode and structural rows agree, and
+workbench reports zero relocation metadata differences. This remains a
+NON_MATCHING candidate; linked-byte identity is not proved.
+
+Controls preserved privately in build/recovery-font/:
+- Reversing the integer-add operands: unchanged at 57.
+- Explicit u32 or u16 offset locals: 100 words; relocation order agrees but
+  locals take allocator colours and disturb the surrounding code.
+- Byte-pointer arithmetic: retained at 51, zero structural rows.
+- Unsigned default-character-width promotion and a one-field y struct:
+  unchanged at 51; neither is retained.
+- Sharing newline and vertical-tab increments: correct saved-register prefix,
+  but 12 bytes short and 90 differing words; not retained.
+- Unsigned newline increment: unchanged at 51; not retained.
+
+The actual compiler-input context compares with itself and each changed input;
+stock and instrumented outputs pass the workbench fidelity gate. The Ucode
+procedure-name mapping proves allocator ordinal 8. On the retained body, the
+y web has save priority 3.833333 versus active colour at 3.642857. Sharing the
+newline increment reaches the target priority order but loses the separate
+case tail, proving a control-flow/allocation tradeoff rather than impossibility.
+Next: seek a source-faithful case/control-flow form that preserves the separate
+tails while reaching that priority order. Do not replay the above controls.
+
+#### 2026-10-07: matched with exact stock output and linked proof
+
+Promoted `src/main/font.c` from guarded candidate to C. The configured stock
+full TU now matches all 556 words (2,224 bytes), frame `0x80`, and all 42
+relocation identities. The promotion proof compares the real linked ROM range
+`0x4BDDC..0x4C68C`; full-ROM identity and the overlay relocation surface pass.
+
+The two-word diagnostic was closed by masking the default u8 character width,
+restoring the plain newline increment, and using compound tab advancement.
+The width mask and an empty duplicated nonvolatile colour-global test remain
+intentional inert source shaping. Independent semantic review found no new
+observable access or undefined behavior on the original defined domain; the
+source discloses both forms and `docs/cleanup-queue.md` records follow-up.
+No original debug-macro identity is claimed. Removing the empty test produces
+25 register differences; moving glyph allocation into its condition also
+produces 25, while duplicating the real glyph condition grows the function.
+
+Private source/object/score/context captures and independent review remain in
+`build/recovery-font/`. `promotion-proof.json` records verdict `exact`, 556
+words and 42/42 relocations. `gmake verify`, `gmake scoreboard`, and
+`tools/promotion_proof.py func_8004B1DC --canonical --json` passed. Further
+work on this symbol is cleanup only, with the exact body as the baseline.
+
 <!-- plateau-handoff:func_8004B1DC:end -->

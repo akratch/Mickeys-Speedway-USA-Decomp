@@ -1181,8 +1181,8 @@
       "source_commit": "34a144842e349bc166b1f75ba9230dd2f1d416da"
     },
     "func_overlay_045_F0001158_188D5B0": {
-      "ledger_commit": "a926f3759c4f4963195fd32b9ac3ec5f68febd99",
-      "reason": "Despite the window-load keep, one pass moves the four screen ints 16 bytes later so their homes can match the stack cluster. The window load and the allocation mask stay.",
+      "ledger_commit": "599c30a03fce16f3f83260acf998ce64fcf78037",
+      "reason": "Fresh exact font sibling closes structural rows by byte-pointer arithmetic for the same arena and glyph offsets; o045 only closed integer reversal. Test the two typed byte-pointer sums, preserving all commands and offset widths.",
       "source_commit": "a926f3759c4f4963195fd32b9ac3ec5f68febd99"
     },
     "func_overlay_046_F0000120_188E518": {

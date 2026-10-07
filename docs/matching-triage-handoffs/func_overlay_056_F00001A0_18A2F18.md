@@ -209,4 +209,25 @@ so lowering the toll below 20 alone would hand mapX the bank. The source
 form has to raise mapY's caller cost above the toll (another call crossing)
 or order mapY ahead of mapX. Not yet found.
 
+Follow-up measurements on the retained body (records, CDX_PROC=6):
+
+- Caller cost is 10 per call crossed. A diagnostic store of mapY after
+  matrixTranslate (one more crossing) moves web 197 to cost 30 and it takes
+  c30 at the 20.75 toll unforced. Not a source form; it locates the lever.
+- Dropping the ghost loop (diagnostic) cuts the toll to 17.25 and then
+  mapX and mapY both open callee registers, which the target does not do.
+- So the shipped allocation needs mapY to cross three calls while mapX
+  crosses two (caller 30 against toll 20.75 against caller 20). Every
+  natural form measured so far gives both values the same two crossings.
+- mapX shape (in-place negation, rotX first or last, negate-then-copy):
+  mapY stays at cost 20 in all four; retained form is best.
+- Unused s32 cells ahead of count (0, 1, 2, 4, 8) and mapX declared
+  directly after count: 272 or 268 aligned disagreement, no allocation
+  change. The target places a spilled mapX at a declared home (0x1B4)
+  between count and the matrices; ours spills to a temporary slot.
+
+Cycle-21 line: find the third call crossing for mapY (or a form where
+mapX loses one) and confirm with web 197 cost in the records before
+scoring; then the frame homes (frame_census) for the 61 immediate rows.
+
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

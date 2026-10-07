@@ -460,7 +460,6 @@ void shadowGenerate(s32 arg0, s32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/shadowGenerate.s")
 #endif
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: the query/polygon organization follows DKR's public
  * src/tracks.c shadow pipeline and JFG's public func_8001DF5C assembly.
@@ -491,7 +490,7 @@ typedef struct Shadow168Angle {
 #define SH168_F32(p, o) (*(f32 *) ((u8 *) (p) + (o)))
 #define SH168_PTR(p, o) (*(void **) ((u8 *) (p) + (o)))
 
-/* Workbench verdict: 12 masked words at size delta 0, frame 0x190 exact.
+/* Matched 2026-10-07 (lane a-shad).
  * This is DKR's shadow_generate with the shadow globals gathered into the
  * stack query struct.
  * 2026-10-02 (lane x-shad):
@@ -512,7 +511,10 @@ typedef struct Shadow168Angle {
  * which only uopt's own cells can be. Written inline with point6 assigned
  * before the first corner, the code is the target's word for word; modInst,
  * radius and the arg2 copy then sit at +0x60..+0x68 and give the frame.
- * Left: from +0xAC the distance and its 1024.0f bound swap f0 and f2. */
+ * The distance clamp is computed in point0, not in its own local: one name
+ * makes it one long web, decided after the 1024.0f constant, so the bound
+ * takes f0 and the distance f2 as shipped. distance stays declared for its
+ * frame cell. */
 void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
                    f32 arg5, s16 arg6) {
     typedef struct Shadow168Query {
@@ -571,18 +573,18 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
                             (s32) arg4);
 
     if (SH168_S16(arg0, 0x44) != 1) {
-        distance = SH168_F32(arg0, 0x30);
-        if (distance < 0.0f) {
-            distance = -distance;
+        point0 = SH168_F32(arg0, 0x30);
+        if (point0 < 0.0f) {
+            point0 = -point0;
         }
-        distance -= 250.0f;
-        if (distance < 0.0f) {
-            distance = 0.0f;
+        point0 -= 250.0f;
+        if (point0 < 0.0f) {
+            point0 = 0.0f;
         }
-        if (distance > 1024.0f) {
-            distance = 1024.0f;
+        if (point0 > 1024.0f) {
+            point0 = 1024.0f;
         }
-        query.scale1C += distance * D_800817A4;
+        query.scale1C += point0 * D_800817A4;
     }
 
     query.inverseScale2C = SH168_F32(arg2p, 0);
@@ -733,9 +735,6 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
 #undef SH168_S32
 #undef SH168_F32
 #undef SH168_PTR
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/func_80016890.s")
-#endif
 /*
  * PROVENANCE: adapted from the public Diddy Kong Racing decompilation,
  * src/tracks.c func_8002E904 (the per-segment shadow polygon builder that
@@ -1382,14 +1381,4 @@ void func_800180B4(ShadowQuery *query) {
  * first-mismatch: +0x118
  * summary: Typed owned trap calls remove default float promotion: 432/+40 to 419/+24; exact frame retained. Remaining type-home and structural residual needs new source evidence.
  * PLATEAU-HANDOFF:shadowGenerate:end
- */
-
-/* PLATEAU-HANDOFF:func_80016890:start
- * symbol: func_80016890
- * score: 12/556 words
- * frame: 0x190
- * relocations: 48
- * first-mismatch: +0xAC
- * summary: temp[] was compiler cells: inline rotated negations, point6 first, modInst/radius/arg2 copy: 31 to 12; left: distance and 1024.0f swap f0/f2
- * PLATEAU-HANDOFF:func_80016890:end
  */

@@ -81,7 +81,10 @@ extern u8 gOverlay12TrianglesB[];
  * reference that ranks it above 1024.0f (f28 as shipped, 1.0f no longer
  * coloured), 429 at -8 -> 180 at delta 0. The four vertex colour writes
  * are one counted loop (IDO unrolls it; the loop weight puts the u8 255 in
- * s0 ahead of the effect pointer), 180 -> 122. */
+ * s0 ahead of the effect pointer), 180 -> 122. Case 1 scales the three
+ * velocity components in place (f20-f24 as shipped) and the secondary
+ * colour is written red, green, blue (ugen then evaluates blue, red,
+ * green as shipped), 122 -> 64. */
 #ifdef NON_MATCHING
 void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                                        s32 *matrixPtr,
@@ -130,9 +133,9 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             component = ((intensity * 255) >> 5) & 0xFF00;
             primary = component | (component << 8) | (component << 16) | 0xFF;
             color = &gOverlay12EffectColors[effect->type * 3];
-            secondary = (((color[2] * intensity) >> 5) & 0xFF00) |
-                        ((intensity * color[0] << 11) & 0xFF000000) |
-                        ((intensity * color[1] * 8) & 0xFF0000) | 0xFF;
+            secondary = ((intensity * color[0] << 11) & 0xFF000000) |
+                        ((intensity * color[1] * 8) & 0xFF0000) |
+                        (((color[2] * intensity) >> 5) & 0xFF00) | 0xFF;
         }
 
         if (((effect->active == 2) || (effect->active == 3)) &&
@@ -213,9 +216,12 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                 factor = 40.0f / distance;
             }
             factor *= effect->value;
-            previous[0] = effect->x0 - (velocityX * factor);
-            previous[1] = effect->y0 - (velocityY * factor);
-            previous[2] = effect->z0 - (velocityZ * factor);
+            velocityX *= factor;
+            velocityY *= factor;
+            velocityZ *= factor;
+            previous[0] = effect->x0 - velocityX;
+            previous[1] = effect->y0 - velocityY;
+            previous[2] = effect->z0 - velocityZ;
             func_800084C4(&displayList, &vertices,
                           gOverlay12Resources[2 + effect->kind1],
                           effect->kind1 == 0 ? gOverlay12TrianglesA : gOverlay12TrianglesB,
@@ -267,10 +273,10 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
 
 /* PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:start
  * symbol: func_overlay_012_F0000910_186DB90
- * score: 122 differing words
+ * score: 64 differing words
  * frame: 0x148
  * relocations: 38
- * first-mismatch: +0xAC
- * summary: Vertex colour writes as an unrolled loop put the u8 255 in s0: 180 to 122 at 0. Open: FP f0/f2/f12 trio, case-1 velocity products.
+ * first-mismatch: +0xC4
+ * summary: Velocity scaled in place, secondary terms red-green-blue: 122 to 64 at 0, all naming. Open: alpha t0, packet cursor a1, FP trio.
  * PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:end
  */

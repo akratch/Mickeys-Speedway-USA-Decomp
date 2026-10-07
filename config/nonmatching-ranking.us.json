@@ -46,13 +46,13 @@
       "tu": "overlays/o008",
       "size_bytes": 3592,
       "objdiff_match_pct": null,
-      "differing_words": 50,
+      "differing_words": 49,
       "first_mismatch_offset": 156,
-      "relocation_masked_differing_words": 15,
-      "relocation_masked_first_mismatch_offset": 1916,
+      "relocation_masked_differing_words": 14,
+      "relocation_masked_first_mismatch_offset": 2360,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "qkSk.nUpk.HEEG.zUbc.9JaZ.9It2.YWa6.kNM4.n5DV.zZV6.RZU"
+      "source_context_sha256": "SlOX.B6AF.h53X.l-Hb.HRzC.lSrI.uG1M.P7OY.kZum.N8ka.0JY"
     },
     {
       "name": "func_80016890",
@@ -157,7 +157,7 @@
       "relocation_masked_first_mismatch_offset": 276,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "VbIA.KSec.hESW.szkv.jRaE.UwfT.8wIi.89eH.F8PN.vzik.zvY"
+      "source_context_sha256": "KBym.Hgtv.Sgfw.2E1V.hVnk.7Nqi.48ds.XeKY.Y43Y.TA8H.iJU"
     },
     {
       "name": "overlay68UpdateAnimation",

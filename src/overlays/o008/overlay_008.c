@@ -1565,9 +1565,12 @@ void overlay8ScaleOutputs(void *unused, Overlay8ScaleState *state,
  * pair on: that gives the shipped second address build.  Each pair is its own
  * block, so the two address webs do not interfere.  Left (17): the first
  * pair's one-block address web takes v0 where the shipped one takes v1 (14
- * words; forced, exact); the mode compare's operands are reversed (1).
+ * words; forced, exact).
  * 2026-10-07: the approach loop written on one line closed its save order
- * (17 -> 15).  GLOBAL_ASM stays canonical. */
+ * (17 -> 15); the mode compare reads ownerMode through a copy into the
+ * free int local sampleCount, which emits the shipped operand order with no
+ * new frame cell (15 -> 14).  Forcing the first pair's web to v1
+ * (p1:w490=c2) on this shape scores 0.  GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                                       O8P34A0State *state, f32 limit,
@@ -1782,7 +1785,8 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
         selectedValue = 0.0111f;
     }
 
-    if (selectedMode != ownerMode) {
+    sampleCount = ownerMode; /* int copy: shipped compare operand order */
+    if (selectedMode != sampleCount) {
         o8P34A0SetModeReloc(owner, selectedMode, -1, blend);
     }
     if ((o8P34A0AnimateReloc(owner, selectedValue, update) != 0) &&
@@ -2383,10 +2387,10 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:start
  * symbol: func_overlay_008_F00034A0_18611F8
- * score: 15/898 words
+ * score: 14/898 words
  * frame: 0x80
  * relocations: 107
- * first-mismatch: +0x77C
- * summary: Approach loop on one physical line fixes the counter save order: 17 to 15. Left: first pair web v0 not v1 (14), mode compare (1).
+ * first-mismatch: +0x938
+ * summary: Mode compare through an int copy: 15 to 14. Left: only the first pair web v0 not v1; forcing it to v1 scores 0.
  * PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:end
  */

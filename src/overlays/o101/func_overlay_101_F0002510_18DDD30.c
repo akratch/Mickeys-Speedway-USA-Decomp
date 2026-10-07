@@ -178,7 +178,7 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
 
 /* PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:start
  * symbol: func_overlay_101_F0002510_18DDD30
- * score: 90 differing words
+ * score: 90/293 words
  * frame: 0xE8
  * relocations: 6
  * first-mismatch: +0x70

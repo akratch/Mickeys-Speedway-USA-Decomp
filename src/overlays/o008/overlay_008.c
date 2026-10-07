@@ -1958,6 +1958,14 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
  * so with one counter everywhere loop 3's `steps - 1` reload sat at loop
  * 2's exit (the one-sided word that kept the gate symbol at +4); on a
  * second variable it sits in loop 3's guard delay slot, as shipped.
+ * Then 93 -> 60: the table row is `randomMode << 2` (a shift, so it is not
+ * one expression with D_2220's `randomMode * 4` scale and uopt stops
+ * sharing it), both tables are read by element index, and the D_2220 term
+ * is added before the directionDC store. 54 -> 45: the row index is
+ * written inline at both table reads (uopt makes the sum one web, v1, and
+ * the byte scale a ring temporary), the D_2208 angle read follows them,
+ * and the `& 0xFF` mask on the mode entry is gone: its draw only stood in
+ * for the order of these reads.
  * GLOBAL_ASM stays canonical. */
 extern s32 gO8P42A8GateReloc;
 #ifdef NON_MATCHING
@@ -2012,15 +2020,14 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     }
     D_0[mode] &= 3;
     randomMode = o8P42A8RandomReloc() & 3;
-    tableIndex = D_0[mode] & 0xFF;
+    tableIndex = D_0[mode];
     if ((state->reset170 != 0) || (state->lock191 != 0)) {
         tableIndex = 1;
     }
 
+    targetMotion = D_2188[(randomMode << 2) + tableIndex];
+    targetHeight = D_21C8[(randomMode << 2) + tableIndex];
     tableAngle = D_2208[randomMode];
-    tableIndex = ((randomMode * 4) + tableIndex) * 4;
-    targetMotion = *(f32 *)((u8 *)D_2188 + tableIndex);
-    targetHeight = *(f32 *)((u8 *)D_21C8 + tableIndex);
     smoothing = D_2210[mode];
     if ((state->lowering349 == 0) && (state->lock191 == 0)) {
         smoothing += 0.08f * update;
@@ -2035,8 +2042,8 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     }
     D_2210[mode] = smoothing;
 
-    state->directionDC = 0x8000 - state->angleF0;
     targetHeight += smoothing * D_2220[randomMode];
+    state->directionDC = 0x8000 - state->angleF0;
     acceleration = state->accelerationE4;
     steering = state->steeringE0;
     targetAngle = tableAngle - ((owner->angle2 * 3) >> 2);
@@ -2389,11 +2396,11 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000
- * score: 93/447 words
+ * score: 45/447 words
  * frame: 0xA0
  * relocations: 40
- * first-mismatch: +0x114
- * summary: Loops 1-2 count with randomMode, loops 3-6 with remaining, gate read as its resident symbol: 96 to 93. Left: shared randomMode*4 and its ring draw.
+ * first-mismatch: +0x290
+ * summary: Row index inline at both table reads, angle read after, no mode mask: 54 to 45. Left: the steps piece after loop 2 (v1) and one ring draw.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
  */
 

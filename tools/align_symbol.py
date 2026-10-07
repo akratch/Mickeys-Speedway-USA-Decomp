@@ -303,6 +303,66 @@ def align(streams: "nr.WordStreams") -> dict:
     }
 
 
+class AlignedScorer:
+    """Score many candidate objects of ONE symbol against a cached target.
+
+    `nr.word_streams` re-assembles the target listing on every call, which is
+    the whole cost when a product of hundreds of cells is ranked. The target
+    stream does not depend on the candidate, so it is read once here and each
+    `score(obj)` only reads the candidate's own stream. Thread-safe after
+    construction (no shared mutable state, nothing touches `nr.WORK_DIR`).
+    """
+
+    def __init__(self, symbol: str, workdir: pathlib.Path):
+        queue = {item.func: item for item in pb.discover_queue()}
+        item = queue.get(symbol)
+        if item is None:
+            raise SystemExit(f"{symbol}: not in the NON_MATCHING queue")
+        self.symbol = symbol
+        out_dir = pathlib.Path(workdir) / "aligned-target"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        target_o = out_dir / "target.o"
+        target_asm = pb.prepare_target_asm(item, out_dir)
+        nr.assemble_target(target_asm, target_o)
+        span = nr.func_symbol_span(target_o, symbol)
+        if span is None:
+            raise SystemExit(f"{symbol}: no .text symbol in the target object")
+        self.target_size = span[1]
+        self.target_words = nr.words_of(nr.text_bytes(target_o, *span))
+        self.target_reloc = nr.relocations(target_o, *span)
+
+    def score(self, obj: pathlib.Path) -> dict | None:
+        span = nr.func_symbol_span(obj, self.symbol)
+        if span is None:
+            return None
+        streams = nr.WordStreams(
+            base_words=nr.words_of(nr.text_bytes(obj, *span)),
+            target_words=self.target_words,
+            base_reloc=nr.relocations(obj, *span),
+            target_reloc=self.target_reloc,
+            base_size=span[1], target_size=self.target_size,
+        )
+        _cat, raw, _first, masked, first = nr.classify(
+            streams.base_size, streams.target_size, streams.base_words,
+            streams.target_words, streams.base_reloc, streams.target_reloc)
+        row = {"masked": masked, "raw": raw, "delta": span[1] - self.target_size,
+               "first": first}
+        row.update(align(streams))
+        row["residual"] = (row["aligned_register_naming"]
+                           + row["aligned_immediate_only"]
+                           + row["aligned_really_different"])
+        return row
+
+
+def render_buckets(row: dict) -> str:
+    """One line: the four buckets and the one-sided spans of an aligned row."""
+    ins = sum(s["words"] for s in row["insertions"])
+    dele = sum(s["words"] for s in row["deletions"])
+    return (f"exact {row['aligned_exact']}  naming {row['aligned_register_naming']}  "
+            f"imm {row['aligned_immediate_only']}  different {row['aligned_really_different']}  "
+            f"(candidate-only {ins}, target-only {dele})  residual {row['residual']}")
+
+
 def measure(symbols: list[str]) -> tuple[list[dict], list[str]]:
     queue = {item.func: item for item in pb.discover_queue()}
     wanted, errors = [], []

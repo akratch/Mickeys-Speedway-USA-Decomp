@@ -3993,11 +3993,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 165 differing words
+ * score: 165/229 words
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x24
- * summary: Then-arm block before the offsets (timeStep loaded once) and the empty if after the else offsets: aligned 161 to 154 at 165. Left: else-arm FP colours.
+ * summary: Then-arm block before the offsets and the empty if after the else offsets: aligned 161 to 154 at 165. Left: else-arm FP colours, trig colours.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

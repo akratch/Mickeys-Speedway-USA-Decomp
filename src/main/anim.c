@@ -1365,30 +1365,28 @@ void func_800517E0(void) {
                     }
                     break;
                 case 0x40:
-                    pathIndex = cursor->command & 0xFF;
-                    packed = *((u16 *) ((u8 *) cursor + 4));
-                    index = pathIndex;
+                    low = cursor->command & 0xFF;
                     high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
-                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    flagsValue = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     high2 = (*((u16 *) ((u8 *) cursor + 6)) >> 8) & 0xFF;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     value = (f32) (*((u16 *) ((u8 *) cursor + 8)));
                     duration = *((u16 *) ((u8 *) cursor + 0xA));
                     target = (f32) duration;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
-                    if ((index & 0xF) == 7) {
-                        packed = low != 0 ? 0 : 0xFF;
+                    if ((low & 0xF) == 7) {
+                        packed = flagsValue != 0 ? 0 : 0xFF;
                         TrapDanglingJump(high, high2, low2, packed,
                                          (s32) (value * factor * scale));
                     } else {
                         color = target != 65535.0f ?
                             target / hundred : -1.0f;
-                        if (low != 0) {
-                            index |= 0x80;
+                        if (flagsValue != 0) {
+                            low |= 0x80;
                         }
                         normalized = value / hundred;
                         func_800498FC(4, normalized, color, high,
-                                      high2, low2, index);
+                                      high2, low2, low);
                     }
                     break;
                 case 0x41:
@@ -1424,15 +1422,15 @@ void func_800517E0(void) {
                                   (s32) value);
                     break;
                 case 0x45:
-                    pathIndex = cursor->command & 0xFF;
+                    high = cursor->command & 0xFF;
                     duration = *((u16 *) ((u8 *) cursor + 6));
                     value = (f32) duration;
                     packed2 = *((u16 *) ((u8 *) cursor + 8));
                     index = *((u16 *) ((u8 *) cursor + 0xA));
-                    high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
-                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    high2 = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
+                    low2 = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
-                    func_80014BAC(0, pathIndex, high, low,
+                    func_80014BAC(0, high, high2, low2,
                                   packed2, index, value / hundred - delta);
                     break;
                 case 0x46: {
@@ -1442,21 +1440,21 @@ void func_800517E0(void) {
                     motionDuration = packedField & 0xFF;
                     motionCount = packedField >> 8;
                     packedField = *((u16 *) ((u8 *) cursor + 0xA));
-                    colorB0 = packedField >> 8;
-                    colorB1 = packedField & 0xFF;
+                    high = packedField >> 8;
+                    high2 = packedField & 0xFF;
                     packedField = *((u16 *) ((u8 *) cursor + 0xC));
-                    colorB2 = packedField >> 8;
-                    colorA0 = packedField & 0xFF;
+                    low2 = packedField >> 8;
+                    pathIndex = packedField & 0xFF;
                     packedField = *((u16 *) ((u8 *) cursor + 0xE));
-                    colorA1 = packedField >> 8;
+                    low = packedField >> 8;
                     packedField &= 0xFF;
-                    motionAngle = cursor->command << 8;
+                    index = cursor->command << 8;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0x10);
-                    motionX = func_8002A8C0(motionAngle) * radius;
-                    motionZ = func_8002A8BC(motionAngle) * radius;
+                    motionX = func_8002A8C0(index) * radius;
+                    motionZ = func_8002A8BC(index) * radius;
                     animCommandMotionTrap(motionX, height, motionZ,
-                                          motionCount * 2, colorB0, colorB1,
-                                          colorB2, colorA0, colorA1, packedField,
+                                          motionCount * 2, high, high2,
+                                          low2, pathIndex, low, packedField,
                                           motionDuration / hundred);
                     break;
                 }
@@ -1512,16 +1510,15 @@ void func_800517E0(void) {
                 }
                 case 0x4A:
                     pathIndex = cursor->command & 0xFF;
-                    index = pathIndex;
-                    high = *((u16 *) ((u8 *) cursor + 4)) >> 8;
-                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    low = *((u16 *) ((u8 *) cursor + 4)) >> 8;
+                    high = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     high2 = *((u16 *) ((u8 *) cursor + 6)) >> 8;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
-                    if (high != 0) {
-                        TrapDanglingJump(index, low, high2, low2, high);
+                    if (low != 0) {
+                        TrapDanglingJump(pathIndex, high, high2, low2, low);
                     } else {
-                        TrapDanglingJump(index);
+                        TrapDanglingJump(pathIndex);
                     }
                     break;
                 case 0x4B:
@@ -4008,10 +4005,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1757 differing words
- * frame: 0x160
- * relocations: 250
+ * score: 1716 differing words
+ * frame: 0x168
+ * relocations: 246
  * first-mismatch: +0x0
- * summary: Aligned 1369, size -28. Command field-read in s2, path index and object s0, a0/a3 pieces held; path table not spilled, per-case local partition remains.
+ * summary: Aligned 1312, size +24. Byte quartet shared by 0x40/0x45/0x46/0x4A takes fp, path table spilled to +0x7C; mask immediates still cost the state piece.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

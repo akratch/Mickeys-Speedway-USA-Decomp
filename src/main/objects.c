@@ -5385,6 +5385,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: 0x198
  * relocations: 11
  * first-mismatch: +0x170
- * summary: Base carrier removed (189 to 185 at delta 0, aligned naming 137 to 134). Left: one folded draw on the unk3 load, sort j web, entry loop draws.
+ * summary: Base carrier removed (189 to 185 at delta 0). Left: one folded draw on the unk3 load, sort j web (a0 in the target), entry loop draws.
  * PLATEAU-HANDOFF:func_80009414:end
  */

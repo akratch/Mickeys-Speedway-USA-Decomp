@@ -82,8 +82,11 @@ extern void *D_800D31C8[];
  * layout func_overlay_047_F0000000_1890E18 defines (Tier D, from the LOCAL
  * relocation addends). Only the NON_MATCHING body sees them; a promotion must
  * drop these sections at POSTPROCESS as that TU's rule does. The blend value
- * and its speed (+0x540/+0x544) are one struct: measured -4 bytes at the tail
- * against two scalars (2026-10-02). */
+ * and its speed (+0x540/+0x544) are two statics: the target forms each address
+ * in its own register at the tail (2026-10-08). The colour table is s32 and the
+ * colour blocks read it per channel with no `colour` local, so the packet's
+ * cursor store blocks uopt's forward and the channels are symbol webs as
+ * shipped; the blend reassigns the channels (lane j-9, 2026-10-08). */
 static u8 ov47Data_0[0x8C] = { 0 };
 static u8 ov47Data_8C[0x8C] = { 0 };
 static u8 ov47Data_118[0x80] = { 0 };
@@ -101,7 +104,7 @@ static u8 sO47Data3B4[0x14] = { 0 };
 /* One table: the ready and unready reads index the same rows (3CC is
  * 3C8 plus one row), measured 2026-10-07. */
 static s8 ov47Data_3C8[5][4] = { 0 };
-static u32 ov47Data_3DC[5] = { 0 };
+static s32 ov47Data_3DC[5] = { 0 };
 static f32 ov47Data_3F0[5] = { 0 };
 static f32 D_404[15] = { 0 };
 static s8 D_440[12] = { 0 };
@@ -120,7 +123,8 @@ static u8 sO47Data500[0x10] = { 0 };
 static s16 ov47Data_510[10] = { 0 };
 static s8 ov47Data_524[12] = { 0 };
 static s32 ov47Data_530[4] = { 0 };
-static struct { f32 value; f32 speed; } ov47Data_540 = { 0 };
+static f32 ov47Data_540 = 0;
+static f32 ov47Data_544 = 0;
 static s32 ov47Data_548 = 0;
 static f32 ov47Data_54C = 0;
 static s32 ov47Data_550 = 0;
@@ -220,7 +224,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     s32 textX;
     s32 barX, barY;
     s32 stat;
-    s32 colour;
+
     s32 x, y;
     s32 red, green, blue;
     s32 showMode;
@@ -552,7 +556,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             if ((f32)p2->selector == icon->selector && p2->active) {
                 colourIndex = stat;
                 if (!p2->ready) unready = 1;
-                for (j = 0; j < updateRate; j++) {
+                for (selected = 0; selected < updateRate; selected++) {
                     ov47Bss_328[stat] +=
                         ((((s32)icon->x + 160) << 4) - ov47Bss_328[stat]) >> 2;
                 }
@@ -573,17 +577,16 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         mtxf_mul(localMatrix, cameraMatrix, resultMatrix);
         mtxf_to_mtx(resultMatrix, D_800D3144);
         savedMatrix = D_800D3144;
-        O47_COMMAND(0x01000040, O47_PHYSICAL(D_800D3144));
+        O47_COMMAND_W1(0x01000040, O47_PHYSICAL(D_800D3144));
         D_800D3144++;
-        colour = ov47Data_3DC[colourIndex];
-        red = colour >> 24;
-        green = colour >> 16;
-        blue = colour >> 8;
-        O47_COMMAND_W1(0x06000000, ov47Data_300);
+        red = ov47Data_3DC[colourIndex] >> 24;
+        green = ov47Data_3DC[colourIndex] >> 16;
+        blue = ov47Data_3DC[colourIndex] >> 8;
+        O47_COMMAND(0x06000000, ov47Data_300);
         O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
         O47_COMMAND_W1(0xFCFFFFFF, 0xFFFDF6FB);
         O47_VERTICES(ov47Data_198, 4);
-        O47_COMMAND_W1(0x05100020, O47_PHYSICAL(ov47Data_1C0));
+        O47_COMMAND(0x05100020, O47_PHYSICAL(ov47Data_1C0));
         camStandardOrtho(&D_800D3140, &D_800D3144);
         func_80034920(&D_800D3140);
         O47_COMMAND(0xFA000000, -1);
@@ -597,15 +600,14 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         O47_COMMAND(0x01000040, O47_PHYSICAL(savedMatrix));
         if (selected != -1 && !D_800D3058[selected].ready) {
             O47_COMMAND_W1(0x06000000, ov47Data_2A8);
-            colour = ov47Data_3DC[selected];
-            red = (colour >> 24) & 255;
-            green = (colour >> 16) & 255;
-            blue = (colour >> 8) & 255;
-            O47_COMMAND(0xFA000000,
-                ((u32)(s32)(red + (255 - red) * ov47Data_540.value) << 24) |
-                (((s32)(green + (255 - green) * ov47Data_540.value) & 255) << 16) |
-                (((s32)(blue + (255 - blue) * ov47Data_540.value) & 255) << 8) | 255);
-            O47_COMMAND_W1(0xFCFFFFFF, 0xFFFDF6FB);
+            red = ov47Data_3DC[selected] >> 24;
+            green = ov47Data_3DC[selected] >> 16;
+            blue = ov47Data_3DC[selected] >> 8;
+            red = (red & 255) + (255 - (red & 255)) * ov47Data_540;
+            green = (green & 255) + (255 - (green & 255)) * ov47Data_540;
+            blue = (blue & 255) + (255 - (blue & 255)) * ov47Data_540;
+            O47_COMMAND(0xFA000000, (red << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
+            O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
             O47_VERTICES(ov47Data_0, 14);
             O47_COMMAND(0x05710080, O47_PHYSICAL(ov47Data_118));
             O47_VERTICES(ov47Data_8C, 14);
@@ -704,13 +706,13 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     }
     func_80021504(oldFov, 1);
     func_800221E8(&D_800D3140, NULL);
-    ov47Data_540.value += ov47Data_540.speed * rate;
-    if (ov47Data_540.value > 1.0f) {
-        ov47Data_540.speed = -ov47Data_540.speed;
-        ov47Data_540.value = 2.0f - ov47Data_540.value;
-    } else if (ov47Data_540.value < 0.0f) {
-        ov47Data_540.value = -ov47Data_540.value;
-        ov47Data_540.speed = -ov47Data_540.speed;
+    ov47Data_540 += ov47Data_544 * rate;
+    if (ov47Data_540 > 1.0f) {
+        ov47Data_544 = -ov47Data_544;
+        ov47Data_540 = 2.0f - ov47Data_540;
+    } else if (ov47Data_540 < 0.0f) {
+        ov47Data_540 = -ov47Data_540;
+        ov47Data_544 = -ov47Data_544;
     }
     if (ov47Bss_30B) {
         if (ov47Bss_310 != NULL) amSndStop(ov47Bss_310);
@@ -724,10 +726,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 1982/2168 words
+ * score: 1969/2168 words
  * frame: 0x280
- * relocations: 322
+ * relocations: 315
  * first-mismatch: +0x4
- * summary: Unchanged. j-9 shape (table-read channels, blend reassignment, 540/544 statics) reads residual 887 vs 911 at -12; open: green copy, 3C8, +0x12C.
+ * summary: Banked on aligned residual at size -12: table-read channels, blend reassignment, 540/544 statics, j on selected; residual 911 to 887.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

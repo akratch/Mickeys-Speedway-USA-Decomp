@@ -84,7 +84,9 @@ extern u8 gOverlay12TrianglesB[];
  * s0 ahead of the effect pointer), 180 -> 122. Case 1 scales the three
  * velocity components in place (f20-f24 as shipped) and the secondary
  * colour is written red, green, blue (ugen then evaluates blue, red,
- * green as shipped), 122 -> 64. */
+ * green as shipped), 122 -> 64. Case 1 keeps its scale in distance, so
+ * factor is a resource-block value only (the distance, factor and centre
+ * webs then take f2, f0, f12 as shipped), 64 -> 43. */
 #ifdef NON_MATCHING
 void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                                        s32 *matrixPtr,
@@ -211,14 +213,14 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                              (velocityY * velocityY) +
                              (velocityZ * velocityZ));
             if (distance == 0.0f) {
-                factor = 0.0f;
+                distance = 0.0f;
             } else {
-                factor = 40.0f / distance;
+                distance = 40.0f / distance;
             }
-            factor *= effect->value;
-            velocityX *= factor;
-            velocityY *= factor;
-            velocityZ *= factor;
+            distance *= effect->value;
+            velocityX *= distance;
+            velocityY *= distance;
+            velocityZ *= distance;
             previous[0] = effect->x0 - velocityX;
             previous[1] = effect->y0 - velocityY;
             previous[2] = effect->z0 - velocityZ;
@@ -273,10 +275,10 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
 
 /* PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:start
  * symbol: func_overlay_012_F0000910_186DB90
- * score: 64 differing words
+ * score: 43 differing words
  * frame: 0x148
  * relocations: 38
  * first-mismatch: +0xC4
- * summary: Velocity scaled in place, secondary terms red-green-blue: 122 to 64 at 0, all naming. Open: alpha t0, packet cursor a1, FP trio.
+ * summary: Case 1 scales through distance: FP triple as shipped, 64 to 43 at 0, all naming. Open: alpha t0, packet cursor a1, ring.
  * PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:end
  */

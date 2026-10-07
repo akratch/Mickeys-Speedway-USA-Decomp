@@ -3559,6 +3559,10 @@ f32 func_8002A8C0(s32 angle);
  * `pz*nz + (nx*px + ny*py)`, as the target adds it. The empty region after
  * the trig products starts a block for the offsets, so timeStep's last
  * piece is coloured and loaded once, as shipped. See the shard.
+ * 2026-10-08 (lane j-4): the compare reads two of its products through
+ * `dot` and `speed` (the then arm's FP ring is then in phase from +0x80),
+ * and an empty `if (cosine)` after the trig pair gives the cosine reload
+ * f2 and the sine f12 as shipped: 165 to 145 at size 0.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3581,9 +3585,9 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
     target = first->target;
     firstSource = first->source;
     secondSource = second->source;
-    if (target->velocity.z * target->velocity.z +
-            (target->velocity.x * target->velocity.x +
-             target->velocity.y * target->velocity.y) > 25.0f) {
+    dot = target->velocity.x * target->velocity.x;
+    speed = target->velocity.y * target->velocity.y;
+    if (target->velocity.z * target->velocity.z + (dot + speed) > 25.0f) {
         mass = ((HitResolveMass *) TrapDanglingJump(target))->mass;
         dot = normal->z * target->velocity.z +
               (target->velocity.x * normal->x + target->velocity.y * normal->y);
@@ -3608,6 +3612,8 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         secondSource->unk64 = speed;
         cosine = -func_8002A8C0(*(s16 *) first);
         sine = -func_8002A8BC(*(s16 *) first);
+        if (cosine) {
+        }
         target->unk90 = normal->z * cosine - normal->x * sine;
         target->unk8C = normal->z * sine + cosine * normal->x;
         if (1) {
@@ -3993,11 +3999,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 165/229 words
+ * score: 145/229 words
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x24
- * summary: Then-arm block before the offsets and the empty if after the else offsets: aligned 161 to 154 at 165. Left: else-arm FP colours, trig colours.
+ * summary: Compare products through dot/speed and an empty if (cosine) after the trig pair: 165 to 145 at size 0. Left: else-arm FP colours and spills.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

@@ -203,6 +203,6 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
  * frame: 0x78
  * relocations: 22
  * first-mismatch: +0x0
- * summary: Reversed first smoothing sum 382 to 380; operand-order products flat. Open: dead copies a0 vs a3, lo a1 vs a0, frame 0x78 vs 0x70.
+ * summary: Shift-form store address is not strength reduced (target shape, +16); the remaining surplus is the hi expression copy.
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

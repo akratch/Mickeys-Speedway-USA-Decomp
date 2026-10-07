@@ -200,4 +200,15 @@ Measured on the 2-word body (size delta 0 throughout unless noted).
 
 Decision variable now: the shape that is the in-argument body (index live in the call block, colours exact) but whose atStart is a symbol web with a load-bearing call-block reference, as the memory form gives. Next: the memory-form statement before the call combined with an index use in the call block that emits no word.
 
+#### 2026-10-07, lane d-near (resumed): index into the call block on the memory form
+
+Base: the memory-form statement before the call passing plain `atStart` (100 at 0, the target's store order). Measured:
+
+- Folded uses of index in the call block (`(before->red << 8) or (index & 0)`, `atStart + (index & 0)`, a comma `(index, atStart)`, a shift by `8 + (index & 0)`, `atStart * (index == index)`): uopt deletes them, 100; the others emit code (147 to 317).
+- A product by zero, which uopt keeps and ugen folds (`atStart + index * 0`, `index * 0 + atStart`, `(before->red << 8) + index * 0` or `0 * index`, `(before + index * 0)->red`), red through index or not (10 cells): 159 at 0. This does keep index live into the call block, and index takes t0 as shipped, but the keyframeIndex load stays its own web (v0, `move t0,v0` after it), so blez and the slti read the load web and the ring shifts by the extra move. The memory form always gives two webs where the target has one.
+- The same product-by-zero uses on the `atStart = index < 1;` statement shape: 20 (red through index) and 6 (red direct), unchanged; the argument still reads the CSE'd compare.
+- In-argument forms re-reading the variable (`(atStart = index < 1, atStart)`, the same with `*&atStart`): 75 at 0 with a frame 8 bytes larger. `(atStart = (index < 1)) + 0`: 2. Statement shape with atStart typed s16/u8/s8/u16 (233 to 234 at +8) or u32 (20), and `!index` (76) or `(index < 1) & 1` (242 at +4): no cell under 20.
+
+Decision variable: atStart must be a register symbol web with a reference in the call block (so it is saved there, giving the target's store order) while computed from the index web itself, not a separate load. Every index-form statement is copy-propagated into the argument; every memory form splits the load from index.
+
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

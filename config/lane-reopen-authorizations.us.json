@@ -1981,8 +1981,8 @@
       "source_commit": "9c47a665816bbc11a9ffa1734b1700da5e3b08ed"
     },
     "overlay69DrawSortedGeometry": {
-      "ledger_commit": "b1ff1b5bf31537269b4c92d402c256f1e788f091",
-      "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 57 masked words is a schedule or structure defect the permuter can still move.",
+      "ledger_commit": "fb36a18bc55aafcb56dbde493144f56f7c8e26ee",
+      "reason": "Exact font sibling proves redundant byte masks can change earlier temporary phase. Test fixed-key and signed-byte geometry load masks; reference/count masks and store-order controls remain closed.",
       "source_commit": "0c6942a2e1f185ce6530dc2e0a61085ee468a7d5"
     },
     "overlay74Update": {
@@ -2019,6 +2019,11 @@
       "ledger_commit": "0e065f2dbfd96051c91275499c27d5777676b5ec",
       "reason": "Despite the comma-copy stall, one pass writes the environment color as four ordered or-assignments so red is shifted before green. The comma copy stays closed.",
       "source_commit": "ef9a4d0bb6fab88c5026be5dc5d27a4875bf1295"
+    },
+    "overlay88DrawSortedGeometry": {
+      "ledger_commit": null,
+      "reason": "Paired include owner with overlay69: record its renamed full-TU baseline, then test the shared byte-mask phase mechanism. Preserve local callee identities and prove both linked ranges before promotion.",
+      "source_commit": "c7419096d16de0105293606807ded85c794df3d2"
     },
     "overlay89InitializeEffect": {
       "ledger_commit": "fb9a096f575791e53907007f0bdb5aeaf6348437",

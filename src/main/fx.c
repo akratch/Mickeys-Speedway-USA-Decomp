@@ -979,7 +979,14 @@ void func_80048980(WakeRipple *ripple) {
  * index as s32, a while (count--) scan, and the 0x20 buffer read spelled as
  * a subscript so uopt keeps it apart from the 0x18/0x28 address (the target
  * computes that address twice). The rest is p1 colour order: wake and
- * secondaryVertices, index and stripIndex swap; see the handoff shard. */
+ * secondaryVertices, index and stripIndex swap; see the handoff shard.
+ * Lane j-6 (2026-10-08), 170 -> 37: the second loop reads the sample as
+ * index * 0x14, so the constant 20 web spans the loop's calls and splits
+ * (totalsave 20 against bestcost 20): the loop piece goes back to an
+ * immediate (the shipped shift-add) and the first-scan piece keeps a0 across
+ * the pre-loop region. The mark and new-sample sites multiply a u8 by 0x14U,
+ * a second constant web that then takes a2 as shipped; the new sample's
+ * byte 1 is stored straight from wake->value8 >> 1 (no `value` carrier). */
 void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
     u8 *sample;
     s32 index;
@@ -991,7 +998,7 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
     s32 outputCount;
     s32 value;
     s32 polygonOffset;
-    s32 vertexCount;
+    u8 vertexCount;
     u8 *vertices;
     u8 *secondaryVertices;
     u8 *polygon;
@@ -1019,7 +1026,7 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
     stripIndex = 0;
     polyCount = 0;
     outputCount = 0;
-    ((u8 *) wake->samples + (vertexCount * 0x14))[1] |= 0x80;
+    ((u8 *) wake->samples + (vertexCount * 0x14U))[1] |= 0x80;
     if (wake->flags & 2) {
         if (wake->value8 == 0) {
             mark = 1;
@@ -1045,10 +1052,9 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
         }
     }
     if ((wake->value8 != 0) && (wake->value3B < wake->segmentCount)) {
-        sample = (u8 *) wake->samples + (wake->value3A * 0x14);
+        sample = (u8 *) wake->samples + (wake->value3A * 0x14U);
         sample[0] = wake->textureIndex;
-        value = wake->value8 >> 1;
-        sample[1] = value;
+        sample[1] = wake->value8 >> 1;
         if (mark != 0) {
             /* Lane i-6: OR-assigned through the byte. uopt forwards the
              * byte just stored, so the value stays one ring temporary and
@@ -1079,8 +1085,7 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
         index = wake->value39;
         if (index != wake->value3A) {
             do {
-                value = index * 5;
-                sample = (u8 *) wake->samples + (value * 4);
+                sample = (u8 *) wake->samples + (index * 0x14);
                 if (++index >= wake->segmentCount) {
                     index = 0;
                 }
@@ -2148,10 +2153,10 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeUpdate:start
  * symbol: wakeUpdate
- * score: 170/398 words
+ * score: 37/398 words
  * frame: 0x90
  * relocations: 2
- * first-mismatch: +0xC0
- * summary: Aligned 125 to 104 (outputCount per vertex, height in value); 170 positional is one as1-hoisted zero init. Left: constant 20 in a0, stripIndex probes
+ * first-mismatch: +0x284
+ * summary: Constant 20 split from source (loop index*0x14, u8 times 0x14U at mark/new-sample, value8 stored direct): 170 to 37 at 0
  * PLATEAU-HANDOFF:wakeUpdate:end
  */

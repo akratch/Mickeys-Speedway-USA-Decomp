@@ -2,11 +2,13 @@
 ### `wakeUpdate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 170/398 words
+- score: 37/398 words
 - frame: 0x90
 - relocations: 2
-- first mismatch: +0xC0
-- summary: Aligned 125 to 104 (outputCount per vertex, height in value); 170 positional is one as1-hoisted zero init. Left: constant 20 in a0, stripIndex probes
+- first mismatch: +0x284
+- summary: Constant 20 split from source (loop index*0x14, u8 times 0x14U at mark/new-sample, value8 stored direct): 170 to 37 at 0
+
+Summary before this remeasure: Aligned 125 to 104 (outputCount per vertex, height in value); 170 positional is one as1-hoisted zero init. Left: constant 20 in a0, stripIndex probes
 
 Summary before this remeasure: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: constant 20 in a0 (target a2), loop t3/t5, stripIndex probes
 
@@ -363,4 +365,48 @@ target has a0 in the first scan and a2 at the mark and new-sample sites,
 which needs two webs, and no literal spelling makes two). Next look: what
 holds a0 across bb9..bb25 in the target (an argument-register web or a
 call), then the stripIndex references.
+
+#### 2026-10-08, lane j-6: the constant 20 splits, 170 to 37 at delta 0
+
+Measured by tools/bank.py: masked 37 (raw 37), size delta +0, candidate 398 words vs target 398. Aligned: byte-exact 379, register naming 1, immediate only 2, really different 20.
+
+Aligner before: byte-exact 298, naming 81, immediate 2, really different
+21 (170 positional). After: the bank.py measurement above.
+
+The decision variable named by i-6 (web 326, the constant 20, a0 at the mark
+and new-sample sites where the target has a2) is reached from source with no
+force. Three measured steps, one product each (proc 13 records read with
+web_report --trace on an instrumented compile of the cell):
+
+- The second loop's sample address written as index * 0x14 (no index * 5
+  carrier). Alone this is +4 (the constant web reaches the loop in a
+  register, multu), but the records show why it is the right shape: the
+  web then spans the loop's two calls with totalsave 21 against bestcost 20.
+  One reference fewer and it splits: the loop piece goes to memory, so the
+  loop multiplies by an immediate (the shipped sll/addu/sll in place), and
+  the first-scan piece seeded at bb2 takes a0 and grows through bb30. That
+  piece is the "something that holds a0 across bb9..bb25".
+- The mark and new-sample sites as a u8 times 0x14U (vertexCount declared
+  u8, wake->value3A already u8). Both sites then share a second constant
+  web, which drops the first web to totalsave 20 (split) and itself takes
+  a2 because the first web's piece holds a0: li a0,20 in the first scan and
+  li a2,20 at the join, as shipped. The U literal on an s32 operand, or a
+  u16/u32 cast, does not make a separate web; a (u8) cast does but adds an
+  andi. sizeof of a 20-byte type is the same as 0x14U.
+- The new sample's byte 1 stored straight from wake->value8 >> 1 instead of
+  through `value`: the reload goes to a ring temporary as shipped and the
+  whole temp ring from +0x1C0 through the second loop lines up (177 to 37).
+
+Products measured on the way: 16 cells over 0x14U at each of the four
+sites (only the u8 new-sample site moves anything), 10 mark-site casts, 4
+declared types of vertexCount, 3 forms of the value8 store times 4 loop
+address forms (index * 0x14, * 20, a byte-offset local, the old
+index * 5 then * 4).
+
+Left (37): outputOffset's zero init in the beq delay slot here where the
+target has it before the triangle-buffer loads (+0x284), polygonOffset's
+call-spill cell (+0x68 here, +0x6C in the target), the strip alpha value in
+v0 where the target has v1 (the mflo and the four byte stores), and the
+stripIndex test scheduling at the loop end. The three stripIndex OR-zero
+probes are still in the body.
 <!-- plateau-handoff:wakeUpdate:end -->

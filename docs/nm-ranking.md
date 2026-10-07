@@ -271,20 +271,21 @@ Relocation-masked mismatch evidence covers **37 / 37** resolved rows. The raw co
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
+| `register-only` | 1 | 2.7% |
 | `schedule-only` | 1 | 2.7% |
-| `other` | 28 | 75.7% |
+| `other` | 27 | 73.0% |
 | `size-mismatch` | 8 | 21.6% |
 
 ### Differing-word thresholds
 
 | Threshold | Count |
 |---|---:|
-| raw `differing_words <= 5` | 1 |
-| relocation-masked `differing_words <= 5` | 1 |
-| raw `differing_words <= 10` | 4 |
-| relocation-masked `differing_words <= 10` | 4 |
-| raw `differing_words <= 20` | 4 |
-| relocation-masked `differing_words <= 20` | 6 |
+| raw `differing_words <= 5` | 2 |
+| relocation-masked `differing_words <= 5` | 2 |
+| raw `differing_words <= 10` | 5 |
+| relocation-masked `differing_words <= 10` | 5 |
+| raw `differing_words <= 20` | 5 |
+| relocation-masked `differing_words <= 20` | 7 |
 
 ### Complete ranked queue
 
@@ -294,13 +295,13 @@ units remain distinct.
 
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `schedule-only` | 1,424 | 2 | 2 | 580 | 580 | 0 | — |
-| 2 | `src/main/track.c` | `func_80010654` | `main` | `other` | 684 | 8 | 7 | 180 | 180 | 0 | — |
-| 3 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
-| 4 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
-| 5 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `other` | 3,040 | 29 | 14 | 96 | 696 | 0 | — |
-| 6 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 49 | 14 | 156 | 2,360 | 0 | — |
-| 7 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 24 | 24 | 60 | 60 | 0 | — |
+| 1 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `register-only` | 784 | 3 | 3 | 60 | 60 | 0 | — |
+| 2 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `schedule-only` | 1,424 | 2 | 2 | 580 | 580 | 0 | — |
+| 3 | `src/main/track.c` | `func_80010654` | `main` | `other` | 684 | 8 | 7 | 180 | 180 | 0 | — |
+| 4 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
+| 5 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
+| 6 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `other` | 3,040 | 29 | 14 | 96 | 696 | 0 | — |
+| 7 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 49 | 14 | 156 | 2,360 | 0 | — |
 | 8 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 43 | 43 | 20 | 20 | 0 | — |
 | 9 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
 | 10 | `src/main/textures_354C8.c` | `func_800349A4` | `main` | `other` | 1,088 | 62 | 62 | 96 | 96 | 0 | — |

@@ -2,11 +2,13 @@
 ### `func_overlay_056_F00001A0_18A2F18` plateau handoff
 
 - source: `src/overlays/o056/overlay_056.c`
-- score: 538 differing words
-- frame: 0x1F8
+- score: 577 differing words
+- frame: 0x1F0
 - relocations: 75
-- first mismatch: +0x50
-- summary: Colour table reconstructed as a field at overlay-data +0x50 (gOverlay56Data.colors[index]) so both marker sites emit lui plus scaled addu plus lw 0x50 off the data-section base, the live pointer the target already holds. Indexing gOverlay56Colors by name still costs an extra addiu per site. Minimap sprite identity is gOverlay56Resource, not a NULL-page load. Aligned split 132 naming 244 immediate 28 structural 216 versus the prior 130/237/28/223; size is 591 versus 581 (delta +40) because the colour loads add the four missing base words plus leftover surplus elsewhere. The eight-word hole at target +0x6D8 remains unpack schedule: the target shifts RGB immediately after the load (green, blue, then red in the mode-branch delay slot) while this candidate still unpacks in the call. Identity-gate passed with CDX_PROC=6. Do not colour-landscape until size delta is 0. Ghost slots at D_800D1494 (alpha 255) and D_800D1498 (alpha 85) are identified but naming them did not move the aligned residual. Next: force the AI-site unpack before the mode branch without extra copies, then the unsigned-float surplus around +0x498.
+- first mismatch: +0x0
+- summary: Natural rewrite: aligned 316/121/61/90, delta -8; open: mapY web 197 takes caller c29 (20.0) under the 20.75 callee toll, no f24.
+
+Summary before this remeasure: Colour table reconstructed as a field at overlay-data +0x50 (gOverlay56Data.colors[index]) so both marker sites emit lui plus scaled addu plus lw 0x50 off the data-section base, the live pointer the target already holds. Indexing gOverlay56Colors by name still costs an extra addiu per site. Minimap sprite identity is gOverlay56Resource, not a NULL-page load. Aligned split 132 naming 244 immediate 28 structural 216 versus the prior 130/237/28/223; size is 591 versus 581 (delta +40) because the colour loads add the four missing base words plus leftover surplus elsewhere. The eight-word hole at target +0x6D8 remains unpack schedule: the target shifts RGB immediately after the load (green, blue, then red in the mode-branch delay slot) while this candidate still unpacks in the call. Identity-gate passed with CDX_PROC=6. Do not colour-landscape until size delta is 0. Ghost slots at D_800D1494 (alpha 255) and D_800D1498 (alpha 85) are identified but naming them did not move the aligned residual. Next: force the AI-site unpack before the mode branch without extra copies, then the unsigned-float surplus around +0x498.
 
 - ownership: Overlay 56 text `+0x1A0..+0xAB4`, ROM `0x18A2F18..0x18A382C`, exactly 2,324 bytes. `overlay56UnpackColor` starts at `+0xAB4`; the separate `+0xAF4..+0xB00` alignment tail is not owned.
 - ABI: the resident inbound at ROM `0x27F18` passes the display-list pointer address, vertex-cursor address, and the current update-rate word. It is the sole direct resident relocation to export table index 1361 at `+0x1A0`.
@@ -159,5 +161,73 @@ caused resident relocation overflows; regeneration after that rebuild restored
 the committed alias file exactly and verification passed. Documentation,
 clean-room and all 99 tooling test files pass. No game source or generated
 alias change is committed.
+
+#### 2026-10-07 (lane b-o056): natural-source rewrite from the listing
+
+The inherited m2c body was discarded and the function rewritten from the
+target listing and the relocation records (brief items 1, 3, 6, 20). Each
+cell below is a whole-TU compile scored by aligned edit distance, measured
+as exact / naming / immediate / structural rows and size delta.
+
+- Inherited body: 132 / 244 / 28 / 216, delta +40.
+- First natural draft (typed structs, while (i--) loops, three distinct
+  resident bytes for the mode tests): 144 / 225 / 59 / 185, delta +24.
+- GBI packet macros taking dl++ (pipe sync, scissor, matrix, prim colour,
+  DKR vertex and polygon): 156 / 231 / 46 / 171, delta -8.
+- Ghost selector as an else-if chain with a final else obj = NULL (the
+  shipped redundant branch to the join): structural 91 to 90.
+- x/z products written inline, not as locals: mapY is then computed at the
+  loop head as shipped instead of being forwarded past the calls.
+- mapY rebased in place (mapY += offset) before matrixTranslate: 440 to 421
+  aligned disagreement.
+- Colour word read from the table at each unpack with no colour local:
+  421 to 283. This alone produces the shipped srl/srl/andi/andi/move/move
+  unpack before the mirror branch; a colour carrier lets uopt forward all
+  three components into the call block. Typing red/green/blue u8, splitting
+  the masks into a second statement, and four statement orders were
+  byte-identical or worse (measured, 16 cells).
+- Retained: 316 / 121 / 61 / 90, 579 against 581 words, frame 0x1F0
+  against 0x1F8. Positional 577 is insertion shadow.
+
+Resident mode bytes, from the relocation records: 0x800D3198 is the
+fade-rate test (== 3), 0x800D3194 the player count (== 2 split test,
+slot = count - 1, loop bound i < count), 0x800D31A8 the mirror flag (every
+negation and +520 offset). The header's gOverlay56Mode is a fourth object
+(SetMode stores 0x800CD60C). Promotion needs a placeholder name per byte.
+
+Decision variable. The two missing words are the f24 save and restore.
+Instrumented uopt (CDX_PROC=6, .text identity-gated against the stock
+object) records web 197 (mapY) with caller cost 20.0 at c29 against the
+callee toll 20.75 (L56: nBB 83), so it is never offered a callee register.
+Forcing p1:w197=c30 is accepted (forced=30) and puts mapY, cos and sin in
+f20, f22, f24 exactly as shipped; the forced object scores 386 positional
+at delta -8 with only scheduling and ghost-loop rows left structural.
+Web 339 (ghostAlpha, v1, caller cost 20.0) is the same decision; the target
+holds it in s1. Web 203 (mapX, save 20, caller cost 20.0) is decided first
+and must stay caller (the target spills it to its declared home at 0x1B4),
+so lowering the toll below 20 alone would hand mapX the bank. The source
+form has to raise mapY's caller cost above the toll (another call crossing)
+or order mapY ahead of mapX. Not yet found.
+
+Follow-up measurements on the retained body (records, CDX_PROC=6):
+
+- Caller cost is 10 per call crossed. A diagnostic store of mapY after
+  matrixTranslate (one more crossing) moves web 197 to cost 30 and it takes
+  c30 at the 20.75 toll unforced. Not a source form; it locates the lever.
+- Dropping the ghost loop (diagnostic) cuts the toll to 17.25 and then
+  mapX and mapY both open callee registers, which the target does not do.
+- So the shipped allocation needs mapY to cross three calls while mapX
+  crosses two (caller 30 against toll 20.75 against caller 20). Every
+  natural form measured so far gives both values the same two crossings.
+- mapX shape (in-place negation, rotX first or last, negate-then-copy):
+  mapY stays at cost 20 in all four; retained form is best.
+- Unused s32 cells ahead of count (0, 1, 2, 4, 8) and mapX declared
+  directly after count: 272 or 268 aligned disagreement, no allocation
+  change. The target places a spilled mapX at a declared home (0x1B4)
+  between count and the matrices; ours spills to a temporary slot.
+
+Cycle-21 line: find the third call crossing for mapY (or a form where
+mapX loses one) and confirm with web 197 cost in the records before
+scoring; then the frame homes (frame_census) for the 61 immediate rows.
 
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

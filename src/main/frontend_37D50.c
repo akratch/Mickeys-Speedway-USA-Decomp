@@ -405,12 +405,16 @@ extern void func_80037BF4(void);
 
 /* Draws the backdrop as a 16x8 grid of texture tiles, each loaded with the
  * six-packet tile load and drawn as two vertex rows and four triangles.
- * 2026-10-03: exact overlay 99's typed vertex carrier and row-index shape,
- * plus the matched two-argument camera ABI, improve 302 to 191 words.
- * The third formal here is unused; argument-register contents do not prove
- * a callee's arity. Coordinates follow the bounded row/column indices and
- * the frame is now the target's 0xE0. The remaining measured plateau
- * residual is in docs/matching-triage-handoffs/func_80037C74.md. */
+ * 2026-10-07 (lane a-front), 191 -> 19 words at delta 0:
+ *  - the tile coordinates are induction variables, x += 40 per tile and
+ *    y += 15 per row, not products of the row and column indices;
+ *  - the triangle packet reads D_7BE40 through a block-scoped pointer local.
+ *    Written inline, uopt hoists the address out of the loop and spills it
+ *    (an extra frame cell, 0xE8); the local keeps it in the loop as shipped;
+ *  - the vertex pointer is declared first, which puts row and colour on the
+ *    target's homes, and x is reset before the row colour is copied.
+ * The remaining residual is one integer-ring draw from the second vertex
+ * packet to the loop end; see docs/matching-triage-handoffs/func_80037C74.md. */
 #ifdef NON_MATCHING
 #define _SHIFTL(v, s, w) ((u32) (((u32) (v) & ((0x01 << (w)) - 1)) << (s)))
 #define FE_PKT(pkt, word0, word1) \
@@ -431,18 +435,17 @@ extern void func_80037BF4(void);
 #define OS_K0_TO_PHYSICAL(x) (u32) (((char *) (x) - 0x80000000))
 
 void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
+    FrontendVertex *v;
     s32 row;
     s32 col;
-
-
+    s32 x;
+    s32 y;
     s32 uls;
     s32 ult;
     s32 lrs;
     s32 lrt;
     s32 colour;
     s32 rowColour;
-
-    FrontendVertex *v;
 
     if (D_8007BE80 != 0) {
         camStandardPersp(gfx, mtx);
@@ -462,28 +465,28 @@ void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
         }
         FE_PKT((*gfx)++, 0xFD10013F, D_800D2FAC);
         colour = (D_8007BEB0 << 5) / 1024;
-
+        y = 0;
         for (row = 0; row < 16; row++) {
-
+            x = 0;
             rowColour = colour;
             for (col = 0; col < 16; col += 2) {
-                if (col * 20 - 1 > 0) {
-                    uls = col * 20 - 1;
+                if (x - 1 > 0) {
+                    uls = x - 1;
                 } else {
                     uls = 0;
                 }
-                if (row * 15 - 1 > 0) {
-                    ult = row * 15 - 1;
+                if (y - 1 > 0) {
+                    ult = y - 1;
                 } else {
                     ult = 0;
                 }
-                if (col * 20 + 40 < 319) {
-                    lrs = col * 20 + 40;
+                if (x + 40 < 319) {
+                    lrs = x + 40;
                 } else {
                     lrs = 319;
                 }
-                if (row * 15 + 15 < 239) {
-                    lrt = row * 15 + 15;
+                if (y + 15 < 239) {
+                    lrt = y + 15;
                 } else {
                     lrt = 239;
                 }
@@ -500,15 +503,15 @@ void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
                 }
                 v = &((FrontendVertex **) &D_8007BE88)[D_8007BE84][row * 17 + col];
                 FE_VERTEX((*gfx)++, OS_K0_TO_PHYSICAL(v), 3, 0);
-                v = &((FrontendVertex **) &D_8007BE88)[D_8007BE84][(row + 1) * 17 + col];
+                v = &((FrontendVertex **) &D_8007BE88)[D_8007BE84][row * 17 + col + 17];
                 FE_VERTEX((*gfx)++, OS_K0_TO_PHYSICAL(v), 3, 3);
-                FE_PKT((*gfx)++, 0x05310040, D_7BE40);
-
+                { u8 *_d = D_7BE40; FE_PKT((*gfx)++, 0x05310040, _d); }
+                x += 40;
             }
-
             if (row & 1) {
                 colour ^= ~0xFF;
             }
+            y += 15;
         }
         func_80034920(gfx);
     }
@@ -638,11 +641,11 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
 
 /* PLATEAU-HANDOFF:func_80037C74:start
  * symbol: func_80037C74
- * score: 191/327 words
+ * score: 19/327 words
  * frame: 0xE0
  * relocations: 18
- * first-mismatch: +0x100
- * summary: Typed vertex carrier and proved integer coordinates close the frame; camera ABI corrected from matched definition. Loop webs remain structural, not exact.
+ * first-mismatch: +0x46C
+ * summary: Induction x/y coordinates and a block-local D_7BE40 pointer: 191 to 19 at delta 0, frame 0xE0. Left: one integer-ring draw from +0x46C.
  * PLATEAU-HANDOFF:func_80037C74:end
  */
 

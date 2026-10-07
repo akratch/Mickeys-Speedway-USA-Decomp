@@ -3944,9 +3944,12 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                 depths[count] = camGetProjZ(vector->x, vector->y, vector->z);
                 cones[count] = cone;
                 /* No base carrier: the table word is a ring temp in the
-                 * target (`base` stays declared for its frame cell). */
-                textures[count] = (u8 *)*(s32 *)((u8 *)root + (root->unkA * 4) + 0xC) +
-                                  (staticEntry->unk3 << 6);
+                 * target (`base` stays declared for its frame cell). The
+                 * frame offset is a scaled word subscript: ugen shifts by 4
+                 * and scales by 4, as1 folds the pair into one shift and the
+                 * draw stays spent, as shipped (brief item 43). */
+                textures[count] = (u8 *)&((s32 *)*(s32 *)((u8 *)root + (root->unkA * 4) + 0xC))
+                                      [staticEntry->unk3 * 16];
                 alphas[count] = staticEntry->unk4;
                 kindOrEntry[count] = staticEntry->unk0 | 0x80;
                 sortIndex[count] = count;
@@ -5381,10 +5384,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414
- * score: 185/421 words
+ * score: 136/421 words
  * frame: 0x198
  * relocations: 11
- * first-mismatch: +0x170
- * summary: Base carrier removed (189 to 185 at delta 0). The missing unk3 draw is worth 32 aligned rows ((u16) cast gives it at +4); sort j web
+ * first-mismatch: +0xD8
+ * summary: unk3 texture offset as a scaled word subscript (185 to 136 at delta 0); left: render-loop ring seven-cycle, sort j web
  * PLATEAU-HANDOFF:func_80009414:end
  */

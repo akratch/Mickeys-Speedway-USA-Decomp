@@ -193,4 +193,22 @@ and a one-register temp-ring shift through the counter block. Next: the
 freelist trace (draw_census --proc 13) on the pre-loop lines, then replace
 the probes with real references.
 
+#### 2026-10-07, lane g-7: the secondary buffer through the +0x18 base, flat
+
+One 6-cell product on the retained 195 body: the secondary pointer read
+as `((u8 **)(wake + 0x18))[state + 2]` (x-fx's one-array reading) or as
+the byte-offset form `+ 0x18 + (state + 2) * 4`, times the
+secondaryVertices probe on or off. The retained spelling (the separate
++0x20 subscript) is the only delta-0 cell: 195 with the probe, 234
+without. Both +0x18 spellings let uopt share the state*4 address with the
+vertex read, -4 (288, 319) and -8 (289, 320). In this shape the doubled
+address needs the two spellings to differ (B3-fx's finding stands); the
+one-array reading is only consistent with x-fx's typed shape.
+
+Cycle-21 line: unchanged from a-front (replace the four probes with real
+references; decision variable: secondaryVertices' totalsave against
+wake's, 141/6 needed against 306/14, and stripIndex's 171/11 against
+index's 123/8, read on proc 13).
+
+
 <!-- plateau-handoff:wakeUpdate:end -->

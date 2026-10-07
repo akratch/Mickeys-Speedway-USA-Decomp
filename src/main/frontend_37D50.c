@@ -542,11 +542,11 @@ extern void frontend38190DrawHeightGridReloc(Gfx **displayList, Mtx **matrices,
     }
 
 void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
+    s32 var_a2;
     s32 spE0;
     s32 spDC;
     f32 spD8;
     u8 *viewport;
-    s32 var_a2;
     s32 var_a3;
     s32 var_t2;
 
@@ -584,16 +584,14 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
             *(s16 *) (viewport + 2) = (s16) (spE0 * 2);
             FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
             FRONTEND38190_EMIT(arg0, 0xBC000406,
-                          (u32) D_800D2FAC + 0x80000000u);
+                          (u32) ((char *) D_800D2FAC - 0x80000000));
             FRONTEND38190_EMIT(arg0, 0xBC001006,
                           (u32) D_800D2FAC + 0x7FFFFB00u);
             FRONTEND38190_EMIT(arg0, 0xBC000806, 0x80000000u);
             FRONTEND38190_EMIT(arg0, 0xFF10013F, 0x01000000);
             FRONTEND38190_EMIT(arg0, 0xB6000000, 0x10001);
             FRONTEND38190_EMIT(arg0, 0xEF20000F, 0);
-            var_a3 = 0;
-            var_a2 = 0;
-            do {
+            for (var_a2 = 0, var_a3 = 0; var_a2 != 0xF0; var_a2 = var_t2) {
                 var_t2 = var_a2 + 4;
                 FRONTEND38190_EMIT(arg0, 0xFD100000,
                               (u32) D_800D2FA8 + var_a3);
@@ -608,15 +606,14 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
                               (var_a2 * 4) & 0xFFF);
                 FRONTEND38190_EMIT(arg0, 0xB3000000, 0);
                 FRONTEND38190_EMIT(arg0, 0xB2000000, 0x10000400);
-                var_a2 = var_t2;
-            } while (var_t2 != 0xF0);
+            }
             FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
             FRONTEND38190_EMIT(arg0, 0xBC000406,
-                          (u32) D_800D2FA8 + 0x80000000u);
+                          (u32) ((char *) D_800D2FA8 - 0x80000000));
             FRONTEND38190_EMIT(arg0, 0xBC001006,
                           (u32) D_800D2FA8 + 0x7FFFFB00u);
             FRONTEND38190_EMIT(arg0, 0xFF10013F, 0x01000000);
-            FRONTEND38190_EMIT(arg0, 0x03800010, (u32) viewport + 0x80000000u);
+            FRONTEND38190_EMIT(arg0, 0x03800010, (u32) (viewport - 0x80000000));
             if ((D_8007BE90 == 4) || (D_8007BE90 == 5)) {
                 frontend38190DrawHeightGridReloc(
                     arg0, arg1, arg2, spD8, 0x10, 0x10, 4, 0x28, 0xF);
@@ -636,10 +633,10 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
 
 /* PLATEAU-HANDOFF:func_80038190:start
  * symbol: func_80038190
- * score: 199 differing words
+ * score: 19/368 words
  * frame: 0xE8
  * relocations: 32
- * first-mismatch: +0x130
- * summary: Typed direct overlay calls and packet order restore exact size/frame; stack homes and mixed structural/register residual remain nonexact.
+ * first-mismatch: +0x1C8
+ * summary: K0-to-physical subtractions, var_a2 declared first, for loop: 199 to 19 at delta 0, naming only. Left: var_t2 save 20 must rank below 15.
  * PLATEAU-HANDOFF:func_80038190:end
  */

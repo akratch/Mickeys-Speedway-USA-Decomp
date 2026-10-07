@@ -2,11 +2,17 @@
 ### `overlay98RenderReflections` plateau handoff
 
 - source: `src/overlays/o098/overlay98RenderReflections.c`
-- score: 267/389 words
+- score: 225/389 words
 - frame: 0x1C8
 - relocations: 36
-- first mismatch: +0x14
-- summary: Natural rewrite plus two-statement packets in the matrix arms: 332 to 267 at delta 0, frame exact; open: second node copy (s5) missing.
+- first mismatch: +0xB0
+- summary: Packets on one line, second node name and pick local, target callee-saved order: 267 to 225 at delta 0 (aligned 66); open: cursor's second home store at +0xFC.
+
+Summary before this remeasure: One-line packets, second node name and pick local, u32 matrix word: 267 to 226 at delta 0 (aligned 71); open: cursor's second home store at +0xFC.
+
+Summary before this remeasure: One-line packets, second node name after the state-index store, u32 matrix word: 267 to 227 at delta 0; open: one temp-ring draw before +0x200, node/model pair.
+
+Summary before this remeasure: Natural rewrite plus two-statement packets in the matrix arms: 332 to 267 at delta 0, frame exact; open: second node copy (s5) missing.
 
 Summary before this remeasure: Natural rewrite, fixed transform offsets, target home ladder: 332 to 278 at delta 0, frame exact; open: node in s3 and s5, hoisted data re-read.
 
@@ -222,5 +228,88 @@ p1dec record (CDX_DETAIL_WEB on the home's web) to see whether it is a
 register candidate at all; if it is excluded, find what makes it
 memory-class (its first use is in the drewObject block, after both matrix
 arms), and try the copy placed after the state-index store as shipped.
+
+#### 2026-10-07 (lane e-ovl3): one-line packets plus the second node name, 267 to 227 at delta 0
+
+Records on the second-name body (node2 read from the subscript after the
+state-index store, 327 at +12): node2 is web 89, save 4.0 (20/5), offered
+only caller-saved colours and split, because nine callee-saved webs already
+hold s0..s8: the gfx variable (web 10) and the `*dl` expression the
+`(*dl)++` packets leave (web 14) are two webs. Writing every packet as
+`gfx = *dl; *dl = gfx + 1;` makes them one web and node2 then gets a
+callee-saved register (306 at +8, aligned residual 202 to 133).
+
+Product on that body, ranked by aligned rows (residual_map --object):
+
+  - every packet on one physical line (the O98_PACKET macro; the two word
+    stores on one line is identical): as1 then stores a constant w1 before
+    w0 as shipped (L59);
+  - the matrix word as `(u32)*matrixHeap + 0x80000000` instead of
+    `(u32)(*matrixHeap + 0x80000000)`: the pointer-typed sum was its own
+    constant web (two extra lui, +8 bytes); with the u32 sum it shares the
+    hoisted 0x80000000 and the size closes;
+  - emittedReflection = 1 just before the inverse build, not at the top of
+    the arm (its store fills the jal delay slot as shipped);
+  - flat or worse: node2 read after `model = node->data` or as a copy of
+    node; the display-list pick through node->data or node2->data (+4 to
+    +12); any packet region left as `(*dl)++` (pre-loop, matrix arms,
+    drewObject block, state-1 arm, epilogue: each +2 to +8 aligned).
+
+Result 227 at delta 0, aligned exact 293, naming 47, immediate 11,
+structural 33 (one-sided 5 and 5). Callee-saved order now s0 gfx, s1
+object, s2 dl, s3 node, s4 matrixHeap as shipped; then ours s5 the
+0x80000000 web (248, save 5.83), s6 specialModel (75, 5.0), s7 &matrixA
+(253, 5.0), s8 node2 (89, 4.0) against the target's node2, constant,
+&matrixA, specialModel. Forcing that order (accepted, forced=19..22) is
+worth 4 positional words (223) and 10 naming rows: the remaining residual
+is not the s-register order. Window +0x200 carries one closed ten-cycle
+over the whole temp ring (t0 to t1), a single missing or extra draw
+before +0x200; window +0x0 is the node/model pair (ours a0/v0, target
+v0/a1, with the pick re-reading node->data through v0 into a0).
+
+Second product on the 227 body (same lane), aligned residual 100 to 71:
+
+  - the pick through a new local read from node2 (`pick = node2->data`
+    before the alpha test, the declaration replacing the last unused cell):
+    the target's second load of the node's first word, node in v0, model
+    in a1, drewObject in a2, all as shipped (aligned 82); through node->data
+    in the arms or a ternary, uopt CSEs it with model (+4); an s32 or u32
+    view on either load reloads in both arms (+8, 224 aligned); volatile or
+    address-taken stateIndex (+8 to +16);
+  - reflected-arm transform stores x, y, z, scale (aligned 71); four other
+    orders 81 to 84;
+  - flat: specialModel and drewObject cleared before the node load, an
+    if/else for specialModel (+4), six loop-head forms (i++ placement,
+    re-read referenceY, assignment inside the compare), modelDisplayList
+    without volatile (-12, 206).
+
+Open, 226 at delta 0 (exact 321, naming 32, immediate 9, structural 24):
+the target stores the entry cursor to its home a second time at the end
+of the negation block (+0xFC), which shifts everything to +0x478 by one
+word; our compensating extra word is the modelDisplayList packet's own
+`lui at` for 0x80000000 at +0x450 (the target uses the s6 web there).
+Also s7/s8 swapped (&matrixA against specialModel, both save 5.0, tie to
+the lower web number).
+
+Third step (same lane), 226 to 225, aligned 71 to 66 (exact 326, naming
+27): records on the non-volatile modelDisplayList body read node2 6.0 (s5),
+the 0x80000000 web 5.83, and specialModel, modelDisplayList and &matrixA
+tied at 5.0 (30/6, 30/6, 60/12), so the lower web numbers take s7/s8 and
+&matrixA is split. Two zero-cost `do { } while (0)` blocks after the vertex
+packet move specialModel and modelDisplayList to nocs 7 (4.29) without
+touching node2: the records then give exactly the target's order (s5
+node2, s6 constant, s7 &matrixA, s8 specialModel, modelDisplayList spilled
+to its home), with modelDisplayList a plain local (volatile and plain are
+now identical). One block is inert, three equal two, four is worse (77).
+The two blocks are a stand-in: the vertex packet or the special-model
+packets as a do-while macro, or the special-model test as `specialModel &&
+stateIndex` / else-if, all measured worse (79 to 215 aligned).
+
+Cycle-21 line: the cursor's second home store is a range-split boundary
+store: read the p1dec split records for the cursor web (type-1 entry
+address, home 0x5C) and find which block set makes the negation block part
+of its register piece; separately, why the 0x06000000 packet's constant
+leaves the s6 web (the volatile modelDisplayList load is the only operand
+that differs from the other packets).
 
 <!-- plateau-handoff:overlay98RenderReflections:end -->

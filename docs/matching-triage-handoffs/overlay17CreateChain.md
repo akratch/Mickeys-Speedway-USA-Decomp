@@ -443,4 +443,47 @@ body was committed in ff930eacb, and the integration merge kept the older
 re-scores 3 masked at delta 0 (fast_score, configured command), first +0x3C,
 the three words being the half-buffer size web's pre-call piece. That body
 is restored here unchanged.
+#### 2026-10-07, lane g-5: web 12 is the count-times-20 PRE temp, and the target decision set
+
+Records on the restored 3-word body (instrumented uopt, .text identical to
+stock, proc 0): web 12 is type 4, an expression web, not the declared
+size local. Every spelling that reaches it lands in the same web, which is
+why the size-local experiments of earlier passes are inert. Measured, none
+kept, all on the 3-word body:
+
+- the size local reused for a later role (alpha-loop counter, both loop
+  counters, the outer buffer counter, widthScale): 3, 3, 3 and 25 or 34.
+  Extra definitions of the variable do not stop uopt making web 12.
+- two size variables through the existing padFrame slot (five cells: copy
+  before or after the allocation, inside the chain test, or the padFrame
+  name for every use): 3 in all five. The home stays put, so the 0x38 slot
+  is web 12's home, not a declared local's.
+- the embedded assignment: records unchanged (web 12 totalsave 4, cost 3).
+
+Forces (accepted, forced=-1 or the colour, objects scored directly):
+
+- `p1:w12=s` alone: the pre-call piece then compiles exactly as shipped
+  (count times 20 in t7, `sw t7` in the allocation's delay slot, the shift
+  reading t7), but the token web 3 takes a2 at cost 1.1 and the post-call
+  piece (web 199, sym 12, blocks 3-7, totalsave 1 against cost 1) splits.
+- adding `p1:w3=s` and `p1:w199=c5`: the post-call piece is coloured a2
+  and the token is reloaded into a0 as shipped. Left: count is loaded into
+  the ring (t7) where the target loads it into a2, and a2 is not saved
+  around the texture call.
+
+So the target is not one decision but four: web 12 split, its post-call
+piece coloured a2, web 3 split, and a block-2 piece of count coloured a2
+(the target's `lw a2` of count is a colour, not ugen loading into the
+size web's register). The arithmetic does not close on our occurrences:
+splitting the whole web needs totalsave at most 3 (one fewer occurrence),
+while colouring the post-call piece needs its totalsave above its cost of
+1 (one more). That points at a source whose size value has a different
+occurrence structure, not at a spelling of this one.
+
+Cycle-21 line: the decision variable is web 12's occurrence set. Next:
+find a form whose post-call uses outnumber the pre-call ones (for example
+a third post-call reference that emits nothing, or the shift reading the
+expression rather than the web), and read web 12, web 199 and count's
+pieces after each. Blocked by: no occurrence-level record in the
+instrumented uopt (only p1dec totals).
 <!-- plateau-handoff:overlay17CreateChain:end -->

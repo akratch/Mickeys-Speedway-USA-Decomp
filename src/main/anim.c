@@ -3969,11 +3969,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80051364:start
  * symbol: func_80051364
- * score: 7 differing words
+ * score: 7/287 words
  * frame: 0x40
  * relocations: 47
  * first-mismatch: +0x114
- * summary: Nested tests and join regions give a0/a1/a2 (9 to 7). Left: the join. Ring and free order say state stored first; as1 then swaps the two stores (2).
+ * summary: 7 at size 0, all the join. The state value is a ring temp, not a web; a reordering macro gives the exact ring, leaving the store order and an a0/a1 swap.
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

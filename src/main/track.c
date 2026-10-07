@@ -2699,60 +2699,75 @@ next_plane:
     } while (planeCount--);
     return TRUE;
 }
-/* Workbench verdict: structure-mismatch, 158 raw/masked differing words;
- * first mismatch +0x0. Corrected Mickey jump-table dispatch remains nonexact. */
-/* Candidate: 156/160 instructions with a -0x60 frame versus target -0x38;
- * target/candidate static relocations are 20/12. */
-/* Shape status: both jump tables and all seven no-op kinds are reconstructed;
- * the saved-FP declaration web remains unresolved. */
 /* PROVENANCE: JFG's assembly-only object-alpha routine supplies the role and switch family;
  * Mickey's jump tables, fields, globals, and arithmetic are authoritative here. */
-#ifdef NON_MATCHING
-s32 func_800103D4(void *object) {
-    u8 *gameMode;
-    void *state;
-    void *bounds;
-    TrackPlane *plane;
-    f32 objectX;
-    f32 objectY;
-    f32 objectZ;
-    f32 radius;
-    f32 fadeDistance;
-    f32 fadeRange;
-    f32 fadeScale;
-    f32 fadeRemaining;
-    s16 kind;
+typedef struct TrackAlphaBounds {
+    u8 pad00[0x16];
     s16 distanceLimit;
+} TrackAlphaBounds;
+
+typedef struct TrackAlphaObject {
+    u8 pad00[0xC];
+    f32 x;
+    f32 y;
+    f32 z;
+    u8 pad18[0x34 - 0x18];
+    f32 radius;
+    u8 pad38;
+    u8 alpha;
+    u8 pad3A[0x40 - 0x3A];
+    TrackAlphaBounds *bounds;
+    s16 kind;
+    u8 pad46[0x64 - 0x46];
+    u8 *state;
+} TrackAlphaObject;
+
+/*
+ * Matched 2026-10-07 (natural rewrite): a typed object, the per-kind alpha switch with
+ * the state pointer read once only in case 1, s32 truncating casts, the fade
+ * scale as the literal 0.3f, and one counted loop over D_800C9578[i] with
+ * named plane components. Register-exact through variable reuse: one s32
+ * holds the kind and then the distance limit (v1), the fade scale overwrites
+ * range (f12), and the fade remainder lives in the plane loop's dist (f16).
+ */
+#define object ((TrackAlphaObject *) objectArg)
+s32 func_800103D4(void *objectArg) {
+    s32 kind;
     s32 visible;
+    u8 *gameMode;
+    u8 *state;
+    f32 distance;
+    f32 range;
+    f32 planeX;
+    f32 planeY;
+    f32 planeZ;
+    f32 planeD;
+    f32 dist;
+    s32 i;
 
     visible = 1;
     gameMode = func_80028F54();
-    kind = *(s16 *) ((u8 *) object + 0x44);
+    kind = object->kind;
     switch (kind) {
     case 65:
-        state = *(void **) ((u8 *) object + 0x64);
-        *(u8 *) ((u8 *) object + 0x39) = (s32) *(f32 *) ((u8 *) state + 0x18);
+        object->alpha = (s32) *(f32 *) (object->state + 0x18);
         break;
     case 63:
-        state = *(void **) ((u8 *) object + 0x64);
-        *(u8 *) ((u8 *) object + 0x39) = *(u8 *) ((u8 *) state + 0xF);
+        object->alpha = object->state[0xF];
         break;
     case 1:
-        state = *(void **) ((u8 *) object + 0x64);
+        state = object->state;
         if (*gameMode == 5) {
-            *(u8 *) ((u8 *) object + 0x39) = *(u8 *) ((u8 *) state + 0x190);
-        } else if (((*(u16 *) ((u8 *) state + 0x1A8) & 1) == 0) ||
-                   (*(u8 *) ((u8 *) state + 0x170) == 0)) {
-            *(u8 *) ((u8 *) object + 0x39) = 0xFF;
+            object->alpha = state[0x190];
+        } else if (!(*(u16 *) (state + 0x1A8) & 1) || (state[0x170] == 0)) {
+            object->alpha = 0xFF;
         }
         break;
     case 80:
-        state = *(void **) ((u8 *) object + 0x64);
-        *(u8 *) ((u8 *) object + 0x39) = *(u8 *) ((u8 *) state + 2);
+        object->alpha = object->state[2];
         break;
     case 88:
-        state = *(void **) ((u8 *) object + 0x64);
-        *(u8 *) ((u8 *) object + 0x39) = *(u32 *) ((u8 *) state + 4);
+        object->alpha = *(u32 *) (object->state + 4);
         break;
     case 22:
     case 23:
@@ -2762,106 +2777,43 @@ s32 func_800103D4(void *object) {
     case 29:
     case 79:
         break;
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 11:
-    case 12:
-    case 13:
-    case 14:
-    case 15:
-    case 16:
-    case 17:
-    case 18:
-    case 19:
-    case 20:
-    case 21:
-    case 27:
-    case 28:
-    case 64:
-    case 66:
-    case 67:
-    case 68:
-    case 69:
-    case 70:
-    case 71:
-    case 72:
-    case 73:
-    case 74:
-    case 75:
-    case 76:
-    case 77:
-    case 78:
-    case 81:
-    case 82:
-    case 83:
-    case 84:
-    case 85:
-    case 86:
-    case 87:
     default:
-        *(u8 *) ((u8 *) object + 0x39) = 0xFF;
+        object->alpha = 0xFF;
         break;
     }
-    if (*(u8 *) ((u8 *) object + 0x39) == 0) {
+    if (object->alpha == 0) {
         return 0;
     }
-    bounds = *(void **) ((u8 *) object + 0x40);
-    distanceLimit = *(s16 *) ((u8 *) bounds + 0x16);
-    if (distanceLimit != 0) {
-        fadeDistance = camDistance(*(f32 *) ((u8 *) object + 0xC),
-                                   *(f32 *) ((u8 *) object + 0x10),
-                                   *(f32 *) ((u8 *) object + 0x14));
-        fadeRange = (f32) distanceLimit;
-        if (fadeRange < fadeDistance) {
+    kind = object->bounds->distanceLimit;
+    if (kind != 0) {
+        distance = camDistance(object->x, object->y, object->z);
+        range = kind;
+        if (range < distance) {
             visible = 0;
         } else {
-            fadeRemaining = fadeRange - fadeDistance;
-            fadeScale = fadeRange * D_80081770;
-            if (fadeRemaining < fadeScale) {
-                *(u8 *) ((u8 *) object + 0x39) =
-                    (s32) ((f32) *(u8 *) ((u8 *) object + 0x39) *
-                           (fadeRemaining / fadeScale));
+            dist = range - distance;
+            range = range * 0.3f;
+            if (dist < range) {
+                object->alpha = (s32) (object->alpha * (dist / range));
             }
         }
     }
-    if (visible != 0) {
-        objectX = *(f32 *) ((u8 *) object + 0xC);
-        objectY = *(f32 *) ((u8 *) object + 0x10);
-        objectZ = *(f32 *) ((u8 *) object + 0x14);
-        radius = *(f32 *) ((u8 *) object + 0x34);
-        plane = D_800C9578;
-        do {
-            f32 planeX;
-            f32 planeY;
-            f32 planeZ;
-            f32 planeDistance;
-
-            planeX = plane->x;
-            planeY = plane->y;
-            planeZ = plane->z;
-            planeDistance = plane->distance;
-            if ((((objectX * planeX) + (objectY * planeY)) +
-                 (objectZ * planeZ) + planeDistance + radius) < 0.0f) {
-                visible = 0;
-            }
-            plane++;
-            if (visible == 0) {
-                break;
-            }
-        } while ((u8 *) plane < (u8 *) &D_800C95A8);
+    i = 0;
+    while (i < 3 && visible) {
+        planeX = D_800C9578[i].x;
+        planeY = D_800C9578[i].y;
+        planeZ = D_800C9578[i].z;
+        planeD = D_800C9578[i].distance;
+        dist = (object->x * planeX) + (planeY * object->y) + (planeZ * object->z) + planeD +
+               object->radius;
+        if (dist < 0.0f) {
+            visible = 0;
+        }
+        i++;
     }
     return visible;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_800103D4.s")
-#endif
+#undef object
 typedef struct TrackRayPoint {
     f32 x;
     f32 y;
@@ -2878,125 +2830,107 @@ typedef struct TrackRayNode {
     TrackPlane *planes;
 } TrackRayNode;
 
-/* Candidate: 171/171 words, 162 differing, first mismatch +0x0, frame 0x70 versus 0x98. */
-/* Forming the hit point once before the edge loop closes the +4 size gap. */
-/* Two callee-saves remain: a dead edge copy and the hoisted D_80081774 address. */
+/*
+ * Natural rewrite, 2026-10-07: one counted node loop, a plane-component local
+ * per edge read, the edge index incremented at the loop tail, and the node
+ * word reused as the edge index (that reuse keeps the entry copy and the
+ * unfolded index * 2 start); the first plane index read through the edge
+ * variable numbers its web ahead of the plane pointer; i = 0 as its own
+ * statement schedules the prologue. 9 masked words at delta 0.
+ */
 s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
                   TrackPlane *result, f32 *maximum) {
-    s32 padFrame0;
-    s32 padFrame1;
-    s32 padFrame2;
-    s32 padFrame3;
-    s32 padFrame4;
-    s32 padFrame5;
-    s32 padFrame6;
-    s32 padFrame7;
-    s32 padFrame8;
-    s32 padFrame9;
-    u8 *node;
+    s32 pad94;
+    TrackRayNode *node;
+    s32 pad8C;
     f32 planeX;
+    f32 planeY;
     f32 planeZ;
-    f32 differenceX;
-    f32 differenceY;
-    f32 differenceZ;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 temp_f12;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f18;
-    f32 temp_f18_2;
-    f32 temp_f28;
-    f32 temp_f2;
-    f32 temp_f2_2;
-    f32 temp_f30;
-    f32 normalValue;
-    s32 temp_a2;
-    s32 temp_t2;
-    s32 var_a3;
-    s32 var_s1;
-    s32 var_s2;
-    s32 var_v0;
-    s32 var_v1;
+    f32 planeD;
+    f32 endDistance;
+    f32 startDistance;
+    f32 t;
+    f32 hitX;
+    f32 hitY;
+    f32 hitZ;
+    f32 value;
+    f32 dist;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    f32 nx;
+    f32 ny;
+    f32 nz;
+    f32 nd;
+    TrackPlane *plane;
+    u16 *entry;
+    s32 encoded;
+    s32 flip;
+    s32 inside;
+    s32 i;
+    s32 hit;
     u16 edge;
 
-    differenceX = end->x - start->x;
-    var_v1 = 0;
-    var_v0 = 0;
-    var_a3 = 0;
-    differenceY = end->y - start->y;
-    differenceZ = end->z - start->z;
-    if (D_800C9D3C > 0) {
-        do {
-            var_v0++;
-            temp_a2 = *(s32 *) ((u8 *) D_800C9D2C + var_a3);
-            if (temp_a2 > 0) {
-                node = (u8 *) (temp_a2 | (s32) 0x80000000);
-            } else {
-                TrackPlane *planes;
-                TrackPlane *plane;
-                u16 *entry;
-
-                entry = (u16 *) temp_a2;
-                planes = ((TrackRayNode *) node)->planes;
-                plane = &planes[*entry];
-                temp_f30 = plane->y;
-                if (D_80081774 <= temp_f30) {
-                    temp_f0 = plane->x;
-                    temp_f2 = plane->z;
-                    temp_f16 = plane->distance;
-                    planeX = temp_f0;
-                    planeZ = temp_f2;
-                    temp_f18 = (end->z * temp_f2) +
-                               ((temp_f0 * end->x) + (temp_f30 * end->y)) + temp_f16;
-                    if (temp_f18 < 0.0f) {
-                        temp_f2_2 = start->x;
-                        temp_f12 = start->y;
-                        temp_f14 = start->z;
-                        temp_f0_2 = (temp_f14 * planeZ) +
-                                    ((planeX * temp_f2_2) + (temp_f30 * temp_f12)) + temp_f16;
-                        if (temp_f0_2 >= 0.0f) {
-                            temp_f28 = temp_f0_2 / (temp_f0_2 - temp_f18);
-                            if (temp_f28 <= *maximum) {
-                                temp_f2_2 = temp_f2_2 + (differenceX * temp_f28);
-                                temp_f12 = temp_f12 + (differenceY * temp_f28);
-                                temp_f14 = temp_f14 + (differenceZ * temp_f28);
-                                var_s2 = 0 * 2;
-                                var_s1 = 1;
-loop_80010654:
-                                    var_s2 += 2;
-                                    edge = *(u16 *) ((u8 *) entry + var_s2);
-                                    temp_t2 = edge & 0x8000;
-                                    plane = &planes[edge ^ temp_t2];
-                                    temp_f18_2 = ((plane->x * temp_f2_2) +
-                                                  (plane->y * temp_f12)) +
-                                                 (plane->z * temp_f14) + plane->distance;
-                                    normalValue = temp_f18_2;
-                                    if (temp_t2 != 0) {
-                                        normalValue = -temp_f18_2;
-                                    }
-                                    if (normalValue > 0.0f) {
-                                        var_s1 = 0;
-                                    }
-                                    if ((var_s2 < 6) && (var_s1 != 0)) {
-                                        goto loop_80010654;
-                                    }
-                                if (var_s1 != 0) {
-                                    *maximum = temp_f28;
-                                    result->y = temp_f30;
-                                    result->x = planeX;
-                                    var_v1 = 1;
-                                    result->z = planeZ;
+    hit = 0;
+    dx = end->x - start->x;
+    dy = end->y - start->y;
+    dz = end->z - start->z;
+    i = 0;
+    for (; i < D_800C9D3C; i++) {
+        encoded = D_800C9D2C[i];
+        if (encoded > 0) {
+            node = (TrackRayNode *) (encoded | 0x80000000);
+        } else {
+            entry = (u16 *) encoded;
+            edge = *entry;
+            plane = &node->planes[edge];
+            encoded = 0;
+            planeY = plane->y;
+            if (planeY >= 0.707f) {
+                planeX = plane->x;
+                planeZ = plane->z;
+                planeD = plane->distance;
+                endDistance = (end->z * planeZ) + ((planeX * end->x) + (planeY * end->y)) + planeD;
+                if (endDistance < 0.0f) {
+                    startDistance = (start->z * planeZ) + ((planeX * start->x) + (planeY * start->y)) + planeD;
+                    if (startDistance >= 0.0f) {
+                        t = startDistance / (startDistance - endDistance);
+                        if (t <= *maximum) {
+                            hitX = start->x + (dx * t);
+                            hitY = start->y + (dy * t);
+                            hitZ = start->z + (dz * t);
+                            inside = TRUE;
+                            do {
+                                edge = entry[encoded + 1];
+                                flip = edge & 0x8000;
+                                plane = &node->planes[edge ^ flip];
+                                nx = plane->x;
+                                ny = plane->y;
+                                nz = plane->z;
+                                nd = plane->distance;
+                                value = (nx * hitX) + (ny * hitY) + (nz * hitZ) + nd;
+                                if (flip) {
+                                    value = -value;
                                 }
+                                if (value > 0.0f) {
+                                    inside = FALSE;
+                                }
+                                encoded++;
+                            } while (encoded < 3 && inside);
+                            if (inside) {
+                                *maximum = t;
+                                result->x = planeX;
+                                result->y = planeY;
+                                result->z = planeZ;
+                                hit = 1;
                             }
                         }
                     }
                 }
             }
-            var_a3 += 4;
-        } while (var_v0 < D_800C9D3C);
+        }
     }
-    return var_v1;
+    return hit;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80010654.s")
@@ -3468,24 +3402,25 @@ typedef struct TrackRayNodeExtended {
     TrackRayFace *planes;
 } TrackRayNodeExtended;
 
-/* Candidate (Track B, 2026-09-23): 216/215 words, 195 differing, frame 0xD8
- * versus 0xC8. Typed plane/metadata subscripts, sums left-associated, the edge
- * index incremented at the loop's end and initialised in the entry block (which
- * reproduces the target's shifted-zero preheader). The rest is the p1 ranking:
- * the target gives the inner loop's edge, sign and face pointer the last four
- * callee-saved registers and keeps the entry pointer in a copy, while this body
- * gives them the first caller-saved colours and runs out of registers (ra). */
+/*
+ * Natural rewrite, 2026-10-07: one counted segment loop, the 0.01f literal,
+ * and the node word reused as the edge index (as in func_80010654, it keeps
+ * the entry copy and the unfolded index shift). Declarations give the target's 0xC8 frame: one pad
+ * slot above the node, face before the plane components, entry and planes
+ * after them, start and the hit offset read inline. 107 masked at delta 0.
+ */
 s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                   TrackRayPoint *offset, f32 scale, f32 planeOffset,
                   f32 threshold, TrackRayHit *hit) {
+    s32 pad;
     TrackRayNodeExtended *node;
-    u16 *entry;
-    TrackRayFace *planes;
     TrackRayFace *face;
     f32 planeX;
     f32 planeY;
     f32 planeZ;
     f32 planeValue;
+    u16 *entry;
+    TrackRayFace *planes;
     f32 startValue;
     f32 endValue;
     f32 ratio;
@@ -3493,75 +3428,62 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
     f32 pointY;
     f32 pointZ;
     f32 edgeValue;
-    f32 adjustedOffset;
     s32 encoded;
     s32 segmentIndex;
-    s32 edgeValid;
     s32 valid;
     s32 sign;
-    s32 i;
+    s32 inside;
     u16 edge;
 
     valid = 0;
-    segmentIndex = 0;
-    if (D_800C9D3C > 0) {
-        do {
+    for (segmentIndex = 0; segmentIndex < D_800C9D3C; segmentIndex++) {
         encoded = D_800C9D2C[segmentIndex];
         if (encoded > 0) {
-            node = (TrackRayNodeExtended *) (encoded | (s32) 0x80000000);
+            node = (TrackRayNodeExtended *) (encoded | 0x80000000);
         } else {
             entry = (u16 *) encoded;
-            i = 0;
             planes = node->planes;
             face = &planes[*entry];
+            encoded = 0;
             planeX = face->x;
             planeY = face->y;
             planeZ = face->z;
             planeValue = face->distance - planeOffset;
-            endValue = planeX * end->x + planeY * end->y + end->z * planeZ +
-                       planeValue;
+            endValue = planeX * end->x + planeY * end->y + end->z * planeZ + planeValue;
             if (endValue < 0.0f) {
-                startValue = planeX * start->x + planeY * start->y +
-                             start->z * planeZ + planeValue;
+                startValue = planeX * start->x + planeY * start->y + start->z * planeZ + planeValue;
                 if (startValue >= 0.0f) {
                     ratio = (startValue / (startValue - endValue)) * scale;
                     if (ratio <= hit->ratio) {
-                        edgeValid = 1;
-                        pointX = ((offset->x * ratio) + start->x) -
-                                 (planeOffset * planeX);
-                        pointY = ((offset->y * ratio) + start->y) -
-                                 (planeOffset * planeY);
-                        pointZ = ((offset->z * ratio) + start->z) -
-                                 (planeOffset * planeZ);
+                        pointX = ((offset->x * ratio) + start->x) - (planeOffset * planeX);
+                        pointY = ((offset->y * ratio) + start->y) - (planeOffset * planeY);
+                        pointZ = ((offset->z * ratio) + start->z) - (planeOffset * planeZ);
+                        inside = 1;
                         do {
-                            edge = entry[i + 1];
+                            edge = entry[encoded + 1];
                             sign = edge & 0x8000;
                             face = &planes[edge ^ sign];
                             edgeValue = face->distance +
-                                        (face->x * pointX + face->y * pointY +
-                                         face->z * pointZ);
+                                        (face->x * pointX + face->y * pointY + face->z * pointZ);
                             if (sign != 0) {
                                 edgeValue = -edgeValue;
                             }
                             if (threshold < edgeValue) {
-                                edgeValid = 0;
+                                inside = 0;
                             }
-                            i++;
-                        } while (i < 3 && edgeValid != 0);
-                        if (edgeValid != 0) {
+                            encoded++;
+                        } while (encoded < 3 && inside != 0);
+                        if (inside != 0) {
                             hit->normalX = planeX;
                             hit->normalY = planeY;
                             hit->normalZ = planeZ;
                             hit->distance = planeValue;
-                            adjustedOffset = D_80081790 + planeOffset;
-                            hit->x = (adjustedOffset * planeX) + pointX;
-                            hit->y = (adjustedOffset * planeY) + pointY;
-                            hit->z = (adjustedOffset * planeZ) + pointZ;
-                            hit->faceData =
-                                node->metadata[D_800C9D30[segmentIndex]].data;
+                            hit->x = ((0.01f + planeOffset) * planeX) + pointX;
+                            hit->y = ((0.01f + planeOffset) * planeY) + pointY;
+                            hit->z = ((0.01f + planeOffset) * planeZ) + pointZ;
+                            hit->faceData = node->metadata[D_800C9D30[segmentIndex]].data;
                             hit->material = ((u8 *) &D_800792E8->textures[
-                                node->metadata[D_800C9D30[segmentIndex]]
-                                    .material])[7];
+                                node->metadata[D_800C9D30[segmentIndex]].material])[7];
                             hit->ratio = ratio;
                             valid = 1;
                         }
@@ -3569,8 +3491,6 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                 }
             }
         }
-            segmentIndex++;
-        } while (segmentIndex < D_800C9D3C);
     }
     return valid;
 }
@@ -5313,35 +5233,25 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80011980:start
  * symbol: func_80011980
- * score: 195 differing words
- * frame: 0xd8
+ * score: 107 differing words
+ * frame: 0xc8
  * relocations: 12
- * first-mismatch: +0x0
- * summary: The missing-CSE pair is pair 2 (+0x268..+0x2D4): the second metadata add is line 3709 at +0x2D0, and the target has that add too. Stall: textures local and volatile threshold stay at 195, size +4; ra still holds D_80081790.
+ * first-mismatch: +0x4
+ * summary: Frame closed (0xC8) by the declaration ladder; node word as the edge index: 119 to 107 at delta 0. Left: callee-saved ranking of edge, sign, face.
  * PLATEAU-HANDOFF:func_80011980:end
  */
 
 
 /* PLATEAU-HANDOFF:func_80010654:start
  * symbol: func_80010654
- * score: 160 differing words
- * frame: 0x70
+ * score: 9 differing words
+ * frame: 0x98
  * relocations: 8
- * first-mismatch: +0x4
- * summary: Hoisting the hit point before the edge-loop line closes the size pair (+4 to 0) at 162 words. Stall: frame stays 0x70 versus 0x98 because of the dead edge-copy and hoisted D_80081774.
+ * first-mismatch: +0xa0
+ * summary: Node word reused as the edge index, edge numbered by the first plane read, i = 0 split out: 21 to 9 at 0. Left: first index read in t3, target t8.
  * PLATEAU-HANDOFF:func_80010654:end
  */
 
-
-/* PLATEAU-HANDOFF:func_800103D4:start
- * symbol: func_800103D4
- * score: 158/160 words
- * frame: 0x50
- * relocations: 12
- * first-mismatch: +0x0
- * summary: Scoped plane FP lifetimes lower the candidate frame from 0x60 to 0x50; accepted web 163 force to c32 scores 95 but source route remains unproved.
- * PLATEAU-HANDOFF:func_800103D4:end
- */
 
 /* PLATEAU-HANDOFF:func_80011CDC:start
  * symbol: func_80011CDC

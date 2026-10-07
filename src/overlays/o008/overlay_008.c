@@ -1961,8 +1961,11 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
  * Then 93 -> 60: the table row is `randomMode << 2` (a shift, so it is not
  * one expression with D_2220's `randomMode * 4` scale and uopt stops
  * sharing it), both tables are read by element index, and the D_2220 term
- * is added before the directionDC store. 60 -> 54: the row index is
- * computed before the D_2208 angle read (ugen draws its shift first).
+ * is added before the directionDC store. 54 -> 45: the row index is
+ * written inline at both table reads (uopt makes the sum one web, v1, and
+ * the byte scale a ring temporary), the D_2208 angle read follows them,
+ * and the `& 0xFF` mask on the mode entry is gone: its draw only stood in
+ * for the order of these reads.
  * GLOBAL_ASM stays canonical. */
 extern s32 gO8P42A8GateReloc;
 #ifdef NON_MATCHING
@@ -2017,15 +2020,14 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     }
     D_0[mode] &= 3;
     randomMode = o8P42A8RandomReloc() & 3;
-    tableIndex = D_0[mode] & 0xFF;
+    tableIndex = D_0[mode];
     if ((state->reset170 != 0) || (state->lock191 != 0)) {
         tableIndex = 1;
     }
 
-    tableIndex = (randomMode << 2) + tableIndex;
+    targetMotion = D_2188[(randomMode << 2) + tableIndex];
+    targetHeight = D_21C8[(randomMode << 2) + tableIndex];
     tableAngle = D_2208[randomMode];
-    targetMotion = D_2188[tableIndex];
-    targetHeight = D_21C8[tableIndex];
     smoothing = D_2210[mode];
     if ((state->lowering349 == 0) && (state->lock191 == 0)) {
         smoothing += 0.08f * update;
@@ -2394,11 +2396,11 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000
- * score: 54/447 words
+ * score: 45/447 words
  * frame: 0xA0
  * relocations: 40
- * first-mismatch: +0x114
- * summary: Row index randomMode << 2 by element before the angle read, D_2220 term before directionDC: 93 to 54. Left: the mask's draw, the row sum's web.
+ * first-mismatch: +0x290
+ * summary: Row index inline at both table reads, angle read after, no mode mask: 54 to 45. Left: the steps piece after loop 2 (v1) and one ring draw.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
  */
 

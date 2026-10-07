@@ -161,4 +161,10 @@ Instrumented records on the 6-word body: atStart's value is web 113, type 4 (an 
 
 Law: a value is a symbol web (and spills to its home) only when uopt cannot rebuild it, but every form that achieves that here moves the neighbour index's block count or reference count by one.
 
+## 2026-10-07, lane a-ovl2 (third budget): the keyframeIndex re-read does not merge
+
+On the memory form plus the copy wrapper (96 positional): reading `atStart = state->keyframeIndex < 1` before or after `index = state->keyframeIndex` leaves the second load as its own type-4 web (61, block 25, v0); uopt does not share the two loads. Computing atStart from a second local copied from the load (`opacity = state->keyframeIndex; index = opacity; atStart = opacity < 1`) is copy-propagated back to type 4 (-4 bytes). The last atStart piece is not denied v0 by web 61 alone: afterAfter's last piece (web 102, save 0.667, nocs 3) is decided before atStart's (save 0.333) and takes v0, where the target has afterAfter v1 and atStart v0. A force cannot address only the last piece (the pieces share the web number; forcing it colours the whole range and drops the split, -12 bytes).
+
+Moving the memory-form assignment after the `count - 2` test gives a one-block range: atStart takes v1, 92 positional, size 0. What remains is the integer cascade from index: off the call block, index is no longer denied a0-a3 and takes a1 (target t0); forcing index to t0 restores those colours but some web then takes t5 and the ring shifts (162).
+
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

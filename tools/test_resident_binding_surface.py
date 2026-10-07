@@ -196,16 +196,21 @@ class ResidentBindingSurfaceTests(unittest.TestCase):
     def test_helper_pin_rechecked_after_final_physical_capture(self):
         with tempfile.TemporaryDirectory(dir=surface.adapter.ROOT) as td:
             root = Path(td); candidate = root / "candidate.o"; candidate.write_bytes(b"candidate")
+            source = root / surface.SOURCE
+            source.parent.mkdir(parents=True)
+            source.write_bytes(b"synthetic canonical source")
+            source_sha = surface._sha(source)
             helper = Path(surface.__file__).resolve(); expected = surface._LOADED[helper]
             def late_change(_handle):
                 surface._LOADED[helper] = "0" * 64
             receipt = {"schema": "mickey-r8-resident-binding-surface-v1",
-                       "candidate": {"path": candidate.relative_to(surface.adapter.ROOT).as_posix(),
+                       "candidate": {"path": candidate.relative_to(root).as_posix(),
                                      "sha256": surface._sha(candidate), "source": surface.SOURCE,
-                                     "source_sha256": surface.SOURCE_SHA256},
+                                     "source_sha256": source_sha},
                        "recheck_handles": ["opaque"]}
             try:
-                with mock.patch.object(surface.adapter, "ROOT", surface.adapter.ROOT), \
+                with mock.patch.object(surface.adapter, "ROOT", root), \
+                     mock.patch.object(surface, "SOURCE_SHA256", source_sha), \
                      mock.patch.object(surface.adapter, "recheck", side_effect=late_change):
                     with self.assertRaisesRegex(surface.BindingSurfaceError, "changed since import"):
                         surface.recheck_candidate(receipt)

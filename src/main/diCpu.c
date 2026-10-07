@@ -354,10 +354,13 @@ void func_80045D34(s32 arg0) {
             }
             if (buttons & 0xC) {
                 mask = 0xF << (nibble * 4);
+                /* Copied then stepped in place: the plus arm then loads the
+                 * address before forming the step, as shipped. */
+                candidate = address;
                 if (buttons & 8) {
-                    candidate = address + (1 << (nibble * 4));
+                    candidate += 1 << (nibble * 4);
                 } else {
-                    candidate = address - (1 << (nibble * 4));
+                    candidate -= 1 << (nibble * 4);
                 }
                 candidate = (candidate & mask) | (address & ~mask);
                 if (candidate >= 0x803FFF60U) {
@@ -792,10 +795,10 @@ void func_80046E00(void) {
 
 /* PLATEAU-HANDOFF:func_80045D34:start
  * symbol: func_80045D34
- * score: 115/459 words
+ * score: 112/459 words
  * frame: 0xA8
  * relocations: 93
  * first-mismatch: +0x14C
- * summary: Entry order, shifted row label and render-first page 0 (193 to 115); left: buttons copied to a1, nibble arm schedule, mode counter address.
+ * summary: Address copied then stepped in place in the editor arms (115 to 112); left: u16 return copy, counter address piece growth at bb 64
  * PLATEAU-HANDOFF:func_80045D34:end
  */

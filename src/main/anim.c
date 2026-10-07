@@ -3559,9 +3559,11 @@ f32 func_8002A8C0(s32 angle);
  * the then-arm correction is the repeated `impulse / mass` (uopt homes it as
  * the target does). The else arm computes the current-position dot first,
  * negated into the store-only `negDot`; the empty `if (negDot)` after the
- * previous-position updates keeps that store (and with it the dot as the
- * target's spilled temporary), and the previous-position dot is written
- * z-first, `pz*nz + (nx*px + ny*py)`, as the target adds it. See the shard.
+ * else-arm offsets keeps that store (and with it the dot as the target's
+ * spilled temporary), and the previous-position dot is written z-first,
+ * `pz*nz + (nx*px + ny*py)`, as the target adds it. The empty region after
+ * the trig products starts a block for the offsets, so timeStep's last
+ * piece is coloured and loaded once, as shipped. See the shard.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3613,6 +3615,8 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         sine = -func_8002A8BC(*(s16 *) first);
         target->unk90 = normal->z * cosine - normal->x * sine;
         target->unk8C = normal->z * sine + cosine * normal->x;
+        if (1) {
+        }
         offsetY = first->position.y - firstSource->previous.y;
         offsetX = first->position.x - firstSource->previous.x;
         offsetZ = first->position.z - firstSource->previous.z;
@@ -3636,11 +3640,11 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         offsetX = first->position.x - firstSource->previous.x;
         offsetY = first->position.y - firstSource->previous.y;
         offsetZ = first->position.z - firstSource->previous.z;
+        if (negDot) {
+        }
         firstSource->previous.x += displacement * normal->x;
         firstSource->previous.y += displacement * normal->y;
         firstSource->previous.z += displacement * normal->z;
-        if (negDot) {
-        }
         first->position.x = firstSource->previous.x + offsetX;
         first->position.y = firstSource->previous.y + offsetY;
         first->position.z = firstSource->previous.z + offsetZ;
@@ -3998,7 +4002,7 @@ void fmvInit(void) {
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x24
- * summary: Else arm dot first, empty if (negDot) after the updates, z-first previous dot: 171 to 165, frame 0x70. Left: else-arm FP colours, timeStep f18.
+ * summary: Then-arm block before the offsets (timeStep loaded once) and the empty if after the else offsets: aligned 161 to 154 at 165. Left: else-arm FP colours.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

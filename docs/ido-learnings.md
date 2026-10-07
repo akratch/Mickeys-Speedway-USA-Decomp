@@ -29,6 +29,21 @@ bytes and disassembly never belong here.
 
 ## Proven reusable behavior
 
+### Equivalent zero literals can occupy distinct saved FP registers
+
+- **Symptom:** a shared floating zero occupies a saved register that the target
+  uses for data. **Mechanism:** controlled stock full-TU comparisons showed
+  that changing just one of two `f32` comparisons from `0.0f` to integer `0`
+  produced two hoisted saved-register zero values and a larger frame. Changing
+  both comparisons restored the original shared zero and identical owned
+  bytes. **Lever:** test literal types independently when investigating
+  constant sharing, keeping value producers and control flow fixed.
+  **Limits:** integer zero converts exactly to positive `f32` zero, but a
+  source-equivalent partition can increase pressure instead of causing target
+  rematerialization. Count saved data values separately from constant carriers;
+  another saved register alone is not progress. These output observations do
+  not identify an internal optimizer pass or establish a matching result.
+
 ### Separate saved-register allocation from temporary-ring phase
 
 - **Symptom:** an exact-size renderer has only register differences, and a

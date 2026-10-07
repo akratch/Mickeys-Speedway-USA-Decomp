@@ -1,29 +1,14 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 35,
-  "resolved": 35,
+  "queue_size": 34,
+  "resolved": 34,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 35,
-  "relocation_masked_coverage": 35,
+  "source_context_coverage": 34,
+  "relocation_masked_coverage": 34,
   "functions": [
-    {
-      "name": "func_800349A4",
-      "file": "src/main/textures_354C8.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1088,
-      "objdiff_match_pct": null,
-      "differing_words": 5,
-      "first_mismatch_offset": 984,
-      "relocation_masked_differing_words": 5,
-      "relocation_masked_first_mismatch_offset": 984,
-      "size_delta": 0,
-      "category": "register-only",
-      "source_context_sha256": "KOe8.XPCk.uTIp.txYz.6g1R.w9ee.GQ2M.ug6y.i6r4.qAtX.4dI"
-    },
     {
       "name": "overlay68UpdateAnimation",
       "file": "src/overlays/o068/overlay68UpdateAnimation.c",

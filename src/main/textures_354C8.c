@@ -184,7 +184,6 @@ void func_80034920(Gfx **dlist) {
                         _SHIFTL((numberOfCommands * 8), 0, 16));               \
         _g->words.w1 = (unsigned int)(address);                                \
     }
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: Jet Force Gemini's public texDPTextureX establishes the related
  * texture/render-state role.  This body's fields, tables, control flow, and
@@ -201,7 +200,11 @@ void func_80034920(Gfx **dlist) {
  * through the frame block as1 hoists the table's lui to the first tex block
  * (the "split" high half was as1, from ugen's `la` at the merge). frameIndex
  * is computed before numTextures (ring order t8, t9); the settings address
- * adds table first as a byte offset.
+ * adds table first as a byte offset. 5 -> 0 (matched): the dead read of
+ * the lower record's first word into `lowerWord` before the copies enters
+ * `tableFlags << 3` into uopt's expression table first, so its web wins the
+ * save-3.0 tie for v0 against `tableFlags >> 3` (checklist item 21); uopt
+ * deletes the read.
  */
 void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
                    s32 frame) {
@@ -213,7 +216,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     u8 *nextTexture;
     s32 numTextures;
     s32 frameIndex;
-    s32 nextFrame;
+    s32 lowerWord;
     s32 hasTexture;
     s32 settingsIndex;
     s32 tableFlags;
@@ -335,6 +338,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
             }
             D_800D3034 = 0;
         }
+        lowerWord = settings->lower[tableFlags].words.w0;
         dl->words.w0 = settings->upper[tableFlags >> 3].words.w0;
         dl->words.w1 = settings->upper[tableFlags >> 3].words.w1;
         dl++;
@@ -344,30 +348,6 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     }
     *dlist = dl;
 }
-/* Size delta 0 and frame 0x40 closed (from +8 and -16). flags reaches s0
- * naturally once `flags = (flags & ~0x80) | 4` is two statements: its total
- * save goes 14 to 16 against the callee toll 15.85 (L56). The two DMA
- * commands are gSPDisplayList and gDkrDmaDisplayList; the wrap takes an else
- * arm; numTextures is declared ahead of oldBlockedFlags so that home lands at
- * -0x1C; settings is assigned at the head of the texture arm. A pointer to
- * D_800D302C, live across its load and store, stopped the early address
- * hold; since 2026-10-02 (lane p-tex2) the cache compare is the sibling
- * func_80034E54's: a state key compared and stored directly, and
- * D_800D3020 caching the table BASE (the target compares and stores the
- * unindexed table register), the indexed entry read through its own
- * pointer (175 to 172). Left: register naming from +0x24. */
-/* PLATEAU-HANDOFF:func_800349A4:start
- * symbol: func_800349A4
- * score: 5 differing words
- * frame: 0x40 (target 0x40)
- * relocations: 39
- * first-mismatch: +0x3D8
- * summary: 62 to 5 at delta 0: frameIndex++ in place, frameIndex first, byte-offset settings. Left: tail tie, webs 226 and 233 at save 3.0; the forced swap scores 0.
- * PLATEAU-HANDOFF:func_800349A4:end
- */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/textures_354C8/func_800349A4.s")
-#endif
 
 void func_80034DE4(s32 value) {
     D_8007BD88 = value;

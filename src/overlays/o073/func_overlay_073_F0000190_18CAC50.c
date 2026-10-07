@@ -194,7 +194,7 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
             if (sqrtf((dx * dx) + (dy * dy) + (dz * dz)) < 4.0f) {
                 func_80008118();
                 func_80008128(object, -dx, -dy, -dz);
-                object->velocityY = 0.0f;
+                object->velocityY = 0;
                 state->mode = 0;
                 state->timer = 0.0f;
             }
@@ -410,10 +410,10 @@ common:
 
 /* PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:start
  * symbol: func_overlay_073_F0000190_18CAC50
- * score: 35 differing words
+ * score: 29 differing words
  * frame: 0x98
  * relocations: 46
  * first-mismatch: +0x2B8
- * summary: 20 masked at size 0; case 3 velocity zero colour, case 1 dz reload colour, float-rate spill +0x30 not +0x34, case 4 query index web.
+ * summary: 14 masked at size 0; float-rate spill +0x30 not +0x34 (6 words), case 4 query narrowing order and index web (8 words).
  * PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:end
  */

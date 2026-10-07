@@ -295,8 +295,8 @@ units remain distinct.
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
 | 2 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
-| 3 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 52 | 17 | 156 | 1,916 | 0 | — |
-| 4 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `other` | 3,040 | 35 | 20 | 96 | 696 | 0 | — |
+| 3 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `other` | 3,040 | 29 | 14 | 96 | 696 | 0 | — |
+| 4 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 52 | 17 | 156 | 1,916 | 0 | — |
 | 5 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 36 | 36 | 60 | 60 | 0 | — |
 | 6 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 43 | 43 | 20 | 20 | 0 | — |
 | 7 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |

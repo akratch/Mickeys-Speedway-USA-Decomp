@@ -2,11 +2,11 @@
 ### `func_overlay_073_F0000190_18CAC50` plateau handoff
 
 - source: `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c`
-- score: 35 differing words
+- score: 29 differing words
 - frame: 0x98
 - relocations: 46
 - first mismatch: +0x2B8
-- summary: 20 masked at size 0; case 3 velocity zero colour, case 1 dz reload colour, float-rate spill +0x30 not +0x34, case 4 query index web.
+- summary: 14 masked at size 0; float-rate spill +0x30 not +0x34 (6 words), case 4 query narrowing order and index web (8 words).
 
 Summary before this remeasure: 153 masked at size 0; target is two ring draws ahead from the case 1 angle difference; float-rate spill at +0x30 not +0x34.
 
@@ -331,5 +331,21 @@ structural rows.
   where the target uses f18; the float-rate spill +0x30 against +0x34;
   and the case 4 query (narrowing schedule order and `hitIndex - 1`
   coloured a1 in the target, a ring temp here).
+
+- Zero spellings (512-cell product over the nine float-zero sites that
+  are not sign tests): the case 1 reset writes `object->velocityY = 0;`
+  (int zero). 20 to 14 at size 0; it fixes the case 3 velocity zero
+  (f2) and the case 1 dz reload (f18) together.
+- Exhaustive single-force landscape at 20 (278 probes): no force beats
+  the unforced build, so the remaining rows are not colour decisions.
+- Extra pad of s32, s16 or u8 at each of 19 declaration positions (57
+  cells): the float-rate spill stays 8 below `hits` in every cell; it
+  only moves when `hits` moves.
+- Case 4 query, 14 remaining rows minus the spill: narrowing order and
+  `hitIndex - 1` into a1. Chained, comma and in-predicate assignments,
+  int-typed count, regions around the index store, and s32/s16
+  carriers for the index (41 cells) are flat. `hitIndex--` makes the
+  index a web (coloured a0, not a1) but no longer draws the ring
+  register the target spends there (75).
 
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

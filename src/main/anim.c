@@ -3499,115 +3499,91 @@ f32 func_8002A8BC(s32 angle);
 f32 func_8002A8C0(s32 angle);
 
 /*
- * Plateau: 229/229 instructions, frame 0x70, 177 differing words from +0x24.
- * Computing the contact dots as their own statement, then
- * (unk6C + 1.0f) * dots / (1.0f / mass), closed the one-word size deficit:
- * 1.0f/mass and (unk6C + 1.0f) now sit side by side after the dots.
- *
- * Next lever: delay materializing 25.0f until after the three squared
- * velocity products. ugen currently emits that constant first among the
- * magnitude ops, which occupies a ring temp and rotates the FP ring for the
- * rest of the procedure. Mag-as-local, L97, L144 on the magnitude, L144 on
- * retained, an unassociated sum, and deleting the pre-branch velocity
- * carriers were all measured; copy-forwarding collapses the mag local back
- * into the compare.
+ * Plateau: 229/229 instructions, 171 masked words (2026-10-07, lane a-anim).
+ * Natural shape: velocity, normal and previous-position fields are read at
+ * every use (no carriers, no volatile), the then-arm correction is the
+ * repeated `impulse / mass` (uopt homes it as the target does), and the else
+ * arm writes the plane dot inline twice, once negated into the store-only
+ * local. The target frame is 0x70 with 13 declared homes and five compiler
+ * temporaries; this shape has the 13 declared homes but seven temporaries
+ * (frame 0x78). See the shard.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
                    AnimVec3f *normal, f32 timeStep) {
     HitCopyTarget *target;
     HitCopySource *firstSource;
+    f32 mass;
     HitCopySource *secondSource;
-    /* vectorX/Y/Z and scalar are shared by the two mutually exclusive arms:
-     * the velocity triple and its magnitude above, the previous-position
-     * triple and the plane dot product below. The target's 0x70 frame homes
-     * exactly this many f32 locals. */
-    f32 vectorX;
-    f32 vectorY;
-    f32 vectorZ;
-    f32 scalar;
     f32 impulse;
-    f32 correction;
-    f32 cosine;
     f32 sine;
-    f32 offsetX;
+    f32 cosine;
     f32 offsetY;
     f32 offsetZ;
+    f32 offsetX;
+    f32 negDot;
+    f32 speed;
     f32 displacement;
-    volatile f32 retained;
+    f32 dot;
 
     target = first->target;
-    vectorX = target->velocity.x;
-    vectorY = target->velocity.y;
-    vectorZ = target->velocity.z;
     firstSource = first->source;
     secondSource = second->source;
-    if (((vectorZ * vectorZ) +
-         ((vectorX * vectorX) + (vectorY * vectorY))) > 25.0f) {
-        f32 mass;
-
-        mass = ((HitCopyTarget *) TrapDanglingJump(target))->unk4;
-        vectorX = target->velocity.x;
-        vectorY = target->velocity.y;
-        vectorZ = target->velocity.z;
-        /* Dots first so (unk6C + 1.0f) and 1.0f/mass sit side by side. */
-        impulse = (normal->z * vectorZ) +
-                  ((vectorX * normal->x) + (vectorY * normal->y));
-        impulse = ((secondSource->unk6C + 1.0f) * impulse) / (1.0f / mass);
-        correction = impulse / mass;
-        retained = impulse;
-        target->velocity.x = vectorX - (correction * normal->x);
-        target->velocity.y = vectorY - (correction * normal->y);
-        target->velocity.z = vectorZ - (correction * normal->z);
-        scalar = sqrtf((target->velocity.z * target->velocity.z) +
-                          ((target->velocity.x * target->velocity.x) +
-                           (target->velocity.y * target->velocity.y)));
-        target->magnitude80 = scalar;
-        target->magnitude84 = scalar;
-        target->direction.x = target->velocity.x / scalar;
-        target->direction.y = target->velocity.y / scalar;
-        target->direction.z = target->velocity.z / scalar;
+    if (target->velocity.z * target->velocity.z +
+            (target->velocity.x * target->velocity.x +
+             target->velocity.y * target->velocity.y) > 25.0f) {
+        mass = ((HitResolveMass *) TrapDanglingJump(target))->mass;
+        dot = normal->z * target->velocity.z +
+              (target->velocity.x * normal->x + target->velocity.y * normal->y);
+        impulse = ((secondSource->unk6C + 1.0f) * dot) / (1.0f / mass);
+        target->velocity.x -= (impulse / mass) * normal->x;
+        target->velocity.y -= (impulse / mass) * normal->y;
+        target->velocity.z -= (impulse / mass) * normal->z;
+        speed = sqrtf(target->velocity.z * target->velocity.z +
+                      (target->velocity.x * target->velocity.x +
+                       target->velocity.y * target->velocity.y));
+        target->magnitude80 = speed;
+        target->magnitude84 = speed;
+        target->direction.x = target->velocity.x / speed;
+        target->direction.y = target->velocity.y / speed;
+        target->direction.z = target->velocity.z / speed;
         target->unk181 = 1;
         target->unk4 = 0.0f;
         target->unk8 = 0.0f;
         target->unk88 = D_80084210;
         firstSource->unk63 = 1;
         secondSource->unk63 = 1;
-        secondSource->unk64 = scalar;
+        secondSource->unk64 = speed;
         cosine = -func_8002A8C0(*(s16 *) first);
         sine = -func_8002A8BC(*(s16 *) first);
-        target->unk90 = (normal->z * cosine) - (normal->x * sine);
-        target->unk8C = (normal->z * sine) + (cosine * normal->x);
+        target->unk90 = normal->z * cosine - normal->x * sine;
+        target->unk8C = normal->z * sine + cosine * normal->x;
         offsetY = first->position.y - firstSource->previous.y;
         offsetX = first->position.x - firstSource->previous.x;
         offsetZ = first->position.z - firstSource->previous.z;
-        firstSource->previous.x =
-            (target->velocity.x * timeStep) + firstSource->current.x;
-        firstSource->previous.y =
-            (target->velocity.y * timeStep) + firstSource->current.y;
-        firstSource->previous.z =
-            (target->velocity.z * timeStep) + firstSource->current.z;
+        firstSource->previous.x = target->velocity.x * timeStep + firstSource->current.x;
+        firstSource->previous.y = target->velocity.y * timeStep + firstSource->current.y;
+        firstSource->previous.z = target->velocity.z * timeStep + firstSource->current.z;
         first->position.x = firstSource->previous.x + offsetX;
         first->position.y = firstSource->previous.y + offsetY;
         first->position.z = firstSource->previous.z + offsetZ;
     } else {
-        scalar = (normal->z * firstSource->current.z) +
-              ((firstSource->current.x * normal->x) +
-               (firstSource->current.y * normal->y));
-        retained = -scalar;
-        vectorZ = firstSource->previous.z;
-        vectorY = firstSource->previous.y;
-        vectorX = firstSource->previous.x;
+        negDot = -(normal->z * firstSource->current.z +
+                   (firstSource->current.x * normal->x +
+                    firstSource->current.y * normal->y));
         displacement = D_80084214 -
-                       (((normal->z * vectorZ) +
-                         ((normal->x * vectorX) +
-                          (normal->y * vectorY))) - scalar);
-        offsetY = first->position.y - vectorY;
-        offsetZ = first->position.z - vectorZ;
-        offsetX = first->position.x - vectorX;
-        firstSource->previous.x = vectorX + (displacement * normal->x);
-        firstSource->previous.y = vectorY + (displacement * normal->y);
-        firstSource->previous.z = vectorZ + (displacement * normal->z);
+                       ((normal->x * firstSource->previous.x +
+                         normal->y * firstSource->previous.y +
+                         firstSource->previous.z * normal->z) -
+                        (normal->z * firstSource->current.z +
+                         (firstSource->current.x * normal->x +
+                          firstSource->current.y * normal->y)));
+        offsetX = first->position.x - firstSource->previous.x;
+        offsetY = first->position.y - firstSource->previous.y;
+        offsetZ = first->position.z - firstSource->previous.z;
+        firstSource->previous.x += displacement * normal->x;
+        firstSource->previous.y += displacement * normal->y;
+        firstSource->previous.z += displacement * normal->z;
         first->position.x = firstSource->previous.x + offsetX;
         first->position.y = firstSource->previous.y + offsetY;
         first->position.z = firstSource->previous.z + offsetZ;
@@ -3961,11 +3937,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 177 differing words
- * frame: 0x70
+ * score: 171 differing words
+ * frame: 0x78
  * relocations: 8
- * first-mismatch: +0x24
- * summary: Size now exact at 229 words and frame 0x70; impulse dots-then-divide closed the missing word. Residual is the early 25.0f materialization rotating the FP ring from +0x24.
+ * first-mismatch: +0x0
+ * summary: Natural field-read shape, homed impulse/mass: 177 to 171 at size 0. Left: frame 0x78 (two surplus temps), FP ring one draw out at the compare.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

@@ -77,7 +77,7 @@ SYNTHETIC_VMA = 0xF0000000
 # function's own object and the linked ELF.
 TOOL_SOURCES = (
     "tools/promotion_proof.py", "tools/function_preflight.py",
-    "tools/reloc_surface.py", "tools/reloc_identity.py",
+    "tools/reloc_surface.py", "tools/reloc_identity.py", "tools/overlay_call_context.py",
     "tools/proof_provenance.py", "tools/overlay_tables.py",
     "tools/postprocess_audit.py", "tools/function_history.py",
     "tools/wb_compare.sh", "tools/promotion_proof_census.py",

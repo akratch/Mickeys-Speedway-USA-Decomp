@@ -108,17 +108,17 @@ import source_symbol_fidelity  # noqa: E402
 import prepared_macro_context  # noqa: E402
 import sweep_receipts  # noqa: E402
 import promotion_transaction  # noqa: E402
-_LOADED_IMPLEMENTATIONS = {
-    name: (Path(path), hashlib.sha256(Path(path).read_bytes()).hexdigest())
-    for name, path in (("runner", __file__), ("receipts", sweep_receipts.__file__),
-                       ("promotion", promotion_transaction.__file__),
-                       ("relocations", reloc_surface.__file__),
-                       ("search_local_bindings", search_local_bindings.__file__),
-                       ("source_symbol_fidelity", source_symbol_fidelity.__file__),
-                       ("prepared_macro_context", prepared_macro_context.__file__),
-                       ("relocation_identity", reloc_surface.ri.__file__),
-                       ("overlay_table", reloc_surface.ot.__file__))
-}
+_LOADED_IMPLEMENTATIONS = sweep_receipts.loaded_implementations(
+    (("runner", __file__), ("receipts", sweep_receipts.__file__),
+     ("promotion", promotion_transaction.__file__),
+     ("relocations", reloc_surface.__file__),
+     ("overlay_call_context", ROOT / "tools/overlay_call_context.py"),
+     ("search_local_bindings", search_local_bindings.__file__),
+     ("source_symbol_fidelity", source_symbol_fidelity.__file__),
+     ("prepared_macro_context", prepared_macro_context.__file__),
+     ("relocation_identity", reloc_surface.ri.__file__),
+     ("overlay_table", reloc_surface.ot.__file__))
+)
 ATLAS_PATH = ROOT / "config" / "overlays.us.json"
 PERMUTER_DIR = ROOT / "tools" / "permuter"
 IMPORT_PY = PERMUTER_DIR / "import.py"

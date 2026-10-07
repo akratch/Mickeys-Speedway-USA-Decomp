@@ -22,6 +22,12 @@ import uuid
 import zipfile
 from pathlib import Path
 
+def loaded_implementations(paths):
+    """Pin proof implementation files at module load for subsequent drift checks."""
+    return {name: (Path(path), hashlib.sha256(Path(path).read_bytes()).hexdigest())
+            for name, path in paths}
+
+
 SCHEMA = 4
 MAX_ARTIFACT_BYTES = 128 * 1024 * 1024  # Encoded ZIP, including metadata.
 MAX_PAYLOAD_BYTES = 120 * 1024 * 1024

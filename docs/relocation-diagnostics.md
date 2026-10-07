@@ -37,6 +37,16 @@ freshness, ownership, linked-byte and runtime-tuple checks pass. The function
 under proof remains excluded from that sibling search. Alias propagation keeps
 `via_symbol` provenance and does not create a new identity.
 
+A canonical call boundary may use a friendly C name through one unique direct
+`generated = friendly` equality in the tracked overlay alias map. The equality
+only selects the definition spelling. The ordinary friendly C definition,
+fresh configured object, bounded function symbols, exact atlas ownership,
+linked ROM bytes and unchanged compiler instruction bits must still prove the
+callee independently. Duplicate or chained aliases, conflicting definitions,
+stale map/link evidence and an absolute generated alias without the actual
+friendly function do not establish a boundary. Alias inputs are snapshotted
+alongside the source and object so replacement during inspection fails closed.
+
 Runtime HI/LO and repeated-call correlations have `independent: false`, even
 where the existing resolver accepts them. Their recorded proposals cannot be
 used as additional independent witnesses. Diagnostics leave that existing

@@ -2,11 +2,13 @@
 ### `func_overlay_056_F00001A0_18A2F18` plateau handoff
 
 - source: `src/overlays/o056/overlay_056.c`
-- score: 152 differing words
+- score: 131 differing words
 - frame: 0x1F8
 - relocations: 75
 - first mismatch: +0x160
-- summary: y sum merged into ghost x (mapY f20), frame ladder, ternary fade shift: 542 to 152 at 0; open: sum/mapX, cos/sin, scale/x colours.
+- summary: x/z locals, in-place mapY rebase (CSE temp in f20), x-term-first mapY, frame refit: 542 to 131 at 0; open: cos/sin, int ring phase.
+
+Summary before this remeasure: y sum merged into ghost x (mapY f20), frame ladder, ternary fade shift: 542 to 152 at 0; open: sum/mapX, cos/sin, scale/x colours.
 
 Summary before this remeasure: mapY in f20 via the y sum merged into the ghost x web, frame ladder for the f24 save: 542 to 163 at 0; open: sum/mapX, cos/sin, scale/x colour pairs.
 
@@ -414,5 +416,24 @@ re-fit the frame with frame_census. If that order is unreachable, the 152
 body's open pairs are the fallback: sum web save below 20 crossing a call
 elsewhere, and cos ahead of sin (cos spans one more block, 41/13 against
 41/12).
+
+#### 2026-10-07 (lane e-big, resumed): x/z-locals shape at size 0, 152 to 131
+
+On the x/z-locals shape (373 at +4), the order of the two terms inside
+mapY's own expression decides which products uopt emits first: mapY =
+x * sinA + z * cosA puts rotX's products first and removes the extra
+mul.s hazard nop (182 at 0). Splitting either statement into two, moving
+x's or z's definition, and rotX after mapY all stay at 373 at +4 (8 forms).
+Frame refit: homes were 8 high above ghostAlpha and the D_84 temporary
+4 low; dropping the unused cell that replaced shift, ghostAlpha last in
+declaration order, and two of the four float locals (x and z) declared
+above the pads put every home on the target's ladder except one top cell
+(0x1D0 against 0x1D4): 131 at 0, aligned 453 / 120 / 2 / 5. 18 placements
+of the moved pair by 3 top-pad counts measured; any pair containing x at
+one top pad reaches 131.
+
+Open: cos and sin still f24 and f22 (cos spans one more block), which also
+puts the mapY add ahead of the rotX subtract; the int ring is a closed
+seven-cycle from the prim-colour packet (+0x764) to the end.
 
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

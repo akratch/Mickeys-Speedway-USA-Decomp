@@ -3559,6 +3559,14 @@ f32 func_8002A8C0(s32 angle);
  * `pz*nz + (nx*px + ny*py)`, as the target adds it. The empty region after
  * the trig products starts a block for the offsets, so timeStep's last
  * piece is coloured and loaded once, as shipped. See the shard.
+ * 2026-10-08 (lane j-4): the compare reads two of its products through
+ * `speed` and `dot`, assigned in that order (the then arm's FP ring is then
+ * in phase from +0x80), and an empty `if (cosine)` after the trig pair
+ * gives the cosine reload f2 and the sine f12 as shipped: 165 to 140 at
+ * size 0. Later: no then-arm region (offsets X, Y, Z), and the else arm
+ * names its plane dot and previous.y/previous.z reads (previous.y carried
+ * in the dead `impulse`, which keeps the frame at 0x70), else offsets
+ * Y, Z, X: 140 to 95.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3577,13 +3585,15 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
     f32 speed;
     f32 displacement;
     f32 dot;
+    f32 planeDot;
+    f32 previousZ;
 
     target = first->target;
     firstSource = first->source;
     secondSource = second->source;
-    if (target->velocity.z * target->velocity.z +
-            (target->velocity.x * target->velocity.x +
-             target->velocity.y * target->velocity.y) > 25.0f) {
+    speed = target->velocity.y * target->velocity.y;
+    dot = target->velocity.x * target->velocity.x;
+    if (target->velocity.z * target->velocity.z + (dot + speed) > 25.0f) {
         mass = ((HitResolveMass *) TrapDanglingJump(target))->mass;
         dot = normal->z * target->velocity.z +
               (target->velocity.x * normal->x + target->velocity.y * normal->y);
@@ -3608,12 +3618,12 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         secondSource->unk64 = speed;
         cosine = -func_8002A8C0(*(s16 *) first);
         sine = -func_8002A8BC(*(s16 *) first);
+        if (cosine) {
+        }
         target->unk90 = normal->z * cosine - normal->x * sine;
         target->unk8C = normal->z * sine + cosine * normal->x;
-        if (1) {
-        }
-        offsetY = first->position.y - firstSource->previous.y;
         offsetX = first->position.x - firstSource->previous.x;
+        offsetY = first->position.y - firstSource->previous.y;
         offsetZ = first->position.z - firstSource->previous.z;
         firstSource->previous.x = target->velocity.x * timeStep + firstSource->current.x;
         firstSource->previous.y = target->velocity.y * timeStep + firstSource->current.y;
@@ -3622,19 +3632,19 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         first->position.y = firstSource->previous.y + offsetY;
         first->position.z = firstSource->previous.z + offsetZ;
     } else {
-        negDot = -(normal->z * firstSource->current.z +
+        planeDot = normal->z * firstSource->current.z +
                    (firstSource->current.x * normal->x +
-                    firstSource->current.y * normal->y));
+                    firstSource->current.y * normal->y);
+        negDot = -planeDot;
+        previousZ = firstSource->previous.z;
+        impulse = firstSource->previous.y;
         displacement = D_80084214 -
-                       ((firstSource->previous.z * normal->z +
+                       ((previousZ * normal->z +
                          (normal->x * firstSource->previous.x +
-                          normal->y * firstSource->previous.y)) -
-                        (normal->z * firstSource->current.z +
-                         (firstSource->current.x * normal->x +
-                          firstSource->current.y * normal->y)));
-        offsetX = first->position.x - firstSource->previous.x;
+                          normal->y * impulse)) - planeDot);
         offsetY = first->position.y - firstSource->previous.y;
         offsetZ = first->position.z - firstSource->previous.z;
+        offsetX = first->position.x - firstSource->previous.x;
         if (negDot) {
         }
         firstSource->previous.x += displacement * normal->x;
@@ -3987,17 +3997,17 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: Z-first step reads give the target's vector colours: aligned 270 to 255 at 344. Left: arg1 in s0 needs position-pointer webs in the quadratic block.
+ * summary: Z-first step reads, aligned 270 to 255 at 344. Left: arg1 in s0 (position-pointer webs); first doubles stored at their definitions.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 165/229 words
+ * score: 95/229 words
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x24
- * summary: Then-arm block before the offsets and the empty if after the else offsets: aligned 161 to 154 at 165. Left: else-arm FP colours, trig colours.
+ * summary: Named else-arm reads, else offsets Y,Z,X, cosine kill, compare carriers: 165 to 95 at size 0. Left: negDot store, compare block.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

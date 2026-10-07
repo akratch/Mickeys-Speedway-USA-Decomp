@@ -253,6 +253,13 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         if stripped is not None:
             stripped.unlink(missing_ok=True)
+    with tempfile.TemporaryDirectory(prefix="shape-product-") as tmp:
+        workdir = Path(tmp)
+        with ThreadPoolExecutor(max_workers=ns.jobs) as pool:
+            results = list(pool.map(
+                lambda ic: run_cell(ns.symbol, base_args, candidate, source, workdir, *ic),
+                enumerate(cells),
+            ))
 
     rank = choose_rank(results, ns.rank)
     results.sort(key=aligned_key if rank == "aligned" else sort_key)

@@ -600,6 +600,28 @@ class FinalizeCommandTests(unittest.TestCase):
         self.assertEqual((self.repo / "src" / "demo.c").read_text(encoding="utf-8"), before)
         self.assertFalse(self.gate_log.exists())
 
+    def test_regenerated_files_are_allowed_dirt_and_committed(self) -> None:
+        for rel in ("config/nonmatching-ranking.us.json", "docs/nm-ranking.md", "README.md"):
+            path = self.repo / rel
+            path.parent.mkdir(exist_ok=True)
+            path.write_text("old\n", encoding="utf-8")
+        self.run_command("git", "add", ".")
+        self.run_command("git", "commit", "-q", "-m", "regen baseline")
+        for rel in ("config/nonmatching-ranking.us.json", "docs/nm-ranking.md", "README.md"):
+            (self.repo / rel).write_text("new\n", encoding="utf-8")
+        result = self.finalize("--commit")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.run_command("git", "status", "--porcelain").stdout, "")
+        changed = self.run_command("git", "show", "--name-only", "--format=", "HEAD").stdout
+        for rel in ("config/nonmatching-ranking.us.json", "docs/nm-ranking.md", "README.md"):
+            self.assertIn(rel, changed)
+
+    def test_long_summary_is_wrapped_not_refused(self) -> None:
+        result = self.finalize("--summary", "blocker " * 60)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        result = self.finalize("--summary", "a | b")
+        self.assertEqual(result.returncode, 2)
+
     def test_rejects_unguarded_source_before_gates(self) -> None:
         (self.repo / "src" / "demo.c").write_text(
             "void demo_symbol(void) {}\n", encoding="utf-8"

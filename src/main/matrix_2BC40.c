@@ -64,10 +64,10 @@ void func_8002B040(MtxF matrix, f32 arg1, f32 arg2, f32 arg3,
 
 /* PLATEAU-HANDOFF:func_8002B040:start
  * symbol: func_8002B040
- * score: 34 differing words
+ * score: 34/34 words
  * frame: frameless
  * relocations: 0
  * first-mismatch: +0x0
- * summary: Own TU now. -O2 keeps the arg2 stack home (c28 infinite on incoming scalars); -O3 floors at 18, delta 0, outer add operand order at +0x2C.
+ * summary: Own TU; -O3 -Wab,-r4300_mul floors at 16 delta 0; two silent float ring draws per row after the sum are unexplained
  * PLATEAU-HANDOFF:func_8002B040:end
  */

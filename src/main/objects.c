@@ -5381,10 +5381,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414
- * score: 185 differing words
+ * score: 185/421 words
  * frame: 0x198
  * relocations: 11
  * first-mismatch: +0x170
- * summary: Base carrier removed (189 to 185 at delta 0). Left: one folded draw on the unk3 load, sort j web (a0 in the target), entry loop draws.
+ * summary: Base carrier removed (189 to 185 at delta 0). The missing unk3 draw is worth 32 aligned rows ((u16) cast gives it at +4); sort j web
  * PLATEAU-HANDOFF:func_80009414:end
  */

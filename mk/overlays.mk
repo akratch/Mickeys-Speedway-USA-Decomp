@@ -1481,6 +1481,12 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o071/func_overlay_071_F0000870_18CA390.c.o: POS
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2D8
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o072/overlay_072.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x168
+# The guarded overlay 73 updater owns this entire function-sized TU. Its
+# independent floating multiplies require the R4300 hazard schedule: the
+# default assembler omits four target nops and changes a branch delay slot.
+# This local flag corrects that mechanism; the C body remains NON_MATCHING.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o073/func_overlay_073_F0000190_18CAC50.c.o: CFLAGS += \
+	-Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o073/overlay73Draw.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_8002409C=func_8002409C_o073Reloc \

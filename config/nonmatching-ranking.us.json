@@ -856,13 +856,13 @@
       "tu": "overlays/o073",
       "size_bytes": 3040,
       "objdiff_match_pct": null,
-      "differing_words": 749,
+      "differing_words": 741,
       "first_mismatch_offset": 28,
-      "relocation_masked_differing_words": 749,
+      "relocation_masked_differing_words": 740,
       "relocation_masked_first_mismatch_offset": 28,
-      "size_delta": 32,
+      "size_delta": 8,
       "category": "size-mismatch",
-      "source_context_sha256": "kY3v.nuFf.QJEu.e5nc.efXX.hzOK.9NFE.q5hH.d9sS.sYio.3q4"
+      "source_context_sha256": "lpC-.phH7.RiLr.sf1m.s7JP.NRla.229L.dm51._Vp1.huMm.8iY"
     },
     {
       "name": "func_overlay_047_F0000B30_1891948",

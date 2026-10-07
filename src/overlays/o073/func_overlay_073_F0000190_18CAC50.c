@@ -1,9 +1,10 @@
-/* Current configured stock candidate: structure-mismatch, 749 differing words,
- * first mismatch +0x1C; 768 vs 760 words, frame 0x98. Authenticated query
- * output storage, ten-byte vertex banks, shared case4 timer tail and post-call
- * target-data reloads are reconstructed. Text relocation cardinality is 46/46;
- * offset/identity and linked owned-byte proof remain nonexact. See the owned
- * matching-triage handoff for supported input domains and retained controls. */
+/* NON_MATCHING: query output storage, ten-byte vertex banks and observed
+ * automatic homes are reconstructed. Radius limits and shared zero values
+ * have explicit, nonoverlapping local roles. Signed steering comparisons
+ * preserve promoted negation, including the signed-halfword minimum.
+ * Entry narrowing, compiler scratch allocation and relocation geometry
+ * remain nonexact; see the owned matching-triage handoff for measurements
+ * and the supported query/index domain. */
 #ifdef NON_MATCHING
 #include "PR/ultratypes.h"
 
@@ -91,19 +92,24 @@ typedef struct Func073Target {
 } Func073Target;
 
 void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
-    s16 absStep;
-    s16 stateAngle;
-    struct HitCopyState *hits[8];
-    Func073Vertex *vertex;
-    s32 phase;
     s32 horizontal;
     s32 vertical;
-    Func073State *state;
-    f32 dx;
-    f32 dz;
-    f32 dy;
-    s16 targetAngle;
+    s32 phase;
+    s32 stateAngle;
+    s16 absStep;
     s16 delta;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    s16 targetAngle;
+    f32 limit;
+    s16 hitCount;
+    s32 hitIndex;
+    Func073TargetData *data;
+    Func073Target *target;
+    Func073Vertex *vertex;
+    Func073State *state;
+    struct HitCopyState *hits[8];
 
     state = object->state;
     stateAngle = state->angle;
@@ -115,12 +121,13 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
 
     switch (state->mode) {
     case 0: {
-        state->timer = 0.0f;
+        state->timer = 0;
         if ((s16)func_8005776C(state->x, 0.0f, state->z, state->radius,
                           1, hits) != 0) {
+            target = (Func073Target *)hits[0];
             state->countdown = 0xF0;
             state->mode = 3;
-            state->target = hits[0];
+            state->target = target;
         }
         object->timer += (f32)updateRate * D_20;
         if (object->timer >= 1.0f) {
@@ -144,7 +151,7 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
         targetAngle = Arctanf(dx, dz);
         delta = targetAngle - object->angle;
         if (delta < 0) {
-            if ((s16)-absStep < delta) {
+            if (-absStep < delta) {
                 object->angle += delta;
             } else {
                 object->angle -= absStep;
@@ -158,26 +165,27 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
         }
 
         dy = state->y - object->y;
-        if (dy < 0.0f) {
+        if (dy < 0) {
             object->velocityY -= D_24 * (f32)updateRate;
             if (object->velocityY < dy) {
                 object->velocityY = dy;
             }
-        } else if (dy > 0.0f) {
+        } else if (dy > 0) {
             object->velocityY += D_28 * (f32)updateRate;
             if (dy < object->velocityY) {
                 object->velocityY = dy;
             }
         } else {
-            object->velocityY = 0.0f;
+            object->velocityY = 0;
         }
 
         if (state->mode == 1 &&
-            (s16)func_8005776C(state->x, 0.0f, state->z, state->radius,
+            (s16)func_8005776C(state->x, 0, state->z, state->radius,
                           1, hits) != 0) {
+            target = (Func073Target *)hits[0];
             state->countdown = 0x78;
             state->mode = 3;
-            state->target = hits[0];
+            state->target = target;
         }
 
         if (state->mode != 3) {
@@ -199,8 +207,6 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
     }
 
     case 3: {
-        Func073Target *target;
-        Func073TargetData *data;
 
         if (stateAngle < 0x480) {
             state->angle = stateAngle + (updateRate * 0x10);
@@ -213,27 +219,26 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
         data = target->data;
         dx = data->x - state->x;
         dz = data->z - state->z;
-        if ((state->radius * state->radius * 4.0f) <
-            ((dx * dx) + (dz * dz))) {
+        limit = state->radius * state->radius * 4.0f;
+        if (limit < ((dx * dx) + (dz * dz))) {
             state->target = NULL;
             if ((s16)func_8005776C(state->x, 0.0f, state->z, state->radius,
                               1, hits) != 0) {
+                target = (Func073Target *)hits[0];
                 state->countdown = 0xF0;
-                state->target = hits[0];
+                state->target = target;
             }
         }
 
         target = (Func073Target *)state->target;
-        if (target == NULL) {
-            state->mode = 1;
-        } else {
+        if (target != NULL) {
             data = target->data;
             dx = object->x - data->x;
             dz = object->z - data->z;
             targetAngle = Arctanf(dx, dz);
             delta = targetAngle - object->angle;
             if (delta < 0) {
-                if ((s16)-absStep < delta) {
+                if (-absStep < delta) {
                     object->angle += delta;
                 } else {
                     object->angle -= absStep;
@@ -248,12 +253,12 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
 
             data = ((Func073Target *)state->target)->data;
             dy = data->y - object->y;
-            if (dy < 0.0f) {
+            if (dy < 0) {
                 object->velocityY -= D_30 * (f32)updateRate;
                 if (object->velocityY < dy) {
                     object->velocityY = dy;
                 }
-            } else if (dy > 0.0f) {
+            } else if (dy > 0) {
                 object->velocityY += D_34 * (f32)updateRate;
                 if (dy < object->velocityY) {
                     object->velocityY = dy;
@@ -263,6 +268,8 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
             if (((dx * dx) + (dz * dz)) < 256.0f) {
                 state->mode = 4;
             }
+        } else {
+            state->mode = 1;
         }
 
         object->timer += D_38 * (f32)updateRate;
@@ -273,10 +280,6 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
     }
 
     case 4: {
-        Func073Target *target;
-        Func073TargetData *data;
-        s32 hitCount;
-        s32 hitIndex;
 
         if (stateAngle >= 0x181) {
             state->angle = stateAngle - (updateRate * 0x10);
@@ -287,60 +290,60 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
 
         dx = object->x - state->x;
         dz = object->z - state->z;
-        if ((state->radius * state->radius * 4.0f) <
-            ((dx * dx) + (dz * dz))) {
+        limit = state->radius * state->radius * 4.0f;
+        if (limit < ((dx * dx) + (dz * dz))) {
             state->mode = 2;
-            goto case4_timer;
-        }
-
-        if (updateRate < state->countdown) {
-            state->countdown -= updateRate;
         } else {
-            state->countdown = 0;
-            hitCount = (s16)func_8005776C(object->x, 0.0f, object->z,
-                                     150.0f, 1, hits);
-            if (hitCount == 0) {
-                state->target = NULL;
-                state->mode = 1;
+
+            if (updateRate < state->countdown) {
+                state->countdown -= updateRate;
             } else {
+                state->countdown = 0;
+                hitCount = (s16)func_8005776C(object->x, 0.0f, object->z,
+                                         150.0f, 1, hits);
                 hitIndex = hitCount;
-                if (hitCount >= 2) {
-                    hitIndex = (s16)mathRnd(1, hitCount);
-                }
-                state->countdown = 0xF0;
-                state->target = hits[(s16)(hitIndex - 1)];
-            }
-        }
-
-        if (state->mode == 4) {
-            target = (Func073Target *)state->target;
-            data = target->data;
-            dx = object->x - data->x;
-            dz = object->z - data->z;
-            if (D_3C < ((dx * dx) + (dz * dz))) {
-                state->mode = 3;
-            } else {
-                if (func_800299E8(0, 0x3FF) >= 0x3EC) {
-                    state->angle = -state->angle;
-                }
-                object->angle += updateRate * state->angle;
-                data = ((Func073Target *)state->target)->data;
-                dy = data->y;
-                if ((dy + 40.0f) < object->y) {
-                    state->flags &= ~1;
-                } else if (object->y < dy) {
-                    state->flags |= 1;
-                }
-                if (state->flags & 1) {
-                    object->velocityY += D_40 * (f32)updateRate;
+                if (hitIndex != 0) {
+                    if (hitCount >= 2) {
+                        hitIndex = (s16)mathRnd(1, hitCount);
+                    }
+                    state->target = hits[(s16)(hitIndex - 1)];
+                    state->countdown = 0xF0;
                 } else {
-                    object->velocityY -= D_44 * (f32)updateRate;
+                    state->target = NULL;
+                    state->mode = 1;
                 }
-                object->angle += state->angle;
             }
+
+            if (state->mode == 4) {
+                target = (Func073Target *)state->target;
+                data = target->data;
+                dx = object->x - data->x;
+                dz = object->z - data->z;
+                if (D_3C < ((dx * dx) + (dz * dz))) {
+                    state->mode = 3;
+                } else {
+                    if (func_800299E8(0, 0x3FF) >= 0x3EC) {
+                        state->angle = -state->angle;
+                    }
+                    object->angle += updateRate * state->angle;
+                    data = ((Func073Target *)state->target)->data;
+                    dy = data->y;
+                    if ((dy + 40.0f) < object->y) {
+                        state->flags &= ~1;
+                    } else if (object->y < dy) {
+                        state->flags |= 1;
+                    }
+                    if (state->flags & 1) {
+                        object->velocityY += D_40 * (f32)updateRate;
+                    } else {
+                        object->velocityY -= D_44 * (f32)updateRate;
+                    }
+                    object->angle += state->angle;
+                }
+            }
+
         }
 
-case4_timer:
         object->timer += D_48 * (f32)updateRate;
         if (object->timer >= 1.0f) {
             object->timer -= 1.0f;
@@ -363,12 +366,11 @@ common:
     }
 
     if (state->timer != 0.0f) {
-        f32 limit;
 
-        if (state->mode == 4) {
-            limit = D_50;
-        } else {
+        if (state->mode != 4) {
             limit = D_4C;
+        } else {
+            limit = D_50;
         }
         if (object->velocityY < -limit) {
             object->velocityY = -limit;
@@ -412,10 +414,10 @@ common:
 
 /* PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:start
  * symbol: func_overlay_073_F0000190_18CAC50
- * score: 749 differing words
+ * score: 741 differing words
  * frame: 0x98
  * relocations: 46
  * first-mismatch: +0x1C
- * summary: Configured stock 760/768 result with exact frame and 46/46 text relocation cardinality; authenticated storage and call-crossing pointer lifetimes reconstructed. Eight excess words, home allocation and actual relocation geometry still block promotion.
+ * summary: Configured stock 760/762 result, 740 relocation-masked differences and exact frame; observed declared homes and the multiply-hazard schedule are reconstructed. Entry narrowing, one compiler scratch home and exact relocation/linked proof remain unresolved.
  * PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:end
  */

@@ -2,11 +2,11 @@
 ### `func_overlay_073_F0000190_18CAC50` plateau handoff
 
 - source: `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c`
-- score: 749 differing words
+- score: 741 differing words
 - frame: 0x98
 - relocations: 46
 - first mismatch: +0x1C
-- summary: Configured stock 760/768 result with exact frame and 46/46 text relocation cardinality; authenticated storage and call-crossing pointer lifetimes reconstructed. Eight excess words, home allocation and actual relocation geometry still block promotion.
+- summary: Configured stock 760/762 result, 740 relocation-masked differences and exact frame; observed declared homes and the multiply-hazard schedule are reconstructed. Entry narrowing, one compiler scratch home and exact relocation/linked proof remain unresolved.
 
 Header regenerated from the ranking on 2026-09-23 (check_shard_metrics --write); it read first mismatch +0x0.
 
@@ -117,5 +117,80 @@ Actual compiler capture, self-context, fidelity, preflight and verify evidence
 remain private under `build/recovery-o073/`. This recovery does not authorize
 new attempts: integrate it and establish current reopen pins before a separate
 complete stack-home and signed-angle reconstruction packet.
+
+#### 2026-10-07: joint automatic-home and angle packet
+
+The authorized packet followed recovery integration and a fresh zero-exit
+`base-only` assignment gate. The configured candidate is now 762 versus 760
+words, 741 raw and 740 relocation-masked differences, first difference +0x1C,
+with the target 0x98 frame. It remains NON_MATCHING: zero matched bytes.
+The shape-tolerant opcode distance fell from 90 to 6; this diagnostic is not a
+percentage or a substitute for exact bytes and relocation identities.
+
+Real function-scope roles reconstruct every observed declared home: coordinate
+components, the signed step, vertex and state pointers, and the eight-entry hit
+buffer. Shared roles have dominated assignments and disjoint lifetimes. The
+remaining frame difference is one compiler-created float-rate spill home,
++0x30 instead of +0x34, with the same three saves and three reloads. Target
+storage widths, vertex-bank bounds and the earlier query/RNG domain remain
+unchanged. The signed angle snapshot is word-sized; the persistent step stays
+a signed halfword. Both steering comparisons now negate the promoted signed
+step without an incorrect narrowing cast, preserving the target's behavior
+when that step is the signed-halfword minimum.
+
+The target retains a named scaled-radius value across each distance expression.
+Reusing the existing, nonoverlapping float `limit` role reconstructs that
+transport. Integer zero in the case1 velocity/query lifetime and the case3
+sign comparisons reproduces the target's shared positive floating zero. These
+integer-to-float conversions preserve the value and floating comparison
+semantics; the distinct float zeros after the reset calls remain distinct.
+First-hit reads precede independent state-field writes. The fourth query uses
+a signed-halfword count and a word-sized selected index, with its actual
+nonzero arm first. The case3 nonnull arm and final velocity-limit arms follow
+the target's control flow. Case4 uses a complete natural if/else with one
+shared timer tail, preventing an incorrect early conversion merge while
+preserving the skipped side effects and exactly one timer update.
+
+The object-local `-Wab,-r4300_mul` correction is supported by the target's
+independent floating-multiply hazard sequence, not by a positional score.
+On identical captured compiler input it restores four missing scheduler nops
+and the radius-test branch-delay form. The full TU owns only this guarded
+function; no other object receives the flag. Without the flag the same source
+is 758 words with opcode distance 12. The configured flagged source has two
+excess entry normalization words, followed by a query-result scheduling
+residual and allocation differences. The actual stock compiler input and raw
+output are preserved; no emitted instruction is edited.
+
+Closed entry controls include direct/result casts, ternary and assignment
+predicates, a register hint, widened carriers, phase/short-phi splits, unsigned
+views, low-product masks, unsigned negation, multiply-by-negative-one, external `abs`,
+and scalar/one-field-struct/one-element-array storage. None closes the signed
+step's entry normalization and persistent halfword home together. The array
+introduces real entry memory traffic; the widened forms spill a word; standard
+`abs` emits an unwanted call. Named float-rate controls either hoist the wrong
+store lifetime or grow the frame. Chained query assignment, assignment inside
+the predicate and count-versus-index predicates are output-inert; stop that
+schedule axis after these three controls. Destructive coordinate squaring and
+nonzero integer-literal spelling also failed to explain the residual.
+
+Fresh configured preflight still finds 46 static and 46 runtime relocation
+sites, but only one offset/type pair aligns. Sixteen candidate identities are
+resolved and thirty literal/switch-table identities remain unresolved. The
+candidate exceeds the owned executable range by eight bytes. Actual compiler
+capture agrees with the configured object's allocated sections, geometry and
+all normalized relocation identities. The dedicated TU flag-impact report
+confirms one consumer and 46 static sites under either flag choice; its raw
+positional preference for the unflagged build does not override the observed
+hazard mechanism. Fresh extraction, overlay-symbol regeneration and
+`gmake verify` reproduce the expected US ROM SHA1 with the assembly fallback. No
+candidate linked-byte or runtime-identity proof is claimed.
+
+All meaningful sources, actual preprocessed inputs, raw/configured objects,
+contexts, frame censuses, scores and stock phase streams remain private under
+`build/o073-home/`. A reproducible next packet needs new evidence for the CFE
+short-assignment/predicate web split or the compiler spill-pool ownership;
+repeating the closed width and spelling controls is not a new hypothesis.
+The float-pool/switch address bindings and final linked owned-byte proof also
+remain necessary before any promotion.
 
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

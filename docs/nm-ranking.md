@@ -271,8 +271,8 @@ Relocation-masked mismatch evidence covers **22 / 22** resolved rows. The raw co
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `other` | 16 | 72.7% |
-| `size-mismatch` | 6 | 27.3% |
+| `other` | 17 | 77.3% |
+| `size-mismatch` | 5 | 22.7% |
 
 ### Differing-word thresholds
 
@@ -308,13 +308,13 @@ units remain distinct.
 | 13 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
 | 14 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 380 | 380 | 0 | 0 | 0 | — |
 | 15 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 392 | 392 | 112 | 112 | 0 | — |
-| 16 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `other` | 8,672 | 1,991 | 1,982 | 4 | 4 | 0 | — |
-| 17 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
-| 18 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
-| 19 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 296 | 296 | 76 | 76 | 16 | — |
-| 20 | `src/main/fx.c` | `wakeAllocate` | `main` | `size-mismatch` | 1,404 | 323 | 323 | 16 | 16 | -8 | — |
-| 21 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 339 | 339 | 0 | 0 | 8 | — |
-| 22 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,282 | 1,281 | 72 | 72 | 4 | — |
+| 16 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,248 | 1,247 | 200 | 208 | 0 | — |
+| 17 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `other` | 8,672 | 1,991 | 1,982 | 4 | 4 | 0 | — |
+| 18 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
+| 19 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
+| 20 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 296 | 296 | 76 | 76 | 16 | — |
+| 21 | `src/main/fx.c` | `wakeAllocate` | `main` | `size-mismatch` | 1,404 | 323 | 323 | 16 | 16 | -8 | — |
+| 22 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 339 | 339 | 0 | 0 | 8 | — |
 
 ### Unresolved identities
 

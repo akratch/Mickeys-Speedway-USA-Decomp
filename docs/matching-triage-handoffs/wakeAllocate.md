@@ -2,11 +2,13 @@
 ### `wakeAllocate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 345 differing words
-- frame: 0x98
+- score: 325/351 words
+- frame: 0x90
 - relocations: 3
-- first mismatch: 0xc
-- summary: JFG efd5abb remains assembly-only; zero source attempts. Need new initialization homes and buffer-loop topology evidence.
+- first mismatch: +0x10
+- summary: Natural rewrite (own triangle count, if/else flags, word id, one cursor): -32 to -8, frame 0x90. Left: dead v0/v1 copies before the call.
+
+Summary before this remeasure: JFG efd5abb remains assembly-only; zero source attempts. Need new initialization homes and buffer-loop topology evidence.
 
 
 Reopening audit (2026-09-08), evidence D: PROVENANCE inspection of Jet Force
@@ -142,5 +144,49 @@ the target's third count web. These typed-address and induction-index identity
 controls are closed; no further causal lever emerged. Source is restored,
 with unchanged allocated sections, symbols and relocation tuples. No matching
 credit. Private source/object/context captures remain in build/wake-conversion.
+
+#### 2026-10-07, lane a-front: natural rewrite, -32 to -8 bytes
+
+345 masked at -32, frame 0x98, to 325 masked at -8, frame 0x90 (exact).
+Aligner after: byte-exact 234, register naming 84, immediate only 8, really
+different 27; one-sided words 2 candidate, 4 target (before: naming 109,
+immediate 19, structural 33, 16 one-sided). Seven measured cycles, products
+of 16, 12, 4, 18, 5, 18 and 32 cells. What moved it, each measured:
+
+- The second fill loop bounds on its own variable, triCount = segmentCount
+  * 2 written again after groupCount. uopt keeps the two variables apart, so
+  the unroller takes one bound copy per loop: three count webs, as shipped.
+  This is the "third count web" the induction-bound controls could not
+  create (they varied the index, never the bound). Worth 12 bytes.
+- The flags store as if/else (the 2026-10-04 contrast, kept), the alpha
+  default as default-then-override (an if/else there adds a branch), and the
+  resource id as a full word.
+- The textureBytes product reads triCount, not groupCount.
+- No size or vertexBytes locals, and one pointer local walking both areas
+  (the vertex-buffer base, then the sample area): each declared local costs a
+  frame cell here, and 0x90 needs exactly these. With i declared first and
+  groupCount, alpha, j, triCount, bufferCount last, the three declared homes
+  the target spills around both calls (groupCount, alpha, triCount) land on
+  the target's offsets. Declaring order among the first eight is inert.
+- value36 is stored before the four byte clears (the target's schedule).
+
+Measured flat or worse: computing the vertex base inline (wake + 0x40
+inside the loop is re-added per iteration, +12 bytes), (u8 *)(wake + 1)
+(+12), re-reading wake->vertices and wake->samples instead of the cursor
+(+28), bufferCount as a literal 2 (the loop unrolls away, -144), s32/u32 on
+segmentCount, groupCount and frameCount and a two-statement segmentCount
+(all byte-identical), u32 triCount (-72).
+
+Left, from the decision records (proc 9, instrumented .text identical to
+the stock object): the two missing words are dead copies the target makes
+just before the first call, the segment count into v0 and the group count
+into v1. In our records those values exist only as expression webs (types
+4): the variables were propagated away, and the split webs whose pre-call
+pieces take v0/v1/a2/a3 are sampleBytes, vertexBytes, segmentCount and
+frameCount, in that order. The target colours the variables' pieces v0 and
+v1 first, then sampleBytes/vertexBytes a2/a3, and frameCount's piece lands
+on s0. Decision variable: what keeps segmentCount and groupCount as symbol
+webs live across the first call (the target re-reads segmentCount from its
+spill cell after the call, as we do).
 
 <!-- plateau-handoff:wakeAllocate:end -->

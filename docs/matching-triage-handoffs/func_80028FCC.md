@@ -353,4 +353,8 @@ Configured baseline unchanged: 108 bytes, 10 raw and masked words, delta 0, firs
 
 The target's per-arm value is a normalised call result that is both the branch operand and the return value in one block. No source form measured yet gives that without uopt rewriting the test to the raw result.
 
+#### 2026-10-07, lane a-res1 (second pass): one result used twice in one block
+
+Configured baseline unchanged at 10, delta 0. A 24-cell product of six forms crossed with four normalisations (`!!`, `!= 0`, `0U < (u32)`, `(u32) > 0U`). The forms were: the result assigned then returned when nonzero, the conditional-expression chain on that assignment, `do { } while (0)` around each call and test, the assignment in the test, nested negated tests, and break out of a `do { } while (0)`. Best 15 at +4 (nested tests and the break form with the unsigned compare): uopt lowers the unsigned compare as `sltiu` plus `xori` and keeps one a0 web, so there is no per-arm ring temporary. The rest are 19 at -8 or worse.
+
 <!-- plateau-handoff:func_80028FCC:end -->

@@ -193,6 +193,20 @@
       "class": "metadata",
       "matched_c": null,
       "nonmatching": null,
+      "object": "build/src/main/matrix.c.o",
+      "offset": null,
+      "overlay": null,
+      "size": null,
+      "source": "src/main/matrix.c",
+      "tools": [
+        "trim_elf_section.py"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
       "object": "build/src/main/menu.c.o",
       "offset": null,
       "overlay": null,
@@ -7041,16 +7055,15 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o083/overlay83DrawStrip.c.o",
       "offset": 2128,
       "overlay": 83,
       "size": 308,
       "source": "src/overlays/o083/overlay83DrawStrip.c",
       "tools": [
-        "trim_elf_section.py",
-        "objcopy"
+        "trim_elf_section.py"
       ]
     },
     {
@@ -9371,10 +9384,10 @@
     "altered_bytes": 14372,
     "by_class": {
       "altered": 8,
-      "metadata": 636,
+      "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 400992,
-    "objects_with_postprocess": 645
+    "matched_c_bytes_with_postprocess": 401300,
+    "objects_with_postprocess": 646
   }
 }

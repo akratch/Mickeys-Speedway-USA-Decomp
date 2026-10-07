@@ -342,7 +342,7 @@ units remain distinct.
 | 47 | `src/overlays/o056/overlay_056.c` | `func_overlay_056_F00001A0_18A2F18` | `o056` | `size-mismatch` | 2,324 | 538 | 538 | 80 | 80 | 40 | — |
 | 48 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `size-mismatch` | 3,040 | 741 | 740 | 28 | 28 | 8 | — |
 | 49 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 1,394 | 1,377 | 4 | 4 | 4 | — |
-| 50 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,794 | 1,794 | 0 | 0 | -708 | — |
+| 50 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,751 | 1,750 | 0 | 0 | -132 | — |
 
 ### Unresolved identities
 

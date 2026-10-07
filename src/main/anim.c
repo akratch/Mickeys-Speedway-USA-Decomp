@@ -1367,12 +1367,11 @@ void func_800517E0(void) {
                 case 0x40:
                     pathIndex = currentCommand & 0xFF;
                     packed = *((u16 *) ((u8 *) cursor + 4));
-                    packed2 = *((u16 *) ((u8 *) cursor + 6));
                     index = pathIndex;
-                    high = (packed >> 8) & 0xFF;
-                    low = packed & 0xFF;
-                    high2 = (packed2 >> 8) & 0xFF;
-                    low2 = packed2 & 0xFF;
+                    high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
+                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    high2 = (*((u16 *) ((u8 *) cursor + 6)) >> 8) & 0xFF;
+                    low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     value = (f32) (*((u16 *) ((u8 *) cursor + 8)));
                     duration = *((u16 *) ((u8 *) cursor + 0xA));
                     target = (f32) duration;
@@ -1428,11 +1427,10 @@ void func_800517E0(void) {
                     pathIndex = currentCommand & 0xFF;
                     duration = *((u16 *) ((u8 *) cursor + 6));
                     value = (f32) duration;
-                    packed = *((u16 *) ((u8 *) cursor + 4));
                     packed2 = *((u16 *) ((u8 *) cursor + 8));
                     index = *((u16 *) ((u8 *) cursor + 0xA));
-                    high = (packed >> 8) & 0xFF;
-                    low = packed & 0xFF;
+                    high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
+                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     func_80014BAC(0, pathIndex, high, low,
                                   packed2, index, value / hundred - delta);
@@ -1513,14 +1511,14 @@ void func_800517E0(void) {
                 }
                 case 0x4A:
                     pathIndex = currentCommand & 0xFF;
-                    packed = *((u16 *) ((u8 *) cursor + 4));
-                    packed2 = *((u16 *) ((u8 *) cursor + 6));
                     index = pathIndex;
+                    high = *((u16 *) ((u8 *) cursor + 4)) >> 8;
+                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    high2 = *((u16 *) ((u8 *) cursor + 6)) >> 8;
+                    low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
-                    if ((packed >> 8) != 0) {
-                        TrapDanglingJump(index, packed & 0xFF,
-                                         (packed2 >> 8) & 0xFF,
-                                         packed2 & 0xFF, packed >> 8);
+                    if (high != 0) {
+                        TrapDanglingJump(index, low, high2, low2, high);
                     } else {
                         TrapDanglingJump(index);
                     }
@@ -1538,14 +1536,14 @@ void func_800517E0(void) {
                     break;
                 case 0x4C:
                     pathIndex = currentCommand & 0xFF;
-                    packed = *((u16 *) ((u8 *) cursor + 4));
                     packed2 = *((u16 *) ((u8 *) cursor + 6));
                     timer = *((u16 *) ((u8 *) cursor + 8));
                     frame = *((u16 *) ((u8 *) cursor + 0xA));
                     duration = *((u16 *) ((u8 *) cursor + 0xC));
+                    high = *((u16 *) ((u8 *) cursor + 4)) >> 8;
+                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
-                    TrapDanglingJump(pathIndex,
-                                     (packed >> 8) & 0xFF, packed & 0xFF,
+                    TrapDanglingJump(pathIndex, high, low,
                                      packed2 & 0xFF00,
                                      (packed2 & 0xFF) << 8,
                                      timer & 0xFF00, (timer & 0xFF) << 8,
@@ -1560,15 +1558,16 @@ void func_800517E0(void) {
                     timer = *((u16 *) ((u8 *) cursor + 0xA));
                     frame = *((u16 *) ((u8 *) cursor + 0xC));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
+                    high2 = frame >> 8;
+                    low2 = frame & 0xFF;
                     TrapDanglingJump(packed, (s32) value,
-                                     packed2, timer, frame >> 8,
-                                     frame & 0xFF, pathIndex);
+                                     packed2, timer, high2,
+                                     low2, pathIndex);
                     break;
                 case 0x60:
                     pathIndex = currentCommand & 0xFF;
-                    packed = *((u16 *) ((u8 *) cursor + 4));
-                    high = (packed >> 8) & 0xFF;
-                    low = packed & 0xFF;
+                    high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
+                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     duration = *((u16 *) ((u8 *) cursor + 6));
                     value = (f32) duration / 16384.0f;
                     duration = *((u16 *) ((u8 *) cursor + 8));
@@ -1687,14 +1686,12 @@ void func_800517E0(void) {
                     break;
                 case 0x6A: {
                     pathIndex = currentCommand & 0xFF;
-                    packed = *((u16 *) ((u8 *) cursor + 4));
-                    packed2 = *((u16 *) ((u8 *) cursor + 6));
                     frame = *((u16 *) ((u8 *) cursor + 8));
                     duration = *((u16 *) ((u8 *) cursor + 0xA));
-                    high = (packed >> 8) & 0xFF;
-                    low = packed & 0xFF;
-                    high2 = (packed2 >> 8) & 0xFF;
-                    low2 = packed2 & 0xFF;
+                    high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
+                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    high2 = (*((u16 *) ((u8 *) cursor + 6)) >> 8) & 0xFF;
+                    low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     value = (f32) duration;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
@@ -1713,14 +1710,12 @@ void func_800517E0(void) {
                 }
                 case 0x6B: {
                     pathIndex = currentCommand & 0xFF;
-                    packed = *((u16 *) ((u8 *) cursor + 4));
-                    packed2 = *((u16 *) ((u8 *) cursor + 6));
                     frame = *((u16 *) ((u8 *) cursor + 8));
                     duration = *((u16 *) ((u8 *) cursor + 0xA));
-                    high = (packed >> 8) & 0xFF;
-                    low = packed & 0xFF;
-                    high2 = (packed2 >> 8) & 0xFF;
-                    low2 = packed2 & 0xFF;
+                    high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
+                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    high2 = (*((u16 *) ((u8 *) cursor + 6)) >> 8) & 0xFF;
+                    low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     value = (f32) duration;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
@@ -1820,9 +1815,8 @@ void func_800517E0(void) {
                     break;
                 case 0x6F:
                     pathIndex = currentCommand & 0xFF;
-                    packed = *((u16 *) ((u8 *) cursor + 4));
-                    high = (packed >> 8) & 0xFF;
-                    low = packed & 0xFF;
+                    high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
+                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     frame = *((u16 *) ((u8 *) cursor + 6));
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
@@ -4015,10 +4009,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1794 differing words
+ * score: 1750 differing words
  * frame: 0x160
- * relocations: 127
+ * relocations: 241
  * first-mismatch: +0x0
- * summary: Per-case u32 path index; aligned residual 1557. Open: the target keeps the index in s0 at 31 sites, IDO here propagates the mask.
+ * summary: Decoded bytes read from the stream: fp used, size -132, aligned 1557. Open: divisor piece 9 entries (target 1), path index propagated.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

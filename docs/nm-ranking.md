@@ -271,15 +271,16 @@ Relocation-masked mismatch evidence covers **44 / 44** resolved rows. The raw co
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `other` | 33 | 75.0% |
+| `schedule-only` | 1 | 2.3% |
+| `other` | 32 | 72.7% |
 | `size-mismatch` | 11 | 25.0% |
 
 ### Differing-word thresholds
 
 | Threshold | Count |
 |---|---:|
-| raw `differing_words <= 5` | 0 |
-| relocation-masked `differing_words <= 5` | 0 |
+| raw `differing_words <= 5` | 1 |
+| relocation-masked `differing_words <= 5` | 1 |
 | raw `differing_words <= 10` | 4 |
 | relocation-masked `differing_words <= 10` | 4 |
 | raw `differing_words <= 20` | 4 |
@@ -293,7 +294,7 @@ units remain distinct.
 
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 6 | 6 | 580 | 580 | 0 | — |
+| 1 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `schedule-only` | 1,424 | 2 | 2 | 580 | 580 | 0 | — |
 | 2 | `src/main/track.c` | `func_80010654` | `main` | `other` | 684 | 8 | 7 | 180 | 180 | 0 | — |
 | 3 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
 | 4 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |

@@ -2,11 +2,13 @@
 ### `overlay68UpdateAnimation` plateau handoff
 
 - source: `src/overlays/o068/overlay68UpdateAnimation.c`
-- score: 6/356 words
+- score: 2/356 words
 - frame: 0x78
 - relocations: 15
 - first mismatch: +0x244
-- summary: Plain-if neighbours, copy order afterAfter/after/before, unmasked opacity before elapsed: 106 to 6. Left: atStart spills to a temp, not its home.
+- summary: atStart assigned in the first call, red result through index: 6 to 2. Left: home store emitted at the definition, after the argument store.
+
+Summary before this remeasure: Plain-if neighbours, copy order afterAfter/after/before, unmasked opacity before elapsed: 106 to 6. Left: atStart spills to a temp, not its home.
 
 Summary before this remeasure: Opacity store follows the elapsed add: 108 to 106 at size 0. Left: the ring from +0xCC and the neighbour pointers' colours.
 
@@ -166,5 +168,21 @@ Law: a value is a symbol web (and spills to its home) only when uopt cannot rebu
 On the memory form plus the copy wrapper (96 positional): reading `atStart = state->keyframeIndex < 1` before or after `index = state->keyframeIndex` leaves the second load as its own type-4 web (61, block 25, v0); uopt does not share the two loads. Computing atStart from a second local copied from the load (`opacity = state->keyframeIndex; index = opacity; atStart = opacity < 1`) is copy-propagated back to type 4 (-4 bytes). The last atStart piece is not denied v0 by web 61 alone: afterAfter's last piece (web 102, save 0.667, nocs 3) is decided before atStart's (save 0.333) and takes v0, where the target has afterAfter v1 and atStart v0. A force cannot address only the last piece (the pieces share the web number; forcing it colours the whole range and drops the split, -12 bytes).
 
 Moving the memory-form assignment after the `count - 2` test gives a one-block range: atStart takes v1, 92 positional, size 0. What remains is the integer cascade from index: off the call block, index is no longer denied a0-a3 and takes a1 (target t0); forcing index to t0 restores those colours but some web then takes t5 and the ring shifts (162).
+
+## 2026-10-07, lane c-near: 6 to 2, atStart assigned in the first call
+
+The dispatch note said the target computes atStart and keeps index live into the first call block. Both facts are reached by one shape: the first call's last argument is `atStart = index < 1` (no earlier atStart statement), and the red result is carried through `index` (`index = func(...); object->red = index;`). The argument use keeps index's range in the call block, so index is denied a0-a3 and keeps t0; the redefinition kills `index < 1`, so uopt cannot rebuild atStart and it is the symbol web, spilled to its home at sp+0x6C. 1424 bytes, 2 masked, size delta 0, aligned 354 exact, 0 naming, 2 immediate, 0 different.
+
+The two words are one store pair: the target emits the home store with the call's spill group (register order, v0 first) and then the argument store; ours emits the home store at the definition, ahead of the argument store, and as1 reverses both. A home store joins the spill group only when the web is defined in an earlier block than the call block, so the remaining requirement is an early definition plus a use of the old index in the call block.
+
+Measured negatives (masked, size delta):
+
+- do-while and if(1) wrappers around the atStart statement or the whole neighbour block, three spellings of the test, before or after the count tests: all 6 at 0 (54 cells).
+- atStart assigned in the call argument without the index redefinition: 6. The red, green or blue result through index without the argument assignment: 313 to 319 at -4.
+- atStart as a statement right before the call plus the index redefinition: 20 at 0 (home store scheduled into the branch-likely slot).
+- index declared s16, u16 or short: 6 (u16 is +8).
+- An early atStart with index redefined in the call block by an argument value (index = 1, or one of the four shifted samples, passed as that argument): 240 to 318 at -4. A definition does not extend the old range; it has to be a use.
+- The assignment inside an earlier argument as a comma expression: 75 to 182, prologue moves.
+- Line layout of the in-argument assignment (own line, one-line call, parentheses, index <= 0): all 2; index == 0 is 3.
 
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

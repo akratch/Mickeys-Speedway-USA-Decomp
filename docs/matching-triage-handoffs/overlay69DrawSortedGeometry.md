@@ -287,4 +287,17 @@ and read the trace, expecting the dead narrowing's draw after the lb (one
 late, 115 + rotation) unless uopt orders the CVT first; and instrument
 f_eval_2ops directly for the operand-order rule.
 
+#### 2026-10-07, lane f-o069 (resumed): chained assignments are normalised
+
+Traced on the refs, geometry, keys order: `(j = state->fixedGeometryIndex[i])
+* 64` compiles exactly as the plain `j = ...;` cell (the lb goes straight to
+j's colour, no draw, 57 at delta 0), and `geometryBases[slot =
+resources->geometryGroup]` likewise (lh into slot's colour, 99). uopt turns
+an embedded assignment into a variable definition with a direct load and
+folds the narrowing, so no dead CVT temp exists for a load that fits the
+variable. The dead-narrowing generator needs an int-typed two-use load
+temp, which this block has none of after the call. Cycle-21 line unchanged:
+instrument f_eval_2ops for its operand-order rule, since the value-first
+order and one draw are all that separate this block from the target.
+
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

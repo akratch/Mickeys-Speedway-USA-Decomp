@@ -18,21 +18,17 @@ typedef struct O38Object {
     O38Pool *pool;
 } O38Object;
 
-extern f32 gO38AgeRate;
-extern f32 gO38AccelerationPosition;
-extern f32 gO38AccelerationVelocity;
 extern void o38ReleaseObject(O38Object *object);
 
-/* 2026-10-07 (lane h-1): written from the listing, 159 -> 58 at size delta 0.
- * The loop is IDO's own 4x unroll of a plain 20-step loop. The timestep is
- * converted once and copied to a second local at entry (`loopDt = dt`), which
- * is the target's cvt into f0 plus the f14 copy in the delay slot of the
- * alpha test. Each particle's three displacements are locals computed first
- * (y, x, z) and added in x, y, z order; their symbol webs span all four
- * unrolled copies (save 80) and rank above the loop timestep (62), which
- * then takes f14, the dy webs f16..f22 and the accelerations f24/f26, the
- * target's ladder with no force. The rates are literals. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-07 (lane h-1), written from the listing. The loop is IDO's
+ * own 4x unroll of a plain 20-step loop. The timestep is converted once and
+ * copied to a second local at entry (`loopDt = dt`): the target's cvt into
+ * f0 plus the f14 copy in the delay slot of the alpha test. The three
+ * displacements are locals; their symbol webs span all four unrolled copies
+ * and rank above the loop timestep, which is what gives the target's FP
+ * colours with no force. The dy update sits between deltaY and deltaZ, which
+ * is the target's store order in the later unrolled copies. The rates are
+ * float literals in the module's own rodata. */
 void func_overlay_038_F0000154_1885E64(O38Object *object, s32 ticks)
 {
     O38Pool *pool = object->pool;
@@ -57,25 +53,12 @@ void func_overlay_038_F0000154_1885E64(O38Object *object, s32 ticks)
     accelerationVelocity = -0.1f * loopDt;
     for (i = 0; i < 20; i++) {
         particle = &pool->particles[i];
-        deltaY = particle->dy * loopDt + accelerationPosition;
         deltaX = particle->dx * loopDt;
+        deltaY = particle->dy * loopDt + accelerationPosition;
+        particle->dy += accelerationVelocity;
         deltaZ = particle->dz * loopDt;
         particle->x += deltaX;
         particle->y += deltaY;
         particle->z += deltaZ;
-        particle->dy += accelerationVelocity;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o038/overlay38UpdateParticles/func_overlay_038_F0000154_1885E64.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_038_F0000154_1885E64:start
- * symbol: func_overlay_038_F0000154_1885E64
- * score: 58 differing words
- * frame: 0x38
- * relocations: 7
- * first-mismatch: +0x164
- * summary: 58 at size delta 0: timestep entry copy and three displacement locals give the target's FP ladder; later unrolled copies schedule differently.
- * PLATEAU-HANDOFF:func_overlay_038_F0000154_1885E64:end
- */

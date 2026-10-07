@@ -1954,8 +1954,15 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F0000000_1885D10.c.o: POS
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay38UpdateParticles.c.o: CFLAGS += \
 	-Wab,-r4300_mul
+# The three rates are float literals, so the compiler emits a 0x10-byte pool
+# that duplicates the retained overlay data at rodata-relative +0x0 (the
+# shipped hi/lo pairs are LOCAL records with stored addends 0, 4 and 8).
+# Assert the pool by digest and bind the pairs to the loader-owned base; no
+# instruction is edited (overlay 7's form).
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/overlay38UpdateParticles.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x328
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x328 && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:bdcefd8e01ed3fbf749d94f1d2eca6ebf09ccfef55954c89ecb731ed6d8a3752
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o038/func_overlay_038_F000047C_188618C.c.o: CFLAGS += \
 	-Wab,-r4300_mul

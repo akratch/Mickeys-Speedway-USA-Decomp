@@ -3404,36 +3404,35 @@ typedef struct TrackRayNodeExtended {
 
 /*
  * Natural rewrite, 2026-10-07: one counted segment loop, the 0.01f literal,
- * named start coordinates, and the node word reused as the edge-inside flag
- * (as in func_80010654, it keeps the entry copy). 119 masked words at delta 0.
+ * and the node word reused as the edge index (as in func_80010654, it keeps
+ * the entry copy and the unfolded index shift). Declarations give the target's 0xC8 frame: one pad
+ * slot above the node, face before the plane components, entry and planes
+ * after them, start and the hit offset read inline. 107 masked at delta 0.
  */
 s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                   TrackRayPoint *offset, f32 scale, f32 planeOffset,
                   f32 threshold, TrackRayHit *hit) {
+    s32 pad;
     TrackRayNodeExtended *node;
-    u16 *entry;
-    TrackRayFace *planes;
     TrackRayFace *face;
     f32 planeX;
     f32 planeY;
     f32 planeZ;
     f32 planeValue;
+    u16 *entry;
+    TrackRayFace *planes;
     f32 startValue;
     f32 endValue;
     f32 ratio;
     f32 pointX;
     f32 pointY;
     f32 pointZ;
-    f32 startX;
-    f32 startY;
-    f32 startZ;
     f32 edgeValue;
-    f32 adjustedOffset;
     s32 encoded;
     s32 segmentIndex;
     s32 valid;
     s32 sign;
-    s32 i;
+    s32 inside;
     u16 edge;
 
     valid = 0;
@@ -3443,28 +3442,25 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
             node = (TrackRayNodeExtended *) (encoded | 0x80000000);
         } else {
             entry = (u16 *) encoded;
-            i = 0;
             planes = node->planes;
             face = &planes[*entry];
+            encoded = 0;
             planeX = face->x;
             planeY = face->y;
             planeZ = face->z;
             planeValue = face->distance - planeOffset;
             endValue = planeX * end->x + planeY * end->y + end->z * planeZ + planeValue;
             if (endValue < 0.0f) {
-                startX = start->x;
-                startY = start->y;
-                startZ = start->z;
-                startValue = planeX * startX + planeY * startY + startZ * planeZ + planeValue;
+                startValue = planeX * start->x + planeY * start->y + start->z * planeZ + planeValue;
                 if (startValue >= 0.0f) {
                     ratio = (startValue / (startValue - endValue)) * scale;
                     if (ratio <= hit->ratio) {
-                        pointX = ((offset->x * ratio) + startX) - (planeOffset * planeX);
-                        pointY = ((offset->y * ratio) + startY) - (planeOffset * planeY);
-                        pointZ = ((offset->z * ratio) + startZ) - (planeOffset * planeZ);
-                        encoded = 1;
+                        pointX = ((offset->x * ratio) + start->x) - (planeOffset * planeX);
+                        pointY = ((offset->y * ratio) + start->y) - (planeOffset * planeY);
+                        pointZ = ((offset->z * ratio) + start->z) - (planeOffset * planeZ);
+                        inside = 1;
                         do {
-                            edge = entry[i + 1];
+                            edge = entry[encoded + 1];
                             sign = edge & 0x8000;
                             face = &planes[edge ^ sign];
                             edgeValue = face->distance +
@@ -3473,19 +3469,18 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                                 edgeValue = -edgeValue;
                             }
                             if (threshold < edgeValue) {
-                                encoded = 0;
+                                inside = 0;
                             }
-                            i++;
-                        } while (i < 3 && encoded != 0);
-                        if (encoded != 0) {
+                            encoded++;
+                        } while (encoded < 3 && inside != 0);
+                        if (inside != 0) {
                             hit->normalX = planeX;
                             hit->normalY = planeY;
                             hit->normalZ = planeZ;
                             hit->distance = planeValue;
-                            adjustedOffset = 0.01f + planeOffset;
-                            hit->x = (adjustedOffset * planeX) + pointX;
-                            hit->y = (adjustedOffset * planeY) + pointY;
-                            hit->z = (adjustedOffset * planeZ) + pointZ;
+                            hit->x = ((0.01f + planeOffset) * planeX) + pointX;
+                            hit->y = ((0.01f + planeOffset) * planeY) + pointY;
+                            hit->z = ((0.01f + planeOffset) * planeZ) + pointZ;
                             hit->faceData = node->metadata[D_800C9D30[segmentIndex]].data;
                             hit->material = ((u8 *) &D_800792E8->textures[
                                 node->metadata[D_800C9D30[segmentIndex]].material])[7];
@@ -5238,11 +5233,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80011980:start
  * symbol: func_80011980
- * score: 119 differing words
- * frame: 0xd0
+ * score: 107 differing words
+ * frame: 0xc8
  * relocations: 12
- * first-mismatch: +0x0
- * summary: Natural rewrite with the node word reused as the edge flag: 195 at +4 to 119 at 0. Left: a two-window register rotation and frame 0xD0 vs 0xC8.
+ * first-mismatch: +0x4
+ * summary: Frame closed (0xC8) by the declaration ladder; node word as the edge index: 119 to 107 at delta 0. Left: callee-saved ranking of edge, sign, face.
  * PLATEAU-HANDOFF:func_80011980:end
  */
 

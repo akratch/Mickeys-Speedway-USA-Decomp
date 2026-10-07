@@ -185,4 +185,8 @@ Measured negatives (masked, size delta):
 - The assignment inside an earlier argument as a comma expression: 75 to 182, prologue moves.
 - Line layout of the in-argument assignment (own line, one-line call, parentheses, index <= 0): all 2; index == 0 is 3.
 
+#### 2026-10-07, lane c-near (resumed): early definitions and uses after the calls
+
+On the 2-word body. Every early definition of atStart beside the red-result redefinition, with the call passing atStart, is 319 masked at size delta -4: `opacity = index; atStart = opacity < 1;`, the same through animationOpacity, and plain `atStart = index < 1` after the before test. The copy folds and index's range does not reach the call block. Adding `+ (index & 0)` to the call argument folds too (319 at -4). A use of atStart after the six calls is either dead (`if (atStart) direction = 0;` before the advance call: unchanged, 2 at 0) or emits code (`atStart &&` in the first direction test: 57 at +8; an and-assign of the active flag with atStart or-ed with 1: 91 at +36). The in-argument assignment stays the only shape at size 0.
+
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

@@ -304,12 +304,12 @@ void func_80045D34(s32 arg0) {
             pageCount++;
         }
     } else { pageCount = 25; }
+    /* The memory-page index is initialised with the region selector, after
+     * the anti-piracy test, not with the page state. */
+    memoryIndex = 0;
     selectedRegion = 0;
     pageCount += 5;
     if (viGetVideoMode() != 0) { D_8007D02C = 1; } else { D_8007D02C = 0; }
-    /* The memory-page index is initialised beside the address editor's
-     * state, after the video-mode probe, not with the page state. */
-    memoryIndex = 0;
     address = 0x80100000;
     nibble = 1;
     index = 0;
@@ -410,9 +410,9 @@ void func_80045D34(s32 arg0) {
         if (oldPage != currentPage || redraw != 0) {
             switch (currentPage) {
                 case 0:
+                    render_epc_lock_up_display((MickeyEpcInfo *)(u32)arg0);
                     oldPage = currentPage;
                     redraw = 0;
-                    render_epc_lock_up_display((MickeyEpcInfo *)(u32)arg0);
                     break;
                 case 1:
                 case 2:
@@ -433,7 +433,7 @@ void func_80045D34(s32 arg0) {
                         row = 20;
                         do {
                             words--;
-                            cpuXYPrintf(pageColumn, (row + 3) * 8,
+                            cpuXYPrintf(pageColumn, (row + 3) << 3,
                                         "%08x:%08x", words, *words);
                             if (currentPage == 1 && row == 1) {
                                 row = 0;
@@ -508,9 +508,9 @@ void func_80045D34(s32 arg0) {
                         D_8007D030 = 1;
                     }
                     cpuXYPrintf(76 - (row * 8), 32, "%1x", pageColumn & 0xF);
-                    row++;
                     D_8007D030 = 0;
-                    pageColumn = (s32)pageColumn >> 4;
+                    pageColumn >>= 4;
+                    row++;
                 } while (row != 8);
             }
             if (D_8007CFE8 == 0) {
@@ -792,10 +792,10 @@ void func_80046E00(void) {
 
 /* PLATEAU-HANDOFF:func_80045D34:start
  * symbol: func_80045D34
- * score: 193/459 words
+ * score: 115/459 words
  * frame: 0xA8
  * relocations: 93
- * first-mismatch: +0x60
- * summary: Per-page redraw clears, redraw after the clamps and a signed old page give redraw s6 (217 to 193); left: entry delay slot, mode counter address.
+ * first-mismatch: +0x14C
+ * summary: Entry order, shifted row label and render-first page 0 (193 to 115); left: buttons copied to a1, nibble arm schedule, mode counter address.
  * PLATEAU-HANDOFF:func_80045D34:end
  */

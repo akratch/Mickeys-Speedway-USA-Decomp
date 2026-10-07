@@ -420,6 +420,13 @@ and absent or ambiguous tracked exact evidence remains an error.
 
 ### Safe plateau finalization
 
+Most lanes should use `.venv/bin/python tools/bank.py <symbol> [--note FILE]
+[--summary TEXT] [--match] [--commit]` instead: it measures the symbol itself,
+writes the shard header and marker from the measurement, regenerates the
+ranking and its document, runs the shard and handoff checks, and with
+`--commit` commits only after `tools/gates.sh --staged` exits 0. The
+`finalize_plateau.py` form below is the lower-level tool it reuses.
+
 After a bounded attempt reaches ADR 0009's cap, preserve it with the original
 assembly fallback still active:
 

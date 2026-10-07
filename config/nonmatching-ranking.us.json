@@ -121,13 +121,13 @@
       "tu": "main",
       "size_bytes": 1840,
       "objdiff_match_pct": null,
-      "differing_words": 123,
+      "differing_words": 114,
       "first_mismatch_offset": 408,
-      "relocation_masked_differing_words": 123,
+      "relocation_masked_differing_words": 114,
       "relocation_masked_first_mismatch_offset": 408,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "Tzao.oCRY.JBEj.Ujv0.L6vd.SVW5.qDTK.lNaj.Ebcm.ZgLO.Mpw"
+      "source_context_sha256": "YCCm.y9qt.rG_X.8xi-.KNlr.AvgT.tJ37.x-LR.GzMi.Ul-U.UDc"
     },
     {
       "name": "func_overlay_008_F00042A8_1862000",

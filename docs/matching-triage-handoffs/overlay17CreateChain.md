@@ -434,5 +434,3 @@ p1dec after each.
 
 Header regenerated from the ranking on 2026-10-07 (check_shard_metrics --write); it read score 3 differing words.
 <!-- plateau-handoff:overlay17CreateChain:end -->
-
-Coordinator note 2026-10-07: the lane report claimed 3 masked words for commit ff930eacb, but the committed source measures 24 in the lane worktree and in the integration tree; the 3-word cell was never committed. Header corrected from the ranking.

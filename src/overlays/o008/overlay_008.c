@@ -2406,7 +2406,7 @@ Overlay8BssOwner gOverlay8BssOwner;
  * frame: 0xA0
  * relocations: 40
  * first-mismatch: +0x290
- * summary: Loop 3 counter initialised after loop 2: the steps reload is the post-decrement temp in v1 as shipped, 45 to 3. Left: loop 2 call a1 reload order.
+ * summary: Loop 3 counter set after loop 2: steps reload is the v1 post-decrement temp, 45 to 3. Left: loop 2 a1 reload is a block-head piece reload.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
  */
 

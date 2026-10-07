@@ -458,15 +458,19 @@ $(O8_OBJ): config/normalizations/overlay8P0058.rebind.spec
 $(O8_OBJ): config/normalizations/overlay8P1294.rebind.spec
 $(O8_OBJ): config/normalizations/overlay8UpdateChannels.rebind.spec
 $(O8_OBJ): config/normalizations/overlay8P2640.rebind.spec
+$(O8_OBJ): config/normalizations/overlay8P34A0.rebind.spec
 $(O8_OBJ): config/normalizations/overlay8P4CF0.rebind.spec
-# The object's .rodata is five literal pools in function order: the +0x0058
+# The object's .rodata is six literal pools in function order: the +0x0058
 # update's seven floats (retail 0xB0 on), the +0x1294 update's forty (one
 # entry per use, retail 0xF8 through 0x194), the +0x2640 emitter's two
-# (retail 0x198, 0x19C), the +0x3018 channel update's (retail 0x1BC on), then
-# the +0x4CF0 surface update's (retail 0x290 on).  Each pool is rebound to an
-# absolute anchor and keeps its section-relative addend, so each anchor is its
-# retail offset less the bytes that precede it in the object: 0xF8 less 0x1C,
-# 0x198 less 0xBC, 0x1BC less 0xC4, 0x290 less 0xD8.
+# (retail 0x198, 0x19C), the +0x3018 channel update's (retail 0x1BC on), the
+# +0x34A0 update's thirty-four (retail 0x1D8 through 0x25C), then the +0x4CF0
+# surface update's (retail 0x290 on).  Each pool is rebound to an absolute
+# anchor and keeps its section-relative addend, so each anchor is its retail
+# offset less the bytes that precede it in the object: 0xF8 less 0x1C, 0x198
+# less 0xBC, 0x1BC less 0xC4, 0x1D8 less 0xD8, 0x290 less 0x160.
+# gOverlay8CommandBuffer is a second header name for gOverlay8Buffer (the
+# +0x34A0 update's second address build); it is bound back to the one cursor.
 # No -Wo,-loopunroll,0 (removed 2026-10-02).  It was added for the +0x34A0
 # body's angle loop and was byte-inert on every function of this unit by then;
 # the +0x0058 body's four selector reads are a plain for loop that the
@@ -477,6 +481,8 @@ $(O8_OBJ): POSTPROCESS = \
 		gO8P34A0ScaleReloc=D_0 $@ && \
 	$(OBJCOPY) --redefine-sym \
 		gO8P34A0ModeReloc=D_0 $@ && \
+	$(OBJCOPY) --redefine-sym \
+		gOverlay8CommandBuffer=gOverlay8Buffer $@ && \
 	$(OBJCOPY) --redefine-sym \
 		o8P34A0RandomReloc=func_overlay_008_F0000000_185DD58 $@ && \
 	$(OBJCOPY) --redefine-sym \
@@ -597,7 +603,9 @@ $(O8_OBJ): POSTPROCESS = \
 	$(OBJCOPY) --add-symbol \
 		gOverlay8UpdateChannelConstants=0xF8,global $@ && \
 	$(OBJCOPY) --add-symbol \
-		gOverlay8P4CF0Constants=0x1B8,global $@ && \
+		gOverlay8P34A0Constants=0x100,global $@ && \
+	$(OBJCOPY) --add-symbol \
+		gOverlay8P4CF0Constants=0x130,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay8P0058.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
@@ -607,9 +615,11 @@ $(O8_OBJ): POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay8UpdateChannels.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/overlay8P34A0.rebind.spec && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
 		@config/normalizations/overlay8P4CF0.rebind.spec && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
-		sha256:83eab06de7958c29521dd38565ece7d6210be9be772d33f0c9a92473f3e43c51
+		sha256:cd8c7ed9b6f24d9779f7278dd48346ab2e41db11176ae5d9dbb3a1905e551da4
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: CFLAGS += -Wab,-r4300_mul
 # func_overlay_009_F0000000_1866678 defines overlay 9's parameter block in

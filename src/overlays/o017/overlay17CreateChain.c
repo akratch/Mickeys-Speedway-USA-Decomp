@@ -183,7 +183,7 @@ Overlay17Chain *overlay17CreateChain(
 
 /* PLATEAU-HANDOFF:overlay17CreateChain:start
  * symbol: overlay17CreateChain
- * score: 3 differing words
+ * score: 24 differing words
  * frame: 0x80
  * relocations: 7
  * first-mismatch: +0x3C

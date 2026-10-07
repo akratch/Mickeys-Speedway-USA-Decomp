@@ -880,7 +880,7 @@ tier-A threshold, so the address label remains canonical.
 | `func_80037AEC` | Allocation-mismatch, 7 differing words, first `+0x54`; target/candidate 66 words and 0x40-byte frames, with only register allocation unresolved. |
 | `func_80037BF4` | Matched: the retained NON_MATCHING body was already byte-exact (32/32 words, 0x18 frame, 6 relocations); the recorded 17-word structure-mismatch was a stale verdict from an earlier candidate. |
 | `func_80037C74` | Structure-mismatch, 324 differing words, first `+0x0`; target 327/candidate 308 words, with Gfx emission and render-loop shape unresolved. |
-| `func_80038190` | Structure-mismatch, 365 differing words, first `+0x0`; target 368/candidate 342 words and 0xE8-byte frames, with Gfx emission, relocation web, and render-loop shape unresolved. |
+| `func_80038190` | Structure-mismatch, 199 differing words, first `+0x130`; target/candidate 368 words and `0xE8` frames. Authenticated overlay call signatures and packet order recovered; stack homes and structural/register differences remain. |
 
 ### 3.9 `main/track`: ROM `0xC950`-`0x16140`
 

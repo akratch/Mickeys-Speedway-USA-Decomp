@@ -517,10 +517,32 @@ void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/frontend_37D50/func_80037C74.s")
 #endif
 
-/* Workbench verdict: structure-mismatch, 365 differing words; target 368/candidate 342 words. */
-/* First mismatch: +0x0; both frames are 0xE8, with 86 relocation-site differences. */
-/* Structural gap: Gfx emission schedule, relocation web, and render-loop shape remain unresolved. */
+/* Workbench verdict: structure-mismatch, 199 differing words; target/candidate 368 words. */
+/* First mismatch: +0x130; both frames are 0xE8. Static relocations remain nonexact. */
+/* Stack homes and mixed structural/register residual remain unresolved. */
 #ifdef NON_MATCHING
+/* Resident runtime records 245/246 bind these distinct typed call sites to
+ * overlay 99's height-grid builder and framebuffer-grid renderer. Both retain
+ * the static trap carrier until the runtime linker installs their callees. */
+#pragma weak frontend38190BuildHeightGridReloc = TrapDanglingJump
+#pragma weak frontend38190DrawHeightGridReloc = TrapDanglingJump
+extern void frontend38190BuildHeightGridReloc(f32 scale, void *unused,
+                                              s32 widthMinusOne,
+                                              s32 heightMinusOne,
+                                              s32 stepX, s32 stepY);
+extern void frontend38190DrawHeightGridReloc(Gfx **displayList, Mtx **matrices,
+                                             MainVertex **vertices, f32 scale,
+                                             s32 columns, s32 rows,
+                                             s32 triangles, s32 stepX,
+                                             s32 stepY);
+
+#define FRONTEND38190_EMIT(pkt, opcode, data) \
+    { \
+        Gfx *_cmd = (*(pkt))++; \
+        _cmd->words.w0 = (u32) (opcode); \
+        _cmd->words.w1 = (u32) (data); \
+    }
+
 void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
     s32 spE0;
     s32 spDC;
@@ -529,19 +551,14 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
     s32 var_a2;
     s32 var_a3;
     s32 var_t2;
-    s32 var_t3;
-    s32 var_t4;
-    s32 var_v0;
-    u32 temp_v1;
-    u32 temp_v1_2;
 
     if ((D_8007BE80 != 0) && (D_8007BEA8 != 0)) {
-        FRONTEND_EMIT(arg0, 0xE7000000, 0);
-        FRONTEND_EMIT(arg0, 0xED000000, 0x5003C0);
+        FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
+        FRONTEND38190_EMIT(arg0, 0xED000000, 0x5003C0);
         if (D_8007BEA8 == 2) {
-            FRONTEND_EMIT(arg0, 0xEF30000F, 0);
-            FRONTEND_EMIT(arg0, 0xF7000000, 0x10001);
-            FRONTEND_EMIT(arg0, 0xF64FC3BC, 0);
+            FRONTEND38190_EMIT(arg0, 0xEF30000F, 0);
+            FRONTEND38190_EMIT(arg0, 0xF7000000, 0x10001);
+            FRONTEND38190_EMIT(arg0, 0xF64FC3BC, 0);
         } else {
             spD8 = (f32) D_8007BEAC / (f32) D_8007BE94;
             switch (D_8007BE90) {
@@ -555,7 +572,9 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
                 break;
             case 4:
             case 5:
-                TrapDanglingJump(spD8, D_8007BEB0, 0x10, 0x10, 0x14, 0xF);
+                frontend38190BuildHeightGridReloc(
+                    spD8, (void *) (u32) D_8007BEB0,
+                    0x10, 0x10, 0x14, 0xF);
                 break;
             }
             D_8007BEE0 = (D_8007BEE0 + 1) & 1;
@@ -565,52 +584,53 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
             *(s16 *) (viewport + 0xA) = (s16) (spDC * 2);
             *(s16 *) (viewport + 0) = (s16) (spE0 * 2);
             *(s16 *) (viewport + 2) = (s16) (spE0 * 2);
-            FRONTEND_EMIT(arg0, 0xE7000000, 0);
-            FRONTEND_EMIT(arg0, 0xBC000406,
+            FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
+            FRONTEND38190_EMIT(arg0, 0xBC000406,
                           (u32) D_800D2FAC + 0x80000000u);
-            FRONTEND_EMIT(arg0, 0xBC001006,
+            FRONTEND38190_EMIT(arg0, 0xBC001006,
                           (u32) D_800D2FAC + 0x7FFFFB00u);
-            FRONTEND_EMIT(arg0, 0xBC000806, 0x80000000u);
-            FRONTEND_EMIT(arg0, 0xFF10013F, 0x01000000);
-            FRONTEND_EMIT(arg0, 0xB6000000, 0x10001);
-            FRONTEND_EMIT(arg0, 0xEF20000F, 0);
+            FRONTEND38190_EMIT(arg0, 0xBC000806, 0x80000000u);
+            FRONTEND38190_EMIT(arg0, 0xFF10013F, 0x01000000);
+            FRONTEND38190_EMIT(arg0, 0xB6000000, 0x10001);
+            FRONTEND38190_EMIT(arg0, 0xEF20000F, 0);
             var_a3 = 0;
             var_a2 = 0;
             do {
                 var_t2 = var_a2 + 4;
-                FRONTEND_EMIT(arg0, 0xFD100000,
+                FRONTEND38190_EMIT(arg0, 0xFD100000,
                               (u32) D_800D2FA8 + var_a3);
                 var_a3 += 0xA00;
-                FRONTEND_EMIT(arg0, 0xF5100000, 0x07080200);
-                FRONTEND_EMIT(arg0, 0xE6000000, 0);
-                FRONTEND_EMIT(arg0, 0xF3000000, 0x074FF01A);
-                FRONTEND_EMIT(arg0, 0xE7000000, 0);
-                FRONTEND_EMIT(arg0, 0xF510A000, 0x80200);
-                FRONTEND_EMIT(arg0, 0xF2000000, 0x4FC00C);
-                FRONTEND_EMIT(arg0, 0xE4500000 | ((var_t2 * 4) & 0xFFF),
+                FRONTEND38190_EMIT(arg0, 0xF5100000, 0x07080200);
+                FRONTEND38190_EMIT(arg0, 0xE6000000, 0);
+                FRONTEND38190_EMIT(arg0, 0xF3000000, 0x074FF01A);
+                FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
+                FRONTEND38190_EMIT(arg0, 0xF510A000, 0x80200);
+                FRONTEND38190_EMIT(arg0, 0xF2000000, 0x4FC00C);
+                FRONTEND38190_EMIT(arg0, 0xE4500000 | ((var_t2 * 4) & 0xFFF),
                               (var_a2 * 4) & 0xFFF);
-                FRONTEND_EMIT(arg0, 0xB3000000, 0);
-                FRONTEND_EMIT(arg0, 0xB2000000, 0x10000400);
+                FRONTEND38190_EMIT(arg0, 0xB3000000, 0);
+                FRONTEND38190_EMIT(arg0, 0xB2000000, 0x10000400);
                 var_a2 = var_t2;
             } while (var_t2 != 0xF0);
-            FRONTEND_EMIT(arg0, 0xE7000000, 0);
-            FRONTEND_EMIT(arg0, 0xBC000406,
+            FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
+            FRONTEND38190_EMIT(arg0, 0xBC000406,
                           (u32) D_800D2FA8 + 0x80000000u);
-            FRONTEND_EMIT(arg0, 0xBC001006,
+            FRONTEND38190_EMIT(arg0, 0xBC001006,
                           (u32) D_800D2FA8 + 0x7FFFFB00u);
-            FRONTEND_EMIT(arg0, 0xFF10013F, 0x01000000);
-            FRONTEND_EMIT(arg0, 0x03800010, (u32) viewport + 0x80000000u);
+            FRONTEND38190_EMIT(arg0, 0xFF10013F, 0x01000000);
+            FRONTEND38190_EMIT(arg0, 0x03800010, (u32) viewport + 0x80000000u);
             if ((D_8007BE90 == 4) || (D_8007BE90 == 5)) {
-                TrapDanglingJump((f32) (u32) arg0, (s32) arg1, (s32) arg2,
-                                 spD8, 0x10, 0x10, 4, 0x28, 0xF);
+                frontend38190DrawHeightGridReloc(
+                    arg0, arg1, arg2, spD8, 0x10, 0x10, 4, 0x28, 0xF);
             } else {
                 func_80037C74(arg0, arg1, arg2);
             }
             D_8007BE84 ^= 1;
         }
-        FRONTEND_EMIT(arg0, 0xE7000000, 0);
+        FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
     }
 }
+#undef FRONTEND38190_EMIT
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/frontend_37D50/func_80038190.s")
 #endif
@@ -628,10 +648,10 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
 
 /* PLATEAU-HANDOFF:func_80038190:start
  * symbol: func_80038190
- * score: 365 differing words
+ * score: 199 differing words
  * frame: 0xE8
  * relocations: 32
- * first-mismatch: +0x0
- * summary: Candidate saves only s0 and ra where the target saves s0-s8: about 18 of the 26 words it is short are those eight missing save/restore pairs, so the source holds eight more values live across its calls than the m2c draft does. Frames already agree at 0xE8. Rebuild it as ordinary C first, as func_800378A4 and func_800371BC in this TU were.
+ * first-mismatch: +0x130
+ * summary: Typed direct overlay calls and packet order restore exact size/frame; stack homes and mixed structural/register residual remain nonexact.
  * PLATEAU-HANDOFF:func_80038190:end
  */

@@ -121,6 +121,20 @@
       "class": "metadata",
       "matched_c": null,
       "nonmatching": null,
+      "object": "build/src/main/frontend_37D50.c.o",
+      "offset": null,
+      "overlay": null,
+      "size": null,
+      "source": "src/main/frontend_37D50.c",
+      "tools": [
+        "objcopy"
+      ]
+    },
+    {
+      "c_owned": null,
+      "class": "metadata",
+      "matched_c": null,
+      "nonmatching": null,
       "object": "build/src/main/joy.c.o",
       "offset": null,
       "overlay": null,
@@ -2793,8 +2807,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o027/overlay_027.c.o",
       "offset": 0,
       "overlay": 27,
@@ -9356,10 +9370,10 @@
     "altered_bytes": 13636,
     "by_class": {
       "altered": 7,
-      "metadata": 636,
+      "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 397248,
-    "objects_with_postprocess": 644
+    "matched_c_bytes_with_postprocess": 400256,
+    "objects_with_postprocess": 645
   }
 }

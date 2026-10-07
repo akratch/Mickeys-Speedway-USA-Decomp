@@ -1192,6 +1192,12 @@ $(BUILD_DIR)/$(SRC_DIR)/main/objects.c.o: POSTPROCESS = \
 	    0x6718:PC16:objectsInitDefaultBranch:0x120 \
 	    0x6C00:PC16:objectsControlDefaultBranch:0x114 && \
 	$(OBJCOPY) --redefine-sym objectsVoidTrap=TrapDanglingJump $@
+# func_80038190 has two independently bound overlay-99 call signatures.
+# IDO leaves the weak source aliases as distinct undefined symbols; normalize
+# only their names to the resident runtime linker's static trap carrier.
+$(BUILD_DIR)/$(SRC_DIR)/main/frontend_37D50.c.o: POSTPROCESS = \
+	$(OBJCOPY) --redefine-sym frontend38190BuildHeightGridReloc=TrapDanglingJump $@ && \
+	$(OBJCOPY) --redefine-sym frontend38190DrawHeightGridReloc=TrapDanglingJump $@
 # JFG's source-level string migration reproduces diRcp's complete diagnostic
 # string block followed by the 0x100-byte switch-table span. The following
 # four zero bytes are output-section padding.

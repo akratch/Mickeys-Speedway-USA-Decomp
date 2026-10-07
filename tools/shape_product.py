@@ -253,6 +253,7 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         if stripped is not None:
             stripped.unlink(missing_ok=True)
+
     rank = choose_rank(results, ns.rank)
     results.sort(key=aligned_key if rank == "aligned" else sort_key)
     exact = [r for r in results if "error" not in r and r["masked"] == 0 and r["delta"] == 0]

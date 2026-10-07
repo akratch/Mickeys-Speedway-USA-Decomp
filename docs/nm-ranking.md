@@ -280,10 +280,10 @@ Relocation-masked mismatch evidence covers **58 / 58** resolved rows. The raw co
 |---|---:|
 | raw `differing_words <= 5` | 0 |
 | relocation-masked `differing_words <= 5` | 0 |
-| raw `differing_words <= 10` | 2 |
-| relocation-masked `differing_words <= 10` | 2 |
-| raw `differing_words <= 20` | 2 |
-| relocation-masked `differing_words <= 20` | 3 |
+| raw `differing_words <= 10` | 3 |
+| relocation-masked `differing_words <= 10` | 3 |
+| raw `differing_words <= 20` | 3 |
+| relocation-masked `differing_words <= 20` | 4 |
 
 ### Complete ranked queue
 
@@ -294,9 +294,9 @@ units remain distinct.
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
-| 2 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
-| 3 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 52 | 17 | 156 | 1,916 | 0 | — |
-| 4 | `src/main/track.c` | `func_80010654` | `main` | `other` | 684 | 22 | 21 | 104 | 104 | 0 | — |
+| 2 | `src/main/track.c` | `func_80010654` | `main` | `other` | 684 | 10 | 9 | 160 | 160 | 0 | — |
+| 3 | `src/main/main.c` | `func_80028FCC` | `main` | `other` | 108 | 10 | 10 | 28 | 28 | 0 | — |
+| 4 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 52 | 17 | 156 | 1,916 | 0 | — |
 | 5 | `src/main/shadows.c` | `func_80016890` | `main` | `other` | 2,224 | 32 | 31 | 172 | 172 | 0 | — |
 | 6 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 36 | 36 | 60 | 60 | 0 | — |
 | 7 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 43 | 43 | 20 | 20 | 0 | — |

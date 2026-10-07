@@ -2832,9 +2832,11 @@ typedef struct TrackRayNode {
 
 /*
  * Natural rewrite, 2026-10-07: one counted node loop, a plane-component local
- * per edge read, the edge read as entry[j + 1] with j++ at the loop tail, and
- * one s32 serving as the node word and then the inside flag (that reuse keeps
- * the entry copy and the unfolded j * 2 start). 21 masked words at delta 0.
+ * per edge read, the edge index incremented at the loop tail, and the node
+ * word reused as the edge index (that reuse keeps the entry copy and the
+ * unfolded index * 2 start); the first plane index read through the edge
+ * variable numbers its web ahead of the plane pointer; i = 0 as its own
+ * statement schedules the prologue. 9 masked words at delta 0.
  */
 s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
                   TrackPlane *result, f32 *maximum) {
@@ -2864,7 +2866,7 @@ s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
     u16 *entry;
     s32 encoded;
     s32 flip;
-    s32 j;
+    s32 inside;
     s32 i;
     s32 hit;
     u16 edge;
@@ -2873,14 +2875,16 @@ s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
     dx = end->x - start->x;
     dy = end->y - start->y;
     dz = end->z - start->z;
-    for (i = 0; i < D_800C9D3C; i++) {
+    i = 0;
+    for (; i < D_800C9D3C; i++) {
         encoded = D_800C9D2C[i];
         if (encoded > 0) {
             node = (TrackRayNode *) (encoded | 0x80000000);
         } else {
             entry = (u16 *) encoded;
-            j = 0;
-            plane = &node->planes[*entry];
+            edge = *entry;
+            plane = &node->planes[edge];
+            encoded = 0;
             planeY = plane->y;
             if (planeY >= 0.707f) {
                 planeX = plane->x;
@@ -2895,9 +2899,9 @@ s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
                             hitX = start->x + (dx * t);
                             hitY = start->y + (dy * t);
                             hitZ = start->z + (dz * t);
-                            encoded = TRUE;
+                            inside = TRUE;
                             do {
-                                edge = entry[j + 1];
+                                edge = entry[encoded + 1];
                                 flip = edge & 0x8000;
                                 plane = &node->planes[edge ^ flip];
                                 nx = plane->x;
@@ -2909,11 +2913,11 @@ s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
                                     value = -value;
                                 }
                                 if (value > 0.0f) {
-                                    encoded = FALSE;
+                                    inside = FALSE;
                                 }
-                                j++;
-                            } while (j < 3 && encoded);
-                            if (encoded) {
+                                encoded++;
+                            } while (encoded < 3 && inside);
+                            if (inside) {
                                 *maximum = t;
                                 result->x = planeX;
                                 result->y = planeY;
@@ -5245,11 +5249,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80010654:start
  * symbol: func_80010654
- * score: 21 differing words
+ * score: 9 differing words
  * frame: 0x98
  * relocations: 8
- * first-mismatch: +0x68
- * summary: Natural rewrite, 160 to 21 at delta 0. Left: the node word reused as the inside flag takes a2 where the target has s1.
+ * first-mismatch: +0xa0
+ * summary: Node word reused as the edge index, edge numbered by the first plane read, i = 0 split out: 21 to 9 at 0. Left: first index read in t3, target t8.
  * PLATEAU-HANDOFF:func_80010654:end
  */
 

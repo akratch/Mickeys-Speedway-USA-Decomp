@@ -6,7 +6,9 @@
 - frame: 0xE8
 - relocations: 6
 - first mismatch: +0x70
-- summary: y origin local tested, y copied after the clip tests (target's v1/s4 split): delta 0. Left: clip-block schedule, left/top in s3/s1.
+- summary: y origin local tested, y copied after the clip tests: delta 0. bottom never forms a web (no argument pin); alias spellings fold.
+
+Summary before this remeasure: y origin local tested, y copied after the clip tests (target's v1/s4 split): delta 0. Left: clip-block schedule, left/top in s3/s1.
 
 Summary before this remeasure: 257 words at size -8, frame 0xE8 exact, SDK GBI body with early returns. Left: the y split, left/top in s3/s1, rotated hoisted rect words.
 
@@ -349,4 +351,23 @@ Cycle-21: decide which. Compile the 90 body with the GetBounds call's fifth argu
 Measured by tools/bank.py: masked 90 (raw 90), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 229, register naming 36, immediate only 4, really different 33.
 
 On the 90 body. bottom copied into a local after GetBounds (a new local, or chunkRows reused) and the copy used by the second test and the scissor call: 166 and 163 at 0. uopt propagates the copy; the load stays a ring temporary (t8) carried to the call, and no bottom web appears. Not kept. Cycle-21 unchanged (decide whether the target's bottom is a promoted symbol or one load expression; the fifth argument's stack escape is the candidate cause).
+
+#### 2026-10-08, lane j-3: bottom never forms a web; pointer, address, in-place and nesting forms all measured
+
+Measured by tools/bank.py: masked 90 (raw 90), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 229, register naming 36, immediate only 4, really different 33.
+
+On the 90 body (size delta 0, aligned exact 229, naming 36, immediate 4, really different 33). web_report, proc 0, identity gate passed.
+
+Records: the three bounds that are register arguments of the scissor call (left a1, top a2, right a3) each get a symbol web from that call's argument pin (bbpin in block 12); bottom, the stack argument, has no pin and no web. Left's and top's occurrences each carry their own load charge (left: gross 4, chargeA 3, net 1), so outside a pin an address-taken local gets a web only where one block uses it twice. Right's test in block 6 and bottom's test in block 7 are not part of any web.
+
+Measured, all with no bottom web:
+
+- &bottom through a pointer local for the GetBounds argument: 100 at 0 (the pointer takes a frame cell). Reading bottom through the pointer at the test and the call, or everywhere: 100 at 0; uopt folds the pointer back to &bottom.
+- `*&bottom` and `*(s32 *)&bottom` at the test and the call: 90, byte-identical.
+- The four bounds as one array (`bounds[3]` for left down to `bounds[0]` for bottom): 90, byte-identical.
+- `bottom -= drawY` (and/or `right -= drawX`) in place after the call: 235 to 246 at +4 or +8 (the store back).
+- A 12-cell product of the clip shape (90 body, g-3's 259 cell, y-first 262 cell) by if/else or default-then-override for the x and y clamps: floor 90 (if/else both).
+- The clip tests as one positive `&&` condition wrapping the rest of the body, on each clip shape: 259 to 276; the early-return form stays best.
+
+Cycle-21: bottom's web cannot come from a spelling of bottom; every alias spelling folds to the same stack variable. Settle on a mini TU whether IDO ever gives an address-taken local with no register-argument pin a web (a local passed by address, then read in a test block and stored as a later call's stack argument). If it never does, the target's v0 value is not that local's own web, and the question becomes which value live over blocks 7 to 12 the target's source has that ours lacks (the decision variable is v0's occupant there; the record is the p1color row for c1 over blocks 7 to 12).
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

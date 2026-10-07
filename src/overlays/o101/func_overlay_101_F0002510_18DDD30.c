@@ -182,6 +182,6 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
  * frame: 0xE8
  * relocations: 6
  * first-mismatch: +0x70
- * summary: y origin local tested, y copied after the clip tests (target's v1/s4 split): delta 0. Left: clip-block schedule, left/top in s3/s1.
+ * summary: y origin local tested, y copied after the clip tests: delta 0. bottom never forms a web (no argument pin); alias spellings fold.
  * PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:end
  */

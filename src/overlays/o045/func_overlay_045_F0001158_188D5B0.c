@@ -355,6 +355,6 @@ void func_overlay_045_F0001158_188D5B0(
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x748
- * summary: 116 at size delta 0; the right conversion and nhh*sin tie at save 15 over 2 blocks and the lower web number (right) is decided first.
+ * summary: 116 at size delta 0; the target's float order differs in four rankings (c3x, nhh*cos, nhh*sin, right), not one tie.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

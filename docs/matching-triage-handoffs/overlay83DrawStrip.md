@@ -361,7 +361,8 @@ Copy taken before the first packet: the display-list parameter is web 19,
 the first `_g` is web 22, and the parameter takes a2. Copy taken after the
 first packet: `_g` is web 17 and takes a2, invisibly, and the parameter
 (web 19) takes a3, as shipped. Every placement after the first packet scored
-0; every placement before it scored 3. Use this when a target skips a
+0. Inside the branch but before the first packet scored 3, and before the
+count load scored 73 at -4. Use this when a target skips a
 register for no visible reason: an earlier macro local may hold it.
 
 <!-- plateau-handoff:overlay83DrawStrip:end -->

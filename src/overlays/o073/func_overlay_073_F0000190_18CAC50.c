@@ -3,9 +3,14 @@
  * have explicit, nonoverlapping local roles. Signed steering comparisons
  * preserve promoted negation, including the signed-halfword minimum.
  * The entry multiply sits in its own region (do/while) so the step is
- * narrowed once, as shipped. Ring phase from the case 1 angle difference,
- * one float spill home and relocation geometry remain nonexact; see the
- * owned matching-triage handoff for measurements and the query domain. */
+ * narrowed once, as shipped. 2026-10-07 (lane f-o073), 14 -> 4 at size 0:
+ * the case 0 timer add goes through the float `limit` local so the rate
+ * product is numbered before the timer read (a timer read numbered first
+ * reserves a 4-byte compiler cell and puts the float-rate spill at +0x30
+ * instead of +0x34); the case 4 count assignment, index copy and test sit
+ * on one physical line so as1's line tie-break schedules the index
+ * narrowing first. Remaining 4: `hitIndex - 1` is an a1 web in the target
+ * and a ring temp here; see the owned matching-triage handoff. */
 #ifdef NON_MATCHING
 #include "PR/ultratypes.h"
 
@@ -117,7 +122,8 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
             state->countdown = 0xF0;
             state->mode = 3;
         }
-        object->timer += (f32)updateRate * 0.004f;
+        limit = (f32)updateRate * 0.004f;
+        object->timer += limit;
         if (object->timer >= 1.0f) {
             object->timer -= 1.0f;
         }
@@ -283,10 +289,7 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
                 state->countdown -= updateRate;
             } else {
                 state->countdown = 0;
-                hitCount = (s16)func_8005776C(object->x, 0.0f, object->z,
-                                         150.0f, 1, hits);
-                hitIndex = hitCount;
-                if (hitIndex != 0) {
+                hitCount = (s16)func_8005776C(object->x, 0.0f, object->z, 150.0f, 1, hits); hitIndex = hitCount; if (hitIndex != 0) {
                     if (hitCount >= 2) {
                         hitIndex = (s16)mathRnd(1, hitCount);
                     }
@@ -396,10 +399,10 @@ common:
 
 /* PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:start
  * symbol: func_overlay_073_F0000190_18CAC50
- * score: 29 differing words
+ * score: 19 differing words
  * frame: 0x98
  * relocations: 46
- * first-mismatch: +0x2B8
- * summary: 14 masked at size 0; the case 0 timer block reserves the extra temp that puts the spill at +0x30; case 4 query index web (8 words).
+ * first-mismatch: +0x7C8
+ * summary: 4 masked at size 0, all naming in the case 4 query: hitIndex - 1 is an a1 web in the target with one extra folded ring draw; ours is a ring temp.
  * PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:end
  */

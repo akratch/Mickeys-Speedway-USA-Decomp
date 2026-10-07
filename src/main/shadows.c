@@ -460,7 +460,6 @@ void shadowGenerate(s32 arg0, s32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/shadowGenerate.s")
 #endif
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: the query/polygon organization follows DKR's public
  * src/tracks.c shadow pipeline and JFG's public func_8001DF5C assembly.
@@ -491,9 +490,9 @@ typedef struct Shadow168Angle {
 #define SH168_F32(p, o) (*(f32 *) ((u8 *) (p) + (o)))
 #define SH168_PTR(p, o) (*(void **) ((u8 *) (p) + (o)))
 
-/* Workbench verdict: 31 masked words at size delta 0, frame 0x190 exact
- * (was 315 at frame 0x1A0). This is DKR's shadow_generate with the shadow
- * globals gathered into the stack query struct.
+/* Matched 2026-10-07 (lane a-shad).
+ * This is DKR's shadow_generate with the shadow globals gathered into the
+ * stack query struct.
  * 2026-10-02 (lane x-shad):
  *   - the corner points are seeded from query.x8/query.z10, not from the x/z
  *     arguments, so x/y take f12/f14 as in the target;
@@ -501,29 +500,21 @@ typedef struct Shadow168Angle {
  *     lands at point0's home +0xF8) and writes the zero-sine arm as 2.0, a
  *     double literal;
  *   - three scalars above result (+0x104), count at +0x100, sine at +0xE0.
- * 2026-10-02 (lane z-shad), measured with the four scratch FP registers
- * erased, because their names are one ring phase for the whole function
- * (ugen's free list at entry is the state the function's own code leaves at
- * its end, so no local edit fixes the first draw):
- *   - the rotated-corner path names four products in the extent variables
- *     (point2 = halfX*cos, point4 = halfZ*sin, point0 = halfX*sin,
- *     point6 = expanded*sin) and keeps the negated and expanded-cosine
- *     products in a four-float array, temp[2], temp[0] and temp[3]: the
- *     target's +0x58, +0x50 and +0x5C stores with their immediate reloads.
- *     That path is now the target's word for word;
- *   - the unrotated path assigns all four extents from the two fields and
- *     scales them in place in both arms, with 10.0f and -10.0f literals;
- *   - the model is reached through a named instance pointer (the target
- *     keeps it in v1), and the centre sums read points[0], [2], [4], [6] in
- *     order.
- * Left: from +0xAC the distance and 1024.0f still swap f0 and f2 (14 naming
- * words). Aligned residual is 525 exact, 14 naming, 17 immediate, and 0
- * really different. Both half extents are inverseScale * 10.0f. radius, the
- * arg2 copy, and modInst are not declared, which closed the frame at 0x190.
- * Do not put those three locals back, and do not copy halfZ from halfX.
- * The unrotated temp[] product spelling remains the rejected 291 at +16.
- * point2's cross-call split is not what this measurement reopened.
- * The open residual is the f0/f2 swap, not another local. */
+ * 2026-10-02 (lane z-shad): the rotated corners name four products in the
+ * extent variables (point2 = halfX*cos, point4 = halfZ*sin, point0 =
+ * halfX*sin, point6 = expanded*sin); the unrotated path assigns all four
+ * extents from the two fields and scales them in place in both arms, with
+ * 10.0f and -10.0f literals.
+ * 2026-10-07 (lane a-shad): the rotated path's negated and expanded-cosine
+ * products are compiler temporaries, not a declared array: the target's
+ * +0x50..+0x5C cells are shared with the unrotated path's spilled products,
+ * which only uopt's own cells can be. Written inline with point6 assigned
+ * before the first corner, the code is the target's word for word; modInst,
+ * radius and the arg2 copy then sit at +0x60..+0x68 and give the frame.
+ * The distance clamp is computed in point0, not in its own local: one name
+ * makes it one long web, decided after the 1024.0f constant, so the bound
+ * takes f0 and the distance f2 as shipped. distance stays declared for its
+ * frame cell. */
 void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
                    f32 arg5, s16 arg6) {
     typedef struct Shadow168Query {
@@ -564,10 +555,9 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
     s32 active;
     Shadow168Query query;
     f32 points[8];
-    /* modInst stays in a register; a declared local reserves a cell. */
-    /* radius is unread and still reserves a cell under IDO. */
-    /* arg2 is the incoming pointer; its parameter home is the save. */
-    f32 temp[4];
+    void *modInst;
+    f32 radius;
+    void *arg2 = arg2p;
 
     query.x8 = arg3;
     query.yC = arg4;
@@ -583,18 +573,18 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
                             (s32) arg4);
 
     if (SH168_S16(arg0, 0x44) != 1) {
-        distance = SH168_F32(arg0, 0x30);
-        if (distance < 0.0f) {
-            distance = -distance;
+        point0 = SH168_F32(arg0, 0x30);
+        if (point0 < 0.0f) {
+            point0 = -point0;
         }
-        distance -= 250.0f;
-        if (distance < 0.0f) {
-            distance = 0.0f;
+        point0 -= 250.0f;
+        if (point0 < 0.0f) {
+            point0 = 0.0f;
         }
-        if (distance > 1024.0f) {
-            distance = 1024.0f;
+        if (point0 > 1024.0f) {
+            point0 = 1024.0f;
         }
-        query.scale1C += distance * D_800817A4;
+        query.scale1C += point0 * D_800817A4;
     }
 
     query.inverseScale2C = SH168_F32(arg2p, 0);
@@ -640,19 +630,16 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
         cosine = func_8002A8BC(SH168_S16(arg1, 0));
         point2 = query.halfX34 * cosine;
         point4 = query.halfZ38 * sine;
-        temp[2] = -point2;
-        points[0] += temp[2] - point4;
-        point0 = query.halfX34 * sine;
-        temp[0] = -(query.halfZ38 * cosine);
-        points[1] += temp[0] + point0;
-        points[2] += point2 - point4;
-        points[3] += temp[0] - point0;
         point6 = query.expanded3C * sine;
+        points[0] += -point2 - point4;
+        point0 = query.halfX34 * sine;
+        points[1] += -(query.halfZ38 * cosine) + point0;
+        points[2] += point2 - point4;
+        points[3] += -(query.halfZ38 * cosine) - point0;
         points[4] += point2 + point6;
-        temp[3] = query.expanded3C * cosine;
-        points[5] += temp[3] - point0;
-        points[6] += temp[2] + point6;
-        points[7] += temp[3] + point0;
+        points[5] += (query.expanded3C * cosine) - point0;
+        points[6] += -point2 + point6;
+        points[7] += (query.expanded3C * cosine) + point0;
     } else {
         value = SH168_U8(arg2p, 0x10) & 0x20;
         if ((value != 0) || (SH168_F32(arg2p, 4) != SH168_F32(arg2p, 0))) {
@@ -662,8 +649,8 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
             point6 = SH168_F32(arg2p, 4);
             if (value != 0) {
                 objectScale = SH168_F32(arg0, 8);
-                matrix = SH168_PTR(SH168_PTR(arg0, 0x68), 0);
-                matrix = SH168_PTR(matrix, 0);
+                modInst = SH168_PTR(SH168_PTR(arg0, 0x68), 0);
+                matrix = SH168_PTR(modInst, 0);
                 point0 *= (f32) SH168_S16(matrix, 0x42) * objectScale;
                 point2 *= (f32) SH168_S16(matrix, 0x46) * objectScale;
                 point4 *= (f32) SH168_S16(matrix, 0x3C) * objectScale;
@@ -748,9 +735,6 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
 #undef SH168_S32
 #undef SH168_F32
 #undef SH168_PTR
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/shadows/func_80016890.s")
-#endif
 /*
  * PROVENANCE: adapted from the public Diddy Kong Racing decompilation,
  * src/tracks.c func_8002E904 (the per-segment shadow polygon builder that
@@ -1397,14 +1381,4 @@ void func_800180B4(ShadowQuery *query) {
  * first-mismatch: +0x118
  * summary: Typed owned trap calls remove default float promotion: 432/+40 to 419/+24; exact frame retained. Remaining type-home and structural residual needs new source evidence.
  * PLATEAU-HANDOFF:shadowGenerate:end
- */
-
-/* PLATEAU-HANDOFF:func_80016890:start
- * symbol: func_80016890
- * score: 31 differing words
- * frame: 0x1A0
- * relocations: 48
- * first-mismatch: +0xAC
- * summary: rotated corners exact via a temp[4] array: 439/+12 to 315/0; left: head f0/f2 swap, unrotated post-call products (291 at +16 with frame 0x190)
- * PLATEAU-HANDOFF:func_80016890:end
  */

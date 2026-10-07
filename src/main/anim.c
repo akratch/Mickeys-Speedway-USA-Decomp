@@ -1535,14 +1535,14 @@ void func_800517E0(void) {
                     }
                     break;
                 case 0x4B:
-                    pathIndex = cursor->command & 0xFF;
+                    targetValue = cursor->command & 0xFF;
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     timer = (s32) (value * scale * factor);
                     D_800D6C4E = timer;
                     D_800D6C4C = timer;
                     D_800D6C50 = D_800D6C54;
-                    D_800D6C52 = pathIndex;
+                    D_800D6C52 = targetValue;
                     break;
                 case 0x4C:
                     pathIndex = cursor->command & 0xFF;
@@ -1841,12 +1841,15 @@ void func_800517E0(void) {
                                     0xFF1FFFFF;
                                 reference->speed12 =
                                     (s16) ((frame6F << 8) / 6000);
-                                if (low == 1) {
-                                    record->flags |= 0x800000;
-                                    reference->flags |= 0x800000;
-                                } else if (low == 2) {
-                                    record->flags |= 0x400000;
-                                    reference->flags |= 0x400000;
+                                switch (low) {
+                                    case 1:
+                                        record->flags |= 0x800000;
+                                        reference->flags |= 0x800000;
+                                        break;
+                                    case 2:
+                                        record->flags |= 0x400000;
+                                        reference->flags |= 0x400000;
+                                        break;
                                 }
                             }
                         }
@@ -1865,10 +1868,8 @@ void func_800517E0(void) {
                     mainSyncNextLevel();
                     break;
                 case 0x78:
-                    pathIndex = cursor->command & 0xFF;
-                    word11 = *((u16 *) ((u8 *) cursor + 4));
+                    func_80029084(*((u16 *) ((u8 *) cursor + 4)), cursor->command & 0xFF);
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    func_80029084(word11, pathIndex);
                     break;
                 case 0x79:
                     pathIndex = cursor->command & 0xFF;
@@ -1904,8 +1905,8 @@ void func_800517E0(void) {
                     value = (f32) duration;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     D_8007D6AC = value * factor;
-                    timer = (s8) *((u16 *) ((u8 *) cursor - 2));
-                    D_8007D6A4 = timer;
+                    currentCommand = (s8) (*((u16 *) ((u8 *) cursor - 2)) & 0xFF);
+                    D_8007D6A4 = currentCommand;
                     break;
                 case 0x7C:
                     currentCommand = cursor->command;
@@ -1923,8 +1924,6 @@ void func_800517E0(void) {
                     value2 = (f32) duration;
                     cursor = D_8007D698;
                     D_8007D6AC = D_8007D6AC - value2 * factor;
-                    break;
-                default:
                     break;
             }
         }
@@ -4023,10 +4022,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1530 differing words
- * frame: 0x1b0
+ * score: 1247/1808 words
+ * frame: 0x1B0
  * relocations: 245
- * first-mismatch: +0x48
- * summary: Banked on aligned residual at size -12: aligned 853, frame 0x1B0. Ring t6-t9 as shipped via 0x4C caller-saved webs; pieces at target counts.
+ * first-mismatch: +0xD0
+ * summary: Aligned 821 at size 0: 0x78 arguments read inline before the advance; pieces kept (6000 a3, state a0).
  * PLATEAU-HANDOFF:func_800517E0:end
  */

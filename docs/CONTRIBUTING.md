@@ -599,6 +599,20 @@ interrupted report without recompiling recorded identities, and repeated
   `MICKEY_BUILD_JOBS` and `MICKEY_BUILD_NICE` when local workstation policy
   requires a lower compiler concurrency or priority; the three-session crew
   uses two jobs and niceness 15.
+- **`tools/integrate.sh [--land] <lane> [lane ...]`** is the serialized
+  coordinator entry point for a batch. It takes `<git-common-dir>/integrate.lock`
+  (pid-stamped; a dead owner's lock is reclaimed, a live owner makes the next
+  run queue), records the recovery base, stashes uncommitted tracked changes to
+  files the batch does not touch (and refuses, naming the file, if a dirty file
+  is touched by a lane diff or by a generated file), runs `merge_lanes.sh`, and
+  with `--land` runs `land.sh --release-ref campaign/unchain`. If the batch
+  dies at `check-docs`, it runs `check_shard_metrics.py --write` for shard
+  header drift and re-runs the gate once, then the remaining gates and the
+  regenerated-artifacts commit. A `check_derived_numbers` mismatch is printed
+  verbatim and the run stops; fix that line by hand. Ends with
+  `== integrated <lanes> landed <sha>` or
+  `== FAILED at <step>: <reason>; recover with git reset --hard <base>`.
+  Must run on `campaign/unchain`.
 - **`tools/codex_lane.sh <name> <prompt-file> [--minutes N] [--target SYMBOL] [--no-extract]`**
   creates a lane with `new_lane.sh` and launches a detached, non-interactive
   `codex exec` worker inside it; the worker commits on `lane/<name>` like any

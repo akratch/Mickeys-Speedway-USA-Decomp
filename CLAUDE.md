@@ -12,6 +12,11 @@ GitHub still redirects the old name, so a stale remote keeps working and hides
 the rename until the redirect stops. Work lands through lanes on
 `campaign/unchain`, is merged into `master`, and both are pushed by
 `tools/land.sh` after each integration batch.
+Integrate a batch with `tools/integrate.sh [--land] <lane> ...`: one lock
+(a second run queues), the owner's unrelated dirty files stashed and restored,
+`merge_lanes.sh`, the documented `check-docs` repair, then `land.sh
+--release-ref campaign/unchain`; it ends on one `== integrated` or
+`== FAILED at <step>` line. Do not hand-write the chain.
 Run it rather than pushing by hand: it regenerates the overlay alias list,
 re-verifies the ROM *from the merge result* (a merge can combine two lanes'
 generated artifacts in ways neither produced alone, which `verify` on

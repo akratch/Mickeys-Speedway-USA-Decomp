@@ -2143,6 +2143,6 @@ void func_8004AF68(void) {
  * frame: 0x90
  * relocations: 3
  * first-mismatch: +0x10
- * summary: sampleBytes after segmentCount (target spill-cell order): 325 to 323 at -8. Left: dead v0/v1 copies before the call, four cells out of order
+ * summary: Forces w14/w324/w10/w5 leave only the two dead pre-call copies and the spill-cell order; eight source negatives recorded
  * PLATEAU-HANDOFF:wakeAllocate:end
  */

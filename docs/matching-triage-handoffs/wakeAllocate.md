@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x10
-- summary: sampleBytes after segmentCount (target spill-cell order): 325 to 323 at -8. Left: dead v0/v1 copies before the call, four cells out of order
+- summary: Forces w14/w324/w10/w5 leave only the two dead pre-call copies and the spill-cell order; eight source negatives recorded
+
+Summary before this remeasure: sampleBytes after segmentCount (target spill-cell order): 325 to 323 at -8. Left: dead v0/v1 copies before the call, four cells out of order
 
 Summary before this remeasure: Divisors read textureIndex back: tail ring aligned, naming 84 to 9 at -8. Left: dead v0/v1 copies before the call (split pieces).
 
@@ -348,4 +350,64 @@ Cycle-21 line: find the four temporaries in our cell gap (between the
 doubled count and segmentBytes) and what makes the target create them
 before frameCount; the same creation order decides which webs exist in
 bb2 when w10 and w14 are coloured.
+
+#### 2026-10-08, lane j-6: what the forces leave, and eight negatives (323 at -8 kept)
+
+Measured by tools/bank.py: masked 323 (raw 323), size delta -8, candidate 349 words vs target 351. Aligned: byte-exact 311, register naming 10, immediate only 6, really different 29.
+
+Score unchanged: 323 masked at -8, aligned byte-exact 311, naming 10,
+immediate 6, really different 29.
+
+Forces on proc 9 (instrumented compile of the tree body, each accepted):
+p1:w14=c5 (sampleBytes piece a2), p1:w324=c6 (segmentCount * 0x14 piece a3),
+p1:w10=c7 (segmentCount piece t0) and p1:w5=c14 (frameCount piece s0).
+The object then differs from the target only in: the two dead copies
+before the first call (segment count into v0, doubled count into v1), the
+five pre-call spill cells (ours sampleBytes +0x40, s20 +0x20, segmentCount
++0x44, doubled +0x3C, frameCount +0x48; target +0x34, +0x30, +0x38, +0x2C,
++0x3C), and the scheduling that follows from them (andi a1,ra,3 and the
+zero of i after the first call, li a0,255 in the tail). Everything after
+the first call is otherwise exact. The rest of the function is done; the
+whole residual is the pre-call block's split pieces and cell order.
+
+The same two dead copies, the same seven-cell spill run and the same
+pre-call schedule are in Jet Force Gemini's wakeAllocate (its retail
+listing in the reference tree, read only; JFG calls mmAlloc2 and rounds
+with cvt.w.s), so the shape is the engine's common source, not a Mickey
+edit.
+
+Measured flat or worse, each a product ranked aligned:
+- or-with-zero kills (the overlay17CreateChain lever) on segmentCount,
+  groupCount, triCount and frameCount after the allocation (16 cells) and
+  after the alpha branch (27 cells): 323 or worse; segmentCount killed
+  after the call is delta 0 but sends it to a memory home (246, aligned
+  192, frame 0x88).
+- a block boundary before the call (do-while, if (1), a goto label, the
+  size through i, the byte products in a do-while): 7 cells, all
+  byte-identical.
+- copies of segmentCount/groupCount into i and j before or after the alpha
+  branch, used by the byte products, with kills before or after the call
+  (one product): 323 at best, delta-0 cells at 228 with i in v1.
+- sampleBytes, segmentBytes and textureBytes inline or as locals, with
+  segmentCount * 0x14 through a local (16 cells): flat (segmentBytes
+  inline +8, textureBytes inline 211 aligned).
+- post-call copies n = segmentCount and m = groupCount defined before the
+  call, killed after it, read by wake->segmentCount and the fill-loop
+  bounds (two new locals): 325 or worse (frame cells, immediate 21).
+
+Reading. The target's cell run follows the allocation argument's term
+order (frameCount, segmentCount, sampleBytes, segmentCount * 0x14, the
+doubled count, segmentBytes, textureBytes), which is the order uopt would
+number those expressions if it first met them in the argument. Ours meets
+four of them at their statements in block 0.
+
+Cycle-21 line: the wakeUpdate match came from the split rule (a web splits
+iff totalsave <= bestcost), so read the split decisions here the same way:
+web_report --proc 9 for w10 (segmentCount, totalsave 5 against bestcost
+16.25, split, piece seeded at bb0 grows into bb2 at left 16 to 11) and w18
+(the doubled count, totalsave 65 against bestcost 3, coloured t5). The
+target needs both to have a bb2-only piece coloured before the
+sampleBytes/s20 pieces; find the source that makes w10's bb0 piece stop at
+bb1 (its colour unavailable in bb2) and gives w18 a split. Decision
+variable: w18's totalsave against its bestcost on proc 9.
 <!-- plateau-handoff:wakeAllocate:end -->

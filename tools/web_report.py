@@ -504,7 +504,7 @@ def source_for(symbol: str) -> tuple[list[str], tuple[int, int] | None]:
     pattern = re.compile(r"^\S.*\b" + re.escape(symbol) + r"\s*\(")
     for number, line in enumerate(lines, 1):
         if pattern.search(line) and not line.rstrip().endswith(";") \
-                and not line.lstrip().startswith(("#", "//", "*")):
+                and not line.lstrip().startswith(("#", "//", "*", "extern ")):
             end = next((n for n in range(number, len(lines) + 1)
                         if lines[n - 1].startswith("}")), len(lines))
             return lines, (number, end)

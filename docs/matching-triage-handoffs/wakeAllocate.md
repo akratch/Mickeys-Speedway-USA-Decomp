@@ -97,4 +97,24 @@ Neither a private candidate improvement nor a mask score receives match credit.
 Further work needs fresh producer or structural evidence, not old allocator,
 loop, home or declaration grids.
 
+#### 2026-10-07: divisor conversion audit closes without a source change
+
+The configured full-TU baseline reproduces 343/351 words, 345 raw and masked
+differences, size delta -32 bytes, first mismatch +0xC, and frame 0x98 against
+0x90. Captured compiler-input self-context passes; replay agrees with the
+configured object in every allocated section, symbols, and relocation tuples.
+
+The proposed missing unsigned-to-float correction was a mistaken initial
+reading: the baseline already emits that correction for its byte divisor.
+Explicitly widening the byte cast to u32 is executable-byte-inert. Replacing
+the divisor with an unsigned low-byte mask adds one instruction and measures
+344 differing words at -28 bytes, while opcode distance worsens from 30 to36
+and aligned structural differences from33 to39. This is not a structural
+improvement and is not adopted. Both forms preserve the byte-valued divisor.
+
+Source is restored unchanged. The conversion hypothesis is closed; no new
+matching bytes. Ignored source, actual inputs, objects, context and fidelity
+receipts remain under build/wake-conversion. Existing word-argument and flags
+CFG findings remain separate; this packet does not repeat or promote them.
+
 <!-- plateau-handoff:wakeAllocate:end -->

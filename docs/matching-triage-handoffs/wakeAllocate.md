@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x10
-- summary: Natural rewrite (own triangle count, if/else flags, word id, one cursor): -32 to -8, frame 0x90. Left: dead v0/v1 copies before the call.
+- summary: Divisors read wake->textureIndex back (store forwarded): tail temp ring aligned, naming 84 to 9 at -8. Left: dead v0/v1 copies before the call.
+
+Summary before this remeasure: Natural rewrite (own triangle count, if/else flags, word id, one cursor): -32 to -8, frame 0x90. Left: dead v0/v1 copies before the call.
 
 Summary before this remeasure: JFG efd5abb remains assembly-only; zero source attempts. Need new initialization homes and buffer-loop topology evidence.
 
@@ -223,5 +225,37 @@ webs' block-2 pieces must outrank 0.75. Next: read w14's cost list and
 forbidden mask in the records, and find the source change that takes away
 its last colour (an extra web live across all blocks, the way case 2's
 limit local did for func_80049B14 in this TU) before any spelling product.
+
+#### 2026-10-07, lane c-fx (resumed): the tail's temp ring, naming 84 to 9
+
+Positional 325 at -8 both sides; aligned before byte-exact 234, naming
+84, immediate 8, really different 27 (plus 6 one-sided); after 308, 9, 8,
+31. Ten measured cycles.
+
+- residual_map split the 84 naming rows: about 75 of them are one closed
+  four-cycle over t6..t9 from +0x280 to the end, a single ring-draw phase.
+  The draw is frameCount after the call: the target reloads it from its
+  spill cell into a ring temporary at its use, where ours coloured the
+  post-call piece (records: proc 9, w374, v1). Forcing that piece to
+  split (p1:w374=s, accepted) prices it at naming 84 to 9.
+- Source that does it: both divisors read wake->textureIndex instead of
+  (u8) frameCount. uopt forwards the byte just stored, so the value is the
+  reload masked once, as shipped. Mixed forms (one divisor each way) lose
+  the ring again and land at -4 (311 and 312 positional, naming 84).
+- Forcing w327, w332, w10 and w5 to the target colours (c5, c6, c7, c14)
+  on top leaves naming 1 and 15 structural rows: what remains is the two
+  missing pre-call words and their schedule.
+
+Flat or worse, measured: an extra web for the byte-size product, the
+vertex byte count or the loop bound as named locals (twelve cells, 325
+to 345, none produces the copies); forcing w14 to split (p1:w14=s,
+accepted: the block 0-2 piece takes v0 and the rest goes to memory, 337
+at -16), so the doubled count is not split in the target by that route.
+
+Next: the two dead copies. They are block-2 pieces coloured v0/v1 ahead
+of w327/w332; the forced split above shows ours seeds at block 0 and grows
+through block 2. Read the growv records for w10 under a candidate where
+block 2 holds one more live value, and look for the source that makes the
+growth into block 2 refuse.
 
 <!-- plateau-handoff:wakeAllocate:end -->

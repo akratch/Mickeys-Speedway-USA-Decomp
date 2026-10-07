@@ -46,7 +46,13 @@ def compare_stock(baseline, winner, symbol, directory, compiler, compiler_args, 
         if hashlib.sha256(compiler.read_bytes()).hexdigest() != compiler_hash:
             raise ValueError("stock compiler changed during preprocessing")
         return {"argv": argv, "returncode": process.returncode, "compiler_sha256": compiler_hash}
-    return compare(baseline, winner, symbol, directory, preprocess)
+    # Command-line definitions can introduce aliases to a prepared macro.
+    # Conservatively treat every recipe identifier as a possible expansion
+    # root, so an apparently unused paste cannot become active through -D.
+    external_identifiers = set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*",
+                                         " ".join(compiler_args)))
+    return compare(baseline, winner, symbol, directory, preprocess,
+                   external_identifiers=external_identifiers)
 
 
 def retain(report: dict, directory: Path, build_permuter: Path) -> None:
@@ -60,7 +66,8 @@ def retain(report: dict, directory: Path, build_permuter: Path) -> None:
         shutil.copytree(source, directory / "preprocessing", dirs_exist_ok=True)
 
 
-def compare(baseline: bytes, winner: bytes, symbol: str, directory: Path, preprocess) -> dict:
+def compare(baseline: bytes, winner: bytes, symbol: str, directory: Path, preprocess,
+            *, external_identifiers=()) -> dict:
     """Compare only actual successful -E outputs, retaining raw input binding.
 
     The runner supplies its configured stock compiler invocation after validating
@@ -69,8 +76,10 @@ def compare(baseline: bytes, winner: bytes, symbol: str, directory: Path, prepro
     ordered context in addition to the expanded non-target C context.
     """
     directory.mkdir(parents=True, exist_ok=False)
-    old = candidate_context.preprocessing_macro_context(baseline)
-    new = candidate_context.preprocessing_macro_context(winner)
+    old = candidate_context.preprocessing_macro_context(
+        baseline, external_identifiers=external_identifiers)
+    new = candidate_context.preprocessing_macro_context(
+        winner, external_identifiers=external_identifiers)
     if not old:
         raise ValueError("compiler preprocessing route requires a prepared macro prelude")
     if old != new:

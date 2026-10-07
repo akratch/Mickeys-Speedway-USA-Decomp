@@ -167,6 +167,41 @@ class MacroContextTests(unittest.TestCase):
         source = b"#define JOIN(a,b) a ## b\nint target(int x) { return x; }"
         self.assertEqual(cc.compare_context(source, source, "target")["status"], "unchanged")
 
+    def test_unused_paste_does_not_block_active_macro_replay(self):
+        source = b"#define UNUSED_JOIN(a,b) a ## b\n" + BASE
+        def preprocess(source_path, output):
+            output.write_bytes(EXPANDED)
+            return {"returncode": 0}
+        result = pm.compare(source, source, "target", self.directory, preprocess)
+        self.assertEqual(result["status"], "unchanged")
+        self.assertEqual(len(cc.preprocessing_macro_context(source)), 2)
+        self.assertEqual((self.directory / "baseline.c").read_bytes(), source)
+
+    def test_transitive_paste_reachability_refuses(self):
+        for paste in (b"##", b"%:%:"):
+            source = (b"#define JOIN(a,b) a " + paste + b" b\n"
+                      b"#define INNER(x) JOIN(x,1)\n"
+                      b"#define OUTER(x) INNER(x)\n"
+                      b"int target(int x) { return OUTER(x); }\n")
+            with self.subTest(paste=paste), self.assertRaisesRegex(cc.ContextError, "token pasting"):
+                cc.preprocessing_macro_context(source)
+
+    def test_unused_recursive_macros_and_literal_names_are_not_roots(self):
+        source = (b"#define JOIN(a,b) a ## b\n"
+                  b"#define A B\n#define B A\n"
+                  b'const char *label = "JOIN A B";\n' + EXPANDED)
+        self.assertEqual(len(cc.preprocessing_macro_context(source)), 3)
+
+    def test_command_line_alias_cannot_activate_unreviewed_paste(self):
+        source = b"#define JOIN(a,b) a ## b\n" + BASE
+        compiler = Path(self.temp.name) / "cc"
+        compiler.write_bytes(b"synthetic compiler identity")
+        calls = []
+        with self.assertRaisesRegex(cc.ContextError, "token pasting"):
+            pm.compare_stock(source, source, "target", self.directory, compiler,
+                             ["-DINDIRECT=JOIN"], lambda argv: calls.append(argv))
+        self.assertEqual(calls, [])
+
     def test_preprocessor_start_and_timeout_preserve_command_and_diagnostics(self):
         compiler = Path(self.temp.name) / "cc"
         compiler.write_bytes(b"identity")

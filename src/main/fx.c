@@ -671,6 +671,9 @@ typedef struct FxWakeAllocation {
  *    default-then-override, and the resource id is a full word;
  *  - one pointer local walks both areas; no size/vertexBytes locals (frame
  *    0x98 -> 0x90 and the target's home ladder for groupCount/alpha/triCount).
+ * Lane c-fx: both divisors read wake->textureIndex back; uopt forwards the
+ * store, so frameCount is reloaded once into a ring temporary after the call
+ * (as shipped) and the whole tail's temp ring lines up (naming 84 -> 9).
  * Left: two dead copies the target makes before the first call (segment and
  * group counts into v0/v1) and frameCount's pre-call piece in s0; see shard. */
 /* PROVENANCE: Mickey's own target accesses and caller ABI supply this reconstruction; JFG supplies only the published role/name. */
@@ -734,9 +737,9 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
             wake->textureIndex = (s8) frameCount;
             wake->textureStep =
                 (s16) (((wake->linked->height - 1) << 8) /
-                       (u8) frameCount);
+                       wake->textureIndex);
             wake->valueC =
-                (wakeValue84 - wakeValue80) / (u8) frameCount;
+                (wakeValue84 - wakeValue80) / wake->textureIndex;
             for (i = 0; i < alpha; i++) {
                 for (j = 0; j < groupCount; j++) {
                     wake->sampleBuffers[i][(j * 0xA) + 6] = 0xFF;
@@ -2123,7 +2126,7 @@ void func_8004AF68(void) {
  * frame: 0x90
  * relocations: 3
  * first-mismatch: +0x10
- * summary: Natural rewrite (own triangle count, if/else flags, word id, one cursor): -32 to -8, frame 0x90. Left: dead v0/v1 copies before the call.
+ * summary: Divisors read wake->textureIndex back (store forwarded): tail temp ring aligned, naming 84 to 9 at -8. Left: dead v0/v1 copies before the call.
  * PLATEAU-HANDOFF:wakeAllocate:end
  */
 

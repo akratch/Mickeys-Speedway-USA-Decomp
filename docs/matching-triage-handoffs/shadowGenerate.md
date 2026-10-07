@@ -2,11 +2,13 @@
 ### `shadowGenerate` plateau handoff
 
 - source: `src/main/shadows.c`
-- score: 419/510 words
+- score: 0/510 words, promoted
 - frame: 0x138
 - relocations: 63
-- first mismatch: +0x118
-- summary: Typed owned trap calls remove default float promotion: 432/+40 to 419/+24; exact frame retained. Remaining type-home and structural residual needs new source evidence.
+- first mismatch: none
+- summary: Matched. 419 at +24 to 0 on 2026-10-07 (lane a-shad) by rewriting the inherited m2c shape; the edits are listed in the last section
+
+Summary before this remeasure: Typed owned trap calls remove default float promotion: 432/+40 to 419/+24; exact frame retained. Remaining type-home and structural residual needs new source evidence.
 
 Summary before this remeasure: Frame exact at 0x138 (unused f32s dropped, homes reordered): 445 to 432 at +40; an s16 still spills to +0xAA where the target keeps type in fp
 
@@ -75,4 +77,34 @@ the type in fp, where this candidate has s8, s7 and an s16 home at +0xAA.
   self-context and fidelity, independent other-function byte/relocation checks,
   workbench diagnosis, full ROM verification, documentation, clean-room and
   tooling gates before the owned plateau commit.
+#### 2026-10-07 (lane a-shad): matched, 419 at +24 to 0
+
+Read from the target listing and measured as fast_score products ranked by
+aligned rows (residual_map --object), never by the positional count, which
+read worse on several steps that were right. Baseline: 419 masked at +24,
+aligned 284 exact, 123 naming, 25 immediate, 68 really different.
+
+  - info->0x14 is a u16 flag word (the target reads a halfword) and
+    object->0x6 an s16; object->0x44 read at each use after camGetMode
+    instead of the objectType carrier; angleSource as
+    `angleSource = NULL; if (flags & 8) { if (link != NULL) ...}`: a product
+    of these alone stayed 392 to 441, size +28 to +48.
+  - one loop variable for the model-part loop, the sort passes and the
+    final call loop (k; the target keeps all three in s2), angleCount
+    starting at 0 and set to 1 under D_80079460 > 0, the material stored
+    before angleCount++: 318 at -8, aligned 417 exact, 30 naming. The merged
+    loop variable is the big one (it frees fp for type, whose s16 home at
+    +0xAA was the spill/reload pairs insertion_pairs reported).
+  - with that, angleSource as an if/else over `flags & 8 && link != NULL`:
+    205 at -4, structural 10.
+  - the model tail reading object->0x50 at each use (the target reloads it
+    after each func_800180B4 call), the trap result in j instead of value,
+    the angle pointer stored after the three part loads, and the sort bound
+    assigned in its guard `(k = angleCount - 1) > 0`: a 24-cell product,
+    exact at all four together (16 at delta 0 without the store order and
+    the j split).
+  - objectType deleted (unchanged); deleting the now-unused i moves the
+    frame (29), so it stays declared.
+
+gmake verify passed with the guard removed.
 <!-- plateau-handoff:shadowGenerate:end -->

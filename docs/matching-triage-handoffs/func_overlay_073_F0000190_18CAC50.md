@@ -561,4 +561,97 @@ mini TU over constructs that make f_get_dest refuse a0 for the constant
 the mathRnd block, or a call argument moved through a0), read from the ugen
 trace, not the score; the records say no such web exists in the tree body,
 so it must be created by the source.
+
+#### 2026-10-08, lane j-near: the ghost draw is not a test, argument or callee-type spelling; an s16 callee moves the residual into the query block
+
+Measured by tools/bank.py: masked 4 (raw 19), size delta +0, candidate 760 words vs target 760. Aligned: byte-exact 756, register naming 4, immediate only 0, really different 0.
+
+Tree body re-measured: 4 masked at size 0 (fast_score agrees with
+score_symbol). All cells below were measured on the full candidate with
+tools/fast_score.py on the kill join (hitCount = hitIndex - 1, hitIndex
+or-assigned with zero, hits[hitCount]: 64 at size 0, the ghost's whole
+positional shadow), except where a tail is named.
+
+- Declaring the hit query to return s16 (`extern s16 func_8005776C(...)`,
+  hitCount still s16, kill join): 8 at size 0, first mismatch +0x794. uopt
+  then treats v0 as already narrowed: hitIndex = hitCount compiles to a
+  plain copy (move v1, v0), the first test reads raw v0 (beqz v0), and the
+  second test narrows v0 into its own temp pair (sll t7, sra t8, slti t8);
+  that pair spends the draw the target spends invisibly, so the mathRnd
+  narrowing lands on t9 and the join is exact (addiu a1, v1, -1 and the
+  rest). The 8 are the query block only: the target narrows v0 once into
+  the v1 web (sll v1, sra t7, or v1) and both tests read t7. A 96-cell
+  product on that shape (hitIndex s32 or s16, defined as hitCount,
+  (s16)hitCount or (s32)hitCount; each test on hitCount or hitIndex;
+  mathRnd argument hitCount or hitIndex; kill or base join) floors at 8;
+  every cast on hitIndex or the tests is dropped by cfe (byte-identical),
+  the natural join is substituted again (71), s16 hitIndex with a pad is
+  73, the copy placed inside the if is 75, hitIndex assigned from the
+  call with hitCount copied from it is 8.
+- On the s32-callee kill shape, flat at 64 (byte-identical unless noted):
+  hitIndex = hitCount inside the if (71, both inner test operands),
+  mathRnd variadic, or-zero on hitCount (281 at +4) or hitIndex in the
+  arm, the result through hitCount then copied, through an s16 phase
+  local, the first argument as hitIndex / hitIndex (292 at +52), (u8)1,
+  `hitCount != 0` (65) or `hitCount >= 2` as the first argument, hitIndex
+  declared s16 without a pad (146), the first test on hitCount or > 0,
+  the second test on hitIndex, > 1, != 1 (66), both tests joined with and-and,
+  or-or, or nested (274 at +4), the call or the constant inside a comma
+  with hitIndex, hitCount++ after the arm, `hitIndex = (s16)hitIndex` or
+  `hitCount = (s16)hitIndex` before the arm (274 to 279 at +8).
+- A switch on hitIndex or hitCount for the first test (`case 0:` the
+  else arm, `default:` the query arm; 36 cells over the inner test as an
+  if or a one- or two-case switch, three join forms, both callee types):
+  23 at size 0 with the NATURAL join on the s32 callee. The ugen listing
+  shows why, and it is not a dispatch draw: ugen lays the case-0 body out
+  first whichever case is written first, so the dispatch is bnez and the
+  else arm's `li t8, 1` (state->mode = 1) is emitted before the mathRnd
+  arm, which is what puts the mathRnd narrowing on t9; the join is then
+  substituted (addiu t2) and the colours agree. The target's else arm
+  draws t7 at +0x7FC, after the join, so the target's else arm is emitted
+  last and this is not the shape. A two-case inner switch is +4 or +8.
+- Trace facts (DKWB_UGEN_TRACE on the tree body): the only two
+  no-emission ring rotations in the whole procedure are the switch
+  dispatch at line 116 (f_jump: f_is_available then f_get_free_reg, freed
+  at once) and a MOVE_END at line 289 (f_eval of a uopt temp still held
+  in t2 moves t2 to the list's tail). Neither mechanism can touch t8 in
+  the query span: the span from the countdown-else label to the mathRnd
+  narrowing holds no label, its resident ring values are t4 (constant 1
+  for the stack argument), t5 (the hits address), t6 and t7 (the two
+  narrowings), and t8's last value is the 0x180 clamp from another block.
+  For the mathRnd constant ugen calls f_get_dest, f_get_reg, f_get_one_reg
+  and f_fill_reg and lands on a0 directly; the second argument is a pmov
+  entry that emits nothing.
+
+Cycle-21 line: the target spends one ring draw whose only instruction as1
+deleted, between the hitIndex narrowing and the mathRnd narrowing, and
+the s16-callee shape proves the count (a two-draw test narrowing in that
+window reproduces everything from the mathRnd arm to the end). Decision
+variable: which ugen path emits a `move tN, X` (or a `li tN` renamed by
+as1) in that window with v1 still the cvt web the tests read; the
+blocking record is the ugen trace of the target's source, which no
+spelling of the tests, arguments, callee types, copies or switches has
+reproduced. Next: on the s16-callee 8 shape, look for a form whose first
+test reads a narrowed temp of v0 while hitIndex is the cvt web (the two
+tests sharing one narrowing temp, not the web), e.g. an s16 phase local
+tested once and copied once; do not re-run the lists above.
+
+#### 2026-10-08, lane j-near (resumed): the phase carrier over both callee types
+
+Measured by tools/bank.py: masked 4 (raw 19), size delta +0, candidate 760 words vs target 760. Aligned: byte-exact 756, register naming 4, immediate only 0, really different 0.
+
+A 96-cell product (tools/fast_score.py, kill join) over the callee type
+(s32 or s16), the carrier definition (`phase = call` or `(s16)call`),
+hitCount from phase or (s16)phase, hitIndex from phase, (s16)phase or
+hitCount, and the two tests on phase, hitCount or hitIndex: floor 6 at
+size 0 on the s32 callee (`phase = call; hitCount = phase;
+hitIndex = hitCount; if (hitCount != 0) { if (phase >= 2) ...`), the
+g-near cell: the first test narrows phase into a temp pair (sll t7,
+sra t8), hitIndex is a plain copy of v0 and the second test reads raw
+v0, so the ring agrees from the mathRnd arm to the end and the six rows
+are the query block. The s16 callee floors at 8 as before. Read against
+the tree body, the target's query block is the tree's (the narrowing
+into the v1 web, both tests reading its temp) plus one draw, and the
+6 cell is the tree's with the web replaced by a temp pair and a copy.
+Cycle-21 line unchanged.
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

@@ -73,7 +73,10 @@ extern void overlay17CalculateEndpoints(struct Overlay17ChainHead *chain, f32 *x
  * the else arm's template address is a coloured web where the target has a
  * ring temp formed before the branch. On 2026-10-03 the three calls were
  * identified independently and given their real declarations and arities,
- * closing 65 to 45 masked differences without changing the size local. */
+ * closing 65 to 45 masked differences without changing the size local.
+ * 2026-10-07 (lane f-o069): chain->count stored before dirty and
+ * selectedBuffer, 36 -> 24 at delta 0; the target loads count at the head
+ * of the join block (as1 copies it into both predecessors' delay slots). */
 #ifdef NON_MATCHING
 Overlay17Chain *overlay17CreateChain(
     void *owner, s32 count, Overlay17Material *materialToken, s32 materialScale,
@@ -132,9 +135,9 @@ Overlay17Chain *overlay17CreateChain(
         chain->template = source;
     }
 
+    chain->count = count;
     chain->dirty = 1;
     chain->selectedBuffer = 0;
-    chain->count = count;
     chain->x = x;
     chain->y = y;
     chain->z = z;
@@ -180,10 +183,10 @@ Overlay17Chain *overlay17CreateChain(
 
 /* PLATEAU-HANDOFF:overlay17CreateChain:start
  * symbol: overlay17CreateChain
- * score: 36 differing words
+ * score: 24 differing words
  * frame: 0x80
  * relocations: 7
  * first-mismatch: +0x3C
- * summary: Authenticated allocation/material/endpoint calls: 65 to 45; all three call identities align. The independently owned template extent is 16 records; faithful pass captures retain one baseline address definition and two in the branch-local diagnostic. Pre-call size is already coloured a2; five candidate relocations still differ from seven target records.
+ * summary: count stored before dirty/selectedBuffer: 36 to 24 at delta 0. Open: the size web's def-only pre-call piece, and one ring draw on the arm-exact 46 shape.
  * PLATEAU-HANDOFF:overlay17CreateChain:end
  */

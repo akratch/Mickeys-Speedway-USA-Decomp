@@ -227,4 +227,64 @@ only address-first case was a uopt address CSE shared by two stores, and
 that lands in a coloured register, not the ring. The s16 index local (j)
 gives the shipped instruction sequence at delta 0 but spends no draw (57).
 
+#### 2026-10-07, lane f-o069: the ring arithmetic settled, five cell families closed
+
+Kept body re-scores 57 at delta 0, first +0x3DC. The refs, geometry, keys
+order (115 at -4) is the base for every cell below, because the ugen trace
+puts the target's statement order there: replaying the free list as ugen
+keeps it (a draw takes the head and re-appends it to the tail; a free MOVES
+the register to the tail, so a register held across other draws comes out
+later) reproduces every target register after the geometry store, the keys
+lbu t6 and address t8, the count narrowing's surviving sll temp t9, the i
+narrowing's t7 and the post-loop t3 t5 t6, from one event: between the refs
+store's address draw (t3) and the geometry index load, one register is
+drawn and freed, or the geometry address is drawn first and held. Both
+readings give identical registers everywhere.
+
+Measured on the full TU:
+
+- Address-first is closed. ugen's f_eval_2ops evaluates the store VALUE
+  before the address even when the address needs its own draws (index
+  `count + i`: the sll and addu for the address are drawn after the value,
+  172 at +16). Two stores to the same stack element make uopt CSE the full
+  address into a COLOURED temp (`addu v1, v0, sp+0xC0`, 2 words: a NULL
+  store first 122 at +8, a duplicate identical store 121 at +36 with the
+  duplicate eliminated), never a ring draw.
+- Product-by-zero probes (`+ i * 0`, `+ count * 0`, `(idx + i * 0) * 64`,
+  `0 * i +`, `(s32)reference * 0`, on the group index, on the refs value):
+  seven cells, every object byte-identical to the base. uopt folds an
+  integer product by zero.
+- 27 zero-cost constructs (empty `if (reference) {}` 307 at -8, `do {}
+  while (0)` around or before the statement 300 at -8, `<< 6`, `* 8 * 8`,
+  `(s32)` on the product, `+ (reference == NULL)` +8, `* 64 * 1`, `(s8)(x *
+  1)` +8, `slot = count` indexing, `(void *)(u32)` casts, `fixedRefs[count]
+  = fixedRefs[count]`, comma expressions discarding count, reference, the
+  key byte, metrics[count] or the index, `reference ? reference : NULL`
+  +36, an or-zero on the pointer): all 115 at -4 except `metrics[count] =
+  metrics[count]` (61 at 0: uopt moves the metrics store after the refs
+  store, not a fix) and the s16 index local (57, a-ovl1's cell).
+- `slot = (s32)count` with slot used by the geometry, keys or refs index,
+  dead, or copied on (eight cells): byte-identical; uopt folds a narrowing
+  of a declared s16.
+
+Two zero-word draws exist in this function and both are measured, not
+inferred, from the trace against the object: (1) the sort's `left =
+order[j]` is a dead narrowing of the 2-use load temp a0 (`sll a2; sra t4;
+move a2`) that as1 deletes as a dead chain, one draw and no word; (2) every
+s16 `count++`/`i++` narrowing draws two temps and as1 renames the second
+away. Neither has a host between the refs store and the index load: (1)
+needs a coloured load temp known s16-ranged, and every load after the call
+in that block is a single-use ring load; (2) is pinned to the count and i
+increments at the block end. The L129 reload needs a use of the stored
+value, and the target reads v1 nowhere after the refs store.
+
+Cycle-21 line: the decision variable is one ring draw at the head of the
+geometry statement. The next thing to measure is a draw that ugen spends on
+a *value* evaluated before the index load whose instruction is deleted
+downstream: write the geometry value with the index through a chained
+assignment into a declared s16 (`(j = state->fixedGeometryIndex[i]) * 64`)
+and read the trace, expecting the dead narrowing's draw after the lb (one
+late, 115 + rotation) unless uopt orders the CVT first; and instrument
+f_eval_2ops directly for the operand-order rule.
+
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

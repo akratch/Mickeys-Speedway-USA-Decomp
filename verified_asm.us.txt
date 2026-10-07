@@ -2,13 +2,17 @@
 #
 # One named splat subsegment per line. This is an evidence ledger, not a list
 # of everything currently emitted through asm/: compiler-generated functions
-# remain unresolved until matched to C. Every entry below has a byte-identical
-# whole-object match to a permitted reference build's tracked `.s` source; the
-# per-object evidence lives beside its boundary in mickey.us.yaml and
+# remain unresolved until matched to C. Every entry below is byte-identical,
+# with relocated fields masked, to hand-written assembly in a permitted
+# reference build: a whole object, or a contiguous run of one object's
+# routines in that object's own order (main/math_matrix: JFG's routines two
+# to five, file boundary not claimed).
+# The per-entry evidence lives beside its boundary in mickey.us.yaml and
 # symbol_addrs.us.txt.
 
 entrypoint
 main/math_util
+main/math_matrix
 main/lights2
 main/trapDanglingJump
 main/gzip_asm

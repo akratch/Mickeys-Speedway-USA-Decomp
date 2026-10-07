@@ -602,14 +602,22 @@ relocation-masking, not the coarse scan), identifies all four of
 | `0x8002AE10` | `0x2BA10` | `matrix_XYZ_YPR` | 6/87 | 1 |
 | `0x8002AF6C` | `0x2BB6C` | `matrixTransposeVectorMultiply` | 0/53 | 1 |
 
-None of these are adopted into `symbol_addrs.us.txt`: section 1.5 forbids a
-name for a function whose C is parked non-matching, since that would put a
-second evidence tier into the symbol file. They are recorded here, in prose,
-against the day `main/matrix.c`'s odd-FP-register blocker (above) is resolved
-and the four bodies match — at which point these names, JFG's own for the
-identical bytes, are what tier A says to adopt, and `src/main/matrix.c`'s own
-comments (out of this lane's ownership) are where a `PROVENANCE` line for them
-belongs.
+**Resolved 2026-10-07 as hand-written assembly, not as C.** The run
+`0x2B778`-`0x2BC40` holding these four, in JFG's order, is now the
+verified-assembly subsegment `main/math_matrix` (`verified_asm.us.txt`): 306
+of 306 words agree with JFG's routines two to five once the R_MIPS_26 fields
+are masked, and every masked word is a `jal` whose JFG relocation names
+`Cosf` or `Sinf`, landing here on `0x8002A8BC` or `0x8002A8C0` (JFG also
+places `Cosf` four bytes before `Sinf`). The odd-register question is
+answered for them: they were never compiler output. The other two functions
+of the old TU stay guarded C in working splits: `0x8002AA50` (`main/matrix`)
+is JFG's first routine `matrix_SCL_RPY_XYZ` in a shorter revision, `0x128`
+bytes against `0x148`, identical for its first 18 words and different after;
+`0x8002B040` (`main/matrix_2BC40`) has no JFG counterpart, and JFG's object
+is followed directly by `memory.c` exactly as `main/memory` follows it here.
+The four JFG names now clear section 1.5 (the bytes are in the ROM as
+assembly) but were not adopted in the ownership change, to keep it a pure
+reclassification; adopting them is a rename across their callers.
 
 ### 6.3 Data ownership: SDK tails carved without guessing the bulk boundary
 

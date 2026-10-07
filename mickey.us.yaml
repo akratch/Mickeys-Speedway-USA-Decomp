@@ -211,9 +211,32 @@ segments:
       # subsegment lets the progress ledger distinguish verified source asm
       # from compiler-generated code that has not been decompiled yet.
       - [0x2A250, asm, main/math_util]
-      # Matrix and vector maths -- six float-only functions, no rodata of their
-      # own, which is why this is the first non-linker game TU to be decompiled.
+      # Matrix and vector maths. In JFG's tree the counterpart of this run is
+      # one hand-written object, `hasm/math_matrix`, followed directly by
+      # memory.c exactly as main/memory follows here. Three subsegments:
+      #
+      # main/matrix (0x2B650): one function, JFG's first routine
+      # matrix_SCL_RPY_XYZ in a shorter revision (0x128 against 0x148). Its
+      # first 18 words agree and the body after them does not, so it is not
+      # proved and stays a guarded C candidate. Working split, trimmed to
+      # 0x128 in the Makefile.
+      #
+      # main/math_matrix (0x2B778): JFG's routines two to five, in JFG's
+      # order, each byte-identical to JFG's built
+      # `asm/hasm/math_matrix.s.o` once its R_MIPS_26 fields are masked
+      # (6/67, 6/99, 6/87 and 0/53 masked words, romocc=1 each; 306 of 306
+      # words over the whole run, every masked jal targeting the Cosf/Sinf
+      # pair at the matching sites). Hand-written assembly in the original,
+      # so it stays assembly and is listed in verified_asm.us.txt. The run is
+      # a measured routine run, not a measured object boundary: the
+      # original object begins at 0x2B650 and, by its JFG position, most
+      # likely ends at 0x2BCD0.
+      #
+      # main/matrix_2BC40: func_8002B040, which JFG's object does not have.
+      # Working split; guarded C candidate.
       - [0x2B650, c, main/matrix]
+      - [0x2B778, asm, main/math_matrix]
+      - [0x2BC40, c, main/matrix_2BC40]
       # The resident allocator. The linked baseline gives the old 2BCD0.s.o a
       # 0xBF0-byte .text section ending exactly where 2C8C0.s.o begins. Its
       # final function ends at 0x2C8B4; the remaining 0xC bytes are alignment.

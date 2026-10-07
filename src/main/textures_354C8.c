@@ -195,6 +195,13 @@ void func_80034920(Gfx **dlist) {
  * memory-resident local; `table = D_8007B680` is assigned at the merge
  * after the frame block (the target materialises its low half there);
  * and the state key is compared as `stateKey != D_800D302C`.
+ * 2026-10-07, lane e-res1: 62 -> 5. The next frame is frameIndex itself
+ * (`frameIndex++`, clamped in place): that frees v0 for it and shifts
+ * textureSize, the flags and the table to t0, t1, t2, and with t2 free
+ * through the frame block as1 hoists the table's lui to the first tex block
+ * (the "split" high half was as1, from ugen's `la` at the merge). frameIndex
+ * is computed before numTextures (ring order t8, t9); the settings address
+ * adds table first as a byte offset.
  */
 void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
                    s32 frame) {
@@ -221,23 +228,23 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
     hasTexture = 0;
     dl = *dlist;
     if (tex != NULL) {
-        numTextures = tex->numOfTextures >> 8;
         frameIndex = frame >> 16;
+        numTextures = tex->numOfTextures >> 8;
         if ((numTextures >= 2) && (frameIndex < numTextures) &&
             (D_8007BD94 == 0)) {
             currentTexture = ((u8 *)tex) + (frameIndex * tex->textureSize) +
                              sizeof(TextureFrameHeader);
             if ((tex->flags & 0x40) && (tex->unk1B < 2)) {
-                hasTexture = frameIndex + 1;
-                if (hasTexture >= numTextures) {
+                frameIndex++;
+                if (frameIndex >= numTextures) {
                     if (tex->spriteFlags & 2) {
-                        hasTexture = 0;
+                        frameIndex = 0;
                     } else {
-                        hasTexture = numTextures - 1;
+                        frameIndex = numTextures - 1;
                     }
                 }
                 nextTexture = ((u8 *)tex) +
-                              (hasTexture * tex->textureSize) +
+                              (frameIndex * tex->textureSize) +
                               sizeof(TextureFrameHeader);
             } else {
                 nextTexture = currentTexture;
@@ -299,7 +306,7 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
         settingsIndex += 8;
     }
 
-    settings = &table[settingsIndex];
+    settings = (TextureRenderSettings *)((u8 *)table + settingsIndex * sizeof(TextureRenderSettings));
     tableFlags = settings->flags | (flags & settings->mask);
     stateKey = (settingsIndex << 8) | tableFlags;
     if ((stateKey != D_800D302C) || (D_800D3020 != table)) {
@@ -351,11 +358,11 @@ void func_800349A4(Gfx **dlist, TextureFrameHeader *tex, s32 flags,
  * pointer (175 to 172). Left: register naming from +0x24. */
 /* PLATEAU-HANDOFF:func_800349A4:start
  * symbol: func_800349A4
- * score: 62 differing words
+ * score: 5 differing words
  * frame: 0x40 (target 0x40)
  * relocations: 39
- * first-mismatch: +0x60
- * summary: 162 to 62 at delta 0: saved flags in numTextures, table at the merge, stateKey first. Left: table high half in the first block (one ring draw).
+ * first-mismatch: +0x3D8
+ * summary: 62 to 5 at delta 0: frameIndex++ in place, frameIndex first, byte-offset settings. Left: tail tie, webs 226 and 233 at save 3.0; the forced swap scores 0.
  * PLATEAU-HANDOFF:func_800349A4:end
  */
 #else

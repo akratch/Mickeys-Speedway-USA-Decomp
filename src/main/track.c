@@ -3507,21 +3507,22 @@ typedef struct TrackClipOutput {
     s16 segment;
 } TrackClipOutput;
 
-#ifdef NON_MATCHING
 /* PROVENANCE: JFG's public track.c supplies the ray/edge collision role;
  * this body uses Mickey's resident edge records and output layout. */
-/* Candidate (Track B, 2026-09-23): 347/342 words, 329 differing, frame 0xC8
- * versus 0xC0. Typed edge records (TrackClipOutput) and hit (TrackRayHit),
- * point sums written origin-first, all three points computed before the hit
- * stores (t is address-taken, so an interleaved store forces a reload), the
- * foot point carried in the difference locals, unused locals dropped. One p1
- * decision is left: the D_800792E8 address web (save 30/7) outranks the record
- * counter (31/8), is kept in s8, and pushes the counter into a caller-saved
- * register spilled at each call. Forcing that web to split alone gives
- * 342/342 words and 150 differing. */
+/* Matched 2026-10-07 (lane c-track2; 329 at +20 -> 0): the record
+ * direction's y and z read from the record rather than held in locals (two
+ * frame cells), the material flag a struct field (base-first add), the sum of
+ * squares and the distance with the z term first, and one zero-cost block in
+ * the loop so the counter outranks the D_800792E8 address web. */
 extern s32 func_80012234(TrackVec3f *point, TrackVec3f *direction,
                          TrackVec3f *origin, TrackVec3f *planeDirection,
                          f32 radius, f32 *minimum, f32 *maximum);
+
+typedef struct TrackTextureFlags {
+    void *texture;
+    u8 pad04[3];
+    u8 flag;
+} TrackTextureFlags;
 
 s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
                   TrackRayHit *hit) {
@@ -3533,8 +3534,6 @@ s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
     f32 pointY;
     f32 pointZ;
     f32 normalX;
-    f32 normalY;
-    f32 normalZ;
     f32 differenceX;
     f32 differenceY;
     f32 differenceZ;
@@ -3548,24 +3547,28 @@ s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
     if (D_800C9D24 > 0) {
         do {
             edgeHit = 0;
-            record = recordCount + (TrackClipOutput *) D_800C9D20;
+            /* One extra basic block (brief checklist item 18): it moves every
+             * loop-spanning web's save divisor to 8, so the record counter
+             * (31) ties the byte offset and wins on web number, and the
+             * D_800792E8 address is rematerialised at each use as shipped. */
+            do {
+                record = recordCount + (TrackClipOutput *) D_800C9D20;
+            } while (0);
             if ((func_80012234(origin, direction, (TrackVec3f *) &record->x0,
                                (TrackVec3f *) &record->dx, radius, &t,
                                &tEnd) != 0) &&
                 (t >= 0.0f) && (t <= hit->ratio)) {
                 normalX = record->dx;
-                normalY = record->dy;
-                normalZ = record->dz;
                 pointX = origin->f[0] + direction->f[0] * t;
                 pointY = origin->f[1] + direction->f[1] * t;
                 pointZ = origin->f[2] + direction->f[2] * t;
                 differenceX = pointX - record->x0;
                 differenceY = pointY - record->y0;
                 differenceZ = pointZ - record->z0;
-                planeDistance = (differenceX * normalX + differenceY * normalY +
-                                 differenceZ * normalZ) /
-                                (normalX * normalX + normalY * normalY +
-                                 normalZ * normalZ);
+                planeDistance = (differenceX * normalX + differenceY * record->dy +
+                                 differenceZ * record->dz) /
+                                (record->dz * record->dz +
+                                 (normalX * normalX + record->dy * record->dy));
                 if ((planeDistance >= 0.0f) && (planeDistance <= 1.0f)) {
                     hit->x = pointX;
                     hit->y = pointY;
@@ -3579,13 +3582,10 @@ s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
                     hit->normalY = (pointY - differenceY) / radius;
                     normalX = (pointZ - differenceZ) / radius;
                     hit->normalZ = normalX;
-                    hit->distance = -(pointX * hit->normalX +
-                                      pointY * hit->normalY +
-                                      normalX * pointZ);
+                    hit->distance = -(normalX * pointZ + (pointX * hit->normalX + pointY * hit->normalY));
                     node = record->node;
                     hit->faceData = node->indices[record->segment].data;
-                    hit->material = ((u8 *) &D_800792E8->textures[
-                        node->indices[record->segment].material])[7];
+                    hit->material = ((TrackTextureFlags *) D_800792E8->textures)[node->indices[record->segment].material].flag;
                     hit->ratio = t;
                 }
             }
@@ -3604,13 +3604,10 @@ s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
                     hit->normalX = (pointX - record->x0) / radius;
                     hit->normalY = (pointY - record->y0) / radius;
                     hit->normalZ = (pointZ - record->z0) / radius;
-                    hit->distance = -(pointX * hit->normalX +
-                                      pointY * hit->normalY +
-                                      hit->normalZ * pointZ);
+                    hit->distance = -(hit->normalZ * pointZ + (pointX * hit->normalX + pointY * hit->normalY));
                     node = record->node;
                     hit->faceData = node->indices[record->segment].data;
-                    hit->material = ((u8 *) &D_800792E8->textures[
-                        node->indices[record->segment].material])[7];
+                    hit->material = ((TrackTextureFlags *) D_800792E8->textures)[node->indices[record->segment].material].flag;
                     hit->ratio = t;
                 }
             }
@@ -3628,13 +3625,10 @@ s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
                     hit->normalX = (pointX - record->x1) / radius;
                     hit->normalY = (pointY - record->y1) / radius;
                     hit->normalZ = (pointZ - record->z1) / radius;
-                    hit->distance = -(pointX * hit->normalX +
-                                      pointY * hit->normalY +
-                                      hit->normalZ * pointZ);
+                    hit->distance = -(hit->normalZ * pointZ + (pointX * hit->normalX + pointY * hit->normalY));
                     node = record->node;
                     hit->faceData = node->indices[record->segment].data;
-                    hit->material = ((u8 *) &D_800792E8->textures[
-                        node->indices[record->segment].material])[7];
+                    hit->material = ((TrackTextureFlags *) D_800792E8->textures)[node->indices[record->segment].material].flag;
                     hit->ratio = t;
                 }
             }
@@ -3643,9 +3637,6 @@ s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
     }
     return result;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80011CDC.s")
-#endif
 /*
  * PROVENANCE: Mickey's m2c FP dataflow and the resident vector layout
  * reconstruct this plane-intersection query; no external function body is adapted.
@@ -5220,16 +5211,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * PLATEAU-HANDOFF:func_80010654:end
  */
 
-
-/* PLATEAU-HANDOFF:func_80011CDC:start
- * symbol: func_80011CDC
- * score: 329 differing words
- * frame: 0xc8
- * relocations: 11
- * first-mismatch: +0x0
- * summary: Aligned 243 to 193. One p1 decision left: D_800792E8 address web outranks the record counter; forcing it split gives 342/342 words, 150 diff.
- * PLATEAU-HANDOFF:func_80011CDC:end
- */
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C

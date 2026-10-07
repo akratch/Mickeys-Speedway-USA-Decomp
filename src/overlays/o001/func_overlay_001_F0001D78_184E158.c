@@ -133,11 +133,22 @@ extern f32 gO1RankWeights[];
  * object in its own local `ref` (a declared local is never a ring temp, so
  * it takes a0 and the counter and cursor move to a1/a2 as shipped), the
  * player-count compare is written count first, the lap compares state
- * first, and the position sum offset first: 219 -> 131 at size 0. */
+ * first, and the position sum offset first: 219 -> 131 at size 0.
+ * 2026-10-07 d-mid1: the v0 denial on the table loops was the call result.
+ * uopt propagates `entry` into its uses as the pre-coloured return
+ * register, and that register is live to the last use in the IR, which
+ * was the second loop's body; a micro TU with the two loops reproduces it
+ * and loses it once the call result has no later use. Taking
+ * `best = table[entry].best` before the first loop ends the return
+ * register's range there, so the second loop's time load takes v0 and the
+ * counter, cursor and bound fall to v1/a0/a1 as shipped (131 -> 126; best
+ * takes the leading pad's cell). With that, the lap-logic stretch read as
+ * a word too (STATE_W everywhere but the first loop's split read) puts the
+ * state in a1 and the lap in a2 as shipped: 126 -> 77 at size 0. */
 #ifdef NON_MATCHING
 void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 count) {
     Overlay1ObjectRef *ref;
-    s32 padB;
+    Overlay1BestTime *best;
     s32 switched;
     s32 objectCount;
     s32 pad5C;
@@ -170,42 +181,43 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
             D_1D64 = D_1D68;
             D_1D68 = D_1D6C;
             D_1D6C = record;
-            STATE->path = D_1D68 - (Overlay1PathRecord *)gOverlay1Start.records;
+            STATE_W->path = D_1D68 - (Overlay1PathRecord *)gOverlay1Start.records;
             if (PREV->flags == 0) {
-                if (STATE->changed) {
-                    STATE->changed = 0;
-                    STATE->modeIndex++;
-                } else if (STATE->modeIndex < level->laps) {
-                    STATE->modeIndex++;
-                    D_1DC8[STATE->modeIndex]++;
-                    STATE->nextMode = D_1DD0[STATE->modeIndex];
-                    if (STATE->modeIndex == level->laps) {
-                        STATE->split[2] = (STATE->total / 3 - STATE->split[1] / 3 - STATE->split[0] / 3) * 3;
+                if (STATE_W->changed) {
+                    STATE_W->changed = 0;
+                    STATE_W->modeIndex++;
+                } else if (STATE_W->modeIndex < level->laps) {
+                    STATE_W->modeIndex++;
+                    D_1DC8[STATE_W->modeIndex]++;
+                    STATE_W->nextMode = D_1DD0[STATE_W->modeIndex];
+                    if (STATE_W->modeIndex == level->laps) {
+                        STATE_W->split[2] = (STATE_W->total / 3 - STATE_W->split[1] / 3 - STATE_W->split[0] / 3) * 3;
                     }
-                    if (STATE->modeIndex < 0) {
-                        STATE->modeIndex = 0;
+                    if (STATE_W->modeIndex < 0) {
+                        STATE_W->modeIndex = 0;
                     }
-                    if (!(STATE->flags & 1) && STATE->modeIndex > 0 && STATE->modeIndex < 3) {
+                    if (!(STATE_W->flags & 1) && STATE_W->modeIndex > 0 && STATE_W->modeIndex < 3) {
                         amSndPlay(0x1FC, NULL);
                     }
-                    if (STATE->modeIndex > 0) {
-                        D_1DC0[STATE->index] = 1;
+                    if (STATE_W->modeIndex > 0) {
+                        D_1DC0[STATE_W->index] = 1;
                     }
-                    if (STATE->maxIndex < STATE->modeIndex) {
-                        STATE->maxIndex = STATE->modeIndex;
+                    if (STATE_W->maxIndex < STATE_W->modeIndex) {
+                        STATE_W->maxIndex = STATE_W->modeIndex;
                     }
-                    if (STATE->modeIndex == level->laps && G_o1_83e0 == 1 && !(STATE->flags & 1)) {
+                    if (STATE_W->modeIndex == level->laps && G_o1_83e0 == 1 && !(STATE_W->flags & 1)) {
                         if (results->mode == 1) {
                             valid = 0;
                             table = func_800291C4();
                             entry = levelGetBlurEffect(levelGetNumber());
-                            for (j = 0; j < STATE->modeIndex; j++) {
+                            best = table[entry].best;
+                            for (j = 0; j < STATE_W->modeIndex; j++) {
                                 if (STATE->split[j] < table[entry].lap || table[entry].lap == 0) {
                                     valid = 1;
                                 }
                             }
                             for (j = 0; j < 3; j++) {
-                                if (STATE->total < table[entry].best[j].time || table[entry].best[j].time == 0) {
+                                if (STATE_W->total < best[j].time || best[j].time == 0) {
                                     valid = 1;
                                 }
                             }
@@ -214,18 +226,18 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
                             } else {
                                 func_8003A55C(6);
                             }
-                        } else if (STATE->eventMode == 0) {
+                        } else if (STATE_W->eventMode == 0) {
                             func_8003A55C(5);
-                        } else if (STATE->eventMode < 4) {
+                        } else if (STATE_W->eventMode < 4) {
                             func_8003A55C(0x1B);
                         } else {
                             func_8003A55C(6);
                         }
                     }
-                    if (STATE->modeIndex > 0) {
-                        if (STATE->modeIndex + 1 == level->laps) {
+                    if (STATE_W->modeIndex > 0) {
+                        if (STATE_W->modeIndex + 1 == level->laps) {
                             overlay7UpdateOwnerMode(D_1D9C, level->laps);
-                        } else if (STATE->modeIndex == level->laps) {
+                        } else if (STATE_W->modeIndex == level->laps) {
                             overlay7UpdateOwnerMode(D_1D9C, level->laps);
                             if (!(STATE_W->flags & 1)) {
                                 G_o1_83e0--;
@@ -310,10 +322,10 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
 
 /* PLATEAU-HANDOFF:func_overlay_001_F0001D78_184E158:start
  * symbol: func_overlay_001_F0001D78_184E158
- * score: 131/627 words
+ * score: 77/627 words
  * frame: 0x70
  * relocations: 185
- * first-mismatch: +0x174
- * summary: List-loop element local, count-first and state-first compares, offset-first sum: 219 to 131 at delta 0; open: lap-logic state web a2 (target a1).
+ * first-mismatch: +0x3BC
+ * summary: best pointer ends the call-result v0 range (loop 2 time in v0); STATE_W outside loop-1 split read puts state in a1: 131 to 77. Left: switched-block stores.
  * PLATEAU-HANDOFF:func_overlay_001_F0001D78_184E158:end
  */

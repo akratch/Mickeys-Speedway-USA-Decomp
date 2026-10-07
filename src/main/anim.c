@@ -1273,8 +1273,7 @@ void func_800517E0(void) {
                     break;
                 case 0x22:
                     opcode = cursor->command;
-                    duration = *((u16 *) ((u8 *) cursor + 4));
-                    value = (f32) duration;
+                    value = (f32) *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     func_800005CC(value / hundred - delta,
                                   opcode);
@@ -1293,8 +1292,7 @@ void func_800517E0(void) {
                     break;
                 case 0x25:
                     opcode = cursor->command;
-                    duration = *((u16 *) ((u8 *) cursor + 4));
-                    value = (f32) duration;
+                    value = (f32) *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     amAmbientSetFade(value / hundred - delta,
                                      opcode);
@@ -1372,8 +1370,7 @@ void func_800517E0(void) {
                     high2 = (*((u16 *) ((u8 *) cursor + 6)) >> 8) & 0xFF;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     value = (f32) (*((u16 *) ((u8 *) cursor + 8)));
-                    duration = *((u16 *) ((u8 *) cursor + 0xA));
-                    target = (f32) duration;
+                    target = (f32) *((u16 *) ((u8 *) cursor + 0xA));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     if ((low & 0xF) == 7) {
                         packed = flagsValue != 0 ? 0 : 0xFF;
@@ -1401,8 +1398,7 @@ void func_800517E0(void) {
                     break;
                 case 0x43:
                     pathIndex = cursor->command & 0xFF;
-                    duration = *((u16 *) ((u8 *) cursor + 4));
-                    value = (f32) duration;
+                    value = (f32) *((u16 *) ((u8 *) cursor + 4));
                     color = (f32) (pathIndex);
                     color = (color / 255.0f) * 65535.0f;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
@@ -1410,8 +1406,7 @@ void func_800517E0(void) {
                                   (s32) (value * factor * scale));
                     break;
                 case 0x44:
-                    duration = *((u16 *) ((u8 *) cursor + 4));
-                    value = (f32) duration;
+                    value = (f32) *((u16 *) ((u8 *) cursor + 4));
                     start = *((s16 *) ((u8 *) cursor + 6));
                     end = *((s16 *) ((u8 *) cursor + 8));
                     target = *((s16 *) ((u8 *) cursor + 0xA));
@@ -1424,8 +1419,7 @@ void func_800517E0(void) {
                     break;
                 case 0x45:
                     high = cursor->command & 0xFF;
-                    duration = *((u16 *) ((u8 *) cursor + 6));
-                    value = (f32) duration;
+                    value = (f32) *((u16 *) ((u8 *) cursor + 6));
                     packed2 = *((u16 *) ((u8 *) cursor + 8));
                     index = *((u16 *) ((u8 *) cursor + 0xA));
                     high2 = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
@@ -1524,8 +1518,7 @@ void func_800517E0(void) {
                     break;
                 case 0x4B:
                     pathIndex = cursor->command & 0xFF;
-                    duration = *((u16 *) ((u8 *) cursor + 4));
-                    value = (f32) duration;
+                    value = (f32) *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     timer = (s32) (value * scale * factor);
                     D_800D6C4E = timer;
@@ -1551,8 +1544,7 @@ void func_800517E0(void) {
                 case 0x4D:
                     pathIndex = cursor->command & 0xFF;
                     packed = *((u16 *) ((u8 *) cursor + 4));
-                    duration = *((u16 *) ((u8 *) cursor + 6));
-                    value = (f32) duration;
+                    value = (f32) *((u16 *) ((u8 *) cursor + 6));
                     packed2 = *((u16 *) ((u8 *) cursor + 8));
                     timer = *((u16 *) ((u8 *) cursor + 0xA));
                     frame = *((u16 *) ((u8 *) cursor + 0xC));
@@ -1801,8 +1793,7 @@ void func_800517E0(void) {
                     packed2 = *((u16 *) ((u8 *) cursor + 6));
                     timer = *((u16 *) ((u8 *) cursor + 8));
                     frame = *((u16 *) ((u8 *) cursor + 0xA));
-                    duration = *((u16 *) ((u8 *) cursor + 0xC));
-                    value = (f32) duration;
+                    value = (f32) *((u16 *) ((u8 *) cursor + 0xC));
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
                     if ((path != NULL) && (path->unk8 != NULL)) {
@@ -1876,8 +1867,7 @@ void func_800517E0(void) {
                 case 0x79:
                     pathIndex = cursor->command & 0xFF;
                     value = (f32) (pathIndex);
-                    duration = *((u16 *) ((u8 *) cursor + 4));
-                    value2 = (f32) duration;
+                    value2 = (f32) *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     timer = (s32) (value2 * scale * factor);
                     D_8007D6BC = timer;
@@ -4006,10 +3996,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1500 differing words
+ * score: 1684 differing words
  * frame: 0x168
- * relocations: 246
+ * relocations: 248
  * first-mismatch: +0x0
- * summary: Aligned 1246, size delta 0. Quartet shared, table spilled, 0x48 frame via path index; masks still cost the state piece; frame 0x168 against 0x1B0.
+ * summary: Aligned 1178, size +20. Duration conversions inline, quartet shared, table spilled; masks still cost the state piece.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

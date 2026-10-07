@@ -314,7 +314,7 @@ units remain distinct.
 | 19 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 296 | 296 | 76 | 76 | 16 | — |
 | 20 | `src/main/fx.c` | `wakeAllocate` | `main` | `size-mismatch` | 1,404 | 323 | 323 | 16 | 16 | -8 | — |
 | 21 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 339 | 339 | 0 | 0 | 8 | — |
-| 22 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,509 | 1,508 | 72 | 72 | -4 | — |
+| 22 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,282 | 1,281 | 72 | 72 | 4 | — |
 
 ### Unresolved identities
 

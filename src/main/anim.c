@@ -1535,14 +1535,14 @@ void func_800517E0(void) {
                     }
                     break;
                 case 0x4B:
-                    pathIndex = cursor->command & 0xFF;
+                    targetValue = cursor->command & 0xFF;
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     timer = (s32) (value * scale * factor);
                     D_800D6C4E = timer;
                     D_800D6C4C = timer;
                     D_800D6C50 = D_800D6C54;
-                    D_800D6C52 = pathIndex;
+                    D_800D6C52 = targetValue;
                     break;
                 case 0x4C:
                     pathIndex = cursor->command & 0xFF;
@@ -1907,8 +1907,8 @@ void func_800517E0(void) {
                     value = (f32) duration;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     D_8007D6AC = value * factor;
-                    timer = (s8) *((u16 *) ((u8 *) cursor - 2));
-                    D_8007D6A4 = timer;
+                    currentCommand = (s8) (*((u16 *) ((u8 *) cursor - 2)) & 0xFF);
+                    D_8007D6A4 = currentCommand;
                     break;
                 case 0x7C:
                     currentCommand = cursor->command;
@@ -4014,10 +4014,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1508/1808 words
+ * score: 1281/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0x48
- * summary: Aligned 829 at size -4: 0x6F low test as a switch, outer default deleted (one more loop block keeps the 6000 piece).
+ * summary: Aligned 823 at size +4: 0x4B byte through targetValue, 0x7B state masked before the s8 narrowing through currentCommand; both pieces kept.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

@@ -37,7 +37,7 @@
       "relocation_masked_first_mismatch_offset": 276,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "tjc4.9iqC.loYU.lS8M.NlkX.lHGV.iyW_.DUGP.yvag.xSE-.6Js"
+      "source_context_sha256": "qadU.9MbP.lMY8.Viqi.fLLX.LGnU.Ogd2.Scz4.lmYg.o867.yIQ"
     },
     {
       "name": "func_8001B798",
@@ -172,7 +172,7 @@
       "relocation_masked_first_mismatch_offset": 36,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "YEyd.gZEr.53bC.rSDU.xP6b.PgEd.EAKr.HEl_.u2Fr.EX1j.3f8"
+      "source_context_sha256": "6dw5.19Uj.h7J-.b2Cu.jcuI.Ho6n.7yQe.7ZeC.zFB4.1p-E.reA"
     },
     {
       "name": "wakeUpdate",
@@ -202,7 +202,7 @@
       "relocation_masked_first_mismatch_offset": 4,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "iF4P.6L48.ZA2W.cD_X.CEGB.-cpS.5VO-.o2fC.2MZT.KrX2.UAA"
+      "source_context_sha256": "0VBH.bnYU.dY_R.gokk.4oey.Cz8x.hkJU.w2CK.oPsp.u_9K.ac4"
     },
     {
       "name": "func_overlay_064_F0000000_18C3B28",
@@ -232,7 +232,7 @@
       "relocation_masked_first_mismatch_offset": 112,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "r-jU.bcj0.JZkd.xaec.RQlR.iux1.s3be.I5cn.uHCk.EUYu.gB8"
+      "source_context_sha256": "9sqm.XX9z.OWuJ.lti6.eRyW.kOcO.-weM.78iN.YOM6.0QhE.90E"
     },
     {
       "name": "func_overlay_047_F0000B30_1891948",
@@ -331,13 +331,13 @@
       "tu": "main",
       "size_bytes": 7232,
       "objdiff_match_pct": null,
-      "differing_words": 1509,
+      "differing_words": 1282,
       "first_mismatch_offset": 72,
-      "relocation_masked_differing_words": 1508,
+      "relocation_masked_differing_words": 1281,
       "relocation_masked_first_mismatch_offset": 72,
-      "size_delta": -4,
+      "size_delta": 4,
       "category": "size-mismatch",
-      "source_context_sha256": "OfVU.Jq0Q.1smJ.Xibs.YAiX.s2jA.bcCX.lmsn.aYpP.65Xe.m5g"
+      "source_context_sha256": "vRnP.di8n.Ac6j.TWGt.usqL.1nrM.JzjQ.pbC_.bjKM.4fGe.qbk"
     }
   ],
   "unresolved_functions": []

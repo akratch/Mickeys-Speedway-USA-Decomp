@@ -2,11 +2,13 @@
 ### `wakeUpdate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 37/398 words
+- score: 0 differing words
 - frame: 0x90
 - relocations: 2
-- first mismatch: +0x284
-- summary: Constant 20 split from source (loop index*0x14, u8 times 0x14U at mark/new-sample, value8 stored direct): 170 to 37 at 0
+- first mismatch: none
+- summary: Matched. Constant 20 split from source, outputOffset cleared first, alpha in its own web and stored last per vertex.
+
+Summary before this remeasure: Constant 20 split from source (loop index*0x14, u8 times 0x14U at mark/new-sample, value8 stored direct): 170 to 37 at 0
 
 Summary before this remeasure: Aligned 125 to 104 (outputCount per vertex, height in value); 170 positional is one as1-hoisted zero init. Left: constant 20 in a0, stripIndex probes
 
@@ -409,4 +411,27 @@ call-spill cell (+0x68 here, +0x6C in the target), the strip alpha value in
 v0 where the target has v1 (the mflo and the four byte stores), and the
 stripIndex test scheduling at the loop end. The three stripIndex OR-zero
 probes are still in the body.
+
+#### 2026-10-08, lane j-6 (continued): matched, 37 to 0
+
+Gmake verify OK after removing the guard. Four more products on the 37
+body, each ranked by masked words at delta 0:
+
+- outputOffset cleared before the three buffer loads instead of after
+  polygonOffset (4 positions times 0 to 3 stripIndex probes): 37 to 32. The
+  zero lands at +0x284 and the beq delay slot takes polygonOffset's copy,
+  as shipped. The three probes are still needed in every position.
+- polygonOffset declared before value: its call-spill home moves from +0x68
+  to +0x6C, as shipped (32 to 31).
+- The strip alpha in mark (dead after the new-sample block) instead of
+  value: value was one web over the alpha and the height (save 40, v0); the
+  alpha's own web takes v1 as shipped (31 to 30). A new local for either role
+  costs frame homes (39); count or the height in mark or count are worse.
+- Every vertex stores its alpha byte last (after x, y and z; after the
+  y-store for the last vertex): an 81-cell product of the four store
+  positions has one exact cell, this one. Moving the alpha statement itself
+  (5 positions) is flat.
+
+With the shipped store order the stripIndex probes are still load-bearing:
+0, 1 or 2 probes measure 25 (stripIndex and index swap s5/s6).
 <!-- plateau-handoff:wakeUpdate:end -->

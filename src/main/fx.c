@@ -972,21 +972,18 @@ void func_80048980(WakeRipple *ripple) {
         wakeFree(ripple->wake);
     }
 }
-#ifdef NON_MATCHING
-/* B3-fx (2026-09-23): size delta 0 and frame 0x90, 257 masked. Two
- * semantic fixes against the target (a separate polygon counter stored at
- * +0xE, and stripIndex advancing by 2 per sample with polygon[0x12] set),
- * index as s32, a while (count--) scan, and the 0x20 buffer read spelled as
- * a subscript so uopt keeps it apart from the 0x18/0x28 address (the target
- * computes that address twice). The rest is p1 colour order: wake and
- * secondaryVertices, index and stripIndex swap; see the handoff shard.
- * Lane j-6 (2026-10-08), 170 -> 37: the second loop reads the sample as
- * index * 0x14, so the constant 20 web spans the loop's calls and splits
- * (totalsave 20 against bestcost 20): the loop piece goes back to an
- * immediate (the shipped shift-add) and the first-scan piece keeps a0 across
- * the pre-loop region. The mark and new-sample sites multiply a u8 by 0x14U,
- * a second constant web that then takes a2 as shipped; the new sample's
- * byte 1 is stored straight from wake->value8 >> 1 (no `value` carrier). */
+/* Matched 2026-10-08 (lane j-6). Earlier steps: a separate polygon counter
+ * stored at +0xE and stripIndex advancing by 2 (B3-fx); the 0x20 buffer read
+ * spelled as a subscript so the 0x18/0x28 address is computed twice; the mark
+ * bit OR-assigned through the stored byte (i-6). Lane j-6: the second loop
+ * reads the sample as index * 0x14, so the constant 20 spans the loop's calls
+ * and splits (the loop multiplies by an immediate, the first-scan piece keeps
+ * a0); the mark and new-sample sites multiply a u8 by 0x14U, a second
+ * constant web on a2; byte 1 of the new sample comes straight from
+ * wake->value8 >> 1; outputOffset is cleared before the buffer loads;
+ * polygonOffset is declared before value (its spill home); the strip alpha
+ * lives in mark, apart from the height; and each vertex stores its alpha
+ * byte last. The three stripIndex OR-zero probes are still load-bearing. */
 void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
     u8 *sample;
     s32 index;
@@ -996,8 +993,8 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
     s32 stripIndex;
     s32 polyCount;
     s32 outputCount;
-    s32 value;
     s32 polygonOffset;
+    s32 value;
     u8 vertexCount;
     u8 *vertices;
     u8 *secondaryVertices;
@@ -1077,11 +1074,11 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
     wake->state = 1 - wake->state;
     wake->value38 = 0;
     if (wake->value3B != 0) {
+        outputOffset = 0;
         vertices = *(u8 **) ((u8 *) wake + 0x18 + (wake->state * 4));
         secondaryVertices = ((u8 **) ((u8 *) wake + 0x20))[wake->state];
         polygon = *(u8 **) ((u8 *) wake + 0x28 + (wake->state * 4));
         polygonOffset = (*(u16 *) ((u8 *) wake->linked + 6) - 1) << 5;
-        outputOffset = 0;
         index = wake->value39;
         if (index != wake->value3A) {
             do {
@@ -1115,12 +1112,14 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
                 sine *= *(f32 *) (sample + 0x10);
                 cosine = func_8002A8BC(*(s16 *) (sample + 2));
                 cosine *= *(f32 *) (sample + 0x10);
-                value = ((sample[1] & 0x7F) * wake->value3C) >> 7;
+                /* the strip alpha in mark, dead since the new sample (lane
+                 * j-6): its own web, v1 as shipped, apart from the height */
+                mark = ((sample[1] & 0x7F) * wake->value3C) >> 7;
                 vertices += 0xA;
                 *(s16 *) (vertices - 0xA) = *(f32 *) (sample + 8) - cosine;
                 *(s16 *) (vertices - 8) = *(s16 *) (sample + 6);
-                *(s8 *) (vertices - 1) = value;
                 *(s16 *) (vertices - 6) = *(f32 *) (sample + 0xC) + sine;
+                *(s8 *) (vertices - 1) = mark;
                 if (secondaryVertices == NULL) {
                     *(s16 *) (vertices + 0) = *(f32 *) (sample + 8) + cosine;
                     *(s16 *) (vertices + 4) = *(f32 *) (sample + 0xC) - sine;
@@ -1133,18 +1132,18 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
                     *(s16 *) (vertices + 4) = *(f32 *) (sample + 0xC);
                     *(s16 *) (secondaryVertices + 0) = *(f32 *) (sample + 8) + cosine;
                     *(s16 *) (secondaryVertices + 2) = *(s16 *) (sample + 6);
-                    *(s8 *) (secondaryVertices + 9) = value;
                     *(s16 *) (secondaryVertices + 4) = *(f32 *) (sample + 0xC) - sine;
+                    *(s8 *) (secondaryVertices + 9) = mark;
                     secondaryVertices += 0xA;
                     *(s16 *) (secondaryVertices + 0) = *(s16 *) (vertices + 0);
                     *(s16 *) (secondaryVertices + 2) = *(s16 *) (sample + 6);
-                    *(s8 *) (secondaryVertices + 9) = value;
                     *(s16 *) (secondaryVertices + 4) = *(s16 *) (vertices + 4);
+                    *(s8 *) (secondaryVertices + 9) = mark;
                     secondaryVertices += 0xA;
                 }
-                *(s8 *) (vertices + 9) = value;
                 vertices += 0xA;
                 *(s16 *) (vertices - 8) = *(s16 *) (sample + 6);
+                *(s8 *) (vertices - 1) = mark;
                 /* one per vertex (lane i-6): outputCount ties polyCount and
                  * takes fp; polygonOffset falls to a1 and spills, as shipped */
                 outputCount++;
@@ -1197,9 +1196,6 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/wakeUpdate.s")
-#endif
 /* The height carrier is `v1` because `mode` dies before it, not because of any
  * spelling of the carrier itself. uopt colours pool webs by descending
  * `references / bucket(references + spanning statements)`, and `mode` outranks
@@ -2149,14 +2145,4 @@ void func_8004AF68(void) {
  * first-mismatch: +0x10
  * summary: sampleBytes after segmentCount (target spill-cell order): 325 to 323 at -8. Left: dead v0/v1 copies before the call, four cells out of order
  * PLATEAU-HANDOFF:wakeAllocate:end
- */
-
-/* PLATEAU-HANDOFF:wakeUpdate:start
- * symbol: wakeUpdate
- * score: 37/398 words
- * frame: 0x90
- * relocations: 2
- * first-mismatch: +0x284
- * summary: Constant 20 split from source (loop index*0x14, u8 times 0x14U at mark/new-sample, value8 stored direct): 170 to 37 at 0
- * PLATEAU-HANDOFF:wakeUpdate:end
  */

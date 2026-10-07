@@ -30,6 +30,10 @@ does, and prints the cells sorted by masked words then size delta. Marked
 alternatives cost nothing in the tracked tree: a promoted file carries none of
 them.
 
+An axis the candidate fixes with `#define SHAPE_x N` is not enumerated (pass
+`--all-axes` to enumerate it anyway). Values are 0, every literal compared with
+`==`/`!=`/`>=`/etc., plus max+1 when the chain ends in a bare `#else`.
+
 `--fix NAME=VALUE` pins an axis (to re-run a sub-product), `--top K` limits
 the table, `--json` writes every cell's numbers for a shard. Exit status is 0
 when at least one cell scores 0 masked words at size delta 0, else 1, so a
@@ -60,22 +64,61 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import fast_score  # noqa: E402
 
 AXIS_RE = re.compile(r"\bSHAPE_([A-Za-z0-9_]+)\b")
-VALUE_RE = re.compile(r"\bSHAPE_([A-Za-z0-9_]+)\s*(?:==|!=)\s*(-?\d+)")
+VALUE_RE = re.compile(r"\bSHAPE_([A-Za-z0-9_]+)\s*(?:==|!=|>=|<=|>|<)\s*(-?\d+)")
+DEFINE_RE = re.compile(r"^\s*#\s*define\s+SHAPE_([A-Za-z0-9_]+)\s+(-?\d+)\b", re.M)
+COND_RE = re.compile(r"^\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b(.*)$")
 
 
-def axes_of(text: str) -> dict[str, list[int]]:
-    """Return {axis: sorted values} for every SHAPE_ identifier in `text`."""
+def defined_axes(text: str) -> dict[str, int]:
+    """Axes the candidate fixes itself with `#define SHAPE_x N`."""
+    return {name: int(value) for name, value in DEFINE_RE.findall(text)}
+
+
+def else_axes(text: str) -> set[str]:
+    """Axes whose `#if`/`#elif` chain ends in a bare `#else`."""
+    stack: list[set[str]] = []
+    out: set[str] = set()
+    for line in text.splitlines():
+        m = COND_RE.match(line)
+        if not m:
+            continue
+        kind, rest = m.groups()
+        names = set(AXIS_RE.findall(rest))
+        if kind in ("if", "ifdef", "ifndef"):
+            stack.append(names)
+        elif kind == "elif" and stack:
+            stack[-1] |= names
+        elif kind == "else" and stack:
+            out |= stack[-1]
+        elif kind == "endif" and stack:
+            stack.pop()
+    return out
+
+
+def axes_of(text: str, all_axes: bool = False) -> dict[str, list[int]]:
+    """Return {axis: sorted values} for every SHAPE_ identifier in `text`.
+
+    Values: 0, every compared literal, and (max compared + 1) when the chain
+    ends in a bare #else. An axis fixed by `#define SHAPE_x N` is left out
+    unless `all_axes`.
+    """
+    fixed = {} if all_axes else defined_axes(text)
     values: dict[str, set[int]] = {}
     for name in AXIS_RE.findall(text):
         values.setdefault(name, set())
     for name, value in VALUE_RE.findall(text):
         values[name].add(int(value))
+    has_else = else_axes(text)
     out = {}
     for name, vals in values.items():
-        if not vals:
-            vals = {0}
-        if vals == {0}:
+        if name in fixed:
+            continue
+        if vals <= {0}:
             vals = {0, 1}
+        else:
+            vals = vals | {0}
+            if name in has_else:
+                vals.add(max(vals) + 1)
         out[name] = sorted(vals)
     return dict(sorted(out.items()))
 
@@ -137,13 +180,16 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--top", type=int, default=20)
     ap.add_argument("--fix", action="append", default=[], metavar="NAME=VALUE")
     ap.add_argument("--json", metavar="PATH")
+    ap.add_argument("--all-axes", action="store_true",
+                    help="enumerate axes even when the candidate #defines them")
     ns = ap.parse_args(argv)
 
     candidate = Path(ns.candidate).resolve()
     text = candidate.read_text()
-    axes = axes_of(text)
+    axes = axes_of(text, ns.all_axes)
     if not axes:
-        raise SystemExit("no SHAPE_<name> axes found in the candidate")
+        raise SystemExit("no SHAPE_<name> axes to enumerate in the candidate "
+                         "(axes fixed by #define are skipped; see --all-axes)")
     for fix in ns.fix:
         name, _, value = fix.partition("=")
         if name not in axes:
@@ -155,6 +201,9 @@ def main(argv: list[str] | None = None) -> int:
     base_args = fast_score.configured_cc_args(source)
     print(f"{ns.symbol}: {len(cells)} cells over {len(names)} axes "
           + ", ".join(f"{n}={axes[n]}" for n in names), flush=True)
+
+    for i, c in enumerate(cells):
+        print(f"  cell {i}: {c}", flush=True)
 
     with tempfile.TemporaryDirectory(prefix="shape-product-") as tmp:
         workdir = Path(tmp)

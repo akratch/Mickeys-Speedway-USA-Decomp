@@ -34,6 +34,19 @@ class AxisTests(unittest.TestCase):
         self.assertEqual(axes["carrier"], [0, 1], "a bare #if/#else axis is two cells")
         self.assertEqual(axes["pad"], [0, 1])
 
+    def test_bare_else_adds_max_plus_one(self):
+        src = "#if SHAPE_a == 1\nx;\n#elif SHAPE_a == 2\ny;\n#else\nz;\n#endif\n"
+        self.assertEqual(shape_product.axes_of(src)["a"], [0, 1, 2, 3])
+
+    def test_ordering_operators_count(self):
+        src = "#if SHAPE_a >= 2\nx;\n#endif\n#if SHAPE_a != 4\ny;\n#endif\n"
+        self.assertEqual(shape_product.axes_of(src)["a"], [0, 2, 4])
+
+    def test_define_fixes_axis_unless_all_axes(self):
+        src = "#define SHAPE_a 2\n#if SHAPE_a == 0\nx;\n#else\ny;\n#endif\n#if SHAPE_b == 1\n#endif\n"
+        self.assertEqual(list(shape_product.axes_of(src)), ["b"])
+        self.assertEqual(shape_product.axes_of(src, all_axes=True)["a"], [0, 1])
+
     def test_defines_name_every_axis(self):
         defs = shape_product.cell_defines({"loop": 2, "carrier": 0})
         self.assertEqual(defs, ["-DSHAPE_loop=2", "-DSHAPE_carrier=0"])

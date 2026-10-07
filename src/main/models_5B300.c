@@ -603,10 +603,11 @@ void func_8005AD64(ModelAnimationInstance *instance, s32 frame, s32 arg2,
  * Rewritten plainly (lane b-models, 2026-10-07): the slot arrays as
  * matrices[2]/counts[2], the head and neck as &matrices[slot][8] and [9],
  * node 9's position read through a pointer, the three point loops indexed,
- * the clamp reflected through a short intermediate so it is not folded.
- * NON_MATCHING: 460 words, frame 0xF8, 123 masked words; the remaining
- * residual is ring phase (one draw per clamp arm, the loop matrix address
- * operand order). */
+ * the clamp reflected through an unsigned short intermediate (one deleted
+ * draw per arm, as shipped), the vertex fields read in the call.
+ * NON_MATCHING: 460 words, frame 0xF8, 114 masked words; the remaining
+ * residual is ring phase (free order after the clamp, the loop matrix
+ * address operand order). */
 #ifdef NON_MATCHING
 void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
                    ModelRenderModel *model) {
@@ -628,13 +629,13 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
     f32 dz;
     f32 sine;
     f32 cosine;
-    ModelRenderVertex *vertex;
+    ModelRenderVertex *unusedVertex;
     s16 yaw;
     s16 pitch;
     s16 rawAngle;
     s16 clampedAngle;
     s32 unused;
-    s16 excess;
+    u16 excess;
 
     scale = 1.0f;
     if (model->type == 1) {
@@ -735,23 +736,29 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
 
     output = instance->vertices[0];
     for (i = 0; i < context->count0; i++) {
-        vertex = (ModelRenderVertex *) &context->vertexData[context->points0[i].vertex * 10];
         mtxf_transform_point(instance->matrices[instance->activeSlot][context->points0[i].node],
-                             vertex->x, vertex->y, vertex->z, output, output + 1, output + 2);
+                             ((ModelRenderVertex *) &context->vertexData[context->points0[i].vertex * 10])->x,
+                             ((ModelRenderVertex *) &context->vertexData[context->points0[i].vertex * 10])->y,
+                             ((ModelRenderVertex *) &context->vertexData[context->points0[i].vertex * 10])->z,
+                             output, output + 1, output + 2);
         output += 3;
     }
     output = instance->vertices[1];
     for (i = 0; i < context->count1; i++) {
-        vertex = (ModelRenderVertex *) &context->vertexData[context->points1[i].vertex * 10];
         mtxf_transform_point(instance->matrices[instance->activeSlot][context->points1[i].node],
-                             vertex->x, vertex->y, vertex->z, output, output + 1, output + 2);
+                             ((ModelRenderVertex *) &context->vertexData[context->points1[i].vertex * 10])->x,
+                             ((ModelRenderVertex *) &context->vertexData[context->points1[i].vertex * 10])->y,
+                             ((ModelRenderVertex *) &context->vertexData[context->points1[i].vertex * 10])->z,
+                             output, output + 1, output + 2);
         output += 3;
     }
     output = instance->vertices[2];
     for (i = 0; i < context->count2; i++) {
-        vertex = (ModelRenderVertex *) &context->vertexData[context->points2[i].vertex * 10];
         mtxf_transform_point(instance->matrices[instance->activeSlot][context->points2[i].node],
-                             vertex->x, vertex->y, vertex->z, output, output + 1, output + 2);
+                             ((ModelRenderVertex *) &context->vertexData[context->points2[i].vertex * 10])->x,
+                             ((ModelRenderVertex *) &context->vertexData[context->points2[i].vertex * 10])->y,
+                             ((ModelRenderVertex *) &context->vertexData[context->points2[i].vertex * 10])->z,
+                             output, output + 1, output + 2);
         output += 3;
     }
     camConvertMatrixList(matrixList, context->matrixCount);
@@ -790,10 +797,10 @@ void func_8005B644(Matrix *matrices, Matrix *root, ModelMatrixNode *node, s32 co
 
 /* PLATEAU-HANDOFF:func_8005AF14:start
  * symbol: func_8005AF14
- * score: 123/460 words
+ * score: 114/460 words
  * frame: 0xF8
  * relocations: 27
  * first-mismatch: +0x198
- * summary: Plain rewrite, delta 0, frame 0xF8 (339 to 123). Left: ring phase in the clamp arms and the loop matrix address operand order
+ * summary: Delta 0, frame 0xF8 (123 to 114): u16 clamp intermediate, vertex read in the call. Left: free order after the clamp, loop address order
  * PLATEAU-HANDOFF:func_8005AF14:end
  */

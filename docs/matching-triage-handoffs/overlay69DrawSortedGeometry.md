@@ -175,4 +175,35 @@ both overlay owners reproduce 57 raw differences, first +0x3DC, with 1,436 owned
 bytes each. The 46-word candidate and all search/capture evidence remain private;
 no executable bytes or matching credit were added by this packet.
 
+#### 2026-10-07, lane a-ovl1: draw arithmetic for the geometry store
+
+The kept body re-scores 57 at delta 0, first +0x3DC. From `cc -S` on the
+refs, geometry, keys order, the geometry statement's draws are t5 t6 t7 t8
+t9 t2 t4 t3 (index load first, address last, landing on the refs store's t3,
+which as1 then deletes: -4). The target's registers for the same statement
+read t6 t7 t8 t9 t2 t4 t3 t5: the same free list with t5 consumed and
+returned to the tail before the index load. Replayed by hand, the keys
+statement after it would then draw t6 and t8, which is what ships; that
+favours refs, geometry, keys as the source order and argues against an
+extra draw in the keys store (inferred from the free list, not compiled).
+So the target needs one draw-and-free between the refs store and the index
+load, or a move after the index load that as1 deletes by renaming the load
+(L150) -- either gives the shipped registers exactly.
+
+Measured, none kept:
+
+- The index through an existing s16 local (`j = index;` then `j * 64`) in
+  refs, geometry, keys order: 57 at delta 0, and the fixed block's
+  instruction sequence equals the target's word for word (the address is
+  no longer deleted), but j is coloured a1 so the index spends no ring
+  draw and every following register is one position early. Through `slot`
+  62, `right`/`left` worse.
+- Index conversions (s8 field read as `(s8)` of a u8 field, `(s8)(u8)`,
+  `(s8)(x & 0xFF)`, `(s32)(s8)(s16)`): uopt removes all of them; with the
+  key mask, 48 as already recorded.
+- Re-reading `state->fixedRefs[i]` for the refs store: delta 0 in the
+  shipped order, but the reference no longer spills and the frame moves
+  (112). `&base[index * 64]`, u32 arithmetic, index-first operand order
+  and a store-then-reload of the geometry slot: 112 to 168.
+
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

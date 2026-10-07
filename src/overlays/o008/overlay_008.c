@@ -1958,6 +1958,11 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
  * so with one counter everywhere loop 3's `steps - 1` reload sat at loop
  * 2's exit (the one-sided word that kept the gate symbol at +4); on a
  * second variable it sits in loop 3's guard delay slot, as shipped.
+ * Then 93 -> 60: the table row is `randomMode << 2` (a shift, so it is not
+ * one expression with D_2220's `randomMode * 4` scale and uopt stops
+ * sharing it), both tables are read by element index, and the D_2220 term
+ * is added before the directionDC store. 60 -> 54: the row index is
+ * computed before the D_2208 angle read (ugen draws its shift first).
  * GLOBAL_ASM stays canonical. */
 extern s32 gO8P42A8GateReloc;
 #ifdef NON_MATCHING
@@ -2017,10 +2022,10 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
         tableIndex = 1;
     }
 
+    tableIndex = (randomMode << 2) + tableIndex;
     tableAngle = D_2208[randomMode];
-    tableIndex = ((randomMode * 4) + tableIndex) * 4;
-    targetMotion = *(f32 *)((u8 *)D_2188 + tableIndex);
-    targetHeight = *(f32 *)((u8 *)D_21C8 + tableIndex);
+    targetMotion = D_2188[tableIndex];
+    targetHeight = D_21C8[tableIndex];
     smoothing = D_2210[mode];
     if ((state->lowering349 == 0) && (state->lock191 == 0)) {
         smoothing += 0.08f * update;
@@ -2035,8 +2040,8 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     }
     D_2210[mode] = smoothing;
 
-    state->directionDC = 0x8000 - state->angleF0;
     targetHeight += smoothing * D_2220[randomMode];
+    state->directionDC = 0x8000 - state->angleF0;
     acceleration = state->accelerationE4;
     steering = state->steeringE0;
     targetAngle = tableAngle - ((owner->angle2 * 3) >> 2);
@@ -2389,11 +2394,11 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000
- * score: 93/447 words
+ * score: 54/447 words
  * frame: 0xA0
  * relocations: 40
  * first-mismatch: +0x114
- * summary: Loops 1-2 count with randomMode, loops 3-6 with remaining, gate read as its resident symbol: 96 to 93. Left: shared randomMode*4 and its ring draw.
+ * summary: Row index randomMode << 2 by element before the angle read, D_2220 term before directionDC: 93 to 54. Left: the mask's draw, the row sum's web.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
  */
 

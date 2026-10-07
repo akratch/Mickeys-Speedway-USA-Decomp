@@ -4003,11 +4003,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80053868:start
  * symbol: func_80053868
- * score: 392 differing words
+ * score: 392/1205 words
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: Pre-tested overlap for (func_800573C8 shape) restores the 0<<2 seeds: 393 to 392. Left: pairIndex a1 pieces, movingCount reload, constant webs.
+ * summary: Pre-tested overlap for (func_800573C8 shape) restores the 0<<2 seeds: 393 to 392. Left: movingCount piece 631, pairIndex a1 piece, constant webs.
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

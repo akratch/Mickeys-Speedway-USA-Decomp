@@ -2528,8 +2528,14 @@ extern f32 D_8008420C;
  * at entry as the target does (`hit` takes a0, so arg0 is left uncoloured);
  * placed anywhere after `hit = 0` it is inert. Left: the target keeps arg1
  * in s0 and hit in t0, defines the position pointers at entry (v0, a0)
- * where this candidate rematerializes them per block, and declares four
- * more homes (frame 0xD8 against 0xC0).
+ * where this candidate rematerializes them per block.
+ * 2026-10-07 (lane a-anim): the three distance tests read their own
+ * locals, dx/dy/dz for the position test and ex/ey/ez for both edge tests,
+ * declared after the coordinates; those are the target's six untouched
+ * slots between the coordinates and the spill area, and the frame is now
+ * the target's 0xD8 (349 to 345 at size 0). The second vector is read
+ * through `arg3->vector` directly. Left: arg1 in s0 (its callee cost is
+ * 8.6 against 3.0 for a1) and the entry pointer webs.
  */
 s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                   s32 arg2, AnimCollisionShape *arg3,
@@ -2540,7 +2546,6 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     f32 discriminant;
     f32 fraction;
     AnimVec3f *firstVector;
-    AnimVec3f *secondVector;
     f32 quadA;
     f32 quadB;
     f32 quadC;
@@ -2560,6 +2565,12 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     f32 y1;
     f32 twoY1;
     f32 y2;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    f32 ex;
+    f32 ey;
+    f32 ez;
 
     radiusSq = arg1->radius + arg3->radius;
     if (1) {
@@ -2569,10 +2580,10 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
     radiusSq = radiusSq * radiusSq;
     secondPoint = &arg3->position;
     if ((arg1->flags & 2) || (arg3->flags & 2)) {
-        stepX1 = secondPoint->x - firstPoint->x;
-        stepY1 = secondPoint->y - firstPoint->y;
-        stepZ1 = secondPoint->z - firstPoint->z;
-        if (stepX1 * stepX1 + stepY1 * stepY1 + stepZ1 * stepZ1 <= radiusSq) {
+        dx = secondPoint->x - firstPoint->x;
+        dy = secondPoint->y - firstPoint->y;
+        dz = secondPoint->z - firstPoint->z;
+        if (dx * dx + dy * dy + dz * dz <= radiusSq) {
             arg4->object = arg0;
             arg4->value = arg2;
             arg4->fraction = 0.0f;
@@ -2580,13 +2591,12 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
         }
     }
     firstVector = &arg1->vector;
-    secondVector = &arg3->vector;
     stepX1 = firstVector->x;
-    stepX2 = secondVector->x;
+    stepX2 = arg3->vector.x;
     stepY1 = firstVector->y;
-    stepY2 = secondVector->y;
+    stepY2 = arg3->vector.y;
     stepZ1 = firstVector->z;
-    stepZ2 = secondVector->z;
+    stepZ2 = arg3->vector.z;
     quadA = (stepZ2 * stepZ2) +
             ((stepZ1 * stepZ1) - (2.0f * stepZ1 * stepZ2)) +
             (((stepX1 * stepX1) - (2.0f * stepX1 * stepX2)) +
@@ -2637,10 +2647,10 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                     arg4->fraction = fraction;
                 }
             } else {
-                stepX1 = arg3->edge.x - arg1->edge.x;
-                stepY1 = arg3->edge.y - arg1->edge.y;
-                stepZ1 = arg3->edge.z - arg1->edge.z;
-                if (stepX1 * stepX1 + stepY1 * stepY1 + stepZ1 * stepZ1 <= radiusSq) {
+                ex = arg3->edge.x - arg1->edge.x;
+                ey = arg3->edge.y - arg1->edge.y;
+                ez = arg3->edge.z - arg1->edge.z;
+                if (ex * ex + ey * ey + ez * ez <= radiusSq) {
                     discriminant = z1 * (quadC - (radiusSq + 83.0f));
                     if (discriminant < z2) {
                         fraction = (twoZ1 - sqrtf(z2 - discriminant)) / x1;
@@ -2659,10 +2669,10 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
         }
     }
     if (hit == 0) {
-        stepX1 = arg3->edge.x - arg1->edge.x;
-        stepY1 = arg3->edge.y - arg1->edge.y;
-        stepZ1 = arg3->edge.z - arg1->edge.z;
-        if (stepX1 * stepX1 + stepY1 * stepY1 + stepZ1 * stepZ1 <= radiusSq) {
+        ex = arg3->edge.x - arg1->edge.x;
+        ey = arg3->edge.y - arg1->edge.y;
+        ez = arg3->edge.z - arg1->edge.z;
+        if (ex * ex + ey * ey + ez * ez <= radiusSq) {
             arg4->object = arg0;
             arg4->value = arg2;
             hit = 1;
@@ -3927,11 +3937,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80054B3C:start
  * symbol: func_80054B3C
- * score: 349 differing words
- * frame: 0xC0
+ * score: 345 differing words
+ * frame: 0xD8
  * relocations: 3
- * first-mismatch: +0x0
- * summary: 366 at +4 to 349 at size 0: empty region before hit = 0 homes arg0 at entry. Left: arg1 s0, hit t0, entry pointer webs, 4 homes
+ * first-mismatch: +0x4
+ * summary: dx/dy/dz and ex/ey/ez test locals after the coordinates: frame 0xD8, 349 to 345 at size 0. Left: arg1 s0 (callee 8.6 vs a1 3.0), entry pointer webs.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

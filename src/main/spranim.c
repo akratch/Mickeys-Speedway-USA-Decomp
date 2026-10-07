@@ -292,39 +292,49 @@ void texscrollControl(TexscrollState *state, s32 updateRate) {
     func_8000D16C(entry->textureIndex, x, y, updateRate);
 }
 #ifdef NON_MATCHING
-/* 2026-10-02 (lane x-res): 131 at size delta -16 -> 128 at delta 0. The
- * intersection point is a three-float array (the target keeps its y in a
- * stack home and reloads it for both height tests) and the plane radius is
- * read into a local; the plane fields are the typed SpranimPlane members.
- * Left: the frame (0xC0 here, 0xE0 in the target), the target's six
- * callee-saved FP webs (it rematerialises 0.0f at each compare where this
- * build hoists it), and the object's y/z spilled to homes at 0x8C/0x88. */
+/* 2026-10-07 (lane d-fx): 128 -> 48 at delta 0, frame 0xE0 exact. Three
+ * edits together: the per-file -Wab,-r4300_mul (the target never puts two
+ * mul.s back to back, and its radius-test branch is the non-likely bc1f the
+ * flag produces); the hit interpolation through three delta locals, with
+ * deltaX/deltaZ reused for the horizontal offsets (the target holds x-px,
+ * y-py and z-pz in f2/f22/f12, and the extra FP pressure is what leaves the
+ * radius and hit y uncoloured in memory, as shipped); and only x held in a
+ * local (any one coordinate local moves the y/z spill stores into the second
+ * block). Left: arg0/objects in s3/s1 (target s1/s3), x/firstDistance in
+ * f28/f30 (swapped), the previous-position colours, spill-home order. */
 /* PROVENANCE: JFG's public character-plane control role supplies the idiom; Mickey's fields, globals, and action calls are authoritative below. */
 void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
     SpranimPlane *plane;
     SpranimB798Target **objects;
     SpranimB798Target *object;
     u8 *targetState;
-    s32 count;
     s32 i;
     f32 firstDistance;
     f32 secondDistance;
     f32 fraction;
-    f32 hit[3];
+    f32 hitX;
+    f32 hitY;
+    f32 hitZ;
+    f32 x;
     f32 deltaX;
+    f32 deltaY;
     f32 deltaZ;
+    s32 count;
+    s32 pad1;
     f32 radius;
+    s32 pad2;
 
     plane = arg0->state64;
     objects = (SpranimB798Target **) func_80005750(&count);
-    for (i = 0; i < count; i++) {
-        object = objects[i];
+    for (i = 0; i < count; i++, objects++) {
+        object = *objects;
         targetState = object->state64;
         if ((*(u16 *)(targetState + 0x1A8) & 1) && (*(s8 *) targetState != 0)) {
             continue;
         }
+        x = object->x;
         firstDistance = plane->distance +
-            ((plane->normalX * object->x) + (plane->normalY * object->y) +
+            ((plane->normalX * x) + (plane->normalY * object->y) +
              (plane->normalZ * object->z));
         if (firstDistance < 0.0f) {
             secondDistance = plane->distance +
@@ -332,18 +342,18 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
                  (plane->normalY * *(f32 *)(targetState + 0x3C)) +
                  (plane->normalZ * *(f32 *)(targetState + 0x40)));
             if (secondDistance >= 0.0f) {
+                deltaX = x - *(f32 *)(targetState + 0x38);
+                deltaY = object->y - *(f32 *)(targetState + 0x3C);
+                deltaZ = object->z - *(f32 *)(targetState + 0x40);
                 fraction = secondDistance / (secondDistance - firstDistance);
-                hit[0] = *(f32 *)(targetState + 0x38) +
-                         fraction * (object->x - *(f32 *)(targetState + 0x38));
-                hit[1] = *(f32 *)(targetState + 0x3C) +
-                         fraction * (object->y - *(f32 *)(targetState + 0x3C));
-                hit[2] = *(f32 *)(targetState + 0x40) +
-                         fraction * (object->z - *(f32 *)(targetState + 0x40));
-                deltaX = hit[0] - arg0->x;
-                deltaZ = hit[2] - arg0->z;
+                hitX = *(f32 *)(targetState + 0x38) + fraction * deltaX;
+                hitY = *(f32 *)(targetState + 0x3C) + fraction * deltaY;
+                hitZ = *(f32 *)(targetState + 0x40) + fraction * deltaZ;
+                deltaX = hitX - arg0->x;
+                deltaZ = hitZ - arg0->z;
                 radius = plane->radius;
                 if (((deltaX * deltaX) + (deltaZ * deltaZ) <= radius) &&
-                    (arg0->y <= hit[1]) && (hit[1] <= plane->maxY)) {
+                    (arg0->y <= hitY) && (hitY <= plane->maxY)) {
                     switch (plane->mode) {
                     case 0:
                         if (D_8007BF0C == 0) {
@@ -411,10 +421,10 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
 
 /* PLATEAU-HANDOFF:func_8001B798:start
  * symbol: func_8001B798
- * score: 128/175 words
- * frame: 0xC0
+ * score: 48/175 words
+ * frame: 0xE0
  * relocations: 9
- * first-mismatch: +0x0
- * summary: -16 to delta 0 (131 to 128): hit point as a three-float array, radius local. Left: frame 0xC0 vs target 0xE0 and the six callee-saved FP webs
+ * first-mismatch: +0x4
+ * summary: Delta locals and -Wab,-r4300_mul: 128 to 48 at delta 0, frame exact. Left: arg0/objects s-reg order, x/firstDistance f30/f28, previous-position colours.
  * PLATEAU-HANDOFF:func_8001B798:end
  */

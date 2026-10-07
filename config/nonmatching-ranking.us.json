@@ -130,6 +130,21 @@
       "source_context_sha256": "2BCf.TIDS.28-t.0xYN.27J2.Hx3R.37Ib.cR47.vSVF.OrnL.gRo"
     },
     {
+      "name": "func_8001B798",
+      "file": "src/main/spranim.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 700,
+      "objdiff_match_pct": null,
+      "differing_words": 48,
+      "first_mismatch_offset": 4,
+      "relocation_masked_differing_words": 48,
+      "relocation_masked_first_mismatch_offset": 4,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "vl2k.-MjH.u3sL.R_Cs.KCfY.RJjY._tH2.awjB.o7T-.eQs1.G_I"
+    },
+    {
       "name": "overlay69DrawSortedGeometry",
       "file": "src/overlays/o069/overlay69DrawSortedGeometry.c",
       "overlay": 69,
@@ -263,21 +278,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "CuSN.-71_.MS6K.QZMD.7t_H.bF70.NlDv.oSkT.I-FK.AnNQ.pOI"
-    },
-    {
-      "name": "func_8001B798",
-      "file": "src/main/spranim.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 700,
-      "objdiff_match_pct": null,
-      "differing_words": 128,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 128,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "3FfT.v04l.h9yQ.BwaQ.mujT.6bm8.kNFQ.kjpB.MfE3.RJgy.bgA"
     },
     {
       "name": "func_overlay_001_F0001D78_184E158",

@@ -261,10 +261,11 @@ def _prepare_cache(
     source: Path,
     baseline: fs.Combo,
     trial: fs.Combo,
+    recipe: pb.BuildRecipe,
 ) -> tuple[Path, str]:
     try:
         key, manifest = fs.compilation_cache_identity(
-            source, ("NON_MATCHING",), (baseline, trial)
+            source, ("NON_MATCHING",), (baseline, trial), recipe
         )
     except LookupError as error:
         raise ImpactError(str(error)) from error
@@ -280,14 +281,14 @@ def _prepare_cache(
 
 def compile_variants(
     source: Path,
-    baseline_flags: Sequence[str],
+    recipe: pb.BuildRecipe,
     trial_flags: Sequence[str],
     *,
     rescore: bool,
 ) -> tuple[fs.CompileResult, fs.CompileResult, Path, int]:
-    baseline = fs.Combo("configured", (), (), tuple(baseline_flags))
+    baseline = fs.Combo("configured", (), (), tuple(recipe.flags))
     trial = fs.Combo("trial", (), (), tuple(trial_flags))
-    cache, _key = _prepare_cache(source, baseline, trial)
+    cache, _key = _prepare_cache(source, baseline, trial, recipe)
     results: list[fs.CompileResult] = []
     compiled = 0
     for combo in (baseline, trial):
@@ -298,7 +299,10 @@ def compile_variants(
                 raise ImpactError(
                     f"cache is incomplete for {combo.id}; rerun without --rescore"
                 )
-            result = fs.compile_combo(source, combo, outdir, ("NON_MATCHING",))
+            result = fs.compile_combo(
+                source, combo, outdir, ("NON_MATCHING",),
+                fs.lattice_base_arguments(recipe),
+            )
             fs.write_cached_result(result, outdir)
             compiled += 1
         if not result.ok or result.obj_path is None:
@@ -399,7 +403,7 @@ def run_analysis(args: argparse.Namespace) -> ImpactReport:
     remove = _parse_flag_values(args.remove_flags, "--remove-flags")
     trial_flags = apply_flag_delta(recipe.flags, add, remove)
     baseline, trial, cache, compiled = compile_variants(
-        seed.source, recipe.flags, trial_flags, rescore=args.rescore
+        seed.source, recipe, trial_flags, rescore=args.rescore
     )
     work_root = cache / "analysis"
     elf_path = fs.repo_cli_path(args.elf)

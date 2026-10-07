@@ -561,9 +561,9 @@
       "source_commit": "08ac22b28868e6fb86e798a4a5a1d849d930a121"
     },
     "func_80038190": {
-      "ledger_commit": "15923576c9c5cceb2b5cf48a150819e2fb5f3939",
-      "reason": "Retail relocation identities prove two distinct exact o099 callees: six-argument f32-first ABI and nine-argument pointer-first ABI with fourth f32. Test isolated typed call views; remove proved pointer conversion/default promotion defects.",
-      "source_commit": "d4ac3577512b13d29bb819c46527dde99e0ae852"
+      "ledger_commit": "9ee97a593bff6b829ab7e28a6404a92bcf7c880c",
+      "reason": "Exact font sibling proves byte-pointer arena arithmetic changes temporary phase. Test byte-offset-first segment mapping against folded integer constants, preserving packet order and typed calls; prior local/scope controls stay closed.",
+      "source_commit": "9ee97a593bff6b829ab7e28a6404a92bcf7c880c"
     },
     "func_80038878": {
       "ledger_commit": "f6250d56ba0062f3f018697cad839e1c05b425b3",

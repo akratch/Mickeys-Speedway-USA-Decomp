@@ -949,12 +949,19 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/overlay79UpdateTimers.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/overlay79FindNearby.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0xA4
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/overlay79FindNearby.c.o: CFLAGS += -Wab,-r4300_mul
+# The exact C body calls its resident callees through the generated surface
+# and loads its four float literals from the module's retained constant pool
+# (shipped records carry addends +0x30..+0x3C).
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c.o: \
+	$(TOOLS_DIR)/externalize_elf_section.py
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
-		--redefine-sym sqrtf=overlay79SqrtReloc \
-		--redefine-sym Arctanf=ext_o0_2a4c0 \
-		--redefine-sym func_8002A8BC=ext_o0_2a46c $@ && \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2E0
+		--redefine-sym Arctanf=Arctanf_o079Reloc \
+		--redefine-sym func_8002A8BC=func_8002A8BC_o079Reloc \
+		--redefine-sym sqrtf=sqrtf_o079Reloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x2E0 && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:0c0b859de4143883c21a200f86471c44ec8ee0959c57db2b2c91df6deb7db5e2 0x30
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c.o: CFLAGS += -Wab,-r4300_mul
 # The exact C body retains overlay 79's shipped local-data relocations and
 # resident call identities; only relocation metadata and alignment change.

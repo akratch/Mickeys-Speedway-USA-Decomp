@@ -3627,8 +3627,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o036/overlay36UpdateInteractiveEntity.c.o",
       "offset": 464,
       "overlay": 36,
@@ -9388,7 +9388,7 @@
       "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 401300,
+    "matched_c_bytes_with_postprocess": 402520,
     "objects_with_postprocess": 646
   }
 }

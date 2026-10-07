@@ -3994,7 +3994,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: Z-first step reads give the target's vector colours: aligned 270 to 255 at 344. Left: arg1 in s0 needs position-pointer webs in the quadratic block.
+ * summary: Z-first step reads, aligned 270 to 255 at 344. Left: arg1 in s0 (position-pointer webs); first doubles stored at their definitions.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

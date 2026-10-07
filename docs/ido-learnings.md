@@ -29,6 +29,24 @@ bytes and disassembly never belong here.
 
 ## Proven reusable behavior
 
+### Separate saved-register allocation from temporary-ring phase
+
+- **Symptom:** an exact-size renderer has only register differences, and a
+  redundant byte mask improves one branch while worsening earlier arithmetic.
+  **Mechanism:** scalar mismatch counts can hide two independent changes.
+  A controlled full-TU comparison showed identical allocation-pool lanes after
+  masking one u8 load, with the remaining differences confined to temporary-ring
+  phase. A second mask, previously helpful alone, was then counterproductive.
+  **Lever:** compare register classes and the first divergence after each
+  coherent edit; remove a previously useful compensating form when another edit
+  changes the same phase. Separately, compound integer advancement can change
+  commutative operand order without altering size or relocation identities.
+  **Limits:** this is measured interaction, not a universal mask recipe or a
+  proved attribution to one compiler pass. Prove integer reassociation on the
+  original defined domain. Inert diagnostic forms stay private unless an exact
+  result passes independent semantic review, disclosure, cleanup registration,
+  exact relocations, linked-byte comparison and full-ROM verification.
+
 ### From a proved colour force to ordinary source
 
 - **Symptom:** a signed-conversion temporary loses an allocation tie to

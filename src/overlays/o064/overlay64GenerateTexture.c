@@ -104,7 +104,7 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         j = width - 2;
         while (j--) {
-            value = (in[width] * 4 + in[0] * 2 + in[width - 1] + in[width + 1]) >> 3;
+            value = (in[width + 1] + in[width - 1] + in[0] * 2 + in[width] * 4) >> 3;
             in++;
             if (value < 0xAA) {
                 value--;
@@ -199,10 +199,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 382/420 words
+ * score: 380/420 words
  * frame: 0x78
  * relocations: 18
  * first-mismatch: +0x0
- * summary: Listing rewrite with while (n--) loops: 401 to 382 at delta 0. Open: frame 0x78 vs 0x70 (five temporaries vs four), width in ra, counter in t5.
+ * summary: Reversed first smoothing sum 382 to 380; operand-order products flat. Open: dead copies a0 vs a3, lo a1 vs a0, frame 0x78 vs 0x70.
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

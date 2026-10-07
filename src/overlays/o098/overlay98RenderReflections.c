@@ -18,8 +18,8 @@ typedef struct O98Node {
     void *vertexData;
     s16 useAlternate;
     s16 partIndex;
-    u8 pad0C[0x44];
-    void *alternateVertexData;
+    void *partsA[17];
+    void *partsB[1];
 } O98Node;
 
 typedef struct O98Object {
@@ -33,191 +33,215 @@ typedef struct O98Object {
     u8 pad3B[5];
     s8 *stateTable;
     u8 pad44[0x24];
-    O98Node **nodes;
+    void **nodes;
     u8 pad6C[0x27];
     u8 stateIndex;
 } O98Object;
 
 typedef struct O98VisibleEntry { O98Object *object; f32 referenceY; } O98VisibleEntry;
-typedef struct O98Cursor { O98VisibleEntry *entry; } O98Cursor;
 typedef struct O98Context { u8 bytes[0x40]; } O98Context;
-typedef struct O98Globals {
-    O98Context contexts[2];
-    u8 pad80[4];
-    s32 visibleCount;
-    O98VisibleEntry visibleEntries[0x50];
-} O98Globals;
 typedef struct O98Transform {
-    s16 rotX, rotY, rotZ;
+    s16 rot0, rot2, rot4;
     u16 pad06;
     f32 scale;
     f32 x, y, z;
 } O98Transform;
 
 extern void *o98AcquireRenderContextReloc(void);
-extern void o98SetupRenderContextReloc(void *, void *);
-extern void o98BuildMatrixReloc(O98Transform *, O98Mtx *, s32);
+extern void o98LoadMatrixReloc(void *, void *);
+extern void o98BuildMatrixReloc(O98Transform *, O98Mtx *);
 extern void o98CombineMatrixReloc(O98Mtx *, void *, O98Mtx *);
-extern void o98LoadMatrixReloc(O98Mtx *, void *);
-extern void o98BuildInverseMatrixReloc(O98Transform *, O98Mtx *, s32);
+extern void o98BuildInverseMatrixReloc(O98Transform *, O98Mtx *);
 extern void o98EmitObjectReloc(Gfx **, u8 **, s32, O98Object *);
 extern void o98RestoreStateReloc(Gfx **);
 
 extern s32 gO98Toggle;
-extern O98Globals gO98Globals;
+extern O98Context gO98Contexts[2];
+extern s32 gOverlay98AcceptedCount;
+extern O98VisibleEntry gOverlay98AcceptedEntries[0x50];
 extern u8 gO98SpecialVertices[];
 
-/* Fresh V0 retains the exact 0x614 boundary, with 57/389 relocation-masked
- * and 56/389 raw words matching from +0x0. Its frame is 0x190 bytes versus
- * the target's 0x1C8; saved-register slots agree, leaving 56 non-save bytes.
- * The 119-combination flag lattice found no improvement. A bounded source-only
- * permuter batch improved its internal score only by dropping the saved-state
- * volatile home; that candidate had a 0x198 frame but shrank to 0x5F8. Scope
- * and declaration-order variants retained the exact size but not the target's
- * non-reused cursor, transform, matrix, and saved-pointer stack layout. */
+/* Rewritten from the listing (lane a-ovl4, 2026-10-07): transform and
+ * inverse fields written to the offsets the target stores, the entry list
+ * indexed so uopt creates the cursor temporary, one callee for the context
+ * set-up and the matrix load (relocation records), two-argument matrix
+ * builds, literal segment bases, and the target's home ladder: five
+ * register locals, the display-list pointers, the matrices, the two float
+ * homes, and fourteen unused cells after the state index. The two matrix
+ * arms advance the list in two statements, so the packet pointer is one web
+ * there (267; the shard has the decision records). */
 #ifdef NON_MATCHING
 void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
+    O98Object *object;
+    O98Node *node;
+    s32 padNode;
+    O98ModelData *model;
+    Gfx *gfx;
+    void * volatile modelDisplayList;
+    void *savedDisplayList;
     O98Mtx matrixC;
     O98Mtx matrixB;
     O98Mtx matrixA;
-    void *savedDisplayList;
-    void * volatile modelDisplayList;
-    O98Transform transform;
+    f32 referenceY;
+    f32 distance;
+    f32 oldY;
     O98Transform inverse;
-    volatile O98Cursor cursor;
-    Gfx *gfx;
+    O98Transform transform;
     s32 emittedReflection;
-    s32 entryIndex;
+    s32 i;
+    s32 specialModel;
+    s32 stateIndex;
+    s32 drewObject;
+    s8 state;
+    s32 pad0;
+    s32 pad1;
+    s32 pad2;
+    s32 pad3;
+    s32 pad4;
+    s32 pad5;
+    s32 pad6;
+    s32 pad7;
+    s32 pad8;
+    s32 pad9;
+    s32 pad10;
+    s32 pad11;
+    s32 pad12;
+    s32 pad13;
 
     gO98Toggle ^= 1;
     savedDisplayList = o98AcquireRenderContextReloc();
-    o98SetupRenderContextReloc(savedDisplayList, &gO98Globals.contexts[gO98Toggle]);
+    o98LoadMatrixReloc(savedDisplayList, &gO98Contexts[gO98Toggle]);
 
-    gfx = *dl; *dl = gfx + 1;
-    gfx->w0 = 0xB7000000; gfx->w1 = 0x1000;
+    gfx = (*dl)++;
+    gfx->w0 = 0xB7000000;
+    gfx->w1 = 0x1000;
     emittedReflection = 0;
-    entryIndex = 0;
-    if (gO98Globals.visibleCount > 0) {
-        u32 segmentBase = 0x80000000;
-        cursor.entry = gO98Globals.visibleEntries;
+    i = 0;
+    if (gOverlay98AcceptedCount > 0) {
         do {
-            O98VisibleEntry *entry = cursor.entry;
-            O98Object *object = entry->object;
-            f32 referenceY = entry->referenceY;
-            f32 distance = object->y - referenceY;
-            s32 drewObject = 0;
-            s32 specialModel = 0;
-            O98Node *node;
-            O98ModelData *model;
-            s8 state;
-            volatile s32 savedStateIndex;
-
-            cursor.entry = entry + 1;
-            entryIndex++;
-            if (distance < 0.0f) distance = -distance;
-            if ((object->flags & 0x400) || (object->flags & 0x40)) continue;
-            savedStateIndex = object->stateIndex;
-            state = object->stateTable[savedStateIndex + 0x1E];
+            object = gOverlay98AcceptedEntries[i].object;
+            referenceY = gOverlay98AcceptedEntries[i].referenceY;
+            i++;
+            distance = object->y - referenceY;
+            if (distance < 0.0f) {
+                distance = -distance;
+            }
+            if ((object->flags & 0x400) || (object->flags & 0x40)) {
+                continue;
+            }
+            state = object->stateTable[object->stateIndex + 0x1E];
             if (state == 0) {
-                node = object->nodes[object->nodeIndex];
+                node = (O98Node *)object->nodes[object->nodeIndex];
                 model = node->data;
-                if (model->special != 0) specialModel = 1;
-                modelDisplayList = (object->alpha == 0xFF) ? model->displayListA : model->displayListB;
+                specialModel = 0;
+                drewObject = 0;
+                if (model->special != 0) {
+                    specialModel = 1;
+                }
+                stateIndex = object->stateIndex;
+                if (object->alpha == 0xFF) {
+                    modelDisplayList = model->displayListA;
+                } else {
+                    modelDisplayList = model->displayListB;
+                }
                 if (model->mode4E == 0) {
-                    transform.x = referenceY - distance;
-                    transform.y = object->x;
+                    transform.y = referenceY - distance;
+                    transform.x = object->x;
                     transform.z = object->z;
                     transform.scale = -object->scale;
-                    transform.rotX = object->rotZ;
-                    transform.rotY = object->rotY;
-                    transform.rotZ = object->rotX + 0x8000;
-                    o98BuildMatrixReloc(&transform, &matrixB, 0);
+                    transform.rot4 = object->rotZ;
+                    transform.rot2 = object->rotY;
+                    transform.rot0 = object->rotX + 0x8000;
+                    o98BuildMatrixReloc(&transform, &matrixB);
                     o98CombineMatrixReloc(&matrixB, savedDisplayList, &matrixA);
                     o98LoadMatrixReloc(&matrixA, *matrixHeap);
                     gfx = *dl; *dl = gfx + 1;
                     gfx->w0 = 0x01010040;
-                    gfx->w1 = (u32)(*matrixHeap + segmentBase);
+                    gfx->w1 = (u32)(*matrixHeap + 0x80000000);
                     *matrixHeap += 0x40;
                     drewObject = 1;
                 } else if (node->useAlternate == 0) {
-                    volatile f32 savedReferenceY;
-                    volatile f32 savedDistance;
-
+                    emittedReflection = 1;
                     inverse.x = -object->x;
                     inverse.y = -object->y;
                     inverse.z = -object->z;
                     inverse.scale = 1.0f;
-                    inverse.rotX = -object->rotZ;
-                    inverse.rotY = -object->rotY;
-                    inverse.rotZ = -object->rotX;
-                    savedReferenceY = referenceY;
-                    savedDistance = distance;
-                    o98BuildInverseMatrixReloc(&inverse, &matrixC, 0);
-
-                    transform.x = savedReferenceY - savedDistance;
-                    transform.y = object->x;
+                    inverse.rot4 = -object->rotZ;
+                    inverse.rot2 = -object->rotY;
+                    inverse.rot0 = -object->rotX;
+                    o98BuildInverseMatrixReloc(&inverse, &matrixC);
+                    transform.y = referenceY - distance;
+                    transform.x = object->x;
                     transform.z = object->z;
                     transform.scale = -1.0f;
-                    transform.rotX = object->rotZ;
-                    transform.rotY = object->rotY;
-                    transform.rotZ = object->rotX + 0x8000;
-                    o98BuildMatrixReloc(&transform, &matrixB, 0);
+                    transform.rot4 = object->rotZ;
+                    transform.rot2 = object->rotY;
+                    transform.rot0 = object->rotX + 0x8000;
+                    o98BuildMatrixReloc(&transform, &matrixB);
                     o98CombineMatrixReloc(&matrixC, &matrixB, &matrixA);
                     o98CombineMatrixReloc(&matrixA, savedDisplayList, &matrixA);
                     o98LoadMatrixReloc(&matrixA, *matrixHeap);
                     gfx = *dl; *dl = gfx + 1;
                     gfx->w0 = 0x01000040;
-                    gfx->w1 = (u32)(*matrixHeap + segmentBase);
+                    gfx->w1 = (u32)(*matrixHeap + 0x80000000);
                     *matrixHeap += 0x40;
                     drewObject = 1;
-                    emittedReflection = 1;
                 }
-
                 if (drewObject) {
-                    gfx = *dl; *dl = gfx + 1;
-                    gfx->w0 = 0xFA000000; gfx->w1 = object->alpha | ~0xFF;
-                    gfx = *dl; *dl = gfx + 1;
-                    gfx->w0 = (u32)(((u32)*(void **)((u8 *)node + node->partIndex * 4 + 0xC) + segmentBase) & 0xFFFFFF) | 0xBF000000;
-                    gfx->w1 = (u32)node->vertexData + segmentBase;
+                    gfx = (*dl)++;
+                    gfx->w0 = 0xFA000000;
+                    gfx->w1 = object->alpha | ~0xFF;
+                    gfx = (*dl)++;
+                    gfx->w0 = (((u32)node->partsA[node->partIndex] + 0x80000000) & 0xFFFFFF) | 0xBF000000;
+                    gfx->w1 = (u32)node->vertexData + 0x80000000;
                     if (specialModel) {
-                        if (savedStateIndex) {
-                            gfx = *dl; *dl = gfx + 1;
-                            gfx->w1 = (u32)gO98SpecialVertices;
+                        if (stateIndex) {
+                            gfx = (*dl)++;
+                            gfx->w1 = (u32)gO98SpecialVertices + 0x80000000;
                             gfx->w0 = 0x02000050;
                         } else {
-                            gfx = *dl; *dl = gfx + 1;
+                            gfx = (*dl)++;
                             gfx->w0 = 0x02000050;
-                            gfx->w1 = (u32)*(void **)((u8 *)node + node->partIndex * 4 + 0x50) + segmentBase;
+                            gfx->w1 = (u32)node->partsB[node->partIndex] + 0x80000000;
                         }
                     }
-                    gfx = *dl; *dl = gfx + 1;
-                    gfx->w0 = 0x06000000; gfx->w1 = (u32)modelDisplayList + segmentBase;
-                    gfx = *dl; *dl = gfx + 1; gfx->w0 = 0xBF000000; gfx->w1 = 0;
-                    gfx = *dl; *dl = gfx + 1; gfx->w0 = 0xBC00000A; gfx->w1 = 0;
+                    gfx = (*dl)++;
+                    gfx->w0 = 0x06000000;
+                    gfx->w1 = (u32)modelDisplayList + 0x80000000;
+                    gfx = (*dl)++;
+                    gfx->w0 = 0xBF000000;
+                    gfx->w1 = 0;
+                    gfx = (*dl)++;
+                    gfx->w0 = 0xBC00000A;
+                    gfx->w1 = 0;
                     o98RestoreStateReloc(dl);
-                    gfx = *dl; *dl = gfx + 1; gfx->w0 = 0xFA000000; gfx->w1 = 0xFFFFFFFF;
+                    gfx = (*dl)++;
+                    gfx->w0 = 0xFA000000;
+                    gfx->w1 = 0xFFFFFFFF;
                 }
-            } else if (state == 1 && !(object->flags & 0x400)) {
+            } else if (!(object->flags & 0x400) && state == 2) {
+            } else if (!(object->flags & 0x400) && state == 1) {
                 if (emittedReflection) {
-                    gfx = *dl; *dl = gfx + 1;
+                    gfx = (*dl)++;
                     gfx->w0 = 0x01000040;
-                    gfx->w1 = (u32)&gO98Globals.contexts[gO98Toggle] + segmentBase;
+                    gfx->w1 = (u32)&gO98Contexts[gO98Toggle] + 0x80000000;
                     emittedReflection = 0;
                 }
-                {
-                    f32 oldY = object->y;
-                    object->y = referenceY - distance;
-                    object->scale = -object->scale;
-                    o98EmitObjectReloc(dl, matrixHeap, arg2, object);
-                    object->y = oldY;
-                }
+                oldY = object->y;
+                object->y = referenceY - distance;
+                object->scale = -object->scale;
+                o98EmitObjectReloc(dl, matrixHeap, arg2, object);
+                object->y = oldY;
             }
-        } while (entryIndex < gO98Globals.visibleCount);
+        } while (i < gOverlay98AcceptedCount);
     }
-    gfx = *dl; *dl = gfx + 1; gfx->w0 = 0xB6000000; gfx->w1 = 0x1000;
+    gfx = (*dl)++;
+    gfx->w0 = 0xB6000000;
+    gfx->w1 = 0x1000;
     if (emittedReflection) {
-        gfx = *dl; *dl = gfx + 1; gfx->w0 = 0x01000040;
-        gfx->w1 = (u32)&gO98Globals.contexts[gO98Toggle] + 0x80000000;
+        gfx = (*dl)++;
+        gfx->w0 = 0x01000040;
+        gfx->w1 = (u32)&gO98Contexts[gO98Toggle] + 0x80000000;
     }
 }
 #else
@@ -226,10 +250,10 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
 
 /* PLATEAU-HANDOFF:overlay98RenderReflections:start
  * symbol: overlay98RenderReflections
- * score: 57/389 words
- * frame: 0x190
+ * score: 267/389 words
+ * frame: 0x1C8
  * relocations: 36
- * first-mismatch: +0x0
- * summary: Exact-size V0 has a 56-byte non-save frame deficit and 21/36 relocation tuple alignment; prior natural mechanisms are exhausted.
+ * first-mismatch: +0x14
+ * summary: Natural rewrite plus two-statement packets in the matrix arms: 332 to 267 at delta 0, frame exact; open: second node copy (s5) missing.
  * PLATEAU-HANDOFF:overlay98RenderReflections:end
  */

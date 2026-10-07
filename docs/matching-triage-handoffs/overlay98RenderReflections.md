@@ -2,11 +2,15 @@
 ### `overlay98RenderReflections` plateau handoff
 
 - source: `src/overlays/o098/overlay98RenderReflections.c`
-- score: 57/389 words
-- frame: 0x190
+- score: 267/389 words
+- frame: 0x1C8
 - relocations: 36
-- first mismatch: +0x0
-- summary: Exact-size V0 has a 56-byte non-save frame deficit and 21/36 relocation tuple alignment; prior natural mechanisms are exhausted.
+- first mismatch: +0x14
+- summary: Natural rewrite plus two-statement packets in the matrix arms: 332 to 267 at delta 0, frame exact; open: second node copy (s5) missing.
+
+Summary before this remeasure: Natural rewrite, fixed transform offsets, target home ladder: 332 to 278 at delta 0, frame exact; open: node in s3 and s5, hoisted data re-read.
+
+Summary before this remeasure: Exact-size V0 has a 56-byte non-save frame deficit and 21/36 relocation tuple alignment; prior natural mechanisms are exhausted.
 
 ## 2026-09-11 the frame runs the other way, and the 56 bytes are solved (lane `lane/o11-frames`)
 
@@ -114,5 +118,55 @@ no padding, declaration/home grid, flags, or forced allocator work followed.
 A future packet needs independently supported missing executable behavior or
 compiler producer evidence. Lower positional differences at a short extent
 and truthful type spelling alone do not reopen the closed layout families.
+
+## 2026-10-07 (lane a-ovl4): natural rewrite, 332 to 278 at delta 0, frame exact
+
+The inherited body stored the transform and inverse fields to the wrong
+offsets: the target writes the reflected height to transform +0x10, the
+object x to +0xC, and each rotation to its own slot (+0 gets rotation 0
+plus 0x8000), so the old candidate was not semantically the target. Fixed
+in the rewrite, together with:
+
+  - one callee for the context set-up and the matrix load (both calls are
+    SYMBOL records naming resident +0x29484), two-argument matrix builds;
+  - the visible list as gOverlay98AcceptedCount/gOverlay98AcceptedEntries
+    (records LOCAL +0x84/+0x88, the names overlay98CollectAccepted uses),
+    indexed, so uopt makes the cursor a temporary at the target's +0x5C;
+  - literal 0x80000000 at each use (the target hoists one constant web
+    into s6), plain locals, no volatile on the float homes;
+  - the home ladder: five register locals, then modelDisplayList (+0x1B0),
+    savedDisplayList (+0x1AC), matrices C/B/A (+0x16C/+0x12C/+0xEC),
+    referenceY/distance (+0xE8/+0xE4), one cell, inverse (+0xC8),
+    transform (+0xB0), emitted (+0xAC), index (+0xA8), one cell, the
+    state index (+0xA0), then fourteen unused cells. Frame 0x1C8 exact.
+
+Aligned: exact 183, naming 143, immediate 11, really different 61.
+
+Measured and open: the target loads the node into v0 and copies it to two
+callee-saved registers (s3 for useAlternate and the part arrays, s5 for
+vertexData), and re-reads node->data hoisted above the alpha test for the
+display-list pick. `node2 = node` (before or after the state-index store),
+a chained assignment, an (s32) round-trip, and re-reading the nodes
+element are all copy-propagated or reload (300 to 357). A volatile
+state index gives the re-read but not the hoist (300, exact 128). The
+emitted flag set just before the inverse call scores 282.
+
+#### 2026-10-07 (lane a-ovl4, second pass): packet split in the two matrix arms, 278 to 267
+
+Decision records (instrumented uopt, .text identity gate passed): the two
+highest-save webs are the `gfx` variable and the `*dl` expression that
+`gfx = (*dl)++` leaves (saves 89.75 and 93, interfering), so they take s0
+and s1 and every later callee-saved web sits one register up from the
+target (object s2 for s1, dl s3 for s2, heap s5 for s4). Writing the
+packet as `gfx = *dl; *dl = gfx + 1;` in the two matrix arms only scores
+267 at delta 0 (aligned exact 196, naming 130, immediate 11, really
+different 43). The same form in the display-list block puts gfx, object,
+dl and node on the target's s0..s3 but shrinks the function by 12 bytes:
+with one web fewer competing, the entry cursor takes s8 instead of its
++0x5C spill. So the target has one more callee-saved web than this body,
+which is the second copy of the node (s5); none of the node2 spellings
+measured (copy, chained assignment, reload, cast round-trip, 192 cells
+with the packet forms) creates it at delta 0. Block-scoped GBI-style
+packet macros give -12 as well.
 
 <!-- plateau-handoff:overlay98RenderReflections:end -->

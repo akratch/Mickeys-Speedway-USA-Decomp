@@ -3,7 +3,7 @@
 /*
  * Overlay 56, ADR 0006 consolidation: one translation unit in ROM order.
  * Exact DKR v77/v80 and JFG scans are negative for the matched C functions;
- * the unresolved middle function remains GLOBAL_ASM.
+ * every function in it is now C.
  */
 
 void overlay56OffsetCoordinates(u32 *x, u32 *y) {
@@ -56,29 +56,19 @@ void overlay56ReleaseResource(void) {
     }
 }
 
-/* Natural-source rewrite (2026-10-07): 581/581 instructions at size delta 0, frame 0x1F8.
- * Shape edits that moved it: GBI packet macros taking dl++, one shared loop index per
- * loop family (while (i--)), three distinct resident mode bytes (game mode, player count,
- * mirror) instead of one alias name, the colour word read from the table at each unpack
- * with no carrier local, mapY rebased in place (mapY += ...), an else-if ghost selector,
- * and x/z products written inline so mapY is not forwarded past the calls.
- * Lane d-mid3: -Wab,-r4300_mul (the target's mul.s hazard nops), func_8002F618's colour
- * parameters u8 (o052's matched prototype; the ghost's one andi), a ghost-loop racer local
- * of its own (ghostAlpha then takes s1 behind racer), the packet cursor at function scope
- * and the declaration order that lands every home on the target's frame ladder.
- * Lane e-big: x and z are the loop's own locals in both loops and mapY is rebased in place,
- * so uopt carries the loop-head mapY value in a CSE temp across the calls (f20, as shipped)
- * and the rebased symbol takes f18; mapY's products are written x-term first so rotX's are
- * emitted first; x and z declared above the pads and ghostAlpha last fit the f24 frame;
- * the fade shift is a conditional expression inside the add (byte a0, shift v1).
- * The first angle call's result goes through a block-scoped temporary so cos outranks
- * sin (f22/f24 as shipped).
- * A pad where the shift local was (between slot and mapX) lands count on 0x1D4.
- * Lane g-2: the AI marker's shade is a declared s32 (one of the frame pads was this local),
- * assigned (racer->alpha * alpha) >> 8 and then tested; the packet re-reads its own product.
- * That one variable is the whole int ring phase from the prim-colour packet on: 127 -> 24.
- * Open: mapY's products emitted before rotX's, the dl cursor's v0/v1, the D_84 temporary home. */
-#ifdef NON_MATCHING
+/* Matched 2026-10-07 (lane g-2), from the natural rewrite of lanes b-o056, d-mid3 and
+ * e-big (GBI packet macros, one loop index per loop family, the colour word re-read at
+ * each unpack, mapY rebased in place, -Wab,-r4300_mul, u8 colour parameters, the frame
+ * ladder). The last 127 words were all declared-local identity:
+ * - the AI marker's shade is a variable (one of the old frame pads), assigned and then
+ *   tested; the packet recomputes its own product (127 -> 24, the int ring cycle);
+ * - two packet cursors, _g (pipe sync, matrix, prim colour) and _g2 (scissor, vertex,
+ *   polygon): one shared cursor is 24, six distinct are 17, this split 13;
+ * - the first angle result is held in a function-scope float c (cos f22, sin f24) rather
+ *   than a block local, whose extra frame cell moved the D_84 spill (13 -> 9);
+ * - mapX is the rotated x itself and is negated in place, mapY = z * cosA + x * sinA
+ *   (9 -> 2); the ghost loop reads its racer before setting the sprite (2 -> 0).
+ * unusedF is the frame cell of the old rotX local. */
 typedef struct O56Gfx {
     u32 w0;
     u32 w1;
@@ -175,29 +165,29 @@ extern u8 D_80000004[];
 extern u8 D_80000030[];
 
 #define O56_SHIFTL(v, s, w) ((unsigned int)(((unsigned int)(v) & ((0x01 << (w)) - 1)) << (s)))
-#define O56_PIPESYNC(pkt) { _g = (O56Gfx *)(pkt); _g->w0 = O56_SHIFTL(0xE7, 24, 8); _g->w1 = 0; }
-#define O56_SCISSOR(pkt, mode, ulx, uly, lrx, lry) { _g = (O56Gfx *)(pkt); \
-    _g->w0 = O56_SHIFTL(0xED, 24, 8) | O56_SHIFTL((int)((float)(ulx) * 4.0F), 12, 12) | \
+#define O56_PIPESYNC(g, pkt) { g = (O56Gfx *)(pkt); g->w0 = O56_SHIFTL(0xE7, 24, 8); g->w1 = 0; }
+#define O56_SCISSOR(g, pkt, mode, ulx, uly, lrx, lry) { g = (O56Gfx *)(pkt); \
+    g->w0 = O56_SHIFTL(0xED, 24, 8) | O56_SHIFTL((int)((float)(ulx) * 4.0F), 12, 12) | \
              O56_SHIFTL((int)((float)(uly) * 4.0F), 0, 12); \
-    _g->w1 = O56_SHIFTL(mode, 24, 2) | O56_SHIFTL((int)((float)(lrx) * 4.0F), 12, 12) | \
+    g->w1 = O56_SHIFTL(mode, 24, 2) | O56_SHIFTL((int)((float)(lrx) * 4.0F), 12, 12) | \
              O56_SHIFTL((int)((float)(lry) * 4.0F), 0, 12); }
-#define O56_DMA1P(pkt, c, s, l, p) { _g = (O56Gfx *)(pkt); \
-    _g->w0 = O56_SHIFTL((c), 24, 8) | O56_SHIFTL((p), 16, 8) | O56_SHIFTL((l), 0, 16); \
-    _g->w1 = (unsigned int)(s); }
-#define O56_MATRIX(pkt, m) O56_DMA1P(pkt, 1, (u32)(m) + 0x80000000, 0x40, 0)
-#define O56_VERTEX(pkt, v, n, v0) O56_DMA1P(pkt, 4, v, (((n) << 3) + ((n) << 1)) + 8, ((n) << 3) | ((u32)(v) & 6) | (v0))
-#define O56_POLYGON(pkt, ptr, numTris, tex) { _g = (O56Gfx *)(pkt); \
-    _g->w0 = O56_SHIFTL((((numTris) - 1) << 4) | (tex), 16, 8) | O56_SHIFTL(5, 24, 8) | \
+#define O56_DMA1P(g, pkt, c, s, l, p) { g = (O56Gfx *)(pkt); \
+    g->w0 = O56_SHIFTL((c), 24, 8) | O56_SHIFTL((p), 16, 8) | O56_SHIFTL((l), 0, 16); \
+    g->w1 = (unsigned int)(s); }
+#define O56_MATRIX(g, pkt, m) O56_DMA1P(g, pkt, 1, (u32)(m) + 0x80000000, 0x40, 0)
+#define O56_VERTEX(g, pkt, v, n, v0) O56_DMA1P(g, pkt, 4, v, (((n) << 3) + ((n) << 1)) + 8, ((n) << 3) | ((u32)(v) & 6) | (v0))
+#define O56_POLYGON(g, pkt, ptr, numTris, tex) { g = (O56Gfx *)(pkt); \
+    g->w0 = O56_SHIFTL((((numTris) - 1) << 4) | (tex), 16, 8) | O56_SHIFTL(5, 24, 8) | \
              O56_SHIFTL((numTris) * 16, 0, 16); \
-    _g->w1 = (unsigned int)(ptr); }
-#define O56_PRIMCOLOR(pkt, rgba) { _g = (O56Gfx *)(pkt); _g->w0 = O56_SHIFTL(0xFA, 24, 8); _g->w1 = (rgba); }
+    g->w1 = (unsigned int)(ptr); }
+#define O56_PRIMCOLOR(g, pkt, rgba) { g = (O56Gfx *)(pkt); g->w0 = O56_SHIFTL(0xFA, 24, 8); g->w1 = (rgba); }
 
 void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCursor,
                                       s32 updateRate) {
     f32 x;
     f32 z;
     s32 shade;
-    s32 pad1;
+    O56Gfx *_g2;
     s32 pad2;
     s32 pad3;
     O56Racer *ghostRacer;
@@ -208,7 +198,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     O56Sprite *dot;
     O56Object *obj;
     O56Racer *racer;
-    s32 pad6;
+    f32 c;
     s32 slot;
     f32 mapX;
     s32 alpha;
@@ -227,7 +217,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     u32 width;
     u32 height;
     f32 mapY;
-    f32 rotX;
+    f32 unusedF;
     s32 blue;
     s32 posX;
     s32 red;
@@ -253,8 +243,8 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     dl = *displayList;
     mtx = *matrixCursor;
     viGetCurrentSize(&width, &height);
-    O56_PIPESYNC(dl++);
-    O56_SCISSOR(dl++, 0, 0, 0, width, height);
+    O56_PIPESYNC(_g, dl++);
+    O56_SCISSOR(_g2, dl++, 0, 0, 0, width, height);
     camStandardOrtho(&dl, &mtx);
     racers = func_80005750(&count);
     level = levelGetLevel();
@@ -277,11 +267,9 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     }
     viGetCurrentSize(&screenWidth, &screenHeight);
     dot = D_800CD788[22];
-    {
-        f32 c = func_8002A8BC(level->angle);
-        sinA = func_8002A8C0(level->angle);
-        cosA = c;
-    }
+    c = func_8002A8BC(level->angle);
+    sinA = func_8002A8C0(level->angle);
+    cosA = c;
     alpha = gOverlay56ResourceState * 2;
     alpha = (alpha > 255) ? 255 : alpha;
     marker.unk4 = 0;
@@ -292,11 +280,10 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
         racer = obj->racer;
         x = obj->x * level->scale;
         z = obj->z * level->scale;
-        rotX = x * cosA - z * sinA;
-        mapY = x * sinA + z * cosA;
-        mapX = rotX;
+        mapX = x * cosA - z * sinA;
+        mapY = z * cosA + x * sinA;
         if (D_800D31A8 != 0) {
-            mapX = -rotX;
+            mapX = -mapX;
         }
         if (i < D_800D3194) {
             func_800349A4(&dl, NULL, 5, 0);
@@ -318,13 +305,13 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
             func_80024978(&mtxB);
             mtxf_mul(&mtxA, &mtxB, &mtxC);
             mtxf_to_mtx(&mtxC, mtx);
-            O56_MATRIX(dl++, mtx);
+            O56_MATRIX(_g, dl++, mtx);
             mtx++;
             shade = (racer->alpha * alpha) >> 8;
             if (shade > 0) {
-                O56_PRIMCOLOR(dl++, gOverlay56Data.colors[racer->colour] | ((alpha * racer->alpha) >> 8));
-                O56_VERTEX(dl++, D_80000004, 4, 0);
-                O56_POLYGON(dl++, D_80000030, 2, 1);
+                O56_PRIMCOLOR(_g, dl++, gOverlay56Data.colors[racer->colour] | ((alpha * racer->alpha) >> 8));
+                O56_VERTEX(_g2, dl++, D_80000004, 4, 0);
+                O56_POLYGON(_g2, dl++, D_80000030, 2, 1);
             }
         } else {
             marker.sprite = D_800CD788[22];
@@ -357,8 +344,8 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
             if (obj != NULL) {
                 x = obj->x * level->scale;
                 z = obj->z * level->scale;
-                marker.sprite = D_800CD788[22];
                 ghostRacer = obj->racer;
+                marker.sprite = D_800CD788[22];
                 red = green = blue = ghostAlpha;
                 marker.x = (x * cosA - z * sinA) - (f32)(dot->width >> 1);
                 marker.y = (z * cosA + x * sinA) - (f32)(dot->height >> 1);
@@ -371,9 +358,6 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     *displayList = dl;
     *matrixCursor = mtx;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o056/overlay_056/func_overlay_056_F00001A0_18A2F18.s")
-#endif
 
 void overlay56UnpackColor(s32 index, u32 *red, s32 *green, s32 *blue) {
     u32 *color = &gOverlay56Colors[index];
@@ -381,13 +365,3 @@ void overlay56UnpackColor(s32 index, u32 *red, s32 *green, s32 *blue) {
     *green = (*color >> 16) & 0xFF;
     *blue = (*color >> 8) & 0xFF;
 }
-
-/* PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:start
- * symbol: func_overlay_056_F00001A0_18A2F18
- * score: 24 differing words
- * frame: 0x1F8
- * relocations: 75
- * first-mismatch: +0x160
- * summary: shade test through a declared s32 (a former pad) retires the int ring cycle: 127 to 24 at 0; open: dl v0/v1, D_84 home, product order.
- * PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:end
- */

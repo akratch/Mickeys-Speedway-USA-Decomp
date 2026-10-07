@@ -2,11 +2,13 @@
 ### `func_overlay_056_F00001A0_18A2F18` plateau handoff
 
 - source: `src/overlays/o056/overlay_056.c`
-- score: 24 differing words
+- score: 0/581 words, promoted
 - frame: 0x1F8
 - relocations: 75
-- first mismatch: +0x160
-- summary: shade test through a declared s32 (a former pad) retires the int ring cycle: 127 to 24 at 0; open: dl v0/v1, D_84 home, product order.
+- first mismatch: none
+- summary: Matched. Two packet cursors, a function-scope cos temp, mapX negated in place, mapY z-term first, ghost racer read first (lane g-2); promoted, gmake verify passes.
+
+Summary before this remeasure: shade test through a declared s32 (a former pad) retires the int ring cycle: 127 to 24 at 0; open: dl v0/v1, D_84 home, product order.
 
 Summary before this remeasure: x/z locals, in-place mapY rebase, frame refit, block temp for cos: 542 to 127 at 0; open: product emission order, int ring.
 
@@ -509,5 +511,51 @@ Open, all small: the dl cursor in v0 where the target has v1 (+0x160 and
 D_84 temporary at 0x78 against 0x7C (four sites); the loop-head product
 order (mapY's products before rotX's, +0x3F0 to +0x41C); one lw/andi pair
 swapped in the ghost loop at +0x7F0.
+
+#### 2026-10-07 (lane g-2, second commit): two packet cursors and a function-scope cos temp; 24 to 9
+
+- Packet cursor identity, product of a two-name assignment over the six
+  packet sites (64 cells, a second O56Gfx pointer in place of pad1, frame
+  unchanged): one shared cursor 24; _g for pipe sync, matrix and prim
+  colour with _g2 for scissor, vertex and polygon (or the mirror) 13; all
+  six distinct (five names) 17; a third name never beats two. Block-local
+  cursors per macro (standard GBI): 84 to 88; block-local for one group
+  only: 84 and 285 at -4. With the two groups, the scissor cursor is v1,
+  the prim colour v0 and the vertex v1 with D_80000004 in a0, as shipped.
+- The cos temporary: the block-scoped f32 costs a frame cell, which put
+  the D_84 spill at 0x78. A function-scope f32 c in place of pad2, pad3 or
+  pad6 (cell count unchanged): 9, with cos f22, sin f24 and the spill on
+  0x7C. Plain cosA/sinA assignment: 13 (spill right, cos and sin swapped).
+  x, z or mapY as the temp: 360 at +4. Removing a pad with the block temp:
+  74 to 76.
+- Loop-head product spellings on the 9 base: four rotX by six mapY term
+  spellings by two statement orders (48 cells): mapY written x * sinA +
+  z * cosA is 9 at every rotX spelling and order; the rest are worse.
+
+Kept: 9 masked at delta 0. Open: the loop-head products (+0x3F0 to
++0x41C: the target emits rotX's x*cos and z*sin first, then mapY's z*cos
+and x*sin, and moves rotX into the mirror branch's delay slot) and one
+lw/andi pair swapped in the ghost loop at +0x7F0.
+
+#### 2026-10-07 (lane g-2, third commit): matched and promoted
+
+- Loop head, 8 shapes (mapX/rotX statement forms): writing mapX as the
+  rotated x itself (`mapX = x * cosA - z * sinA; ... if (mirror) mapX =
+  -mapX;`, or any form where mapX is assigned before the branch from the
+  rotated value) moves rotX's products ahead of mapY's: 9 to 4. The
+  if/else and ternary mirror forms are 376 at +12. Then mapY written
+  z * cosA + x * sinA: 4 to 2 (on the old shape that order was +4 bytes).
+- Ghost loop, all 60 orders of its five head statements: 15 exact; kept
+  x, z, ghostRacer = obj->racer, then marker.sprite, then the colour copy.
+- rotX is unused now; its declaration stays (unusedF) as the frame cell.
+- Promotion: the TU is complete, so the atlas writer drops overlay 56's
+  mixed ranges. The overlay object's resident callees and the eight
+  resident data names (D_800C3A3C, D_800CD788, D_800D1494, D_800D1498,
+  D_800D3194, D_800D3198, D_800D31A8, D_800D3450) are renamed to
+  `*_o056Reloc` in its POSTPROCESS rule; with the data names bare the
+  generated alias file set them to 0 globally and moved resident
+  references (the ROM differed in 16 bytes of resident code).
+  gmake verify passes; check-overlay-syms up to date; promotion-proof PASS
+  (581 words, frame 0x1F8, relocations 75/75).
 
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

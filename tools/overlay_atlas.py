@@ -1754,6 +1754,12 @@ MIXED_TU_EXACT_C_RANGES = {
             "canonical mixed-TU object and linked bytes exact",
         ),
         (
+            0x1A0,
+            0xAB4,
+            "func_overlay_056_F00001A0_18A2F18",
+            "canonical mixed-TU object and linked bytes exact",
+        ),
+        (
             0xAB4,
             0xAF4,
             "overlay56UnpackColor",

@@ -257,23 +257,23 @@ Text outside the markers remains authored and is preserved byte-for-byte.
 > `config/nonmatching-ranking.us.json`. Do not edit this region by hand;
 > `--check-doc` and `gmake check-docs` fail on any drift.
 
-The snapshot contains **33 queued identities**: **33 resolved measurements** and **0 unresolved identities**. Resolved target size totals **65,600 bytes (64.1 KiB)**.
+The snapshot contains **32 queued identities**: **32 resolved measurements** and **0 unresolved identities**. Resolved target size totals **63,276 bytes (61.8 KiB)**.
 
-Resolved rows span **15 overlays** and **1 resident TU group** (`main`).
+Resolved rows span **14 overlays** and **1 resident TU group** (`main`).
 
-A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 33** resolved rows.
+A supplementary objdiff report was not supplied; `objdiff_match_pct` covers **0 / 32** resolved rows.
 
-Persisted configured-TU input evidence covers **33 / 33** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
+Persisted configured-TU input evidence covers **32 / 32** resolved rows. Rows without it are retained legacy or bounded-refresh measurements and must be treated as requiring reproof.
 
-Relocation-masked mismatch evidence covers **33 / 33** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
+Relocation-masked mismatch evidence covers **32 / 32** resolved rows. The raw count preserves literal object differences; the masked count removes only known linker-owned fields to expose the remaining code-generation mismatch. Neither replaces linked byte-identity proof.
 
 ### Category distribution
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `schedule-only` | 1 | 3.0% |
-| `other` | 26 | 78.8% |
-| `size-mismatch` | 6 | 18.2% |
+| `schedule-only` | 1 | 3.1% |
+| `other` | 25 | 78.1% |
+| `size-mismatch` | 6 | 18.8% |
 
 ### Differing-word thresholds
 
@@ -300,33 +300,32 @@ units remain distinct.
 | 4 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
 | 5 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 49 | 14 | 156 | 2,360 | 0 | — |
 | 6 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 24 | 24 | 60 | 60 | 0 | — |
-| 7 | `src/overlays/o056/overlay_056.c` | `func_overlay_056_F00001A0_18A2F18` | `o056` | `other` | 2,324 | 24 | 24 | 352 | 352 | 0 | — |
-| 8 | `src/main/models_5B300.c` | `func_8005AF14` | `main` | `other` | 1,840 | 32 | 32 | 1,460 | 1,460 | 0 | — |
-| 9 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 43 | 43 | 20 | 20 | 0 | — |
-| 10 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 44 | 44 | 88 | 88 | 0 | — |
-| 11 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
-| 12 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 68 | 68 | 4 | 4 | 0 | — |
-| 13 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
-| 14 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `other` | 1,788 | 106 | 98 | 276 | 276 | 0 | — |
-| 15 | `src/main/diCpu.c` | `func_80045D34` | `main` | `other` | 1,836 | 131 | 115 | 332 | 332 | 0 | — |
-| 16 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 116 | 116 | 1,864 | 1,864 | 0 | — |
-| 17 | `src/overlays/o038/overlay38UpdateParticles.c` | `func_overlay_038_F0000154_1885E64` | `o038` | `other` | 808 | 160 | 159 | 32 | 32 | 0 | — |
-| 18 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 171 | 171 | 0 | 0 | 0 | — |
-| 19 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 189 | 189 | 216 | 216 | 0 | — |
-| 20 | `src/main/fx.c` | `wakeUpdate` | `main` | `other` | 1,592 | 195 | 195 | 52 | 52 | 0 | — |
-| 21 | `src/overlays/o098/overlay98RenderReflections.c` | `overlay98RenderReflections` | `o098` | `other` | 1,556 | 228 | 225 | 152 | 176 | 0 | — |
-| 22 | `src/overlays/o066/overlay66SmoothAndDraw.c` | `func_overlay_066_F0000040_18C64A8` | `o066` | `other` | 1,184 | 251 | 249 | 4 | 132 | 0 | — |
-| 23 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
-| 24 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 380 | 380 | 0 | 0 | 0 | — |
-| 25 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 392 | 392 | 112 | 112 | 0 | — |
-| 26 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,429 | 1,428 | 200 | 208 | 0 | — |
-| 27 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `other` | 8,672 | 1,991 | 1,982 | 4 | 4 | 0 | — |
-| 28 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
-| 29 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
-| 30 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 296 | 296 | 76 | 76 | 16 | — |
-| 31 | `src/main/fx.c` | `wakeAllocate` | `main` | `size-mismatch` | 1,404 | 325 | 325 | 16 | 16 | -8 | — |
-| 32 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 339 | 339 | 0 | 0 | 8 | — |
-| 33 | `src/overlays/o012/func_overlay_012_F0000910_186DB90.c` | `func_overlay_012_F0000910_186DB90` | `o012` | `size-mismatch` | 2,444 | 463 | 461 | 84 | 84 | -8 | — |
+| 7 | `src/main/models_5B300.c` | `func_8005AF14` | `main` | `other` | 1,840 | 32 | 32 | 1,460 | 1,460 | 0 | — |
+| 8 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 43 | 43 | 20 | 20 | 0 | — |
+| 9 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 44 | 44 | 88 | 88 | 0 | — |
+| 10 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
+| 11 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 68 | 68 | 4 | 4 | 0 | — |
+| 12 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
+| 13 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `other` | 1,788 | 106 | 98 | 276 | 276 | 0 | — |
+| 14 | `src/main/diCpu.c` | `func_80045D34` | `main` | `other` | 1,836 | 131 | 115 | 332 | 332 | 0 | — |
+| 15 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 116 | 116 | 1,864 | 1,864 | 0 | — |
+| 16 | `src/overlays/o038/overlay38UpdateParticles.c` | `func_overlay_038_F0000154_1885E64` | `o038` | `other` | 808 | 160 | 159 | 32 | 32 | 0 | — |
+| 17 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 171 | 171 | 0 | 0 | 0 | — |
+| 18 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 189 | 189 | 216 | 216 | 0 | — |
+| 19 | `src/main/fx.c` | `wakeUpdate` | `main` | `other` | 1,592 | 195 | 195 | 52 | 52 | 0 | — |
+| 20 | `src/overlays/o098/overlay98RenderReflections.c` | `overlay98RenderReflections` | `o098` | `other` | 1,556 | 228 | 225 | 152 | 176 | 0 | — |
+| 21 | `src/overlays/o066/overlay66SmoothAndDraw.c` | `func_overlay_066_F0000040_18C64A8` | `o066` | `other` | 1,184 | 251 | 249 | 4 | 132 | 0 | — |
+| 22 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
+| 23 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 380 | 380 | 0 | 0 | 0 | — |
+| 24 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 392 | 392 | 112 | 112 | 0 | — |
+| 25 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,429 | 1,428 | 200 | 208 | 0 | — |
+| 26 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `other` | 8,672 | 1,991 | 1,982 | 4 | 4 | 0 | — |
+| 27 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
+| 28 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
+| 29 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 296 | 296 | 76 | 76 | 16 | — |
+| 30 | `src/main/fx.c` | `wakeAllocate` | `main` | `size-mismatch` | 1,404 | 325 | 325 | 16 | 16 | -8 | — |
+| 31 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 339 | 339 | 0 | 0 | 8 | — |
+| 32 | `src/overlays/o012/func_overlay_012_F0000910_186DB90.c` | `func_overlay_012_F0000910_186DB90` | `o012` | `size-mismatch` | 2,444 | 463 | 461 | 84 | 84 | -8 | — |
 
 ### Unresolved identities
 

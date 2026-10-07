@@ -3991,8 +3991,10 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                 j = sortIndex[i];
                 type = kindOrEntry[j];
                 if ((type & 0x80) != 0) {
-                    type &= 0x7F;
-                    switch (type) {
+                    /* The masked value is the switch's own temporary (v0
+                     * in the target); masking `type` in place makes it a
+                     * ring temp and costs 104 words. */
+                    switch (type & 0x7F) {
                     case 0:
                         mode = 0x206;
                         break;
@@ -5384,10 +5386,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414
- * score: 136/421 words
+ * score: 32/421 words
  * frame: 0x198
  * relocations: 11
- * first-mismatch: +0xD8
- * summary: unk3 texture offset as a scaled word subscript (185 to 136 at delta 0); left: render-loop ring seven-cycle, sort j web
+ * first-mismatch: +0x240
+ * summary: Render switch on (type & 0x7F) (136 to 32 at delta 0); split render slot is exact in the sort but -4 until arg0's piece refuses the sort head
  * PLATEAU-HANDOFF:func_80009414:end
  */

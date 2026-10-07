@@ -1203,7 +1203,7 @@
     "func_overlay_047_F0000B30_1891948": {
       "ledger_commit": "003cc8c2043fc01bc7acf64f364f5c3c787fe116",
       "reason": "Test own-SDK unsigned masked color packing after the o083 causal improvement. Preserve command scope, channel producers and address expressions; prior channel masks and packet-scope controls remain closed.",
-      "source_commit": "a5fa96a3285d4d1c4e925b7b8887ac4e7d5be833"
+      "source_commit": "0ed92c5ca74e4d1b0f884732ded5ddfce190551d"
     },
     "func_overlay_050_F0000000_1896970": {
       "ledger_commit": "9eeee4ce415459b8988df486b8172c1267f88a49",

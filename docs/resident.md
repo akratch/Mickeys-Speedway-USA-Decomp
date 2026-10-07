@@ -28,7 +28,9 @@ the segment, carrying 194 function names.
 | `0x27BB4`, `0x28BB8` | — | `"main/main.c"` asserts | — | **`main` code is resident** |
 | `0x29FD0` | `0x800293D0` | `"x = %5d"` … `"a = %3.1f"` | — | On-screen coordinate readout |
 | `0x2A250`–`0x2AE44` | `0x80029650` | 11 named `math_util.s` routines | A | Matrix / vector / RNG library. 13 routines matched: 11 named here, `rand_range` already carried as `mathRnd`, and `func_80070058` left unnamed as a placeholder |
-| `0x2B650`–`0x2BCD0` | `0x8002AA50` | `main/matrix` | — | The parked float TU (§6.2) |
+| `0x2B650`–`0x2B778` | `0x8002AA50` | `main/matrix` | — | Working split: JFG `matrix_SCL_RPY_XYZ` in a shorter revision, guarded C (§6.2) |
+| `0x2B778`–`0x2BC40` | `0x8002AB78` | `main/math_matrix` | A | Verified hand-written assembly: JFG `hasm/math_matrix` routines two to five, byte-identical with R_MIPS_26 masked; routine run, not file boundary |
+| `0x2BC40`–`0x2BCD0` | `0x8002B040` | `main/matrix_2BC40` | — | Working split: one function with no JFG counterpart, guarded C |
 | `0x2C860` | `0x8002BC60` | `align16`/`align8`/`align4` | A | The allocator |
 | `0x2C8C0`–`0x2ECA0` | `0x8002BCC0` | `main/saves` | A/B/D | Rumble, EEPROM/save bitstreams, and Controller Pak files (§3.15) |
 | `0x2ECA0`–`0x2F0D0` | `0x8002E0A0` | `main/pi` | B | Asset lookup and cartridge DMA (§3.15) |

@@ -789,7 +789,7 @@
     {
       "kind": "resident-trailing-alignment",
       "symbol": "func_8002B040",
-      "source": "main/matrix",
+      "source": "main/matrix_2BC40",
       "vram": "0x8002b040",
       "owner_size": "0x90",
       "offset": "0x88",

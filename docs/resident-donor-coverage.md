@@ -214,14 +214,21 @@ JFG mainAnyoneHas remains assembly-only at efd5abb; no new C donor.
 
 | Target | Bytes | Coverage |
 | --- | ---: | --- |
-| [MatrixMultiplyVec4](../src/main/matrix.c) | 212 | U |
+| MatrixMultiplyVec4 (func_8002AF6C) | 212 | U |
 | [func_8002B040](matching-triage-handoffs/func_8002B040.md) | 136 | U |
-| [func_8002AB78](matching-triage-handoffs/func_8002AB78.md) | 268 | B |
+| func_8002AB78 | 268 | B |
 | [func_8002AA50](matching-triage-handoffs/func_8002AA50.md) | 296 | B |
-| [func_8002AC84](matching-triage-handoffs/func_8002AC84.md) | 396 | B |
-| [func_8002AE10](matching-triage-handoffs/func_8002AE10.md) | 348 | B |
+| func_8002AC84 | 396 | B |
+| func_8002AE10 | 348 | B |
 
 Known JFG counterpart is handwritten assembly; stock-IDO ABI/register limitation remains, not a proved all-source matrix.
+
+Superseded on 2026-10-07 for four of these rows: func_8002AB78,
+func_8002AC84, func_8002AE10 and func_8002AF6C are byte-identical (R_MIPS_26
+masked) to routines two to five of JFG's hand-written `hasm/math_matrix`
+object and are now the verified-assembly subsegment `main/math_matrix`, so
+they left the queue and their shards were retired. func_8002B040 moved to
+`src/main/matrix_2BC40.c`.
 
 ### `src/main/menu.c`
 

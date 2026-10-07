@@ -956,12 +956,24 @@ mainRelocTableCount = 0x800D2DA0;
 linkSlotTable = 0x800D2E48;
 
 // ---------------------------------------------------------------------------
-// main/matrix  ROM 0x2b650-0x2bcd0 -- matrix and vector maths.
+// main/matrix, main/math_matrix, main/matrix_2BC40  ROM 0x2b650-0x2bcd0 --
+// matrix and vector maths.
 //
-// No names claimed yet. The two functions whose arithmetic is fully understood
-// (0x8002AF6C, 0x8002B040) are parked non-matching -- see src/main/matrix.c --
-// and naming a symbol whose C is not in the ROM would put a second evidence
-// tier into this file, which is exactly what the libultra work avoided.
+// main/math_matrix (ROM 0x2b778-0x2bc40) is verified hand-written assembly
+// (verified_asm.us.txt): its four functions are, in order, byte-identical to
+// routines two to five of JFG's built `asm/hasm/math_matrix.s.o` with only
+// the R_MIPS_26 fields masked --
+//   0x8002AB78 matrix_RPY_XYZ                masked=6/67 romocc=1
+//   0x8002AC84 matrix_XYZ_YPR_SCL            masked=6/99 romocc=1
+//   0x8002AE10 matrix_XYZ_YPR                masked=6/87 romocc=1
+//   0x8002AF6C matrixTransposeVectorMultiply masked=0/53 romocc=1
+// and every masked word is a jal whose JFG relocation names Cosf or Sinf,
+// landing here on 0x8002A8BC or 0x8002A8C0 respectively (JFG also places
+// Cosf four bytes before Sinf). The JFG names are tier A for these bytes but
+// are not adopted in this change, which only moves ownership.
+// 0x8002AA50 is JFG's matrix_SCL_RPY_XYZ in a shorter revision (0x128 against
+// 0x148; identical through +0x48, different after) and 0x8002B040 has no
+// counterpart; both stay guarded C candidates, unnamed.
 // ---------------------------------------------------------------------------
 func_8002B040 = 0x8002B040; // type:func size:0x88 ROM 0x2bc40 tier-D NON_MATCHING bounded plateau, canonical 1/34 words and +1 instruction, first +0x0, frameless/no padding/zero relocs, 119 flags plus 10 structural forms nonexact, 4 overlay callers, linked exactness fallback-only
 

@@ -1565,9 +1565,12 @@ void overlay8ScaleOutputs(void *unused, Overlay8ScaleState *state,
  * pair on: that gives the shipped second address build.  Each pair is its own
  * block, so the two address webs do not interfere.  Left (17): the first
  * pair's one-block address web takes v0 where the shipped one takes v1 (14
- * words; forced, exact); the approach loop saves the counter after loading
- * the second argument, shipped before (2); the mode compare's operands are
- * reversed (1).  GLOBAL_ASM stays canonical. */
+ * words; forced, exact).
+ * 2026-10-07: the approach loop written on one line closed its save order
+ * (17 -> 15); the mode compare reads ownerMode through a copy into the
+ * free int local sampleCount, which emits the shipped operand order with no
+ * new frame cell (15 -> 14).  Forcing the first pair's web to v1
+ * (p1:w490=c2) on this shape scores 0.  GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                                       O8P34A0State *state, f32 limit,
@@ -1782,7 +1785,8 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
         selectedValue = 0.0111f;
     }
 
-    if (selectedMode != ownerMode) {
+    sampleCount = ownerMode; /* int copy: shipped compare operand order */
+    if (selectedMode != sampleCount) {
         o8P34A0SetModeReloc(owner, selectedMode, -1, blend);
     }
     if ((o8P34A0AnimateReloc(owner, selectedValue, update) != 0) &&
@@ -1816,10 +1820,9 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     }
     steps = (s32)update;
     index = steps;
-    while (index--) {
-        state->angle110 +=
-            o8P34A0ApproachReloc(state->angle110, target) >> 2;
-    }
+    /* One physical line: as1 then orders the counter save ahead of the
+     * second argument's reload, as shipped (L59). */
+    while (index--) state->angle110 += o8P34A0ApproachReloc(state->angle110, target) >> 2;
     state->angle112 = state->angle110;
 
     do {
@@ -1938,6 +1941,9 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
  * the approach loop.  The gate word read as `O8_S32(0)` is a resident symbol
  * (records at +0x2CC/+0x3C4): declared as one, its high half is hoisted
  * after the approach loop as shipped, at +4 bytes until that reload moves.
+ * 2026-10-07, 124 -> 98 at size 0: the u8 mode entry is masked once more
+ * where it is read (`D_0[mode] & 0xFF`); the redundant mask spends the ring
+ * draw the shipped table lookup was rotated by (checklist item 16, L149).
  * GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
@@ -1993,7 +1999,7 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     }
     D_0[mode] &= 3;
     randomMode = o8P42A8RandomReloc() & 3;
-    tableIndex = D_0[mode];
+    tableIndex = D_0[mode] & 0xFF;
     if ((state->reset170 != 0) || (state->lock191 != 0)) {
         tableIndex = 1;
     }
@@ -2371,20 +2377,20 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000
- * score: 124/447 words
+ * score: 98/447 words
  * frame: 0xA0
  * relocations: 40
- * first-mismatch: +0x124
- * summary: Byte-offset table index: 126 to 124 at size 0. Left: randomMode still off a2, steps home, counter reload.
+ * first-mismatch: +0x114
+ * summary: Redundant u8 mask on the mode entry: 124 to 98 at size 0. Left: randomMode off a2 (shared r*4), steps conversion block and home, counter reload against the gate hoist.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
  */
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:start
  * symbol: func_overlay_008_F00034A0_18611F8
- * score: 17/898 words
+ * score: 14/898 words
  * frame: 0x80
  * relocations: 107
- * first-mismatch: +0x77C
- * summary: ownerMode symbol web, (s16) trig sums, statement orders: 103 to 17. Left: first pair web v0 not v1 (14), loop save order (2), mode compare (1).
+ * first-mismatch: +0x938
+ * summary: Mode compare through an int copy: 15 to 14. Left: only the first pair web v0 not v1; forcing it to v1 scores 0.
  * PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:end
  */

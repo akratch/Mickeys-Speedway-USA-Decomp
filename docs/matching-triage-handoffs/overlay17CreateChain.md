@@ -2,7 +2,7 @@
 ### `overlay17CreateChain` plateau handoff
 
 - source: `src/overlays/o017/overlay17CreateChain.c`
-- score: 3 differing words
+- score: 24 differing words
 - frame: 0x80
 - relocations: 7
 - first mismatch: +0x3C
@@ -432,4 +432,7 @@ keeps without a new frame slot or word, or a form in which the shift reads
 the expression temp so the variable has three references; read web 12's
 p1dec after each.
 
+Header regenerated from the ranking on 2026-10-07 (check_shard_metrics --write); it read score 3 differing words.
 <!-- plateau-handoff:overlay17CreateChain:end -->
+
+Coordinator note 2026-10-07: the lane report claimed 3 masked words for commit ff930eacb, but the committed source measures 24 in the lane worktree and in the integration tree; the 3-word cell was never committed. Header corrected from the ranking.

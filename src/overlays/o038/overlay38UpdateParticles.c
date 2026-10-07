@@ -23,16 +23,15 @@ extern f32 gO38AccelerationPosition;
 extern f32 gO38AccelerationVelocity;
 extern void o38ReleaseObject(O38Object *object);
 
-/* 2026-10-07 (lane h-1): written from the listing, 159 -> 126 at size delta 0.
- * The loop is IDO's own 4x unroll of a plain 20-step loop. Two facts set the
- * target's FP colour ladder without any force: the timestep is converted once
- * and copied to a second local at entry (`loopDt = dt` in the declarations),
- * which is the target's cvt into f0 plus the f14 copy in the delay slot of the
- * alpha test; and exactly three body values are locals (dx, dz, x), whose
- * symbol webs span all four unrolled copies (save 80) and so rank above the
- * loop timestep (62), which then takes f14 (c27), the four dy CSE webs
- * c28..c31, and the two accelerations f24/f26. Two or four locals change the
- * size. The rates are literals (the extern names score 130). */
+/* 2026-10-07 (lane h-1): written from the listing, 159 -> 58 at size delta 0.
+ * The loop is IDO's own 4x unroll of a plain 20-step loop. The timestep is
+ * converted once and copied to a second local at entry (`loopDt = dt`), which
+ * is the target's cvt into f0 plus the f14 copy in the delay slot of the
+ * alpha test. Each particle's three displacements are locals computed first
+ * (y, x, z) and added in x, y, z order; their symbol webs span all four
+ * unrolled copies (save 80) and rank above the loop timestep (62), which
+ * then takes f14, the dy webs f16..f22 and the accelerations f24/f26, the
+ * target's ladder with no force. The rates are literals. */
 #ifdef NON_MATCHING
 void func_overlay_038_F0000154_1885E64(O38Object *object, s32 ticks)
 {
@@ -42,7 +41,7 @@ void func_overlay_038_F0000154_1885E64(O38Object *object, s32 ticks)
     O38Particle *particle;
     f32 accelerationPosition;
     f32 accelerationVelocity;
-    f32 x, dx, dz;
+    f32 deltaX, deltaY, deltaZ;
     s32 i;
 
     if (pool->alpha == 0) {
@@ -58,13 +57,13 @@ void func_overlay_038_F0000154_1885E64(O38Object *object, s32 ticks)
     accelerationVelocity = -0.1f * loopDt;
     for (i = 0; i < 20; i++) {
         particle = &pool->particles[i];
-        dx = particle->dx;
-        dz = particle->dz;
-        x = particle->x;
-        particle->y = particle->y + (particle->dy * loopDt + accelerationPosition);
-        particle->x = x + dx * loopDt;
+        deltaY = particle->dy * loopDt + accelerationPosition;
+        deltaX = particle->dx * loopDt;
+        deltaZ = particle->dz * loopDt;
+        particle->x += deltaX;
+        particle->y += deltaY;
+        particle->z += deltaZ;
         particle->dy += accelerationVelocity;
-        particle->z = particle->z + dz * loopDt;
     }
 }
 #else
@@ -73,10 +72,10 @@ void func_overlay_038_F0000154_1885E64(O38Object *object, s32 ticks)
 
 /* PLATEAU-HANDOFF:func_overlay_038_F0000154_1885E64:start
  * symbol: func_overlay_038_F0000154_1885E64
- * score: 126 differing words
+ * score: 58 differing words
  * frame: 0x38
  * relocations: 7
- * first-mismatch: +0xC8
- * summary: 126 at size delta 0 on a natural loop: entry copy of the timestep and three body locals give the target's FP ladder unforced; the body schedule remains.
+ * first-mismatch: +0x164
+ * summary: 58 at size delta 0: timestep entry copy and three displacement locals give the target's FP ladder; later unrolled copies schedule differently.
  * PLATEAU-HANDOFF:func_overlay_038_F0000154_1885E64:end
  */

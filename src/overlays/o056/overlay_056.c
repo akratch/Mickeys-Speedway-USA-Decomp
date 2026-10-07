@@ -74,8 +74,10 @@ void overlay56ReleaseResource(void) {
  * The first angle call's result goes through a block-scoped temporary so cos outranks
  * sin (f22/f24 as shipped).
  * A pad where the shift local was (between slot and mapX) lands count on 0x1D4.
- * Open: mapY's products emitted before rotX's,
- * the int ring phase from the prim-colour packet on. */
+ * Lane g-2: the AI marker's shade is a declared s32 (one of the frame pads was this local),
+ * assigned (racer->alpha * alpha) >> 8 and then tested; the packet re-reads its own product.
+ * That one variable is the whole int ring phase from the prim-colour packet on: 127 -> 24.
+ * Open: mapY's products emitted before rotX's, the dl cursor's v0/v1, the D_84 temporary home. */
 #ifdef NON_MATCHING
 typedef struct O56Gfx {
     u32 w0;
@@ -194,7 +196,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
                                       s32 updateRate) {
     f32 x;
     f32 z;
-    s32 pad0;
+    s32 shade;
     s32 pad1;
     s32 pad2;
     s32 pad3;
@@ -318,7 +320,8 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
             mtxf_to_mtx(&mtxC, mtx);
             O56_MATRIX(dl++, mtx);
             mtx++;
-            if (((racer->alpha * alpha) >> 8) > 0) {
+            shade = (racer->alpha * alpha) >> 8;
+            if (shade > 0) {
                 O56_PRIMCOLOR(dl++, gOverlay56Data.colors[racer->colour] | ((alpha * racer->alpha) >> 8));
                 O56_VERTEX(dl++, D_80000004, 4, 0);
                 O56_POLYGON(dl++, D_80000030, 2, 1);
@@ -381,10 +384,10 @@ void overlay56UnpackColor(s32 index, u32 *red, s32 *green, s32 *blue) {
 
 /* PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:start
  * symbol: func_overlay_056_F00001A0_18A2F18
- * score: 127 differing words
+ * score: 24 differing words
  * frame: 0x1F8
  * relocations: 75
  * first-mismatch: +0x160
- * summary: x/z locals, in-place mapY rebase, frame refit, block temp for cos: 542 to 127 at 0; open: product emission order, int ring.
+ * summary: shade test through a declared s32 (a former pad) retires the int ring cycle: 127 to 24 at 0; open: dl v0/v1, D_84 home, product order.
  * PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:end
  */

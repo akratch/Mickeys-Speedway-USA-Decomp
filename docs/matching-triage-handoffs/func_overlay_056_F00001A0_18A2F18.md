@@ -2,11 +2,13 @@
 ### `func_overlay_056_F00001A0_18A2F18` plateau handoff
 
 - source: `src/overlays/o056/overlay_056.c`
-- score: 127 differing words
+- score: 24 differing words
 - frame: 0x1F8
 - relocations: 75
 - first mismatch: +0x160
-- summary: x/z locals, in-place mapY rebase, frame refit, block temp for cos: 542 to 127 at 0; open: product emission order, int ring.
+- summary: shade test through a declared s32 (a former pad) retires the int ring cycle: 127 to 24 at 0; open: dl v0/v1, D_84 home, product order.
+
+Summary before this remeasure: x/z locals, in-place mapY rebase, frame refit, block temp for cos: 542 to 127 at 0; open: product emission order, int ring.
 
 Summary before this remeasure: x/z locals, in-place mapY rebase, frame refit, block temp for cos: 542 to 129 at 0; open: product emission order, int ring.
 
@@ -481,5 +483,31 @@ ahead of rotX) is the remaining float residual; then the one high home
 Cycle-21 line: the prim-colour constant's draw ahead of the mtx++ add
 (draw_census lines 319 to 322 against the target's order lw mtx, lw dl,
 lui 0xFA00, addiu mtx+64), then the loop-head product order.
+
+#### 2026-10-07 (lane g-2): the shade test is a variable; 127 to 24 at delta 0
+
+Entry 127 masked at delta 0, aligned exact 457, naming 114, immediate 2,
+structural 7; the int ring was a closed seven-cycle from +0x5B4 to the end.
+
+- The prim-colour packet written as `_g = dl; _g->w0 = ...; _g->w1 = ...;
+  dl++;` (or `dl = _g + 1`): 119. It moves the 0xFA000000 draw ahead of the
+  test as shipped but adds a dl reload; not kept. Eleven other packet forms
+  (store orders, increment placement, explicit local w0, dl[0] indexing):
+  119 to 292.
+- The test through a declared int local: `shade = (racer->alpha * alpha) >> 8;
+  if (shade > 0)`, packet unchanged (it re-reads racer->alpha and recomputes
+  the product, as shipped): 26 with posX as the local, 24 with any of the
+  five unused s32 pads (so one pad was this variable; first pad kept, renamed
+  shade). red, green or blue as the carrier: 292 (they merge with the ghost
+  loop's webs). A fresh local: 93 (frame). The conditional assignment inside
+  the test, and a cast on the product: 119 to 292.
+- Kept: 24 masked at delta 0, aligned exact 557, naming 15, immediate 4,
+  structural 5. The seven-cycle is gone.
+
+Open, all small: the dl cursor in v0 where the target has v1 (+0x160 and
++0x620 packet sites); D_80000004's address in v1 against a0 at +0x608; the
+D_84 temporary at 0x78 against 0x7C (four sites); the loop-head product
+order (mapY's products before rotX's, +0x3F0 to +0x41C); one lw/andi pair
+swapped in the ghost loop at +0x7F0.
 
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

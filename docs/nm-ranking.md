@@ -310,8 +310,8 @@ units remain distinct.
 | 15 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 171 | 171 | 0 | 0 | 0 | — |
 | 16 | `src/main/fx.c` | `func_80049B14` | `main` | `other` | 824 | 181 | 181 | 4 | 4 | 0 | — |
 | 17 | `src/main/frontend_37D50.c` | `func_80037C74` | `main` | `other` | 1,308 | 191 | 191 | 256 | 256 | 0 | — |
-| 18 | `src/main/frontend_37D50.c` | `func_80038190` | `main` | `other` | 1,472 | 199 | 199 | 304 | 304 | 0 | — |
-| 19 | `src/main/diCpu.c` | `func_80045D34` | `main` | `other` | 1,836 | 233 | 217 | 12 | 12 | 0 | — |
+| 18 | `src/main/diCpu.c` | `func_80045D34` | `main` | `other` | 1,836 | 208 | 193 | 96 | 96 | 0 | — |
+| 19 | `src/main/frontend_37D50.c` | `func_80038190` | `main` | `other` | 1,472 | 199 | 199 | 304 | 304 | 0 | — |
 | 20 | `src/main/charControl.c` | `func_8001DD70` | `main` | `other` | 2,132 | 224 | 224 | 360 | 360 | 0 | — |
 | 21 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 234 | 234 | 192 | 192 | 0 | — |
 | 22 | `src/overlays/o036/overlay36UpdateInteractiveEntity.c` | `overlay36UpdateInteractiveEntity` | `o036` | `other` | 1,220 | 238 | 235 | 24 | 44 | 0 | — |

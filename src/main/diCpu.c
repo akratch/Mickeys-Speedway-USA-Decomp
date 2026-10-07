@@ -271,7 +271,7 @@ void func_80045CAC(void) {
 void func_80045D34(s32 arg0) {
     s32 row;
     s32 *words;
-    u32 oldPage;
+    s32 oldPage;
     s32 buttons;
     s32 pageCount;
     s32 currentPage;
@@ -290,7 +290,7 @@ void func_80045D34(s32 arg0) {
     u32 candidate;
     MemoryPoolSlot *slot;
 
-    oldPage = -1U;
+    oldPage = -1;
     currentPage = 0;
     redraw = 1;
     /* The fallback count belongs to the logging-mode branch. */
@@ -360,13 +360,13 @@ void func_80045D34(s32 arg0) {
                     candidate = address - (1 << (nibble * 4));
                 }
                 candidate = (candidate & mask) | (address & ~mask);
-                redraw = 1;
                 if (candidate >= 0x803FFF60U) {
                     candidate = 0x803FFF60;
                 }
                 if (candidate < 0x80000451U) {
                     candidate = 0x80000450;
                 }
+                redraw = 1;
                 address = candidate;
                 printedValue = candidate;
             }
@@ -403,8 +403,11 @@ void func_80045D34(s32 arg0) {
                 D_8007D02C = 0;
             }
         }
-        if (oldPage != (u32)currentPage || redraw != 0) {
-            redraw = 0;
+        /* Each page clears redraw itself (the default page first), so the
+         * per-page stores survive; one shared clear before the switch lets
+         * uopt delete them and hands redraw a lower save than the memory
+         * index. The address editor sets it only after both clamps. */
+        if (oldPage != currentPage || redraw != 0) {
             switch (currentPage) {
                 case 0:
                     oldPage = currentPage;
@@ -485,6 +488,7 @@ void func_80045D34(s32 arg0) {
                     redraw = 0;
                     break;
                 default:
+                    redraw = 0;
                     currentPage = 0;
                     oldPage = 0;
                     break;
@@ -788,10 +792,10 @@ void func_80046E00(void) {
 
 /* PLATEAU-HANDOFF:func_80045D34:start
  * symbol: func_80045D34
- * score: 217/459 words
+ * score: 193/459 words
  * frame: 0xA8
- * relocations: 91
- * first-mismatch: +0xC
- * summary: memoryIndex set after the video probe (254 to 217); s6-s8 cycle is one ranking: redraw 241/31 below memory index 311/31.
+ * relocations: 93
+ * first-mismatch: +0x60
+ * summary: Per-page redraw clears, redraw after the clamps and a signed old page give redraw s6 (217 to 193); left: entry delay slot, mode counter address.
  * PLATEAU-HANDOFF:func_80045D34:end
  */

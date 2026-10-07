@@ -730,6 +730,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
  * frame: 0x280
  * relocations: 315
  * first-mismatch: +0x4
- * summary: Banked on aligned residual at size -12: compound 550 update and re-climbed word orders, residual 887 to 759. Open: green copy, 3C8, +0x12C.
+ * summary: Banked on aligned residual at size -12: residual 911 to 759. Open: unready has no register (ring at +0x13F0), green copy, 3C8, +0x12C.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

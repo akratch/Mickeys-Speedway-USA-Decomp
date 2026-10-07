@@ -2147,6 +2147,6 @@ void func_8004AF68(void) {
  * frame: 0x90
  * relocations: 2
  * first-mismatch: +0x34
- * summary: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: loop t3/t5, outputCount/polygonOffset, stripIndex probes
+ * summary: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: constant 20 in a0 (target a2), loop t3/t5, stripIndex probes
  * PLATEAU-HANDOFF:wakeUpdate:end
  */

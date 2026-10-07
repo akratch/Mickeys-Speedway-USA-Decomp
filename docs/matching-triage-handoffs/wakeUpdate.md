@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 2
 - first mismatch: +0x34
-- summary: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: loop t3/t5, outputCount/polygonOffset, stripIndex probes
+- summary: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: constant 20 in a0 (target a2), loop t3/t5, stripIndex probes
+
+Summary before this remeasure: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: loop t3/t5, outputCount/polygonOffset, stripIndex probes
 
 Summary before this remeasure: Secondary cursor per vertex and polyCount per triangle replace two OR-zero probes (byte-identical, 195 at 0). Left: the three stripIndex probes.
 
@@ -285,4 +287,47 @@ Cycle-21 line: draw_census --proc 13 on the second loop's head (lines of
 the sample address) to find the draw that puts index * 5 in t4 here; then
 the stripIndex probes (decision variable unchanged: stripIndex 171/11 with
 probes against index 123/8).
+
+#### 2026-10-07, lane i-6 (continued): outputCount per vertex, and the constant 20's colour
+
+Measured by tools/bank.py: masked 132 (raw 132), size delta +0, candidate 398 words vs target 398. Aligned: byte-exact 277, register naming 101, immediate only 2, really different 22.
+
+Not banked (positional rises; aligned falls). On the 132 body, measured:
+
+  - outputCount advanced once per vertex (two single increments where the
+    body has the += 2; uopt folds them into the shipped single add): the
+    web reads 62/12 and ties polyCount and polygonOffset, so it takes fp
+    and polygonOffset falls to a1 and spills around the calls, as shipped.
+    The a1/fp cycle leaves the residual map. Alone 183 positional, aligned
+    residual 119 (against 125).
+  - with that and the loop's vertexCount carried by value (so the
+    pre-loop vertexCount web no longer spans the loop): 170 positional,
+    aligned byte-exact 298, naming 81, immediate 2, really different 21,
+    residual 104. The pre-loop region then reads count copy v1, mark v1,
+    vertexCount a1, outputCount fp, polygonOffset a1, all as shipped.
+  - why positional rises: with mark off a2, a2 is free from the pre-loop
+    zero group to the loop, and as1 hoists outputOffset's zero init into
+    that group (+0xE0; the target keeps it at +0x284), a one-word shadow
+    over 0xD0..0x284. In the target a2 is held there by the constant 20
+    (the multiply at +0xC0 and +0x1B0), while ours colours that constant
+    a0 for its whole range (web 326, decision 27, a0 the lowest free).
+    Forcing it (p1:w326=c5, accepted) on that cell prices it: 170 to 108
+    at delta 0, the best number this function has measured.
+
+Flat: the constant 20 at the two pre-loop sites spelt (s16), (u8),
+(u16), (s8) or L (cfe folds the cast, 6 cells, all 170); the 0x14U
+literal at the first-scan or mark site (byte-identical); the second
+loop's sample address as (value * 4) plus the base (135: index * 5 lands
+in t3 as shipped but the shift draws t4 where the target shifts in
+place), as an index into the base, or split over two statements (132 to
+199).
+
+Cycle-21 line: the constant 20. In the target the first scan's 20 is in
+a0 and the mark and new-sample sites' 20 in a2, so it is two webs (or a
+split) where ours is one web over bb2..bb25. Decision variable: web 326's
+colour on proc 13 (a0 taken at decision 27 with a2 also free). Find the
+spelling that makes the first-scan multiply a different constant web
+(L131: the spellings must differ; casts on the literal are folded by
+cfe), then adopt the outputCount and vertexCount edits above with it.
+Then the stripIndex probes.
 <!-- plateau-handoff:wakeUpdate:end -->

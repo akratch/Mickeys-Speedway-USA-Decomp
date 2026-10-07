@@ -187,6 +187,14 @@ extern void func_overlay_047_F0002D10_1893B28(Overlay47Player *player);
     command->w0 = (u32)(a); \
     command->w1 = (u32)(b); \
 }
+/* The same command with its second word written first: per command site,
+ * the order fixes which word's operand ugen materialises first (measured
+ * 2026-10-07, six sites). */
+#define O47_COMMAND_W1(a, b) { \
+    Overlay47Command *command = D_800D3140++; \
+    command->w1 = (u32)(b); \
+    command->w0 = (u32)(a); \
+}
 #define O47_PHYSICAL(p) ((u32)((u8 *)(p) + 0x80000000))
 #define O47_VERTICES(p, n) \
     O47_COMMAND(0x04000000 | (((((n) << 3) | (O47_PHYSICAL(p) & 6)) & 0xFF) << 16) | ((n) * 10 + 8), O47_PHYSICAL(p))
@@ -525,7 +533,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     func_800221E8(&D_800D3140, NULL);
     camStandardOrtho(&D_800D3140, &D_800D3144);
     func_800349A4(&D_800D3140, NULL, 16, 0);
-    O47_COMMAND(0xFA000000, -1);
+    O47_COMMAND_W1(0xFA000000, -1);
     O47_VERTICES(ov47Data_228, 6);
     O47_COMMAND(0x05300040, O47_PHYSICAL(ov47Data_268));
     O47_COMMAND(0xE7000000, 0);
@@ -571,11 +579,11 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         red = colour >> 24;
         green = colour >> 16;
         blue = colour >> 8;
-        O47_COMMAND(0x06000000, ov47Data_300);
+        O47_COMMAND_W1(0x06000000, ov47Data_300);
         O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
-        O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
+        O47_COMMAND_W1(0xFCFFFFFF, 0xFFFDF6FB);
         O47_VERTICES(ov47Data_198, 4);
-        O47_COMMAND(0x05100020, O47_PHYSICAL(ov47Data_1C0));
+        O47_COMMAND_W1(0x05100020, O47_PHYSICAL(ov47Data_1C0));
         camStandardOrtho(&D_800D3140, &D_800D3144);
         func_80034920(&D_800D3140);
         O47_COMMAND(0xFA000000, -1);
@@ -588,7 +596,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         }
         O47_COMMAND(0x01000040, O47_PHYSICAL(savedMatrix));
         if (selected != -1 && !D_800D3058[selected].ready) {
-            O47_COMMAND(0x06000000, ov47Data_2A8);
+            O47_COMMAND_W1(0x06000000, ov47Data_2A8);
             colour = ov47Data_3DC[selected];
             red = (colour >> 24) & 255;
             green = (colour >> 16) & 255;
@@ -597,7 +605,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                 ((u32)(s32)(red + (255 - red) * ov47Data_540.value) << 24) |
                 (((s32)(green + (255 - green) * ov47Data_540.value) & 255) << 16) |
                 (((s32)(blue + (255 - blue) * ov47Data_540.value) & 255) << 8) | 255);
-            O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
+            O47_COMMAND_W1(0xFCFFFFFF, 0xFFFDF6FB);
             O47_VERTICES(ov47Data_0, 14);
             O47_COMMAND(0x05710080, O47_PHYSICAL(ov47Data_118));
             O47_VERTICES(ov47Data_8C, 14);
@@ -716,10 +724,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 1984 differing words
+ * score: 1982 differing words
  * frame: 0x280
  * relocations: 320
  * first-mismatch: +0x4
- * summary: Banked at delta 0 though positional rose 1377 to 1984: masked aligned rows 994 to 963 (indexed loops, one 3C8 table). Open: +0x4, 3C8 piece, i.
+ * summary: Banked: six command sites write w1 first, aligned rows 855 to 843 at delta 0. Open: blend cursor webs hold s1 (selected), +0x4, i order.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

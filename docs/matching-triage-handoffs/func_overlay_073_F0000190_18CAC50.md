@@ -423,4 +423,16 @@ structural rows.
   decision variable is what colours that non-p1 web, and what draws the
   extra ring temp in the if arm; both are open.
 
+- Resumed (lane f-o073): a 108-cell product over the if arm is flat at 4:
+  the count test as `>= 2`, `> 1`, `hitCount - 1 > 0`, `hitIndex - 1 > 0`,
+  `(hitCount - 1) != 0`, `hitIndex > 1`; the mathRnd arguments as
+  `hitCount`, `(s32)hitCount`, `hitCount + 0`, `(u16)hitCount`,
+  `(hitIndex, hitCount)`, `(1, hitIndex)`; the index as the ring temp,
+  `hitIndex = hitIndex - 1`, or masked with `& 7`. No cell draws the
+  extra ring temp or puts the subtraction in a1. Cycle-21 line: the
+  a-register of the join-block subtraction web is not a p1 decision, so
+  trace which pass assigns it (CDX_DETAIL_WEB on the `hitIndex = hitIndex
+  - 1` cell, then the ugen trace for any a-register ALLOC in that block);
+  the extra draw is between the beqz and the mathRnd narrowing.
+
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

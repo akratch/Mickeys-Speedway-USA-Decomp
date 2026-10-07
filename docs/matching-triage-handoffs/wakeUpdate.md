@@ -2,7 +2,7 @@
 ### `wakeUpdate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 198/398 words
+- score: 195/398 words
 - frame: 0x90
 - relocations: 2
 - first mismatch: +0x34
@@ -171,5 +171,26 @@ pointer in v0 where ours keeps one s0 web for both regions, the mark flag in
 v1, the first scan's count in a1) plus a one-register ring shift in the
 counter block; give the pre-loop sample its own local and re-read the
 records. Then replace each probe with a real reference.
+
+#### 2026-10-07, lane a-front (resumed): 198 to 195 at delta 0
+
+Aligner after: byte-exact 208, register naming 170, immediate 2, really
+different 22. The strip-start mark is written through the expression,
+((u8 *) wake->samples + (vertexCount * 0x14))[1] OR-assigned 0x80, so the pre-loop
+sample local no longer spans it (198 to 195). With the outputCount probe
+added this measures 248 positionally but 206 aligned exact rows (best
+aligned); not banked.
+
+Measured flat or worse (each a product): a separate cursor local for the
+first scan (worse); moving the stripIndex, polyCount and outputCount zero
+inits to just before the loop (flat or worse); mark as u8, as an assignment
+from the compare, or with an else arm, and the first scan as count-- != 0
+(u8 assign shifts the temp ring the other way: 262 aligned exact but +4).
+
+Left: the pre-loop zero init our build places at +0xDC (a2) where the
+target has none until +0x284, the mark/first-scan swap between v1 and a1,
+and a one-register temp-ring shift through the counter block. Next: the
+freelist trace (draw_census --proc 13) on the pre-loop lines, then replace
+the probes with real references.
 
 <!-- plateau-handoff:wakeUpdate:end -->

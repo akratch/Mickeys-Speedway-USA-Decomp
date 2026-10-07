@@ -312,7 +312,7 @@ units remain distinct.
 | 17 | `src/main/track.c` | `func_80010654` | `main` | `other` | 684 | 160 | 160 | 4 | 4 | 0 | — |
 | 18 | `src/main/textures_354C8.c` | `func_800349A4` | `main` | `other` | 1,088 | 162 | 162 | 36 | 36 | 0 | — |
 | 19 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 177 | 177 | 36 | 36 | 0 | — |
-| 20 | `src/main/fx.c` | `wakeUpdate` | `main` | `other` | 1,592 | 198 | 198 | 52 | 52 | 0 | — |
+| 20 | `src/main/fx.c` | `wakeUpdate` | `main` | `other` | 1,592 | 195 | 195 | 52 | 52 | 0 | — |
 | 21 | `src/main/charControl.c` | `func_8001DD70` | `main` | `other` | 2,132 | 224 | 224 | 360 | 360 | 0 | — |
 | 22 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 234 | 234 | 192 | 192 | 0 | — |
 | 23 | `src/overlays/o036/overlay36UpdateInteractiveEntity.c` | `overlay36UpdateInteractiveEntity` | `o036` | `other` | 1,220 | 238 | 235 | 24 | 44 | 0 | — |

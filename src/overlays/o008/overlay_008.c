@@ -1937,6 +1937,9 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
  * the approach loop.  The gate word read as `O8_S32(0)` is a resident symbol
  * (records at +0x2CC/+0x3C4): declared as one, its high half is hoisted
  * after the approach loop as shipped, at +4 bytes until that reload moves.
+ * 2026-10-07, 124 -> 98 at size 0: the u8 mode entry is masked once more
+ * where it is read (`D_0[mode] & 0xFF`); the redundant mask spends the ring
+ * draw the shipped table lookup was rotated by (checklist item 16, L149).
  * GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
@@ -1992,7 +1995,7 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     }
     D_0[mode] &= 3;
     randomMode = o8P42A8RandomReloc() & 3;
-    tableIndex = D_0[mode];
+    tableIndex = D_0[mode] & 0xFF;
     if ((state->reset170 != 0) || (state->lock191 != 0)) {
         tableIndex = 1;
     }
@@ -2370,11 +2373,11 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000
- * score: 124/447 words
+ * score: 98/447 words
  * frame: 0xA0
  * relocations: 40
- * first-mismatch: +0x124
- * summary: Byte-offset table index: 126 to 124 at size 0. Left: randomMode still off a2, steps home, counter reload.
+ * first-mismatch: +0x114
+ * summary: Redundant u8 mask on the mode entry: 124 to 98 at size 0. Left: randomMode off a2 (shared r*4), steps conversion block and home, counter reload against the gate hoist.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
  */
 

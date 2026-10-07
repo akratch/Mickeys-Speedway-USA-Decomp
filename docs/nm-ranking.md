@@ -321,7 +321,7 @@ units remain distinct.
 | 26 | `src/overlays/o036/overlay36UpdateInteractiveEntity.c` | `overlay36UpdateInteractiveEntity` | `o036` | `other` | 1,220 | 232 | 229 | 24 | 44 | 0 | — |
 | 27 | `src/overlays/o066/overlay66SmoothAndDraw.c` | `func_overlay_066_F0000040_18C64A8` | `o066` | `other` | 1,184 | 251 | 249 | 4 | 132 | 0 | — |
 | 28 | `src/overlays/o098/overlay98RenderReflections.c` | `overlay98RenderReflections` | `o098` | `other` | 1,556 | 270 | 267 | 20 | 20 | 0 | — |
-| 29 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 345 | 345 | 4 | 4 | 0 | — |
+| 29 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
 | 30 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 380 | 380 | 0 | 0 | 0 | — |
 | 31 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 392 | 392 | 112 | 112 | 0 | — |
 | 32 | `src/overlays/o012/func_overlay_012_F0000910_186DB90.c` | `func_overlay_012_F0000910_186DB90` | `o012` | `other` | 2,444 | 570 | 569 | 4 | 4 | 0 | — |

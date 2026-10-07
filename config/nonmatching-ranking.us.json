@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 55,
-  "resolved": 55,
+  "queue_size": 54,
+  "resolved": 54,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 55,
-  "relocation_masked_coverage": 55,
+  "source_context_coverage": 54,
+  "relocation_masked_coverage": 54,
   "functions": [
     {
       "name": "func_80051364",
@@ -682,7 +682,7 @@
       "relocation_masked_first_mismatch_offset": 76,
       "size_delta": 16,
       "category": "size-mismatch",
-      "source_context_sha256": "sdTe.qjVL.Yduk.Ql5O.VM2R.joB3.8VAV.E-TQ.U3_K.x7CS.Wk4"
+      "source_context_sha256": "B0yj.bbhZ.8_v4.e-Tz.V9kd.PlE7.MtFB.gjQY.EMFZ.8P08.XbE"
     },
     {
       "name": "func_8000E920",
@@ -743,21 +743,6 @@
       "size_delta": -32,
       "category": "size-mismatch",
       "source_context_sha256": "0JFh.gZbY.7Gv4.ut8s.d1BJ.3PMM.w9q1.p1ZZ.oSod.3QS1.ZrY"
-    },
-    {
-      "name": "shadowGenerate",
-      "file": "src/main/shadows.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 2040,
-      "objdiff_match_pct": null,
-      "differing_words": 419,
-      "first_mismatch_offset": 280,
-      "relocation_masked_differing_words": 419,
-      "relocation_masked_first_mismatch_offset": 280,
-      "size_delta": 24,
-      "category": "size-mismatch",
-      "source_context_sha256": "O-7Y.I6i7.3rHs.V0Ij.auph.Ff3f.OYww.vKtm.B6n8.ldhi.Z10"
     },
     {
       "name": "func_8001291C",

@@ -435,4 +435,80 @@ structural rows.
   - 1` cell, then the ugen trace for any a-register ALLOC in that block);
   the extra draw is between the beqz and the mathRnd narrowing.
 
+#### 2026-10-07, lane g-near: the a1 web is the unsubstituted count definition; one ghost draw remains
+
+Fresh eyes on the 4-word residual. The recorded next step (trace which pass
+colours the join-block subtraction) was not the right question: the target's
+`addiu a1, v1, -1` is not a fresh web coloured a1, it is hitCount's own a1
+web redefined in the join block. uopt forward-substitutes `hitCount =
+hitIndex - 1` into `hits[hitCount]` (every earlier lane measured that cell
+as 4, "substituted away"); a no-op redefinition of hitIndex between the two
+statements, the same lever that matched overlay68UpdateAnimation today,
+kills the substitution: `hitCount = hitIndex - 1;`, then hitIndex or-assigned
+with zero, then `state->target = hits[hitCount];` compiles to the target's join block
+exactly (addiu a1, then the s16 narrowing of a1 and the subscript, with the
+same ring temps in the same order relative to the block's first draw). The
+cast and the and-with-minus-one and xor-with-zero spellings measure the
+same; the or on hitCount instead of hitIndex, and a trailing use of either
+variable, do not (30-cell product). Source and tree are unchanged: that
+shape measures 64 masked at size 0 because what remains is a single ring
+draw, not colour, and the positional count counts its whole shadow.
+
+What remains, located exactly: the target spends one ring draw with no
+surviving instruction between the hitIndex narrowing's `or v1, t7` and the
+mathRnd arm's `sra` (ugen emits 680 to 692 in our trace: the two tests, the
+constant a0 argument, the state spill and reload). The freelist is a pure
+rotation here (simulated from the trace against all 121 draws), so the draw
+cannot be anywhere else: earlier would shift the call block's t4..t7, later
+would shift nothing. A ghost draw of this kind exists in this very
+function, at the switch dispatch (ALLOC t4 freed before any emission).
+
+Measured flat on the kill shape, all 64 at size 0 unless noted:
+
+- The mathRnd arm: cast or no cast, s16-returning callee, result through an
+  s32 local, count carried through hitCount, argument as hitIndex, (s16)
+  casts and or-zero on either argument, 1U and (s16)1, five test spellings
+  (90-cell product); or-zero, cast and self-copy probes on either variable
+  before the test (35 cells).
+- The countdown block: an and-mask or a (u16) cast on the countdown
+  subtraction spends a draw but two lines too early (12 at size 0, first
+  mismatch +0x754, the call block's t4..t7 shift); (s16)1 and &hits[0] as
+  arguments, a double cast on the count, (s16) on the index copy (45 cells).
+- The query line: five assignment forms, three index types, one or two
+  physical lines, three spellings of each test (180 cells). One form is
+  informative: `phase = func(...); hitCount = phase; hitIndex = phase;` with
+  s32 hitIndex and the tests on hitCount and hitIndex reads 6 at size 0,
+  first mismatch +0x794: the ring is then in phase through the mathRnd arm
+  and the join block, because the test narrows phase into two ring temps
+  (sll t7, sra t8) while hitIndex is a plain copy. That proves the target's
+  call block spends five draws where ours spends four, and that the fifth
+  is a narrowing-sized draw. With hitIndex narrowed (s16, or an explicit
+  cast) the test shares hitIndex's narrowing again and the draw is gone
+  (108 + 270 cells over phase-carrier definitions, test operands, A-block
+  redefinitions). Explicit double narrowings, shift pairs, multiply-by-one
+  and add-zero on the index definition (24 cells) are folded by uopt before
+  ugen draws.
+- Forces (instrumented uopt, identity-gated): the constant-1 argument web
+  to a2, a3, t2, t5 or split, and the ghost narrowing web (type 4, a0, the
+  test blocks only) to a2, a3, t2..t5 or split: none puts t9 under the
+  mathRnd narrowing; t2/t3 forces rotate the ring the other way. t8 and t9
+  are not colours in this procedure (c13 is unnamed, c14 is s0), so the
+  skip cannot be a coloured web removed from the ring.
+- Countdown store before the target store, and the countdown clear moved
+  after the query call: worse (11 and 314 at -8).
+
+Cycle-21 line: the decision variable is the construct in the target's
+source that makes ugen draw and release one ring temp between the index
+narrowing and the mathRnd call with no surviving instruction. The two
+candidates the data leaves are an as1-forwarded copy of the narrowed index
+(ugen `move tN, v1` for a test operand that is a temp rather than the
+symbol, deleted after forwarding, which is how `beqz t7` already reads
+through `or v1, t7`) and a second narrowing of the same value that as1
+folds like the double andi of L149. Next: on the kill shape, compile the
+`phase` carrier cell (6 words) with the ugen trace and diff its ALLOC rows
+against the kill shape's to name the handler that drew the fifth temp;
+then look for a source form whose test reads an expression temporary of
+the narrowed index rather than hitIndex itself. Do not re-run the
+spellings above.
+
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

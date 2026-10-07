@@ -71,33 +71,28 @@ extern s32 gOverlay68GlobalFlagReloc;
 #define OVERLAY68_GLOBAL_FLAG gOverlay68GlobalFlagReloc
 
 /*
- * 2026-10-07 (lane c-near), 6 -> 2 at size 0: atStart is assigned inside the
- * first call's argument list and the red result is carried through `index`.
- * The argument keeps index live into the call block (so it is denied a0-a3
- * and keeps t0), and the redefinition kills `index < 1`, so uopt can no
- * longer rebuild atStart as an expression temporary: it becomes the symbol
- * web and spills to its own home at sp+0x6C as shipped. Left: the home store
- * is emitted at the definition, after the argument store; the target emits
- * it with the call's spill group, before the argument store.
- * 2026-10-07 (lane a-ovl2), 106 -> 6 at size 0: the neighbour selection is
- * three plain ifs after copies made in the order afterAfter, after, before
- * (the copy order alone swaps the before and afterAfter colours), the red
- * sample is read in the call's argument list, and the opacity store is the
- * plain byte store ahead of the elapsed add. The inherited ternary through
- * `angle` and the `& 0xFF` mask were each a ring draw the target does not
- * spend; they only looked load-bearing because each was measured without the
- * other. Left: atStart's spill lands in a compiler temp (sp+0x34), the
- * target spills it to its home (sp+0x6C).
- * 2026-10-02 (lane x-sort), 180 -> 108 at size 0: the duration loop carries
- * the keyframe index in `index` (stored as index + 1, re-read into index in
- * the exit test), which makes one web of the loop index and the neighbour
- * index and gives state t2, current t1, index t0, animation a2 and the
- * stride a3 as the target has them.  The declarations follow the target's
- * home map (atStart 0x6C, tangents 0x60/0x5C, current 0x58, before 0x54,
- * after 0x4C, afterAfter 0x48, state 0x40) with two unused cells at the
- * bottom for the 0x78 frame.
+ * Matched 2026-10-07 (lane g-near), 2 -> 0 at size 0. The last two words
+ * were the order of atStart's home store against its argument store before
+ * the first interpolation call: the target saves the v0 web with the call's
+ * spill group (ascending register order, after the argument stores), ours
+ * stored it at the definition. uopt forward-substituted `index < 1` into
+ * the argument on every statement form, which left the symbol's call-block
+ * piece with no reference but its store, so it was never coloured. The
+ * no-op redefinition `index = (s16)index;` between the atStart statement and
+ * the call kills that substitution (the compiler deletes the cast itself:
+ * `|= 0`, `&= -1` and `^= 0` measure the same; `+= 0` and `= index` do
+ * not), so the argument reads the symbol, the web is coloured v0 and saved
+ * at the call, while index stays live into the call block and keeps t0.
+ * Earlier steps, in order: the duration loop carries the keyframe index in
+ * `index` (stored as index + 1, re-read in the exit test) so one web spans
+ * the loop and the neighbour selection (lane x-sort, 180 -> 108); the
+ * neighbour selection is three plain ifs after copies made in the order
+ * afterAfter, after, before, the red sample is read in the argument list,
+ * and the opacity store is the plain byte store ahead of the elapsed add
+ * (lane a-ovl2, 106 -> 6); the declarations follow the target's home map
+ * (atStart 0x6C, tangents 0x60/0x5C, current 0x58, before 0x54, after 0x4C,
+ * afterAfter 0x48, state 0x40) with two unused cells for the 0x78 frame.
  */
-#ifdef NON_MATCHING
 void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
     s32 direction;
     s32 animationOpacity;
@@ -183,11 +178,11 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
                 afterAfter = current + 2;
             }
 
-            index = func_overlay_068_F0000650_18C77B0(
+            atStart = index < 1;
+            index = (s16)index;
+            object->red = (s16)(s32)func_overlay_068_F0000650_18C77B0(
                 state->fraction, before->red << 8, current->red << 8,
-                after->red << 8, afterAfter->red << 8, 1, 0,
-                atStart = index < 1);
-            object->red = index;
+                after->red << 8, afterAfter->red << 8, 1, 0, atStart);
             object->green = (s16)(s32)func_overlay_068_F0000650_18C77B0(
                 state->fraction, before->green << 8, current->green << 8,
                 after->green << 8, afterAfter->green << 8, 1, 0, atStart);
@@ -239,16 +234,3 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o068/overlay68UpdateAnimation/func_overlay_068_F000096C_18C7ACC.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay68UpdateAnimation:start
- * symbol: overlay68UpdateAnimation
- * score: 2/356 words
- * frame: 0x78
- * relocations: 15
- * first-mismatch: +0x244
- * summary: atStart assigned in the first call, red result through index: 6 to 2. Left: home store emitted at the definition, after the argument store.
- * PLATEAU-HANDOFF:overlay68UpdateAnimation:end
- */

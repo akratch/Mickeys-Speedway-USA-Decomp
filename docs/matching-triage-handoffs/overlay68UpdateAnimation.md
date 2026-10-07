@@ -2,11 +2,11 @@
 ### `overlay68UpdateAnimation` plateau handoff
 
 - source: `src/overlays/o068/overlay68UpdateAnimation.c`
-- score: 2/356 words
+- score: 0/356 words, promoted
 - frame: 0x78
 - relocations: 15
-- first mismatch: +0x244
-- summary: atStart assigned in the first call, red result through index: 6 to 2. Left: home store emitted at the definition, after the argument store.
+- first mismatch: none
+- summary: Matched. A no-op redefinition of index between the atStart statement and the first call kills the forward-substitution of `index < 1` into the argument; atStart is then a coloured symbol web saved with the call's spill group, as shipped. 2 to 0 at size 0, promoted.
 
 Summary before this remeasure: Plain-if neighbours, copy order afterAfter/after/before, unmasked opacity before elapsed: 106 to 6. Left: atStart spills to a temp, not its home.
 
@@ -210,5 +210,36 @@ Base: the memory-form statement before the call passing plain `atStart` (100 at 
 - In-argument forms re-reading the variable (`(atStart = index < 1, atStart)`, the same with `*&atStart`): 75 at 0 with a frame 8 bytes larger. `(atStart = (index < 1)) + 0`: 2. Statement shape with atStart typed s16/u8/s8/u16 (233 to 234 at +8) or u32 (20), and `!index` (76) or `(index < 1) & 1` (242 at +4): no cell under 20.
 
 Decision variable: atStart must be a register symbol web with a reference in the call block (so it is saved there, giving the target's store order) while computed from the index web itself, not a separate load. Every index-form statement is copy-propagated into the argument; every memory form splits the load from index.
+
+## 2026-10-07, lane g-near: matched, 2 to 0, the substitution kill
+
+d-near's decision variable was exact: atStart had to be a register symbol web
+with a reference in the call block, computed from the index web itself. What
+was missing was a DEFINITION of index, not a use, between the atStart
+statement and the call: uopt forward-substitutes `atStart = index < 1` into
+the argument only while index is unchanged, and every earlier redefinition
+had been a real new value (-4 bytes, 240 to 319). A redefinition that uopt
+keeps as a definition but emits nothing for is enough.
+
+One 56-cell product (`tools/shape_product.py`): the no-op redefinition
+spelled as an or with zero, an and with minus one, an xor with zero, an add of zero, an s16 cast of itself, or a plain self-copy; the
+atStart statement after the index load or right before the call; the
+redefinition right after the atStart statement or right before the call; the
+red result through index or stored directly.
+
+- 16 exact cells at size 0: the or, and, xor and cast forms with the
+  atStart statement right before the call, either redefinition position,
+  either red form. The adopted spelling is `atStart = index < 1; index =
+  (s16)index;` ahead of the call with the red result stored directly.
+- The add of zero and the self-copy are folded before the substitution and read 6 (red
+  direct) or 20 (red through index), the same as no redefinition.
+- Every cell with the atStart statement right after the index load is 316 to
+  318 at size -8 or +4: the early definition ends index's range before the
+  neighbour tests reach the call block.
+
+Records of the adopted cell: atStart's call-block piece is referenced by the
+argument, coloured v0 and saved as the first member of the call's spill
+group; index keeps t0. `gmake verify`, `check-overlay-syms` and
+`promotion-proof` pass; promoted.
 
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

@@ -2059,54 +2059,16 @@ def _atlas_hex(row, field, description):
 
 
 def _callee_build_dependencies(root, source_path, source_text):
-    """Conservative canonical dependency set for an identity-only read proof.
+    from overlay_call_context import callee_build_dependencies
+    return callee_build_dependencies(root, source_path, source_text)
 
-    This does not build or create a compiler receipt. Literal header lookup
-    follows the canonical C rule (including asm-processor's source directory);
-    unsupported includes fail closed. Build policy and compiler/metadata tools
-    are timestamp prerequisites even where make's object rule omits them.
-    """
-    import permute_batch as batch
-    import subprocess
-    import time
-    root = Path(root)
-    if root.resolve() != batch.ROOT.resolve():
-        return None
+
+def _overlay_call_definition_name(root, name):
+    from overlay_call_context import overlay_call_definition_name
     try:
-        deadline = time.monotonic() + 5
-        recipe = batch.build_recipe_for(source_path, deadline=deadline)
-        if not recipe.from_dry_run or not recipe.compiler_args:
-            return None
-        # asm-processor appends the original source directory to the real
-        # compiler's -I list because its temporary C lives elsewhere.
-        includes = batch.source_dependencies(
-            source_path, recipe.compiler_args + ("-I", str(source_path.parent)), deadline)
-    except (OSError, RuntimeError, ValueError, subprocess.SubprocessError):
-        return None
-    if any(name.startswith("missing:") for name in includes):
-        return None
-    dependencies = set(path for path in (root / "include").rglob("*")
-                       if path.is_file())
-    dependencies.update(path for path in (root / "mk").rglob("*.mk") if path.is_file())
-    # Rebind/filter specs are build inputs too; their suffix is not uniformly
-    # JSON and editing them need not alter the expanded command string.
-    dependencies.update(path for path in (root / "config/normalizations").rglob("*")
-                        if path.is_file())
-    dependencies.update(path for path in (root / "tools/ido").rglob("*")
-                        if path.is_file())
-    dependencies.update(path for path in (root / "tools/asm-processor").glob("*.py")
-                        if path.is_file())
-    for relative in (
-            "Makefile", "build/.splat-stamp", "tools/binutils/mips64-elf-as",
-            "tools/binutils/mips64-elf-objcopy", "tools/normalize_elf_instructions.py",
-            "tools/filter_elf_relocations.py", "tools/trim_elf_section.py",
-            "tools/externalize_elf_section.py", "tools/rebind_elf_relocations.py",
-            "tools/set_elf_flags.py", "tools/render_overlay_aliases.py"):
-        path = root / relative
-        if path.is_file():
-            dependencies.add(path)
-    dependencies.update(root / name for name in includes)
-    return dependencies, (recipe, includes)
+        return overlay_call_definition_name(root, name, GEN_NAME_RE)
+    except ValueError as error:
+        raise SurfaceComparisonError(str(error)) from error
 
 
 def _canonical_overlay_call_boundary(atlas, source_overlay, generated_name,
@@ -2122,9 +2084,12 @@ def _canonical_overlay_call_boundary(atlas, source_overlay, generated_name,
     symbols, linked ROM equality and unchanged non-relocation instruction bits.
     Contradictory evidence is an error; missing proof supplies no identity.
     """
-    match = GEN_NAME_RE.fullmatch(generated_name)
-    if not match:
+    root = REPO if root is None else Path(root)
+    spelling = _overlay_call_definition_name(root, generated_name)
+    if spelling is None:
         return None
+    generated_name, definition_name, alias_path, alias_text = spelling
+    match = GEN_NAME_RE.fullmatch(generated_name)
     target_overlay = int(match.group(1))
     target_offset = int(match.group(2), 16)
 
@@ -2185,7 +2150,8 @@ def _canonical_overlay_call_boundary(atlas, source_overlay, generated_name,
     # Containment in a section or broad TU does not prove a function start.
     if row.get("type") != "c":
         return None
-    strict_c = target_overlay != source_overlay or row_start != target_offset
+    strict_c = (alias_path is not None or target_overlay != source_overlay
+                or row_start != target_offset)
     if strict_c and rom is None:
         return None
 
@@ -2222,12 +2188,20 @@ def _canonical_overlay_call_boundary(atlas, source_overlay, generated_name,
             return None
         dependencies, _context = dependency_proof
         proof_paths = [source_path, object_path, target_path, *dependencies]
+        if alias_path is not None:
+            proof_paths.append(alias_path)
+            if alias_path.read_text() != alias_text:
+                return None
         def file_state(path):
             stat = path.stat()
             return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns
         before_files = {path: file_state(path) for path in proof_paths}
+        if alias_path is not None and alias_path.read_text() != alias_text:
+            return None
         object_time = before_files[object_path][3]
         if (before_files[source_path][3] > object_time
+                or (alias_path is not None and
+                    before_files[alias_path][3] > before_files[target_path][3])
                 or before_files[target_path][3] < object_time
                 or any(before_files[path][3] > object_time for path in dependencies)):
             return None
@@ -2240,7 +2214,7 @@ def _canonical_overlay_call_boundary(atlas, source_overlay, generated_name,
             return None
         # This route proves an actual ordinary C definition, not a label in
         # fallback assembly. Unknown conditional compilation is not evidence.
-        facts = provenance.source_facts(source_text, generated_name)
+        facts = provenance.source_facts(source_text, definition_name)
         if len(facts.definitions) != 1 or facts.pragmas:
             return None
         depth = 0
@@ -2268,13 +2242,13 @@ def _canonical_overlay_call_boundary(atlas, source_overlay, generated_name,
     ]
     if strict_c:
         named = [row for row in canonical.symbols()
-                 if row[0] == generated_name and row[4] != SHN_UNDEF]
+                 if row[0] == definition_name and row[4] != SHN_UNDEF]
         if len(named) > 1:
             raise SurfaceComparisonError("generated callee has ambiguous canonical definitions")
         if named and (named[0][4] != text_index or named[0][3] & 0xF != STT_FUNC):
             return None
     definitions = [
-        row for row in canonical_functions if row[0] == generated_name
+        row for row in canonical_functions if row[0] == definition_name
     ]
     if len(definitions) > 1:
         raise SurfaceComparisonError(
@@ -2287,12 +2261,20 @@ def _canonical_overlay_call_boundary(atlas, source_overlay, generated_name,
         raise SurfaceComparisonError(
             "%s canonical object symbol conflicts with atlas boundary"
             % generated_name)
+    if strict_c and alias_path is not None:
+        aliases = [row for row in canonical.symbols()
+                   if row[0] == generated_name and row[4] != SHN_UNDEF]
+        if len(aliases) > 1 or any(
+                row[1:3] != (object_value, object_symbol_size)
+                or row[4] != text_index or row[3] & 0xF != STT_FUNC
+                for row in aliases):
+            raise SurfaceComparisonError("generated alias conflicts with canonical friendly callee")
     if strict_c:
         object_end = object_value + object_symbol_size
         if object_end > row_size:
             raise SurfaceComparisonError("generated callee escapes canonical object ownership")
         for name, value, size in canonical_functions:
-            if name == generated_name or (value, size) == (object_value, object_symbol_size):
+            if name == definition_name or (value, size) == (object_value, object_symbol_size):
                 continue
             if size > 0 and value < object_end and object_value < value + size:
                 raise SurfaceComparisonError("generated callee has overlapping function boundaries")
@@ -2323,13 +2305,13 @@ def _canonical_overlay_call_boundary(atlas, source_overlay, generated_name,
     linked = []
     if strict_c:
         named = [row for row in target_elf.symbols()
-                 if row[0] == generated_name and row[4] != SHN_UNDEF]
+                 if row[0] == definition_name and row[4] != SHN_UNDEF]
         if len(named) > 1:
             raise SurfaceComparisonError("generated callee has ambiguous linked definitions")
         if named and (named[0][4] == SHN_ABS or named[0][3] & 0xF != STT_FUNC):
             return None
     for name, value, size, info, shndx in target_elf.symbols():
-        if (name == generated_name and shndx != SHN_UNDEF
+        if (name == definition_name and shndx != SHN_UNDEF
                 and (info & 0xF) == STT_FUNC):
             section = target_elf.names[shndx] if shndx < len(target_elf.names) else ""
             linked.append((value, size, section))
@@ -2345,6 +2327,14 @@ def _canonical_overlay_call_boundary(atlas, source_overlay, generated_name,
         raise SurfaceComparisonError(
             "%s linked symbol conflicts with canonical overlay ownership"
             % generated_name)
+    if strict_c and alias_path is not None:
+        aliases = [row for row in target_elf.symbols()
+                   if row[0] == generated_name and row[4] != SHN_UNDEF]
+        linked_index = target_elf.names.index(linked_section)
+        if len(aliases) > 1 or any(
+                row[1] != linked_value or row[4] not in (SHN_ABS, linked_index)
+                for row in aliases):
+            raise SurfaceComparisonError("generated alias conflicts with proved friendly callee")
     if strict_c:
         section_index, section_header = target_elf.section(linked_section)
         if section_index is None or not isinstance(section_header, tuple):
@@ -2654,7 +2644,8 @@ def _capture_explicit_storage_group(root, group, registry_path, registry_sha256)
                           for p in [root / "Makefile", *sorted((root / "mk").glob("**/*.mk"))]},
             "tools": batch.checked_tool_identity(),
             "proof_tools": {rel: pp.sha256_file(root / rel) for rel in
-                             ("tools/reloc_surface.py", "tools/proof_provenance.py",
+                             ("tools/reloc_surface.py", "tools/overlay_call_context.py",
+                             "tools/proof_provenance.py",
                              "tools/overlay_storage_types.py", "tools/overlay_storage_freshness.py",
                              "tools/trim_elf_section.py",
                              "tools/binutils/mips64-elf-objcopy")},
@@ -2759,7 +2750,8 @@ def _recheck_explicit_storage_capture(root, group, registry_path,
                       for p in [root / "Makefile", *sorted((root / "mk").glob("**/*.mk"))]},
         "tools": tools_identity,
         "proof_tools": {rel: pp.sha256_file(root / rel) for rel in
-                        ("tools/reloc_surface.py", "tools/proof_provenance.py",
+                        ("tools/reloc_surface.py", "tools/overlay_call_context.py",
+                             "tools/proof_provenance.py",
                          "tools/overlay_storage_types.py", "tools/overlay_storage_freshness.py",
                          "tools/trim_elf_section.py",
                          "tools/binutils/mips64-elf-objcopy")},
@@ -4136,7 +4128,8 @@ def _capture_reserved_storage_source(root, source, configured, linked):
                               ("baseroms/mickey.us.z64", "config/overlays.us.json",
                                "overlay_undefined_syms.us.txt", "symbol_addrs.us.txt")},
             "proof_tools": {p: pp.sha256_file(root / p) for p in
-                            ("tools/reloc_surface.py", "tools/proof_provenance.py",
+                            ("tools/reloc_surface.py", "tools/overlay_call_context.py",
+                             "tools/proof_provenance.py",
                              "tools/trim_elf_section.py", "tools/binutils/mips64-elf-objcopy")},
         }
 

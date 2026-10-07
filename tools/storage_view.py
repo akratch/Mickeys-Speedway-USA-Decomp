@@ -125,6 +125,7 @@ def capture(resolution, directory):
                 'proof_tools': {p: pp.sha256_file(ROOT / p) for p in (
                     'tools/storage_view.py', 'tools/function_preflight.py', 'tools/proof_provenance.py',
                     'tools/reloc_surface.py', 'tools/overlay_tables.py', 'tools/reloc_identity.py',
+                    'tools/overlay_call_context.py',
                     'tools/rebind_elf_relocations.py', 'tools/trim_elf_section.py',
                     'tools/binutils/mips64-elf-objcopy')}}
 

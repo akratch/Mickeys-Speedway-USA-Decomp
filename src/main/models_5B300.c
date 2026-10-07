@@ -603,15 +603,15 @@ void func_8005AD64(ModelAnimationInstance *instance, s32 frame, s32 arg2,
  * Rewritten plainly (lane b-models, 2026-10-07): the slot arrays as
  * matrices[2]/counts[2], the head and neck as &matrices[slot][8] and [9],
  * node 9's position read through a pointer, the three point loops indexed,
- * the first clamp arm updating rawAngle in place (its narrowing frees the
+ * both clamp arms updating clampedAngle in place (the narrowing frees the
  * intermediate before the constant, as shipped), the second Arctanf result
- * held in rawAngle so the add reads clampedAngle first. Each point loop takes
- * a vertex pointer first and forms the matrix as a byte offset added to the
+ * held in rawAngle so the add reads clampedAngle first, and a redundant
+ * 0xFFFF mask on that sum (one deleted draw, L149). Each point loop takes a
+ * vertex pointer first and forms the matrix as a byte offset added to the
  * slot base; a redundant 0xFFFF mask (node in loop 0, vertex index in loops
- * 1 and 2) spends the scratch draw the target's ring shows (L149).
- * NON_MATCHING: 460 words, frame 0xF8, 71 masked words; the remaining
- * residual is one extra draw: rawAngle's dead narrowing at the first
- * Arctanf, which shifts the clamp's ring by one register. */
+ * 1 and 2) spends a scratch draw (L149).
+ * NON_MATCHING: 460 words, frame 0xF8, 32 masked words, all in loops 1 and
+ * 2: the target draws output + 1 before the node load there. */
 #ifdef NON_MATCHING
 void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
                    ModelRenderModel *model) {
@@ -712,18 +712,18 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
         rawAngle = Arctanf(-((dx * cosine) + (dz * sine)), (dz * cosine) - (dx * sine));
         clampedAngle = rawAngle;
         if (rawAngle > 0x4000) {
-            rawAngle = rawAngle - 0x4000;
-            clampedAngle = 0x4000 - rawAngle;
+            clampedAngle = clampedAngle - 0x4000;
+            clampedAngle = 0x4000 - clampedAngle;
         } else if (rawAngle < -0x4000) {
-            excess = rawAngle + 0x4000;
-            clampedAngle = -0x4000 - excess;
+            clampedAngle = clampedAngle + 0x4000;
+            clampedAngle = -0x4000 - clampedAngle;
         }
         clampedAngle = ((f32) clampedAngle / 16384.0f) * 8192.0f;
         func_8002B040(head, Z2, 1.0f, Z2, &dx, &dy, &dz);
         sine = func_8002A8C0(angle);
         cosine = func_8002A8BC(angle);
         rawAngle = Arctanf(-((dx * cosine) + (dz * sine)), dy);
-        transform.rotation2 = clampedAngle + rawAngle;
+        transform.rotation2 = (clampedAngle + rawAngle) & 0xFFFF;
         transform.rotation0 = yaw;
         transform.rotation1 = pitch;
         transform.scale = model->transformScale;
@@ -799,10 +799,10 @@ void func_8005B644(Matrix *matrices, Matrix *root, ModelMatrixNode *node, s32 co
 
 /* PLATEAU-HANDOFF:func_8005AF14:start
  * symbol: func_8005AF14
- * score: 71/460 words
+ * score: 32/460 words
  * frame: 0xF8
  * relocations: 27
- * first-mismatch: +0x328
- * summary: Vertex pointer first, byte-offset matrix, L149 masks, rawAngle in place (114 to 71). Left: dead narrowing of the first Arctanf result
+ * first-mismatch: +0x5B4
+ * summary: Clamp arms in place on clampedAngle, masked rotation sum (71 to 32). Left: one ring draw before the node load in loops 1 and 2
  * PLATEAU-HANDOFF:func_8005AF14:end
  */

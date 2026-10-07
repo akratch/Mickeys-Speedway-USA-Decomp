@@ -71,8 +71,15 @@ extern s32 gOverlay68GlobalFlagReloc;
 #define OVERLAY68_GLOBAL_FLAG gOverlay68GlobalFlagReloc
 
 /*
- * 2026-10-06, 108 -> 106 at size 0: the opacity store follows the elapsed
- * add. The mask stays; moving it past that add is what drops the two words.
+ * 2026-10-07 (lane a-ovl2), 106 -> 6 at size 0: the neighbour selection is
+ * three plain ifs after copies made in the order afterAfter, after, before
+ * (the copy order alone swaps the before and afterAfter colours), the red
+ * sample is read in the call's argument list, and the opacity store is the
+ * plain byte store ahead of the elapsed add. The inherited ternary through
+ * `angle` and the `& 0xFF` mask were each a ring draw the target does not
+ * spend; they only looked load-bearing because each was measured without the
+ * other. Left: atStart's spill lands in a compiler temp (sp+0x34), the
+ * target spills it to its home (sp+0x6C).
  * 2026-10-02 (lane x-sort), 180 -> 108 at size 0: the duration loop carries
  * the keyframe index in `index` (stored as index + 1, re-read into index in
  * the exit test), which makes one web of the loop index and the neighbour
@@ -131,8 +138,8 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
             if (animationOpacity < 0) {
                 animationOpacity = 0;
             }
+            state->opacity = animationOpacity;
             state->elapsed += updateRate;
-            state->opacity = animationOpacity & 0xFF;
             index = state->keyframeIndex;
             current = &animation->keyframes[index];
             while (state->elapsed >= current->duration) {
@@ -155,9 +162,9 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
             }
 
             index = state->keyframeIndex;
-            before = current;
-            after = current;
             afterAfter = current;
+            after = current;
+            before = current;
             if (index > 0) {
                 before = current - 1;
             }
@@ -165,12 +172,12 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
             if (index < animation->keyframeCount - 1) {
                 after = current + 1;
             }
-            angle = index < animation->keyframeCount - 2
-                ? (afterAfter = current + 2, before->red)
-                : before->red;
+            if (index < animation->keyframeCount - 2) {
+                afterAfter = current + 2;
+            }
 
             object->red = (s16)(s32)func_overlay_068_F0000650_18C77B0(
-                state->fraction, angle << 8, current->red << 8,
+                state->fraction, before->red << 8, current->red << 8,
                 after->red << 8, afterAfter->red << 8, 1, 0, atStart);
             object->green = (s16)(s32)func_overlay_068_F0000650_18C77B0(
                 state->fraction, before->green << 8, current->green << 8,
@@ -229,10 +236,10 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
 
 /* PLATEAU-HANDOFF:overlay68UpdateAnimation:start
  * symbol: overlay68UpdateAnimation
- * score: 106/356 words
+ * score: 6/356 words
  * frame: 0x78
  * relocations: 15
- * first-mismatch: +0xCC
- * summary: Opacity store follows the elapsed add: 108 to 106 at size 0. Left: the ring from +0xCC and the neighbour pointers' colours.
+ * first-mismatch: +0x244
+ * summary: Plain-if neighbours, copy order afterAfter/after/before, unmasked opacity before elapsed: 106 to 6. Left: atStart spills to a temp, not its home.
  * PLATEAU-HANDOFF:overlay68UpdateAnimation:end
  */

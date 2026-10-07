@@ -2,11 +2,13 @@
 ### `overlay68UpdateAnimation` plateau handoff
 
 - source: `src/overlays/o068/overlay68UpdateAnimation.c`
-- score: 106/356 words
+- score: 6/356 words
 - frame: 0x78
 - relocations: 15
-- first mismatch: +0xCC
-- summary: Opacity store follows the elapsed add: 108 to 106 at size 0. Left: the ring from +0xCC and the neighbour pointers' colours.
+- first mismatch: +0x244
+- summary: Plain-if neighbours, copy order afterAfter/after/before, unmasked opacity before elapsed: 106 to 6. Left: atStart spills to a temp, not its home.
+
+Summary before this remeasure: Opacity store follows the elapsed add: 108 to 106 at size 0. Left: the ring from +0xCC and the neighbour pointers' colours.
 
 #### 2026-10-05: narrowing the elapsed add does not rotate the ring
 
@@ -135,5 +137,15 @@ The unmodified body scores 1424 bytes, 106 raw and 106 masked words, size delta 
 Storing the masked opacity through a byte pointer at that field scores the same 106 masked and 106 raw words at size delta 0. The mismatch list is unchanged. The store is folded. Not kept.
 
 Reading that byte back into the opacity local, on the direct field store, also scores 106 masked and 106 raw words at size delta 0. The mismatch list changes and the aligned split does not: 81 naming, 17 structural, 3 immediate. Not kept. The 106-word body stays. Do not repeat the byte pointer or this read-back. The joined line stays closed.
+
+## 2026-10-07, lane a-ovl2: 106 to 6, the neighbour selection rewritten
+
+The 2026-10-01 and 2026-10-02 closures said plain ifs lose the branch-likely copy and that the opacity mask is a load-bearing ring draw. Both were measured one at a time on the ternary shape; together they are the residual.
+
+- Plain `if (index < count - 2) afterAfter = current + 2;` with `before->red << 8` read in the first call's argument list: 132 masked at size 0. The branch-likely copy of the red load comes back once the red read is the first instruction of the join block (a separate `angle = before->red` local, or `opacity` reused, is -4).
+- On that shape, all eight orders of the three neighbour copies: afterAfter, after, before puts before in t4 and afterAfter in v1 as shipped.
+- Opacity store placement (four positions) times the mask: no mask, before the elapsed add, 6 masked at size 0. With the mask any placement is 106 or worse.
+
+Aligned now: 350 byte-exact, 0 naming, 6 immediate, 0 different. The six words are atStart's call-spanning spill: the target stores the v0 web to sp+0x6C (the third declared home) and reloads it for calls two to six; this body stores the same web to sp+0x34, a compiler temporary below the declared homes, so uopt is spilling an expression temporary for `index < 1` rather than the variable. Measured inert at 6: `index <= 0`, `!(index > 0)`, a conditional, `index == 0` (7), `state->keyframeIndex < 1`, `register`, `*&atStart`, u32. Reusing `opacity`, `direction` or `animationOpacity` as the carrier (each declared third) also spills to sp+0x34. `volatile` and `*(s32 *)&atStart` make every call reload the home but cost 4 bytes (309 masked). An s16 or u8 atStart, or an s16/u8 parameter, is +8. Reading `state->keyframeIndex` at every neighbour use instead of `index` is -4.
 
 <!-- plateau-handoff:overlay68UpdateAnimation:end -->

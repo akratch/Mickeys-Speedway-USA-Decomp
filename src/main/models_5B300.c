@@ -223,9 +223,9 @@ ModelRenderCamera *camGetListPtr(void);
 s32 camGetMode(void);
 s32 func_800290A0(void);
 s32 Arctanf(f32 y, f32 x);
-f32 func_8002A8BC(s16 angle);
-f32 func_8002A8C0(s16 angle);
-void func_8002B040(void *matrix, s32 x, s32 y, s32 z,
+f32 func_8002A8BC(s32 angle);
+f32 func_8002A8C0(s32 angle);
+void func_8002B040(void *matrix, f32 x, f32 y, f32 z,
                    f32 *outX, f32 *outY, f32 *outZ);
 void func_800591B0(Matrix *matrices, Matrix root,
                     ModelRenderInstance *instance, ModelMatrixNode *nodes,
@@ -592,10 +592,12 @@ void func_8005AD64(ModelAnimationInstance *instance, s32 frame, s32 arg2,
  * src/camera.h. JFG's peer body remains assembly; Mickey's offsets, node
  * selection, control flow, and call sequence are reconstructed from Mickey.
  */
-/* Workbench: structure-mismatch, 377 differing words, first mismatch +0x0. */
-/* Structural gap: target 460 instructions/frame -0xF8 versus candidate 463/-0x110; camera-angle stack layout remains unresolved. */
-/* Next: constant-audit the earliest immediate, then repair structure before register allocation (workbench mixed-residual routing). */
-/* Not shape-exact or permuter-ready; model matrix and attachment-point control flow are represented. */
+/* The TU uses -Wab,-r4300_mul for the target multiply-hazard spacing.
+ * All ten collateral functions retain their bytes and relative relocations.
+ * Corrected integer trig widths and float matrix arguments preserve the ABI.
+ * Updating the clamped angle in place keeps its scaled value across calls.
+ * NON_MATCHING: 462 versus 460 words, frame 0x110 versus 0xF8; normalized
+ * distance 208. The matrix/camera homes and pointer lifetimes remain open. */
 #ifdef NON_MATCHING
 void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
                    ModelRenderModel *model) {
@@ -620,10 +622,9 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
     f32 cosine;
     s16 yaw;
     s16 pitch;
-    s16 angle;
+    s32 angle;
     s16 rawAngle;
     s16 clampedAngle;
-    s16 scaledAngle;
     s32 index;
     s32 pointOffset;
     s32 temp;
@@ -700,7 +701,7 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
             deltaY = -(deltaY * deltaY);
         }
         pitch = Arctanf(deltaY, (deltaX * deltaX) + (deltaZ * deltaZ));
-        func_8002B040(matrixBase + 0x200, 0, 0, 0x3F800000,
+        func_8002B040(matrixBase + 0x200, 0.0f, 0.0f, 1.0f,
                       &deltaX, &deltaY, &deltaZ);
         angle = -yaw;
         sine = func_8002A8C0(angle);
@@ -713,11 +714,11 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
         } else if (rawAngle < -0x4000) {
             clampedAngle = -0x4000 - (rawAngle + 0x4000);
         }
-        scaledAngle = (s16) ((s32) (((f32) clampedAngle / 16384.0f) * 8192.0f));
-        func_8002B040(matrixBase + 0x200, 0, 0x3F800000, 0,
+        clampedAngle = (s16) ((s32) (((f32) clampedAngle / 16384.0f) * 8192.0f));
+        func_8002B040(matrixBase + 0x200, 0.0f, 1.0f, 0.0f,
                       &deltaX, &deltaY, &deltaZ);
         sine = func_8002A8C0(angle);
-        transform.rotation2 = scaledAngle +
+        transform.rotation2 = clampedAngle +
                                Arctanf(-((deltaX * func_8002A8BC(angle)) +
                                           (deltaZ * sine)), deltaY);
         transform.rotation0 = yaw;
@@ -733,7 +734,7 @@ void func_8005AF14(ModelRenderInstance *instance, ModelRenderContext *context,
 
     if ((model->type == 1) && (func_800290A0() == 0)) {
         slot = (ModelRenderSlot *) ((u8 *) instance + (instance->activeSlot * 4));
-        func_8002B040((u8 *) slot->matrices, 0, 0, 0x3F800000,
+        func_8002B040((u8 *) slot->matrices, 0.0f, 0.0f, 1.0f,
                       &deltaX, &deltaY, &deltaZ);
         asset->angle = Arctanf(deltaX, deltaZ);
     }
@@ -827,10 +828,10 @@ void func_8005B644(Matrix *matrices, Matrix *root, ModelMatrixNode *node, s32 co
 
 /* PLATEAU-HANDOFF:func_8005AF14:start
  * symbol: func_8005AF14
- * score: 377 differing words
+ * score: 339 differing words
  * frame: 0x110
  * relocations: 27
  * first-mismatch: +0x0
- * summary: split-not-copy at rotation2 line 771. Frame-close reorder hits 0xF8 but aligned residual 376>327; the +0x24 callee save stays missing. Stall.
+ * summary: Correct trig widths, float matrix ABI and multiply hazards; in-place angle scaling recovers its across-call lifetime. 462 versus 460 words; matrix/camera homes remain.
  * PLATEAU-HANDOFF:func_8005AF14:end
  */

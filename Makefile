@@ -1259,9 +1259,11 @@ $(BUILD_DIR)/$(SRC_DIR)/main/level.c.o: POSTPROCESS = \
 # The gsSnd flag lattice reproduces its debug-shaped epilogues only with bare -g.
 $(BUILD_DIR)/$(SRC_DIR)/main/gsSnd.c.o: OPT_FLAGS := -g
 
-# models_5B300.c compiles with the stock flags. It once carried
-# -Wo,-loopunroll,0; removing it left every matched function in the TU
-# byte-identical and func_8005AF14 unchanged (2026-10-02, lane x-models).
+# models_5B300.c needs R4300 multiply-hazard spacing in func_8005AF14.
+# The corrected-width candidate improves while all ten other functions retain
+# their bytes and relative relocation identities (2026-10-07). The removed
+# -Wo,-loopunroll,0 override remains inert and is not restored.
+$(BUILD_DIR)/$(SRC_DIR)/main/models_5B300.c.o: CFLAGS += -Wab,-r4300_mul
 
 # anim.c compiles with IDO's default loop unroller. It once carried
 # -Wo,-loopunroll,0 "for the 0x40-byte light-record reset"; that reset is a

@@ -635,4 +635,23 @@ reproduced. Next: on the s16-callee 8 shape, look for a form whose first
 test reads a narrowed temp of v0 while hitIndex is the cvt web (the two
 tests sharing one narrowing temp, not the web), e.g. an s16 phase local
 tested once and copied once; do not re-run the lists above.
+
+#### 2026-10-08, lane j-near (resumed): the phase carrier over both callee types
+
+Measured by tools/bank.py: masked 4 (raw 19), size delta +0, candidate 760 words vs target 760. Aligned: byte-exact 756, register naming 4, immediate only 0, really different 0.
+
+A 96-cell product (tools/fast_score.py, kill join) over the callee type
+(s32 or s16), the carrier definition (`phase = call` or `(s16)call`),
+hitCount from phase or (s16)phase, hitIndex from phase, (s16)phase or
+hitCount, and the two tests on phase, hitCount or hitIndex: floor 6 at
+size 0 on the s32 callee (`phase = call; hitCount = phase;
+hitIndex = hitCount; if (hitCount != 0) { if (phase >= 2) ...`), the
+g-near cell: the first test narrows phase into a temp pair (sll t7,
+sra t8), hitIndex is a plain copy of v0 and the second test reads raw
+v0, so the ring agrees from the mathRnd arm to the end and the six rows
+are the query block. The s16 callee floors at 8 as before. Read against
+the tree body, the target's query block is the tree's (the narrowing
+into the v1 web, both tests reading its temp) plus one draw, and the
+6 cell is the tree's with the web replaced by a temp pair and a copy.
+Cycle-21 line unchanged.
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

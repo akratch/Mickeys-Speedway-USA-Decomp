@@ -44,10 +44,11 @@ whole-object match (`mickey.us.yaml`). `main/shadows_fp`,
 `main/weather_snow_asm`, and the two unnamed odd-register blocks are the
 files `docs/modules.md` already closes: IDO cannot emit them, and they do
 not become verified assembly without a byte-identical permitted reference
-object. `main/refractOutputAssembler` is the one compiler-shaped near miss
-in the list. Its symbol note records a same-sized Jet Force Gemini object
-with a nonzero masked difference, so it is not admissible as verified
-assembly either. The four-byte unnamed range is a single `nop` between two
+object. `main/refractOutputAssembler`, once listed here as a compiler-shaped
+near miss, is verified assembly since 2026-10-07: its whole `.text` agrees
+with Jet Force Gemini's hand-written `src/hasm/refractOutputAssembler.s`
+on every word outside the 16 HI16/LO16 relocated fields, and it saves
+`$ra` in a leaf, which IDO never emits. The four-byte unnamed range is a single `nop` between two
 C translation units, with no callers. It is not a function, and the census
 does not call it padding only because that class is reserved for named
 overlay tails.

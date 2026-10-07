@@ -68,6 +68,6 @@ void func_8002B040(MtxF matrix, f32 arg1, f32 arg2, f32 arg3,
  * frame: frameless
  * relocations: 0
  * first-mismatch: +0x0
- * summary: Pair +0x0..end is the line-391 arg2 stack-store. Struct, volatile, const, register, and z+(y+x) leave that home in place at -O2.
+ * summary: Own TU now. -O2 keeps the arg2 stack home (c28 infinite on incoming scalars); -O3 floors at 18, delta 0, outer add operand order at +0x2C.
  * PLATEAU-HANDOFF:func_8002B040:end
  */

@@ -1944,17 +1944,23 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
  * 2026-10-07, 124 -> 98 at size 0: the u8 mode entry is masked once more
  * where it is read (`D_0[mode] & 0xFF`); the redundant mask spends the ring
  * draw the shipped table lookup was rotated by (checklist item 16, L149).
+ * 2026-10-07 (lane h-3), 98 -> 96 at size 0, frame ladder now identical:
+ * the step count is converted once, after the sample call, for both paths
+ * (the shipped `steps` is a symbol stored to its own cell at 0x34 with the
+ * counter at 0x28, not a per-path conversion temporary), and the two unused
+ * f32 pads are gone: their cells belong to `steps` (after mode) and
+ * `randomMode` (after targetAngle), with savedAngle declared last.
  * GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
                                        O8P42A8Owner *owner, f32 update) {
     O8P42A8State *state;
     s32 mode;
-    f32 pad1;
+    s32 steps;
     f32 smoothing;
     s32 tableAngle;
     s32 targetAngle;
-    f32 pad2;
+    s32 randomMode;
     f32 posX;
     f32 posY;
     f32 posZ;
@@ -1970,18 +1976,16 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     f32 targetHeight;
     f32 acceleration;
     f32 steering;
-    s32 steps;
-    s32 randomMode;
-    s16 savedAngle;
     s32 tableIndex;
     s32 remaining;
+    s16 savedAngle;
 
     state = owner->state64;
     mode = state->mode0 & 3;
     o8P42A8SampleReloc(60.0f, 0);
+    steps = (s32)update;
 
     if (state->reset170 != 0) {
-        steps = (s32)update;
         savedAngle = actor->angle0;
         remaining = steps;
         while (remaining--) {
@@ -2034,7 +2038,6 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
         targetAngle = -0x2000;
     }
 
-    steps = (s32)update;
     remaining = steps;
     while (remaining--) {
         actor->angle2 +=
@@ -2377,11 +2380,11 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
  * symbol: func_overlay_008_F00042A8_1862000
- * score: 98/447 words
+ * score: 96/447 words
  * frame: 0xA0
  * relocations: 40
  * first-mismatch: +0x114
- * summary: Redundant u8 mask on the mode entry: 124 to 98 at size 0. Left: randomMode off a2 (shared r*4), steps conversion block and home, counter reload against the gate hoist.
+ * summary: Step count converted once, pads replaced by steps/randomMode: frame ladder identical, 98 to 96. Left: counter reload at loop 2 exit, shared r*4.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
  */
 

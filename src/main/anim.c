@@ -1413,14 +1413,14 @@ void func_800517E0(void) {
                 case 0x44:
                     duration = *((u16 *) ((u8 *) cursor + 4));
                     value = (f32) duration;
-                    signedValue = *((s16 *) ((u8 *) cursor + 6));
-                    packed = *((s16 *) ((u8 *) cursor + 8));
-                    packed2 = *((s16 *) ((u8 *) cursor + 0xA));
+                    start = *((s16 *) ((u8 *) cursor + 6));
+                    end = *((s16 *) ((u8 *) cursor + 8));
+                    target = *((s16 *) ((u8 *) cursor + 0xA));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     unit = 0.00390625f;
-                    changeWeather((s32) ((f32) signedValue * unit),
-                                  (s32) ((f32) packed * unit),
-                                  (s32) ((f32) packed2 * unit), 1, 1,
+                    changeWeather((s32) (start * unit),
+                                  (s32) (end * unit),
+                                  (s32) (target * unit), 1, 1,
                                   (s32) value);
                     break;
                 case 0x45:
@@ -1910,8 +1910,7 @@ void func_800517E0(void) {
                     value = (f32) duration;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     D_8007D6AC = value * factor;
-                    timer = (s8) *((u16 *) ((u8 *) cursor - 2));
-                    D_8007D6A4 = timer;
+                    D_8007D6A4 = (s8) *((u16 *) ((u8 *) cursor - 2));
                     break;
                 case 0x7C:
                     currentCommand = cursor->command;
@@ -4009,10 +4008,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1779 differing words
- * frame: 0x168
+ * score: 1735 differing words
+ * frame: 0x160
  * relocations: 250
  * first-mismatch: +0x0
- * summary: Aligned 1438, size +136. Command read from the field at each use; path index s0 per case, a0 state and a3 6000 pieces as shipped; command s3 against s2.
+ * summary: Aligned 1397, size +32. Command field-read in s2, path index s0 per case, a0 state and a3 6000 pieces held; per-case local partition is what remains.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

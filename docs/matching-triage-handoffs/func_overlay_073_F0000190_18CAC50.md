@@ -2,11 +2,13 @@
 ### `func_overlay_073_F0000190_18CAC50` plateau handoff
 
 - source: `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c`
-- score: 168 differing words
+- score: 146 differing words
 - frame: 0x98
 - relocations: 46
-- first mismatch: +0x180
-- summary: 153 masked at size 0; target is two ring draws ahead from the case 1 angle difference; float-rate spill at +0x30 not +0x34.
+- first mismatch: +0x1E4
+- summary: 131 masked at size 0; ring in phase through case 3; case 3 else-arm and case 4 ring, float-rate spill +0x30 not +0x34.
+
+Summary before this remeasure: 153 masked at size 0; target is two ring draws ahead from the case 1 angle difference; float-rate spill at +0x30 not +0x34.
 
 Summary before this remeasure: 163 masked at size 0 (was 740 at +8); ring two draws behind from the case 1 angle difference, one float spill home, one schedule swap.
 
@@ -292,5 +294,26 @@ structural rows.
   (+0x34). Moving the dead `s32` pad through all 18 declaration
   positions never moves it (position 3, the current one, is best);
   deleting the pad drops the frame to 0x90.
+
+#### 2026-10-07, lane b-o073 (resumed): Arctanf returns int, 153 to 131
+
+- The two missing ring draws before each angle difference were the
+  narrowing of an int-returning `Arctanf` into the s16 `targetAngle`;
+  as1 folds the pair, so no word changes. Declaring
+  `extern s32 Arctanf(f32, f32)` (u16 and u32 read the same) with
+  `targetAngle` kept s16: the ring then agrees from the case 1
+  difference through case 3. With s32 `targetAngle` uopt drops the
+  narrowing and nothing moves (24-cell product).
+- With the ring in phase, the target's direct reads are now
+  improvements: case 1 hit copy `state->target = hits[0];` written
+  first, case 3 `data = ((Func073Target *)state->target)->data;`,
+  case 3 inner hit copy written first. Together 153 to 131 masked at
+  size 0 (aligned 629 exact, 123 naming, 6 immediate, 2 structural).
+- Flat or worse on the ramp and difference (draw-placement products,
+  90 + 18 + 15 + 36 cells): `<< 4`, `0x10 * x`, compare spellings,
+  argument assignment order and inline assignment, `delta -=`, an
+  `(s16)` on the clamp or the call, an s16/s32 carrier for
+  `object->angle`. An `(s16)` on the ramp product does add two folded
+  draws, but before the ramp's add, so it misnames the ramp.
 
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

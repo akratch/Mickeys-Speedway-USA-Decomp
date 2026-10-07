@@ -12,7 +12,7 @@
 struct HitCopyState;
 extern s32 func_8005776C(f32 x, f32 y, f32 z, f32 radius, s32 mode,
                        struct HitCopyState **hits);
-extern s16 Arctanf(f32 x, f32 y);
+extern s32 Arctanf(f32 x, f32 y);
 extern f32 sqrtf(f32 value);
 extern void func_80008118(void);
 extern void func_80008128(void *object, f32 x, f32 y, f32 z);
@@ -184,10 +184,9 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
         if (state->mode == 1 &&
             (s16)func_8005776C(state->x, 0, state->z, state->radius,
                           1, hits) != 0) {
-            target = (Func073Target *)hits[0];
+            state->target = hits[0];
             state->countdown = 0x78;
             state->mode = 3;
-            state->target = target;
         }
 
         if (state->mode != 3) {
@@ -217,8 +216,7 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
             }
         }
 
-        target = (Func073Target *)state->target;
-        data = target->data;
+        data = ((Func073Target *)state->target)->data;
         dx = data->x - state->x;
         dz = data->z - state->z;
         limit = state->radius * state->radius * 4.0f;
@@ -226,9 +224,8 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
             state->target = NULL;
             if ((s16)func_8005776C(state->x, 0.0f, state->z, state->radius,
                               1, hits) != 0) {
-                target = (Func073Target *)hits[0];
+                state->target = hits[0];
                 state->countdown = 0xF0;
-                state->target = target;
             }
         }
 
@@ -415,10 +412,10 @@ common:
 
 /* PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:start
  * symbol: func_overlay_073_F0000190_18CAC50
- * score: 168 differing words
+ * score: 146 differing words
  * frame: 0x98
  * relocations: 46
- * first-mismatch: +0x180
- * summary: 153 masked at size 0; target is two ring draws ahead from the case 1 angle difference; float-rate spill at +0x30 not +0x34.
+ * first-mismatch: +0x1E4
+ * summary: 131 masked at size 0; ring in phase through case 3; case 3 else-arm and case 4 ring, float-rate spill +0x30 not +0x34.
  * PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:end
  */

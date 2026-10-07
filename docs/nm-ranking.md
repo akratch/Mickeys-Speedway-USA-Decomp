@@ -302,7 +302,7 @@ units remain distinct.
 | 7 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `other` | 1,424 | 106 | 106 | 204 | 204 | 0 | — |
 | 8 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `other` | 1,788 | 132 | 124 | 292 | 292 | 0 | — |
 | 9 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 128 | 128 | 0 | 0 | 0 | — |
-| 10 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `other` | 3,040 | 168 | 153 | 96 | 384 | 0 | — |
+| 10 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `other` | 3,040 | 146 | 131 | 96 | 484 | 0 | — |
 | 11 | `src/overlays/o100/overlay100DrawMotion.c` | `overlay100DrawMotion` | `o100` | `other` | 972 | 155 | 155 | 48 | 48 | 0 | — |
 | 12 | `src/main/charControl.c` | `func_8001E5C4` | `main` | `other` | 1,664 | 168 | 157 | 80 | 80 | 0 | — |
 | 13 | `src/overlays/o038/overlay38UpdateParticles.c` | `func_overlay_038_F0000154_1885E64` | `o038` | `other` | 808 | 160 | 159 | 32 | 32 | 0 | — |

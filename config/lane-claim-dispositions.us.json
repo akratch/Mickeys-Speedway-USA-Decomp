@@ -162,6 +162,12 @@
       "state": "superseded",
       "decision_commit": "d1232e0efd67b0708d8725671f34dcfb447a245d",
       "reason": "Completed width and CFG reports are integrated in full; source is identical, and these older authorization/report tips have no remaining integration delta."
+    },
+    "a56b603da818c09d623d0f3709bae36ba37b4783": {
+      "symbol": "wakeAllocate",
+      "state": "superseded",
+      "decision_commit": "d1232e0efd67b0708d8725671f34dcfb447a245d",
+      "reason": "The completed flags-CFG report was integrated in full with identical source. This frozen report tip predates the newer conversion closure and has no remaining integration delta."
     }
   }
 }

@@ -189,4 +189,39 @@ on s0. Decision variable: what keeps segmentCount and groupCount as symbol
 webs live across the first call (the target re-reads segmentCount from its
 spill cell after the call, as we do).
 
+#### 2026-10-07, lane c-fx: what the two dead copies are (no source change)
+
+Score unchanged at 325 masked, delta -8, frame 0x90. Instrumented .text on
+proc 9 is identical to the stock object.
+
+The copies are not variables. `cc -S` on our body shows as1 forwarding
+copies into later uses: ugen's `move` of the shifted count into the count
+web, then a multiply reading the web, comes out of as1 as a shift reading
+the original temporary. Read the target the same way: ugen emitted the
+two moves into v0 and v1 at a split-piece boundary, every later use in that
+block, the two spill stores included, was forwarded back to t0 and t5, and
+the moves were left dead. So in the target the segment-count web (ours
+w10) and the doubled-count web (ours w14) are each split, with their pieces
+in the block before the first call coloured v0 and v1 ahead of sampleBytes
+and vertexBytes (w327 and w332, save 0.75 each, which take v0/v1 here).
+Here w10 (save 0.556, nocs 9) is split after those two, seeded at block 0
+and grown through block 2 in one colour (a2), and w14 (save 4.33, nocs 15)
+is not split at all: globalcolor gives it t5 with a caller save around the
+call. frameCount's piece lands on s0 in the target because v0 through t5
+are all taken over blocks 0-2 once those two extra pieces exist.
+
+Measured on the way, each worse or flat: groupCount as a shift (164
+positional at +4, but a third saved register and frame 0xA0), groupCount
+and triCount after the alpha branch (351 at -4), the inner bounds written
+as the product (342 at -20), a copy of the count before the call (327 at
+-8; propagated away), one to four OR-with-zero assignments of the count
+before the call (the whole web moves to v0; 325 to 328), the alpha branch
+first (350 at -16), segmentBytes from the count times 0x14 (346 at -16).
+
+Decision variable: w14 must fail globalcolor at its turn and both split
+webs' block-2 pieces must outrank 0.75. Next: read w14's cost list and
+forbidden mask in the records, and find the source change that takes away
+its last colour (an extra web live across all blocks, the way case 2's
+limit local did for func_80049B14 in this TU) before any spelling product.
+
 <!-- plateau-handoff:wakeAllocate:end -->

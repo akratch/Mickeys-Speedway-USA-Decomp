@@ -304,7 +304,7 @@ units remain distinct.
 | 8 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 48 | 48 | 4 | 4 | 0 | — |
 | 9 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
 | 10 | `src/main/textures_354C8.c` | `func_800349A4` | `main` | `other` | 1,088 | 62 | 62 | 96 | 96 | 0 | — |
-| 11 | `src/overlays/o001/func_overlay_001_F0001D78_184E158.c` | `func_overlay_001_F0001D78_184E158` | `o001` | `other` | 2,508 | 103 | 64 | 76 | 956 | 0 | — |
+| 11 | `src/overlays/o001/func_overlay_001_F0001D78_184E158.c` | `func_overlay_001_F0001D78_184E158` | `o001` | `other` | 2,508 | 102 | 62 | 76 | 956 | 0 | — |
 | 12 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 68 | 68 | 4 | 4 | 0 | — |
 | 13 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
 | 14 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `other` | 1,788 | 106 | 98 | 276 | 276 | 0 | — |

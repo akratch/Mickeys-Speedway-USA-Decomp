@@ -3405,13 +3405,11 @@ typedef struct TrackRayNodeExtended {
     TrackRayFace *planes;
 } TrackRayNodeExtended;
 
-/* Candidate (Track B, 2026-09-23): 216/215 words, 195 differing, frame 0xD8
- * versus 0xC8. Typed plane/metadata subscripts, sums left-associated, the edge
- * index incremented at the loop's end and initialised in the entry block (which
- * reproduces the target's shifted-zero preheader). The rest is the p1 ranking:
- * the target gives the inner loop's edge, sign and face pointer the last four
- * callee-saved registers and keeps the entry pointer in a copy, while this body
- * gives them the first caller-saved colours and runs out of registers (ra). */
+/*
+ * Natural rewrite, 2026-10-07: one counted segment loop, the 0.01f literal,
+ * named start coordinates, and the node word reused as the edge-inside flag
+ * (as in func_80010654, it keeps the entry copy). 119 masked words at delta 0.
+ */
 s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                   TrackRayPoint *offset, f32 scale, f32 planeOffset,
                   f32 threshold, TrackRayHit *hit) {
@@ -3429,23 +3427,23 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
     f32 pointX;
     f32 pointY;
     f32 pointZ;
+    f32 startX;
+    f32 startY;
+    f32 startZ;
     f32 edgeValue;
     f32 adjustedOffset;
     s32 encoded;
     s32 segmentIndex;
-    s32 edgeValid;
     s32 valid;
     s32 sign;
     s32 i;
     u16 edge;
 
     valid = 0;
-    segmentIndex = 0;
-    if (D_800C9D3C > 0) {
-        do {
+    for (segmentIndex = 0; segmentIndex < D_800C9D3C; segmentIndex++) {
         encoded = D_800C9D2C[segmentIndex];
         if (encoded > 0) {
-            node = (TrackRayNodeExtended *) (encoded | (s32) 0x80000000);
+            node = (TrackRayNodeExtended *) (encoded | 0x80000000);
         } else {
             entry = (u16 *) encoded;
             i = 0;
@@ -3455,50 +3453,45 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
             planeY = face->y;
             planeZ = face->z;
             planeValue = face->distance - planeOffset;
-            endValue = planeX * end->x + planeY * end->y + end->z * planeZ +
-                       planeValue;
+            endValue = planeX * end->x + planeY * end->y + end->z * planeZ + planeValue;
             if (endValue < 0.0f) {
-                startValue = planeX * start->x + planeY * start->y +
-                             start->z * planeZ + planeValue;
+                startX = start->x;
+                startY = start->y;
+                startZ = start->z;
+                startValue = planeX * startX + planeY * startY + startZ * planeZ + planeValue;
                 if (startValue >= 0.0f) {
                     ratio = (startValue / (startValue - endValue)) * scale;
                     if (ratio <= hit->ratio) {
-                        edgeValid = 1;
-                        pointX = ((offset->x * ratio) + start->x) -
-                                 (planeOffset * planeX);
-                        pointY = ((offset->y * ratio) + start->y) -
-                                 (planeOffset * planeY);
-                        pointZ = ((offset->z * ratio) + start->z) -
-                                 (planeOffset * planeZ);
+                        pointX = ((offset->x * ratio) + startX) - (planeOffset * planeX);
+                        pointY = ((offset->y * ratio) + startY) - (planeOffset * planeY);
+                        pointZ = ((offset->z * ratio) + startZ) - (planeOffset * planeZ);
+                        encoded = 1;
                         do {
                             edge = entry[i + 1];
                             sign = edge & 0x8000;
                             face = &planes[edge ^ sign];
                             edgeValue = face->distance +
-                                        (face->x * pointX + face->y * pointY +
-                                         face->z * pointZ);
+                                        (face->x * pointX + face->y * pointY + face->z * pointZ);
                             if (sign != 0) {
                                 edgeValue = -edgeValue;
                             }
                             if (threshold < edgeValue) {
-                                edgeValid = 0;
+                                encoded = 0;
                             }
                             i++;
-                        } while (i < 3 && edgeValid != 0);
-                        if (edgeValid != 0) {
+                        } while (i < 3 && encoded != 0);
+                        if (encoded != 0) {
                             hit->normalX = planeX;
                             hit->normalY = planeY;
                             hit->normalZ = planeZ;
                             hit->distance = planeValue;
-                            adjustedOffset = D_80081790 + planeOffset;
+                            adjustedOffset = 0.01f + planeOffset;
                             hit->x = (adjustedOffset * planeX) + pointX;
                             hit->y = (adjustedOffset * planeY) + pointY;
                             hit->z = (adjustedOffset * planeZ) + pointZ;
-                            hit->faceData =
-                                node->metadata[D_800C9D30[segmentIndex]].data;
+                            hit->faceData = node->metadata[D_800C9D30[segmentIndex]].data;
                             hit->material = ((u8 *) &D_800792E8->textures[
-                                node->metadata[D_800C9D30[segmentIndex]]
-                                    .material])[7];
+                                node->metadata[D_800C9D30[segmentIndex]].material])[7];
                             hit->ratio = ratio;
                             valid = 1;
                         }
@@ -3506,8 +3499,6 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                 }
             }
         }
-            segmentIndex++;
-        } while (segmentIndex < D_800C9D3C);
     }
     return valid;
 }
@@ -5250,11 +5241,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80011980:start
  * symbol: func_80011980
- * score: 195 differing words
- * frame: 0xd8
+ * score: 119 differing words
+ * frame: 0xd0
  * relocations: 12
  * first-mismatch: +0x0
- * summary: The missing-CSE pair is pair 2 (+0x268..+0x2D4): the second metadata add is line 3709 at +0x2D0, and the target has that add too. Stall: textures local and volatile threshold stay at 195, size +4; ra still holds D_80081790.
+ * summary: Natural rewrite with the node word reused as the edge flag: 195 at +4 to 119 at 0. Left: a two-window register rotation and frame 0xD0 vs 0xC8.
  * PLATEAU-HANDOFF:func_80011980:end
  */
 

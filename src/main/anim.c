@@ -2202,7 +2202,10 @@ void func_800573C8(HitOverlapState *state, HitOverlapVolume *other,
  * v1 and 12 in s3, and holds the model pointer in v1 (here secondObject's
  * s5); the axis loops' counter is a saved register (s2); pairIndex stays
  * in a1 from the while head; the displacement loop re-reads movingCount
- * each pass. */
+ * each pass. The overlap test in both pair loops is a pre-tested
+ * `for (axis = 0, overlaps = 1; ...)`, the shape of the matched
+ * func_800573C8: the bottom-tested do-while let uopt fold the zero
+ * subscript and lost the target's unfolded `0 << 2` seed (392). */
 void func_80053868(s32 updateRate) {
     f32 remainingTime;
     f32 fraction;
@@ -2348,9 +2351,7 @@ void func_80053868(s32 updateRate) {
                 secondShape = secondObject->unk48;
                 if ((firstShape->unk6 & 1) && (secondShape->unk6 & 1) && (secondObject != firstShape->unk70)) {
                     if (firstObject != secondShape->unk70) {
-                        axis = 0;
-                        overlaps = 1;
-                        do {
+                        for (axis = 0, overlaps = 1; (axis < 3) && overlaps; axis++) {
                             high = firstShape->minimum[axis];
                             low = secondShape->minimum[axis];
                             if ((high < low) && (firstShape->maximum[axis] < low)) {
@@ -2361,8 +2362,7 @@ void func_80053868(s32 updateRate) {
                                     overlaps = 0;
                                 }
                             }
-                            axis++;
-                        } while ((axis < 3) && overlaps);
+                        }
                         if (overlaps != 0) {
                             overlaps = func_800563B4((s32) firstObject, (AnimCollisionShape *) firstShape, (s32) secondObject, (AnimCollisionShape *) secondShape, (AnimCollisionResult *) FUNC538_PAIR(pairCount));
                             if ((overlaps == 0) && (secondShape->unk9 == 1)) {
@@ -2389,9 +2389,7 @@ void func_80053868(s32 updateRate) {
                 secondShape = secondObject->unk48;
                 if ((firstShape->unk6 & 1) && (secondShape->unk6 & 1) && (secondObject != firstShape->unk70)) {
                     if (firstObject != secondShape->unk70) {
-                        axis = 0;
-                        overlaps = 1;
-                        do {
+                        for (axis = 0, overlaps = 1; (axis < 3) && overlaps; axis++) {
                             high = firstShape->minimum[axis];
                             low = secondShape->minimum[axis];
                             if ((high < low) && (firstShape->maximum[axis] < low)) {
@@ -2402,8 +2400,7 @@ void func_80053868(s32 updateRate) {
                                     overlaps = 0;
                                 }
                             }
-                            axis++;
-                        } while ((axis < 3) && overlaps);
+                        }
                         if ((overlaps != 0) && (func_80054B3C((s32) firstObject, (AnimCollisionShape *) firstShape, (s32) secondObject, (AnimCollisionShape *) secondShape, (AnimCollisionResult *) FUNC538_PAIR(pairCount)) != 0) && (pairCount < 0xF)) {
                             pairCount += 1;
                         }
@@ -3958,11 +3955,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80053868:start
  * symbol: func_80053868
- * score: 393 differing words
+ * score: 392 differing words
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: Model pointer carried in the dead secondObject (no new cell): first-loop ring back in phase (438 to 393). Left: 2/3/12 constant webs, s2 axis/j, pairIndex a1.
+ * summary: Pre-tested overlap for (func_800573C8 shape) restores the 0<<2 seeds: 393 to 392. Left: pairIndex a1 pieces, movingCount reload, constant webs.
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

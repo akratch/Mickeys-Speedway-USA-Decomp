@@ -19,7 +19,10 @@ repository root so relative includes resolve as the build's do, and the object
 is scored with `tools/score_symbol.py --object`, so the number agrees with the
 ranking by construction.
 
-`--diff` prints the words that still differ, target word beside candidate
+`--aligned` adds the aligner's four buckets (exact, register naming, immediate
+only, really different) plus the one-sided word spans, which stay meaningful
+when the candidate is an instruction long or short and the positional count is
+noise. `--diff` prints the words that still differ, target word beside candidate
 word, read from the extracted target listing and the candidate object. It is a
 reading aid for choosing the next edit; the masked count is the measurement.
 
@@ -183,6 +186,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("symbol")
     ap.add_argument("candidate")
     ap.add_argument("--diff", action="store_true", help="print differing words")
+    ap.add_argument("--aligned", action="store_true",
+                    help="also print align_symbol's four buckets for this candidate")
     ap.add_argument("--keep-object", help="write the object here instead of beside the candidate")
     ns = ap.parse_args(argv)
 
@@ -205,6 +210,17 @@ def main(argv: list[str] | None = None) -> int:
         sys.stderr.write(score.stdout + score.stderr)
         return 1
     print(f"{candidate.name}: {' '.join(lines[0].split()[1:])}   (bytes raw masked artifact delta category)")
+    if ns.aligned:
+        import tempfile
+        import align_symbol
+        with tempfile.TemporaryDirectory(prefix="fast-score-") as tmp:
+            row = align_symbol.AlignedScorer(ns.symbol, Path(tmp)).score(obj)
+        print("  aligned: " + (align_symbol.render_buckets(row) if row else "symbol not found"))
+        if row:
+            for span in row["insertions"]:
+                print(f"    candidate-only +{span['candidate_offset']:#x}: {span['words']} word(s)")
+            for span in row["deletions"]:
+                print(f"    target-only    +{span['target_offset']:#x}: {span['words']} word(s)")
     if ns.diff:
         print_diff(ns.symbol, source, obj)
     return 0

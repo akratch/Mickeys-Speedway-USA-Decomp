@@ -30,6 +30,19 @@ does, and prints the cells sorted by masked words then size delta. Marked
 alternatives cost nothing in the tracked tree: a promoted file carries none of
 them.
 
+An axis the candidate fixes with `#define SHAPE_x N` is not enumerated (pass
+`--all-axes` to enumerate it anyway). Values are 0, every literal compared with
+`==`/`!=`/`>=`/etc., plus max+1 when the chain ends in a bare `#else`.
+
+`--rank aligned|positional|auto` chooses the ordering. Positional (delta, then
+masked) is honest only at size delta 0: one instruction long or short shifts
+every later word. So `auto` (the default) ranks by the aligned residual of
+`align_symbol.py` -- register-naming + immediate-only + really-different
+(one-sided words count as different) -- then size delta, whenever any cell is
+off size. The table prints the four buckets and the one-sided word count per
+cell; `--json` carries all of them. The target stream is read once and shared
+by every cell, and cells run `--jobs` at a time.
+
 `--fix NAME=VALUE` pins an axis (to re-run a sub-product), `--top K` limits
 the table, `--json` writes every cell's numbers for a shard. Exit status is 0
 when at least one cell scores 0 masked words at size delta 0, else 1, so a
@@ -60,22 +73,61 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import fast_score  # noqa: E402
 
 AXIS_RE = re.compile(r"\bSHAPE_([A-Za-z0-9_]+)\b")
-VALUE_RE = re.compile(r"\bSHAPE_([A-Za-z0-9_]+)\s*(?:==|!=)\s*(-?\d+)")
+VALUE_RE = re.compile(r"\bSHAPE_([A-Za-z0-9_]+)\s*(?:==|!=|>=|<=|>|<)\s*(-?\d+)")
+DEFINE_RE = re.compile(r"^\s*#\s*define\s+SHAPE_([A-Za-z0-9_]+)\s+(-?\d+)\b", re.M)
+COND_RE = re.compile(r"^\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b(.*)$")
 
 
-def axes_of(text: str) -> dict[str, list[int]]:
-    """Return {axis: sorted values} for every SHAPE_ identifier in `text`."""
+def defined_axes(text: str) -> dict[str, int]:
+    """Axes the candidate fixes itself with `#define SHAPE_x N`."""
+    return {name: int(value) for name, value in DEFINE_RE.findall(text)}
+
+
+def else_axes(text: str) -> set[str]:
+    """Axes whose `#if`/`#elif` chain ends in a bare `#else`."""
+    stack: list[set[str]] = []
+    out: set[str] = set()
+    for line in text.splitlines():
+        m = COND_RE.match(line)
+        if not m:
+            continue
+        kind, rest = m.groups()
+        names = set(AXIS_RE.findall(rest))
+        if kind in ("if", "ifdef", "ifndef"):
+            stack.append(names)
+        elif kind == "elif" and stack:
+            stack[-1] |= names
+        elif kind == "else" and stack:
+            out |= stack[-1]
+        elif kind == "endif" and stack:
+            stack.pop()
+    return out
+
+
+def axes_of(text: str, all_axes: bool = False) -> dict[str, list[int]]:
+    """Return {axis: sorted values} for every SHAPE_ identifier in `text`.
+
+    Values: 0, every compared literal, and (max compared + 1) when the chain
+    ends in a bare #else. An axis fixed by `#define SHAPE_x N` is left out
+    unless `all_axes`.
+    """
+    fixed = {} if all_axes else defined_axes(text)
     values: dict[str, set[int]] = {}
     for name in AXIS_RE.findall(text):
         values.setdefault(name, set())
     for name, value in VALUE_RE.findall(text):
         values[name].add(int(value))
+    has_else = else_axes(text)
     out = {}
     for name, vals in values.items():
-        if not vals:
-            vals = {0}
-        if vals == {0}:
+        if name in fixed:
+            continue
+        if vals <= {0}:
             vals = {0, 1}
+        else:
+            vals = vals | {0}
+            if name in has_else:
+                vals.add(max(vals) + 1)
         out[name] = sorted(vals)
     return dict(sorted(out.items()))
 
@@ -99,7 +151,7 @@ def score_object(symbol: str, obj: Path) -> dict | None:
     return None
 
 
-def run_cell(symbol: str, base_args: list[str], candidate: Path, source: str,
+def run_cell(scorer, base_args: list[str], candidate: Path, source: str,
              workdir: Path, index: int, cell: dict[str, int]) -> dict:
     obj = workdir / f"cell{index}.o"
     args = fast_score.rewrite_io(base_args, candidate, source, obj)
@@ -110,23 +162,40 @@ def run_cell(symbol: str, base_args: list[str], candidate: Path, source: str,
     if cc.returncode:
         result.update(error=cc.stderr.strip().splitlines()[-1:] or ["compile failed"])
         return result
-    row = score_object(symbol, obj)
+    row = scorer.score(obj)
     if row is None:
         result.update(error=["symbol not found in object"])
         return result
-    result.update(
-        masked=row["relocation_masked_differing_words"],
-        raw=row["differing_words"],
-        delta=row["size_delta"],
-        first=row["relocation_masked_first_mismatch_offset"],
-    )
+    result.update(row)
+    obj.unlink(missing_ok=True)
     return result
 
 
 def sort_key(r: dict):
+    """Positional ranking: size delta first, then masked words."""
     if "error" in r:
         return (1, 0, 0)
     return (0, abs(r["delta"]), r["masked"])
+
+
+def aligned_key(r: dict):
+    """Aligned ranking: residual after alignment, then size delta, then masked."""
+    if "error" in r:
+        return (1, 0, 0, 0)
+    return (0, r["residual"], abs(r["delta"]), r["masked"])
+
+
+def choose_rank(results: list[dict], requested: str) -> str:
+    """`auto` is aligned whenever any scored cell is off size: positional lies there."""
+    if requested != "auto":
+        return requested
+    off = any("error" not in r and r["delta"] != 0 for r in results)
+    return "aligned" if off else "positional"
+
+
+def strip_defines(text: str) -> str:
+    """Remove `#define SHAPE_x N` lines so the command-line -D owns the axis."""
+    return DEFINE_RE.sub("", text)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -137,13 +206,19 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--top", type=int, default=20)
     ap.add_argument("--fix", action="append", default=[], metavar="NAME=VALUE")
     ap.add_argument("--json", metavar="PATH")
+    ap.add_argument("--rank", choices=("auto", "aligned", "positional"), default="auto",
+                    help="aligned: rank by residual after align_symbol's alignment "
+                         "(default when any cell is off size); positional: delta then masked")
+    ap.add_argument("--all-axes", action="store_true",
+                    help="enumerate axes even when the candidate #defines them")
     ns = ap.parse_args(argv)
 
     candidate = Path(ns.candidate).resolve()
     text = candidate.read_text()
-    axes = axes_of(text)
+    axes = axes_of(text, ns.all_axes)
     if not axes:
-        raise SystemExit("no SHAPE_<name> axes found in the candidate")
+        raise SystemExit("no SHAPE_<name> axes to enumerate in the candidate "
+                         "(axes fixed by #define are skipped; see --all-axes)")
     for fix in ns.fix:
         name, _, value = fix.partition("=")
         if name not in axes:
@@ -156,29 +231,49 @@ def main(argv: list[str] | None = None) -> int:
     print(f"{ns.symbol}: {len(cells)} cells over {len(names)} axes "
           + ", ".join(f"{n}={axes[n]}" for n in names), flush=True)
 
-    with tempfile.TemporaryDirectory(prefix="shape-product-") as tmp:
-        workdir = Path(tmp)
-        with ThreadPoolExecutor(max_workers=ns.jobs) as pool:
-            results = list(pool.map(
-                lambda ic: run_cell(ns.symbol, base_args, candidate, source, workdir, *ic),
-                enumerate(cells),
-            ))
+    for i, c in enumerate(cells):
+        print(f"  cell {i}: {c}", flush=True)
 
-    results.sort(key=sort_key)
+    run_candidate = candidate
+    stripped = None
+    if ns.all_axes and defined_axes(text):
+        stripped = candidate.with_name(f".shape-all-axes-{os.getpid()}-{candidate.name}")
+        stripped.write_text(strip_defines(text))
+        run_candidate = stripped
+    try:
+        with tempfile.TemporaryDirectory(prefix="shape-product-") as tmp:
+            workdir = Path(tmp)
+            import align_symbol  # noqa: E402  (imports the ranking stack)
+            scorer = align_symbol.AlignedScorer(ns.symbol, workdir)  # target read once
+            with ThreadPoolExecutor(max_workers=ns.jobs) as pool:
+                results = list(pool.map(
+                    lambda ic: run_cell(scorer, base_args, run_candidate, source, workdir, *ic),
+                    enumerate(cells),
+                ))
+    finally:
+        if stripped is not None:
+            stripped.unlink(missing_ok=True)
+
+    rank = choose_rank(results, ns.rank)
+    results.sort(key=aligned_key if rank == "aligned" else sort_key)
     exact = [r for r in results if "error" not in r and r["masked"] == 0 and r["delta"] == 0]
     errors = [r for r in results if "error" in r]
     best = results[0] if results and "error" not in results[0] else None
-    print(f"exact cells: {len(exact)}; compile errors: {len(errors)}; "
-          + (f"floor: {best['masked']} masked at delta {best['delta']:+d}" if best else "no scored cell"))
-    print(f"{'masked':>6} {'delta':>6} {'first':>8}  cell")
+    print(f"ranking: {rank}; exact cells: {len(exact)}; compile errors: {len(errors)}; "
+          + (f"floor: {best['masked']} masked, residual {best['residual']} at delta {best['delta']:+d}"
+             if best else "no scored cell"))
+    print(f"{'resid':>5} {'masked':>6} {'delta':>6} {'exact':>5} {'name':>5} {'imm':>4} {'diff':>5} {'1side':>5}  cell")
     for r in results[: ns.top]:
         if "error" in r:
-            print(f"{'ERR':>6} {'':>6} {'':>8}  {r['cell']}  {r['error'][0][:80]}")
+            print(f"{'ERR':>5} {'':>6} {'':>6} {'':>5} {'':>5} {'':>4} {'':>5} {'':>5}  {r['cell']}  {r['error'][0][:80]}")
         else:
-            first = f"{r['first']:#x}" if r["first"] is not None else "-"
-            print(f"{r['masked']:>6} {r['delta']:>+6} {first:>8}  {r['cell']}")
+            one = (sum(x["words"] for x in r["insertions"])
+                   + sum(x["words"] for x in r["deletions"]))
+            print(f"{r['residual']:>5} {r['masked']:>6} {r['delta']:>+6} {r['aligned_exact']:>5} "
+                  f"{r['aligned_register_naming']:>5} {r['aligned_immediate_only']:>4} "
+                  f"{r['aligned_really_different']:>5} {one:>5}  {r['cell']}")
     if ns.json:
-        Path(ns.json).write_text(json.dumps({"symbol": ns.symbol, "axes": axes, "cells": results}, indent=1))
+        Path(ns.json).write_text(json.dumps({"symbol": ns.symbol, "axes": axes, "rank": rank, "cells": results}, indent=1))
     return 0 if exact else 1
 
 

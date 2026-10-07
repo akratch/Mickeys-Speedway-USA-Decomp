@@ -792,6 +792,16 @@ it end to end. The ones that carry most of the weight:
 - Direct `cc` equals the asm-processor build for a candidate with no
   `GLOBAL_ASM` pragma, at roughly 130 candidates/sec, which makes a small
   lattice exhaustive rather than sampled.
+- **`tools/shape_product.py --rank aligned`** (the default whenever any cell is off
+  size) ranks a product by `align_symbol.py`'s residual -- naming + immediate +
+  really-different, one-sided words included -- then size delta. Positional
+  masked misranks any cell an instruction long or short; do not write a private
+  scratch runner for it. On `func_80056DD8` it prefers a +4 cell (residual 136)
+  over the delta-0 cell positional picks (165 masked, residual 154).
+- `--json` carries every cell's masked, delta, residual and four buckets. The target
+  is read once per run; `--jobs` runs cells in parallel (16 cells in ~1.0 s).
+  `tools/fast_score.py --aligned` prints the same buckets and one-sided spans for one
+  candidate. A `#define SHAPE_x N` in the candidate fixes that axis (`--all-axes` enumerates it).
 
 ### The insertion-pair reader, for any function whose size is off
 

@@ -2,11 +2,13 @@
 ### `wakeAllocate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 325/351 words
+- score: 323/351 words
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x10
-- summary: Divisors read textureIndex back: tail ring aligned, naming 84 to 9 at -8. Left: dead v0/v1 copies before the call (split pieces).
+- summary: sampleBytes after segmentCount (target spill-cell order): 325 to 323 at -8. Left: dead v0/v1 copies before the call, four cells out of order
+
+Summary before this remeasure: Divisors read textureIndex back: tail ring aligned, naming 84 to 9 at -8. Left: dead v0/v1 copies before the call (split pieces).
 
 Summary before this remeasure: Divisors read wake->textureIndex back (store forwarded): tail temp ring aligned, naming 84 to 9 at -8. Left: dead v0/v1 copies before the call.
 
@@ -312,4 +314,38 @@ growv refusal rule from the records of a refused case (proc 47 has
 several), then look for the source change that makes w10's growth into
 block 2 refuse.
 
+#### 2026-10-07, lane i-6: spill-cell creation order, 325 to 323 at -8
+
+Measured by tools/bank.py: masked 323 (raw 323), size delta -8, candidate 349 words vs target 351. Aligned: byte-exact 311, register naming 10, immediate only 6, really different 29.
+
+Aligner after: byte-exact 311, naming 10, immediate 6, really different
+29 (before 308, 9, 8, 31). The target's seven pre-call spill cells read,
+from the top down, frameCount, segmentCount, sampleBytes, segmentCount *
+0x14, the doubled count, segmentBytes, textureBytes; expression-temporary
+homes are handed out in creation order, so the target creates sampleBytes
+straight after segmentCount. Moving that one statement there puts our
+sampleBytes cell between segmentCount and the doubled count (325 to 323,
+immediate 8 to 6). Adding segmentCount * 0x14 through a local before
+groupCount completes the target's cell order exactly but scores 325.
+What is left of the frame: four cells sit between the doubled count and
+segmentBytes in ours, while the target has those four above frameCount;
+moving alpha, bufferCount and the alpha branch above frameCount does not
+move them (pre-placement product, 30 cells, flat at 323).
+
+Measured flat, each a product on the 323 or 325 body: groupCount and/or
+triCount after the alpha branch (8 cells, 337/338 at -12 or flat); copies
+of segmentCount, groupCount or triCount into i or j in the call block,
+used by the byte products (16 cells, all 325: uopt propagates every copy).
+
+Records (web_report, proc 9, identity-gated): split() seeds a piece at the
+first liveblock that passes, in list order; w10's piece seeds at bb0 (its
+def) and grows into bb2 at new 4, left 16 to 11, numintf 7, far from the
+L161 refusal (needs left_after 5 or fewer). So the target's v0 copy is not
+a refused growth of w10 from bb0; it needs either a seed at bb2 or a
+separate web.
+
+Cycle-21 line: find the four temporaries in our cell gap (between the
+doubled count and segmentBytes) and what makes the target create them
+before frameCount; the same creation order decides which webs exist in
+bb2 when w10 and w14 are coloured.
 <!-- plateau-handoff:wakeAllocate:end -->

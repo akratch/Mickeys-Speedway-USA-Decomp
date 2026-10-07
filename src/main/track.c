@@ -3835,9 +3835,20 @@ void func_80012658(s32 flags) {
  * declarations reconstruct this query; no external function body is adapted.
  * Raw offsets retain the compact segment and polygon records.
  */
-/* Workbench verdict: structure-mismatch, 499 differing words, first mismatch +0x0. */
-/* Candidate is 538/548 instructions with frame -0x2B0 versus target -0x288. */
-/* Remaining gap: ten missing instructions, 40 excess frame bytes, and two excess relocations. */
+/* 339 masked words at size +8 (499 at -40, 2026-10-07 lane c-track2):
+ * rewritten from the listing. Declarations in the target's frame order (every
+ * declared local takes a cell; the homes of segments, bestPlane, entryTimes,
+ * best, the three vectors, nearClip/farClip, hitCount, hit, batchIndex,
+ * xzMasks, bestFlags, yMasks and the u8 yMask/bestTexture all sit at the
+ * target's distance from the frame top), D_800792E8 read by name (no `track`
+ * carrier), farClip reused as the best distance, the batch read as
+ * segment->batches[batchIndex] at each use, the y test held in a u8 local,
+ * named fields for the hit plane and separate ones for each edge plane, one
+ * condition for the batch skip, the texture flag as a struct field, the edge
+ * plane read in place and the coordinate swaps through temporaryXZ. Left:
+ * bestTexture takes s8 where the target keeps it only in its home (three
+ * words), the frame 0x20 large (seven more declared scalars than the target's
+ * 35 cells between the arrays), and the register naming that follows. */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -3852,84 +3863,82 @@ extern u8 getYCompareMask(void *bounds, s32 y0, s32 y1);
 
 s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
     TrackSegment *segments[20];
+    s32 x0;
+    s32 y0;
+    s32 z0;
+    s32 x1;
+    TrackPlane *bestPlane;
     f32 entryTimes[20];
-    s32 xzMasks[20];
-    u8 yMasks[20];
-    TrackVec3f direction;
+    TrackVec3f best;
     TrackVec3f minimum;
     TrackVec3f maximum;
-    f32 bestX;
-    f32 bestY;
-    f32 bestZ;
+    TrackVec3f direction;
+    s32 y1;
+    s32 z1;
+    s32 insertIndex;
+    TrackSegment *temporarySegment;
+    s32 temporaryXZ;
     TrackBoundingBox *bounds;
-    TrackData *track;
-    TrackSegment *segment;
-    TrackBatch *batch;
-    TrackPlane *surfaceBase;
-    TrackPlane *plane;
-    TrackPlane *bestPlane;
-    u16 *polygon;
+    s32 segmentIndex;
     f32 nearClip;
     f32 farClip;
-    f32 bestDistance;
+    TrackSegment *segment;
+    TrackPlane *surfaceBase;
+    s32 xzMask;
+    s32 triangleIndex;
+    s32 firstTriangle;
+    s32 lastTriangle;
+    u32 batchFlags;
+    s32 visibility;
+    u16 *polygon;
+    f32 normalX;
+    f32 normalY;
+    f32 normalZ;
+    f32 planeDistance;
+    f32 edgeX;
+    f32 edgeY;
+    f32 edgeZ;
+    f32 edgeD;
+    u8 yHit;
     f32 side0;
     f32 side1;
     f32 fraction;
     f32 pointX;
     f32 pointY;
     f32 pointZ;
-    f32 normalX;
-    f32 normalY;
-    f32 normalZ;
-    f32 planeDistance;
-    f32 edgeValue;
-    s32 segmentIndex;
     s32 hitCount;
-    s32 insertIndex;
-    s32 batchCount;
-    s32 batchIndex;
-    s32 triangleIndex;
-    s32 firstTriangle;
-    s32 lastTriangle;
     s32 edgeIndex;
     s32 inside;
     s32 hit;
+    s32 edge;
+    s32 edgeSign;
+    s32 batchIndex;
+    f32 value;
+    s32 xzMasks[20];
+    f32 edgeValue;
     u32 bestFlags;
-    u32 batchFlags;
-    u8 bestTexture;
-    s32 x0;
-    s32 y0;
-    s32 z0;
-    s32 x1;
-    s32 y1;
-    s32 z1;
-    s32 edgeNumber;
-    u16 edge;
-    u16 edgeSign;
+    u8 yMasks[20];
+    u8 yMask;
     u8 temporaryY;
-    u8 *surfaceBytes;
-    TrackSegment *temporarySegment;
-    s32 temporaryXZ;
+    u8 bestTexture;
 
     direction.f[0] = arg1[0] - arg0[0];
     direction.f[1] = arg1[1] - arg0[1];
     direction.f[2] = arg1[2] - arg0[2];
     if ((direction.f[0] != 0.0f) || (direction.f[1] != 0.0f) ||
         (direction.f[2] != 0.0f)) {
-        track = D_800792E8;
         hitCount = 0;
-        for (segmentIndex = 0;
-             segmentIndex < E129_S16(D_800792E8, 0x1A);
+        for (segmentIndex = 0; segmentIndex < D_800792E8->segmentCount;
              segmentIndex++) {
-            bounds = track->segmentBounds + segmentIndex;
-            minimum.f[0] = (f32) bounds->x1;
-            minimum.f[1] = (f32) bounds->y1;
-            minimum.f[2] = (f32) bounds->z1;
-            maximum.f[0] = (f32) bounds->x2;
-            maximum.f[1] = (f32) bounds->y2;
-            maximum.f[2] = (f32) bounds->z2;
-            if ((func_800131AC((TrackVec3f *) arg0, &direction,
-                               &minimum, &maximum, &nearClip, &farClip) != 0) &&
+            bounds = &D_800792E8->segmentBounds[segmentIndex];
+            minimum.f[0] = bounds->x1;
+            minimum.f[1] = bounds->y1;
+            minimum.f[2] = bounds->z1;
+            maximum.f[0] = bounds->x2;
+            maximum.f[1] = bounds->y2;
+            maximum.f[2] = bounds->z2;
+            if ((func_800131AC((TrackVec3f *) arg0, &direction, &minimum,
+                               &maximum, &nearClip, &farClip) != 0) &&
                 (((nearClip <= 0.0f) && (farClip >= 0.0f)) ||
                  ((nearClip >= 0.0f) && (nearClip <= 1.0f)))) {
                 if (nearClip < 0.0f) {
@@ -3938,41 +3947,39 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                 if (farClip > 1.0f) {
                     farClip = 1.0f;
                 }
-                x0 = (s32) ((direction.f[0] * nearClip) + arg0[0]);
-                y0 = (s32) ((direction.f[1] * nearClip) + arg0[1]);
-                z0 = (s32) ((direction.f[2] * nearClip) + arg0[2]);
-                x1 = (s32) ((direction.f[0] * farClip) + arg0[0]);
-                y1 = (s32) ((direction.f[1] * farClip) + arg0[1]);
-                z1 = (s32) ((direction.f[2] * farClip) + arg0[2]);
+                x0 = direction.f[0] * nearClip + arg0[0];
+                y0 = direction.f[1] * nearClip + arg0[1];
+                z0 = direction.f[2] * nearClip + arg0[2];
+                x1 = direction.f[0] * farClip + arg0[0];
+                y1 = direction.f[1] * farClip + arg0[1];
+                z1 = direction.f[2] * farClip + arg0[2];
                 if (x1 < x0) {
-                    s32 temporary = x1;
+                    temporaryXZ = x1;
                     x1 = x0;
-                    x0 = temporary;
+                    x0 = temporaryXZ;
                 }
                 if (y1 < y0) {
-                    s32 temporary = y1;
+                    temporaryXZ = y1;
                     y1 = y0;
-                    y0 = temporary;
+                    y0 = temporaryXZ;
                 }
                 if (z1 < z0) {
-                    s32 temporary = z1;
+                    temporaryXZ = z1;
                     z1 = z0;
-                    z0 = temporary;
+                    z0 = temporaryXZ;
                 }
-                entryTimes[hitCount] = nearClip;
-                segments[hitCount] =
-                    &D_800792E8->segments[segmentIndex];
                 xzMasks[hitCount] = getXZCompareMask(bounds, x0, z0, x1, z1);
                 yMasks[hitCount] = getYCompareMask(bounds, y0, y1);
-                insertIndex = hitCount;
-                while ((insertIndex > 0) &&
-                       (entryTimes[insertIndex] <
-                        entryTimes[insertIndex - 1])) {
+                entryTimes[hitCount] = nearClip;
+                segments[hitCount] = &D_800792E8->segments[segmentIndex];
+                for (insertIndex = hitCount;
+                     (insertIndex > 0) &&
+                     (entryTimes[insertIndex] < entryTimes[insertIndex - 1]);
+                     insertIndex--) {
                     nearClip = entryTimes[insertIndex];
                     temporarySegment = segments[insertIndex];
                     temporaryXZ = xzMasks[insertIndex];
                     temporaryY = yMasks[insertIndex];
-
                     entryTimes[insertIndex] = entryTimes[insertIndex - 1];
                     segments[insertIndex] = segments[insertIndex - 1];
                     xzMasks[insertIndex] = xzMasks[insertIndex - 1];
@@ -3981,113 +3988,105 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                     segments[insertIndex - 1] = temporarySegment;
                     xzMasks[insertIndex - 1] = temporaryXZ;
                     yMasks[insertIndex - 1] = temporaryY;
-                    insertIndex--;
                 }
                 hitCount++;
                 if (hitCount >= 20) {
-                    segmentIndex = E129_S16(D_800792E8, 0x1A);
+                    segmentIndex = D_800792E8->segmentCount;
                 }
             }
         }
     }
     hit = 0;
-    bestDistance = 1.0f;
-    bestX = arg1[0];
-    bestY = arg1[1];
-    bestZ = arg1[2];
+    farClip = 1.0f;
+    best.f[0] = arg1[0];
+    best.f[1] = arg1[1];
+    best.f[2] = arg1[2];
     arg3 |= 0x1080;
-    for (segmentIndex = 0;
-         (segmentIndex < hitCount) && (hit == 0);
+    for (segmentIndex = 0; (segmentIndex < hitCount) && (hit == 0);
          segmentIndex++) {
         segment = segments[segmentIndex];
+        xzMask = xzMasks[segmentIndex];
+        yMask = yMasks[segmentIndex];
         surfaceBase = segment->surfaces;
-        batch = segment->batches;
-        batchCount = segment->batchCount;
-        for (batchIndex = 0; batchIndex < batchCount; batchIndex++) {
-            firstTriangle = batch->v0;
-            lastTriangle = batch[1].v0;
-            batchFlags = batch->flags;
+        for (batchIndex = 0; batchIndex < segment->batchCount; batchIndex++) {
+            batchFlags = segment->batches[batchIndex].flags;
+            firstTriangle = segment->batches[batchIndex].v0;
+            lastTriangle = segment->batches[batchIndex + 1].v0;
             if ((batchFlags & arg3) ||
                 ((arg4 != 0) && ((batchFlags & arg4) == 0))) {
                 firstTriangle = lastTriangle;
             }
-            for (triangleIndex = firstTriangle;
-                 triangleIndex < lastTriangle; triangleIndex++) {
-                s32 visibility = E129_S32(
-                    E129_PTR(segment, 0x10), triangleIndex * 4);
-                visibility &= xzMasks[segmentIndex];
+            for (triangleIndex = firstTriangle; triangleIndex < lastTriangle;
+                 triangleIndex++) {
+                visibility = segment->visibilityMasks[triangleIndex] & xzMask;
+                yHit = E129_U8(E129_PTR(segment, 0x14), triangleIndex) & yMask;
                 if (((visibility & 0xFFFF) != 0) &&
-                    ((visibility & 0xFFFF0000) != 0) &&
-                    ((E129_U8(E129_PTR(segment, 0x14), triangleIndex) &
-                      yMasks[segmentIndex]) != 0)) {
+                    ((visibility & 0xFFFF0000) != 0) && (yHit != 0)) {
                     polygon = &segment->surfaceIndices[triangleIndex * 4];
-                    plane = &surfaceBase[polygon[0]];
-                    normalX = plane->x;
-                    normalY = plane->y;
-                    normalZ = plane->z;
-                    planeDistance = plane->distance;
+                    normalX = surfaceBase[polygon[0]].x;
+                    normalY = surfaceBase[polygon[0]].y;
+                    normalZ = surfaceBase[polygon[0]].z;
+                    planeDistance = surfaceBase[polygon[0]].distance;
                     side1 = (arg1[2] * normalZ) +
-                              ((normalX * arg1[0]) +
-                               (normalY * arg1[1])) + planeDistance;
+                            ((normalX * arg1[0]) + (normalY * arg1[1])) +
+                            planeDistance;
                     if (side1 < 0.0f) {
                         side0 = (arg0[2] * normalZ) +
-                              ((normalX * arg0[0]) +
-                               (normalY * arg0[1])) + planeDistance;
+                                ((normalX * arg0[0]) + (normalY * arg0[1])) +
+                                planeDistance;
                         if (side0 >= 0.0f) {
                             fraction = side0 / (side0 - side1);
                             pointX = (direction.f[0] * fraction) + arg0[0];
                             pointY = (direction.f[1] * fraction) + arg0[1];
                             pointZ = (direction.f[2] * fraction) + arg0[2];
                             inside = 1;
-                            for (edgeIndex = 0; (edgeIndex < 3) && (inside != 0); edgeIndex++) {
-                                edge = E129_U16(polygon, (edgeIndex + 1) * 2);
+                            for (edgeIndex = 0; (edgeIndex < 3) && (inside != 0);
+                                 edgeIndex++) {
+                                edge = polygon[edgeIndex + 1];
                                 edgeSign = edge & 0x8000;
-                                edgeNumber = edge ^ edgeSign;
-                                surfaceBytes = (u8 *) surfaceBase +
-                                               (edgeNumber * 0x10);
-                                edgeValue =
-                                    (E129_F32(surfaceBytes, 0) * pointX) +
-                                    (E129_F32(surfaceBytes, 4) * pointY) +
-                                    (E129_F32(surfaceBytes, 8) * pointZ) +
-                                    E129_F32(surfaceBytes, 0xC);
+                                edgeX = surfaceBase[edge ^ edgeSign].x;
+                                edgeY = surfaceBase[edge ^ edgeSign].y;
+                                edgeZ = surfaceBase[edge ^ edgeSign].z;
+                                edgeD = surfaceBase[edge ^ edgeSign].distance;
+                                value = (edgeX * pointX) + (edgeY * pointY) +
+                                        (edgeZ * pointZ) + edgeD;
+                                edgeValue = value;
                                 if (edgeSign != 0) {
-                                    edgeValue = -edgeValue;
+                                    edgeValue = -value;
                                 }
                                 if (edgeValue > 0.0f) {
                                     inside = 0;
                                 }
                             }
-                            if ((inside != 0) && (fraction < bestDistance)) {
-                                bestDistance = fraction;
-                                bestX = pointX;
-                                bestY = pointY;
-                                bestZ = pointZ;
-                                bestPlane = plane;
-                                bestFlags = batch->flags;
-                                bestTexture = E129_U8(
-                                    D_800792E8->textures,
-                                    (batch->textureIndex * 8) + 7);
+                            if ((inside != 0) && (fraction < farClip)) {
+                                farClip = fraction;
+                                best.f[0] = pointX;
+                                best.f[1] = pointY;
+                                best.f[2] = pointZ;
+                                bestFlags = segment->batches[batchIndex].flags;
+                                bestTexture = ((TrackTextureFlags *) D_800792E8->textures)[
+                                    segment->batches[batchIndex].textureIndex].flag;
                                 hit = 1;
+                                bestPlane = &surfaceBase[polygon[0]];
                             }
                         }
                     }
                 }
             }
-            batch++;
         }
     }
     if (hit != 0) {
         E129_S32(arg2, 0) = 0;
-        E129_F32(arg2, 4) = bestX;
-        E129_F32(arg2, 8) = bestY;
-        E129_F32(arg2, 0xC) = bestZ;
+        E129_F32(arg2, 4) = best.f[0];
+        E129_F32(arg2, 8) = best.f[1];
+        E129_F32(arg2, 0xC) = best.f[2];
         E129_F32(arg2, 0x10) = bestPlane->x;
         E129_F32(arg2, 0x14) = bestPlane->y;
         E129_F32(arg2, 0x18) = bestPlane->z;
         E129_F32(arg2, 0x1C) = bestPlane->distance;
-        direction.f[0] *= bestDistance;
-        direction.f[1] *= bestDistance;
-        direction.f[2] *= bestDistance;
+        direction.f[0] *= farClip;
+        direction.f[1] *= farClip;
+        direction.f[2] *= farClip;
         E129_F32(arg2, 0x20) = sqrtf(
             (direction.f[2] * direction.f[2]) +
             ((direction.f[0] * direction.f[0]) +
@@ -5214,10 +5213,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 499 differing words
- * frame: 0x2b0
- * relocations: 15
+ * score: 339 differing words
+ * frame: 0x2a0
+ * relocations: 13
  * first-mismatch: +0x0
- * summary: Mickey m2c fixes batch stride and best-hit state; retained 499 diffs, target-count alternative preserved. Next: authenticated source lifetimes.
+ * summary: Natural rewrite in target frame order: 499 at -40 to 339 at +8. Left: bestTexture takes s8, frame 0x18 large, second-phase s-register roles.
  * PLATEAU-HANDOFF:func_8001291C:end
  */

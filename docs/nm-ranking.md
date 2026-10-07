@@ -332,7 +332,7 @@ units remain distinct.
 | 37 | `src/overlays/o066/func_overlay_066_F00004E0_18C6948.c` | `func_overlay_066_F00004E0_18C6948` | `o066` | `size-mismatch` | 816 | 202 | 202 | 0 | 0 | -52 | — |
 | 38 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 296 | 296 | 76 | 76 | 16 | — |
 | 39 | `src/main/fx.c` | `wakeAllocate` | `main` | `size-mismatch` | 1,404 | 325 | 325 | 16 | 16 | -8 | — |
-| 40 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 499 | 499 | 0 | 0 | -40 | — |
+| 40 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 339 | 339 | 0 | 0 | 8 | — |
 | 41 | `src/overlays/o056/overlay_056.c` | `func_overlay_056_F00001A0_18A2F18` | `o056` | `size-mismatch` | 2,324 | 577 | 577 | 0 | 0 | -8 | — |
 | 42 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,789 | 1,788 | 0 | 0 | -344 | — |
 

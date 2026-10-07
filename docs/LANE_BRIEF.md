@@ -904,6 +904,11 @@ it end to end. The ones that carry most of the weight:
   disagree with the tree: one TU's per-file `-Wab,-r4300_mul` produced 33
   against the configured 31, a gap small enough to read as noise. Then `cmp` the
   objects rather than trusting the gate's verdict alone.
+- **`tools/web_report.py <symbol> [--proc N] [--web W] [--block B]`** -- per web: its expression over the function's own locals (`(col & 7)`), symbol or temporary, save/nocs/totalsave, order, colour and `forced`;
+  per occurrence the block, uses, defs, loop weight and term with the block's source lines (summing to totalsave); every split piece's growth tests checked against L161 with the first refused block;
+  and the forbidden seed with the pinned value behind each bit. One instrumented compile, identity-gated against stock, procedure found by itself.
+  It needs `CDX_WEBREPORT=1` records, added to the shared instrumented uopt on 2026-10-07 (`uopt-cdx-webreport.patch` beside its `uopt.c`;
+  unset, object, stderr and every other record are byte-identical). Its references are per block, not per expression node: the lines are the block's.
 - Direct `cc` equals the asm-processor build for a candidate with no
   `GLOBAL_ASM` pragma, at roughly 130 candidates/sec, which makes a small
   lattice exhaustive rather than sampled.

@@ -2575,6 +2575,9 @@ extern f32 D_8008420C;
  * 8.6 against 3.0 for a1) and the entry pointer webs.
  * 2026-10-07 (lane c-anim2): quadA is the natural x, y, z sum of
  * (a*a - 2ab + b*b) terms (345 to 344).
+ * 2026-10-07 (lane i-5): the step components are read z first (z, x, y),
+ * which numbers their webs in the target's colour order (z f0/f14, x
+ * f2/f16, y f12/f18); masked unchanged at 344, aligned residual 270 to 255.
  */
 s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
                   s32 arg2, AnimCollisionShape *arg3,
@@ -2630,12 +2633,12 @@ s32 func_80054B3C(s32 arg0, AnimCollisionShape *arg1,
         }
     }
     firstVector = &arg1->vector;
+    stepZ1 = firstVector->z;
+    stepZ2 = arg3->vector.z;
     stepX1 = firstVector->x;
     stepX2 = arg3->vector.x;
     stepY1 = firstVector->y;
     stepY2 = arg3->vector.y;
-    stepZ1 = firstVector->z;
-    stepZ2 = arg3->vector.z;
     quadA = ((stepX1 * stepX1) - (2.0f * stepX1 * stepX2) + (stepX2 * stepX2)) +
             ((stepY1 * stepY1) - (2.0f * stepY1 * stepY2) + (stepY2 * stepY2)) +
             ((stepZ1 * stepZ1) - (2.0f * stepZ1 * stepZ2) + (stepZ2 * stepZ2));
@@ -3980,31 +3983,31 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80054B3C:start
  * symbol: func_80054B3C
- * score: 344 differing words
+ * score: 344/370 words
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: Natural x,y,z quadA: 345 to 344. Left: arg1 in s0 needs the arg3+48 vector pointer web (a1) the target materializes; z-first colour order.
+ * summary: Z-first step reads give the target's vector colours: aligned 270 to 255 at 344. Left: arg1 in s0 needs position-pointer webs in the quadratic block.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 165 differing words
+ * score: 165/229 words
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x24
- * summary: Then-arm block before the offsets (timeStep loaded once) and the empty if after the else offsets: aligned 161 to 154 at 165. Left: else-arm FP colours.
+ * summary: Then-arm block before the offsets and the empty if after the else offsets: aligned 161 to 154 at 165. Left: else-arm FP colours, trig colours.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 
 /* PLATEAU-HANDOFF:func_80053868:start
  * symbol: func_80053868
- * score: 392 differing words
+ * score: 392/1205 words
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: Pre-tested overlap for (func_800573C8 shape) restores the 0<<2 seeds: 393 to 392. Left: pairIndex a1 pieces, movingCount reload, constant webs.
+ * summary: Pre-tested overlap for (func_800573C8 shape) restores the 0<<2 seeds: 393 to 392. Left: movingCount piece 631, pairIndex a1 piece, constant webs.
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

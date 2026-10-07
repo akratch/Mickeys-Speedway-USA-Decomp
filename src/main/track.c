@@ -2791,7 +2791,6 @@ typedef struct TrackTextureFlags {
     u8 pad04[3];
     u8 flag;
 } TrackTextureFlags;
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c draft and the resident collision-node and plane
  * offsets reconstruct this intersection query; no external body is adapted.
@@ -2808,7 +2807,9 @@ typedef struct TrackRayNode {
  * unfolded index * 2 start); the first plane index read through the edge
  * variable numbers its web ahead of the plane pointer; i = 0 as its own
  * statement and i++ at the loop tail schedule the prologue and loop top.
- * 7 masked words at delta 0.
+ * Matched 2026-10-07: the redundant `& 0xFFFF` on the u16 edge at the first
+ * plane index spends the one ring draw the target spends there (as1 folds
+ * the mask away), which puts the edge-loop index temps on t6/t7 as shipped.
  */
 s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
                   TrackPlane *result, f32 *maximum) {
@@ -2855,7 +2856,7 @@ s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
         } else {
             entry = (u16 *) encoded;
             edge = *entry;
-            plane = &node->planes[edge];
+            plane = &node->planes[edge & 0xFFFF];
             encoded = 0;
             planeY = plane->y;
             if (planeY >= 0.707f) {
@@ -2905,9 +2906,6 @@ s32 func_80010654(TrackRayPoint *start, TrackRayPoint *end,
     }
     return hit;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80010654.s")
-#endif
 /*
  * PROVENANCE: Mickey's m2c control-flow draft and resident collision
  * records reconstruct this wrapper; no external function body is adapted.
@@ -5201,16 +5199,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * PLATEAU-HANDOFF:func_80011980:end
  */
 
-
-/* PLATEAU-HANDOFF:func_80010654:start
- * symbol: func_80010654
- * score: 7 differing words
- * frame: 0x98
- * relocations: 8
- * first-mismatch: +0xb4
- * summary: Edge index in the node word, edge numbered by the first plane read, i split out with a tail increment: 21 to 7 at 0. Left: first index load in t3, target t8.
- * PLATEAU-HANDOFF:func_80010654:end
- */
 
 
 /* PLATEAU-HANDOFF:func_8001291C:start

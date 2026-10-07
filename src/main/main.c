@@ -1425,32 +1425,22 @@ s32 func_80028FB8(s32 arg0, s32 arg1, s32 arg2) {
     return 0;
 }
 
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: Jet Force Gemini src/main.c::mainAnyoneHas at upstream commit
  * efd5abb remains GLOBAL_ASM and supplies only an assembly/object structural
  * analogue and TU-role comparison; no C body was adapted. Mickey establishes
  * this boundary, ABI, calls, Boolean normalization, and candidate body.
  *
- * The authorized donor update advanced other shared-engine work but did not
- * provide a new C spelling for this function. The prior shared-result probe
- * regressed to 25 words and moved the second and third calls, so it did not
- * unlock another flag lattice or trace. This retained early-return spelling
- * is the best source-faithful form: exact 108-byte size/frame 0x18 and calls
- * at +0x14/+0x30/+0x4C. ORT 663 has no authenticated caller.
+ * Matched 2026-10-07 as a plain short-circuit or with a plain `int` return
+ * type. With the s32 (`long`) return type the int-valued `||` is converted
+ * on return, and uopt colours the carrier a0 with one move at the join;
+ * returned as int, each arm normalises into a ring temp and copies it to v0
+ * in the branch delay slot, as shipped.
  */
-s32 func_80028FCC(s32 arg0) {
-    if (func_80028FB8(0, 0, arg0)) {
-        return TRUE;
-    }
-    if (func_80028FB8(0, 0, arg0)) {
-        return TRUE;
-    }
-    return func_80028FB8(0, 0, arg0) != 0;
+int func_80028FCC(s32 arg0) {
+    return func_80028FB8(0, 0, arg0) || func_80028FB8(0, 0, arg0) ||
+           func_80028FB8(0, 0, arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/main/func_80028FCC.s")
-#endif
 
 s32 func_80029038(s32 arg0, s32 arg1, s32 arg2) {
     return 0;
@@ -1667,29 +1657,3 @@ void func_800293D0(void) {
         }
     }
 }
-
-/*
- * 2026-09-10, lane nm-mixed: the target's control flow is now identified and
- * is a short-circuit || chain, not the retained early-return shape. A plain
- * `return a() != 0 || b() != 0 || c() != 0;` reproduces the target's per-site
- * normalise-and-branch-to-epilogue exactly, at 25 of the 27 instructions. The
- * one blocking mechanism: uopt coalesces the three normalised results into a
- * SINGLE web, colours it a0, and emits one copy to v0 in the epilogue, where
- * the target keeps three separate ring temporaries each copied into v0 in the
- * branch delay slot (25 - 1 + 3 = 27). Falsified: every ||/goto/do-while-break
- * /nested-if/early-return spelling collapses to the same 25-instruction a0
- * form; a named result variable splits the webs but loses the direct branch
- * (29 instructions); `register`, u32 casts, a local copy of the argument, an
- * unrolled 3-iteration loop, -Olimit removal, -O1 and -Wo,-nogcse all fail.
- * Next lever is whatever makes v0, not a0, admissible for the merged web.
- */
-
-/* PLATEAU-HANDOFF:func_80028FCC:start
- * symbol: func_80028FCC
- * score: 10 differing words
- * frame: 0x18
- * relocations: 3
- * first-mismatch: +0x1C
- * summary: Or-chain carrier is allocator proc 40 web 2: v0 not offered (forced=-2). Accepted recolours stay 25. L145/L144 miss the ring-temp copies. Best still 10.
- * PLATEAU-HANDOFF:func_80028FCC:end
- */

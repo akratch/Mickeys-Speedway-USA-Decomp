@@ -1071,8 +1071,23 @@ shadow -- the dispatch order for Track B.
   hexdumps, no machine-word arrays, no base64 of ROM bytes. `uoptlist` and
   compiler scratch are never committed.
 - No absolute workstation paths in tracked files.
-- `tools/finalize_plateau.py --commit` appends your commit trailer only when
-  given one: export `MICKEY_COMMIT_TRAILER` (or pass `--trailer`, repeatable).
+- **Bank with `tools/bank.py`, not by hand.** `.venv/bin/python tools/bank.py
+  <symbol> [--note FILE] [--summary TEXT] [--commit] [--trailer T]` does the
+  whole sequence in the order that works: it re-measures the symbol
+  (`score_symbol`'s masked count, frame and relocations, and `align_symbol`'s
+  four aligned buckets, the honest numbers at a nonzero size delta), writes the
+  shard header and in-source marker from that measurement (never from you),
+  appends your dated `--note` section (first line `#### YYYY-MM-DD, lane ...`,
+  no `|`; a re-run replaces the same heading, so it is idempotent), regenerates
+  the ranking with the measuring form then `--write-doc`, runs
+  `check_shard_metrics.py` and `plateau_handoff_audit.py --check`, and with
+  `--commit` stages exactly what it wrote, runs `tools/gates.sh --staged` and
+  commits only on exit 0, ending with `--trailer` or `MICKEY_COMMIT_TRAILER`
+  (use `--also PATH` to include other files in the commit). On a match, remove
+  the guard first, then `bank.py <symbol> --match`: it refuses while the
+  function is still queued or ranked and writes the "Matched." header form.
+  A mid-file PLATEAU block is replaced in place. `finalize_plateau.py` remains
+  for the low-level case where you already hold the numbers.
 - A handoff shard is a strict grammar: the metric header must be source, score,
   frame, relocations, first mismatch, then an optional summary, each on its own
   line, and `|` is forbidden anywhere in the block — write measurements as prose

@@ -291,4 +291,16 @@ On the 90 body (1172 bytes, 90 masked, size delta 0). Reading the target's clip 
 That does produce the copy (`move s4, v0`, the sum is a CSE temporary and y its own web) but costs 4 bytes: 261 to 268 masked at size delta -4 or +4 over 14 cells (three statement orders of x, edgeX and edgeY, both addend orders of edgeY, y before or after the tests). Aligned against the 90 body the naming rows rise in every window (+106 aligned). Not kept.
 
 Next: frame_census the a-ovl3 264 cell (edgeY beside originY, frame 0xF0) and find which other declared local the target lacks, so that cell can be paid for elsewhere; the inline-sum route above is closed at -4.
+#### 2026-10-07 (lane d-mid1): the 264 cell's extra frame cell is any declared local
+
+On the 90 body (1172 bytes, 90 masked, size delta 0, aligned exact 229, naming 36, immediate 4, really different 15).
+
+frame_census on a-ovl3's 264 cell (edgeY declared beside originY, `edgeY = originY + texture->height` with x's edge, tested as `edgeY < top`; reproduced at 264, size delta -8, frame 0xF0): both sides use 16 slots and the ladders are identical below +0x40; above it every home (the GetBounds outputs and the argument save) sits 8 bytes higher. The gap between the callee saves and the homes is the declared-local reservation, so the extra cell is the count of declared locals, not a particular home: folding any one local back restores 0xE8. Measured, one local removed from the 264 cell each:
+
+- edgeX dropped (x's edge inline in the third test): 88 masked at size delta 0, aligned exact 230, naming 33, immediate 2, really different 20. The aligned residual is the 90 body's 55 again, and the clip block is not the target's (x's edge is summed in the test block, left and top are not held in s3/s1). Not kept.
+- the edge held in drawX, drawWidth (x) or drawY (y) instead of a local: 257 at -8. stride inline at both uses: 289 at -8.
+
+insertion_pairs on the 264 cell (trace identity-gated): the -8 is three target-only moves, the y copy into s4 at +0x98 (line of the tests), a move at +0xD4 (line 117, move_to_dest) and one at +0x1BC, against one candidate-only stack load at +0x158. So that cell is short of exactly the copies, and its frame cell is free to pay for with edgeX.
+
+Next: on the 264 cell with edgeX folded (frame 0xE8), find the source of the +0xD4 and +0x1BC moves (insertion_pairs owners: line 117 and line 142 of that cell) before the y copy; the y copy needs the sum redefined after `y = originY` (a-ovl3), which so far moves the last test onto the copy.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

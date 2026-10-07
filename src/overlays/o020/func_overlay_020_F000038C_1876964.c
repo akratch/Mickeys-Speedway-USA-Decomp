@@ -68,6 +68,16 @@ extern void *func_overlay_020_F0000000_18765D8();
  * so the surviving copy is of index + 9, as in the target, not of index + 1.
  * Open: index + 1 spans two uopt blocks here and is denied v1 (col's
  * register); the target computes it inside one block.
+ * 2026-10-07 (lane d-mid1), 103 -> 68: the loop body's three uopt blocks
+ * are not control flow; uopt cuts a straight-line block once it holds
+ * about ten statements' worth of ucode, so a block boundary falls between
+ * the first triangle's index stores. Storing vi2 before vi1 puts index + 9
+ * before that cut and index + 1 after it, so index + 1 lives in one block
+ * and takes v1 as shipped. The triangle buffer size written as
+ * `columns * rows * 2 * sizeof` keeps the product in a ring temporary (the
+ * parenthesised `(columns * rows) * (2 * sizeof)` assigned it to size's
+ * register first and shifted the ring by one draw for the rest of the
+ * function), and u1/v1 multiply `(col + 1)`/`(row + 1)` first.
  */
 #ifdef NON_MATCHING
 Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
@@ -108,7 +118,7 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
         }
     }
 
-    size = (grid->columns * grid->rows) * (2 * sizeof(Overlay20Triangle));
+    size = grid->columns * grid->rows * 2 * sizeof(Overlay20Triangle);
     if (grid->triangles == NULL) {
         grid->triangles = func_overlay_020_F0000000_18765D8(size, 0x87);
     }
@@ -117,15 +127,15 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
         for (row = 0; row < grid->rows; row++) {
             for (col = 0; col < grid->columns; col++) {
                 u0 = ((grid->textureScaleX * col * texture->width) << 5) / grid->columns;
-                u1 = ((grid->textureScaleX * (col + 1) * texture->width) << 5) / grid->columns;
+                u1 = (((col + 1) * grid->textureScaleX * texture->width) << 5) / grid->columns;
                 v0 = ((grid->textureScaleY * row * texture->height) << 5) / grid->rows;
-                v1 = ((grid->textureScaleY * (row + 1) * texture->height) << 5) / grid->rows;
+                v1 = (((row + 1) * grid->textureScaleY * texture->height) << 5) / grid->rows;
                 index = col & 7;
                 far = index + 10;
                 tri[0].flags = 0x40;
                 tri[0].vi0 = index;
-                tri[0].vi1 = index + 1;
                 tri[0].vi2 = index + 9;
+                tri[0].vi1 = index + 1;
                 tri[0].uv0.u = u0;
                 tri[0].uv0.v = v0;
                 tri[0].uv1.u = u1;
@@ -161,10 +171,10 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
 
 /* PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:start
  * symbol: func_overlay_020_F000038C_1876964
- * score: 103 differing words
+ * score: 68 differing words
  * frame: 0x40
  * relocations: 3
  * first-mismatch: +0x4
- * summary: Walking vertex index (index += 9, named far): copy now of index+9 as shipped, 104 to 103. Left: index+1 spans two uopt blocks and is denied v1.
+ * summary: Size-limited uopt block cut: vi2 before vi1 gives index+1 v1; size product spelling fixes a ring draw; 103 to 68. Left: copy save, entry copy.
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

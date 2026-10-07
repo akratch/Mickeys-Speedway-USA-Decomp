@@ -1430,7 +1430,10 @@ void func_8001DCD0(s16 rotation, ControlVector3 *vector, s16 *pitch, s16 *yaw);
  * (the D_80081850-60 cells are this TU's pool); no rate local. Open: the
  * `bit` web is not split around the 0x24 block (the target spills it to a
  * compiler temp there), dot takes f22 where the target spills it, and the
- * &hit address is hoisted into s4 where the target rematerialises it. */
+ * &hit address is hoisted into s4 where the target rematerialises it.
+ * The `(u8) bit` cast at the unk34A update gives that read its own IR name
+ * (185 -> 150); the target additionally spills it to a temp across the
+ * block's calls. */
 s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     CharControlGroundRecord *record;
     s32 i;
@@ -1543,7 +1546,7 @@ s32 func_8001DD70(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
                         player->unk198 = 1;
                     }
                     hitResult |= 1;
-                    player->unk34A |= bit;
+                    player->unk34A |= (u8) bit;
                 }
             }
             (&player->unk320)[i] = record->unk3C;
@@ -2059,10 +2062,10 @@ void controlClearPlayerSetup(void) {
 
 /* PLATEAU-HANDOFF:func_8001DD70:start
  * symbol: func_8001DD70
- * score: 185/533 words
+ * score: 150/533 words
  * frame: 0x268
  * relocations: 23
  * first-mismatch: +0x168
- * summary: Natural rewrite, 224 to 185 at delta 0. Left: bit not split around the 0x24 block, dot in f22 where the target spills it, hit address hoisted.
+ * summary: Natural rewrite plus a (u8) bit read at unk34A: 224 to 150 at delta 0. Left: the bit temp spill, the dot copy, the hit address hoist.
  * PLATEAU-HANDOFF:func_8001DD70:end
  */

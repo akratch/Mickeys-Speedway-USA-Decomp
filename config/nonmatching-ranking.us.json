@@ -52,7 +52,7 @@
       "relocation_masked_first_mismatch_offset": 276,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "LZz0.sQXQ.2Pxa.Lvrq.7wRD.BuhJ.NWLO.Q7Qg.i8G8.pqBA.EYM"
+      "source_context_sha256": "cfr-.EP06.MgT7.ftoK.R14V.6iO6.gDkp.aEXA.dC-E.X8Bu.y2A"
     },
     {
       "name": "func_80028FCC",
@@ -322,7 +322,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "4J5e.QUVt.qZrh.0G4s.0T6e.DHlg.jJwz.kPNh.fX1E.MBvt.VV8"
+      "source_context_sha256": "uFK1.yl8A.dC9Y.0rOd.fzpo.FSl-.yGZN.h60T.K8x_.KKiz.v5w"
     },
     {
       "name": "func_80009414",
@@ -397,7 +397,7 @@
       "relocation_masked_first_mismatch_offset": 4,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "JTll.l6n1.5d1o.5pdY.nmIz.aHQ2.Yd8a.4o9e.Q9he.5v2Y.ZS0"
+      "source_context_sha256": "1TIN.tn4C.Bu9B.q3ej._6a5.cse0.DHWP.ooSF.9sON.m7tn.JMw"
     },
     {
       "name": "func_overlay_064_F0000000_18C3B28",
@@ -427,7 +427,7 @@
       "relocation_masked_first_mismatch_offset": 112,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "YpY0.wE1Z.R4y3.pnfq.Tav0.2z5C.M0FU.J6v1.MBdJ.jfFe.j_o"
+      "source_context_sha256": "kKo7.40Qo.mLsq.5q4n.05WP.JYQL.GBxL.r9mY.jRpu.0WkC.SnU"
     },
     {
       "name": "func_overlay_047_F0000B30_1891948",
@@ -556,13 +556,13 @@
       "tu": "main",
       "size_bytes": 7232,
       "objdiff_match_pct": null,
-      "differing_words": 1686,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 1684,
-      "relocation_masked_first_mismatch_offset": 0,
+      "differing_words": 1685,
+      "first_mismatch_offset": 72,
+      "relocation_masked_differing_words": 1683,
+      "relocation_masked_first_mismatch_offset": 72,
       "size_delta": 20,
       "category": "size-mismatch",
-      "source_context_sha256": "fbuE.ZP9G.alWn.s_B3.Yy2O.mtUP.Fp0m.eZSg.J9bE.OLfU.muE"
+      "source_context_sha256": "b9lW.fLyo.wTlC.U7Tq.ARh1.0LBa.UU2G.8CI8.qe16.gcgu.-4A"
     }
   ],
   "unresolved_functions": []

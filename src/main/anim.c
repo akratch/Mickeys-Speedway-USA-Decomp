@@ -1094,11 +1094,11 @@ void func_800517E0(void) {
     s32 pathIndex;
     f32 commandTime;
     f32 hundred;
-    f32 delta;
     f32 value;
-    f32 value2;
     f32 factor;
     f32 unit;
+    s16 signedValue;
+    u8 type;
     f32 scale;
     f32 target;
     f32 start;
@@ -1107,6 +1107,7 @@ void func_800517E0(void) {
     f32 normalized;
     s32 packed;
     s32 packed2;
+    s32 packedField;
     s32 high;
     s32 low;
     s32 high2;
@@ -1118,8 +1119,6 @@ void func_800517E0(void) {
     s32 state;
     s32 flagsValue;
     u32 objectFlags;
-    s16 signedValue;
-    AnimPath *path;
     AnimCommandObject *object;
     AnimCommandSub *sub;
     AnimCommandSubState *next;
@@ -1132,7 +1131,6 @@ void func_800517E0(void) {
     void **soundSlot;
     void *sound;
     void *entry;
-    u8 type;
     s32 motionAngle;
     s32 motionCount;
     s32 colorB0;
@@ -1140,14 +1138,33 @@ void func_800517E0(void) {
     s32 colorB2;
     s32 colorA0;
     s32 colorA1;
-    s32 packedField;
-    f32 motionDuration;
-    f32 radius;
-    f32 height;
-    f32 motionX;
-    AnimPath **paths;
     f32 motionZ;
     AnimPath *slot;
+    f32 motionX;
+    f32 height;
+    f32 radius;
+    f32 motionDuration;
+    s32 pad0;
+    f32 delta;
+    s32 pad1;
+    s32 pad2;
+    s32 pad3;
+    s32 pad4;
+    s32 pad5;
+    f32 value2;
+    s32 pad6;
+    s32 pad7;
+    s32 pad8;
+    s32 pad9;
+    s32 pad10;
+    s32 pad11;
+    s32 pad12;
+    s32 pad13;
+    s32 pad14;
+    s32 pad15;
+    AnimPath *path;
+    s32 pad16;
+    AnimPath **paths;
 
     cursor = D_8007D69C;
     paths = D_800D6B00;
@@ -3996,10 +4013,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1684 differing words
- * frame: 0x168
+ * score: 1683 differing words
+ * frame: 0x1b0
  * relocations: 248
- * first-mismatch: +0x0
- * summary: Aligned 1178, size +20. Duration conversions inline, quartet shared, table spilled; masks still cost the state piece.
+ * first-mismatch: +0x48
+ * summary: Aligned 1170, size +20, frame 0x1B0 matched. Declaration ladder puts the target's homes exactly; scroll trap ordering and shared int locals remain.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

@@ -311,8 +311,8 @@ units remain distinct.
 | 15 | `src/main/models_5B300.c` | `func_8005AF14` | `main` | `other` | 1,840 | 114 | 114 | 408 | 408 | 0 | — |
 | 16 | `src/main/diCpu.c` | `func_80045D34` | `main` | `other` | 1,836 | 131 | 115 | 332 | 332 | 0 | — |
 | 17 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 117 | 117 | 1,816 | 1,816 | 0 | — |
-| 18 | `src/overlays/o038/overlay38UpdateParticles.c` | `func_overlay_038_F0000154_1885E64` | `o038` | `other` | 808 | 160 | 159 | 32 | 32 | 0 | — |
-| 19 | `src/overlays/o056/overlay_056.c` | `func_overlay_056_F00001A0_18A2F18` | `o056` | `other` | 2,324 | 163 | 163 | 96 | 96 | 0 | — |
+| 18 | `src/overlays/o056/overlay_056.c` | `func_overlay_056_F00001A0_18A2F18` | `o056` | `other` | 2,324 | 152 | 152 | 352 | 352 | 0 | — |
+| 19 | `src/overlays/o038/overlay38UpdateParticles.c` | `func_overlay_038_F0000154_1885E64` | `o038` | `other` | 808 | 160 | 159 | 32 | 32 | 0 | — |
 | 20 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 171 | 171 | 0 | 0 | 0 | — |
 | 21 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 189 | 189 | 216 | 216 | 0 | — |
 | 22 | `src/main/fx.c` | `wakeUpdate` | `main` | `other` | 1,592 | 195 | 195 | 52 | 52 | 0 | — |

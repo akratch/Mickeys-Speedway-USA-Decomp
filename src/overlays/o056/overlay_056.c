@@ -69,7 +69,8 @@ void overlay56ReleaseResource(void) {
  * Lane e-big: the matrixTranslate y sum is assigned to the ghost loop's x (one merged web,
  * offered no argument colour, decided ahead of mapX), which leaves mapY no caller colour so
  * it takes f20 as shipped; the f24 save then needs the unused colour local gone and two
- * cells below ghostAlpha (frame ladder).
+ * cells below ghostAlpha (frame ladder); the fade shift is a conditional expression inside
+ * the add (the mode byte then takes a0 and the shift v1, as shipped).
  * Open: sum/mapX colours swapped (f16/f18), cos/sin f22/f24 swapped, scale/x-product
  * f0/f2 swapped, the D_84 pointer temp home (0x74 against 0x7C). */
 #ifdef NON_MATCHING
@@ -202,7 +203,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     O56Sprite *dot;
     O56Object *obj;
     O56Racer *racer;
-    s32 shift;
+    s32 pad6;
     s32 slot;
     f32 mapX;
     s32 alpha;
@@ -232,12 +233,7 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
 
     gameState = func_80028F54();
     if (D_800C3A3C == 0) {
-        if (D_800D3198 == 3) {
-            shift = 2;
-        } else {
-            shift = 1;
-        }
-        gOverlay56ResourceState += updateRate << shift;
+        gOverlay56ResourceState += updateRate << ((D_800D3198 == 3) ? 2 : 1);
         if (D_800D3198 != 3 && gOverlay56ResourceState > 160) {
             gOverlay56ResourceState = 160;
         } else if (gOverlay56ResourceState > 255) {
@@ -379,10 +375,10 @@ void overlay56UnpackColor(s32 index, u32 *red, s32 *green, s32 *blue) {
 
 /* PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:start
  * symbol: func_overlay_056_F00001A0_18A2F18
- * score: 163 differing words
+ * score: 152 differing words
  * frame: 0x1F8
  * relocations: 75
- * first-mismatch: +0x60
- * summary: mapY in f20 via the y sum merged into the ghost x web, frame ladder for the f24 save: 542 to 163 at 0; open: sum/mapX, cos/sin, scale/x colour pairs.
+ * first-mismatch: +0x160
+ * summary: y sum merged into ghost x (mapY f20), frame ladder, ternary fade shift: 542 to 152 at 0; open: sum/mapX, cos/sin, scale/x colours.
  * PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:end
  */

@@ -2,11 +2,13 @@
 ### `func_overlay_056_F00001A0_18A2F18` plateau handoff
 
 - source: `src/overlays/o056/overlay_056.c`
-- score: 163 differing words
+- score: 152 differing words
 - frame: 0x1F8
 - relocations: 75
-- first mismatch: +0x60
-- summary: mapY in f20 via the y sum merged into the ghost x web, frame ladder for the f24 save: 542 to 163 at 0; open: sum/mapX, cos/sin, scale/x colour pairs.
+- first mismatch: +0x160
+- summary: y sum merged into ghost x (mapY f20), frame ladder, ternary fade shift: 542 to 152 at 0; open: sum/mapX, cos/sin, scale/x colours.
+
+Summary before this remeasure: mapY in f20 via the y sum merged into the ghost x web, frame ladder for the f24 save: 542 to 163 at 0; open: sum/mapX, cos/sin, scale/x colour pairs.
 
 Summary before this remeasure: r4300_mul, u8 colour params, ghost racer local, frame ladder: 577 at -8 to 542 at 0; open: mapY caller cost 20 vs toll 21.
 
@@ -363,5 +365,20 @@ Cycle-21 line: give the y sum a web saved below 20 that still crosses a
 call elsewhere (so mapX is decided first and takes f16), then cos's save
 above sin's (one more weighted reference or one fewer spanned block), and
 read the ladder after each in the records before scoring.
+
+#### 2026-10-07 (lane e-big, second commit): fade shift as a conditional expression, 163 to 152
+
+The fade head swapped a0 and v1: the mode byte (web 9, CSE temp, save 3/2)
+and the shift local (web 12, save 3/2) tie and the byte, numbered first,
+takes v1. Product over the head (6 shapes by 2 orders of the clamp test,
+12 cells): writing the shift as `updateRate << ((D_800D3198 == 3) ? 2 : 1)`
+inside the add removes the shift local and gives the shipped a0/v1 (152 at
+delta 0, aligned 431 / 143 / 2 / 6). The if/else, a default-then-override,
+a ternary into the local, a negated test and a long-hand add stay at 163;
+shifting updateRate in place changes size; testing the state before the
+mode byte in the clamp costs 8 bytes. Also measured on this body: the y
+sum in mapY (548), a fresh local (546), x or z (152), inline (555); the
+ghost loop with inline products instead of x/z locals is +24 bytes in
+every sum form.
 
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

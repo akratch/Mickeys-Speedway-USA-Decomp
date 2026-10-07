@@ -762,7 +762,14 @@ void func_80016890(void *arg0, void *arg1, void *arg2p, f32 arg3, f32 arg4,
  * Byte-inert here: nested against merged Y tests, continue against nested
  * face test, the cap spelled > 0x1F, literal-type and cast round-trip forms
  * of the -1 and argument webs. One store after the found/not-found arms is
- * size +12 but aligned 173. */
+ * size +12 but aligned 173.
+ * 2026-10-08 (lane j-5): computing `vertices` before the batch flag test puts
+ * one more coloured web (s1) in the outer head bb2, so arg2's entry piece
+ * refuses bb2 (new 17, left 11: 22 < 23) and the remainder takes t5 from the
+ * preheader, as shipped: 296 at +16 to 292 at +12, aligned residual 159 to 60.
+ * The target computes vertices after the test, so this is a stand-in for the
+ * web the target holds there (it also keeps v1 from the flag word: target
+ * flags a0, next a1). Left: the face*8/face*4 latch pieces (left 10, need 11). */
 typedef struct ShadowClipPoint {
     f32 x;
     f32 y;
@@ -839,11 +846,11 @@ void func_80017140(ShadowGenQuery *arg0, f32 *arg1, ShadowCollSector *arg2, s32 
     s32 k;
 
     for (spAC = 0; spAC < arg2->numberOfBatches; spAC++) {
+        vertices = &arg2->vertices[arg2->batches[spAC].verticesOffset];
         if (!(arg2->batches[spAC].flags & 0x08013880)) {
             curFacesOffset = arg2->batches[spAC].facesOffset;
             nextFacesOffset = arg2->batches[spAC + 1].facesOffset;
             sp88 = (arg2->batches[spAC].flags >> 24) & 7;
-            vertices = &arg2->vertices[arg2->batches[spAC].verticesOffset];
             for (; curFacesOffset < nextFacesOffset; curFacesOffset++) {
                 temp_t6 = arg2->collisionFacets[curFacesOffset].basePlaneIndex * 4;
                 if (((arg2->faceMasks[curFacesOffset] & arg3) & 0xFFFF) &&
@@ -1367,10 +1374,10 @@ void func_800180B4(ShadowQuery *query) {
 
 /* PLATEAU-HANDOFF:func_80017140:start
  * symbol: func_80017140
- * score: 296/328 words
+ * score: 292/328 words
  * frame: 0x140
  * relocations: 21
  * first-mismatch: +0x4C
- * summary: DKR func_8002E904 shape: aligned residual 159 vs 258 at +16; left: arg2 outer-head split (margin -4), face-index temps reject the latch (-1, -2)
+ * summary: Vertices before the flag test: arg2 entry piece refuses bb2, t5 from preheader; 292 at +12, aligned residual 60; left: face temp latch pieces
  * PLATEAU-HANDOFF:func_80017140:end
  */

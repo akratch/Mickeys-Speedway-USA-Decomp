@@ -311,7 +311,7 @@ units remain distinct.
 | 16 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `other` | 8,672 | 1,991 | 1,982 | 4 | 4 | 0 | — |
 | 17 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
 | 18 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
-| 19 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 296 | 296 | 76 | 76 | 16 | — |
+| 19 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 292 | 292 | 76 | 76 | 12 | — |
 | 20 | `src/main/fx.c` | `wakeAllocate` | `main` | `size-mismatch` | 1,404 | 323 | 323 | 16 | 16 | -8 | — |
 | 21 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 339 | 339 | 0 | 0 | 8 | — |
 | 22 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,531 | 1,530 | 72 | 72 | -12 | — |

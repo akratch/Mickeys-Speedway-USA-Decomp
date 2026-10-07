@@ -67,7 +67,7 @@
       "relocation_masked_first_mismatch_offset": 192,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "eI8j.nv-C.YFt5.g4OX.GAHM.iVy2.pSpX.ybwa._y7r.-HtS.XYY"
+      "source_context_sha256": "IQvn.LzvK.ynfP.NL4j.jh3G.VDhE.7ioy.Enpd.4RYQ.L9jb.ARQ"
     },
     {
       "name": "func_80009414",
@@ -256,13 +256,13 @@
       "tu": "main",
       "size_bytes": 1312,
       "objdiff_match_pct": null,
-      "differing_words": 296,
+      "differing_words": 292,
       "first_mismatch_offset": 76,
-      "relocation_masked_differing_words": 296,
+      "relocation_masked_differing_words": 292,
       "relocation_masked_first_mismatch_offset": 76,
-      "size_delta": 16,
+      "size_delta": 12,
       "category": "size-mismatch",
-      "source_context_sha256": "2P_Q.b_DN.s57m.f5Bf.E3Q-.eENy.4reL.82fn.cOU7.iYW7.S_U"
+      "source_context_sha256": "KqI8.gGH3.lhPS.5maO.BiUL.adGK.JbCZ.72uj.EBlI.XCRh.HCw"
     },
     {
       "name": "wakeAllocate",
@@ -292,7 +292,7 @@
       "relocation_masked_first_mismatch_offset": 0,
       "size_delta": 8,
       "category": "size-mismatch",
-      "source_context_sha256": "boxi.GgWs.kSkR.yHEg.UVEX.WlHW._FgZ.n16H.G6nj.Vb2V.WtY"
+      "source_context_sha256": "P2aU.EyEu.fW_N.jdVk.ENg-.DQk-.EPyX.ns6y.1Fgj.00zS.mEk"
     },
     {
       "name": "func_800517E0",

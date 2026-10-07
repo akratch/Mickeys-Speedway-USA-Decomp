@@ -2,11 +2,13 @@
 ### `func_overlay_073_F0000190_18CAC50` plateau handoff
 
 - source: `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c`
-- score: 178 differing words
+- score: 168 differing words
 - frame: 0x98
 - relocations: 46
 - first mismatch: +0x180
-- summary: 163 masked at size 0 (was 740 at +8); ring two draws behind from the case 1 angle difference, one float spill home, one schedule swap.
+- summary: 153 masked at size 0; target is two ring draws ahead from the case 1 angle difference; float-rate spill at +0x30 not +0x34.
+
+Summary before this remeasure: 163 masked at size 0 (was 740 at +8); ring two draws behind from the case 1 angle difference, one float spill home, one schedule swap.
 
 Summary before this remeasure: Configured stock 760/762 result, 740 relocation-masked differences and exact frame; observed declared homes and the multiply-hazard schedule are reconstructed. Entry narrowing, one compiler scratch home and exact relocation/linked proof remain unresolved.
 
@@ -258,5 +260,37 @@ angle difference (+0x18C) onward, with every instruction between
 the ramp and that point register-identical; the float spill home
 (+0x30 against +0x34) and one schedule swap near +0x7A4 are the two
 structural rows.
+
+#### 2026-10-07, lane b-o073 (continued): case 4 data read, 163 to 153
+
+- Case 4 reads `data = ((Func073Target *)state->target)->data;` with no
+  `target` local: 163 to 153 at size 0 (aligned 607 exact, 145 naming,
+  6 immediate, 2 structural).
+- The target also reads `state->target` and `hits[0]` into ring
+  temporaries in case 1 (hit copy) and case 3 (first data read, inner
+  hit copy), where this source keeps the colored `target` local (v1).
+  Rewriting those three sites directly is the target's shape but
+  measures worse on this source (36-cell product, best 168 to 190
+  aligned naming rows) because the ring is already out of phase there;
+  re-measure them after the phase is fixed.
+- Ring phase, read from the listing in address order: the source
+  agrees with the target through the case 1 ramp (+0x120), then the
+  target is two integer ring draws ahead at the angle difference
+  (+0x18C), with every instruction in between identical. Flat on this
+  shape: eight statement forms for the Arctanf call and difference in
+  each of cases 1 and 3 (64 cells), Arctanf return type, targetAngle
+  type and four casts (24 cells), the ramp's operand order and
+  compound forms. The two draws are folded (L149): nothing emitted
+  between the ramp and the difference consumes them.
+- Case 4 selected index: the target computes `hitIndex - 1` into a1,
+  the count's register, as a colored web; this source uses a ring
+  temp. `hitIndex--` makes it a web but colours it a0 (174);
+  `phase = hitIndex - 1` and an s16 `hitCount = hitIndex - 1` are
+  propagated away (153, unchanged); an s32 `hitCount` is -8.
+- Float-rate spill: the CSE of `(f32)updateRate` spans the case 1
+  calls and is homed at hits-8 (+0x30) where the target uses hits-4
+  (+0x34). Moving the dead `s32` pad through all 18 declaration
+  positions never moves it (position 3, the current one, is best);
+  deleting the pad drops the frame to 0x90.
 
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

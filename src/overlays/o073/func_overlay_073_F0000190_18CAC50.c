@@ -317,8 +317,7 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
             }
 
             if (state->mode == 4) {
-                target = (Func073Target *)state->target;
-                data = target->data;
+                data = ((Func073Target *)state->target)->data;
                 dx = object->x - data->x;
                 dz = object->z - data->z;
                 if (D_3C < ((dx * dx) + (dz * dz))) {
@@ -416,10 +415,10 @@ common:
 
 /* PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:start
  * symbol: func_overlay_073_F0000190_18CAC50
- * score: 178 differing words
+ * score: 168 differing words
  * frame: 0x98
  * relocations: 46
  * first-mismatch: +0x180
- * summary: 163 masked at size 0 (was 740 at +8); ring two draws behind from the case 1 angle difference, one float spill home, one schedule swap.
+ * summary: 153 masked at size 0; target is two ring draws ahead from the case 1 angle difference; float-rate spill at +0x30 not +0x34.
  * PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:end
  */

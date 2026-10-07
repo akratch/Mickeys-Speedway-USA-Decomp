@@ -193,4 +193,31 @@ repeating the closed width and spelling controls is not a new hypothesis.
 The float-pool/switch address bindings and final linked owned-byte proof also
 remain necessary before any promotion.
 
+#### 2026-10-07: two-short entry carrier diagnostic
+
+A fresh authorized lane and zero-exit `base-only` gate tested a distinct
+width-preserving split: compute the signed product in existing short `delta`,
+copy it to short `absStep`, and use `delta` for the sign predicate and negative
+arm. The later angle-difference assignment dominates all subsequent `delta`
+uses, so the two roles have disjoint lifetimes. No automatic homes, flags or
+headers were added or changed.
+
+The configured baseline reproduced 762 versus 760 words, 741 raw and 740
+relocation-masked differences, first +0x1C, frame 0x98 and opcode distance 6.
+The diagnostic's complete executable section and relocation inventory are
+identical to that baseline. It therefore retains the duplicate normalization
+web and supplies no new allocation or control-flow lever. Actual configured
+preprocessed inputs preserve all context outside the function; untouched stock
+compiler output and configured objects agree in allocated section geometry,
+bytes and normalized relocation identities for both builds.
+
+The canonical source is restored unchanged. This closes the two-short
+product/predicate split with zero matched bytes; it does not reopen other
+closed spellings. Private source, input, object, context, fidelity and score
+artifacts are preserved under `build/o073-home/` in the diagnostic lane. No
+linked promotion is claimed and no ROM rebuild is needed for this report-only
+closure. The next packet still needs independently new evidence for the
+normalization web or spill-pool ownership, plus eventual literal/switch binding
+and linked owned-byte proof.
+
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

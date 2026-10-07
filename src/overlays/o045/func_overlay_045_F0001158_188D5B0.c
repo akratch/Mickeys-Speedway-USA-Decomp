@@ -62,7 +62,7 @@ extern u8 D_800D664D;
 
 extern void func_80034920(Gfx **displayList);
 extern void func_8004D39C(char *input, char *output);
-extern Overlay45GlyphData *func_8004C690(s32 character);
+extern Overlay45GlyphData *func_8004C690(u8 character);
 extern f32 func_8002A8BC(s32 angle);
 extern f32 func_8002A8C0(s32 angle);
 
@@ -89,8 +89,11 @@ extern f32 func_8002A8C0(s32 angle);
  * operand; leftFloat/rightFloat stay declared as frame slots. The
  * triangles are written through the walking pointer (triangles->field,
  * triangles++ after each), which retires the inherited all-ones mask the
- * indexed form needed to keep the allocation pointer in s1. Earlier
- * passes: see the shard. */
+ * indexed form needed to keep the allocation pointer in s1. 135 -> 119:
+ * func_8004C690 takes a u8, as its definition in src/main/font.c does;
+ * the escape byte is then loaded into a0 and copied into first's v0 as
+ * shipped, and the colour packets take v1/a0. Earlier passes: see the
+ * shard. */
 #define PKT(pkt, a, b) { Gfx *_g = (Gfx *)(pkt)++; _g->words.w0 = (a); _g->words.w1 = (b); }
 #ifdef NON_MATCHING
 void func_overlay_045_F0001158_188D5B0(
@@ -345,10 +348,10 @@ void func_overlay_045_F0001158_188D5B0(
 
 /* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
  * symbol: func_overlay_045_F0001158_188D5B0
- * score: 135 differing words
+ * score: 119 differing words
  * frame: 0x190
  * relocations: 25
- * first-mismatch: +0x208
- * summary: Sibling shape plus colours-before-z and inline x conversions: 135 at size delta 0. Vertex float colours and escape-byte a0/v0 remain.
+ * first-mismatch: +0x718
+ * summary: Sibling shape and u8 glyph-lookup prototype: 119 at size delta 0. Only the float block after the angle calls remains.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

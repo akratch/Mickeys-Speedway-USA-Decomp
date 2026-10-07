@@ -1489,9 +1489,14 @@ void func_80049A8C(s32 index) {
         record++;
     }
 }
-/* Workbench verdict: structure-mismatch, 154 differing words, first mismatch +0x8. */
-/* Candidate: 207/206 instructions with the target -0x18 frame and all four relocation identities exact. */
-/* Shape status: the five-record post-decrement loop and 32-bit delta/carry widths are reconstructed; switch allocation remains. */
+/* Lane a-front (2026-10-07): 181 masked at delta 0 -> 105 at +4.
+ *  - the state byte is read into a local at the top of each record and the
+ *    switch re-reads it into that local: the ten hoisted constants then
+ *    become constrained webs (22 interferences) and globalcolor gives them
+ *    v1..t5 ahead of the variables, which take s0..s4 as shipped;
+ *  - cases 1 and 3 read the duration after the counter update.
+ * Left: the switch-value copy and case 0's block, and case 2's duration
+ * colour (s4 in the target); see the shard. */
 /* PROVENANCE: Mickey's own FxRecord layout and m2c draft supply the state transitions; no external body is adapted here. */
 #ifdef NON_MATCHING
 s32 func_80049B14(s32 delta) {
@@ -1502,28 +1507,29 @@ s32 func_80049B14(s32 delta) {
     s32 carry;
     s32 bit;
     u16 flags;
-    u8 mode;
+    s32 mode;
 
     D_800D5F50 = 0;
     record = D_800D5F58;
     bit = 4;
     do {
-        if (record->state != 0) {
+        mode = record->state;
+        if (mode != 0) {
             flags = record->flags;
             carry = delta;
             if ((flags & 4) != 0) {
                 record->flags = flags & ~4;
             } else if (delta != 0) {
                 do {
-                    switch (record->state) {
+                    switch (mode = record->state) {
                     case 0:
                         carry = 0;
                         record->status = 0;
                         break;
                     case 1:
-                        duration = record->value16;
                         record->value14 = (s16) (record->value14 + carry);
                         current = record->value14;
+                        duration = record->value16;
                         if (current >= duration) {
                             if (record->value18 != 0) {
                                 next = current - duration;
@@ -1583,9 +1589,9 @@ s32 func_80049B14(s32 delta) {
                         }
                         break;
                     case 3:
-                        duration = record->value16;
                         record->value14 = (s16) (record->value14 + carry);
                         current = record->value14;
+                        duration = record->value16;
                         if (current >= duration) {
                             carry = 0;
                             if ((record->value1E != 0) &&
@@ -2111,11 +2117,11 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:func_80049B14:start
  * symbol: func_80049B14
- * score: 181/206 words
+ * score: 105/206 words
  * frame: 0x18
  * relocations: 4
- * first-mismatch: +0x4
- * summary: Delta +4 to 0 by reusing carry as the case-2 mode byte; allocator regime then shifts (p1 colours 4 webs), constants land in s0-s4.
+ * first-mismatch: +0x30
+ * summary: State read into a local at each record top and in the switch: constants become p1 webs (v1..t5), variables s0..s4. 181 at 0 to 105 at +4.
  * PLATEAU-HANDOFF:func_80049B14:end
  */
 

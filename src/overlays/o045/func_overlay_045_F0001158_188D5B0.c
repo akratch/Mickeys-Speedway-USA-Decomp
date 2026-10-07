@@ -86,7 +86,10 @@ extern f32 func_8002A8C0(s32 angle);
  * products and its float spill. 153 -> 135: each vertex writes its colour
  * bytes before z, and the x sums convert the screen offset inline
  * ((f32)screenLeft + ...), which puts the conversion on the target's left
- * operand; leftFloat/rightFloat stay declared as frame slots. Earlier
+ * operand; leftFloat/rightFloat stay declared as frame slots. The
+ * triangles are written through the walking pointer (triangles->field,
+ * triangles++ after each), which retires the inherited all-ones mask the
+ * indexed form needed to keep the allocation pointer in s1. Earlier
  * passes: see the shard. */
 #define PKT(pkt, a, b) { Gfx *_g = (Gfx *)(pkt)++; _g->words.w0 = (a); _g->words.w1 = (b); }
 #ifdef NON_MATCHING
@@ -295,31 +298,31 @@ void func_overlay_045_F0001158_188D5B0(
                     vertices[3].alpha = 0xFF;
                     vertices[3].z = 0;
 
-                    triangles[0].flags = 0x40;
-                    triangles[0].vertex0 = 0;
-                    triangles[0].vertex1 = 1;
-                    triangles[0].vertex2 = 2;
-                    triangles[0].s0 = textureLeft;
-                    triangles[0].t0 = textureTop;
-                    triangles[0].s1 = textureRight;
-                    triangles[0].t1 = textureTop;
-                    triangles[0].s2 = textureLeft;
-                    triangles[0].t2 = textureBottom;
+                    triangles->flags = 0x40;
+                    triangles->vertex0 = 0;
+                    triangles->vertex1 = 1;
+                    triangles->vertex2 = 2;
+                    triangles->s0 = textureLeft;
+                    triangles->t0 = textureTop;
+                    triangles->s1 = textureRight;
+                    triangles->t1 = textureTop;
+                    triangles->s2 = textureLeft;
+                    triangles->t2 = textureBottom;
+                    triangles++;
 
-                    triangles[1].flags = 0x40;
-                    triangles[1].vertex0 = 1;
-                    triangles[1].vertex1 = 3;
-                    triangles[1].vertex2 = 2;
-                    triangles[1].s0 = textureRight;
-                    triangles[1].t0 = textureTop;
-                    triangles[1].s1 = textureRight;
-                    triangles[1].t1 = textureBottom;
-                    triangles[1].s2 = textureLeft;
-                    triangles[1].t2 = textureBottom;
+                    triangles->flags = 0x40;
+                    triangles->vertex0 = 1;
+                    triangles->vertex1 = 3;
+                    triangles->vertex2 = 2;
+                    triangles->s0 = textureRight;
+                    triangles->t0 = textureTop;
+                    triangles->s1 = textureRight;
+                    triangles->t1 = textureBottom;
+                    triangles->s2 = textureLeft;
+                    triangles->t2 = textureBottom;
+                    triangles++;
 
                     vertices += 4;
-                    triangles = (Overlay45Triangle *)((s32)triangles & -1);
-                    triangles += 2;
                 }
             }
         }

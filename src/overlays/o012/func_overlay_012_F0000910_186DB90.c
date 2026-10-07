@@ -64,16 +64,29 @@ extern u8 gOverlay12TrianglesB[];
  * public source is GLOBAL_ASM. This body is reconstructed from Mickey only.
  */
 /* Rewritten from the listing (lane c-o012, 2026-10-07): 569 -> 461
- * masked, aligned residual 492 -> 419, size delta 0 -> -8. The colour
- * words keep their stack homes and are masked into separate locals; the
- * volatile zero is stored after the three pointer loads and never read;
+ * masked; lane h-8 (2026-10-07): 461 -> 429 masked, byte-exact rows 196 ->
+ * 338. The colour words keep their stack homes and are masked into separate
+ * locals; the volatile zero is stored after the three pointer loads and
+ * never read, beside an unused s16 that puts it on the target's half-word;
  * declaration order reproduces the target's home ladder; the vertex packet
- * is the objects.c vertex/polygon command pair, its two segment-base adds
- * spelt with different operators so they stay two constants; case 2 and the
- * particle loop compute the three colour bytes before the alpha byte; the
- * billboard's alpha parameter is a u8 (the 255 shares the vertex-byte web);
- * the polygon list is one of two .data triangle tables. Open: the FP
- * constant ranking (2.0f must outrank 1024.0f; see the shard). */
+ * is the objects.c vertex/polygon command pair; the quad corners are written
+ * through a walking pointer (the target's +0x1E base with negative
+ * displacements); the collision vector is read through a pointer taken
+ * before the clamp (the target's effect+0x2C base); the lifetime alpha is an
+ * if/else; the secondary colour is one expression; in case 2 and the
+ * particle loop the three colour PRODUCTS are s32 locals and the shift and
+ * mask are written at the call (v1, t0, t1 as shipped). factor is set to
+ * 2.0f before the distance call and the scaled distance added after the
+ * clamp: the extra definition gives the 2.0f constant web the second
+ * reference that ranks it above 1024.0f (f28 as shipped, 1.0f no longer
+ * coloured), 429 at -8 -> 180 at delta 0. The four vertex colour writes
+ * are one counted loop (IDO unrolls it; the loop weight puts the u8 255 in
+ * s0 ahead of the effect pointer), 180 -> 122. Case 1 scales the three
+ * velocity components in place (f20-f24 as shipped) and the secondary
+ * colour is written red, green, blue (ugen then evaluates blue, red,
+ * green as shipped), 122 -> 64. Case 1 keeps its scale in distance, so
+ * factor is a resource-block value only (the distance, factor and centre
+ * webs then take f2, f0, f12 as shipped), 64 -> 43. */
 #ifdef NON_MATCHING
 void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                                        s32 *matrixPtr,
@@ -87,8 +100,8 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     u32 secondary;
     u32 maskedPrimary;
     u32 maskedSecondary;
-    u32 blueTerm;
-    u32 redTerm;
+    s32 blue;
+    s32 red;
     f32 previous[3];
     f32 distance;
     f32 factor;
@@ -98,17 +111,18 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     f32 velocityX;
     f32 velocityY;
     f32 velocityZ;
-    u32 greenTerm;
+    s32 green;
     s32 component;
     Overlay12Vertex *quad;
     Overlay12Vertex *vertices;
     Overlay12Effect *effect;
     Overlay12Particle *particle;
-    s32 pad0;
+    f32 *collision;
+    s16 unused2;
     volatile s16 unused;
     Overlay12Gfx *displayList;
     s32 matrix;
-    s32 pad1;
+    s32 k;
 
     displayList = *displayListPtr;
     matrix = *matrixPtr;
@@ -121,17 +135,17 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             component = ((intensity * 255) >> 5) & 0xFF00;
             primary = component | (component << 8) | (component << 16) | 0xFF;
             color = &gOverlay12EffectColors[effect->type * 3];
-            blueTerm = ((color[2] * intensity) >> 5) & 0xFF00;
-            redTerm = (intensity * color[0] << 11) & 0xFF000000;
-            greenTerm = (intensity * color[1] * 8) & 0xFF0000;
-            secondary = blueTerm | redTerm | greenTerm | 0xFF;
+            secondary = ((intensity * color[0] << 11) & 0xFF000000) |
+                        ((intensity * color[1] * 8) & 0xFF0000) |
+                        (((color[2] * intensity) >> 5) & 0xFF00) | 0xFF;
         }
 
         if (((effect->active == 2) || (effect->active == 3)) &&
             (effect->collided != 0)) {
-            alpha = 255;
             if (effect->lifetime < 120) {
                 alpha = (effect->lifetime * 255) / 120;
+            } else {
+                alpha = 255;
             }
             resource = gOverlay12Resources[4 + effect->kind2];
             maskedPrimary = primary & ~0xFF;
@@ -146,6 +160,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                 O12_GFX_VERTEX(displayList++, VA, VB, 4, 0);
                 O12_GFX_POLYGON(displayList++, gOverlay12QuadTriangles + 0x80000000, 2, 1);
 
+                factor = 2.0f;
                 distance = -func_80024938(effect->x0, effect->y0, effect->z0);
                 if (distance < 0.0f) {
                     distance = -distance;
@@ -154,47 +169,38 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                 if (distance < 0.0f) {
                     distance = 0.0f;
                 }
+                collision = &effect->collisionX;
                 if (distance > 1024.0f) {
                     distance = 1024.0f;
                 }
-                factor = 2.0f + (distance * 0.01f);
-                centerX = effect->collisionX * factor + effect->x0;
-                centerY = effect->collisionY * factor + effect->y0;
-                centerZ = effect->collisionZ * factor + effect->z0;
+                factor += distance * 0.01f;
+                centerX = collision[0] * factor + effect->x0;
+                centerY = collision[1] * factor + effect->y0;
+                centerZ = collision[2] * factor + effect->z0;
 
                 quad = vertices;
-                quad[0].x = (s16)(effect->vertexX0 + centerX);
-                quad[0].y = (s16)(effect->vertexY0 + centerY);
-                quad[0].z = (s16)(effect->vertexZ0 + centerZ);
-                quad[1].x = (s16)(effect->vertexX1 + centerX);
-                quad[1].y = (s16)(effect->vertexY1 + centerY);
-                quad[1].z = (s16)(effect->vertexZ1 + centerZ);
-                quad[2].x = (s16)(centerX - effect->vertexX1);
-                quad[2].y = (s16)(centerY - effect->vertexY1);
-                quad[2].z = (s16)(centerZ - effect->vertexZ1);
-                quad[3].x = (s16)(centerX - effect->vertexX0);
-                quad[3].y = (s16)(centerY - effect->vertexY0);
-                quad[3].z = (s16)(centerZ - effect->vertexZ0);
-                vertices->r = 255;
-                vertices->g = 255;
-                vertices->b = 255;
-                vertices->a = 255;
-                vertices++;
-                vertices->r = 255;
-                vertices->g = 255;
-                vertices->b = 255;
-                vertices->a = 255;
-                vertices++;
-                vertices->r = 255;
-                vertices->g = 255;
-                vertices->b = 255;
-                vertices->a = 255;
-                vertices++;
-                vertices->r = 255;
-                vertices->g = 255;
-                vertices->b = 255;
-                vertices->a = 255;
-                vertices++;
+                quad->x = (s16)(effect->vertexX0 + centerX);
+                quad->y = (s16)(effect->vertexY0 + centerY);
+                quad->z = (s16)(effect->vertexZ0 + centerZ);
+                quad++;
+                quad->x = (s16)(effect->vertexX1 + centerX);
+                quad->y = (s16)(effect->vertexY1 + centerY);
+                quad->z = (s16)(effect->vertexZ1 + centerZ);
+                quad++;
+                quad->x = (s16)(centerX - effect->vertexX1);
+                quad->y = (s16)(centerY - effect->vertexY1);
+                quad->z = (s16)(centerZ - effect->vertexZ1);
+                quad++;
+                quad->x = (s16)(centerX - effect->vertexX0);
+                quad->y = (s16)(centerY - effect->vertexY0);
+                quad->z = (s16)(centerZ - effect->vertexZ0);
+                for (k = 0; k < 4; k++) {
+                    vertices->r = 255;
+                    vertices->g = 255;
+                    vertices->b = 255;
+                    vertices->a = 255;
+                    vertices++;
+                }
             }
         }
 
@@ -207,14 +213,17 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                              (velocityY * velocityY) +
                              (velocityZ * velocityZ));
             if (distance == 0.0f) {
-                factor = 0.0f;
+                distance = 0.0f;
             } else {
-                factor = 40.0f / distance;
+                distance = 40.0f / distance;
             }
-            factor *= effect->value;
-            previous[0] = effect->x0 - (velocityX * factor);
-            previous[1] = effect->y0 - (velocityY * factor);
-            previous[2] = effect->z0 - (velocityZ * factor);
+            distance *= effect->value;
+            velocityX *= distance;
+            velocityY *= distance;
+            velocityZ *= distance;
+            previous[0] = effect->x0 - velocityX;
+            previous[1] = effect->y0 - velocityY;
+            previous[2] = effect->z0 - velocityZ;
             func_800084C4(&displayList, &vertices,
                           gOverlay12Resources[2 + effect->kind1],
                           effect->kind1 == 0 ? gOverlay12TrianglesA : gOverlay12TrianglesB,
@@ -223,11 +232,11 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             break;
         case 2:
             color = &gOverlay12EffectColors[effect->type * 3];
-            redTerm = ((color[0] * intensity) >> 13) & 0xFF;
-            greenTerm = ((color[1] * intensity) >> 13) & 0xFF;
-            blueTerm = ((color[2] * intensity) >> 13) & 0xFF;
+            red = color[0] * intensity;
+            green = color[1] * intensity;
+            blue = color[2] * intensity;
             alpha = ((intensity * 255) >> 13) & 0xFF;
-            func_80034DF0(alpha, alpha, alpha, redTerm, greenTerm, blueTerm);
+            func_80034DF0(alpha, alpha, alpha, (red >> 13) & 0xFF, (green >> 13) & 0xFF, (blue >> 13) & 0xFF);
             func_80023CCC(&displayList, &matrix, &vertices,
                           gOverlay12Resource5,
                           (s32)effect->x0, (s32)effect->y0, (s32)effect->z0,
@@ -243,11 +252,11 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
         if (particle->active != 0) {
             color = &gOverlay12ParticleColors[particle->variant * 3];
             intensity = particle->type;
-            redTerm = ((color[0] * intensity) >> 8) & 0xFF;
-            greenTerm = ((color[1] * intensity) >> 8) & 0xFF;
-            blueTerm = ((color[2] * intensity) >> 8) & 0xFF;
+            red = color[0] * intensity;
+            green = color[1] * intensity;
+            blue = color[2] * intensity;
             alpha = ((intensity * 255) >> 8) & 0xFF;
-            func_80034DF0(alpha, alpha, alpha, redTerm, greenTerm, blueTerm);
+            func_80034DF0(alpha, alpha, alpha, (red >> 8) & 0xFF, (green >> 8) & 0xFF, (blue >> 8) & 0xFF);
             func_80023CCC(&displayList, &matrix, &vertices,
                           gOverlay12Resource5,
                           (s32)particle->x, (s32)particle->y, (s32)particle->z,
@@ -266,10 +275,10 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
 
 /* PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:start
  * symbol: func_overlay_012_F0000910_186DB90
- * score: 461 differing words
+ * score: 43 differing words
  * frame: 0x148
  * relocations: 38
- * first-mismatch: +0x54
- * summary: Natural rewrite from the listing 569 to 461 at -8. Open: FP constant ranking, 2.0f must outrank 1024.0f.
+ * first-mismatch: +0xC4
+ * summary: Case 1 scales through distance: FP triple as shipped, 64 to 43 at 0, all naming. Open: alpha t0, packet cursor a1, ring.
  * PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:end
  */

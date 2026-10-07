@@ -67,7 +67,9 @@ extern u8 gO98SpecialVertices[];
  * set-up and the matrix load (relocation records), two-argument matrix
  * builds, literal segment bases, and the target's home ladder: five
  * register locals, the display-list pointers, the matrices, the two float
- * homes, and fourteen unused cells after the state index. */
+ * homes, and fourteen unused cells after the state index. The two matrix
+ * arms advance the list in two statements, so the packet pointer is one web
+ * there (267; the shard has the decision records). */
 #ifdef NON_MATCHING
 void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
     O98Object *object;
@@ -153,7 +155,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
                     o98BuildMatrixReloc(&transform, &matrixB);
                     o98CombineMatrixReloc(&matrixB, savedDisplayList, &matrixA);
                     o98LoadMatrixReloc(&matrixA, *matrixHeap);
-                    gfx = (*dl)++;
+                    gfx = *dl; *dl = gfx + 1;
                     gfx->w0 = 0x01010040;
                     gfx->w1 = (u32)(*matrixHeap + 0x80000000);
                     *matrixHeap += 0x40;
@@ -179,7 +181,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
                     o98CombineMatrixReloc(&matrixC, &matrixB, &matrixA);
                     o98CombineMatrixReloc(&matrixA, savedDisplayList, &matrixA);
                     o98LoadMatrixReloc(&matrixA, *matrixHeap);
-                    gfx = (*dl)++;
+                    gfx = *dl; *dl = gfx + 1;
                     gfx->w0 = 0x01000040;
                     gfx->w1 = (u32)(*matrixHeap + 0x80000000);
                     *matrixHeap += 0x40;
@@ -248,10 +250,10 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
 
 /* PLATEAU-HANDOFF:overlay98RenderReflections:start
  * symbol: overlay98RenderReflections
- * score: 278/389 words
+ * score: 267/389 words
  * frame: 0x1C8
  * relocations: 36
  * first-mismatch: +0x14
- * summary: Natural rewrite, fixed transform offsets, target home ladder: 332 to 278 at delta 0, frame exact; open: node in s3 and s5, hoisted data re-read.
+ * summary: Natural rewrite plus two-statement packets in the matrix arms: 332 to 267 at delta 0, frame exact; open: second node copy (s5) missing.
  * PLATEAU-HANDOFF:overlay98RenderReflections:end
  */

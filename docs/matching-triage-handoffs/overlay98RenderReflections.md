@@ -2,11 +2,13 @@
 ### `overlay98RenderReflections` plateau handoff
 
 - source: `src/overlays/o098/overlay98RenderReflections.c`
-- score: 278/389 words
+- score: 267/389 words
 - frame: 0x1C8
 - relocations: 36
 - first mismatch: +0x14
-- summary: Natural rewrite, fixed transform offsets, target home ladder: 332 to 278 at delta 0, frame exact; open: node in s3 and s5, hoisted data re-read.
+- summary: Natural rewrite plus two-statement packets in the matrix arms: 332 to 267 at delta 0, frame exact; open: second node copy (s5) missing.
+
+Summary before this remeasure: Natural rewrite, fixed transform offsets, target home ladder: 332 to 278 at delta 0, frame exact; open: node in s3 and s5, hoisted data re-read.
 
 Summary before this remeasure: Exact-size V0 has a 56-byte non-save frame deficit and 21/36 relocation tuple alignment; prior natural mechanisms are exhausted.
 
@@ -148,5 +150,23 @@ a chained assignment, an (s32) round-trip, and re-reading the nodes
 element are all copy-propagated or reload (300 to 357). A volatile
 state index gives the re-read but not the hoist (300, exact 128). The
 emitted flag set just before the inverse call scores 282.
+
+#### 2026-10-07 (lane a-ovl4, second pass): packet split in the two matrix arms, 278 to 267
+
+Decision records (instrumented uopt, .text identity gate passed): the two
+highest-save webs are the `gfx` variable and the `*dl` expression that
+`gfx = (*dl)++` leaves (saves 89.75 and 93, interfering), so they take s0
+and s1 and every later callee-saved web sits one register up from the
+target (object s2 for s1, dl s3 for s2, heap s5 for s4). Writing the
+packet as `gfx = *dl; *dl = gfx + 1;` in the two matrix arms only scores
+267 at delta 0 (aligned exact 196, naming 130, immediate 11, really
+different 43). The same form in the display-list block puts gfx, object,
+dl and node on the target's s0..s3 but shrinks the function by 12 bytes:
+with one web fewer competing, the entry cursor takes s8 instead of its
++0x5C spill. So the target has one more callee-saved web than this body,
+which is the second copy of the node (s5); none of the node2 spellings
+measured (copy, chained assignment, reload, cast round-trip, 192 cells
+with the packet forms) creates it at delta 0. Block-scoped GBI-style
+packet macros give -12 as well.
 
 <!-- plateau-handoff:overlay98RenderReflections:end -->

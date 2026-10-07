@@ -2121,8 +2121,8 @@
       "source_commit": "4a19eaf4143fd79a7053188c64f8656016aae2cf"
     },
     "wakeAllocate": {
-      "ledger_commit": "a48bdabf507785088849b78bcc499bfca96d7633",
-      "reason": "ADR 0018 stall rule, and at delta -32 bytes the candidate is not the same function: decompiler-assisted reconstruction applies where no permutation can.",
+      "ledger_commit": "d1232e0efd67b0708d8725671f34dcfb447a245d",
+      "reason": "Retail float divisor conversion includes unsigned correction despite byte-masked input. Test explicit u32 widening of the u8 divisor, absent in four committed body versions; combine only with proved flags CFG and word ABI.",
       "source_commit": "a48bdabf507785088849b78bcc499bfca96d7633"
     },
     "wakeDraw": {

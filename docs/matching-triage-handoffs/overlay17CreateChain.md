@@ -6,7 +6,9 @@
 - frame: 0x80
 - relocations: 7
 - first mismatch: +0x3C
-- summary: Arm-exact shape with the red mask dropped: 24 to 3 at delta 0. Open: the size web's pre-call piece (web 12 totalsave 4 vs bestcost 3, coloured a2).
+- summary: Arm-exact shape with the red mask dropped: 24 to 3 at delta 0. Open: web 12 splits only when totalsave <= bestcost (tree 4 vs 3); block count is not the lever.
+
+Summary before this remeasure: Arm-exact shape with the red mask dropped: 24 to 3 at delta 0. Open: the size web's pre-call piece (web 12 totalsave 4 vs bestcost 3, coloured a2).
 
 Summary before this remeasure: count stored before dirty/selectedBuffer: 36 to 24 at delta 0. Open: the size web's def-only pre-call piece, and one ring draw on the arm-exact 46 shape.
 
@@ -400,5 +402,34 @@ bestcost >= 4). Next: a reference uopt keeps but as1 deletes placed after
 the endpoints call (raise the cost to a third spanned call), or a form
 whose pre-call shift reads the expression temp (drop the reference count to
 3); read the record after each.
+
+#### 2026-10-07, lane f-o069 (third pass): the size web's rule is totalsave against bestcost
+
+Kept body re-scores 3 at delta 0. Eight cells, none kept:
+
+- Control `p1:w12=s` (accepted, forced=-1): 115 at delta 0. The pre-call
+  piece (nocs 1, totalsave 1) is then coloured v0 at cost 0 and the
+  post-call piece (totalsave 1, bestcost 1) splits again; the target's
+  post-call piece is coloured a2 with a spill, so the whole-web spill is
+  not the target's decision.
+- Raising the block count is not the lever: three `do {} while (0)`
+  wrappers inside the span give nocs 4, save 1.0, totalsave 4, bestcost 3
+  and still decision=color (186 at +4, colours move to a3); one wrapper on
+  the allocation is byte-identical (3), the allocation plus the material
+  call 7.
+- `(u32)count * 40u` for the allocation (192 at +8, no CSE with the
+  variable), `(u32)` on the else-arm use and `(u32) * 2u` on the shift (3,
+  inert), a late address-taken (137), `register` (3), a one-element array
+  for every access (119: pre-call exact but per-arm reloads and the home
+  at 0x6C), array for the definition with a scalar read once after the
+  allocation (194 at +8), a repeated buffers[1] store after the endpoints
+  call as a third-call probe (194 at +24, the frame grows).
+
+Decision variable: web 12 splits only when totalsave <= bestcost; the tree
+has 4 references (definition, shift, two arm uses) against cost 3 (two
+calls spanned). Cycle-21: a reference after the endpoints call that uopt
+keeps without a new frame slot or word, or a form in which the shift reads
+the expression temp so the variable has three references; read web 12's
+p1dec after each.
 
 <!-- plateau-handoff:overlay17CreateChain:end -->

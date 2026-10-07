@@ -74,16 +74,9 @@ extern void overlay17CalculateEndpoints(struct Overlay17ChainHead *chain, f32 *x
  * ring temp formed before the branch. On 2026-10-03 the three calls were
  * identified independently and given their real declarations and arities,
  * closing 65 to 45 masked differences without changing the size local.
- * 2026-10-07 (lane f-o069), 36 -> 3: chain->count stored before dirty and
- * selectedBuffer (the target loads count at the head of the join block);
- * source, destination and the template store assigned inside the material
- * arm in that order (source first, or the destination's loop web splits
- * with a preheader copy); the else arm storing the global directly; and the
- * inherited `red & 0xFF` mask dropped (its peepholed andi had become the
- * one surplus ring draw before the endpoint-call argument addresses). The
- * three left are the half-buffer size web, coloured a2 where the target
- * keeps its pre-call piece in a ring temp (records: totalsave 4 against
- * bestcost 3, so it is coloured, not split). */
+ * 2026-10-07 (lane f-o069): chain->count stored before dirty and
+ * selectedBuffer, 36 -> 24 at delta 0; the target loads count at the head
+ * of the join block (as1 copies it into both predecessors' delay slots). */
 #ifdef NON_MATCHING
 Overlay17Chain *overlay17CreateChain(
     void *owner, s32 count, Overlay17Material *materialToken, s32 materialScale,
@@ -117,14 +110,12 @@ Overlay17Chain *overlay17CreateChain(
         chain->buffers[1] = (Overlay17Pair *)((u8 *)chain->buffers[0] + halfBufferBytes);
     }
 
+    source = gOverlay17TemplateReloc;
+    destination = (Overlay17Template *)((u8 *)chain + 0x40);
     if (chain->material != 0) {
-        s32 widthScale;
-        s32 heightScale;
-        source = gOverlay17TemplateReloc;
-        destination = (Overlay17Template *)((u8 *)chain + 0x40);
+        s32 widthScale = chain->material->width - 1;
+        s32 heightScale = chain->material->height * materialScale;
         chain->template = destination;
-        widthScale = chain->material->width - 1;
-        heightScale = chain->material->height * materialScale;
         index = 15;
         do {
             destination->byte0 = source->byte0;
@@ -141,7 +132,7 @@ Overlay17Chain *overlay17CreateChain(
             source++;
         } while (index--);
     } else {
-        chain->template = gOverlay17TemplateReloc;
+        chain->template = source;
     }
 
     chain->count = count;
@@ -151,7 +142,7 @@ Overlay17Chain *overlay17CreateChain(
     chain->y = y;
     chain->z = z;
     chain->radius = radius;
-    chain->red = red;
+    chain->red = (red & 0xFF);
     chain->green = green;
     chain->blue = blue;
     chain->alpha = alpha;
@@ -196,6 +187,6 @@ Overlay17Chain *overlay17CreateChain(
  * frame: 0x80
  * relocations: 7
  * first-mismatch: +0x3C
- * summary: Arm-exact shape with the red mask dropped: 24 to 3 at delta 0. Open: the size web's pre-call piece (web 12 totalsave 4 vs bestcost 3, coloured a2).
+ * summary: Arm-exact shape with the red mask dropped: 24 to 3 at delta 0. Open: web 12 splits only when totalsave <= bestcost (tree 4 vs 3); block count is not the lever.
  * PLATEAU-HANDOFF:overlay17CreateChain:end
  */

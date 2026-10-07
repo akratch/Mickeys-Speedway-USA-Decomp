@@ -11,16 +11,16 @@ from the original stub but have not been modernized or verified.
 <!-- SCOREBOARD_BEGIN -->
 ## Progress
 
-[![functions](https://img.shields.io/badge/functions_matched-1342_of_1460_(91.92%25)-blue)](#progress) [![bytes](https://img.shields.io/badge/code_bytes_resolved-885832_of_943640_(93.87%25)-blue)](#progress) [![names](https://img.shields.io/badge/symbols_named-1460_adopted-blue)](#progress)
+[![functions](https://img.shields.io/badge/functions_matched-1342_of_1460_(91.92%25)-blue)](#progress) [![bytes](https://img.shields.io/badge/code_bytes_resolved-889424_of_943640_(94.25%25)-blue)](#progress) [![names](https://img.shields.io/badge/symbols_named-1460_adopted-blue)](#progress)
 
 Physical text: 944,324 bytes; reviewed nonexecutable alignment: 684 bytes.
 
 | | Done | Total | |
 | :--- | ---: | ---: | ---: |
-| **Whole program** | 885,832 | 943,640 | **93.87%** |
+| **Whole program** | 889,424 | 943,640 | **94.25%** |
 | Resident C | 421,560 | 475,048 | 88.74% |
 | Verified assembly | 19,400 | 475,048 | 4.08% |
-| Overlay C | 444,872 | 468,592 | 94.94% |
+| Overlay C | 448,464 | 468,592 | 95.70% |
 | Functions matched | 1,342 | 1,460 | 91.92% |
 | Names adopted | 1,424 | 1,460 | 97.53% |
 

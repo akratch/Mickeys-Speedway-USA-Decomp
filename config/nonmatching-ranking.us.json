@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 59,
-  "resolved": 59,
+  "queue_size": 55,
+  "resolved": 55,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 59,
-  "relocation_masked_coverage": 59,
+  "source_context_coverage": 55,
+  "relocation_masked_coverage": 55,
   "functions": [
     {
       "name": "func_80051364",
@@ -53,21 +53,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "5m6O.9cuh.X1rm.GAtx.vaB8.AQkp.ePVe.0_bg.1Qc9.kVZQ.RCE"
-    },
-    {
-      "name": "func_80016890",
-      "file": "src/main/shadows.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 2224,
-      "objdiff_match_pct": null,
-      "differing_words": 32,
-      "first_mismatch_offset": 172,
-      "relocation_masked_differing_words": 31,
-      "relocation_masked_first_mismatch_offset": 172,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "cGe_.vusT.cRw9.rQgm.6rvo.1Ny8.MpZ_.cmQV.Oury.IJ5K.u6E"
     },
     {
       "name": "overlay17CreateChain",
@@ -130,21 +115,6 @@
       "source_context_sha256": "h8s_.XKYX.w3hh.WN0A.QzrX.u3uN.fFVC.bZcS.4R1k.ME6k.-08"
     },
     {
-      "name": "overlay83DrawStrip",
-      "file": "src/overlays/o083/overlay83DrawStrip.c",
-      "overlay": 83,
-      "tu": "overlays/o083",
-      "size_bytes": 308,
-      "objdiff_match_pct": null,
-      "differing_words": 58,
-      "first_mismatch_offset": 4,
-      "relocation_masked_differing_words": 58,
-      "relocation_masked_first_mismatch_offset": 4,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "wd4n.UbDK.x70p.rhRc.icEj.rXrs.mVDA.IpnY.w4ug.jWoW.kdA"
-    },
-    {
       "name": "overlay68UpdateAnimation",
       "file": "src/overlays/o068/overlay68UpdateAnimation.c",
       "overlay": 68,
@@ -188,21 +158,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "3FfT.v04l.h9yQ.BwaQ.mujT.6bm8.kNFQ.kjpB.MfE3.RJgy.bgA"
-    },
-    {
-      "name": "func_overlay_079_F0000FA0_18CDF40",
-      "file": "src/overlays/o079/func_overlay_079_F0000FA0_18CDF40.c",
-      "overlay": 79,
-      "tu": "overlays/o079",
-      "size_bytes": 736,
-      "objdiff_match_pct": null,
-      "differing_words": 144,
-      "first_mismatch_offset": 56,
-      "relocation_masked_differing_words": 143,
-      "relocation_masked_first_mismatch_offset": 60,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "I78R.0wYm.gboT.I8wJ.medO.aaqW.FSNj.T1av.DJoX.XUo7._sw"
     },
     {
       "name": "overlay100DrawMotion",
@@ -685,21 +640,6 @@
       "source_context_sha256": "fmOK.2JZU.fJnJ.2dxa.vU-0.X7Mp.jRXk.n5x_.W2oB.FvGt.a4s"
     },
     {
-      "name": "func_8001953C",
-      "file": "src/main/lights.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1016,
-      "objdiff_match_pct": null,
-      "differing_words": 225,
-      "first_mismatch_offset": 0,
-      "relocation_masked_differing_words": 225,
-      "relocation_masked_first_mismatch_offset": 0,
-      "size_delta": 32,
-      "category": "size-mismatch",
-      "source_context_sha256": "Zs7z.fL6h.QD_K.CxL0.eETR.EiOI.kjHc.gYtC.1X-B.jb2t.AoY"
-    },
-    {
       "name": "refractOutputAssembler",
       "file": "src/main/refractOutputAssembler.c",
       "overlay": null,
@@ -742,7 +682,7 @@
       "relocation_masked_first_mismatch_offset": 76,
       "size_delta": 16,
       "category": "size-mismatch",
-      "source_context_sha256": "fEG5.vfum.1UKu.m0Zr.fEdS.akO4.vuFk.Iioa.Bo7Z.Roy6.BFM"
+      "source_context_sha256": "sdTe.qjVL.Yduk.Ql5O.VM2R.joB3.8VAV.E-TQ.U3_K.x7CS.Wk4"
     },
     {
       "name": "func_8000E920",
@@ -817,7 +757,7 @@
       "relocation_masked_first_mismatch_offset": 280,
       "size_delta": 24,
       "category": "size-mismatch",
-      "source_context_sha256": "s0mm.9AZA.ua6q.ZWT7.Sukq.87pU.JUVB.b-Om.Lqes._mqW.GhY"
+      "source_context_sha256": "O-7Y.I6i7.3rHs.V0Ij.auph.Ff3f.OYww.vKtm.B6n8.ldhi.Z10"
     },
     {
       "name": "func_8001291C",

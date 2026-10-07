@@ -271,20 +271,21 @@ Relocation-masked mismatch evidence covers **33 / 33** resolved rows. The raw co
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
+| `register-only` | 1 | 3.0% |
 | `schedule-only` | 1 | 3.0% |
-| `other` | 26 | 78.8% |
+| `other` | 25 | 75.8% |
 | `size-mismatch` | 6 | 18.2% |
 
 ### Differing-word thresholds
 
 | Threshold | Count |
 |---|---:|
-| raw `differing_words <= 5` | 1 |
-| relocation-masked `differing_words <= 5` | 2 |
-| raw `differing_words <= 10` | 3 |
-| relocation-masked `differing_words <= 10` | 5 |
-| raw `differing_words <= 20` | 5 |
-| relocation-masked `differing_words <= 20` | 6 |
+| raw `differing_words <= 5` | 2 |
+| relocation-masked `differing_words <= 5` | 3 |
+| raw `differing_words <= 10` | 4 |
+| relocation-masked `differing_words <= 10` | 6 |
+| raw `differing_words <= 20` | 6 |
+| relocation-masked `differing_words <= 20` | 7 |
 
 ### Complete ranked queue
 
@@ -294,17 +295,17 @@ units remain distinct.
 
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `schedule-only` | 1,424 | 2 | 2 | 580 | 580 | 0 | — |
-| 2 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `other` | 3,040 | 19 | 4 | 96 | 1,992 | 0 | — |
-| 3 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
-| 4 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 10 | 10 | 88 | 88 | 0 | — |
-| 5 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
-| 6 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 49 | 14 | 156 | 2,360 | 0 | — |
-| 7 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 24 | 24 | 60 | 60 | 0 | — |
+| 1 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `register-only` | 784 | 3 | 3 | 60 | 60 | 0 | — |
+| 2 | `src/overlays/o068/overlay68UpdateAnimation.c` | `overlay68UpdateAnimation` | `o068` | `schedule-only` | 1,424 | 2 | 2 | 580 | 580 | 0 | — |
+| 3 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `other` | 3,040 | 19 | 4 | 96 | 1,992 | 0 | — |
+| 4 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
+| 5 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 10 | 10 | 88 | 88 | 0 | — |
+| 6 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
+| 7 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 49 | 14 | 156 | 2,360 | 0 | — |
 | 8 | `src/main/models_5B300.c` | `func_8005AF14` | `main` | `other` | 1,840 | 32 | 32 | 1,460 | 1,460 | 0 | — |
 | 9 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 35 | 35 | 20 | 20 | 0 | — |
-| 10 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
-| 11 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 68 | 68 | 4 | 4 | 0 | — |
+| 10 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 44 | 44 | 84 | 84 | 0 | — |
+| 11 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
 | 12 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
 | 13 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00042A8_1862000` | `o008` | `other` | 1,788 | 106 | 98 | 276 | 276 | 0 | — |
 | 14 | `src/main/diCpu.c` | `func_80045D34` | `main` | `other` | 1,836 | 131 | 115 | 332 | 332 | 0 | — |

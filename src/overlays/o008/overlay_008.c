@@ -1565,9 +1565,9 @@ void overlay8ScaleOutputs(void *unused, Overlay8ScaleState *state,
  * pair on: that gives the shipped second address build.  Each pair is its own
  * block, so the two address webs do not interfere.  Left (17): the first
  * pair's one-block address web takes v0 where the shipped one takes v1 (14
- * words; forced, exact); the approach loop saves the counter after loading
- * the second argument, shipped before (2); the mode compare's operands are
- * reversed (1).  GLOBAL_ASM stays canonical. */
+ * words; forced, exact); the mode compare's operands are reversed (1).
+ * 2026-10-07: the approach loop written on one line closed its save order
+ * (17 -> 15).  GLOBAL_ASM stays canonical. */
 #ifdef NON_MATCHING
 f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                                       O8P34A0State *state, f32 limit,
@@ -1816,10 +1816,9 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     }
     steps = (s32)update;
     index = steps;
-    while (index--) {
-        state->angle110 +=
-            o8P34A0ApproachReloc(state->angle110, target) >> 2;
-    }
+    /* One physical line: as1 then orders the counter save ahead of the
+     * second argument's reload, as shipped (L59). */
+    while (index--) state->angle110 += o8P34A0ApproachReloc(state->angle110, target) >> 2;
     state->angle112 = state->angle110;
 
     do {
@@ -2381,10 +2380,10 @@ Overlay8BssOwner gOverlay8BssOwner;
 
 /* PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:start
  * symbol: func_overlay_008_F00034A0_18611F8
- * score: 17/898 words
+ * score: 15/898 words
  * frame: 0x80
  * relocations: 107
  * first-mismatch: +0x77C
- * summary: ownerMode symbol web, (s16) trig sums, statement orders: 103 to 17. Left: first pair web v0 not v1 (14), loop save order (2), mode compare (1).
+ * summary: Approach loop on one physical line fixes the counter save order: 17 to 15. Left: first pair web v0 not v1 (14), mode compare (1).
  * PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:end
  */

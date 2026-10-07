@@ -14,40 +14,48 @@ typedef struct Overlay83Strip {
 
 extern u8 D_80000000[];
 
-#define SHIFTL(value, shift, width) \
-    (((u32)(value) & ((1U << (width)) - 1U)) << (shift))
-#define SET_PRIM(packet, red, green, blue, alpha) { \
-    Overlay83Command *cmd = (Overlay83Command *)(packet); \
-    cmd->w0 = 0xFA000000; \
-    cmd->w1 = ((red) << 24) | ((green) << 16) | ((blue) << 8) | (alpha); \
+/*
+ * PROVENANCE: the packet macros follow Jet Force Gemini's published
+ * decompilation (include/PR/gbi.h _SHIFTL, gDma1p, gDPSetPrimColor and
+ * DPRGBColor; include/f3ddkr.h gSPVertexJFG and gSPPolygon), adapted to
+ * this file's command type.
+ */
+#define _SHIFTL(v, s, w) ((unsigned int)(((unsigned int)(v) & ((0x01 << (w)) - 1)) << (s)))
+#define gDma1p(pkt, c, s, l, p) { \
+    Overlay83Command *_g = (Overlay83Command *)(pkt); \
+    _g->w0 = (_SHIFTL((c), 24, 8) | _SHIFTL((p), 16, 8) | _SHIFTL((l), 0, 16)); \
+    _g->w1 = (unsigned int)(s); \
 }
-#define SET_ENV(packet, red, green, blue, alpha) { \
-    Overlay83Command *cmd = (Overlay83Command *)(packet); \
-    cmd->w0 = 0xFB000000; \
-    cmd->w1 = ((red) << 24) | ((green) << 16) | ((blue) << 8) | (alpha); \
+#define gSPVertexJFG(pkt, v, n, v0) \
+    gDma1p(pkt, 4, v, ((((n) << 3) + ((n) << 1))) + 8, ((n))<<3|(((u32)(v) & 6))|(v0))
+#define gSPPolygon(dl, ptr, numTris, texEnabled) { \
+    Overlay83Command *_g = (Overlay83Command *)(dl); \
+    _g->w0 = _SHIFTL((((numTris) - 1) << 4) | (texEnabled), 16, 8) | _SHIFTL(5, 24, 8) | \
+             _SHIFTL(((numTris)*16), 0, 16); \
+    _g->w1 = (unsigned int)(ptr); \
 }
-#define VERTEX(packet, address, vertexCount, firstVertex) { \
-    Overlay83Command *cmd = (Overlay83Command *)(packet); \
-    cmd->w0 = SHIFTL(4, 24, 8) | \
-              SHIFTL(((vertexCount) << 3) | ((u32)(address) & 6) | \
-                         (firstVertex), 16, 8) | \
-              SHIFTL(((vertexCount) << 3) + ((vertexCount) << 1) + 8, 0, 16); \
-    cmd->w1 = (u32)(address); \
+#define gDPSetPrimColor(pkt, m, l, r, g, b, a) { \
+    Overlay83Command *_g = (Overlay83Command *)(pkt); \
+    _g->w0 = (_SHIFTL(0xFA, 24, 8) | _SHIFTL(m, 8, 8) | _SHIFTL(l, 0, 8)); \
+    _g->w1 = (_SHIFTL(r, 24, 8) | _SHIFTL(g, 16, 8) | _SHIFTL(b, 8, 8) | _SHIFTL(a, 0, 8)); \
 }
-#define POLYGON(packet, triangles, triangleCount, textured) { \
-    Overlay83Command *cmd = (Overlay83Command *)(packet); \
-    cmd->w0 = SHIFTL((((triangleCount) - 1) << 4) | (textured), 16, 8) | \
-              SHIFTL(5, 24, 8) | SHIFTL((triangleCount) * 16, 0, 16); \
-    cmd->w1 = (u32)(triangles); \
+#define gDPSetEnvColor(pkt, r, g, b, a) { \
+    Overlay83Command *_g = (Overlay83Command *)(pkt); \
+    _g->w0 = _SHIFTL(0xFB, 24, 8); \
+    _g->w1 = (_SHIFTL(r, 24, 8) | _SHIFTL(g, 16, 8) | _SHIFTL(b, 8, 8) | _SHIFTL(a, 0, 8)); \
 }
 
-#ifdef NON_MATCHING
-/* Workbench: structure-mismatch, 68 differing words, first mismatch +0x04.
- * Exact 77-instruction size and four-command CFG; packet arithmetic is reordered.
- * Trailing empty if (vertexCount) then if (count) are L100 occurrences; reverse
- * order is 73, and each probe alone is 72 and 71. */
+/*
+ * Matched 2026-10-07 (lane a-ovl1). One packet macro per command, written
+ * with the SDK/JFG shapes above. Two edits closed the old 58-word residual:
+ * the colour words packed through _SHIFTL, and the vertex address written
+ * as byte arithmetic on the strip base (index times record size first), which
+ * gives the target's base-first add at both evaluations. The saved
+ * display-list pointer is taken after the first packet; taken before it, the
+ * parameter keeps a2 instead of the target's a3.
+ */
 void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
-    register Overlay83Command **savedDisplayList;
+    Overlay83Command **savedDisplayList;
     s32 count;
     s32 doubledCount;
     s32 vertexCount;
@@ -56,29 +64,12 @@ void overlay83DrawStrip(Overlay83Command **displayList, Overlay83Strip *strip) {
     if (count != 0) {
         doubledCount = count * 2;
         vertexCount = doubledCount + 2;
+        gDPSetPrimColor((*displayList)++, 0, 0, 255, 255, 255, 255);
         savedDisplayList = displayList;
-        SET_PRIM((*displayList)++, 255, 255, 255, 255);
-        SET_ENV((*displayList)++, strip->red, strip->green, strip->blue, 255);
-        VERTEX((*displayList)++,
-               (u8 *)&strip[strip->vertexIndex] + 0x800000F0,
-               vertexCount, 0);
-        POLYGON((*savedDisplayList)++, D_80000000, doubledCount, 1);
-        if (vertexCount) {
-        }
-        if (count) {
-        }
+        gDPSetEnvColor((*displayList)++, strip->red, strip->green, strip->blue, 255);
+        gSPVertexJFG((*displayList)++,
+                     (u8 *)strip + strip->vertexIndex * sizeof(Overlay83Strip) + 0x800000F0,
+                     vertexCount, 0);
+        gSPPolygon((*savedDisplayList)++, D_80000000, doubledCount, 1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o083/overlay83DrawStrip/func_overlay_083_F0000850_18D0010.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay83DrawStrip:start
- * symbol: overlay83DrawStrip
- * score: 58 differing words
- * frame: frameless
- * relocations: 2
- * first-mismatch: +0x4
- * summary: vertexCount defined before the packet stores scores 68/77 at delta 0, first +0x4. Dead zeros, pointer-copy placement and an early address local do not give vertexCount a0. The opening display-list copy is still absent.
- * PLATEAU-HANDOFF:overlay83DrawStrip:end
- */

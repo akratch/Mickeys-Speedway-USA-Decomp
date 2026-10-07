@@ -25,7 +25,7 @@ extern f32 func_80024938(f32 x, f32 y, f32 z);
 extern f32 sqrtf(f32 value);
 extern void func_800084C4(Overlay12Gfx **displayList,
                           Overlay12Vertex **vertices, void *resource,
-                          Overlay12Effect *base, Overlay12Effect *effect,
+                          void *base, Overlay12Effect *effect,
                           f32 *previous, f32 scale, u32 primary,
                           u32 secondary, s32 flags);
 extern void func_80034DF0(u8 firstR, u8 firstG, u8 firstB,
@@ -33,9 +33,26 @@ extern void func_80034DF0(u8 firstR, u8 firstG, u8 firstB,
 extern void func_80023CCC(Overlay12Gfx **displayList, s32 *matrix,
                           Overlay12Vertex **vertices, void *resource,
                           s32 x, s32 y, s32 z, s32 arg7, f32 scale,
-                          f32 arg9, f32 frame, s32 mode, s32 alpha);
+                          f32 arg9, f32 frame, s32 mode,
+                          u8 alpha);
 extern void func_80034E48(void);
+extern u8 gOverlay12TrianglesA[];
+extern u8 gOverlay12TrianglesB[];
 
+#define O12_SHIFTL(value, shift, width) ((u32)(((u32)(value) & ((1U << (width)) - 1U)) << (shift)))
+#define O12_GFX_VERTEX(packet, addressA, addressB, count, first) { \
+    Overlay12Gfx *_g = (Overlay12Gfx *)(packet); \
+    _g->w0 = O12_SHIFTL(4, 24, 8) | \
+             O12_SHIFTL(((count) << 3) | ((u32)(addressA) & 6) | (first), 16, 8) | \
+             O12_SHIFTL(((count) << 3) + ((count) << 1) + 8, 0, 16); \
+    _g->w1 = (u32)(addressB); \
+}
+#define O12_GFX_POLYGON(packet, address, count, textured) { \
+    Overlay12Gfx *_g = (Overlay12Gfx *)(packet); \
+    _g->w0 = O12_SHIFTL((((count) - 1) << 4) | (textured), 16, 8) | \
+             O12_SHIFTL(5, 24, 8) | O12_SHIFTL((count) * 16, 0, 16); \
+    _g->w1 = (u32)(address); \
+}
 #define OVERLAY12_EMIT(cursor, first, second) do { \
     Overlay12Gfx *command = (cursor)++; \
     command->w0 = (first); \
@@ -46,28 +63,33 @@ extern void func_80034E48(void);
  * JFG's bloodSpurtsDraw is the closest masked-skeleton sibling, but its
  * public source is GLOBAL_ASM. This body is reconstructed from Mickey only.
  */
-/* Plateau 2026-10-02 (lane w2-ovle): 581 at -20 -> 606 positional at -4
- * (aligned byte-exact 117 -> 130). The rodata-relative +0xC/+0x10 scales
- * are this TU's own float literals (0.01f, 1.8f; overlay 12's pool continues
- * from the update function's three), the billboard's ninth argument is the
- * float 1.0f, and the colour words are masked in place (primary before the
- * resource test, secondary inside it), the s3/s4 shape the target keeps.
- * Open decision variable: the target hoists 2.0f into f28 above 1024.0f
- * (f30) and 0.0f (f26); here 2.0f's constant web (one use, save 10/13)
- * loses to 1.0f, which is used in both loops. */
+/* Rewritten from the listing (lane c-o012, 2026-10-07): 569 -> 461
+ * masked, aligned residual 492 -> 419, size delta 0 -> -8. The colour
+ * words keep their stack homes and are masked into separate locals; the
+ * volatile zero is stored after the three pointer loads and never read;
+ * declaration order reproduces the target's home ladder; the vertex packet
+ * is the objects.c vertex/polygon command pair, its two segment-base adds
+ * spelt with different operators so they stay two constants; case 2 and the
+ * particle loop compute the three colour bytes before the alpha byte; the
+ * billboard's alpha parameter is a u8 (the 255 shares the vertex-byte web);
+ * the polygon list is one of two .data triangle tables. Open: the FP
+ * constant ranking (2.0f must outrank 1024.0f; see the shard). */
 #ifdef NON_MATCHING
 void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                                        s32 *matrixPtr,
                                        Overlay12Vertex **verticesPtr) {
+    s32 i;
+    s32 *color;
     s32 alpha;
+    void *resource;
     s32 intensity;
     u32 primary;
     u32 secondary;
+    u32 maskedPrimary;
+    u32 maskedSecondary;
+    u32 blueTerm;
+    u32 redTerm;
     f32 previous[3];
-    Overlay12Vertex *vertices;
-    volatile s16 unused = 0;
-    Overlay12Gfx *displayList;
-    s32 matrix;
     f32 distance;
     f32 factor;
     f32 centerX;
@@ -76,26 +98,22 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     f32 velocityX;
     f32 velocityY;
     f32 velocityZ;
-    Overlay12Vertex *quad;
-    s32 *color;
-    Overlay12Effect *effect;
-    Overlay12Particle *particle;
-    void *resource;
-    u32 blueTerm;
-    u32 redTerm;
     u32 greenTerm;
     s32 component;
-    s32 i;
-    s32 padFrame0;
-    s32 padFrame1;
-    s32 padFrame2;
-    s32 padFrame3;
-    s32 padFrame4;
-    s32 padFrame5;
+    Overlay12Vertex *quad;
+    Overlay12Vertex *vertices;
+    Overlay12Effect *effect;
+    Overlay12Particle *particle;
+    s32 pad0;
+    volatile s16 unused;
+    Overlay12Gfx *displayList;
+    s32 matrix;
+    s32 pad1;
 
     displayList = *displayListPtr;
     matrix = *matrixPtr;
     vertices = *verticesPtr;
+    unused = 0;
     effect = gOverlay12Effects;
     for (i = 0; i < 64; i++, effect++) {
         if (effect->active != 0) {
@@ -116,21 +134,17 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                 alpha = (effect->lifetime * 255) / 120;
             }
             resource = gOverlay12Resources[4 + effect->kind2];
-            primary &= ~0xFF;
+            maskedPrimary = primary & ~0xFF;
             if (resource != NULL) {
-                secondary &= ~0xFF;
+                maskedSecondary = secondary & ~0xFF;
                 func_800349A4(&displayList, resource, 0x203, 0);
                 OVERLAY12_EMIT(displayList, 0xE7000000, 0);
-                OVERLAY12_EMIT(displayList, 0xFA000000, primary | alpha);
-                OVERLAY12_EMIT(displayList, 0xFB000000, secondary | alpha);
-                OVERLAY12_EMIT(
-                    displayList,
-                    0x04000030U |
-                        ((((((u32)vertices + 0x80000000U) & 6U) | 0x20U) &
-                          0xFFU) << 16),
-                    (u32)vertices + 0x80000000U);
-                OVERLAY12_EMIT(displayList, 0x05110020,
-                               (u32)gOverlay12QuadTriangles);
+                OVERLAY12_EMIT(displayList, 0xFA000000, maskedPrimary | alpha);
+                OVERLAY12_EMIT(displayList, 0xFB000000, maskedSecondary | alpha);
+#define VA ((u32)vertices + 0x80000000)
+#define VB ((u32)vertices - 0x80000000)
+                O12_GFX_VERTEX(displayList++, VA, VB, 4, 0);
+                O12_GFX_POLYGON(displayList++, gOverlay12QuadTriangles + 0x80000000, 2, 1);
 
                 distance = -func_80024938(effect->x0, effect->y0, effect->z0);
                 if (distance < 0.0f) {
@@ -144,7 +158,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                     distance = 1024.0f;
                 }
                 factor = 2.0f + (distance * 0.01f);
-                centerX = (effect->collisionX * 2.0f) + (effect->collisionX * (distance * 0.01f)) + effect->x0;
+                centerX = effect->collisionX * factor + effect->x0;
                 centerY = effect->collisionY * factor + effect->y0;
                 centerZ = effect->collisionZ * factor + effect->z0;
 
@@ -203,17 +217,17 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
             previous[2] = effect->z0 - (velocityZ * factor);
             func_800084C4(&displayList, &vertices,
                           gOverlay12Resources[2 + effect->kind1],
-                          effect->kind1 != 0 ? gOverlay12Effects : NULL,
+                          effect->kind1 == 0 ? gOverlay12TrianglesA : gOverlay12TrianglesB,
                           effect, previous, effect->value * 8.0f,
                           primary, secondary, 0x200);
             break;
         case 2:
             color = &gOverlay12EffectColors[effect->type * 3];
+            redTerm = ((color[0] * intensity) >> 13) & 0xFF;
+            greenTerm = ((color[1] * intensity) >> 13) & 0xFF;
+            blueTerm = ((color[2] * intensity) >> 13) & 0xFF;
             alpha = ((intensity * 255) >> 13) & 0xFF;
-            func_80034DF0(alpha, alpha, alpha,
-                          ((color[0] * intensity) >> 13) & 0xFF,
-                          ((color[1] * intensity) >> 13) & 0xFF,
-                          ((color[2] * intensity) >> 13) & 0xFF);
+            func_80034DF0(alpha, alpha, alpha, redTerm, greenTerm, blueTerm);
             func_80023CCC(&displayList, &matrix, &vertices,
                           gOverlay12Resource5,
                           (s32)effect->x0, (s32)effect->y0, (s32)effect->z0,
@@ -229,11 +243,11 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
         if (particle->active != 0) {
             color = &gOverlay12ParticleColors[particle->variant * 3];
             intensity = particle->type;
+            redTerm = ((color[0] * intensity) >> 8) & 0xFF;
+            greenTerm = ((color[1] * intensity) >> 8) & 0xFF;
+            blueTerm = ((color[2] * intensity) >> 8) & 0xFF;
             alpha = ((intensity * 255) >> 8) & 0xFF;
-            func_80034DF0(alpha, alpha, alpha,
-                          ((color[0] * intensity) >> 8) & 0xFF,
-                          ((color[1] * intensity) >> 8) & 0xFF,
-                          ((color[2] * intensity) >> 8) & 0xFF);
+            func_80034DF0(alpha, alpha, alpha, redTerm, greenTerm, blueTerm);
             func_80023CCC(&displayList, &matrix, &vertices,
                           gOverlay12Resource5,
                           (s32)particle->x, (s32)particle->y, (s32)particle->z,
@@ -245,7 +259,6 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     *displayListPtr = displayList;
     *matrixPtr = matrix;
     *verticesPtr = vertices;
-    (void)unused;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/overlays/o012/func_overlay_012_F0000910_186DB90/func_overlay_012_F0000910_186DB90.s")
@@ -253,10 +266,10 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
 
 /* PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:start
  * symbol: func_overlay_012_F0000910_186DB90
- * score: 569 differing words
- * frame: 0x130
- * relocations: 36
- * first-mismatch: +0x4
- * summary: Literal scales, float 1.0f, in-place colour masks: -20 to -4, aligned exact 117 to 130. Open: 2.0f not hoisted into f28.
+ * score: 461 differing words
+ * frame: 0x148
+ * relocations: 38
+ * first-mismatch: +0x54
+ * summary: Natural rewrite from the listing 569 to 461 at -8. Open: FP constant ranking, 2.0f must outrank 1024.0f.
  * PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:end
  */

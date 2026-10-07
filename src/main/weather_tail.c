@@ -57,6 +57,11 @@ extern WeatherColor D_800D40F0[];
 extern void func_8002EBD4(WeatherColor *colors);
 
 #ifdef NON_MATCHING
+/* 2026-10-07 (lane g-4): 43 -> 35. One zero-cost block around each of the
+ * call and the two scalar lerps after the colour loop (brief item 18):
+ * frac then spans more blocks, its save falls below the counter's, and the
+ * counter takes t0 and frac t1 as shipped. Left: the time wrap (ring phase
+ * and the dead copy in the wrap's delay slot) and from->unk28's register. */
 void func_8003C80C(s32 arg0, s32 time) {
     s32 i;
     s32 frac;
@@ -94,9 +99,9 @@ void func_8003C80C(s32 arg0, s32 time) {
             src1++;
             dst++;
         } while (i--);
-        func_8002EBD4(D_800D40F0);
-        D_8007C858 = from->unk24 + (((to->unk24 - from->unk24) * frac) >> 16);
-        D_8007C85C = from->unk28 + (((to->unk28 - from->unk28) * frac) >> 16);
+        do { func_8002EBD4(D_800D40F0); } while (0);
+        do { D_8007C858 = from->unk24 + (((to->unk24 - from->unk24) * frac) >> 16); } while (0);
+        do { D_8007C85C = from->unk28 + (((to->unk28 - from->unk28) * frac) >> 16); } while (0);
     }
 }
 #else
@@ -105,10 +110,10 @@ void func_8003C80C(s32 arg0, s32 time) {
 
 /* PLATEAU-HANDOFF:func_8003C80C:start
  * symbol: func_8003C80C
- * score: 43 differing words
+ * score: 35/118 words
  * frame: 0x38
  * relocations: 21
  * first-mismatch: +0x14
- * summary: Nine colours (do-while, post-decrement from 8), time in the second parameter: 103 to 74 at delta 0. Defining dst before the source pointers grows the body; the v1 pool already matches.
+ * summary: Zero-cost blocks on the call and both scalar lerps lower frac's save: counter t0, frac t1 as shipped, 43 to 35 at 0. Left: the time wrap window.
  * PLATEAU-HANDOFF:func_8003C80C:end
  */

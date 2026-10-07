@@ -292,17 +292,26 @@ void texscrollControl(TexscrollState *state, s32 updateRate) {
     func_8000D16C(entry->textureIndex, x, y, updateRate);
 }
 #ifdef NON_MATCHING
-/* 2026-10-07 (lane d-fx): 128 -> 48 at delta 0, frame 0xE0 exact. Three
- * edits together: the per-file -Wab,-r4300_mul (the target never puts two
- * mul.s back to back, and its radius-test branch is the non-likely bc1f the
- * flag produces); the hit interpolation through three delta locals, with
- * deltaX/deltaZ reused for the horizontal offsets (the target holds x-px,
- * y-py and z-pz in f2/f22/f12, and the extra FP pressure is what leaves the
- * radius and hit y uncoloured in memory, as shipped); and only x held in a
- * local (any one coordinate local moves the y/z spill stores into the second
- * block). The do/while around the second distance adds a zero-cost block that
- * ranks arg0 above the cursor and index (48 -> 44). Left: arg0/objects in s3/s1 (target s1/s3), x/firstDistance in
- * f28/f30 (swapped), the previous-position colours, spill-home order. */
+/* 2026-10-07 (lane d-fx): 128 -> 48 at delta 0, frame 0xE0 exact: the
+ * per-file -Wab,-r4300_mul (no two mul.s back to back, non-likely bc1f on
+ * the radius test); the hit interpolation through delta locals with
+ * deltaX/deltaZ reused for the horizontal offsets (the pressure leaves the
+ * radius and hit y in memory, as shipped).
+ * 2026-10-07 (lane g-4): 44 -> 10. Object x/y/z read in place (no x local:
+ * the first block is the target's), plus three ordering levers measured on
+ * the allocator records (proc 6):
+ *  - `fraction = object->x;` (a dead store uopt removes) numbers the x
+ *    expression ahead of the normals, so the y/z split pieces are grown
+ *    into the second-distance block (10 registers left, not 8) and take
+ *    f24/f26 with their spill stores after the previous-position loads;
+ *  - `firstDistance = 0.0f;` in the block above numbers firstDistance
+ *    ahead of x, so firstDistance takes f28 and x f30;
+ *  - `i = 0;` before the call numbers i ahead of the cursor (s2/s3), and
+ *    the second distance summed z, y, x numbers the previous position
+ *    px, py, pz (f16/f18/f20).
+ * x stays declared (unused) as its frame cell.
+ * Left: the y/z/radius homes (0x7C/0x74/0x98 against 0x8C/0x88/0x78), the
+ * i/objects copy order after the call, two add/mul operand orders. */
 /* PROVENANCE: JFG's public character-plane control role supplies the idiom; Mickey's fields, globals, and action calls are authoritative below. */
 void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
     SpranimPlane *plane;
@@ -326,26 +335,28 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
     s32 pad2;
 
     plane = arg0->state64;
+    i = 0;
     objects = (SpranimB798Target **) func_80005750(&count);
     for (i = 0; i < count; i++, objects++) {
         object = *objects;
         targetState = object->state64;
+        firstDistance = 0.0f;
         if ((*(u16 *)(targetState + 0x1A8) & 1) && (*(s8 *) targetState != 0)) {
             continue;
         }
-        x = object->x;
+        fraction = object->x;
         firstDistance = plane->distance +
-            ((plane->normalX * x) + (plane->normalY * object->y) +
+            ((plane->normalX * object->x) + (plane->normalY * object->y) +
              (plane->normalZ * object->z));
         if (firstDistance < 0.0f) {
             do {
                 secondDistance = plane->distance +
-                    ((plane->normalX * *(f32 *)(targetState + 0x38)) +
-                     (plane->normalY * *(f32 *)(targetState + 0x3C)) +
-                     (plane->normalZ * *(f32 *)(targetState + 0x40)));
+                    ((plane->normalZ * *(f32 *)(targetState + 0x40)) +
+                     ((plane->normalY * *(f32 *)(targetState + 0x3C)) +
+                      (plane->normalX * *(f32 *)(targetState + 0x38))));
             } while (0);
             if (secondDistance >= 0.0f) {
-                deltaX = x - *(f32 *)(targetState + 0x38);
+                deltaX = object->x - *(f32 *)(targetState + 0x38);
                 deltaY = object->y - *(f32 *)(targetState + 0x3C);
                 deltaZ = object->z - *(f32 *)(targetState + 0x40);
                 fraction = secondDistance / (secondDistance - firstDistance);
@@ -424,10 +435,10 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
 
 /* PLATEAU-HANDOFF:func_8001B798:start
  * symbol: func_8001B798
- * score: 44/175 words
+ * score: 10/175 words
  * frame: 0xE0
  * relocations: 9
  * first-mismatch: +0x58
- * summary: Delta locals, r4300 flag, a zero-cost block on the second distance: 128 to 44 at delta 0. Left: web-number ties (i/objects, x/firstDistance, previous position).
+ * summary: No coordinate locals, dead stores order x and firstDistance, i = 0 before the call, z-y-x second distance: 44 to 10 at 0. Left: y/z/radius homes.
  * PLATEAU-HANDOFF:func_8001B798:end
  */

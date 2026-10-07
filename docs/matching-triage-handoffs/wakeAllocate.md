@@ -258,4 +258,25 @@ through block 2. Read the growv records for w10 under a candidate where
 block 2 holds one more live value, and look for the source that makes the
 growth into block 2 refuse.
 
+#### 2026-10-07, lane g-7: count spellings, flat (325 at -8 kept)
+
+One 12-cell product on the retained body: groupCount/triCount written
+as two products (kept), `groupCount = triCount = segmentCount * 2`, the
+reverse chain, and `triCount = groupCount`, times three orders of the
+three byte-size statements. 325 to 327 at -8 everywhere; the chain forms
+are 326 and 327. No cell creates the block-2 pieces.
+
+Reading of the target's frame (tools/frame_census.py): its seven spill
+cells are one contiguous run, +0x24 to +0x3C (textureBytes, segment
+bytes, the doubled count, segmentCount * 0x14, sampleBytes, segmentCount,
+frameCount); ours splits them into +0x20 to +0x2C and +0x40 to +0x48
+(the doubled count, segmentCount, frameCount). The three that land apart
+are exactly the three webs c-fx names (w14, w10 and frameCount's piece),
+so the frame is a second readout of the same decision.
+
+Cycle-21 line: unchanged from c-fx (w14 must fail globalcolor and the
+block-2 pieces of w10/w14 must outrank 0.75); confirm any candidate with
+frame_census first, since the spill run moving to +0x24..+0x3C is the
+cheapest sign the pieces exist.
+
 <!-- plateau-handoff:wakeAllocate:end -->

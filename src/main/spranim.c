@@ -300,7 +300,8 @@ void texscrollControl(TexscrollState *state, s32 updateRate) {
  * y-py and z-pz in f2/f22/f12, and the extra FP pressure is what leaves the
  * radius and hit y uncoloured in memory, as shipped); and only x held in a
  * local (any one coordinate local moves the y/z spill stores into the second
- * block). Left: arg0/objects in s3/s1 (target s1/s3), x/firstDistance in
+ * block). The do/while around the second distance adds a zero-cost block that
+ * ranks arg0 above the cursor and index (48 -> 44). Left: arg0/objects in s3/s1 (target s1/s3), x/firstDistance in
  * f28/f30 (swapped), the previous-position colours, spill-home order. */
 /* PROVENANCE: JFG's public character-plane control role supplies the idiom; Mickey's fields, globals, and action calls are authoritative below. */
 void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
@@ -337,10 +338,12 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
             ((plane->normalX * x) + (plane->normalY * object->y) +
              (plane->normalZ * object->z));
         if (firstDistance < 0.0f) {
-            secondDistance = plane->distance +
-                ((plane->normalX * *(f32 *)(targetState + 0x38)) +
-                 (plane->normalY * *(f32 *)(targetState + 0x3C)) +
-                 (plane->normalZ * *(f32 *)(targetState + 0x40)));
+            do {
+                secondDistance = plane->distance +
+                    ((plane->normalX * *(f32 *)(targetState + 0x38)) +
+                     (plane->normalY * *(f32 *)(targetState + 0x3C)) +
+                     (plane->normalZ * *(f32 *)(targetState + 0x40)));
+            } while (0);
             if (secondDistance >= 0.0f) {
                 deltaX = x - *(f32 *)(targetState + 0x38);
                 deltaY = object->y - *(f32 *)(targetState + 0x3C);
@@ -421,10 +424,10 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
 
 /* PLATEAU-HANDOFF:func_8001B798:start
  * symbol: func_8001B798
- * score: 48/175 words
+ * score: 44/175 words
  * frame: 0xE0
  * relocations: 9
- * first-mismatch: +0x4
- * summary: Delta locals and -Wab,-r4300_mul: 128 to 48 at delta 0, frame exact. Left: arg0/objects s-reg order, x/firstDistance f30/f28, previous-position colours.
+ * first-mismatch: +0x58
+ * summary: Delta locals, r4300 flag, a zero-cost block on the second distance: 128 to 44 at delta 0. Left: web-number ties (i/objects, x/firstDistance, previous position).
  * PLATEAU-HANDOFF:func_8001B798:end
  */

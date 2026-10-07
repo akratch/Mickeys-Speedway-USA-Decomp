@@ -302,7 +302,7 @@ units remain distinct.
 | 6 | `src/overlays/o008/overlay_008.c` | `func_overlay_008_F00034A0_18611F8` | `o008` | `other` | 3,592 | 49 | 14 | 156 | 2,360 | 0 | — |
 | 7 | `src/overlays/o017/overlay17CreateChain.c` | `overlay17CreateChain` | `o017` | `other` | 784 | 36 | 36 | 60 | 60 | 0 | — |
 | 8 | `src/main/weather_tail.c` | `func_8003C80C` | `main` | `other` | 472 | 43 | 43 | 20 | 20 | 0 | — |
-| 9 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 48 | 48 | 4 | 4 | 0 | — |
+| 9 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 44 | 44 | 88 | 88 | 0 | — |
 | 10 | `src/overlays/o069/overlay69DrawSortedGeometry.c` | `overlay69DrawSortedGeometry` | `o069` | `other` | 1,436 | 57 | 57 | 988 | 988 | 0 | — |
 | 11 | `src/main/textures_354C8.c` | `func_800349A4` | `main` | `other` | 1,088 | 62 | 62 | 96 | 96 | 0 | — |
 | 12 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 89 | 89 | 148 | 148 | 0 | — |

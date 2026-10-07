@@ -330,7 +330,7 @@ units remain distinct.
 | 34 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 339 | 339 | 0 | 0 | 8 | — |
 | 35 | `src/overlays/o012/func_overlay_012_F0000910_186DB90.c` | `func_overlay_012_F0000910_186DB90` | `o012` | `size-mismatch` | 2,444 | 463 | 461 | 84 | 84 | -8 | — |
 | 36 | `src/overlays/o056/overlay_056.c` | `func_overlay_056_F00001A0_18A2F18` | `o056` | `size-mismatch` | 2,324 | 577 | 577 | 0 | 0 | -8 | — |
-| 37 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,754 | 1,753 | 0 | 0 | -188 | — |
+| 37 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,781 | 1,779 | 0 | 0 | 136 | — |
 
 ### Unresolved identities
 

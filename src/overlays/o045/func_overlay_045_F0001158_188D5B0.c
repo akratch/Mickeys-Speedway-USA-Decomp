@@ -92,8 +92,8 @@ extern f32 func_8002A8C0(s32 angle);
  * indexed form needed to keep the allocation pointer in s1. 135 -> 119:
  * func_8004C690 takes a u8, as its definition in src/main/font.c does;
  * the escape byte is then loaded into a0 and copied into first's v0 as
- * shipped, and the colour packets take v1/a0. Earlier passes: see the
- * shard. */
+ * shipped, and the colour packets take v1/a0. 119 -> 117: each triangle
+ * writes vertex2 before vertex1. Earlier passes: see the shard. */
 #define PKT(pkt, a, b) { Gfx *_g = (Gfx *)(pkt)++; _g->words.w0 = (a); _g->words.w1 = (b); }
 #ifdef NON_MATCHING
 void func_overlay_045_F0001158_188D5B0(
@@ -303,8 +303,8 @@ void func_overlay_045_F0001158_188D5B0(
 
                     triangles->flags = 0x40;
                     triangles->vertex0 = 0;
-                    triangles->vertex1 = 1;
                     triangles->vertex2 = 2;
+                    triangles->vertex1 = 1;
                     triangles->s0 = textureLeft;
                     triangles->t0 = textureTop;
                     triangles->s1 = textureRight;
@@ -315,8 +315,8 @@ void func_overlay_045_F0001158_188D5B0(
 
                     triangles->flags = 0x40;
                     triangles->vertex0 = 1;
-                    triangles->vertex1 = 3;
                     triangles->vertex2 = 2;
+                    triangles->vertex1 = 3;
                     triangles->s0 = textureRight;
                     triangles->t0 = textureTop;
                     triangles->s1 = textureRight;
@@ -348,10 +348,10 @@ void func_overlay_045_F0001158_188D5B0(
 
 /* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
  * symbol: func_overlay_045_F0001158_188D5B0
- * score: 119 differing words
+ * score: 117 differing words
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x718
- * summary: Sibling shape and u8 glyph-lookup prototype: 119 at size delta 0. Only the float block after the angle calls remains.
+ * summary: 117 at size delta 0; only the float block remains: as1 store schedule behind which float web is spilled.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

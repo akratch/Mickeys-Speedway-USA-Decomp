@@ -343,4 +343,10 @@ On the 90 body (90 masked, size delta 0, aligned exact 229, naming 36, immediate
 The shipped code has bottom in v0, loaded in the second test's block and stored as the scissor call's fifth argument: a web over bb7 to bb12. So the target's bottom is either a promoted symbol (its address not escaping through memory) or an expression web whose two loads were made one. Neither is reachable by spelling the clip tests (the closed products above). No source cycle was spent here.
 
 Cycle-21: decide which. Compile the 90 body with the GetBounds call's fifth argument passed through a pointer local (`s32 *bottomOut = &bottom;`), or with bottom's uses after the call read from a copy, and read whether a bottom web appears in the p1 records (web_report) before scoring.
+
+#### 2026-10-07, lane i-3 (resumed): a copy of bottom is propagated
+
+Measured by tools/bank.py: masked 90 (raw 90), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 229, register naming 36, immediate only 4, really different 33.
+
+On the 90 body. bottom copied into a local after GetBounds (a new local, or chunkRows reused) and the copy used by the second test and the scissor call: 166 and 163 at 0. uopt propagates the copy; the load stays a ring temporary (t8) carried to the call, and no bottom web appears. Not kept. Cycle-21 unchanged (decide whether the target's bottom is a promoted symbol or one load expression; the fifth argument's stack escape is the candidate cause).
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

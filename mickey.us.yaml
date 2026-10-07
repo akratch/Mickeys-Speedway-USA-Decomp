@@ -332,9 +332,17 @@ segments:
       - [0x4FC30, asm, libultra/exceptasm]
       - [0x505E0, c, libultra/createthread]
       - [0x506D0, c, main/block_506D0]
-      # Same ROM range as the former asm subsegment. The C file keeps
-      # GLOBAL_ASM until a match; this is not a new file-boundary claim.
-      - [0x50820, c, main/refractOutputAssembler]
+      # Hand-written assembly. The whole 0x3E0-byte .text is byte-identical,
+      # with only its 16 R_MIPS_HI16/LO16 fields masked (248 of 248 words,
+      # romocc=1), to Jet Force Gemini's src/hasm/refractOutputAssembler.s
+      # assembled with GNU as -- JFG's own hand-written (not IDO-built) hasm
+      # directory. Mechanism, independent of the reference: the routine is a
+      # leaf (no call, no relocated jump) that still allocates a 0x48 frame
+      # five instructions into the body and stores only $ra in it; IDO never
+      # saves $ra in a leaf and always opens with the stack adjustment. The C
+      # candidate this range carried from 2026-09-26 sat 35 words short at
+      # frame 0x10 for that reason. Listed in verified_asm.us.txt.
+      - [0x50820, asm, main/refractOutputAssembler]
       # Resident animation/collision sequence. Individual-function skeleton
       # evidence ties the leading functions to JFG anim.c, the later functions
       # to JFG hit.c, and the final function to JFG fmv.c; no 16-byte-aligned

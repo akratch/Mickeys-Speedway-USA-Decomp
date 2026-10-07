@@ -271,7 +271,7 @@ void func_80045CAC(void) {
 void func_80045D34(s32 arg0) {
     s32 row;
     s32 *words;
-    u32 oldPage;
+    s32 oldPage;
     s32 buttons;
     s32 pageCount;
     s32 currentPage;
@@ -290,10 +290,9 @@ void func_80045D34(s32 arg0) {
     u32 candidate;
     MemoryPoolSlot *slot;
 
-    oldPage = -1U;
+    oldPage = -1;
     currentPage = 0;
     redraw = 1;
-    memoryIndex = 0;
     /* The fallback count belongs to the logging-mode branch. */
     if (D_8007A200 == 0 || D_80000310 != 0x17D9) {
         while (1) {
@@ -305,6 +304,9 @@ void func_80045D34(s32 arg0) {
             pageCount++;
         }
     } else { pageCount = 25; }
+    /* The memory-page index is initialised with the region selector, after
+     * the anti-piracy test, not with the page state. */
+    memoryIndex = 0;
     selectedRegion = 0;
     pageCount += 5;
     if (viGetVideoMode() != 0) { D_8007D02C = 1; } else { D_8007D02C = 0; }
@@ -358,13 +360,13 @@ void func_80045D34(s32 arg0) {
                     candidate = address - (1 << (nibble * 4));
                 }
                 candidate = (candidate & mask) | (address & ~mask);
-                redraw = 1;
                 if (candidate >= 0x803FFF60U) {
                     candidate = 0x803FFF60;
                 }
                 if (candidate < 0x80000451U) {
                     candidate = 0x80000450;
                 }
+                redraw = 1;
                 address = candidate;
                 printedValue = candidate;
             }
@@ -401,13 +403,16 @@ void func_80045D34(s32 arg0) {
                 D_8007D02C = 0;
             }
         }
-        if (oldPage != (u32)currentPage || redraw != 0) {
-            redraw = 0;
+        /* Each page clears redraw itself (the default page first), so the
+         * per-page stores survive; one shared clear before the switch lets
+         * uopt delete them and hands redraw a lower save than the memory
+         * index. The address editor sets it only after both clamps. */
+        if (oldPage != currentPage || redraw != 0) {
             switch (currentPage) {
                 case 0:
+                    render_epc_lock_up_display((MickeyEpcInfo *)(u32)arg0);
                     oldPage = currentPage;
                     redraw = 0;
-                    render_epc_lock_up_display((MickeyEpcInfo *)(u32)arg0);
                     break;
                 case 1:
                 case 2:
@@ -428,7 +433,7 @@ void func_80045D34(s32 arg0) {
                         row = 20;
                         do {
                             words--;
-                            cpuXYPrintf(pageColumn, (row + 3) * 8,
+                            cpuXYPrintf(pageColumn, (row + 3) << 3,
                                         "%08x:%08x", words, *words);
                             if (currentPage == 1 && row == 1) {
                                 row = 0;
@@ -483,6 +488,7 @@ void func_80045D34(s32 arg0) {
                     redraw = 0;
                     break;
                 default:
+                    redraw = 0;
                     currentPage = 0;
                     oldPage = 0;
                     break;
@@ -502,9 +508,9 @@ void func_80045D34(s32 arg0) {
                         D_8007D030 = 1;
                     }
                     cpuXYPrintf(76 - (row * 8), 32, "%1x", pageColumn & 0xF);
-                    row++;
                     D_8007D030 = 0;
-                    pageColumn = (s32)pageColumn >> 4;
+                    pageColumn >>= 4;
+                    row++;
                 } while (row != 8);
             }
             if (D_8007CFE8 == 0) {
@@ -786,10 +792,10 @@ void func_80046E00(void) {
 
 /* PLATEAU-HANDOFF:func_80045D34:start
  * symbol: func_80045D34
- * score: 254/459 words
+ * score: 115/459 words
  * frame: 0xA8
- * relocations: 91
- * first-mismatch: +0xC
- * summary: Control-flow and lifetime corrections recover 459 words and exact frame/home traffic; 298 aligned exact, with type and emission residuals remaining.
+ * relocations: 93
+ * first-mismatch: +0x14C
+ * summary: Entry order, shifted row label and render-first page 0 (193 to 115); left: buttons copied to a1, nibble arm schedule, mode counter address.
  * PLATEAU-HANDOFF:func_80045D34:end
  */

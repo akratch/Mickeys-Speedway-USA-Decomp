@@ -16,6 +16,7 @@ main/math_matrix
 main/lights2
 main/trapDanglingJump
 main/gzip_asm
+main/refractOutputAssembler
 
 libultra/exceptasm
 libultra/sqrtf

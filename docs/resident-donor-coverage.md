@@ -290,12 +290,6 @@ Bounded nearest-shape/source inspection found only assembly-backed or noncredibl
 | [func_8002EBE0](matching-triage-handoffs/func_8002EBE0.md) | 1020 | U |
 | [func_8002FB34](matching-triage-handoffs/func_8002FB34.md) | 1436 | U |
 
-### `src/main/refractOutputAssembler.c`
-
-| Target | Bytes | Coverage |
-| --- | ---: | --- |
-| [refractOutputAssembler](matching-triage-handoffs/refractOutputAssembler.md) | 992 | U |
-
 ### `src/main/runlink.c`
 
 | Target | Bytes | Coverage |

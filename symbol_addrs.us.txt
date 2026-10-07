@@ -1790,6 +1790,10 @@ starfieldFastMove = 0x8001AD50; // type:func size:0x130
 cpuLine = 0x8001AE80; // type:func size:0x1D8
 rainFastDraw = 0x8001B058; // type:func size:0x1EC
 // main/refractOutputAssembler  ROM 0x50820  (jfg/game: src/refractOutputAssembler.c.o)  whole .text 0x3e0, masked=16, romocc=1
+//   Verified hand-written assembly (verified_asm.us.txt): the 16 masked words
+//   are the R_MIPS_HI16/LO16 fields only. That built object is a GLOBAL_ASM
+//   wrapper; JFG's tree now keeps the routine as hand-written
+//   src/hasm/refractOutputAssembler.s, whose GNU-as .text is identical to it.
 refractOutputAssembler = 0x8004FC20; // type:func size:0x3E0
 // main/osBootRamTest  ROM 0x59b90  (jfg/game: src/osBootRamTest.c.o)  whole .text 0x60, masked=0, romocc=1
 osBootRamTest1_6105 = 0x80058F90; // type:func size:0x2C tier-A ROM 0x59B90 exact C, JFG source body

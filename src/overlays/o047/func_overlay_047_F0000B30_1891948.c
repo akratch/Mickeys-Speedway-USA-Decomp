@@ -724,10 +724,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 1982 differing words
+ * score: 1982/2168 words
  * frame: 0x280
- * relocations: 320
+ * relocations: 322
  * first-mismatch: +0x4
- * summary: Banked: six command sites write w1 first, aligned rows 855 to 843 at delta 0. Open: blend cursor webs hold s1 (selected), +0x4, i order.
+ * summary: Unchanged. j-9 shape (table-read channels, blend reassignment, 540/544 statics) reads residual 887 vs 911 at -12; open: green copy, 3C8, +0x12C.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

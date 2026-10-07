@@ -2490,6 +2490,66 @@ class ResidentCoverageTests(unittest.TestCase):
 class SourceViewTests(unittest.TestCase):
     """Definitions the written source does not spell as `name(...) {`."""
 
+    def test_guarded_include_resolution_and_signature_use_candidate_mode(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "src/overlays/o088/wrapper.c"
+            source.parent.mkdir(parents=True)
+            source.write_text('#define shared friendly\n#ifdef NON_MATCHING\n'
+                              '#include "shared.c"\n#else\n'
+                              '#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o088/wrapper/func_overlay_088_F00001A4_18D3C2C.s")\n'
+                              '#endif\n')
+            target = root / "asm/nonmatchings/overlays/o088/wrapper/func_overlay_088_F00001A4_18D3C2C.s"
+            target.parent.mkdir(parents=True)
+            target.touch()
+            aliases = root / "aliases.txt"
+            aliases.write_text("func_overlay_088_F00001A4_18D3C2C = friendly;\n")
+            def expanded(_source, _root, *, non_matching=False):
+                if non_matching:
+                    return 'void friendly(int value) {}\n'
+                return '#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o088/wrapper/func_overlay_088_F00001A4_18D3C2C.s")\n'
+            with mock.patch.object(fp.pp, "preprocessed_text", side_effect=expanded):
+                resolution = fp.resolve("friendly", root=root, alias_path=aliases)
+                self.assertEqual(source.resolve(), resolution.source)
+                self.assertEqual("build_non_matching", resolution.candidate_build_dir)
+                self.assertEqual(root.resolve() / "build_non_matching/src/overlays/o088/wrapper.c.o",
+                                 resolution.candidate_object)
+                self.assertEqual("void friendly(int value)", fp._source_signature(
+                    source, "friendly", non_matching=True))
+            with mock.patch.object(fp.pp, "preprocessed_text",
+                                   side_effect=fp.pp.MetadataProofError("cpp failed")):
+                with self.assertRaisesRegex(fp.PreflightError, "cpp failed"):
+                    fp.resolve("friendly", root=root, alias_path=aliases)
+
+    def test_shared_overlay_body_is_an_explicit_make_prerequisite(self):
+        # Exercise Make's dependency graph without a compiler, ROM or split.
+        import shutil
+        make = shutil.which("gmake") or shutil.which("make")
+        if make is None:
+            self.skipTest("make unavailable")
+        policy = (Path(fp.__file__).resolve().parent.parent / "mk/overlays.mk").read_text()
+        policy = "\n".join(line for line in policy.splitlines()
+                           if not line.startswith("include "))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            dependency = root / "src/overlays/o069/overlay69DrawSortedGeometry.c"
+            dependency.parent.mkdir(parents=True)
+            dependency.touch()
+            for mode in ("build", "build_non_matching"):
+                target = root / mode / "src/overlays/o088/overlay88DrawSortedGeometry.c.o"
+                target.parent.mkdir(parents=True)
+                target.touch()
+                os.utime(dependency, ns=(1_000_000_000, 1_000_000_000))
+                os.utime(target, ns=(2_000_000_000, 2_000_000_000))
+                makefile = root / "Makefile"
+                makefile.write_text(f"BUILD_DIR={mode}\nSRC_DIR=src\n" + policy +
+                                    f"\n{target.relative_to(root)}:\n\t@:\n")
+                command = [make, "-q", str(target.relative_to(root))]
+                result = subprocess.run(command, cwd=root, capture_output=True)
+                self.assertEqual(0, result.returncode, result.stderr.decode())
+                os.utime(dependency, ns=(3_000_000_000, 3_000_000_000))
+                self.assertEqual(1, subprocess.run(command, cwd=root, capture_output=True).returncode)
+
     def test_kr_definition_has_a_signature(self):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "a.c"

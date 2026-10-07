@@ -1525,6 +1525,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88UpdateAnchor.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
 		overlay88PrepareNodeReloc=func_overlay_088_F0000000_18D3A88 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x158
+# The wrapper compiles the shared C body in candidate and promoted modes.
+$(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: \
+	$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.c
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
 		func_overlay_088_F00001A4_18D3C2C=overlay88DrawSortedGeometry $@ && \

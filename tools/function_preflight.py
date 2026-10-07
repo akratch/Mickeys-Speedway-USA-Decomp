@@ -606,20 +606,15 @@ def resolve(
         )
     target_asm = _unique(asm_matches, f"fallback assembly for {target_symbol}")
     source = _fallback_source_for(target_symbol, candidate_symbol, target_asm, root)
-    text = source.read_text(encoding="utf-8", errors="replace")
-
-    ordinary, ordinary_reason = pp.classify_source_selection(
-        text,
-        candidate_symbol=candidate_symbol,
-        target_symbol=target_symbol,
-        defines=(),
-    )
-    nonmatching, nonmatching_reason = pp.classify_source_selection(
-        text,
-        candidate_symbol=candidate_symbol,
-        target_symbol=target_symbol,
-        defines=("NON_MATCHING",),
-    )
+    try:
+        ordinary, ordinary_reason = pp.classify_source_file(
+            source, candidate_symbol=candidate_symbol, target_symbol=target_symbol,
+            root=root, non_matching=False)
+        nonmatching, nonmatching_reason = pp.classify_source_file(
+            source, candidate_symbol=candidate_symbol, target_symbol=target_symbol,
+            root=root, non_matching=True)
+    except pp.MetadataProofError as error:
+        raise PreflightError(f"{_relative(source)}: {error}") from error
     if ordinary == pp.ORDINARY_C:
         build_dir = "build"
         selection = ordinary_reason
@@ -1063,9 +1058,10 @@ def _build_linked_boundary() -> None:
         _build_target(TARGET_ELF, non_matching=False, label="canonical")
 
 
-def _source_signature(source: Path, symbol: str) -> str:
+def _source_signature(source: Path, symbol: str, *, non_matching: bool = False) -> str:
     try:
-        original = pp.source_view(source, symbol, REPO)[0]
+        original = pp.source_view(source, symbol, REPO,
+                                  **({"non_matching": True} if non_matching else {}))[0]
     except pp.MetadataProofError as error:
         raise PreflightError(f"{_relative(source)}: {error}") from error
     facts = pp.source_facts(original, symbol)
@@ -3066,7 +3062,8 @@ def collect(resolution: Resolution, *, no_build: bool = False) -> dict[str, obje
         "resolution_mode": resolution.resolution_mode,
         "identity_evidence": resolution.identity_evidence,
         "candidate_signature": _source_signature(
-            resolution.source, resolution.candidate_symbol
+            resolution.source, resolution.candidate_symbol,
+            non_matching=resolution.candidate_build_dir == "build_non_matching",
         ),
         "source_history": source_history,
         "source_history_status": source_history_status,

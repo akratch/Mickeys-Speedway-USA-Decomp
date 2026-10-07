@@ -71,8 +71,10 @@ void overlay56ReleaseResource(void) {
  * and the rebased symbol takes f18; mapY's products are written x-term first so rotX's are
  * emitted first; x and z declared above the pads and ghostAlpha last fit the f24 frame;
  * the fade shift is a conditional expression inside the add (byte a0, shift v1).
- * Open: cos/sin f22/f24 swapped, one home 4 low (0x1D0 against 0x1D4), the int ring
- * phase from the prim-colour packet on. */
+ * The first angle call's result goes through a block-scoped temporary so cos outranks
+ * sin (f22/f24 as shipped).
+ * Open: mapY's products emitted before rotX's, one home 4 low (0x1D0 against 0x1D4),
+ * the int ring phase from the prim-colour packet on. */
 #ifdef NON_MATCHING
 typedef struct O56Gfx {
     u32 w0;
@@ -272,8 +274,11 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     }
     viGetCurrentSize(&screenWidth, &screenHeight);
     dot = D_800CD788[22];
-    cosA = func_8002A8BC(level->angle);
-    sinA = func_8002A8C0(level->angle);
+    {
+        f32 c = func_8002A8BC(level->angle);
+        sinA = func_8002A8C0(level->angle);
+        cosA = c;
+    }
     alpha = gOverlay56ResourceState * 2;
     alpha = (alpha > 255) ? 255 : alpha;
     marker.unk4 = 0;
@@ -375,10 +380,10 @@ void overlay56UnpackColor(s32 index, u32 *red, s32 *green, s32 *blue) {
 
 /* PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:start
  * symbol: func_overlay_056_F00001A0_18A2F18
- * score: 131 differing words
+ * score: 129 differing words
  * frame: 0x1F8
  * relocations: 75
  * first-mismatch: +0x160
- * summary: x/z locals, in-place mapY rebase (CSE temp in f20), x-term-first mapY, frame refit: 542 to 131 at 0; open: cos/sin, int ring phase.
+ * summary: x/z locals, in-place mapY rebase, frame refit, block temp for cos: 542 to 129 at 0; open: product emission order, int ring.
  * PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:end
  */

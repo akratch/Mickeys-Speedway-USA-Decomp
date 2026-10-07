@@ -23,70 +23,48 @@ extern f32 gO38AccelerationPosition;
 extern f32 gO38AccelerationVelocity;
 extern void o38ReleaseObject(O38Object *object);
 
-#define P(cursor, index) \
-    (*(O38Particle *)((cursor) + 8 + (index) * sizeof(O38Particle)))
-
-#define UPDATE_XYZ(particle, delta, position, velocity, yResult) do { \
-    (particle).x += (particle).dx * (delta); \
-    (yResult) = (particle).y + (particle).dy * (delta) + (position); \
-    (particle).z += (particle).dz * (delta); \
-    (particle).dy += (velocity); \
-} while (0)
-
-#define UPDATE_YZX(particle, delta, position, velocity, yResult) do { \
-    (yResult) = (particle).y + (particle).dy * (delta) + (position); \
-    (particle).z += (particle).dz * (delta); \
-    (particle).x += (particle).dx * (delta); \
-    (particle).dy += (velocity); \
-} while (0)
-
-#define UPDATE_XYZ_DEFER_Z(particle, delta, position, velocity, yResult, zResult) do { \
-    (particle).x += (particle).dx * (delta); \
-    (yResult) = (particle).y + (particle).dy * (delta) + (position); \
-    (zResult) = (particle).z + (particle).dz * (delta); \
-    (particle).dy += (velocity); \
-} while (0)
-
-/* Plateau (2026-08-26, p5): workbench mixed, 202/202 instructions and 160 raw (159 masked) differing words from +0x20; both frames are 0x38.
- * The r4300-mul flag sweep remains best; typed/update-order/delta/lifetime probes and the bounded permuter leave 109 structural and 92 register rows.
- * No permitted skeleton or source-backed lever remains; retain NON_MATCHING. */
+/* 2026-10-07 (lane h-1): written from the listing, 159 -> 126 at size delta 0.
+ * The loop is IDO's own 4x unroll of a plain 20-step loop. Two facts set the
+ * target's FP colour ladder without any force: the timestep is converted once
+ * and copied to a second local at entry (`loopDt = dt` in the declarations),
+ * which is the target's cvt into f0 plus the f14 copy in the delay slot of the
+ * alpha test; and exactly three body values are locals (dx, dz, x), whose
+ * symbol webs span all four unrolled copies (save 80) and so rank above the
+ * loop timestep (62), which then takes f14 (c27), the four dy CSE webs
+ * c28..c31, and the two accelerations f24/f26. Two or four locals change the
+ * size. The rates are literals (the extern names score 130). */
 #ifdef NON_MATCHING
 void func_overlay_038_F0000154_1885E64(O38Object *object, s32 ticks)
 {
     O38Pool *pool = object->pool;
-    char *cursor;
-    f32 dt = (f32)ticks;
-    f32 accelerationPosition, accelerationVelocity;
-    f32 loopDt;
-    f32 y0, y1, y2, y3, z2;
+    f32 dt = ticks;
+    f32 loopDt = dt;
+    O38Particle *particle;
+    f32 accelerationPosition;
+    f32 accelerationVelocity;
+    f32 x, dx, dz;
     s32 i;
 
     if (pool->alpha == 0) {
         o38ReleaseObject(object);
         return;
     }
-    object->age += gO38AgeRate * dt;
+    object->age += 0.1f * dt;
     pool->alpha -= (s32)(4.25f * dt);
     if (pool->alpha < 0) {
         pool->alpha = 0;
     }
-    accelerationPosition = gO38AccelerationPosition * dt;
-    accelerationPosition *= dt;
-    accelerationVelocity = gO38AccelerationVelocity * dt;
-    loopDt = dt;
-    cursor = (char *)pool;
-
-    for (i = 0; i < 20; i += 4, cursor += 4 * sizeof(O38Particle)) {
-        UPDATE_YZX(P(cursor, 0), loopDt, accelerationPosition, accelerationVelocity, y0);
-        UPDATE_XYZ(P(cursor, 1), loopDt, accelerationPosition, accelerationVelocity, y1);
-        UPDATE_XYZ_DEFER_Z(P(cursor, 2), loopDt, accelerationPosition,
-                           accelerationVelocity, y2, z2);
-        UPDATE_XYZ(P(cursor, 3), dt, accelerationPosition, accelerationVelocity, y3);
-        P(cursor, 0).y = y0;
-        P(cursor, 1).y = y1;
-        P(cursor, 2).y = y2;
-        P(cursor, 3).y = y3;
-        P(cursor, 2).z = z2;
+    accelerationPosition = -0.05f * loopDt * loopDt;
+    accelerationVelocity = -0.1f * loopDt;
+    for (i = 0; i < 20; i++) {
+        particle = &pool->particles[i];
+        dx = particle->dx;
+        dz = particle->dz;
+        x = particle->x;
+        particle->y = particle->y + (particle->dy * loopDt + accelerationPosition);
+        particle->x = x + dx * loopDt;
+        particle->dy += accelerationVelocity;
+        particle->z = particle->z + dz * loopDt;
     }
 }
 #else
@@ -95,10 +73,10 @@ void func_overlay_038_F0000154_1885E64(O38Object *object, s32 ticks)
 
 /* PLATEAU-HANDOFF:func_overlay_038_F0000154_1885E64:start
  * symbol: func_overlay_038_F0000154_1885E64
- * score: 43/202 words
+ * score: 126 differing words
  * frame: 0x38
  * relocations: 7
- * first-mismatch: +0x20
- * summary: Exact size/frame and all seven relocation offset/type sites persist. r4300-mul, typed/update-order/delta/lifetime and bounded permutation routes are exhausted.
+ * first-mismatch: +0xC8
+ * summary: 126 at size delta 0 on a natural loop: entry copy of the timestep and three body locals give the target's FP ladder unforced; the body schedule remains.
  * PLATEAU-HANDOFF:func_overlay_038_F0000154_1885E64:end
  */

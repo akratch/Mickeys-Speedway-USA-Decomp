@@ -218,8 +218,36 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_head.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
 		sha256:a9e8bb2ddde2c0045fe459a7a498fe7611a867b6388de34508f2f49849204ffa
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/func_overlay_001_F0001D78_184E158.c.o: CFLAGS += -Wab,-r4300_mul
+# Every call but overlay1InitMotionScale's is a SYMBOL record (the shipped
+# word carries the 0xF0000000 addend), the overlay 1 callees included, so all
+# of them go through generated surface names. The -666.0f sentinel is a
+# one-constant pool duplicating the retained overlay data at rodata-relative
+# +0xD8 (a LOCAL hi/lo record with stored addend 0xD8): the pair is bound to
+# an absolute 0xD8 symbol and the pool asserted by digest, as in the sibling
+# func_overlay_001_F0003258_184F638. No instruction is edited.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/func_overlay_001_F0001D78_184E158.c.o: POSTPROCESS = \
-	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x9CC
+	$(OBJCOPY) \
+		--redefine-sym func_80028F54=func_80028F54_o001Reloc \
+		--redefine-sym func_80005750=func_80005750_o001Reloc \
+		--redefine-sym amSndPlay=amSndPlay_o001Reloc \
+		--redefine-sym func_800291C4=func_800291C4_o001Reloc \
+		--redefine-sym levelGetNumber=levelGetNumber_o001Reloc \
+		--redefine-sym levelGetBlurEffect=levelGetBlurEffect_o001Reloc \
+		--redefine-sym func_8003A55C=func_8003A55C_o001Reloc \
+		--redefine-sym overlay7UpdateOwnerMode=overlay1Overlay7UpdateOwnerModeReloc \
+		--redefine-sym overlay7CommitSelection=overlay1Overlay7CommitSelectionReloc \
+		--redefine-sym overlay68StartTimer=overlay1Overlay68StartTimerReloc \
+		--redefine-sym overlay1FindClosestSample=overlay1FindClosestSampleReloc \
+		--redefine-sym overlay1TestDirection=overlay1TestDirectionReloc \
+		--redefine-sym overlay1NextPointer=overlay1NextPointerReloc \
+		--redefine-sym overlay1PreviousPointer=overlay1PreviousPointerReloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x9CC && \
+	$(OBJCOPY) --add-symbol gOverlay1PositionSentinelLiteral=0xD8,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		0x8FC:.rodata:gOverlay1PositionSentinelLiteral \
+		0x900:.rodata:gOverlay1PositionSentinelLiteral && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/externalize_elf_section.py $@ .rodata \
+		sha256:e0209c986e6e6bc1c834c0bc7b6616de0b4512a3cbadf1f68ab10c158c66bc53
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/func_overlay_001_F0002B4C_184EF2C.c.o: CFLAGS += -Wab,-r4300_mul
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/func_overlay_001_F0002B4C_184EF2C.c.o: POSTPROCESS = \
 	$(OBJCOPY) \

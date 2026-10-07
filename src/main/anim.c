@@ -1474,13 +1474,13 @@ void func_800517E0(void) {
                     break;
                 case 0x48:
                     index = *((u16 *) ((u8 *) cursor + 4));
-                    frame = *((u16 *) ((u8 *) cursor + 6));
+                    pathIndex = *((u16 *) ((u8 *) cursor + 6));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
                     track = (AnimCommandTrack *) trackGetTrack();
                     if ((track != NULL) && (index < track->count18)) {
                         trackEntry = track->entries[index].texture;
                         if (trackEntry != NULL) {
-                            trackEntry->speed12 = (s16) ((frame << 8) /
+                            trackEntry->speed12 = (s16) ((pathIndex << 8) /
                                                            6000);
                         }
                     }
@@ -4006,10 +4006,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1570 differing words
+ * score: 1500 differing words
  * frame: 0x168
  * relocations: 246
  * first-mismatch: +0x0
- * summary: Aligned 1260, size +8. Quartet shared, table spilled, slot local for 0x61-0x67, opcode carries the audio command byte; masks still cost the state piece.
+ * summary: Aligned 1246, size delta 0. Quartet shared, table spilled, 0x48 frame via path index; masks still cost the state piece; frame 0x168 against 0x1B0.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

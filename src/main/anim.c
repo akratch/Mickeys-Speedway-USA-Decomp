@@ -1086,13 +1086,12 @@ void joyEnable(s32 player);
 /* NON_MATCHING: Mickey-led call/type reconstruction. Shared loop carriers
  * and handler dataflow still differ; see the symbol-owned handoff. */
 void func_800517E0(void) {
-    AnimPath **paths;
     AnimStreamEntry *cursor;
     s32 currentCommand;
     u16 commandDuration;
     u16 duration;
     s32 opcode;
-    u32 pathIndex;
+    s32 pathIndex;
     f32 commandTime;
     f32 hundred;
     f32 delta;
@@ -1146,6 +1145,7 @@ void func_800517E0(void) {
     f32 radius;
     f32 height;
     f32 motionX;
+    AnimPath **paths;
     f32 motionZ;
 
     cursor = D_8007D69C;
@@ -4009,10 +4009,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1750 differing words
+ * score: 1752 differing words
  * frame: 0x160
  * relocations: 241
  * first-mismatch: +0x0
- * summary: Decoded bytes read from the stream: fp used, size -132, aligned 1557. Open: divisor piece 9 entries (target 1), path index propagated.
+ * summary: Table spilled at +0x7C as shipped; aligned 1548, size -196. Open: divisor piece 9 entries (target 1), never held with the state piece.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

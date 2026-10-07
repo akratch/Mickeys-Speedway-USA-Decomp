@@ -2,11 +2,13 @@
 ### `overlay98RenderReflections` plateau handoff
 
 - source: `src/overlays/o098/overlay98RenderReflections.c`
-- score: 57/389 words
-- frame: 0x190
+- score: 278/389 words
+- frame: 0x1C8
 - relocations: 36
-- first mismatch: +0x0
-- summary: Exact-size V0 has a 56-byte non-save frame deficit and 21/36 relocation tuple alignment; prior natural mechanisms are exhausted.
+- first mismatch: +0x14
+- summary: Natural rewrite, fixed transform offsets, target home ladder: 332 to 278 at delta 0, frame exact; open: node in s3 and s5, hoisted data re-read.
+
+Summary before this remeasure: Exact-size V0 has a 56-byte non-save frame deficit and 21/36 relocation tuple alignment; prior natural mechanisms are exhausted.
 
 ## 2026-09-11 the frame runs the other way, and the 56 bytes are solved (lane `lane/o11-frames`)
 
@@ -114,5 +116,37 @@ no padding, declaration/home grid, flags, or forced allocator work followed.
 A future packet needs independently supported missing executable behavior or
 compiler producer evidence. Lower positional differences at a short extent
 and truthful type spelling alone do not reopen the closed layout families.
+
+## 2026-10-07 (lane a-ovl4): natural rewrite, 332 to 278 at delta 0, frame exact
+
+The inherited body stored the transform and inverse fields to the wrong
+offsets: the target writes the reflected height to transform +0x10, the
+object x to +0xC, and each rotation to its own slot (+0 gets rotation 0
+plus 0x8000), so the old candidate was not semantically the target. Fixed
+in the rewrite, together with:
+
+  - one callee for the context set-up and the matrix load (both calls are
+    SYMBOL records naming resident +0x29484), two-argument matrix builds;
+  - the visible list as gOverlay98AcceptedCount/gOverlay98AcceptedEntries
+    (records LOCAL +0x84/+0x88, the names overlay98CollectAccepted uses),
+    indexed, so uopt makes the cursor a temporary at the target's +0x5C;
+  - literal 0x80000000 at each use (the target hoists one constant web
+    into s6), plain locals, no volatile on the float homes;
+  - the home ladder: five register locals, then modelDisplayList (+0x1B0),
+    savedDisplayList (+0x1AC), matrices C/B/A (+0x16C/+0x12C/+0xEC),
+    referenceY/distance (+0xE8/+0xE4), one cell, inverse (+0xC8),
+    transform (+0xB0), emitted (+0xAC), index (+0xA8), one cell, the
+    state index (+0xA0), then fourteen unused cells. Frame 0x1C8 exact.
+
+Aligned: exact 183, naming 143, immediate 11, really different 61.
+
+Measured and open: the target loads the node into v0 and copies it to two
+callee-saved registers (s3 for useAlternate and the part arrays, s5 for
+vertexData), and re-reads node->data hoisted above the alpha test for the
+display-list pick. `node2 = node` (before or after the state-index store),
+a chained assignment, an (s32) round-trip, and re-reading the nodes
+element are all copy-propagated or reload (300 to 357). A volatile
+state index gives the re-read but not the hoist (300, exact 128). The
+emitted flag set just before the inverse call scores 282.
 
 <!-- plateau-handoff:overlay98RenderReflections:end -->

@@ -485,7 +485,9 @@ void func_80045D34(s32 arg0) {
                             }
                             index++;
                         }
-                        slot = &((MemoryPoolSlot *)redraw)[slot->nextIndex];
+                        /* Index first: the target adds the scaled index
+                         * before the pool base. */
+                        slot = slot->nextIndex + (MemoryPoolSlot *)redraw;
                     } while (slot->nextIndex != -1);
                     oldPage = currentPage;
                     redraw = 0;
@@ -795,10 +797,10 @@ void func_80046E00(void) {
 
 /* PLATEAU-HANDOFF:func_80045D34:start
  * symbol: func_80045D34
- * score: 112/459 words
+ * score: 111/459 words
  * frame: 0xA8
  * relocations: 93
  * first-mismatch: +0x14C
- * summary: Address copied then stepped in place in the editor arms (115 to 112); left: u16 return copy, counter address piece growth at bb 64
+ * summary: Slot step index first (112 to 111); u16 shape plus difference page test differs only in the counter toggle (aligned 73)
  * PLATEAU-HANDOFF:func_80045D34:end
  */

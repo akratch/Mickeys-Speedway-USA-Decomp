@@ -183,10 +183,10 @@ Overlay17Chain *overlay17CreateChain(
 
 /* PLATEAU-HANDOFF:overlay17CreateChain:start
  * symbol: overlay17CreateChain
- * score: 24 differing words
+ * score: 3 differing words
  * frame: 0x80
  * relocations: 7
  * first-mismatch: +0x3C
- * summary: count stored before dirty/selectedBuffer: 36 to 24 at delta 0. Open: the size web's def-only pre-call piece, and one ring draw on the arm-exact 46 shape.
+ * summary: Arm-exact shape with the red mask dropped: 24 to 3 at delta 0. Open: web 12 splits only when totalsave <= bestcost (tree 4 vs 3); block count is not the lever.
  * PLATEAU-HANDOFF:overlay17CreateChain:end
  */

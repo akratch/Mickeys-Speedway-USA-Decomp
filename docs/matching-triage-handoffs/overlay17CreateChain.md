@@ -2,11 +2,15 @@
 ### `overlay17CreateChain` plateau handoff
 
 - source: `src/overlays/o017/overlay17CreateChain.c`
-- score: 24 differing words
+- score: 3 differing words
 - frame: 0x80
 - relocations: 7
 - first mismatch: +0x3C
-- summary: count stored before dirty/selectedBuffer: 36 to 24 at delta 0. Open: the size web's def-only pre-call piece, and one ring draw on the arm-exact 46 shape.
+- summary: Arm-exact shape with the red mask dropped: 24 to 3 at delta 0. Open: web 12 splits only when totalsave <= bestcost (tree 4 vs 3); block count is not the lever.
+
+Summary before this remeasure: Arm-exact shape with the red mask dropped: 24 to 3 at delta 0. Open: the size web's pre-call piece (web 12 totalsave 4 vs bestcost 3, coloured a2).
+
+Summary before this remeasure: count stored before dirty/selectedBuffer: 36 to 24 at delta 0. Open: the size web's def-only pre-call piece, and one ring draw on the arm-exact 46 shape.
 
 Summary before this remeasure: Authenticated allocation/material/endpoint calls: 65 to 45; all three call identities align. The independently owned template extent is 16 records; faithful pass captures retain one baseline address definition and two in the branch-local diagnostic. Pre-call size is already coloured a2; five candidate relocations still differ from seven target records.
 
@@ -367,5 +371,65 @@ Configured full-TU baseline re-scored 36 masked at delta 0, first +0x3C.
   the structural lead. Next on it: find the one extra ring draw between the
   template loop and the join block (the else arm's `la` is a ring draw in
   ours; the target forms that constant before the branch).
+
+#### 2026-10-07, lane f-o069 (resumed): the 46 shape plus the dropped red mask, 24 to 3
+
+The extra ring draw on the 46 shape was not the else arm's `la`: the ugen
+trace puts it at `chain->red = (red & 0xFF)` (lbu t5, then the andi's
+temp t6 that the peephole deletes, L127), one position before the
+endpoint-call argument addresses. Dropping the mask on the 46 shape scores
+3 masked at delta 0, first +0x3C: the whole function is byte-exact except
+the half-buffer size web's three pre-call words (`sll a2` for `sll t7`, the
+shift reading a2, `sw a2` for `sw t7`). Kept.
+
+Measured on the 46 shape, all 46 (no effect on the else arm's draw): a
+template-address local read before the branch and stored by the else arm
+(uopt rematerialises the constant in the arm), the same local also
+initialising the loop source, the destination assigned in both arms and
+stored once after the join (158 at -4), stored in each arm (46), one
+template local assigned in both arms (122). A new local costs 8 bytes of
+frame; replacing the unused `padFrame` slot with it keeps the frame.
+
+Measured on the 3-word body for the size web, all 3 or 4: the embedded
+assignment in the allocation argument (4), the definition hoisted above
+the header-size branch, `<< 1`, and a dead use after the endpoints call
+through an s16 or s32 local, plain or scaled (uopt removes it, so the web
+does not come to span a third call). Web 12 reads save 1.33, nocs 3,
+totalsave 4, bestcost 3 (a2), decision colour, on this shape as before.
+
+Cycle-21 line: the decision variable is web 12's split (totalsave <= 3 or
+bestcost >= 4). Next: a reference uopt keeps but as1 deletes placed after
+the endpoints call (raise the cost to a third spanned call), or a form
+whose pre-call shift reads the expression temp (drop the reference count to
+3); read the record after each.
+
+#### 2026-10-07, lane f-o069 (third pass): the size web's rule is totalsave against bestcost
+
+Kept body re-scores 3 at delta 0. Eight cells, none kept:
+
+- Control `p1:w12=s` (accepted, forced=-1): 115 at delta 0. The pre-call
+  piece (nocs 1, totalsave 1) is then coloured v0 at cost 0 and the
+  post-call piece (totalsave 1, bestcost 1) splits again; the target's
+  post-call piece is coloured a2 with a spill, so the whole-web spill is
+  not the target's decision.
+- Raising the block count is not the lever: three `do {} while (0)`
+  wrappers inside the span give nocs 4, save 1.0, totalsave 4, bestcost 3
+  and still decision=color (186 at +4, colours move to a3); one wrapper on
+  the allocation is byte-identical (3), the allocation plus the material
+  call 7.
+- `(u32)count * 40u` for the allocation (192 at +8, no CSE with the
+  variable), `(u32)` on the else-arm use and `(u32) * 2u` on the shift (3,
+  inert), a late address-taken (137), `register` (3), a one-element array
+  for every access (119: pre-call exact but per-arm reloads and the home
+  at 0x6C), array for the definition with a scalar read once after the
+  allocation (194 at +8), a repeated buffers[1] store after the endpoints
+  call as a third-call probe (194 at +24, the frame grows).
+
+Decision variable: web 12 splits only when totalsave <= bestcost; the tree
+has 4 references (definition, shift, two arm uses) against cost 3 (two
+calls spanned). Cycle-21: a reference after the endpoints call that uopt
+keeps without a new frame slot or word, or a form in which the shift reads
+the expression temp so the variable has three references; read web 12's
+p1dec after each.
 
 <!-- plateau-handoff:overlay17CreateChain:end -->

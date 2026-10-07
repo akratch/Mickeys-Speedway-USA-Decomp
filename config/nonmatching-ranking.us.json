@@ -85,6 +85,21 @@
       "source_context_sha256": "NUGQ.Lwci.S0Z-.WyTE.PcV1.bJoM.DRha.CASm.Nuy9.A7JZ.TUM"
     },
     {
+      "name": "func_80049B14",
+      "file": "src/main/fx.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 824,
+      "objdiff_match_pct": null,
+      "differing_words": 28,
+      "first_mismatch_offset": 48,
+      "relocation_masked_differing_words": 28,
+      "relocation_masked_first_mismatch_offset": 48,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "rf7j.JgAh.9BpJ.PjXx.Aq-u.W4aj.0ETR.bxQS.-lrU.zaru.dB8"
+    },
+    {
       "name": "overlay17CreateChain",
       "file": "src/overlays/o017/overlay17CreateChain.c",
       "overlay": 17,
@@ -367,7 +382,7 @@
       "relocation_masked_first_mismatch_offset": 52,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "nIKc.cpmY.tFwz.9EG7.PISI.a-EB.fOMc.tcaN.XDzB.JgVH.vng"
+      "source_context_sha256": "noOs.horK.2TBR.6IGP.bphd.xtzj.o_Cl.ZGga.ohjM.7pi5.Ddw"
     },
     {
       "name": "func_overlay_001_F0001D78_184E158",
@@ -535,21 +550,6 @@
       "source_context_sha256": "3BlY.PAA0.o0f7.zVE8.sDYd.2qxu.Zwey.QnNg._YF6.mdBm.r5A"
     },
     {
-      "name": "func_80049B14",
-      "file": "src/main/fx.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 824,
-      "objdiff_match_pct": null,
-      "differing_words": 105,
-      "first_mismatch_offset": 48,
-      "relocation_masked_differing_words": 105,
-      "relocation_masked_first_mismatch_offset": 48,
-      "size_delta": 4,
-      "category": "size-mismatch",
-      "source_context_sha256": "9wtG.nZ7i.9nPO.XQgs.bd9g.J9Ko.hh-8.TnaK.ee3A.HLd5.VxI"
-    },
-    {
       "name": "func_overlay_066_F00004E0_18C6948",
       "file": "src/overlays/o066/func_overlay_066_F00004E0_18C6948.c",
       "overlay": 66,
@@ -607,7 +607,7 @@
       "relocation_masked_first_mismatch_offset": 16,
       "size_delta": -8,
       "category": "size-mismatch",
-      "source_context_sha256": "Y3GM.iBBV.NQms.APtK.JTvY.lDrf.eKbs.oGwv.3wvz.ATCM.jBs"
+      "source_context_sha256": "FE7o.NGYu.5Azz.vnHw.l6Ak.XTs1.YmlF.S65J.WKz7.jYRf.kTo"
     },
     {
       "name": "func_80011CDC",

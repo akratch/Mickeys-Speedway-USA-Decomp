@@ -12,8 +12,9 @@ renderer, and func_8000F198 in the shape of func_8000DFBC. Finding the sibling
 by hand is the slow step; this ranks candidates.
 
 Signal: the opcode-mnemonic SEQUENCE. Each unmatched target's mnemonics come
-from its splat listing under asm/; each matched function's come from the
-compiled objects under build/ (objdump of what our C produced, so the shape
+from its splat listing under asm/, excluding only reviewed nonexecutable ROM
+ranges from the executable-accounting contract; each matched function's come
+from compiled objects under build/ (objdump of what our C produced, so the shape
 is the shape a C body is known to reach). Candidates are prefiltered by
 Jaccard overlap of mnemonic trigrams, then scored by difflib's ratio over the
 two sequences. Registers, immediates and relocations are ignored: two bodies
@@ -46,7 +47,9 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from collections.abc import Sequence
 
+import executable_accounting
 import finalize_plateau
 import nm_ranking
 import overlay_atlas
@@ -56,7 +59,7 @@ import reloc_surface
 ROOT = Path(__file__).resolve().parent.parent
 OBJDUMP = ROOT / "tools" / "binutils" / "mips64-elf-objdump"
 RANKING = ROOT / "config" / "nonmatching-ranking.us.json"
-LISTING_ROW = re.compile(r"\s*/\*\s*[0-9A-F]+ [0-9A-F]+ [0-9A-F]{8} \*/\s+(\S+)")
+LISTING_ROW = re.compile(r"\s*/\*\s*([0-9A-F]+) [0-9A-F]+ [0-9A-F]{8} \*/\s+(\S+)")
 DIS_FUNC = re.compile(r"^[0-9a-f]+ <([^>]+)>:")
 DIS_ROW = re.compile(r"^\s+[0-9a-f]+:\s+(\S+)")
 
@@ -163,14 +166,21 @@ def authenticated_names(text: str, symbols: list[tuple], source: str,
     return accepted
 
 
-def listing_mnemonics(path: Path) -> list[str]:
-    """Mnemonics of one splat listing, in order."""
+def listing_mnemonics(path: Path, excluded_ranges: Sequence[dict] = ()) -> list[str]:
+    """Target mnemonics, excluding only validated reviewed ROM intervals.
+
+    ROM offsets distinguish overlays sharing a synthetic VMA. A zero word or
+    trailing nop alone never establishes a nonexecutable range.
+    """
     out = []
     with open(path) as handle:
         for line in handle:
             match = LISTING_ROW.match(line)
             if match:
-                out.append(match.group(1))
+                rom_offset = int(match.group(1), 16)
+                if not any(row["rom_start"] <= rom_offset < row["rom_end"]
+                           for row in excluded_ranges):
+                    out.append(match.group(2))
     return out
 
 
@@ -280,13 +290,19 @@ def main(argv: list[str] | None = None) -> int:
     if not OBJDUMP.exists():
         print(f"missing {OBJDUMP.relative_to(ROOT)}; run gmake setup", file=sys.stderr)
         return 2
+    try:
+        excluded_ranges = executable_accounting.reviewed_ranges(
+            ROOT, rom=(ROOT / "baseroms/mickey.us.z64").read_bytes())
+    except (OSError, ValueError, RuntimeError, KeyError, TypeError) as exc:
+        print(f"cannot authenticate target executable ranges: {exc}", file=sys.stderr)
+        return 2
     unmatched = unmatched_names()
     listings = {}
     for path in (ROOT / "asm" / "nonmatchings").rglob("*.s"):
         if args.symbol and path.stem not in args.symbol:
             continue
         if path.stem in unmatched and path.stem not in listings:
-            seq = listing_mnemonics(path)
+            seq = listing_mnemonics(path, excluded_ranges)
             if seq:
                 listings[path.stem] = seq
     if not listings:

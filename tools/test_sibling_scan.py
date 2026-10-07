@@ -144,6 +144,47 @@ class SiblingScanTests(unittest.TestCase):
         finally:
             Path(handle.name).unlink()
 
+    def test_only_reviewed_rom_intervals_remove_nops(self):
+        # Synthetic instructions: an executed delay slot, a reviewed tail,
+        # and an unreviewed nop at the same synthetic VMA in another overlay.
+        listing = """glabel demo
+/* 000100 F0000000 11111111 */ jr $ra
+/* 000104 F0000004 00000000 */ nop
+/* 000108 F0000008 00000000 */ nop
+/* 000200 F0000000 22222222 */ jr $ra
+/* 000204 F0000004 00000000 */ nop
+/* 000208 F0000008 00000000 */ nop
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "demo.s"
+            path.write_text(listing)
+            self.assertEqual(sibling_scan.listing_mnemonics(path),
+                             ["jr", "nop", "nop", "jr", "nop", "nop"])
+            ranges = [{"rom_start": 0x108, "rom_end": 0x10C}]
+            self.assertEqual(sibling_scan.listing_mnemonics(path, ranges),
+                             ["jr", "nop", "jr", "nop", "nop"])
+            # End is exclusive, and the second overlay remains untouched.
+            ranges = [{"rom_start": 0x100, "rom_end": 0x108}]
+            self.assertEqual(sibling_scan.listing_mnemonics(path, ranges),
+                             ["nop", "jr", "nop", "nop"])
+
+    def test_invalid_accounting_contract_stops_before_target_scan(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "baseroms").mkdir()
+            (root / "baseroms/mickey.us.z64").write_bytes(b"synthetic ROM")
+            objdump = root / "objdump"
+            objdump.touch()
+            with patch.object(sibling_scan, "ROOT", root), \
+                 patch.object(sibling_scan, "OBJDUMP", objdump), \
+                 patch.object(sibling_scan.executable_accounting, "reviewed_ranges",
+                              side_effect=RuntimeError("stale reviewed extent")) as reviewed, \
+                 patch.object(sibling_scan, "unmatched_names") as targets, \
+                 patch.object(sibling_scan.sys, "stderr"):
+                self.assertEqual(sibling_scan.main([]), 2)
+                reviewed.assert_called_once_with(root, rom=b"synthetic ROM")
+                targets.assert_not_called()
+
     def test_rank_prefers_the_same_shape_over_the_same_length(self):
         # Non-periodic on purpose: difflib aligns a periodic sequence against a
         # shifted copy of itself, which real function bodies never are.

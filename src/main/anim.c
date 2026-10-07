@@ -1492,6 +1492,8 @@ void func_800517E0(void) {
                     s32 scrollY;
                     f32 scrollDuration;
 
+                    pathIndex = currentCommand & 0xFF;
+
                     index = *((u16 *) ((u8 *) cursor + 4));
                     scrollX = *((s16 *) ((u8 *) cursor + 6));
                     scrollY = *((s16 *) ((u8 *) cursor + 8));
@@ -1500,7 +1502,7 @@ void func_800517E0(void) {
                     scrollY = (s32) ((u32) scrollY << 16) / 6000;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     scroll = (AnimCommandScroll *)
-                        &D_800D6B58[currentCommand & 7];
+                        &D_800D6B58[pathIndex & 7];
                     scroll->textureIndex = index;
                     scroll->duration = (s16) (s32) (scrollDuration *
                                                (60.0f * 0.01f));
@@ -4009,10 +4011,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1752 differing words
+ * score: 1753 differing words
  * frame: 0x160
  * relocations: 241
  * first-mismatch: +0x0
- * summary: Table spilled at +0x7C as shipped; aligned 1548, size -196. Open: divisor piece 9 entries (target 1), never held with the state piece.
+ * summary: Aligned 1544, size -188. Divisor piece accepts case blocks at margin 0 (9 entries, target 1); needs one more interferer per case block.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

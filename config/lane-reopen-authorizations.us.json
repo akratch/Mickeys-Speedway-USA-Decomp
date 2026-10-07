@@ -736,9 +736,9 @@
       "source_commit": "cb7d0ac38b50149be503d9418fc1f130f57155b6"
     },
     "func_8004B1DC": {
-      "ledger_commit": "dab722cc302bcee6031af6c263c80ff56ebc2a32",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "6adf607b6c4bb67fbf8309ff5bab5a0a9fc52f62"
+      "ledger_commit": "26aef033c1c1992ac63ae5994f3c60777e0a540d",
+      "reason": "Fresh stock reproduction isolates two reordered texture-address loads (four structural rows). Test operand evaluation order and explicit offset carriers before saved-register allocation; retain the proved 57-word baseline.",
+      "source_commit": "26aef033c1c1992ac63ae5994f3c60777e0a540d"
     },
     "func_8004BA8C": {
       "ledger_commit": "9fa2314ec43c033254eb19b67d3494a2c67df7c9",

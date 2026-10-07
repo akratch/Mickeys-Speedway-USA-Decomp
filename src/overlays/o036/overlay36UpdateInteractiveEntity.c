@@ -102,26 +102,27 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
                                        s32 elapsed) {
     Overlay36State *state;
     Overlay36Record *record;
-    s32 animationMode;
-    Overlay36Work work;
-    u8 alpha;
-    s32 recordCount;
+    s32 count;
     s32 kind;
     f32 deltaY;
+    s32 animation;
+    Overlay36Found *found[10];
+    Overlay36FoundState *foundState;
 
     state = entity->state64;
     gOverlay36Elapsed = elapsed;
     gOverlay36CurrentEntity = entity;
     gOverlay36CurrentState = entity->state64;
 
-    if (state->countdownB != 0) {
-        if (elapsed >= state->countdownB) {
+    count = state->countdownB;
+    if (count != 0) {
+        if (elapsed >= count) {
             state->countdownB = 0;
             overlay36ExpireReloc();
             return;
         }
-        if (state->countdownB != 0xFF) {
-            state->countdownB -= elapsed;
+        if (count != 0xFF) {
+            state->countdownB = count - elapsed;
         }
     }
 
@@ -136,13 +137,13 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
     }
 
     record = gOverlay36Records;
-    recordCount = 13;
+    count = 13;
     do {
         if (kind == record->kind0) {
             break;
         }
         record++;
-    } while (recordCount--);
+    } while (count--);
 
     if (state->timer4 != 0) {
         if (elapsed >= state->timer4) {
@@ -156,34 +157,28 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
     }
 
     if (state->value0 != 0) {
-        alpha = state->alphaA;
-        if (alpha < record->targetAlpha3A) {
-            alpha = (state->alphaA = alpha + elapsed * 4);
-            if (alpha > record->targetAlpha3A) {
+        if (state->alphaA < record->targetAlpha3A) {
+            state->alphaA += elapsed * 4;
+            if (state->alphaA > record->targetAlpha3A) {
                 state->alphaA = record->targetAlpha3A;
-                alpha = state->alphaA;
             }
-        } else if (alpha > record->targetAlpha3A) {
-            alpha = (state->alphaA = alpha - elapsed * 4);
-            if (alpha < record->targetAlpha3A) {
+        } else if (state->alphaA > record->targetAlpha3A) {
+            state->alphaA -= elapsed * 4;
+            if (state->alphaA < record->targetAlpha3A) {
                 state->alphaA = record->targetAlpha3A;
-                alpha = state->alphaA;
             }
         }
-    } else {
-        alpha = state->alphaA;
-        if (alpha < 0x80) {
-            alpha = (state->alphaA = alpha + elapsed * 4);
-            if (alpha >= 0x81) {
-                alpha = (state->alphaA = 0x80);
-            }
+    } else if (state->alphaA < 0x80) {
+        state->alphaA += elapsed * 4;
+        if (state->alphaA > 0x80) {
+            state->alphaA = 0x80;
         }
     }
 
-    entity->scale8 = (*(f32 *)entity->model40 * (f32)alpha) * 0.0078125f;
+    entity->scale8 = (*(f32 *)entity->model40 * (f32)state->alphaA) * 0.0078125f;
     if ((s8)entity->model40[entity->modelIndex93 + 0x1E] == 1) {
-        animationMode = 9;
-        overlay36AnimateReloc(*entity->resource68, &animationMode, 0x14,
+        animation = 9;
+        overlay36AnimateReloc(*entity->resource68, &animation, 0x14,
                               (u8 *)entity + 0x28, elapsed);
     } else {
         entity->angle0 += elapsed << 8;
@@ -203,47 +198,49 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
         entity->marker50->active4 = 1;
     }
 
-    if ((state->countdownB == 0) && !(entity->flags6 & 0x400)) {
-        if (state->timer4 != 0) {
-            gOverlay36CurrentValue = state->value0;
-        } else {
-            gOverlay36CurrentValue = 0;
-        }
+    if (state->countdownB != 0) {
+        return;
+    }
+    if (entity->flags6 & 0x400) {
+        return;
+    }
+    if (state->timer4 != 0) {
+        gOverlay36CurrentValue = state->value0;
+    } else {
+        gOverlay36CurrentValue = 0;
+    }
 
-        if (overlay36QueryReloc(entity->xC, entity->y10, entity->z14,
-                                record->queryRadius2C, 1, &work.found) != 0) {
-            deltaY = work.found->y10 - entity->y10;
-            if ((record->minimumY30 < deltaY) &&
-                (deltaY < record->maximumY34)) {
-                work.foundState = work.found->state64;
-                if (state->flags6 & 2) {
-                    if (record->alternateCallbackC != 0) {
-                        record->alternateCallbackC(work.found, entity);
-                    }
-                    if (record->alternateEffect1E != 0) {
-                        overlay36CreateEffectReloc(record->alternateEffect1E,
-                                                   entity->xC, entity->y10,
-                                                   entity->z14, 4, 0);
-                    }
-                } else {
-                    if (record->normalCallback8 != 0) {
-                        record->normalCallback8(
-                            work.found, entity,
-                            (s32)(record - gOverlay36Records),
-                            record->callbackArg2);
-                    }
-                    if (record->normalEffect1C != 0) {
-                        overlay36CreateEffectReloc(record->normalEffect1C,
-                                                   entity->xC, entity->y10,
-                                                   entity->z14, 4, 0);
-                    }
-                    if (!(record->flags3 & 1)) {
-                        work.foundState->record1A0 = record;
-                    }
+    if (overlay36QueryReloc(entity->xC, entity->y10, entity->z14,
+                            record->queryRadius2C, 1, found) != 0) {
+        deltaY = found[0]->y10 - entity->y10;
+        if ((record->minimumY30 < deltaY) && (deltaY < record->maximumY34)) {
+            foundState = found[0]->state64;
+            if (state->flags6 & 2) {
+                if (record->alternateCallbackC != 0) {
+                    record->alternateCallbackC(found[0], entity);
                 }
-                if ((state->countdownB == 0) && (state->timer4 == 0)) {
-                    overlay36ReleaseEntityReloc(entity);
+                if (record->alternateEffect1E != 0) {
+                    overlay36CreateEffectReloc(record->alternateEffect1E,
+                                               entity->xC, entity->y10,
+                                               entity->z14, 4, 0);
                 }
+            } else {
+                if (record->normalCallback8 != 0) {
+                    record->normalCallback8(found[0], entity,
+                                            record - gOverlay36Records,
+                                            record->callbackArg2);
+                }
+                if (record->normalEffect1C != 0) {
+                    overlay36CreateEffectReloc(record->normalEffect1C,
+                                               entity->xC, entity->y10,
+                                               entity->z14, 4, 0);
+                }
+                if (!(record->flags3 & 1)) {
+                    foundState->record1A0 = record;
+                }
+            }
+            if ((state->countdownB == 0) && (state->timer4 == 0)) {
+                overlay36ReleaseEntityReloc(entity);
             }
         }
     }
@@ -254,10 +251,10 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
 
 /* PLATEAU-HANDOFF:overlay36UpdateInteractiveEntity:start
  * symbol: overlay36UpdateInteractiveEntity
- * score: 235 differing words
+ * score: 229 differing words
  * frame: 0x80
  * relocations: 24
- * first-mismatch: +0x18
- * summary: Exact frame from split animation local; countdown CFG carrier remains plus one-instruction size tradeoff.
+ * first-mismatch: +0x2C
+ * summary: Natural rewrite, frame exact, aligned 252/305 exact (was 187); left: countdown/timer split copies, remap hoist, found reload.
  * PLATEAU-HANDOFF:overlay36UpdateInteractiveEntity:end
  */

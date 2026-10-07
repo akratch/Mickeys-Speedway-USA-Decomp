@@ -1252,7 +1252,7 @@
     },
     "func_overlay_056_F00001A0_18A2F18": {
       "ledger_commit": "205239f1d4581c00c9f2253e9f27a24cf4eb72d3",
-      "reason": "Target has one unsigned-float correction per logical half-dimension; candidate also adds an explicit unreachable correction. Test removing only both duplicate fixups while retaining u32 conversion and all RGB/CFG shapes.",
+      "reason": "Duplicate conversion paths are proved. Removing manual fixups loses16words versus target10; test signed initial conversions retaining manual corrections. Logical half-dimensions fit s32, and native fixups may account for the exact surplus.",
       "source_commit": "4d685542da42fa2b9be7883d065ba43fa0bbf245"
     },
     "func_overlay_057_F0000000_18A3BF8": {

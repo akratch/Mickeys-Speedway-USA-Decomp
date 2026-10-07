@@ -3932,8 +3932,9 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
         }
     }
 
-    data = object->unk40;
-    if (data->unk1E[object->unk93] == 0) {
+    /* `data` stays declared for its frame cell; the test reads the field
+     * directly (a held copy spends a ring draw the target does not). */
+    if (object->unk40->unk1E[object->unk93] == 0) {
         count = 0;
         staticEntry = (Objects09414StaticEntry *)((u8 *)resource + 0x34C);
         for (i = 0; i < 4; i++, staticEntry++) {
@@ -5378,10 +5379,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414
- * score: 234 differing words
+ * score: 189 differing words
  * frame: 0x198
  * relocations: 11
- * first-mismatch: +0xC0
- * summary: Delta 0, frame 0x198. unk8 loads after the unk4 test (234). Left: object reload, sort j=1, entries address, temp ring.
+ * first-mismatch: +0xD8
+ * summary: Data test read from the field (234 to 189 at delta 0). Left: sort j web in t0 not a0, root/base ring draws, entry loop draws.
  * PLATEAU-HANDOFF:func_80009414:end
  */

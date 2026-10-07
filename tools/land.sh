@@ -5,9 +5,10 @@
 #
 # A curated release ref must already be an ancestor of campaign/unchain.
 # It is pinned before publication and must contain both local and remote master.
-# This lands only the reviewed release tree while retaining campaign work.
+# This publishes only master with the reviewed release tree; campaign work
+# remains local. Local integration is required even when campaign is not pushed.
 #
-# Pushes campaign/unchain, merges it into master, re-verifies the ROM from
+# By default, pushes campaign/unchain, merges it into master, re-verifies the ROM from
 # the merge result, and pushes master. Run it after every integration batch;
 # leaving master behind means someone merges it by hand later.
 #
@@ -57,10 +58,8 @@ if [ -n "$release_ref" ]; then
     done
 fi
 
-echo "== push campaign/unchain"
-if [ -n "$release_ref" ]; then
-    git push origin "$campaign_oid:refs/heads/campaign/unchain"
-else
+if [ -z "$release_ref" ]; then
+    echo "== push campaign/unchain"
     git push origin campaign/unchain
 fi
 

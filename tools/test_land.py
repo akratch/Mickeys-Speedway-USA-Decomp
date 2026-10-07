@@ -96,22 +96,22 @@ if name == "authorizer":
         self.assertIn(["gmake", "verify"], commands)
         self.assert_no_reauthorization(commands)
 
-    def test_curated_release_pins_both_pushes_and_merges_only_reviewed_commit(self):
+    def test_curated_release_publishes_only_pinned_master_after_all_gates(self):
         result, commands = self.run_landing(release=True)
         self.assertEqual(0, result.returncode, result.stderr)
         ancestry = ["git", "merge-base", "--is-ancestor", "a" * 40, "b" * 40]
-        push_campaign = ["git", "push", "origin", "b" * 40 + ":refs/heads/campaign/unchain"]
         merge = ["git", "merge", "--no-edit", "a" * 40]
         gates = ["gmake", "cleanroom", "check-docs", "check-scoreboard"]
         push_master = ["git", "push", "origin", "c" * 40 + ":refs/heads/master"]
-        self.assertLess(commands.index(ancestry), commands.index(push_campaign))
+        self.assertLess(commands.index(ancestry), commands.index(merge))
         for ref in ("refs/heads/master", "refs/remotes/origin/master"):
             self.assertLess(commands.index(["git", "merge-base", "--is-ancestor", ref, "a" * 40]),
-                            commands.index(push_campaign))
-        self.assertLess(commands.index(merge), commands.index(["gmake", "verify"]))
+                            commands.index(merge))
+        self.assertLess(commands.index(merge), commands.index(["gmake", "overlay-syms"]))
+        self.assertLess(commands.index(["gmake", "overlay-syms"]), commands.index(["gmake", "verify"]))
         self.assertLess(commands.index(["gmake", "verify"]), commands.index(gates))
         self.assertLess(commands.index(gates), commands.index(push_master))
-        self.assertEqual([push_campaign, push_master], [c for c in commands if c[:2] == ["git", "push"]])
+        self.assertEqual([push_master], [c for c in commands if c[:2] == ["git", "push"]])
         self.assert_no_reauthorization(commands)
 
     def test_curated_release_rejects_unintegrated_or_outdated_ref_before_publication(self):
@@ -127,7 +127,7 @@ if name == "authorizer":
             with self.subTest(defect=defect):
                 result, commands = self.run_landing(release=True, **{defect: True})
                 self.assertNotEqual(0, result.returncode)
-                self.assertEqual([["git", "push", "origin", "b" * 40 + ":refs/heads/campaign/unchain"]],
+                self.assertEqual([],
                                  [c for c in commands if c[:2] == ["git", "push"]])
                 self.assert_no_reauthorization(commands)
 

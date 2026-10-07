@@ -2,11 +2,13 @@
 ### `func_overlay_056_F00001A0_18A2F18` plateau handoff
 
 - source: `src/overlays/o056/overlay_056.c`
-- score: 542 differing words
+- score: 163 differing words
 - frame: 0x1F8
 - relocations: 75
-- first mismatch: +0x4
-- summary: r4300_mul, u8 colour params, ghost racer local, frame ladder: 577 at -8 to 542 at 0; open: mapY caller cost 20 vs toll 21.
+- first mismatch: +0x60
+- summary: mapY in f20 via the y sum merged into the ghost x web, frame ladder for the f24 save: 542 to 163 at 0; open: sum/mapX, cos/sin, scale/x colour pairs.
+
+Summary before this remeasure: r4300_mul, u8 colour params, ghost racer local, frame ladder: 577 at -8 to 542 at 0; open: mapY caller cost 20 vs toll 21.
 
 Summary before this remeasure: Natural rewrite: aligned 316/121/61/90, delta -8; open: mapY web 197 takes caller c29 (20.0) under the 20.75 callee toll, no f24.
 
@@ -319,5 +321,47 @@ call block prices 1 unit and a call block holding a reference prices 2,
 look for a reference to mapY in the func_800349A4 or func_8002A82C block
 that emits no word; then drop two of the top cells (the f24 save adds 8
 bytes) and run frame_census.
+
+#### 2026-10-07 (lane e-big): mapY in f20 from a merged sum web; 542 to 163 at delta 0
+
+Aligned rows (residual_map --object), exact / naming / immediate /
+structural: entry 356 / 134 / 31 / 65 (542 at 0); retained
+420 / 154 / 2 / 4 (163 at 0), one one-sided word each way.
+
+- Records (CDX_PROC=6, configured command with only the compiler swapped).
+  A use of mapY between func_800349A4 and func_8002A82C prices web 194 at
+  caller 30 and it takes c30 unforced; a use before func_800349A4 or after
+  func_8002A82C does not. Measured: marker.y = mapY there (30, but a
+  store), -(-mapY) and mapY / 1.0f (30, but they emit), and
+  func_8002A82C(&mtxA + (s32)mapY * 0) (30, emits nothing; ugen folds the
+  product). Inert (cost 20): bare, void, self-assign, += 0.0f, * 1.0f,
+  (f32) cast, empty if, if (0), do-while-zero, & 0, dead local copy.
+- The shipped form needs no probe. The target computes the y sum into f18,
+  a register mapY does not hold, so the sum is not an in-place rebase. A
+  fresh local for it takes c24 (f0) and leaves mapY caller (291 at -4).
+  Assigning it to the ghost loop's x (or z) merges it into a web that is
+  offered no argument colour and is decided ahead of mapX; with c28 and c29
+  both held by interfering webs mapY is offered only the callee bank and
+  takes f20 with no probe (probe on or off: identical text).
+- Frame: the f24 save raises every sp-relative home by 8 (homes ascend
+  from the save area in reverse declaration order, so top pads only resize
+  the frame; 0 to 8 pads swept). Dropping the unused colour local and
+  placing two of red/green/blue/posX below ghostAlpha restores the ladder;
+  41 placements measured, 233 to 228 for the best, then the sum form.
+- Product (20 cells: x/z as main-loop locals, sum target in mapY/x/z/rotX/
+  inline, probe on/off): x/z locals in the main loop change size (+4 to
+  +24); inline sum 239 to 555; rotX 164; x or z 163.
+
+Open, all naming at delta 0: the sum takes f16 and mapX f18 (target f18 and
+f16: the merged x web, save 25, is decided ahead of mapX at 20); cos and sin
+are f24 and f22 (target f22 and f24: sin's save 41/12 outranks cos's 41/13
+because cos spans one more block); level->scale and the x product are f0
+and f2 (target f2 and f0); the D_84 pointer temporary sits at 0x74 against
+0x7C; the fade-shift head swaps a0 and v1.
+
+Cycle-21 line: give the y sum a web saved below 20 that still crosses a
+call elsewhere (so mapX is decided first and takes f16), then cos's save
+above sin's (one more weighted reference or one fewer spanned block), and
+read the ladder after each in the records before scoring.
 
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

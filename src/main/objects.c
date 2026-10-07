@@ -3943,8 +3943,10 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                 vector = &root->unk40[staticEntry->unk2];
                 depths[count] = camGetProjZ(vector->x, vector->y, vector->z);
                 cones[count] = cone;
-                base = *(s32 *)((u8 *)root + (root->unkA * 4) + 0xC);
-                textures[count] = (u8 *)base + (staticEntry->unk3 << 6);
+                /* No base carrier: the table word is a ring temp in the
+                 * target (`base` stays declared for its frame cell). */
+                textures[count] = (u8 *)*(s32 *)((u8 *)root + (root->unkA * 4) + 0xC) +
+                                  (staticEntry->unk3 << 6);
                 alphas[count] = staticEntry->unk4;
                 kindOrEntry[count] = staticEntry->unk0 | 0x80;
                 sortIndex[count] = count;
@@ -5379,10 +5381,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414
- * score: 189 differing words
+ * score: 185 differing words
  * frame: 0x198
  * relocations: 11
- * first-mismatch: +0xD8
- * summary: Data test read from the field (234 to 189 at delta 0). Left: sort j web in t0 not a0, root/base ring draws, entry loop draws.
+ * first-mismatch: +0x170
+ * summary: Base carrier removed (189 to 185 at delta 0, aligned naming 137 to 134). Left: one folded draw on the unk3 load, sort j web, entry loop draws.
  * PLATEAU-HANDOFF:func_80009414:end
  */

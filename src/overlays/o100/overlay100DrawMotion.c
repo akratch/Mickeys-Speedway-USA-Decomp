@@ -20,30 +20,34 @@ extern Gfx gOverlay100SegmentReloc[];
 /*
  * Written from the listing (lane c-o066, 2026-10-07): GBI packet macros, the
  * two getters called with no arguments (their relocations name
- * func_8002468C(void) and camGetPtr(void); the values the target leaves in
- * a0-a3 at those calls are leftover webs, not arguments), plain colour
- * locals, `while (row--)` / `while (count--)`, the alpha-step clamp as an
- * if/else (the target's branch over an empty arm), and the count read before
- * the phase wrap. Four unused pointers declared first hold frame 0xC0.
- * 155 -> 113 masked at delta 0; the residual is the inner loop's FP colours
- * (inverseDepth copied through a temp) and the preheader's alpha/colour order.
+ * func_8002468C(void) and camGetPtr(void); what the target leaves in a0-a3
+ * at those calls are leftover webs, not arguments), plain colour locals,
+ * `while (row--)` / `while (count--)`, the alpha-step clamp as an if/else
+ * (the target's branch over an empty arm), the count read before the frame
+ * pointer, and the alpha product inline in the colour packet (so the packed
+ * colour word is numbered, and emitted in the setup, first). In the inner
+ * loop the depth and the reciprocal are expressions written at each use, so
+ * uopt shares them as single webs (the reciprocal computed straight into
+ * f16), and point->y is read into a local at the top of the visible branch,
+ * which is the shipped early f18 load. The unreferenced locals place the
+ * frame (0xC0) and the green/blue/command spill homes.
  */
-#ifdef NON_MATCHING
 void overlay100DrawMotion(Gfx **dList, Overlay100Motion *motion) {
-    void *unused0;
+    void *unused0; /* unreferenced: frame 0xC0 and the target's homes */
     void *unused1;
     void *unused2;
     void *unused3;
     f32 sinAngle, cosAngle, xScale, yScale;
     s32 green;
     s32 blue;
-    f32 depthScale, depth, inverseDepth;
+    f32 py;
+    void *unused4;
+    f32 depthScale, unused5;
     O100View *view;
     Overlay100Vec3 *point;
     s16 *angle;
     s32 phase, row, count;
     s32 alphaStep;
-    s32 alpha;
     s32 red;
     s32 x, y, progress;
     Gfx *commands;
@@ -73,21 +77,19 @@ void overlay100DrawMotion(Gfx **dList, Overlay100Motion *motion) {
     phase = motion->nextBank;
     while (row--) {
         gDPPipeSync(commands++);
-        alpha = alphaStep * (3 - row);
-        gDPSetPrimColor(commands++, 0, 0, red, green, blue, alpha / 3);
-        point = motion->frames[phase];
+        gDPSetPrimColor(commands++, 0, 0, red, green, blue, (alphaStep * (3 - row)) / 3);
         count = motion->count;
+        point = motion->frames[phase];
         phase++;
         if (phase >= 3) {
             phase = 0;
         }
         while (count--) {
-            depth = point->z * sinAngle - point->x * cosAngle;
-            if (depth < -10.0f) {
-                inverseDepth = 1.0f / (depth * depthScale);
-                x = (s32)((point->x * sinAngle + point->z * cosAngle) * xScale * inverseDepth) + 160;
+            if ((-(point->x * cosAngle) + point->z * sinAngle) < -10.0f) {
+                py = point->y;
+                x = (s32)((point->x * sinAngle + point->z * cosAngle) * xScale * (1.0f / ((-(point->x * cosAngle) + point->z * sinAngle) * depthScale))) + 160;
                 if ((u32)x < 320) {
-                    y = 120 - (s32)(point->y * yScale * inverseDepth);
+                    y = 120 - (s32)(py * yScale * (1.0f / ((-(point->x * cosAngle) + point->z * sinAngle) * depthScale)));
                     if ((u32)y < 240) {
                         gDPFillRectangle(commands++, x, y, x + 1, y + 1);
                     }
@@ -100,16 +102,3 @@ void overlay100DrawMotion(Gfx **dList, Overlay100Motion *motion) {
     overlay100FinishCommandsReloc(dList);
     gDPSetPrimColor((*dList)++, 0, 0, 255, 255, 255, 255);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o100/overlay100DrawMotion/func_overlay_100_F0000580_18DB2A8.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay100DrawMotion:start
- * symbol: overlay100DrawMotion
- * score: 113 differing words
- * frame: 0xC0
- * relocations: 7
- * first-mismatch: +0x194
- * summary: Void getters, GBI macros, if/else alpha clamp: 155 to 113. Left: preheader colour/alpha order, inner-loop FP colours.
- * PLATEAU-HANDOFF:overlay100DrawMotion:end
- */

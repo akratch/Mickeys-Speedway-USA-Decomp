@@ -4611,6 +4611,14 @@ overlay100RemoveEntryReloc = 0xf0000000;
 /* overlay 100: overlay100ApplyToValue.c.o */
 overlay100ApplyToValueReloc = 0xf0000000;
 
+/* overlay 100: overlay100DrawMotion.c.o */
+gOverlay100SegmentReloc = 0x00000000;
+overlay100CosReloc = 0xf0000000;
+overlay100FinishCommandsReloc = 0xf0000000;
+overlay100GetViewReloc = 0xf0000000;
+overlay100PrepareAnglesReloc = 0xf0000000;
+overlay100SinReloc = 0xf0000000;
+
 /* overlay 101: overlay101Initialize.c.o */
 gOverlay101ConfigEnabled = 0x00000000;
 gOverlay101ConfigValue = 0x00000000;

@@ -736,9 +736,9 @@
       "source_commit": "cb7d0ac38b50149be503d9418fc1f130f57155b6"
     },
     "func_8004B1DC": {
-      "ledger_commit": "26aef033c1c1992ac63ae5994f3c60777e0a540d",
-      "reason": "Fresh stock reproduction isolates two reordered texture-address loads (four structural rows). Test operand evaluation order and explicit offset carriers before saved-register allocation; retain the proved 57-word baseline.",
-      "source_commit": "26aef033c1c1992ac63ae5994f3c60777e0a540d"
+      "ledger_commit": "bb9235c27df188c203b4c4575ed6ed30f9e10474",
+      "reason": "The geometry-exact 51-word baseline exposes colour priority below y. Test moving the normal-colour reset outside its already-zero guard, preserving all graphics writes, to change colour lifetime without merging newline tails.",
+      "source_commit": "bb9235c27df188c203b4c4575ed6ed30f9e10474"
     },
     "func_8004BA8C": {
       "ledger_commit": "9fa2314ec43c033254eb19b67d3494a2c67df7c9",

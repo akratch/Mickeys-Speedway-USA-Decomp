@@ -3560,9 +3560,10 @@ f32 func_8002A8C0(s32 angle);
  * the trig products starts a block for the offsets, so timeStep's last
  * piece is coloured and loaded once, as shipped. See the shard.
  * 2026-10-08 (lane j-4): the compare reads two of its products through
- * `dot` and `speed` (the then arm's FP ring is then in phase from +0x80),
- * and an empty `if (cosine)` after the trig pair gives the cosine reload
- * f2 and the sine f12 as shipped: 165 to 145 at size 0.
+ * `speed` and `dot`, assigned in that order (the then arm's FP ring is then
+ * in phase from +0x80), and an empty `if (cosine)` after the trig pair
+ * gives the cosine reload f2 and the sine f12 as shipped: 165 to 140 at
+ * size 0.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3585,8 +3586,8 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
     target = first->target;
     firstSource = first->source;
     secondSource = second->source;
-    dot = target->velocity.x * target->velocity.x;
     speed = target->velocity.y * target->velocity.y;
+    dot = target->velocity.x * target->velocity.x;
     if (target->velocity.z * target->velocity.z + (dot + speed) > 25.0f) {
         mass = ((HitResolveMass *) TrapDanglingJump(target))->mass;
         dot = normal->z * target->velocity.z +
@@ -3999,11 +4000,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 145/229 words
+ * score: 140/229 words
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x24
- * summary: Compare products through dot/speed and an empty if (cosine) after the trig pair: 165 to 145 at size 0. Left: else-arm FP colours and spills.
+ * summary: Compare carriers speed then dot and an empty if (cosine) after the trig pair: 165 to 140 at size 0. Left: else-arm FP colours and spills, compare ring temps.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

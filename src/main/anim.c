@@ -1546,18 +1546,16 @@ void func_800517E0(void) {
                     break;
                 case 0x4C:
                     pathIndex = cursor->command & 0xFF;
-                    packed2 = *((u16 *) ((u8 *) cursor + 6));
-                    timer = *((u16 *) ((u8 *) cursor + 8));
-                    frame4C = *((u16 *) ((u8 *) cursor + 0xA));
-                    duration = *((u16 *) ((u8 *) cursor + 0xC));
                     high = *((u16 *) ((u8 *) cursor + 4)) >> 8;
                     low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    packed2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF00;
+                    word8 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
+                    word9 = *((u16 *) ((u8 *) cursor + 8)) & 0xFF00;
+                    frame = *((u16 *) ((u8 *) cursor + 8)) & 0xFF;
+                    frame4C = *((u16 *) ((u8 *) cursor + 0xA));
+                    duration = *((u16 *) ((u8 *) cursor + 0xC));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
-                    TrapDanglingJump(pathIndex, high, low,
-                                     packed2 & 0xFF00,
-                                     (packed2 & 0xFF) << 8,
-                                     timer & 0xFF00, (timer & 0xFF) << 8,
-                                     frame4C, duration);
+                    TrapDanglingJump(pathIndex, high, low, packed2, word8 << 8, word9, frame << 8, frame4C, duration);
                     break;
                 case 0x4D:
                     pathIndex = cursor->command & 0xFF;
@@ -1606,9 +1604,7 @@ void func_800517E0(void) {
                     break;
                 case 0x62:
                     pathIndex = cursor->command & 0xFF;
-                    word7 = *((u16 *) ((u8 *) cursor + 4));
-                    packed2 = *((u16 *) ((u8 *) cursor + 6));
-                    objectFlags = ((u32) word7 << 16) | (u32) packed2;
+                    objectFlags = ((u32) *((u16 *) ((u8 *) cursor + 4)) << 16) | *((u16 *) ((u8 *) cursor + 6));
                     slot = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
                     if ((slot != NULL) &&
@@ -1618,9 +1614,7 @@ void func_800517E0(void) {
                     break;
                 case 0x63:
                     pathIndex = cursor->command & 0xFF;
-                    word8 = *((u16 *) ((u8 *) cursor + 4));
-                    packed2 = *((u16 *) ((u8 *) cursor + 6));
-                    objectFlags = ((u32) word8 << 16) | (u32) packed2;
+                    objectFlags = *((u16 *) ((u8 *) cursor + 6)) | (*((u16 *) ((u8 *) cursor + 4)) << 16);
                     slot = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
                     if ((slot != NULL) &&
@@ -1910,8 +1904,8 @@ void func_800517E0(void) {
                     value = (f32) duration;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     D_8007D6AC = value * factor;
-                    timer = *((u16 *) ((u8 *) cursor - 2));
-                    D_8007D6A4 = (s8) timer;
+                    timer = (s8) *((u16 *) ((u8 *) cursor - 2));
+                    D_8007D6A4 = timer;
                     break;
                 case 0x7C:
                     currentCommand = cursor->command;
@@ -4009,10 +4003,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1416 differing words
+ * score: 1530 differing words
  * frame: 0x1b0
  * relocations: 245
- * first-mismatch: +0xD0
- * summary: Aligned 986, size delta 0, frame 0x1B0. Per-case values read as shipped in 6, 7, 0x27, 0x28, 0x68, 0x6A, 0x6B, 0x6D, 0x7B; both pieces at the target's counts.
+ * first-mismatch: +0x48
+ * summary: Banked on aligned residual at size -12: aligned 853, frame 0x1B0. Ring t6-t9 as shipped via 0x4C caller-saved webs; pieces at target counts.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

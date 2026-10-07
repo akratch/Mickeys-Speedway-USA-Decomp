@@ -146,4 +146,33 @@ search receipts. The friendly-name proof and included-wrapper proof must pass
 before a bounded search may consume the retained private 48-word candidate.
 Do not repeat the closed store-order or index-copy controls without new evidence.
 
+#### 2026-10-07: authenticated searches close the byte-phase packet
+
+Both wrappers now resolve through configured candidate preprocessing, and all
+six call identities and slots pass independent preflight. The overlay 88 object
+also explicitly depends on the included body. A fresh canonical callee rebuild
+and full fallback ROM verification passed before the bounded search.
+
+The first six-minute search authenticated all six candidate bindings and kept
+compiler context unchanged. Its proxy winner reproduced the already-closed
+retail store order: 115 words, one instruction short. Replaying its next result
+in the configured full TU gave a private best of 46 raw and masked words at the
+original extent and frame, first mismatch +0x3C4. That variant orders the stores
+geometry, references, keys and retains the inert key mask. A copied command
+cursor result gave 151 words and again lost one instruction. A second five-minute
+search from the 46-word seed returned the same rejected size-short winner;
+neither search found an exact candidate.
+
+A duplicated nonvolatile byte-field condition shared a later load and shortened
+the candidate by three instructions. An independent initialized flags-field
+condition kept the extent but regressed to 275 words. These controls did not
+supply the required temporary without disturbing other allocation. Stop this
+phase mechanism: do not repeat its masks, cast/order interactions, duplicated
+conditions or either bounded search without new structural evidence.
+
+The canonical 57-word source was restored exactly. Fresh configured builds of
+both overlay owners reproduce 57 raw differences, first +0x3DC, with 1,436 owned
+bytes each. The 46-word candidate and all search/capture evidence remain private;
+no executable bytes or matching credit were added by this packet.
+
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

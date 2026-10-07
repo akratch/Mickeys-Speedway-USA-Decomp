@@ -40,4 +40,34 @@ Commands: `lane_status.py --symbol`, `wb_compare.sh --summary-json`, workbench
 `diagnose` and `guide`, and `finalize_plateau.py`. The unchanged guarded C stays
 NON_MATCHING and receives zero new exact bytes.
 
+Width-only causal audit (2026-10-04), Mickey evidence B: the retail allocator
+forwards its fifth incoming stack argument as a full word. The independently
+matched sole evidenced caller sign-extends its signed-short source field before
+storing the outgoing word, and the exact resource loader accepts a signed word
+and masks it to its low sixteen bits before resource behavior. Direct resident
+and overlay calls, runtime call records, source references and stored absolute
+function pointers were checked; arbitrary computed indirect calls remain
+outside this exhaustive claim. No shared declaration or header was changed.
+
+One isolated contrast changed only the fifth formal and its same-TU forward
+declaration from signed short to signed word. The configured output changed
+only that argument import from a halfword load to a word load. The candidate
+remained 1372 bytes / 343 words, delta -32 bytes, frame 0x98, 345 raw and masked
+differences, first mismatch +0xC, with the same three relocation sites. All
+thirty-eight other configured TU functions, including the exact caller,
+retained identical owned bytes and function-relative relocation identities.
+Actual compiler-input capture and stock preprocessing accepted each baseline
+and contrast self-context; replay fidelity passed text, data, rodata, symbols
+and relocations. Whole-file debug metadata differences were disclosed. The
+approved formal/declaration change correctly reports changed cross-context.
+
+The historical full-word fifth formal belonged to an abbreviated draft with a
+different allocation topology and extra resource-loader arguments; it was not
+a prior isolated control on the restored body. This fresh control eliminates
+argument import width as the cause of the current structural deficit. The
+unchanged baseline remains tracked; the contrast and raw receipts are private
+ignored evidence in `build/wake-word/`. No candidate or exact bytes are adopted.
+Next work requires independently authenticated topology or producer evidence;
+no declaration, buffer, home or allocator grid follows this negative result.
+
 <!-- plateau-handoff:wakeAllocate:end -->

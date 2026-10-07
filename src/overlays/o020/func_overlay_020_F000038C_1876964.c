@@ -63,6 +63,11 @@ extern void *func_overlay_020_F0000000_18765D8();
  * size. Open: register naming (row/index and rows/size swap their
  * registers), the first field loads through the argument register, and the
  * index + 9 copy.
+ * 2026-10-07 (lane c-near), 104 -> 103: the second triangle walks the vertex
+ * index (`index += 9`, then `index` and a named `far` computed at the top),
+ * so the surviving copy is of index + 9, as in the target, not of index + 1.
+ * Open: index + 1 spans two uopt blocks here and is denied v1 (col's
+ * register); the target computes it inside one block.
  */
 #ifdef NON_MATCHING
 Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
@@ -74,8 +79,6 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
     s32 row;
     s32 col;
     s32 index;
-    s32 across;
-    s32 mirror;
     s32 far;
     s32 u0;
     s32 u1;
@@ -118,13 +121,11 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
                 v0 = ((grid->textureScaleY * row * texture->height) << 5) / grid->rows;
                 v1 = ((grid->textureScaleY * (row + 1) * texture->height) << 5) / grid->rows;
                 index = col & 7;
-                across = index + 9;
-                mirror = across;
                 far = index + 10;
                 tri[0].flags = 0x40;
                 tri[0].vi0 = index;
                 tri[0].vi1 = index + 1;
-                tri[0].vi2 = across;
+                tri[0].vi2 = index + 9;
                 tri[0].uv0.u = u0;
                 tri[0].uv0.v = v0;
                 tri[0].uv1.u = u1;
@@ -132,9 +133,9 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
                 tri[0].uv2.u = u0;
                 tri[0].uv2.v = v1;
                 tri[1].flags = 0x40;
-                index++;
-                tri[1].vi0 = index;
-                tri[1].vi1 = mirror;
+                tri[1].vi0 = index + 1;
+                index += 9;
+                tri[1].vi1 = index;
                 tri[1].vi2 = far;
                 tri[1].uv0.u = u1;
                 tri[1].uv0.v = v0;
@@ -160,10 +161,10 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
 
 /* PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:start
  * symbol: func_overlay_020_F000038C_1876964
- * score: 104 differing words
+ * score: 103 differing words
  * frame: 0x40
  * relocations: 3
  * first-mismatch: +0x4
- * summary: u/v before indices, whole-triangle stores, index++ with mirror/far: delta 0, frame 0x40. Left: register naming and entry loads via a0.
+ * summary: Walking vertex index (index += 9, named far): copy now of index+9 as shipped, 104 to 103. Left: index+1 spans two uopt blocks and is denied v1.
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

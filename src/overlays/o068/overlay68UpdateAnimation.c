@@ -71,6 +71,14 @@ extern s32 gOverlay68GlobalFlagReloc;
 #define OVERLAY68_GLOBAL_FLAG gOverlay68GlobalFlagReloc
 
 /*
+ * 2026-10-07 (lane c-near), 6 -> 2 at size 0: atStart is assigned inside the
+ * first call's argument list and the red result is carried through `index`.
+ * The argument keeps index live into the call block (so it is denied a0-a3
+ * and keeps t0), and the redefinition kills `index < 1`, so uopt can no
+ * longer rebuild atStart as an expression temporary: it becomes the symbol
+ * web and spills to its own home at sp+0x6C as shipped. Left: the home store
+ * is emitted at the definition, after the argument store; the target emits
+ * it with the call's spill group, before the argument store.
  * 2026-10-07 (lane a-ovl2), 106 -> 6 at size 0: the neighbour selection is
  * three plain ifs after copies made in the order afterAfter, after, before
  * (the copy order alone swaps the before and afterAfter colours), the red
@@ -168,7 +176,6 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
             if (index > 0) {
                 before = current - 1;
             }
-            atStart = index < 1;
             if (index < animation->keyframeCount - 1) {
                 after = current + 1;
             }
@@ -176,9 +183,11 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
                 afterAfter = current + 2;
             }
 
-            object->red = (s16)(s32)func_overlay_068_F0000650_18C77B0(
+            index = func_overlay_068_F0000650_18C77B0(
                 state->fraction, before->red << 8, current->red << 8,
-                after->red << 8, afterAfter->red << 8, 1, 0, atStart);
+                after->red << 8, afterAfter->red << 8, 1, 0,
+                atStart = index < 1);
+            object->red = index;
             object->green = (s16)(s32)func_overlay_068_F0000650_18C77B0(
                 state->fraction, before->green << 8, current->green << 8,
                 after->green << 8, afterAfter->green << 8, 1, 0, atStart);
@@ -236,10 +245,10 @@ void overlay68UpdateAnimation(Overlay68Object *object, s32 updateRate) {
 
 /* PLATEAU-HANDOFF:overlay68UpdateAnimation:start
  * symbol: overlay68UpdateAnimation
- * score: 6/356 words
+ * score: 2/356 words
  * frame: 0x78
  * relocations: 15
  * first-mismatch: +0x244
- * summary: Plain-if neighbours, copy order afterAfter/after/before, unmasked opacity before elapsed: 106 to 6. Left: atStart spills to a temp, not its home.
+ * summary: atStart assigned in the first call, red result through index: 6 to 2. Left: home store emitted at the definition, after the argument store.
  * PLATEAU-HANDOFF:overlay68UpdateAnimation:end
  */

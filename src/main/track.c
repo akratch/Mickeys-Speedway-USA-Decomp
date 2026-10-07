@@ -5213,8 +5213,8 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 339 differing words
- * frame: 0x2a0
+ * score: 339/548 words
+ * frame: 0x2A0
  * relocations: 13
  * first-mismatch: +0x0
  * summary: Natural rewrite in target frame order: 499 at -40 to 339 at +8. Left: bestTexture takes s8, frame 0x18 large, second-phase s-register roles.

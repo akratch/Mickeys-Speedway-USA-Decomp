@@ -1050,7 +1050,11 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
         value = wake->value8 >> 1;
         sample[1] = value;
         if (mark != 0) {
-            sample[1] = value | 0x80;
+            /* Lane i-6: OR-assigned through the byte. uopt forwards the
+             * byte just stored, so the value stays one ring temporary and
+             * the forwarded byte spends the draw the target spends
+             * (195 -> 132; the value | 0x80 form kept `value` in v0). */
+            sample[1] |= 0x80;
         }
         *(s16 *) (sample + 2) = angle;
         *(s16 *) (sample + 4) = (*(u16 *) ((u8 *) wake->linked + 8) - 1) << 8;
@@ -1136,18 +1140,23 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
                 *(s8 *) (vertices + 9) = value;
                 vertices += 0xA;
                 *(s16 *) (vertices - 8) = *(s16 *) (sample + 6);
-                outputCount += 2;
-                vertexCount = *(s16 *) (sample + 4) >> 3;
+                /* one per vertex (lane i-6): outputCount ties polyCount and
+                 * takes fp; polygonOffset falls to a1 and spills, as shipped */
+                outputCount++;
+                outputCount++;
+                /* the strip height carried by value, so the pre-loop vertexCount web
+                 * stops at the loop (lane i-6) */
+                value = *(s16 *) (sample + 4) >> 3;
                 if (stripIndex != 0) {
                     polygon[3] = stripIndex;
                     *(s16 *) (polygon + 0xC) = 0;
-                    *(s16 *) (polygon + 0xE) = vertexCount;
+                    *(s16 *) (polygon + 0xE) = value;
                     polygon[0x12] = stripIndex;
                     *(s16 *) (polygon + 0x18) = 0;
-                    *(s16 *) (polygon + 0x1A) = vertexCount;
+                    *(s16 *) (polygon + 0x1A) = value;
                     polygon[0x13] = stripIndex + 1;
                     *(s16 *) (polygon + 0x1C) = polygonOffset;
-                    *(s16 *) (polygon + 0x1E) = vertexCount;
+                    *(s16 *) (polygon + 0x1E) = value;
                     polygon += 0x20;
                     polyCount++; /* one per triangle: replaces a probe */
                     polyCount++;
@@ -1157,13 +1166,13 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
                 }
                 polygon[1] = stripIndex;
                 *(s16 *) (polygon + 4) = 0;
-                *(s16 *) (polygon + 6) = vertexCount;
+                *(s16 *) (polygon + 6) = value;
                 polygon[2] = stripIndex + 1;
                 *(s16 *) (polygon + 8) = polygonOffset;
-                *(s16 *) (polygon + 0xA) = vertexCount;
+                *(s16 *) (polygon + 0xA) = value;
                 polygon[0x11] = stripIndex + 1;
                 *(s16 *) (polygon + 0x14) = polygonOffset;
-                *(s16 *) (polygon + 0x16) = vertexCount;
+                *(s16 *) (polygon + 0x16) = value;
                 /* L109 weight probes (deleted by uopt, counted by globalcolor):
                  * they rank stripIndex (171/11) over index (123/8), as shipped.
                  * The source form carrying those references is still open; the
@@ -2139,10 +2148,10 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeUpdate:start
  * symbol: wakeUpdate
- * score: 195/398 words
+ * score: 170/398 words
  * frame: 0x90
  * relocations: 2
- * first-mismatch: +0x34
- * summary: Secondary cursor per vertex and polyCount per triangle replace two OR-zero probes (byte-identical, 195 at 0). Left: the three stripIndex probes.
+ * first-mismatch: +0xC0
+ * summary: Aligned 125 to 104 (outputCount per vertex, height in value); 170 positional is one as1-hoisted zero init. Left: constant 20 in a0, stripIndex probes
  * PLATEAU-HANDOFF:wakeUpdate:end
  */

@@ -2,11 +2,17 @@
 ### `wakeUpdate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 195/398 words
+- score: 170/398 words
 - frame: 0x90
 - relocations: 2
-- first mismatch: +0x34
-- summary: Secondary cursor per vertex and polyCount per triangle replace two OR-zero probes (byte-identical, 195 at 0). Left: the three stripIndex probes.
+- first mismatch: +0xC0
+- summary: Aligned 125 to 104 (outputCount per vertex, height in value); 170 positional is one as1-hoisted zero init. Left: constant 20 in a0, stripIndex probes
+
+Summary before this remeasure: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: constant 20 in a0 (target a2), loop t3/t5, stripIndex probes
+
+Summary before this remeasure: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: loop t3/t5, outputCount/polygonOffset, stripIndex probes
+
+Summary before this remeasure: Secondary cursor per vertex and polyCount per triangle replace two OR-zero probes (byte-identical, 195 at 0). Left: the three stripIndex probes.
 
 Summary before this remeasure: OR-zero weight probes order secondaryVertices over wake and stripIndex over index (253 to 198 at 0). Left: polyCount/outputCount over polygonOffset.
 
@@ -245,4 +251,116 @@ increments carry half of it at the cost of a ring rotation; look for the
 form that carries the rest without moving the draws (draw_census
 --compare against this body).
 
+#### 2026-10-07, lane i-6: the mark bit OR-assigned through the byte, 195 to 132 at delta 0
+
+Measured by tools/bank.py: masked 132 (raw 132), size delta +0, candidate 398 words vs target 398. Aligned: byte-exact 277, register naming 101, immediate only 2, really different 22.
+
+Aligner after: byte-exact 277, naming 101, immediate 2, really different
+22 (before 208, 170, 2, 22). The new-sample block's mark store is
+sample[1] = value, then sample[1] OR-assigned 0x80 inside the mark test. uopt forwards
+the byte just stored, so `wake->value8 >> 1` stays a ring temporary (t8 in
+the target, where ours had the `value` web in v0) and the forwarded byte
+spends the one extra draw the target spends before the `ori` (t9 skipped,
+the `ori` lands in t0): the whole temp ring from +0x1C0 to the end of the
+pre-loop region lines up. This was the one-register ring shift earlier
+lanes read as a counter-block phase.
+
+Seven other spellings of the same statement group, one product: re-reading
+(wake->value8 >> 1) OR 0x80 in the arm reloads the halfword (the byte
+store may alias wake), +8; the `u8` cast and `& 0xFF` forms are the same
++8; `sample[1] = value = ...` is byte-identical to the old body. The (u8) value
+OR 0x80 and (value & 0xFF) OR 0x80 arms compile to the same object
+as the OR-assign (132).
+
+Measured since, on the 132 body: the loop's vertexCount through its own
+carrier (value: 182 positional but aligned residual 117 against 125, the
+pre-loop vertexCount then lands in a2 against the target's a1 and the
+count copy and mark take v1 as shipped; mark 188; count 197; a new local
+281); the second loop's sample address as `index * 0x14` (+4, multu),
+`(index * 5) << 2` or `* 4` (byte-identical).
+
+Left: a t3/t5 swap in the loop (the target computes index * 5 into t3 and
+shifts it in place after loading the sample base into t5), the
+outputCount/polygonOffset pair (a1 and fp swapped), the first window's
+vertexCount/count-copy pair, and the outputOffset zero init (+0x284 in the
+target, ours in the branch delay slot at +0x298).
+
+Cycle-21 line: draw_census --proc 13 on the second loop's head (lines of
+the sample address) to find the draw that puts index * 5 in t4 here; then
+the stripIndex probes (decision variable unchanged: stripIndex 171/11 with
+probes against index 123/8).
+
+#### 2026-10-07, lane i-6 (continued): outputCount per vertex, and the constant 20's colour
+
+Measured by tools/bank.py: masked 132 (raw 132), size delta +0, candidate 398 words vs target 398. Aligned: byte-exact 277, register naming 101, immediate only 2, really different 22.
+
+Not banked (positional rises; aligned falls). On the 132 body, measured:
+
+  - outputCount advanced once per vertex (two single increments where the
+    body has the += 2; uopt folds them into the shipped single add): the
+    web reads 62/12 and ties polyCount and polygonOffset, so it takes fp
+    and polygonOffset falls to a1 and spills around the calls, as shipped.
+    The a1/fp cycle leaves the residual map. Alone 183 positional, aligned
+    residual 119 (against 125).
+  - with that and the loop's vertexCount carried by value (so the
+    pre-loop vertexCount web no longer spans the loop): 170 positional,
+    aligned byte-exact 298, naming 81, immediate 2, really different 21,
+    residual 104. The pre-loop region then reads count copy v1, mark v1,
+    vertexCount a1, outputCount fp, polygonOffset a1, all as shipped.
+  - why positional rises: with mark off a2, a2 is free from the pre-loop
+    zero group to the loop, and as1 hoists outputOffset's zero init into
+    that group (+0xE0; the target keeps it at +0x284), a one-word shadow
+    over 0xD0..0x284. In the target a2 is held there by the constant 20
+    (the multiply at +0xC0 and +0x1B0), while ours colours that constant
+    a0 for its whole range (web 326, decision 27, a0 the lowest free).
+    Forcing it (p1:w326=c5, accepted) on that cell prices it: 170 to 108
+    at delta 0, the best number this function has measured.
+
+Flat: the constant 20 at the two pre-loop sites spelt (s16), (u8),
+(u16), (s8) or L (cfe folds the cast, 6 cells, all 170); the 0x14U
+literal at the first-scan or mark site (byte-identical); the second
+loop's sample address as (value * 4) plus the base (135: index * 5 lands
+in t3 as shipped but the shift draws t4 where the target shifts in
+place), as an index into the base, or split over two statements (132 to
+199).
+
+Cycle-21 line: the constant 20. In the target the first scan's 20 is in
+a0 and the mark and new-sample sites' 20 in a2, so it is two webs (or a
+split) where ours is one web over bb2..bb25. Decision variable: web 326's
+colour on proc 13 (a0 taken at decision 27 with a2 also free). Find the
+spelling that makes the first-scan multiply a different constant web
+(L131: the spellings must differ; casts on the literal are folded by
+cfe), then adopt the outputCount and vertexCount edits above with it.
+Then the stripIndex probes.
+
+#### 2026-10-07, lane i-6 (resumed): stride spellings flat, aligned edits adopted
+
+Measured by tools/bank.py: masked 170 (raw 170), size delta +0, candidate 398 words vs target 398. Aligned: byte-exact 298, register naming 81, immediate only 2, really different 21.
+
+Adopted on the coordinator's instruction, ranked aligned: outputCount
+advanced once per vertex and the loop's strip height carried by value.
+132 to 170 positional at delta 0, aligned byte-exact 277 to 298, naming
+101 to 81, really different 22 to 21 (residual 125 to 104). The whole
+positional rise is one shadow: a2 is free through the pre-loop region, so
+as1 hoists outputOffset's zero init to +0xE0 (target +0x284).
+
+Measured flat on this shape (one 20-cell product, ranked aligned): the
+first scan's stride as 0x14U, (5 * 4), sizeof of a 20-byte struct, or a
+typed struct subscript is byte-identical every time (uopt makes one
+constant 20 web); at the mark and new-sample sites the struct subscript,
+sizeof or 0x14U forms add 4 bytes (the unsigned multiply at the
+new-sample site). A byte cursor stepping 20 is ruled out by the target,
+which multiplies inside the first scan (multu with the constant in a0).
+Forcing web 326 to split (p1:w326=s, accepted) sends it to memory, 349 at
+-4; forcing it whole to a2 (c5) is 108. Probes: removing the three
+stripIndex probes costs 19 (189 against 170); stripIndex advanced as two
+single increments reads 121/11 against index 123/8 on proc 13, so it
+still needs about five more loop references; the strip test as > 0 is
+flat.
+
+Cycle-21 line: the constant 20's colour (web 326, a0 at decision 27; the
+target has a0 in the first scan and a2 at the mark and new-sample sites,
+which needs two webs, and no literal spelling makes two). Next look: what
+holds a0 across bb9..bb25 in the target (an argument-register web or a
+call), then the stripIndex references.
 <!-- plateau-handoff:wakeUpdate:end -->

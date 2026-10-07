@@ -344,4 +344,13 @@ The unmodified body scores 108 bytes, 10 raw and 10 masked words, size delta 0, 
 
 Reusing one local for an unsigned greater-than test, and returning that local from each early arm, scores 23 masked and 23 raw words at size delta +16. The candidate grows by 16 bytes. Not kept. The 10-word body stays. Do not repeat this reused unsigned compare. The three separate locals stay closed.
 
+#### 2026-10-07, lane a-res1: loops and a block-split carrier are not the target shape
+
+Configured baseline unchanged: 108 bytes, 10 raw and masked words, delta 0, first +0x1C. Two fresh-shape products, not adopted:
+
+- Loops (28 cells: three-trip for, do-while, break, accumulate-or, with and without the index as the second argument): IDO unrolls none of them; best 26 at delta 0 and 24 at -4, first mismatch +0x0.
+- Call result in its own block (plain, `do { } while (0)`, a trailing `if (1) { }`, or `if (1) { }` around the call) and the normalisation assigned in the next statement (96 cells). uopt either sinks the normalisation to the join (one `sltu` in the epilogue, 20 at -8) or branches on the raw result and normalises in the taken arm (14 at -4). Neither keeps a per-arm normalised value live into the return.
+
+The target's per-arm value is a normalised call result that is both the branch operand and the return value in one block. No source form measured yet gives that without uopt rewriting the test to the raw result.
+
 <!-- plateau-handoff:func_80028FCC:end -->

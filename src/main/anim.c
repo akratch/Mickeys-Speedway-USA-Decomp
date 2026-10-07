@@ -1841,12 +1841,15 @@ void func_800517E0(void) {
                                     0xFF1FFFFF;
                                 reference->speed12 =
                                     (s16) ((frame6F << 8) / 6000);
-                                if (low == 1) {
-                                    record->flags |= 0x800000;
-                                    reference->flags |= 0x800000;
-                                } else if (low == 2) {
-                                    record->flags |= 0x400000;
-                                    reference->flags |= 0x400000;
+                                switch (low) {
+                                    case 1:
+                                        record->flags |= 0x800000;
+                                        reference->flags |= 0x800000;
+                                        break;
+                                    case 2:
+                                        record->flags |= 0x400000;
+                                        reference->flags |= 0x400000;
+                                        break;
                                 }
                             }
                         }
@@ -1923,8 +1926,6 @@ void func_800517E0(void) {
                     value2 = (f32) duration;
                     cursor = D_8007D698;
                     D_8007D6AC = D_8007D6AC - value2 * factor;
-                    break;
-                default:
                     break;
             }
         }
@@ -4013,10 +4014,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1530 differing words
- * frame: 0x1b0
+ * score: 1508/1808 words
+ * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0x48
- * summary: Banked on aligned residual at size -12: aligned 853, frame 0x1B0. Ring t6-t9 as shipped via 0x4C caller-saved webs; pieces at target counts.
+ * summary: Aligned 829 at size -4: 0x6F low test as a switch, outer default deleted (one more loop block keeps the 6000 piece).
  * PLATEAU-HANDOFF:func_800517E0:end
  */

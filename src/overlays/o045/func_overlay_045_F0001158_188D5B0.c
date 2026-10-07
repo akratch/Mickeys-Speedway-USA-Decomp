@@ -351,7 +351,7 @@ void func_overlay_045_F0001158_188D5B0(
 
 /* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
  * symbol: func_overlay_045_F0001158_188D5B0
- * score: 116 differing words
+ * score: 116/674 words
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x748

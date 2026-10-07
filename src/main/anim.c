@@ -1576,10 +1576,8 @@ void func_800517E0(void) {
                     pathIndex = cursor->command & 0xFF;
                     high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
                     low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
-                    duration = *((u16 *) ((u8 *) cursor + 6));
-                    value = (f32) duration / 16384.0f;
-                    duration = *((u16 *) ((u8 *) cursor + 8));
-                    value2 = (f32) duration / 16384.0f;
+                    value = (f32) *((u16 *) ((u8 *) cursor + 6)) / 16384.0f;
+                    value2 = (f32) *((u16 *) ((u8 *) cursor + 8)) / 16384.0f;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xA);
                     if ((path != NULL) &&
@@ -4013,10 +4011,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1482 differing words
+ * score: 1430 differing words
  * frame: 0x1b0
  * relocations: 248
- * first-mismatch: +0x48
- * summary: Aligned 1125, size +4, frame 0x1B0. Homes exact, packed split per case, scroll cursor-first; packed2 and timer splits lose the table spill.
+ * first-mismatch: +0xD0
+ * summary: Aligned 1095, size delta 0, frame 0x1B0. Homes exact, per-case packed words, 0x60 inline conversions; mask immediates still cost the state piece.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

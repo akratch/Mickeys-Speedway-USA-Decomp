@@ -78,6 +78,11 @@ extern void *func_overlay_020_F0000000_18765D8();
  * parenthesised `(columns * rows) * (2 * sizeof)` assigned it to size's
  * register first and shifted the ring by one draw for the rest of the
  * function), and u1/v1 multiply `(col + 1)`/`(row + 1)` first.
+ * 2026-10-07 (lane g-3), 68 -> 44: the TU's inherited per-file `-O2 -g3`
+ * override is removed (checklist item 11). Under -g3 as1 kept the grid
+ * argument copy ahead of the entry field loads and the epilogue's s0
+ * restore ahead of s1; without it both are as shipped. uopt's records are
+ * unchanged by the flag. Left: the copy/index+9 and row/index rankings.
  */
 #ifdef NON_MATCHING
 Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
@@ -171,10 +176,10 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
 
 /* PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:start
  * symbol: func_overlay_020_F000038C_1876964
- * score: 68 differing words
+ * score: 44 differing words
  * frame: 0x40
  * relocations: 3
- * first-mismatch: +0x4
- * summary: Size-limited uopt block cut: vi2 before vi1 gives index+1 v1; size product spelling fixes a ring draw; 103 to 68. Left: copy save, entry copy.
+ * first-mismatch: +0x54
+ * summary: Inherited -O2 -g3 override removed: entry copy and epilogue now as shipped, 68 to 44. Left: copy/index+9 ranking (22) and row/index ranking (9).
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

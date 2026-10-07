@@ -302,4 +302,28 @@ slot) but the remainder splits again and the count parameter loses a2:
 131 differing words. So the size residual is the split of web 12 with the
 post-call piece kept on a2, which no source form here has produced.
 
+#### 2026-10-07, lane a-ovl1 (resumed): the split rule for the size web
+
+- Spelling the size as two webs is closed. A 30-cell product (pre-call
+  local, `count * 20 * 2`, `(count * 20) << 1`, `count * sizeof`, `20U`,
+  against post-call `half`, `count * 20`, `count * sizeof`, `(u32)count * 20`,
+  `count * 20U`, `sizeof * count`) scores 36 in every valid cell: uopt
+  merges them all into one web whatever the signedness. The listing agrees:
+  the post-call value is reloaded from the 0x38 home, not recomputed.
+- `do { } while (0)` around the size definition, the allocation, either
+  buffer store or the material call (16 cells): 36 or 40, and the +0x3C
+  row never moves.
+- The decision rule, measured with the records (identity-gated): web 12 is
+  split when totalsave <= bestcost. The tree has totalsave 4 (definition,
+  the shift, two arm uses) against cost 3 (a2 across both calls), so it is
+  coloured. A diagnostic that drops one arm use (semantically wrong, not
+  kept) gives totalsave 3 = cost 3 and the record reads `decision=split`.
+  But the pre-call piece is then coloured v0 (save 1, cost 0), not left in
+  the ring as shipped.
+
+So the target needs both the split and an uncoloured pre-call piece. The
+next step is the post-split pre-call piece's record: why the target leaves
+it uncoloured with v0 free, or whether its web is never formed. It is not a
+source-spelling question.
+
 <!-- plateau-handoff:overlay17CreateChain:end -->

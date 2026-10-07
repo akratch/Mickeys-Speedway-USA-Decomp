@@ -206,4 +206,25 @@ Measured, none kept:
   (112). `&base[index * 64]`, u32 arithmetic, index-first operand order
   and a store-then-reload of the geometry slot: 112 to 168.
 
+#### 2026-10-07, lane a-ovl1 (resumed): zero-word draw constructs are all removed by uopt
+
+In the shipped order (refs, geometry, keys), a 22-cell product placed one
+statement between the refs store and the geometry statement: `(void)` of a
+field load, a dead store to an s16 local, `j++`, `left = count`, an unused
+compare, `reference = fixedRefs[count]`, a dead store to an address-taken
+local, `vector = vector`, `i = i`, a pointer copy. Every one compiles to the
+same object as the order without it (-4, the deleted address); `j++` is
++36. None reaches ugen, so none draws a register.
+
+Read the free-list arithmetic again: the base order's geometry draws are
+t5 t6 t7 t8 t9 t2 t4 t3. The shipped registers equal the same list with the
+store address taken FIRST (t5) and the value after (t6 .. t3), with no extra
+draw. So the open question can also be stated as "what makes ugen evaluate
+this stack store's address before its value". A mini TU confirms ugen puts
+a stack-array element's `sp + index` address after the value for `a[i]`,
+`*(a + i)`, a byte-offset cast, a 2-D array and a struct member array. The
+only address-first case was a uopt address CSE shared by two stores, and
+that lands in a coloured register, not the ring. The s16 index local (j)
+gives the shipped instruction sequence at delta 0 but spends no draw (57).
+
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

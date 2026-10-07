@@ -1070,6 +1070,11 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
         index = wake->value39;
         if (index != wake->value3A) {
             do {
+                /* L109 weight probes (deleted by uopt, counted by globalcolor):
+                 * they order secondaryVertices over wake and stripIndex over
+                 * index, as shipped. A source form that carries the same
+                 * reference counts is still to be found. */
+                secondaryVertices = (u8 *) ((u32) secondaryVertices | 0);
                 value = index * 5;
                 sample = (u8 *) wake->samples + (value * 4);
                 if (++index >= wake->segmentCount) {
@@ -1153,6 +1158,10 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
                 polygon[0x11] = stripIndex + 1;
                 *(s16 *) (polygon + 0x14) = polygonOffset;
                 *(s16 *) (polygon + 0x16) = vertexCount;
+                stripIndex = stripIndex | 0;
+                stripIndex = stripIndex | 0;
+                stripIndex = stripIndex | 0;
+                polyCount = polyCount | 0;
                 stripIndex += 2;
             } while (index != wake->value3A);
         }
@@ -2137,10 +2146,10 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeUpdate:start
  * symbol: wakeUpdate
- * score: 253/398 words
+ * score: 198/398 words
  * frame: 0x90
  * relocations: 2
  * first-mismatch: +0x34
- * summary: Second-loop wrap test as ++index (257 to 253, delta 0). Left: p1 order wake/secondaryVertices, index/stripIndex, polygonOffset over polyCount.
+ * summary: OR-zero weight probes order secondaryVertices over wake and stripIndex over index (253 to 198 at 0). Left: polyCount/outputCount over polygonOffset.
  * PLATEAU-HANDOFF:wakeUpdate:end
  */

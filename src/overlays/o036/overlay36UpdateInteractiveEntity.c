@@ -97,7 +97,15 @@ extern void overlay36ReleaseEntityReloc(Overlay36Entity *entity);
 extern void overlay36AnimateReloc(void *resource, s32 *mode, s32 count,
                                   void *angles, s32 elapsed);
 
-#ifdef NON_MATCHING
+/* Matched (lane c-ovla, 2026-10-07) from the a-ovl3 natural rewrite by:
+ * the record base taken at entry; the countdown and timer each copied
+ * after their nonzero test, the compare reading the field and the
+ * subtraction the copy (the timer's copy is the loop counter `count`, the
+ * countdown's a separate `temp` that the marker test reuses, which gives
+ * it the save to take v0 ahead of the countdown load); a `hit` local for
+ * the found object and a separately named reload of the slot for the
+ * state pointer; and found[9], an unobservable length that pays for the
+ * extra cell so the frame stays 0x80. */
 void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
                                        s32 elapsed) {
     Overlay36State *state;
@@ -106,7 +114,8 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
     s32 kind;
     f32 deltaY;
     s32 animation;
-    Overlay36Found *found[10];
+    s32 temp;
+    Overlay36Found *found[9];
     Overlay36FoundState *foundState;
     Overlay36Found *hit;
 
@@ -116,15 +125,15 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
     gOverlay36CurrentEntity = entity;
     gOverlay36CurrentState = entity->state64;
 
-    count = state->countdownB;
-    if (count != 0) {
-        if (elapsed >= count) {
+    if (state->countdownB != 0) {
+        temp = state->countdownB;
+        if (elapsed >= state->countdownB) {
             state->countdownB = 0;
             overlay36ExpireReloc();
             return;
         }
-        if (count != 0xFF) {
-            state->countdownB = count - elapsed;
+        if (temp != 0xFF) {
+            state->countdownB = temp - elapsed;
         }
     }
 
@@ -196,8 +205,9 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
         return;
     }
 
-    if (entity->marker50 != 0) {
-        entity->marker50->active4 = 1;
+    temp = (s32)entity->marker50;
+    if (temp != 0) {
+        ((Overlay36Marker *)temp)->active4 = 1;
     }
 
     if (state->countdownB != 0) {
@@ -251,16 +261,3 @@ void overlay36UpdateInteractiveEntity(Overlay36Entity *entity,
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o036/overlay36UpdateInteractiveEntity/func_overlay_036_F00001D0_1883688.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay36UpdateInteractiveEntity:start
- * symbol: overlay36UpdateInteractiveEntity
- * score: 4 differing words
- * frame: 0x80
- * relocations: 24
- * first-mismatch: +0x48
- * summary: Record base at entry, timer copy after the test, hit local plus a separately named found[0] reload; left: countdown load v1 and copy v0 swapped.
- * PLATEAU-HANDOFF:overlay36UpdateInteractiveEntity:end
- */

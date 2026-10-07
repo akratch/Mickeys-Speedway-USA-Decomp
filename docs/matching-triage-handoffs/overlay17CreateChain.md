@@ -2,7 +2,7 @@
 ### `overlay17CreateChain` plateau handoff
 
 - source: `src/overlays/o017/overlay17CreateChain.c`
-- score: 45 differing words
+- score: 36 differing words
 - frame: 0x80
 - relocations: 7
 - first mismatch: +0x3C
@@ -269,4 +269,5 @@ The kept body scores 784 bytes, 36 raw and 36 masked words, size delta 0, first 
 
 Copying count into the size and multiplying that local by 20 scores the same 36 masked and 36 raw words at size delta 0. The mismatch list is unchanged. The multiply is folded. Not kept. The 36-word body stays. Do not repeat this in-place multiply. The frame slot stays.
 
+Header regenerated from the ranking on 2026-10-07 (check_shard_metrics --write); it read score 45 differing words.
 <!-- plateau-handoff:overlay17CreateChain:end -->

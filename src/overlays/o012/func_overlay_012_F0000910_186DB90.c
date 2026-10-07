@@ -253,10 +253,10 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
 
 /* PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:start
  * symbol: func_overlay_012_F0000910_186DB90
- * score: 571 differing words
+ * score: 569 differing words
  * frame: 0x130
  * relocations: 36
- * first-mismatch: +0x0
+ * first-mismatch: +0x4
  * summary: Literal scales, float 1.0f, in-place colour masks: -20 to -4, aligned exact 117 to 130. Open: 2.0f not hoisted into f28.
  * PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:end
  */

@@ -1443,6 +1443,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay69UpdateAnchor.c.o: POSTPROCESS = \
 # symbol; restore its friendly name and discard only section alignment.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o069/overlay69DrawSortedGeometry.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
+		--redefine-sym overlay17DrawStrip=overlay69DrawFixedResourceReloc \
+		--redefine-sym camGetProjZ=overlay69MetricReloc \
+		--redefine-sym func_80022E80=overlay69PrepareTransformReloc \
+		--redefine-sym func_80022FD4=overlay69SubmitDynamicReloc \
+		--redefine-sym func_80047CD8=overlay69DrawConeReloc \
+		$@ && \
+	$(OBJCOPY) \
 		--redefine-sym func_overlay_069_F0000170_18C8BD8=overlay69DrawSortedGeometry $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x59C
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o067/overlay_067.c.o: POSTPROCESS = \
@@ -1526,6 +1533,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88UpdateAnchor.c.o: POSTPROCESS = \
 		overlay88PrepareNodeReloc=func_overlay_088_F0000000_18D3A88 $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x158
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o088/overlay88DrawSortedGeometry.c.o: POSTPROCESS = \
+	$(OBJCOPY) \
+		--redefine-sym overlay17DrawStrip=overlay88DrawFixedResourceReloc \
+		--redefine-sym camGetProjZ=overlay88MetricReloc \
+		--redefine-sym func_80022E80=overlay88PrepareTransformReloc \
+		--redefine-sym func_80022FD4=overlay88SubmitDynamicReloc \
+		--redefine-sym func_80047CD8=overlay88DrawConeReloc \
+		$@ && \
 	$(OBJCOPY) --redefine-sym \
 		func_overlay_088_F00001A4_18D3C2C=overlay88DrawSortedGeometry $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x59C

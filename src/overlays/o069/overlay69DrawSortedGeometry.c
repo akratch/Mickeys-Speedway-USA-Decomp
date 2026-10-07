@@ -2,8 +2,8 @@
 
 /*
  * Overlay 88 ships this renderer byte for byte: its TU renames this file's
- * function and callee symbols to its own and includes it, so one body serves
- * both modules.
+ * function and includes it, so one body serves both modules. Each object's
+ * metadata-only recipe supplies its own runtime-relocation symbol names.
  */
 
 #define SHARED_SET_ENV_WHITE_ZERO_ALPHA(packet)             \
@@ -116,16 +116,19 @@ typedef struct SharedDynamicSubmit {
     void *payload20;
 } SharedDynamicSubmit;
 
-extern void overlay69DrawFixedResourceReloc(SharedCommand **commands,
-                                        void *resource);
-extern f32 overlay69MetricReloc(f32 x, f32 y, f32 z);
-extern void overlay69PrepareTransformReloc(SharedTransform *transform);
-extern void overlay69SubmitDynamicReloc(
+/* Tier B: runtime call records agree with the independently linked resident
+ * definitions and overlay 17 export ownership. Preserve these canonical callee
+ * identities in the compiler input; per-object symbol renames retain each
+ * module's relocation surface without changing instructions. */
+extern void overlay17DrawStrip(SharedCommand **commands, void *resource);
+extern f32 camGetProjZ(f32 x, f32 y, f32 z);
+extern void func_80022E80(SharedTransform *transform);
+extern void func_80022FD4(
     SharedCommand **commands, void *renderArg1, void *renderArg2,
     SharedTransform *transform, void *objectResource,
     SharedDynamicSubmit *submit, s32 mode, u8 flags);
-extern void overlay69DrawConeReloc(SharedCommand **commands,
-                                      void *reference, s32 mode, u8 key);
+extern void func_80047CD8(SharedCommand **commands, void *reference,
+                          s32 mode, u8 key);
 
 /* DKR v77/v80 and JFG have no exact donor for this renderer. */
 /*
@@ -176,7 +179,7 @@ void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
 
     for (i = 0; i < 4; i++) {
         if (state->fixedResources[i] != NULL) {
-            overlay69DrawFixedResourceReloc(commands, state->fixedResources[i]);
+            overlay17DrawStrip(commands, state->fixedResources[i]);
         }
     }
     entry = object->dynamicEntries;
@@ -184,7 +187,7 @@ void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
         if (!object->gate->suppressBySelector[object->selector]) {
             for (i = 0, count = 0; (i < object->dynamicCount) && (i < 8); i++) {
                 vector = &resources->vectors[entry->vectorIndex];
-                metrics[count] = overlay69MetricReloc(vector->x, vector->y, vector->z);
+                metrics[count] = camGetProjZ(vector->x, vector->y, vector->z);
                 order[count] = count;
                 count++;
                 entry++;
@@ -207,7 +210,7 @@ void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
             transform.position.x = state->position.x;
             transform.position.y = state->position.y;
             transform.position.z = state->position.z;
-            overlay69PrepareTransformReloc(&transform);
+            func_80022E80(&transform);
 
             inverseScale = 1.0f / object->gate->scale;
             submit.mode6 = 3;
@@ -224,7 +227,7 @@ void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
                 submit.vector.z = vector->z;
                 submit.oneC = 1.0f;
                 submit.payload20 = entry->payload;
-                overlay69SubmitDynamicReloc(commands, renderArg1, renderArg2,
+                func_80022FD4(commands, renderArg1, renderArg2,
                                             &transform, object->submitResource50,
                                             &submit, 0xE, object->submitFlags39);
             }
@@ -242,7 +245,7 @@ void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
             ((reference = state->fixedRefs[i]) != NULL)) {
             vector = &resources->vectors[state->fixedVectorIndex[i]];
             order[count] = count;
-            metrics[count] = overlay69MetricReloc(vector->x, vector->y, vector->z);
+            metrics[count] = camGetProjZ(vector->x, vector->y, vector->z);
             fixedRefs[count] = reference;
             fixedKeys[count] = state->fixedActive[i];
             fixedGeometry[count] =
@@ -267,7 +270,7 @@ void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
         for (i = 0; i < count; i++) {
             SHARED_LOAD_FIXED_GEOMETRY((*commands)++,
                 (void *)((u32)fixedGeometry[order[i]] + 0x80000000U));
-            overlay69DrawConeReloc(commands, fixedRefs[order[i]], 6,
+            func_80047CD8(commands, fixedRefs[order[i]], 6,
                                       (u8)fixedKeys[order[i]]);
         }
 

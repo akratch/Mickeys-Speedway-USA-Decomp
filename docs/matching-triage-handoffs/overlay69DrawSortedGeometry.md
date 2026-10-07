@@ -119,4 +119,31 @@ The unmodified body scores 1436 bytes, 57 raw and 57 masked words, size delta 0,
 
 Storing the key and then truncating that stored half to a byte scores 156 masked and 156 raw words at size delta +12. The candidate grows by 12 bytes. Not kept. The 57-word body stays. Do not repeat this truncation. The subscript mask stays closed.
 
+#### 2026-10-07: canonical callee identities and private byte-mask controls
+
+The retained source remains 57 masked words at the original extent and frame.
+The five opaque callee declarations now name Mickey's actual strip renderer,
+projection-depth helper, transform preparation, sprite submission, and cone
+renderer. The independent linked definitions agree with the runtime call
+records; the strip call belongs to overlay 17's export. Per-object symbol-only
+renames retain separate overlay 69 and 88 relocation names. Renaming these
+references leaves every owned instruction byte and all six relocation slots
+unchanged. Overlay 88 still compiles its own wrapper and needs separate proof.
+
+A private fixed-key byte mask reduced the residual to 48 words at unchanged
+size and frame. Signed versus unsigned mask constants, a destination-width
+cast, and unsigned address-addition spelling retained 48. A source-width byte
+cast gave 49 with a different temporary sequence; combining that cast with
+retail store order again lost one instruction and gave 115. Earlier guard-mask
+controls gave 65 or 66, and signed geometry-byte masking grew by eight bytes.
+These nonexact inert diagnostics remain private; none replaces the retained
+source or earns credit. Manual controls stopped without further improvement.
+
+Search preparation exposed unresolved opaque callee identities, a stale
+canonical-object snapshot after editing, and missing independent proof for a
+friendly cross-overlay callee name. Build the canonical fallback before taking
+search receipts. The friendly-name proof and included-wrapper proof must pass
+before a bounded search may consume the retained private 48-word candidate.
+Do not repeat the closed store-order or index-copy controls without new evidence.
+
 <!-- plateau-handoff:overlay69DrawSortedGeometry:end -->

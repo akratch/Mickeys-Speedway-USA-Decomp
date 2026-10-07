@@ -1,13 +1,9 @@
 /*
  * Overlay 88 and overlay 69 ship the same renderer body.  Keep the public
- * symbols overlay-local while sharing the reviewed implementation spelling.
+ * function symbols overlay-local while sharing the implementation spelling.
+ * The object recipes supply distinct runtime-relocation names for the callees.
  */
 #define overlay69DrawSortedGeometry overlay88DrawSortedGeometry
-#define overlay69DrawFixedResourceReloc overlay88DrawFixedResourceReloc
-#define overlay69MetricReloc overlay88MetricReloc
-#define overlay69PrepareTransformReloc overlay88PrepareTransformReloc
-#define overlay69SubmitDynamicReloc overlay88SubmitDynamicReloc
-#define overlay69DrawConeReloc overlay88DrawConeReloc
 
 /* Plateau: see the shared body's notes in overlay 69. */
 #ifdef NON_MATCHING

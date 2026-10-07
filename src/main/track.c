@@ -5324,10 +5324,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80010654:start
  * symbol: func_80010654
- * score: 162 differing words
+ * score: 160 differing words
  * frame: 0x70
  * relocations: 8
- * first-mismatch: +0x0
+ * first-mismatch: +0x4
  * summary: Hoisting the hit point before the edge-loop line closes the size pair (+4 to 0) at 162 words. Stall: frame stays 0x70 versus 0x98 because of the dead edge-copy and hoisted D_80081774.
  * PLATEAU-HANDOFF:func_80010654:end
  */

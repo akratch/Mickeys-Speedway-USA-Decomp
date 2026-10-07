@@ -98,8 +98,9 @@ static s16 D_370[2] = { 0 };
 static s16 D_374[12] = { 0 };
 static void *D_38C[10] = { 0 };
 static u8 sO47Data3B4[0x14] = { 0 };
-static s8 ov47Data_3C8[1][4] = { 0 };
-static s8 ov47Data_3CC[4][4] = { 0 };
+/* One table: the ready and unready reads index the same rows (3CC is
+ * 3C8 plus one row), measured 2026-10-07. */
+static s8 ov47Data_3C8[5][4] = { 0 };
 static u32 ov47Data_3DC[5] = { 0 };
 static f32 ov47Data_3F0[5] = { 0 };
 static f32 D_404[15] = { 0 };
@@ -220,7 +221,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     f32 oldFrame;
     f32 frame;
     Overlay47Player *p2;
-    Overlay47Player *p3;
+    Overlay47Player *p3; /* unreferenced; its frame cell is measured */
     f32 scale;
     f32 rate;
     f32 oldFov;
@@ -242,17 +243,19 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     start = 0;
     activeCount = 0;
     back = 0;
-    player = D_800D3058;
-    do {
-        if (player->active != 0) {
+    /* Both player-array loops outside the main loop are indexed by
+     * controller: the target's first-loop and label-loop cursors are one
+     * strength-reduced s8 cursor with their own address pairs (measured
+     * 2026-10-07). */
+    for (controller = 0; controller < 4; controller++) {
+        if (D_800D3058[controller].active != 0) {
             activeCount++;
-            if (player->ready == 0) {
+            if (D_800D3058[controller].ready == 0) {
                 allReady = 0;
                 ov47Bss_338 = 0;
             }
         }
-        player++;
-    } while (player < D_800D3058 + 4);
+    }
     slot = 0;
     if (allReady && ((activeCount == 1) || (activeCount == 4))) {
         ov47Bss_338 = 1;
@@ -377,10 +380,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             } else {
                 movement = 0.125f;
                 if (player->ready) {
-                    player->targetX = ov47Bss_280[ov47Data_3CC[ov47Bss_30A - 1][slot]].x;
-                    player->targetY = ov47Bss_280[ov47Data_3CC[ov47Bss_30A - 1][slot]].y;
-                    player->targetZ = ov47Bss_280[ov47Data_3CC[ov47Bss_30A - 1][slot]].z;
-                    player->targetRotation = ov47Bss_280[ov47Data_3CC[ov47Bss_30A - 1][slot]].rotation;
+                    player->targetX = ov47Bss_280[ov47Data_3C8[ov47Bss_30A][slot]].x;
+                    player->targetY = ov47Bss_280[ov47Data_3C8[ov47Bss_30A][slot]].y;
+                    player->targetZ = ov47Bss_280[ov47Data_3C8[ov47Bss_30A][slot]].z;
+                    player->targetRotation = ov47Bss_280[ov47Data_3C8[ov47Bss_30A][slot]].rotation;
                     slot++;
                 } else {
                     player->targetX = ov47Bss_210[ov47Data_3C8[ov47Bss_30A][slot]].x;
@@ -640,13 +643,12 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     fontColour(255, 255, 255, 255, 255);
     func_8004B0A4(2);
     labelCount = 0;
-    p3 = D_800D3058;
-    for (controller = 0; controller != 4; controller++, p3++) {
-        if (p3->active && p3->actor != NULL) {
+    for (controller = 0; controller != 4; controller++) {
+        if (D_800D3058[controller].active && D_800D3058[controller].actor != NULL) {
             if (ov47Bss_30A == 4) {
-                textX = ov47Data_530[controller] + p3->screenX;
+                textX = ov47Data_530[controller] + D_800D3058[controller].screenX;
             } else {
-                textX = p3->screenX - 20.0f;
+                textX = D_800D3058[controller].screenX - 20.0f;
             }
             barY = 116;
             for (stat = 0; stat != 4; stat++) {
@@ -663,7 +665,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                 O47_COMMAND(0xEF002C0F, 0x00504340);
                 O47_COMMAND(0xB6000000, 0x00010001);
                 O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
-                count = ov47Data_4C8[ov47Data_524[p3->selector]][stat];
+                count = ov47Data_4C8[ov47Data_524[D_800D3058[controller].selector]][stat];
                 O47_COMMAND(0xFA000000, ov47Data_3DC[controller]);
                 while (count--) {
                     O47_RECTANGLE(barX, barY);
@@ -671,7 +673,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                 }
                 O47_COMMAND(0xE7000000, 0);
                 O47_COMMAND(0xFA000000, (ov47Data_3DC[controller] & ~0xFF) | 0x40);
-                count = 5 - ov47Data_4C8[ov47Data_524[p3->selector]][stat];
+                count = 5 - ov47Data_4C8[ov47Data_524[D_800D3058[controller].selector]][stat];
                 while (count--) {
                     O47_RECTANGLE(barX, barY);
                     barX += 8;
@@ -714,10 +716,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 1377 differing words
+ * score: 1984 differing words
  * frame: 0x280
  * relocations: 320
  * first-mismatch: +0x4
- * summary: The +4 is one colour: the &ov47Bss_338 entry piece ties a0/a2/a3 and takes a0 (p1:w966=c5 removes it). Indexed first+label loops give the s8 cursor. 1377/+4.
+ * summary: Banked at delta 0 though positional rose 1377 to 1984: masked aligned rows 994 to 963 (indexed loops, one 3C8 table). Open: +0x4, 3C8 piece, i.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

@@ -996,8 +996,8 @@
       "source_commit": "9d3b4722a37957437633b4b7adff25203819bec5"
     },
     "func_overlay_012_F0000910_186DB90": {
-      "ledger_commit": "85e453d21a1f6ef0609b312b73cdc9202d482880",
-      "reason": "Despite the frame-pad keep, one pass assigns the effect cursor before the three argument loads so the incoming pointer is not the first use. The six frame slots stay.",
+      "ledger_commit": "599c30a03fce16f3f83260acf998ce64fcf78037",
+      "reason": "Transfer the measured o083 SDK unsigned color-packing mechanism to signed component and intensity shifts. Preserve values, memory accesses, locals and packet scopes; prior local removal and mask-placement controls remain closed.",
       "source_commit": "85e453d21a1f6ef0609b312b73cdc9202d482880"
     },
     "func_overlay_014_F0001540_1870E18": {

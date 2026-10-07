@@ -5390,6 +5390,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: 0x198
  * relocations: 11
  * first-mismatch: +0x240
- * summary: Render switch on (type & 0x7F) (136 to 32 at delta 0); left: sort j web (a0) and render j/type t0-t1 swap
+ * summary: Render switch on (type & 0x7F) (136 to 32 at delta 0); split render slot is exact in the sort but -4 until arg0's piece refuses the sort head
  * PLATEAU-HANDOFF:func_80009414:end
  */

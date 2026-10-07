@@ -1154,9 +1154,10 @@ void func_800517E0(void) {
         hundred = 100.0f;
         scale = 60.0f;
         factor = 0.01f;
-        while ((currentCommand = cursor->command) != 0x7F00 &&
+        while (cursor->command != 0x7F00 &&
                (commandTime = (f32) (commandDuration = cursor->duration) /
                               hundred) < D_8007D6AC && D_8007D6A4 == 1) {
+            currentCommand = cursor->command;
             opcode = (currentCommand >> 8) & 0xFF;
             pathIndex = currentCommand & 0xFF;
             delta = D_8007D6AC - commandTime;
@@ -3967,10 +3968,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1782 differing words
+ * score: 1780 differing words
  * frame: 0x160
- * relocations: 245
+ * relocations: 127
  * first-mismatch: +0x0
- * summary: 288 aligned exact words; 83 words short. Ordinary halfword carrier retained; addressed-home and divisor-force experiments stay diagnostic.
+ * summary: Field loop test plus first-statement command copy gives the 6000 divisor web (62 sites); size -220. Next: keep the state-address piece too.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

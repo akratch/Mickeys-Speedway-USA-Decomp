@@ -2699,60 +2699,79 @@ next_plane:
     } while (planeCount--);
     return TRUE;
 }
-/* Workbench verdict: structure-mismatch, 158 raw/masked differing words;
- * first mismatch +0x0. Corrected Mickey jump-table dispatch remains nonexact. */
-/* Candidate: 156/160 instructions with a -0x60 frame versus target -0x38;
- * target/candidate static relocations are 20/12. */
-/* Shape status: both jump tables and all seven no-op kinds are reconstructed;
- * the saved-FP declaration web remains unresolved. */
 /* PROVENANCE: JFG's assembly-only object-alpha routine supplies the role and switch family;
  * Mickey's jump tables, fields, globals, and arithmetic are authoritative here. */
 #ifdef NON_MATCHING
-s32 func_800103D4(void *object) {
-    u8 *gameMode;
-    void *state;
-    void *bounds;
-    TrackPlane *plane;
-    f32 objectX;
-    f32 objectY;
-    f32 objectZ;
-    f32 radius;
-    f32 fadeDistance;
-    f32 fadeRange;
-    f32 fadeScale;
-    f32 fadeRemaining;
-    s16 kind;
+typedef struct TrackAlphaBounds {
+    u8 pad00[0x16];
     s16 distanceLimit;
+} TrackAlphaBounds;
+
+typedef struct TrackAlphaObject {
+    u8 pad00[0xC];
+    f32 x;
+    f32 y;
+    f32 z;
+    u8 pad18[0x34 - 0x18];
+    f32 radius;
+    u8 pad38;
+    u8 alpha;
+    u8 pad3A[0x40 - 0x3A];
+    TrackAlphaBounds *bounds;
+    s16 kind;
+    u8 pad46[0x64 - 0x46];
+    u8 *state;
+} TrackAlphaObject;
+
+/*
+ * Natural rewrite, 2026-10-07: a typed object, the per-kind alpha switch with
+ * the state pointer read once only in case 1, s32 truncating casts, the fade
+ * scale as the literal 0.3f, and one counted loop over D_800C9578[i] with
+ * named plane components; one s32 holds the kind and then the distance limit,
+ * which puts the limit in v1. 12 masked words at delta 0, 8 of them the
+ * target's relocated branches; the real residual is the fade remainder taking
+ * f12 where the target has f16 (an accepted force onto colour 28 closes it).
+ */
+#define object ((TrackAlphaObject *) objectArg)
+s32 func_800103D4(void *objectArg) {
+    s32 kind;
     s32 visible;
+    u8 *gameMode;
+    u8 *state;
+    f32 distance;
+    f32 range;
+    f32 remaining;
+    f32 scale;
+    f32 planeX;
+    f32 planeY;
+    f32 planeZ;
+    f32 planeD;
+    f32 dist;
+    s32 i;
 
     visible = 1;
     gameMode = func_80028F54();
-    kind = *(s16 *) ((u8 *) object + 0x44);
+    kind = object->kind;
     switch (kind) {
     case 65:
-        state = *(void **) ((u8 *) object + 0x64);
-        *(u8 *) ((u8 *) object + 0x39) = (s32) *(f32 *) ((u8 *) state + 0x18);
+        object->alpha = (s32) *(f32 *) (object->state + 0x18);
         break;
     case 63:
-        state = *(void **) ((u8 *) object + 0x64);
-        *(u8 *) ((u8 *) object + 0x39) = *(u8 *) ((u8 *) state + 0xF);
+        object->alpha = object->state[0xF];
         break;
     case 1:
-        state = *(void **) ((u8 *) object + 0x64);
+        state = object->state;
         if (*gameMode == 5) {
-            *(u8 *) ((u8 *) object + 0x39) = *(u8 *) ((u8 *) state + 0x190);
-        } else if (((*(u16 *) ((u8 *) state + 0x1A8) & 1) == 0) ||
-                   (*(u8 *) ((u8 *) state + 0x170) == 0)) {
-            *(u8 *) ((u8 *) object + 0x39) = 0xFF;
+            object->alpha = state[0x190];
+        } else if (!(*(u16 *) (state + 0x1A8) & 1) || (state[0x170] == 0)) {
+            object->alpha = 0xFF;
         }
         break;
     case 80:
-        state = *(void **) ((u8 *) object + 0x64);
-        *(u8 *) ((u8 *) object + 0x39) = *(u8 *) ((u8 *) state + 2);
+        object->alpha = object->state[2];
         break;
     case 88:
-        state = *(void **) ((u8 *) object + 0x64);
-        *(u8 *) ((u8 *) object + 0x39) = *(u32 *) ((u8 *) state + 4);
+        object->alpha = *(u32 *) (object->state + 4);
         break;
     case 22:
     case 23:
@@ -2762,103 +2781,43 @@ s32 func_800103D4(void *object) {
     case 29:
     case 79:
         break;
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 11:
-    case 12:
-    case 13:
-    case 14:
-    case 15:
-    case 16:
-    case 17:
-    case 18:
-    case 19:
-    case 20:
-    case 21:
-    case 27:
-    case 28:
-    case 64:
-    case 66:
-    case 67:
-    case 68:
-    case 69:
-    case 70:
-    case 71:
-    case 72:
-    case 73:
-    case 74:
-    case 75:
-    case 76:
-    case 77:
-    case 78:
-    case 81:
-    case 82:
-    case 83:
-    case 84:
-    case 85:
-    case 86:
-    case 87:
     default:
-        *(u8 *) ((u8 *) object + 0x39) = 0xFF;
+        object->alpha = 0xFF;
         break;
     }
-    if (*(u8 *) ((u8 *) object + 0x39) == 0) {
+    if (object->alpha == 0) {
         return 0;
     }
-    bounds = *(void **) ((u8 *) object + 0x40);
-    distanceLimit = *(s16 *) ((u8 *) bounds + 0x16);
-    if (distanceLimit != 0) {
-        fadeDistance = camDistance(*(f32 *) ((u8 *) object + 0xC),
-                                   *(f32 *) ((u8 *) object + 0x10),
-                                   *(f32 *) ((u8 *) object + 0x14));
-        fadeRange = (f32) distanceLimit;
-        if (fadeRange < fadeDistance) {
+    kind = object->bounds->distanceLimit;
+    if (kind != 0) {
+        distance = camDistance(object->x, object->y, object->z);
+        range = kind;
+        if (range < distance) {
             visible = 0;
         } else {
-            fadeRemaining = fadeRange - fadeDistance;
-            fadeScale = fadeRange * D_80081770;
-            if (fadeRemaining < fadeScale) {
-                *(u8 *) ((u8 *) object + 0x39) =
-                    (s32) ((f32) *(u8 *) ((u8 *) object + 0x39) *
-                           (fadeRemaining / fadeScale));
+            remaining = range - distance;
+            scale = range * 0.3f;
+            if (remaining < scale) {
+                object->alpha = (s32) (object->alpha * (remaining / scale));
             }
         }
     }
-    if (visible != 0) {
-        objectX = *(f32 *) ((u8 *) object + 0xC);
-        objectY = *(f32 *) ((u8 *) object + 0x10);
-        objectZ = *(f32 *) ((u8 *) object + 0x14);
-        radius = *(f32 *) ((u8 *) object + 0x34);
-        plane = D_800C9578;
-        do {
-            f32 planeX;
-            f32 planeY;
-            f32 planeZ;
-            f32 planeDistance;
-
-            planeX = plane->x;
-            planeY = plane->y;
-            planeZ = plane->z;
-            planeDistance = plane->distance;
-            if ((((objectX * planeX) + (objectY * planeY)) +
-                 (objectZ * planeZ) + planeDistance + radius) < 0.0f) {
-                visible = 0;
-            }
-            plane++;
-            if (visible == 0) {
-                break;
-            }
-        } while ((u8 *) plane < (u8 *) &D_800C95A8);
+    i = 0;
+    while (i < 3 && visible) {
+        planeX = D_800C9578[i].x;
+        planeY = D_800C9578[i].y;
+        planeZ = D_800C9578[i].z;
+        planeD = D_800C9578[i].distance;
+        dist = (object->x * planeX) + (planeY * object->y) + (planeZ * object->z) + planeD +
+               object->radius;
+        if (dist < 0.0f) {
+            visible = 0;
+        }
+        i++;
     }
     return visible;
 }
+#undef object
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_800103D4.s")
 #endif
@@ -5313,11 +5272,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_800103D4:start
  * symbol: func_800103D4
- * score: 158/160 words
- * frame: 0x50
+ * score: 12 differing words
+ * frame: 0x38
  * relocations: 12
- * first-mismatch: +0x0
- * summary: Scoped plane FP lifetimes lower the candidate frame from 0x60 to 0x50; accepted web 163 force to c32 scores 95 but source route remains unproved.
+ * first-mismatch: +0x44
+ * summary: Natural rewrite, 158 at -16 to 12 at 0; 8 rows are relocated target branches. Left: fade remainder web takes f12, target f16 (force to c28 scores 8).
  * PLATEAU-HANDOFF:func_800103D4:end
  */
 

@@ -66,13 +66,16 @@ void overlay56ReleaseResource(void) {
  * parameters u8 (o052's matched prototype; the ghost's one andi), a ghost-loop racer local
  * of its own (ghostAlpha then takes s1 behind racer), the packet cursor at function scope
  * and the declaration order that lands every home on the target's frame ladder.
- * Lane e-big: the matrixTranslate y sum is assigned to the ghost loop's x (one merged web,
- * offered no argument colour, decided ahead of mapX), which leaves mapY no caller colour so
- * it takes f20 as shipped; the f24 save then needs the unused colour local gone and two
- * cells below ghostAlpha (frame ladder); the fade shift is a conditional expression inside
- * the add (the mode byte then takes a0 and the shift v1, as shipped).
- * Open: sum/mapX colours swapped (f16/f18), cos/sin f22/f24 swapped, scale/x-product
- * f0/f2 swapped, the D_84 pointer temp home (0x74 against 0x7C). */
+ * Lane e-big: x and z are the loop's own locals in both loops and mapY is rebased in place,
+ * so uopt carries the loop-head mapY value in a CSE temp across the calls (f20, as shipped)
+ * and the rebased symbol takes f18; mapY's products are written x-term first so rotX's are
+ * emitted first; x and z declared above the pads and ghostAlpha last fit the f24 frame;
+ * the fade shift is a conditional expression inside the add (byte a0, shift v1).
+ * The first angle call's result goes through a block-scoped temporary so cos outranks
+ * sin (f22/f24 as shipped).
+ * A pad where the shift local was (between slot and mapX) lands count on 0x1D4.
+ * Open: mapY's products emitted before rotX's,
+ * the int ring phase from the prim-colour packet on. */
 #ifdef NON_MATCHING
 typedef struct O56Gfx {
     u32 w0;
@@ -189,12 +192,12 @@ extern u8 D_80000030[];
 
 void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCursor,
                                       s32 updateRate) {
+    f32 x;
+    f32 z;
     s32 pad0;
     s32 pad1;
     s32 pad2;
     s32 pad3;
-    s32 pad4;
-    s32 pad5;
     O56Racer *ghostRacer;
     O56Gfx *_g;
     s32 count;
@@ -221,15 +224,13 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     O56Mtx *mtx;
     u32 width;
     u32 height;
-    f32 x;
-    f32 z;
     f32 mapY;
     f32 rotX;
     s32 blue;
     s32 posX;
-    s32 ghostAlpha;
     s32 red;
     s32 green;
+    s32 ghostAlpha;
 
     gameState = func_80028F54();
     if (D_800C3A3C == 0) {
@@ -274,8 +275,11 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     }
     viGetCurrentSize(&screenWidth, &screenHeight);
     dot = D_800CD788[22];
-    cosA = func_8002A8BC(level->angle);
-    sinA = func_8002A8C0(level->angle);
+    {
+        f32 c = func_8002A8BC(level->angle);
+        sinA = func_8002A8C0(level->angle);
+        cosA = c;
+    }
     alpha = gOverlay56ResourceState * 2;
     alpha = (alpha > 255) ? 255 : alpha;
     marker.unk4 = 0;
@@ -284,8 +288,10 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
     while (i--) {
         obj = racers[i];
         racer = obj->racer;
-        rotX = obj->x * level->scale * cosA - obj->z * level->scale * sinA;
-        mapY = obj->z * level->scale * cosA + obj->x * level->scale * sinA;
+        x = obj->x * level->scale;
+        z = obj->z * level->scale;
+        rotX = x * cosA - z * sinA;
+        mapY = x * sinA + z * cosA;
         mapX = rotX;
         if (D_800D31A8 != 0) {
             mapX = -rotX;
@@ -298,9 +304,9 @@ void func_overlay_056_F00001A0_18A2F18(O56Gfx **displayList, O56Mtx **matrixCurs
             } else {
                 mapX += (f32)(level->offsetX + D_78[slot]);
             }
-            x = mapY + (f32)(level->offsetY + D_84[slot]);
+            mapY += (f32)(level->offsetY + D_84[slot]);
             matrixTranslate(mapX - (f32)(screenWidth >> 1),
-                            (f32)(screenHeight >> 1) - x,
+                            (f32)(screenHeight >> 1) - mapY,
                             0.0f, &mtxA);
             if (D_800D31A8 != 0) {
                 func_8002A604(-(obj->angle - level->angle), &mtxA);
@@ -375,10 +381,10 @@ void overlay56UnpackColor(s32 index, u32 *red, s32 *green, s32 *blue) {
 
 /* PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:start
  * symbol: func_overlay_056_F00001A0_18A2F18
- * score: 152 differing words
+ * score: 127 differing words
  * frame: 0x1F8
  * relocations: 75
  * first-mismatch: +0x160
- * summary: y sum merged into ghost x (mapY f20), frame ladder, ternary fade shift: 542 to 152 at 0; open: sum/mapX, cos/sin, scale/x colours.
+ * summary: x/z locals, in-place mapY rebase, frame refit, block temp for cos: 542 to 127 at 0; open: product emission order, int ring.
  * PLATEAU-HANDOFF:func_overlay_056_F00001A0_18A2F18:end
  */

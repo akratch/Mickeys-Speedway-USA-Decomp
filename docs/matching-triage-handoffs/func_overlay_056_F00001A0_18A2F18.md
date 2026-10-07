@@ -2,11 +2,17 @@
 ### `func_overlay_056_F00001A0_18A2F18` plateau handoff
 
 - source: `src/overlays/o056/overlay_056.c`
-- score: 152 differing words
+- score: 127 differing words
 - frame: 0x1F8
 - relocations: 75
 - first mismatch: +0x160
-- summary: y sum merged into ghost x (mapY f20), frame ladder, ternary fade shift: 542 to 152 at 0; open: sum/mapX, cos/sin, scale/x colours.
+- summary: x/z locals, in-place mapY rebase, frame refit, block temp for cos: 542 to 127 at 0; open: product emission order, int ring.
+
+Summary before this remeasure: x/z locals, in-place mapY rebase, frame refit, block temp for cos: 542 to 129 at 0; open: product emission order, int ring.
+
+Summary before this remeasure: x/z locals, in-place mapY rebase (CSE temp in f20), x-term-first mapY, frame refit: 542 to 131 at 0; open: cos/sin, int ring phase.
+
+Summary before this remeasure: y sum merged into ghost x (mapY f20), frame ladder, ternary fade shift: 542 to 152 at 0; open: sum/mapX, cos/sin, scale/x colours.
 
 Summary before this remeasure: mapY in f20 via the y sum merged into the ghost x web, frame ladder for the f24 save: 542 to 163 at 0; open: sum/mapX, cos/sin, scale/x colour pairs.
 
@@ -414,5 +420,66 @@ re-fit the frame with frame_census. If that order is unreachable, the 152
 body's open pairs are the fallback: sum web save below 20 crossing a call
 elsewhere, and cos ahead of sin (cos spans one more block, 41/13 against
 41/12).
+
+#### 2026-10-07 (lane e-big, resumed): x/z-locals shape at size 0, 152 to 131
+
+On the x/z-locals shape (373 at +4), the order of the two terms inside
+mapY's own expression decides which products uopt emits first: mapY =
+x * sinA + z * cosA puts rotX's products first and removes the extra
+mul.s hazard nop (182 at 0). Splitting either statement into two, moving
+x's or z's definition, and rotX after mapY all stay at 373 at +4 (8 forms).
+Frame refit: homes were 8 high above ghostAlpha and the D_84 temporary
+4 low; dropping the unused cell that replaced shift, ghostAlpha last in
+declaration order, and two of the four float locals (x and z) declared
+above the pads put every home on the target's ladder except one top cell
+(0x1D0 against 0x1D4): 131 at 0, aligned 453 / 120 / 2 / 5. 18 placements
+of the moved pair by 3 top-pad counts measured; any pair containing x at
+one top pad reaches 131.
+
+Open: cos and sin still f24 and f22 (cos spans one more block), which also
+puts the mapY add ahead of the rotX subtract; the int ring is a closed
+seven-cycle from the prim-colour packet (+0x764) to the end.
+
+#### 2026-10-07 (lane e-big, resumed): cos ahead of sin, 131 to 129
+
+Records: cos (first angle call) 41/13 against sin 41/12, so sin took f22.
+Routing the first result through a block-scoped temporary (f32 c =
+func_8002A8BC(...); sinA = func_8002A8C0(...); cosA = c;) gives the temp
+save 5.46 and cos and sin take f22 and f24 as shipped: 129 at 0, aligned
+455 / 114 / 4 / 7. An empty if (cosA) {} after the calls does the same at
+127 (457 / 116 / 2 / 5) but is a diagnostic construct and not adopted.
+Measured negatives: the temp at function scope in three declaration slots
+(131 and 178), rotX or mapX as the carrier (361 at +4). With the colours
+right, mapY's products are emitted before rotX's in every term order: 16
+rotX by mapY spellings by 2 statement orders on both bases, flat at 127
+(empty-if base) and 129; z * cosA + x * sinA is 340 at +4.
+
+Cycle-21 line: the loop-head emission order (mapY's CSE temp numbered
+ahead of rotX) is the remaining float residual; then the one high home
+(0x1D0) and the int ring seven-cycle from the prim-colour packet.
+
+#### 2026-10-07 (lane e-big, second resume): count home, 129 to 127
+
+- Dead reads for first-occurrence numbering, assigned to existing locals
+  (mapX or mapY or rotX = x * cosA, or the whole rotX expression, before or
+  after the rotX statement; 18 cells over both mapY term orders): every
+  cell byte-identical to its base (129, or 341 at +4 with z * cosA first).
+  Emission order of the loop-head products follows only the term order
+  inside mapY's expression, not first occurrence. Closed for this shape.
+- The high home was count (0x1D0 against 0x1D4): one s32 pad between slot
+  and mapX (where the shift local stood) with one top pad fewer, 127 at 0,
+  aligned 457 / 114 / 2 / 7. Seven positions by two top-pad counts
+  measured; any position between count and mapX works.
+- Integer ring from +0x764: the target draws the 0xFA000000 prim-colour
+  constant before mtx++'s add; we draw it after the alpha byte load. Flat
+  (16 cells, 127): test operand order, >= 1, an unsigned != 0 test, prim
+  operand order, the packet written long-hand in either store order.
+  mtx++ in the matrix macro, as += 1, as &mtx[1], or folded onto the macro
+  line: 127. mtx++ after the if-block: 123 masked but structurally wrong
+  (the mtx store moves into the branch), not adopted.
+
+Cycle-21 line: the prim-colour constant's draw ahead of the mtx++ add
+(draw_census lines 319 to 322 against the target's order lw mtx, lw dl,
+lui 0xFA00, addiu mtx+64), then the loop-head product order.
 
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

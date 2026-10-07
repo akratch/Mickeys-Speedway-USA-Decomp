@@ -2,11 +2,13 @@
 ### `wakeUpdate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 132/398 words
+- score: 170/398 words
 - frame: 0x90
 - relocations: 2
-- first mismatch: +0x34
-- summary: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: constant 20 in a0 (target a2), loop t3/t5, stripIndex probes
+- first mismatch: +0xC0
+- summary: Aligned 125 to 104 (outputCount per vertex, height in value); 170 positional is one as1-hoisted zero init. Left: constant 20 in a0, stripIndex probes
+
+Summary before this remeasure: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: constant 20 in a0 (target a2), loop t3/t5, stripIndex probes
 
 Summary before this remeasure: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: loop t3/t5, outputCount/polygonOffset, stripIndex probes
 
@@ -330,4 +332,35 @@ spelling that makes the first-scan multiply a different constant web
 (L131: the spellings must differ; casts on the literal are folded by
 cfe), then adopt the outputCount and vertexCount edits above with it.
 Then the stripIndex probes.
+
+#### 2026-10-07, lane i-6 (resumed): stride spellings flat, aligned edits adopted
+
+Measured by tools/bank.py: masked 170 (raw 170), size delta +0, candidate 398 words vs target 398. Aligned: byte-exact 298, register naming 81, immediate only 2, really different 21.
+
+Adopted on the coordinator's instruction, ranked aligned: outputCount
+advanced once per vertex and the loop's strip height carried by value.
+132 to 170 positional at delta 0, aligned byte-exact 277 to 298, naming
+101 to 81, really different 22 to 21 (residual 125 to 104). The whole
+positional rise is one shadow: a2 is free through the pre-loop region, so
+as1 hoists outputOffset's zero init to +0xE0 (target +0x284).
+
+Measured flat on this shape (one 20-cell product, ranked aligned): the
+first scan's stride as 0x14U, (5 * 4), sizeof of a 20-byte struct, or a
+typed struct subscript is byte-identical every time (uopt makes one
+constant 20 web); at the mark and new-sample sites the struct subscript,
+sizeof or 0x14U forms add 4 bytes (the unsigned multiply at the
+new-sample site). A byte cursor stepping 20 is ruled out by the target,
+which multiplies inside the first scan (multu with the constant in a0).
+Forcing web 326 to split (p1:w326=s, accepted) sends it to memory, 349 at
+-4; forcing it whole to a2 (c5) is 108. Probes: removing the three
+stripIndex probes costs 19 (189 against 170); stripIndex advanced as two
+single increments reads 121/11 against index 123/8 on proc 13, so it
+still needs about five more loop references; the strip test as > 0 is
+flat.
+
+Cycle-21 line: the constant 20's colour (web 326, a0 at decision 27; the
+target has a0 in the first scan and a2 at the mark and new-sample sites,
+which needs two webs, and no literal spelling makes two). Next look: what
+holds a0 across bb9..bb25 in the target (an argument-register web or a
+call), then the stripIndex references.
 <!-- plateau-handoff:wakeUpdate:end -->

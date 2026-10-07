@@ -293,7 +293,6 @@ void func_80045D34(s32 arg0) {
     oldPage = -1U;
     currentPage = 0;
     redraw = 1;
-    memoryIndex = 0;
     /* The fallback count belongs to the logging-mode branch. */
     if (D_8007A200 == 0 || D_80000310 != 0x17D9) {
         while (1) {
@@ -308,6 +307,9 @@ void func_80045D34(s32 arg0) {
     selectedRegion = 0;
     pageCount += 5;
     if (viGetVideoMode() != 0) { D_8007D02C = 1; } else { D_8007D02C = 0; }
+    /* The memory-page index is initialised beside the address editor's
+     * state, after the video-mode probe, not with the page state. */
+    memoryIndex = 0;
     address = 0x80100000;
     nibble = 1;
     index = 0;
@@ -786,10 +788,10 @@ void func_80046E00(void) {
 
 /* PLATEAU-HANDOFF:func_80045D34:start
  * symbol: func_80045D34
- * score: 254/459 words
+ * score: 217/459 words
  * frame: 0xA8
  * relocations: 91
  * first-mismatch: +0xC
- * summary: Control-flow and lifetime corrections recover 459 words and exact frame/home traffic; 298 aligned exact, with type and emission residuals remaining.
+ * summary: memoryIndex set after the video probe (254 to 217); s6-s8 cycle is one ranking: redraw 241/31 below memory index 311/31.
  * PLATEAU-HANDOFF:func_80045D34:end
  */

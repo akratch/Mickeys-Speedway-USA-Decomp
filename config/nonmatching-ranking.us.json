@@ -280,6 +280,21 @@
       "source_context_sha256": "qsn5.7vSd.BKCr.Pudo.AXqi.w4_k.rviR.tfHa.rsxP.g6ah.8p8"
     },
     {
+      "name": "func_80045D34",
+      "file": "src/main/diCpu.c",
+      "overlay": null,
+      "tu": "main",
+      "size_bytes": 1836,
+      "objdiff_match_pct": null,
+      "differing_words": 233,
+      "first_mismatch_offset": 12,
+      "relocation_masked_differing_words": 217,
+      "relocation_masked_first_mismatch_offset": 12,
+      "size_delta": 0,
+      "category": "other",
+      "source_context_sha256": "U4mV.8OQh.SToJ.DJfO.KwUR.n3DR.1Oxl.aMI1.L2Ee.Wz5e.0Pc"
+    },
+    {
       "name": "func_8001DD70",
       "file": "src/main/charControl.c",
       "overlay": null,
@@ -353,21 +368,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "vsXO.iX5l.XDMt.R9yn.k6vo.wLlX.xvwU.97sU.pGII.Ycdh.h1U"
-    },
-    {
-      "name": "func_80045D34",
-      "file": "src/main/diCpu.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 1836,
-      "objdiff_match_pct": null,
-      "differing_words": 270,
-      "first_mismatch_offset": 12,
-      "relocation_masked_differing_words": 254,
-      "relocation_masked_first_mismatch_offset": 12,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "nBH-.MJyO.dGV4.1f50.p3o1.UZZJ.F49n.CXTh.wLEw.0Jyq.Knw"
     },
     {
       "name": "func_overlay_001_F0001D78_184E158",

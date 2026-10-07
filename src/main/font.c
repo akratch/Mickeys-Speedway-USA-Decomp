@@ -153,7 +153,7 @@ void func_8004B13C(Gfx **displayList, s32 windowId, s32 xpos, s32 ypos,
     }
 }
 
-/* Workbench plateau: structure-mismatch, 57 differing words at exact size,
+/* Workbench plateau: structure-mismatch, 51 differing words at exact size,
  * exact 0x80 frame and 42 candidate relocation records. The retained source
  * reconstruction closes the prior 452-word residual; allocation and schedule
  * differences remain, so the NON_MATCHING fallback stays authoritative. */
@@ -335,13 +335,13 @@ void func_8004B1DC(Gfx **displayList, DialogueBoxBackground *window,
 
                         fontCommands = font->displayList;
                         dList->words.w0 = fontCommands->words.w0;
-                        dList->words.w1 = D_800D6638 + glyph->textureOffset;
+                        dList->words.w1 = (u32)((u8 *)D_800D6638 + glyph->textureOffset);
                         dList++;
                         fontCommands++;
                         if (font->format == 4) {
                             gDma1p(dList++, 7, (u32) fontCommands + 0x80000000, 48, 6);
                             dList->words.w0 = fontCommands[6].words.w0;
-                            dList->words.w1 = D_800D6638 + glyph->textureOffset2;
+                            dList->words.w1 = (u32)((u8 *)D_800D6638 + glyph->textureOffset2);
                             dList++;
                             fontCommands += 7;
                         }
@@ -1203,10 +1203,10 @@ u8 func_8004D5C0(s32 font) {
 
 /* PLATEAU-HANDOFF:func_8004B1DC:start
  * symbol: func_8004B1DC
- * score: 57 differing words
+ * score: 51 differing words
  * frame: 0x80
  * relocations: 42
  * first-mismatch: +0x4
- * summary: 452 to 57 words; exact size/frame/relocation count. Glyph statement order closes 11 words; remaining s3/s4, texture-order, and width-branch residuals; linked identity open.
+ * summary: 452 to 51 words; exact size/frame and object relocation surface. Byte-pointer texture addresses close structural rows; saved-register and width-branch allocation remain; linked identity open.
  * PLATEAU-HANDOFF:func_8004B1DC:end
  */

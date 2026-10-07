@@ -2,11 +2,11 @@
 ### `func_8004B1DC` plateau handoff
 
 - source: `src/main/font.c`
-- score: 57 differing words
+- score: 51 differing words
 - frame: 0x80
 - relocations: 42
 - first mismatch: +0x4
-- summary: 452 to 57 words; exact size/frame/relocation count. Glyph statement order closes 11 words; remaining s3/s4, texture-order, and width-branch residuals; linked identity open.
+- summary: 452 to 51 words; exact size/frame and object relocation surface. Byte-pointer texture addresses close structural rows; saved-register and width-branch allocation remain; linked identity open.
 
 ### 2026-10-04 Astra close-out candidate
 
@@ -108,5 +108,38 @@ fallback remains in place. No matching credit is claimed.
 
 Private baseline/candidate scores and diagnosis are under build/recovery-font/.
 Next: review the four structural rows before revisiting allocator changes.
+
+### 2026-10-07: byte-pointer texture addresses close the structural residual
+
+The retained two texture-address expressions now add the glyph byte offset to
+an unsigned-byte pointer before converting to the display-list address word.
+The matched glyph allocator already uses this arena-relative pointer form:
+it derives the texture offsets from the allocation and texture header offsets.
+No external declaration, header, ABI, call order, or compiler flag changed.
+
+Fresh stock full-TU result: 51 raw and masked differing words, first +0x4,
+2,224 bytes, frame 0x80. All aligned opcode and structural rows agree, and
+workbench reports zero relocation metadata differences. This remains a
+NON_MATCHING candidate; linked-byte identity is not proved.
+
+Controls preserved privately in build/recovery-font/:
+- Reversing the integer-add operands: unchanged at 57.
+- Explicit u32 or u16 offset locals: 100 words; relocation order agrees but
+  locals take allocator colours and disturb the surrounding code.
+- Byte-pointer arithmetic: retained at 51, zero structural rows.
+- Unsigned default-character-width promotion and a one-field y struct:
+  unchanged at 51; neither is retained.
+- Sharing newline and vertical-tab increments: correct saved-register prefix,
+  but 12 bytes short and 90 differing words; not retained.
+- Unsigned newline increment: unchanged at 51; not retained.
+
+The actual compiler-input context compares with itself and each changed input;
+stock and instrumented outputs pass the workbench fidelity gate. The Ucode
+procedure-name mapping proves allocator ordinal 8. On the retained body, the
+y web has save priority 3.833333 versus active colour at 3.642857. Sharing the
+newline increment reaches the target priority order but loses the separate
+case tail, proving a control-flow/allocation tradeoff rather than impossibility.
+Next: seek a source-faithful case/control-flow form that preserves the separate
+tails while reaching that priority order. Do not replay the above controls.
 
 <!-- plateau-handoff:func_8004B1DC:end -->

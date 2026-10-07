@@ -2,11 +2,13 @@
 ### `func_overlay_073_F0000190_18CAC50` plateau handoff
 
 - source: `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c`
-- score: 168 differing words
+- score: 29 differing words
 - frame: 0x98
 - relocations: 46
-- first mismatch: +0x180
-- summary: 153 masked at size 0; target is two ring draws ahead from the case 1 angle difference; float-rate spill at +0x30 not +0x34.
+- first mismatch: +0x2B8
+- summary: 14 masked at size 0; the case 0 timer block reserves the extra temp that puts the spill at +0x30; case 4 query index web (8 words).
+
+Summary before this remeasure: 153 masked at size 0; target is two ring draws ahead from the case 1 angle difference; float-rate spill at +0x30 not +0x34.
 
 Summary before this remeasure: 163 masked at size 0 (was 740 at +8); ring two draws behind from the case 1 angle difference, one float spill home, one schedule swap.
 
@@ -292,5 +294,86 @@ structural rows.
   (+0x34). Moving the dead `s32` pad through all 18 declaration
   positions never moves it (position 3, the current one, is best);
   deleting the pad drops the frame to 0x90.
+
+#### 2026-10-07, lane b-o073 (resumed): Arctanf returns int, 153 to 131
+
+- The two missing ring draws before each angle difference were the
+  narrowing of an int-returning `Arctanf` into the s16 `targetAngle`;
+  as1 folds the pair, so no word changes. Declaring
+  `extern s32 Arctanf(f32, f32)` (u16 and u32 read the same) with
+  `targetAngle` kept s16: the ring then agrees from the case 1
+  difference through case 3. With s32 `targetAngle` uopt drops the
+  narrowing and nothing moves (24-cell product).
+- With the ring in phase, the target's direct reads are now
+  improvements: case 1 hit copy `state->target = hits[0];` written
+  first, case 3 `data = ((Func073Target *)state->target)->data;`,
+  case 3 inner hit copy written first. Together 153 to 131 masked at
+  size 0 (aligned 629 exact, 123 naming, 6 immediate, 2 structural).
+- Flat or worse on the ramp and difference (draw-placement products,
+  90 + 18 + 15 + 36 cells): `<< 4`, `0x10 * x`, compare spellings,
+  argument assignment order and inline assignment, `delta -=`, an
+  `(s16)` on the clamp or the call, an s16/s32 carrier for
+  `object->angle`. An `(s16)` on the ramp product does add two folded
+  draws, but before the ramp's add, so it misnames the ramp.
+
+- With the ring in phase, the velocity blocks of cases 3 and 4 read
+  `((Func073Target *)state->target)->data->y` at the use, with no
+  `data` local: 131 to 74 (case 3) to 33 (case 4) at size 0.
+
+- The first height difference in cases 1 and 3 (velocity steering) is
+  its own float local, `height`, declared in the dead s32 pad's slot
+  (pad replaced, frame unchanged); reusing `limit` or `dy` keeps one
+  web whose colour is f2 where the target has f0. 33 to 20 at size 0.
+  A new f32 declared elsewhere shifts every home (43 immediate rows).
+- Remaining 20: the case 3 velocity zero is f14 where the target has
+  f2 (int-zero against `0.0f` on the four compares: 16 cells, only
+  the all-int cell holds size 0); case 1 sqrtf reload of dz into f14
+  where the target uses f18; the float-rate spill +0x30 against +0x34;
+  and the case 4 query (narrowing schedule order and `hitIndex - 1`
+  coloured a1 in the target, a ring temp here).
+
+- Zero spellings (512-cell product over the nine float-zero sites that
+  are not sign tests): the case 1 reset writes `object->velocityY = 0;`
+  (int zero). 20 to 14 at size 0; it fixes the case 3 velocity zero
+  (f2) and the case 1 dz reload (f18) together.
+- Exhaustive single-force landscape at 20 (278 probes): no force beats
+  the unforced build, so the remaining rows are not colour decisions.
+- Extra pad of s32, s16 or u8 at each of 19 declaration positions (57
+  cells): the float-rate spill stays 8 below `hits` in every cell; it
+  only moves when `hits` moves.
+- Case 4 query, 14 remaining rows minus the spill: narrowing order and
+  `hitIndex - 1` into a1. Chained, comma and in-predicate assignments,
+  int-typed count, regions around the index store, and s32/s16
+  carriers for the index (41 cells) are flat. `hitIndex--` makes the
+  index a web (coloured a0, not a1) but no longer draws the ring
+  register the target spends there (75).
+
+- The fourteen `D_20`..`D_54` externs are now float literals at the
+  point of use (0.004, 0.1, 0.064, 22500, 1.2, 1.6 in use order). Score
+  unchanged at 14; the compiled literal pool is byte-identical to the
+  target's (compared locally), which the promotion needs.
+- Spill home, located by bisection: removing the case 0 timer block
+  (both the add and the wrap) puts the float-rate spill at +0x34, the
+  target's home; removing either half alone, or cases 1, 3 or 4, does
+  not. Flat on the case 0 block: operand order, int or float
+  zero/one spellings, `+=` against an explicit add, the wrap's compare
+  and subtract forms, `break` for `goto common`, and a declared `f32
+  rate` after `hits` (uopt still spills to its own temp, 8 below the
+  lowest home). A double `1.0` moves it to +0x38, so the case 0 timer
+  code reserves one extra 4-byte frame temp that the target's
+  source does not.
+
+- Spill home, continued (cycles 45-46): `(f32)1.0`, the case 0 timer
+  through the float `limit` local (two forms), the add and the
+  wrap as one expression, and `!(timer < 1.0f)` all leave the spill
+  at +0x30. The uopt `-zdbug:2` list carries the same memory variables
+  and offsets with and without the case 0 timer block, so the
+  extra 4-byte cell is allocated after uopt (in the emitter's
+  temporary area), not as a uopt variable.
+- Case 4 query (cycle 46, 7 cells): if/else for the selected index
+  (+8), the ternary inline in the subscript (+8), the ternary into
+  the index, the copy inside the count test, testing the index
+  against 2, and pointer arithmetic for the subscript are flat or
+  worse; none puts `hitIndex - 1` in a1.
 
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

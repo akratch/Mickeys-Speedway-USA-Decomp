@@ -1497,42 +1497,36 @@ void func_80049A8C(s32 index) {
         record++;
     }
 }
-/* Lane a-front (2026-10-07): 181 masked at delta 0 -> 105 at +4.
+/* Matched 2026-10-07 (lanes a-front, then c-fx), from 181 words:
  *  - the state byte is read into a local at the top of each record and the
- *    switch re-reads it into that local: the ten hoisted constants then
- *    become constrained webs (22 interferences) and globalcolor gives them
- *    v1..t5 ahead of the variables, which take s0..s4 as shipped;
- *  - cases 1 and 3 read the duration after the counter update.
- * Lane c-fx (2026-10-07): 105 at +4 -> 28 at 0.
- *  - no `current` local: the counter is re-read from its field at each use.
- *    Case 2's difference then reads a load the state store kills, so uopt
- *    keeps it in carry instead of a separate web plus a copy (two words);
- *  - case 3's >= arm clears carry only in its fall-back arm, so the two
- *    clears are not hoisted above the compare (one word);
- *  - case 2's fall-back arm ends in `break` (layout of its three leaves).
- * Left: the switch selector copy, case 2's duration/0x1F-byte colours, and a
- * dead flags copy before the delta test; see the shard. */
+ *    switch re-reads it: the hoisted constants become constrained webs and
+ *    take v1..t5 ahead of the variables (s0..s4);
+ *  - the counter has no local; each use re-reads the field, so case 2's
+ *    difference contains a load the state store kills and is computed
+ *    straight into carry;
+ *  - case 2 has its own limit local, the flags clear is written through the
+ *    field, and a negative limit breaks out early;
+ *  - case 2 clears carry again in an else arm and case 3 only in its
+ *    fall-back arms (block layout and the unhoisted clears);
+ *  - `bit = 4; do {` on one line orders the preheader constants (L59). */
 /* PROVENANCE: Mickey's own FxRecord layout and m2c draft supply the state transitions; no external body is adapted here. */
-#ifdef NON_MATCHING
 s32 func_80049B14(s32 delta) {
     FxRecord *record;
+    s16 limit;
     s16 duration;
     s32 next;
     s32 carry;
     s32 bit;
-    u16 flags;
     s32 mode;
 
     D_800D5F50 = 0;
     record = D_800D5F58;
-    bit = 4;
-    do {
+    bit = 4; do {
         mode = record->state;
         if (mode != 0) {
-            flags = record->flags;
             carry = delta;
-            if ((flags & 4) != 0) {
-                record->flags = flags & ~4;
+            if ((record->flags & 4) != 0) {
+                record->flags &= ~4;
             } else if (delta != 0) {
                 do {
                     switch (mode = record->state) {
@@ -1571,33 +1565,34 @@ s32 func_80049B14(s32 delta) {
                         }
                         break;
                     case 2:
-                        duration = record->value18;
-                        if (duration < 0) {
+                        limit = record->value18;
+                        if (limit < 0) {
                             carry = 0;
-                        } else {
+                            break;
+                        }
                             record->value14 = (s16) (record->value14 + carry);
                             carry = 0;
-                            if (record->value14 >= duration) {
+                            if (record->value14 >= limit) {
                                 carry = record->value1E;
                                 if (((carry != 0) && (record->value1F == 0)) ||
                                     ((carry == 0) && (record->value1F != 0))) {
-                                    carry = record->value14 - duration;
+                                    carry = record->value14 - limit;
                                     record->state = 3;
                                     record->value14 = carry;
                                 } else {
                                     if (record->value1F != 0) {
-                                        carry = record->value14 - duration;
+                                        carry = record->value14 - limit;
                                         record->state = 1;
                                         record->value14 = carry;
                                     } else {
                                         carry = 0;
                                         record->state = 0;
                                         record->status = 0;
-                                        break;
                                     }
                                 }
+                            } else {
+                                carry = 0;
                             }
-                        }
                         break;
                     case 3:
                         record->value14 = (s16) (record->value14 + carry);
@@ -1633,9 +1628,6 @@ s32 func_80049B14(s32 delta) {
     } while (bit--);
     return D_800D5F50;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/fx/func_80049B14.s")
-#endif
 /* PROVENANCE: Mickey's target commands, globals, and CFG supply this
  * reconstruction; the GBI macros are project SDK headers. */
 #define FX_SET_SCREEN_RENDER(packet, mode) { \
@@ -2124,16 +2116,6 @@ void func_8004AF68(void) {
 }
 
 
-
-/* PLATEAU-HANDOFF:func_80049B14:start
- * symbol: func_80049B14
- * score: 28/206 words
- * frame: 0x18
- * relocations: 4
- * first-mismatch: +0x30
- * summary: No current local (field re-read), case 3 clear in its fall-back arm, case 2 fall-back break: 105 at +4 to 28 at 0. Left: switch copy, case 2 s2/s4.
- * PLATEAU-HANDOFF:func_80049B14:end
- */
 
 /* PLATEAU-HANDOFF:wakeAllocate:start
  * symbol: wakeAllocate

@@ -108,13 +108,39 @@ The proposed missing unsigned-to-float correction was a mistaken initial
 reading: the baseline already emits that correction for its byte divisor.
 Explicitly widening the byte cast to u32 is executable-byte-inert. Replacing
 the divisor with an unsigned low-byte mask adds one instruction and measures
-344 differing words at -28 bytes, while opcode distance worsens from 30 to36
-and aligned structural differences from33 to39. This is not a structural
+344 differing words at -28 bytes, while opcode distance worsens from 30 to 36
+and aligned structural differences from 33 to 39. This is not a structural
 improvement and is not adopted. Both forms preserve the byte-valued divisor.
 
 Source is restored unchanged. The conversion hypothesis is closed; no new
 matching bytes. Ignored source, actual inputs, objects, context and fidelity
 receipts remain under build/wake-conversion. Existing word-argument and flags
 CFG findings remain separate; this packet does not repeat or promote them.
+
+#### 2026-10-07: induction-bound identity controls
+
+Read-only target comparison identifies three count webs: one original count
+for guards/remainders and separate copies for the ten-byte and sixteen-byte
+unrolled termination extents. The configured baseline instead shares one
+copy between those extents. Neither missing allocation space nor reuse of a
+saved stride explains this discrepancy.
+
+Three configured full-TU controls, each with accepted compiler-input context:
+
+- Unsigned conversion of only the second loop's address index leaves the
+  entire executable text byte-identical to the 343-word baseline.
+- A separate signed second-loop index retains the same single bound copy,
+  343 words and opcode distance 30; its frame grows from 0x98 to 0xA0.
+- An unsigned second-loop index with a signed loop test retains one shared
+  bound copy but prevents that loop's remainder/four-way unrolling. It emits
+  324/351 words, opcode distance 53 and 97 aligned structural differences,
+  versus 30 and 33 on the baseline. The original signed trip domain is retained;
+  the smaller output is not progress toward the target.
+
+Independent inspection of frozen configured objects confirms that none creates
+the target's third count web. These typed-address and induction-index identity
+controls are closed; no further causal lever emerged. Source is restored,
+with unchanged allocated sections, symbols and relocation tuples. No matching
+credit. Private source/object/context captures remain in build/wake-conversion.
 
 <!-- plateau-handoff:wakeAllocate:end -->

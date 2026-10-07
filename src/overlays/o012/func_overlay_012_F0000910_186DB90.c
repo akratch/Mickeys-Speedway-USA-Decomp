@@ -79,8 +79,9 @@ extern u8 gOverlay12TrianglesB[];
  * 2.0f before the distance call and the scaled distance added after the
  * clamp: the extra definition gives the 2.0f constant web the second
  * reference that ranks it above 1024.0f (f28 as shipped, 1.0f no longer
- * coloured), 429 at -8 -> 180 at delta 0. Open: the effect pointer and the
- * u8 255 trade s0 and s1 (see the shard). */
+ * coloured), 429 at -8 -> 180 at delta 0. The four vertex colour writes
+ * are one counted loop (IDO unrolls it; the loop weight puts the u8 255 in
+ * s0 ahead of the effect pointer), 180 -> 122. */
 #ifdef NON_MATCHING
 void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                                        s32 *matrixPtr,
@@ -116,7 +117,7 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
     volatile s16 unused;
     Overlay12Gfx *displayList;
     s32 matrix;
-    s32 pad1;
+    s32 k;
 
     displayList = *displayListPtr;
     matrix = *matrixPtr;
@@ -188,26 +189,13 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
                 quad->x = (s16)(centerX - effect->vertexX0);
                 quad->y = (s16)(centerY - effect->vertexY0);
                 quad->z = (s16)(centerZ - effect->vertexZ0);
-                vertices->r = 255;
-                vertices->g = 255;
-                vertices->b = 255;
-                vertices->a = 255;
-                vertices++;
-                vertices->r = 255;
-                vertices->g = 255;
-                vertices->b = 255;
-                vertices->a = 255;
-                vertices++;
-                vertices->r = 255;
-                vertices->g = 255;
-                vertices->b = 255;
-                vertices->a = 255;
-                vertices++;
-                vertices->r = 255;
-                vertices->g = 255;
-                vertices->b = 255;
-                vertices->a = 255;
-                vertices++;
+                for (k = 0; k < 4; k++) {
+                    vertices->r = 255;
+                    vertices->g = 255;
+                    vertices->b = 255;
+                    vertices->a = 255;
+                    vertices++;
+                }
             }
         }
 
@@ -279,10 +267,10 @@ void func_overlay_012_F0000910_186DB90(Overlay12Gfx **displayListPtr,
 
 /* PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:start
  * symbol: func_overlay_012_F0000910_186DB90
- * score: 180 differing words
+ * score: 122 differing words
  * frame: 0x148
  * relocations: 38
- * first-mismatch: +0x68
- * summary: factor = 2.0f in an earlier block ranks 2.0f above 1024.0f: 429 at -8 to 180 at 0. Open: s0/s1 (effect pointer vs u8 255).
+ * first-mismatch: +0xAC
+ * summary: Vertex colour writes as an unrolled loop put the u8 255 in s0: 180 to 122 at 0. Open: FP f0/f2/f12 trio, case-1 velocity products.
  * PLATEAU-HANDOFF:func_overlay_012_F0000910_186DB90:end
  */

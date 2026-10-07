@@ -70,4 +70,31 @@ ignored evidence in `build/wake-word/`. No candidate or exact bytes are adopted.
 Next work requires independently authenticated topology or producer evidence;
 no declaration, buffer, home or allocator grid follows this negative result.
 
+Flags-CFG causal audit (2026-10-04), Mickey evidence B: the retail guarded
+flags initialization branches to separate byte stores of one or zero, whereas
+the configured baseline computes a Boolean and emits one byte store. One
+isolated explicit if/else contrast at that same nonnull-loader point, on the
+proved full-word fifth-formal reconstruction, retained this fork in stock
+output. Both paths still execute exactly one store, with the same full signed
+word condition, guard, byte value, call order and other expressions.
+
+The contrast measured 1384 bytes / 346 words versus 1404 bytes / 351 words,
+delta -20 bytes, 342 raw and masked differences, first mismatch +0xC and
+frame 0x98 versus 0x90. It has the same three call identities; relocation
+positions remain nonexact. All thirty-eight other configured TU functions,
+including the exact caller, retained identical bytes and function-relative
+relocation identities. Actual compiler-input self-context and stock replay
+fidelity passed text, data, rodata, symbols and relocations; cross-context outside the owned body
+remained unchanged. The fixed full-word baseline reproduced the
+previous width-only result rather than constituting another width hypothesis.
+
+This proves a source CFG discrepancy and closes three words of the size
+shortfall, but leaves five words and the frame deficit. No supported additional
+source lever was established within this packet. The canonical diagnostic
+baseline is restored unchanged; the defined branch contrast, configured
+objects, capture receipts and scores remain ignored in `build/wake-flags/`.
+Neither a private candidate improvement nor a mask score receives match credit.
+Further work needs fresh producer or structural evidence, not old allocator,
+loop, home or declaration grids.
+
 <!-- plateau-handoff:wakeAllocate:end -->

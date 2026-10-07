@@ -1147,6 +1147,7 @@ void func_800517E0(void) {
     f32 motionX;
     AnimPath **paths;
     f32 motionZ;
+    AnimPath *slot;
 
     cursor = D_8007D69C;
     paths = D_800D6B00;
@@ -1265,43 +1266,43 @@ void func_800517E0(void) {
                     amSndPlay(packed, NULL);
                     break;
                 case 0x21:
-                    pathIndex = cursor->command & 0xFF;
+                    opcode = cursor->command;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    func_80000510(pathIndex);
+                    func_80000510(opcode);
                     amTuneResetFade();
                     break;
                 case 0x22:
-                    pathIndex = cursor->command & 0xFF;
+                    opcode = cursor->command;
                     duration = *((u16 *) ((u8 *) cursor + 4));
                     value = (f32) duration;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     func_800005CC(value / hundred - delta,
-                                  pathIndex);
+                                  opcode);
                     break;
                 case 0x23:
-                    pathIndex = cursor->command & 0xFF;
+                    opcode = cursor->command;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    amTuneSetVolume(pathIndex);
+                    amTuneSetVolume(opcode);
                     amTuneResetFade();
                     break;
                 case 0x24:
-                    pathIndex = cursor->command & 0xFF;
+                    opcode = cursor->command;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    amAmbientPlay(pathIndex);
+                    amAmbientPlay(opcode);
                     amAmbientResetFade();
                     break;
                 case 0x25:
-                    pathIndex = cursor->command & 0xFF;
+                    opcode = cursor->command;
                     duration = *((u16 *) ((u8 *) cursor + 4));
                     value = (f32) duration;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     amAmbientSetFade(value / hundred - delta,
-                                     pathIndex);
+                                     opcode);
                     break;
                 case 0x26:
-                    pathIndex = cursor->command & 0xFF;
+                    opcode = cursor->command;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    amAmbientSetVolume(pathIndex);
+                    amAmbientSetVolume(opcode);
                     amAmbientResetFade();
                     break;
                 case 0x27:
@@ -1585,11 +1586,11 @@ void func_800517E0(void) {
                     break;
                 case 0x61:
                     pathIndex = cursor->command & 0xFF;
-                    path = paths[pathIndex];
+                    slot = paths[pathIndex];
                     frame = *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    if ((path != NULL) &&
-                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
+                    if ((slot != NULL) &&
+                            ((object = (AnimCommandObject *) slot->unk8) != NULL)) {
                         if (frame < object->model->animationCount) {
                             object->animationIndex = frame;
                         }
@@ -1600,10 +1601,10 @@ void func_800517E0(void) {
                     packed = *((u16 *) ((u8 *) cursor + 4));
                     packed2 = *((u16 *) ((u8 *) cursor + 6));
                     objectFlags = ((u32) packed << 16) | (u32) packed2;
-                    path = paths[pathIndex];
+                    slot = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
-                    if ((path != NULL) &&
-                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
+                    if ((slot != NULL) &&
+                            ((object = (AnimCommandObject *) slot->unk8) != NULL)) {
                         object->flags80 |= objectFlags;
                     }
                     break;
@@ -1612,38 +1613,38 @@ void func_800517E0(void) {
                     packed = *((u16 *) ((u8 *) cursor + 4));
                     packed2 = *((u16 *) ((u8 *) cursor + 6));
                     objectFlags = ((u32) packed << 16) | (u32) packed2;
-                    path = paths[pathIndex];
+                    slot = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
-                    if ((path != NULL) &&
-                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
+                    if ((slot != NULL) &&
+                            ((object = (AnimCommandObject *) slot->unk8) != NULL)) {
                         object->flags80 &= ~objectFlags;
                     }
                     break;
                 case 0x64:
                     pathIndex = cursor->command & 0xFF;
-                    path = paths[pathIndex];
+                    slot = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    if ((path != NULL) &&
-                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
+                    if ((slot != NULL) &&
+                            ((object = (AnimCommandObject *) slot->unk8) != NULL)) {
                         object->flags6 &= ~0x400;
                     }
                     break;
                 case 0x65:
                     pathIndex = cursor->command & 0xFF;
-                    path = paths[pathIndex];
+                    slot = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    if ((path != NULL) &&
-                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
+                    if ((slot != NULL) &&
+                            ((object = (AnimCommandObject *) slot->unk8) != NULL)) {
                         object->flags6 |= 0x400;
                     }
                     break;
                 case 0x66:
                     pathIndex = cursor->command & 0xFF;
-                    path = paths[pathIndex];
+                    slot = paths[pathIndex];
                     frame = *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    if (path != NULL) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if (slot != NULL) {
+                        object = (AnimCommandObject *) slot->unk8;
                         if (object != NULL) {
                             object->unk88 = frame;
                         }
@@ -1653,11 +1654,11 @@ void func_800517E0(void) {
                     break;
                 case 0x67:
                     pathIndex = cursor->command & 0xFF;
-                    path = paths[pathIndex];
+                    slot = paths[pathIndex];
                     frame = *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    if ((path != NULL) &&
-                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
+                    if ((slot != NULL) &&
+                            ((object = (AnimCommandObject *) slot->unk8) != NULL)) {
                         if (frame != 0) {
                             object->flags6 |= 4;
                         } else {
@@ -4005,10 +4006,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1716 differing words
+ * score: 1570 differing words
  * frame: 0x168
  * relocations: 246
  * first-mismatch: +0x0
- * summary: Aligned 1312, size +24. Byte quartet shared by 0x40/0x45/0x46/0x4A takes fp, path table spilled to +0x7C; mask immediates still cost the state piece.
+ * summary: Aligned 1260, size +8. Quartet shared, table spilled, slot local for 0x61-0x67, opcode carries the audio command byte; masks still cost the state piece.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

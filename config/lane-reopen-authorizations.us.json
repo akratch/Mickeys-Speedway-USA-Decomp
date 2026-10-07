@@ -1201,9 +1201,9 @@
       "source_commit": "5cf05869e9af8dd404c469b6812f23969f48f224"
     },
     "func_overlay_047_F0000B30_1891948": {
-      "ledger_commit": "fa8412495449ce0db1ffc8e73410576c44342405",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "c8e612e0091a7664a5db345543b64ff801f35545"
+      "ledger_commit": "003cc8c2043fc01bc7acf64f364f5c3c787fe116",
+      "reason": "Test own-SDK unsigned masked color packing after the o083 causal improvement. Preserve command scope, channel producers and address expressions; prior channel masks and packet-scope controls remain closed.",
+      "source_commit": "a5fa96a3285d4d1c4e925b7b8887ac4e7d5be833"
     },
     "func_overlay_050_F0000000_1896970": {
       "ledger_commit": "9eeee4ce415459b8988df486b8172c1267f88a49",

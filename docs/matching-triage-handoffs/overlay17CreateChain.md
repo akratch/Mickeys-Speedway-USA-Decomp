@@ -270,4 +270,60 @@ The kept body scores 784 bytes, 36 raw and 36 masked words, size delta 0, first 
 Copying count into the size and multiplying that local by 20 scores the same 36 masked and 36 raw words at size delta 0. The mismatch list is unchanged. The multiply is folded. Not kept. The 36-word body stays. Do not repeat this in-place multiply. The frame slot stays.
 
 Header regenerated from the ranking on 2026-10-07 (check_shard_metrics --write); it read score 45 differing words.
+#### 2026-10-07, lane a-ovl1: natural products and the size-web records
+
+The kept body re-scores 36 masked at delta 0, first +0x3C. Three products,
+none kept:
+
+- 128 cells over header carrier (chain against a separate size local),
+  if/else against default-then-override header size, early return against
+  the enclosing if, inline scales, size local against `count * sizeof * 2`
+  with `buffers[0] + count`, indexed template loop against the walking
+  pointers, and the leading pad. Floor 36, the kept body. An indexed
+  16-record template loop is unrolled (+84); early return is +12;
+  if/else header size +4; a separate size local 42; no size local +8.
+- 10 cells on the template arm: source, destination or both assigned
+  inside the material arm, else arm storing the global directly, template
+  store after the loop. Both inside the arm is 71 at delta 0 and puts the
+  else-arm address in t2 and the loop source in v0 as the target does, but
+  rotates the loop body (aligned naming 11 to 47). Destination before the
+  if with source inside the arm is +4: the else-arm address is no longer
+  formed before the branch and the destination splits into t0 and v0.
+- 24 cells on that +4 shape (source assignment position, template store
+  position, increment order, declaration order): all +4.
+
+Records (instrumented uopt, identity-gated byte-identical .text, proc 0):
+the half-buffer product is one type-4 web (12) over blocks 2-7, coloured
+a2 at save 1.33 against cost 3.0, and spilled around both calls. The
+target computes it in a ring temp and stores it before the first call, so
+its first piece is uncoloured. Forcing `p1:w12=s` (accepted, forced=-1)
+reproduces the target's first piece exactly (t7, stored in the jal delay
+slot) but the remainder splits again and the count parameter loses a2:
+131 differing words. So the size residual is the split of web 12 with the
+post-call piece kept on a2, which no source form here has produced.
+
+#### 2026-10-07, lane a-ovl1 (resumed): the split rule for the size web
+
+- Spelling the size as two webs is closed. A 30-cell product (pre-call
+  local, `count * 20 * 2`, `(count * 20) << 1`, `count * sizeof`, `20U`,
+  against post-call `half`, `count * 20`, `count * sizeof`, `(u32)count * 20`,
+  `count * 20U`, `sizeof * count`) scores 36 in every valid cell: uopt
+  merges them all into one web whatever the signedness. The listing agrees:
+  the post-call value is reloaded from the 0x38 home, not recomputed.
+- `do { } while (0)` around the size definition, the allocation, either
+  buffer store or the material call (16 cells): 36 or 40, and the +0x3C
+  row never moves.
+- The decision rule, measured with the records (identity-gated): web 12 is
+  split when totalsave <= bestcost. The tree has totalsave 4 (definition,
+  the shift, two arm uses) against cost 3 (a2 across both calls), so it is
+  coloured. A diagnostic that drops one arm use (semantically wrong, not
+  kept) gives totalsave 3 = cost 3 and the record reads `decision=split`.
+  But the pre-call piece is then coloured v0 (save 1, cost 0), not left in
+  the ring as shipped.
+
+So the target needs both the split and an uncoloured pre-call piece. The
+next step is the post-split pre-call piece's record: why the target leaves
+it uncoloured with v0 free, or whether its web is never formed. It is not a
+source-spelling question.
+
 <!-- plateau-handoff:overlay17CreateChain:end -->

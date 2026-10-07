@@ -350,4 +350,19 @@ Configured baseline 58 masked at delta 0. Three products, each one cycle:
 
 Promoted; `gmake verify` and `promotion-proof` pass. The POSTPROCESS rule
 keeps only the trim.
+#### Law (reusable): a packet macro's cursor local can take a register ahead of the parameter
+
+In a leaf (p2 records only), symbol webs are numbered by first occurrence in
+statement order and coloured lowest-free in that order. Each GBI-style macro
+declares its own cursor local (`Gfx *_g = (Gfx *)(pkt)`); uopt
+copy-propagates it away, so it emits nothing, but its web is still numbered
+and coloured. Where a parameter copy is written decides which comes first.
+Copy taken before the first packet: the display-list parameter is web 19,
+the first `_g` is web 22, and the parameter takes a2. Copy taken after the
+first packet: `_g` is web 17 and takes a2, invisibly, and the parameter
+(web 19) takes a3, as shipped. Every placement after the first packet scored
+0. Inside the branch but before the first packet scored 3, and before the
+count load scored 73 at -4. Use this when a target skips a
+register for no visible reason: an earlier macro local may hold it.
+
 <!-- plateau-handoff:overlay83DrawStrip:end -->

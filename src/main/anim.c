@@ -1088,7 +1088,7 @@ void joyEnable(s32 player);
 void func_800517E0(void) {
     AnimPath **paths;
     AnimStreamEntry *cursor;
-    u16 currentCommand;
+    s32 currentCommand;
     u16 commandDuration;
     u16 duration;
     s32 opcode;
@@ -1154,10 +1154,9 @@ void func_800517E0(void) {
         hundred = 100.0f;
         scale = 60.0f;
         factor = 0.01f;
-        while (cursor->command != 0x7F00 &&
+        while ((currentCommand = cursor->command) != 0x7F00 &&
                (commandTime = (f32) (commandDuration = cursor->duration) /
                               hundred) < D_8007D6AC && D_8007D6A4 == 1) {
-            currentCommand = cursor->command;
             opcode = (currentCommand >> 8) & 0xFF;
             pathIndex = currentCommand & 0xFF;
             delta = D_8007D6AC - commandTime;
@@ -1868,7 +1867,8 @@ void func_800517E0(void) {
                     value = (f32) duration;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     D_8007D6AC = value * factor;
-                    D_8007D6A4 = (s8) *((u16 *) ((u8 *) cursor - 2));
+                    timer = (s8) *((u16 *) ((u8 *) cursor - 2));
+                    D_8007D6A4 = timer;
                     break;
                 case 0x7C:
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
@@ -3968,10 +3968,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1780 differing words
+ * score: 1788 differing words
  * frame: 0x160
- * relocations: 127
+ * relocations: 241
  * first-mismatch: +0x0
- * summary: Field loop test plus first-statement command copy gives the 6000 divisor web (62 sites); size -220. Next: keep the state-address piece too.
+ * summary: s32 command gives the target's tail loads and s0/s2 roles; aligned residual 1592. Next: per-case local partition for the a0 and a3 pieces.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

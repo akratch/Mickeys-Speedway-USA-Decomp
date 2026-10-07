@@ -363,4 +363,17 @@ structural rows.
   code reserves one extra 4-byte frame temp that the target's
   source does not.
 
+- Spill home, continued (cycles 45-46): `(f32)1.0`, the case 0 timer
+  through the float `limit` local (two forms), the add and the
+  wrap as one expression, and `!(timer < 1.0f)` all leave the spill
+  at +0x30. The uopt `-zdbug:2` list carries the same memory variables
+  and offsets with and without the case 0 timer block, so the
+  extra 4-byte cell is allocated after uopt (in the emitter's
+  temporary area), not as a uopt variable.
+- Case 4 query (cycle 46, 7 cells): if/else for the selected index
+  (+8), the ternary inline in the subscript (+8), the ternary into
+  the index, the copy inside the count test, testing the index
+  against 2, and pointer arithmetic for the subscript are flat or
+  worse; none puts `hitIndex - 1` in a1.
+
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

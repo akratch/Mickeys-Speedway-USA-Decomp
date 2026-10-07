@@ -145,7 +145,8 @@ extern f32 gO1RankWeights[];
  * takes the leading pad's cell). With that, the lap-logic stretch read as
  * a word too (STATE_W everywhere but the first loop's split read) puts the
  * state in a1 and the lap in a2 as shipped: 126 -> 77 at size 0. Reading
- * D_1D60 into `record` before the switched test: 77 -> 64. */
+ * D_1D60 into `record` before the switched test: 77 -> 64; reading D_1D64
+ * there instead (the second store's base): 64 -> 62. */
 #ifdef NON_MATCHING
 void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 count) {
     Overlay1ObjectRef *ref;
@@ -288,10 +289,10 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
             }
             STATE_W->mode3b2 = D_1D68->flags;
         }
-        record = D_1D60;
+        record = D_1D64;
         if (switched) {
-            D_0208 = (u8 *)record + STATE_W->selector * 0x10 + 0x14;
-            D_020C = (u8 *)D_1D64 + STATE_W->selector * 0x10 + 0x14;
+            D_0208 = (u8 *)D_1D60 + STATE_W->selector * 0x10 + 0x14;
+            D_020C = (u8 *)record + STATE_W->selector * 0x10 + 0x14;
             D_0210 = (u8 *)D_1D68 + STATE_W->selector * 0x10 + 0x14;
             D_0214 = (u8 *)D_1D6C + STATE_W->selector * 0x10 + 0x14;
         }
@@ -324,10 +325,10 @@ void func_overlay_001_F0001D78_184E158(s32 index, Overlay1Level *level, s32 coun
 
 /* PLATEAU-HANDOFF:func_overlay_001_F0001D78_184E158:start
  * symbol: func_overlay_001_F0001D78_184E158
- * score: 64/627 words
+ * score: 62/627 words
  * frame: 0x70
  * relocations: 185
  * first-mismatch: +0x3BC
- * summary: D_1D60 read into record before the switched test: 77 to 64. Left: ring rotation over the four D_0208 stores (base-first adds).
+ * summary: D_1D64 read into record before the switched test: 77 to 62. Left: only D_1D60's lui should sit above the test; ring rotation over the stores.
  * PLATEAU-HANDOFF:func_overlay_001_F0001D78_184E158:end
  */

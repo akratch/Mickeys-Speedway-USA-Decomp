@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 36,
-  "resolved": 36,
+  "queue_size": 35,
+  "resolved": 35,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 36,
-  "relocation_masked_coverage": 36,
+  "source_context_coverage": 35,
+  "relocation_masked_coverage": 35,
   "functions": [
     {
       "name": "overlay68UpdateAnimation",
@@ -38,21 +38,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "90oI.huT_.3Eqc.zEGA.mgR_.VXaq.-Ms8.SegN.nh04.P-vf.yHM"
-    },
-    {
-      "name": "func_80028FCC",
-      "file": "src/main/main.c",
-      "overlay": null,
-      "tu": "main",
-      "size_bytes": 108,
-      "objdiff_match_pct": null,
-      "differing_words": 10,
-      "first_mismatch_offset": 28,
-      "relocation_masked_differing_words": 10,
-      "relocation_masked_first_mismatch_offset": 28,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "YtVg.Sant.Qkco.QEsf.YwKI.K8Au.Pw2Q.39Tv.VOTS.mSgu.Pt0"
     },
     {
       "name": "func_overlay_073_F0000190_18CAC50",

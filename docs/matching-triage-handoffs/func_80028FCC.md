@@ -2,11 +2,27 @@
 ### `func_80028FCC` plateau handoff
 
 - source: `src/main/main.c`
-- score: 10 differing words
+- score: 0/27 words, promoted
 - frame: 0x18
 - relocations: 3
-- first mismatch: +0x1C
-- summary: Or-chain carrier is allocator proc 40 web 2: v0 not offered (forced=-2). Accepted recolours stay 25. L145/L144 miss the ring-temp copies. Best still 10.
+- first mismatch: none
+- summary: Matched. The plain short-circuit or of the three calls, returned from a function declared `int`. The s32 return type (`long` in ultratypes) was the whole residual: converting the int-valued logical or to long on return is what let uopt merge the three normalised results into one a0 web.
+
+#### 2026-10-07, lane d-near: matched, the return type was the decision variable
+
+Every earlier pass held the return type fixed at `s32`, which
+`include/PR/ultratypes.h` defines as `long`. The logical-or expression has type
+`int`, so returning the or of the three calls from an `s32` function carries an
+int-to-long conversion on the returned value. Compiled in a standalone file
+with `typedef int s32`, the bare or-chain gave the target's 27 instructions
+exactly (ring temps t6/t7/t8, each copied to v0 in the branch delay slot);
+the same file with `typedef long s32` gave the 25-instruction a0 form that
+the 2026-09-10 and 2026-09-12 notes describe. Bisecting the main.c TU down
+to its includes isolated the typedef. Declaring the function `int` and
+returning the plain or-chain scores 0 at delta 0 in the configured TU, and
+`gmake verify` passes with the guard removed. The 2026-09-10 closure
+("every or-chain, goto, ... spelling collapses to the same 25-instruction a0 form")
+was true of the long-returning shape only.
 
 #### 2026-10-05: or-chain and three named carriers lose the size
 

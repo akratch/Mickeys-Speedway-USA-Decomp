@@ -308,4 +308,16 @@ same blocks, the only change being which call block carries the
 reference, so the caller price is per call block, 1 unit when the web
 is transparent through it and 2 when it is referenced there.
 
+Also measured on the committed body: mapY assigned per branch (before
+func_800349A4 and at the head of the dot branch) opens f20 unforced but
+uopt does not hoist it back to the loop head (400 at +4); assigned after
+func_800349A4 instead, 586 at +36.
+
+Cycle-21 line: mapY needs three caller units with its definition at the
+loop head and its offset add after func_8002A82C. Since a transparent
+call block prices 1 unit and a call block holding a reference prices 2,
+look for a reference to mapY in the func_800349A4 or func_8002A82C block
+that emits no word; then drop two of the top cells (the f24 save adds 8
+bytes) and run frame_census.
+
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

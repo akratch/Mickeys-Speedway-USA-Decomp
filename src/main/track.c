@@ -1861,22 +1861,20 @@ void func_8000E5EC(s32 updateRate, s32 arg1) {
     }
     D_800C9544 = 0;
 }
-#ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c control-flow draft and the resident track
  * declarations reconstruct this display-list pipeline; no external function
  * body is adapted. The raw offsets retain fields absent from the local types.
  */
-/* 314 masked words at size +8 (459 at +20 -> 314, 2026-10-02 lane p-track3):
- * rewritten from the listing in the func_8000DFBC/func_8000E5EC idiom. The
- * flag clear and the first segment walk are indexed loops; the object walks
- * read `selectedObjects[index--]` (pointer and offset both decremented at the
- * loop top, as in the target) and the forward walks step a byte cursor with a
- * separate counter; segmentEnd and visibleCount head the declarations so the
- * homes from 0xF4 down to lastSelected land as in the target. Left: the frame
- * is 0x18 larger (six unnamed compiler cells below the declared homes), the
- * `index-- != 0` tests materialise sltu where the target copies, and the
- * TrapDanglingJump argument copy through s0. */
+/* Matched 2026-10-07 (lane c-track2; 314 at +8 -> 0): the byte walks are
+ * `index = visibleCount; while (index--)` over `segmentIds[index]` (uopt makes
+ * the cursor and keeps the post-decrement copy), the forward walks are
+ * `for (index = 0; index < selectedCount;) object = selectedObjects[index++]`,
+ * the 0x8E shadow walk sits inside the D_80079260 test, the TrapDanglingJump
+ * display-list argument is uncast, and `selectedCount - 1` is written at each
+ * reverse walk (uopt's spilled common subexpression, not a declared local).
+ * No `child` or `segment` carrier; one unused s32 above segmentIds sizes the
+ * frame. */
 extern void func_8000F198(s32 segment, s32 record, s32 mode);
 
 #define E920_U8(base, offset) (*(u8 *) ((u8 *) (base) + (offset)))
@@ -1893,14 +1891,10 @@ void func_8000E920(s32 arg0, s32 arg1) {
     s32 segmentCount;
     s32 selectedCount;
     s32 index;
-    s32 lastIndex;
+    s32 pad;
     u8 segmentIds[128];
     void **selectedObjects;
-    u8 *cursor;
     u8 *object;
-    u8 *child;
-    s32 lastSelected;
-    s32 segment;
 
     segmentCount = func_8000A244(&segmentEnd);
     selectedObjects = (void **) D_800C9548;
@@ -1923,9 +1917,8 @@ void func_8000E920(s32 arg0, s32 arg1) {
     }
     if ((D_80079260 != 0) || (D_80079264 != 0)) {
         for (index = visibleCount - 1; index >= 0; index--) {
-            segment = segmentIds[index];
-            E920_RECORD(segment) = -1;
-            func_8000F198(segment, -1, 0x4000);
+            E920_RECORD(segmentIds[index]) = -1;
+            func_8000F198(segmentIds[index], -1, 0x4000);
         }
     }
     if (D_800792E8->segmentCount < 2) {
@@ -1935,8 +1928,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
     func_80044BC8(D_800C9520, "track/track.c", 0x5A1);
     if (D_80079260 != 0) {
         for (index = 0; index < visibleCount; index++) {
-            segment = segmentIds[index];
-            func_8000F198(segment, E920_RECORD(segment), 0);
+            func_8000F198(segmentIds[index], E920_RECORD(segmentIds[index]), 0);
         }
     }
     index = segmentCount;
@@ -1956,27 +1948,19 @@ void func_8000E920(s32 arg0, s32 arg1) {
         TrapDanglingJump(selectedCount, selectedObjects);
     }
     func_80044BC8(D_800C9520, "track/track.c", 0x5D7);
-    index = 0;
-    if (selectedCount > 0) {
-        cursor = (u8 *) selectedObjects;
-        do {
-        object = *(u8 **) cursor;
-        cursor += 4;
-        index++;
+    for (index = 0; index < selectedCount;) {
+        object = selectedObjects[index++];
         if ((E920_S32(object, 0x58) != 0) &&
             ((E920_S16(object, 6) & 0xC) == 0) &&
             (E920_U8(object, 0x39) == 0xFF)) {
             func_80009E78(&D_800C9520, &D_800C9524, &D_800C9528,
                           (TrackSkyObject *) object);
         }
-        } while (index != selectedCount);
     }
     func_80044BC8(D_800C9520, "track/track.c", 0x5E3);
-    lastSelected = selectedCount - 1;
-    for (index = lastSelected; index >= 0;) {
+    for (index = selectedCount - 1; index >= 0;) {
         object = selectedObjects[index--];
-        child = E920_PTR(object, 0x4C);
-        if ((child != NULL) && (E920_U8(object, 0x8E) == 0)) {
+        if ((E920_PTR(object, 0x4C) != NULL) && (E920_U8(object, 0x8E) == 0)) {
             if (E920_U8(E920_PTR(object, 0x4C), 0x10) & 8) {
                 if (E920_PTR(E920_PTR(object, 0x4C), 0x1C) != NULL) {
                     func_800140CC((struct TrackShadowObject *) object,
@@ -1988,23 +1972,17 @@ void func_8000E920(s32 arg0, s32 arg1) {
         }
     }
     func_80044BC8(D_800C9520, "track/track.c", 0x5F7);
-    index = 0;
-    if (selectedCount > 0) {
-        cursor = (u8 *) selectedObjects;
-        do {
-        object = *(u8 **) cursor;
-        cursor += 4;
-        index++;
+    for (index = 0; index < selectedCount;) {
+        object = selectedObjects[index++];
         if (((E920_S16(object, 6) & 0xC) == 0) &&
             (E920_U8(object, 0x39) == 0xFF) &&
             (E920_S32(object, 0x58) == 0)) {
             func_80009E78(&D_800C9520, &D_800C9524, &D_800C9528,
                           (TrackSkyObject *) object);
         }
-        } while (index != selectedCount);
     }
     func_80044BC8(D_800C9520, "track/track.c", 0x603);
-    for (index = lastSelected; index >= 0;) {
+    for (index = selectedCount - 1; index >= 0;) {
         object = selectedObjects[index--];
         if (E920_S16(object, 6) & 8) {
             func_80009E78(&D_800C9520, &D_800C9524, &D_800C9528,
@@ -2012,49 +1990,40 @@ void func_8000E920(s32 arg0, s32 arg1) {
         }
     }
     if (runlinkIsModuleLoaded(0xC) != 0) {
-        TrapDanglingJump((s32) &D_800C9520, &D_800C9524, &D_800C9528);
+        TrapDanglingJump(&D_800C9520, &D_800C9524, &D_800C9528);
     }
     if (E920_S8(D_800792EC, 0xF6) != 0) {
         func_80044BC8(D_800C9520, "track/track.c", 0x61A);
-        TrapDanglingJump((s32) &D_800C9520, &D_800C9524, &D_800C9528);
+        TrapDanglingJump(&D_800C9520, &D_800C9524, &D_800C9528);
         if (D_80079260 != 0) {
-            index = visibleCount - 1;
-            if (visibleCount != 0) {
-                cursor = segmentIds + index;
-                do {
-                    segment = *cursor--;
-                    func_8000F198(segment, E920_RECORD(segment), 0x8000);
-                } while (index-- != 0);
+            index = visibleCount;
+            while (index--) {
+                func_8000F198(segmentIds[index], E920_RECORD(segmentIds[index]), 0x8000);
             }
-        }
-        for (index = lastSelected; index >= 0;) {
-            object = selectedObjects[index--];
-            child = E920_PTR(object, 0x4C);
-            if ((child != NULL) && (E920_U8(object, 0x8E) != 0)) {
-                if (E920_U8(E920_PTR(object, 0x4C), 0x10) & 8) {
+            for (index = selectedCount - 1; index >= 0;) {
+                object = selectedObjects[index--];
+                if ((E920_PTR(object, 0x4C) != NULL) && (E920_U8(object, 0x8E) != 0)) {
+                    if (E920_U8(E920_PTR(object, 0x4C), 0x10) & 8) {
                         if (E920_PTR(E920_PTR(object, 0x4C), 0x1C) != NULL) {
-                        func_800140CC((struct TrackShadowObject *) object,
-                                      (struct TrackShadowInstance *) E920_PTR(E920_PTR(object, 0x4C), 0x1C));
+                            func_800140CC((struct TrackShadowObject *) object,
+                                          (struct TrackShadowInstance *) E920_PTR(E920_PTR(object, 0x4C), 0x1C));
+                        }
                     }
+                    func_800140CC((struct TrackShadowObject *) object,
+                                  (struct TrackShadowInstance *) E920_PTR(object, 0x4C));
                 }
-                func_800140CC((struct TrackShadowObject *) object,
-                              (struct TrackShadowInstance *) E920_PTR(object, 0x4C));
             }
         }
     }
     func_80044BC8(D_800C9520, "track/track.c", 0x634);
     if (D_80079260 != 0) {
-        lastIndex = visibleCount - 1;
-        if (visibleCount != 0) {
-            cursor = segmentIds + lastIndex;
-            do {
-                segment = *cursor--;
-                func_8000F198(segment, E920_RECORD(segment), 4);
-            } while (lastIndex-- != 0);
+        index = visibleCount;
+        while (index--) {
+            func_8000F198(segmentIds[index], E920_RECORD(segmentIds[index]), 4);
         }
     }
     func_80044BC8(D_800C9520, "track/track.c", 0x63B);
-    for (index = lastSelected; index >= 0;) {
+    for (index = selectedCount - 1; index >= 0;) {
         object = selectedObjects[index--];
         if (E920_S32(object, 0x54) != 0) {
             func_80049518(E920_S32(object, 0x54), &D_800C9520);
@@ -2067,7 +2036,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
         TrapDanglingJump((s32) &D_800C9520, &D_800C9528);
     }
     func_80044BC8(D_800C9520, "track/track.c", 0x64E);
-    for (index = lastSelected; index >= 0;) {
+    for (index = selectedCount - 1; index >= 0;) {
         object = selectedObjects[index--];
         if ((E920_S16(object, 6) & 4) || (E920_U8(object, 0x39) < 0xFF)) {
             func_80009E78(&D_800C9520, &D_800C9524, &D_800C9528,
@@ -2117,14 +2086,11 @@ void func_8000E920(s32 arg0, s32 arg1) {
 /* Three warning strings no shipped instruction references. They follow the
  * fourteen file-name strings in the TU's .rodata, ahead of its literal pool;
  * the last two name the JFG-era trackPolyHeight and trackGetHeights. splat
- * migrates them into func_8000E920's listing with that function's own twelve
- * strings, so C defines them only when the listing is not assembled. */
+ * once migrated them into func_8000E920's listing with that function's own
+ * twelve strings; the function is C now, so C defines them. */
 const char D_80081620[] = "WARNING: visible blocks exceeded 100\n";
 const char D_80081648[] = "trackPolyHeight: Overflow!!!\n";
 const char D_80081668[] = "trackGetHeights: Height list overflow\n";
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_8000E920.s")
-#endif
 /* PROVENANCE -- JFG's public track.c supplies the surrounding display-list
  * routine and texture vocabulary, while this Mickey body follows its own
  * fields, call sites, and assembly-only command schedule. */
@@ -2820,6 +2786,11 @@ typedef struct TrackRayPoint {
     f32 z;
 } TrackRayPoint;
 
+typedef struct TrackTextureFlags {
+    void *texture;
+    u8 pad04[3];
+    u8 flag;
+} TrackTextureFlags;
 #ifdef NON_MATCHING
 /*
  * PROVENANCE: Mickey's m2c draft and the resident collision-node and plane
@@ -3443,7 +3414,10 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
         if (encoded > 0) {
             node = (TrackRayNodeExtended *) (encoded | 0x80000000);
         } else {
-            entry = (u16 *) encoded;
+            /* A zero-cost block (brief checklist item 18): 107 -> 89. */
+            do {
+                entry = (u16 *) encoded;
+            } while (0);
             planes = node->planes;
             face = &planes[*entry];
             encoded = 0;
@@ -3484,8 +3458,8 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                             hit->y = ((0.01f + planeOffset) * planeY) + pointY;
                             hit->z = ((0.01f + planeOffset) * planeZ) + pointZ;
                             hit->faceData = node->metadata[D_800C9D30[segmentIndex]].data;
-                            hit->material = ((u8 *) &D_800792E8->textures[
-                                node->metadata[D_800C9D30[segmentIndex]].material])[7];
+                            hit->material = ((TrackTextureFlags *) D_800792E8->textures)[
+                                node->metadata[D_800C9D30[segmentIndex]].material].flag;
                             hit->ratio = ratio;
                             valid = 1;
                         }
@@ -3541,18 +3515,13 @@ typedef struct TrackClipOutput {
     s16 segment;
 } TrackClipOutput;
 
-#ifdef NON_MATCHING
 /* PROVENANCE: JFG's public track.c supplies the ray/edge collision role;
  * this body uses Mickey's resident edge records and output layout. */
-/* Candidate (Track B, 2026-09-23): 347/342 words, 329 differing, frame 0xC8
- * versus 0xC0. Typed edge records (TrackClipOutput) and hit (TrackRayHit),
- * point sums written origin-first, all three points computed before the hit
- * stores (t is address-taken, so an interleaved store forces a reload), the
- * foot point carried in the difference locals, unused locals dropped. One p1
- * decision is left: the D_800792E8 address web (save 30/7) outranks the record
- * counter (31/8), is kept in s8, and pushes the counter into a caller-saved
- * register spilled at each call. Forcing that web to split alone gives
- * 342/342 words and 150 differing. */
+/* Matched 2026-10-07 (lane c-track2; 329 at +20 -> 0): the record
+ * direction's y and z read from the record rather than held in locals (two
+ * frame cells), the material flag a struct field (base-first add), the sum of
+ * squares and the distance with the z term first, and one zero-cost block in
+ * the loop so the counter outranks the D_800792E8 address web. */
 extern s32 func_80012234(TrackVec3f *point, TrackVec3f *direction,
                          TrackVec3f *origin, TrackVec3f *planeDirection,
                          f32 radius, f32 *minimum, f32 *maximum);
@@ -3567,8 +3536,6 @@ s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
     f32 pointY;
     f32 pointZ;
     f32 normalX;
-    f32 normalY;
-    f32 normalZ;
     f32 differenceX;
     f32 differenceY;
     f32 differenceZ;
@@ -3582,24 +3549,28 @@ s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
     if (D_800C9D24 > 0) {
         do {
             edgeHit = 0;
-            record = recordCount + (TrackClipOutput *) D_800C9D20;
+            /* One extra basic block (brief checklist item 18): it moves every
+             * loop-spanning web's save divisor to 8, so the record counter
+             * (31) ties the byte offset and wins on web number, and the
+             * D_800792E8 address is rematerialised at each use as shipped. */
+            do {
+                record = recordCount + (TrackClipOutput *) D_800C9D20;
+            } while (0);
             if ((func_80012234(origin, direction, (TrackVec3f *) &record->x0,
                                (TrackVec3f *) &record->dx, radius, &t,
                                &tEnd) != 0) &&
                 (t >= 0.0f) && (t <= hit->ratio)) {
                 normalX = record->dx;
-                normalY = record->dy;
-                normalZ = record->dz;
                 pointX = origin->f[0] + direction->f[0] * t;
                 pointY = origin->f[1] + direction->f[1] * t;
                 pointZ = origin->f[2] + direction->f[2] * t;
                 differenceX = pointX - record->x0;
                 differenceY = pointY - record->y0;
                 differenceZ = pointZ - record->z0;
-                planeDistance = (differenceX * normalX + differenceY * normalY +
-                                 differenceZ * normalZ) /
-                                (normalX * normalX + normalY * normalY +
-                                 normalZ * normalZ);
+                planeDistance = (differenceX * normalX + differenceY * record->dy +
+                                 differenceZ * record->dz) /
+                                (record->dz * record->dz +
+                                 (normalX * normalX + record->dy * record->dy));
                 if ((planeDistance >= 0.0f) && (planeDistance <= 1.0f)) {
                     hit->x = pointX;
                     hit->y = pointY;
@@ -3613,13 +3584,10 @@ s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
                     hit->normalY = (pointY - differenceY) / radius;
                     normalX = (pointZ - differenceZ) / radius;
                     hit->normalZ = normalX;
-                    hit->distance = -(pointX * hit->normalX +
-                                      pointY * hit->normalY +
-                                      normalX * pointZ);
+                    hit->distance = -(normalX * pointZ + (pointX * hit->normalX + pointY * hit->normalY));
                     node = record->node;
                     hit->faceData = node->indices[record->segment].data;
-                    hit->material = ((u8 *) &D_800792E8->textures[
-                        node->indices[record->segment].material])[7];
+                    hit->material = ((TrackTextureFlags *) D_800792E8->textures)[node->indices[record->segment].material].flag;
                     hit->ratio = t;
                 }
             }
@@ -3638,13 +3606,10 @@ s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
                     hit->normalX = (pointX - record->x0) / radius;
                     hit->normalY = (pointY - record->y0) / radius;
                     hit->normalZ = (pointZ - record->z0) / radius;
-                    hit->distance = -(pointX * hit->normalX +
-                                      pointY * hit->normalY +
-                                      hit->normalZ * pointZ);
+                    hit->distance = -(hit->normalZ * pointZ + (pointX * hit->normalX + pointY * hit->normalY));
                     node = record->node;
                     hit->faceData = node->indices[record->segment].data;
-                    hit->material = ((u8 *) &D_800792E8->textures[
-                        node->indices[record->segment].material])[7];
+                    hit->material = ((TrackTextureFlags *) D_800792E8->textures)[node->indices[record->segment].material].flag;
                     hit->ratio = t;
                 }
             }
@@ -3662,13 +3627,10 @@ s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
                     hit->normalX = (pointX - record->x1) / radius;
                     hit->normalY = (pointY - record->y1) / radius;
                     hit->normalZ = (pointZ - record->z1) / radius;
-                    hit->distance = -(pointX * hit->normalX +
-                                      pointY * hit->normalY +
-                                      hit->normalZ * pointZ);
+                    hit->distance = -(hit->normalZ * pointZ + (pointX * hit->normalX + pointY * hit->normalY));
                     node = record->node;
                     hit->faceData = node->indices[record->segment].data;
-                    hit->material = ((u8 *) &D_800792E8->textures[
-                        node->indices[record->segment].material])[7];
+                    hit->material = ((TrackTextureFlags *) D_800792E8->textures)[node->indices[record->segment].material].flag;
                     hit->ratio = t;
                 }
             }
@@ -3677,9 +3639,6 @@ s32 func_80011CDC(TrackVec3f *origin, TrackVec3f *direction, f32 radius,
     }
     return result;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/track/func_80011CDC.s")
-#endif
 /*
  * PROVENANCE: Mickey's m2c FP dataflow and the resident vector layout
  * reconstruct this plane-intersection query; no external function body is adapted.
@@ -3878,9 +3837,20 @@ void func_80012658(s32 flags) {
  * declarations reconstruct this query; no external function body is adapted.
  * Raw offsets retain the compact segment and polygon records.
  */
-/* Workbench verdict: structure-mismatch, 499 differing words, first mismatch +0x0. */
-/* Candidate is 538/548 instructions with frame -0x2B0 versus target -0x288. */
-/* Remaining gap: ten missing instructions, 40 excess frame bytes, and two excess relocations. */
+/* 339 masked words at size +8 (499 at -40, 2026-10-07 lane c-track2):
+ * rewritten from the listing. Declarations in the target's frame order (every
+ * declared local takes a cell; the homes of segments, bestPlane, entryTimes,
+ * best, the three vectors, nearClip/farClip, hitCount, hit, batchIndex,
+ * xzMasks, bestFlags, yMasks and the u8 yMask/bestTexture all sit at the
+ * target's distance from the frame top), D_800792E8 read by name (no `track`
+ * carrier), farClip reused as the best distance, the batch read as
+ * segment->batches[batchIndex] at each use, the y test held in a u8 local,
+ * named fields for the hit plane and separate ones for each edge plane, one
+ * condition for the batch skip, the texture flag as a struct field, the edge
+ * plane read in place and the coordinate swaps through temporaryXZ. Left:
+ * bestTexture takes s8 where the target keeps it only in its home (three
+ * words), the frame 0x20 large (seven more declared scalars than the target's
+ * 35 cells between the arrays), and the register naming that follows. */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -3895,84 +3865,82 @@ extern u8 getYCompareMask(void *bounds, s32 y0, s32 y1);
 
 s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
     TrackSegment *segments[20];
+    s32 x0;
+    s32 y0;
+    s32 z0;
+    s32 x1;
+    TrackPlane *bestPlane;
     f32 entryTimes[20];
-    s32 xzMasks[20];
-    u8 yMasks[20];
-    TrackVec3f direction;
+    TrackVec3f best;
     TrackVec3f minimum;
     TrackVec3f maximum;
-    f32 bestX;
-    f32 bestY;
-    f32 bestZ;
+    TrackVec3f direction;
+    s32 y1;
+    s32 z1;
+    s32 insertIndex;
+    TrackSegment *temporarySegment;
+    s32 temporaryXZ;
     TrackBoundingBox *bounds;
-    TrackData *track;
-    TrackSegment *segment;
-    TrackBatch *batch;
-    TrackPlane *surfaceBase;
-    TrackPlane *plane;
-    TrackPlane *bestPlane;
-    u16 *polygon;
+    s32 segmentIndex;
     f32 nearClip;
     f32 farClip;
-    f32 bestDistance;
+    TrackSegment *segment;
+    TrackPlane *surfaceBase;
+    s32 xzMask;
+    s32 triangleIndex;
+    s32 firstTriangle;
+    s32 lastTriangle;
+    u32 batchFlags;
+    s32 visibility;
+    u16 *polygon;
+    f32 normalX;
+    f32 normalY;
+    f32 normalZ;
+    f32 planeDistance;
+    f32 edgeX;
+    f32 edgeY;
+    f32 edgeZ;
+    f32 edgeD;
+    u8 yHit;
     f32 side0;
     f32 side1;
     f32 fraction;
     f32 pointX;
     f32 pointY;
     f32 pointZ;
-    f32 normalX;
-    f32 normalY;
-    f32 normalZ;
-    f32 planeDistance;
-    f32 edgeValue;
-    s32 segmentIndex;
     s32 hitCount;
-    s32 insertIndex;
-    s32 batchCount;
-    s32 batchIndex;
-    s32 triangleIndex;
-    s32 firstTriangle;
-    s32 lastTriangle;
     s32 edgeIndex;
     s32 inside;
     s32 hit;
+    s32 edge;
+    s32 edgeSign;
+    s32 batchIndex;
+    f32 value;
+    s32 xzMasks[20];
+    f32 edgeValue;
     u32 bestFlags;
-    u32 batchFlags;
-    u8 bestTexture;
-    s32 x0;
-    s32 y0;
-    s32 z0;
-    s32 x1;
-    s32 y1;
-    s32 z1;
-    s32 edgeNumber;
-    u16 edge;
-    u16 edgeSign;
+    u8 yMasks[20];
+    u8 yMask;
     u8 temporaryY;
-    u8 *surfaceBytes;
-    TrackSegment *temporarySegment;
-    s32 temporaryXZ;
+    u8 bestTexture;
 
     direction.f[0] = arg1[0] - arg0[0];
     direction.f[1] = arg1[1] - arg0[1];
     direction.f[2] = arg1[2] - arg0[2];
     if ((direction.f[0] != 0.0f) || (direction.f[1] != 0.0f) ||
         (direction.f[2] != 0.0f)) {
-        track = D_800792E8;
         hitCount = 0;
-        for (segmentIndex = 0;
-             segmentIndex < E129_S16(D_800792E8, 0x1A);
+        for (segmentIndex = 0; segmentIndex < D_800792E8->segmentCount;
              segmentIndex++) {
-            bounds = track->segmentBounds + segmentIndex;
-            minimum.f[0] = (f32) bounds->x1;
-            minimum.f[1] = (f32) bounds->y1;
-            minimum.f[2] = (f32) bounds->z1;
-            maximum.f[0] = (f32) bounds->x2;
-            maximum.f[1] = (f32) bounds->y2;
-            maximum.f[2] = (f32) bounds->z2;
-            if ((func_800131AC((TrackVec3f *) arg0, &direction,
-                               &minimum, &maximum, &nearClip, &farClip) != 0) &&
+            bounds = &D_800792E8->segmentBounds[segmentIndex];
+            minimum.f[0] = bounds->x1;
+            minimum.f[1] = bounds->y1;
+            minimum.f[2] = bounds->z1;
+            maximum.f[0] = bounds->x2;
+            maximum.f[1] = bounds->y2;
+            maximum.f[2] = bounds->z2;
+            if ((func_800131AC((TrackVec3f *) arg0, &direction, &minimum,
+                               &maximum, &nearClip, &farClip) != 0) &&
                 (((nearClip <= 0.0f) && (farClip >= 0.0f)) ||
                  ((nearClip >= 0.0f) && (nearClip <= 1.0f)))) {
                 if (nearClip < 0.0f) {
@@ -3981,41 +3949,39 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                 if (farClip > 1.0f) {
                     farClip = 1.0f;
                 }
-                x0 = (s32) ((direction.f[0] * nearClip) + arg0[0]);
-                y0 = (s32) ((direction.f[1] * nearClip) + arg0[1]);
-                z0 = (s32) ((direction.f[2] * nearClip) + arg0[2]);
-                x1 = (s32) ((direction.f[0] * farClip) + arg0[0]);
-                y1 = (s32) ((direction.f[1] * farClip) + arg0[1]);
-                z1 = (s32) ((direction.f[2] * farClip) + arg0[2]);
+                x0 = direction.f[0] * nearClip + arg0[0];
+                y0 = direction.f[1] * nearClip + arg0[1];
+                z0 = direction.f[2] * nearClip + arg0[2];
+                x1 = direction.f[0] * farClip + arg0[0];
+                y1 = direction.f[1] * farClip + arg0[1];
+                z1 = direction.f[2] * farClip + arg0[2];
                 if (x1 < x0) {
-                    s32 temporary = x1;
+                    temporaryXZ = x1;
                     x1 = x0;
-                    x0 = temporary;
+                    x0 = temporaryXZ;
                 }
                 if (y1 < y0) {
-                    s32 temporary = y1;
+                    temporaryXZ = y1;
                     y1 = y0;
-                    y0 = temporary;
+                    y0 = temporaryXZ;
                 }
                 if (z1 < z0) {
-                    s32 temporary = z1;
+                    temporaryXZ = z1;
                     z1 = z0;
-                    z0 = temporary;
+                    z0 = temporaryXZ;
                 }
-                entryTimes[hitCount] = nearClip;
-                segments[hitCount] =
-                    &D_800792E8->segments[segmentIndex];
                 xzMasks[hitCount] = getXZCompareMask(bounds, x0, z0, x1, z1);
                 yMasks[hitCount] = getYCompareMask(bounds, y0, y1);
-                insertIndex = hitCount;
-                while ((insertIndex > 0) &&
-                       (entryTimes[insertIndex] <
-                        entryTimes[insertIndex - 1])) {
+                entryTimes[hitCount] = nearClip;
+                segments[hitCount] = &D_800792E8->segments[segmentIndex];
+                for (insertIndex = hitCount;
+                     (insertIndex > 0) &&
+                     (entryTimes[insertIndex] < entryTimes[insertIndex - 1]);
+                     insertIndex--) {
                     nearClip = entryTimes[insertIndex];
                     temporarySegment = segments[insertIndex];
                     temporaryXZ = xzMasks[insertIndex];
                     temporaryY = yMasks[insertIndex];
-
                     entryTimes[insertIndex] = entryTimes[insertIndex - 1];
                     segments[insertIndex] = segments[insertIndex - 1];
                     xzMasks[insertIndex] = xzMasks[insertIndex - 1];
@@ -4024,113 +3990,105 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                     segments[insertIndex - 1] = temporarySegment;
                     xzMasks[insertIndex - 1] = temporaryXZ;
                     yMasks[insertIndex - 1] = temporaryY;
-                    insertIndex--;
                 }
                 hitCount++;
                 if (hitCount >= 20) {
-                    segmentIndex = E129_S16(D_800792E8, 0x1A);
+                    segmentIndex = D_800792E8->segmentCount;
                 }
             }
         }
     }
     hit = 0;
-    bestDistance = 1.0f;
-    bestX = arg1[0];
-    bestY = arg1[1];
-    bestZ = arg1[2];
+    farClip = 1.0f;
+    best.f[0] = arg1[0];
+    best.f[1] = arg1[1];
+    best.f[2] = arg1[2];
     arg3 |= 0x1080;
-    for (segmentIndex = 0;
-         (segmentIndex < hitCount) && (hit == 0);
+    for (segmentIndex = 0; (segmentIndex < hitCount) && (hit == 0);
          segmentIndex++) {
         segment = segments[segmentIndex];
+        xzMask = xzMasks[segmentIndex];
+        yMask = yMasks[segmentIndex];
         surfaceBase = segment->surfaces;
-        batch = segment->batches;
-        batchCount = segment->batchCount;
-        for (batchIndex = 0; batchIndex < batchCount; batchIndex++) {
-            firstTriangle = batch->v0;
-            lastTriangle = batch[1].v0;
-            batchFlags = batch->flags;
+        for (batchIndex = 0; batchIndex < segment->batchCount; batchIndex++) {
+            batchFlags = segment->batches[batchIndex].flags;
+            firstTriangle = segment->batches[batchIndex].v0;
+            lastTriangle = segment->batches[batchIndex + 1].v0;
             if ((batchFlags & arg3) ||
                 ((arg4 != 0) && ((batchFlags & arg4) == 0))) {
                 firstTriangle = lastTriangle;
             }
-            for (triangleIndex = firstTriangle;
-                 triangleIndex < lastTriangle; triangleIndex++) {
-                s32 visibility = E129_S32(
-                    E129_PTR(segment, 0x10), triangleIndex * 4);
-                visibility &= xzMasks[segmentIndex];
+            for (triangleIndex = firstTriangle; triangleIndex < lastTriangle;
+                 triangleIndex++) {
+                visibility = segment->visibilityMasks[triangleIndex] & xzMask;
+                yHit = E129_U8(E129_PTR(segment, 0x14), triangleIndex) & yMask;
                 if (((visibility & 0xFFFF) != 0) &&
-                    ((visibility & 0xFFFF0000) != 0) &&
-                    ((E129_U8(E129_PTR(segment, 0x14), triangleIndex) &
-                      yMasks[segmentIndex]) != 0)) {
+                    ((visibility & 0xFFFF0000) != 0) && (yHit != 0)) {
                     polygon = &segment->surfaceIndices[triangleIndex * 4];
-                    plane = &surfaceBase[polygon[0]];
-                    normalX = plane->x;
-                    normalY = plane->y;
-                    normalZ = plane->z;
-                    planeDistance = plane->distance;
+                    normalX = surfaceBase[polygon[0]].x;
+                    normalY = surfaceBase[polygon[0]].y;
+                    normalZ = surfaceBase[polygon[0]].z;
+                    planeDistance = surfaceBase[polygon[0]].distance;
                     side1 = (arg1[2] * normalZ) +
-                              ((normalX * arg1[0]) +
-                               (normalY * arg1[1])) + planeDistance;
+                            ((normalX * arg1[0]) + (normalY * arg1[1])) +
+                            planeDistance;
                     if (side1 < 0.0f) {
                         side0 = (arg0[2] * normalZ) +
-                              ((normalX * arg0[0]) +
-                               (normalY * arg0[1])) + planeDistance;
+                                ((normalX * arg0[0]) + (normalY * arg0[1])) +
+                                planeDistance;
                         if (side0 >= 0.0f) {
                             fraction = side0 / (side0 - side1);
                             pointX = (direction.f[0] * fraction) + arg0[0];
                             pointY = (direction.f[1] * fraction) + arg0[1];
                             pointZ = (direction.f[2] * fraction) + arg0[2];
                             inside = 1;
-                            for (edgeIndex = 0; (edgeIndex < 3) && (inside != 0); edgeIndex++) {
-                                edge = E129_U16(polygon, (edgeIndex + 1) * 2);
+                            for (edgeIndex = 0; (edgeIndex < 3) && (inside != 0);
+                                 edgeIndex++) {
+                                edge = polygon[edgeIndex + 1];
                                 edgeSign = edge & 0x8000;
-                                edgeNumber = edge ^ edgeSign;
-                                surfaceBytes = (u8 *) surfaceBase +
-                                               (edgeNumber * 0x10);
-                                edgeValue =
-                                    (E129_F32(surfaceBytes, 0) * pointX) +
-                                    (E129_F32(surfaceBytes, 4) * pointY) +
-                                    (E129_F32(surfaceBytes, 8) * pointZ) +
-                                    E129_F32(surfaceBytes, 0xC);
+                                edgeX = surfaceBase[edge ^ edgeSign].x;
+                                edgeY = surfaceBase[edge ^ edgeSign].y;
+                                edgeZ = surfaceBase[edge ^ edgeSign].z;
+                                edgeD = surfaceBase[edge ^ edgeSign].distance;
+                                value = (edgeX * pointX) + (edgeY * pointY) +
+                                        (edgeZ * pointZ) + edgeD;
+                                edgeValue = value;
                                 if (edgeSign != 0) {
-                                    edgeValue = -edgeValue;
+                                    edgeValue = -value;
                                 }
                                 if (edgeValue > 0.0f) {
                                     inside = 0;
                                 }
                             }
-                            if ((inside != 0) && (fraction < bestDistance)) {
-                                bestDistance = fraction;
-                                bestX = pointX;
-                                bestY = pointY;
-                                bestZ = pointZ;
-                                bestPlane = plane;
-                                bestFlags = batch->flags;
-                                bestTexture = E129_U8(
-                                    D_800792E8->textures,
-                                    (batch->textureIndex * 8) + 7);
+                            if ((inside != 0) && (fraction < farClip)) {
+                                farClip = fraction;
+                                best.f[0] = pointX;
+                                best.f[1] = pointY;
+                                best.f[2] = pointZ;
+                                bestFlags = segment->batches[batchIndex].flags;
+                                bestTexture = ((TrackTextureFlags *) D_800792E8->textures)[
+                                    segment->batches[batchIndex].textureIndex].flag;
                                 hit = 1;
+                                bestPlane = &surfaceBase[polygon[0]];
                             }
                         }
                     }
                 }
             }
-            batch++;
         }
     }
     if (hit != 0) {
         E129_S32(arg2, 0) = 0;
-        E129_F32(arg2, 4) = bestX;
-        E129_F32(arg2, 8) = bestY;
-        E129_F32(arg2, 0xC) = bestZ;
+        E129_F32(arg2, 4) = best.f[0];
+        E129_F32(arg2, 8) = best.f[1];
+        E129_F32(arg2, 0xC) = best.f[2];
         E129_F32(arg2, 0x10) = bestPlane->x;
         E129_F32(arg2, 0x14) = bestPlane->y;
         E129_F32(arg2, 0x18) = bestPlane->z;
         E129_F32(arg2, 0x1C) = bestPlane->distance;
-        direction.f[0] *= bestDistance;
-        direction.f[1] *= bestDistance;
-        direction.f[2] *= bestDistance;
+        direction.f[0] *= farClip;
+        direction.f[1] *= farClip;
+        direction.f[2] *= farClip;
         E129_F32(arg2, 0x20) = sqrtf(
             (direction.f[2] * direction.f[2]) +
             ((direction.f[0] * direction.f[0]) +
@@ -5235,11 +5193,11 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_80011980:start
  * symbol: func_80011980
- * score: 107 differing words
+ * score: 89 differing words
  * frame: 0xc8
  * relocations: 12
- * first-mismatch: +0x4
- * summary: Frame closed (0xC8) by the declaration ladder; node word as the edge index: 119 to 107 at delta 0. Left: callee-saved ranking of edge, sign, face.
+ * first-mismatch: +0x94
+ * summary: Struct-field material flag and one zero-cost block around the entry pointer: 107 to 89 at 0. Left: s-register roles of edge, sign, face.
  * PLATEAU-HANDOFF:func_80011980:end
  */
 
@@ -5255,32 +5213,12 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  */
 
 
-/* PLATEAU-HANDOFF:func_80011CDC:start
- * symbol: func_80011CDC
- * score: 329 differing words
- * frame: 0xc8
- * relocations: 11
- * first-mismatch: +0x0
- * summary: Aligned 243 to 193. One p1 decision left: D_800792E8 address web outranks the record counter; forcing it split gives 342/342 words, 150 diff.
- * PLATEAU-HANDOFF:func_80011CDC:end
- */
-
-/* PLATEAU-HANDOFF:func_8000E920:start
- * symbol: func_8000E920
- * score: 314/542 words
- * frame: 0x110
- * relocations: 112
- * first-mismatch: +0x0
- * summary: DFBC/E5EC-idiom rewrite (459 at +20 -> 314 at +8); left: frame +0x18 from six unnamed cells, sltu loop tests, s0 arg copy.
- * PLATEAU-HANDOFF:func_8000E920:end
- */
-
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 499 differing words
- * frame: 0x2b0
- * relocations: 15
+ * score: 339 differing words
+ * frame: 0x2a0
+ * relocations: 13
  * first-mismatch: +0x0
- * summary: Mickey m2c fixes batch stride and best-hit state; retained 499 diffs, target-count alternative preserved. Next: authenticated source lifetimes.
+ * summary: Natural rewrite in target frame order: 499 at -40 to 339 at +8. Left: bestTexture takes s8, frame 0x18 large, second-phase s-register roles.
  * PLATEAU-HANDOFF:func_8001291C:end
  */

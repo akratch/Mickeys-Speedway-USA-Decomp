@@ -2,13 +2,61 @@
 ### `func_80011CDC` plateau handoff
 
 - source: `src/main/track.c`
-- score: 329 differing words
-- frame: 0xc8
-- relocations: 11
-- first mismatch: +0x0
-- summary: Aligned 243 to 193. One p1 decision left: D_800792E8 address web outranks the record counter; forcing it split gives 342/342 words, 150 diff.
+- score: 0/342 words, promoted
+- frame: 0xc0
+- relocations: 15
+- first mismatch: none
+- summary: Matched. Record y/z read in place (frame), struct-field material flag, z term first in two sums, one zero-cost loop block so the counter outranks the D_800792E8 address web.
+
+Summary before this remeasure: Aligned 243 to 193. One p1 decision left: D_800792E8 address web outranks the record counter; forcing it split gives 342/342 words, 150 diff.
 
 Summary before this remeasure: Mickey m2c reproduces existing edge/endpoint tests; no new structural identity. Next: source-proved texture-global and counter lifetimes.
+
+#### Law (2026-10-07, lane c-track2): one zero-cost block crosses a save divisor
+
+A web's save is totalsave / nocs with nocs = 1 + floor((blocks + 2) / 4)
+over the blocks its range spans. When two webs tie on totalsave and
+differ only because one spans a block or two more (here the record
+counter, initialised in the entry block, against the byte offset and
+three address webs that span only the loop), one `do { } while (0)`
+around a statement inside the shared range adds a block to every
+loop-spanning web at no instruction cost. If the shorter webs sit one
+block below the next divisor, they cross it and the longer one does
+not, so the tie is decided by web number instead of by span. Measured:
+counter 31/8 against offset 31/7 and addresses 30/7 (328 at +20); with
+the block, all at /8 and the counter (lower web number) wins: 0. Two
+blocks overshoot (329). Read the ladder's nocs for the contested pair
+before choosing where to put the block; a block outside the shared range
+moves nothing. Same lever, 107 to 89, on func_80011980.
+
+#### 2026-10-07, lane c-track2: matched (329 at +20 to 0)
+
+- Counter initialised inside the `D_800C9D24 > 0` test: 329 at +20 to 124
+  at 0. The counter's web then spans fewer blocks and outranks the
+  D_800792E8 address, which is rematerialised at each use as shipped.
+- Record direction y and z read from the record (`record->dy`,
+  `record->dz`) instead of `normalY`/`normalZ` locals: frame 0xC8 to 0xC0.
+  Each declared local takes a frame cell here; `node` removed instead is
+  +132. 124 to 118.
+- Material flag as a struct field (`((TrackTextureFlags *)
+  D_800792E8->textures)[i].flag`, byte 7 of the 8-byte entry): base-first
+  add. The four cast spellings of `((u8 *) &textures[i])[7]` all add index
+  first.
+- Sum of squares as `dz * dz + (dx * dx + dy * dy)` and each distance as
+  `-(nz * pointZ + (pointX * nx + pointY * ny))`: the target adds the z
+  term first in both. 120-cell product (material 5, sum 3, distance 4):
+  floor 15 at 0, the counter-init prologue only.
+- The 15: the target initialises the counter before the test (its zero
+  fills the branch delay slot and its save is scheduled early). That shape
+  measured 328 at +20 because the counter (31/8, 3.875) loses to the offset
+  (31/7) and three address webs (30/7). Records (proc 43, .text identity
+  gate passed): every loop-spanning web is one block short of the next
+  save divisor. One `do { } while (0)` around the record computation (or
+  around `edgeHit = 0`) puts them all at 8, the counter ties the offset at
+  31/8 and wins on web number, and the D_800792E8 web gets no register:
+  0 at 0. Two wrappers overshoot (329).
+
+`gmake verify` passed with the GLOBAL_ASM branch removed.
 
 #### Track B pass (lane B3-track), 2026-09-23
 

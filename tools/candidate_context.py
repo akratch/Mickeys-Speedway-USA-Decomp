@@ -143,18 +143,43 @@ def _inactive_macro_prelude(text: str, *, allow_active: bool = False) -> tuple[s
     return prepared, rows, snippets
 
 
-def preprocessing_macro_context(source: bytes) -> list[dict]:
+def preprocessing_macro_context(source: bytes, *, external_identifiers=()) -> list[dict]:
     """Validate and fingerprint definitions for an actual compiler -E replay.
 
     This never supplies C with its active definitions blanked. Only the stock
     preprocessor output may be passed to the ordinary context comparator.
     """
     text = _prepared_text(source)
-    visible = LEXICAL.sub(lambda match: " " if match.group().startswith(('"', "'"))
-                         else match.group(), text)
-    if "##" in visible or "%:%:" in visible:
+    prepared, rows, _snippets = _inactive_macro_prelude(text, allow_active=True)
+    def visible(value):
+        return LEXICAL.sub(lambda match: " " if match.group().startswith(('"', "'"))
+                          else match.group(), value)
+
+    # A prepared graphics prelude can retain unused token-pasting macros next
+    # to macros that really need -E. Keep every definition in the context hash,
+    # but refuse pasting only when C can reach it, including through another
+    # macro. Parameter identifiers deliberately overapproximate dependencies.
+    definitions = {
+        match[1]: visible(match[2])
+        for match in re.finditer(
+            r"(?m)^\s*#\s*define\s+([A-Za-z_][A-Za-z0-9_]*)([^\n]*)", text)
+    }
+    body = visible(prepared)
+    pending = (set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", body))
+               | set(external_identifiers)) & definitions.keys()
+    seen = set()
+    if "##" in body or "%:%:" in body:
         raise ContextError("active token pasting requires independent expansion provenance")
-    _text, rows, _snippets = _inactive_macro_prelude(text, allow_active=True)
+    while pending:
+        name = pending.pop()
+        if name in seen:
+            continue
+        seen.add(name)
+        replacement = definitions[name]
+        if "##" in replacement or "%:%:" in replacement:
+            raise ContextError("active token pasting requires independent expansion provenance")
+        pending.update((set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", replacement))
+                        & definitions.keys()) - seen)
     return rows
 
 

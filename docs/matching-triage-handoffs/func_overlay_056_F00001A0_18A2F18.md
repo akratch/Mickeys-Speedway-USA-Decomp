@@ -2,11 +2,13 @@
 ### `func_overlay_056_F00001A0_18A2F18` plateau handoff
 
 - source: `src/overlays/o056/overlay_056.c`
-- score: 129 differing words
+- score: 127 differing words
 - frame: 0x1F8
 - relocations: 75
 - first mismatch: +0x160
-- summary: x/z locals, in-place mapY rebase, frame refit, block temp for cos: 542 to 129 at 0; open: product emission order, int ring.
+- summary: x/z locals, in-place mapY rebase, frame refit, block temp for cos: 542 to 127 at 0; open: product emission order, int ring.
+
+Summary before this remeasure: x/z locals, in-place mapY rebase, frame refit, block temp for cos: 542 to 129 at 0; open: product emission order, int ring.
 
 Summary before this remeasure: x/z locals, in-place mapY rebase (CSE temp in f20), x-term-first mapY, frame refit: 542 to 131 at 0; open: cos/sin, int ring phase.
 
@@ -455,5 +457,29 @@ rotX by mapY spellings by 2 statement orders on both bases, flat at 127
 Cycle-21 line: the loop-head emission order (mapY's CSE temp numbered
 ahead of rotX) is the remaining float residual; then the one high home
 (0x1D0) and the int ring seven-cycle from the prim-colour packet.
+
+#### 2026-10-07 (lane e-big, second resume): count home, 129 to 127
+
+- Dead reads for first-occurrence numbering, assigned to existing locals
+  (mapX or mapY or rotX = x * cosA, or the whole rotX expression, before or
+  after the rotX statement; 18 cells over both mapY term orders): every
+  cell byte-identical to its base (129, or 341 at +4 with z * cosA first).
+  Emission order of the loop-head products follows only the term order
+  inside mapY's expression, not first occurrence. Closed for this shape.
+- The high home was count (0x1D0 against 0x1D4): one s32 pad between slot
+  and mapX (where the shift local stood) with one top pad fewer, 127 at 0,
+  aligned 457 / 114 / 2 / 7. Seven positions by two top-pad counts
+  measured; any position between count and mapX works.
+- Integer ring from +0x764: the target draws the 0xFA000000 prim-colour
+  constant before mtx++'s add; we draw it after the alpha byte load. Flat
+  (16 cells, 127): test operand order, >= 1, an unsigned != 0 test, prim
+  operand order, the packet written long-hand in either store order.
+  mtx++ in the matrix macro, as += 1, as &mtx[1], or folded onto the macro
+  line: 127. mtx++ after the if-block: 123 masked but structurally wrong
+  (the mtx store moves into the branch), not adopted.
+
+Cycle-21 line: the prim-colour constant's draw ahead of the mtx++ add
+(draw_census lines 319 to 322 against the target's order lw mtx, lw dl,
+lui 0xFA00, addiu mtx+64), then the loop-head product order.
 
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

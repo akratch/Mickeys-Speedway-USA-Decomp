@@ -2,11 +2,19 @@
 ### `func_8004B1DC` plateau handoff
 
 - source: `src/main/font.c`
-- score: 452 differing words
+- score: 57 differing words
 - frame: 0x80
-- relocations: 48
+- relocations: 42
 - first mismatch: +0x4
-- summary: hypothesis=postincrement packet cursor instead of a delayed dList increment; spellings=empty if(1) and wrapped if(1) left the fold at delta -44, Gfx *packet = dList++ kept; stall=size delta is 0 at 452 masked words and the mechanism is display-list only
+- summary: 452 to 57 words; exact size/frame/relocation count. Glyph statement order closes 11 words; remaining s3/s4, texture-order, and width-branch residuals; linked identity open.
+
+### 2026-10-04 Astra close-out candidate
+
+The best source is committed in the lane as a reconstruction only. Private ignored evidence under `build/astra-font/` records the captured configured full-TU input, stock/instrumented compiler fidelity, workbench diagnostics, candidate scores, residual classification, and the allocator trace mapping `func_8004B1DC` to the 2,224-byte procedure. The retained score is 57 words at first mismatch `+0x4`, with no size delta and 42 candidate relocation records; the prior 68-word candidate is retained in the private experiment history.
+
+The remaining residual is concentrated in saved-register allocation and scheduling: the s3/s4 swap between alignment flags and y/active-colour, texture-base/offset order, and the default-ASCII-width branch. The next useful experiment is an authenticated live-block or type-use change that alters the saved-register allocation, followed by a field-evaluation-order experiment for the texture offsets. Macro, bounds, packet, tab-width, and glyph-coordinate hypotheses in this packet should not be replayed. No ROM-wide proof was run because the function is still guarded by `NON_MATCHING`.
+
+Summary before this remeasure: hypothesis=postincrement packet cursor instead of a delayed dList increment; spellings=empty if(1) and wrapped if(1) left the fold at delta -44, Gfx *packet = dList++ kept; stall=size delta is 0 at 452 masked words and the mechanism is display-list only
 
 Summary before this remeasure: Unchanged body; the u8 parameter on func_8004C690 moved this caller from 465 to 451 at the same size delta -32
 
@@ -88,4 +96,17 @@ DKR's render_text_string (font.c), whose scissor clamp, alignment and
 per-glyph structure this body follows; a rewrite from the listing in that
 donor's shape (the method that closed func_8005830C from 697) is the
 untried lever.
+### 2026-10-07: committed candidate reproduced in a fresh integration lane
+
+Recovered source from commit b9262cc9d and compiled the configured full TU with
+stock IDO. The current canonical baseline reproduces 452 masked words; the
+recovered body reproduces 57 raw and masked words, exact 2,224-byte size,
+0x80 frame, and first mismatch +0x4. Workbench reports 55 aligned register
+rows and four structural rows. Four relocation metadata differences remain;
+42 records alone does not establish relocation identity. The NON_MATCHING
+fallback remains in place. No matching credit is claimed.
+
+Private baseline/candidate scores and diagnosis are under build/recovery-font/.
+Next: review the four structural rows before revisiting allocator changes.
+
 <!-- plateau-handoff:func_8004B1DC:end -->

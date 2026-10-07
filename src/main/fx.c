@@ -674,6 +674,9 @@ typedef struct FxWakeAllocation {
  * Lane c-fx: both divisors read wake->textureIndex back; uopt forwards the
  * store, so frameCount is reloaded once into a ring temporary after the call
  * (as shipped) and the whole tail's temp ring lines up (naming 84 -> 9).
+ * Lane i-6: sampleBytes computed straight after segmentCount (the target's
+ * spill cells for frameCount, segmentCount and sampleBytes are adjacent, in
+ * creation order): 325 -> 323.
  * Left: two dead copies the target makes before the first call (segment and
  * group counts into v0/v1) and frameCount's pre-call piece in s0; see shard. */
 /* PROVENANCE: Mickey's own target accesses and caller ABI supply this reconstruction; JFG supplies only the published role/name. */
@@ -695,6 +698,7 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
 
     frameCount = (s32) (wakeValue88 * 60.0f);
     segmentCount = (frameCount + 5) >> 1;
+    sampleBytes = segmentCount * 0x10;
     groupCount = segmentCount * 2;
     triCount = segmentCount * 2;
     alpha = 2;
@@ -703,7 +707,6 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
         alpha = 4;
     }
     segmentBytes = groupCount * 0xA;
-    sampleBytes = segmentCount * 0x10;
     textureBytes = triCount * 0x10;
     wake = func_8002B314(sampleBytes + (segmentCount * 0x14) + (alpha * segmentBytes) +
                          (textureBytes * 2) + 0x40, 0x87);
@@ -2126,11 +2129,11 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeAllocate:start
  * symbol: wakeAllocate
- * score: 325/351 words
+ * score: 323/351 words
  * frame: 0x90
  * relocations: 3
  * first-mismatch: +0x10
- * summary: Divisors read textureIndex back: tail ring aligned, naming 84 to 9 at -8. Left: dead v0/v1 copies before the call (split pieces).
+ * summary: sampleBytes after segmentCount (target spill-cell order): 325 to 323 at -8. Left: dead v0/v1 copies before the call, four cells out of order
  * PLATEAU-HANDOFF:wakeAllocate:end
  */
 

@@ -19,4 +19,74 @@
 - donor evidence: pinned DKR v77 `src/game_ui.c::hud_render_general` supplies the permitted semantic minimap phase order—fade/gates, orthographic setup, viewport offsets, map transform, reverse racer iteration, marker rendering, and state restore. Exact DKR v77/v80 and JFG object/source scans remain negative; the donor is structural evidence, not a promotable body.
 - integration blocker: a guarded definition in this consolidated TU routes 5,024 previously credited C bytes through the nonmatching object, so the global atlas correctly fails stale. Session B did not rewrite it. Agent A can preserve exact C accounting with reviewed mixed ranges `+0..+0x1A0` and `+0xAB4..+0xAF4`, retain fallback `+0x1A0..+0xAB4`, and exclude padding `+0xAF4..+0xB00`; do not physically split at unaligned `+0xAB4`.
 - next mechanism: hoist the AI-site RGB unpack (green and blue, red in the mode-branch delay slot) immediately after the colour load without introducing extra copies. Then the unsigned-to-float surplus around candidate +0x498. Ghost identities `D_800D1494` and `D_800D1498` are known but inert as named loads. Identity-gate is `CDX_PROC=6`. Do not colour-landscape until size delta is 0. Do not rerun flags or generic source permutation.
+#### 2026-10-04: used RGB lifetime and sibling-backed signedness controls
+
+The committed assignment base `eb90496fa674057eeccf3ba67aea8cbb68f8aedf`
+passed the local zero-exit `base-only` gate with source and ledger both pinned
+at `4d685542da42fa2b9be7883d065ba43fa0bbf245`. The fresh configured full-TU
+baseline reproduces 538 raw/relocation-masked words, 591 versus 581
+instructions, size delta +40 bytes, frame `0x1F8`, and first mismatch `+0x50`.
+This packet tests the previously recorded RGB-before-mode-branch question;
+it does not restart flags, identities, declaration ordering or permutation.
+
+The first natural control names three genuinely used `u32` components
+immediately after the existing packed-colour read and before the existing
+mode-dependent x branch. Original shifts, masks, load identity, call order,
+widths and stores remain unchanged. All values are bounded to 0..255; the
+pure extractions do not add observable memory accesses. It produces 541
+raw/masked words at the same +40-byte extent, frame `0x200`, first mismatch
+`+0x0`. Every one of its 84 changed owned instructions retains its opcode
+and registers and changes only a stack-relative displacement or the frame
+adjustment. The unpack/branch instruction sequence does not change.
+
+The exact same-TU `overlay56UnpackColor` independently supplies a second
+source-type witness: `u32` red and `s32` green/blue. Its existing linked
+64-byte range at module `+0xAB4..+0xAF4` compares byte-identically with the
+same physical ROM range. One separately authorized contrast changes only
+the two named green/blue declarations to `s32`. Both masked values fit that
+signed domain. It is text, symbol and ordered-relocation identical to the
+all-unsigned control, with the same score, frame and first mismatch. No
+casts, extra references, padding, reordered expressions or helper call
+were added.
+
+Authentic retained whole-TU streams distinguish the source effects. The
+unsigned control adds three load, three store and three local-location
+records at CFE output; only the three local-location records remain in
+optimized output. Signed green/blue additionally adds four CFE conversion
+records and two optimized conversion records. Neither changes the final
+non-stack instruction output. These are measured stage counts and output
+comparisons; no source-variable generation, PRE event, allocator-home or
+optimizer replacement lineage is inferred from them. The prediction that
+these named component lifetimes recover the earlier target unpack emission
+is falsified for both supported forms.
+
+All seven configured C siblings retain their bytes and symbol geometry.
+All 88 ordered full-TU static relocation rows retain offsets, types and
+symbols, and the REL operands at their sites remain unchanged. Fresh target
+preflight still refuses promotion: 75 shipped runtime records versus 69
+candidate owned static records, 37 candidate identities resolved and 32
+unresolved, with ten effective identities aligned. This supersedes the
+older retained 61-record candidate count; it does not relax identity proof.
+The null-address tail proxies and other incomplete physical bindings remain
+unproved and cannot supply linked-match credit.
+
+Untouched stock compiler-input capture/replay passes every allocated-content
+section, symbols and relocations for the baseline and both controls.
+Whole-file debug metadata differences remain disclosed. Raw prepared-input
+self-comparison refuses multiline comments containing macro definitions;
+untouched stock preprocessing of the captured actual input passes expanded
+self-context, and both outside-body comparisons are unchanged. Ordinary
+fresh-lane overlay-alias generation repairs the initial cold-link failure;
+the failure and retry receipts are retained rather than treated as a source
+change.
+
+The baseline source is restored and recompiled, with full-content/symbol/REL
+restoration fidelity passing. All meaningful inputs, objects, scores,
+first mismatches, retained phase streams and receipts remain ignored under
+`build/o056-rgb/`. Stop on elimination of the two assigned mechanisms,
+without a count-based stall claim. Future work needs an independently
+supported executable, ABI or physical-storage fact; another component
+spelling, type or ordering grid is not a fresh mechanism. No C source or
+matching credit is adopted.
+
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

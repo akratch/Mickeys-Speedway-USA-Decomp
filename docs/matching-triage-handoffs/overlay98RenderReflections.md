@@ -62,4 +62,57 @@ trailing cells for whatever the target's -296 local is.
 
 **Not the lever:** declaration order alone.  Moving `gfx` and `cursor` to the
 front without the fourteen cells leaves the frame at 0x190 and the score at 332.
+
+## 2026-10-03, authenticated two-argument matrix-build packet
+
+The untouched configured baseline again measures 332 masked / 333 raw
+**differing** words at 1,556 bytes / 389 words, frame `0x190` against retail
+`0x1C8`, first mismatch `+0x0`, and 36 static relocations versus 36 runtime
+records. The older header's `57/389` is matching-word coverage, not a
+57-word residual. The translation unit contains only the owned function.
+
+Mickey's runtime table independently binds both matrix-build calls to
+`func_8002AA50` and the inverse call to `func_8002AC84`. Already-matched
+camera/model callers use two arguments. Direct retail helper inspection,
+rather than their nonmatching C reconstructions alone, establishes that both
+helpers overwrite the incoming third argument register before reading it.
+The retail caller also performs no third-register preparation between the
+inverse return and the following build call. This supports a focused
+argument-constraint contrast; callee behavior alone does not establish the
+original caller's source prototype.
+
+Removing only the two third formals and three pure zero actuals removes
+exactly three argument preparations. Stock IDO measures 316 masked / 317 raw
+differences at 1,544 bytes / 386 words, delta `-12`, with the unchanged frame
+and 36 relocations. The masked positional reduction is nonexact evidence:
+three executable instructions and the 56-byte frame deficit remain missing,
+and relocation identity/schedule proof is incomplete. This artifact remains
+private; no candidate source or byte credit is adopted.
+
+A separately authorized storage correction replaces the three 64-byte byte
+facades with `f32[4][4]`, preserving their extent and supplying truthful
+array-compatible matrix declarations and projection-pointer access. Actual
+retail readers/writers establish complete 64-byte float inputs/outputs; the
+multiply supports the existing destination-equals-left-input use. Native
+compile-only assertions confirm 64-byte extent, 16-byte row stride, and
+four-byte alignment. This correction is raw-code, relocation, and
+readonly-data identical to the arity artifact. It repairs the local matrix
+storage view without explaining the residual or frame deficit. Fixed-output context
+facades and the integer pointer carrier remain outside this correction and
+require independent semantic review before any promotion.
+
+The actual asm-processor compiler inputs, stock objects, comparisons, and
+meaningful source alternatives remain private. Untouched IDO replay passes
+text, data, readonly-data, symbol, and relocation fidelity; whole-file debug
+metadata differences are disclosed. Baseline and candidate expanded-input
+self-context pass. Cross-context comparison correctly reports the authorized
+external prototype/type changes; it was not forced to claim unchanged input.
+
+The tracked diagnostic body is restored exactly. This packet closes early on
+an authenticated arity effect and an eliminated matrix-storage mechanism;
+no padding, declaration/home grid, flags, or forced allocator work followed.
+A future packet needs independently supported missing executable behavior or
+compiler producer evidence. Lower positional differences at a short extent
+and truthful type spelling alone do not reopen the closed layout families.
+
 <!-- plateau-handoff:overlay98RenderReflections:end -->

@@ -55,4 +55,42 @@ size -4 against the inherited 155 at delta 0. Findings to carry:
   (a named packet pointer in place of an unused pad: 207 at +8, frame 0xE0).
 - `if (motion != NULL) { ... }` against an early return, and `* 4` against
   `<< 2`, are flat.
+
+#### 2026-10-03, getter-arity packet: negative transfer after diagnostic cleanup
+
+The shipped relocation identities resolve the two getter calls to matched
+`func_8002468C(void)` and `camGetPtr(void)`. Their Matrix and Camera return
+storage agrees with this caller's existing read views. Removing the original
+one and four pure argument evaluations preserves runtime callee behavior;
+this does **not** establish the retail caller's original source signature,
+which could still have passed ignored carrier arguments.
+
+Stock configured contrasts, in order (differing words, candidate words,
+size delta, frame, first mismatch):
+
+- Unchanged inherited baseline: 155, 243, 0, `0xC0`, `+0x30`.
+- Both getter declarations/calls changed to no arguments: 185, 240,
+  -12 bytes, `0xC0`, `+0x40`.
+- Both volatile color qualifiers removed: 162, 239, -16 bytes,
+  `0xC0`, `+0x40`; four unused pointer locals still remained diagnostic.
+- All four unused pointer locals removed: 164, 239, -16 bytes,
+  `0xB0`, `+0x0`. This clean body remains structurally nonexact, with a
+  16-byte non-save frame deficit; the save region is unchanged.
+
+Actual stock compiler-input capture, section/symbol/relocation fidelity,
+and unchanged self-context checks pass for the baseline and clean body.
+The approved getter declaration changes are disclosed as changed context,
+not presented as an unchanged-context candidate. Both objects retain the
+same seven ordered relocation types and identities, at shifted offsets;
+that is not exact target relocation geometry or linked promotion proof.
+
+The getter behavior is authenticated, but this arity correction did not
+explain the retail instruction extent or produce an admissible match.
+Stop: no independently justified fresh mechanism remains after the three
+controlled contrasts. Do not repeat the exhausted packing, frame, ordering,
+or padding probes. All sources, objects, scores, and causal receipts remain
+private. The original tracked body is restored solely as the unchanged
+155-word diagnostic baseline: its volatile homes and unused pointers gain
+no new admissibility or matching credit. No candidate source is adopted.
+
 <!-- plateau-handoff:overlay100DrawMotion:end -->

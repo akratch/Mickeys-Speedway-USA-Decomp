@@ -1072,11 +1072,6 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
         index = wake->value39;
         if (index != wake->value3A) {
             do {
-                /* L109 weight probes (deleted by uopt, counted by globalcolor):
-                 * they order secondaryVertices over wake and stripIndex over
-                 * index, as shipped. A source form that carries the same
-                 * reference counts is still to be found. */
-                secondaryVertices = (u8 *) ((u32) secondaryVertices | 0);
                 value = index * 5;
                 sample = (u8 *) wake->samples + (value * 4);
                 if (++index >= wake->segmentCount) {
@@ -1118,17 +1113,22 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
                     *(s16 *) (vertices + 0) = *(f32 *) (sample + 8) + cosine;
                     *(s16 *) (vertices + 4) = *(f32 *) (sample + 0xC) - sine;
                 } else {
-                    secondaryVertices += 0x14;
+                    /* One vertex at a time, the cursor advanced after each:
+                     * uopt folds the two steps into the shipped single add,
+                     * and the extra references are what rank this web over
+                     * wake (141/6 against 306/14), replacing an OR-zero probe. */
                     *(s16 *) (vertices + 0) = *(f32 *) (sample + 8);
                     *(s16 *) (vertices + 4) = *(f32 *) (sample + 0xC);
-                    *(s16 *) (secondaryVertices - 0x14) = *(f32 *) (sample + 8) + cosine;
-                    *(s16 *) (secondaryVertices - 0x12) = *(s16 *) (sample + 6);
-                    *(s8 *) (secondaryVertices - 0xB) = value;
-                    *(s16 *) (secondaryVertices - 0x10) = *(f32 *) (sample + 0xC) - sine;
-                    *(s16 *) (secondaryVertices - 0xA) = *(s16 *) (vertices + 0);
-                    *(s16 *) (secondaryVertices - 8) = *(s16 *) (sample + 6);
-                    *(s8 *) (secondaryVertices - 1) = value;
-                    *(s16 *) (secondaryVertices - 6) = *(s16 *) (vertices + 4);
+                    *(s16 *) (secondaryVertices + 0) = *(f32 *) (sample + 8) + cosine;
+                    *(s16 *) (secondaryVertices + 2) = *(s16 *) (sample + 6);
+                    *(s8 *) (secondaryVertices + 9) = value;
+                    *(s16 *) (secondaryVertices + 4) = *(f32 *) (sample + 0xC) - sine;
+                    secondaryVertices += 0xA;
+                    *(s16 *) (secondaryVertices + 0) = *(s16 *) (vertices + 0);
+                    *(s16 *) (secondaryVertices + 2) = *(s16 *) (sample + 6);
+                    *(s8 *) (secondaryVertices + 9) = value;
+                    *(s16 *) (secondaryVertices + 4) = *(s16 *) (vertices + 4);
+                    secondaryVertices += 0xA;
                 }
                 *(s8 *) (vertices + 9) = value;
                 vertices += 0xA;
@@ -1146,7 +1146,8 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
                     *(s16 *) (polygon + 0x1C) = polygonOffset;
                     *(s16 *) (polygon + 0x1E) = vertexCount;
                     polygon += 0x20;
-                    polyCount += 2;
+                    polyCount++; /* one per triangle: replaces a probe */
+                    polyCount++;
                     if ((stripIndex + 2) >= 0x11) {
                         stripIndex = 0;
                     }
@@ -1160,10 +1161,13 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
                 polygon[0x11] = stripIndex + 1;
                 *(s16 *) (polygon + 0x14) = polygonOffset;
                 *(s16 *) (polygon + 0x16) = vertexCount;
+                /* L109 weight probes (deleted by uopt, counted by globalcolor):
+                 * they rank stripIndex (171/11) over index (123/8), as shipped.
+                 * The source form carrying those references is still open; the
+                 * secondaryVertices and polyCount probes are now real steps. */
                 stripIndex = stripIndex | 0;
                 stripIndex = stripIndex | 0;
                 stripIndex = stripIndex | 0;
-                polyCount = polyCount | 0;
                 stripIndex += 2;
             } while (index != wake->value3A);
         }
@@ -2136,6 +2140,6 @@ void func_8004AF68(void) {
  * frame: 0x90
  * relocations: 2
  * first-mismatch: +0x34
- * summary: OR-zero weight probes order secondaryVertices over wake and stripIndex over index (253 to 198 at 0). Left: polyCount/outputCount over polygonOffset.
+ * summary: Secondary cursor per vertex and polyCount per triangle replace two OR-zero probes (byte-identical, 195 at 0). Left: the three stripIndex probes.
  * PLATEAU-HANDOFF:wakeUpdate:end
  */

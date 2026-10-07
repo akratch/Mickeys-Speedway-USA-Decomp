@@ -1331,8 +1331,8 @@ void func_800517E0(void) {
                     path = paths[pathIndex];
                     packed = *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         if (object->soundHandle != NULL) {
                             func_800031E8(object->soundHandle);
                             object->soundHandle = NULL;
@@ -1346,8 +1346,8 @@ void func_800517E0(void) {
                     pathIndex = cursor->command & 0xFF;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         if (object->soundHandle != NULL) {
                             func_800031E8(object->soundHandle);
                             object->soundHandle = NULL;
@@ -1575,8 +1575,8 @@ void func_800517E0(void) {
                     value2 = (f32) duration / 16384.0f;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xA);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         if (object->model->animationKinds[object->animationIndex] == 1) {
                             object->animationValue = value;
                         } else {
@@ -1591,8 +1591,8 @@ void func_800517E0(void) {
                     path = paths[pathIndex];
                     frame = *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         if (frame < object->model->animationCount) {
                             object->animationIndex = frame;
                         }
@@ -1605,8 +1605,8 @@ void func_800517E0(void) {
                     objectFlags = ((u32) packed << 16) | (u32) packed2;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         object->flags80 |= objectFlags;
                     }
                     break;
@@ -1617,8 +1617,8 @@ void func_800517E0(void) {
                     objectFlags = ((u32) packed << 16) | (u32) packed2;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         object->flags80 &= ~objectFlags;
                     }
                     break;
@@ -1626,8 +1626,8 @@ void func_800517E0(void) {
                     pathIndex = cursor->command & 0xFF;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         object->flags6 &= ~0x400;
                     }
                     break;
@@ -1635,8 +1635,8 @@ void func_800517E0(void) {
                     pathIndex = cursor->command & 0xFF;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         object->flags6 |= 0x400;
                     }
                     break;
@@ -1659,8 +1659,8 @@ void func_800517E0(void) {
                     path = paths[pathIndex];
                     frame = *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         if (frame != 0) {
                             object->flags6 |= 4;
                         } else {
@@ -1674,8 +1674,8 @@ void func_800517E0(void) {
                     frame = *((u16 *) ((u8 *) cursor + 4));
                     duration = *((u16 *) ((u8 *) cursor + 6));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         type = path->unk25;
                         path->unk25 = frame;
                         path->unk27 = 0;
@@ -1696,8 +1696,8 @@ void func_800517E0(void) {
                     value = (f32) duration;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         entry = object->table70;
                         if ((entry != NULL) &&
                             (high < object->model->tableCount28)) {
@@ -1720,8 +1720,8 @@ void func_800517E0(void) {
                     value = (f32) duration;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         entry = object->table74;
                         if ((entry != NULL) &&
                             (high < object->model->tableCount29)) {
@@ -1752,8 +1752,8 @@ void func_800517E0(void) {
                     value2 = (f32) packed * 0.00390625f;
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         sub = object->sub;
                         if (sub != NULL) {
                             switch (type) {
@@ -1821,8 +1821,8 @@ void func_800517E0(void) {
                     frame = *((u16 *) ((u8 *) cursor + 6));
                     path = paths[pathIndex];
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        object = (AnimCommandObject *) path->unk8;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         if ((object->animationIndex >= 4) ||
                             (object->model->animationValues[object->animationIndex] ==
                              0.0f)) {
@@ -4008,10 +4008,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1735 differing words
+ * score: 1757 differing words
  * frame: 0x160
  * relocations: 250
  * first-mismatch: +0x0
- * summary: Aligned 1397, size +32. Command field-read in s2, path index s0 per case, a0 state and a3 6000 pieces held; per-case local partition is what remains.
+ * summary: Aligned 1369, size -28. Command field-read in s2, path index and object s0, a0/a3 pieces held; path table not spilled, per-case local partition remains.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

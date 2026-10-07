@@ -857,7 +857,7 @@
     },
     "func_8005AF14": {
       "ledger_commit": "e7bf36cb5f82c362cef5c140718d1e5f7f13b3aa",
-      "reason": "Target forwards full-width negated yaw to four trig calls. Candidate short angle/prototypes narrow it; Mickey helpers use only low16 bits and exact siblings declare s32. Test angle/prototype width only, with full TU impact proof.",
+      "reason": "New angle-width fix removes ten spurious instructions. Combine with target-proved float matrix ABI and R4300 multiply hazards: old controls add two and five words, predicting exact 460-word size. Audit every TU flag consumer.",
       "source_commit": "7b2238a357082cc1efc8185806e8bbd79941222a"
     },
     "func_8006E7E0": {

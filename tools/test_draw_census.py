@@ -77,6 +77,27 @@ class TraceParsingTests(unittest.TestCase):
         self.assertEqual(dict(parsed["frees"]), {})
 
 
+class ProcResolutionTests(unittest.TestCase):
+    FUNCS = [("a", 0), ("b", 0x40), ("c", 0x90)]
+
+    def test_symbol_maps_to_its_address_ordinal(self):
+        self.assertEqual(dc.ordinal_from_symbols("c", self.FUNCS, 3), 2)
+        self.assertEqual(dc.ordinal_from_symbols("a", self.FUNCS, 3), 0)
+
+    def test_aliases_share_an_ordinal(self):
+        funcs = self.FUNCS + [("b_alias", 0x40)]
+        self.assertEqual(dc.ordinal_from_symbols("b_alias", funcs, 3), 1)
+
+    def test_count_mismatch_is_refused(self):
+        with self.assertRaises(SystemExit) as cm:
+            dc.ordinal_from_symbols("b", self.FUNCS, 2)
+        self.assertIn("--proc", str(cm.exception))
+
+    def test_unknown_symbol_is_refused(self):
+        with self.assertRaises(SystemExit):
+            dc.ordinal_from_symbols("zzz", self.FUNCS, 3)
+
+
 class ComparisonTests(unittest.TestCase):
     def profile(self, symbol="f", draws=None, emits=None, order=None):
         draws = draws or {}

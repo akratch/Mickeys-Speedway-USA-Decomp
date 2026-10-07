@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Census a function's ugen draws and emissions, per SOURCE LINE.
 
-    tools/draw_census.py <symbol> [--proc N] [--save out.json]
+    tools/draw_census.py <symbol> [--proc N]   (default: resolved from the symbol) [--save out.json]
     tools/draw_census.py --compare before.json after.json
 
 WHY THIS EXISTS
@@ -94,7 +94,42 @@ def parse_trace(text: str, proc: int) -> dict:
     return {"draws": draws, "frees": frees, "emits": emits, "order": order}
 
 
-def profile(symbol: str, proc: int, keep: pathlib.Path | None = None) -> dict:
+PROC_BEGIN_RE = re.compile(r"^DKWB-PROC\s+BEGIN\s+proc=(\d+)\s*$", re.M)
+
+
+def ordinal_from_symbols(symbol: str, funcs: list[tuple[str, int]], nprocs: int) -> int:
+    """Procedure ordinal of `symbol` from the object's FUNC symbols.
+
+    ugen emits procedures in ordinal order, so the Nth distinct function
+    address is procedure N. That is only believed when the trace announces
+    exactly as many procedures as the object has function ranges; otherwise
+    the mapping is unproven and we refuse rather than census another function.
+    """
+    ranges = sorted({value for _, value in funcs})
+    if len(ranges) != nprocs:
+        raise SystemExit(
+            f"draw_census: cannot resolve {symbol!r} to a procedure: the object has "
+            f"{len(ranges)} function ranges but the trace has {nprocs} procedures. "
+            "Pass --proc N (tools/web_footprint.py --list-procs prints the index).")
+    values = [v for n, v in funcs if n == symbol]
+    if not values:
+        raise SystemExit(f"draw_census: {symbol!r} is not a function in the compiled object; "
+                         "pass --proc N")
+    return ranges.index(values[0])
+
+
+def resolve_proc(symbol: str, obj: pathlib.Path, text: str) -> int:
+    import allocator_trace_receipt as atr
+    try:
+        syms = atr.read_object_symbols(obj)
+    except atr.ReceiptError as error:
+        raise SystemExit(f"draw_census: cannot resolve {symbol!r} to a procedure ({error}); "
+                         "pass --proc N")
+    nprocs = len(set(PROC_BEGIN_RE.findall(text)))
+    return ordinal_from_symbols(symbol, [(x.name, x.value) for x in syms], nprocs)
+
+
+def profile(symbol: str, proc: int | None, keep: pathlib.Path | None = None) -> dict:
     """Compile once with the ugen trace on and reduce it to a per-line census."""
     command = fl.replace_compiler(fl.compile_command(symbol),
                                   fl.INSTRUMENTED / "cc")
@@ -111,6 +146,9 @@ def profile(symbol: str, proc: int, keep: pathlib.Path | None = None) -> dict:
         (work / "ugen.log").write_text(text)
     if result.returncode:
         raise SystemExit(f"draw_census: compile failed (exit {result.returncode})")
+    if proc is None:
+        proc = resolve_proc(symbol, work / "candidate.o", text)
+        print(f"draw_census: {symbol} is procedure {proc}", file=sys.stderr)
     parsed = parse_trace(text, proc)
     if not parsed["order"] and not parsed["emits"]:
         raise SystemExit(
@@ -183,7 +221,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Census a function's ugen draws and emissions per source line.")
     parser.add_argument("symbol", nargs="?")
-    parser.add_argument("--proc", type=int, default=0)
+    parser.add_argument("--proc", type=int, default=None,
+                        help="procedure ordinal (default: resolved from the symbol name)")
     parser.add_argument("--save", type=pathlib.Path, default=None)
     parser.add_argument("--keep", type=pathlib.Path, default=None,
                         help="retain the object and the raw trace here")

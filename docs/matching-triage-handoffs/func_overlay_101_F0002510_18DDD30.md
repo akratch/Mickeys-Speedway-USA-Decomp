@@ -303,4 +303,9 @@ frame_census on a-ovl3's 264 cell (edgeY declared beside originY, `edgeY = origi
 insertion_pairs on the 264 cell (trace identity-gated): the -8 is three target-only moves, the y copy into s4 at +0x98 (line of the tests), a move at +0xD4 (line 117, move_to_dest) and one at +0x1BC, against one candidate-only stack load at +0x158. So that cell is short of exactly the copies, and its frame cell is free to pay for with edgeX.
 
 Next: on the 264 cell with edgeX folded (frame 0xE8), find the source of the +0xD4 and +0x1BC moves (insertion_pairs owners: line 117 and line 142 of that cell) before the y copy; the y copy needs the sum redefined after `y = originY` (a-ovl3), which so far moves the last test onto the copy.
+#### 2026-10-07 (lane e-ovl2): statement order and the copy position are inert on the 90 body
+
+On the 90 body (1172 bytes, 90 masked, size delta 0). An 8-cell product: x and originY assigned in either order, `y = originY` before or after the clip tests, crossed with the edgeX local or x's edge inline (edgeX still declared). Every edgeX-local cell is 90 and byte-identical (uopt orders the two sums itself; the target's ugen order, y's loads first, is not a statement-order fact); every inline cell is 269 at +12. Records on the 90 body (CDX_PROC=0, identity gate passed, 64 decisions): twelve webs are split (318 to 329, save 3.33 over 3 blocks, the hoisted loop constants), and six webs tie at save 3.67 over 3 blocks taking s1 to s5 in web-number order.
+
+Cycle-21: on the 90 body, read whether the target's y is one web split by the allocator around the scissor call (the `or s4, v1` at +0x98 sits at the split point), against this body's originY copy that uopt propagates; the lane that closed overlay 1's F0001D78 found the word/pointer double spelling of one object was the artefact, so check that no other value here is held under two names before forcing.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

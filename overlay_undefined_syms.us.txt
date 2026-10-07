@@ -105,6 +105,28 @@ overlay1ResetReloc = 0xf0000000;
 overlay1SubmitBuildReloc = 0xf0000000;
 sqrtf_o001Reloc = 0xf0000000;
 
+/* overlay 1: func_overlay_001_F0001D78_184E158.c.o */
+D_1D94 = 0x00001d94;
+D_1DC0 = 0x00001dc0;
+D_1DD0 = 0x00001dd0;
+amSndPlay_o001Reloc = 0xf0000000;
+func_80005750_o001Reloc = 0xf0000000;
+func_80028F54_o001Reloc = 0xf0000000;
+func_800291C4_o001Reloc = 0xf0000000;
+func_8003A55C_o001Reloc = 0xf0000000;
+gO1FinishEnabled = 0x00000000;
+gO1RaceOver = 0x00000000;
+gO1RankWeights = 0x00000000;
+gOverlay1PositionSentinelLiteral = 0x000000d8;
+levelGetBlurEffect_o001Reloc = 0xf0000000;
+levelGetNumber_o001Reloc = 0xf0000000;
+overlay1FindClosestSampleReloc = 0xf0000000;
+overlay1Overlay68StartTimerReloc = 0xf0000000;
+overlay1Overlay7CommitSelectionReloc = 0xf0000000;
+overlay1Overlay7UpdateOwnerModeReloc = 0xf0000000;
+overlay1PreviousPointerReloc = 0xf0000000;
+overlay1TestDirectionReloc = 0xf0000000;
+
 /* overlay 1: overlay_001_middle.c.o */
 gOverlay1ModeObject = 0x00001da0;
 gOverlay1ModeSource = 0x00001d9c;
@@ -122,22 +144,16 @@ overlay1ReadModeReloc = 0xf0000000;
 D_1BA8 = 0x00001ba8;
 D_1D74 = 0x00001d74;
 D_1D78 = 0x00001d78;
-D_1D94 = 0x00001d94;
 D_1DA0_State = 0x00001da0;
-D_1DC0 = 0x00001dc0;
-D_1DD0 = 0x00001dd0;
-func_80005750_o001Reloc = 0xf0000000;
 func_80005820_o001Reloc = 0xf0000000;
 func_800291D8_o001Reloc = 0xf0000000;
 func_8005830C_o001Reloc = 0xf0000000;
 gO1RankMode = 0x00000000;
 gO1RankTime = 0x00000004;
-gO1RankWeights = 0x00000000;
 gO1RankWord800C947C = 0x00000000;
 levelGetLevel_o001Reloc = 0xf0000000;
 
 /* overlay 1: func_overlay_001_F0003258_184F638.c.o */
-func_80028F54_o001Reloc = 0xf0000000;
 gOverlay1RankSentinelLiteral = 0x000000e4;
 overlay1Overlay7DispatchSelectionReloc = 0xf0000000;
 

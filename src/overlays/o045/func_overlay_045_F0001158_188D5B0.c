@@ -225,13 +225,13 @@ void func_overlay_045_F0001158_188D5B0(
 
                     fontCommands = font->displayList;
                     dList->words.w0 = fontCommands->words.w0;
-                    dList->words.w1 = D_800D6638 + glyph->textureOffset;
+                    dList->words.w1 = (u32)((u8 *)D_800D6638 + glyph->textureOffset);
                     dList++;
                     fontCommands++;
                     if (font->format == 4) {
                         PKT(dList, 0x07060030, (u32)fontCommands + 0x80000000);
                         dList->words.w0 = fontCommands[6].words.w0;
-                        dList->words.w1 = D_800D6638 + glyph->textureOffset2;
+                        dList->words.w1 = (u32)((u8 *)D_800D6638 + glyph->textureOffset2);
                         dList++;
                         fontCommands += 7;
                     }
@@ -347,10 +347,10 @@ void func_overlay_045_F0001158_188D5B0(
 
 /* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
  * symbol: func_overlay_045_F0001158_188D5B0
- * score: 402 differing words
+ * score: 395 differing words
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x64
- * summary: Float screen coordinates after the 0xA0 bias: 566 at -4 to 561 at size 0, frame 0x190. Left/right call spills remain open.
+ * summary: Typed byte-arena texture addresses: 402 to 395 at size delta 0, frame 0x190. Stack homes and call-spanning screen values remain open.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

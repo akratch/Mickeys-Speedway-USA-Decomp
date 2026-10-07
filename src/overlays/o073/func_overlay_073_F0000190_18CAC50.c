@@ -2,9 +2,10 @@
  * automatic homes are reconstructed. Radius limits and shared zero values
  * have explicit, nonoverlapping local roles. Signed steering comparisons
  * preserve promoted negation, including the signed-halfword minimum.
- * Entry narrowing, compiler scratch allocation and relocation geometry
- * remain nonexact; see the owned matching-triage handoff for measurements
- * and the supported query/index domain. */
+ * The entry multiply sits in its own region (do/while) so the step is
+ * narrowed once, as shipped. Ring phase from the case 1 angle difference,
+ * one float spill home and relocation geometry remain nonexact; see the
+ * owned matching-triage handoff for measurements and the query domain. */
 #ifdef NON_MATCHING
 #include "PR/ultratypes.h"
 
@@ -112,9 +113,11 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
     struct HitCopyState *hits[8];
 
     state = object->state;
-    stateAngle = state->angle;
-    absStep = stateAngle;
-    absStep *= updateRate;
+
+    absStep = state->angle;
+    do {
+        absStep *= updateRate;
+    } while (0);
     if (absStep < 0) {
         absStep = -absStep;
     }
@@ -124,10 +127,9 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
         state->timer = 0;
         if ((s16)func_8005776C(state->x, 0.0f, state->z, state->radius,
                           1, hits) != 0) {
-            target = (Func073Target *)hits[0];
+            state->target = hits[0];
             state->countdown = 0xF0;
             state->mode = 3;
-            state->target = target;
         }
         object->timer += (f32)updateRate * D_20;
         if (object->timer >= 1.0f) {
@@ -139,8 +141,8 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
     case 1:
     case 2: {
 
-        if (stateAngle < 0x480) {
-            state->angle = stateAngle + (updateRate * 0x10);
+        if (state->angle < 0x480) {
+            state->angle += updateRate * 0x10;
             if (state->angle >= 0x481) {
                 state->angle = 0x480;
             }
@@ -208,8 +210,8 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
 
     case 3: {
 
-        if (stateAngle < 0x480) {
-            state->angle = stateAngle + (updateRate * 0x10);
+        if (state->angle < 0x480) {
+            state->angle += updateRate * 0x10;
             if (state->angle >= 0x481) {
                 state->angle = 0x480;
             }
@@ -281,8 +283,8 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
 
     case 4: {
 
-        if (stateAngle >= 0x181) {
-            state->angle = stateAngle - (updateRate * 0x10);
+        if (state->angle >= 0x181) {
+            state->angle -= updateRate * 0x10;
             if (state->angle < 0x180) {
                 state->angle = 0x180;
             }
@@ -414,10 +416,10 @@ common:
 
 /* PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:start
  * symbol: func_overlay_073_F0000190_18CAC50
- * score: 741 differing words
+ * score: 178 differing words
  * frame: 0x98
  * relocations: 46
- * first-mismatch: +0x1C
- * summary: Configured stock 760/762 result, 740 relocation-masked differences and exact frame; observed declared homes and the multiply-hazard schedule are reconstructed. Entry narrowing, one compiler scratch home and exact relocation/linked proof remain unresolved.
+ * first-mismatch: +0x180
+ * summary: 163 masked at size 0 (was 740 at +8); ring two draws behind from the case 1 angle difference, one float spill home, one schedule swap.
  * PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:end
  */

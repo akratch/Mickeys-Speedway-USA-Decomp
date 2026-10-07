@@ -2,11 +2,13 @@
 ### `func_overlay_073_F0000190_18CAC50` plateau handoff
 
 - source: `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c`
-- score: 741 differing words
+- score: 178 differing words
 - frame: 0x98
 - relocations: 46
-- first mismatch: +0x1C
-- summary: Configured stock 760/762 result, 740 relocation-masked differences and exact frame; observed declared homes and the multiply-hazard schedule are reconstructed. Entry narrowing, one compiler scratch home and exact relocation/linked proof remain unresolved.
+- first mismatch: +0x180
+- summary: 163 masked at size 0 (was 740 at +8); ring two draws behind from the case 1 angle difference, one float spill home, one schedule swap.
+
+Summary before this remeasure: Configured stock 760/762 result, 740 relocation-masked differences and exact frame; observed declared homes and the multiply-hazard schedule are reconstructed. Entry narrowing, one compiler scratch home and exact relocation/linked proof remain unresolved.
 
 Header regenerated from the ranking on 2026-09-23 (check_shard_metrics --write); it read first mismatch +0x0.
 
@@ -219,5 +221,42 @@ linked promotion is claimed and no ROM rebuild is needed for this report-only
 closure. The next packet still needs independently new evidence for the
 normalization web or spill-pool ownership, plus eventual literal/switch binding
 and linked owned-byte proof.
+
+#### 2026-10-07, lane b-o073: entry region, direct hit copy, field-read ramp
+
+Three source-shape edits, each measured as a product with
+`tools/shape_product.py`, took the function from 740 masked words at
+size +8 to 163 at size 0 (aligned: 597 exact, 155 naming, 6 immediate,
+2 structural; first mismatch +0x180).
+
+- Entry, 740 at +8 to 212 at 0. The duplicate narrowing was the
+  multiply sharing a uopt region with the sign test. Putting the
+  multiply in its own `do { } while (0)` region removes it (237, with
+  the step coloured a1 because its web no longer spans the entry
+  block). Reading the field directly (`absStep = state->angle;`, not
+  through the s32 snapshot) restores the step's entry-block definition,
+  so the parameter register is forbidden and the step takes t1; the
+  entry words then agree with the target. Nine carrier/cast forms and
+  four sign-test forms without a region were all +8 or -8 (two
+  products, 45 cells); region placement was a 32-cell product.
+- Case 0 hit copy, 212 to 164. `state->target = hits[0];` written
+  first, with no `target` local. The same edit at the case 1 or case 3
+  copy regresses (27-cell product; best combination is case 0 only).
+- Angle ramps, 164 to 163 and first mismatch +0x124 to +0x180.
+  Test and update the field itself (`if (state->angle < 0x480)
+  state->angle += updateRate * 0x10;`, and the case 4 mirror); the
+  s32 snapshot local is then dead and its store is removed. Deleting
+  its declaration as well regresses to 229 (frame side effect), so
+  the declaration stays.
+
+Measured flat (do not repeat on this shape): Arctanf return type
+s16/s32/u16, targetAngle s16/s32, and four casts on the angle
+difference (24 cells, all 163); the ramp add's operand order.
+
+Remaining: the ring is two draws behind the target from the case 1
+angle difference (+0x18C) onward, with every instruction between
+the ramp and that point register-identical; the float spill home
+(+0x30 against +0x34) and one schedule swap near +0x7A4 are the two
+structural rows.
 
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

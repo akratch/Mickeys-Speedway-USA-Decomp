@@ -2,11 +2,11 @@
 ### `overlay98RenderReflections` plateau handoff
 
 - source: `src/overlays/o098/overlay98RenderReflections.c`
-- score: 5/389 words
+- score: 0/389 words, promoted
 - frame: 0x1C8
 - relocations: 36
-- first mismatch: +0xB0
-- summary: Bare special-vertex address, masked alpha, u32 display list, x-first arm, flag on the call line: 225 to 5 at delta 0; open: cursor temp at +0x58 against +0x5C.
+- first mismatch: none
+- summary: Matched. The state byte is read at each test, not held in an s8 local; with the h-5 edits (bare special-vertex address, masked alpha, u32 display list, x-first arm, flag on the call line) promoted at 0 at delta 0.
 
 Summary before this remeasure: Packets on one line, second node name and pick local, target callee-saved order: 267 to 225 at delta 0 (aligned 66); open: cursor's second home store at +0xFC.
 
@@ -321,8 +321,9 @@ and the module's relocation records, five edits, each measured alone on
 the previous body (positional masked, then aligned non-equal rows):
 
   - the special-vertex word: the record at that site is a SYMBOL record
-    with stored addend 0, and the target stores the lui/addiu pair
-    directly, so the source passes the bare address, not the address plus
+    (target module 4093) whose stored hi/lo pair already carries
+    0x80000000, and the target stores that pair with no add of the
+    constant web, so the source passes the bare address, not the address plus
     0x80000000 (225 to 277 positional, aligned 54 to 123: the removed
     addu exposes a ring phase that the extra draw had been hiding);
   - the alpha word as `(object->alpha & 0xFF)` ORed with `~0xFF`: the target's ring
@@ -358,5 +359,27 @@ the temp to +0x54 at 0x1C8; two more 0x1D0. So the target's declared
 block ends at +0x60 (one cell fewer than ours) and its frame carries four
 more bytes below the cursor's temp that no instruction touches: a second
 compiler temporary allocated after the cursor's, whose traffic is gone.
+
+#### 2026-10-07 (lane h-5, second step): matched, the state local was the extra cell
+
+On the 5-word body, a product over three axes (one pad cell fewer; the
+`pick` local inlined as `node2->data`; the `state` local removed with
+each of the three tests reading
+`object->stateTable[object->stateIndex + 0x1E]`), positional masked at
+size delta:
+
+  - state local removed, everything else kept: 0 at delta 0 (raw 3, the
+    three relocation-addend words of the accepted count, masked);
+  - one pad fewer: 64 at 0 (frame 0x1C0), with or without the state
+    removal;
+  - pick inlined: 320 to 324 at +8 in every combination.
+
+The s8 local was the value held under a second name: it cost the frame
+one cell, which put the cursor temporary at +0x58. Promoted: overlay
+atlas, extract, overlay-syms, build, overlay-syms, build, `gmake verify`
+OK, `check-overlay-syms` up to date, `promotion-proof` PASS (389 words,
+frame 0x1C8, relocations 36/36). The special-vertex site's SYMBOL record
+stores 0x80000000, so the generated alias binds gO98SpecialVertices to
+that value; the bare address in the source is what makes the stored word.
 
 <!-- plateau-handoff:overlay98RenderReflections:end -->

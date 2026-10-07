@@ -1,13 +1,13 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 32,
-  "resolved": 32,
+  "queue_size": 31,
+  "resolved": 31,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 32,
-  "relocation_masked_coverage": 32,
+  "source_context_coverage": 31,
+  "relocation_masked_coverage": 31,
   "functions": [
     {
       "name": "overlay17CreateChain",
@@ -53,21 +53,6 @@
       "size_delta": 0,
       "category": "other",
       "source_context_sha256": "VH-q.TnbH.910b.V4ao.7OIo.8Oqm.5oYJ.zouI.JTWh.eJrR.yHU"
-    },
-    {
-      "name": "overlay98RenderReflections",
-      "file": "src/overlays/o098/overlay98RenderReflections.c",
-      "overlay": 98,
-      "tu": "overlays/o098",
-      "size_bytes": 1556,
-      "objdiff_match_pct": null,
-      "differing_words": 8,
-      "first_mismatch_offset": 152,
-      "relocation_masked_differing_words": 5,
-      "relocation_masked_first_mismatch_offset": 176,
-      "size_delta": 0,
-      "category": "other",
-      "source_context_sha256": "EoCF.Y4nL.R8hp.mAQs.7Tzl.F4A_.MteL.rHK1.O3TX.rFXT.n_U"
     },
     {
       "name": "func_80051364",

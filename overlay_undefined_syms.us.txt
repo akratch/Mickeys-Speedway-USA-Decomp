@@ -4575,6 +4575,18 @@ gOverlay98AcceptedCount = 0x00000084;
 gOverlay98AcceptedEntries = 0x00000088;
 overlay98AcquireContextReloc = 0xf0000000;
 
+/* overlay 98: overlay98RenderReflections.c.o */
+gO98Contexts = 0x00000000;
+gO98SpecialVertices = 0x80000000;
+gO98Toggle = 0x00000000;
+o98AcquireRenderContextReloc = 0xf0000000;
+o98BuildInverseMatrixReloc = 0xf0000000;
+o98BuildMatrixReloc = 0xf0000000;
+o98CombineMatrixReloc = 0xf0000000;
+o98EmitObjectReloc = 0xf0000000;
+o98LoadMatrixReloc = 0xf0000000;
+o98RestoreStateReloc = 0xf0000000;
+
 /* overlay 98: overlay98CheckObject.c.o */
 overlay98CheckCandidateReloc = 0xf0000000;
 overlay98CheckInitialReloc = 0xf0000000;

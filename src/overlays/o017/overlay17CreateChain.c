@@ -65,26 +65,19 @@ extern void overlay17CalculateEndpoints(struct Overlay17ChainHead *chain, f32 *x
                                         f32 *x1, f32 *y1, f32 *z1);
 
 
-/* Plateau, 2026-10-02 (lane x-ovlb): 83 -> 65 masked at delta 0. The
- * template loop and the alpha-clearing loop share one counter, `index`, as
- * the target's shared a0/v1 counter and copy registers require; that fixed
- * the template loop's colours. Still open: the half-buffer size is coloured
- * a3 where the target has a ring temp (t7) stored straight to its home, and
- * the else arm's template address is a coloured web where the target has a
- * ring temp formed before the branch. On 2026-10-03 the three calls were
- * identified independently and given their real declarations and arities,
- * closing 65 to 45 masked differences without changing the size local.
- * 2026-10-07 (lane f-o069), 36 -> 3: chain->count stored before dirty and
- * selectedBuffer (the target loads count at the head of the join block);
- * source, destination and the template store assigned inside the material
- * arm in that order (source first, or the destination's loop web splits
- * with a preheader copy); the else arm storing the global directly; and the
- * inherited `red & 0xFF` mask dropped (its peepholed andi had become the
- * one surplus ring draw before the endpoint-call argument addresses). The
- * three left are the half-buffer size web, coloured a2 where the target
- * keeps its pre-call piece in a ring temp (records: totalsave 4 against
- * bestcost 3, so it is coloured, not split). */
-#ifdef NON_MATCHING
+/* Matched 2026-10-07 (lane i-near). The half-buffer size is a local that
+ * the allocation reads, kept alive past the call by a no-op or-with-zero
+ * (deleted by the compiler) so that uopt does not substitute `count * 20`
+ * into it; the two buffer arms read the expression itself. That makes the
+ * size an expression web whose definition is evaluated into a ring temp and
+ * copied (as1 forwards the temp into the allocation argument and the spill
+ * store and deletes the copy), with count loaded into the web's own register
+ * as scratch and the spill in the compiler's temp slot, as shipped. Earlier
+ * steps, in order: one shared loop counter (x-ovlb, 83 -> 65); real callee
+ * declarations and arities (65 -> 45); chain->count stored before dirty and
+ * selectedBuffer, source/destination/template assigned inside the material
+ * arm, the else arm storing the global directly, the inherited `red & 0xFF`
+ * mask dropped (f-o069, 36 -> 3); the or-zero kill (3 -> 0). */
 Overlay17Chain *overlay17CreateChain(
     void *owner, s32 count, Overlay17Material *materialToken, s32 materialScale,
     f32 x, f32 y, f32 z, f32 radius,
@@ -105,16 +98,17 @@ Overlay17Chain *overlay17CreateChain(
     halfBufferBytes = count * 20;
     chain = func_8002B280(
         (s32)chain + (halfBufferBytes * 2), 0x87);
+    halfBufferBytes |= 0;
     if (chain != 0) {
 
     if (materialToken != (Overlay17Material *)-1) {
         chain->material = (Overlay17Material *)func_80034448((s32)materialToken);
         chain->buffers[0] = (Overlay17Pair *)((u8 *)chain + 0x140);
-        chain->buffers[1] = (Overlay17Pair *)((u8 *)chain->buffers[0] + halfBufferBytes);
+        chain->buffers[1] = (Overlay17Pair *)((u8 *)chain->buffers[0] + count * 20);
     } else {
         chain->material = 0;
         chain->buffers[0] = (Overlay17Pair *)((u8 *)chain + 0x40);
-        chain->buffers[1] = (Overlay17Pair *)((u8 *)chain->buffers[0] + halfBufferBytes);
+        chain->buffers[1] = (Overlay17Pair *)((u8 *)chain->buffers[0] + count * 20);
     }
 
     if (chain->material != 0) {
@@ -186,16 +180,3 @@ Overlay17Chain *overlay17CreateChain(
 
     return chain;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o017/overlay17CreateChain/func_overlay_017_F0000318_1873CD0.s")
-#endif
-
-/* PLATEAU-HANDOFF:overlay17CreateChain:start
- * symbol: overlay17CreateChain
- * score: 3 differing words
- * frame: 0x80
- * relocations: 7
- * first-mismatch: +0x3C
- * summary: Restored ff930eacb arm-exact body lost in a merge: 24 to 3 at delta 0. Open: web 12 (half-buffer size) pre-call piece in a2 where the target uses ring t7.
- * PLATEAU-HANDOFF:overlay17CreateChain:end
- */

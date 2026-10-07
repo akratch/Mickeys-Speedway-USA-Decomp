@@ -508,7 +508,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             }
         }
     }
-    ov47Data_550 = ov47Data_550 + ov47Data_554 * updateRate;
+    ov47Data_550 += ov47Data_554 * updateRate;
     if (ov47Data_550 < 0) {
         ov47Data_550 = -ov47Data_550;
         ov47Data_554 = -ov47Data_554;
@@ -537,7 +537,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     func_800221E8(&D_800D3140, NULL);
     camStandardOrtho(&D_800D3140, &D_800D3144);
     func_800349A4(&D_800D3140, NULL, 16, 0);
-    O47_COMMAND_W1(0xFA000000, -1);
+    O47_COMMAND(0xFA000000, -1);
     O47_VERTICES(ov47Data_228, 6);
     O47_COMMAND(0x05300040, O47_PHYSICAL(ov47Data_268));
     O47_COMMAND(0xE7000000, 0);
@@ -586,10 +586,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
         O47_COMMAND_W1(0xFCFFFFFF, 0xFFFDF6FB);
         O47_VERTICES(ov47Data_198, 4);
-        O47_COMMAND(0x05100020, O47_PHYSICAL(ov47Data_1C0));
+        O47_COMMAND_W1(0x05100020, O47_PHYSICAL(ov47Data_1C0));
         camStandardOrtho(&D_800D3140, &D_800D3144);
         func_80034920(&D_800D3140);
-        O47_COMMAND(0xFA000000, -1);
+        O47_COMMAND_W1(0xFA000000, -1);
         func_80023F84(&D_800D3140, &D_800D3144, &D_800D3148, icon, D_800D31C8[11], 0, 255);
         if (selected != -1 && !unready) {
             oldSelector = icon->selector;
@@ -599,7 +599,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         }
         O47_COMMAND(0x01000040, O47_PHYSICAL(savedMatrix));
         if (selected != -1 && !D_800D3058[selected].ready) {
-            O47_COMMAND_W1(0x06000000, ov47Data_2A8);
+            O47_COMMAND(0x06000000, ov47Data_2A8);
             red = ov47Data_3DC[selected] >> 24;
             green = ov47Data_3DC[selected] >> 16;
             blue = ov47Data_3DC[selected] >> 8;
@@ -726,10 +726,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 1969/2168 words
+ * score: 1977/2168 words
  * frame: 0x280
  * relocations: 315
  * first-mismatch: +0x4
- * summary: Banked on aligned residual at size -12: table-read channels, blend reassignment, 540/544 statics, j on selected; residual 911 to 887.
+ * summary: Banked on aligned residual at size -12: compound 550 update and re-climbed word orders, residual 887 to 759. Open: green copy, 3C8, +0x12C.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

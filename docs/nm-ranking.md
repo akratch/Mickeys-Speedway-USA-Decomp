@@ -314,7 +314,7 @@ units remain distinct.
 | 19 | `src/main/fx.c` | `wakeAllocate` | `main` | `size-mismatch` | 1,404 | 323 | 323 | 16 | 16 | -8 | — |
 | 20 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 339 | 339 | 0 | 0 | 8 | — |
 | 21 | `src/main/anim.c` | `func_800517E0` | `main` | `size-mismatch` | 7,232 | 1,531 | 1,530 | 72 | 72 | -12 | — |
-| 22 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 1,976 | 1,969 | 4 | 4 | -12 | — |
+| 22 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 1,984 | 1,977 | 4 | 4 | -12 | — |
 
 ### Unresolved identities
 

@@ -1050,7 +1050,11 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
         value = wake->value8 >> 1;
         sample[1] = value;
         if (mark != 0) {
-            sample[1] = value | 0x80;
+            /* Lane i-6: OR-assigned through the byte. uopt forwards the
+             * byte just stored, so the value stays one ring temporary and
+             * the forwarded byte spends the draw the target spends
+             * (195 -> 132; the value | 0x80 form kept `value` in v0). */
+            sample[1] |= 0x80;
         }
         *(s16 *) (sample + 2) = angle;
         *(s16 *) (sample + 4) = (*(u16 *) ((u8 *) wake->linked + 8) - 1) << 8;
@@ -2139,10 +2143,10 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeUpdate:start
  * symbol: wakeUpdate
- * score: 195/398 words
+ * score: 132/398 words
  * frame: 0x90
  * relocations: 2
  * first-mismatch: +0x34
- * summary: Secondary cursor per vertex and polyCount per triangle replace two OR-zero probes (byte-identical, 195 at 0). Left: the three stripIndex probes.
+ * summary: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: loop t3/t5, outputCount/polygonOffset, stripIndex probes
  * PLATEAU-HANDOFF:wakeUpdate:end
  */

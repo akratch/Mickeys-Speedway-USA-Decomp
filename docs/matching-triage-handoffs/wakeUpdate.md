@@ -2,11 +2,13 @@
 ### `wakeUpdate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 195/398 words
+- score: 132/398 words
 - frame: 0x90
 - relocations: 2
 - first mismatch: +0x34
-- summary: Secondary cursor per vertex and polyCount per triangle replace two OR-zero probes (byte-identical, 195 at 0). Left: the three stripIndex probes.
+- summary: Mark bit OR-assigned through the stored byte: ring lines up, 195 to 132 at 0. Left: loop t3/t5, outputCount/polygonOffset, stripIndex probes
+
+Summary before this remeasure: Secondary cursor per vertex and polyCount per triangle replace two OR-zero probes (byte-identical, 195 at 0). Left: the three stripIndex probes.
 
 Summary before this remeasure: OR-zero weight probes order secondaryVertices over wake and stripIndex over index (253 to 198 at 0). Left: polyCount/outputCount over polygonOffset.
 
@@ -245,4 +247,42 @@ increments carry half of it at the cost of a ring rotation; look for the
 form that carries the rest without moving the draws (draw_census
 --compare against this body).
 
+#### 2026-10-07, lane i-6: the mark bit OR-assigned through the byte, 195 to 132 at delta 0
+
+Measured by tools/bank.py: masked 132 (raw 132), size delta +0, candidate 398 words vs target 398. Aligned: byte-exact 277, register naming 101, immediate only 2, really different 22.
+
+Aligner after: byte-exact 277, naming 101, immediate 2, really different
+22 (before 208, 170, 2, 22). The new-sample block's mark store is
+sample[1] = value, then sample[1] OR-assigned 0x80 inside the mark test. uopt forwards
+the byte just stored, so `wake->value8 >> 1` stays a ring temporary (t8 in
+the target, where ours had the `value` web in v0) and the forwarded byte
+spends the one extra draw the target spends before the `ori` (t9 skipped,
+the `ori` lands in t0): the whole temp ring from +0x1C0 to the end of the
+pre-loop region lines up. This was the one-register ring shift earlier
+lanes read as a counter-block phase.
+
+Seven other spellings of the same statement group, one product: re-reading
+(wake->value8 >> 1) OR 0x80 in the arm reloads the halfword (the byte
+store may alias wake), +8; the `u8` cast and `& 0xFF` forms are the same
++8; `sample[1] = value = ...` is byte-identical to the old body. The (u8) value
+OR 0x80 and (value & 0xFF) OR 0x80 arms compile to the same object
+as the OR-assign (132).
+
+Measured since, on the 132 body: the loop's vertexCount through its own
+carrier (value: 182 positional but aligned residual 117 against 125, the
+pre-loop vertexCount then lands in a2 against the target's a1 and the
+count copy and mark take v1 as shipped; mark 188; count 197; a new local
+281); the second loop's sample address as `index * 0x14` (+4, multu),
+`(index * 5) << 2` or `* 4` (byte-identical).
+
+Left: a t3/t5 swap in the loop (the target computes index * 5 into t3 and
+shifts it in place after loading the sample base into t5), the
+outputCount/polygonOffset pair (a1 and fp swapped), the first window's
+vertexCount/count-copy pair, and the outputOffset zero init (+0x284 in the
+target, ours in the branch delay slot at +0x298).
+
+Cycle-21 line: draw_census --proc 13 on the second loop's head (lines of
+the sample address) to find the draw that puts index * 5 in t4 here; then
+the stripIndex probes (decision variable unchanged: stripIndex 171/11 with
+probes against index 123/8).
 <!-- plateau-handoff:wakeUpdate:end -->

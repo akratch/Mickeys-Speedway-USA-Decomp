@@ -2,11 +2,11 @@
 ### `overlay83DrawStrip` plateau handoff
 
 - source: `src/overlays/o083/overlay83DrawStrip.c`
-- score: 58 differing words
+- score: 0/77 words, promoted
 - frame: frameless
 - relocations: 2
-- first mismatch: +0x4
-- summary: vertexCount defined before the packet stores scores 68/77 at delta 0, first +0x4. Dead zeros, pointer-copy placement and an early address local do not give vertexCount a0. The opening display-list copy is still absent.
+- first mismatch: none
+- summary: Matched. Rewritten with one SDK/JFG packet macro per command: colour words packed through _SHIFTL, the vertex address as byte arithmetic on the strip base with the index product first, and the saved display-list pointer taken after the first packet so the parameter takes a3.
 
 #### 2026-10-05: the saved display-list copy stays in a2
 
@@ -329,4 +329,25 @@ tracked source was restored and freshly recompiled to the 58-word baseline.
 No new match and no source change is adopted. Next action requires evidence
 for the remaining polygon expression's early allocation, followed by a
 reviewed representation of the independently proved data owner and bias.
+#### 2026-10-07, lane a-ovl1: matched
+
+Configured baseline 58 masked at delta 0. Three products, each one cycle:
+
+1. The natural body (no doubled or vertex locals, no saved pointer,
+   JFG gDPSetPrimColor/gDPSetEnvColor/gSPVertexJFG/gSPPolygon) scored 71.
+   The colour packets became exact; the counts then took ring temps.
+2. Re-adding the doubled and vertex locals and the saved pointer to the
+   JFG macros, with the address as `(u8 *)&strip[index] + 0x800000F0`:
+   4 masked. Left: the copy in a2 and the second address add reading
+   index product first.
+3. Address written `(u8 *)strip + index * sizeof(Overlay83Strip) +
+   0x800000F0` closed the add (3). A placement grid of the saved-pointer
+   assignment (before the count load, before the first packet, after each
+   packet) found 0 for every placement after the first packet. The
+   records showed why: before it, the parameter web (19) is numbered ahead
+   of the first packet's `_g` web (22) and takes a2; after it, `_g` takes
+   a2 first (and emits nothing) and the parameter takes a3.
+
+Promoted; `gmake verify` and `promotion-proof` pass. The POSTPROCESS rule
+keeps only the trim.
 <!-- plateau-handoff:overlay83DrawStrip:end -->

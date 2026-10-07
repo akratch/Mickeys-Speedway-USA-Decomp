@@ -2,11 +2,13 @@
 ### `overlay98RenderReflections` plateau handoff
 
 - source: `src/overlays/o098/overlay98RenderReflections.c`
-- score: 227/389 words
+- score: 226/389 words
 - frame: 0x1C8
 - relocations: 36
 - first mismatch: +0xB0
-- summary: One-line packets, second node name after the state-index store, u32 matrix word: 267 to 227 at delta 0; open: one temp-ring draw before +0x200, node/model pair.
+- summary: One-line packets, second node name and pick local, u32 matrix word: 267 to 226 at delta 0 (aligned 71); open: cursor's second home store at +0xFC.
+
+Summary before this remeasure: One-line packets, second node name after the state-index store, u32 matrix word: 267 to 227 at delta 0; open: one temp-ring draw before +0x200, node/model pair.
 
 Summary before this remeasure: Natural rewrite plus two-statement packets in the matrix arms: 332 to 267 at delta 0, frame exact; open: second node copy (s5) missing.
 
@@ -262,5 +264,36 @@ is not the s-register order. Window +0x200 carries one closed ten-cycle
 over the whole temp ring (t0 to t1), a single missing or extra draw
 before +0x200; window +0x0 is the node/model pair (ours a0/v0, target
 v0/a1, with the pick re-reading node->data through v0 into a0).
+
+Second product on the 227 body (same lane), aligned residual 100 to 71:
+
+  - the pick through a new local read from node2 (`pick = node2->data`
+    before the alpha test, the declaration replacing the last unused cell):
+    the target's second load of the node's first word, node in v0, model
+    in a1, drewObject in a2, all as shipped (aligned 82); through node->data
+    in the arms or a ternary, uopt CSEs it with model (+4); an s32 or u32
+    view on either load reloads in both arms (+8, 224 aligned); volatile or
+    address-taken stateIndex (+8 to +16);
+  - reflected-arm transform stores x, y, z, scale (aligned 71); four other
+    orders 81 to 84;
+  - flat: specialModel and drewObject cleared before the node load, an
+    if/else for specialModel (+4), six loop-head forms (i++ placement,
+    re-read referenceY, assignment inside the compare), modelDisplayList
+    without volatile (-12, 206).
+
+Open, 226 at delta 0 (exact 321, naming 32, immediate 9, structural 24):
+the target stores the entry cursor to its home a second time at the end
+of the negation block (+0xFC), which shifts everything to +0x478 by one
+word; our compensating extra word is the modelDisplayList packet's own
+`lui at` for 0x80000000 at +0x450 (the target uses the s6 web there).
+Also s7/s8 swapped (&matrixA against specialModel, both save 5.0, tie to
+the lower web number).
+
+Cycle-21 line: the cursor's second home store is a range-split boundary
+store: read the p1dec split records for the cursor web (type-1 entry
+address, home 0x5C) and find which block set makes the negation block part
+of its register piece; separately, why the 0x06000000 packet's constant
+leaves the s6 web (the volatile modelDisplayList load is the only operand
+that differs from the other packets).
 
 <!-- plateau-handoff:overlay98RenderReflections:end -->

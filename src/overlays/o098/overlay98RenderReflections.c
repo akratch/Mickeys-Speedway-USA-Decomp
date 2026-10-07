@@ -74,7 +74,10 @@ extern u8 gO98SpecialVertices[];
  * read from the same subscript after the state-index store carries the
  * vertex word (the target's s5); the matrix word is (u32)*matrixHeap plus
  * the literal so it shares the hoisted 0x80000000 web; the emitted flag is
- * set just before the inverse build. */
+ * set just before the inverse build. Then 227 to 226 (aligned residual
+ * 100 to 71): the display-list pick reads node2->data into its own local
+ * before the alpha test (the target's second load of the node's first
+ * word), and the reflected arm fills its transform x, y, z, scale. */
 #define O98_PACKET(word0, word1) gfx = *dl; *dl = gfx + 1; gfx->w0 = (word0); gfx->w1 = (word1)
 
 #ifdef NON_MATCHING
@@ -113,7 +116,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
     s32 pad10;
     s32 pad11;
     s32 pad12;
-    s32 pad13;
+    O98ModelData *pick;
 
     gO98Toggle ^= 1;
     savedDisplayList = o98AcquireRenderContextReloc();
@@ -145,10 +148,11 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
                 }
                 stateIndex = object->stateIndex;
                 node2 = (O98Node *)object->nodes[object->nodeIndex];
+                pick = node2->data;
                 if (object->alpha == 0xFF) {
-                    modelDisplayList = model->displayListA;
+                    modelDisplayList = pick->displayListA;
                 } else {
-                    modelDisplayList = model->displayListB;
+                    modelDisplayList = pick->displayListB;
                 }
                 if (model->mode4E == 0) {
                     transform.y = referenceY - distance;
@@ -174,8 +178,8 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
                     inverse.rot0 = -object->rotX;
                     emittedReflection = 1;
                     o98BuildInverseMatrixReloc(&inverse, &matrixC);
-                    transform.y = referenceY - distance;
                     transform.x = object->x;
+                    transform.y = referenceY - distance;
                     transform.z = object->z;
                     transform.scale = -1.0f;
                     transform.rot4 = object->rotZ;
@@ -230,10 +234,10 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
 
 /* PLATEAU-HANDOFF:overlay98RenderReflections:start
  * symbol: overlay98RenderReflections
- * score: 227/389 words
+ * score: 226/389 words
  * frame: 0x1C8
  * relocations: 36
  * first-mismatch: +0xB0
- * summary: One-line packets, second node name after the state-index store, u32 matrix word: 267 to 227 at delta 0; open: one temp-ring draw before +0x200, node/model pair.
+ * summary: One-line packets, second node name and pick local, u32 matrix word: 267 to 226 at delta 0 (aligned 71); open: cursor's second home store at +0xFC.
  * PLATEAU-HANDOFF:overlay98RenderReflections:end
  */

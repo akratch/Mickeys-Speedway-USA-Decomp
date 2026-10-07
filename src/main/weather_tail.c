@@ -56,13 +56,13 @@ extern WeatherKey *D_8007C838[];
 extern WeatherColor D_800D40F0[];
 extern void func_8002EBD4(WeatherColor *colors);
 
-#ifdef NON_MATCHING
-/* 2026-10-07 (lane g-4): 43 -> 35. One zero-cost block around each of the
- * call and the two scalar lerps after the colour loop (brief item 18):
- * frac then spans more blocks, its save falls below the counter's, and the
- * counter takes t0 and frac t1 as shipped. Left: the time wrap (ring phase
- * and the dead copy in the wrap's delay slot) and from->unk28's register. */
-void func_8003C80C(s32 arg0, s32 time) {
+/* 2026-10-07 (lane i-1): matched by the natural body. The time global is
+ * advanced and wrapped in place (no carrier, one parameter, so nothing is
+ * homed), and the fraction is computed before the two key lookups, which
+ * gives the wrap's ring draws and the dead copy in its delay slot. The one
+ * zero-cost block around the call keeps the counter in t0 and the fraction
+ * in t1 (brief item 18). */
+void func_8003C80C(s32 arg0) {
     s32 i;
     s32 frac;
     WeatherColor *dst;
@@ -72,24 +72,21 @@ void func_8003C80C(s32 arg0, s32 time) {
     WeatherKey *to;
 
     if (D_8007C854 != 0) {
-        time = D_8007C864;
-        time += arg0;
-        D_8007C864 = time;
-        i = 8;
-        while ((time < D_8007C868) == 0) {
-            D_8007C864 = time - D_8007C868;
+        D_8007C864 += arg0;
+        while (D_8007C864 >= D_8007C868) {
+            D_8007C864 -= D_8007C868;
             D_8007C860++;
             if (D_8007C860 >= 6) {
                 D_8007C860 = 0;
             }
-            time = D_8007C864;
         }
+        frac = (D_8007C864 << 16) / D_8007C868;
         from = D_8007C838[D_8007C860];
         to = D_8007C838[D_8007C860 + 1];
-        frac = (time << 16) / D_8007C868;
         src0 = from->colors;
         src1 = to->colors;
         dst = D_800D40F0;
+        i = 8;
         do {
             dst->r = (((src1->r - src0->r) * frac) >> 16) + src0->r;
             dst->g = (((src1->g - src0->g) * frac) >> 16) + src0->g;
@@ -100,20 +97,7 @@ void func_8003C80C(s32 arg0, s32 time) {
             dst++;
         } while (i--);
         do { func_8002EBD4(D_800D40F0); } while (0);
-        do { D_8007C858 = from->unk24 + (((to->unk24 - from->unk24) * frac) >> 16); } while (0);
-        do { D_8007C85C = from->unk28 + (((to->unk28 - from->unk28) * frac) >> 16); } while (0);
+        D_8007C858 = from->unk24 + (((to->unk24 - from->unk24) * frac) >> 16);
+        D_8007C85C = from->unk28 + (((to->unk28 - from->unk28) * frac) >> 16);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/weather_tail/func_8003C80C.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_8003C80C:start
- * symbol: func_8003C80C
- * score: 35/118 words
- * frame: 0x38
- * relocations: 21
- * first-mismatch: +0x14
- * summary: Zero-cost blocks on the call and both scalar lerps lower frac's save: counter t0, frac t1 as shipped, 43 to 35 at 0. Left: the time wrap window.
- * PLATEAU-HANDOFF:func_8003C80C:end
- */

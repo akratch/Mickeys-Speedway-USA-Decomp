@@ -266,8 +266,8 @@
       "source_commit": "5cafbf70916743b98c06ea2a57da440401dd2a0f"
     },
     "func_80016890": {
-      "ledger_commit": "9c49b242c41ba89e2548037c1b682a0041a6d0d7",
-      "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 31 masked words is a schedule or structure defect the permuter can still move.",
+      "ledger_commit": "b794822cccc6952ab2e87e141f64f33ca40fcf30",
+      "reason": "Test integer 1024 versus f32 1024 in the distance clamp after measured literal-type constant sharing in o073 and spranim. Keep operations, values, locals and control flow unchanged; prior double, clamp-shape and home controls remain closed.",
       "source_commit": "879820da8fd0d357e646fdf31e9565f9cb07b897"
     },
     "func_80017140": {

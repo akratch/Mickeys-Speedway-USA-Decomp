@@ -11,24 +11,38 @@ extern void rsp_segment(Gfx **displayList, s32 segment, void *base);
 extern void viGetCurrentSize(u32 *width, u32 *height);
 
 /*
- * PROVENANCE: JFG asm/nonmatchings/fx/fxScreenEffect.s was used as the
- * nearest structural oracle for this display-list command family. Mickey's
- * own function supplies the body, resident bindings, and framebuffer loop.
+ * PROVENANCE: the strip loop is the matched resident fxScreenEffect
+ * (src/main/fx.c) with its coordinate arguments as locals: a full-screen
+ * 320x240 copy at the origin, coordinates rescaled in place, s taken before
+ * the rescale. Mickey's own listing supplies the setup.
+ *
+ * Matched (202 -> 0 masked words) once the strip limit and s were made
+ * opaque to uopt's constant propagation while ugen still folds them: the
+ * target keeps the limit, s and the rectangle's x/tile word as loop-invariant
+ * registers (a materialised 0x3C0 guarding the loop, a zero shifted into the
+ * s word), which every plain constant spelling folds away 13 words short.
+ * `width * 0` is an opaque zero to uopt (it does not
+ * fold a product by zero) and a constant to ugen (o058 F000138C uses the
+ * same fact). It is a stand-in for the author's form, not a claim about it:
+ * most likely a macro or shared-routine parameter that is 0 in this overlay
+ * and multiplies a value the compiler cannot see. The two unreferenced s32 locals set the frame to 0xA8 with
+ * width and height at 0x7C/0x78.
  */
-/* Workbench p7: structure/size mismatch, 204/201 instructions, frame -168 vs -120, 181 raw words from +0x0.
- * Full MIPS-I/MIPS-II/-g3 and prior alias/type/declaration/loop/macro/register levers leave target’s extra s3/s4 saves and three instructions.
- * Context is clean; no source-backed schedule is stable for another allocation attempt; retain NON_MATCHING. */
-#ifdef NON_MATCHING
-void func_overlay_066_F00004E0_18C6948(register Gfx **displayList,
-                                       register u16 *framebuffer,
-                                       register void *segmentBase) {
-    register Gfx *textureCommands;
+void func_overlay_066_F00004E0_18C6948(Gfx **displayList, u16 *framebuffer,
+                                       void *segmentBase) {
+    Gfx *textureCommands;
+    s32 videoMode;
+    u16 *screen;
+    s32 x0;
+    s32 y0;
+    s32 x1;
+    s32 y1;
+    s32 top;
+    s32 s;
+    s32 pad;
     u32 width;
     u32 height;
-    s32 y;
-    s32 previousY;
-    s32 limit;
-    s32 videoMode;
+    s32 pad2;
 
     videoMode = viGetVideoMode();
     if (videoMode != 2) {
@@ -55,26 +69,32 @@ void func_overlay_066_F00004E0_18C6948(register Gfx **displayList,
     gSPDisplayList((*displayList)++, D_0);
     gDPSetPrimColor((*displayList)++, 0, 0, 255, 255, 255, 255);
 
-    limit = 0x3C0;
-    y = 0;
-    if (y < limit) {
-        do {
-            previousY = y;
-            y += 0x10;
-
-            (*displayList)->words.w0 = textureCommands->words.w0;
-            (*displayList)->words.w1 = (u32)framebuffer;
-            framebuffer += 0x500;
-            (*displayList)++;
-
-            gDma1p((*displayList)++, 7,
-                   (u32)textureCommands + 0x80000008, 0x30, 6);
-            if (y > limit) {
-                y = limit;
-            }
-            gSPTextureRectangle((*displayList)++, 0, previousY, 0x500, y,
-                                G_TX_RENDERTILE, 0, 0, 0x400, 0x400);
-        } while (y < limit);
+    x0 = 0;
+    y0 = 0;
+    x1 = 320;
+    y1 = 960 + width * 0;
+    screen = framebuffer;
+    s = width * 0;
+    x0 <<= 2;
+    y0 <<= 2;
+    x1 <<= 2;
+    while (y0 < y1) {
+        (*displayList)->words.w0 = textureCommands->words.w0;
+        (*displayList)->words.w1 = (u32)screen;
+        (*displayList)++;
+        {
+            Gfx *_g = (*displayList)++;
+            _g->words.w1 = (u32)(textureCommands + 1) + 0x80000000;
+            _g->words.w0 = 0x07060030;
+        }
+        screen += 320 * 4;
+        top = y0;
+        y0 += 16;
+        if (y0 > y1) {
+            y0 = y1;
+        }
+        gSPTextureRectangle((*displayList)++, x0, top, x1, y0, G_TX_RENDERTILE,
+                            s, 0, 1 << 10, 1 << 10);
     }
 
     gDPPipeSync((*displayList)++);
@@ -83,16 +103,3 @@ void func_overlay_066_F00004E0_18C6948(register Gfx **displayList,
     gDPSetPrimColor((*displayList)++, 0, 0, 255, 255, 255, 255);
     gDPSetEnvColor((*displayList)++, 255, 255, 255, 255);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o066/func_overlay_066_F00004E0_18C6948/func_overlay_066_F00004E0_18C6948.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_066_F00004E0_18C6948:start
- * symbol: func_overlay_066_F00004E0_18C6948
- * score: 202 differing words
- * frame: 0x78
- * relocations: 19
- * first-mismatch: +0x0
- * summary: Thirteen words short (delta -52): the target keeps limit, the rectangle x part and s as opaque register invariants; no tested source does. JFG screenDraw is the sibling.
- * PLATEAU-HANDOFF:func_overlay_066_F00004E0_18C6948:end
- */

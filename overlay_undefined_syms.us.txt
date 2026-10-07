@@ -3976,6 +3976,10 @@ gOverlay66Timer = 0x000000f8;
 
 /* overlay 66: func_overlay_066_F00004E0_18C6948.c.o */
 D_88 = 0x00000088;
+func_80034920_o066Reloc = 0xf0000000;
+rsp_segment_o066Reloc = 0xf0000000;
+viGetCurrentSize_o066Reloc = 0xf0000000;
+viGetVideoMode_o066Reloc = 0xf0000000;
 
 /* overlay 67: overlay_067.c.o */
 gOverlay67PointSets = 0x000000a4;

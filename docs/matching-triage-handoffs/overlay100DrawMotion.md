@@ -2,11 +2,13 @@
 ### `overlay100DrawMotion` plateau handoff
 
 - source: `src/overlays/o100/overlay100DrawMotion.c`
-- score: 155 differing words
+- score: 113 differing words
 - frame: 0xC0
 - relocations: 7
-- first mismatch: +0x30
-- summary: L99 unused pointers declared first close frame 0xC0 with exact homes. Packed RGB hoist is plus two words. Command/color lifetime remains.
+- first mismatch: +0x194
+- summary: Void getters, GBI macros, if/else alpha clamp: 155 to 113. Left: preheader colour/alpha order, inner-loop FP colours.
+
+Summary before this remeasure: L99 unused pointers declared first close frame 0xC0 with exact homes. Packed RGB hoist is plus two words. Command/color lifetime remains.
 - assignment base: `b05cf692e3fc02d376d334564fed1d6c1e0a8953`
 - owned range: overlay 100 `+0x580..+0x94C`, 972 bytes / 243 words; the following four-byte padding is separately owned
 - identity gate: instrumented IDO `.text` byte-identical to stock; `CDX_PROC=0` (47 p1 decisions)
@@ -99,4 +101,44 @@ Not adopted; the 155 body stays. Read from the listing: the colour word's red te
 
 A body written with those macros, non-volatile green and blue, `motion->remaining` read at each use, `while (row--)` and `while (count--)`, produces the target's preheader (0xFA000000 in s3, the divisor 3 in s1, 0xE7000000 in ra, 0xF6000000 in t1, 120 in t0, 1.0f and -10.0f in f24/f22, the packed RGB hoisted) and the target's loop body, but the frame is 0x90 to 0xD8 and red lands in memory instead of s3. Products over the packet pointer passed first to the preparation call (start local in five spellings, or `commands - 1`), three alpha-step forms, alpha strength-reduced or explicit, volatile or not and word order inside the macros: floor 173 masked at +8, and 204 at +8 for the non-volatile cells. In every cell with a `start` local that pointer takes s3 and colorA0 takes s1, where the target has start in a0, colorA0 in a1, colorA1 in a2, colorA2 in t0 and remaining in t1.
 
+#### 2026-10-07, lane c-o066: void getters plus the listing's shape, 155 to 113
+
+Adopted. The relocation finding that the two getters take no arguments was
+the missing half of a-ovl2's GBI rewrite: with `func_8002468C(void)` and
+`camGetPtr(void)` declared that way, the packet pointer, colorA0, colorA1 and
+the command cursor sit in a0-a3 at those calls as the shipped leftovers, and
+the rewrite (GBI macros, plain non-volatile green and blue, `while (row--)`
+and `while (count--)`, four unused pointers first) lands frame 0xC0 with all
+15 slots on the target ladder.
+
+Measured, whole-TU products with fast_score (masked, size delta):
+
+- natural body, alpha-step as default-then-override: 155 at +4; with
+  volatile colours 169 at -4.
+- alpha-step clamp as `if (remaining >= 64) step = 255; else step = remaining * 4;`
+  (the target's branch over an empty arm): the decisive axis. With an alpha
+  local assigned in the loop, 127 at 0 (frame 0xB0); the else-first spelling
+  131; default-then-override 151 at -4.
+- alpha inline in the colour macro: 100 at +8 then 83 at +8 with the frame
+  fixed; the two extra words are a `mov.s` of the reciprocal into the
+  inverseDepth register plus its nop, which the target does not have.
+- count read before the phase wrap: 113 at 0 (adopted) against 123 after it
+  and 114 before the frame pointer read.
+- four unused pointers: frame 0xC0 and the full ladder; 1 to 3: 117 to 133.
+- inert at 113: the depth and x expression operand orders (6 cells), alpha
+  placed before or after the sync packet or as `(3 - row) * step`.
+- the reciprocal written inline at both uses (no inverseDepth local): the
+  `mov.s` goes and the reciprocal lands in f16 as shipped, but one more
+  callee-saved FP register is spent (frame 0xB8) and the score is 184 to 239.
+- point->y read into a local before or after the depth test (the target
+  loads it early into f18): 195 at 0 and 226 at +4, FP colours reshuffled.
+
+Aligned after adoption: byte-exact 170, naming 49, immediate 5, really
+different 24 (from 146, 48, 0, 69), displacement tax 35. Candidate-only
+words at +0x194 (3) and +0x2DC (2), target-only at +0x1AC, +0x1B4 and
++0x1EC (3). The residual is the preheader (the target emits the colour
+word before the alpha product, ours the reverse) and the inner loop's FP
+colours: the target holds z in f12, x in f2, depth in f14 and the
+reciprocal in f16; ours z f14, x f16, depth f12, the reciprocal in f2 then
+copied to f18.
 <!-- plateau-handoff:overlay100DrawMotion:end -->

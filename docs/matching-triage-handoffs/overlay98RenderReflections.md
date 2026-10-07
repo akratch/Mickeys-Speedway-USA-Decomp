@@ -2,11 +2,13 @@
 ### `overlay98RenderReflections` plateau handoff
 
 - source: `src/overlays/o098/overlay98RenderReflections.c`
-- score: 225/389 words
+- score: 5/389 words
 - frame: 0x1C8
 - relocations: 36
 - first mismatch: +0xB0
-- summary: Packets on one line, second node name and pick local, target callee-saved order: 267 to 225 at delta 0 (aligned 66); open: cursor's second home store at +0xFC.
+- summary: Bare special-vertex address, masked alpha, u32 display list, x-first arm, flag on the call line: 225 to 5 at delta 0; open: cursor temp at +0x58 against +0x5C.
+
+Summary before this remeasure: Packets on one line, second node name and pick local, target callee-saved order: 267 to 225 at delta 0 (aligned 66); open: cursor's second home store at +0xFC.
 
 Summary before this remeasure: One-line packets, second node name and pick local, u32 matrix word: 267 to 226 at delta 0 (aligned 71); open: cursor's second home store at +0xFC.
 
@@ -311,5 +313,50 @@ address, home 0x5C) and find which block set makes the negation block part
 of its register piece; separately, why the 0x06000000 packet's constant
 leaves the s6 web (the volatile modelDisplayList load is the only operand
 that differs from the other packets).
+
+#### 2026-10-07 (lane h-5): 225 to 5 at delta 0, every remaining word is the cursor's temp slot
+
+Read from an aligned listing of the 225 body (aligned residual 54 rows)
+and the module's relocation records, five edits, each measured alone on
+the previous body (positional masked, then aligned non-equal rows):
+
+  - the special-vertex word: the record at that site is a SYMBOL record
+    with stored addend 0, and the target stores the lui/addiu pair
+    directly, so the source passes the bare address, not the address plus
+    0x80000000 (225 to 277 positional, aligned 54 to 123: the removed
+    addu exposes a ring phase that the extra draw had been hiding);
+  - the alpha word as `(object->alpha & 0xFF)` ORed with `~0xFF`: the target's ring
+    is one draw ahead from the lbu, the redundant mask on the u8 load is
+    that draw (as1 folds it by renaming the load, L149/L150): 277 to 225,
+    aligned 123 to 28. A u8 cast, a u32 cast, a 0xFFFFFF00 literal or the
+    operands reversed are all 277;
+  - first matrix arm fills x before y (z, scale after): aligned 28 to 21;
+    the three other orders 26 to 32;
+  - modelDisplayList as a u32 local assigned `(u32)pick->displayListA/B`,
+    packet `modelDisplayList + 0x80000000`: 226 to 8, aligned 21 to 11.
+    Records: with the pointer cast at the use, that 0x80000000 is a second
+    hoisted constant web (one more interferer for every loop web, numintf
+    one higher), so it is materialised inline (`lui at`), and the cursor's
+    split piece rejects the negation block by one (L161: new 0, left 16,
+    numintf 33, 2*16 < 33). With one constant web the piece takes the
+    block and the target's second home store at +0xFC appears. Spelt as a
+    subtraction the constant joins the web but emits subu (9); as s32, u8
+    pointer, Gfx pointer or void pointer with the cast at the use, 226;
+  - `emittedReflection = 1;` on the inverse call's own line: its store
+    fills the jal delay slot as shipped (8 to 5, aligned 8). At the top of
+    the arm 34, after the scale 21.
+
+Still required: the two `do { } while (0)` blocks (none: -16 bytes, 342;
+one: 15).
+
+Open, 5 at delta 0 (exact 384, naming 0, immediate 5, structural 0): the
+cursor temporary is homed at +0x58 against the target's +0x5C, its four
+references and the reload at +0x578. The frame is the target's 0x1C8 and
+the declared ladder above +0xA0 agrees. Measured: one pad fewer puts the
+temp 4 bytes higher but the frame drops to 0x1C0 (64); one more pad moves
+the temp to +0x54 at 0x1C8; two more 0x1D0. So the target's declared
+block ends at +0x60 (one cell fewer than ours) and its frame carries four
+more bytes below the cursor's temp that no instruction touches: a second
+compiler temporary allocated after the cursor's, whose traffic is gone.
 
 <!-- plateau-handoff:overlay98RenderReflections:end -->

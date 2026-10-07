@@ -79,7 +79,17 @@ extern u8 gO98SpecialVertices[];
  * before the alpha test (the target's second load of the node's first
  * word), and the reflected arm fills its transform x, y, z, scale. modelDisplayList is
  * a plain local again (226 to 225, aligned 66) once two blocks after the
- * vertex packet give the target's callee-saved order. */
+ * vertex packet give the target's callee-saved order.
+ * Lane h-5 (2026-10-07), 225 to 5 at delta 0, read from the aligned listing
+ * and the relocation records: the special-vertex word is the bare address
+ * (its record stores addend 0, no 0x80000000 add); the alpha word masks the
+ * u8 load (the extra ring draw as1 folds, L149); the first matrix arm fills
+ * x before y; modelDisplayList is a u32, so its packet's 0x80000000 is the
+ * same constant web as every other packet's (as a pointer cast it was a
+ * second constant, materialised inline, and its extra interferer cost the
+ * cursor's split piece the negation block and its second home store); the
+ * emitted flag shares the inverse call's line (its store fills the delay
+ * slot). */
 #define O98_PACKET(word0, word1) gfx = *dl; *dl = gfx + 1; gfx->w0 = (word0); gfx->w1 = (word1)
 
 #ifdef NON_MATCHING
@@ -89,7 +99,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
     O98Node *node2;
     O98ModelData *model;
     Gfx *gfx;
-    void *modelDisplayList;
+    u32 modelDisplayList;
     void *savedDisplayList;
     O98Mtx matrixC;
     O98Mtx matrixB;
@@ -152,13 +162,13 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
                 node2 = (O98Node *)object->nodes[object->nodeIndex];
                 pick = node2->data;
                 if (object->alpha == 0xFF) {
-                    modelDisplayList = pick->displayListA;
+                    modelDisplayList = (u32)pick->displayListA;
                 } else {
-                    modelDisplayList = pick->displayListB;
+                    modelDisplayList = (u32)pick->displayListB;
                 }
                 if (model->mode4E == 0) {
-                    transform.y = referenceY - distance;
                     transform.x = object->x;
+                    transform.y = referenceY - distance;
                     transform.z = object->z;
                     transform.scale = -object->scale;
                     transform.rot4 = object->rotZ;
@@ -178,8 +188,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
                     inverse.rot4 = -object->rotZ;
                     inverse.rot2 = -object->rotY;
                     inverse.rot0 = -object->rotX;
-                    emittedReflection = 1;
-                    o98BuildInverseMatrixReloc(&inverse, &matrixC);
+                    emittedReflection = 1; o98BuildInverseMatrixReloc(&inverse, &matrixC);
                     transform.x = object->x;
                     transform.y = referenceY - distance;
                     transform.z = object->z;
@@ -196,7 +205,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
                     drewObject = 1;
                 }
                 if (drewObject) {
-                    O98_PACKET(0xFA000000, object->alpha | ~0xFF);
+                    O98_PACKET(0xFA000000, (object->alpha & 0xFF) | ~0xFF);
                     O98_PACKET((((u32)node->partsA[node->partIndex] + 0x80000000) & 0xFFFFFF) | 0xBF000000, (u32)node2->vertexData + 0x80000000);
                     /* Two zero-cost blocks: they carry specialModel and
                      * modelDisplayList across the next save divisor (5.0 to
@@ -208,12 +217,12 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
                     do { } while (0);
                     if (specialModel) {
                         if (stateIndex) {
-                            O98_PACKET(0x02000050, (u32)gO98SpecialVertices + 0x80000000);
+                            O98_PACKET(0x02000050, (u32)gO98SpecialVertices);
                         } else {
                             O98_PACKET(0x02000050, (u32)node->partsB[node->partIndex] + 0x80000000);
                         }
                     }
-                    O98_PACKET(0x06000000, (u32)modelDisplayList + 0x80000000);
+                    O98_PACKET(0x06000000, modelDisplayList + 0x80000000);
                     O98_PACKET(0xBF000000, 0);
                     O98_PACKET(0xBC00000A, 0);
                     o98RestoreStateReloc(dl);
@@ -244,10 +253,10 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
 
 /* PLATEAU-HANDOFF:overlay98RenderReflections:start
  * symbol: overlay98RenderReflections
- * score: 225/389 words
+ * score: 5/389 words
  * frame: 0x1C8
  * relocations: 36
  * first-mismatch: +0xB0
- * summary: Packets on one line, second node name and pick local, target callee-saved order: 267 to 225 at delta 0 (aligned 66); open: cursor's second home store at +0xFC.
+ * summary: Bare special-vertex address, masked alpha, u32 display list, x-first arm, flag on the call line: 225 to 5 at delta 0; open: cursor temp at +0x58 against +0x5C.
  * PLATEAU-HANDOFF:overlay98RenderReflections:end
  */

@@ -150,6 +150,18 @@
       "state": "superseded",
       "decision_commit": "4ffcf3f0dc0604b7f4cb029ac1ae4c93480e58ba",
       "reason": "The complete guarded coordinate and coefficient closure is integrated; canonical source is identical and this frozen report-only tip has no remaining ownership."
+    },
+    "24f91e55a6ea61c82509d06d889a7944d21ffa7a": {
+      "symbol": "wakeAllocate",
+      "state": "superseded",
+      "decision_commit": "d1232e0efd67b0708d8725671f34dcfb447a245d",
+      "reason": "Completed width and CFG reports are integrated in full; source is identical, and these older authorization/report tips have no remaining integration delta."
+    },
+    "322b1a508dbe05be2e17b5273443e60e7127e886": {
+      "symbol": "wakeAllocate",
+      "state": "superseded",
+      "decision_commit": "d1232e0efd67b0708d8725671f34dcfb447a245d",
+      "reason": "Completed width and CFG reports are integrated in full; source is identical, and these older authorization/report tips have no remaining integration delta."
     }
   }
 }

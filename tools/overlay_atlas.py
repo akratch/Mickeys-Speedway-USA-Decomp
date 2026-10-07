@@ -1560,6 +1560,7 @@ MIXED_TU_EXACT_C_RANGES = {
             "overlay8ScaleOutputs",
             "canonical mixed-TU object and linked bytes exact",
         ),
+        (0x34A0, 0x42A8, "func_overlay_008_F00034A0_18611F8"),
         (0x49A4, 0x49B4, "overlay8SetBuffer"),
         (0x49B4, 0x49DC, "overlay8WriteCommand"),
         (0x49DC, 0x49E8, "overlay8SetValue"),

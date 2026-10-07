@@ -1544,34 +1544,25 @@ void overlay8ScaleOutputs(void *unused, Overlay8ScaleState *state,
     }
 }
 
-/* NON_MATCHING: exact size and frame, 17 masked words (2026-10-02).  Every
- * stack home is at its shipped offset: the terrain query's pointer and the
- * four -1 scratch words are separate locals, and the update count is
- * declared between trigB and blend.  The float constants are this function's
- * own literal pool, one entry per use.  The effect call is
- * overlay7DispatchSelection, which takes two arguments.  `limit` is read
- * plainly, and the approach loop is `while (index--)`.
+/* Matched 2026-10-08 (lane j-7).  The float constants are this function's
+ * own literal pool, one entry per use; the effect call is
+ * overlay7DispatchSelection with two arguments; `limit` is read plainly; the
+ * approach loop is `while (index--)` on one physical line (as1 orders the
+ * counter save ahead of the argument reload, L59).  The motion tests read the
+ * mode through `ownerMode`, assigned in each arm, and the final compare reads
+ * it through a copy into the free int `sampleCount` for the shipped operand
+ * order.  The kind-4 outputs add `(s16)(strength * trig)` to the angle with
+ * `strength *= 4096.0f` in place: the deleted narrowing spends the scratch
+ * draws the command burst needs.  The burst reaches the buffer through a
+ * second name from its second pair on (the shipped second address build), and
+ * each pair is its own block.
  *
- * The motion tests read the mode through `ownerMode`, assigned in each arm:
- * uopt colours a symbol as one web, so those reads take the v1 the later
- * tests take (an expression web there takes v0).  The kind-4 outputs add
- * `(s16)(strength * trig)` to the angle, with `strength *= 4096.0f` in place
- * and the negated angle stored last: the deleted narrowing spends the three
- * scratch draws the whole command burst after it was rotated by.  The zero
- * initialisers are result, blend, selectedValue; the 0xA/0xB arms assign the
- * mode before blend; the landing flag is stored after the animation rate.
- *
- * The command burst reaches the buffer through a second name from its second
- * pair on: that gives the shipped second address build.  Each pair is its own
- * block, so the two address webs do not interfere.  Left (17): the first
- * pair's one-block address web takes v0 where the shipped one takes v1 (14
- * words; forced, exact).
- * 2026-10-07: the approach loop written on one line closed its save order
- * (17 -> 15); the mode compare reads ownerMode through a copy into the
- * free int local sampleCount, which emits the shipped operand order with no
- * new frame cell (15 -> 14).  Forcing the first pair's web to v1
- * (p1:w490=c2) on this shape scores 0.  GLOBAL_ASM stays canonical. */
-#ifdef NON_MATCHING
+ * The last 14 words were the first pair's one-block address web taking v0.
+ * The angle112 copy goes through `sample` (dead after the terrain loop) in
+ * the first pair's block: that symbol web is coloured v0 early, interferes
+ * with the address web and pushes it to v1.  The masked RHS makes ugen
+ * evaluate the load into a ring temp and copy it, and as1 forwards the temp
+ * into the store and deletes the copy, so no v0 word is emitted. */
 f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
                                       O8P34A0State *state, f32 limit,
                                       f32 update) {
@@ -1823,9 +1814,9 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     /* One physical line: as1 then orders the counter save ahead of the
      * second argument's reload, as shipped (L59). */
     while (index--) state->angle110 += o8P34A0ApproachReloc(state->angle110, target) >> 2;
-    state->angle112 = state->angle110;
-
     do {
+        sample = (f32 **)(state->angle110 & 0xFFFF);
+        state->angle112 = (s32)sample;
         *gOverlay8Buffer = 3;
         gOverlay8Buffer++;
         *gOverlay8Buffer = state->angle144;
@@ -1914,9 +1905,6 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     }
     return result;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o008/overlay_008/func_overlay_008_F00034A0_18611F8.s")
-#endif
 
 /* NON_MATCHING: exact size and frame, 126 masked words (2026-10-02).  The
  * tables are real data symbols (D_2188, D_21C8, D_2208, D_2220), the float
@@ -2402,14 +2390,4 @@ Overlay8BssOwner gOverlay8BssOwner;
  * first-mismatch: +0x290
  * summary: Row index inline at both table reads, angle read after, no mode mask: 54 to 45. Left: the steps piece after loop 2 (v1) and one ring draw.
  * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
- */
-
-/* PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:start
- * symbol: func_overlay_008_F00034A0_18611F8
- * score: 14/898 words
- * frame: 0x80
- * relocations: 107
- * first-mismatch: +0x938
- * summary: Mode compare through an int copy: 15 to 14. Left: only the first pair web v0 not v1; forcing it to v1 scores 0.
- * PLATEAU-HANDOFF:func_overlay_008_F00034A0_18611F8:end
  */

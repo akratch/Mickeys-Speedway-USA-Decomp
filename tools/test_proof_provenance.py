@@ -177,6 +177,40 @@ class ManifestPrimitiveTests(unittest.TestCase):
                 self.assertEqual(alias, provenance._find_source(root, ("entryB",)))
                 self.assertEqual({alias}, {call.args[0] for call in cpp.call_args_list})
 
+    def test_guarded_include_uses_candidate_mode_and_retains_candidate_status(self):
+        wrapper = ('#define shared friendly\n#ifdef NON_MATCHING\n'
+                   '#include "shared.c"\n#else\n'
+                   '#pragma GLOBAL_ASM("asm/func_1234.s")\n#endif\n')
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            source = root / "wrapper.c"
+            source.write_text(wrapper)
+            for expanded, expected in (
+                ("void friendly(void) {}\n", provenance.NON_MATCHING_C),
+                ("void other(void) {}\n", provenance.UNKNOWN),
+                ("void friendly(void) {}\nvoid friendly(void) {}\n", provenance.UNKNOWN),
+                ('void friendly(void) {}\n#pragma GLOBAL_ASM("asm/func_1234.s")\n', provenance.UNKNOWN),
+            ):
+                with self.subTest(expanded=expanded), mock.patch.object(
+                        provenance, "preprocessed_text", return_value=expanded) as cpp:
+                    result = provenance.classify_source_file(
+                        source, candidate_symbol="friendly", target_symbol="func_1234",
+                        root=root, non_matching=True)
+                    self.assertEqual(expected, result[0])
+                    cpp.assert_called_once_with(source, root, non_matching=True)
+            with mock.patch.object(provenance, "preprocessed_text",
+                                   side_effect=provenance.MetadataProofError("missing include")):
+                with self.assertRaisesRegex(provenance.MetadataProofError, "missing include"):
+                    provenance.classify_source_file(
+                        source, candidate_symbol="friendly", target_symbol="func_1234",
+                        root=root, non_matching=True)
+            source.write_text(wrapper.replace("func_1234.s", "wrong.s"))
+            with mock.patch.object(provenance, "preprocessed_text") as cpp:
+                self.assertEqual(provenance.UNKNOWN, provenance.classify_source_file(
+                    source, candidate_symbol="friendly", target_symbol="func_1234",
+                    root=root, non_matching=True)[0])
+                cpp.assert_not_called()
+
     def test_preprocessed_text_runs_the_configured_compiler(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
@@ -193,17 +227,24 @@ class ManifestPrimitiveTests(unittest.TestCase):
                 self.assertEqual("-E -DX -I include -O2 src/a.c\n",
                                  provenance.preprocessed_text(source, root))
             with mock.patch.object(provenance, "_discover_compile_command",
+                                   return_value=(command, ["-DNON_MATCHING", "-I", "include"], None)) as discover:
+                self.assertEqual("-E -DNON_MATCHING -I include src/a.c\n",
+                                 provenance.preprocessed_text(source, root, non_matching=True))
+                discover.assert_called_once_with(root, source, non_matching=True)
+            with mock.patch.object(provenance, "_discover_compile_command",
                                    return_value=(None, [], "gmake dry-run failed")):
                 with self.assertRaises(provenance.MetadataProofError):
                     provenance.preprocessed_text(source, root)
 
-    def build_fixture_manifest(self, source_text: str, *, emit_symbol: bool) -> dict[str, object]:
+    def build_fixture_manifest(self, source_text: str, *, emit_symbol: bool,
+                               non_matching: bool = False) -> dict[str, object]:
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
             source = root / "src" / "fixture.c"
             source.parent.mkdir(parents=True)
             source.write_text(source_text)
-            candidate = root / "build" / "src" / "fixture.c.o"
+            build_dir = root / ("build_non_matching" if non_matching else "build")
+            candidate = build_dir / "src" / "fixture.c.o"
             candidate.parent.mkdir(parents=True)
             candidate.write_bytes(b"candidate-object")
             target = root / "target.o"
@@ -222,13 +263,31 @@ class ManifestPrimitiveTests(unittest.TestCase):
                 source=source,
                 symbol="friendly",
                 candidate_symbol="friendly",
-                candidate_build_dir=root / "build",
+                candidate_build_dir=build_dir,
                 candidate_object=candidate,
                 target_object=target,
                 candidate_artifact=candidate,
                 target_artifact=target,
                 objdump=fake_objdump,
             )
+
+    def test_manifest_indirect_candidate_and_preprocessing_failure(self):
+        wrapper = ('#define shared friendly\n#ifdef NON_MATCHING\n'
+                   '#include "shared.c"\n#else\n'
+                   '#pragma GLOBAL_ASM("asm/friendly.s")\n#endif\n')
+        with mock.patch.object(provenance, "_discover_compile_command", return_value=(
+                "tools/ido/cc -DNON_MATCHING", ["-DNON_MATCHING"], None)):
+            with mock.patch.object(provenance, "preprocessed_text",
+                                   return_value="void friendly(void) {}\n"):
+                manifest = self.build_fixture_manifest(wrapper, emit_symbol=True, non_matching=True)
+                self.assertTrue(manifest["exact_claim_allowed"])
+                self.assertEqual(provenance.NON_MATCHING_C, manifest["selection"]["classification"])
+            with mock.patch.object(provenance, "preprocessed_text",
+                                   side_effect=provenance.MetadataProofError("cpp failed")):
+                manifest = self.build_fixture_manifest(wrapper, emit_symbol=True, non_matching=True)
+                self.assertFalse(manifest["exact_claim_allowed"])
+                self.assertEqual(provenance.UNKNOWN, manifest["selection"]["classification"])
+                self.assertIn("cpp failed", manifest["reasons"])
 
     def test_manifest_allows_tied_ordinary_c(self) -> None:
         manifest = self.build_fixture_manifest(

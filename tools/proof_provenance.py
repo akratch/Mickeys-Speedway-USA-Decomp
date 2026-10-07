@@ -804,15 +804,16 @@ def needs_preprocessed_view(text: str, symbol: str) -> bool:
                 and re.search(rf"\b{re.escape(symbol)}\s*\(", _mask_c(text)))
 
 
-def preprocessed_text(source: pathlib.Path, root: pathlib.Path) -> str:
+def preprocessed_text(source: pathlib.Path, root: pathlib.Path, *,
+                      non_matching: bool = False) -> str:
     """The configured compiler's own preprocessed view of ``source``.
 
-    The ordinary build's compile command (``gmake -n``, every define and include
-    in order, no ``NON_MATCHING``) is rerun as ``tools/ido/cc -E``. The result
+    The selected build's compile command (``gmake -n``, every define and include
+    in order) is rerun as ``tools/ido/cc -E``. The result
     is what the compiler parsed: conditionals resolved, macros expanded,
     quoted includes inlined, ``# LINE "FILE"`` markers left in place.
     """
-    command, flags, error = _discover_compile_command(root, source, non_matching=False)
+    command, flags, error = _discover_compile_command(root, source, non_matching=non_matching)
     if command is None or error is not None:
         raise MetadataProofError("cannot discover the configured compile command: %s" % error)
     words = shlex.split(command)
@@ -828,7 +829,8 @@ def preprocessed_text(source: pathlib.Path, root: pathlib.Path) -> str:
 
 
 def source_view(source: pathlib.Path, symbol: str,
-                root: pathlib.Path | None = None) -> tuple[str, str]:
+                root: pathlib.Path | None = None, *,
+                non_matching: bool = False) -> tuple[str, str]:
     """The text ``source_facts`` should read for ``symbol``, and which view it is.
 
     The source as written is the view unless ``needs_preprocessed_view``: a
@@ -838,12 +840,19 @@ def source_view(source: pathlib.Path, symbol: str,
     ``#include "overlay101UpdateEntry8.c"``), and ordinary conditionals can
     hold two definitions or hide one. Then the view is the configured
     compiler's preprocessed output (``preprocessed_text``), so the facts are
-    the ones the ordinary build compiles.
+    the ones the ordinary build compiles. Explicit ``non_matching=True``
+    selects the configured candidate command for indirect guarded definitions.
     """
     root = pathlib.Path(__file__).resolve().parent.parent if root is None else root
     text = source.read_text(encoding="utf-8", errors="replace")
+    if non_matching and not source_facts(text, symbol).definitions and (
+            _macro_spells(text, symbol) or re.search(
+                r'^\s*#\s*include\s+"[^"\n]+\.(?:c|inc)"', text, re.MULTILINE)):
+        return preprocessed_text(source, root, non_matching=True), "preprocessed"
     if not needs_preprocessed_view(text, symbol):
         return text, "source"
+    if non_matching:
+        return preprocessed_text(source, root, non_matching=True), "preprocessed"
     return preprocessed_text(source, root), "preprocessed"
 
 
@@ -925,6 +934,41 @@ def classify_source_selection(
     if definitions:
         return UNKNOWN, "the C definition is inactive under the discovered compiler defines"
     return UNKNOWN, "no active C definition or matching GLOBAL_ASM could be tied to the symbol"
+
+
+def classify_source_file(
+    source: pathlib.Path, *, candidate_symbol: str, target_symbol: str,
+    root: pathlib.Path, non_matching: bool, defines: Iterable[str] | None = None,
+) -> tuple[str, str]:
+    """Classify an indirect definition using its configured compiler mode.
+
+    Preprocessing removes NON_MATCHING guards. Preserve candidate status only
+    when the written source independently ties this target to its opposite
+    fallback; an expanded definition alone cannot establish that pairing.
+    """
+    raw = source.read_text(encoding="utf-8", errors="replace")
+    effective = tuple(defines) if defines is not None else (
+        ("NON_MATCHING",) if non_matching else ())
+    kind, reason = classify_source_selection(
+        raw, candidate_symbol=candidate_symbol, target_symbol=target_symbol,
+        defines=effective)
+    if non_matching and kind != UNKNOWN:
+        return kind, reason
+    if non_matching:
+        if source_facts(raw, candidate_symbol).definitions:
+            return kind, reason
+        fallbacks = [p for p in _all_pragmas(raw)
+                     if p.symbol in {candidate_symbol, target_symbol}]
+        if len(fallbacks) != 1 or fallbacks[0].non_matching_state is not False:
+            return UNKNOWN, "indirect candidate lacks one opposite target fallback"
+    text, view = source_view(source, candidate_symbol, root,
+                             **({"non_matching": True} if non_matching else {}))
+    selected, detail = classify_source_selection(
+        text, candidate_symbol=candidate_symbol, target_symbol=target_symbol,
+        defines=effective)
+    if non_matching and view == "preprocessed" and selected == ORDINARY_C:
+        return NON_MATCHING_C, "configured -DNON_MATCHING preprocessing selects one C definition"
+    return selected, detail
 
 
 def _relative(path: pathlib.Path, root: pathlib.Path) -> str:
@@ -1081,7 +1125,6 @@ def build_manifest(
     reasons: list[str] = []
     if source is None:
         source = _find_source(root, (candidate_symbol, symbol))
-    source_text = None
     if source is None or not source.is_file():
         classification = UNKNOWN
         classification_reason = "source path could not be resolved uniquely"
@@ -1090,13 +1133,6 @@ def build_manifest(
         compile_error = "source unavailable"
     else:
         requested_nm = candidate_build_dir.name == "build_non_matching"
-        try:
-            # The ordinary build's view: a definition spelled through the
-            # preprocessor is classified as the compiler sees it.
-            source_text = (source_view(source, candidate_symbol, root)[0] if not requested_nm
-                           else source.read_text(encoding="utf-8", errors="replace"))
-        except MetadataProofError:
-            source_text = source.read_text(encoding="utf-8", errors="replace")
         compile_command, compiler_flags, compile_error = _discover_compile_command(
             root, source, non_matching=requested_nm
         )
@@ -1110,12 +1146,13 @@ def build_manifest(
         # public build contract and supplies the conservative define here.
         if requested_nm:
             defines.add("NON_MATCHING")
-        classification, classification_reason = classify_source_selection(
-            source_text,
-            candidate_symbol=candidate_symbol,
-            target_symbol=symbol,
-            defines=defines,
-        )
+        try:
+            classification, classification_reason = classify_source_file(
+                source, candidate_symbol=candidate_symbol, target_symbol=symbol,
+                root=root, non_matching=requested_nm, defines=defines)
+        except MetadataProofError as error:
+            classification, classification_reason = UNKNOWN, str(error)
+
 
     if candidate_object is None and source is not None:
         rel_source = _relative(source, root)

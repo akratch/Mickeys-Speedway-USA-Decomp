@@ -1,0 +1,200 @@
+[CDX] rangepin proc=0 bb=3 mask0=0x40000000 class=1 lr=L1 sym=25 expr=var:2:3:4
+[CDX] rangepin proc=0 bb=17 mask0=0x40000000 class=1 lr=L1 sym=25 expr=var:2:3:4
+[CDX] rangepin proc=0 bb=34 mask0=0x40000000 class=1 lr=L1 sym=25 expr=var:2:3:4
+[CDX] rangepin proc=0 bb=35 mask0=0x40000000 class=1 lr=L1 sym=25 expr=var:2:3:4
+[CDX] globalcolor proc=0
+[CDX] bbline proc=0 bb=0 weight=1 mask1=0x10000000 mask2=0x0 entry=-1 lines=88,103,104,105
+[CDX] bbpin proc=0 bb=0 color=3 reg=a0 lr=L2 web=2 sym=2 expr=var:0:2:4
+[CDX] bbline proc=0 bb=1 weight=10 mask1=0x0 mask2=0x0 entry=105 lines=105,106
+[CDX] bbline proc=0 bb=2 weight=10 mask1=0x18000000 mask2=0x0 entry=106 lines=106,107
+[CDX] bbpin proc=0 bb=2 color=3 reg=a0 lr=L3 web=0 sym=0 expr=var:-16:1:4
+[CDX] bbline proc=0 bb=3 weight=10 mask1=0x40000000 mask2=0x0 entry=107 lines=-
+[CDX] bbline proc=0 bb=4 weight=10 mask1=0x0 mask2=0x0 entry=107 lines=109,110
+[CDX] bbline proc=0 bb=5 weight=10 mask1=0x0 mask2=0x0 entry=110 lines=110,111
+[CDX] bbline proc=0 bb=6 weight=10 mask1=0x0 mask2=0x0 entry=111 lines=-
+[CDX] bbline proc=0 bb=7 weight=100 mask1=0x0 mask2=0x0 entry=111 lines=111,112
+[CDX] bbline proc=0 bb=8 weight=100 mask1=0x0 mask2=0x0 entry=112 lines=-
+[CDX] bbline proc=0 bb=9 weight=1000 mask1=0x0 mask2=0x0 entry=112 lines=112,113,114,115,116,117,118,119,120,112
+[CDX] bbline proc=0 bb=10 weight=100 mask1=0x0 mask2=0x0 entry=112 lines=-
+[CDX] bbline proc=0 bb=11 weight=100 mask1=0x0 mask2=0x0 entry=112 lines=111
+[CDX] bbline proc=0 bb=12 weight=10 mask1=0x0 mask2=0x0 entry=111 lines=-
+[CDX] bbline proc=0 bb=13 weight=10 mask1=0x0 mask2=0x0 entry=111 lines=105
+[CDX] bbline proc=0 bb=14 weight=10 mask1=0x0 mask2=0x0 entry=105 lines=-
+[CDX] bbline proc=0 bb=15 weight=10 mask1=0x0 mask2=0x0 entry=105 lines=126,127
+[CDX] bbline proc=0 bb=16 weight=10 mask1=0x18000000 mask2=0x0 entry=127 lines=127,128
+[CDX] bbpin proc=0 bb=16 color=3 reg=a0 lr=L3 web=0 sym=0 expr=var:-16:1:4
+[CDX] bbline proc=0 bb=17 weight=10 mask1=0x40000000 mask2=0x0 entry=128 lines=-
+[CDX] bbline proc=0 bb=18 weight=10 mask1=0x0 mask2=0x0 entry=128 lines=130,131
+[CDX] bbline proc=0 bb=19 weight=10 mask1=0x0 mask2=0x0 entry=131 lines=131,132
+[CDX] bbline proc=0 bb=20 weight=10 mask1=0x0 mask2=0x0 entry=132 lines=-
+[CDX] bbline proc=0 bb=21 weight=10 mask1=0x0 mask2=0x0 entry=132 lines=132,133
+[CDX] bbline proc=0 bb=22 weight=10 mask1=0x0 mask2=0x0 entry=133 lines=-
+[CDX] bbline proc=0 bb=23 weight=100 mask1=0x0 mask2=0x0 entry=133 lines=133,134,135,136,137,138,139,140,141,142
+[CDX] bbline proc=0 bb=24 weight=100 mask1=0x0 mask2=0x0 entry=142 lines=143,144,145,146,147,148,149,150,151,152,153
+[CDX] bbline proc=0 bb=25 weight=100 mask1=0x0 mask2=0x0 entry=153 lines=154,155,156,157,158,159,160,161,133
+[CDX] bbline proc=0 bb=26 weight=10 mask1=0x0 mask2=0x0 entry=133 lines=-
+[CDX] bbline proc=0 bb=27 weight=10 mask1=0x0 mask2=0x0 entry=133 lines=132
+[CDX] bbline proc=0 bb=28 weight=1 mask1=0x0 mask2=0x0 entry=132 lines=-
+[CDX] bbline proc=0 bb=29 weight=1 mask1=0x0 mask2=0x0 entry=132 lines=166,167
+[CDX] bbline proc=0 bb=30 weight=1 mask1=0x0 mask2=0x0 entry=167 lines=-
+[CDX] bbline proc=0 bb=31 weight=1 mask1=0x0 mask2=0x0 entry=167 lines=-
+[CDX] bbline proc=0 bb=32 weight=1 mask1=0x0 mask2=0x0 entry=167 lines=-
+[CDX] bbline proc=0 bb=33 weight=1 mask1=0x10000000 mask2=0x0 entry=167 lines=167,168
+[CDX] bbpin proc=0 bb=33 color=3 reg=a0 lr=L2 web=2 sym=2 expr=var:0:2:4
+[CDX] bbline proc=0 bb=34 weight=1 mask1=0x40000000 mask2=0x0 entry=168 lines=169
+[CDX] bbline proc=0 bb=35 weight=1 mask1=0x40000000 mask2=0x0 entry=169 lines=171
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=5 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=10 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=11 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=14 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=15 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=19 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=23 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=26 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=27 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=6 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=7 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=20 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=6 lr=L4 bb=21 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=5 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=9 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=11 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=19 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=22 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=23 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=27 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=6 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=7 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=8 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=10 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=20 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=21 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=24 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=25 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=33 lr=L5 bb=26 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=130 lr=L6 bb=23 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=130 lr=L6 bb=24 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=132 lr=L7 bb=23 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=132 lr=L7 bb=24 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=141 lr=L8 bb=23 own=0 class=1 mask0=0x0
+[CDX] forbidseed proc=0 web=141 lr=L8 bb=24 own=0 class=1 mask0=0x0
+[CDX] saveocc proc=0 web=6 lr=L4 occ=0 bb=5 uses=1 defs=1 usesdefs=2.0 weight=10.0 term=20.000000 nl=0 bb5=0 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=6 lr=L4 occ=1 bb=10 uses=0 defs=1 usesdefs=1.0 weight=100.0 term=100.000000 nl=0 bb5=0 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=6 lr=L4 occ=2 bb=11 uses=1 defs=0 usesdefs=1.0 weight=100.0 term=100.000000 nl=0 bb5=0 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=6 lr=L4 occ=3 bb=14 uses=0 defs=1 usesdefs=1.0 weight=10.0 term=10.000000 nl=0 bb5=0 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=6 lr=L4 occ=4 bb=15 uses=1 defs=0 usesdefs=1.0 weight=10.0 term=10.000000 nl=0 bb5=0 o22=0 o23=1 w34=1
+[CDX] saveocc proc=0 web=6 lr=L4 occ=5 bb=19 uses=1 defs=1 usesdefs=2.0 weight=10.0 term=20.000000 nl=0 bb5=0 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=6 lr=L4 occ=6 bb=23 uses=2 defs=1 usesdefs=3.0 weight=100.0 term=300.000000 nl=0 bb5=1 o22=0 o23=1 w34=1
+[CDX] saveocc proc=0 web=6 lr=L4 occ=7 bb=26 uses=0 defs=1 usesdefs=1.0 weight=10.0 term=10.000000 nl=0 bb5=0 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=6 lr=L4 occ=8 bb=27 uses=1 defs=0 usesdefs=1.0 weight=10.0 term=10.000000 nl=0 bb5=0 o22=0 o23=0 w34=1
+[CDX] savedetail proc=0 web=6 lr=L4 sym=6 occ=9 gross=580.000000 chargeA=0.000000 chargeB=0.000000 net=580.000000 nocs=4 save=145.000000 verdict=1
+[CDX] saveocc proc=0 web=33 lr=L5 occ=0 bb=5 uses=0 defs=1 usesdefs=1.0 weight=10.0 term=10.000000 nl=0 bb5=0 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=33 lr=L5 occ=1 bb=9 uses=1 defs=0 usesdefs=1.0 weight=1000.0 term=1000.000000 nl=0 bb5=1 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=33 lr=L5 occ=2 bb=11 uses=2 defs=1 usesdefs=3.0 weight=100.0 term=300.000000 nl=0 bb5=0 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=33 lr=L5 occ=3 bb=19 uses=0 defs=1 usesdefs=1.0 weight=10.0 term=10.000000 nl=0 bb5=0 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=33 lr=L5 occ=4 bb=22 uses=1 defs=0 usesdefs=1.0 weight=10.0 term=10.000000 nl=0 bb5=0 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=33 lr=L5 occ=5 bb=23 uses=1 defs=0 usesdefs=1.0 weight=100.0 term=100.000000 nl=0 bb5=1 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=33 lr=L5 occ=6 bb=27 uses=2 defs=1 usesdefs=3.0 weight=10.0 term=30.000000 nl=0 bb5=0 o22=0 o23=0 w34=1
+[CDX] savedetail proc=0 web=33 lr=L5 sym=33 occ=7 gross=1460.000000 chargeA=0.000000 chargeB=0.000000 net=1460.000000 nocs=5 save=292.000000 verdict=1
+[CDX] saveocc proc=0 web=130 lr=L6 occ=0 bb=23 uses=0 defs=1 usesdefs=1.0 weight=100.0 term=100.000000 nl=0 bb5=1 o22=0 o23=1 w34=1
+[CDX] saveocc proc=0 web=130 lr=L6 occ=1 bb=24 uses=1 defs=1 usesdefs=2.0 weight=100.0 term=200.000000 nl=0 bb5=0 o22=0 o23=1 w34=1
+[CDX] savedetail proc=0 web=130 lr=L6 sym=130 occ=2 gross=300.000000 chargeA=0.000000 chargeB=0.000000 net=300.000000 nocs=2 save=150.000000 verdict=1
+[CDX] saveocc proc=0 web=132 lr=L7 occ=0 bb=23 uses=4 defs=1 usesdefs=5.0 weight=100.0 term=500.000000 nl=0 bb5=1 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=132 lr=L7 occ=1 bb=24 uses=1 defs=0 usesdefs=1.0 weight=100.0 term=100.000000 nl=0 bb5=0 o22=0 o23=1 w34=1
+[CDX] savedetail proc=0 web=132 lr=L7 sym=132 occ=2 gross=600.000000 chargeA=0.000000 chargeB=0.000000 net=600.000000 nocs=2 save=300.000000 verdict=1
+[CDX] saveocc proc=0 web=141 lr=L8 occ=0 bb=23 uses=1 defs=1 usesdefs=2.0 weight=100.0 term=200.000000 nl=0 bb5=1 o22=0 o23=0 w34=1
+[CDX] saveocc proc=0 web=141 lr=L8 occ=1 bb=24 uses=1 defs=0 usesdefs=1.0 weight=100.0 term=100.000000 nl=0 bb5=0 o22=0 o23=1 w34=1
+[CDX] savedetail proc=0 web=141 lr=L8 sym=141 occ=2 gross=300.000000 chargeA=0.000000 chargeB=0.000000 net=300.000000 nocs=2 save=150.000000 verdict=1
+[CDX] p1dec phase=p1 proc=0 web=28 sym=28 class=1 save=3006.666748 nocs=3 totalsave=9020.000000 bestcost=0.000000 bestcolor=1 bestreg=v0 forbidden0=0x0 regsleft=22 numintf=11 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=28 lr=L9 kind=3 dtype=0 expr=var:-4:1:4
+[CDX] p1color phase=p1 proc=0 web=28 sym=28 color=1 reg=v0 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=38 sym=38 class=1 save=1536.666626 nocs=3 totalsave=4610.000000 bestcost=0.000000 bestcolor=2 bestreg=v1 forbidden0=0x40000000 regsleft=21 numintf=26 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=38 lr=L10 kind=3 dtype=6 expr=var:-28:1:4
+[CDX] p1color phase=p1 proc=0 web=38 sym=38 color=2 reg=v1 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=187 sym=187 class=1 save=1000.000000 nocs=4 totalsave=4000.000000 bestcost=9.000000 bestcolor=14 bestreg=s0 forbidden0=0x78000000 regsleft=18 numintf=11 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=187 lr=L11 kind=2 dtype=8 expr=const:255
+[CDX] p1color phase=p1 proc=0 web=187 sym=187 color=14 reg=s0 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=2 sym=2 class=1 save=761.099976 nocs=10 totalsave=7611.000000 bestcost=9.200000 bestcolor=15 bestreg=s1 forbidden0=0x78020000 regsleft=17 numintf=30 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=2 lr=L2 kind=3 dtype=0 expr=var:0:2:4
+[CDX] p1color phase=p1 proc=0 web=2 sym=2 color=15 reg=s1 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=4 sym=4 class=1 save=710.000000 nocs=5 totalsave=3550.000000 bestcost=0.000000 bestcolor=3 bestreg=a0 forbidden0=0x60030000 regsleft=18 numintf=27 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=4 lr=L12 kind=4 dtype=6 expr=op54(var:0:2:4,@10)
+[CDX] p1color phase=p1 proc=0 web=4 sym=4 color=3 reg=a0 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=87 sym=87 class=1 save=555.000000 nocs=4 totalsave=2220.000000 bestcost=0.000000 bestcolor=1 bestreg=v0 forbidden0=0x30010000 regsleft=19 numintf=23 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=87 lr=L13 kind=3 dtype=0 expr=var:-8:1:4
+[CDX] p1color phase=p1 proc=0 web=87 sym=87 color=1 reg=v0 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=98 sym=98 class=1 save=300.000000 nocs=1 totalsave=300.000000 bestcost=0.000000 bestcolor=4 bestreg=a1 forbidden0=0x70010000 regsleft=18 numintf=21 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=98 lr=L14 kind=4 dtype=6 expr=op54(var:0:2:4,@14)
+[CDX] p1color phase=p1 proc=0 web=98 sym=98 color=4 reg=a1 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=101 sym=101 class=1 save=300.000000 nocs=1 totalsave=300.000000 bestcost=0.000000 bestcolor=5 bestreg=a2 forbidden0=0x78010000 regsleft=17 numintf=21 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=101 lr=L15 kind=4 dtype=6 expr=op24(op54(var:-12:1:4,@6))
+[CDX] p1color phase=p1 proc=0 web=101 sym=101 color=5 reg=a2 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=115 sym=115 class=1 save=300.000000 nocs=1 totalsave=300.000000 bestcost=0.000000 bestcolor=6 bestreg=a3 forbidden0=0x7c010000 regsleft=16 numintf=21 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=115 lr=L16 kind=4 dtype=6 expr=op54(var:0:2:4,@16)
+[CDX] p1color phase=p1 proc=0 web=115 sym=115 color=6 reg=a3 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=118 sym=118 class=1 save=300.000000 nocs=1 totalsave=300.000000 bestcost=0.000000 bestcolor=7 bestreg=t0 forbidden0=0x7e010000 regsleft=15 numintf=21 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=118 lr=L17 kind=4 dtype=6 expr=op24(op54(var:-12:1:4,@8))
+[CDX] p1color phase=p1 proc=0 web=118 sym=118 color=7 reg=t0 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=132 sym=132 class=1 save=300.000000 nocs=2 totalsave=600.000000 bestcost=0.000000 bestcolor=8 bestreg=t1 forbidden0=0x7f010000 regsleft=14 numintf=22 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=132 lr=L7 kind=4 dtype=6 expr=op4(var:-28:1:4,const:7)
+[CDX] p1color phase=p1 proc=0 web=132 sym=132 color=8 reg=t1 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=182 sym=182 class=1 save=300.000000 nocs=1 totalsave=300.000000 bestcost=0.000000 bestcolor=2 bestreg=v1 forbidden0=0x40810000 regsleft=19 numintf=15 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=182 lr=L18 kind=4 dtype=6 expr=op1(op4(var:-28:1:4,const:7),const:1)
+[CDX] p1color phase=p1 proc=0 web=182 sym=182 color=2 reg=v1 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=33 sym=33 class=1 save=292.000000 nocs=5 totalsave=1460.000000 bestcost=0.000000 bestcolor=9 bestreg=t2 forbidden0=0x7f830000 regsleft=12 numintf=27 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=33 lr=L5 kind=3 dtype=6 expr=var:-24:1:4
+[CDX] p1color phase=p1 proc=0 web=33 sym=33 color=9 reg=t2 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=96 sym=96 class=1 save=200.000000 nocs=2 totalsave=400.000000 bestcost=0.000000 bestcolor=10 bestreg=t3 forbidden0=0x7fc10000 regsleft=12 numintf=22 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=96 lr=L19 kind=3 dtype=6 expr=var:-40:1:4
+[CDX] p1color phase=p1 proc=0 web=96 sym=96 color=10 reg=t3 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=106 sym=106 class=1 save=200.000000 nocs=2 totalsave=400.000000 bestcost=0.000000 bestcolor=11 bestreg=t4 forbidden0=0x7fe10000 regsleft=11 numintf=22 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=106 lr=L20 kind=3 dtype=6 expr=var:-44:1:4
+[CDX] p1color phase=p1 proc=0 web=106 sym=106 color=11 reg=t4 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=113 sym=113 class=1 save=200.000000 nocs=2 totalsave=400.000000 bestcost=0.000000 bestcolor=12 bestreg=t5 forbidden0=0x7ff10000 regsleft=10 numintf=22 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=113 lr=L21 kind=3 dtype=6 expr=var:-48:1:4
+[CDX] p1color phase=p1 proc=0 web=113 sym=113 color=12 reg=t5 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=123 sym=123 class=1 save=200.000000 nocs=2 totalsave=400.000000 bestcost=0.000000 bestcolor=13 bestreg=? forbidden0=0x7ff90000 regsleft=9 numintf=22 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=123 lr=L22 kind=3 dtype=6 expr=var:-52:1:4
+[CDX] p1color phase=p1 proc=0 web=123 sym=123 color=13 reg=? forced=-2
+[CDX] p1dec phase=p1 proc=0 web=63 sym=63 class=1 save=150.000000 nocs=2 totalsave=300.000000 bestcost=0.000000 bestcolor=14 bestreg=s0 forbidden0=0x7ffd0000 regsleft=8 numintf=22 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=63 lr=L23 kind=4 dtype=6 expr=op1(var:-28:1:4,const:1)
+[CDX] p1color phase=p1 proc=0 web=63 sym=63 color=14 reg=s0 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=130 sym=130 class=1 save=150.000000 nocs=2 totalsave=300.000000 bestcost=9.000000 bestcolor=16 bestreg=s2 forbidden0=0x7fff0000 regsleft=7 numintf=22 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=130 lr=L6 kind=3 dtype=6 expr=var:-32:1:4
+[CDX] p1color phase=p1 proc=0 web=130 sym=130 color=16 reg=s2 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=141 sym=141 class=1 save=150.000000 nocs=2 totalsave=300.000000 bestcost=9.000000 bestcolor=17 bestreg=s3 forbidden0=0x7fff8000 regsleft=6 numintf=22 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=141 lr=L8 kind=4 dtype=6 expr=op1(op4(var:-28:1:4,const:7),const:9)
+[CDX] p1color phase=p1 proc=0 web=141 sym=141 color=17 reg=s3 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=6 sym=6 class=1 save=145.000000 nocs=4 totalsave=580.000000 bestcost=9.000000 bestcolor=18 bestreg=s4 forbidden0=0x7fffc000 regsleft=5 numintf=27 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=6 lr=L4 kind=4 dtype=6 expr=op54(var:0:2:4,@12)
+[CDX] p1color phase=p1 proc=0 web=6 sym=6 color=18 reg=s4 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=134 sym=134 class=1 save=100.000000 nocs=2 totalsave=200.000000 bestcost=9.000000 bestcolor=19 bestreg=s5 forbidden0=0x7fffe000 regsleft=4 numintf=22 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=134 lr=L24 kind=3 dtype=6 expr=var:-36:1:4
+[CDX] p1color phase=p1 proc=0 web=134 sym=134 color=19 reg=s5 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=188 sym=188 class=1 save=66.666664 nocs=3 totalsave=200.000000 bestcost=9.000000 bestcolor=20 bestreg=s6 forbidden0=0x7ffff000 regsleft=3 numintf=22 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=188 lr=L25 kind=2 dtype=8 expr=const:64
+[CDX] p1color phase=p1 proc=0 web=188 sym=188 color=20 reg=s6 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=68 sym=68 class=1 save=55.000000 nocs=2 totalsave=110.000000 bestcost=9.000000 bestcolor=21 bestreg=s7 forbidden0=0x7ffff800 regsleft=2 numintf=22 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=68 lr=L26 kind=4 dtype=6 expr=op1(var:-24:1:4,const:1)
+[CDX] p1color phase=p1 proc=0 web=68 sym=68 color=21 reg=s7 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=13 sym=13 class=1 save=25.125000 nocs=8 totalsave=201.000000 bestcost=9.000000 bestcolor=22 bestreg=s8 forbidden0=0x7ffffc00 regsleft=1 numintf=30 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=13 lr=L27 kind=3 dtype=0 expr=var:-12:1:4
+[CDX] p1color phase=p1 proc=0 web=13 sym=13 color=22 reg=s8 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=22 sym=22 class=1 save=20.000000 nocs=2 totalsave=40.000000 bestcost=0.000000 bestcolor=2 bestreg=v1 forbidden0=0x40030200 regsleft=18 numintf=7 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=22 lr=L28 kind=4 dtype=0 expr=op54(op65(var:0:2:4,op91(var:-20:1:4,const:4)),@32)
+[CDX] p1color phase=p1 proc=0 web=22 sym=22 color=2 reg=v1 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=83 sym=83 class=1 save=20.000000 nocs=2 totalsave=40.000000 bestcost=0.000000 bestcolor=2 bestreg=v1 forbidden0=0x50012200 regsleft=17 numintf=6 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=83 lr=L29 kind=4 dtype=0 expr=op54(var:0:2:4,@40)
+[CDX] p1color phase=p1 proc=0 web=83 sym=83 color=2 reg=v1 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=21 sym=21 class=1 save=10.200000 nocs=5 totalsave=51.000000 bestcost=0.000000 bestcolor=16 bestreg=s2 forbidden0=0x78432200 regsleft=13 numintf=12 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=21 lr=L30 kind=4 dtype=6 expr=op65(var:0:2:4,op91(var:-20:1:4,const:4))
+[CDX] p1color phase=p1 proc=0 web=21 sym=21 color=16 reg=s2 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=0 sym=0 class=1 save=6.200000 nocs=5 totalsave=31.000000 bestcost=2.000000 bestcolor=17 bestreg=s3 forbidden0=0x7843a200 regsleft=12 numintf=13 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=0 lr=L3 kind=3 dtype=6 expr=var:-16:1:4
+[CDX] p1color phase=p1 proc=0 web=0 sym=0 color=17 reg=s3 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=20 sym=20 class=1 save=6.200000 nocs=5 totalsave=31.000000 bestcost=0.000000 bestcolor=19 bestreg=s5 forbidden0=0x7843e200 regsleft=11 numintf=12 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=20 lr=L31 kind=4 dtype=6 expr=op91(var:-20:1:4,const:4)
+[CDX] p1color phase=p1 proc=0 web=20 sym=20 color=19 reg=s5 forced=-2
+[CDX] p1dec phase=p1 proc=0 web=17 sym=17 class=1 save=1.000000 nocs=1 totalsave=1.000000 bestcost=0.000000 bestcolor=1 bestreg=v0 forbidden0=0x1001d200 regsleft=16 numintf=5 decision=color forced=-2
+[CDX] webexpr phase=p1 proc=0 web=17 lr=L32 kind=3 dtype=6 expr=var:-20:1:4
+[CDX] p1color phase=p1 proc=0 web=17 sym=17 color=1 reg=v0 forced=-2

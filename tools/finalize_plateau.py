@@ -134,7 +134,10 @@ def validate_metrics(args: argparse.Namespace) -> Metrics:
         raise PlateauError("first mismatch must be a hexadecimal offset, 'none', or 'unknown'")
     if args.relocations < 0:
         raise PlateauError("relocations must be non-negative")
-    summary = validate_one_line(args.summary, "summary") if args.summary else ""
+    # The shard grammar permits a summary of any length on its one line (only
+    # '|' and line breaks are barred), so a long one is kept whole, whitespace
+    # normalised, rather than refused.
+    summary = validate_one_line(args.summary, "summary", 10**6) if args.summary else ""
     return Metrics(score, frame, args.relocations, first_mismatch, summary)
 
 
@@ -586,8 +589,18 @@ def changed_paths(root: Path) -> set[str]:
     return paths
 
 
+# Files `gmake check-docs` demands be regenerated after a bank. They are
+# derived, not evidence: dirt in them never blocks a plateau, and --commit
+# carries whichever of them changed.
+REGENERATED_PATHS = frozenset({
+    "config/nonmatching-ranking.us.json",
+    "docs/nm-ranking.md",
+    "README.md",
+})
+
+
 def require_only_allowed_dirt(root: Path, allowed: set[str]) -> None:
-    unrelated = sorted(changed_paths(root) - allowed)
+    unrelated = sorted(changed_paths(root) - allowed - REGENERATED_PATHS)
     if unrelated:
         raise PlateauError("unrelated worktree/index dirt: " + ", ".join(unrelated))
 
@@ -649,7 +662,7 @@ def build_parser() -> argparse.ArgumentParser:
             f"symbol-owned {HANDOFF_SHARD_DIR}/<symbol>.md shard"
         ),
     )
-    parser.add_argument("--commit", action="store_true", help="Commit only the source and handoff doc")
+    parser.add_argument("--commit", action="store_true", help="Commit the source, the handoff doc and any regenerated ranking/README files")
     parser.add_argument("--message", help="Commit subject; requires --commit")
     parser.add_argument(
         "--trailer", action="append", default=None,
@@ -744,9 +757,10 @@ def main() -> int:
         commit = "not requested"
         if args.commit:
             message = validate_one_line(args.message or f"Plateau {args.symbol}", "commit message", 100)
-            run_git(root, "add", "--", *sorted(allowed))
+            regenerated = sorted(REGENERATED_PATHS & changed_paths(root))
+            run_git(root, "add", "--", *sorted(allowed), *regenerated)
             staged = set(run_git(root, "diff", "--cached", "--name-only").stdout.splitlines())
-            if staged - allowed:
+            if staged - allowed - REGENERATED_PATHS:
                 raise PlateauError("refusing to commit unrelated staged paths")
             if not staged:
                 commit = "unchanged"

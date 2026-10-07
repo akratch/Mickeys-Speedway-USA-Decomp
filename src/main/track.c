@@ -5205,7 +5205,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: planeValue load-then-subtract, block on inside = 1, z-first dot products: 89 to 10 at 0. Left: first face v0 vs s8, edge/sign s-regs (p2).
+ * summary: planeValue load-then-subtract, block on inside = 1, z-first dot products: 89 to 10 at 0. Left: first face v0 vs s8, edge/sign s-regs (p2, numintf threshold 22).
  * PLATEAU-HANDOFF:func_80011980:end
  */
 

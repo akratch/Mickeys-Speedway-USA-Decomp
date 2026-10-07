@@ -381,4 +381,38 @@ sum in mapY (548), a fresh local (546), x or z (152), inline (555); the
 ghost loop with inline products instead of x/z locals is +24 bytes in
 every sum form.
 
+#### 2026-10-07 (lane e-big, after the 152 commit): x and z as main-loop locals, the shipped colour split at +4
+
+Records on the 152 body: the merged x web (218, blocks 49 and 76) is
+decided at save 25 ahead of mapX (20) and takes c28, so the ghost loop's x
+is f16 against the shipped f0; level->scale is the web spanning both loops
+(c24) where the target's scale is f2.
+
+Writing the main loop with the ghost loop's own locals (x = obj->x *
+scale; z = obj->z * scale; rotX and mapY from them) and the y sum back as
+an in-place mapY rebase gives every float colour the target has: x c24
+(both loops, f0), scale c25 (f2), z c26 (f12), rotX c27, mapX c28, the
+rebased mapY symbol web c29 (f18, the shipped sum register), and uopt's
+CSE temp for the loop-head mapY value live across the calls takes c30
+(f20) with no probe. Aligned naming falls 143 to 93, but the cell is 373
+masked at +4: uopt evaluates the mapY temp's products before rotX's, so
+one extra R4300 mul.s hazard nop appears and the add leaves the branch
+delay slot; frame 0x200 (homes +8).
+
+Measured on that shape (product, about 70 distinct cells): mapY statement
+before or after rotX, rotX carried or written as in-place negation,
+if/else and ternary mirror forms; two or one top pads; five placements of
+ghostAlpha among the bottom cells. Floor 373 at +4 (mapY first), 376 at +8,
+377 at +16, 579 at -12 when mapY is written after the mirror block. Bottom
+placement and top pads do not move the masked count on this shape.
+
+Cycle-21 line: on the x/z-locals shape, make uopt emit rotX's products
+before the mapY CSE temp (the decision variable is expression numbering of
+the type-4 mapY temp against the rotX symbol web; brief items 21 and 28,
+a dead read or a first-occurrence edit ahead of the loop head), then
+re-fit the frame with frame_census. If that order is unreachable, the 152
+body's open pairs are the fallback: sum web save below 20 crossing a call
+elsewhere, and cos ahead of sin (cos spans one more block, 41/13 against
+41/12).
+
 <!-- plateau-handoff:func_overlay_056_F00001A0_18A2F18:end -->

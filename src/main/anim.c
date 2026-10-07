@@ -3563,7 +3563,10 @@ f32 func_8002A8C0(s32 angle);
  * `speed` and `dot`, assigned in that order (the then arm's FP ring is then
  * in phase from +0x80), and an empty `if (cosine)` after the trig pair
  * gives the cosine reload f2 and the sine f12 as shipped: 165 to 140 at
- * size 0.
+ * size 0. Later: no then-arm region (offsets X, Y, Z), and the else arm
+ * names its plane dot and previous.y/previous.z reads (previous.y carried
+ * in the dead `impulse`, which keeps the frame at 0x70), offsets Z, X, Y:
+ * 140 to 97.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3582,6 +3585,8 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
     f32 speed;
     f32 displacement;
     f32 dot;
+    f32 planeDot;
+    f32 previousZ;
 
     target = first->target;
     firstSource = first->source;
@@ -3617,10 +3622,8 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         }
         target->unk90 = normal->z * cosine - normal->x * sine;
         target->unk8C = normal->z * sine + cosine * normal->x;
-        if (1) {
-        }
-        offsetY = first->position.y - firstSource->previous.y;
         offsetX = first->position.x - firstSource->previous.x;
+        offsetY = first->position.y - firstSource->previous.y;
         offsetZ = first->position.z - firstSource->previous.z;
         firstSource->previous.x = target->velocity.x * timeStep + firstSource->current.x;
         firstSource->previous.y = target->velocity.y * timeStep + firstSource->current.y;
@@ -3629,19 +3632,19 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         first->position.y = firstSource->previous.y + offsetY;
         first->position.z = firstSource->previous.z + offsetZ;
     } else {
-        negDot = -(normal->z * firstSource->current.z +
+        planeDot = normal->z * firstSource->current.z +
                    (firstSource->current.x * normal->x +
-                    firstSource->current.y * normal->y));
+                    firstSource->current.y * normal->y);
+        negDot = -planeDot;
+        previousZ = firstSource->previous.z;
+        impulse = firstSource->previous.y;
         displacement = D_80084214 -
-                       ((firstSource->previous.z * normal->z +
+                       ((previousZ * normal->z +
                          (normal->x * firstSource->previous.x +
-                          normal->y * firstSource->previous.y)) -
-                        (normal->z * firstSource->current.z +
-                         (firstSource->current.x * normal->x +
-                          firstSource->current.y * normal->y)));
+                          normal->y * impulse)) - planeDot);
+        offsetZ = first->position.z - firstSource->previous.z;
         offsetX = first->position.x - firstSource->previous.x;
         offsetY = first->position.y - firstSource->previous.y;
-        offsetZ = first->position.z - firstSource->previous.z;
         if (negDot) {
         }
         firstSource->previous.x += displacement * normal->x;
@@ -4000,11 +4003,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 140/229 words
+ * score: 97/229 words
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x24
- * summary: Compare carriers speed then dot and an empty if (cosine) after the trig pair: 165 to 140 at size 0. Left: else-arm FP colours and spills, compare ring temps.
+ * summary: Named else-arm dot/previous reads, no then-arm region, cosine kill, compare carriers: 165 to 97 at size 0. Left: compare block, store order.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

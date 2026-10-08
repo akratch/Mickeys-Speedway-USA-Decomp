@@ -271,8 +271,8 @@ Relocation-masked mismatch evidence covers **20 / 20** resolved rows. The raw co
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `other` | 14 | 70.0% |
-| `size-mismatch` | 6 | 30.0% |
+| `other` | 15 | 75.0% |
+| `size-mismatch` | 5 | 25.0% |
 
 ### Differing-word thresholds
 
@@ -298,20 +298,20 @@ units remain distinct.
 | 3 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
 | 4 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 10 | 10 | 88 | 88 | 0 | — |
 | 5 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
-| 6 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 28 | 28 | 668 | 668 | 0 | — |
+| 6 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 32 | 32 | 576 | 576 | 0 | — |
 | 7 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 34 | 34 | 80 | 80 | 0 | — |
-| 8 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
-| 9 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 95 | 95 | 36 | 36 | 0 | — |
-| 10 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 116 | 116 | 1,864 | 1,864 | 0 | — |
-| 11 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
-| 12 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 380 | 380 | 0 | 0 | 0 | — |
-| 13 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 392 | 392 | 112 | 112 | 0 | — |
-| 14 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,236 | 1,235 | 200 | 208 | 0 | — |
-| 15 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
-| 16 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
-| 17 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 292 | 292 | 76 | 76 | 12 | — |
-| 18 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 310 | 310 | 0 | 0 | 8 | — |
-| 19 | `src/main/fx.c` | `wakeAllocate` | `main` | `size-mismatch` | 1,404 | 323 | 323 | 16 | 16 | -8 | — |
+| 8 | `src/main/fx.c` | `wakeAllocate` | `main` | `other` | 1,404 | 57 | 57 | 148 | 148 | 0 | — |
+| 9 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
+| 10 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 95 | 95 | 36 | 36 | 0 | — |
+| 11 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 116 | 116 | 1,864 | 1,864 | 0 | — |
+| 12 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
+| 13 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 380 | 380 | 0 | 0 | 0 | — |
+| 14 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 392 | 392 | 112 | 112 | 0 | — |
+| 15 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,248 | 1,247 | 200 | 208 | 0 | — |
+| 16 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
+| 17 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
+| 18 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 292 | 292 | 76 | 76 | 12 | — |
+| 19 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 339 | 339 | 0 | 0 | 8 | — |
 | 20 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 1,984 | 1,977 | 4 | 4 | -12 | — |
 
 ### Unresolved identities

@@ -2,11 +2,17 @@
 ### `wakeAllocate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 323/351 words
+- score: 57/351 words
 - frame: 0x90
 - relocations: 3
-- first mismatch: +0x10
-- summary: Forces w14/w324/w10/w5 leave only the two dead pre-call copies and the spill-cell order; eight source negatives recorded
+- first mismatch: +0x94
+- summary: XOR-kept copies, counts inline: 323 at -8 to 57. Left: spill homes follow web number; pre-call webs must number after the loop temps
+
+Summary before this remeasure: XOR-kept copies give the dead v0/v1 moves (size 0); counts inline so the segment copy takes v0: 323 at -8 to 57. Left: pre-call spill-cell order (web numbering)
+
+Summary before this remeasure: XOR-kept copies of the two counts after the alpha branch give the dead v0/v1 moves: -8 to size 0, 323 to 60. Left: copies' v0/v1 order and spill-cell order
+
+Summary before this remeasure: Forces w14/w324/w10/w5 leave only the two dead pre-call copies and the spill-cell order; eight source negatives recorded
 
 Summary before this remeasure: sampleBytes after segmentCount (target spill-cell order): 325 to 323 at -8. Left: dead v0/v1 copies before the call, four cells out of order
 
@@ -410,4 +416,136 @@ target needs both to have a bb2-only piece coloured before the
 sampleBytes/s20 pieces; find the source that makes w10's bb0 piece stop at
 bb1 (its colour unavailable in bb2) and gives w18 a split. Decision
 variable: w18's totalsave against its bestcost on proc 9.
+
+#### 2026-10-08, lane k-6: the two dead copies are XOR-kept copies, -8 to size 0
+
+Measured by tools/bank.py: masked 60 (raw 60), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 325, register naming 3, immediate only 14, really different 13.
+
+Score 323 masked at -8 to 60 masked at size delta 0. Aligned before:
+byte-exact 311, naming 10, immediate 6, really different 29 (12 one-sided
+words); after: byte-exact 325, naming 3, immediate 14, really different 13
+(4 candidate-only, 4 target-only, all in the tail schedule at +0x2D4..+0x36C).
+
+What it is. The target's two dead moves before the first call are copy
+webs, not split pieces of the segment-count or doubled-count webs: a symbol
+assigned from each count in the block after the alpha branch, read by that
+block's byte products, and dead at the call. as1 forwards the products back
+to t0 and t5 and leaves the moves. The source that makes them: after the
+alpha branch, `j = segmentCount; j ^= 0; i = groupCount; i ^= 0;`, with
+sampleBytes and the segment-times-0x14 term computed from j, segmentBytes
+and textureBytes from i, and the post-call cursor add reading `j * 0x14`
+(j is not redefined until the fill loops). Both copies then take v0/v1 in
+that block before sampleBytes and the 0x14 term are coloured, so those two
+take a2/a3, segmentCount's piece takes t0 and frameCount's piece s0, exactly
+the colours j-6 had to force (w14=c5, w324=c6, w10=c7, w5=c14).
+
+Measured on the way (each a shape_product, ranked aligned):
+- plain copies into i/j (no kill), before or after the alpha branch: 325,
+  propagated (5 cells, as j-6 recorded).
+- the kill form matters: OR-zero, `&= ~0` and `+= 0` are folded and the copy
+  is propagated (325 at -8); only `^= 0` keeps the copy web (32 cells).
+- one copy alone (the group count in i or j): 292 at -4, one dead move.
+- the segment copy in i instead of j: i is redefined by the vertex loop
+  before the cursor adds, so the 0x14 term splits (328 at -12 and worse).
+- copies placed before the alpha branch: uopt hoists them into block 0.
+- kill literal type (0, 0U, (s16) 0, (u8) 0, `x = x ^ 0`), 25 cells: flat 60.
+- statement order of the two copy groups (4), the three byte products (3)
+  and the call argument's first two terms (3), 36 cells: flat 60.
+
+Left (60 masked, aligned residual 30): the two copies take v1 (segment) and
+v0 (doubled) where the target has v0 and v1. Records (proc 9): both copy
+webs have save 3.0, nocs 1, and tie; the doubled copy is web 300 and the
+segment copy web 326, so the doubled one is decided first. The pre-call
+spill cells are still in the old order (ours frameCount 0x48, segment 0x44,
+doubled 0x40, segment bytes 0x2C, texture bytes 0x28, sampleBytes 0x24,
+the 0x14 term 0x20; target 0x3C, 0x38, 0x2C, 0x28, 0x24, 0x34, 0x30), and
+the tail schedule at +0x2D4 follows the cells. One sampleBytes + 0x14-term
+addu has its operands reversed.
+
+#### 2026-10-08, lane k-6 (continued): v0/v1 order, 60 to 57
+
+Measured by tools/bank.py: masked 57 (raw 57), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 328, register naming 0, immediate only 14, really different 13.
+
+Measured by tools/bank.py at the end of this section. Aligned before:
+byte-exact 325, naming 3, immediate 14, really different 13; after: 328,
+0, 14, 13 (the same 4 candidate-only and 4 target-only tail words).
+
+- The sample-byte term written inline in the allocation argument and the
+  cursor add (`j * 0x10`, sampleBytes still declared): the
+  sampleBytes-plus-0x14-term addu takes the target's operand order (60 to
+  59). Deleting the now-unused sampleBytes declaration moves the cells (71);
+  keep it.
+- The frame and segment counts written as the expression at each use
+  instead of through frameCount and segmentCount (both still declared): the
+  segment copy's web is then numbered 26 against the doubled copy's 288, so
+  it is coloured first and takes v0 as shipped (59 to 57, naming 2 to 0).
+  Either one inline alone stays at 59 (4-cell product).
+
+Measured flat: kill literal types and forms on the copies (25 cells);
+statement order of the copies, byte products and the argument's first two
+terms (36 cells); a separate 0x14-term local (fixes the operand order but
+adds a frame cell, 79); the alpha branch moved above the counts (347 at -20
+and worse); the segment count carried to the post-call store in j (65, the
+segment copy takes t0 and segmentCount's piece v1); segmentCount = i copied
+from a count computed in i (285 at -4, segmentCount becomes memory class at
+its declared home); count spellings `frameCount ^= 0`, two-statement shift,
+`/ 2`, `<< 1`, `seg + seg` (18 cells, flat 59).
+
+Reading for the cells (web_report on the 57 shape, proc 9): spill homes are
+handed out in web-number order. Ours: cvt 5, segment 7, doubled 8, sample
+term 40, 0x14 term 41, the four unroller autos 174-255, segment-bytes 289,
+texture-bytes 308, which is exactly our cell ladder from 0x48 down. The
+target ladder from 0x3C down is cvt, segment, sample term, 0x14 term,
+doubled, segment-bytes, texture-bytes, with the free cells above it: every
+pre-call spilled web numbered after the unroller autos, in the order a walk
+of the allocation argument meets them. In ours only the copies of the
+group count (substituted late, after unrolling, because groupCount is a
+loop bound) are numbered that late.
+
+#### 2026-10-08, lane k-6 (resumed): the spill-home law, read from uopt's slot trace
+
+Measured by tools/bank.py: masked 57 (raw 57), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 328, register naming 0, immediate only 14, really different 13.
+
+Score unchanged at 57 masked, size delta 0 (byte-exact 328, naming 0,
+immediate 14, really different 13). The 57 body is kept.
+
+Law (spill homes). uopt's spilltemps hands out pre-call spill homes in
+ascending web number. Each web either reuses an earlier slot whose
+occupants it does not interfere with, or takes a fresh 4-byte slot below
+the previous one. Read with the slot-tracing uopt (DKWB_UOPT_SLOT_TRACE,
+its .text identical to stock on this TU), proc 9 on the 57 body:
+- cvt (web 5) at -72, segment (7) at -76, doubled (8) at -80, sample term
+  (40) at -84, 0x14 term (41) at -88: each one is fresh.
+- the vertex-buffer loop's index temporaries (i + 1) (67), (i + 2) (191)
+  and (i + 3) (195): fresh at -92, -96 and -100. They interfere with all
+  five webs above, so they cannot reuse any of those slots.
+- $v0[i * 4] (287): fresh at -104. segment-bytes (289) at -108,
+  texture-bytes (308) at -112. Everything else reuses a slot.
+This is exactly the cell ladder of the object (-72 is 0x48). The target
+ladder is three free cells (0x48 to 0x40), then cvt, segment, sample term,
+0x14 term, doubled, segment-bytes and texture-bytes. In web-number terms,
+the three loop temporaries are numbered before every pre-call spilled
+web, and the pre-call webs are numbered in the order a walk of the
+allocation argument meets them. Read it with web_report --proc 9 and check
+it with frame_census.
+
+Measured flat or worse this pass:
+- The count definitions moved below the alpha branch, below the copies,
+  or post-call before the fill loops, with the doubled copy from
+  groupCount, from the expression, or from triCount (12 cells). Below the
+  branch: 347 at -20. Post-call: 349 at -28. bb0 has to compute them.
+- The cvt rooted through a reused parameter (`wakeValue88 *= 60.0f`, or
+  assigned): 310 at +20. Through `frameCount = wakeValue88 * 60.0f`: 59.
+- The post-call segment store reading j (65). The segment web then no
+  longer spans the call; it keeps a dead slot at -76.
+
+Flag: the two `^= 0` keep-alives are stand-ins. They reproduce the target's
+dead v0/v1 copies but are not the author's source.
+
+Cycle-21 line: the decision variable is web-creation order. The pre-call
+expression webs need numbers above the vertex-buffer loop's (i + 2)/(i + 3)
+temporaries (191/195 here); they are 5 to 41 now. Only values reached
+through a late substitution of a loop-bound symbol (the group-count copy,
+288) are numbered that late. Find the source that delays creating the cvt
+chain the same way while bb0 still computes it.
 <!-- plateau-handoff:wakeAllocate:end -->

@@ -677,8 +677,14 @@ typedef struct FxWakeAllocation {
  * Lane i-6: sampleBytes computed straight after segmentCount (the target's
  * spill cells for frameCount, segmentCount and sampleBytes are adjacent, in
  * creation order): 325 -> 323.
- * Left: two dead copies the target makes before the first call (segment and
- * group counts into v0/v1) and frameCount's pre-call piece in s0; see shard. */
+ * Lane k-6: the two dead copies the target makes before the first call are
+ * the segment and doubled counts copied into j and i after the alpha branch
+ * and kept by an XOR with zero (uopt keeps the copy webs; as1 forwards their
+ * uses and leaves the moves): -8 bytes to size delta 0, 323 -> 60 masked.
+ * The sample-byte term inline (operand order, 59) and the frame and segment
+ * counts written as expressions rather than through frameCount and
+ * segmentCount (the segment copy is then numbered ahead of the doubled one
+ * and takes v0, 57). Left: the pre-call spill-cell order; see shard. */
 /* PROVENANCE: Mickey's own target accesses and caller ABI supply this reconstruction; JFG supplies only the published role/name. */
 Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
                    f32 wakeValue84, s32 wakeValue8C, f32 wakeValue8E) {
@@ -696,19 +702,20 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
     s32 triCount;
     s32 bufferCount;
 
-    frameCount = (s32) (wakeValue88 * 60.0f);
-    segmentCount = (frameCount + 5) >> 1;
-    sampleBytes = segmentCount * 0x10;
-    groupCount = segmentCount * 2;
-    triCount = segmentCount * 2;
+    groupCount = ((((s32) (wakeValue88 * 60.0f)) + 5) >> 1) * 2;
+    triCount = ((((s32) (wakeValue88 * 60.0f)) + 5) >> 1) * 2;
     alpha = 2;
     bufferCount = 2;
     if (wakeType == 0) {
         alpha = 4;
     }
-    segmentBytes = groupCount * 0xA;
-    textureBytes = triCount * 0x10;
-    wake = func_8002B314(sampleBytes + (segmentCount * 0x14) + (alpha * segmentBytes) +
+    j = (((s32) (wakeValue88 * 60.0f)) + 5) >> 1;
+    j ^= 0;
+    i = groupCount;
+    i ^= 0;
+    segmentBytes = i * 0xA;
+    textureBytes = i * 0x10;
+    wake = func_8002B314((j * 0x10) + (j * 0x14) + (alpha * segmentBytes) +
                          (textureBytes * 2) + 0x40, 0x87);
     if (wake != NULL) {
         cursor = (u8 *) wake + 0x40;
@@ -719,9 +726,9 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
         wake->vertices = cursor;
         wake->sampleBuffers[2] = NULL;
         wake->sampleBuffers[3] = NULL;
-        cursor += sampleBytes;
+        cursor += (j * 0x10);
         wake->samples = cursor;
-        cursor += (segmentCount * 0x14);
+        cursor += (j * 0x14);
         for (i = 0; i < alpha; i++) {
             wake->sampleBuffers[i] = cursor + (i * segmentBytes);
         }
@@ -733,11 +740,11 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
                 wake->flags = 0;
             }
             wake->state = 0;
-            wake->segmentCount = segmentCount;
+            wake->segmentCount = (((s32) (wakeValue88 * 60.0f)) + 5) >> 1;
             wake->value8 = 0;
             wake->value3C = 0;
             wake->value4 = wakeValue80;
-            wake->textureIndex = (s8) frameCount;
+            wake->textureIndex = (s8) (s32) (wakeValue88 * 60.0f);
             wake->textureStep =
                 (s16) (((wake->linked->height - 1) << 8) /
                        wake->textureIndex);
@@ -2139,10 +2146,10 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeAllocate:start
  * symbol: wakeAllocate
- * score: 323/351 words
+ * score: 57/351 words
  * frame: 0x90
  * relocations: 3
- * first-mismatch: +0x10
- * summary: Forces w14/w324/w10/w5 leave only the two dead pre-call copies and the spill-cell order; eight source negatives recorded
+ * first-mismatch: +0x94
+ * summary: XOR-kept copies, counts inline: 323 at -8 to 57. Left: spill homes follow web number; pre-call webs must number after the loop temps
  * PLATEAU-HANDOFF:wakeAllocate:end
  */

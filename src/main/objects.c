@@ -5395,6 +5395,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: 0x198
  * relocations: 11
  * first-mismatch: +0x90
- * summary: Trap loop on its own index (28 to 8 at delta 0); left the trap exit test (bne against 16 in s0, target slti)
+ * summary: Trap loop on its own index (28 to 8 at delta 0); the slti shape (no-op k = 0 after the loop) prices at one split, arg3's memory piece at the sort inner block
  * PLATEAU-HANDOFF:func_80009414:end
  */

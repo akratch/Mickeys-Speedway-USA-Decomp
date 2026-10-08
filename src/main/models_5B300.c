@@ -458,7 +458,8 @@ void camConvertMatrixList(Matrix *mtx, s32 count) {
 }
 
 /* Exact stock C output proved 2026-09-30: 111/111 words, frameless, zero relocations.
- * The retained empty guard is disclosed in docs/cleanup-queue.md. */
+ * The empty `instance` guard the search left in the non-transition branch was
+ * byte-inert and is gone (lane c-4, 2026-10-09). */
 /* PROVENANCE: Mickey-only reconstruction from func_8005ABA8.s and the
  * existing models TU layouts; no external function body is copied. */
 s32 func_8005ABA8(ModelAnimationInstance *instance, f32 arg1, f32 arg2) {
@@ -493,16 +494,11 @@ s32 func_8005ABA8(ModelAnimationInstance *instance, f32 arg1, f32 arg2) {
                                    temp_v0->frameValue;
         }
     } else {
-        /* Inert source-shaping guard; see docs/cleanup-queue.md. */
-        if ((instance && instance) && instance) {
-        }
         instance->frameValue += arg1 * arg2;
         if (instance->frameValue >= 1.0f) {
             if (frame->loop != 0) {
-                if (instance->frameValue >= 1.0f) {
-                    do {
-                        instance->frameValue -= 1.0f;
-                    } while (instance->frameValue >= 1.0f);
+                while (instance->frameValue >= 1.0f) {
+                    instance->frameValue -= 1.0f;
                 }
             } else {
                 instance->frameValue = 1.0f;
@@ -510,10 +506,8 @@ s32 func_8005ABA8(ModelAnimationInstance *instance, f32 arg1, f32 arg2) {
             var_v1 = 1;
         } else if (instance->frameValue < 0.0f) {
             if (frame->loop != 0) {
-                if (instance->frameValue < 0.0f) {
-                    do {
-                        instance->frameValue += 1.0f;
-                    } while (instance->frameValue < 0.0f);
+                while (instance->frameValue < 0.0f) {
+                    instance->frameValue += 1.0f;
                 }
             } else {
                 instance->frameValue = 0.0f;

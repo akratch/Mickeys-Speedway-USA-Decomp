@@ -96,11 +96,11 @@ u8 *piRomLoadCompressed(u32 assetIndex, s32 extraMemory) {
     out = func_8002B280(totalSpace + extraMemory, 0x84);
     if (out == NULL) {
         return NULL;
-    }
-    gzipHeaderRamPos = (out + totalSpace) - size;
-    if (1) {
-        /* Preserve IDO's tail-call parameter lifetime; tracked in
-         * docs/cleanup-queue.md. */
+    } else {
+        /* The donors (JFG, DKR) write an empty `if (1) {}` after this
+         * assignment. The else arm gives it the same block of its own, which
+         * is what lets IDO compute the copy target straight into a1. */
+        gzipHeaderRamPos = (out + totalSpace) - size;
     }
     romCopy((u32) (start + D_86760), (u32) gzipHeaderRamPos, size);
     func_8004D7E0(gzipHeaderRamPos, out);

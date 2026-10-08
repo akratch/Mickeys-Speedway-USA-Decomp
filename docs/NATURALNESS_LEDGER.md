@@ -149,6 +149,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   **Resolved (lane c-2, 2026-10-08):** rewritten in func_800378A4's style: nested `do`/`while` loops with named `height`/`value`/`angle` locals, no `if (1)`, no mask, no `vertex[-1]`. A redundant `s32 row = 0;` initialiser (a dead store uopt deletes) numbers `row` before `phase`, the same first-reference rule as `dst` in func_8004C690. Byte-identical.
 - `src/main/gameVi.c:161` `func_800336A8` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-4, 2026-10-09):** the two `!=` mode tests and the empty `if (1) {}` (inherited from JFG viChangeMode) are a `switch (D_800D2F98 & 3)` with `case 2: case 3:` allocating and `default:` placing the second buffer after the first. Deleting the `if (1)` alone moves every global-address register (93 lines); the inverted `==`/`||` test differs in 11. Byte-identical.
 - `src/main/menu.c:818` `func_8003968C` **A**: one-line body: `new_var` carriers, 64-bit mask chains, duplicated empty test.
   **Resolved (lane c-3, 2026-10-08):** the one-line permuter body is a four-iteration controller loop storing `-1`, `20` and `15` to `menuPreviousButtons[i]`, `menuRepeatX[i]` and `menuRepeatY[i]` (the TU's existing array aliases). IDO unrolls it completely, which is why the target loads each constant afresh per controller. Byte-identical.
 - `src/main/menu.c:1163` `func_8003A2C8` **A**: OR/XOR with zero, or an all-ones mask.
@@ -157,6 +158,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   Natural: delete. Keep bytes: no - measured (lane c-3, 2026-10-08): deleting the empty `record != base` test differs in 20 words. Not explored further.
 - `src/main/models_5B300.c:497` `func_8005ABA8` **A**: `(instance && instance) && instance` with an empty body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-4, 2026-10-09):** deleted; the guard was byte-inert in the current tree. The two `if (x) { do { ... } while (x); }` wrap loops are plain `while` loops as well (IDO inverts them to the same code). Byte-identical.
 - `src/main/objects.c:2278` `func_80006B04` **A**: empty `do { } while (0)`.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Left (lane c-2, 2026-10-08):** not re-measured; the cleanup queue row lists eleven placements already tried.
@@ -171,8 +173,10 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   **Left (lane c-2, 2026-10-08):** the block boundary keeps the time scale out of the one-block body, where it interferes with every caller-saved float web and is split to memory (shard). Measured: deleted (+3 words); a separate `factor` local for the reflection (+3 words).
 - `src/main/particles.c:993` `partObjFreeTriggers` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-4, 2026-10-09):** the byte-offset cursor, the `if (count > 0) do { } while (++i != count)` shape and the empty `if (offset) {}` are one indexed loop, `for (i = 0; i < count; i++) { if (object->triggers[i].flags & 0x8000) ... }`. Deleting only the empty test swaps the index and offset registers (8 lines). Byte-identical.
 - `src/main/pi.c:101` `piRomLoadCompressed` **A**: empty `if (1)`/`if (0)` region.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-4, 2026-10-09):** the empty `if (1)` is gone; the copy-target assignment is the `else` arm of the `out == NULL` test, which gives it the same block of its own (the donors JFG and DKR both carry the `if (1) {}` as a fakematch). Deleted outright, the target is computed in v0 and copied to a1 (4 words). The inverted `if (out != NULL) { ... }` body differs in 7. Byte-identical.
 - `src/main/runlink.c:500` `func_800320F0` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Left (lane c-2, 2026-10-08):** the extra reference ranks the `overlayCount` web into s1. Measured: deleted (38 words differ); a `count = overlayCount` loop-bound local, declared first or last, with the `if (1)` blocks (23) and without (87).

@@ -2,11 +2,13 @@
 ### `func_overlay_101_F0002510_18DDD30` plateau handoff
 
 - source: `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c`
-- score: 68/293 words
+- score: 60/293 words
 - frame: 0xE8
 - relocations: 6
 - first mismatch: +0x3C
-- summary: k-2 clip block plus one bottom or-zero after the tests: delta 0, 90 to 68 (aligned residual 51). Left: bottom's v0, left's s3.
+- summary: Bounds call declared int with its result consumed by x pins v0 in the clip block: bottom v0, left s3 as shipped, 68 to 60. Left: node/y, frame window.
+
+Summary before this remeasure: k-2 clip block plus one bottom or-zero after the tests: delta 0, 90 to 68 (aligned residual 51). Left: bottom's v0, left's s3.
 
 Summary before this remeasure: bottom is a web only with no indirect load in its blocks; target clip block reached at 260/-4 (aligned 61); needs v0 denied to the post-GetBounds webs.
 
@@ -413,4 +415,12 @@ Measured by tools/bank.py: masked 68 (raw 68), size delta +0, candidate 293 word
 On the 68 body. Records (web_report, proc 0, identity gate passed): with the probe bottom is gross 4 less one load and one store charge, net 2, save 1.0, and is decided by web number after edgeX (31) and edgeY (36) at the same save, still t0; originY 2.0 keeps v0. Forces (tools/force_lattice.py, all three accepted): originY to c2 alone 66 at 0; edgeX to c3 alone 68; edgeY to c4 alone 234 at +4; all three 230 at +4. With the target's clip colours left takes s3 and its argument move appears, so the probe's store-back becomes surplus: the probe is a positional stand-in for that move, not a step towards the target, and must be dropped in the same edit that gives bottom v0 (k-2's 260 cell then priced 60, and 51 with node over y).
 
 Cycle-21: on the 260 cell (this body without the bottom probe), bottom needs v0 ahead of originY, edgeX and edgeY. Their saves are 2.0, 1.0, 1.0 against bottom's 0.5, all unconstrained and decided by save then web number, with no forbidden seed in the post-GetBounds block. Decision variable: v0 in the forbidden mask of webs 22, 31 and 36 (no source tried here puts it there; an int GetBounds whose result is unused, assigned to a dead local, or tested by an empty if does not), or originY at save 1.0 with bottom numbered before edgeX.
+
+#### 2026-10-08, lane m-4 (resumed): the bounds call's result consumed by x, 68 to 60
+
+Measured by tools/bank.py: masked 60 (raw 60), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 253, register naming 28, immediate only 2, really different 13.
+
+On the 68 body, bottom probe removed. GetBounds declared to return s32 and its result consumed by x's definition. Measured (shape_product, masked at size delta; aligned exact, naming, immediate, different): times zero, `x = GetBounds(...) * 0 + node->x + element->x`, 60 at 0 (253/28/2/13, residual 43); `(GetBounds(...) and 0)` in x or originY, a comma expression, and plus-then-minus through chunkRows: 260 to 271 at -4 to +12, no v0 pin (uopt folds the and-zero and the comma before the call result is delivered). Records (web_report, identity gate passed): originY, edgeX and edgeY now carry forbidden seed v0 (the call delivers v0 into their block, item 38), so bottom takes v0, originY v1, edgeX a0, edgeY a1 and left s3, all as shipped, and the left argument move appears. Kept.
+
+Left: node (save 0.857, 6 over nocs 7) is decided before y (0.667, 4 over 6) and takes s4 where the target has s5 (k-2 priced node over y at 51); the frame-block window at +0x14c to +0x208 (dList reload, three one-sided words each side).
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

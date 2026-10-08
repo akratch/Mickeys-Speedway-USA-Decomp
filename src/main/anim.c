@@ -4064,6 +4064,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 630 at size 0: six case-local values share locals (merge scan); 0x4B byte in a3. 0x4B sext: the trunc web the target lacks holds the pieces.
+ * summary: Aligned 630 at size 0: six case-local values share locals (merge scan); 0x4B byte in a3. 0x4B sext: target truncation is a ring temp; no store form found.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

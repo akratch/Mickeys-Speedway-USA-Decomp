@@ -1686,8 +1686,8 @@ void func_800517E0(void) {
                     break;
                 case 0x6A: {
                     pathIndex = cursor->command & 0xFF;
-                    high = *((u16 *) ((u8 *) cursor + 4)) >> 8;
-                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    packed2 = *((u16 *) ((u8 *) cursor + 4)) >> 8;
+                    high = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     high2 = *((u16 *) ((u8 *) cursor + 6)) >> 8;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     frame6A = *((u16 *) ((u8 *) cursor + 8));
@@ -1696,21 +1696,21 @@ void func_800517E0(void) {
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
-                        entry = object->table70;
-                        if ((entry != NULL) &&
-                            (high < object->model->tableCount28)) {
+                        reference = (AnimCommandFrameReference *) object->table70;
+                        if ((reference != NULL) &&
+                            (packed2 < object->model->tableCount28)) {
                             entry = *(void **)
-                                ((u8 *) entry + high * 4);
+                                ((u8 *) reference + packed2 * 4);
                             animCommandSlotTrap(
-                                entry, low, high2, low2, frame6A, value, 1);
+                                entry, high, high2, low2, frame6A, value, 1);
                         }
                     }
                     break;
                 }
                 case 0x6B: {
                     pathIndex = cursor->command & 0xFF;
-                    high = *((u16 *) ((u8 *) cursor + 4)) >> 8;
-                    low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
+                    packed2 = *((u16 *) ((u8 *) cursor + 4)) >> 8;
+                    high = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     high2 = *((u16 *) ((u8 *) cursor + 6)) >> 8;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     frame6B = *((u16 *) ((u8 *) cursor + 8));
@@ -1719,13 +1719,13 @@ void func_800517E0(void) {
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
-                        entry = object->table74;
-                        if ((entry != NULL) &&
-                            (high < object->model->tableCount29)) {
+                        reference = (AnimCommandFrameReference *) object->table74;
+                        if ((reference != NULL) &&
+                            (packed2 < object->model->tableCount29)) {
                             entry = *(void **)
-                                ((u8 *) entry + high * 4);
+                                ((u8 *) reference + packed2 * 4);
                             animCommandSlotTrap(
-                                entry, low, high2, low2, frame6B, value, 0);
+                                entry, high, high2, low2, frame6B, value, 0);
                         }
                     }
                     break;
@@ -4021,10 +4021,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1243/1808 words
+ * score: 1235/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 812 at size 0: case 3 and 0x6C object carriers as shipped; ring phase per case is the residual, stack fixes in case order.
+ * summary: Aligned 804 at size 0: 0x6A/0x6B index in packed2, low byte in high, table in reference; cases must be fixed in case order (ring phase).
  * PLATEAU-HANDOFF:func_800517E0:end
  */

@@ -1446,10 +1446,13 @@ void func_800517E0(void) {
                     func_80014BAC(0, high, high2, low2,
                                   packed2, index, value / hundred - delta);
                     break;
+                /* 0x46: the empty ifs are stand-ins (flagged, not the shipped source): each
+                 * adds one counted reference so height, motionDuration and motionX outbid
+                 * their caller-saved cost and take f14, f16 and f12 as shipped (2026-10-08). */
                 case 0x46: {
                     radius = *((s16 *) ((u8 *) cursor + 4));
-                    height = *((s16 *) ((u8 *) cursor + 6));
-                    motionDuration = *((u16 *) ((u8 *) cursor + 8)) & 0xFF;
+                    height = *((s16 *) ((u8 *) cursor + 6)); if (height) {}
+                    motionDuration = *((u16 *) ((u8 *) cursor + 8)) & 0xFF; if (motionDuration) {}
                     motionCount = *((u16 *) ((u8 *) cursor + 8)) >> 8;
                     high = *((u16 *) ((u8 *) cursor + 0xA)) >> 8;
                     high2 = *((u16 *) ((u8 *) cursor + 0xA)) & 0xFF;
@@ -1460,7 +1463,7 @@ void func_800517E0(void) {
                     index = cursor->command << 8;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0x10);
                     motionX = func_8002A8C0(index) * radius;
-                    radius = func_8002A8BC(index) * radius;
+                    radius = func_8002A8BC(index) * radius; if (motionX) {} if (motionX) {}
                     animCommandMotionTrap(motionX, height, radius,
                                           motionCount * 2, high, high2,
                                           low2, pathIndex, low, packedField,
@@ -4048,10 +4051,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1178/1808 words
+ * score: 1163/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 762 at size 0: n-1 stacked 0x2B/0x43/0x46/0x47 line plus 0x49 scroll order and path lookups after reads. 0x46 floats priced 698.
+ * summary: Aligned 695 at size 0: 0x46 height, duration, motionX coloured as shipped via empty-if references (flagged stand-ins), even if count, before the advance.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

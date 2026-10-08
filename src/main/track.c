@@ -3887,9 +3887,10 @@ void func_80012658(s32 flags) {
  * the edge value negated in place (no edgeValue). The declarations those
  * free hold the first-plane floats, so the frame stays 0x288.
  * 234 -> 64 at 0 (aligned residual 93 -> 64), lane r-3: the insertion sort
- * is a while loop swapping one array at a time, yHit is masked at its
- * definition and again at its test (each mask spends the draw the target
- * spends), and both distances sum x and y before z. */
+ * is a while loop swapping one array at a time and both distances sum x
+ * and y before z; then 64 -> 57: the visibility word masked by xzMask is
+ * read into x0 (a phase-1 local) before yHit, which gives the target's
+ * load order and its two v0/v1 tests with no yHit copy. */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -4058,10 +4059,10 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
             }
             for (z1 = firstTriangle; z1 < lastTriangle;
                  z1++) {
-                yHit = (E129_U8(E129_PTR(segment, 0x14), z1) & yMask) & 0xFF;
-                if (((segment->visibilityMasks[z1] & xzMask & 0xFFFF) != 0) &&
-                    ((segment->visibilityMasks[z1] & xzMask & 0xFFFF0000) != 0) &&
-                    ((yHit & 0xFF) != 0)) {
+                x0 = segment->visibilityMasks[z1] & xzMask;
+                yHit = E129_U8(E129_PTR(segment, 0x14), z1) & yMask;
+                if (((x0 & 0xFFFF) != 0) && ((x0 & 0xFFFF0000) != 0) &&
+                    (yHit != 0)) {
                     polygon = ((TrackFacet *) segment->surfaceIndices)[z1].indices;
                     plane = &surfaceBase[polygon[0]];
                     normalX = plane->x;
@@ -5242,10 +5243,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 64/548 words
+ * score: 57/548 words
  * frame: 0x288
  * relocations: 13
  * first-mismatch: +0x2AC
- * summary: While-loop insertion sort, masked yHit, x+y-first distances: 234 to 64 at 0, aligned residual 93 to 64
+ * summary: Visibility word in a local before yHit: 64 to 57 at 0, aligned residual 64 to 57
  * PLATEAU-HANDOFF:func_8001291C:end
  */

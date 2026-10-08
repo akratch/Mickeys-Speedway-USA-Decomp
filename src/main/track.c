@@ -5214,7 +5214,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, all naming. The double-read loop has the target's web order; it needs one zero-emission interferer for the four p1 webs outside blocks 4 and 10
+ * summary: 10 at 0, all naming; three p2 colours price at 1, and no single catalogue lever (lever_sweep, 3,300 cells) reproduces them
  * PLATEAU-HANDOFF:func_80011980:end
  */
 

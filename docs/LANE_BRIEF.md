@@ -926,6 +926,10 @@ it end to end. The ones that carry most of the weight:
   `tools/fast_score.py --aligned` prints the same buckets and one-sided spans for one
   candidate. A `#define SHAPE_x N` in the candidate fixes that axis (`--all-axes` enumerates it).
 
+- **`tools/lever_sweep.py <symbol> --proc N --oracle 'p1:wN=s,...' [--candidate F] [--web W] [--block B]`** turns a priced force into a source search: every catalogue lever (assigned/masked dead read, `|= 0` keep-alive, `x = (T) x`, narrower type, subscript mask/scale, `do {} while (0)` and empty `if (v) {}`, global re-read, `k = 0` between loops, split/merge locals, reorder, loop move, constant IV init) at every statement position on the lines of the named webs/blocks, inserted on the same physical line.
+  Each cell compiles stock and instrumented with the build's own recipe; size moves over `--max-size-delta` are dropped before scoring, inert cells cost one compile. It ranks by aligned residual with an `oracle` column: whether the UNFORCED records now show the forced state, matching webs by expression and line overlap because numbers move (`=F`: bytes equal the forced object).
+  First run matched func_80009414 (368 cells, 22 s): `if (vector) {}` after `count = 0;` reproduced `p1:w387=s` byte for byte. `sem check` marks a lever that can change behaviour; read it before adopting.
+
 ### The insertion-pair reader, for any function whose size is off
 
 `tools/insertion_pairs.py <symbol>` is the instrument for a size-mismatch

@@ -4017,7 +4017,7 @@ void fmvInit(void) {
  * frame: 0x40
  * relocations: 47
  * first-mismatch: +0x114
- * summary: 7 at size 0, all the join. The target's add is a ring draw (t1 is drawn in loop 2); line layouts and region wrappers on state-first joins are inert.
+ * summary: 7 at 0. All 306 exact join streams emit the state store first on a later line than the cursor store; conversion line at most the add's.
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

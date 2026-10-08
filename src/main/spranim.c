@@ -309,9 +309,12 @@ void texscrollControl(TexscrollState *state, s32 updateRate) {
  *  - `i = 0;` before the call numbers i ahead of the cursor (s2/s3), and
  *    the second distance summed z, y, x numbers the previous position
  *    px, py, pz (f16/f18/f20).
- * x stays declared (unused) as its frame cell.
- * Left: the y/z/radius homes (0x7C/0x74/0x98 against 0x8C/0x88/0x78), the
- * i/objects copy order after the call, two add/mul operand orders. */
+ * 2026-10-08 (lane q-f): 10 -> 8. The call result goes into `list` (the
+ * frame cell the unused x held) and the for-init copies it to the cursor
+ * after `i = 0`, so ugen emits the index clear before the cursor copy, as
+ * shipped (stream surgery: that emission order alone is worth the 2 words).
+ * Left: the y/z/radius homes (0x7C/0x74/0x98 against 0x8C/0x88/0x78) and
+ * two add/mul operand orders. */
 /* PROVENANCE: JFG's public character-plane control role supplies the idiom; Mickey's fields, globals, and action calls are authoritative below. */
 void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
     SpranimPlane *plane;
@@ -325,7 +328,7 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
     f32 hitX;
     f32 hitY;
     f32 hitZ;
-    f32 x;
+    SpranimB798Target **list;
     f32 deltaX;
     f32 deltaY;
     f32 deltaZ;
@@ -336,8 +339,8 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
 
     plane = arg0->state64;
     i = 0;
-    objects = (SpranimB798Target **) func_80005750(&count);
-    for (i = 0; i < count; i++, objects++) {
+    list = (SpranimB798Target **) func_80005750(&count);
+    for (i = 0, objects = list; i < count; i++, objects++) {
         object = *objects;
         targetState = object->state64;
         firstDistance = 0.0f;
@@ -435,10 +438,10 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
 
 /* PLATEAU-HANDOFF:func_8001B798:start
  * symbol: func_8001B798
- * score: 10/175 words
+ * score: 8/175 words
  * frame: 0xE0
  * relocations: 9
- * first-mismatch: +0x58
- * summary: No coordinate locals, x/firstDistance dead stores, i = 0 before the call, z-y-x second distance: 44 to 10 at 0. Left: y/z/radius homes
+ * first-mismatch: +0xF0
+ * summary: Call result in a list local, copied in the for-init after i = 0 (10 to 8). Left: y/z/radius homes, two operand orders.
  * PLATEAU-HANDOFF:func_8001B798:end
  */

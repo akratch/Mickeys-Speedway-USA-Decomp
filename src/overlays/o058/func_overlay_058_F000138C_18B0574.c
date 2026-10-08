@@ -755,13 +755,10 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
 
         D_o058_5EA0 -= arg0 * 0xF;
         if (D_o058_5EA0 < 0) {
-            /* Interference token, zero width: a discarded read of a local
-             * that is dead here keeps the `&D_o058_5EA0` fragment from
-             * adjoining this block, so the zero store below goes through
-             * `at` as the target's does instead of sharing the fragment's
-             * register (-4).  `columnCount` and `erase` both work; a live
-             * local or a fresh declaration does not. */
-            if (columnCount != 0);
+            /* An empty `if (columnCount != 0);` read stood here to keep the
+             * `&D_o058_5EA0` fragment from adjoining this block (-4 when it
+             * was added).  On the current source shape it is byte-inert and
+             * was removed (lane c-1, 2026-10-08). */
             D_o058_5EA0 = 0;
             if (D_o058_5EB0 == 0) {
                 if (D_800D31B8_o058Reloc & 0x9000) {
@@ -842,11 +839,10 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                 nodes[0].x = opponent;
                 /* Stride in `columnStep` (shared with case 12, s5) and count
                  * in `columnCount` (s6), as the target colours them.  The
-                 * count alone measures 124/6 = 20.7, below `i`'s 21.9, so
-                 * this +10 lifts it to 22.3; the stride probe in case 12
-                 * keeps the stride above it (23.2).  Order: stride, count,
-                 * i.  Without the pair the exchange costs 100 rows. */
-                if (columnCount != 0);
+                 * stride probe in case 12 keeps the stride above `i`.  A
+                 * matching `if (columnCount != 0);` count probe stood here;
+                 * on the current source shape it is byte-inert and was
+                 * removed (lane c-1, 2026-10-08). */
                 nodes[0].y = 0x37;
                 nodes[0].packedOffset = 0;
                 nodes[1].texture = 0;
@@ -1408,8 +1404,9 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                  * Together with the count/stride carrier exchange in case
                  * 13, this keeps the visible index in its target colour.
                  * The former four discarded index probes are unnecessary
-                 * on this source shape and have been removed.  The opaque
-                 * unit increment below still prevents the counted rewrite.
+                 * on this source shape and have been removed, and so has
+                 * the opaque `i += (i * 0) + 1` unit increment: plain `i++`
+                 * is byte-identical (lane c-1, 2026-10-08).
                  */
                 sprintf(&text[0], D_o058_5DAC, (u8) D_o058_5C5C[columnX][i]);
                 if ((i == D_o058_5E7C) && (columnX == D_o058_5E78)) {
@@ -1418,7 +1415,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                     fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
                 }
                 func_8004B0F8(&D_800D3140_o058Reloc, opponent, textY, &text[0], 4);
-                i += (i * 0) + 1;
+                i++;
                 opponent += 0x18;
             } while (i < 0xA);
             columnX += 1;

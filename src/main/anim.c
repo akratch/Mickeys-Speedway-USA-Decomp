@@ -1471,13 +1471,13 @@ void func_800517E0(void) {
                     break;
                 }
                 case 0x47:
-                    value = (f32) *((u16 *) ((u8 *) cursor + 4));
-                    value2 = (f32) *((u16 *) ((u8 *) cursor + 6));
-                    target = (f32) *((u16 *) ((u8 *) cursor + 8));
-                    pathIndex = cursor->command & 0xFF;
+                    start = (f32) *((u16 *) ((u8 *) cursor + 4));
+                    end = (f32) *((u16 *) ((u8 *) cursor + 6));
+                    color = (f32) *((u16 *) ((u8 *) cursor + 8));
+                    opcode = cursor->command & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xA);
-                    camStartShake(0, value / hundred, value2 / hundred,
-                                  target / hundred, pathIndex);
+                    camStartShake(0, start / hundred, end / hundred,
+                                  color / hundred, opcode);
                     if (D_8007BF0C == 0) {
                         rumbleStart(0, 0x4B, 2.0f);
                     }
@@ -1499,26 +1499,26 @@ void func_800517E0(void) {
                     AnimCommandScroll *scroll;
                     s32 scrollX;
                     s32 scrollY;
-                    f32 scrollDuration;
 
-                    targetValue = cursor->command & 0xFF;
 
-                    /* scrollY is read before scrollX (lever_sweep, lane
-                     * p-4: 823 at +4 to 780 at size 0 on the stacked
-                     * 0x2B/0x43/0x46/0x47 shape of lanes k-7 and n-1;
-                     * path lookups after the stream reads in 6, 0x2B and
-                     * the D_8007D6AC update before the cursor reset: 762). */
+                    packed = cursor->command & 0xFF;
+
+                    /* scrollX is read before scrollY again once 0x46 and
+                     * 0x47 colour as shipped (lane q-4; p-4 had measured
+                     * the reverse on the earlier ring phase). The byte goes
+                     * through packed and the duration through value (a1 and
+                     * f16 as shipped). */
                     index = *((u16 *) ((u8 *) cursor + 4));
-                    scrollY = *((s16 *) ((u8 *) cursor + 8));
                     scrollX = *((s16 *) ((u8 *) cursor + 6));
-                    scrollDuration = *((u16 *) ((u8 *) cursor + 0xA));
+                    scrollY = *((s16 *) ((u8 *) cursor + 8));
+                    value = *((u16 *) ((u8 *) cursor + 0xA));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     scrollX = (s32) ((u32) scrollX << 16) / 6000;
                     scrollY = (s32) ((u32) scrollY << 16) / 6000;
                     scroll = (AnimCommandScroll *)
-                        &D_800D6B58[targetValue & 7];
+                        &D_800D6B58[packed & 7];
                     scroll->textureIndex = index;
-                    scroll->duration = (s16) (s32) (scrollDuration *
+                    scroll->duration = (s16) (s32) (value *
                                                (60.0f * 0.01f));
                     scroll->stepX = (scrollX - scroll->x) / scroll->duration;
                     scroll->stepY = (scrollY - scroll->y) / scroll->duration;
@@ -4051,10 +4051,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1163/1808 words
+ * score: 1150/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 695 at size 0: 0x46 height, duration, motionX coloured as shipped via empty-if references (flagged stand-ins), even if count, before the advance.
+ * summary: Aligned 650 at size 0: 0x47 floats through start, end, color and byte through opcode; 0x49 scrollX first, byte packed, duration value.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

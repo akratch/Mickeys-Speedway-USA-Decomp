@@ -307,7 +307,7 @@ units remain distinct.
 | 11 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 354 | 354 | 112 | 112 | 0 | — |
 | 12 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 372 | 372 | 0 | 0 | 0 | — |
 | 13 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `other` | 8,672 | 755 | 721 | 4 | 4 | 0 | — |
-| 14 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,164 | 1,163 | 200 | 208 | 0 | — |
+| 14 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,151 | 1,150 | 200 | 208 | 0 | — |
 | 15 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
 | 16 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
 | 17 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 292 | 292 | 76 | 76 | 12 | — |

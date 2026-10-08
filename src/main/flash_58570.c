@@ -9,7 +9,7 @@ extern OSIoMesg D_800D7730;
 extern OSMesgQueue D_800D7748;
 extern u8 D_800D7774[0x60];
 extern OSMesg D_800D77D4[1];
-extern s32 D_800D77D8;
+extern u32 D_800D77D8;
 
 void osFlashReadId(s32 *flash_type, s32 *flash_maker);
 

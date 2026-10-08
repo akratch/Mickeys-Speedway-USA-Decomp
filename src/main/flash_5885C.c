@@ -2,7 +2,7 @@
 #include "PR/os_pi.h"
 
 extern OSPiHandle D_800D7760;
-extern s32 D_800D77D8;
+extern u32 D_800D77D8;
 
 /* PROVENANCE: body adapted from Jet Force Gemini's public decompilation,
  * libultra/src/flash/flashallerase.c:osFlashAllErase. Mickey's symbol,
@@ -86,7 +86,7 @@ s32 osFlashReadArray(OSIoMesg *mb, s32 priority, u32 page_num, void *dramAddr,
     mb->hdr.pri = priority;
     mb->hdr.retQueue = mq;
     mb->dramAddr = dramAddr;
-    mb->devAddr = (page_num ^ 0) * D_800D77D8;
+    mb->devAddr = page_num * D_800D77D8;
     mb->size = n_pages << 7;
     ret = osEPiStartDma(&D_800D7760, mb, OS_READ);
     return ret;

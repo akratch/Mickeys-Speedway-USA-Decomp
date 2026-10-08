@@ -132,13 +132,13 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/diRcp.c:417` `diRcpMoveWd` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: no - measured (lane c-3, 2026-10-08). The `command = index` store in the G_MW_FOG case and the `command && command` read together keep the six empty cases as separate jump-table blocks; with either removed the cases merge into the exit and the function shrinks by 12 words. Not reproduced: both removed; `if (command == (u8) G_MOVEWORD)` and `if (command != 0)` guards on the final print (with and without the store). The same pair is marked `fakematch` in JFG's diRcp.c.
 - `src/main/flash_5885C.c:89` `osFlashReadArray` **A**: OR/XOR with zero, or an all-ones mask.
-  Natural: the bare operand. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved (lane c-3, 2026-10-08):** `(page_num ^ 0) * D_800D77D8` is `page_num * D_800D77D8` with the page-size global declared `u32` (as the u32 page arithmetic it feeds; `flash_58570.c` now declares it the same way). The XOR stood in for the operand type: with an `s32` global the plain product loads the operands in the other order (3 words); swapping the operands does not help. Byte-identical.
 - `src/main/flash_58C10.c:70` `func_800580F0` **A**: `do { } while (0)` around one call (three sites, 70-78).
   Natural: the bare calls. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/main/font.c:937` `func_8004C690` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/main/frontend_37680.c:228` `func_80036DD0` **A**: `& 0xFFFFFFFF` on a u32 address.
-  Natural: the bare address. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: the bare address. Keep bytes: no - measured (lane c-3, 2026-10-08): `(u8 *) compressedAddr` without the mask differs in 23 words. Not explored further.
 - `src/main/frontend_37D50.c:165` `func_80037414` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/frontend_37D50.c:371` `func_80037AEC` **A**: all-ones 64-bit mask chain.
@@ -150,7 +150,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/menu.c:1163` `func_8003A2C8` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: no - measured (lane c-3, 2026-10-08). The target holds `&D_8007C090` in a1 for both the load and the store; three plain spellings (`screenMode &= 3` with a `u8 *current` for load and store, an `s32 mode` local with the global named, and the pointer for the load with the name for the store) all fold the address into `lui`/`lbu` pairs (22-24 words differ). The address-taken `modeBits` behind `modeBitPtr` is what keeps the address; leave until that is understood.
 - `src/main/menu_3B1A0.c:190` `func_8003A754` **A**: empty if body.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: delete. Keep bytes: no - measured (lane c-3, 2026-10-08): deleting the empty `record != base` test differs in 20 words. Not explored further.
 - `src/main/models_5B300.c:497` `func_8005ABA8` **A**: `(instance && instance) && instance` with an empty body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/objects.c:2278` `func_80006B04` **A**: empty `do { } while (0)`.
@@ -180,7 +180,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/track.c:4983` `func_800148E0` **A**: empty `if (1)`/`if (0)` region.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/vehicle_sounds.c:395` `func_8005830C` **A**: empty if body.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: delete. Keep bytes: no - measured (lane c-3, 2026-10-08): deleting the empty `if (cameras) {}` differs in 6 words. Not explored further.
 - `src/overlays/o001/overlay_001_tail.c:1568` `overlay1StartTimerCallbacks` **A**: empty if body.
   Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/overlays/o001/overlay_001_tail.c:1625` `overlay1FindDirectionalObject` **A**: empty then-arm `if (a == b) { } else { ... }`.

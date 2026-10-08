@@ -3890,7 +3890,23 @@ void func_80012658(s32 flags) {
  * is a while loop swapping one array at a time and both distances sum x
  * and y before z; then 64 -> 57: the visibility word masked by xzMask is
  * read into x0 (a phase-1 local) before yHit, which gives the target's
- * load order and its two v0/v1 tests with no yHit copy. */
+ * load order and its two v0/v1 tests with no yHit copy.
+ * 57 -> 45 at 0 (lane s-3): arg4 is unsigned and tested `> 0`. An unsigned
+ * compare with zero lets ugen keep the one arg4 load for the and block (a
+ * `!= 0` test reloads it and spends one more ring draw, which rotated every
+ * ring register from the else-if on); the yHit test then needs its `& 0xFF`
+ * back for the target's second andi. 45 -> 22: the hit block stores
+ * bestTexture masked (`& 0xFF`, the draw the target spends before its flag
+ * load) and assigns bestPlane before `hit = 1`, which removed the ring
+ * rotation from +0x72C to the end. 22 -> 18: the masked visibility word is
+ * held in edgeSign (a phase-2 local), not in x0, whose phase-1 range kept it
+ * out of v0. 18 -> 6: the phase-1 z coordinate is edgeIndex (its own web,
+ * v0) and z1 is only the triangle index; the edge value's sign is a
+ * conditional expression, whose extra blocks order the triangle index after
+ * polygon (t3/t2 as shipped); xzMask is also the insertion sort's xzMasks
+ * swap temporary, which ties it with the batch cursor and wins on web number
+ * (s4/s5); the coordinate swaps go through insertIndex. pad is the unused
+ * cell the old swap temporary held; deleting it moves the frame. */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -3908,7 +3924,7 @@ typedef struct TrackFacet {
     u16 indices[4];
 } TrackFacet;
 
-s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
+s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, u32 arg4) {
     TrackSegment *segments[20];
     s32 x0;
     s32 y0;
@@ -3924,7 +3940,7 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
     s32 z1;
     s32 insertIndex;
     f32 planeDistance;
-    s32 temporaryXZ;
+    s32 pad;
     TrackBoundingBox *bounds;
     s32 segmentIndex;
     s32 xzMask;
@@ -3993,23 +4009,23 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                 z0 = arg0[2] + direction.f[2] * nearClip;
                 x1 = arg0[0] + direction.f[0] * farClip;
                 y1 = arg0[1] + direction.f[1] * farClip;
-                z1 = arg0[2] + direction.f[2] * farClip;
+                edgeIndex = arg0[2] + direction.f[2] * farClip;
                 if (x1 < x0) {
-                    temporaryXZ = x1;
+                    insertIndex = x1;
                     x1 = x0;
-                    x0 = temporaryXZ;
+                    x0 = insertIndex;
                 }
                 if (y1 < y0) {
-                    temporaryXZ = y1;
+                    insertIndex = y1;
                     y1 = y0;
-                    y0 = temporaryXZ;
+                    y0 = insertIndex;
                 }
-                if (z1 < z0) {
-                    temporaryXZ = z1;
-                    z1 = z0;
-                    z0 = temporaryXZ;
+                if (edgeIndex < z0) {
+                    insertIndex = edgeIndex;
+                    edgeIndex = z0;
+                    z0 = insertIndex;
                 }
-                xzMasks[hitCount] = getXZCompareMask(bounds, x0, z0, x1, z1);
+                xzMasks[hitCount] = getXZCompareMask(bounds, x0, z0, x1, edgeIndex);
                 yMasks[hitCount] = getYCompareMask(bounds, y0, y1);
                 entryTimes[hitCount] = nearClip;
                 segments[hitCount] = &D_800792E8->segments[segmentIndex];
@@ -4021,9 +4037,9 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                     segment = segments[insertIndex];
                     segments[insertIndex] = segments[insertIndex - 1];
                     segments[insertIndex - 1] = segment;
-                    temporaryXZ = xzMasks[insertIndex];
+                    xzMask = xzMasks[insertIndex];
                     xzMasks[insertIndex] = xzMasks[insertIndex - 1];
-                    xzMasks[insertIndex - 1] = temporaryXZ;
+                    xzMasks[insertIndex - 1] = xzMask;
                     temporaryY = yMasks[insertIndex];
                     yMasks[insertIndex] = yMasks[insertIndex - 1];
                     yMasks[insertIndex - 1] = temporaryY;
@@ -4053,16 +4069,16 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
             lastTriangle = segment->batches[batchIndex + 1].v0;
             if (segment->batches[batchIndex].flags & arg3) {
                 firstTriangle = lastTriangle;
-            } else if ((arg4 != 0) &&
+            } else if ((arg4 > 0) &&
                        ((segment->batches[batchIndex].flags & arg4) == 0)) {
                 firstTriangle = lastTriangle;
             }
             for (z1 = firstTriangle; z1 < lastTriangle;
                  z1++) {
-                x0 = segment->visibilityMasks[z1] & xzMask;
+                edgeSign = segment->visibilityMasks[z1] & xzMask;
                 yHit = E129_U8(E129_PTR(segment, 0x14), z1) & yMask;
-                if (((x0 & 0xFFFF) != 0) && ((x0 & 0xFFFF0000) != 0) &&
-                    (yHit != 0)) {
+                if (((edgeSign & 0xFFFF) != 0) && ((edgeSign & 0xFFFF0000) != 0) &&
+                    ((yHit & 0xFF) != 0)) {
                     polygon = ((TrackFacet *) segment->surfaceIndices)[z1].indices;
                     plane = &surfaceBase[polygon[0]];
                     normalX = plane->x;
@@ -4091,9 +4107,7 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                                 edgeD = plane->distance;
                                 value = (edgeX * pointX) + (edgeY * pointY) +
                                         (edgeZ * pointZ) + edgeD;
-                                if (edgeSign != 0) {
-                                    value = -value;
-                                }
+                                value = (edgeSign != 0) ? -value : value;
                                 if (value > 0.0f) {
                                     insertIndex = 0;
                                 }
@@ -4105,9 +4119,9 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                                 best.f[2] = pointZ;
                                 bestFlags = segment->batches[batchIndex].flags;
                                 bestTexture = ((TrackTextureFlags *) D_800792E8->textures)[
-                                    segment->batches[batchIndex].textureIndex].flag;
-                                hit = 1;
+                                    segment->batches[batchIndex].textureIndex].flag & 0xFF;
                                 bestPlane = &surfaceBase[polygon[0]];
+                                hit = 1;
                             }
                         }
                     }
@@ -5243,10 +5257,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 57/548 words
+ * score: 6/548 words
  * frame: 0x288
  * relocations: 13
- * first-mismatch: +0x2AC
- * summary: Visibility word in a local before yHit: 64 to 57 at 0, aligned residual 64 to 57
+ * first-mismatch: +0x568
+ * summary: Phase-1 z in edgeIndex, sign as a conditional, xzMask swap, insertIndex swaps: 18 to 6 at 0, aligned residual 18 to 6
  * PLATEAU-HANDOFF:func_8001291C:end
  */

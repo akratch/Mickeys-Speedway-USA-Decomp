@@ -4031,6 +4031,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 804 at size 0: 0x6A/0x6B index in packed2, low byte in high, table in reference; cases must be fixed in case order (ring phase).
+ * summary: Aligned 804 at size 0. The case-3 re-mask and 0x64 constant are as1 effects of the later ring phase, not of 0x43; 0x46 read per use restores the phase to 0x4B.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

@@ -745,6 +745,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 302 aligned at size 0 (masked 324): icon scan is a for loop on i; icon draw loop's colour index is i. Open: i ranks above actor (CDX_BIAS on i).
+ * summary: 302 aligned at size 0 (masked 324): icon scan is a for loop on i; colour index in i is a likely stand-in (target s7). Open: i's save vs actor.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

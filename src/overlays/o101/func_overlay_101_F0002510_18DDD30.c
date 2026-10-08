@@ -182,6 +182,6 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
  * frame: 0xE8
  * relocations: 6
  * first-mismatch: +0x70
- * summary: y origin local tested, y copied after the clip tests: delta 0. bottom never forms a web (no argument pin); alias spellings fold.
+ * summary: bottom is a web only with no indirect load in its blocks; target clip block reached at 260/-4 (aligned 61); needs v0 denied to the post-GetBounds webs.
  * PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:end
  */

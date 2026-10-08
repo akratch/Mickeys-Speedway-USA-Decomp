@@ -90,6 +90,11 @@ extern void *func_overlay_020_F0000000_18765D8();
  * shipped. Left: the merged web's save (55 over six blocks) puts it after
  * far and the 64 constant (s6 here, s4 in the target), and the col & 7 web
  * still outranks row.
+ * 2026-10-08 (lane k-2), 34 -> 22: two `size |= 0;` after the increment
+ * each add a def and a use of size in the loop (L109), raising the merged
+ * web's save above far's and the 64 constant's, so size takes s4, far s5
+ * and 64 s6 as shipped. One probe lands between far and 64 (33); three or
+ * four overshoot (48). Left: col & 7 over row (t1/t2) and the copy's use.
  */
 #ifdef NON_MATCHING
 Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
@@ -156,6 +161,8 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
                 tri[1].flags = 0x40;
                 tri[1].vi0 = size + 1;
                 size += 9;
+                size |= 0;
+                size |= 0;
                 tri[1].vi1 = size;
                 tri[1].vi2 = far;
                 tri[1].uv0.u = u1;
@@ -182,10 +189,10 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
 
 /* PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:start
  * symbol: func_overlay_020_F000038C_1876964
- * score: 34/270 words
+ * score: 22/270 words
  * frame: 0x40
  * relocations: 3
- * first-mismatch: +0x50
- * summary: Forces price 24 words as the size/far/64 web order (10 left: the copy is substituted at its store); six source products flat at 34.
+ * first-mismatch: +0x94
+ * summary: Two or-zero probes on size order size, far and 64 as shipped (s4/s5/s6), 34 to 22. Left: col & 7 over row, the copy's use.
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

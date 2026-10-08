@@ -282,8 +282,8 @@ Relocation-masked mismatch evidence covers **18 / 18** resolved rows. The raw co
 | relocation-masked `differing_words <= 5` | 1 |
 | raw `differing_words <= 10` | 3 |
 | relocation-masked `differing_words <= 10` | 5 |
-| raw `differing_words <= 20` | 5 |
-| relocation-masked `differing_words <= 20` | 5 |
+| raw `differing_words <= 20` | 6 |
+| relocation-masked `differing_words <= 20` | 6 |
 
 ### Complete ranked queue
 
@@ -298,8 +298,8 @@ units remain distinct.
 | 3 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 10 | 10 | 88 | 88 | 0 | — |
 | 4 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 10 | 10 | 548 | 548 | 0 | — |
 | 5 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
-| 6 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 27 | 27 | 88 | 88 | 0 | — |
-| 7 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 29 | 29 | 60 | 60 | 0 | — |
+| 6 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 19 | 19 | 156 | 156 | 0 | — |
+| 7 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 27 | 27 | 88 | 88 | 0 | — |
 | 8 | `src/main/fx.c` | `wakeAllocate` | `main` | `other` | 1,404 | 57 | 57 | 148 | 148 | 0 | — |
 | 9 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 116 | 116 | 1,864 | 1,864 | 0 | — |
 | 10 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |

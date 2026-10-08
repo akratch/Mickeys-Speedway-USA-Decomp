@@ -145,7 +145,7 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     }
     drawWidth = texture->width - sourceX;
     if ((right - drawX) < drawWidth) {
-        drawWidth = right - drawX;
+        drawWidth = right - drawX; if (y) {}
     }
     if (y < top) {
         drawY = top;
@@ -190,10 +190,10 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
 
 /* PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:start
  * symbol: func_overlay_101_F0002510_18DDD30
- * score: 29/293 words
+ * score: 19/293 words
  * frame: 0xE8
  * relocations: 6
- * first-mismatch: +0x3C
- * summary: gfx read before the stride (lever_sweep reorder) closes the frame-block window, 60 to 29. Left: node over y (s4/s5), a3/t0/t1 ring cycle.
+ * first-mismatch: +0x9C
+ * summary: gfx read before the stride, and an empty test of y at the right clamp (lever_sweep oracle reproduction): 60 to 19. Left: a3/t0/t1 ring cycle, s2/t7, v1/t8.
  * PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:end
  */

@@ -2,11 +2,13 @@
 ### `func_overlay_101_F0002510_18DDD30` plateau handoff
 
 - source: `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c`
-- score: 29/293 words
+- score: 19/293 words
 - frame: 0xE8
 - relocations: 6
-- first mismatch: +0x3C
-- summary: gfx read before the stride (lever_sweep reorder) closes the frame-block window, 60 to 29. Left: node over y (s4/s5), a3/t0/t1 ring cycle.
+- first mismatch: +0x9C
+- summary: gfx read before the stride, and an empty test of y at the right clamp (lever_sweep oracle reproduction): 60 to 19. Left: a3/t0/t1 ring cycle, s2/t7, v1/t8.
+
+Summary before this remeasure: gfx read before the stride (lever_sweep reorder) closes the frame-block window, 60 to 29. Left: node over y (s4/s5), a3/t0/t1 ring cycle.
 
 Summary before this remeasure: Bounds call declared int with its result consumed by x pins v0 in the clip block: bottom v0, left s3 as shipped, 68 to 60. Left: node/y, frame window.
 
@@ -448,4 +450,14 @@ On the 60 body. Oracle re-priced first: p1:w0=c19 (node to s5), p1:w32=c18 (y to
 Measured by tools/lever_sweep.py (proc 0, oracle above, positions restricted to the lines of webs 32 and 0, identity gate passed): 2,738 cells generated, 1,500 measured: scored 1,378 (801 inert), size-skipped 89, compile errors 33; oracle reproduced 0; exact 0. The one cell that moved: a reorder at line 137, `gfx = *dList;` read before `stride = texture->width * rows;`, 29 masked at +0 (aligned 264/27/1/1, residual 29). That is the frame-block window m-4 left open at +0x14c to +0x208: it closes entirely. Next best were assigned dead reads of node/element fields into drawWidth at lines 114-119, 58 at +0 (residual 40). Kept the reorder.
 
 Records on the 29 body (web_report, proc 0, identity gate passed): node still save 0.857 (6 over nocs 7) decided before y at 0.667 (4 over 6), s4 and s5 swapped from the target; register_census reads s4/s5 (10 sites), a three-cycle a3/t0/t1 on the ring and t7/s2 over coloured registers.
+
+#### 2026-10-08, lane p-3 (second sweep): an empty test of y gives y s4 and node s5, 29 to 19
+
+Measured by tools/bank.py: masked 19 (raw 19), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 274, register naming 17, immediate only 1, really different 1.
+
+On the 29 body. Oracle p1:w0=c19, p1:w32=c18 (accepted): forced 19 masked, residual 19 at +0.
+
+Measured by tools/lever_sweep.py (proc 0, same oracle, positions on the lines of webs 32 and 0, identity gate passed): 2,745 cells generated and measured: scored 2,500 (1,520 inert), size-skipped 158, compile errors 87; oracle reproduced 3; exact 0. All three reproductions are byte-identical to the forced object (19 at +0, aligned 274/17/1/1): `if (y) {}` on the line of the right clamp's `drawWidth = right - drawX;` (line 148, kept), and `if (y) {}` or `if (drawY) {}` on the line of `drawY = y;` (155). The empty test adds a y reference in a block of its own, which lifts y's save above node's. Next best: assigned dead reads of `*dList` or `texture->width` into drawWidth at lines 139-140, 26 at +0 (one of two oracle webs).
+
+Left (register_census, residual_map): 17 naming over the ring, a3/t0/t1 three-cycle (both windows), and two single swaps s2/t7 and v1/t8 in the first 0x200 bytes; one immediate, one structural.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

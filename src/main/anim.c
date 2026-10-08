@@ -1564,14 +1564,14 @@ void func_800517E0(void) {
                     word6 = *((u16 *) ((u8 *) cursor + 4));
                     pathIndex = cursor->command & 0xFF;
                     value = (f32) *((u16 *) ((u8 *) cursor + 6));
-                    packed2 = *((u16 *) ((u8 *) cursor + 8));
+                    frame6F = *((u16 *) ((u8 *) cursor + 8));
                     timer = *((u16 *) ((u8 *) cursor + 0xA));
                     frame4D = *((u16 *) ((u8 *) cursor + 0xC));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xE);
                     high2 = frame4D >> 8;
                     low2 = frame4D & 0xFF;
                     TrapDanglingJump(word6, (s32) value,
-                                     packed2, timer, high2,
+                                     frame6F, timer, high2,
                                      low2, pathIndex);
                     break;
                 case 0x60:
@@ -4051,10 +4051,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1150/1808 words
+ * score: 1148/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 650 at size 0: 0x47 floats through start, end, color and byte through opcode; 0x49 scrollX first, byte packed, duration value.
+ * summary: Aligned 648 at size 0: 0x46 empty-if stand-ins, 0x47 start/end/color and opcode, 0x49 scrollX first, 0x4D frame6F. Next: 0x4B sext store.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

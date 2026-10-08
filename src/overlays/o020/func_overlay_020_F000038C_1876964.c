@@ -199,6 +199,6 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
  * frame: 0x40
  * relocations: 3
  * first-mismatch: +0x224
- * summary: 10 at 0. Stream surgery: copy and index ops before the v1 division give 2; the text round trip difference was as1 -noglobal.
+ * summary: 10 at 0. Exact stream: index ops (i+9 before i+1, copy, far) between u1 and the v1 division, vi0/vi1/vi2 order.
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

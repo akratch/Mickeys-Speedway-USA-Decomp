@@ -4023,7 +4023,7 @@ void fmvInit(void) {
  * frame: 0x40
  * relocations: 47
  * first-mismatch: +0x114
- * summary: 7 at 0. All 306 exact join streams emit the state store first on a later line than the cursor store; conversion line at most the add's.
+ * summary: 7 at 0. Goto-placed blocks emit the state store first but carry the goto's line, and break the a0/a1/a2 colours (266-281).
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

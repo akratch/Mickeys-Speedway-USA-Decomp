@@ -6,7 +6,9 @@
 - frame: 0x98
 - relocations: 46
 - first mismatch: +0x7C8
-- summary: 4 masked at size 0, case 4 query: one ring draw with no surviving word between the index narrowing and the mathRnd arm.
+- summary: 4 at 0. Hybrid stream (mathRnd narrowing on t9, kill join into a1) is exact with no extra instruction; a t8 draw with no surviving word.
+
+Summary before this remeasure: 4 masked at size 0, case 4 query: one ring draw with no surviving word between the index narrowing and the mathRnd arm.
 
 Summary before this remeasure: 4 masked at size 0, case 4 query: ugen's hinted argument path never refuses a0 (it spills the occupant), so the folded draw is a uopt temp moved into a0.
 
@@ -717,4 +719,16 @@ No source change (4 at size 0; aligned exact 756, naming 4).
 - In the recompiled ugen (`f_eval`'s binary-operator path, around source line 60300 of ugen.traced.c), the result register is the left operand's register if its usage count is 0 and it is available, else the right operand's, else a fresh `f_get_free_reg` draw. So any binary node whose operands sit in web registers (v1, a1) draws a ring temp. An instruction as1 then deletes, or renames into its consumer (L150), is the only way such a draw leaves no word.
 
 Cycle-21 line: unchanged in substance. The decision variable is a binary node evaluated between emit 681 and 693 whose operands are both web registers and whose instruction as1 removes (a copy into a ring temp of v1 or a1 read by a test or an argument, then forwarded). Record: the ugen listing (`cc -S`) of each cell, read for a `move` or ALU op into t8 in that window, not the score.
+
+#### 2026-10-08, lane r-1: the target stream needs no instruction for the ghost draw
+
+Measured by tools/bank.py: masked 4 (raw 19), size delta +0, candidate 760 words vs target 760. Aligned: byte-exact 756, register naming 4, immediate only 0, really different 0.
+
+No source change; the 4 body is kept.
+
+- Stream surgery on the tree's ugen listing (as0, then as1 with the configured C flags including -r4300_mul; the unedited round trip is byte-identical to the direct compile): renaming only the mathRnd narrowing's ring register from t8 to t9 and writing the join's subtraction into a1 (g-near's kill join) scores 0 masked at size 0 (raw 15, all relocation artefacts). No inserted instruction is needed. Inserting any dead write of t8 (twelve forms: copies of v1, a1, v0, t6 or t7, li, add, shift, or) at any of seven positions from the hitIndex narrowing to the mathRnd narrowing also scores 0: as1 deletes them all. `li t8, 1` then a copy into a0 is 0 (as1 renames the producer). Replacing the second test's branch macro by a compare into t8 and a branch on it is 2 (as1 keeps the slti in t8, the target has at), so the target's second test is the macro form.
+- So the target's free list has t8 behind t9 when the mathRnd narrowing draws; the cause is a draw (or a MOVE_END) of t8 after t7 is freed at the end of the query line, with no instruction surviving as1, or a draw whose instruction as1 deletes as dead.
+- Measured flat (cc -S read for the narrowing register, then fast_score): the second test as `(u32)hitCount >= 2`, `hitCount >= 2U`, `(u32)hitIndex > 1U` (bltu, 20) and `hitCount != 1` (21), `(u16)hitCount >= 2` (283 at +4, the and draws t8 but survives); the mathRnd result as `(s16)(s32)`, through hitIndex then narrowed, `+ 0`, or-with-zero, through phase, assigned inside the cast, `(s16)(s16)`, `(s16)(u32)`: all 19 raw, narrowing on t8; `(s16)(u16)` 283 at +4.
+
+Cycle-21 line: decision variable unchanged in kind but narrowed: a construct that makes ugen draw t8 after the hitIndex narrowing and leaves either nothing or a dead or forwarded write (as1 deletes both). Oracle: the hybrid stream (tree listing, t9 for the narrowing, a1 for the join) is exact, so test each C cell by reading the mathRnd narrowing register in cc -S (t9 wanted) with the kill join in place; next candidates are constructs ugen evaluates into a ring temp and copies (an argument or test operand that is a uopt temporary rather than a symbol or leaf).
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

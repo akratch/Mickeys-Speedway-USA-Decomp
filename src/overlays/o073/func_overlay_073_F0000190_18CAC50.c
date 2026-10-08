@@ -403,6 +403,6 @@ common:
  * frame: 0x98
  * relocations: 46
  * first-mismatch: +0x7C8
- * summary: 4 masked at size 0, case 4 query: one ring draw with no surviving word between the index narrowing and the mathRnd arm.
+ * summary: 4 at 0. Hybrid stream (mathRnd narrowing on t9, kill join into a1) is exact with no extra instruction; a t8 draw with no surviving word.
  * PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:end
  */

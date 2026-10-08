@@ -3895,7 +3895,12 @@ void func_80012658(s32 flags) {
  * compare with zero lets ugen keep the one arg4 load for the and block (a
  * `!= 0` test reloads it and spends one more ring draw, which rotated every
  * ring register from the else-if on); the yHit test then needs its `& 0xFF`
- * back for the target's second andi. */
+ * back for the target's second andi. 45 -> 22: the hit block stores
+ * bestTexture masked (`& 0xFF`, the draw the target spends before its flag
+ * load) and assigns bestPlane before `hit = 1`, which removed the ring
+ * rotation from +0x72C to the end. 22 -> 18: the masked visibility word is
+ * held in edgeSign (a phase-2 local), not in x0, whose phase-1 range kept it
+ * out of v0. */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -4064,9 +4069,9 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, u32 arg4) {
             }
             for (z1 = firstTriangle; z1 < lastTriangle;
                  z1++) {
-                x0 = segment->visibilityMasks[z1] & xzMask;
+                edgeSign = segment->visibilityMasks[z1] & xzMask;
                 yHit = E129_U8(E129_PTR(segment, 0x14), z1) & yMask;
-                if (((x0 & 0xFFFF) != 0) && ((x0 & 0xFFFF0000) != 0) &&
+                if (((edgeSign & 0xFFFF) != 0) && ((edgeSign & 0xFFFF0000) != 0) &&
                     ((yHit & 0xFF) != 0)) {
                     polygon = ((TrackFacet *) segment->surfaceIndices)[z1].indices;
                     plane = &surfaceBase[polygon[0]];
@@ -4110,9 +4115,9 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, u32 arg4) {
                                 best.f[2] = pointZ;
                                 bestFlags = segment->batches[batchIndex].flags;
                                 bestTexture = ((TrackTextureFlags *) D_800792E8->textures)[
-                                    segment->batches[batchIndex].textureIndex].flag;
-                                hit = 1;
+                                    segment->batches[batchIndex].textureIndex].flag & 0xFF;
                                 bestPlane = &surfaceBase[polygon[0]];
+                                hit = 1;
                             }
                         }
                     }
@@ -5248,10 +5253,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 45/548 words
+ * score: 18/548 words
  * frame: 0x288
  * relocations: 13
  * first-mismatch: +0x2AC
- * summary: arg4 unsigned and tested > 0 keeps one load: 57 to 45 at 0, aligned residual 57 to 45
+ * summary: Hit block masked texture and order, visibility in edgeSign: 45 to 18 at 0, aligned residual 45 to 18
  * PLATEAU-HANDOFF:func_8001291C:end
  */

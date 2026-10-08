@@ -3912,8 +3912,8 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
     Objects09414StaticEntry *staticEntry;
     Objects09414Entry *entry;
     Objects09414Vector *vector;
-    s32 pad1;
-    s32 pad2;
+    s32 slot;
+    s32 k;
 
     object = (Objects09414Object *)arg3;
     resource = object->unk64;
@@ -3926,9 +3926,15 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
     *arg0 = (void *)(command + 1);
     command->w0 = 0xFB000000; command->w1 = (u32)-0x100;
 
-    for (i = 0; i < 4; i++) {
-        if (*(s32 *)((u8 *)resource + 0x134 + (i * 4)) != 0) {
-            TrapDanglingJump(arg0, *(s32 *)((u8 *)resource + 0x134 + (i * 4)));
+    /* The trap loop has an index of its own (lane m-1, 28 -> 8): its web is
+     * the extra interferer that stops arg0's first split piece at the sort
+     * head (bb25), so arg0, root and resource reload per render pass; the
+     * render loop then takes its own `slot` (sort j in a0, as shipped). Left:
+     * this loop's exit test is LFTR'd to `!= 16` in s0, the target keeps
+     * `slti` (an index used only in one loop loses `<`). */
+    for (k = 0; k < 4; k++) {
+        if (*(s32 *)((u8 *)resource + 0x134 + (k * 4)) != 0) {
+            TrapDanglingJump(arg0, *(s32 *)((u8 *)resource + 0x134 + (k * 4)));
         }
     }
 
@@ -3988,8 +3994,8 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
             sprite.divisor = 3;
             sprite.frameCount = 0x3333;
             for (i = 0; i < count; i++) {
-                j = sortIndex[i];
-                type = kindOrEntry[j];
+                slot = sortIndex[i];
+                type = kindOrEntry[slot];
                 if ((type & 0x80) != 0) {
                     /* The masked value is the switch's own temporary (v0
                      * in the target); masking `type` in place makes it a
@@ -4004,23 +4010,23 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                     case 2:
                         func_80009220(arg0, arg1, arg2,
                                       (Objects09220Object *)object,
-                                      (s32)textures[j],
-                                      (Objects09220Source *)cones[j],
-                                      alphas[j]);
+                                      (s32)textures[slot],
+                                      (Objects09220Source *)cones[slot],
+                                      alphas[slot]);
                         mode = 0x16;
                         break;
                     }
                     command = (Objects09414Gfx *)*arg0;
                     *arg0 = (void *)(command + 1);
                     command->w0 = 0x01810040;
-                    command->w1 = (u32)textures[j] + 0x80000000;
-                    func_80047CD8(arg0, cones[j], mode,
-                                  (u8)alphas[j]);
+                    command->w1 = (u32)textures[slot] + 0x80000000;
+                    func_80047CD8(arg0, cones[slot], mode,
+                                  (u8)alphas[slot]);
                     command = (Objects09414Gfx *)*arg0;
                     *arg0 = (void *)(command + 1);
                     command->w0 = 0xBC00000A; command->w1 = 0;
                 } else {
-                    entry = entries[j];
+                    entry = entries[slot];
                     vector = &root->unk40[entry->unk4];
                     sprite.angle = *(s16 *)((u8 *)resource + 0x10C +
                                              (type * 2));
@@ -5385,10 +5391,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414
- * score: 28/421 words
+ * score: 8/421 words
  * frame: 0x198
  * relocations: 11
- * first-mismatch: +0x29C
- * summary: Dynamic-loop index stored before the entry, BC packet on one line (32 to 28 at delta 0); left the arg0 piece at bb25 (slot shape) and the sort j web
+ * first-mismatch: +0x90
+ * summary: Trap loop on its own index (28 to 8 at delta 0); left the trap exit test (bne against 16 in s0, target slti)
  * PLATEAU-HANDOFF:func_80009414:end
  */

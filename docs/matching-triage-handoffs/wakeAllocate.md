@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: XOR-kept copies, counts inline: 323 at -8 to 57. Left: spill homes follow web number; pre-call webs must number after the loop temps
+- summary: XOR-kept copies, counts inline: 323 at -8 to 57. Left: cvt and segment must be kept symbols created late (target s0/t0); loop-bound copies alone go late
+
+Summary before this remeasure: XOR-kept copies, counts inline: 323 at -8 to 57. Left: spill homes follow web number; pre-call webs must number after the loop temps
 
 Summary before this remeasure: XOR-kept copies give the dead v0/v1 moves (size 0); counts inline so the segment copy takes v0: 323 at -8 to 57. Left: pre-call spill-cell order (web numbering)
 
@@ -548,4 +550,42 @@ temporaries (191/195 here); they are 5 to 41 now. Only values reached
 through a late substitution of a loop-bound symbol (the group-count copy,
 288) are numbered that late. Find the source that delays creating the cvt
 chain the same way while bb0 still computes it.
+
+#### 2026-10-08, lane m-1: which symbols uopt keeps, read from the target (57 kept)
+
+Measured by tools/bank.py: masked 57 (raw 57), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 328, register naming 0, immediate only 14, really different 13.
+
+Score unchanged at 57 masked, size delta 0 (aligned byte-exact 328, naming
+0, immediate 14, really different 13). No source change adopted.
+
+Reading of the target's block 0. The trunc result goes straight into s0
+(frameCount), and the segment count is copied from its expression into t0
+(`segmentCount`, spilled at 0x38), beside the two fill-loop bounds copied
+into t2 and t4 (groupCount and triCount, homes 0x6C and 0x60), alpha in ra
+and bufferCount = 2 held in s1 across both calls. uopt keeps a symbol web
+apart from its defining expression like this for loop bounds (alpha,
+bufferCount, groupCount, triCount all are), so the target also keeps
+frameCount and segmentCount as symbols.
+
+Diagnostic (not adoptable, +120 bytes): segmentCount declared, assigned in
+bb0, the copy `j = segmentCount; j ^= 0`, and a dummy loop bounded by
+segmentCount. web_report --proc 9: the copy and both terms read from it
+move from webs 26, 40, 41 to 357, 358, 363 (numbered with the late
+substitutions, after the unroller's autos), while cvt, the segment
+expression and the doubled expression keep 5, 7 and 11 because bb0's
+definitions still create them first. So the dispatch's mechanism is
+confirmed on the terms, and refuted as a full answer for cvt and the
+segment value: those also need their defining expressions to be first
+created late, which a loop bound alone does not do.
+
+Measured worse: the 0x14 term (and the sample term) written inside the
+sample-buffer loop's subscript so the hoisted add sits in the guard's
+delay slot as shipped: 283 at +4 and 263 at +20.
+
+Cycle-21 line: find the source that keeps frameCount and segmentCount as
+symbols (the target's s0 and t0) without a loop; decision variable is the
+first-creation web number of the cvt and segment expressions (5 and 7
+now, must exceed the unroller autos 174-255); record web_report --proc 9
+numbers and frame_census's ladder (target cvt at 0x3C, three free cells
+above it).
 <!-- plateau-handoff:wakeAllocate:end -->

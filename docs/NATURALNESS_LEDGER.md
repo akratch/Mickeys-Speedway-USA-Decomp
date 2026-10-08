@@ -149,6 +149,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   **Resolved (lane c-2, 2026-10-08):** rewritten in func_800378A4's style: nested `do`/`while` loops with named `height`/`value`/`angle` locals, no `if (1)`, no mask, no `vertex[-1]`. A redundant `s32 row = 0;` initialiser (a dead store uopt deletes) numbers `row` before `phase`, the same first-reference rule as `dst` in func_8004C690. Byte-identical.
 - `src/main/gameVi.c:161` `func_800336A8` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-4, 2026-10-09):** the two `!=` mode tests and the empty `if (1) {}` (inherited from JFG viChangeMode) are a `switch (D_800D2F98 & 3)` with `case 2: case 3:` allocating and `default:` placing the second buffer after the first. Deleting the `if (1)` alone moves every global-address register (93 lines); the inverted `==`/`||` test differs in 11. Byte-identical.
 - `src/main/menu.c:818` `func_8003968C` **A**: one-line body: `new_var` carriers, 64-bit mask chains, duplicated empty test.
   **Resolved (lane c-3, 2026-10-08):** the one-line permuter body is a four-iteration controller loop storing `-1`, `20` and `15` to `menuPreviousButtons[i]`, `menuRepeatX[i]` and `menuRepeatY[i]` (the TU's existing array aliases). IDO unrolls it completely, which is why the target loads each constant afresh per controller. Byte-identical.
 - `src/main/menu.c:1163` `func_8003A2C8` **A**: OR/XOR with zero, or an all-ones mask.
@@ -157,6 +158,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   Natural: delete. Keep bytes: no - measured (lane c-3, 2026-10-08): deleting the empty `record != base` test differs in 20 words. Not explored further.
 - `src/main/models_5B300.c:497` `func_8005ABA8` **A**: `(instance && instance) && instance` with an empty body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-4, 2026-10-09):** deleted; the guard was byte-inert in the current tree. The two `if (x) { do { ... } while (x); }` wrap loops are plain `while` loops as well (IDO inverts them to the same code). Byte-identical.
 - `src/main/objects.c:2278` `func_80006B04` **A**: empty `do { } while (0)`.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Left (lane c-2, 2026-10-08):** not re-measured; the cleanup queue row lists eleven placements already tried.
@@ -171,8 +173,10 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   **Left (lane c-2, 2026-10-08):** the block boundary keeps the time scale out of the one-block body, where it interferes with every caller-saved float web and is split to memory (shard). Measured: deleted (+3 words); a separate `factor` local for the reflection (+3 words).
 - `src/main/particles.c:993` `partObjFreeTriggers` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-4, 2026-10-09):** the byte-offset cursor, the `if (count > 0) do { } while (++i != count)` shape and the empty `if (offset) {}` are one indexed loop, `for (i = 0; i < count; i++) { if (object->triggers[i].flags & 0x8000) ... }`. Deleting only the empty test swaps the index and offset registers (8 lines). Byte-identical.
 - `src/main/pi.c:101` `piRomLoadCompressed` **A**: empty `if (1)`/`if (0)` region.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-4, 2026-10-09):** the empty `if (1)` is gone; the copy-target assignment is the `else` arm of the `out == NULL` test, which gives it the same block of its own (the donors JFG and DKR both carry the `if (1) {}` as a fakematch). Deleted outright, the target is computed in v0 and copied to a1 (4 words). The inverted `if (out != NULL) { ... }` body differs in 7. Byte-identical.
 - `src/main/runlink.c:500` `func_800320F0` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Left (lane c-2, 2026-10-08):** the extra reference ranks the `overlayCount` web into s1. Measured: deleted (38 words differ); a `count = overlayCount` loop-bound local, declared first or last, with the `if (1)` blocks (23) and without (87).
@@ -203,26 +207,35 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   Natural: the literal `0`. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o003/overlay3FindClosestObject.c:39` `overlay3FindClosestObject` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Partly resolved (lane c-4, 2026-10-09):** the `if (&pad)` probe was byte-inert and is deleted (the `pad` declaration stays: without it the frame moves, 9 lines). **Left:** the empty `!cursor` test and the `if (1)` around the loop body; deleting either swaps the index and cursor registers (s3/s4; 10 and 7 lines). Measured without them: an indexed `objects[index]` loop (12), a pointer-walk `for (index = start, cursor = &objects[start]; ...; index++, cursor++)` (14), the same with the cursor set first (19), `while` with both increments at the tail (14), `*cursor++` (14). The fakes add references that rank the index web ahead of the cursor; a natural second use of `index` is still to find.
 - `src/overlays/o007/overlay_007_tail.c:268` `overlay7FillValues` **A**: `((!value) & 0xFFFFU) && (!value)` with an empty body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Left (lane c-4, 2026-10-09):** deleted, the counter takes v0 and its post-decrement copy v1, the target has them the other way round (4 lines). The two reads of the parameter before it is overwritten are what number its web first. Measured: a separate `s16 *entry` local (6), counter assigned before the pointer (4), a `for (i = 9; i >= 0; i--)` with `*value-- = 0xF0` (6), an indexed store below the end symbol (unrolled), `void` return with and without the parameter (4, 5), declaration initialisers with `!= 0` (6). The function overwrites its only parameter, so the signature itself is suspect; a caller-side reading of the argument would settle it.
 - `src/overlays/o008/overlay_008.c:416` `func_overlay_008_F0001000_185ED58` **A**: empty if body.
   **Left** (lane c-1, 2026-10-08, measured): deleting the empty `if (unused) {}` changes about 100 words; the parameter reference removes its home store (cf. overlay99BuildHeightGrid). Prior note: Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/overlays/o008/overlay_008.c:1519` `overlay8ScaleOutputs` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o012/func_overlay_012_F00000C4_186D344.c:41` `func_overlay_012_F00000C4_186D344` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Left (lane c-4, 2026-10-09):** the empty `!i` test keeps `i` live after the clear loop, which stops IDO turning the `< 64` exit into `!= 64` (2 lines: `li`/`bne` against `slti`/`bnez`). The sibling overlay12Initialize resolved with `for (i = 0, entry = gOverlay12Entries; i < 64; i++, entry++)` because its counter is reused after the loop; here the same loop (2), `<= 63` (2), a plain `do`/`while` (3, 4), an indexed loop (8) and deleting the test (7) all differ. A natural later use of `i` is still to find.
 - `src/overlays/o012/overlay_012.c:26` `overlay12Initialize` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-4, 2026-10-09):** the `do`/`while` with `entry[-1]` and the empty `!remaining` test are one loop, `for (i = 0, entry = gOverlay12Entries; i < 64; i++, entry++) { entry->active = 0; }`; the counter (renamed `i`) is still the carrier of the trailing `gOverlay12Value1598` zero, which a literal store reorders (4 lines). Byte-identical.
 - `src/overlays/o022/overlay22RemoveObject.c:60` `func_overlay_022_F0000D30_1878E38` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Left (lane c-4, 2026-10-09):** deleting the empty `if (i)` moves 55 lines. Measured: the compaction written as a loop over `i` from `found` (`for` and `while`, 41 each, 19 lines longer) and `break` in place of `i = count` (56). The test keeps `i` live across the compaction so its save ranks below the cursor; a natural use of `i` there is still to find.
 - `src/overlays/o027/overlay_027.c:391` `overlay27Activate` **A**: `state == 0 && state == 0` with an empty body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-4, 2026-10-09):** the `savedObject` alias and the duplicated empty `state == 0` test are gone; the two state tests are `if (... == 4) { ... = 3; } else if (... == 2) { ... timer = 0; }` with one `return 1`. Two early returns without the probe differ in 6 lines, a `state` local in 6. Byte-identical.
 - `src/overlays/o040/overlay40AddEntry.c:39` `overlay40AddEntry` **A**: all-ones 32-bit mask chain on a zero carrier.
   Natural: `entry->state = 0`, no carrier. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Left (lane c-4, 2026-10-09):** without the mask chain, and with no carrier at all (literal zero, three `30` stores), the a0/v1 swap remains (4 lines); a `zero` local used for the state and subscript also 4; a `for` loop is unrolled (o040 unrolls). The crew note lists seven earlier lifetime variants.
 - `src/overlays/o043/overlay43AllocateResources.c:25` `func_overlay_043_F0001184_188B154` **A**: `if (&pad);` reads a pad address.
   Natural: delete; the pad alone. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved (lane c-4, 2026-10-09):** deleted; byte-inert. The `s32 pad[2]` declaration stays (one `s32 pad` moves the frame, 6 lines).
 - `src/overlays/o057/overlay57UpdateInterface.c:188` `func_overlay_057_F0000954_18A454C` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Left (lane c-4, 2026-10-09):** the empty `field08` test and the redundant `& 0xFFFF` on the same field work together: removing either alone moves 86-88 lines, removing both leaves only the config base address in v0 where the target has v1 (5 lines). An `O57Config0954 *config` pointer for the three tests (assigned in place or as an initialiser) differs in 30. Seek a natural statement after the switch that forbids v0 in that block (law 38: an earlier int-returning call).
 - `src/overlays/o058/overlay58DrawLargePointQuad.c:90` `overlay58DrawLargePointQuad` **A**: empty if body or `if (c);` probe.
   **Resolved** (lane c-1, 2026-10-08): both probes and the dead `vertices += 3` replaced by the four-vertex colour loop `for (i = 0; i < 4; i++) { vertices->r = ... vertices++; }`, which IDO unrolls into the shipped stores; the loop's entry and exit supply the two block boundaries. Byte-identical.
 - `src/overlays/o058/overlay58DrawLargePointQuad.c:108` `overlay58DrawLargePointQuad` **A**: empty if body or `if (c);` probe.
@@ -233,12 +246,14 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   **Resolved** (lane c-1, 2026-10-08): both probes and the dead `vertices += 3` replaced by the four-vertex colour loop `for (i = 0; i < 4; i++) { vertices->r = ... vertices++; }`, which IDO unrolls into the shipped stores; the loop's entry and exit supply the two block boundaries. Byte-identical.
 - `src/overlays/o059/overlay59DrawFrame.c:32` `overlay59DrawFrame` **A**: empty if with a duplicated condition.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-4, 2026-10-09):** deleted together with the two `register` keywords; byte-inert (so is placing `x += 4` before or after the entry). The packed call line is split. Reading `entry->owner` in the test without the `owner` local differs (15 lines). Byte-identical.
 - `src/overlays/o059/overlay59PrepareEntry.c:77` `overlay59PrepareEntry` **A**: `& 0xFFFFFFFF` on a u32 value.
   Natural: the bare value. Keep bytes: no - measured (lane c-3, 2026-10-08): `handle = (u32) func_80034448((s32) value);` without the masked copy differs in 9 words. Not explored further.
 - `src/overlays/o063/overlay63Initialize.c:89` `overlay63Initialize` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: no - measured (lane c-3, 2026-10-08): `while (index != -1)` and `while (-1 != index)` both differ in one word, the loop's `bnel` with its operands swapped (target compares the held `-1` register first). The XOR keeps `index` as the second operand.
 - `src/overlays/o068/overlay68CheckKind.c:69` `overlay68CheckKind` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Left (lane c-4, 2026-10-09):** the same one-word `bnel` operand swap lane c-3 measured in o063: `currentKind != -1`, `-1 != currentKind` and `!= (s8)-1` each differ in 1 line; testing `mapping->kind` directly (10) and a `while (1)` with a `break` on the sentinel (10, both spellings) are worse.
 - `src/overlays/o073/overlay73Initialize.c:101` `func_overlay_073_F0000000_18CAAC0` **A**: multiply-by-zero stand-in for a constant.
   Natural: the literal `0`. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/overlays/o079/func_overlay_079_F0001290_18CE230.c:111` `func_overlay_079_F0001290_18CE230` **A**: empty if body.
@@ -247,12 +262,15 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   **Left** (lane c-1, 2026-10-08): the block boundary between the `field3C` store and the emit call keeps the post-call linked-state load (`spawned = node->next->state`) in v0; deleted, it takes v1 at both sites (4 words). Storing through `node->next->state->field40` directly costs 26 words. Seek a natural block boundary at that point.
 - `src/overlays/o082/overlay_082_tail.c:131` `overlay82Update` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-4, 2026-10-09):** the `(s32 *)state` cursor walk with `targetValues[-1]` and the empty `currentValues` test are an indexed loop, `for (index = 0; index < 6; index++) { state->values[index] += (((s32)targetRow[index] << 16) - state->values[index]) >> shift; }`, and the `targetValues` local is gone. Byte-identical. Not changed: the never-read `currentValues++` in the display loop (removing it moves 1 line) and its packed line (splitting the two stores onto two lines reorders one `sh`, so line placement reaches the scheduler here).
 - `src/overlays/o089/overlay89UpdateStateAndParticles.c:152` `overlay89UpdateStateAndParticles` **A**: empty `do { } while (0)`, twice.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o092/func_overlay_092_F0000308_18D6228.c:130` `func_overlay_092_F0000308_18D6228` **A**: self-assignment.
   Natural: delete the statement. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Left (lane c-4, 2026-10-09):** deleting the self-copy moves 139 lines, as does a plain `f32 x` (with and without `x += (pathX - x) * wave`). The union keeps `x` address-taken in memory and the copy forces a store and reload there; not explored further.
 - `src/overlays/o099/overlay99BuildHeightGrid.c:55` `overlay99BuildHeightGrid` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Left (lane c-4, 2026-10-09):** `(void) unused;` emits the home store like a deletion (one word longer, 47 lines); an unnamed parameter is rejected by cfe; an `f32` second parameter is still homed (47).
 - `src/overlays/o101/overlay101BuildBorder.c:72` `overlay101BuildBorder` **A**: empty `if (1)`/`if (0)` region.
   **Left** (lane c-1, 2026-10-08, measured): deleting the empty `if (1) {}` and declaring `trailingColor` `volatile` (as `leadingColor` already is) keeps size and registers but schedules two loads late (4 words); the join between the two `trailingColor` reads is load-bearing. Prior note: Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
 
@@ -272,6 +290,7 @@ One A-grade self-assign probe, not in the queue.
 
 - `src/overlays/o068/overlay68UpdateAnimation.c:182` **A**: no-op self-assign `index = (s16)index` blocks forward substitution.
   Natural: delete it, and the argument reads `index < 1` directly. Keep bytes: unlikely - comment measures 2 words lost without it.
+  **Left (lane c-4, 2026-10-09):** not re-measured; this is the measured case of law 48 (LANE_BRIEF), where the redefinition is what stops the forward substitution into the call argument.
 - `src/overlays/o068/overlay68UpdateAnimation.c:111` **B**: two unreferenced locals unused1/unused2 for the 0x78 frame.
   Natural: one pad or a real local. Keep bytes: unlikely - frame size and home map.
 - `src/overlays/o068/overlay68UpdateAnimation.c:152` **B**: assignment inside the if test `(index = state->keyframeIndex) >= count`.

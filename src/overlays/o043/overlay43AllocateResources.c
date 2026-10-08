@@ -22,8 +22,6 @@ s32 func_overlay_043_F0001184_188B154(Overlay43Input *input,
     s32 secondaryCount;
     s32 primaryCount;
 
-    if (&pad);
-
     resources->primary = func_8002B280(0x10B4, 0x87);
     if (resources->primary == NULL) {
         return 0;

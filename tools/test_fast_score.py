@@ -26,6 +26,12 @@ class RecipeTests(unittest.TestCase):
         self.assertNotIn("-march=vr4300", args, "assembler flags must not leak into cc")
         self.assertEqual(args[-1], "src/main/camera.c")
 
+    def test_split_recipe_skips_build_py_options(self):
+        # Overlay TUs run asm-processor with --force ahead of the compiler path.
+        args = fast_score.split_recipe(RECIPE.replace("build.py tools/ido/cc", "build.py --force tools/ido/cc"))
+        self.assertEqual(args[0], "tools/ido/cc")
+        self.assertNotIn("--force", args)
+
     def test_rewrite_io_replaces_only_source_and_output(self):
         args = fast_score.split_recipe(RECIPE)
         out = fast_score.rewrite_io(args, Path("/tmp/x/cand.c"), "src/main/camera.c", Path("/tmp/x/cand.o"))
@@ -40,6 +46,20 @@ class RecipeTests(unittest.TestCase):
         self.assertEqual(fast_score.target_listing_for("overlay101TailA6BC", src),
                          "asm/nonmatchings/overlays/o101/x/func_overlay_101_F000A6BC.s")
         self.assertIsNone(fast_score.target_listing_for("missing", src))
+
+    def test_source_grep_is_a_fixed_word_match(self):
+        # `\\b` in a `git grep -E` pattern matched nothing on macOS; the word
+        # boundary has to come from git's own -w, with the symbol fixed text.
+        cmd = fast_score.source_grep_command("piRomLoadCompressed")
+        self.assertIn("-w", cmd)
+        self.assertIn("-F", cmd)
+        self.assertNotIn("-E", cmd)
+        self.assertFalse(any("\\b" in arg for arg in cmd))
+        self.assertEqual(cmd[cmd.index("-F") + 1], "piRomLoadCompressed")
+
+    def test_tracked_source_found_for_a_matched_function(self):
+        # A matched function has no ranking row, so this exercises the grep.
+        self.assertEqual(fast_score.tracked_source_for("piRomLoadCompressed"), "src/main/pi.c")
 
     def test_split_recipe_rejects_malformed_line(self):
         with self.assertRaises(SystemExit):

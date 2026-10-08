@@ -157,12 +157,17 @@ void func_800336A8(s32 videoMode) {
     D_8007A690[0] = (s32 *) (((s32) D_8007A680[0] + 0x3F) & ~0x3F);
     D_8007A690[1] = NULL;
     D_8007A690[2] = NULL;
-    if (((D_800D2F98 & 3) != 2) && ((D_800D2F98 & 3) != 3)) {
-        if (1) {} /* Inert donor spelling retained for exact IDO allocation; see cleanup queue. */
-        D_8007A690[1] = (s32 *) ((u8 *) D_8007A690[0] + bufferSize);
-    } else {
-        D_8007A680[1] = (s32 *) func_8002B280(bufferSize + 0x30, 0x92);
-        D_8007A690[1] = (s32 *) (((s32) D_8007A680[1] + 0x3F) & ~0x3F);
+    /* JFG tests the two modes with `!=` and opens the then-arm with an empty
+     * `if (1) {}`; the switch gives the same blocks without it. */
+    switch (D_800D2F98 & 3) {
+        case 2:
+        case 3:
+            D_8007A680[1] = (s32 *) func_8002B280(bufferSize + 0x30, 0x92);
+            D_8007A690[1] = (s32 *) (((s32) D_8007A680[1] + 0x3F) & ~0x3F);
+            break;
+        default:
+            D_8007A690[1] = (s32 *) ((u8 *) D_8007A690[0] + bufferSize);
+            break;
     }
     if (D_800D2F96) {
         D_8007A680[2] = (s32 *) func_8002B280(bufferSize + 0x30, 0x92);

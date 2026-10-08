@@ -976,22 +976,13 @@ void func_8003EC8C(ParticleObject *object, s32 index) {
 /* PROVENANCE: body adapted from JFG src/particles.c:partObjFreeTriggers. */
 void partObjFreeTriggers(ParticleObject *object) {
     s32 i;
-    s32 offset;
     s8 count;
 
-    offset = 0;
     count = object->header->triggerCount;
-    i = 0;
-    if (count > 0) {
-        do {
-            if (((ParticleTriggerSlot *)((u8 *)object->triggers + offset))->flags & 0x8000) {
-                func_8003EC8C(object, i);
-            }
-            offset += sizeof(ParticleTriggerSlot);
-            /* Inert allocation aid retained by exact C; tracked in
-             * docs/cleanup-queue.md. */
-            if (offset) {}
-        } while (++i != count);
+    for (i = 0; i < count; i++) {
+        if (object->triggers[i].flags & 0x8000) {
+            func_8003EC8C(object, i);
+        }
     }
 }
 /* PROVENANCE: body adapted from JFG src/particles.c:partAdjustScaling. */

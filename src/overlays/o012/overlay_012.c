@@ -4,7 +4,7 @@
 
 /* DKR v77/v80 and JFG contain no exact donor for this resource initializer. */
 void overlay12Initialize(void) {
-    s32 remaining;
+    s32 i;
     Overlay12Entry *entry;
 
     gOverlay12ResourceF3 = overlay12LoadReloc(0xF3);
@@ -14,22 +14,16 @@ void overlay12Initialize(void) {
     gOverlay12ResourceF6 = overlay12LoadReloc(0xF6);
     gOverlay12Resource39 = overlay12LoadReloc(0x39, 1);
 
-    entry = gOverlay12Entries;
-    remaining = 0;
-    do {
-        remaining++;
-        entry++;
-        entry[-1].active = 0;
-    } while (remaining < 0x40);
-    /* Inert allocation aid retained by the exact C; tracked in
-     * docs/cleanup-queue.md. */
-    if (!remaining) {
+    for (i = 0, entry = gOverlay12Entries; i < 64; i++, entry++) {
+        entry->active = 0;
     }
 
     gOverlay12Flag1536 = 0;
     gOverlay12Ready = 1;
     gOverlay12Count = 0;
     gOverlay12Selection = 0;
-    remaining = 0;
-    gOverlay12Value1598 = remaining;
+    /* The zero goes through the loop counter: a literal store loads it in a
+     * different order (4 words). */
+    i = 0;
+    gOverlay12Value1598 = i;
 }

@@ -47,16 +47,23 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def source_grep_command(symbol: str) -> list[str]:
+    """`git grep` arguments listing the tracked files that name `symbol` as a whole word.
+
+    A `\\b` boundary inside `-E` is a GNU extension that macOS's regex library
+    does not provide, so the pattern matched nothing there. `-w -F` asks git
+    itself for the word match and needs no regex at all.
+    """
+    return ["git", "grep", "-l", "-w", "-F", symbol, "--", "src"]
+
+
 def tracked_source_for(symbol: str) -> str:
     """Return the tracked TU path (repo-relative) carrying `symbol`'s candidate."""
     ranking = json.loads((ROOT / "config/nonmatching-ranking.us.json").read_text())
     for row in ranking["functions"]:
         if row["name"] == symbol:
             return row["file"]
-    hits = subprocess.run(
-        ["git", "grep", "-l", "-E", rf"\b{re.escape(symbol)}\b", "--", "src"],
-        cwd=ROOT, capture_output=True, text=True,
-    ).stdout.split()
+    hits = subprocess.run(source_grep_command(symbol), cwd=ROOT, capture_output=True, text=True).stdout.split()
     hits = [h for h in hits if h.endswith(".c")]
     if len(hits) != 1:
         raise SystemExit(f"cannot identify one tracked TU for {symbol}: {hits}")
@@ -90,7 +97,12 @@ def split_recipe(line: str) -> list[str]:
     seps = [i for i, w in enumerate(words) if w == "--"]
     if len(seps) < 2:
         raise SystemExit("recipe lacks the two '--' separators asm-processor uses")
-    cc = words[words.index("tools/asm-processor/build.py") + 1]
+    # build.py takes its own options (`--force` on overlay TUs) before the
+    # compiler path, so the compiler is the first word after it that is not one.
+    after = words[words.index("tools/asm-processor/build.py") + 1:seps[0]]
+    cc = next((w for w in after if not w.startswith("-")), None)
+    if cc is None:
+        raise SystemExit("recipe names no compiler before the first '--'")
     return [cc] + words[seps[1] + 1:]
 
 

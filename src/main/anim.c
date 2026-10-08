@@ -3572,9 +3572,17 @@ f32 func_8002A8C0(s32 angle);
  * become the target's 0x34/0x30/0x28 temporaries) and offsets X, Y, Z;
  * the compare magnitude is held in `displacement`, which numbers that
  * web ahead of offsetY so it wins the else-arm f16 tie: 95 to 70.
- * An empty `if (speed)` before the source flag stores adds the blocks
+ * An empty `if (speed)` before the source flag stores added the blocks
  * that give `first` nocs 5, so `normal` outranks it for s2 as shipped:
- * 70 to 41.
+ * 70 to 41. `unk88` is assigned before the flag stores: the load of
+ * D_80084210 carries a memory edge from every earlier store and a store
+ * emitted after it cannot pass it, so the flag stores land after the
+ * direction stores as shipped (41 to 30). The empty `if (timeStep)`
+ * between the trig products and the offsets is both the block boundary
+ * that lets offsetX share the cosine's colour and a timeStep reference,
+ * so the split piece seeds there and its reload lands in the multiply
+ * hazard slot; it also supplies first's blocks, so the `if (speed)` goes
+ * and the 0.0f constant takes f2 as shipped (30 to 27).
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3616,12 +3624,10 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         target->direction.x = target->velocity.x / speed;
         target->direction.y = target->velocity.y / speed;
         target->direction.z = target->velocity.z / speed;
+        target->unk88 = D_80084210;
         target->unk181 = 1;
         target->unk4 = 0.0f;
         target->unk8 = 0.0f;
-        target->unk88 = D_80084210;
-        if (speed) {
-        }
         firstSource->unk63 = 1;
         secondSource->unk63 = 1;
         secondSource->unk64 = speed;
@@ -3631,6 +3637,8 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         }
         target->unk90 = normal->z * cosine - normal->x * sine;
         target->unk8C = normal->z * sine + cosine * normal->x;
+        if (timeStep) {
+        }
         offsetX = first->position.x - firstSource->previous.x;
         offsetY = first->position.y - firstSource->previous.y;
         offsetZ = first->position.z - firstSource->previous.z;
@@ -3990,7 +3998,7 @@ void fmvInit(void) {
  * frame: 0x40
  * relocations: 47
  * first-mismatch: +0x114
- * summary: 7 at size 0, all the join. The state value is a ring temp, not a web; single-expression and comma joins are split by uopt into U,C,S (11).
+ * summary: 7 at size 0, all the join. The target's add is a ring draw (t1 is drawn in loop 2); line layouts and region wrappers on state-first joins are inert.
  * PLATEAU-HANDOFF:func_80051364:end
  */
 
@@ -4007,11 +4015,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 41/229 words
+ * score: 27/229 words
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x58
- * summary: Plane offset, magnitude in displacement, empty if (speed) before the flag stores: 95 to 41. Left: previous.x colour (9), store order.
+ * summary: speed-if removed, empty if (timeStep) before the offsets seeds the piece: 30 to 27. Left: else order (ny before offsetX), compare colour, correction home.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

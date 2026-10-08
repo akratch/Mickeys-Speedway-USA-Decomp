@@ -3585,6 +3585,18 @@ f32 func_8002A8C0(s32 angle);
  * so the split piece seeds there and its reload lands in the multiply
  * hazard slot; it also supplies first's blocks, so the `if (speed)` goes
  * and the 0.0f constant takes f2 as shipped (30 to 27).
+ * 2026-10-08 (lane q-1): the target declares twelve locals, not fourteen.
+ * uopt's slot trace shows the declared-local area sizes the frame: with
+ * `target = first->target;` at the else head the spill webs for nx and
+ * previous.x take slots and the correction temporary lands at the target's
+ * 0x38, and one float local after negDot (here `speed`, carrying the
+ * compare magnitude, the dot and the root, all f18/f0 in the target) gives
+ * the target's 0x70 frame with no immediate rows. The else arm's offset
+ * is formed in two statements (sum, then `D - sum`) into a reused local,
+ * which puts the intermediate in the result's register as shipped: 27 to
+ * 17, all register naming. The reused local is `cosine` here; the shard
+ * records why the target's is `mass` and the forces that price that shape
+ * at zero.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3601,20 +3613,18 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
     f32 offsetX;
     f32 negDot;
     f32 speed;
-    f32 displacement;
-    f32 dot;
 
     target = first->target;
     firstSource = first->source;
     secondSource = second->source;
-    displacement = target->velocity.z * target->velocity.z +
-                   (target->velocity.x * target->velocity.x +
-                    target->velocity.y * target->velocity.y);
-    if (displacement > 25.0f) {
+    speed = target->velocity.z * target->velocity.z +
+            (target->velocity.x * target->velocity.x +
+             target->velocity.y * target->velocity.y);
+    if (speed > 25.0f) {
         mass = ((HitResolveMass *) TrapDanglingJump(target))->mass;
-        dot = normal->z * target->velocity.z +
-              (target->velocity.x * normal->x + target->velocity.y * normal->y);
-        impulse = ((secondSource->unk6C + 1.0f) * dot) / (1.0f / mass);
+        speed = normal->z * target->velocity.z +
+                (target->velocity.x * normal->x + target->velocity.y * normal->y);
+        impulse = ((secondSource->unk6C + 1.0f) * speed) / (1.0f / mass);
         target->velocity.x -= (impulse / mass) * normal->x;
         target->velocity.y -= (impulse / mass) * normal->y;
         target->velocity.z -= (impulse / mass) * normal->z;
@@ -3651,19 +3661,20 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         first->position.y = firstSource->previous.y + offsetY;
         first->position.z = firstSource->previous.z + offsetZ;
     } else {
+        target = first->target;
         negDot = -(normal->z * firstSource->current.z +
                    (firstSource->current.x * normal->x +
                     firstSource->current.y * normal->y));
-        displacement = D_80084214 -
-                       ((firstSource->previous.z * normal->z +
-                         (normal->x * firstSource->previous.x +
-                          normal->y * firstSource->previous.y)) + negDot);
+        cosine = (firstSource->previous.z * normal->z +
+                  (normal->x * firstSource->previous.x +
+                   normal->y * firstSource->previous.y)) + negDot;
+        cosine = D_80084214 - cosine;
         offsetX = first->position.x - firstSource->previous.x;
         offsetY = first->position.y - firstSource->previous.y;
         offsetZ = first->position.z - firstSource->previous.z;
-        firstSource->previous.x += displacement * normal->x;
-        firstSource->previous.y += displacement * normal->y;
-        firstSource->previous.z += displacement * normal->z;
+        firstSource->previous.x += cosine * normal->x;
+        firstSource->previous.y += cosine * normal->y;
+        firstSource->previous.z += cosine * normal->z;
         first->position.x = firstSource->previous.x + offsetX;
         first->position.y = firstSource->previous.y + offsetY;
         first->position.z = firstSource->previous.z + offsetZ;
@@ -4017,11 +4028,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 27/229 words
+ * score: 17/229 words
  * frame: 0x70
  * relocations: 8
- * first-mismatch: +0x58
- * summary: Unchanged at 27; lever sweeps over both arms flat. Left: else order (ny before offsetX), compare colour, correction home.
+ * first-mismatch: +0x1C0
+ * summary: Twelve locals, else-head def, two-statement else offset in a reused local: 27 to 17, frame closed. Left: mass/nx, offsetX/ny, then pieces.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

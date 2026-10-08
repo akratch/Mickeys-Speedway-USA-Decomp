@@ -271,8 +271,8 @@ Relocation-masked mismatch evidence covers **18 / 18** resolved rows. The raw co
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `other` | 13 | 72.2% |
-| `size-mismatch` | 5 | 27.8% |
+| `other` | 14 | 77.8% |
+| `size-mismatch` | 4 | 22.2% |
 
 ### Differing-word thresholds
 
@@ -302,14 +302,14 @@ units remain distinct.
 | 7 | `src/main/fx.c` | `wakeAllocate` | `main` | `other` | 1,404 | 57 | 57 | 148 | 148 | 0 | — |
 | 8 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 60 | 60 | 60 | 60 | 0 | — |
 | 9 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 116 | 116 | 1,864 | 1,864 | 0 | — |
-| 10 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
-| 11 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 380 | 380 | 0 | 0 | 0 | — |
-| 12 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 392 | 392 | 112 | 112 | 0 | — |
-| 13 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,236 | 1,235 | 200 | 208 | 0 | — |
-| 14 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
-| 15 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
-| 16 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 292 | 292 | 76 | 76 | 12 | — |
-| 17 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 310 | 310 | 0 | 0 | 8 | — |
+| 10 | `src/main/track.c` | `func_8001291C` | `main` | `other` | 2,192 | 293 | 293 | 0 | 0 | 0 | — |
+| 11 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
+| 12 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 380 | 380 | 0 | 0 | 0 | — |
+| 13 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 392 | 392 | 112 | 112 | 0 | — |
+| 14 | `src/main/anim.c` | `func_800517E0` | `main` | `other` | 7,232 | 1,236 | 1,235 | 200 | 208 | 0 | — |
+| 15 | `src/main/matrix_2BC40.c` | `func_8002B040` | `main` | `size-mismatch` | 136 | 34 | 34 | 0 | 0 | 4 | — |
+| 16 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
+| 17 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 292 | 292 | 76 | 76 | 12 | — |
 | 18 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 2,019 | 2,011 | 4 | 4 | -4 | — |
 
 ### Unresolved identities

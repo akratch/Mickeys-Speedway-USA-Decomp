@@ -3864,7 +3864,14 @@ void func_80012658(s32 flags) {
  * `arg0[i] + direction * t` (uopt then emits the product first, as shipped),
  * both plane sides as x, y, z terms in order then the distance, and the
  * polygon as an 8-byte facet record indexed by the triangle (the target
- * scales the triangle by 8, not the shared triangle * 4). */
+ * scales the triangle by 8, not the shared triangle * 4).
+ * 2026-10-08 (lane p-2): 310 at +8 -> 293 at 0 (aligned residual 285 -> 192):
+ * one plane pointer for the first plane and each edge plane (the edge plane
+ * from a second read of the polygon word, lane m-3, merges the a0 plane web),
+ * batch flags and the visibility word read in place (two fewer cells), pads
+ * before nearClip, after hit and after xzMasks (target cell counts), and the
+ * batch skip as an else-if (the target's two `first = last` arms). The frame
+ * is still 0x18 large: eight more cells between farClip and hitCount. */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -3901,6 +3908,7 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
     s32 temporaryXZ;
     TrackBoundingBox *bounds;
     s32 segmentIndex;
+    s32 pad;
     f32 nearClip;
     f32 farClip;
     TrackSegment *segment;
@@ -3909,9 +3917,8 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
     s32 triangleIndex;
     s32 firstTriangle;
     s32 lastTriangle;
-    u32 batchFlags;
-    s32 visibility;
     u16 *polygon;
+    TrackPlane *plane;
     f32 normalX;
     f32 normalY;
     f32 normalZ;
@@ -3931,11 +3938,13 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
     s32 edgeIndex;
     s32 inside;
     s32 hit;
+    s32 pad2;
     s32 edge;
     s32 edgeSign;
     s32 batchIndex;
     f32 value;
     s32 xzMasks[20];
+    s32 pad3;
     f32 edgeValue;
     u32 bestFlags;
     u8 yMasks[20];
@@ -4030,24 +4039,26 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
         yMask = yMasks[segmentIndex];
         surfaceBase = segment->surfaces;
         for (batchIndex = 0; batchIndex < segment->batchCount; batchIndex++) {
-            batchFlags = segment->batches[batchIndex].flags;
             firstTriangle = segment->batches[batchIndex].v0;
             lastTriangle = segment->batches[batchIndex + 1].v0;
-            if ((batchFlags & arg3) ||
-                ((arg4 != 0) && ((batchFlags & arg4) == 0))) {
+            if (segment->batches[batchIndex].flags & arg3) {
+                firstTriangle = lastTriangle;
+            } else if ((arg4 != 0) &&
+                       ((segment->batches[batchIndex].flags & arg4) == 0)) {
                 firstTriangle = lastTriangle;
             }
             for (triangleIndex = firstTriangle; triangleIndex < lastTriangle;
                  triangleIndex++) {
-                visibility = segment->visibilityMasks[triangleIndex] & xzMask;
                 yHit = E129_U8(E129_PTR(segment, 0x14), triangleIndex) & yMask;
-                if (((visibility & 0xFFFF) != 0) &&
-                    ((visibility & 0xFFFF0000) != 0) && (yHit != 0)) {
+                if (((segment->visibilityMasks[triangleIndex] & xzMask & 0xFFFF) != 0) &&
+                    ((segment->visibilityMasks[triangleIndex] & xzMask & 0xFFFF0000) != 0) &&
+                    (yHit != 0)) {
                     polygon = ((TrackFacet *) segment->surfaceIndices)[triangleIndex].indices;
-                    normalX = surfaceBase[polygon[0]].x;
-                    normalY = surfaceBase[polygon[0]].y;
-                    normalZ = surfaceBase[polygon[0]].z;
-                    planeDistance = surfaceBase[polygon[0]].distance;
+                    plane = &surfaceBase[polygon[0]];
+                    normalX = plane->x;
+                    normalY = plane->y;
+                    normalZ = plane->z;
+                    planeDistance = plane->distance;
                     side1 = (normalX * arg1[0]) + (normalY * arg1[1]) +
                             (normalZ * arg1[2]) + planeDistance;
                     if (side1 < 0.0f) {
@@ -4063,10 +4074,11 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                                  edgeIndex++) {
                                 edge = polygon[edgeIndex + 1];
                                 edgeSign = edge & 0x8000;
-                                edgeX = surfaceBase[edge ^ edgeSign].x;
-                                edgeY = surfaceBase[edge ^ edgeSign].y;
-                                edgeZ = surfaceBase[edge ^ edgeSign].z;
-                                edgeD = surfaceBase[edge ^ edgeSign].distance;
+                                plane = &surfaceBase[polygon[edgeIndex + 1] ^ edgeSign];
+                                edgeX = plane->x;
+                                edgeY = plane->y;
+                                edgeZ = plane->z;
+                                edgeD = plane->distance;
                                 value = (edgeX * pointX) + (edgeY * pointY) +
                                         (edgeZ * pointZ) + edgeD;
                                 edgeValue = value;
@@ -5214,7 +5226,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, all naming; three p2 colours price at 1, and no single catalogue lever (lever_sweep, 3,300 cells) reproduces them
+ * summary: 10 at 0, all naming. With the four at p1 the loop's p2 colours are one register low; the target needs two zero-emission webs (s7 in block 4, s5 in block 10)
  * PLATEAU-HANDOFF:func_80011980:end
  */
 
@@ -5222,10 +5234,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 310/548 words
- * frame: 0x2A0
+ * score: 293/548 words
+ * frame: 0x2A8
  * relocations: 13
  * first-mismatch: +0x0
- * summary: 310 at +8. A second-read edge loop merges the plane web (target a0): 339 at -8, aligned residual 221 vs 285; edge symbol save is the next variable
+ * summary: Plane pointer, in-place flags/visibility, cell pads, else-if skip: 310 at +8 to 293 at 0, residual 192; frame 8 cells large
  * PLATEAU-HANDOFF:func_8001291C:end
  */

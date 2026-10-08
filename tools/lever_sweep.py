@@ -2,8 +2,7 @@
 """Search the source-lever catalogue for the edit that reproduces a forced allocator state.
 
     tools/lever_sweep.py <symbol> --proc N --oracle 'p1:w387=s[,p2:w131=c21...]'
-    tools/lever_sweep.py <symbol> --proc N --bias '429=40,442=50,...'
-                         [--candidate FILE] [--web W ...] [--block B ...]
+                         [--bias 'w387=-4.5,...'] [--root WORKTREE] [--candidate FILE] [--web W ...] [--block B ...]
                          [--lines LO-HI] [--levers a,b] [--jobs J]
                          [--max-size-delta 16] [--max-cells 600] [--json PATH]
 
@@ -76,11 +75,6 @@ shard), with only the source and output paths swapped. Per cell:
    must equal the stock .text (identity gate) or the cell's oracle column
    reads `gate`.
 
-A BIAS ORACLE. `--bias 'web=delta,...'` prices a decision ORDER instead of
-colours: the forced base is compiled with `CDX_BIAS` (globalcolor's selection
-key only, brief Instruments), and the state to reproduce is the colour (or
-the split) each biased p1 web then took. It combines with `--oracle`.
-
 THE ORACLE CHECK. The base is compiled once with the oracle's forces; every
 force must be accepted (force_lattice.force_acceptance) or the run stops. Each
 forced web is then identified by its expression (`webexpr`) and the source
@@ -92,6 +86,28 @@ no same-expression piece over those lines receives a colour (a piece that is
 never formed counts). The column reads
 `yes`, `k/n` for partial, or `no`; `=forced` marks a cell whose function bytes
 equal the forced base's exactly.
+
+BIAS ORACLE. `--bias 'web=delta,...'` compiles the base with CDX_BIAS (the
+shared instrumented uopt adds delta to a p1 web's save for globalcolor's
+selection only; see force_lattice.py). The pairs of p1 webs whose decision
+order the bias REVERSED against the unbiased base are the state to price; a
+cell satisfies one when its own unbiased records decide the two webs (found
+again by expression + line overlap) in the biased order. It can be combined
+with --oracle; use bias alone when the order, not a colour, is what the
+target needs.
+
+AMBIGUITY. The forced web is re-derived in every cell from its expression text
+and source-line overlap, never by web number. If the best-overlapping rows tie
+and disagree about the outcome the cell reads `ambiguous` (and the candidates
+are printed) instead of yes or no.
+
+DEAD-READ TYPES. `x = READ;` is generated only when READ's declared type is
+inferred (locals, params, struct fields from the TU and include/*.h) and is
+assignment-compatible with x; an unknown type never pairs.
+
+ROOT. The worktree is the git toplevel of the current directory (or --root),
+not the script's own path, so a copy of this tool runs against the lane
+standing in it.
 
 POSITIONS. Every statement position of the function body (after each
 compound's declarations), optionally narrowed to the source lines of the
@@ -124,7 +140,36 @@ from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
+
+def resolve_root(explicit: str | None = None, cwd: str | None = None) -> pathlib.Path:
+    """The worktree to work in: --root, else the git toplevel of the current directory.
+
+    Never the script's own location: a copy of this tool run from a scratch
+    directory (or from another lane's worktree) must still compile, and refuse
+    scratch dirs, relative to the tree the lane is standing in.
+    """
+    if explicit:
+        root = pathlib.Path(explicit).expanduser().resolve()
+        if not (root / "Makefile").is_file():
+            raise SystemExit(f"--root {root}: not a repository root (no Makefile)")
+        return root
+    r = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=cwd, capture_output=True,
+                       text=True)
+    if r.returncode == 0 and r.stdout.strip():
+        return pathlib.Path(r.stdout.strip()).resolve()
+    return pathlib.Path(__file__).resolve().parents[1]
+
+
+def use_root(root: pathlib.Path) -> None:
+    """Make `root` the tree every sibling tool module resolves against."""
+    global ROOT
+    ROOT = root
+    tools = str(root / "tools")
+    if (root / "tools").is_dir() and tools not in sys.path[:1]:
+        sys.path.insert(0, tools)
+
+
+ROOT = resolve_root()
 
 KEYWORDS = {
     "if", "else", "for", "while", "do", "switch", "case", "default", "break",
@@ -460,6 +505,141 @@ def category(info: dict) -> str:
     return "other"
 
 
+# ---------------------------------------------------------------- expression types
+
+_STRUCTS: dict[str, dict] = {}
+_STRUCTS_ROOT: list = [None]
+STRUCT_RE = re.compile(r"(?:typedef\s+)?(struct|union)\s*(\w*)\s*\{")
+
+
+def parse_structs(text: str, into: dict | None = None) -> dict:
+    """tag/typedef name -> {field: info} for flat struct and union bodies.
+
+    Nested aggregates are skipped, so a field inside one is simply unknown (an
+    unknown type never pairs with anything, see `compatible`).
+    """
+    out = {} if into is None else into
+    text = strip_comments(text)
+    for m in STRUCT_RE.finditer(text):
+        try:
+            close = match_close(text, m.end() - 1)
+        except ValueError:
+            continue
+        body = text[m.end():close - 1]
+        flat, depth = [], 0
+        for ch in body:
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+            elif depth == 0:
+                flat.append(ch)
+        fields = {}
+        for decl in "".join(flat).split(";"):
+            decl = decl.strip()
+            mm = re.match(r"^((?:(?:const|volatile|unsigned|signed|struct|union|enum)\s+)*"
+                          r"[A-Za-z_]\w*)", decl)
+            if not mm:
+                continue
+            base = mm.group(1)
+            for d in split_top(decl[len(base):]):
+                got = parse_declarator(base, d.split(":")[0])
+                if got:
+                    fields[got[0]] = got[1]
+        names = []
+        if m.group(2):
+            names.append(m.group(2))
+        tail = re.match(r"\s*(\w+)\s*;", text[close:])
+        if tail:
+            names.append(tail.group(1))
+        for n in names:
+            out.setdefault(n, fields)
+    return out
+
+
+def structs_for(fn: "Function") -> dict:
+    """Struct tables from the TU and the repository's headers (cached per root)."""
+    if _STRUCTS_ROOT[0] != ROOT:
+        _STRUCTS.clear()
+        _STRUCTS_ROOT[0] = ROOT
+        for h in sorted((ROOT / "include").rglob("*.h")) if (ROOT / "include").is_dir() else []:
+            try:
+                parse_structs(h.read_text(errors="replace"), _STRUCTS)
+            except Exception:
+                continue
+    table = dict(_STRUCTS)
+    parse_structs(fn.text, table)
+    return table
+
+
+def expr_type(fn: "Function", expr: str, structs: dict) -> dict | None:
+    """Declared type {type, ptr, array} of a read expression, or None when unknown."""
+    expr = expr.strip()
+    deref = 0
+    while expr.startswith("*"):
+        deref += 1
+        expr = expr[1:].strip()
+    m = IDENT_RE.match(expr)
+    if not m:
+        return None
+    info = fn.locals.get(m.group(0)) or fn.params.get(m.group(0))
+    if info is None:
+        return None
+    cur = {"type": info["type"], "ptr": info["ptr"], "array": bool(info.get("array"))}
+    rest = expr[m.end():]
+    ops = re.findall(r"->\s*\w+|\.\s*\w+|\[[^\[\]]*\]", rest)
+    if "".join(o.replace(" ", "") for o in ops) != re.sub(r"\s+", "", rest):
+        return None
+    for op in ops:
+        if op.startswith("["):
+            if cur["array"]:
+                cur["array"] = False
+            elif cur["ptr"] > 0:
+                cur["ptr"] -= 1
+            else:
+                return None
+        else:
+            arrow = op.startswith("->")
+            if cur["array"] or cur["ptr"] != (1 if arrow else 0):
+                return None
+            fields = structs.get(re.sub(r"^(?:struct|union|const|volatile)\s+", "", cur["type"]))
+            f = fields.get(op.lstrip("->.").strip()) if fields else None
+            if not f:
+                return None
+            cur = {"type": f["type"], "ptr": f["ptr"], "array": bool(f.get("array"))}
+    for _ in range(deref):
+        if cur["ptr"] > 0:
+            cur["ptr"] -= 1
+        elif cur["array"]:
+            cur["array"] = False
+        else:
+            return None
+    return cur
+
+
+def bare_type(t: str) -> str:
+    return re.sub(r"^(?:(?:struct|union|enum|const|volatile)\s+)+", "", t.strip())
+
+
+def compatible(local: dict, read: dict | None) -> bool:
+    """May `local = <read>;` compile as a plain assignment? Unknown types never pair."""
+    if read is None or read["array"] or local.get("array"):
+        return False
+    local = dict(local, type=bare_type(local["type"]))
+    read = dict(read, type=bare_type(read["type"]))
+    lc, rc = category(local), category(read)
+    if lc != rc:
+        return False
+    if lc == "int":
+        return True
+    if lc == "float":
+        return local["type"] == read["type"]
+    if lc == "pointer":
+        return local["ptr"] == read["ptr"] and (local["type"] == read["type"]
+                                               or "void" in (local["type"], read["type"]))
+    return local["type"] == read["type"] and local["ptr"] == read["ptr"]
+
+
 # ---------------------------------------------------------------- flow helpers
 
 def simple_statements(fn: Function) -> list[Node]:
@@ -634,6 +814,8 @@ def lever_dead_read(fn, ctx, masked=False):
                 continue
             for r in reads:
                 if re.match(rf"^\*?\s*{re.escape(name)}\b", r):
+                    continue
+                if not compatible(info, expr_type(fn, r, ctx["structs"])):
                     continue
                 rhs = f"{r} & 0xFFFF" if masked else r
                 stmt = f"{name} = {rhs};"
@@ -1025,7 +1207,8 @@ def generate(fn: Function, levers: list[str], lines: set[int] | None, own_line: 
     for s in stmts:
         mentioned.update(idents(s.text(fn.text)))
     ctx = {"positions": pos, "stmts": stmts, "in_lines": in_lines, "own_line": own_line,
-           "window": window, "max_reads": max_reads, "mentioned": mentioned}
+           "window": window, "max_reads": max_reads, "mentioned": mentioned,
+           "structs": structs_for(fn)}
     seen = {hashlib.sha1(fn.text.encode()).hexdigest()}
     cells = []
     for name in levers:
@@ -1068,36 +1251,6 @@ def parse_oracle(spec: str) -> list[tuple[str, int, str]]:
         if not m:
             raise SystemExit(f"oracle force {f!r} is not p1:wN=cK or p1:wN=s")
         out.append((f"p{m.group(1)}", int(m.group(2)), m.group(3)))
-    return out
-
-
-BIAS_RE = re.compile(r"^(\d+)=(-?\d+(?:\.\d+)?)$")
-
-
-def parse_bias(spec: str | None) -> list[tuple[int, str]]:
-    """`web=delta,...` (the CDX_BIAS grammar) as (web, delta) pairs."""
-    out = []
-    for f in [s.strip() for s in (spec or "").split(",") if s.strip()]:
-        m = BIAS_RE.match(f)
-        if not m:
-            raise SystemExit(f"bias {f!r} is not web=delta")
-        out.append((int(m.group(1)), m.group(2)))
-    return out
-
-
-def bias_oracle(forced: list[dict], bias) -> list[tuple[str, int, str]]:
-    """The state each biased p1 web reached in the biased base, as oracle forces.
-
-    A web with a coloured row wants that colour; one with only split or memory
-    rows wants memory (`s`). The result feeds `oracle_targets` unchanged.
-    """
-    out = []
-    for web, _ in bias:
-        rows = [d for d in forced if d["phase"] == "p1" and d["web"] == web]
-        if not rows:
-            raise SystemExit(f"bias p1:w{web}: no decision for that web in the biased base")
-        coloured = [d for d in rows if d["colour"] is not None]
-        out.append(("p1", web, f"c{coloured[-1]['colour']}" if coloured else "s"))
     return out
 
 
@@ -1144,49 +1297,177 @@ def oracle_targets(forced: list[dict], oracle) -> list[dict]:
     return targets
 
 
+def parse_bias(spec: str) -> list[tuple[int, float]]:
+    out = []
+    for f in [s.strip() for s in spec.split(",") if s.strip()]:
+        m = re.match(r"^w?(\d+)=(-?\d+(?:\.\d+)?)$", f)
+        if not m:
+            raise SystemExit(f"bias {f!r} is not web=delta (e.g. 387=-4.5)")
+        out.append((int(m.group(1)), float(m.group(2))))
+    return out
+
+
+def bias_env(bias: list[tuple[int, float]]) -> str:
+    return ",".join(f"{w}={d:g}" for w, d in bias)
+
+
+def p1_order(decs: list[dict]) -> list[dict]:
+    """Phase-1 webs in decision order: the first decision row of each web."""
+    seen, out = set(), []
+    for d in decs:
+        if d["phase"] == "p1" and d["web"] not in seen:
+            seen.add(d["web"])
+            out.append(d)
+    return out
+
+
+def bias_targets(unbiased: list[dict], biased: list[dict], bias) -> list[dict]:
+    """Pairs (biased web, other web) whose decision order the bias reversed.
+
+    Read off two logs of the same source: the bias is the only difference, so
+    the reversed pairs are exactly the order the oracle prices. A cell
+    satisfies one when, WITHOUT the bias, its records decide the two webs in
+    the biased order. Each side is kept as an expression + lines signature so
+    it can be found again in a renumbered cell.
+    """
+    ub = {d["web"]: i for i, d in enumerate(p1_order(unbiased))}
+    bi_rows = p1_order(biased)
+    bb = {d["web"]: i for i, d in enumerate(bi_rows)}
+    by_web = {d["web"]: d for d in bi_rows}
+    sig = lambda d: {"expr": d["expr"], "kind": d["kind"], "lines": set(d["lines"])}
+    targets = []
+    for w, delta in bias:
+        if w not in bb:
+            raise SystemExit(f"bias w{w}: no p1 decision for that web in the biased base")
+        for o in bb:
+            if o == w or w not in ub or o not in ub:
+                continue
+            if (ub[w] < ub[o]) != (bb[w] < bb[o]):
+                first, second = (w, o) if bb[w] < bb[o] else (o, w)
+                targets.append({"spec": f"w{first} before w{second}", "want": "order",
+                                "first": sig(by_web[first]), "second": sig(by_web[second])})
+    if not targets:
+        raise SystemExit("bias reverses no p1 decision order against the unbiased base; "
+                         "nothing for the oracle to price")
+    return targets
+
+
 def jaccard(a: set, b: set) -> float:
     return len(a & b) / len(a | b) if a | b else 0.0
 
 
-def oracle_status(cands: list[dict], targets: list[dict]) -> tuple[int, list[dict]]:
-    """How many oracle forces the (unforced) decision rows reproduce, with the matches.
+def find_rows(cands: list[dict], row: dict) -> list[dict]:
+    """Rows of a candidate's records that can be the forced row, best overlap first.
 
-    Each forced row is found among the candidate's rows by expression and kind
-    in either phase, taking the best overlap of block source lines (Jaccard,
-    at least 0.3). A colour force's row must carry that colour. A split force
-    reads as memory: every same-expression row over those lines must be
-    uncoloured, and a row with no counterpart at all (the piece is never
-    formed) counts as reproduced.
+    Re-derived per candidate, never by web number: same expression and kind
+    over at least 0.3 of the same source lines; failing that (the edit changed
+    the expression's text) the same kind over at least 0.6 of the lines.
+    """
+    lines = set(row["lines"])
+    same = [d for d in cands if d["expr"] == row["expr"] and d["kind"] == row["kind"]
+            and jaccard(set(d["lines"]), lines) >= 0.3]
+    if not same:
+        same = [d for d in cands if d["kind"] == row["kind"]
+                and jaccard(set(d["lines"]), lines) >= 0.6]
+    return sorted(same, key=lambda d: -jaccard(set(d["lines"]), lines))
+
+
+def tied(rows: list[dict], row: dict) -> list[dict]:
+    """The leading rows that tie on overlap, one per distinct (phase, web)."""
+    if not rows:
+        return []
+    lines = set(row["lines"])
+    top = jaccard(set(rows[0]["lines"]), lines)
+    out, seen = [], set()
+    for d in rows:
+        if top - jaccard(set(d["lines"]), lines) > 0.05:
+            break
+        key = (d["phase"], d["web"])
+        if key not in seen:
+            seen.add(key)
+            out.append(d)
+    return out
+
+
+def web_name(d: dict) -> str:
+    return f"{d['phase']}:w{d['web']}"
+
+
+def order_status(cands: list[dict], tgt: dict) -> dict:
+    order = {}
+    for i, d in enumerate(p1_order(cands)):
+        order[d["web"]] = i
+    ends = []
+    for side in ("first", "second"):
+        ties = [d for d in tied(find_rows([d for d in cands if d["phase"] == "p1"], tgt[side]),
+                                tgt[side])]
+        ends.append(ties)
+    if not ends[0] or not ends[1]:
+        return {"spec": tgt["spec"], "ok": False, "ambiguous": False,
+                "rows": [{"match": None}]}
+    verdicts = {order[a["web"]] < order[b["web"]] for a in ends[0] for b in ends[1]
+                if a["web"] != b["web"]}
+    amb = len(verdicts) > 1
+    return {"spec": tgt["spec"], "ok": verdicts == {True}, "ambiguous": amb,
+            "rows": [{"match": [web_name(d) for d in ends[0]]},
+                     {"match": [web_name(d) for d in ends[1]]}],
+            "candidates": [web_name(d) for d in ends[0] + ends[1]] if amb else []}
+
+
+def oracle_status(cands: list[dict], targets: list[dict]) -> tuple[int, list[dict]]:
+    """How many oracle states the (unforced, unbiased) decision rows reproduce.
+
+    Each forced row is re-derived among the candidate's rows (`find_rows`). A
+    colour force's row must carry that colour. A split force reads as memory:
+    every same-expression row over those lines must be uncoloured, and a row
+    with no counterpart at all (the piece is never formed) counts as
+    reproduced. A bias target is an order (`order_status`). When the leading
+    rows tie on overlap and disagree about the outcome the target is
+    `ambiguous`: it is neither counted as a hit nor as a miss, and the
+    candidates are listed in the detail.
     """
     hits, detail = 0, []
     for tgt in targets:
-        ok_all, matches = True, []
+        if tgt["want"] == "order":
+            st = order_status(cands, tgt)
+            hits += st["ok"] and not st["ambiguous"]
+            detail.append(st)
+            continue
+        ok_all, amb, matches, cand_names = True, False, [], []
         for row in tgt["rows"]:
-            same = [d for d in cands if d["expr"] == row["expr"] and d["kind"] == row["kind"]
-                    and jaccard(set(d["lines"]), row["lines"]) >= 0.3]
-            best = max(same, key=lambda d: jaccard(set(d["lines"]), row["lines"]), default=None)
+            same = find_rows(cands, row)
             if tgt["want"] == "s":
                 # memory: no live piece of that value over those lines holds a register
                 ok = all(d["colour"] is None for d in same)
                 ok_all &= ok
-                matches.append({"match": [f"{d['phase']}:w{d['web']}" for d in same],
+                matches.append({"match": [web_name(d) for d in same],
                                 "colour": [d["colour"] for d in same], "ok": ok})
                 continue
-            if best is None:
+            if not same:
                 ok_all = False
                 matches.append({"match": None})
                 continue
+            want = int(tgt["want"][1:])
+            ties = tied(same, row)
+            outcomes = {d["colour"] == want for d in ties}
+            if len(outcomes) > 1:
+                amb = True
+                cand_names += [f"{web_name(d)}(c{d['colour']})" for d in ties]
+            best = ties[0]
             score = jaccard(set(best["lines"]), row["lines"])
-            ok = best["colour"] == int(tgt["want"][1:])
+            ok = best["colour"] == want
             ok_all &= ok
-            matches.append({"match": f"{best['phase']}:w{best['web']}", "jaccard": round(score, 2),
+            matches.append({"match": web_name(best), "jaccard": round(score, 2),
                             "decision": best["decision"], "colour": best["colour"], "ok": ok})
-        hits += ok_all
-        detail.append({"spec": tgt["spec"], "ok": ok_all, "rows": matches})
+        hits += ok_all and not amb
+        detail.append({"spec": tgt["spec"], "ok": ok_all and not amb, "ambiguous": amb,
+                       "rows": matches, "candidates": cand_names})
     return hits, detail
 
 
-def oracle_label(hits: int, n: int) -> str:
+def oracle_label(hits: int, n: int, ambiguous: int = 0) -> str:
+    if ambiguous:
+        return "ambiguous"
     return "yes" if hits == n else ("no" if hits == 0 else f"{hits}/{n}")
 
 
@@ -1283,7 +1564,7 @@ def measure_cell(run: Runner, index: int, cell: Cell, base: dict, targets, max_d
         else:
             decs, _ = decisions(log.read_text(errors="replace"), run.proc)
             hits, detail = oracle_status(decs, targets)
-            row["oracle"] = oracle_label(hits, len(targets))
+            row["oracle"] = oracle_label(hits, len(targets), sum(d["ambiguous"] for d in detail))
             row["oracle_detail"] = detail
         return row
     finally:
@@ -1303,6 +1584,17 @@ def rank_key(r: dict):
     return (0, not exact, r["residual"], r.get("oracle") != "yes", abs(r.get("delta", 0)), r["masked"])
 
 
+def summary_line(symbol, proc, specs, generated, results, scored, errors, yes, ambiguous,
+                 exact, best) -> str:
+    """One line for a shard note."""
+    pct = 100.0 * len(errors) / len(results) if results else 0.0
+    tail = (f"best {best['lever']} L{best['line']} `{best['edit'][:40]}` masked {best['masked']} "
+            f"delta {best['delta']:+d} resid {best['residual']}") if best else "no scored cell"
+    return (f"SUMMARY lever_sweep {symbol} proc {proc} [{';'.join(specs)}]: {generated} cells, "
+            f"{len(results)} measured, {len(errors)} compile errors ({pct:.0f}%), "
+            f"oracle yes {len(yes)}, ambiguous {len(ambiguous)}, exact {len(exact)}; {tail}")
+
+
 def parse_lines(spec: str | None) -> set[int]:
     if not spec:
         return set()
@@ -1315,7 +1607,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("symbol")
     ap.add_argument("--proc", type=int, required=True, help="procedure ordinal (as web_report prints)")
     ap.add_argument("--oracle", default="", help="CDX_FORCE spec the source must reproduce")
-    ap.add_argument("--bias", help="CDX_BIAS spec (web=delta,...): reproduce the order it imposes")
+    ap.add_argument("--bias", default="",
+                    help="CDX_BIAS oracle 'web=delta,...': the decision order it imposes is the "
+                         "state to reproduce without it (may be combined with --oracle)")
+    ap.add_argument("--root", help="repository worktree (default: git toplevel of the cwd)")
     ap.add_argument("--candidate", help="base TU (default: the tracked source)")
     ap.add_argument("--web", type=int, action="append", default=[],
                     help="restrict positions to the lines of the blocks this web spans (forced base)")
@@ -1339,10 +1634,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--dry-run", action="store_true", help="generate and count cells only")
     ns = ap.parse_args(argv)
 
+    use_root(resolve_root(ns.root))
     oracle = parse_oracle(ns.oracle)
     bias = parse_bias(ns.bias)
     if not oracle and not bias:
-        raise SystemExit("give --oracle, --bias or both")
+        raise SystemExit("give --oracle and/or --bias")
     levers = [x.strip() for x in ns.levers.split(",") if x.strip()]
     unknown = [x for x in levers if x not in LEVERS]
     if unknown:
@@ -1362,10 +1658,10 @@ def main(argv: list[str] | None = None) -> int:
     bdir.mkdir(exist_ok=True)
     bsrc = bdir / ("candidate" + pathlib.Path(source).suffix)
     bsrc.write_text(base_text)
+    force_env = ",".join(f"{p}:w{w}={c}" for p, w, c in oracle) or None
     for label, kw in (("stock", {}), ("unforced", {"instrumented": True}),
-                      ("forced", {"instrumented": True,
-                                  "force": ",".join(f"{p}:w{w}={c}" for p, w, c in oracle) or None,
-                                  "bias": ",".join(f"{w}={d}" for w, d in bias) or None})):
+                      ("forced", {"instrumented": True, "force": force_env,
+                                  "bias": bias_env(bias) if bias else None})):
         err = run.compile(bsrc, bdir / f"{label}.o", log=bdir / f"{label}.log", **kw)
         if err:
             raise SystemExit(f"base {label} compile failed: {err}")
@@ -1378,11 +1674,13 @@ def main(argv: list[str] | None = None) -> int:
     if refused:
         raise SystemExit(f"oracle not accepted on the base: {refused}")
     forced_decs, blines = decisions(forced_log, ns.proc)
+    targets = oracle_targets(forced_decs, oracle) if oracle else []
     if bias:
-        oracle = oracle + [o for o in bias_oracle(forced_decs, bias) if o[:2] not in
-                           {(p, w) for p, w, _ in oracle}]
-        specs = specs + tuple(f"bias:{w}={d}" for w, d in bias)
-    targets = oracle_targets(forced_decs, oracle)
+        unbiased_decs, _ = decisions((bdir / "unforced.log").read_text(errors="replace"), ns.proc)
+        # a bias-only run compares against the unbiased base; with forces too, the
+        # forced base is still biased, and the unforced log is the reference order
+        targets += bias_targets(unbiased_decs, forced_decs, bias)
+        specs = specs + tuple(f"bias {w}={d:g}" for w, d in bias)
     base_score = run.scorer.score(bdir / "stock.o")
     forced_score = run.scorer.score(bdir / "forced.o")
     base_decs, _ = decisions((bdir / "unforced.log").read_text(errors="replace"), ns.proc)
@@ -1392,12 +1690,16 @@ def main(argv: list[str] | None = None) -> int:
             "masked": base_score["masked"], "residual": base_score["residual"],
             "buckets": [base_score["aligned_exact"], base_score["aligned_register_naming"],
                         base_score["aligned_immediate_only"], base_score["aligned_really_different"]],
-            "oracle": oracle_label(bhits, len(targets)), "oracle_detail": bdetail}
+            "oracle": oracle_label(bhits, len(targets), sum(d["ambiguous"] for d in bdetail)),
+            "oracle_detail": bdetail}
     print(f"{ns.symbol} proc {ns.proc}: base {base['masked']} masked, residual {base['residual']} "
           f"at {base['size'] - run.scorer.target_size:+d}; oracle {','.join(specs)} accepted, "
           f"forced {forced_score['masked']} masked, residual {forced_score['residual']} at "
           f"{forced_score['delta']:+d}; base oracle state: {base['oracle']}")
     for t in targets:
+        if t["want"] == "order":
+            print(f"  oracle {t['spec']} (decision order, p1)")
+            continue
         for r in t["rows"]:
             span = f"{min(r['lines'])}-{max(r['lines'])}" if r["lines"] else "-"
             print(f"  oracle {t['spec']}: {r['decision']} row, expr {r['expr']} kind {r['kind']}, "
@@ -1456,6 +1758,15 @@ def main(argv: list[str] | None = None) -> int:
         d = scratch / f"cell{r['index']:04d}"
         shutil.rmtree(d, ignore_errors=True)
     print(f"best cells' sources: {keepdir}")
+    ambiguous = [r for r in scored if r.get("oracle") == "ambiguous" and not r.get("inert")]
+    for r in ambiguous[: ns.top]:
+        for d in r.get("oracle_detail", []):
+            if d.get("ambiguous"):
+                print(f"  cell {r['index']} oracle: ambiguous for {d['spec']}: "
+                      f"{', '.join(d.get('candidates', []))}")
+    best = next((r for r in scored if not r.get("inert")), None)
+    print(summary_line(ns.symbol, ns.proc, specs, len(cells), results, scored, errors, yes,
+                       ambiguous, exact, best))
     if ns.json:
         pathlib.Path(ns.json).write_text(json.dumps({
             "symbol": ns.symbol, "proc": ns.proc, "oracle": list(specs),
@@ -1463,6 +1774,7 @@ def main(argv: list[str] | None = None) -> int:
             "forced": {"masked": forced_score["masked"], "residual": forced_score["residual"],
                        "delta": forced_score["delta"]},
             "targets": [{**t, "rows": [{**r, "lines": sorted(r["lines"])} for r in t["rows"]]}
+                        if "rows" in t else {"spec": t["spec"], "want": t["want"]}
                         for t in targets],
             "cells": results}, indent=1, default=str))
     return 0 if exact else 1

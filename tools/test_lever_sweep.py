@@ -1,6 +1,8 @@
 """Fixture tests for tools/lever_sweep.py (synthetic C and records; no build needed)."""
 
+import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -114,7 +116,8 @@ class LeverTests(unittest.TestCase):
     def test_dead_read_uses_nearby_reads(self):
         cells = self.cells("dead_read", lines={13})
         edits = {c.edit for c in cells}
-        self.assertIn("p = thing[i].a;", edits)
+        self.assertIn("spare = thing[i].a;", edits)
+        self.assertNotIn("p = thing[i].a;", edits, "an int read into a Thing * does not compile")
         self.assertFalse(any(e.startswith("total =") for e in edits), "total is live there")
 
     def test_keep_alive_and_noop_redef(self):
@@ -173,20 +176,6 @@ class OracleTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             ls.parse_oracle("p1:387=s")
 
-    def test_parse_bias(self):
-        self.assertEqual(ls.parse_bias("429=40, 442=-12.5"), [(429, "40"), (442, "-12.5")])
-        self.assertEqual(ls.parse_bias(None), [])
-        with self.assertRaises(SystemExit):
-            ls.parse_bias("w429=40")
-
-    def test_bias_oracle_reads_the_biased_outcome(self):
-        decs, _ = ls.decisions(RECORDS, 3)
-        self.assertEqual(ls.bias_oracle(decs, [(5, "10")]), [("p1", 5, "c21")])
-        split_only = [d for d in decs if not (d["web"] == 5 and d["decision"] == "color")]
-        self.assertEqual(ls.bias_oracle(split_only, [(5, "10")]), [("p1", 5, "s")])
-        with self.assertRaises(SystemExit):
-            ls.bias_oracle(decs, [(77, "1")])
-
     def test_decisions_join_lines_and_colours(self):
         decs, blines = ls.decisions(RECORDS, 3)
         self.assertEqual([(d["web"], d["decision"], d["colour"]) for d in decs],
@@ -215,6 +204,115 @@ class OracleTests(unittest.TestCase):
         self.assertEqual(detail[0]["rows"][0]["match"], "p1:w40")
         self.assertEqual(ls.oracle_status(decs, targets)[0], 0)
         self.assertEqual(ls.oracle_label(1, 4), "1/4")
+
+
+class TypeTests(unittest.TestCase):
+    def test_expr_types(self):
+        fn = function()
+        st = ls.structs_for(fn)
+        self.assertEqual(ls.expr_type(fn, "thing[i].a", st)["type"], "int")
+        nxt = ls.expr_type(fn, "thing->next", st)
+        self.assertEqual((ls.bare_type(nxt["type"]), nxt["ptr"]), ("Thing", 1))
+        self.assertEqual(ls.expr_type(fn, "*thing", st)["ptr"], 0)
+        self.assertIsNone(ls.expr_type(fn, "gCount", st), "globals are unknown")
+        self.assertIsNone(ls.expr_type(fn, "p->nothing", st))
+
+    def test_compatibility(self):
+        fn = function()
+        st = ls.structs_for(fn)
+        ptr = ls.expr_type(fn, "thing->next", st)
+        self.assertTrue(ls.compatible(fn.locals["p"], ptr))
+        self.assertFalse(ls.compatible(fn.locals["spare"], ptr))
+        self.assertFalse(ls.compatible(fn.locals["spare"], None))
+
+    def test_no_dead_read_pairs_incompatible_types(self):
+        for c in ls.generate(function(), ["dead_read", "dead_masked"], None):
+            name, _, rhs = c.edit.partition(" = ")
+            if name == "p":
+                self.assertIn("next", rhs, c.edit)
+            else:
+                self.assertNotIn("->next", rhs.replace("&", ""), c.edit)
+
+
+class RootTests(unittest.TestCase):
+    def test_root_is_the_cwd_worktree_not_the_script(self):
+        with tempfile.TemporaryDirectory() as d:
+            subprocess.run(["git", "init", "-q", d], check=True)
+            self.assertEqual(ls.resolve_root(cwd=d), Path(d).resolve())
+            (Path(d) / "Makefile").write_text("")
+            self.assertEqual(ls.resolve_root(d), Path(d).resolve())
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(SystemExit):
+                ls.resolve_root(d)
+
+    def test_use_root_rebinds(self):
+        old = ls.ROOT
+        try:
+            with tempfile.TemporaryDirectory() as d:
+                ls.use_root(Path(d))
+                self.assertEqual(ls.ROOT, Path(d))
+        finally:
+            ls.use_root(old)
+
+
+def row(web, expr, lines, colour, phase="p1"):
+    return {"web": web, "phase": phase, "expr": expr, "kind": 3, "bbs": [], "lines": lines,
+            "decision": "color", "forced": "-2", "colour": colour}
+
+
+class AmbiguityTests(unittest.TestCase):
+    def targets(self):
+        return ls.oracle_targets([row(7, "E", [10, 11], 21)], [("p1", 7, "c21")])
+
+    def test_renumbered_and_edited_still_found(self):
+        hits, d = ls.oracle_status([row(90, "E", [10, 11], 21)], self.targets())
+        self.assertEqual((hits, d[0]["rows"][0]["match"]), (1, "p1:w90"))
+
+    def test_changed_expression_falls_back_to_lines(self):
+        hits, _ = ls.oracle_status([row(90, "E2", [10, 11], 21)], self.targets())
+        self.assertEqual(hits, 1)
+
+    def test_tie_with_disagreement_is_ambiguous(self):
+        cands = [row(90, "E", [10, 11], 21), row(91, "E", [10, 11], 19)]
+        hits, d = ls.oracle_status(cands, self.targets())
+        self.assertEqual(hits, 0)
+        self.assertTrue(d[0]["ambiguous"])
+        self.assertEqual(d[0]["candidates"], ["p1:w90(c21)", "p1:w91(c19)"])
+        self.assertEqual(ls.oracle_label(hits, 1, 1), "ambiguous")
+
+    def test_tie_with_agreement_is_not_ambiguous(self):
+        cands = [row(90, "E", [10, 11], 21), row(91, "E", [10, 11], 21)]
+        hits, d = ls.oracle_status(cands, self.targets())
+        self.assertEqual((hits, d[0]["ambiguous"]), (1, False))
+
+
+class BiasTests(unittest.TestCase):
+    def logs(self):
+        a, b, c = (row(1, "A", [1], 16), row(2, "B", [5], 17), row(3, "C", [9], 18))
+        return [a, b, c], [b, a, c]
+
+    def test_parse(self):
+        self.assertEqual(ls.parse_bias("w2=-4.5, 3=1"), [(2, -4.5), (3, 1.0)])
+        self.assertEqual(ls.bias_env([(2, -4.5), (3, 1.0)]), "2=-4.5,3=1")
+        with self.assertRaises(SystemExit):
+            ls.parse_bias("2")
+
+    def test_targets_are_reversed_pairs(self):
+        un, bi = self.logs()
+        t = ls.bias_targets(un, bi, [(2, 9.0)])
+        self.assertEqual([x["spec"] for x in t], ["w2 before w1"])
+        with self.assertRaises(SystemExit):
+            ls.bias_targets(un, un, [(2, 0.0)])
+
+    def test_cell_satisfies_when_order_holds_without_bias(self):
+        un, bi = self.logs()
+        t = ls.bias_targets(un, bi, [(2, 9.0)])
+        hits, _ = ls.oracle_status(un, t)
+        self.assertEqual(hits, 0, "the unbiased base decides w1 first")
+        renumbered = [dict(d, web=d["web"] + 50) for d in bi]
+        hits, d = ls.oracle_status(renumbered, t)
+        self.assertEqual(hits, 1)
+        self.assertEqual(d[0]["rows"][0]["match"], ["p1:w52"])
 
 
 if __name__ == "__main__":

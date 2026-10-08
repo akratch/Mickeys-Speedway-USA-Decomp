@@ -2,11 +2,13 @@
 ### `wakeAllocate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 323/351 words
+- score: 60/351 words
 - frame: 0x90
 - relocations: 3
-- first mismatch: +0x10
-- summary: Forces w14/w324/w10/w5 leave only the two dead pre-call copies and the spill-cell order; eight source negatives recorded
+- first mismatch: +0x84
+- summary: XOR-kept copies of the two counts after the alpha branch give the dead v0/v1 moves: -8 to size 0, 323 to 60. Left: copies' v0/v1 order and spill-cell order
+
+Summary before this remeasure: Forces w14/w324/w10/w5 leave only the two dead pre-call copies and the spill-cell order; eight source negatives recorded
 
 Summary before this remeasure: sampleBytes after segmentCount (target spill-cell order): 325 to 323 at -8. Left: dead v0/v1 copies before the call, four cells out of order
 
@@ -410,4 +412,49 @@ target needs both to have a bb2-only piece coloured before the
 sampleBytes/s20 pieces; find the source that makes w10's bb0 piece stop at
 bb1 (its colour unavailable in bb2) and gives w18 a split. Decision
 variable: w18's totalsave against its bestcost on proc 9.
+
+#### 2026-10-08, lane k-6: the two dead copies are XOR-kept copies, -8 to size 0
+
+Measured by tools/bank.py: masked 60 (raw 60), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 325, register naming 3, immediate only 14, really different 13.
+
+Score 323 masked at -8 to 60 masked at size delta 0. Aligned before:
+byte-exact 311, naming 10, immediate 6, really different 29 (12 one-sided
+words); after: byte-exact 325, naming 3, immediate 14, really different 13
+(4 candidate-only, 4 target-only, all in the tail schedule at +0x2D4..+0x36C).
+
+What it is. The target's two dead moves before the first call are copy
+webs, not split pieces of the segment-count or doubled-count webs: a symbol
+assigned from each count in the block after the alpha branch, read by that
+block's byte products, and dead at the call. as1 forwards the products back
+to t0 and t5 and leaves the moves. The source that makes them: after the
+alpha branch, `j = segmentCount; j ^= 0; i = groupCount; i ^= 0;`, with
+sampleBytes and the segment-times-0x14 term computed from j, segmentBytes
+and textureBytes from i, and the post-call cursor add reading `j * 0x14`
+(j is not redefined until the fill loops). Both copies then take v0/v1 in
+that block before sampleBytes and the 0x14 term are coloured, so those two
+take a2/a3, segmentCount's piece takes t0 and frameCount's piece s0, exactly
+the colours j-6 had to force (w14=c5, w324=c6, w10=c7, w5=c14).
+
+Measured on the way (each a shape_product, ranked aligned):
+- plain copies into i/j (no kill), before or after the alpha branch: 325,
+  propagated (5 cells, as j-6 recorded).
+- the kill form matters: OR-zero, `&= ~0` and `+= 0` are folded and the copy
+  is propagated (325 at -8); only `^= 0` keeps the copy web (32 cells).
+- one copy alone (the group count in i or j): 292 at -4, one dead move.
+- the segment copy in i instead of j: i is redefined by the vertex loop
+  before the cursor adds, so the 0x14 term splits (328 at -12 and worse).
+- copies placed before the alpha branch: uopt hoists them into block 0.
+- kill literal type (0, 0U, (s16) 0, (u8) 0, `x = x ^ 0`), 25 cells: flat 60.
+- statement order of the two copy groups (4), the three byte products (3)
+  and the call argument's first two terms (3), 36 cells: flat 60.
+
+Left (60 masked, aligned residual 30): the two copies take v1 (segment) and
+v0 (doubled) where the target has v0 and v1. Records (proc 9): both copy
+webs have save 3.0, nocs 1, and tie; the doubled copy is web 300 and the
+segment copy web 326, so the doubled one is decided first. The pre-call
+spill cells are still in the old order (ours frameCount 0x48, segment 0x44,
+doubled 0x40, segment bytes 0x2C, texture bytes 0x28, sampleBytes 0x24,
+the 0x14 term 0x20; target 0x3C, 0x38, 0x2C, 0x28, 0x24, 0x34, 0x30), and
+the tail schedule at +0x2D4 follows the cells. One sampleBytes + 0x14-term
+addu has its operands reversed.
 <!-- plateau-handoff:wakeAllocate:end -->

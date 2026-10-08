@@ -210,13 +210,13 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/overlays/o057/overlay57UpdateInterface.c:188` `func_overlay_057_F0000954_18A454C` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o058/overlay58DrawLargePointQuad.c:90` `overlay58DrawLargePointQuad` **A**: empty if body or `if (c);` probe.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved** (lane c-1, 2026-10-08): both probes and the dead `vertices += 3` replaced by the four-vertex colour loop `for (i = 0; i < 4; i++) { vertices->r = ... vertices++; }`, which IDO unrolls into the shipped stores; the loop's entry and exit supply the two block boundaries. Byte-identical.
 - `src/overlays/o058/overlay58DrawLargePointQuad.c:108` `overlay58DrawLargePointQuad` **A**: empty if body or `if (c);` probe.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved** (lane c-1, 2026-10-08): both probes and the dead `vertices += 3` replaced by the four-vertex colour loop `for (i = 0; i < 4; i++) { vertices->r = ... vertices++; }`, which IDO unrolls into the shipped stores; the loop's entry and exit supply the two block boundaries. Byte-identical.
 - `src/overlays/o058/overlay58DrawPointQuad.c:90` `overlay58DrawPointQuad` **A**: empty if body or `if (c);` probe.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved** (lane c-1, 2026-10-08): both probes and the dead `vertices += 3` replaced by the four-vertex colour loop `for (i = 0; i < 4; i++) { vertices->r = ... vertices++; }`, which IDO unrolls into the shipped stores; the loop's entry and exit supply the two block boundaries. Byte-identical.
 - `src/overlays/o058/overlay58DrawPointQuad.c:108` `overlay58DrawPointQuad` **A**: empty if body or `if (c);` probe.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved** (lane c-1, 2026-10-08): both probes and the dead `vertices += 3` replaced by the four-vertex colour loop `for (i = 0; i < 4; i++) { vertices->r = ... vertices++; }`, which IDO unrolls into the shipped stores; the loop's entry and exit supply the two block boundaries. Byte-identical.
 - `src/overlays/o059/overlay59DrawFrame.c:32` `overlay59DrawFrame` **A**: empty if with a duplicated condition.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o059/overlay59PrepareEntry.c:77` `overlay59PrepareEntry` **A**: `& 0xFFFFFFFF` on a u32 value.

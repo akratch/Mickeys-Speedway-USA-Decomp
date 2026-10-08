@@ -739,6 +739,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
  * frame: 0x280
  * relocations: 315
  * first-mismatch: +0x4
- * summary: Banked on aligned residual: unready registered, selected and stat span the label loop; 759 at -12 to 619 at -4. Open: first-block channel draws, 3C8 piece.
+ * summary: 619 at -4. Priced: 3C8 piece w1196 split (folded lb lo as shipped) 581 at +4; channel order by CDX_BIAS 616. Open: a source with one counted 3C8 use in bb100.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

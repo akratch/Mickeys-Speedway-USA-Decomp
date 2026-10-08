@@ -3597,6 +3597,11 @@ f32 func_8002A8C0(s32 angle);
  * 17, all register naming. The reused local is `cosine` here; the shard
  * records why the target's is `mass` and the forces that price that shape
  * at zero.
+ * 2026-10-08 (lane q-1, second pass): the then arm's block boundary sits
+ * between the Y and Z offsets (`if (timeStep)` after offsetY) and the
+ * `if (cosine)` region is gone: the offsetY and timeStep pieces take the
+ * target's f14 and f18 (17 to 11, all naming). Left: offsetX/cosine swap
+ * (f16/f2 against f2/f16) and the offsetZ piece (f0 against f16).
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3645,14 +3650,12 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         secondSource->unk64 = speed;
         cosine = -func_8002A8C0(*(s16 *) first);
         sine = -func_8002A8BC(*(s16 *) first);
-        if (cosine) {
-        }
         target->unk90 = normal->z * cosine - normal->x * sine;
         target->unk8C = normal->z * sine + cosine * normal->x;
-        if (timeStep) {
-        }
         offsetX = first->position.x - firstSource->previous.x;
         offsetY = first->position.y - firstSource->previous.y;
+        if (timeStep) {
+        }
         offsetZ = first->position.z - firstSource->previous.z;
         firstSource->previous.x = target->velocity.x * timeStep + firstSource->current.x;
         firstSource->previous.y = target->velocity.y * timeStep + firstSource->current.y;
@@ -4028,11 +4031,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 17/229 words
+ * score: 11/229 words
  * frame: 0x70
  * relocations: 8
- * first-mismatch: +0x1C0
- * summary: Twelve locals, else-head def, two-statement else offset in a reused local: 27 to 17, frame closed. Left: mass/nx, offsetX/ny, then pieces.
+ * first-mismatch: +0x204
+ * summary: Then-arm boundary between offsetY and offsetZ, cosine region removed: 17 to 11. Left: offsetX/cosine swap, offsetZ piece.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

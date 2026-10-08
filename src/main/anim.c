@@ -2242,7 +2242,10 @@ void func_800573C8(HitOverlapState *state, HitOverlapVolume *other,
  * each pass. The overlap test in both pair loops is a pre-tested
  * `for (axis = 0, overlaps = 1; ...)`, the shape of the matched
  * func_800573C8: the bottom-tested do-while let uopt fold the zero
- * subscript and lost the target's unfolded `0 << 2` seed (392). */
+ * subscript and lost the target's unfolded `0 << 2` seed (392).
+ * 2026-10-08 (lane p-1): the displacement loop reads its shape straight
+ * from the moving list (`D_800D7160[i]->unk48`, no firstObject there):
+ * 392 to 354 at size 0, aligned residual 200 to 187. */
 void func_80053868(s32 updateRate) {
     f32 remainingTime;
     f32 fraction;
@@ -2360,8 +2363,7 @@ void func_80053868(s32 updateRate) {
         pairCount = 0;
         pairIndex = -1;
         for (i = 0; i < movingCount; i++) {
-            firstObject = D_800D7160[i];
-            firstShape = firstObject->unk48;
+            firstShape = D_800D7160[i]->unk48;
             firstShape->displacement[0] = firstShape->position[0] - firstShape->previous[0];
             firstShape->displacement[1] = firstShape->position[1] - firstShape->previous[1];
             firstShape->displacement[2] = firstShape->position[2] - firstShape->previous[2];
@@ -4025,11 +4027,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80053868:start
  * symbol: func_80053868
- * score: 392/1205 words
+ * score: 354/1205 words
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: Pre-tested overlap for (func_800573C8 shape) restores the 0<<2 seeds: 393 to 392. Left: movingCount piece 631, pairIndex a1 piece, constant webs.
+ * summary: Displacement loop reads its shape from the moving list: 392 to 354 at size 0. Left: firstObject s6/cursor s7 in that loop, axis s2, pairIndex a1.
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

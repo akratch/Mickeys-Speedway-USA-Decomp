@@ -165,9 +165,9 @@ void rumbleProcessing(s32 enabled) {
 }
 /* PROVENANCE: body adapted from Jet Force Gemini's public decomp,
  * src/saves.c:rumbleMax, under Mickey's established rumbleStart name. */
-void rumbleStart(s32 controllerIndex, s32 arg1, f32 arg2) {
+void rumbleStart(s32 controllerIndex, s32 strength, f32 duration) {
     RumbleState *rumble;
-    s32 temp_f16;
+    s32 ticks;
     s32 controllerNum;
 
     if (func_8002BCC0() != 0) {
@@ -178,17 +178,17 @@ void rumbleStart(s32 controllerIndex, s32 arg1, f32 arg2) {
                 if (rumble->rumbleTime <= 0) {
                     rumble->strength = 0;
                 }
-                if (arg1 != 0) {
-                    arg1 = (s32) ((f32) (arg1 * arg1) * D_80082088);
-                    if (rumble->strength < arg1) {
-                        rumble->strength = arg1;
+                if (strength != 0) {
+                    strength = (s32) ((f32) (strength * strength) * D_80082088);
+                    if (rumble->strength < strength) {
+                        rumble->strength = strength;
                     }
                 }
                 if (rumble->state != 2) {
                     rumble->state = 1;
-                    temp_f16 = (s32) (arg2 * 60.0f);
-                    if (rumble->rumbleTime < temp_f16) {
-                        rumble->rumbleTime = temp_f16;
+                    ticks = (s32) (duration * 60.0f);
+                    if (rumble->rumbleTime < ticks) {
+                        rumble->rumbleTime = ticks;
                     }
                 }
             }
@@ -213,11 +213,11 @@ void rumbleStop(s32 controllerIndex, s32 force) {
     }
 }
 /* PROVENANCE: adapted from Jet Force Gemini's public decomp, src/saves.c:rumbleKill. */
-void rumbleKill(s32 arg0) {
+void rumbleKill(s32 force) {
     s32 i = 4;
 
     while (i--) {
-        rumbleStop(i, arg0);
+        rumbleStop(i, force);
     }
 }
 /* PROVENANCE: adapted from Jet Force Gemini's public decomp, src/saves.c:rumbleUpdate. */
@@ -509,42 +509,42 @@ s32 packCalculateGameChecksum(u8 *buffer, s32 count) {
     return checksum;
 }
 /* Mickey-derived chunked save-device transfer. */
-s32 func_8002C7EC(s32 arg0, s32 arg1, void *arg2, s32 arg3) {
+s32 func_8002C7EC(s32 controller, s32 address, void *buffer, s32 length) {
     s32 result;
     u8 type;
 
-    D_8007A31C = arg1 & 1;
+    D_8007A31C = address & 1;
     result = 0;
-    if (arg3 > 0) {
+    if (length > 0) {
         do {
-            type = arg1;
+            type = address;
             mainPreNMI();
-            if (arg3 >= 0x21) {
-                result = func_8006FEF0(arg0, type, arg2, 0x20);
-                arg2 = (u8 *) arg2 + 0x20;
-                arg3 -= 0x20;
-                arg1 += 4;
+            if (length >= 0x21) {
+                result = func_8006FEF0(controller, type, buffer, 0x20);
+                buffer = (u8 *) buffer + 0x20;
+                length -= 0x20;
+                address += 4;
             } else {
-                result = func_8006FEF0(arg0, type, arg2, arg3);
-                arg3 = 0;
+                result = func_8006FEF0(controller, type, buffer, length);
+                length = 0;
             }
-        } while (arg3 > 0 && result == 0);
+        } while (length > 0 && result == 0);
     }
     return result;
 }
-void func_8002C8B4(s32 arg0, s32 arg1, void *arg2, s32 arg3) {
+void func_8002C8B4(s32 controller, s32 address, void *buffer, s32 length) {
     u8 data[16];
 
     if (D_8007A31C != 0) {
-        if (arg1 & 1) {
-            func_8006FEF0(arg0, 0x3E, data, 8);
+        if (address & 1) {
+            func_8006FEF0(controller, 0x3E, data, 8);
             D_8007A31C = 0;
         }
-    } else if (!(arg1 & 1)) {
-        func_8006FEF0(arg0, 0x3F, data, 8);
+    } else if (!(address & 1)) {
+        func_8006FEF0(controller, 0x3F, data, 8);
         D_8007A31C = 1;
     }
-    func_80070030(arg0, (u8) arg1, arg2, arg3);
+    func_80070030(controller, (u8) address, buffer, length);
 }
 /* Mickey-derived serialization of one 0x94-byte save window. */
 /* The `if (1)` block around the entry init is a register-scheduling nudge

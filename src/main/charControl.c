@@ -235,7 +235,7 @@ u8 frontGetMode(void);
 void func_800214AC(void);
 void func_8001F09C(ControlPlayer *player, s32 updateRate);
 void func_800031C0(void *soundHandle, f32 x, f32 y, f32 z);
-void func_8001BBB4(ControlActor *actor, ControlPlayer *player, f32 arg2);
+void func_8001BBB4(ControlActor *actor, ControlPlayer *player, f32 updateRate);
 void func_8001C114(s32 slotIndex, f32 x, f32 y, f32 z);
 void *func_80053420(s32 index, void *target);
 void func_80024ED8();
@@ -270,8 +270,8 @@ s32 func_80010B4C(s32 count, void *start, void *points, void *radius,
                   void *records, void *actorPosition, void *actor);
 s32 func_80010900(ControlVector3 *start, ControlVector3 *end, f32 radius,
                   s32 actor, void *callback);
-void func_8001EC44(s32 arg0, ControlVector3 *arg1, ControlVector3 *arg2,
-                   f32 arg3, ControlCollisionPlane *arg4);
+void func_8001EC44(s32 unused, ControlVector3 *pos, ControlVector3 *vel,
+                   f32 radius, ControlCollisionPlane *plane);
 u8 levelGetType(void);
 u8 *func_80028F54(void);
 u32 joyGetButtons(s32 playerIndex);
@@ -306,7 +306,7 @@ f32 func_8001BB90(s32 cameraIndex) {
 /* Existing readonly scalar cells, in their owning function order. */
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081840.s")
 
-void func_8001BBB4(ControlActor *actor, ControlPlayer *player, f32 arg2) {
+void func_8001BBB4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
     ControlTrackState *track;
     s32 surfaceIndex;
     void *cameraSource;
@@ -321,13 +321,13 @@ void func_8001BBB4(ControlActor *actor, ControlPlayer *player, f32 arg2) {
         cameraSource = func_80053420(0, D_800CB300);
         if (cameraSource == NULL) {
             if ((player->flags1A8 & 1) && (func_8003A550() == 0)) {
-                TrapDanglingJump(actor, player, D_800CB300, (s32) arg2);
+                TrapDanglingJump(actor, player, D_800CB300, (s32) updateRate);
             } else if (player->controlKeys & 4) {
                 func_80024ED8(actor, player, D_800CB300);
             } else if (D_8007BF10 != 0) {
-                TrapDanglingJump(D_800CB300, actor, *(s32 *) &arg2);
+                TrapDanglingJump(D_800CB300, actor, *(s32 *) &updateRate);
             } else {
-                TrapDanglingJump(D_800CB300, actor, *(s32 *) &arg2);
+                TrapDanglingJump(D_800CB300, actor, *(s32 *) &updateRate);
             }
         }
         track = trackGetTrack();
@@ -510,7 +510,7 @@ void func_8001C2D4(u8 *start, u8 *end) {
  * controlPlayerReInit name/role. This Mickey-specific save, clear, initialize,
  * and restore body is independently reconstructed from Mickey's code.
  */
-void controlPlayerReInit(ControlActor *actor, f32 x, f32 y, f32 z, s16 arg4, s16 arg5, s16 arg6) {
+void controlPlayerReInit(ControlActor *actor, f32 x, f32 y, f32 z, s16 rotationX, s16 rotationY, s16 rotationZ) {
     ControlPlayer *player;
     s32 saved192;
     s32 saved1A8;
@@ -524,9 +524,9 @@ void controlPlayerReInit(ControlActor *actor, f32 x, f32 y, f32 z, s16 arg4, s16
     state = &stateStorage;
     state->playerIndex = player->playerIndex;
     state->unk11 = player->unk1;
-    state->arg4 = arg4;
-    state->arg5 = arg5;
-    state->arg6 = arg6;
+    state->arg4 = rotationX;
+    state->arg5 = rotationY;
+    state->arg6 = rotationZ;
     saved192 = player->unk192;
     saved1A8 = player->flags1A8;
     saved3BA = player->unk3BA;
@@ -814,12 +814,12 @@ void func_8001CB0C(ControlTransform *transform, ControlPlayer *player) {
 /* Frame law used here (see docs/ido-learnings.md): declared locals occupy the
  * TOP of the local region in declaration order, first-declared highest; every
  * value written as an expression instead of a named local is homed in the
- * compiler-temp region below them.  sp7C/sp70/character keep their m2c names
+ * compiler-temp region below them.  decayFactor/levelInfo/character keep their positions
  * because those are the target's own displacements. */
-/* var_f12 is ONE scratch float reused twice, and that is what closed this
+/* bounce is ONE scratch float reused twice, and that is what closed this
  * function.  Naming the ballistic step keeps it in a coloured web where the
  * inline expression spent floating-point ring temps, which cost 40 register
- * words; declaring a *new* local for it instead of reusing var_f12 pushed
+ * words; declaring a *new* local for it instead of reusing bounce pushed
  * every compiler temp 4 bytes down the frame and cost 25 displacement words.
  * Both halves are needed: 53 -> 39 -> 0. */
 /* Existing readonly scalar cells, in their owning function order. */
@@ -827,29 +827,29 @@ void func_8001CB0C(ControlTransform *transform, ControlPlayer *player) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_8008184C.s")
 
 void func_8001CB84(ControlActor *actor, s32 updateRate) {
-    f32 sp7C;
-    f32 var_f12;
-    f32 temp_f2_2;
-    CharControlLevelDescription *sp70;
+    f32 decayFactor;
+    f32 bounce;
+    f32 tiltCos;
+    CharControlLevelDescription *levelInfo;
     ControlPlayer *player;
     CharControlSpawnSetup packetD0;
     CharControlSpawnSetup packetD8;
-    s32 temp_v1_3;
+    s32 fade;
     s32 character;
 
     player = actor->player;
     player->unk3 = player->unk2;
     if (player->unkC8 != NULL) {
-        sp70 = ((CharControlLevelRequest *) player->unkC8)->description;
-        character = sp70->characterLow;
-        if (sp70->characterHigh != 0xFF) {
-            character |= sp70->characterHigh << 8;
+        levelInfo = ((CharControlLevelRequest *) player->unkC8)->description;
+        character = levelInfo->characterLow;
+        if (levelInfo->characterHigh != 0xFF) {
+            character |= levelInfo->characterHigh << 8;
         }
         mainChangeLevel(character, mainGetNextCharacter(),
-                        sp70->nextLevel, frontGetMode(),
-                        sp70->camera, 0);
-        if (sp70->animGroup != -1) {
-            mainSetAnimGroup(sp70->animGroup);
+                        levelInfo->nextLevel, frontGetMode(),
+                        levelInfo->camera, 0);
+        if (levelInfo->animGroup != -1) {
+            mainSetAnimGroup(levelInfo->animGroup);
         }
         func_80006EA0(player->unkC8);
         player->unkC8 = NULL;
@@ -896,9 +896,9 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
                           &player->unkB4);
             player->unk158 = (s16) (player->unk158 & 0x7FFF);
         }
-        var_f12 = (player->unk150 * (f32) updateRate) -
+        bounce = (player->unk150 * (f32) updateRate) -
                   (0.5f * D_800CB304 * (f32) updateRate * (f32) updateRate);
-        player->unk154 = player->unk154 + var_f12;
+        player->unk154 = player->unk154 + bounce;
         player->unk150 = player->unk150 - (D_800CB304 * (f32) updateRate);
         if (player->unk154 < 0.0f) {
             player->unk154 = -player->unk154;
@@ -911,10 +911,10 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
             player->unk164 = (s16) (player->unk164 + player->unk15E * updateRate);
             player->unk162 = (s16) (player->unk162 + player->unk15C * updateRate);
         } else if (player->unk158 == 1) {
-            sp7C = Powerf(D_80081848, updateRate);
-            player->unk160 = dAngle(player->unk160, 0, sp7C);
-            player->unk164 = dAngle(player->unk164, 0, sp7C);
-            player->unk162 = dAngle(player->unk162, 0, sp7C);
+            decayFactor = Powerf(D_80081848, updateRate);
+            player->unk160 = dAngle(player->unk160, 0, decayFactor);
+            player->unk164 = dAngle(player->unk164, 0, decayFactor);
+            player->unk162 = dAngle(player->unk162, 0, decayFactor);
         } else if (player->unk158 == 0) {
             player->unk160 = 0;
             player->unk164 = 0;
@@ -922,13 +922,13 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
             player->unk154 = 0.0f;
             player->unk150 = 0.0f;
         }
-        temp_f2_2 = func_8002A8BC(player->unk162) * func_8002A8BC(player->unk164);
-        if (temp_f2_2 < 0.0f) {
-            var_f12 = 0.0f;
+        tiltCos = func_8002A8BC(player->unk162) * func_8002A8BC(player->unk164);
+        if (tiltCos < 0.0f) {
+            bounce = 0.0f;
         } else {
-            var_f12 = temp_f2_2 * temp_f2_2;
+            bounce = tiltCos * tiltCos;
         }
-        player->unk14C = 30.0f - (30.0f * var_f12);
+        player->unk14C = 30.0f - (30.0f * bounce);
         actor->unk48->unk54 = player->unk154;
         player->unk185 = 0;
         player->unk188 = 0.0f;
@@ -1007,8 +1007,8 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
     controlDisableJoypad(player, 0);
     if (player->unk3FA != 0) {
         if ((s32) player->unk190 > 0) {
-            temp_v1_3 = player->unk190 - (updateRate * 4);
-            if (temp_v1_3 <= 0) {
+            fade = player->unk190 - (updateRate * 4);
+            if (fade <= 0) {
                 if (player->unkAC != NULL) {
                     func_800031E8(player->unkAC);
                     actor->unk80 = 0;
@@ -1019,7 +1019,7 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
                 actor->y = player->unk48 + D_8008184C;
                 actor->z = player->unk4C;
             } else {
-                player->unk190 = (u8) temp_v1_3;
+                player->unk190 = (u8) fade;
             }
         }
     }
@@ -1032,7 +1032,7 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
  * Levers tried: prior flags/commutative/volatile/prototype forms plus fresh pointer scope, lvalue, and typed-stride forms.
  * Remains: candidate CSE hoists the global base address before the camera-count call; target keeps it split.
  */
-void func_8001D2A0(ControlActor *actor, s32 arg1)
+void func_8001D2A0(ControlActor *actor, s32 updateRate)
 {
   s32 cameraIndex;
   ControlPlayer *player;
@@ -1053,12 +1053,12 @@ void func_8001D2A0(ControlActor *actor, s32 arg1)
   }
   if (!(player->flags1A8 & 1))
   {
-    TrapDanglingJump(actor, player, arg1);
+    TrapDanglingJump(actor, player, updateRate);
     D_800CB300 = D_800CB300;
   }
   if (player->unkD4 != 0)
   {
-    TrapDanglingJump(player->unkD4, arg1);
+    TrapDanglingJump(player->unkD4, updateRate);
   }
   D_800CB300 = camGetListPtr();
   cameraIndex = mainGetNumberOfCameras() - 1;
@@ -1070,7 +1070,7 @@ void func_8001D2A0(ControlActor *actor, s32 arg1)
   camSetNo(player->playerIndex, cameraIndex, &D_800CB300);
   if ((player->unk190 != 0) || (player->unk3FA == 0))
   {
-    func_8001BBB4(actor, player, (f32) arg1);
+    func_8001BBB4(actor, player, (f32) updateRate);
   }
 }
 void func_8001D41C(ControlActor *actor, ControlPlayer *player, s32 updateRate) {
@@ -1192,47 +1192,47 @@ void func_8001D690(ControlActor *actor, ControlPlayer *player) {
     }
 }
 /* PROVENANCE -- adapted from JFG's src/charControl.c dAngle. */
-s16 dAngle(s16 arg0, s16 arg1, f32 arg2) {
-    s32 temp_t1;
-    s32 var_v1;
+s16 dAngle(s16 angle, s16 target, f32 factor) {
+    s32 backward;
+    s32 forward;
 
-    var_v1 = (arg1 - arg0) & 0xFFFF;
-    temp_t1 = (arg0 - arg1) & 0xFFFF;
-    if (temp_t1 < var_v1) {
-        var_v1 = -temp_t1;
+    forward = (target - angle) & 0xFFFF;
+    backward = (angle - target) & 0xFFFF;
+    if (backward < forward) {
+        forward = -backward;
     }
-    return (s16) (arg0 + (s32) ((f32) var_v1 * arg2));
+    return (s16) (angle + (s32) ((f32) forward * factor));
 }
 /* PROVENANCE -- role and signature follow JFG's charControl controlMakeV,
  * which the donor carries as assembly only; the body is written from
  * Mickey's listing. Matched with one reused index, each argument reduced to
  * its fraction in place, the table read by subscript, and the difference
  * accumulated into `v`. */
-f32 func_8001D880(f32 arg0, f32 arg1, f32 *table, f32 divisor) {
+f32 func_8001D880(f32 valueA, f32 valueB, f32 *table, f32 divisor) {
     s32 i;
     f32 base;
     f32 v;
 
-    arg1 *= 10.0f;
-    i = arg1;
-    arg1 -= i;
+    valueB *= 10.0f;
+    i = valueB;
+    valueB -= i;
     base = table[i];
-    v = (table[i + 1] - base) * arg1 + base;
-    arg0 *= 10.0f;
-    i = arg0;
-    arg0 -= i;
+    v = (table[i + 1] - base) * valueB + base;
+    valueA *= 10.0f;
+    i = valueA;
+    valueA -= i;
     base = table[i];
-    v -= base + (table[i + 1] - base) * arg0;
+    v -= base + (table[i + 1] - base) * valueA;
     return v / divisor;
 }
 /* PROVENANCE -- adapted from JFG's src/charControl.c controlFSUvels. */
 void controlFSUvels(s16 *rotation, ControlPlayer *player) {
-    s16 sp18[3];
+    s16 angles[3];
 
-    sp18[0] = rotation[0];
-    sp18[1] = rotation[1];
-    sp18[2] = 0;
-    pointListRPY(3, sp18, D_80079BD4, player->unk14);
+    angles[0] = rotation[0];
+    angles[1] = rotation[1];
+    angles[2] = 0;
+    pointListRPY(3, angles, D_80079BD4, player->unk14);
 }
 typedef struct ControlFlameSlot {
     u8 state;
@@ -1261,135 +1261,135 @@ typedef struct ControlFlameParticle {
  *    not an m2c sp5C/var_v0 pair; declaring it first is what puts its home at
  *    the target's displacement and keeps the frame at 0x60,
  *  - case 1 re-reads the particle's angle field rather than reading the value
- *    already in var_s6; that CSE is what makes IDO keep the loaded value in a
+ *    already in size; that CSE is what makes IDO keep the loaded value in a
  *    caller-saved register and copy it into the saved one,
  *  - case 2 spells the scaled angle inline, exactly as case 3 does. Naming the
  *    call result in a local made it a uopt-coloured web where the target pops a
  *    ugen ring temp, and that one class crossing rotated twelve downstream webs,
- *  - case 2 performs actor->unk80 |= arg2 AFTER the whole var_s6 product, so
+ *  - case 2 performs actor->unk80 |= triggerFlags AFTER the whole size product, so
  *    the product's four ring temps are drawn before the or's two loads.
  * The last two are one composition: neither alone is an improvement. */
 /* PROVENANCE: JFG's public controlUpdateJetFlames role and Mickey's m2c/assembly establish
  * the state-machine order; no external body is copied into this reconstruction. */
-void func_8001D960(ControlActor *actor, ControlPlayer *player, s32 arg2, s32 arg3,
-                   s32 arg4) {
-    s32 var_v0;
-    ControlFlameSlot *var_s1;
-    void *temp_s7;
-    s32 var_s5;
-    s32 var_s0;
-    s32 var_s3;
-    s32 var_s6;
-    f32 var_f20;
-    f32 var_f22;
+void func_8001D960(ControlActor *actor, ControlPlayer *player, s32 triggerFlags, s32 spawnState,
+                   s32 updateRate) {
+    s32 slotIndex;
+    ControlFlameSlot *slot;
+    void *particle;
+    s32 slotMask;
+    s32 intensity;
+    s32 phase;
+    s32 size;
+    f32 scaleX;
+    f32 scaleY;
 
-    var_v0 = 0;
-    var_s5 = 1;
-    var_s1 = (ControlFlameSlot *) ((u8 *) player + 0x34C);
+    slotIndex = 0;
+    slotMask = 1;
+    slot = (ControlFlameSlot *) ((u8 *) player + 0x34C);
     do {
-        temp_s7 = var_s1->particle;
-        if (temp_s7 != NULL) {
-            var_s6 = *(s16 *) ((u8 *) temp_s7 + 0x24);
-            var_s0 = var_s1->intensity;
-            var_s3 = var_s1->phase;
-            var_f20 = *(f32 *) ((u8 *) temp_s7 + 0x18);
-            var_f22 = *(f32 *) ((u8 *) temp_s7 + 0x1C);
-            if (var_s1->state == 2) {
-                if (var_s1->mode == 0) {
-                    var_s0 -= arg4 << 5;
-                    if (var_s0 < 0) {
-                        var_s0 = 0;
+        particle = slot->particle;
+        if (particle != NULL) {
+            size = *(s16 *) ((u8 *) particle + 0x24);
+            intensity = slot->intensity;
+            phase = slot->phase;
+            scaleX = *(f32 *) ((u8 *) particle + 0x18);
+            scaleY = *(f32 *) ((u8 *) particle + 0x1C);
+            if (slot->state == 2) {
+                if (slot->mode == 0) {
+                    intensity -= updateRate << 5;
+                    if (intensity < 0) {
+                        intensity = 0;
                     }
-                    var_s3 = actor->rotationX;
-                    if (player->unk186 & var_s5) {
-                        var_s1->mode = 2;
+                    phase = actor->rotationX;
+                    if (player->unk186 & slotMask) {
+                        slot->mode = 2;
                     }
                 } else {
-                    var_s0 += arg4 << 5;
-                    if (var_s0 >= 0x100) {
-                        var_s0 = 0xFF;
+                    intensity += updateRate << 5;
+                    if (intensity >= 0x100) {
+                        intensity = 0xFF;
                     }
-                    var_s3 = actor->rotationX;
-                    if (!(player->unk186 & var_s5)) {
-                        var_s1->mode = 0;
+                    phase = actor->rotationX;
+                    if (!(player->unk186 & slotMask)) {
+                        slot->mode = 0;
                     }
                 }
-                var_f20 *= (f32) var_s0 / 255.0f;
-                var_f22 *= (f32) var_s0 / 255.0f;
+                scaleX *= (f32) intensity / 255.0f;
+                scaleY *= (f32) intensity / 255.0f;
                 if (actor->unk70 != NULL) {
-                    s32 temp_a0;
+                    s32 lightHandle;
 
-                    temp_a0 = *actor->unk70;
-                    if (temp_a0 != 0) {
-                        changeLightIntensity((void *) temp_a0, var_s0);
+                    lightHandle = *actor->unk70;
+                    if (lightHandle != 0) {
+                        changeLightIntensity((void *) lightHandle, intensity);
                     }
                 }
             } else {
-                switch (var_s1->mode) {
+                switch (slot->mode) {
                 case 0:
-                    var_s0 = 0;
-                    if (player->unk186 & var_s5) {
-                        s32 temp_s2;
+                    intensity = 0;
+                    if (player->unk186 & slotMask) {
+                        s32 savedState;
 
-                        temp_s2 = actor->unk80;
-                        actor->unk80 = arg3;
+                        savedState = actor->unk80;
+                        actor->unk80 = spawnState;
                         partUpdateTriggers(actor, 2);
-                        actor->unk80 = temp_s2;
-                        var_s1->mode = 1;
+                        actor->unk80 = savedState;
+                        slot->mode = 1;
                     }
                     break;
                 case 1:
-                    var_s0 += arg4 << 5;
-                    var_s6 = (s32) (*(s16 *) ((u8 *) temp_s7 + 0x24) * var_s0) >> 7;
-                    if (var_s0 >= 0x100) {
-                        var_s0 = 0xFF;
-                        if (player->unk186 & var_s5) {
-                            var_s1->mode = 2;
+                    intensity += updateRate << 5;
+                    size = (s32) (*(s16 *) ((u8 *) particle + 0x24) * intensity) >> 7;
+                    if (intensity >= 0x100) {
+                        intensity = 0xFF;
+                        if (player->unk186 & slotMask) {
+                            slot->mode = 2;
                         } else {
-                            var_s1->mode = 3;
+                            slot->mode = 3;
                         }
                     }
                     break;
                 case 2:
-                    var_s0 += arg4 * 0x10;
-                    if (var_s0 >= 0x100) {
-                        var_s0 = 0xFF;
+                    intensity += updateRate * 0x10;
+                    if (intensity >= 0x100) {
+                        intensity = 0xFF;
                     }
-                    var_s3 += arg4 << 0xC;
-                    var_s6 = (s32) ((func_8002A204((s16) (var_s3 << 8)) + 0x18000) *
-                                    ((s32) (var_s6 * var_s0) >> 8)) >> 0x10;
-                    actor->unk80 |= arg2;
-                    if (!(player->unk186 & var_s5)) {
-                        var_s1->mode = 3;
+                    phase += updateRate << 0xC;
+                    size = (s32) ((func_8002A204((s16) (phase << 8)) + 0x18000) *
+                                    ((s32) (size * intensity) >> 8)) >> 0x10;
+                    actor->unk80 |= triggerFlags;
+                    if (!(player->unk186 & slotMask)) {
+                        slot->mode = 3;
                     }
                     break;
                 case 3:
-                    var_s0 -= arg4 * 8;
-                    if (var_s0 <= 0) {
-                        var_s0 = 0;
-                        var_s1->mode = 0;
+                    intensity -= updateRate * 8;
+                    if (intensity <= 0) {
+                        intensity = 0;
+                        slot->mode = 0;
                     } else {
-                        var_s3 += arg4 << 0xC;
-                        var_s6 = (s32) ((func_8002A204((s16) (var_s3 << 8)) + 0x18000) *
-                                        ((s32) (var_s6 * var_s0) >> 8)) >> 0x10;
-                        if (player->unk186 & var_s5) {
-                            var_s1->mode = 2;
+                        phase += updateRate << 0xC;
+                        size = (s32) ((func_8002A204((s16) (phase << 8)) + 0x18000) *
+                                        ((s32) (size * intensity) >> 8)) >> 0x10;
+                        if (player->unk186 & slotMask) {
+                            slot->mode = 2;
                         }
                     }
                     break;
                 }
             }
-            var_s1->intensity = var_s0;
-            var_s1->phase = var_s3;
-            if (var_s0 != 0) {
-                func_800475E8(temp_s7, var_s1->phase);
-                func_800479D4(temp_s7, var_s6, var_f20, var_f22, var_s1->intensity);
+            slot->intensity = intensity;
+            slot->phase = phase;
+            if (intensity != 0) {
+                func_800475E8(particle, slot->phase);
+                func_800479D4(particle, size, scaleX, scaleY, slot->intensity);
             }
         }
-        var_s5 *= 2;
-        var_s1++;
-        var_v0++;
-    } while (var_v0 != 4);
+        slotMask *= 2;
+        slot++;
+        slotIndex++;
+    } while (slotIndex != 4);
 }
 void func_8001DCD0(s16 rotation, ControlVector3 *vector, s16 *pitch, s16 *yaw) {
     f32 cosine;
@@ -1407,7 +1407,7 @@ void func_8001DCD0(s16 rotation, ControlVector3 *vector, s16 *pitch, s16 *yaw) {
     *pitch = Arctanf(-pitchX, y);
     *yaw = Arctanf(transformedX, y);
 }
-s16 dAngle(s16 arg0, s16 arg1, f32 arg2);
+s16 dAngle(s16 angle, s16 target, f32 factor);
 void func_8001DCD0(s16 rotation, ControlVector3 *vector, s16 *pitch, s16 *yaw);
 /* PROVENANCE: JFG's public charControl.c and hit.c identify the related
  * ground-hit and polygon-edge control family, but publish assembly only;
@@ -1831,7 +1831,7 @@ s32 func_8001E5C4(ControlActor *actor, ControlPlayer *player, f32 updateRate) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_8008188C.s")
 #pragma GLOBAL_ASM("asm/nonmatchings/main/charControl/D_80081890.s")
 
-void func_8001EC44(s32 arg0, ControlVector3 *pos, ControlVector3 *vel,
+void func_8001EC44(s32 unused, ControlVector3 *pos, ControlVector3 *vel,
                    f32 radius, ControlCollisionPlane *plane) {
     ControlCollisionState *state = &D_800CB2C0;
     f32 dx;
@@ -2023,23 +2023,23 @@ void controlSetRumble(ControlPlayer *player, s32 strength, f32 duration) {
 }
 void func_8001F364(void) {
 }
-void controlSetPlayerSetup(s16 arg0, s16 arg1, s16 arg2, s16 arg3) {
-    D_800CB470 = arg0;
-    D_800CB472 = arg1;
-    D_800CB474 = arg2;
-    D_800CB476 = arg3;
+void controlSetPlayerSetup(s16 x, s16 y, s16 z, s16 angle) {
+    D_800CB470 = x;
+    D_800CB472 = y;
+    D_800CB474 = z;
+    D_800CB476 = angle;
     D_80079BF8 = 1;
 }
 /*
  * PROVENANCE -- JFG's charControl symbols supplied the controlGetPlayerSetup
  * name/role. This body is reconstructed from Mickey's setup-state accesses.
  */
-s32 controlGetPlayerSetup(s16 *arg0, s16 *arg1, s16 *arg2, s16 *arg3) {
+s32 controlGetPlayerSetup(s16 *x, s16 *y, s16 *z, s16 *angle) {
     if (D_80079BF8 != 0) {
-        *arg0 = D_800CB470;
-        *arg1 = D_800CB472;
-        *arg2 = D_800CB474;
-        *arg3 = D_800CB476;
+        *x = D_800CB470;
+        *y = D_800CB472;
+        *z = D_800CB474;
+        *angle = D_800CB476;
         D_80079BF8 = 0;
         return 1;
     }

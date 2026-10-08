@@ -74,15 +74,15 @@ extern void func_80034920(Gfx **dList);
     }
 
 void func_80036A80(ColourCycle *cycle) {
-    ColourCycle *temp_v0;
+    ColourCycle *target;
 
-    temp_v0 = cycle->unkC;
+    target = cycle->unkC;
     cycle->unk0 = 0;
     cycle->unk4 = 0;
-    cycle->unk8 = temp_v0->unk8;
-    cycle->unk9 = temp_v0->unk9;
-    cycle->unkA = temp_v0->unkA;
-    cycle->unkB = temp_v0->unkB;
+    cycle->unk8 = target->unk8;
+    cycle->unk9 = target->unk9;
+    cycle->unkA = target->unkA;
+    cycle->unkB = target->unkB;
 }
 
 /* PROVENANCE: body adapted from Jet Force Gemini's public decompilation,
@@ -199,7 +199,7 @@ s32 *func_80036DD0(s32 screenIndex) {
     s32 count;
     s32 uncompressedSize;
     u8 *decompressedAddr;
-    u8 *sp1C;
+    u8 *header;
     u32 compressedAddr;
 
     screenTable = (s32 *) piRomLoad(0x14);
@@ -215,11 +215,11 @@ s32 *func_80036DD0(s32 screenIndex) {
     size = screenTable[screenIndex + 1] - screenTable[screenIndex];
     start = screenTable[screenIndex];
     decompressedAddr = NULL;
-    sp1C = (u8 *) func_8002B280(0x10, 0x90);
-    if (sp1C != NULL) {
-        piRomLoadSection(0x13, (u32) sp1C, start, 0x10);
-        uncompressedSize = byteswap32(sp1C) + 0x80;
-        mmFree(sp1C);
+    header = (u8 *) func_8002B280(0x10, 0x90);
+    if (header != NULL) {
+        piRomLoadSection(0x13, (u32) header, start, 0x10);
+        uncompressedSize = byteswap32(header) + 0x80;
+        mmFree(header);
         decompressedAddr = (u8 *) func_8002B280(uncompressedSize, 0x90);
         if (decompressedAddr != NULL) {
             compressedAddr = (u32) ((decompressedAddr + uncompressedSize) - size);
@@ -234,7 +234,7 @@ s32 *func_80036DD0(s32 screenIndex) {
 /* PROVENANCE: body adapted from Jet Force Gemini's public decompilation,
  * src/screen.c:screenDraw. Mickey's command data, VI calls, and ABI remain
  * authoritative. */
-void func_80036F08(Gfx **dList, u8 *screenAddress, s32 arg2) {
+void func_80036F08(Gfx **dList, u8 *screenAddress, s32 scaled) {
     s32 yl;
     s32 yPos;
     s32 xh;
@@ -247,7 +247,7 @@ void func_80036F08(Gfx **dList, u8 *screenAddress, s32 arg2) {
 
     screenAddress += 0x10;
     viGetCurrentSize((s32 *) &width, (s32 *) &height);
-    if (((width == 0x140) && (height == 0xF0)) || arg2 == 0) {
+    if (((width == 0x140) && (height == 0xF0)) || scaled == 0) {
         yl = (height - 0xF0) << 15;
         xl = (width - 0x140) << 1;
         dy = (0xF0 << 16) / 40;

@@ -462,39 +462,39 @@ void camConvertMatrixList(Matrix *mtx, s32 count) {
  * byte-inert and is gone (lane c-4, 2026-10-09). */
 /* PROVENANCE: Mickey-only reconstruction from func_8005ABA8.s and the
  * existing models TU layouts; no external function body is copied. */
-s32 func_8005ABA8(ModelAnimationInstance *instance, f32 arg1, f32 arg2) {
-    s32 var_v1;
-    f32 temp_f0;
-    f32 temp_f2;
+s32 func_8005ABA8(ModelAnimationInstance *instance, f32 speed, f32 timeStep) {
+    s32 result;
+    f32 elapsed;
+    f32 duration;
     ModelAnimationFrame *frame;
-    ModelAnimationState *temp_v0;
+    ModelAnimationState *state;
 
-    temp_v0 = instance->states[(s32)instance->animationIndex];
-    var_v1 = 0;
-    if (temp_v0->frame == NULL) {
+    state = instance->states[(s32)instance->animationIndex];
+    result = 0;
+    if (state->frame == NULL) {
         return 0;
     }
-    frame = (ModelAnimationFrame *)temp_v0->frame;
-    if (temp_v0->transition != 0) {
-        if (temp_v0->hasNext != 0) {
-            temp_f0 = temp_v0->blendValue + arg2;
-            temp_f2 = temp_v0->blendEnd;
-            temp_v0->blendValue = 0.0f;
-            temp_v0->blendStart = temp_f0 / temp_f2;
-            temp_v0->blendEnd = temp_f2 - temp_f0;
+    frame = (ModelAnimationFrame *)state->frame;
+    if (state->transition != 0) {
+        if (state->hasNext != 0) {
+            elapsed = state->blendValue + timeStep;
+            duration = state->blendEnd;
+            state->blendValue = 0.0f;
+            state->blendStart = elapsed / duration;
+            state->blendEnd = duration - elapsed;
         } else {
-            temp_v0->blendValue = temp_v0->blendValue + arg2;
+            state->blendValue = state->blendValue + timeStep;
         }
-        temp_f2 = temp_v0->blendEnd;
-        if ((temp_f2 <= 0.0f) || (temp_f2 <= temp_v0->blendValue)) {
-            temp_v0->transition = 0;
-            temp_v0->blendStart = 0.0f;
-            temp_v0->blendValue = 0.0f;
-            instance->frameValue = (f32)temp_v0->frameIndex /
-                                   temp_v0->frameValue;
+        duration = state->blendEnd;
+        if ((duration <= 0.0f) || (duration <= state->blendValue)) {
+            state->transition = 0;
+            state->blendStart = 0.0f;
+            state->blendValue = 0.0f;
+            instance->frameValue = (f32)state->frameIndex /
+                                   state->frameValue;
         }
     } else {
-        instance->frameValue += arg1 * arg2;
+        instance->frameValue += speed * timeStep;
         if (instance->frameValue >= 1.0f) {
             if (frame->loop != 0) {
                 while (instance->frameValue >= 1.0f) {
@@ -503,7 +503,7 @@ s32 func_8005ABA8(ModelAnimationInstance *instance, f32 arg1, f32 arg2) {
             } else {
                 instance->frameValue = 1.0f;
             }
-            var_v1 = 1;
+            result = 1;
         } else if (instance->frameValue < 0.0f) {
             if (frame->loop != 0) {
                 while (instance->frameValue < 0.0f) {
@@ -512,69 +512,69 @@ s32 func_8005ABA8(ModelAnimationInstance *instance, f32 arg1, f32 arg2) {
             } else {
                 instance->frameValue = 0.0f;
             }
-            var_v1 = 1;
+            result = 1;
         }
     }
-    return var_v1;
+    return result;
 }
 /* PROVENANCE: Mickey-only reconstruction from func_8005AD64.s and the
  * existing models TU layouts; no external function body is copied. */
 /* Exact configured C: 108 words, no stack frame or relocations. The canonical
  * linked resident range and full ROM are byte-identical. */
-void func_8005AD64(ModelAnimationInstance *instance, s32 frame, s32 arg2,
+void func_8005AD64(ModelAnimationInstance *instance, s32 frame, s32 blendTime,
                    f32 value) {
-    f32 temp_f0;
-    s32 temp_f6;
-    s32 var_a1;
-    s32 temp_a1;
-    s32 var_v1;
-    ModelAnimationFrame *temp_a0;
-    ModelAnimationState *temp_v0;
-    ModelAnimationInfo *temp_v1;
+    f32 position;
+    s32 frameIndex;
+    s32 blending;
+    s32 frameCount;
+    s32 duration;
+    ModelAnimationFrame *animFrame;
+    ModelAnimationState *state;
+    ModelAnimationInfo *info;
 
-    temp_v0 = instance->states[(s32)instance->animationIndex];
-    temp_v1 = temp_v0->info;
-    if (temp_v1->frameCount != 0) {
+    state = instance->states[(s32)instance->animationIndex];
+    info = state->info;
+    if (info->frameCount != 0) {
         if (value > 1.0f) {
             value = 1.0f;
         } else if (value < 0.0f) {
             value = 0.0f;
         }
         instance->frameValue = value;
-        temp_a1 = temp_v1->frameCount;
-        if (frame >= temp_a1) {
-            frame = temp_a1 - 1;
+        frameCount = info->frameCount;
+        if (frame >= frameCount) {
+            frame = frameCount - 1;
         } else if (frame < 0) {
             frame = 0;
         }
         instance->frame = frame;
-        var_a1 = 0;
-        if ((temp_v0->frame != NULL) && (temp_v0->hasNext != 0)) {
-            var_a1 = 1;
+        blending = 0;
+        if ((state->frame != NULL) && (state->hasNext != 0)) {
+            blending = 1;
         }
-        temp_a0 = temp_v1->frames[frame];
-        temp_v0->frame = temp_a0;
-        temp_v0->frameData = (u8 *)temp_a0 + temp_a0->offset + 0x14;
-        temp_v0->frameValue = (f32)temp_a0->count;
-        if (temp_a0->loop == 0) {
-            temp_v0->frameValue = temp_v0->frameValue - 1.0f;
+        animFrame = info->frames[frame];
+        state->frame = animFrame;
+        state->frameData = (u8 *)animFrame + animFrame->offset + 0x14;
+        state->frameValue = (f32)animFrame->count;
+        if (animFrame->loop == 0) {
+            state->frameValue = state->frameValue - 1.0f;
         }
-        if (arg2 != -1) {
-            var_v1 = arg2;
+        if (blendTime != -1) {
+            duration = blendTime;
         } else {
-            var_v1 = temp_a0->flags;
+            duration = animFrame->flags;
         }
-        if ((var_a1 != 0) && (var_v1 != 0)) {
-            temp_v0->blendEnd = (f32)var_v1;
-            temp_f0 = temp_v0->frameValue * value;
-            temp_v0->transition = 1;
-            temp_v0->blendStart = 0.0f;
-            temp_f6 = (s32)temp_f0;
-            if ((temp_f0 - (f32)temp_f6) >= 0.5f) {
-                temp_v0->frameIndex = temp_f6 + 1;
+        if ((blending != 0) && (duration != 0)) {
+            state->blendEnd = (f32)duration;
+            position = state->frameValue * value;
+            state->transition = 1;
+            state->blendStart = 0.0f;
+            frameIndex = (s32)position;
+            if ((position - (f32)frameIndex) >= 0.5f) {
+                state->frameIndex = frameIndex + 1;
                 return;
             }
-            temp_v0->frameIndex = temp_f6;
+            state->frameIndex = frameIndex;
         }
     }
 }

@@ -58,7 +58,7 @@ void func_800580E8(void) {
  * 0x30 frame after that spill disappears (L99). The first status call still
  * takes the signed address so its identity stays distinct from the plains.
  */
-void func_800580F0(s32 arg0) {
+void func_800580F0(s32 index) {
     u8 status;
     OSPfs *pfs;
 
@@ -69,9 +69,9 @@ void func_800580F0(s32 arg0) {
             osGbpakCheckConnector(&D_800D7830, &status);
             } while (0);
             do {
-            func_8006B020(&D_800D7830, (u16)arg0,
-                          *(u16 *)(&D_800D789A[arg0 * 4]),
-                          D_800D78A0[arg0], D_800D78A8[arg0]);
+            func_8006B020(&D_800D7830, (u16)index,
+                          *(u16 *)(&D_800D789A[index * 4]),
+                          D_800D78A0[index], D_800D78A8[index]);
             } while (0);
             do {
             func_8006AC60(&D_800D7830, 0);
@@ -85,17 +85,17 @@ void func_800580F0(s32 arg0) {
 void func_800581BC(void) {
     D_8007A1CC |= 0x04000000;
 }
-void func_800581D8(s32 arg0, s32 arg1, s32 arg2) {
+void func_800581D8(s32 address, s32 buffer, s32 size) {
     D_8007A1CC |= 0x02000000;
-    D_800D789C = arg0;
-    D_800D78A4 = arg1;
-    D_800D78AC = arg2;
+    D_800D789C = address;
+    D_800D78A4 = buffer;
+    D_800D78AC = size;
 }
-void func_8005820C(s32 arg0, s32 arg1, s32 arg2) {
+void func_8005820C(s32 address, s32 buffer, s32 size) {
     D_8007A1CC |= 0x01000000;
-    D_800D7898 = arg0;
-    D_800D78A0[0] = (u8 *)arg1;
-    D_800D78A8[0] = arg2;
+    D_800D7898 = address;
+    D_800D78A0[0] = (u8 *)buffer;
+    D_800D78A8[0] = size;
 }
 
 OSGbpakId *func_80058240(void) {

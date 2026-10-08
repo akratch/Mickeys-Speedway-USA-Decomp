@@ -286,7 +286,7 @@ void func_80045CAC(void) {
  * the printed-value home, redraw set after the decrement clamp, the slot
  * step index first, and the counter reached through an opaque zero
  * subscript. */
-void func_80045D34(s32 arg0) {
+void func_80045D34(s32 epcInfo) {
     s32 row;
     s32 *words;
     s32 oldPage;
@@ -432,7 +432,7 @@ void func_80045D34(s32 arg0) {
         if (oldPage != currentPage || redraw != 0) {
             switch (currentPage) {
                 case 0:
-                    render_epc_lock_up_display((MickeyEpcInfo *)(u32)arg0);
+                    render_epc_lock_up_display((MickeyEpcInfo *)(u32)epcInfo);
                     oldPage = currentPage;
                     redraw = 0;
                     break;
@@ -594,31 +594,31 @@ void func_8004650C(s32 ticks) {
  * argument hoists into `value` came out again (tick counter, cause-table
  * lookup, mmAlloc colour tag are passed directly), and the level result has
  * its own local. */
-void render_epc_lock_up_display(MickeyEpcInfo *arg0) {
-    u32 sp4c;
-    u32 sp48;
-    u32 sp44;
+void render_epc_lock_up_display(MickeyEpcInfo *info) {
+    u32 moduleIndex;
+    u32 moduleOffset;
+    u32 moduleBase;
     char *region;
     u32 value;
     u32 level;
-    MickeyThreadContext *context = (MickeyThreadContext *)((u8 *)arg0 + 0x20);
+    MickeyThreadContext *context = (MickeyThreadContext *)((u8 *)info + 0x20);
 
     func_80046E00();
-    cpuXYPrintf(0x20, 0x18, D_80083B5C, arg0->unk14, D_8007CFD0);
+    cpuXYPrintf(0x20, 0x18, D_80083B5C, info->unk14, D_8007CFD0);
     value = context->pc;
     if (value == 0) {
         cpuXYPrintf(0x20, 0x22, D_80083B78);
-    } else if (runlinkGetAddressInfo(value, (s32 *)&sp4c, (s32 *)&sp48,
-                                     (u32 **)&sp44) != 0) {
-        cpuXYPrintf(0x20, 0x22, D_80083B84, sp4c, sp48);
+    } else if (runlinkGetAddressInfo(value, (s32 *)&moduleIndex, (s32 *)&moduleOffset,
+                                     (u32 **)&moduleBase) != 0) {
+        cpuXYPrintf(0x20, 0x22, D_80083B84, moduleIndex, moduleOffset);
     } else {
         cpuXYPrintf(0x20, 0x22, D_80083B90, context->pc);
     }
     if ((u32)context->ra == 0) {
         cpuXYPrintf(0x20, 0x28, D_80083BA0);
-    } else if (runlinkGetAddressInfo((u32)context->ra, (s32 *)&sp4c, (s32 *)&sp48,
-                                     (u32 **)&sp44) != 0) {
-        cpuXYPrintf(0x20, 0x28, D_80083BAC, sp4c, sp48);
+    } else if (runlinkGetAddressInfo((u32)context->ra, (s32 *)&moduleIndex, (s32 *)&moduleOffset,
+                                     (u32 **)&moduleBase) != 0) {
+        cpuXYPrintf(0x20, 0x28, D_80083BAC, moduleIndex, moduleOffset);
     } else {
         cpuXYPrintf(0x20, 0x28, D_80083BB8, (u32)context->ra);
     }

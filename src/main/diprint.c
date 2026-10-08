@@ -458,7 +458,7 @@ s32 vsprintf(char *s, const char *fmt, va_list args) {
                 s32 unused2;
                 f32 f16;
                 f32 f02;
-                f32 spD0;
+                f32 fpValue;
                 f32 f0;
                 s32 exponent;
                 s32 unused;
@@ -475,35 +475,35 @@ s32 vsprintf(char *s, const char *fmt, va_list args) {
                 if (is_short) {
                     f32 *ptr;
                     castarg(ptr, f32 *, f32 *);
-                    spD0 = *ptr;
+                    fpValue = *ptr;
                 } else {
                     f32 *ptr;
                     nextarg(ptr, f32 *);
-                    spD0 = *ptr;
+                    fpValue = *ptr;
                 }
 
-                if (*((s8 *) &spD0) < 0) {
+                if (*((s8 *) &fpValue) < 0) {
                     showDash = TRUE;
-                    spD0 = -spD0;
+                    fpValue = -fpValue;
                 }
 
-                if (spD0 == 0.0f) {
+                if (fpValue == 0.0f) {
                     exponent = 0;
                     f16 = 1.0f;
-                } else if (spD0 < 1.0f) {
+                } else if (fpValue < 1.0f) {
                     exponent = 0;
                     f16 = 1.0f;
-                    while (spD0 < f16) {
+                    while (fpValue < f16) {
                         f16 /= 10.0f;
                         exponent--;
                     }
                 }
 
-                if (spD0 >= 1.0f) {
+                if (fpValue >= 1.0f) {
                     exponent = 0;
                     f16 = 1.0f;
                     f0 = 10.0f;
-                    while (f0 <= spD0) {
+                    while (f0 <= fpValue) {
                         f16 = f0;
                         f0 *= 10.0f;
                         exponent++;
@@ -516,8 +516,8 @@ s32 vsprintf(char *s, const char *fmt, va_list args) {
                     f02 /= 10.0f;
                 }
 
-                spD0 += f02;
-                if (spD0 >= f16 * 10.0f) {
+                fpValue += f02;
+                if (fpValue >= f16 * 10.0f) {
                     f16 = f16 * 10.0f;
                     exponent++;
                 }
@@ -545,8 +545,8 @@ s32 vsprintf(char *s, const char *fmt, va_list args) {
                 }
 
                 digit = '0';
-                while (spD0 >= f16) {
-                    spD0 -= f16;
+                while (fpValue >= f16) {
+                    fpValue -= f16;
                     digit++;
                 }
                 outchar(digit);
@@ -558,8 +558,8 @@ s32 vsprintf(char *s, const char *fmt, va_list args) {
 
                 while (prec > 0) {
                     digit = '0';
-                    while (spD0 >= f16) {
-                        spD0 -= f16;
+                    while (fpValue >= f16) {
+                        fpValue -= f16;
                         digit++;
                     }
                     outchar(digit);
@@ -596,7 +596,7 @@ s32 vsprintf(char *s, const char *fmt, va_list args) {
                 s32 showDash;
                 f32 *ptr;
                 s32 i;
-                f32 spD0;
+                f32 fpValue;
 
                 showDash = FALSE;
 
@@ -613,23 +613,23 @@ s32 vsprintf(char *s, const char *fmt, va_list args) {
 
                 if (is_short) {
                     castarg(ptr, f32 *, f32 *);
-                    spD0 = *ptr;
+                    fpValue = *ptr;
                 } else {
                     nextarg(ptr, f32 *);
-                    spD0 = *ptr;
+                    fpValue = *ptr;
                 }
 
-                if (spD0 < 0.0f) {
+                if (fpValue < 0.0f) {
                     showDash = TRUE;
-                    spD0 = -spD0;
+                    fpValue = -fpValue;
                 }
 
-                spD0 += f12 * 0.5f;
+                fpValue += f12 * 0.5f;
 
                 digit = 1;
                 f2 = 1.0f;
                 f14 = 10.0f;
-                while (spD0 >= f14) {
+                while (fpValue >= f14) {
                     f2 = f14;
                     f14 *= 10.0f;
                     digit++;
@@ -658,8 +658,8 @@ s32 vsprintf(char *s, const char *fmt, va_list args) {
 
                 do {
                     digit = '0';
-                    while (spD0 >= f2) {
-                        spD0 -= f2;
+                    while (fpValue >= f2) {
+                        fpValue -= f2;
                         digit++;
                     }
                     f2 /= 10.0f;
@@ -672,8 +672,8 @@ s32 vsprintf(char *s, const char *fmt, va_list args) {
 
                 while (prec > 0) {
                     digit = '0';
-                    while (spD0 >= f2) {
-                        spD0 -= f2;
+                    while (fpValue >= f2) {
+                        fpValue -= f2;
                         digit++;
                     }
                     outchar(digit);

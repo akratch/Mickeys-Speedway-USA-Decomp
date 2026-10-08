@@ -402,7 +402,7 @@ void func_8005830C(s32 updateRate) {
  * square preserves the target's FP lifetimes and direct multiplication in
  * the return expression preserves its return-register coalescing.
  */
-f32 func_80058EF4(f32 arg0) {
+f32 func_80058EF4(f32 x) {
     f32 one;
     f32 squared;
     f32 previous;
@@ -414,9 +414,9 @@ f32 func_80058EF4(f32 arg0) {
     previous = -1.0f;
     result = 0.0f;
     divisor = 1;
-    arg0 = (arg0 - one) / (one + arg0);
-    term = arg0;
-    squared = arg0 * arg0;
+    x = (x - one) / (one + x);
+    term = x;
+    squared = x * x;
     if (0.001f < (result - previous)) {
         do {
             previous = result;

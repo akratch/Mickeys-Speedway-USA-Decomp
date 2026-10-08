@@ -248,7 +248,7 @@ void snow_render(void);
  * src/weather.c::initWeather. Mickey's globals and asset ID are authoritative.
  */
 void initWeather(void) {
-    s32 *temp_v0;
+    s32 *table;
 
     D_8007C398.positions = NULL;
     D_8007C398.size = 0;
@@ -263,9 +263,9 @@ void initWeather(void) {
     D_800D40B8.near = -1;
     D_800D40B8.far = -0x200;
     if (D_8007C3DC == NULL) {
-        temp_v0 = piRomLoad(0x1B);
+        table = piRomLoad(0x1B);
         D_8007C3E0 = 0;
-        D_8007C3DC = temp_v0;
+        D_8007C3DC = table;
         while (D_8007C3DC[D_8007C3E0] != -1) {
             D_8007C3E0++;
         }
@@ -329,115 +329,115 @@ void freeWeather(void) {
  * src/weather.c::setupWeather.  Mickey's bytes, extra rain-init argument,
  * random bounds, and globals are authoritative here.
  */
-void setupWeather(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
-    s16 temp_s1_2;
-    s16 temp_s2;
-    s32 temp_s1;
-    u8 var_a1;
+void setupWeather(s32 type, s32 numParticles, s32 velX, s32 velY, s32 velZ, s32 intensity, s32 opacity) {
+    s16 maxU;
+    s16 maxV;
+    s32 bufferSize;
+    u8 byteCount;
     s32 i;
-    WeatherParticle *var_s1_2;
-    WeatherTriangle *var_v1_2;
-    WeatherVertex *var_a3;
+    WeatherParticle *particle;
+    WeatherTriangle *triangle;
+    WeatherVertex *vertex;
     s32 j;
-    s8 *var_a0;
-    u8 *var_v1;
+    s8 *dest;
+    u8 *src;
     s32 pad;
     s32 numOfElements;
 
     freeWeather();
-    D_800D4078.velX = arg2;
+    D_800D4078.velX = velX;
     D_800D4078.velXStep = 0;
-    D_800D4078.velXTarget = arg2;
-    D_800D4078.velY = arg3;
+    D_800D4078.velXTarget = velX;
+    D_800D4078.velY = velY;
     D_800D4078.velYStep = 0;
-    D_800D4078.velYTarget = arg3;
+    D_800D4078.velYTarget = velY;
     D_800D4078.velZStep = 0;
     D_800D4078.intensityStep = 0;
     D_800D4078.opacityStep = 0;
     D_800D4078.shiftTime = 0;
-    D_800D4078.velZ = arg4;
-    D_800D4078.velZTarget = arg4;
-    D_800D4078.intensity = arg5;
-    D_800D4078.intensityTarget = arg5;
-    D_800D4078.opacity = arg6;
-    D_800D4078.opacityTarget = arg6;
-    if (arg0 > 1) {
-        arg0 = 1;
+    D_800D4078.velZ = velZ;
+    D_800D4078.velZTarget = velZ;
+    D_800D4078.intensity = intensity;
+    D_800D4078.intensityTarget = intensity;
+    D_800D4078.opacity = opacity;
+    D_800D4078.opacityTarget = opacity;
+    if (type > 1) {
+        type = 1;
     }
-    if (D_8007C310[arg0].source.type == 1) {
-        rain_init(arg1, arg5 + 1, arg6 + 1, arg5);
+    if (D_8007C310[type].source.type == 1) {
+        rain_init(numParticles, intensity + 1, opacity + 1, intensity);
         return;
     }
-    var_v1 = (u8 *) &D_8007C310[arg0];
-    var_a0 = (s8 *) &D_8007C398;
-    var_a1 = 0x2C;
-    while (var_a1--) {
-        *var_a0++ = *var_v1++;
+    src = (u8 *) &D_8007C310[type];
+    dest = (s8 *) &D_8007C398;
+    byteCount = 0x2C;
+    while (byteCount--) {
+        *dest++ = *src++;
     }
-    if (!var_s1_2) {
+    if (!particle) {
         ;
     }
-    D_8007C398.positions = func_8002B280(D_8007C310[arg0].size * 0xC, 0x93);
-    if (D_8007C310[arg0].source.type == 0) {
+    D_8007C398.positions = func_8002B280(D_8007C310[type].size * 0xC, 0x93);
+    if (D_8007C310[type].source.type == 0) {
         snow_init();
     }
-    numOfElements = arg1;
-    D_800D4070 = arg1;
-    D_8007C3D0 = func_8002B280(arg1 * sizeof(s16), 0x93);
-    D_8007C394 = func_8002B280(arg1 * sizeof(WeatherParticle), 0x93);
-    var_s1_2 = D_8007C394;
+    numOfElements = numParticles;
+    D_800D4070 = numParticles;
+    D_8007C3D0 = func_8002B280(numParticles * sizeof(s16), 0x93);
+    D_8007C394 = func_8002B280(numParticles * sizeof(WeatherParticle), 0x93);
+    particle = D_8007C394;
     for (i = 0; i < D_800D4070; i++) {
-        var_s1_2->x = func_800299E8(0, D_8007C398.radiusX);
-        var_s1_2->y = func_800299E8(0, D_8007C398.radiusY);
-        var_s1_2->z = func_800299E8(0, D_8007C398.radiusZ);
-        var_s1_2->xScale = 1 << (func_800299E8(0, 0x1F) + 5);
-        var_s1_2->yScale = 1 << (func_800299E8(0, 0x1F) + 5);
-        var_s1_2->zScale = 1 << (func_800299E8(0, 0x1F) + 5);
-        var_s1_2->index = mathRnd(0, D_8007C398.size - 1);
-        var_s1_2++;
+        particle->x = func_800299E8(0, D_8007C398.radiusX);
+        particle->y = func_800299E8(0, D_8007C398.radiusY);
+        particle->z = func_800299E8(0, D_8007C398.radiusZ);
+        particle->xScale = 1 << (func_800299E8(0, 0x1F) + 5);
+        particle->yScale = 1 << (func_800299E8(0, 0x1F) + 5);
+        particle->zScale = 1 << (func_800299E8(0, 0x1F) + 5);
+        particle->index = mathRnd(0, D_8007C398.size - 1);
+        particle++;
     }
     numOfElements *= 4;
-    temp_s1 = sizeof(WeatherVertex);
-    temp_s1 *= numOfElements;
-    D_8007C3D4[0] = func_8002B280(temp_s1, 0x93);
-    D_8007C3D4[1] = func_8002B280(temp_s1, 0x93);
+    bufferSize = sizeof(WeatherVertex);
+    bufferSize *= numOfElements;
+    D_8007C3D4[0] = func_8002B280(bufferSize, 0x93);
+    D_8007C3D4[1] = func_8002B280(bufferSize, 0x93);
     j = 0;
     do {
-        var_a3 = D_8007C3D4[j];
-        for (i = 0; i < numOfElements; i++, var_a3++) {
-            var_a3->r = 0xFF;
-            var_a3->g = 0xFF;
-            var_a3->b = 0xFF;
-            var_a3->a = 0xFF;
+        vertex = D_8007C3D4[j];
+        for (i = 0; i < numOfElements; i++, vertex++) {
+            vertex->r = 0xFF;
+            vertex->g = 0xFF;
+            vertex->b = 0xFF;
+            vertex->a = 0xFF;
         }
         j++;
     } while (&D_8007C3D4[j] < (WeatherVertex **) &D_8007C3DC);
-    temp_s1_2 = (D_8007C398.source.texture->width << 5) - 1;
-    temp_s2 = (D_8007C398.source.texture->height << 5) - 1;
+    maxU = (D_8007C398.source.texture->width << 5) - 1;
+    maxV = (D_8007C398.source.texture->height << 5) - 1;
     D_8007C3CC = func_8002B280(D_800D40C4 * sizeof(WeatherTriangle), 0x93);
-    var_v1_2 = D_8007C3CC;
+    triangle = D_8007C3CC;
     for (i = 0; i < D_800D40C4; i += 2) {
-        var_v1_2[0].flags = 0;
-        var_v1_2[0].vi0 = (i << 1) + 3;
-        var_v1_2[0].uv0.u = 0;
-        var_v1_2[0].uv0.v = temp_s2;
-        var_v1_2[0].vi1 = (i << 1) + 1;
-        var_v1_2[0].uv1.u = temp_s1_2;
-        var_v1_2[0].uv1.v = 0;
-        var_v1_2[0].vi2 = i << 1;
-        var_v1_2[0].uv2.u = 0;
-        var_v1_2[0].uv2.v = 0;
-        var_v1_2[1].flags = 0;
-        var_v1_2[1].vi0 = (i << 1) + 3;
-        var_v1_2[1].uv0.u = 0;
-        var_v1_2[1].uv0.v = temp_s2;
-        var_v1_2[1].vi1 = (i << 1) + 2;
-        var_v1_2[1].uv1.u = temp_s1_2;
-        var_v1_2[1].uv1.v = temp_s2;
-        var_v1_2[1].vi2 = (i << 1) + 1;
-        var_v1_2[1].uv2.u = temp_s1_2;
-        var_v1_2[1].uv2.v = 0;
-        var_v1_2 += 2;
+        triangle[0].flags = 0;
+        triangle[0].vi0 = (i << 1) + 3;
+        triangle[0].uv0.u = 0;
+        triangle[0].uv0.v = maxV;
+        triangle[0].vi1 = (i << 1) + 1;
+        triangle[0].uv1.u = maxU;
+        triangle[0].uv1.v = 0;
+        triangle[0].vi2 = i << 1;
+        triangle[0].uv2.u = 0;
+        triangle[0].uv2.v = 0;
+        triangle[1].flags = 0;
+        triangle[1].vi0 = (i << 1) + 3;
+        triangle[1].uv0.u = 0;
+        triangle[1].uv0.v = maxV;
+        triangle[1].vi1 = (i << 1) + 2;
+        triangle[1].uv1.u = maxU;
+        triangle[1].uv1.v = maxV;
+        triangle[1].vi2 = (i << 1) + 1;
+        triangle[1].uv2.u = maxU;
+        triangle[1].uv2.v = 0;
+        triangle += 2;
     }
     D_800D40C8 = 0;
 }
@@ -466,29 +466,29 @@ void snow_init(void) {
  * src/weather.c::changeWeather. Mickey's condition and assignment ordering
  * are authoritative here.
  */
-void changeWeather(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
-    if ((arg5 > 0) &&
-        ((arg0 != D_800D4078.velXTarget) || (arg1 != D_800D4078.velYTarget) ||
-         (arg2 != D_800D4078.velZTarget) || (arg3 != D_800D4078.intensity) ||
-         (arg4 != D_800D4078.opacity))) {
-        D_800D4078.velXStep = (s32) ((arg0 - D_800D4078.velX) / arg5);
-        D_800D4078.velXTarget = arg0;
-        D_800D4078.velYStep = (s32) ((arg1 - D_800D4078.velY) / arg5);
-        D_800D4078.velYTarget = arg1;
-        D_800D4078.velZStep = (s32) ((arg2 - D_800D4078.velZ) / arg5);
-        D_800D4078.velZTarget = arg2;
+void changeWeather(s32 velX, s32 velY, s32 velZ, s32 intensity, s32 opacity, s32 duration) {
+    if ((duration > 0) &&
+        ((velX != D_800D4078.velXTarget) || (velY != D_800D4078.velYTarget) ||
+         (velZ != D_800D4078.velZTarget) || (intensity != D_800D4078.intensity) ||
+         (opacity != D_800D4078.opacity))) {
+        D_800D4078.velXStep = (s32) ((velX - D_800D4078.velX) / duration);
+        D_800D4078.velXTarget = velX;
+        D_800D4078.velYStep = (s32) ((velY - D_800D4078.velY) / duration);
+        D_800D4078.velYTarget = velY;
+        D_800D4078.velZStep = (s32) ((velZ - D_800D4078.velZ) / duration);
+        D_800D4078.velZTarget = velZ;
         if (D_8007C6E8 == 0) {
-            D_800D4078.intensityTarget = arg3;
-            D_800D4078.intensityStep = (s32) ((arg3 - D_800D4078.intensity) / arg5);
-            D_800D4078.opacityStep = (s32) ((arg4 - D_800D4078.opacity) / arg5);
-            D_800D4078.opacityTarget = arg4;
-            D_800D4078.shiftTime = arg5;
+            D_800D4078.intensityTarget = intensity;
+            D_800D4078.intensityStep = (s32) ((intensity - D_800D4078.intensity) / duration);
+            D_800D4078.opacityStep = (s32) ((opacity - D_800D4078.opacity) / duration);
+            D_800D4078.opacityTarget = opacity;
+            D_800D4078.shiftTime = duration;
             return;
         }
-        D_800D4078.intensity = arg3;
-        D_800D4078.opacity = arg4;
+        D_800D4078.intensity = intensity;
+        D_800D4078.opacity = opacity;
         D_800D4078.shiftTime = 0;
-        rain_set(arg3 + 1, arg4 + 1, (f32) arg5 / 60.0f);
+        rain_set(intensity + 1, opacity + 1, (f32) duration / 60.0f);
     }
 }
 /*
@@ -496,11 +496,11 @@ void changeWeather(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
  * src/weather.c::doWeather. Mickey's split vertex/render calls and globals
  * are authoritative here.
  */
-void doWeather(Gfx **arg0, Mtx **arg1, WeatherVertex **arg2, WeatherTriangle **arg3, s32 updateRate) {
-    D_800D40CC = *arg0;
-    D_800D40D0 = *arg1;
-    D_800D40D4 = *arg2;
-    D_800D40D8 = *arg3;
+void doWeather(Gfx **gfxList, Mtx **mtxList, WeatherVertex **vertexList, WeatherTriangle **triangleList, s32 updateRate) {
+    D_800D40CC = *gfxList;
+    D_800D40D0 = *mtxList;
+    D_800D40D4 = *vertexList;
+    D_800D40D8 = *triangleList;
     D_800D40DC = camGetPtr();
     D_800D40E0 = camGetRotationMtx();
     if (D_8007C6E8 != 0) {
@@ -535,10 +535,10 @@ void doWeather(Gfx **arg0, Mtx **arg1, WeatherVertex **arg2, WeatherTriangle **a
             D_800D40C8 = 1 - D_800D40C8;
         }
     }
-    *arg0 = D_800D40CC;
-    *arg1 = D_800D40D0;
-    *arg2 = D_800D40D4;
-    *arg3 = D_800D40D8;
+    *gfxList = D_800D40CC;
+    *mtxList = D_800D40D0;
+    *vertexList = D_800D40D4;
+    *triangleList = D_800D40D8;
 }
 /*
  * PROVENANCE -- body adapted from Jet Force Gemini's public retail-derived

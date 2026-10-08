@@ -11,16 +11,16 @@ void camlightInit(void) {
 }
 void camlightFlush(void) {
 }
-void *camlightAdd(void *arg0, void *arg1) {
+void *camlightAdd(void *object, void *source) {
     return 0;
 }
-void camlightDelete(void *arg0) {
+void camlightDelete(void *light) {
 }
 void camlightUpdateAll(void) {
 }
-void camlightUpdate(void *arg0) {
+void camlightUpdate(void *light) {
 }
 void camlightVisibilityCheck(void) {
 }
-void camlightDraw(void *arg0, void *arg1, void *arg2) {
+void camlightDraw(void *displayList, void *matrix, void *light) {
 }

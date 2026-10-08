@@ -4021,7 +4021,7 @@ void fmvInit(void) {
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x58
- * summary: speed-if removed, empty if (timeStep) before the offsets seeds the piece: 30 to 27. Left: else order (ny before offsetX), compare colour, correction home.
+ * summary: Unchanged at 27; lever sweeps over both arms flat. Left: else order (ny before offsetX), compare colour, correction home.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

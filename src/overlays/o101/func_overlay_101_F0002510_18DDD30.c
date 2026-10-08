@@ -134,8 +134,8 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
         shift = 1;
     }
     rows = 1 << shift;
-    stride = texture->width * rows;
     gfx = *dList;
+    stride = texture->width * rows;
     if (x < left) {
         drawX = left;
         sourceX = left - x;
@@ -190,10 +190,10 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
 
 /* PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:start
  * symbol: func_overlay_101_F0002510_18DDD30
- * score: 60/293 words
+ * score: 29/293 words
  * frame: 0xE8
  * relocations: 6
  * first-mismatch: +0x3C
- * summary: Bounds call declared int with its result consumed by x pins v0 in the clip block: bottom v0, left s3 as shipped, 68 to 60. Left: node/y, frame window.
+ * summary: gfx read before the stride (lever_sweep reorder) closes the frame-block window, 60 to 29. Left: node over y (s4/s5), a3/t0/t1 ring cycle.
  * PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:end
  */

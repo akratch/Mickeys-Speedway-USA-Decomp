@@ -2,11 +2,13 @@
 ### `func_overlay_101_F0002510_18DDD30` plateau handoff
 
 - source: `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c`
-- score: 60/293 words
+- score: 29/293 words
 - frame: 0xE8
 - relocations: 6
 - first mismatch: +0x3C
-- summary: Bounds call declared int with its result consumed by x pins v0 in the clip block: bottom v0, left s3 as shipped, 68 to 60. Left: node/y, frame window.
+- summary: gfx read before the stride (lever_sweep reorder) closes the frame-block window, 60 to 29. Left: node over y (s4/s5), a3/t0/t1 ring cycle.
+
+Summary before this remeasure: Bounds call declared int with its result consumed by x pins v0 in the clip block: bottom v0, left s3 as shipped, 68 to 60. Left: node/y, frame window.
 
 Summary before this remeasure: k-2 clip block plus one bottom or-zero after the tests: delta 0, 90 to 68 (aligned residual 51). Left: bottom's v0, left's s3.
 
@@ -436,4 +438,14 @@ On the 60 body. Target needs y (save 0.667, 4 over nocs 6) decided before node (
 - a node or-with-zero before the y clamp: no better.
 
 Cycle-21: y's save must fall in (0.857, 1.0) or node's below 0.667. y at 4 references cannot (4 over 4 or 5); 7 over nocs 8 would. Read y's and node's blocks with web_report before spending a cell; the frame-block window (+0x14c to +0x208) is the other open question.
+
+#### 2026-10-08, lane p-3: the stride after the display-list read, 60 to 29
+
+Measured by tools/bank.py: masked 29 (raw 29), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 264, register naming 27, immediate only 1, really different 1.
+
+On the 60 body. Oracle re-priced first: p1:w0=c19 (node to s5), p1:w32=c18 (y to s4), both accepted, forced object 51 masked, residual 34 at +0; the unforced base reproduces neither.
+
+Measured by tools/lever_sweep.py (proc 0, oracle above, positions restricted to the lines of webs 32 and 0, identity gate passed): 2,738 cells generated, 1,500 measured: scored 1,378 (801 inert), size-skipped 89, compile errors 33; oracle reproduced 0; exact 0. The one cell that moved: a reorder at line 137, `gfx = *dList;` read before `stride = texture->width * rows;`, 29 masked at +0 (aligned 264/27/1/1, residual 29). That is the frame-block window m-4 left open at +0x14c to +0x208: it closes entirely. Next best were assigned dead reads of node/element fields into drawWidth at lines 114-119, 58 at +0 (residual 40). Kept the reorder.
+
+Records on the 29 body (web_report, proc 0, identity gate passed): node still save 0.857 (6 over nocs 7) decided before y at 0.667 (4 over 6), s4 and s5 swapped from the target; register_census reads s4/s5 (10 sites), a three-cycle a3/t0/t1 on the ring and t7/s2 over coloured registers.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

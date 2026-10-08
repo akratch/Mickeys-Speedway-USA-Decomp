@@ -67,7 +67,7 @@
       "relocation_masked_first_mismatch_offset": 88,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "R8Rd.wbzB.Farw.g4cs.1R5k.-K09.KAmn.HO4U.mgA7.VvP4.fYg"
+      "source_context_sha256": "wY_3.4zGo.MnxM.QeKY.oCPO.OQb1.N_Pv.lkO-.VTtH.WWSP.Mzk"
     },
     {
       "name": "func_80011980",
@@ -91,13 +91,13 @@
       "tu": "main",
       "size_bytes": 1684,
       "objdiff_match_pct": null,
-      "differing_words": 32,
-      "first_mismatch_offset": 576,
-      "relocation_masked_differing_words": 32,
-      "relocation_masked_first_mismatch_offset": 576,
+      "differing_words": 28,
+      "first_mismatch_offset": 668,
+      "relocation_masked_differing_words": 28,
+      "relocation_masked_first_mismatch_offset": 668,
       "size_delta": 0,
       "category": "other",
-      "source_context_sha256": "-YNI.wCc0.Tj3N.GTji.Vmg9.N08V.IF_k.8xL3.19cy.VR-I.LtQ"
+      "source_context_sha256": "YVe4.5WX5.go0A.2vse.Pt6-.LDBl.ILkL.W8eO.GLuR.xQk4.-PA"
     },
     {
       "name": "func_overlay_020_F000038C_1876964",

@@ -549,14 +549,15 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         overlay45ConfigureLayout(ov47Bss_314, 160, 272, 0x104);
     }
     for (controller = 0; controller < ov47Bss_0; controller++, icon++) {
-        colourIndex = 4;
+        /* The colour index is i (lane r-4: 335 -> 302 aligned). */
+        i = 4;
         unready = 0;
         selected = -1;
         count = 0;
         p2 = D_800D3058;
         for (stat = 0; stat < 4; stat++, p2++) {
             if ((f32)p2->selector == icon->selector && p2->active) {
-                colourIndex = stat;
+                i = stat;
                 if (!p2->ready) unready = 1;
                 for (selected = 0; selected < updateRate; selected++) {
                     ov47Bss_328[stat] +=
@@ -583,9 +584,9 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
          * operand's reload, so unready keeps its register (lane k-8). */
         O47_COMMAND(0x01000040, O47_PHYSICAL(D_800D3144));
         D_800D3144++;
-        red = ov47Data_3DC[colourIndex] >> 24;
-        green = ov47Data_3DC[colourIndex] >> 16;
-        blue = ov47Data_3DC[colourIndex] >> 8;
+        red = ov47Data_3DC[i] >> 24;
+        green = ov47Data_3DC[i] >> 16;
+        blue = ov47Data_3DC[i] >> 8;
         O47_COMMAND(0x06000000, ov47Data_300);
         O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
         O47_COMMAND_W1(0xFCFFFFFF, 0xFFFDF6FB);
@@ -740,10 +741,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 359/2168 words
+ * score: 324/2168 words
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 335 aligned at size 0 (masked 359): case-0 icon scan is one for loop on i. Open: i ranks above actor (bias i -39 prices 258), head hoists.
+ * summary: 302 aligned at size 0 (masked 324): icon scan is a for loop on i; icon draw loop's colour index is i. Open: i ranks above actor (CDX_BIAS on i).
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

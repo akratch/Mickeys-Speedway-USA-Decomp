@@ -3858,7 +3858,13 @@ void func_80012658(s32 flags) {
  * plane read in place and the coordinate swaps through temporaryXZ. Left:
  * bestTexture takes s8 where the target keeps it only in its home (three
  * words), the frame 0x20 large (seven more declared scalars than the target's
- * 35 cells between the arrays), and the register naming that follows. */
+ * 35 cells between the arrays), and the register naming that follows.
+ * 2026-10-08 (lane k-4): 339 -> 310 at +8 (aligned residual 315 -> 285) from
+ * three spellings read off the listing: the clip and hit points written
+ * `arg0[i] + direction * t` (uopt then emits the product first, as shipped),
+ * both plane sides as x, y, z terms in order then the distance, and the
+ * polygon as an 8-byte facet record indexed by the triangle (the target
+ * scales the triangle by 8, not the shared triangle * 4). */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -3870,6 +3876,11 @@ extern u8 getYCompareMask(void *bounds, s32 y0, s32 y1);
 #define E129_S32(base, offset) (*(s32 *) ((u8 *) (base) + (offset)))
 #define E129_F32(base, offset) (*(f32 *) ((u8 *) (base) + (offset)))
 #define E129_PTR(base, offset) (*(void **) ((u8 *) (base) + (offset)))
+
+/* One collision facet: the plane index, then the three edge-plane indices. */
+typedef struct TrackFacet {
+    u16 indices[4];
+} TrackFacet;
 
 s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
     TrackSegment *segments[20];
@@ -3957,12 +3968,12 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                 if (farClip > 1.0f) {
                     farClip = 1.0f;
                 }
-                x0 = direction.f[0] * nearClip + arg0[0];
-                y0 = direction.f[1] * nearClip + arg0[1];
-                z0 = direction.f[2] * nearClip + arg0[2];
-                x1 = direction.f[0] * farClip + arg0[0];
-                y1 = direction.f[1] * farClip + arg0[1];
-                z1 = direction.f[2] * farClip + arg0[2];
+                x0 = arg0[0] + direction.f[0] * nearClip;
+                y0 = arg0[1] + direction.f[1] * nearClip;
+                z0 = arg0[2] + direction.f[2] * nearClip;
+                x1 = arg0[0] + direction.f[0] * farClip;
+                y1 = arg0[1] + direction.f[1] * farClip;
+                z1 = arg0[2] + direction.f[2] * farClip;
                 if (x1 < x0) {
                     temporaryXZ = x1;
                     x1 = x0;
@@ -4032,23 +4043,21 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                 yHit = E129_U8(E129_PTR(segment, 0x14), triangleIndex) & yMask;
                 if (((visibility & 0xFFFF) != 0) &&
                     ((visibility & 0xFFFF0000) != 0) && (yHit != 0)) {
-                    polygon = &segment->surfaceIndices[triangleIndex * 4];
+                    polygon = ((TrackFacet *) segment->surfaceIndices)[triangleIndex].indices;
                     normalX = surfaceBase[polygon[0]].x;
                     normalY = surfaceBase[polygon[0]].y;
                     normalZ = surfaceBase[polygon[0]].z;
                     planeDistance = surfaceBase[polygon[0]].distance;
-                    side1 = (arg1[2] * normalZ) +
-                            ((normalX * arg1[0]) + (normalY * arg1[1])) +
-                            planeDistance;
+                    side1 = (normalX * arg1[0]) + (normalY * arg1[1]) +
+                            (normalZ * arg1[2]) + planeDistance;
                     if (side1 < 0.0f) {
-                        side0 = (arg0[2] * normalZ) +
-                                ((normalX * arg0[0]) + (normalY * arg0[1])) +
-                                planeDistance;
+                        side0 = (normalX * arg0[0]) + (normalY * arg0[1]) +
+                                (normalZ * arg0[2]) + planeDistance;
                         if (side0 >= 0.0f) {
                             fraction = side0 / (side0 - side1);
-                            pointX = (direction.f[0] * fraction) + arg0[0];
-                            pointY = (direction.f[1] * fraction) + arg0[1];
-                            pointZ = (direction.f[2] * fraction) + arg0[2];
+                            pointX = arg0[0] + (direction.f[0] * fraction);
+                            pointY = arg0[1] + (direction.f[1] * fraction);
+                            pointZ = arg0[2] + (direction.f[2] * fraction);
                             inside = 1;
                             for (edgeIndex = 0; (edgeIndex < 3) && (inside != 0);
                                  edgeIndex++) {
@@ -5213,10 +5222,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 339/548 words
+ * score: 310/548 words
  * frame: 0x2A0
  * relocations: 13
  * first-mismatch: +0x0
- * summary: Natural rewrite in target frame order, 339 at +8; the one-colour shift starts in the edge loop (inside a3 here, t0 in target)
+ * summary: Operand order and facet record: 339 to 310 at +8, aligned residual 315 to 285; left: edge-loop colours, bestTexture in fp, frame 0x18 large
  * PLATEAU-HANDOFF:func_8001291C:end
  */

@@ -1378,6 +1378,6 @@ void func_800180B4(ShadowQuery *query) {
  * frame: 0x140
  * relocations: 21
  * first-mismatch: +0x4C
- * summary: Vertices before the flag test: arg2 entry piece refuses bb2, t5 from preheader; 292 at +12, aligned residual 60; left: face temp latch pieces
+ * summary: 292 at +12, residual 60; face latch pieces blocked by arg3's bb5 piece and the D_800CB268 bb50 piece (split order is web number)
  * PLATEAU-HANDOFF:func_80017140:end
  */

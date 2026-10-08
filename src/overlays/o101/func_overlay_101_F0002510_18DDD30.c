@@ -69,6 +69,13 @@ void func_80034920(Gfx **displayList);
  * call); 257 at -8 -> 90 at size delta 0. What is left is allocation and
  * the clip block's schedule: the target computes the bottom edge before the
  * tests and holds left/top in s3/s1 for the scissor call.
+ * 2026-10-08 (lane m-4), 90 -> 68 at size delta 0: lane k-2's clip block
+ * (both edges in locals before the tests, the y copy kept by a dead
+ * redefinition of originY, rowOffset folded into sourceY) plus one
+ * or-with-zero of bottom after the tests. The probe emits a store of bottom
+ * back to its home that the target lacks; it stands in for the missing left
+ * argument move, so the cell is aligned at delta 0 with residual 51 (73 on
+ * the old body). Open: v0 for bottom (here originY takes it).
  */
 #ifdef NON_MATCHING
 void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
@@ -92,8 +99,8 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     s32 drawWidth;
     s32 drawHeight;
     s32 chunkRows;
-    s32 rowOffset;
     s32 edgeX;
+    s32 edgeY;
     s32 originY;
 
     if ((node->type != 2) && (node->type != 4)) {
@@ -106,12 +113,14 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     overlay101GetBoundsReloc(node, &left, &top, &right, &bottom);
     x = node->x + element->x;
     originY = node->y + element->y;
+    y = originY;
     edgeX = x + texture->width;
-    if ((right < x) || (bottom < originY) || (edgeX < left) ||
-        (originY + texture->height < top)) {
+    edgeY = originY + texture->height;
+    if ((right < x) || (bottom < originY) || (edgeX < left) || (edgeY < top)) {
         return;
     }
-    y = originY;
+    bottom |= 0;
+    originY = 0;
     overlay101SetScissorReloc(dList, left, top, right, bottom);
     rows = 0x800 / texture->width;
     if (rows >= 8) {
@@ -147,7 +156,7 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
         drawHeight = bottom - drawY;
     }
     source = &texture->pixels[stride * (sourceY >> shift)];
-    rowOffset = (sourceY & (rows - 1)) << 5;
+    sourceY = (sourceY & (rows - 1)) << 5;
     drawY *= 4;
     drawX *= 4;
     drawWidth *= 4;
@@ -157,14 +166,14 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     while (drawHeight > 0) {
         gDPLoadTextureBlockS(gfx++, source, G_IM_FMT_RGBA, G_IM_SIZ_16b, texture->width, rows, 0,
                              G_TX_CLAMP, G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-        chunkRows = rows - (rowOffset >> 5);
+        chunkRows = rows - (sourceY >> 5);
         if (drawHeight < chunkRows) {
             chunkRows = drawHeight;
         }
         gSPTextureRectangle(gfx++, drawX, drawY, drawX + drawWidth, drawY + chunkRows * 4, G_TX_RENDERTILE,
-                            sourceX, rowOffset, 1 << 10, 1 << 10);
+                            sourceX, sourceY, 1 << 10, 1 << 10);
         drawHeight -= chunkRows;
-        rowOffset = 0;
+        sourceY = 0;
         drawY += chunkRows * 4;
         source += stride;
     }
@@ -178,10 +187,10 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
 
 /* PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:start
  * symbol: func_overlay_101_F0002510_18DDD30
- * score: 90/293 words
+ * score: 68/293 words
  * frame: 0xE8
  * relocations: 6
- * first-mismatch: +0x70
- * summary: bottom is a web only with no indirect load in its blocks; target clip block reached at 260/-4 (aligned 61); needs v0 denied to the post-GetBounds webs.
+ * first-mismatch: +0x3C
+ * summary: k-2 clip block plus one bottom or-zero after the tests: delta 0, 90 to 68 (aligned residual 51). Left: bottom's v0, left's s3.
  * PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:end
  */

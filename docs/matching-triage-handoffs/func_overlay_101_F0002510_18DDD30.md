@@ -2,11 +2,13 @@
 ### `func_overlay_101_F0002510_18DDD30` plateau handoff
 
 - source: `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c`
-- score: 90/293 words
+- score: 68/293 words
 - frame: 0xE8
 - relocations: 6
-- first mismatch: +0x70
-- summary: bottom is a web only with no indirect load in its blocks; target clip block reached at 260/-4 (aligned 61); needs v0 denied to the post-GetBounds webs.
+- first mismatch: +0x3C
+- summary: k-2 clip block plus one bottom or-zero after the tests: delta 0, 90 to 68 (aligned residual 51). Left: bottom's v0, left's s3.
+
+Summary before this remeasure: bottom is a web only with no indirect load in its blocks; target clip block reached at 260/-4 (aligned 61); needs v0 denied to the post-GetBounds webs.
 
 Summary before this remeasure: y origin local tested, y copied after the clip tests: delta 0. bottom never forms a web (no argument pin); alias spellings fold.
 
@@ -390,4 +392,17 @@ Measured on the tracked TU (shape_product, masked at size delta; aligned exact, 
 Records on that last cell (proc 0): originY save 2.0 (v0), edgeX 1.0 (v1), edgeY 1.0 (a0), left 1.0 (a1), bottom 0.5 (t0). Forcing originY to c2, edgeX to c3 and edgeY to c4 (all accepted) gives bottom v0 and left s3 unforced and scores 60 positional at size delta 0 (253 exact); adding node to c19 gives y s4 and 51 (262/19/2/7). Forcing bottom to c1 alone is never applied (v0 already taken).
 
 Cycle-21: on the 260 cell, the three clip webs defined after GetBounds must be denied v0 (or bottom must outrank a save of 2.0, which two references cannot). Decision variable: v0 in the forbidden mask of webs 22, 31 and 36 in the block after the GetBounds call. Find what source delivers v0 into that block (item 38) without a use the listing lacks; then node over y for s5/s4.
+
+#### 2026-10-08, lane m-4: k-2's clip block plus one bottom probe reaches size delta 0, 90 to 68
+
+Measured by tools/bank.py: masked 68 (raw 68), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 245, register naming 34, immediate only 2, really different 15.
+
+On the 90 body. k-2's 260 cell rebuilt from its description (originY the y sum, `y = originY` beside it, edgeX and a new edgeY local before the tests, the bottom test on originY, a dead `originY = 0;` after the tests, rowOffset folded into sourceY): 260 at -4, aligned residual 61, reproduced. Measured on it (tools/shape_product.py, masked at size delta; aligned exact, naming, immediate, different):
+
+- one or-with-zero (or and-with-minus-one) of bottom after the clip tests: 68 at 0 (245/34/2/15, residual 51). The probe emits a store of bottom back to its home, which the target does not have; it fills the slot of the missing left argument move, so the rest of the function aligns positionally. Kept as the banked body (aligned residual 51 against the old body's 73).
+- two to four bottom probes: 230 to 233 at +4. An or-with-zero of originY there: no better.
+- GetBounds declared int, its result unused or assigned to a dead local (chunkRows): byte-identical to the 260 cell. The result as the condition of an empty if: 272 at 0 with the frame and prologue changed (residual 213).
+- the bottom test on y instead of originY: byte-identical.
+
+Records on the 260 cell (web_report, proc 0, identity gate passed): every clip web is unconstrained and decided by save: originY 2.0 (v0, decision 43), top 1.5, edgeX 1.0 (v1), edgeY 1.0 (a0), left 1.0 (a1), bottom 0.5 (t0, gross 2 less one load charge). No forbidden seed on originY, edgeX or edgeY.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

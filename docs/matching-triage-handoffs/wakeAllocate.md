@@ -615,4 +615,15 @@ On the 26 body. Two store groups set the two remaining schedule windows (as1 rea
 A second lever_sweep on the 26 body (proc 9, the same satisfied oracle p1:w48=c14; 2,743 cells generated and measured: scored 2,481 (2,000 inert), size-skipped 87, compile errors 175; exact 0): best `if (segmentBytes) {}` after the allocation at line 734, 24 at +0 (immediate 12, structural 11), then the reorder at 745, 25. The empty test is the only cell in either sweep that moves the ladder (immediate 14 to 12); not adopted, it was measured on the old store order.
 
 Left: 16 immediate rows and nothing else (no naming, no structural). The whole residual is the pre-call spill ladder: target cvt 0x3C, segment 0x38, sample term 0x34, 0x14 term 0x30, doubled 0x2C, segment bytes 0x28, texture bytes 0x24 under three free cells; ours cvt 0x48, segment 0x44, doubled 0x40, sample term 0x3C, 0x14 term 0x38, segment bytes 0x24, texture bytes 0x20.
+
+#### 2026-10-08, lane p-3 (third pass): the ladder under the lever catalogue, 16 kept
+
+Measured by tools/bank.py: masked 16 (raw 16), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 335, register naming 0, immediate only 16, really different 0.
+
+On the 16 body (aligned 335/0/16/0; the residual is only the pre-call spill ladder). No source change adopted.
+
+- `if (segmentBytes) {}` after the alpha (sample-buffer) loop, carried over from the second sweep: 14 at +0 (immediate 14). It moves only segment bytes from 0x24 to the target's 0x28 by lengthening its range; every other cell keeps its slot. A stand-in, not adopted.
+- tools/lever_sweep.py stacked on that cell (--candidate, proc 9, satisfied oracle p1:w48=c14; 2,809 cells generated and measured: scored 2,536 (2,049 inert), size-skipped 87, compile errors 186; exact 0): floor 15 (assigned dead reads of a fill-loop element into i, or `if (i) {}`, at line 759); nothing goes below the base 14. No catalogue lever at any position changes the creation order of the cvt, segment, doubled, sample and 0x14 webs.
+
+Cycle-21 line: the decision variable is unchanged from k-6 and m-1: the first-creation web numbers of the cvt, segment, sample-term, 0x14-term and doubled webs (5, 7, 8, 40, 41 on proc 9) must exceed the vertex-buffer loop's unroller temporaries (67, 191, 195), and the doubled web must follow the 0x14 term. Record: web_report --proc 9 plus frame_census. No CDX force prices a spill slot, so the next instrument is a CDX knob that renumbers webs (or a slot-order override in spilltemps) to confirm the ladder alone closes the function, then a source search for a late creation of those expressions (k-6: only loop-bound symbols are substituted after unrolling).
 <!-- plateau-handoff:wakeAllocate:end -->

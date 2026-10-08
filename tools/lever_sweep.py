@@ -45,6 +45,10 @@ THE CATALOGUE (each lever names the brief item or wave law it comes from):
                  on (items 14, 39).
   merge_locals   two same-typed locals with disjoint ranges become one name,
                  declaration kept or dropped (item 39, item 40; check).
+  merge_pairs    the merge_locals family's second member: every same-typed pair
+                 merged over the whole body, no liveness test, declaration
+                 dropped when possible (tools/merge_locals.py shares the
+                 renaming and classifies frame-only merges; check).
   reorder        two adjacent independent statements swapped (statement order
                  reaches as1 and ugen emission order; semantics: check when
                  both touch memory).
@@ -139,6 +143,8 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+
+import merge_locals as merge_locals_tool  # noqa: E402
 
 
 def resolve_root(explicit: str | None = None, cwd: str | None = None) -> pathlib.Path:
@@ -1002,8 +1008,7 @@ def lever_zero_def(fn, ctx):
 
 
 def rename_from(t: str, start: int, end: int, old: str, new: str) -> str:
-    seg = re.sub(rf"(?<![\w.>]){re.escape(old)}\b", new, t[start:end])
-    return t[:start] + seg + t[end:]
+    return merge_locals_tool.rename_word(t, start, end, old, new)
 
 
 def add_decl(fn: Function, text: str, name: str, new: str) -> str:
@@ -1060,15 +1065,37 @@ def lever_merge_locals(fn, ctx):
             if loops_x & loops_y:
                 continue
             line = fn.line_of(first_y.start)
-            out.append(Cell("merge_locals", line, f"{y} -> {x} (decl kept)",
-                            rename_from(t, first_y.start, fn.body.end, y, x), "check"))
             decl = iy["decl"]
-            if "," not in strip_comments(decl.text(t)):
-                cut = decl.end - decl.start
-                dropped = t[:decl.start] + t[decl.end:]
-                out.append(Cell("merge_locals", line, f"{y} -> {x} (decl dropped)",
-                                rename_from(dropped, first_y.start - cut, fn.body.end - cut, y, x),
-                                "check"))
+            scope = (first_y.start, fn.body.end)
+            kept = merge_locals_tool.merge_text(t, scope, (decl.start, decl.end), x, y, drop_decl=False)
+            out.append(Cell("merge_locals", line, f"{y} -> {x} (decl kept)", kept, "check"))
+            dropped = merge_locals_tool.merge_text(t, scope, (decl.start, decl.end), x, y)
+            if dropped is not None:
+                out.append(Cell("merge_locals", line, f"{y} -> {x} (decl dropped)", dropped, "check"))
+    return out
+
+
+def lever_merge_pairs(fn, ctx):
+    """Every ordered pair of same-typed locals merged over the whole body.
+
+    The merge_locals family's second member (tools/merge_locals.py is the
+    stand-alone classifier and shares this renaming): no liveness test, so it
+    reaches the frame-cell reuse the author's shared names would have made.
+    Declaration dropped when possible; semantics: check.
+    """
+    out = []
+    t = fn.text
+    mentioned = ctx["mentioned"]
+    scope = (fn.body.start + 1, fn.body.end)
+    for keep, drop in merge_locals_tool.candidate_pairs(fn, sys.modules[__name__]):
+        if keep not in mentioned or drop not in mentioned:
+            continue
+        decl = fn.locals[drop]["decl"]
+        text = merge_locals_tool.merge_text(t, scope, (decl.start, decl.end), keep, drop)
+        if text is None:
+            text = merge_locals_tool.merge_text(t, scope, (decl.start, decl.end), keep, drop, drop_decl=False)
+        if text is not None:
+            out.append(Cell("merge_pairs", fn.line_of(decl.start), f"{drop} -> {keep} (whole body)", text, "check"))
     return out
 
 
@@ -1191,6 +1218,7 @@ LEVERS = {
     "zero_def": lever_zero_def,
     "split_local": lever_split_local,
     "merge_locals": lever_merge_locals,
+    "merge_pairs": lever_merge_pairs,
     "reorder": lever_reorder,
     "loop_move": lever_loop_move,
     "const_iv": lever_const_iv,

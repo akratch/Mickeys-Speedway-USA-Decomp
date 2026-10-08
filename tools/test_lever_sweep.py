@@ -113,6 +113,18 @@ class LeverTests(unittest.TestCase):
             self.assertEqual(len(c.text.splitlines()), len(SRC.splitlines()),
                              "same-line insertion keeps every line number")
 
+    def test_merge_pairs_renames_whole_body_and_drops_declaration(self):
+        cells = {c.edit: c for c in self.cells("merge_pairs")}
+        cell = cells["k -> i (whole body)"]
+        body = cell.text.split("int fixture", 1)[1]
+        self.assertNotIn("int k;", body)
+        self.assertIn("for (i = 0; i < 4; i++)", body)
+        self.assertIn("use(i);", body)
+        self.assertEqual(cell.semantics, "check")
+        self.assertFalse([e for e in cells if "p " in e.split("->")[0] or e.endswith("-> p (whole body)")],
+                         "a pointer never pairs with an int")
+        self.assertEqual(len(cells), 12, "four ints, ordered pairs")
+
     def test_dead_read_uses_nearby_reads(self):
         cells = self.cells("dead_read", lines={13})
         edits = {c.edit for c in cells}

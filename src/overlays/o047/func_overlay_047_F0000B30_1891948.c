@@ -286,7 +286,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                     player->y = ov47Bss_2F0.y;
                     player->z = ov47Bss_2F0.z;
                     player->rotation = ov47Bss_2F0.rotation;
-                    i = 0;
                     while (ov47Bss_300[player->selector]) {
                         player->selector++;
                         if (player->selector >= 10) player->selector = 0;
@@ -305,16 +304,17 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                             func_8005AD64(player->actor, 1, -1, 0.0f);
                         }
                     }
-                    if (ov47Bss_0 > 0) {
-                        j = i;
-                        do {
-                            if ((f32)player->selector == icon->selector) {
-                                ov47Bss_328[controller] = ((s32)icon->x + 160) << 4;
-                            }
-                            icon++;
-                        } while (++j < ov47Bss_0);
-                        icon = ov47Bss_8;
+                    /* One counted loop on i, as shipped (the target's s4 is
+                     * i here and in the later loops); the inherited j copy
+                     * and its > 0 guard were m2c artefacts. 455 -> 335
+                     * aligned at size 0 (lane r-4). */
+                    for (i = 0; i < ov47Bss_0; i++) {
+                        if ((f32)player->selector == icon->selector) {
+                            ov47Bss_328[controller] = ((s32)icon->x + 160) << 4;
+                        }
+                        icon++;
                     }
+                    icon = ov47Bss_8;
                 }
                 break;
             default:
@@ -740,10 +740,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 721/2168 words
+ * score: 359/2168 words
  * frame: 0x280
- * relocations: 315
- * first-mismatch: +0x4
- * summary: 455 aligned at size 0 (masked 721). Head: ov47Bss_338 bb3 piece refused at bb12 by one (2*12 < 9+16); a2 force prices the prologue, loop piece missing.
+ * relocations: 321
+ * first-mismatch: +0xC
+ * summary: 335 aligned at size 0 (masked 359): case-0 icon scan is one for loop on i. Open: i ranks above actor (bias i -39 prices 258), head hoists.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

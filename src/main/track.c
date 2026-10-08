@@ -5226,6 +5226,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0x2A0
  * relocations: 13
  * first-mismatch: +0x0
- * summary: Operand order and facet record: 339 to 310 at +8, aligned residual 315 to 285; left: edge-loop colours, bestTexture in fp, frame 0x18 large
+ * summary: 310 at +8. A second-read edge loop merges the plane web (target a0): 339 at -8, aligned residual 221 vs 285; edge symbol save is the next variable
  * PLATEAU-HANDOFF:func_8001291C:end
  */

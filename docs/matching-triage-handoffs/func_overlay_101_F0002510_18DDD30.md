@@ -2,11 +2,13 @@
 ### `func_overlay_101_F0002510_18DDD30` plateau handoff
 
 - source: `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c`
-- score: 19/293 words
+- score: 2/293 words
 - frame: 0xE8
 - relocations: 6
 - first mismatch: +0x9C
-- summary: gfx read before the stride, and an empty test of y at the right clamp (lever_sweep oracle reproduction): 60 to 19. Left: a3/t0/t1 ring cycle, s2/t7, v1/t8.
+- summary: Row mask carried by originY after rows, scaling statements reordered: 19 to 2. Left: operand order of the two edge sums; the times-zero stand-in.
+
+Summary before this remeasure: gfx read before the stride, and an empty test of y at the right clamp (lever_sweep oracle reproduction): 60 to 19. Left: a3/t0/t1 ring cycle, s2/t7, v1/t8.
 
 Summary before this remeasure: gfx read before the stride (lever_sweep reorder) closes the frame-block window, 60 to 29. Left: node over y (s4/s5), a3/t0/t1 ring cycle.
 
@@ -460,4 +462,17 @@ On the 29 body. Oracle p1:w0=c19, p1:w32=c18 (accepted): forced 19 masked, resid
 Measured by tools/lever_sweep.py (proc 0, same oracle, positions on the lines of webs 32 and 0, identity gate passed): 2,745 cells generated and measured: scored 2,500 (1,520 inert), size-skipped 158, compile errors 87; oracle reproduced 3; exact 0. All three reproductions are byte-identical to the forced object (19 at +0, aligned 274/17/1/1): `if (y) {}` on the line of the right clamp's `drawWidth = right - drawX;` (line 148, kept), and `if (y) {}` or `if (drawY) {}` on the line of `drawY = y;` (155). The empty test adds a y reference in a block of its own, which lifts y's save above node's. Next best: assigned dead reads of `*dList` or `texture->width` into drawWidth at lines 139-140, 26 at +0 (one of two oracle webs).
 
 Left (register_census, residual_map): 17 naming over the ring, a3/t0/t1 three-cycle (both windows), and two single swaps s2/t7 and v1/t8 in the first 0x200 bytes; one immediate, one structural.
+
+#### 2026-10-08, lane p-3 (third pass): the row mask as a local, and the scaling order, 19 to 2
+
+Measured by tools/bank.py: masked 2 (raw 2), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 291, register naming 2, immediate only 0, really different 0.
+
+On the 19 body. Records (web_report, proc 0): sourceX (web 97), drawWidth (103) and the row mask expression `(1 << shift) + -1` (298) tie at save 1.5 and are coloured in web order, a3/t0/t1; the target has the mask in a3, sourceX t0, drawWidth t1. The mask is an expression temporary, numbered last (L154). Oracle p1:w298=c6, p1:w97=c7, p1:w103=c8 (accepted): forced 11 masked at +0.
+
+- tools/lever_sweep.py with that oracle on the lines of the three webs: 1,653 cells generated and measured: scored 1,381 (735 inert), size-skipped 259, compile errors 13; oracle reproduced 0; exact 0; floor 19 (u32 drawX or drawWidth).
+- tools/shape_product.py, a declared mask local `mask = rows - 1;` at four positions, two declaration positions, both and-operand orders (24 cells): 32 at +0 for every early definition (naming 8, immediate 22: the new local takes a frame home and shifts every slot), 41 defined beside its use.
+- The same role carried by an existing local (edgeX, edgeY, originY, chunkRows; 15 cells): 10 at +0 (283/8/0/2) for every role and early position. Kept originY, assigned right after `rows = 1 << shift;`; the dead `originY = 0;` after the clip tests is then unnecessary (still 10 without it) and is gone.
+- All 120 orders of the five scaling statements after the source pointer (fast_score): drawX, drawY, drawWidth, sourceX, then sourceY's mask-and-shift is the unique best, 2 at +0 (291/2/0/0); next 6.
+
+Left: two operand-order rows, `addu a0, x, width` and `addu a1, y, height` for the edge sums (ours read the height or width first). Edge spelling (x + width against width + x, y against originY) and the stand-in's position in x (front, middle, end; 45 cells) are all inert at 2. The bounds stand-in `* 0 +` is still needed: without it 260 at -4.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

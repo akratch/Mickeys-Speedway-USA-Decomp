@@ -123,7 +123,6 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     if ((right < x) || (bottom < originY) || (edgeX < left) || (edgeY < top)) {
         return;
     }
-    originY = 0;
     overlay101SetScissorReloc(dList, left, top, right, bottom);
     rows = 0x800 / texture->width;
     if (rows >= 8) {
@@ -134,6 +133,7 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
         shift = 1;
     }
     rows = 1 << shift;
+    originY = rows - 1;
     gfx = *dList;
     stride = texture->width * rows;
     if (x < left) {
@@ -159,11 +159,11 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
         drawHeight = bottom - drawY;
     }
     source = &texture->pixels[stride * (sourceY >> shift)];
-    sourceY = (sourceY & (rows - 1)) << 5;
-    drawY *= 4;
     drawX *= 4;
+    drawY *= 4;
     drawWidth *= 4;
     sourceX <<= 5;
+    sourceY = (sourceY & originY) << 5;
     gSPDisplayList(gfx++, D_230);
     gDPSetPrimColor(gfx++, 0, 0, node->intensity, node->intensity, node->intensity, node->alpha);
     while (drawHeight > 0) {
@@ -190,10 +190,10 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
 
 /* PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:start
  * symbol: func_overlay_101_F0002510_18DDD30
- * score: 19/293 words
+ * score: 2/293 words
  * frame: 0xE8
  * relocations: 6
  * first-mismatch: +0x9C
- * summary: gfx read before the stride, and an empty test of y at the right clamp (lever_sweep oracle reproduction): 60 to 19. Left: a3/t0/t1 ring cycle, s2/t7, v1/t8.
+ * summary: Row mask carried by originY after rows, scaling statements reordered: 19 to 2. Left: operand order of the two edge sums; the times-zero stand-in.
  * PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:end
  */

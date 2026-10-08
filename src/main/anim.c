@@ -3565,6 +3565,16 @@ f32 func_8002A8C0(s32 angle);
  * names its plane dot and previous.y/previous.z reads (previous.y carried
  * in the dead `impulse`, which keeps the frame at 0x70), else offsets
  * Y, Z, X: 140 to 95.
+ * 2026-10-08 (lane k-3): the else arm is the plane form as written, a
+ * plane offset `negDot = -(n . current)` added to the previous-position
+ * dot (`pd + negDot`; uopt folds it to `pd - dot` and keeps the 0x44
+ * store, so no empty if), fields read inline (previous y/z and the dot
+ * become the target's 0x34/0x30/0x28 temporaries) and offsets X, Y, Z;
+ * the compare magnitude is held in `displacement`, which numbers that
+ * web ahead of offsetY so it wins the else-arm f16 tie: 95 to 70.
+ * An empty `if (speed)` before the source flag stores adds the blocks
+ * that give `first` nocs 5, so `normal` outranks it for s2 as shipped:
+ * 70 to 41.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3583,15 +3593,14 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
     f32 speed;
     f32 displacement;
     f32 dot;
-    f32 planeDot;
-    f32 previousZ;
 
     target = first->target;
     firstSource = first->source;
     secondSource = second->source;
-    speed = target->velocity.y * target->velocity.y;
-    dot = target->velocity.x * target->velocity.x;
-    if (target->velocity.z * target->velocity.z + (dot + speed) > 25.0f) {
+    displacement = target->velocity.z * target->velocity.z +
+                   (target->velocity.x * target->velocity.x +
+                    target->velocity.y * target->velocity.y);
+    if (displacement > 25.0f) {
         mass = ((HitResolveMass *) TrapDanglingJump(target))->mass;
         dot = normal->z * target->velocity.z +
               (target->velocity.x * normal->x + target->velocity.y * normal->y);
@@ -3611,6 +3620,8 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         target->unk4 = 0.0f;
         target->unk8 = 0.0f;
         target->unk88 = D_80084210;
+        if (speed) {
+        }
         firstSource->unk63 = 1;
         secondSource->unk63 = 1;
         secondSource->unk64 = speed;
@@ -3630,21 +3641,16 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         first->position.y = firstSource->previous.y + offsetY;
         first->position.z = firstSource->previous.z + offsetZ;
     } else {
-        planeDot = normal->z * firstSource->current.z +
+        negDot = -(normal->z * firstSource->current.z +
                    (firstSource->current.x * normal->x +
-                    firstSource->current.y * normal->y);
-        negDot = -planeDot;
-        previousZ = firstSource->previous.z;
-        impulse = firstSource->previous.y;
+                    firstSource->current.y * normal->y));
         displacement = D_80084214 -
-                       ((previousZ * normal->z +
+                       ((firstSource->previous.z * normal->z +
                          (normal->x * firstSource->previous.x +
-                          normal->y * impulse)) - planeDot);
+                          normal->y * firstSource->previous.y)) + negDot);
+        offsetX = first->position.x - firstSource->previous.x;
         offsetY = first->position.y - firstSource->previous.y;
         offsetZ = first->position.z - firstSource->previous.z;
-        offsetX = first->position.x - firstSource->previous.x;
-        if (negDot) {
-        }
         firstSource->previous.x += displacement * normal->x;
         firstSource->previous.y += displacement * normal->y;
         firstSource->previous.z += displacement * normal->z;
@@ -4001,11 +4007,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 95/229 words
+ * score: 41/229 words
  * frame: 0x70
  * relocations: 8
- * first-mismatch: +0x24
- * summary: Named else-arm reads, else offsets Y,Z,X, cosine kill, compare carriers: 165 to 95 at size 0. Left: negDot store, compare block.
+ * first-mismatch: +0x58
+ * summary: Plane offset, magnitude in displacement, empty if (speed) before the flag stores: 95 to 41. Left: previous.x colour (9), store order.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

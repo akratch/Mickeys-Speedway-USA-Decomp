@@ -1382,10 +1382,10 @@ void func_800517E0(void) {
                     }
                     break;
                 case 0x40:
-                    low = cursor->command & 0xFF;
                     high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
                     flagsValue = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     high2 = (*((u16 *) ((u8 *) cursor + 6)) >> 8) & 0xFF;
+                    low = cursor->command & 0xFF;
                     low2 = *((u16 *) ((u8 *) cursor + 6)) & 0xFF;
                     value = (f32) (*((u16 *) ((u8 *) cursor + 8)));
                     target = (f32) *((u16 *) ((u8 *) cursor + 0xA));
@@ -1676,13 +1676,12 @@ void func_800517E0(void) {
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 8);
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
-                        type = path->unk25;
+                        path->unk24 = path->unk25;
                         path->unk25 = frame68;
                         path->unk27 = 0;
-                        path->unk24 = type;
                         path->unk26 = (u8) (s32) (value /
                                             hundred * scale);
-                        object->state39 = type;
+                        object->state39 = path->unk24;
                     }
                     break;
                 case 0x6A: {
@@ -1876,11 +1875,10 @@ void func_800517E0(void) {
                     value = (f32) (pathIndex);
                     value2 = (f32) *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    timer = (s32) (value2 * scale * factor);
-                    D_8007D6BC = timer;
-                    if (timer > 0) {
+                    D_8007D6BC = (s32) (value2 * scale * factor);
+                    if (D_8007D6BC > 0) {
                         D_8007D6B8 = (value - D_8007D6B4) /
-                                     (f32) timer;
+                                     (f32) D_8007D6BC;
                     } else {
                         D_8007D6B4 = value;
                     }
@@ -4022,10 +4020,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1247/1808 words
+ * score: 1246/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 821 at size 0: 0x78 arguments read inline before the advance; pieces kept (6000 a3, state a0).
+ * summary: Aligned 818 at size 0: 0x68 copies the byte through the path, 0x79 re-reads its global, 0x40 order high/flags/high2/low/low2.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

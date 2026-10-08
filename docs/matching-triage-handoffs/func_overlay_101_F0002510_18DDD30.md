@@ -405,4 +405,12 @@ On the 90 body. k-2's 260 cell rebuilt from its description (originY the y sum, 
 - the bottom test on y instead of originY: byte-identical.
 
 Records on the 260 cell (web_report, proc 0, identity gate passed): every clip web is unconstrained and decided by save: originY 2.0 (v0, decision 43), top 1.5, edgeX 1.0 (v1), edgeY 1.0 (a0), left 1.0 (a1), bottom 0.5 (t0, gross 2 less one load charge). No forbidden seed on originY, edgeX or edgeY.
+
+#### 2026-10-08, lane m-4 (second pass): forces on the 68 body; the bottom probe is a stand-in
+
+Measured by tools/bank.py: masked 68 (raw 68), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 245, register naming 34, immediate only 2, really different 15.
+
+On the 68 body. Records (web_report, proc 0, identity gate passed): with the probe bottom is gross 4 less one load and one store charge, net 2, save 1.0, and is decided by web number after edgeX (31) and edgeY (36) at the same save, still t0; originY 2.0 keeps v0. Forces (tools/force_lattice.py, all three accepted): originY to c2 alone 66 at 0; edgeX to c3 alone 68; edgeY to c4 alone 234 at +4; all three 230 at +4. With the target's clip colours left takes s3 and its argument move appears, so the probe's store-back becomes surplus: the probe is a positional stand-in for that move, not a step towards the target, and must be dropped in the same edit that gives bottom v0 (k-2's 260 cell then priced 60, and 51 with node over y).
+
+Cycle-21: on the 260 cell (this body without the bottom probe), bottom needs v0 ahead of originY, edgeX and edgeY. Their saves are 2.0, 1.0, 1.0 against bottom's 0.5, all unconstrained and decided by save then web number, with no forbidden seed in the post-GetBounds block. Decision variable: v0 in the forbidden mask of webs 22, 31 and 36 (no source tried here puts it there; an int GetBounds whose result is unused, assigned to a dead local, or tested by an empty if does not), or originY at save 1.0 with bottom numbered before edgeX.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

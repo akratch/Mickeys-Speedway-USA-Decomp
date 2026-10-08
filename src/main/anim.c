@@ -1232,8 +1232,8 @@ void func_800517E0(void) {
                     break;
                 case 6:
                     pathIndex = cursor->command & 0xFF;
-                    path = paths[pathIndex];
                     low = *((u16 *) ((u8 *) cursor + 4)) >> 8;
+                    path = paths[pathIndex];
                     packed = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     if (path != NULL) {
@@ -1373,12 +1373,13 @@ void func_800517E0(void) {
                     break;
                 case 0x2B:
                     pathIndex = cursor->command & 0xFF;
+                    packed = *((u16 *) ((u8 *) cursor + 4)) >> 8;
                     path = paths[pathIndex];
-                    word4 = *((u16 *) ((u8 *) cursor + 4));
+                    flagsValue = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     if (path != NULL) {
-                        path->unk28 = word4 >> 8;
-                        path->unk29 = word4 & 0xFF;
+                        path->unk28 = packed;
+                        path->unk29 = flagsValue;
                     }
                     break;
                 case 0x40:
@@ -1415,9 +1416,8 @@ void func_800517E0(void) {
                     func_8004E99C();
                     break;
                 case 0x43:
-                    pathIndex = cursor->command & 0xFF;
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
-                    color = (f32) (pathIndex);
+                    color = (f32) (cursor->command & 0xFF);
                     color = (color / 255.0f) * 65535.0f;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     changeWeather(0, 0, 0, (s32) color, 0xFFFF,
@@ -1447,36 +1447,31 @@ void func_800517E0(void) {
                                   packed2, index, value / hundred - delta);
                     break;
                 case 0x46: {
-                    packedField = *((u16 *) ((u8 *) cursor + 8));
                     radius = *((s16 *) ((u8 *) cursor + 4));
                     height = *((s16 *) ((u8 *) cursor + 6));
-                    motionDuration = packedField & 0xFF;
-                    motionCount = packedField >> 8;
-                    packedField = *((u16 *) ((u8 *) cursor + 0xA));
-                    high = packedField >> 8;
-                    high2 = packedField & 0xFF;
-                    packedField = *((u16 *) ((u8 *) cursor + 0xC));
-                    low2 = packedField >> 8;
-                    pathIndex = packedField & 0xFF;
-                    packedField = *((u16 *) ((u8 *) cursor + 0xE));
-                    low = packedField >> 8;
-                    packedField &= 0xFF;
+                    motionDuration = *((u16 *) ((u8 *) cursor + 8)) & 0xFF;
+                    motionCount = *((u16 *) ((u8 *) cursor + 8)) >> 8;
+                    high = *((u16 *) ((u8 *) cursor + 0xA)) >> 8;
+                    high2 = *((u16 *) ((u8 *) cursor + 0xA)) & 0xFF;
+                    low2 = *((u16 *) ((u8 *) cursor + 0xC)) >> 8;
+                    pathIndex = *((u16 *) ((u8 *) cursor + 0xC)) & 0xFF;
+                    low = *((u16 *) ((u8 *) cursor + 0xE)) >> 8;
+                    packedField = *((u16 *) ((u8 *) cursor + 0xE)) & 0xFF;
                     index = cursor->command << 8;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0x10);
                     motionX = func_8002A8C0(index) * radius;
-                    motionZ = func_8002A8BC(index) * radius;
-                    animCommandMotionTrap(motionX, height, motionZ,
+                    radius = func_8002A8BC(index) * radius;
+                    animCommandMotionTrap(motionX, height, radius,
                                           motionCount * 2, high, high2,
                                           low2, pathIndex, low, packedField,
                                           motionDuration / hundred);
                     break;
                 }
                 case 0x47:
-                    pathIndex = cursor->command & 0xFF;
-                    pathIndex = cursor->command & 0xFF;
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
                     value2 = (f32) *((u16 *) ((u8 *) cursor + 6));
                     target = (f32) *((u16 *) ((u8 *) cursor + 8));
+                    pathIndex = cursor->command & 0xFF;
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xA);
                     camStartShake(0, value / hundred, value2 / hundred,
                                   target / hundred, pathIndex);
@@ -1505,9 +1500,14 @@ void func_800517E0(void) {
 
                     targetValue = cursor->command & 0xFF;
 
+                    /* scrollY is read before scrollX (lever_sweep, lane
+                     * p-4: 823 at +4 to 780 at size 0 on the stacked
+                     * 0x2B/0x43/0x46/0x47 shape of lanes k-7 and n-1;
+                     * path lookups after the stream reads in 6, 0x2B and
+                     * the D_8007D6AC update before the cursor reset: 762). */
                     index = *((u16 *) ((u8 *) cursor + 4));
-                    scrollX = *((s16 *) ((u8 *) cursor + 6));
                     scrollY = *((s16 *) ((u8 *) cursor + 8));
+                    scrollX = *((s16 *) ((u8 *) cursor + 6));
                     scrollDuration = *((u16 *) ((u8 *) cursor + 0xA));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 0xC);
                     scrollX = (s32) ((u32) scrollX << 16) / 6000;
@@ -1558,8 +1558,8 @@ void func_800517E0(void) {
                     TrapDanglingJump(pathIndex, high, low, packed2, word8 << 8, word9, frame << 8, frame4C, duration);
                     break;
                 case 0x4D:
-                    pathIndex = cursor->command & 0xFF;
                     word6 = *((u16 *) ((u8 *) cursor + 4));
+                    pathIndex = cursor->command & 0xFF;
                     value = (f32) *((u16 *) ((u8 *) cursor + 6));
                     packed2 = *((u16 *) ((u8 *) cursor + 8));
                     timer = *((u16 *) ((u8 *) cursor + 0xA));
@@ -1794,8 +1794,8 @@ void func_800517E0(void) {
                     }
                     break;
                 case 0x6E:
-                    pathIndex = cursor->command & 0xFF;
                     word10 = *((u16 *) ((u8 *) cursor + 4));
+                    pathIndex = cursor->command & 0xFF;
                     packed2 = *((u16 *) ((u8 *) cursor + 6));
                     timer = *((u16 *) ((u8 *) cursor + 8));
                     frame6E = *((u16 *) ((u8 *) cursor + 0xA));
@@ -1921,8 +1921,8 @@ void func_800517E0(void) {
                     D_8007D6A8 -= ((s32) commandDuration * 0x3C) / 100;
                     duration = cursor->duration;
                     value2 = (f32) duration;
-                    cursor = D_8007D698;
                     D_8007D6AC = D_8007D6AC - value2 * factor;
+                    cursor = D_8007D698;
                     break;
             }
         }
@@ -4035,10 +4035,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1235/1808 words
+ * score: 1178/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 804 at size 0. 0x46: radius reuse for motionZ gives f2 from source; height, duration, motionX forced make 0x46 exact (757 at +4).
+ * summary: Aligned 762 at size 0: n-1 stacked 0x2B/0x43/0x46/0x47 line plus 0x49 scroll order and path lookups after reads. 0x46 floats priced 698.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

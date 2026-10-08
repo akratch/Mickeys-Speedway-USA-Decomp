@@ -26,6 +26,12 @@ class RecipeTests(unittest.TestCase):
         self.assertNotIn("-march=vr4300", args, "assembler flags must not leak into cc")
         self.assertEqual(args[-1], "src/main/camera.c")
 
+    def test_split_recipe_skips_build_py_options(self):
+        # Overlay TUs run asm-processor with --force ahead of the compiler path.
+        args = fast_score.split_recipe(RECIPE.replace("build.py tools/ido/cc", "build.py --force tools/ido/cc"))
+        self.assertEqual(args[0], "tools/ido/cc")
+        self.assertNotIn("--force", args)
+
     def test_rewrite_io_replaces_only_source_and_output(self):
         args = fast_score.split_recipe(RECIPE)
         out = fast_score.rewrite_io(args, Path("/tmp/x/cand.c"), "src/main/camera.c", Path("/tmp/x/cand.o"))

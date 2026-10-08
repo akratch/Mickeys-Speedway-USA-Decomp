@@ -97,7 +97,12 @@ def split_recipe(line: str) -> list[str]:
     seps = [i for i, w in enumerate(words) if w == "--"]
     if len(seps) < 2:
         raise SystemExit("recipe lacks the two '--' separators asm-processor uses")
-    cc = words[words.index("tools/asm-processor/build.py") + 1]
+    # build.py takes its own options (`--force` on overlay TUs) before the
+    # compiler path, so the compiler is the first word after it that is not one.
+    after = words[words.index("tools/asm-processor/build.py") + 1:seps[0]]
+    cc = next((w for w in after if not w.startswith("-")), None)
+    if cc is None:
+        raise SystemExit("recipe names no compiler before the first '--'")
     return [cc] + words[seps[1] + 1:]
 
 

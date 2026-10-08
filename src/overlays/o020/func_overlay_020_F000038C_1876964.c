@@ -199,6 +199,6 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
  * frame: 0x40
  * relocations: 3
  * first-mismatch: +0x224
- * summary: Separate index in i with a dead or-zero redefinition, size probes after it: row/col and 7 and size/far/64 as shipped, 22 to 10. Left: the index + 9 copy's use.
+ * summary: Separate index, dead or-zero redefinition, size probes after it: 22 to 10. Left: as1 renames the vi1 store from the s4 copy to s2.
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

@@ -3557,70 +3557,24 @@ f32 func_8002A8BC(s32 angle);
 f32 func_8002A8C0(s32 angle);
 
 /*
- * Plateau: 229/229 instructions, 165 masked words, frame 0x70 as shipped
- * (2026-10-07, lane h-6). Natural shape: velocity, normal and
- * previous-position fields are read at every use (no carriers, no volatile),
- * the then-arm correction is the repeated `impulse / mass` (uopt homes it as
- * the target does). The else arm computes the current-position dot first,
- * negated into the store-only `negDot`; the empty `if (negDot)` after the
- * else-arm offsets keeps that store (and with it the dot as the target's
- * spilled temporary), and the previous-position dot is written z-first,
- * `pz*nz + (nx*px + ny*py)`, as the target adds it. The empty region after
- * the trig products starts a block for the offsets, so timeStep's last
- * piece is coloured and loaded once, as shipped. See the shard.
- * 2026-10-08 (lane j-4): the compare reads two of its products through
- * `speed` and `dot`, assigned in that order (the then arm's FP ring is then
- * in phase from +0x80), and an empty `if (cosine)` after the trig pair
- * gives the cosine reload f2 and the sine f12 as shipped: 165 to 140 at
- * size 0. Later: no then-arm region (offsets X, Y, Z), and the else arm
- * names its plane dot and previous.y/previous.z reads (previous.y carried
- * in the dead `impulse`, which keeps the frame at 0x70), else offsets
- * Y, Z, X: 140 to 95.
- * 2026-10-08 (lane k-3): the else arm is the plane form as written, a
- * plane offset `negDot = -(n . current)` added to the previous-position
- * dot (`pd + negDot`; uopt folds it to `pd - dot` and keeps the 0x44
- * store, so no empty if), fields read inline (previous y/z and the dot
- * become the target's 0x34/0x30/0x28 temporaries) and offsets X, Y, Z;
- * the compare magnitude is held in `displacement`, which numbers that
- * web ahead of offsetY so it wins the else-arm f16 tie: 95 to 70.
- * An empty `if (speed)` before the source flag stores added the blocks
- * that give `first` nocs 5, so `normal` outranks it for s2 as shipped:
- * 70 to 41. `unk88` is assigned before the flag stores: the load of
- * D_80084210 carries a memory edge from every earlier store and a store
- * emitted after it cannot pass it, so the flag stores land after the
- * direction stores as shipped (41 to 30). The empty `if (timeStep)`
- * between the trig products and the offsets is both the block boundary
- * that lets offsetX share the cosine's colour and a timeStep reference,
- * so the split piece seeds there and its reload lands in the multiply
- * hazard slot; it also supplies first's blocks, so the `if (speed)` goes
- * and the 0.0f constant takes f2 as shipped (30 to 27).
- * 2026-10-08 (lane q-1): the target declares twelve locals, not fourteen.
- * uopt's slot trace shows the declared-local area sizes the frame: with
- * `target = first->target;` at the else head the spill webs for nx and
- * previous.x take slots and the correction temporary lands at the target's
- * 0x38, and one float local after negDot (here `speed`, carrying the
- * compare magnitude, the dot and the root, all f18/f0 in the target) gives
- * the target's 0x70 frame with no immediate rows. The else arm's offset
- * is formed in two statements (sum, then `D - sum`) into a reused local,
- * which puts the intermediate in the result's register as shipped: 27 to
- * 17, all register naming. The reused local is `cosine` here; the shard
- * records why the target's is `mass` and the forces that price that shape
- * at zero.
- * 2026-10-08 (lane q-1, second pass): the then arm's block boundary sits
- * between the Y and Z offsets (`if (timeStep)` after offsetY) and the
- * `if (cosine)` region is gone: the offsetY and timeStep pieces take the
- * target's f14 and f18 (17 to 11, all naming). Left: offsetX/cosine swap
- * (f16/f2 against f2/f16) and the offsetZ piece (f0 against f16).
+ * Matched 2026-10-09 (lane s-2), after many passes on the allocator. Three
+ * locals each carry two roles, as the target's colours show: `factor` holds
+ * the mass and then the negated sine, `cosine` holds the cosine and then the
+ * x offset in both arms (one web, f2, homed at 0x54 across the sine call),
+ * and the else arm's plane correction is formed in two statements in its own
+ * local. With the mass and the correction in different locals, the
+ * correction no longer outranks the normal's x component, and the two
+ * statements put the intermediate in the correction's register. `offsetX`
+ * is unused; it keeps the 0x70 frame.
  */
-#ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
                    AnimVec3f *normal, f32 timeStep) {
     HitCopyTarget *target;
     HitCopySource *firstSource;
-    f32 mass;
+    f32 correction;
     HitCopySource *secondSource;
     f32 impulse;
-    f32 sine;
+    f32 factor;
     f32 cosine;
     f32 offsetY;
     f32 offsetZ;
@@ -3635,13 +3589,14 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
             (target->velocity.x * target->velocity.x +
              target->velocity.y * target->velocity.y);
     if (speed > 25.0f) {
-        mass = ((HitResolveMass *) TrapDanglingJump(target))->mass;
+        /* `factor` carries the mass, then the negated sine. */
+        factor = ((HitResolveMass *) TrapDanglingJump(target))->mass;
         speed = normal->z * target->velocity.z +
                 (target->velocity.x * normal->x + target->velocity.y * normal->y);
-        impulse = ((secondSource->unk6C + 1.0f) * speed) / (1.0f / mass);
-        target->velocity.x -= (impulse / mass) * normal->x;
-        target->velocity.y -= (impulse / mass) * normal->y;
-        target->velocity.z -= (impulse / mass) * normal->z;
+        impulse = ((secondSource->unk6C + 1.0f) * speed) / (1.0f / factor);
+        target->velocity.x -= (impulse / factor) * normal->x;
+        target->velocity.y -= (impulse / factor) * normal->y;
+        target->velocity.z -= (impulse / factor) * normal->z;
         speed = sqrtf(target->velocity.z * target->velocity.z +
                       (target->velocity.x * target->velocity.x +
                        target->velocity.y * target->velocity.y));
@@ -3658,44 +3613,39 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         secondSource->unk63 = 1;
         secondSource->unk64 = speed;
         cosine = -func_8002A8C0(*(s16 *) first);
-        sine = -func_8002A8BC(*(s16 *) first);
-        target->unk90 = normal->z * cosine - normal->x * sine;
-        target->unk8C = normal->z * sine + cosine * normal->x;
-        offsetX = first->position.x - firstSource->previous.x;
+        factor = -func_8002A8BC(*(s16 *) first);
+        target->unk90 = normal->z * cosine - normal->x * factor;
+        target->unk8C = normal->z * factor + cosine * normal->x;
+        /* `cosine` carries the x offset in both arms. */
+        cosine = first->position.x - firstSource->previous.x;
         offsetY = first->position.y - firstSource->previous.y;
-        if (timeStep) {
-        }
         offsetZ = first->position.z - firstSource->previous.z;
         firstSource->previous.x = target->velocity.x * timeStep + firstSource->current.x;
         firstSource->previous.y = target->velocity.y * timeStep + firstSource->current.y;
         firstSource->previous.z = target->velocity.z * timeStep + firstSource->current.z;
-        first->position.x = firstSource->previous.x + offsetX;
+        first->position.x = firstSource->previous.x + cosine;
         first->position.y = firstSource->previous.y + offsetY;
         first->position.z = firstSource->previous.z + offsetZ;
     } else {
-        target = first->target;
         negDot = -(normal->z * firstSource->current.z +
                    (firstSource->current.x * normal->x +
                     firstSource->current.y * normal->y));
-        cosine = (firstSource->previous.z * normal->z +
-                  (normal->x * firstSource->previous.x +
-                   normal->y * firstSource->previous.y)) + negDot;
-        cosine = D_80084214 - cosine;
-        offsetX = first->position.x - firstSource->previous.x;
+        correction = (firstSource->previous.z * normal->z +
+                      (normal->x * firstSource->previous.x +
+                       normal->y * firstSource->previous.y)) + negDot;
+        correction = D_80084214 - correction;
+        cosine = first->position.x - firstSource->previous.x;
         offsetY = first->position.y - firstSource->previous.y;
         offsetZ = first->position.z - firstSource->previous.z;
-        firstSource->previous.x += cosine * normal->x;
-        firstSource->previous.y += cosine * normal->y;
-        firstSource->previous.z += cosine * normal->z;
-        first->position.x = firstSource->previous.x + offsetX;
+        firstSource->previous.x += correction * normal->x;
+        firstSource->previous.y += correction * normal->y;
+        firstSource->previous.z += correction * normal->z;
+        first->position.x = firstSource->previous.x + cosine;
         first->position.y = firstSource->previous.y + offsetY;
         first->position.z = firstSource->previous.z + offsetZ;
         firstSource->unk62 = 1;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/anim/func_80056DD8.s")
-#endif
 /* PROVENANCE: JFG efd5abb's src/hit.c leaves hitGetInelasticVelocity as an
  * assembly fallback; its 0.0484 masked similarity supplies no donor C body.
  * Mickey's fields, behavior, and compiled bytes remain authoritative.
@@ -4036,16 +3986,6 @@ void fmvInit(void) {
  * first-mismatch: +0x4
  * summary: Unchanged at 344; FP census: the six step webs fill c24-c29 in the coordinate block. Left: first-position doubles stored at their definitions.
  * PLATEAU-HANDOFF:func_80054B3C:end
- */
-
-/* PLATEAU-HANDOFF:func_80056DD8:start
- * symbol: func_80056DD8
- * score: 11/229 words
- * frame: 0x70
- * relocations: 8
- * first-mismatch: +0x204
- * summary: Then-arm boundary after offsetY, cosine region removed: 17 to 11. Left: else-arm ny decided before offsetX; then-arm pieces on the mass shape.
- * PLATEAU-HANDOFF:func_80056DD8:end
  */
 
 /* PLATEAU-HANDOFF:func_80053868:start

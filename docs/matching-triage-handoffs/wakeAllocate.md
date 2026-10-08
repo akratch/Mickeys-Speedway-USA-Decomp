@@ -679,4 +679,46 @@ not the source's own block-0 expressions. Next: dump `uoptlist`
 after the unroller (late substitution, hoisting, rematerialisation), then
 look for the one that can produce the whole allocation argument in walk
 order (cvt, segment, sample, 0x14, doubled, segment bytes, texture bytes).
+
+#### 2026-10-09, lane s-2: uoptlist reading of the web numbers, and a float local (no change, 16)
+
+Measured by tools/bank.py: masked 16 (raw 16), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 335, register naming 0, immediate only 16, really different 0.
+
+Base re-measured: 16 masked at size 0, aligned 335/0/16/0.
+
+uoptlist (`-Wo,-zdbug:2`, direct cc with the TU's flags in scratch; the
+file is never committed). The expression table printed after REMOVAL OF
+REDUNDANT STORES is numbered exactly as web_report numbers the webs: cvt
+bit 5, segment 7, doubled 8, sample term 40, 0x14 term 41, (i + 1) 67,
+(i + 2) 191, (i + 3) 195, $v0[i * 4] 287, segment bytes 289, texture
+bytes 308. So a web number is the expression's index in that table. The
+table is built in IR order after the unroller (the unrolled loop bodies
+sit inline at 176-202), with forward substitution inside each block done
+while it is built. Entries after the last original statement (287 on)
+are created by global copy propagation across blocks: 287 is the
+call-result substitution of `wake`, 288 is `i ^ 0` with groupCount's
+block-0 expression substituted, and 289/308 are built on it. That is why
+segment bytes and texture bytes are late here, and why q-1's
+frameCount/segmentCount-symbol cells made the sample and 0x14 terms late.
+
+Consequence: the target's order (cvt, segment, sample, 0x14, doubled,
+segment bytes, texture bytes, all after 195) is exactly the order a
+recursive substitution into the allocation argument would create them
+in, which says all seven are created by cross-block substitution. cvt,
+segment and doubled are computed before the alpha branch (block 0) in the
+target, and nothing is substituted into block 0, so the open question is
+which source puts their first IR occurrence outside block 0 while ugen
+still emits them before the branch.
+
+Measured flat: a float local for the frame count (`frames = wakeValue88
+* 60.0f;`, in the unused sampleBytes cell), read as `(s32) frames` or
+through frameCount, with segmentCount as a symbol or inline (6 cells):
+16 for the tree cell, 18 for the rest. The table shows why: the
+substitution happens inside block 0 while the table is built, so cvt
+stays bit 8.
+
+Cycle-21 line: find a source whose first IR occurrence of the frame-count
+conversion is outside block 0 (the decision variable is the creation
+index of cvt, segment and doubled against 195); read uoptlist's table
+after each candidate rather than the score.
 <!-- plateau-handoff:wakeAllocate:end -->

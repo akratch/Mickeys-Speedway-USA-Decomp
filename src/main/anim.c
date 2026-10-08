@@ -3998,7 +3998,7 @@ void fmvInit(void) {
  * frame: 0x40
  * relocations: 47
  * first-mismatch: +0x114
- * summary: 7 at size 0, all the join. The state value is a ring temp, not a web; single-expression and comma joins are split by uopt into U,C,S (11).
+ * summary: 7 at size 0, all the join. The target's add is a ring draw (t1 is drawn in loop 2); line layouts and region wrappers on state-first joins are inert.
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

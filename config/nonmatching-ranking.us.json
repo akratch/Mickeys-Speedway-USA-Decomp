@@ -1,29 +1,14 @@
 {
   "schema_version": 3,
   "source_context_version": 5,
-  "queue_size": 18,
-  "resolved": 18,
+  "queue_size": 17,
+  "resolved": 17,
   "unresolved": 0,
   "objdiff_report_used": false,
   "objdiff_match_pct_coverage": 0,
-  "source_context_coverage": 18,
-  "relocation_masked_coverage": 18,
+  "source_context_coverage": 17,
+  "relocation_masked_coverage": 17,
   "functions": [
-    {
-      "name": "func_overlay_101_F0002510_18DDD30",
-      "file": "src/overlays/o101/func_overlay_101_F0002510_18DDD30.c",
-      "overlay": 101,
-      "tu": "overlays/o101",
-      "size_bytes": 1172,
-      "objdiff_match_pct": null,
-      "differing_words": 2,
-      "first_mismatch_offset": 156,
-      "relocation_masked_differing_words": 2,
-      "relocation_masked_first_mismatch_offset": 156,
-      "size_delta": 0,
-      "category": "register-only",
-      "source_context_sha256": "qcfx.KMC0.DEYT.OfRj.lxvG.p1cp.XXO6.5dnv.GQvy.AhXn.ZKg"
-    },
     {
       "name": "func_overlay_073_F0000190_18CAC50",
       "file": "src/overlays/o073/func_overlay_073_F0000190_18CAC50.c",

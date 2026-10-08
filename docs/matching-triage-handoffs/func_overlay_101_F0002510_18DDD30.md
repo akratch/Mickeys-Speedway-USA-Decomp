@@ -2,11 +2,13 @@
 ### `func_overlay_101_F0002510_18DDD30` plateau handoff
 
 - source: `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c`
-- score: 2/293 words
+- score: 0 differing words
 - frame: 0xE8
 - relocations: 6
-- first mismatch: +0x9C
-- summary: Row mask carried by originY after rows, scaling statements reordered: 19 to 2. Left: operand order of the two edge sums; the times-zero stand-in.
+- first mismatch: none
+- summary: Matched. Display list before the stride, empty y test, row mask in originY, scaling order, edges copied then grown.
+
+Summary before this remeasure: Row mask carried by originY after rows, scaling statements reordered: 19 to 2. Left: operand order of the two edge sums; the times-zero stand-in.
 
 Summary before this remeasure: gfx read before the stride, and an empty test of y at the right clamp (lever_sweep oracle reproduction): 60 to 19. Left: a3/t0/t1 ring cycle, s2/t7, v1/t8.
 
@@ -475,4 +477,10 @@ On the 19 body. Records (web_report, proc 0): sourceX (web 97), drawWidth (103) 
 - All 120 orders of the five scaling statements after the source pointer (fast_score): drawX, drawY, drawWidth, sourceX, then sourceY's mask-and-shift is the unique best, 2 at +0 (291/2/0/0); next 6.
 
 Left: two operand-order rows, `addu a0, x, width` and `addu a1, y, height` for the edge sums (ours read the height or width first). Edge spelling (x + width against width + x, y against originY) and the stand-in's position in x (front, middle, end; 45 cells) are all inert at 2. The bounds stand-in `* 0 +` is still needed: without it 260 at -4.
+
+#### 2026-10-08, lane p-3 (fourth pass): each edge copied from its origin then grown, matched
+
+On the 2 body. The two rows were operand order: the target adds `x + width` and `y + height` with the origin register first, ours read the width or height first. Measured by tools/shape_product.py (25 cells: per edge `x + width`, the three-term sum from the fields, `width + (sum)`, a cast round-trip, and `edgeX = x; edgeX += texture->width;`): the copy-then-grow form on both edges is the one exact cell, 0 at +0 (293/0/0/0); either edge alone 1. The two copies may also precede both additions (still 0); kept that order. Retiring the times-zero stand-in on the exact body (the bounds call as a statement, its result into chunkRows, x or edgeX) is 260 at -4 in every form, so it stays.
+
+Promoted: the TU is one function, so no mixed-TU range; atlas written, digest refreshed, extract, overlay-syms, build, overlay-syms, build; the resident call needed `--redefine-sym func_80034920=func_80034920_o101Reloc` in the object's POSTPROCESS rule (promotion trap 1). gmake verify, check-overlay-syms and promotion-proof (293 words, frame 0xE8, relocations 6/6) pass.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

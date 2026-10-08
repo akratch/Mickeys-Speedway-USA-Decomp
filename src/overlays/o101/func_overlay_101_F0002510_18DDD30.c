@@ -49,40 +49,17 @@ void overlay101SetScissorReloc(Gfx **displayList, s32 left, s32 top,
 void func_80034920(Gfx **displayList);
 
 /*
- * NON_MATCHING reconstruction. Lane p11-o101 (2026-09-12) decoded the four
- * callees; lane x-o101 (2026-10-02) rewrote the display-list body with the
- * SDK's own GBI macros (gSPDisplayList, gDPSetPrimColor,
- * gDPLoadTextureBlockS, gSPTextureRectangle -- every command word, mask and
- * the MIN() branch of the target is that macro set's expansion, including the
- * LoadBlock dxt of 0 that only the S variant has), the texture rows as a
- * u16 pointer stepped by the stride, and the edge sums as locals ahead of
- * the clip chain. 291 -> 263 masked, size delta +8 -> -8, frame 0xF8 -> 0xE8
- * (exact): every declared local takes a frame cell top-down in declaration
- * order here, so eleven locals precede the four bounds (target homes 0xB8..
- * 0xAC with the stride spill at 0xA8 below them) and dropping the nextY
- * carrier removed the one cell too many. Early returns for the type, null
- * and clip tests, and the 0x800 / width quotient held in `rows` itself (the
- * target's s7), took it to 257 at -8 with 228 of the aligned words exact.
- * Lane a-ovl3 (2026-10-07): the clip tests read the y origin from its own
- * local and `y` is copied from it after the tests, which is the target's
- * split of y (v1 for the tests, a callee-saved copy across the scissor
- * call); 257 at -8 -> 90 at size delta 0. What is left is allocation and
- * the clip block's schedule: the target computes the bottom edge before the
- * tests and holds left/top in s3/s1 for the scissor call.
- * 2026-10-08 (lane m-4), 90 -> 68 at size delta 0: lane k-2's clip block
- * (both edges in locals before the tests, the y copy kept by a dead
- * redefinition of originY, rowOffset folded into sourceY) plus one
- * or-with-zero of bottom after the tests. The probe emits a store of bottom
- * back to its home that the target lacks; it stands in for the missing left
- * argument move, so the cell is aligned at delta 0 with residual 51 (73 on
- * the old body). Open: v0 for bottom (here originY takes it).
- * 2026-10-08 (lane m-4, resumed), 68 -> 60: the bounds call declared int and
- * its result consumed (times zero) by x's definition. The call then delivers
- * v0 into the block after it (checklist item 38), so originY and the two
- * edges are denied v0, bottom takes it and left s3 as shipped, and the
- * bottom probe is gone. Open: node/y in s5/s4.
+ * Lanes p11-o101, x-o101, a-ovl3, k-2 and m-4 decoded the callees and wrote
+ * the body with the SDK GBI macros, the y origin tested from its own local
+ * and copied after the clip tests, and the bounds call's result consumed by
+ * x (times zero: the call then delivers v0 into the clip block, so bottom
+ * takes v0 and left s3, checklist item 38). Lane p-3 (2026-10-08) closed the
+ * last 60 words: the display list read before the stride, an empty test of
+ * y at the right clamp (y outranks node for s4), the row mask carried by
+ * originY from right after rows (it outranks sourceX and drawWidth), the
+ * scaling statements in the target's order, and each edge copied from its
+ * origin and then grown, which gives the sums the target's operand order.
  */
-#ifdef NON_MATCHING
 void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
                                        Overlay101TextureElement *element) {
     Overlay101Texture *texture;
@@ -118,8 +95,10 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     x = overlay101GetBoundsReloc(node, &left, &top, &right, &bottom) * 0 + node->x + element->x;
     originY = node->y + element->y;
     y = originY;
-    edgeX = x + texture->width;
-    edgeY = originY + texture->height;
+    edgeX = x;
+    edgeY = originY;
+    edgeX += texture->width;
+    edgeY += texture->height;
     if ((right < x) || (bottom < originY) || (edgeX < left) || (edgeY < top)) {
         return;
     }
@@ -184,16 +163,3 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     func_80034920(dList);
     overlay101SetScissorReloc(dList, 0, 0, 1000, 1000);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o101/func_overlay_101_F0002510_18DDD30/func_overlay_101_F0002510_18DDD30.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:start
- * symbol: func_overlay_101_F0002510_18DDD30
- * score: 2/293 words
- * frame: 0xE8
- * relocations: 6
- * first-mismatch: +0x9C
- * summary: Row mask carried by originY after rows, scaling statements reordered: 19 to 2. Left: operand order of the two edge sums; the times-zero stand-in.
- * PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:end
- */

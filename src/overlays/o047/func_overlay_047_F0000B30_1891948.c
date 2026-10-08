@@ -226,6 +226,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
     s32 barX;
     s32 stat;
+    /* Three unused cells above x and y: the target's homes from x down sit
+     * 0xC lower than ours (lane s-4, frame_census); with p3 and the trailing
+     * pad dropped the frame stays 0x280 (302 -> 291 aligned). */
+    s32 padA, padB, padC;
 
     s32 x, y;
     s32 red, green, blue;
@@ -235,7 +239,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     f32 oldFrame;
     f32 frame;
     Overlay47Player *p2;
-    Overlay47Player *p3; /* unreferenced; its frame cell is measured */
     f32 scale;
     f32 rate;
     f32 oldFov;
@@ -248,7 +251,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     Overlay47Player *player;
     Overlay47TextureScroll *scroll;
     Overlay47Icon *icon;
-    s32 pad;
 
     rate = updateRate;
     ov47Bss_30B = 0;
@@ -741,10 +743,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 324/2168 words
+ * score: 313/2168 words
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 302 aligned at size 0 (masked 324): icon scan is a for loop on i; colour index in i is a likely stand-in (target s7). Open: i's save vs actor.
+ * summary: 291 aligned at size 0 (masked 313): 0xC home shift fixed by unused cells above x; colour index in i a stand-in. Open: i vs actor, ring phase (68 rows).
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

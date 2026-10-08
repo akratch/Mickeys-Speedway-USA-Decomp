@@ -300,8 +300,8 @@ units remain distinct.
 | 5 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
 | 6 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 32 | 32 | 576 | 576 | 0 | — |
 | 7 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 34 | 34 | 80 | 80 | 0 | — |
-| 8 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 41 | 41 | 88 | 88 | 0 | — |
-| 9 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
+| 8 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |
+| 9 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 95 | 95 | 36 | 36 | 0 | — |
 | 10 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 116 | 116 | 1,864 | 1,864 | 0 | — |
 | 11 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
 | 12 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 380 | 380 | 0 | 0 | 0 | — |
@@ -312,7 +312,7 @@ units remain distinct.
 | 17 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 292 | 292 | 76 | 76 | 12 | — |
 | 18 | `src/main/fx.c` | `wakeAllocate` | `main` | `size-mismatch` | 1,404 | 323 | 323 | 16 | 16 | -8 | — |
 | 19 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 339 | 339 | 0 | 0 | 8 | — |
-| 20 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 1,984 | 1,977 | 4 | 4 | -12 | — |
+| 20 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 2,023 | 2,015 | 4 | 4 | -4 | — |
 
 ### Unresolved identities
 

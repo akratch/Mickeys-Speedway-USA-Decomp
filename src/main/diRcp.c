@@ -372,10 +372,9 @@ s32 diRcpColor(Gfx *dList, char *command, char *macro) {
 
 /* PROVENANCE: body adapted from JFG src/diRcp.c::diRcpDmaOffsets. */
 s32 diRcpDmaOffsets(Gfx *dList, char *command) {
-    /* Inert allocation aid retained by exact C; tracked in
-     * docs/cleanup-queue.md. */
-    if (dList) {}
-    stubbed_printf("%20s: gSPSetDMAOffsets(%08x, %08x)\n", command, dList, dList);
+    if (dList != NULL) {
+        stubbed_printf("%20s: gSPSetDMAOffsets(%08x, %08x)\n", command, dList, dList);
+    }
     return sizeof(Gfx);
 }
 

@@ -126,9 +126,9 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/charControl.c:1057` `func_8001D2A0` **A**: self-assignment.
   Natural: delete the statement. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/main/diRcp.c:377` `diRcpDmaOffsets` **A**: empty if body or `if (c);` probe.
-  Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-3, 2026-10-08):** the empty `if (dList) {}` is now the guard of the debug print, `if (dList != NULL) { stubbed_printf(...); }`. `stubbed_printf` is an empty macro in this TU, so the body compiles away; the test is the one real read of `dList`, which is why the target homes only `command` (a1) and not `dList`. Every sibling whose parameters appear only in a print homes them all. Byte-identical.
 - `src/main/diRcp.c:417` `diRcpMoveWd` **A**: empty if body or `if (c);` probe.
-  Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  Natural: delete. Keep bytes: no - measured (lane c-3, 2026-10-08). The `command = index` store in the G_MW_FOG case and the `command && command` read together keep the six empty cases as separate jump-table blocks; with either removed the cases merge into the exit and the function shrinks by 12 words. Not reproduced: both removed; `if (command == (u8) G_MOVEWORD)` and `if (command != 0)` guards on the final print (with and without the store). The same pair is marked `fakematch` in JFG's diRcp.c.
 - `src/main/flash_5885C.c:89` `osFlashReadArray` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/main/flash_58C10.c:70` `func_800580F0` **A**: `do { } while (0)` around one call (three sites, 70-78).

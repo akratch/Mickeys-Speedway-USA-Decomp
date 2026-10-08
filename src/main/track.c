@@ -3890,7 +3890,12 @@ void func_80012658(s32 flags) {
  * is a while loop swapping one array at a time and both distances sum x
  * and y before z; then 64 -> 57: the visibility word masked by xzMask is
  * read into x0 (a phase-1 local) before yHit, which gives the target's
- * load order and its two v0/v1 tests with no yHit copy. */
+ * load order and its two v0/v1 tests with no yHit copy.
+ * 57 -> 45 at 0 (lane s-3): arg4 is unsigned and tested `> 0`. An unsigned
+ * compare with zero lets ugen keep the one arg4 load for the and block (a
+ * `!= 0` test reloads it and spends one more ring draw, which rotated every
+ * ring register from the else-if on); the yHit test then needs its `& 0xFF`
+ * back for the target's second andi. */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -3908,7 +3913,7 @@ typedef struct TrackFacet {
     u16 indices[4];
 } TrackFacet;
 
-s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
+s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, u32 arg4) {
     TrackSegment *segments[20];
     s32 x0;
     s32 y0;
@@ -4053,7 +4058,7 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
             lastTriangle = segment->batches[batchIndex + 1].v0;
             if (segment->batches[batchIndex].flags & arg3) {
                 firstTriangle = lastTriangle;
-            } else if ((arg4 != 0) &&
+            } else if ((arg4 > 0) &&
                        ((segment->batches[batchIndex].flags & arg4) == 0)) {
                 firstTriangle = lastTriangle;
             }
@@ -4062,7 +4067,7 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                 x0 = segment->visibilityMasks[z1] & xzMask;
                 yHit = E129_U8(E129_PTR(segment, 0x14), z1) & yMask;
                 if (((x0 & 0xFFFF) != 0) && ((x0 & 0xFFFF0000) != 0) &&
-                    (yHit != 0)) {
+                    ((yHit & 0xFF) != 0)) {
                     polygon = ((TrackFacet *) segment->surfaceIndices)[z1].indices;
                     plane = &surfaceBase[polygon[0]];
                     normalX = plane->x;
@@ -5243,10 +5248,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 57/548 words
+ * score: 45/548 words
  * frame: 0x288
  * relocations: 13
  * first-mismatch: +0x2AC
- * summary: Visibility word in a local before yHit: 64 to 57 at 0, aligned residual 64 to 57
+ * summary: arg4 unsigned and tested > 0 keeps one load: 57 to 45 at 0, aligned residual 57 to 45
  * PLATEAU-HANDOFF:func_8001291C:end
  */

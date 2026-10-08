@@ -9,8 +9,11 @@ extern s32 overlay3ContainsValueReloc(Object *, Object *);
 extern f32 overlay3DistanceSquaredReloc(f32, f32, f32, f32, f32, f32);
 extern f32 gOverlay3SearchMaxDistance[];
 /* Exact C: all 77 instruction words, the 0x78 frame, relocations, and linked
- * overlay range match after bounded permutation. Three inert allocation/block
- * aids remain below and are tracked in docs/cleanup-queue.md. */
+ * overlay range match after bounded permutation. Two inert allocation/block
+ * aids remain below and are tracked in docs/cleanup-queue.md: the empty
+ * `!cursor` test and the `if (1)` around the loop body each swap the index and
+ * cursor registers (s3/s4) when deleted. The `&pad` probe was inert and is
+ * gone; the pad itself holds the 0x78 frame. */
 Object *overlay3FindClosestObject(Object *anchor, void *unused)
 {
   s32 pad;
@@ -24,10 +27,6 @@ Object *overlay3FindClosestObject(Object *anchor, void *unused)
   Object *best;
   State *state;
   s32 index;
-  if (&pad)
-  {
-    ;
-  }
   objects = overlay3GetObjectRangeReloc(&start, &end);
   bestDistance = gOverlay3SearchMaxDistance[3];
   best = 0;

@@ -40,7 +40,6 @@ void overlay82Update(O82Object *object, f32 updateRate) {
     O82Resource *resource;
     const s16 (*targets)[6];
     const s16 *targetRow;
-    const s16 *targetValues;
     s32 *currentValues;
     const s8 *channelMap;
     const s8 *channelValues;
@@ -123,19 +122,9 @@ void overlay82Update(O82Object *object, f32 updateRate) {
         resource = object->resourceOwner->resource;
         targetRow = (const s16 *)targets + state->selection * 6;
         shift = state->changed != 0 ? 2 : 3;
-        index = 0;
-        currentValues = (s32 *)state;
-        targetValues = targetRow;
-        /* Inert zero-code web-priority read required by IDO 5.3; tracked in
-         * docs/cleanup-queue.md. */
-        if (currentValues) {}
-        do {
-            currentValues++;
-            targetValues++;
-            *currentValues +=
-                (((s32)targetValues[-1] << 16) - *currentValues) >> shift;
-            index++;
-        } while (index < 6);
+        for (index = 0; index < 6; index++) {
+            state->values[index] += (((s32)targetRow[index] << 16) - state->values[index]) >> shift;
+        }
 
         channelMap = ((const s8 *) (gO82DataBase + 0x78)) ;
         index = 0;

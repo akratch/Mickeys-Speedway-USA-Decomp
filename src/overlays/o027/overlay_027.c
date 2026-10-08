@@ -381,18 +381,10 @@ s32 overlay27CanUse(Overlay27UseObject *object) {
 
 /* DKR v77/v80 and JFG contain no exact donor for this state transition. */
 s32 overlay27Activate(O27Object *object) {
-    O27Object *savedObject;
-
-    if (object != 0 && object->blocked == 0) {
+    if (object != NULL && object->blocked == 0) {
         if (object->state->primaryState == 4) {
-            (savedObject = object)->state->primaryState = 3;
-            /* Inert allocation aid retained by exact C; tracked in
-             * docs/cleanup-queue.md. */
-            if (object->state == 0 && object->state == 0) {
-            }
-            return 1;
-        }
-        if (object->state->primaryState == 2) {
+            object->state->primaryState = 3;
+        } else if (object->state->primaryState == 2) {
             object->state->timer = 0;
         }
         return 1;

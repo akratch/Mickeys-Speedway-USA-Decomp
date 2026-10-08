@@ -222,9 +222,9 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/overlays/o059/overlay59DrawFrame.c:32` `overlay59DrawFrame` **A**: empty if with a duplicated condition.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o059/overlay59PrepareEntry.c:77` `overlay59PrepareEntry` **A**: `& 0xFFFFFFFF` on a u32 value.
-  Natural: `handle = value`. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: the bare value. Keep bytes: no - measured (lane c-3, 2026-10-08): `handle = (u32) func_80034448((s32) value);` without the masked copy differs in 9 words. Not explored further.
 - `src/overlays/o063/overlay63Initialize.c:89` `overlay63Initialize` **A**: OR/XOR with zero, or an all-ones mask.
-  Natural: the bare operand. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: the bare operand. Keep bytes: no - measured (lane c-3, 2026-10-08): `while (index != -1)` and `while (-1 != index)` both differ in one word, the loop's `bnel` with its operands swapped (target compares the held `-1` register first). The XOR keeps `index` as the second operand.
 - `src/overlays/o068/overlay68CheckKind.c:69` `overlay68CheckKind` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o073/overlay73Initialize.c:101` `func_overlay_073_F0000000_18CAAC0` **A**: multiply-by-zero stand-in for a constant.

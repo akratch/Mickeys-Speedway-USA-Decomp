@@ -1,17 +1,12 @@
-/* NON_MATCHING: query output storage, ten-byte vertex banks and observed
- * automatic homes are reconstructed. Radius limits and shared zero values
- * have explicit, nonoverlapping local roles. Signed steering comparisons
- * preserve promoted negation, including the signed-halfword minimum.
- * The entry multiply sits in its own region (do/while) so the step is
- * narrowed once, as shipped. 2026-10-07 (lane f-o073), 14 -> 4 at size 0:
- * the case 0 timer add goes through the float `limit` local so the rate
- * product is numbered before the timer read (a timer read numbered first
- * reserves a 4-byte compiler cell and puts the float-rate spill at +0x30
- * instead of +0x34); the case 4 count assignment, index copy and test sit
- * on one physical line so as1's line tie-break schedules the index
- * narrowing first. Remaining 4: `hitIndex - 1` is an a1 web in the target
- * and a ring temp here; see the owned matching-triage handoff. */
-#ifdef NON_MATCHING
+/* Overlay 73 updater. Matched 2026-10-09 (lane s-1): the case 4 query keeps
+ * one count, `if ((hitCount = query(...)) != 0)`, replaces it by mathRnd's
+ * pick and decrements it in place before indexing. The count's two live
+ * pieces (the mathRnd argument and the join) are what narrow the call result
+ * twice; the narrowing of the dead piece after mathRnd is the ring draw that
+ * leaves no instruction. The entry multiply sits in its own region
+ * (do/while) so the step is narrowed once; the case 0 timer add goes through
+ * the float `limit` local so the rate product is numbered before the timer
+ * read (the float-rate spill at +0x34). `unused` holds the 0x98 frame. */
 #include "PR/ultratypes.h"
 
 struct HitCopyState;
@@ -96,7 +91,7 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
     s16 targetAngle;
     f32 limit;
     s16 hitCount;
-    s32 hitIndex;
+    s32 unused;
     Func073TargetData *data;
     Func073Target *target;
     Func073Vertex *vertex;
@@ -289,11 +284,12 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
                 state->countdown -= updateRate;
             } else {
                 state->countdown = 0;
-                hitCount = (s16)func_8005776C(object->x, 0.0f, object->z, 150.0f, 1, hits); hitIndex = hitCount; if (hitIndex != 0) {
+                if ((hitCount = func_8005776C(object->x, 0.0f, object->z, 150.0f, 1, hits)) != 0) {
                     if (hitCount >= 2) {
-                        hitIndex = (s16)mathRnd(1, hitCount);
+                        hitCount = mathRnd(1, hitCount);
                     }
-                    state->target = hits[(s16)(hitIndex - 1)];
+                    hitCount--;
+                    state->target = hits[hitCount];
                     state->countdown = 0xF0;
                 } else {
                     state->target = NULL;
@@ -392,17 +388,3 @@ common:
         *object->output = (f32)horizontal * 0.1f * object->scale;
     }
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o073/func_overlay_073_F0000190_18CAC50/func_overlay_073_F0000190_18CAC50.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:start
- * symbol: func_overlay_073_F0000190_18CAC50
- * score: 4/760 words
- * frame: 0x98
- * relocations: 46
- * first-mismatch: +0x7C8
- * summary: 4 at 0. Hybrid stream (mathRnd narrowing on t9, kill join into a1) is exact with no extra instruction; a t8 draw with no surviving word.
- * PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:end
- */

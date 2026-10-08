@@ -118,7 +118,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/anim.c:3067` `func_80055B24` **A**: empty `if (1)`/`if (0)` region.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/audio_manager_36D0.c:658` `func_80003760` **A**: `entry++; entry--;` pair plus a single-statement region.
-  Natural: plain `group = point->unk23;`. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-3, 2026-10-08):** the cancelling pair, the region and the `group` local are gone; the row is `D_800C9238[point->unk23 - 1]` and the bound `D_80078F04[point->unk23 - 1]` (the typed count array, not a cast of `D_80078F00`). Byte-identical: `group` was the web numbered ahead of `entry`; reading the field at each use lets `entry` take v0 as shipped.
 - `src/main/audiomgr.c:474` `func_80002188` **A**: `if (0) { }`.
   Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/main/camera.c:1283` `func_80023598` **A**: empty `do { } while (0)`.

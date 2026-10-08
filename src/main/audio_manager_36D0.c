@@ -647,26 +647,19 @@ void func_800035F8(s32 group) {
         } while (index < countValue);
     }
 }
-/* Exact C: all 25 instruction words, the frame, relocations, and linked ROM
- * range match. The legacy canceling pointer operations and one-iteration loop
- * are cleanup-tracked allocation aids. */
-void func_80003760(AudioPoint *point)
-{
-  AudioUpdateEntry *entry;
-  s32 index;
-  u8 group;
- entry++; entry--; do { group = point->unk23; } while (0);
-  entry = D_800C9238[group - 1];
-  for (index = 0; index < ((s32 *) (&D_80078F00))[group]; index++)
-  {
-    if (point == entry->point)
-    {
-      entry->point = (void *) 0;
-      return;
-    }
-    entry++;
-  }
+/* Removes `point` from its group's update list. The group number is 1-based. */
+void func_80003760(AudioPoint *point) {
+    AudioUpdateEntry *entry;
+    s32 index;
 
+    entry = D_800C9238[point->unk23 - 1];
+    for (index = 0; index < D_80078F04[point->unk23 - 1]; index++) {
+        if (point == entry->point) {
+            entry->point = NULL;
+            return;
+        }
+        entry++;
+    }
 }
 /*
  * PROVENANCE: name/order compared with JFG src/audio_manager_36D0.c

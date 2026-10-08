@@ -4011,7 +4011,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: Z-first step reads, aligned 270 to 255 at 344. Left: arg1 in s0 (position-pointer webs); first doubles stored at their definitions.
+ * summary: Unchanged at 344; lever sweep for arg1 in s0 flat. Left: position pointer webs in the quadratic block; first doubles stored at definition.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

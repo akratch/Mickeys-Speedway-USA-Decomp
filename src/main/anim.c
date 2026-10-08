@@ -4012,7 +4012,7 @@ void fmvInit(void) {
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x58
- * summary: Plane offset, magnitude in displacement, empty if (speed) before the flag stores: 95 to 41. Left: else FP colours, store order.
+ * summary: Plane offset, magnitude in displacement, empty if (speed) before the flag stores: 95 to 41. Left: previous.x colour (9), store order.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

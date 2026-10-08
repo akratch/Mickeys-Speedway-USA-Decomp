@@ -3985,7 +3985,7 @@ void fmvInit(void) {
  * frame: 0x40
  * relocations: 47
  * first-mismatch: +0x114
- * summary: 7 at size 0, all the join. The state value is a ring temp, not a web; a reordering macro gives the exact ring, leaving the store order and an a0/a1 swap.
+ * summary: 7 at size 0, all the join. The state value is a ring temp, not a web; single-expression and comma joins are split by uopt into U,C,S (11).
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

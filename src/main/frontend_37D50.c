@@ -44,10 +44,10 @@ extern s32 D_8007BE84;
 extern s32 D_8007BEB0;
 extern s32 D_8007BEB4;
 extern f32 D_800826A0;
-extern void func_800378A4(f32 arg0, s32 arg1);
+extern void func_800378A4(f32 amount, s32 intensity);
 extern f32 func_8002A8C0(s32 angle);
 extern f32 sqrtf(f32 value);
-extern void func_80037AEC(f32 arg0, s32 arg1);
+extern void func_80037AEC(f32 amplitude, s32 intensity);
 
 typedef struct FrontendGfxWords {
     u32 w0;
@@ -142,30 +142,30 @@ extern void TrapDanglingJump();
  * argument setup and the s0 carrier it forced); the three tail byte stores
  * are in address order; the first frame count is not a declared variable --
  * D_8007BE94 re-spells the expression and uopt CSEs it; and the
- * TrapDanglingJump argument is `var_a1 | 0`. uopt copy-propagates a bare
+ * TrapDanglingJump argument is `outTicks | 0`. uopt copy-propagates a bare
  * variable into a call argument but not into an operand of an operator, so
- * the plain `var_a1` argument was replaced by the expression temp and the two
- * webs traded a1/t0. The `| 0` keeps var_a1 itself as the argument, as the
+ * the plain `outTicks` argument was replaced by the expression temp and the two
+ * webs traded a1/t0. The `| 0` keeps outTicks itself as the argument, as the
  * target does, and folds away before code generation (`& -1` measures the
  * same). */
-void func_80037414(s32 arg0, f32 arg1, f32 arg2, s32 arg3, s32 arg4,
-                   s32 arg5, s32 arg6) {
-    s32 var_a1;
-    s32 sp28;
-    s32 var_a2;
+void func_80037414(s32 mode, f32 outTime, f32 inTime, s32 red, s32 green,
+                   s32 blue, s32 restart) {
+    s32 outTicks;
+    s32 savedInTicks;
+    s32 inTicks;
 
-    var_a1 = (s32) (arg1 * 60.0f);
-    var_a2 = (s32) (arg2 * 60.0f);
-    sp28 = var_a2;
+    outTicks = (s32) (outTime * 60.0f);
+    inTicks = (s32) (inTime * 60.0f);
+    savedInTicks = inTicks;
     if (D_8007BE80 == 0) {
         func_800371BC();
     }
     if ((D_8007BEA8 != 0) &&
         ((D_8007BE90 == 4) || (D_8007BE90 == 5))) {
-        TrapDanglingJump(arg0, var_a1 | 0, var_a2);
+        TrapDanglingJump(mode, outTicks | 0, inTicks);
     }
-    if ((arg6 == 0) || (D_8007BEA8 == 0)) {
-        if ((arg0 & 1) && (var_a2 != 0)) {
+    if ((restart == 0) || (D_8007BEA8 == 0)) {
+        if ((mode & 1) && (inTicks != 0)) {
             D_8007BEA8 = 2;
         } else {
             D_8007BEA8 = 1;
@@ -174,19 +174,19 @@ void func_80037414(s32 arg0, f32 arg1, f32 arg2, s32 arg3, s32 arg4,
         D_8007BEB0 = 0;
         D_8007BEB4 = 0x8000;
     } else if (D_8007BEA8 == 2) {
-        D_8007BEAC = (s32) (sp28 * D_8007BEAC) / D_8007BE98;
+        D_8007BEAC = (s32) (savedInTicks * D_8007BEAC) / D_8007BE98;
         D_8007BEB0 = 0;
-    } else if (!(arg0 & 1)) {
-        D_8007BEAC = (s32) (var_a1 * D_8007BEB0) / 1024;
+    } else if (!(mode & 1)) {
+        D_8007BEAC = (s32) (outTicks * D_8007BEB0) / 1024;
     } else {
-        D_8007BEAC = (s32) ((0x400 - D_8007BEB0) * var_a1) / 1024;
+        D_8007BEAC = (s32) ((0x400 - D_8007BEB0) * outTicks) / 1024;
     }
-    D_8007BE90 = arg0;
-    D_8007BE94 = (s32) (arg1 * 60.0f);
-    D_8007BE98 = var_a2;
-    D_8007BE9C = (u8) arg3;
-    D_8007BEA0 = (u8) arg4;
-    D_8007BEA4 = (u8) arg5;
+    D_8007BE90 = mode;
+    D_8007BE94 = (s32) (outTime * 60.0f);
+    D_8007BE98 = inTicks;
+    D_8007BE9C = (u8) red;
+    D_8007BEA0 = (u8) green;
+    D_8007BEA4 = (u8) blue;
 }
 void func_80037658(void) {
     D_8007BEA8 = 0;
@@ -203,7 +203,7 @@ s32 func_80037664(void) {
 }
 /*
  * Fade state machine. The leftover time lives in the parameter: a separate
- * copy loses a2 to the cached mode bit and then has to save s0. `arg0 |= 0`
+ * copy loses a2 to the cached mode bit and then has to save s0. `updateRate |= 0`
  * each iteration is the loop-weighted identity that keeps the remainder's
  * save above the mode bit's (L100); it emits no extra word. Duplicating the
  * loop-flag clear on both overflow arms, instead of a shared goto, is the
@@ -213,50 +213,50 @@ s32 func_80037664(void) {
  * No donor: JFG PR 37 (head d45123d1c528955d5e12ddad805076267a690d76) does
  * not contain this function.
  */
-void func_800376CC(s32 arg0) {
-    s32 temp_t0;
+void func_800376CC(s32 updateRate) {
+    s32 reversed;
     register s32 old_state;
-    register s32 var_a1;
+    register s32 done;
 
-    temp_t0 = D_8007BE90 & 1;
+    reversed = D_8007BE90 & 1;
     old_state = D_8007BEA8;
     do {
-        var_a1 = 1;
-        arg0 |= 0; /* L100: loop weight so the remainder keeps a2 */
+        done = 1;
+        updateRate |= 0; /* L100: loop weight so the remainder keeps a2 */
         if (D_8007BEA8 == 2) {
             if (D_8007BE98 >= 0) {
-                D_8007BEAC += arg0;
+                D_8007BEAC += updateRate;
                 if (D_8007BEAC >= D_8007BE98) {
-                    arg0 = D_8007BEAC - D_8007BE98;
-                    if (temp_t0 != 0) {
+                    updateRate = D_8007BEAC - D_8007BE98;
+                    if (reversed != 0) {
                         D_8007BEA8 = 1;
                     } else {
                         D_8007BEA8 = 0;
                     }
                     D_8007BEAC = 0;
-                    var_a1 = 0;
+                    done = 0;
                 }
             }
         } else if (D_8007BEA8 == 1) {
-            D_8007BEAC += arg0;
-            if (temp_t0 == 0) {
+            D_8007BEAC += updateRate;
+            if (reversed == 0) {
                 D_8007BEB0 = (s32) (D_8007BEAC << 0xA) / D_8007BE94;
             } else {
                 D_8007BEB0 = (s32) ((D_8007BE94 - D_8007BEAC) << 0xA) /
                               D_8007BE94;
             }
             if (D_8007BEAC >= D_8007BE94) {
-                arg0 = D_8007BEAC - D_8007BE94;
-                if (temp_t0 != 0) {
+                updateRate = D_8007BEAC - D_8007BE94;
+                if (reversed != 0) {
                     D_8007BEA8 = 0;
                 } else {
                     D_8007BEA8 = 2;
                 }
                 D_8007BEAC = 0;
-                var_a1 = 0;
+                done = 0;
             }
         }
-    } while (var_a1 == 0);
+    } while (done == 0);
     if (D_8007BEB8 != 0) {
         D_8007BEB8 -= 1;
     }
@@ -266,7 +266,7 @@ void func_800376CC(s32 arg0) {
     if ((old_state != 0) && (D_8007BEA8 == 0) &&
         ((D_8007BEB8 = 1, (D_8007BE90 == 4)) ||
          (D_8007BE90 == 5))) {
-        TrapDanglingJump(&D_8007BEAC, var_a1, arg0, &D_8007BEA8);
+        TrapDanglingJump(&D_8007BEAC, done, updateRate, &D_8007BEA8);
     }
 }
 /* The front-end backdrop's radial shading pass: a 17x17 vertex grid whose
@@ -283,7 +283,7 @@ void func_800376CC(s32 arg0) {
  * No donor counterpart: JFG's src/menu.c has no function of this shape.
  * frontend_37D50.c is Mickey's own backdrop renderer, not part of the JFG
  * menu.c crosswalk that names the rest of this front end. */
-void func_800378A4(f32 arg0, s32 intensity) {
+void func_800378A4(f32 amount, s32 intensity) {
     FrontendVertex *vertex;
     s32 base;
     s32 amountI;
@@ -296,8 +296,8 @@ void func_800378A4(f32 arg0, s32 intensity) {
     f32 distance;
     f32 scale;
 
-    amountI = (s32) arg0;
-    arg0 *= D_800826A0;
+    amountI = (s32) amount;
+    amount *= D_800826A0;
     vertex = ((FrontendVertex **) &D_8007BE88)[D_8007BE84];
     if (vertex != NULL) {
         base = 0xFF - amountI;
@@ -306,7 +306,7 @@ void func_800378A4(f32 arg0, s32 intensity) {
             for (x = 0; x != 0x11; x++) {
                 dx = (f32) (x - 8) * 20.0f;
                 distance = sqrtf((dx * dx) + (dy * dy));
-                scale = (200.0f - distance) * arg0;
+                scale = (200.0f - distance) * amount;
                 if (scale < 0.0f) {
                     scale = 0.0f;
                 }
@@ -340,7 +340,7 @@ void func_80037A78(void) {
  * deletes, but it numbers `row` ahead of `phase` so the two take s6/s7 as
  * shipped while the D_8007BEB4 load is still scheduled first (the same
  * first-reference rule as `dst` in font.c's func_8004C690). */
-void func_80037AEC(f32 arg0, s32 arg1) {
+void func_80037AEC(f32 amplitude, s32 intensity) {
     FrontendVertex *vertex;
     s32 row = 0;
     s32 column;
@@ -352,18 +352,18 @@ void func_80037AEC(f32 arg0, s32 arg1) {
 
     vertex = ((FrontendVertex **) &D_8007BE88)[D_8007BE84];
     if (vertex != NULL) {
-        contrast = 0xFF - ((s32) arg0 * 2);
+        contrast = 0xFF - ((s32) amplitude * 2);
         phase = D_8007BEB4;
         row = 0;
         do {
             column = 0;
             angle = phase;
             do {
-                height = (s32) (func_8002A8C0(angle) * arg0);
+                height = (s32) (func_8002A8C0(angle) * amplitude);
                 column++;
                 angle += 0x2000;
                 vertex->unk4 = (s16) (height + 5);
-                value = (s32) ((height * 2 + contrast) * arg1) >> 8;
+                value = (s32) ((height * 2 + contrast) * intensity) >> 8;
                 vertex->r = (s8) value;
                 vertex->g = (s8) value;
                 vertex->b = (s8) value;
@@ -513,10 +513,10 @@ void func_80037C74(Gfx **gfx, Mtx **mtx, MainVertex **vtx) {
 
 /* func_80038190 matched 2026-10-07 (lane a-front) from 199 words: the
  * segment additions are K0-to-physical subtractions (no shared 0x80000000
- * register), var_a2 is declared first (frame homes), the tile loop is a for
+ * register), row is declared first (frame homes), the tile loop is a for
  * with both zero inits in its header, and OR-with-zero probes (law L109;
- * uopt deletes them, globalcolor still counts them) on var_a2, var_a3 and
- * two packet cursors rank those webs above var_t2, which then takes t2 as
+ * uopt deletes them, globalcolor still counts them) on row, dataOffset and
+ * two packet cursors rank those webs above nextRow, which then takes t2 as
  * shipped. A source form carrying those reference counts is still unknown. */
 /* Resident runtime records 245/246 bind these distinct typed call sites to
  * overlay 99's height-grid builder and framebuffer-grid renderer. Both retain
@@ -547,24 +547,24 @@ extern void frontend38190DrawHeightGridReloc(Gfx **displayList, Mtx **matrices,
         _cmd->words.w0 = (u32) (opcode); \
         _cmd->words.w1 = (u32) (data); \
     }
-void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
-    s32 var_a2;
-    s32 spE0;
-    s32 spDC;
-    f32 spD8;
+void func_80038190(Gfx **gfxList, Mtx **mtxList, MainVertex **vertexList) {
+    s32 row;
+    s32 width;
+    s32 height;
+    f32 progress;
     u8 *viewport;
-    s32 var_a3;
-    s32 var_t2;
+    s32 dataOffset;
+    s32 nextRow;
 
     if ((D_8007BE80 != 0) && (D_8007BEA8 != 0)) {
-        FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
-        FRONTEND38190_EMIT(arg0, 0xED000000, 0x5003C0);
+        FRONTEND38190_EMIT(gfxList, 0xE7000000, 0);
+        FRONTEND38190_EMIT(gfxList, 0xED000000, 0x5003C0);
         if (D_8007BEA8 == 2) {
-            FRONTEND38190_EMIT(arg0, 0xEF30000F, 0);
-            FRONTEND38190_EMIT(arg0, 0xF7000000, 0x10001);
-            FRONTEND38190_EMIT(arg0, 0xF64FC3BC, 0);
+            FRONTEND38190_EMIT(gfxList, 0xEF30000F, 0);
+            FRONTEND38190_EMIT(gfxList, 0xF7000000, 0x10001);
+            FRONTEND38190_EMIT(gfxList, 0xF64FC3BC, 0);
         } else {
-            spD8 = (f32) D_8007BEAC / (f32) D_8007BE94;
+            progress = (f32) D_8007BEAC / (f32) D_8007BE94;
             switch (D_8007BE90) {
             case 0:
             case 1:
@@ -577,61 +577,61 @@ void func_80038190(Gfx **arg0, Mtx **arg1, MainVertex **arg2) {
             case 4:
             case 5:
                 frontend38190BuildHeightGridReloc(
-                    spD8, (void *) (u32) D_8007BEB0,
+                    progress, (void *) (u32) D_8007BEB0,
                     0x10, 0x10, 0x14, 0xF);
                 break;
             }
             D_8007BEE0 = (D_8007BEE0 + 1) & 1;
-            viGetCurrentSize(&spE0, &spDC);
+            viGetCurrentSize(&width, &height);
             viewport = D_8007BEC0 + (D_8007BEE0 * 0x10);
-            *(s16 *) (viewport + 8) = (s16) (spE0 * 2);
-            *(s16 *) (viewport + 0xA) = (s16) (spDC * 2);
-            *(s16 *) (viewport + 0) = (s16) (spE0 * 2);
-            *(s16 *) (viewport + 2) = (s16) (spE0 * 2);
-            FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
-            FRONTEND38190_EMIT(arg0, 0xBC000406,
+            *(s16 *) (viewport + 8) = (s16) (width * 2);
+            *(s16 *) (viewport + 0xA) = (s16) (height * 2);
+            *(s16 *) (viewport + 0) = (s16) (width * 2);
+            *(s16 *) (viewport + 2) = (s16) (width * 2);
+            FRONTEND38190_EMIT(gfxList, 0xE7000000, 0);
+            FRONTEND38190_EMIT(gfxList, 0xBC000406,
                           (u32) ((char *) D_800D2FAC - 0x80000000));
-            FRONTEND38190_EMIT(arg0, 0xBC001006,
+            FRONTEND38190_EMIT(gfxList, 0xBC001006,
                           (u32) D_800D2FAC + 0x7FFFFB00u);
-            FRONTEND38190_EMIT(arg0, 0xBC000806, 0x80000000u);
-            FRONTEND38190_EMIT(arg0, 0xFF10013F, 0x01000000);
-            FRONTEND38190_EMIT(arg0, 0xB6000000, 0x10001);
-            FRONTEND38190_EMIT(arg0, 0xEF20000F, 0);
-            for (var_a2 = 0, var_a3 = 0; var_a2 != 0xF0; var_a2 = var_t2) {
-                var_t2 = var_a2 + 4;
-                FRONTEND38190_EMIT(arg0, 0xFD100000,
-                              (u32) D_800D2FA8 + var_a3);
-                var_a3 += 0xA00;
-                FRONTEND38190_EMIT(arg0, 0xF5100000, 0x07080200);
-                FRONTEND38190_EMIT(arg0, 0xE6000000, 0);
-                FE38190_PROBE(arg0, 0xF3000000, 0x074FF01A);
-                FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
-                FRONTEND38190_EMIT(arg0, 0xF510A000, 0x80200);
-                FRONTEND38190_EMIT(arg0, 0xF2000000, 0x4FC00C);
-                FE38190_PROBE(arg0, 0xE4500000 | ((var_t2 * 4) & 0xFFF),
-                              (var_a2 * 4) & 0xFFF);
-                FRONTEND38190_EMIT(arg0, 0xB3000000, 0);
-                FRONTEND38190_EMIT(arg0, 0xB2000000, 0x10000400);
-                var_a2 = var_a2 | 0;
-                var_a2 = var_a2 | 0;
-                var_a3 = var_a3 | 0;
+            FRONTEND38190_EMIT(gfxList, 0xBC000806, 0x80000000u);
+            FRONTEND38190_EMIT(gfxList, 0xFF10013F, 0x01000000);
+            FRONTEND38190_EMIT(gfxList, 0xB6000000, 0x10001);
+            FRONTEND38190_EMIT(gfxList, 0xEF20000F, 0);
+            for (row = 0, dataOffset = 0; row != 0xF0; row = nextRow) {
+                nextRow = row + 4;
+                FRONTEND38190_EMIT(gfxList, 0xFD100000,
+                              (u32) D_800D2FA8 + dataOffset);
+                dataOffset += 0xA00;
+                FRONTEND38190_EMIT(gfxList, 0xF5100000, 0x07080200);
+                FRONTEND38190_EMIT(gfxList, 0xE6000000, 0);
+                FE38190_PROBE(gfxList, 0xF3000000, 0x074FF01A);
+                FRONTEND38190_EMIT(gfxList, 0xE7000000, 0);
+                FRONTEND38190_EMIT(gfxList, 0xF510A000, 0x80200);
+                FRONTEND38190_EMIT(gfxList, 0xF2000000, 0x4FC00C);
+                FE38190_PROBE(gfxList, 0xE4500000 | ((nextRow * 4) & 0xFFF),
+                              (row * 4) & 0xFFF);
+                FRONTEND38190_EMIT(gfxList, 0xB3000000, 0);
+                FRONTEND38190_EMIT(gfxList, 0xB2000000, 0x10000400);
+                row = row | 0;
+                row = row | 0;
+                dataOffset = dataOffset | 0;
             }
-            FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
-            FRONTEND38190_EMIT(arg0, 0xBC000406,
+            FRONTEND38190_EMIT(gfxList, 0xE7000000, 0);
+            FRONTEND38190_EMIT(gfxList, 0xBC000406,
                           (u32) ((char *) D_800D2FA8 - 0x80000000));
-            FRONTEND38190_EMIT(arg0, 0xBC001006,
+            FRONTEND38190_EMIT(gfxList, 0xBC001006,
                           (u32) D_800D2FA8 + 0x7FFFFB00u);
-            FRONTEND38190_EMIT(arg0, 0xFF10013F, 0x01000000);
-            FRONTEND38190_EMIT(arg0, 0x03800010, (u32) (viewport - 0x80000000));
+            FRONTEND38190_EMIT(gfxList, 0xFF10013F, 0x01000000);
+            FRONTEND38190_EMIT(gfxList, 0x03800010, (u32) (viewport - 0x80000000));
             if ((D_8007BE90 == 4) || (D_8007BE90 == 5)) {
                 frontend38190DrawHeightGridReloc(
-                    arg0, arg1, arg2, spD8, 0x10, 0x10, 4, 0x28, 0xF);
+                    gfxList, mtxList, vertexList, progress, 0x10, 0x10, 4, 0x28, 0xF);
             } else {
-                func_80037C74(arg0, arg1, arg2);
+                func_80037C74(gfxList, mtxList, vertexList);
             }
             D_8007BE84 ^= 1;
         }
-        FRONTEND38190_EMIT(arg0, 0xE7000000, 0);
+        FRONTEND38190_EMIT(gfxList, 0xE7000000, 0);
     }
 }
 #undef FRONTEND38190_EMIT

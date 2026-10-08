@@ -222,18 +222,18 @@ extern MenuSpawnedObject *func_8000590C(MenuSpawnPacket *packet, s32 mode);
 extern void *func_8001F520(s32 assetId, s32 arg1);
 
 typedef struct MenuDrawStack {
-    s16 sp7C;
-    s16 sp7E;
-    s16 sp80;
+    s16 rotationY;
+    s16 rotationX;
+    s16 rotationZ;
     u8 pad82[2];
-    f32 sp84;
-    f32 sp88;
-    f32 sp8C;
-    f32 sp90;
+    f32 scale;
+    f32 x;
+    f32 y;
+    f32 z;
     u8 pad94[0x10];
-    f32 spA4;
+    f32 frame;
     u8 padA8[4];
-    MenuFrontObject *spAC;
+    MenuFrontObject *savedObject;
     u8 padB0[8];
 } MenuDrawStack;
 
@@ -576,13 +576,13 @@ u8 frontGetMode(void) {
  * argument -- the other Mickey callers agree). The locals keep their target
  * homes in declaration order: the four joyGetPressed halves and the two
  * call results are the whole 0x28 frame. */
-s32 func_80038E1C(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3, s32 updateRate) {
+s32 func_80038E1C(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList, s32 updateRate) {
     s32 timerState;
     u8 *selection;
     u16 pressed0;
     u16 pressed1;
     u16 pressed2;
-    s32 temp_v0;
+    s32 playerObject;
     u8 mode;
 
     selection = func_80028F54();
@@ -618,12 +618,12 @@ s32 func_80038E1C(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3, s32 updateRate) {
                 func_8003A544(1);
             }
         }
-        temp_v0 = func_80005820(0);
-        D_800D3140 = *arg0;
-        D_800D3144 = *arg1;
-        D_800D3148 = *arg2;
-        timerState = temp_v0;
-        D_800D314C = *arg3;
+        playerObject = func_80005820(0);
+        D_800D3140 = *gfxList;
+        D_800D3144 = *mtxList;
+        D_800D3148 = *vertexList;
+        timerState = playerObject;
+        D_800D314C = *triangleList;
         func_80044BC8(D_800D3140, D_800826C0, 0x297);
         switch (D_8007C0A0) {
         case 0:
@@ -688,10 +688,10 @@ s32 func_80038E1C(s32 *arg0, s32 *arg1, s32 *arg2, s32 *arg3, s32 updateRate) {
             break;
         }
         func_80044BC8(D_800D3140, D_800826D0, 0x2C5);
-        *arg0 = D_800D3140;
-        *arg1 = D_800D3144;
-        *arg2 = D_800D3148;
-        *arg3 = D_800D314C;
+        *gfxList = D_800D3140;
+        *mtxList = D_800D3144;
+        *vertexList = D_800D3148;
+        *triangleList = D_800D314C;
         D_8007BF34 = 0;
         if (D_8007BF70 != -1) {
             D_8007BF70 -= updateRate;
@@ -1048,13 +1048,13 @@ void func_80039E34(s32 index) {
     current = &D_800D3550[index];
     if ((D_800D31C8[current->index] != NULL) &&
         ((D_8007C1B8[current->index] & 0xC000) != 0xC000)) {
-        stack.sp7C = *(volatile s16 *)&current->unk0;
-        stack.sp7E = *(volatile s16 *)&current->unk2;
-        stack.sp80 = *(volatile s16 *)&current->unk4;
-        stack.sp88 = *(volatile f32 *)&current->unkC;
-        stack.sp8C = *(volatile f32 *)&current->unk10;
-        stack.sp90 = *(volatile f32 *)&current->unk14;
-        stack.sp84 = *(volatile f32 *)&current->unk8;
+        stack.rotationY = *(volatile s16 *)&current->unk0;
+        stack.rotationX = *(volatile s16 *)&current->unk2;
+        stack.rotationZ = *(volatile s16 *)&current->unk4;
+        stack.x = *(volatile f32 *)&current->unkC;
+        stack.y = *(volatile f32 *)&current->unk10;
+        stack.z = *(volatile f32 *)&current->unk14;
+        stack.scale = *(volatile f32 *)&current->unk8;
         flags = D_8007C1B8[*(volatile s16 *)&current->index];
         if (flags & 0x4000) {
             MenuCurrentObject *drawObject =
@@ -1073,7 +1073,7 @@ void func_80039E34(s32 index) {
             return;
         }
         if (flags & 0x8000) {
-            stack.spA4 = current->unk18;
+            stack.frame = current->unk18;
             tex = D_800D31C8[current->index];
             MENU_COMMAND(D_800D3140++, 0xE7000000, 0);
             MENU_COMMAND(D_800D3140++, 0xFA000000,
@@ -1083,7 +1083,7 @@ void func_80039E34(s32 index) {
                              (D_8007C0BC & 0xFF));
             MENU_COMMAND(D_800D3140++, 0xFB000000, -0x100);
             func_80023F84(&D_800D3140, &D_800D3144, &D_800D3148,
-                          &stack.sp7C,
+                          &stack.rotationY,
                           tex, D_8007C0B4,
                           D_8007C0BC);
             MENU_COMMAND_CARRIER(0xE7000000, 0);
@@ -1097,13 +1097,13 @@ void func_80039E34(s32 index) {
             MENU_COMMAND_CARRIER(0xFA000000, -1);
         }
         MENU_COMMAND(D_800D3140++, 0xFB000000, -0x100);
-        stack.spA4 = current->unk18 * 0.0625f;
+        stack.frame = current->unk18 * 0.0625f;
         renderObject = D_800D31C8[current->index];
         if (renderObject->resource->unk4E == 0) {
-            stack.spAC = renderObject;
-            camPushModelMtx(&D_800D3140, &D_800D3144, &stack.sp7C, 1.0f,
+            stack.savedObject = renderObject;
+            camPushModelMtx(&D_800D3140, &D_800D3144, &stack.rotationY, 1.0f,
                           0.0f);
-            renderObject = stack.spAC;
+            renderObject = stack.savedObject;
             MENU_COMMAND(D_800D3140++,
                          (((renderObject->unkC[renderObject->indexA] +
                             0x80000000) & 0xFFFFFF) | 0xBF000000),

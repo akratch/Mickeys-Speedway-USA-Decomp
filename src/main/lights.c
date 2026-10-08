@@ -386,7 +386,7 @@ void freeLights(void) {
     D_80079490 = 0;
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/lights.c, with Mickey's allocation sizes. */
-void setupLights(s32 count, s32 arg1, s32 arg2) {
+void setupLights(s32 count, s32 unusedA, s32 unusedB) {
     s32 i;
     void **buffer;
 
@@ -421,7 +421,7 @@ void func_800188CC(UnkLight *light) {
     }
 }
 /* PROVENANCE: adapted from JFG's public decomp comparison and Mickey's own assembly. */
-UnkLight *addRomdefLight(s32 arg0, RomdefLight *entry) {
+UnkLight *addRomdefLight(s32 unused, RomdefLight *entry) {
     UnkLight *light;
     u8 *levelData;
 
@@ -543,8 +543,8 @@ void changeLightColour(UnkLight *light, u8 red, u8 green, u8 blue) {
     light->unk54 = 0;
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/lights.c. */
-void changeLightColourCycle(s32 arg0, s32 arg1) {
-    initColourCycle(arg0 + 0x48, arg1);
+void changeLightColourCycle(s32 light, s32 cycle) {
+    initColourCycle(light + 0x48, cycle);
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/lights.c. */
 void changeLightIntensity(UnkLight *light, u8 intensity) {
@@ -873,11 +873,11 @@ void func_8001953C(LightingObject *object, ShadeState *state) {
     state->lights[0].colourStep = amount << state->lights[0].shift;
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/lights.c, with Mickey's trigonometry helper. */
-f32 func_80019934(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
+f32 func_80019934(f32 maxValue, f32 distance, f32 inverseRange, s32 falloffType) {
     f32 temp;
 
-    temp = arg1 * arg2;
-    switch (arg3) {
+    temp = distance * inverseRange;
+    switch (falloffType) {
         case 1:
             temp = 1.0f - temp;
             break;
@@ -896,23 +896,23 @@ f32 func_80019934(f32 arg0, f32 arg1, f32 arg2, s32 arg3) {
             temp *= temp;
             break;
     }
-    return arg0 * temp;
+    return maxValue * temp;
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/lights.c. */
-f32 lightDirectionCalc(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5, f32 arg6) {
-    f32 temp_f0;
-    f32 var_f2;
+f32 lightDirectionCalc(f32 x, f32 y, f32 z, f32 directionX, f32 directionY, f32 directionZ, f32 length) {
+    f32 inverseLength;
+    f32 dot;
 
-    if (arg6 > 0.0f) {
-        temp_f0 = 1.0f / arg6;
-        var_f2 = (arg3 * temp_f0 * arg0) + (arg4 * temp_f0 * arg1) + (arg5 * temp_f0 * arg2);
-        if (var_f2 < 0.0f) {
-            var_f2 = 0.0f;
+    if (length > 0.0f) {
+        inverseLength = 1.0f / length;
+        dot = (directionX * inverseLength * x) + (directionY * inverseLength * y) + (directionZ * inverseLength * z);
+        if (dot < 0.0f) {
+            dot = 0.0f;
         }
     } else {
-        var_f2 = 1.0f;
+        dot = 1.0f;
     }
-    return var_f2;
+    return dot;
 }
 /* PROVENANCE: JFG public decomp src/lights.c names this routine lightObject; that entry is still assembly, so Mickey's fields, globals, and calls are authoritative below.
  *
@@ -1011,23 +1011,23 @@ void func_80019AB8(LightPosition *position, LightObjectContext *object,
     }
 }
 /* PROVENANCE: adapted from JFG's public decomp comparison and Mickey's own assembly. */
-void lightDefaultObjectLight(s32 arg0, s32 arg1, s16 arg2, s16 arg3, s32 arg4) {
-    func_80019DE8(&D_800CB298, arg0, arg1, arg2, arg3, arg4);
+void lightDefaultObjectLight(s32 startValue, s32 endValue, s16 pitch, s16 yaw, s32 shift) {
+    func_80019DE8(&D_800CB298, startValue, endValue, pitch, yaw, shift);
 }
 /* PROVENANCE: JFG's public assembly-backed lightSetObjectLight authenticates
  * the structural role only; Mickey's body and globals remain authoritative. */
-void func_80019DE8(ObjectLightState *state, s32 arg1, s32 arg2, s16 pitch, s16 yaw, s32 shift) {
+void func_80019DE8(ObjectLightState *state, s32 startValue, s32 endValue, s16 pitch, s16 yaw, s32 shift) {
     s16 rotation[3];
     f32 direction[3];
 
-    arg1 &= 0xFF;
-    arg2 &= 0xFF;
+    startValue &= 0xFF;
+    endValue &= 0xFF;
     shift &= 7;
-    if (arg2 < arg1) {
-        arg1 = arg2;
+    if (endValue < startValue) {
+        startValue = endValue;
     }
-    state->startValue = arg1;
-    state->endValue = arg2;
+    state->startValue = startValue;
+    state->endValue = endValue;
     state->shift = shift;
     state->valueDelta = state->endValue - state->startValue;
     state->colourStep = state->valueDelta << state->shift;

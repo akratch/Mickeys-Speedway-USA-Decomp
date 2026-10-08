@@ -429,7 +429,7 @@ s32 diRcpStrName(Gfx *dList, char *command) {
 
 /* PROVENANCE: body adapted from JFG src/diRcp.c::diRcpOtherMode. */
 s32 diRcpOtherMode(Gfx *dList, char *command) {
-    char sp30[0x50];
+    char padded[0x50];
     s32 bits;
     s32 shiftValue;
     s32 data;
@@ -439,7 +439,7 @@ s32 diRcpOtherMode(Gfx *dList, char *command) {
 
     stubbed_printf("%s: 0x%08x  0x%08x\n", command, dList, data);
 
-    sprintf(sp30, "%20s", command);
+    sprintf(padded, "%20s", command);
 
     switch (shiftValue) {
         case G_MDSFT_ALPHACOMPARE:

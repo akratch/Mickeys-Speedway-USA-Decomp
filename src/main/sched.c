@@ -104,8 +104,8 @@ SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
 void func_80044C94(SchedGfx *displayList, s32 *file, s32 *unkC,
                    s32 *unk10, s32 *file2, s32 *unkC2, s32 *unk102);
 void diRcpPrintDL(SchedGfx *start, SchedGfx *end, s32 count);
-SchedGfx *func_80030910(OSSched *sc, s32 *arg1, s32 *arg2, s32 *arg3,
-                        s32 *arg4, s32 *arg5, s32 *arg6);
+SchedGfx *func_80030910(OSSched *sc, s32 *outFile, s32 *outUnkC, s32 *outUnk10,
+                        s32 *outFile2, s32 *outUnkC2, s32 *outUnk102);
 void __scAppendList(OSSched *sc, OSScTask *task);
 void __scYield(OSSched *sc);
 void __scHandleRetrace(OSSched *sc);
@@ -291,7 +291,7 @@ char *osScGetTaskType(s32 taskID) {
             return D_80082100;
     }
 }
-void func_80030608(OSScTask *arg0) {
+void func_80030608(OSScTask *task) {
 }
 /* Matched 2026-10-01.  The edits that closed it:
  *  - the nested cursor and its start are pointers, like the print cursor.
@@ -412,8 +412,8 @@ SchedGfx *func_80030610(OSSched *sc, s32 commandIndex,
 }
 /* PROVENANCE: body adapted from Jet Force Gemini's public decomp,
  * src/sched.c:func_8004FF64_50B64, with Mickey's extracted trace helper. */
-SchedGfx *func_80030910(OSSched *sc, s32 *arg1, s32 *arg2, s32 *arg3,
-                        s32 *arg4, s32 *arg5, s32 *arg6) {
+SchedGfx *func_80030910(OSSched *sc, s32 *outFile, s32 *outUnkC, s32 *outUnk10,
+                        s32 *outFile2, s32 *outUnkC2, s32 *outUnk102) {
     u32 commandIndex;
     OSMesg queueBuffer[8];
     OSMesgQueue queue;
@@ -442,20 +442,20 @@ SchedGfx *func_80030910(OSSched *sc, s32 *arg1, s32 *arg2, s32 *arg3,
     osSetEventMesg(9, &sc->interruptQ, (OSMesg) RDP_DONE_MSG);
     osViSetEvent(&sc->interruptQ, (OSMesg) VIDEO_MSG, 1);
 
-    *arg4 = 0;
-    *arg1 = 0;
+    *outFile2 = 0;
+    *outFile = 0;
     func_80044C94(displayList, &file, &unkC, &unk10, &file2, &unkC2,
                   &unk102);
     if (file2 != 0 || file != 0) {
         if (file != 0) {
-            *arg1 = file;
-            *arg2 = unkC;
-            *arg3 = unk10;
+            *outFile = file;
+            *outUnkC = unkC;
+            *outUnk10 = unk10;
         }
         if (file2 != 0) {
-            *arg4 = file2;
-            *arg5 = unkC2;
-            *arg6 = unk102;
+            *outFile2 = file2;
+            *outUnkC2 = unkC2;
+            *outUnk102 = unk102;
         }
     }
 
@@ -485,18 +485,18 @@ void __scHandleRetrace(OSSched *sc) {
     u8 clearRDPTask = FALSE;
     SchedGfx *spGfx;
     SchedGfx *dpGfx;
-    s32 spC4;
-    s32 spC0;
-    s32 spBC;
-    OSScTask *spB8;
-    s32 spB4;
-    s32 spB0;
-    s32 spAC;
-    s32 spA8;
-    s32 spA4;
-    s32 spA0;
-    s32 sp9C;
-    s32 sp98;
+    s32 rspUnk10;
+    s32 rspUnk102;
+    s32 rdpUnk10;
+    OSScTask *rdpUnk102;
+    s32 rspFile;
+    s32 rspFile2;
+    s32 rdpFile;
+    s32 rdpFile2;
+    s32 rspUnkC;
+    s32 rspUnkC2;
+    s32 rdpUnkC;
+    s32 rdpUnkC2;
     OSScTask *unkTask;
     OSMesg intBuf[8];
     OSMesgQueue interruptQ;
@@ -519,7 +519,7 @@ void __scHandleRetrace(OSSched *sc) {
             osScGetTaskType(sc->curRSPTask->taskID);
             func_80030608(sc->curRSPTask);
             if (sc->curRSPTask->list.t.type == 1) {
-                spGfx = func_80030910(sc, &spB4, &spA4, &spC4, &spB0, &spA0, &spC0);
+                spGfx = func_80030910(sc, &rspFile, &rspUnkC, &rspUnk10, &rspFile2, &rspUnkC2, &rspUnk102);
             }
             D_800D2D40 = 0;
         }
@@ -538,7 +538,7 @@ void __scHandleRetrace(OSSched *sc) {
             osScGetTaskType(sc->curRDPTask->taskID);
             func_80030608(sc->curRDPTask);
             if (sc->curRDPTask->list.t.type == 1) {
-                dpGfx = func_80030910(sc, &spAC, &sp9C, &spBC, &spA8, &sp98, (s32 *) &spB8);
+                dpGfx = func_80030910(sc, &rdpFile, &rdpUnkC, &rdpUnk10, &rdpFile2, &rdpUnkC2, (s32 *) &rdpUnk102);
             }
             D_800D2D44 = 0;
         }

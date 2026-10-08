@@ -923,8 +923,8 @@ void *func_80004454(f32 x, f32 y, f32 z, u8 objectType) {
 /* Keep the preheader's three assignments on one physical line with `do {`:
  * splitting them costs two words at +0x74/+0x78. See func_8000471C, which is
  * the same function against a different object list and needs the same edit. */
-/* Lane w3-obj: u8 arg0 emits the prologue andi plus the incoming a0 home
- * store. object->unk44 == arg0 is the compare operand order. Unused pointer
+/* Lane w3-obj: u8 objectType emits the prologue andi plus the incoming a0 home
+ * store. object->unk44 == objectType is the compare operand order. Unused pointer
  * pad places count at 0x40. 99/99 words, frame 0x50, 5 relocations. */
 s32 func_80004590(u8 objectType) {
     s32 start;
@@ -3331,8 +3331,8 @@ typedef union {
     _g->words.w1 = (u32)(address); \
 }
 /* Matched (was 168 masked words, four bytes long) on two shapes: the
- * texture flags are two terms OR-ed onto arg9, and the vertex and triangle
- * packets are the vertex/polygon command macros with arg3 a display-list
+ * texture flags are two terms OR-ed onto flags, and the vertex and triangle
+ * packets are the vertex/polygon command macros with triangles a display-list
  * byte pointer, so the 0x80000000 segment base is pointer arithmetic that
  * ugen keeps in one register for both packets. */
 void func_800084C4(Objects084C4Gfx **displayListPtr, Objects084C4Vertex **vertexPtr,
@@ -4371,9 +4371,9 @@ s32 func_8000A244(s32 *countOut) {
  * the countdown `for (count = n; count != 0; count--)` on the same local the
  * sort pass counts with (IDO unrolls it with the shipped negated remainder;
  * the earlier `> 0` and `while (n--)` forms stay rolled and `i` from zero gives
- * the positive remainder); `arg1 - arg0` is never stored, so it is spilled as
- * a temporary and the frame is 0x58; `arg0 * 4` is written at both uses with
- * `arg0` never assigned, so it stays in its incoming home and the shift is
+ * the positive remainder); `last - first` is never stored, so it is spilled as
+ * a temporary and the frame is 0x58; `first * 4` is written at both uses with
+ * `first` never assigned, so it stays in its incoming home and the shift is
  * copied once for the sort pass; and the loop header shares one physical line
  * with its first statement, which orders the unrolled body's pointer and
  * counter steps as shipped (L59). */

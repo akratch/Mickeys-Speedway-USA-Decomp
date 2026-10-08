@@ -77,35 +77,35 @@ extern u8 D_80082714[];
  * the four interior `return`s make the body multi-exit.
  *
  * No donor counterpart: JFG's src/menu.c has no function of this shape. */
-void *func_8003A5A0(s32 arg0) {
+void *func_8003A5A0(s32 key) {
     s32 i;
 
     for (i = 0; i < 6; i++) {
-        if (arg0 == D_8007C0E8[i].key[0]) { return (void *) D_8007C0B8[D_8007C11C[i].key[0]]; }
-        if (arg0 == D_8007C0E8[i].key[1]) { return (void *) D_8007C0B8[D_8007C11C[i].key[1]]; }
-        if (arg0 == D_8007C0E8[i].key[2]) { return (void *) D_8007C0B8[D_8007C11C[i].key[2]]; }
-        if (arg0 == D_8007C0E8[i].key[3]) { return (void *) D_8007C0B8[D_8007C11C[i].key[3]]; }
+        if (key == D_8007C0E8[i].key[0]) { return (void *) D_8007C0B8[D_8007C11C[i].key[0]]; }
+        if (key == D_8007C0E8[i].key[1]) { return (void *) D_8007C0B8[D_8007C11C[i].key[1]]; }
+        if (key == D_8007C0E8[i].key[2]) { return (void *) D_8007C0B8[D_8007C11C[i].key[2]]; }
+        if (key == D_8007C0E8[i].key[3]) { return (void *) D_8007C0B8[D_8007C11C[i].key[3]]; }
     }
     return D_80082714;
 }
 
-void func_8003A680(s32 arg0) {
+void func_8003A680(s32 value) {
     if (D_8007BF44 < 8) {
-        D_8007BF3C[D_8007BF44] = arg0;
+        D_8007BF3C[D_8007BF44] = value;
         D_8007BF44 += 1;
     }
 }
-s32 func_8003A6B0(u8 arg0) {
-    s32 temp_t6 = arg0;
-    s32 temp_v1 = temp_t6;
+s32 func_8003A6B0(u8 character) {
+    s32 code = character;
+    s32 codeCopy = code;
 
-    if (temp_t6 == 0x21) {
+    if (code == 0x21) {
         goto return_1B;
     }
-    if (temp_t6 == 0x2A) {
+    if (code == 0x2A) {
         goto return_1C;
     }
-    if (temp_t6 != 0x3F) {
+    if (code != 0x3F) {
         goto return_default;
     }
     return 0x1A;
@@ -115,13 +115,13 @@ return_1B:
 return_1C:
     return 0x1C;
 return_default:
-    return (temp_v1 - 0x41) & 0xFF;
+    return (codeCopy - 0x41) & 0xFF;
 }
-s32 func_8003A700(u8 arg0) {
-    s32 temp_t6 = arg0;
-    s32 temp_v1 = temp_t6;
+s32 func_8003A700(u8 character) {
+    s32 code = character;
+    s32 codeCopy = code;
 
-    switch (temp_t6) {
+    switch (code) {
     case 0x1A:
         return 0x3F;
     case 0x1B:
@@ -129,7 +129,7 @@ s32 func_8003A700(u8 arg0) {
     case 0x1C:
         return 0x2A;
     default:
-        return (temp_v1 + 0x41) & 0xFF;
+        return (codeCopy + 0x41) & 0xFF;
     }
 }
 /* Clears ten 0x28-byte records: each record's half26, byte07 and bytes20[],
@@ -199,13 +199,13 @@ void func_8003A754(void) {
  * `state->count` again rather than the local: IDO CSEs all three reads onto
  * one carrier and copies it into the second, which is what puts the -1
  * compare on the original and the increment on the copy (lever 45). */
-s32 func_8003A7D0(Menu3B1A0Object *arg0) {
+s32 func_8003A7D0(Menu3B1A0Object *object) {
     Menu3B1A0State *state;
     s32 total;
     s32 limit;
     s32 i;
 
-    state = arg0->state;
+    state = object->state;
     total = 0;
     limit = state->count;
     if ((state->flag45C != 0) && (state->count != -1)) {

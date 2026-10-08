@@ -250,60 +250,60 @@ void levelGetCounts(void) {
 }
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
-s32 levelNGetType(s32 arg0) {
-    if ((arg0 >= 0) && (arg0 < D_800CF3D4)) {
-        return D_800CF3DC[arg0].type;
+s32 levelNGetType(s32 levelIndex) {
+    if ((levelIndex >= 0) && (levelIndex < D_800CF3D4)) {
+        return D_800CF3DC[levelIndex].type;
     }
     return -1;
 }
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
-s32 levelGetTune(s32 arg0) {
-    if ((arg0 >= 0) && (arg0 < D_800CF3D4)) {
-        return D_800CF3DC[arg0].tune;
+s32 levelGetTune(s32 levelIndex) {
+    if ((levelIndex >= 0) && (levelIndex < D_800CF3D4)) {
+        return D_800CF3DC[levelIndex].tune;
     }
     return -1;
 }
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
-s32 levelGetWorld(s32 arg0) {
-    if ((arg0 >= 0) && (arg0 < D_800CF3D4)) {
-        return D_800CF3DC[arg0].world;
+s32 levelGetWorld(s32 levelIndex) {
+    if ((levelIndex >= 0) && (levelIndex < D_800CF3D4)) {
+        return D_800CF3DC[levelIndex].world;
     }
     return 0;
 }
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
-s32 levelGetRegionNo(s32 arg0) {
-    if ((arg0 >= 0) && (arg0 < D_800CF3D4)) {
-        return D_800CF3DC[arg0].region;
+s32 levelGetRegionNo(s32 levelIndex) {
+    if ((levelIndex >= 0) && (levelIndex < D_800CF3D4)) {
+        return D_800CF3DC[levelIndex].region;
     }
     return 0;
 }
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
-s32 levelGetScreenMode(s32 arg0) {
-    if ((arg0 >= 0) && (arg0 < D_800CF3D4)) {
-        return D_800CF3DC[arg0].screenMode;
+s32 levelGetScreenMode(s32 levelIndex) {
+    if ((levelIndex >= 0) && (levelIndex < D_800CF3D4)) {
+        return D_800CF3DC[levelIndex].screenMode;
     }
     return 0;
 }
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
-s32 levelGetBlurEffect(s32 arg0) {
-    if ((arg0 >= 0) && (arg0 < D_800CF3D4)) {
-        return D_800CF3DC[arg0].blur;
+s32 levelGetBlurEffect(s32 levelIndex) {
+    if ((levelIndex >= 0) && (levelIndex < D_800CF3D4)) {
+        return D_800CF3DC[levelIndex].blur;
     }
     return 0;
 }
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
-u32 levelGetGfxIndex(s32 arg0) {
+u32 levelGetGfxIndex(s32 levelIndex) {
     u32 result;
 
     result = mainGetNumberOfCameras() - 1;
-    if ((arg0 >= 0) && (arg0 < D_800CF3D4) && (result == 0) &&
-        (D_800CF3DC[arg0].gfxIndex != 0)) {
+    if ((levelIndex >= 0) && (levelIndex < D_800CF3D4) && (result == 0) &&
+        (D_800CF3DC[levelIndex].gfxIndex != 0)) {
         result = 4;
     }
     return result;
@@ -312,7 +312,7 @@ u32 levelGetGfxIndex(s32 arg0) {
 /* PROVENANCE: pinned JFG c82afff keeps levelInit assembly-only; later public
  * JFG 773e313/1a92d81 C provides structural and lifetime evidence only.
  * Mickey's call graph, fields, boundaries, and bytes remain decisive. */
-void levelInit(s32 lvlIdx, s32 arg1, s32 arg2, s32 arg3) {
+void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
     s16 tune;
     s32 i;
     s32 lvlStart;
@@ -326,8 +326,8 @@ void levelInit(s32 lvlIdx, s32 arg1, s32 arg2, s32 arg3) {
 
     rumbleKill(1);
     D_800CF3C0 = piRomLoad(0x1E);
-    if (arg3 < 0) {
-        arg3 = 0;
+    if (mode < 0) {
+        mode = 0;
     }
 
     switch (func_800291FC()) {
@@ -374,16 +374,16 @@ void levelInit(s32 lvlIdx, s32 arg1, s32 arg2, s32 arg3) {
     setupLights(D_800CF3C8->lightCount, 8, 0x10);
     mainPreNMI();
 
-    func_8000A6DC(arg3);
+    func_8000A6DC(mode);
 
     mainPreNMI();
-    levelTrackInitTrap(D_800CF3C8->trackArg0, D_800CF3C8->trackArg1, arg1,
+    levelTrackInitTrap(D_800CF3C8->trackArg0, D_800CF3C8->trackArg1, trackParam,
                        D_800CF3C8->trackArg3, D_800CF3C8->trackArg4,
                        D_800CF3C8->trackArg5);
 
     mainPreNMI();
 
-    func_80051004(arg3);
+    func_80051004(mode);
 
     if ((D_800CF3C8->type == 0) || (D_800CF3C8->type == 3)) {
         if (D_8007BF0C != 0) {
@@ -551,12 +551,12 @@ void levelTunePlay(void) {
 }
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
-void levelUpdateColourCycling(s32 arg0) {
+void levelUpdateColourCycling(s32 updateRate) {
     s32 i;
 
     for (i = 0; i < 7; i++) {
         if (((LevelHeaderColour *) D_800CF3C8)->weatherType[i] != -1) {
-            func_80036AB0(&D_800CF420[i * 16], arg0);
+            func_80036AB0(&D_800CF420[i * 16], updateRate);
         }
     }
 }
@@ -590,12 +590,12 @@ u8 *levelGetLevel(void) {
 }
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
-u8 *levelGetName(s32 arg0) {
+u8 *levelGetName(s32 levelIndex) {
     *D_8007A0D0 = 0;
-    if (arg0 < D_800CF3D4) {
+    if (levelIndex < D_800CF3D4) {
         D_800CF3C0 = piRomLoad(0x1E);
         if (D_800CF3C0 != NULL) {
-            piRomLoadSection(0x1F, D_8007A0D0, D_800CF3C0[arg0], 0x20);
+            piRomLoadSection(0x1F, D_8007A0D0, D_800CF3C0[levelIndex], 0x20);
             mmFree(D_800CF3C0);
         }
     }
@@ -610,10 +610,10 @@ u8 *levelGetName(s32 arg0) {
  * into the carrier is a surviving evaluation, and 32-bit width avoids a
  * narrowing chain. */
 void levelFreeAll(void) {
-    s32 temp_v0_2;
+    s32 assetId;
     s32 i;
-    s8 temp_v1;
-    void *temp_v0;
+    s8 levelType;
+    void *levelData;
 
     rcpSetScreenColour(0, 0, 0);
     mmFree(D_800CF3C8);
@@ -623,26 +623,26 @@ void levelFreeAll(void) {
     func_80013EC0();
     amResetAudioMap();
     func_800582A8();
-    temp_v0 = D_800CF3C8;
-    if (*(s16 *) ((u8 *) temp_v0 + 0xA2) > 0) {
+    levelData = D_800CF3C8;
+    if (*(s16 *) ((u8 *) levelData + 0xA2) > 0) {
         freeWeather();
     }
-    temp_v1 = *(s8 *) ((u8 *) D_800CF3C8 + 0x52);
-    if (temp_v1 == 3) {
+    levelType = *(s8 *) ((u8 *) D_800CF3C8 + 0x52);
+    if (levelType == 3) {
         func_800347A0(*(void **) ((u8 *) D_800CF3C8 + 0xB8));
-    } else if ((temp_v1 == 4) || (temp_v1 == 5)) {
+    } else if ((levelType == 4) || (levelType == 5)) {
         func_8002EBD4(0);
     }
     if (D_8007A0F4 != NULL) {
         for (i = 0; i < D_800CF508; i++) {
-            temp_v0_2 = D_8007A0F4[i];
-            if ((temp_v0_2 & 0xC000) == 0xC000) {
+            assetId = D_8007A0F4[i];
+            if ((assetId & 0xC000) == 0xC000) {
                 func_800347A0(D_800CF490[i]);
-            } else if (temp_v0_2 & 0x8000) {
+            } else if (assetId & 0x8000) {
                 func_800359D4(D_800CF490[i]);
-            } else if (temp_v0_2 & 0x4000) {
-                temp_v0_2 &= 0x3FFF;
-                func_80004B04(*(s16 *) ((u32) D_800C94E0 + (temp_v0_2 << 1)));
+            } else if (assetId & 0x4000) {
+                assetId &= 0x3FFF;
+                func_80004B04(*(s16 *) ((u32) D_800C94E0 + (assetId << 1)));
             } else {
                 modFreeModel(D_800CF490[i]);
             }
@@ -658,14 +658,14 @@ void levelFreeAll(void) {
 }
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
-s32 levelGetNextOfWorld(s32 arg0, s8 arg1) {
+s32 levelGetNextOfWorld(s32 levelIndex, s8 world) {
     s32 next;
 
-    next = arg0 + 1;
+    next = levelIndex + 1;
     if (next >= D_800CF3D4) {
         next = 0;
     }
-    while ((next != arg0) && (arg1 != D_800CF3DC[next].world)) {
+    while ((next != levelIndex) && (world != D_800CF3DC[next].world)) {
         next++;
         if (next >= D_800CF3D4) {
             next = 0;
@@ -675,14 +675,14 @@ s32 levelGetNextOfWorld(s32 arg0, s8 arg1) {
 }
 
 /* PROVENANCE: body adapted from JFG src/level.c; Mickey byte identity is decisive. */
-s32 levelGetPrevOfWorld(s32 arg0, s8 arg1) {
+s32 levelGetPrevOfWorld(s32 levelIndex, s8 world) {
     s32 prev;
 
-    prev = arg0 - 1;
+    prev = levelIndex - 1;
     if (prev < 0) {
         prev = D_800CF3D4 - 1;
     }
-    while ((prev != arg0) && (arg1 != D_800CF3DC[prev].world)) {
+    while ((prev != levelIndex) && (world != D_800CF3DC[prev].world)) {
         prev--;
         if (prev < 0) {
             prev = D_800CF3D4 - 1;

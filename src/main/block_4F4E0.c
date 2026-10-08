@@ -68,8 +68,8 @@ void func_8004E99C(void) {
 extern s32 D_8007D648;
 extern void func_8004EC60(void);
 
-void func_8004E9EC(s32 arg0) {
-    D_8007D648 = arg0;
+void func_8004E9EC(s32 value) {
+    D_8007D648 = value;
 }
 
 /* PROVENANCE: adapted from Diddy Kong Racing's public decomp, src/game_text.c:
@@ -155,46 +155,46 @@ void func_8004EC60(void) {
         D_800D6AC4 = 1;
     }
 }
-void func_8004EDA8(s32 arg0)
+void func_8004EDA8(s32 updateRate)
 {
-  s16 var_a0;
+  s16 fadeState;
   if (D_8007D640 != 0)
   {
     if (D_8007D648 == 0)
     {
       D_800D6AC4 = 0;
     }
-    var_a0 = D_800D6AC4;
-    if (var_a0 != 0)
+    fadeState = D_800D6AC4;
+    if (fadeState != 0)
     {
       if (D_800D6ABA <= 0)
       {
-        D_800D6AB6 -= arg0 * D_800D6AB8;
+        D_800D6AB6 -= updateRate * D_800D6AB8;
         if (D_800D6AB6 < 0)
         {
           D_800D6AB6 = 0;
           D_800D6AC4 = 0;
           func_8004BFD8(6);
           func_8004BF64(6);
-          var_a0 = D_800D6AC4;
+          fadeState = D_800D6AC4;
         }
       }
       else
       {
-        D_800D6AB6 += arg0 * D_800D6AB8;
+        D_800D6AB6 += updateRate * D_800D6AB8;
         if (D_800D6AB6 >= 0x101)
         {
           D_800D6AB6 = 0x100;
         }
-        D_800D6ABA -= arg0;
+        D_800D6ABA -= updateRate;
         if (D_800D6ABA <= 0)
         {
           func_8004EC60();
-          var_a0 = D_800D6AC4;
+          fadeState = D_800D6AC4;
         }
       }
     }
-    if (var_a0 != 0)
+    if (fadeState != 0)
     {
       func_8004E9F8();
     }
@@ -213,33 +213,33 @@ extern s32 piRomLoadSection(u32 assetIndex, u32 address, s32 assetOffset,
  * than a walking pointer plus loaded-word CSE. That reorders ugen's
  * post-call scratch ring (L145/L160); colour-forcing the loaded-word web
  * to t2 scored 18 and did not close. */
-void func_8004EED0(s32 arg0) {
+void func_8004EED0(s32 stringIndex) {
     s32 *entries;
     s32 language;
     s32 temp;
     s32 size;
 
-    if ((D_8007D640 != 0) && (arg0 >= 0) && (arg0 < D_800D6AB4)) {
+    if ((D_8007D640 != 0) && (stringIndex >= 0) && (stringIndex < D_800D6AB4)) {
         language = frontGetLanguage();
         switch (language) {
         case 2:
-            arg0 += 2;
+            stringIndex += 2;
             break;
         case 1:
-            arg0 += 1;
+            stringIndex += 1;
             break;
         case 3:
-            arg0 += 3;
+            stringIndex += 3;
             break;
         case 5:
-            arg0 += 4;
+            stringIndex += 4;
             break;
         }
-        piRomLoadSection(5, D_800D6AB0, (arg0 & ~1) << 2, 0x10);
+        piRomLoadSection(5, D_800D6AB0, (stringIndex & ~1) << 2, 0x10);
         entries = (s32 *)D_800D6AB0;
-        temp = entries[arg0 & 1] & 0xFF000000;
-        size = (entries[(arg0 & 1) + 1] & 0xFFFFFF) - (entries[arg0 & 1] & 0xFFFFFF);
-        piRomLoadSection(4, D_800D6AD8[D_800D6AE4], entries[arg0 & 1] ^ temp, size);
+        temp = entries[stringIndex & 1] & 0xFF000000;
+        size = (entries[(stringIndex & 1) + 1] & 0xFFFFFF) - (entries[stringIndex & 1] & 0xFFFFFF);
+        piRomLoadSection(4, D_800D6AD8[D_800D6AE4], entries[stringIndex & 1] ^ temp, size);
         D_800D6AE0 = (u8 *)D_800D6AD8[D_800D6AE4];
         func_8004EC60();
         D_800D6AE4 = (D_800D6AE4 + 1) & 1;

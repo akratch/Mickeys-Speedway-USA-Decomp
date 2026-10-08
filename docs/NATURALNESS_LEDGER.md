@@ -180,11 +180,11 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/vehicle_sounds.c:395` `func_8005830C` **A**: empty if body.
   Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/overlays/o001/overlay_001_tail.c:1568` `overlay1StartTimerCallbacks` **A**: empty if body.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Left** (lane c-1, 2026-10-08): deleting the empty `if (entry->modeMask) {}` after `callback()` changes about 12 words; the re-read of `modeMask` after the call is load-bearing.
 - `src/overlays/o001/overlay_001_tail.c:1625` `overlay1FindDirectionalObject` **A**: empty then-arm `if (a == b) { } else { ... }`.
-  Natural: `if (a != b) { ... }`. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved** (lane c-1, 2026-10-08): `if (other == object) { continue; }` with the rest of the body unnested, byte-identical. The inverted `if (other != object) { ... }` is not (the loop re-lays out).
 - `src/overlays/o001/overlay_001_tail.c:2320` `overlay1ConsumeNearbyPending` **A**: empty if body.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Left** (lane c-1, 2026-10-08): deleting the empty `if (other) {}` changes about 12 words; the extra reference to `other` before `other->state` is load-bearing.
 - `src/overlays/o001/overlay_001_tail.c:2903` `overlay1UpdateValueCache` **A**: multiply-by-zero stand-in for a constant.
   Natural: the literal `0`. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o003/overlay3FindClosestObject.c:39` `overlay3FindClosestObject` **A**: empty if body.
@@ -228,9 +228,9 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/overlays/o073/overlay73Initialize.c:101` `func_overlay_073_F0000000_18CAAC0` **A**: multiply-by-zero stand-in for a constant.
   Natural: the literal `0`. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/overlays/o079/func_overlay_079_F0001290_18CE230.c:111` `func_overlay_079_F0001290_18CE230` **A**: empty if body.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved** (lane c-1, 2026-10-08): the empty `if (object->position.y) {}` was byte-inert and is deleted. The `else if (1)` arm opener was inert too and is now a plain `else`.
 - `src/overlays/o079/func_overlay_079_F0001290_18CE230.c:124` `func_overlay_079_F0001290_18CE230` **A**: empty `if (1)`/`if (0)` region.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Left** (lane c-1, 2026-10-08): the block boundary between the `field3C` store and the emit call keeps the post-call linked-state load (`spawned = node->next->state`) in v0; deleted, it takes v1 at both sites (4 words). Storing through `node->next->state->field40` directly costs 26 words. Seek a natural block boundary at that point.
 - `src/overlays/o082/overlay_082_tail.c:131` `overlay82Update` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o089/overlay89UpdateStateAndParticles.c:152` `overlay89UpdateStateAndParticles` **A**: empty `do { } while (0)`, twice.
@@ -682,9 +682,9 @@ No fake-match constructs;  carriers and arena casts.
 Two empty-if steers and a volatile reread.
 
 - `src/overlays/o001/overlay_001_tail.c:1282` **A**: empty if body around a call `if (func_800299E8(0, 127) != 0) { }`.
-  Natural: bare call statement. Keep bytes: unlikely - comment calls it load-bearing.
+  **Left** (lane c-1, 2026-10-08): the bare call changes about 4 words (the result test is load-bearing). Plausibly a stripped debug body; seek the body or a real use of the result.
 - `src/overlays/o001/overlay_001_tail.c:1439` **A**: empty if body `if (predicate() != 0) { }`.
-  Natural: bare call statement. Keep bytes: unlikely - comment calls it load-bearing.
+  **Left** (lane c-1, 2026-10-08): the bare call changes about 11 words (the result test is load-bearing).
 - `src/overlays/o001/overlay_001_tail.c:1414` **B**: volatile reread `*(volatile f32 *)&state->speedLimit`.
   Natural: `state->speedLimit`. Keep bytes: unlikely - forces the reload after a store.
 - `src/overlays/o001/overlay_001_tail.c:1225` **B**: magic float indices `tuning[x + 50]`, `tuning[16]`.

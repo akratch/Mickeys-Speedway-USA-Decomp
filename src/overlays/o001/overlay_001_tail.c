@@ -1623,25 +1623,25 @@ active:
     while (remaining = count--) {
         other = objects[count];
         if (other == object) {
-        } else {
-            dx = other->x - object->x;
-            otherState = other->state;
-            dz = other->z - object->z;
-            distance = sqrtf((dx * dx) + (dz * dz));
-            if (distance > 0.0f) {
-                dx /= distance;
-                dz /= distance;
-            }
-            directionX = -overlay1TrigX(object->angle);
-            directionY = -overlay1TrigY(object->angle);
-            dot = (directionX * dx) + (directionY * dz);
-            if (DOT_CONDITION) {
-                entry = &D_1BA8[*(s8 *)D_1DA0].entries[otherState->tableIndex];
-                value = entry->value;
-                if ((value <= maxValue) && (value < bestValue)) {
-                    bestValue = value;
-                    best = other;
-                }
+            continue;
+        }
+        dx = other->x - object->x;
+        otherState = other->state;
+        dz = other->z - object->z;
+        distance = sqrtf((dx * dx) + (dz * dz));
+        if (distance > 0.0f) {
+            dx /= distance;
+            dz /= distance;
+        }
+        directionX = -overlay1TrigX(object->angle);
+        directionY = -overlay1TrigY(object->angle);
+        dot = (directionX * dx) + (directionY * dz);
+        if (DOT_CONDITION) {
+            entry = &D_1BA8[*(s8 *)D_1DA0].entries[otherState->tableIndex];
+            value = entry->value;
+            if ((value <= maxValue) && (value < bestValue)) {
+                bestValue = value;
+                best = other;
             }
         }
     }

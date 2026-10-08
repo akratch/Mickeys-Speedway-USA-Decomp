@@ -747,6 +747,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 291 aligned at size 0 (masked 313): three unused cells above x fix the 0xC home shift; colour index in i still a stand-in. Open: i vs actor, ring.
+ * summary: 291 aligned at size 0 (masked 313): 0xC home shift fixed by unused cells above x; colour index in i a stand-in. Open: i vs actor, ring phase (68 rows).
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

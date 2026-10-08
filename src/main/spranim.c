@@ -439,6 +439,6 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
  * frame: 0xE0
  * relocations: 9
  * first-mismatch: +0x58
- * summary: No coordinate locals, dead stores order x and firstDistance, i = 0 before the call, z-y-x second distance: 44 to 10 at 0. Left: y/z/radius homes.
+ * summary: No coordinate locals, x/firstDistance dead stores, i = 0 before the call, z-y-x second distance: 44 to 10 at 0. Left: y/z/radius homes
  * PLATEAU-HANDOFF:func_8001B798:end
  */

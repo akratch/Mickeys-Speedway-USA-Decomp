@@ -4023,7 +4023,7 @@ void fmvInit(void) {
  * frame: 0x40
  * relocations: 47
  * first-mismatch: +0x114
- * summary: 7 at 0. Goto-placed blocks emit the state store first but carry the goto's line, and break the a0/a1/a2 colours (266-281).
+ * summary: 7 at 0. A single-pass for with the cursor in its increment is kept as a loop (+28); goto blocks inherit the goto's line.
  * PLATEAU-HANDOFF:func_80051364:end
  */
 

@@ -3885,7 +3885,6 @@ extern void func_80022FD4(void **displayList, s32 matrices, s32 vertices,
 extern void func_80047CD8(void **displayList, void *cone, s32 flags, u8 alpha);
 extern f32 func_80009F08(Objects09F08Arg *arg0);
 
-#ifdef NON_MATCHING
 void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
     s32 i;
     s32 j;
@@ -3929,19 +3928,26 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
     /* The trap loop has an index of its own (lane m-1, 28 -> 8): its web is
      * the extra interferer that stops arg0's first split piece at the sort
      * head (bb25), so arg0, root and resource reload per render pass; the
-     * render loop then takes its own `slot` (sort j in a0, as shipped). Left:
-     * this loop's exit test is LFTR'd to `!= 16` in s0, the target keeps
-     * `slti` (an index used only in one loop loses `<`). */
+     * render loop then takes its own `slot` (sort j in a0, as shipped). The
+     * dead `k = 0` after it keeps uopt's `slti` exit test (a def of the index
+     * before the next loop; lane n-f1). */
     for (k = 0; k < 4; k++) {
         if (*(s32 *)((u8 *)resource + 0x134 + (k * 4)) != 0) {
             TrapDanglingJump(arg0, *(s32 *)((u8 *)resource + 0x134 + (k * 4)));
         }
     }
+    k = 0;
 
     /* `data` stays declared for its frame cell; the test reads the field
      * directly (a held copy spends a ring draw the target does not). */
     if (object->unk40->unk1E[object->unk93] == 0) {
         count = 0;
+        /* An empty test of `vector` emits nothing, but makes it live from
+         * entry: the zero-emission interferer that keeps arg3's memory piece
+         * out of the sort's inner block, so the dynamic loop reloads the
+         * object from its home (found by tools/lever_sweep.py against the
+         * forced split of arg3's remainder, lane t-lever). */
+        if (vector) {}
         staticEntry = (Objects09414StaticEntry *)((u8 *)resource + 0x34C);
         for (i = 0; i < 4; i++, staticEntry++) {
             if (staticEntry->unk4 != 0) { cone = staticEntry->unk8;
@@ -4057,9 +4063,6 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
         TrapDanglingJump(arg0, arg1, *(s32 *)((u8 *)resource + 0xD8));
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/objects/func_80009414.s")
-#endif
 typedef struct {
     u8 pad00[0xD4];
     f32 unkD4;
@@ -5385,16 +5388,3 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
   temp_f18 = arg2 - arg5;
   return ((temp_f2 * temp_f2) + (temp_f16 * temp_f16)) + (temp_f18 * temp_f18);
 }
-
-
-
-
-/* PLATEAU-HANDOFF:func_80009414:start
- * symbol: func_80009414
- * score: 8/421 words
- * frame: 0x198
- * relocations: 11
- * first-mismatch: +0x90
- * summary: Trap loop on its own index (28 to 8 at delta 0); the slti shape (no-op k = 0 after the loop) prices at one split, arg3's memory piece at the sort inner block
- * PLATEAU-HANDOFF:func_80009414:end
- */

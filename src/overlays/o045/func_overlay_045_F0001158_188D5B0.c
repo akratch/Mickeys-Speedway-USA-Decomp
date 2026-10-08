@@ -355,6 +355,6 @@ void func_overlay_045_F0001158_188D5B0(
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x748
- * summary: 116 at size delta 0; the target's float order differs in four rankings (c3x, nhh*cos, nhh*sin, right), not one tie.
+ * summary: 116 at size delta 0; the target's float decision order, applied by a selection-bias uopt, leaves 1 naming row: the save order is the residual.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

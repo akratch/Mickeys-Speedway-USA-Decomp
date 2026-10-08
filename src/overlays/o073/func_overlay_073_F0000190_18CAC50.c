@@ -403,6 +403,6 @@ common:
  * frame: 0x98
  * relocations: 46
  * first-mismatch: +0x7C8
- * summary: 4 masked at size 0, case 4 query: the skipped t8 is an as1-folded draw, not a ghost; the a1 join has a natural chained-copy spelling (64).
+ * summary: 4 masked at size 0, case 4 query: ugen's hinted argument path never refuses a0 (it spills the occupant), so the folded draw is a uopt temp moved into a0.
  * PLATEAU-HANDOFF:func_overlay_073_F0000190_18CAC50:end
  */

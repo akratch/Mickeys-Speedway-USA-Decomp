@@ -3573,6 +3573,9 @@ f32 func_8002A8C0(s32 angle);
  * become the target's 0x34/0x30/0x28 temporaries) and offsets X, Y, Z;
  * the compare magnitude is held in `displacement`, which numbers that
  * web ahead of offsetY so it wins the else-arm f16 tie: 95 to 70.
+ * An empty `if (speed)` before the source flag stores adds the blocks
+ * that give `first` nocs 5, so `normal` outranks it for s2 as shipped:
+ * 70 to 41.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3618,6 +3621,8 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         target->unk4 = 0.0f;
         target->unk8 = 0.0f;
         target->unk88 = D_80084210;
+        if (speed) {
+        }
         firstSource->unk63 = 1;
         secondSource->unk63 = 1;
         secondSource->unk64 = speed;
@@ -4003,11 +4008,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 70/229 words
+ * score: 41/229 words
  * frame: 0x70
  * relocations: 8
- * first-mismatch: +0x24
- * summary: Plane offset added (pd + negDot), magnitude in displacement, else offsets X,Y,Z: 95 to 70. Left: first/normal s2/s3 (29), store order.
+ * first-mismatch: +0x58
+ * summary: Plane offset, magnitude in displacement, empty if (speed) before the flag stores: 95 to 41. Left: else FP colours, store order.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

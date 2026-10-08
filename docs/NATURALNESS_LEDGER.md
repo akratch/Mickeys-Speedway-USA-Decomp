@@ -122,11 +122,11 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/audio_manager_36D0.c:658` `func_80003760` **A**: `entry++; entry--;` pair plus a single-statement region.
   **Resolved (lane c-3, 2026-10-08):** the cancelling pair, the region and the `group` local are gone; the row is `D_800C9238[point->unk23 - 1]` and the bound `D_80078F04[point->unk23 - 1]` (the typed count array, not a cast of `D_80078F00`). Byte-identical: `group` was the web numbered ahead of `entry`; reading the field at each use lets `entry` take v0 as shipped.
 - `src/main/audiomgr.c:474` `func_80002188` **A**: `if (0) { }`.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved (lane c-3, 2026-10-08):** deleted; it was inert (byte-identical without it).
 - `src/main/camera.c:1283` `func_80023598` **A**: empty `do { } while (0)`.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: delete. Keep bytes: no - measured (lane c-3, 2026-10-08): deleted, the function changes size. The function comment ties the region at the if/else join to keeping `dlist` in its home; the natural statement that supplies that block boundary is not found yet.
 - `src/main/charControl.c:1057` `func_8001D2A0` **A**: self-assignment.
-  Natural: delete the statement. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: delete the statement. Keep bytes: no - measured (lane c-3, 2026-10-08). `D_800CB300 = D_800CB300;` emits nothing, but the use/def in the flag-1 block stops uopt sharing the global's address across `camGetListPtr()`, where the target splits it (`sw` through `at`, then a fresh `lui`/`addiu`); deleted, the function changes size. A natural statement that defines `D_800CB300` in that block without code is still to find.
 - `src/main/diRcp.c:377` `diRcpDmaOffsets` **A**: empty if body or `if (c);` probe.
   **Resolved (lane c-3, 2026-10-08):** the empty `if (dList) {}` is now the guard of the debug print, `if (dList != NULL) { stubbed_printf(...); }`. `stubbed_printf` is an empty macro in this TU, so the body compiles away; the test is the one real read of `dList`, which is why the target homes only `command` (a1) and not `dList`. Every sibling whose parameters appear only in a print homes them all. Byte-identical.
 - `src/main/diRcp.c:417` `diRcpMoveWd` **A**: empty if body or `if (c);` probe.

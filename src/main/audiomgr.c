@@ -471,7 +471,6 @@ s32 func_80002188(s32 addr, s32 len, void *state)
   }
   else
   {
- if (0) { }
     D_800C7DF8.firstUsed = dmaPtr;
     dmaPtr->node.next = (void *) 0;
     dmaPtr->node.prev = (void *) 0;

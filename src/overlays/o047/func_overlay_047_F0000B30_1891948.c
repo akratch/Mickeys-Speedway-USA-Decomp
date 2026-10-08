@@ -286,7 +286,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                     player->y = ov47Bss_2F0.y;
                     player->z = ov47Bss_2F0.z;
                     player->rotation = ov47Bss_2F0.rotation;
-                    i = 0;
                     while (ov47Bss_300[player->selector]) {
                         player->selector++;
                         if (player->selector >= 10) player->selector = 0;
@@ -305,16 +304,17 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                             func_8005AD64(player->actor, 1, -1, 0.0f);
                         }
                     }
-                    if (ov47Bss_0 > 0) {
-                        j = i;
-                        do {
-                            if ((f32)player->selector == icon->selector) {
-                                ov47Bss_328[controller] = ((s32)icon->x + 160) << 4;
-                            }
-                            icon++;
-                        } while (++j < ov47Bss_0);
-                        icon = ov47Bss_8;
+                    /* One counted loop on i, as shipped (the target's s4 is
+                     * i here and in the later loops); the inherited j copy
+                     * and its > 0 guard were m2c artefacts. 455 -> 335
+                     * aligned at size 0 (lane r-4). */
+                    for (i = 0; i < ov47Bss_0; i++) {
+                        if ((f32)player->selector == icon->selector) {
+                            ov47Bss_328[controller] = ((s32)icon->x + 160) << 4;
+                        }
+                        icon++;
                     }
+                    icon = ov47Bss_8;
                 }
                 break;
             default:
@@ -549,14 +549,15 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         overlay45ConfigureLayout(ov47Bss_314, 160, 272, 0x104);
     }
     for (controller = 0; controller < ov47Bss_0; controller++, icon++) {
-        colourIndex = 4;
+        /* The colour index is i (lane r-4: 335 -> 302 aligned). */
+        i = 4;
         unready = 0;
         selected = -1;
         count = 0;
         p2 = D_800D3058;
         for (stat = 0; stat < 4; stat++, p2++) {
             if ((f32)p2->selector == icon->selector && p2->active) {
-                colourIndex = stat;
+                i = stat;
                 if (!p2->ready) unready = 1;
                 for (selected = 0; selected < updateRate; selected++) {
                     ov47Bss_328[stat] +=
@@ -583,9 +584,9 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
          * operand's reload, so unready keeps its register (lane k-8). */
         O47_COMMAND(0x01000040, O47_PHYSICAL(D_800D3144));
         D_800D3144++;
-        red = ov47Data_3DC[colourIndex] >> 24;
-        green = ov47Data_3DC[colourIndex] >> 16;
-        blue = ov47Data_3DC[colourIndex] >> 8;
+        red = ov47Data_3DC[i] >> 24;
+        green = ov47Data_3DC[i] >> 16;
+        blue = ov47Data_3DC[i] >> 8;
         O47_COMMAND(0x06000000, ov47Data_300);
         O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
         O47_COMMAND_W1(0xFCFFFFFF, 0xFFFDF6FB);
@@ -740,10 +741,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 721/2168 words
+ * score: 324/2168 words
  * frame: 0x280
- * relocations: 315
- * first-mismatch: +0x4
- * summary: 455 aligned at size 0 (masked 721). Head: ov47Bss_338 bb3 piece refused at bb12 by one (2*12 < 9+16); a2 force prices the prologue, loop piece missing.
+ * relocations: 321
+ * first-mismatch: +0xC
+ * summary: 302 aligned at size 0 (masked 324): icon scan is a for loop on i; colour index in i is a likely stand-in (target s7). Open: i's save vs actor.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

@@ -358,6 +358,6 @@ void func_overlay_045_F0001158_188D5B0(
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x748
- * summary: 109 at size 0: triangle byte order hoists the target's 2, 1, 3 constants; float decision order (CDX_BIAS oracle, residual 47 at -4) is the rest.
+ * summary: 109 at size 0: triangle byte order as shipped; float decision order (CDX_BIAS 500/10 oracle, residual 47 at -4) is the rest; merge scan flat.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

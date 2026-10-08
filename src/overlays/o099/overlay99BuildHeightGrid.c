@@ -33,7 +33,7 @@ extern void overlay99ApplySegment(Overlay99Segment *segment, f32 scale);
  * leaves the clamped value dead.
  */
 void overlay99BuildHeightGrid(f32 scale, void *unused, s32 widthMinusOne,
-                              s32 heightMinusOne, s32 arg4, s32 arg5) {
+                              s32 heightMinusOne, s32 extra4, s32 extra5) {
     Overlay99GridPoint *point;
     s32 *widthPtr;
     s32 *heightPtr;
@@ -60,8 +60,8 @@ void overlay99BuildHeightGrid(f32 scale, void *unused, s32 widthMinusOne,
     *heightPtr = heightMinusOne + 1;
     gOverlay99WidthMinusOne = widthMinusOne;
     gOverlay99HeightMinusOne = heightMinusOne;
-    gOverlay99Arg4 = arg4;
-    gOverlay99Arg5 = arg5;
+    gOverlay99Arg4 = extra4;
+    gOverlay99Arg5 = extra5;
 
     i = *heightPtr * *widthPtr;
     while (i--) {

@@ -58,17 +58,17 @@ extern O1RankPair D_1BA8[][6];
 
 extern void *levelGetLevel(void);
 extern O1RankObject **func_80005750(s32 *count);
-extern void func_8005830C(s32 arg0);
+extern void func_8005830C(s32 elapsed);
 extern f32 sqrtf(f32 value);
-extern void func_800291D8(s32 arg0);
+extern void func_800291D8(s32 elapsed);
 extern O1RankObject *func_80005820(s32 index);
 extern f32 func_overlay_001_F00000E4_184C4C4(f32 first, f32 second);
 extern void *func_overlay_001_F00004B4_184C894(O1RankObject *object);
 extern void func_overlay_001_F0001D78_184E158(s32 index, void *level, s32 count);
 extern void func_overlay_001_F00028D4_184ECB4(s32 index, void *level, s32 count);
 extern void func_overlay_001_F000293C_184ED1C(s32 index, void *level, s32 count);
-extern void func_overlay_001_F000296C_184ED4C(void *level, s32 arg0);
-extern void func_overlay_001_F0002AA4_184EE84(s32 arg0);
+extern void func_overlay_001_F000296C_184ED4C(void *level, s32 elapsed);
+extern void func_overlay_001_F0002AA4_184EE84(s32 elapsed);
 
 /* 2026-10-02 o-ovl7: rewritten from the target listing in the overlay's
  * `while (i--)` loop shape (every loop's `or v0,s7` copy is the post-decrement
@@ -89,7 +89,7 @@ extern void func_overlay_001_F0002AA4_184EE84(s32 arg0);
  * induction init, so as1 fills the func_80005820 delay slot with the
  * argument copy. The reversed comma is 2 words. `-Wo,-loopunroll,0` was
  * not load-bearing (still 6 words) and is gone. */
-void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
+void func_overlay_001_F0002B4C_184EF2C(s32 elapsed) {
     void *level;
     s32 count;
     O1RankObject *object;
@@ -114,19 +114,19 @@ void func_overlay_001_F0002B4C_184EF2C(s32 arg0) {
     level = levelGetLevel();
     list = func_80005750(&count);
     if (G_o1_83e4 == 3) {
-        func_overlay_001_F0002AA4_184EE84(arg0);
+        func_overlay_001_F0002AA4_184EE84(elapsed);
     } else {
-        func_overlay_001_F000296C_184ED4C(level, arg0);
+        func_overlay_001_F000296C_184ED4C(level, elapsed);
     }
-    func_8005830C(arg0);
+    func_8005830C(elapsed);
     if (count == 0) {
         return;
     }
     if (G_o1_83e4 == 0) {
         return;
     }
-    D_1D94 = arg0;
-    gO1RankTime = arg0;
+    D_1D94 = elapsed;
+    gO1RankTime = elapsed;
     if (gO1RankWord800C947C != 0) {
         D_1D78 = 1;
     } else {

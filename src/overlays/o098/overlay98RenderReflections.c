@@ -96,7 +96,7 @@ extern u8 gO98SpecialVertices[];
  * cursor temporary at +0x58 instead of +0x5C). Matched. */
 #define O98_PACKET(word0, word1) gfx = *dl; *dl = gfx + 1; gfx->w0 = (word0); gfx->w1 = (word1)
 
-void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
+void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 vertices) {
     O98Object *object;
     O98Node *node;
     O98Node *node2;
@@ -238,7 +238,7 @@ void overlay98RenderReflections(Gfx **dl, u8 **matrixHeap, s32 arg2) {
                 oldY = object->y;
                 object->y = referenceY - distance;
                 object->scale = -object->scale;
-                o98EmitObjectReloc(dl, matrixHeap, arg2, object);
+                o98EmitObjectReloc(dl, matrixHeap, vertices, object);
                 object->y = oldY;
             }
         } while (i < gOverlay98AcceptedCount);

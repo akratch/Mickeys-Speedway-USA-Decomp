@@ -106,7 +106,7 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
     s32 i;
     s32 j;
     s32 k;
-    s32 temp_s4;
+    s32 byteCount;
     s32 temp;
     O35Segment *segment;
     u8 *cursor;
@@ -134,13 +134,13 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
     }
 
     mdl = D_o35_model_table[modelId];
-    temp_s4 = D_o35_model_table[modelId + 1] - mdl;
+    byteCount = D_o35_model_table[modelId + 1] - mdl;
     temp = (s32)D_o35_current_model;
-    temp += 0x9F000 - temp_s4;
+    temp += 0x9F000 - byteCount;
     temp -= temp % 16;
 
     call_o0_0_26934();
-    call_o0_0_2DE90(0x25, (void *)temp, mdl, temp_s4);
+    call_o0_0_2DE90(0x25, (void *)temp, mdl, byteCount);
     call_o0_0_4D390((void *)temp, D_o35_current_model);
     call_o0_0_2B318(D_o35_model_table);
     call_o0_0_26934();
@@ -191,12 +191,12 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
     }
 
     cursor = call_o0_0_2B810(cursor);
-    temp_s4 = cursor - (u8 *)D_o35_current_model;
+    byteCount = cursor - (u8 *)D_o35_current_model;
     call_o0_0_26934();
     temp = call_o0_0_2B6E4();
     call_o0_0_2B2A4(0);
     call_o0_0_2B318(D_o35_model_heap);
-    call_o0_0_2B0D4(temp_s4, D_o35_model_heap, 0x91);
+    call_o0_0_2B0D4(byteCount, D_o35_model_heap, 0x91);
     call_o0_0_2B2A4(temp);
     call_o0_0_26934();
 
@@ -213,15 +213,15 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
         s16 *flags;
 
         j = segment->count20;
-        temp_s4 = ((j + 0xF) >> 4) * 2;
-        colorData = call_o0_0_2AE30(temp_s4 + 8 + j * 3, 0x91);
+        byteCount = ((j + 0xF) >> 4) * 2;
+        colorData = call_o0_0_2AE30(byteCount + 8 + j * 3, 0x91);
         if (colorData != 0) {
             s32 remaining;
             u8 *source;
 
             segment->colorData = colorData;
             colorData->flags = (s16 *)((u8 *)colorData + 8);
-            colorData->colors = (u8 *)colorData + temp_s4 + 8;
+            colorData->colors = (u8 *)colorData + byteCount + 8;
             remaining = segment->count20;
             flags = colorData->flags;
             colors = colorData->colors;
@@ -232,7 +232,7 @@ void func_overlay_035_F00001E0_1881EC0(s32 modelId) {
                 *colors++ = source[8];
                 source += 0xA;
             }
-            remaining = temp_s4 >> 1;
+            remaining = byteCount >> 1;
             while (remaining--) {
                 *flags++ = 0;
             }

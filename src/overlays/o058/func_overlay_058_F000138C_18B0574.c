@@ -295,7 +295,7 @@ extern s32 D_o058_5F30;
 
 extern s8 D_o058_5F48[4];
 
-void func_overlay_058_F000138C_18B0574(s32 arg0) {
+void func_overlay_058_F000138C_18B0574(s32 ticks) {
     s32 i;
     s32 opponent;
     s32 textY;
@@ -329,7 +329,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
     SavesSlot *slot;
 
     state = func_80028F54();
-    func_80036AB0(&D_o058_5F38, arg0);
+    func_80036AB0(&D_o058_5F38, ticks);
     func_8004B0A4(0);
     switch (D_o058_5E94) {
     case 1:
@@ -425,7 +425,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                 rowY += rowHeight;
             } while (i < (s32) D_8007BEF8_o058Reloc);
         }
-        D_o058_5E98 -= arg0 * 0xF;
+        D_o058_5E98 -= ticks * 0xF;
         if (D_o058_5E98 < 0) {
             D_o058_5E98 = 0;
             if ((D_o058_5EB0 == 0) && (D_800D31B8_o058Reloc & 0x9000)) {
@@ -442,16 +442,16 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                 amSndPlay(0xCU, NULL);
             }
             if (D_o058_5EB0 != 0) {
-                D_o058_5EA4 += arg0 * 0xF;
+                D_o058_5EA4 += ticks * 0xF;
                 if ((D_o058_5EB0 == 5) || (D_o058_5EB0 == 6)) {
-                    D_o058_5EA8 += arg0 * 0xF;
+                    D_o058_5EA8 += ticks * 0xF;
                     if (D_o058_5EA8 >= 0x141) {
                         D_o058_5E94 = D_o058_5EB0;
                         amSndPlay(0x1FAU, NULL);
                         return;
                     }
                 } else {
-                    D_o058_5EAC += arg0 * 0xF;
+                    D_o058_5EAC += ticks * 0xF;
 
                     if ((D_o058_5EAC >= 0xB5) && (D_o058_5EA4 >= 0x141)) {
                         D_o058_5E9C = 0x6E;
@@ -469,7 +469,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
     case 2:
         i = 0;
         if (*D_o058_5E50 > 0) {
-            D_o058_5EB4 = D_o058_5EB4 - arg0;
+            D_o058_5EB4 = D_o058_5EB4 - ticks;
             if (D_o058_5EB4 < 0) {
                 D_o058_5EB4 = 0xF;
                 amSndPlay(0x1BU, NULL);
@@ -542,9 +542,9 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
         }
         D_o058_5E98 = savedX;
         D_o058_5EA0 = savedOffset;
-        D_o058_5E9C -= arg0 * 0xF;
-        D_o058_5EA0 -= arg0 * 0xF;
-        D_o058_5EA4 -= arg0 * 0xF;
+        D_o058_5E9C -= ticks * 0xF;
+        D_o058_5EA0 -= ticks * 0xF;
+        D_o058_5EA4 -= ticks * 0xF;
 
         if ((D_o058_5E9C < 0) && (D_o058_5EA0 < 0) && (D_o058_5EA4 < 0)) {
             if (D_o058_5EB0 == 0) {
@@ -556,7 +556,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                     amSndPlay(0xDU, NULL);
                 }
             } else {
-                D_o058_5E98 += arg0 * 0xF;
+                D_o058_5E98 += ticks * 0xF;
                 if (D_o058_5E98 >= 0x141) {
                     D_o058_5EAC = 0;
                     D_o058_5E94 = D_o058_5EB0;
@@ -621,7 +621,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
         D_o058_5E98 = savedX;
         D_o058_5E9C = savedPosition;
 
-        D_o058_5E98 -= arg0 * 0xF;
+        D_o058_5E98 -= ticks * 0xF;
         if (D_o058_5E98 < 0) {
             D_o058_5E98 = 0;
             if (D_o058_5EB0 == 0) {
@@ -641,7 +641,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                     return;
                 }
             } else {
-                D_o058_5E9C += arg0 * 0xF;
+                D_o058_5E9C += ticks * 0xF;
                 if (D_o058_5E9C >= 0x141) {
                     if (D_o058_5EB0 == 4) {
                         animseqStopPath(D_o058_5E84.bytes[3]);
@@ -753,7 +753,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
         D_o058_5E9C = savedPosition;
         D_o058_5EA0 = savedOffset;
 
-        D_o058_5EA0 -= arg0 * 0xF;
+        D_o058_5EA0 -= ticks * 0xF;
         if (D_o058_5EA0 < 0) {
             /* An empty `if (columnCount != 0);` read stood here to keep the
              * `&D_o058_5EA0` fragment from adjoining this block (-4 when it
@@ -777,7 +777,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                     return;
                 }
             } else {
-                D_o058_5E9C += arg0 * 0xF;
+                D_o058_5E9C += ticks * 0xF;
                 if (D_o058_5E9C >= 0x141) {
                     if (D_o058_5EB0 == 4) {
                         animseqStopPath(D_o058_5E84.bytes[3]);
@@ -891,7 +891,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
         D_o058_5E9C = savedPosition;
         D_o058_5EA0 = savedOffset;
 
-        D_o058_5EA0 -= arg0 * 0xF;
+        D_o058_5EA0 -= ticks * 0xF;
         if (D_o058_5EA0 < 0) {
             D_o058_5EA0 = 0;
             if (D_o058_5EB0 == 0) {
@@ -911,7 +911,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                     return;
                 }
             } else {
-                D_o058_5E9C += arg0 * 0xF;
+                D_o058_5E9C += ticks * 0xF;
                 if (D_o058_5E9C >= 0x141) {
                     if (D_o058_5EB0 == 4) {
                         animseqStopPath(D_o058_5E84.bytes[3]);
@@ -975,7 +975,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
 
             x = -x;
         } while (i < 4);
-        D_o058_5EA0 -= arg0 * 0xF;
+        D_o058_5EA0 -= ticks * 0xF;
 
         if (D_o058_5EA0 < 0) {
             if (D_o058_5EB0 == 0) {
@@ -993,7 +993,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
 
                 }
             } else {
-                D_o058_5E9C += arg0 * 0xF;
+                D_o058_5E9C += ticks * 0xF;
                 if (D_o058_5E9C >= 0x141) {
                     if (D_o058_5EB0 == 4) {
                         switch (D_o058_5F28) {
@@ -1072,7 +1072,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
         func_8004B0F8(&D_800D3140_o058Reloc, D_o058_5EA8 + 0xA0, 0x8C, D_8007C0B8_o058Reloc->text[0x2D], 4);
         D_o058_5EA8 = -D_o058_5EA8;
 
-        D_o058_5EA8 = D_o058_5EA8 - (arg0 * 0xF);
+        D_o058_5EA8 = D_o058_5EA8 - (ticks * 0xF);
         if (D_o058_5EA8 < 0) {
             if (D_800D31B8_o058Reloc & 0x9000) {
                 func_8003A754();
@@ -1136,7 +1136,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
             nodes[i].texture = 0;
             func_8002F618(&D_800D3140_o058Reloc, (RcpTextureNode *) &nodes[0], 0, 0, (u8) 0xFF, (u8) 0xFF, (u8) 0xFF, (u8) 0xFF);
         }
-        D_o058_5EA8 = D_o058_5EA8 - (arg0 * 0xF);
+        D_o058_5EA8 = D_o058_5EA8 - (ticks * 0xF);
         if (D_o058_5EA8 < 0) {
             if (D_800D31B8_o058Reloc & 0x9000) {
                 if ((D_8007BF44_o058Reloc > 0) && (state->mode == 0)) {
@@ -1229,7 +1229,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
         func_8004B0F8(&D_800D3140_o058Reloc, x + 0xD5, textY, D_o058_5DA0, 0);
         sprintf(&text[0], D_o058_5DA4, centiseconds);
         func_8004B0F8(&D_800D3140_o058Reloc, x + 0xDC, textY, &text[0], 0);
-        D_o058_5E98 -= arg0 * 0xF;
+        D_o058_5E98 -= ticks * 0xF;
         if (D_o058_5E98 < 0) {
             D_o058_5E98 = 0;
             if ((D_o058_5EB0 == 0) && (D_800D31B8_o058Reloc & 0x9000)) {
@@ -1241,7 +1241,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                 amSndPlay(0xCU, NULL);
             }
             if (D_o058_5EB0 != 0) {
-                D_o058_5EA8 += arg0 * 0xF;
+                D_o058_5EA8 += ticks * 0xF;
                 if (D_o058_5EA8 >= 0x141) {
                     D_o058_5EA8 = 0;
                     D_o058_5E98 = 0x140;
@@ -1258,7 +1258,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
         x = D_o058_5E98 + D_o058_5EA8;
         func_8004B0F8(&D_800D3140_o058Reloc, x + 0xA0, 0x1E, D_8007C0B8_o058Reloc->text[0x32], 4);
         fontColour(0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
-        D_o058_5E98 -= arg0 * 0xF;
+        D_o058_5E98 -= ticks * 0xF;
         if (D_o058_5E98 < 0) {
             D_o058_5E98 = 0;
             if (D_o058_5EB0 == 0) {
@@ -1369,7 +1369,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                 }
             }
             if (D_o058_5EB0 != 0) {
-                D_o058_5EA8 += arg0 * 0xF;
+                D_o058_5EA8 += ticks * 0xF;
                 if (D_o058_5EA8 >= 0x141) {
                     D_o058_5EA8 = 0;
                     D_o058_5E98 = 0x140;
@@ -1527,7 +1527,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
             i += 1;
             textY += 0x1B;
         } while (i != 4);
-        D_o058_5E98 -= arg0 * 0xF;
+        D_o058_5E98 -= ticks * 0xF;
         if (D_o058_5E98 < 0) {
             D_o058_5E98 = 0;
             if ((D_o058_5EB0 == 0) && (D_800D31B8_o058Reloc & 0x9000)) {
@@ -1535,7 +1535,7 @@ void func_overlay_058_F000138C_18B0574(s32 arg0) {
                 amSndPlay(0xCU, NULL);
             }
             if (D_o058_5EB0 != 0) {
-                D_o058_5EA8 += arg0 * 0xF;
+                D_o058_5EA8 += ticks * 0xF;
                 if (D_o058_5EA8 >= 0x141) {
                     D_o058_5E94 = D_o058_5EB0;
                     D_o058_5E9C = 0;

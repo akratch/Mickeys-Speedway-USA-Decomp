@@ -46,7 +46,7 @@ extern Overlay79Spawned *overlay79SpawnReloc(Overlay79SpawnDesc *desc, s32 count
 extern void overlay79EmitAtReloc(s32 id, f32 x, f32 y, f32 z, s32 arg4, s32 arg5);
 extern void overlay79FinishReloc(Overlay79Object *object);
 extern s32 overlay79FindNearby(Overlay79Vector *position, f32 distance);
-extern void overlay79EmitReloc(s32 id, s32 arg1);
+extern void overlay79EmitReloc(s32 id, s32 unused1);
 extern void overlay79TriggerReloc(void);
 
 extern s32 gOverlay79CounterReloc;
@@ -106,7 +106,7 @@ extern u8 gOverlay79FlagsReloc[];
  * without it the linked-state load after the call takes v1 instead of v0 at
  * both sites (4 words), and storing through `node->next->state` directly
  * instead of reusing `spawned` costs 26 words. */
-void func_overlay_079_F0001290_18CE230(Overlay79Object *object, s32 arg1)
+void func_overlay_079_F0001290_18CE230(Overlay79Object *object, s32 unused1)
 {
   Overlay79Node *node;
   Overlay79SpawnDesc desc;

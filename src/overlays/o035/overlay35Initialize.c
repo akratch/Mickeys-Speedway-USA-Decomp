@@ -39,8 +39,8 @@ extern void *call_o0_0_33FF8(s16);
 extern void call_o98_0_0(void *);
 extern void func_overlay_035_F00001E0_1881EC0(s32);
 
-void func_overlay_035_F0000000_1881CE0(s32 arg0, s32 arg1, s32 arg2,
-                                        s32 arg3, s32 arg4, s32 arg5) {
+void func_overlay_035_F0000000_1881CE0(s32 modelId, s32 value1, s32 value2,
+                                        s32 value3, s32 value4, s32 value5) {
     O35System *system;
 
     D_o35_alloc = call_o0_0_2AE30(0x800, 0x8F);
@@ -51,13 +51,13 @@ void func_overlay_035_F0000000_1881CE0(s32 arg0, s32 arg1, s32 arg2,
         D_4 = 1;
     }
 
-    func_overlay_035_F00001E0_1881EC0(arg0);
+    func_overlay_035_F00001E0_1881EC0(modelId);
     D_o35_reset1 = 0;
     call_o0_0_214D4(call_o0_0_28DA0() - 1);
-    call_o0_0_47D8(arg4, 0);
-    call_o0_0_47D8(arg3, 1);
-    call_o0_0_509A0(arg5);
-    call_o0_0_4B90(arg2);
+    call_o0_0_47D8(value4, 0);
+    call_o0_0_47D8(value3, 1);
+    call_o0_0_509A0(value5);
+    call_o0_0_4B90(value2);
 
     D_o35_reset2 = 0;
     call_o0_0_15A40(D_o35_paramA, D_o35_paramB, 0x1F4, 0xC8, 0x64);
@@ -71,7 +71,7 @@ void func_overlay_035_F0000000_1881CE0(s32 arg0, s32 arg1, s32 arg2,
     if (D_o35_system->flag82 == 0) {
         call_o0_0_20114(0);
     }
-    call_o0_0_C0F0(arg1);
+    call_o0_0_C0F0(value1);
     if (D_o35_system->flag82 == 0) {
         call_o0_0_20114(8);
     }

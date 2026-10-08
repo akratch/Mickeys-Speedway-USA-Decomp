@@ -43,7 +43,7 @@ extern void o13SetupRecord(O13Command **, void *, s32, s32);
 #define O13_GFX(w0v, w1v) { O13Command *_g = (*commands)++; _g->w0 = (w0v); _g->w1 = (w1v); }
 
 void overlay13DrawRecord(
-    O13Record *record, O13Command **commands, s32 arg2, s32 arg3) {
+    O13Record *record, O13Command **commands, s32 mtx, s32 vertices) {
     f32 savedScale;
     O13RenderState *render;
 
@@ -53,7 +53,7 @@ void overlay13DrawRecord(
         if (record->state != 2) {
             o13SetColor(0xFF, 0xFF, 0xFF, render->r, render->g, render->b);
             record->scale = savedScale;
-            o13DrawRecord(commands, arg2, arg3, record, D_20, 6, 0xFF);
+            o13DrawRecord(commands, mtx, vertices, record, D_20, 6, 0xFF);
             o13FinishDraw();
         } else {
             o13SetupRecord(commands, D_28, 0xE, 0);
@@ -73,7 +73,7 @@ void overlay13DrawRecord(
                                         ((render->g & 0xFF) << 16) |
                                         ((render->b & 0xFF) << 8) | 0xA0);
                 O13_GFX(0xFB000000, 0xFFFFFF00);
-                o13DrawRecord(commands, arg2, arg3, record, D_24, 0xE, 0);
+                o13DrawRecord(commands, mtx, vertices, record, D_24, 0xE, 0);
             }
         }
 

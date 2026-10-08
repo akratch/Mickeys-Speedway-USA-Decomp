@@ -67,9 +67,9 @@ extern Overlay36NodeDataB gOverlay36NodeB;
 
 extern u32 overlay36ChooseReloc();
 extern f32 overlay36MeasureReloc(Overlay36Object *object);
-extern Overlay36Choice *overlay36GetChoiceReloc(s8 selector, s32 arg1);
+extern Overlay36Choice *overlay36GetChoiceReloc(s8 selector, s32 argument);
 extern void func_overlay_036_F0000914_1883DCC(Overlay36Object *object,
-                                              s32 arg1, s32 state,
+                                              s32 argument, s32 state,
                                               s32 enabled);
 
 /* Matched 2026-10-02. Three edits closed it from 71 words: the overlay 1
@@ -78,9 +78,9 @@ extern void func_overlay_036_F0000914_1883DCC(Overlay36Object *object,
  * branch); the blend is written weight-term first; and both walks are
  * `i = 14; while (i--)`, whose guard block orders the preheader as shipped.
  * `i` is declared ahead of `position` for the position home. */
-void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 arg1,
-                                       volatile s32 arg2,
-                                       volatile s32 arg3) {
+void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 argument,
+                                       volatile s32 unused2,
+                                       volatile s32 unused3) {
     Overlay36Inner *inner;
     s32 total;
     s32 state;
@@ -145,7 +145,7 @@ void func_overlay_036_F0000A60_1883F18(Overlay36Object *object, s32 arg1,
                 state = 9;
             }
         }
-        func_overlay_036_F0000914_1883DCC(object, arg1, state, 1);
+        func_overlay_036_F0000914_1883DCC(object, argument, state, 1);
     }
 
     if (gOverlay36Mode == 3) {

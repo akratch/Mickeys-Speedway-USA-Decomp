@@ -128,13 +128,13 @@ void overlay5InitializeAudio(void *context) {
     n_alCSPSetMessageQ(gOverlay5Player0, gOverlay5MessageQueue);
 }
 
-void *overlay5CreatePlayer(s32 arg0, s32 arg1) {
+void *overlay5CreatePlayer(s32 voiceCount, s32 value) {
     void *player;
     Overlay5PlayerConfig config;
 
-    config.arg0 = arg0;
-    config.arg1 = arg1;
-    config.voiceCount = arg0;
+    config.arg0 = voiceCount;
+    config.arg1 = value;
+    config.voiceCount = voiceCount;
     config.channels = 0x10;
     config.heap = gOverlay5AudioHeap;
     config.initQueue = gOverlay5InitQueue;

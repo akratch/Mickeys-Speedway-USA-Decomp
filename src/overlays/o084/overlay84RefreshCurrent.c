@@ -42,7 +42,7 @@ extern Overlay84Resource *overlay84GetResource(u8 resource);
 extern void overlay84ReleaseResource(u8 resource);
 
 /* DKR v77/v80 and JFG contain no exact donor for this resource refresh. */
-void overlay84RefreshCurrent(void *unused, Overlay84State *state, s32 arg2) {
+void overlay84RefreshCurrent(void *unused, Overlay84State *state, s32 unused2) {
     struct {
         s32 changed;
         s32 reserved[2];

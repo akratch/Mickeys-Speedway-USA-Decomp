@@ -65,7 +65,7 @@ extern void overlay7SetRuntimeModeReloc(Overlay7RuntimeObject *object,
  * - the first object loop is the plain `remaining = count; while
  *   (remaining--)`.
  * The create-owner sixth argument is `&overlay7RuntimeHandleReloc`. */
-void func_overlay_007_F0000324_185C1AC(s32 arg0, s32 elapsed) {
+void func_overlay_007_F0000324_185C1AC(s32 unused0, s32 elapsed) {
     s32 count;
     u16 *cursor;
     s32 remaining;

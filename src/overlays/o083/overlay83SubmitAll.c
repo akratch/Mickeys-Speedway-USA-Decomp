@@ -33,18 +33,18 @@ extern void overlay83SubmitSetupReloc(Overlay83Command **displayList,
 extern void overlay83DrawMeshReloc(Overlay83Command **displayList,
                                    void *record);
 extern void overlay83DispatchLocalReloc(Overlay83Command **displayList,
-                                        void *arg1, void *arg2, void *record,
+                                        void *mtx, void *vertices, void *record,
                                         void *resource);
 
 /* DKR v77/v80 and JFG contain no exact donor for this two-pass renderer. */
-void overlay83SubmitAll(Overlay83Command **displayList, void *arg1, void *arg2,
+void overlay83SubmitAll(Overlay83Command **displayList, void *mtx, void *vertices,
                         Overlay83Context *context) {
     s32 count;
     u8 *record;
     Overlay83Batch *batch;
 
     batch = context->batch;
-    overlay83SubmitSetupReloc(displayList, arg1, (s32)arg2, (s32)context);
+    overlay83SubmitSetupReloc(displayList, mtx, (s32)vertices, (s32)context);
     overlay83SubmitSetupReloc(displayList, *context->setup, 0x213, 0);
 
     count = batch->count;
@@ -60,7 +60,7 @@ void overlay83SubmitAll(Overlay83Command **displayList, void *arg1, void *arg2,
     while (count--) {
         u8 *currentRecord = record;
         record += 0x258;
-        overlay83DispatchLocalReloc(displayList, arg1, arg2, currentRecord,
+        overlay83DispatchLocalReloc(displayList, mtx, vertices, currentRecord,
                                     *context->nested->resource);
     }
 

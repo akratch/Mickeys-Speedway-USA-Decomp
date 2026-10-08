@@ -19,8 +19,8 @@ extern u8 gOverlay61Text0Reloc[];
 extern u8 gOverlay61Text1Reloc[];
 extern void overlay61CopyTextReloc(u8 *, u8 *, s32);
 
-void overlay61AddEntry(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
-                       s32 arg5, s32 arg6, s32 arg7) {
+void overlay61AddEntry(s32 value0, s32 value1, s32 text0Id, s32 text1Id, s32 value4,
+                       s32 slot, s32 value6, s32 totalTime) {
     s32 hours;
     s32 minutes;
     s32 hundredths;
@@ -29,35 +29,35 @@ void overlay61AddEntry(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
     if (gOverlay61EntryCountReloc < 20) {
         entry = &gOverlay61EntriesReloc[gOverlay61EntryCountReloc++];
 
-        if (arg7 != -1) {
-            hours = arg7 / 3600;
-            minutes = (arg7 - (hours * 3600)) / 60;
-            hundredths = (((arg7 - (hours * 3600)) - (minutes * 60)) * 100) / 60;
+        if (totalTime != -1) {
+            hours = totalTime / 3600;
+            minutes = (totalTime - (hours * 3600)) / 60;
+            hundredths = (((totalTime - (hours * 3600)) - (minutes * 60)) * 100) / 60;
         }
 
-        if ((arg5 < 0) || (arg5 >= 11)) {
-            arg5 = 0;
+        if ((slot < 0) || (slot >= 11)) {
+            slot = 0;
         }
 
-        if (arg2 != 0) {
-            overlay61CopyTextReloc(entry->text0, gOverlay61Text0Reloc, arg2);
+        if (text0Id != 0) {
+            overlay61CopyTextReloc(entry->text0, gOverlay61Text0Reloc, text0Id);
         } else {
             entry->text0[0] = 0;
         }
 
-        if (arg3 != 0) {
-            overlay61CopyTextReloc(entry->text1, gOverlay61Text1Reloc, arg3);
+        if (text1Id != 0) {
+            overlay61CopyTextReloc(entry->text1, gOverlay61Text1Reloc, text1Id);
         } else {
             entry->text1[0] = 0;
         }
 
-        entry->field0 = arg0;
-        entry->field2 = arg1;
-        entry->field3 = arg5;
-        entry->field4 = arg6;
+        entry->field0 = value0;
+        entry->field2 = value1;
+        entry->field3 = slot;
+        entry->field4 = value6;
         entry->field5 = hours;
         entry->field6 = minutes;
         entry->field7 = hundredths;
-        entry->field3C = arg4;
+        entry->field3C = value4;
     }
 }

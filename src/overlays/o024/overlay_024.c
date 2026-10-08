@@ -125,7 +125,7 @@ void overlay24Update(Overlay24Object *object, s32 updateRate) {
     }
 }
 
-void overlay24RenderState(Overlay24Command **commands, void *arg1, void *arg2,
+void overlay24RenderState(Overlay24Command **commands, void *mtx, void *vertices,
                           Overlay24RenderObject *object) {
     s32 opacity;
     s32 alpha;
@@ -183,7 +183,7 @@ void overlay24RenderState(Overlay24Command **commands, void *arg1, void *arg2,
                        O24_SHIFTL(0, 0, 8));
     }
 
-    overlay24RenderHelperReloc(renderCommands, arg1, arg2, object,
+    overlay24RenderHelperReloc(renderCommands, mtx, vertices, object,
                                *object->resource, 0xC, 0xFF);
 
     {

@@ -3,8 +3,8 @@
  * pick and decrements it in place before indexing. The count's two live
  * pieces (the mathRnd argument and the join) are what narrow the call result
  * twice; the narrowing of the dead piece after mathRnd is the ring draw that
- * leaves no instruction. The entry multiply sits in its own region
- * (do/while) so the step is narrowed once; the case 0 timer add goes through
+ * leaves no instruction. The entry step is multiplied in place, so it is
+ * narrowed once; the case 0 timer add goes through
  * the float `limit` local so the rate product is numbered before the timer
  * read (the float-rate spill at +0x34). `unused` holds the 0x98 frame. */
 #include "PR/ultratypes.h"
@@ -101,9 +101,7 @@ void func_overlay_073_F0000190_18CAC50(Func073Object *object, s32 updateRate) {
     state = object->state;
 
     absStep = state->angle;
-    do {
-        absStep *= updateRate;
-    } while (0);
+    absStep *= updateRate;
     if (absStep < 0) {
         absStep = -absStep;
     }

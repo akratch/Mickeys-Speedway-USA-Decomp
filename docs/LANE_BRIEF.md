@@ -909,6 +909,9 @@ it end to end. The ones that carry most of the weight:
   and the forbidden seed with the pinned value behind each bit. One instrumented compile, identity-gated against stock, procedure found by itself.
   It needs `CDX_WEBREPORT=1` records, added to the shared instrumented uopt on 2026-10-07 (`uopt-cdx-webreport.patch` beside its `uopt.c`;
   unset, object, stderr and every other record are byte-identical). Its references are per block, not per expression node: the lines are the block's.
+- **`CDX_BIAS="web=delta,..."`** (with `CDX_PROC`) adds `delta` to a p1 web's save in globalcolor's candidate *selection* only, so a whole decision ORDER can be priced where `CDX_FORCE` prices colours; records still print the true save.
+  Added 2026-10-08 (`uopt-cdx-bias.patch` beside `uopt.c`, previous source and binary kept as `*.pre-cdxbias`); unset, `.text`, data and relocations are identical to stock (o045, o064).
+  To impose an order, give each named web key minus its save (keys descending). On o045 F0001158 the target's full order took naming 50 to 1, which made it the oracle for a source search.
 - Direct `cc` equals the asm-processor build for a candidate with no
   `GLOBAL_ASM` pragma, at roughly 130 candidates/sec, which makes a small
   lattice exhaustive rather than sampled.

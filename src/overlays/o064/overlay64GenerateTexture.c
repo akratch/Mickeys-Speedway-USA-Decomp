@@ -203,6 +203,6 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
  * frame: 0x78
  * relocations: 22
  * first-mismatch: +0x0
- * summary: Shift-form store address is not strength reduced (target shape, +16); the remaining surplus is the hi expression copy.
+ * summary: 380 at 0; killing hi's operand (hi = *in++ + 0x34) gives the compare on hi and the target's pixel-loop length, but the load becomes its own web.
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

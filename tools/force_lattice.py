@@ -40,6 +40,11 @@ object that is indistinguishable from a legitimate decline (Trap 20). Every
 cell here reads the forced value back out of the records and refuses to score
 a cell whose forces did not all apply.
 
+DECISION ORDER, NOT COLOUR. `CDX_BIAS="web=delta,..."` (with `CDX_PROC`) adds
+delta to a p1 web's save for globalcolor's selection only, so a decision order
+can be imposed and scored where a colour force cannot reach a split; this tool
+does not drive it (see docs/LANE_BRIEF.md, Instruments).
+
 THE OBJECT IS SCORED DIRECTLY. score_symbol/align_symbol/frame_census all
 recompile the TU with the *configured* command before measuring, which
 overwrites the forced object and reports the unforced build -- one lane read

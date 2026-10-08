@@ -143,6 +143,16 @@ typedef struct SpranimB798Target {
     void *state64;
 } SpranimB798Target;
 
+typedef struct SpranimB798State {
+    s8 flag0;
+    u8 pad1[0x37];
+    f32 previousX;
+    f32 previousY;
+    f32 previousZ;
+    u8 pad44[0x164];
+    u16 flags;
+} SpranimB798State;
+
 extern u8 D_8007BF2C;
 extern u8 D_8007BF0C;
 extern void func_80006EA0(void *object);
@@ -313,14 +323,18 @@ void texscrollControl(TexscrollState *state, s32 updateRate) {
  * frame cell the unused x held) and the for-init copies it to the cursor
  * after `i = 0`, so ugen emits the index clear before the cursor copy, as
  * shipped (stream surgery: that emission order alone is worth the 2 words).
- * Left: the y/z/radius homes (0x7C/0x74/0x98 against 0x8C/0x88/0x78) and
- * two add/mul operand orders. */
+ * 2026-10-09 (lane s-2): 8 -> 6. The target state is a struct and the
+ * previous position is read through members, summed x, y, z like the first
+ * distance: a byte-offset cast is a heavier operand (L92), which had put the
+ * position left of the normal and the sum left of the distance. The z, y, x
+ * spelling that compensated goes, and so does the dead `i = 0;` (inert).
+ * Left: the y/z/radius homes (0x7C/0x74/0x98 against 0x8C/0x88/0x78). */
 /* PROVENANCE: JFG's public character-plane control role supplies the idiom; Mickey's fields, globals, and action calls are authoritative below. */
 void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
     SpranimPlane *plane;
     SpranimB798Target **objects;
     SpranimB798Target *object;
-    u8 *targetState;
+    SpranimB798State *targetState;
     s32 i;
     f32 firstDistance;
     f32 secondDistance;
@@ -338,13 +352,12 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
     s32 pad2;
 
     plane = arg0->state64;
-    i = 0;
     list = (SpranimB798Target **) func_80005750(&count);
     for (i = 0, objects = list; i < count; i++, objects++) {
         object = *objects;
         targetState = object->state64;
         firstDistance = 0.0f;
-        if ((*(u16 *)(targetState + 0x1A8) & 1) && (*(s8 *) targetState != 0)) {
+        if ((targetState->flags & 1) && (targetState->flag0 != 0)) {
             continue;
         }
         fraction = object->x;
@@ -354,18 +367,18 @@ void func_8001B798(SpranimB798Object *arg0, s32 arg1) {
         if (firstDistance < 0.0f) {
             do {
                 secondDistance = plane->distance +
-                    ((plane->normalZ * *(f32 *)(targetState + 0x40)) +
-                     ((plane->normalY * *(f32 *)(targetState + 0x3C)) +
-                      (plane->normalX * *(f32 *)(targetState + 0x38))));
+                    ((plane->normalX * targetState->previousX) +
+                     (plane->normalY * targetState->previousY) +
+                     (plane->normalZ * targetState->previousZ));
             } while (0);
             if (secondDistance >= 0.0f) {
-                deltaX = object->x - *(f32 *)(targetState + 0x38);
-                deltaY = object->y - *(f32 *)(targetState + 0x3C);
-                deltaZ = object->z - *(f32 *)(targetState + 0x40);
+                deltaX = object->x - targetState->previousX;
+                deltaY = object->y - targetState->previousY;
+                deltaZ = object->z - targetState->previousZ;
                 fraction = secondDistance / (secondDistance - firstDistance);
-                hitX = *(f32 *)(targetState + 0x38) + fraction * deltaX;
-                hitY = *(f32 *)(targetState + 0x3C) + fraction * deltaY;
-                hitZ = *(f32 *)(targetState + 0x40) + fraction * deltaZ;
+                hitX = targetState->previousX + fraction * deltaX;
+                hitY = targetState->previousY + fraction * deltaY;
+                hitZ = targetState->previousZ + fraction * deltaZ;
                 deltaX = hitX - arg0->x;
                 deltaZ = hitZ - arg0->z;
                 radius = plane->radius;
@@ -438,10 +451,10 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
 
 /* PLATEAU-HANDOFF:func_8001B798:start
  * symbol: func_8001B798
- * score: 8/175 words
+ * score: 6/175 words
  * frame: 0xE0
  * relocations: 9
- * first-mismatch: +0xF0
- * summary: Call result in a list local, copied in the for-init after i = 0 (10 to 8). Left: y/z/radius homes, two operand orders.
+ * first-mismatch: +0xF4
+ * summary: Previous position through struct members (operand weight), 8 to 6. Left: y/z/radius homes (spill request set).
  * PLATEAU-HANDOFF:func_8001B798:end
  */

@@ -2150,6 +2150,6 @@ void func_8004AF68(void) {
  * frame: 0x90
  * relocations: 3
  * first-mismatch: +0x94
- * summary: XOR-kept copies give the dead v0/v1 moves (size 0); counts inline so the segment copy takes v0: 323 at -8 to 57. Left: pre-call spill-cell order (web numbering)
+ * summary: XOR-kept copies, counts inline: 323 at -8 to 57. Left: spill homes follow web number; pre-call webs must number after the loop temps
  * PLATEAU-HANDOFF:wakeAllocate:end
  */

@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: XOR-kept copies give the dead v0/v1 moves (size 0); counts inline so the segment copy takes v0: 323 at -8 to 57. Left: pre-call spill-cell order (web numbering)
+- summary: XOR-kept copies, counts inline: 323 at -8 to 57. Left: spill homes follow web number; pre-call webs must number after the loop temps
+
+Summary before this remeasure: XOR-kept copies give the dead v0/v1 moves (size 0); counts inline so the segment copy takes v0: 323 at -8 to 57. Left: pre-call spill-cell order (web numbering)
 
 Summary before this remeasure: XOR-kept copies of the two counts after the alpha branch give the dead v0/v1 moves: -8 to size 0, 323 to 60. Left: copies' v0/v1 order and spill-cell order
 
@@ -499,4 +501,51 @@ pre-call spilled web numbered after the unroller autos, in the order a walk
 of the allocation argument meets them. In ours only the copies of the
 group count (substituted late, after unrolling, because groupCount is a
 loop bound) are numbered that late.
+
+#### 2026-10-08, lane k-6 (resumed): the spill-home law, read from uopt's slot trace
+
+Measured by tools/bank.py: masked 57 (raw 57), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 328, register naming 0, immediate only 14, really different 13.
+
+Score unchanged at 57 masked, size delta 0 (byte-exact 328, naming 0,
+immediate 14, really different 13). The 57 body is kept.
+
+Law (spill homes). uopt's spilltemps hands out pre-call spill homes in
+ascending web number. Each web either reuses an earlier slot whose
+occupants it does not interfere with, or takes a fresh 4-byte slot below
+the previous one. Read with the slot-tracing uopt (DKWB_UOPT_SLOT_TRACE,
+its .text identical to stock on this TU), proc 9 on the 57 body:
+- cvt (web 5) at -72, segment (7) at -76, doubled (8) at -80, sample term
+  (40) at -84, 0x14 term (41) at -88: each one is fresh.
+- the vertex-buffer loop's index temporaries (i + 1) (67), (i + 2) (191)
+  and (i + 3) (195): fresh at -92, -96 and -100. They interfere with all
+  five webs above, so they cannot reuse any of those slots.
+- $v0[i * 4] (287): fresh at -104. segment-bytes (289) at -108,
+  texture-bytes (308) at -112. Everything else reuses a slot.
+This is exactly the cell ladder of the object (-72 is 0x48). The target
+ladder is three free cells (0x48 to 0x40), then cvt, segment, sample term,
+0x14 term, doubled, segment-bytes and texture-bytes. In web-number terms,
+the three loop temporaries are numbered before every pre-call spilled
+web, and the pre-call webs are numbered in the order a walk of the
+allocation argument meets them. Read it with web_report --proc 9 and check
+it with frame_census.
+
+Measured flat or worse this pass:
+- The count definitions moved below the alpha branch, below the copies,
+  or post-call before the fill loops, with the doubled copy from
+  groupCount, from the expression, or from triCount (12 cells). Below the
+  branch: 347 at -20. Post-call: 349 at -28. bb0 has to compute them.
+- The cvt rooted through a reused parameter (`wakeValue88 *= 60.0f`, or
+  assigned): 310 at +20. Through `frameCount = wakeValue88 * 60.0f`: 59.
+- The post-call segment store reading j (65). The segment web then no
+  longer spans the call; it keeps a dead slot at -76.
+
+Flag: the two `^= 0` keep-alives are stand-ins. They reproduce the target's
+dead v0/v1 copies but are not the author's source.
+
+Cycle-21 line: the decision variable is web-creation order. The pre-call
+expression webs need numbers above the vertex-buffer loop's (i + 2)/(i + 3)
+temporaries (191/195 here); they are 5 to 41 now. Only values reached
+through a late substitution of a loop-bound symbol (the group-count copy,
+288) are numbered that late. Find the source that delays creating the cvt
+chain the same way while bb0 still computes it.
 <!-- plateau-handoff:wakeAllocate:end -->

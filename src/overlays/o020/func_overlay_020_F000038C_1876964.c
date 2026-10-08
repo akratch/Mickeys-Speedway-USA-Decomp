@@ -95,6 +95,11 @@ extern void *func_overlay_020_F0000000_18765D8();
  * web's save above far's and the 64 constant's, so size takes s4, far s5
  * and 64 s6 as shipped. One probe lands between far and 64 (33); three or
  * four overshoot (48). Left: col & 7 over row (t1/t2) and the copy's use.
+ * 2026-10-08 (lane m-4), 22 -> 10: the vertex index in `i` (k-2's separate
+ * index), `size = i + 9` for the second triangle, the dead `i |= 0` that
+ * drops col & 7 below row (t2/t1 as shipped), and the two size probes AFTER
+ * that redefinition, where they are no longer folded: size s4, far s5, 64
+ * s6. Left: the copy (the target stores tri[1].vi1 from the copy in s4).
  */
 #ifdef NON_MATCHING
 Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
@@ -146,12 +151,12 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
                 u1 = (((col + 1) * grid->textureScaleX * texture->width) << 5) / grid->columns;
                 v0 = ((grid->textureScaleY * row * texture->height) << 5) / grid->rows;
                 v1 = (((row + 1) * grid->textureScaleY * texture->height) << 5) / grid->rows;
-                size = col & 7;
-                far = size + 10;
+                i = col & 7;
+                far = i + 10;
                 tri[0].flags = 0x40;
-                tri[0].vi0 = size;
-                tri[0].vi2 = size + 9;
-                tri[0].vi1 = size + 1;
+                tri[0].vi0 = i;
+                tri[0].vi2 = i + 9;
+                tri[0].vi1 = i + 1;
                 tri[0].uv0.u = u0;
                 tri[0].uv0.v = v0;
                 tri[0].uv1.u = u1;
@@ -159,8 +164,9 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
                 tri[0].uv2.u = u0;
                 tri[0].uv2.v = v1;
                 tri[1].flags = 0x40;
-                tri[1].vi0 = size + 1;
-                size += 9;
+                tri[1].vi0 = i + 1;
+                size = i + 9;
+                i |= 0;
                 size |= 0;
                 size |= 0;
                 tri[1].vi1 = size;
@@ -189,10 +195,10 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
 
 /* PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:start
  * symbol: func_overlay_020_F000038C_1876964
- * score: 22/270 words
+ * score: 10/270 words
  * frame: 0x40
  * relocations: 3
- * first-mismatch: +0x94
- * summary: Two or-zero probes on size order size, far and 64 as shipped (s4/s5/s6), 34 to 22. Left: col & 7 over row, the copy's use.
+ * first-mismatch: +0x224
+ * summary: Separate index, dead or-zero redefinition, size probes after it: 22 to 10. Left: as1 renames the vi1 store from the s4 copy to s2.
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

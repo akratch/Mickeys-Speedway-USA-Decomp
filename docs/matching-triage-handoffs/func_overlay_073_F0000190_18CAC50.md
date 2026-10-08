@@ -6,7 +6,9 @@
 - frame: 0x98
 - relocations: 46
 - first mismatch: +0x7C8
-- summary: 4 masked at size 0, case 4 query: the skipped t8 is an as1-folded draw, not a ghost; the a1 join has a natural chained-copy spelling (64).
+- summary: 4 masked at size 0, case 4 query: ugen's hinted argument path never refuses a0 (it spills the occupant), so the folded draw is a uopt temp moved into a0.
+
+Summary before this remeasure: 4 masked at size 0, case 4 query: the skipped t8 is an as1-folded draw, not a ghost; the a1 join has a natural chained-copy spelling (64).
 
 Summary before this remeasure: 4 masked at size 0, all naming in the case 4 query: hitIndex - 1 is an a1 web in the target with one extra folded ring draw; ours is a ring temp.
 
@@ -654,4 +656,51 @@ the tree body, the target's query block is the tree's (the narrowing
 into the v1 web, both tests reading its temp) plus one draw, and the
 6 cell is the tree's with the web replaced by a temp pair and a copy.
 Cycle-21 line unchanged.
+
+#### 2026-10-08, lane m-f1: ugen's argument path cannot refuse a0; six join spellings flat
+
+Measured by tools/bank.py: masked 4 (raw 19), size delta +0, candidate 760 words vs target 760. Aligned: byte-exact 756, register naming 4, immediate only 0, really different 0.
+
+Measured with tools/fast_score.py on the 4 body (aligned exact 756, naming
+4). No change adopted.
+
+- The recomp ugen source (`build/5.3/ugen.traced.c`, f_get_dest at 45674,
+  f_get_reg at 81511, f_get_one_reg at 81221) answers the question the last
+  two cycle-21 lines asked. f_get_dest with a register hint always reaches
+  f_get_one_reg(hint): the hint is refused on no path. f_get_one_reg reads
+  the register's available byte (0x10019830 + reg * 12 + 7); when the
+  hinted register is unavailable and occupied it calls f_spill_reg on the
+  occupant and still returns the hint. So "something pinned in a0 makes
+  ugen draw a temp for the mathRnd constant" is not a mechanism this ugen
+  has: a held a0 would produce a spill word, not a folded move. The
+  temp-plus-move signature (`li tN, 1; move a0, tN`, as1 renaming the
+  producer) arises only when the argument node is already a register temp
+  reached through f_move_to_dest, i.e. a uopt expression temporary. The
+  tree body's trace confirms the stack-argument `1` of the query call is a
+  plain ring draw (f_get_dest with no hint, f_get_free_reg, t4, emit 666)
+  and the mathRnd `1` goes f_eval, f_is_zero, f_get_dest, f_get_reg,
+  f_get_one_reg, f_fill_reg straight into a0 (emit 688); between emit 681
+  and 693 the handlers are f_fill_reg, f_ureg, f_free_reg, f_eval,
+  f_get_reg1 and f_move_to_dest and none allocates.
+- Six spellings on the 4 body, all 4 at size 0 unless noted:
+  `hitIndex = hitCount = (s16)mathRnd(1, hitCount)` (4), the same with the
+  kill join `hitCount = hitIndex - 1; hits[hitCount]` (4), the kill join
+  alone (4), the mathRnd arm as a ternary into hitIndex (4), the join as
+  `hitCount = hitIndex; hitCount--; hits[hitCount]` (65 at 0, the g-near
+  kill shape), the else arm written first with the test inverted (273 at
+  +12: the dispatch becomes bnez and the arm order moves).
+
+Cycle-21 line: the decision variable is which uopt expression temporary
+the target evaluates into a ring register between the index narrowing and
+the mathRnd call, to be moved into a0 or a1 by f_move_to_dest and folded
+by as1. The only candidate with no surviving word is the constant 1 reached
+as a temp rather than a leaf, which needs uopt to common it with another
+int 1 available in that block; the query's stack-argument 1 is the nearest
+and uopt does not common it across the query call on this source. Next:
+a mini TU with the countdown test, the query call and the mathRnd arm,
+read with `cc -S`, over forms that give the two 1s one IR name without a
+symbol (the same literal in the inner test, e.g. `hitCount > 1` with an
+int-typed 1 that uopt keeps as a temp, or the mode argument and the
+minimum spelt through one macro), checking the ugen trace for an
+f_move_to_dest on the a0 argument rather than the score.
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

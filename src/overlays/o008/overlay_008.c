@@ -1906,63 +1906,25 @@ f32 func_overlay_008_F00034A0_18611F8(O8P34A0Owner *owner,
     return result;
 }
 
-/* NON_MATCHING: exact size and frame, 126 masked words (2026-10-02).  The
- * tables are real data symbols (D_2188, D_21C8, D_2208, D_2220), the float
- * constants are this function's literal pool, every step loop is
- * `remaining = steps; while (remaining--)`, the random draw precedes the
- * re-read of D_0[mode], the relative trig calls take the unclamped table
- * angle, and the position sums are separate locals from the trig products.
- *
- * One float local carries the phase, the velocity reduction, the blend
- * constant, the +-10 height target and the tilt target: uopt colours a
- * symbol as one web, the union spans the trig calls, so it is denied f0 and
- * takes f14 throughout, as shipped (two pads keep its old cells).  The tail
- * is the matched overlay 9 sibling's: `posX += tilt * trig; posZ -= ...;`
- * then three plain sums, and `tilt *= (f32)magnitude * 0.035f`.  The sample
- * call returns nothing, so update is offered f0 after it.
- *
- * 2026-10-06, 126 -> 124 at size 0: the shared table index is a byte
- * offset, `((randomMode * 4) + tableIndex) * 4`, before both float loads.
- * Left: the integer webs of the table lookup (randomMode a2, tableIndex a0,
- * their sum in v1, no shared `randomMode * 4`), the `steps` home (0x34
- * shipped, a compiler temporary at 0x2C here) and the counter reload after
- * the approach loop.  The gate word read as `O8_S32(0)` is a resident symbol
- * (records at +0x2CC/+0x3C4): declared as one, its high half is hoisted
- * after the approach loop as shipped, at +4 bytes until that reload moves.
- * 2026-10-07, 124 -> 98 at size 0: the u8 mode entry is masked once more
- * where it is read (`D_0[mode] & 0xFF`); the redundant mask spends the ring
- * draw the shipped table lookup was rotated by (checklist item 16, L149).
- * 2026-10-07 (lane h-3), 98 -> 96 at size 0, frame ladder now identical:
- * the step count is converted once, after the sample call, for both paths
- * (the shipped `steps` is a symbol stored to its own cell at 0x34 with the
- * counter at 0x28, not a per-path conversion temporary), and the two unused
- * f32 pads are gone: their cells belong to `steps` (after mode) and
- * `randomMode` (after targetAngle), with savedAngle declared last.
- * 2026-10-07 (lane i-3), 96 -> 93 at size 0 with the gate read as the
- * resident symbol it is (gO8P42A8GateReloc, the +0x2CC/+0x3C4 SYMBOL pair):
- * the reset loop and the angle2 approach loop count with randomMode (dead
- * after the D_2220 read), loops 3-6 with remaining. uopt places a counter's
- * re-initialisation at the exit of the previous loop on the same variable,
- * so with one counter everywhere loop 3's `steps - 1` reload sat at loop
- * 2's exit (the one-sided word that kept the gate symbol at +4); on a
- * second variable it sits in loop 3's guard delay slot, as shipped.
- * Then 93 -> 60: the table row is `randomMode << 2` (a shift, so it is not
- * one expression with D_2220's `randomMode * 4` scale and uopt stops
- * sharing it), both tables are read by element index, and the D_2220 term
- * is added before the directionDC store. 54 -> 45: the row index is
- * written inline at both table reads (uopt makes the sum one web, v1, and
- * the byte scale a ring temporary), the D_2208 angle read follows them,
- * and the `& 0xFF` mask on the mode entry is gone: its draw only stood in
- * for the order of these reads.
- * 2026-10-07 (lane j-1), 45 -> 3: loop 3's `remaining = steps;` is written
- * right after loop 2, not before loop 3. uopt then makes loop 3's first
- * test value (the post-decrement temporary, v1) at loop 2's exit, so the
- * step count is reloaded into v1 there and held to loop 3's guard, as
- * shipped, instead of a ring temporary that rotated the ring for the rest
- * of the function.  Left: the loop 2 call's argument reload order.
- * GLOBAL_ASM stays canonical. */
+/* Matched 2026-10-08 (lane m-f1).  The tables are real data symbols (D_2188,
+ * D_21C8, D_2208, D_2220) and the float constants are this function's own
+ * literal pool, one entry per use.  One float local carries the phase, the
+ * velocity reduction, the blend constant, the +-10 height target and the
+ * tilt target (one symbol web, denied f0 across the trig calls, f14
+ * throughout).  The sample call returns nothing, so update is offered f0
+ * after it.  The step count is converted once after the sample call and is
+ * a symbol homed at 0x34 with the counter at 0x28; the gate word is the
+ * resident symbol gO8P42A8GateReloc (the +0x2CC/+0x3C4 SYMBOL pair).  The
+ * reset loop and the angle2 approach loop count with randomMode, loops 3-6
+ * with remaining, and loop 3's `remaining = steps;` is written right after
+ * loop 2 so its first test value is made at loop 2's exit (v1, as shipped).
+ * The table row is `randomMode << 2`, written inline at both table reads,
+ * with the D_2208 angle read after them and no mask on the mode entry.
+ * The last three words were the approach loop's call block: with the
+ * `while` and the call on one physical line, as1's line tie-break (L59)
+ * orders the two float saves ahead of the argument reload, which then
+ * fills the jal delay slot as shipped. */
 extern s32 gO8P42A8GateReloc;
-#ifdef NON_MATCHING
 void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
                                        O8P42A8Owner *owner, f32 update) {
     O8P42A8State *state;
@@ -2049,10 +2011,9 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
     }
 
     randomMode = steps;
-    while (randomMode--) {
-        actor->angle2 +=
-            o8P42A8ApproachReloc(actor->angle2, targetAngle) >> 4;
-    }
+    /* One physical line: as1 then orders the float saves ahead of the
+     * argument reload, which fills the delay slot as shipped (L59). */
+    while (randomMode--) { actor->angle2 += o8P42A8ApproachReloc(actor->angle2, targetAngle) >> 4; }
     remaining = steps;
 
     if (state->velocity4 < 0.0f) {
@@ -2154,9 +2115,6 @@ void func_overlay_008_F00042A8_1862000(O8P42A8Actor *actor,
             o8P42A8ApproachReloc(actor->angle4, owner->angle4 >> 1) >> 5;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o008/overlay_008/func_overlay_008_F00042A8_1862000.s")
-#endif
 
 void overlay8SetBuffer(void *base) {
     gOverlay8Buffer = (s16 *)((u8 *)base + 0x1B8);
@@ -2387,13 +2345,3 @@ typedef struct {
 } Overlay8BssOwner;
 
 Overlay8BssOwner gOverlay8BssOwner;
-
-/* PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:start
- * symbol: func_overlay_008_F00042A8_1862000
- * score: 3/447 words
- * frame: 0xA0
- * relocations: 40
- * first-mismatch: +0x290
- * summary: Loop 3 counter after loop 2: 45 to 3. Left: the loop-2 argument is a memory read at the use (array home gives the block, 17 naming: the clamp web a0/a1).
- * PLATEAU-HANDOFF:func_overlay_008_F00042A8_1862000:end
- */

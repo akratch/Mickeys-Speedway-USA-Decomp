@@ -1043,8 +1043,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o008/overlay_008.c.o",
       "offset": 0,
       "overlay": 8,
@@ -9408,7 +9408,7 @@
       "metadata": 637,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 419508,
+    "matched_c_bytes_with_postprocess": 440284,
     "objects_with_postprocess": 647
   }
 }

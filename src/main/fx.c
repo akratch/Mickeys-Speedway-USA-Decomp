@@ -724,10 +724,10 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
         }
         cursor = wake->vertexBuffers[1] + textureBytes;
         wake->vertices = cursor;
-        wake->sampleBuffers[2] = NULL;
-        wake->sampleBuffers[3] = NULL;
         cursor += (j * 0x10);
         wake->samples = cursor;
+        wake->sampleBuffers[2] = NULL;
+        wake->sampleBuffers[3] = NULL;
         cursor += (j * 0x14);
         for (i = 0; i < alpha; i++) {
             wake->sampleBuffers[i] = cursor + (i * segmentBytes);
@@ -739,11 +739,11 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
             } else {
                 wake->flags = 0;
             }
-            wake->state = 0;
             wake->segmentCount = (((s32) (wakeValue88 * 60.0f)) + 5) >> 1;
+            wake->state = 0;
+            wake->textureIndex = (s8) (s32) (wakeValue88 * 60.0f);
             wake->value8 = 0;
             wake->value3C = 0;
-            wake->textureIndex = (s8) (s32) (wakeValue88 * 60.0f);
             wake->value4 = wakeValue80;
             wake->textureStep =
                 (s16) (((wake->linked->height - 1) << 8) /
@@ -2146,10 +2146,10 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeAllocate:start
  * symbol: wakeAllocate
- * score: 26/351 words
+ * score: 16/351 words
  * frame: 0x90
  * relocations: 3
  * first-mismatch: +0x94
- * summary: Alpha-start store moved after the texture index (lever_sweep reorder): 57 to 26. Left: pre-call spill ladder (14 immediate), tail rows.
+ * summary: NULL stores after the samples pointer, post-link stores reordered: 26 to 16. Left: only the pre-call spill ladder (16 immediate).
  * PLATEAU-HANDOFF:wakeAllocate:end
  */

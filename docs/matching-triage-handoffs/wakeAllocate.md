@@ -2,11 +2,13 @@
 ### `wakeAllocate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 26/351 words
+- score: 16/351 words
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: Alpha-start store moved after the texture index (lever_sweep reorder): 57 to 26. Left: pre-call spill ladder (14 immediate), tail rows.
+- summary: NULL stores after the samples pointer, post-link stores reordered: 26 to 16. Left: only the pre-call spill ladder (16 immediate).
+
+Summary before this remeasure: Alpha-start store moved after the texture index (lever_sweep reorder): 57 to 26. Left: pre-call spill ladder (14 immediate), tail rows.
 
 Summary before this remeasure: XOR-kept copies, counts inline: 323 at -8 to 57. Left: cvt and segment must be kept symbols created late (target s0/t0); loop-bound copies alone go late
 
@@ -600,4 +602,17 @@ On the 57 body. The residual has no naming rows (aligned 328/0/14/13), so no col
 Measured by tools/lever_sweep.py (proc 9, every statement position, identity gate passed): 2,724 cells generated and measured: scored 2,469 (1,991 inert), size-skipped 87, compile errors 168; exact 0. One cell moved the tail: `wake->value4 = wakeValue80;` stored after `wake->textureIndex = ...` instead of before it (a reorder of two stores to different fields, no read between them), 26 at +0 (aligned 327/0/14/11, residual 25). The four candidate-only and four target-only tail words at +0x2D4..+0x36C fall to one candidate-only word at +0x2DC. Next best: empty tests and do-while wrappers on lines 734-746 (`if (segmentBytes) {}` after the allocation, 55 at +0, residual 25; `if (wake) {}` or a do-while at 743, 54). Kept the reorder.
 
 Left: the 14 immediate rows are the pre-call spill ladder (target cvt 0x3C, segment 0x38, sample term 0x34, 0x14 term 0x30, doubled 0x2C, segment bytes 0x28, texture bytes 0x24; ours 0x48 down), unchanged by any cell, and 11 structural rows in the tail.
+
+#### 2026-10-08, lane p-3 (second pass): statement order of the stores, 26 to 16, only the spill ladder left
+
+Measured by tools/bank.py: masked 16 (raw 16), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 335, register naming 0, immediate only 16, really different 0.
+
+On the 26 body. Two store groups set the two remaining schedule windows (as1 reads statement order there):
+
+- The two NULL sample-buffer stores at eight positions in the cursor sequence (fast_score, aligned residual): after `cursor += j * 0x10` or after `wake->samples = cursor`, 22 at +0 (residual 21); where they were, after the vertex pointer, or after the 0x14 add, 26; at the cursor start or after the alpha loop, 72 to 74. Kept: after `wake->samples = cursor`.
+- Every order of the five post-link stores (state, segment count, value8, value3C, alpha start) with the texture-index store at each of six positions, 720 cells on that body (fast_score): segment count, state, texture index, value8, value3C, alpha start is one of three cells at 16 at +0 (aligned 335/0/16/0, residual 16); the next are 18. Kept.
+
+A second lever_sweep on the 26 body (proc 9, the same satisfied oracle p1:w48=c14; 2,743 cells generated and measured: scored 2,481 (2,000 inert), size-skipped 87, compile errors 175; exact 0): best `if (segmentBytes) {}` after the allocation at line 734, 24 at +0 (immediate 12, structural 11), then the reorder at 745, 25. The empty test is the only cell in either sweep that moves the ladder (immediate 14 to 12); not adopted, it was measured on the old store order.
+
+Left: 16 immediate rows and nothing else (no naming, no structural). The whole residual is the pre-call spill ladder: target cvt 0x3C, segment 0x38, sample term 0x34, 0x14 term 0x30, doubled 0x2C, segment bytes 0x28, texture bytes 0x24 under three free cells; ours cvt 0x48, segment 0x44, doubled 0x40, sample term 0x3C, 0x14 term 0x38, segment bytes 0x24, texture bytes 0x20.
 <!-- plateau-handoff:wakeAllocate:end -->

@@ -744,6 +744,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
  * frame: 0x280
  * relocations: 315
  * first-mismatch: +0x4
- * summary: 455 aligned at size 0 (masked 721): the label x written into unready keeps s8; the +4 word is gone. Open: head param copy, colour-block ring.
+ * summary: 455 aligned at size 0 (masked 721). Head: ov47Bss_338 bb3 piece refused at bb12 by one (2*12 < 9+16); a2 force prices the prologue, loop piece missing.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

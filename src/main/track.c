@@ -3885,7 +3885,11 @@ void func_80012658(s32 flags) {
  * merge, ranked aligned): the edge word in x1, the inside flag in
  * insertIndex, the triangle index in z1, the swap temporary in segment, and
  * the edge value negated in place (no edgeValue). The declarations those
- * free hold the first-plane floats, so the frame stays 0x288. */
+ * free hold the first-plane floats, so the frame stays 0x288.
+ * 234 -> 64 at 0 (aligned residual 93 -> 64), lane r-3: the insertion sort
+ * is a while loop swapping one array at a time, yHit is masked at its
+ * definition and again at its test (each mask spends the draw the target
+ * spends), and both distances sum x and y before z. */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -4008,22 +4012,21 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                 yMasks[hitCount] = getYCompareMask(bounds, y0, y1);
                 entryTimes[hitCount] = nearClip;
                 segments[hitCount] = &D_800792E8->segments[segmentIndex];
-                for (insertIndex = hitCount;
-                     (insertIndex > 0) &&
-                     (entryTimes[insertIndex] < entryTimes[insertIndex - 1]);
-                     insertIndex--) {
+                insertIndex = hitCount;
+                while ((insertIndex > 0) && (entryTimes[insertIndex] < entryTimes[insertIndex - 1])) {
                     nearClip = entryTimes[insertIndex];
-                    segment = segments[insertIndex];
-                    temporaryXZ = xzMasks[insertIndex];
-                    temporaryY = yMasks[insertIndex];
                     entryTimes[insertIndex] = entryTimes[insertIndex - 1];
-                    segments[insertIndex] = segments[insertIndex - 1];
-                    xzMasks[insertIndex] = xzMasks[insertIndex - 1];
-                    yMasks[insertIndex] = yMasks[insertIndex - 1];
                     entryTimes[insertIndex - 1] = nearClip;
+                    segment = segments[insertIndex];
+                    segments[insertIndex] = segments[insertIndex - 1];
                     segments[insertIndex - 1] = segment;
+                    temporaryXZ = xzMasks[insertIndex];
+                    xzMasks[insertIndex] = xzMasks[insertIndex - 1];
                     xzMasks[insertIndex - 1] = temporaryXZ;
+                    temporaryY = yMasks[insertIndex];
+                    yMasks[insertIndex] = yMasks[insertIndex - 1];
                     yMasks[insertIndex - 1] = temporaryY;
+                    insertIndex--;
                 }
                 hitCount++;
                 if (hitCount >= 20) {
@@ -4055,10 +4058,10 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
             }
             for (z1 = firstTriangle; z1 < lastTriangle;
                  z1++) {
-                yHit = E129_U8(E129_PTR(segment, 0x14), z1) & yMask;
+                yHit = (E129_U8(E129_PTR(segment, 0x14), z1) & yMask) & 0xFF;
                 if (((segment->visibilityMasks[z1] & xzMask & 0xFFFF) != 0) &&
                     ((segment->visibilityMasks[z1] & xzMask & 0xFFFF0000) != 0) &&
-                    (yHit != 0)) {
+                    ((yHit & 0xFF) != 0)) {
                     polygon = ((TrackFacet *) segment->surfaceIndices)[z1].indices;
                     plane = &surfaceBase[polygon[0]];
                     normalX = plane->x;
@@ -4124,16 +4127,16 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
         direction.f[1] *= farClip;
         direction.f[2] *= farClip;
         E129_F32(arg2, 0x20) = sqrtf(
-            (direction.f[2] * direction.f[2]) +
             ((direction.f[0] * direction.f[0]) +
-             (direction.f[1] * direction.f[1])));
+             (direction.f[1] * direction.f[1])) +
+            (direction.f[2] * direction.f[2]));
         E129_S32(arg2, 0x24) = bestFlags;
         E129_S32(arg2, 0x28) = bestTexture;
     } else {
         E129_F32(arg2, 0x20) = sqrtf(
-            (direction.f[2] * direction.f[2]) +
             ((direction.f[0] * direction.f[0]) +
-             (direction.f[1] * direction.f[1])));
+             (direction.f[1] * direction.f[1])) +
+            (direction.f[2] * direction.f[2]));
     }
     return hit;
 }
@@ -5239,10 +5242,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 234/548 words
+ * score: 64/548 words
  * frame: 0x288
  * relocations: 13
  * first-mismatch: +0x2AC
- * summary: Frame-exact body plus first-phase locals reused as second-phase webs: 242 to 234 at 0, aligned residual 119 to 93
+ * summary: While-loop insertion sort, masked yHit, x+y-first distances: 234 to 64 at 0, aligned residual 93 to 64
  * PLATEAU-HANDOFF:func_8001291C:end
  */

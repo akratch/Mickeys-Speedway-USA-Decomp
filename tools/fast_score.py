@@ -47,16 +47,23 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def source_grep_command(symbol: str) -> list[str]:
+    """`git grep` arguments listing the tracked files that name `symbol` as a whole word.
+
+    A `\\b` boundary inside `-E` is a GNU extension that macOS's regex library
+    does not provide, so the pattern matched nothing there. `-w -F` asks git
+    itself for the word match and needs no regex at all.
+    """
+    return ["git", "grep", "-l", "-w", "-F", symbol, "--", "src"]
+
+
 def tracked_source_for(symbol: str) -> str:
     """Return the tracked TU path (repo-relative) carrying `symbol`'s candidate."""
     ranking = json.loads((ROOT / "config/nonmatching-ranking.us.json").read_text())
     for row in ranking["functions"]:
         if row["name"] == symbol:
             return row["file"]
-    hits = subprocess.run(
-        ["git", "grep", "-l", "-E", rf"\b{re.escape(symbol)}\b", "--", "src"],
-        cwd=ROOT, capture_output=True, text=True,
-    ).stdout.split()
+    hits = subprocess.run(source_grep_command(symbol), cwd=ROOT, capture_output=True, text=True).stdout.split()
     hits = [h for h in hits if h.endswith(".c")]
     if len(hits) != 1:
         raise SystemExit(f"cannot identify one tracked TU for {symbol}: {hits}")

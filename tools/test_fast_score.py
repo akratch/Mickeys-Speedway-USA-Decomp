@@ -41,6 +41,20 @@ class RecipeTests(unittest.TestCase):
                          "asm/nonmatchings/overlays/o101/x/func_overlay_101_F000A6BC.s")
         self.assertIsNone(fast_score.target_listing_for("missing", src))
 
+    def test_source_grep_is_a_fixed_word_match(self):
+        # `\\b` in a `git grep -E` pattern matched nothing on macOS; the word
+        # boundary has to come from git's own -w, with the symbol fixed text.
+        cmd = fast_score.source_grep_command("piRomLoadCompressed")
+        self.assertIn("-w", cmd)
+        self.assertIn("-F", cmd)
+        self.assertNotIn("-E", cmd)
+        self.assertFalse(any("\\b" in arg for arg in cmd))
+        self.assertEqual(cmd[cmd.index("-F") + 1], "piRomLoadCompressed")
+
+    def test_tracked_source_found_for_a_matched_function(self):
+        # A matched function has no ranking row, so this exercises the grep.
+        self.assertEqual(fast_score.tracked_source_for("piRomLoadCompressed"), "src/main/pi.c")
+
     def test_split_recipe_rejects_malformed_line(self):
         with self.assertRaises(SystemExit):
             fast_score.split_recipe("tools/asm-processor/build.py tools/ido/cc -c a.c")

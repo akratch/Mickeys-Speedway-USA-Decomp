@@ -75,6 +75,8 @@ locals or role reuse, which only the read-through found.
    one line: `new_var` temporaries, five chained 64-bit all-ones masks around
    the literal `1`, and an empty `if` with a duplicated `!new_var` test. It is
    the worst single body the census found, and it is not in the queue.
+   (Resolved 2026-10-08, lane c-3: the source is a four-iteration
+   controller loop that IDO unrolls.)
 3. **"The 2026-10-07 batch used the most stand-ins."** Eight of the 24 functions
    matched that day carry an A construct: `func_80038190` (five OR-zero probes),
    o066 `F00004E0` (two `width * 0`), `overlay68UpdateAnimation` (`index =
@@ -118,19 +120,19 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/anim.c:3067` `func_80055B24` **A**: empty `if (1)`/`if (0)` region.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/audio_manager_36D0.c:658` `func_80003760` **A**: `entry++; entry--;` pair plus a single-statement region.
-  Natural: plain `group = point->unk23;`. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-3, 2026-10-08):** the cancelling pair, the region and the `group` local are gone; the row is `D_800C9238[point->unk23 - 1]` and the bound `D_80078F04[point->unk23 - 1]` (the typed count array, not a cast of `D_80078F00`). Byte-identical: `group` was the web numbered ahead of `entry`; reading the field at each use lets `entry` take v0 as shipped.
 - `src/main/audiomgr.c:474` `func_80002188` **A**: `if (0) { }`.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved (lane c-3, 2026-10-08):** deleted; it was inert (byte-identical without it).
 - `src/main/camera.c:1283` `func_80023598` **A**: empty `do { } while (0)`.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: delete. Keep bytes: no - measured (lane c-3, 2026-10-08): deleted, the function changes size. The function comment ties the region at the if/else join to keeping `dlist` in its home; the natural statement that supplies that block boundary is not found yet.
 - `src/main/charControl.c:1057` `func_8001D2A0` **A**: self-assignment.
-  Natural: delete the statement. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: delete the statement. Keep bytes: no - measured (lane c-3, 2026-10-08). `D_800CB300 = D_800CB300;` emits nothing, but the use/def in the flag-1 block stops uopt sharing the global's address across `camGetListPtr()`, where the target splits it (`sw` through `at`, then a fresh `lui`/`addiu`); deleted, the function changes size. A natural statement that defines `D_800CB300` in that block without code is still to find.
 - `src/main/diRcp.c:377` `diRcpDmaOffsets` **A**: empty if body or `if (c);` probe.
-  Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-3, 2026-10-08):** the empty `if (dList) {}` is now the guard of the debug print, `if (dList != NULL) { stubbed_printf(...); }`. `stubbed_printf` is an empty macro in this TU, so the body compiles away; the test is the one real read of `dList`, which is why the target homes only `command` (a1) and not `dList`. Every sibling whose parameters appear only in a print homes them all. Byte-identical.
 - `src/main/diRcp.c:417` `diRcpMoveWd` **A**: empty if body or `if (c);` probe.
-  Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  Natural: delete. Keep bytes: no - measured (lane c-3, 2026-10-08). The `command = index` store in the G_MW_FOG case and the `command && command` read together keep the six empty cases as separate jump-table blocks; with either removed the cases merge into the exit and the function shrinks by 12 words. Not reproduced: both removed; `if (command == (u8) G_MOVEWORD)` and `if (command != 0)` guards on the final print (with and without the store). The same pair is marked `fakematch` in JFG's diRcp.c.
 - `src/main/flash_5885C.c:89` `osFlashReadArray` **A**: OR/XOR with zero, or an all-ones mask.
-  Natural: the bare operand. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved (lane c-3, 2026-10-08):** `(page_num ^ 0) * D_800D77D8` is `page_num * D_800D77D8` with the page-size global declared `u32` (as the u32 page arithmetic it feeds; `flash_58570.c` now declares it the same way). The XOR stood in for the operand type: with an `s32` global the plain product loads the operands in the other order (3 words); swapping the operands does not help. Byte-identical.
 - `src/main/flash_58C10.c:70` `func_800580F0` **A**: `do { } while (0)` around one call (three sites, 70-78).
   Natural: the bare calls. Keep bytes: unknown - not measured; not in the cleanup queue.
   **Left (lane c-2, 2026-10-08):** the three regions are three blocks, so `&D_800D7830` is rematerialized per call rather than held in s0 (without them it moves to s0 and the frame grows to 0x38). Measured: no wrappers; one region over all three calls; one region over the middle two; an `OSPfs *pfs` local for the address; an empty test on the connector result. None keeps the bytes.
@@ -138,7 +140,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   Natural: the bare operand. Keep bytes: unknown - not measured; not in the cleanup queue.
   **Left (lane c-2, 2026-10-08):** the OR-zero keeps `k` a non-basic induction variable, which is what leaves the copy rolled with the `sltiu` counter; every plain counter is rewritten to `!=` or unrolled. Not re-measured here; the shard lists the spellings already tried.
 - `src/main/frontend_37680.c:228` `func_80036DD0` **A**: `& 0xFFFFFFFF` on a u32 address.
-  Natural: the bare address. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: the bare address. Keep bytes: no - measured (lane c-3, 2026-10-08): `(u8 *) compressedAddr` without the mask differs in 23 words. Not explored further.
 - `src/main/frontend_37D50.c:165` `func_80037414` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Left (lane c-2, 2026-10-08):** not re-measured; the cleanup queue lists 16+ three-argument spellings already tried.
@@ -148,11 +150,11 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/gameVi.c:161` `func_800336A8` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/menu.c:818` `func_8003968C` **A**: one-line body: `new_var` carriers, 64-bit mask chains, duplicated empty test.
-  Natural: `D_800D31A0 = -1;` and the plain stores. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved (lane c-3, 2026-10-08):** the one-line permuter body is a four-iteration controller loop storing `-1`, `20` and `15` to `menuPreviousButtons[i]`, `menuRepeatX[i]` and `menuRepeatY[i]` (the TU's existing array aliases). IDO unrolls it completely, which is why the target loads each constant afresh per controller. Byte-identical.
 - `src/main/menu.c:1163` `func_8003A2C8` **A**: OR/XOR with zero, or an all-ones mask.
-  Natural: the bare operand. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: the bare operand. Keep bytes: no - measured (lane c-3, 2026-10-08). The target holds `&D_8007C090` in a1 for both the load and the store; three plain spellings (`screenMode &= 3` with a `u8 *current` for load and store, an `s32 mode` local with the global named, and the pointer for the load with the name for the store) all fold the address into `lui`/`lbu` pairs (22-24 words differ). The address-taken `modeBits` behind `modeBitPtr` is what keeps the address; leave until that is understood.
 - `src/main/menu_3B1A0.c:190` `func_8003A754` **A**: empty if body.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: delete. Keep bytes: no - measured (lane c-3, 2026-10-08): deleting the empty `record != base` test differs in 20 words. Not explored further.
 - `src/main/models_5B300.c:497` `func_8005ABA8` **A**: `(instance && instance) && instance` with an empty body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/objects.c:2278` `func_80006B04` **A**: empty `do { } while (0)`.
@@ -190,7 +192,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/track.c:4983` `func_800148E0` **A**: empty `if (1)`/`if (0)` region.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/vehicle_sounds.c:395` `func_8005830C` **A**: empty if body.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: delete. Keep bytes: no - measured (lane c-3, 2026-10-08): deleting the empty `if (cameras) {}` differs in 6 words. Not explored further.
 - `src/overlays/o001/overlay_001_tail.c:1568` `overlay1StartTimerCallbacks` **A**: empty if body.
   **Left** (lane c-1, 2026-10-08): deleting the empty `if (entry->modeMask) {}` after `callback()` changes about 12 words; the re-read of `modeMask` after the call is load-bearing.
 - `src/overlays/o001/overlay_001_tail.c:1625` `overlay1FindDirectionalObject` **A**: empty then-arm `if (a == b) { } else { ... }`.
@@ -232,9 +234,9 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/overlays/o059/overlay59DrawFrame.c:32` `overlay59DrawFrame` **A**: empty if with a duplicated condition.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o059/overlay59PrepareEntry.c:77` `overlay59PrepareEntry` **A**: `& 0xFFFFFFFF` on a u32 value.
-  Natural: `handle = value`. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: the bare value. Keep bytes: no - measured (lane c-3, 2026-10-08): `handle = (u32) func_80034448((s32) value);` without the masked copy differs in 9 words. Not explored further.
 - `src/overlays/o063/overlay63Initialize.c:89` `overlay63Initialize` **A**: OR/XOR with zero, or an all-ones mask.
-  Natural: the bare operand. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: the bare operand. Keep bytes: no - measured (lane c-3, 2026-10-08): `while (index != -1)` and `while (-1 != index)` both differ in one word, the loop's `bnel` with its operands swapped (target compares the held `-1` register first). The XOR keeps `index` as the second operand.
 - `src/overlays/o068/overlay68CheckKind.c:69` `overlay68CheckKind` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o073/overlay73Initialize.c:101` `func_overlay_073_F0000000_18CAAC0` **A**: multiply-by-zero stand-in for a constant.

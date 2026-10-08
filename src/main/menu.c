@@ -811,11 +811,14 @@ void frontPlayerScreenLimits(s32 player, s32 *left, s32 *top, s32 *right, s32 *b
     *bottom = limits[3];
     viConvertXY(right, bottom);
 }
-void func_8003968C(void)
-{
-  int new_var;
-  int new_var2;
- do { new_var2 = ((((1 & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu) & 0xFFFFFFFFFFFFFFFFu; D_800D31A0 = -(new_var2 & 0xFFFFFFFFFFFFFFFFu); D_800D3198 = 0x14; D_800D319C = 0xF; D_800D31A4 = -1; new_var = 0xF; D_800D3199 = 0x14; D_800D319D = new_var; if ((!new_var) && (!new_var)) { } D_800D31A8 = -1; D_800D319A = 0x14; D_800D319E = 0xF; D_800D31AC = -1; D_800D319B = 0x14; D_800D319F = new_var; } while (new_var * 0);
+void func_8003968C(void) {
+    s32 controller;
+
+    for (controller = 0; controller < 4; controller++) {
+        MENU_PREVIOUS_BUTTONS[controller] = -1;
+        MENU_REPEAT_X[controller] = 20;
+        MENU_REPEAT_Y[controller] = 15;
+    }
 }
 void func_80039720(s32 updateRate) {
     s32 controller;

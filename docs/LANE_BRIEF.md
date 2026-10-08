@@ -930,6 +930,10 @@ it end to end. The ones that carry most of the weight:
   Each cell compiles stock and instrumented with the build's own recipe; size moves over `--max-size-delta` are dropped before scoring, inert cells cost one compile. It ranks by aligned residual with an `oracle` column: whether the UNFORCED records now show the forced state, matching webs by expression and line overlap because numbers move (`=F`: bytes equal the forced object).
   First run matched func_80009414 (368 cells, 22 s): `if (vector) {}` after `count = 0;` reproduced `p1:w387=s` byte for byte. `sem check` marks a lever that can change behaviour; read it before adopting.
 
+- **`tools/stream_surgery.py <symbol> --edit DIFF|--script PY [--enumerate A-B,C-D]`** edits the function's `cc -S` listing, reassembles it with the C compile's own `as0`/`as1` flags (never the driver's `.s` path, whose `-noglobal` renames registers) and prints masked and aligned buckets; a CONTROL line proves the untouched round trip equals the configured object. `--dump` numbers the lines; `--enumerate` scores every ordering of the named line ranges.
+  It answers "if ugen had emitted this stream, would as1 give the target?" with a known destination. Validated on o020 F000038C: a copy-back `move` after the size copy takes 10 to 4, naming 0.
+- **`tools/merge_locals.py <symbol> [--source F] [--target-frame N]`** merges every same-typed local pair (rename, drop the declarator), classes each cell inert / frame-only (identical outside `N($sp)` and the frame) / code-changing, applies the frame-only ones greedily and reports the frame delta; code-changing cells rank by aligned residual. `lever_sweep.py --levers merge_pairs` uses the same renaming. On func_8001291C's 293 body it reaches the target frame 0x288 with eight neutral merges.
+
 ### The insertion-pair reader, for any function whose size is off
 
 `tools/insertion_pairs.py <symbol>` is the instrument for a size-mismatch

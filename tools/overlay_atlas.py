@@ -213,6 +213,19 @@ FIXED_DATA_RODATA_OWNERSHIP = {
             True,
         )
     ],
+    # The updater's five-entry mode-switch table and float literals,
+    # rodata-relative +0xC (data_rodata +0xDC), which the shipped %hi/%lo
+    # pairs encode.
+    73: [
+        (
+            0xDC,
+            0x12C,
+            "func_overlay_073_F0000190_18CAC50",
+            ".rodata",
+            "func_overlay_073_F0000190_18CAC50",
+            True,
+        )
+    ],
     86: [
         (
             0x80,

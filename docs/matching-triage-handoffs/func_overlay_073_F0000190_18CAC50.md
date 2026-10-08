@@ -2,11 +2,13 @@
 ### `func_overlay_073_F0000190_18CAC50` plateau handoff
 
 - source: `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c`
-- score: 4/760 words
+- score: 0 differing words
 - frame: 0x98
 - relocations: 46
-- first mismatch: +0x7C8
-- summary: 4 at 0. Hybrid stream (mathRnd narrowing on t9, kill join into a1) is exact with no extra instruction; a t8 draw with no surviving word.
+- first mismatch: none
+- summary: Matched. One count, replaced by mathRnd's pick and decremented in place; its dead narrowing is the shipped ghost draw.
+
+Summary before this remeasure: 4 at 0. Hybrid stream (mathRnd narrowing on t9, kill join into a1) is exact with no extra instruction; a t8 draw with no surviving word.
 
 Summary before this remeasure: 4 masked at size 0, case 4 query: one ring draw with no surviving word between the index narrowing and the mathRnd arm.
 
@@ -731,4 +733,35 @@ No source change; the 4 body is kept.
 - Measured flat (cc -S read for the narrowing register, then fast_score): the second test as `(u32)hitCount >= 2`, `hitCount >= 2U`, `(u32)hitIndex > 1U` (bltu, 20) and `hitCount != 1` (21), `(u16)hitCount >= 2` (283 at +4, the and draws t8 but survives); the mathRnd result as `(s16)(s32)`, through hitIndex then narrowed, `+ 0`, or-with-zero, through phase, assigned inside the cast, `(s16)(s16)`, `(s16)(u32)`: all 19 raw, narrowing on t8; `(s16)(u16)` 283 at +4.
 
 Cycle-21 line: decision variable unchanged in kind but narrowed: a construct that makes ugen draw t8 after the hitIndex narrowing and leaves either nothing or a dead or forwarded write (as1 deletes both). Oracle: the hybrid stream (tree listing, t9 for the narrowing, a1 for the join) is exact, so test each C cell by reading the mathRnd narrowing register in cc -S (t9 wanted) with the kill join in place; next candidates are constructs ugen evaluates into a ring temp and copies (an argument or test operand that is a uopt temporary rather than a symbol or leaf).
+
+#### 2026-10-09, lane s-1: one count, decremented in place; matched and promoted
+
+Discarded the two-variable query shape every lane since f-o073 had held
+fixed (hitCount plus a hitIndex copy, the mathRnd result in hitIndex, the
+join narrowing hitIndex - 1). Written as one count:
+`if ((hitCount = query(...)) != 0) { if (hitCount >= 2) hitCount =
+mathRnd(1, hitCount); hitCount--; state->target = hits[hitCount]; ...`.
+uopt splits that one symbol into two live pieces (the mathRnd argument in
+a1 and the join's value in v1), so the call result is narrowed twice in the
+query block exactly as shipped, and the mathRnd result is narrowed twice
+too: the a1 piece's narrowing after mathRnd is dead (draws t8, which as1
+deletes) and the v1 piece's narrowing lands on t9. That dead narrowing is
+the ghost draw the last seven sections looked for; the decrement in place
+gives `addiu a1, v1, -1` and the join's narrowing with no stand-in.
+
+Measured (tools/shape_product.py, 6 cells, then fast_score): the one-count
+decrement on two lines 4 masked at size 0 (aligned naming 2, really
+different 2: the query block's as1 order of the two sra and the reload); the
+same with the assignment and test on one line, or the assignment inside the
+test, 0 masked at size 0. Dropping the unused s32 local moves the frame (86),
+so it stays as `unused`. Other cells: hitIndex = (s16)(hitCount - 1) 8;
+`hits[hitCount - 1]` 141 at -12; a separate s16 index assigned from the
+count or from mathRnd with an else arm 141 at -8 and 82 at +8.
+
+Promotion: the TU's .rodata (five-entry mode-switch table and the float
+literals, 0x50 bytes) duplicates the retained overlay data at data_rodata
++0xDC, rodata-relative +0xC; rebound to gOverlay73UpdatePoolReloc and
+externalized by digest (overlay 86's form), nine resident callees through
+the surface. gmake verify OK, check-overlay-syms up to date,
+promotion-proof PASS (760 words, frame 0x98, relocations 46/46).
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

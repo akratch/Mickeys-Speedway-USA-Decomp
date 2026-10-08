@@ -3611,6 +3611,15 @@ f32 func_8002A8C0(s32 angle);
  * `if (cosine)` region is gone: the offsetY and timeStep pieces take the
  * target's f14 and f18 (17 to 11, all naming). Left: offsetX/cosine swap
  * (f16/f2 against f2/f16) and the offsetZ piece (f0 against f16).
+ * 2026-10-09 (lane s-2): the x offset is held in `cosine` in both arms (the
+ * target's cosine and x offset are one web: f2, homed at 0x54 across the
+ * sine call), and the else-arm correction is one statement in `mass`. The
+ * merged web outranks the else-arm ny, so ny takes f14 and the x offset f2
+ * as shipped; mass ties nx at 3.5 and loses on web number, so nx takes f12
+ * and mass f16. The `if (timeStep)` boundary goes: 11 to 4. Left: the
+ * correction's intermediate (the target forms it in f16, the two-statement
+ * form, which raises mass's save above nx's). `speed = normal->x;` is a
+ * stand-in that numbers nx ahead of mass.
  */
 #ifdef NON_MATCHING
 void func_80056DD8(HitCopyState *first, HitCopyState *second,
@@ -3635,6 +3644,7 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
             (target->velocity.x * target->velocity.x +
              target->velocity.y * target->velocity.y);
     if (speed > 25.0f) {
+        speed = normal->x;
         mass = ((HitResolveMass *) TrapDanglingJump(target))->mass;
         speed = normal->z * target->velocity.z +
                 (target->velocity.x * normal->x + target->velocity.y * normal->y);
@@ -3661,15 +3671,13 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         sine = -func_8002A8BC(*(s16 *) first);
         target->unk90 = normal->z * cosine - normal->x * sine;
         target->unk8C = normal->z * sine + cosine * normal->x;
-        offsetX = first->position.x - firstSource->previous.x;
+        cosine = first->position.x - firstSource->previous.x;
         offsetY = first->position.y - firstSource->previous.y;
-        if (timeStep) {
-        }
         offsetZ = first->position.z - firstSource->previous.z;
         firstSource->previous.x = target->velocity.x * timeStep + firstSource->current.x;
         firstSource->previous.y = target->velocity.y * timeStep + firstSource->current.y;
         firstSource->previous.z = target->velocity.z * timeStep + firstSource->current.z;
-        first->position.x = firstSource->previous.x + offsetX;
+        first->position.x = firstSource->previous.x + cosine;
         first->position.y = firstSource->previous.y + offsetY;
         first->position.z = firstSource->previous.z + offsetZ;
     } else {
@@ -3677,17 +3685,16 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         negDot = -(normal->z * firstSource->current.z +
                    (firstSource->current.x * normal->x +
                     firstSource->current.y * normal->y));
-        cosine = (firstSource->previous.z * normal->z +
-                  (normal->x * firstSource->previous.x +
-                   normal->y * firstSource->previous.y)) + negDot;
-        cosine = D_80084214 - cosine;
-        offsetX = first->position.x - firstSource->previous.x;
+        mass = D_80084214 - ((firstSource->previous.z * normal->z +
+                              (normal->x * firstSource->previous.x +
+                               normal->y * firstSource->previous.y)) + negDot);
+        cosine = first->position.x - firstSource->previous.x;
         offsetY = first->position.y - firstSource->previous.y;
         offsetZ = first->position.z - firstSource->previous.z;
-        firstSource->previous.x += cosine * normal->x;
-        firstSource->previous.y += cosine * normal->y;
-        firstSource->previous.z += cosine * normal->z;
-        first->position.x = firstSource->previous.x + offsetX;
+        firstSource->previous.x += mass * normal->x;
+        firstSource->previous.y += mass * normal->y;
+        firstSource->previous.z += mass * normal->z;
+        first->position.x = firstSource->previous.x + cosine;
         first->position.y = firstSource->previous.y + offsetY;
         first->position.z = firstSource->previous.z + offsetZ;
         firstSource->unk62 = 1;
@@ -4040,11 +4047,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 11/229 words
+ * score: 4/229 words
  * frame: 0x70
  * relocations: 8
- * first-mismatch: +0x204
- * summary: Then-arm boundary after offsetY, cosine region removed: 17 to 11. Left: else-arm ny decided before offsetX; then-arm pieces on the mass shape.
+ * first-mismatch: +0x2E8
+ * summary: Cosine and the x offset one variable, correction one statement in mass, then-arm boundary gone: 11 to 4. Left: the correction's intermediate in f16.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

@@ -271,18 +271,17 @@ Relocation-masked mismatch evidence covers **17 / 17** resolved rows. The raw co
 
 | Category | Count | Share of resolved |
 |---|---:|---:|
-| `register-only` | 1 | 5.9% |
-| `other` | 13 | 76.5% |
+| `other` | 14 | 82.4% |
 | `size-mismatch` | 3 | 17.6% |
 
 ### Differing-word thresholds
 
 | Threshold | Count |
 |---|---:|
-| raw `differing_words <= 5` | 0 |
-| relocation-masked `differing_words <= 5` | 1 |
-| raw `differing_words <= 10` | 3 |
-| relocation-masked `differing_words <= 10` | 5 |
+| raw `differing_words <= 5` | 1 |
+| relocation-masked `differing_words <= 5` | 2 |
+| raw `differing_words <= 10` | 4 |
+| relocation-masked `differing_words <= 10` | 6 |
 | raw `differing_words <= 20` | 7 |
 | relocation-masked `differing_words <= 20` | 7 |
 
@@ -294,7 +293,7 @@ units remain distinct.
 
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | `src/main/anim.c` | `func_80056DD8` | `main` | `register-only` | 916 | 11 | 11 | 516 | 516 | 0 | — |
+| 1 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 4 | 4 | 744 | 744 | 0 | — |
 | 2 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `other` | 3,040 | 19 | 4 | 96 | 1,992 | 0 | — |
 | 3 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 6 | 6 | 244 | 244 | 0 | — |
 | 4 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |

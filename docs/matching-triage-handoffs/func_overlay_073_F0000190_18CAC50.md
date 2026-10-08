@@ -6,7 +6,9 @@
 - frame: 0x98
 - relocations: 46
 - first mismatch: +0x7C8
-- summary: 4 masked at size 0, case 4 query: ugen's hinted argument path never refuses a0 (it spills the occupant), so the folded draw is a uopt temp moved into a0.
+- summary: 4 masked at size 0, case 4 query: one ring draw with no surviving word between the index narrowing and the mathRnd arm.
+
+Summary before this remeasure: 4 masked at size 0, case 4 query: ugen's hinted argument path never refuses a0 (it spills the occupant), so the folded draw is a uopt temp moved into a0.
 
 Summary before this remeasure: 4 masked at size 0, case 4 query: the skipped t8 is an as1-folded draw, not a ghost; the a1 join has a natural chained-copy spelling (64).
 
@@ -703,4 +705,16 @@ symbol (the same literal in the inner test, e.g. `hitCount > 1` with an
 int-typed 1 that uopt keeps as a temp, or the mode argument and the
 minimum spelt through one macro), checking the ugen trace for an
 f_move_to_dest on the a0 argument rather than the score.
+
+#### 2026-10-08, lane q-f: uopt regions around the inner test are inert; where ugen draws without emitting
+
+Measured by tools/bank.py: masked 4 (raw 19), size delta +0, candidate 760 words vs target 760. Aligned: byte-exact 756, register naming 4, immediate only 0, really different 0.
+
+No source change (4 at size 0; aligned exact 756, naming 4).
+
+- An 18-cell product (tools/shape_product.py) is flat. It crossed a `do { } while (0)` or `if (1) { }` region around the whole `hitCount >= 2` test, a region around the mathRnd assignment alone, and the tree, kill and kill-in-region joins. Every tree-join cell is 4 and every kill-join cell is 64, byte-identical to the unwrapped forms, so a region boundary there changes no ugen draw.
+- A free-list simulation of the tree's DKWB_UGEN_TRACE (ADD, REMOVE, FREE, ALLOC_GP_RESULT, MOVE_END) bounds where the extra draw can be. The ring before the arm's narrowing reads t8 t9 t2 t3 t4 t5 t6 t7. The target's sequence (t9 in the arm, the join on t2 to t6, t7 in the else arm) needs t8 behind t7, so the draw or MOVE_END of t8 must come after t7 is freed at the end of the query line, or t8 must be drawn in the query block and freed after t7.
+- In the recompiled ugen (`f_eval`'s binary-operator path, around source line 60300 of ugen.traced.c), the result register is the left operand's register if its usage count is 0 and it is available, else the right operand's, else a fresh `f_get_free_reg` draw. So any binary node whose operands sit in web registers (v1, a1) draws a ring temp. An instruction as1 then deletes, or renames into its consumer (L150), is the only way such a draw leaves no word.
+
+Cycle-21 line: unchanged in substance. The decision variable is a binary node evaluated between emit 681 and 693 whose operands are both web registers and whose instruction as1 removes (a copy into a ring temp of v1 or a1 read by a test or an argument, then forwarded). Record: the ugen listing (`cc -S`) of each cell, read for a `move` or ALU op into t8 in that window, not the score.
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

@@ -222,7 +222,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     s32 rotationStep;
     s32 labelCount;
     s32 textX;
-    s32 barX, barY;
+    s32 barX;
     s32 stat;
 
     s32 x, y;
@@ -577,7 +577,9 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         mtxf_mul(localMatrix, cameraMatrix, resultMatrix);
         mtxf_to_mtx(resultMatrix, D_800D3144);
         savedMatrix = D_800D3144;
-        O47_COMMAND_W1(0x01000040, O47_PHYSICAL(D_800D3144));
+        /* Word 0 first: the w0 store separates the savedMatrix load from the
+         * operand's reload, so unready keeps its register (lane k-8). */
+        O47_COMMAND(0x01000040, O47_PHYSICAL(D_800D3144));
         D_800D3144++;
         red = ov47Data_3DC[colourIndex] >> 24;
         green = ov47Data_3DC[colourIndex] >> 16;
@@ -601,12 +603,16 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         if (selected != -1 && !D_800D3058[selected].ready) {
             O47_COMMAND(0x06000000, ov47Data_2A8);
             red = ov47Data_3DC[selected] >> 24;
-            green = ov47Data_3DC[selected] >> 16;
+            green = (ov47Data_3DC[selected] >> 16) & 255;
             blue = ov47Data_3DC[selected] >> 8;
-            red = (red & 255) + (255 - (red & 255)) * ov47Data_540;
-            green = (green & 255) + (255 - (green & 255)) * ov47Data_540;
-            blue = (blue & 255) + (255 - (blue & 255)) * ov47Data_540;
-            O47_COMMAND(0xFA000000, (red << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
+            /* Red and blue masked in place, green masked at the load: the
+             * masks are ring temporaries and green keeps the shipped copy. */
+            red &= 255;
+            red = red + (255 - red) * ov47Data_540;
+            green = green + (255 - green) * ov47Data_540;
+            blue &= 255;
+            blue = blue + (255 - blue) * ov47Data_540;
+            O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
             O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
             O47_VERTICES(ov47Data_0, 14);
             O47_COMMAND(0x05710080, O47_PHYSICAL(ov47Data_118));
@@ -660,14 +666,17 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             } else {
                 textX = D_800D3058[controller].screenX - 20.0f;
             }
-            barY = 116;
-            for (stat = 0; stat != 4; stat++) {
+            /* The row counter is `selected` and the bar row is `stat`: one
+             * symbol each across the icon and label loops, which puts both
+             * webs across calls and gives the target's s1 and s4 (lane k-8). */
+            stat = 116;
+            for (selected = 0; selected != 4; selected++) {
                 barX = textX;
                 if (labelCount < 4) {
                     if (ov47Bss_30A != 4) {
-                        func_8004B0F8(&D_800D3140, textX - 6, barY + 2, D_8007C0B8[145 + stat], 9);
+                        func_8004B0F8(&D_800D3140, textX - 6, stat + 2, D_8007C0B8[145 + selected], 9);
                     } else {
-                        func_8004B0F8(&D_800D3140, 160, barY + 2, D_8007C0B8[145 + stat], 12);
+                        func_8004B0F8(&D_800D3140, 160, stat + 2, D_8007C0B8[145 + selected], 12);
                     }
                     labelCount++;
                 }
@@ -675,20 +684,20 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                 O47_COMMAND(0xEF002C0F, 0x00504340);
                 O47_COMMAND(0xB6000000, 0x00010001);
                 O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
-                count = ov47Data_4C8[ov47Data_524[D_800D3058[controller].selector]][stat];
+                count = ov47Data_4C8[ov47Data_524[D_800D3058[controller].selector]][selected];
                 O47_COMMAND(0xFA000000, ov47Data_3DC[controller]);
                 while (count--) {
-                    O47_RECTANGLE(barX, barY);
+                    O47_RECTANGLE(barX, stat);
                     barX += 8;
                 }
                 O47_COMMAND(0xE7000000, 0);
                 O47_COMMAND(0xFA000000, (ov47Data_3DC[controller] & ~0xFF) | 0x40);
-                count = 5 - ov47Data_4C8[ov47Data_524[D_800D3058[controller].selector]][stat];
+                count = 5 - ov47Data_4C8[ov47Data_524[D_800D3058[controller].selector]][selected];
                 while (count--) {
-                    O47_RECTANGLE(barX, barY);
+                    O47_RECTANGLE(barX, stat);
                     barX += 8;
                 }
-                barY += 8;
+                stat += 8;
             }
         }
     }
@@ -726,10 +735,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 1977/2168 words
+ * score: 2015/2168 words
  * frame: 0x280
  * relocations: 315
  * first-mismatch: +0x4
- * summary: Banked on aligned residual at size -12: residual 911 to 759. Open: unready has no register (ring at +0x13F0), green copy, 3C8, +0x12C.
+ * summary: Banked on aligned residual: unready registered, selected and stat span the label loop; 759 at -12 to 619 at -4. Open: first-block channel draws, blend colours.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

@@ -1,9 +1,9 @@
 #include "PR/ultratypes.h"
 
 /* Pinned DKR v77/v80 and JFG object scans have no exact donor. */
-s32 overlay2IntersectSegments(f32 arg0, f32 arg1, f32 arg2, f32 arg3,
-                              f32 arg4, f32 arg5, f32 arg6, f32 arg7,
-                              f32 *arg8, f32 *arg9) {
+s32 overlay2IntersectSegments(f32 ax, f32 ay, f32 bx, f32 by,
+                              f32 cx, f32 cy, f32 dx, f32 dy,
+                              f32 *outX, f32 *outY) {
     f32 a1;
     f32 b1;
     f32 c1;
@@ -16,11 +16,11 @@ s32 overlay2IntersectSegments(f32 arg0, f32 arg1, f32 arg2, f32 arg3,
     f32 bias;
     f32 numerator;
 
-    a1 = arg3 - arg1;
-    b1 = arg0 - arg2;
-    c1 = (arg2 * arg1) - (arg0 * arg3);
-    side1 = (a1 * arg4) + (b1 * arg5) + c1;
-    side2 = (a1 * arg6) + (b1 * arg7) + c1;
+    a1 = by - ay;
+    b1 = ax - bx;
+    c1 = (bx * ay) - (ax * by);
+    side1 = (a1 * cx) + (b1 * cy) + c1;
+    side2 = (a1 * dx) + (b1 * dy) + c1;
     if (side1 != 0.0f) {
         if ((side2 != 0.0f) &&
             (((side1 > 0.0f) && (side2 > 0.0f)) ||
@@ -28,11 +28,11 @@ s32 overlay2IntersectSegments(f32 arg0, f32 arg1, f32 arg2, f32 arg3,
             return 0;
         }
     }
-    b2 = arg4 - arg6;
-    a2 = arg7 - arg5;
-    c2 = (arg6 * arg5) - (arg4 * arg7);
-    side1 = (a2 * arg0) + (b2 * arg1) + c2;
-    side2 = (a2 * arg2) + (b2 * arg3) + c2;
+    b2 = cx - dx;
+    a2 = dy - cy;
+    c2 = (dx * cy) - (cx * dy);
+    side1 = (a2 * ax) + (b2 * ay) + c2;
+    side2 = (a2 * bx) + (b2 * by) + c2;
     if ((side1 != 0.0f) && (side2 != 0.0f) &&
         (((side1 > 0.0f) && (side2 > 0.0f)) ||
          ((side1 < 0.0f) && (side2 < 0.0f)))) {
@@ -41,11 +41,11 @@ s32 overlay2IntersectSegments(f32 arg0, f32 arg1, f32 arg2, f32 arg3,
     side1 = a2 * b1;
     side2 = a1 * b2;
     if (side1 == side2) {
-        *arg8 = arg0;
-        *arg9 = arg1;
+        *outX = ax;
+        *outY = ay;
         return 2;
     }
-    if (arg8 != NULL) {
+    if (outX != NULL) {
         denominator = side2 - side1;
         if (denominator < 0.0f) {
             bias = -denominator * 0.5f;
@@ -59,7 +59,7 @@ s32 overlay2IntersectSegments(f32 arg0, f32 arg1, f32 arg2, f32 arg3,
         } else {
             numerator = (side1 - side2) + bias;
         }
-        *arg8 = numerator / denominator;
+        *outX = numerator / denominator;
         side1 = a2 * c1;
         side2 = a1 * c2;
         if (side1 < side2) {
@@ -67,7 +67,7 @@ s32 overlay2IntersectSegments(f32 arg0, f32 arg1, f32 arg2, f32 arg3,
         } else {
             numerator = (side1 - side2) + bias;
         }
-        *arg9 = numerator / denominator;
+        *outY = numerator / denominator;
     }
     return 1;
 }

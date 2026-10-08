@@ -60,12 +60,12 @@ void overlay77Update(Overlay77Object *object, volatile s32 updateRate) {
     Overlay77State *state;
     volatile f32 unused;
     s32 mode;
-    f32 temp_f0;
-    f32 temp_f2;
-    f32 temp_f12;
+    f32 velY;
+    f32 deltaY;
+    f32 accel;
     f32 moveX;
     f32 moveZ;
-    f32 temp_f14;
+    f32 deltaX;
 
     state = object->state;
     mode = 9;
@@ -74,46 +74,46 @@ void overlay77Update(Overlay77Object *object, volatile s32 updateRate) {
 
     if (gOverlay77Handle != 0) {
         if (gOverlay77Selection == state->sequence) { if (gOverlay77CallbackArgument == 0) { overlay77SpawnReloc(0x217, object->x.bits, object->y.bits, object->z.bits, 1, &gOverlay77CallbackArgument); } else { overlay77ContinueReloc(gOverlay77CallbackArgument, object->x.bits, object->y.bits, object->z.bits); } } object->flags &= ~0x400;
-        temp_f0 = object->velocityY;
-        temp_f12 = 0.0f;
+        velY = object->velocityY;
+        accel = 0.0f;
         moveX = updateRate;
-        if (temp_f0 >= temp_f12) {
-            temp_f2 = (-(temp_f0 * temp_f0)) / gOverlay77PositiveDivisor;
-            if (state->targetY <= (object->y.value + temp_f2)) {
-                state->acceleration = temp_f12;
+        if (velY >= accel) {
+            deltaY = (-(velY * velY)) / gOverlay77PositiveDivisor;
+            if (state->targetY <= (object->y.value + deltaY)) {
+                state->acceleration = accel;
             } else {
                 {
                     state->acceleration = gOverlay77PositiveAcceleration;
                 }
             }
         } else {
-            temp_f2 = (-(temp_f0 * temp_f0)) / gOverlay77NegativeDivisor;
-            if ((object->y.value + temp_f2) < state->targetY) {
+            deltaY = (-(velY * velY)) / gOverlay77NegativeDivisor;
+            if ((object->y.value + deltaY) < state->targetY) {
                 state->acceleration = gOverlay77NegativeAcceleration;
             } else {
-                state->acceleration = temp_f12;
+                state->acceleration = accel;
             }
         }
 
-        temp_f0 = ((0, object))->velocityY;
-        temp_f12 = state->acceleration + gOverlay77Gravity;
-        temp_f2 = (temp_f0 * moveX) + (((0.5f * temp_f12) * moveX) * moveX);
-        object->velocityY = (0, temp_f0) + (temp_f12 * moveX);
-        temp_f12 = 0.0f;
+        velY = ((0, object))->velocityY;
+        accel = state->acceleration + gOverlay77Gravity;
+        deltaY = (velY * moveX) + (((0.5f * accel) * moveX) * moveX);
+        object->velocityY = (0, velY) + (accel * moveX);
+        accel = 0.0f;
         {
-            temp_f14 = object->velocityX * moveX;
+            deltaX = object->velocityX * moveX;
             moveZ = object->velocityZ * moveX;
-            if (overlay77MoveReloc(object, temp_f14, temp_f2, moveZ)) {
+            if (overlay77MoveReloc(object, deltaX, deltaY, moveZ)) {
                 gOverlay77Handle--;
             }
         }
     }
 
     if (gOverlay77Handle == 0) {
-        temp_f14 = state->targetX - object->x.value;
-        temp_f2 = state->targetYCopy - object->y.value;
+        deltaX = state->targetX - object->x.value;
+        deltaY = state->targetYCopy - object->y.value;
         moveZ = state->targetZ - object->z.value;
-        overlay77OrientReloc(object, temp_f14, temp_f2, moveZ);
+        overlay77OrientReloc(object, deltaX, deltaY, moveZ);
         object->flags |= 0x400;
         if (gOverlay77CallbackArgument != 0) {
             overlay77StopReloc(gOverlay77CallbackArgument);

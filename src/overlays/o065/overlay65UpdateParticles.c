@@ -100,8 +100,8 @@ extern void func_overlay_065_F0000C38_18C4EA0(O65Command **, s32 *, s32);
  * registers); the batch flush and tail use the packet macros above; the
  * working set is one local per role with no carrier copies of constants.
  */
-void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
-                                        s32 arg2) {
+void overlay65UpdateParticles(O65Command **commandList, s32 *cursorPtr,
+                                        s32 ticks) {
     O65Command *commands;
     O65Vertex *batchStart;
     s32 cursor;
@@ -121,8 +121,8 @@ void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
     f32 **ground;
     u8 *colors;
 
-    commands = *arg0;
-    cursor = *arg1;
+    commands = *commandList;
+    cursor = *cursorPtr;
     D_2988 = O65_BUFFER_TABLE[D_210];
     D_210 ^= 1;
     particle = D_1908;
@@ -147,14 +147,14 @@ void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
 
     do {
         if (particle->active != 0) {
-            particle->y -= arg2 * 4;
+            particle->y -= ticks * 4;
             if (particle->y < particle->floorY) {
                 particle->active = 0;
             } else {
-                particle->dx += particle->ddx * arg2;
-                particle->dy += particle->ddy * arg2;
-                particle->dz += particle->ddz * arg2;
-                particle->angle += particle->angleStep * arg2;
+                particle->dx += particle->ddx * ticks;
+                particle->dy += particle->ddy * ticks;
+                particle->dz += particle->ddz * ticks;
+                particle->angle += particle->angleStep * ticks;
                 particle->x = (s16)((f32)particle->x + O65_DELTA_X);
                 particle->z = (s16)((f32)particle->z + O65_DELTA_Z);
             }
@@ -234,8 +234,8 @@ void overlay65UpdateParticles(O65Command **arg0, s32 *arg1,
         O65_POLYGON(commands++, D_80000000, (6 - remaining) * 2, 1);
     }
 
-    *arg0 = commands;
-    *arg1 = cursor;
-    func_overlay_065_F0000C38_18C4EA0(arg0, arg1, arg2);
+    *commandList = commands;
+    *cursorPtr = cursor;
+    func_overlay_065_F0000C38_18C4EA0(commandList, cursorPtr, ticks);
     O65_MODE = 1;
 }

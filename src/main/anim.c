@@ -3616,10 +3616,10 @@ void func_80056DD8(HitCopyState *first, HitCopyState *second,
         target->direction.x = target->velocity.x / speed;
         target->direction.y = target->velocity.y / speed;
         target->direction.z = target->velocity.z / speed;
+        target->unk88 = D_80084210;
         target->unk181 = 1;
         target->unk4 = 0.0f;
         target->unk8 = 0.0f;
-        target->unk88 = D_80084210;
         if (speed) {
         }
         firstSource->unk63 = 1;
@@ -4007,11 +4007,11 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_80056DD8:start
  * symbol: func_80056DD8
- * score: 41/229 words
+ * score: 30/229 words
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x58
- * summary: Plane offset, magnitude in displacement, empty if (speed) before the flag stores: 95 to 41. Left: previous.x colour (9), store order.
+ * summary: unk88 loaded before the flag stores (a store cannot pass a may-alias load): 41 to 30. Left: previous.x colour, the speed-if colours the zero, offsets colours.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

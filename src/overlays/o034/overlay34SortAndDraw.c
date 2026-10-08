@@ -31,7 +31,7 @@ extern f32 func_80024938(f32 x, f32 y, f32 z);
 extern void overlay34InterpolateColor(s32 position, s32 length,
                                       const u8 *start, const u8 *end,
                                       u8 *output);
-extern void func_800084C4(s32 arg0, s32 arg1, void *resource,
+extern void func_800084C4(s32 commands, s32 mtx, void *resource,
                           Overlay34Record *record, f32 *position,
                           f32 *secondPosition, f32 value, u32 color1,
                           u32 color2, s32 scale);
@@ -43,7 +43,7 @@ extern void func_800084C4(s32 arg0, s32 arg1, void *resource,
  * pointers plus distances[59] (L99+L112, net-zero block) drop the colour
  * homes onto +0x184/+0x188. Scalars declared above the array pull its home
  * down 24 bytes into the spilltemps gap, onto +0x80. */
-void overlay34SortAndDraw(s32 arg0, s32 arg1) {
+void overlay34SortAndDraw(s32 commands, s32 mtx) {
     void *pad0;
     void *pad1;
     void *pad2;
@@ -113,7 +113,7 @@ void overlay34SortAndDraw(s32 arg0, s32 arg1) {
                                               (u8 *)&record->color2B,
                                               (u8 *)&color2);
                 }
-                func_800084C4(arg0, arg1, record->resource, record,
+                func_800084C4(commands, mtx, record->resource, record,
                               &record->x1, &record->x2, record->value,
                               color1, color2, 0x200);
             }

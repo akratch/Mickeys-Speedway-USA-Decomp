@@ -19,15 +19,15 @@ extern void overlay101PrepareChainReloc(void *context,
 extern void overlay101DrawChainType1Reloc(void *context,
                                          Overlay101DrawChain *chain,
                                          Overlay101DrawNode *node);
-extern void overlay101DrawChainType2Reloc(void *context, void *arg1,
-                                         s32 *arg2,
+extern void overlay101DrawChainType2Reloc(void *context, void *mtx,
+                                         s32 *vertices,
                                          Overlay101DrawChain *chain,
                                          Overlay101DrawNode *node);
 extern void overlay101DrawChainType3Reloc(void *context,
                                          Overlay101DrawChain *chain,
                                          Overlay101DrawNode *node);
 
-void overlay101DrawChain(void *context, void *arg1, s32 *arg2,
+void overlay101DrawChain(void *context, void *mtx, s32 *vertices,
                          Overlay101DrawChain *chain) {
     register Overlay101DrawNode *node;
     s32 type;
@@ -50,7 +50,7 @@ void overlay101DrawChain(void *context, void *arg1, s32 *arg2,
                 }
                 case 2: {
                     Overlay101DrawNode *current = node;
-                    overlay101DrawChainType2Reloc(context, arg1, arg2, chain,
+                    overlay101DrawChainType2Reloc(context, mtx, vertices, chain,
                                                   node);
                     type = current->type;
                     node = current->next;

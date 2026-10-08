@@ -242,11 +242,11 @@ extern void camPushModelMtx(O27Command **commands, void *mtx,
 extern void func_800349A4(O27Command **commands, void *texture, s32 flags,
                           s32 frame);
 extern void camPopModelMtx(O27Command **commands);
-extern void func_80009E78(O27Command **commands, void *arg1, s16 *arg2,
+extern void func_80009E78(O27Command **commands, void *mtx, s16 *vertices,
                           O27Object *object);
 
-void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
-                                       s16 *arg2, O27Object *object) {
+void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *mtx,
+                                       s16 *vertices, O27Object *object) {
     s32 intensity;
     f32 scale;
     f32 oldScale;
@@ -290,7 +290,7 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
         }
 
         displayList = *object->renderResource->displayList;
-        camPushModelMtx(commands, arg1, &transform, 1.0f, 0.0f);
+        camPushModelMtx(commands, mtx, &transform, 1.0f, 0.0f);
         func_800349A4(commands, displayList, 0x214, 0);
 
         O27_WRITE_COMMAND(0xFA000000, ((((intensity * 0x60) >> 8) & 0xFF) << 24) | ((((intensity * 0xE0) >> 8) & 0xFF) << 16) | ((((intensity * 0xFF) >> 8) & 0xFF) << 8) | (state->fade & 0xFF));
@@ -330,7 +330,7 @@ void func_overlay_027_F0000624_187BFFC(O27Command **commands, void *arg1,
     }
     object->scale *= scale;
     object->alpha = state->intensity;
-    func_80009E78(commands, arg1, arg2, object);
+    func_80009E78(commands, mtx, vertices, object);
     object->scale = oldScale;
 }
 

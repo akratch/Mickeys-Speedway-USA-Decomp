@@ -464,7 +464,7 @@ void func_overlay_009_F0000F6C_18675E4(O9Point *point, O9Height *offset,
     ext_o0_7cd8(point, 0.0f, candidate - current, 0.0f);
 }
 
-void overlay9Ignore(volatile s32 arg0, volatile s32 arg1, volatile s32 arg2) {
+void overlay9Ignore(volatile s32 unused0, volatile s32 unused1, volatile s32 unused2) {
 }
 
 /* Workbench: allocation-mismatch, 282/282 instructions/frame -152, 20 masked (28 raw)

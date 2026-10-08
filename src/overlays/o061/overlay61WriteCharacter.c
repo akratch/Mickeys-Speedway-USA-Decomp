@@ -7,7 +7,7 @@ extern s32 overlay61WriteRecordReloc(
 extern void overlay61FreeReloc(void *data);
 extern u8 gOverlay61RecordFormatReloc[];
 
-s32 overlay61WriteCharacter(s32 *source, s32 destination, s32 arg2) {
+s32 overlay61WriteCharacter(s32 *source, s32 destination, s32 value) {
     s32 size;
     s32 words;
     s32 result;
@@ -35,7 +35,7 @@ s32 overlay61WriteCharacter(s32 *source, s32 destination, s32 arg2) {
             } while (count--);
         }
         result = overlay61WriteRecordReloc(
-            destination, -1, gOverlay61RecordFormatReloc, arg2, buffer, size);
+            destination, -1, gOverlay61RecordFormatReloc, value, buffer, size);
         overlay61FreeReloc(buffer);
     } else {
         result = 6;

@@ -118,7 +118,7 @@ extern Overlay1ModeObject *gOverlay1ModeObject;
 extern s32 overlay1ReadModeReloc(void *source);
 
 /* DKR v77/v80 and JFG have no exact donor for this mode refresh wrapper. */
-void overlay1RefreshMode(s32 arg0, s32 arg1, s32 arg2) {
+void overlay1RefreshMode(s32 unused0, s32 unused1, s32 unused2) {
     if (overlay1ReadModeReloc(gOverlay1ModeSource) >= 3) {
         gOverlay1ModeObject->mode = 2;
     } else {

@@ -27,7 +27,7 @@ typedef struct Overlay31Config {
 
 extern void *func_overlay_031_F0000000_187F520(s32 size, s32 tag, s32 recordBytes);
 
-Overlay31Config *overlay31CreateConfig(s32 arg0, void *source, s32 arg2, s32 arg3, s32 count)
+Overlay31Config *overlay31CreateConfig(s32 value0, void *source, s32 divisor, s32 multiplier, s32 count)
 {
   Overlay31Config *config;
   s32 maskCount;
@@ -54,12 +54,12 @@ Overlay31Config *overlay31CreateConfig(s32 arg0, void *source, s32 arg2, s32 arg
   config->lastMask = maskCount - 1;
   config->reserved28 = 0;
   config->reserved1C = 0;
-  config->arg3 = arg3;
-  config->arg2 = arg2;
-  config->arg0 = arg0;
+  config->arg3 = multiplier;
+  config->arg2 = divisor;
+  config->arg0 = value0;
   if (source != ((void *) 0))
   {
-    width = (0x18 / arg2) * arg3;
+    width = (0x18 / divisor) * multiplier;
     if (!(width < 0x11))
     {
       width = 0x10;

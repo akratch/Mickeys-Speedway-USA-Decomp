@@ -28,7 +28,7 @@ extern void overlay13DrawRecord(O13Record *, s32, s32, s32);
  * collection walk reuses i, so that web is coloured before record. if (1)
  * is the region boundary that rematerializes the record base. The matched
  * overlay13Initialize is void and leaves the view pointer in v0. */
-void overlay13DrawActive(s32 arg0, s32 arg1, s32 arg2) {
+void overlay13DrawActive(s32 commands, s32 mtx, s32 vertices) {
     s32 i;
     void *pad0;
     void *pad1;
@@ -90,7 +90,7 @@ void overlay13DrawActive(s32 arg0, s32 arg1, s32 arg2) {
             } while (done == 0);
         }
         for (i = 0; i < count; i++) {
-            overlay13DrawRecord(&gOverlay13Records[indices[i]], arg0, arg1, arg2);
+            overlay13DrawRecord(&gOverlay13Records[indices[i]], commands, mtx, vertices);
         }
     }
 }

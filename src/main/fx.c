@@ -743,8 +743,8 @@ Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
             wake->segmentCount = (((s32) (wakeValue88 * 60.0f)) + 5) >> 1;
             wake->value8 = 0;
             wake->value3C = 0;
-            wake->value4 = wakeValue80;
             wake->textureIndex = (s8) (s32) (wakeValue88 * 60.0f);
+            wake->value4 = wakeValue80;
             wake->textureStep =
                 (s16) (((wake->linked->height - 1) << 8) /
                        wake->textureIndex);
@@ -2146,10 +2146,10 @@ void func_8004AF68(void) {
 
 /* PLATEAU-HANDOFF:wakeAllocate:start
  * symbol: wakeAllocate
- * score: 57/351 words
+ * score: 26/351 words
  * frame: 0x90
  * relocations: 3
  * first-mismatch: +0x94
- * summary: XOR-kept copies, counts inline: 323 at -8 to 57. Left: cvt and segment must be kept symbols created late (target s0/t0); loop-bound copies alone go late
+ * summary: Alpha-start store moved after the texture index (lever_sweep reorder): 57 to 26. Left: pre-call spill ladder (14 immediate), tail rows.
  * PLATEAU-HANDOFF:wakeAllocate:end
  */

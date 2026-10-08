@@ -2,11 +2,13 @@
 ### `wakeAllocate` plateau handoff
 
 - source: `src/main/fx.c`
-- score: 57/351 words
+- score: 26/351 words
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: XOR-kept copies, counts inline: 323 at -8 to 57. Left: cvt and segment must be kept symbols created late (target s0/t0); loop-bound copies alone go late
+- summary: Alpha-start store moved after the texture index (lever_sweep reorder): 57 to 26. Left: pre-call spill ladder (14 immediate), tail rows.
+
+Summary before this remeasure: XOR-kept copies, counts inline: 323 at -8 to 57. Left: cvt and segment must be kept symbols created late (target s0/t0); loop-bound copies alone go late
 
 Summary before this remeasure: XOR-kept copies, counts inline: 323 at -8 to 57. Left: spill homes follow web number; pre-call webs must number after the loop temps
 
@@ -588,4 +590,14 @@ first-creation web number of the cvt and segment expressions (5 and 7
 now, must exceed the unroller autos 174-255); record web_report --proc 9
 numbers and frame_census's ladder (target cvt at 0x3C, three free cells
 above it).
+
+#### 2026-10-08, lane p-3: the alpha-start store after the texture index, 57 to 26
+
+Measured by tools/bank.py: masked 26 (raw 26), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 327, register naming 0, immediate only 14, really different 11.
+
+On the 57 body. The residual has no naming rows (aligned 328/0/14/13), so no colour force prices it; the run used a satisfied oracle (p1:w48=c14, wake in s0, accepted, forced object identical to the base) and ranked by aligned residual only.
+
+Measured by tools/lever_sweep.py (proc 9, every statement position, identity gate passed): 2,724 cells generated and measured: scored 2,469 (1,991 inert), size-skipped 87, compile errors 168; exact 0. One cell moved the tail: `wake->value4 = wakeValue80;` stored after `wake->textureIndex = ...` instead of before it (a reorder of two stores to different fields, no read between them), 26 at +0 (aligned 327/0/14/11, residual 25). The four candidate-only and four target-only tail words at +0x2D4..+0x36C fall to one candidate-only word at +0x2DC. Next best: empty tests and do-while wrappers on lines 734-746 (`if (segmentBytes) {}` after the allocation, 55 at +0, residual 25; `if (wake) {}` or a do-while at 743, 54). Kept the reorder.
+
+Left: the 14 immediate rows are the pre-call spill ladder (target cvt 0x3C, segment 0x38, sample term 0x34, 0x14 term 0x30, doubled 0x2C, segment bytes 0x28, texture bytes 0x24; ours 0x48 down), unchanged by any cell, and 11 structural rows in the tail.
 <!-- plateau-handoff:wakeAllocate:end -->

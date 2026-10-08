@@ -2150,6 +2150,6 @@ void func_8004AF68(void) {
  * frame: 0x90
  * relocations: 3
  * first-mismatch: +0x94
- * summary: NULL stores after the samples pointer, post-link stores reordered: 26 to 16. Left: only the pre-call spill ladder (16 immediate).
+ * summary: Unchanged at 16; slot trace, natural count product and lever sweep flat. Left: the pre-call spill ladder (web creation order).
  * PLATEAU-HANDOFF:wakeAllocate:end
  */

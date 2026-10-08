@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: NULL stores after the samples pointer, post-link stores reordered: 26 to 16. Left: only the pre-call spill ladder (16 immediate).
+- summary: Unchanged at 16; slot trace, natural count product and lever sweep flat. Left: the pre-call spill ladder (web creation order).
+
+Summary before this remeasure: NULL stores after the samples pointer, post-link stores reordered: 26 to 16. Left: only the pre-call spill ladder (16 immediate).
 
 Summary before this remeasure: Alpha-start store moved after the texture index (lever_sweep reorder): 57 to 26. Left: pre-call spill ladder (14 immediate), tail rows.
 
@@ -626,4 +628,55 @@ On the 16 body (aligned 335/0/16/0; the residual is only the pre-call spill ladd
 - tools/lever_sweep.py stacked on that cell (--candidate, proc 9, satisfied oracle p1:w48=c14; 2,809 cells generated and measured: scored 2,536 (2,049 inert), size-skipped 87, compile errors 186; exact 0): floor 15 (assigned dead reads of a fill-loop element into i, or `if (i) {}`, at line 759); nothing goes below the base 14. No catalogue lever at any position changes the creation order of the cvt, segment, doubled, sample and 0x14 webs.
 
 Cycle-21 line: the decision variable is unchanged from k-6 and m-1: the first-creation web numbers of the cvt, segment, sample-term, 0x14-term and doubled webs (5, 7, 8, 40, 41 on proc 9) must exceed the vertex-buffer loop's unroller temporaries (67, 191, 195), and the doubled web must follow the 0x14 term. Record: web_report --proc 9 plus frame_census. No CDX force prices a spill slot, so the next instrument is a CDX knob that renumbers webs (or a slot-order override in spilltemps) to confirm the ladder alone closes the function, then a source search for a late creation of those expressions (k-6: only loop-bound symbols are substituted after unrolling).
+
+#### 2026-10-08, lane q-1: five measurements on the spill ladder, 16 kept
+
+Measured by tools/bank.py: masked 16 (raw 16), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 335, register naming 0, immediate only 16, really different 0.
+
+On the 16 body (aligned 335/0/16/0). No source change adopted.
+
+The slot trace (DKWB_UOPT_SLOT_TRACE, proc 9) on the 16 body gives the
+spill requests in ascending web number: cvt 5, segment 7, doubled 8,
+sample term 40, 0x14 term 41 take fresh slots -72 to -88, (i + 1) 67,
+(i + 2) 191 and (i + 3) 195 take -92 to -100, $v0[(i * 4)] 287 -104,
+segment bytes 289 -108, texture bytes 308 -112. The target's ladder is
+three unused cells (the loop temporaries), then cvt, segment, sample term,
+0x14 term, doubled, segment bytes and texture bytes, with 0x20 unused
+($v0[(i * 4)] after them). So the order to reach is: the three loop
+temporaries, cvt, segment, sample term, 0x14 term, doubled, segment bytes,
+texture bytes, then $v0[(i * 4)].
+
+- lever_sweep with `--levers split_local,merge_locals,reorder,loop_move,
+  zero_def,const_iv` (oracle `p1:w48=c14`, satisfied): 121 cells, all
+  measured, exact 0, best 18 (a reorder at line 705).
+- Natural count product (288 cells, shape_product): frameCount and
+  segmentCount as declared symbols or inline expressions, groupCount and
+  triCount from `segmentCount * 2`, from each other or in full, the i copy
+  from groupCount, `segmentCount * 2` or triCount, and both post-call
+  stores through the symbols or inline: flat at 16. With frameCount and
+  segmentCount as symbols (the most natural cell, 18) the sample and 0x14
+  terms are numbered late (318, 325) because `j = segmentCount` is
+  substituted after unrolling, but cvt, segment and doubled stay 5, 10
+  and 14.
+- Diagnostic, not adoptable (+240 bytes): frameCount and segmentCount as
+  the bounds of two dummy loops. cvt (5) and segment (10) are still the
+  spilled webs, so a loop bound alone does not delay their creation (as
+  m-1 found for segmentCount).
+- Assigned dead reads of the loop temporaries before the counts: `j = i +
+  1;` alone renumbers (i + 1) to web 4, which then takes the first slot
+  (-72) and pushes cvt to -76, but the masked count stays 16; reads of
+  (i + 2) and (i + 3) change the unrolled loops' colours (30 masked).
+- The counts and the allocation wrapped in `do { } while (0)` or
+  `for (;;) { break; }`: byte-identical when the wrapper closes after the
+  call, 361 at +60 when it closes before it.
+
+Cycle-21 line: the decision variable is still the itable first-occurrence
+order (web numbers 5/7/8/40/41 against the loop temporaries 67/191/195).
+Every source expression in block 0 is numbered before loop A's (i + 1),
+so the target's spilled webs must be values uopt creates after unrolling,
+not the source's own block-0 expressions. Next: dump `uoptlist`
+(`-Wo,-zdbug:2`) on the 16 body and list which passes create expressions
+after the unroller (late substitution, hoisting, rematerialisation), then
+look for the one that can produce the whole allocation argument in walk
+order (cvt, segment, sample, 0x14, doubled, segment bytes, texture bytes).
 <!-- plateau-handoff:wakeAllocate:end -->

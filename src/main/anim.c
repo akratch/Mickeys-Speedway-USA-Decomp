@@ -4054,7 +4054,7 @@ void fmvInit(void) {
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: Displacement loop reads its shape from the moving list: 392 to 354 at size 0. Left: firstObject s6/cursor s7 in that loop, axis s2, pairIndex a1.
+ * summary: 354 at size 0: displacement loop reads the moving list; left firstObject s6/cursor s7, axis s2, pairIndex a1; -varref block cuts inert.
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

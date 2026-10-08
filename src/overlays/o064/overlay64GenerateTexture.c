@@ -207,6 +207,6 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
  * frame: 0x78
  * relocations: 22
  * first-mismatch: +0x0
- * summary: 371 at 0: first sum in target add order with in++ after the first clamp; an end-of-body in++ removes uopt's loop-carried load webs (284 at -4 aligned).
+ * summary: 371 at 0: pointer subtraction gives the target's three stepped second-loop pointers at +16; the tree hides four surplus pixel-loop words.
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

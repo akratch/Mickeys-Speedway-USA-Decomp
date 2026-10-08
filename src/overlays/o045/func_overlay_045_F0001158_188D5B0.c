@@ -358,6 +358,6 @@ void func_overlay_045_F0001158_188D5B0(
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x748
- * summary: 109 at size 0: triangle byte order as shipped; float decision order (CDX_BIAS 500/10 oracle, residual 47 at -4) is the rest; merge scan flat.
+ * summary: 109 at size 0: block cuts are uopt -varref (20 out-of-block variable loads); forced-cut oracle 94 at 0; target order (CDX_BIAS) still 47 at -4.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

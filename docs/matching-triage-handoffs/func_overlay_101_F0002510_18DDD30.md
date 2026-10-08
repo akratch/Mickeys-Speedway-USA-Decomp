@@ -6,7 +6,9 @@
 - frame: 0xE8
 - relocations: 6
 - first mismatch: +0x70
-- summary: y origin local tested, y copied after the clip tests: delta 0. bottom never forms a web (no argument pin); alias spellings fold.
+- summary: bottom is a web only with no indirect load in its blocks; target clip block reached at 260/-4 (aligned 61); needs v0 denied to the post-GetBounds webs.
+
+Summary before this remeasure: y origin local tested, y copied after the clip tests: delta 0. bottom never forms a web (no argument pin); alias spellings fold.
 
 Summary before this remeasure: y origin local tested, y copied after the clip tests (target's v1/s4 split): delta 0. Left: clip-block schedule, left/top in s3/s1.
 
@@ -370,4 +372,22 @@ Measured, all with no bottom web:
 - The clip tests as one positive `&&` condition wrapping the rest of the body, on each clip shape: 259 to 276; the early-return form stays best.
 
 Cycle-21: bottom's web cannot come from a spelling of bottom; every alias spelling folds to the same stack variable. Settle on a mini TU whether IDO ever gives an address-taken local with no register-argument pin a web (a local passed by address, then read in a test block and stored as a later call's stack argument). If it never does, the target's v0 value is not that local's own web, and the question becomes which value live over blocks 7 to 12 the target's source has that ours lacks (the decision variable is v0's occupant there; the record is the p1color row for c1 over blocks 7 to 12).
+
+#### 2026-10-08, lane k-2: bottom's web needs no indirect load in its blocks; the clip shape priced at 51 under four forces
+
+Measured by tools/bank.py: masked 90 (raw 90), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 229, register naming 36, immediate only 4, really different 33.
+
+On the 90 body. j-3's reading (bottom has no web because the stack argument has no pin) is wrong. Mini TUs with the tree's IDO and the instrumented uopt (web_report on the saved log): an address-taken bound passed as the fifth, stack, argument does get a symbol web (t0 or v0) when no indirect load occurs between its first test and the call; one `texture->height` load inline in the last test, or the repeated sum `node->y + element->y` in the bottom test (even CSE'd), removes the web entirely, and with it the cached right in a3. The 90 body tests `originY + texture->height` inline, so bottom is a t-register load there. The target computes both edges in the first block and its tests read only locals.
+
+Measured on the tracked TU (shape_product, masked at size delta; aligned exact, naming, immediate, different):
+
+- Both edges before the tests in the 90 body's two locals (y one web): 257 at -8 (228/38/8/24). bottom becomes a web (t0) and right is copied into a3 as shipped, but y has no copy.
+- The y sum in a later-role local (drawY, sourceY, drawHeight, rowOffset, chunkRows, drawWidth) with y copied from it at four positions and the y edge from the sum or from y, 48 cells: best valid 267 at -4 (223/49/4/21). Every such local is one web with its post-call role, so the sum spans the call and takes a saved register.
+- The target's clip block exactly: originY the sum, `y = originY` beside it, edgeX and a new edgeY local before the tests, then a dead redefinition of originY after the tests (`originY = 0`, a cast, an or-zero or `originY = y`, all identical) so the copy is not propagated: 265 at -4, frame 0xF0. The copy is emitted in the first block where the target has it, the sum is a short caller-saved web, bottom is a web.
+- The same with rowOffset folded into sourceY (`sourceY = (sourceY & (rows - 1)) << 5`, three spellings identical; the target computes the mask in sourceY's register): frame 0xE8, 260 at -4 (235/34/8/19, residual 61 against 73). Not banked: the size is the left argument move.
+- GetBounds declared to return s32 (result unused): byte-identical; v0 is not added to any block's mask.
+
+Records on that last cell (proc 0): originY save 2.0 (v0), edgeX 1.0 (v1), edgeY 1.0 (a0), left 1.0 (a1), bottom 0.5 (t0). Forcing originY to c2, edgeX to c3 and edgeY to c4 (all accepted) gives bottom v0 and left s3 unforced and scores 60 positional at size delta 0 (253 exact); adding node to c19 gives y s4 and 51 (262/19/2/7). Forcing bottom to c1 alone is never applied (v0 already taken).
+
+Cycle-21: on the 260 cell, the three clip webs defined after GetBounds must be denied v0 (or bottom must outrank a save of 2.0, which two references cannot). Decision variable: v0 in the forbidden mask of webs 22, 31 and 36 in the block after the GetBounds call. Find what source delivers v0 into that block (item 38) without a use the listing lacks; then node over y for s5/s4.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

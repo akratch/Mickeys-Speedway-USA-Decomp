@@ -121,8 +121,8 @@ void amResetAudioMap(void);
 s32 func_8001398C(f32 x, f32 z, s32 range,
                   AudioEchoSurface ***surfaces);
 s32 amCalcSfxStereo(f32 x, f32 y, f32 z);
-void func_8000329C(u16 soundId, f32 x, f32 y, f32 z, u8 arg4, u8 arg5, u8 volume, u16 distance, u8 arg8,
-                   u8 pitch, u8 argA, s32 argB, AudioPoint **point);
+void func_8000329C(u16 soundId, f32 x, f32 y, f32 z, u8 flags, u8 minVolume, u8 volume, u16 distance, u8 fastFalloff,
+                   u8 pitch, u8 priority, s32 soundMode, AudioPoint **point);
 void func_800037C4(s32 index);
 u8 func_800033B0(void *sound, f32 x, f32 y, f32 z);
 void func_80003480(AudioPoint *point, s32 volume, f32 pitch, s32 pan,
@@ -209,7 +209,7 @@ void amResetAudioMap(void) {
  * audspat_update_all and compared with JFG src/audio_manager_36D0.c
  * amPlayAudioMap; Mickey's reduced point-only update remains authoritative.
  */
-void amPlayAudioMap(void *arg0, s32 arg1, s32 arg2) {
+void amPlayAudioMap(void *players, s32 playerCount, s32 updateRate) {
     s32 cameraCount;
     s32 pointIndex;
     s32 cameraIndex;
@@ -407,9 +407,9 @@ s32 amCalcSfxStereo(f32 x, f32 y, f32 z) {
 }
 
 /* PROVENANCE: body adapted from JFG src/audio_manager_36D0.c amSndPlayXYZ. */
-void func_80002FE0(u16 soundId, f32 x, f32 y, f32 z, u8 arg4, AudioPoint **point) {
+void func_80002FE0(u16 soundId, f32 x, f32 y, f32 z, u8 flags, AudioPoint **point) {
     if (D_800C91E0[soundId].soundBite != 0 && (point == NULL || *point == NULL)) {
-        func_8000329C(D_800C91E0[soundId].soundBite, x, y, z, arg4, D_800C91E0[soundId].minVolume,
+        func_8000329C(D_800C91E0[soundId].soundBite, x, y, z, flags, D_800C91E0[soundId].minVolume,
                       D_800C91E0[soundId].volume, D_800C91E0[soundId].range, 0,
                       D_800C91E0[soundId].pitch, D_800C91E0[soundId].priority,
                       D_800C91E0[soundId].unk5, point);
@@ -431,9 +431,9 @@ void func_800030B4(AudioPoint *point, u8 pitch) {
 }
 
 /* PROVENANCE: body adapted from JFG src/audio_manager_36D0.c amSndPlayDirectXYZ. */
-void func_800030CC(u16 soundId, f32 x, f32 y, f32 z, u8 arg4, u8 volume, f32 pitch, u8 arg7,
+void func_800030CC(u16 soundId, f32 x, f32 y, f32 z, u8 flags, u8 volume, f32 pitch, u8 unused,
                    AudioPoint **point) {
-    func_8000329C(soundId, x, y, z, arg4, 100, volume, 15000, 0, pitch, 0x3F, 0, point);
+    func_8000329C(soundId, x, y, z, flags, 100, volume, 15000, 0, pitch, 0x3F, 0, point);
 }
 
 /* PROVENANCE: body adapted from JFG src/audio_manager_36D0.c amSndSetXYZ. */
@@ -480,9 +480,9 @@ void amSndUnlinkHandleXYZ(AudioPoint *point) {
  * PROVENANCE: name/order compared with JFG src/audio_manager_36D0.c
  * amCreateAudioPoint; body and pool layout use Mickey-only evidence.
  */
-void func_8000329C(u16 soundId, f32 x, f32 y, f32 z, u8 arg4, u8 arg5,
-                   u8 volume, u16 distance, u8 arg8, u8 pitch, u8 argA,
-                   s32 argB, AudioPoint **pointHandle) {
+void func_8000329C(u16 soundId, f32 x, f32 y, f32 z, u8 flags, u8 minVolume,
+                   u8 volume, u16 distance, u8 fastFalloff, u8 pitch, u8 priority,
+                   s32 soundMode, AudioPoint **pointHandle) {
     AudioPoint *point;
 
     if (D_80078F14 < D_80078F00) {
@@ -500,15 +500,15 @@ void func_8000329C(u16 soundId, f32 x, f32 y, f32 z, u8 arg4, u8 arg5,
     point->y = y;
     point->z = z;
     point->soundId = soundId;
-    point->flags = arg4;
-    point->minVolume = arg5;
+    point->flags = flags;
+    point->minVolume = minVolume;
     point->volume = volume;
     point->pitch = pitch;
     point->range = distance;
-    point->fastFalloff = arg8;
-    point->priority = argA;
+    point->fastFalloff = fastFalloff;
+    point->priority = priority;
     point->triggeredOnce = 0;
-    point->unk23 = argB;
+    point->unk23 = soundMode;
     point->handle = pointHandle;
     D_800C91E4[D_80078F00] = point;
     D_80078F00++;

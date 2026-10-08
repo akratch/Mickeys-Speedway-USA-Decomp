@@ -147,11 +147,11 @@ void func_800348C8(s32 tagId) {
     D_8007BD84 = tagId;
 }
 
-TextureFrameHeader *func_800348D4(TextureFrameHeader *arg0, s32 arg1) {
-    TextureFrameHeader *ret = arg0 + 1;
-    if ((arg1 > 0) && (arg1 < arg0->numOfTextures << 8)) {
-        ret = (TextureFrameHeader *)(((u8 *)arg0) +
-                                     ((arg1 >> 16) * arg0->textureSize)) + 1;
+TextureFrameHeader *func_800348D4(TextureFrameHeader *texture, s32 packedOffset) {
+    TextureFrameHeader *ret = texture + 1;
+    if ((packedOffset > 0) && (packedOffset < texture->numOfTextures << 8)) {
+        ret = (TextureFrameHeader *)(((u8 *)texture) +
+                                     ((packedOffset >> 16) * texture->textureSize)) + 1;
     }
     return ret;
 }
@@ -1107,24 +1107,24 @@ s32 func_80036544(Sprite *sprite, s32 *flags, s32 speed, f32 *frame, s32 updateR
 }
 
 
-void func_800367A4(u8 *arg0, s32 *arg1, s32 arg2, f32 *arg3, s32 arg4) {
+void func_800367A4(u8 *textureData, s32 *state, s32 mode, f32 *timer, s32 updateRate) {
     Sprite sprite;
     TextureFrameHeader *texture;
 
-    texture = (TextureFrameHeader *)arg0;
+    texture = (TextureFrameHeader *)textureData;
     sprite.textures = &texture;
     sprite.numberOfFrames = (u8)(texture->numOfTextures >> 8);
-    func_80036544(&sprite, arg1, arg2, arg3, arg4);
+    func_80036544(&sprite, state, mode, timer, updateRate);
 }
 
 /* JFG's texAnimateTexture body, with Mickey's four-bit flag relocation and
  * random-number entry point retained as local target-specific evidence. */
 void func_800367E8(TextureFrameHeader *texture, u32 *triangleBatchInfoFlags,
-                   s32 *arg2, s32 updateRate) {
+                   s32 *framePtr, s32 updateRate) {
     s32 breakVar;
     u16 *frameAdvanceDelay;
     u8 blink;
-    s32 arg2Temp = *arg2;
+    s32 frame = *framePtr;
     s32 flags = *triangleBatchInfoFlags;
 
     if (flags & (1 << 21)) {
@@ -1140,14 +1140,14 @@ void func_800367E8(TextureFrameHeader *texture, u32 *triangleBatchInfoFlags,
                 flags |= (1 << 22);
             }
         } else if (!(flags & (1 << 23))) {
-            arg2Temp += texture->frameAdvanceDelay * updateRate;
-            if (arg2Temp >= texture->numOfTextures) {
+            frame += texture->frameAdvanceDelay * updateRate;
+            if (frame >= texture->numOfTextures) {
                 if (blink == 3) {
-                    arg2Temp = texture->numOfTextures - 1;
+                    frame = texture->numOfTextures - 1;
                 } else {
-                    arg2Temp = ((texture->numOfTextures * 2) - arg2Temp) - 1;
-                    if (arg2Temp < 0) {
-                        arg2Temp = 0;
+                    frame = ((texture->numOfTextures * 2) - frame) - 1;
+                    if (frame < 0) {
+                        frame = 0;
                         flags &= ~((1 << 23) | (1 << 22));
                     } else {
                         flags |= (1 << 23);
@@ -1155,45 +1155,45 @@ void func_800367E8(TextureFrameHeader *texture, u32 *triangleBatchInfoFlags,
                 }
             }
         } else {
-            arg2Temp -= texture->frameAdvanceDelay * updateRate;
-            if (arg2Temp < 0) {
-                arg2Temp = 0;
+            frame -= texture->frameAdvanceDelay * updateRate;
+            if (frame < 0) {
+                frame = 0;
                 flags &= ~((1 << 23) | (1 << 22));
             }
         }
         D_8007BDA0 = 0;
     } else if (flags & (1 << 22)) {
         if (!(flags & (1 << 23))) {
-            arg2Temp += texture->frameAdvanceDelay * updateRate;
+            frame += texture->frameAdvanceDelay * updateRate;
         } else {
             frameAdvanceDelay = &texture->frameAdvanceDelay;
-            arg2Temp -= (*frameAdvanceDelay) * updateRate;
+            frame -= (*frameAdvanceDelay) * updateRate;
         }
         do {
             breakVar = FALSE;
-            if (arg2Temp < 0) {
-                arg2Temp = -arg2Temp;
+            if (frame < 0) {
+                frame = -frame;
                 flags &= ~(1 << 23);
                 breakVar = TRUE;
             }
-            if (arg2Temp >= texture->numOfTextures) {
-                arg2Temp = ((texture->numOfTextures * 2) - arg2Temp) - 1;
+            if (frame >= texture->numOfTextures) {
+                frame = ((texture->numOfTextures * 2) - frame) - 1;
                 flags |= (1 << 23);
                 breakVar = TRUE;
             }
         } while (breakVar);
     } else if (!(flags & (1 << 23))) {
-        arg2Temp += texture->frameAdvanceDelay * updateRate;
-        while (arg2Temp >= texture->numOfTextures) {
-            arg2Temp -= texture->numOfTextures;
+        frame += texture->frameAdvanceDelay * updateRate;
+        while (frame >= texture->numOfTextures) {
+            frame -= texture->numOfTextures;
         }
     } else {
-        arg2Temp -= texture->frameAdvanceDelay * updateRate;
-        while (arg2Temp < 0) {
-            arg2Temp += texture->numOfTextures;
+        frame -= texture->frameAdvanceDelay * updateRate;
+        while (frame < 0) {
+            frame += texture->numOfTextures;
         }
     }
-    *arg2 = arg2Temp;
+    *framePtr = frame;
     *triangleBatchInfoFlags = flags;
 }
 #ifdef NON_MATCHING

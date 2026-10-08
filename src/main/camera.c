@@ -875,8 +875,8 @@ void func_800221E8(Gfx **dlist, Mtx **mtx) {
         func_80022794(dlist, mtx);
     }
 }
-void func_80022604(s32 arg0) {
-    D_80079F8C = arg0;
+void func_80022604(s32 value) {
+    D_80079F8C = value;
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/camera.c:camSetScissor. */
 void camSetScissor(Gfx **dlist) {
@@ -951,8 +951,8 @@ void func_80022794(Gfx **dlist, Mtx **mtx) {
 void camOrthoYAspect(f32 aspect) {
     D_80079F60 = aspect;
 }
-void func_80022A44(f32 arg0) {
-    D_80079F48 = arg0;
+void func_80022A44(f32 value) {
+    D_80079F48 = value;
 }
 /* PROVENANCE: adapted from JFG's public decomp, src/camera.c:camStandardOrtho. */
 void camStandardOrtho(Gfx **dlist, Mtx **mtx) {

@@ -534,7 +534,7 @@ void amSndPlay(u16 soundId, void **handle) {
  * asm/nonmatchings/audio_manager_1050/amSndPlayDirect.s; Mickey's boundary,
  * branch form, globals, and calls remain authoritative.
  */
-void amSndPlayDirect(u16 soundBite, u8 volume, u8 pan, f32 pitch, u8 arg4,
+void amSndPlayDirect(u16 soundBite, u8 volume, u8 pan, f32 pitch, u8 effects,
                      void **handle) {
     if (soundBite <= 0 || amGetSfxCount() < soundBite) {
         if (handle != NULL) {
@@ -543,7 +543,7 @@ void amSndPlayDirect(u16 soundBite, u8 volume, u8 pan, f32 pitch, u8 arg4,
         return;
     }
     ad_sndp_play(D_800BF79C->bankArray[0], soundBite,
-                 scalevol(volume << 8), pan, pitch, arg4, handle);
+                 scalevol(volume << 8), pan, pitch, effects, handle);
 }
 /*
  * PROVENANCE: body shape adapted from DKR src/audio.c

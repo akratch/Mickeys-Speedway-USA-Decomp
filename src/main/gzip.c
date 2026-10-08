@@ -91,13 +91,13 @@ void func_8004D750(void) {
  * PROVENANCE: adapted from Diddy Kong Racing's published src/gzip.c.
  * Mickey's compiled and linked function is independently byte-identical.
  */
-s32 byteswap32(u8 *arg0) {
+s32 byteswap32(u8 *bytes) {
     s32 value;
 
-    value = *arg0++;
-    value |= *arg0++ << 8;
-    value |= *arg0++ << 16;
-    value |= *arg0 << 24;
+    value = *bytes++;
+    value |= *bytes++ << 8;
+    value |= *bytes++ << 16;
+    value |= *bytes << 24;
     return value;
 }
 

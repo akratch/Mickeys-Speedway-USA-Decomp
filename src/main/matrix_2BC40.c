@@ -49,14 +49,14 @@
  * plus the c28 force score 18 masked at +0x44, matching the best driver
  * -O3 body. Do not move the TU to -O3.
  */
-void func_8002B040(MtxF matrix, f32 arg1, f32 arg2, f32 arg3,
-                   f32 *arg4, f32 *arg5, f32 *arg6) {
+void func_8002B040(MtxF matrix, f32 x, f32 y, f32 z,
+                   f32 *outX, f32 *outY, f32 *outZ) {
     f32 *flatMatrix;
 
     flatMatrix = (f32 *)matrix;
-    *arg4 = arg1 * flatMatrix[0] + arg2 * flatMatrix[4] + arg3 * flatMatrix[8];
-    *arg5 = arg1 * flatMatrix[1] + arg2 * flatMatrix[5] + arg3 * flatMatrix[9];
-    *arg6 = arg1 * flatMatrix[2] + arg2 * flatMatrix[6] + arg3 * flatMatrix[10];
+    *outX = x * flatMatrix[0] + y * flatMatrix[4] + z * flatMatrix[8];
+    *outY = x * flatMatrix[1] + y * flatMatrix[5] + z * flatMatrix[9];
+    *outZ = x * flatMatrix[2] + y * flatMatrix[6] + z * flatMatrix[10];
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/matrix_2BC40/func_8002B040.s")

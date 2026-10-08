@@ -348,35 +348,35 @@ void func_8002EBE0(RcpCommand **dlist, s32 width, s32 height, u32 colours) {
     *dlist = cmd;
 }
 /* PROVENANCE: command sequence adapted from DKR's public src/rcp_dkr.c:bgdraw_render. */
-void rcpClearZBuffer(RcpCommand **arg0, u32 arg1, u32 arg2, s32 arg3,
-                     s32 arg4, s32 arg5, s32 arg6) {
+void rcpClearZBuffer(RcpCommand **dlistPtr, u32 width, u32 height, s32 left,
+                     s32 top, s32 right, s32 bottom) {
     RcpCommand *dlist;
     s32 alignedX1;
     s32 alignedX2;
 
-    if ((D_800D2FAC != 0) && (arg3 < arg5) && (arg4 < arg6)) {
-        alignedX1 = arg3 & ~3;
-        dlist = *arg0;
-        alignedX2 = (arg5 + 3) & ~3;
-        arg3 = alignedX1;
-        arg5 = alignedX2;
+    if ((D_800D2FAC != 0) && (left < right) && (top < bottom)) {
+        alignedX1 = left & ~3;
+        dlist = *dlistPtr;
+        alignedX2 = (right + 3) & ~3;
+        left = alignedX1;
+        right = alignedX2;
         RCP_PIPE_SYNC(dlist++);
-        gDPSetScissor(dlist++, G_SC_NON_INTERLACE, 0, 0, arg1 - 1,
-                      arg2 - 1);
+        gDPSetScissor(dlist++, G_SC_NON_INTERLACE, 0, 0, width - 1,
+                      height - 1);
         RCP_SET_FILL_CYCLE(dlist++);
-        RCP_SET_COLOR_IMAGE(dlist++, arg1, 0x02000000);
+        RCP_SET_COLOR_IMAGE(dlist++, width, 0x02000000);
         gDPSetFillColor(dlist++, 0xFFFCFFFC);
-        gDPFillRectangle(dlist++, arg3, arg4, arg5, arg6);
+        gDPFillRectangle(dlist++, left, top, right, bottom);
         RCP_PIPE_SYNC(dlist++);
-        RCP_SET_COLOR_IMAGE(dlist++, arg1, 0x01000000);
-        *arg0 = dlist;
+        RCP_SET_COLOR_IMAGE(dlist++, width, 0x01000000);
+        *dlistPtr = dlist;
     }
 }
 /* PROVENANCE: display-list command spelling adapted from Diddy Kong Racing's
  * public decomp, src/rcp_dkr.c:bgdraw_render. Mickey's enable flag, helpers,
  * coordinates, and branch structure decide the implementation; JFG supplies
  * the ordered rcpClearScreen correspondence while retaining assembly. */
-void rcpClearScreen(RcpCommand **dlist, s32 arg1, s32 drawBackground) {
+void rcpClearScreen(RcpCommand **dlist, s32 unused, s32 drawBackground) {
     s32 width;
     s32 height;
     s32 x1;
@@ -457,8 +457,8 @@ void rcpInit(OSSched *scheduler) {
  * third command's cursor IS lastCmd, which the macro form cannot express; and
  * the second command of the plain-texture branch takes its cursor before the
  * texel count is computed, which is what orders those two webs. */
-void func_8002F618(RcpCommand **arg0, RcpTextureNode *arg1, s32 arg2,
-                   s32 arg3, u8 arg4, u8 arg5, u8 arg6, u8 arg7) {
+void func_8002F618(RcpCommand **dlistPtr, RcpTextureNode *nodes, s32 xPos,
+                   s32 yPos, u8 red, u8 green, u8 blue, u8 alpha) {
     RcpTextureInfo *tex;
     RcpTextureInfo *alternate;
     RcpCommand *dlist;
@@ -477,24 +477,24 @@ void func_8002F618(RcpCommand **arg0, RcpTextureNode *arg1, s32 arg2,
     s32 loadCount;
 
     i = 0;
-    if (arg1->texture != NULL) {
-        dlist = *arg0;
-        if (arg1->alternate != NULL) {
+    if (nodes->texture != NULL) {
+        dlist = *dlistPtr;
+        if (nodes->alternate != NULL) {
             lastCmd = (RcpCommand *)D_8007A540;
         } else {
             lastCmd = (RcpCommand *)D_8007A4F8;
         }
 
         RCP_DISPLAY_LIST(dlist++, lastCmd);
-        gDPSetPrimColor((Gfx *)dlist++, 0, 0, arg4, arg5, arg6, arg7);
+        gDPSetPrimColor((Gfx *)dlist++, 0, 0, red, green, blue, alpha);
 
-        arg2 *= 4;
-        arg3 *= 4;
-        tex = arg1[i].texture;
+        xPos *= 4;
+        yPos *= 4;
+        tex = nodes[i].texture;
 
         while (tex != NULL) {
-            ulx = (arg1[i].x * 4) + arg2;
-            uly = (arg1[i].y * 4) + arg3;
+            ulx = (nodes[i].x * 4) + xPos;
+            uly = (nodes[i].y * 4) + yPos;
             lrx = (tex->width * 4) + ulx;
             lry = (tex->height * 4) + uly;
             if (lrx > 0 && lry > 0) {
@@ -509,11 +509,11 @@ void func_8002F618(RcpCommand **arg0, RcpTextureNode *arg1, s32 arg2,
                     uly = 0;
                 }
 
-                alternate = arg1[i].alternate;
+                alternate = nodes[i].alternate;
                 if (alternate != NULL) {
                     gDPSetTextureImage(
                         (Gfx *)dlist++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1,
-                        ((((s32)arg1[i].packedOffset >> 16) * tex->tileRows) +
+                        ((((s32)nodes[i].packedOffset >> 16) * tex->tileRows) +
                          (s32)tex + 0x20));
                     gDPSetTile((Gfx *)dlist++, G_IM_FMT_RGBA, G_IM_SIZ_16b,
                                0, 0, G_TX_LOADTILE, 0, G_TX_NOMIRROR | G_TX_WRAP,
@@ -532,7 +532,7 @@ void func_8002F618(RcpCommand **arg0, RcpTextureNode *arg1, s32 arg2,
                                    (tex->height - 1) << 2);
                     gDPSetTextureImage(
                         (Gfx *)dlist++, G_IM_FMT_I, G_IM_SIZ_16b, 1,
-                        ((((s32)arg1[i].packedOffset >> 16) *
+                        ((((s32)nodes[i].packedOffset >> 16) *
                           alternate->tileRows) + (s32)alternate + 0x20));
                     gDPSetTile((Gfx *)dlist++, G_IM_FMT_I, G_IM_SIZ_16b, 0,
                                0x100, G_TX_LOADTILE, 0,
@@ -554,7 +554,7 @@ void func_8002F618(RcpCommand **arg0, RcpTextureNode *arg1, s32 arg2,
                 } else {
                     dlist->w0 = *tex->data;
                     dlist->w1 = (u32)(func_800348D4(
-                        tex, arg1[i].packedOffset) + 0x80000000U);
+                        tex, nodes[i].packedOffset) + 0x80000000U);
                     dlist++;
                     blockCmd = dlist++; loadCount = tex->count - 1; blockCmd->w0 = (((loadCount & 0xFF) << 16) | 0x07000000U | ((loadCount * 8) & 0xFFFF)); blockCmd->w1 = (u32)tex->data + 0x80000008U;
                 }
@@ -564,12 +564,12 @@ void func_8002F618(RcpCommand **arg0, RcpTextureNode *arg1, s32 arg2,
                 lastCmd = dlist++; lastCmd->w0 = _SHIFTL(G_RDPHALF_2, 24, 8); lastCmd->w1 = (_SHIFTL(1024, 16, 16) | _SHIFTL(1024, 0, 16));
             }
             i++;
-            tex = arg1[i].texture;
+            tex = nodes[i].texture;
         }
 
         gDPPipeSync((Gfx *)dlist++);
         gDPSetPrimColor((Gfx *)dlist++, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF);
-        *arg0 = dlist;
+        *dlistPtr = dlist;
         func_80034910(lastCmd);
     }
 }
@@ -594,7 +594,7 @@ void func_8002F618(RcpCommand **arg0, RcpTextureNode *arg1, s32 arg2,
  * The flip and position setup stays inside `if (tex != NULL)`: it removes a
  * basic block, so xScale and yScale take f20/f22 (lane w2-front).
  */
-void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
+void func_8002FB34(RcpCommand **dlistPtr, RcpTextureNode *nodes, f32 xPos, f32 yPos,
                    f32 xScale, f32 yScale, u32 colour, s32 flags) {
     RcpTextureInfo *tex;
     u8 *dmaDlist;
@@ -622,7 +622,7 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
 
     width = 0;
     height = 0;
-    dlist = *arg0;
+    dlist = *dlistPtr;
     viGetCurrentSize(&width, &height);
     height *= 4;
     width *= 4;
@@ -636,7 +636,7 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
     lastCmd = dlist++; lastCmd->w0 = 0x06000000; lastCmd->w1 = (u32) (D_8007A588);
     { RcpCommand *_g = dlist++; _g->w0 = 0x07020010; _g->w1 = (u32) dmaDlist + 0x80000000U; }
     { RcpCommand *_g = dlist++; _g->w0 = 0xFA000000; _g->w1 = colour; }
-    tex = arg1->texture;
+    tex = nodes->texture;
     halfCmd = NULL;
     if (tex != NULL) {
         xPos4x = xPos * 4.0f;
@@ -646,15 +646,15 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
         i = 0;
         do {
             if (!bFlipX) {
-                ulx = (s32) (arg1[i].x * xScale) + xPos4x;
+                ulx = (s32) (nodes[i].x * xScale) + xPos4x;
             } else {
-                lrx = xPos4x - (s32) (arg1[i].x * xScale);
+                lrx = xPos4x - (s32) (nodes[i].x * xScale);
                 ulx = lrx - (s32) (tex->width * xScale);
             }
             if (!bFlipY) {
-                uly = (s32) (arg1[i].y * yScale) + yPos4x;
+                uly = (s32) (nodes[i].y * yScale) + yPos4x;
             } else {
-                lry = yPos4x - (s32) (arg1[i].y * yScale);
+                lry = yPos4x - (s32) (nodes[i].y * yScale);
                 uly = lry - (s32) (tex->height * yScale);
             }
             if (ulx < width && uly < height) {
@@ -689,7 +689,7 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
                     }
                     dmaDlist = (u8 *) tex->data;
                     dlist->w0 = *(u32 *) dmaDlist;
-                    dlist->w1 = func_800348D4(tex, arg1[i].packedOffset, halfCmd) + 0x80000000U;
+                    dlist->w1 = func_800348D4(tex, nodes[i].packedOffset, halfCmd) + 0x80000000U;
                     dlist++;
                     dmaDlist += 8;
                     blockCmd = dlist++; count = tex->count - 1; blockCmd->w0 = ((count & 0xFF) << 16) | 0x07000000 | ((count * 8) & 0xFFFF); blockCmd->w1 = (u32) dmaDlist + 0x80000000U;
@@ -698,12 +698,12 @@ void func_8002FB34(RcpCommand **arg0, RcpTextureNode *arg1, f32 xPos, f32 yPos,
                     lastCmd = dlist++; lastCmd->w0 = _SHIFTL(G_RDPHALF_2, 24, 8); lastCmd->w1 = (_SHIFTL(dsdx, 16, 16) | _SHIFTL(dtdy, 0, 16));
                 }
             }
-            tex = arg1[i + 1].texture;
+            tex = nodes[i + 1].texture;
             i++;
         } while (tex != NULL);
     }
     gDPPipeSync((Gfx *) dlist++);
     { RcpCommand *_g = dlist++; _g->w0 = 0xFA000000; _g->w1 = 0xFFFFFFFF; }
-    *arg0 = dlist;
+    *dlistPtr = dlist;
     func_80034910();
 }

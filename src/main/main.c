@@ -815,11 +815,11 @@ nextCheck:
 }
 
 /* PROVENANCE: body adapted from JFG src/main.c; Mickey byte identity is decisive. */
-s8 mainGetZBCheck(s32 arg0) {
-    if ((arg0 < 0) || (arg0 >= 8)) {
+s8 mainGetZBCheck(s32 index) {
+    if ((index < 0) || (index >= 8)) {
         return 1;
     }
-    return D_800CF53F[arg0 * 8];
+    return D_800CF53F[index * 8];
 }
 
 /*
@@ -887,7 +887,7 @@ void mainSetGameWindow(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4,
  * Force Gemini src/main.c::func_80045C38_46838; JFG retains assembly, and the
  * body below is reconstructed from Mickey-only control-flow and data evidence.
  */
-void func_80027D14(s32 arg0) {
+void func_80027D14(s32 updateRate) {
     s32 fraction;
     s32 countdown;
     s32 changing;
@@ -900,7 +900,7 @@ void func_80027D14(s32 arg0) {
     D_8007A130 = D_800D18D4;
     D_8007A134 = D_800D18D8;
     D_8007A138 = D_800D18DC;
-    countdown = D_8007A13C = countdown - arg0;
+    countdown = D_8007A13C = countdown - updateRate;
     if (countdown > 0) {
         fraction = (countdown << 16) / D_8007A140;
         D_8007A12C += ((D_800D18C0 - D_800D18D0) * fraction) >> 16;
@@ -932,7 +932,7 @@ void mainGameWindowSize(s32 *x1, s32 *y1, s32 *x2, s32 *y2) {
     *y2 = D_8007A138;
 }
 
-void func_80027EC0(s32 arg0) {
+void func_80027EC0(s32 updateRate) {
     s32 i;
     s32 buttons;
 
@@ -1100,8 +1100,8 @@ void mainChangeLevel(s32 nextLevel, s32 nextCharacter, s32 nextAnimGroup,
 }
 
 /* PROVENANCE: body adapted from JFG src/main.c; Mickey byte identity is decisive. */
-void mainSetAnimGroup(s32 arg0) {
-    D_8007A164 = arg0;
+void mainSetAnimGroup(s32 animGroup) {
+    D_8007A164 = animGroup;
 }
 
 /* PROVENANCE: body adapted from JFG src/main.c; Mickey byte identity is decisive. */
@@ -1110,8 +1110,8 @@ s32 mainGetAnimGroup(void) {
 }
 
 /* PROVENANCE: body adapted from JFG src/main.c; Mickey byte identity is decisive. */
-void mainChangeCameras(s32 arg0) {
-    D_8007A170 = arg0;
+void mainChangeCameras(s32 cameraCount) {
+    D_8007A170 = cameraCount;
 }
 
 /* PROVENANCE: body adapted from JFG src/main.c; Mickey byte identity is decisive. */
@@ -1324,7 +1324,7 @@ void mainSetMode(s32 modeToSet) {
 }
 
 /* PROVENANCE: function role adapted from JFG src/main.c order and body. */
-void mainTitlePageInit(s32 arg0) {
+void mainTitlePageInit(s32 unused) {
     D_8007A1BC = 1;
     D_8007A1C0 = 1;
     func_8003A544(0);
@@ -1347,13 +1347,13 @@ void func_80028DE4(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
 }
 
 /* PROVENANCE: body adapted from JFG src/main.c; Mickey byte identity is decisive. */
-void mainFrontInit(s32 arg0, s32 arg1, s32 arg2) {
+void mainFrontInit(s32 mode, s32 level, s32 unused) {
     D_8007A1BC = 1;
     D_8007A1C0 = 1;
     if (D_8007A1AC == 0) {
         D_8007A1AC = 1;
     }
-    mainChangeLevel(arg1, D_8007A154, 0, arg0, 1, 0);
+    mainChangeLevel(level, D_8007A154, 0, mode, 1, 0);
 }
 
 /* PROVENANCE: stripped function role follows JFG src/main.c order. */
@@ -1408,20 +1408,20 @@ void *func_80028F54(void) {
     return D_800D18E0;
 }
 
-u8 *func_80028F60(s32 index, s32 arg1) {
+u8 *func_80028F60(s32 index, s32 unused) {
     if ((index < 0) || (index >= 6)) {
         index = 0;
     }
     return (u8 *) D_800D18E0 + (index * 40) + 4;
 }
 
-void func_80028F98(s32 arg0, s32 arg1, s32 arg2) {
+void func_80028F98(s32 unused0, s32 unused1, s32 unused2) {
 }
 
-void func_80028FA8(s32 arg0, s32 arg1, s32 arg2) {
+void func_80028FA8(s32 unused0, s32 unused1, s32 unused2) {
 }
 
-s32 func_80028FB8(s32 arg0, s32 arg1, s32 arg2) {
+s32 func_80028FB8(s32 unused0, s32 unused1, s32 unused2) {
     return 0;
 }
 
@@ -1437,37 +1437,37 @@ s32 func_80028FB8(s32 arg0, s32 arg1, s32 arg2) {
  * returned as int, each arm normalises into a ring temp and copies it to v0
  * in the branch delay slot, as shipped.
  */
-int func_80028FCC(s32 arg0) {
-    return func_80028FB8(0, 0, arg0) || func_80028FB8(0, 0, arg0) ||
-           func_80028FB8(0, 0, arg0);
+int func_80028FCC(s32 value) {
+    return func_80028FB8(0, 0, value) || func_80028FB8(0, 0, value) ||
+           func_80028FB8(0, 0, value);
 }
 
-s32 func_80029038(s32 arg0, s32 arg1, s32 arg2) {
+s32 func_80029038(s32 unused0, s32 unused1, s32 unused2) {
     return 0;
 }
 
-s32 func_8002904C(s32 arg0, s32 arg1) {
+s32 func_8002904C(s32 unused0, s32 unused1) {
     return 0;
 }
 
-s32 func_8002905C(s32 arg0) {
-    return func_8002904C((s32) D_800D18E0, arg0);
+s32 func_8002905C(s32 value) {
+    return func_8002904C((s32) D_800D18E0, value);
 }
 
-void func_80029084(s32 arg0, s32 arg1) {
+void func_80029084(s32 unused0, s32 unused1) {
 }
 
-void func_80029090(s32 arg0, s32 arg1, s32 arg2) {
+void func_80029090(s32 unused0, s32 unused1, s32 unused2) {
 }
 
 s32 func_800290A0(void) {
     return D_8007A1A8;
 }
 
-void func_800290AC(s32 arg0) {
+void func_800290AC(s32 newValue) {
     register s32 *value = &D_8007A1A8;
 
-    *value = arg0;
+    *value = newValue;
     if (*value == 0) {
         func_80000450(0);
         return;
@@ -1487,8 +1487,8 @@ void func_80029104(void) {
     D_8007A1CC |= 0x40000000;
 }
 
-void func_80029120(u32 arg0) {
-    D_8007A1CC |= 0x20000000 | (arg0 & 0x1F);
+void func_80029120(u32 value) {
+    D_8007A1CC |= 0x20000000 | (value & 0x1F);
 }
 
 void func_80029144(void) {
@@ -1518,8 +1518,8 @@ u8 *func_800291C4(void) {
 void func_800291D0(void) {
 }
 
-void func_800291D8(s32 arg0) {
-    D_8007A1A4 = arg0;
+void func_800291D8(s32 value) {
+    D_8007A1A4 = value;
 }
 
 s32 func_800291E4(void) {
@@ -1559,7 +1559,7 @@ u8 func_80029240(s32 index) {
  * parameters so it takes the register the conversion later needs; the early
  * exit is one conditional expression; and the loop bound is the conversion
  * itself, named only after the loop, so no separate copy of it survives. */
-f32 func_80029274(s32 arg0, f32 arg1, f32 arg2) {
+f32 func_80029274(s32 distance, f32 speed, f32 acceleration) {
     f32 sum;
     f32 step;
     f32 result;
@@ -1571,47 +1571,47 @@ f32 func_80029274(s32 arg0, f32 arg1, f32 arg2) {
     sum = 0.0f;
     step = 0.0f;
     result = 0.0f;
-    neg = arg0 < 0;
+    neg = distance < 0;
     if (neg) {
-        arg0 = -arg0;
-        arg1 = -arg1;
+        distance = -distance;
+        speed = -speed;
     }
-    if (arg1 < 0.0f) {
-        return neg ? -arg2 : arg2;
+    if (speed < 0.0f) {
+        return neg ? -acceleration : acceleration;
     }
     do {
-        step += arg2;
+        step += acceleration;
         sum += step;
-    } while ((sum + step) < (f32) arg0);
-    dist = (f32) arg0;
-    if ((dist <= arg2) && (arg1 <= arg2) &&
-        (((arg0 >= 0) && (arg1 >= 0.0f)) || ((arg0 <= 0) && (arg1 <= 0.0f)))) {
+    } while ((sum + step) < (f32) distance);
+    dist = (f32) distance;
+    if ((dist <= acceleration) && (speed <= acceleration) &&
+        (((distance >= 0) && (speed >= 0.0f)) || ((distance <= 0) && (speed <= 0.0f)))) {
         result = 0.0f;
     } else {
-        lower = step - arg2;
-        next = arg1 + arg2;
+        lower = step - acceleration;
+        next = speed + acceleration;
         if (next <= lower) {
             result = next;
         } else {
-            next = arg1 - arg2;
+            next = speed - acceleration;
             if (next < step) {
                 result = lower;
-                if (step == arg2) {
-                    result = arg2;
+                if (step == acceleration) {
+                    result = acceleration;
                 }
             } else {
                 result = next;
                 if (next == 0.0f) {
-                    result = arg2;
+                    result = acceleration;
                 }
             }
         }
     }
     if (neg) {
         result = -result;
-        arg1 = -arg1;
+        speed = -speed;
     }
-    return result - arg1;
+    return result - speed;
 }
 
 /*

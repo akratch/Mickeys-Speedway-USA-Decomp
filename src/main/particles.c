@@ -2113,7 +2113,7 @@ void func_80041388(ParticleModelEntry *entry, s32 updateRate) {
  *    onto the w0 line of the triangle command (4 -> 2 -> 0). */
 /* PROVENANCE: structure cross-checked against JFG asm/nonmatchings/particles/
  * func_80062BFC.s; body reconstructed from Mickey evidence. */
-void func_80041530(s32 arg0, s32 arg1, ParticleModelEntry *entry) {
+void func_80041530(s32 displayListPtr, s32 vertexListPtr, ParticleModelEntry *entry) {
     Gfx *displayList;
     ParticleVertex *vertices;
     ParticleVertex *vertexStart;
@@ -2136,9 +2136,9 @@ void func_80041530(s32 arg0, s32 arg1, ParticleModelEntry *entry) {
         u8 blue;
         u8 alpha;
 
-        displayList = *(Gfx **)arg0;
+        displayList = *(Gfx **)displayListPtr;
         vertexCount = entry->vertexCount;
-        vertices = *(ParticleVertex **)arg1;
+        vertices = *(ParticleVertex **)vertexListPtr;
         triangleLists[0] = ((void **)((u8 *)&D_8007CA60 + (vertexCount * 8)))[-4];
         triangleLists[1] = ((void **)((u8 *)&D_8007CA60 + (vertexCount * 8)))[-3];
         if (entry->vertexCount == 2) {
@@ -2208,11 +2208,11 @@ void func_80041530(s32 arg0, s32 arg1, ParticleModelEntry *entry) {
                 particleIndex++;
             } while (particleIndex < entry->particleCount);
         }
-        *(Gfx **)arg0 = displayList;
-        *(ParticleVertex **)arg1 = vertices;
+        *(Gfx **)displayListPtr = displayList;
+        *(ParticleVertex **)vertexListPtr = vertices;
     }
 }
-void func_80041C50(s32 arg0, s32 arg1) {
+void func_80041C50(s32 displayListPtr, s32 vertexListPtr) {
     ParticleModelEntry *entry;
     s32 i;
 
@@ -2222,7 +2222,7 @@ void func_80041C50(s32 arg0, s32 arg1) {
         if (D_8007C890 > 0) {
             do {
                 if (entry->active != 0) {
-                    func_80041530(arg0, arg1, entry);
+                    func_80041530(displayListPtr, vertexListPtr, entry);
                 }
                 i++;
                 entry++;
@@ -2295,7 +2295,7 @@ void func_80041CE4(Gfx **dList, ParticleLineVertex **vertices) {
         *vertices = vertex;
     }
 }
-void func_80041F48(s32 arg0, ParticleTrigger *trigger) {
+void func_80041F48(s32 emitter, ParticleTrigger *trigger) {
     void *particle;
     ParticleModelEntry *entry;
     ParticleTypeDescriptor *descriptor;
@@ -2306,7 +2306,7 @@ void func_80041F48(s32 arg0, ParticleTrigger *trigger) {
     if (index != 0xFF && ((u32)descriptor->flags >> 28) == 4) {
         entry = &D_8007C898[index];
         if (entry->particleCount != 15) {
-            particle = func_8003FB98((ParticleEmitterObject *)arg0, trigger, -1);
+            particle = func_8003FB98((ParticleEmitterObject *)emitter, trigger, -1);
             if (particle != NULL) {
                 entry->particles[entry->particleCount] = particle;
                 entry->particleCount++;
@@ -2482,7 +2482,7 @@ void partUpdateParticles(s32 updateRate) {
     }
 }
 /* PROVENANCE: structure cross-checked against JFG asm/nonmatchings/particles/partDraw.s; body reconstructed from Mickey evidence. */
-void partDraw(Gfx **dList, s32 arg1, s32 mode) {
+void partDraw(Gfx **dList, s32 mtxList, s32 mode) {
     ParticleLineVertex *vertices;
     s32 pad;
 
@@ -2492,18 +2492,18 @@ void partDraw(Gfx **dList, s32 arg1, s32 mode) {
     vertices = (u8 *)D_8007C89C[D_8007C8E8] + (D_8007C8EC * 10);
     gDPPipeSync((*dList)++);
     if (mode == 1) {
-        D_8007C8EC = func_8003CE10(dList, arg1, (void **)&vertices,
+        D_8007C8EC = func_8003CE10(dList, mtxList, (void **)&vertices,
                                    D_800D4128, 1);
         return;
     }
     camSetNo(0);
-    func_800221E8((void **)dList, arg1);
+    func_800221E8((void **)dList, mtxList);
     func_8003D4FC((void **)dList, (void **)&vertices, D_800D4120[0]);
     func_8003D4FC((void **)dList, (void **)&vertices, D_800D4124);
     func_80041CE4(dList, &vertices);
     func_80041C50((s32)dList, (s32)&vertices);
-    func_8003CE10(dList, arg1, (void **)&vertices, D_800D4128, mode);
-    func_8003D25C(dList, arg1, (void **)&vertices, D_800D412C);
+    func_8003CE10(dList, mtxList, (void **)&vertices, D_800D4128, mode);
+    func_8003D25C(dList, mtxList, (void **)&vertices, D_800D412C);
     D_8007C8E8 ^= 1;
 }
 void partNullifyCircularParticleParents(ParticlePosition *position) {

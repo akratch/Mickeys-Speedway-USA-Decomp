@@ -5214,7 +5214,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, all naming. The double-read loop has the target's web order; it needs one zero-emission interferer for the four p1 webs outside blocks 4 and 10
+ * summary: 10 at 0, all naming. With the four at p1 the loop's p2 colours are one register low; the target needs two zero-emission webs (s7 in block 4, s5 in block 10)
  * PLATEAU-HANDOFF:func_80011980:end
  */
 

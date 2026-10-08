@@ -281,8 +281,8 @@ Relocation-masked mismatch evidence covers **17 / 17** resolved rows. The raw co
 |---|---:|
 | raw `differing_words <= 5` | 0 |
 | relocation-masked `differing_words <= 5` | 1 |
-| raw `differing_words <= 10` | 3 |
-| relocation-masked `differing_words <= 10` | 5 |
+| raw `differing_words <= 10` | 4 |
+| relocation-masked `differing_words <= 10` | 6 |
 | raw `differing_words <= 20` | 8 |
 | relocation-masked `differing_words <= 20` | 8 |
 
@@ -296,12 +296,12 @@ units remain distinct.
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | `src/main/anim.c` | `func_80056DD8` | `main` | `register-only` | 916 | 11 | 11 | 516 | 516 | 0 | — |
 | 2 | `src/overlays/o073/func_overlay_073_F0000190_18CAC50.c` | `func_overlay_073_F0000190_18CAC50` | `o073` | `other` | 3,040 | 19 | 4 | 96 | 1,992 | 0 | — |
-| 3 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
-| 4 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 8 | 8 | 240 | 240 | 0 | — |
-| 5 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 10 | 10 | 548 | 548 | 0 | — |
-| 6 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
-| 7 | `src/main/fx.c` | `wakeAllocate` | `main` | `other` | 1,404 | 16 | 16 | 148 | 148 | 0 | — |
-| 8 | `src/main/track.c` | `func_8001291C` | `main` | `other` | 2,192 | 18 | 18 | 684 | 684 | 0 | — |
+| 3 | `src/main/track.c` | `func_8001291C` | `main` | `other` | 2,192 | 6 | 6 | 1,384 | 1,384 | 0 | — |
+| 4 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
+| 5 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 8 | 8 | 240 | 240 | 0 | — |
+| 6 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 10 | 10 | 548 | 548 | 0 | — |
+| 7 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
+| 8 | `src/main/fx.c` | `wakeAllocate` | `main` | `other` | 1,404 | 16 | 16 | 148 | 148 | 0 | — |
 | 9 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 109 | 109 | 1,864 | 1,864 | 0 | — |
 | 10 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `other` | 8,672 | 368 | 324 | 12 | 12 | 0 | — |
 | 11 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |

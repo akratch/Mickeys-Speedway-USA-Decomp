@@ -75,6 +75,8 @@ locals or role reuse, which only the read-through found.
    one line: `new_var` temporaries, five chained 64-bit all-ones masks around
    the literal `1`, and an empty `if` with a duplicated `!new_var` test. It is
    the worst single body the census found, and it is not in the queue.
+   (Resolved 2026-10-08, lane c-3: the source is a four-iteration
+   controller loop that IDO unrolls.)
 3. **"The 2026-10-07 batch used the most stand-ins."** Eight of the 24 functions
    matched that day carry an A construct: `func_80038190` (five OR-zero probes),
    o066 `F00004E0` (two `width * 0`), `overlay68UpdateAnimation` (`index =
@@ -144,9 +146,9 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/gameVi.c:161` `func_800336A8` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/menu.c:818` `func_8003968C` **A**: one-line body: `new_var` carriers, 64-bit mask chains, duplicated empty test.
-  Natural: `D_800D31A0 = -1;` and the plain stores. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved (lane c-3, 2026-10-08):** the one-line permuter body is a four-iteration controller loop storing `-1`, `20` and `15` to `menuPreviousButtons[i]`, `menuRepeatX[i]` and `menuRepeatY[i]` (the TU's existing array aliases). IDO unrolls it completely, which is why the target loads each constant afresh per controller. Byte-identical.
 - `src/main/menu.c:1163` `func_8003A2C8` **A**: OR/XOR with zero, or an all-ones mask.
-  Natural: the bare operand. Keep bytes: unknown - not measured; not in the cleanup queue.
+  Natural: the bare operand. Keep bytes: no - measured (lane c-3, 2026-10-08). The target holds `&D_8007C090` in a1 for both the load and the store; three plain spellings (`screenMode &= 3` with a `u8 *current` for load and store, an `s32 mode` local with the global named, and the pointer for the load with the name for the store) all fold the address into `lui`/`lbu` pairs (22-24 words differ). The address-taken `modeBits` behind `modeBitPtr` is what keeps the address; leave until that is understood.
 - `src/main/menu_3B1A0.c:190` `func_8003A754` **A**: empty if body.
   Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/main/models_5B300.c:497` `func_8005ABA8` **A**: `(instance && instance) && instance` with an empty body.

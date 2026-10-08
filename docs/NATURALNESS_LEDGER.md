@@ -133,14 +133,18 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   Natural: the bare operand. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/main/flash_58C10.c:70` `func_800580F0` **A**: `do { } while (0)` around one call (three sites, 70-78).
   Natural: the bare calls. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Left (lane c-2, 2026-10-08):** the three regions are three blocks, so `&D_800D7830` is rematerialized per call rather than held in s0 (without them it moves to s0 and the frame grows to 0x38). Measured: no wrappers; one region over all three calls; one region over the middle two; an `OSPfs *pfs` local for the address; an empty test on the connector result. None keeps the bytes.
 - `src/main/font.c:937` `func_8004C690` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Left (lane c-2, 2026-10-08):** the OR-zero keeps `k` a non-basic induction variable, which is what leaves the copy rolled with the `sltiu` counter; every plain counter is rewritten to `!=` or unrolled. Not re-measured here; the shard lists the spellings already tried.
 - `src/main/frontend_37680.c:228` `func_80036DD0` **A**: `& 0xFFFFFFFF` on a u32 address.
   Natural: the bare address. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/main/frontend_37D50.c:165` `func_80037414` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Left (lane c-2, 2026-10-08):** not re-measured; the cleanup queue lists 16+ three-argument spellings already tried.
 - `src/main/frontend_37D50.c:371` `func_80037AEC` **A**: all-ones 64-bit mask chain.
   Natural: the bare value. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved (lane c-2, 2026-10-08):** rewritten in func_800378A4's style: nested `do`/`while` loops with named `height`/`value`/`angle` locals, no `if (1)`, no mask, no `vertex[-1]`. A redundant `s32 row = 0;` initialiser (a dead store uopt deletes) numbers `row` before `phase`, the same first-reference rule as `dst` in func_8004C690. Byte-identical.
 - `src/main/gameVi.c:161` `func_800336A8` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/menu.c:818` `func_8003968C` **A**: one-line body: `new_var` carriers, 64-bit mask chains, duplicated empty test.
@@ -153,28 +157,36 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/objects.c:2278` `func_80006B04` **A**: empty `do { } while (0)`.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Left (lane c-2, 2026-10-08):** not re-measured; the cleanup queue row lists eleven placements already tried.
 - `src/main/objects.c:3174` `func_80008028` **A**: multiply-by-zero stand-in for a constant.
   Natural: the literal `0`. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved (lane c-2, 2026-10-08):** `updateModels = object->unk40->unkD0[1] != 0.0f;` and an inner `for (modelIndex = 0; ...)` loop; the zero lands at the join without the product. Byte-identical.
 - `src/main/objects.c:3190` `func_80008028` **A**: empty if body.
   Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved (lane c-2, 2026-10-08):** deleted; the outer loop is `objectIndex = D_800C949C; for (; objectIndex < D_800C9498; objectIndex++)` (folding the read into the initialiser loads the bound first, 8 words). Byte-identical.
 - `src/main/objects.c:5339` `func_8000BB84` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Left (lane c-2, 2026-10-08):** the block boundary keeps the time scale out of the one-block body, where it interferes with every caller-saved float web and is split to memory (shard). Measured: deleted (+3 words); a separate `factor` local for the reflection (+3 words).
 - `src/main/particles.c:993` `partObjFreeTriggers` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/pi.c:101` `piRomLoadCompressed` **A**: empty `if (1)`/`if (0)` region.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/runlink.c:500` `func_800320F0` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Left (lane c-2, 2026-10-08):** the extra reference ranks the `overlayCount` web into s1. Measured: deleted (38 words differ); a `count = overlayCount` loop-bound local, declared first or last, with the `if (1)` blocks (23) and without (87).
 - `src/main/runlink.c:504` `func_800320F0` **A**: three empty `if (1) { }` on one line.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Left (lane c-2, 2026-10-08):** deleting them alone moves 38 words; with the `overlayCount` block also removed, 70. See the row above.
 - `src/main/runlink.c:773` `runlinkUnloadOverlay` **A**: OR/XOR with zero, or an all-ones mask.
   Natural: the bare operand. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
+  **Resolved (lane c-2, 2026-10-08):** the patch operation is read from the record at each use, as JFG's src/runLink.c does (`relocEntry->patchOperation` twice); the `patchOperation` local and the xor are gone. A local with a plain compare, or assigned inside the test, differs by 2 words. Byte-identical.
 - `src/main/shadows.c:1338` `func_800180B4` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/main/spranim.c:271` `effectboxControl` **A**: `do { } while (0)` around one magic-offset store.
   Natural: `st->owner = arg0;` on a typed struct. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/main/textures_354C8.c:877` `func_80035E88` **A**: empty if body.
   Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Left (lane c-2, 2026-10-08):** the empty `if (tex) {}` is in JFG's published donor (src/textures.c func_800570D8_57CD8), so it is inherited, not added here.
 - `src/main/track.c:4983` `func_800148E0` **A**: empty `if (1)`/`if (0)` region.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/main/vehicle_sounds.c:395` `func_8005830C` **A**: empty if body.
@@ -291,6 +303,7 @@ One A-grade dead read, otherwise defensible.
 
 - `src/main/textures_354C8.c:341` **A**: dead read `lowerWord = settings->lower[...].words.w0`, deleted by the optimiser.
   Natural: remove it. Keep bytes: unlikely - comment says 5 words regress.
+  **Left (lane c-2, 2026-10-08):** not re-measured; L44 is the measured law for this assigned dead read.
 - `src/main/textures_354C8.c:226` **B**: `numTextures` reused to save and restore D_8007BD90 around a call.
   Natural: a dedicated saved local. Keep bytes: unlikely - comment ties it to a spill.
 - `src/main/textures_354C8.c:312` **B**: byte-offset table index `(u8 *)table + i * sizeof(...)`.
@@ -389,8 +402,10 @@ Five OR-zero probes, not in the cleanup queue.
 
 - `src/main/frontend_37D50.c:550` **A**: FE38190_PROBE macro ORs the cursor with zero (used at 611 and 615).
   Natural: plain FRONTEND38190_EMIT. Keep bytes: unlikely - comment says L109 probes rank webs.
+  **Left (lane c-2, 2026-10-08):** replacing both cursor probes with the plain packet macro differs by 8 words; they rank the two block-scoped cursors below `var_t2` (shard, L109).
 - `src/main/frontend_37D50.c:619` **A**: `var_a2 = var_a2 OR 0` twice and `var_a3 OR 0` at the loop end.
   Natural: delete all three statements. Keep bytes: unlikely - comment says they set the t2 colour.
+  **Left (lane c-2, 2026-10-08):** deleting the three loop-end probes differs by 38 words; they lift `var_a2`/`var_a3` above `var_t2` (save 20). A natural second use of both indices was not found within budget.
 - `src/main/frontend_37D50.c:599` **B**: K0 arithmetic `(u32)ptr + 0x7FFFFB00u` and split subtractions.
   Natural: OS_K0_TO_PHYSICAL(ptr) - 0x500. Keep bytes: unknown - comment says the split form is needed.
 - `src/main/frontend_37D50.c:591` **B**: viewport written as s16 at byte offsets on a u8 pointer.
@@ -465,8 +480,10 @@ Duplicated empty test and inert mask (in the queue).
 
 - `src/main/font.c:318` **A**: empty duplicated test `if (D_8007D540 && D_8007D540) { }`.
   Natural: delete it. Keep bytes: unlikely - queue says 25 registers differ without it.
+  **Left (lane c-2, 2026-10-08):** not re-measured; cleanup queue: removing it restores 25 register differences.
 - `src/main/font.c:364` **A**: redundant `& 0xFFu` on a u8 width.
   Natural: `x += font->characterWidth`. Keep bytes: unlikely - comment says temp selection.
+  **Left (lane c-2, 2026-10-08):** not re-measured; queued with the test above (L43 family).
 - `src/main/font.c:208` **B**: `D_800D64F2` alias extern for `D_800D64E8[0].y2`.
   Natural: one symbol. Keep bytes: unknown - alias may set the hi/lo split.
 
@@ -519,6 +536,7 @@ Matched but contorted;  one inert guard and allocator carriers.
 
 - `src/main/objects.c:1987` **A**: empty `if (D_800C94A8 > 0x100) { }` after the append (not in the queue).
   Natural: real overflow handling or none. Keep bytes: unlikely - comment says it breaks a 3-way tie.
+  **Resolved (lane c-2, 2026-10-08):** the guard now carries its debug-only report, `#ifdef _DEBUG` around `osSyncPrintf("ObjList Overflow %d!!!\n", D_800C94A8)`, the overflow print DKR's spawn_object compiles out at the same place. A live `stubbed_printf` with the string emits the literal into `.rodata`, so the report is preprocessed out instead. Byte-identical.
 - `src/main/objects.c:1950` **B**: dead `u8 *aligned` reused as the unk48 nested integer (queued).
   Natural: dedicated s32 temp. Keep bytes: unlikely - a new local moves the 0x90 frame.
 - `src/main/objects.c:1938` **B**: redundant `(u8 *)(u32)` second spelling of one store address.
@@ -601,8 +619,10 @@ Two inert empty-if steering blocks, would be called fake.
 
 - `src/main/textures_354C8.c:410` **A**: empty `if (frameIndex) {}` after the truncating assignment.
   Natural: drop it. Keep bytes: unlikely - comment says truncation must stay in the join block.
+  **Left (lane c-2, 2026-10-08):** not re-measured within budget.
 - `src/main/textures_354C8.c:481` **A**: empty `if (tableFlags) {}` between the w0 and w1 copies.
   Natural: drop it. Keep bytes: unlikely - comment says it splits a tie.
+  **Left (lane c-2, 2026-10-08):** not re-measured within budget; no DKR or JFG donor carries this settings copy.
 - `src/main/textures_354C8.c:499` **B**: frameIndex scaled in place, one local in two roles.
   Natural: separate textureBase local. Keep bytes: unlikely - comment says the last 5 words need it.
 

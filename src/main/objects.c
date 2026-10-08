@@ -1698,10 +1698,11 @@ extern s32 func_8000A830(Objects0A830Object *object, void *data);
  * Lane s2-a (2026-09-16): 26 -> 2 masked at delta 0, frame 0x90, no force.
  * Three mechanisms, all read off the allocator records:
  *  - The tail's three-way tie (`arg1 & 1`, &D_800C9498, &D_800C94A8 at 3/7)
- *    is broken by an empty overflow check after the special-list append,
- *    `if (D_800C94A8 > 0x100) { }` -- the shape DKR's spawnObject carries
- *    after its own append (PROVENANCE: idiom only, no code adopted). It emits
- *    nothing and reorders the constants' webs; the failure-path
+ *    is broken by the overflow check after the special-list append, whose
+ *    report is debug-only and absent from the retail build -- the shape
+ *    DKR's spawn_object carries after its own append, where the report is a
+ *    compiled-out stubbed_printf (PROVENANCE: idiom only; the message text
+ *    is DKR's). It emits nothing and reorders the constants' webs; the failure-path
  *    &D_800C9498 def then lands at the join, as the ROM has it (26 -> 5).
  *  - The copy loop is the plain `while (resultSize < size)` loop and the
  *    TU no longer carries -Wo,-loopunroll,0 (see the Makefile): IDO's
@@ -1984,7 +1985,11 @@ void *func_8000590C(void *arg0, s32 arg1) {
     } else {
         D_800C94A4[D_800C94A8] = (s32)object;
         D_800C94A8 += 1;
-        if (D_800C94A8 > 0x100) { }
+        if (D_800C94A8 > 0x100) {
+#ifdef _DEBUG
+            osSyncPrintf("ObjList Overflow %d!!!\n", D_800C94A8);
+#endif
+        }
     }
     if (object->unk40->unk28 > 0) {
         lightSetupLightSources(object);
@@ -3161,33 +3166,22 @@ void func_80008028(s32 arg0) {
     s32 modelIndex;
     s32 updateModels;
 
+    /* Read the first index as its own statement: folded into the for
+     * initialiser, the D_800C9498 bound is loaded first. */
     objectIndex = D_800C949C;
-    if (objectIndex < D_800C9498) {
-        do {
-            Objects08028Object *object = ((Objects08028Object **)D_800C9494)[objectIndex];
-            if (object->unk40->unk1E[0] == 0) {
-                updateModels = 0;
-                if (object->unk40->unkD0[1] != 0.0f) {
-                    updateModels = 1;
-                }
-                /* A plain zero is hoisted above the float test. The product stays at the join. */
-                modelIndex = updateModels * 0;
-                if (object->unk40->unk22 > 0) {
-                    do {
-                        if ((updateModels == 0) || (object->unk40->unk1E[modelIndex] == 0)) {
-                            Objects08028Model *model = object->unk68[modelIndex];
-                            model->unk8 = arg0;
-                            if (model->unk3F != 0) {
-                                model->unk3F -= 1;
-                            }
-                        }
-                        modelIndex += 1;
-                    } while (modelIndex < object->unk40->unk22);
+    for (; objectIndex < D_800C9498; objectIndex++) {
+        Objects08028Object *object = ((Objects08028Object **)D_800C9494)[objectIndex];
+        if (object->unk40->unk1E[0] == 0) {
+            updateModels = object->unk40->unkD0[1] != 0.0f;
+            for (modelIndex = 0; modelIndex < object->unk40->unk22; modelIndex++) {
+                if ((updateModels == 0) || (object->unk40->unk1E[modelIndex] == 0)) {
+                    Objects08028Model *model = object->unk68[modelIndex];
+                    model->unk8 = arg0;
+                    if (model->unk3F != 0) {
+                        model->unk3F -= 1;
+                    }
                 }
             }
-            objectIndex += 1;
-        } while (objectIndex < D_800C9498);
-        if (objectIndex) {
         }
     }
 }

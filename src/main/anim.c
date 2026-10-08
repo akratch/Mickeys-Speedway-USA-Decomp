@@ -1211,9 +1211,9 @@ void func_800517E0(void) {
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     if (path != NULL) {
                         path->flags |= 2;
-                        object = (AnimCommandObject *) path->unk8;
-                        if ((object != NULL) && (path->flags & 5)) {
-                            D_800D6B08[0] = (AnimCameraSource *) object;
+                        reference = (AnimCommandFrameReference *) path->unk8;
+                        if ((reference != NULL) && (path->flags & 5)) {
+                            D_800D6B08[0] = (AnimCameraSource *) reference;
                         }
                     }
                     break;
@@ -1735,8 +1735,9 @@ void func_800517E0(void) {
                     path = paths[pathIndex];
                     type = *((u8 *) cursor + 5);
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    if ((path != NULL) && (path->unk8 != NULL)) {
-                        ((AnimCommandObject *) path->unk8)->unk90 = type;
+                    if ((path != NULL) &&
+                            ((object = (AnimCommandObject *) path->unk8) != NULL)) {
+                        object->unk90 = type;
                     }
                     break;
                 case 0x6D:
@@ -4020,10 +4021,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1246/1808 words
+ * score: 1243/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 818 at size 0: 0x68 copies the byte through the path, 0x79 re-reads its global, 0x40 order high/flags/high2/low/low2.
+ * summary: Aligned 812 at size 0: case 3 and 0x6C object carriers as shipped; ring phase per case is the residual, stack fixes in case order.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

@@ -2,11 +2,19 @@
 ### `func_overlay_101_F0002510_18DDD30` plateau handoff
 
 - source: `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c`
-- score: 60/293 words
+- score: 0 differing words
 - frame: 0xE8
 - relocations: 6
-- first mismatch: +0x3C
-- summary: Bounds call declared int with its result consumed by x pins v0 in the clip block: bottom v0, left s3 as shipped, 68 to 60. Left: node/y, frame window.
+- first mismatch: none
+- summary: Matched. Display list before the stride, empty y test, row mask in originY, scaling order, edges copied then grown.
+
+Summary before this remeasure: Row mask carried by originY after rows, scaling statements reordered: 19 to 2. Left: operand order of the two edge sums; the times-zero stand-in.
+
+Summary before this remeasure: gfx read before the stride, and an empty test of y at the right clamp (lever_sweep oracle reproduction): 60 to 19. Left: a3/t0/t1 ring cycle, s2/t7, v1/t8.
+
+Summary before this remeasure: gfx read before the stride (lever_sweep reorder) closes the frame-block window, 60 to 29. Left: node over y (s4/s5), a3/t0/t1 ring cycle.
+
+Summary before this remeasure: Bounds call declared int with its result consumed by x pins v0 in the clip block: bottom v0, left s3 as shipped, 68 to 60. Left: node/y, frame window.
 
 Summary before this remeasure: k-2 clip block plus one bottom or-zero after the tests: delta 0, 90 to 68 (aligned residual 51). Left: bottom's v0, left's s3.
 
@@ -436,4 +444,43 @@ On the 60 body. Target needs y (save 0.667, 4 over nocs 6) decided before node (
 - a node or-with-zero before the y clamp: no better.
 
 Cycle-21: y's save must fall in (0.857, 1.0) or node's below 0.667. y at 4 references cannot (4 over 4 or 5); 7 over nocs 8 would. Read y's and node's blocks with web_report before spending a cell; the frame-block window (+0x14c to +0x208) is the other open question.
+
+#### 2026-10-08, lane p-3: the stride after the display-list read, 60 to 29
+
+Measured by tools/bank.py: masked 29 (raw 29), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 264, register naming 27, immediate only 1, really different 1.
+
+On the 60 body. Oracle re-priced first: p1:w0=c19 (node to s5), p1:w32=c18 (y to s4), both accepted, forced object 51 masked, residual 34 at +0; the unforced base reproduces neither.
+
+Measured by tools/lever_sweep.py (proc 0, oracle above, positions restricted to the lines of webs 32 and 0, identity gate passed): 2,738 cells generated, 1,500 measured: scored 1,378 (801 inert), size-skipped 89, compile errors 33; oracle reproduced 0; exact 0. The one cell that moved: a reorder at line 137, `gfx = *dList;` read before `stride = texture->width * rows;`, 29 masked at +0 (aligned 264/27/1/1, residual 29). That is the frame-block window m-4 left open at +0x14c to +0x208: it closes entirely. Next best were assigned dead reads of node/element fields into drawWidth at lines 114-119, 58 at +0 (residual 40). Kept the reorder.
+
+Records on the 29 body (web_report, proc 0, identity gate passed): node still save 0.857 (6 over nocs 7) decided before y at 0.667 (4 over 6), s4 and s5 swapped from the target; register_census reads s4/s5 (10 sites), a three-cycle a3/t0/t1 on the ring and t7/s2 over coloured registers.
+
+#### 2026-10-08, lane p-3 (second sweep): an empty test of y gives y s4 and node s5, 29 to 19
+
+Measured by tools/bank.py: masked 19 (raw 19), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 274, register naming 17, immediate only 1, really different 1.
+
+On the 29 body. Oracle p1:w0=c19, p1:w32=c18 (accepted): forced 19 masked, residual 19 at +0.
+
+Measured by tools/lever_sweep.py (proc 0, same oracle, positions on the lines of webs 32 and 0, identity gate passed): 2,745 cells generated and measured: scored 2,500 (1,520 inert), size-skipped 158, compile errors 87; oracle reproduced 3; exact 0. All three reproductions are byte-identical to the forced object (19 at +0, aligned 274/17/1/1): `if (y) {}` on the line of the right clamp's `drawWidth = right - drawX;` (line 148, kept), and `if (y) {}` or `if (drawY) {}` on the line of `drawY = y;` (155). The empty test adds a y reference in a block of its own, which lifts y's save above node's. Next best: assigned dead reads of `*dList` or `texture->width` into drawWidth at lines 139-140, 26 at +0 (one of two oracle webs).
+
+Left (register_census, residual_map): 17 naming over the ring, a3/t0/t1 three-cycle (both windows), and two single swaps s2/t7 and v1/t8 in the first 0x200 bytes; one immediate, one structural.
+
+#### 2026-10-08, lane p-3 (third pass): the row mask as a local, and the scaling order, 19 to 2
+
+Measured by tools/bank.py: masked 2 (raw 2), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 291, register naming 2, immediate only 0, really different 0.
+
+On the 19 body. Records (web_report, proc 0): sourceX (web 97), drawWidth (103) and the row mask expression `(1 << shift) + -1` (298) tie at save 1.5 and are coloured in web order, a3/t0/t1; the target has the mask in a3, sourceX t0, drawWidth t1. The mask is an expression temporary, numbered last (L154). Oracle p1:w298=c6, p1:w97=c7, p1:w103=c8 (accepted): forced 11 masked at +0.
+
+- tools/lever_sweep.py with that oracle on the lines of the three webs: 1,653 cells generated and measured: scored 1,381 (735 inert), size-skipped 259, compile errors 13; oracle reproduced 0; exact 0; floor 19 (u32 drawX or drawWidth).
+- tools/shape_product.py, a declared mask local `mask = rows - 1;` at four positions, two declaration positions, both and-operand orders (24 cells): 32 at +0 for every early definition (naming 8, immediate 22: the new local takes a frame home and shifts every slot), 41 defined beside its use.
+- The same role carried by an existing local (edgeX, edgeY, originY, chunkRows; 15 cells): 10 at +0 (283/8/0/2) for every role and early position. Kept originY, assigned right after `rows = 1 << shift;`; the dead `originY = 0;` after the clip tests is then unnecessary (still 10 without it) and is gone.
+- All 120 orders of the five scaling statements after the source pointer (fast_score): drawX, drawY, drawWidth, sourceX, then sourceY's mask-and-shift is the unique best, 2 at +0 (291/2/0/0); next 6.
+
+Left: two operand-order rows, `addu a0, x, width` and `addu a1, y, height` for the edge sums (ours read the height or width first). Edge spelling (x + width against width + x, y against originY) and the stand-in's position in x (front, middle, end; 45 cells) are all inert at 2. The bounds stand-in `* 0 +` is still needed: without it 260 at -4.
+
+#### 2026-10-08, lane p-3 (fourth pass): each edge copied from its origin then grown, matched
+
+On the 2 body. The two rows were operand order: the target adds `x + width` and `y + height` with the origin register first, ours read the width or height first. Measured by tools/shape_product.py (25 cells: per edge `x + width`, the three-term sum from the fields, `width + (sum)`, a cast round-trip, and `edgeX = x; edgeX += texture->width;`): the copy-then-grow form on both edges is the one exact cell, 0 at +0 (293/0/0/0); either edge alone 1. The two copies may also precede both additions (still 0); kept that order. Retiring the times-zero stand-in on the exact body (the bounds call as a statement, its result into chunkRows, x or edgeX) is 260 at -4 in every form, so it stays.
+
+Promoted: the TU is one function, so no mixed-TU range; atlas written, digest refreshed, extract, overlay-syms, build, overlay-syms, build; the resident call needed `--redefine-sym func_80034920=func_80034920_o101Reloc` in the object's POSTPROCESS rule (promotion trap 1). gmake verify, check-overlay-syms and promotion-proof (293 words, frame 0xE8, relocations 6/6) pass.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

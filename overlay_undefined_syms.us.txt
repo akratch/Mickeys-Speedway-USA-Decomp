@@ -4825,6 +4825,9 @@ overlay101SetColorReloc = 0xf0000000;
 overlay101SetRenderModeReloc = 0xf0000000;
 overlay101SetScissorReloc = 0xf0000000;
 
+/* overlay 101: func_overlay_101_F0002510_18DDD30.c.o */
+func_80034920_o101Reloc = 0xf0000000;
+
 /* overlay 101: overlay101DrawTransformed.c.o */
 overlay101GetBounds2Reloc = 0xf0000000;
 overlay101GetDimensions2Reloc = 0xf0000000;

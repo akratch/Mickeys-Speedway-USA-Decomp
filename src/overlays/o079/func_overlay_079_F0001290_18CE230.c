@@ -98,7 +98,14 @@ extern u8 gOverlay79FlagsReloc[];
  * sole inbound; no cross-overlay inbound exists. Pinned DKR v77/v80 and JFG
  * scans are negative. Preserve the fallback and resume only with a newly
  * proved natural v0/v1 linked-state coalescing form; do not repeat the flag
- * lattice, temp-FIFO lever, state-slot type forms, or a generic batch. */
+ * lattice, temp-FIFO lever, state-slot type forms, or a generic batch.
+ *
+ * Naturalness pass (lane c-1, 2026-10-08): the empty `if (object->position.y)`
+ * and the `if (1)` that opened the else arm were byte-inert and are gone. The
+ * empty `if (1)` between the `field3C` store and the emit call is load-bearing:
+ * without it the linked-state load after the call takes v1 instead of v0 at
+ * both sites (4 words), and storing through `node->next->state` directly
+ * instead of reusing `spawned` costs 26 words. */
 void func_overlay_079_F0001290_18CE230(Overlay79Object *object, s32 arg1)
 {
   Overlay79Node *node;
@@ -108,9 +115,6 @@ void func_overlay_079_F0001290_18CE230(Overlay79Object *object, s32 arg1)
   if (node->active != 0)
   {
     desc.objectId = 0x14B;
-    if (object->position.y)
-    {
-    }
     desc.kind = 0xC;
     desc.flags = 0;
     desc.x = object->position.x;
@@ -131,7 +135,6 @@ void func_overlay_079_F0001290_18CE230(Overlay79Object *object, s32 arg1)
     overlay79FinishReloc(object);
   }
   else
-    if (1)
   {
     if (overlay79FindNearby(&object->position, 900.0f) != 0)
     {

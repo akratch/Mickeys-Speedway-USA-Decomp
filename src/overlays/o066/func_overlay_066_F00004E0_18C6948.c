@@ -25,7 +25,8 @@ extern void viGetCurrentSize(u32 *width, u32 *height);
  * fold a product by zero) and a constant to ugen (o058 F000138C uses the
  * same fact). It is a stand-in for the author's form, not a claim about it:
  * most likely a macro or shared-routine parameter that is 0 in this overlay
- * and multiplies a value the compiler cannot see. The two unreferenced s32 locals set the frame to 0xA8 with
+ * and multiplies a value the compiler cannot see. The donor's own
+ * `s = x0 << 5` lets uopt fold the zero and re-lays out the function (lane c-1). The two unreferenced s32 locals set the frame to 0xA8 with
  * width and height at 0x7C/0x78.
  */
 void func_overlay_066_F00004E0_18C6948(Gfx **displayList, u16 *framebuffer,

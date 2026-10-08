@@ -30,7 +30,9 @@ void overlay101BuilderCreateReloc(Overlay101Gfx **displayList, s32 count,
  * still does. Falsified with each measured: all sixteen commutative operand
  * orders of the four geometry sums are byte-inert, 1,888 statement orders and
  * 297 region spans reach 10 but no lower without the second boundary, and
- * dropping leadingColor's `volatile` folds its pair and costs an instruction. */
+ * dropping leadingColor's `volatile` folds its pair and costs an instruction.
+ * The converse (trailingColor `volatile` too, second block deleted) keeps size
+ * and registers but schedules two colour loads late: 4 words (lane c-1). */
 void overlay101BuildBorder(Overlay101Gfx **displayList, s32 x, s32 y,
                            s32 width, s32 height, s32 intensity, s32 alpha,
                            s32 swapColors) {

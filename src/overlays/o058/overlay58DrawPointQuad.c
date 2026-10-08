@@ -65,47 +65,39 @@ extern void func_overlay_058_F0000000_18AF1E8(
  *     (save 6.0) and is coloured v0 before the two `_g` phantoms (3.0 each,
  *     a1/a2), and `vertices` spanning that block and the colour block keeps
  *     v1 busy there so the display-list address falls to a3.
- *  2. A zero-cost boundary after `vertices = cursor` and another after the
- *     last colour store (the two `if (vertices != 0);` probes, L97), so the
- *     0xFF constant is a single-block web (save 15, v0) that shares no
- *     block with the `dl++` web, and the four coordinate expressions are
- *     single-block webs coloured v0/v1/a1/a2 in first-occurrence order.
- *     uopt closes a straight-line block on its own after twenty loads of
- *     LOCAL variables (global loads are free), so the appends' four loads
- *     never reach that budget and the boundaries must be explicit.
+ *  2. The colour fill written as the four-vertex loop it is.  IDO unrolls
+ *     the constant-count loop (vertices 1-3 at positive offsets, the cursor
+ *     advanced by three, vertex 0 at -3), and the loop's entry and exit
+ *     are the block boundaries the match needs: the 0xFF constant is a
+ *     single-block web (save 15, v0) that shares no block with the `dl++`
+ *     web, and the four coordinate expressions are single-block webs
+ *     coloured v0/v1/a1/a2 in first-occurrence order.  An earlier
+ *     straight-line spelling needed two empty `if (vertices != 0);`
+ *     probes to cut those blocks (lane c-1, 2026-10-08, byte-identical).
  *  3. The render-state field read in its own region before the call: as1
  *     ties the two argument `lui`s at equal height and breaks the tie on
  *     source line, so the load's line must precede the cursor address's.
- *     The dead `vertices += 3` survives without any probe.
+ *     Spelled plainly, as a call argument or as an initializer, the
+ *     cursor `lui` is scheduled first (4 words differ); the `if (1)`
+ *     region is the remaining unnatural form.
  */
 void overlay58DrawPointQuad(s32 x, s32 y, s32 z) {
     Overlay58PointVertex *vertices;
     void *resource;
+    s32 i;
 
     if (1) { resource = gOverlay58PointRenderStateReloc.resource; }
     func_overlay_058_F0000000_18AF1E8(&gOverlay58PointVertexCursorReloc, resource, 5, 0);
     O58_VERTEX(gOverlay58PointDisplayListReloc++, O58_PHYSICAL_TO_K0(gOverlay58PointVertexCursorReloc), 4, 0);
     O58_POLYGON(gOverlay58PointDisplayListReloc++, D_80000078, 2, 1);
     vertices = gOverlay58PointVertexCursorReloc;
-    if (vertices != 0);
-    vertices[1].r = 0xFF;
-    vertices[1].g = 0xFF;
-    vertices[1].b = 0xFF;
-    vertices[1].a = 0xFF;
-    vertices[2].r = 0xFF;
-    vertices[2].g = 0xFF;
-    vertices[2].b = 0xFF;
-    vertices[2].a = 0xFF;
-    vertices[3].r = 0xFF;
-    vertices[3].g = 0xFF;
-    vertices[3].b = 0xFF;
-    vertices[3].a = 0xFF;
-    vertices += 3;
-    vertices[-3].r = 0xFF;
-    vertices[-3].g = 0xFF;
-    vertices[-3].b = 0xFF;
-    vertices[-3].a = 0xFF;
-    if (vertices != 0);
+    for (i = 0; i < 4; i++) {
+        vertices->r = 0xFF;
+        vertices->g = 0xFF;
+        vertices->b = 0xFF;
+        vertices->a = 0xFF;
+        vertices++;
+    }
     gOverlay58PointVertexCursorReloc->x = (s16)(x - 8);
     gOverlay58PointVertexCursorReloc->y = (s16)y;
     gOverlay58PointVertexCursorReloc->z = (s16)(z - 8);

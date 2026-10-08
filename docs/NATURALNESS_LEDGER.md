@@ -192,11 +192,11 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/main/vehicle_sounds.c:395` `func_8005830C` **A**: empty if body.
   Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/overlays/o001/overlay_001_tail.c:1568` `overlay1StartTimerCallbacks` **A**: empty if body.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Left** (lane c-1, 2026-10-08): deleting the empty `if (entry->modeMask) {}` after `callback()` changes about 12 words; the re-read of `modeMask` after the call is load-bearing.
 - `src/overlays/o001/overlay_001_tail.c:1625` `overlay1FindDirectionalObject` **A**: empty then-arm `if (a == b) { } else { ... }`.
-  Natural: `if (a != b) { ... }`. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved** (lane c-1, 2026-10-08): `if (other == object) { continue; }` with the rest of the body unnested, byte-identical. The inverted `if (other != object) { ... }` is not (the loop re-lays out).
 - `src/overlays/o001/overlay_001_tail.c:2320` `overlay1ConsumeNearbyPending` **A**: empty if body.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Left** (lane c-1, 2026-10-08): deleting the empty `if (other) {}` changes about 12 words; the extra reference to `other` before `other->state` is load-bearing.
 - `src/overlays/o001/overlay_001_tail.c:2903` `overlay1UpdateValueCache` **A**: multiply-by-zero stand-in for a constant.
   Natural: the literal `0`. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o003/overlay3FindClosestObject.c:39` `overlay3FindClosestObject` **A**: empty if body.
@@ -204,7 +204,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/overlays/o007/overlay_007_tail.c:268` `overlay7FillValues` **A**: `((!value) & 0xFFFFU) && (!value)` with an empty body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o008/overlay_008.c:416` `func_overlay_008_F0001000_185ED58` **A**: empty if body.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Left** (lane c-1, 2026-10-08, measured): deleting the empty `if (unused) {}` changes about 100 words; the parameter reference removes its home store (cf. overlay99BuildHeightGrid). Prior note: Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/overlays/o008/overlay_008.c:1519` `overlay8ScaleOutputs` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o012/func_overlay_012_F00000C4_186D344.c:41` `func_overlay_012_F00000C4_186D344` **A**: empty if body.
@@ -222,13 +222,13 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/overlays/o057/overlay57UpdateInterface.c:188` `func_overlay_057_F0000954_18A454C` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o058/overlay58DrawLargePointQuad.c:90` `overlay58DrawLargePointQuad` **A**: empty if body or `if (c);` probe.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved** (lane c-1, 2026-10-08): both probes and the dead `vertices += 3` replaced by the four-vertex colour loop `for (i = 0; i < 4; i++) { vertices->r = ... vertices++; }`, which IDO unrolls into the shipped stores; the loop's entry and exit supply the two block boundaries. Byte-identical.
 - `src/overlays/o058/overlay58DrawLargePointQuad.c:108` `overlay58DrawLargePointQuad` **A**: empty if body or `if (c);` probe.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved** (lane c-1, 2026-10-08): both probes and the dead `vertices += 3` replaced by the four-vertex colour loop `for (i = 0; i < 4; i++) { vertices->r = ... vertices++; }`, which IDO unrolls into the shipped stores; the loop's entry and exit supply the two block boundaries. Byte-identical.
 - `src/overlays/o058/overlay58DrawPointQuad.c:90` `overlay58DrawPointQuad` **A**: empty if body or `if (c);` probe.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved** (lane c-1, 2026-10-08): both probes and the dead `vertices += 3` replaced by the four-vertex colour loop `for (i = 0; i < 4; i++) { vertices->r = ... vertices++; }`, which IDO unrolls into the shipped stores; the loop's entry and exit supply the two block boundaries. Byte-identical.
 - `src/overlays/o058/overlay58DrawPointQuad.c:108` `overlay58DrawPointQuad` **A**: empty if body or `if (c);` probe.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved** (lane c-1, 2026-10-08): both probes and the dead `vertices += 3` replaced by the four-vertex colour loop `for (i = 0; i < 4; i++) { vertices->r = ... vertices++; }`, which IDO unrolls into the shipped stores; the loop's entry and exit supply the two block boundaries. Byte-identical.
 - `src/overlays/o059/overlay59DrawFrame.c:32` `overlay59DrawFrame` **A**: empty if with a duplicated condition.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o059/overlay59PrepareEntry.c:77` `overlay59PrepareEntry` **A**: `& 0xFFFFFFFF` on a u32 value.
@@ -240,9 +240,9 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/overlays/o073/overlay73Initialize.c:101` `func_overlay_073_F0000000_18CAAC0` **A**: multiply-by-zero stand-in for a constant.
   Natural: the literal `0`. Keep bytes: unknown - not measured; not in the cleanup queue.
 - `src/overlays/o079/func_overlay_079_F0001290_18CE230.c:111` `func_overlay_079_F0001290_18CE230` **A**: empty if body.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Resolved** (lane c-1, 2026-10-08): the empty `if (object->position.y) {}` was byte-inert and is deleted. The `else if (1)` arm opener was inert too and is now a plain `else`.
 - `src/overlays/o079/func_overlay_079_F0001290_18CE230.c:124` `func_overlay_079_F0001290_18CE230` **A**: empty `if (1)`/`if (0)` region.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Left** (lane c-1, 2026-10-08): the block boundary between the `field3C` store and the emit call keeps the post-call linked-state load (`spawned = node->next->state`) in v0; deleted, it takes v1 at both sites (4 words). Storing through `node->next->state->field40` directly costs 26 words. Seek a natural block boundary at that point.
 - `src/overlays/o082/overlay_082_tail.c:131` `overlay82Update` **A**: empty if body or `if (c);` probe.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o089/overlay89UpdateStateAndParticles.c:152` `overlay89UpdateStateAndParticles` **A**: empty `do { } while (0)`, twice.
@@ -252,7 +252,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/overlays/o099/overlay99BuildHeightGrid.c:55` `overlay99BuildHeightGrid` **A**: empty if body.
   Natural: delete. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
 - `src/overlays/o101/overlay101BuildBorder.c:72` `overlay101BuildBorder` **A**: empty `if (1)`/`if (0)` region.
-  Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
+  **Left** (lane c-1, 2026-10-08, measured): deleting the empty `if (1) {}` and declaring `trailingColor` `volatile` (as `leadingColor` already is) keeps size and registers but schedules two loads late (4 words); the join between the two `trailingColor` reads is load-bearing. Prior note: Natural: delete. Keep bytes: unknown - not measured; not in the cleanup queue.
 
 ## Part 2: read-through of 44 functions
 
@@ -374,7 +374,7 @@ Fake match by strict standards (two times-zero).
 - `src/overlays/o066/func_overlay_066_F00004E0_18C6948.c:75` **A**: `y1 = 960 + width * 0`, an opaque zero against constant propagation.
   Natural: `y1 = 960`. Keep bytes: unlikely - comment says 13 words short without it.
 - `src/overlays/o066/func_overlay_066_F00004E0_18C6948.c:77` **A**: `s = width * 0`, an opaque zero stand-in.
-  Natural: `s = 0` or a real macro parameter. Keep bytes: unlikely - same mechanism as line 75.
+  **Left** (lane c-1, 2026-10-08, measured): the donor's own spelling `s = x0 << 5` (fxScreenEffect takes `s` from the x coordinate before the rescale) lets uopt fold the zero and re-lays out the function (over 200 words). Prior note: Natural: `s = 0` or a real macro parameter. Keep bytes: unlikely - same mechanism as line 75.
 - `src/overlays/o066/func_overlay_066_F00004E0_18C6948.c:87` **B**: inline DMA packet with a magic command word and `+ 0x80000000`.
   Natural: the f3ddkr DMA display-list macro. Keep bytes: unknown - word store order.
 
@@ -642,15 +642,15 @@ Five codegen probes, one duplicated test, hidden resets.
 - `src/overlays/o058/func_overlay_058_F000138C_18B0574.c:691` **A**: `i &= 0` self-reading reset after the case 12 colour call.
   Natural: plain `i = 0` before the title loop. Keep bytes: unlikely - comment says the delay-slot reset dies (46).
 - `src/overlays/o058/func_overlay_058_F000138C_18B0574.c:718` **A**: empty `if (columnStep != 0);` probe in the case 12 title loop.
-  Natural: delete. Keep bytes: unlikely - comment says +10 to the stride web.
+  **Left** (lane c-1, 2026-10-08, measured): deleting it changes about 19 words; it is the stride web's +10 that keeps `columnStep` above `i` (case 13 comment).
 - `src/overlays/o058/func_overlay_058_F000138C_18B0574.c:764` **A**: empty `if (columnCount != 0);` read of a dead local.
-  Natural: delete. Keep bytes: unlikely - comment says the zero store moves (-4).
+  **Resolved** (lane c-1, 2026-10-08): deleted; byte-identical on the current source shape (each alone and both together).
 - `src/overlays/o058/func_overlay_058_F000138C_18B0574.c:849` **A**: empty `if (columnCount != 0);` probe in the case 13 portrait loop.
-  Natural: delete. Keep bytes: unlikely - comment says 100 rows without it.
+  **Resolved** (lane c-1, 2026-10-08): deleted; byte-identical on the current source shape (each alone and both together).
 - `src/overlays/o058/func_overlay_058_F000138C_18B0574.c:1421` **A**: `i += (i * 0) + 1;` times-zero unit increment.
-  Natural: `i++` in a for loop. Keep bytes: unlikely - comment says it blocks the counted-loop rewrite.
+  **Resolved** (lane c-1, 2026-10-08): plain `i++`, byte-identical.
 - `src/overlays/o058/func_overlay_058_F000138C_18B0574.c:1349` **A**: duplicated condition, the same `== 3` test on both sides of an OR.
-  Natural: single test, or the intended second global. Keep bytes: unknown - may be an original typo, read the target.
+  **Left** (lane c-1, 2026-10-08, measured): a single `== 3` test changes the object (the externalized `.rodata` digest no longer matches). Prior note: Natural: single test, or the intended second global. Keep bytes: unknown - may be an original typo, read the target.
 - `src/overlays/o058/func_overlay_058_F000138C_18B0574.c:370` **B**: `(0xFF - (i = 0))` index reset hidden in a colour arg (six sites).
   Natural: `i = 0;` statement then plain 0xFF. Keep bytes: unlikely - comments say the reset lands in a delay slot.
 - `src/overlays/o058/func_overlay_058_F000138C_18B0574.c:304` **B**: unused `cursor` and `portraitX` declarations kept for frame cells.
@@ -702,9 +702,9 @@ No fake-match constructs;  carriers and arena casts.
 Two empty-if steers and a volatile reread.
 
 - `src/overlays/o001/overlay_001_tail.c:1282` **A**: empty if body around a call `if (func_800299E8(0, 127) != 0) { }`.
-  Natural: bare call statement. Keep bytes: unlikely - comment calls it load-bearing.
+  **Left** (lane c-1, 2026-10-08): the bare call changes about 4 words (the result test is load-bearing). Plausibly a stripped debug body; seek the body or a real use of the result.
 - `src/overlays/o001/overlay_001_tail.c:1439` **A**: empty if body `if (predicate() != 0) { }`.
-  Natural: bare call statement. Keep bytes: unlikely - comment calls it load-bearing.
+  **Left** (lane c-1, 2026-10-08): the bare call changes about 11 words (the result test is load-bearing).
 - `src/overlays/o001/overlay_001_tail.c:1414` **B**: volatile reread `*(volatile f32 *)&state->speedLimit`.
   Natural: `state->speedLimit`. Keep bytes: unlikely - forces the reload after a store.
 - `src/overlays/o001/overlay_001_tail.c:1225` **B**: magic float indices `tuning[x + 50]`, `tuning[16]`.
@@ -715,13 +715,13 @@ Two empty-if steers and a volatile reread.
 Three single-statement regions and a dead parameter store.
 
 - `src/overlays/o008/overlay_008.c:703` **A**: `do { } while (0)` around one clamp statement.
-  Natural: plain `if (factor < 0.1f) factor = 0.1f;`. Keep bytes: unlikely - comment says the region count steers.
+  **Left** (lane c-1, 2026-10-08, measured): both wrappers removed (plain `if` clamp and plain `D_10 *= factor;`) changes about 7 words. Prior note: Natural: plain `if (factor < 0.1f) factor = 0.1f;`. Keep bytes: unlikely - comment says the region count steers.
 - `src/overlays/o008/overlay_008.c:704` **A**: `do { D_10 *= factor; } while (0)` around one statement.
   Natural: `D_10 *= factor;`. Keep bytes: unlikely - same region-count comment.
 - `src/overlays/o008/overlay_008.c:1008` **A**: `do { index = steeringInput >> 4; } while (0)`.
-  Natural: plain statement. Keep bytes: unlikely - comment says no shift temp.
+  **Left** (lane c-1, 2026-10-08, measured): plain `index = steeringInput >> 4;` changes about 75 words. Prior note: Natural: plain statement. Keep bytes: unlikely - comment says no shift temp.
 - `src/overlays/o008/overlay_008.c:735` **A**: dead store to a parameter `update = 0.0f;`.
-  Natural: delete. Keep bytes: unlikely - comment says it moves index to v1.
+  **Left** (lane c-1, 2026-10-08, measured): deleting the dead store changes about 3 words (L48 family: it stops forward substitution of the conversion). Prior note: Natural: delete. Keep bytes: unlikely - comment says it moves index to v1.
 - `src/overlays/o008/overlay_008.c:812` **B**: `goto block_74` into an else arm (m2c label name).
   Natural: restructure the shared store. Keep bytes: unknown - shared store block.
 - `src/overlays/o008/overlay_008.c:730` **B**: comma-assign carriers in conditions (three sites).

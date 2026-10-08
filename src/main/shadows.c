@@ -1378,6 +1378,6 @@ void func_800180B4(ShadowQuery *query) {
  * frame: 0x140
  * relocations: 21
  * first-mismatch: +0x4C
- * summary: 292 at +12, residual 60; face latch pieces blocked by arg3's bb5 piece and the D_800CB268 bb50 piece (split order is web number)
+ * summary: 292 at +12, residual 60. A dead k = arg3 moves arg3's split after the face pieces; only the tail-flag address piece still blocks the latch
  * PLATEAU-HANDOFF:func_80017140:end
  */

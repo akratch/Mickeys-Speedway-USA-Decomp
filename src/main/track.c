@@ -5214,7 +5214,7 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: planeValue load-then-subtract, block on inside = 1, z-first dot products: 89 to 10 at 0. Left: first face v0 vs s8, edge/sign s-regs (p2, numintf threshold 22).
+ * summary: 10 at 0, all naming. Face-reread loop prices at 2 under forces; the face must be p2 and decided after the three loop webs
  * PLATEAU-HANDOFF:func_80011980:end
  */
 
@@ -5226,6 +5226,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0x2A0
  * relocations: 13
  * first-mismatch: +0x0
- * summary: Operand order and facet record: 339 to 310 at +8, aligned residual 315 to 285; left: edge-loop colours, bestTexture in fp, frame 0x18 large
+ * summary: 310 at +8. A second-read edge loop merges the plane web (target a0): 339 at -8, aligned residual 221 vs 285; edge symbol save is the next variable
  * PLATEAU-HANDOFF:func_8001291C:end
  */

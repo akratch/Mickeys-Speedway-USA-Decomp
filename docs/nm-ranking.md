@@ -297,8 +297,8 @@ units remain distinct.
 | 2 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
 | 3 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 10 | 10 | 88 | 88 | 0 | — |
 | 4 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
-| 5 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 28 | 28 | 668 | 668 | 0 | — |
-| 6 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 34 | 34 | 80 | 80 | 0 | — |
+| 5 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 22 | 22 | 148 | 148 | 0 | — |
+| 6 | `src/main/objects.c` | `func_80009414` | `main` | `other` | 1,684 | 28 | 28 | 668 | 668 | 0 | — |
 | 7 | `src/main/anim.c` | `func_80056DD8` | `main` | `other` | 916 | 41 | 41 | 88 | 88 | 0 | — |
 | 8 | `src/main/fx.c` | `wakeAllocate` | `main` | `other` | 1,404 | 57 | 57 | 148 | 148 | 0 | — |
 | 9 | `src/overlays/o101/func_overlay_101_F0002510_18DDD30.c` | `func_overlay_101_F0002510_18DDD30` | `o101` | `other` | 1,172 | 90 | 90 | 112 | 112 | 0 | — |

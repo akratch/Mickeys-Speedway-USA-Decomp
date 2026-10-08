@@ -6,7 +6,7 @@
 - frame: 0x98
 - relocations: 46
 - first mismatch: +0x7C8
-- summary: 4 masked at size 0, case 4 query: one ring temp drawn and released between the two narrowings with nothing emitted; no test or argument spelling draws it.
+- summary: 4 masked at size 0, case 4 query: the skipped t8 is an as1-folded draw, not a ghost; the a1 join has a natural chained-copy spelling (64).
 
 Summary before this remeasure: 4 masked at size 0, all naming in the case 4 query: hitIndex - 1 is an a1 web in the target with one extra folded ring draw; ours is a ring temp.
 

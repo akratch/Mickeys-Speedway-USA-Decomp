@@ -42,7 +42,7 @@ extern Gfx D_230[];
  * the 0xF0000000 addend rather than offset >> 2, so they must be routed
  * through the generated surface. The two overlay callees are ROM-exact, so
  * their prototypes are the matched ones. */
-void overlay101GetBoundsReloc(Overlay101ClipNode *node, s32 *leftOut,
+s32 overlay101GetBoundsReloc(Overlay101ClipNode *node, s32 *leftOut,
                               s32 *topOut, s32 *rightOut, s32 *bottomOut);
 void overlay101SetScissorReloc(Gfx **displayList, s32 left, s32 top,
                                s32 right, s32 bottom);
@@ -76,6 +76,11 @@ void func_80034920(Gfx **displayList);
  * back to its home that the target lacks; it stands in for the missing left
  * argument move, so the cell is aligned at delta 0 with residual 51 (73 on
  * the old body). Open: v0 for bottom (here originY takes it).
+ * 2026-10-08 (lane m-4, resumed), 68 -> 60: the bounds call declared int and
+ * its result consumed (times zero) by x's definition. The call then delivers
+ * v0 into the block after it (checklist item 38), so originY and the two
+ * edges are denied v0, bottom takes it and left s3 as shipped, and the
+ * bottom probe is gone. Open: node/y in s5/s4.
  */
 #ifdef NON_MATCHING
 void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
@@ -110,8 +115,7 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     if (texture == NULL) {
         return;
     }
-    overlay101GetBoundsReloc(node, &left, &top, &right, &bottom);
-    x = node->x + element->x;
+    x = overlay101GetBoundsReloc(node, &left, &top, &right, &bottom) * 0 + node->x + element->x;
     originY = node->y + element->y;
     y = originY;
     edgeX = x + texture->width;
@@ -119,7 +123,6 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
     if ((right < x) || (bottom < originY) || (edgeX < left) || (edgeY < top)) {
         return;
     }
-    bottom |= 0;
     originY = 0;
     overlay101SetScissorReloc(dList, left, top, right, bottom);
     rows = 0x800 / texture->width;
@@ -187,10 +190,10 @@ void func_overlay_101_F0002510_18DDD30(Gfx **dList, Overlay101ClipNode *node,
 
 /* PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:start
  * symbol: func_overlay_101_F0002510_18DDD30
- * score: 68/293 words
+ * score: 60/293 words
  * frame: 0xE8
  * relocations: 6
  * first-mismatch: +0x3C
- * summary: k-2 clip block plus one bottom or-zero after the tests: delta 0, 90 to 68 (aligned residual 51). Left: bottom's v0, left's s3.
+ * summary: Bounds call declared int with its result consumed by x pins v0 in the clip block: bottom v0, left s3 as shipped, 68 to 60. Left: node/y, frame window.
  * PLATEAU-HANDOFF:func_overlay_101_F0002510_18DDD30:end
  */

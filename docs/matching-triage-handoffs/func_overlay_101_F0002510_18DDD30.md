@@ -423,4 +423,17 @@ Measured by tools/bank.py: masked 60 (raw 60), size delta +0, candidate 293 word
 On the 68 body, bottom probe removed. GetBounds declared to return s32 and its result consumed by x's definition. Measured (shape_product, masked at size delta; aligned exact, naming, immediate, different): times zero, `x = GetBounds(...) * 0 + node->x + element->x`, 60 at 0 (253/28/2/13, residual 43); `(GetBounds(...) and 0)` in x or originY, a comma expression, and plus-then-minus through chunkRows: 260 to 271 at -4 to +12, no v0 pin (uopt folds the and-zero and the comma before the call result is delivered). Records (web_report, identity gate passed): originY, edgeX and edgeY now carry forbidden seed v0 (the call delivers v0 into their block, item 38), so bottom takes v0, originY v1, edgeX a0, edgeY a1 and left s3, all as shipped, and the left argument move appears. Kept.
 
 Left: node (save 0.857, 6 over nocs 7) is decided before y (0.667, 4 over 6) and takes s4 where the target has s5 (k-2 priced node over y at 51); the frame-block window at +0x14c to +0x208 (dList reload, three one-sided words each side).
+
+#### 2026-10-08, lane m-4 (resumed, second pass): node over y, probes and dead reads
+
+Measured by tools/bank.py: masked 60 (raw 60), size delta +0, candidate 293 words vs target 293. Aligned: byte-exact 253, register naming 28, immediate only 2, really different 13.
+
+On the 60 body. Target needs y (save 0.667, 4 over nocs 6) decided before node (0.857, 6 over 7) and after left (1.0). Measured (shape_product; masked, size delta, aligned residual):
+
+- y or-with-zero after the clip copy, after the scissor call or after `gfx = *dList` (0 to 2 each): one probe makes y 1.0 and wins the tie with left on web number (y 32, left 55): 57 at 0, residual 40, but y takes s3 and left s4 (wrong pair). Not kept.
+- y probes after the loop or after the last scissor call: inert, or 218 at +4.
+- dead assigned reads `chunkRows = y;` (after the scissor call, after gfx) and `stride = (s32)node;` / `chunkRows = (s32)node;` (after the loop, before rows): all 60, byte-identical (deleted before counting).
+- a node or-with-zero before the y clamp: no better.
+
+Cycle-21: y's save must fall in (0.857, 1.0) or node's below 0.667. y at 4 references cannot (4 over 4 or 5); 7 over nocs 8 would. Read y's and node's blocks with web_report before spending a cell; the frame-block window (+0x14c to +0x208) is the other open question.
 <!-- plateau-handoff:func_overlay_101_F0002510_18DDD30:end -->

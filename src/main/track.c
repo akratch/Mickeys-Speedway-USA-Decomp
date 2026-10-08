@@ -3871,7 +3871,15 @@ void func_80012658(s32 flags) {
  * batch flags and the visibility word read in place (two fewer cells), pads
  * before nearClip, after hit and after xzMasks (target cell counts), and the
  * batch skip as an else-if (the target's two `first = last` arms). The frame
- * is still 0x18 large: eight more cells between farClip and hitCount. */
+ * is still 0x18 large: eight more cells between farClip and hitCount.
+ * 2026-10-08 (lane q-2): 293 -> 242 at 0 (aligned residual 192 -> 119), frame
+ * 0x288 exact with the allocation byte-identical. Every declared local takes
+ * a cell here, so the eight are locals the target's source reuses: the first
+ * plane is read into value, fraction, pointX and pointY (the target's normalZ
+ * and pointX share f20, the distance and pointY f22), the batch's first
+ * triangle is held in edgeIndex, and xzMask, triangleIndex and lastTriangle
+ * sit where the three frame pads were. Each merge was screened alone for an
+ * unchanged object outside the frame offsets; only these were neutral. */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -3908,21 +3916,15 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
     s32 temporaryXZ;
     TrackBoundingBox *bounds;
     s32 segmentIndex;
-    s32 pad;
+    s32 xzMask;
     f32 nearClip;
     f32 farClip;
     TrackSegment *segment;
     TrackPlane *surfaceBase;
-    s32 xzMask;
-    s32 triangleIndex;
-    s32 firstTriangle;
-    s32 lastTriangle;
     u16 *polygon;
     TrackPlane *plane;
-    f32 normalX;
-    f32 normalY;
-    f32 normalZ;
-    f32 planeDistance;
+    f32 pointX;
+    f32 pointY;
     f32 edgeX;
     f32 edgeY;
     f32 edgeZ;
@@ -3931,20 +3933,18 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
     f32 side0;
     f32 side1;
     f32 fraction;
-    f32 pointX;
-    f32 pointY;
     f32 pointZ;
     s32 hitCount;
     s32 edgeIndex;
     s32 inside;
     s32 hit;
-    s32 pad2;
+    s32 triangleIndex;
     s32 edge;
     s32 edgeSign;
     s32 batchIndex;
     f32 value;
     s32 xzMasks[20];
-    s32 pad3;
+    s32 lastTriangle;
     f32 edgeValue;
     u32 bestFlags;
     u8 yMasks[20];
@@ -4039,15 +4039,15 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
         yMask = yMasks[segmentIndex];
         surfaceBase = segment->surfaces;
         for (batchIndex = 0; batchIndex < segment->batchCount; batchIndex++) {
-            firstTriangle = segment->batches[batchIndex].v0;
+            edgeIndex = segment->batches[batchIndex].v0;
             lastTriangle = segment->batches[batchIndex + 1].v0;
             if (segment->batches[batchIndex].flags & arg3) {
-                firstTriangle = lastTriangle;
+                edgeIndex = lastTriangle;
             } else if ((arg4 != 0) &&
                        ((segment->batches[batchIndex].flags & arg4) == 0)) {
-                firstTriangle = lastTriangle;
+                edgeIndex = lastTriangle;
             }
-            for (triangleIndex = firstTriangle; triangleIndex < lastTriangle;
+            for (triangleIndex = edgeIndex; triangleIndex < lastTriangle;
                  triangleIndex++) {
                 yHit = E129_U8(E129_PTR(segment, 0x14), triangleIndex) & yMask;
                 if (((segment->visibilityMasks[triangleIndex] & xzMask & 0xFFFF) != 0) &&
@@ -4055,15 +4055,15 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                     (yHit != 0)) {
                     polygon = ((TrackFacet *) segment->surfaceIndices)[triangleIndex].indices;
                     plane = &surfaceBase[polygon[0]];
-                    normalX = plane->x;
-                    normalY = plane->y;
-                    normalZ = plane->z;
-                    planeDistance = plane->distance;
-                    side1 = (normalX * arg1[0]) + (normalY * arg1[1]) +
-                            (normalZ * arg1[2]) + planeDistance;
+                    value = plane->x;
+                    fraction = plane->y;
+                    pointX = plane->z;
+                    pointY = plane->distance;
+                    side1 = (value * arg1[0]) + (fraction * arg1[1]) +
+                            (pointX * arg1[2]) + pointY;
                     if (side1 < 0.0f) {
-                        side0 = (normalX * arg0[0]) + (normalY * arg0[1]) +
-                                (normalZ * arg0[2]) + planeDistance;
+                        side0 = (value * arg0[0]) + (fraction * arg0[1]) +
+                                (pointX * arg0[2]) + pointY;
                         if (side0 >= 0.0f) {
                             fraction = side0 / (side0 - side1);
                             pointX = arg0[0] + (direction.f[0] * fraction);
@@ -5234,10 +5234,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 293/548 words
- * frame: 0x2A8
+ * score: 242/548 words
+ * frame: 0x288
  * relocations: 13
- * first-mismatch: +0x0
- * summary: Plane pointer, in-place flags/visibility, cell pads, else-if skip: 310 at +8 to 293 at 0, residual 192; frame 8 cells large
+ * first-mismatch: +0x308
+ * summary: Frame 0x288 exact by reusing eight locals (allocation unchanged): 293 to 242 at 0, residual 119; phase 1 byte-exact, left: phase-2 naming
  * PLATEAU-HANDOFF:func_8001291C:end
  */

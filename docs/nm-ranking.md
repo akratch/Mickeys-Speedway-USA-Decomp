@@ -302,7 +302,7 @@ units remain distinct.
 | 6 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
 | 7 | `src/main/fx.c` | `wakeAllocate` | `main` | `other` | 1,404 | 16 | 16 | 148 | 148 | 0 | — |
 | 8 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 109 | 109 | 1,864 | 1,864 | 0 | — |
-| 9 | `src/main/track.c` | `func_8001291C` | `main` | `other` | 2,192 | 293 | 293 | 0 | 0 | 0 | — |
+| 9 | `src/main/track.c` | `func_8001291C` | `main` | `other` | 2,192 | 242 | 242 | 776 | 776 | 0 | — |
 | 10 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |
 | 11 | `src/main/anim.c` | `func_80053868` | `main` | `other` | 4,820 | 354 | 354 | 112 | 112 | 0 | — |
 | 12 | `src/overlays/o064/overlay64GenerateTexture.c` | `func_overlay_064_F0000000_18C3B28` | `o064` | `other` | 1,680 | 372 | 372 | 0 | 0 | 0 | — |

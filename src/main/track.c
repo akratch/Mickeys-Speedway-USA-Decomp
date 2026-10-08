@@ -3879,7 +3879,13 @@ void func_80012658(s32 flags) {
  * and pointX share f20, the distance and pointY f22), the batch's first
  * triangle is held in edgeIndex, and xzMask, triangleIndex and lastTriangle
  * sit where the three frame pads were. Each merge was screened alone for an
- * unchanged object outside the frame offsets; only these were neutral. */
+ * unchanged object outside the frame offsets; only these were neutral.
+ * 242 -> 234 at 0 (aligned residual 119 -> 93), lane q-2: the target also
+ * reuses first-phase locals as second-phase webs (a scan of every same-typed
+ * merge, ranked aligned): the edge word in x1, the inside flag in
+ * insertIndex, the triangle index in z1, the swap temporary in segment, and
+ * the edge value negated in place (no edgeValue). The declarations those
+ * free hold the first-plane floats, so the frame stays 0x288. */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -3912,7 +3918,7 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
     s32 y1;
     s32 z1;
     s32 insertIndex;
-    TrackSegment *temporarySegment;
+    f32 planeDistance;
     s32 temporaryXZ;
     TrackBoundingBox *bounds;
     s32 segmentIndex;
@@ -3936,16 +3942,16 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
     f32 pointZ;
     s32 hitCount;
     s32 edgeIndex;
-    s32 inside;
+    s32 firstTriangle;
     s32 hit;
-    s32 triangleIndex;
-    s32 edge;
+    f32 normalZ;
+    f32 normalX;
     s32 edgeSign;
     s32 batchIndex;
     f32 value;
     s32 xzMasks[20];
     s32 lastTriangle;
-    f32 edgeValue;
+    f32 normalY;
     u32 bestFlags;
     u8 yMasks[20];
     u8 yMask;
@@ -4007,7 +4013,7 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                      (entryTimes[insertIndex] < entryTimes[insertIndex - 1]);
                      insertIndex--) {
                     nearClip = entryTimes[insertIndex];
-                    temporarySegment = segments[insertIndex];
+                    segment = segments[insertIndex];
                     temporaryXZ = xzMasks[insertIndex];
                     temporaryY = yMasks[insertIndex];
                     entryTimes[insertIndex] = entryTimes[insertIndex - 1];
@@ -4015,7 +4021,7 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                     xzMasks[insertIndex] = xzMasks[insertIndex - 1];
                     yMasks[insertIndex] = yMasks[insertIndex - 1];
                     entryTimes[insertIndex - 1] = nearClip;
-                    segments[insertIndex - 1] = temporarySegment;
+                    segments[insertIndex - 1] = segment;
                     xzMasks[insertIndex - 1] = temporaryXZ;
                     yMasks[insertIndex - 1] = temporaryY;
                 }
@@ -4039,41 +4045,41 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
         yMask = yMasks[segmentIndex];
         surfaceBase = segment->surfaces;
         for (batchIndex = 0; batchIndex < segment->batchCount; batchIndex++) {
-            edgeIndex = segment->batches[batchIndex].v0;
+            firstTriangle = segment->batches[batchIndex].v0;
             lastTriangle = segment->batches[batchIndex + 1].v0;
             if (segment->batches[batchIndex].flags & arg3) {
-                edgeIndex = lastTriangle;
+                firstTriangle = lastTriangle;
             } else if ((arg4 != 0) &&
                        ((segment->batches[batchIndex].flags & arg4) == 0)) {
-                edgeIndex = lastTriangle;
+                firstTriangle = lastTriangle;
             }
-            for (triangleIndex = edgeIndex; triangleIndex < lastTriangle;
-                 triangleIndex++) {
-                yHit = E129_U8(E129_PTR(segment, 0x14), triangleIndex) & yMask;
-                if (((segment->visibilityMasks[triangleIndex] & xzMask & 0xFFFF) != 0) &&
-                    ((segment->visibilityMasks[triangleIndex] & xzMask & 0xFFFF0000) != 0) &&
+            for (z1 = firstTriangle; z1 < lastTriangle;
+                 z1++) {
+                yHit = E129_U8(E129_PTR(segment, 0x14), z1) & yMask;
+                if (((segment->visibilityMasks[z1] & xzMask & 0xFFFF) != 0) &&
+                    ((segment->visibilityMasks[z1] & xzMask & 0xFFFF0000) != 0) &&
                     (yHit != 0)) {
-                    polygon = ((TrackFacet *) segment->surfaceIndices)[triangleIndex].indices;
+                    polygon = ((TrackFacet *) segment->surfaceIndices)[z1].indices;
                     plane = &surfaceBase[polygon[0]];
-                    value = plane->x;
-                    fraction = plane->y;
-                    pointX = plane->z;
-                    pointY = plane->distance;
-                    side1 = (value * arg1[0]) + (fraction * arg1[1]) +
-                            (pointX * arg1[2]) + pointY;
+                    normalX = plane->x;
+                    normalY = plane->y;
+                    normalZ = plane->z;
+                    planeDistance = plane->distance;
+                    side1 = (normalX * arg1[0]) + (normalY * arg1[1]) +
+                            (normalZ * arg1[2]) + planeDistance;
                     if (side1 < 0.0f) {
-                        side0 = (value * arg0[0]) + (fraction * arg0[1]) +
-                                (pointX * arg0[2]) + pointY;
+                        side0 = (normalX * arg0[0]) + (normalY * arg0[1]) +
+                                (normalZ * arg0[2]) + planeDistance;
                         if (side0 >= 0.0f) {
                             fraction = side0 / (side0 - side1);
                             pointX = arg0[0] + (direction.f[0] * fraction);
                             pointY = arg0[1] + (direction.f[1] * fraction);
                             pointZ = arg0[2] + (direction.f[2] * fraction);
-                            inside = 1;
-                            for (edgeIndex = 0; (edgeIndex < 3) && (inside != 0);
+                            insertIndex = 1;
+                            for (edgeIndex = 0; (edgeIndex < 3) && (insertIndex != 0);
                                  edgeIndex++) {
-                                edge = polygon[edgeIndex + 1];
-                                edgeSign = edge & 0x8000;
+                                x1 = polygon[edgeIndex + 1];
+                                edgeSign = x1 & 0x8000;
                                 plane = &surfaceBase[polygon[edgeIndex + 1] ^ edgeSign];
                                 edgeX = plane->x;
                                 edgeY = plane->y;
@@ -4081,15 +4087,14 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, s32 arg4) {
                                 edgeD = plane->distance;
                                 value = (edgeX * pointX) + (edgeY * pointY) +
                                         (edgeZ * pointZ) + edgeD;
-                                edgeValue = value;
                                 if (edgeSign != 0) {
-                                    edgeValue = -value;
+                                    value = -value;
                                 }
-                                if (edgeValue > 0.0f) {
-                                    inside = 0;
+                                if (value > 0.0f) {
+                                    insertIndex = 0;
                                 }
                             }
-                            if ((inside != 0) && (fraction < farClip)) {
+                            if ((insertIndex != 0) && (fraction < farClip)) {
                                 farClip = fraction;
                                 best.f[0] = pointX;
                                 best.f[1] = pointY;
@@ -5234,10 +5239,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 242/548 words
+ * score: 234/548 words
  * frame: 0x288
  * relocations: 13
- * first-mismatch: +0x308
- * summary: Frame 0x288 exact by reusing eight locals (allocation unchanged): 293 to 242 at 0, residual 119; phase 1 byte-exact, left: phase-2 naming
+ * first-mismatch: +0x2AC
+ * summary: Frame-exact body plus first-phase locals reused as second-phase webs: 242 to 234 at 0, aligned residual 119 to 93
  * PLATEAU-HANDOFF:func_8001291C:end
  */

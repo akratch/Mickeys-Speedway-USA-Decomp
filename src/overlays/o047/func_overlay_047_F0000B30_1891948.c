@@ -101,9 +101,11 @@ static s16 D_370[2] = { 0 };
 static s16 D_374[12] = { 0 };
 static void *D_38C[10] = { 0 };
 static u8 sO47Data3B4[0x14] = { 0 };
-/* One table: the ready and unready reads index the same rows (3CC is
- * 3C8 plus one row), measured 2026-10-07. */
-static s8 ov47Data_3C8[5][4] = { 0 };
+/* Both arms read the 3CC table at row (count - 1): the ready arm's held
+ * base and -4 displacement and the unready arm's folded 0x3C8 address are
+ * the same expression (lane n-1, 2026-10-08). */
+static s8 ov47Data_3C8[1][4] = { 0 };
+static s8 ov47Data_3CC[4][4] = { 0 };
 static s32 ov47Data_3DC[5] = { 0 };
 static f32 ov47Data_3F0[5] = { 0 };
 static f32 D_404[15] = { 0 };
@@ -392,16 +394,16 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             } else {
                 movement = 0.125f;
                 if (player->ready) {
-                    player->targetX = ov47Bss_280[ov47Data_3C8[ov47Bss_30A][slot]].x;
-                    player->targetY = ov47Bss_280[ov47Data_3C8[ov47Bss_30A][slot]].y;
-                    player->targetZ = ov47Bss_280[ov47Data_3C8[ov47Bss_30A][slot]].z;
-                    player->targetRotation = ov47Bss_280[ov47Data_3C8[ov47Bss_30A][slot]].rotation;
+                    player->targetX = ov47Bss_280[ov47Data_3CC[ov47Bss_30A - 1][slot]].x;
+                    player->targetY = ov47Bss_280[ov47Data_3CC[ov47Bss_30A - 1][slot]].y;
+                    player->targetZ = ov47Bss_280[ov47Data_3CC[ov47Bss_30A - 1][slot]].z;
+                    player->targetRotation = ov47Bss_280[ov47Data_3CC[ov47Bss_30A - 1][slot]].rotation;
                     slot++;
                 } else {
-                    player->targetX = ov47Bss_210[ov47Data_3C8[ov47Bss_30A][slot]].x;
-                    player->targetY = ov47Bss_210[ov47Data_3C8[ov47Bss_30A][slot]].y;
-                    player->targetZ = ov47Bss_210[ov47Data_3C8[ov47Bss_30A][slot]].z;
-                    player->targetRotation = ov47Bss_210[ov47Data_3C8[ov47Bss_30A][slot]].rotation;
+                    player->targetX = ov47Bss_210[ov47Data_3CC[ov47Bss_30A - 1][slot]].x;
+                    player->targetY = ov47Bss_210[ov47Data_3CC[ov47Bss_30A - 1][slot]].y;
+                    player->targetZ = ov47Bss_210[ov47Data_3CC[ov47Bss_30A - 1][slot]].z;
+                    player->targetRotation = ov47Bss_210[ov47Data_3CC[ov47Bss_30A - 1][slot]].rotation;
                     slot++;
                 }
             }
@@ -735,10 +737,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 2015/2168 words
+ * score: 2011/2168 words
  * frame: 0x280
  * relocations: 315
  * first-mismatch: +0x4
- * summary: 619 at -4. Priced: 3C8 piece w1196 split (folded lb lo as shipped) 581 at +4; channel order by CDX_BIAS 616. Open: a source with one counted 3C8 use in bb100.
+ * summary: 615 at -4. Both arms read 3CC[row - 1]; ready arm exact. Priced: the shared 3CC web's bb100 remainder piece (w1196) split, about 577 at +4.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

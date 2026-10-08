@@ -311,7 +311,7 @@ units remain distinct.
 | 16 | `src/main/matrix.c` | `func_8002AA50` | `main` | `size-mismatch` | 296 | 90 | 90 | 0 | 0 | 68 | — |
 | 17 | `src/main/shadows.c` | `func_80017140` | `main` | `size-mismatch` | 1,312 | 292 | 292 | 76 | 76 | 12 | — |
 | 18 | `src/main/track.c` | `func_8001291C` | `main` | `size-mismatch` | 2,192 | 310 | 310 | 0 | 0 | 8 | — |
-| 19 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 2,023 | 2,015 | 4 | 4 | -4 | — |
+| 19 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `size-mismatch` | 8,672 | 2,019 | 2,011 | 4 | 4 | -4 | — |
 
 ### Unresolved identities
 

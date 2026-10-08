@@ -4031,6 +4031,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 804 at size 0. The case-3 re-mask and 0x64 constant are as1 effects of the later ring phase, not of 0x43; 0x46 read per use restores the phase to 0x4B.
+ * summary: Aligned 804 at size 0. 0x46: radius reuse for motionZ gives f2 from source; height, duration, motionX forced make 0x46 exact (757 at +4).
  * PLATEAU-HANDOFF:func_800517E0:end
  */

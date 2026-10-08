@@ -2,6 +2,7 @@
 """Search the source-lever catalogue for the edit that reproduces a forced allocator state.
 
     tools/lever_sweep.py <symbol> --proc N --oracle 'p1:w387=s[,p2:w131=c21...]'
+    tools/lever_sweep.py <symbol> --proc N --bias '429=40,442=50,...'
                          [--candidate FILE] [--web W ...] [--block B ...]
                          [--lines LO-HI] [--levers a,b] [--jobs J]
                          [--max-size-delta 16] [--max-cells 600] [--json PATH]
@@ -74,6 +75,11 @@ shard), with only the source and output paths swapped. Per cell:
    CDX_DETAIL_WEB=all, CDX_WEBREPORT=1 and NO force. The instrumented .text
    must equal the stock .text (identity gate) or the cell's oracle column
    reads `gate`.
+
+A BIAS ORACLE. `--bias 'web=delta,...'` prices a decision ORDER instead of
+colours: the forced base is compiled with `CDX_BIAS` (globalcolor's selection
+key only, brief Instruments), and the state to reproduce is the colour (or
+the split) each biased p1 web then took. It combines with `--oracle`.
 
 THE ORACLE CHECK. The base is compiled once with the oracle's forces; every
 force must be accepted (force_lattice.force_acceptance) or the run stops. Each
@@ -1065,6 +1071,36 @@ def parse_oracle(spec: str) -> list[tuple[str, int, str]]:
     return out
 
 
+BIAS_RE = re.compile(r"^(\d+)=(-?\d+(?:\.\d+)?)$")
+
+
+def parse_bias(spec: str | None) -> list[tuple[int, str]]:
+    """`web=delta,...` (the CDX_BIAS grammar) as (web, delta) pairs."""
+    out = []
+    for f in [s.strip() for s in (spec or "").split(",") if s.strip()]:
+        m = BIAS_RE.match(f)
+        if not m:
+            raise SystemExit(f"bias {f!r} is not web=delta")
+        out.append((int(m.group(1)), m.group(2)))
+    return out
+
+
+def bias_oracle(forced: list[dict], bias) -> list[tuple[str, int, str]]:
+    """The state each biased p1 web reached in the biased base, as oracle forces.
+
+    A web with a coloured row wants that colour; one with only split or memory
+    rows wants memory (`s`). The result feeds `oracle_targets` unchanged.
+    """
+    out = []
+    for web, _ in bias:
+        rows = [d for d in forced if d["phase"] == "p1" and d["web"] == web]
+        if not rows:
+            raise SystemExit(f"bias p1:w{web}: no decision for that web in the biased base")
+        coloured = [d for d in rows if d["colour"] is not None]
+        out.append(("p1", web, f"c{coloured[-1]['colour']}" if coloured else "s"))
+    return out
+
+
 def decisions(text: str, proc: int) -> tuple[list[dict], dict[int, list[int]]]:
     """Decision rows of one procedure: web, phase, expr, kind, lines, decision, colour.
 
@@ -1177,13 +1213,16 @@ class Runner:
         return cmd
 
     def compile(self, src: pathlib.Path, obj: pathlib.Path, *, instrumented: bool = False,
-                force: str | None = None, log: pathlib.Path | None = None) -> str | None:
+                force: str | None = None, bias: str | None = None,
+                log: pathlib.Path | None = None) -> str | None:
         env = dict(self.env)
         if instrumented:
             env.update(CDX_LOG="1", CDX_PROC=str(self.proc), CDX_DETAIL_WEB="all",
                        CDX_WEBREPORT="1", CDX_OUT=str(log))
             if force:
                 env["CDX_FORCE"] = force
+            if bias:
+                env["CDX_BIAS"] = bias
         r = subprocess.run(self._cmd(src, obj, instrumented), env=env, cwd=ROOT,
                            capture_output=True, text=True, timeout=900)
         if r.returncode or not obj.is_file():
@@ -1275,7 +1314,8 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("symbol")
     ap.add_argument("--proc", type=int, required=True, help="procedure ordinal (as web_report prints)")
-    ap.add_argument("--oracle", required=True, help="CDX_FORCE spec the source must reproduce")
+    ap.add_argument("--oracle", default="", help="CDX_FORCE spec the source must reproduce")
+    ap.add_argument("--bias", help="CDX_BIAS spec (web=delta,...): reproduce the order it imposes")
     ap.add_argument("--candidate", help="base TU (default: the tracked source)")
     ap.add_argument("--web", type=int, action="append", default=[],
                     help="restrict positions to the lines of the blocks this web spans (forced base)")
@@ -1300,6 +1340,9 @@ def main(argv: list[str] | None = None) -> int:
     ns = ap.parse_args(argv)
 
     oracle = parse_oracle(ns.oracle)
+    bias = parse_bias(ns.bias)
+    if not oracle and not bias:
+        raise SystemExit("give --oracle, --bias or both")
     levers = [x.strip() for x in ns.levers.split(",") if x.strip()]
     unknown = [x for x in levers if x not in LEVERS]
     if unknown:
@@ -1320,7 +1363,9 @@ def main(argv: list[str] | None = None) -> int:
     bsrc = bdir / ("candidate" + pathlib.Path(source).suffix)
     bsrc.write_text(base_text)
     for label, kw in (("stock", {}), ("unforced", {"instrumented": True}),
-                      ("forced", {"instrumented": True, "force": ",".join(f"{p}:w{w}={c}" for p, w, c in oracle)})):
+                      ("forced", {"instrumented": True,
+                                  "force": ",".join(f"{p}:w{w}={c}" for p, w, c in oracle) or None,
+                                  "bias": ",".join(f"{w}={d}" for w, d in bias) or None})):
         err = run.compile(bsrc, bdir / f"{label}.o", log=bdir / f"{label}.log", **kw)
         if err:
             raise SystemExit(f"base {label} compile failed: {err}")
@@ -1329,10 +1374,14 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("IDENTITY GATE FAILED: instrumented .text differs from stock on the base")
     forced_log = (bdir / "forced.log").read_text(errors="replace")
     specs = tuple(f"{p}:w{w}={c}" for p, w, c in oracle)
-    refused = run.fl.force_acceptance(forced_log, ns.proc, specs)
+    refused = run.fl.force_acceptance(forced_log, ns.proc, specs) if specs else None
     if refused:
         raise SystemExit(f"oracle not accepted on the base: {refused}")
     forced_decs, blines = decisions(forced_log, ns.proc)
+    if bias:
+        oracle = oracle + [o for o in bias_oracle(forced_decs, bias) if o[:2] not in
+                           {(p, w) for p, w, _ in oracle}]
+        specs = specs + tuple(f"bias:{w}={d}" for w, d in bias)
     targets = oracle_targets(forced_decs, oracle)
     base_score = run.scorer.score(bdir / "stock.o")
     forced_score = run.scorer.score(bdir / "forced.o")

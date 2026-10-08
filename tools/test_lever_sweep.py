@@ -173,6 +173,20 @@ class OracleTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             ls.parse_oracle("p1:387=s")
 
+    def test_parse_bias(self):
+        self.assertEqual(ls.parse_bias("429=40, 442=-12.5"), [(429, "40"), (442, "-12.5")])
+        self.assertEqual(ls.parse_bias(None), [])
+        with self.assertRaises(SystemExit):
+            ls.parse_bias("w429=40")
+
+    def test_bias_oracle_reads_the_biased_outcome(self):
+        decs, _ = ls.decisions(RECORDS, 3)
+        self.assertEqual(ls.bias_oracle(decs, [(5, "10")]), [("p1", 5, "c21")])
+        split_only = [d for d in decs if not (d["web"] == 5 and d["decision"] == "color")]
+        self.assertEqual(ls.bias_oracle(split_only, [(5, "10")]), [("p1", 5, "s")])
+        with self.assertRaises(SystemExit):
+            ls.bias_oracle(decs, [(77, "1")])
+
     def test_decisions_join_lines_and_colours(self):
         decs, blines = ls.decisions(RECORDS, 3)
         self.assertEqual([(d["web"], d["decision"], d["colour"]) for d in decs],

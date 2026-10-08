@@ -27,6 +27,9 @@ extern s32 o64RandomRange(s32 minimum, s32 maximum);
  * temporaries against four), and the target keeps width in ra and the
  * counter in t5. 380 -> 372 (lane q-3): both smoothing loops hold their
  * sum in lo rather than value, so value's web no longer spans them.
+ * 372 -> 371 (lane q-3): the first sum in the target's add order with in++
+ * after the first clamp, not a natural placement; an in++ after the
+ * loads' block stops uopt's loop-carried load webs (shard, 2026-10-08).
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -105,11 +108,11 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         j = width - 2;
         while (j--) {
-            lo = (in[width + 1] + in[width - 1] + in[0] * 2 + in[width] * 4) >> 3;
-            in++;
+            lo = (in[width] * 4 + in[0] * 2 + in[width - 1] + in[width + 1]) >> 3;
             if (lo < 0xAA) {
                 lo--;
             }
+            in++;
             if (lo < 0) {
                 lo = 0;
             }
@@ -200,10 +203,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 372/420 words
+ * score: 371/420 words
  * frame: 0x78
  * relocations: 22
  * first-mismatch: +0x0
- * summary: 372 at 0: smoothing sum held in lo, so value no longer spans the smoothing loops; out/in/lo colours (a2, t2, v0 in the target) remain.
+ * summary: 371 at 0: first sum in target add order with in++ after the first clamp; an end-of-body in++ removes uopt's loop-carried load webs (284 at -4 aligned).
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

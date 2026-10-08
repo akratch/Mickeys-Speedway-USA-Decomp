@@ -879,46 +879,46 @@ void func_8000439C(void) {
  * it, rather than the two being separate sums. The copy coalesces away, so it
  * emits nothing, but it leaves uopt a zero-cost web that interferes with the
  * initial list index and takes a0 -- which is what puts that index in a1. */
-void *func_80004454(f32 arg0, f32 arg1, f32 arg2, u8 arg3) {
+void *func_80004454(f32 x, f32 y, f32 z, u8 objectType) {
     f32 queryX;
     f32 queryY;
-    s32 sp7C;
-    s32 sp78;
-    f32 temp_f0;
-    f32 var_f20;
-    s32 temp_v0;
-    s32 var_s1;
-    s32 var_v0;
-    u8 *var_s2;
-    Objects04454Object *temp_s0;
-    void *var_s4;
+    s32 listStart;
+    s32 listEnd;
+    f32 distance;
+    f32 bestDistance;
+    s32 list;
+    s32 byteOffset;
+    s32 endOffset;
+    u8 *cursor;
+    Objects04454Object *candidate;
+    void *nearest;
 
-    queryX = arg0;
-    queryY = arg1;
-    temp_v0 = (s32)func_8000572C(&sp7C, &sp78);
-    var_f20 = D_80080D24;
-    var_s4 = NULL;
-    if (sp7C < sp78) {
-        var_s1 = sp7C * 4; temp_v0 += var_s1; var_s2 = (u8 *)temp_v0; do {
-            temp_s0 = *(Objects04454Object **)var_s2;
-            if (temp_s0->unk91 != 0) {
-                var_v0 = sp78 * 4;
+    queryX = x;
+    queryY = y;
+    list = (s32)func_8000572C(&listStart, &listEnd);
+    bestDistance = D_80080D24;
+    nearest = NULL;
+    if (listStart < listEnd) {
+        byteOffset = listStart * 4; list += byteOffset; cursor = (u8 *)list; do {
+            candidate = *(Objects04454Object **)cursor;
+            if (candidate->unk91 != 0) {
+                endOffset = listEnd * 4;
             } else {
-                if ((temp_s0 != D_80078F20) && (temp_s0->unk44 == arg3)) {
-                    temp_f0 = func_8000BD0C(temp_s0->unkC, temp_s0->unk10,
-                                            temp_s0->unk14, queryX, queryY, arg2);
-                    if (temp_f0 < var_f20) {
-                        var_f20 = temp_f0;
-                        var_s4 = temp_s0;
+                if ((candidate != D_80078F20) && (candidate->unk44 == objectType)) {
+                    distance = func_8000BD0C(candidate->unkC, candidate->unk10,
+                                            candidate->unk14, queryX, queryY, z);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        nearest = candidate;
                     }
                 }
-                var_v0 = sp78 * 4;
+                endOffset = listEnd * 4;
             }
-            var_s1 += 4;
-            var_s2 += 4;
-        } while (var_s1 < var_v0);
+            byteOffset += 4;
+            cursor += 4;
+        } while (byteOffset < endOffset);
     }
-    return var_s4;
+    return nearest;
 }
 /* Keep the preheader's three assignments on one physical line with `do {`:
  * splitting them costs two words at +0x74/+0x78. See func_8000471C, which is
@@ -926,7 +926,7 @@ void *func_80004454(f32 arg0, f32 arg1, f32 arg2, u8 arg3) {
 /* Lane w3-obj: u8 arg0 emits the prologue andi plus the incoming a0 home
  * store. object->unk44 == arg0 is the compare operand order. Unused pointer
  * pad places count at 0x40. 99/99 words, frame 0x50, 5 relocations. */
-s32 func_80004590(u8 arg0) {
+s32 func_80004590(u8 objectType) {
     s32 start;
     s32 end;
     void *pad;
@@ -940,7 +940,7 @@ s32 func_80004590(u8 arg0) {
     for (i = start; i < end; i++) {
         object = list[i];
         if ((object->unk91 == 0) && (object != D_80078F20) &&
-            (object->unk44 == arg0)) {
+            (object->unk44 == objectType)) {
             count += 1;
         }
     }
@@ -950,65 +950,65 @@ s32 func_80004590(u8 arg0) {
  * the list base onto the start element, whose coalesced copy leaves the
  * zero-cost web that takes a0 and moves the initial list index to a1.
  * The preheader must stay on one physical line with `do {`. */
-void *func_8000471C(f32 arg0, f32 arg1, f32 arg2, u8 arg3) {
+void *func_8000471C(f32 x, f32 y, f32 z, u8 typeId) {
     f32 queryX;
     f32 queryY;
-    s32 sp7C;
-    s32 sp78;
-    f32 temp_f0;
-    f32 var_f20;
-    s32 temp_v0;
-    s32 var_s1;
-    s32 var_v0;
-    u8 *var_s2;
-    Objects0471CObject *temp_s0;
-    void *var_s4;
+    s32 listStart;
+    s32 listEnd;
+    f32 distance;
+    f32 bestDistance;
+    s32 list;
+    s32 byteOffset;
+    s32 endOffset;
+    u8 *cursor;
+    Objects0471CObject *candidate;
+    void *nearest;
 
-    queryX = arg0;
-    queryY = arg1;
-    temp_v0 = (s32)func_8000572C(&sp7C, &sp78);
-    var_f20 = D_80080D28;
-    var_s4 = NULL;
-    if (sp7C < sp78) {
-        var_s1 = sp7C * 4; temp_v0 += var_s1; var_s2 = (u8 *)temp_v0; do {
-            temp_s0 = *(Objects0471CObject **)var_s2;
-            if (temp_s0->unk91 != 0) {
-                var_v0 = sp78 * 4;
+    queryX = x;
+    queryY = y;
+    list = (s32)func_8000572C(&listStart, &listEnd);
+    bestDistance = D_80080D28;
+    nearest = NULL;
+    if (listStart < listEnd) {
+        byteOffset = listStart * 4; list += byteOffset; cursor = (u8 *)list; do {
+            candidate = *(Objects0471CObject **)cursor;
+            if (candidate->unk91 != 0) {
+                endOffset = listEnd * 4;
             } else {
-                if ((temp_s0 != (Objects0471CObject *)D_80078F20) && (temp_s0->unk40->unk1B == arg3)) {
-                    temp_f0 = func_8000BD0C(temp_s0->unkC, temp_s0->unk10, temp_s0->unk14, queryX, queryY, arg2);
-                    if (temp_f0 < var_f20) {
-                        var_f20 = temp_f0;
-                        var_s4 = temp_s0;
+                if ((candidate != (Objects0471CObject *)D_80078F20) && (candidate->unk40->unk1B == typeId)) {
+                    distance = func_8000BD0C(candidate->unkC, candidate->unk10, candidate->unk14, queryX, queryY, z);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        nearest = candidate;
                     }
                 }
-                var_v0 = sp78 * 4;
+                endOffset = listEnd * 4;
             }
-            var_s1 += 4;
-            var_s2 += 4;
-        } while (var_s1 < var_v0);
+            byteOffset += 4;
+            cursor += 4;
+        } while (byteOffset < endOffset);
     }
-    return var_s4;
+    return nearest;
 }
 /* (Four lines held here so the physical line numbers of every function below
  * are unchanged by this promotion; IDO's schedule is sensitive to them, and a
  * shorter replacement moved an already-matched neighbour in another TU.) */
-void func_8000485C(s8 arg0) {
-    D_80078F88 = arg0;
+void func_8000485C(s8 allowFallback) {
+    D_80078F88 = allowFallback;
 }
-void *func_8000486C(s32 arg0) {
+void *func_8000486C(s32 assetIndex) {
     Objects0486CAsset *asset;
     s32 assetStart;
     s32 assetSize;
     s32 index;
 
-    if (*(u16 *)((u8 *)D_800C948C + arg0 * 2) != 0) {
-        *(u16 *)((u8 *)D_800C948C + arg0 * 2) += 1;
-        return ((Objects0486CAsset **)D_800C9488)[arg0];
+    if (*(u16 *)((u8 *)D_800C948C + assetIndex * 2) != 0) {
+        *(u16 *)((u8 *)D_800C948C + assetIndex * 2) += 1;
+        return ((Objects0486CAsset **)D_800C9488)[assetIndex];
     }
 
-    assetStart = ((s32 *)((u8 *)D_800C9458 + arg0 * 4))[0];
-    assetSize = ((s32 *)((u8 *)D_800C9458 + arg0 * 4))[1] - assetStart;
+    assetStart = ((s32 *)((u8 *)D_800C9458 + assetIndex * 4))[0];
+    assetSize = ((s32 *)((u8 *)D_800C9458 + assetIndex * 4))[1] - assetStart;
     asset = (Objects0486CAsset *)func_8002B4C0(D_800C94A0, assetSize);
     if ((asset == NULL) && (D_80078F88 != 0)) {
         asset = (Objects0486CAsset *)func_8002B280(assetSize, 0x8B);
@@ -1050,8 +1050,8 @@ void *func_8000486C(s32 arg0) {
             (*func_80028F54() != 1)) {
             asset->unk0 *= 0.5f;
         }
-        *(Objects0486CAsset **)((u8 *)D_800C9488 + arg0 * 4) = asset;
-        *(u16 *)((u8 *)D_800C948C + arg0 * 2) = 1;
+        *(Objects0486CAsset **)((u8 *)D_800C9488 + assetIndex * 4) = asset;
+        *(u16 *)((u8 *)D_800C948C + assetIndex * 2) = 1;
     } else {
         return NULL;
     }
@@ -1060,53 +1060,53 @@ void *func_8000486C(s32 arg0) {
 /* Workbench verdict: register-permutation; 14 differing words (59/73). */
 /* First mismatch: +0x4; size, frame, CFG, and relocation surface are exact. */
 /* Structural gap: none; global-color pool allocation is reserved for the permuter. */
-void func_80004B04(s32 arg0)
+void func_80004B04(s32 assetIndex)
 {
-  s32 temp_v0;
-  s32 var_s1;
-  s32 var_s2;
-  s32 var_s3;
-  u16 *temp_v1;
-  u16 temp_a1;
-  u16 temp_v0_2;
-  Objects04B04Object *temp_s0;
-  temp_v0 = arg0 * 2;
-  temp_v1 = (u16 *) (((u8 *) D_800C948C) + temp_v0);
-  temp_a1 = *temp_v1;
-  if (temp_a1)
+  s32 countOffset;
+  s32 modelOffset;
+  s32 index;
+  s32 flagOffset;
+  u16 *refCountPtr;
+  u16 refCount;
+  u16 unusedCount;
+  Objects04B04Object *asset;
+  countOffset = assetIndex * 2;
+  refCountPtr = (u16 *) (((u8 *) D_800C948C) + countOffset);
+  refCount = *refCountPtr;
+  if (refCount)
   {
-    *temp_v1 = temp_a1 - 1;
-    if ((*((u16 *) (((u8 *) D_800C948C) + temp_v0))) == 0)
+    *refCountPtr = refCount - 1;
+    if ((*((u16 *) (((u8 *) D_800C948C) + countOffset))) == 0)
     {
-      var_s2 = 0;
-      temp_s0 = D_800C9488[arg0];
-      var_s3 = 0;
-      var_s1 = 0;
-      if (temp_s0->unkA6 > 0)
+      index = 0;
+      asset = D_800C9488[assetIndex];
+      flagOffset = 0;
+      modelOffset = 0;
+      if (asset->unkA6 > 0)
       {
         do
         {
           ;
-          if (((*((u16 *) (temp_s0->unkA8 + var_s3))) & 0xC000) == 0xC000)
+          if (((*((u16 *) (asset->unkA8 + flagOffset))) & 0xC000) == 0xC000)
           {
-            func_800347A0(*((void **) (((u8 *) temp_s0->unkAC) + var_s1)));
+            func_800347A0(*((void **) (((u8 *) asset->unkAC) + modelOffset)));
           }
           else
-            if ((*((u16 *) (temp_s0->unkA8 + var_s3))) & 0x8000)
+            if ((*((u16 *) (asset->unkA8 + flagOffset))) & 0x8000)
           {
-            func_800359D4(*((void **) (((u8 *) temp_s0->unkAC) + var_s1)));
+            func_800359D4(*((void **) (((u8 *) asset->unkAC) + modelOffset)));
           }
           else
           {
-            modFreeModel(*((void **) (((u8 *) temp_s0->unkAC) + var_s1)));
+            modFreeModel(*((void **) (((u8 *) asset->unkAC) + modelOffset)));
           }
-          var_s2 += 1;
-          var_s3 += 2;
-          var_s1 += 4;
+          index += 1;
+          flagOffset += 2;
+          modelOffset += 4;
         }
-        while (var_s2 < ((s32) temp_s0->unkA6));
+        while (index < ((s32) asset->unkA6));
       }
-      mmFree(temp_s0);
+      mmFree(asset);
     }
   }
 }
@@ -1130,7 +1130,7 @@ void func_80004B04(s32 arg0)
  * PROVENANCE: ROM-table scan and direct array-carrier spelling informed by
  * Diddy Kong Racing public src/objects.c track_spawn_objects. Mickey ROM
  * controls its boundaries, globals, record format and spawn conditions. */
-void func_80004C28(s32 arg0, s32 arg1) {
+void func_80004C28(s32 tableIndex, s32 slot) {
     s32 size;
     s32 offset;
     s32 tableCount;
@@ -1139,31 +1139,31 @@ void func_80004C28(s32 arg0, s32 arg1) {
     s32 *romTable;
     s32 start;
 
-    D_800C94D8[arg1] = func_8002B280(0x3000, 0x8B);
-    D_800C94C0[arg1] = (s32)((u8 *)D_800C94D8[arg1] + 0x10);
-    heap = D_800C94D8[arg1];
-    D_800C94C8[arg1] = 0;
-    D_800C94D0[arg1] = arg0;
+    D_800C94D8[slot] = func_8002B280(0x3000, 0x8B);
+    D_800C94C0[slot] = (s32)((u8 *)D_800C94D8[slot] + 0x10);
+    heap = D_800C94D8[slot];
+    D_800C94C8[slot] = 0;
+    D_800C94D0[slot] = tableIndex;
 
     romTable = piRomLoad(0x1C);
     for (tableCount = 0; romTable[tableCount] != -1; tableCount++) {
     }
     tableCount -= 1;
-    if (arg0 >= tableCount) {
-        arg0 = 0;
+    if (tableIndex >= tableCount) {
+        tableIndex = 0;
     }
-    start = romTable[arg0];
-    size = romTable[arg0 + 1] - start;
+    start = romTable[tableIndex];
+    size = romTable[tableIndex + 1] - start;
     mmFree(romTable);
     if (size == 0) {
         return;
     }
 
     piRomLoadSection(0x1D, (u32)heap, start, size);
-    D_800C94C0[arg1] = (s32)((u8 *)D_800C94D8[arg1] + 0x10);
-    D_800C94C8[arg1] = *heap;
-    D_800C94E8 = arg1;
-    romTable = &D_800C94D0[arg1];
+    D_800C94C0[slot] = (s32)((u8 *)D_800C94D8[slot] + 0x10);
+    D_800C94C8[slot] = *heap;
+    D_800C94E8 = slot;
+    romTable = &D_800C94D0[slot];
     if (romTable == &D_800C94D4[0]) {
         D_80078F78 = 1;
         runlinkDownloadCode(8);
@@ -1173,11 +1173,11 @@ void func_80004C28(s32 arg0, s32 arg1) {
     }
 
     offset = 0;
-    if (D_800C94C8[arg1] > 0) {
+    if (D_800C94C8[slot] > 0) {
         do {
             tableCount = 1;
             if (D_8007BF0C != 0) {
-                current = (s16 *)D_800C94C0[arg1];
+                current = (s16 *)D_800C94C0[slot];
                 switch (*current) {
                 case 0x1B:
                     *current = 0xEA;
@@ -1207,31 +1207,31 @@ void func_80004C28(s32 arg0, s32 arg1) {
                     break;
                 }
             }
-            current = (s16 *)D_800C94C0[arg1];
+            current = (s16 *)D_800C94C0[slot];
             if ((*current == 0x3F) && ((D_8007BF1C & 0x20) != 0)) {
                 tableCount = 0;
             }
             if ((*current == 1) || (*current == 0x155) || (*current == 0x156)) {
                 if (D_800D3128[0x12] >= 0x15) {
                     *current = 0x156;
-                    current = (s16 *)D_800C94C0[arg1];
+                    current = (s16 *)D_800C94C0[slot];
                 } else if ((*(u16 *)(D_800D3128 + 0x14) & 0x40) != 0) {
                     *current = 0x155;
-                    current = (s16 *)D_800C94C0[arg1];
+                    current = (s16 *)D_800C94C0[slot];
                 } else {
                     *current = 1;
-                    current = (s16 *)D_800C94C0[arg1];
+                    current = (s16 *)D_800C94C0[slot];
                 }
             }
             if (tableCount != 0) {
                 func_8000590C(current, 1);
-                current = (s16 *)D_800C94C0[arg1];
+                current = (s16 *)D_800C94C0[slot];
             }
             offset += *((u8 *)current + 2);
-            D_800C94C0[arg1] = (s32)((u8 *)current + *((u8 *)current + 2));
-        } while (offset < D_800C94C8[arg1]);
+            D_800C94C0[slot] = (s32)((u8 *)current + *((u8 *)current + 2));
+        } while (offset < D_800C94C8[slot]);
     }
-    D_800C94C0[arg1] = (s32)((u8 *)D_800C94D8[arg1] + 0x10);
+    D_800C94C0[slot] = (s32)((u8 *)D_800C94D8[slot] + 0x10);
     if (D_800C9478 == 0) {
         func_80006FA0();
     }
@@ -1317,7 +1317,7 @@ typedef struct {
  * which spends the extra temp draw a mask-and-compare does not.  The first
  * trap call under those tests is declared through a void alias: a call with
  * a result keeps the flag word's web off v0. */
-void func_80004FE0(s32 arg0) {
+void func_80004FE0(s32 groupId) {
     s32 i;
     s32 objectSlot;
     s32 playerCount;
@@ -1343,7 +1343,7 @@ void func_80004FE0(s32 arg0) {
         }
         for (i = 0; i < D_800C9498; i++) {
             object = (Objects04FE0Object *)D_800C9494[i];
-            if ((object->unk44 == 5) && (arg0 == object->unk88)) {
+            if ((object->unk44 == 5) && (groupId == object->unk88)) {
                 objectSlot = object->unk84;
                 if ((objectSlot >= 0) && (objectSlot < 6)) {
                     if (category[objectSlot] == NULL) {
@@ -1468,22 +1468,22 @@ void func_80004FE0(s32 arg0) {
     func_80058250();
 }
 /* Lane lm-obj: the ROM's two rank-copy loops are IDO's unroller output of a
- * plain `for (i = 0; i < arg0; i++)` over each mode record. The hand-unrolled
+ * plain `for (i = 0; i < playerCount; i++)` over each mode record. The hand-unrolled
  * remainder-plus-4x body grew 632 bytes under the unroller. unk5 is signed:
  * a u8 load left 10 structural words at delta 0. 87/87 words, frame 0x18,
  * 3 relocations. */
-void func_80005548(s32 arg0) {
+void func_80005548(s32 playerCount) {
     s32 i;
     Objects04FE0ModeRecord *records;
 
     records = (Objects04FE0ModeRecord *)func_80028F54();
     if (D_8007BF0C != 0) {
-        for (i = 0; i < arg0; i++) {
+        for (i = 0; i < playerCount; i++) {
             records[i].unk6 = records[i].unk5;
         }
     } else {
-        for (i = 0; i < arg0; i++) {
-            records[i].unk6 = (arg0 - records[i].unk5) - 1;
+        for (i = 0; i < playerCount; i++) {
+            records[i].unk6 = (playerCount - records[i].unk5) - 1;
         }
     }
 }
@@ -1536,30 +1536,30 @@ void **func_80005808(s32 *count) {
     *count = D_800C9504;
     return D_800C9500;
 }
-s32 func_80005820(s32 arg0) {
+s32 func_80005820(s32 playerIndex) {
     if (D_800C94F8 == 0) {
         return 0;
     }
-    if ((arg0 < 0) || (arg0 >= D_800C94F8)) {
+    if ((playerIndex < 0) || (playerIndex >= D_800C94F8)) {
         return 0;
     }
-    return D_800C94F4[arg0];
+    return D_800C94F4[playerIndex];
 }
-s16 func_80005868(s32 arg0) {
+s16 func_80005868(s32 assetIndex) {
     s32 assetOffset;
     s16 *entry;
     u8 buffer[0xC0];
 
-    assetOffset = D_800C9458[D_800C94E0[arg0]];
+    assetOffset = D_800C9458[D_800C94E0[assetIndex]];
     piRomLoadSection(0x2D, (u32)buffer, assetOffset, 0xC0);
     entry = (s16 *)(buffer + 0x1C);
     return *entry;
 }
-s8 func_800058C0(Objects58C0Arg *arg0, s32 arg1) {
-    if ((arg1 >= 4) || (arg0->unk40->unkD0[arg1] == 0.0f)) {
-        return arg0->unk40->unk1E[0];
+s8 func_800058C0(Objects58C0Arg *object, s32 index) {
+    if ((index >= 4) || (object->unk40->unkD0[index] == 0.0f)) {
+        return object->unk40->unk1E[0];
     }
-    return arg0->unk40->unk1E[arg1];
+    return object->unk40->unk1E[index];
 }
 typedef struct {
     s16 unk0;
@@ -1671,14 +1671,14 @@ extern s32 func_80048760(void *object, s32 state);
 extern void func_80053550(void *source, s32 kind, s32 mode, s16 rotationX,
                            s16 rotationY, s16 rotationZ, f32 radius, f32 height,
                            f32 arg8, f32 arg9, s32 collisionType, u16 flags);
-extern void func_8000AA38(Objects0AA38Object *object, void *arg1, s32 preserveState);
+extern void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState);
 extern void func_80006448(void *object);
 extern s32 func_80006534(Objects06534Object *object);
 extern s32 func_80006868(Objects06868Object *object, void *data);
 extern s32 func_800069C0(Objects69C0In *object, Objects69C0Out *data);
 extern s32 func_800069E8(Objects069E8Object *object, Objects069E8Target *data);
 extern s32 func_80006B04(Objects06B04Object *object, Objects06B04Output *data,
-                          volatile s32 arg2);
+                          volatile s32 packetId);
 extern s32 func_80006C40(Objects06C40 *object, s32 data);
 extern s32 func_8000A830(Objects0A830Object *object, void *data);
 
@@ -1697,7 +1697,7 @@ extern s32 func_8000A830(Objects0A830Object *object, void *data);
  *
  * Lane s2-a (2026-09-16): 26 -> 2 masked at delta 0, frame 0x90, no force.
  * Three mechanisms, all read off the allocator records:
- *  - The tail's three-way tie (`arg1 & 1`, &D_800C9498, &D_800C94A8 at 3/7)
+ *  - The tail's three-way tie (`spawnFlags & 1`, &D_800C9498, &D_800C94A8 at 3/7)
  *    is broken by the overflow check after the special-list append, whose
  *    report is debug-only and absent from the retail build -- the shape
  *    DKR's spawn_object carries after its own append, where the report is a
@@ -1724,7 +1724,7 @@ extern s32 func_8000A830(Objects0A830Object *object, void *data);
  * frame; `offset` and the already-dead `aligned` reuse the existing 20
  * slots. Using `offset` at both sites reconnects as one type-3 web and
  * re-steals the 1.5 tie (14). */
-void *func_8000590C(void *arg0, s32 arg1) {
+void *func_8000590C(void *packet, s32 spawnFlags) {
     Objects0590CObject *object;
     Objects0590CObject *newObject;
     u8 *cursor;
@@ -1745,8 +1745,8 @@ void *func_8000590C(void *arg0, s32 arg1) {
     D_8007A218 = NULL;
     D_8007A21C = 1;
 
-    packetId = ((Objects0590CPacket *)arg0)->unk0;
-    if (arg1 & 2) {
+    packetId = ((Objects0590CPacket *)packet)->unk0;
+    if (spawnFlags & 2) {
         selected = packetId;
     } else {
         selected = D_800C94E0[packetId];
@@ -1773,12 +1773,12 @@ void *func_8000590C(void *arg0, s32 arg1) {
     }
     D_8007A218 = (u8 *)object->unk40 + 4;
     object->unk6 = (s16)(object->unk6 | (object->unk40->unk14 & 0x124C));
-    object->unkC = (f32)((Objects0590CPacket *)arg0)->unk4;
-    object->unk10 = (f32)((Objects0590CPacket *)arg0)->unk6;
-    object->unk14 = (f32)((Objects0590CPacket *)arg0)->unk8;
+    object->unkC = (f32)((Objects0590CPacket *)packet)->unk4;
+    object->unk10 = (f32)((Objects0590CPacket *)packet)->unk6;
+    object->unk14 = (f32)((Objects0590CPacket *)packet)->unk8;
     object->unk2E = func_8000FAE0(object->unkC, object->unk10, object->unk14);
     object->unk2C = selected;
-    object->unk3C = arg0;
+    object->unk3C = packet;
     object->unk46 = packetId;
     object->unk8 = object->unk40->unk0;
     object->unk34 = (f32)object->unk40->unk18 * object->unk8;
@@ -1864,7 +1864,7 @@ void *func_8000590C(void *arg0, s32 arg1) {
     if (loadFlags & 0x800) {
         cursor += func_80006B04((Objects06B04Object *)object,
                                 (Objects06B04Output *)cursor,
-                                ((Objects0590CPacket *)arg0)->unk0);
+                                ((Objects0590CPacket *)packet)->unk0);
     }
     if (loadFlags & 0x1000) {
         cursor += func_80006C40((Objects06C40 *)object, (s32)cursor);
@@ -1979,7 +1979,7 @@ void *func_8000590C(void *arg0, s32 arg1) {
         object->unk78 = (s32)((u32)object + (u32)object->unk78 - (u32)D_800C9450);
     }
     object->unk68 = (s32 *)((u8 *)object + 0x94);
-    if (arg1 & 1) {
+    if (spawnFlags & 1) {
         D_800C9494[D_800C9498] = object;
         D_800C9498 += 1;
     } else {
@@ -1997,7 +1997,7 @@ void *func_8000590C(void *arg0, s32 arg1) {
     if (object->unk40->unk29 > 0) {
         lightSetupFlareSources(object);
     }
-    func_8000AA38((Objects0AA38Object *)object, arg0, 0);
+    func_8000AA38((Objects0AA38Object *)object, packet, 0);
     if (object->unk58 != 0) {
         TrapDanglingJump(object);
     }
@@ -2016,7 +2016,7 @@ void *func_8000590C(void *arg0, s32 arg1) {
         func_80006448(object);
         func_80004B04(selected);
         mmFree(object);
-        if (arg1 & 1) {
+        if (spawnFlags & 1) {
             D_800C9498 -= 1;
         } else {
             D_800C94A8 -= 1;
@@ -2035,28 +2035,28 @@ void *func_8000590C(void *arg0, s32 arg1) {
 }
 /* Mickey-only reconstruction. Indexed accesses let IDO create the offset and
  * resource webs; the initializer shares the loop line to retain entry order. */
-void func_80006448(void *arg0) {
+void func_80006448(void *object) {
     s32 index;
     s8 type;
 
-    if (((Objects06448Arg *)arg0)->unk40->unk22 > 0) {
+    if (((Objects06448Arg *)object)->unk40->unk22 > 0) {
         index = 0; do {
-            type = func_800058C0((Objects58C0Arg *)arg0, index);
+            type = func_800058C0((Objects58C0Arg *)object, index);
             if (type == 0) {
-                if (((Objects06448Arg *)arg0)->unk68[index] != 0) {
-                    modFreeModel(((Objects06448Arg *)arg0)->unk68[index]);
+                if (((Objects06448Arg *)object)->unk68[index] != 0) {
+                    modFreeModel(((Objects06448Arg *)object)->unk68[index]);
                 }
             } else if (type == 2) {
-                if (((Objects06448Arg *)arg0)->unk68[index] != 0) {
-                    func_800347A0(((Objects06448Arg *)arg0)->unk68[index]);
+                if (((Objects06448Arg *)object)->unk68[index] != 0) {
+                    func_800347A0(((Objects06448Arg *)object)->unk68[index]);
                 }
             } else {
-                if (((Objects06448Arg *)arg0)->unk68[index] != 0) {
-                    func_800359D4(((Objects06448Arg *)arg0)->unk68[index]);
+                if (((Objects06448Arg *)object)->unk68[index] != 0) {
+                    func_800359D4(((Objects06448Arg *)object)->unk68[index]);
                 }
             }
             index += 1;
-        } while (index < ((Objects06448Arg *)arg0)->unk40->unk22);
+        } while (index < ((Objects06448Arg *)object)->unk40->unk22);
     }
 }
 /* Matched by reading the packed word back from the sprite it was just stored
@@ -2152,125 +2152,125 @@ s32 func_80006534(Objects06534Object *object) {
 /* Workbench verdict: allocation-mismatch; 1 differing word (85/86). */
 /* First mismatch: +0x7C; size, frame, CFG, and call/relocation shape are exact. */
 /* Structural gap: none; s5/v1 comparison color is reserved for the permuter. */
-s32 func_80006868(Objects06868Object *arg0, void *arg1)
+s32 func_80006868(Objects06868Object *object, void *triggerBuffer)
 {
-  s32 temp_v0_2;
-  s32 temp_v1;
-  s32 temp_v1_2;
-  s32 var_s1;
-  s32 var_s3;
-  s8 var_v1;
-  Objects06868Entry *temp_a2;
-  Objects06868Data *temp_v0;
-  Objects06868Entry *var_s0;
-  temp_v0 = arg0->unk40;
-  arg0->unk6C = arg1;
-  var_v1 = temp_v0->unk25;
-  var_s3 = 0;
-  temp_a2 = temp_v0->unk44;
-  if (var_v1 <= 0)
+  s32 word0;
+  s32 wordHigh;
+  s32 word1;
+  s32 byteOffset;
+  s32 index;
+  s8 triggerCount;
+  Objects06868Entry *firstEntry;
+  Objects06868Data *data;
+  Objects06868Entry *entry;
+  data = object->unk40;
+  object->unk6C = triggerBuffer;
+  triggerCount = data->unk25;
+  index = 0;
+  firstEntry = data->unk44;
+  if (triggerCount <= 0)
   {
     goto done;
   }
-  var_s0 = temp_a2;
-  var_s1 = 0;
+  entry = firstEntry;
+  byteOffset = 0;
   do
   {
-    temp_v0_2 = var_s0->unk0;
-    temp_v1 = temp_v0_2 & 0xFFFF0000;
-    if (temp_v1 == 0xFFFF0000)
+    word0 = entry->unk0;
+    wordHigh = word0 & 0xFFFF0000;
+    if (wordHigh == 0xFFFF0000)
     {
-      partInitTrigger(((u8 *) arg0->unk6C) + var_s1, (temp_v0_2 >> 8) & 0xFF, temp_v0_2 & 0xFF);
+      partInitTrigger(((u8 *) object->unk6C) + byteOffset, (word0 >> 8) & 0xFF, word0 & 0xFF);
     }
     else
-      if ((temp_v0_2 & 0xFFFF0000) == 0xFFFE0000)
+      if ((word0 & 0xFFFF0000) == 0xFFFE0000)
     {
-      partInitTriggerSPPos(((u8 *) arg0->unk6C) + var_s1, (temp_v0_2 >> 8) & 0xFF, temp_v0_2 & 0xFF, var_s0->unk4 & 0xFF);
+      partInitTriggerSPPos(((u8 *) object->unk6C) + byteOffset, (word0 >> 8) & 0xFF, word0 & 0xFF, entry->unk4 & 0xFF);
     }
     else
     {
-      temp_v1_2 = var_s0->unk4;
-      partInitTriggerPos(((u8 *) arg0->unk6C) + var_s1, (temp_v0_2 >> 24) & 0xFF, (temp_v0_2 >> 16) & 0xFF, temp_v0_2 & 0xFFFF, (temp_v1_2 >> 16) & 0xFFFF, temp_v1_2 & 0xFFFF);
+      word1 = entry->unk4;
+      partInitTriggerPos(((u8 *) object->unk6C) + byteOffset, (word0 >> 24) & 0xFF, (word0 >> 16) & 0xFF, word0 & 0xFFFF, (word1 >> 16) & 0xFFFF, word1 & 0xFFFF);
     }
-    var_s3 += 1;
-    var_s1 += 0x24;
-    var_v1 = arg0->unk40->unk25;
-    var_s0 += 1;
+    index += 1;
+    byteOffset += 0x24;
+    triggerCount = object->unk40->unk25;
+    entry += 1;
   }
-  while (var_s3 < var_v1);
+  while (index < triggerCount);
   done:
-  return ((var_v1 * 0x24) + 3) & (~3);
+  return ((triggerCount * 0x24) + 3) & (~3);
 
 }
-s32 func_800069C0(Objects69C0In *arg0, Objects69C0Out *arg1) {
-    arg0->unk78 = arg1;
-    arg1->unk4 = arg0->unk40->unkE0->unk2C;
-    arg0->unk78->unk0 = 2;
+s32 func_800069C0(Objects69C0In *object, Objects69C0Out *output) {
+    object->unk78 = output;
+    output->unk4 = object->unk40->unkE0->unk2C;
+    object->unk78->unk0 = 2;
     return 0x2C;
 }
-s32 func_800069E8(Objects069E8Object *arg0, Objects069E8Target *arg1) {
+s32 func_800069E8(Objects069E8Object *object, Objects069E8Target *target) {
     Objects069E8Source *source;
     Objects069E8Source *source2;
-    s32 sp1C;
-    s32 temp_v0_2;
+    s32 size;
+    s32 handle;
 
-    source2 = arg0->unk40;
+    source2 = object->unk40;
     source = source2;
-    arg0->unk4C = arg1;
-    arg1->unk0 = source2->unk54;
-    arg1->unk4 = source2->unk58;
-    arg1->unk10 = source2->unk61;
-    arg1->unk11 = source2->unk62;
-    arg1->unk12 = source2->unk63;
-    arg1->unk13 = 0;
-    arg1->unkC = 0;
-    arg1->unkE = source2->unk66;
-    sp1C = 0x20;
-    arg1->unk1C = 0;
+    object->unk4C = target;
+    target->unk0 = source2->unk54;
+    target->unk4 = source2->unk58;
+    target->unk10 = source2->unk61;
+    target->unk11 = source2->unk62;
+    target->unk12 = source2->unk63;
+    target->unk13 = 0;
+    target->unkC = 0;
+    target->unkE = source2->unk66;
+    size = 0x20;
+    target->unk1C = 0;
     if (func_800291FC() == 0) {
-        if (arg1->unk10 & 8) {
+        if (target->unk10 & 8) {
             /* The record's own aligned tail is the cursor.  Reading the
                stored field back at the second use is what keeps the +4 out
                of the size constant: spelled through a local, IDO reassociates
                (cursor + 4) - base + 0xBC into cursor - base + 0xC0. */
-            arg1->unk1C = ((s32)((u8 *)arg1 + 0x20) & ~3) + 4;
-            sp1C = (arg1->unk1C - (s32)arg1) + 0xBC;
+            target->unk1C = ((s32)((u8 *)target + 0x20) & ~3) + 4;
+            size = (target->unk1C - (s32)target) + 0xBC;
         }
     } else {
-        arg1->unk10 = 5;
-        arg1->unk11 = 1;
+        target->unk10 = 5;
+        target->unk11 = 1;
     }
-    if (arg0->unk40->unk1E == 0) {
-        arg1->unk10 |= 0x20;
+    if (object->unk40->unk1E == 0) {
+        target->unk10 |= 0x20;
     }
-    temp_v0_2 = func_80034448(source->unk64, arg1);
-    arg1->unk8 = temp_v0_2;
-    if (temp_v0_2 == 0) {
+    handle = func_80034448(source->unk64, target);
+    target->unk8 = handle;
+    if (handle == 0) {
         return 0;
     }
-    D_800C9490 = arg1->unk8;
-    return (sp1C & ~3) + 4;
+    D_800C9490 = target->unk8;
+    return (size & ~3) + 4;
 }
-s32 func_80006B04(Objects06B04Object *arg0, Objects06B04Output *arg1, volatile s32 arg2) {
-    s16 temp_t0;
-    s32 var_a3;
-    s32 var_t2;
-    s32 var_v1;
-    s32 temp_a3;
-    Objects06B04Asset *temp_a2;
+s32 func_80006B04(Objects06B04Object *object, Objects06B04Output *outputBase, volatile s32 packetId) {
+    s16 slotCount;
+    s32 sourceOffset;
+    s32 index;
+    s32 size;
+    s32 count;
+    Objects06B04Asset *asset;
     Objects06B04Output *output;
     u8 *slots;
 
-    arg0->unk48 = arg1;
-    var_v1 = 0x7C;
-    if (arg0->unk40->unk1E == 0) {
+    object->unk48 = outputBase;
+    size = 0x7C;
+    if (object->unk40->unk1E == 0) {
         /* One carrier for the asset handle and then the output record, so
            both live ranges are one name and share v0. */
-        output = (Objects06B04Output *)*arg0->unk68;
-        temp_a2 = *(Objects06B04Asset **)output;
-        output = arg1;
-        temp_a3 = temp_a2->unk2F;
-        if (temp_a3 > 0) {
+        output = (Objects06B04Output *)*object->unk68;
+        asset = *(Objects06B04Asset **)output;
+        output = outputBase;
+        count = asset->unk2F;
+        if (count > 0) {
             /* The slot base is never a named web: it stays in the ring
                temporary that first computes it (t9), and the preheader
                copies that register.  `slots` is read back from the record
@@ -2279,46 +2279,46 @@ s32 func_80006B04(Objects06B04Object *arg0, Objects06B04Output *arg1, volatile s
                colour is what pushes the loop count to t2.  Without the
                region the forward happens early and the base becomes a
                coloured expression web. */
-            output->unk74 = (u8 *)arg1 + 0x7C;
+            output->unk74 = (u8 *)outputBase + 0x7C;
             do { } while (0);
-            output->unkA = temp_a3;
-            temp_t0 = output->unkA;
+            output->unkA = count;
+            slotCount = output->unkA;
             slots = output->unk74;
-            var_t2 = 0;
-            var_v1 = (temp_t0 * 0x34) + 0x7C;
-            if (temp_t0 > 0) {
-                /* arg1 itself walks the slots: its register is the cursor. */
-                arg1 = (Objects06B04Output *)slots;
-                var_a3 = 0;
+            index = 0;
+            size = (slotCount * 0x34) + 0x7C;
+            if (slotCount > 0) {
+                /* outputBase itself walks the slots: its register is the cursor. */
+                outputBase = (Objects06B04Output *)slots;
+                sourceOffset = 0;
                 do {
-                    *(u16 *)arg1 = 0;
-                    *(u16 *)((u8 *)arg1 + 2) = 0;
-                    *(u16 *)((u8 *)arg1 + 4) = 0;
-                    var_t2 += 1;
-                    arg1 = (Objects06B04Output *)((u8 *)arg1 + 0x34);
-                    *(u16 *)((u8 *)arg1 - 0x2E) = *(u16 *)(temp_a2->unk38 + var_a3);
-                    *(s8 *)((u8 *)arg1 - 0x2C) = *(s8 *)(temp_a2->unk38 + var_a3 + 2);
-                    *(u8 *)((u8 *)arg1 - 0x2B) = *(u8 *)(temp_a2->unk38 + var_a3 + 3);
-                    *(u16 *)((u8 *)arg1 - 0x2A) = 0;
-                    *(f32 *)((u8 *)arg1 - 0x10) = *(f32 *)(temp_a2->unk38 + var_a3 + 8) * arg0->unk8;
-                    *(f32 *)((u8 *)arg1 - 0xC) = *(f32 *)(temp_a2->unk38 + var_a3 + 8) * arg0->unk8;
-                    *(u8 *)((u8 *)arg1 - 0x6) = (u8)*(u16 *)(temp_a2->unk38 + var_a3 + 4);
-                    *(u8 *)((u8 *)arg1 - 0x5) = (u8)*(u16 *)(temp_a2->unk38 + var_a3 + 6);
-                    *(u8 *)((u8 *)arg1 - 0x4) = (*(u8 *)((u8 *)arg1 - 0x4) & 0xFF) | 0x80;
-                    *(u16 *)((u8 *)arg1 - 0x8) = 0;
-                    *(u8 *)((u8 *)arg1 - 0x4) &= 0xBF;
-                    var_a3 += 0xC;
-                } while (var_t2 < output->unkA);
+                    *(u16 *)outputBase = 0;
+                    *(u16 *)((u8 *)outputBase + 2) = 0;
+                    *(u16 *)((u8 *)outputBase + 4) = 0;
+                    index += 1;
+                    outputBase = (Objects06B04Output *)((u8 *)outputBase + 0x34);
+                    *(u16 *)((u8 *)outputBase - 0x2E) = *(u16 *)(asset->unk38 + sourceOffset);
+                    *(s8 *)((u8 *)outputBase - 0x2C) = *(s8 *)(asset->unk38 + sourceOffset + 2);
+                    *(u8 *)((u8 *)outputBase - 0x2B) = *(u8 *)(asset->unk38 + sourceOffset + 3);
+                    *(u16 *)((u8 *)outputBase - 0x2A) = 0;
+                    *(f32 *)((u8 *)outputBase - 0x10) = *(f32 *)(asset->unk38 + sourceOffset + 8) * object->unk8;
+                    *(f32 *)((u8 *)outputBase - 0xC) = *(f32 *)(asset->unk38 + sourceOffset + 8) * object->unk8;
+                    *(u8 *)((u8 *)outputBase - 0x6) = (u8)*(u16 *)(asset->unk38 + sourceOffset + 4);
+                    *(u8 *)((u8 *)outputBase - 0x5) = (u8)*(u16 *)(asset->unk38 + sourceOffset + 6);
+                    *(u8 *)((u8 *)outputBase - 0x4) = (*(u8 *)((u8 *)outputBase - 0x4) & 0xFF) | 0x80;
+                    *(u16 *)((u8 *)outputBase - 0x8) = 0;
+                    *(u8 *)((u8 *)outputBase - 0x4) &= 0xBF;
+                    sourceOffset += 0xC;
+                } while (index < output->unkA);
             }
         }
     }
-    return var_v1;
+    return size;
 }
-s32 func_80006C40(Objects06C40 *arg0, s32 arg1) {
-    arg0->unk58 = arg1;
+s32 func_80006C40(Objects06C40 *object, s32 buffer) {
+    object->unk58 = buffer;
     return 0x13C;
 }
-void *func_80006C4C(s32 arg0) {
+void *func_80006C4C(s32 assetIndex) {
     Objects06C4CAsset *asset;
     Objects06C4CObject *object;
     u8 *end;
@@ -2332,10 +2332,10 @@ void *func_80006C4C(s32 arg0) {
     s32 *destination;
     s32 *source;
 
-    if (arg0 >= D_800C945C) {
-        arg0 = 0;
+    if (assetIndex >= D_800C945C) {
+        assetIndex = 0;
     }
-    asset = func_8000486C(arg0);
+    asset = func_8000486C(assetIndex);
     if (asset == NULL) {
         return NULL;
     }
@@ -2352,8 +2352,8 @@ void *func_80006C4C(s32 arg0) {
 
     object->unk40 = asset;
     object->unk6 = 2;
-    object->unk2C = (s16)arg0;
-    object->unk46 = (s16)arg0;
+    object->unk2C = (s16)assetIndex;
+    object->unk46 = (s16)assetIndex;
     object->unk8 = asset->unk0;
     object->unk6 = (s16)(object->unk6 | (asset->unk14 & 0x20C));
     loadType = func_8000A6E8(asset->unk1C) & 3;
@@ -2400,7 +2400,7 @@ void *func_80006C4C(s32 arg0) {
     }
     if (failed != 0) {
         func_80006448(object);
-        func_80004B04(arg0);
+        func_80004B04(assetIndex);
         result = NULL;
     }
     return result;
@@ -2495,7 +2495,7 @@ extern void func_80046E70(void *object);
  * the four resource loops subscript by `i` with no offset carrier, the
  * record-1 slot loops use their own byte index `j`, the owner checks read
  * the slot field at each use, and the 0x84 resource is read as an s32. */
-void func_80007118(u8 *object, s32 arg1) {
+void func_80007118(u8 *object, s32 unused) {
     s32 i;
     s32 offset; /* unused: holds the frame slot the target keeps */
     u8 *entry;
@@ -2904,7 +2904,7 @@ extern void amPlayAudioMap(void **objects, s32 count, s32 updateRate);
  * in-loop store and reload the target emits. Adding a ninth scalar without
  * removing a temporary moves the array the wrong way, which is why sixteen
  * earlier declaration probes all landed at +4. */
-void func_8000784C(s32 arg0) {
+void func_8000784C(s32 updateRate) {
     Objects0784CObject *object;
     Objects0784COutput *output;
     Objects0784CAnimation *animation;
@@ -2937,7 +2937,7 @@ void func_8000784C(s32 arg0) {
 
 
     if (runlinkIsModuleLoaded(0x14) != 0) {
-        TrapDanglingJump(arg0);
+        TrapDanglingJump(updateRate);
     }
 
     count = D_800C9498;
@@ -2953,18 +2953,18 @@ void func_8000784C(s32 arg0) {
                     pendingCount += 1;
                 }
             } else if (object->unk44 != 0xF) {
-                func_8000AEEC(object, arg0);
+                func_8000AEEC(object, updateRate);
                 if ((object->unk40->unk1E == 0) && (object->unk40->unkA2 != 0xFF)) {
-                    func_80007E40((Objects07E40Object *)object, arg0);
+                    func_80007E40((Objects07E40Object *)object, updateRate);
                 }
                 if ((object->unk44 != 1) && (object->unk54 != NULL)) {
-                    func_80049000(object, arg0);
+                    func_80049000(object, updateRate);
                 }
                 animation = (Objects0784CAnimation *)object->unk4C;
                 if (animation != NULL) {
                     if (animation->unkE != 0) {
                         if (animation->unk8 != NULL) {
-                            animation->unkC += (u32)animation->unkE * arg0;
+                            animation->unkC += (u32)animation->unkE * updateRate;
                             while (animation->unkC >=
                                    (animPeriod = ((u16 *)animation->unk8)[8])) {
                                 animation->unkC -= animPeriod;
@@ -2978,7 +2978,7 @@ void func_8000784C(s32 arg0) {
                     while (i < object->unk8C) {
                         func_80036544(effect->unk0, &effect->unkC,
                                       effect->unk5, &effect->pad10,
-                                      arg0);
+                                      updateRate);
                         i += 1;
                         effect += 1;
                     }
@@ -2989,7 +2989,7 @@ void func_8000784C(s32 arg0) {
     }
 
     if (D_80078F80 != 0) {
-        D_80078F80 -= arg0;
+        D_80078F80 -= updateRate;
         if (D_80078F80 < 0) {
             D_80078F80 = 0;
         }
@@ -2997,31 +2997,31 @@ void func_8000784C(s32 arg0) {
 
     i = 0;
     for (objectOffset = 0; objectOffset < D_800C94F8; objectOffset++) {
-        func_8001CB84(D_800C94F4[objectOffset], arg0);
+        func_8001CB84(D_800C94F4[objectOffset], updateRate);
     }
-    func_80053868(arg0);
+    func_80053868(updateRate);
     for (objectOffset = 0; objectOffset < D_800C94F8; objectOffset++) {
-        func_8001D2A0(D_800C94F4[objectOffset], arg0);
+        func_8001D2A0(D_800C94F4[objectOffset], updateRate);
     }
     if (pendingCount > 0) {
         objectOffset = (s32)pending;
         do {
-            func_8000AEEC(*(Objects0784CObject **)objectOffset, arg0);
+            func_8000AEEC(*(Objects0784CObject **)objectOffset, updateRate);
             i++;
             objectOffset += sizeof(void *);
         } while (i != pendingCount);
     }
-    lightUpdateLights(arg0);
+    lightUpdateLights(updateRate);
     lightUpdateObjects();
-    amPlayAudioMap(D_800C94F4, D_800C94F8, arg0);
+    amPlayAudioMap(D_800C94F4, D_800C94F8, updateRate);
     if (*func_80028F54() == 1) {
-        TrapDanglingJump(arg0);
+        TrapDanglingJump(updateRate);
     }
     if (D_800C9478 == 0) {
         func_80006FA0();
     }
     D_800C9478 = 1;
-    D_800C946C = (f32)arg0;
+    D_800C946C = (f32)updateRate;
 }
 /* PROVENANCE: the per-batch texture-animation walk is adapted from the public
  * Diddy Kong Racing decompilation, src/objects.c::obj_tex_animate (the
@@ -3036,8 +3036,8 @@ void func_8000784C(s32 arg0) {
  * index is the pool web the target colours.  The flag word and both frame
  * words are read from the record at each use, with no carrier locals, in a
  * plain for loop. */
-void func_80007C68(Objects07C68Object *arg0, Objects07C68Source *arg1,
-                   Objects07C68Object *arg2, s32 arg3) {
+void func_80007C68(Objects07C68Object *object, Objects07C68Source *asset,
+                   Objects07C68Object *animObject, s32 updateRate) {
     Objects07C68Record *rec;
     s32 offset;
     s16 *out;
@@ -3046,20 +3046,20 @@ void func_80007C68(Objects07C68Object *arg0, Objects07C68Source *arg1,
     s32 texIndex;
 
     if (func_800290A0() != 0) {
-        arg3 = 0;
+        updateRate = 0;
     }
-    rec = arg2->unk4C;
+    rec = animObject->unk4C;
     if (rec != NULL) {
-        out = ((Objects07C68Indexed *)((u8 *)arg2 + (arg2->unkA * 4)))->unk50;
-        for (i = 0; i < arg1->unk2C; i++) {
+        out = ((Objects07C68Indexed *)((u8 *)animObject + (animObject->unkA * 4)))->unk50;
+        for (i = 0; i < asset->unk2C; i++) {
             texIndex = rec->unk4 & 0xFF;
-            tex = arg1->unk18[texIndex].texture;
+            tex = asset->unk18[texIndex].texture;
             if (rec->unk4 & 0x100000) {
                 offset = rec->unk0;
                 if (rec->unk4 & 0x200000) {
-                    D_8007BDA0 = arg0->unk90;
+                    D_8007BDA0 = object->unk90;
                 }
-                func_800367E8(tex, &rec->unk4, &offset, arg3);
+                func_800367E8(tex, &rec->unk4, &offset, updateRate);
                 rec->unk0 = offset;
                 if (rec->unk2 >= 0) {
                     offset += 0x100;
@@ -3079,8 +3079,8 @@ void func_80007C68(Objects07C68Object *arg0, Objects07C68Source *arg1,
             *out++ = (rec->unk0 >> 8) * tex->unkE;
             rec++;
         }
-        if (arg0->unk90 == 1) {
-            arg0->unk90 = 2;
+        if (object->unk90 == 1) {
+            object->unk90 = 2;
         }
     }
 }
@@ -3098,7 +3098,7 @@ void func_80007C68(Objects07C68Object *arg0, Objects07C68Source *arg1,
  * webs to the phase-one threshold, so they take the low caller-saved
  * colours by save order and the object pointer is left with the first
  * callee-saved register, which is the target's whole assignment. */
-void func_80007E40(Objects07E40Object *arg0, s32 arg1) {
+void func_80007E40(Objects07E40Object *object, s32 updateRate) {
     Objects07E40Data *header;
     s16 width;
     s16 height;
@@ -3118,11 +3118,11 @@ void func_80007E40(Objects07E40Object *arg0, s32 arg1) {
     s16 newV1;
     s16 newV2;
 
-    header = arg0->unk40;
+    header = object->unk40;
     modelIndex = header->unkA3;
     textureIndex = header->unkA2;
-    scrollU = (s16)(header->unkA4 * arg1);
-    scrollV = (s16)(header->unkA5 * arg1);
+    scrollU = (s16)(header->unkA4 * updateRate);
+    scrollV = (s16)(header->unkA5 * updateRate);
     if ((modelIndex == 0xFF) || (modelIndex < header->unk22)) {
         if (modelIndex == 0xFF) {
             modelIndex = 0;
@@ -3131,7 +3131,7 @@ void func_80007E40(Objects07E40Object *arg0, s32 arg1) {
             end = modelIndex + 1;
         }
         for (i = modelIndex; i < end; i++) {
-            instance = arg0->unk68[i];
+            instance = object->unk68[i];
             model = instance->unk0;
             if (textureIndex < model->unk10) {
                 width = model->unk18[textureIndex].texture->unk6 << 5;
@@ -3161,7 +3161,7 @@ void func_80007E40(Objects07E40Object *arg0, s32 arg1) {
         }
     }
 }
-void func_80008028(s32 arg0) {
+void func_80008028(s32 updateRate) {
     s32 objectIndex;
     s32 modelIndex;
     s32 updateModels;
@@ -3176,7 +3176,7 @@ void func_80008028(s32 arg0) {
             for (modelIndex = 0; modelIndex < object->unk40->unk22; modelIndex++) {
                 if ((updateModels == 0) || (object->unk40->unk1E[modelIndex] == 0)) {
                     Objects08028Model *model = object->unk68[modelIndex];
-                    model->unk8 = arg0;
+                    model->unk8 = updateRate;
                     if (model->unk3F != 0) {
                         model->unk3F -= 1;
                     }
@@ -3188,7 +3188,7 @@ void func_80008028(s32 arg0) {
 void func_80008118(void) {
     D_80079004 = 1;
 }
-s32 func_80008128(Objects08128Object *arg0, f32 arg1, f32 arg2, f32 arg3) {
+s32 func_80008128(Objects08128Object *object, f32 moveX, f32 moveY, f32 moveZ) {
     Objects08128Track *track;
     Objects08128Bounds *bounds;
     f32 deltaX;
@@ -3206,13 +3206,13 @@ s32 func_80008128(Objects08128Object *arg0, f32 arg1, f32 arg2, f32 arg3) {
     s32 maxZ;
 
     track = trackGetTrack();
-    deltaX = arg1;
-    deltaY = arg2;
-    deltaZ = arg3;
-    x = (s32) (arg0->unkC + deltaX);
+    deltaX = moveX;
+    deltaY = moveY;
+    deltaZ = moveZ;
+    x = (s32) (object->unkC + deltaX);
     result = 0;
-    y = (s32) (arg0->unk10 + deltaY);
-    z = (s32) (arg0->unk14 + deltaZ);
+    y = (s32) (object->unk10 + deltaY);
+    z = (s32) (object->unk14 + deltaZ);
     if ((D_80079004 == 0) && (track != NULL)) {
         minX = track->unk20 - 1000;
         minY = track->unk24 - 1000;
@@ -3228,11 +3228,11 @@ s32 func_80008128(Objects08128Object *arg0, f32 arg1, f32 arg2, f32 arg3) {
     }
     D_80079004 = 0;
     if (result == 0) {
-        arg0->unkC += deltaX;
-        arg0->unk10 += deltaY;
-        arg0->unk14 += deltaZ;
+        object->unkC += deltaX;
+        object->unk10 += deltaY;
+        object->unk14 += deltaZ;
         if (track != NULL) {
-            bounds = func_8000FEEC(arg0->unk2E);
+            bounds = func_8000FEEC(object->unk2E);
             if ((bounds != NULL) &&
                 ((x < bounds->unk0) || (y < bounds->unk2) ||
                  (z < bounds->unk4) || (bounds->unk6 < x) ||
@@ -3240,8 +3240,8 @@ s32 func_80008128(Objects08128Object *arg0, f32 arg1, f32 arg2, f32 arg3) {
                 bounds = NULL;
             }
             if (bounds == NULL) {
-                arg0->unk2E = func_8000FAE0(arg0->unkC, arg0->unk10,
-                                            arg0->unk14);
+                object->unk2E = func_8000FAE0(object->unkC, object->unk10,
+                                            object->unk14);
             }
         }
     }
@@ -3335,10 +3335,10 @@ typedef union {
  * packets are the vertex/polygon command macros with arg3 a display-list
  * byte pointer, so the 0x80000000 segment base is pointer arithmetic that
  * ugen keeps in one register for both packets. */
-void func_800084C4(Objects084C4Gfx **arg0, Objects084C4Vertex **arg1,
-                   s32 arg2, u8 *arg3, Objects084C4Point *arg4,
-                   Objects084C4Point *arg5, f32 arg6, s32 arg7, s32 arg8,
-                   u32 arg9) {
+void func_800084C4(Objects084C4Gfx **displayListPtr, Objects084C4Vertex **vertexPtr,
+                   s32 texture, u8 *triangles, Objects084C4Point *pointA,
+                   Objects084C4Point *pointB, f32 width, s32 primColor, s32 envColor,
+                   u32 flags) {
     f32 pointBX;
     f32 pointBY;
     f32 pointBZ;
@@ -3362,14 +3362,14 @@ void func_800084C4(Objects084C4Gfx **arg0, Objects084C4Vertex **arg1,
     Objects084C4Gfx *displayList;
     Objects084C4Vertex *vertices;
 
-    if ((arg5->x == arg4->x) && (arg5->y == arg4->y) &&
-        (arg5->z == arg4->z)) {
+    if ((pointB->x == pointA->x) && (pointB->y == pointA->y) &&
+        (pointB->z == pointA->z)) {
         return;
     }
     rotationMatrix = camGetRotationMtx();
-    mtxf_transform_point(rotationMatrix, arg5->x, arg5->y, arg5->z,
+    mtxf_transform_point(rotationMatrix, pointB->x, pointB->y, pointB->z,
                          &pointBX, &pointBY, &pointBZ);
-    mtxf_transform_point(rotationMatrix, arg4->x, arg4->y, arg4->z,
+    mtxf_transform_point(rotationMatrix, pointA->x, pointA->y, pointA->z,
                          &pointAX, &pointAY, &pointAZ);
     if ((pointBZ > -10.0f) && (pointAZ > -10.0f)) {
         return;
@@ -3391,8 +3391,8 @@ void func_800084C4(Objects084C4Gfx **arg0, Objects084C4Vertex **arg1,
         clippedAX += (pointBX - pointAX) * deltaLengthSquared;
         clippedAY += (pointBY - pointAY) * deltaLengthSquared;
     }
-    displayList = *arg0;
-    vertices = *arg1;
+    displayList = *displayListPtr;
+    vertices = *vertexPtr;
     if (func_800246B0(clippedBX, clippedBY, clippedBZ,
                       &projectedBX, &projectedBY, 0) != 0) {
         if (func_800246B0(clippedAX, clippedAY, clippedAZ,
@@ -3401,16 +3401,16 @@ void func_800084C4(Objects084C4Gfx **arg0, Objects084C4Vertex **arg1,
             deltaY = projectedAY - projectedBY;
             deltaLengthSquared = (deltaX * deltaX) + (deltaY * deltaY);
             if (deltaLengthSquared > 0.0f) {
-                deltaLengthSquared = arg6 / sqrtf(deltaLengthSquared);
+                deltaLengthSquared = width / sqrtf(deltaLengthSquared);
                 deltaX *= deltaLengthSquared;
                 deltaY *= deltaLengthSquared;
             }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0x01010040; command->words.w1 = (unsigned int)camGetProjOrgMtx() - 0x80000000U; }
-            func_800349A4((FxGfx **)&displayList, arg2, arg9 | 2 | 4, 0);
-            { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFA000000; command->words.w1 = arg7; }
-            { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFB000000; command->words.w1 = arg8; }
+            func_800349A4((FxGfx **)&displayList, texture, flags | 2 | 4, 0);
+            { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFA000000; command->words.w1 = primColor; }
+            { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFB000000; command->words.w1 = envColor; }
             OBJECTS_GFX_VERTEX(displayList++, (u32)vertices + 0x80000000, 4, 0);
-            OBJECTS_GFX_POLYGON(displayList++, arg3 + 0x80000000, 2, 1);
+            OBJECTS_GFX_POLYGON(displayList++, triangles + 0x80000000, 2, 1);
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xE7000000; command->words.w1 = 0; }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFA000000; command->words.w1 = (u32)-1; }
             { Objects084C4Gfx *command = displayList++; command->words.w0 = 0xFB000000; command->words.w1 = (u32)-1; }
@@ -3446,34 +3446,34 @@ void func_800084C4(Objects084C4Gfx **arg0, Objects084C4Vertex **arg1,
             vertices += 4;
         }
     }
-    *arg0 = displayList;
-    *arg1 = vertices;
+    *displayListPtr = displayList;
+    *vertexPtr = vertices;
 }
-void func_80008A20(Objects08A20Arg *arg0) {
-    func_8000831C(arg0, D_80079008, 0x14, D_800790D0, 0x18, *arg0->unk68, 2, 0, 1.0f, 0xFF, 0xFF);
+void func_80008A20(Objects08A20Arg *object) {
+    func_8000831C(object, D_80079008, 0x14, D_800790D0, 0x18, *object->unk68, 2, 0, 1.0f, 0xFF, 0xFF);
 }
-void func_80008A8C(Objects08A20Arg *arg0) {
-    switch (arg0->unk44) {
+void func_80008A8C(Objects08A20Arg *object) {
+    switch (object->unk44) {
         case 0x3D:
-            if (arg0->unk88 != NULL) {
-                TrapDanglingJump(arg0);
+            if (object->unk88 != NULL) {
+                TrapDanglingJump(object);
             }
-            TrapDanglingJump(&D_800C94B4, arg0);
+            TrapDanglingJump(&D_800C94B4, object);
             break;
         case 0x24:
-            TrapDanglingJump(&D_800C94B4, &D_800C94B8, arg0);
+            TrapDanglingJump(&D_800C94B4, &D_800C94B8, object);
             break;
         case 0x3B:
-            func_80008A20(arg0);
+            func_80008A20(object);
             break;
         case 0x41:
-            TrapDanglingJump(arg0, &D_800C94B4, &D_800C94B8, &D_800C94BC);
+            TrapDanglingJump(object, &D_800C94B4, &D_800C94B8, &D_800C94BC);
             break;
         case 0x55:
-            TrapDanglingJump(&D_800C94B4, &D_800C94B8, arg0);
+            TrapDanglingJump(&D_800C94B4, &D_800C94B8, object);
             break;
         case 0x5B:
-            TrapDanglingJump(&D_800C94B4, &D_800C94B8, arg0);
+            TrapDanglingJump(&D_800C94B4, &D_800C94B8, object);
             break;
     }
 }
@@ -3571,7 +3571,7 @@ typedef struct {
  * its web ties the a0 webs at save 3.0 and wins on web number. 0.0025f is a
  * literal because it is this function's own rodata slot in the ROM.
  */
-void func_80008B94(void *arg0) {
+void func_80008B94(void *rawObject) {
     s32 flags;
     s32 colourState;
     s32 alpha;
@@ -3596,9 +3596,9 @@ void func_80008B94(void *arg0) {
     Objects08B94Info *info;
     s8 *cameraData2;
 
-    object = (Objects08B94Object *)arg0;
+    object = (Objects08B94Object *)rawObject;
     specialColour = 0;
-    if (((Objects08B94Object *)arg0)->unk44 == 0x45) {
+    if (((Objects08B94Object *)rawObject)->unk44 == 0x45) {
         TrapDanglingJump(&D_800C94B4, &D_800C94B8, &D_800C94BC, object);
         return;
     }
@@ -3746,8 +3746,8 @@ void func_80008B94(void *arg0) {
     object->unk8 = savedScale;
 }
 /* The sprite renderer reads the transform and frame from this segment layout. */
-void func_80009220(void **arg0, s32 arg1, s32 arg2, Objects09220Object *arg3,
-                   s32 arg4, Objects09220Source *arg5, s32 arg6) {
+void func_80009220(void **displayListPtr, s32 vertexList, s32 triangleList, Objects09220Object *object,
+                   s32 sourceMatrix, Objects09220Source *source, s32 alpha) {
     f32 distance;
     f32 direction[3];
     struct {
@@ -3765,9 +3765,9 @@ void func_80009220(void **arg0, s32 arg1, s32 arg2, Objects09220Object *arg3,
     Objects09220Matrix *matrix;
     Objects09220Gfx *command;
 
-    if (arg3->unk40->unkA6 > 0) {
+    if (object->unk40->unkA6 > 0) {
         direction[2] = -1.0f;
-        mathOneFloatPY(arg3, direction);
+        mathOneFloatPY(object, direction);
         matrix = camGetRotationMtx();
         distance = ((matrix->unk8 * direction[0]) +
                     (matrix->unk18 * direction[1])) +
@@ -3778,19 +3778,19 @@ void func_80009220(void **arg0, s32 arg1, s32 arg2, Objects09220Object *arg3,
             segment.xRotation = 0;
             segment.zRotation = 0;
             segment.frame = 0.0f;
-            segment.scale = arg3->unk8 * distance * (f32)arg6 * 0.0225f;
-            mtxf_transform_point((void *)arg4, (f32)arg5->unk26,
-                                 (f32)arg5->unk28, (f32)arg5->unk2A,
+            segment.scale = object->unk8 * distance * (f32)alpha * 0.0225f;
+            mtxf_transform_point((void *)sourceMatrix, (f32)source->unk26,
+                                 (f32)source->unk28, (f32)source->unk2A,
                                  &segment.x, &segment.y, &segment.z);
-            arg6 = (s32)(distance * 320.0f);
-            if (arg6 >= 0x100) {
-                arg6 = 0xFF;
+            alpha = (s32)(distance * 320.0f);
+            if (alpha >= 0x100) {
+                alpha = 0xFF;
             }
             func_80034DF0(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0);
-            func_80023A08(arg0, arg1, arg2, (s16 *)&segment,
-                          *arg3->unk40->unkAC, 4, arg6);
+            func_80023A08(displayListPtr, vertexList, triangleList, (s16 *)&segment,
+                          *object->unk40->unkAC, 4, alpha);
             func_80034E48();
-            command = (*(Objects09220Gfx **)arg0)++;
+            command = (*(Objects09220Gfx **)displayListPtr)++;
             command->w0 = 0xFB000000; command->w1 = -0x100;
         }
     }
@@ -3877,9 +3877,9 @@ extern void func_80022FD4(void **displayList, s32 matrices, s32 vertices,
                           void *transform, f32 *opacity,
                           Objects09414Sprite *sprite, s32 flags, s32 alpha);
 extern void func_80047CD8(void **displayList, void *cone, s32 flags, u8 alpha);
-extern f32 func_80009F08(Objects09F08Arg *arg0);
+extern f32 func_80009F08(Objects09F08Arg *object);
 
-void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
+void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void *rawObject) {
     s32 i;
     s32 j;
     s32 count;
@@ -3908,26 +3908,26 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
     s32 slot;
     s32 k;
 
-    object = (Objects09414Object *)arg3;
+    object = (Objects09414Object *)rawObject;
     resource = object->unk64;
     root = *object->unk68;
 
-    command = (Objects09414Gfx *)*arg0;
-    *arg0 = (void *)(command + 1);
+    command = (Objects09414Gfx *)*displayListPtr;
+    *displayListPtr = (void *)(command + 1);
     command->w0 = 0xE7000000; command->w1 = 0;
-    command = (Objects09414Gfx *)*arg0;
-    *arg0 = (void *)(command + 1);
+    command = (Objects09414Gfx *)*displayListPtr;
+    *displayListPtr = (void *)(command + 1);
     command->w0 = 0xFB000000; command->w1 = (u32)-0x100;
 
     /* The trap loop has an index of its own (lane m-1, 28 -> 8): its web is
-     * the extra interferer that stops arg0's first split piece at the sort
-     * head (bb25), so arg0, root and resource reload per render pass; the
+     * the extra interferer that stops displayListPtr's first split piece at the sort
+     * head (bb25), so displayListPtr, root and resource reload per render pass; the
      * render loop then takes its own `slot` (sort j in a0, as shipped). The
      * dead `k = 0` after it keeps uopt's `slti` exit test (a def of the index
      * before the next loop; lane n-f1). */
     for (k = 0; k < 4; k++) {
         if (*(s32 *)((u8 *)resource + 0x134 + (k * 4)) != 0) {
-            TrapDanglingJump(arg0, *(s32 *)((u8 *)resource + 0x134 + (k * 4)));
+            TrapDanglingJump(displayListPtr, *(s32 *)((u8 *)resource + 0x134 + (k * 4)));
         }
     }
     k = 0;
@@ -3937,10 +3937,10 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
     if (object->unk40->unk1E[object->unk93] == 0) {
         count = 0;
         /* An empty test of `vector` emits nothing, but makes it live from
-         * entry: the zero-emission interferer that keeps arg3's memory piece
+         * entry: the zero-emission interferer that keeps rawObject's memory piece
          * out of the sort's inner block, so the dynamic loop reloads the
          * object from its home (found by tools/lever_sweep.py against the
-         * forced split of arg3's remainder, lane t-lever). */
+         * forced split of rawObject's remainder, lane t-lever). */
         if (vector) {}
         staticEntry = (Objects09414StaticEntry *)((u8 *)resource + 0x34C);
         for (i = 0; i < 4; i++, staticEntry++) {
@@ -4008,7 +4008,7 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                         mode = 6;
                         break;
                     case 2:
-                        func_80009220(arg0, arg1, arg2,
+                        func_80009220(displayListPtr, vertexList, triangleList,
                                       (Objects09220Object *)object,
                                       (s32)textures[slot],
                                       (Objects09220Source *)cones[slot],
@@ -4016,14 +4016,14 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                         mode = 0x16;
                         break;
                     }
-                    command = (Objects09414Gfx *)*arg0;
-                    *arg0 = (void *)(command + 1);
+                    command = (Objects09414Gfx *)*displayListPtr;
+                    *displayListPtr = (void *)(command + 1);
                     command->w0 = 0x01810040;
                     command->w1 = (u32)textures[slot] + 0x80000000;
-                    func_80047CD8(arg0, cones[slot], mode,
+                    func_80047CD8(displayListPtr, cones[slot], mode,
                                   (u8)alphas[slot]);
-                    command = (Objects09414Gfx *)*arg0;
-                    *arg0 = (void *)(command + 1);
+                    command = (Objects09414Gfx *)*displayListPtr;
+                    *displayListPtr = (void *)(command + 1);
                     command->w0 = 0xBC00000A; command->w1 = 0;
                 } else {
                     entry = entries[slot];
@@ -4039,7 +4039,7 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                                         (type * 4)) + vector->y;
                     sprite.z = vector->z;
                     sprite.spriteData = entry->unk0;
-                    func_80022FD4(arg0, arg1, arg2,
+                    func_80022FD4(displayListPtr, vertexList, triangleList,
                                   (void *)((u8 *)resource + 0x43C), object->unk50,
                                   &sprite, 0xE, object->unk39);
                 }
@@ -4048,13 +4048,13 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
 
     }
     if (*(s32 *)((u8 *)resource + 0xD0) != 0) {
-        TrapDanglingJump(arg0, arg1, *(s32 *)((u8 *)resource + 0xD0));
+        TrapDanglingJump(displayListPtr, vertexList, *(s32 *)((u8 *)resource + 0xD0));
     }
     if (*(s32 *)((u8 *)resource + 0xD4) != 0) {
-        TrapDanglingJump(arg0, arg1, arg2, *(s32 *)((u8 *)resource + 0xD4));
+        TrapDanglingJump(displayListPtr, vertexList, triangleList, *(s32 *)((u8 *)resource + 0xD4));
     }
     if (*(s32 *)((u8 *)resource + 0xD8) != 0) {
-        TrapDanglingJump(arg0, arg1, *(s32 *)((u8 *)resource + 0xD8));
+        TrapDanglingJump(displayListPtr, vertexList, *(s32 *)((u8 *)resource + 0xD8));
     }
 }
 typedef struct {
@@ -4115,102 +4115,102 @@ typedef union {
 extern u8 D_78F28[];
 
 void func_80009AA8(Objects09AA8Object *object) {
-    s32 var_v0;
-    Objects09AA8Entry **temp_v1;
-    Objects09AA8Entry *temp_a1;
-    Objects09AA8Entry *var_s2;
-    Objects09AA8Material *temp_s1;
-    u32 var_t3;
-    void *temp_s0;
-    s32 var_a0;
-    s32 var_a1;
-    s32 sp38;
-    s32 var_t2;
+    s32 isBlended;
+    Objects09AA8Entry **entryList;
+    Objects09AA8Entry *selectedEntry;
+    Objects09AA8Entry *baseEntry;
+    Objects09AA8Material *material;
+    u32 geometryAddr;
+    void *root;
+    s32 passIndex;
+    s32 listOffset;
+    s32 blendIndex;
+    s32 scrolling;
     Objects09AA8Command *command;
 
-    var_v0 = object->unk40->unkD4 != 0.0f;
+    isBlended = object->unk40->unkD4 != 0.0f;
     /* One definition, not a zero-then-one pair. uopt counts the pair as two
      * web occurrences, which halves this web's priority and drops it behind
      * the list and selected-entry webs; the single definition keeps it ahead
      * of them, and the selected entry then takes a1 instead of a0. */
-    temp_v1 = object->unk68;
-    temp_a1 = temp_v1[(s32)object->unk3A];
-    if (var_v0 != 0) {
-        var_s2 = temp_v1[0];
-        sp38 = object->unk93;
+    entryList = object->unk68;
+    selectedEntry = entryList[(s32)object->unk3A];
+    if (isBlended != 0) {
+        baseEntry = entryList[0];
+        blendIndex = object->unk93;
     } else {
-        var_s2 = temp_v1[(s32)object->unk3A];
-        sp38 = 0;
+        baseEntry = entryList[(s32)object->unk3A];
+        blendIndex = 0;
     }
     /* Declared after the selection: initialized at the top, the spill IDO
        emits in the func_8005AF14 delay slot carries a register instead of
        the target's `sw zero`. */
-    var_t2 = 0;
-    temp_s1 = var_s2->unk0;
-    temp_s0 = (Objects09AA8Root *)temp_a1->unk0;
-    if (var_s2->unk8 != 0) {
-        if (temp_s1->unk4E != 0) {
+    scrolling = 0;
+    material = baseEntry->unk0;
+    root = (Objects09AA8Root *)selectedEntry->unk0;
+    if (baseEntry->unk8 != 0) {
+        if (material->unk4E != 0) {
 
-            func_8005AF14(var_s2, temp_s1, object);
-        } else if (temp_s1->unk11 != 0) {
-            var_s2->unkA = (s16)(var_s2->unkA ^ 1);
+            func_8005AF14(baseEntry, material, object);
+        } else if (material->unk11 != 0) {
+            baseEntry->unkA = (s16)(baseEntry->unkA ^ 1);
         }
 
-        func_80019AB8(object, var_s2, object->unk50,
-                      ((Objects09AA8Entry *)((u8 *)var_s2 +
-                                             (var_s2->unkA * 4)))->unkC);
-        if (temp_s1->unk11 != 0) {
+        func_80019AB8(object, baseEntry, object->unk50,
+                      ((Objects09AA8Entry *)((u8 *)baseEntry +
+                                             (baseEntry->unkA * 4)))->unkC);
+        if (material->unk11 != 0) {
 
             func_80007C68((Objects07C68Object *)object,
-                          (Objects07C68Source *)temp_s1,
-                          (Objects07C68Object *)var_s2, var_s2->unk8);
+                          (Objects07C68Source *)material,
+                          (Objects07C68Object *)baseEntry, baseEntry->unk8);
         }
-        var_s2->unk8 = 0;
+        baseEntry->unk8 = 0;
     }
-    if (temp_s1->unk11 != 0) {
-        var_t2 = 1;
+    if (material->unk11 != 0) {
+        scrolling = 1;
     }
-    if ((sp38 != 0) && (temp_a1->unk8 != 0)) {
+    if ((blendIndex != 0) && (selectedEntry->unk8 != 0)) {
 
-        func_80019AB8(object, temp_a1, object->unk50,
-                      ((Objects09AA8Entry *)((u8 *)var_s2 +
-                                             (var_s2->unkA * 4)))->unkC);
-        temp_a1->unk8 = 0;
+        func_80019AB8(object, selectedEntry, object->unk50,
+                      ((Objects09AA8Entry *)((u8 *)baseEntry +
+                                             (baseEntry->unkA * 4)))->unkC);
+        selectedEntry->unk8 = 0;
     }
     if (object->unk39 == 0xFF) {
-        var_t3 = ((Objects09AA8Root *)temp_s0)->unk68;
+        geometryAddr = ((Objects09AA8Root *)root)->unk68;
     } else {
-        var_t3 = ((Objects09AA8Root *)temp_s0)->unk6C;
+        geometryAddr = ((Objects09AA8Root *)root)->unk6C;
     }
 
     command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = 0xFA000000; command->words.w1 = ((255U << 24) | (255U << 16) | (255U << 8) | ((unsigned int)object->unk39 & 255U));
-    if (temp_s1->unk4E == 0) {
+    if (material->unk4E == 0) {
 
         camPushModelMtx((Gfx **)&D_800C94B4, (Mtx **)&D_800C94B8,
                         (CameraScaledTransform *)object, 1.0f, 0.0f);
     }
-    command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = (u32)((((u32)(((Objects09AA8Entry *)((u8 *)var_s2 + (var_s2->unkA * 4)))->unkC + 0x80000000) & 0xFFFFFF)) | 0xBF000000); command->words.w1 = (u32)(temp_a1->unk4 + 0x80000000);
-    if (var_t2 != 0) {
-        if (sp38 != 0) {
+    command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = (u32)((((u32)(((Objects09AA8Entry *)((u8 *)baseEntry + (baseEntry->unkA * 4)))->unkC + 0x80000000) & 0xFFFFFF)) | 0xBF000000); command->words.w1 = (u32)(selectedEntry->unk4 + 0x80000000);
+    if (scrolling != 0) {
+        if (blendIndex != 0) {
             command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = 0x02000050; command->words.w1 = (u32)D_78F28;
         } else {
-            command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = 0x02000050; command->words.w1 = (u32)(((Objects09AA8Entry *)((u8 *)var_s2 + (var_s2->unkA * 4)))->unk50 + 0x80000000);
+            command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = 0x02000050; command->words.w1 = (u32)(((Objects09AA8Entry *)((u8 *)baseEntry + (baseEntry->unkA * 4)))->unk50 + 0x80000000);
         }
     }
-    if (temp_s1->unk70 != 0) {
-        var_a0 = 0;
-        if ((temp_s1->unk70 + 1) > 0) {
-            var_a1 = 0;
+    if (material->unk70 != 0) {
+        passIndex = 0;
+        if ((material->unk70 + 1) > 0) {
+            listOffset = 0;
             do {
-                if (var_t2 != 0) {
+                if (scrolling != 0) {
                     command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = 0x02000050; command->words.w1 = (u32)D_78F28;
                 }
-                command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; var_a0 += 1; command->words.w0 = 0x06000000; command->words.w1 = (u32)(*(s32 *)((u8 *)temp_s1->unk78 + var_a1) + 0x80000000);
-                var_a1 += 4;
-            } while (temp_s1->unk70 >= var_a0);
+                command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; passIndex += 1; command->words.w0 = 0x06000000; command->words.w1 = (u32)(*(s32 *)((u8 *)material->unk78 + listOffset) + 0x80000000);
+                listOffset += 4;
+            } while (material->unk70 >= passIndex);
         }
     } else {
-        command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = 0x06000000; command->words.w1 = (u32)(var_t3 + 0x80000000);
+        command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = 0x06000000; command->words.w1 = (u32)(geometryAddr + 0x80000000);
     }
     command = (Objects09AA8Command *)D_800C94B4; D_800C94B4 += 8; command->words.w0 = 0xBF000000; command->words.w1 = 0;
     camRestoreModelMtx((Gfx **)&D_800C94B4);
@@ -4231,21 +4231,21 @@ void func_80009E78(Gfx **displayList, Mtx **matrix, TrackVertex **vertices,
         *vertices = (TrackVertex *) D_800C94BC;
     }
 }
-f32 func_80009F08(Objects09F08Arg *arg0) {
-    f32 temp_f0;
-    f32 var_f2;
+f32 func_80009F08(Objects09F08Arg *object) {
+    f32 distance;
+    f32 scale;
 
-    var_f2 = 1.0f;
+    scale = 1.0f;
     if (D_8007BF0C == 0) {
-        temp_f0 = arg0->unk30;
-        if (temp_f0 > 250.0f) {
-            var_f2 += (temp_f0 - 250.0f) * 0.00134f;
-            if (var_f2 > 2.0f) {
-                var_f2 = 2.0f;
+        distance = object->unk30;
+        if (distance > 250.0f) {
+            scale += (distance - 250.0f) * 0.00134f;
+            if (scale > 2.0f) {
+                scale = 2.0f;
             }
         }
     }
-    return var_f2;
+    return scale;
 }
 /* Mickey-only distance-tier selection and object-renderer dispatch. */
 void func_80009F74(Objects09F74Object *object) {
@@ -4323,7 +4323,7 @@ void func_80009F74(Objects09F74Object *object) {
 }
 /* PROVENANCE: partition loop adapted from Diddy Kong Racing's public
  * src/objects.c get_first_active_object; Mickey's list and header offsets are authoritative. */
-s32 func_8000A244(s32 *arg0) {
+s32 func_8000A244(s32 *countOut) {
     s32 i;
     s32 j;
     s32 minIndex;
@@ -4331,7 +4331,7 @@ s32 func_8000A244(s32 *arg0) {
     s32 breakLoop;
     Objects0A244Object *tempObject;
 
-    *arg0 = D_800C9498;
+    *countOut = D_800C9498;
     if (D_800C94B2 != 0) {
         return D_800C94B2;
     }
@@ -4377,7 +4377,7 @@ s32 func_8000A244(s32 *arg0) {
  * copied once for the sort pass; and the loop header shares one physical line
  * with its first statement, which orders the unrolled body's pointer and
  * counter steps as shipped (L59). */
-void func_8000A39C(s32 arg0, s32 arg1) {
+void func_8000A39C(s32 first, s32 last) {
     s32 passCount;
     Objects0A39CObject *current;
     Objects0A39CObject *next;
@@ -4392,15 +4392,15 @@ void func_8000A39C(s32 arg0, s32 arg1) {
     s32 updateCount;
     s32 sorted;
 
-    if (arg1 - arg0 > 0) {
-        passCount = arg1 - arg0;
+    if (last - first > 0) {
+        passCount = last - first;
         matrix = (Objects0A39CMatrix *)camGetRotationMtx();
         matrixX = matrix->unk8;
         matrixY = matrix->unk18;
         matrixZ = matrix->unk28;
         matrixW = matrix->unk38;
-        objects = (Objects0A39CObject **)((arg0 * 4) + (u8 *)D_800C9494);
-        for (updateCount = (arg1 - arg0) + 1; updateCount != 0; updateCount--) { current = *objects++;
+        objects = (Objects0A39CObject **)((first * 4) + (u8 *)D_800C9494);
+        for (updateCount = (last - first) + 1; updateCount != 0; updateCount--) { current = *objects++;
             if (current != NULL) {
                 current->unk30 = -((current->unkC * matrixX) +
                                   (current->unk10 * matrixY) +
@@ -4409,7 +4409,7 @@ void func_8000A39C(s32 arg0, s32 arg1) {
         }
 
         do {
-            objects = (Objects0A39CObject **)((arg0 * 4) + (u8 *)D_800C9494);
+            objects = (Objects0A39CObject **)((first * 4) + (u8 *)D_800C9494);
             updateCount = passCount;
             passCount -= 1;
             current = objects[0];
@@ -4453,13 +4453,13 @@ void func_8000A62C(f32 x, f32 y, f32 z) {
     D_800C9508[1] = y;
     D_800C9508[2] = z;
 }
-void func_8000A6DC(s32 arg0) {
-    D_800C94B0 = arg0;
+void func_8000A6DC(s32 value) {
+    D_800C94B0 = value;
 }
-s32 func_8000A6E8(s32 arg0) {
+s32 func_8000A6E8(s32 objectType) {
     s32 flags;
 
-    switch (arg0) {
+    switch (objectType) {
         case 1:
             flags = 0xF01;
             break;
@@ -4577,10 +4577,10 @@ s32 func_8000A6E8(s32 arg0) {
     return flags;
 }
 /* Tier A: Mickey-only switch destinations, field widths, and linked bytes. */
-s32 func_8000A830(Objects0A830Object *arg0, void *arg1) {
+s32 func_8000A830(Objects0A830Object *object, void *buffer) {
     s32 size;
 
-    switch (arg0->unk40->unk1C - 1) {
+    switch (object->unk40->unk1C - 1) {
         case 0: size = 0x460; break;
         case 5: size = 0x18; break;
         case 19: size = 0xC; break;
@@ -4640,7 +4640,7 @@ s32 func_8000A830(Objects0A830Object *arg0, void *arg1) {
         default: size = 0; break;
     }
     if (size != 0) {
-        arg0->unk64 = arg1;
+        object->unk64 = buffer;
     }
     return (size & -4) + 4;
 }
@@ -4650,235 +4650,235 @@ struct Objects0AA38Object {
     s16 unk44;
 };
 
-extern void func_8001C4C0(void *object, void *arg1, s32 mode);
-extern void spranimInit(void *object, void *arg1);
-extern void sprasjiInit(void *object, void *arg1);
+extern void func_8001C4C0(void *object, void *packet, s32 mode);
+extern void spranimInit(void *object, void *packet);
+extern void sprasjiInit(void *object, void *packet);
 extern void func_8001A154(void *object);
-extern void func_8001BAE4(void *object, void *arg1);
-extern void func_8001BAF8(void *object, void *arg1);
+extern void func_8001BAE4(void *object, void *packet);
+extern void func_8001BAF8(void *object, void *packet);
 
 /* Tier B: Mickey's resident loader records identify each overlay export.
  * The dispatch ABI forwards object, entry, and preserveState. Each call
  * retains the resident trap that the runtime loader patches at that site. */
-void func_8000AA38(Objects0AA38Object *arg0, void *arg1, s32 preserveState) {
-    arg0->unk44 = arg0->unk40->unk1C;
-    switch (arg0->unk44 - 1) {
+void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState) {
+    object->unk44 = object->unk40->unk1C;
+    switch (object->unk44 - 1) {
         case 0:
-            func_8001C4C0(arg0, arg1, 1);
+            func_8001C4C0(object, packet, 1);
             break;
         case 28:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 69 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 69 +0x0. */
             break;
         case 72:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 88 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 88 +0x0. */
             break;
         case 1:
         case 2:
         case 3:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 85 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 85 +0x0. */
             break;
         case 30:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 97 +0x508. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x508. */
             break;
         case 31:
         case 33:
-            spranimInit(arg0, arg1);
+            spranimInit(object, packet);
             break;
         case 58:
-            sprasjiInit(arg0, arg1);
+            sprasjiInit(object, packet);
             break;
         case 19:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 97 +0x36C. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x36C. */
             break;
         case 5:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 97 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x0. */
             break;
         case 4:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 97 +0x14C. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x14C. */
             break;
         case 10:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 97 +0x130. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x130. */
             break;
         case 11:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 92 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 92 +0x0. */
             break;
         case 13:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 97 +0x748. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x748. */
             break;
         case 14:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 97 +0x3F4. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x3F4. */
             break;
         case 40:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 89 +0x270. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 89 +0x270. */
             break;
         case 34:
-            func_8001A154(arg0);
+            func_8001A154(object);
             break;
         case 35:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 71 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 71 +0x0. */
             break;
         case 8:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 97 +0x420. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x420. */
             break;
         case 41:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 83 +0x53C. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 83 +0x53C. */
             break;
         case 7:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 93 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 93 +0x0. */
             break;
         case 6:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 97 +0x1A8. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x1A8. */
             break;
         case 27:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 97 +0x944. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x944. */
             break;
         case 23:
         case 24:
-            func_8001BAE4(arg0, arg1);
+            func_8001BAE4(object, packet);
             break;
         case 25:
-            func_8001BAF8(arg0, arg1);
+            func_8001BAF8(object, packet);
             break;
         case 32:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 36 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 36 +0x0. */
             break;
         case 45:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 1 +0x6788. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 1 +0x6788. */
             break;
         case 46:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 1 +0x69A0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 1 +0x69A0. */
             break;
         case 47:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 1 +0x6B28. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 1 +0x6B28. */
             break;
         case 48:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 4 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 4 +0x0. */
             break;
         case 49:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 84 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 84 +0x0. */
             break;
         case 50:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 84 +0xDBC. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 84 +0xDBC. */
             break;
         case 20:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 97 +0x1E8. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 97 +0x1E8. */
             break;
         case 42:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 2 +0x1DF8. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 2 +0x1DF8. */
             break;
         case 43:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 2 +0x2528. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 2 +0x2528. */
             break;
         case 44:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 1 +0x36A0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 1 +0x36A0. */
             break;
         case 52:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 72 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 72 +0x0. */
             break;
         case 53:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 90 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 90 +0x0. */
             break;
         case 54:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 86 +0x444. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 86 +0x444. */
             break;
         case 56:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 26 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 26 +0x0. */
             break;
         case 57:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 29 +0x42C. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 29 +0x42C. */
             break;
         case 59:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 25 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 25 +0x0. */
             break;
         case 60:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 20 +0x204. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 20 +0x204. */
             break;
         case 61:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 20 +0xF78. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 20 +0xF78. */
             break;
         case 62:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 68 +0x8E0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 68 +0x8E0. */
             break;
         case 63:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 22 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 22 +0x0. */
             break;
         case 64:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 23 +0x208. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 23 +0x208. */
             break;
         case 65:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 28 +0x1B8. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 28 +0x1B8. */
             break;
         case 66:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 75 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 75 +0x0. */
             break;
         case 67:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 27 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 27 +0x0. */
             break;
         case 68:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 24 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 24 +0x0. */
             break;
         case 69:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 21 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 21 +0x0. */
             break;
         case 70:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 91 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 91 +0x0. */
             break;
         case 71:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 87 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 87 +0x0. */
             break;
         case 73:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 74 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 74 +0x0. */
             break;
         case 79:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 70 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 70 +0x0. */
             break;
         case 74:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 76 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 76 +0x0. */
             break;
         case 75:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 77 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 77 +0x0. */
             break;
         case 76:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 78 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 78 +0x0. */
             break;
         case 77:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 79 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 79 +0x0. */
             break;
         case 80:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 80 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 80 +0x0. */
             break;
         case 81:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 81 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 81 +0x0. */
             break;
         case 82:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 81 +0x240. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 81 +0x240. */
             break;
         case 83:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 82 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 82 +0x0. */
             break;
         case 84:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 73 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 73 +0x0. */
             break;
         case 85:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 94 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 94 +0x0. */
             break;
         case 86:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 79 +0x1280. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 79 +0x1280. */
             break;
         case 87:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 79 +0x147C. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 79 +0x147C. */
             break;
         case 88:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 37 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 37 +0x0. */
             break;
         case 89:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 95 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 95 +0x0. */
             break;
         case 90:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 38 +0x0. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 38 +0x0. */
             break;
         case 91:
-            TrapDanglingJump(arg0, arg1, preserveState); /* Overlay 96 +0xF8. */
+            TrapDanglingJump(object, packet, preserveState); /* Overlay 96 +0xF8. */
             break;
         case 9:
             break;
@@ -4925,53 +4925,53 @@ typedef struct {
 } Objects0AEECObject;
 
 /* Tier B: Mickey resident control-type switch and runtime overlay call sites. */
-void func_8000AEEC(void *arg0, s32 arg1) {
+void func_8000AEEC(void *rawObject, s32 updateRate) {
     Objects0AEECObject *object;
 
     D_8007A210 = 3;
     D_8007A21C = 1;
-    D_8007A214 = arg0;
-    object = (Objects0AEECObject *)arg0;
+    D_8007A214 = rawObject;
+    object = (Objects0AEECObject *)rawObject;
     D_8007A218 = object->unk40 + 4;
     switch (object->unk44 - 3) {
         case 0:
-            TrapDanglingJump(object, arg1); /* Overlay 85 +0xC0. */
+            TrapDanglingJump(object, updateRate); /* Overlay 85 +0xC0. */
             break;
         case 31:
-            spranimOnceControl(object, arg1);
+            spranimOnceControl(object, updateRate);
             break;
         case 29:
-            spranimControl(object, arg1);
+            spranimControl(object, updateRate);
             break;
         case 17:
-            texscrollControl(object, arg1);
+            texscrollControl(object, updateRate);
             break;
         case 3:
-            effectboxControl(object, arg1);
+            effectboxControl(object, updateRate);
             break;
         case 38:
-            TrapDanglingJump(object, arg1); /* Overlay 89 +0x5A4. */
+            TrapDanglingJump(object, updateRate); /* Overlay 89 +0x5A4. */
             break;
         case 33:
             TrapDanglingJump(object); /* Overlay 71 +0x278. */
             break;
         case 39:
-            TrapDanglingJump(object, arg1); /* Overlay 83 +0x7DC. */
+            TrapDanglingJump(object, updateRate); /* Overlay 83 +0x7DC. */
             break;
         case 5:
-            TrapDanglingJump(object, arg1); /* Overlay 93 +0x1C. */
+            TrapDanglingJump(object, updateRate); /* Overlay 93 +0x1C. */
             break;
         case 4:
             func_800148E0(object);
             break;
         case 26:
-            TrapDanglingJump(object, arg1); /* Overlay 69 +0x4C. */
+            TrapDanglingJump(object, updateRate); /* Overlay 69 +0x4C. */
             break;
         case 70:
-            TrapDanglingJump(object, arg1); /* Overlay 88 +0x4C. */
+            TrapDanglingJump(object, updateRate); /* Overlay 88 +0x4C. */
             break;
         case 25:
-            func_8001B798(object, arg1);
+            func_8001B798(object, updateRate);
             break;
         case 19:
         case 20:
@@ -4979,130 +4979,130 @@ void func_8000AEEC(void *arg0, s32 arg1) {
         case 22:
         case 23:
         case 24:
-            func_8001BB04(object, arg1);
+            func_8001BB04(object, updateRate);
             break;
         case 76:
-            func_8001BB10(object, arg1);
+            func_8001BB10(object, updateRate);
             break;
         case 30:
-            TrapDanglingJump(object, arg1); /* Overlay 36 +0x1D0. */
+            TrapDanglingJump(object, updateRate); /* Overlay 36 +0x1D0. */
             break;
         case 43:
-            TrapDanglingJump(object, arg1); /* Overlay 1 +0x67C0. */
+            TrapDanglingJump(object, updateRate); /* Overlay 1 +0x67C0. */
             break;
         case 44:
-            TrapDanglingJump(object, arg1); /* Overlay 1 +0x6A14. */
+            TrapDanglingJump(object, updateRate); /* Overlay 1 +0x6A14. */
             break;
         case 45:
-            TrapDanglingJump(object, arg1); /* Overlay 1 +0x6B6C. */
+            TrapDanglingJump(object, updateRate); /* Overlay 1 +0x6B6C. */
             break;
         case 46:
-            TrapDanglingJump(object, arg1); /* Overlay 4 +0x138. */
+            TrapDanglingJump(object, updateRate); /* Overlay 4 +0x138. */
             break;
         case 47:
-            TrapDanglingJump(object, arg1); /* Overlay 84 +0x48. */
+            TrapDanglingJump(object, updateRate); /* Overlay 84 +0x48. */
             break;
         case 50:
-            TrapDanglingJump(object, arg1); /* Overlay 72 +0xB4. */
+            TrapDanglingJump(object, updateRate); /* Overlay 72 +0xB4. */
             break;
         case 51:
-            TrapDanglingJump(object, arg1); /* Overlay 90 +0xFC. */
+            TrapDanglingJump(object, updateRate); /* Overlay 90 +0xFC. */
             break;
         case 52:
-            TrapDanglingJump(object, arg1); /* Overlay 86 +0x474. */
+            TrapDanglingJump(object, updateRate); /* Overlay 86 +0x474. */
             break;
         case 54:
-            TrapDanglingJump(object, arg1); /* Overlay 26 +0x1A0. */
+            TrapDanglingJump(object, updateRate); /* Overlay 26 +0x1A0. */
             break;
         case 55:
-            TrapDanglingJump(object, arg1); /* Overlay 29 +0x5C4. */
+            TrapDanglingJump(object, updateRate); /* Overlay 29 +0x5C4. */
             break;
         case 57:
-            TrapDanglingJump(object, arg1); /* Overlay 25 +0x17C. */
+            TrapDanglingJump(object, updateRate); /* Overlay 25 +0x17C. */
             break;
         case 58:
             TrapDanglingJump(object); /* Overlay 20 +0xE0C. */
             break;
         case 60:
-            TrapDanglingJump(object, arg1); /* Overlay 68 +0x96C. */
+            TrapDanglingJump(object, updateRate); /* Overlay 68 +0x96C. */
             break;
         case 61:
-            TrapDanglingJump(object, arg1); /* Overlay 22 +0x2B0. */
+            TrapDanglingJump(object, updateRate); /* Overlay 22 +0x2B0. */
             break;
         case 62:
-            TrapDanglingJump(object, arg1); /* Overlay 23 +0x350. */
+            TrapDanglingJump(object, updateRate); /* Overlay 23 +0x350. */
             break;
         case 63:
-            TrapDanglingJump(object, arg1); /* Overlay 28 +0x318. */
+            TrapDanglingJump(object, updateRate); /* Overlay 28 +0x318. */
             break;
         case 64:
-            TrapDanglingJump(object, arg1); /* Overlay 75 +0x214. */
+            TrapDanglingJump(object, updateRate); /* Overlay 75 +0x214. */
             break;
         case 65:
-            TrapDanglingJump(object, arg1); /* Overlay 27 +0x64. */
+            TrapDanglingJump(object, updateRate); /* Overlay 27 +0x64. */
             break;
         case 66:
-            TrapDanglingJump(object, arg1); /* Overlay 24 +0x1C. */
+            TrapDanglingJump(object, updateRate); /* Overlay 24 +0x1C. */
             break;
         case 68:
-            TrapDanglingJump(object, arg1); /* Overlay 91 +0x4C. */
+            TrapDanglingJump(object, updateRate); /* Overlay 91 +0x4C. */
             break;
         case 69:
-            TrapDanglingJump(object, arg1); /* Overlay 87 +0x128. */
+            TrapDanglingJump(object, updateRate); /* Overlay 87 +0x128. */
             break;
         case 71:
-            TrapDanglingJump(object, arg1); /* Overlay 74 +0xB8. */
+            TrapDanglingJump(object, updateRate); /* Overlay 74 +0xB8. */
             break;
         case 72:
-            TrapDanglingJump(object, arg1); /* Overlay 76 +0x38. */
+            TrapDanglingJump(object, updateRate); /* Overlay 76 +0x38. */
             break;
         case 73:
-            TrapDanglingJump(object, arg1); /* Overlay 77 +0x130. */
+            TrapDanglingJump(object, updateRate); /* Overlay 77 +0x130. */
             break;
         case 74:
-            TrapDanglingJump(object, arg1); /* Overlay 78 +0x70. */
+            TrapDanglingJump(object, updateRate); /* Overlay 78 +0x70. */
             break;
         case 75:
-            TrapDanglingJump(object, arg1); /* Overlay 79 +0x134. */
+            TrapDanglingJump(object, updateRate); /* Overlay 79 +0x134. */
             break;
         case 78:
-            TrapDanglingJump(object, arg1); /* Overlay 80 +0x11C. */
+            TrapDanglingJump(object, updateRate); /* Overlay 80 +0x11C. */
             break;
         case 79:
-            TrapDanglingJump(object, arg1); /* Overlay 81 +0xCC. */
+            TrapDanglingJump(object, updateRate); /* Overlay 81 +0xCC. */
             break;
         case 80:
-            TrapDanglingJump(object, arg1); /* Overlay 81 +0x274. */
+            TrapDanglingJump(object, updateRate); /* Overlay 81 +0x274. */
             break;
         case 77:
-            TrapDanglingJump(object, arg1); /* Overlay 70 +0xD8. */
+            TrapDanglingJump(object, updateRate); /* Overlay 70 +0xD8. */
             break;
         case 81:
-            TrapDanglingJump(object, arg1); /* Overlay 82 +0x40. */
+            TrapDanglingJump(object, updateRate); /* Overlay 82 +0x40. */
             break;
         case 82:
-            TrapDanglingJump(object, arg1); /* Overlay 73 +0x190. */
+            TrapDanglingJump(object, updateRate); /* Overlay 73 +0x190. */
             break;
         case 83:
-            TrapDanglingJump(object, arg1); /* Overlay 94 +0x110. */
+            TrapDanglingJump(object, updateRate); /* Overlay 94 +0x110. */
             break;
         case 84:
-            TrapDanglingJump(object, arg1); /* Overlay 79 +0x1290. */
+            TrapDanglingJump(object, updateRate); /* Overlay 79 +0x1290. */
             break;
         case 85:
-            TrapDanglingJump(object, arg1); /* Overlay 79 +0x149C. */
+            TrapDanglingJump(object, updateRate); /* Overlay 79 +0x149C. */
             break;
         case 86:
-            TrapDanglingJump(object, arg1); /* Overlay 37 +0x88. */
+            TrapDanglingJump(object, updateRate); /* Overlay 37 +0x88. */
             break;
         case 15:
-            rangetriggerControl(object, arg1);
+            rangetriggerControl(object, updateRate);
             break;
         case 87:
-            TrapDanglingJump(object, arg1); /* Overlay 95 +0xC. */
+            TrapDanglingJump(object, updateRate); /* Overlay 95 +0xC. */
             break;
         case 88:
-            TrapDanglingJump(object, arg1); /* Overlay 38 +0x154. */
+            TrapDanglingJump(object, updateRate); /* Overlay 38 +0x154. */
             break;
         case 1:
         case 2:
@@ -5138,7 +5138,7 @@ void func_8000AEEC(void *arg0, s32 arg1) {
             break;
     }
     if (object->unk78 != NULL) {
-        func_8000B3CC((Objects0B3CCObject *)object, arg1);
+        func_8000B3CC((Objects0B3CCObject *)object, updateRate);
     }
     D_8007A21C = 4;
 }
@@ -5148,7 +5148,7 @@ void func_8000AEEC(void *arg0, s32 arg1) {
  * bottom of the frame, so neither is a declared carrier; `pad` holds the
  * slot the old cast local took. The 0.1/0.707/0.1 literals are this function's
  * own pool (the second 0.1 is spelled apart so it is not merged). */
-void func_8000B3CC(Objects0B3CCObject *object, s32 arg1) {
+void func_8000B3CC(Objects0B3CCObject *object, s32 updateRate) {
     s32 pad;
     Objects0B3CCConfig *config;
     f32 start[3];
@@ -5176,7 +5176,7 @@ void func_8000B3CC(Objects0B3CCObject *object, s32 arg1) {
         return;
     }
 
-    step = (f32)arg1;
+    step = (f32)updateRate;
     config = object->unk40->unkE0;
     if ((state->flags & 1) != 0) {
         acceleration = -config->unk8;
@@ -5240,7 +5240,7 @@ void func_8000B3CC(Objects0B3CCObject *object, s32 arg1) {
                 object->unk2 = 0;
                 object->unk4 = 0;
                 object->unk80 = config->unk14;
-                partUpdateTriggers(object, arg1);
+                partUpdateTriggers(object, updateRate);
                 object->unk80 = 0;
                 object->unk10 = savedY;
                 object->unk2 = savedAngle2;
@@ -5320,8 +5320,8 @@ void func_8000B3CC(Objects0B3CCObject *object, s32 arg1) {
  * split to memory (+12 bytes); and the dot product adds the z term to the
  * x+y pair, the only exact association in a 96-cell product over operand
  * order, association and the negation spelling. */
-void func_8000BB84(s32 arg0, Objects0BB84Vec3 *arg1, Objects0BB84Vec3 *arg2,
-                   f32 arg3, Objects0BB84Plane *arg4, Objects0BB84Object *arg5) {
+void func_8000BB84(s32 unused, Objects0BB84Vec3 *position, Objects0BB84Vec3 *direction,
+                   f32 distance, Objects0BB84Plane *plane, Objects0BB84Object *object) {
     Objects0BB84Output *output;
     Objects0BB84Depth *depth;
     f32 reflectedX;
@@ -5333,21 +5333,21 @@ void func_8000BB84(s32 arg0, Objects0BB84Vec3 *arg1, Objects0BB84Vec3 *arg2,
     f32 normalZ;
     f32 dot;
 
-    output = arg5->unk78;
-    depth = arg5->unk40->unkE0;
-    normalX = arg4->x;
-    normalY = arg4->y;
-    normalZ = arg4->z;
-    dot = (normalZ * arg2->z) + ((normalX * arg2->x) + (normalY * arg2->y));
+    output = object->unk78;
+    depth = object->unk40->unkE0;
+    normalX = plane->x;
+    normalY = plane->y;
+    normalZ = plane->z;
+    dot = (normalZ * direction->z) + ((normalX * direction->x) + (normalY * direction->y));
     scale = 2.0f * -dot;
-    reflectedX = arg2->x + (scale * normalX);
-    reflectedY = arg2->y + (scale * normalY);
-    reflectedZ = arg2->z + (scale * normalZ);
+    reflectedX = direction->x + (scale * normalX);
+    reflectedY = direction->y + (scale * normalY);
+    reflectedZ = direction->z + (scale * normalZ);
     if (1) {}
-    scale = (arg3 - arg4->unk1C) * depth->unk10;
-    arg1->x = arg4->unk10 + (scale * reflectedX);
-    arg1->y = arg4->unk14 + (scale * reflectedY);
-    arg1->z = arg4->unk18 + (scale * reflectedZ);
+    scale = (distance - plane->unk1C) * depth->unk10;
+    position->x = plane->unk10 + (scale * reflectedX);
+    position->y = plane->unk14 + (scale * reflectedY);
+    position->z = plane->unk18 + (scale * reflectedZ);
     output->x = normalX;
     output->y = normalY;
     output->z = normalZ;
@@ -5359,26 +5359,26 @@ void GetRomlistInfo(s32 *romlist, s32 *size, s32 index) {
 /* Workbench verdict: schedule-mismatch; 2 differing words. */
 /* First mismatch: +0x3C. */
 /* Shape-exact candidate; FP scheduling is reserved for the permuter. */
-f32 func_8000BCB0(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
+f32 func_8000BCB0(f32 ax, f32 ay, f32 az, f32 bx, f32 by, f32 bz)
 {
-  f32 temp_f0;
-  f32 temp_f16;
-  f32 temp_f2;
-  temp_f0 = arg0 - arg3;
-  temp_f2 = arg1 - arg4;
-  temp_f16 = arg2 - arg5;
-  return sqrtf(((temp_f0 * temp_f0) + (temp_f2 * temp_f2)) + (temp_f16 * temp_f16));
+  f32 deltaX;
+  f32 deltaZ;
+  f32 deltaY;
+  deltaX = ax - bx;
+  deltaY = ay - by;
+  deltaZ = az - bz;
+  return sqrtf(((deltaX * deltaX) + (deltaY * deltaY)) + (deltaZ * deltaZ));
 }
 /* Workbench verdict: schedule-mismatch; 2 differing words. */
 /* First mismatch: +0x2C. */
 /* Shape-exact candidate; instruction ordering is reserved for the permuter. */
-f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
+f32 func_8000BD0C(f32 ax, f32 ay, f32 az, f32 bx, f32 by, f32 bz)
 {
-  f32 temp_f16;
-  f32 temp_f18;
-  f32 temp_f2;
-  temp_f2 = arg0 - arg3;
-  temp_f16 = arg1 - arg4;
-  temp_f18 = arg2 - arg5;
-  return ((temp_f2 * temp_f2) + (temp_f16 * temp_f16)) + (temp_f18 * temp_f18);
+  f32 deltaY;
+  f32 deltaZ;
+  f32 deltaX;
+  deltaX = ax - bx;
+  deltaY = ay - by;
+  deltaZ = az - bz;
+  return ((deltaX * deltaX) + (deltaY * deltaY)) + (deltaZ * deltaZ);
 }

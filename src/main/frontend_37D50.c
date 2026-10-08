@@ -335,48 +335,44 @@ void func_80037A78(void) {
     }
     func_800378A4(64.0f, (s32) (0x400 - D_8007BEB0) >> 1);
 }
-/* Workbench verdict: allocation-mismatch, 7 differing words. */
-/* First mismatch: +0x54; target and candidate are 66 words with 0x40 frames. */
-/* Structural gap: only register allocation remains. */
-void func_80037AEC(f32 arg0, s32 arg1)
-{
-  FrontendVertex *vertex;
-  s32 row;
-  s32 phase;
-  vertex = ((FrontendVertex **) (&D_8007BE88))[D_8007BE84];
-  if (vertex != ((void *) 0))
-  {
-    s32 contrast = 0xFF - (((s32) arg0) * 2);
-    phase = D_8007BEB4;
-    if (1)
-    {
-      row = 0;
-      do
-      {
-        s32 column = 0;
-        s32 angle = phase;
-        do
-        {
-          f32 value = func_8002A8C0(angle) * arg0;
-          s32 integerValue;
-          s32 intensity;
-          column += 1;
-          angle += 0x2000;
-          vertex += 1;
-          integerValue = (s32) value;
-          vertex[-1].unk4 = (s16) (integerValue + 5);
-          intensity = ((s32) (((integerValue * 2) + contrast) * arg1)) >> 8;
-          vertex[-1].r = (s8) intensity;
-          vertex[-1].g = (s8) intensity;
-          vertex[-1].b = (s8) (intensity & 0xFFFFFFFFFFFFFFFF);
-        }
-        while (column != 0x11);
-        row += 1;
-        phase += 0x800;
-      }
-      while (row != 0x11);
+/* Shades the backdrop grid with a travelling sine wave (sibling of
+ * func_800378A4). The redundant `row = 0` initialiser is a dead store uopt
+ * deletes, but it numbers `row` ahead of `phase` so the two take s6/s7 as
+ * shipped while the D_8007BEB4 load is still scheduled first (the same
+ * first-reference rule as `dst` in font.c's func_8004C690). */
+void func_80037AEC(f32 arg0, s32 arg1) {
+    FrontendVertex *vertex;
+    s32 row = 0;
+    s32 column;
+    s32 phase;
+    s32 angle;
+    s32 contrast;
+    s32 height;
+    s32 value;
+
+    vertex = ((FrontendVertex **) &D_8007BE88)[D_8007BE84];
+    if (vertex != NULL) {
+        contrast = 0xFF - ((s32) arg0 * 2);
+        phase = D_8007BEB4;
+        row = 0;
+        do {
+            column = 0;
+            angle = phase;
+            do {
+                height = (s32) (func_8002A8C0(angle) * arg0);
+                column++;
+                angle += 0x2000;
+                vertex->unk4 = (s16) (height + 5);
+                value = (s32) ((height * 2 + contrast) * arg1) >> 8;
+                vertex->r = (s8) value;
+                vertex->g = (s8) value;
+                vertex->b = (s8) value;
+                vertex++;
+            } while (column != 0x11);
+            row++;
+            phase += 0x800;
+        } while (row != 0x11);
     }
-  }
 }
 void func_80037BF4(void) {
     D_8007BEB4 = (D_8007BEB0 << 8) + 0x8000;

@@ -684,7 +684,9 @@ void runlinkFreeCode(s32 overlayIndex) {
                     }
 
                     /* Restore dangling calls to the trap; clear other references. */
-                    if (((u32) relocEntry->u.b.flags >> 4) == RELOC_TYPE_26) {
+                    /* The patch operation is read at each use, as JFG does; held in
+             * a local, IDO swaps the comparison's operands. */
+            if (((u32) relocEntry->u.b.flags >> 4) == RELOC_TYPE_26) {
                         address = (u32) &TrapDanglingJump;
                     } else {
                         address = 0;
@@ -714,7 +716,6 @@ void runlinkUnloadOverlay(s32 overlayIndex) {
     s32 relocType;
     s32 found;
     s32 i;
-    u32 patchOperation;
     u32 address;
 
     overlay = &overlayTable[overlayIndex];
@@ -767,15 +768,14 @@ void runlinkUnloadOverlay(s32 overlayIndex) {
                     ((u8 *) func_80000450 + (relocEntry->u.info >> 8));
             }
 
-            patchOperation = (u32) relocEntry->u.b.flags >> 4;
-            /* Legacy inert xor preserves IDO's comparison operand order;
-             * tracked in docs/cleanup-queue.md. */
-            if ((patchOperation ^ 0) == RELOC_TYPE_26) {
+            /* The patch operation is read at each use, as JFG does; held in
+             * a local, IDO swaps the comparison's operands. */
+            if (((u32) relocEntry->u.b.flags >> 4) == RELOC_TYPE_26) {
                 address = (u32) TrapDanglingJump;
             } else {
                 address = 0;
             }
-            PatchInstruction(patchLocation, address, patchOperation);
+            PatchInstruction(patchLocation, address, (u32) relocEntry->u.b.flags >> 4);
         }
 
         relocEntry->u.n.op = relocType;

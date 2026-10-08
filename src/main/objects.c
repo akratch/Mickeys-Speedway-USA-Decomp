@@ -3964,8 +3964,8 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                     vector = &root->unk40[entry->unk4];
                     depths[count] = camGetProjZ(vector->x, vector->y,
                                                 vector->z);
-                    entries[count] = entry;
                     kindOrEntry[count] = i;
+                    entries[count] = entry;
                     sortIndex[count] = count;
                     count += 1;
                 }
@@ -4018,8 +4018,7 @@ void func_80009414(void **arg0, s32 arg1, s32 arg2, void *arg3) {
                                   (u8)alphas[j]);
                     command = (Objects09414Gfx *)*arg0;
                     *arg0 = (void *)(command + 1);
-                    command->w0 = 0xBC00000A;
-                    command->w1 = 0;
+                    command->w0 = 0xBC00000A; command->w1 = 0;
                 } else {
                     entry = entries[j];
                     vector = &root->unk40[entry->unk4];
@@ -5386,10 +5385,10 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
 
 /* PLATEAU-HANDOFF:func_80009414:start
  * symbol: func_80009414
- * score: 32/421 words
+ * score: 28/421 words
  * frame: 0x198
  * relocations: 11
- * first-mismatch: +0x240
- * summary: Render switch on (type & 0x7F) (136 to 32 at delta 0); split render slot is exact in the sort but -4 until arg0's piece refuses the sort head
+ * first-mismatch: +0x29C
+ * summary: Dynamic-loop index stored before the entry, BC packet on one line (32 to 28 at delta 0); left the sort j web (a0) and render j/type
  * PLATEAU-HANDOFF:func_80009414:end
  */

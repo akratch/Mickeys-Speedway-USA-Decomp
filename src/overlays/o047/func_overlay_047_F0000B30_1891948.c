@@ -223,7 +223,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     s32 start;
     s32 rotationStep;
     s32 labelCount;
-    s32 textX;
+
     s32 barX;
     s32 stat;
 
@@ -663,20 +663,23 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     labelCount = 0;
     for (controller = 0; controller != 4; controller++) {
         if (D_800D3058[controller].active && D_800D3058[controller].actor != NULL) {
+            /* The label x is `unready` again: one symbol for the ready flag
+             * and the label column, so it keeps unready's s8 (lever_sweep
+             * merge_locals, lane p-4: 615 at -4 to 455 at size 0). */
             if (ov47Bss_30A == 4) {
-                textX = ov47Data_530[controller] + D_800D3058[controller].screenX;
+                unready = ov47Data_530[controller] + D_800D3058[controller].screenX;
             } else {
-                textX = D_800D3058[controller].screenX - 20.0f;
+                unready = D_800D3058[controller].screenX - 20.0f;
             }
             /* The row counter is `selected` and the bar row is `stat`: one
              * symbol each across the icon and label loops, which puts both
              * webs across calls and gives the target's s1 and s4 (lane k-8). */
             stat = 116;
             for (selected = 0; selected != 4; selected++) {
-                barX = textX;
+                barX = unready;
                 if (labelCount < 4) {
                     if (ov47Bss_30A != 4) {
-                        func_8004B0F8(&D_800D3140, textX - 6, stat + 2, D_8007C0B8[145 + selected], 9);
+                        func_8004B0F8(&D_800D3140, unready - 6, stat + 2, D_8007C0B8[145 + selected], 9);
                     } else {
                         func_8004B0F8(&D_800D3140, 160, stat + 2, D_8007C0B8[145 + selected], 12);
                     }
@@ -737,10 +740,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 2011/2168 words
+ * score: 721/2168 words
  * frame: 0x280
  * relocations: 315
  * first-mismatch: +0x4
- * summary: 615 at -4. Both arms read 3CC[row - 1]; ready arm exact. Priced: the shared 3CC web's bb100 remainder piece (w1196) split, about 577 at +4.
+ * summary: 455 aligned at size 0 (masked 721): the label x written into unready keeps s8; the +4 word is gone. Open: head param copy, colour-block ring.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

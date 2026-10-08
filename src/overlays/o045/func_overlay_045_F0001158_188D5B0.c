@@ -266,8 +266,8 @@ void func_overlay_045_F0001158_188D5B0(
                     screenRight = right - 0xA0U;
                     halfWidth = (f32)(s32)(screenRight - screenLeft) * 0.5f;
                     rightFloat = screenRight;
-                    halfHeight = (f32)(upper - lower) * 0.5f;
                     negativeHalfWidth = -halfWidth;
+                    halfHeight = (f32)(upper - lower) * 0.5f;
                     negativeHalfHeight = -halfHeight;
                     x = negativeHalfWidth;
                     y = halfHeight;
@@ -351,10 +351,10 @@ void func_overlay_045_F0001158_188D5B0(
 
 /* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
  * symbol: func_overlay_045_F0001158_188D5B0
- * score: 116/674 words
+ * score: 115/674 words
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x748
- * summary: 116 at size delta 0; the target's float decision order (CDX_BIAS) leaves 1 naming row; the source of that order depends on block cuts not yet reproduced.
+ * summary: 115 at size 0: halfHeight after the negated width numbers nhw before hh; target float order (CDX_BIAS 500/10) is the oracle, 7 of 16 reproduced.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

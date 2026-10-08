@@ -25,7 +25,8 @@ extern s32 o64RandomRange(s32 minimum, s32 maximum);
  * computed before the call and saved in that local's own cell. 382 masked at
  * delta 0 against 401. Open: the frame is 0x78 against 0x70 (five compiler
  * temporaries against four), and the target keeps width in ra and the
- * counter in t5.
+ * counter in t5. 380 -> 372 (lane q-3): both smoothing loops hold their
+ * sum in lo rather than value, so value's web no longer spans them.
  */
 #ifdef NON_MATCHING
 void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
@@ -104,15 +105,15 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         j = width - 2;
         while (j--) {
-            value = (in[width + 1] + in[width - 1] + in[0] * 2 + in[width] * 4) >> 3;
+            lo = (in[width + 1] + in[width - 1] + in[0] * 2 + in[width] * 4) >> 3;
             in++;
-            if (value < 0xAA) {
-                value--;
+            if (lo < 0xAA) {
+                lo--;
             }
-            if (value < 0) {
-                value = 0;
+            if (lo < 0) {
+                lo = 0;
             }
-            *out++ = value;
+            *out++ = lo;
         }
         *out++ = 0;
         in++;
@@ -126,15 +127,15 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
         in++;
         j = width - 2;
         while (j--) {
-            value = (in[-width] + in[-width - 1] + in[-width + 1]) >> 2;
+            lo = (in[-width] + in[-width - 1] + in[-width + 1]) >> 2;
             in++;
-            if (value < 0xAA) {
-                value--;
+            if (lo < 0xAA) {
+                lo--;
             }
-            if (value < 0) {
-                value = 0;
+            if (lo < 0) {
+                lo = 0;
             }
-            *out++ = value;
+            *out++ = lo;
         }
         *out++ = 0;
         in++;
@@ -199,10 +200,10 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
 
 /* PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:start
  * symbol: func_overlay_064_F0000000_18C3B28
- * score: 380/420 words
+ * score: 372/420 words
  * frame: 0x78
  * relocations: 22
  * first-mismatch: +0x0
- * summary: 380 at 0; killing hi's operand (hi = *in++ + 0x34) gives the compare on hi and the target's pixel-loop length, but the load becomes its own web.
+ * summary: 372 at 0: smoothing sum held in lo, so value no longer spans the smoothing loops; out/in/lo colours (a2, t2, v0 in the target) remain.
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

@@ -5389,6 +5389,6 @@ f32 func_8000BD0C(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, f32 arg5)
  * frame: 0x198
  * relocations: 11
  * first-mismatch: +0x29C
- * summary: Dynamic-loop index stored before the entry, BC packet on one line (32 to 28 at delta 0); left the sort j web (a0) and render j/type
+ * summary: Dynamic-loop index stored before the entry, BC packet on one line (32 to 28 at delta 0); left the arg0 piece at bb25 (slot shape) and the sort j web
  * PLATEAU-HANDOFF:func_80009414:end
  */

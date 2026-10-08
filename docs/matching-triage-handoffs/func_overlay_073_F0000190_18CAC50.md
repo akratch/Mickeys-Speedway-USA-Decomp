@@ -6,7 +6,9 @@
 - frame: 0x98
 - relocations: 46
 - first mismatch: +0x7C8
-- summary: 4 masked at size 0, case 4 query: one ring temp drawn and released between the two narrowings with nothing emitted; no test or argument spelling draws it.
+- summary: 4 masked at size 0, case 4 query: the skipped t8 is an as1-folded draw, not a ghost; the a1 join has a natural chained-copy spelling (64).
+
+Summary before this remeasure: 4 masked at size 0, case 4 query: one ring temp drawn and released between the two narrowings with nothing emitted; no test or argument spelling draws it.
 
 Summary before this remeasure: 4 masked at size 0, all naming in the case 4 query: hitIndex - 1 is an a1 web in the target with one extra folded ring draw; ours is a ring temp.
 
@@ -561,4 +563,56 @@ mini TU over constructs that make f_get_dest refuse a0 for the constant
 the mathRnd block, or a call argument moved through a0), read from the ugen
 trace, not the score; the records say no such web exists in the tree body,
 so it must be created by the source.
+
+#### 2026-10-08, lane k-near: the skipped t8 is a folded draw, and the a1 join has a natural spelling
+
+Measured by tools/bank.py: masked 4 (raw 19), size delta +0, candidate 760 words vs target 760. Aligned: byte-exact 756, register naming 4, immediate only 0, really different 0.
+
+Measured on the tree body and on g-near's kill shape. No source change
+adopted; the tree stays at 4 masked at size 0.
+
+- ugen trace (draw_census, tree body): between emit 681 (the `or` that
+  finishes hitIndex's narrowing) and emit 693 (the sll of the mathRnd
+  result) ugen draws nothing. The whole function has exactly two kinds of
+  zero-emission ring events: the switch dispatch (f_eval's jump-table path
+  draws a free register and releases it when the selector's register is
+  not marked available) and two MOVE_END re-reads of a node still held in
+  a freed register (line 116 and the updateRate re-read on line 289).
+  Neither construct is reachable from the query block, and t8 holds no
+  node of block 34 (its last value is the 0x180 clamp of another block),
+  so the target's skipped t8 is a draw whose instruction as1 deleted by
+  renaming its producer (L150), not a ghost: either `addiu t8, zero, 1`
+  plus a move into a0, or a temp for the result narrowing's sll with a
+  move into v1.
+- Argument evaluation, read from cc -S (pre-as1 registers, 24 cells on
+  the kill shape): a constant, a symbol (updateRate), a field load
+  (state->flags), a compare (hitCount >= 2) and a swapped argument order
+  all land straight in a0 through f_get_dest; the swapped order moves
+  hitCount's narrowing into a0. So the temp-and-move needs a0 unavailable
+  at the argument, and the records (web_report, kill shape) hold nothing
+  in a0 in the call block: hitCount is web 212 (a1, bb87, bb89, bb91),
+  hitIndex is the expression web 26 (v1, bb87, bb88, bb90, bb91) and a0
+  in bb89 is the bound constant.
+- The result narrowing's sll goes into v1 directly in every form read (a
+  self copy, an or with `hitIndex ^ hitIndex`, `+ hitIndex - hitIndex` (spills
+  hitIndex), `(s8)`, `(u16)`, a mask, an s16 hitIndex, the count assigned
+  then copied, chained assignment, a ternary, an else arm assigning the
+  count or 1, a second call in the else arm): 18 listing cells, none
+  draws between the two narrowings, none emits a move as1 would fold.
+- `hitIndex = hitCount = hitIndex - 1; state->target = hits[hitCount];`
+  (and `hitCount = hitIndex - 1; hitIndex = hitCount;` before the same
+  subscript) compile the kill join without an or-zero: the copy gives
+  the subtraction a second use so uopt keeps hitCount's web, and the
+  dead copy is dropped. 64 masked at size 0 (aligned 696 exact, 64
+  naming, 0 immediate, 0 really different), the same object as the
+  or-zero kill. The copy read through hitIndex in the subscript instead
+  (`hits[hitIndex]`, `--hitIndex`) makes hitIndex a symbol web in a0.
+
+Cycle-21 line: the decision variable is still what makes f_get_dest
+refuse a0 for the mathRnd constant (or v1 for the result's sll) in the
+target. Next: on the kill or chained-copy shape, read ugen's f_get_dest
+path for an argument register in the recompiled source (decomp-refs
+ido5.3_recomp ugen_c.c, f_get_dest and f_get_reg) to list the states
+that refuse a requested register, then build the one source state the
+records can produce; do not re-run the listing cells above.
 <!-- plateau-handoff:func_overlay_073_F0000190_18CAC50:end -->

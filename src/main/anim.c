@@ -4035,7 +4035,7 @@ void fmvInit(void) {
  * frame: 0x70
  * relocations: 8
  * first-mismatch: +0x204
- * summary: Then-arm boundary between offsetY and offsetZ, cosine region removed: 17 to 11. Left: offsetX/cosine swap, offsetZ piece.
+ * summary: Then-arm boundary after offsetY, cosine region removed: 17 to 11. Left: else-arm ny decided before offsetX; then-arm pieces on the mass shape.
  * PLATEAU-HANDOFF:func_80056DD8:end
  */
 

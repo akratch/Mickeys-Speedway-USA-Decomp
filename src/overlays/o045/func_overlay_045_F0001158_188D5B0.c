@@ -97,7 +97,10 @@ extern f32 func_8002A8C0(s32 angle);
  * `leftFloat = screenLeft;` store; the left conversion is then numbered at
  * its first use and takes f26 as shipped. The dead `rightFloat` store stays:
  * it numbers the right conversion ahead of the half-height webs (removing it
- * is 117). Earlier passes: see the shard. */
+ * is 117). 115 -> 109 (lane q-3): triangle 1 writes vertex0, vertex2,
+ * flags, vertex1 and triangle 2 writes its fields in order with flags last,
+ * which makes as1 hoist the 2, 1, 3 constants as shipped. Earlier passes:
+ * see the shard. */
 #define PKT(pkt, a, b) { Gfx *_g = (Gfx *)(pkt)++; _g->words.w0 = (a); _g->words.w1 = (b); }
 #ifdef NON_MATCHING
 void func_overlay_045_F0001158_188D5B0(
@@ -304,9 +307,9 @@ void func_overlay_045_F0001158_188D5B0(
                     vertices[3].alpha = 0xFF;
                     vertices[3].z = 0;
 
-                    triangles->flags = 0x40;
                     triangles->vertex0 = 0;
                     triangles->vertex2 = 2;
+                    triangles->flags = 0x40;
                     triangles->vertex1 = 1;
                     triangles->s0 = textureLeft;
                     triangles->t0 = textureTop;
@@ -316,10 +319,10 @@ void func_overlay_045_F0001158_188D5B0(
                     triangles->t2 = textureBottom;
                     triangles++;
 
-                    triangles->flags = 0x40;
                     triangles->vertex0 = 1;
-                    triangles->vertex2 = 2;
                     triangles->vertex1 = 3;
+                    triangles->vertex2 = 2;
+                    triangles->flags = 0x40;
                     triangles->s0 = textureRight;
                     triangles->t0 = textureTop;
                     triangles->s1 = textureRight;
@@ -351,10 +354,10 @@ void func_overlay_045_F0001158_188D5B0(
 
 /* PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:start
  * symbol: func_overlay_045_F0001158_188D5B0
- * score: 115/674 words
+ * score: 109/674 words
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x748
- * summary: 115 at size 0: halfHeight after the negated width numbers nhw before hh; target float order (CDX_BIAS 500/10) is the oracle, 7 of 16 reproduced.
+ * summary: 109 at size 0: triangle byte order hoists the target's 2, 1, 3 constants; float decision order (CDX_BIAS oracle, residual 47 at -4) is the rest.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

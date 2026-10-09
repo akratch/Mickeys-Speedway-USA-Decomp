@@ -193,14 +193,6 @@ extern void func_overlay_047_F0002D10_1893B28(Overlay47Player *player);
     command->w0 = (u32)(a); \
     command->w1 = (u32)(b); \
 }
-/* The same command with its second word written first: per command site,
- * the order fixes which word's operand ugen materialises first (measured
- * 2026-10-07, six sites). */
-#define O47_COMMAND_W1(a, b) { \
-    Overlay47Command *command = D_800D3140++; \
-    command->w1 = (u32)(b); \
-    command->w0 = (u32)(a); \
-}
 #define O47_PHYSICAL(p) ((u32)((u8 *)(p) + 0x80000000))
 #define O47_VERTICES(p, n) \
     O47_COMMAND(0x04000000 | (((((n) << 3) | (O47_PHYSICAL(p) & 6)) & 0xFF) << 16) | ((n) * 10 + 8), O47_PHYSICAL(p))
@@ -226,17 +218,18 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
     s32 barX;
     s32 stat;
-    /* The icon packet's own colour channels, declared above x and y: these
-     * three cells put every home from x down where the target's are (lane
-     * s-4 found them as unused pads, 302 -> 291; giving the icon packet its
-     * own channels instead of the blend's, 291 -> 289, lane t-5). */
-    s32 iconRed, iconGreen, iconBlue;
+    /* Three unused cells above x and y put every home from x down where the
+     * target's are (lane s-4, 302 -> 291). Flagged: no used local found. */
+    s32 padA, padB, padC;
 
     s32 x, y;
     s32 red, green, blue;
     s32 showMode;
     f32 movement;
     s32 back;
+    /* Unused: with the three above x, the frame's fourth unexplained cell
+     * (lane v-4: here 67, after blue 74). Flagged. */
+    s32 padD;
     f32 oldFrame;
     f32 frame;
     Overlay47Player *p2;
@@ -252,6 +245,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     Overlay47Player *player;
     Overlay47TextureScroll *scroll;
     Overlay47Icon *icon;
+    /* Unused: the cell between the declared homes and the spill temps
+     * (lane v-4, 67 -> 59, every home and temp now at the target's offset).
+     * Flagged, like the other four pads. */
+    s32 padE;
 
     rate = updateRate;
     ov47Bss_30B = 0;
@@ -589,17 +586,20 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
          * operand's reload, so unready keeps its register (lane k-8). */
         O47_COMMAND(0x01000040, O47_PHYSICAL(D_800D3144));
         D_800D3144++;
-        iconRed = ov47Data_3DC[colourIndex] >> 24;
-        iconGreen = ov47Data_3DC[colourIndex] >> 16;
-        iconBlue = ov47Data_3DC[colourIndex] >> 8;
+        /* The icon packet and the blend share one set of channels, each
+         * masked at the load: the masks spend the ring draws the target
+         * spends and as1 folds them into the packet's (lane v-4). */
+        red = (ov47Data_3DC[colourIndex] >> 24) & 255;
+        green = (ov47Data_3DC[colourIndex] >> 16) & 255;
+        blue = (ov47Data_3DC[colourIndex] >> 8) & 255;
         O47_COMMAND(0x06000000, ov47Data_300);
-        O47_COMMAND(0xFA000000, ((iconRed & 255) << 24) | ((iconGreen & 255) << 16) | ((iconBlue & 255) << 8) | 255);
-        O47_COMMAND_W1(0xFCFFFFFF, 0xFFFDF6FB);
+        O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
+        O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
         O47_VERTICES(ov47Data_198, 4);
-        O47_COMMAND_W1(0x05100020, O47_PHYSICAL(ov47Data_1C0));
+        O47_COMMAND(0x05100020, O47_PHYSICAL(ov47Data_1C0));
         camStandardOrtho(&D_800D3140, &D_800D3144);
         func_80034920(&D_800D3140);
-        O47_COMMAND_W1(0xFA000000, -1);
+        O47_COMMAND(0xFA000000, -1);
         func_80023F84(&D_800D3140, &D_800D3144, &D_800D3148, icon, D_800D31C8[11], 0, 255);
         if (selected != -1 && !unready) {
             oldSelector = icon->selector;
@@ -610,15 +610,11 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         O47_COMMAND(0x01000040, O47_PHYSICAL(savedMatrix));
         if (selected != -1 && !D_800D3058[selected].ready) {
             O47_COMMAND(0x06000000, ov47Data_2A8);
-            red = ov47Data_3DC[selected] >> 24;
+            red = (ov47Data_3DC[selected] >> 24) & 255;
             green = (ov47Data_3DC[selected] >> 16) & 255;
-            blue = ov47Data_3DC[selected] >> 8;
-            /* Red and blue masked in place, green masked at the load: the
-             * masks are ring temporaries and green keeps the shipped copy. */
-            red &= 255;
+            blue = (ov47Data_3DC[selected] >> 8) & 255;
             red = red + (255 - red) * ov47Data_540;
             green = green + (255 - green) * ov47Data_540;
-            blue &= 255;
             blue = blue + (255 - blue) * ov47Data_540;
             O47_COMMAND(0xFA000000, ((red & 255) << 24) | ((green & 255) << 16) | ((blue & 255) << 8) | 255);
             O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
@@ -746,10 +742,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 249/2168 words
+ * score: 59/2168 words
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 237 aligned at size 0 (masked 249): one index per loop family (i, j), colour index its own local; ring phase (~150 rows) and head window left.
+ * summary: 59 aligned at size 0 (masked 59): every frame home exact; five unused cells flagged. Cursor fp priced (47 under force). Open: head, +0x400, s7 to s8.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

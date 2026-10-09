@@ -1357,7 +1357,11 @@ void func_800517E0(void) {
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         if (object->soundHandle != NULL) {
-                            func_800031E8(object->soundHandle);
+                            /* The cast round-trip names the call argument
+                             * apart from the tested load: the load keeps v0
+                             * and the argument copy fills the call's delay
+                             * slot, as in func_80051364 (596 -> 590). */
+                            func_800031E8((void *) (s32) object->soundHandle);
                             object->soundHandle = NULL;
                         }
                         func_80002FE0(word3 & 0xFFFF, object->x,
@@ -1372,7 +1376,7 @@ void func_800517E0(void) {
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         if (object->soundHandle != NULL) {
-                            func_800031E8(object->soundHandle);
+                            func_800031E8((void *) (s32) object->soundHandle);
                             object->soundHandle = NULL;
                         }
                     }
@@ -4003,10 +4007,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1106/1808 words
+ * score: 1100/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 596 at size 0. The 0x4B mask moves one ugen draw, not a web; 0x6F mixed-type mask literals are faithful but drop the break pieces.
+ * summary: Aligned 590 at size 0: 0x29/0x2A sound handle via cast round-trip. Break pieces hang on the D_8007D6A4 a0 piece; faithful 0x6F/0x4B crowd its seed.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

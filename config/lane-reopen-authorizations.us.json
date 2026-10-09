@@ -621,9 +621,9 @@
       "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
-      "ledger_commit": "1b79389ddbad5c65a3cd400157fc6d99d61c78fa",
-      "reason": "Test 22 used function-scope handler value homes instead of two shared carriers, predicting the 80-byte frame gap from 20 additional real decoded values. Prior block-scope locals overlapped homes; no padding or volatile.",
-      "source_commit": "556d46adad11f97e64191f3a01753aa8c1b25aa8"
+      "ledger_commit": "e759fb261f5bfbf5cdbd3db8509516e72081c13f",
+      "reason": "2026-10-09: remeasure current case 0x6E context, then test successive definitions of its real FP value with same-order destructive scaling. Prior split-scaling trials were 0x60/0x4B; byte-name and timer sweeps remain closed.",
+      "source_commit": "35bec13ea59ed384060fdd5b793ab319fe186204"
     },
     "func_80053868": {
       "ledger_commit": "7eee82f46d96fd7930784785c246ea05b6818fd4",

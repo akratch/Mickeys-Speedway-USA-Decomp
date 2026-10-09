@@ -148,7 +148,7 @@ not equivalent and the four-name mechanism above is Mickey's own.
 |---|---:|---:|---|---|
 | `runlinkDownloadCode` | `0x32878` | `0x478` | `-O2 -mips2 -32` | JFG `src/runLink.c`; 286/286 instruction words and all relocations exact, linked ROM byte-identical |
 
-`func_800320F0` (`runlinkEnsureJumpIsValid`, `0x800320F0`, `0x194` bytes) is
+`runlinkEnsureJumpIsValid` (`runlinkEnsureJumpIsValid`, `0x800320F0`, `0x194` bytes) is
 Evidence A exact C after a bounded permuter pass resolved the prior register
 allocation mismatch. Under `-O2 -mips2 -32`, all 101 instruction words, the
 `-0x20` frame, all 21 relocations, and the linked ROM bytes match. JFG's

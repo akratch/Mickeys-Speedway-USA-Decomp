@@ -2072,7 +2072,7 @@ s32 fxGenerateTextures(void) {
     index = 4;
     while (index--) {
         if ((1 << index) & D_800D60A8) {
-            func_800320F0((s32)D_8007D47C + (index << 2));
+            runlinkEnsureJumpIsValid((s32)D_8007D47C + (index << 2));
             callback = (FxTextureCallback)D_8007D47C[index];
             if (callback != 0) {
                 callback(index, D_800D6098[index], 0);
@@ -2113,7 +2113,7 @@ void fxCpuTextureRequired(s32 index, FxConeTextureInfo *texture) {
             *second = 0;
             second++;
         }
-        func_800320F0((s32)&D_8007D47C[index]);
+        runlinkEnsureJumpIsValid((s32)&D_8007D47C[index]);
         second = (s8 *)D_8007D47C[index];
         if (second != 0) {
             ((FxTextureCallback)second)(index, D_800D6098[index], 1);

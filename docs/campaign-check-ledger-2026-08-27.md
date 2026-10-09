@@ -270,7 +270,7 @@ close live rankings, and the new same-ROM leads:
 9. `overlay2SplitRegion` — W-route scheduler expert or park;
 10. `func_80012574` — configured 7/57 FP-web/stack-home plateau; run the
     bounded saved-local/declaration-order ladder;
-11. `func_800320F0` (`runlinkEnsureJumpIsValid` donor alias) — since resolved
+11. `runlinkEnsureJumpIsValid` (`runlinkEnsureJumpIsValid` donor alias) — since resolved
     exact; this dated queue entry is historical only; and
 12. `levelInit` — since classified reproof-only after source, 119-flag, and
     bounded-permuter exhaustion; this dated queue entry is historical.

@@ -153,7 +153,7 @@ typedef struct FxGfx {
 typedef void (*FxTextureCallback)(s32 index, s32 value, s32 arg2);
 
 extern void texFreeTexture(void *texture);
-extern void func_800320F0(s32 callback);
+extern void runlinkEnsureJumpIsValid(s32 callback);
 extern void func_8004ACC4(void);
 extern void mmFree(void *ptr);
 extern FxFlags D_800D5F5A[];

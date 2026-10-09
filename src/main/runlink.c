@@ -482,7 +482,7 @@ s32 runlinkDownloadCode(s32 overlayIndex) {
 /* Exact C: 101 instruction words, frame -0x20, and all 21 relocations match.
  * Four inert allocation aids remain: one overlayCount block and three
  * constant-true blocks. See docs/cleanup-queue.md. */
-s32 func_800320F0(void **jumpAddress)
+s32 runlinkEnsureJumpIsValid(void **jumpAddress)
 {
   register void **address;
   OverlayHeader *overlay;

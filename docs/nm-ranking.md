@@ -376,7 +376,7 @@ comments only, so no source/codegen search is warranted. The exact retained
 whole `.bin` predates the object and is historical rather than causal proof;
 fresh current-source object, link, and full-bin comparisons remain due.
 
-`func_800320F0` (the function formerly routed under the JFG donor alias
+`runlinkEnsureJumpIsValid` (the function formerly routed under the JFG donor alias
 `runlinkEnsureJumpIsValid`) has since been promoted: retained canonical C is
 101 words with 21 relocations, and its linked ROM range
 `0x32CF0..0x32E84` is byte-identical. It is no longer an unmatched ranking

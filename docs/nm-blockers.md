@@ -107,7 +107,7 @@ This is a names-only audit of every function body guarded by `NON_MATCHING` in `
 | `rcpClearZBuffer` | `src/main/rcpFast3d.c` | resolved-plateau | — | Fresh configured full-TU V0 is exact-sized and frameless at 103/107 raw/normalized words, first `+0x74`, with one four-field ugen temp-phase residual: target `t8/t9`, candidate `t7/t8`. Both HI16/LO16 records are exact in offset/type/identity to `D_800D2FAC`. All 119 flags are nonexact; seven O2/MIPS-II rows tie V0. A fidelity-clean proc-6 trace records 29 integer and one FP uopt decision; source-line-stamped ugen rows locate the candidate pops, though mixed-TU automatic attribution remains withheld. Pointer-truth and staged-`alignedX1` forms are byte-identical to V0, so no combination or batch qualified. ORT 765 and four callers remain authenticated; linked equality is fallback-only. Resume only with a new natural preceding phantom-pop/web-existence mechanism; do not repeat this route. |
 | `func_80031A30` | `src/main/runlink.c` | none | — | No ownership change; continue source/codegen work. |
 | `runlinkDownloadCode` | `src/main/runlink.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_800320F0` | `src/main/runlink.c` | matched | — | Promoted to exact C; no ownership work remains. |
+| `runlinkEnsureJumpIsValid` | `src/main/runlink.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `runlinkFreeCode` | `src/main/runlink.c` | none | — | No ownership change; continue source/codegen work. |
 | `runlinkInit` | `src/main/runlink.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `runlinkResumeCode` | `src/main/runlink.c` | resolved | pending-load carrier | Exact C body, frame, relocations, and linked ROM range. |

@@ -127,7 +127,7 @@ extern void func_80022FD4(
     SharedCommand **commands, void *renderArg1, void *renderArg2,
     SharedTransform *transform, void *objectResource,
     SharedDynamicSubmit *submit, s32 mode, u8 flags);
-extern void func_80047CD8(SharedCommand **commands, void *reference,
+extern void fxDrawCone(SharedCommand **commands, void *reference,
                           s32 mode, u8 key);
 
 /* DKR v77/v80 and JFG have no exact donor for this renderer. */
@@ -265,7 +265,7 @@ void overlay69DrawSortedGeometry(SharedCommand **commands, void *renderArg1,
         for (i = 0; i < count; i++) {
             SHARED_LOAD_FIXED_GEOMETRY((*commands)++,
                 (void *)((u32)fixedGeometry[order[i]] + 0x80000000U));
-            func_80047CD8(commands, fixedRefs[order[i]], 6,
+            fxDrawCone(commands, fixedRefs[order[i]], 6,
                                       (u8)fixedKeys[order[i]]);
         }
 

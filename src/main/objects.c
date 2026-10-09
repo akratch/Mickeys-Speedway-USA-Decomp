@@ -1667,7 +1667,7 @@ extern void lightSetupLightSources(void *object);
 extern void lightSetupFlareSources(void *object);
 extern s32 func_8001A008(void *object, void *state);
 extern void modelSetModelFlags(s32 flags);
-extern s32 func_80048760(void *object, s32 state);
+extern s32 wakeSetupRipple(void *object, s32 state);
 extern void func_80053550(void *source, s32 kind, s32 mode, s16 rotationX,
                            s16 rotationY, s16 rotationZ, f32 radius, f32 height,
                            f32 arg8, f32 arg9, s32 collisionType, u16 flags);
@@ -1849,7 +1849,7 @@ void *func_8000590C(void *packet, s32 spawnFlags) {
         }
     }
     if ((loadFlags & 0x400) && (object->unk40->unk72 != -1)) {
-        resultSize = func_80048760(object, (s32)cursor);
+        resultSize = wakeSetupRipple(object, (s32)cursor);
         cursor += resultSize;
         if (resultSize == 0) {
             if (D_800C9490 != 0) {
@@ -2482,11 +2482,11 @@ extern void camlightDelete(void *object);
 extern void partObjFreeTriggers(void *object);
 extern void partNullifyCircularParticleParents(void *object);
 extern s32 lightKillGlowingLight();
-extern void func_80048980(void *object);
+extern void wakeFreeRipple(void *object);
 extern void func_8001C088(void *object);
 extern void killLight(void *light);
 extern void amSndStop(void *sound);
-extern void func_80046E70(void *object);
+extern void fxFreeCone(void *object);
 
 /* Matched (was 168 masked words) by giving each value its own spelling:
  * one `payload` local holds the behaviour payload in every case that reads
@@ -2768,7 +2768,7 @@ void func_80007118(u8 *object, s32 unused) {
             for (j = 0; j != 0x30; j += 0xC) {
                 value = *(void **)(payload + 0x354 + j);
                 if (value != NULL) {
-                    func_80046E70(value);
+                    fxFreeCone(value);
                 }
             }
             break;
@@ -2788,7 +2788,7 @@ void func_80007118(u8 *object, s32 unused) {
         }
     }
     if (*(void **)(object + 0x54) != NULL) {
-        func_80048980(*(void **)(object + 0x54));
+        wakeFreeRipple(*(void **)(object + 0x54));
     }
     if (*(u8 **)(object + 0x78) != NULL && *(void **)(*(u8 **)(object + 0x78) + 0x24) != NULL) {
         func_800031E8(*(void **)(*(u8 **)(object + 0x78) + 0x24));
@@ -2873,7 +2873,7 @@ extern void func_8001BB04(void *object, s32 updateRate);
 extern void func_8001BB10(void *object, s32 updateRate);
 extern void rangetriggerControl(void *object, s32 updateRate);
 extern void func_80007E40(Objects07E40Object *object, s32 updateRate);
-extern void func_80049000(void *object, s32 updateRate);
+extern void wakeUpdateRipple(void *object, s32 updateRate);
 extern void func_80036544(void *entry, s32 *mode, s32 animationId, void *state,
                           s32 updateRate);
 extern void func_8001CB84(void *object, s32 updateRate);
@@ -2958,7 +2958,7 @@ void func_8000784C(s32 updateRate) {
                     func_80007E40((Objects07E40Object *)object, updateRate);
                 }
                 if ((object->unk44 != 1) && (object->unk54 != NULL)) {
-                    func_80049000(object, updateRate);
+                    wakeUpdateRipple(object, updateRate);
                 }
                 animation = (Objects0784CAnimation *)object->unk4C;
                 if (animation != NULL) {
@@ -3876,7 +3876,7 @@ extern void func_80022E80(void *transform);
 extern void func_80022FD4(void **displayList, s32 matrices, s32 vertices,
                           void *transform, f32 *opacity,
                           Objects09414Sprite *sprite, s32 flags, s32 alpha);
-extern void func_80047CD8(void **displayList, void *cone, s32 flags, u8 alpha);
+extern void fxDrawCone(void **displayList, void *cone, s32 flags, u8 alpha);
 extern f32 func_80009F08(Objects09F08Arg *object);
 
 void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void *rawObject) {
@@ -4020,7 +4020,7 @@ void func_80009414(void **displayListPtr, s32 vertexList, s32 triangleList, void
                     *displayListPtr = (void *)(command + 1);
                     command->w0 = 0x01810040;
                     command->w1 = (u32)textures[slot] + 0x80000000;
-                    func_80047CD8(displayListPtr, cones[slot], mode,
+                    fxDrawCone(displayListPtr, cones[slot], mode,
                                   (u8)alphas[slot]);
                     command = (Objects09414Gfx *)*displayListPtr;
                     *displayListPtr = (void *)(command + 1);

@@ -241,8 +241,8 @@ void *func_80053420(s32 index, void *target);
 void func_80024ED8();
 s32 func_8003A550(void);
 s32 func_8000FBD8(s32 segmentIndex, f32 x, f32 y, f32 z);
-void func_800475E8(void *cone, s16 angle);
-void func_800479D4(void *cone, s16 angle, f32 x, f32 y, s32 length);
+void fxMakeConeTextureCoords(void *cone, s16 angle);
+void fxMakeConeLength(void *cone, s16 angle, f32 x, f32 y, s32 length);
 void partUpdateTriggers(void *object, s32 updateRate);
 void changeLightIntensity(void *light, u8 intensity);
 s32 func_8002A204(s16 angle);
@@ -258,7 +258,7 @@ ControlActor **func_8000572C(s32 *start, s32 *end);
 s32 func_8005776C(f32 x, f32 y, f32 z, f32 radius, s32 mode, ControlActor **hitActor);
 void func_800282C8(void);
 void func_8005AD64(void *instance, s32 frame, s32 arg2, f32 value);
-void *func_80046EC4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
+void *fxAllocateCone(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
                     f32 arg5, f32 arg6, f32 arg7, s32 arg8, s32 arg9,
                     s32 argA);
 f32 Powerf(f32 value, s32 exponent);
@@ -691,7 +691,7 @@ void func_8001C4C0(ControlActor *actor, ControlPlayerInitState *state, s32 mode)
                     slot->index = particle->index;
                     slot->model = (s8)
                         characterData->indexTable[particle->index].value;
-                    slot->handle = func_80046EC4(
+                    slot->handle = fxAllocateCone(
                         position[0], position[1], position[2],
                         (s16) (particle->angle << 8),
                         (s16) (particle->angleLow << 8),
@@ -1382,8 +1382,8 @@ void func_8001D960(ControlActor *actor, ControlPlayer *player, s32 triggerFlags,
             slot->intensity = intensity;
             slot->phase = phase;
             if (intensity != 0) {
-                func_800475E8(particle, slot->phase);
-                func_800479D4(particle, size, scaleX, scaleY, slot->intensity);
+                fxMakeConeTextureCoords(particle, slot->phase);
+                fxMakeConeLength(particle, size, scaleX, scaleY, slot->intensity);
             }
         }
         slotMask *= 2;

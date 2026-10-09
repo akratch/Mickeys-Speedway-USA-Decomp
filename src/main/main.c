@@ -262,7 +262,7 @@ extern f32 rainDensity(void);
 extern s32 runlinkIsModuleLoaded(s32);
 extern void func_8004A0F0(void);
 extern void func_8004A51C(void);
-extern void func_8004AD34(void);
+extern void fxGenerateTextures(void);
 extern s32 D_800D40E4;
 extern f32 D_80081BCC;
 extern u8 amTuneGetSeqNo(void);
@@ -322,7 +322,7 @@ extern void camDisableUserView(s32, s32);
 extern void func_80044B9C(void);
 extern void func_80046504(void);
 extern void func_8004650C(s32);
-extern void func_8004A9CC(Gfx **);
+extern void fxUnQueueScreenEffect(Gfx **);
 extern s32 func_80049B14(s32);
 extern void func_80038E1C(Gfx **, Mtx **, MainVertex **, MainTriangle **, s32);
 extern void func_80049E4C(Gfx **, s32);
@@ -575,7 +575,7 @@ void func_80026FB4(void) {
         }
     }
 
-    func_8004A9CC(&D_800CF518);
+    fxUnQueueScreenEffect(&D_800CF518);
     drawTransition = func_80049B14(D_8007A248);
     func_80038E1C(&D_800CF518, &D_800CF530, &D_800CF588, &D_800CF5A0,
                   D_8007A248);
@@ -850,7 +850,7 @@ void mainCPUeffects(u16 *framebuffer, s32 unused) {
         }
         D_800D40E4 = screenHeight;
     }
-    func_8004AD34();
+    fxGenerateTextures();
     if ((runlinkIsModuleLoaded(0x21) != 0) &&
         (func_80049864(4) == 0)) {
         TrapDanglingJump();

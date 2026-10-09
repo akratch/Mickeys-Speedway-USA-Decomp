@@ -652,7 +652,7 @@ void levelFreeAll(void) {
         D_8007A0F4 = NULL;
     }
     runlinkFlushModules();
-    func_8004AF68();
+    fxCpuTextureFlush();
     D_800C947C = 0;
     D_80078DF0 = 0;
 }

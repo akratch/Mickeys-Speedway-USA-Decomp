@@ -1748,7 +1748,7 @@ void func_8000DFBC(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
             func_80009E78(&D_800C9520, &D_800C9524, &D_800C9528,
                           (TrackSkyObject *) object);
             if (*(s32 *) (object + 0x54) != 0) {
-                func_80049518(*(s32 *) (object + 0x54), &D_800C9520);
+                wakeDrawRipple(*(s32 *) (object + 0x54), &D_800C9520);
             }
             if (*(s16 *) (object + 6) & 0x200) {
                 switch (*(s16 *) (object + 0x44)) {
@@ -2026,7 +2026,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
     for (index = selectedCount - 1; index >= 0;) {
         object = selectedObjects[index--];
         if (E920_S32(object, 0x54) != 0) {
-            func_80049518(E920_S32(object, 0x54), &D_800C9520);
+            wakeDrawRipple(E920_S32(object, 0x54), &D_800C9520);
         }
     }
     if (runlinkIsModuleLoaded(0xD) != 0) {

@@ -1152,23 +1152,23 @@ func_80046E00 = 0x80046E00;                // type:func size:0x58 tier-A (exact 
 // trigonometry, draw and free calls agree function-for-function. Mickey begins
 // at fxFreeCone; unresolved JFG address placeholders and the later Mickey-
 // specific effects retain their local func_ names with Tier-D boundaries.
-func_80046E70 = 0x80046E70;           // type:func size:0x54 tier A (exact C, JFG fxFreeCone)
-func_80046EC4 = 0x80046EC4;           // type:func size:0x1B8 tier B (JFG fxAllocateCone)
+fxFreeCone = 0x80046E70;           // type:func size:0x54 tier A (exact C, JFG fxFreeCone), name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C
+fxAllocateCone = 0x80046EC4;           // type:func size:0x1B8 tier B (JFG fxAllocateCone), name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C
 func_8004707C = 0x8004707C;           // type:func size:0x34 tier A (exact C)
 func_800470B0 = 0x800470B0;           // type:func size:0x254 tier D (JFG placeholder)
 func_80047304 = 0x80047304;           // type:func size:0x2E4 tier D (JFG placeholder)
-func_800475E8 = 0x800475E8;           // type:func size:0x3EC tier-B ROM 0x481E8 NON_MATCHING plateau, first +0x0
-func_800479D4 = 0x800479D4;           // type:func size:0x304 tier B (JFG fxMakeConeLength), matched C src/main/fx.c -O2 -mips2 -32 -Wab,-r4300_mul, linked exact=193/193
-func_80047CD8 = 0x80047CD8;           // type:func size:0x3A8 tier-A ROM 0x488D8 matched C and linked ROM, frame 0x68, four exact func_800349A4 calls, tier-B JFG fxDrawCone role
+fxMakeConeTextureCoords = 0x800475E8;           // type:func size:0x3EC tier-B ROM 0x481E8 NON_MATCHING plateau, first +0x0, name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C
+fxMakeConeLength = 0x800479D4;           // type:func size:0x304 tier B (JFG fxMakeConeLength), matched C src/main/fx.c -O2 -mips2 -32 -Wab,-r4300_mul, linked exact=193/193, name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C
+fxDrawCone = 0x80047CD8;           // type:func size:0x3A8 tier-A ROM 0x488D8 matched C and linked ROM, frame 0x68, four exact func_800349A4 calls, tier-B JFG fxDrawCone role, name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C
 func_80048080 = 0x80048080;           // type:func size:0x164 tier-A ROM 0x48C80 matched C, 89/89 words and 4 relocations, frame -0x48, linked ROM 0x48C80-0x48DE4 byte-identical
 wakeAllocate = 0x800481E4;            // type:func size:0x57C tier B (JFG call graph/order)
-func_80048760 = 0x80048760;           // type:func size:0x1E4 tier-A ROM 0x49360 matched C, 121/121 words and 4 relocations, frame -0x48, linked ROM 0x49360-0x49544 byte-identical, tier-B JFG wakeSetupRipple role
+wakeSetupRipple = 0x80048760;           // type:func size:0x1E4 tier-A ROM 0x49360 matched C, 121/121 words and 4 relocations, frame -0x48, linked ROM 0x49360-0x49544 byte-identical, tier-B JFG wakeSetupRipple role, name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C, JFG size 0x1E4 equal
 wakeFree = 0x80048944;                // type:func size:0x3C tier A (exact C, JFG wakeFree)
-func_80048980 = 0x80048980;           // type:func size:0x48 tier A (exact C, JFG wakeFreeRipple)
+wakeFreeRipple = 0x80048980;           // type:func size:0x48 tier A (exact C, JFG wakeFreeRipple), name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C
 wakeUpdate = 0x800489C8;              // type:func size:0x638 tier B (JFG call graph/order)
-func_80049000 = 0x80049000;           // type:func size:0x254 tier B (JFG wakeUpdateRipple)
+wakeUpdateRipple = 0x80049000;           // type:func size:0x254 tier B (JFG wakeUpdateRipple), name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C
 wakeDraw = 0x80049254;                // type:func size:0x2C4 tier B (JFG call graph/order), matched C src/main/fx.c -O2 -mips2 -32 -Wab,-r4300_mul, linked exact=177/177
-func_80049518 = 0x80049518;           // type:func size:0x228 tier B (JFG wakeDrawRipple)
+wakeDrawRipple = 0x80049518;           // type:func size:0x228 tier B (JFG wakeDrawRipple), name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C, JFG size 0x228 equal
 fxInit = 0x80049740;                  // type:func size:0x4C tier A (exact C, JFG name)
 func_8004978C = 0x8004978C;           // type:func size:0x9C tier-D ROM 0x4A38C matched C src/main/fx.c.o -O2 -mips2 -32, linked exact=39/39
 func_80049828 = 0x80049828;           // type:func size:0x3C tier A (exact C)
@@ -1185,12 +1185,12 @@ func_8004A4B0 = 0x8004A4B0;           // type:func size:0x6C tier-A (exact C)
 func_8004A51C = 0x8004A51C;           // type:func size:0xA4 tier-A (exact C)
 fxSPDPRipple = 0x8004A5C0;             // type:func size:0x3A0 tier B (JFG skeleton/calls)
 fxQueueScreenEffect = 0x8004A960;      // type:func size:0x6C tier A (exact C, JFG name)
-func_8004A9CC = 0x8004A9CC;           // type:func size:0xAC tier A (exact C, JFG fxUnQueueScreenEffect)
+fxUnQueueScreenEffect = 0x8004A9CC;           // type:func size:0xAC tier A (exact C, JFG fxUnQueueScreenEffect), name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C
 fxScreenEffect = 0x8004AA78;           // type:func size:0x24C tier B (JFG order/calls)
 func_8004ACC4 = 0x8004ACC4;           // type:func size:0x70 tier-A ROM 0x4B8C4 matched C, 28/28 words and 12 relocations, frameless, linked ROM 0x4B8C4-0x4B934 byte-identical
-func_8004AD34 = 0x8004AD34;            // type:func size:0xB4 tier A (exact C, JFG fxGenerateTextures)
-func_8004ADE8 = 0x8004ADE8;            // type:func size:0x180 tier-A ROM 0x4B9E8 matched C and linked ROM, frame 0x40, 15 exact relocations, tier-B JFG fxCpuTextureRequired role
-func_8004AF68 = 0x8004AF68;            // type:func size:0xD0 tier-A ROM 0x4BB68 matched C, 52/52 words and 12 relocations, frame -0x38, linked ROM 0x4BB68-0x4BC38 byte-identical
+fxGenerateTextures = 0x8004AD34;            // type:func size:0xB4 tier A (exact C, JFG fxGenerateTextures), name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C, JFG size 0xB4 equal
+fxCpuTextureRequired = 0x8004ADE8;            // type:func size:0x180 tier-A ROM 0x4B9E8 matched C and linked ROM, frame 0x40, 15 exact relocations, tier-B JFG fxCpuTextureRequired role, name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C, JFG size 0x180 equal
+fxCpuTextureFlush = 0x8004AF68;            // type:func size:0xD0 tier-A ROM 0x4BB68 matched C, 52/52 words and 12 relocations, frame -0x38, linked ROM 0x4BB68-0x4BC38 byte-identical, name tier-B 2026-10-09 from JFG src/fx.c TU order between the named anchors wakeAllocate/wakeFree/wakeUpdate/wakeDraw/fxInit/fxQueueScreenEffect/fxScreenEffect, matched C, JFG size 0xD8 equal
 
 // gsSnd.c. One distinctive literal each, and the literal states the contract:
 // 0x8005D6E4 owns "WARNING: Attempt to stop NULL sound aborted", 0x8005D898

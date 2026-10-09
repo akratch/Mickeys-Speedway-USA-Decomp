@@ -731,7 +731,7 @@ bytes and disassembly never belong here.
   changing any other instruction. Recheck the ordinary object, complete
   relocation identities, linked owned range, and full ROM; this lever does not
   apply to locals whose initialization or lifetime is observable. Evidence:
-  the exact `func_8004ADE8` closure, 2026-09-08.
+  the exact `fxCpuTextureRequired` closure, 2026-09-08.
 - Removing one redundant input alias can disturb exact stack homes while
   removing two together recovers both the frame and the surviving homes.
   Declaration placement can expose the intermediate state: a correct frame
@@ -1709,7 +1709,7 @@ bytes and disassembly never belong here.
   closes it in one edit. The cheapest way to end a local's range early is to
   read the field back where the local was about to be used again -- uopt
   forwards the store on the line above to that load, so the read costs no
-  instruction. Evidence: `func_80049000` in `src/main/fx.c`, five words for
+  instruction. Evidence: `wakeUpdateRipple` in `src/main/fx.c`, five words for
   four passes, where `mode`'s last use was the vertex multiply's
   `(mode & 0xFF)` and ugen schedules the height `l.s`/`trunc.w.s`/`mfc1` ahead
   of that multiply; spelling the multiply's base `ripple->mode` -- the field

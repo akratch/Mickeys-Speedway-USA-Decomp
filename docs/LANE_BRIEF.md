@@ -430,7 +430,7 @@ order of how often they decided a match:
 28. **uopt numbers expressions at first occurrence, and a loop preheader
     emits in that order.** Assigning `(width - 1)` and `(height - 1)` to
     locals before the loop numbered them ahead of a table base and fixed
-    every register in func_800475E8 (33 -> 13); the same idea is item 21's
+    every register in fxMakeConeTextureCoords (33 -> 13); the same idea is item 21's
     dead read.
 29. **What makes IDO unroll.** A `do { } while (0)` macro as the loop body
     stops the unroller in a function that makes a call after the loop; the
@@ -659,7 +659,7 @@ it end to end. The ones that carry most of the weight:
   and solve rather than guess. Frame *size* is a count, not an order.
   **Corrected 2026-09-23:** an unused `s32` is *not* reliably eliminated
   before the frame is sized. Five Track B matches (`func_8000DB34`,
-  `func_800133FC`, `wakeDraw`, `func_800479D4`, the overlay 20 match) depend
+  `func_800133FC`, `wakeDraw`, `fxMakeConeLength`, the overlay 20 match) depend
   on unreferenced `s32` pads to land the target's homes; removing three from
   `wakeDraw` moved its frame from 0x88 to 0x78. Treat unreferenced locals as
   a frame lever, sweep their count and position with `frame_census.py`, and

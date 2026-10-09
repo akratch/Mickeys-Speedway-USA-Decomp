@@ -164,7 +164,7 @@ Pinned JFG font body unchanged after renames; source differences already compare
 
 | Target | Bytes | Coverage |
 | --- | ---: | --- |
-| [func_80046EC4](matching-triage-handoffs/func_80046EC4.md) | 440 | B |
+| [fxAllocateCone](matching-triage-handoffs/fxAllocateCone.md) | 440 | B |
 | [func_800470B0](matching-triage-handoffs/func_800470B0.md) | 596 | B |
 | [func_8004A10C](matching-triage-handoffs/func_8004A10C.md) | 628 | B |
 | [func_80047304](matching-triage-handoffs/func_80047304.md) | 740 | B |
@@ -173,7 +173,7 @@ Pinned JFG font body unchanged after renames; source differences already compare
 | [wakeUpdate](matching-triage-handoffs/wakeUpdate.md) | 1592 | B |
 | [fxScreenEffect](matching-triage-handoffs/fxScreenEffect.md) | 588 | B |
 | [wakeAllocate](matching-triage-handoffs/wakeAllocate.md) | 1404 | B |
-| [func_800475E8](matching-triage-handoffs/func_800475E8.md) | 1004 | B |
+| [fxMakeConeTextureCoords](matching-triage-handoffs/fxMakeConeTextureCoords.md) | 1004 | B |
 
 Pinned JFG fx audit: assembly-only TU; reused deleted anchor through committed Git history.
 

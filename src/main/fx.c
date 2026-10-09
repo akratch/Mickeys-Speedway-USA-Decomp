@@ -82,7 +82,7 @@ extern void *mmAlloc2(s32 size, s32 tag);
 #define func_8002B314 mmAlloc2
 extern u8 D_7D310[];
 
-void func_80046E70(FxCone *cone) {
+void fxFreeCone(FxCone *cone) {
     FxConeTextureInfo *texture;
     FxConeTextureInfo *alternateTexture;
 
@@ -107,9 +107,9 @@ extern void func_800470B0(FxCone *, s16, s16, s16, s16, s16,
                           f32, f32, f32);
 extern void func_80047304(FxCone *, s16, s16, s16, s16, s16,
                           f32, f32, f32);
-extern void func_800475E8(FxCone *, s16);
+extern void fxMakeConeTextureCoords(FxCone *, s16);
 
-void *func_80046EC4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
+void *fxAllocateCone(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
                     f32 arg5, f32 arg6, f32 arg7, s32 arg8, s32 arg9,
                     s32 argA) {
     s32 vertexBytes;
@@ -162,7 +162,7 @@ void *func_80046EC4(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
             func_800470B0(cone, arg0, arg1, arg2, arg3, arg4, arg5, arg6,
                           arg7);
         }
-        func_800475E8(cone, 0);
+        fxMakeConeTextureCoords(cone, 0);
     }
     return cone;
 }
@@ -322,7 +322,7 @@ void func_80047304(FxCone *cone, s16 arg1, s16 arg2, s16 arg3, s16 arg4,
  * (height - 1) first. segmentCount carries the eight-point angle and the
  * 32-vertex countdown as well as the count, which with the texture local
  * keeps the frame at 0xF8 and the arrays at sp+0xB8/sp+0x90. */
-void func_800475E8(FxCone *cone, s16 angle) {
+void fxMakeConeTextureCoords(FxCone *cone, s16 angle) {
     FxConeTextureInfo *texture;
     FxConeVertex *vertex;
     s32 width;
@@ -405,7 +405,7 @@ void func_800475E8(FxCone *cone, s16 angle) {
  *    copy and tests the counter).
  *  - FP colours: the cast height in its own web (originZ), the scale
  *    written inline, and originZ *= before the negation. */
-void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
+void fxMakeConeLength(FxCone *cone, s16 height, f32 radius, f32 depth,
                    s32 alpha) {
     s32 unused;
     FxConePoint *point;
@@ -485,7 +485,7 @@ void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
 /*
  * PROVENANCE: the block-local display-list macro spelling below is adapted
  * from Jet Force Gemini include/f3ddkr.h. Mickey's own bytes establish every
- * invocation, argument, constant and operation order in func_80047CD8.
+ * invocation, argument, constant and operation order in fxDrawCone.
  */
 #define FX_SHIFTL(value, shift, width) \
     ((u32)(((u32)(value) & ((1U << (width)) - 1U)) << (shift)))
@@ -523,7 +523,7 @@ void func_800479D4(FxCone *cone, s16 height, f32 radius, f32 depth,
 
 /* Mickey-derived body; JFG's corresponding fxDrawCone body is assembly-only.
  * The white-color block retains an unsigned XOR-zero allocation lever. */
-void func_80047CD8(FxGfx **dList, FxCone *cone, s32 flags, u8 alpha) {
+void fxDrawCone(FxGfx **dList, FxCone *cone, s32 flags, u8 alpha) {
     s32 hasTexture;
 
     if (cone != 0) {
@@ -886,7 +886,7 @@ extern Wake *wakeAllocate(s32 wakeType, f32 wakeValue88, f32 wakeValue80,
                           f32 wakeValue84, s32 wakeValue8C,
                           f32 wakeValue8E);
 
-s32 func_80048760(void *arg0, s32 arg1) {
+s32 wakeSetupRipple(void *arg0, s32 arg1) {
     u8 pad[16];
     s32 size;
     s32 i;
@@ -984,7 +984,7 @@ void wakeFree(Wake *wake) {
     }
     mmFree(wake);
 }
-void func_80048980(WakeRipple *ripple) {
+void wakeFreeRipple(WakeRipple *ripple) {
     void *linked = ripple->linked;
 
     if (linked != 0) {
@@ -1244,7 +1244,7 @@ void wakeUpdate(Wake *wake, f32 arg1, f32 arg2, f32 arg3, s16 angle, s32 arg5) {
  * still leaves wakeUpdateRipple assembly-only; src/fx.h adds no ripple source
  * context. JFG supplies only the role/name; this retained body uses Mickey's
  * target offsets and calls. No new donor body was available or adopted. */
-void func_80049000(FxWakeUpdateOwner *owner, s32 delta) {
+void wakeUpdateRipple(FxWakeUpdateOwner *owner, s32 delta) {
     FxWakeTexture *texture;
     u8 mode;
     FxWakeRippleData *ripple;
@@ -1396,7 +1396,7 @@ void wakeDraw(Wake *wake, FxGfx **dlist) {
 /* Workbench: schedule-mismatch, 2/138 differing words, first mismatch +0x60. */
 /* Exact 138-word geometry/frame -0x20; one D_7D310 LO16 schedule slot remains. */
 /* All five relocation identities agree; the LO16 offset is nonexact. */
-void func_80049518(WakeRipple *ripple, FxGfx **dlist)
+void wakeDrawRipple(WakeRipple *ripple, FxGfx **dlist)
 {
   s32 alpha;
   void *linked;
@@ -1962,7 +1962,7 @@ void fxQueueScreenEffect(s32 type, s32 value4, s32 value6, s32 value8,
         effect->value10 = value10;
     }
 }
-void func_8004A9CC(FxGfx **dList) {
+void fxUnQueueScreenEffect(FxGfx **dList) {
     FxScreenEffect *effect;
     s32 index;
 
@@ -2064,7 +2064,7 @@ void func_8004ACC4(void) {
         D_800D60D0[i] = (s32) TrapDanglingJump == (s32) D_8007D47C[i];
     }
 }
-s32 func_8004AD34(void) {
+s32 fxGenerateTextures(void) {
     FxTextureCallback callback;
     s32 index;
 
@@ -2087,7 +2087,7 @@ extern void *mmAlloc(s32 size, s32 tag);
  * src/fx.c::fxCpuTextureRequired placeholder and its retail-derived assembly;
  * Mickey's target establishes all types, expressions, and final codegen.
  */
-void func_8004ADE8(s32 index, FxConeTextureInfo *texture) {
+void fxCpuTextureRequired(s32 index, FxConeTextureInfo *texture) {
     s8 *first;
     s32 i;
     s8 *second;
@@ -2137,7 +2137,7 @@ void func_8004ADE8(s32 index, FxConeTextureInfo *texture) {
  * JFG's fxCpuTextureFlush counterpart is still assembly-only; no donor body
  * was available or used.
  */
-void func_8004AF68(void) {
+void fxCpuTextureFlush(void) {
     s32 i;
     void *allocation;
 

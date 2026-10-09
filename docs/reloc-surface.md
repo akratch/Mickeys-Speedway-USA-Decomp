@@ -1683,7 +1683,7 @@ resident offset `0x2B35C`; resident runtime and overlay SYMBOL inbounds are
 zero, and `func_80026FB4+0x5F8` is the sole direct caller. The owned range and
 the full ROM are byte-identical.
 
-Resident `func_80047CD8` owns four exact R_MIPS_26 records to
+Resident `fxDrawCone` owns four exact R_MIPS_26 records to
 `func_800349A4` at `+0x19C,+0x1F0,+0x244,+0x278`. It has no resident runtime
 record or ORT export. Authenticated inbounds are resident
 `func_80009414+0x520`, Overlay 69 table-1 record 9 at

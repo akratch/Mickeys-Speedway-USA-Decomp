@@ -777,7 +777,7 @@ segments:
       - [0x849C0, .rodata, main/diCpu]
       # fx's literal pool: func_8004A380's "%d", func_80047304's 0.33f scale
       # (a literal: as an extern global its load could not be hoisted past
-      # that loop's trig calls, which reorders the prologue), func_800475E8's
+      # that loop's trig calls, which reorders the prologue), fxMakeConeTextureCoords's
       # 102.4f, and the object's own alignment word -- IDO's whole 0x10-byte
       # input section, so no trim.
       - [0x849E0, .rodata, main/fx]

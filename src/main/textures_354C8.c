@@ -35,7 +35,7 @@ extern u8 D_800D303B;
 extern u8 D_800D303C;
 extern u8 D_800D303D;
 extern s32 D_8007BD9C;
-extern void func_8004ADE8();
+extern void fxCpuTextureRequired();
 
 typedef struct TextureFrameHeader {
     u8 pad00[2];
@@ -490,7 +490,7 @@ void func_80034E54(Gfx **dlist, Sprite *sprite, s32 flags, f32 frame, u8 alpha) 
     D_800D3028 = 0;
     texture = sprite->textures[0];
     if (texture->pad1A) {
-        func_8004ADE8(texture->pad1A, texture);
+        fxCpuTextureRequired(texture->pad1A, texture);
     }
     if (sprite->drawFlags & 0x40) {
         texturesPerFrame = sprite->numberOfTextures / sprite->numberOfFrames;

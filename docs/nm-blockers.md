@@ -47,12 +47,12 @@ This is a names-only audit of every function body guarded by `NON_MATCHING` in `
 | `func_8004BCC4` | `src/main/font.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `func_8004C690` | `src/main/font.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_8004D40C` | `src/main/font.c` | matched | — | Promoted to exact C; no ownership work remains. |
-| `func_800475E8` | `src/main/fx.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_80047CD8` | `src/main/fx.c` | resolved-plateau | — | Current configured full-TU V0 is exact-sized at 234 words with frame `0x68`, 226/234 raw/normalized words, first `+0x298`, and exact `func_800349A4` tuples at `+0x19C,+0x1F0,+0x244,+0x278`. Five residual sites are the `cone->mode` web and three the `segmentCount` web. All 119 flag identities were attempted; seven O2/MIPS-II rows tie. A proc-7 globalcolor trace leaves the temp lane exact; a mode local regressed to 236 words/frame `0x70` with tuple drift, while a scoped `segmentCount` local retained 234 words but moved to frame `0x70` and 35 raw differences. No strict gain permitted a combination or batch. Authenticated callers remain `func_80009414+0x520` and Overlay 69/88 draw functions at `+0x530`; linked equality is fallback-only. |
+| `fxMakeConeTextureCoords` | `src/main/fx.c` | none | — | No ownership change; continue source/codegen work. |
+| `fxDrawCone` | `src/main/fx.c` | resolved-plateau | — | Current configured full-TU V0 is exact-sized at 234 words with frame `0x68`, 226/234 raw/normalized words, first `+0x298`, and exact `func_800349A4` tuples at `+0x19C,+0x1F0,+0x244,+0x278`. Five residual sites are the `cone->mode` web and three the `segmentCount` web. All 119 flag identities were attempted; seven O2/MIPS-II rows tie. A proc-7 globalcolor trace leaves the temp lane exact; a mode local regressed to 236 words/frame `0x70` with tuple drift, while a scoped `segmentCount` local retained 234 words but moved to frame `0x70` and 35 raw differences. No strict gain permitted a combination or batch. Authenticated callers remain `func_80009414+0x520` and Overlay 69/88 draw functions at `+0x530`; linked equality is fallback-only. |
 | `func_800498FC` | `src/main/fx.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `func_8004A380` | `src/main/fx.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `func_8004ACC4` | `src/main/fx.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_8004AF68` | `src/main/fx.c` | none | — | No ownership change; continue source/codegen work. |
+| `fxCpuTextureFlush` | `src/main/fx.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_800336A8` | `src/main/gameVi.c` | matched | — | Promoted to exact C with the JFG direct-read and empty-statement spelling; see resident §3.8. |
 | `func_800339B4` | `src/main/gameVi.c` | matched | — | Promoted to exact C; no ownership work remains. |
 | `func_80034094` | `src/main/gameVi.c` | matched | — | Promoted to exact C; no ownership work remains. |

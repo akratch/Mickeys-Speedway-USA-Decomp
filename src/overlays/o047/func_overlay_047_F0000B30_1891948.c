@@ -281,7 +281,7 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         ov47Bss_338 = 1;
     }
     player = D_800D3058;
-    for (controller = 0; controller < 4; controller++, player++) {
+    for (controller = 0; controller < 4; controller++) {
         /* The icon cursor is reset per controller (lane v-4, 59 -> 54; still
          * 11 against 16 on the if/else body, lane x-047). */
         icon = ov47Bss_8;
@@ -514,6 +514,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                 if (player->actor != NULL) partUpdateTriggers(player->actor, updateRate);
             }
         }
+        /* The step is the body's last statement, not the for-step (lane
+         * x-047, 2 -> 0: the next statement's high half then schedules
+         * first in the latch, as shipped). */
+        player++;
     }
     ov47Data_550 += ov47Data_554 * updateRate;
     if (ov47Data_550 < 0) {
@@ -747,10 +751,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 2/2168 words
+ * score: 0/2168 words
  * frame: 0x280
  * relocations: 321
- * first-mismatch: +0x1068
- * summary: 2 aligned at size 0 (masked 2): blend arm order, draw cursor in the for-init, activeCount after the ready test. Open: latch lui at +0x1068.
+ * first-mismatch: none
+ * summary: 0 masked at size 0 (aligned exact): player step as the loop body's last statement. Not promoted: .data/.bss statics need the section rebind.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

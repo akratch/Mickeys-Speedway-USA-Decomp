@@ -455,6 +455,6 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
  * frame: 0xE0
  * relocations: 9
  * first-mismatch: +0xF4
- * summary: Previous position through struct members (operand weight), 8 to 6. Left: y/z/radius homes (spill request set).
+ * summary: Unchanged at 6; x, normal and distance locals give the target's first five spill requests (y z px py pz); radius temporary and frame left.
  * PLATEAU-HANDOFF:func_8001B798:end
  */

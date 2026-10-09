@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: Unchanged at 16; slot trace, natural count product and lever sweep flat. Left: the pre-call spill ladder (web creation order).
+- summary: Unchanged at 16; natural counts lose the dead copies (-8), declaration order does not move spill cells. Left: the pre-call spill ladder.
+
+Summary before this remeasure: Unchanged at 16; slot trace, natural count product and lever sweep flat. Left: the pre-call spill ladder (web creation order).
 
 Summary before this remeasure: NULL stores after the samples pointer, post-link stores reordered: 26 to 16. Left: only the pre-call spill ladder (16 immediate).
 
@@ -721,4 +723,30 @@ Cycle-21 line: find a source whose first IR occurrence of the frame-count
 conversion is outside block 0 (the decision variable is the creation
 index of cvt, segment and doubled against 195); read uoptlist's table
 after each candidate rather than the score.
+
+#### 2026-10-09, lane t-2: natural counts and declaration order (no change, 16)
+
+Measured by tools/bank.py: masked 16 (raw 16), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 335, register naming 0, immediate only 16, really different 0.
+
+Base re-measured: 16 masked at size 0, aligned 335/0/16/0.
+
+- Natural count product (tools/shape_product.py, 24 cells): frameCount
+  and segmentCount as symbols, groupCount and triCount from
+  `segmentCount * 2` or from each other, the alpha default before or
+  after the counts, sizes through segmentCount or through plain j/i
+  copies without the XOR. Without the XOR the two dead pre-call copies
+  go: 325 at -8 (aligned residual 37); sizes through the symbols 331 at
+  -4; alpha first 350 at -16 or worse.
+- frameCount and segmentCount symbols with the XOR copies kept: 18 at 0
+  (aligned 333/2/16/0). Declaring frameCount, segmentCount, sampleBytes,
+  a 0x14-term local, segmentBytes and textureBytes after twelve pads so
+  their declared cells would sit at the target's 0x3C to 0x24: 40 at 0,
+  and the spilled segment and doubled values still go to spill cells
+  (0x44, 0x40), not to their declared homes. A symbol spilled across the
+  call is homed in the spill area, so declaration order is not the lever
+  for this ladder.
+- The stock compiler's uopt aborts on `-Wo,-zdbug:2` here (float printer
+  assertion); the instrumented cc writes uoptlist.
+
+Cycle-21 line unchanged from lane s-2.
 <!-- plateau-handoff:wakeAllocate:end -->

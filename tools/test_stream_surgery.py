@@ -151,6 +151,8 @@ class Instrumented(unittest.TestCase):
         self.assertFalse(ss.instrumented_wanted({"PATH": "x", "CDX_FORCE": ""}))
         self.assertTrue(ss.instrumented_wanted({"CDX_BIAS": "w1=2"}))
         self.assertTrue(ss.instrumented_wanted({"DKWB_CUT_X": "1"}))
+        self.assertTrue(ss.instrumented_wanted({"DKWB_SUBST_KEEP": "2658"}))
+        self.assertFalse(ss.instrumented_wanted({"DKWB_SUBST_KEEP": ""}))
         self.assertFalse(ss.instrumented_wanted({"DKWB_UGEN_TRACE": "1"}))
         self.assertTrue(ss.instrumented_wanted({}, flag=True))
 

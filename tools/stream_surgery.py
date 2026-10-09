@@ -42,7 +42,7 @@ function in the object rides along unchanged; the function's bytes are not
 spliced into a second object because the score reads the symbol's own span and
 relocation records.
 
-`--instrumented` (implied by any `CDX_*` or `DKWB_CUT_*` variable in the
+`--instrumented` (implied by any `CDX_*`, `DKWB_CUT_*` or `DKWB_SUBST_*` variable in the
 environment) produces the listing and the configured object with the
 instrumented compiler, so a biased or cut-forced listing round-trips and the
 control compares against the same instrumented object, not stock.
@@ -71,22 +71,10 @@ import fast_score  # noqa: E402
 
 ROOT = fast_score.ROOT
 IDO = ROOT / "tools/ido"
-INSTRUMENTED_CC = Path.home() / "Desktop" / "dev" / "ido-instrumented" / "cc"
-INSTRUMENTED_PREFIXES = ("CDX_", "DKWB_CUT_")
-
-
-def instrumented_wanted(env: dict, flag: bool = False) -> bool:
-    """True when `--instrumented` is given or any CDX_*/DKWB_CUT_* variable is set.
-
-    A stock compiler ignores those variables, so a biased or cut-forced run
-    through it would silently produce the unbiased listing.
-    """
-    return flag or any(k.startswith(INSTRUMENTED_PREFIXES) and v for k, v in env.items())
-
-
-def use_compiler(args: list[str], compiler: Path | None) -> list[str]:
-    """Swap the compiler word (args[0]) when an instrumented one is asked for."""
-    return [str(compiler)] + list(args[1:]) if compiler else list(args)
+INSTRUMENTED_CC = fast_score.INSTRUMENTED_CC
+INSTRUMENTED_PREFIXES = fast_score.INSTRUMENTED_PREFIXES
+instrumented_wanted = fast_score.instrumented_wanted
+use_compiler = fast_score.use_compiler
 
 
 # ------------------------------------------------------------ pure helpers
@@ -323,7 +311,7 @@ def main(argv: list[str] | None = None) -> int:
                     help="1-based inclusive function-line ranges to permute, e.g. 40-43,60-62")
     ap.add_argument("--instrumented", action="store_true",
                     help="use the instrumented compiler for the listing and the control object "
-                         "(implied when any CDX_* or DKWB_CUT_* variable is set)")
+                         "(implied when any CDX_*, DKWB_CUT_* or DKWB_SUBST_* variable is set)")
     ap.add_argument("--dump", action="store_true", help="print the numbered function listing and exit")
     ap.add_argument("--jobs", type=int, default=2)
     ap.add_argument("--max-cells", type=int, default=5040)

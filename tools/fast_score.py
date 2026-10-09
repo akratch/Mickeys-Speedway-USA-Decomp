@@ -19,6 +19,11 @@ repository root so relative includes resolve as the build's do, and the object
 is scored with `tools/score_symbol.py --object`, so the number agrees with the
 ranking by construction.
 
+Setting any `CDX_*`, `DKWB_CUT_*` or `DKWB_SUBST_*` variable (or `--instrumented`)
+compiles with the instrumented compiler instead, so the variable takes effect
+and the object scored is the forced one: `DKWB_SUBST_KEEP=2658 tools/fast_score.py ...`
+prices a kept substitution directly.
+
 `--aligned` adds the aligner's four buckets (exact, register naming, immediate
 only, really different) plus the one-sided word spans, which stay meaningful
 when the candidate is an instruction long or short and the positional count is
@@ -45,6 +50,34 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+# Not resolve()d: the instrumented cc is a symlink to the stock driver, which
+# finds its pass binaries (the instrumented uopt/ugen) beside the path it was
+# invoked as.
+INSTRUMENTED_CC = Path.home() / "Desktop" / "dev" / "ido-instrumented" / "cc"
+INSTRUMENTED_PREFIXES = ("CDX_", "DKWB_CUT_", "DKWB_SUBST_")
+
+
+def instrumented_wanted(env: dict, flag: bool = False) -> bool:
+    """True when `--instrumented` is given or any CDX_*/DKWB_CUT_*/DKWB_SUBST_* variable is set.
+
+    A stock compiler ignores those variables, so a biased, cut-forced or
+    substitution-forced run through it would silently score the unforced object.
+    """
+    return flag or any(k.startswith(INSTRUMENTED_PREFIXES) and v for k, v in env.items())
+
+
+def use_compiler(args: list[str], compiler: Path | None) -> list[str]:
+    """Swap the compiler word (args[0]) when an instrumented one is asked for."""
+    return [str(compiler)] + list(args[1:]) if compiler else list(args)
+
+
+def compiler_for(instrumented: bool) -> Path | None:
+    """The instrumented driver when wanted (exit if it is missing), else None."""
+    if not instrumented:
+        return None
+    if not INSTRUMENTED_CC.is_file():
+        raise SystemExit(f"instrumented compiler not found: {INSTRUMENTED_CC}")
+    return INSTRUMENTED_CC
 
 
 def source_grep_command(symbol: str) -> list[str]:
@@ -228,6 +261,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--diff", action="store_true", help="print differing words")
     ap.add_argument("--aligned", action="store_true",
                     help="also print align_symbol's four buckets for this candidate")
+    ap.add_argument("--instrumented", action="store_true",
+                    help="compile with the instrumented compiler (implied by any CDX_*, DKWB_CUT_* "
+                         "or DKWB_SUBST_* variable)")
     ap.add_argument("--keep-object", help="write the object here instead of beside the candidate")
     ns = ap.parse_args(argv)
 
@@ -236,7 +272,11 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"no such candidate: {candidate}")
     source = tracked_source_for(ns.symbol)
     obj = Path(ns.keep_object).resolve() if ns.keep_object else candidate.with_suffix(".o")
-    args = rewrite_io(configured_cc_args(source), candidate, source, obj)
+    instrumented = instrumented_wanted(os.environ, ns.instrumented)
+    args = use_compiler(rewrite_io(configured_cc_args(source), candidate, source, obj),
+                        compiler_for(instrumented))
+    if instrumented:
+        print("compiler: instrumented", file=sys.stderr)
     cc = subprocess.run(args, cwd=ROOT, capture_output=True, text=True)
     if cc.returncode:
         sys.stderr.write(cc.stderr[-2000:])

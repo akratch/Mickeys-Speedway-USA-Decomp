@@ -358,6 +358,6 @@ void func_overlay_045_F0001158_188D5B0(
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x718
- * summary: 96 at size 0: block A loads 21 out-of-block variables by vertex 1's x; the target's cut needs 19, reached only by an in-block copy.
+ * summary: 96 at size 0: statement packaging (one line, one comma statement) does not move the first cut; the load count before vertex 1's x store decides it.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

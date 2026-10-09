@@ -3987,7 +3987,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: 344 at size 0: the target keeps two pointer copies and all three doubles at their definitions; the z1/y2 array stand-in keeps only twoZ1.
+ * summary: 344 at size 0: KEEP on the pointer and double definitions prices worse; region and z1/y2 array levers do not combine (best stand-in 201 aligned at +4).
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 
@@ -3997,7 +3997,7 @@ void fmvInit(void) {
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: 354 at size 0: pairIndex's head piece is refused at the min-loop preheader by one interference (26 vs 27); the target's a1 piece includes the min loop.
+ * summary: 354 at size 0: one s2 counter for the axis loops gives the target's displacement loop (989 at -4); pairIndex head piece still refused at block 234 (26 vs 27).
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

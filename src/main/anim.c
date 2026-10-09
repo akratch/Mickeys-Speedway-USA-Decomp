@@ -4011,6 +4011,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 583 at size 0: sound handle via cast round-trip; 0x7B/0x45/0x68 statement orders. Break pieces hang on the D_8007D6A4 a0 piece.
+ * summary: Aligned 583 at size 0. The 0x4B chain keeps the break pieces with a 0x7B-only copy local (639 at 0, 602 at -4); the target's v0 copy variable is shared.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

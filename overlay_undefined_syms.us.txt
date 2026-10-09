@@ -4577,7 +4577,6 @@ overlay94SetCurrentReloc = 0xf0000000;
 overlay94SetupReloc = 0xf0000000;
 
 /* overlay 94: overlay94UpdateController.c.o */
-func_80019AB8_o094Reloc = 0xf0000000;
 func_800254FC_o094Reloc = 0xf0000000;
 func_8002565C_o094Reloc = 0xf0000000;
 func_8002A878_o094Reloc = 0xf0000000;
@@ -4596,6 +4595,7 @@ gO94Const4 = 0x00000004;
 gO94Const8 = 0x00000008;
 gO94ConstC = 0x0000000c;
 gO94Value = 0x00000130;
+lightObject_o094Reloc = 0xf0000000;
 
 /* overlay 94: overlay94SetValue.c.o */
 gOverlay94Value = 0x00000130;

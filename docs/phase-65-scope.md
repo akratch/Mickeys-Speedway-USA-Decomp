@@ -69,7 +69,7 @@ or an ADR 0018 plateau.
 | 768 | 56 | `func_80030610` | `src/main/sched.c` | Symbol compare whose `lui` fills the branch delay |
 | 740 | 158 | `func_80047304` | `src/main/fx.c` | Hoisted bound, no prior source attempt |
 | 732 | 37 | `func_overlay_008_F0002640_1860398` | `src/overlays/o008/overlay_008.c` | Preheader emission-count move |
-| 736 | 63 | `func_80019AB8` | `src/main/lights.c` | Re-derive from the newer Jet Force Gemini body; Mickey's ROM decides |
+| 736 | 63 | `lightObject` | `src/main/lights.c` | Re-derive from the newer Jet Force Gemini body; Mickey's ROM decides |
 
 23,336 bytes in total. `overlay1ActivateObject` was dropped: lane status is
 already-integrated/exhausted, not base-only.

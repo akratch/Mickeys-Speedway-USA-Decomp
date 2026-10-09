@@ -345,7 +345,7 @@ typedef struct ShadeLevel {
 } ShadeLevel;
 
 extern void func_8001953C(LightingObject *object, ShadeState *state);
-extern void func_80019DE8(ObjectLightState *state, s32 arg1, s32 arg2, s16 arg3, s16 arg4, s32 arg5);
+extern void lightSetObjectLight(ObjectLightState *state, s32 arg1, s32 arg2, s16 arg3, s16 arg4, s32 arg5);
 extern void mathOneFloatRPY(s16 *rotation, f32 *output);
 extern void *camlightAdd(void *object, FlareEntry *entry);
 extern void camlightDelete(void);
@@ -927,7 +927,7 @@ f32 lightDirectionCalc(f32 x, f32 y, f32 z, f32 directionX, f32 directionY, f32 
  * so the products and their difference stay ring temporaries instead of three
  * globally coloured webs. Three unused declarations keep the 0x70 local block
  * and the 0x50 cameraDelta home. */
-void func_80019AB8(LightPosition *position, LightObjectContext *object,
+void lightObject(LightPosition *position, LightObjectContext *object,
                    LightDescription *description, f32 *matrix) {
     s32 count;
     s32 savedRed;
@@ -1012,11 +1012,11 @@ void func_80019AB8(LightPosition *position, LightObjectContext *object,
 }
 /* PROVENANCE: adapted from JFG's public decomp comparison and Mickey's own assembly. */
 void lightDefaultObjectLight(s32 startValue, s32 endValue, s16 pitch, s16 yaw, s32 shift) {
-    func_80019DE8(&D_800CB298, startValue, endValue, pitch, yaw, shift);
+    lightSetObjectLight(&D_800CB298, startValue, endValue, pitch, yaw, shift);
 }
 /* PROVENANCE: JFG's public assembly-backed lightSetObjectLight authenticates
  * the structural role only; Mickey's body and globals remain authoritative. */
-void func_80019DE8(ObjectLightState *state, s32 startValue, s32 endValue, s16 pitch, s16 yaw, s32 shift) {
+void lightSetObjectLight(ObjectLightState *state, s32 startValue, s32 endValue, s16 pitch, s16 yaw, s32 shift) {
     s16 rotation[3];
     f32 direction[3];
 
@@ -1063,7 +1063,7 @@ void lightSetupFlareSources(FlareObject *object) {
     }
 }
 /* PROVENANCE: adapted from JFG's public asm/nonmatchings/lights/lightInitObjectLighting.s, with Mickey's layout. */
-s32 func_8001A008(LightingObject *object, LightInitState *state) {
+s32 lightInitObjectLighting(LightingObject *object, LightInitState *state) {
     s32 result;
     LightLevelData *level;
     s32 mode;
@@ -1078,10 +1078,10 @@ s32 func_8001A008(LightingObject *object, LightInitState *state) {
         state->enabled = 1;
         result = 0x90;
         if (level->useLevelLight != 0) {
-            func_80019DE8(&state->light, level->red, level->green, level->yaw,
+            lightSetObjectLight(&state->light, level->red, level->green, level->yaw,
                           level->pitch + 0x8000, 0);
         } else {
-            func_80019DE8(&state->light, (s32) (header->red * 255.0f),
+            lightSetObjectLight(&state->light, (s32) (header->red * 255.0f),
                           (s32) (header->green * 255.0f), header->yaw,
                           header->pitch, header->shift);
         }
@@ -1104,7 +1104,7 @@ s32 func_8001A008(LightingObject *object, LightInitState *state) {
     return (result & ~3) + 4;
 }
 /* PROVENANCE: adapted from JFG's public asm/nonmatchings/lights/lightAdjustGlowingLight.s, with Mickey's constants and offsets. */
-void func_8001A154(GlowObject *object) {
+void lightAdjustGlowingLight(GlowObject *object) {
     FlareEntry flare;
     GlowEntry *entry;
     s32 scaledSize;

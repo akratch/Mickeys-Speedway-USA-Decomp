@@ -194,7 +194,7 @@ Pinned JFG fx audit: assembly-only TU; reused deleted anchor through committed G
 | Target | Bytes | Coverage |
 | --- | ---: | --- |
 | [func_80018F08](matching-triage-handoffs/func_80018F08.md) | 820 | U |
-| [func_80019AB8](matching-triage-handoffs/func_80019AB8.md) | 736 | B |
+| [lightObject](matching-triage-handoffs/lightObject.md) | 736 | B |
 | [func_8001953C](matching-triage-handoffs/func_8001953C.md) | 1016 | U |
 
 JFG lightObject remains GLOBAL_ASM at efd5abb.

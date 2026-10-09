@@ -528,7 +528,7 @@ bytes and disassembly never belong here.
   not something the programmer wrote. Limits: the field and the local must be
   provably the same value at that point, and this trades a load for a mask, so
   it only shortens the function when the field is read more than once.
-  Evidence: `func_80019DE8` in `src/main/lights.c`, where three reloads of a
+  Evidence: `lightSetObjectLight` in `src/main/lights.c`, where three reloads of a
   stack-homed parameter became two, closing a +4 size mismatch and taking the
   residual from 45 words with nine structural differences to 16 register names
   -- a pure temporary-ring rotation, closed by the ring entry below.
@@ -692,7 +692,7 @@ bytes and disassembly never belong here.
   `overlay57HandleModeInput`, and the exact resident texture-table initializer.
   The first two were found with the workbench's ugen emit-provenance trace on
   2026-09-02. It does not apply to register renames, to delay-slot fills chosen
-  by latency (`func_8001A154`'s `li -1`), or to relocation-surface differences.
+  by latency (`lightAdjustGlowingLight`'s `li -1`), or to relocation-surface differences.
 - The lexical start of a conditional block can be an allocation boundary for
   a loop-invariant expression. If IDO hoists an invariant value into a saved
   register, adding save/restore and move instructions, initialize the existing
@@ -1501,7 +1501,7 @@ bytes and disassembly never belong here.
   index of any expression is directly readable and a candidate can be scored
   by *ring position* before it is ever assembled -- much sharper than a
   positional word diff, which reports a pure rotation as dozens of differences.
-  Evidence: `func_80019DE8` in `src/main/lights.c`, whose last residual was
+  Evidence: `lightSetObjectLight` in `src/main/lights.c`, whose last residual was
   16 words that were exactly a +2 rotation. Spelling the delta as
   `state->valueDelta = state->endValue - state->startValue` instead of
   `arg2 - arg1` -- the two bytes were stored on the two preceding lines, so

@@ -32,7 +32,7 @@ hand analysis had "proven" walled (`docs/matching-triage.md`).
 ## Phases
 
 **Phase 0 (done 2026-08-28).** `tools/permute_batch.py` ported to the
-`permute.sh` fidelity fixes and proven (`func_8001A154` re-found in 75 s from
+`permute.sh` fidelity fixes and proven (`lightAdjustGlowingLight` re-found in 75 s from
 its pre-match source; see `docs/permute-batch.md` "Scratch fidelity"). Lane
 worktrees pruned 81 → 1, fully-merged branches deleted, plateau-note branches
 kept. Workbench instrumentation branch merged and pushed; backlog items

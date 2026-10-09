@@ -1737,13 +1737,13 @@ zero. `func_8003E7B8+0xE4` is the sole direct caller. The exact tuple set and
 `0x230` boundary survive the declaration-home improvement; current linked
 equality proves fallback only.
 
-Resident `func_80019DE8` targets three static records: R_MIPS_26
+Resident `lightSetObjectLight` targets three static records: R_MIPS_26
 `mathOneFloatRPY` at `+0xBC` and a `D_800CB290` HI16/LO16 pair at
 `+0xC8/+0xE0`. Matched C carries all three at the target offsets. Resident
 runtime records inside the function are zero. ORT 358 exports offset
 `0x19998`, but all resident runtime and overlay SYMBOL records have zero
 inbounds; direct callers are `lightDefaultObjectLight+0x38` and
-`func_8001A008+0x74/+0xC4`, with no stored pointer.
+`lightInitObjectLighting+0x74/+0xC4`, with no stored pointer.
 
 Resident `mmAllocAtAddr` owns 12 exact tuples in retained diagnostic C:
 HI16/LO16 pairs to `D_8007A278` at `+0x04/+0x08`, `D_8007A270` at

@@ -2408,14 +2408,14 @@ all 88 odd-FP operands and stays assembly under §6.2; lights has none.
 PROVENANCE DISCLOSURE. Comparisons use JFG's permitted public
 `src/{shadows_214A0,lights}.c` and `src/lights.h`.
 
-`func_80019DE8` owns VRAM `0x80019DE8..0x80019EE4`, ROM
+`lightSetObjectLight` owns VRAM `0x80019DE8..0x80019EE4`, ROM
 `0x1A9E8..0x1AAE4`: 252 bytes/63 words, frame `0x38`, and no padding before
 `lightSetupLightSources`. Matched exactly under `-O2 -mips2 -32
 -Wab,-r4300_mul`, with the `mathOneFloatRPY` R_MIPS_26 record at `+0xBC` and
 the `D_800CB290` HI16/LO16 pair at `+0xC8/+0xE0` at the target offsets. ORT
 358 exports offset `0x19998`, with zero resident-runtime or overlay inbounds;
 direct callers are `lightDefaultObjectLight+0x38` and
-`func_8001A008+0x74/+0xC4`, and no stored pointer exists.
+`lightInitObjectLighting+0x74/+0xC4`, and no stored pointer exists.
 
 The last residual was a uniform two-slot rotation of ugen's temporary ring
 from the delta web onward, with every opcode, offset and relocation already

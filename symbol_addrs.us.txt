@@ -2348,12 +2348,13 @@ addObjectLight = 0x80018BB4; // type:func size:0x200   ROM 0x197b4  src/lights.c
 func_80019934 = 0x80019934; // type:func size:0xF0 tier-B ROM 0x1a534 exact C, JFG body and compiler-owned switch table
 jtbl_800817B4 = 0x800817B4; // type:jtbl size:0x14 tier-A compiler-owned lights switch table
 lightDirectionCalc = 0x80019A24; // type:func size:0x94   ROM 0x1a624  src/lights.c.o  body adapted and compiler-exact
+lightObject = 0x80019AB8; // type:func size:0x2E0 ROM 0x1a6b8 matched C, name tier-B JFG src/lights.c order+named anchors lightDirectionCalc/lightDefaultObjectLight, JFG size 0x2E0 equal
 lightDefaultObjectLight = 0x80019D98; // type:func size:0x50   ROM 0x1a998  src/lights.c.o  Mickey/JFG-adapted body compiler-exact
-func_80019DE8 = 0x80019DE8; // type:func size:0xFC tier-D ROM 0x1a9e8 NON_MATCHING bounded-plateau C 64/63 words, 19/63 raw/normalized, first +0x44, 119 flags + proc-22 trace + 2 valueDelta forms nonexact, ORT 358, 3 direct callers, no runtime inbound/padding, JFG structural-only
+lightSetObjectLight = 0x80019DE8; // type:func size:0xFC tier-D ROM 0x1a9e8 NON_MATCHING bounded-plateau C 64/63 words, 19/63 raw/normalized, first +0x44, 119 flags + proc-22 trace + 2 valueDelta forms nonexact, ORT 358, 3 direct callers, no runtime inbound/padding, JFG structural-only, name tier-B JFG src/lights.c order+named anchors lightDefaultObjectLight/lightSetupLightSources, now matched C
 lightSetupLightSources = 0x80019EE4; // type:func size:0x98   ROM 0x1aae4  src/lights.c.o  Mickey/JFG-adapted body compiler-exact
 lightSetupFlareSources = 0x80019F7C; // type:func size:0x8C   ROM 0x1ab7c  src/lights.c.o  Mickey/JFG-adapted body compiler-exact
-func_8001A008 = 0x8001A008; // type:func size:0x14C tier-B ROM 0x1ac08 src/lights.c.o JFG-adapted body compiler-exact
-func_8001A154 = 0x8001A154; // type:func size:0xE8 tier-A ROM 0x1ad54 IDO C exact, Mickey reconstruction with JFG structural oracle
+lightInitObjectLighting = 0x8001A008; // type:func size:0x14C tier-B ROM 0x1ac08 src/lights.c.o JFG-adapted body compiler-exact, name tier-B JFG src/lights.c order+named anchors lightSetupFlareSources/lightKillGlowingLight
+lightAdjustGlowingLight = 0x8001A154; // type:func size:0xE8 tier-A ROM 0x1ad54 IDO C exact, Mickey reconstruction with JFG structural oracle, name tier-B JFG src/lights.c order+named anchors lightSetupFlareSources/lightKillGlowingLight
 lightKillGlowingLight = 0x8001A23C; // type:func size:0x24   ROM 0x1ae3c  src/lights.c.o  Mickey/JFG-adapted body compiler-exact
 // jfg:src/charControl.c.o
 // exact-C (ADR 0001), no external name adopted: func_8001BB90, ROM 0x1c790, size 0x24

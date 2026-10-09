@@ -1125,7 +1125,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o086/overlay86BuildTransform.c.o: POSTPROCESS =
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o094/overlay94UpdateController.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_overlay_094_F0000110_18D6CB0=overlay94UpdateController \
-		--redefine-sym func_80019AB8=func_80019AB8_o094Reloc \
+		--redefine-sym lightObject=lightObject_o094Reloc \
 		--redefine-sym func_800254FC=func_800254FC_o094Reloc \
 		--redefine-sym func_8002565C=func_8002565C_o094Reloc \
 		--redefine-sym func_8002A878=func_8002A878_o094Reloc \

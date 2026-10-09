@@ -300,12 +300,12 @@
       "reason": "New donor evidence: Jet Force Gemini upstream efd5abb advanced this shared-engine TU past the reference this plateau was filed against. Re-derive with a PROVENANCE note; Mickey ROM decides disagreements.",
       "source_commit": "d09352cdaa9a476ab208fd6965e169db3d64bdce"
     },
-    "func_80019AB8": {
+    "lightObject": {
       "ledger_commit": "48d20b5a7f43f073e7afa3d09f3852ee75d75ebc",
       "reason": "New stock compiler evidence for defined u8-to-u64 widening at one store; ADR 0017 tests minimal widening/narrowing spellings with unchanged evaluation, ABI and memory effects. Closed declaration and colour grids remain closed.",
       "source_commit": "48d20b5a7f43f073e7afa3d09f3852ee75d75ebc"
     },
-    "func_80019DE8": {
+    "lightSetObjectLight": {
       "ledger_commit": "3871c92be170f512c85f90d6fd3682e1e1a0adb0",
       "reason": "One-instruction reconstruction: at a 4-byte delta the candidate is one instruction out, and today's laws name the usual causes -- a missing register copy, a block-fallthrough order, or an address rematerialized once too often.",
       "source_commit": "3871c92be170f512c85f90d6fd3682e1e1a0adb0"

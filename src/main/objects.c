@@ -827,7 +827,7 @@ extern void texDPTextureX(FxGfx **dlist, s32 texture, s32 flags, s32 arg3);
 extern s32 func_800291FC(void);
 extern s32 texLoadTexture();
 extern void func_8005AF14(void *arg0, void *arg1, void *arg2);
-extern void func_80019AB8(void *arg0, void *arg1, s32 arg2, s32 arg3);
+extern void lightObject(void *arg0, void *arg1, s32 arg2, s32 arg3);
 extern void func_80007C68(Objects07C68Object *arg0, Objects07C68Source *arg1,
                           Objects07C68Object *arg2, s32 arg3);
 extern void **func_8000572C(s32 *start, s32 *end);
@@ -1665,7 +1665,7 @@ typedef struct {
 extern u8 *align4(u8 *address);
 extern void lightSetupLightSources(void *object);
 extern void lightSetupFlareSources(void *object);
-extern s32 func_8001A008(void *object, void *state);
+extern s32 lightInitObjectLighting(void *object, void *state);
 extern void modelSetModelFlags(s32 flags);
 extern s32 wakeSetupRipple(void *object, s32 state);
 extern void func_80053550(void *source, s32 kind, s32 mode, s16 rotationX,
@@ -1832,7 +1832,7 @@ void *func_8000590C(void *packet, s32 spawnFlags) {
     cursor += func_8000A830((Objects0A830Object *)object, cursor);
     D_800C9490 = 0;
     if (loadFlags & 0x100) {
-        cursor += func_8001A008(object, cursor);
+        cursor += lightInitObjectLighting(object, cursor);
         *(u8 *)((u8 *)object->unk50 + 0xC) = *(u8 *)((u8 *)object->unk50 + 0x25);
         *(u8 *)((u8 *)object->unk50 + 0xD) = *(u8 *)((u8 *)object->unk50 + 0x27);
     }
@@ -4156,7 +4156,7 @@ void func_80009AA8(Objects09AA8Object *object) {
             baseEntry->unkA = (s16)(baseEntry->unkA ^ 1);
         }
 
-        func_80019AB8(object, baseEntry, object->unk50,
+        lightObject(object, baseEntry, object->unk50,
                       ((Objects09AA8Entry *)((u8 *)baseEntry +
                                              (baseEntry->unkA * 4)))->unkC);
         if (material->unk11 != 0) {
@@ -4172,7 +4172,7 @@ void func_80009AA8(Objects09AA8Object *object) {
     }
     if ((blendIndex != 0) && (selectedEntry->unk8 != 0)) {
 
-        func_80019AB8(object, selectedEntry, object->unk50,
+        lightObject(object, selectedEntry, object->unk50,
                       ((Objects09AA8Entry *)((u8 *)baseEntry +
                                              (baseEntry->unkA * 4)))->unkC);
         selectedEntry->unk8 = 0;
@@ -4653,7 +4653,7 @@ struct Objects0AA38Object {
 extern void func_8001C4C0(void *object, void *packet, s32 mode);
 extern void spranimInit(void *object, void *packet);
 extern void sprasjiInit(void *object, void *packet);
-extern void func_8001A154(void *object);
+extern void lightAdjustGlowingLight(void *object);
 extern void func_8001BAE4(void *object, void *packet);
 extern void func_8001BAF8(void *object, void *packet);
 
@@ -4712,7 +4712,7 @@ void func_8000AA38(Objects0AA38Object *object, void *packet, s32 preserveState) 
             TrapDanglingJump(object, packet, preserveState); /* Overlay 89 +0x270. */
             break;
         case 34:
-            func_8001A154(object);
+            lightAdjustGlowingLight(object);
             break;
         case 35:
             TrapDanglingJump(object, packet, preserveState); /* Overlay 71 +0x0. */

@@ -114,7 +114,7 @@ exact, and the linked ROM range is byte-identical.
 The plateau was one mechanism, and it was a relocation-*identity* question
 rather than a code-generation one. The target materializes `0x80078D60` twice
 and `0x80085A40` twice, while uopt shares one address materialization per
-*symbol* -- it shares `func_80000450` between the `vramBase` store and the
+*symbol* -- it shares `amSetMuteMode` between the `vramBase` store and the
 `textSize` difference inside this same target. Two names each, not two uses of
 one name: the original link placed the code-segment end and the data-segment
 start at `0x80078D60`, and the data-segment end and the bss-segment start at
@@ -1934,7 +1934,7 @@ A loop-local node carrier plus an empty `if (i)` after the compact restore
 the search-load dest and the index colour unforced. The configured instruction
 stream is exact. All 12 runtime records agree by offset, type, identity, and
 addend: a LOCAL pair to count `+0xED0`, three LOCAL node-array pairs to
-`+0xEA0`, and SYMBOL calls to resident `partUpdateTriggers`, `func_80002FE0`
+`+0xEA0`, and SYMBOL calls to resident `partUpdateTriggers`, `amSndPlayXYZ`
 twice, and `func_80006EA0`. The following `+0xE9C..+0xEA0` word remains
 separately owned padding. The linked owned range, complete overlay, and full
 US ROM are byte-identical.

@@ -97,7 +97,7 @@ extern void mainChangeCameras(s32);
 extern void func_800016EC(u8);
 extern void func_80037414(s32, f32, f32, s32, s32, s32, s32);
 extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
-extern void func_800005CC(f32, u8);
+extern void amTuneSetFade(f32, u8);
 
 /* Overlay 52 was one translation unit: the shipped code shares high halves
  * between data/bss sites the way as1 does only for objects defined in the
@@ -580,7 +580,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                             func_8003A590();
                             func_80037414(2, 4.0f, -1.0f, 0, 0, 0, 0);
                             mainChangeLevel(18, 0, 0, 7, 1, 1);
-                            func_800005CC(3.0f, 0);
+                            amTuneSetFade(3.0f, 0);
                             o52_data_318 = 1;
                         }
                     }
@@ -594,7 +594,7 @@ void func_overlay_052_F000063C_189ACAC(s32 updateRate) {
                             func_8003A590();
                             func_80037414(2, 4.0f, -1.0f, 0, 0, 0, 0);
                             mainChangeLevel(18, 0, 0, 7, 1, 1);
-                            func_800005CC(3.0f, 0);
+                            amTuneSetFade(3.0f, 0);
                             o52_data_318 = 1;
                         }
                     }

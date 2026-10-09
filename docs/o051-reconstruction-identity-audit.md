@@ -52,7 +52,7 @@ callee has guarded candidate C; its identity does not prove that candidate ABI.
 | `func_8003A590` | 1 | `src/main/menu.c` |
 | `func_80037414` | 1 | `src/main/frontend_37D50.c` |
 | `mainChangeLevel` | 1 | `src/main/main.c` |
-| `func_800005CC` | 1 | `src/main/audio_manager_1050.c` |
+| `amTuneSetFade` | 1 | `src/main/audio_manager_1050.c` |
 
 Existing exact declarations provide useful ABI constraints:
 `func_8002F618` takes four trailing unsigned-byte arguments,

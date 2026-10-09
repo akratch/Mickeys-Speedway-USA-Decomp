@@ -216,7 +216,7 @@ extern s32 func_80049864(s32 mode);
 extern void func_800498FC(s32 mode, f32 arg1, f32 arg2, s32 red, s32 green, s32 blue, s32 alpha);
 extern f32 func_8002A8BC(s32 angle);
 extern f32 func_8002A8C0(s32 angle);
-extern void func_800031C0(void *sound, f32 x, f32 y, f32 z);
+extern void amSndSetXYZ(void *sound, f32 x, f32 y, f32 z);
 extern void *func_800355A0(s32 assetId, s32 arg1);
 extern s32 camGetMode(void);
 extern void TrapDanglingJump(f32, f32, f32, s32);
@@ -641,7 +641,7 @@ void rain_init(s32 count, s32 intensity, s32 opacity) {
  * globals and trap binding are authoritative here.
  */
 extern void func_800359D4(void *sprite);
-extern void func_800031E8(void *sound);
+extern void amSndStopXYZ(void *sound);
 extern void rainFreeTrap(void);
 void free_rain_memory(void) {
     if (D_8007C714 != NULL) {
@@ -653,7 +653,7 @@ void free_rain_memory(void) {
         D_8007C718 = NULL;
     }
     if (D_8007C720 != NULL) {
-        func_800031E8(D_8007C720);
+        amSndStopXYZ(D_8007C720);
         D_8007C720 = NULL;
     }
     rainFreeTrap();
@@ -905,6 +905,6 @@ void rain_sound(s32 updateRate) {
     y = D_800D40DC->y;
     z = D_800D40DC->z - (length * sinOffset);
     if (D_8007C720 != NULL) {
-        func_800031C0(D_8007C720, x, y, z);
+        amSndSetXYZ(D_8007C720, x, y, z);
     }
 }

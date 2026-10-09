@@ -24,7 +24,7 @@ This is a names-only audit of every function body guarded by `NON_MATCHING` in `
 | `func_8005716C` | `src/main/anim.c` | matched | — | Exact 320-byte / 80-word C with frame `0x28` and a 2-record relocation surface; no ownership change was needed. |
 | `func_800573C8` | `src/main/anim.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_8005776C` | `src/main/anim.c` | none | — | No ownership change; continue source/codegen work. |
-| `func_800033B0` | `src/main/audio_manager_36D0.c` | none | — | No ownership change; continue source/codegen work. |
+| `amSndSetEcho` | `src/main/audio_manager_36D0.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_80022FD4` | `src/main/camera.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_80023598` | `src/main/camera.c` | none | — | No ownership change; continue source/codegen work. |
 | `func_80024978` | `src/main/camera.c` | matched | — | Promoted: JFG camCopyOrthoMatrix loop scaled by D_80079F48, 83 words, frame `0x30`, 12/12 relocations. Camera's .data section starts at 0x80079F40 (as1's `lui $at` sharing places D_80079F4C at section offset 0xC). |

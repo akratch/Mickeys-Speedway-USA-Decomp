@@ -87,7 +87,7 @@ void func_800016EC_o051Reloc(u8);
 void func_8003A590_o051Reloc(void);
 void func_80037414_o051Reloc(s32, f32, f32, s32, s32, s32, s32);
 void mainChangeLevel_o051Reloc(s32, s32, s32, s32, s32, s32);
-void func_800005CC_o051Reloc(f32, u8);
+void amTuneSetFade_o051Reloc(f32, u8);
 
 extern void *D_800D3140_o051Reloc;
 extern void *D_800D3144_o051Reloc;
@@ -215,7 +215,7 @@ void func_overlay_051_F00000D0_18999D0(Overlay51Object *object, s32 updateRate) 
             func_8003A590_o051Reloc();
             func_80037414_o051Reloc(2, 4.0f, -1.0f, 0, 0, 0, 0);
             mainChangeLevel_o051Reloc(0x12, 0, 0, 7, 1, 1);
-            func_800005CC_o051Reloc(3.0f, 0);
+            amTuneSetFade_o051Reloc(3.0f, 0);
             gOverlay51TransitionDone = 1;
         }
     }

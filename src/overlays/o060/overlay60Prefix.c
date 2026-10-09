@@ -38,8 +38,8 @@ typedef struct MenuSpawnInner {
 extern ControlActor **func_8000572C(s32 *start, s32 *end);
 extern void amSndPlay(u16 sound, void **handle);
 extern s32 mathRnd(s32 minimum, s32 maximum);
-extern void func_80000510(u8 sequence);
-extern void func_800005CC(f32 fade, u8 volume);
+extern void amTunePlay(u8 sequence);
+extern void amTuneSetFade(f32 fade, u8 volume);
 extern void func_8004B0A4(s32 font);
 extern void func_8004B0DC(s32 red, s32 green, s32 blue, s32 alpha);
 extern void func_8004B0F8(Gfx **commands, s32 x, s32 y, char *text, s32 flags);
@@ -455,7 +455,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                         gOverlay60Data150 = previewMode - ticks;
                         if (gOverlay60Data150 <= 0) {
                             gOverlay60Data150 = 0;
-                            func_80000510(((u8 *)&gOverlay60Data15C)[3]);
+                            amTunePlay(((u8 *)&gOverlay60Data15C)[3]);
                         }
                     }
                     if (func_overlay_082_F00004A4_18CF624(gOverlay60Data0A8) != 0) {
@@ -467,7 +467,7 @@ void func_overlay_060_F0000334_18BA10C(s32 ticks) {
                             amSndPlay(0xF, NULL);
                         } else if (D_800D31B8_o060Reloc & 0x9000) {
                             if (gOverlay60Data150 == 0) {
-                                func_800005CC(0.5f, 0);
+                                amTuneSetFade(0.5f, 0);
                                 gOverlay60Data150 = 0x1E;
                             }
                             gOverlay60Data15C = gOverlay60Data2B0 + 1;

@@ -79,7 +79,7 @@ void func_800016EC_o050Reloc(s32); /* 0:+0x129C */
 void func_8003A590_o050Reloc(void); /* 0:+0x3A140 */
 void func_80037414_o050Reloc(s32, f32, f32, s32, s32, s32, s32); /* 0:+0x36FC4 */
 void mainChangeLevel_o050Reloc(s32, s32, s32, s32, s32, s32); /* 0:+0x27F24 */
-void func_800005CC_o050Reloc(f32, u8); /* 0:+0x17C */
+void amTuneSetFade_o050Reloc(f32, u8); /* 0:+0x17C */
 
 void overlay50SubmitTimeGlyphs(s32, s32, s32, s32);
 /* Overlay 50 was one translation unit: its runtime records address this
@@ -463,7 +463,7 @@ racer->laps != level->laps
                     func_8003A590_o050Reloc();
                     func_80037414_o050Reloc(2, 4.0f, -1.0f, 0, 0, 0, 0);
                     mainChangeLevel_o050Reloc(0x12, 0, 0, 7, 1, 1);
-                    func_800005CC_o050Reloc(3.0f, 0);
+                    amTuneSetFade_o050Reloc(3.0f, 0);
                     D_33C = 1;
                 }
                 break;
@@ -473,7 +473,7 @@ racer->laps != level->laps
                     func_8003A590_o050Reloc();
                     func_80037414_o050Reloc(2, 4.0f, -1.0f, 0, 0, 0, 0);
                     mainChangeLevel_o050Reloc(0x12, 0, 0, 7, 1, 0);
-                    func_800005CC_o050Reloc(3.0f, 0);
+                    amTuneSetFade_o050Reloc(3.0f, 0);
                     D_33C = 1;
                 }
                 break;

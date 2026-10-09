@@ -99,14 +99,14 @@ extern RunlinkRelocContext D_800D2DA8;
 extern u8 D_80078D60[]; /* start of .data  */
 extern u8 D_80078D64[]; /* the word after it */
 extern u8 D_80085A40[]; /* start of .bss   */
-extern void func_80000450(void); /* start of .text */
+extern void amSetMuteMode(void); /* start of .text */
 
 /*
  * The four section anchors runlinkInit differences, under the names the
  * original link gave them. The original placed _codeSegmentEnd and
  * _dataSegmentStart at one address and _dataSegmentEnd and _bssSegmentStart
  * at another, and the target proves it: uopt shares one address
- * materialisation per *symbol* -- it shares func_80000450 between the
+ * materialisation per *symbol* -- it shares amSetMuteMode between the
  * vramBase store and the textSize difference -- yet the target materialises
  * 0x80078D60 twice and 0x80085A40 twice. Two names each, not two uses of one
  * name.
@@ -153,15 +153,15 @@ void *ResolveRelocAddress(s32 ortIndex, s32 otIndex, RelocationEntry *relocEntry
             switch (overlayNumber) {
                 case RELOC_SECTION_DATA1:
                     overlayNumber = 0;
-                    addressOffset = (s32) D_80078D60 - (s32) func_80000450;
+                    addressOffset = (s32) D_80078D60 - (s32) amSetMuteMode;
                     break;
                 case RELOC_SECTION_DATA2:
                     overlayNumber = 0;
-                    addressOffset = (s32) D_80078D60 - (s32) func_80000450;
+                    addressOffset = (s32) D_80078D60 - (s32) amSetMuteMode;
                     break;
                 case RELOC_SECTION_BSS:
                     overlayNumber = 0;
-                    addressOffset = (s32) D_80085A40 - (s32) func_80000450;
+                    addressOffset = (s32) D_80085A40 - (s32) amSetMuteMode;
                     break;
             }
             addressBase = overlayTable[overlayNumber].vramBase;
@@ -431,7 +431,7 @@ s32 runlinkDownloadCode(s32 overlayIndex) {
     for (otherIndex = 0; otherIndex < overlayCount; otherIndex++) {
         if (overlay->vramBase != 0 && otherIndex != overlayIndex) {
             if (otherIndex == 0) {
-                D_800D2DA8.textBase = (u8 *) func_80000450;
+                D_800D2DA8.textBase = (u8 *) amSetMuteMode;
                 D_800D2DA8.dataBase = D_80078D60;
                 D_800D2DA8.bssBase = D_80085A40;
                 D_800D2DA8.relocBase = (u8 *) mainRelocTable;
@@ -508,7 +508,7 @@ s32 func_800320F0(void **jumpAddress)
     {
       if (overlayIndex == 0)
       {
-        D_800D2DA8.textBase = (u8 *) func_80000450;
+        D_800D2DA8.textBase = (u8 *) amSetMuteMode;
         D_800D2DA8.dataBase = D_80078D60;
         D_800D2DA8.bssBase = D_80085A40;
         D_800D2DA8.relocBase = (u8 *) mainRelocTable;
@@ -649,7 +649,7 @@ void runlinkFreeCode(s32 overlayIndex) {
         loadedAddress = (void *) overlay->vramBase;
         if (loadedAddress != NULL && i != overlayIndex) {
             if (i == 0) {
-                D_800D2DA8.textBase = (u8 *) &func_80000450;
+                D_800D2DA8.textBase = (u8 *) &amSetMuteMode;
                 D_800D2DA8.dataBase = (u8 *) &D_80078D60;
                 D_800D2DA8.bssBase = (u8 *) &D_80085A40;
                 D_800D2DA8.relocBase = (u8 *) mainRelocTable;
@@ -765,7 +765,7 @@ void runlinkUnloadOverlay(s32 overlayIndex) {
                 relocEntry->u.n.op = RELOC_OP_SYMBOL;
             } else {
                 patchLocation = (MipsInstruction *)
-                    ((u8 *) func_80000450 + (relocEntry->u.info >> 8));
+                    ((u8 *) amSetMuteMode + (relocEntry->u.info >> 8));
             }
 
             /* The patch operation is read at each use, as JFG does; held in
@@ -840,9 +840,9 @@ void runlinkInit(void) {
     linkSlotTable = mmAlloc(overlayCount * sizeof(LinkSlot), 0x83);
     _bzero(linkSlotTable, overlayCount * sizeof(LinkSlot));
 
-    overlayTable->vramBase = (s32) func_80000450;
+    overlayTable->vramBase = (s32) amSetMuteMode;
     overlayTable->romAddress = 0;
-    overlayTable->textSize = (u32) runlinkCodeEnd - (u32) func_80000450;
+    overlayTable->textSize = (u32) runlinkCodeEnd - (u32) amSetMuteMode;
     overlayTable->dataSize = (u32) runlinkDataEnd - (u32) runlinkDataStart;
     overlayTable->bssSize = (u32) runlinkBssEnd - (u32) runlinkBssStart;
     overlayTable->relocTableSize = mainRelocTableCount * sizeof(RelocTableEntry);
@@ -997,7 +997,7 @@ void runlinkResumeCode(s32 overlayIndex) {
         for (otherIndex = 0; otherIndex < overlayCount; otherIndex++) {
             if (overlay->vramBase != 0 && otherIndex != overlayIndex) {
                 if (otherIndex == 0) {
-                    D_800D2DA8.textBase = (u8 *) func_80000450;
+                    D_800D2DA8.textBase = (u8 *) amSetMuteMode;
                     D_800D2DA8.dataBase = D_80078D60;
                     D_800D2DA8.bssBase = D_80085A40;
                     D_800D2DA8.relocBase = (u8 *) mainRelocTable;

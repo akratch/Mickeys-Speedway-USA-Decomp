@@ -119,7 +119,7 @@ void overlay5InitializeAudio(void *context) {
     gsSndpNew(&sequenceConfig);
 
     func_80001BA0();
-    func_80000450(0);
+    amSetMuteMode(0);
     func_8002B768(resource);
     func_800039F0();
     alSurround_OutputType(4);

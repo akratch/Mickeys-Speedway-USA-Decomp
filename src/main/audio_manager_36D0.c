@@ -121,10 +121,10 @@ void amResetAudioMap(void);
 s32 func_8001398C(f32 x, f32 z, s32 range,
                   AudioEchoSurface ***surfaces);
 s32 amCalcSfxStereo(f32 x, f32 y, f32 z);
-void func_8000329C(u16 soundId, f32 x, f32 y, f32 z, u8 flags, u8 minVolume, u8 volume, u16 distance, u8 fastFalloff,
+void amCreateAudioPoint(u16 soundId, f32 x, f32 y, f32 z, u8 flags, u8 minVolume, u8 volume, u16 distance, u8 fastFalloff,
                    u8 pitch, u8 priority, s32 soundMode, AudioPoint **point);
 void func_800037C4(s32 index);
-u8 func_800033B0(void *sound, f32 x, f32 y, f32 z);
+u8 amSndSetEcho(void *sound, f32 x, f32 y, f32 z);
 void func_80003480(AudioPoint *point, s32 volume, f32 pitch, s32 pan,
                    s32 effects);
 void func_800035F8(s32 index);
@@ -270,7 +270,7 @@ void amPlayAudioMap(void *players, s32 playerCount, s32 updateRate) {
                         gsSndpSetParam(point->soundHandle, 0x10,
                                       *(u32 *)&pitch);
                         gsSndpSetParam(point->soundHandle, 4, specialPan);
-                        effects |= func_800033B0(point->soundHandle, point->x,
+                        effects |= amSndSetEcho(point->soundHandle, point->x,
                                                 point->y, point->z);
                         gsSndpSetParam(point->soundHandle, 0x100, effects);
                     }
@@ -344,7 +344,7 @@ void amPlayAudioMap(void *players, s32 playerCount, s32 updateRate) {
                         gsSndpSetParam(point->soundHandle, 4, pan);
                         gsSndpSetPriority(point->soundHandle,
                                          point->priority);
-                        effects |= func_800033B0(point->soundHandle, point->x,
+                        effects |= amSndSetEcho(point->soundHandle, point->x,
                                                 point->y, point->z);
                         gsSndpSetParam(point->soundHandle, 0x100, effects);
                     }
@@ -407,9 +407,9 @@ s32 amCalcSfxStereo(f32 x, f32 y, f32 z) {
 }
 
 /* PROVENANCE: body adapted from JFG src/audio_manager_36D0.c amSndPlayXYZ. */
-void func_80002FE0(u16 soundId, f32 x, f32 y, f32 z, u8 flags, AudioPoint **point) {
+void amSndPlayXYZ(u16 soundId, f32 x, f32 y, f32 z, u8 flags, AudioPoint **point) {
     if (D_800C91E0[soundId].soundBite != 0 && (point == NULL || *point == NULL)) {
-        func_8000329C(D_800C91E0[soundId].soundBite, x, y, z, flags, D_800C91E0[soundId].minVolume,
+        amCreateAudioPoint(D_800C91E0[soundId].soundBite, x, y, z, flags, D_800C91E0[soundId].minVolume,
                       D_800C91E0[soundId].volume, D_800C91E0[soundId].range, 0,
                       D_800C91E0[soundId].pitch, D_800C91E0[soundId].priority,
                       D_800C91E0[soundId].unk5, point);
@@ -417,27 +417,27 @@ void func_80002FE0(u16 soundId, f32 x, f32 y, f32 z, u8 flags, AudioPoint **poin
 }
 
 /* PROVENANCE: body adapted from JFG src/audio_manager_36D0.c amSndSetVolXYZ. */
-void func_8000309C(AudioPoint *point, u8 volume) {
+void amSndSetVolXYZ(AudioPoint *point, u8 volume) {
     if (point != NULL) {
         point->volume = volume;
     }
 }
 
 /* PROVENANCE: body adapted from JFG src/audio_manager_36D0.c amSndSetPitchXYZ. */
-void func_800030B4(AudioPoint *point, u8 pitch) {
+void amSndSetPitchXYZ(AudioPoint *point, u8 pitch) {
     if (point != NULL) {
         point->pitch = pitch;
     }
 }
 
 /* PROVENANCE: body adapted from JFG src/audio_manager_36D0.c amSndPlayDirectXYZ. */
-void func_800030CC(u16 soundId, f32 x, f32 y, f32 z, u8 flags, u8 volume, f32 pitch, u8 unused,
+void amSndPlayDirectXYZ(u16 soundId, f32 x, f32 y, f32 z, u8 flags, u8 volume, f32 pitch, u8 unused,
                    AudioPoint **point) {
-    func_8000329C(soundId, x, y, z, flags, 100, volume, 15000, 0, pitch, 0x3F, 0, point);
+    amCreateAudioPoint(soundId, x, y, z, flags, 100, volume, 15000, 0, pitch, 0x3F, 0, point);
 }
 
 /* PROVENANCE: body adapted from JFG src/audio_manager_36D0.c amSndSetXYZ. */
-void func_800031C0(AudioPoint *point, f32 x, f32 y, f32 z) {
+void amSndSetXYZ(AudioPoint *point, f32 x, f32 y, f32 z) {
     if (point != NULL) {
         point->x = x;
         point->y = y;
@@ -446,7 +446,7 @@ void func_800031C0(AudioPoint *point, f32 x, f32 y, f32 z) {
 }
 
 /* PROVENANCE: body adapted from JFG src/audio_manager_36D0.c amSndStopXYZ. */
-void func_800031E8(AudioPoint *point) {
+void amSndStopXYZ(AudioPoint *point) {
     s32 index;
 
     if (point != NULL) {
@@ -480,7 +480,7 @@ void amSndUnlinkHandleXYZ(AudioPoint *point) {
  * PROVENANCE: name/order compared with JFG src/audio_manager_36D0.c
  * amCreateAudioPoint; body and pool layout use Mickey-only evidence.
  */
-void func_8000329C(u16 soundId, f32 x, f32 y, f32 z, u8 flags, u8 minVolume,
+void amCreateAudioPoint(u16 soundId, f32 x, f32 y, f32 z, u8 flags, u8 minVolume,
                    u8 volume, u16 distance, u8 fastFalloff, u8 pitch, u8 priority,
                    s32 soundMode, AudioPoint **pointHandle) {
     AudioPoint *point;
@@ -520,7 +520,7 @@ void func_8000329C(u16 soundId, f32 x, f32 y, f32 z, u8 flags, u8 minVolume,
  * PROVENANCE: name/order compared with JFG src/audio_manager_36D0.c
  * amSndSetEcho; body and surface layout use Mickey-only evidence.
  */
-u8 func_800033B0(void *sound, f32 x, f32 y, f32 z) {
+u8 amSndSetEcho(void *sound, f32 x, f32 y, f32 z) {
     AudioEchoSurface **surfaces;
     AudioEchoSurface *closest = NULL;
     AudioEchoSurface *surface;
@@ -635,7 +635,7 @@ void func_800035F8(s32 group) {
                     gsSndpSetPriority(point->soundHandle, point->priority);
                     gsSndpSetParam(
                         point->soundHandle, 0x100,
-                        func_800033B0(point->soundHandle, point->x, point->y,
+                        amSndSetEcho(point->soundHandle, point->x, point->y,
                                       point->z) |
                             entry->effects);
                 }
@@ -690,7 +690,7 @@ void func_800037C4(s32 index) {
  * PROVENANCE: name/order compared with JFG src/audio_manager_36D0.c
  * amSndGetXYZVolume; body and settings layout use Mickey-only evidence.
  */
-s32 func_800038EC(u16 soundId, AudioVector3 *position,
+s32 amSndGetXYZVolume(u16 soundId, AudioVector3 *position,
                   AudioVector3 *listener) {
     f32 dx;
     f32 dy;

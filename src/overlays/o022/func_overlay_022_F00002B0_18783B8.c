@@ -57,10 +57,10 @@ extern void func_overlay_022_F0000D30_1878E38Reloc(O22Object *object,
                                                   s32 flags);
 extern void partUpdateTriggers(O22Object *object, s32 updateRate);
 extern u32 func_80001620(u16 soundId);
-extern void func_800031E8(void *handle);
-extern void func_80002FE0(u16 soundId, f32 x, f32 y, f32 z, u8 priority,
+extern void amSndStopXYZ(void *handle);
+extern void amSndPlayXYZ(u16 soundId, f32 x, f32 y, f32 z, u8 priority,
                           void **handle);
-extern void func_8000309C(void *handle, u8 volume);
+extern void amSndSetVolXYZ(void *handle, u8 volume);
 extern void func_80036544(void *entry, s32 *mode, s32 animationId,
                           void *state, s32 updateRate);
 
@@ -195,11 +195,11 @@ void func_overlay_022_F00002B0_18783B8(O22Object *object, s32 updateRate) {
                     volume = (f32)soundVolume;
                 }
                 if (state->soundHandle != 0) {
-                    func_800031E8(state->soundHandle);
+                    amSndStopXYZ(state->soundHandle);
                 }
-                func_80002FE0(0x20B, object->position.x, object->position.y,
+                amSndPlayXYZ(0x20B, object->position.x, object->position.y,
                               object->position.z, 4, &state->soundHandle);
-                func_8000309C(state->soundHandle, (u8)volume);
+                amSndSetVolXYZ(state->soundHandle, (u8)volume);
                 state->speed = speed;
             } else {
                 state->speed = 0.0f;

@@ -24,8 +24,20 @@ u8 *levelGetLevel(void);
 void func_800511C4();
 void func_80021504(f32 value, s32 arg1);
 f32 sqrtf(f32 value);
-extern void func_800031E8(void *handle);
+extern void amSndStopXYZ(void *handle);
 HitCopyState **func_80005750(s32 *count);
+
+#ifdef NON_MATCHING
+/* The NON_MATCHING bodies of func_80051364, func_800517E0, func_80053868 and
+ * func_80054B3C are owned by other lanes and still spell these callees by
+ * their old placeholders; drop each line once those bodies are renamed. */
+#define func_80000510 amTunePlay
+#define func_800005CC amTuneSetFade
+#define func_80002FE0 amSndPlayXYZ
+#define func_800030B4 amSndSetPitchXYZ
+#define func_800031C0 amSndSetXYZ
+#define func_800031E8 amSndStopXYZ
+#endif
 
 /*
  * PROVENANCE: adapted from JFG's func_80076020_76C20. Mickey's globals and
@@ -274,7 +286,7 @@ u8 pathIndex;
                 }
                 animResetTrap(path, 0.0f, 0, 0);
                 if (*(s32 *) &object->soundHandle != 0) {
-                    func_800031E8(*(s32 *) &object->soundHandle);
+                    amSndStopXYZ(*(s32 *) &object->soundHandle);
                     *(s32 *) &object->soundHandle = 0;
                 }
             }
@@ -758,8 +770,8 @@ void func_800511C4(void) {
 }
 
 extern s32 osTvType;
-void func_800030B4(void *soundHandle, u8 pitch);
-void func_800031C0(void *soundHandle, f32 x, f32 y, f32 z);
+void amSndSetPitchXYZ(void *soundHandle, u8 pitch);
+void amSndSetXYZ(void *soundHandle, f32 x, f32 y, f32 z);
 void func_800517E0(void);
 #pragma weak animUpdateTrap = TrapDanglingJump
 extern void animUpdateTrap(AnimPath *path, f32 delta, s32 updateRate,
@@ -1996,7 +2008,7 @@ void func_800534EC(s32 arg0) {
     } while (i--);
 }
 
-void func_80002FE0(s32 id, f32 x, f32 y, f32 z, s32 priority,
+void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority,
                    void **handle);
 u8 *func_80028F54(void);
 void rumbleStart(s32 playerIndex, s32 strength, f32 duration);
@@ -2768,7 +2780,7 @@ typedef struct HitResolveVehicle {
 
 extern f32 D_800841F0;
 extern u32 func_80001620(s32 soundId);
-extern void func_8000309C(void *handle, u8 volume);
+extern void amSndSetVolXYZ(void *handle, u8 volume);
 
 typedef struct HitResolveRotation {
     s16 x;
@@ -2912,10 +2924,10 @@ void func_80055104(HitCopyState *first, HitCopyState *second, f32 scale) {
             volume = maxVolume;
         }
         if (firstVehicle->soundHandle != NULL) {
-            func_800031E8(firstVehicle->soundHandle);
+            amSndStopXYZ(firstVehicle->soundHandle);
         }
-        func_80002FE0(7, x, y, z, 4, &firstVehicle->soundHandle);
-        func_8000309C(firstVehicle->soundHandle, volume);
+        amSndPlayXYZ(7, x, y, z, 4, &firstVehicle->soundHandle);
+        amSndSetVolXYZ(firstVehicle->soundHandle, volume);
         if (!(firstVehicle->flags & 1)) {
             rumbleStart(firstVehicle->playerIndex, 50, 0.4f);
         }
@@ -2963,13 +2975,13 @@ void func_800557F8(HitCopyState *first, HitCopyState *second, f32 unused) {
         firstVehicle->unk185 = 0;
         firstVehicle->unk188 = 0.0f;
         if (soundHandle != 0) {
-            func_800031E8(soundHandle);
+            amSndStopXYZ(soundHandle);
         }
         if (!(firstVehicle->flags1A8 & 1)) {
             rumbleStart(firstVehicle->playerIndex, 0x46, 0.75f);
         }
     } else {
-        func_80002FE0(0x26E, source->current.x, source->current.y,
+        amSndPlayXYZ(0x26E, source->current.x, source->current.y,
                       source->current.z, priority, NULL);
     }
     second->position.x = source->current.x;
@@ -3012,7 +3024,7 @@ void func_80055970(HitCopyState *first, HitCopyState *second, f32 unused) {
             TrapDanglingJump(first);
         }
     } else {
-        func_80002FE0(0x26E, secondSource->current.x,
+        amSndPlayXYZ(0x26E, secondSource->current.x,
                       secondSource->current.y, secondSource->current.z,
                       4, NULL);
     }
@@ -3082,13 +3094,13 @@ void func_80055B24(HitCopyState *first, HitCopyState *second, f32 unused) {
         firstVehicle->unk185 = 0;
         firstVehicle->unk188 = 0.0f;
         if (soundHandle != 0) {
-            func_800031E8(soundHandle);
+            amSndStopXYZ(soundHandle);
         }
         if (!(firstVehicle->flags1A8 & 1)) {
             rumbleStart(firstVehicle->playerIndex, 0x46, 0.75f);
         }
     } else {
-        func_80002FE0(0x26E, secondSource->current.x,
+        amSndPlayXYZ(0x26E, secondSource->current.x,
                       secondSource->current.y, secondSource->current.z,
                       4, NULL);
     }

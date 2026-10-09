@@ -95,7 +95,7 @@ extern void func_800016EC(u8);
 extern void func_8003A590(void);
 extern void func_80037414(s32, f32, f32, s32, s32, s32, s32);
 extern void mainChangeLevel(s32, s32, s32, s32, s32, s32);
-extern void func_800005CC(f32, u8);
+extern void amTuneSetFade(f32, u8);
 
 /* Overlay 55's HUD update: the four-player sibling of overlay 53's
  * func_overlay_053_F0000240_189DBE8 and of overlay52TailB, written the same
@@ -242,7 +242,7 @@ void func_overlay_055_F000031C_18A1E34(s32 updateRate) {
             func_8003A590();
             func_80037414(2, 4.0f, -1.0f, 0, 0, 0, 0);
             mainChangeLevel(18, 0, 0, 7, 1, 1);
-            func_800005CC(3.0f, 0);
+            amTuneSetFade(3.0f, 0);
             gOverlay55TransitionDone = 1;
         }
     }

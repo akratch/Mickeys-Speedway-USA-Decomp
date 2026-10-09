@@ -45,7 +45,7 @@ extern void func_80037414_o054Reloc(s32 kind, f32 duration, f32 delay,
     s32 arg3, s32 arg4, s32 arg5, s32 arg6);
 extern void mainChangeLevel_o054Reloc(s32 level, s32 character,
     s32 animation, s32 mode, s32 arg4, s32 arg5);
-extern void func_800005CC_o054Reloc(f32 fade, u8 volume);
+extern void amTuneSetFade_o054Reloc(f32 fade, u8 volume);
 extern void amSndPlay_o054Reloc(u16 sound, void **handle);
 extern void overlay45ReleaseDescriptor_o054Reloc(Overlay45ResourceDescriptor *descriptor);
 extern void overlay45SetMode_o054Reloc(Overlay45ResourceDescriptor *descriptor, s32 value);
@@ -517,7 +517,7 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
                     func_8003A590_o054Reloc();
                     func_80037414_o054Reloc(2, 4.0f, -1.0f, 0, 0, 0, 0);
                     mainChangeLevel_o054Reloc(18, 0, 0, 7, 1, 1);
-                    func_800005CC_o054Reloc(3.0f, 0);
+                    amTuneSetFade_o054Reloc(3.0f, 0);
                     sOverlay54Tail2AC = 1;
                 }
                 break;
@@ -528,7 +528,7 @@ void func_overlay_054_F00005AC_189F24C(s32 updateRate) {
                     func_8003A590_o054Reloc();
                     func_80037414_o054Reloc(2, 4.0f, -1.0f, 0, 0, 0, 0);
                     mainChangeLevel_o054Reloc(18, 0, 0, 7, 1, 1);
-                    func_800005CC_o054Reloc(3.0f, 0);
+                    amTuneSetFade_o054Reloc(3.0f, 0);
                     sOverlay54Tail2AC = 1;
                 }
                 break;

@@ -100,7 +100,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o005/overlay_005.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym alHeapInit=alHeapInit_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym alSurround_OutputType=alSurround_OutputType_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym alSurround_ReverbSetup=alSurround_ReverbSetup_o005Reloc $@ && \
-	$(OBJCOPY) --redefine-sym func_80000450=func_80000450_o005Reloc $@ && \
+	$(OBJCOPY) --redefine-sym amSetMuteMode=amSetMuteMode_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_80001740=func_80001740_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_80001BA0=func_80001BA0_o005Reloc $@ && \
 	$(OBJCOPY) --redefine-sym func_800039F0=func_800039F0_o005Reloc $@ && \
@@ -147,7 +147,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o007/overlay_007_tail.c.o: POSTPROCESS = \
 		--redefine-sym func_overlay_007_F0000CCC_185CB54=overlay7DispatchSelection \
 		--redefine-sym func_overlay_007_F0000DBC_185CC44=overlay7CommitSelection \
 		--redefine-sym amSndPlay=amSndPlay_o007Reloc \
-		--redefine-sym func_800031E8=func_800031E8_o007Reloc \
+		--redefine-sym amSndStopXYZ=amSndStopXYZ_o007Reloc \
 		--redefine-sym mathRnd=mathRnd_o007Reloc \
 		--add-symbol gOverlay7ModeSwitchTableReloc=0x4,global $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
@@ -330,9 +330,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o001/overlay_001_tail.c.o: POSTPROCESS = \
 		--redefine-sym func_overlay_001_F0006A14_1852DF4=overlay1ConsumeNearbyPending \
 		--redefine-sym func_overlay_001_F0006D4C_185312C=overlay1UpdateAimedTransient \
 		--redefine-sym func_8002A910=func_8002A910_o001Reloc \
-		--redefine-sym func_80002FE0=func_80002FE0_o001Reloc \
-		--redefine-sym func_800031C0=func_800031C0_o001Reloc \
-		--redefine-sym func_800031E8=func_800031E8_o001Reloc \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o001Reloc \
+		--redefine-sym amSndSetXYZ=amSndSetXYZ_o001Reloc \
+		--redefine-sym amSndStopXYZ=amSndStopXYZ_o001Reloc \
 		--redefine-sym func_80008128=func_80008128_o001Reloc \
 		--redefine-sym func_8001357C=func_8001357C_o001Reloc \
 		--redefine-sym func_8001D41C=func_8001D41C_o001Reloc \
@@ -587,11 +587,11 @@ $(O8_OBJ): POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
 		func_800299E8=func_800299E8_o008Reloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_800031E8=func_800031E8_o008Reloc $@ && \
+		amSndStopXYZ=amSndStopXYZ_o008Reloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_80002FE0=func_80002FE0_o008Reloc $@ && \
+		amSndPlayXYZ=amSndPlayXYZ_o008Reloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_800031C0=func_800031C0_o008Reloc $@ && \
+		amSndSetXYZ=amSndSetXYZ_o008Reloc $@ && \
 	$(OBJCOPY) --redefine-sym \
 		func_8002A204=func_8002A204_o008Reloc $@ && \
 	$(OBJCOPY) --redefine-sym \
@@ -649,13 +649,13 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o009/overlay_009.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym \
 		ext_o0_7cd8=overlay9TransformReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_80002FE0=overlay9PlaySpatialReloc $@ && \
+		amSndPlayXYZ=overlay9PlaySpatialReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
 		mathRnd=overlay9RandomReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_800031C0=overlay9SetSpatialReloc $@ && \
+		amSndSetXYZ=overlay9SetSpatialReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
-		func_800030B4=overlay9SetPitchReloc $@ && \
+		amSndSetPitchXYZ=overlay9SetPitchReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
 		o9P540MathDiffAngleReloc=overlay9AngleDifferenceReloc $@ && \
 	$(OBJCOPY) --redefine-sym \
@@ -753,10 +753,10 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o027/overlay_027.c.o: POSTPROCESS = \
 	$(OBJCOPY) --redefine-sym func_overlay_027_F0000A1C_187C3F4=overlay27UpdateCoordinates $@ && \
 	$(OBJCOPY) \
-		--redefine-sym func_80002FE0=func_80002FE0_o027Reloc \
-		--redefine-sym func_8000309C=func_8000309C_o027Reloc \
-		--redefine-sym func_800031C0=func_800031C0_o027Reloc \
-		--redefine-sym func_800031E8=func_800031E8_o027Reloc \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o027Reloc \
+		--redefine-sym amSndSetVolXYZ=amSndSetVolXYZ_o027Reloc \
+		--redefine-sym amSndSetXYZ=amSndSetXYZ_o027Reloc \
+		--redefine-sym amSndStopXYZ=amSndStopXYZ_o027Reloc \
 		--redefine-sym func_80006EA0=func_80006EA0_o027Reloc \
 		--redefine-sym func_800299E8=func_800299E8_o027Reloc \
 		--redefine-sym func_8002A878=func_8002A878_o027Reloc \
@@ -1046,9 +1046,9 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o079/func_overlay_079_F0000134_18CD0D4.c.o: POS
 		--redefine-sym Arctanf=Arctanf_o079Reloc \
 		--redefine-sym Powerf=Powerf_o079Reloc \
 		--redefine-sym dAngle=dAngle_o079Reloc \
-		--redefine-sym func_80002FE0=func_80002FE0_o079Reloc \
-		--redefine-sym func_800031C0=func_800031C0_o079Reloc \
-		--redefine-sym func_800031E8=func_800031E8_o079Reloc \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o079Reloc \
+		--redefine-sym amSndSetXYZ=amSndSetXYZ_o079Reloc \
+		--redefine-sym amSndStopXYZ=amSndStopXYZ_o079Reloc \
 		--redefine-sym func_8000590C=func_8000590C_o079Reloc \
 		--redefine-sym func_80008128=func_80008128_o079Reloc \
 		--redefine-sym func_80010900=func_80010900_o079Reloc \
@@ -1777,7 +1777,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o087/func_overlay_087_F0000128_18D3090.c.o: POS
 		--redefine-sym Arctanf=Arctanf_o087Reloc \
 		--redefine-sym Powerf=Powerf_o087Reloc \
 		--redefine-sym dAngle=dAngle_o087Reloc \
-		--redefine-sym func_80002FE0=func_80002FE0_o087Reloc \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o087Reloc \
 		--redefine-sym func_80008128=func_80008128_o087Reloc \
 		--redefine-sym func_8002A8BC=func_8002A8BC_o087Reloc \
 		--redefine-sym func_8002A8C0=func_8002A8C0_o087Reloc \
@@ -2396,7 +2396,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o055/func_overlay_055_F000031C_18A1E34.c.o: POS
 		--redefine-sym camSetScissor=camSetScissor_o055Reloc \
 		--redefine-sym camStandardOrtho=camStandardOrtho_o055Reloc \
 		--redefine-sym frontGetScreenMode=frontGetScreenMode_o055Reloc \
-		--redefine-sym func_800005CC=func_800005CC_o055Reloc \
+		--redefine-sym amTuneSetFade=amTuneSetFade_o055Reloc \
 		--redefine-sym func_800016EC=func_800016EC_o055Reloc \
 		--redefine-sym func_80005750=func_80005750_o055Reloc \
 		--redefine-sym func_80028F54=func_80028F54_o055Reloc \
@@ -2507,7 +2507,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o053/func_overlay_053_F0000240_189DBE8.c.o: POS
 		--redefine-sym freeFrontEndItem=freeFrontEndItem_o053Reloc \
 		--redefine-sym frontGet2PlayerSplit=frontGet2PlayerSplit_o053Reloc \
 		--redefine-sym frontGetScreenMode=frontGetScreenMode_o053Reloc \
-		--redefine-sym func_800005CC=func_800005CC_o053Reloc \
+		--redefine-sym amTuneSetFade=amTuneSetFade_o053Reloc \
 		--redefine-sym func_800016EC=func_800016EC_o053Reloc \
 		--redefine-sym func_80005750=func_80005750_o053Reloc \
 		--redefine-sym func_80028F54=func_80028F54_o053Reloc \
@@ -2673,12 +2673,12 @@ $(O90_OBJ): POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym amSndPlay=amSndPlay_o090Reloc \
 		--redefine-sym camGetMode=camGetMode_o090Reloc \
-		--redefine-sym func_80000510=func_80000510_o090Reloc \
-		--redefine-sym func_80002FE0=func_80002FE0_o090Reloc \
-		--redefine-sym func_8000309C=func_8000309C_o090Reloc \
-		--redefine-sym func_800030B4=func_800030B4_o090Reloc \
-		--redefine-sym func_800031C0=func_800031C0_o090Reloc \
-		--redefine-sym func_800031E8=func_800031E8_o090Reloc \
+		--redefine-sym amTunePlay=amTunePlay_o090Reloc \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o090Reloc \
+		--redefine-sym amSndSetVolXYZ=amSndSetVolXYZ_o090Reloc \
+		--redefine-sym amSndSetPitchXYZ=amSndSetPitchXYZ_o090Reloc \
+		--redefine-sym amSndSetXYZ=amSndSetXYZ_o090Reloc \
+		--redefine-sym amSndStopXYZ=amSndStopXYZ_o090Reloc \
 		--redefine-sym func_80006EA0=func_80006EA0_o090Reloc \
 		--redefine-sym func_8000FAE0=func_8000FAE0_o090Reloc \
 		--redefine-sym func_8002A8BC=func_8002A8BC_o090Reloc \
@@ -2788,7 +2788,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/overlay26HandleEffects.c.o: POSTPROCESS = 
 		--redefine-sym func_80029FE4=func_80029FE4_o026Reloc \
 		--redefine-sym func_8002997C=func_8002997C_o026Reloc \
 		--redefine-sym func_8003EDEC=func_8003EDEC_o026Reloc \
-		--redefine-sym func_80002FE0=func_80002FE0_o026Reloc $@ && \
+		--redefine-sym amSndPlayXYZ=amSndPlayXYZ_o026Reloc $@ && \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x434
 
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o026/func_overlay_026_F00001A0_187A598.c.o: CFLAGS += -Wab,-r4300_mul

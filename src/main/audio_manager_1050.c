@@ -155,7 +155,7 @@ extern void *ad_sndp_play(void *bank, s16 soundBite, u16 volume, u8 pan,
                           f32 pitch, u8 arg5, void **handle);
 
 /* PROVENANCE: body adapted from JFG src/audio_manager_1050.c amSetMuteMode. */
-void func_80000450(s32 behavior) {
+void amSetMuteMode(s32 behavior) {
     switch (behavior) {
         case 1:
             gsSndpSetMasterVolume(0, 0);
@@ -175,7 +175,7 @@ void func_80000450(s32 behavior) {
 }
 
 /* PROVENANCE: body adapted from JFG src/audio_manager_1050.c amTunePlay. */
-void func_80000510(u8 sequenceId) {
+void amTunePlay(u8 sequenceId) {
     if (D_80078D78 == 0 && D_800BF798[sequenceId] <= 0x8000) {
         if (D_80078D70 != 0) {
             amTuneStop();
@@ -193,7 +193,7 @@ void amTuneVoiceLimit(u8 voiceLimit) {
 }
 
 /* PROVENANCE: body adapted from JFG src/audio_manager_1050.c amTuneSetFade. */
-void func_800005CC(f32 fade, u8 volume) {
+void amTuneSetFade(f32 fade, u8 volume) {
     if (volume > 0x7F) {
         volume = 0x7F;
     }
@@ -221,7 +221,7 @@ void amTuneSetFadeScaled(f32 fade, u8 volume) {
     }
     scaled =
         (s32)((u32)D_800BF7A4[D_800BF794].volume * volume) / 0x7F;
-    func_800005CC(fade, scaled);
+    amTuneSetFade(fade, scaled);
 }
 /* PROVENANCE: body and name adapted from JFG src/audio_manager_1050.c. */
 void amTuneResetFade(void) {
@@ -347,7 +347,7 @@ void amResetMidiSync(void) {
  * PROVENANCE: name/order compared with JFG src/audio_manager_1050.c
  * amTuneSetChlMask; body uses Mickey-only evidence.
  */
-void func_80000B48(u16 channelMask) {
+void amTuneSetChlMask(u16 channelMask) {
     s32 channel;
 
     if (D_80078D94 != 0) {

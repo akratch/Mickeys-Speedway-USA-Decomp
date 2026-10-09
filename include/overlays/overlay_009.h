@@ -189,11 +189,11 @@ extern void ext_o0_19668(void *, void *, void *, void *);
 extern void ext_o0_1d510(void *, void *, void *, void *, s32);
 extern void ext_o0_2d98(void *);
 /* Mickey resident call boundaries and the spatial-audio ABI are authenticated. */
-extern void func_80002FE0(u16, f32, f32, f32, u8, void **);
+extern void amSndPlayXYZ(u16, f32, f32, f32, u8, void **);
 extern void ext_o0_3e99c(void *, s32);
 extern s32 mathRnd(s32, s32);
-extern void func_800031C0(void *, f32, f32, f32);
-extern void func_800030B4(void *, u8);
+extern void amSndSetXYZ(void *, f32, f32, f32);
+extern void amSndSetPitchXYZ(void *, u8);
 extern void ext_o0_7cd8(void *, f32, f32, f32);
 extern void ext_o0_1d920(O9IntegrateOutput *, O9IntegrateControl *, f32);
 extern s32 ext_o0_1353c(f32, f32, s32, O9Hit ***);

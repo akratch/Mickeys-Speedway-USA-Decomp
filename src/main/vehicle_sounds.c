@@ -85,12 +85,12 @@ extern f32 D_8007F9D8[];
 extern f32 D_8007FA00[];
 
 f32 alCents2Ratio(s32 cents);
-void func_80002FE0(u16 soundId, f32 x, f32 y, f32 z, u8 arg4,
+void amSndPlayXYZ(u16 soundId, f32 x, f32 y, f32 z, u8 arg4,
                    void **soundHandle);
-void func_8000309C(void *soundHandle, u8 volume);
-void func_800030B4(void *soundHandle, u8 pitch);
-void func_800031C0(void *soundHandle, f32 x, f32 y, f32 z);
-void func_800031E8(void *soundHandle);
+void amSndSetVolXYZ(void *soundHandle, u8 volume);
+void amSndSetPitchXYZ(void *soundHandle, u8 pitch);
+void amSndSetXYZ(void *soundHandle, f32 x, f32 y, f32 z);
+void amSndStopXYZ(void *soundHandle);
 VehicleObject **func_80005750(s32 *count);
 VehicleCamera *camGetListPtr(void);
 s32 func_8003A550(void);
@@ -116,7 +116,7 @@ void func_800582A8(void) {
     VehicleSoundSlot *slot = D_800D78B0, *end = (VehicleSoundSlot *)&D_800D78F0;
     do {
         if (slot->handle != 0) {
-            func_800031E8(slot->handle);
+            amSndStopXYZ(slot->handle);
         }
         if (slot->racerObject != 0) {
             slot->racerObject = 0;
@@ -190,10 +190,10 @@ void func_8005830C(s32 updateRate) {
         racer = object->racer;
         if (racer->raceFinished != 0) {
             if (racer->engineSound != 0) {
-                func_800031E8(racer->engineSound);
+                amSndStopXYZ(racer->engineSound);
             }
             if (racer->secondarySound != 0) {
-                func_800031E8(racer->secondarySound);
+                amSndStopXYZ(racer->secondarySound);
             }
         } else {
             engineIntensity = racer->speed;
@@ -221,15 +221,15 @@ void func_8005830C(s32 updateRate) {
             }
             if ((racer->flags & 0x20) && (racer->flags & 1) && (racer->flags & 0x10)) {
                 if (racer->engineSound != 0) {
-                    func_800031E8(racer->engineSound);
+                    amSndStopXYZ(racer->engineSound);
                 }
             }
             if ((!(racer->flags & 1) || func_8003A550() != 0) && racer->raceFinished == 0) {
                 if (racer->engineSound == 0) {
-                    func_80002FE0(soundId, object->x, object->y, object->z, 1, &racer->engineSound);
+                    amSndPlayXYZ(soundId, object->x, object->y, object->z, 1, &racer->engineSound);
                 }
-                func_800031C0(racer->engineSound, object->x, object->y, object->z);
-                func_800030B4(racer->engineSound, (s32)(racer->engineIntensity * 6.0f + basePitch));
+                amSndSetXYZ(racer->engineSound, object->x, object->y, object->z);
+                amSndSetPitchXYZ(racer->engineSound, (s32)(racer->engineIntensity * 6.0f + basePitch));
                 if (engineIntensity < 0.0f) {
                     engineIntensity = -engineIntensity;
                 }
@@ -240,7 +240,7 @@ void func_8005830C(s32 updateRate) {
                 if (volume > 60) {
                     volume = 60;
                 }
-                func_8000309C(racer->engineSound, volume);
+                amSndSetVolXYZ(racer->engineSound, volume);
             }
             if (((racer->flags & 0x20) || func_8003A550() != 0) && racer->raceFinished == 0) {
                 speed = racer->speed;
@@ -267,7 +267,7 @@ void func_8005830C(s32 updateRate) {
                     }
                 }
                 if (racer->secondarySound != 0 && soundId != racer->secondarySoundId) {
-                    func_800031E8(racer->secondarySound);
+                    amSndStopXYZ(racer->secondarySound);
                     racer->secondarySoundId = 0;
                 }
                 if (soundId != 0) {
@@ -277,12 +277,12 @@ void func_8005830C(s32 updateRate) {
                         speed = maximumSpeed;
                     }
                     if (racer->secondarySound == 0) {
-                        func_80002FE0(soundId, object->x, object->y, object->z, 1, &racer->secondarySound);
+                        amSndPlayXYZ(soundId, object->x, object->y, object->z, 1, &racer->secondarySound);
                     }
-                    func_800031C0(racer->secondarySound, object->x, object->y, object->z);
+                    amSndSetXYZ(racer->secondarySound, object->x, object->y, object->z);
                     ratio = (speed - minimumSpeed) / range;
-                    func_800030B4(racer->secondarySound, (s32)((ratio * 0.5f + 0.5f) * 100.0f));
-                    func_8000309C(racer->secondarySound, (s32)(ratio * 100.0f * secondaryVolumeScale) + 20);
+                    amSndSetPitchXYZ(racer->secondarySound, (s32)((ratio * 0.5f + 0.5f) * 100.0f));
+                    amSndSetVolXYZ(racer->secondarySound, (s32)(ratio * 100.0f * secondaryVolumeScale) + 20);
                 }
             }
         }
@@ -298,7 +298,7 @@ void func_8005830C(s32 updateRate) {
             if (object != 0 && object == slot->handle) {
                 racer = object->racer;
                 if (racer->raceFinished != 0) {
-                    func_800031E8(slot->handle);
+                    amSndStopXYZ(slot->handle);
                 }
             }
             if (D_8007BF0C != 0) {
@@ -364,14 +364,14 @@ void func_8005830C(s32 updateRate) {
                         slot->dopplerPitch = 0.0f;
                     }
                     if (slot->handle == 0) {
-                        func_80002FE0(soundId, candidate->x, candidate->y, candidate->z, 1, &slot->handle);
+                        amSndPlayXYZ(soundId, candidate->x, candidate->y, candidate->z, 1, &slot->handle);
                     }
-                    func_800031C0(slot->handle, candidate->x, candidate->y, candidate->z);
+                    amSndSetXYZ(slot->handle, candidate->x, candidate->y, candidate->z);
                     pitch = slot->dopplerPitch * 100.0f + basePitch + racer->engineIntensity * 6.0f;
                     if (pitch > 200.0f) {
                         pitch = 200.0f;
                     }
-                    func_800030B4(slot->handle, (s32)pitch);
+                    amSndSetPitchXYZ(slot->handle, (s32)pitch);
                     if (engineIntensity < 0.0f) {
                         engineIntensity = -engineIntensity;
                     }
@@ -382,14 +382,14 @@ void func_8005830C(s32 updateRate) {
                     if (volume > 60) {
                         volume = 60;
                     }
-                    func_8000309C(slot->handle, volume);
+                    amSndSetVolXYZ(slot->handle, volume);
                 } else if (slot->handle != 0) {
-                    func_800031E8(slot->handle);
+                    amSndStopXYZ(slot->handle);
                 }
                 slot->racerObject = candidate;
                 slot->previousDistance = nearestDistance;
             } else if (slot->handle != 0) {
-                func_800031E8(slot->handle);
+                amSndStopXYZ(slot->handle);
             }
         }
         if (cameras) {

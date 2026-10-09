@@ -61,7 +61,7 @@ extern s32 TrapDanglingJump();
 extern void amSndPlay(s32 soundId, s32 *handle);
 extern void amSndSetVol(s32 soundId, s32 handle, s32 volume, s32 *handleOut);
 extern void amSndStop(s32 handle);
-extern void func_80000510(u8 sequence);
+extern void amTunePlay(u8 sequence);
 extern void func_80006EA0(void *object);
 extern void func_80006FA0(void);
 extern s32 func_80005820(s32 arg0);
@@ -572,7 +572,7 @@ u8 frontGetMode(void) {
  * back and clear `disable`. Mickey's additions are its own: the title-music
  * fade, the demo/attract timer with its any-pad-START check, the early
  * `return 0` when the overlay trap reports the frame consumed, and the fade
- * countdown that plays a tune through func_80000510 (JFG's amTunePlay, one
+ * countdown that plays a tune through amTunePlay (JFG's amTunePlay, one
  * argument -- the other Mickey callers agree). The locals keep their target
  * homes in declaration order: the four joyGetPressed halves and the two
  * call results are the whole 0x28 frame. */
@@ -697,7 +697,7 @@ s32 func_80038E1C(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList
             D_8007BF70 -= updateRate;
             if (D_8007BF70 <= 0) {
                 D_8007BF70 = -1;
-                func_80000510(D_800D3050);
+                amTunePlay(D_800D3050);
             }
         }
     return 0;

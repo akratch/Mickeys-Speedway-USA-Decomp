@@ -586,10 +586,10 @@ extern u8 gO8P1294ImpactGateReloc;
 extern u8 gO8P1294ColorGateReloc;
 extern void controlSetRumble(void *player, s32 strength, f32 duration);
 extern s32 func_800299E8(s32 minimum, s32 maximum);
-extern void func_800031E8(void *handle);
-extern void func_80002FE0(s32 id, f32 x, f32 y, f32 z, s32 priority,
+extern void amSndStopXYZ(void *handle);
+extern void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority,
                           void **handle);
-extern void func_800031C0(void *handle, f32 x, f32 y, f32 z);
+extern void amSndSetXYZ(void *handle, f32 x, f32 y, f32 z);
 extern s32 func_8002A204(s16 angle);
 extern s32 mathDiffAngle(s32 current, s32 target);
 
@@ -906,9 +906,9 @@ block_74:
                         state->unkA2 = 0xF;
                     }
                     if (state->unkA8 != NULL) {
-                        func_800031E8(state->unkA8);
+                        amSndStopXYZ(state->unkA8);
                     }
-                    func_80002FE0(5, owner->unkC, owner->unk10,
+                    amSndPlayXYZ(5, owner->unkC, owner->unk10,
                                   owner->unk14, 4, &state->unkA8);
                 }
             }
@@ -1057,22 +1057,22 @@ block_74:
     }
     if ((state->unk41C & 0x4000) && (state->unk420 & 0x8000) && (state->unk4 == 0.0f)) {
         if (state->unkB8 != NULL) {
-            func_800031E8(state->unkB8);
+            amSndStopXYZ(state->unkB8);
         }
-        func_80002FE0(2, owner->unkC, owner->unk10, owner->unk14, 4,
+        amSndPlayXYZ(2, owner->unkC, owner->unk10, owner->unk14, 4,
                       &state->unkB8);
     }
     if ((state->unk349 != 0) && ((state->unk16E > 0) || (state->unk100 != 0) || (state->unk102 != 0) || (effectMask & 0x30) || (owner->unk3B == 0x18) || ((state->unk41C & 0x4000) && (state->unk4 < 0.0f)))) {
         if (state->unkAC == NULL) {
-            func_80002FE0(3, owner->unkC, owner->unk10, owner->unk14, 1,
+            amSndPlayXYZ(3, owner->unkC, owner->unk10, owner->unk14, 1,
                           &state->unkAC);
         } else {
-            func_800031C0(state->unkAC, owner->unkC, owner->unk10,
+            amSndSetXYZ(state->unkAC, owner->unkC, owner->unk10,
                           owner->unk14);
         }
     } else {
         if (state->unkAC != NULL) {
-            func_800031E8(state->unkAC);
+            amSndStopXYZ(state->unkAC);
         }
     }
     if ((state->unk2 != 0) || (state->unkD4 != NULL)) {

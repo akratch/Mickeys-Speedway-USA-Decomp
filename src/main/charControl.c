@@ -215,8 +215,8 @@ f32 sqrtf(f32 value);
 void mathOneFloatRPY(ControlTransform *transform, f32 *output);
 s32 mathRnd(s32 minimum, s32 maximum);
 ControlSpawned *func_8000590C(ControlSpawnPacket *packet, s32 mode);
-void func_800031E8(void *handle);
-void func_80002FE0(s32 id, f32 x, f32 y, f32 z, s32 priority, void **handle);
+void amSndStopXYZ(void *handle);
+void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority, void **handle);
 void func_8001D690(ControlActor *actor, ControlPlayer *player);
 void func_80006EA0(void *handle);
 s32 func_8000FAE0(f32 x, f32 y, f32 z);
@@ -234,7 +234,7 @@ void mainSetAnimGroup(s32 group);
 u8 frontGetMode(void);
 void func_800214AC(void);
 void func_8001F09C(ControlPlayer *player, s32 updateRate);
-void func_800031C0(void *soundHandle, f32 x, f32 y, f32 z);
+void amSndSetXYZ(void *soundHandle, f32 x, f32 y, f32 z);
 void func_8001BBB4(ControlActor *actor, ControlPlayer *player, f32 updateRate);
 void func_8001C114(s32 slotIndex, f32 x, f32 y, f32 z);
 void *func_80053420(s32 index, void *target);
@@ -890,9 +890,9 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
     if (player->unk158 != 0) {
         if (player->unk158 & 0x8000) {
             if (player->unkB4 != NULL) {
-                func_800031E8(player->unkB4);
+                amSndStopXYZ(player->unkB4);
             }
-            func_80002FE0(0x21, actor->x, actor->y, actor->z, 4,
+            amSndPlayXYZ(0x21, actor->x, actor->y, actor->z, 4,
                           &player->unkB4);
             player->unk158 = (s16) (player->unk158 & 0x7FFF);
         }
@@ -1010,7 +1010,7 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
             fade = player->unk190 - (updateRate * 4);
             if (fade <= 0) {
                 if (player->unkAC != NULL) {
-                    func_800031E8(player->unkAC);
+                    amSndStopXYZ(player->unkAC);
                     actor->unk80 = 0;
                 }
                 player->unk191 = 1;
@@ -1024,7 +1024,7 @@ void func_8001CB84(ControlActor *actor, s32 updateRate) {
         }
     }
     if (player->unkA4 != NULL) {
-        func_800031C0(player->unkA4, actor->x, actor->y, actor->z);
+        amSndSetXYZ(player->unkA4, actor->x, actor->y, actor->z);
     }
 }
 /*
@@ -1098,17 +1098,17 @@ void func_8001D41C(ControlActor *actor, ControlPlayer *player, s32 updateRate) {
             if ((player->unk1 >= 0) && (player->unk1 < 10)) {
                 if (D_8007BF1C & 4) {
                     if (player->unkA4 != 0) {
-                        func_800031E8(player->unkA4);
+                        amSndStopXYZ(player->unkA4);
                     }
-                    func_80002FE0(
+                    amSndPlayXYZ(
                         D_80079A20[player->unk1][func_800299E8(0, 3)],
                         actor->x, actor->y, actor->z, 4, &player->unkA4);
                     return;
                 }
                 if (player->unkA8 != 0) {
-                    func_800031E8(player->unkA8);
+                    amSndStopXYZ(player->unkA8);
                 }
-                func_80002FE0(D_80079A0C[player->unk1], actor->x, actor->y,
+                amSndPlayXYZ(D_80079A0C[player->unk1], actor->x, actor->y,
                               actor->z, 4, &player->unkA8);
             }
         }
@@ -1980,9 +1980,9 @@ void func_8001F14C(ControlTransform *transform, ControlCeilingContext *context) 
         spawned->unk3C = 0;
     }
     if (context->handle != 0) {
-        func_800031E8(context->handle);
+        amSndStopXYZ(context->handle);
     }
-    func_80002FE0(0x329, x, y, z, 4, &context->handle);
+    amSndPlayXYZ(0x329, x, y, z, 4, &context->handle);
 }
 /*
  * PROVENANCE -- JFG's src/charControl.c supplied the controlDisableJoypad

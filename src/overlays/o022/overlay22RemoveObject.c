@@ -23,7 +23,7 @@ static f32 overlay22Constants[5] = { 14.4F, 14.4F, 0.8F, 0.03F, 0.707F };
 static u8 overlay22DataTail[0xC] = { 0 };
 
 extern void partUpdateTriggers(Overlay22Object *object, s32 mode);
-extern void func_80002FE0(u16 soundId, f32 x, f32 y, f32 z, u8 priority,
+extern void amSndPlayXYZ(u16 soundId, f32 x, f32 y, f32 z, u8 priority,
                           void **handle);
 extern void func_80006EA0(void *object);
 
@@ -66,10 +66,10 @@ void func_overlay_022_F0000D30_1878E38(Overlay22Object *object, s32 flags) {
         partUpdateTriggers(object, 1);
     }
     if (flags & 2) {
-        func_80002FE0(0x22B, object->x, object->y, object->z, 4, 0);
+        amSndPlayXYZ(0x22B, object->x, object->y, object->z, 4, 0);
     }
     if (flags & 4) {
-        func_80002FE0(0x279, object->x, object->y, object->z, 4, 0);
+        amSndPlayXYZ(0x279, object->x, object->y, object->z, 4, 0);
     }
     func_80006EA0(object);
 }

@@ -117,9 +117,9 @@ struct LevelHeaderSummarySource {
 
 extern LevelSummary *D_800CF3DC;
 extern s32 mainGetNumberOfCameras(void);
-extern void func_80000510(u8);
+extern void amTunePlay(u8);
 extern void amTuneResetFade(void);
-extern void func_80000B48(u16);
+extern void amTuneSetChlMask(u16);
 extern void amTuneResetChls(void);
 extern void amTuneStop(void);
 extern u8 amTuneGetSeqNo(void);
@@ -134,7 +134,7 @@ extern s8 func_800291FC(void);
 extern void gsSndpLimitVoices(s32);
 extern void initColourCycle(void *, s16);
 extern void amTuneVoiceLimit(u8);
-extern void func_80000450(s32);
+extern void amSetMuteMode(s32);
 extern void setupLights(s32, s32, s32);
 extern void func_8000A6DC(s32);
 extern void func_80051004(s32);
@@ -369,7 +369,7 @@ void levelInit(s32 lvlIdx, s32 trackParam, s32 unused, s32 mode) {
     }
     amTuneVoiceLimit(D_800CF3C8->voiceLimit);
     amTuneResetFade();
-    func_80000450(0);
+    amSetMuteMode(0);
     mainPreNMI();
     setupLights(D_800CF3C8->lightCount, 8, 0x10);
     mainPreNMI();
@@ -541,9 +541,9 @@ void levelTunePlay(void) {
     if (((u8 *) D_800CF3C8)[0x8E] != 0) {
         if (((u8 *) D_800CF3C8)[0x8E] != amTuneGetSeqNo()) {
             amTuneResetChls();
-            func_80000510(((u8 *) D_800CF3C8)[0x8E]);
+            amTunePlay(((u8 *) D_800CF3C8)[0x8E]);
             amTuneResetFade();
-            func_80000B48(*(u16 *) &((u8 *) D_800CF3C8)[0x90]);
+            amTuneSetChlMask(*(u16 *) &((u8 *) D_800CF3C8)[0x90]);
         }
     } else {
         amTuneStop();

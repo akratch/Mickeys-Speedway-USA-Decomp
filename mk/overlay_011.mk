@@ -200,7 +200,7 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11Initialize.c.o: \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o011/overlay11Initialize.c.o: POSTPROCESS = \
 	$(OBJCOPY) \
 		--redefine-sym func_800290AC=overlay11ResidentModeReloc \
-		--redefine-sym func_800005CC=overlay11ResidentFloatReloc \
+		--redefine-sym amTuneSetFade=overlay11ResidentFloatReloc \
 		--redefine-sym overlay66Select=overlay11Overlay66SelectReloc \
 		--redefine-sym func_80028F54=overlay11GetStatusReloc \
 		--redefine-sym func_8004B0A4=overlay11DrawModeReloc \

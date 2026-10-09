@@ -201,9 +201,9 @@ typedef struct {
     s32 unk80;
 } Objects0B3CCObject;
 
-extern void func_80002FE0(s32 id, f32 x, f32 y, f32 z, s32 priority,
+extern void amSndPlayXYZ(s32 id, f32 x, f32 y, f32 z, s32 priority,
                           void **handle);
-extern void func_8000309C(void *handle, u8 volume);
+extern void amSndSetVolXYZ(void *handle, u8 volume);
 extern void trackMakePolylist(s32 count, Objects0BB84Vec3 *start,
                               Objects0BB84Vec3 *end, f32 *radius, s32 arg4,
                               s32 arg5);
@@ -2475,7 +2475,7 @@ void func_80006FA0(void) {
     }
     D_800C94F0 = 0;
 }
-extern void func_800031E8(void *object);
+extern void amSndStopXYZ(void *object);
 extern void func_80005798(void *object);
 extern void func_8000D728(void *object);
 extern void camlightDelete(void *object);
@@ -2559,7 +2559,7 @@ void func_80007118(u8 *object, s32 unused) {
             payload = *(u8 **)(object + 0x64);
             value = *(void **)(payload + 0x3C);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             break;
         }
@@ -2573,7 +2573,7 @@ void func_80007118(u8 *object, s32 unused) {
             payload = *(u8 **)(object + 0x64);
             value = *(void **)(payload + 0x3C);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             break;
         }
@@ -2581,11 +2581,11 @@ void func_80007118(u8 *object, s32 unused) {
             linkedPayload = *(u8 **)(object + 0x64);
             value = *(void **)(linkedPayload + 0x18);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(linkedPayload + 0x1C);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             if (*(void **)(linkedPayload + 0x20) != NULL) {
                 owner = *(u8 **)(*(u8 **)(linkedPayload + 0x20) + 0x64);
@@ -2607,7 +2607,7 @@ void func_80007118(u8 *object, s32 unused) {
             }
             value = *(void **)(once + 0x14);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             break;
         }
@@ -2633,7 +2633,7 @@ void func_80007118(u8 *object, s32 unused) {
             payload = *(u8 **)(object + 0x64);
             value = *(void **)(payload + 0x3C);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             break;
         }
@@ -2641,16 +2641,16 @@ void func_80007118(u8 *object, s32 unused) {
             linkedPayload = *(u8 **)(object + 0x64);
             value = *(void **)(linkedPayload + 0x18);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(linkedPayload + 0x40);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             break;
         case 54:
             if (*(void **)(*(u8 **)(object + 0x64) + 0x38) != NULL) {
-                func_800031E8(*(void **)(*(u8 **)(object + 0x64) + 0x38));
+                amSndStopXYZ(*(void **)(*(u8 **)(object + 0x64) + 0x38));
             }
             break;
         case 71:
@@ -2704,7 +2704,7 @@ void func_80007118(u8 *object, s32 unused) {
         case 29:
             func_80005798(object);
             if (*(s32 *)(object + 0x84) != 0) {
-                func_800031E8((void *)*(s32 *)(object + 0x84));
+                amSndStopXYZ((void *)*(s32 *)(object + 0x84));
             }
             break;
         case 73:
@@ -2718,46 +2718,46 @@ void func_80007118(u8 *object, s32 unused) {
         case 27:
         case 79:
             if (*(s32 *)(object + 0x84) != 0) {
-                func_800031E8((void *)*(s32 *)(object + 0x84));
+                amSndStopXYZ((void *)*(s32 *)(object + 0x84));
             }
             break;
         case 1:
             payload = *(u8 **)(object + 0x64);
             value = *(void **)(payload + 0xA4);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xA8);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xAC);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xB0);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xB4);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xB8);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xBC);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xC0);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             value = *(void **)(payload + 0xC4);
             if (value != NULL) {
-                func_800031E8(value);
+                amSndStopXYZ(value);
             }
             for (j = 0; j < 0x10; j += 4) {
                 value = *(void **)(payload + 0x134 + j);
@@ -2791,7 +2791,7 @@ void func_80007118(u8 *object, s32 unused) {
         wakeFreeRipple(*(void **)(object + 0x54));
     }
     if (*(u8 **)(object + 0x78) != NULL && *(void **)(*(u8 **)(object + 0x78) + 0x24) != NULL) {
-        func_800031E8(*(void **)(*(u8 **)(object + 0x78) + 0x24));
+        amSndStopXYZ(*(void **)(*(u8 **)(object + 0x78) + 0x24));
     }
     if (*(u8 *)(object + 0x92) != 0) {
         partNullifyCircularParticleParents(object);
@@ -5221,14 +5221,14 @@ void func_8000B3CC(Objects0B3CCObject *object, s32 updateRate) {
         if ((state->flags & 1) == 0) {
             state->flags |= 1;
             if ((config->unk1C != 0) && (state->unk24 == NULL)) {
-                func_80002FE0(config->unk1C, object->unkC, object->unk10,
+                amSndPlayXYZ(config->unk1C, object->unkC, object->unk10,
                               object->unk14, 4, &state->unk24);
                 if (state->unk24 != NULL) {
                     volume = state->unk18 * 0.1f;
                     if (volume > 1.0f) {
                         volume = 1.0f;
                     }
-                    func_8000309C(state->unk24,
+                    amSndSetVolXYZ(state->unk24,
                                   (u8)(127.0f * volume));
                 }
             }
@@ -5298,14 +5298,14 @@ void func_8000B3CC(Objects0B3CCObject *object, s32 updateRate) {
         }
         if ((bounced != 0) && (config->unk1E != 0) &&
             ((state->flags & 1) == 0) && (state->unk24 == NULL)) {
-            func_80002FE0(config->unk1E, object->unkC, object->unk10,
+            amSndPlayXYZ(config->unk1E, object->unkC, object->unk10,
                           object->unk14, 4, &state->unk24);
             if (state->unk24 != NULL) {
                 volume = state->unk18 * 0.100000001f;
                 if (volume > 1.0f) {
                     volume = 1.0f;
                 }
-                func_8000309C(state->unk24,
+                amSndSetVolXYZ(state->unk24,
                               (u8)(127.0f * volume));
             }
         }

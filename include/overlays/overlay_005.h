@@ -211,7 +211,7 @@ extern void func_80001740(Overlay5SoundConfig *config, s32 count,
                           void *context);
 extern void gsSndpNew(Overlay5SequenceConfig *config);
 extern void func_80001BA0(void);
-extern void func_80000450(void *value);
+extern void amSetMuteMode(void *value);
 extern void func_8002B768(Overlay5Resource *resource);
 extern void func_800039F0(void);
 extern void alSurround_OutputType(s32 outputType);

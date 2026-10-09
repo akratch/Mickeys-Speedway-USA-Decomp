@@ -1229,7 +1229,7 @@ ORT 1510 exports the function and fourteen calls arrive from Overlays 1, 7, and
 
 Overlay 7 `+0xDBC` (`overlay7CommitSelection`) owns 17 records: a SYMBOL pair
 at `+0x00/+0x04` through ORT 1579 to resident `D_800D3128+2`; calls at
-`+0x58/+0xAC` to `mathRnd`, `+0xE8` to resident `func_800031E8`, and `+0x108`
+`+0x58/+0xAC` to `mathRnd`, `+0xE8` to resident `amSndStopXYZ`, and `+0x108`
 to `amSndPlay`; LOCAL pairs at `+0x68/+0x80`, `+0x84/+0x88`, `+0xD8/+0xDC`,
 `+0xF0/+0xF8`, and `+0x100/+0x104` to module `+0x1714`, `+0x18B4`, `+0xFC0`,
 `+0x1BA0`, and `+0xFC4`; and a LOCAL JUMP at `+0xF4` to
@@ -1452,7 +1452,7 @@ runtime-backed tuples in the configured candidate. LOCAL HI16/LO16 pairs at
 function `+0x14/+0x18` resolve through count `+0xED0`; pairs at
 `+0x20/+0x38`, `+0x70/+0x7C`, and `+0x90/+0x94` resolve to the node-array
 base at `+0xEA0`. SYMBOL calls at `+0xE8/+0x118/+0x148/+0x150` resolve to
-resident `partUpdateTriggers`, `func_80002FE0` twice, and `func_80006EA0`.
+resident `partUpdateTriggers`, `amSndPlayXYZ` twice, and `func_80006EA0`.
 The extracted fallback object retains only the count pair and collapses the
 four call identities, so the shipped runtime tables are the identity authority.
 The configured C is now byte-identical; linked equality proves the C object
@@ -1811,7 +1811,7 @@ finish roles at `+0x7C/+0x138`, `+0x8C/+0x148`, `+0xB4/+0x1B8`, and
 `+0xCC/+0x1D0`; local call `overlay79FindNearby` at `+0xDC`; emit and trigger
 roles at `+0x17C/+0x194`; a LOCAL HI16/LO16 counter pair at `+0x154/+0x158`;
 and a SYMBOL flags pair at `+0x184/+0x188`. Runtime identity resolution maps
-the resident calls to `mathRnd`, `func_8000590C`, `func_80002FE0`,
+the resident calls to `mathRnd`, `func_8000590C`, `amSndPlayXYZ`,
 `func_80006EA0`, `func_80000F94`, and `func_800291B4`, all with zero addends;
 the local jump targets Overlay 79 `+0xEFC`, the counter pair resolves to
 Overlay 79 `+0x14F4` through addend `+0x14`, and the flags pair is the reserved

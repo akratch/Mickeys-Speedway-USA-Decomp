@@ -251,7 +251,7 @@ void overlay7CommitSelection(s32 selection)
     {
       if (gOverlay7DispatchObject != 0)
       {
-        func_800031E8(gOverlay7DispatchObject);
+        amSndStopXYZ(gOverlay7DispatchObject);
         overlay7ReleaseEntry(gOverlay7Selected);
       }
       amSndPlay(value, &gOverlay7CommitArgument);

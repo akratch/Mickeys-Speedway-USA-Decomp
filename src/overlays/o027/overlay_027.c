@@ -173,9 +173,9 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
             sourceState = source->state;
             state->pulseState = 1;
             if (state->secondaryHandle != 0) {
-                func_800031E8(state->secondaryHandle);
+                amSndStopXYZ(state->secondaryHandle);
             }
-            func_80002FE0(0x1BB, object->x, object->y, object->z, 4,
+            amSndPlayXYZ(0x1BB, object->x, object->y, object->z, 4,
                           &state->secondaryHandle);
             if (!(sourceState->flags1A8 & 1)) {
                 func_8002BD58(*(s8 *)&sourceState->primaryState,
@@ -210,7 +210,7 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
     }
 
     if (state->primaryHandle == 0) {
-        func_80002FE0(0x1B8, object->x, object->y, object->z, 1,
+        amSndPlayXYZ(0x1B8, object->x, object->y, object->z, 1,
                       &state->primaryHandle);
     }
     volume = state->fade >> 1;
@@ -218,12 +218,12 @@ void func_overlay_027_F0000064_187BA3C(O27Object *object, s32 updateRate) {
         volume = 0x7F;
     }
     if (state->primaryHandle != 0) {
-        func_800031C0(state->primaryHandle, object->x, object->y, object->z);
-        func_8000309C(state->primaryHandle, volume);
+        amSndSetXYZ(state->primaryHandle, object->x, object->y, object->z);
+        amSndSetVolXYZ(state->primaryHandle, volume);
     }
     if (state->secondaryHandle != 0) {
-        func_800031C0(state->secondaryHandle, object->x, object->y, object->z);
-        func_8000309C(state->secondaryHandle, volume);
+        amSndSetXYZ(state->secondaryHandle, object->x, object->y, object->z);
+        amSndSetVolXYZ(state->secondaryHandle, volume);
     }
 }
 

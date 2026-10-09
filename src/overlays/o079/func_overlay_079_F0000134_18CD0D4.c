@@ -128,9 +128,9 @@ extern Overlay79Object *overlay79FindNearby(Overlay79Vector *position,
 extern void func_8005AD64(Overlay79Object *object, s32 mode, s32 index,
                           f32 value);
 extern f32 sqrtf(f32 value);
-extern void func_800031E8(void *handle);
+extern void amSndStopXYZ(void *handle);
 extern s32 mathRnd(s32 lower, s32 upper);
-extern void func_80002FE0(u16 id, f32 x, f32 y, f32 z, s32 priority,
+extern void amSndPlayXYZ(u16 id, f32 x, f32 y, f32 z, s32 priority,
                           void **handle);
 extern s32 Arctanf(f32 y, f32 x);
 extern f32 Powerf(f32 value, s32 exponent);
@@ -141,7 +141,7 @@ extern f32 func_8002A8BC(s32 angle);
 extern Overlay79Object *func_8000590C(Overlay79SpawnDesc *desc, s32 count);
 extern s32 func_80008128(Overlay79Object *object, f32 x, f32 y, f32 z);
 extern s32 func_8005ABA8(Overlay79Object *object, f32 factor, f32 updateRate);
-extern void func_800031C0(void *handle, f32 x, f32 y, f32 z);
+extern void amSndSetXYZ(void *handle, f32 x, f32 y, f32 z);
 extern void partUpdateTriggers(Overlay79Object *object, s32 updateRate);
 extern void trackMakePolylist(s32 mode, f32 *start, f32 *end, f32 *height,
                               void *unused, s32 flags);
@@ -228,9 +228,9 @@ void func_overlay_079_F0000134_18CD0D4(Overlay79Object *object,
                     (state->collisionFlags & 2)) {
                     object->velocityY = 5.0f;
                     if (state->effect != NULL) {
-                        func_800031E8(state->effect);
+                        amSndStopXYZ(state->effect);
                     }
-                    func_80002FE0(mathRnd(0x21F, 0x226), object->x, object->y,
+                    amSndPlayXYZ(mathRnd(0x21F, 0x226), object->x, object->y,
                                   object->z, 4, &state->effect);
                     state->effectTimer = mathRnd(0x78, 0xF0);
                 }
@@ -279,7 +279,7 @@ void func_overlay_079_F0000134_18CD0D4(Overlay79Object *object,
             }
         }
         if ((state->effect == NULL) && (state->effectTimer == 0)) {
-            func_80002FE0(mathRnd(0x227, 0x229), object->x, object->y,
+            amSndPlayXYZ(mathRnd(0x227, 0x229), object->x, object->y,
                           object->z, 4, &state->effect);
             state->effectTimer = mathRnd(0x78, 0xF0);
         }
@@ -321,7 +321,7 @@ void func_overlay_079_F0000134_18CD0D4(Overlay79Object *object,
                 }
             }
             if ((state->effect == NULL) && (state->effectTimer == 0)) {
-                func_80002FE0(mathRnd(0x21B, 0x21E), object->x, object->y,
+                amSndPlayXYZ(mathRnd(0x21B, 0x21E), object->x, object->y,
                               object->z, 4, &state->effect);
                 state->effectTimer = mathRnd(0x78, 0xF0);
             }
@@ -343,7 +343,7 @@ void func_overlay_079_F0000134_18CD0D4(Overlay79Object *object,
                 state->step++;
             } else if ((state->step == 1) && (state->event != 0)) {
                 if (state->effect == NULL) {
-                    func_80002FE0(mathRnd(0x218, 0x21A), object->x, object->y,
+                    amSndPlayXYZ(mathRnd(0x218, 0x21A), object->x, object->y,
                                   object->z, 4, &state->effect);
                 }
                 func_8005AD64(object, 2, -1, 0.0f);
@@ -388,7 +388,7 @@ void func_overlay_079_F0000134_18CD0D4(Overlay79Object *object,
             } else if (state->step == 2) {
                 func_8005AD64(object, 4, -1, 0.0f);
                 if (state->effect == NULL) {
-                    func_80002FE0(mathRnd(0x270, 0x272), object->x, object->y,
+                    amSndPlayXYZ(mathRnd(0x270, 0x272), object->x, object->y,
                                   object->z, 4, &state->effect);
                 }
                 state->step = 3;
@@ -408,7 +408,7 @@ void func_overlay_079_F0000134_18CD0D4(Overlay79Object *object,
                     spawned->field3C = 0;
                     state->target = spawned;
                 }
-                func_80002FE0(0x273, object->x, object->y, object->z, 4, NULL);
+                amSndPlayXYZ(0x273, object->x, object->y, object->z, 4, NULL);
                 state->step = 4;
             } else if ((state->step == 4) && (state->event != 0)) {
                 func_8005AD64(object, 0, -1, 0.0f);
@@ -464,7 +464,7 @@ void func_overlay_079_F0000134_18CD0D4(Overlay79Object *object,
     state->previousHeight = object->floorHeight;
     state->event = func_8005ABA8(object, factor, update);
     if (state->effect != NULL) {
-        func_800031C0(state->effect, object->x, object->y, object->z);
+        amSndSetXYZ(state->effect, object->x, object->y, object->z);
     }
     if (object->mode == 3) {
         object->flags |= 1;

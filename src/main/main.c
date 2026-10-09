@@ -266,7 +266,7 @@ extern void fxGenerateTextures(void);
 extern s32 D_800D40E4;
 extern f32 D_80081BCC;
 extern u8 amTuneGetSeqNo(void);
-extern void func_800005CC(f32, s32);
+extern void amTuneSetFade(f32, s32);
 extern s32 func_80001614(void);
 extern s32 func_800290A0(void);
 /* Unsigned here on evidence: func_80028564 compares this result and a byte
@@ -1087,7 +1087,7 @@ void mainChangeLevel(s32 nextLevel, s32 nextCharacter, s32 nextAnimGroup,
             }
             if ((amTuneGetSeqNo() != levelGetTune(D_8007A14C)) &&
                 (func_800290A0() == 0) && (func_80001614() == 0)) {
-                func_800005CC(D_80081BCC, 0);
+                amTuneSetFade(D_80081BCC, 0);
             }
             rumbleKill(1);
             rumbleRumbles(0);
@@ -1469,10 +1469,10 @@ void func_800290AC(s32 newValue) {
 
     *value = newValue;
     if (*value == 0) {
-        func_80000450(0);
+        amSetMuteMode(0);
         return;
     }
-    func_80000450(1);
+    amSetMuteMode(1);
 }
 
 s32 func_800290EC(void) {

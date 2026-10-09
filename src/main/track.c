@@ -5262,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, all naming. Edge loop in the DKR for form at identical bytes; arm-head clear dropped
+ * summary: 10 at 0, all naming. Records re-read: the lhu destination must start in the preheader block, the and in the loop
  * PLATEAU-HANDOFF:func_80011980:end
  */

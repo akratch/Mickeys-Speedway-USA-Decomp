@@ -455,6 +455,6 @@ void func_8001BB10(SpranimBB10Object *arg0, void *arg1) {
  * frame: 0xE0
  * relocations: 9
  * first-mismatch: +0xF4
- * summary: Unchanged at 6; y and z assigned after the second distance give the whole code shape at 31, frame needs seven fewer temporaries
+ * summary: Unchanged at 6; declared y/z ladder lands every home but the second distance's operand order refutes it; y, z, radius are temporaries
  * PLATEAU-HANDOFF:func_8001B798:end
  */

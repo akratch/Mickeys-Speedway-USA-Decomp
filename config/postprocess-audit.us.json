@@ -2360,8 +2360,8 @@
     {
       "c_owned": true,
       "class": "metadata",
-      "matched_c": false,
-      "nonmatching": true,
+      "matched_c": true,
+      "nonmatching": false,
       "object": "build/src/overlays/o020/func_overlay_020_F000038C_1876964.c.o",
       "offset": 908,
       "overlay": 20,
@@ -9425,7 +9425,7 @@
       "metadata": 638,
       "review-required": 1
     },
-    "matched_c_bytes_with_postprocess": 444496,
+    "matched_c_bytes_with_postprocess": 445576,
     "objects_with_postprocess": 648
   }
 }

@@ -267,11 +267,13 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
      * alone 382 to 394 at +4, lane x-047). */
     for (controller = 0; controller < 4; controller++) {
         if ((D_800D3058 + controller)->active != 0) {
-            activeCount++;
+            /* Counted after the ready test (lane x-047, 4 -> 2: the inner
+             * branch keeps its nop rather than a likely copy of the step). */
             if ((D_800D3058 + controller)->ready == 0) {
                 allReady = 0;
                 ov47Bss_338 = 0;
             }
+            activeCount++;
         }
     }
     slot = 0;
@@ -559,8 +561,9 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         unready = 0;
         selected = -1;
         count = 0;
-        p2 = D_800D3058;
-        for (i = 0; i < 4; i++, p2++) {
+        /* The cursor starts in the for-init (lane x-047, 6 -> 4: the table
+         * base is hoisted ahead of it, as shipped). */
+        for (i = 0, p2 = D_800D3058; i < 4; i++, p2++) {
             if ((f32)p2->selector == icon->selector && p2->active) {
                 colourIndex = i;
                 if (!p2->ready) unready = 1;
@@ -723,9 +726,11 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     func_80021504(oldFov, 1);
     func_800221E8(&D_800D3140, NULL);
     ov47Data_540 += ov47Data_544 * rate;
+    /* Both arms update the factor before its step (lane x-047, 11 -> 6:
+     * the step negated first put the 2.0f literal on f16). */
     if (ov47Data_540 > 1.0f) {
-        ov47Data_544 = -ov47Data_544;
         ov47Data_540 = 2.0f - ov47Data_540;
+        ov47Data_544 = -ov47Data_544;
     } else if (ov47Data_540 < 0.0f) {
         ov47Data_540 = -ov47Data_540;
         ov47Data_544 = -ov47Data_544;
@@ -742,10 +747,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 11/2168 words
+ * score: 2/2168 words
  * frame: 0x280
  * relocations: 321
- * first-mismatch: +0x9C
- * summary: 11 aligned at size 0 (masked 11): if/else on player->active, label column its own local. Open: +0x9C bnezl, a1/t0, final blend; padC, padD, frame unused.
+ * first-mismatch: +0x1068
+ * summary: 2 aligned at size 0 (masked 2): blend arm order, draw cursor in the for-init, activeCount after the ready test. Open: latch lui at +0x1068.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

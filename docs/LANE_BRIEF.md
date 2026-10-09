@@ -1108,7 +1108,7 @@ shadow -- the dispatch order for Track B.
   (use `--also PATH` to include other files in the commit). On a match, remove
   the guard first, then `bank.py <symbol> --match`: it refuses while the
   function is still queued or ranked and writes the "Matched." header form.
-  A mid-file PLATEAU block is replaced in place. `finalize_plateau.py` remains
+  A mid-file PLATEAU block is replaced in place. `bank.py` refuses before measuring or writing when `--summary` exceeds 160 characters or holds `|`, or when the summary or note holds a `|` or a hex-looking token such as `bb51` (the clean-room BARE_HEX_WORD rule); the message names the rule. `finalize_plateau.py` remains
   for the low-level case where you already hold the numbers.
 - A handoff shard is a strict grammar: the metric header must be source, score,
   frame, relocations, first mismatch, then an optional summary, each on its own

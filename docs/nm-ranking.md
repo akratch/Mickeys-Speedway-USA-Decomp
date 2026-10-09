@@ -296,7 +296,7 @@ units remain distinct.
 | 1 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 6 | 6 | 244 | 244 | 0 | — |
 | 2 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
 | 3 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |
-| 4 | `src/main/fx.c` | `wakeAllocate` | `main` | `other` | 1,404 | 16 | 16 | 148 | 148 | 0 | — |
+| 4 | `src/main/fx.c` | `wakeAllocate` | `main` | `other` | 1,404 | 14 | 14 | 148 | 148 | 0 | — |
 | 5 | `src/overlays/o047/func_overlay_047_F0000B30_1891948.c` | `func_overlay_047_F0000B30_1891948` | `o047` | `other` | 8,672 | 100 | 47 | 12 | 12 | 0 | — |
 | 6 | `src/overlays/o045/func_overlay_045_F0001158_188D5B0.c` | `func_overlay_045_F0001158_188D5B0` | `o045` | `other` | 2,696 | 96 | 96 | 1,816 | 1,816 | 0 | — |
 | 7 | `src/main/anim.c` | `func_80054B3C` | `main` | `other` | 1,480 | 344 | 344 | 4 | 4 | 0 | — |

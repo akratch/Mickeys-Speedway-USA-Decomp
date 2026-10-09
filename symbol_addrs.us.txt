@@ -423,7 +423,10 @@ coss_2 = 0x8002A200; // type:func size:0x44   ROM 0x2ae00  hasm/ido/math_util.s.
 // the same callers/callees and subsystem roles.  Tier D corroboration: the
 // functions occur in JFG's order and lead every masked-skeleton query.
 // This is not tier A: only trackLightAsm has equal size, and none of these
-// functions has been claimed byte-identical under relocation masking.
+// functions is byte-identical under relocation masking. Measured 2026-10-09
+// against JFG's built asm/hasm/trackasm.s.o, words Mickey/JFG: 295/333,
+// 71/72, 38/39 (first divergence +0x0 each) and 192/192 with 7 differing,
+// first +0xB4 (mickey.us.yaml).
 trackMakePolylist = 0x80015540; // type:func size:0x49C tier-B, ROM 0x16140
 getXZCompareMask = 0x800159DC; // type:func size:0x11C tier-B, ROM 0x165dc
 getYCompareMask = 0x80015AF8; // type:func size:0x98 tier-B, ROM 0x166f8
@@ -617,8 +620,8 @@ rain_update = 0x8003BAB4; // type:func size:0x144 tier-D, ROM 0x3c6b4  matched C
 rain_render_splashes = 0x8003BBF8; // type:func size:0x650 tier-D, ROM 0x3c7f8
 rain_lightning = 0x8003C248; // type:func size:0x128 tier-D, ROM 0x3ce48  matched C src/main/weather.c.o -O2 -mips2 -32, DKR/JFG src/weather.c donor, masked=0/74
 rain_sound = 0x8003C370; // type:func size:0xC0 tier-D, ROM 0x3cf70  matched C src/main/weather.c.o -O2 -mips2 -32, JFG src/weather.c donor, masked=0/48
-snow_update = 0x8003C430; // type:func size:0x144 tier-D, ROM 0x3d030
-snow_vertices = 0x8003C574; // type:func size:0x1FC tier-D, ROM 0x3d174
+snow_update = 0x8003C430; // type:func size:0x144 tier-D, ROM 0x3d030  hand-written, no permitted reference object holds it (DKR/JFG have compiled C, 85 vs 81 words, all differ)
+snow_vertices = 0x8003C574; // type:func size:0x1FC tier-D, ROM 0x3d174  hand-written (20 odd-FP operands), no permitted reference object holds it (DKR compiled C 226 vs 127 words)
 func_8003C770 = 0x8003C770; // type:func size:0x9C tier-D, ROM 0x3d370  matched C src/main/weather_tail.c.o -O2 -mips2 -32, Mickey-only reconstruction, linked exact=39/39
 
 // main/particles, ROM 0x3D5F0-0x43470.
@@ -2324,8 +2327,17 @@ trackSetFogOff = 0x800145A0; // type:func size:0x74   ROM 0x151a0  src/track.c.o
 // donor-jfg-src/shadows_214A0.c.o
 func_80016890 = 0x80016890; // type:func size:0x8B0 tier-D ROM 0x17490 src/main/shadows.c.o -O2 -mips2 -32 NON_MATCHING resident fallback and adjacent func_80017140 boundary owner, no match credit
 func_80017660 = 0x80017660; // type:func size:0x56C tier-A ROM 0x18260 src/main/shadows.c.o exact C, 347 words, 4 relocations under -O2 -mips2 -32 -Wab,-r4300_mul
-shadowBoxPolyOverlap = 0x800183F0; // type:func size:0xC4   ROM 0x18ff0  src/shadows_214A0.c.o  masked=0/49
-shadowBoundingBox = 0x800184B4; // type:func size:0x90   ROM 0x190b4  src/shadows_214A0.c.o  masked=0/36
+// main/shadows_fp and main/shadows_fp_19254 are verified hand-written assembly
+// (verified_asm.us.txt): JFG's built src/shadows_214A0.c.o holds these routines
+// as GLOBAL_ASM, and the odd-FP mechanism (docs/modules.md 6.2) makes them
+// hand-written. Routines one and two are a contiguous run in JFG's order;
+// routine four stands alone because routine three, func_80018544
+// (main/shadows_fp_19144, JFG's shadowYHeight, 68 against 69 words, first
+// divergence +0x0), is a shorter revision and is not proved.
+// func_80018654 (ROM 0x19254, 0xBC) is JFG's shadowMakeYs, masked=0/47 romocc=1;
+// the JFG name is tier A for these bytes but is not adopted in this change.
+shadowBoxPolyOverlap = 0x800183F0; // type:func size:0xC4   ROM 0x18ff0  src/shadows_214A0.c.o  masked=0/49 romocc=1
+shadowBoundingBox = 0x800184B4; // type:func size:0x90   ROM 0x190b4  src/shadows_214A0.c.o  masked=0/36 romocc=1
 // jfg:src/lights.c.o -- tier A, ROM-wide unique; body adapted in src/main/lights.c
 freeLights = 0x80018710; // type:func size:0x8C   ROM 0x19310  src/lights.c.o  JFG-adapted body compiler-exact
 setupLights = 0x8001879C; // type:func size:0x130 ROM 0x1939c tier-B matched C src/main/lights.c.o -O2 -mips2 -32, JFG src/lights.c donor, linked exact=76/76

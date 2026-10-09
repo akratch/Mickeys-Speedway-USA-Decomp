@@ -2,17 +2,31 @@
 #
 # One named splat subsegment per line. This is an evidence ledger, not a list
 # of everything currently emitted through asm/: compiler-generated functions
-# remain unresolved until matched to C. Every entry below is byte-identical,
-# with relocated fields masked, to hand-written assembly in a permitted
-# reference build: a whole object, or a contiguous run of one object's
-# routines in that object's own order (main/math_matrix: JFG's routines two
-# to five, file boundary not claimed).
+# remain unresolved until matched to C. Every entry below belongs to one of
+# two evidence classes, and in both the comparison masks only relocated
+# fields (R_MIPS_26/HI16/LO16) and covers a whole object or a contiguous run
+# of one object's routines in that object's own order (file boundary not
+# claimed for a run):
+#
+# 1. Byte-identical to a hand-written assembly object in a permitted
+#    reference build (main/math_matrix: JFG hasm/math_matrix's routines two
+#    to five; the other entries are whole objects).
+# 2. Proved hand-written by docs/modules.md section 6.2 -- odd single-
+#    precision FP registers no IDO build can emit, or a non-IDO prologue,
+#    with the registers or prologue named per routine in mickey.us.yaml --
+#    and byte-identical to the same routine in a permitted reference build,
+#    whether that build carries it as a hand-written object or as extracted
+#    assembly (GLOBAL_ASM). main/shadows_fp: JFG src/shadows_214A0's routines
+#    one and two; main/shadows_fp_19254: its routine four.
+#
 # The per-entry evidence lives beside its boundary in mickey.us.yaml and
 # symbol_addrs.us.txt.
 
 entrypoint
 main/math_util
 main/math_matrix
+main/shadows_fp
+main/shadows_fp_19254
 main/lights2
 main/trapDanglingJump
 main/gzip_asm

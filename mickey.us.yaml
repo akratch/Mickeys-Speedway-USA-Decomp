@@ -159,6 +159,19 @@ segments:
       # JFG's four-function hand-written trackasm sequence, in the same order.
       # Mickey's first three routines are shorter revisions, so this is a
       # tier-B/D file-boundary attribution rather than a whole-object match.
+      # Measured 2026-10-09 against JFG's built `asm/hasm/trackasm.s.o`
+      # (R_MIPS_26/HI16/LO16 masked; no routine identical, so not in
+      # verified_asm.us.txt). Words are Mickey/JFG; "aligned" counts words in
+      # common blocks after an insert/delete alignment:
+      #   trackMakePolylist 295/333 words, first divergence +0x0, 243 aligned
+      #   getXZCompareMask   71/72,  first divergence +0x0, 68 aligned
+      #   getYCompareMask    38/39,  first divergence +0x0, 36 aligned
+      #   trackLightAsm     192/192, 7 differing words, first +0xB4
+      # No other permitted build (3,436 DKR/JFG/PD/BK/Conker objects scanned)
+      # holds a closer counterpart. Hand-written evidence: all four use the
+      # trapping signed add/sub forms IDO does not emit for C arithmetic
+      # (46, 9, 5 and 6 sites), and trackLightAsm has 15 odd-FP operands
+      # (docs/modules.md 6.2). Not compiler output.
       - [0x16140, asm, main/trackasm]
       # JFG shadows.c begins with shadowInitBuffers immediately after trackasm.
       # The other end is independently fixed by the tier-A
@@ -168,7 +181,34 @@ segments:
       # of Mickey's shadowMakeYs. The four shadows_214A0 functions use odd FP
       # registers and remain assembly (docs/modules.md sections 3.4 and 6.2);
       # the following lights TU has no odd-FP operands and is eligible for C.
+      #
+      # JFG keeps these four as GLOBAL_ASM in src/shadows_214A0.c; its built
+      # `src/shadows_214A0.c.o` (816 bytes of .text, no relocations) is the
+      # reference, and the odd-FP mechanism (docs/modules.md 6.2; 11, 11, 12
+      # and 8 odd-FP operands) is what makes it hand-written. Measured
+      # 2026-10-09, relocation fields masked, ROM-wide occurrence in brackets:
+      #
+      # main/shadows_fp (0x18FF0): JFG's routines one and two, in order,
+      # shadowBoxPolyOverlap 0/49 masked, 49/49 words [romocc=1] and
+      # shadowBoundingBox 0/36, 36/36 [romocc=1]; 85/85 over the run
+      # [romocc=1]. Verified assembly (verified_asm.us.txt, evidence class
+      # 2). 6.2 evidence: shadowBoxPolyOverlap uses odd $f1, $f3, $f5, $f13
+      # and $f15 (11 operands); shadowBoundingBox odd $f1, $f3 and $f5 (11).
+      #
+      # main/shadows_fp_19144: func_80018544, JFG's routine three
+      # shadowYHeight in a shorter revision, 68 against 69 words. Its first
+      # word already differs (+0x0); 63 words agree after an insert/delete
+      # alignment. Hand-written (12 odd-FP operands), not proved by identity,
+      # so it stays unverified assembly.
+      #
+      # main/shadows_fp_19254: func_80018654, JFG's routine four
+      # shadowMakeYs, 47/47 words with 0 masked [romocc=1]; JFG's three
+      # further words are its zero section-alignment padding. Verified
+      # assembly (evidence class 2). 6.2 evidence: odd $f1, $f3 and $f5
+      # (8 operands).
       - [0x18FF0, asm, main/shadows_fp]
+      - [0x19144, asm, main/shadows_fp_19144]
+      - [0x19254, asm, main/shadows_fp_19254]
       - [0x19310, c, main/lights]
       - [0x1AE60, asm, main/lights2]
       # JFG's eight camlight entry points survive here as Mickey no-op stubs,
@@ -288,6 +328,15 @@ segments:
       - [0x3B480, c, main/weather]
       # Hand-written snow update/vertex pair. snow_vertices uses odd FP
       # registers, and asm-processor cannot safely wrap either routine.
+      # Measured 2026-10-09: no permitted reference build holds either
+      # routine. DKR and JFG have them as compiled C with a different calling
+      # convention (DKR's built weather.c.o: snow_update 85 words, snow_vertices
+      # 226, against Mickey's 81 and 127, with 81/81 and 127/127 positional
+      # differences); a scan of 3,436 DKR/JFG/PD/BK/Conker objects finds no
+      # closer counterpart. Hand-written, not compiler output: snow_update
+      # dispatches through a computed jump into an unrolled add ladder, both
+      # use the trapping signed add/sub forms (26 and 10 sites), and
+      # snow_vertices has 20 odd-FP operands. Not in verified_asm.us.txt.
       - [0x3D030, asm, main/weather_snow_asm]
       - [0x3D370, c, main/weather_tail]
       - [0x3D5F0, c, main/particles]

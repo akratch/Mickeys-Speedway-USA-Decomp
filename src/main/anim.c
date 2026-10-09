@@ -1357,7 +1357,11 @@ void func_800517E0(void) {
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         if (object->soundHandle != NULL) {
-                            func_800031E8(object->soundHandle);
+                            /* The cast round-trip names the call argument
+                             * apart from the tested load: the load keeps v0
+                             * and the argument copy fills the call's delay
+                             * slot, as in func_80051364 (596 -> 590). */
+                            func_800031E8((void *) (s32) object->soundHandle);
                             object->soundHandle = NULL;
                         }
                         func_80002FE0(word3 & 0xFFFF, object->x,
@@ -1372,7 +1376,7 @@ void func_800517E0(void) {
                     if ((path != NULL) &&
                             ((object = (AnimCommandObject *) path->unk8) != NULL)) {
                         if (object->soundHandle != NULL) {
-                            func_800031E8(object->soundHandle);
+                            func_800031E8((void *) (s32) object->soundHandle);
                             object->soundHandle = NULL;
                         }
                     }
@@ -1442,8 +1446,8 @@ void func_800517E0(void) {
                                   (s32) value);
                     break;
                 case 0x45:
-                    high = cursor->command & 0xFF;
                     value = (f32) *((u16 *) ((u8 *) cursor + 6));
+                    high = cursor->command & 0xFF;
                     packed2 = *((u16 *) ((u8 *) cursor + 8));
                     index = *((u16 *) ((u8 *) cursor + 0xA));
                     high2 = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
@@ -1688,9 +1692,9 @@ void func_800517E0(void) {
                         path->unk24 = path->unk25;
                         path->unk25 = frame68;
                         path->unk27 = 0;
+                        object->state39 = path->unk24;
                         path->unk26 = (u8) (s32) (value /
                                             hundred * scale);
-                        object->state39 = path->unk24;
                     }
                     break;
                 case 0x6A: {
@@ -1914,8 +1918,8 @@ void func_800517E0(void) {
                     D_8007D6A8 = ((s32) commandDuration * 0x3C) / 100;
                     duration = cursor->duration;
                     value = (f32) duration;
-                    cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     D_8007D6AC = value * factor;
+                    cursor = (AnimStreamEntry *) ((u8 *) cursor + 4);
                     currentCommand = (s8) (*((u16 *) ((u8 *) cursor - 2)) & 0xFF);
                     D_8007D6A4 = currentCommand;
                     break;
@@ -4007,6 +4011,6 @@ void fmvInit(void) {
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 596 at size 0. The 0x4B mask moves one ugen draw, not a web; 0x6F mixed-type mask literals are faithful but drop the break pieces.
+ * summary: Aligned 583 at size 0. The 0x4B chain keeps the break pieces with a 0x7B-only copy local (639 at 0, 602 at -4); the target's v0 copy variable is shared.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

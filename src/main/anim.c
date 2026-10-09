@@ -1551,9 +1551,9 @@ void func_800517E0(void) {
                     frame68 = cursor->command & 0xFF;
                     value = (f32) *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    timer = (s32) (value * scale * factor);
-                    D_800D6C4E = timer;
-                    D_800D6C4C = timer;
+                    /* The chained store is the shipped 0x4B: truncation in
+                     * a ring temporary, sign-extended for the 0x4C store. */
+                    D_800D6C4C = D_800D6C4E = (s32) (value * scale * factor);
                     D_800D6C50 = D_800D6C54;
                     D_800D6C52 = frame68;
                     break;
@@ -1586,7 +1586,7 @@ void func_800517E0(void) {
                     break;
                 case 0x60:
                     pathIndex = cursor->command & 0xFF;
-                    high = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
+                    signedValue = (*((u16 *) ((u8 *) cursor + 4)) >> 8) & 0xFF;
                     low = *((u16 *) ((u8 *) cursor + 4)) & 0xFF;
                     value = (f32) *((u16 *) ((u8 *) cursor + 6)) / 16384.0f;
                     radius = (f32) *((u16 *) ((u8 *) cursor + 8)) / 16384.0f;
@@ -1597,7 +1597,7 @@ void func_800517E0(void) {
                         if (object->model->animationKinds[object->animationIndex] == 1) {
                             object->animationValue = value;
                         } else {
-                            func_8005AD64(object, high, -1, value);
+                            func_8005AD64(object, signedValue, -1, value);
                         }
                         path->unkC = radius;
                         path->unk14 = low;
@@ -1892,10 +1892,13 @@ void func_800517E0(void) {
                     value = (f32) (cursor->command & 0xFF);
                     radius = (f32) *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
-                    D_8007D6BC = (s32) (radius * scale * factor);
-                    if (D_8007D6BC > 0) {
+                    /* currentCommand also carries 0x7B's byte: one shared
+                     * local keeps the chained 0x4B's break pieces (the
+                     * D_8007D6A4 a0 piece accepts the 0x7B block). */
+                    D_8007D6BC = currentCommand = (s32) (radius * scale * factor);
+                    if (currentCommand > 0) {
                         D_8007D6B8 = (value - D_8007D6B4) /
-                                     (f32) D_8007D6BC;
+                                     (f32) currentCommand;
                     } else {
                         D_8007D6B4 = value;
                     }
@@ -4007,10 +4010,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1106/1808 words
+ * score: 1342/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 583 at size 0. The 0x4B chain keeps the break pieces with a 0x7B-only copy local (639 at 0, 602 at -4); the target's v0 copy variable is shared.
+ * summary: Aligned 579 at size 0: chained 0x4B store with 0x79/0x7B sharing currentCommand keeps the break pieces; 0x6F mask still t0.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

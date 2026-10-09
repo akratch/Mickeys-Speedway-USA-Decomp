@@ -62,6 +62,7 @@ and is a lane's job, not a sweep you run inside another sweep.
 census: draws, frees and emissions for every line of the function, plus the draw
 order as a sequence. `--save a.json`, change one thing, `--save b.json`,
 `--compare a.json b.json` names the lines whose draw or emission count moved.
+`--source FILE` censuses a candidate C file in place of the tracked TU (relative to your cwd), so no lane swaps anim.c in the tree.
 **A line whose draws did not move was not moved by your edit**, however much the
 score moved -- and a score moves for causes the edit did not create. This is the
 instrument for the blockers the colour axis leaves behind: "pre-colour web
@@ -907,6 +908,8 @@ it end to end. The ones that carry most of the weight:
 - **`tools/web_report.py <symbol> [--proc N] [--web W] [--block B]`** -- per web: its expression over the function's own locals (`(col & 7)`), symbol or temporary, save/nocs/totalsave, order, colour and `forced`;
   per occurrence the block, uses, defs, loop weight and term with the block's source lines (summing to totalsave); every split piece's growth tests checked against L161 with the first refused block;
   and the forbidden seed with the pinned value behind each bit. One instrumented compile, identity-gated against stock, procedure found by itself. `--source FILE` reports a candidate C file in place of the tracked TU; `DKWB_CUT_*` reach the instrumented compile (the gate then compares against an instrumented compile with the same cuts and no logging).
+  `CDX_FORCE`, `CDX_BIAS` and `DKWB_SUBST_KEEP` in the environment now reach the instrumented compile (with a numeric `--proc`; a force with no ordinal is refused), and the gate then compares against an instrumented compile with the same settings, saying so in the header; variable names still resolve. `--neighbours WEB` prints that web's interferers per block with their assigned colours (it wraps the `CDX_DETAIL_WEB=<web>` capture and `trace growth --neighbours`; `--block B` keeps one block).
+  A relative `--source` path is the caller's cwd's (`fast_score.py`'s candidate likewise).
   It needs `CDX_WEBREPORT=1` records, added to the shared instrumented uopt on 2026-10-07 (`uopt-cdx-webreport.patch` beside its `uopt.c`;
   unset, object, stderr and every other record are byte-identical). Its references are per block, not per expression node: the lines are the block's.
 - **`CDX_BIAS="web=delta,..."`** (with `CDX_PROC`) adds `delta` to a p1 web's save in globalcolor's candidate *selection* only, so a whole decision ORDER can be priced where `CDX_FORCE` prices colours; records still print the true save.
@@ -928,13 +931,14 @@ it end to end. The ones that carry most of the weight:
 
 - **`tools/lever_sweep.py <symbol> --proc N --oracle 'p1:wN=s,...' [--candidate F] [--web W] [--block B]`** turns a priced force into a source search: every catalogue lever (assigned/masked dead read, `|= 0` keep-alive, `x = (T) x`, narrower type, subscript mask/scale, `do {} while (0)` and empty `if (v) {}`, global re-read, `k = 0` between loops, split/merge locals, reorder, loop move, constant IV init) at every statement position on the lines of the named webs/blocks, inserted on the same physical line.
   Each cell compiles stock and instrumented with the build's own recipe; size moves over `--max-size-delta` are dropped before scoring, inert cells cost one compile. It ranks by aligned residual with an `oracle` column: whether the UNFORCED records now show the forced state, matching webs by expression and line overlap because numbers move (`=F`: bytes equal the forced object).
-  First run matched func_80009414 (368 cells, 22 s): `if (vector) {}` after `count = 0;` reproduced `p1:w387=s` byte for byte. `sem check` marks a lever that can change behaviour; read it before adopting. With no `--oracle`/`--bias` it ranks cells by masked words, aligned residual and size delta (`dbase` column) with the oracle column `-`.
+  First run matched func_80009414 (368 cells, 22 s): `if (vector) {}` after `count = 0;` reproduced `p1:w387=s` byte for byte. `sem check` marks a lever that can change behaviour; read it before adopting. With no `--oracle`/`--bias` it ranks cells by masked words, aligned residual and size delta (`dbase` column) with the oracle column `-`. Exit is 1 when no cell is exact (scripts rely on it); `--no-fail` makes a completed sweep with no exact cell exit 0, and either way a `no exact cell` line says the sweep finished.
 
 - **`tools/stream_surgery.py <symbol> --edit DIFF|--script PY [--enumerate A-B,C-D]`** edits the function's `cc -S` listing, reassembles it with the C compile's own `as0`/`as1` flags (never the driver's `.s` path, whose `-noglobal` renames registers) and prints masked and aligned buckets (with any `CDX_*`/`DKWB_CUT_*` set, or `--instrumented`, the listing and the control object come from the instrumented compiler, so a biased or cut-forced listing round-trips); a CONTROL line proves the untouched round trip equals the configured object. `--dump` numbers the lines; `--enumerate` scores every ordering of the named line ranges.
   It answers "if ugen had emitted this stream, would as1 give the target?" with a known destination. Validated on o020 F000038C: a copy-back `move` after the size copy takes 10 to 4, naming 0.
 - **Instrumented scoring of `DKWB_SUBST_*`/`DKWB_CUT_*`/`CDX_*`:** `fast_score.py` and `shape_product.py` (and `stream_surgery.py`) compile with `~/Desktop/dev/ido-instrumented/cc` whenever any such variable is set or `--instrumented` is given, so `DKWB_SUBST_KEEP=<lines> tools/fast_score.py <sym> <cand.c>` prices a kept substitution directly (func_80054B3C: 344 unforced, 349 with `DKWB_SUBST_KEEP=2658`).
 - **`tools/cut_log.py <log> [--source F] [--proc NAME] [--range LO-HI --lines A,B]`** folds a `DKWB_CUT_OUT` log (tens of thousands of records per TU, appended by every compile: `rm` it first) into one row per source line: procedure, line, statement counter and the counter the cut test saw (`pre`, natural cut is `pre >= lim`), whether a block was closed there and by which `AG` site, and whether `DKWB_CUT_RANGE/LINES` forced it. The override itself is not logged, so `forced` is computed from the range you give (or the environment).
 - **`tools/subst_report.py <symbol> [--source F] [--keep LINES]`** runs the `DKWB_SUBST_TRACE` instrumented compile (uopt's forward substitution and copy propagation) and prints LOCAL/GLOBAL/STORE decisions grouped by variable with use/def source lines, the reason and every reaching definition's verdict; a local keeps its stack home only if its STORE is kept. `--keep` sets `DKWB_SUBST_KEEP` (changes code; price it with `fast_score.py`). On func_80054B3C `twoZ1` (M-76) is substituted at L2665/L2671 and its store deleted; on o020 F000038C `size` is `kept treekilled` at L170/L172.
+- **`tools/slot_trace.py <symbol> [--proc N] [--source F] [--candidates] [--raw]`** compiles with `~/Desktop/dev/ido-slottrace/cc` and `DKWB_UOPT_SLOT_TRACE` (stderr only, no file path), resolves the procedure from the object, and prints each stack-slot request in uopt's order with its path, owner, size, index and reserve, the slot chosen (new or reuse, offset, frame before and after) and the candidate count; `--candidates` adds the rejected ones.
 - **`tools/merge_locals.py <symbol> [--source F] [--target-frame N]`** merges every same-typed local pair (rename, drop the declarator), classes each cell inert / frame-only (identical outside `N($sp)` and the frame) / code-changing, applies the frame-only ones greedily and reports the frame delta; code-changing cells rank by aligned residual. `lever_sweep.py --levers merge_pairs` uses the same renaming. On func_8001291C's 293 body it reaches the target frame 0x288 with eight neutral merges.
 
 ### The insertion-pair reader, for any function whose size is off
@@ -944,6 +948,7 @@ function, and the one to run **before** any colour or draw work on it. Every
 other instrument here works at size delta 0; they move a register, never an
 instruction. This one answers the question a nonzero delta actually asks:
 which word is extra or missing, and which construct of our source emitted it.
+`--object` of a scratch candidate needs `--source <its C file>`: the traced compile then runs on the candidate, so the identity gate compares like with like (without it the gate fails and the trace is discarded; the message says so).
 
 What it measures, all from one alignment (the same edit script
 `residual_map.py` reads, so its offsets agree with that tool's by construction):
@@ -1105,7 +1110,7 @@ shadow -- the dispatch order for Track B.
   (use `--also PATH` to include other files in the commit). On a match, remove
   the guard first, then `bank.py <symbol> --match`: it refuses while the
   function is still queued or ranked and writes the "Matched." header form.
-  A mid-file PLATEAU block is replaced in place. `finalize_plateau.py` remains
+  A mid-file PLATEAU block is replaced in place. `bank.py` refuses before measuring or writing when `--summary` exceeds 160 characters or holds `|`, or when the summary or note holds a `|` or a hex-looking token such as `bb51` (the clean-room BARE_HEX_WORD rule); the message names the rule. `finalize_plateau.py` remains
   for the low-level case where you already hold the numbers.
 - A handoff shard is a strict grammar: the metric header must be source, score,
   frame, relocations, first mismatch, then an optional summary, each on its own

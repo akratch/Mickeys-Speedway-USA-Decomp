@@ -199,6 +199,48 @@ class CommandTests(unittest.TestCase):
         self.assertIn("CDX_WEBREPORT", err)
 
 
+NEIGHBOUR_LOG = """\
+[CDX] p1dec phase=p1 proc=3 web=7 sym=7 class=1 save=1 nocs=1 totalsave=1 bestcost=0 bestcolor=1 bestreg=v0 forbidden0=0x0 regsleft=20 numintf=3 decision=color forced=-2
+[CDX] webblocks phase=p1 proc=3 role=target web=7 sym=7 lr=0x1 bbs=4,5,6,9 aux=-
+[CDX] intf phase=p1 proc=3 web=7 other=11 sym=11 assigned=1 shared=0 marked=0
+[CDX] webblocks phase=p1 proc=3 role=neighbor web=11 sym=11 lr=0x2 bbs=4,5,6 aux=-
+[CDX] intf phase=p1 proc=3 web=7 other=12 sym=12 assigned=0 shared=0 marked=0
+[CDX] webblocks phase=p1 proc=3 role=neighbor web=12 sym=12 lr=0x3 bbs=5,6,9 aux=-
+[CDX] p1dec phase=p1 proc=3 web=8 sym=8 class=1 save=1 nocs=1 totalsave=1 bestcost=0 bestcolor=1 bestreg=v0 forbidden0=0x0 regsleft=20 numintf=1 decision=color forced=-2
+[CDX] intf phase=p1 proc=3 web=8 other=99 sym=99 assigned=0 shared=0 marked=0
+"""
+
+
+class NeighbourTests(unittest.TestCase):
+    def test_interferers_are_listed_per_block_and_runs_fold(self):
+        rows = wr.parse_records(NEIGHBOUR_LOG)
+        decisions = wr.neighbour_model(rows, 3, 7)
+        self.assertEqual(len(decisions), 1)
+        self.assertEqual(sorted(decisions[0]["neighbours"]), [11, 12])
+        text = wr.render_neighbours(decisions, 7, None, "hdr")
+        self.assertIn("bb4: 1  w11(v0)", text)
+        self.assertIn("bb5-6: 2  w11(v0) w12", text)
+        self.assertIn("bb9: 1  w12", text)
+        self.assertNotIn("w99", text)
+        only = wr.render_neighbours(decisions, 7, 5, "hdr")
+        self.assertNotIn("bb4", only)
+        self.assertIn("bb5: 2", only)
+
+    def test_neighbours_via_trace_and_missing_web(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory) / "n.cdx"
+            path.write_text(NEIGHBOUR_LOG + "[CDX] bbline proc=3 bb=1 weight=1 entry=1 "
+                            "lines=- mask1=0 mask2=0\n")
+            status, out, _ = CommandTests.run_main(None, "sym", "--trace", str(path),
+                                                   "--proc", "3", "--neighbours", "7")
+            self.assertEqual(status, 0)
+            self.assertIn("bb5-6", out)
+            status, _, err = CommandTests.run_main(None, "sym", "--trace", str(path),
+                                                   "--proc", "3", "--neighbours", "40")
+            self.assertEqual(status, 2)
+            self.assertIn("CDX_DETAIL_WEB=40", err)
+
+
 class CompileEnvironment(unittest.TestCase):
     def test_cut_variables_survive_and_the_rest_do_not(self):
         env = {"PATH": "p", "CDX_FORCE": "x", "DKWB_UGEN_TRACE": "1",
@@ -206,11 +248,33 @@ class CompileEnvironment(unittest.TestCase):
         self.assertEqual(wr.cut_env(env), {"DKWB_CUT_A": "3"})
         self.assertEqual(wr.clean_env(env), {"PATH": "p"})
 
+    def test_force_bias_and_keep_survive_alongside_the_cuts(self):
+        env = {"PATH": "p", "CDX_FORCE": "p1:w1=s", "CDX_BIAS": "w2=5",
+               "DKWB_SUBST_KEEP": "12", "CDX_LOG": "1", "DKWB_CUT_A": "3", "CDX_PROC": "4"}
+        self.assertEqual(wr.setting_env(env), {"CDX_FORCE": "p1:w1=s", "CDX_BIAS": "w2=5",
+                                               "DKWB_SUBST_KEEP": "12"})
+        self.assertEqual(set(wr.pinned_env(env)),
+                         {"CDX_FORCE", "CDX_BIAS", "DKWB_SUBST_KEEP", "DKWB_CUT_A"})
+        self.assertIn("CDX_FORCE=p1:w1=s", wr.describe_pinned(env))
+        self.assertEqual(wr.pinned_env({"PATH": "p"}), {})
+
     def test_with_source_replaces_only_the_last_word(self):
         cmd = ["cc", "-O2", "-o", "x.o", "src/a.c"]
         self.assertEqual(wr.with_source(cmd, pathlib.Path("/c/cand.c")),
                          ["cc", "-O2", "-o", "x.o", "/c/cand.c"])
         self.assertEqual(wr.with_source(cmd, None), cmd)
+
+    def test_relative_source_is_the_callers_not_the_repo_roots(self):
+        import os
+        with tempfile.TemporaryDirectory() as directory:
+            old = os.getcwd()
+            os.chdir(directory)
+            try:
+                with self.assertRaises(SystemExit) as caught:
+                    wr.main(["sym", "--source", "cand.c"])
+            finally:
+                os.chdir(old)
+        self.assertIn(str(pathlib.Path(directory).resolve() / "cand.c"), str(caught.exception))
 
     def test_missing_source_is_refused(self):
         with self.assertRaises(SystemExit):

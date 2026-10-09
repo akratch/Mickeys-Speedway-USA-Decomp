@@ -4,7 +4,14 @@
     tools/lever_sweep.py <symbol> --proc N [--oracle 'p1:w387=s[,p2:w131=c21...]']
                          [--bias 'w387=-4.5,...'] [--root WORKTREE] [--candidate FILE] [--web W ...] [--block B ...]
                          [--lines LO-HI] [--levers a,b] [--jobs J]
-                         [--max-size-delta 16] [--max-cells 600] [--json PATH]
+                         [--max-size-delta 16] [--max-cells 600] [--json PATH] [--no-fail]
+
+EXIT STATUS. Default: 0 when some cell is exact (masked 0, size delta 0), 1
+when none is -- scripts rely on that. A completed sweep that only ranks (a
+`--max-size-delta`/`--bias` search, a no-oracle survey) has no exact cell by
+design and reads as a failure; `--no-fail` exits 0 for it. Either way the run
+prints a `no exact cell` line saying the sweep completed. Errors that stop the
+sweep (identity gate, bad oracle) still exit nonzero under `--no-fail`.
 
 NO ORACLE. With neither --oracle nor --bias the sweep still runs: cells are
 ranked by exactness, aligned residual, size delta and masked words, the
@@ -1663,6 +1670,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--max-size-delta", type=int, default=16,
                     help="drop a cell whose size moves more than this many bytes from the base")
     ap.add_argument("--max-cells", type=int, default=600)
+    ap.add_argument("--no-fail", action="store_true",
+                    help="exit 0 when the sweep completes without an exact cell (default exits 1)")
     ap.add_argument("--window", type=int, default=3,
                     help="statements either side a dead read's source is taken from")
     ap.add_argument("--max-reads", type=int, default=16)
@@ -1817,7 +1826,16 @@ def main(argv: list[str] | None = None) -> int:
                         if "rows" in t else {"spec": t["spec"], "want": t["want"]}
                         for t in targets],
             "cells": results}, indent=1, default=str))
-    return 0 if exact else 1
+    return exit_status(exact, ns.no_fail)
+
+
+def exit_status(exact: list, no_fail: bool) -> int:
+    """0 with an exact cell; otherwise 1, or 0 under --no-fail, with a line saying why."""
+    if exact:
+        return 0
+    print("no exact cell: the sweep completed" + (" (exit 0 by --no-fail)" if no_fail
+                                                 else " (exit 1; --no-fail makes it 0)"))
+    return 0 if no_fail else 1
 
 
 if __name__ == "__main__":

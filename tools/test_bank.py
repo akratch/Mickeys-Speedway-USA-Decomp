@@ -132,6 +132,30 @@ class BankTests(Fixture):
         self.assertEqual(code, 2)
         self.assertIn("'|'", err)
 
+    def test_long_summary_refused_before_anything_is_written(self):
+        code, _, err = self.run_bank("--summary", "x" * 161)
+        self.assertEqual(code, 2)
+        self.assertIn("161 characters", err)
+        self.assertIn("160", err)
+        self.assertFalse((self.root / fp.handoff_shard_path("demo_symbol")).exists())
+
+    def test_hex_looking_block_name_refused_naming_the_rule(self):
+        self.note.write_text("#### 2026-10-07, x\n\nThe split starts at bb51 and ends.\n")
+        code, _, err = self.run_bank("--note", str(self.note))
+        self.assertEqual(code, 2)
+        self.assertIn("bb51", err)
+        self.assertIn("BARE_HEX_WORD", err)
+        code, _, err = self.run_bank("--summary", "stuck in bb51")
+        self.assertEqual(code, 2)
+        self.assertIn("--summary", err)
+
+    def test_pipe_in_summary_and_plain_words_pass_the_preflight(self):
+        with self.assertRaises(bank.BankError) as caught:
+            bank.preflight_text("a | b", None)
+        self.assertIn("'|'", str(caught.exception))
+        # ordinary words, decimal block numbers and 0x-prefixed offsets are fine
+        bank.preflight_text("dead read in block 51 at 0x7f3a", "#### 2026-10-07, x\n\nfaded 2026\n")
+
     def test_note_needs_dated_heading(self):
         self.note.write_text("just prose\n")
         code, _, err = self.run_bank("--note", str(self.note))

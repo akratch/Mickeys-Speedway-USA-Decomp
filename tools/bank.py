@@ -59,6 +59,49 @@ HEADING_RE = re.compile(r"^#### \d{4}-\d{2}-\d{2}[,:].*\S$")
 ADDIU_SP_HI = 0x27BD
 
 
+SUMMARY_LIMIT = 160
+
+
+def hex_looking_words(text: str) -> list[str]:
+    """Bare 4/8/16-digit hex tokens mixing digits and a-f (`bb51`, `7f3a`).
+
+    The clean-room machine-word rule (cleanroom_detectors.BARE_HEX_WORD) counts
+    these as ROM words; a block name like bb51 reads as one. It fires on a
+    file's total, after the notes are written, so the offender is found here.
+    """
+    from cleanroom_detectors import BARE_HEX_WORD
+    return sorted({w for w in BARE_HEX_WORD.findall(text)
+                   if any(c.isdigit() for c in w) and any(c.lower() in "abcdef" for c in w)})
+
+
+def preflight_text(summary: str | None, note: str | None) -> None:
+    """Refuse text the shard grammar or the clean-room word rule will reject later.
+
+    Runs before any measurement, write or gate, and names every rule broken.
+    """
+    problems = []
+    if summary:
+        if len(summary) > SUMMARY_LIMIT:
+            problems.append(f"--summary is {len(summary)} characters; the shard grammar "
+                            f"limit is {SUMMARY_LIMIT}. Put the argument in the --note.")
+        if "|" in summary:
+            problems.append("--summary contains '|', the ledger's column separator "
+                            "(shard grammar)")
+    if note and "|" in note:
+        problems.append("the note contains '|', the ledger's column separator (shard "
+                        "grammar); write prose or an indented list, not a table")
+    for label, text in (("--summary", summary), ("the note", note)):
+        words = hex_looking_words(text or "")
+        if words:
+            problems.append(
+                f"{label} contains hex-looking token(s) {', '.join(words[:6])}; the "
+                "clean-room machine-word rule (BARE_HEX_WORD: a bare 4/8/16-digit token "
+                "mixing digits and a-f) counts them as ROM words. Write 'block 51' or "
+                "'0x51', not 'bb51'")
+    if problems:
+        raise BankError("; ".join(problems))
+
+
 class BankError(RuntimeError):
     """A clear refusal; nothing is committed."""
 
@@ -331,6 +374,10 @@ def bank(args: argparse.Namespace, root: Path) -> list[str]:
         raise BankError(f"invalid exact symbol {symbol!r}")
     if args.trailer and not args.commit:
         raise BankError("--trailer requires --commit")
+    note_text = None
+    if args.note and Path(args.note).is_file():
+        note_text = Path(args.note).read_text(encoding="utf-8")
+    preflight_text(args.summary, note_text)
     trailers = fp.commit_trailers(args.trailer, dict(os.environ)) if args.commit else []
     section = read_note(Path(args.note)) if args.note else None
     if args.summary:

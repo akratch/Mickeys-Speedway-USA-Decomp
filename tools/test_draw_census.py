@@ -165,5 +165,20 @@ class RenderTests(unittest.TestCase):
         self.assertIn("14 15", dc.render(data))
 
 
+
+class SourceTests(unittest.TestCase):
+    def test_with_source_replaces_only_the_last_word(self):
+        cmd = ["cc", "-O2", "-o", "x.o", "src/a.c"]
+        self.assertEqual(dc.with_source(cmd, pathlib.Path("/c/cand.c")),
+                         ["cc", "-O2", "-o", "x.o", "/c/cand.c"])
+        self.assertEqual(dc.with_source(cmd, None), cmd)
+        self.assertEqual(cmd[-1], "src/a.c")
+
+    def test_missing_source_is_refused_by_absolute_path(self):
+        with self.assertRaises(SystemExit) as caught:
+            dc.main(["sym", "--source", "nope/cand.c"])
+        self.assertIn(str(pathlib.Path("nope/cand.c").resolve()), str(caught.exception))
+
+
 if __name__ == "__main__":
     unittest.main()

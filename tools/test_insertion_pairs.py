@@ -21,6 +21,7 @@ in the grammar the instrumented ugen emits. What is pinned is the reading:
 import os
 import pathlib
 import sys
+import tempfile
 import unittest
 from unittest import mock
 
@@ -387,6 +388,45 @@ class RefusalTests(unittest.TestCase):
             with self.assertRaises(SystemExit) as caught:
                 ip.refuse_delta_zero(Item(), pathlib.Path("unused.o"))
         self.assertIn("size delta 0", str(caught.exception))
+
+
+class SourceTests(unittest.TestCase):
+    def test_source_without_object_is_refused(self):
+        with mock.patch.object(ip, "measure") as measure, mock.patch("sys.stderr"):
+            self.assertEqual(ip.main(["func_x", "--source", __file__]), 2)
+            measure.assert_not_called()
+
+    def test_source_is_resolved_and_handed_to_measure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            old = os.getcwd()
+            os.chdir(directory)
+            try:
+                pathlib.Path("cand.c").write_text("int x;\n")
+                with mock.patch.object(ip, "measure", return_value={}) as measure, \
+                        mock.patch.object(ip, "render", return_value=""), \
+                        mock.patch.dict(os.environ, {}, clear=False):
+                    ip.main(["func_x", "--object", "cand.o", "--source", "cand.c"])
+                got = measure.call_args[0][4]
+                self.assertEqual(got, pathlib.Path(directory).resolve() / "cand.c")
+            finally:
+                os.chdir(old)
+
+    def test_the_traced_compile_uses_the_candidate_source(self):
+        import force_lattice as fl
+        seen = {}
+
+        def fake_run(command, **kwargs):
+            seen["command"] = command
+            return mock.Mock(returncode=0, stdout="", stderr="")
+        item = mock.Mock(func="func_x", rel_c_file="src/a.c")
+        with tempfile.TemporaryDirectory() as directory, \
+                mock.patch.object(fl, "compile_command",
+                                  return_value=["cc", "-O2", "-o", "x.o", "src/a.c"]), \
+                mock.patch.object(fl, "replace_compiler", side_effect=lambda c, _: list(c)), \
+                mock.patch.object(pathlib.Path, "exists", return_value=True), \
+                mock.patch.object(ip.subprocess, "run", fake_run):
+            ip.compile_traced(item, pathlib.Path(directory), pathlib.Path("/c/cand.c"))
+        self.assertEqual(seen["command"][-1], "/c/cand.c")
 
 
 if __name__ == "__main__":

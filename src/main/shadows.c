@@ -1378,6 +1378,6 @@ void func_800180B4(ShadowQuery *query) {
  * frame: 0x140
  * relocations: 21
  * first-mismatch: +0x4C
- * summary: 292 at +12, residual 60. The +12 is the D_800CB268 store's address piece alone: deleting that store gives size 0, residual 67.
+ * summary: 292 at +12, residual 60. Needs the D_800CB268 store piece out of block 51 and one more face-piece neighbour in blocks 6/7 (records).
  * PLATEAU-HANDOFF:func_80017140:end
  */

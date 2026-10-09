@@ -879,4 +879,68 @@ Base re-measured: 14 masked at size 0, aligned 337/2/12/0.
   references them, and none of those does in the target.
 
 Cycle-21 line unchanged from lane z-2.
+
+#### 2026-10-09, lane finish-wake-regions: actual spill regions rule out the two-owner-only explanation
+
+No source or matching-credit change. Configured baseline: 1,404 bytes,
+351 words, 14 raw/masked differences, aligned 337 exact / 2 naming /
+12 immediate / 0 structural, first mismatch +0x94; frame 0x90 and three
+relocations. The configured NON_MATCHING object and direct compiler path
+agree on the entire owned extent and relocation offset/type/identity records.
+Prepared compiler-input self-context comparison passes.
+
+This packet measured the actual slot allocator, not another expression-order
+or early-return variant. A private copy of the hash-pinned IDO 5.3 generated
+UOPT was instrumented at `spilltemps`' own graph-node membership tests and
+at the three sites that add an earlier owner's slot to the unavailable set.
+The observations record request table identity, node membership, earlier
+owner and slot, without writing compiler state. Existing request/choice
+records and the same-capture expression descriptors supply the other joins.
+No shared compiler or tooling files changed. Stock, trace-disabled, and
+trace-enabled full-TU objects are whole-file identical; section, relocation,
+and symbol fidelity all pass. Retained named Ucode and the complete oneproc
+stream authenticate procedure 9 of 39. Sources, private compiler inputs and
+hash manifest, captures, and replay script remain ignored under
+`build/wake-regions/`.
+
+The measurement distinguishes two previously conflated objects: register
+`webblocks` describes a live-range bitvector during global coloring, whereas
+`spilltemps` queries each graph node's expression-membership bitvector.
+Only the latter was used for this census.
+
+- All 19 spill requests were observed across the same 63 graph nodes.
+  The 667 direct earlier-owner/block witnesses equal the independently
+  reconstructed pairwise membership intersections, with neither missing nor
+  extra witnesses. First-fit replay reproduces every chosen slot and every
+  tested conflict. Three subsequent ordinary temporary requests are separate
+  from this spill-request census.
+- Texture bytes, sample bytes and the segment-times-0x14 term have **identical
+  13-node allocation regions**. They are requested in that order and receive
+  consecutive pool cells. This strengthens z-2's inferred texture-subset-of-
+  sample relation to measured equality on the current body.
+- Before the doubled count, ten requesters occupy only pool cells zero
+  through four, using both fresh allocations and reuse. Doubled itself first
+  allocates cell five, currently 0x34(sp). The buffer-array address expression
+  first allocates cell six, currently 0x30(sp), after doubled. Thus there are
+  no two earlier owners of those cells in this baseline. The top cells also
+  have shared owners; they must not be described solely by their first
+  requesters or by the three unrolled index expressions.
+
+Consequence: adding earlier owners alone cannot reverse texture and sample
+slot order while their regions and creation order remain unchanged. Every
+cell blocked for texture by an earlier owner is also blocked for sample;
+texture's own chosen cell is then blocked for the later sample. The sample
+term therefore cannot obtain a higher existing cell than texture. The same
+argument applies to the segment-times-0x14 term. Two hypothetical owners
+that push doubled down cannot repair this second ordering requirement.
+
+The authorized measurement is resolved without a source experiment. The
+next reopen must establish a source mechanism that changes either the
+texture/sample region equality or their authenticated creation order while
+preserving semantics and the target instruction structure. Another two-owner
+census on this unchanged body, generic earlier-owner insertion, declaration
+permutation, or the already exhausted expression/early-return sweeps is not
+such a mechanism. The two dead-copy stand-ins and the empty region boundary
+remain unresolved independently of the spill order.
+
 <!-- plateau-handoff:wakeAllocate:end -->

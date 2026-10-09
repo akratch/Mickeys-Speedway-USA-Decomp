@@ -3984,7 +3984,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: 344 at size 0: SUBST_KEEP on the six definitions prices worse; z1 and y2 as memory objects reach aligned 201 at +4 (stand-in).
+ * summary: 344 at size 0: z1 and y2 memory-class (array stand-in) reach aligned 201 at +4; arrays, structs, pointer-read doubles and scoping are flat or worse.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

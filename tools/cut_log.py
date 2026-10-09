@@ -13,8 +13,8 @@ Records read (everything else is ignored):
     OP c=<counter> lim=<limit> <w0> <w1> <w2> <w3>   every ucode record at getop;
                                                      w0 byte 0 is the opcode,
                                                      0x51 (Uloc) carries the
-                                                     source line in w1, 0x19
-                                                     opens a procedure
+                                                     source line in w1, 0x21
+                                                     (Uent) opens a procedure
     AG site=<n> op=<hex> cur=<node>                  appendgraph: a block was
                                                      closed; op=51 is a cut at a
                                                      Uloc

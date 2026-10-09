@@ -853,10 +853,28 @@ def ledger_source_plateau_record(
     return None
 
 
+def structured_inline_handoff(text: str | None, symbol: str) -> str | None:
+    """Validate one exact keyed checkpoint; legacy detection stays separate."""
+    if text is None:
+        return None
+    blocks = [match.group(0) for match in finalize_plateau.KEYED_HANDOFF_RE.finditer(text)
+              if match.group("symbol") == symbol]
+    if len(blocks) != 1:
+        return None
+    block = blocks[0]
+    if re.findall(r"(?m)^ \* symbol: ([A-Za-z_]\w*)[ \t]*$", block) != [symbol]:
+        return None
+    try:
+        finalize_plateau.update_source(text, symbol, block)
+    except finalize_plateau.PlateauError:
+        return None
+    return block
+
+
 def shard_source_plateau_record(
     ref: str, symbol: str, source_path: str,
 ) -> tuple[str, str] | None:
-    """Find a plateau commit that changed one source and its exact shard."""
+    """Find a source checkpoint that changed one source and its exact shard."""
     ledger_path = shard_path(symbol)
     raw = git("log", "--format=%H%x00%s%x1e", ref, "--", ledger_path)
     for record in raw.split("\x1e"):
@@ -864,11 +882,21 @@ def shard_source_plateau_record(
         if not record:
             continue
         commit, subject = record.split("\0", 1)
-        if not PLATEAU_SUBJECT_RE.search(subject):
-            continue
         changed = commit_paths(commit)
         if source_path not in changed or ledger_path not in changed:
             continue
+        if not PLATEAU_SUBJECT_RE.search(subject):
+            # Structured checkpoints are evidence even when the subject says
+            # "Bank". Require this exact inline handoff to change; a whole
+            # guard can contain siblings, so its body diff is insufficient.
+            source = show_file(commit, source_path)
+            checkpoint = structured_inline_handoff(source, symbol)
+            if checkpoint is None:
+                continue
+            parent = first_parent(commit)
+            previous = show_file(parent, source_path) if parent else None
+            if checkpoint == structured_inline_handoff(previous, symbol):
+                continue
         shard = show_file(commit, ledger_path)
         if shard is None:
             continue

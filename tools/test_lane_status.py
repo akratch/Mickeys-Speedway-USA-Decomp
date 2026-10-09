@@ -331,6 +331,92 @@ class LaneStatusAssignmentTests(unittest.TestCase):
         self.commit("Seed two owned functions in one guard")
         return text
 
+    def test_structured_bank_checkpoint_needs_fresh_authorization(self):
+        (self.repo / SOURCE_PATH).write_text(candidate(plateau=True))
+        (self.repo / SHARD_PATH.parent).mkdir(exist_ok=True)
+        (self.repo / SHARD_PATH).write_text(shard())
+        checkpoint = self.commit(f"Bank {SYMBOL}")
+        result, report = self.status()
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(report["assignment"]["state"], "already-integrated/exhausted")
+        self.assertEqual(report["assignment"]["source_commit"], checkpoint)
+        self.authorize_reopen(checkpoint, checkpoint)
+        result, report = self.status()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        (self.repo / SOURCE_PATH).write_text(candidate(plateau=True).replace(
+            "void " + SYMBOL + "(void) {", "void " + SYMBOL + "(void) { int changed;"))
+        changed = self.commit("Refine guarded body")
+        result, report = self.status()
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(report["assignment"]["source_commit"], changed)
+
+    def test_structured_bank_requires_target_owned_source_change(self):
+        (self.repo / SOURCE_PATH).write_text(candidate(plateau=True))
+        self.commit("Record source evidence alone")
+        (self.repo / SHARD_PATH.parent).mkdir(exist_ok=True)
+        (self.repo / SHARD_PATH).write_text(shard())
+        (self.repo / SOURCE_PATH).write_text(candidate(plateau=True) +
+                                           "\nvoid sibling(void) {}\n")
+        self.commit(f"Bank {SYMBOL} documentation with sibling edit")
+        result, report = self.status()
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(report["assignment"]["reason_code"], "prose-needs-remeasurement")
+
+    def test_structured_bank_does_not_own_sibling_inside_same_guard(self):
+        text = self.shared_guard() + candidate(plateau=True).split(
+            "/* PLATEAU-HANDOFF", 1)[1].join(["\n/* PLATEAU-HANDOFF", ""])
+        (self.repo / SOURCE_PATH).write_text(text)
+        self.commit("Record source evidence alone")
+        (self.repo / SHARD_PATH.parent).mkdir(exist_ok=True)
+        (self.repo / SHARD_PATH).write_text(shard())
+        (self.repo / SOURCE_PATH).write_text(text.replace(
+            "void sibling(void) {}", "void sibling(void) { int changed; }"))
+        self.commit("Bank sibling improvement with target shard")
+        result, report = self.status()
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(report["assignment"]["reason_code"], "prose-needs-remeasurement")
+
+    def test_structured_bank_handoff_only_checkpoint(self):
+        (self.repo / SOURCE_PATH).write_text(candidate(plateau=True))
+        self.commit("Record source evidence alone")
+        (self.repo / SHARD_PATH.parent).mkdir(exist_ok=True)
+        (self.repo / SHARD_PATH).write_text(shard())
+        (self.repo / SOURCE_PATH).write_text(candidate(plateau=True).replace(
+            "8/43 words", "7/43 words"))
+        checkpoint = self.commit("Bank measured handoff")
+        self.authorize_reopen(checkpoint, checkpoint)
+        result, report = self.status()
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_bank_rejects_foreign_or_malformed_inline_identity(self):
+        (self.repo / SHARD_PATH.parent).mkdir(exist_ok=True)
+        (self.repo / SHARD_PATH).write_text(shard())
+        variants = [
+            candidate(plateau=True).replace(f"PLATEAU-HANDOFF:{SYMBOL}:end",
+                                             "PLATEAU-HANDOFF:sibling:end"),
+            candidate(plateau=True).replace(f" * symbol: {SYMBOL}", " * symbol: sibling"),
+            candidate(plateau=True).replace(f" * symbol: {SYMBOL}",
+                                             f" * symbol: {SYMBOL}\n * symbol: {SYMBOL}"),
+        ]
+        for index, text in enumerate(variants):
+            with self.subTest(index=index):
+                (self.repo / SOURCE_PATH).write_text(text)
+                (self.repo / SHARD_PATH).write_text(shard().replace("allocator web remains", f"allocator web remains; review {index}"))
+                self.commit(f"Bank {SYMBOL} checkpoint {index}")
+                result, report = self.status()
+                self.assertEqual(result.returncode, 1)
+                self.assertEqual(report["assignment"]["reason_code"], "prose-needs-remeasurement")
+
+    def test_bank_subject_without_inline_handoff_is_not_checkpoint(self):
+        (self.repo / SOURCE_PATH).write_text(candidate().replace(
+            "void " + SYMBOL + "(void) {", "void " + SYMBOL + "(void) { int changed;"))
+        (self.repo / SHARD_PATH.parent).mkdir(exist_ok=True)
+        (self.repo / SHARD_PATH).write_text(shard())
+        self.commit(f"Bank {SYMBOL}")
+        result, report = self.status()
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(report["assignment"]["reason_code"], "prose-needs-remeasurement")
+
     def test_history_check_rejects_renamed_historical_key_without_rearming(self):
         plateau = self.current_plateau()
         self.authorize_reopen(plateau, plateau)

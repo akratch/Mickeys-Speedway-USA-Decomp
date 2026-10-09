@@ -396,9 +396,9 @@
       "source_commit": "6091b1a01df312435a7fd6ecae778481fb795ce4"
     },
     "func_8002B040": {
-      "ledger_commit": "8b6507d4ca7fc3983a6598956289c06ceb0a0099",
-      "reason": "Trap 20: CDX_FORCE is silently ignored without CDX_PROC, so a closure resting on a force sweep is unproven, not negative -- one re-run scored 6 at delta 0 where it read unreachable. Also new laws L139, L141, L142, L144 (2026-09-12).",
-      "source_commit": "8b6507d4ca7fc3983a6598956289c06ceb0a0099"
+      "ledger_commit": "325e151a6ea4025f9121f27d1a3093da532da1d9",
+      "reason": "2026-10-09: exact-reference search of the 136-byte matrix routine in decoded permitted retail revisions. Prior object scans and the later 9380-byte/296-byte retail searches did not cover this routine. No C or compiler-flag sweep.",
+      "source_commit": "325e151a6ea4025f9121f27d1a3093da532da1d9"
     },
     "func_8002C69C": {
       "ledger_commit": "0af40ba10fb3711caa178fe4de27170b84a23854",

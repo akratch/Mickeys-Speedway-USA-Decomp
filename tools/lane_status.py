@@ -2227,21 +2227,29 @@ def reopen_authorizations(base: str) -> dict[str, dict[str, str | None]]:
     raw = git("show", f"{base}:{REOPEN_AUTHORIZATIONS_PATH}", check=False)
     if not raw:
         return {}
-    authorizations = parse_reopen_authorizations(
-        raw, label=f"{base}:{REOPEN_AUTHORIZATIONS_PATH}",
+    return validate_reopen_history(
+        raw, base=base, label=f"{base}:{REOPEN_AUTHORIZATIONS_PATH}",
     )
+
+
+def validate_reopen_history(
+    raw: str, *, base: str, label: str,
+) -> dict[str, dict[str, str | None]]:
+    """Validate candidate metadata against real history without authorizing work."""
+    authorizations = parse_reopen_authorizations(raw, label=label)
+    git("rev-parse", "--verify", "--end-of-options", f"{base}^{{commit}}")
     for symbol, row in authorizations.items():
         source_commit = row["source_commit"]
         ledger_commit = row["ledger_commit"]
         if not is_ancestor(source_commit, base):
             raise RuntimeError(
-                f"{base}:{REOPEN_AUTHORIZATIONS_PATH}: {symbol} source_commit "
+                f"{label}: {symbol} source_commit "
                 f"{source_commit} is not an ancestor of {base}"
             )
         if ledger_commit is not None:
             if not is_ancestor(ledger_commit, base):
                 raise RuntimeError(
-                    f"{base}:{REOPEN_AUTHORIZATIONS_PATH}: {symbol} "
+                    f"{label}: {symbol} "
                     f"ledger_commit {ledger_commit} is not an ancestor of {base}"
                 )
             if not (
@@ -2249,13 +2257,13 @@ def reopen_authorizations(base: str) -> dict[str, dict[str, str | None]]:
                 or is_ancestor(ledger_commit, source_commit)
             ):
                 raise RuntimeError(
-                    f"{base}:{REOPEN_AUTHORIZATIONS_PATH}: {symbol} "
+                    f"{label}: {symbol} "
                     "source_commit and ledger_commit are unrelated"
                 )
         source_path, identity_error = source_identity(source_commit, symbol)
         if identity_error or source_path is None:
             raise RuntimeError(
-                f"{base}:{REOPEN_AUTHORIZATIONS_PATH}: {symbol} source_commit "
+                f"{label}: {symbol} source_commit "
                 "does not identify exactly one source definition"
             )
         if ledger_commit is not None:
@@ -2264,7 +2272,7 @@ def reopen_authorizations(base: str) -> dict[str, dict[str, str | None]]:
                 shard_source = validated_shard_source(shard_text, symbol)
             except RuntimeError as error:
                 raise RuntimeError(
-                    f"{base}:{REOPEN_AUTHORIZATIONS_PATH}: {symbol} "
+                    f"{label}: {symbol} "
                     f"ledger_commit has invalid handoff evidence: {error}"
                 ) from error
             if shard_source is None:
@@ -2282,13 +2290,13 @@ def reopen_authorizations(base: str) -> dict[str, dict[str, str | None]]:
                 )
                 if not rows and not blocks:
                     raise RuntimeError(
-                        f"{base}:{REOPEN_AUTHORIZATIONS_PATH}: {symbol} "
+                        f"{label}: {symbol} "
                         "ledger_commit carries neither a handoff shard nor "
                         "legacy evidence for this symbol"
                     )
             elif shard_source != source_path:
                 raise RuntimeError(
-                    f"{base}:{REOPEN_AUTHORIZATIONS_PATH}: {symbol} "
+                    f"{label}: {symbol} "
                     "ledger_commit does not identify the authorized source path"
                 )
     return authorizations
@@ -2442,10 +2450,31 @@ def main() -> int:
         "--check-reopen-schema", action="store_true",
         help="check worktree reopen JSON structure only, without Git/history checks",
     )
+    parser.add_argument(
+        "--check-reopen-history", action="store_true",
+        help="check worktree reopen JSON against committed history; does not authorize assignment",
+    )
     args = parser.parse_args()
 
+    if args.check_reopen_history:
+        if (args.check_reopen_schema or args.symbol or args.symbols is not None
+                or args.pending_only or args.json or args.no_cache):
+            parser.error("--check-reopen-history cannot be combined with assignment or schema options")
+        path = Path(REOPEN_AUTHORIZATIONS_PATH)
+        try:
+            base = args.base or integration_base.resolve(Path.cwd())
+            rows = validate_reopen_history(
+                path.read_text(encoding="utf-8"), base=base, label=str(path),
+            )
+        except (OSError, UnicodeError, RuntimeError) as error:
+            print(f"lane_status: {error}", file=sys.stderr)
+            return 2
+        print(f"reopen history: OK ({len(rows)} entries; not assignment authorization)")
+        return 0
+
     if args.check_reopen_schema:
-        if args.base is not None or args.symbol or args.pending_only or args.json:
+        if (args.base is not None or args.symbol or args.symbols is not None
+                or args.pending_only or args.json or args.no_cache):
             parser.error("--check-reopen-schema cannot be combined with assignment options")
         path = Path(REOPEN_AUTHORIZATIONS_PATH)
         try:

@@ -13,7 +13,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 class LandingTests(unittest.TestCase):
     def run_landing(self, fail_verify=False, *, release=False, unintegrated=False,
-                    outdated=False, fail_gate=False, changed_tree=False):
+                    outdated=False, fail_gate=False, changed_tree=False,
+                    fail_history=0):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             bin_dir = root / "bin"
@@ -50,8 +51,14 @@ if name == "gmake" and args == ["cleanroom", "check-docs", "check-scoreboard"] a
     sys.exit(8)
 if name == "authorizer":
     sys.exit(99)
+if name == "python3":
+    assert args == ["tools/lane_status.py", "--check-reopen-history", "--base", "HEAD"]
+    calls = sum(json.loads(line)[0] == "python3"
+                for line in pathlib.Path(os.environ["LAND_TEST_LOG"]).read_text().splitlines())
+    if calls == int(os.environ["LAND_TEST_HISTORY"]):
+        sys.exit(9)
 '''
-            for name in ("git", "gmake", "authorizer"):
+            for name in ("git", "gmake", "authorizer", "python3"):
                 path = bin_dir / name
                 path.write_text(shim)
                 path.chmod(0o755)
@@ -60,7 +67,8 @@ if name == "authorizer":
                        LAND_TEST_ROOT=str(root), LAND_TEST_FAIL=str(int(fail_verify)),
                        LAND_TEST_UNINTEGRATED=str(int(unintegrated)),
                        LAND_TEST_OUTDATED=str(int(outdated)), LAND_TEST_GATE=str(int(fail_gate)),
-                       LAND_TEST_TREE=str(int(changed_tree)))
+                       LAND_TEST_TREE=str(int(changed_tree)),
+                       LAND_TEST_HISTORY=str(fail_history))
             result = subprocess.run(["bash", str(ROOT / "tools/land.sh")] +
                                     (["--release-ref", "reviewed-release"] if release else []),
                                     cwd=root, env=env, text=True, capture_output=True)
@@ -95,6 +103,21 @@ if name == "authorizer":
                          [["git", "push", "origin", "campaign/unchain"]])
         self.assertIn(["gmake", "verify"], commands)
         self.assert_no_reauthorization(commands)
+
+    def test_invalid_authorization_history_stops_publication(self):
+        for release in (False, True):
+            for failure in (1, 2):
+                with self.subTest(release=release, failure=failure):
+                    result, commands = self.run_landing(
+                        release=release, fail_history=failure,
+                    )
+                    self.assertEqual(result.returncode, 9, result.stderr)
+                    pushes = [c for c in commands if c[:2] == ["git", "push"]]
+                    expected = ([["git", "push", "origin", "campaign/unchain"]]
+                                if failure == 2 and not release else [])
+                    self.assertEqual(pushes, expected)
+                    self.assertFalse(any(c[0] == "gmake" for c in commands))
+                    self.assert_no_reauthorization(commands)
 
     def test_curated_release_publishes_only_pinned_master_after_all_gates(self):
         result, commands = self.run_landing(release=True)

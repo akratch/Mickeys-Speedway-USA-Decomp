@@ -1049,9 +1049,9 @@ D_800D4A82 = 0x800D4A82; // type:u16 size:0x2 tier-A compiler-owned diprint BSS 
 // consumed by the display-list crash reporter. The whole run immediately
 // precedes diRcp.c in both games.
 diRcpTraceInit = 0x80044B60;    // type:func size:0x3C tier A (exact C, JFG diRcpTraceInit)
-func_80044B9C = 0x80044B9C;     // type:func size:0x2C tier A (exact C, JFG diRcpTraceReset)
-func_80044BC8 = 0x80044BC8;     // type:func size:0xCC tier-A (exact C, JFG diRcpTrace)
-func_80044C94 = 0x80044C94;     // type:func size:0x12C tier A exact C (JFG diRcpTraceGetInfo), ROM 0x45894
+diRcpTraceReset = 0x80044B9C;     // type:func size:0x2C tier A (exact C, JFG diRcpTraceReset), name tier-B 2026-10-09 from JFG src/diRcpTrace.c TU order after the named anchor diRcpTraceInit and before diRcpPrintDL, matched C, JFG size 0x2C equal
+diRcpTrace = 0x80044BC8;     // type:func size:0xCC tier-A (exact C, JFG diRcpTrace), name tier-B 2026-10-09 from JFG src/diRcpTrace.c TU order after the named anchor diRcpTraceInit and before diRcpPrintDL, matched C
+diRcpTraceGetInfo = 0x80044C94;     // type:func size:0x12C tier A exact C (JFG diRcpTraceGetInfo), ROM 0x45894, name tier-B 2026-10-09 from JFG src/diRcpTrace.c TU order after the named anchor diRcpTraceInit and before diRcpPrintDL, matched C
 
 // diRcp.c -- the display-list disassembler. `diRcpPrintDL` is the only
 // function referencing the whole G_* opcode name table and "UNKNOWN COMMAND";
@@ -1139,8 +1139,8 @@ func_80045BBC = 0x80045BBC;                // type:func size:0xF0 tier-A ROM 0x4
 func_80045CAC = 0x80045CAC;                // type:func size:0x88 tier-A (exact C, JFG active-thread scan)
 func_80045D34 = 0x80045D34;                // type:func size:0x72C tier-D ROM 0x46934 NON_MATCHING plateau, first +0x0
 diCpuReportWatchpoint = 0x80046460;         // type:func size:0xA4 tier-A (exact C, JFG body)
-func_80046504 = 0x80046504;                 // type:func size:0x8 tier A (exact C, JFG diCpuTraceGetFault)
-func_8004650C = 0x8004650C;                 // type:func size:0x3C tier A (exact C, JFG diCpuTraceTick)
+diCpuTraceGetFault = 0x80046504;                 // type:func size:0x8 tier A (exact C, JFG diCpuTraceGetFault), name tier-B 2026-10-09 from JFG src/diCpu.c TU order after the named anchor diCpuReportWatchpoint and before render_epc_lock_up_display, matched C, JFG size 0x8 equal
+diCpuTraceTick = 0x8004650C;                 // type:func size:0x3C tier A (exact C, JFG diCpuTraceTick), name tier-B 2026-10-09 from JFG src/diCpu.c TU order after the named anchor diCpuReportWatchpoint and before render_epc_lock_up_display, matched C, JFG size 0x3C equal
 render_epc_lock_up_display = 0x80046548;    // type:func size:0x560 tier B/C (crash display)
 func_80046AA8 = 0x80046AA8;                // type:func size:0x124 tier-A ROM 0x476A8 IDO C exact, Mickey reconstruction with JFG structural oracle
 func_80046BCC = 0x80046BCC;                // type:func size:0x1A8 tier D (Mickey boundary)

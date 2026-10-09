@@ -550,7 +550,7 @@ extern void doWeather();
 extern void func_800219D0(void);
 extern void func_80022D20();
 extern void func_80036CAC();
-extern void func_80044BC8();
+extern void diRcpTrace();
 extern void func_800534EC();
 extern void levelUpdateColourCycling();
 extern void rainSetFog();
@@ -582,7 +582,7 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
     D_800C9524 = *arg1;
     D_800C9528 = *arg2;
     D_800C952C = *arg3;
-    func_80044BC8(D_800C9520, "track/track.c", 0x1CC);
+    diRcpTrace(D_800C9520, "track/track.c", 0x1CC);
     D_800C9558 = 1;
     D_800C9538 = 0;
     if (func_800290A0() != 0) {
@@ -675,7 +675,7 @@ void func_8000BDB4(Gfx **arg0, Mtx **arg1, TrackVertex **arg2,
                 func_8000CC78();
             }
         }
-        func_80044BC8(D_800C9520, "track/track.c", 0x26A);
+        diRcpTrace(D_800C9520, "track/track.c", 0x26A);
         gDPPipeSync(D_800C9520++);
         func_8000D018(temp_s2, arg4);
         weather_clip_planes(-1, -0x200);
@@ -1910,7 +1910,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
     }
     func_8000A39C(segmentCount, segmentEnd - 1);
     func_80034920(&D_800C9520);
-    func_80044BC8(D_800C9520, "track/track.c", 0x58D);
+    diRcpTrace(D_800C9520, "track/track.c", 0x58D);
     D_800C95B0[0] = -1;
     for (index = 1; index <= D_800792E8->segmentCount; index++) {
         D_800C95B0[index] = 0;
@@ -1925,7 +1925,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
         E920_RECORD(0) = -1;
     }
     func_8000D978(0, arg1);
-    func_80044BC8(D_800C9520, "track/track.c", 0x5A1);
+    diRcpTrace(D_800C9520, "track/track.c", 0x5A1);
     if (D_80079260 != 0) {
         for (index = 0; index < visibleCount; index++) {
             func_8000F198(segmentIds[index], E920_RECORD(segmentIds[index]), 0);
@@ -1947,7 +1947,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
     if (E920_S8(D_800792EC, 0xF6) != 0) {
         TrapDanglingJump(selectedCount, selectedObjects);
     }
-    func_80044BC8(D_800C9520, "track/track.c", 0x5D7);
+    diRcpTrace(D_800C9520, "track/track.c", 0x5D7);
     for (index = 0; index < selectedCount;) {
         object = selectedObjects[index++];
         if ((E920_S32(object, 0x58) != 0) &&
@@ -1957,7 +1957,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
                           (TrackSkyObject *) object);
         }
     }
-    func_80044BC8(D_800C9520, "track/track.c", 0x5E3);
+    diRcpTrace(D_800C9520, "track/track.c", 0x5E3);
     for (index = selectedCount - 1; index >= 0;) {
         object = selectedObjects[index--];
         if ((E920_PTR(object, 0x4C) != NULL) && (E920_U8(object, 0x8E) == 0)) {
@@ -1971,7 +1971,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
                           (struct TrackShadowInstance *) E920_PTR(object, 0x4C));
         }
     }
-    func_80044BC8(D_800C9520, "track/track.c", 0x5F7);
+    diRcpTrace(D_800C9520, "track/track.c", 0x5F7);
     for (index = 0; index < selectedCount;) {
         object = selectedObjects[index++];
         if (((E920_S16(object, 6) & 0xC) == 0) &&
@@ -1981,7 +1981,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
                           (TrackSkyObject *) object);
         }
     }
-    func_80044BC8(D_800C9520, "track/track.c", 0x603);
+    diRcpTrace(D_800C9520, "track/track.c", 0x603);
     for (index = selectedCount - 1; index >= 0;) {
         object = selectedObjects[index--];
         if (E920_S16(object, 6) & 8) {
@@ -1993,7 +1993,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
         TrapDanglingJump(&D_800C9520, &D_800C9524, &D_800C9528);
     }
     if (E920_S8(D_800792EC, 0xF6) != 0) {
-        func_80044BC8(D_800C9520, "track/track.c", 0x61A);
+        diRcpTrace(D_800C9520, "track/track.c", 0x61A);
         TrapDanglingJump(&D_800C9520, &D_800C9524, &D_800C9528);
         if (D_80079260 != 0) {
             index = visibleCount;
@@ -2015,14 +2015,14 @@ void func_8000E920(s32 arg0, s32 arg1) {
             }
         }
     }
-    func_80044BC8(D_800C9520, "track/track.c", 0x634);
+    diRcpTrace(D_800C9520, "track/track.c", 0x634);
     if (D_80079260 != 0) {
         index = visibleCount;
         while (index--) {
             func_8000F198(segmentIds[index], E920_RECORD(segmentIds[index]), 4);
         }
     }
-    func_80044BC8(D_800C9520, "track/track.c", 0x63B);
+    diRcpTrace(D_800C9520, "track/track.c", 0x63B);
     for (index = selectedCount - 1; index >= 0;) {
         object = selectedObjects[index--];
         if (E920_S32(object, 0x54) != 0) {
@@ -2035,7 +2035,7 @@ void func_8000E920(s32 arg0, s32 arg1) {
     if (runlinkIsModuleLoaded(0x22) != 0) {
         TrapDanglingJump((s32) &D_800C9520, &D_800C9528);
     }
-    func_80044BC8(D_800C9520, "track/track.c", 0x64E);
+    diRcpTrace(D_800C9520, "track/track.c", 0x64E);
     for (index = selectedCount - 1; index >= 0;) {
         object = selectedObjects[index--];
         if ((E920_S16(object, 6) & 4) || (E920_U8(object, 0x39) < 0xFF)) {
@@ -2069,12 +2069,12 @@ void func_8000E920(s32 arg0, s32 arg1) {
             }
         }
     }
-    func_80044BC8(D_800C9520, "track/track.c", 0x678);
+    diRcpTrace(D_800C9520, "track/track.c", 0x678);
     if ((D_8007A124 == 0) && (camGetMode() == 0)) {
         partDraw(&D_800C9520, (s32) &D_800C9524, -1);
     }
     D_800C9544 = 0;
-    func_80044BC8(D_800C9520, "track/track.c", 0x680);
+    diRcpTrace(D_800C9520, "track/track.c", 0x680);
 }
 #undef index
 #undef E920_U8

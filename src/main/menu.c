@@ -73,7 +73,7 @@ extern void freeFrontEndItem(s32 assetId);
 extern void loadFrontEndItem(s32 assetId);
 extern void func_80039720(s32 updateRate);
 extern void func_8004BF64(s32 windowId);
-extern void func_80044BC8(s32 arg0, u8 *source, s32 line);
+extern void diRcpTrace(s32 arg0, u8 *source, s32 line);
 extern u32 joyGetButtons(s32 controller);
 extern u32 joyGetPressed(s32 controller);
 extern s8 joyGetStickX(s32 controller);
@@ -624,7 +624,7 @@ s32 func_80038E1C(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList
         D_800D3148 = *vertexList;
         timerState = playerObject;
         D_800D314C = *triangleList;
-        func_80044BC8(D_800D3140, D_800826C0, 0x297);
+        diRcpTrace(D_800D3140, D_800826C0, 0x297);
         switch (D_8007C0A0) {
         case 0:
             break;
@@ -687,7 +687,7 @@ s32 func_80038E1C(s32 *gfxList, s32 *mtxList, s32 *vertexList, s32 *triangleList
             TrapDanglingJump(updateRate);
             break;
         }
-        func_80044BC8(D_800D3140, D_800826D0, 0x2C5);
+        diRcpTrace(D_800D3140, D_800826D0, 0x2C5);
         *gfxList = D_800D3140;
         *mtxList = D_800D3144;
         *vertexList = D_800D3148;

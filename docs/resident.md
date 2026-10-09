@@ -2739,8 +2739,8 @@ FX type-pass inventory (target widths/offsets; no source-body promotion):
 | `fxCpuTextureFlush` | the four parallel slot arrays `D_800D60B0`, `D_800D60C0`, `D_800D60D0` and `D_8007D47C`; `D_800D60A8`; `TrapDanglingJump`; `mmFree`. | **A**; exact C, 52 words, frame `-0x38`, 12 relocations; ROM `0x4BB68`-`0x4BC38` byte-identical. One `while (i--)` index over all four arrays; uopt builds every cursor, shares one byte offset between `D_800D60C0` and `D_8007D47C`, and keeps `D_800D60C0`'s base inside the loop. |
 
 Exact C closures in these splits begin with 680 bytes across seven `diCpu`
-functions: the 8-byte `func_80046504` (`diCpuTraceGetFault` in JFG) and the
-60-byte `func_8004650C` (`diCpuTraceTick`). Their natural return-zero and
+functions: the 8-byte `diCpuTraceGetFault` (`diCpuTraceGetFault` in JFG) and the
+60-byte `diCpuTraceTick` (`diCpuTraceTick`). Their natural return-zero and
 60-tick counter bodies are identical under the resident `-O2 -mips2 -32`
 rule; the getter has no relocations and the tick routine retains both exact
 HI16/LO16 data pairs. Five JFG `diRcp` return-eight leaves are also exact at
@@ -2751,7 +2751,7 @@ the resident defaults with no relocations: 16-byte `diRcpTexDma`, 20-byte
 `diRcpViewport`, and `diRcpDisplayList`, are exact at the same defaults,
 including their helper-call relocations and source-specific stack frames. The
 52-byte `diRcpStrName` formatter is exact as well, including its format-string
-and `sprintf` relocations. The 44-byte `func_80044B9C` (`diRcpTraceReset`) is
+and `sprintf` relocations. The 44-byte `diRcpTraceReset` (`diRcpTraceReset`) is
 exact too, including both data-symbol relocation pairs.
 The 60-byte `diRcpTraceInit` is likewise exact, preserving both allocator
 calls and their call/data relocations. The 60-byte JFG-identified `wakeFree`
@@ -2759,7 +2759,7 @@ is exact after resolving `func_800347A0` as a one-argument call; its two call
 relocations and the wake-linked field access match without normalization. The
 same ABI resolves the adjacent 72-byte `wakeFreeRipple` (`wakeFreeRipple`),
 which is exact with both its linked-release and nested-wake call relocations.
-The 204-byte `func_80044BC8` (`diRcpTrace` in JFG) is exact too. Its typed
+The 204-byte `diRcpTrace` (`diRcpTrace` in JFG) is exact too. Its typed
 three-word trace entries and direct global-index expressions reproduce all 51
 target words, including the repeated buffer/count reloads, the 100-entry
 limit, and all four data relocation pairs at the resident defaults.
@@ -2910,7 +2910,7 @@ identities, and linked ROM bytes match. JFG's assembly-only
 permuter-forced spelling remains in `docs/cleanup-queue.md` for a readability
 follow-up, not as a matching deficit.
 
-The 300-byte `func_80044C94` trace-neighbor lookup is exact C. JFG's newly
+The 300-byte `diRcpTraceGetInfo` trace-neighbor lookup is exact C. JFG's newly
 matched `diRcpTraceGetInfo` source supplied the original array-index loop
 spelling; with Mickey's own symbols and ABI, IDO emits all 75 target
 instructions and the exact relocation layout. The inactive-buffer scan and

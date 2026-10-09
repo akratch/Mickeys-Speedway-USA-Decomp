@@ -287,7 +287,7 @@ extern void func_8004B0F8(Gfx **, s32, s32, char *, s32);
 extern MainDebugMemory *func_80005820(s32);
 extern s32 sprintf(char *, const char *, ...);
 extern u8 *levelGetLevel(void);
-extern void func_80044BC8(Gfx *, char *, s32);
+extern void diRcpTrace(Gfx *, char *, s32);
 /* The checkpoint hook always receives a string and a number that read as a
  * file name and a source line, which is what a macro built on __FILE__ and
  * __LINE__ leaves behind. The do-while wrapper is the usual form for such a
@@ -295,7 +295,7 @@ extern void func_80044BC8(Gfx *, char *, s32);
  * register allocation depends on. */
 #define MAIN_DL_CHECKPOINT(dl, file, line) \
     do { \
-        func_80044BC8((dl), (file), (line)); \
+        diRcpTrace((dl), (file), (line)); \
     } while (0)
 extern void func_80008028(s32);
 extern void func_80051364(s32);
@@ -319,9 +319,9 @@ extern void bgdraw_fillcolour(s32, s32, s32);
 extern void func_80021C88(s32, s32, s32, s32, s32);
 extern void camEnableUserView(s32, s32);
 extern void camDisableUserView(s32, s32);
-extern void func_80044B9C(void);
-extern void func_80046504(void);
-extern void func_8004650C(s32);
+extern void diRcpTraceReset(void);
+extern void diCpuTraceGetFault(void);
+extern void diCpuTraceTick(s32);
 extern void fxUnQueueScreenEffect(Gfx **);
 extern s32 func_80049B14(s32);
 extern void func_80038E1C(Gfx **, Mtx **, MainVertex **, MainTriangle **, s32);
@@ -543,7 +543,7 @@ void func_80026FB4(void) {
     }
 
     D_8007A1B8 ^= 1;
-    func_80044B9C();
+    diRcpTraceReset();
     D_800CF518 = D_800CF510[D_8007A1B8];
     D_800CF530 = D_800CF528[D_8007A1B8];
     D_800CF588 = D_800CF580[D_8007A1B8];
@@ -565,9 +565,9 @@ void func_80026FB4(void) {
     camDisableUserView(0, 1);
 
     D_8007A1CC = joyRead(D_8007A1CC, D_8007A248);
-    func_80046504();
+    diCpuTraceGetFault();
     if (D_8007A1BC == 5) {
-        func_8004650C(D_8007A248);
+        diCpuTraceTick(D_8007A248);
     } else {
         func_80027FB8(D_8007A248);
         if (D_8007A1BC == 6) {
@@ -1021,12 +1021,12 @@ void func_80027FB8(s32 updateRate) {
         }
     }
     func_80006FA0();
-    func_80044BC8(D_800CF518, D_80081B30, 0x563);
+    diRcpTrace(D_800CF518, D_80081B30, 0x563);
     if (D_8007A198 != 0) {
         func_8000BDB4(&D_800CF518, &D_800CF530, &D_800CF588,
                       &D_800CF5A0, updateRate);
     }
-    func_80044BC8(D_800CF518, D_80081B3C, 0x589);
+    diRcpTrace(D_800CF518, D_80081B3C, 0x589);
     func_8004EDA8(updateRate);
     if (runlinkIsModuleLoaded(0xE) != 0) {
         TrapDanglingJump(&D_800CF518, updateRate);
@@ -1042,7 +1042,7 @@ void func_80027FB8(s32 updateRate) {
         TrapDanglingJump(&D_800CF518, &D_800CF530, &D_800CF588,
                          D_80078F7C);
     }
-    func_80044BC8(D_800CF518, D_80081B48, 0x5A0);
+    diRcpTrace(D_800CF518, D_80081B48, 0x5A0);
 }
 
 void func_800282C8(void) {

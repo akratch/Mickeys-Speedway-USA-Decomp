@@ -45,7 +45,7 @@ Executable bytes exclude compiler alignment padding.
 
 | Commit | Mickey target(s) | JFG source role | Bytes |
 |---|---|---|---:|
-| `73cc0aa3` | `func_80044C94` | `diRcpTraceGetInfo` | 300 |
+| `73cc0aa3` | `diRcpTraceGetInfo` | `diRcpTraceGetInfo` | 300 |
 | `16a48fa4` | `func_80024834` | `camReversePoint` | 260 |
 | `054ff552` | `atan2f` | maths source | 500 |
 | `05be7496` | `acosf` | maths source | 220 |

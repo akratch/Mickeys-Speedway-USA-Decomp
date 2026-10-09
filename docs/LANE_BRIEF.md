@@ -924,7 +924,7 @@ it end to end. The ones that carry most of the weight:
 - `--json` carries every cell's masked, delta, residual and four buckets. The target
   is read once per run; `--jobs` runs cells in parallel (16 cells in ~1.0 s).
   `tools/fast_score.py --aligned` prints the same buckets and one-sided spans for one
-  candidate. A `#define SHAPE_x N` in the candidate fixes that axis (`--all-axes` enumerates it).
+  candidate. `fast_score.py` and `shape_product.py` also accept an already-matched symbol: the target is its built object (`build/<source>.o`, proven equal to the ROM by `verify`), so post-match cleanup is measured as `masked 0 delta +0`. `--diff` reads only the function's own text, so a `.late_rodata` pool before it no longer shifts every row. A `#define SHAPE_x N` in the candidate fixes that axis (`--all-axes` enumerates it).
 
 - **`tools/lever_sweep.py <symbol> --proc N --oracle 'p1:wN=s,...' [--candidate F] [--web W] [--block B]`** turns a priced force into a source search: every catalogue lever (assigned/masked dead read, `|= 0` keep-alive, `x = (T) x`, narrower type, subscript mask/scale, `do {} while (0)` and empty `if (v) {}`, global re-read, `k = 0` between loops, split/merge locals, reorder, loop move, constant IV init) at every statement position on the lines of the named webs/blocks, inserted on the same physical line.
   Each cell compiles stock and instrumented with the build's own recipe; size moves over `--max-size-delta` are dropped before scoring, inert cells cost one compile. It ranks by aligned residual with an `oracle` column: whether the UNFORCED records now show the forced state, matching webs by expression and line overlap because numbers move (`=F`: bytes equal the forced object).

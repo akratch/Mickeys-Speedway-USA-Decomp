@@ -303,6 +303,17 @@ def align(streams: "nr.WordStreams") -> dict:
     }
 
 
+def matched_target_object(symbol: str) -> pathlib.Path:
+    """The built object of a matched symbol's TU (`build/<tracked source>.o`)."""
+    import fast_score
+    source = fast_score.tracked_source_for(symbol)
+    obj = nr.ROOT / "build" / (source + ".o")
+    if not obj.is_file():
+        raise SystemExit(f"{symbol}: not in the NON_MATCHING queue and {obj.relative_to(nr.ROOT)} "
+                         "does not exist; run gmake to build the matched object first")
+    return obj
+
+
 class AlignedScorer:
     """Score many candidate objects of ONE symbol against a cached target.
 
@@ -316,14 +327,20 @@ class AlignedScorer:
     def __init__(self, symbol: str, workdir: pathlib.Path):
         queue = {item.func: item for item in pb.discover_queue()}
         item = queue.get(symbol)
-        if item is None:
-            raise SystemExit(f"{symbol}: not in the NON_MATCHING queue")
         self.symbol = symbol
-        out_dir = pathlib.Path(workdir) / "aligned-target"
-        out_dir.mkdir(parents=True, exist_ok=True)
-        target_o = out_dir / "target.o"
-        target_asm = pb.prepare_target_asm(item, out_dir)
-        nr.assemble_target(target_asm, target_o)
+        self.matched = item is None
+        if item is None:
+            # An already-matched (promoted) symbol: its target is the built
+            # object of its own TU, which `gmake verify` proves byte-identical
+            # to the ROM for this function. That lets post-match cleanup be
+            # measured: a candidate is exact when it still equals that object.
+            target_o = matched_target_object(symbol)
+        else:
+            out_dir = pathlib.Path(workdir) / "aligned-target"
+            out_dir.mkdir(parents=True, exist_ok=True)
+            target_o = out_dir / "target.o"
+            target_asm = pb.prepare_target_asm(item, out_dir)
+            nr.assemble_target(target_asm, target_o)
         span = nr.func_symbol_span(target_o, symbol)
         if span is None:
             raise SystemExit(f"{symbol}: no .text symbol in the target object")

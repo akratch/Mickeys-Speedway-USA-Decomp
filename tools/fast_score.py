@@ -152,10 +152,33 @@ def target_words(symbol: str, source: str) -> list[tuple[int, str]]:
             break
     if not files:
         raise SystemExit(f"no extracted target listing for {symbol}; run gmake extract")
-    rows = []
-    for line in Path(files[0]).read_text().splitlines():
-        m = re.match(r"\s*/\* \w+ \w+ ([0-9A-Fa-f]{8}) \*/\s*(.*)", line)
-        if m:
+    return text_rows(Path(files[0]).read_text().splitlines())
+
+
+ROW_RE = re.compile(r"\s*/\* \w+ \w+ ([0-9A-Fa-f]{8}) \*/\s*(.*)")
+
+
+def text_rows(lines: list[str]) -> list[tuple[int, str]]:
+    """(word, text) rows of the function's OWN text in a splat listing.
+
+    A listing can carry `.late_rodata` / `.rodata` rows (literal pools) before
+    the function; they have the same `/* off vram word */` shape, so reading
+    every such row shifted the whole comparison by the pool's length and made
+    each row differ. Rows count only from the first `glabel` and stop at the
+    next section or `endlabel`; data directives never count.
+    """
+    rows, inside = [], False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("glabel "):
+            inside = True
+            continue
+        if inside and (stripped.startswith((".section", "endlabel", ".size"))):
+            break
+        if not inside:
+            continue
+        m = ROW_RE.match(line)
+        if m and not m.group(2).lstrip().startswith("."):
             rows.append((int(m.group(1), 16), re.sub(r"\s+", " ", m.group(2).strip())))
     return rows
 
@@ -181,8 +204,13 @@ def candidate_words(symbol: str, obj: Path) -> list[tuple[int, str]]:
 RELOC_NOISE = ("%lo", "%hi", ">> 16", "& 0xFFFF")
 
 
-def print_diff(symbol: str, source: str, obj: Path) -> None:
-    tgt = target_words(symbol, source)
+def print_diff(symbol: str, source: str, obj: Path, target_obj: Path | None = None) -> None:
+    """Differing words, target beside candidate.
+
+    `target_obj` (a matched symbol's built object) replaces the extracted
+    listing as the target, so rows are read the same way on both sides.
+    """
+    tgt = candidate_words(symbol, target_obj) if target_obj else target_words(symbol, source)
     cand = candidate_words(symbol, obj)
     for i in range(max(len(tgt), len(cand))):
         t = tgt[i] if i < len(tgt) else (None, "-")
@@ -218,10 +246,25 @@ def main(argv: list[str] | None = None) -> int:
         cwd=ROOT, capture_output=True, text=True,
     )
     lines = [l for l in score.stdout.splitlines() if l.startswith(ns.symbol)]
-    if not lines:
+    matched = not lines and "not in the NON_MATCHING queue" in score.stdout + score.stderr
+    if matched:
+        # Already promoted: score against the symbol's own built object (the
+        # one `gmake verify` proves equal to the ROM), the way --aligned does.
+        import tempfile
+        import align_symbol
+        with tempfile.TemporaryDirectory(prefix="fast-score-") as tmp:
+            row = align_symbol.AlignedScorer(ns.symbol, Path(tmp)).score(obj)
+        if row is None:
+            sys.stderr.write(f"{ns.symbol}: not found in {obj}\n")
+            return 1
+        exact = row["masked"] == 0 and row["delta"] == 0
+        print(f"{candidate.name}: raw {row['raw']} masked {row['masked']} delta {row['delta']:+d} "
+              f"{'exact' if exact else 'differs'}   (matched symbol; target = its built object)")
+    elif not lines:
         sys.stderr.write(score.stdout + score.stderr)
         return 1
-    print(f"{candidate.name}: {' '.join(lines[0].split()[1:])}   (bytes raw masked artifact delta category)")
+    else:
+        print(f"{candidate.name}: {' '.join(lines[0].split()[1:])}   (bytes raw masked artifact delta category)")
     if ns.aligned:
         import tempfile
         import align_symbol
@@ -234,7 +277,11 @@ def main(argv: list[str] | None = None) -> int:
             for span in row["deletions"]:
                 print(f"    target-only    +{span['target_offset']:#x}: {span['words']} word(s)")
     if ns.diff:
-        print_diff(ns.symbol, source, obj)
+        target_obj = None
+        if matched:
+            import align_symbol
+            target_obj = align_symbol.matched_target_object(ns.symbol)
+        print_diff(ns.symbol, source, obj, target_obj)
     return 0
 
 

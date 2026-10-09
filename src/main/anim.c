@@ -3984,7 +3984,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: Unchanged at 344; per-axis accumulation and forced coordinate-block cuts flat. Left: what keeps the first-position doubles stored at their definitions.
+ * summary: 344 at size 0: the cut after quadA is the -varref limit (quadA's own loads take the counter 4 to 22); doubles' evaluation point still open.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 
@@ -3994,7 +3994,7 @@ void fmvInit(void) {
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: 354 at size 0: displacement loop reads the moving list; left firstObject s6/cursor s7, axis s2, pairIndex a1; -varref block cuts inert.
+ * summary: 354 at size 0: model-local cell's movingCount latch piece passes growth with margin (30 vs 23); CDX_BIAS cannot order constant 3 ahead of it.
  * PLATEAU-HANDOFF:func_80053868:end
  */
 

@@ -52,6 +52,11 @@ dp64's own naming is not covered by this exception.
   the game, the scratch slug and its author instead of a file, and
   condition (b) applies unchanged -- a scratch's decomp.me score, and in
   particular a `match_override`, says nothing about Mickey's bytes.
+  The same holds for **unmerged pull requests and non-default branches**
+  of these projects' public repositories (owner decision, 2026-10-09):
+  they are the same CC0 retail-derived work, published earlier. The
+  `PROVENANCE` note names the project, the pull request number or branch,
+  the commit, and the file; condition (b) applies unchanged.
 - Official Nintendo 64 SDK documentation, headers, and library source as
   distributed in existing public decomp projects
 - Emulator tracing/debugging of retail ROMs

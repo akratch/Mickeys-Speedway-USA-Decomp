@@ -207,6 +207,6 @@ void func_overlay_064_F0000000_18C3B28(s32 index, O64Image *image, u8 *unused)
  * frame: 0x78
  * relocations: 22
  * first-mismatch: +0x0
- * summary: 371 at 0: slot trace: the re-inserted select load (web 2), the first-loop distance expression and one uopt temporary open the extra frame cells
+ * summary: 371 at 0: the select load is codemotion's partial-redundancy insertion at both loop exits (web 2); select, toggle, global and loop-form products flat
  * PLATEAU-HANDOFF:func_overlay_064_F0000000_18C3B28:end
  */

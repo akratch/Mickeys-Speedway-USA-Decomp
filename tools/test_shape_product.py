@@ -34,9 +34,18 @@ class AxisTests(unittest.TestCase):
         self.assertEqual(axes["carrier"], [0, 1], "a bare #if/#else axis is two cells")
         self.assertEqual(axes["pad"], [0, 1])
 
-    def test_bare_else_adds_max_plus_one(self):
+    def test_bare_else_adds_the_smallest_uncompared_value(self):
+        # 0 is not compared, so it already reaches the #else arm: no fourth cell.
         src = "#if SHAPE_a == 1\nx;\n#elif SHAPE_a == 2\ny;\n#else\nz;\n#endif\n"
-        self.assertEqual(shape_product.axes_of(src)["a"], [0, 1, 2, 3])
+        self.assertEqual(shape_product.axes_of(src)["a"], [0, 1, 2])
+        # A chain that tests 0 upward needs one value past it.
+        src = "#if SHAPE_a == 0\nx;\n#elif SHAPE_a == 1\ny;\n#else\nz;\n#endif\n"
+        self.assertEqual(shape_product.axes_of(src)["a"], [0, 1, 2])
+
+    def test_if_equals_one_is_not_enumerated_one_past(self):
+        for tail in ("", "#else\nb;\n"):
+            src = "#if SHAPE_x == 1\na;\n" + tail + "#endif\n"
+            self.assertEqual(shape_product.axes_of(src)["x"], [0, 1], tail)
 
     def test_ordering_operators_count(self):
         src = "#if SHAPE_a >= 2\nx;\n#endif\n#if SHAPE_a != 4\ny;\n#endif\n"

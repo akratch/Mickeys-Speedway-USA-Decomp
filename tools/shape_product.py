@@ -32,7 +32,8 @@ them.
 
 An axis the candidate fixes with `#define SHAPE_x N` is not enumerated (pass
 `--all-axes` to enumerate it anyway). Values are 0, every literal compared with
-`==`/`!=`/`>=`/etc., plus max+1 when the chain ends in a bare `#else`.
+`==`/`!=`/`>=`/etc., plus the smallest uncompared value when the chain ends in a
+bare `#else` (so `#if X == 1 ... #else` is {0, 1}, `#if X == 0 / #elif X == 1 / #else` is {0, 1, 2}).
 
 `--rank aligned|positional|auto` chooses the ordering. Positional (delta, then
 masked) is honest only at size delta 0: one instruction long or short shifts
@@ -122,12 +123,16 @@ def axes_of(text: str, all_axes: bool = False) -> dict[str, list[int]]:
     for name, vals in values.items():
         if name in fixed:
             continue
+        compared = set(vals)
         if vals <= {0}:
             vals = {0, 1}
         else:
             vals = vals | {0}
             if name in has_else:
-                vals.add(max(vals) + 1)
+                # The bare #else arm needs one value no test claims. When 0 is
+                # not compared it already reaches the arm (`#if X == 1 ... #else`
+                # is {0, 1}); only a chain that tests 0.. upward needs another.
+                vals.add(next(n for n in itertools.count() if n not in compared))
         out[name] = sorted(vals)
     return dict(sorted(out.items()))
 

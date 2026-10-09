@@ -3389,6 +3389,10 @@ typedef struct TrackRayNodeExtended {
  * Both dot products summed z term first, `z + (x + y) + d`: the target's add
  * takes the z product first and its mul the plane component first, which
  * also fixes the ring free order after each sum: 24 -> 10.
+ * Lane u-1, 2026-10-09: the edge sign applied as a conditional expression
+ * (the form func_8001291C's edge loop takes) supplies the blocks the
+ * `do { inside = 1; } while (0)` region stood in for; the object is
+ * byte-identical with the region gone. Still 10.
  */
 s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                   TrackRayPoint *offset, f32 scale, f32 planeOffset,
@@ -3440,18 +3444,14 @@ s32 func_80011980(TrackRayPoint *start, TrackRayPoint *end,
                         pointX = ((offset->x * ratio) + start->x) - (planeOffset * planeX);
                         pointY = ((offset->y * ratio) + start->y) - (planeOffset * planeY);
                         pointZ = ((offset->z * ratio) + start->z) - (planeOffset * planeZ);
-                        do {
-                            inside = 1;
-                        } while (0);
+                        inside = 1;
                         do {
                             edge = entry[encoded + 1];
                             sign = edge & 0x8000;
                             face = (TrackRayFace *) ((u8 *) planes + ((edge ^ sign) << 4));
                             edgeValue = face->distance +
                                         (face->x * pointX + face->y * pointY + face->z * pointZ);
-                            if (sign != 0) {
-                                edgeValue = -edgeValue;
-                            }
+                            edgeValue = (sign != 0) ? -edgeValue : edgeValue;
                             if (threshold < edgeValue) {
                                 inside = 0;
                             }
@@ -5260,6 +5260,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: Unchanged at 10, all naming; double-read lever sweep and the sibling 10654 shape product flat.
+ * summary: 10 at 0, all naming. Conditional sign replaces the inside region at identical bytes; sibling-form products and lever sweep flat
  * PLATEAU-HANDOFF:func_80011980:end
  */

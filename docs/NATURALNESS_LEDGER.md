@@ -230,6 +230,7 @@ Sites in the 44 reviewed functions are listed in part 2 instead.
 - `src/overlays/o040/overlay40AddEntry.c:39` `overlay40AddEntry` **A**: all-ones 32-bit mask chain on a zero carrier.
   Natural: `entry->state = 0`, no carrier. Keep bytes: unlikely - queued in cleanup-queue.md as load-bearing.
   **Left (lane c-4, 2026-10-09):** without the mask chain, and with no carrier at all (literal zero, three `30` stores), the a0/v1 swap remains (4 lines); a `zero` local used for the state and subscript also 4; a `for` loop is unrolled (o040 unrolls). The crew note lists seven earlier lifetime variants.
+  **Resolved (lane c-5, 2026-10-09):** the walk is `remaining = 8; while (remaining--) { ... entry++; }` with literal `0` and `30` stores; the carrier, the mask chain and `new_var2` are gone. The counted `while` keeps the counter in a0 and the 30 in v1 as shipped, which the `do`/`while (remaining--)` from 7 only reached through the extra carrier references. Byte-identical.
 - `src/overlays/o043/overlay43AllocateResources.c:25` `func_overlay_043_F0001184_188B154` **A**: `if (&pad);` reads a pad address.
   Natural: delete; the pad alone. Keep bytes: unknown - not measured; not in the cleanup queue.
   **Resolved (lane c-4, 2026-10-09):** deleted; byte-inert. The `s32 pad[2]` declaration stays (one `s32 pad` moves the frame, 6 lines).

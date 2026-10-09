@@ -69,6 +69,51 @@ remains the clear leader at approximately 0.203, versus approximately 0.036
 for the next result; the newer pinned `src/anim.c` still has no C body for it.
 Neither result exhausts other source versions or compiler configurations.
 
+## JFG open pull requests and unmerged branches (2026-10-09, lane j-donor)
+
+The checks above read JFG `master` only. This sweep read every open JFG pull
+request head (`pr/2` through `pr/37`, newest `pr/37` at `d45123d`) and the
+unmerged branch `OverlayHandling` (`948e1f5`) against master (`c82afff`). A
+function counts as newly C when master names it in `GLOBAL_ASM` and the ref
+defines it outside `#if 0`/`NON_MATCHING`. The union over all refs is 227
+such functions plus the libultra audio files the PRs reorganised, in
+`camera.c`, `camlight.c`, `level.c`, `menu.c`, `runLink.c`, `saves.c`,
+`squads.c`, `staticcamera.c`, `subtitles.c`, `track.c` (8: sky, draw and FX
+setup), `weather.c`, `models.c`, `objects.c` and a few singletons. None of
+`anim.c`, `hit.c`, `fx.c`, `spranim.c`, `font.c` or `shadows_214A0.c`
+gained a body in any ref.
+
+Counterparts, by mnemonic-sequence ratio against JFG's extracted listings and
+its whole linked ELF (a lead, not identity), and their status in every ref:
+
+- `func_80051364` is `animseqUpdate` (0.81), `func_800517E0`
+  `animseqProcessCommandList`, `wakeAllocate` `wakeAllocate` (0.89),
+  overlay 64 `F0000000` `GenerateTorchFireTex` (0.93, JFG overlay 65): all
+  `GLOBAL_ASM` in master, every PR head and `OverlayHandling`.
+- `func_80053868`, `func_80054B3C`, `func_80011980`, `func_8001B798` and
+  overlay 45 `F0001158` have no counterpart above 0.4 anywhere in JFG,
+  newly-C set included; the `hitUpdate` naming for `func_80053868` stays an
+  ordering claim. The nearest track candidates for `func_80011980` (JFG
+  US `func_80017094`, `func_80017794`, `func_800184B4`) are `GLOBAL_ASM` in
+  every ref.
+- The `shadows_fp` four are JFG `shadowBoxPolyOverlap`, `shadowBoundingBox`,
+  `shadowYHeight` (0.98) and `shadowMakeYs` (1.00). JFG carries only `#if 0`
+  m2c drafts for the first two. All four use odd single-precision registers,
+  which IDO's allocator never assigns, so no C body can produce them.
+- `snow_vertices` and `snow_update` have C in JFG from `pr/14` onward
+  (`weather.c`, `func_8005B62C_5C22C` and `func_8005CC0C_5D80C`, commits
+  `e1daa9a` and `a896a2c`). Mickey's two are hand-written: odd FP registers and
+  a computed jump into an unrolled `add` run (IDO emits `addu`). They are not
+  reachable from C.
+- `trackasm`'s four routines and the `0x59BF0`/`0x59DB0` routines are
+  hand-written (odd FP registers or signed `add`) and have no C body in any
+  ref. The exception is `func_8005A6F0`, a two-word empty leaf: that is what
+  IDO emits for `void f(void) {}`, and it is the carving lane's to take.
+
+No candidate was compiled: no ref supplies a C body for a Mickey target that
+IDO could emit. decomp.me scratch search could not be read (its API returns a
+bot challenge to scripted requests).
+
 ## Coverage by exact target
 
 B means bounded-negative; U means uncovered under the definition above.

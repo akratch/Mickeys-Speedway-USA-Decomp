@@ -218,9 +218,11 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
     s32 barX;
     s32 stat;
-    /* Three unused cells above x and y put every home from x down where the
-     * target's are (lane s-4, 302 -> 291). Flagged: no used local found. */
-    s32 padA, padB, padC;
+    /* The label bars' count and the scroll loop's index have locals of
+     * their own (byte-identical to sharing count and i); with padC these
+     * three cells put every home from x down where the target's are (lane
+     * s-4 found them as unused pads, 302 -> 291; lane v-4). padC flagged. */
+    s32 bars, field, padC;
 
     s32 x, y;
     s32 red, green, blue;
@@ -425,8 +427,8 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
             oldFrame = player->actor->frameValue;
             func_8005ABA8(player->actor, ov47Data_3F0[(s8)player->actor->frame], rate);
             scroll = player->actor->scroll;
-            for (i = 0; i < 4; i++) {
-                (&scroll->a)[i] += speed;
+            for (field = 0; field < 4; field++) {
+                (&scroll->a)[field] += speed;
             }
             if (!player->ready && !player->leaving && player->active && !start) {
                 if (D_800D3190[controller] < -16 && !ov47Bss_324) {
@@ -693,16 +695,16 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                 O47_COMMAND(0xEF002C0F, 0x00504340);
                 O47_COMMAND(0xB6000000, 0x00010001);
                 O47_COMMAND(0xFCFFFFFF, 0xFFFDF6FB);
-                count = ov47Data_4C8[ov47Data_524[D_800D3058[controller].selector]][j];
+                bars = ov47Data_4C8[ov47Data_524[D_800D3058[controller].selector]][j];
                 O47_COMMAND(0xFA000000, ov47Data_3DC[controller]);
-                while (count--) {
+                while (bars--) {
                     O47_RECTANGLE(barX, stat);
                     barX += 8;
                 }
                 O47_COMMAND(0xE7000000, 0);
                 O47_COMMAND(0xFA000000, (ov47Data_3DC[controller] & ~0xFF) | 0x40);
-                count = 5 - ov47Data_4C8[ov47Data_524[D_800D3058[controller].selector]][j];
-                while (count--) {
+                bars = 5 - ov47Data_4C8[ov47Data_524[D_800D3058[controller].selector]][j];
+                while (bars--) {
                     O47_RECTANGLE(barX, stat);
                     barX += 8;
                 }
@@ -748,6 +750,6 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
  * frame: 0x280
  * relocations: 321
  * first-mismatch: +0xC
- * summary: 54 aligned at size 0 (masked 54): icon cursor reset per controller; five unused frame cells flagged. Open: head, +0x400, s-register windows.
+ * summary: 54 aligned at size 0 (masked 54): bars and field replace two pads; padC, padD, padE and frame unused, flagged. Open: cursor order, +0x400.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

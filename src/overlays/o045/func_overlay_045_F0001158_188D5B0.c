@@ -358,6 +358,6 @@ void func_overlay_045_F0001158_188D5B0(
  * frame: 0x190
  * relocations: 25
  * first-mismatch: +0x718
- * summary: 96 at size 0: statement packaging (one line, one comma statement) does not move the first cut; the load count before vertex 1's x store decides it.
+ * summary: 96 at size 0: the target's block-A statements count 20 to 22 variable loads against this body's 24 whatever the field order; aliased loads still count.
  * PLATEAU-HANDOFF:func_overlay_045_F0001158_188D5B0:end
  */

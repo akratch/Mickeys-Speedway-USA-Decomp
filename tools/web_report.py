@@ -536,14 +536,33 @@ def source_for(symbol: str, candidate: pathlib.Path | None = None
         lines = (candidate or fl.ROOT / items[0].rel_c_file).read_text().splitlines()
     except Exception:  # noqa: BLE001
         return [], None
+    return lines, definition_span(lines, symbol)
+
+
+def definition_span(lines: list[str], symbol: str) -> tuple[int, int] | None:
+    """Signature line to closing brace of `symbol`'s definition, 1-based.
+
+    A prototype is skipped even when its parameter list runs over several
+    lines: the line that closes the list ends in `;` (anim.c declares
+    func_80054B3C that way above func_80053868, and taking it for the
+    definition handed the caller func_80053868's procedure)."""
     pattern = re.compile(r"^\S.*\b" + re.escape(symbol) + r"\s*\(")
     for number, line in enumerate(lines, 1):
-        if pattern.search(line) and not line.rstrip().endswith(";") \
-                and not line.lstrip().startswith(("#", "//", "*", "extern ")):
-            end = next((n for n in range(number, len(lines) + 1)
-                        if lines[n - 1].startswith("}")), len(lines))
-            return lines, (number, end)
-    return lines, None
+        if not pattern.search(line) \
+                or line.lstrip().startswith(("#", "//", "*", "extern ")):
+            continue
+        depth, close = 0, number
+        for n in range(number, len(lines) + 1):
+            depth += lines[n - 1].count("(") - lines[n - 1].count(")")
+            close = n
+            if depth <= 0:
+                break
+        if lines[close - 1].rstrip().endswith(";"):
+            continue
+        end = next((n for n in range(close, len(lines) + 1)
+                    if lines[n - 1].startswith("}")), len(lines))
+        return (number, end)
+    return None
 
 
 def choose_proc(rows, span: tuple[int, int] | None) -> int | None:

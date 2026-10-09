@@ -171,7 +171,7 @@ class O008SplitTests(unittest.TestCase):
 class CommandTests(unittest.TestCase):
     def run_main(self, *argv):
         original = wr.source_for
-        wr.source_for = lambda symbol: ([], None)
+        wr.source_for = lambda symbol, candidate=None: ([], None)
         out, err = io.StringIO(), io.StringIO()
         try:
             with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
@@ -197,6 +197,24 @@ class CommandTests(unittest.TestCase):
             status, _, err = self.run_main("sym", "--trace", str(path))
         self.assertEqual(status, 2)
         self.assertIn("CDX_WEBREPORT", err)
+
+
+class CompileEnvironment(unittest.TestCase):
+    def test_cut_variables_survive_and_the_rest_do_not(self):
+        env = {"PATH": "p", "CDX_FORCE": "x", "DKWB_UGEN_TRACE": "1",
+               "DKWB_CUT_A": "3", "DKWB_CUT_B": ""}
+        self.assertEqual(wr.cut_env(env), {"DKWB_CUT_A": "3"})
+        self.assertEqual(wr.clean_env(env), {"PATH": "p"})
+
+    def test_with_source_replaces_only_the_last_word(self):
+        cmd = ["cc", "-O2", "-o", "x.o", "src/a.c"]
+        self.assertEqual(wr.with_source(cmd, pathlib.Path("/c/cand.c")),
+                         ["cc", "-O2", "-o", "x.o", "/c/cand.c"])
+        self.assertEqual(wr.with_source(cmd, None), cmd)
+
+    def test_missing_source_is_refused(self):
+        with self.assertRaises(SystemExit):
+            wr.main(["sym", "--source", "/nonexistent/cand.c"])
 
 
 if __name__ == "__main__":

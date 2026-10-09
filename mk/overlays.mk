@@ -1844,25 +1844,67 @@ $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47SpawnObject.c.o: POSTPROCESS = \
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/overlay47ReleaseResources.c.o: POSTPROCESS = \
 	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x160
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000B30_1891948.c.o: CFLAGS += -Wab,-r4300_mul
+# The function defines overlay 47's .data and .bss at their recorded offsets
+# and its .rodata four bytes into the overlay's; the retained overlay image
+# owns the bytes, so these copies are dropped and their sites rebound to base
+# placeholders. Resident and overlay 45 callees and resident data go through
+# the generated *_o047Reloc surface.
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000B30_1891948.c.o: \
-	$(TOOLS_DIR)/rebind_elf_relocations.py
-# The compiler's six-entry table is the same table retained in overlay 47's
-# initialized aggregate at runtime-local +0x56C. Rebind the text pair to that
-# owner and discard only the duplicate private section. The canonical
-# GLOBAL_ASM fallback has neither candidate relocation, so leave that object
-# untouched; promotion_trial.py splices the C body into the normal build and
-# exposes both asserted .rodata relocations before this normalization runs.
+	$(TOOLS_DIR)/rebind_elf_relocations.py \
+	config/normalizations/func_overlay_047_F0000B30_1891948.rebind.spec
 $(BUILD_DIR)/$(SRC_DIR)/overlays/o047/func_overlay_047_F0000B30_1891948.c.o: POSTPROCESS = \
-	if $(OBJDUMP) -r $@ | awk \
-		'$$1 == "00000f04" && $$3 == ".rodata" { hi = 1 } \
-		 $$1 == "00000f0c" && $$3 == ".rodata" { lo = 1 } \
-		 END { exit !(hi && lo) }'; then \
-		$(OBJCOPY) --add-symbol overlay47DispatchSwitchTable=0x56C,global $@ && \
-		$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
-			0xF04:.rodata:overlay47DispatchSwitchTable \
-			0xF0C:.rodata:overlay47DispatchSwitchTable && \
-		$(OBJCOPY) --remove-section=.rodata $@; \
-	fi
+	$(OBJCOPY) --add-symbol gOverlay47B30DataBaseReloc=0x0,global \
+		--add-symbol gOverlay47B30BssBaseReloc=0x0,global \
+		--add-symbol gOverlay47B30RodataBaseReloc=0x4,global $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/rebind_elf_relocations.py $@ .text \
+		@config/normalizations/func_overlay_047_F0000B30_1891948.rebind.spec && \
+	$(OBJCOPY) --remove-section=.data --remove-section=.bss \
+		--remove-section=.rodata --remove-section=.rel.rodata \
+		--remove-section=.gptab.data --remove-section=.gptab.bss $@ && \
+	$(OBJCOPY) \
+		--redefine-sym amSndPlay=amSndPlay_o047Reloc \
+		--redefine-sym amSndStop=amSndStop_o047Reloc \
+		--redefine-sym camGetFOV=camGetFOV_o047Reloc \
+		--redefine-sym camStandardOrtho=camStandardOrtho_o047Reloc \
+		--redefine-sym D_8007BF74=D_8007BF74_o047Reloc \
+		--redefine-sym D_8007C0B8=D_8007C0B8_o047Reloc \
+		--redefine-sym D_8007C1A0=D_8007C1A0_o047Reloc \
+		--redefine-sym D_800D3058=D_800D3058_o047Reloc \
+		--redefine-sym D_800D3140=D_800D3140_o047Reloc \
+		--redefine-sym D_800D3144=D_800D3144_o047Reloc \
+		--redefine-sym D_800D3148=D_800D3148_o047Reloc \
+		--redefine-sym D_800D3190=D_800D3190_o047Reloc \
+		--redefine-sym D_800D31C8=D_800D31C8_o047Reloc \
+		--redefine-sym fontColour=fontColour_o047Reloc \
+		--redefine-sym func_80006EA0=func_80006EA0_o047Reloc \
+		--redefine-sym func_8001398C=func_8001398C_o047Reloc \
+		--redefine-sym func_80021504=func_80021504_o047Reloc \
+		--redefine-sym func_800221E8=func_800221E8_o047Reloc \
+		--redefine-sym func_80023F84=func_80023F84_o047Reloc \
+		--redefine-sym func_800246B0=func_800246B0_o047Reloc \
+		--redefine-sym func_80024978=func_80024978_o047Reloc \
+		--redefine-sym func_8002A604=func_8002A604_o047Reloc \
+		--redefine-sym func_8002A82C=func_8002A82C_o047Reloc \
+		--redefine-sym func_8002FB34=func_8002FB34_o047Reloc \
+		--redefine-sym func_80034920=func_80034920_o047Reloc \
+		--redefine-sym func_800349A4=func_800349A4_o047Reloc \
+		--redefine-sym func_800367A4=func_800367A4_o047Reloc \
+		--redefine-sym func_8004B0A4=func_8004B0A4_o047Reloc \
+		--redefine-sym func_8004B0F8=func_8004B0F8_o047Reloc \
+		--redefine-sym func_8005ABA8=func_8005ABA8_o047Reloc \
+		--redefine-sym func_8005AD64=func_8005AD64_o047Reloc \
+		--redefine-sym joyGetPressed=joyGetPressed_o047Reloc \
+		--redefine-sym mainChangeLevel=mainChangeLevel_o047Reloc \
+		--redefine-sym mathRnd=mathRnd_o047Reloc \
+		--redefine-sym matrixScale=matrixScale_o047Reloc \
+		--redefine-sym matrixTranslate=matrixTranslate_o047Reloc \
+		--redefine-sym mtxf_mul=mtxf_mul_o047Reloc \
+		--redefine-sym mtxf_to_mtx=mtxf_to_mtx_o047Reloc \
+		--redefine-sym overlay45ConfigureLayout=overlay45ConfigureLayout_o047Reloc \
+		--redefine-sym overlay45ReadPair=overlay45ReadPair_o047Reloc \
+		--redefine-sym overlay45SetField22=overlay45SetField22_o047Reloc \
+		--redefine-sym partUpdateTriggers=partUpdateTriggers_o047Reloc $@ && \
+	$(HOST_PYTHON) $(TOOLS_DIR)/trim_elf_section.py $@ .text 0x21E0
 # The function defines overlay 47's .data, .bss and its "OK" literal at their
 # recorded offsets; the retained overlay image owns the bytes, so these copies
 # are dropped and their sites rebound to zero-valued bases.

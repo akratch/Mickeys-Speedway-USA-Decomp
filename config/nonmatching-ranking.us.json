@@ -145,21 +145,6 @@
       "source_context_sha256": "3mtU.O_lj.WVOw.la0g.hPqi.7roi.mgHb.BZWI.zvNN.urXZ.6mE"
     },
     {
-      "name": "func_overlay_047_F0000B30_1891948",
-      "file": "src/overlays/o047/func_overlay_047_F0000B30_1891948.c",
-      "overlay": 47,
-      "tu": "overlays/o047",
-      "size_bytes": 8672,
-      "objdiff_match_pct": null,
-      "differing_words": 54,
-      "first_mismatch_offset": 124,
-      "relocation_masked_differing_words": 0,
-      "relocation_masked_first_mismatch_offset": null,
-      "size_delta": 0,
-      "category": "reloc-mismatch",
-      "source_context_sha256": "H5Fx.P6FJ.KUq0.dXUz.IUTX.RDre.EEaI.ye9p.JRLV.dhmz.KVg"
-    },
-    {
       "name": "func_8002B040",
       "file": "src/main/matrix_2BC40.c",
       "overlay": null,

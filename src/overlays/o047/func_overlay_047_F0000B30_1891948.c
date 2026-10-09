@@ -1,6 +1,7 @@
-/* NON_MATCHING: typed structural reconstruction from Mickey-only call,
- * data and field evidence. The canonical assembly remains the authority. */
-#ifdef NON_MATCHING
+/* Overlay 47's controller-select screen update. Matched 2026-10-09 (lanes
+ * d-o047 through x-047); see docs/matching-triage-handoffs for the history.
+ * The closing edits were the if/else on player->active, the label column as
+ * its own local, and the main loop's player step as the body's last statement. */
 #include "PR/ultratypes.h"
 #include "n_audio/mbi.h"
 #include "game/math.h"
@@ -80,8 +81,8 @@ extern void *D_800D3148;
 extern void *D_800D31C8[];
 /* Overlay 47's .data and .bss as TU statics at their recorded offsets, in the
  * layout func_overlay_047_F0000000_1890E18 defines (Tier D, from the LOCAL
- * relocation addends). Only the NON_MATCHING body sees them; a promotion must
- * drop these sections at POSTPROCESS as that TU's rule does. The blend value
+ * relocation addends). mk/overlays.mk drops these sections at POSTPROCESS and
+ * rebinds their sites, as that TU's rule does. The blend value
  * and its speed (+0x540/+0x544) are two statics: the target forms each address
  * in its own register at the tail (2026-10-08). The colour table is s32 and the
  * colour blocks read it per channel with no `colour` local, so the packet's
@@ -218,22 +219,17 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
     s32 barX;
     s32 stat;
-    /* The label bars' count and the scroll loop's index have locals of
-     * their own (byte-identical to sharing count and i); with padC these
-     * three cells put every home from x down where the target's are (lane
-     * s-4 found them as unused pads, 302 -> 291; lane v-4). padC flagged. */
-    s32 bars, field, padC;
+    s32 bars, field;
+    s32 padC; /* unused: holds the frame (every home from x down) */
 
     s32 x, y;
     s32 red, green, blue;
     s32 showMode;
     f32 movement;
     s32 back;
-    /* Unused: with the three above x, the frame's fourth unexplained cell
-     * (lane v-4: here 67, after blue 74). Flagged. */
-    s32 padD;
+    s32 padD; /* unused: holds the frame */
     f32 oldFrame;
-    f32 frame;
+    f32 frame; /* unused: holds the frame (17 words without it) */
     Overlay47Player *p2;
     f32 scale;
     f32 rate;
@@ -744,17 +740,3 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         amSndPlay(15, &ov47Bss_310);
     }
 }
-
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/overlays/o047/func_overlay_047_F0000B30_1891948/func_overlay_047_F0000B30_1891948.s")
-#endif
-
-/* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
- * symbol: func_overlay_047_F0000B30_1891948
- * score: 0/2168 words
- * frame: 0x280
- * relocations: 321
- * first-mismatch: none
- * summary: 0 masked at size 0 (aligned exact): player step as the loop body's last statement. Not promoted: .data/.bss statics need the section rebind.
- * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
- */

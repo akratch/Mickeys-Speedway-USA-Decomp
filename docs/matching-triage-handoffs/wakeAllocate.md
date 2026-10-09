@@ -6,7 +6,9 @@
 - frame: 0x90
 - relocations: 3
 - first mismatch: +0x94
-- summary: 14 at 0: copy propagation walks reverse depth-first, so the fill-loop guard creates doubled before the sample terms; identity-op copies all equal ^= 0
+- summary: 14 at 0: early returns cost size; post-call fill-loop guards read the doubled spill cell, so walk order creates it before the sample terms
+
+Summary before this remeasure: 14 at 0: copy propagation walks reverse depth-first, so the fill-loop guard creates doubled before the sample terms; identity-op copies all equal ^= 0
 
 Summary before this remeasure: 14 at 0: copy propagation walks blocks in reverse; the second fill loop's guard creates the doubled entry before the sample and 0x14 terms
 
@@ -854,4 +856,27 @@ Base re-measured: 14 masked at size 0, aligned exact 337, naming 2, immediate 12
 - Cursor and alpha-loop spellings (5 cells): the alpha loop's base written from `wake->samples + j * 0x14` or recomputed in full does create the 0x14 term ahead of segment bytes (298/299 before 301/302) but costs +4 to +28 bytes; the struct-field form with no cursor local (`wake->vertices = wake->vertexBuffers[1] + textureBytes; wake->samples = wake->vertices + j * 0x10; cursor = wake->samples + j * 0x14;`) is 19 at 0.
 
 Cycle-21 line: decision variable is the creation index of the sample and 0x14 terms against the doubled family (segment bytes, texture bytes) in copypropagate's reverse depth-first walk. Record: the raw DKWB_SUBST_TRACE GLOBAL order plus web_report numbers per candidate (`fast_score` with DKWB_SUBST_TRACE set, then `web_report --source`). Next: a source in which a block walked before the alpha loop (the alpha loop itself, the linked-call block or the stores after it) references the j-based sample and 0x14 terms at size 0, or a slot-trace reading of which two items could own 0x34 and 0x30 below doubled.
+
+#### 2026-10-09, lane aa-2: early returns, and the walk-order constraint restated (no change, 14)
+
+Measured by tools/bank.py: masked 14 (raw 14), size delta +0, candidate 351 words vs target 351. Aligned: byte-exact 337, register naming 2, immediate only 12, really different 0.
+
+Base re-measured: 14 masked at size 0, aligned 337/2/12/0.
+
+- Early-return structure (tools/shape_product.py, 4 cells): `if (wake ==
+  NULL) return NULL;` after the allocation and `if (wake->linked == NULL) {
+  mmFree(wake); return NULL; }` after the second call, each alone and
+  together: 303 at +8, 194 at +4, 278 at +12 (aligned residual 24, 27,
+  33). The if/else nesting is the target's; the allocation call and the
+  post-call block structure are where the tree has them.
+- Reading of the target listing against z-2's walk: the guards of both
+  fill loops read the doubled value from its pre-call spill cell (the
+  same expression web), and the unrolled end bounds read the two kept
+  symbols. So the doubled value is referenced at a post-call guard, which
+  the reverse depth-first walk visits before the call block; the sample
+  and 0x14 terms can only be created first if a block listed after the
+  fill-loop guards (their bodies, the tail stores or an else arm)
+  references them, and none of those does in the target.
+
+Cycle-21 line unchanged from lane z-2.
 <!-- plateau-handoff:wakeAllocate:end -->

@@ -5262,6 +5262,6 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
  * frame: 0xC8
  * relocations: 12
  * first-mismatch: +0xC0
- * summary: 10 at 0, all naming. Loop face through node->planes is 103 (node reloaded); only the entry re-read keeps the face store at no frame cost
+ * summary: 10 at 0, all naming. Interference count exact; target needs 22 webs on blocks 4/10 plus a code-free preheader web, and the face numbered after the loop webs
  * PLATEAU-HANDOFF:func_80011980:end
  */

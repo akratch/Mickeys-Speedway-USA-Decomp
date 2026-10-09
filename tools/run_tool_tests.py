@@ -70,6 +70,8 @@ INTERPRETER_OVERRIDES = {
     "tools/test_raw_asm_census.py": VENV_PYTHON,
     "tools/test_candidate_context.py": VENV_PYTHON,
     "tools/test_source_fidelity.py": VENV_PYTHON,
+    # Imports PyYAML (objdiff_config reads mickey.us.yaml), a venv dependency.
+    "tools/test_objdiff_config.py": VENV_PYTHON,
 }
 
 SUMMARY_RE = re.compile(r"^(OK|FAILED)(?:\s*\((?P<detail>[^)]*)\))?\s*$", re.MULTILINE)

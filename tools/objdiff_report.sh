@@ -70,7 +70,10 @@ echo "Regenerating objdiff.json from the current build/ tree..." >&2
 
 report=$(mktemp "${TMPDIR:-/tmp}/objdiff-report.XXXXXX.json")
 errlog=$(mktemp "${TMPDIR:-/tmp}/objdiff-err.XXXXXX.log")
-trap 'rm -f "$report" "$errlog"' EXIT
+# objdiff-cli reads ./objdiff.json, which the retry loop rewrites with the local
+# exclusions applied; put the canonical (exclusion-free) file back on the way
+# out so the working tree is not left dirty.
+trap 'rm -f "$report" "$errlog"; .venv/bin/python tools/objdiff_config.py >/dev/null 2>&1' EXIT
 
 attempt=0
 while [ "$attempt" -lt 20 ]; do

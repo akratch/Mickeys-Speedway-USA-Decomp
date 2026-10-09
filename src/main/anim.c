@@ -3987,7 +3987,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: 344 at size 0: z1 and y2 memory-class (array stand-in) reach aligned 201 at +4; arrays, structs, pointer-read doubles and scoping are flat or worse.
+ * summary: 344 at size 0: the target keeps two pointer copies and all three doubles at their definitions; the z1/y2 array stand-in keeps only twoZ1.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 

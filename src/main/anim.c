@@ -1881,8 +1881,11 @@ void func_800517E0(void) {
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     break;
                 case 0x79:
-                    pathIndex = cursor->command & 0xFF;
-                    value = (f32) (pathIndex);
+                    /* The byte is converted straight from the stream: a
+                     * definition that reads memory keeps its own value
+                     * (f0 up front, shared by both arms), where one from
+                     * pathIndex is substituted into each arm (lane w-5). */
+                    value = (f32) (cursor->command & 0xFF);
                     radius = (f32) *((u16 *) ((u8 *) cursor + 4));
                     cursor = (AnimStreamEntry *) ((u8 *) cursor + 6);
                     D_8007D6BC = (s32) (radius * scale * factor);
@@ -4000,10 +4003,10 @@ void fmvInit(void) {
 
 /* PLATEAU-HANDOFF:func_800517E0:start
  * symbol: func_800517E0
- * score: 1135/1808 words
+ * score: 1106/1808 words
  * frame: 0x1B0
  * relocations: 245
  * first-mismatch: +0xD0
- * summary: Aligned 630 at size 0. 0x4B: the chained store is the target's case; it loses the 6000/D_8007D6A4 break pieces (-736), one interference short.
+ * summary: Aligned 596 at size 0: 0x79 converts the command byte from the stream; webs the target lacks (0x4B trunc, 0x7A copy, opcode) hold the break pieces.
  * PLATEAU-HANDOFF:func_800517E0:end
  */

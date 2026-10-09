@@ -247,10 +247,11 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     Overlay47Player *player;
     Overlay47TextureScroll *scroll;
     Overlay47Icon *icon;
-    /* Unused: the cell between the declared homes and the spill temps
-     * (lane v-4, 67 -> 59, every home and temp now at the target's offset).
-     * Flagged, like the other four pads. */
-    s32 padE;
+    /* The label column has a local of its own, declared last: its cell is
+     * the one between the declared homes and the spill temps (lane v-4
+     * had it as an unused pad, 67 -> 59), and as its own web it takes s6
+     * where the ready flag keeps fp (lane x-047). */
+    s32 labelX;
 
     rate = updateRate;
     ov47Bss_30B = 0;
@@ -261,16 +262,18 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     back = 0;
     /* Both player-array loops outside the main loop are indexed by
      * controller and spelled `(D_800D3058 + controller)->`: the two loops'
-     * cursors are one strength-reduced fp web, and the subscript spelling in
-     * both loops ranks it below unready (lane v-4, 54 -> 47; either loop
-     * alone is 388 to 395 at +4). */
+     * cursors are one strength-reduced fp web (lane v-4, 54 -> 47; on the
+     * if/else body subscripts in both loops are 20 against 11, either loop
+     * alone 382 to 394 at +4, lane x-047). */
     for (controller = 0; controller < 4; controller++) {
         if ((D_800D3058 + controller)->active != 0) {
-            activeCount++;
+            /* Counted after the ready test (lane x-047, 4 -> 2: the inner
+             * branch keeps its nop rather than a likely copy of the step). */
             if ((D_800D3058 + controller)->ready == 0) {
                 allReady = 0;
                 ov47Bss_338 = 0;
             }
+            activeCount++;
         }
     }
     slot = 0;
@@ -278,110 +281,107 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         ov47Bss_338 = 1;
     }
     player = D_800D3058;
-    for (controller = 0; controller < 4; controller++, player++) {
-        /* The icon cursor is reset per controller (lane v-4, 59 -> 54: it
-         * moves the player cursor below unready in the colour order). */
+    for (controller = 0; controller < 4; controller++) {
+        /* The icon cursor is reset per controller (lane v-4, 59 -> 54; still
+         * 11 against 16 on the if/else body, lane x-047). */
         icon = ov47Bss_8;
-        switch (player->active) {
-            case 0:
-                if ((joyGetPressed(controller) & 0x9000) && !player->leaving &&
-                    !ov47Bss_324 && !start) {
-                    player->active = 1;
-                    player->x = ov47Bss_2F0.x;
-                    player->y = ov47Bss_2F0.y;
-                    player->z = ov47Bss_2F0.z;
-                    player->rotation = ov47Bss_2F0.rotation;
-                    while (ov47Bss_300[player->selector]) {
-                        player->selector++;
-                        if (player->selector >= 10) player->selector = 0;
-                    }
-                    allReady = 0;
-                    ov47Bss_300[player->selector] = 1;
-                    D_8007C1A0++;
-                    ov47Bss_30A++;
-                    amSndPlay(12, NULL);
-                    amSndPlay(25, NULL);
-                    if (player->actor != NULL) {
-                        if (player->actor->kind != ov47Data_510[player->selector]) {
-                            func_80006EA0(player->actor);
-                            func_overlay_047_F0002D10_1893B28(player);
-                        } else {
-                            func_8005AD64(player->actor, 1, -1, 0.0f);
-                        }
-                    }
-                    /* One counted loop on i, as shipped (the target's s4 is
-                     * i here and in the later loops); the inherited j copy
-                     * and its > 0 guard were m2c artefacts. 455 -> 335
-                     * aligned at size 0 (lane r-4). */
-                    for (i = 0; i < ov47Bss_0; i++) {
-                        if ((f32)player->selector == icon->selector) {
-                            ov47Bss_328[controller] = ((s32)icon->x + 160) << 4;
-                        }
-                        icon++;
-                    }
-                    icon = ov47Bss_8;
+        if (!player->active) {
+            if ((joyGetPressed(controller) & 0x9000) && !player->leaving &&
+                !ov47Bss_324 && !start) {
+                player->active = 1;
+                player->x = ov47Bss_2F0.x;
+                player->y = ov47Bss_2F0.y;
+                player->z = ov47Bss_2F0.z;
+                player->rotation = ov47Bss_2F0.rotation;
+                while (ov47Bss_300[player->selector]) {
+                    player->selector++;
+                    if (player->selector >= 10) player->selector = 0;
                 }
-                break;
-            default:
-                if (allReady && !ov47Bss_338) {
-                    showMode = 1;
-                    if (D_800D3190[controller] < -16) {
-                        if (D_8007BF74 != 0) {
-                            amSndPlay(14, NULL);
-                        } else {
-                            ov47Bss_30B = 1;
-                            D_8007BF74 = 1;
-                        }
-                    }
-                    if (D_800D3190[controller] >= 17) {
-                        if (D_8007BF74 == 0) {
-                            amSndPlay(14, NULL);
-                        } else {
-                            ov47Bss_30B = 1;
-                            D_8007BF74 = 0;
-                        }
+                allReady = 0;
+                ov47Bss_300[player->selector] = 1;
+                D_8007C1A0++;
+                ov47Bss_30A++;
+                amSndPlay(12, NULL);
+                amSndPlay(25, NULL);
+                if (player->actor != NULL) {
+                    if (player->actor->kind != ov47Data_510[player->selector]) {
+                        func_80006EA0(player->actor);
+                        func_overlay_047_F0002D10_1893B28(player);
+                    } else {
+                        func_8005AD64(player->actor, 1, -1, 0.0f);
                     }
                 }
-                if ((joyGetPressed(controller) & 0x9000) && !player->leaving &&
-                    player->actor != NULL && !ov47Bss_324) {
-                    if (allReady) {
-                        if (!ov47Bss_338) {
-                            ov47Bss_338 = 1;
-                            amSndPlay(12, NULL);
-                        } else {
-                            start = 1;
-                            if (player->sound != NULL) amSndStop(player->sound);
-                            amSndPlay(ov47Data_4B4[ov47Data_524[player->selector]], &player->sound);
-                        }
-                    } else if (!player->ready) {
-                        player->ready = 1;
+                /* One counted loop on i, as shipped (the target's s4 is
+                 * i here and in the later loops); the inherited j copy
+                 * and its > 0 guard were m2c artefacts. 455 -> 335
+                 * aligned at size 0 (lane r-4). */
+                for (i = 0; i < ov47Bss_0; i++) {
+                    if ((f32)player->selector == icon->selector) {
+                        ov47Bss_328[controller] = ((s32)icon->x + 160) << 4;
+                    }
+                    icon++;
+                }
+                icon = ov47Bss_8;
+            }
+        } else {
+            if (allReady && !ov47Bss_338) {
+                showMode = 1;
+                if (D_800D3190[controller] < -16) {
+                    if (D_8007BF74 != 0) {
+                        amSndPlay(14, NULL);
+                    } else {
+                        ov47Bss_30B = 1;
+                        D_8007BF74 = 1;
+                    }
+                }
+                if (D_800D3190[controller] >= 17) {
+                    if (D_8007BF74 == 0) {
+                        amSndPlay(14, NULL);
+                    } else {
+                        ov47Bss_30B = 1;
+                        D_8007BF74 = 0;
+                    }
+                }
+            }
+            if ((joyGetPressed(controller) & 0x9000) && !player->leaving &&
+                player->actor != NULL && !ov47Bss_324) {
+                if (allReady) {
+                    if (!ov47Bss_338) {
+                        ov47Bss_338 = 1;
+                        amSndPlay(12, NULL);
+                    } else {
+                        start = 1;
                         if (player->sound != NULL) amSndStop(player->sound);
-                        amSndPlay(ov47Data_48C[ov47Data_524[player->selector]], &player->sound);
+                        amSndPlay(ov47Data_4B4[ov47Data_524[player->selector]], &player->sound);
                     }
-                    func_8005AD64(player->actor, 2, -1, 0.0f);
-                } else if ((joyGetPressed(controller) & 0x4000) && !player->leaving) {
-                    if (player->actor != NULL && !ov47Bss_324 && !start) {
-                        if (player->ready) {
-                            player->ready = 0;
-                            allReady = 0;
-                            func_8005AD64(player->actor, 0, -1, 0.0f);
-                            if (player->sound != NULL) amSndStop(player->sound);
-                            amSndPlay(ov47Data_4A0[ov47Data_524[player->selector]], &player->sound);
-                        } else if (D_8007C1A0 >= 2) {
-                            player->active = 0;
-                            ov47Bss_300[player->selector] = 0;
-                            if (player->actor != NULL) {
-                                player->leaving = 1;
-                                func_8005AD64(player->actor, 5, -1, 0.0f);
-                                amSndPlay(24, NULL);
-                            }
-                            D_8007C1A0--;
-                        } else {
-                            back = 1;
+                } else if (!player->ready) {
+                    player->ready = 1;
+                    if (player->sound != NULL) amSndStop(player->sound);
+                    amSndPlay(ov47Data_48C[ov47Data_524[player->selector]], &player->sound);
+                }
+                func_8005AD64(player->actor, 2, -1, 0.0f);
+            } else if ((joyGetPressed(controller) & 0x4000) && !player->leaving) {
+                if (player->actor != NULL && !ov47Bss_324 && !start) {
+                    if (player->ready) {
+                        player->ready = 0;
+                        allReady = 0;
+                        func_8005AD64(player->actor, 0, -1, 0.0f);
+                        if (player->sound != NULL) amSndStop(player->sound);
+                        amSndPlay(ov47Data_4A0[ov47Data_524[player->selector]], &player->sound);
+                    } else if (D_8007C1A0 >= 2) {
+                        player->active = 0;
+                        ov47Bss_300[player->selector] = 0;
+                        if (player->actor != NULL) {
+                            player->leaving = 1;
+                            func_8005AD64(player->actor, 5, -1, 0.0f);
+                            amSndPlay(24, NULL);
                         }
+                        D_8007C1A0--;
+                    } else {
+                        back = 1;
                     }
                 }
-                break;
+            }
         }
         if (player->active && player->actor == NULL) {
             func_overlay_047_F0002D10_1893B28(player);
@@ -514,6 +514,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
                 if (player->actor != NULL) partUpdateTriggers(player->actor, updateRate);
             }
         }
+        /* The step is the body's last statement, not the for-step (lane
+         * x-047, 2 -> 0: the next statement's high half then schedules
+         * first in the latch, as shipped). */
+        player++;
     }
     ov47Data_550 += ov47Data_554 * updateRate;
     if (ov47Data_550 < 0) {
@@ -561,8 +565,9 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
         unready = 0;
         selected = -1;
         count = 0;
-        p2 = D_800D3058;
-        for (i = 0; i < 4; i++, p2++) {
+        /* The cursor starts in the for-init (lane x-047, 6 -> 4: the table
+         * base is hoisted ahead of it, as shipped). */
+        for (i = 0, p2 = D_800D3058; i < 4; i++, p2++) {
             if ((f32)p2->selector == icon->selector && p2->active) {
                 colourIndex = i;
                 if (!p2->ready) unready = 1;
@@ -670,23 +675,20 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     labelCount = 0;
     for (controller = 0; controller != 4; controller++) {
         if ((D_800D3058 + controller)->active && (D_800D3058 + controller)->actor != NULL) {
-            /* The label x is `unready` again: one symbol for the ready flag
-             * and the label column, so it keeps unready's s8 (lever_sweep
-             * merge_locals, lane p-4: 615 at -4 to 455 at size 0). */
             if (ov47Bss_30A == 4) {
-                unready = ov47Data_530[controller] + (D_800D3058 + controller)->screenX;
+                labelX = ov47Data_530[controller] + (D_800D3058 + controller)->screenX;
             } else {
-                unready = (D_800D3058 + controller)->screenX - 20.0f;
+                labelX = (D_800D3058 + controller)->screenX - 20.0f;
             }
             /* The row counter is j, as is the marker easing loop's, and the
              * bar row is `stat` (lane k-8 had the rows on `selected`; j in
              * both loops is 245 -> 237 aligned, lane u-5). */
             stat = 116;
             for (j = 0; j != 4; j++) {
-                barX = unready;
+                barX = labelX;
                 if (labelCount < 4) {
                     if (ov47Bss_30A != 4) {
-                        func_8004B0F8(&D_800D3140, unready - 6, stat + 2, D_8007C0B8[145 + j], 9);
+                        func_8004B0F8(&D_800D3140, labelX - 6, stat + 2, D_8007C0B8[145 + j], 9);
                     } else {
                         func_8004B0F8(&D_800D3140, 160, stat + 2, D_8007C0B8[145 + j], 12);
                     }
@@ -728,9 +730,11 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
     func_80021504(oldFov, 1);
     func_800221E8(&D_800D3140, NULL);
     ov47Data_540 += ov47Data_544 * rate;
+    /* Both arms update the factor before its step (lane x-047, 11 -> 6:
+     * the step negated first put the 2.0f literal on f16). */
     if (ov47Data_540 > 1.0f) {
-        ov47Data_544 = -ov47Data_544;
         ov47Data_540 = 2.0f - ov47Data_540;
+        ov47Data_544 = -ov47Data_544;
     } else if (ov47Data_540 < 0.0f) {
         ov47Data_540 = -ov47Data_540;
         ov47Data_544 = -ov47Data_544;
@@ -747,10 +751,10 @@ void func_overlay_047_F0000B30_1891948(s32 updateRate) {
 
 /* PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:start
  * symbol: func_overlay_047_F0000B30_1891948
- * score: 47/2168 words
+ * score: 0/2168 words
  * frame: 0x280
  * relocations: 321
- * first-mismatch: +0xC
- * summary: 47 aligned at size 0 (masked 47): player array as pointer add in both outer loops; padC, padD, padE, frame unused. Open: cursor order (34 priced).
+ * first-mismatch: none
+ * summary: 0 masked at size 0 (aligned exact): player step as the loop body's last statement. Not promoted: .data/.bss statics need the section rebind.
  * PLATEAU-HANDOFF:func_overlay_047_F0000B30_1891948:end
  */

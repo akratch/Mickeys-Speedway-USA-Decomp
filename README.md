@@ -11,7 +11,7 @@ from the original stub but have not been modernized or verified.
 <!-- SCOREBOARD_BEGIN -->
 ## Progress
 
-[![functions](https://img.shields.io/badge/functions_matched-1346_of_1460_(92.19%25)-blue)](#progress) [![bytes](https://img.shields.io/badge/code_bytes_resolved-911808_of_943640_(96.63%25)-blue)](#progress) [![names](https://img.shields.io/badge/symbols_named-1460_adopted-blue)](#progress)
+[![functions](https://img.shields.io/badge/functions_matched-1346_of_1460_(92.19%25)-blue)](#progress) [![bytes](https://img.shields.io/badge/code_bytes_resolved-911808_of_943640_(96.63%25)-blue)](#progress) [![names](https://img.shields.io/badge/symbols_named-1476_adopted-blue)](#progress)
 
 Physical text: 944,324 bytes; reviewed nonexecutable alignment: 684 bytes.
 
@@ -24,7 +24,7 @@ Physical text: 944,324 bytes; reviewed nonexecutable alignment: 684 bytes.
 | Functions matched | 1,346 | 1,460 | 92.19% |
 | Names adopted | 1,428 | 1,460 | 97.81% |
 
-Whole program is resident C plus verified assembly plus overlay C. Totals exclude [reviewed nonexecutable alignment](docs/executable-accounting.md). A function counts only when the ROM rebuilds byte-identically with its C compiled in place of its assembly, so a `NON_MATCHING` body counts as unmatched exactly like extracted assembly. Verified assembly is 92 hand-written functions kept as assembly on purpose. 1,460 symbols are adopted in `symbol_addrs.us.txt`.
+Whole program is resident C plus verified assembly plus overlay C. Totals exclude [reviewed nonexecutable alignment](docs/executable-accounting.md). A function counts only when the ROM rebuilds byte-identically with its C compiled in place of its assembly, so a `NON_MATCHING` body counts as unmatched exactly like extracted assembly. Verified assembly is 92 hand-written functions kept as assembly on purpose. 1,476 symbols are adopted in `symbol_addrs.us.txt`.
 
 | Area | Functions | Matched to C | Named, still asm | Unnamed | Identified |
 | :--- | ---: | ---: | ---: | ---: | :--- |

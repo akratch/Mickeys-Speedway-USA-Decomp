@@ -616,9 +616,9 @@
       "source_commit": "838f8ff7d18ce66f00c1ab7470b30bee06dbf5b5"
     },
     "func_80051364": {
-      "ledger_commit": "f722219d46e2bb3db99cc72da515a5ccb5452e25",
-      "reason": "ADR 0018 stall rule: this plateau closed under the retired ten-attempt cap. Delta 0 at 7 masked words is a schedule or structure defect the permuter can still move.",
-      "source_commit": "6c43dc616af9b69dd370ae593d412f388371cf33"
+      "ledger_commit": "2eca6b2652879f37cd68d90229bf5ac1f78b44de",
+      "reason": "AA-1 isolated six register differences. Test a separate narrowed-state local initialized before self-narrowing, measuring command/clock web references; this lifetime split differs from the substituted direct narrowing copy.",
+      "source_commit": "17a62a121d378bf8f14030fe30b6238fc9149f4c"
     },
     "func_800517E0": {
       "ledger_commit": "1b79389ddbad5c65a3cd400157fc6d99d61c78fa",

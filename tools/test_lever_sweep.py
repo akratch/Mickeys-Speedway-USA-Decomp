@@ -334,5 +334,29 @@ class NoOracleTests(unittest.TestCase):
         self.assertEqual(ls.oracle_label(0, 2), "no")
 
 
+class ExitStatusTests(unittest.TestCase):
+    def status(self, exact, no_fail):
+        import contextlib
+        import io
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = ls.exit_status(exact, no_fail)
+        return code, out.getvalue()
+
+    def test_default_keeps_one_for_no_exact_cell(self):
+        code, text = self.status([], False)
+        self.assertEqual(code, 1)
+        self.assertIn("no exact cell", text)
+
+    def test_no_fail_makes_it_zero_and_says_so(self):
+        code, text = self.status([], True)
+        self.assertEqual(code, 0)
+        self.assertIn("no exact cell", text)
+        self.assertIn("--no-fail", text)
+
+    def test_an_exact_cell_is_zero_and_silent(self):
+        self.assertEqual(self.status([{"index": 1}], False), (0, ""))
+
+
 if __name__ == "__main__":
     unittest.main()

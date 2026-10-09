@@ -199,6 +199,6 @@ Overlay20InitGrid *func_overlay_020_F000038C_1876964(Overlay20InitGrid *grid) {
  * frame: 0x40
  * relocations: 3
  * first-mismatch: +0x224
- * summary: 10 at 0. Reused variables are forwarded; a walking index is natural at 47 size-exact but has no copy; the barrier is any second definition of i.
+ * summary: 10 at 0. Natural walking form i += 9 emits the target's copy (47 at 0; 34 held in size); the copy and i's dead first def must precede the v1 division
  * PLATEAU-HANDOFF:func_overlay_020_F000038C_1876964:end
  */

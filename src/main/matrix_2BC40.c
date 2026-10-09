@@ -68,6 +68,6 @@ void func_8002B040(MtxF matrix, f32 x, f32 y, f32 z,
  * frame: frameless
  * relocations: 0
  * first-mismatch: +0x0
- * summary: Own TU; -O3 -Wab,-r4300_mul floors at 16 delta 0; two silent float ring draws per row after the sum are unexplained
+ * summary: Target is libultra guMtxXFMF's -O3 object with the translation load and add hand-deleted per row (0 words differ); hasm, not C
  * PLATEAU-HANDOFF:func_8002B040:end
  */

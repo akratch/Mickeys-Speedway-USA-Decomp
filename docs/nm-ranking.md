@@ -278,8 +278,8 @@ Relocation-masked mismatch evidence covers **15 / 15** resolved rows. The raw co
 
 | Threshold | Count |
 |---|---:|
-| raw `differing_words <= 5` | 0 |
-| relocation-masked `differing_words <= 5` | 0 |
+| raw `differing_words <= 5` | 1 |
+| relocation-masked `differing_words <= 5` | 1 |
 | raw `differing_words <= 10` | 4 |
 | relocation-masked `differing_words <= 10` | 5 |
 | raw `differing_words <= 20` | 6 |
@@ -293,8 +293,8 @@ units remain distinct.
 
 | Rank | File | Symbol | Overlay/TU | Category | Target bytes | Raw diff | Masked diff | Raw first | Masked first | Size delta | Objdiff% |
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 6 | 6 | 244 | 244 | 0 | — |
-| 2 | `src/main/track.c` | `func_8001291C` | `main` | `other` | 2,192 | 6 | 6 | 1,384 | 1,384 | 0 | — |
+| 1 | `src/main/track.c` | `func_8001291C` | `main` | `other` | 2,192 | 4 | 4 | 1,752 | 1,752 | 0 | — |
+| 2 | `src/main/spranim.c` | `func_8001B798` | `main` | `other` | 700 | 6 | 6 | 244 | 244 | 0 | — |
 | 3 | `src/main/anim.c` | `func_80051364` | `main` | `other` | 1,148 | 10 | 7 | 96 | 276 | 0 | — |
 | 4 | `src/overlays/o020/func_overlay_020_F000038C_1876964.c` | `func_overlay_020_F000038C_1876964` | `o020` | `other` | 1,080 | 10 | 10 | 548 | 548 | 0 | — |
 | 5 | `src/main/track.c` | `func_80011980` | `main` | `other` | 860 | 11 | 10 | 192 | 192 | 0 | — |

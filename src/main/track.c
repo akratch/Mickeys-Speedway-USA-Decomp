@@ -3906,7 +3906,14 @@ void func_80012658(s32 flags) {
  * polygon (t3/t2 as shipped); xzMask is also the insertion sort's xzMasks
  * swap temporary, which ties it with the batch cursor and wins on web number
  * (s4/s5); the coordinate swaps go through insertIndex. pad is the unused
- * cell the old swap temporary held; deleting it moves the frame. */
+ * cell the old swap temporary held; deleting it moves the frame.
+ * 6 -> 4 at 0 (lane t-1): both plane lookups take the DKR tracks.c form,
+ * the plane index scaled by four into a local and then an f32 subscript,
+ * which puts the base first in the add. The local is reused for its next
+ * role straight after the lookup (edgeIndex becomes the edge counter, x1
+ * the edge word); without that later definition uopt substitutes the
+ * address into the plane's field loads and the plane leaves a0. The sign
+ * mask is written first in the xor for the shipped operand order. */
 extern s32 func_800131AC(TrackVec3f *origin, TrackVec3f *direction,
                          TrackVec3f *minimum, TrackVec3f *maximum,
                          f32 *nearClip, f32 *farClip);
@@ -4080,7 +4087,9 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, u32 arg4) {
                 if (((edgeSign & 0xFFFF) != 0) && ((edgeSign & 0xFFFF0000) != 0) &&
                     ((yHit & 0xFF) != 0)) {
                     polygon = ((TrackFacet *) segment->surfaceIndices)[z1].indices;
-                    plane = &surfaceBase[polygon[0]];
+                    edgeIndex = polygon[0] << 2;
+                    plane = (TrackPlane *) &((f32 *) surfaceBase)[edgeIndex];
+                    edgeIndex = 0;
                     normalX = plane->x;
                     normalY = plane->y;
                     normalZ = plane->z;
@@ -4096,11 +4105,12 @@ s32 func_8001291C(f32 *arg0, f32 *arg1, f32 *arg2, s32 arg3, u32 arg4) {
                             pointY = arg0[1] + (direction.f[1] * fraction);
                             pointZ = arg0[2] + (direction.f[2] * fraction);
                             insertIndex = 1;
-                            for (edgeIndex = 0; (edgeIndex < 3) && (insertIndex != 0);
-                                 edgeIndex++) {
+                            for (; (edgeIndex < 3) && (insertIndex != 0); edgeIndex++) {
+                                x1 = ((polygon[edgeIndex + 1] & 0x8000) ^
+                                      polygon[edgeIndex + 1]) << 2;
+                                plane = (TrackPlane *) &((f32 *) surfaceBase)[x1];
                                 x1 = polygon[edgeIndex + 1];
                                 edgeSign = x1 & 0x8000;
-                                plane = &surfaceBase[polygon[edgeIndex + 1] ^ edgeSign];
                                 edgeX = plane->x;
                                 edgeY = plane->y;
                                 edgeZ = plane->z;
@@ -5257,10 +5267,10 @@ void func_80014ECC(TrackTextureHeader *texture, s32 frame, s32 flags) {
 
 /* PLATEAU-HANDOFF:func_8001291C:start
  * symbol: func_8001291C
- * score: 6/548 words
+ * score: 4/548 words
  * frame: 0x288
  * relocations: 13
- * first-mismatch: +0x568
- * summary: Phase-1 z in edgeIndex, sign as a conditional, xzMask swap, insertIndex swaps: 18 to 6 at 0, aligned residual 18 to 6
+ * first-mismatch: +0x6D8
+ * summary: Both plane lookups in the DKR f32-subscript form with the index local reused straight after: 6 to 4 at 0; left: the hit block flag-load draw
  * PLATEAU-HANDOFF:func_8001291C:end
  */

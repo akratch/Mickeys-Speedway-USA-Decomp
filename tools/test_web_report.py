@@ -216,6 +216,25 @@ class CompileEnvironment(unittest.TestCase):
         with self.assertRaises(SystemExit):
             wr.main(["sym", "--source", "/nonexistent/cand.c"])
 
+class DefinitionSpanTest(unittest.TestCase):
+    def test_a_multi_line_prototype_is_not_the_definition(self):
+        lines = [
+            "s32 target(s32 a,",
+            "           s32 b);",
+            "void other(void) {",
+            "    target(1, 2);",
+            "}",
+            "s32 target(s32 a,",
+            "           s32 b) {",
+            "    return a + b;",
+            "}",
+        ]
+        self.assertEqual(wr.definition_span(lines, "target"), (6, 9))
+
+    def test_a_one_line_prototype_is_skipped_too(self):
+        lines = ["s32 target(s32 a);", "s32 target(s32 a) {", "    return a;", "}"]
+        self.assertEqual(wr.definition_span(lines, "target"), (2, 4))
+
 
 if __name__ == "__main__":
     unittest.main()

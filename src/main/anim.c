@@ -3987,7 +3987,7 @@ void fmvInit(void) {
  * frame: 0xD8
  * relocations: 3
  * first-mismatch: +0x4
- * summary: 344 at size 0: z1 and y2 memory-class (array stand-in) reach aligned 201 at +4; arrays, structs, pointer-read doubles and scoping are flat or worse.
+ * summary: 344 at size 0: the target keeps two pointer copies and all three doubles at their definitions; the z1/y2 array stand-in keeps only twoZ1.
  * PLATEAU-HANDOFF:func_80054B3C:end
  */
 
@@ -3997,7 +3997,7 @@ void fmvInit(void) {
  * frame: 0xF8
  * relocations: 59
  * first-mismatch: +0x70
- * summary: 354 at size 0: the target holds pairIndex in a1 through the displacement loop; address-taken counts stop the unroller.
+ * summary: 354 at size 0: pairIndex's head piece is refused at the min-loop preheader by one interference (26 vs 27); the target's a1 piece includes the min loop.
  * PLATEAU-HANDOFF:func_80053868:end
  */
 
